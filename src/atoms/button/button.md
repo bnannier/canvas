@@ -280,7 +280,7 @@ A disabled button ignores presses: `onPress` is wired exactly as above, but it n
 
 ## Real links (href)
 
-A button that NAVIGATES should be a real link, not a press handler that sets `location`. Pass `href` and the web render becomes a genuine `<a>`: middle-click, cmd-click, and open-in-new-tab all work, crawlers see the destination, and assistive tech hears a link. Native platforms have no anchors, so pair `href` with an `onPress` that runs the same navigation through your router; while `disabled` or `loading` the anchor is suppressed exactly like `onPress`. `hrefAttrs` carries the anchor attributes react-native-web forwards (`target`, `rel`, `download`).
+A button that NAVIGATES should be a real link, not a press handler that sets `location`. Pass `href` and the web render becomes a genuine browser link: middle-click, cmd-click, and open-in-new-tab all work, crawlers see the destination, and assistive tech hears a link. Native platforms have no anchors, so pair `href` with an `onPress` that runs the same navigation through your router; while `disabled` or `loading` the anchor is suppressed exactly like `onPress`. `hrefAttrs` carries the anchor attributes react-native-web forwards (`target`, `rel`, `download`).
 
 ```tsx
 <Row alignCenter cozy>
