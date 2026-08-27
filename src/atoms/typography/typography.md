@@ -373,3 +373,13 @@ git commit -m "wip"</Typography>
 ```tsx
 <Typography mono style={{ maxWidth: 320 }}>We could not process your request because the upstream service returned an unexpected response.</Typography>
 ```
+
+## Inline links (href)
+
+Inline text that NAVIGATES should be a real link, not pressable text that sets `location`: pass `href` and the web render becomes a genuine browser link (middle-click, new tab, crawlers, and assistive tech all treat it as one). Native platforms ignore `href`, so pair it with an `onPress` that runs the same navigation through your router; `underline` supplies the conventional link look, and `hrefAttrs` forwards `target` / `rel` / `download` on the web.
+
+```tsx
+<Typography small>
+  Read the <Typography small underline href="https://canvas.nannier.com">Canvas docs</Typography> for the full component list.
+</Typography>
+```
