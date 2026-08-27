@@ -1,4 +1,5 @@
 import { type ReactNode } from "react";
+import { type GestureResponderEvent } from "react-native";
 import { Text, useTheme, MONO_FONT, type StyleProp, type TextStyle } from "../../style/index.js";
 import {
   type Role,
@@ -90,6 +91,20 @@ export interface TypographyProps {
    * shim. Combines freely with every role, tone, and weight; omit for undecorated text.
    */
   underline?: boolean;
+  /**
+   * Renders this text as a REAL inline link on the web: react-native-web
+   * gives the root element a browser link with this destination, so
+   * middle-click, cmd-click, and open-in-new-tab work and assistive tech
+   * hears a link. Native platforms have no browser links and ignore it, so
+   * pair `href` with an `onPress` running the same navigation through the
+   * host's router. Combine with `underline` for the conventional link look.
+   * When a heading role and `href` are both set, the link role wins.
+   */
+  href?: string;
+  /** Attributes forwarded with `href` on the web: `target`, `rel`, `download`. */
+  hrefAttrs?: { target?: "_blank" | "_self"; rel?: string; download?: boolean | string };
+  /** Press handler; the native navigation path for `href` (fires on web too). */
+  onPress?: (event: GestureResponderEvent) => void;
   /** E2E hook forwarded to the root element. */
   testID?: string;
   /**
@@ -203,11 +218,18 @@ export function createTypography(skin: TypographySkin) {
     // native (otherwise RNW emits every header as h1).
     const level = HEADING_LEVEL[role];
 
+    // A real browser link on the web (react-native-web renders Text carrying
+    // `href` as one); native ignores these and navigates through onPress. RN's
+    // prop types don't know the web-forwarded props, hence the narrow spread.
+    const anchor = props.href != null ? { href: props.href, hrefAttrs: props.hrefAttrs } : null;
+
     return (
       <Text
+        {...(anchor ?? undefined)}
         testID={testID}
-        accessibilityRole={level ? "header" : undefined}
-        aria-level={level}
+        onPress={props.onPress}
+        accessibilityRole={anchor ? "link" : level ? "header" : undefined}
+        aria-level={anchor ? undefined : level}
         style={[
           skin.roleType[role],
           roleColor(tokens, role),
