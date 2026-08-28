@@ -1,3 +1,12 @@
+"use client";
+
+// Canvas is a react-native-web kit: every export ultimately touches React
+// context, state, or browser APIs, so the whole package is a client boundary.
+// Declaring it here means a React Server Components consumer (Next.js App
+// Router) can import the kit from a server component without each app having
+// to remember its own "use client" wrapper. tsc preserves this prologue into
+// dist/index.js, the package's only public JS entry.
+
 export { token, hsl } from "./tokens.js";
 export {
   getTheme,
