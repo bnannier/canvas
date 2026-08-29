@@ -101,6 +101,16 @@ export interface StatsProps {
   plain?: boolean;
   /** Optional heading shown above the metrics (mainly for the plain surface). */
   title?: string;
+  /** Draw every metric's strip on a muted track, in one bounded band.
+   *
+   *  For a ROW of metrics, where the strips are read against each other. Without
+   *  it each strip draws only its marks, so a metric with a quiet series shows a
+   *  near-empty band beside one with a full bar and the row's densities range
+   *  from blank to solid with nothing tying them together; the eye lands on the
+   *  fullest tile rather than scanning the row. The track gives every strip the
+   *  same frame whatever its data, so a flat series reads as a chart sitting at
+   *  zero and the fill is the only thing that varies. */
+  framed?: boolean;
   /** Make each metric a tappable target (drill into the underlying detail). When
    *  set, every metric renders as a Pressable with a button role and a pressed
    *  affordance, so a tappable stat needs no hand-rolled Pressable. */
@@ -156,7 +166,7 @@ function accentOf(item: StatItem): string | null {
 
 export function createStats(skin: StatsSkin) {
   // One metric: label, value, optional delta. Tappable when an onPress is given.
-  function StatItemView({ item, surface, onPress }: { item: StatItem; surface: Surface; onPress?: () => void }): ReactNode {
+  function StatItemView({ item, surface, framed, onPress }: { item: StatItem; surface: Surface; framed?: boolean; onPress?: () => void }): ReactNode {
     const { tokens, dark } = useTheme();
     // Split the surface shape (radius/border/fill/padding) from the outer flex sizing:
     // the shape stays on the tappable node, the sizing rides the RippleClip wrapper.
@@ -188,10 +198,13 @@ export function createStats(skin: StatsSkin) {
           <Text style={[skin.deltaBase, item.steady ? { color: tokens["muted-foreground"] } : deltaTone(dark, !!item.down)]}>{item.delta}</Text>
         ) : null}
         {item.spark != null && item.spark.length > 0 ? (
-          <Sparkline values={item.spark} accessibilityLabel={item.sparkLabel ?? `${item.label} trend`} style={sparkStrip} />
+          <Sparkline values={item.spark} track={framed} accessibilityLabel={item.sparkLabel ?? `${item.label} trend`} style={sparkStrip} />
         ) : item.share != null && item.share.length > 0 ? (
           <View style={shareStrip}>
-            <StackedBar segments={item.share} label={item.label} hideLegend track />
+            {/* Subtle whether or not the row is framed: inside a tile the strip
+                supports the value rather than being it, which is the same reason
+                a Sparkline washes its own marks. */}
+            <StackedBar segments={item.share} label={item.label} hideLegend track subtle tall={framed} />
           </View>
         ) : null}
       </>
@@ -233,7 +246,7 @@ export function createStats(skin: StatsSkin) {
         {title != null && title !== "" ? <Text style={skin.title(tokens, surface)}>{title}</Text> : null}
         <View style={[row, skin.rowGap[surface]]}>
           {items.map((item, i) => (
-            <StatItemView key={i} item={item} surface={surface} onPress={onPressItem ? () => onPressItem(i) : undefined} />
+            <StatItemView key={i} item={item} surface={surface} framed={props.framed} onPress={onPressItem ? () => onPressItem(i) : undefined} />
           ))}
         </View>
       </View>

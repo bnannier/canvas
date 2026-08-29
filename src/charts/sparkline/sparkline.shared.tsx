@@ -36,6 +36,14 @@ export interface SparklineProps {
   tall?: boolean;
   /** A continuous 2px trend line with an area wash and end marker, instead of the bar strip. */
   line?: boolean;
+  /** Paint the plot area with the muted track, giving the strip a visible frame.
+   *
+   *  Two things it buys: a flat or all-zero series reads as a chart sitting at
+   *  zero rather than as one that failed to load, and a row of strips scans
+   *  evenly because every one of them holds the same band whatever its data. Use
+   *  it wherever strips sit side by side (a Stats row); a lone sparkline inside
+   *  running text is usually better without. */
+  track?: boolean;
   /** Accessible summary (e.g. "requests, last 11 days"). */
   accessibilityLabel?: string;
   /** E2E hook forwarded to the root element. */
@@ -115,6 +123,13 @@ export function createSparkline(skin: SparklineSkin) {
     const sized = flat.width != null || flat.flex != null || flat.flexBasis != null || flat.flexGrow != null;
     const root: ViewStyle = { flexDirection: "row", alignItems: "flex-end", gap: skin.gap, height: plot };
     if (!sized) root.width = skin.defaultWidth;
+    // The frame sits on the root, so it holds the band in both variants and the
+    // marks draw over it. Same radius as a bar's data end, so the band and what
+    // it holds read as one shape.
+    if (props.track) {
+      root.backgroundColor = tokens.muted;
+      root.borderRadius = skin.barRadius;
+    }
 
     // The accent marks the latest real period: the last FINITE value, so a
     // trailing missing bucket never wears the accent (which would contradict

@@ -40,6 +40,29 @@ hold its space, such as inside a `Stats` tile.
 </Card>
 ```
 
+### Strip size and wash
+
+`tall` takes the 24 band a Sparkline plots in, with the chart bar radius, so a
+composition and a trend sitting side by side draw as one family. `subtle` washes
+the segments for a bar that supports a headline rather than being one, where a
+solid bar would outweigh everything around it.
+
+```tsx
+<Card padded style={{ maxWidth: 560 }}>
+  <StackedBar
+    tall
+    subtle
+    track
+    hideLegend
+    label="Verified identities"
+    segments={[
+      { label: "Verified", value: 1502 },
+      { label: "Unverified", value: 345 }
+    ]}
+  />
+</Card>
+```
+
 ## Do & Don't
 
 ### Stacked bar

@@ -1,4 +1,4 @@
-import { View, useTheme, devWarn, type StyleProp, type ViewStyle } from "../../style/index.js";
+import { View, useTheme, devWarn, alpha, type StyleProp, type ViewStyle } from "../../style/index.js";
 import { seriesFill } from "../shared/charts.styles.js";
 import { ChartLegend } from "../shared/chart-legend.js";
 import { type StackedSegment } from "../shared/types.js";
@@ -11,6 +11,16 @@ import { type StackedSegment } from "../shared/types.js";
 // StackedBar: one proportional horizontal bar split into colored segments, with a
 // legend (dot + label + %) so each band is identified.
 
+// The wash `subtle` draws its segments at: the density a Sparkline gives its
+// own marks, so a composition and a trend sitting side by side carry the same
+// ink.
+const SUBTLE_ALPHA = 0.35;
+
+// The `tall` size, matching what a Sparkline plots in: the same band height and
+// the same radius its bars carry, so the two draw as one family.
+const STRIP_HEIGHT = 24;
+const STRIP_BAR_RADIUS = 4;
+
 export interface StackedBarProps {
   segments: StackedSegment[];
   /** What the bar measures (e.g. "Traffic sources"); leads the accessible name. */
@@ -22,13 +32,23 @@ export interface StackedBarProps {
    *  nothing (an empty queue, a metric at zero) is a real state to draw, and
    *  without the rail it draws as an absence. */
   track?: boolean;
+  /** The metric-strip size: a 24 band carrying the chart bar radius, instead of
+   *  the default 10 pill. It is the height a Sparkline plots in, so a
+   *  composition drawn at this size sits in the same band as a trend and a row
+   *  holding both scans as one set. */
+  tall?: boolean;
+  /** Draw the segments as washes of their ramp colours rather than at full
+   *  strength. For a bar that supports a headline rather than being one (the
+   *  strip under a metric's value), where a solid bar outweighs everything
+   *  around it. */
+  subtle?: boolean;
   /** E2E hook forwarded to the root element. */
   testID?: string;
   /** For sizing/composition only. */
   style?: StyleProp<ViewStyle>;
 }
 
-export function StackedBar({ segments, label, hideLegend, track, testID, style }: StackedBarProps) {
+export function StackedBar({ segments, label, hideLegend, track, tall, subtle, testID, style }: StackedBarProps) {
   const { tokens } = useTheme();
   const rawTotal = segments.reduce((sum, seg) => sum + Math.max(0, Number.isFinite(seg.value) ? seg.value : 0), 0);
   // Floor the divisor at 1 so an all-zero (or empty) bar divides cleanly to 0%
@@ -60,10 +80,22 @@ export function StackedBar({ segments, label, hideLegend, track, testID, style }
     <View testID={testID} style={style} {...(hideLegend ? img : {})}>
       <View
         {...(hideLegend ? {} : img)}
-        style={{ flexDirection: "row", overflow: "hidden", borderRadius: 9999, height: 10, ...(track ? { backgroundColor: tokens.muted } : {}) }}
+        style={{
+          flexDirection: "row",
+          overflow: "hidden",
+          borderRadius: tall ? STRIP_BAR_RADIUS : 9999,
+          height: tall ? STRIP_HEIGHT : 10,
+          ...(track ? { backgroundColor: tokens.muted } : {}),
+        }}
       >
         {segments.map((seg, i) => (
-          <View key={i} style={{ width: `${pct(seg.value)}%`, backgroundColor: seriesFill(tokens, i) }} />
+          <View
+            key={i}
+            style={{
+              width: `${pct(seg.value)}%`,
+              backgroundColor: subtle ? alpha(seriesFill(tokens, i), SUBTLE_ALPHA) : seriesFill(tokens, i),
+            }}
+          />
         ))}
       </View>
       {hideLegend ? null : (
