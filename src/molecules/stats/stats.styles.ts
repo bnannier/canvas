@@ -57,7 +57,13 @@ export const sparkStrip: ViewStyle = { marginTop: 12, width: "100%" };
 
 // The composition strip an item renders when it carries `share`: the same slot,
 // the same full width, and the SAME RESERVED HEIGHT as the trend strip, with the
-// bar centred in it.
+// bar sitting on the strip's floor.
+//
+// On the floor rather than centred in the band, because that is where a
+// Sparkline's bars sit (`alignItems: "flex-end"`), and a row that mixes the two
+// then shares one baseline. Centred, the composition bar floated seven pixels
+// above its neighbours' baseline, which is a smaller version of the same
+// "these tiles do not match" reading the strip exists to fix.
 //
 // The height is what makes a mixed row work. Cards in a Stats row stretch to the
 // tallest sibling, so a row where one metric plots a trend and another draws a
@@ -66,7 +72,7 @@ export const sparkStrip: ViewStyle = { marginTop: 12, width: "100%" };
 // unfinished component rather than as a deliberate one. Reserving the trend
 // strip's height for the composition strip keeps every card in the row filled to
 // the same line.
-export const shareStrip: ViewStyle = { marginTop: 12, width: "100%", height: SPARK_STRIP_HEIGHT, justifyContent: "center" };
+export const shareStrip: ViewStyle = { marginTop: 12, width: "100%", height: SPARK_STRIP_HEIGHT, justifyContent: "flex-end" };
 
 // The metric's header row, rendered only when the item carries an icon or a
 // control: the label on the left, the glyph and control opposite it. A metric with
