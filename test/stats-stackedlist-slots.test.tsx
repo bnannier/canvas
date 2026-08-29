@@ -98,6 +98,13 @@ describe("Stats strip slot", () => {
     expect(shareStrip.marginTop).toBe(sparkStrip.marginTop);
   });
 
+  it("stands the composition bar on the trend strip's floor", () => {
+    // A Sparkline's bars sit on the bottom of the band, so a centred
+    // composition bar would float above its neighbours' baseline in a row that
+    // mixes the two.
+    expect(shareStrip.justifyContent).toBe("flex-end");
+  });
+
   it("prefers the trend over the composition when a metric carries both", () => {
     const { container } = ui(
       <Stats items={[{ label: "Requests", value: "24.5k", spark: [1, 2, 3], share: [{ label: "Hit", value: 9 }] }]} />,
