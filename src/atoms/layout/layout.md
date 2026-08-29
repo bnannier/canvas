@@ -4,8 +4,8 @@ The layout primitives. `Row` lays children out horizontally, `Column`
 vertically. Both own arrangement through semantic boolean axes, a gap scale
 (`flush` / `tight` / `snug` / `cozy` / `relaxed` / `loose`), main-axis
 distribution (`center`, `between`, …), cross-axis alignment (`alignCenter`,
-`baseline`, …), and `wrap` / `fill` / `grow`, so a call site never hand-rolls
-`flexDirection`, `gap`, or `alignItems`.
+`baseline`, …), and `wrap` / `fill` / `grow` / `shrink`, so a call site never
+hand-rolls `flexDirection`, `gap`, or `alignItems`.
 
 ## Usage
 
@@ -56,6 +56,33 @@ distribution (`center`, `between`, …), cross-axis alignment (`alignCenter`,
   <Badge>delta</Badge>
   <Badge>epsilon</Badge>
   <Badge>zeta</Badge>
+</Row>
+```
+
+### Shrink a child to the row
+
+React Native gives every box `flexShrink: 0`, the opposite of the web's flex
+default, so a Row child sized by a long sentence keeps that sentence's full
+single-line width and spills past the row's edge, where the nearest clipping
+ancestor cuts it mid-word. `shrink` hands the row's width back to the text: the
+child gives way and the copy wraps. Reach for it on the copy in a
+heading-beside-actions row, or any Row child whose width should follow the row
+rather than its own longest line. It is not `fill`: `fill` also zeroes the flex
+basis, so in a `wrap` row every child then fits on one line and the actions stop
+wrapping below the copy.
+
+```tsx
+<Row between alignEnd wrap snug>
+  <Column tight shrink>
+    <Typography h3>Dashboard</Typography>
+    <Typography small muted>
+      Identity platform overview. Each widget reports its own window, not one shared period.
+    </Typography>
+  </Column>
+  <Row snug alignCenter>
+    <Button outline small>Customize</Button>
+    <Button outline small>Export</Button>
+  </Row>
 </Row>
 ```
 
@@ -127,5 +154,31 @@ stacks.
 <View style={{ flexDirection: "row" }}>
   <Text style={{ fontSize: 14, color: "#71717a" }}>Total</Text>
   <Text style={{ marginLeft: "auto", fontWeight: "600" }}>$1,240.00</Text>
+</View>
+```
+
+### Overflow
+
+**Do** — Mark the child that may give way with `shrink`, so its text wraps to the row.
+
+```tsx
+<Row between alignEnd wrap snug>
+  <Column tight shrink>
+    <Typography h5>Sessions</Typography>
+    <Typography small muted>Every session Kratos is holding open, newest first.</Typography>
+  </Column>
+  <Button primary small>Revoke all</Button>
+</Row>
+```
+
+**Don't** — Reach into the raw view to unstick it; that is a styling escape hatch.
+
+```tsx
+<View style={{ flexDirection: "row", justifyContent: "space-between", gap: 8 }}>
+  <View style={{ flexShrink: 1, minWidth: 0 }}>
+    <Text style={{ fontSize: 16, fontWeight: "600" }}>Sessions</Text>
+    <Text style={{ fontSize: 13, color: "#71717a" }}>Every session Kratos is holding open, newest first.</Text>
+  </View>
+  <Button primary small>Revoke all</Button>
 </View>
 ```

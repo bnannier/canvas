@@ -3,10 +3,19 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { MediaObject, Row } = scope;
+  const { Button, Typography, Row, Column } = scope;
   return (
-<Row relaxed pad>
-  <MediaObject avatar="RC" title="Rachel Chen" description="rachel.chen@example.com" />
+<Row between alignEnd wrap snug>
+  <Column tight shrink>
+    <Typography h3>Dashboard</Typography>
+    <Typography small muted>
+      Identity platform overview. Each widget reports its own window, not one shared period.
+    </Typography>
+  </Column>
+  <Row snug alignCenter>
+    <Button outline small>Customize</Button>
+    <Button outline small>Export</Button>
+  </Row>
 </Row>
   );
 }

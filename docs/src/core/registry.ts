@@ -264,10 +264,13 @@ import e_atoms_layout_example_3 from "./examples/atoms/layout/example-3";
 import e_atoms_layout_example_4 from "./examples/atoms/layout/example-4";
 import e_atoms_layout_example_5 from "./examples/atoms/layout/example-5";
 import e_atoms_layout_example_6 from "./examples/atoms/layout/example-6";
+import e_atoms_layout_example_7 from "./examples/atoms/layout/example-7";
 import e_atoms_layout_dont_0_do from "./examples/atoms/layout/dont-0-do";
 import e_atoms_layout_dont_0_dont from "./examples/atoms/layout/dont-0-dont";
 import e_atoms_layout_dont_1_do from "./examples/atoms/layout/dont-1-do";
 import e_atoms_layout_dont_1_dont from "./examples/atoms/layout/dont-1-dont";
+import e_atoms_layout_dont_2_do from "./examples/atoms/layout/dont-2-do";
+import e_atoms_layout_dont_2_dont from "./examples/atoms/layout/dont-2-dont";
 import e_atoms_listbox_example_0 from "./examples/atoms/listbox/example-0";
 import e_atoms_listbox_example_1 from "./examples/atoms/listbox/example-1";
 import e_atoms_listbox_example_2 from "./examples/atoms/listbox/example-2";
@@ -1425,12 +1428,14 @@ export const COMPONENT_DOCS: Record<string, DocEntry> = {
       { label: "Centered row", code: "<Row center alignCenter snug>\n  <Badge>schema</Badge>\n  <Badge secondary>role</Badge>\n  <Badge outline>tag</Badge>\n</Row>", render: e_atoms_layout_example_2 },
       { label: "Space between", code: "<Row between alignCenter>\n  <Typography small>Request ID</Typography>\n  <Typography mono>req_8f2c10ab</Typography>\n</Row>", render: e_atoms_layout_example_3 },
       { label: "Wrap", code: "<Row wrap snug>\n  <Badge>alpha</Badge>\n  <Badge>beta</Badge>\n  <Badge>gamma</Badge>\n  <Badge>delta</Badge>\n  <Badge>epsilon</Badge>\n  <Badge>zeta</Badge>\n</Row>", render: e_atoms_layout_example_4 },
-      { label: "Padded surround", code: "<Row relaxed pad>\n  <MediaObject avatar=\"RC\" title=\"Rachel Chen\" description=\"rachel.chen@example.com\" />\n</Row>", render: e_atoms_layout_example_5 },
-      { label: "Stacks at narrow widths", code: "<Row stacks between alignCenter relaxed>\n  <Input placeholder=\"Search runs…\" />\n  <Row snug>\n    <Button outline>Filter</Button>\n    <Button primary>New run</Button>\n  </Row>\n</Row>", render: e_atoms_layout_example_6 },
+      { label: "Shrink a child to the row", code: "<Row between alignEnd wrap snug>\n  <Column tight shrink>\n    <Typography h3>Dashboard</Typography>\n    <Typography small muted>\n      Identity platform overview. Each widget reports its own window, not one shared period.\n    </Typography>\n  </Column>\n  <Row snug alignCenter>\n    <Button outline small>Customize</Button>\n    <Button outline small>Export</Button>\n  </Row>\n</Row>", render: e_atoms_layout_example_5 },
+      { label: "Padded surround", code: "<Row relaxed pad>\n  <MediaObject avatar=\"RC\" title=\"Rachel Chen\" description=\"rachel.chen@example.com\" />\n</Row>", render: e_atoms_layout_example_6 },
+      { label: "Stacks at narrow widths", code: "<Row stacks between alignCenter relaxed>\n  <Input placeholder=\"Search runs…\" />\n  <Row snug>\n    <Button outline>Filter</Button>\n    <Button primary>New run</Button>\n  </Row>\n</Row>", render: e_atoms_layout_example_7 },
     ],
     donts: [
       { title: "Gap", do: { caption: "Use the gap scale so spacing tracks the kit's spacing tokens.", code: "<Row alignCenter snug>\n  <Button primary>Save</Button>\n  <Button ghost>Cancel</Button>\n</Row>", render: e_atoms_layout_dont_0_do }, dont: { caption: "Hand-roll `flexDirection` and a raw `gap`; that is a styling escape hatch.", code: "<View style={{ flexDirection: \"row\", alignItems: \"center\", gap: 8 }}>\n  <Button primary>Save</Button>\n  <Button ghost>Cancel</Button>\n</View>", render: e_atoms_layout_dont_0_dont } },
       { title: "Alignment", do: { caption: "Reach for the main- and cross-axis booleans (`between`, `alignCenter`).", code: "<Row between alignCenter>\n  <Typography small>Total</Typography>\n  <Typography h5>$1,240.00</Typography>\n</Row>", render: e_atoms_layout_dont_1_do }, dont: { caption: "Push content around with raw `justifyContent` and `marginLeft`.", code: "<View style={{ flexDirection: \"row\" }}>\n  <Text style={{ fontSize: 14, color: \"#71717a\" }}>Total</Text>\n  <Text style={{ marginLeft: \"auto\", fontWeight: \"600\" }}>$1,240.00</Text>\n</View>", render: e_atoms_layout_dont_1_dont } },
+      { title: "Overflow", do: { caption: "Mark the child that may give way with `shrink`, so its text wraps to the row.", code: "<Row between alignEnd wrap snug>\n  <Column tight shrink>\n    <Typography h5>Sessions</Typography>\n    <Typography small muted>Every session Kratos is holding open, newest first.</Typography>\n  </Column>\n  <Button primary small>Revoke all</Button>\n</Row>", render: e_atoms_layout_dont_2_do }, dont: { caption: "Reach into the raw view to unstick it; that is a styling escape hatch.", code: "<View style={{ flexDirection: \"row\", justifyContent: \"space-between\", gap: 8 }}>\n  <View style={{ flexShrink: 1, minWidth: 0 }}>\n    <Text style={{ fontSize: 16, fontWeight: \"600\" }}>Sessions</Text>\n    <Text style={{ fontSize: 13, color: \"#71717a\" }}>Every session Kratos is holding open, newest first.</Text>\n  </View>\n  <Button primary small>Revoke all</Button>\n</View>", render: e_atoms_layout_dont_2_dont } },
     ],
   },
   "listbox": {

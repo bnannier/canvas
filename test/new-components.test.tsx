@@ -72,6 +72,28 @@ describe("Row / Column (layout primitives)", () => {
     expect(el).not.toBeNull();
     expect(el.style.flexWrap).toBe("wrap");
   });
+
+  // `shrink` is the opt-out of React Native's `flexShrink: 0` default, which is
+  // what lets a long sentence in a Row child overflow the row instead of
+  // wrapping. It has to stay distinct from `fill`: `fill` zeroes the flex basis
+  // too, which pulls every child of a `wrap` row back onto one line.
+  it("map the flex modifiers to their own properties (grow, shrink, fill)", () => {
+    const { container } = ui(
+      <>
+        <Column testID="plain"><Text>x</Text></Column>
+        <Column shrink testID="sh"><Text>x</Text></Column>
+        <Column grow testID="gr"><Text>x</Text></Column>
+        <Column fill testID="fi"><Text>x</Text></Column>
+      </>,
+    );
+    expect(at(container, "plain").style.flexShrink).toBe(""); // RN's default: never shrinks
+    expect(at(container, "sh").style.flexShrink).toBe("1");
+    expect(at(container, "sh").style.flexBasis).toBe(""); // basis stays at the content size
+    expect(at(container, "sh").style.flexGrow).toBe("");
+    expect(at(container, "gr").style.flexGrow).toBe("1");
+    expect(at(container, "gr").style.flexShrink).toBe("");
+    expect(at(container, "fi").style.flexBasis).toBe("0%"); // flex: 1 zeroes the basis
+  });
 });
 
 describe("AvatarGroup", () => {

@@ -3,14 +3,10 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Button, Input, Row } = scope;
+  const { MediaObject, Row } = scope;
   return (
-<Row stacks between alignCenter relaxed>
-  <Input placeholder="Search runs…" />
-  <Row snug>
-    <Button outline>Filter</Button>
-    <Button primary>New run</Button>
-  </Row>
+<Row relaxed pad>
+  <MediaObject avatar="RC" title="Rachel Chen" description="rachel.chen@example.com" />
 </Row>
   );
 }
