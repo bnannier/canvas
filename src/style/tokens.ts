@@ -77,8 +77,19 @@ export const lightColors: ColorTokens = {
   warning: "#d97708",
   "warning-foreground": "#ffffff",
   border: "#e4e4e7",
-  // A CONTROL boundary, not a surface separator, so it is held to the WCAG 1.4.11
-  // 3:1 minimum while `border` above is not. See the long note in colors.css.
+  // `input` and `border` part company here, and the split is the point of having
+  // two names. `border` separates two SURFACES (a card edge, a divider, a table
+  // rule) and carries no contrast floor: it is read against the fills either side
+  // of it. `input` is the BOUNDARY OF A CONTROL (the fields, checkbox, radio, the
+  // switch track, select, autocomplete, pagination, and the outline Button), which
+  // is what WCAG 2.2 SC 1.4.11 holds to 3:1 against whatever it sits on. Both
+  // shipped the same hairline value until 2.55.1, which left every unfilled
+  // control at 1.27:1 in light and 1.34:1 in dark: a silhouette the eye cannot
+  // find. Each value here is the lightest one on the border hue that still clears
+  // 3:1 against ALL THREE surfaces a control is placed on (the page, a card or
+  // popover, and a muted panel), so re-tuning either means re-solving it, not
+  // nudging it by eye. test/tokens.test.ts pins the floor, and asserts `border`
+  // stays BELOW it so the two cannot be collapsed back together.
   input: "#88888b",
   ring: "#615fff", // one ring value in both schemes; see colors.css
   "chart-1": "#6366f1", // indigo-500
@@ -113,7 +124,7 @@ export const darkColors: ColorTokens = {
   warning: "#f59e09",
   "warning-foreground": "#451a03",
   border: "#27272a",
-  // Control boundary, held to 3:1; see the light `input` above.
+  // Control boundary held to 3:1; see the light `input` above for the full note.
   input: "#747478",
   ring: "#615fff",
   // Same series values as light: the palette was validated against both
