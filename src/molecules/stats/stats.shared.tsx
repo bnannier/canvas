@@ -1,7 +1,9 @@
 import { type ReactNode } from "react";
 import { View, Pressable, Text, RippleClip, cornerRadii, useTheme, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle } from "../../style/index.js";
 import { Sparkline } from "../../charts/sparkline/sparkline.js";
-import { deltaTone, headerRow, headerTrailing, item as itemLayout, row, sparkStrip, type Surface } from "./stats.styles.js";
+import { StackedBar } from "../../charts/stacked-bar/stacked-bar.js";
+import { type StackedSegment } from "../../charts/shared/types.js";
+import { deltaTone, headerRow, headerTrailing, item as itemLayout, row, shareStrip, sparkStrip, type Surface } from "./stats.styles.js";
 
 // Shared Stats shell. The structure (a wrapping row/grid of metric stacks, each a
 // small label, a large headline value, and an optional delta), the boolean-prop
@@ -25,6 +27,15 @@ import { deltaTone, headerRow, headerTrailing, item as itemLayout, row, sparkStr
 // (mirrors Button's intentOf). `items` carries the plain data; each item's `down`
 // flag colors its delta red instead of the default green.
 //
+// One strip slot, two ways to fill it. Under the value/delta an item draws either
+// its trend (`spark`, a Sparkline) or its composition (`share`, a StackedBar over
+// a muted rail), and both reserve the same height. That is what lets a row mix
+// them: cards stretch to the tallest sibling, so a metric row where only one tile
+// carries a strip leaves every other tile with a band of blank space under its
+// text and reads as an unfinished component. A metric with no trend to plot
+// usually still decomposes, and drawing the decomposition fills the card with
+// something true instead of padding it.
+//
 // Stats is a "Light" platform treatment: one structure and one set of (semantic)
 // colors, with per-OS touches limited to corner radius, density, type tracking,
 // shadow-vs-outline, and press feedback — so the skin carries only those, not the
@@ -47,6 +58,19 @@ export interface StatItem {
   /** Optional trend series; when set (and non-empty), the metric renders a
    *  Sparkline strip below the value that plots these points. Omit for no trend. */
   spark?: number[];
+  /** What the trend strip plots, as its accessible name. Defaults to the
+   *  metric's own label ("Revenue trend"), which is right whenever the strip is
+   *  the VALUE's history. Set it when the strip plots the supporting line
+   *  instead ("Sign-ins per hour, last 24 hours" under a live-sessions count),
+   *  so a screen reader is not told the strip is something it is not. */
+  sparkLabel?: string;
+  /** Optional composition of the value, drawn in the SAME slot as `spark` as a
+   *  proportional strip over a muted rail: the metric that decomposes but has no
+   *  trend to plot (a verified share, a queue by status) still fills its card,
+   *  so a row mixing the two reads as one finished set rather than as tiles that
+   *  came out half empty. Segments summing to zero draw the bare rail, which is
+   *  the honest picture of a metric at zero. Ignored when `spark` is set. */
+  share?: StackedSegment[];
   /** A glyph shown opposite the label, naming what the metric counts. */
   icon?: ReactNode;
   /** A control in the metric's header, opposite the label (a period selector, a
@@ -164,7 +188,11 @@ export function createStats(skin: StatsSkin) {
           <Text style={[skin.deltaBase, item.steady ? { color: tokens["muted-foreground"] } : deltaTone(dark, !!item.down)]}>{item.delta}</Text>
         ) : null}
         {item.spark != null && item.spark.length > 0 ? (
-          <Sparkline values={item.spark} accessibilityLabel={`${item.label} trend`} style={sparkStrip} />
+          <Sparkline values={item.spark} accessibilityLabel={item.sparkLabel ?? `${item.label} trend`} style={sparkStrip} />
+        ) : item.share != null && item.share.length > 0 ? (
+          <View style={shareStrip}>
+            <StackedBar segments={item.share} label={item.label} hideLegend track />
+          </View>
         ) : null}
       </>
     );

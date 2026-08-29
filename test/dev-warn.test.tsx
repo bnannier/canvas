@@ -60,6 +60,13 @@ describe("component data-misuse warnings", () => {
     expect(sawWarning("all segment values are zero")).toBe(true);
   });
 
+  it("StackedBar stays quiet about an all-zero bar that asked for a track", () => {
+    // The track is what draws a composition of nothing, so that combination is
+    // the supported way to say zero, not a mistake to warn about.
+    ui(<StackedBar track segments={[{ label: "A", value: 0 }, { label: "B", value: 0 }]} />);
+    expect(sawWarning("all segment values are zero")).toBe(false);
+  });
+
   it("Gauge warns on an out-of-range value but still clamps it to 0–100", () => {
     const { getByText } = ui(<Gauge value={140} />);
     expect(sawWarning("<Gauge />")).toBe(true);
