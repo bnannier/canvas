@@ -14,7 +14,7 @@ import { type FlexSkin } from "./layout.styles.js";
 //   - gap scale     (flush / tight / snug / cozy / relaxed / loose; default snug)
 //   - main axis      justify (start / center / end / between / around / evenly)
 //   - cross axis      align   (alignStart / alignCenter / alignEnd / baseline / stretch)
-//   - modifiers       wrap / fill / grow (orthogonal, stack freely)
+//   - modifiers       wrap / fill / grow / shrink (orthogonal, stack freely)
 //   - padding scale  (padTight / pad / padLoose; default none)
 // Main- and cross-axis "center" carry distinct prop names (`center` vs
 // `alignCenter`) so `<Row center alignCenter>` is unambiguous.
@@ -59,6 +59,25 @@ export interface FlexProps {
   wrap?: boolean; // flexWrap: "wrap"
   fill?: boolean; // flex: 1
   grow?: boolean; // flexGrow: 1
+  /**
+   * Let this box shrink below its own content width when the line runs out of
+   * room (`flexShrink: 1`), so a long text child wraps instead of overflowing.
+   *
+   * React Native gives every box `flexShrink: 0`, which is the opposite of the
+   * web's flex default: inside a Row, a Column holding a sentence keeps its
+   * MAX-CONTENT width and spills past the row's edge, where the nearest
+   * clipping ancestor cuts it mid-word. `shrink` is the opt-in that hands the
+   * row's width back to the text. Reach for it on the copy in a
+   * heading-beside-actions row, a label beside a control, any Row child whose
+   * width should follow the row rather than its own longest line.
+   *
+   * It is not `fill`. `fill` (flex: 1) also zeroes the flex BASIS, so in a
+   * `wrap` row every child then fits on one line and the actions stop wrapping
+   * below the copy; `shrink` leaves the basis at the content size, so the row
+   * still breaks where it did and only the over-wide child gives way.
+   * Redundant alongside `fill`, which already shrinks.
+   */
+  shrink?: boolean; // flexShrink: 1
   /**
    * Responsive (Row only): render as a Column when the row's own CONTAINER is
    * at or below `stackBreakpoint` (default `sm` = 640). Container-measured with
@@ -170,6 +189,7 @@ export function createFlex(skin: FlexSkin, direction: Direction) {
     if (props.wrap && !stacked) layout.flexWrap = "wrap";
     if (props.fill) layout.flex = 1;
     if (props.grow) layout.flexGrow = 1;
+    if (props.shrink) layout.flexShrink = 1;
     if (props.indent) layout.paddingLeft = 24; // one control gutter: box (16) + row gap (8)
     const pad = padOf(props);
     if (pad) layout.padding = skin.pad[pad];
