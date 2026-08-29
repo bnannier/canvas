@@ -129,6 +129,46 @@ describe("Stats strip slot", () => {
   });
 });
 
+describe("Stats framed strips", () => {
+  const strip = (container: HTMLElement, label: string) => container.querySelector(`[aria-label="${label}"]`) as HTMLElement;
+
+  it("frames a trend strip on the muted track only when the row asks", () => {
+    const bare = strip(ui(<Stats items={[{ label: "Requests", value: "1", spark: [0, 0, 0] }]} />).container, "Requests trend");
+    expect(bare.style.backgroundColor).toBe("");
+    cleanup();
+    const framed = strip(ui(<Stats framed items={[{ label: "Requests", value: "1", spark: [0, 0, 0] }]} />).container, "Requests trend");
+    // The frame is what makes an all-zero series read as a chart sitting at
+    // zero rather than one that failed to load.
+    expect(framed.style.backgroundColor).toBeTruthy();
+  });
+
+  it("fills the band with the composition when framed, so both strips are one shape", () => {
+    const { container } = ui(
+      <Stats framed items={[{ label: "Verified", value: "80%", share: [{ label: "Yes", value: 8 }, { label: "No", value: 2 }] }]} />,
+    );
+    const bar = (container.querySelector('[aria-label^="Verified:"]') as HTMLElement).firstElementChild as HTMLElement;
+    expect(bar.style.height).toBe("24px");
+    expect(shareStrip.height).toBe(24);
+  });
+
+  it("draws a tile's composition as a wash, framed or not", () => {
+    // Inside a tile the strip supports the value rather than being it, which is
+    // the same reason a Sparkline washes its own marks.
+    const segment = (framed: boolean) => {
+      const { container } = ui(
+        <Stats framed={framed} items={[{ label: "Verified", value: "80%", share: [{ label: "Yes", value: 8 }] }]} />,
+      );
+      const bar = (container.querySelector('[aria-label^="Verified:"]') as HTMLElement).firstElementChild as HTMLElement;
+      return (bar.firstElementChild as HTMLElement).style.backgroundColor;
+    };
+    const framed = segment(true);
+    cleanup();
+    const plain = segment(false);
+    expect(framed).toContain("rgba");
+    expect(plain).toBe(framed);
+  });
+});
+
 describe("StackedBar track", () => {
   // With `hideLegend` the image role sits on the root, and the rail is the bar
   // row inside it.
@@ -140,6 +180,25 @@ describe("StackedBar track", () => {
     const railed = barRow(ui(<StackedBar track hideLegend segments={[{ label: "a", value: 0 }]} />).container);
     expect(railed.style.backgroundColor).toBeTruthy();
     expect(railed.style.backgroundColor).not.toBe(bareFill);
+  });
+
+  it("takes the metric-strip band with `tall`, matching what a Sparkline plots in", () => {
+    const railed = barRow(ui(<StackedBar tall hideLegend segments={[{ label: "a", value: 1 }]} />).container);
+    expect(railed.style.height).toBe("24px");
+    // A 24 band with a pill radius reads as a lozenge, so the tall size takes
+    // the chart bar radius instead.
+    expect(railed.style.borderRadius).toBe("4px");
+  });
+
+  it("washes its segments with `subtle` rather than painting them at full strength", () => {
+    const seg = (props: Record<string, boolean>) =>
+      (barRow(ui(<StackedBar hideLegend {...props} segments={[{ label: "a", value: 1 }]} />).container).firstElementChild as HTMLElement).style
+        .backgroundColor;
+    const washed = seg({ subtle: true });
+    cleanup();
+    const solid = seg({});
+    expect(washed).toContain("rgba");
+    expect(washed).not.toBe(solid);
   });
 
   it("keeps the rail behind a full bar, where the segments cover it", () => {

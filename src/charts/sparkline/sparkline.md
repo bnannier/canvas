@@ -44,6 +44,20 @@ Views to draw an inline trend on a stat card or dashboard.
 </Column>
 ```
 
+## Variants
+
+### Track
+
+`track` paints the plot area with the muted track, so the strip keeps a visible
+frame. A flat or all-zero series then reads as a chart sitting at zero rather
+than as one that failed to load, and a row of strips scans evenly because every
+one holds the same band whatever its data. Use it where strips sit side by side;
+a lone sparkline inside running text is usually better without.
+
+```tsx
+<Sparkline track values={[0, 0, 0, 0, 0, 0, 0, 0]} style={{ width: 160 }} />
+```
+
 ## Do & Don't
 
 ### Pair with a value
