@@ -4,6 +4,9 @@ import { type ReactNode } from "react";
 import { Text } from "react-native";
 import { ThemeProvider } from "../src/style/theme.tsx";
 import { Stats } from "../src/molecules/stats/stats.tsx";
+import { shareStrip, sparkStrip } from "../src/molecules/stats/stats.styles.ts";
+import { webSkin as sparklineSkin } from "../src/charts/sparkline/sparkline.styles.ts";
+import { StackedBar } from "../src/charts/stacked-bar/stacked-bar.tsx";
 import { StackedList } from "../src/molecules/stacked-lists/stacked-lists.tsx";
 
 afterEach(cleanup);
@@ -65,6 +68,77 @@ describe("Stats per-metric slots", () => {
     cleanup();
     const plain = ui(<Stats items={[{ label: "A", value: "1", delta: "-5%", down: true }]} />).getByText("-5%").style.color;
     expect(accented).toBe(plain);
+  });
+});
+
+describe("Stats strip slot", () => {
+  it("draws a metric's composition when it has no trend to plot", () => {
+    const { container } = ui(
+      <Stats items={[{ label: "Verified identities", value: "81.3%", share: [{ label: "Verified", value: 1502 }, { label: "Unverified", value: 345 }] }]} />,
+    );
+    const name = container.querySelector('[role="img"]')?.getAttribute("aria-label") ?? "";
+    // The name carries the composition itself, so the strip is not a mute
+    // decoration to a screen reader.
+    expect(name).toContain("Verified identities");
+    expect(name).toContain("Verified 81%");
+    expect(name).toContain("Unverified 19%");
+  });
+
+  it("still draws the strip when the composition sums to zero", () => {
+    // A metric at zero is a real state, and the rail is how the tile says so
+    // instead of going blank and leaving the card half empty.
+    const { container } = ui(<Stats items={[{ label: "Courier queue", value: "0", share: [{ label: "Sent", value: 0 }, { label: "Queued", value: 0 }] }]} />);
+    expect(container.querySelector('[role="img"]')).toBeTruthy();
+  });
+
+  it("reserves the trend strip's height for the composition strip", () => {
+    // What keeps a row that mixes the two at ONE card height: the cards stretch
+    // to the tallest sibling, so the two strips have to occupy the same band.
+    expect(shareStrip.height).toBe(sparklineSkin.height.default);
+    expect(shareStrip.marginTop).toBe(sparkStrip.marginTop);
+  });
+
+  it("prefers the trend over the composition when a metric carries both", () => {
+    const { container } = ui(
+      <Stats items={[{ label: "Requests", value: "24.5k", spark: [1, 2, 3], share: [{ label: "Hit", value: 9 }] }]} />,
+    );
+    const imgs = container.querySelectorAll('[role="img"]');
+    expect(imgs.length).toBe(1);
+    expect(imgs[0]?.getAttribute("aria-label")).toBe("Requests trend");
+  });
+
+  it("names the trend strip for what it plots when that is not the value's own history", () => {
+    const { container } = ui(
+      <Stats
+        items={[{ label: "Active sessions", value: "0", spark: [0, 0, 1], sparkLabel: "Sign-ins per hour, last 24 hours" }]}
+      />,
+    );
+    expect(container.querySelector('[role="img"]')?.getAttribute("aria-label")).toBe("Sign-ins per hour, last 24 hours");
+  });
+
+  it("leaves a metric with neither strip untouched", () => {
+    const { container } = ui(<Stats items={[{ label: "Orders", value: "842" }]} />);
+    expect(container.querySelector('[role="img"]')).toBeNull();
+  });
+});
+
+describe("StackedBar track", () => {
+  // With `hideLegend` the image role sits on the root, and the rail is the bar
+  // row inside it.
+  const barRow = (container: HTMLElement) => container.querySelector('[role="img"]')?.firstElementChild as HTMLElement;
+
+  it("paints a rail behind the segments only when asked", () => {
+    const bareFill = barRow(ui(<StackedBar hideLegend segments={[{ label: "a", value: 0 }]} />).container).style.backgroundColor;
+    cleanup();
+    const railed = barRow(ui(<StackedBar track hideLegend segments={[{ label: "a", value: 0 }]} />).container);
+    expect(railed.style.backgroundColor).toBeTruthy();
+    expect(railed.style.backgroundColor).not.toBe(bareFill);
+  });
+
+  it("keeps the rail behind a full bar, where the segments cover it", () => {
+    const railed = barRow(ui(<StackedBar track hideLegend segments={[{ label: "a", value: 3 }, { label: "b", value: 1 }]} />).container);
+    expect(railed.style.backgroundColor).toBeTruthy();
+    expect(railed.children.length).toBe(2);
   });
 });
 

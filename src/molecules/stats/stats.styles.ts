@@ -1,5 +1,6 @@
 import { type ViewStyle, type TextStyle } from "react-native";
 import { type ColorTokens, palette, shadow, alpha, surfaceRipple } from "../../style/index.js";
+import { SPARK_STRIP_HEIGHT } from "../../charts/sparkline/sparkline.styles.js";
 import { type StatsSkin } from "./stats.shared.js";
 
 // Co-located Stats skins, one per platform, all driven by the brand tokens
@@ -53,6 +54,19 @@ export const item: Record<Surface, ViewStyle> = {
 // value/delta and spans the full metric width (so the bars fill the stack rather
 // than a fixed 120px). A layout contract shared by every skin, like `row`/`item`.
 export const sparkStrip: ViewStyle = { marginTop: 12, width: "100%" };
+
+// The composition strip an item renders when it carries `share`: the same slot,
+// the same full width, and the SAME RESERVED HEIGHT as the trend strip, with the
+// bar centred in it.
+//
+// The height is what makes a mixed row work. Cards in a Stats row stretch to the
+// tallest sibling, so a row where one metric plots a trend and another draws a
+// composition would otherwise leave the shorter cards with a band of blank space
+// under their text, and a row of cards that are only half filled reads as an
+// unfinished component rather than as a deliberate one. Reserving the trend
+// strip's height for the composition strip keeps every card in the row filled to
+// the same line.
+export const shareStrip: ViewStyle = { marginTop: 12, width: "100%", height: SPARK_STRIP_HEIGHT, justifyContent: "center" };
 
 // The metric's header row, rendered only when the item carries an icon or a
 // control: the label on the left, the glyph and control opposite it. A metric with

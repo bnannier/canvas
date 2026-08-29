@@ -17,6 +17,29 @@ One proportional horizontal bar split into colored segments (the `chart-1`..`cha
 </Card>
 ```
 
+## Variants
+
+### Track
+
+`track` paints the unfilled remainder as a muted rail. A full bar looks the same;
+a bar whose segments sum to zero draws the rail instead of nothing, so a
+composition of nothing still reads as a bar. Use it wherever the strip has to
+hold its space, such as inside a `Stats` tile.
+
+```tsx
+<Card padded style={{ maxWidth: 560 }}>
+  <StackedBar
+    track
+    hideLegend
+    label="Courier queue"
+    segments={[
+      { label: "Sent", value: 0 },
+      { label: "Queued", value: 0 }
+    ]}
+  />
+</Card>
+```
+
 ## Do & Don't
 
 ### Stacked bar

@@ -17,13 +17,18 @@ export interface StackedBarProps {
   label?: string;
   /** Hide the legend (the labelled dots below the bar). */
   hideLegend?: boolean;
+  /** Paint the unfilled remainder as a muted rail, so a bar whose segments sum
+   *  to zero still reads as a bar rather than as blank space. A composition of
+   *  nothing (an empty queue, a metric at zero) is a real state to draw, and
+   *  without the rail it draws as an absence. */
+  track?: boolean;
   /** E2E hook forwarded to the root element. */
   testID?: string;
   /** For sizing/composition only. */
   style?: StyleProp<ViewStyle>;
 }
 
-export function StackedBar({ segments, label, hideLegend, testID, style }: StackedBarProps) {
+export function StackedBar({ segments, label, hideLegend, track, testID, style }: StackedBarProps) {
   const { tokens } = useTheme();
   const rawTotal = segments.reduce((sum, seg) => sum + Math.max(0, Number.isFinite(seg.value) ? seg.value : 0), 0);
   // Floor the divisor at 1 so an all-zero (or empty) bar divides cleanly to 0%
@@ -34,9 +39,12 @@ export function StackedBar({ segments, label, hideLegend, testID, style }: Stack
   // No segments, or every segment zero, both render an empty bar: warn so the
   // developer sees the degenerate input instead of a silently blank strip.
   devWarn(segments.length === 0, "[canvas] <StackedBar />: `segments` is empty; the bar renders empty.");
+  // An all-zero bar is a mistake when nothing is drawn for it, and a deliberate
+  // state once `track` is set: the rail is there to show a composition of
+  // nothing. So the warning speaks only for the trackless case.
   devWarn(
-    segments.length > 0 && rawTotal <= 0,
-    "[canvas] <StackedBar />: all segment values are zero; the bar renders empty.",
+    segments.length > 0 && rawTotal <= 0 && !track,
+    "[canvas] <StackedBar />: all segment values are zero and no `track` is set; the bar renders empty.",
   );
 
   // The accessible name carries the data itself, so a screen reader hears the
@@ -50,7 +58,10 @@ export function StackedBar({ segments, label, hideLegend, testID, style }: Stack
 
   return (
     <View testID={testID} style={style} {...(hideLegend ? img : {})}>
-      <View {...(hideLegend ? {} : img)} style={{ flexDirection: "row", overflow: "hidden", borderRadius: 9999, height: 10 }}>
+      <View
+        {...(hideLegend ? {} : img)}
+        style={{ flexDirection: "row", overflow: "hidden", borderRadius: 9999, height: 10, ...(track ? { backgroundColor: tokens.muted } : {}) }}
+      >
         {segments.map((seg, i) => (
           <View key={i} style={{ width: `${pct(seg.value)}%`, backgroundColor: seriesFill(tokens, i) }} />
         ))}
