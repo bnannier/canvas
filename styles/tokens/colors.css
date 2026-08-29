@@ -23,7 +23,17 @@
   --warning:oklch(0.666 0.157 58.318);
   --warning-foreground:oklch(1 0 0);
   --border:oklch(0.92 0.004 286.32);
-  --input:oklch(0.92 0.004 286.32);
+  /* `input` and `border` part company here, and the split is the point of the two
+     names. `border` separates two SURFACES (a card edge, a divider, a table rule)
+     and carries no contrast floor: it is read against the fills either side of it.
+     `input` is the BOUNDARY OF A CONTROL (the fields, checkbox, radio, switch
+     track, select, and the outline button), which is the one thing WCAG 1.4.11
+     holds to 3:1 against whatever it sits on. Holding both to the same hairline
+     value left every unfilled control at 1.27:1 light / 1.34:1 dark, i.e. a
+     silhouette the eye cannot find. This value is the LIGHTEST one on the border
+     hue that still clears 3:1 against all three surfaces a control sits on: the
+     page, a card, and a muted panel. Recompute it, do not nudge it by eye. */
+  --input:oklch(0.629 0.004 286.32);
   /* The focus ring is ONE value in both schemes (indigo-500), not the per-scheme
      primary. It has to read against a light page, a dark page, and the primary fill
      itself, and a ring equal to that fill disappears on the control it is marking. */
@@ -89,7 +99,10 @@
   --warning:oklch(0.769 0.165 70.08);
   --warning-foreground:oklch(0.279 0.074 45.635);
   --border:oklch(0.274 0.006 286.033);
-  --input:oklch(0.274 0.006 286.033);
+  /* A control boundary held to 3:1, not a surface separator; see the light
+     `--input` note above. Dark needs its own solve because the surfaces it is
+     measured against (page, card, muted panel) sit at the other end of the ramp. */
+  --input:oklch(0.559 0.006 286.033);
   --ring:oklch(0.585 0.233 277.117);
   --p-menu-destructive:#f87171;
   /* iOS resolves its drawer scrim per scheme: 0.2 light, 0.48 dark. */

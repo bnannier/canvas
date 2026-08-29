@@ -130,3 +130,73 @@ describe("glassByScheme (the glass material's own tokens)", () => {
     }
   });
 });
+
+/**
+ * WCAG 2.2 SC 1.4.11 (Non-text Contrast) holds "visual information required to
+ * identify user interface components" to 3:1 against adjacent colour. In this
+ * token set that clause lands squarely on `input`: it is the boundary the
+ * unfilled controls draw themselves with (the outline Button, the text fields,
+ * checkbox, radio, the switch track, select, autocomplete, pagination), and for
+ * several of them it is the ONLY thing separating the control from the page.
+ *
+ * `border` is deliberately NOT held to the same floor. It separates two SURFACES
+ * that differ in fill (a card edge, a divider, a table rule), so it is read
+ * against that fill difference rather than on its own contrast.
+ *
+ * The regression this pins: `input` and `border` shipped the same hairline value
+ * in both schemes, which put every unfilled control at 1.27:1 in light and
+ * 1.34:1 in dark, i.e. a silhouette that disappeared into the page. Anyone
+ * re-tuning `input` has to keep it above the floor for all three surfaces a
+ * control sits on, not just the page.
+ */
+describe("control boundary contrast (WCAG 1.4.11)", () => {
+  /** sRGB hex -> WCAG relative luminance. */
+  function luminance(hex: string): number {
+    const h = hex.replace("#", "");
+    const channel = (i: number) => {
+      const v = parseInt(h.slice(i, i + 2), 16) / 255;
+      return v <= 0.04045 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4;
+    };
+    return 0.2126 * channel(0) + 0.7152 * channel(2) + 0.0722 * channel(4);
+  }
+
+  function contrast(a: string, b: string): number {
+    const [hi, lo] = [luminance(a), luminance(b)].sort((x, y) => y - x);
+    return (hi + 0.05) / (lo + 0.05);
+  }
+
+  it("computes a known ratio, so a broken helper cannot pass the checks below", () => {
+    // Black on white is the fixed 21:1 endpoint of the scale.
+    expect(contrast("#000000", "#ffffff")).toBeCloseTo(21, 5);
+    expect(contrast("#ffffff", "#ffffff")).toBeCloseTo(1, 5);
+  });
+
+  for (const scheme of ["light", "dark"] as const) {
+    // Every surface a bordered control is placed on: the page, a card or popover,
+    // and a muted/accent panel. The muted fill is the tightest of the three.
+    it(`keeps \`input\` at 3:1 on every ${scheme} surface a control sits on`, () => {
+      const t = colorsByScheme[scheme];
+      for (const surface of [t.background, t.card, t.popover, t.muted, t.accent, t.secondary]) {
+        expect(contrast(t.input, surface)).toBeGreaterThanOrEqual(3);
+      }
+    });
+
+    it(`keeps the ${scheme} switch thumb readable against its unchecked track`, () => {
+      // The web switch paints an unchecked track with `input` and the thumb with
+      // `background`, so the thumb-on-track pair is a second consumer of the same
+      // floor: it is the only thing that shows the switch is off.
+      const t = colorsByScheme[scheme];
+      expect(contrast(t.background, t.input)).toBeGreaterThanOrEqual(3);
+    });
+  }
+
+  it("does NOT hold `border` to the control floor, keeping the separator hairline", () => {
+    // Guards the split from the other side: someone "fixing" the contrast run
+    // by collapsing border back onto input would coarsen every divider and card
+    // edge in the kit. These are expected to stay well under 3:1.
+    expect(contrast(lightColors.border, lightColors.background)).toBeLessThan(3);
+    expect(contrast(darkColors.border, darkColors.background)).toBeLessThan(3);
+    expect(lightColors.border).not.toBe(lightColors.input);
+    expect(darkColors.border).not.toBe(darkColors.input);
+  });
+});

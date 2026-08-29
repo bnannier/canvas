@@ -18,9 +18,14 @@ const IOS_TRACK: Record<Size, { width: number; height: number }> = {
 };
 
 // iOS off-track gray. systemGray3 (#c7c7cc light, #48484a dark) is the real
-// at-rest track fill; the generic `input` token (#e4e4e7 light) is too washed
-// out and reads as disabled on a white card. Dark `input` (#27272a) was already
-// acceptable, so dark stays close to it via systemGray3 dark.
+// at-rest UISwitch track fill, and the reason to hard-code it is platform
+// FIDELITY, not contrast: an iOS switch that is off has to be the grey iOS
+// users read as off. (The comment here used to say `input` was too washed out
+// to use; that was true of the old hairline value and is no longer why this
+// constant exists. `input` now clears 3:1 on every surface, and the web skin
+// below uses it directly.) Both systemGray3 values sit UNDER the WCAG 1.4.11
+// 3:1 floor, 1.68:1 light and 2.18:1 dark against their page, which is Apple's
+// own trade-off; changing it is a HIG question, not a token one.
 const IOS_OFF_TRACK = { light: "#c7c7cc", dark: "#48484a" } as const;
 
 // Material 3 (m3.material.io/components/switch/specs): the switch has a SINGLE

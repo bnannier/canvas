@@ -77,7 +77,9 @@ export const lightColors: ColorTokens = {
   warning: "#d97708",
   "warning-foreground": "#ffffff",
   border: "#e4e4e7",
-  input: "#e4e4e7",
+  // A CONTROL boundary, not a surface separator, so it is held to the WCAG 1.4.11
+  // 3:1 minimum while `border` above is not. See the long note in colors.css.
+  input: "#88888b",
   ring: "#615fff", // one ring value in both schemes; see colors.css
   "chart-1": "#6366f1", // indigo-500
   "chart-2": "#0d9488", // teal-600
@@ -111,7 +113,8 @@ export const darkColors: ColorTokens = {
   warning: "#f59e09",
   "warning-foreground": "#451a03",
   border: "#27272a",
-  input: "#27272a",
+  // Control boundary, held to 3:1; see the light `input` above.
+  input: "#747478",
   ring: "#615fff",
   // Same series values as light: the palette was validated against both
   // surfaces, so brand overrides stay consistent across schemes by default.
