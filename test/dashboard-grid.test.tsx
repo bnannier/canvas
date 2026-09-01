@@ -24,6 +24,13 @@ async function flush(n = 6) {
 // RNW attaches to the host node (the progress.test.tsx idiom). The grid row is the only
 // layout-handling node in this tree, so the first one in document order is it.
 type LayoutHost = { __reactLayoutHandler?: (e: unknown) => void };
+/** The grid's own wrapping row: the only layout-handling node in the tree. */
+function gridRow(container: HTMLElement): HTMLElement {
+  for (const el of Array.from(container.querySelectorAll("div"))) {
+    if (typeof (el as unknown as LayoutHost).__reactLayoutHandler === "function") return el as HTMLElement;
+  }
+  throw new Error("no layout-handling node in the grid (RNW layout hook absent)");
+}
 function fireGridLayout(container: HTMLElement, width: number) {
   for (const el of Array.from(container.querySelectorAll("div"))) {
     const handler = (el as unknown as LayoutHost).__reactLayoutHandler;
@@ -184,6 +191,15 @@ describe("DashboardGrid layout", () => {
     const { container } = ui(<DashboardGrid items={items} order={["c", "a"]} />);
     expect(bodyOrder(container)).toEqual(["body-c", "body-a", "body-b"]);
   });
+
+  // The cross-axis contract. Cells used to hug their own content, so a row holding one
+  // short widget beside a tall one showed page background under the short one. Stretching
+  // the cell gives a widget that wants the tile's full height something to grow into; the
+  // widget still sizes itself, so a board of hugging widgets is unchanged.
+  it("stretches every cell to the height of the row it wrapped onto", () => {
+    const { container } = ui(<DashboardGrid items={items} />);
+    expect(gridRow(container).style.alignItems).toBe("stretch");
+  });
 });
 
 describe("DashboardGrid locked mode", () => {
@@ -204,6 +220,18 @@ describe("DashboardGrid locked mode", () => {
     expect(grip.getAttribute("tabindex")).not.toBe("-1");
     const root = container.querySelector("[data-testid='grid']") as HTMLElement;
     expect(root.children.length).toBe(2); // the grid row + the drag ghost outlet
+  });
+
+  // Locked, the cell itself is what stretches. Unlocked, the drag wrapper and the dashed
+  // edit ring stand between the cell and the widget, so both have to pass the height on or
+  // a tile that fills its cell would shrink back the moment customize mode is entered.
+  it("carries the stretched cell's height through the customize chrome", () => {
+    const { container } = ui(<DashboardGrid unlocked items={items} />);
+    const body = container.querySelector("[data-testid='body-a']") as HTMLElement;
+    const editRing = body.parentElement as HTMLElement;
+    const draggable = editRing.parentElement as HTMLElement;
+    expect(editRing.style.flexGrow).toBe("1");
+    expect(draggable.style.flexGrow).toBe("1");
   });
 
   it("never nests a grip inside another interactive element", () => {

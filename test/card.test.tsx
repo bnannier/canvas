@@ -231,3 +231,32 @@ describe("Card sections beside children", () => {
     expect(queryByText("ignored")).toBeNull();
   });
 });
+
+describe("A grown card fills the box it is given", () => {
+  // `grow` used to reach the surface alone, so a card stretched to stand beside a
+  // taller neighbour drew its content in a box it did not fill and left its footer
+  // floating in the middle of the surface. The BODY is what takes up the slack.
+  it("hands the slack to the body section", () => {
+    const { getByText, getByTestId } = ui(
+      <Card grow title="T" testID="c">
+        <Text>body</Text>
+      </Card>,
+    );
+    expect(getByTestId("c").style.flexGrow).toBe("1");
+    expect((getByText("body").parentElement as HTMLElement).style.flexGrow).toBe("1");
+  });
+
+  it("grows the string body the same way", () => {
+    const { getByText } = ui(<Card grow title="T" body="the body" />);
+    expect((getByText("the body").parentElement as HTMLElement).style.flexGrow).toBe("1");
+  });
+
+  it("leaves the body alone on a card that was not asked to grow", () => {
+    const { getByText } = ui(
+      <Card title="T">
+        <Text>body</Text>
+      </Card>,
+    );
+    expect((getByText("body").parentElement as HTMLElement).style.flexGrow).toBe("");
+  });
+});

@@ -88,7 +88,12 @@ export interface CardProps {
    * selectable cards (a card-style radio or checkbox option that is chosen).
    */
   selected?: boolean;
-  /** Grow to fill the main axis of a parent Row/Column (flexGrow: 1). */
+  /**
+   * Grow to fill the main axis of a parent Row/Column (flexGrow: 1). On a card
+   * that renders sections, the BODY takes up whatever slack the growth won, so
+   * the content region fills the taller surface and a footer stays on its floor
+   * rather than floating up under the content.
+   */
   grow?: boolean;
   // Density (pick one; default is the standard inset). Scales the card's own
   // content padding and the gap between flat children.
@@ -179,6 +184,13 @@ export function createCard(skin: CardSkin) {
     // Outer layout composition, carried on the outermost node (the plain View, or the
     // RippleClip wrapper on a pressable card).
     const outer: StyleProp<ViewStyle> = [grow ? { flexGrow: 1 } : null, style];
+    // A card told to GROW fills the box its parent hands it, and the BODY is what takes up
+    // the slack. Without this the sections stack from the top and every extra pixel piles up
+    // under the last one, so a card stretched to match a taller neighbour shows its content
+    // in a box it does not fill and floats its footer in the middle of the surface. Growing
+    // the content section is inert on a card that is already exactly as tall as its sections,
+    // which is every card that was not asked to grow in the first place.
+    const bodyFill: StyleProp<ViewStyle> = grow ? { flexGrow: 1 } : null;
 
     // The header and footer are the same nodes on both paths, so they are built once
     // here rather than inside the string-body branch. That is the whole fix: a card
@@ -220,7 +232,7 @@ export function createCard(skin: CardSkin) {
         <>
           {headerNode}
           {hasHeader && hasBody ? <CardSeparator /> : null}
-          {hasBody ? flush ? children : <CardContent>{children}</CardContent> : null}
+          {hasBody ? flush ? children : <CardContent style={bodyFill}>{children}</CardContent> : null}
           {footerNode}
         </>
       ) : (
@@ -232,7 +244,7 @@ export function createCard(skin: CardSkin) {
           {headerNode}
           {hasHeader && body ? <CardSeparator /> : null}
           {body ? (
-            <CardContent>
+            <CardContent style={bodyFill}>
               <Text style={s.bodyText(tokens)}>{body}</Text>
             </CardContent>
           ) : null}
