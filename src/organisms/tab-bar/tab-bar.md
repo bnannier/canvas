@@ -36,7 +36,7 @@ Bottom app navigation: a row of equal-width destinations, each an icon over a sh
 
 ### Tab Bar
 
-**Do** — Exactly one destination carries the primary tint on both its icon and label; the rest stay muted, so the current tab is always singular and unmistakable.
+**Do** — Exactly one destination carries the primary tint on both its icon and label, over Material 3's active-indicator pill on web and Android; the rest stay muted, so the current tab is always singular and unmistakable. On web the pill is what lets a bar and a `Sidebar` in the same app shell mark the current destination the same way across the breakpoint that swaps them.
 
 ```tsx
 <TabBar
