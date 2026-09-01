@@ -163,7 +163,14 @@ export interface DataTableProps {
    * before.
    */
   emptyMessage?: ReactNode;
-  /** When set, each data row is pressable, reporting the row data and its index in `rows`. */
+  /**
+   * When set, each data row is pressable, reporting the row data and its index
+   * in `rows`. A press anywhere on the row acts; the keyboard and screen-reader
+   * path is a button inside the row's FIRST column, named from the row's plain
+   * text cells (or, when it has none, by that cell's own content). The row
+   * itself stays a `row`, so keep your own controls out of the first column
+   * here: a control there would nest inside the activator.
+   */
   onRowPress?: (row: ReactNode[], index: number) => void;
   /**
    * Row editing: passing this adds a trailing actions column with a pencil
@@ -284,9 +291,8 @@ const ACTIONS_CELL: ViewStyle = {
 };
 
 // When the actions column is present the pressable row area wraps only the
-// data cells, and the actions cell sits BESIDE it as a sibling: an action
-// button must never nest inside a button-roled row (invalid DOM on web), and
-// this way a press on the pencil/bin can never double as a row press.
+// data cells, and the actions cell sits BESIDE it as a sibling, so a press on
+// the pencil/bin can never double as a row press.
 const ROW_PRESS_AREA: ViewStyle = {
   flexGrow: 1,
   flexShrink: 1,
@@ -294,6 +300,14 @@ const ROW_PRESS_AREA: ViewStyle = {
   flexDirection: "row",
   alignItems: "center",
 };
+
+// The row activator that carries `onRowPress` for the keyboard and for screen
+// readers, inside the first data cell. It takes the cell's box so the focus
+// ring outlines the whole leading column rather than hugging a word; it draws
+// nothing of its own, because the row already draws every state the press has.
+// The cell's own cross-axis alignment rides along with it (a numeric or
+// centered leading column keeps its alignment through the wrapper).
+const ROW_ACTIVATOR: ViewStyle = { alignSelf: "stretch", flexShrink: 1, minWidth: 0 };
 
 // How long an armed delete waits for its confirming second press.
 const DELETE_CONFIRM_MS = 4000;
@@ -722,6 +736,22 @@ export function createDataTable(skin: DataTableSkin, parts: DataTableParts) {
     }
 
     // A keyless data row (the key is supplied by the eager map / FlatList keyExtractor).
+    //
+    // A data row is always `role="row"`, whatever it does on press. It is
+    // tempting to role the pressable row a button, and it is wrong twice over:
+    // web renders that role as a real <button>, so every `role="cell"` in the
+    // row loses the row that has to own it (the table stops reading as a
+    // table), and every control the row carries (the select checkbox, a menu
+    // or a link a caller put in a cell) becomes a focusable descendant of a
+    // button, which is invalid DOM and logs a React nesting error.
+    //
+    // So the press splits in two. The row keeps the POINTER convenience, out of
+    // the accessibility tree, so a press anywhere on it still acts. The action
+    // itself is a real button inside the first data cell (see renderBodyCell),
+    // sibling to everything else in the row: that is the tab stop, and that is
+    // what a screen reader announces. The one thing a caller owes this is to
+    // keep its own controls out of the leading column when it passes
+    // `onRowPress`, since that column is where the activator goes.
     function renderDataRow(row: ReactNode[], r: number) {
       const rowId = keyOf(row, r);
       const isSelected = selectable && selectedSet.has(rowId);
@@ -744,7 +774,19 @@ export function createDataTable(skin: DataTableSkin, parts: DataTableParts) {
           />
         </View>
       ) : null;
-      const dataCells = visibleColumns.map((col) => renderBodyCell(row, r, rowId, col));
+      // The row action's KEYBOARD and screen-reader path: a real button, in the
+      // first data cell, beside every other control in the row rather than
+      // around them (see the structure note above renderDataRow).
+      const activate =
+        onRowPress && !editingHere
+          ? () => {
+              disarmDelete();
+              onRowPress(row, r);
+            }
+          : undefined;
+      const dataCells = visibleColumns.map((col, i) =>
+        renderBodyCell(row, r, rowId, col, i === 0 ? activate : undefined),
+      );
       // An inset row separator (iOS), absolutely positioned so it does not
       // affect the flex layout; web/Android use the dataRow's full-bleed
       // borderBottom instead (skin.separator is null there).
@@ -769,19 +811,17 @@ export function createDataTable(skin: DataTableSkin, parts: DataTableParts) {
         : undefined;
 
       if (hasActions) {
-        // With a trailing actions column the row shell is a plain View: the
-        // data cells sit in a flex-1 press area and the actions cell rides
-        // BESIDE it as a sibling, so the pencil/bin buttons never nest inside
-        // a button-roled row (invalid DOM on web) and an action press can
-        // never double as a row press.
+        // With a trailing actions column the data cells sit in a flex-1 press
+        // area and the actions cell rides BESIDE it as a sibling, so a press on
+        // the pencil/bin (or on the padding around them) can never double as a
+        // row press. The press area carries no role and stays out of the
+        // accessibility tree: the row's semantics belong to the row.
         const area = pressRow ? (
           <Pressable
             onPress={pressRow}
             android_ripple={ripple}
-            role={onRowPress ? "button" : undefined}
-            accessible={onRowPress ? undefined : false}
-            focusable={onRowPress ? undefined : false}
-            accessibilityLabel={onRowPress ? rowLabel(row) : undefined}
+            accessible={false}
+            focusable={false}
             style={({ pressed }) => [
               ROW_PRESS_AREA,
               // Android ripples; iOS/web tint the pressed area fill.
@@ -827,13 +867,14 @@ export function createDataTable(skin: DataTableSkin, parts: DataTableParts) {
         <Pressable
           onPress={pressRow}
           android_ripple={ripple}
-          role={onRowPress ? "button" : undefined}
-          accessible={onRowPress ? undefined : false}
-          focusable={onRowPress ? undefined : false}
-          // Announce the actionable row's content: read off the plain
-          // string/number cells (custom ReactNode cells carry their own
-          // labels, so they are skipped here).
-          accessibilityLabel={onRowPress ? rowLabel(row) : undefined}
+          // A row is a `row`, never a button: its cells have to stay owned by a
+          // row for the table to read as a table, and a button-roled row would
+          // swallow every control the cells carry. The press here is the
+          // pointer convenience only, so it stays out of the accessibility
+          // tree; the activator in the first cell is the reachable action.
+          role="row"
+          accessible={false}
+          focusable={false}
           style={({ pressed }) => [
             skin.dataRow(tokens),
             // Hold the platform minimum tap target (iOS 44pt / M3 48dp) so a
@@ -857,7 +898,13 @@ export function createDataTable(skin: DataTableSkin, parts: DataTableParts) {
     // One data cell: the plain text/node; a press-to-edit target when
     // `inlineEdit` can open it; or the open editor field (a press-opened cell,
     // or every string cell while the row is in pencil-opened edit mode).
-    function renderBodyCell(row: ReactNode[], r: number, rowId: string, col: NormalColumn) {
+    function renderBodyCell(
+      row: ReactNode[],
+      r: number,
+      rowId: string,
+      col: NormalColumn,
+      activate?: () => void,
+    ) {
       const c = cols.indexOf(col);
       const cell = cellOf(row, c);
       const rowEditing = editingRow === r;
@@ -915,10 +962,11 @@ export function createDataTable(skin: DataTableSkin, parts: DataTableParts) {
             cell
           );
         // An inline-editable (string) cell is a press target opening its
-        // editor. It stays out of the accessibility tree while the row itself
-        // is a button (`onRowPress`): nested buttons are invalid on web, and
-        // there the row press is the primary semantic (pencil row editing
-        // carries the accessible editing path).
+        // editor. It stays out of the accessibility tree when the row carries
+        // an action (`onRowPress`), because this cell then holds the row's
+        // activator and nested buttons are invalid on web; there the row press
+        // is the primary semantic (pencil row editing carries the accessible
+        // editing path).
         content =
           inlineEdit && typeof cell === "string" && !rowEditing ? (
             <Pressable
@@ -936,6 +984,28 @@ export function createDataTable(skin: DataTableSkin, parts: DataTableParts) {
           ) : (
             text
           );
+      }
+
+      // The row's activator, when this is the first data cell of a row that has
+      // an action. It is the ONE thing in the row that carries the row press as
+      // a control: a real button, sibling to the select checkbox and to
+      // whatever the caller put in the other cells, so nothing nests and the
+      // cells stay owned by the row. Its name comes from the plain cells when
+      // there are any, and otherwise from this cell's own content, which is the
+      // column tables lead with and the one a reader identifies the row by.
+      if (activate && !cellOpen) {
+        const label = rowLabel(row);
+        content = (
+          <Pressable
+            onPress={activate}
+            role="button"
+            accessibilityLabel={label || undefined}
+            aria-label={label || undefined}
+            style={[ROW_ACTIVATOR, alignCell]}
+          >
+            {content}
+          </Pressable>
+        );
       }
 
       return (

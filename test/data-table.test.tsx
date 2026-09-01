@@ -5,6 +5,7 @@ import { ThemeProvider } from "../src/style/theme.tsx";
 import { resetDevWarnings } from "../src/style/dev-warn.ts";
 import { DataTable, type DataTableSort } from "../src/organisms/data-table/data-table.tsx";
 import { Badge } from "../src/atoms/badge/badge.tsx";
+import { Pressable, Text } from "../src/style/index.js";
 
 // DataTable behavior: the column model, sorting, row selection, pagination, and
 // the loading/empty states. Rendering is react-native-web under happy-dom, so
@@ -351,13 +352,75 @@ describe("DataTable row actions", () => {
     expect(screen.getByText("Bob")).toBeDefined();
   });
 
-  it("keeps action buttons SIBLINGS of a button-roled pressable row, isolated from onRowPress", () => {
-    let pressed = -1;
+  // A pressable row is a ROW, not a button. Rolling it a button renders a real
+  // <button> on web, which strands every `role="cell"` outside a row and turns
+  // any control the cells carry into a focusable descendant of a button: on
+  // /identities that logged "In HTML, <button> cannot be a descendant of
+  // button" for every row, because the row menu's trigger sat inside the row.
+  it("gives a pressable row role=row, owning its cells, and nests no control inside a button", () => {
+    const menu = (
+      <Pressable key="m" role="button" accessibilityLabel="Actions for Ada" aria-label="Actions for Ada">
+        <Text>...</Text>
+      </Pressable>
+    );
+    const { container } = ui(
+      <DataTable
+        selectable
+        columns={[...COLUMNS, "Actions"]}
+        rows={[["Ada", "Eng", menu]]}
+        onRowPress={() => {}}
+      />,
+    );
+    // The row is a row, and every cell in the table is owned by one.
+    const rows = container.querySelectorAll('[role="row"]');
+    expect(rows.length).toBe(2); // header + the data row
+    const cells = Array.from(container.querySelectorAll('[role="cell"]'));
+    expect(cells.length).toBeGreaterThan(0);
+    expect(cells.every((c) => c.parentElement?.closest('[role="row"]') != null)).toBe(true);
+    // Nothing focusable sits inside a button: not the caller's row menu, not
+    // the select checkbox, not the activator.
+    const controls = Array.from(container.querySelectorAll('[role="button"], [role="checkbox"]'));
+    expect(controls.some((c) => c.parentElement?.closest('[role="button"]') != null)).toBe(false);
+    expect(container.querySelector("button button")).toBeNull();
+  });
+
+  // The row action has to stay reachable without a pointer. It moves from the
+  // row onto a button in the leading cell, which is the tab stop and the thing
+  // a screen reader announces.
+  it("puts the row action on a named button in the first cell, firing once", () => {
+    let presses: number[] = [];
+    ui(<DataTable columns={COLUMNS} rows={ROWS} onRowPress={(_row, i) => presses.push(i)} />);
+    // Named off the row's plain cells, one per row.
+    const activator = screen.getByLabelText("Ada, Eng");
+    expect(activator.closest('[role="cell"]')).not.toBeNull();
+    expect(activator.closest('[role="cell"]')!.previousElementSibling).toBeNull(); // the FIRST cell
+    fireEvent.click(activator);
+    expect(presses).toEqual([1]); // once, not twice: the row press must not double-fire
+  });
+
+  // Custom cells carry their own labels, so there is no plain text to name the
+  // activator from; its content names it instead of an empty aria-label.
+  it("leaves the activator to be named by its content when the row has no plain cells", () => {
+    const { container } = ui(
+      <DataTable
+        columns={COLUMNS}
+        rows={[[<Badge key="n">Ada</Badge>, <Badge key="r">Eng</Badge>]]}
+        onRowPress={() => {}}
+      />,
+    );
+    const activator = container.querySelector('[role="row"]:not(:first-child) [role="button"]')!;
+    expect(activator).not.toBeNull();
+    expect(activator.getAttribute("aria-label")).toBeNull();
+    expect(activator.textContent).toBe("Ada");
+  });
+
+  it("keeps action buttons SIBLINGS of the row press area, isolated from onRowPress", () => {
+    const presses: number[] = [];
     const { container } = ui(
       <DataTable
         columns={COLUMNS}
         rows={ROWS}
-        onRowPress={(_row, i) => (pressed = i)}
+        onRowPress={(_row, i) => presses.push(i)}
         onRowEdit={() => {}}
         onRowDelete={() => {}}
       />,
@@ -367,11 +430,12 @@ describe("DataTable row actions", () => {
     const buttons = Array.from(container.querySelectorAll('[role="button"]'));
     expect(buttons.length).toBeGreaterThan(0);
     expect(buttons.some((b) => b.parentElement?.closest('[role="button"]') != null)).toBe(false);
-    // An action press never doubles as a row press; a cell press still rows.
+    // An action press never doubles as a row press; a cell press still rows,
+    // once, even though the activator sits inside the row's own press area.
     fireEvent.click(screen.getByLabelText("Delete Bob"));
-    expect(pressed).toBe(-1);
+    expect(presses).toEqual([]);
     fireEvent.click(screen.getByText("Ada"));
-    expect(pressed).toBe(1);
+    expect(presses).toEqual([1]);
   });
 
   it("passes custom ReactNode cells through a row commit unchanged", () => {
