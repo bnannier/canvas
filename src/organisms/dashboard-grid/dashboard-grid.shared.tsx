@@ -80,7 +80,22 @@ const TIERS: Responsive<DashboardTier> = { base: "wide", lg: "narrow", sm: "phon
 // The grid spans its container so the measurement is truthful: a hugging root would measure
 // its own content width and latch the wrong tier forever (the container.ts probe note).
 const ROOT: ViewStyle = { width: "100%", maxWidth: "100%" };
-const GRID: ViewStyle = { flexDirection: "row", flexWrap: "wrap", alignItems: "flex-start" };
+// Cells STRETCH to the height of the row they wrapped onto, so a board's rows have a flush
+// bottom edge instead of a ragged one. `flex-start` used to let every cell hug its own
+// content, which is fine while the widgets in a row happen to run the same height and reads
+// as a hole in the board the moment one of them is short: a widget with nothing to draw sat
+// in a 158px tile beside a 427px neighbour, and the 269px underneath it was page background
+// rather than anything the board had put there.
+//
+// Stretching the CELL is all this does; the widget inside still sizes itself, so a board of
+// widgets that hug their content renders exactly as it did before. A widget that wants the
+// tile's full height asks for it (a Card's `grow`, `flex: 1` on anything else) and now has a
+// box to grow into, which is the half that was impossible from outside the kit.
+const GRID: ViewStyle = { flexDirection: "row", flexWrap: "wrap", alignItems: "stretch" };
+// The customize-mode chrome between a stretched cell and the widget it holds. Without it the
+// drag wrapper and the dashed ring keep hugging the widget, so a tile that fills its cell
+// while the board is locked would shrink back the moment customize mode is entered.
+const FILL: ViewStyle = { flexGrow: 1 };
 
 // Where the uncontrolled `storageKey` convenience writes. Namespaced so a consumer's key is
 // a short name of their own ("overview", "billing") rather than a global-scope collision.
@@ -261,8 +276,8 @@ export function createDashboardGrid(skin: DashboardGridSkin, parts: DashboardGri
               horizontal={span < DASHBOARD_COLUMNS}
               style={cell}
             >
-              <Draggable id={widget.id} data={widget} label={widget.title}>
-                <View style={skin.editCell(tokens)}>
+              <Draggable id={widget.id} data={widget} label={widget.title} style={FILL}>
+                <View style={[skin.editCell(tokens), FILL]}>
                   <View style={skin.gripRow}>
                     <DragHandle label={`Reorder ${widget.title}`} />
                   </View>
