@@ -46,9 +46,13 @@ async function watchForProblems(page: Page): Promise<PageProblems> {
     problems.pageErrors.push(error.message);
   });
   page.on("response", (response) => {
-    const url = response.url();
-    if (response.status() >= 400 && url.startsWith("http://127.0.0.1")) {
-      problems.badResponses.push(`${response.status()} ${url}`);
+    // Same-origin only: a third-party URL an example links to is not this app's
+    // problem. Matching on the page's own origin rather than on a hard-coded
+    // 127.0.0.1 is what keeps the gate armed when E2E_BASE_URL points the suite at a
+    // running Metro on localhost, which is the documented way to run it locally.
+    const origin = new URL(page.url() === "about:blank" ? response.url() : page.url()).origin;
+    if (response.status() >= 400 && response.url().startsWith(origin)) {
+      problems.badResponses.push(`${response.status()} ${response.url()}`);
     }
   });
   page.on("requestfailed", (request) => {

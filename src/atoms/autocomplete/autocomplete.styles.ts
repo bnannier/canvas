@@ -1,5 +1,5 @@
 import { StyleSheet, type ViewStyle, type TextStyle } from "react-native";
-import { shadow, activeIndicator, TOUCH_TARGET, type ColorTokens, type FloatingLabelStyles, type TouchTargetSkin } from "../../style/index.js";
+import { shadow, activeIndicator, type ColorTokens, type FloatingLabelStyles } from "../../style/index.js";
 
 // Co-located Autocomplete skins, one per platform. An Autocomplete is a searchable
 // single-select: an editable field that filters an open option list. The BRAND
@@ -28,7 +28,7 @@ export type Size = "small" | "default" | "large";
 // open/selected/pressed/muted state and asks the skin to map them to RN style
 // objects. The skin owns shape, fill, border/underline, popover elevation, the
 // row layout, and the press-feedback channel (iOS/web opacity vs Android ripple).
-export interface AutocompleteSkin extends FloatingLabelStyles<Size>, TouchTargetSkin {
+export interface AutocompleteSkin extends FloatingLabelStyles<Size> {
   /** Type scale per size; the field text and the option rows share it. */
   text: (size: Size) => TextStyle;
   /** Stacked (above-field) label type, used on iOS + web (`floatingLabel: false`).
@@ -110,7 +110,6 @@ const WEB_FIELD_BOX: Record<Size, number> = { small: 32, default: 36, large: 40 
 
 // ---------- Web: the established Canvas look (lifted verbatim) ----------
 export const webSkin: AutocompleteSkin = {
-  minTarget: null,
   text: webText,
   label: (t, size) => ({ marginBottom: 6, fontWeight: "500", color: t.foreground, ...TEXT_SIZE[size] }),
   field: (t, size) => ({
@@ -186,7 +185,6 @@ const IOS_TEXT: Record<Size, TextStyle> = {
 // matching the kit's fixed "Menu Item, Title" type and select.styles.ts IOS_ROW_TEXT.
 const IOS_ROW_TEXT: TextStyle = { fontSize: 17, lineHeight: 22 };
 export const iosSkin: AutocompleteSkin = {
-  minTarget: TOUCH_TARGET.ios,
   text: (size) => IOS_TEXT[size],
   label: (t, size) => ({ marginBottom: 6, fontWeight: "600", color: t.foreground, ...IOS_TEXT[size] }),
   // Filled rounded rect (.roundedBorder), continuous corners; the border tints to the
@@ -255,7 +253,6 @@ export const iosSkin: AutocompleteSkin = {
 const ANDROID_TOP_RADIUS = 4;
 const ANDROID_FIELD_BOX: Record<Size, number> = { small: 48, default: 56, large: 60 };
 export const androidSkin: AutocompleteSkin = {
-  minTarget: TOUCH_TARGET.android,
   // M3 body text is 16sp; nudge base/large up, keep small readable.
   text: (size) => {
     if (size === "large") return { fontSize: 18, lineHeight: 26 };

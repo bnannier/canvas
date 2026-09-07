@@ -14,7 +14,7 @@
  * See the `visual` project in playwright.config.ts.
  */
 import { componentRoutes } from "../support/routes";
-import { gotoDocs, previewCard } from "../support/docs";
+import { gotoDocs, previewCard, settledBox } from "../support/docs";
 import { expect, test } from "../support/fixtures";
 
 // Several examples render today's date or a live-looking clock. A fixed instant makes
@@ -30,6 +30,8 @@ for (const scheme of ["dark", "light"] as const) {
       await gotoDocs(page, route.path, { scheme, surface: "solid" });
       const card = previewCard(page).first();
       await expect(card).toBeVisible();
+      // A card holding a self-measuring component settles a pass after it appears.
+      await settledBox(card);
       await expect(card).toHaveScreenshot(`components/${route.name}--${scheme}.png`);
     });
   }

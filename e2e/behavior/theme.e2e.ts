@@ -22,9 +22,18 @@ test("the toggle really changes what is painted", async ({ page }) => {
   await expect.poll(() => readScheme(page)).toBe("dark");
 });
 
-test("the launch URL seeds the scheme on a fresh load", async ({ page }) => {
-  // The docs store nothing by privacy declaration, so ?scheme is the only way to
-  // open a shared link, or a capture, in a chosen look. It is read once, at launch.
+test("the launch URL seeds the scheme, and a later navigation does not re-seed it", async ({ page }) => {
+  // The docs store nothing by privacy declaration, so ?scheme is the only way to open
+  // a shared link, or a capture, in a chosen look. It is read ONCE, at launch, held in
+  // a ref: a later client-side navigation must not fight the in-app toggle. That
+  // second half is what this asserts, since gotoDocs already waits for the first.
   await gotoDocs(page, "/components/button", { scheme: "light" });
-  expect(await readScheme(page)).toBe("light");
+
+  await page.getByLabel("Toggle color scheme").first().click();
+  await expect.poll(() => readScheme(page)).toBe("dark");
+
+  // Navigate within the app. The URL still says scheme=light; the toggle must win.
+  await page.getByRole("tab").nth(1).click();
+  await expect(page).toHaveURL(/scheme=light/);
+  expect(await readScheme(page), "a client-side navigation re-seeded the scheme").toBe("dark");
 });

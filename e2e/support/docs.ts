@@ -136,3 +136,36 @@ export async function setFormFactor(page: Page, factor: FormFactor): Promise<voi
   await tab.click();
   await expect(tab).toHaveAttribute("aria-selected", "true");
 }
+
+/**
+ * Read a measurement until it stops changing.
+ *
+ * Several components size themselves from a measurement of their own box, and an
+ * overlay's container grows AFTER the overlay becomes visible, so a single sample
+ * races the layout. Two consecutive agreeing samples is a wait on the settled state
+ * rather than on a clock, and it is direction-agnostic: a value that is genuinely
+ * wrong settles too, and fails on the real number.
+ *
+ * This is not a nicety. Sampling the page's overflow once produced a test that failed
+ * under parallel workers and passed alone; sampling an overlay's stage height once
+ * produced a screenshot baseline of a stage that had not finished opening.
+ */
+export async function settled<T>(read: () => Promise<T>, timeoutMs = 5_000): Promise<T> {
+  let previous = await read();
+  const deadline = Date.now() + timeoutMs;
+  for (;;) {
+    await new Promise((resolve) => setTimeout(resolve, 50));
+    const current = await read();
+    if (JSON.stringify(current) === JSON.stringify(previous)) return current;
+    if (Date.now() > deadline) return current;
+    previous = current;
+  }
+}
+
+/** The box of a locator, once it has stopped moving. */
+export async function settledBox(locator: Locator): Promise<{ width: number; height: number }> {
+  return settled(async () => {
+    const box = await locator.boundingBox();
+    return { width: Math.round(box?.width ?? -1), height: Math.round(box?.height ?? -1) };
+  });
+}

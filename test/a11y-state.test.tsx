@@ -10,6 +10,7 @@ import { AvatarMenu } from "../src/atoms/avatar/avatar.tsx";
 import { Select } from "../src/atoms/select/select.tsx";
 import { Autocomplete } from "../src/atoms/autocomplete/autocomplete.tsx";
 import { Chip } from "../src/atoms/chip/chip.tsx";
+import { Badge } from "../src/atoms/badge/badge.tsx";
 import { Command } from "../src/organisms/command/command.tsx";
 import { TabBar } from "../src/organisms/tab-bar/tab-bar.tsx";
 import { Tabs } from "../src/organisms/tabs/tabs.tsx";
@@ -191,5 +192,36 @@ describe("listbox a11y (options announce as a selectable list, operably)", () =>
     expect(picked).toEqual([]);
     fireEvent.click(rows[0]);
     expect(picked).toEqual(["Edit"]);
+  });
+});
+
+describe("Badge: a name needs a role it can legally sit on", () => {
+  // ARIA prohibits naming a generic element, so an aria-label on a bare View is
+  // discarded rather than announced. Which role fixes that depends on what the badge
+  // contains, and the wrong choice trades one defect for a worse one: img is a LEAF
+  // role, so putting it on a badge that also renders text would replace that text in
+  // the accessibility tree with the label.
+  it("names a bare status dot as an image", () => {
+    const { container } = ui(<Badge status success />);
+    const badge = container.querySelector('[aria-label="success"]');
+    expect(badge?.getAttribute("role")).toBe("img");
+  });
+
+  it("names a badge that also carries text as a group, keeping the text", () => {
+    const { container } = ui(
+      <Badge status error accessibilityLabel="3 failing checks">
+        Failed
+      </Badge>,
+    );
+    const badge = container.querySelector('[aria-label="3 failing checks"]');
+    expect(badge?.getAttribute("role")).toBe("group");
+    expect(badge?.textContent).toBe("Failed");
+  });
+
+  it("leaves an unnamed badge generic, since its own text is the name", () => {
+    const { container } = ui(<Badge status warning>Pending</Badge>);
+    const labelled = container.querySelector("[aria-label]");
+    expect(labelled).toBeNull();
+    expect(container.textContent).toBe("Pending");
   });
 });

@@ -47,6 +47,16 @@ const COVERED_ANOTHER_WAY: Record<string, string> = {
   "organisms/filter-panel": "option rows are 44/48 tall by skin",
   "organisms/toast": "hitSlop on the dismiss and the action",
   "charts/shared": "a chart's hit area is the mark it belongs to, sized by the data",
+  // The same answer, one directory each. A slice, a bubble, a tile, a cell: the
+  // pressable IS the mark, it carries accessibilityRole=\"image\", and its size is the
+  // value it draws. Padding a 3% slice out to 44pt would overlap the 4% one.
+  "charts/funnel-chart": "the pressable is the funnel band, sized by its value",
+  "charts/geo-map": "the pressable is the bubble, sized by its value",
+  "charts/heatmap": "the pressable is the day cell, sized by the grid",
+  "charts/pie-chart": "the pressable is the slice, sized by its share",
+  "charts/radial-bar-chart": "the pressable is the arc, sized by its value",
+  "charts/scatter-plot": "the pressable is the point, sized by the series",
+  "charts/treemap": "the pressable is the tile, sized by its area",
 };
 
 /**
@@ -71,26 +81,41 @@ const KNOWN_GAP: Record<string, string> = {
   "organisms/dialog": "only the Android text buttons, at 40 against a 48 minimum",
   "organisms/drawer": "the scrim is a dismiss target, not a control",
   "molecules/alert-dialog": "only the Android text buttons, at 40 against a 48 minimum",
+  // Its rows become real buttons only when onPressItem is passed, which the docs
+  // example does not do, so the browser sweep never saw them. Read from the source:
+  // the row is a bare flex row with no minHeight, so it is as tall as one line of
+  // name plus value, around 20pt.
+  "charts/service-health-list": "a pressable row is content-height, around 20pt, when onPressItem is passed",
+  // The chevron that opens the list is 7pt wide on iOS and 6dp on Android. It cannot
+  // be fixed with hitSlop: the field's editable area is its immediate neighbour, and
+  // a symmetric 18pt of slop steals the end of the text the user just typed. Fixing
+  // it means widening the control, which is a layout change and its own decision.
+  "atoms/autocomplete": "the chevron renders 7pt wide, and slop would steal the field's own tap area",
 };
 
-/** The skin module in a component directory (its name is not always the directory's). */
-function skinFile(component: string): string {
+/**
+ * The skin module in a component directory, or null when it has none.
+ *
+ * Its name is not always the directory's (charts/shared holds charts.styles.ts), and
+ * eight chart components have no skin file at all. Enumerating from the skin files
+ * made those eight invisible to every check here, which is the hole this test exists
+ * to close: one of them, ServiceHealthList, renders a 20pt pressable row.
+ */
+function skinFile(component: string): string | null {
   const dir = join(ROOT, "src", component);
   const [file] = [...new Glob("*.styles.ts").scanSync(dir)];
-  return join(dir, file);
+  return file === undefined ? null : join(dir, file);
 }
 
-/** Component directories whose shell renders a Pressable. */
+/** Component directories whose shell renders a Pressable, skin file or not. */
 function pressableComponents(): string[] {
-  const out: string[] = [];
-  for (const rel of new Glob("src/*/*/*.styles.ts").scanSync(ROOT)) {
-    const dir = dirname(rel);
-    const sources = [...new Glob("*.tsx").scanSync(join(ROOT, dir))]
-      .filter((f) => !f.endsWith(".ios.tsx") && !f.endsWith(".android.tsx"))
-      .map((f) => readFileSync(join(ROOT, dir, f), "utf8"));
-    if (sources.some((text) => /<Pressable\b/.test(text))) out.push(dir.replace(/^src\//, ""));
+  const out = new Set<string>();
+  for (const rel of new Glob("src/*/*/*.tsx").scanSync(ROOT)) {
+    if (rel.endsWith(".ios.tsx") || rel.endsWith(".android.tsx")) continue;
+    if (!/<Pressable\b/.test(readFileSync(join(ROOT, rel), "utf8"))) continue;
+    out.add(dirname(rel).replace(/^src\//, ""));
   }
-  return out.sort();
+  return [...out].sort();
 }
 
 const components = pressableComponents();
@@ -101,8 +126,8 @@ it("finds the pressable components", () => {
 
 describe("every pressable is accounted for", () => {
   for (const component of components) {
-    const skin = readFileSync(skinFile(component), "utf8");
-    const declares = /minTarget/.test(skin);
+    const declared = skinFile(component);
+    const declares = declared !== null && /minTarget/.test(readFileSync(declared, "utf8"));
 
     it(component, () => {
       if (declares) return;
@@ -119,6 +144,7 @@ describe("every pressable is accounted for", () => {
 describe("a declared target is the platform's own number", () => {
   for (const component of components) {
     const file = skinFile(component);
+    if (file === null) continue;
     const skin = readFileSync(file, "utf8");
     if (!/minTarget/.test(skin)) continue;
 
@@ -160,11 +186,8 @@ describe("the lists stay honest", () => {
 
   it("lists nothing that already declares a target", () => {
     const redundant = [...Object.keys(COVERED_ANOTHER_WAY), ...Object.keys(KNOWN_GAP)].filter((c) => {
-      try {
-        return /minTarget/.test(readFileSync(skinFile(c), "utf8"));
-      } catch {
-        return false;
-      }
+      const file = skinFile(c);
+      return file !== null && /minTarget/.test(readFileSync(file, "utf8"));
     });
     expect(redundant, "declares a target, so delete the list entry").toEqual([]);
   });

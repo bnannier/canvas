@@ -1,6 +1,6 @@
 import { forwardRef, useId, useRef, useState } from "react";
 import { type Role, type TextInput as RNTextInput } from "react-native";
-import { View, Pressable, Text, TextInput, useTheme, useControllableState, useEscapeKey, useFieldWidth, AnchoredOverlay, useMeasuredWidth, FloatingLabel, LabelContent, FOCUS_RESET, RippleClip, cornerRadii, useMinTargetSlop, type FieldWidthProps, type StyleProp, type ViewStyle, type TextStyle } from "../../style/index.js";
+import { View, Pressable, Text, TextInput, useTheme, useControllableState, useEscapeKey, useFieldWidth, AnchoredOverlay, useMeasuredWidth, FloatingLabel, LabelContent, FOCUS_RESET, RippleClip, cornerRadii, type FieldWidthProps, type StyleProp, type ViewStyle, type TextStyle } from "../../style/index.js";
 
 // React Native's Role union omits the valid ARIA "listbox" role, so the option-list
 // container casts it. The value is correct on both web (DOM role) and native.
@@ -121,10 +121,6 @@ const POPOVER_ANCHOR: ViewStyle = { position: "absolute", top: "100%", start: 0,
 /** Build an Autocomplete component from a platform skin. */
 export function createAutocomplete(skin: AutocompleteSkin) {
   const Autocomplete = forwardRef<RNTextInput, AutocompleteProps>(function Autocomplete(props, ref) {
-    // The chevron that opens the list is a 7pt-wide glyph beside the field: the
-    // narrowest control in the kit, and the one most in need of a touch area of its
-    // own. It grows around the glyph; the field beside it does not move.
-    const chevronTarget = useMinTargetSlop(skin.minTarget);
     const {
       options = [],
       label,
@@ -248,17 +244,29 @@ export function createAutocomplete(skin: AutocompleteSkin) {
             onFocus={() => {
               if (!open) setOpen(true);
             }}
-            // Escape while the caret is IN the field. useEscapeKey below listens on
-            // the document, which covers focus on the chevron or anywhere else, but
-            // react-native-web's TextInput does not let an Escape keydown out of the
-            // input, so the listener never sees the one case that matters most: a
-            // person typing a query and pressing Escape to abandon it. Handled here
-            // through RN's own onKeyPress channel, which works on every platform that
-            // reports a key.
+            // A press on a field that already holds the caret fires no focus event, so
+            // without this there is no way back into a list you dismissed with Escape
+            // while your query is still sitting in the field.
+            onPressIn={() => {
+              if (!open && !disabled) setOpen(true);
+            }}
+            // The two keys the caret has to handle itself. react-native-web's
+            // TextInput does not let a keydown out of the input, so the document-level
+            // useEscapeKey below never sees the case that matters most for a combobox:
+            // someone typing a query and pressing Escape to abandon it. ArrowDown is
+            // the other half of that contract and the standard way back into the list,
+            // without which Escape leaves a focused field with no way to reopen.
+            // RN's onKeyPress channel is fed by the DOM keydown event.
             onKeyPress={(event) => {
-              if (event.nativeEvent.key !== "Escape" || disabled) return;
-              event.preventDefault?.();
-              setOpen(false);
+              if (disabled) return;
+              const key = event.nativeEvent.key;
+              if (key === "Escape" && open) {
+                event.preventDefault?.();
+                setOpen(false);
+              } else if (key === "ArrowDown" && !open) {
+                event.preventDefault?.();
+                setOpen(true);
+              }
             }}
             // Floating label owns the resting placeholder: hide the native
             // placeholder until the list opens (matching the M3 Input).
@@ -281,7 +289,6 @@ export function createAutocomplete(skin: AutocompleteSkin) {
             aria-label={hasLabel ? label : undefined}
           />
           <Pressable
-            {...chevronTarget}
             style={({ pressed }) => [
               chevronHit,
               skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null,

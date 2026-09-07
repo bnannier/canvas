@@ -12,7 +12,7 @@
  * itself, and the page's own scroller (docs/src/ui/page.tsx marks it).
  */
 import { componentRoutes, contentRoutes } from "../support/routes";
-import { gotoDocs, previewCard, setFormFactor } from "../support/docs";
+import { gotoDocs, previewCard, setFormFactor, settled } from "../support/docs";
 import { expect, test } from "../support/fixtures";
 
 type Overflow = { document: number; page: number };
@@ -29,27 +29,9 @@ async function readOverflow(page: import("@playwright/test").Page): Promise<Over
   });
 }
 
-/**
- * The overflow once the layout has stopped moving.
- *
- * Several components size themselves from a measurement of their own box
- * (useMeasuredWidth / useContainerBreakpoint), so their first paint can be one
- * layout pass wider than their second. Sampling once races that, which showed up as
- * a single page failing under parallel workers and passing on its own. Reading until
- * two consecutive samples agree waits on the settled state rather than on a clock,
- * and it is direction-agnostic: a page that is genuinely too wide settles too, and
- * fails on the real number.
- */
+/** The overflow once the layout has stopped moving. See `settled` in support/docs. */
 async function overflow(page: import("@playwright/test").Page): Promise<Overflow> {
-  let previous = await readOverflow(page);
-  const deadline = Date.now() + 5_000;
-  for (;;) {
-    await page.evaluate(() => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))));
-    const current = await readOverflow(page);
-    if (current.document === previous.document && current.page === previous.page) return current;
-    if (Date.now() > deadline) return current;
-    previous = current;
-  }
+  return settled(() => readOverflow(page));
 }
 
 /**
