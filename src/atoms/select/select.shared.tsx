@@ -1,12 +1,20 @@
 import { useId, useRef } from "react";
 import { type Role } from "react-native";
-import { View, Pressable, Text, useTheme, useControllableState, useEscapeKey, useFieldWidth, AnchoredOverlay, useMeasuredWidth, FloatingLabel, LabelContent, RippleClip, cornerRadii, type FieldWidthProps, type StyleProp, type ViewStyle } from "../../style/index.js";
+import { View, Pressable, Text, ScrollView, useTheme, useControllableState, useEscapeKey, useFieldWidth, AnchoredOverlay, useMeasuredWidth, FloatingLabel, LabelContent, RippleClip, cornerRadii, type FieldWidthProps, type StyleProp, type ViewStyle } from "../../style/index.js";
 
 // React Native's Role union omits the valid ARIA "listbox" role, so the option-list
 // container casts it. The value is correct on both web (DOM role) and native.
 const LISTBOX = "listbox" as Role;
+
 import { Icon } from "../icon/icon.js";
 import { root, rootLifted, PANEL_ANCHOR, type SelectSkin, type Size } from "./select.styles.js";
+
+// The option list is a SCROLLPORT inside the card's `maxHeight` cap. The cap bounds
+// the CARD, so without this the list would keep its full content height and the
+// card's clip would simply cut the overflow rows off, unreachable. React Native
+// Views default to `flexShrink: 0`, so the list has to be told it may shrink to the
+// capped card; the rows past the cap then scroll into view instead of disappearing.
+const optionScroll: ViewStyle = { flexShrink: 1 };
 
 // Shared Select shell. The structure (the stacked label + the trigger row with
 // its optional leading icon, value/placeholder and trailing chevron, plus the
@@ -265,8 +273,10 @@ export function createSelect(skin: SelectSkin) {
           dismissable={props.open === undefined || onOpenChange !== undefined}
         >
             {/* The option rows have no radius of their own and sit inside the rounded
-                (4dp) `panel` card, which has NO overflow clip; this RippleClip parent clips
-                their bounded Android ripples to the panel's corners. See src/style/ripple-clip. */}
+                (4dp) `panel` card. RippleClip is still what rounds their bounded Android
+                ripples: a view cannot clip its own ripple, and the card's own clip does not
+                reach them through the card's padding. See src/style/ripple-clip. */}
+            <ScrollView style={optionScroll} bounces={false}>
             <RippleClip shape={cornerRadii(skin.panel(tokens))}>
             <View role={LISTBOX}>
             {items.map((option, i) => {
@@ -305,6 +315,7 @@ export function createSelect(skin: SelectSkin) {
             })}
             </View>
             </RippleClip>
+            </ScrollView>
         </AnchoredOverlay>
       </View>
     );

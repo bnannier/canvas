@@ -1,6 +1,6 @@
 import { forwardRef, useId, useRef, useState } from "react";
 import { type Role, type TextInput as RNTextInput } from "react-native";
-import { View, Pressable, Text, TextInput, useTheme, useControllableState, useEscapeKey, useFieldWidth, AnchoredOverlay, useMeasuredWidth, FloatingLabel, LabelContent, FOCUS_RESET, RippleClip, cornerRadii, type FieldWidthProps, type StyleProp, type ViewStyle, type TextStyle } from "../../style/index.js";
+import { View, Pressable, Text, TextInput, ScrollView, useTheme, useControllableState, useEscapeKey, useFieldWidth, AnchoredOverlay, useMeasuredWidth, FloatingLabel, LabelContent, FOCUS_RESET, RippleClip, cornerRadii, type FieldWidthProps, type StyleProp, type ViewStyle, type TextStyle } from "../../style/index.js";
 
 // React Native's Role union omits the valid ARIA "listbox" role, so the option-list
 // container casts it. The value is correct on both web (DOM role) and native.
@@ -117,6 +117,13 @@ const chevronHit: ViewStyle = { alignSelf: "stretch", justifyContent: "center" }
 // adds the outside-tap dismiss backdrop instead. `start:0,end:0` pins it to the
 // field's width; the skin owns the card's shape/fill/shadow.
 const POPOVER_ANCHOR: ViewStyle = { position: "absolute", top: "100%", start: 0, end: 0, zIndex: 50, marginTop: 4 };
+
+// The option list is a SCROLLPORT inside the card's `maxHeight` cap. The cap bounds
+// the CARD, so without this the list would keep its full content height and the
+// card's clip would simply cut the overflow rows off, unreachable. React Native
+// Views default to `flexShrink: 0`, so the list has to be told it may shrink to the
+// capped card; the rows past the cap then scroll into view instead of disappearing.
+const optionScroll: ViewStyle = { flexShrink: 1 };
 
 /** Build an Autocomplete component from a platform skin. */
 export function createAutocomplete(skin: AutocompleteSkin) {
@@ -343,8 +350,10 @@ export function createAutocomplete(skin: AutocompleteSkin) {
               </View>
             ) : (
               // The option rows have borderRadius:0 and sit inside the rounded `popover`
-              // card, which has NO overflow clip; this RippleClip parent clips their bounded
-              // Android ripples to the popover's corners. See src/style/ripple-clip.
+              // card. RippleClip is still what rounds their bounded Android ripples: a view
+              // cannot clip its own ripple, and the card's own clip does not reach them
+              // through the card's padding. See src/style/ripple-clip.
+              <ScrollView style={optionScroll} bounces={false}>
               <RippleClip shape={cornerRadii(skin.popover(tokens))}>
               <View role={LISTBOX}>
               {matches.map((option, index) => {
@@ -381,6 +390,7 @@ export function createAutocomplete(skin: AutocompleteSkin) {
               })}
               </View>
               </RippleClip>
+              </ScrollView>
             )}
         </AnchoredOverlay>
 

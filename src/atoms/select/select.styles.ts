@@ -159,6 +159,7 @@ export const webSkin: SelectSkin = {
   chevronGlyph: "▾",
   panel: (t) => ({
     maxHeight: 240,
+    overflow: "hidden", // clip rows to the rounded card; the list scrolls inside
     borderRadius: 6,
     borderWidth: 1,
     borderColor: t.border,
@@ -231,12 +232,14 @@ export const iosSkin: SelectSkin = {
   // "⇅" reads as the chevron-up-down pop-up disclosure inline.
   chevron: (t, size) => ({ color: t.primary, fontWeight: "600", ...IOS_TEXT[size] }),
   chevronGlyph: "⇅",
-  // The Liquid Glass menu: very rounded (26pt), `popover`, soft shadow. No
-  // `overflow: hidden` (it would clip the shadow on iOS, matching how the web and
-  // Android panels here keep their drop shadow); the inset hairline separators and
-  // the subtle neutral press tint stay clear of the rounded corners.
+  // The Liquid Glass menu: very rounded (26pt), `popover`, soft shadow, and
+  // CLIPPED to those corners so a pressed row, the full-bleed separators, and any
+  // option scrolled under the cap cannot poke past them. iOS still draws the soft
+  // shadow outside these bounds: the iOS Dropdown menuCard has shipped the same
+  // clip alongside shadow("lg") since the Liquid Glass rework.
   panel: (t) => ({
     maxHeight: 320,
+    overflow: "hidden", // clip rows to the rounded card; the list scrolls inside
     borderRadius: IOS_MENU_RADIUS,
     backgroundColor: t.popover,
     paddingVertical: 4,
@@ -320,6 +323,7 @@ export const androidSkin: SelectSkin = {
   chevronGlyph: "⌄",
   panel: (t) => ({
     maxHeight: 280,
+    overflow: "hidden", // clip rows to the rounded card; the list scrolls inside
     borderRadius: 4,
     backgroundColor: t.popover,
     paddingVertical: 8,
