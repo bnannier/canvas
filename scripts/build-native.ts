@@ -13,7 +13,10 @@ export const nativeSpecifiers: ts.TransformerFactory<ts.SourceFile> = (context) 
           (parent.expression.kind === ts.SyntaxKind.ImportKeyword ||
             (ts.isIdentifier(parent.expression) && parent.expression.text === "require")));
       if (moduleSpecifier) {
-        return ts.setOriginalNode(ts.factory.createStringLiteral(node.text.slice(0, -3)), node);
+        const literal = ts.factory.createStringLiteral(node.text.slice(0, -3));
+        // Original-node identity alone does not retain the literal's source-map
+        // segment. Carry its range too, so shortened requests map to their source.
+        return ts.setTextRange(ts.setOriginalNode(literal, node), node);
       }
     }
     return ts.visitEachChild(node, visit, context);
