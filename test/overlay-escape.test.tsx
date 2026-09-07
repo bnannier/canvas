@@ -44,6 +44,23 @@ describe("Autocomplete — Escape dismisses the option list", () => {
     escapeKeyDown();
     expect(screen.queryByText("Banana")).toBeNull();
   });
+
+  it("closes on Escape pressed inside the field, where the document never hears it", () => {
+    // The document listener above covers focus on the chevron or anywhere else, but
+    // it cannot cover the case that matters most for a combobox: a person typing a
+    // query and pressing Escape to abandon it. react-native-web's TextInput does not
+    // let an Escape keydown out of the input, so in a real browser the document
+    // listener never fired and the list stayed open while the two suites that
+    // exercised the chevron path both passed. The field handles the key itself now.
+    const { container } = ui(<Autocomplete options={["Apple", "Banana", "Cherry"]} />);
+    const field = container.querySelector('[role="combobox"]') as HTMLElement;
+    fireEvent.focus(field);
+    expect(screen.queryByText("Banana")).not.toBeNull();
+    // react-native-web feeds RN's onKeyPress channel from the DOM keydown event, so
+    // that is what a test fires. (A DOM keypress event reaches nothing here.)
+    fireEvent.keyDown(field, { key: "Escape" });
+    expect(screen.queryByText("Banana")).toBeNull();
+  });
 });
 
 describe("Select — Escape dismisses the listbox", () => {
