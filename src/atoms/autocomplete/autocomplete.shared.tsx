@@ -264,6 +264,18 @@ export function createAutocomplete(skin: AutocompleteSkin) {
             onFocus={() => {
               if (!open) setOpen(true);
             }}
+            // Escape while the caret is IN the field. useEscapeKey below listens on
+            // the document, which covers focus on the chevron or anywhere else, but
+            // react-native-web's TextInput does not let an Escape keydown out of the
+            // input, so the listener never sees the one case that matters most: a
+            // person typing a query and pressing Escape to abandon it. Handled here
+            // through RN's own onKeyPress channel, which works on every platform that
+            // reports a key.
+            onKeyPress={(event) => {
+              if (event.nativeEvent.key !== "Escape" || disabled) return;
+              event.preventDefault?.();
+              setOpen(false);
+            }}
             // Floating label owns the resting placeholder: hide the native
             // placeholder until the list opens (matching the M3 Input).
             placeholder={floating && !open ? undefined : placeholder}
