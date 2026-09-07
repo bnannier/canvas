@@ -15,9 +15,10 @@
  *      and the app defaults to dark + glass.
  *
  * Reading the scheme back off the painted pixels covers both at once, and it is what
- * keeps a silent no-op from passing as a capture: scripts/capture-ui.ts once seeded a
- * localStorage key no part of the docs app reads, so an entire "light" screenshot set
- * was really dark. This function fails instead.
+ * keeps a silent no-op from passing as a capture: the screenshot script this suite
+ * replaced once seeded a localStorage key no part of the docs app reads (it belongs
+ * to the kit's web CSS hand-off, which the docs do not use), so an entire "light"
+ * screenshot set was really dark and nothing said so. This function fails instead.
  */
 import { expect, type Locator, type Page } from "@playwright/test";
 
