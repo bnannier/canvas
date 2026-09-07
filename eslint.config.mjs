@@ -34,6 +34,8 @@ const SOURCES = [
   "test/**/*.{ts,tsx}",
   "docs/src/**/*.{ts,tsx}",
   "docs/scripts/**/*.ts",
+  "e2e/**/*.ts",
+  "playwright.config.ts",
 ];
 
 export default tseslint.config(

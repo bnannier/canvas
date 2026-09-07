@@ -1,0 +1,14 @@
+{
+  // The e2e tree is typechecked as its own project: the root tsconfig includes only
+  // src/**, and Playwright transpiles TypeScript without checking it, so without this
+  // nothing would ever type-check these files. Wired up as `bun run typecheck:e2e`.
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "types": ["node"],
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "moduleResolution": "bundler"
+  },
+  "include": ["./**/*.ts", "../playwright.config.ts"]
+}
