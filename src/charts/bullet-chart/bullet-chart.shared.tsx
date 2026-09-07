@@ -1,4 +1,4 @@
-import { View, Text, useTheme, alpha, devWarn, type StyleProp, type ViewStyle } from "../../style/index.js";
+import { View, Text, useTheme, alpha, devWarn, tabularNums, type StyleProp, type ViewStyle } from "../../style/index.js";
 import * as s from "../shared/charts.styles.js";
 import { type Tone } from "../shared/charts.styles.js";
 import { type ChartSkin } from "../shared/types.js";
@@ -157,7 +157,7 @@ export function createBulletChart(skin: ChartSkin) {
                     <View style={{ position: "absolute", left: `${pctOf(d.target, max)}%`, top: 0, bottom: 0, width: 2, marginLeft: -1, backgroundColor: tokens["card-foreground"] }} />
                   ) : null}
                 </View>
-                <Text style={[s.horizontalValue(tokens), { fontVariant: ["tabular-nums"] }]}>{formatValue(Number.isFinite(d.value) ? d.value : 0)}</Text>
+                <Text style={[s.horizontalValue(tokens), { ...tabularNums() }]}>{formatValue(Number.isFinite(d.value) ? d.value : 0)}</Text>
               </View>
             );
           })}

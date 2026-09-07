@@ -26,6 +26,43 @@ it("finds the kit source", () => {
   expect(sources.length).toBeGreaterThan(200);
 });
 
+describe("text stays legible", () => {
+  // 10px is the floor the platforms themselves set: it is the iOS tab-bar label size
+  // and sits just under Material's 12sp label-small. Below it a label stops being
+  // readable at arm's length and starts being decoration. Markdown is out of scope on
+  // purpose, since a docs example is allowed to demonstrate the wrong thing inside a
+  // "Don't" fence, and the Calendar page does exactly that with 7px event slivers.
+  const FLOOR = 10;
+
+  it(`no rendered text is smaller than ${FLOOR}px`, () => {
+    const offenders: string[] = [];
+    for (const { file, text } of sources) {
+      text.split("\n").forEach((line, i) => {
+        for (const m of line.matchAll(/fontSize:\s*([\d.]+)/g)) {
+          if (Number(m[1]) < FLOOR) offenders.push(`${file}:${i + 1} fontSize ${m[1]}`);
+        }
+      });
+    }
+    expect(offenders).toEqual([]);
+  });
+});
+
+describe("tabular figures", () => {
+  // react-native-web silently drops `fontVariant`, so the React Native spelling is a
+  // no-op in a browser. src/style/numerals.ts is the one place that knows this; a raw
+  // fontVariant anywhere else is a style that works on two platforms out of three.
+  it("go through the helper, never the raw style prop", () => {
+    const offenders: string[] = [];
+    for (const { file, text } of sources) {
+      if (file === "src/style/numerals.ts") continue;
+      text.split("\n").forEach((line, i) => {
+        if (/\bfontVariant\b/.test(line)) offenders.push(`${file}:${i + 1} ${line.trim()}`);
+      });
+    }
+    expect(offenders).toEqual([]);
+  });
+});
+
 describe("layering", () => {
   // The CSS hand-off documents a deliberately shallow scale (10 raised, 40 dropdown,
   // 50 overlay) and every in-tree layer uses it. The two exceptions are the portal

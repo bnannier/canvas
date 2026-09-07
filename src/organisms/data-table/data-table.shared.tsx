@@ -1,6 +1,6 @@
 import { Fragment, type ComponentType, type ReactNode, useEffect, useMemo, useRef, useState } from "react";
 import { FlatList, StyleSheet, ScrollView, type ViewProps, type ViewStyle as RNViewStyle } from "react-native";
-import { View, Pressable, Text, TextInput, useTheme, useControllableState, controlRipple, devWarn, breakpoints, useMeasuredWidth, type StyleProp, type ViewStyle } from "../../style/index.js";
+import { View, Pressable, Text, TextInput, useTheme, useControllableState, controlRipple, devWarn, breakpoints, useMeasuredWidth, tabularNums, type StyleProp, type TextStyle, type ViewStyle } from "../../style/index.js";
 import { type CheckboxProps } from "../../atoms/checkbox/checkbox.shared.js";
 import { type PaginationProps } from "../../atoms/pagination/pagination.shared.js";
 import { type SkeletonProps } from "../../atoms/skeleton/skeleton.shared.js";
@@ -916,10 +916,16 @@ export function createDataTable(skin: DataTableSkin, parts: DataTableParts) {
         : col.centered
           ? { alignItems: "center" }
           : null;
-      const alignText = col.numeric
-        ? ({ textAlign: "right" } as const)
+      // A numeric column reads DOWN, not across, and proportional digits are
+      // different widths: 1 is narrow, 0 and 4 are wide. So the same column of
+      // figures fails to line up on the decimal, and a value that updates in
+      // place visibly jitters as its digits change. Tabular figures give every
+      // digit the same advance. The editor gets them too, so opening a cell for
+      // editing does not reflow the number under the caret.
+      const alignText: TextStyle | null = col.numeric
+        ? { textAlign: "right", ...tabularNums() }
         : col.centered
-          ? ({ textAlign: "center" } as const)
+          ? { textAlign: "center" }
           : null;
 
       let content: ReactNode;

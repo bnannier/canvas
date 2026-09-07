@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { StyleSheet } from "react-native";
 import Svg, { Path } from "react-native-svg";
-import { View, Text, Pressable, useTheme, useControllableState, devWarn, type StyleProp, type ViewStyle } from "../../style/index.js";
+import { View, Text, Pressable, useTheme, useControllableState, devWarn, tabularNums, type StyleProp, type ViewStyle } from "../../style/index.js";
 import * as s from "../shared/charts.styles.js";
 import { type ChartSkin } from "../shared/types.js";
 import { type StackedSegment } from "../shared/types.js";
@@ -169,7 +169,7 @@ export function createFunnelChart(skin: ChartSkin) {
                     {stageH >= 34 ? (
                       <Text
                         numberOfLines={1}
-                        style={{ fontSize: 11, lineHeight: 14, color: inside ? tokens.card : tokens["muted-foreground"], opacity: inside ? 0.85 : 1, fontVariant: ["tabular-nums"] }}
+                        style={{ fontSize: 11, lineHeight: 14, color: inside ? tokens.card : tokens["muted-foreground"], opacity: inside ? 0.85 : 1, ...tabularNums() }}
                       >
                         {detail}
                       </Text>

@@ -1,4 +1,4 @@
-import { View, Text, Pressable, useTheme, surfaceRipple, pressDim, devWarn, type StyleProp, type ViewStyle } from "../../style/index.js";
+import { View, Text, Pressable, useTheme, surfaceRipple, pressDim, devWarn, tabularNums, type StyleProp, type ViewStyle } from "../../style/index.js";
 import * as s from "../shared/charts.styles.js";
 import { type ChartSkin } from "../shared/types.js";
 import { chartRootWidth } from "../shared/chart-frame.js";
@@ -98,7 +98,7 @@ export function createServiceHealthList(skin: ChartSkin) {
                   {item.label}
                 </Text>
                 {item.detail != null && item.detail !== "" ? (
-                  <Text style={{ fontSize: 12, lineHeight: 16, color: tokens["muted-foreground"], fontVariant: ["tabular-nums"] }}>{item.detail}</Text>
+                  <Text style={{ fontSize: 12, lineHeight: 16, color: tokens["muted-foreground"], ...tabularNums() }}>{item.detail}</Text>
                 ) : null}
               </>
             );

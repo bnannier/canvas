@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { StyleSheet } from "react-native";
-import { View, Text, Pressable, useTheme, useControllableState, devWarn, type StyleProp, type ViewStyle } from "../../style/index.js";
+import { View, Text, Pressable, useTheme, useControllableState, devWarn, tabularNums, type StyleProp, type ViewStyle } from "../../style/index.js";
 import * as s from "../shared/charts.styles.js";
 import { type ChartSkin } from "../shared/types.js";
 import { chartRootWidth } from "../shared/chart-frame.js";
@@ -139,7 +139,7 @@ export function createTreemap(skin: ChartSkin) {
                   </Text>
                 ) : null}
                 {valueFits ? (
-                  <Text numberOfLines={1} style={{ fontSize: 11, lineHeight: 14, color: tokens.card, opacity: 0.85, fontVariant: ["tabular-nums"] }}>
+                  <Text numberOfLines={1} style={{ fontSize: 11, lineHeight: 14, color: tokens.card, opacity: 0.85, ...tabularNums() }}>
                     {formatValue(clean[i])}
                   </Text>
                 ) : null}

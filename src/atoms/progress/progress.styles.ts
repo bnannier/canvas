@@ -1,4 +1,4 @@
-import { alpha, type ColorTokens, type TextStyle } from "../../style/index.js";
+import { alpha, tabularNums, type ColorTokens, type TextStyle } from "../../style/index.js";
 import { type ProgressSkin, type Size } from "./progress.shared.js";
 
 // Co-located Progress skins, one per platform, all driven by the brand tokens (passed in
@@ -51,7 +51,7 @@ function description(t: ColorTokens): TextStyle {
   return { color: t["muted-foreground"], fontSize: 12, lineHeight: 16 };
 }
 function valueReadout(t: ColorTokens): TextStyle {
-  return { color: t["muted-foreground"], fontSize: 14, lineHeight: 20, fontVariant: ["tabular-nums"] };
+  return { color: t["muted-foreground"], fontSize: 14, lineHeight: 20, ...tabularNums() };
 }
 
 export const iosSkin: ProgressSkin = {

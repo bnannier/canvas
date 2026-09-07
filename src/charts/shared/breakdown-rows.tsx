@@ -1,4 +1,4 @@
-import { View, Text, Pressable, useTheme, surfaceRipple, pressDim, type ColorTokens } from "../../style/index.js";
+import { View, Text, Pressable, useTheme, surfaceRipple, pressDim, tabularNums, type ColorTokens } from "../../style/index.js";
 import * as s from "./charts.styles.js";
 import { type Tone } from "./charts.styles.js";
 import { estimateTextWidth } from "./chart-math.js";
@@ -125,11 +125,11 @@ export function BreakdownRows({ rows, share, percent, tone, compact, formatValue
               <Text numberOfLines={1} style={{ flexGrow: 1, flexShrink: 1, fontSize: 12, lineHeight: 16, color: tokens["card-foreground"] }}>
                 {row.label}
               </Text>
-              <Text style={{ fontSize: 12, lineHeight: 16, fontWeight: "500", color: tokens["card-foreground"], fontVariant: ["tabular-nums"] }}>
+              <Text style={{ fontSize: 12, lineHeight: 16, fontWeight: "500", color: tokens["card-foreground"], ...tabularNums() }}>
                 {formatValue(Number.isFinite(row.value) ? row.value : 0)}
               </Text>
               {percent ? (
-                <Text style={{ fontSize: 11, lineHeight: 16, color: tokens["muted-foreground"], fontVariant: ["tabular-nums"] }}>{sharePct}%</Text>
+                <Text style={{ fontSize: 11, lineHeight: 16, color: tokens["muted-foreground"], ...tabularNums() }}>{sharePct}%</Text>
               ) : null}
               {row.delta != null && row.delta !== "" ? (
                 <Text
