@@ -1,5 +1,5 @@
 import { describe, it, expect, afterEach } from "bun:test";
-import { render, cleanup } from "@testing-library/react";
+import { render, cleanup, screen } from "@testing-library/react";
 import { createElement, type ReactNode } from "react";
 import { Text } from "react-native";
 import { ThemeProvider } from "../src/style/theme.tsx";
@@ -273,6 +273,13 @@ for (const platform of PLATFORMS) {
         expect(() => {
           render(createElement(ThemeProvider, null, createElement(Comp as never, c.props ?? null, kids)));
         }).not.toThrow();
+        if (c.name === "Stepper") {
+          // An iOS/Android skin preview in a browser still needs web semantics.
+          const field = screen.getByRole("spinbutton", { name: "Number" });
+          expect(field.tagName).toBe("INPUT");
+          expect(screen.getByRole("group", { name: "Number" }).contains(field)).toBe(true);
+          expect(screen.queryByRole("slider")).toBeNull();
+        }
       });
     }
   });

@@ -4,6 +4,7 @@ import {
   type AccessibilityActionEvent,
   type NativeSyntheticEvent,
   type TextInputEndEditingEventData,
+  type TextInputKeyPressEvent,
 } from "react-native";
 import {
   View,
@@ -22,19 +23,21 @@ import {
 } from "../../style/index.js";
 import { clamp } from "../../style/math.js";
 import { Icon } from "../icon/icon.js";
+import { addDecimal } from "./stepper.math.js";
+import { stepperAccessibility } from "./stepper.accessibility.js";
 
 // Shared Stepper shell. A numeric value with a − button, an editable numeric
 // center field, and a + button (the iOS UIStepper idiom, ± with direct entry). ALL
 // of the structure (the three slots), the clamping math, the direct-entry parsing,
 // the disabled-at-bound logic, and the full accessibility (button roles + the
-// cross-platform ARIA value props the container carries) live here ONCE. A platform
+// runtime accessibility metadata) live here ONCE. A platform
 // file supplies only its skin (the per-OS shape, sizing, fill, divider, glyph color,
 // and press feedback) and calls createStepper.
 //
 // Why the ARIA props are spelled out: react-native-web DROPS accessibilityValue, so
-// the container View carries aria-valuenow/min/max directly (RN 0.71+ accepts these
-// and RNW forwards them to the DOM) for web screen readers; native reads the value
-// from the same numbers. The − / + buttons carry aria-disabled alongside
+// the spinbutton field carries aria-valuenow/min/max directly for web screen
+// readers. Native keeps those numbers and its adjustment actions on the outer
+// View. The − / + buttons carry aria-disabled alongside
 // accessibilityState so RNW marks them disabled too.
 
 // Style axes (semantic boolean props, the prop name is the value):
@@ -49,7 +52,7 @@ export interface StepperProps {
   value?: number;
   /** Initial value for uncontrolled use (a bare <Stepper /> steps out of the box). Default `min`. */
   defaultValue?: number;
-  /** Fired with the next clamped value when ±, or direct entry, changes it (both modes). */
+  /** Fired with the next clamped value when buttons, adjustment keys, or direct entry change it (both modes). */
   onChange?: (next: number) => void;
   /** E2E hook forwarded to the group container. */
   testID?: string;
@@ -57,7 +60,7 @@ export interface StepperProps {
   min?: number;
   /** Upper bound. Default Number.MAX_SAFE_INTEGER. The + button disables when value >= max. */
   max?: number;
-  /** Increment/decrement amount for the ± buttons. Default 1. */
+  /** Increment/decrement amount for the ± buttons and adjustment keys. Default 1. */
   step?: number;
   /**
    * The control's persistent, component-owned label. When set it renders as a
@@ -72,7 +75,7 @@ export interface StepperProps {
   description?: ReactNode;
   /**
    * Marks the control required: appends a destructive "*" to the label (hidden from
-   * the accessible name) and sets aria-required on the group/field. Takes effect only
+   * the accessible name) and sets aria-required on the numeric control. Takes effect only
    * alongside `label`.
    */
   required?: boolean;
@@ -168,14 +171,14 @@ export function createStepper(skin: StepperSkin) {
     // Collision-free ids so the group can name itself from the visible label and be
     // described by the description (unconditional hooks: the ids are cheap and always
     // available). The label (when present) is the group's programmatic name on BOTH
-    // channels — accessibilityLabel (native) and aria-labelledby -> the label Text's
-    // nativeID (web, which RNW forwards). With no label, both are undefined and the
-    // editable field keeps the invisible "Number" fallback below.
+    // channels: accessibilityLabel (native) and aria-labelledby -> the label Text's
+    // nativeID (web, which RNW forwards). Without a visible label, the group and
+    // editable field both use the invisible "Number" name.
     const labelId = useId();
     const descId = useId();
     const accessibleName = label ?? "Number";
     const ariaLabelledby = label != null ? labelId : undefined;
-    const ariaDescribedby = description != null ? descId : undefined;
+    const ariaDescribedby = label != null && description != null ? descId : undefined;
 
     // Controlled when `value` is provided, self-managed otherwise, so a bare
     // <Stepper /> steps out of the box (the standard library contract).
@@ -204,11 +207,11 @@ export function createStepper(skin: StepperSkin) {
 
     const decrement = () => {
       if (atMin) return;
-      emit(current - step);
+      emit(addDecimal(current, -step));
     };
     const increment = () => {
       if (atMax) return;
-      emit(current + step);
+      emit(addDecimal(current, step));
     };
 
     // Keyboard / Switch Control / VoiceOver / TalkBack "adjust value" gesture for the
@@ -220,6 +223,35 @@ export function createStepper(skin: StepperSkin) {
       const name = event.nativeEvent.actionName;
       if (name === "increment") increment();
       else if (name === "decrement") decrement();
+    };
+
+    const accessibility = stepperAccessibility({
+      min, max, current, disabled: !!disabled, required, onAccessibilityAction,
+    });
+
+    // RNW TextInput owns onKeyDown and forwards it through onKeyPress. Use that
+    // public event on every runtime so the editable field keeps focus while
+    // adjusting. Leave modified keys and composition to ordinary text editing.
+    const onKeyPress = (event: TextInputKeyPressEvent) => {
+      const keyEvent = event.nativeEvent as typeof event.nativeEvent & {
+        isComposing?: boolean;
+        keyCode?: number;
+        ctrlKey?: boolean;
+        metaKey?: boolean;
+        altKey?: boolean;
+        shiftKey?: boolean;
+      };
+      if (disabled || keyEvent.isComposing || keyEvent.keyCode === 229 ||
+          keyEvent.ctrlKey || keyEvent.metaKey || keyEvent.altKey || keyEvent.shiftKey) return;
+      const key = keyEvent.key;
+      if (key !== "ArrowUp" && key !== "ArrowDown" && key !== "Home" && key !== "End") return;
+      event.preventDefault();
+      // A previously typed draft must not hide this adjustment or recommit its
+      // old value on blur. The same exact decimal helpers own button/key changes.
+      setDraft(null);
+      if (key === "ArrowUp") increment();
+      else if (key === "ArrowDown") decrement();
+      else emit(key === "Home" ? min : max);
     };
 
     // Parse on every keystroke: ignore non-numeric input, allow an empty/partial
@@ -296,9 +328,11 @@ export function createStepper(skin: StepperSkin) {
 
     const Field = (
       <TextInput
+        {...accessibility.field}
         ref={ref}
         value={shown}
         onChangeText={onChangeText}
+        onKeyPress={onKeyPress}
         onBlur={() => commit()}
         onEndEditing={commit}
         editable={!disabled}
@@ -308,6 +342,7 @@ export function createStepper(skin: StepperSkin) {
         accessibilityLabel={accessibleName}
         aria-label={accessibleName}
         aria-labelledby={ariaLabelledby}
+        aria-describedby={ariaDescribedby}
         // Required is surfaced programmatically (aria-required), matching Input;
         // omitted entirely when optional so no aria-required="false" is emitted.
         aria-required={required || undefined}
@@ -323,30 +358,14 @@ export function createStepper(skin: StepperSkin) {
     const control = (
       <View
         testID={props.testID}
-        // Cross-platform ARIA value props: RNW DROPS accessibilityValue, so the
-        // numbers are forwarded directly (RN 0.71+ accepts them; RNW maps them to
-        // aria-valuenow/min/max on the DOM node) for web screen readers.
-        accessibilityRole="adjustable"
-        accessibilityValue={{ min, max, now: current }}
-        aria-valuenow={current}
-        aria-valuemin={min}
-        aria-valuemax={max}
-        // The visible label (when present) names the whole group and the description
-        // describes it. Both are undefined without a label, so nothing changes for a
-        // bare <Stepper /> (the group stays unnamed, as before).
-        accessibilityLabel={label}
+        {...accessibility.group}
+        // The group names the three related controls without hiding interactive
+        // descendants behind a web slider role. Native retains its adjustable
+        // View, value and actions through the runtime metadata above.
+        accessibilityLabel={accessibleName}
+        aria-label={accessibleName}
         aria-labelledby={ariaLabelledby}
         aria-describedby={ariaDescribedby}
-        // Programmatic required on the group too (aria-required), omitted when optional.
-        aria-required={required || undefined}
-        accessibilityState={{ disabled: !!disabled }}
-        // RNW drops accessibilityState, so alias the disabled flag for web SR (matching
-        // the ± buttons) — otherwise the group's adjustable element omits disabled.
-        aria-disabled={!!disabled}
-        // The adjustable role advertises an "adjust value" gesture; bind it so swipe /
-        // arrow-key adjust actually steps the value (helpers guard atMin/atMax).
-        accessibilityActions={[{ name: "increment" }, { name: "decrement" }]}
-        onAccessibilityAction={onAccessibilityAction}
         style={[
           {
             flexDirection: "row",
@@ -357,8 +376,7 @@ export function createStepper(skin: StepperSkin) {
             opacity: label == null && disabled ? 0.5 : 1,
           },
           // The style escape hatch rides the outer wrapper when a label is present
-          // (as in Input); on the bare control it stays here so the bare output is
-          // byte-identical.
+          // (as in Input); on the bare control it stays here to preserve its layout.
           label != null ? null : style,
         ]}
       >
@@ -383,7 +401,7 @@ export function createStepper(skin: StepperSkin) {
       </View>
     );
 
-    // No label: return the bare control, byte-identical to the pre-label output.
+    // No label: return the bare control without an extra layout wrapper.
     if (label == null) return control;
 
     // With a label: a component-owned title (and optional muted description) ABOVE

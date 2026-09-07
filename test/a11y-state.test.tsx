@@ -16,6 +16,7 @@ import { TabBar } from "../src/organisms/tab-bar/tab-bar.tsx";
 import { Tabs } from "../src/organisms/tabs/tabs.tsx";
 import { RowMenu } from "../src/organisms/row-menu/row-menu.tsx";
 import { DataTable } from "../src/organisms/data-table/data-table.tsx";
+import { Stepper } from "../src/atoms/stepper/stepper.tsx";
 
 // react-native-web forwards NEITHER accessibilityState NOR accessibilityValue to
 // the DOM (verified empirically). The kit therefore carries the cross-platform
@@ -28,6 +29,15 @@ const ui = (n: ReactNode) => render(<ThemeProvider>{n}</ThemeProvider>);
 const attr = (c: HTMLElement, sel: string, a: string) => c.querySelector(sel)?.getAttribute(a);
 
 describe("web a11y state (aria aliases for RNW-dropped accessibilityState)", () => {
+  it("Stepper carries the numeric state on the named editable spinbutton", () => {
+    const { getByRole } = ui(<Stepper label="Quantity" value={2} min={1} max={5} disabled />);
+    const field = getByRole("spinbutton", { name: "Quantity" });
+    expect(field.getAttribute("aria-valuenow")).toBe("2");
+    expect(field.getAttribute("aria-valuemin")).toBe("1");
+    expect(field.getAttribute("aria-valuemax")).toBe("5");
+    expect(field.getAttribute("aria-disabled")).toBe("true");
+  });
+
   it("Checkbox forwards aria-checked, including the mixed (indeterminate) state", () => {
     const { container, rerender } = ui(<Checkbox checked />);
     expect(attr(container, '[role="checkbox"]', "aria-checked")).toBe("true");
