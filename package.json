@@ -50,6 +50,7 @@
     "*.css"
   ],
   "scripts": {
+    "prepare": "node -e \"if (require('node:fs').existsSync('.husky/install.mjs')) import('./.husky/install.mjs')\"",
     "typecheck": "tsc --noEmit",
     "typecheck:e2e": "tsc --noEmit -p e2e/tsconfig.json",
     "lint": "eslint .",
@@ -57,7 +58,7 @@
     "dev": "bun scripts/dev.ts",
     "verify-package": "bun scripts/verify-package.ts",
     "prepublishOnly": "node tools/licensegen/generate.mjs && bun run build && bun run verify-package",
-    "test": "bun test",
+    "test": "bun test ./test ./tools",
     "e2e": "playwright test",
     "e2e:ui": "playwright test --ui",
     "e2e:update": "playwright test --project=visual --update-snapshots",
@@ -141,6 +142,7 @@
     "expo-blur": "~57.0.2",
     "expo-glass-effect": "~57.0.1",
     "happy-dom": "^20.10.6",
+    "husky": "^9.1.7",
     "lucide-static": "^1.24.0",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",

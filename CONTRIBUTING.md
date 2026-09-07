@@ -23,6 +23,13 @@ bun install            # root: kit dependencies
 cd docs && bun install # docs app; its postinstall symlinks the kit source into place
 ```
 
+The root install also installs the development-only Husky hooks through the
+guarded `prepare` script. Git uses the relative `.husky/_` path, so hooks keep
+working when the checkout moves or is used as a linked worktree. Run `bun run
+prepare` from the root to repair an older checkout's hook configuration. CI,
+production installs, and installs without Husky or a Git checkout skip this step;
+the published package does not contain the hook installer.
+
 To run the docs app (the kit's live showcase and your development harness):
 
 ```bash
@@ -35,16 +42,33 @@ symlinked kit source in every case; if a kit edit does not show up, restart with
 
 ## Checks
 
-Run these before pushing; the pre-push hook runs the same battery and will block a
-push that fails any of them:
+The pre-push hook runs the following local checks in order and stops on the first
+failure. Building before verification and tests ensures they use fresh compiled
+output:
 
 ```bash
-bun test               # unit tests (bun test + react-native-web + happy-dom)
-bun run typecheck      # kit TypeScript
-bun run lint           # ESLint
-bun run docs:gen:check # generated docs are in sync with the source
-bun run raster:gen:check # generated native menu glyphs are in sync
+bun run typecheck         # kit TypeScript
+bun run typecheck:e2e     # end-to-end suite TypeScript
+bun run lint              # ESLint, including docs and tests
+bun run build             # refresh the published package's compiled output
+bun run verify-package    # compiled entry points, imports, and public types
+bun run test              # unit tests and compiled-package smoke tests
+bun run docs:gen:check     # generated docs match their source
+bun run raster:gen:check   # generated native menu glyphs match their source
+bun run designmd:gen:check # generated design reference matches its source
+bunx tsc --noEmit -p docs/src/core/tsconfig.json # generated example TypeScript
 ```
+
+CI remains the release authority. It also checks the complete docs app and web
+export, browser behavior, theme tokens, design parity, and size budgets. The local
+hook does not run the browser suite or deploy anything.
+
+Use `bun run test` to run every unit test under `test/` and `tools/`, with the
+shared React Native Web preload from `bunfig.toml`. For a focused run, use a path
+starting with `./`, for example `bun test ./test/behavior.test.tsx`. Rooted paths
+keep Bun's discovery within the test trees instead of scanning the entire
+checkout and retaining enough directory handles to break subprocess tests on
+macOS.
 
 ## Changesets
 
