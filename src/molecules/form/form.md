@@ -4,6 +4,8 @@ Stitch your own fields; Form adds the rhythm, the sections, the actions row, and
 
 ## Usage
 
+On the web, Enter confirms an active Autocomplete suggestion before it can submit the form. A subsequent Enter submits after the list closes. Enter used to confirm an input-method candidate never submits, and holding Enter does not repeat submission. Multiline fields retain Enter for newlines. On native platforms, each field's `onSubmitEditing` owns the return-key action.
+
 Form is a composition surface: you stitch the field atoms as children and keep their state; Form supplies the vertical rhythm, the actions row, and `onSubmit`, which fires from the submit button or from Enter in a single-line field on the web. (`Stateful` is a docs-only helper that holds the example's state — in your app that state is your own.)
 
 ```tsx

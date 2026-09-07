@@ -1,6 +1,6 @@
-import { EscapeLayerProvider, useEscapeLayer } from "../../style/escape-layer.js";
-import { forwardRef, useId, useRef, useState } from "react";
-import { type Role, type TextInput as RNTextInput } from "react-native";
+import { consumeEscapeKey, EscapeLayerProvider, useEscapeLayer } from "../../style/escape-layer.js";
+import { forwardRef, useCallback, useEffect, useId, useRef, useState } from "react";
+import { type Role, type ScrollView as RNScrollView, type TextInput as RNTextInput } from "react-native";
 import { View, Pressable, Text, TextInput, ScrollView, useTheme, useControllableState, useFieldWidth, AnchoredOverlay, useMeasuredWidth, FloatingLabel, LabelContent, FOCUS_RESET, RippleClip, cornerRadii, type FieldWidthProps, type StyleProp, type ViewStyle, type TextStyle } from "../../style/index.js";
 
 // React Native's Role union omits the valid ARIA "listbox" role, so the option-list
@@ -48,10 +48,12 @@ export interface AutocompleteProps extends FieldWidthProps {
   onQueryChange?: (query: string) => void;
   /** The full list of selectable option labels. */
   options?: string[];
-  /** The currently selected option label (CONTROLLED), marked with a check in the list. Omit for uncontrolled use. */
+  /** The selected option label (CONTROLLED), or "" for no selection. Omit for uncontrolled use. */
   value?: string;
   /** Initial selected option for uncontrolled use (selecting a row updates it). */
   defaultValue?: string;
+  /** Fired on selection and with "" when the field is cleared, in both controlled and uncontrolled modes. */
+  onValueChange?: (value: string) => void;
   /** Prompt shown in the field when there is no query or value. */
   placeholder?: string;
   /**
@@ -82,7 +84,7 @@ export interface AutocompleteProps extends FieldWidthProps {
   helperText?: string;
   /** Dims the control and blocks interaction. */
   disabled?: boolean;
-  /** Called with the chosen option label when a row is pressed. */
+  /** Called when an option is chosen by touch, pointer, or keyboard. Clearing only fires onValueChange. */
   onSelect?: (option: string) => void;
   /** E2E hook forwarded to the text field. */
   testID?: string;
@@ -103,14 +105,10 @@ function sizeOf(p: AutocompleteProps): Size {
 // The editable slice of the field row: fill the space before the chevron and
 // drop the platform's default inner padding, so the skin's field box (height,
 // gutter) governs the footprint exactly as it did around the old static text.
-const fieldInput: TextStyle = { flex: 1, paddingVertical: 0, paddingHorizontal: 0 };
+const fieldInput: TextStyle = { flex: 1, minWidth: 0, paddingVertical: 0, paddingHorizontal: 0 };
 
 // Read a numeric style value (the Android field height), falling back when absent.
 const asNum = (v: unknown, fallback: number): number => (typeof v === "number" ? v : fallback);
-
-// Full-height touch target for the chevron toggle. It centers the glyph
-// without moving it from where the static chevron sat in the field row.
-const chevronHit: ViewStyle = { alignSelf: "stretch", justifyContent: "center" };
 
 // The inline-fallback anchor: with no OverlayProvider mounted the option list
 // renders in place, absolutely positioned below the field (the kit's pre-portal
@@ -147,6 +145,7 @@ export function createAutocomplete(skin: AutocompleteSkin) {
     const widthCap = useFieldWidth(props);
     // One collision-free id for the label so the floated label carries a nativeID.
     const labelId = useId();
+    const listboxId = useId();
 
     // Controlled when `query` is provided, self-managed otherwise, so a bare
     // <Autocomplete /> filters as you type (the standard library contract).
@@ -159,16 +158,20 @@ export function createAutocomplete(skin: AutocompleteSkin) {
     // Controlled when `value` is provided, self-managed otherwise, so selecting
     // a row actually updates the shown selection instead of firing onSelect into
     // the void.
-    const [value, setValue] = useControllableState<string | undefined>(
+    const [value, setValue] = useControllableState<string>(
       props.value,
-      props.defaultValue,
+      props.defaultValue ?? "",
+      props.onValueChange,
     );
 
     // Uncontrolled by default: focus/typing opens the list, the chevron
     // toggles it, a select closes it. `defaultOpen` seeds it open initially.
     const [internalOpen, setInternalOpen] = useState(props.defaultOpen ?? false);
-    const open = openProp ?? internalOpen;
+    const open = !disabled && (openProp ?? internalOpen);
+    const [activeKey, setActiveKey] = useState<string | null>(null);
     const setOpen = (next: boolean) => {
+      if (disabled) return;
+      if (!next) setActiveKey(null);
       if (openProp === undefined) setInternalOpen(next);
       onOpenChange?.(next);
     };
@@ -181,19 +184,91 @@ export function createAutocomplete(skin: AutocompleteSkin) {
 
     // Escape closes the open option list on web (no-op natively). A disabled
     // control renders no list, so it never subscribes.
-    const escapeScope = useEscapeLayer(open && !disabled, () => setOpen(false));
+    const escapeScope = useEscapeLayer(open, () => setOpen(false));
 
     // What the field shows: the typed query, then the selected value, else the
     // placeholder (rendered natively by the input, in the skin's muted color).
     const hasQuery = query !== "";
-    const hasValue = value != null && value !== "";
-    const fieldValue = hasQuery ? query : hasValue ? (value as string) : "";
+    const hasValue = value !== "";
+    const fieldValue = hasQuery ? query : value;
 
     // Filter the list by the query (case-insensitive). With no query, show all.
     const q = query.toLowerCase();
-    const matches = hasQuery
-      ? options.filter((o) => o.toLowerCase().includes(q))
-      : options;
+    // IDs use the original index, so filtering does not rename surviving rows.
+    // Label + occurrence preserves identity across reordering while allowing
+    // repeated labels to remain distinct keyboard destinations and React keys.
+    const occurrences = new Map<string, number>();
+    const matches = options.map((option, index) => {
+      const occurrence = occurrences.get(option) ?? 0;
+      occurrences.set(option, occurrence + 1);
+      return { option, key: JSON.stringify([option, occurrence]), id: `${listboxId}-option-${index}` };
+    })
+      .filter(({ option }) => !hasQuery || option.toLowerCase().includes(q));
+    const activeIndex = open ? matches.findIndex(({ key }) => key === activeKey) : -1;
+    const activeId = activeIndex >= 0 ? matches[activeIndex]!.id : undefined;
+    useEffect(() => {
+      if (!open || activeIndex < 0) setActiveKey(null);
+    }, [open, activeIndex]);
+
+    // Measure the active row in current content coordinates. RNW's onLayout is
+    // resize-driven, so cached y positions go stale when filtering moves a
+    // surviving row without resizing it. Native measureLayout handles both that
+    // case and wrapped labels without a DOM-specific scroll implementation.
+    const listRef = useRef<RNScrollView>(null);
+    const listContentRef = useRef<View>(null);
+    const rowRefs = useRef(new Map<string, View>());
+    const viewportHeight = useRef(0);
+    const scrollOffset = useRef(0);
+    const activeIdRef = useRef(activeId);
+    activeIdRef.current = activeId;
+    const layoutKey = JSON.stringify(matches.map(({ id, key }) => [id, key]));
+    const layoutKeyRef = useRef(layoutKey);
+    layoutKeyRef.current = layoutKey;
+    const measurementSequence = useRef(0);
+    const scrollActiveIntoView = useCallback(() => {
+      const request = ++measurementSequence.current;
+      const id = activeIdRef.current;
+      const order = layoutKeyRef.current;
+      const row = id ? rowRefs.current.get(id) : undefined;
+      const content = listContentRef.current;
+      const list = listRef.current;
+      if (!id || !row || !content || !list || viewportHeight.current <= 0) return;
+      row.measureLayout(content, (_x, y, _width, height) => {
+        // A native measurement may return after another arrow, filter, reorder,
+        // or close/reopen. Its coordinates belong only to this row and request.
+        if (request !== measurementSequence.current || id !== activeIdRef.current
+          || order !== layoutKeyRef.current || row !== rowRefs.current.get(id)
+          || content !== listContentRef.current || list !== listRef.current
+          || !Number.isFinite(y) || height <= 0 || viewportHeight.current <= 0) return;
+        const top = scrollOffset.current;
+        const bottom = top + viewportHeight.current;
+        const next = y < top ? y
+          : y + height > bottom ? Math.min(y, y + height - viewportHeight.current)
+          : top;
+        if (next !== top) {
+          list.scrollTo({ y: next, animated: false });
+          scrollOffset.current = next;
+        }
+      }, () => {});
+    }, []);
+    // Layout callbacks can be queued before navigation and delivered afterward
+    // (RNW measures asynchronously). A stable callback reads today's active row
+    // so that late opening measurements still scroll the latest destination.
+    useEffect(scrollActiveIntoView, [activeId, layoutKey, scrollActiveIntoView]);
+    useEffect(() => {
+      if (!open) {
+        viewportHeight.current = 0;
+        scrollOffset.current = 0;
+      }
+    }, [open]);
+
+    const selectOption = (option: string) => {
+      if (disabled) return;
+      setValue(option);
+      onSelect?.(option);
+      setQuery("");
+      setOpen(false);
+    };
 
     const ripple = skin.ripple ? skin.ripple(tokens) : undefined;
 
@@ -241,12 +316,14 @@ export function createAutocomplete(skin: AutocompleteSkin) {
             ]}
             value={fieldValue}
             onChangeText={(text) => {
+              if (disabled) return;
+              setActiveKey(null);
               setQuery(text);
               // Erasing the field to empty clears the committed selection, so the
               // value cannot snap back into the field through the display fallback
               // above. An uncontrolled value clears; a controlled `value` stays the
               // parent's to own.
-              if (text === "" && hasValue) setValue(undefined);
+              if (text === "" && hasValue) setValue("");
               if (!open) setOpen(true); // typing re-opens a closed list
             }}
             onFocus={() => {
@@ -258,21 +335,43 @@ export function createAutocomplete(skin: AutocompleteSkin) {
             onPressIn={() => {
               if (!open && !disabled) setOpen(true);
             }}
-            // The two keys the caret has to handle itself. react-native-web's
-            // TextInput does not let a keydown out of the input, so the document-level
-            // useEscapeKey below never sees the case that matters most for a combobox:
-            // someone typing a query and pressing Escape to abandon it. ArrowDown is
-            // the other half of that contract and the standard way back into the list,
-            // without which Escape leaves a focused field with no way to reopen.
-            // RN's onKeyPress channel is fed by the DOM keydown event.
+            // Keep the caret in the input; active-descendant identifies the row
+            // navigated by arrows. RNW feeds DOM keydown through this RN channel
+            // and stops propagation, so Escape must delegate to the layer here.
             onKeyPress={(event) => {
               if (disabled) return;
-              const key = event.nativeEvent.key;
+              const { key, isComposing, keyCode, repeat, altKey, ctrlKey, metaKey } = event.nativeEvent as {
+                key: string; isComposing?: boolean; keyCode?: number; repeat?: boolean;
+                altKey?: boolean; ctrlKey?: boolean; metaKey?: boolean;
+              };
+              // Confirming an IME candidate must not navigate/select suggestions
+              // or dismiss this layer. Older web engines report only code 229.
+              if (isComposing || keyCode === 229) {
+                // Modal asks to close again on keyup. Record IME ownership while
+                // leaving the original keydown default free to cancel a candidate.
+                if (key === "Escape") consumeEscapeKey({ nativeEvent: event.nativeEvent });
+                return;
+              }
               if (key === "Escape") {
                 escapeScope.onKeyPress(event);
-              } else if (key === "ArrowDown" && !open) {
+              } else if (key === "Enter") {
+                if (repeat) {
+                  event.preventDefault?.();
+                } else if (activeIndex >= 0) {
+                  event.preventDefault?.();
+                  selectOption(matches[activeIndex]!.option);
+                }
+              } else if (!altKey && !ctrlKey && !metaKey && (key === "ArrowDown" || key === "ArrowUp")) {
                 event.preventDefault?.();
-                setOpen(true);
+                if (!open) setOpen(true);
+                const next = activeIndex < 0 ? (key === "ArrowDown" ? 0 : matches.length - 1)
+                  : Math.max(0, Math.min(matches.length - 1, activeIndex + (key === "ArrowDown" ? 1 : -1)));
+                setActiveKey(matches[next]?.key ?? null);
+              } else if (!altKey && !ctrlKey && !metaKey && activeIndex >= 0 && (key === "Home" || key === "End")) {
+                event.preventDefault?.();
+                setActiveKey(matches[key === "Home" ? 0 : matches.length - 1]!.key);
+              } else if (key === "Tab" && open) {
+                setOpen(false);
               }
             }}
             // Floating label owns the resting placeholder: hide the native
@@ -288,6 +387,10 @@ export function createAutocomplete(skin: AutocompleteSkin) {
             accessibilityState={{ expanded: open, disabled: !!disabled }}
             aria-expanded={open}
             aria-disabled={!!disabled}
+            // These ARIA relationships have no native RN equivalent. nativeID
+            // and each row's selected trait retain native accessibility semantics.
+            {...{ "aria-controls": listboxId, "aria-activedescendant": activeId,
+              "aria-autocomplete": "list" as const, "aria-haspopup": "listbox" as const }}
             // Required is surfaced programmatically (aria-required), omitted when optional.
             aria-required={required || undefined}
             // Tie the visible label to the field so a screen reader announces the
@@ -297,7 +400,7 @@ export function createAutocomplete(skin: AutocompleteSkin) {
           />
           <Pressable
             style={({ pressed }) => [
-              chevronHit,
+              skin.chevronTarget(size),
               skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null,
             ]}
             onPress={() => setOpen(!open)}
@@ -329,7 +432,7 @@ export function createAutocomplete(skin: AutocompleteSkin) {
         </View>
 
         <AnchoredOverlay
-          open={open && !disabled}
+          open={open}
           onDismiss={() => setOpen(false)}
           triggerRef={fieldRef}
           gap={4}
@@ -345,55 +448,68 @@ export function createAutocomplete(skin: AutocompleteSkin) {
           dismissable={openProp === undefined || onOpenChange !== undefined}
         >
           <EscapeLayerProvider scope={escapeScope}>
-            {matches.length === 0 ? (
-              <View style={skin.emptyRow}>
-                <Text style={skin.emptyText(tokens, size)}>No results</Text>
-              </View>
-            ) : (
-              // The option rows have borderRadius:0 and sit inside the rounded `popover`
-              // card. RippleClip is still what rounds their bounded Android ripples: a view
-              // cannot clip its own ripple, and the card's own clip does not reach them
-              // through the card's padding. See src/style/ripple-clip.
-              <ScrollView style={optionScroll} bounces={false}>
+            <ScrollView
+              ref={listRef}
+              style={optionScroll}
+              bounces={false}
+              keyboardShouldPersistTaps="handled"
+              onLayout={(event) => {
+                viewportHeight.current = event.nativeEvent.layout.height;
+                scrollActiveIntoView();
+              }}
+              onScroll={(event) => { scrollOffset.current = event.nativeEvent.contentOffset.y; }}
+              scrollEventThrottle={16}
+              onContentSizeChange={scrollActiveIntoView}
+            >
+              {/* The card's padding separates its clip from the rows. RippleClip
+                  rounds bounded Android ripples without rounding each row. */}
               <RippleClip shape={cornerRadii(skin.popover(tokens))}>
-              <View role={LISTBOX}>
-              {matches.map((option, index) => {
-                const selected = option === value;
-                const separator = index > 0 && skin.rowSeparator ? skin.rowSeparator(tokens) : null;
-                return (
-                  <Pressable
-                    key={option}
-                    style={({ pressed }) => [
-                      skin.row,
-                      separator,
-                      selected ? skin.rowSelected(tokens) : null,
-                      pressed ? skin.rowPressed(tokens) : null,
-                    ]}
-                    onPress={() => {
-                      setValue(option);
-                      onSelect?.(option);
-                      // Reset the filter so the field falls back to showing the
-                      // selected value and the next open lists every option.
-                      setQuery("");
-                      setOpen(false);
-                    }}
-                    android_ripple={ripple}
-                    role="option"
-                    // accessibilityState carries the native selected trait (iOS/Android);
-                    // RNW drops it on the web, so aria-selected aliases it there.
-                    accessibilityState={{ selected }}
-                    aria-selected={selected}
-                  >
-                    <Text style={skin.check(tokens, size)}>{selected ? "✓" : " "}</Text>
-                    <Text style={skin.optionText(tokens, size)}>{option}</Text>
-                  </Pressable>
-                );
-              })}
-              </View>
+                <View ref={listContentRef} collapsable={false} nativeID={listboxId} role={LISTBOX}
+                  accessibilityLabel={hasLabel ? label : undefined} aria-label={hasLabel ? label : undefined}>
+                  {matches.length === 0 ? (
+                    <View style={skin.emptyRow}>
+                      <Text style={skin.emptyText(tokens, size)}>No results</Text>
+                    </View>
+                  ) : matches.map(({ option, key, id }, index) => {
+                    const selected = option === value;
+                    const separator = index > 0 && skin.rowSeparator ? skin.rowSeparator(tokens) : null;
+                    return (
+                      <Pressable
+                        key={key}
+                        nativeID={id}
+                        ref={(node) => {
+                          if (node) rowRefs.current.set(id, node);
+                          else rowRefs.current.delete(id);
+                        }}
+                        onLayout={() => {
+                          if (activeIdRef.current === id) scrollActiveIntoView();
+                        }}
+                        style={({ pressed }) => [
+                          skin.row,
+                          separator,
+                          selected ? skin.rowSelected(tokens) : null,
+                          pressed || index === activeIndex ? skin.rowPressed(tokens) : null,
+                        ]}
+                        onPress={() => selectOption(option)}
+                        android_ripple={ripple}
+                        role="option"
+                        tabIndex={-1}
+                        accessibilityLabel={option}
+                        aria-label={option}
+                        // accessibilityState carries the native selected trait;
+                        // aria-selected supplies RNW's corresponding DOM state.
+                        accessibilityState={{ selected }}
+                        aria-selected={selected}
+                      >
+                        <Text style={skin.check(tokens, size)}>{selected ? "✓" : " "}</Text>
+                        <Text style={skin.optionText(tokens, size)}>{option}</Text>
+                      </Pressable>
+                    );
+                  })}
+                </View>
               </RippleClip>
-              </ScrollView>
-            )}
-        </EscapeLayerProvider>
+            </ScrollView>
+          </EscapeLayerProvider>
         </AnchoredOverlay>
 
         {helperText != null && helperText !== "" ? (

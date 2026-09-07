@@ -41,6 +41,8 @@ export interface AutocompleteSkin extends FloatingLabelStyles<Size> {
   fieldText: (t: ColorTokens, size: Size, muted: boolean) => TextStyle;
   /** The trailing disclosure chevron. */
   chevron: (t: ColorTokens, size: Size) => TextStyle;
+  /** The disclosure's real layout/touch target, including the field's border band. */
+  chevronTarget: (size: Size) => ViewStyle;
   /**
    * The open option list CARD: radius, fill, border, elevation/shadow, padding,
    * max-height. Positioning is owned by the shell (AnchoredOverlay portals and
@@ -125,6 +127,10 @@ export const webSkin: AutocompleteSkin = {
   }),
   fieldText: (t, size, muted) => ({ color: muted ? t["muted-foreground"] : t.foreground, ...TEXT_SIZE[size] }),
   chevron: (t, size) => ({ color: t["muted-foreground"], ...TEXT_SIZE[size] }),
+  chevronTarget: () => ({
+    alignSelf: "stretch", alignItems: "center", justifyContent: "center", flexShrink: 0,
+    width: 24, minHeight: 24,
+  }),
   popover: (t) => ({
     maxHeight: 240,
     overflow: "hidden", // clip rows to the rounded card; the list scrolls inside
@@ -173,7 +179,9 @@ export const webSkin: AutocompleteSkin = {
 // ripple. The brand survives: the open hairline, the leading check, and the
 // trailing disclosure are all the indigo `primary`, never iOS system blue.
 const IOS_MENU_RADIUS = 26;
-const IOS_FIELD_BOX: Record<Size, number> = { small: 36, default: 44, large: 50 };
+// Small retains its compact typography, but its entire field must contain the
+// 44pt disclosure target: native hit testing cannot extend beyond its parent.
+const IOS_FIELD_BOX: Record<Size, number> = { small: 44, default: 44, large: 50 };
 // iOS-native field scale (matches select.styles.ts IOS_TEXT): the field value,
 // placeholder, and stacked label sit a notch larger than the brand web scale so
 // the control reads at the iOS-native footprint (13/15/17pt).
@@ -205,6 +213,13 @@ export const iosSkin: AutocompleteSkin = {
   fieldText: (t, size, muted) => ({ color: muted ? t["muted-foreground"] : t.foreground, ...IOS_TEXT[size] }),
   // The trailing disclosure is the brand indigo, the iOS field/pop-up tint.
   chevron: (t, size) => ({ color: t.primary, ...IOS_TEXT[size] }),
+  chevronTarget: () => ({
+    alignSelf: "stretch", alignItems: "center", justifyContent: "center", flexShrink: 0,
+    width: 44, minHeight: 44,
+    // Include the 1pt field borders in the actual hit box and use the trailing
+    // gutter for the target instead of taking all 44pt from editable text.
+    marginVertical: -1, marginEnd: -12,
+  }),
   popover: (t) => ({
     maxHeight: 260,
     overflow: "hidden", // clip rows to the rounded card; the list scrolls inside
@@ -276,12 +291,22 @@ export const androidSkin: AutocompleteSkin = {
     backgroundColor: t.muted,
     paddingHorizontal: 16,
     height: ANDROID_FIELD_BOX[size],
-    // Clip the Material ripple to the rounded (top-corner) outline (without it
-    // the bounded RippleDrawable bleeds past the rounded corners as a rectangle).
-    overflow: "hidden",
+    // The disclosure includes the indicator's border band in its hit target.
+    // Clipping here would remove that band from native and browser hit testing.
+    // Its Pressable owns the rounded ripple clip instead.
+    overflow: "visible",
   }),
   fieldText: (t, size, muted) => ({ color: muted ? t["muted-foreground"] : t.foreground, ...TEXT_SIZE[size] }),
   chevron: (t, size) => ({ color: t["muted-foreground"], ...TEXT_SIZE[size] }),
+  chevronTarget: () => ({
+    alignSelf: "stretch", alignItems: "center", justifyContent: "center", flexShrink: 0,
+    width: 48, minHeight: 48, marginEnd: -16,
+    // activeIndicator always reserves 2dp for its border + padding. Include
+    // that band so the small 48dp field contains a complete 48dp target.
+    marginBottom: -2,
+    borderTopEndRadius: ANDROID_TOP_RADIUS,
+    overflow: "hidden",
+  }),
   // M3 menu surface: flat 4dp corners, elevated (no soft drop shadow), zero
   // padding so the full-bleed rows reach the edges.
   popover: (t) => ({

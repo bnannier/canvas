@@ -41,7 +41,6 @@ const KNOWN_FINDINGS: Record<string, string[]> = {
   spinner: ["aria-progressbar-name"],
   command: ["aria-input-field-name", "aria-valid-attr-value"],
   select: ["aria-input-field-name", "label"],
-  autocomplete: ["aria-input-field-name", "aria-required-attr", "target-size"],
   // Form fields inside the overlay's own example content, with a placeholder but no
   // label. Docs-side, in the example rather than in the component.
   dialog: ["label"],
