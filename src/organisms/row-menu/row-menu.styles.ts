@@ -1,5 +1,5 @@
 import { type ViewStyle, type TextStyle } from "react-native";
-import { type ColorTokens, palette, shadow, alpha } from "../../style/index.js";
+import { palette, shadow, alpha, TOUCH_TARGET, type ColorTokens, type TouchTargetSkin } from "../../style/index.js";
 import { type IconName } from "../../atoms/icon/icon.js";
 
 // Co-located RowMenu skins, one per platform, all driven by the brand tokens
@@ -46,7 +46,7 @@ export interface RowMenuItem {
 // ⋯ trigger + floating card of section label and item rows) and the open/close
 // state; the skin maps tokens and the active row state to RN style objects, and
 // declares its press-feedback mode (iOS/web dim or tint inline, Android ripples).
-export interface RowMenuSkin {
+export interface RowMenuSkin extends TouchTargetSkin {
   /** The relative anchor: keeps the trigger from stretching, positions the card. */
   anchor: ViewStyle;
   /** The ⋯ icon-button surface (square, centered, platform radius). */
@@ -95,6 +95,7 @@ export const anchorLifted: ViewStyle = { zIndex: 50 };
 // with a 2-radius corner; hairline `border` separators split groups; destructive
 // rows are red-600/red-400; the trigger and rows tint with `accent` on press.
 export const webSkin: RowMenuSkin = {
+  minTarget: null,
   anchor: { position: "relative", alignSelf: "flex-start" },
   trigger: {
     width: 32,
@@ -153,6 +154,7 @@ export const webSkin: RowMenuSkin = {
 // destructive red, section titles) is unchanged from the HIG layout.
 const IOS_RADIUS = 28;
 export const iosSkin: RowMenuSkin = {
+  minTarget: TOUCH_TARGET.ios,
   anchor: { position: "relative", alignSelf: "flex-start" },
   trigger: {
     width: 32,
@@ -213,6 +215,7 @@ export const iosSkin: RowMenuSkin = {
 // are red. The ⋯ trigger shares the ripple.
 const ANDROID_RADIUS = 4;
 export const androidSkin: RowMenuSkin = {
+  minTarget: TOUCH_TARGET.android,
   anchor: { position: "relative", alignSelf: "flex-start" },
   trigger: {
     width: 40,

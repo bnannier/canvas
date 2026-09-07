@@ -1,6 +1,6 @@
 import { type ReactNode } from "react";
 import { type GestureResponderEvent } from "react-native";
-import { Pressable, View, Text, useTheme, useControllableState, type ColorTokens, type StyleProp, type ViewStyle } from "../../style/index.js";
+import { Pressable, View, Text, useTheme, useControllableState, useMinTargetSlop, type ColorTokens, type StyleProp, type ViewStyle, type TouchTargetSkin } from "../../style/index.js";
 
 // Shared Switch shell. Uses React Native's primitives DIRECTLY (no engine className
 // layer) and reads the active brand tokens via useTheme, so colors follow light/dark.
@@ -52,7 +52,7 @@ function sizeOf(p: SwitchProps): Size {
 // shell. `dark` is threaded in (like dropdown/badge) so a skin can pick a
 // scheme-specific off-track gray that the generic `input` token does not provide
 // (the iOS off track is a solid mid-gray in light mode, systemGray3).
-export interface SwitchSkin {
+export interface SwitchSkin extends TouchTargetSkin {
   track: (tokens: ColorTokens, dark: boolean, checked: boolean, size: Size) => ViewStyle;
   thumb: (tokens: ColorTokens, checked: boolean, size: Size) => ViewStyle;
 }
@@ -82,8 +82,14 @@ export function createSwitch(skin: SwitchSkin) {
       setChecked(!checked);
     };
 
+    // The whole row is the control, and a base iOS track is 28pt tall, so the row is
+    // short of the platform minimum even though it is wide. The touch area grows to
+    // meet it; nothing moves (see src/style/touch-target.ts).
+    const target = useMinTargetSlop(skin.minTarget);
+
     return (
       <Pressable
+        {...target}
         onPress={handlePress}
         disabled={disabled}
         testID={props.testID}

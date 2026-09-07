@@ -1,5 +1,5 @@
 import { type ViewStyle, type TextStyle } from "react-native";
-import { type ColorTokens, palette, shadow, alpha, MONO_FONT } from "../../style/index.js";
+import { palette, shadow, alpha, MONO_FONT, platformMinTarget, type ColorTokens } from "../../style/index.js";
 import { type CodeBlockSkin } from "./code-block.shared.js";
 
 // Co-located CodeBlock skins. Layout-only fragments are static objects; anything
@@ -360,6 +360,9 @@ function copyText(tokens: ColorTokens, dark: boolean): TextStyle {
 // terminal / numbered / inline variants and the copy chip described above. This is
 // the single source of truth for the one shared look.
 export const webSkin: CodeBlockSkin = {
+  // One shared skin across the three platforms (a code surface is
+  // platform-neutral), so the minimum comes from the platform at runtime.
+  minTarget: platformMinTarget(),
   codeType,
   codeTypeCompact,
   codeText,

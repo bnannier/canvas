@@ -1,26 +1,6 @@
 import { forwardRef, useId, useRef, useState } from "react";
 import { type Role, type TextInput as RNTextInput } from "react-native";
-import {
-  View,
-  Pressable,
-  Text,
-  TextInput,
-  useTheme,
-  useControllableState,
-  useEscapeKey,
-  useFieldWidth,
-  AnchoredOverlay,
-  useMeasuredWidth,
-  FloatingLabel,
-  LabelContent,
-  FOCUS_RESET,
-  RippleClip,
-  cornerRadii,
-  type FieldWidthProps,
-  type StyleProp,
-  type ViewStyle,
-  type TextStyle,
-} from "../../style/index.js";
+import { View, Pressable, Text, TextInput, useTheme, useControllableState, useEscapeKey, useFieldWidth, AnchoredOverlay, useMeasuredWidth, FloatingLabel, LabelContent, FOCUS_RESET, RippleClip, cornerRadii, useMinTargetSlop, type FieldWidthProps, type StyleProp, type ViewStyle, type TextStyle } from "../../style/index.js";
 
 // React Native's Role union omits the valid ARIA "listbox" role, so the option-list
 // container casts it. The value is correct on both web (DOM role) and native.
@@ -141,6 +121,10 @@ const POPOVER_ANCHOR: ViewStyle = { position: "absolute", top: "100%", start: 0,
 /** Build an Autocomplete component from a platform skin. */
 export function createAutocomplete(skin: AutocompleteSkin) {
   const Autocomplete = forwardRef<RNTextInput, AutocompleteProps>(function Autocomplete(props, ref) {
+    // The chevron that opens the list is a 7pt-wide glyph beside the field: the
+    // narrowest control in the kit, and the one most in need of a touch area of its
+    // own. It grows around the glyph; the field beside it does not move.
+    const chevronTarget = useMinTargetSlop(skin.minTarget);
     const {
       options = [],
       label,
@@ -297,6 +281,7 @@ export function createAutocomplete(skin: AutocompleteSkin) {
             aria-label={hasLabel ? label : undefined}
           />
           <Pressable
+            {...chevronTarget}
             style={({ pressed }) => [
               chevronHit,
               skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null,

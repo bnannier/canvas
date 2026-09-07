@@ -1,5 +1,6 @@
 import { describe, it, expect } from "bun:test";
 import { minTargetSlop } from "../src/atoms/button/button.shared.tsx";
+import { TOUCH_TARGET, platformMinTarget } from "../src/style/touch-target.ts";
 import { iosSkin, androidSkin, webSkin } from "../src/atoms/button/button.styles.ts";
 
 // Native minimum touch targets for the Button atom (iOS HIG 44x44pt, Android M3
@@ -45,5 +46,31 @@ describe("minTargetSlop", () => {
   it("returns undefined when the control already meets the minimum", () => {
     expect(minTargetSlop(44, 120, 50)).toBeUndefined(); // iOS base: 50pt tall
     expect(minTargetSlop(44, 44, 44)).toBeUndefined(); // exactly at the minimum
+  });
+});
+
+describe("the shared touch-target module", () => {
+  it("carries the two platforms' own numbers", () => {
+    expect(TOUCH_TARGET).toEqual({ ios: 44, android: 48 });
+  });
+
+  it("resolves no minimum on the web, where a pointer is not a fingertip", () => {
+    // The harness runs as react-native-web, so this is the web branch.
+    expect(platformMinTarget()).toBeNull();
+  });
+
+  it("extends only downward and upward for a control that abuts its neighbours", () => {
+    // Tabs, breadcrumb links and segmented items sit edge to edge. Extending
+    // sideways there would overlap the neighbour's own slop and make a tap near the
+    // seam ambiguous, so those pass axis "vertical".
+    expect(minTargetSlop(44, 47, 32, { axis: "vertical" })).toEqual({ top: 6, bottom: 6, left: 0, right: 0 });
+    // The same control on both axes would also grow sideways.
+    expect(minTargetSlop(44, 47, 32)).toEqual({ top: 6, bottom: 6, left: 0, right: 0 });
+    expect(minTargetSlop(44, 32, 32, { axis: "vertical" })).toEqual({ top: 6, bottom: 6, left: 0, right: 0 });
+    expect(minTargetSlop(44, 32, 32)).toEqual({ top: 6, bottom: 6, left: 6, right: 6 });
+  });
+
+  it("still returns nothing when a control already meets the minimum on both axes", () => {
+    expect(minTargetSlop(44, 60, 50, { axis: "vertical" })).toBeUndefined();
   });
 });
