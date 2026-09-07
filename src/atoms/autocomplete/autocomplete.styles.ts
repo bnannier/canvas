@@ -127,6 +127,7 @@ export const webSkin: AutocompleteSkin = {
   chevron: (t, size) => ({ color: t["muted-foreground"], ...TEXT_SIZE[size] }),
   popover: (t) => ({
     maxHeight: 240,
+    overflow: "hidden", // clip rows to the rounded card; the list scrolls inside
     borderRadius: 6,
     borderWidth: 1,
     borderColor: t.border,
@@ -206,6 +207,7 @@ export const iosSkin: AutocompleteSkin = {
   chevron: (t, size) => ({ color: t.primary, ...IOS_TEXT[size] }),
   popover: (t) => ({
     maxHeight: 260,
+    overflow: "hidden", // clip rows to the rounded card; the list scrolls inside
     borderRadius: IOS_MENU_RADIUS,
     backgroundColor: t.popover,
     paddingVertical: 6,
@@ -284,6 +286,7 @@ export const androidSkin: AutocompleteSkin = {
   // padding so the full-bleed rows reach the edges.
   popover: (t) => ({
     maxHeight: 280,
+    overflow: "hidden", // clip rows to the rounded card; the list scrolls inside
     borderRadius: 4,
     backgroundColor: t.popover,
     paddingVertical: 8,
