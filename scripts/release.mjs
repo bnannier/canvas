@@ -7,7 +7,30 @@ import { fileURLToPath } from "node:url";
 
 const SHA = /^[0-9a-f]{40}$/;
 const VERSION = /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$/;
-const run = (cwd, cmd, args) => execFileSync(cmd, args, { cwd, encoding: "utf8", env: { ...process.env, HUSKY: "0" } }).trim();
+let localGitVariables;
+function commandEnvironment() {
+  if (!localGitVariables) {
+    // Git hooks export repository selectors that override cwd. Ask Git which
+    // variables are local using a clean environment, even if inherited config
+    // points at an invalid or unrelated repository.
+    const clean = Object.fromEntries(Object.entries(process.env).filter(([key]) => !key.startsWith("GIT_")));
+    localGitVariables = new Set(execFileSync("git", ["rev-parse", "--local-env-vars"], {
+      encoding: "utf8",
+      env: { ...clean, GIT_CONFIG_GLOBAL: "/dev/null", GIT_CONFIG_NOSYSTEM: "1" },
+      stdio: ["ignore", "pipe", "pipe"],
+    }).trim().split("\n"));
+    // Namespace selects different refs but is not included in Git's local list.
+    localGitVariables.add("GIT_NAMESPACE");
+  }
+  // Keep SSH, askpass and other transport settings. Clear indexed config values
+  // alongside GIT_CONFIG_COUNT, which Git includes in its local-variable list.
+  return {
+    ...Object.fromEntries(Object.entries(process.env).filter(([key]) =>
+      !localGitVariables.has(key) && !/^GIT_CONFIG_(KEY|VALUE)_\d+$/.test(key))),
+    HUSKY: "0",
+  };
+}
+const run = (cwd, cmd, args) => execFileSync(cmd, args, { cwd, encoding: "utf8", env: commandEnvironment() }).trim();
 const git = (cwd, ...args) => run(cwd, "git", args);
 const read = (file) => JSON.parse(fs.readFileSync(file, "utf8"));
 const write = (file, data) => fs.writeFileSync(file, JSON.stringify(data, null, 2) + "\n");
@@ -141,7 +164,7 @@ export function accept(cwd, c, beforePush = () => {}) {
   if (tip !== c.source) return false;
   if (!c.release) return true;
   beforePush();
-  const pushed = spawnSync("git", ["push", "origin", "HEAD:refs/heads/main"], { cwd, encoding: "utf8", env: { ...process.env, HUSKY: "0" } });
+  const pushed = spawnSync("git", ["push", "origin", "HEAD:refs/heads/main"], { cwd, encoding: "utf8", env: commandEnvironment() });
   if (pushed.status === 0) return true;
   const latest = git(cwd, "ls-remote", "origin", "refs/heads/main").split(/\s/)[0];
   if (latest !== c.source) return false;

@@ -9,7 +9,17 @@ import { preparePages } from "../../docs/scripts/prepare-pages.mjs";
 
 const roots: string[] = [];
 const root = () => { const dir = fs.mkdtempSync(path.join(os.tmpdir(), "canvas-release-")); roots.push(dir); return dir; };
-const git = (cwd: string, ...args: string[]) => execFileSync("git", args, { cwd, encoding: "utf8", env: { ...process.env, HUSKY: "0", GIT_CONFIG_NOSYSTEM: "1" }, stdio: ["ignore", "pipe", "pipe"] }).trim();
+const git = (cwd: string, ...args: string[]) => execFileSync("git", args, {
+  cwd,
+  encoding: "utf8",
+  env: {
+    ...Object.fromEntries(Object.entries(process.env).filter(([key]) => !key.startsWith("GIT_"))),
+    HUSKY: "0",
+    GIT_CONFIG_GLOBAL: "/dev/null",
+    GIT_CONFIG_NOSYSTEM: "1",
+  },
+  stdio: ["ignore", "pipe", "pipe"],
+}).trim();
 const write = (file: string, data: unknown) => fs.writeFileSync(file, JSON.stringify(data));
 afterEach(() => { for (const dir of roots.splice(0)) fs.rmSync(dir, { recursive: true, force: true }); });
 
