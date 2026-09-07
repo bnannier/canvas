@@ -1,112 +1,188 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState, type RefObject } from "react";
 import { type View } from "react-native";
 
-// Focus management for modal dialogs (Dialog, AlertDialog). A modal takes over
-// the page while it is open, so on the web it must: move focus INTO the panel on
-// open (WAI-ARIA: focus the dialog so a keyboard/AT user lands inside it), keep
-// Tab / Shift+Tab cycling within the panel (a focus trap, so focus can't wander
-// to the inert page behind the backdrop), and RESTORE focus to whatever was
-// focused before (the trigger) when it closes. Attach the returned ref to the
-// panel container (a focusable `tabIndex={-1}` View) and pass the open state.
-//
-// This is additive web-only EVENT handling (a keydown listener bound to the panel
-// node, which RNW renders as a real DOM element), not a web-only rendering
-// branch, so it stays inside the kit's cross-platform rules. Natively there is no
-// `document` (VoiceOver/TalkBack scope the modal via accessibilityViewIsModal),
-// so the whole effect is a no-op there and never touches a DOM global.
+// Refs may attach after the hook's open effect: Portal publishes into a sibling
+// outlet, and anchored overlays also wait for a trigger measurement. An ordinary
+// useRef cannot notify that effect when its panel finally exists. Keep the public
+// object-ref API, but reconcile focus from its current setter as well as open.
+// These are DOM event/focus operations only, never a platform rendering fork.
 
-// The interactive descendants Tab visits: links, form controls, and anything
-// explicitly made tabbable. Disabled controls and `tabindex="-1"` nodes (the
-// panel container itself, decorative focus targets) are filtered out below.
 const FOCUSABLE_SELECTOR =
   'a[href], button, input, select, textarea, [tabindex]';
 
-export function useDialogFocus(
-  /** Run the focus management only while the dialog is open. */
-  open: boolean,
-) {
-  const panelRef = useRef<View>(null);
-
-  useEffect(() => {
-    if (!open || typeof document === "undefined") return;
-    // RNW renders the panel View as a DOM element, so the ref is an HTMLElement
-    // at runtime; bridge the RN ref type to it for the DOM-only focus work.
-    const panel = panelRef.current as unknown as HTMLElement | null;
-    if (panel == null) return;
-
-    // Remember what had focus (the trigger), then pull focus into the panel.
-    // `preventScroll`: moving focus into the panel must NOT scroll the panel's
-    // nearest scrollable ancestor into view. A modal overlays the page (it is
-    // portaled/fixed and already visible), and a `<Dialog open>` rendered inline
-    // in a docs demo sits mid-page; without this flag the browser yanks the
-    // surrounding ScrollView to the panel on every open. Every programmatic focus
-    // move below passes it for the same reason.
-    const previouslyFocused = document.activeElement as HTMLElement | null;
-    panel.focus({ preventScroll: true });
-
-    // Trap: keep Tab / Shift+Tab inside the panel, wrapping last->first and
-    // first->last so focus never leaves the modal while it is open.
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key !== "Tab") return;
-      const focusables = Array.from(
-        panel.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR),
-      ).filter(
-        (el) => !el.hasAttribute("disabled") && el.getAttribute("tabindex") !== "-1",
-      );
-      if (focusables.length === 0) {
-        // Nothing to land on: keep focus pinned to the panel itself.
-        event.preventDefault();
-        panel.focus({ preventScroll: true });
-        return;
-      }
-      const first = focusables[0];
-      const last = focusables[focusables.length - 1];
-      const active = document.activeElement;
-      if (event.shiftKey) {
-        // Backward off the first control (or the panel container) wraps to last.
-        if (active === first || active === panel || !panel.contains(active)) {
-          event.preventDefault();
-          last.focus({ preventScroll: true });
-        }
-      } else if (active === last) {
-        // Forward off the last control wraps to first.
-        event.preventDefault();
-        first.focus({ preventScroll: true });
-      }
-    };
-    panel.addEventListener("keydown", onKeyDown);
-
-    return () => {
-      panel.removeEventListener("keydown", onKeyDown);
-      // Return focus to the trigger (or wherever it was) as the dialog closes.
-      // `preventScroll` so the restore never yanks the page: the trigger is
-      // normally already in view when a user dismisses the dialog.
-      previouslyFocused?.focus?.({ preventScroll: true });
-    };
-  }, [open]);
-
-  return panelRef;
+interface FocusSession {
+  panel: HTMLElement;
+  restoreTarget: HTMLElement | null;
 }
 
-// Lighter focus handling for a NON-MODAL popover: move focus into the panel on open
-// and restore it to the trigger on close, WITHOUT trapping Tab. A popover does not
-// take over the page (Escape or an outside tap dismisses it, and Tab may leave it),
-// so it only needs the move-in / restore-out halves, not the trap. Attach the
-// returned ref to a focusable `tabIndex={-1}` panel container and pass the open
-// state. No-op natively and during SSR (guarded on `document`), like useDialogFocus.
-export function usePopoverFocus(open: boolean) {
-  const panelRef = useRef<View>(null);
+// An initially open inline child runs its effect before its parent. The parent
+// must preserve the child's focus and original restoration target, instead of
+// focusing over it or later restoring into its own disappearing subtree.
+const sessions = new Set<FocusSession>();
+
+function trapFocus(panel: HTMLElement): () => void {
+  const onKeyDown = (event: KeyboardEvent) => {
+    // A nested modal may already have wrapped this Tab. Leave that move intact.
+    if (event.key !== "Tab" || event.defaultPrevented) return;
+    const focusables = Array.from(
+      panel.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR),
+    ).filter(
+      (el) => !el.hasAttribute("disabled") && el.getAttribute("tabindex") !== "-1",
+    );
+    if (focusables.length === 0) {
+      event.preventDefault();
+      panel.focus({ preventScroll: true });
+      return;
+    }
+    const first = focusables[0];
+    const last = focusables[focusables.length - 1];
+    const active = document.activeElement;
+    if (event.shiftKey) {
+      if (active === first || active === panel || !panel.contains(active)) {
+        event.preventDefault();
+        last.focus({ preventScroll: true });
+      }
+    } else if (active === last) {
+      event.preventDefault();
+      first.focus({ preventScroll: true });
+    }
+  };
+  panel.addEventListener("keydown", onKeyDown);
+  return () => panel.removeEventListener("keydown", onKeyDown);
+}
+
+function createFocusRef(modal: boolean, onAttach: () => void) {
+  let node: View | null = null;
+  let enabled = false;
+  let restoreTarget: HTMLElement | null = null;
+  let session: FocusSession | null = null;
+  let removeTrap: (() => void) | undefined;
+
+  const detach = () => {
+    if (!session) return;
+    const previous = session;
+    restoreTarget = previous.restoreTarget;
+    session = null;
+    removeTrap?.();
+    removeTrap = undefined;
+    // Portaled children are DOM siblings. Their restoration targets still name
+    // the control or panel they opened from, so follow that chain when deciding
+    // whether a closing parent owns the current focus.
+    const owned = new Set([previous]);
+    for (const parent of owned) {
+      for (const candidate of sessions) {
+        if (parent.panel.contains(candidate.panel) || parent.panel.contains(candidate.restoreTarget)) {
+          owned.add(candidate);
+        }
+      }
+    }
+    sessions.delete(previous);
+    for (const child of owned) {
+      if (child !== previous && previous.panel.contains(child.restoreTarget)) {
+        child.restoreTarget = previous.restoreTarget;
+      }
+    }
+
+    // Restore only focus owned by this panel. In particular, a nonmodal popover
+    // may close after the user has tabbed to another live control. Its close must
+    // not pull that deliberate focus move back to the trigger.
+    const active = document.activeElement;
+    const orphaned = active == null || active === document.body ||
+      !active.isConnected || [...owned].some((owner) => owner.panel.contains(active));
+    if (orphaned && previous.restoreTarget?.isConnected) {
+      previous.restoreTarget.focus({ preventScroll: true });
+    }
+  };
+
+  const attach = () => {
+    if (!enabled || session || !node || typeof document === "undefined") return;
+    const panel = node as unknown as HTMLElement;
+    const active = document.activeElement;
+    const descendants = [...sessions].filter((candidate) =>
+      panel.contains(candidate.panel) && candidate.panel.contains(active),
+    );
+    const child = descendants.find((candidate) => !descendants.some((other) =>
+      other !== candidate && other.panel.contains(candidate.panel),
+    ));
+    // Follow the child's original target only when our captured target belongs
+    // to this panel. Ordinary nested openings still restore to their own trigger.
+    if (child && restoreTarget && panel.contains(restoreTarget)) {
+      restoreTarget = child.restoreTarget;
+    }
+    // An initially open child has no opener inside this newly active parent.
+    // Closing just that child must return to the parent, while closing the whole
+    // parent still restores the original page trigger captured above.
+    if (child && !panel.contains(child.restoreTarget)) child.restoreTarget = panel;
+    session = { panel, restoreTarget };
+    sessions.add(session);
+    if (modal) removeTrap = trapFocus(panel);
+    if (!child) panel.focus({ preventScroll: true });
+  };
+
+  const ref: RefObject<View | null> = {
+    get current() { return node; },
+    set current(next: View | null) {
+      if (next === node) return;
+      detach();
+      node = next;
+      // Setup follows a committed effect, so attaching a panel in the same
+      // render that closes it cannot briefly focus it with the previous open
+      // value. Detachment still removes its listener immediately.
+      if (next && typeof document !== "undefined") onAttach();
+    },
+  };
+
+  return {
+    ref,
+    attach,
+    activate() {
+      if (enabled) return;
+      enabled = true;
+      // Capture once per opening, including the interval before a hosted panel
+      // attaches. Ref replacement or duplicate attachment cannot overwrite it.
+      restoreTarget = typeof document === "undefined"
+        ? null
+        : document.activeElement as HTMLElement | null;
+      attach();
+    },
+    deactivate() {
+      enabled = false;
+      detach();
+      restoreTarget = null;
+    },
+  };
+}
+
+function usePanelFocus(open: boolean, modal: boolean): RefObject<View | null> {
+  const [attachment, setAttachment] = useState(0);
+  const controllerRef = useRef<ReturnType<typeof createFocusRef> | null>(null);
+  if (controllerRef.current == null) {
+    controllerRef.current = createFocusRef(modal, () => setAttachment((version) => version + 1));
+  }
+  const controller = controllerRef.current;
 
   useEffect(() => {
-    if (!open || typeof document === "undefined") return;
-    const panel = panelRef.current as unknown as HTMLElement | null;
-    if (panel == null) return;
-    const previouslyFocused = document.activeElement as HTMLElement | null;
-    panel.focus({ preventScroll: true });
-    return () => {
-      previouslyFocused?.focus?.({ preventScroll: true });
-    };
-  }, [open]);
+    if (!open) return;
+    controller.activate();
+    return () => controller.deactivate();
+  }, [open, controller]);
 
-  return panelRef;
+  useEffect(() => {
+    controller.attach();
+  }, [attachment, controller]);
+
+  return controller.ref;
+}
+
+/** Move focus into an attached modal panel, trap Tab, and restore on close.
+ * Attach the returned object ref to a View with tabIndex={-1}. Native and SSR
+ * do not touch DOM globals; native modal accessibility remains the caller's. */
+export function useDialogFocus(open: boolean): RefObject<View | null> {
+  return usePanelFocus(open, true);
+}
+
+/** Move focus into an attached nonmodal panel and restore on close. Tab remains
+ * free to leave the panel. Pass false for an always-visible inline popover. */
+export function usePopoverFocus(open: boolean): RefObject<View | null> {
+  return usePanelFocus(open, false);
 }
