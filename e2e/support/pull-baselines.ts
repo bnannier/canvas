@@ -34,8 +34,12 @@ if (!runId) {
 const run = (command: string, args: string[]) =>
   execFileSync(command, args, { stdio: "inherit", cwd: REPO });
 
-// Replace rather than merge: a stale baseline for a component that no longer exists
-// would otherwise sit there forever, and the run is the complete set by definition.
+// Replace rather than merge, so a rename shows up as one file gone and one added
+// instead of both sitting there. Note the limit: the runner checks out the committed
+// baselines and --update-snapshots only rewrites the ones a test actually produced, so
+// a baseline for a DELETED component rides back unchanged rather than disappearing.
+// Delete it alongside the component; nothing here can tell it apart from a file that
+// simply did not change.
 if (existsSync(OUT)) rmSync(OUT, { recursive: true });
 
 run("gh", ["run", "download", runId, "-n", "visual-baselines", "-D", OUT]);
