@@ -1,6 +1,6 @@
 import { type ReactNode } from "react";
 import { Platform, useWindowDimensions } from "react-native";
-import { View, Text, Icon, Column, alpha, palette, useTheme, type StyleProp, type ViewStyle } from "@nannier-com/canvas";
+import { View, Text, Icon, Column, alpha, breakpoints, palette, useTheme, type StyleProp, type ViewStyle } from "@nannier-com/canvas";
 import { buildScopes } from "../core/build-scopes";
 import type { DocDontPair } from "../core/scope";
 import { CodeBlock } from "./code-block";
@@ -78,7 +78,15 @@ export function DoDontCard(props: DoDontCardProps) {
 export function Donts({ donts }: { donts: DocDontPair[] }) {
   const { tokens } = useTheme();
   const { width } = useWindowDimensions();
-  const wide = width >= 768;
+  // A pair sits side by side only when each card can actually HOLD its example.
+  // Examples are authored up to 560 wide; a card adds 20 of padding either side, the
+  // pair adds a 16 gap, and the page adds 28 of padding either side, so two of them
+  // need 2 * (560 + 40) + 16 + 56 = 1272 before anything fits. The threshold used to
+  // be 768, which gave each card about 348 of inner width and silently CLIPPED the
+  // right-hand side of every chart, table and wide row in the section: the page's
+  // scroller is overflow-hidden, so nothing scrolled to reveal it and nothing warned.
+  // Below this the pair stacks and each card gets the full column.
+  const wide = width >= breakpoints.xl;
   const previews = buildScopes(tokens);
   const scope = previews[previews.length - 1].scope;
 

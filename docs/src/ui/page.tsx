@@ -1,4 +1,5 @@
 import { type ReactNode } from "react";
+import { Platform } from "react-native";
 import { ScrollView, View, OverlayProvider, useTheme } from "@nannier-com/canvas";
 import { CONTENT_TOP_INSET } from "../shell/topbar";
 import { ScreenFrame } from "../shell/native-header";
@@ -21,6 +22,10 @@ export function Page({ children }: { children: ReactNode }) {
   return (
     <ScreenFrame>
       <ScrollView
+        // Marks the page's scroller for tooling. The docs scroll in an INNER view, not
+        // the window, so a check for "does this page scroll sideways" has to ask this
+        // node and not the document. Web-only attribute; a no-op on native.
+        {...(Platform.OS === "web" ? ({ dataSet: { pageScroll: "" } } as object) : null)}
         style={{ flex: 1, backgroundColor: surface === "glass" ? "transparent" : tokens.background }}
         contentInsetAdjustmentBehavior="automatic"
         contentContainerStyle={{
