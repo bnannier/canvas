@@ -14,8 +14,6 @@ import { gotoDocs, settledBox, stage } from "../support/docs";
 import { expect, test } from "../support/fixtures";
 
 const FIXED_TIME = new Date("2026-01-15T12:00:00Z");
-/** Overlays that render outside the stage, through a Modal at the document root. */
-const AT_DOCUMENT_ROOT = new Set(["drawer", "action-sheet"]);
 
 for (const scheme of ["dark", "light"] as const) {
   for (const recipe of OVERLAYS) {
@@ -34,7 +32,7 @@ for (const scheme of ["dark", "light"] as const) {
       await settledBox(stage(page));
 
       const name = `overlays/${recipe.slug}--${scheme}.png`;
-      if (AT_DOCUMENT_ROOT.has(recipe.slug)) {
+      if (recipe.atDocumentRoot) {
         await expect(page).toHaveScreenshot(name, { fullPage: false });
       } else {
         await expect(stage(page)).toHaveScreenshot(name);
