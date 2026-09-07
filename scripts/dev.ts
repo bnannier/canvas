@@ -1,14 +1,17 @@
 import { join } from "node:path";
 
 /**
- * Local kit dev: runs the tsc watch that rebuilds `dist/` and the dev-sync
- * watcher that mirrors dist/ and styles/ into linked sibling consumers.
- * Either process dying takes the other down so a half-running dev session
- * cannot silently stop syncing.
+ * Local kit dev: watches web and native compilation, then mirrors dist/ and
+ * styles/ into linked sibling consumers. Any process dying stops the others so
+ * an incomplete dev session cannot silently stop building or syncing.
  */
 
 const procs = [
 	Bun.spawn(["bunx", "tsc", "-p", "tsconfig.build.json", "--watch", "--preserveWatchOutput"], {
+		stdout: "inherit",
+		stderr: "inherit",
+	}),
+	Bun.spawn(["bun", join(import.meta.dir, "build-native.ts"), "--watch"], {
 		stdout: "inherit",
 		stderr: "inherit",
 	}),

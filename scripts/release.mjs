@@ -123,7 +123,7 @@ export function seal(cwd, candidateDir, artifactDir) {
   run(cwd, "node", ["tools/licensegen/generate.mjs"]);
   const [pack] = JSON.parse(run(cwd, "npm", ["pack", "--ignore-scripts", "--json", "--pack-destination", artifactDir, "--cache", path.join(artifactDir, "..", "npm-cache")]));
   if (pack.name !== c.name || pack.version !== c.version || path.basename(pack.filename) !== pack.filename) throw new Error("Packed a different package");
-  const required = ["LICENSE", "dist/index.js", "dist/index.d.ts", "package.json"];
+  const required = ["LICENSE", "dist/index.js", "dist/index.d.ts", "dist/native/index.js", "package.json"];
   if (!required.every((name) => pack.files.some((file) => file.path === name))) throw new Error("Package is missing a required distribution file");
   // Verify the unpacked bytes, including specifier/platform checks, before sealing.
   const unpacked = fs.mkdtempSync(path.join(artifactDir, "unpacked-"));

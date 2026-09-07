@@ -9,16 +9,15 @@
 //     require(); a value import breaks consumers who skip the peer).
 //   - no Trusted Types sinks in src/**: they throw under a strict CSP, and a sink
 //     on a module's import path takes the whole consuming app down with it.
+import { readFileSync } from "node:fs";
 import tseslint from "typescript-eslint";
 import reactHooks from "eslint-plugin-react-hooks";
 import react from "eslint-plugin-react";
 
-const OPTIONAL_PEERS = [
-  "expo-blur",
-  "expo-glass-effect",
-  "react-native-qrcode-svg",
-  "react-native-safe-area-context",
-];
+const packageMetadata = JSON.parse(readFileSync(new URL("./package.json", import.meta.url), "utf8"));
+const OPTIONAL_PEERS = Object.keys(packageMetadata.peerDependencies).filter(
+  (name) => packageMetadata.peerDependenciesMeta?.[name]?.optional,
+);
 
 // Every hand-written TypeScript tree in the repo, kit AND docs app. The docs app used
 // to be ignored wholesale ("docs/**"), which did two bad things at once: it left the

@@ -56,16 +56,7 @@ const JS_MAX_GZIP = 196_608; // 192 KB
 
 // The optional/required peers a consumer resolves from the outside, excluded from
 // the kit's own JS size the same way their `import`s leave the bundle.
-const JS_EXTERNALS = [
-  "react",
-  "react-native",
-  "react-native-svg",
-  "react-native-qrcode-svg",
-  "react-native-safe-area-context",
-  "expo-blur",
-  "expo-glass-effect",
-  "@shopify/react-native-skia",
-];
+const JS_EXTERNALS = Object.keys(JSON.parse(await readFile(join(ROOT, "package.json"), "utf8")).peerDependencies);
 
 interface FileSize {
   path: string;

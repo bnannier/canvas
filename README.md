@@ -94,7 +94,16 @@ Canvas targets all three platforms from one install. The only thing that changes
 
 - **Expo** apps use the required peers and any optional modules needed by their features. The docs app in this repository is a working Expo example, including native glass and blur modules.
 - **Bare React Native** works the same way once the required peers are installed and linked (`react-native-svg` needs the usual autolinking / pod install). Add the optional peers if you want QRCode or full-fidelity glass.
-- **Web via React Native Web** needs one bundler step: install `react-native-web` and alias `react-native` to `react-native-web`, exactly as any RNW project does. Canvas resolves its `react-native` entry point through your alias; nothing else is web-specific. On the web you can also flip glass at runtime with the exported `setSurface("glass")` / `setSurface("solid")` DOM helper.
+- **Web via React Native Web** needs one bundler step: install `react-native-web` and alias `react-native` to `react-native-web`, exactly as any RNW project does. Web bundlers use the default `dist/index.js` entry. On the web you can also flip glass at runtime with the exported `setSurface("glass")` / `setSurface("solid")` DOM helper.
+
+Metro selects `dist/native/index.js` through the `react-native` export condition
+or legacy field. That compiled output preserves Metro's iOS and Android module
+selection, including native material helpers. No custom Canvas resolver is needed
+in consumer apps. Public declarations and the web ESM build remain in `dist/`.
+`bun run dev` watches both outputs and syncs them to local consumer overlays.
+`bun run verify-native-consumer` packs the build and bundles an isolated React
+Native consumer for both platforms with all optional peers omitted. CI also runs
+this check on the exact sealed tarball before it can be published.
 
 ## Theming
 

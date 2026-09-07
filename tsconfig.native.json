@@ -1,0 +1,10 @@
+{
+  "extends": "./tsconfig.build.json",
+  "compilerOptions": {
+    "outDir": "./dist/native",
+    "declaration": false,
+    "declarationMap": false,
+    "inlineSources": true,
+    "noEmitOnError": true
+  }
+}

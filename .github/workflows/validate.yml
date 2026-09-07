@@ -73,6 +73,10 @@ jobs:
       - name: Verify package artifact
         run: bun run verify-package
 
+      - name: Bundle packed native consumer
+        if: ${{ !inputs.candidate }}
+        run: bun run verify-native-consumer
+
       - name: Unit tests
         run: bun run test
 
@@ -180,6 +184,10 @@ jobs:
       - name: Seal the tested release artifacts
         if: inputs.candidate
         run: node scripts/release.mjs seal "$RUNNER_TEMP/candidate" "$RUNNER_TEMP/artifacts"
+
+      - name: Bundle the exact sealed package on iOS and Android
+        if: inputs.candidate
+        run: bun run verify-native-consumer --artifacts "$RUNNER_TEMP/artifacts"
 
       - name: Upload sealed release artifacts
         if: inputs.candidate

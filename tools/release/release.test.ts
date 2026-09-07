@@ -34,7 +34,8 @@ function fixture(bump = "patch") {
   git(repo, "config", "user.email", "release@example.test");
   git(repo, "config", "core.hooksPath", path.join(dir, "no-hooks"));
   git(repo, "remote", "add", "origin", remote);
-  write(path.join(repo, "package.json"), { name: "@nannier-com/canvas", version: "2.3.4", files: ["dist", "styles"], scripts: { changeset: "changeset", "version-packages": "changeset version" } });
+  const { main, types, exports, peerDependencies, peerDependenciesMeta, "react-native": nativeEntry } = JSON.parse(fs.readFileSync(path.resolve("package.json"), "utf8"));
+  write(path.join(repo, "package.json"), { name: "@nannier-com/canvas", version: "2.3.4", main, types, exports, "react-native": nativeEntry, peerDependencies, peerDependenciesMeta, files: ["dist", "styles"], scripts: { changeset: "changeset", "version-packages": "changeset version" } });
   fs.writeFileSync(path.join(repo, "CHANGELOG.md"), "# Changes\n");
   fs.mkdirSync(path.join(repo, ".changeset"));
   fs.copyFileSync(path.resolve(".changeset/config.json"), path.join(repo, ".changeset/config.json"));

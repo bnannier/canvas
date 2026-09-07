@@ -1,176 +1,90 @@
-// Verifies the PUBLISHED ARTIFACT (dist/) is actually consumable — the check
-// whose absence let a broken tarball ship for months (raw .ts with NodeNext
-// ".js" specifiers that stock Metro cannot resolve; see the 2026-07 audit).
-// Run after `bun run build`; wired into CI and prepublishOnly.
-//
-// Checks:
-//  1. dist entry points exist (index.js + index.d.ts).
-//  2. Every relative import/require specifier in every dist .js/.d.ts file
-//     resolves to a real file (catches specifier/emit drift).
-//  3. Platform forks survive the build (.ios.js / .android.js present).
-//  4. No raw TypeScript leaks into dist.
-//  5. dist .d.ts files don't reference DOM-only types in their public surface
-//     (consumers without lib:DOM must typecheck; skipLibCheck covers .d.ts, but
-//     type REFERENCES to DOM globals would still error in strict consumers).
-
+// Validate either the local build or the exact unpacked release tarball.
 import * as fs from "node:fs";
 import * as path from "node:path";
-import { fileURLToPath } from "node:url";
+import ts from "typescript";
 
-// CI also invokes this against an unpacked npm tarball, before publishing it.
-const REPO = process.argv[2]
-  ? path.resolve(process.argv[2])
-  : path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-const DIST = path.join(REPO, "dist");
-
-let failures = 0;
-function fail(msg: string) {
-  failures++;
-  console.error(`  ✗ ${msg}`);
-}
-function ok(msg: string) {
-  console.log(`  ✓ ${msg}`);
+export function walk(dir: string): string[] {
+  return fs.readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
+    const file = path.join(dir, entry.name);
+    return entry.isDirectory() ? walk(file) : [file];
+  });
 }
 
-function walk(dir: string, out: string[] = []): string[] {
-  for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
-    const full = path.join(dir, e.name);
-    if (e.isDirectory()) walk(full, out);
-    else out.push(full);
+export function verifyPackage(root: string): string[] {
+  const errors: string[] = [];
+  const dist = path.join(root, "dist");
+  const metadata = JSON.parse(fs.readFileSync(path.join(root, "package.json"), "utf8"));
+  const optionalPeers = Object.keys(metadata.peerDependencies ?? {}).filter((name) => metadata.peerDependenciesMeta?.[name]?.optional);
+  const optionalPeer = (specifier: string) => optionalPeers.some((peer) => specifier === peer || specifier.startsWith(`${peer}/`));
+  const entry = metadata.exports?.["."];
+  if (entry?.["react-native"] !== "./dist/native/index.js" || metadata["react-native"] !== entry?.["react-native"]) {
+    errors.push("Both the react-native export condition and legacy entry must select ./dist/native/index.js");
   }
-  return out;
-}
-
-// 1. Entry points
-if (!fs.existsSync(path.join(DIST, "index.js")) || !fs.existsSync(path.join(DIST, "index.d.ts"))) {
-  fail("dist/index.js + dist/index.d.ts missing — run `bun run build` first");
-  process.exit(1);
-}
-ok("entry points exist (dist/index.js, dist/index.d.ts)");
-
-const files = walk(DIST);
-const jsFiles = files.filter((f) => f.endsWith(".js"));
-const dtsFiles = files.filter((f) => f.endsWith(".d.ts"));
-
-// 2. Relative-specifier resolution integrity
-const SPEC_RE = /(?:from\s+|import\s*\(\s*|require\s*\(\s*)["'](\.\.?\/[^"']+)["']/g;
-// Strip comments first: tsc copies doc comments (which may show example import
-// lines) into the emitted output, and those must not count as real specifiers.
-const stripComments = (s: string) => s.replace(/\/\*[\s\S]*?\*\//g, "").replace(/^\s*\/\/.*$/gm, "");
-let specCount = 0;
-let broken = 0;
-for (const file of [...jsFiles, ...dtsFiles]) {
-  const src = stripComments(fs.readFileSync(file, "utf8"));
-  for (const m of src.matchAll(SPEC_RE)) {
-    specCount++;
-    const spec = m[1];
-    const base = path.resolve(path.dirname(file), spec);
-    // A ".js" specifier must resolve to that exact emitted file (platform forks
-    // resolve at bundler level from the SAME base name, which also exists).
-    const candidates = [base, `${base}.js`, `${base}.d.ts`, path.join(base, "index.js")];
-    if (!candidates.some((c) => fs.existsSync(c))) {
-      broken++;
-      fail(`${path.relative(REPO, file)} → unresolvable specifier "${spec}"`);
+  if (entry?.default !== "./dist/index.js" || entry?.types !== "./dist/index.d.ts" || metadata.main !== entry?.default || metadata.types !== entry?.types) {
+    errors.push("Web ESM and public types must select dist/index.js and dist/index.d.ts");
+  }
+  for (const file of ["dist/index.js", "dist/index.d.ts", "dist/native/index.js"]) {
+    if (!fs.existsSync(path.join(root, file))) errors.push(`${file} missing, run bun run build`);
+  }
+  if (!fs.existsSync(dist)) return errors;
+  const files = walk(dist);
+  const native = path.join(dist, "native") + path.sep;
+  for (const file of files) {
+    const name = path.relative(root, file);
+    if (/\.tsx?$/.test(file) && !file.endsWith(".d.ts")) errors.push(`${name}: raw TypeScript must not ship`);
+    if (!file.endsWith(".js") && !file.endsWith(".d.ts")) continue;
+    const declaration = file.endsWith(".d.ts");
+    const source = ts.createSourceFile(file, fs.readFileSync(file, "utf8"), ts.ScriptTarget.Latest, true,
+      declaration ? ts.ScriptKind.TS : ts.ScriptKind.JS);
+    const visit = (node: ts.Node) => {
+      let literal: ts.StringLiteralLike | undefined;
+      let requireCall = false;
+      if ((ts.isImportDeclaration(node) || ts.isExportDeclaration(node)) && node.moduleSpecifier && ts.isStringLiteralLike(node.moduleSpecifier)) {
+        literal = node.moduleSpecifier;
+      } else if (ts.isCallExpression(node) && node.arguments.length && ts.isStringLiteralLike(node.arguments[0])) {
+        requireCall = ts.isIdentifier(node.expression) && node.expression.text === "require";
+        if (requireCall || node.expression.kind === ts.SyntaxKind.ImportKeyword) literal = node.arguments[0];
+      }
+      if (literal) {
+        const specifier = literal.text;
+        if (/^\.\.?\//.test(specifier)) {
+          const base = path.resolve(path.dirname(file), specifier);
+          const candidates = [base, `${base}.js`, `${base}.d.ts`, path.join(base, "index.js")];
+          if (!candidates.some((candidate) => fs.existsSync(candidate) && fs.statSync(candidate).isFile())) errors.push(`${name}: unresolvable specifier ${specifier}`);
+          if (file.startsWith(native) && specifier.endsWith(".js")) errors.push(`${name}: explicit .js request ${specifier} bypasses Metro platform resolution`);
+        } else if (!declaration && optionalPeer(specifier)) {
+          if (!requireCall) errors.push(`${name}: static/dynamic import of optional peer ${specifier}, use a guarded require`);
+          else {
+            // Mirror Metro's first-block rule without parsing braces in strings.
+            let block: ts.Node | undefined = node.parent;
+            while (block && !ts.isBlock(block)) block = block.parent;
+            if (!block || !ts.isTryStatement(block.parent) || block.parent.tryBlock !== block || !block.parent.catchClause) {
+              errors.push(`${name}: require(${specifier}) must be directly inside a try block with a catch`);
+            }
+          }
+        }
+      }
+      if (declaration && ts.isIdentifier(node) && /^(HTMLElement|HTMLDivElement|Document|Window|MediaQueryList|CSSStyleDeclaration)$/.test(node.text)) {
+        errors.push(`${name}: public declaration references DOM-only type ${node.text}`);
+      }
+      ts.forEachChild(node, visit);
+    };
+    visit(source);
+    if (!declaration && !file.startsWith(native)) {
+      const nativeFile = path.join(native, path.relative(dist, file));
+      if (!fs.existsSync(nativeFile)) errors.push(`${name}: matching native output is missing`);
     }
   }
-}
-if (broken === 0) ok(`${specCount} relative specifiers all resolve`);
-
-// 2b. Optional peers must never be STATICALLY imported (an ES `import` statement).
-// They are loaded through a guarded `require()` so a consumer who skips the peer
-// still builds; a value import would crash their bundler at resolve time. Guarded
-// require() calls and type-only imports (erased by tsc) are fine — only ES import
-// statements referencing these bare specifiers are flagged.
-const OPTIONAL_PEERS = [
-  "@shopify/react-native-skia",
-  "expo-blur",
-  "expo-glass-effect",
-  "react-native-qrcode-svg",
-  "react-native-safe-area-context",
-];
-const PEER_IMPORT_RE = new RegExp(
-  `import\\s+(?:[^;'"]*?\\sfrom\\s*)?["'](${OPTIONAL_PEERS.join("|")})["']`,
-  "g",
-);
-let peerViolations = 0;
-for (const file of jsFiles) {
-  const src = stripComments(fs.readFileSync(file, "utf8"));
-  for (const m of src.matchAll(PEER_IMPORT_RE)) {
-    peerViolations++;
-    fail(`${path.relative(REPO, file)} → static import of optional peer "${m[1]}" (use a guarded require())`);
+  for (const platform of ["ios", "android"]) {
+    if (!files.some((file) => file.startsWith(native) && file.endsWith(`.${platform}.js`))) errors.push(`Native output has no ${platform} forks`);
   }
-}
-if (peerViolations === 0) ok(`no static imports of optional peers (${OPTIONAL_PEERS.length} checked)`);
-
-// 2c. Each optional-peer require must sit DIRECTLY inside a try block.
-//
-// Not style. Metro's isOptionalDependency
-// (metro/src/ModuleGraph/worker/collectDependencies.js) walks up from the require
-// call and, at the FIRST enclosing block statement, returns whether that block
-// belongs to a TryStatement. It does not keep climbing. So any statement that
-// introduces a block between the try and the require, classically
-// `if (typeof require === "function")`, makes Metro register a REQUIRED edge, and
-// every consumer who skipped the peer fails to bundle with "Unable to resolve
-// module". Check 2b above cannot catch it: the require is still a require.
-//
-// Verified against metro 0.84.4 by running the collector on both shapes: the
-// guarded form reports optional=undefined, the hoisted form optional=true.
-const OPTIONAL_REQUIRE_RE = new RegExp(`require\\(["'](${OPTIONAL_PEERS.join("|")})["']\\)`, "g");
-let placementViolations = 0;
-let requireSites = 0;
-for (const file of jsFiles) {
-  const src = stripComments(fs.readFileSync(file, "utf8"));
-  for (const m of src.matchAll(OPTIONAL_REQUIRE_RE)) {
-    requireSites++;
-    // Walk back to the nearest `{`; the token sequence before it must be `try`.
-    const before = src.slice(0, m.index);
-    const brace = before.lastIndexOf("{");
-    if (brace === -1 || !/\btry\s*$/.test(before.slice(0, brace))) {
-      placementViolations++;
-      fail(
-        `${path.relative(REPO, file)} → require("${m[1]}") is not directly inside a try block. ` +
-          `Metro will treat it as a REQUIRED dependency and break consumers without the peer.`,
-      );
-    }
-  }
-}
-if (placementViolations === 0) ok(`optional-peer requires sit directly in a try block (${requireSites} checked)`);
-
-// 3. Platform forks preserved
-const iosForks = jsFiles.filter((f) => f.endsWith(".ios.js")).length;
-const androidForks = jsFiles.filter((f) => f.endsWith(".android.js")).length;
-if (iosForks === 0 || androidForks === 0) {
-  fail(`platform forks missing from dist (ios: ${iosForks}, android: ${androidForks})`);
-} else {
-  ok(`platform forks preserved (${iosForks} .ios.js, ${androidForks} .android.js)`);
+  return [...new Set(errors)];
 }
 
-// 4. No raw TS in dist
-const rawTs = files.filter((f) => /\.tsx?$/.test(f) && !f.endsWith(".d.ts"));
-if (rawTs.length > 0) {
-  fail(`raw TypeScript leaked into dist: ${rawTs.slice(0, 3).map((f) => path.relative(REPO, f)).join(", ")}…`);
-} else {
-  ok("no raw .ts/.tsx in dist");
+if (import.meta.main) {
+  const root = path.resolve(process.argv[2] ?? path.join(import.meta.dir, ".."));
+  const errors = verifyPackage(root);
+  for (const error of errors) console.error(`  ✗ ${error}`);
+  console.log(errors.length ? `verify-package: ${errors.length} failure(s)` : "verify-package: web, types, native output and optional peers verified");
+  process.exitCode = errors.length ? 1 : 0;
 }
-
-// 5. DOM-type references in the public .d.ts surface
-const DOM_RE = /\b(HTMLElement|HTMLDivElement|Document\b|Window\b|MediaQueryList|CSSStyleDeclaration)\b/;
-const domLeaks: string[] = [];
-for (const f of dtsFiles) {
-  const src = fs.readFileSync(f, "utf8");
-  // Strip comments before scanning, so prose mentioning "Document" doesn't trip it.
-  const code = src.replace(/\/\*[\s\S]*?\*\//g, "").replace(/\/\/.*$/gm, "");
-  if (DOM_RE.test(code)) domLeaks.push(path.relative(REPO, f));
-}
-if (domLeaks.length > 0) {
-  fail(`DOM types referenced in public .d.ts (breaks consumers without lib:DOM): ${domLeaks.join(", ")}`);
-} else {
-  ok("no DOM-type references in public .d.ts surface");
-}
-
-console.log(
-  failures === 0
-    ? `\nverify-package — dist OK (${jsFiles.length} js, ${dtsFiles.length} d.ts)`
-    : `\nverify-package — ${failures} FAILURE(S)`,
-);
-process.exit(failures === 0 ? 0 : 1);

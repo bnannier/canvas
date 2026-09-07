@@ -34,7 +34,7 @@
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "react-native": "./dist/index.js",
+      "react-native": "./dist/native/index.js",
       "default": "./dist/index.js"
     },
     "./styles/*": "./styles/*",
@@ -54,7 +54,7 @@
     "typecheck": "tsc --noEmit",
     "typecheck:e2e": "tsc --noEmit -p e2e/tsconfig.json",
     "lint": "eslint .",
-    "build": "rm -rf dist && tsc -p tsconfig.build.json",
+    "build": "rm -rf dist && tsc -p tsconfig.build.json && bun scripts/build-native.ts",
     "dev": "bun scripts/dev.ts",
     "verify-package": "bun scripts/verify-package.ts",
     "prepublishOnly": "node tools/licensegen/generate.mjs && bun run build && bun run verify-package",
@@ -89,7 +89,8 @@
     "docs:gen:check": "bun tools/docgen/generate.ts --check",
     "notices:scan": "bun tools/noticegen/scan.ts",
     "notices:gen": "bun tools/noticegen/generate.ts",
-    "notices:gen:check": "bun tools/noticegen/generate.ts --check"
+    "notices:gen:check": "bun tools/noticegen/generate.ts --check",
+    "verify-native-consumer": "node scripts/verify-native-consumer.mjs"
   },
   "publishConfig": {
     "registry": "https://registry.npmjs.org",
@@ -132,6 +133,8 @@
     "@eslint/js": "^9",
     "@happy-dom/global-registrator": "^20.10.6",
     "@playwright/test": "^1.60.0",
+    "@react-native/babel-preset": "0.86.0",
+    "@react-native/metro-config": "0.86.0",
     "@testing-library/dom": "^10.4.1",
     "@testing-library/react": "^16.3.2",
     "@types/react": "^19.2.16",
@@ -144,6 +147,7 @@
     "happy-dom": "^20.10.6",
     "husky": "^9.1.7",
     "lucide-static": "^1.24.0",
+    "metro": "0.84.5",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
     "react-native": "^0.86.0",
@@ -156,5 +160,6 @@
     "typescript": "^5.8.3",
     "typescript-eslint": "^8.64.0",
     "world-atlas": "^2.0.2"
-  }
+  },
+  "react-native": "./dist/native/index.js"
 }
