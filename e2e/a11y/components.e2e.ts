@@ -36,7 +36,6 @@ const KNOWN_FINDINGS: Record<string, string[]> = {
   // require one or fall back to something, so an example that omits it ships an
   // unnamed control. The fix is per component and is a change to their public
   // contract, so it is its own piece of work.
-  listbox: ["aria-input-field-name"],
   slider: ["aria-input-field-name"],
   progress: ["aria-progressbar-name"],
   spinner: ["aria-progressbar-name"],

@@ -11,6 +11,8 @@ import { Button as ButtonIOS } from "../../../src/atoms/button/button.ios.js";
 import { Button as ButtonAndroid } from "../../../src/atoms/button/button.android.js";
 import { Checkbox as CheckboxIOS } from "../../../src/atoms/checkbox/checkbox.ios.js";
 import { Checkbox as CheckboxAndroid } from "../../../src/atoms/checkbox/checkbox.android.js";
+import { Listbox as ListboxIOS } from "../../../src/atoms/listbox/listbox.ios.js";
+import { Listbox as ListboxAndroid } from "../../../src/atoms/listbox/listbox.android.js";
 import { Radio as RadioIOS } from "../../../src/atoms/radio/radio.ios.js";
 import { Radio as RadioAndroid } from "../../../src/atoms/radio/radio.android.js";
 import { Input as InputIOS } from "../../../src/atoms/input/input.ios.js";
@@ -120,7 +122,7 @@ import { Emblem as EmblemAndroid } from "../../../src/atoms/emblem/emblem.androi
 
 export const PLATFORM_SKINS: Record<"ios" | "android", Record<string, unknown>> = {
   ios: {
-    Switch: SwitchIOS, Button: ButtonIOS, Checkbox: CheckboxIOS, Radio: RadioIOS,
+    Switch: SwitchIOS, Button: ButtonIOS, Checkbox: CheckboxIOS, Listbox: ListboxIOS, Radio: RadioIOS,
     Input: InputIOS, Textarea: TextareaIOS, ButtonGroup: ButtonGroupIOS, Select: SelectIOS,
     Autocomplete: AutocompleteIOS, Dropdown: DropdownIOS, Popover: PopoverIOS, Tooltip: TooltipIOS,
     RowMenu: RowMenuIOS, Dialog: DialogIOS, AlertDialog: AlertDialogIOS,
@@ -139,7 +141,7 @@ export const PLATFORM_SKINS: Record<"ios" | "android", Record<string, unknown>> 
     Swatch: SwatchIOS, Board: BoardIOS, Backdrop: BackdropIOS,
   },
   android: {
-    Switch: SwitchAndroid, Button: ButtonAndroid, Checkbox: CheckboxAndroid, Radio: RadioAndroid,
+    Switch: SwitchAndroid, Button: ButtonAndroid, Checkbox: CheckboxAndroid, Listbox: ListboxAndroid, Radio: RadioAndroid,
     Input: InputAndroid, Textarea: TextareaAndroid, ButtonGroup: ButtonGroupAndroid, Select: SelectAndroid,
     Autocomplete: AutocompleteAndroid, Dropdown: DropdownAndroid, Popover: PopoverAndroid, Tooltip: TooltipAndroid,
     RowMenu: RowMenuAndroid, Dialog: DialogAndroid, AlertDialog: AlertDialogAndroid,

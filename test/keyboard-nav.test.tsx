@@ -144,22 +144,23 @@ describe("Listbox roving keyboard navigation", () => {
 
   it("multi-select: arrows move focus, Space toggles the focused row", () => {
     const items = [{ label: "A" }, { label: "B" }, { label: "C" }];
-    const { container } = ui(<Listbox multi items={items} />);
-    // The row Pressables are the direct children of the listbox; each multi row also
-    // holds an inner presentational Checkbox (aria-hidden), so query the rows directly.
-    const list = container.querySelector('[role="listbox"]') as HTMLElement;
+    const { getByRole } = ui(<Listbox multi items={items} />);
+    // Multi-select is a checkbox group with one interactive host per row.
+    const list = getByRole("group", { name: "Options" });
     const rows = () => [...list.children] as HTMLElement[];
     const checkedIdx = () =>
       rows().map((r, i) => (r.getAttribute("aria-checked") === "true" ? i : -1)).filter((i) => i >= 0);
     // The first row is the single tab stop.
     expect(rows()[0].getAttribute("tabindex")).toBe("0");
     fireEvent.keyDown(rows()[0], { key: " " });
+    fireEvent.keyUp(rows()[0], { key: " " });
     expect(checkedIdx()).toEqual([0]);
     // Arrow moves focus down without toggling.
     fireEvent.keyDown(rows()[0], { key: "ArrowDown" });
     expect(rows()[1].getAttribute("tabindex")).toBe("0");
     expect(checkedIdx()).toEqual([0]);
     fireEvent.keyDown(rows()[1], { key: " " });
+    fireEvent.keyUp(rows()[1], { key: " " });
     expect(checkedIdx()).toEqual([0, 1]);
   });
 });

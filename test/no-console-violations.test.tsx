@@ -142,6 +142,7 @@ describe("no DOM-nesting console violations at render", () => {
         <Pagination page={2} total={5} onChange={() => {}} />
         <ButtonGroup items={["Day", "Week", "Month"]} active={0} onSelect={() => {}} />
         <Listbox items={[{ label: "One", selected: true }, { label: "Two" }]} onSelect={() => {}} />
+        <Listbox multi accessibilityLabel="Teams" items={[{ label: "Backend", selected: true }, { label: "Frontend" }]} />
         {/* Board stacks a pressable card body beside a drag grip and a kebab menu; the
             press target must be a SIBLING of those buttons, never their ancestor. */}
         <Board

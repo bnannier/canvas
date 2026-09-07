@@ -1,6 +1,7 @@
 import { type ReactNode } from "react";
 import { type GestureResponderEvent } from "react-native";
 import { View, Pressable, Text, useTheme, useControllableState, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle } from "../../style/index.js";
+import { CheckboxIndicatorBox, CHECKBOX_ROW } from "./indicator/shared.js";
 
 // Shared Checkbox shell. Uses React Native's primitives DIRECTLY and reads the
 // active brand tokens via useTheme, so colors follow light/dark and the glass
@@ -79,36 +80,12 @@ export interface CheckboxSkin {
   ripple: ((tokens: ColorTokens) => { color: string; borderless: boolean; radius?: number }) | null;
 }
 
-// The row: box + optional label, top-aligned so a multi-line label hangs from the box.
-const ROW: ViewStyle = { flexDirection: "row", alignItems: "flex-start", gap: 8 };
-
 // Stacks the title over its description beside the box. The 8px gap mirrors
 // Radio's TEXT_COLUMN (the kit's title+description precedent) and the kit's
 // default snug column spacing, so every such control stacks its text the same
 // way. `flexShrink` lets a long description wrap within the row instead of
 // forcing the row wider.
 const TEXT_COLUMN: ViewStyle = { flexShrink: 1, gap: 8 };
-
-// The glyph sits on its own absolutely-positioned layer that fills the box and
-// centers the check/dash with flexbox. This is deliberate: on native Android
-// (Fabric) an IN-FLOW <Text> child drives its parent View's main-axis size and
-// overrides the box's explicit `width`, collapsing the box to the glyph's measured
-// width (~5dp) while the cross-axis `height` is honored — an 18dp square renders as
-// a thin vertical sliver. (The Radio never hits this: its checked child is a <View>
-// dot, not text.) Taking the glyph out of flow removes it from the box's content
-// measurement, so `width` wins. Absolute + flex-center behaves identically on iOS,
-// react-native-web, and native Android, so this is a cross-platform fix, not a
-// per-platform escape hatch — the look is unchanged everywhere.
-const GLYPH_LAYER: ViewStyle = {
-  position: "absolute",
-  top: 0,
-  left: 0,
-  right: 0,
-  bottom: 0,
-  alignItems: "center",
-  justifyContent: "center",
-  pointerEvents: "none", // the Pressable owns the touch; keep this layer inert
-};
 
 /** Build a Checkbox component from a platform skin. */
 export function createCheckbox(skin: CheckboxSkin) {
@@ -129,10 +106,6 @@ export function createCheckbox(skin: CheckboxSkin) {
         onValueChange?.(next);
       },
     );
-
-    // Indeterminate reads as "selected-ish": fill the box like a checked state.
-    const filled = indeterminate || checked;
-    const glyph = indeterminate ? "–" : "✓"; // en dash : check mark
 
     const handlePress = (_event: GestureResponderEvent) => {
       setChecked(!checked);
@@ -156,19 +129,14 @@ export function createCheckbox(skin: CheckboxSkin) {
         aria-label={props.accessibilityLabel}
         android_ripple={ripple}
         style={({ pressed }) => [
-          ROW,
+          CHECKBOX_ROW,
           disabled ? { opacity: skin.disabledOpacity } : null,
           skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null,
           style,
         ]}
       >
-        <View style={skin.box(tokens, filled, size, hasText)}>
-          {filled ? (
-            <View style={GLYPH_LAYER}>
-              <Text style={skin.glyph(tokens, size)}>{glyph}</Text>
-            </View>
-          ) : null}
-        </View>
+        <CheckboxIndicatorBox skin={skin} tokens={tokens} size={size} checked={checked}
+          indeterminate={indeterminate} nudge={hasText} />
         {hasText ? (
           description != null ? (
             <View style={TEXT_COLUMN}>
