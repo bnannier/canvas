@@ -70,22 +70,41 @@ keep Bun's discovery within the test trees instead of scanning the entire
 checkout and retaining enough directory handles to break subprocess tests on
 macOS.
 
-## Changesets
+## Changesets and releases
 
-Any change that ships in the published package (component code, styles, tokens,
-public types) needs a changeset:
+Add a changeset for every commit, including documentation and tooling changes:
 
 ```bash
 bun run changeset
 ```
 
-Pick `patch` for fixes, `minor` for new capabilities, and write the summary for a
-consumer reading the changelog. Docs-only and tooling-only changes do not need one.
+Use `patch` by default. A `minor` needs a written justification naming the new
+user-visible capability, such as a component, public API, option, or platform.
+Major releases require the owner's explicit authorization and are blocked by
+both automatic and manual release jobs. Write the summary for a consumer reading
+the changelog.
+
+Work directly on `main` unless the owner explicitly requests a branch or pull
+request. Verify each phase, then commit and push it without force-pushing main.
+Publication goes through CI; do not run `npm publish` locally. The `release`
+script is CI-only and requires the prepared candidate and validated artifact
+directories.
+
+The main-push Deploy workflow prepares the versioned candidate before the shared
+validation jobs run. CI validates the candidate, packs its npm tarball, and tests
+the prepared web artifact. Publication uses a normal fast-forward candidate push
+and the validated tarball. If main advances, it discards the candidate without
+publishing; the newer main run prepares and validates another. Cloudflare receives
+the tested docs artifact. The manual workflow uses the same gates.
+
+If a release fails after any publication step, fix the cause and add a new
+changeset for the next version. Do not republish an old version or release a
+locally rebuilt artifact.
 
 ## Design principles
 
-Canvas is opinionated, and pull requests are reviewed against these rules. The full
-versions live in [CLAUDE.md](./CLAUDE.md).
+Canvas is opinionated, and contributions are reviewed against these rules. The
+full versions live in [AGENTS.md](./AGENTS.md).
 
 - **React Native everywhere.** Components are built from React Native primitives
   (`react-native`, `react-native-svg`, the kit's own primitives) so one codebase

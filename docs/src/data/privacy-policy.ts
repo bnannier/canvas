@@ -6,13 +6,9 @@
  * `tools/privacygen/generate.ts` bakes the same words into a STATIC page at
  * docs/public/privacy/index.html.
  *
- * The static page exists because of how the docs are hosted. The web export is a single
- * page app, and GitHub Pages answers any unknown path with its 404 fallback, so every
- * deep route (/browser-support, /theming, and the in-app /privacy) resolves with an HTTP
- * 404 status even though the browser renders it correctly. Google Play and Apple both
- * fetch the privacy policy URL you file with the listing, so a 404 is a real submission
- * risk. A file at public/privacy/index.html is copied verbatim into the export and served
- * by Pages with a genuine 200.
+ * The static page lets store reviewers read the policy without loading the app's
+ * JavaScript. The shared web build copies it into the Cloudflare Pages artifact
+ * and verifies its presence before browser tests and deployment.
  *
  * Every claim below must stay verifiable from the source: no analytics SDK, no account
  * system, no persistence of user data (the theme choice is in-memory session state; the
@@ -21,11 +17,11 @@
  * Data Safety answers recorded in store/SUBMISSION.md.
  */
 
-export const PRIVACY_ISSUES_URL = "https://github.com/bnannier/canvas/issues";
+export const PRIVACY_ISSUES_URL = "https://github.com/nannier-com/canvas/issues";
 
 // Stated rather than computed, so the policy does not silently claim to have changed on
 // every rebuild.
-export const PRIVACY_EFFECTIVE = "17 August 2026";
+export const PRIVACY_EFFECTIVE = "7 September 2026";
 
 export const PRIVACY_TITLE = "Privacy Policy";
 
@@ -33,7 +29,7 @@ export const PRIVACY_INTRO =
   "Canvas collects no personal information. This page explains exactly what the app does and does not do, and it matches the App Privacy and Data Safety declarations filed with the App Store and Google Play.";
 
 export const PRIVACY_SUMMARY =
-  `Canvas is a free, open-source reference app for the @nannier-com/canvas React Native UI kit. It collects no personal information, creates no user accounts, and contains no analytics, tracking, or advertising code. Effective ${PRIVACY_EFFECTIVE}.`;
+  `Canvas is a free reference app for the @nannier-com/canvas React Native UI kit. It collects no personal information, creates no user accounts, and contains no analytics, tracking, or advertising code. Effective ${PRIVACY_EFFECTIVE}.`;
 
 export interface PrivacyItem {
   title: string;

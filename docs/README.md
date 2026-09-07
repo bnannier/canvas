@@ -1,50 +1,84 @@
-# Canvas docs — native (Expo Router)
+# Canvas docs (Expo Router)
 
-The universal Canvas documentation app. One Expo Router codebase renders the docs on
-iOS, Android, and the web. It consumes the source-only `@nannier-com/canvas` library as a
-**live symlink**, created by `postinstall` (`scripts/link-sources.mjs`) — bun copies
-`file:` deps, which would freeze a stale snapshot, so we symlink instead. The generated
-docs core lives in-tree at `src/core`.
+The universal Canvas documentation app runs on iOS, Android, and the web from one
+Expo Router codebase. The published `@nannier-com/canvas` package contains compiled
+`dist/` output. This app develops against the checkout's live `src/` instead:
+`postinstall` creates one `node_modules/@nannier-com/canvas` symlink to the repository
+root, and `metro.config.js` resolves the package import to `src/index.ts` through
+that symlink. Metro also watches the source and resolves the native skin files.
+Generated documentation and examples live in-tree at `src/core`, with no second
+symlink.
 
 ## Develop
 
-```sh
-bun install            # also links ../src and ../docs-core into node_modules
-bun run web            # Metro web dev server
-bun run ios            # native dev build (needs Xcode)
-bun run android        # native dev build (needs Android SDK)
-npx expo export --platform web   # static web build → dist/
-```
-
-iOS builds need a UTF-8 locale or CocoaPods crashes during `pod install`:
+Start from the repository root:
 
 ```sh
-LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8 npx expo run:ios
+bun install
+cd docs
+bun install            # links the live kit checkout into this app
+bun run dev            # Metro on :8081 and native preview opener on :8790
 ```
+
+The web docs are at <http://localhost:8081/>. The preview opener routes HTTP links
+to a booted iOS simulator or Android emulator with the docs development app
+installed. Use `bun run dev --clear` if Metro needs its cache cleared.
+
+From `docs/`, the platform and export commands are:
+
+```sh
+bun run web            # Metro web development without the preview opener
+bun run ios            # build and run natively with Xcode
+bun run android        # build and run natively with the Android SDK
+bun run build:web      # complete static web artifact in dist/
+```
+
+`build:web` runs the Expo export and then adds font preloads, inlines CSS, and
+prepares asset paths for Cloudflare Pages. Run this script when checking the
+shipping web artifact; a bare Expo export omits those preparation steps.
+
+iOS builds need a UTF-8 locale for CocoaPods:
+
+```sh
+LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8 bun run ios
+```
+
+## Validation and web deployment
+
+The **Deploy** workflow in `.github/workflows/deploy.yml` runs for main pushes and
+supports manual runs on main. It prepares version metadata before calling the
+shared validation workflow. Validation builds the package and web docs, checks
+their types and generated sources, and runs the unit and browser suites.
+
+Publication accepts the frozen candidate only while its source is still the
+current main revision. If main advances, the candidate is discarded and the newer
+main run prepares another. Cloudflare Pages receives the same prepared web
+artifact that the browser tests exercised, at <https://canvas.nannier.com/>.
+The npm release publishes the validated tarball through CI. See the repository's
+[contribution guide](../CONTRIBUTING.md) for changeset and recovery rules.
+
+`EXPO_BASE_URL` remains available for deployments under a subpath through
+`app.config.js`. Production and local development use the root path.
 
 ## Native builds (EAS)
 
-Native builds are produced by EAS through the manual **Deploy** workflow
-(`.github/workflows/deploy.yml`): check the `ios` / `android` inputs and pick a build
-profile. `production` auto-submits to TestFlight / Google Play internal; `preview` and
-`development` produce internal-distribution builds (an installable Android APK + an
-ad-hoc iOS build) shared by URL with no store review. The workflow queues the build on
-EAS and exits (`--no-wait`); progress and store submission live on expo.dev (links
-appear in the run summary). The job stays "skipped" until EAS is configured. One-time
-setup (needs your Expo / Apple accounts; these cannot be automated):
+For native builds, run **Deploy** manually on main, select the `ios` and/or
+`android` input, and choose an EAS profile. These jobs use the accepted, validated
+source. The workflow queues builds with `--no-wait`; successful queueing is not a
+completed device build or store submission. Follow the EAS links in the run
+summary for those results.
 
-1. `npm i -g eas-cli && eas login`
-2. `cd docs && eas init` links the repo to an Expo project (writes the project id into the config)
-3. iOS ad-hoc: `eas device:create` to register tester device UDIDs; EAS manages signing
-4. Add an `EXPO_TOKEN` repository secret (an Expo access token) so CI can authenticate
-5. Set the `EAS_ENABLED` repository variable to `true` to un-skip the deploy job
+- `production` creates store builds and automatically submits iOS to App Store
+  Connect. Android submission to the Play internal draft track additionally
+  requires `PLAY_SUBMIT_ENABLED=true` and its configured service-account key.
+- `preview` and `development` create internal-distribution builds. The preview
+  profile produces an Android APK and a device iOS build; development includes
+  the development client. Neither profile submits to stores.
 
-## Notes
+Native jobs require the repository's `EXPO_TOKEN` secret and `EAS_ENABLED=true`
+variable, plus the signing and store credentials configured in EAS. Project and
+profile configuration live in `app.json` and `eas.json`; current store setup and
+submission notes live in [store/SUBMISSION.md](../store/SUBMISSION.md).
 
-- The icons in `assets/images/` are Expo template placeholders — replace with Canvas
-  branding before a real release.
-- `experiments.baseUrl` is set from `EXPO_BASE_URL` (see `app.config.js`) so the static
-  web export can be hosted under a subpath (e.g. `/canvas/`); local dev stays at root.
-- This is the single documentation site for every platform: the web target deploys to
-  GitHub Pages (`.github/workflows/deploy.yml`) and the native targets ship via EAS. It
-  replaced the previous Vite-based web docs.
+The app uses the generated Canvas C mark, not Expo template branding. Regenerate
+icons through `bun run appicon:gen` from the repository root.

@@ -6,10 +6,10 @@
   "homepage": "https://canvas.nannier.com/",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/bnannier/canvas.git"
+    "url": "git+https://github.com/nannier-com/canvas.git"
   },
   "bugs": {
-    "url": "https://github.com/bnannier/canvas/issues"
+    "url": "https://github.com/nannier-com/canvas/issues"
   },
   "keywords": [
     "react-native",
@@ -72,7 +72,7 @@
     "looks": "bun scripts/capture-looks.ts",
     "changeset": "changeset",
     "version-packages": "changeset version",
-    "release": "changeset publish",
+    "release": "node scripts/release.mjs publish",
     "designmd:gen": "bun tools/designmd/generate.ts",
     "designmd:gen:check": "bun tools/designmd/generate.ts --check",
     "docs:gen": "bun tools/docgen/generate.ts",

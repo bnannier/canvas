@@ -2,13 +2,13 @@
 
 **One universal React Native UI kit that renders natively on iOS and Android, and on the web through React Native Web, from a single component API.**
 
-![The same Canvas component rendered as native iOS, Material 3 Android, and web, side by side](https://raw.githubusercontent.com/bnannier/canvas/main/.github/assets/hero.gif)
+![The same Canvas component rendered as native iOS, Material 3 Android, and web, side by side](https://raw.githubusercontent.com/nannier-com/canvas/main/.github/assets/hero.gif)
 
 [![npm](https://img.shields.io/npm/v/@nannier-com/canvas.svg)](https://www.npmjs.com/package/@nannier-com/canvas) [![CI](https://github.com/bnannier/canvas/actions/workflows/ci.yml/badge.svg)](https://github.com/bnannier/canvas/actions/workflows/ci.yml) [Documentation](https://canvas.nannier.com/)
 
-**Try it live:** the [component catalog](https://canvas.nannier.com/components) renders all 81 components (atoms, molecules, organisms, and a full chart family) in the browser, with dark mode, the glass surface, and density switchable site-wide.
+**Try it live:** the [component catalog](https://canvas.nannier.com/components) renders the full library (atoms, molecules, organisms, and charts) in the browser, with dark mode, the glass surface, and density switchable site-wide.
 
-Write your screen once and it runs everywhere. Canvas is built entirely from React Native primitives (`react-native`, `react-native-svg`, and its own re-exported `View` / `Text` / `Pressable` / `Image` / `TextInput` / `ScrollView`), with no web-only escape hatches, so the same tree renders identically on device and in the browser. Components are styled with semantic boolean props, are accessible by default (roles and state exposed to assistive tech on all three platforms), and are authored desktop-first so they scale down cleanly to phone. On iOS 26 the functional layer (overlays and bars) renders in real Liquid Glass; on Chromium browsers it renders as a real lens (an SVG displacement filter that refracts the backdrop at the rim); elsewhere it falls back to a genuine frost or a solid surface.
+Write your screen once and it runs everywhere. Canvas is built from React Native primitives, React Native SVG, and its own components, so the same tree renders on device and in the browser with each platform's skin. Components are styled with semantic boolean props, are accessible by default (roles and state exposed to assistive tech on all three platforms), and are authored desktop-first so they scale down cleanly to phone. On iOS 26 the functional layer (overlays and bars) renders in real Liquid Glass; on Chromium browsers it renders as a real lens (an SVG displacement filter that refracts the backdrop at the rim); elsewhere it falls back to a genuine frost or a solid surface.
 
 ## Install
 
@@ -24,17 +24,20 @@ npm install react react-native react-native-svg
 
 ### Optional peers
 
-These are only needed if you use the feature they back. Install them lazily; skip them and Canvas still works, degrading gracefully:
+Install the optional peers needed by your app's features. The package remains usable without them, with the following fallbacks:
 
 | Package | Install only if | Without it |
 | --- | --- | --- |
-| `react-native-qrcode-svg` | you render the `QRCode` component | `QRCode` is unavailable |
-| `expo-glass-effect` | you want real iOS 26 Liquid Glass | glass falls back to a translucent fill |
-| `expo-blur` | you want a real frosted blur for glass mode on non-Chromium web, Android, and iOS < 26 (Chromium web renders the SVG lens with no module) | glass falls back to a translucent fill (the Chromium lens keeps working) |
+| `react-native-qrcode-svg` | you render QR codes with `QRCode` | the accessible, sized frame remains empty and warns once in development |
+| `expo-glass-effect` | you want native Liquid Glass on supported iOS 26+ devices | forced glass uses `expo-blur` when available, otherwise the skin's solid fill; automatic surface mode remains solid |
+| `expo-blur` | you want frosted glass on non-Chromium web, Android, or older iOS | surfaces use their solid fill when no other material is available; native Liquid Glass and the Chromium lens still work |
+| `expo-clipboard` | you want `CodeBlock` to copy text on native | web can use `navigator.clipboard`; native copying needs a supplied `onCopy` handler |
+| `react-native-safe-area-context` | you want safe-area insets in Canvas shells, with your app's `SafeAreaProvider` | safe-area wrappers render as plain views without insets |
+| `@shopify/react-native-skia` | you want `Backdrop` to use an available GPU drawing backend | `Backdrop` keeps its React Native SVG renderer |
 
 ```bash
 # add any subset you actually use
-npm install react-native-qrcode-svg expo-glass-effect expo-blur
+npm install react-native-qrcode-svg expo-glass-effect expo-blur expo-clipboard react-native-safe-area-context @shopify/react-native-skia
 ```
 
 ## Quick start
@@ -89,7 +92,7 @@ String-valued enum props such as `variant="primary"`, `size="lg"`, or `tone="des
 
 Canvas targets all three platforms from one install. The only thing that changes is which peers your app already provides.
 
-- **Expo** works out of the box. Expo ships `react-native` and `react-native-svg` compatible versions, and the optional `expo-blur` / `expo-glass-effect` peers are Expo modules, so glass renders at full fidelity with no extra native setup.
+- **Expo** apps use the required peers and any optional modules needed by their features. The docs app in this repository is a working Expo example, including native glass and blur modules.
 - **Bare React Native** works the same way once the required peers are installed and linked (`react-native-svg` needs the usual autolinking / pod install). Add the optional peers if you want QRCode or full-fidelity glass.
 - **Web via React Native Web** needs one bundler step: install `react-native-web` and alias `react-native` to `react-native-web`, exactly as any RNW project does. Canvas resolves its `react-native` entry point through your alias; nothing else is web-specific. On the web you can also flip glass at runtime with the exported `setSurface("glass")` / `setSurface("solid")` DOM helper.
 
@@ -118,7 +121,7 @@ the shape and elevation scales, and the four API rules that are easy to break by
 accident. It is written to be read by an agent building on the kit as much as by a
 person, and its numbers are generated from the kit's own sources.
 
-The kit exports 60+ components across atoms, molecules, and organisms, all from `@nannier-com/canvas`:
+The kit exports components across atoms, molecules, organisms, and charts, all from `@nannier-com/canvas`:
 
 - **Forms and inputs**: Button, Button Group, Input, Textarea, Checkbox, Radio, Switch, Slider, Stepper, Input OTP, Select, Autocomplete, Listbox.
 - **Overlays**: Dialog, Alert Dialog, Drawer, Popover, Tooltip, Dropdown, Action Sheet, Toast, Command palette.
@@ -126,14 +129,14 @@ The kit exports 60+ components across atoms, molecules, and organisms, all from 
 - **Data and content**: Data Table, Stacked / Grid Lists, Stats, Calendar, Charts, Card, Avatar, Badge, Description Lists, Media Objects, QR Code.
 - **Disclosure and feedback**: Accordion, Collapsible, Carousel, Progress, Skeleton, Spinner, Alert, Empty State.
 
-Alongside the components, the package exports the style foundation: the theme runtime (`ThemeProvider`, `useTheme`), the design tokens (`token`, `hsl`), the responsive and motion helpers (`useResponsive`, `useReducedMotion`), the glass helpers (`liquidGlassAvailable`, `setSurface`), and the raw React Native primitives (`View`, `Text`, `Pressable`, `Image`, `TextInput`, `ScrollView`).
+Alongside the components, the package exports the style foundation: the theme runtime (`ThemeProvider`, `useTheme`), the design tokens (`token`, `hsl`), the responsive and motion helpers (`useResponsive`, `useReducedMotion`), the glass helpers (`liquidGlassAvailable`, `setSurface`), and React Native primitives (`View`, `Text`, `Pressable`, `TextInput`, `ScrollView`). `Image` is a Canvas atom with semantic fit props.
 
 ## Contributing
 
 Contributions are welcome. [CONTRIBUTING.md](./CONTRIBUTING.md) covers the Bun-based
 setup, the docs app you develop against, the check battery, and the design principles
 (semantic boolean props, no styling escape hatches, React Native everywhere) that
-pull requests are reviewed against.
+contributions are reviewed against.
 
 ## Security
 
@@ -142,7 +145,10 @@ public issues for security problems.
 
 ## License
 
-None. Canvas is purpose-built for my own projects and carries no license, so all rights
-are reserved. It is not offered for outside use, modification, or redistribution.
+The compiled package distributed on npm as `@nannier-com/canvas` is licensed under
+MIT. Its tarball includes the license and copyright notice.
+
+The source repository is not covered by that grant and remains all rights reserved.
+These are separate terms for the distributed package and the repository source.
 
 © 2026 Bobby Nannier.
