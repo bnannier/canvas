@@ -6,6 +6,7 @@ export default function Example(scope: ExampleScope) {
   const { Listbox } = scope;
   return (
 <Listbox
+  accessibilityLabel="People"
   items={[
     { label: "Rachel Chen", detail: "rachel@acme.io", selected: true },
     { label: "Ada Lovelace", detail: "ada@acme.io", selected: false },

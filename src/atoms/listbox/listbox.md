@@ -2,10 +2,13 @@
 
 A custom (non-native) select: single or multi-select, an optional detail line under each option, and a checkmark on the chosen items. Reach for it when a native select can't show rich options; prefer a native select for simple short lists. The list renders at the standard field width by default (`narrow` and `wide` pick the other modes, `block` fills the container).
 
+Single-select exposes a list of selectable options. With `multi`, it exposes a checkbox group: each row owns its label, checked state, and tap target. Give either mode a meaningful `accessibilityLabel`; the fallback is "Options". Arrow keys and Home/End move focus within one tab stop. Single-select follows focus, while multi-select keeps the current selection until Enter or Space toggles the focused row.
+
 ## Usage
 
 ```tsx
 <Listbox
+  accessibilityLabel="Teams"
   items={[
     { label: "Backend", selected: true },
     { label: "Frontend", selected: false },
@@ -23,6 +26,7 @@ A custom (non-native) select: single or multi-select, an optional detail line un
 
 ```tsx
 <Listbox
+  accessibilityLabel="Teams"
   items={[
     { label: "Backend", selected: true },
     { label: "Frontend", selected: false },
@@ -39,6 +43,7 @@ A custom (non-native) select: single or multi-select, an optional detail line un
 
 ```tsx
 <Listbox
+  accessibilityLabel="Teams"
   items={[
     { label: "Backend", selected: true },
     { label: "Frontend", selected: false },
@@ -55,6 +60,7 @@ A custom (non-native) select: single or multi-select, an optional detail line un
 
 ```tsx
 <Listbox
+  accessibilityLabel="Teams"
   items={[
     { label: "Backend", selected: true },
     { label: "Frontend", selected: false },
@@ -82,6 +88,7 @@ A custom (non-native) select: single or multi-select, an optional detail line un
 
 ```tsx
 <Listbox
+  accessibilityLabel="People"
   items={[
     { label: "Rachel Chen", detail: "rachel@acme.io", selected: true },
     { label: "Ada Lovelace", detail: "ada@acme.io", selected: false },
@@ -96,6 +103,7 @@ A custom (non-native) select: single or multi-select, an optional detail line un
 
 ```tsx
 <Listbox
+  accessibilityLabel="Teams"
   items={[
     { label: "Backend", selected: true },
     { label: "Frontend", selected: false },

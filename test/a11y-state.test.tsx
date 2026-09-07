@@ -17,6 +17,7 @@ import { Tabs } from "../src/organisms/tabs/tabs.tsx";
 import { RowMenu } from "../src/organisms/row-menu/row-menu.tsx";
 import { DataTable } from "../src/organisms/data-table/data-table.tsx";
 import { Stepper } from "../src/atoms/stepper/stepper.tsx";
+import { Listbox } from "../src/atoms/listbox/listbox.tsx";
 
 // react-native-web forwards NEITHER accessibilityState NOR accessibilityValue to
 // the DOM (verified empirically). The kit therefore carries the cross-platform
@@ -29,6 +30,14 @@ const ui = (n: ReactNode) => render(<ThemeProvider>{n}</ThemeProvider>);
 const attr = (c: HTMLElement, sel: string, a: string) => c.querySelector(sel)?.getAttribute(a);
 
 describe("web a11y state (aria aliases for RNW-dropped accessibilityState)", () => {
+  it("Listbox announces selected options and checked multi-select rows", () => {
+    const items = [{ label: "One" }, { label: "Two" }];
+    const { getAllByRole, rerender } = ui(<Listbox items={items} selected={1} />);
+    expect(getAllByRole("option").map((row) => row.getAttribute("aria-selected"))).toEqual(["false", "true"]);
+    rerender(<ThemeProvider><Listbox multi items={items} selected={[0]} /></ThemeProvider>);
+    expect(getAllByRole("checkbox").map((row) => row.getAttribute("aria-checked"))).toEqual(["true", "false"]);
+  });
+
   it("Stepper carries the numeric state on the named editable spinbutton", () => {
     const { getByRole } = ui(<Stepper label="Quantity" value={2} min={1} max={5} disabled />);
     const field = getByRole("spinbutton", { name: "Quantity" });

@@ -6,6 +6,7 @@ export default function Example(scope: ExampleScope) {
   const { Listbox } = scope;
   return (
 <Listbox
+  accessibilityLabel="Teams"
   items={[
     { label: "Backend", selected: true },
     { label: "Frontend", selected: false },

@@ -94,6 +94,7 @@ const CASES: SkinCase[] = [
   { name: "Row", dir: "atoms/layout", file: "layout", children: txt("row") },
   { name: "Column", dir: "atoms/layout", file: "layout", children: txt("col") },
   { name: "Listbox", dir: "atoms/listbox", file: "listbox", props: { items: [{ label: "One", selected: true }, { label: "Two" }] } },
+  { name: "Listbox", label: "Listbox multi", dir: "atoms/listbox", file: "listbox", props: { multi: true, accessibilityLabel: "Teams", items: [{ label: "One", selected: true }, { label: "Two" }] } },
   { name: "Stepper", dir: "atoms/stepper", file: "stepper", props: { value: 3, min: 0, max: 10, onChange: noop } },
   { name: "Pagination", dir: "atoms/pagination", file: "pagination", props: { page: 1, total: 5, onChange: noop } },
   // `inline` renders the popover card body directly (no trigger click needed).
@@ -280,7 +281,47 @@ for (const platform of PLATFORMS) {
           expect(screen.getByRole("group", { name: "Number" }).contains(field)).toBe(true);
           expect(screen.queryByRole("slider")).toBeNull();
         }
+        if (c.name === "Listbox" && c.props?.multi) {
+          const group = screen.getByRole("group", { name: "Teams" });
+          expect(screen.getAllByRole("checkbox")).toHaveLength(2);
+          expect(group.querySelectorAll('[tabindex="0"]')).toHaveLength(1);
+          expect(group.querySelector('[aria-hidden="true"] [tabindex]')).toBeNull();
+        }
       });
     }
+
+    it("Listbox and its private indicator keep the platform Checkbox artwork without its interaction", async () => {
+      const suffix = platform === "web" ? "" : `.${platform}`;
+      const { Checkbox } = await import(`../src/atoms/checkbox/checkbox${suffix}.tsx`);
+      const { CheckboxIndicator } = await import(`../src/atoms/checkbox/indicator/index${suffix}.tsx`);
+      const { Listbox } = await import(`../src/atoms/listbox/listbox${suffix}.tsx`);
+      for (const checked of [false, true]) {
+        for (const disabled of [false, true]) {
+          const publicControl = render(
+            <ThemeProvider><Checkbox checked={checked} disabled={disabled} accessibilityLabel="Choice" /></ThemeProvider>,
+          );
+          const checkbox = publicControl.getByRole("checkbox", { name: "Choice" });
+          const expectedArtwork = checkbox.firstElementChild?.outerHTML;
+          const expectedOpacity = getComputedStyle(checkbox).opacity;
+          publicControl.unmount();
+          const decorative = render(<ThemeProvider><CheckboxIndicator checked={checked} disabled={disabled} /></ThemeProvider>);
+          const indicator = decorative.container.firstElementChild as HTMLElement;
+          expect(indicator.firstElementChild?.outerHTML).toBe(expectedArtwork);
+          expect(getComputedStyle(indicator).opacity).toBe(expectedOpacity);
+          expect(decorative.container.querySelector('[role], [tabindex], button, input')).toBeNull();
+          decorative.unmount();
+
+          const list = render(
+            <ThemeProvider><Listbox multi items={[{ label: "Choice" }]} selected={checked ? [0] : []} disabled={disabled} /></ThemeProvider>,
+          );
+          const row = list.getByRole("checkbox", { name: "Choice" });
+          const composedIndicator = row.querySelector('[aria-hidden="true"]')?.firstElementChild as HTMLElement;
+          expect(composedIndicator.firstElementChild?.outerHTML).toBe(expectedArtwork);
+          expect(getComputedStyle(composedIndicator).opacity).toBe(expectedOpacity);
+          expect(composedIndicator.querySelector('[role], [tabindex], button, input')).toBeNull();
+          list.unmount();
+        }
+      }
+    });
   });
 }

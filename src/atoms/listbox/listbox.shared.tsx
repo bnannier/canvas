@@ -1,7 +1,6 @@
-import { useState } from "react";
+import { useState, type ComponentType } from "react";
 import { type Role } from "react-native";
 import { View, Pressable, Text, useTheme, useControllableState, useFieldWidth, useRovingFocus, isRTL, type FieldWidthProps, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle } from "../../style/index.js";
-import { Checkbox } from "../checkbox/checkbox.js";
 
 // Shared Listbox shell. An inline, selectable list of options rendered directly
 // (not a popover). Each row is a Pressable. Two selection modes, mutually
@@ -9,8 +8,8 @@ import { Checkbox } from "../checkbox/checkbox.js";
 //
 // 1. Single-select (default): the chosen row is filled with the accent and shows
 //    a leading checkmark ("✓"); at most one row is the value.
-// 2. Multi-select (`multi`): every row carries a leading Checkbox reflecting its
-//    own selected state, and any number of rows may be selected at once.
+// 2. Multi-select (`multi`): a named group of checkbox rows with decorative
+//    indicators, and any number of rows may be selected at once.
 //
 // The structure (rows, leading control, label/detail stack), the boolean-prop
 // axes (mode + size precedence, mirroring Button's intentOf), accessibility, and
@@ -50,7 +49,9 @@ export interface ListboxItem {
 export interface ListboxProps extends FieldWidthProps {
   /** The options to render, top to bottom. */
   items: ListboxItem[];
-  /** Multi-select: each row gets a leading Checkbox instead of a single ✓. */
+  /** Accessible name of the option list or multi-select checkbox group. Defaults to "Options". */
+  accessibilityLabel?: string;
+  /** Multi-select: each row is a checkbox with a leading indicator instead of a single ✓. */
   multi?: boolean;
   /** Wrap the list in a rounded, bordered content card (solid, stays opaque under glass). */
   bordered?: boolean;
@@ -128,11 +129,12 @@ function sizeOf(p: ListboxProps): Size {
 }
 
 /** Build a Listbox component from a platform skin. */
-export function createListbox(skin: ListboxSkin) {
+export function createListbox(skin: ListboxSkin, CheckboxIndicator: ComponentType<{ checked?: boolean; disabled?: boolean }>) {
   return function Listbox(props: ListboxProps) {
     const { items, bordered, disabled, onSelect, style } = props;
     const mode = modeOf(props);
     const size = sizeOf(props);
+    const accessibleName = props.accessibilityLabel?.trim() || "Options";
     const { tokens } = useTheme();
     // The standard field width axis: `{ width, maxWidth:"100%" }` (or null for
     // `block`, where the list fills its parent). Applied to the root list View so
@@ -164,7 +166,7 @@ export function createListbox(skin: ListboxSkin) {
       onSelect?.(index);
     };
 
-    // Roving-focus keyboard navigation (the WAI-ARIA listbox pattern): one tab stop,
+    // Roving-focus keyboard navigation: one tab stop,
     // arrows move a focus cursor down/up. Single-select follows focus (arrowing
     // selects); multi-select moves focus only and toggles on Enter/Space. The cursor
     // starts on the first selected row (or the first row).
@@ -198,26 +200,30 @@ export function createListbox(skin: ListboxSkin) {
     // or a group of `checkbox` rows (multi-select); "option"/"checkbox" are in
     // RN's Role union, "listbox" is the hoisted cast above.
     return (
-      <View style={container} role={LISTBOX} testID={props.testID}>
+      <View style={container} role={mode === "multi" ? "group" : LISTBOX} testID={props.testID}
+        accessibilityLabel={accessibleName} aria-label={accessibleName}>
         {items.map((item, index) => {
           const selected = selectedArr.includes(index);
+          // Name the row from its data so the title and detail stay separated,
+          // and a selected option's decorative checkmark is not announced.
+          const rowName = [item.label, item.detail].filter(Boolean).join(", ");
           // Single-select fills the chosen row; multi-select leaves the row plain
-          // and reflects state in the leading Checkbox instead.
+          // and reflects state in the leading checkbox indicator instead.
           const rowBase: StyleProp<ViewStyle> = [
             skin.rowBase,
             skin.rowSize[size],
             mode === "single" && selected ? skin.rowSelected(tokens) : null,
           ];
 
-          // Roving props for this row; Enter/Space toggles the focused row (both
-          // modes) before delegating the arrows to the roving handler. `onKeyDown`
-          // is web-only, so it rides through a cast (RN's Pressable types omit it).
+          // Pressable owns Enter activation on keyup. Handling it here as well
+          // toggles a multi row twice. Its checkbox/option roles need an explicit
+          // Space handler; arrows still use the shared roving-focus behavior.
           const roving = disabled ? undefined : getItemProps(index);
           const onRowKeyDown = roving
-            ? (e: { key: string; preventDefault: () => void }) => {
-                if (e.key === "Enter" || e.key === " ") {
+            ? (e: { key: string; repeat?: boolean; preventDefault: () => void }) => {
+                if (e.key === " " || e.key === "Spacebar") {
                   e.preventDefault();
-                  press(index);
+                  if (!e.repeat) press(index);
                   return;
                 }
                 roving.onKeyDown(e);
@@ -228,9 +234,7 @@ export function createListbox(skin: ListboxSkin) {
             : {};
 
           return (
-            // No RippleClip here on purpose: a listbox row is a `role="option"`/`"checkbox"`
-            // that must be a DIRECT child of the `role="listbox"` container, so a wrapper View
-            // between them would break the ARIA relationship (and the roving-focus DOM walk).
+            // Keep option/checkbox rows directly inside their listbox/group.
             // The row's own radius is only 2px, so a rectangular ripple bleed at those corners
             // is imperceptible and needs no clip. See src/style/ripple-clip.
             <Pressable
@@ -249,11 +253,14 @@ export function createListbox(skin: ListboxSkin) {
               ]}
               onPress={disabled ? undefined : () => press(index)}
               disabled={disabled}
-              // A multi-select row IS the checkbox (the inner Checkbox below is a
-              // presentational glyph), so its state is `checked`; a single-select
+              aria-disabled={!!disabled}
+              // A multi-select row IS the checkbox (the indicator has no interactive
+              // host), so its state is `checked`; a single-select
               // row is an `option`, whose state is `selected`. RNW forwards neither
               // accessibilityState key to the DOM, so each carries its aria alias.
               role={mode === "multi" ? "checkbox" : "option"}
+              accessibilityLabel={rowName}
+              aria-label={rowName}
               accessibilityState={
                 mode === "multi"
                   ? { checked: selected, disabled: !!disabled }
@@ -262,17 +269,16 @@ export function createListbox(skin: ListboxSkin) {
               {...(mode === "multi" ? { "aria-checked": selected } : { "aria-selected": selected })}
             >
               {mode === "multi" ? (
-                // Presentational only: the row Pressable owns the checkbox role and
-                // state, so the inner Checkbox is hidden from assistive tech and made
-                // non-interactive (no nested checkbox, no second focus target). It
-                // still mirrors the row's disabled dim.
+                // The row owns every action. This private indicator reuses the
+                // Checkbox skin but contains only Views/Text, so hiding it cannot
+                // leave a nested Pressable in the keyboard tab order.
                 <View
                   accessibilityElementsHidden
                   importantForAccessibility="no-hide-descendants"
                   aria-hidden
                   style={{ pointerEvents: "none" }}
                 >
-                  <Checkbox checked={selected} disabled={disabled} />
+                  <CheckboxIndicator checked={selected} disabled={disabled} />
                 </View>
               ) : (
                 // Reserve the checkmark column on every row so labels stay aligned

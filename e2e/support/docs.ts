@@ -183,7 +183,8 @@ export async function fitElementForScreenshot(page: Page, frame: Locator): Promi
   const box = await settledBox(frame);
   const viewport = page.viewportSize();
   if (!viewport) throw new Error("An element screenshot requires a configured viewport");
-  const banner = await page.getByRole("banner").first().boundingBox();
+  const bannerLocator = page.getByRole("banner").first();
+  const banner = await bannerLocator.count() ? await bannerLocator.boundingBox() : null;
   const inset = Math.ceil(banner?.height ?? 0);
   const height = Math.max(viewport.height, box.height + 2 * inset);
   if (height !== viewport.height) await page.setViewportSize({ ...viewport, height });
