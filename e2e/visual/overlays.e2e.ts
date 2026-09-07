@@ -10,7 +10,7 @@
  * the document root, so those two are full-page.
  */
 import { OVERLAYS } from "../support/overlays";
-import { fitStageForScreenshot, gotoDocs, settledBox, stage } from "../support/docs";
+import { fitElementForScreenshot, gotoDocs, settledBox, stage } from "../support/docs";
 import { expect, test } from "../support/fixtures";
 
 const FIXED_TIME = new Date("2026-01-15T12:00:00Z");
@@ -35,7 +35,7 @@ for (const scheme of ["dark", "light"] as const) {
       if (recipe.atDocumentRoot) {
         await expect(page).toHaveScreenshot(name, { fullPage: false });
       } else {
-        await fitStageForScreenshot(page);
+        await fitElementForScreenshot(page, stage(page));
         await expect(recipe.panel(page).last()).toBeVisible();
         await expect(stage(page)).toHaveScreenshot(name);
         await expect(recipe.panel(page).last()).toBeVisible();

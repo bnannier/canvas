@@ -171,25 +171,24 @@ export async function settledBox(locator: Locator): Promise<{ width: number; hei
 }
 
 /**
- * Fit an opened stage inside the viewport before cropping it.
+ * Fit a preview card or opened stage inside the viewport before cropping it.
  *
  * Chromium captures an element taller than its viewport with captureBeyondViewport.
  * That can emit a temporary 1x1 visualViewport resize, which RNW treats as a real
- * responsive layout change. Grow only the viewport height from the measured stage,
+ * responsive layout change. Grow only the viewport height from the measured element,
  * leaving enough room above and below for the docs' floating navigation bar.
  * Document-root Modal screenshots keep their configured viewport instead.
  */
-export async function fitStageForScreenshot(page: Page): Promise<void> {
-  const frame = stage(page);
+export async function fitElementForScreenshot(page: Page, frame: Locator): Promise<void> {
   const box = await settledBox(frame);
   const viewport = page.viewportSize();
-  if (!viewport) throw new Error("A stage screenshot requires a configured viewport");
+  if (!viewport) throw new Error("An element screenshot requires a configured viewport");
   const banner = await page.getByRole("banner").first().boundingBox();
   const inset = Math.ceil(banner?.height ?? 0);
   const height = Math.max(viewport.height, box.height + 2 * inset);
   if (height !== viewport.height) await page.setViewportSize({ ...viewport, height });
   await frame.scrollIntoViewIfNeeded();
   const fitted = await settledBox(frame);
-  expect(fitted.width, "the stage exceeds the screenshot viewport width").toBeLessThanOrEqual(viewport.width);
-  expect(fitted.height, "the stage exceeds the screenshot viewport height").toBeLessThanOrEqual(height);
+  expect(fitted.width, "the element exceeds the screenshot viewport width").toBeLessThanOrEqual(viewport.width);
+  expect(fitted.height, "the element exceeds the screenshot viewport height").toBeLessThanOrEqual(height);
 }
