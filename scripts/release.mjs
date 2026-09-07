@@ -54,6 +54,10 @@ export function prepare(cwd, dir, source, publish) {
   const before = read(path.join(cwd, "package.json"));
   let status = "not-requested";
   if (publish) {
+    // checkout(ref: SHA) is detached and creates no local main branch. Changesets
+    // reads its configured baseBranch even when calculating all pending entries.
+    // Supply that name at the pinned source without moving HEAD or any existing ref.
+    if (!git(cwd, "branch", "--list", "main")) git(cwd, "branch", "main", source);
     const planFile = path.join(dir, "changeset-plan.json");
     run(cwd, "bun", ["run", "changeset", "status", "--output", planFile]);
     const plan = read(planFile);

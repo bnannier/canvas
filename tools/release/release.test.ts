@@ -62,6 +62,17 @@ function advance(f: ReturnType<typeof fixture>) {
 }
 
 describe("frozen release transaction", () => {
+  test("prepares from a pinned detached CI checkout with no local main ref", () => {
+    const f = fixture();
+    git(f.repo, "checkout", "--detach", f.source);
+    git(f.repo, "branch", "-D", "main");
+    const c = prepare(f.repo, f.candidateDir, f.source, true);
+    expect(c.status).toBe("ready");
+    expect(c.version).toBe("2.3.5");
+    expect(git(f.repo, "rev-parse", "main")).toBe(f.source);
+    expect(git(f.repo, "rev-parse", "HEAD^")).toBe(f.source);
+  });
+
   test.skipIf(!fs.existsSync(path.resolve("dist/index.js")))("seals a real npm tarball and docs archive, then verifies their unpacked bytes", () => {
     const f = fixture();
     const c = prepare(f.repo, f.candidateDir, f.source, true);
