@@ -1,222 +1,159 @@
-name: Deploy — canvas
+name: Deploy - canvas
 
-# The deploy surface for this repo, split by how expensive and how reversible each
-# target is:
-#
-#   AUTOMATIC on every push to main
-#     - the web docs, published to Cloudflare Pages at canvas.nannier.com
-#     - npm, which is a no-op unless a changeset bumped the version
-#
-#   MANUAL, via the "Run workflow" button
-#     - the EAS native builds, which cost build minutes and, on the production profile,
-#       push binaries at Apple and Google
-#
-# Each target is its own job, so they show as separate boxes and one cannot fail another.
-# Every job writes clickable links for its result into the run summary.
-#
-# The `profile` input picks the EAS build profile: `production` auto-submits to
-# TestFlight / Google Play internal (the only profile with a submit config in
-# docs/eas.json); `preview` / `development` produce internal-distribution builds
-# (Android APK + ad-hoc iOS) shared by URL, with no store submission.
-#
-# EAS ONE-TIME SETUP (until done, the native job shows as "skipped"):
-#   1. EXPO_TOKEN repo secret (expo.dev -> account settings -> Access Tokens).
-#   2. iOS: distribution cert + provisioning profile + an App Store Connect API key
-#      on EAS (`eas credentials -p ios`) so submission runs unattended.
-#   3. Android: app created in the Play Console for com.nannier.canvas, a
-#      Google service-account key on EAS (`eas credentials -p android`), and the
-#      VERY FIRST .aab uploaded manually once (Google's API cannot create the first
-#      release).
-#   4. Set the repo VARIABLE `EAS_ENABLED` to `true` (Settings -> Secrets and
-#      variables -> Actions -> Variables). It gates the native job at the job level
-#      because `secrets` cannot be read in a job-level `if`.
+# One main-push pipeline prepares, validates and publishes a frozen candidate.
+# All paths qualify so an advancing main always schedules a replacement candidate.
 on:
-  # The web docs and the npm package publish THEMSELVES on every push to main: both are
-  # cheap, reversible-ish, and gated by their own tooling (Pages just replaces the site;
-  # `changeset publish` is a no-op unless the local version is absent from the registry,
-  # which only happens after a `changeset version` bump). The native store builds stay
-  # MANUAL below, because they cost EAS build minutes and, on the production profile,
-  # push binaries at Apple and Google.
   push:
     branches: [main]
-    paths:
-      - 'src/**'
-      - 'styles/**'
-      - 'docs/**'
-      - 'tools/**'
-      - 'package.json'
-      - 'bun.lock'
-      - '.changeset/**'
   workflow_dispatch:
     inputs:
       pages:
-        description: "Deploy web docs to Cloudflare Pages (canvas.nannier.com)"
+        description: Deploy validated web docs to Cloudflare Pages
         type: boolean
         default: true
       npm:
-        # Defaults to FALSE unlike the others: this publishes a real, public, immutable
-        # release, so it must be opted into deliberately rather than left ticked.
-        description: "Publish @nannier-com/canvas to npm"
+        description: Publish a validated patch or minor release with pending changesets
         type: boolean
         default: false
       ios:
-        description: "EAS-build the iOS docs app"
+        description: EAS-build the iOS docs app
         type: boolean
         default: true
       android:
-        description: "EAS-build the Android docs app"
+        description: EAS-build the Android docs app
         type: boolean
         default: true
       profile:
-        description: "EAS build profile (production auto-submits to the stores)"
+        description: EAS build profile (production auto-submits to the stores)
         type: choice
         options: [production, preview, development]
         default: production
 
-# Deploys are serialized and never cancelled: two npm publishes racing could
-# double-commit version bumps, and an in-flight Pages deploy should always finish.
+# Finish accepted publication before another run can deploy newer artifacts.
 concurrency:
   group: deploy
   cancel-in-progress: false
 
-# No workflow-level grant: each job scopes exactly the permissions it uses.
+permissions:
+  contents: read
+
+env:
+  HUSKY: '0'
 
 jobs:
-  # --------------------------------------------------------- Cloudflare Pages (web)
-  # Publishes the web docs to canvas.nannier.com. This replaced a GitHub Pages deploy,
-  # for two reasons worth remembering before anyone moves it back:
-  #   - the site is served from the ROOT of its own subdomain rather than a /canvas
-  #     subpath, which was a repeated source of asset-path bugs, so there is no
-  #     EXPO_BASE_URL here;
-  #   - docs/public/_redirects performs a real SPA rewrite, so deep routes answer 200.
-  #     Pages has no rewrites, so serving an SPA there means copying index.html to
-  #     404.html and every deep route answering with a 404 STATUS while rendering fine.
-  #     Both app stores fetch the privacy policy URL they are given, which is what turned
-  #     that from cosmetic into a submission risk.
-  #
-  # Gated on CLOUDFLARE_ENABLED so the job self-disables if the credentials are ever
-  # removed, rather than failing every push.
-  cloudflare:
-    if: ${{ (github.event_name == 'push' || inputs.pages) && vars.CLOUDFLARE_ENABLED == 'true' }}
+  prepare:
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
-    timeout-minutes: 15
-    permissions:
-      contents: read
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v7
-
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version: latest
+      - run: bun install --frozen-lockfile
+      - name: Prepare immutable version candidate
+        run: node scripts/release.mjs prepare "$RUNNER_TEMP/candidate"
+        env:
+          SOURCE_SHA: ${{ github.sha }}
+          RELEASE_NPM: ${{ github.event_name == 'push' || inputs.npm }}
+      - uses: actions/upload-artifact@v7
+        with:
+          name: release-candidate
+          path: ${{ runner.temp }}/candidate
+          retention-days: 7
+          if-no-files-found: error
 
-      # Root deps first: docs consumes the source-only kit as a live symlink
-      # (docs postinstall), so the root tree must exist before the docs install.
-      - name: Install root deps
-        run: bun install --frozen-lockfile
+  validate:
+    needs: prepare
+    uses: ./.github/workflows/validate.yml
+    with:
+      candidate: true
 
-      - name: Check generated docs core is up to date
-        run: bun run docs:gen:check
-
-      - name: Check menu-glyph rasters are up to date
-        run: bun run raster:gen:check
-
-      - name: Install docs deps
-        working-directory: docs
-        run: bun install --frozen-lockfile
-
-      # Must run after the docs install: the generator reads each package's LICENSE from
-      # docs/node_modules first, so without it the set resolves differently and the check
-      # reports a false "stale".
-      - name: Check third-party licence notices are up to date
-        run: bun run notices:gen:check
-
-      - name: Typecheck docs
-        working-directory: docs
-        run: bunx tsc --noEmit
-
-      - name: Check nav config is in sync
-        working-directory: docs
-        run: bun run check:nav
-
-      # No EXPO_BASE_URL: served from the root of canvas.nannier.com.
-      # build:web is `expo export -p web` plus scripts/preload-fonts.mjs, which adds
-      # <link rel="preload"> for the eight Geist faces. The root layout holds the tree
-      # back until they load, and they could not start downloading until the bundle had
-      # been fetched and executed, so they sat at the tail of the critical chain. Measured
-      # over three runs per arm, preloading them cut First Contentful Paint from ~972ms to
-      # ~211ms and Speed Index from ~2156 to ~380, with CLS unchanged at 0.006. The step
-      # is defined in package.json so a local export matches what CI ships.
-      - name: Export web build
-        working-directory: docs
-        run: bun run build:web
-
-      # wrangler's Pages upload SKIPS every path containing a `node_modules` segment, and
-      # Expo emits bundled package assets to dist/assets/node_modules/<pkg>/... mirroring
-      # their source path. The Geist font files land exactly there, so they were silently
-      # dropped from the upload: 421 files built, 366 uploaded. The app then waits forever
-      # on useFonts and renders nothing, and because _redirects answers every unknown path
-      # with index.html at status 200, the missing fonts surfaced as neither a 404 nor a
-      # console error. A blank page with no diagnostics at all.
-      #
-      # Renaming that one path segment (and every reference to it) is enough to make the
-      # assets uploadable. The checks below fail the build rather than let a fontless,
-      # blank site deploy again.
-      - name: Un-hide bundled package assets from wrangler
-        working-directory: docs
+  publish:
+    needs: validate
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    outputs:
+      accepted: ${{ steps.publish.outputs.accepted }}
+      status: ${{ steps.publish.outputs.status }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+          registry-url: https://registry.npmjs.org
+      - uses: actions/download-artifact@v8
+        with:
+          name: release-candidate
+          path: ${{ runner.temp }}/candidate
+      - uses: actions/download-artifact@v8
+        with:
+          name: release-artifacts
+          path: ${{ runner.temp }}/artifacts
+      - name: Restore validated candidate
+        run: node scripts/release.mjs restore "$RUNNER_TEMP/candidate"
+        env:
+          SOURCE_SHA: ${{ github.sha }}
+      - name: Accept candidate and publish tested tarball
+        id: publish
+        run: node scripts/release.mjs publish "$RUNNER_TEMP/candidate" "$RUNNER_TEMP/artifacts"
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      - name: npm outcome
+        if: always()
+        env:
+          OUTCOME: ${{ steps.publish.outcome }}
+          STATUS: ${{ steps.publish.outputs.status }}
         run: |
-          if [ -d dist/assets/node_modules ]; then
-            mv dist/assets/node_modules dist/assets/vendor
-            find dist -type f \( -name '*.js' -o -name '*.html' -o -name '*.css' -o -name '*.json' \) \
-              -exec sed -i 's|assets/node_modules|assets/vendor|g' {} +
-            echo "moved dist/assets/node_modules -> dist/assets/vendor and rewrote references"
-          else
-            echo "no dist/assets/node_modules present; nothing to move"
-          fi
-          if find dist -type d -name node_modules | grep -q .; then
-            echo "::error::a node_modules path remains under dist; wrangler would skip it"; exit 1
-          fi
-          if grep -rq "assets/node_modules" dist 2>/dev/null; then
-            echo "::error::stale assets/node_modules references remain; fonts would 404"; exit 1
-          fi
+          {
+            echo '### npm release'
+            echo "Publication step: ${OUTCOME:-not started}. Candidate result: ${STATUS:-not accepted}."
+            case "$STATUS" in
+              published) echo 'The validated tarball was published and its candidate tag was pushed.' ;;
+              stale) echo 'Main advanced. No artifact was published and no tag was pushed; the newer main run owns release preparation.' ;;
+              blocked-major) echo 'Major releases are blocked for automatic and manual runs. The generic npm checkbox does not authorize a major.' ;;
+              no-changesets|not-requested) echo 'No npm publication was requested by this candidate.' ;;
+              *) echo 'Publication did not complete. Inspect the failed stage. After a partial release, fix the cause and add a new changeset for the next version.' ;;
+            esac
+          } >> "$GITHUB_STEP_SUMMARY"
 
-      # Fails loudly rather than shipping a site whose deep routes 404: _redirects is what
-      # makes this host better than Pages, and it only works if it reached the artifact.
-      - name: Verify SPA rewrite and privacy page are in the artifact
-        working-directory: docs
+  cloudflare:
+    needs: [validate, publish]
+    if: ${{ !cancelled() && needs.validate.result == 'success' && github.ref == 'refs/heads/main' && needs.publish.outputs.accepted == 'true' && (github.event_name == 'push' || inputs.pages) && vars.CLOUDFLARE_ENABLED == 'true' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.sha }}
+      - uses: actions/download-artifact@v8
+        with:
+          name: release-candidate
+          path: ${{ runner.temp }}/candidate
+      - uses: actions/download-artifact@v8
+        with:
+          name: release-artifacts
+          path: ${{ runner.temp }}/artifacts
+      - name: Verify and extract validated docs
         run: |
-          test -f dist/_redirects || { echo "::error::dist/_redirects missing; SPA routes would 404"; exit 1; }
-          test -f dist/privacy/index.html || { echo "::error::dist/privacy/index.html missing; the store privacy URL would break"; exit 1; }
-          test -f dist/_headers || { echo "::error::dist/_headers missing; the site would deploy with no CSP, HSTS or asset caching"; exit 1; }
-
-      # A preload pointing at a path that does not exist is worse than no preload: the
-      # browser spends a high-priority connection on a 404 and then fetches the real font
-      # anyway. These hrefs are written before the vendor rename above rewrites them, so
-      # this also proves that rewrite reached index.html.
-      - name: Verify font preloads resolve
-        working-directory: docs
-        run: |
-          n=$(grep -c 'rel="preload" as="font"' dist/index.html || true)
-          test "$n" = "8" || { echo "::error::expected 8 font preloads in dist/index.html, found $n"; exit 1; }
-          grep -o 'rel="preload" as="font"[^>]*href="[^"]*"' dist/index.html \
-            | sed 's/.*href="//;s/"//' | while read -r h; do
-              test -f "dist${h}" || { echo "::error::preloaded font not in artifact: ${h}"; exit 1; }
-            done
-          echo "all 8 preloaded fonts resolve to files in the artifact"
-          echo "_redirects and privacy/index.html present"
-
-      # Every Pages deployment keeps a permanent, individually addressable URL of the form
-      # <hash>.canvas-wna.pages.dev, and those are PUBLIC by default. That is not merely
-      # untidy: a deployment goes on serving whatever it contained forever, so anything
-      # published by mistake stays published even after the next deploy removes it. It bit
-      # us exactly once — four deployments kept serving JavaScript source maps carrying
-      # 363 of the kit's own source files after the maps had been removed from the build.
-      #
-      # The project's Settings now has "Preview access" restricted by a Cloudflare Access
-      # policy, so every <hash> URL answers 302 to a login. canvas.nannier.com and the
-      # apex canvas-wna.pages.dev stay public, which is the intent: serve the latest, not
-      # every release. If you ever need a specific old deployment, sign in through Access
-      # rather than turning the policy off.
-      - name: Publish to Cloudflare Pages
+          node scripts/release.mjs restore "$RUNNER_TEMP/candidate"
+          node scripts/release.mjs verify "$RUNNER_TEMP/candidate" "$RUNNER_TEMP/artifacts"
+          mkdir -p docs/dist
+          tar -xzf "$RUNNER_TEMP/artifacts/docs.tgz" -C docs/dist
+        env:
+          SOURCE_SHA: ${{ github.sha }}
+      # Keep preview access restricted in Cloudflare. Permanent deployment URLs
+      # remain behind Access; only the production host serves the public site.
+      - name: Publish the tested docs to Cloudflare Pages
         id: cf
         uses: cloudflare/wrangler-action@v4
         with:
@@ -224,181 +161,24 @@ jobs:
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           workingDirectory: docs
           command: pages deploy dist --project-name=${{ vars.CLOUDFLARE_PROJECT || 'canvas' }} --branch=main
-
-      - name: Summarise the deploy
+      - name: Web outcome
         if: always()
-        run: |
-          {
-            echo "### Web docs (Cloudflare Pages)"
-            echo ""
-            echo "- [canvas.nannier.com](https://canvas.nannier.com/)"
-            echo "- [Privacy policy](https://canvas.nannier.com/privacy/) (the URL filed with both app stores)"
-            [ -n "${{ steps.cf.outputs.deployment-url }}" ] && echo "- [This exact deployment](${{ steps.cf.outputs.deployment-url }})"
-          } >> "$GITHUB_STEP_SUMMARY"
-
-  # ------------------------------------------------------------------------ npm
-  # Changesets release. If there are pending changesets, consume them (version bump
-  # + CHANGELOG) and commit directly to main; then ALWAYS run `changeset publish`.
-  # Publish is idempotent: it only publishes versions missing from npm, so a publish
-  # that failed once converges on the next run without a fresh changeset. Avoids the
-  # PR-creation path entirely (no "Actions can create PRs" repo setting needed).
-  npm:
-    # Automatic on a push to main; on a manual run it obeys the checkbox. `changeset
-    # publish` is a no-op when the local version already exists on the registry, so a
-    # push with no version bump publishes nothing. The version-bump commit carries
-    # [skip ci], which is what stops it from retriggering this workflow forever.
-    if: ${{ github.event_name == 'push' || inputs.npm }}
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    permissions:
-      contents: write
-    steps:
-      - uses: actions/checkout@v7
-        with:
-          fetch-depth: 0
-          token: ${{ secrets.GITHUB_TOKEN }}
-
-      - uses: oven-sh/setup-bun@v2
-        with:
-          bun-version: latest
-
-      - run: bun install --frozen-lockfile
-
-      # A MAJOR bump is never allowed to happen automatically. An automatic push should
-      # only ever move the minor or patch digit; a breaking release is a deliberate act
-      # that deserves a human pressing the button, not a side effect of merging. This is
-      # not hypothetical: a major changeset once rode a push straight to a published
-      # 2.0.0. When a major is pending, the automatic path stops here and the run reports
-      # what to do; a manual run (workflow_dispatch) still performs it.
-      - name: Block automatic major releases
-        id: major_guard
-        run: |
-          major=$(grep -lE "^['\"]?@nannier-com/canvas['\"]?:[[:space:]]*major" .changeset/*.md 2>/dev/null | wc -l | tr -d ' ')
-          echo "major=$major" >> "$GITHUB_OUTPUT"
-          if [ "$major" != "0" ] && [ "${{ github.event_name }}" = "push" ]; then
-            echo "blocked=true" >> "$GITHUB_OUTPUT"
-            {
-              echo "### npm release held back"
-              echo ""
-              echo "$major pending changeset(s) request a **major** version bump, and automatic"
-              echo "publishing is limited to minor and patch releases."
-              echo ""
-              echo "Run the Deploy workflow manually with the npm box ticked to publish it,"
-              echo "or downgrade the changeset to \`minor\` if a breaking release was not intended."
-            } >> "$GITHUB_STEP_SUMMARY"
-            echo "::notice::Major bump pending; skipping the automatic release."
-          else
-            echo "blocked=false" >> "$GITHUB_OUTPUT"
-          fi
-
-      - name: Check for pending changesets
-        if: steps.major_guard.outputs.blocked != 'true'
-        id: has_changesets
-        run: |
-          # count .md files in .changeset/ that aren't README.md
-          # Mirror changesets' OWN filter, which is
-          #   !file.startsWith('.') && file.endsWith('.md') && !/^README\.md$/i.test(file)
-          # Without the dotfile and case-insensitive README exclusions this counts files
-          # changesets ignores, so a repo whose only pending entry is a scratch
-          # .changeset/.draft.md takes the version-and-tag path with nothing to release:
-          # a no-op re-tag of the current version, hidden by the `|| echo already exists`
-          # further down. Over-counting is the safe direction (a wasted no-op) and
-          # under-counting would skip a real release, so this only ever removes entries
-          # changesets itself refuses to read.
-          count=$(find .changeset -maxdepth 1 -name "*.md" ! -iname "README.md" ! -name ".*" 2>/dev/null | wc -l | tr -d ' ')
-          echo "count=$count" >> "$GITHUB_OUTPUT"
-          echo "Found $count pending changeset(s)."
-
-      - name: Configure git
-        if: steps.major_guard.outputs.blocked != 'true' && steps.has_changesets.outputs.count != '0'
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-
-      # The [skip ci] matters: ci.yml's paths filter includes package.json and
-      # .changeset/**, so without it the version commit would burn a CI run.
-      - name: Version packages
-        if: steps.major_guard.outputs.blocked != 'true' && steps.has_changesets.outputs.count != '0'
-        run: |
-          bun run version-packages
-          git add .
-          if git diff --cached --quiet; then
-            echo "No version changes to commit."
-          else
-            git commit -m "chore: version packages [skip ci]"
-            # Rebase onto latest main, then push. Retried because concurrent
-            # worktree pushes can land on main between the rebase and the push,
-            # rejecting it as non-fast-forward.
-            for attempt in 1 2 3; do
-              git fetch origin main
-              git rebase origin/main
-              if git push origin HEAD:main; then
-                break
-              fi
-              if [ "$attempt" = "3" ]; then
-                echo "::error::could not push the version commit after 3 attempts (main kept advancing). Re-run the deploy."
-                exit 1
-              fi
-              echo "Push rejected (main advanced); retrying ($attempt/3)..."
-            done
-          fi
-
-      - name: Authenticate npm (npmjs.org)
-        if: steps.major_guard.outputs.blocked != 'true'
-        run: |
-          echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" >> .npmrc
-          # Both scopes: the kit publishes as @nannier-com/canvas, and the old
-          # @nannier line stays so the deprecation of the former name (see
-          # npm-deprecate.yml) keeps resolving against the same registry.
-          echo "@nannier-com:registry=https://registry.npmjs.org" >> .npmrc
-          echo "@nannier:registry=https://registry.npmjs.org" >> .npmrc
-
-      # Runs UNCONDITIONALLY (not gated on pending changesets): publish is
-      # idempotent, so this also retries any version already on main but missing
-      # from npm.
-      - name: Publish to npmjs.org
-        if: steps.major_guard.outputs.blocked != 'true'
-        run: bun run release
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-
-      - name: Push release tags
-        if: steps.major_guard.outputs.blocked != 'true'
-        run: git push --tags
-
-      # Clickable result in the run summary. Reads the version AFTER `changeset version`
-      # ran, so it names what actually went out, and reports plainly when a run published
-      # nothing (the common case: a push with no pending changesets).
-      - name: Summarise the release
-        if: always()
+          OUTCOME: ${{ steps.cf.outcome }}
+          DEPLOYMENT_URL: ${{ steps.cf.outputs.deployment-url }}
         run: |
-          version=$(node -p "require('./package.json').version")
           {
-            echo "### npm"
-            if [ "${{ steps.has_changesets.outputs.count }}" = "0" ]; then
-              echo "No pending changesets, so nothing was published. Current version is \`$version\`."
-            else
-              echo "Published **@nannier-com/canvas@$version**"
-              echo ""
-              echo "- [View on npm](https://www.npmjs.com/package/@nannier-com/canvas/v/$version)"
-              echo "- [Release tag](https://github.com/${{ github.repository }}/releases/tag/v$version)"
+            echo '### Web docs (Cloudflare Pages)'
+            echo "Deployment step: ${OUTCOME:-not started}."
+            if [ "$OUTCOME" = success ]; then
+              echo '- [canvas.nannier.com](https://canvas.nannier.com/)'
+              echo "- [Exact deployment]($DEPLOYMENT_URL)"
             fi
           } >> "$GITHUB_STEP_SUMMARY"
 
-  # -------------------------------------------------------- EAS native (iOS/Android)
-  # Green here means "queued on EAS"; build + store-submission results live on expo.dev
-  # (links land in the run summary).
-  # iOS and Android are SEPARATE jobs, not one "native" job driven by --platform all, so
-  # each renders as its own box and, more importantly, so one platform cannot fail the
-  # other. They were combined until a run proved the hazard: both builds queued fine, then
-  # the Android submission aborted the whole job ("Google Service Account Keys cannot be
-  # set up in --non-interactive mode"), marking a perfectly good iOS build red. The setup
-  # steps are duplicated between the two rather than hidden in a composite action; the
-  # repetition is a handful of lines and keeps each job readable on its own.
   ios:
-    if: ${{ github.event_name == 'workflow_dispatch' && inputs.ios && vars.EAS_ENABLED == 'true' }}
+    needs: [validate, publish]
+    if: ${{ !cancelled() && needs.validate.result == 'success' && github.ref == 'refs/heads/main' && needs.publish.outputs.accepted == 'true' && github.event_name == 'workflow_dispatch' && inputs.ios && vars.EAS_ENABLED == 'true' }}
     runs-on: ubuntu-latest
     timeout-minutes: 15
     permissions:
@@ -411,6 +191,19 @@ jobs:
       EAS_SUBMIT: ${{ inputs.profile == 'production' }}
     steps:
       - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.sha }}
+
+      - name: Download candidate
+        uses: actions/download-artifact@v8
+        with:
+          name: release-candidate
+          path: ${{ runner.temp }}/candidate
+
+      - name: Restore validated source
+        run: node scripts/release.mjs restore "$RUNNER_TEMP/candidate"
+        env:
+          SOURCE_SHA: ${{ github.sha }}
 
       - uses: oven-sh/setup-bun@v2
         with:
@@ -421,18 +214,9 @@ jobs:
           eas-version: latest
           token: ${{ secrets.EXPO_TOKEN }}
 
-      # The native app consumes the source-only kit + the generated docs core through
-      # symlinks (docs postinstall), so root deps + docgen must precede the EAS build.
+      # Native consumes the same validated source and generated docs core.
       - name: Install root deps
         run: bun install --frozen-lockfile
-
-      - name: Regenerate docs core
-        run: bun run docs:gen
-
-      # The native app bundles the menu-glyph PNGs, so bake them fresh against the current
-      # kit glyphs (same rationale as regenerating docs core above).
-      - name: Regenerate menu-glyph rasters
-        run: bun run raster:gen
 
       - name: Install docs deps
         working-directory: docs
@@ -474,7 +258,8 @@ jobs:
           } >> "$GITHUB_STEP_SUMMARY"
 
   android:
-    if: ${{ github.event_name == 'workflow_dispatch' && inputs.android && vars.EAS_ENABLED == 'true' }}
+    needs: [validate, publish]
+    if: ${{ !cancelled() && needs.validate.result == 'success' && github.ref == 'refs/heads/main' && needs.publish.outputs.accepted == 'true' && github.event_name == 'workflow_dispatch' && inputs.android && vars.EAS_ENABLED == 'true' }}
     runs-on: ubuntu-latest
     timeout-minutes: 15
     permissions:
@@ -490,6 +275,19 @@ jobs:
       EAS_SUBMIT: ${{ inputs.profile == 'production' && vars.PLAY_SUBMIT_ENABLED == 'true' }}
     steps:
       - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.sha }}
+
+      - name: Download candidate
+        uses: actions/download-artifact@v8
+        with:
+          name: release-candidate
+          path: ${{ runner.temp }}/candidate
+
+      - name: Restore validated source
+        run: node scripts/release.mjs restore "$RUNNER_TEMP/candidate"
+        env:
+          SOURCE_SHA: ${{ github.sha }}
 
       - uses: oven-sh/setup-bun@v2
         with:
@@ -500,18 +298,9 @@ jobs:
           eas-version: latest
           token: ${{ secrets.EXPO_TOKEN }}
 
-      # The native app consumes the source-only kit + the generated docs core through
-      # symlinks (docs postinstall), so root deps + docgen must precede the EAS build.
+      # Native consumes the same validated source and generated docs core.
       - name: Install root deps
         run: bun install --frozen-lockfile
-
-      - name: Regenerate docs core
-        run: bun run docs:gen
-
-      # The native app bundles the menu-glyph PNGs, so bake them fresh against the current
-      # kit glyphs (same rationale as regenerating docs core above).
-      - name: Regenerate menu-glyph rasters
-        run: bun run raster:gen
 
       - name: Install docs deps
         working-directory: docs
@@ -540,5 +329,35 @@ jobs:
               echo "Auto-submit is OFF. Download the \`.aab\` from the EAS link above and upload it by hand."
               echo "Play cannot create a first release through the API, so the first upload is manual regardless."
               echo "Set the repo variable \`PLAY_SUBMIT_ENABLED\` to \`true\` once a Google service account key is attached to EAS."
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  summary:
+    needs: [prepare, validate, publish, cloudflare, ios, android]
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: Report every stage
+        env:
+          PREPARE: ${{ needs.prepare.result }}
+          VALIDATE: ${{ needs.validate.result }}
+          PUBLISH: ${{ needs.publish.result }}
+          STATUS: ${{ needs.publish.outputs.status }}
+          WEB: ${{ needs.cloudflare.result }}
+          IOS: ${{ needs.ios.result }}
+          ANDROID: ${{ needs.android.result }}
+        run: |
+          {
+            echo '### Candidate delivery results'
+            echo "- Preparation: $PREPARE"
+            echo "- Validation (including browser tests): $VALIDATE"
+            echo "- npm transaction: $PUBLISH (${STATUS:-not started})"
+            echo "- Web deployment: $WEB"
+            echo "- iOS build submission: $IOS"
+            echo "- Android build submission: $ANDROID"
+            echo 'Native success means queued on EAS; build and store results are reported by EAS.'
+            if [ "$PUBLISH" = failure ]; then
+              echo 'After a partial release, fix the cause and add a new changeset for the next version.'
             fi
           } >> "$GITHUB_STEP_SUMMARY"
