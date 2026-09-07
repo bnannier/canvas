@@ -87,8 +87,9 @@ onto a component is not a supported way to get one.
 ## Typography
 
 Two faces, Geist and Geist Mono, and one scale. The semantic roles below are what the
-Typography component renders; headings lead tighter than body copy, and nothing drops
-below 14px.
+Typography component renders. Headings lead tighter than body copy; every body role
+sits at 14px or above, and the one role below it, `tiny`, is for captions and metadata
+rather than for anything a reader has to work through.
 
 <!-- @generated:typography -->
 <!-- @/generated -->
@@ -201,8 +202,11 @@ written above.
 
 ## Known gaps
 
-`HANDOFF-PARITY.md` tracks where the kit's prop surface diverges from the design
-hand-off, with each divergence either settled or recorded as open. The end-to-end suite
-records the pages that still overflow their column at tablet width, the components whose
-touch targets are below their platform's minimum, and the accessibility findings that
-stand, each with a measurement rather than an adjective.
+Three lists in the repository record what is known to be wrong, each entry with a
+measurement rather than an adjective, and each checked in both directions so it cannot
+go stale: `e2e/responsive/component-widths.e2e.ts` holds the pages that still overflow
+their column at tablet width, `test/touch-target-coverage.test.ts` holds the controls
+below their platform's touch minimum and how every other one reaches it, and
+`e2e/a11y/components.e2e.ts` holds the accessibility findings that stand. A fourth,
+`HANDOFF-PARITY.md`, tracks where the prop surface diverges from the design hand-off.
+None of those four ships in the package; they are in the repository.

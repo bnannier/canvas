@@ -137,17 +137,26 @@ export function createBadge(skin: BadgeSkin) {
       // else fall back to the status tone word ("error", "success", ...).
       const statusName = accessibilityLabel ?? (children == null ? tone : undefined);
       // A name has to sit on a node that can carry one. A bare View is a generic
-      // element, and ARIA prohibits naming those, so the label was being dropped by
-      // validators and by some screen readers rather than announced. A dot standing
-      // in for a word IS image-like, which is the role Swatch already uses for the
-      // same reason. Only when there is a name: a decorative dot beside its own text
-      // label stays generic and silent, which is right.
-      const named = statusName != null;
+      // element, and ARIA prohibits naming those, so the label was being discarded by
+      // validators and by some screen readers rather than announced.
+      //
+      // Which role depends on what the badge contains, and getting that wrong trades
+      // one defect for a worse one. A dot ALONE standing in for a word is image-like,
+      // and img is what Swatch uses for the same reason. A badge that also renders
+      // text must NOT take img, because img is a leaf role: it would replace the
+      // visible text in the accessibility tree with the label. There it is a group,
+      // which accepts a name and keeps its children readable. With no name at all,
+      // no role: a decorative dot beside its own text label stays silent, correctly.
+      const role = statusName == null ? null : children == null ? "img" : "group";
       return (
         <View
           style={[skin.statusBase, statusContainer(tokens, dark, tone), style]}
           testID={testID}
-          {...(named ? { accessibilityRole: "image" as const, role: "img" as const } : null)}
+          {...(role === "img"
+            ? { accessibilityRole: "image" as const, role: "img" as const }
+            : role === "group"
+              ? { role: "group" as const }
+              : null)}
           accessibilityLabel={statusName}
           aria-label={statusName}
         >

@@ -13,7 +13,7 @@
  * covers both schemes and both shells at half the page loads.
  */
 import { allRoutes, aliasRoutes, type DocsRoute } from "../support/routes";
-import { gotoDocs, previewCard, BASE_PATH, type Scheme } from "../support/docs";
+import { gotoDocs, previewCard, settled, BASE_PATH, type Scheme } from "../support/docs";
 import { expect, test } from "../support/fixtures";
 
 interface Variant {
@@ -32,11 +32,20 @@ const VARIANTS: Variant[] = [
 const routes = allRoutes();
 const aliases = new Set(aliasRoutes().map((r) => r.path));
 
+/**
+ * How far the document runs past its own width, once the layout has settled.
+ *
+ * Sampling once races the components that size themselves from a measurement of
+ * their own box, which is how the responsive suite grew a test that failed under
+ * parallel workers and passed alone.
+ */
 async function documentOverflow(page: import("@playwright/test").Page): Promise<number> {
-  return page.evaluate(() => {
-    const el = document.documentElement;
-    return el.scrollWidth - el.clientWidth;
-  });
+  return settled(() =>
+    page.evaluate(() => {
+      const el = document.documentElement;
+      return el.scrollWidth - el.clientWidth;
+    }),
+  );
 }
 
 for (const variant of VARIANTS) {

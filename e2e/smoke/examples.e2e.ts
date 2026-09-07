@@ -38,7 +38,12 @@ for (const { route, examples } of componentExamples()) {
       await expect(tab).toHaveAttribute("aria-selected", "true");
       // Each example has exactly one canonical address, and selecting it puts the
       // page there (replace, not push, so the back button still leaves the page).
-      expect(new URL(page.url()).pathname, example.label).toBe(`${BASE_PATH}${example.path}`);
+      // toHaveURL, not a bare read of page.url(): the address is rewritten by a
+      // router navigation that lands a beat after the click, so reading it once
+      // races the router and fails under parallel workers on the fastest pages.
+      await expect(page, example.label).toHaveURL(
+        (url) => url.pathname === `${BASE_PATH}${example.path}`,
+      );
       await expect(page.getByText(FAILURE), example.label).toHaveCount(0);
     }
   });

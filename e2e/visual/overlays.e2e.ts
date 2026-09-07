@@ -10,7 +10,7 @@
  * the document root, so those two are full-page.
  */
 import { OVERLAYS } from "../support/overlays";
-import { gotoDocs, stage } from "../support/docs";
+import { gotoDocs, settledBox, stage } from "../support/docs";
 import { expect, test } from "../support/fixtures";
 
 const FIXED_TIME = new Date("2026-01-15T12:00:00Z");
@@ -26,6 +26,12 @@ for (const scheme of ["dark", "light"] as const) {
 
       await recipe.open(page);
       await expect(recipe.panel(page).last()).toBeVisible();
+      // Visible is not settled. An anchored overlay portals into the stage, and the
+      // stage grows to hold it a layout pass LATER, so a shot taken here catches the
+      // closed height. toHaveScreenshot's own retry stabilises pixels, not the box,
+      // so it cannot see the difference: it happily agreed with itself twice at the
+      // wrong size and minted a baseline of a dialog that had not opened yet.
+      await settledBox(stage(page));
 
       const name = `overlays/${recipe.slug}--${scheme}.png`;
       if (AT_DOCUMENT_ROOT.has(recipe.slug)) {

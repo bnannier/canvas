@@ -88,12 +88,23 @@ test("a slider moves its value with the arrows", async ({ page }) => {
     .toBeLessThanOrEqual(before);
 });
 
-test("the code block's copy button is reachable by keyboard", async ({ page }) => {
+test("the code block's copy button is reachable by Tab, not just by a mouse", async ({ page }) => {
   // A control that only responds to a mouse is the most common keyboard defect in a
   // component kit, and the copy button is the one every component page carries.
+  // locator.focus() would prove nothing: it calls element.focus() directly, which
+  // succeeds even on tabindex="-1". Tabbing to it is the actual claim.
   await gotoDocs(page, "/components/button", { scheme: "dark" });
   const copy = stage(page).getByRole("button", { name: /Copy/ }).first();
   await expect(copy).toBeVisible();
-  await copy.focus();
-  await expect(copy).toBeFocused();
+  await expect(copy).toHaveAttribute("tabindex", "0");
+
+  // Walk the tab order from the code block's own region until it arrives, rather
+  // than from the top of a page with a whole navigation shell in front of it.
+  await stage(page).getByRole("tab").last().focus();
+  let reached = false;
+  for (let press = 0; press < 12 && !reached; press++) {
+    await page.keyboard.press("Tab");
+    reached = await copy.evaluate((node) => node === document.activeElement);
+  }
+  expect(reached, "Tab never reached the copy button").toBe(true);
 });
