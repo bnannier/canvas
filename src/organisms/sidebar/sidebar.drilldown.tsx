@@ -3,7 +3,10 @@ import { Animated, type GestureResponderEvent } from "react-native";
 import { View, Pressable, Text, ScrollView, RippleClip, cornerRadii, useTheme, useReducedMotion, useHardwareBack, supportsNativeDriver } from "../../style/index.js";
 import { Icon } from "../../atoms/icon/icon.js";
 import { type Density } from "./sidebar.styles.js";
-import { SidebarItemBadge, type SidebarSkin, type SidebarItem, type SidebarSection } from "./sidebar.shared.js";
+import { SidebarItemBadge, type SidebarItem, type SidebarSection } from "./sidebar.item.js";
+// Type-only, so it is erased whole and leaves no runtime edge back to the module
+// that builds this one.
+import type { SidebarSkin } from "./sidebar.shared.js";
 
 // The narrow-viewport presentation of the Sidebar: a two-level DRILL-DOWN of the same
 // `sections` data, rendered inside the kit Drawer (which owns the start-edge slide + scrim).
