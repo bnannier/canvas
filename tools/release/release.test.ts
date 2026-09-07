@@ -73,6 +73,9 @@ describe("frozen release transaction", () => {
     expect(git(f.repo, "rev-parse", "HEAD^")).toBe(f.source);
   });
 
+  // This integration case runs Changesets, copies the complete distribution,
+  // invokes npm pack and verifies unpacked files. Give those subprocesses their
+  // own bounded budget instead of Bun's five-second unit-test default.
   test.skipIf(!fs.existsSync(path.resolve("dist/index.js")))("seals a real npm tarball and docs archive, then verifies their unpacked bytes", () => {
     const f = fixture();
     const c = prepare(f.repo, f.candidateDir, f.source, true);
@@ -91,7 +94,7 @@ describe("frozen release transaction", () => {
     expect(JSON.parse(packed).version).toBe("2.3.5");
     expect(execFileSync("tar", ["-xOf", path.join(f.artifacts, "docs.tgz"), "./index.html"], { encoding: "utf8" })).toBe("Validated docs bytes");
     expect(execFileSync("tar", ["-xOf", path.join(f.artifacts, m.packageFile), "package/LICENSE"], { encoding: "utf8" })).toContain("MIT License");
-  });
+  }, 30_000);
 
   test("prepares version metadata first and restores the identical commit from its bundle", () => {
     const f = fixture();
