@@ -5,6 +5,9 @@
   "extends": "../tsconfig.json",
   "compilerOptions": {
     "noEmit": true,
+    // The repo imports across trees with explicit .ts specifiers (scripts and tools
+    // do the same); nothing here is emitted, so the extension stays honest.
+    "allowImportingTsExtensions": true,
     "types": ["node"],
     "lib": ["ES2022", "DOM", "DOM.Iterable"],
     "module": "ESNext",

@@ -11,6 +11,8 @@
  */
 import { readFileSync, readdirSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
+import { splitDoc } from "../../tools/docgen/parse-md.ts";
+import { COMPONENTS } from "../../docs/src/core/data/components.ts";
 
 /** Walk up from this file to the checkout root (the directory holding e2e/). */
 function repoRoot(): string {
@@ -126,4 +128,56 @@ export function allRoutes(): DocsRoute[] {
 /** Absolute path to a kit component's markdown doc, or null when it has none. */
 export function componentDocPath(category: string, dir: string): string {
   return resolve(ROOT, "src", category.toLowerCase(), dir, `${dir}.md`);
+}
+
+/**
+ * Every Playground example on a component page, as the URL that opens it.
+ *
+ * The labels come from the component's own markdown (the same fences
+ * tools/docgen turns into the generated examples), parsed with the docgen
+ * parser rather than a second one, and slugified with the docs' own
+ * variantSlug. So this enumeration and what the page renders cannot disagree
+ * without one of them failing.
+ */
+export interface ExampleRoute {
+  slug: string;
+  /** The tab label shown in the Playground rail. */
+  label: string;
+  /** The canonical URL for this example: the bare route for the first one. */
+  path: string;
+}
+
+/** The URL segment for an example label. Mirrors docs/src/lib/variant.ts. */
+export function variantSlug(label: string): string {
+  return label.toLowerCase().replace(/[^a-z0-9]+/g, "");
+}
+
+export function examplesFor(slug: string, category: string, dir?: string): ExampleRoute[] {
+  const source = componentDocPath(category, dir ?? slug);
+  let markdown: string;
+  try {
+    markdown = readFileSync(source, "utf8");
+  } catch {
+    // A page with no markdown of its own (the raw React Native primitives) has
+    // nothing to enumerate.
+    return [];
+  }
+  const { examples } = splitDoc(markdown);
+  return examples.map((example, index) => ({
+    slug,
+    label: example.label,
+    path: index === 0 ? `/components/${slug}` : `/components/${slug}/${variantSlug(example.label)}`,
+  }));
+}
+
+/** Every component that has markdown, with its examples. */
+export function componentExamples(): { route: DocsRoute; examples: ExampleRoute[] }[] {
+  const byCategory = new Map(COMPONENTS.map((c) => [c.slug, c]));
+  return componentRoutes()
+    .map((route) => {
+      const doc = byCategory.get(route.name);
+      if (!doc) return { route, examples: [] };
+      return { route, examples: examplesFor(route.name, doc.category, doc.dir) };
+    })
+    .filter((entry) => entry.examples.length > 0);
 }
