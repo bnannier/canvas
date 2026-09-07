@@ -108,36 +108,45 @@ function WebNav() {
     return () => document.removeEventListener("keydown", onKeyDown);
   }, []);
 
-  // Narrow web: the mobile iOS shell. The glass topbar floats over the content (its
-  // hamburger opens the current section's category drill-down), and the kit TabBar docks
-  // at the bottom (thumb-reachable) to switch sections.
-  if (!wide) {
-    const section = sectionFor(pathname);
-    const sectionRoot = MOBILE_SECTIONS.find((s) => s.id === section)?.href ?? "/";
-    const atRoot = MOBILE_SECTIONS.some((s) => s.href === pathname);
-    const goBack = () => (router.canGoBack() ? router.back() : router.push(sectionRoot as never));
-    return (
-      <SafeAreaView style={{ flex: 1, backgroundColor: glass ? "transparent" : tokens.background }} edges={["top"]}>
-        <WebScrollbarTheme />
-        {glass ? <CanvasUniverse /> : null}
+  const section = sectionFor(pathname);
+  const sectionRoot = MOBILE_SECTIONS.find((s) => s.id === section)?.href ?? "/";
+  const atRoot = MOBILE_SECTIONS.some((s) => s.href === pathname);
+  const goBack = () => (router.canGoBack() ? router.back() : router.push(sectionRoot as never));
+
+  // Keep the route's ancestor chain stable across widths. Switching the whole shell
+  // between a View and a Row remounts Slot, discarding open overlays and form drafts.
+  // Only the navigation siblings change: desktop gets the sidebar rail and Topbar;
+  // narrow web gets MobileNavBar, bottom tabs and the responsive sidebar drawer.
+  return (
+    <SafeAreaView style={{ flex: 1, backgroundColor: glass ? "transparent" : tokens.background }} edges={["top"]}>
+      <WebScrollbarTheme />
+      {glass ? <CanvasUniverse /> : null}
+      <Row flush fill>
+        {wide ? (
+          <View>
+            <Sidebar collapsed={collapsed} collapsible onToggleCollapse={() => setCollapsed((c) => !c)} />
+          </View>
+        ) : null}
         <View style={{ flex: 1, minWidth: 0 }}>
-          {/* The page content is the main landmark, so a screen-reader user can skip the
-              nav shell and jump straight to it. `role` is the universal spelling: React
-              Native accepts "main" and React Native Web renders a real <main> element,
-              so this needs no web-only branch. It labels the wrapper that already
-              existed rather than adding a node, keeping the flex layout identical. */}
+          {/* The page content is the main landmark at every width. */}
           <View role="main" style={{ flex: 1 }}>
             <Slot />
           </View>
           <View style={{ position: "absolute", top: 0, left: 0, right: SCROLLBAR_W, zIndex: 10 }}>
-            <MobileNavBar
-              title={titleFor(pathname).title}
-              showBack={!atRoot}
-              onBack={goBack}
-              onMenu={() => setMenuOpen(true)}
-            />
+            {wide ? (
+              <Topbar showMenu onMenu={() => setCollapsed((c) => !c)} onSearch={() => setSearchOpen(true)} />
+            ) : (
+              <MobileNavBar
+                title={titleFor(pathname).title}
+                showBack={!atRoot}
+                onBack={goBack}
+                onMenu={() => setMenuOpen(true)}
+              />
+            )}
           </View>
         </View>
+      </Row>
+      {!wide ? (
         <TabBar
           items={[
             ...MOBILE_SECTIONS.map((s) => ({
@@ -145,8 +154,7 @@ function WebNav() {
               label: s.label,
               icon: (active: boolean) => <Icon {...sectionIcon(s.icon, active)} size={22} />,
             })),
-            // Search is the rightmost tab (the iOS App Store pattern): it opens the
-            // search modal instead of navigating, so it never reads as "active".
+            // Search opens the shared modal rather than navigating to a section.
             { key: SEARCH_TAB, label: "Search", icon: () => <Icon search muted size={22} /> },
           ]}
           active={section}
@@ -160,39 +168,10 @@ function WebNav() {
           }}
           bottomInset={insets.bottom}
         />
-        {/* The hamburger opens the responsive Sidebar as a start-edge navigation drawer — the
-            same kit Sidebar the desktop rail uses, drilled down for the phone. Its Modal covers
-            the bars while open (a full-takeover side drawer). */}
+      ) : null}
+      {!wide ? (
         <Sidebar responsive open={menuOpen} onOpenChange={setMenuOpen} onNavigate={() => setMenuOpen(false)} />
-        <SearchModal visible={searchOpen} onClose={() => setSearchOpen(false)} />
-      </SafeAreaView>
-    );
-  }
-
-  // Desktop web: the fixed 240px sidebar rail + glass topbar. The shell is
-  // transparent in glass so the root BackdropHost's surface shows through: the
-  // backdrop paints its own opaque floor and the shell floats over it. Solid mode
-  // claims no backdrop, so it keeps painting the background token itself.
-  return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: glass ? "transparent" : tokens.background }} edges={["top"]}>
-      <WebScrollbarTheme />
-      {glass ? <CanvasUniverse /> : null}
-      <Row flush fill>
-        {/* The kit Sidebar's column owns the 240/56 width and the flush right hairline now;
-            this wrapper is just the column context so the sidebar's shell fills the row height. */}
-        <View>
-          <Sidebar collapsed={collapsed} collapsible onToggleCollapse={() => setCollapsed((c) => !c)} />
-        </View>
-        <View style={{ flex: 1, minWidth: 0 }}>
-          {/* The desktop counterpart of the mobile main landmark above. */}
-          <View role="main" style={{ flex: 1 }}>
-            <Slot />
-          </View>
-          <View style={{ position: "absolute", top: 0, left: 0, right: SCROLLBAR_W, zIndex: 10 }}>
-            <Topbar showMenu onMenu={() => setCollapsed((c) => !c)} onSearch={() => setSearchOpen(true)} />
-          </View>
-        </View>
-      </Row>
+      ) : null}
       <SearchModal visible={searchOpen} onClose={() => setSearchOpen(false)} />
     </SafeAreaView>
   );
