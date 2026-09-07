@@ -123,6 +123,7 @@
     }
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.13.0",
     "@changesets/cli": "^2.31.0",
     "@eslint/js": "^9",
     "@happy-dom/global-registrator": "^20.10.6",

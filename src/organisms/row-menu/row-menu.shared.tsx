@@ -57,6 +57,9 @@ export function createRowMenu(skin: RowMenuSkin) {
     // right visual weight beside a row of content, and under both platforms' minimum.
     const target = useMinTargetSlop(skin.minTarget);
     const { items, links = false, sectionLabel, onSelect, onOpenChange, triggerLabel = "More options", testID, style } = props;
+    // What the menu is called when it opens. The section label names it when there is
+    // one; otherwise the trigger's own label does, which is what the user pressed.
+    const menuName = sectionLabel ?? triggerLabel;
     const { tokens, dark } = useTheme();
     // Uncontrolled by default: the ⋯ trigger toggles the menu (closed), a select
     // closes it; a controlled `open` prop overrides this.
@@ -134,6 +137,20 @@ export function createRowMenu(skin: RowMenuSkin) {
               rounded corners (a no-op on iOS/web; the card keeps no overflow). */}
           <RippleClip shape={cornerRadii(skin.menuCard(tokens))} style={{ alignSelf: "stretch" }}>
           {sectionLabel ? <Text style={skin.menuLabel(tokens)}>{sectionLabel}</Text> : null}
+          {/* role="menu" gives the menuitem rows a valid ARIA parent. Without it each
+              row is an orphaned menuitem, which axe files as aria-required-parent and a
+              screen reader reads as a loose control rather than "menu, N items". The
+              rows are links rather than menu items when `links` is set, and a list of
+              links wants no menu role at all. Dropdown has carried this container since
+              it shipped; this one did not, and nothing noticed until the accessibility
+              sweep ran in a real browser. Named from the section label or the trigger,
+              so a screen-reader user hears WHICH menu opened; RNW forwards neither
+              alias on its own, hence both, per the kit's dual-a11y contract. */}
+          <View
+            {...(links
+              ? null
+              : { accessibilityRole: "menu" as const, role: "menu" as const, accessibilityLabel: menuName, "aria-label": menuName })}
+          >
           {items.map((item, index) => (
             <View key={`${item.label}-${index}`}>
               {item.separatorBefore ? <View style={skin.separator(tokens)} /> : null}
@@ -168,6 +185,7 @@ export function createRowMenu(skin: RowMenuSkin) {
               </Pressable>
             </View>
           ))}
+          </View>
           </RippleClip>
         </AnchoredOverlay>
       </View>

@@ -96,7 +96,13 @@ export function createKbd(skin: KbdSkin) {
     return (
       <View
         testID={testID}
-        accessibilityRole="text"
+        // The chord is announced once, as a unit, rather than cap by cap. That needs a
+        // role the name can sit on: react-native-web maps accessibilityRole="text" to
+        // no DOM role at all, so the aria-label was landing on a generic div, which
+        // ARIA prohibits naming. img is the role for a group of glyphs read as one
+        // thing, and is what Swatch and the named status Badge use for the same reason.
+        accessibilityRole="image"
+        role="img"
         accessibilityLabel={name}
         aria-label={name}
         style={[skin.chordRow, sequence ? SEQUENCE_GAP : null, style]}

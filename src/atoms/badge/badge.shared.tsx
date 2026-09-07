@@ -136,11 +136,20 @@ export function createBadge(skin: BadgeSkin) {
       // screen reader does not announce a silent, meaningless dot. Prefer the caller's label,
       // else fall back to the status tone word ("error", "success", ...).
       const statusName = accessibilityLabel ?? (children == null ? tone : undefined);
+      // A name has to sit on a node that can carry one. A bare View is a generic
+      // element, and ARIA prohibits naming those, so the label was being dropped by
+      // validators and by some screen readers rather than announced. A dot standing
+      // in for a word IS image-like, which is the role Swatch already uses for the
+      // same reason. Only when there is a name: a decorative dot beside its own text
+      // label stays generic and silent, which is right.
+      const named = statusName != null;
       return (
         <View
           style={[skin.statusBase, statusContainer(tokens, dark, tone), style]}
           testID={testID}
+          {...(named ? { accessibilityRole: "image" as const, role: "img" as const } : null)}
           accessibilityLabel={statusName}
+          aria-label={statusName}
         >
           <View style={{ height: skin.dotSize, width: skin.dotSize, borderRadius: 9999, backgroundColor: statusDotColor(tokens, tone) }} />
           {children != null ? (
