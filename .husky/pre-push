@@ -1,4 +1,5 @@
 bun run typecheck
+bun run typecheck:e2e
 bun test
 bun run docs:gen:check
 bun run raster:gen:check

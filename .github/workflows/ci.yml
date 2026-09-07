@@ -19,6 +19,8 @@ on:
       - 'tsconfig*.json'
       - 'scripts/**'
       - 'test/**'
+      - 'e2e/**'
+      - 'playwright.config.ts'
       - '.changeset/**'
       - '.github/workflows/**'
   pull_request:
@@ -33,6 +35,8 @@ on:
       - 'tsconfig*.json'
       - 'scripts/**'
       - 'test/**'
+      - 'e2e/**'
+      - 'playwright.config.ts'
       - '.changeset/**'
       - '.github/workflows/**'
   workflow_dispatch:
@@ -75,6 +79,12 @@ jobs:
 
       - name: Typecheck
         run: bun run typecheck
+
+      # Playwright transpiles TypeScript without type-checking it, and the root
+      # project includes only src/**, so without this the whole e2e tree would ship
+      # its type errors to runtime.
+      - name: Typecheck the end-to-end suite
+        run: bun run typecheck:e2e
 
       # One flat config at the repo root covers every hand-written source tree, the docs
       # app included, so this single run is the real lint gate. The docs workspace runs
@@ -175,10 +185,84 @@ jobs:
         run: bunx tsc --noEmit
 
       # Kept per-push: it is the only check that catches CI-only Metro/export bugs
-      # before a Pages deploy trips over them. Same EXPO_BASE_URL as the deploy so CI
-      # exercises the exact Pages configuration. Node comes from the runner image.
+      # before a Pages deploy trips over them. `build:web` is what deploy.yml runs, so
+      # this exercises the shipping configuration exactly, including the two
+      # post-processors (font preloads, inlined stylesheet) that `expo export` alone
+      # never reaches. It used to export under EXPO_BASE_URL=/canvas to match a Pages
+      # deploy that no longer exists: deploy.yml sets no base URL, since the site is
+      # served from the root of canvas.nannier.com, so CI was validating a build nobody
+      # ships. Node comes from the runner image.
       - name: Export web build
         working-directory: docs
-        run: npx expo export -p web
-        env:
-          EXPO_BASE_URL: /canvas
+        run: bun run build:web
+
+      # The end-to-end job runs against these exact bytes rather than exporting again,
+      # so what it tests is what this job validated. Nothing reads the artifact after
+      # the run finishes, hence the one-day retention.
+      - name: Upload the web export for the end-to-end job
+        uses: actions/upload-artifact@v7
+        with:
+          name: docs-dist
+          path: docs/dist
+          retention-days: 1
+
+  # Browser work is slow next to the library checks, and it fails for different
+  # reasons, so it gets its own job and its own red box rather than quadrupling the
+  # two-minute `check`. It needs `check` only for the export artifact; if this grows
+  # past roughly eight minutes, split it with a `--project` matrix (the projects in
+  # playwright.config.ts are already independent).
+  e2e:
+    needs: check
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      # The same key as `check`: bun's download cache is content-addressable, so one
+      # entry serves both jobs.
+      - name: Cache bun downloads
+        uses: actions/cache@v6
+        with:
+          path: ~/.bun/install/cache
+          key: bun-${{ runner.os }}-${{ hashFiles('bun.lock', 'docs/bun.lock') }}
+          restore-keys: |
+            bun-${{ runner.os }}-
+
+      - run: bun install --frozen-lockfile
+
+      # Chromium is ~130 MB to download and never changes for a given Playwright
+      # version, which bun.lock pins.
+      - name: Cache the Playwright browser
+        uses: actions/cache@v6
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('bun.lock') }}
+
+      - name: Install chromium
+        run: bunx playwright install --with-deps chromium
+
+      # Not a fresh export: these are the bytes `check` already validated.
+      - name: Download the web export
+        uses: actions/download-artifact@v8
+        with:
+          name: docs-dist
+          path: docs/dist
+
+      - name: End-to-end suite
+        run: bunx playwright test --reporter=github,html
+
+      # Only on failure: the report carries the traces, the failure screenshots and,
+      # once the visual project lands, the expected/actual/diff images.
+      - name: Upload the Playwright report
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: playwright-report
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 7
