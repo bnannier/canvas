@@ -13,6 +13,7 @@ export * from "./responsive.js";
 export * from "./container.js";
 export * from "./shadow.js";
 export * from "./numerals.js";
+export * from "./touch-target.js";
 export * from "./color.js";
 export * from "./rtl.js";
 export * from "./mono.js";

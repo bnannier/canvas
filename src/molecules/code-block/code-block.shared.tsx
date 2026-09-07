@@ -1,23 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { type GestureResponderEvent, StyleSheet } from "react-native";
-import {
-  View,
-  Pressable,
-  Text,
-  ScrollView,
-  useTheme,
-  useControllableState,
-  surfaceRipple,
-  pressDim,
-  RippleClip,
-  cornerRadii,
-  splitElevation,
-  devWarn,
-  type ColorTokens,
-  type StyleProp,
-  type ViewStyle,
-  type TextStyle,
-} from "../../style/index.js";
+import { View, Pressable, Text, ScrollView, useTheme, useControllableState, surfaceRipple, pressDim, RippleClip, cornerRadii, splitElevation, devWarn, useMinTargetSlop, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle, type TouchTargetSkin } from "../../style/index.js";
 import { Icon } from "../../atoms/icon/icon.js";
 import { MONO, type Variant } from "./code-block.styles.js";
 import { tokenize, syntaxColor, type CodeToken } from "./tokenize.js";
@@ -67,7 +50,7 @@ import { tokenize, syntaxColor, type CodeToken } from "./tokenize.js";
 // fragment (or a token-driven function) for one part of the surface; the shell wires
 // them onto the structure. For the "Shared" treatment all three platform skins point
 // at the same object, so these are the single source of truth for the one look.
-export interface CodeBlockSkin {
+export interface CodeBlockSkin extends TouchTargetSkin {
   /** Shared code type (size / line-height) used by code, gutter, and terminal text. */
   codeType: TextStyle;
   /** The tightened compact ramp. */
@@ -408,9 +391,13 @@ export function createCodeBlock(skin: CodeBlockSkin) {
       skin.copyButton(tokens, dark, floating),
     ) as ViewStyle & { elevation?: number };
     const { parent: elevParent } = splitElevation({ elevation });
+    // The copy chip is a 26pt pill of label plus glyph: deliberately quiet chrome on
+    // a code surface, and under both native minimums.
+    const target = useMinTargetSlop(skin.minTarget);
     return (
       <RippleClip shape={cornerRadii(box)} style={elevParent}>
         <Pressable
+          {...target}
           android_ripple={surfaceRipple(tokens)}
           style={({ pressed }) => [box, pressDim(pressed, skin.copyPressedOpacity)]}
           onPress={onPress}

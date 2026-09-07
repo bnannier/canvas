@@ -1,5 +1,5 @@
 import { useRef, useState } from "react";
-import { View, Pressable, Text, useTheme, AnchoredOverlay, useMeasuredWidth, useEscapeKey, RippleClip, cornerRadii, type StyleProp, type ViewStyle } from "../../style/index.js";
+import { View, Pressable, Text, useTheme, AnchoredOverlay, useMeasuredWidth, useEscapeKey, RippleClip, cornerRadii, useMinTargetSlop, type StyleProp, type ViewStyle } from "../../style/index.js";
 import { Icon } from "../../atoms/icon/icon.js";
 import { anchorLifted, type RowMenuItem, type RowMenuSkin } from "./row-menu.styles.js";
 
@@ -53,6 +53,9 @@ const MENU_ANCHOR: ViewStyle = { position: "absolute", top: "100%", start: 0, zI
 /** Build a RowMenu component from a platform skin. */
 export function createRowMenu(skin: RowMenuSkin) {
   return function RowMenu(props: RowMenuProps) {
+    // The trailing menu trigger is a 32pt (iOS) or 40dp (Android) glyph square: the
+    // right visual weight beside a row of content, and under both platforms' minimum.
+    const target = useMinTargetSlop(skin.minTarget);
     const { items, links = false, sectionLabel, onSelect, onOpenChange, triggerLabel = "More options", testID, style } = props;
     const { tokens, dark } = useTheme();
     // Uncontrolled by default: the ⋯ trigger toggles the menu (closed), a select
@@ -89,6 +92,7 @@ export function createRowMenu(skin: RowMenuSkin) {
             outline (a no-op on iOS/web). */}
         <RippleClip shape={cornerRadii(skin.trigger)}>
         <Pressable
+          {...target}
           style={({ pressed }) => [
             skin.trigger,
             // Android ripples; iOS dims via opacity; web tints the fill.

@@ -1,5 +1,5 @@
 import { type ViewStyle } from "react-native";
-import { customShadow } from "../../style/index.js";
+import { customShadow, TOUCH_TARGET } from "../../style/index.js";
 import { type SwitchSkin, type Size } from "./switch.shared.js";
 
 // Co-located Switch styles, one skin per platform, all driven by the brand tokens
@@ -66,6 +66,7 @@ const IOS_THUMB: Record<Size, { width: number; height: number }> = {
 };
 
 export const iosSkin: SwitchSkin = {
+  minTarget: TOUCH_TARGET.ios,
   track: (t, dark, checked, size) => ({
     ...PILL,
     width: IOS_TRACK[size].width,
@@ -91,6 +92,7 @@ export const iosSkin: SwitchSkin = {
 // Material 3: an outlined track with a small dot when off; a filled brand track with
 // a larger white thumb when on.
 export const androidSkin: SwitchSkin = {
+  minTarget: TOUCH_TARGET.android,
   track: (t, _dark, checked, size) => ({
     ...PILL,
     width: NATIVE_TRACK[size].width,
@@ -112,6 +114,7 @@ export const androidSkin: SwitchSkin = {
 
 // Web: the current Canvas look, a compact pill with a surface-colored thumb.
 export const webSkin: SwitchSkin = {
+  minTarget: null,
   track: (t, _dark, checked, size) => ({
     ...PILL,
     width: WEB_TRACK[size].width,

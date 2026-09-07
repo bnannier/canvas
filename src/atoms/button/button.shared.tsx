@@ -1,14 +1,12 @@
-import { useState, type ReactNode } from "react";
+import { type ReactNode } from "react";
 import {
   ActivityIndicator,
   type GestureResponderEvent,
-  type Insets,
-  type LayoutChangeEvent,
   type MouseEvent,
   type NativeSyntheticEvent,
   type TargetedEvent,
 } from "react-native";
-import { Pressable, RippleClip, Text, useTheme, type StyleProp, type ViewStyle } from "../../style/index.js";
+import { Pressable, RippleClip, Text, useMinTargetSlop, useTheme, type StyleProp, type ViewStyle } from "../../style/index.js";
 import { type ButtonSkin, type Intent, type Size, FG_TOKEN } from "./button.styles.js";
 
 // Shared Button shell. The structure (Pressable + optional loading spinner +
@@ -110,16 +108,10 @@ function sizeOf(p: ButtonProps): Size {
   return "base";
 }
 
-/**
- * Insets that grow a `width` x `height` box to a `minTarget` square touch area
- * (half the shortfall per side, per axis), or undefined when the box already
- * meets the minimum. Internal: exported for the shell and its tests only.
- */
-export function minTargetSlop(minTarget: number, width: number, height: number): Insets | undefined {
-  const h = Math.max(0, (minTarget - width) / 2);
-  const v = Math.max(0, (minTarget - height) / 2);
-  return h > 0 || v > 0 ? { top: v, bottom: v, left: h, right: h } : undefined;
-}
+// The touch-target maths moved to src/style/touch-target.ts when every other
+// pressable started needing it. Re-exported here so this file's surface, and the
+// test that reads it, do not change.
+export { minTargetSlop } from "../../style/touch-target.js";
 
 /** Build a Button component from a platform skin. */
 export function createButton(skin: ButtonSkin) {
@@ -141,18 +133,7 @@ export function createButton(skin: ButtonSkin) {
     // declares none). Sub-minimum buttons (small text, icon squares) keep their visual
     // size; the rendered box is measured and hitSlop extends only the TOUCH area, so
     // there is no layout shift on any platform.
-    const [hitSlop, setHitSlop] = useState<Insets | undefined>(undefined);
-    const minTarget = skin.minTarget;
-    const onTargetLayout =
-      minTarget == null
-        ? undefined
-        : (e: LayoutChangeEvent) => {
-            const { width, height } = e.nativeEvent.layout;
-            const next = minTargetSlop(minTarget, width, height);
-            // Bail out (same reference) unless the insets changed: onLayout fires on
-            // every layout pass. top/left imply bottom/right (half-shortfall per side).
-            setHitSlop((prev) => (prev?.top === next?.top && prev?.left === next?.left ? prev : next));
-          };
+    const target = useMinTargetSlop(skin.minTarget);
 
     // A real anchor on the web: react-native-web renders a Pressable carrying
     // `href` as an `<a>` (and forwards hrefAttrs' target/rel/download), while
@@ -177,8 +158,7 @@ export function createButton(skin: ButtonSkin) {
           onBlur={onBlur}
           disabled={disabled || loading}
           testID={testID}
-          onLayout={onTargetLayout}
-          hitSlop={hitSlop}
+          {...target}
           accessibilityRole={href != null ? "link" : "button"}
           accessibilityLabel={accessibilityLabel}
           accessibilityState={{ busy: !!loading, disabled: !!(disabled || loading) }}

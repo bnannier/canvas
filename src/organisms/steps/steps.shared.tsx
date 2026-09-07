@@ -1,6 +1,6 @@
 import { type ReactNode } from "react";
 import { type DimensionValue } from "react-native";
-import { View, Pressable, Text, RippleClip, cornerRadii, useTheme, useControllableState, useContainerBreakpoint, containerProbe, type BreakpointKey, type Responsive, type StyleProp, type ViewStyle } from "../../style/index.js";
+import { View, Pressable, Text, RippleClip, cornerRadii, useTheme, useControllableState, useContainerBreakpoint, containerProbe, useMinTargetSlop, type BreakpointKey, type Responsive, type StyleProp, type ViewStyle } from "../../style/index.js";
 import * as s from "./steps.styles.js";
 import { type State, type StepsSkin } from "./steps.styles.js";
 
@@ -75,6 +75,10 @@ export function createSteps(skin: StepsSkin) {
   // The numbered/check disc. Pressable (and so opacity-dim / ripple) only when an
   // onStepPress handler is supplied; otherwise a plain View.
   function Circle({ index, state, onPress }: { index: number; state: State; onPress?: () => void }) {
+    // A step circle is 32pt of visible dot on every platform, which is right for the
+    // rail's rhythm and short of both platforms' minimum, so the touch area grows
+    // around it rather than the dot growing.
+    const target = useMinTargetSlop(skin.minTarget);
     const { tokens } = useTheme();
     const glyph = (
       <Text style={[s.glyphBase, skin.glyphState(tokens, state)]}>
@@ -88,6 +92,7 @@ export function createSteps(skin: StepsSkin) {
       return (
         <RippleClip shape={cornerRadii(s.circleBase)}>
           <Pressable
+            {...target}
             style={({ pressed }) => [
               s.circleBase,
               skin.circleState(tokens, state),

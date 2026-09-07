@@ -1,5 +1,5 @@
 import { type ViewStyle, type TextStyle } from "react-native";
-import { type ColorTokens, alpha } from "../../style/index.js";
+import { alpha, TOUCH_TARGET, type ColorTokens, type TouchTargetSkin } from "../../style/index.js";
 
 // Co-located Steps skins, one per platform. Steps is a LIGHT treatment:
 // the same multi-step progress STRUCTURE on every platform (numbered/check
@@ -103,7 +103,7 @@ export const horizontalConnector: ViewStyle = {
 // The skin contract: only the colored, platform-varying parts.
 // =============================================================================
 
-export interface StepsSkin {
+export interface StepsSkin extends TouchTargetSkin {
   /** Fill + border of the numbered/check circle for a given step state. */
   circleState: (t: ColorTokens, state: State) => ViewStyle;
   /** Color of the glyph (check / number) inside the circle. */
@@ -144,6 +144,7 @@ function labelState(t: ColorTokens, state: State): TextStyle {
 // =============================================================================
 
 export const webSkin: StepsSkin = {
+  minTarget: null,
   // Completed fills primary; current is outlined in primary on a transparent fill;
   // upcoming sits on the muted token behind a border-toned ring.
   circleState(t, state) {
@@ -190,6 +191,7 @@ export const webSkin: StepsSkin = {
 // =============================================================================
 
 export const iosSkin: StepsSkin = {
+  minTarget: TOUCH_TARGET.ios,
   circleState(t, state) {
     switch (state) {
       // Completed reads as a solid filled `primary` disc.
@@ -238,6 +240,7 @@ export const iosSkin: StepsSkin = {
 // =============================================================================
 
 export const androidSkin: StepsSkin = {
+  minTarget: TOUCH_TARGET.android,
   circleState(t, state) {
     switch (state) {
       // Completed = filled primary.
