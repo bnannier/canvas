@@ -1,6 +1,6 @@
 # Textarea
 
-Multi-line input, with character count, with toolbar. Pass `label` (and `required`) to name the field: iOS and web render the label above the control, while Android floats the Material 3 in-container label at the top of the multiline box.
+Multi-line input, with character count, with toolbar. Pass `label` (and `required`) to name the field: iOS and web render the label above the control, while Android floats the Material 3 in-container label at the top of the multiline box. The box renders at the standard width by default (`narrow` and `wide` pick the other modes, `block` fills the container).
 
 ## Usage
 
@@ -54,6 +54,17 @@ Multi-line input, with character count, with toolbar. Pass `label` (and `require
 
 ```tsx
 <Textarea rows={4} disabled placeholder="A few words about this project" />
+```
+
+### Widths
+
+```tsx
+<Column snug>
+  <Textarea narrow rows={2} placeholder="Narrow (240px)" />
+  <Textarea rows={2} placeholder="Standard (320px)" />
+  <Textarea wide rows={2} placeholder="Wide (480px)" />
+  <Textarea block rows={2} placeholder="Block (fills the container)" />
+</Column>
 ```
 
 ## Do & Don't

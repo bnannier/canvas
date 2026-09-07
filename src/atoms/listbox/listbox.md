@@ -1,6 +1,6 @@
 # Listbox
 
-A custom (non-native) select: single or multi-select, an optional detail line under each option, and a checkmark on the chosen items. Reach for it when a native select can't show rich options; prefer a native select for simple short lists.
+A custom (non-native) select: single or multi-select, an optional detail line under each option, and a checkmark on the chosen items. Reach for it when a native select can't show rich options; prefer a native select for simple short lists. The list renders at the standard field width by default (`narrow` and `wide` pick the other modes, `block` fills the container).
 
 ## Usage
 
@@ -67,36 +67,15 @@ A custom (non-native) select: single or multi-select, an optional detail line un
 />
 ```
 
-### Narrow
+### Widths
 
 ```tsx
-<Listbox
-  narrow
-  bordered
-  items={[
-    { label: "Backend", selected: true },
-    { label: "Frontend", selected: false },
-    { label: "Design", selected: false },
-    { label: "Platform", selected: false },
-    { label: "Security", selected: false }
-  ]}
-/>
-```
-
-### Wide
-
-```tsx
-<Listbox
-  wide
-  bordered
-  items={[
-    { label: "Backend", selected: true },
-    { label: "Frontend", selected: false },
-    { label: "Design", selected: false },
-    { label: "Platform", selected: false },
-    { label: "Security", selected: false }
-  ]}
-/>
+<Column snug>
+  <Listbox narrow bordered items={[{ label: "Narrow (240px)", selected: true }, { label: "Frontend" }]} />
+  <Listbox bordered items={[{ label: "Standard (320px)", selected: true }, { label: "Frontend" }]} />
+  <Listbox wide bordered items={[{ label: "Wide (480px)", selected: true }, { label: "Frontend" }]} />
+  <Listbox block bordered items={[{ label: "Block (fills the container)", selected: true }, { label: "Frontend" }]} />
+</Column>
 ```
 
 ### Detail line

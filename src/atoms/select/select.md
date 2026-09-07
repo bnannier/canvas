@@ -1,6 +1,6 @@
 # Select
 
-Native select restyled to match Canvas inputs. Pass `label` (and `required`) to name the field: iOS and web render the label above the trigger, while Android floats the Material 3 in-container label once the menu opens or a value is selected.
+Native select restyled to match Canvas inputs. Pass `label` (and `required`) to name the field: iOS and web render the label above the trigger, while Android floats the Material 3 in-container label once the menu opens or a value is selected. The trigger renders at the standard width by default (`narrow` and `wide` pick the other modes, `block` fills the container, `fit` hugs its own value).
 
 ## Usage
 
@@ -79,6 +79,17 @@ Native select restyled to match Canvas inputs. Pass `label` (and `required`) to 
   options={["United States", "Canada", "Mexico", "United Kingdom"]}
   placeholder="Select a country"
 />
+```
+
+### Widths
+
+```tsx
+<Column snug>
+  <Select narrow options={["Small", "Medium", "Large"]} placeholder="Narrow (240px)" />
+  <Select options={["Small", "Medium", "Large"]} placeholder="Standard (320px)" />
+  <Select wide options={["Small", "Medium", "Large"]} placeholder="Wide (480px)" />
+  <Select block options={["Small", "Medium", "Large"]} placeholder="Block (fills the container)" />
+</Column>
 ```
 
 ## Do & Don't
