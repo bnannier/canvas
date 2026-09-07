@@ -2,6 +2,7 @@ import { afterEach, expect, test } from "bun:test";
 import * as fs from "node:fs";
 import * as path from "node:path";
 import * as os from "node:os";
+import { SourceMap } from "node:module";
 import ts from "typescript";
 import { buildNative, nativeSpecifiers, watchNative } from "../../scripts/build-native.ts";
 import { verifyPackage } from "../../scripts/verify-package.ts";
@@ -39,6 +40,27 @@ test("native compiler emits real platform files and source maps containing the o
   expect(map.sources).toEqual(["../src/index.ts"]);
   expect(map.sourcesContent).toEqual([fs.readFileSync(path.join(dir, "src/index.ts"), "utf8")]);
   expect(map.mappings.length).toBeGreaterThan(0);
+});
+
+test("native source maps retain exact module-request positions and following code", () => {
+  const source = 'import "./side.js";\nexport { value as renamed } from "./value.js";\nconst load = () => import("./async.js"); const marker = 7;\ntry { require("./peer.js"); } catch {}\n';
+  const emitted = ts.transpileModule(source, {
+    fileName: "index.ts",
+    compilerOptions: { target: ts.ScriptTarget.ES2020, module: ts.ModuleKind.ESNext, sourceMap: true, inlineSources: true },
+    transformers: { before: [nativeSpecifiers] },
+  });
+  // Node's built-in decoder is supported by Bun. Checking actual positions
+  // catches lost ranges that a nonempty mappings/sourcesContent check cannot.
+  const map = new SourceMap(JSON.parse(emitted.sourceMapText!));
+  const generated = emitted.outputText.split("\n");
+  const original = source.split("\n");
+  for (const token of ['"./side', '"./value', '"./async', '"./peer', "marker"]) {
+    const generatedLine = generated.findIndex((line) => line.includes(token));
+    const originalLine = original.findIndex((line) => line.includes(token));
+    const position = map.findEntry(generatedLine, generated[generatedLine].indexOf(token));
+    expect(position.originalSource).toBe("index.ts");
+    expect([position.originalLine, position.originalColumn]).toEqual([originalLine, original[originalLine].indexOf(token)]);
+  }
 });
 
 test("native watch transforms subsequent changes as well as the initial emit", async () => {
