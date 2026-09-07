@@ -18,6 +18,7 @@
 import type { LookoutConfig, RouteDef, StateRecipe } from "@nannier-com/lookout";
 import type { Page } from "playwright";
 import navConfig from "./docs/src/data/nav.config.json";
+import { OVERLAY_RECIPES, TOAST_RECIPE } from "./e2e/support/overlay-recipes.ts";
 
 // ---------------------------------------------------------------------------
 // Routes: every component page, element-shot on the preview card (the 3-up
@@ -72,98 +73,42 @@ const FUNCTIONAL_LAYER = [
 ];
 
 // ---------------------------------------------------------------------------
-// Overlay recipes. Each clicks the LAST matching trigger inside the playground
-// stage: the rows stack iOS, Android, Web, so the last trigger belongs to the
-// Web row, the row whose behavior is native to the browser being driven. Open
-// overlays portal to a stage-level outlet OUTSIDE the preview card, so every
-// recipe forces a full-page shot (element: null).
+// Overlay recipes. The list itself lives in e2e/support/overlay-recipes.ts, shared
+// with the end-to-end suite, because keeping two copies is what let four of these go
+// stale unnoticed: Select was opened by the text of its current value, which stopped
+// matching when the example changed, so the sweep judged a closed Select as an open
+// one. Here they are wrapped as lookout StateRecipes: a settle pause after the click,
+// Escape to restore, and element:null so the shot is the full page, since an open
+// overlay portals to a stage-level outlet OUTSIDE the preview card.
 // ---------------------------------------------------------------------------
 
 const stage = (page: Page) => page.locator("[data-preview-stage]").first();
 
-function clickTrigger(name: string | RegExp): StateRecipe {
-  return {
-    prepare: async (page) => {
-      await stage(page).getByRole("button", { name }).last().click();
-      await page.waitForTimeout(400);
-    },
-    restore: async (page) => {
-      await page.keyboard.press("Escape");
-      await page.waitForTimeout(200);
-    },
-    element: null,
-  };
-}
+const states: Record<string, StateRecipe> = Object.fromEntries(
+  OVERLAY_RECIPES.map((recipe) => [
+    OVERLAY_STATE[recipe.slug],
+    {
+      prepare: async (page: Page) => {
+        await recipe.open(page, stage(page));
+        await page.waitForTimeout(400);
+      },
+      restore: async (page: Page) => {
+        await page.keyboard.press("Escape");
+        await page.waitForTimeout(200);
+      },
+      element: null,
+    } satisfies StateRecipe,
+  ]),
+);
 
-const states: Record<string, StateRecipe> = {
-  "open-dialog": clickTrigger("Open dialog"),
-  "open-alert-dialog": clickTrigger(/Delete identity/),
-  "open-dropdown": clickTrigger("Actions"),
-  "open-popover": clickTrigger("Open popover"),
-  "open-action-sheet": clickTrigger("Add photo"),
-  "open-drawer": clickTrigger("Open menu"),
-  "show-toast": {
-    // Toasts auto-dismiss: shoot right after the trigger, no restore needed. The
-    // live region is already on the page and empty; the trigger fills it.
-    prepare: async (page) => {
-      await stage(page).getByRole("button", { name: "Show toast" }).last().click();
-      await page.waitForTimeout(350);
-    },
-    element: null,
+// Toasts auto-dismiss, so they are shot right after the trigger with no restore. The
+// live region is already on the page and empty; the trigger fills it.
+states[OVERLAY_STATE.toast] = {
+  prepare: async (page: Page) => {
+    await TOAST_RECIPE.open(page, stage(page));
+    await page.waitForTimeout(350);
   },
-  "open-row-menu": {
-    prepare: async (page) => {
-      await stage(page).getByLabel("More options").last().click();
-      await page.waitForTimeout(400);
-    },
-    restore: async (page) => {
-      await page.keyboard.press("Escape");
-      await page.waitForTimeout(200);
-    },
-    element: null,
-  },
-  "open-select": {
-    // The collapsed field is a button named for its label. It used to be opened by
-    // the text of its current value, which stopped matching when the example changed
-    // and left the sweep judging a closed Select as an open one.
-    prepare: async (page) => {
-      await stage(page).getByRole("button", { name: "Country" }).last().click();
-      await page.waitForTimeout(400);
-    },
-    restore: async (page) => {
-      await page.keyboard.press("Escape");
-      await page.waitForTimeout(200);
-    },
-    element: null,
-  },
-  "open-autocomplete": {
-    prepare: async (page) => {
-      // The field is a combobox, not a bare textbox: the old locator matched the
-      // page's search box on some routes and timed out on others.
-      const input = stage(page).getByRole("combobox").last();
-      await input.click();
-      await input.pressSequentially("a", { delay: 40 });
-      await page.waitForTimeout(400);
-    },
-    restore: async (page) => {
-      await page.keyboard.press("Escape");
-      await page.waitForTimeout(200);
-    },
-    element: null,
-  },
-  "open-command": {
-    // The default example is the COLLAPSED trigger, not an inline palette, so the
-    // placeholder this used to click is not on the page until after it opens.
-    prepare: async (page) => {
-      await stage(page).getByRole("button", { name: /Search/ }).last().click();
-      await page.waitForTimeout(400);
-    },
-    restore: async (page) => {
-      await page.keyboard.press("Escape");
-      await page.waitForTimeout(200);
-    },
-    element: null,
-  },
+  element: null,
 };
 
 // ---------------------------------------------------------------------------

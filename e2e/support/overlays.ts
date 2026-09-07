@@ -1,141 +1,47 @@
 /**
- * Opening every overlay the kit ships, in a real browser.
+ * The overlay recipes, bound to this suite's stage and to Playwright's own types.
  *
- * The recipes started as the ones in lookout.config.ts, which drives the visual
- * judge, and four of them turned out to be stale: Select is opened by its "Country"
- * button rather than by the text of its current value, Autocomplete by its combobox
- * rather than by the last textbox on the page, Command by its collapsed trigger
- * rather than by the placeholder of an inline palette, and Toast writes into a live
- * region that already exists rather than adding one. Those are recorded here as the
- * handles that actually work.
- *
- * Each recipe clicks the LAST matching trigger inside the Playground stage: the rows
- * stack iOS, Android, Web, so the last one belongs to the Web row, the row whose
- * behaviour is native to the browser being driven.
+ * The recipes themselves live in ./overlay-recipes, shared with lookout.config.ts, so
+ * the two things that drive these overlays cannot disagree about how to open one.
+ * This file is the thin adapter: it supplies the stage (filtered to the Playground's,
+ * since the Do/Don't cards carry the same attribute) and the locators the specs read.
  */
 import { type Locator, type Page } from "@playwright/test";
+import { OVERLAY_RECIPES, TOAST_RECIPE, type OverlayRecipe } from "./overlay-recipes";
 import { stage } from "./docs";
 
-export interface OverlayRecipe {
-  /** The component page's slug. */
+export interface BoundOverlay {
   slug: string;
-  /** Open it, and return once the overlay is up. */
+  /** Open it, and return once the click has been dispatched. */
   open: (page: Page) => Promise<void>;
   /** Every node of the overlay's own role, on the whole page. */
   panel: (page: Page) => Locator;
-  /** How many of those one opening adds. One panel, unless the role IS the rows. */
+  /** How many of those one opening adds. */
   adds: number;
   /** The control that opened it, for the focus-return check. */
   trigger: (page: Page) => Locator;
-  /**
-   * Whether the trigger carries aria-expanded. Dialogs and sheets are opened by
-   * ordinary buttons and do not; menus, selects and comboboxes do.
-   */
   expands?: boolean;
-  /**
-   * Whether the kit contracts that focus returns to the trigger on close. Dialog,
-   * AlertDialog and Popover trap focus and restore it (use-dialog-focus.ts); Dropdown
-   * restores it too. The rest close without moving focus back.
-   */
   restoresFocus?: boolean;
+  atDocumentRoot?: boolean;
 }
 
-const lastButton = (page: Page, name: string | RegExp) =>
-  stage(page).getByRole("button", { name }).last();
+function bind(recipe: OverlayRecipe): BoundOverlay {
+  return {
+    slug: recipe.slug,
+    open: (page) => recipe.open(page as never, stage(page) as never),
+    panel: (page) => page.getByRole(recipe.role),
+    adds: recipe.adds,
+    trigger: (page) => recipe.trigger(page as never, stage(page) as never) as unknown as Locator,
+    expands: recipe.expands,
+    restoresFocus: recipe.restoresFocus,
+    atDocumentRoot: recipe.atDocumentRoot,
+  };
+}
 
-export const OVERLAYS: OverlayRecipe[] = [
-  {
-    slug: "dialog",
-    open: async (page) => void (await lastButton(page, "Open dialog").click()),
-    panel: (page) => page.getByRole("dialog"),
-    adds: 1,
-    trigger: (page) => lastButton(page, "Open dialog"),
-    restoresFocus: true,
-  },
-  {
-    slug: "alert-dialog",
-    open: async (page) => void (await lastButton(page, /Delete identity/).click()),
-    panel: (page) => page.getByRole("alertdialog"),
-    adds: 1,
-    trigger: (page) => lastButton(page, /Delete identity/),
-    restoresFocus: true,
-  },
-  {
-    slug: "popover",
-    open: async (page) => void (await lastButton(page, "Open popover").click()),
-    panel: (page) => page.getByRole("dialog"),
-    adds: 1,
-    trigger: (page) => lastButton(page, "Open popover"),
-    restoresFocus: true,
-  },
-  {
-    slug: "dropdown",
-    open: async (page) => void (await lastButton(page, "Actions").click()),
-    panel: (page) => page.getByRole("menu"),
-    adds: 1,
-    trigger: (page) => lastButton(page, "Actions"),
-    expands: true,
-    restoresFocus: true,
-  },
-  {
-    slug: "row-menu",
-    open: async (page) => void (await stage(page).getByLabel("More options").last().click()),
-    panel: (page) => page.getByRole("menu"),
-    adds: 1,
-    trigger: (page) => stage(page).getByLabel("More options").last(),
-    expands: true,
-  },
-  {
-    slug: "select",
-    open: async (page) => void (await lastButton(page, "Country").click()),
-    panel: (page) => page.getByRole("listbox"),
-    adds: 1,
-    trigger: (page) => lastButton(page, "Country"),
-    expands: true,
-  },
-  {
-    slug: "autocomplete",
-    open: async (page) => {
-      const field = stage(page).getByRole("combobox").last();
-      await field.click();
-      await field.pressSequentially("a", { delay: 40 });
-    },
-    panel: (page) => page.getByRole("listbox"),
-    adds: 1,
-    trigger: (page) => stage(page).getByRole("combobox").last(),
-    expands: true,
-  },
-  {
-    slug: "command",
-    open: async (page) => void (await lastButton(page, /Search/).click()),
-    panel: (page) => page.getByRole("listbox"),
-    adds: 1,
-    trigger: (page) => lastButton(page, /Search/),
-    expands: true,
-  },
-  {
-    slug: "action-sheet",
-    open: async (page) => void (await lastButton(page, "Add photo").click()),
-    panel: (page) => page.getByRole("dialog"),
-    adds: 1,
-    trigger: (page) => lastButton(page, "Add photo"),
-  },
-  {
-    slug: "drawer",
-    open: async (page) => void (await lastButton(page, "Open menu").click()),
-    panel: (page) => page.getByRole("dialog"),
-    adds: 1,
-    trigger: (page) => lastButton(page, "Open menu"),
-  },
-];
+export const OVERLAYS: BoundOverlay[] = OVERLAY_RECIPES.map(bind);
 
-/**
- * Toast is not an overlay you open and close: it is an announcement written into a
- * live region that is already on the page, and it removes itself. So it gets its own
- * assertions rather than a row in the table above.
- */
 export const TOAST = {
-  slug: "toast",
-  open: (page: Page) => lastButton(page, "Show toast").click(),
+  slug: TOAST_RECIPE.slug,
+  open: (page: Page) => TOAST_RECIPE.open(page as never, stage(page) as never),
   region: (page: Page) => page.getByRole("status"),
 };
