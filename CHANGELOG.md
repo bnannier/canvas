@@ -1,5 +1,22 @@
 # @nannier/canvas
 
+## 2.61.0
+
+### Minor Changes
+
+- 2b2befb: Add `Listbox.accessibilityLabel` so applications can name single-select lists and multi-select checkbox groups for assistive technology.
+
+  Correct multi-select semantics and remove hidden interactive checkbox indicators while preserving platform checkbox artwork and row actions. Ensure each complete Enter or Space press changes selection once.
+
+### Patch Changes
+
+- 95c8f23: Keep Drawer child overlays inside the drawer's Modal window so Dropdown and Select menus remain visible above its panel. Preserve measured anchoring, outside-tap dismissal, nested Escape handling, and safe blur targets without requiring an extra consumer OverlayProvider.
+- 78225b8: Fix published native module resolution so stock Metro selects iOS and Android
+  skins and material helpers. Preserve the web ESM build and public declarations,
+  watch both outputs during local development, and verify the sealed package in an
+  isolated native consumer with optional peers omitted before CI publication.
+- 8c3b6c3: Update registered local consumer overlays with the package's native entry metadata after its compiled targets exist, preserving package versions and dependency ranges. Retain exact source-map positions when native builds shorten relative module requests for Metro platform resolution.
+
 ## 2.60.5
 
 ### Patch Changes
