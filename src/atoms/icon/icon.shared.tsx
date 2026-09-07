@@ -1,6 +1,7 @@
 import Svg, { Circle, Ellipse, Line, Path, Polygon, Polyline, Rect } from "react-native-svg";
 import { View, useTheme, palette, type ColorTokens, type StyleProp, type ViewStyle } from "../../style/index.js";
 import { ICONS, NAMES, type Shape, type IconGlyphProps } from "./icon.glyphs.js";
+import { ICON_STROKE_WIDTH } from "./icon.stroke.js";
 
 // Shared Icon shell. The whole glyph set, the boolean-prop axes (name + color),
 // the semantic color logic, and the SVG presentation live here once. Icon is a
@@ -152,7 +153,7 @@ function Glyph({
       viewBox="0 0 24 24"
       fill="none"
       stroke={stroke}
-      strokeWidth={1.75}
+      strokeWidth={ICON_STROKE_WIDTH}
       strokeLinecap="round"
       strokeLinejoin="round"
       testID={testID}
