@@ -1,4 +1,4 @@
-import { View, Text, useTheme, palette, statusHues, devWarn, type ColorTokens, type StyleProp, type ViewStyle } from "../../style/index.js";
+import { View, Text, useTheme, palette, statusHues, devWarn, tabularNums, type ColorTokens, type StyleProp, type ViewStyle } from "../../style/index.js";
 import * as s from "../shared/charts.styles.js";
 import { type ChartSkin } from "../shared/types.js";
 import { chartRootWidth } from "../shared/chart-frame.js";
@@ -150,7 +150,7 @@ export function createMetricBreakdown(skin: ChartSkin) {
         {/* Header: headline + caption left, rate + caption right. */}
         <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "flex-end", gap: 12 }}>
           <View style={{ flexShrink: 1, gap: 2 }}>
-            <Text style={{ fontSize: 22, lineHeight: 26, fontWeight: "600", letterSpacing: -0.4, color: tokens["card-foreground"], fontVariant: ["tabular-nums"] }}>
+            <Text style={{ fontSize: 22, lineHeight: 26, fontWeight: "600", letterSpacing: -0.4, color: tokens["card-foreground"], ...tabularNums() }}>
               {value}
             </Text>
             <Text numberOfLines={1} style={captionStyle(tokens)}>{label}</Text>
@@ -158,7 +158,7 @@ export function createMetricBreakdown(skin: ChartSkin) {
           {hasRate ? (
             <View style={{ alignItems: "flex-end", gap: 2 }}>
               {rate != null && rate !== "" ? (
-                <Text style={{ fontSize: 13, lineHeight: 18, fontWeight: "500", color: rateColor(tokens, props), fontVariant: ["tabular-nums"] }}>
+                <Text style={{ fontSize: 13, lineHeight: 18, fontWeight: "500", color: rateColor(tokens, props), ...tabularNums() }}>
                   {rate}
                 </Text>
               ) : null}
@@ -179,7 +179,7 @@ export function createMetricBreakdown(skin: ChartSkin) {
               importantForAccessibility="no-hide-descendants"
               style={{ position: "absolute", top: 0, right: 0, backgroundColor: props.plain ? undefined : tokens.card, paddingHorizontal: 4 }}
             >
-              <Text style={{ fontSize: 11, lineHeight: 14, fontWeight: "500", color: tagColor, fontVariant: ["tabular-nums"] }}>
+              <Text style={{ fontSize: 11, lineHeight: 14, fontWeight: "500", color: tagColor, ...tabularNums() }}>
                 {sparkUnit != null && sparkUnit !== "" ? `${formatValue(last)} ${sparkUnit}` : formatValue(last)}
               </Text>
             </View>
