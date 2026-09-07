@@ -1,9 +1,9 @@
 /**
  * lookout config for the Canvas docs (https://github.com/nannier-com/lookout).
  *
- * Targets the running docs app (bun run dev in docs/, Metro on 8081) and
- * derives the 100 component routes from nav.config.json, the same source
- * capture-ui.ts trusts (check-nav-sync holds it 1:1 with the docs core).
+ * Targets the running docs app (bun run dev in docs/, Metro on 8081) and derives
+ * the component routes from nav.config.json, which check-nav-sync holds 1:1 with
+ * the docs core, so this list cannot drift out from under the sweep.
  *
  * Canonical judging runs on the SOLID surface (?surface=solid pinned via the
  * target query): glass frosts are GPU-nondeterministic and would churn the
@@ -17,7 +17,7 @@
  */
 import type { LookoutConfig, RouteDef, StateRecipe } from "@nannier-com/lookout";
 import type { Page } from "playwright";
-import navConfig from "../docs/src/data/nav.config.json";
+import navConfig from "./docs/src/data/nav.config.json";
 
 // ---------------------------------------------------------------------------
 // Routes: every component page, element-shot on the preview card (the 3-up
@@ -103,7 +103,8 @@ const states: Record<string, StateRecipe> = {
   "open-action-sheet": clickTrigger("Add photo"),
   "open-drawer": clickTrigger("Open menu"),
   "show-toast": {
-    // Toasts auto-dismiss: shoot right after the trigger, no restore needed.
+    // Toasts auto-dismiss: shoot right after the trigger, no restore needed. The
+    // live region is already on the page and empty; the trigger fills it.
     prepare: async (page) => {
       await stage(page).getByRole("button", { name: "Show toast" }).last().click();
       await page.waitForTimeout(350);
@@ -122,9 +123,11 @@ const states: Record<string, StateRecipe> = {
     element: null,
   },
   "open-select": {
-    // The collapsed field shows its current value; click it to drop the list.
+    // The collapsed field is a button named for its label. It used to be opened by
+    // the text of its current value, which stopped matching when the example changed
+    // and left the sweep judging a closed Select as an open one.
     prepare: async (page) => {
-      await stage(page).getByText("United States").last().click();
+      await stage(page).getByRole("button", { name: "Country" }).last().click();
       await page.waitForTimeout(400);
     },
     restore: async (page) => {
@@ -135,7 +138,9 @@ const states: Record<string, StateRecipe> = {
   },
   "open-autocomplete": {
     prepare: async (page) => {
-      const input = stage(page).getByRole("textbox").last();
+      // The field is a combobox, not a bare textbox: the old locator matched the
+      // page's search box on some routes and timed out on others.
+      const input = stage(page).getByRole("combobox").last();
       await input.click();
       await input.pressSequentially("a", { delay: 40 });
       await page.waitForTimeout(400);
@@ -147,8 +152,10 @@ const states: Record<string, StateRecipe> = {
     element: null,
   },
   "open-command": {
+    // The default example is the COLLAPSED trigger, not an inline palette, so the
+    // placeholder this used to click is not on the page until after it opens.
     prepare: async (page) => {
-      await stage(page).getByText("Search commands", { exact: false }).last().click();
+      await stage(page).getByRole("button", { name: /Search/ }).last().click();
       await page.waitForTimeout(400);
     },
     restore: async (page) => {
@@ -193,7 +200,7 @@ const config: LookoutConfig = {
 
   states,
 
-  rubric: "./rubric.md",
+  rubric: "./lookout.rubric.md",
 
   neverFile: [
     "brand indigo primary instead of Material dynamic color: the kit's palette is shadcn-token based by design",
@@ -204,7 +211,23 @@ const config: LookoutConfig = {
     "the react-native-web blue focus outline box on web: a known RNW artifact, not a skin bug",
     "the small uppercase platform watermark (iOS / ANDROID / WEB) in each preview row corner: a docs harness label, not component content",
     "the iOS and Android rows on WEB captures are browser previews of the native skins: judge their metrics and anatomy, but material and feedback fidelity only from device shots",
+    "Lucide-derived outline glyphs at one 1.75 stroke: the kit's icon set, drawn from a single constant",
+    "pure-white light-scheme surfaces and hairline card borders: the shadcn token surfaces this kit is built on",
+    "the circular indicator in Spinner and in a loading Button: information-bearing motion by design; Skeleton is the shimmer",
+    "pill-shaped chips and badges on the iOS and Android rows: platform shape, not a rounding accident",
+    "10pt tab-bar labels on iOS rows: the HIG size for that control",
+    "sample names, addresses and figures in the examples: illustrative data, unless it is literally placeholder text",
   ],
+
+  // Where a defect gets fixed. This repository IS the kit, so a finding on a docs
+  // page is almost always a fix in src/, not in the page that showed it.
+  designSystem: {
+    name: "Canvas",
+    packageRoot: ".",
+    componentRoots: ["./src/atoms", "./src/molecules", "./src/organisms", "./src/charts"],
+    importPrefixes: ["@nannier-com/canvas"],
+    tokenFiles: ["./src/style/tokens.ts", "./styles/canvas.css"],
+  },
 
   native: {
     target: "docs",
