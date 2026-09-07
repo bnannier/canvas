@@ -149,7 +149,7 @@ const CAL_CELL = 11;
 const CAL_GAP = 3;
 const CAL_PITCH = CAL_CELL + CAL_GAP;
 const CAL_ROWS = 7;
-const CAL_GUTTER = 28; // weekday-label column
+const CAL_GUTTER = 32; // weekday-label column, wide enough for "Wed" at 10px
 const CAL_MONTH_H = 15; // month-label row
 
 function CalendarHeatmap({ cells, label, caption, hideLegend, testID, style }: HeatmapProps & { cells: HeatmapCell[] }) {
@@ -227,7 +227,7 @@ function CalendarHeatmap({ cells, label, caption, hideLegend, testID, style }: H
             <View style={{ width: CAL_GUTTER, gap: CAL_GAP, paddingRight: 4 }}>
               {HEATMAP_WEEKDAYS.map((wd, r) => (
                 <View key={r} style={{ height: CAL_CELL, justifyContent: "center" }}>
-                  {wd ? <Text numberOfLines={1} style={{ fontSize: 9, lineHeight: 9, textAlign: "right", color: tokens["muted-foreground"] }}>{wd}</Text> : null}
+                  {wd ? <Text numberOfLines={1} style={{ fontSize: 10, lineHeight: 11, textAlign: "right", color: tokens["muted-foreground"] }}>{wd}</Text> : null}
                 </View>
               ))}
             </View>

@@ -1,5 +1,5 @@
 import { type ViewStyle, type TextStyle } from "react-native";
-import { alpha, customShadow, type ColorTokens } from "../../style/index.js";
+import { alpha, customShadow, tabularNums, type ColorTokens } from "../../style/index.js";
 import { type SliderSkin, type Size } from "./slider.shared.js";
 
 // Co-located Slider skins, one per platform, all driven by the brand tokens (passed
@@ -61,7 +61,7 @@ function description(tokens: ColorTokens, size: Size): TextStyle {
   return { color: tokens["muted-foreground"], ...DESCRIPTION_TYPE[size] };
 }
 function value(tokens: ColorTokens, size: Size): TextStyle {
-  return { fontWeight: "500", color: tokens["muted-foreground"], fontVariant: ["tabular-nums"], ...LABEL_TYPE[size] };
+  return { fontWeight: "500", color: tokens["muted-foreground"], ...tabularNums(), ...LABEL_TYPE[size] };
 }
 
 // ----- iOS (iOS 27 kit): 6pt rail (radius 3), 37x24pt capsule knob -----

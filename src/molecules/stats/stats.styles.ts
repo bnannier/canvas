@@ -1,5 +1,5 @@
 import { type ViewStyle, type TextStyle } from "react-native";
-import { type ColorTokens, palette, shadow, alpha, surfaceRipple } from "../../style/index.js";
+import { palette, shadow, alpha, surfaceRipple, tabularNums, type ColorTokens } from "../../style/index.js";
 import { SPARK_STRIP_HEIGHT } from "../../charts/sparkline/sparkline.styles.js";
 import { type StatsSkin } from "./stats.shared.js";
 
@@ -127,10 +127,14 @@ export const webSkin: StatsSkin = {
     lineHeight: 32,
     fontWeight: "600",
     letterSpacing: -0.4,
+    // Tabular figures: a headline number that updates in place must not
+    // change width as its digits change, and a column of Stats cards should
+    // line its values up.
+    ...tabularNums(),
     color: tokens.foreground,
   }),
   // mt-1 text-xs font-medium (tone color layered on top by the shell)
-  deltaBase: { marginTop: 4, fontSize: 12, lineHeight: 16, fontWeight: "500" },
+  deltaBase: { marginTop: 4, fontSize: 12, lineHeight: 16, fontWeight: "500", ...tabularNums() },
   pressedOpacity: 0.9,
   ripple: (tokens) => ({ color: alpha(tokens.foreground, 0.1), borderless: false }),
 };
@@ -168,9 +172,13 @@ export const iosSkin: StatsSkin = {
     lineHeight: 30,
     fontWeight: "600",
     letterSpacing: -0.5,
+    // Tabular figures: a headline number that updates in place must not
+    // change width as its digits change, and a column of Stats cards should
+    // line its values up.
+    ...tabularNums(),
     color: tokens.foreground,
   }),
-  deltaBase: { marginTop: 4, fontSize: 12, lineHeight: 16, fontWeight: "500", letterSpacing: 0 },
+  deltaBase: { marginTop: 4, fontSize: 12, lineHeight: 16, fontWeight: "500", ...tabularNums(), letterSpacing: 0 },
   pressedOpacity: 0.8,
   ripple: null,
 };
@@ -209,10 +217,14 @@ export const androidSkin: StatsSkin = {
     lineHeight: 32,
     fontWeight: "400",
     letterSpacing: 0,
+    // Tabular figures: a headline number that updates in place must not
+    // change width as its digits change, and a column of Stats cards should
+    // line its values up.
+    ...tabularNums(),
     color: tokens.foreground,
   }),
   // M3 label-medium: 12/16/500/+0.5.
-  deltaBase: { marginTop: 4, fontSize: 12, lineHeight: 16, fontWeight: "500", letterSpacing: 0.5 },
+  deltaBase: { marginTop: 4, fontSize: 12, lineHeight: 16, fontWeight: "500", ...tabularNums(), letterSpacing: 0.5 },
   pressedOpacity: null,
   // Bounded neutral state layer from the shared ripple helper (the cardSurface's
   // overflow:"hidden" clips it to the rounded outline).
