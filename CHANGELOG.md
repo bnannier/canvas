@@ -1,5 +1,20 @@
 # @nannier/canvas
 
+## 2.62.0
+
+### Minor Changes
+
+- 66a262b: Add Autocomplete's public `onValueChange` callback so controlled consumers can observe both option selection and clearing with an empty string. This additive public capability justifies the minor release; `onSelect` continues to report selections only.
+
+  Add keyboard suggestion navigation and selection, accessible active-option relationships, and native ScrollView scrolling. Preserve IME composition and let an active suggestion consume Enter before a surrounding Form submits.
+
+  Give the disclosure button a real platform-sized touch target, including a 44pt minimum height for small iOS fields.
+
+### Patch Changes
+
+- a9135a6: Record the reviewed Linux screenshots for Autocomplete's platform-sized disclosure targets in light and dark, with the list closed and open. The intended pixel changes are limited to the chevrons' positions; field dimensions and option-list layout are preserved.
+- 6132645: Make manual visual baseline generation capture current screenshots for review, including intentional differences within the normal comparison tolerance. Keep the regular visual regression gate's tolerance unchanged.
+
 ## 2.61.0
 
 ### Minor Changes
