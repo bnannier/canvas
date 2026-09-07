@@ -6,8 +6,8 @@
  * is held 1:1 with the generated docs core by docs/scripts/check-nav-sync.ts in CI,
  * which is what makes it safe to enumerate from. It is also plain JSON: the pattern
  * and template data modules compose real kit components, so importing THOSE pulls in
- * React Native and does not parse outside Metro (the lesson scripts/capture-ui.ts
- * records after dying on startup for exactly that reason).
+ * React Native and does not parse outside Metro, which is how the screenshot script
+ * this suite replaced used to die on startup.
  */
 import { readFileSync, readdirSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";

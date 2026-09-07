@@ -5,8 +5,6 @@ dist/
 .env*
 coverage/
 test/screenshots/*.current.png
-test/verify/
-test/ui/
 
 # Playwright run artifacts (reports, traces, failure screenshots). The visual
 # BASELINES under e2e/visual/__screenshots__ are committed; these are not.

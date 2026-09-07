@@ -1,11 +1,11 @@
 /**
  * The scheme toggle repaints the page.
  *
- * Worth its own test because of how it failed before: scripts/capture-ui.ts used to
- * set a `canvas-theme` localStorage key that no part of the docs app reads (it
- * belongs to the kit's web CSS hand-off, which the docs do not use), so an entire
- * "light" screenshot set was really dark and nothing said so. Reading the scheme back
- * off the painted pixels is what makes a silent no-op fail.
+ * Worth its own test because of how it failed before: the screenshot script this
+ * suite replaced used to set a `canvas-theme` localStorage key that no part of the
+ * docs app reads (it belongs to the kit's web CSS hand-off, which the docs do not
+ * use), so an entire "light" screenshot set was really dark and nothing said so.
+ * Reading the scheme back off the painted pixels is what makes a silent no-op fail.
  */
 import { gotoDocs, readScheme } from "../support/docs";
 import { expect, test } from "../support/fixtures";
