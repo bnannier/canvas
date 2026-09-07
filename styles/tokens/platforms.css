@@ -104,14 +104,10 @@
   --p-table-head-font:12px;--p-table-head-lh:16px;--p-table-head-weight:500;--p-table-head-transform:uppercase /* @kind other */;--p-table-head-tracking:0.4px;--p-table-head-pad-y:8px;
   --p-table-cell-font:14px;--p-table-cell-lh:20px;--p-table-cell-tracking:0px;--p-table-cell-pad-x:16px;--p-table-cell-pad-y:12px;--p-table-cell-pad-y-compact:8px;
   --p-min-target:0px;
-  /* Stats — flat inset surface, 18pt inset, SF tracking */
-  --p-stat-radius:12px;--p-stat-pad:18px;--p-stat-shadow:none;--p-stat-gap:12px;
-  --p-stat-label-tracking:-0.15px;--p-stat-value-lh:30px;--p-stat-value-tracking:-0.5px;
   /* Breadcrumb (breadcrumb.styles.ts webSkin: no tracking, font-medium current page) */
   --p-crumb-tracking:0px;--p-crumb-sep-tracking:0px;--p-crumb-current-weight:500;
-  /* EmptyState — 12pt continuous card, SF tracking */
-  --p-empty-radius:12px;--p-empty-title-tracking:-0.31px;--p-empty-desc-tracking:-0.15px;
-  --p-min-target:44px;
+  /* EmptyState (empty-state.styles.ts webSkin: 8px bordered card, no tracking) */
+  --p-empty-radius:8px;--p-empty-title-tracking:0px;--p-empty-desc-tracking:0px;
   /* Sidebar row colors (sidebar.styles.ts webSkin: accent fill, muted label + glyph) */
   --p-side-active-fill:var(--accent);--p-side-active-label:var(--foreground);
   --p-side-label-color:var(--muted-foreground);--p-side-icon-color:var(--muted-foreground);--p-side-icon-active:currentColor;
@@ -353,6 +349,7 @@
   --p-btn-pad-x-lg:26px;--p-btn-pad-y-lg:18px;--p-btn-font-lg:17px;--p-btn-lh-lg:22px;
   --p-btn-square:44px;--p-btn-square-sm:36px;--p-btn-square-lg:52px;
   --p-press:0.8 /* @kind other */;--p-disabled:0.4 /* @kind other */;
+  --p-min-target:44px;
   --p-card-radius:12px;--p-card-shadow:none;--p-card-shadow-raised:0px 1px 2px rgba(0,0,0,0.05);
   --p-field-radius:10px;--p-field-height:44px;--p-field-height-sm:36px;--p-field-height-lg:50px;
   --p-field-fill:var(--secondary);--p-field-radius-bottom:10px;--p-field-pad-x:16px;
@@ -365,8 +362,13 @@
   --p-badge-weight:600;
   --p-avatar-square-radius:10px;
   --p-alert-radius:10px;--p-alert-tracking:-0.15px;
+  /* Stats (stats.styles.ts iosSkin: flat 12pt inset surface, 18pt inset, SF tracking) */
+  --p-stat-radius:12px;--p-stat-pad:18px;--p-stat-shadow:none;--p-stat-gap:12px;
+  --p-stat-label-tracking:-0.15px;--p-stat-value-lh:30px;--p-stat-value-tracking:-0.5px;
   /* Breadcrumb (breadcrumb.styles.ts iosSkin: SF tracking at 14pt, semibold current page) */
   --p-crumb-tracking:-0.15px;--p-crumb-sep-tracking:-0.15px;--p-crumb-current-weight:600;
+  /* EmptyState (empty-state.styles.ts iosSkin: 12pt continuous card, SF tracking) */
+  --p-empty-radius:12px;--p-empty-title-tracking:-0.31px;--p-empty-desc-tracking:-0.15px;
   --p-overlay-radius:12px;--p-sheet-radius:12px;
   /* Popover (iOS 27, Liquid Glass): a largely rounded ~26pt borderless card with the anchor beak */
   --p-popover-radius:26px;--p-popover-border:0px;--p-popover-beak-display:block /* @kind other */;
@@ -788,8 +790,8 @@
   --p-tabbar-inset-b:0px;--p-tabbar-pad-bottom:12px;
   /* No divider, so the separation comes from the surface-container tint instead. */
   --p-tabbar-fill:var(--muted) /* @kind other */;
-  /* M3 top app bar does the same: tinted surface, no hairline. */
-  --p-nav-fill:var(--muted) /* @kind other */;--p-nav-rule:0px;
+  /* M3 top app bar does the same tinted surface; its hairline is already off above. */
+  --p-nav-fill:var(--muted) /* @kind other */;
   /* Progress — M3 linear indicator: 4dp track on secondary, 4dp gap, stop-indicator dot */
   --p-progress-h-small:3px;--p-progress-h-base:4px;--p-progress-h-large:8px;
   --p-progress-track:var(--secondary);--p-progress-gap:4px;--p-progress-stop:4px;--p-progress-stop-opacity:1 /* @kind other */;

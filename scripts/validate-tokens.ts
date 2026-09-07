@@ -1,6 +1,10 @@
 import { readdir, readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { brandColors, darkColors, glassByScheme, lightColors, palette } from "../src/style/tokens.ts";
+// The oklch conversion and the block parser moved to tools/tokens so the design-rule
+// tests and the DESIGN.md generator can read the hand-off with the same parser this
+// script trusts. Nothing can import from HERE: the checks below run at import time.
+import { cssColorToHex, cssRgbaToCanonical, declarationsIn } from "../tools/tokens/css-tokens.ts";
 
 const STYLES_DIR = join(import.meta.dir, "..", "styles");
 
@@ -12,74 +16,6 @@ async function collectCSSFiles(dir: string): Promise<string[]> {
     else if (entry.name.endsWith(".css")) files.push(full);
   }
   return files;
-}
-
-// --- OKLCH -> sRGB -------------------------------------------------------
-// The hand-off authors its semantic colors in oklch(), which React Native cannot
-// parse, so src/style/tokens.ts carries the hex those values resolve to. To compare
-// the two sides at all, the CSS has to be converted back. Standard Oklab matrices
-// (Ottosson), then the sRGB transfer function; the result is the same 8-bit triple a
-// browser paints, so an exact string compare is the right test.
-function oklchToHex(L: number, C: number, hDeg: number): string {
-  const h = (hDeg * Math.PI) / 180;
-  const a = C * Math.cos(h);
-  const b = C * Math.sin(h);
-  const l = (L + 0.3963377774 * a + 0.2158037573 * b) ** 3;
-  const m = (L - 0.1055613458 * a - 0.0638541728 * b) ** 3;
-  const s = (L - 0.0894841775 * a - 1.2914855480 * b) ** 3;
-  const linear = [
-    4.0767416621 * l - 3.3077115913 * m + 0.2309699292 * s,
-    -1.2684380046 * l + 2.6097574011 * m - 0.3413193965 * s,
-    -0.0041960863 * l - 0.7034186147 * m + 1.7076147010 * s,
-  ];
-  const channel = (v: number) => {
-    const c = v <= 0.0031308 ? 12.92 * v : 1.055 * Math.pow(Math.max(v, 0), 1 / 2.4) - 0.055;
-    return Math.round(Math.min(1, Math.max(0, c)) * 255)
-      .toString(16)
-      .padStart(2, "0");
-  };
-  return `#${linear.map(channel).join("")}`;
-}
-
-// Resolve a raw CSS declaration to a comparable hex, or null when it is not a plain
-// color (a var() alias, a gradient, a shadow list, a blur filter).
-function cssColorToHex(raw: string): string | null {
-  const value = raw.replace(/\/\*[\s\S]*?\*\//g, "").trim().toLowerCase();
-  const oklch = value.match(/^oklch\(\s*([\d.]+)\s+([\d.]+)\s+([\d.]+)\s*\)$/);
-  if (oklch) return oklchToHex(Number(oklch[1]), Number(oklch[2]), Number(oklch[3]));
-  if (/^#[0-9a-f]{6}$/.test(value)) return value;
-  if (/^#[0-9a-f]{3}$/.test(value)) return `#${[...value.slice(1)].map((c) => c + c).join("")}`;
-  return null;
-}
-
-// The glass material's tokens are authored as rgba() on BOTH sides (React Native parses
-// rgba natively, so nothing has to be transcribed into another notation), which is exactly
-// the case cssColorToHex declines: a hex compare would drop the alpha, and the alpha is the
-// whole point of a material fill. Canonicalize the four channels instead, so spacing and
-// `0.20` vs `0.2` count as formatting while a real difference still fails.
-function cssRgbaToCanonical(raw: string): string | null {
-  const value = raw.replace(/\/\*[\s\S]*?\*\//g, "").trim().toLowerCase();
-  const m = value.match(/^rgba?\(\s*([\d.]+)\s*,\s*([\d.]+)\s*,\s*([\d.]+)\s*(?:,\s*([\d.]+)\s*)?\)$/);
-  if (!m) return null;
-  const alpha = m[4] === undefined ? 1 : Number(m[4]);
-  return `rgba(${Number(m[1])}, ${Number(m[2])}, ${Number(m[3])}, ${alpha})`;
-}
-
-// Pull the declarations out of one selector block, so the light (:root) and dark
-// (.dark) color sets can be compared against their own JS counterpart.
-function declarationsIn(css: string, selector: string): Record<string, string> {
-  const out: Record<string, string> = {};
-  const start = css.indexOf(selector + "{");
-  if (start === -1) return out;
-  const open = start + selector.length;
-  let depth = 0;
-  let end = open;
-  for (; end < css.length; end++) {
-    if (css[end] === "{") depth++;
-    else if (css[end] === "}" && --depth === 0) break;
-  }
-  for (const m of css.slice(open, end).matchAll(/--([\w-]+)\s*:\s*([^;]+);/g)) out[m[1]] = m[2];
-  return out;
 }
 
 const files = await collectCSSFiles(STYLES_DIR);
