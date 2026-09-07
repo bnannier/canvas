@@ -3,10 +3,10 @@
  *
  * test/tokens.html pulls in styles/canvas.css exactly as a web consumer would, so
  * this is the one baseline that photographs the CSS hand-off rather than the React
- * Native kit. It replaces scripts/capture-screenshots.ts, whose 5% pixel and 1%
- * dimension tolerances existed only to paper over the difference between the macOS
- * machine that minted its baselines and whatever machine ran it next. Linux-only
- * baselines remove the reason for the tolerance.
+ * Native kit. It replaces the screenshot script that used to shoot this fixture, whose
+ * 5% pixel and 1% dimension tolerances existed only to paper over the difference
+ * between the macOS machine that minted its baselines and whatever machine ran it
+ * next. Linux-only baselines remove the reason for the tolerance.
  *
  * Served by the second web server in playwright.config.ts, from the checkout root.
  */
