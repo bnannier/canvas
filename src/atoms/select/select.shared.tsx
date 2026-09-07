@@ -141,7 +141,7 @@ export function createSelect(skin: SelectSkin) {
     // bare <Select options /> opens and picks out of the box (the standard
     // library contract): the trigger opens/closes the list, a select stores the
     // choice and closes it, and the callbacks fire in both modes.
-    const [open, setOpen] = useControllableState<boolean>(
+    const [storedOpen, setStoredOpen] = useControllableState<boolean>(
       props.open,
       props.defaultOpen ?? false,
       onOpenChange,
@@ -151,6 +151,20 @@ export function createSelect(skin: SelectSkin) {
       props.defaultValue ?? "",
       onSelect,
     );
+
+    // Disabled suppresses the menu without changing either owned state axis.
+    // Re-enabling restores the stored open state, matching Dropdown, and prop
+    // changes never synthesize interaction callbacks.
+    const open = !disabled && storedOpen;
+    const setOpen = (next: boolean) => {
+      if (disabled) return;
+      setStoredOpen(next);
+    };
+    const selectOption = (next: string) => {
+      if (disabled) return;
+      setValue(next);
+      setOpen(false);
+    };
 
     // Escape closes the open option list on web (no-op natively).
     useEscapeKey(open, () => setOpen(false));
@@ -207,7 +221,9 @@ export function createSelect(skin: SelectSkin) {
           android_ripple={ripple}
           testID={props.testID}
           accessibilityRole="button"
+          accessibilityState={{ expanded: open, disabled: !!disabled }}
           aria-expanded={open}
+          aria-disabled={!!disabled}
           // Required is surfaced programmatically (aria-required), omitted when optional.
           aria-required={required || undefined}
           // Name the trigger by its label on both channels so a screen reader
@@ -292,10 +308,13 @@ export function createSelect(skin: SelectSkin) {
                     // Web/iOS tint the row on press here; Android uses the ripple instead.
                     skin.ripple == null && pressed ? skin.optionPressed(tokens) : null,
                   ]}
-                  onPress={() => { setValue(option.value); setOpen(false); }}
+                  onPress={() => selectOption(option.value)}
+                  disabled={disabled}
                   android_ripple={ripple}
                   role="option"
+                  accessibilityState={{ selected, disabled: !!disabled }}
                   aria-selected={selected}
+                  aria-disabled={!!disabled}
                 >
                   {skin.selectedSide === "leading" ? (
                     <Text style={[skin.indicator(tokens, size), { width: 14 }]}>
