@@ -1,0 +1,88 @@
+name: Visual baselines — canvas
+
+# Mints the screenshot baselines the `visual` project compares against.
+#
+# They have to come from a Linux runner. macOS renders the same DOM with different
+# glyph metrics, so a baseline taken there disagrees with CI by whole pixels on every
+# shot, for reasons that are not defects. Rather than keep two sets, or loosen the
+# tolerance until it stops catching anything, the baselines are Linux-only and the
+# visual project simply does not compare anywhere else.
+#
+# Deliberately manual, and deliberately not a commit. It uploads the images; a person
+# runs `bun run e2e:baselines:pull <run-id>`, looks at what changed, and commits. A
+# job that rewrote its own baselines would turn every regression into a new baseline.
+on:
+  workflow_dispatch:
+    inputs:
+      project:
+        description: 'Playwright project to update (leave as "visual")'
+        default: visual
+        required: false
+
+concurrency:
+  group: visual-baselines
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  mint:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Cache bun downloads
+        uses: actions/cache@v6
+        with:
+          path: ~/.bun/install/cache
+          key: bun-${{ runner.os }}-${{ hashFiles('bun.lock', 'docs/bun.lock') }}
+          restore-keys: |
+            bun-${{ runner.os }}-
+
+      - run: bun install --frozen-lockfile
+
+      - name: Cache the Playwright browser
+        uses: actions/cache@v6
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('bun.lock') }}
+
+      - name: Install chromium
+        run: bunx playwright install --with-deps chromium
+
+      # The same export the e2e job tests, built the same way the deploy builds it.
+      - name: Install docs deps
+        working-directory: docs
+        run: bun install --frozen-lockfile
+
+      - name: Export web build
+        working-directory: docs
+        run: bun run build:web
+
+      - name: Mint the baselines
+        run: bunx playwright test --project=${{ inputs.project || 'visual' }} --update-snapshots
+
+      - name: Upload them
+        uses: actions/upload-artifact@v7
+        with:
+          name: visual-baselines
+          path: e2e/visual/__screenshots__
+          retention-days: 14
+
+      - name: Summary
+        run: |
+          count=$(find e2e/visual/__screenshots__ -name '*.png' | wc -l | tr -d ' ')
+          size=$(du -sh e2e/visual/__screenshots__ | cut -f1)
+          {
+            echo "### Visual baselines"
+            echo
+            echo "$count screenshots, $size."
+            echo
+            echo 'Pull them with `bun run e2e:baselines:pull ${{ github.run_id }}`, review the diff, and commit.'
+          } >> "$GITHUB_STEP_SUMMARY"
