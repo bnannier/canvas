@@ -135,6 +135,11 @@ jobs:
       - uses: actions/checkout@v7
         with:
           ref: ${{ github.sha }}
+      # Wrangler selects Bun from the docs lockfile. Supply its runtime while
+      # keeping the web archive built and validated by the earlier job intact.
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
       - uses: actions/download-artifact@v8
         with:
           name: release-candidate
