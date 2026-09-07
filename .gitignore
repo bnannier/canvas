@@ -4,7 +4,6 @@ dist/
 *.tsbuildinfo
 .env*
 coverage/
-test/screenshots/*.current.png
 
 # Playwright run artifacts (reports, traces, failure screenshots). The visual
 # BASELINES under e2e/visual/__screenshots__ are committed; these are not.
