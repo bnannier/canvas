@@ -8,6 +8,12 @@ test/screenshots/*.current.png
 test/verify/
 test/ui/
 
+# Playwright run artifacts (reports, traces, failure screenshots). The visual
+# BASELINES under e2e/visual/__screenshots__ are committed; these are not.
+playwright-report/
+test-results/
+blob-report/
+
 # lookout evidence (screenshots; regenerable). The config, rubric, backlog,
 # and ledger under .lookout/ ARE committed.
 .lookout/evidence/
