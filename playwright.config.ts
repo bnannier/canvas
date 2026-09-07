@@ -1,0 +1,121 @@
+/**
+ * The end-to-end suite: what the docs app actually does in a real browser.
+ *
+ * This is the DETERMINISTIC half of Canvas's visual verification. It asserts facts
+ * (a route painted, nothing threw, nothing overflowed, Escape closed the overlay,
+ * these pixels match the baseline). Taste is judged separately by lookout, which
+ * reads lookout.config.ts and files opinions; the two are meant not to overlap.
+ *
+ * What it runs against, in order of preference:
+ *
+ *   E2E_BASE_URL set  Whatever is already serving, typically `cd docs && bun run dev`
+ *                     (Metro on 8081). Convenient while writing a spec; note Metro is
+ *                     a DEV build, so React's own development warnings reach the
+ *                     console gate.
+ *   otherwise         The web export in docs/dist, served by e2e/support/serve-dist.ts
+ *                     with the SPA rewrite and the production Content-Security-Policy
+ *                     from docs/public/_headers. This is the canonical run: it tests
+ *                     the bytes that ship. Build it with `cd docs && bun run build:web`.
+ *
+ * There are no retries on purpose. A test that only passes sometimes is a defect in
+ * the test or the app, and hiding it behind a retry is the shortcut this repo does
+ * not take. Every wait in the suite is a wait on observable state, never a sleep.
+ */
+import { defineConfig, devices } from "@playwright/test";
+
+const CI = !!process.env.CI;
+
+// The suite serves the export itself unless something is already running.
+const OWN_SERVER_PORT = 4173;
+const TOKENS_SERVER_PORT = 4174;
+const baseURL = process.env.E2E_BASE_URL ?? `http://127.0.0.1:${OWN_SERVER_PORT}`;
+const basePath = process.env.E2E_BASE_PATH ?? "";
+
+// Screenshot baselines are rasterized by the CI runner's font stack. macOS renders
+// the same DOM with different glyph metrics, which shifts layout by whole pixels, so
+// a macOS run executes every visual flow (selector rot still fails) but compares
+// nothing. E2E_FORCE_VISUAL is the escape hatch for a run inside the Playwright
+// container image.
+const compareSnapshots = process.platform === "linux" || !!process.env.E2E_FORCE_VISUAL;
+
+export default defineConfig({
+  testDir: "./e2e",
+  testMatch: "**/*.e2e.ts",
+  fullyParallel: true,
+  forbidOnly: CI,
+  retries: 0,
+  // ubuntu-latest gives 4 vCPUs. If load-time variance ever bites, lower this;
+  // never raise retries.
+  workers: CI ? 4 : undefined,
+  timeout: 60_000,
+  expect: {
+    timeout: 10_000,
+    toHaveScreenshot: {
+      animations: "disabled",
+      caret: "hide",
+      maxDiffPixelRatio: 0.002,
+      threshold: 0.2,
+    },
+  },
+  reporter: CI
+    ? [["github"], ["html", { open: "never" }]]
+    : [["list"], ["html", { open: "on-failure" }]],
+
+  use: {
+    ...devices["Desktop Chrome"],
+    baseURL,
+    viewport: { width: 1280, height: 900 },
+    deviceScaleFactor: 1,
+    locale: "en-US",
+    timezoneId: "UTC",
+    // Reduced motion lives on contextOptions rather than beside viewport, which is
+    // just where Playwright 1.60 keeps it. It matters more than it looks: the kit
+    // reads prefers-reduced-motion through react-native-web's AccessibilityInfo
+    // (src/style/motion.ts), so this genuinely stills the kit's entrance animations
+    // instead of merely freezing CSS transitions.
+    contextOptions: { reducedMotion: "reduce" },
+    trace: "retain-on-failure",
+    screenshot: "only-on-failure",
+    // Recording costs CPU on every test to serve the rare failure; the trace already
+    // carries per-action screenshots and DOM snapshots.
+    video: "off",
+  },
+
+  projects: [
+    { name: "smoke", testDir: "./e2e/smoke" },
+    { name: "responsive", testDir: "./e2e/responsive" },
+    { name: "behavior", testDir: "./e2e/behavior" },
+    { name: "a11y", testDir: "./e2e/a11y" },
+    {
+      name: "visual",
+      testDir: "./e2e/visual",
+      ignoreSnapshots: !compareSnapshots,
+      snapshotPathTemplate: "{testDir}/__screenshots__/{arg}{ext}",
+    },
+  ],
+
+  webServer: process.env.E2E_BASE_URL
+    ? undefined
+    : [
+        {
+          command: `bun e2e/support/serve-dist.ts --root docs/dist --port ${OWN_SERVER_PORT} --headers${basePath ? ` --base ${basePath}` : ""}`,
+          url: `http://127.0.0.1:${OWN_SERVER_PORT}${basePath}/`,
+          reuseExistingServer: !CI,
+          timeout: 20_000,
+          stdout: "pipe",
+        },
+        {
+          // The token stylesheet fixture (test/tokens.html) links ../styles/canvas.css
+          // exactly as a consumer would, so it is served from the checkout root. No SPA
+          // rewrite: this one may only answer with files that exist.
+          command: `bun e2e/support/serve-dist.ts --root . --port ${TOKENS_SERVER_PORT} --no-spa`,
+          url: `http://127.0.0.1:${TOKENS_SERVER_PORT}/test/tokens.html`,
+          reuseExistingServer: !CI,
+          timeout: 20_000,
+          stdout: "pipe",
+        },
+      ],
+});
+
+/** Where the token stylesheet fixture is served, for the visual project. */
+export const TOKENS_URL = `http://127.0.0.1:${TOKENS_SERVER_PORT}/test/tokens.html`;
