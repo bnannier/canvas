@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState, type ComponentType, type ReactNode } from "react";
 import { EscapeLayerProvider, useEscapeLayer } from "../../style/escape-layer.js";
+import { OverlayProvider } from "../../style/portal.js";
 import { Animated, KeyboardAvoidingView, Modal, Platform, StyleSheet } from "react-native";
 import { GlassModalBlurTarget, Pressable, View, isRTL, useTheme, useReducedMotion, useHardwareBack, supportsNativeDriver, type StyleProp, type ViewStyle } from "../../style/index.js";
 import { SafeAreaView } from "../../style/safe-area.js";
@@ -217,26 +218,32 @@ export function createDrawer(skin: DrawerSkin, Button: ButtonComponent = WebButt
           // elsewhere). No focus trap is attempted (hard cross-platform).
           accessibilityViewIsModal={true}
         >
-          {/* The Modal renders in its own native window, so the app's Android blur
-              target is a sibling render tree here — re-publish it and the panel's
-              frost blurs the page behind the drawer (a no-op off Android). */}
           <EscapeLayerProvider scope={escapeScope}>
-          <GlassModalBlurTarget>
-          {/* Lift the panel above the iOS software keyboard so a field inside the drawer stays
-              visible while typing. "padding" shrinks the overlay by the keyboard height on iOS;
-              off iOS no behavior is passed (Android's window resizes, web has no soft keyboard). */}
-          <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined} style={{ flex: 1 }}>
-            {/* The dim is an Animated layer that fades in behind a TRANSPARENT tap-to-close
-                layout; the panel rides in on translateX/translateY. The dim is a dismiss
-                affordance, not a control, so it is unannounced (back/escape/trigger dismiss). */}
-            <View style={{ flex: 1 }}>
-              <Animated.View style={[StyleSheet.absoluteFill, { backgroundColor: "rgb(0, 0, 0)", opacity: dimOpacity }]} />
-              <Pressable accessible={false} style={s.scrim(edge, 0)} onPress={() => setOpen(false)}>
-                <Animated.View style={{ transform: slideTransform }}>{panel}</Animated.View>
-              </Pressable>
-            </View>
-          </KeyboardAvoidingView>
-          </GlassModalBlurTarget>
+            {/* This separate native window can safely blur the app's window target.
+                Keep the bridge outside the local host: its outlet publishes only
+                its OWN sibling target, never the target containing its content. */}
+            <GlassModalBlurTarget>
+              {/* Anchored children must publish into this Modal's window. The host
+                  fills the window, outside the translated and clipped panel, so
+                  outlet-relative measurements and outside-tap dismissal span the
+                  whole Modal. Nested Drawers establish their own window host. */}
+              <OverlayProvider>
+                {/* Lift the panel above the iOS software keyboard so a field inside the drawer stays
+                    visible while typing. "padding" shrinks the layout by the keyboard height on iOS;
+                    off iOS no behavior is passed (Android's window resizes, web has no soft keyboard). */}
+                <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined} style={{ flex: 1 }}>
+                  {/* The dim is an Animated layer that fades in behind a TRANSPARENT tap-to-close
+                      layout; the panel rides in on translateX/translateY. The dim is a dismiss
+                      affordance, not a control, so it is unannounced (back/escape/trigger dismiss). */}
+                  <View style={{ flex: 1 }}>
+                    <Animated.View style={[StyleSheet.absoluteFill, { backgroundColor: "rgb(0, 0, 0)", opacity: dimOpacity }]} />
+                    <Pressable accessible={false} style={s.scrim(edge, 0)} onPress={() => setOpen(false)}>
+                      <Animated.View style={{ transform: slideTransform }}>{panel}</Animated.View>
+                    </Pressable>
+                  </View>
+                </KeyboardAvoidingView>
+              </OverlayProvider>
+            </GlassModalBlurTarget>
           </EscapeLayerProvider>
         </Modal>
       </>
