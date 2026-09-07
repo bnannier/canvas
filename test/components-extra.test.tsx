@@ -16,10 +16,10 @@ const click = (sel: string, c: HTMLElement) => fireEvent.click(c.querySelector(s
 describe("Stepper", () => {
   it("increments and decrements by step, clamped, and exposes the value", () => {
     let v = 5;
-    const { container, rerender } = ui(
+    const { container, rerender, getByRole } = ui(
       <Stepper value={v} min={0} max={10} step={1} onChange={(n) => { v = n; }} />,
     );
-    expect(container.querySelector("[aria-valuenow]")?.getAttribute("aria-valuenow")).toBe("5");
+    expect(getByRole("spinbutton", { name: "Number" }).getAttribute("aria-valuenow")).toBe("5");
     click('[aria-label="Increase"]', container);
     expect(v).toBe(6);
     rerender(<ThemeProvider><Stepper value={v} min={0} max={10} onChange={(n) => { v = n; }} /></ThemeProvider>);
