@@ -14,7 +14,7 @@ export interface BoundOverlay {
   slug: string;
   /** Open it, and return once the click has been dispatched. */
   open: (page: Page) => Promise<void>;
-  /** Every node of the overlay's own role, on the whole page. */
+  /** The overlay's role in its own preview host, or document-root Modal. */
   panel: (page: Page) => Locator;
   /** How many of those one opening adds. */
   adds: number;
@@ -29,7 +29,12 @@ function bind(recipe: OverlayRecipe): BoundOverlay {
   return {
     slug: recipe.slug,
     open: (page) => recipe.open(page as never, stage(page) as never),
-    panel: (page) => page.getByRole(recipe.role),
+    // The stage's OverlayProvider wraps both the preview and its sibling portal
+    // outlet. Scope to that host so portaled menus are included but permanently
+    // open Do/Don't panels cannot satisfy the Playground's readiness assertion.
+    panel: (page) => recipe.atDocumentRoot
+      ? page.getByRole(recipe.role)
+      : stage(page).locator("..").getByRole(recipe.role),
     adds: recipe.adds,
     trigger: (page) => recipe.trigger(page as never, stage(page) as never) as unknown as Locator,
     expands: recipe.expands,

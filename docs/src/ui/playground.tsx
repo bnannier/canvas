@@ -1,4 +1,4 @@
-import { Component, type ReactNode, useEffect, useState } from "react";
+import { Component, Fragment, type ReactNode, useEffect, useState } from "react";
 import { Platform, useWindowDimensions } from "react-native";
 import { ScrollView, View, Text, Row, Column, Tabs, Input, ButtonGroup, BackdropHost, OverlayProvider, BreakpointOverride, useMeasuredWidth, useTheme, type IconName, type BreakpointKey } from "@nannier-com/canvas";
 import { buildScopes } from "../core/build-scopes";
@@ -318,15 +318,16 @@ export function Playground({ examples, stageAlign, singlePreview, selected: sele
 
   return (
     <View style={{ flexDirection: wide ? "row" : "column", gap: wide ? 16 : 10 }}>
+      {/* Stable sibling keys preserve the live example when the rail moves above it. */}
       {wide ? (
         <>
-          {stage}
-          {rail}
+          <Fragment key="stage">{stage}</Fragment>
+          <Fragment key="rail">{rail}</Fragment>
         </>
       ) : (
         <>
-          {rail}
-          {stage}
+          <Fragment key="rail">{rail}</Fragment>
+          <Fragment key="stage">{stage}</Fragment>
         </>
       )}
     </View>
