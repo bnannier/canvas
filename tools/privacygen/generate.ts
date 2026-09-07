@@ -6,12 +6,9 @@
  *
  * Run: bun run privacy:gen
  *
- * Why a static page exists alongside the in-app route: the docs web export is a single page
- * app, and GitHub Pages answers unknown paths with its 404 fallback, so every deep route
- * resolves with an HTTP 404 status even though the browser renders it fine. Google Play and
- * Apple both fetch the privacy policy URL filed with the listing, and a 404 there is a real
- * submission risk. Anything under docs/public is copied verbatim into the export, so this
- * file is served by Pages with a genuine 200 at /canvas/privacy/.
+ * The static page gives store reviewers a policy at /privacy/ without requiring
+ * the app's JavaScript. The shared build copies docs/public into the Cloudflare
+ * Pages artifact and verifies this file before browser tests and deployment.
  *
  * The page is deliberately self contained (no bundle, no fonts to fetch, no JavaScript): it
  * has to render for a store reviewer on any device, including one blocking third parties.
@@ -113,7 +110,7 @@ const html =
   ${PRIVACY_SECTIONS.map((s) => `<h2>${esc(s.title)}</h2>\n  <p>${esc(s.description)}</p>`).join("\n\n  ")}
 
   <footer>
-    Effective ${esc(PRIVACY_EFFECTIVE)}. Canvas is free and open source under the MIT license.
+    Effective ${esc(PRIVACY_EFFECTIVE)}.
     Questions and privacy requests: <a href="${PRIVACY_ISSUES_URL}">${PRIVACY_ISSUES_URL}</a>
   </footer>
 </main>
