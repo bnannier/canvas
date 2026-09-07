@@ -4,7 +4,7 @@
 
 ![The same Canvas component rendered as native iOS, Material 3 Android, and web, side by side](https://raw.githubusercontent.com/nannier-com/canvas/main/.github/assets/hero.gif)
 
-[![npm](https://img.shields.io/npm/v/@nannier-com/canvas.svg)](https://www.npmjs.com/package/@nannier-com/canvas) [![CI](https://github.com/bnannier/canvas/actions/workflows/ci.yml/badge.svg)](https://github.com/bnannier/canvas/actions/workflows/ci.yml) [Documentation](https://canvas.nannier.com/)
+[![npm](https://img.shields.io/npm/v/@nannier-com/canvas.svg)](https://www.npmjs.com/package/@nannier-com/canvas) [![CI](https://github.com/nannier-com/canvas/actions/workflows/ci.yml/badge.svg)](https://github.com/nannier-com/canvas/actions/workflows/ci.yml) [Documentation](https://canvas.nannier.com/)
 
 **Try it live:** the [component catalog](https://canvas.nannier.com/components) renders the full library (atoms, molecules, organisms, and charts) in the browser, with dark mode, the glass surface, and density switchable site-wide.
 
