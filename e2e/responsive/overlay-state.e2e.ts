@@ -1,4 +1,4 @@
-import { fitStageForScreenshot, gotoDocs, settledBox, stage } from "../support/docs";
+import { fitElementForScreenshot, gotoDocs, previewCard, settledBox, stage } from "../support/docs";
 import { expect, test } from "../support/fixtures";
 import { OVERLAYS } from "../support/overlays";
 
@@ -31,35 +31,44 @@ test("an open dialog and its draft survive narrow and desktop layouts", async ({
   await originalDialog!.dispose();
 });
 
-test("an open stage screenshot does not resize the browser viewport", async ({ page }, testInfo) => {
-  await gotoDocs(page, "/components/dialog", { scheme: "light" });
-  await dialog.open(page);
-  const panel = dialog.panel(page);
-  await expect(panel).toBeVisible();
-  await fitStageForScreenshot(page);
+for (const slug of ["dialog", "calendar", "grid-lists"] as const) {
+  test(`${slug} screenshot does not resize the browser viewport`, async ({ page }, testInfo) => {
+    await page.clock.setFixedTime(new Date("2026-01-15T12:00:00Z"));
+    await gotoDocs(page, `/components/${slug}`, { scheme: slug === "dialog" ? "light" : "dark" });
+    const frame = slug === "dialog" ? stage(page) : previewCard(page).first();
+    await expect(frame).toBeVisible();
+    if (slug === "dialog") {
+      await dialog.open(page);
+      await expect(dialog.panel(page)).toBeVisible();
+    } else {
+      // These resting examples reproduce the same oversized crop as an open dialog.
+      expect((await settledBox(frame)).height).toBeGreaterThan(page.viewportSize()!.height);
+    }
+    await fitElementForScreenshot(page, frame);
 
-  const viewportChanges = await page.evaluateHandle(() => {
-    const sizes: number[][] = [];
-    const record = () => sizes.push([innerWidth, innerHeight, visualViewport?.width ?? 0, visualViewport?.height ?? 0]);
-    window.addEventListener("resize", record);
-    visualViewport?.addEventListener("resize", record);
-    return {
-      sizes,
-      stop: () => {
-        window.removeEventListener("resize", record);
-        visualViewport?.removeEventListener("resize", record);
-      },
-    };
+    const viewportChanges = await page.evaluateHandle(() => {
+      const sizes: number[][] = [];
+      const record = () => sizes.push([innerWidth, innerHeight, visualViewport?.width ?? 0, visualViewport?.height ?? 0]);
+      window.addEventListener("resize", record);
+      visualViewport?.addEventListener("resize", record);
+      return {
+        sizes,
+        stop: () => {
+          window.removeEventListener("resize", record);
+          visualViewport?.removeEventListener("resize", record);
+        },
+      };
+    });
+
+    try {
+      const screenshot = await frame.screenshot({ animations: "disabled" });
+      await testInfo.attach(`${slug} crop`, { body: screenshot, contentType: "image/png" });
+      await page.evaluate(() => new Promise<void>((resolve) => requestAnimationFrame(() => requestAnimationFrame(() => resolve()))));
+      expect(await viewportChanges.evaluate((audit) => audit.sizes), "capturing the element changed the responsive viewport").toEqual([]);
+      if (slug === "dialog") await expect(dialog.panel(page)).toBeVisible();
+    } finally {
+      await viewportChanges.evaluate((audit) => audit.stop());
+      await viewportChanges.dispose();
+    }
   });
-
-  try {
-    const screenshot = await stage(page).screenshot({ animations: "disabled" });
-    await testInfo.attach("open dialog stage", { body: screenshot, contentType: "image/png" });
-    await page.evaluate(() => new Promise<void>((resolve) => requestAnimationFrame(() => requestAnimationFrame(() => resolve()))));
-    expect(await viewportChanges.evaluate((audit) => audit.sizes), "capturing the stage changed the responsive viewport").toEqual([]);
-    await expect(panel).toBeVisible();
-  } finally {
-    await viewportChanges.evaluate((audit) => audit.stop());
-    await viewportChanges.dispose();
-  }
-});
+}
