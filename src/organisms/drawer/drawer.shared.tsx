@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState, type ComponentType, type ReactNode } from "react";
+import { EscapeLayerProvider, useEscapeLayer } from "../../style/escape-layer.js";
 import { Animated, KeyboardAvoidingView, Modal, Platform, StyleSheet } from "react-native";
 import { GlassModalBlurTarget, Pressable, View, isRTL, useTheme, useReducedMotion, useHardwareBack, supportsNativeDriver, type StyleProp, type ViewStyle } from "../../style/index.js";
 import { SafeAreaView } from "../../style/safe-area.js";
@@ -112,6 +113,7 @@ export function createDrawer(skin: DrawerSkin, Button: ButtonComponent = WebButt
     // once it is closed; it also skips web, where the BackHandler shim would
     // console.error on every call.
     useHardwareBack(open, () => setOpen(false));
+    const escapeScope = useEscapeLayer(open, () => setOpen(false));
 
     // EVERY edge SLIDES by hand (translateX/translateY) behind a SEPARATE, stationary
     // dim layer that fades in. RN Modal's animationType can only slide vertically upward
@@ -208,7 +210,7 @@ export function createDrawer(skin: DrawerSkin, Button: ButtonComponent = WebButt
           visible={mounted}
           transparent
           animationType="none"
-          onRequestClose={() => setOpen(false)}
+          onRequestClose={escapeScope.onRequestClose}
           testID={testID}
           // Tell assistive tech the content behind this full-screen overlay is
           // inert while the drawer is open (iOS VoiceOver honors this; a no-op
@@ -218,6 +220,7 @@ export function createDrawer(skin: DrawerSkin, Button: ButtonComponent = WebButt
           {/* The Modal renders in its own native window, so the app's Android blur
               target is a sibling render tree here — re-publish it and the panel's
               frost blurs the page behind the drawer (a no-op off Android). */}
+          <EscapeLayerProvider scope={escapeScope}>
           <GlassModalBlurTarget>
           {/* Lift the panel above the iOS software keyboard so a field inside the drawer stays
               visible while typing. "padding" shrinks the overlay by the keyboard height on iOS;
@@ -234,6 +237,7 @@ export function createDrawer(skin: DrawerSkin, Button: ButtonComponent = WebButt
             </View>
           </KeyboardAvoidingView>
           </GlassModalBlurTarget>
+          </EscapeLayerProvider>
         </Modal>
       </>
     );

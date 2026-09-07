@@ -1,6 +1,7 @@
+import { EscapeLayerProvider, useEscapeLayer } from "../../style/escape-layer.js";
 import { useRef, useState, type ReactNode } from "react";
 import { type Role } from "react-native";
-import { View, Text, useTheme, GlassSurface, AnchoredOverlay, useMeasuredWidth, useEscapeKey, usePopoverFocus, type StyleProp, type ViewStyle } from "../../style/index.js";
+import { View, Text, useTheme, GlassSurface, AnchoredOverlay, useMeasuredWidth, usePopoverFocus, type StyleProp, type ViewStyle } from "../../style/index.js";
 import { Button } from "../button/button.js";
 import { type PopoverSkin, type Placement } from "./popover.styles.js";
 import * as s from "./popover.styles.js";
@@ -96,7 +97,7 @@ export function createPopover(skin: PopoverSkin) {
     // Escape dismisses the floating card on web (no-op natively). An inline
     // panel is an always-visible surface, not a dismissable overlay, so it
     // never subscribes.
-    useEscapeKey(open && !inline, () => setOpen(false));
+    const escapeScope = useEscapeLayer(open && !inline, () => setOpen(false));
     // Move focus into the panel when the floating card opens and restore it to the
     // trigger on close (non-modal: no focus trap, unlike Dialog). Inline panels are
     // always-visible content, so they never take focus.
@@ -183,6 +184,7 @@ export function createPopover(skin: PopoverSkin) {
           // the hosted dismiss backdrop is skipped (it would only block the page).
           dismissable={props.open === undefined || onOpenChange !== undefined}
         >
+          <EscapeLayerProvider scope={escapeScope}>
           {/* The anchor beak, drawn only when the skin supplies one (iOS) and only in
               SOLID mode. Under glass the beak is intentionally omitted: a flat
               token-filled beak cannot match the Liquid Glass material (GlassView has no
@@ -196,6 +198,7 @@ export function createPopover(skin: PopoverSkin) {
           <View ref={panelRef} tabIndex={-1} role={"dialog" as Role}>
             {panelBody}
           </View>
+        </EscapeLayerProvider>
         </AnchoredOverlay>
       </View>
     );

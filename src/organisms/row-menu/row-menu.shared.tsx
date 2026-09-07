@@ -1,5 +1,6 @@
+import { EscapeLayerProvider, useEscapeLayer } from "../../style/escape-layer.js";
 import { useRef, useState } from "react";
-import { View, Pressable, Text, useTheme, AnchoredOverlay, useMeasuredWidth, useEscapeKey, RippleClip, cornerRadii, useMinTargetSlop, type StyleProp, type ViewStyle } from "../../style/index.js";
+import { View, Pressable, Text, useTheme, AnchoredOverlay, useMeasuredWidth, RippleClip, cornerRadii, useMinTargetSlop, type StyleProp, type ViewStyle } from "../../style/index.js";
 import { Icon } from "../../atoms/icon/icon.js";
 import { anchorLifted, type RowMenuItem, type RowMenuSkin } from "./row-menu.styles.js";
 
@@ -71,7 +72,7 @@ export function createRowMenu(skin: RowMenuSkin) {
     };
 
     // Escape dismisses the open menu on web (no-op natively).
-    useEscapeKey(open, () => setOpen(false));
+    const escapeScope = useEscapeLayer(open, () => setOpen(false));
 
     // The wrapper tightly wraps the ⋯ trigger (the menu portals out when hosted),
     // so measuring it gives the trigger's box for anchoring the floating card. The
@@ -133,6 +134,7 @@ export function createRowMenu(skin: RowMenuSkin) {
           // the hosted dismiss backdrop is skipped (it would only block the page).
           dismissable={props.open === undefined || onOpenChange !== undefined}
         >
+          <EscapeLayerProvider scope={escapeScope}>
           {/* RippleClip clips the Android bounded-ripple rows to the menu card's
               rounded corners (a no-op on iOS/web; the card keeps no overflow). */}
           <RippleClip shape={cornerRadii(skin.menuCard(tokens))} style={{ alignSelf: "stretch" }}>
@@ -187,6 +189,7 @@ export function createRowMenu(skin: RowMenuSkin) {
           ))}
           </View>
           </RippleClip>
+        </EscapeLayerProvider>
         </AnchoredOverlay>
       </View>
     );

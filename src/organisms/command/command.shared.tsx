@@ -1,6 +1,7 @@
+import { EscapeLayerProvider, useEscapeLayer } from "../../style/escape-layer.js";
 import { useEffect, useId, useRef, useState } from "react";
 import { type Role, type TextInput as RNTextInput, type TextStyle } from "react-native";
-import { View, Text, TextInput, Pressable, useTheme, useControllableState, useEscapeKey, AnchoredOverlay, GlassSurface, FOCUS_RESET, type StyleProp, type ViewStyle } from "../../style/index.js";
+import { View, Text, TextInput, Pressable, useTheme, useControllableState, AnchoredOverlay, GlassSurface, FOCUS_RESET, type StyleProp, type ViewStyle } from "../../style/index.js";
 
 // React Native's Role union omits the valid ARIA "listbox" role, so the command
 // list container casts it. The value is correct on both web (DOM role) and native.
@@ -153,7 +154,7 @@ export function createCommand(skin: CommandSkin) {
     // Escape dismisses the open TRIGGER-mode palette on web (no-op natively). The
     // bare inline card is left alone: it has no trigger to reopen it, so escape
     // would only strand it closed.
-    useEscapeKey(!!trigger && open, () => setOpen(false));
+    const escapeScope = useEscapeLayer(!!trigger && open, () => setOpen(false));
 
     // Filter the grouped rows by the query (case-insensitive substring on the
     // label). With no query every row shows; groups left with no matching row
@@ -182,6 +183,10 @@ export function createCommand(skin: CommandSkin) {
     const optionId = (i: number) => `${baseId}-opt-${i}`;
     const searchRef = useRef<RNTextInput>(null);
     const onSearchKeyPress = (event: { nativeEvent: { key: string }; preventDefault: () => void }) => {
+      if (event.nativeEvent.key === "Escape") {
+        escapeScope.onKeyPress(event);
+        return;
+      }
       if (total === 0) return;
       switch (event.nativeEvent.key) {
         case "ArrowDown":
@@ -202,7 +207,7 @@ export function createCommand(skin: CommandSkin) {
           break;
         }
         default:
-          return; // Escape is handled by useEscapeKey (trigger mode only).
+          return;
       }
     };
     // Move focus into the palette when it opens via a trigger (a deliberate action);
@@ -366,7 +371,9 @@ export function createCommand(skin: CommandSkin) {
           // the hosted dismiss backdrop is skipped (it would only block the page).
           dismissable={openProp === undefined || onOpenChange !== undefined}
         >
+          <EscapeLayerProvider scope={escapeScope}>
           {cardContent}
+        </EscapeLayerProvider>
         </AnchoredOverlay>
       </View>
     );

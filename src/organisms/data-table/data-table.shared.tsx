@@ -1,4 +1,5 @@
 import { Fragment, type ComponentType, type ReactNode, useEffect, useMemo, useRef, useState } from "react";
+import { consumeEscapeKey } from "../../style/escape-layer.js";
 import { FlatList, StyleSheet, ScrollView, type ViewProps, type ViewStyle as RNViewStyle } from "react-native";
 import { View, Pressable, Text, TextInput, useTheme, useControllableState, controlRipple, devWarn, breakpoints, useMeasuredWidth, tabularNums, type StyleProp, type TextStyle, type ViewStyle } from "../../style/index.js";
 import { type CheckboxProps } from "../../atoms/checkbox/checkbox.shared.js";
@@ -948,7 +949,10 @@ export function createDataTable(skin: DataTableSkin, parts: DataTableParts) {
             onKeyPress={(e) => {
               // Escape restores the cell (web; native cancels via the Cancel
               // button in row mode, or by committing the unchanged value).
-              if (e.nativeEvent.key === "Escape") (rowEditing ? cancelRowEdit : cancelCellEdit)();
+              if (e.nativeEvent.key === "Escape") {
+                consumeEscapeKey(e);
+                (rowEditing ? cancelRowEdit : cancelCellEdit)();
+              }
             }}
             onBlur={() => {
               // Inline cell editing commits on blur; row mode waits for

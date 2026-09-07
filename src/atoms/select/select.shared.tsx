@@ -1,6 +1,7 @@
+import { EscapeLayerProvider, useEscapeLayer } from "../../style/escape-layer.js";
 import { useId, useRef } from "react";
 import { type Role } from "react-native";
-import { View, Pressable, Text, ScrollView, useTheme, useControllableState, useEscapeKey, useFieldWidth, AnchoredOverlay, useMeasuredWidth, FloatingLabel, LabelContent, RippleClip, cornerRadii, type FieldWidthProps, type StyleProp, type ViewStyle } from "../../style/index.js";
+import { View, Pressable, Text, ScrollView, useTheme, useControllableState, useFieldWidth, AnchoredOverlay, useMeasuredWidth, FloatingLabel, LabelContent, RippleClip, cornerRadii, type FieldWidthProps, type StyleProp, type ViewStyle } from "../../style/index.js";
 
 // React Native's Role union omits the valid ARIA "listbox" role, so the option-list
 // container casts it. The value is correct on both web (DOM role) and native.
@@ -167,7 +168,7 @@ export function createSelect(skin: SelectSkin) {
     };
 
     // Escape closes the open option list on web (no-op natively).
-    useEscapeKey(open, () => setOpen(false));
+    const escapeScope = useEscapeLayer(open, () => setOpen(false));
 
     // Anchor the floating option list to the trigger: its measured width is the
     // list's minimum width when portaled over the page (a wider row can grow past
@@ -288,6 +289,7 @@ export function createSelect(skin: SelectSkin) {
           // the hosted dismiss backdrop is skipped (it would only block the page).
           dismissable={props.open === undefined || onOpenChange !== undefined}
         >
+          <EscapeLayerProvider scope={escapeScope}>
             {/* The option rows have no radius of their own and sit inside the rounded
                 (4dp) `panel` card. RippleClip is still what rounds their bounded Android
                 ripples: a view cannot clip its own ripple, and the card's own clip does not
@@ -335,6 +337,7 @@ export function createSelect(skin: SelectSkin) {
             </View>
             </RippleClip>
             </ScrollView>
+        </EscapeLayerProvider>
         </AnchoredOverlay>
       </View>
     );
