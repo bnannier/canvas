@@ -12,9 +12,13 @@ playwright-report/
 test-results/
 blob-report/
 
-# lookout evidence (screenshots; regenerable). The config, rubric, backlog,
-# and ledger under .lookout/ ARE committed.
-.lookout/evidence/
+# lookout's per-checkout state: screenshots, the judge's verdict cache, the
+# backlog and its issue folders. All of it is regenerable, all of it is local,
+# and lookout appends this exact line itself if it is missing, so committing
+# anything under here does not survive the next run. What IS committed is the
+# pair at the repository root, lookout.config.ts and lookout.rubric.md, which is
+# where lookout looks for them.
+.lookout/
 
 # Local Claude Code session state
 .claude/
