@@ -2,6 +2,12 @@
 
 Text input + dropdown: searchable single-select. Pass `label` (and `required`) to name the field: iOS and web render the label above the field, while Android floats the Material 3 in-container label once the list opens or a value fills the field. The field renders at the standard width by default (`narrow` and `wide` pick the other modes, `block` fills the container).
 
+Arrow Down and Arrow Up open the list and highlight an option while focus stays in the text field. Navigation stops at the first and last matches. Home and End jump to those limits once an option is highlighted; otherwise they retain their text-editing behavior. Enter chooses the highlighted option, Escape closes the list without changing the query, and Tab closes it while moving focus. Typing resets the highlight. Confirming an input-method candidate does not select an option or submit a surrounding Form.
+
+Use `value` with `onValueChange` to control the selection, and use `""` for a controlled empty value. The callback reports selections and clearing the field. `onSelect` remains a selection-only notification. The independent `query`/`onQueryChange` pair controls filtering; choosing an option resets the query to `""`.
+
+The disclosure button has a real target of at least 24px on web, 44pt on iOS, and 48dp on Android. The small iOS field keeps a 44pt height so its touch target fits inside the field; its typography remains compact.
+
 ## Usage
 
 ```tsx
@@ -21,6 +27,24 @@ Text input + dropdown: searchable single-select. Pass `label` (and `required`) t
 ```
 
 ## Variants
+
+### Controlled selection
+
+```tsx
+<Stateful initial="Grace Hopper">
+  {(value, setValue) => (
+    <Column snug>
+      <Autocomplete
+        label="Assigned to"
+        options={["Ada Lovelace", "Grace Hopper", "Kira Tanaka"]}
+        value={value}
+        onValueChange={setValue}
+      />
+      <Typography muted>{value === "" ? "No assignee" : `Selected: ${value}`}</Typography>
+    </Column>
+  )}
+</Stateful>
+```
 
 ### Required field
 

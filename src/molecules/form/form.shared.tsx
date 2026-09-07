@@ -208,12 +208,22 @@ export function createForm(skin: FormSkin, Button: ButtonComponent = WebButton) 
     useEffect(() => {
       if (!enterActive || typeof document === "undefined") return;
       const onKeyDown = (event: KeyboardEvent) => {
-        if (event.key !== "Enter" || disabledRef.current) return;
+        if (event.key !== "Enter" || disabledRef.current || event.defaultPrevented
+          || event.isComposing || event.keyCode === 229) return;
         const target = event.target as HTMLElement | null;
         if (!target || target.tagName !== "INPUT") return;
         const scope = (target as { closest?: (selector: string) => HTMLElement | null }).closest?.("form");
         if (!scope || scope.getAttribute("id") !== formId) return;
+        // Capture runs before TextInput's onKeyPress. An expanded combobox with
+        // an active suggestion owns Enter for selection; its handler prevents
+        // the input's submit/blur default once it has selected that option.
+        if (target.getAttribute("role") === "combobox"
+          && target.getAttribute("aria-expanded") === "true"
+          && target.getAttribute("aria-activedescendant")) return;
         event.preventDefault();
+        // A held selection key can repeat after the combobox closes. It must
+        // not become a form submission until the user presses Enter again.
+        if (event.repeat) return;
         submitRef.current?.();
       };
       document.addEventListener("keydown", onKeyDown, true);
