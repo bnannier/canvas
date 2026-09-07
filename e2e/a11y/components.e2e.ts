@@ -38,7 +38,6 @@ const KNOWN_FINDINGS: Record<string, string[]> = {
   // contract, so it is its own piece of work.
   listbox: ["aria-input-field-name"],
   slider: ["aria-input-field-name"],
-  stepper: ["aria-input-field-name", "nested-interactive"],
   progress: ["aria-progressbar-name"],
   spinner: ["aria-progressbar-name"],
   command: ["aria-input-field-name", "aria-valid-attr-value"],
