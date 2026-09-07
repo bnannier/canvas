@@ -113,6 +113,11 @@ const brand = { primary: "#7c3aed" };
 
 Full docs, live examples, and the complete prop reference live at **<https://canvas.nannier.com/>**.
 
+[`DESIGN.md`](./DESIGN.md) ships with the package: the token values, the type roles,
+the shape and elevation scales, and the four API rules that are easy to break by
+accident. It is written to be read by an agent building on the kit as much as by a
+person, and its numbers are generated from the kit's own sources.
+
 The kit exports 60+ components across atoms, molecules, and organisms, all from `@nannier-com/canvas`:
 
 - **Forms and inputs**: Button, Button Group, Input, Textarea, Checkbox, Radio, Switch, Slider, Stepper, Input OTP, Select, Autocomplete, Listbox.

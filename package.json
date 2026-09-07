@@ -43,7 +43,8 @@
   "files": [
     "dist",
     "styles",
-    "CHANGELOG.md"
+    "CHANGELOG.md",
+    "DESIGN.md"
   ],
   "sideEffects": [
     "*.css"
@@ -71,6 +72,8 @@
     "changeset": "changeset",
     "version-packages": "changeset version",
     "release": "changeset publish",
+    "designmd:gen": "bun tools/designmd/generate.ts",
+    "designmd:gen:check": "bun tools/designmd/generate.ts --check",
     "docs:gen": "bun tools/docgen/generate.ts",
     "geomap:gen": "bun tools/geomapgen/generate.ts",
     "icons:gen": "bun tools/icongen/generate.ts",
