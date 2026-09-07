@@ -80,14 +80,8 @@ export const OVERLAYS: OverlayRecipe[] = [
   {
     slug: "row-menu",
     open: async (page) => void (await stage(page).getByLabel("More options").last().click()),
-    // KNOWN GAP: the panel renders its rows as `menuitem` but has no `menu` container
-    // around them, which the Dropdown does have. WAI-ARIA requires a menuitem to be
-    // owned by a menu, so this is a real defect; it is asserted as it is today rather
-    // than aspirationally, and the accessibility suite's aria-required-parent finding
-    // is the evidence to fix it on.
-    panel: (page) => page.getByRole("menuitem"),
-    // The role here IS the rows, and this menu has three of them.
-    adds: 3,
+    panel: (page) => page.getByRole("menu"),
+    adds: 1,
     trigger: (page) => stage(page).getByLabel("More options").last(),
     expands: true,
   },
