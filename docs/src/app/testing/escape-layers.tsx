@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useLocalSearchParams } from "expo-router";
 import {
   ActionSheet, Autocomplete, Column, Command, DataTable, DescriptionList,
-  Dialog, Drawer, Dropdown, OverlayProvider, Typography,
+  Dialog, Drawer, Dropdown, Typography,
 } from "@nannier-com/canvas";
 import { Page, PageHeader } from "../../ui/page";
 
@@ -39,18 +39,16 @@ export default function EscapeLayersFixture() {
             setDrawerOpen(next);
             if (!next) setParentCloses((count) => count + 1);
           }}>
-            <OverlayProvider>
-              <Column relaxed>
-                <Typography>Drawer content</Typography>
-                {menu}
-                <DataTable inlineEdit columns={[{ label: "Name" }]} rows={[["Alice"]]}
-                  onCellCommit={() => setCommits((count) => count + 1)} />
-                <DescriptionList items={[{ term: "Email", value: "alice@example.com", update: true }]}
-                  onUpdate={() => setCommits((count) => count + 1)} />
-                <ActionSheet trigger="Open actions" actions={[{ label: "Share", onPress: () => {} }]}
-                  onOpenChange={(next) => { if (!next) setChildCloses((count) => count + 1); }} />
-              </Column>
-            </OverlayProvider>
+            <Column relaxed>
+              <Typography>Drawer content</Typography>
+              {menu}
+              <DataTable inlineEdit columns={[{ label: "Name" }]} rows={[["Alice"]]}
+                onCellCommit={() => setCommits((count) => count + 1)} />
+              <DescriptionList items={[{ term: "Email", value: "alice@example.com", update: true }]}
+                onUpdate={() => setCommits((count) => count + 1)} />
+              <ActionSheet trigger="Open actions" actions={[{ label: "Share", onPress: () => {} }]}
+                onOpenChange={(next) => { if (!next) setChildCloses((count) => count + 1); }} />
+            </Column>
           </Drawer>
         ) : (
           <Dialog overlay trigger="Open dialog" accessibilityLabel="Keyboard dialog" open={dialogOpen}

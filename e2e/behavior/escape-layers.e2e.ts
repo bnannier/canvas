@@ -67,19 +67,39 @@ test("Command delegates Escape even when filtering returns zero results", async 
   await expect(page.getByTestId("parent-close-count")).toHaveText("1");
 });
 
-test("a Drawer ignores its child's matching Modal keyup", async ({ page }) => {
-  await gotoDocs(page, "/testing/escape-layers?scenario=drawer");
-  await page.getByRole("button", { name: "Open drawer", exact: true }).click();
-  await page.getByRole("button", { name: "Open menu", exact: true }).click();
-  await expect(page.getByRole("menuitem", { name: "Rename", exact: true })).toBeVisible();
-  await page.keyboard.press("Escape");
-  await expect(page.getByRole("menuitem", { name: "Rename", exact: true })).toHaveCount(0);
-  await expect(page.getByText("Drawer content", { exact: true })).toBeVisible();
-  await expect(page.getByTestId("parent-close-count")).toHaveText("0");
-  await expect(page.getByTestId("child-close-count")).toHaveText("1");
-  await page.keyboard.press("Escape");
-  await expect(page.getByTestId("parent-close-count")).toHaveText("1");
-});
+for (const scheme of ["light", "dark"] as const) {
+  for (const width of [1280, 390]) {
+    test(`a Drawer hosts its menu in the Modal and consumes one Escape (${scheme}, ${width}px)`, async ({ page }, testInfo) => {
+      // This fixture has no caller-supplied provider inside Drawer. The component
+      // owns the window host, including when an app-level provider exists above it.
+      await gotoDocs(page, "/testing/escape-layers?scenario=drawer", { scheme, viewport: { width, height: 900 } });
+      await page.getByRole("button", { name: "Open drawer", exact: true }).click();
+      const drawer = page.getByRole("dialog").filter({ has: page.getByText("Drawer content", { exact: true }) });
+      const trigger = drawer.getByRole("button", { name: "Open menu", exact: true });
+      await trigger.click();
+      const menu = drawer.getByRole("menu");
+      await expect(menu.getByRole("menuitem", { name: "Rename", exact: true })).toBeVisible();
+      await expect(page.getByRole("menu")).toHaveCount(1);
+      const bounds = await menu.boundingBox();
+      expect(bounds).not.toBeNull();
+      expect(bounds!.x).toBeGreaterThanOrEqual(0);
+      expect(bounds!.x + bounds!.width).toBeLessThanOrEqual(width);
+      expect(bounds!.y + bounds!.height).toBeLessThanOrEqual(900);
+      const screenshot = testInfo.outputPath("drawer-hosted-menu.png");
+      await page.screenshot({ path: screenshot });
+      await testInfo.attach("drawer-hosted-menu", { path: screenshot, contentType: "image/png" });
+      await page.keyboard.press("Escape");
+      await expect(page.getByRole("menu")).toHaveCount(0);
+      await expect(drawer).toBeVisible();
+      await expect(page.getByTestId("parent-close-count")).toHaveText("0");
+      await expect(page.getByTestId("child-close-count")).toHaveText("1");
+      await expect(trigger).toBeFocused();
+      await page.keyboard.press("Escape");
+      await expect(drawer).toHaveCount(0);
+      await expect(page.getByTestId("parent-close-count")).toHaveText("1");
+    });
+  }
+}
 
 test("a nested ActionSheet and its Drawer each need their own Escape", async ({ page }) => {
   await gotoDocs(page, "/testing/escape-layers?scenario=drawer");

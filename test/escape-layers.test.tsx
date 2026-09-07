@@ -224,7 +224,7 @@ it("does not let a child's consumed keyup close its Drawer after the child unmou
     </Drawer>;
   }
   ui(<Tree />);
-  fireEvent.keyDown(screen.getByRole("menuitem", { name: "Rename" }), { key: "Escape" });
+  fireEvent.keyDown(await screen.findByRole("menuitem", { name: "Rename" }), { key: "Escape" });
   await waitFor(() => expect(screen.queryByRole("menu")).toBeNull());
   fireEvent.keyUp(screen.getByText("Drawer body"), { key: "Escape" });
   expect(closed).toEqual(["menu"]);
@@ -241,7 +241,7 @@ it("keeps a pending Escape consumed when another key overlaps it", async () => {
     </Drawer>;
   }
   ui(<Tree />);
-  fireEvent.keyDown(screen.getByRole("menuitem", { name: "Rename" }), { key: "Escape" });
+  fireEvent.keyDown(await screen.findByRole("menuitem", { name: "Rename" }), { key: "Escape" });
   await waitFor(() => expect(screen.queryByRole("menu")).toBeNull());
   const body = screen.getByText("Drawer body");
   fireEvent.keyDown(body, { key: "Shift" });
