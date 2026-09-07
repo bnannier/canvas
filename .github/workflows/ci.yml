@@ -114,6 +114,13 @@ jobs:
       - name: Check menu-glyph rasters are up to date
         run: bun run raster:gen:check
 
+      # DESIGN.md is the kit's own design system, written for the agents and people
+      # building on it. Its frontmatter and token tables are generated from
+      # src/style/tokens.ts and styles/tokens, so a token change that skips the
+      # generator would leave the document describing the previous release.
+      - name: Check DESIGN.md is up to date
+        run: bun run designmd:gen:check
+
       - name: Validate theme tokens
         run: bun run validate-tokens
 
