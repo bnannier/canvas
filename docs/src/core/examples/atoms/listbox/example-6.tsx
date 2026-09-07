@@ -7,12 +7,14 @@ export default function Example(scope: ExampleScope) {
   return (
 <Listbox
   items={[
-    { label: "Rachel Chen", detail: "rachel@acme.io", selected: true },
-    { label: "Ada Lovelace", detail: "ada@acme.io", selected: false },
-    { label: "Kevin Turner", detail: "kevin@acme.io", selected: false },
-    { label: "Linus Berg", detail: "linus@acme.io", selected: false }
+    { label: "Backend", selected: true },
+    { label: "Frontend", selected: false },
+    { label: "Design", selected: false },
+    { label: "Platform", selected: false },
+    { label: "Security", selected: false }
   ]}
   bordered
+  disabled
 />
   );
 }

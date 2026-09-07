@@ -65,6 +65,17 @@ the state with copy, since the tone carries no new accessible value on its own.
 <Progress danger showValue value={1}>Over the WIP limit</Progress>
 ```
 
+### Widths
+
+```tsx
+<Column snug>
+  <Progress narrow value={0.6}>Narrow (240px)</Progress>
+  <Progress value={0.6}>Standard (320px)</Progress>
+  <Progress wide value={0.6}>Wide (480px)</Progress>
+  <Progress block value={0.6}>Block (fills the container)</Progress>
+</Column>
+```
+
 ## Do & Don't
 
 ### Determinate

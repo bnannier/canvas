@@ -6,15 +6,13 @@ export default function Example(scope: ExampleScope) {
   const { Listbox } = scope;
   return (
 <Listbox
-  wide
-  bordered
   items={[
-    { label: "Backend", selected: true },
-    { label: "Frontend", selected: false },
-    { label: "Design", selected: false },
-    { label: "Platform", selected: false },
-    { label: "Security", selected: false }
+    { label: "Rachel Chen", detail: "rachel@acme.io", selected: true },
+    { label: "Ada Lovelace", detail: "ada@acme.io", selected: false },
+    { label: "Kevin Turner", detail: "kevin@acme.io", selected: false },
+    { label: "Linus Berg", detail: "linus@acme.io", selected: false }
   ]}
+  bordered
 />
   );
 }

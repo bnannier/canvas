@@ -48,6 +48,17 @@ On iOS 26 the handle is a real Apple Liquid Glass control: a bright knob that sp
 <Slider disabled defaultValue={30} />
 ```
 
+### Widths
+
+```tsx
+<Column snug>
+  <Slider narrow defaultValue={40}>Narrow (240px)</Slider>
+  <Slider defaultValue={40}>Standard (320px)</Slider>
+  <Slider wide defaultValue={40}>Wide (480px)</Slider>
+  <Slider block defaultValue={40}>Block (fills the container)</Slider>
+</Column>
+```
+
 ## Do & Don't
 
 ### Range

@@ -1,6 +1,6 @@
 # Autocomplete
 
-Text input + dropdown: searchable single-select. Pass `label` (and `required`) to name the field: iOS and web render the label above the field, while Android floats the Material 3 in-container label once the list opens or a value fills the field.
+Text input + dropdown: searchable single-select. Pass `label` (and `required`) to name the field: iOS and web render the label above the field, while Android floats the Material 3 in-container label once the list opens or a value fills the field. The field renders at the standard width by default (`narrow` and `wide` pick the other modes, `block` fills the container).
 
 ## Usage
 
@@ -77,6 +77,17 @@ Text input + dropdown: searchable single-select. Pass `label` (and `required`) t
   placeholder="Search a person…"
   disabled
 />
+```
+
+### Widths
+
+```tsx
+<Column snug>
+  <Autocomplete narrow options={["Ada Lovelace", "Grace Hopper"]} placeholder="Narrow (240px)" />
+  <Autocomplete options={["Ada Lovelace", "Grace Hopper"]} placeholder="Standard (320px)" />
+  <Autocomplete wide options={["Ada Lovelace", "Grace Hopper"]} placeholder="Wide (480px)" />
+  <Autocomplete block options={["Ada Lovelace", "Grace Hopper"]} placeholder="Block (fills the container)" />
+</Column>
 ```
 
 ## Do & Don't

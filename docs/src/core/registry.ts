@@ -4,6 +4,7 @@ import e_atoms_autocomplete_example_0 from "./examples/atoms/autocomplete/exampl
 import e_atoms_autocomplete_example_1 from "./examples/atoms/autocomplete/example-1";
 import e_atoms_autocomplete_example_2 from "./examples/atoms/autocomplete/example-2";
 import e_atoms_autocomplete_example_3 from "./examples/atoms/autocomplete/example-3";
+import e_atoms_autocomplete_example_4 from "./examples/atoms/autocomplete/example-4";
 import e_atoms_autocomplete_dont_0_do from "./examples/atoms/autocomplete/dont-0-do";
 import e_atoms_autocomplete_dont_0_dont from "./examples/atoms/autocomplete/dont-0-dont";
 import e_atoms_autocomplete_dont_1_do from "./examples/atoms/autocomplete/dont-1-do";
@@ -278,7 +279,6 @@ import e_atoms_listbox_example_3 from "./examples/atoms/listbox/example-3";
 import e_atoms_listbox_example_4 from "./examples/atoms/listbox/example-4";
 import e_atoms_listbox_example_5 from "./examples/atoms/listbox/example-5";
 import e_atoms_listbox_example_6 from "./examples/atoms/listbox/example-6";
-import e_atoms_listbox_example_7 from "./examples/atoms/listbox/example-7";
 import e_atoms_listbox_dont_0_do from "./examples/atoms/listbox/dont-0-do";
 import e_atoms_listbox_dont_0_dont from "./examples/atoms/listbox/dont-0-dont";
 import e_atoms_listbox_dont_1_do from "./examples/atoms/listbox/dont-1-do";
@@ -315,6 +315,7 @@ import e_atoms_progress_example_4 from "./examples/atoms/progress/example-4";
 import e_atoms_progress_example_5 from "./examples/atoms/progress/example-5";
 import e_atoms_progress_example_6 from "./examples/atoms/progress/example-6";
 import e_atoms_progress_example_7 from "./examples/atoms/progress/example-7";
+import e_atoms_progress_example_8 from "./examples/atoms/progress/example-8";
 import e_atoms_progress_dont_0_do from "./examples/atoms/progress/dont-0-do";
 import e_atoms_progress_dont_0_dont from "./examples/atoms/progress/dont-0-dont";
 import e_atoms_progress_dont_1_do from "./examples/atoms/progress/dont-1-do";
@@ -363,6 +364,7 @@ import e_atoms_select_example_3 from "./examples/atoms/select/example-3";
 import e_atoms_select_example_4 from "./examples/atoms/select/example-4";
 import e_atoms_select_example_5 from "./examples/atoms/select/example-5";
 import e_atoms_select_example_6 from "./examples/atoms/select/example-6";
+import e_atoms_select_example_7 from "./examples/atoms/select/example-7";
 import e_atoms_select_dont_0_do from "./examples/atoms/select/dont-0-do";
 import e_atoms_select_dont_0_dont from "./examples/atoms/select/dont-0-dont";
 import e_atoms_select_dont_1_do from "./examples/atoms/select/dont-1-do";
@@ -398,6 +400,7 @@ import e_atoms_slider_example_3 from "./examples/atoms/slider/example-3";
 import e_atoms_slider_example_4 from "./examples/atoms/slider/example-4";
 import e_atoms_slider_example_5 from "./examples/atoms/slider/example-5";
 import e_atoms_slider_example_6 from "./examples/atoms/slider/example-6";
+import e_atoms_slider_example_7 from "./examples/atoms/slider/example-7";
 import e_atoms_slider_dont_0_do from "./examples/atoms/slider/dont-0-do";
 import e_atoms_slider_dont_0_dont from "./examples/atoms/slider/dont-0-dont";
 import e_atoms_slider_dont_1_do from "./examples/atoms/slider/dont-1-do";
@@ -467,6 +470,7 @@ import e_atoms_textarea_example_3 from "./examples/atoms/textarea/example-3";
 import e_atoms_textarea_example_4 from "./examples/atoms/textarea/example-4";
 import e_atoms_textarea_example_5 from "./examples/atoms/textarea/example-5";
 import e_atoms_textarea_example_6 from "./examples/atoms/textarea/example-6";
+import e_atoms_textarea_example_7 from "./examples/atoms/textarea/example-7";
 import e_atoms_textarea_dont_0_do from "./examples/atoms/textarea/dont-0-do";
 import e_atoms_textarea_dont_0_dont from "./examples/atoms/textarea/dont-0-dont";
 import e_atoms_textarea_dont_1_do from "./examples/atoms/textarea/dont-1-do";
@@ -1110,6 +1114,7 @@ export const COMPONENT_DOCS: Record<string, DocEntry> = {
       { label: "Required field", code: "<Autocomplete\n  options={[\n    \"Ada Lovelace\",\n    \"Grace Hopper\",\n    \"Kira Tanaka\",\n    \"Liang Bao\",\n    \"Marcus Allen\",\n    \"Noor Park\",\n    \"Rachel Chen\"\n  ]}\n  label=\"Assigned to\"\n  required\n  placeholder=\"Search a person…\"\n/>", render: e_atoms_autocomplete_example_1 },
       { label: "With helper text", code: "<Autocomplete\n  options={[\n    \"Ada Lovelace\",\n    \"Grace Hopper\",\n    \"Kira Tanaka\",\n    \"Liang Bao\",\n    \"Marcus Allen\",\n    \"Noor Park\",\n    \"Rachel Chen\"\n  ]}\n  label=\"Assigned to\"\n  helperText=\"The person responsible for this account.\"\n  placeholder=\"Search a person…\"\n/>", render: e_atoms_autocomplete_example_2 },
       { label: "Disabled", code: "<Autocomplete\n  options={[\n    \"Ada Lovelace\",\n    \"Grace Hopper\",\n    \"Kira Tanaka\",\n    \"Liang Bao\",\n    \"Marcus Allen\",\n    \"Noor Park\",\n    \"Rachel Chen\"\n  ]}\n  label=\"Assigned to\"\n  placeholder=\"Search a person…\"\n  disabled\n/>", render: e_atoms_autocomplete_example_3 },
+      { label: "Widths", code: "<Column snug>\n  <Autocomplete narrow options={[\"Ada Lovelace\", \"Grace Hopper\"]} placeholder=\"Narrow (240px)\" />\n  <Autocomplete options={[\"Ada Lovelace\", \"Grace Hopper\"]} placeholder=\"Standard (320px)\" />\n  <Autocomplete wide options={[\"Ada Lovelace\", \"Grace Hopper\"]} placeholder=\"Wide (480px)\" />\n  <Autocomplete block options={[\"Ada Lovelace\", \"Grace Hopper\"]} placeholder=\"Block (fills the container)\" />\n</Column>", render: e_atoms_autocomplete_example_4 },
     ],
     donts: [
       { title: "When to use", do: { caption: "A plain select for short, fixed lists; reserve the autocomplete for long, searchable ones.", code: "<Select label=\"Size\" options={[\"Small\", \"Medium\", \"Large\"]} placeholder=\"Select a size\" />", render: e_atoms_autocomplete_dont_0_do }, dont: { caption: "Type or click: a search field for three fixed options is overhead with nothing to filter.", code: "<Autocomplete label=\"Size\" options={[\"Small\", \"Medium\", \"Large\"]} placeholder=\"Search…\" />", render: e_atoms_autocomplete_dont_0_dont } },
@@ -1454,10 +1459,9 @@ export const COMPONENT_DOCS: Record<string, DocEntry> = {
       { label: "Multi", code: "<Listbox\n  items={[\n    { label: \"Backend\", selected: true },\n    { label: \"Frontend\", selected: false },\n    { label: \"Design\", selected: true },\n    { label: \"Platform\", selected: false },\n    { label: \"Security\", selected: false }\n  ]}\n  multi\n  bordered\n/>", render: e_atoms_listbox_example_1 },
       { label: "Small", code: "<Listbox\n  items={[\n    { label: \"Backend\", selected: true },\n    { label: \"Frontend\", selected: false },\n    { label: \"Design\", selected: false },\n    { label: \"Platform\", selected: false },\n    { label: \"Security\", selected: false }\n  ]}\n  bordered\n  small\n/>", render: e_atoms_listbox_example_2 },
       { label: "Large", code: "<Listbox\n  items={[\n    { label: \"Backend\", selected: true },\n    { label: \"Frontend\", selected: false },\n    { label: \"Design\", selected: false },\n    { label: \"Platform\", selected: false },\n    { label: \"Security\", selected: false }\n  ]}\n  bordered\n  large\n/>", render: e_atoms_listbox_example_3 },
-      { label: "Narrow", code: "<Listbox\n  narrow\n  bordered\n  items={[\n    { label: \"Backend\", selected: true },\n    { label: \"Frontend\", selected: false },\n    { label: \"Design\", selected: false },\n    { label: \"Platform\", selected: false },\n    { label: \"Security\", selected: false }\n  ]}\n/>", render: e_atoms_listbox_example_4 },
-      { label: "Wide", code: "<Listbox\n  wide\n  bordered\n  items={[\n    { label: \"Backend\", selected: true },\n    { label: \"Frontend\", selected: false },\n    { label: \"Design\", selected: false },\n    { label: \"Platform\", selected: false },\n    { label: \"Security\", selected: false }\n  ]}\n/>", render: e_atoms_listbox_example_5 },
-      { label: "Detail line", code: "<Listbox\n  items={[\n    { label: \"Rachel Chen\", detail: \"rachel@acme.io\", selected: true },\n    { label: \"Ada Lovelace\", detail: \"ada@acme.io\", selected: false },\n    { label: \"Kevin Turner\", detail: \"kevin@acme.io\", selected: false },\n    { label: \"Linus Berg\", detail: \"linus@acme.io\", selected: false }\n  ]}\n  bordered\n/>", render: e_atoms_listbox_example_6 },
-      { label: "Disabled", code: "<Listbox\n  items={[\n    { label: \"Backend\", selected: true },\n    { label: \"Frontend\", selected: false },\n    { label: \"Design\", selected: false },\n    { label: \"Platform\", selected: false },\n    { label: \"Security\", selected: false }\n  ]}\n  bordered\n  disabled\n/>", render: e_atoms_listbox_example_7 },
+      { label: "Widths", code: "<Column snug>\n  <Listbox narrow bordered items={[{ label: \"Narrow (240px)\", selected: true }, { label: \"Frontend\" }]} />\n  <Listbox bordered items={[{ label: \"Standard (320px)\", selected: true }, { label: \"Frontend\" }]} />\n  <Listbox wide bordered items={[{ label: \"Wide (480px)\", selected: true }, { label: \"Frontend\" }]} />\n  <Listbox block bordered items={[{ label: \"Block (fills the container)\", selected: true }, { label: \"Frontend\" }]} />\n</Column>", render: e_atoms_listbox_example_4 },
+      { label: "Detail line", code: "<Listbox\n  items={[\n    { label: \"Rachel Chen\", detail: \"rachel@acme.io\", selected: true },\n    { label: \"Ada Lovelace\", detail: \"ada@acme.io\", selected: false },\n    { label: \"Kevin Turner\", detail: \"kevin@acme.io\", selected: false },\n    { label: \"Linus Berg\", detail: \"linus@acme.io\", selected: false }\n  ]}\n  bordered\n/>", render: e_atoms_listbox_example_5 },
+      { label: "Disabled", code: "<Listbox\n  items={[\n    { label: \"Backend\", selected: true },\n    { label: \"Frontend\", selected: false },\n    { label: \"Design\", selected: false },\n    { label: \"Platform\", selected: false },\n    { label: \"Security\", selected: false }\n  ]}\n  bordered\n  disabled\n/>", render: e_atoms_listbox_example_6 },
     ],
     donts: [
       { title: "Prefer a native select for simple lists", do: { caption: "For short, plain lists a native select is lighter, accessible, and uses the platform picker on mobile.", code: "<Select narrow defaultValue=\"Yes\" options={[\"Yes\", \"No\"]} />", render: e_atoms_listbox_dont_0_do }, dont: { caption: "A custom listbox for two short options is heavier than it needs to be and worse on mobile.", code: "<Listbox narrow bordered items={[\n    { label: \"Yes\", selected: true },\n    { label: \"No\" }\n  ]} />", render: e_atoms_listbox_dont_0_dont } },
@@ -1518,6 +1522,7 @@ export const COMPONENT_DOCS: Record<string, DocEntry> = {
       { label: "Large", code: "<Progress large value={0.6} />", render: e_atoms_progress_example_5 },
       { label: "Warning", code: "<Progress warning showValue value={0.85}>Storage used</Progress>", render: e_atoms_progress_example_6 },
       { label: "Danger", code: "<Progress danger showValue value={1}>Over the WIP limit</Progress>", render: e_atoms_progress_example_7 },
+      { label: "Widths", code: "<Column snug>\n  <Progress narrow value={0.6}>Narrow (240px)</Progress>\n  <Progress value={0.6}>Standard (320px)</Progress>\n  <Progress wide value={0.6}>Wide (480px)</Progress>\n  <Progress block value={0.6}>Block (fills the container)</Progress>\n</Column>", render: e_atoms_progress_example_8 },
     ],
     donts: [
       { title: "Determinate", do: { caption: "Use a determinate bar when you know the share of work done, and pass `showValue` so the control renders the percent on the label line; the number and the bar always agree.", code: "<Progress showValue value={0.72}>Uploading…</Progress>", render: e_atoms_progress_dont_0_do }, dont: { caption: "Don't park a determinate bar at a hard-coded value as a decorative divider; a frozen fill reads as a stalled task.", code: "<View style={{ gap: 8 }}>\n  <Text style={{ fontSize: 14, lineHeight: 20, color: tokens.foreground }}>Section</Text>\n  <Progress value={0.5} />\n</View>", render: e_atoms_progress_dont_0_dont } },
@@ -1595,6 +1600,7 @@ export const COMPONENT_DOCS: Record<string, DocEntry> = {
       { label: "Large", code: "<Select\n  large\n  label=\"Country\"\n  defaultValue=\"United States\"\n  options={[\"United States\", \"Canada\", \"Mexico\", \"United Kingdom\"]}\n  placeholder=\"Select a country\"\n/>", render: e_atoms_select_example_4 },
       { label: "With leading icon", code: "<Select\n  label=\"Country\"\n  icon\n  defaultValue=\"United States\"\n  options={[\"United States\", \"Canada\", \"Mexico\", \"United Kingdom\"]}\n  placeholder=\"Select a country\"\n/>", render: e_atoms_select_example_5 },
       { label: "Disabled", code: "<Select\n  disabled\n  label=\"Country\"\n  defaultValue=\"United States\"\n  options={[\"United States\", \"Canada\", \"Mexico\", \"United Kingdom\"]}\n  placeholder=\"Select a country\"\n/>", render: e_atoms_select_example_6 },
+      { label: "Widths", code: "<Column snug>\n  <Select narrow options={[\"Small\", \"Medium\", \"Large\"]} placeholder=\"Narrow (240px)\" />\n  <Select options={[\"Small\", \"Medium\", \"Large\"]} placeholder=\"Standard (320px)\" />\n  <Select wide options={[\"Small\", \"Medium\", \"Large\"]} placeholder=\"Wide (480px)\" />\n  <Select block options={[\"Small\", \"Medium\", \"Large\"]} placeholder=\"Block (fills the container)\" />\n</Column>", render: e_atoms_select_example_7 },
     ],
     donts: [
       { do: { caption: "Use the placeholder prop for the prompt so it can never be submitted as a value.", code: "<Column style={{ minHeight: 220 }}>\n  <Select open label=\"Country\" placeholder=\"Choose a country…\" options={[\"United States\", \"Canada\", \"Mexico\"]} />\n</Column>", render: e_atoms_select_dont_0_do }, dont: { caption: "A placeholder as a normal option can be submitted as a real value.", code: "<View style={{ minHeight: 260 }}>\n  <Select open label=\"Country\" defaultValue=\"Choose a country…\" options={[\"Choose a country…\", \"United States\", \"Canada\", \"Mexico\"]} style={{ maxWidth: 280 }} />\n</View>", render: e_atoms_select_dont_0_dont } },
@@ -1635,6 +1641,7 @@ export const COMPONENT_DOCS: Record<string, DocEntry> = {
       { label: "Large", code: "<Slider large defaultValue={75} />", render: e_atoms_slider_example_4 },
       { label: "Stepped", code: "<Slider defaultValue={6} min={0} max={10} step={2} />", render: e_atoms_slider_example_5 },
       { label: "Disabled", code: "<Slider disabled defaultValue={30} />", render: e_atoms_slider_example_6 },
+      { label: "Widths", code: "<Column snug>\n  <Slider narrow defaultValue={40}>Narrow (240px)</Slider>\n  <Slider defaultValue={40}>Standard (320px)</Slider>\n  <Slider wide defaultValue={40}>Wide (480px)</Slider>\n  <Slider block defaultValue={40}>Block (fills the container)</Slider>\n</Column>", render: e_atoms_slider_example_7 },
     ],
     donts: [
       { title: "Range", do: { caption: "Give the track room to breathe so the thumb has a clear travel path and the value reads at a glance. Pass the label as `children`; the slider owns the title above the rail.", code: "<Slider defaultValue={65} min={0} max={100}>Volume</Slider>", render: e_atoms_slider_dont_0_do }, dont: { caption: "Cramming the slider into a tiny width leaves no travel, so the thumb can barely move and the value is hard to set.", code: "<View style={{ width: 64 }}>\n  <Slider defaultValue={65} min={0} max={100} />\n</View>", render: e_atoms_slider_dont_0_dont } },
@@ -1746,6 +1753,7 @@ export const COMPONENT_DOCS: Record<string, DocEntry> = {
       { label: "Character counter", code: "<Textarea label=\"Description\" showCount maxLength={280} rows={4} wide placeholder=\"A few words about this project…\" />", render: e_atoms_textarea_example_4 },
       { label: "Formatting toolbar", code: "<Card flat flush style={{ width: 400, maxWidth: \"100%\", overflow: \"hidden\" }}>\n  <Row alignCenter tight padTight>\n    <Button ghost small>B</Button>\n    <Button ghost small>I</Button>\n    <Button ghost small>{\"</>\"}</Button>\n    <Divider vertical style={{ height: 16 }} />\n    <Button ghost small>Comment</Button>\n  </Row>\n  <Divider />\n  <Textarea rows={4} flush placeholder=\"Leave a comment…\" />\n</Card>", render: e_atoms_textarea_example_5 },
       { label: "Disabled", code: "<Textarea rows={4} disabled placeholder=\"A few words about this project\" />", render: e_atoms_textarea_example_6 },
+      { label: "Widths", code: "<Column snug>\n  <Textarea narrow rows={2} placeholder=\"Narrow (240px)\" />\n  <Textarea rows={2} placeholder=\"Standard (320px)\" />\n  <Textarea wide rows={2} placeholder=\"Wide (480px)\" />\n  <Textarea block rows={2} placeholder=\"Block (fills the container)\" />\n</Column>", render: e_atoms_textarea_example_7 },
     ],
     donts: [
       { title: "With label", do: { caption: "Set `rows` for a sensible starting height so users can see their text; the field grows with the content from there.", code: "<Textarea label=\"Description\" rows={3} wide value=\"This is a longer description that runs past one line and stays readable.\" />", render: e_atoms_textarea_dont_0_do }, dont: { caption: "A locked, single-line textarea hides long content with no way to expand.", code: "<View style={{ maxWidth: 400, flexDirection: \"column\", gap: 6 }}>\n  <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: \"500\", color: tokens.foreground }}>Description</Text>\n  <TextInput numberOfLines={1} value=\"This is a longer description that runs past one line and gets clipped.\" style={{ height: 32, width: \"100%\", borderRadius: 6, borderWidth: 1, borderColor: tokens.input, backgroundColor: tokens.background, paddingHorizontal: 12, paddingVertical: 4, fontSize: 14, lineHeight: 20, color: tokens.foreground }} />\n</View>", render: e_atoms_textarea_dont_0_dont } },
