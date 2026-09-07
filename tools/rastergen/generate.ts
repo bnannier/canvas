@@ -31,6 +31,7 @@ import { fileURLToPath } from "node:url";
 import { dirname, resolve, relative } from "node:path";
 import sharp from "sharp";
 import { ICONS, type Shape } from "../../src/atoms/icon/icon.glyphs.ts";
+import { ICON_STROKE_WIDTH } from "../../src/atoms/icon/icon.stroke.ts";
 import { menuGlyphNames } from "../../docs/src/data/nav.ts";
 
 const here = dirname(fileURLToPath(import.meta.url));
@@ -77,7 +78,7 @@ function shapeSvg(sh: Shape): string {
 function glyphSvg(shapes: Shape[], size: number): string {
   return (
     `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" ` +
-    `fill="none" stroke="${STROKE}" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">` +
+    `fill="none" stroke="${STROKE}" stroke-width="${ICON_STROKE_WIDTH}" stroke-linecap="round" stroke-linejoin="round">` +
     shapes.map(shapeSvg).join("") +
     `</svg>`
   );
