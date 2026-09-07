@@ -1,5 +1,40 @@
 # @nannier/canvas
 
+## 2.60.4
+
+### Patch Changes
+
+- 1b59a50: Correct optional dependency fallbacks, source development instructions, repository links, privacy copy and the distinct licenses for the npm package and repository source. Document the validated artifact release process and route the release script through its CI-only guard.
+- 023b721: Suppress Select option lists and interaction callbacks while disabled, including when a controlled or already-open Select becomes disabled. Preserve stored open and selection state across re-enabling and expose consistent native and web accessibility states.
+- 212c559: Assign Escape to the foremost overlay with explicit ancestry preserved across hosted content. Keep local editor cancellation, TextInput event handling, held keys and native Modal dismissal coordinated so one key closes one layer and preserves its parent.
+- ab0c66b: Remove Stepper's resolved accessibility exceptions so CI requires a clean scan. Give the real package-sealing integration test a bounded subprocess budget while preserving its full archive and artifact checks.
+- eb53b18: Fit the browser viewport to each measured component preview before taking a screenshot. Cover tall Calendar and GridList previews as well as opened overlays so captures cannot introduce blank areas or transient responsive navigation inside the image.
+- d3ca471: Activate dialog and popover focus management when their panels actually attach, including delayed portal and measurement mounts. Preserve the public object-ref API, modal Tab trapping, nonmodal focus behavior, and restoration across nested panels, reopening, replacement, and unmount.
+- ce3e842: Clear inherited repository-selection variables from release subprocesses so their explicit working directory remains authoritative. Isolate release test fixtures from Git hook environments and verify that adversarial inherited settings cannot modify another repository's configuration, refs, index, staged content or remote.
+- a906439: Normalize Stepper decimal arithmetic before storage and callbacks, preserving decimal offsets and exponent-form increments. Expose a named spinbutton with keyboard adjustment on web inside a noninteractive group, while retaining the existing native adjustable View actions and unchanged platform layouts.
+- ae3336c: Provide Changesets its local main reference when CI checks out a pinned commit in detached mode. Keep the reference at the triggering source SHA and validate the resulting version candidate before delivery.
+- 0129449: Preserve open overlays and form drafts when the docs navigation and playground change responsive layouts. Scope overlay checks to their own preview and size screenshot viewports from the actual opened stage so browser capture cannot trigger a transient responsive layout.
+- 907de7f: Prepare release versions before validating a frozen candidate, then publish only its tested npm tarball and docs archive. Reject stale candidates without rebasing or publishing, enforce the major-version guard for manual and automatic runs, and report actual delivery outcomes. Prepare Cloudflare asset paths in the shared docs build before browser tests.
+- fd4fe0e: Refresh 45 individually reviewed Linux screenshot baselines after fixing oversized element capture. The corrected images contain the full previews without transient navigation headers or blank clipped areas; the other 181 baselines are unchanged.
+- a27b784: Break the Sidebar's require cycle by giving the nav row its own module.
+
+  `sidebar.shared` builds the narrow drill-down from a skin, and the drill-down
+  imported `SidebarItemBadge` back from `sidebar.shared`, so the two modules
+  required each other. Metro allows that and warns on every app start ("Require
+  cycle: sidebar.shared -> sidebar.drilldown -> sidebar.shared"), because
+  whichever module loads second sees the first half-initialized. It was harmless
+  only because every value crossing the cycle is read inside a render, by which
+  time both modules have finished loading; a value read at module scope would
+  have evaluated as `undefined` far from the line that caused it.
+
+  `SidebarItem`, `SidebarSection` and `SidebarItemBadge` now live in
+  `sidebar.item`, which both presentations import and which imports neither of
+  them back. `sidebar.shared` re-exports the two types, so the public API is
+  unchanged: `SidebarItem` and `SidebarSection` are still exported from the kit
+  and from each per-OS entry point, and no consumer import changes.
+
+  The warning is gone from the docs app on iOS, verified on the simulator.
+
 ## 2.60.3
 
 ### Patch Changes
