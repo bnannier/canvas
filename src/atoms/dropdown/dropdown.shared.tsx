@@ -1,5 +1,6 @@
+import { EscapeLayerProvider, useEscapeLayer } from "../../style/escape-layer.js";
 import { useEffect, useRef, useState, type ReactNode } from "react";
-import { View, Pressable, Text, useTheme, AnchoredOverlay, useMeasuredWidth, useEscapeKey, useRovingFocus, isRTL, RippleClip, cornerRadii, type StyleProp, type ViewStyle } from "../../style/index.js";
+import { View, Pressable, Text, useTheme, AnchoredOverlay, useMeasuredWidth, useRovingFocus, isRTL, RippleClip, cornerRadii, type StyleProp, type ViewStyle } from "../../style/index.js";
 import { Button } from "../button/button.js";
 import { Icon, type IconName } from "../icon/icon.js";
 import { wrapper, wrapperLifted, customTrigger, type DropdownSkin } from "./dropdown.styles.js";
@@ -157,7 +158,7 @@ export function createDropdown(skin: DropdownSkin) {
     const menuName = title ?? description ?? label;
 
     // Escape dismisses the open menu on web (no-op natively).
-    useEscapeKey(open, () => setOpen(false));
+    const escapeScope = useEscapeLayer(open, () => setOpen(false));
 
     // Roving-focus keyboard navigation for the open menu (the WAI-ARIA menu pattern):
     // on open, focus moves to the first enabled row; the arrows move focus among the
@@ -298,6 +299,7 @@ export function createDropdown(skin: DropdownSkin) {
           // open itself.
           onCardMount={focusFirstItem}
         >
+          <EscapeLayerProvider scope={escapeScope}>
             {/* role="menu" gives the menuitem rows a valid ARIA parent; without it
                 each menuitem is orphaned and web SRs/validators flag it. The RippleClip
                 parent clips the Android bounded-ripple rows to the menu card's rounded
@@ -384,6 +386,7 @@ export function createDropdown(skin: DropdownSkin) {
             })}
             </View>
             </RippleClip>
+        </EscapeLayerProvider>
         </AnchoredOverlay>
       </View>
     );

@@ -1,6 +1,7 @@
+import { EscapeLayerProvider, useEscapeLayer } from "../../style/escape-layer.js";
 import { useId, useState, type ReactNode } from "react";
 import { KeyboardAvoidingView, Platform } from "react-native";
-import { View, Text, Pressable, RippleClip, cornerRadii, useTheme, GlassSurface, Entrance, Portal, useEscapeKey, useDialogFocus, type StyleProp, type ViewStyle } from "../../style/index.js";
+import { View, Text, Pressable, RippleClip, cornerRadii, useTheme, GlassSurface, Entrance, Portal, useDialogFocus, type StyleProp, type ViewStyle } from "../../style/index.js";
 import { Button } from "../../atoms/button/button.js";
 import { Input } from "../../atoms/input/input.js";
 import * as s from "./dialog.styles.js";
@@ -164,7 +165,7 @@ export function createDialog(skin: DialogSkin) {
     // as a Cancel. All of this is a no-op natively / under SSR (guarded on
     // `document`).
     const panelRef = useDialogFocus(open);
-    useEscapeKey(open, cancel);
+    const escapeScope = useEscapeLayer(open, cancel);
 
     // The confirm/cancel footer. Three platform shapes:
     //   - web (footerKind "buttons", no skin.textButton): the outline Cancel +
@@ -262,6 +263,7 @@ export function createDialog(skin: DialogSkin) {
         ) : null}
         {open ? (
           <Present overlay={overlay}>
+          <EscapeLayerProvider scope={escapeScope}>
           <View
             // The overlay carries the dialog semantics so assistive tech announces
             // it. `role` ("dialog", or "alertdialog" for a destructive confirm) +
@@ -326,6 +328,7 @@ export function createDialog(skin: DialogSkin) {
             </GlassSurface>
             </Entrance>
           </View>
+          </EscapeLayerProvider>
           </Present>
         ) : null}
       </View>

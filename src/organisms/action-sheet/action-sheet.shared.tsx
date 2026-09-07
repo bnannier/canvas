@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState, Fragment } from "react";
+import { EscapeLayerProvider, useEscapeLayer } from "../../style/escape-layer.js";
 import { Animated, KeyboardAvoidingView, Modal, Platform, StyleSheet } from "react-native";
 import { SafeAreaView } from "../../style/safe-area.js";
 import {
@@ -127,6 +128,7 @@ export function createActionSheet(skin: ActionSheetSkin) {
     // it is closed; it also skips web, where the BackHandler shim would
     // console.error on every call.
     useHardwareBack(open, close);
+    const escapeScope = useEscapeLayer(open, close);
 
     // The sheet SLIDES up by hand (translateY) behind a SEPARATE, stationary dim
     // layer that FADES in. RN Modal's animationType="slide" transforms the whole
@@ -228,7 +230,7 @@ export function createActionSheet(skin: ActionSheetSkin) {
           visible={mounted}
           transparent
           animationType="none"
-          onRequestClose={close}
+          onRequestClose={escapeScope.onRequestClose}
           testID={testID}
           // Tell assistive tech the content behind this overlay is inert while the
           // sheet is open (iOS VoiceOver honors this; a no-op elsewhere).
@@ -237,6 +239,7 @@ export function createActionSheet(skin: ActionSheetSkin) {
           {/* The Modal renders in its own native window, so the app's Android blur
               target is a sibling render tree here — re-publish it and the sheet's
               frost blurs the page behind it (a no-op off Android). */}
+          <EscapeLayerProvider scope={escapeScope}>
           <GlassModalBlurTarget>
           {/* Lift the sheet above the iOS software keyboard so a field summoned over
               the sheet stays visible while typing. behavior "padding" shrinks the
@@ -319,6 +322,7 @@ export function createActionSheet(skin: ActionSheetSkin) {
             </View>
           </KeyboardAvoidingView>
           </GlassModalBlurTarget>
+          </EscapeLayerProvider>
         </Modal>
       </Fragment>
     );

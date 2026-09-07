@@ -1,4 +1,5 @@
 import { type ComponentType, useState } from "react";
+import { consumeEscapeKey } from "../../style/escape-layer.js";
 import { View, Text, TextInput, useTheme, useResponsive, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle } from "../../style/index.js";
 import { Avatar as WebAvatar, AvatarGroup as WebAvatarGroup } from "../../atoms/avatar/avatar.js";
 import { Badge as WebBadge } from "../../atoms/badge/badge.js";
@@ -315,7 +316,12 @@ export function createDescriptionList(
                   selectTextOnFocus
                   returnKeyType="done"
                   onSubmitEditing={commit}
-                  onKeyPress={(e) => { if (e.nativeEvent.key === "Escape") cancel(); }}
+                  onKeyPress={(e) => {
+                    if (e.nativeEvent.key === "Escape") {
+                      consumeEscapeKey(e);
+                      cancel();
+                    }
+                  }}
                   accessibilityLabel={`${item.term} value`}
                   aria-label={`${item.term} value`}
                   style={[valueStyle, s.editInput(tokens)]}

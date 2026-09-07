@@ -1,6 +1,7 @@
+import { EscapeLayerProvider, useEscapeLayer } from "../../style/escape-layer.js";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { type GestureResponderEvent, type View as RNView, type ScrollView as RNScrollView } from "react-native";
-import { View, Pressable, Text, ScrollView, RippleClip, cornerRadii, useTheme, useControllableState, AnchoredOverlay, useEscapeKey, useMeasuredWidth, type StyleProp, type ViewStyle } from "../../style/index.js";
+import { View, Pressable, Text, ScrollView, RippleClip, cornerRadii, useTheme, useControllableState, AnchoredOverlay, useMeasuredWidth, type StyleProp, type ViewStyle } from "../../style/index.js";
 import { ButtonGroup } from "../../atoms/button-group/button-group.js";
 import { type CalendarSkin, type DayState, type Density } from "./calendar.styles.js";
 
@@ -291,7 +292,7 @@ export function createCalendar(skin: CalendarSkin) {
     // The peek belongs to one month's grid: close it when the month swaps out
     // from under it, and let Escape dismiss it like any overlay.
     useEffect(() => setPeekDay(null), [month]);
-    useEscapeKey(peekDay != null, () => setPeekDay(null));
+    const escapeScope = useEscapeLayer(peekDay != null, () => setPeekDay(null));
 
     // The day the week/day views revolve around.
     const anchor = Math.min(Math.max(selected ?? today ?? 1, 1), daysInMonth);
@@ -600,6 +601,7 @@ export function createCalendar(skin: CalendarSkin) {
           cardStyle={[skin.peekCard(tokens), { width: tm.peekWidth }]}
           inlineStyle={{ position: "absolute", top: "100%", left: 0 }}
         >
+          <EscapeLayerProvider scope={escapeScope}>
           <Text style={skin.peekTitle(tokens)}>{e.title ?? "Event"}</Text>
           <Text style={[skin.eventTime(tokens), { marginTop: 2 }]}>
             {`${WEEKDAYS_FULL[weekdayOf(e.day)]}, ${monthName} ${e.day} · ${formatHour(start, hour24)} – ${formatHour(end, hour24)}`}
@@ -607,6 +609,7 @@ export function createCalendar(skin: CalendarSkin) {
           {e.description != null ? (
             <Text style={[skin.peekBody(tokens), { marginTop: 6 }]}>{e.description}</Text>
           ) : null}
+        </EscapeLayerProvider>
         </AnchoredOverlay>
       );
     };
@@ -636,6 +639,7 @@ export function createCalendar(skin: CalendarSkin) {
           cardStyle={[skin.peekCard(tokens), { width: tm.peekWidth }]}
           inlineStyle={{ position: "absolute", top: "100%", left: 0 }}
         >
+          <EscapeLayerProvider scope={escapeScope}>
           <Text style={skin.peekTitle(tokens)}>{`${WEEKDAYS_FULL[weekdayOf(peekDay)]}, ${monthName} ${peekDay}`}</Text>
           {untimed.map((e, i) => (
             <View key={`untimed-${i}`} style={{ marginTop: 6 }}>
@@ -651,6 +655,7 @@ export function createCalendar(skin: CalendarSkin) {
               </View>
             </View>
           ) : null}
+        </EscapeLayerProvider>
         </AnchoredOverlay>
       );
     };

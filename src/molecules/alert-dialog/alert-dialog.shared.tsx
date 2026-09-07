@@ -1,6 +1,7 @@
+import { EscapeLayerProvider, useEscapeLayer } from "../../style/escape-layer.js";
 import { type ReactNode, useId, useState } from "react";
 import { KeyboardAvoidingView, Platform } from "react-native";
-import { Entrance, Portal, Pressable, RippleClip, Text, View, cornerRadii, type StyleProp, type ViewStyle, useDialogFocus, useEscapeKey, useTheme } from "../../style/index.js";
+import { Entrance, Portal, Pressable, RippleClip, Text, View, cornerRadii, type StyleProp, type ViewStyle, useDialogFocus, useTheme } from "../../style/index.js";
 import { Button } from "../../atoms/button/button.js";
 import { Input as WebInput } from "../../atoms/input/input.js";
 import * as s from "./alert-dialog.styles.js";
@@ -173,7 +174,7 @@ export function createAlertDialog(skin: AlertDialogSkin, Input: InputComponent =
     // as a Cancel. All of this is a no-op natively / under SSR (guarded on
     // `document`).
     const panelRef = useDialogFocus(open);
-    useEscapeKey(open, handleCancel);
+    const escapeScope = useEscapeLayer(open, handleCancel);
 
     // The action row. iOS renders two capsule buttons side by side (no divider)
     // drawn by the skin; Android renders a right-aligned row of flat M3 TEXT
@@ -277,6 +278,7 @@ export function createAlertDialog(skin: AlertDialogSkin, Input: InputComponent =
         ) : null}
         {open ? (
           <Present overlay={overlay}>
+          <EscapeLayerProvider scope={escapeScope}>
           <View
             // The overlay carries the dialog semantics so assistive tech announces
             // it. `role="alertdialog"` + `aria-modal` make web screen readers treat
@@ -352,6 +354,7 @@ export function createAlertDialog(skin: AlertDialogSkin, Input: InputComponent =
             </View>
             </Entrance>
           </View>
+          </EscapeLayerProvider>
           </Present>
         ) : null}
       </View>

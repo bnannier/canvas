@@ -1,6 +1,7 @@
+import { EscapeLayerProvider, useEscapeLayer } from "../../style/escape-layer.js";
 import { forwardRef, useId, useRef, useState } from "react";
 import { type Role, type TextInput as RNTextInput } from "react-native";
-import { View, Pressable, Text, TextInput, ScrollView, useTheme, useControllableState, useEscapeKey, useFieldWidth, AnchoredOverlay, useMeasuredWidth, FloatingLabel, LabelContent, FOCUS_RESET, RippleClip, cornerRadii, type FieldWidthProps, type StyleProp, type ViewStyle, type TextStyle } from "../../style/index.js";
+import { View, Pressable, Text, TextInput, ScrollView, useTheme, useControllableState, useFieldWidth, AnchoredOverlay, useMeasuredWidth, FloatingLabel, LabelContent, FOCUS_RESET, RippleClip, cornerRadii, type FieldWidthProps, type StyleProp, type ViewStyle, type TextStyle } from "../../style/index.js";
 
 // React Native's Role union omits the valid ARIA "listbox" role, so the option-list
 // container casts it. The value is correct on both web (DOM role) and native.
@@ -180,7 +181,7 @@ export function createAutocomplete(skin: AutocompleteSkin) {
 
     // Escape closes the open option list on web (no-op natively). A disabled
     // control renders no list, so it never subscribes.
-    useEscapeKey(open && !disabled, () => setOpen(false));
+    const escapeScope = useEscapeLayer(open && !disabled, () => setOpen(false));
 
     // What the field shows: the typed query, then the selected value, else the
     // placeholder (rendered natively by the input, in the skin's muted color).
@@ -267,9 +268,8 @@ export function createAutocomplete(skin: AutocompleteSkin) {
             onKeyPress={(event) => {
               if (disabled) return;
               const key = event.nativeEvent.key;
-              if (key === "Escape" && open) {
-                event.preventDefault?.();
-                setOpen(false);
+              if (key === "Escape") {
+                escapeScope.onKeyPress(event);
               } else if (key === "ArrowDown" && !open) {
                 event.preventDefault?.();
                 setOpen(true);
@@ -344,6 +344,7 @@ export function createAutocomplete(skin: AutocompleteSkin) {
           // the hosted dismiss backdrop is skipped (it would only block the page).
           dismissable={openProp === undefined || onOpenChange !== undefined}
         >
+          <EscapeLayerProvider scope={escapeScope}>
             {matches.length === 0 ? (
               <View style={skin.emptyRow}>
                 <Text style={skin.emptyText(tokens, size)}>No results</Text>
@@ -392,6 +393,7 @@ export function createAutocomplete(skin: AutocompleteSkin) {
               </RippleClip>
               </ScrollView>
             )}
+        </EscapeLayerProvider>
         </AnchoredOverlay>
 
         {helperText != null && helperText !== "" ? (
