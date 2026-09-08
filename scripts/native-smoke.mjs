@@ -116,6 +116,14 @@ export function testNativeSmoke(output, platform, device, maestro, requestedEvid
     ? ["xcrun", ["simctl", "ui", device, "appearance"]]
     : ["adb", ["-s", device, "shell", "cmd", "uimode", "night"]];
   const setAppearance = (value) => run(app, appearanceCommand[0], [...appearanceCommand[1], value], identity);
+  const observeFailure = platform === "android" && process.env.CANVAS_ANDROID_DIAGNOSTICS ? (stage) => {
+    const diagnostics = path.join(output, "android-host-diagnostics");
+    if (path.resolve(process.env.CANVAS_ANDROID_DIAGNOSTICS) !== diagnostics) throw new Error("Diagnostic output differs from this native attempt");
+    // Host-only capture happens before appearance restoration can issue another
+    // ADB command. Its bounded failure is recorded without replacing the journey.
+    return JSON.parse(execFileSync(process.execPath, [path.join(repo, "scripts/android-host-diagnostics.mjs"), "capture",
+      "--output", diagnostics, "--stage", stage], { encoding: "utf8", timeout: 5000, maxBuffer: 16384, stdio: ["ignore", "pipe", "pipe"] }));
+  } : undefined;
   recordNativeAttempt(evidence, result, () => {
     // The authored segments are self-contained. Snapshot both before building
     // the attempt-specific measurement export and literal continuation.
@@ -126,7 +134,8 @@ export function testNativeSmoke(output, platform, device, maestro, requestedEvid
       result.flowInputs[file] = sha256(preserved);
     }
     const inputs = ["scripts/native-smoke.mjs", "scripts/verify-native-flow.mjs", "scripts/release.mjs",
-      "tools/native/candidate.mjs", "tools/native/evidence.mjs", "tools/native/gesture.mjs", "tools/native/ParseFlow.java", "tools/native/maestro.json"];
+      "tools/native/candidate.mjs", "tools/native/evidence.mjs", "tools/native/gesture.mjs", "tools/native/ParseFlow.java", "tools/native/maestro.json",
+      "scripts/android-host-diagnostics.mjs", "tools/native/android-host-diagnostics.mjs"];
     result.testInfrastructure = {
       revision: run(repo, "git", ["rev-parse", "HEAD"], identity, true).trim(),
       dirty: run(repo, "git", ["status", "--porcelain", "--untracked-files=all"], identity, true).trim() !== "",
@@ -205,7 +214,7 @@ export function testNativeSmoke(output, platform, device, maestro, requestedEvid
       result.schemes[scheme] = "passed";
     }
     verifyFlowInputs();
-  });
+  }, observeFailure);
 }
 
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {

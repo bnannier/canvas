@@ -120,9 +120,14 @@ jobs:
           avd-name: canvas_candidate
           emulator-port: 5554
           disable-animations: true
+          pre-emulator-launch-script: node scripts/android-host-diagnostics.mjs start --output "$RUNNER_TEMP/native-smoke/android-host-diagnostics"
           script: |
-            node scripts/native-smoke.mjs build --output "$RUNNER_TEMP/native-smoke" --platform android --device emulator-5554
-            node scripts/native-smoke.mjs test --output "$RUNNER_TEMP/native-smoke" --platform android --device emulator-5554 --maestro "$RUNNER_TEMP/native-tools/maestro/bin/maestro"
+            node scripts/android-host-diagnostics.mjs run --output "$RUNNER_TEMP/native-smoke/android-host-diagnostics" -- node scripts/native-smoke.mjs build --output "$RUNNER_TEMP/native-smoke" --platform android --device emulator-5554
+            node scripts/android-host-diagnostics.mjs run --output "$RUNNER_TEMP/native-smoke/android-host-diagnostics" -- node scripts/native-smoke.mjs test --output "$RUNNER_TEMP/native-smoke" --platform android --device emulator-5554 --maestro "$RUNNER_TEMP/native-tools/maestro/bin/maestro"
+
+      - name: Finalize passive Android host evidence
+        if: always() && inputs.platform == 'android'
+        run: node scripts/android-host-diagnostics.mjs finalize --output "$RUNNER_TEMP/native-smoke/android-host-diagnostics"
 
       - name: Preserve candidate identity and native interaction evidence
         if: always()
@@ -133,5 +138,6 @@ jobs:
             ${{ runner.temp }}/native-smoke/context.json
             ${{ runner.temp }}/native-smoke/*-build.json
             ${{ runner.temp }}/native-smoke/*-evidence/
+            ${{ runner.temp }}/native-smoke/android-host-diagnostics/
           if-no-files-found: warn
           retention-days: 14

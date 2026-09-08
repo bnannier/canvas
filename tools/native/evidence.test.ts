@@ -117,3 +117,47 @@ test("passing both schemes qualifies only when restoration succeeds", () => {
     expect(readResult(evidence).status).toBe(restorationFails ? "failed" : "passed");
   }
 });
+
+test("failure observation occurs before appearance restoration and preserves the original error", () => {
+  const evidence = createEvidenceDirectory(output(), "android");
+  const failure = new Error("offline during launch");
+  const calls: string[] = [];
+  const result = { status: "failed" };
+  let caught;
+  try {
+    recordNativeAttempt(evidence, result, () => "no", () => { calls.push("restore"); }, () => { throw failure; },
+      (phase: string, error: Error) => { expect(error).toBe(failure); calls.push(phase); return { status: "available", path: "host-snapshot" }; });
+  } catch (error) { caught = error; }
+  expect(caught).toBe(failure);
+  expect(calls).toEqual(["journey-failed", "restore"]);
+  expect(readResult(evidence)).toMatchObject({ status: "failed", error: "Error: offline during launch", failureObservations: [{ phase: "journey-failed", observation: { status: "available", path: "host-snapshot" } }] });
+});
+
+test("a failed observer never replaces a journey or restoration failure", () => {
+  const evidence = createEvidenceDirectory(output(), "android");
+  const first = new Error("journey failed");
+  const second = new Error("restore failed");
+  const observed: string[] = [];
+  let caught;
+  try {
+    recordNativeAttempt(evidence, { status: "failed" }, () => "no", () => { throw second; }, () => { throw first; },
+      (phase: string) => { observed.push(phase); throw new Error("snapshot denied"); });
+  } catch (error) { caught = error; }
+  expect(caught).toBeInstanceOf(AggregateError);
+  expect((caught as AggregateError).errors).toEqual([first, second]);
+  expect(observed).toEqual(["journey-failed", "restoration-failed"]);
+  expect(readResult(evidence)).toMatchObject({ status: "failed", error: "Error: journey failed", restorationError: "Error: restore failed",
+    failureObservations: [
+      { phase: "journey-failed", observation: { status: "unavailable", reason: "Error: snapshot denied" } },
+      { phase: "restoration-failed", observation: { status: "unavailable", reason: "Error: snapshot denied" } },
+    ] });
+});
+
+test("successful attempts do not call the failure observer", () => {
+  const evidence = createEvidenceDirectory(output(), "android");
+  let observations = 0;
+  recordNativeAttempt(evidence, { status: "failed" }, () => "no", () => {}, () => {}, () => { observations += 1; });
+  expect(observations).toBe(0);
+  expect(readResult(evidence)).toMatchObject({ status: "passed" });
+  expect(readResult(evidence).failureObservations).toBeUndefined();
+});
