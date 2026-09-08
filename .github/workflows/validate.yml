@@ -222,15 +222,17 @@ jobs:
     with:
       platform: ${{ matrix.platform }}
 
-  # Browser work is slow next to the library checks, and it fails for different
-  # reasons, so it gets its own job and its own red box rather than quadrupling the
-  # two-minute `check`. It needs `check` only for the export artifact; if this grows
-  # past roughly eight minutes, split it with a `--project` matrix (the projects in
-  # playwright.config.ts are already independent).
+  # Partition the full browser suite while keeping each shard on the same sealed
+  # candidate. All shards gate the reusable workflow and therefore publication;
+  # fail-fast=false preserves the other engines' evidence after a failure.
   e2e:
     needs: check
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3, 4]
     steps:
       - uses: actions/checkout@v7
         with:
@@ -287,10 +289,52 @@ jobs:
           tar -xzf "$RUNNER_TEMP/artifacts/docs.tgz" -C docs/dist
 
       - name: End-to-end suite
-        run: bunx playwright test --reporter=github,html
+        run: bunx playwright test --shard=${{ matrix.shard }}/4 --reporter=github,html
 
-      # This remains an independent registry consumer. The native jobs install the
-      # sealed candidate separately, with its artifact and runtime identity gates.
+      - name: Upload the shard's Playwright report
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: playwright-report-shard-${{ matrix.shard }}
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 7
+
+  # This is an independent registry consumer. Passing library checks gate it,
+  # but it builds its own app and never installs the sealed candidate package.
+  starter:
+    needs: check
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.sha }}
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version-file: package.json
+
+      - name: Cache bun downloads
+        uses: actions/cache@v6
+        with:
+          path: ~/.bun/install/cache
+          key: bun-${{ runner.os }}-${{ hashFiles('bun.lock', 'docs/bun.lock') }}
+          restore-keys: |
+            bun-${{ runner.os }}-
+
+      - run: bun install --frozen-lockfile
+
+      - name: Cache the Playwright browsers
+        uses: actions/cache@v6
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('bun.lock') }}
+
+      - name: Install Chromium, Firefox and WebKit
+        run: bunx playwright install --with-deps chromium firefox webkit
+
       - name: Install the ordinary starter's pinned registry dependencies
         working-directory: examples/starter
         run: bun install --frozen-lockfile
@@ -306,14 +350,12 @@ jobs:
       - name: Verify starter user journeys across browser engines and touch
         run: bunx playwright test --config e2e/starter/playwright.config.ts
 
-      # Only on failure: the report carries the traces, the failure screenshots and,
-      # once the visual project lands, the expected/actual/diff images.
-      - name: Upload the Playwright report
-        if: failure()
+      - name: Upload the starter's Playwright report
+        if: always()
         uses: actions/upload-artifact@v7
         with:
-          name: playwright-report
+          name: playwright-report-starter
           path: |
-            playwright-report/
-            test-results/
+            playwright-report/starter/
+            test-results/starter/
           retention-days: 7
