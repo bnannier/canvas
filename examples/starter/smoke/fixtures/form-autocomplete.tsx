@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { Autocomplete, Column, Command, Drawer, Form, Input, Switch, Typography, useOverlayHost, useWindowDimensions } from "@nannier-com/canvas";
+import { Keyboard } from "react-native";
+import { ActionSheet, Autocomplete, Column, Command, Drawer, Form, Input, Switch, Typography, useOverlayHost, useWindowDimensions } from "@nannier-com/canvas";
 
 export const FRUIT = [
   "Apple", "Apricot", "Banana", "Cherry", "Dates", "Elderberry", "Fig", "Grapefruit",
@@ -10,7 +11,11 @@ export const FRUIT = [
 interface OutletSample {
   windowHeight: number;
   outletHeight: number;
+  outletTop: number;
+  outletBottom: number;
   visibleHeight: number;
+  visibleTop: number;
+  visibleBottom: number;
 }
 
 // A content-sized outlet can stay tall while its inherited viewport shrinks.
@@ -19,6 +24,14 @@ function OverlayOutletMeasurement() {
   const host = useOverlayHost();
   const { width, height } = useWindowDimensions();
   const [samples, setSamples] = useState<{ initial: OutletSample; smallest: OutletSample } | null>(null);
+  const [keyboardEvent, setKeyboardEvent] = useState<{ count: number; screenY: number; height: number } | null>(null);
+  useEffect(() => {
+    const subscription = Keyboard.addListener("keyboardDidShow", ({ endCoordinates }) => {
+      setKeyboardEvent((previous) => ({ count: (previous?.count ?? 0) + 1,
+        screenY: Math.round(endCoordinates.screenY), height: Math.round(endCoordinates.height) }));
+    });
+    return () => subscription.remove();
+  }, []);
   useEffect(() => {
     let active = true;
     let frame: number | undefined;
@@ -27,13 +40,17 @@ function OverlayOutletMeasurement() {
       const requestedRevision = ++revision;
       if (frame != null) cancelAnimationFrame(frame);
       frame = requestAnimationFrame(() => {
-        host?.measureOutlet((_x, _y, _width, outletHeight) => {
-          host.measureVisibleBounds?.(({ height: visibleHeight }) => {
+        host?.measureOutlet((_x, outletTop, _width, outletHeight) => {
+          host.measureVisibleBounds?.(({ y: visibleTop, height: visibleHeight }) => {
             if (!active || requestedRevision !== revision || height <= 0 || outletHeight <= 0 || visibleHeight <= 0) return;
             const sample = {
               windowHeight: Math.round(height),
               outletHeight: Math.round(outletHeight),
+              outletTop: Math.round(outletTop),
+              outletBottom: Math.round(outletTop + outletHeight),
               visibleHeight: Math.round(visibleHeight),
+              visibleTop: Math.round(visibleTop),
+              visibleBottom: Math.round(visibleTop + visibleHeight),
             };
             setSamples((previous) => previous == null
               ? { initial: sample, smallest: sample }
@@ -69,6 +86,15 @@ function OverlayOutletMeasurement() {
       <Typography small testID="overlay-visible-measurement">
         {samples ? `Visible: ${samples.initial.visibleHeight} to ${samples.smallest.visibleHeight}` : "Visible: awaiting measurement"}
       </Typography>
+      <Typography small testID="overlay-outlet-bounds">
+        {samples ? `Outlet Y: ${samples.initial.outletTop}..${samples.initial.outletBottom} to ${samples.smallest.outletTop}..${samples.smallest.outletBottom}` : "Outlet Y: awaiting measurement"}
+      </Typography>
+      <Typography small testID="overlay-visible-bounds">
+        {samples ? `Visible Y: ${samples.initial.visibleTop}..${samples.initial.visibleBottom} to ${samples.smallest.visibleTop}..${samples.smallest.visibleBottom}` : "Visible Y: awaiting measurement"}
+      </Typography>
+      <Typography small testID="overlay-keyboard-event">
+        {keyboardEvent ? `Keyboard didShow: ${keyboardEvent.count}, screenY ${keyboardEvent.screenY}, height ${keyboardEvent.height}` : "Keyboard didShow: not observed"}
+      </Typography>
       <Typography small testID="overlay-resize-observation">{observation}</Typography>
     </Column>
   );
@@ -101,6 +127,21 @@ function CommandKeyboardBody() {
   );
 }
 
+function ActionSheetSafeAreaBody() {
+  const [selections, setSelections] = useState(0);
+  const [closes, setCloses] = useState(0);
+  return (
+    <Column relaxed>
+      <ActionSheet trigger="Open safe area sheet" title="Safe area actions"
+        cancelLabel="Cancel safe area sheet" testID="safe-area-actions"
+        actions={[{ label: "Choose safe area action", onPress: () => setSelections((count) => count + 1) }]}
+        onOpenChange={(open) => { if (!open) setCloses((count) => count + 1); }} />
+      <Typography testID="sheet-selections">Selections: {selections}</Typography>
+      <Typography testID="sheet-closes">Closes: {closes}</Typography>
+    </Column>
+  );
+}
+
 export function FormAutocompleteBody({ scenario }: { scenario?: string }) {
   const [value, setValue] = useState(scenario === "clear" ? "Apple" : "");
   const [disabled, setDisabled] = useState(scenario === "disabled");
@@ -108,6 +149,7 @@ export function FormAutocompleteBody({ scenario }: { scenario?: string }) {
   const [selections, setSelections] = useState(0);
   const [changes, setChanges] = useState(0);
   if (scenario === "command-keyboard") return <CommandKeyboardBody />;
+  if (scenario === "action-sheet-safe-area") return <ActionSheetSafeAreaBody />;
   return (
     scenario === "modal" || scenario === "modal-keyboard" ? (
         <Drawer trigger="Open fruit drawer" onOpenChange={(next) => { if (!next) setSubmits((count) => count + 1); }}>
