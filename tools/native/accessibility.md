@@ -80,6 +80,58 @@ Run these journeys in light and dark appearance, using screen-reader gestures:
    and backward navigation. Record clipped labels, missing state announcements,
    focus escapes and duplicate announcements as failures, with a reproduction.
 
+## Autocomplete accessibility-focus return
+
+Run these additional journeys in both appearances on the identified candidate.
+Activate options through TalkBack or VoiceOver, not an ordinary tap or a Maestro
+command. Record accessibility focus separately from editing focus: the painted
+focus highlight and announced target establish the former; the caret, visible
+soft keyboard and typing without refocusing establish the latter. A composed
+speech-display screenshot records displayed text, not audio heard by a reviewer.
+
+1. Open `testing/form-autocomplete?scenario=keyboard`. Focus Fruit, enter `Ap`
+   using the soft keyboard, and touch-explore the painted Pineapple row. Confirm
+   its own name and focus bounds before double-tapping once. The suggestions must
+   close, Fruit must contain Pineapple, selection and value-change counts must
+   each be 1, and submit count must remain 0. Observe accessibility focus return
+   to the same Fruit input, with its own highlight and announced identity rather
+   than the page heading or an underlying control. Confirm the keyboard and
+   editing focus remain, then type `s` without tapping or refocusing the input;
+   its text must become `Pineapples`, with no additional selection or submission.
+2. Open `testing/form-autocomplete?scenario=modal-keyboard`, activate Open fruit
+   drawer, and repeat `Ap` to Pineapple through the screen reader. Confirm the
+   child suggestions close while the Drawer remains open. Accessibility focus
+   must return to the same Drawer fruit input inside the native modal, with its
+   own highlight and announced identity. Confirm the keyboard remains and type
+   `s` without refocusing to obtain `Pineapples`. This Drawer fixture has no
+   selection counters; record its actual field value and focus evidence instead.
+3. Open `testing/form-autocomplete?scenario=accessibility-kept-open`. Activate
+   Open retained suggestions, focus Accessible fruit and type `Ap`. Explore and
+   double-tap Pineapple once. Confirm Selected: Pineapple, Selections: 1, Value
+   changes: 1 and Submits: 0 while the suggestions remain open. The selection
+   must not force accessibility focus to the input. Use screen-reader navigation
+   to move accessibility focus to Close retained suggestions, then activate it.
+   Confirm the menu closes and counters remain unchanged, without a delayed
+   return to Accessible fruit reclaiming focus from that button. Record the
+   actual focus destination and announcement throughout selection and closure.
+4. Open `testing/form-autocomplete?scenario=accessibility-destination`. Focus
+   Accessible fruit, type `Ap`, explore Pineapple and double-tap once. Confirm
+   Selected: Pineapple, Selections: 1, Value changes: 1, Submits: 0 and
+   Destination mounted. The original input and suggestions must be removed;
+   the owner's Next destination input must receive editing focus through its
+   autofocus behavior. Record accessibility focus separately, without assuming
+   autofocus also moves it. Type into Next destination without refocusing and
+   navigate with the screen reader. No stale request may reclaim focus for the
+   removed Accessible fruit input.
+
+The implementation observes React suggestion-subtree removal, not a native
+mount-completion or screen-reader acknowledgement. Verify the positive return
+after real typing as well as both cancellation cases on the actual runtime.
+Native TextInput can reassign a callback ref to the same host after a text event;
+such a detach conservatively cancels a pending return. A controlled value change
+alone is not that text-event signal. Do not infer a successful return from unit
+tests or editing focus alone, and keep ordinary-touch results separate.
+
 For each disabled case, record the actual disabled announcement and exposure of
 the control or its group, inert attempted activation, selected/checked state and
 unchanged counters. An OS can skip disabled items in sequential navigation or
