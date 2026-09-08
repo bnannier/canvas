@@ -39,3 +39,29 @@ index 6115e87a6e430f55570fbf759283dca0cca1ee80..a56d62c569b85625916cacc02de21684
  
    RuntimeScheduler(const RuntimeScheduler &) = delete;
  
+diff --git a/apple/Sources/ExpoModulesJSI/Runtime/JavaScriptRuntime.swift b/apple/Sources/ExpoModulesJSI/Runtime/JavaScriptRuntime.swift
+--- a/apple/Sources/ExpoModulesJSI/Runtime/JavaScriptRuntime.swift
++++ b/apple/Sources/ExpoModulesJSI/Runtime/JavaScriptRuntime.swift
+@@ -762,4 +762,2 @@
+     // floor.
+-    nonisolated(unsafe) let thisPtr = thisPtr
+-    nonisolated(unsafe) let argumentsPtr = argumentsPtr
+     nonisolated(unsafe) let resultPtr = resultPtr
+@@ -769,2 +767,6 @@
+     withGuaranteedContext(context) { (context: HostFunctionContext, runtime) in
++      // Rebind inside this synchronous, nonescaping context so the actor closure
++      // captures these local bindings. The pointers still live only for this call.
++      nonisolated(unsafe) let thisPtr = thisPtr
++      nonisolated(unsafe) let argumentsPtr = argumentsPtr
+       resultPtr.pointee = JavaScriptActor.assumeIsolated {
+@@ -805,4 +807,2 @@
+     // per-call `weak`-runtime form/destroy and heap object that the owning `this` pays.
+-    nonisolated(unsafe) let thisPtr = thisPtr
+-    nonisolated(unsafe) let argumentsPtr = argumentsPtr
+     nonisolated(unsafe) let resultPtr = resultPtr
+@@ -812,2 +812,5 @@
+     withGuaranteedContext(context) { (context: UnownedThisHostFunctionContext, runtime) in
++      // Preserve the same synchronous capture boundary as the owning-this overload.
++      nonisolated(unsafe) let thisPtr = thisPtr
++      nonisolated(unsafe) let argumentsPtr = argumentsPtr
+       resultPtr.pointee = JavaScriptActor.assumeIsolated {

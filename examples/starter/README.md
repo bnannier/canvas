@@ -22,7 +22,9 @@ bun run android
 
 `bun run start` starts Metro without choosing a platform. The native commands create the ignored `ios/` or `android/` project and build the application on a connected device or simulator/emulator. iOS requires macOS, compatible Xcode and CocoaPods; Android requires the Android SDK and a supported JDK. No EAS project or cloud account is configured.
 
-The locked Expo Modules JSI57.0.8 dependency carries a small compiler compatibility patch in `patches/`. Apple clang17 (Xcode26) rejects Swift's retained-return annotation on these constructors; the patch omits that annotation only for affected compilers and keeps it on clang18 and newer. Bun applies the checked-in patch during installation, so no manual edit to node_modules or platform version pin is needed.
+The locked Expo Modules JSI 57.0.8 dependency carries a compiler compatibility patch in `patches/`. Apple clang 17 rejects Swift's retained-return annotation on these constructors; the patch omits that annotation only for affected compilers and keeps it on clang 18 and newer. It also rebinds call-scoped pointers inside the synchronous host-context closure, so the actor closure captures those local bindings. This preserves their lifetime, the existing concurrency checks, and the callback's allocation behavior. Bun applies the patch during installation.
+
+The pointer correction was verified with the exact failing compiler invocation: Swift 6.2.4, Xcode 26.3 build 17C529, and the iPhoneSimulator 26.2 SDK. The unchanged source produced four capture errors; the corrected source compiled successfully. The docs app's separately locked JSI 57.0.5 has no intervening host-context closure and does not need this pointer correction. Full native application verification still runs through the candidate smoke workflow.
 
 ```sh
 bun run typecheck
