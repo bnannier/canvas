@@ -186,3 +186,12 @@ candidate identity comparison, and only the runner's smoke flag and identity
 presence. Xcode script-phase environment inheritance remains unobserved. An
 enabled compiled route does not prove URL delivery or navigation; a compiled
 redirect does not establish where an incorrect build value originated.
+
+## Android appearance restoration
+
+Before installing the candidate or changing appearance, the runner validates the
+captured `cmd uimode night` output with the shared appearance parser. It preserves
+all five writable values: `yes`, `no`, `auto`, `custom_schedule` and
+`custom_bedtime`. Bare `custom`, unknown values and malformed output stop the
+attempt before mutation. Restoration replays the exact captured mode and subtype;
+this does not claim to restore every historical automatic-policy override.
