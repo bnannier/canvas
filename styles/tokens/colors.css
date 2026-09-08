@@ -1,6 +1,5 @@
-/* Semantic color tokens. Light at :root, dark under .dark — dark mode keys off a
-   .dark class on <html>, never prefers-color-scheme. Values are verbatim from
-   styles/canvas.css in bnannier/canvas. */
+/* Semantic color tokens. :root is light; .dark on <html> selects dark.
+   See src/style/tokens.ts for native counterparts and contrast constraints. */
 :root{
   --background:oklch(1 0 0);
   --foreground:oklch(0.141 0.005 285.823);
