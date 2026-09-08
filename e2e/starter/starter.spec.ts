@@ -187,9 +187,11 @@ test("Escape dismisses the nested menu before its Drawer and restores focus", as
   await expect(opener).toBeFocused();
 });
 
-test("ordinary builds keep internal smoke diagnostics outside user flows", async ({ page }) => {
+test("ordinary builds exclude internal smoke routes and offer a return to the workspace", async ({ page, hasTouch }) => {
   await page.goto("/testing/diagnostics");
+  await expect(page.getByRole("heading", { name: "Page not found", exact: true })).toBeVisible();
+  await expect(page.getByText("Candidate runtime identity", { exact: true })).not.toBeVisible();
+  await activate(page.getByRole("button", { name: "Back to workspace", exact: true }), hasTouch);
   await expect(page.getByRole("heading", { name: "Your workspace", exact: true })).toBeVisible();
   await expect(page).toHaveURL(/\/$/);
-  await expect(page.getByText("Canvas candidate diagnostics", { exact: true })).not.toBeVisible();
 });

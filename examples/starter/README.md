@@ -57,7 +57,9 @@ Controls, typography and layouts are Canvas components using semantic props. The
 
 `package.json` pins the registry package to `@nannier-com/canvas@2.62.1` and pins the SDK57 React19.2.3 / React Native0.86.2 pair. Run installation inside this directory. There are no source aliases, custom Canvas Metro resolvers, package links or development overlays. To use Canvas in an existing app, install the package and its required peers there instead of copying this starter's SDK dependency versions into an unrelated project.
 
-Maintainer candidate checks use a temporary copy of this app and install the sealed package tarball in that copy. They do not replace the dependency committed here. Test routes are enabled only with `EXPO_PUBLIC_CANVAS_SMOKE=1`; the ordinary app uses `com.nannier.canvas.starter` and the `canvas-starter` URL scheme, while that opt-in build uses the separate `com.nannier.canvas.starter.smoke` ID and `canvas-smoke` scheme. Build identity is supplied by the verification tooling, not fabricated by the app.
+Maintainer candidate checks use a temporary copy of this app and install the sealed package tarball in that copy. They do not replace the dependency committed here. Preparation copies only the reviewed files in `smoke/manifest.json` into the temporary app before typechecking against the candidate. The shared fixture bodies and route templates stay outside ordinary `src`, so unreleased APIs never enter its registry typecheck or route graph.
+
+Setting `EXPO_PUBLIC_CANVAS_SMOKE=1` selects the smoke identity and enables the prepared routes; it does not add those routes to the ordinary app. The ordinary app uses `com.nannier.canvas.starter` and the `canvas-starter` URL scheme, while that opt-in build uses the separate `com.nannier.canvas.starter.smoke` ID and `canvas-smoke` scheme. Build identity is supplied by the verification tooling, not fabricated by the app.
 
 ## Terms
 

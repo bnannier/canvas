@@ -17,7 +17,7 @@ function sourceFingerprint(root) {
       }
     }
   }
-  for (const directory of ["src", "styles", "docs/src"]) visit(join(root, directory));
+  for (const directory of ["src", "styles", "docs/src", "examples/starter/smoke/fixtures"]) visit(join(root, directory));
   for (const name of ["package.json", "bun.lock", "docs/package.json", "docs/bun.lock", "docs/app.json", "docs/app.config.js", "docs/metro.config.js"]) {
     const file = join(root, name);
     if (existsSync(file)) hash.update(name).update("\0").update(readFileSync(file)).update("\0");

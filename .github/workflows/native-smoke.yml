@@ -1,0 +1,127 @@
+name: Native candidate interaction smoke
+
+on:
+  workflow_call:
+    inputs:
+      platform:
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+env:
+  HUSKY: '0'
+  MAESTRO_CLI_NO_ANALYTICS: '1'
+  MAESTRO_CLI_ANALYSIS_NOTIFICATION_DISABLED: 'true'
+
+jobs:
+  smoke:
+    runs-on: ${{ inputs.platform == 'ios' && 'macos-latest' || 'ubuntu-latest' }}
+    timeout-minutes: 75
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version-file: package.json
+
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - uses: actions/download-artifact@v8
+        with:
+          name: release-candidate
+          path: ${{ runner.temp }}/candidate
+
+      - name: Restore the exact candidate
+        run: node scripts/release.mjs restore "$RUNNER_TEMP/candidate"
+        env:
+          SOURCE_SHA: ${{ github.sha }}
+
+      - uses: actions/download-artifact@v8
+        with:
+          name: release-artifacts
+          path: ${{ runner.temp }}/artifacts
+
+      - name: Cache dependency downloads
+        uses: actions/cache@v6
+        with:
+          path: |
+            ~/.bun/install/cache
+            ~/.gradle/caches
+            ~/Library/Caches/CocoaPods
+          key: native-smoke-${{ runner.os }}-${{ hashFiles('examples/starter/bun.lock', 'tools/native/maestro.json') }}
+          restore-keys: native-smoke-${{ runner.os }}-
+
+      - name: Prepare the independent packed consumer
+        run: node scripts/native-smoke.mjs prepare --candidate "$RUNNER_TEMP/candidate" --artifacts "$RUNNER_TEMP/artifacts" --output "$RUNNER_TEMP/native-smoke"
+
+      - name: Install the verified native test CLI
+        run: node scripts/install-maestro.mjs "$RUNNER_TEMP/native-tools"
+
+      - name: Select and boot an available iPhone simulator
+        if: inputs.platform == 'ios'
+        id: iphone
+        run: |
+          node --input-type=module <<'NODE'
+          import { execFileSync } from 'node:child_process';
+          import { appendFileSync } from 'node:fs';
+          const inventory = JSON.parse(execFileSync('xcrun', ['simctl', 'list', 'devices', 'available', '--json'], { encoding: 'utf8' }));
+          const devices = Object.entries(inventory.devices).filter(([runtime]) => runtime.includes('.iOS-')).reverse().flatMap(([, devices]) => devices);
+          const device = devices.find((device) => device.name.startsWith('iPhone') && device.isAvailable);
+          if (!device) throw new Error('No available iPhone simulator runtime');
+          if (device.state !== 'Booted') execFileSync('xcrun', ['simctl', 'boot', device.udid], { stdio: 'inherit' });
+          execFileSync('xcrun', ['simctl', 'bootstatus', device.udid, '-b'], { stdio: 'inherit' });
+          appendFileSync(process.env.GITHUB_OUTPUT, `udid=${device.udid}\n`);
+          NODE
+
+      - name: Build and exercise the iOS candidate
+        if: inputs.platform == 'ios'
+        env:
+          DEVICE: ${{ steps.iphone.outputs.udid }}
+        run: |
+          node scripts/native-smoke.mjs build --output "$RUNNER_TEMP/native-smoke" --platform ios --device "$DEVICE"
+          node scripts/native-smoke.mjs test --output "$RUNNER_TEMP/native-smoke" --platform ios --device "$DEVICE" --maestro "$RUNNER_TEMP/native-tools/maestro/bin/maestro"
+
+      - name: Enable hardware acceleration for the task emulator
+        if: inputs.platform == 'android'
+        run: |
+          test -e /dev/kvm
+          sudo chmod a+rw /dev/kvm
+
+      - name: Build and exercise the Android candidate
+        if: inputs.platform == 'android'
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 35
+          target: google_apis
+          arch: x86_64
+          profile: pixel_7
+          avd-name: canvas_candidate
+          emulator-port: 5554
+          disable-animations: true
+          script: |
+            node scripts/native-smoke.mjs build --output "$RUNNER_TEMP/native-smoke" --platform android --device emulator-5554
+            node scripts/native-smoke.mjs test --output "$RUNNER_TEMP/native-smoke" --platform android --device emulator-5554 --maestro "$RUNNER_TEMP/native-tools/maestro/bin/maestro"
+
+      - name: Preserve candidate identity and native interaction evidence
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: native-${{ inputs.platform }}-evidence
+          path: |
+            ${{ runner.temp }}/native-smoke/context.json
+            ${{ runner.temp }}/native-smoke/*-build.json
+            ${{ runner.temp }}/native-smoke/*-evidence/
+          if-no-files-found: warn
+          retention-days: 14

@@ -1,0 +1,18 @@
+{
+  "schema": 1,
+  "fixtures": [
+    "control-refs",
+    "diagnostics",
+    "escape-layers",
+    "form-autocomplete",
+    "listbox"
+  ],
+  "routes": [
+    "_layout",
+    "control-refs",
+    "diagnostics",
+    "escape-layers",
+    "form-autocomplete",
+    "listbox"
+  ]
+}
