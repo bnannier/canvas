@@ -127,7 +127,7 @@ export function testNativeSmoke(output, platform, device, maestro) {
       run(app, maestro, ["--device", device, "test", "--format", "junit", "--output", path.join(directory, "report.xml"),
         "--test-output-dir", path.join(directory, "maestro"), "-e", `CANDIDATE=${identity.candidateRevision}`,
         "-e", `PACKAGE_SHA256=${identity.packageSha256}`, "-e", `PACKAGE_VERSION=${identity.packageVersion.replaceAll(".", "\\.")}`,
-        "-e", `SCHEME=${scheme}`, "-e", `EVIDENCE=${directory}`, flow], identity);
+        "-e", `SCHEME=${scheme}`, flow], identity);
     }
     result.status = "passed";
   } finally {
