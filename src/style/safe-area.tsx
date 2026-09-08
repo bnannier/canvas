@@ -14,15 +14,22 @@ declare const require: (id: string) => unknown;
 
 type SafeAreaEdges = readonly ("top" | "right" | "bottom" | "left")[];
 export type SafeAreaViewComponent = ComponentType<ViewProps & { edges?: SafeAreaEdges }>;
+type SafeAreaProviderComponent = ComponentType<ViewProps>;
 
 let SafeAreaView: SafeAreaViewComponent = View;
+let SafeAreaProvider: SafeAreaProviderComponent = View;
 try {
   // Directly in the try block: an intervening `if` makes Metro treat this as
   // a REQUIRED dependency. See src/organisms/backdrop/skia-runtime.ts.
-  const mod = require("react-native-safe-area-context") as { SafeAreaView?: SafeAreaViewComponent };
+  const mod = require("react-native-safe-area-context") as {
+    SafeAreaView?: SafeAreaViewComponent;
+    SafeAreaProvider?: SafeAreaProviderComponent;
+  };
   if (mod?.SafeAreaView) SafeAreaView = mod.SafeAreaView;
+  if (mod?.SafeAreaProvider) SafeAreaProvider = mod.SafeAreaProvider;
 } catch {
   SafeAreaView = View;
+  SafeAreaProvider = View;
 }
 
-export { SafeAreaView };
+export { SafeAreaView, SafeAreaProvider };

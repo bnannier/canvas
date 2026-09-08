@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState, Fragment } from "react";
 import { EscapeLayerProvider, useEscapeLayer } from "../../style/escape-layer.js";
 import { Animated, KeyboardAvoidingView, Modal, Platform, StyleSheet } from "react-native";
-import { SafeAreaView } from "../../style/safe-area.js";
+import { SafeAreaProvider, SafeAreaView } from "../../style/safe-area.js";
 import {
   View,
   Text,
@@ -239,90 +239,94 @@ export function createActionSheet(skin: ActionSheetSkin) {
           {/* The Modal renders in its own native window, so the app's Android blur
               target is a sibling render tree here — re-publish it and the sheet's
               frost blurs the page behind it (a no-op off Android). */}
-          <EscapeLayerProvider scope={escapeScope}>
-          <GlassModalBlurTarget>
-          {/* Lift the sheet above the iOS software keyboard so a field summoned over
-              the sheet stays visible while typing. behavior "padding" shrinks the
-              overlay by the keyboard height on iOS; off iOS no behavior is passed
-              (Android's window handles the resize, web has no soft keyboard), so the
-              wrapper is inert there. */}
-          <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined} style={{ flex: 1 }}>
-            {/* The scrim container is a plain TRANSPARENT layout box; the dim is the
-                Animated layer beneath, and the tap-to-dismiss target is a separate
-                full-bleed Pressable BEHIND the sheet, not a wrapper around it.
-                A Pressable that wrapped the sheet would nest one interactive element
-                inside another (an invalid <button>-in-<button> on the web, since RNW
-                renders a button-roled Pressable as a real <button>, plus an ambiguous
-                a11y target). Kept as a sibling, the dismiss control still exposes the
-                same button role + label a screen reader can reach, while the action
-                rows live in their own subtree. The content layer is lifted above the
-                absolute backdrop with zIndex, so a tap on the sheet hits the sheet and
-                a tap on the exposed scrim dismisses (no fall-through wrapper needed). */}
-            <View style={s.scrim}>
-              {/* The stationary dim: it fades from transparent to the skin's alpha and
-                  never moves, so the backdrop settles over the page while the sheet
-                  rises. Purely decorative (the Pressable above it carries the dismiss
-                  role), so it is unannounced. */}
-              <Animated.View style={[StyleSheet.absoluteFill, s.scrimDim, { opacity: dimOpacity }]} />
-              <Pressable
-                style={StyleSheet.absoluteFill}
-                onPress={close}
-                accessibilityRole="button"
-                accessibilityLabel={cancelLabel}
-              />
-              {/* The travelling layer: it carries the zIndex that lifts the sheet above
-                  the absolute dim/dismiss siblings, the slide transform, and the layout
-                  measurement (its height INCLUDES the safe-area inset below, so the sheet
-                  starts fully off-screen rather than peeking by the inset).
-                  SafeAreaView lifts the bottom-anchored stack clear of the home
-                  indicator on iOS (the dim scrim still fills the gap behind it, matching
-                  the native sheet); the inset resolves to 0 elsewhere, so the layout is
-                  unchanged off iOS. */}
-              <Animated.View
-                style={[s.scrimContent, { transform: [{ translateY: slide }] }]}
-                onLayout={(e) => setSheetH(e.nativeEvent.layout.height)}
-              >
-                <SafeAreaView>
-                  <View style={[skin.stack, style]}>
-                    <GlassSurface style={skin.actionsCard(tokens)}>
-                      {/* The handle (Android) sits above the header inside the sheet. */}
-                      {skin.handle ? <View style={skin.handle(tokens)} /> : null}
-                      {headerNode}
-                      {/* The rows scroll if they overflow the viewport (a long action list).
-                          rowsContent spaces the rows on iOS (the detached-capsule gap);
-                          web/Android leave it undefined so the rows stay flush. */}
-                      <ScrollView bounces={false} style={{ maxHeight: 360 }}>
-                        {/* RippleClip clips the Android bounded-ripple action rows to the
-                            card's rounded top corners (a no-op on iOS/web). It also carries
-                            the iOS detached-capsule gap (skin.rowsContent), moved off the
-                            ScrollView's contentContainer so it now spaces the rows inside
-                            the clip and iOS layout is unchanged. */}
-                        <RippleClip
-                          shape={cornerRadii(skin.actionsCard(tokens))}
-                          style={[skin.rowsContent, { alignSelf: "stretch" }]}
-                        >
-                          {actionRows}
-                        </RippleClip>
-                        {/* Android: Cancel is the last row in the same sheet. */}
-                        {skin.cancelLayout === "lastRow" ? (
-                          <Fragment>
-                            {skin.divider ? <View style={skin.divider(tokens)} /> : null}
-                            {cancelRow}
-                          </Fragment>
-                        ) : null}
-                      </ScrollView>
-                    </GlassSurface>
-                    {/* iOS/web: Cancel is a separate rounded card below the actions card. */}
-                    {skin.cancelLayout === "separateCard" && skin.cancelCard ? (
-                      <GlassSurface style={skin.cancelCard(tokens)}>{cancelRow}</GlassSurface>
-                    ) : null}
-                  </View>
-                </SafeAreaView>
-              </Animated.View>
-            </View>
-          </KeyboardAvoidingView>
-          </GlassModalBlurTarget>
-          </EscapeLayerProvider>
+          {/* Measure the Modal window outside the moving sheet and keyboard
+              avoidance, so its inset provider stays attached to the window. */}
+          <SafeAreaProvider style={{ flex: 1 }}>
+            <EscapeLayerProvider scope={escapeScope}>
+            <GlassModalBlurTarget>
+            {/* Lift the sheet above the iOS software keyboard so a field summoned over
+                the sheet stays visible while typing. behavior "padding" shrinks the
+                overlay by the keyboard height on iOS; off iOS no behavior is passed
+                (Android's window handles the resize, web has no soft keyboard), so the
+                wrapper is inert there. */}
+            <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined} style={{ flex: 1 }}>
+              {/* The scrim container is a plain TRANSPARENT layout box; the dim is the
+                  Animated layer beneath, and the tap-to-dismiss target is a separate
+                  full-bleed Pressable BEHIND the sheet, not a wrapper around it.
+                  A Pressable that wrapped the sheet would nest one interactive element
+                  inside another (an invalid <button>-in-<button> on the web, since RNW
+                  renders a button-roled Pressable as a real <button>, plus an ambiguous
+                  a11y target). Kept as a sibling, the dismiss control still exposes the
+                  same button role + label a screen reader can reach, while the action
+                  rows live in their own subtree. The content layer is lifted above the
+                  absolute backdrop with zIndex, so a tap on the sheet hits the sheet and
+                  a tap on the exposed scrim dismisses (no fall-through wrapper needed). */}
+              <View style={s.scrim}>
+                {/* The stationary dim: it fades from transparent to the skin's alpha and
+                    never moves, so the backdrop settles over the page while the sheet
+                    rises. Purely decorative (the Pressable above it carries the dismiss
+                    role), so it is unannounced. */}
+                <Animated.View style={[StyleSheet.absoluteFill, s.scrimDim, { opacity: dimOpacity }]} />
+                <Pressable
+                  style={StyleSheet.absoluteFill}
+                  onPress={close}
+                  accessibilityRole="button"
+                  accessibilityLabel={cancelLabel}
+                />
+                {/* The travelling layer: it carries the zIndex that lifts the sheet above
+                    the absolute dim/dismiss siblings, the slide transform, and the layout
+                    measurement (its height INCLUDES the safe-area inset below, so the sheet
+                    starts fully off-screen rather than peeking by the inset).
+                    SafeAreaView lifts the bottom-anchored stack clear of the home
+                    indicator on iOS (the dim scrim still fills the gap behind it, matching
+                    the native sheet); the inset resolves to 0 elsewhere, so the layout is
+                    unchanged off iOS. */}
+                <Animated.View
+                  style={[s.scrimContent, { transform: [{ translateY: slide }] }]}
+                  onLayout={(e) => setSheetH(e.nativeEvent.layout.height)}
+                >
+                  <SafeAreaView edges={["bottom", "left", "right"]}>
+                    <View style={[skin.stack, style]}>
+                      <GlassSurface style={skin.actionsCard(tokens)}>
+                        {/* The handle (Android) sits above the header inside the sheet. */}
+                        {skin.handle ? <View style={skin.handle(tokens)} /> : null}
+                        {headerNode}
+                        {/* The rows scroll if they overflow the viewport (a long action list).
+                            rowsContent spaces the rows on iOS (the detached-capsule gap);
+                            web/Android leave it undefined so the rows stay flush. */}
+                        <ScrollView bounces={false} style={{ maxHeight: 360 }}>
+                          {/* RippleClip clips the Android bounded-ripple action rows to the
+                              card's rounded top corners (a no-op on iOS/web). It also carries
+                              the iOS detached-capsule gap (skin.rowsContent), moved off the
+                              ScrollView's contentContainer so it now spaces the rows inside
+                              the clip and iOS layout is unchanged. */}
+                          <RippleClip
+                            shape={cornerRadii(skin.actionsCard(tokens))}
+                            style={[skin.rowsContent, { alignSelf: "stretch" }]}
+                          >
+                            {actionRows}
+                          </RippleClip>
+                          {/* Android: Cancel is the last row in the same sheet. */}
+                          {skin.cancelLayout === "lastRow" ? (
+                            <Fragment>
+                              {skin.divider ? <View style={skin.divider(tokens)} /> : null}
+                              {cancelRow}
+                            </Fragment>
+                          ) : null}
+                        </ScrollView>
+                      </GlassSurface>
+                      {/* iOS/web: Cancel is a separate rounded card below the actions card. */}
+                      {skin.cancelLayout === "separateCard" && skin.cancelCard ? (
+                        <GlassSurface style={skin.cancelCard(tokens)}>{cancelRow}</GlassSurface>
+                      ) : null}
+                    </View>
+                  </SafeAreaView>
+                </Animated.View>
+              </View>
+            </KeyboardAvoidingView>
+            </GlassModalBlurTarget>
+            </EscapeLayerProvider>
+          </SafeAreaProvider>
         </Modal>
       </Fragment>
     );
