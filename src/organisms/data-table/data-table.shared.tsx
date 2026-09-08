@@ -1,5 +1,6 @@
 import { Fragment, type ComponentType, type ReactNode, useEffect, useMemo, useRef, useState } from "react";
 import { consumeEscapeKey } from "../../style/escape-layer.js";
+import { useHorizontalScrollFocus } from "../../style/use-scroll-focus.js";
 import { FlatList, StyleSheet, ScrollView, type ViewProps, type ViewStyle as RNViewStyle } from "react-native";
 import { View, Pressable, Text, TextInput, useTheme, useControllableState, controlRipple, devWarn, breakpoints, useMeasuredWidth, tabularNums, type StyleProp, type TextStyle, type ViewStyle } from "../../style/index.js";
 import { type CheckboxProps } from "../../atoms/checkbox/checkbox.shared.js";
@@ -360,6 +361,7 @@ export function createDataTable(skin: DataTableSkin, parts: DataTableParts) {
     // table narrower than a desktop window would report, so useWindowDimensions
     // cannot see the narrow column.
     const { width: measuredWidth, onLayout: onMeasureLayout } = useMeasuredWidth();
+    const scrollFocus = useHorizontalScrollFocus();
     // SwiftUI Table collapses to its PRIMARY (first) column in compact width on
     // iPhone; the iOS skin opts in. Every other platform renders all columns.
     const collapsed =
@@ -656,12 +658,14 @@ export function createDataTable(skin: DataTableSkin, parts: DataTableParts) {
       <View
         testID={testID}
         style={wrap}
-        role="table"
+        role={pans ? undefined : "table"}
         onLayout={onMeasureLayout}
       >
         {pans ? (
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.panContent}>
-            <View style={[s.panInner, { minWidth: panMinWidth }]}>{table}</View>
+          <ScrollView {...scrollFocus} horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.panContent}>
+            {/* A focusable scrollport surrounds the table. Putting it inside the
+                table would expose a generic interactive child where rows belong. */}
+            <View role="table" style={[s.panInner, { minWidth: panMinWidth }]}>{table}</View>
           </ScrollView>
         ) : (
           table

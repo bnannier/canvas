@@ -8,6 +8,10 @@ first match wins); `compact` tightens the density; `copy`, `wrap`, `diff`,
 highlighter (ts/tsx/js/jsx, json, bash, css, html, python; anything else renders
 monochrome), and long lines scroll horizontally instead of truncating.
 
+When a line is wider than the block, Tab reaches the scrollable code and the
+platform's arrow keys scroll it. Short content, `wrap`, and `inline` do not add
+a scrolling tab stop. Native scrolling continues to use the native ScrollView.
+
 ## Usage
 
 ```tsx
