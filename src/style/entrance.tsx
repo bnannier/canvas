@@ -1,16 +1,12 @@
-// Entrance: a one-shot open animation for glass overlays, so a menu/popover appears
-// to pop open FROM the control that triggered it and a dialog scale-fades into place —
-// Apple's Liquid Glass "morph between related states". It wraps content in an
-// Animated.View OUTSIDE the GlassSurface (the material scales with the card, and
-// GlassSurface's public API is untouched), animating only transform + opacity (safe on
-// Android's New Architecture, unlike animated layout) as a single spring. It is
-// OPEN-ONLY: overlays in the kit unmount synchronously, so there is no exit animation.
-//
-// Under Reduce Motion the animation is skipped and the final frame renders statically
-// (Apple: disable elastic/morph effects when Reduce Motion is on).
+// Entrance opens an overlay with a transform-only spring outside GlassSurface.
+// Alpha stays at one: fading a native glass ancestor can prevent its material
+// from painting. A stable animated scale gate conceals the measured host without
+// replacing transform nodes or remounting its children. Overlays unmount on close,
+// so there is no exit animation.
 
-import { type ReactNode, useEffect, useRef, useState } from "react";
+import { type ReactNode, useCallback, useContext, useLayoutEffect, useRef, useState } from "react";
 import { Animated, type LayoutChangeEvent, type StyleProp, type ViewStyle } from "react-native";
+import { EntranceReadinessContext } from "./entrance-readiness.js";
 import { useReducedMotion, supportsNativeDriver } from "./motion.js";
 
 // Anchored menus pop from 85%; dialog panels ease in from 96% (barely a scale, just a
@@ -42,7 +38,7 @@ export function entranceTranslation(size: Size, startScale: number, anchorBottom
 export interface EntranceProps {
   /**
    * Anchored mode: the surface scales up from the trigger's corner (its top-left is
-   * pinned). Omit for a dialog-style symmetric scale-fade about the center.
+   * pinned). Omit for a dialog-style symmetric scale about the center.
    */
   anchor?: boolean;
   /** Pin the lower corner when an anchored card opens above its trigger. */
@@ -54,57 +50,146 @@ export interface EntranceProps {
   children: ReactNode;
 }
 
+interface Coefficients {
+  delta: number;
+  x: number;
+  y: number;
+}
+
+function positiveSize(size: Size | null): size is Size {
+  return !!size && Number.isFinite(size.width) && size.width > 0
+    && Number.isFinite(size.height) && size.height > 0;
+}
+
+function createEntranceGraph(startScale: number) {
+  // Public Value configuration makes every operand native from attachment on
+  // iOS/Android, including the initial hold. Web uses the same graph in JS.
+  const config = { useNativeDriver: supportsNativeDriver };
+  const progress = new Animated.Value(0, config);
+  const gate = new Animated.Value(0, config);
+  const scaleDelta = new Animated.Value(startScale - 1, config);
+  const pinX = new Animated.Value(0, config);
+  const pinY = new Animated.Value(0, config);
+  const inverseProgress = progress.interpolate<number>({
+    inputRange: [0, 1], outputRange: [1, 0], extrapolate: "extend",
+  });
+  const scale = Animated.multiply<number>(gate, Animated.add<number>(1, Animated.multiply<number>(scaleDelta, inverseProgress)));
+  const translateX = Animated.multiply<number>(pinX, inverseProgress);
+  const translateY = Animated.multiply<number>(pinY, inverseProgress);
+  // These operands, derived nodes and transform slots live for the whole mount.
+  // Scale applies about the center before translation pins the chosen corner.
+  const visualStyle: Animated.WithAnimatedValue<ViewStyle> = {
+    opacity: 1,
+    transform: [{ translateX }, { translateY }, { scale }],
+  };
+  return {
+    progress, gate, scaleDelta, pinX, pinY, visualStyle,
+    animation: null as Animated.CompositeAnimation | null,
+    coefficients: null as Coefficients | null,
+    lastReduced: null as boolean | null,
+    visible: false,
+    initialized: false,
+    runToken: 0,
+  };
+}
+
 export function Entrance({ anchor, anchorBottom = false, ready = true, style, children }: EntranceProps) {
   const reduced = useReducedMotion();
-  const progress = useRef(new Animated.Value(0)).current;
-  // Anchored mode needs the surface's own size to pin the corner; measured from the
-  // first layout pass, during which the surface is held invisible (progress 0).
+  const inheritedReadiness = useContext(EntranceReadinessContext);
+  const graphRef = useRef<ReturnType<typeof createEntranceGraph> | null>(null);
+  if (graphRef.current === null) graphRef.current = createEntranceGraph(anchor ? MENU_START_SCALE : PANEL_START_SCALE);
+  const graph = graphRef.current;
   const [size, setSize] = useState<Size | null>(null);
-  const startScale = anchor ? MENU_START_SCALE : PANEL_START_SCALE;
+  // Centered panels do not need their own dimensions to animate. A parent's
+  // readiness delays descendant focus callbacks, never this animation.
+  const held = !ready || (!!anchor && !positiveSize(size));
 
-  useEffect(() => {
-    if (!ready) {
-      progress.setValue(0);
+  const stop = useCallback(() => {
+    graph.runToken++;
+    const animation = graph.animation;
+    graph.animation = null;
+    animation?.stop();
+    graph.progress.stopAnimation();
+  }, [graph]);
+
+  useLayoutEffect(() => {
+    const startScale = anchor ? MENU_START_SCALE : PANEL_START_SCALE;
+    const from = anchor && positiveSize(size) ? entranceTranslation(size, startScale, anchorBottom) : { x: 0, y: 0 };
+    const next = { delta: startScale - 1, x: from.x, y: from.y };
+    if (held && (!graph.initialized || graph.visible)) {
+      // Request concealment before resetting progress or changing coefficients,
+      // including a rehold and anchor change delivered in the same commit.
+      graph.gate.setValue(0);
+      stop();
+      graph.progress.setValue(0);
+      graph.visible = false;
+    }
+    const previous = graph.coefficients;
+    if (!previous || previous.delta !== next.delta) graph.scaleDelta.setValue(next.delta);
+    if (!previous || previous.x !== next.x) graph.pinX.setValue(next.x);
+    if (!previous || previous.y !== next.y) graph.pinY.setValue(next.y);
+    graph.coefficients = next;
+
+    if (!held && !graph.visible) {
+      stop();
+      graph.progress.setValue(reduced ? 1 : 0);
+      graph.visible = true;
+      graph.gate.setValue(1);
+      if (!reduced) {
+        const token = ++graph.runToken;
+        const animation = Animated.spring(graph.progress, {
+          toValue: 1,
+          ...(anchor ? MENU_SPRING : PANEL_SPRING),
+          useNativeDriver: supportsNativeDriver,
+        });
+        graph.animation = animation;
+        animation.start(() => {
+          if (graph.runToken === token) graph.animation = null;
+        });
+      }
+    } else if (!held && reduced && graph.lastReduced !== true) {
+      stop();
+      graph.progress.setValue(1);
+    }
+    // A visible resize or turning motion back on updates the existing graph
+    // without replaying the opening spring.
+    graph.lastReduced = reduced;
+    graph.initialized = true;
+  }, [anchor, anchorBottom, graph, held, reduced, size, stop]);
+
+  useLayoutEffect(() => () => {
+    graph.gate.setValue(0);
+    stop();
+    // StrictMode can replay effect setup on the same host. Close this lifecycle
+    // so the next setup cannot skip its reveal with progress still at the start.
+    graph.visible = false;
+    graph.initialized = false;
+  }, [graph, stop]);
+
+  // Native layout and RNW's offset-based onLayout measure the untransformed
+  // host even while its scale is zero. A transformed bounding-box measurement
+  // here would keep the hold closed because it would report a zero size.
+  const onLayout = useCallback((event: LayoutChangeEvent) => {
+    const { width, height } = event.nativeEvent.layout;
+    if (!positiveSize({ width, height })) {
+      setSize(null);
       return;
     }
-    if (reduced) {
-      // Static final frame: fully visible, no scale/translate (Apple: no morph under
-      // Reduce Motion).
-      progress.setValue(1);
-      return;
-    }
-    if (anchor && !size) return; // wait for measurement so the corner-pin is exact
-    progress.setValue(0);
-    Animated.spring(progress, {
-      toValue: 1,
-      ...(anchor ? MENU_SPRING : PANEL_SPRING),
-      useNativeDriver: supportsNativeDriver, // one-shot: native off-thread on iOS/Android, JS on web
-    }).start();
-  }, [reduced, anchor, size, progress, ready]);
-
-  const opacity = progress.interpolate({ inputRange: [0, 1], outputRange: [0, 1], extrapolate: "clamp" });
-  const scale = progress.interpolate({ inputRange: [0, 1], outputRange: [startScale, 1], extrapolate: "extend" });
-  const from = anchor && size ? entranceTranslation(size, startScale, anchorBottom) : { x: 0, y: 0 };
-  const translateX = progress.interpolate({ inputRange: [0, 1], outputRange: [from.x, 0], extrapolate: "extend" });
-  const translateY = progress.interpolate({ inputRange: [0, 1], outputRange: [from.y, 0], extrapolate: "extend" });
-
-  // Measure once in anchored mode. Transform order [translateX, translateY, scale]:
-  // the surface is scaled about its center first, then translated into place (the
-  // translate is in the parent's coordinate space), which is what pins the corner.
-  const onLayout =
-    anchor && (!size || !ready)
-      ? (event: LayoutChangeEvent) => {
-          const { width, height } = event.nativeEvent.layout;
-          setSize((previous) => previous?.width === width && previous.height === height ? previous : { width, height });
-        }
-      : undefined;
+    setSize(previous => previous?.width === width && previous.height === height ? previous : { width, height });
+  }, []);
 
   return (
-    <Animated.View
-      style={[style, { opacity, transform: [{ translateX }, { translateY }, { scale }] }]}
-      onLayout={onLayout}
-    >
-      {children}
-    </Animated.View>
+    <EntranceReadinessContext.Provider value={inheritedReadiness && !held}>
+      <Animated.View
+        pointerEvents={held ? "none" : "auto"}
+        accessibilityElementsHidden={held}
+        importantForAccessibility={held ? "no-hide-descendants" : "auto"}
+        aria-hidden={held}
+        style={[style, graph.visualStyle]}
+        onLayout={onLayout}
+      >
+        <>{children}</>
+      </Animated.View>
+    </EntranceReadinessContext.Provider>
   );
 }

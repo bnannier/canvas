@@ -11,6 +11,7 @@ import { Form } from "../src/molecules/form/form.tsx";
 import { Tabs } from "../src/organisms/tabs/tabs.tsx";
 import { ThemeProvider } from "../src/style/theme.tsx";
 import { useRovingFocus } from "../src/style/use-roving-focus.ts";
+import { layoutEntrance } from "./entrance-layout.ts";
 
 afterEach(cleanup);
 const ui = (node: ReactNode) => render(<ThemeProvider>{node}</ThemeProvider>);
@@ -76,6 +77,7 @@ for (const runtime of ["web", "ios", "android"] as const) {
           onSelect={(index) => picked.push(`option ${index}`)} />
       </>);
 
+      layoutEntrance(getByRole("menu", { hidden: true }), { width: 240, height: 120 });
       for (const role of ["menuitem", "tab", "radio", "option"] as const) {
         const rows = getAllByRole(role).filter((row) => row.getAttribute("aria-disabled") !== "true");
         expect(rows.map((row) => row.tabIndex)).toEqual(runtime === "web" ? [0, -1] : [0, 0]);
@@ -141,6 +143,7 @@ for (const runtime of ["ios", "android"] as const) {
     const field = getByRole("combobox") as HTMLInputElement;
     act(() => field.focus());
     fireEvent.change(field, { target: { value: "Ap" } });
+    layoutEntrance(getByRole("listbox", { hidden: true }), { width: 320, height: 120 });
     expect(getAllByRole("option").map((row) => row.tabIndex)).toEqual([0, 0, 0]);
     expect(document.activeElement).toBe(field);
     fireEvent.click(getByRole("option", { name: "Pineapple" }));

@@ -39,6 +39,7 @@ import {
   GlassWindowBlurTargetContext,
 } from "./glass-surface/glass-surface.shared.js";
 import { GlassBlurTargetHost, blurTargetMountable } from "./glass-surface/glass-blur-target.js";
+import { EntranceReadinessContext } from "./entrance-readiness.js";
 
 // What a <Portal> (and an anchored overlay) needs from its host. `measureOutlet`
 // is exposed so an anchored overlay can measure a trigger RELATIVE TO the outlet
@@ -283,12 +284,17 @@ export interface PortalProps {
 export function Portal({ children }: PortalProps) {
   const host = useOverlayHost();
   const id = useId();
+  const entranceReady = useContext(EntranceReadinessContext);
 
   // Publish the CURRENT children on every render (children is a fresh node each
   // render, so the teleported tree is never stale). Cheap: it sets the provider's
   // registry, not this component's state.
   useEffect(() => {
-    if (host) host.mount(id, children);
+    // Registry nodes render in a sibling outlet, so preserve this private
+    // context from the publisher's logical ancestry. Always keep the Provider
+    // here, including default-ready publishers, to retain child identity and
+    // avoid inheriting readiness from an unrelated outlet ancestor.
+    if (host) host.mount(id, <EntranceReadinessContext.Provider value={entranceReady}>{children}</EntranceReadinessContext.Provider>);
   });
 
   // Cleanup runs ONLY on true unmount. Kept separate from the publish effect: a

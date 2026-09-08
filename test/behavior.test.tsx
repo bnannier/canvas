@@ -3,6 +3,7 @@ import { render, screen, cleanup, fireEvent } from "@testing-library/react";
 import { createRef, type ReactNode } from "react";
 import type { TextInput } from "react-native";
 import { ThemeProvider } from "../src/style/theme.tsx";
+import { layoutEntrances } from "./entrance-layout.ts";
 import { resetDevWarnings } from "../src/style/dev-warn.ts";
 import { Pagination } from "../src/atoms/pagination/pagination.tsx";
 import { Radio } from "../src/atoms/radio/radio.tsx";
@@ -42,6 +43,7 @@ describe("Autocomplete", () => {
     const { container } = ui(
       <Autocomplete open options={["Apple", "Banana", "Avocado"]} query="av" onSelect={() => {}} />,
     );
+    layoutEntrances(container, { width: 320, height: 144 });
     const opts = container.querySelectorAll('[role="option"]');
     expect(opts.length).toBe(1);
     expect(opts[0].textContent?.includes("Avocado")).toBe(true);
@@ -49,12 +51,14 @@ describe("Autocomplete", () => {
 
   it("shows a no-results state when nothing matches", () => {
     ui(<Autocomplete open options={["Apple", "Banana"]} query="zzz" onSelect={() => {}} />);
+    layoutEntrances(document.body, { width: 320, height: 48 });
     expect(screen.getByText("No results")).toBeDefined();
   });
 
   it("is typeable out of the box: keystrokes filter the list (uncontrolled query)", () => {
     const { container } = ui(<Autocomplete open options={["Apple", "Banana", "Avocado"]} onSelect={() => {}} />);
     fireEvent.change(screen.getByPlaceholderText("Search…"), { target: { value: "ban" } });
+    layoutEntrances(container, { width: 320, height: 144 });
     const opts = container.querySelectorAll('[role="option"]');
     expect(opts.length).toBe(1);
     expect(opts[0].textContent?.includes("Banana")).toBe(true);
@@ -72,6 +76,7 @@ describe("Autocomplete", () => {
     const { container } = ui(
       <Autocomplete ref={ref} open defaultQuery="av" options={["Apple", "Banana", "Avocado"]} onSelect={() => {}} />,
     );
+    layoutEntrances(container, { width: 320, height: 144 });
     expect(container.querySelectorAll('[role="option"]').length).toBe(1);
     expect(typeof ref.current?.focus).toBe("function");
   });
@@ -81,7 +86,8 @@ describe("Autocomplete", () => {
     const { container } = ui(
       <Autocomplete open defaultQuery="av" options={["Avocado"]} onSelect={() => {}} onQueryChange={(q) => { query = q; }} />,
     );
-    fireEvent.click(container.querySelector('[role="option"]') as Element);
+    layoutEntrances(container, { width: 320, height: 48 });
+    fireEvent.click(screen.getByRole("option", { name: "Avocado" }));
     expect(query).toBe("");
   });
 

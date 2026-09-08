@@ -2,6 +2,7 @@ import { describe, it, expect, afterEach } from "bun:test";
 import { render, screen, cleanup, fireEvent } from "@testing-library/react";
 import { type ReactNode } from "react";
 import { ThemeProvider } from "../src/style/theme.tsx";
+import { layoutEntrances } from "./entrance-layout.ts";
 import { Command } from "../src/organisms/command/command.tsx";
 
 afterEach(cleanup);
@@ -93,7 +94,8 @@ describe("Command search filtering", () => {
 
   it("keeps active references valid as controlled results shrink, empty and reopen", () => {
     const view = (query: string, open = true, active = 20) => <ThemeProvider><Command trigger open={open} groups={groups} query={query} active={active} /></ThemeProvider>;
-    const { rerender, getByRole, queryByRole } = render(view(""));
+    const { container, rerender, getByRole, queryByRole } = render(view(""));
+    layoutEntrances(container, { width: 360, height: 280 });
     const activeText = () => document.getElementById(getByRole("textbox").getAttribute("aria-activedescendant")!)?.textContent;
     expect(activeText()).toBe("Go to Settings");
     rerender(view("save"));
@@ -103,6 +105,7 @@ describe("Command search filtering", () => {
     rerender(view("", false));
     expect(queryByRole("textbox")).toBeNull();
     rerender(view(""));
+    layoutEntrances(container, { width: 360, height: 280 });
     expect(activeText()).toBe("Go to Settings");
     for (const invalid of [-2, 0.5, NaN, Infinity]) {
       rerender(view("", true, invalid));

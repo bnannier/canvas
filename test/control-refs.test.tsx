@@ -10,6 +10,7 @@ import { Slider } from "../src/atoms/slider/slider.tsx";
 import { Dialog } from "../src/organisms/dialog/dialog.tsx";
 import { OverlayProvider } from "../src/style/portal.tsx";
 import { ThemeProvider } from "../src/style/theme.tsx";
+import { layoutHostedEntrance } from "./entrance-layout.ts";
 
 afterEach(cleanup);
 const themed = (node: ReactNode) => <ThemeProvider>{node}</ThemeProvider>;
@@ -165,9 +166,14 @@ it("does not reattach a stable consumer Radio ref when group selection changes",
 });
 
 it("preserves Select's hosted trigger measurement when its public ref changes", async () => {
-  const bounds = spyOn(Element.prototype, "getBoundingClientRect").mockReturnValue({
-    x: 10, y: 20, width: 160, height: 40, top: 20, left: 10, right: 170, bottom: 60, toJSON: () => ({}),
-  } as DOMRect);
+  const originalBounds = Element.prototype.getBoundingClientRect;
+  const bounds = spyOn(Element.prototype, "getBoundingClientRect").mockImplementation(function (this: Element) {
+    const outlet = getComputedStyle(this).zIndex === "1000";
+    const trigger = this.getAttribute("aria-haspopup") === "listbox";
+    if (!outlet && !trigger) return originalBounds.call(this);
+    const [x, y, width, height] = outlet ? [0, 0, 640, 800] : [10, 20, 160, 40];
+    return { x, y, width, height, top: y, left: x, right: x + width, bottom: y + height, toJSON: () => ({}) };
+  });
   try {
     const first = createRef<View>();
     const second = createRef<View>();
@@ -175,14 +181,18 @@ it("preserves Select's hosted trigger measurement when its public ref changes", 
     const view = render(tree(first));
     act(() => first.current?.focus());
     fireEvent.click(screen.getByRole("button", { name: "Fruit" }));
-    await screen.findByRole("listbox");
+    const mountedList = await screen.findByRole("listbox", { hidden: true });
+    layoutHostedEntrance(mountedList, { width: 160, height: 74 }, { width: 150, height: 64 });
+    expect(screen.getByRole("listbox")).toBe(mountedList);
     view.rerender(tree(second));
     expect(first.current).toBeNull();
     expect(second.current as unknown).toBe(screen.getByRole("button", { name: "Fruit" }));
     fireEvent.click(screen.getByRole("option", { name: "Pear" }));
     await waitFor(() => expect(screen.queryByRole("listbox")).toBeNull());
     fireEvent.click(screen.getByRole("button", { name: "Fruit" }));
-    await screen.findByRole("listbox");
+    const reopenedList = await screen.findByRole("listbox", { hidden: true });
+    layoutHostedEntrance(reopenedList, { width: 160, height: 74 }, { width: 150, height: 64 });
+    expect(screen.getByRole("listbox")).toBe(reopenedList);
     expect(second.current).not.toBeNull();
   } finally { bounds.mockRestore(); }
 });

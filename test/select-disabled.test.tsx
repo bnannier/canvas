@@ -4,6 +4,7 @@ import { Select } from "../src/atoms/select/select.tsx";
 import { Select as IOSSelect } from "../src/atoms/select/select.ios.tsx";
 import { Select as AndroidSelect } from "../src/atoms/select/select.android.tsx";
 import { ThemeProvider } from "../src/style/theme.tsx";
+import { layoutEntrance } from "./entrance-layout.ts";
 
 afterEach(cleanup);
 
@@ -40,6 +41,7 @@ for (const [platform, Component] of [["web", Select], ["ios", IOSSelect], ["andr
       );
       const { container, getByRole, rerender } = render(view(false));
       fireEvent.click(getByRole("button", { name: "Region" }));
+      layoutEntrance(getByRole("listbox", { hidden: true }), { width: 240, height: 120 });
       expect(container.querySelector('[role="listbox"]')).not.toBeNull();
       expect(openings).toEqual([true]);
 
@@ -52,6 +54,7 @@ for (const [platform, Component] of [["web", Select], ["ios", IOSSelect], ["andr
       expect(openings).toEqual([true]);
 
       rerender(view(false));
+      layoutEntrance(getByRole("listbox", { hidden: true }), { width: 240, height: 120 });
       expect(getByRole("button", { name: "Region" }).getAttribute("aria-expanded")).toBe("true");
       expect(getByRole("option", { name: /EU/ }).getAttribute("aria-selected")).toBe("true");
       fireEvent.click(getByRole("option", { name: /US/ }));
@@ -82,6 +85,7 @@ for (const [platform, Component] of [["web", Select], ["ios", IOSSelect], ["andr
       expect(openings).toEqual([true]);
       expect(container.querySelector('[role="listbox"]')).toBeNull();
       rerender(view(false, true, "US"));
+      layoutEntrance(getByRole("listbox", { hidden: true }), { width: 240, height: 120 });
       fireEvent.click(getByRole("option", { name: /EU/ }));
       expect(selections).toEqual(["EU"]);
       expect(openings).toEqual([true, false]);

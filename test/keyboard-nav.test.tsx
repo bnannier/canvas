@@ -1,7 +1,8 @@
 import { describe, it, expect, afterEach } from "bun:test";
-import { render, screen, cleanup, fireEvent, act } from "@testing-library/react";
+import { render, screen, cleanup, fireEvent, act, waitFor } from "@testing-library/react";
 import { type ReactNode } from "react";
 import { ThemeProvider } from "../src/style/theme.tsx";
+import { layoutEntrances, layoutHostedEntrance } from "./entrance-layout.ts";
 import { Tabs } from "../src/organisms/tabs/tabs.tsx";
 import { RadioGroup } from "../src/atoms/radio/radio-group.tsx";
 import { Radio } from "../src/atoms/radio/radio.tsx";
@@ -16,11 +17,9 @@ afterEach(cleanup);
 const ui = (node: ReactNode) => render(<ThemeProvider>{node}</ThemeProvider>);
 
 // The HOSTED (portaled) overlay path, which every real app and every docs stage
-// runs, holds its card back until the trigger measures a non-zero box, and
-// happy-dom reports every box as 0x0, so a hosted card never mounts in a test
-// unless the layout is stubbed. These two helpers make that path testable: give
-// the DOM a real box for the duration of the case, then let the overlay's
-// measure-and-place frame land (requestAnimationFrame, hence the timer wait).
+// runs, holds its card back until the trigger measures a non-zero box. Supply
+// the fixture box while it measures, wait for the actual portal content to mount,
+// then deliver its explicit native card/scroll/Entrance layouts.
 const LAID_OUT = { x: 10, y: 20, width: 160, height: 32, top: 20, left: 10, right: 170, bottom: 52, toJSON: () => ({}) } as DOMRect;
 const withLayout = async (run: () => Promise<void>) => {
   const original = Element.prototype.getBoundingClientRect;
@@ -32,17 +31,13 @@ const withLayout = async (run: () => Promise<void>) => {
   }
 };
 const settle = async () => {
-  await act(async () => {
-    await new Promise((resolve) => setTimeout(resolve, 50));
+  let menu: Element | null = null;
+  await waitFor(() => {
+    menu = document.querySelector('[role="menu"]');
+    expect(menu).not.toBeNull();
   });
-  // happy-dom has no layout engine. Deliver RNW's native onLayout boundary
-  // after the portal mounts, so card fitting can commit before it takes focus.
-  act(() => {
-    for (const node of document.querySelectorAll("div")) {
-      const handler = (node as unknown as { __reactLayoutHandler?: (event: unknown) => void }).__reactLayoutHandler;
-      handler?.({ nativeEvent: { layout: { x: 10, y: 20, width: 160, height: 32 } } });
-    }
-  });
+  // Supply only this card's native placement boundaries, never its rows.
+  layoutHostedEntrance(menu!, { width: 160, height: 144 });
 };
 
 describe("Tabs roving keyboard navigation", () => {
@@ -179,6 +174,7 @@ describe("Dropdown menu roving keyboard navigation", () => {
     const items = [{ label: "Profile" }, { label: "Settings" }, { label: "Sign out" }];
     const { container } = ui(<Dropdown trigger="Menu" items={items} onSelect={(_it, i) => { picked = i; }} />);
     fireEvent.click(screen.getByText("Menu"));
+    layoutEntrances(document.body, { width: 240, height: 144 });
     const menuitems = () => [...container.querySelectorAll('[role="menuitem"]')];
     expect(menuitems().length).toBe(3);
     // The first row is the tab stop once the menu opens.
@@ -195,6 +191,7 @@ describe("Dropdown menu roving keyboard navigation", () => {
     const items = [{ label: "Profile", disabled: true }, { label: "Settings" }, { label: "Sign out" }];
     const { container } = ui(<Dropdown trigger="Menu" items={items} />);
     fireEvent.click(screen.getByText("Menu"));
+    layoutEntrances(document.body, { width: 240, height: 144 });
     const menuitems = [...container.querySelectorAll('[role="menuitem"]')];
     // The first ENABLED row takes focus and the single tab stop, not row 0.
     expect(document.activeElement).toBe(menuitems[1]);
@@ -230,7 +227,6 @@ describe("Dropdown menu roving keyboard navigation", () => {
 
       fireEvent.keyDown(document.activeElement!, { key: "Enter" });
       expect(picked).toBe(2);
-      await settle();
       expect(container.querySelectorAll('[role="menuitem"]').length).toBe(0);
     });
   });
@@ -245,6 +241,7 @@ describe("Dropdown menu roving keyboard navigation", () => {
       <Dropdown trigger="Menu" title="Rachel Chen" description="rachel@nannier.com" items={items} />,
     );
     fireEvent.click(screen.getByText("Menu"));
+    layoutEntrances(document.body, { width: 240, height: 144 });
     const rows = [...inline.container.querySelectorAll('[role="menuitem"]')];
     expect(rows.length).toBe(2);
     expect(document.activeElement).toBe(rows[0]);
@@ -280,6 +277,7 @@ describe("Dropdown menu roving keyboard navigation", () => {
       <Dropdown trigger="Menu" title="Rachel Chen" description="rachel@nannier.com" items={items} />,
     );
     fireEvent.click(screen.getByText("Menu"));
+    layoutEntrances(document.body, { width: 240, height: 144 });
     const rows = [...container.querySelectorAll('[role="menuitem"]')];
     // The first ENABLED row takes focus and the single tab stop, counted from the
     // rows rather than from the card's children (the header is child 0, the
@@ -298,6 +296,7 @@ describe("Dropdown menu roving keyboard navigation", () => {
     const trigger = container.querySelector('[aria-haspopup="menu"]')!;
 
     fireEvent.click(screen.getByText("Menu"));
+    layoutEntrances(document.body, { width: 240, height: 144 });
     expect(document.activeElement).toBe(container.querySelector('[role="menuitem"]'));
     fireEvent.keyDown(document, { key: "Escape" });
     expect(container.querySelector('[role="menu"]')).toBeNull();
@@ -305,6 +304,7 @@ describe("Dropdown menu roving keyboard navigation", () => {
 
     // Selecting a row closes and returns focus the same way.
     fireEvent.click(screen.getByText("Menu"));
+    layoutEntrances(document.body, { width: 240, height: 144 });
     fireEvent.click(screen.getByText("Settings"));
     expect(container.querySelector('[role="menu"]')).toBeNull();
     expect(document.activeElement).toBe(trigger);
@@ -331,7 +331,6 @@ describe("Dropdown menu roving keyboard navigation", () => {
       })!;
       expect(backdrop).toBeDefined();
       fireEvent.click(backdrop);
-      await settle();
       expect(hosted.container.querySelector('[role="menu"]')).toBeNull();
       expect(document.activeElement).toBe(hostedTrigger);
     });
@@ -344,6 +343,7 @@ describe("Dropdown menu roving keyboard navigation", () => {
         <Dropdown trigger="Menu" open onOpenChange={() => {}} items={items} />
       </ThemeProvider>,
     );
+    layoutEntrances(container, { width: 240, height: 144 });
     const trigger = container.querySelector('[aria-haspopup="menu"]')!;
     expect(document.activeElement).toBe(container.querySelector('[role="menuitem"]'));
     rerender(
@@ -369,6 +369,7 @@ describe("Dropdown menu roving keyboard navigation", () => {
           <Dropdown trigger="Menu" open onOpenChange={() => {}} items={items} />
         </ThemeProvider>,
       );
+      layoutEntrances(container, { width: 240, height: 144 });
       const trigger = container.querySelector('[aria-haspopup="menu"]')!;
       // Tabbing off the focused row re-renders the row it left (RNW tracks focus
       // state on a Pressable), so the move goes through act.

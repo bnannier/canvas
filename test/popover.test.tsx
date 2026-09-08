@@ -3,6 +3,7 @@ import { render, screen, cleanup, fireEvent } from "@testing-library/react";
 import { type ReactNode } from "react";
 import { ThemeProvider } from "../src/style/theme.tsx";
 import { Popover } from "../src/atoms/popover/popover.tsx";
+import { layoutEntrance } from "./entrance-layout.ts";
 
 afterEach(cleanup);
 const ui = (node: ReactNode) => render(<ThemeProvider>{node}</ThemeProvider>);
@@ -14,12 +15,14 @@ describe("Popover", () => {
     expect(trigger.getAttribute("aria-haspopup")).toBe("dialog");
     expect(trigger.getAttribute("aria-expanded")).toBe("false");
     fireEvent.click(screen.getByText("Open"));
+    layoutEntrance(screen.getByRole("dialog", { hidden: true }), { width: 260, height: 120 });
     expect(container.querySelector("[aria-haspopup]")?.getAttribute("aria-expanded")).toBe("true");
   });
 
   it("Escape dismisses the open popover", () => {
     ui(<Popover trigger="Open" title="Title" description="Body" />);
     fireEvent.click(screen.getByText("Open"));
+    layoutEntrance(screen.getByRole("dialog", { hidden: true }), { width: 260, height: 120 });
     expect(screen.queryByText("Body")).not.toBeNull();
     fireEvent.keyDown(document, { key: "Escape" });
     expect(screen.queryByText("Body")).toBeNull();
@@ -28,7 +31,8 @@ describe("Popover", () => {
   it("moves focus into the panel when it opens", () => {
     ui(<Popover trigger="Open" title="Title" description="Body" />);
     fireEvent.click(screen.getByText("Open"));
-    const panel = document.querySelector('[role="dialog"]');
+    layoutEntrance(screen.getByRole("dialog", { hidden: true }), { width: 260, height: 120 });
+    const panel = screen.getByRole("dialog");
     expect(panel).not.toBeNull();
     expect(document.activeElement).toBe(panel);
   });

@@ -25,6 +25,7 @@ import { Dialog } from "../src/organisms/dialog/dialog.tsx";
 import { Drawer } from "../src/organisms/drawer/drawer.tsx";
 import { Tabs } from "../src/organisms/tabs/tabs.tsx";
 import { ThemeProvider } from "../src/style/theme.tsx";
+import { layoutHostedEntrance } from "./entrance-layout.ts";
 
 afterEach(cleanup);
 const root = resolve(import.meta.dir, "..");
@@ -137,6 +138,12 @@ for (const disabled of [false, true]) {
       render(<ThemeProvider><EscapeLayersBody scenario={disabled ? "drawer-disabled" : "drawer"} /></ThemeProvider>);
       fireEvent.click(screen.getByRole("button", { name: "Open drawer" }));
       fireEvent.click(screen.getByRole("button", { name: "Open menu" }));
+      let menu: Element | null = null;
+      await waitFor(() => {
+        menu = document.querySelector('[role="menu"]');
+        expect(menu).not.toBeNull();
+      });
+      layoutHostedEntrance(menu!, { width: 288, height: 96 });
       const archive = await screen.findByRole("menuitem", { name: "Archive" });
       expect(archive.getAttribute("aria-disabled") === "true").toBe(disabled);
       fireEvent.click(archive);
