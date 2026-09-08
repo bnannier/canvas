@@ -1,5 +1,5 @@
 import { describe, it, expect, afterEach } from "bun:test";
-import { render, screen, cleanup, fireEvent, act } from "@testing-library/react";
+import { render, screen, cleanup, fireEvent, waitFor } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { ThemeProvider } from "../src/style/theme.tsx";
 import { Avatar, AvatarGroup, AvatarMenu } from "../src/atoms/avatar/avatar.tsx";
@@ -86,8 +86,8 @@ const loadMenu = async (file: string) =>
 // The HOSTED (portaled) overlay path holds its card back until the trigger
 // measures a non-zero box, and happy-dom reports every box as 0x0, so a hosted
 // card never mounts in a test unless the layout is stubbed. These give the DOM a
-// real box for the duration of a case, then let the overlay's measure-and-place
-// frame land (requestAnimationFrame, hence the timer wait).
+// real box for the duration of a case. Hosted assertions wait for the actual
+// menu and positioned wrapper after the asynchronous measurements complete.
 const LAID_OUT = { x: 10, y: 20, width: 160, height: 32, top: 20, left: 10, right: 170, bottom: 52, toJSON: () => ({}) } as DOMRect;
 const withLayout = async (run: () => Promise<void>) => {
   const original = Element.prototype.getBoundingClientRect;
@@ -97,11 +97,6 @@ const withLayout = async (run: () => Promise<void>) => {
   } finally {
     Element.prototype.getBoundingClientRect = original;
   }
-};
-const settle = async () => {
-  await act(async () => {
-    await new Promise((resolve) => setTimeout(resolve, 50));
-  });
 };
 
 // The disc the capsule is drawn around: Avatar's `tiny` step, the size the web
@@ -344,11 +339,14 @@ describe("AvatarMenu open state", () => {
           <AvatarMenu open name={NAME} email={EMAIL} items={ITEMS} />
         </OverlayProvider>,
       ).container;
-      await settle();
       // Hosted, the trailing edge is a `right` inset measured from the outlet's
-      // own edge, so the card needs no measurement of its own.
-      expect(anchorOf(byDefault).right).toBe("0px");
-      expect(anchorOf(byDefault).left).toBe("");
+      // own edge. Observe the mounted menu and its placement instead of assuming
+      // a fixed number of milliseconds completes the measurement chain.
+      await waitFor(() => {
+        expect(byDefault.querySelector('[role="menu"]')).not.toBeNull();
+        expect(anchorOf(byDefault).right).toBe("0px");
+        expect(anchorOf(byDefault).left).toBe("");
+      });
       cleanup();
 
       const start = ui(
@@ -356,9 +354,11 @@ describe("AvatarMenu open state", () => {
           <AvatarMenu open alignStart name={NAME} email={EMAIL} items={ITEMS} />
         </OverlayProvider>,
       ).container;
-      await settle();
-      expect(anchorOf(start).left).toBe("0px");
-      expect(anchorOf(start).right).toBe("");
+      await waitFor(() => {
+        expect(start.querySelector('[role="menu"]')).not.toBeNull();
+        expect(anchorOf(start).left).toBe("0px");
+        expect(anchorOf(start).right).toBe("");
+      });
       cleanup();
 
       // ...and the precedence holds on this path too.
@@ -367,9 +367,11 @@ describe("AvatarMenu open state", () => {
           <AvatarMenu open alignStart alignEnd name={NAME} email={EMAIL} items={ITEMS} />
         </OverlayProvider>,
       ).container;
-      await settle();
-      expect(anchorOf(both).right).toBe("0px");
-      expect(anchorOf(both).left).toBe("");
+      await waitFor(() => {
+        expect(both.querySelector('[role="menu"]')).not.toBeNull();
+        expect(anchorOf(both).right).toBe("0px");
+        expect(anchorOf(both).left).toBe("");
+      });
     });
   });
 });
