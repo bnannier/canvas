@@ -28,11 +28,11 @@ import {
   useContext,
   useEffect,
   useId,
-  useLayoutEffect,
   useMemo,
   useRef,
   useSyncExternalStore,
 } from "react";
+import { useIsomorphicLayoutEffect } from "./use-isomorphic-layout-effect.js";
 import { Keyboard, Platform, View, StyleSheet, type KeyboardEvent, type StyleProp, type ViewStyle } from "react-native";
 import {
   GlassBlurTargetContext,
@@ -131,7 +131,7 @@ export function OverlayProvider({ children, style, separateWindow = false, viewp
   const topInset = viewportInsets?.top ?? 0;
   const bottomInset = viewportInsets?.bottom ?? 0;
   const insets = useRef({ top: topInset, bottom: bottomInset });
-  useLayoutEffect(() => {
+  useIsomorphicLayoutEffect(() => {
     if (insets.current.top === topInset && insets.current.bottom === bottomInset) return;
     insets.current = { top: topInset, bottom: bottomInset };
     // A changed header height invalidates measurements without replacing the
