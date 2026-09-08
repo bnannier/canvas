@@ -1,5 +1,11 @@
 # @nannier/canvas
 
+## 2.62.1
+
+### Patch Changes
+
+- 0f9bddc: Let drawers expose an accessible modal name, with the built-in trigger label as the default.
+
 ## 2.62.0
 
 ### Minor Changes
