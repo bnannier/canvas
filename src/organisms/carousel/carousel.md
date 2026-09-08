@@ -6,6 +6,13 @@ the current slide drives the dots, and the arrows step the index (clamped, or
 wrapped when `loop`). Slides hold any content; pass an `items` array of
 `{ key, content }`.
 
+On web, Tab reaches an overflowing slide viewport. Left and Right move between
+slides, while Home and End reach the first and last. Controls inside a slide
+keep their own keyboard behavior. The named slide-picker buttons report the
+current slide and its position in the set; activating the current slide does
+nothing. Picker targets measure at least 24px on web, 44pt on iOS, and 48dp on
+Android, independently of the small painted dots.
+
 ## Usage
 
 ```tsx
@@ -13,17 +20,17 @@ wrapped when `loop`). Slides hold any content; pass an `items` array of
   items={[
     { key: "one", content: (
       <Column alignCenter center style={{ height: 160, backgroundColor: tokens.muted }}>{/* docgen-allow-style: demo placeholder slide surface */}
-        <Typography h5 semibold>Slide 1</Typography>
+        <Typography lead semibold>Slide 1</Typography>
       </Column>
     ) },
     { key: "two", content: (
       <Column alignCenter center style={{ height: 160, backgroundColor: tokens.muted }}>{/* docgen-allow-style: demo placeholder slide surface */}
-        <Typography h5 semibold>Slide 2</Typography>
+        <Typography lead semibold>Slide 2</Typography>
       </Column>
     ) },
     { key: "three", content: (
       <Column alignCenter center style={{ height: 160, backgroundColor: tokens.muted }}>{/* docgen-allow-style: demo placeholder slide surface */}
-        <Typography h5 semibold>Slide 3</Typography>
+        <Typography lead semibold>Slide 3</Typography>
       </Column>
     ) }
   ]}

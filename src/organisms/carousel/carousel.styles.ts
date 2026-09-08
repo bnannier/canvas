@@ -1,4 +1,4 @@
-import { type ColorTokens, alpha, shadow, controlRipple, FOCUS_RESET } from "../../style/index.js";
+import { type ColorTokens, alpha, shadow, controlRipple } from "../../style/index.js";
 import { type CarouselSkin } from "./carousel.shared.js";
 
 // Co-located Carousel skins, one per platform. The shell resolves the paging,
@@ -10,7 +10,7 @@ import { type CarouselSkin } from "./carousel.shared.js";
 // follows light/dark.
 //
 //   iOS: the App Store paged-card idiom with a UIPageControl dot strip. Small
-//     circular dots (7px, ~16pt on center): the active one fills brand `primary`,
+//     circular dots (7px): the active one fills brand `primary`,
 //     inactive ones are `muted-foreground` at low alpha. Slide radius 12 with
 //     Apple's continuous (superellipse) corners. Arrows default OFF (App Store
 //     cards swipe with page-control dots, no overlay chrome); the `showArrows`
@@ -34,12 +34,12 @@ import { type CarouselSkin } from "./carousel.shared.js";
 export const webSkin: CarouselSkin = {
   pressedOpacity: 0.9,
   ripple: null,
-  focusOutlineReset: FOCUS_RESET,
 
   // Web (pointer): the established Canvas look shows both arrows and dots, and a
   // mouse has no minimum touch target, so no hitSlop padding.
   defaultShowArrows: true,
   defaultShowDots: true,
+  dotTarget: { minWidth: 24, height: 24, alignItems: "center", justifyContent: "center" },
 
   slide(tokens) {
     return {
@@ -70,6 +70,7 @@ export const webSkin: CarouselSkin = {
   dotsRow() {
     return {
       flexDirection: "row",
+      flexWrap: "wrap",
       alignItems: "center",
       justifyContent: "center",
       gap: 6,
@@ -101,17 +102,14 @@ export const webSkin: CarouselSkin = {
 export const iosSkin: CarouselSkin = {
   pressedOpacity: 0.8, // HIG: dim on press
   ripple: null,
-  focusOutlineReset: FOCUS_RESET,
 
   // App Store paged cards: swipe + UIPageControl dots, no overlay arrows by
   // default (the `showArrows` prop opts them back in for pointer/iPad).
   defaultShowArrows: false,
   defaultShowDots: true,
-  // 30pt arrow chip -> >= 44pt HIG target; 7pt dot -> a 44pt-tall UIPageControl
-  // strip (cross-axis 19 each) while the main-axis slop (5 each) stays near half
-  // the ~16pt inter-dot pitch so adjacent dot targets barely overlap.
+  // Keep the small painted dot inside a real, non-overlapping HIG target.
   arrowHitSlop: 7,
-  dotHitSlop: { top: 19, bottom: 19, left: 5, right: 5 },
+  dotTarget: { minWidth: 44, height: 44, alignItems: "center", justifyContent: "center" },
 
   slide(tokens) {
     return {
@@ -140,9 +138,10 @@ export const iosSkin: CarouselSkin = {
   dotsRow() {
     return {
       flexDirection: "row",
+      flexWrap: "wrap",
       alignItems: "center",
       justifyContent: "center",
-      gap: 9, // ~9pt inter-dot spacing -> 16pt center-to-center (UIPageControl)
+      gap: 0,
       paddingTop: 12,
     };
   },
@@ -180,10 +179,9 @@ export const androidSkin: CarouselSkin = {
   // back in for a common Android pager.
   defaultShowArrows: false,
   defaultShowDots: false,
-  // 32dp arrow chip -> >= 48dp M3 target; 8dp dot -> a 48dp-tall strip (cross-axis
-  // 20 each), main-axis slop 3 kept near half the ~14dp inter-dot pitch.
+  // Keep the opt-in dots inside real, non-overlapping Material touch targets.
   arrowHitSlop: 8,
-  dotHitSlop: { top: 20, bottom: 20, left: 3, right: 3 },
+  dotTarget: { minWidth: 48, height: 48, alignItems: "center", justifyContent: "center" },
 
   slide(tokens) {
     return {
@@ -214,6 +212,7 @@ export const androidSkin: CarouselSkin = {
   dotsRow() {
     return {
       flexDirection: "row",
+      flexWrap: "wrap",
       alignItems: "center",
       justifyContent: "center",
       gap: 6,

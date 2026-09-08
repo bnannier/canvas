@@ -8,7 +8,8 @@ import { installSmokeFixtures } from "./fixtures.mjs";
 const root = resolve(import.meta.dir, "../..");
 
 test("docs and native routes consume one maintained public-API fixture body", () => {
-  for (const fixture of ["form-autocomplete", "listbox", "escape-layers", "control-refs"]) {
+  const manifest = JSON.parse(readFileSync(resolve(root, "examples/starter/smoke/manifest.json"), "utf8"));
+  for (const fixture of manifest.fixtures.filter((name: string) => name !== "diagnostics")) {
     const shared = readFileSync(resolve(root, `examples/starter/smoke/fixtures/${fixture}.tsx`), "utf8");
     const ast = ts.createSourceFile("fixture.tsx", shared, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
     for (const statement of ast.statements) {
@@ -19,10 +20,12 @@ test("docs and native routes consume one maintained public-API fixture body", ()
         } else expect(["react", "@nannier-com/canvas"]).toContain(statement.moduleSpecifier.text);
       }
     }
-    const docs = readFileSync(resolve(root, `docs/src/app/(home)/testing/${fixture}.tsx`), "utf8");
     const native = readFileSync(resolve(root, `examples/starter/smoke/routes/${fixture}.tsx`), "utf8");
-    expect(docs).toContain(`examples/starter/smoke/fixtures/${fixture}`);
     expect(native).toContain(`../../testing/${fixture}`);
+  }
+  for (const fixture of ["form-autocomplete", "listbox", "escape-layers", "control-refs"]) {
+    const docs = readFileSync(resolve(root, `docs/src/app/(home)/testing/${fixture}.tsx`), "utf8");
+    expect(docs).toContain(`examples/starter/smoke/fixtures/${fixture}`);
   }
   const metadata = JSON.parse(readFileSync(resolve(root, "package.json"), "utf8"));
   expect(metadata.files).not.toContain("examples");

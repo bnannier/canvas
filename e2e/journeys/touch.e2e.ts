@@ -17,6 +17,20 @@ for (const scheme of ["light", "dark"] as const) {
     await expect(page.getByRole("listbox")).toHaveCount(0);
   });
 
+  test(`touch selects Carousel pages in ${scheme}`, async ({ page }) => {
+    await gotoDocs(page, "/testing/carousel", { scheme });
+    const carousel = page.getByTestId("carousel-uncontrolled");
+    const current = carousel.getByRole("button", { name: "Slide 6 of 6, current slide", exact: true });
+    await carousel.getByRole("button", { name: "Slide 6 of 6", exact: true }).tap();
+    await expect(current).toHaveAttribute("aria-current", "true");
+    await expect.poll(() => carousel.locator('div[tabindex="0"]').first().evaluate((element) => element.scrollLeft / element.clientWidth)).toBeCloseTo(5, 2);
+    await current.tap();
+    await expect(page.getByTestId("carousel-changes")).toHaveText("Changes: 5");
+    await carousel.getByRole("button", { name: "Slide 1 of 6", exact: true }).tap();
+    await expect(carousel.getByRole("button", { name: "Slide 1 of 6, current slide", exact: true })).toHaveAttribute("aria-current", "true");
+    await expect(page.getByTestId("carousel-changes")).toHaveText("Changes: 5,0");
+  });
+
   test(`touch selects and clears an autocomplete in ${scheme}`, { tag: "@interaction:autocomplete-touch" }, async ({ page }) => {
     let trustedTouches = 0;
     await page.exposeFunction("__recordJourneyTouch", () => { trustedTouches++; });

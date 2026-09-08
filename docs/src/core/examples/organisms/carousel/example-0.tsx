@@ -9,17 +9,17 @@ export default function Example(scope: ExampleScope) {
   items={[
     { key: "one", content: (
       <Column alignCenter center style={{ height: 160, backgroundColor: tokens.muted }}>{/* docgen-allow-style: demo placeholder slide surface */}
-        <Typography h5 semibold>Slide 1</Typography>
+        <Typography lead semibold>Slide 1</Typography>
       </Column>
     ) },
     { key: "two", content: (
       <Column alignCenter center style={{ height: 160, backgroundColor: tokens.muted }}>{/* docgen-allow-style: demo placeholder slide surface */}
-        <Typography h5 semibold>Slide 2</Typography>
+        <Typography lead semibold>Slide 2</Typography>
       </Column>
     ) },
     { key: "three", content: (
       <Column alignCenter center style={{ height: 160, backgroundColor: tokens.muted }}>{/* docgen-allow-style: demo placeholder slide surface */}
-        <Typography h5 semibold>Slide 3</Typography>
+        <Typography lead semibold>Slide 3</Typography>
       </Column>
     ) }
   ]}
