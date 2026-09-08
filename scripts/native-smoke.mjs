@@ -12,6 +12,7 @@ import { createEvidenceDirectory, recordNativeAttempt, successfulMaestroReport }
 import { createCarouselContinuation, createCarouselMeasurementCommands, readCarouselEvidence } from "../tools/native/gesture.mjs";
 import { verifyNativeFlow } from "./verify-native-flow.mjs";
 import { observeIosBundleEvidence } from "../tools/native/ios-bundle-evidence.mjs";
+import { parseAndroidNightMode } from "../tools/native/appearance.mjs";
 
 const repo = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const read = (file) => JSON.parse(fs.readFileSync(file, "utf8"));
@@ -140,7 +141,8 @@ export function testNativeSmoke(output, platform, device, maestro, requestedEvid
     }
     const inputs = ["scripts/native-smoke.mjs", "scripts/verify-native-flow.mjs", "scripts/release.mjs",
       "tools/native/candidate.mjs", "tools/native/evidence.mjs", "tools/native/gesture.mjs", "tools/native/ParseFlow.java", "tools/native/maestro.json",
-      "scripts/android-host-diagnostics.mjs", "tools/native/android-host-diagnostics.mjs", "tools/native/ios-bundle-evidence.mjs"];
+      "scripts/android-host-diagnostics.mjs", "tools/native/android-host-diagnostics.mjs", "tools/native/ios-bundle-evidence.mjs",
+      "tools/native/appearance.mjs"];
     result.testInfrastructure = {
       revision: run(repo, "git", ["rev-parse", "HEAD"], identity, true).trim(),
       dirty: run(repo, "git", ["status", "--porcelain", "--untracked-files=all"], identity, true).trim() !== "",
@@ -155,7 +157,7 @@ export function testNativeSmoke(output, platform, device, maestro, requestedEvid
     result.maestroVersion = result.staticFlowParsers[0].maestroVersion;
     result.javaVersion = result.staticFlowParsers[0].javaVersion;
     const initial = run(app, appearanceCommand[0], appearanceCommand[1], identity, true).trim();
-    const previous = platform === "ios" ? initial : /^Night mode: (no|yes|auto|custom)$/.exec(initial)?.[1];
+    const previous = platform === "ios" ? initial : parseAndroidNightMode(initial);
     if (!previous || (platform === "ios" && !["light", "dark"].includes(previous))) throw new Error("Cannot safely restore the device's appearance");
     return previous;
   }, setAppearance, () => {
