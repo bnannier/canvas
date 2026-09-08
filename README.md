@@ -69,6 +69,37 @@ That exact tree renders natively on iOS and Android and, through React Native We
 
 For a complete runnable application, see the [Expo starter](./examples/starter/README.md). It independently installs the published Canvas package and includes workspace editing, validation, theme preferences, and nested overlays on web, iOS, and Android. Its source follows the repository's all-rights-reserved terms.
 
+### Overlay hosting
+
+Mount an `OverlayProvider` inside `ThemeProvider`, outside scrolling page content,
+and let it fill the app window. Dropdowns, selects, autocompletes and popovers then
+share measured viewport bounds, move above their triggers when needed, and scroll
+long content within the available height. Opening a hosted menu preserves the
+trigger's native view hierarchy and focus.
+
+Nested providers can scope where cards render without restricting them to the
+height of a short form. They inherit the root's visible bounds. Use
+`<OverlayProvider viewport>` for a deliberately bounded nested panel, whose size
+must come from its viewport rather than its content. Use
+`<OverlayProvider separateWindow>` inside a custom React Native `Modal`; its
+measurements must not inherit bounds from a different native window. Canvas
+`Drawer` supplies this boundary automatically.
+
+When page content scrolls under a header, declare the header's measured height as
+`viewportInsets={{ top: headerHeight }}` on the root or a nested `viewport` host.
+The optional `bottom` inset similarly reserves an overlapping footer. Insets are
+relative to that host's own box and are intersected with the keyboard boundary;
+changing them updates open cards without remounting their content.
+
+Android keyboard avoidance requires the window's resize mode and a root provider
+that resizes with it. iOS uses the keyboard frame; at the RN 0.74 support floor,
+this requires a full-screen window because that RN version reports screen
+coordinates. Current RN converts the frame to window coordinates. Web fitting
+uses the layout viewport; RNW does not expose the mobile keyboard's visual
+viewport. Clipping ancestors that are not viewport hosts do not contribute
+additional bounds. With no provider, the legacy inline overlay remains available,
+but has no viewport fitting or outside-tap backdrop.
+
 ### Styling with semantic boolean props
 
 Every visual variation is a flat boolean prop named for its meaning; passing the prop turns it on, so the call site reads like natural language.

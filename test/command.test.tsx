@@ -77,4 +77,26 @@ describe("Command search filtering", () => {
     ui(<Command groups={groups} />);
     expect(screen.getByPlaceholderText("Search commands...")).toBeDefined();
   });
+
+  it("preserves IME confirmation and modified text-editing keys", () => {
+    const picked: string[] = [];
+    const { container } = ui(<Command open groups={groups} onSelect={(item) => picked.push(item.label)} />);
+    const input = container.querySelector("input") as HTMLInputElement;
+    const initial = input.getAttribute("aria-activedescendant");
+    for (const composition of [{ isComposing: true }, { keyCode: 229 }]) {
+      for (const key of ["ArrowDown", "ArrowUp", "Enter"]) {
+        expect(fireEvent.keyDown(input, { key, ...composition })).toBe(true);
+      }
+    }
+    for (const modifier of ["altKey", "ctrlKey", "metaKey"]) {
+      expect(fireEvent.keyDown(input, { key: "ArrowDown", [modifier]: true })).toBe(true);
+    }
+    for (const key of ["Home", "End"]) expect(fireEvent.keyDown(input, { key })).toBe(true);
+    expect(input.getAttribute("aria-activedescendant")).toBe(initial);
+    expect(picked).toEqual([]);
+    expect(fireEvent.keyDown(input, { key: "Enter", repeat: true })).toBe(false);
+    expect(picked).toEqual([]);
+    fireEvent.keyDown(input, { key: "Enter" });
+    expect(picked).toEqual(["New File"]);
+  });
 });

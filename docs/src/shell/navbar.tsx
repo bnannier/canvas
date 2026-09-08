@@ -2,7 +2,7 @@ import { Slot, usePathname, useRouter } from "expo-router";
 import { useState, useEffect } from "react";
 import { Platform } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
-import { View, Text, Row, Icon, Button, ButtonGroup, TabBar, useTheme, useFormFactor, liquidGlassAvailable, alpha, type IconProps } from "@nannier-com/canvas";
+import { View, Text, Row, Icon, Button, ButtonGroup, TabBar, OverlayProvider, useTheme, useFormFactor, liquidGlassAvailable, alpha, type IconProps } from "@nannier-com/canvas";
 import { NativeTabs } from "expo-router/unstable-native-tabs";
 import { Sidebar } from "./sidebar";
 import { Topbar, titleFor } from "./topbar";
@@ -94,6 +94,7 @@ function WebNav() {
   const [searchOpen, setSearchOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [headerHeight, setHeaderHeight] = useState(0);
 
   // Global cmd-K / ctrl-K to toggle search (web only; document/window are web globals).
   useEffect(() => {
@@ -130,9 +131,11 @@ function WebNav() {
         <View style={{ flex: 1, minWidth: 0 }}>
           {/* The page content is the main landmark at every width. */}
           <View role="main" style={{ flex: 1 }}>
-            <Slot />
+            <OverlayProvider viewport viewportInsets={{ top: headerHeight }}>
+              <Slot />
+            </OverlayProvider>
           </View>
-          <View style={{ position: "absolute", top: 0, left: 0, right: SCROLLBAR_W, zIndex: 10 }}>
+          <View onLayout={(event) => setHeaderHeight(event.nativeEvent.layout.height)} style={{ position: "absolute", top: 0, left: 0, right: SCROLLBAR_W, zIndex: 10 }}>
             {wide ? (
               <Topbar showMenu onMenu={() => setCollapsed((c) => !c)} onSearch={() => setSearchOpen(true)} />
             ) : (

@@ -1,10 +1,17 @@
 import { EscapeLayerProvider, useEscapeLayer } from "../../style/escape-layer.js";
 import { useRef, useState, type ReactNode } from "react";
 import { type Role } from "react-native";
-import { View, Text, useTheme, GlassSurface, AnchoredOverlay, useMeasuredWidth, usePopoverFocus, type StyleProp, type ViewStyle } from "../../style/index.js";
+import { View, Text, useTheme, GlassSurface, AnchoredOverlay, useOverlayHost, useMeasuredWidth, usePopoverFocus, type StyleProp, type ViewStyle } from "../../style/index.js";
 import { Button } from "../button/button.js";
 import { type PopoverSkin, type Placement } from "./popover.styles.js";
 import * as s from "./popover.styles.js";
+import { useOverlayAnchor } from "../../style/anchored-overlay.js";
+import type { ColorTokens } from "../../style/tokens.js";
+
+function PopoverArrow({ skin, tokens, placement }: { skin: PopoverSkin; tokens: ColorTokens; placement: Placement }) {
+  const { side, centerX, cardWidth } = useOverlayAnchor();
+  return skin.arrow?.(tokens, side === "above" ? "top" : placement, centerX != null && cardWidth != null ? { centerX, cardWidth } : undefined) ?? null;
+}
 
 // Shared Popover shell. The structure (a trigger paired with a floating card of
 // rich content — a heading, supporting text, and an optional action), the public
@@ -111,6 +118,7 @@ export function createPopover(skin: PopoverSkin) {
     // hugs the trigger, so its laid-out width is the trigger's box.
     const { width: triggerWidth, onLayout: onTriggerLayout } = useMeasuredWidth();
     const triggerRef = useRef<View>(null);
+    const host = useOverlayHost();
 
     // The card body (heading, supporting line, custom content, optional action),
     // shared by the static inline panel and the floating overlay card.
@@ -159,7 +167,7 @@ export function createPopover(skin: PopoverSkin) {
       <View
         ref={triggerRef}
         testID={testID}
-        style={[s.wrapper, open ? s.wrapperLifted : null, style]}
+        style={[s.wrapper, open && !host ? s.wrapperLifted : null, style]}
         onLayout={onTriggerLayout}
       >
         <View style={s.triggerWrap}>
@@ -168,18 +176,18 @@ export function createPopover(skin: PopoverSkin) {
           </Button>
         </View>
 
-        {/* NOTE (placement): AnchoredOverlay always anchors below the trigger, so
-            the `top` placement still renders the card below (its pre-portal
-            behavior) with the beak merely flipped; genuine above-the-trigger
-            placement needs placement-aware anchoring added to AnchoredOverlay. */}
+        {/* Hosted cards may flip above when space below is insufficient. The
+            beak then follows the actual upper placement. Otherwise `top`
+            retains its documented decoration-only behavior. */}
         <AnchoredOverlay
           open={open}
           onDismiss={() => setOpen(false)}
           triggerRef={triggerRef}
-          gap={4}
           cardWidth={skin.cardWidth}
+          gap={skin.arrow != null && surface !== "glass" ? skin.arrowGap ?? 4 : 4}
           cardStyle={[skin.card(tokens), { minWidth: triggerWidth }]}
           inlineStyle={s.cardFloating}
+          decoration={skin.arrow != null && surface !== "glass" ? <PopoverArrow skin={skin} tokens={tokens} placement={placement} /> : null}
           // A controlled `open` with no onOpenChange can never actually close, so
           // the hosted dismiss backdrop is skipped (it would only block the page).
           dismissable={props.open === undefined || onOpenChange !== undefined}
@@ -191,7 +199,6 @@ export function createPopover(skin: PopoverSkin) {
               path mask to extend the material into a beak), and a beak-less floating
               rounded card is exactly how iOS 26 menus read. (It was previously clipped
               away by the GlassSurface clip box anyway; this makes the intent explicit.) */}
-          {skin.arrow != null && surface !== "glass" ? skin.arrow(tokens, placement) : null}
           {/* A focusable (tabIndex -1) container so opening the popover moves focus
               here and closing restores it to the trigger (usePopoverFocus). role
               "dialog" pairs with the trigger's aria-haspopup="dialog". */}

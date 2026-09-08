@@ -1,4 +1,4 @@
-// AnchoredOverlay: a floating card pinned just below a trigger, with
+// AnchoredOverlay: a floating card fitted beside a trigger, with
 // cross-platform outside-tap dismissal, from RN primitives only.
 //
 // When an <OverlayProvider> is mounted (an app root, or a docs example stage),
@@ -15,7 +15,7 @@
 //
 // Width is the caller's concern: it already measures its trigger (onLayout) and
 // passes the card's width/min-width via `cardStyle`. This helper owns only the
-// x/y placement, the backdrop, and which SURFACE the card is painted on.
+// placement, available height, the backdrop, and the card's surface material.
 //
 // Surface: an anchored card is a functional-layer overlay, so by default it
 // renders through GlassSurface and takes the active material (real Liquid Glass
@@ -27,12 +27,20 @@
 // on a plain box, in glass mode exactly as in solid mode. Popovers, the command
 // palette, and the calendar peek keep the material.
 
-import { type ReactNode, type RefObject, useEffect, useRef, useState } from "react";
-import { View, Pressable, useWindowDimensions, type StyleProp, type ViewStyle } from "react-native";
+import { createContext, type ReactNode, type RefObject, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
+import { View, Pressable, StyleSheet, useWindowDimensions, type LayoutChangeEvent, type StyleProp, type ViewStyle } from "react-native";
 import { Portal, useOverlayHost, type OverlayHost } from "./portal.js";
 import { GlassSurface } from "./glass-surface/glass-surface.js";
 import { PlainSurface } from "./glass-surface/glass-surface.shared.js";
 import { Entrance } from "./entrance.js";
+import { fitOverlayHeight, type OverlaySide } from "./overlay-layout.js";
+import { OverlayScrollContext, OverlayScrollView } from "./overlay-scroll.js";
+
+const OverlaySideContext = createContext<{ side: OverlaySide; centerX?: number; cardWidth?: number }>({ side: "below" });
+/** The actual collision-resolved edge for a card's directional decoration. */
+export const useOverlaySide = () => useContext(OverlaySideContext).side;
+/** Trigger center in card-local coordinates for collision-aware decorations. */
+export const useOverlayAnchor = () => useContext(OverlaySideContext);
 
 // A transparent layer filling the outlet: it catches a tap anywhere off the card
 // and dismisses. Transparent (no fill) — anchored menus don't dim the page.
@@ -49,6 +57,8 @@ export interface AnchoredOverlayProps {
   gap?: number;
   /** The floating card's contents. */
   children: ReactNode;
+  /** Non-scrolling card decoration, such as an anchor arrow. */
+  decoration?: ReactNode;
   /** Style for the card wrapper (the skin's card fill/border/shadow + width). */
   cardStyle?: StyleProp<ViewStyle>;
   /** The caller's inline absolute anchor (e.g. position:absolute, top:"100%"),
@@ -109,16 +119,18 @@ export interface AnchoredOverlayProps {
    */
   opaque?: boolean;
   /**
-   * Fired ONCE per opening, the moment the card and everything inside it are
-   * actually mounted. `open` flipping true is NOT that moment on the hosted
+   * Fired once per opening after the card's children mount and its measured
+   * placement is committed. `open` flipping true is not that moment on the hosted
    * path: there the card is held back until the trigger measurement lands, so a
    * caller that moves focus into its content (the WAI-ARIA menu pattern: focus
    * the first row on open) would otherwise focus a card that does not exist yet.
-   * This fires on BOTH paths, from an effect inside the card's own subtree,
-   * which React runs only after every child below it is committed and its refs
-   * attached, so the caller needs neither polling nor a setTimeout guess.
+   * This fires on both paths, from an effect inside the card's own subtree.
+   * Hosted cards also wait for fitting, so focusing a child cannot scroll the
+   * page toward an uncapped, still-invisible card.
    */
   onCardMount?: () => void;
+  /** Internal scroll ownership: children always mount one OverlayScrollView. */
+  ownsScroll?: boolean;
 }
 
 export function AnchoredOverlay({
@@ -127,6 +139,7 @@ export function AnchoredOverlay({
   triggerRef,
   gap = 4,
   children,
+  decoration,
   cardStyle,
   inlineStyle,
   dismissable = true,
@@ -137,6 +150,7 @@ export function AnchoredOverlay({
   rtl = false,
   opaque = false,
   onCardMount,
+  ownsScroll = false,
 }: AnchoredOverlayProps) {
   const host = useOverlayHost();
 
@@ -146,7 +160,7 @@ export function AnchoredOverlay({
   if (!host) {
     return open ? (
       <Entrance anchor style={inlineStyle}>
-        <OverlayCard cardStyle={cardStyle} opaque={opaque} onMount={onCardMount}>{children}</OverlayCard>
+        <OverlayCard cardStyle={cardStyle} opaque={opaque} onMount={onCardMount} ownsScroll={ownsScroll} decoration={decoration}>{children}</OverlayCard>
       </Entrance>
     ) : null;
   }
@@ -167,6 +181,8 @@ export function AnchoredOverlay({
       rtl={rtl}
       opaque={opaque}
       onCardMount={onCardMount}
+      ownsScroll={ownsScroll}
+      decoration={decoration}
     >
       {children}
     </HostedAnchoredOverlay>
@@ -175,33 +191,47 @@ export function AnchoredOverlay({
 
 // The floating card itself, shared by the hosted and inline paths so both report
 // the same lifecycle. Its mount effect is the ONE instant at which the card's
-// contents exist on either path: React attaches every descendant's ref during the
-// commit that mounts this subtree, before running this effect, so a caller can
-// move focus into a freshly mounted row from here without waiting on a frame.
+// contents exist and placement is ready on either path. React attaches every
+// descendant's ref before the effect, so callers can safely move focus here.
 function OverlayCard({
   cardStyle,
   opaque,
   onMount,
   children,
+  decoration,
+  ownsScroll,
+  onLayout,
+  ready = true,
 }: {
   cardStyle?: StyleProp<ViewStyle>;
   opaque?: boolean;
   onMount?: () => void;
   children: ReactNode;
+  decoration?: ReactNode;
+  ownsScroll?: boolean;
+  onLayout?: (event: LayoutChangeEvent) => void;
+  ready?: boolean;
 }) {
   // Latch the callback so the usual fresh-closure-per-render caller cannot re-arm
   // the effect; it must fire once per opening, not once per render.
   const mount = useRef(onMount);
   mount.current = onMount;
+  const notified = useRef(false);
   useEffect(() => {
-    mount.current?.();
-  }, []);
+    // Focus only after the measured placement is committed. Focusing the
+    // initial uncapped card can scroll its ancestor before collision fitting.
+    if (ready && !notified.current) {
+      notified.current = true;
+      mount.current?.();
+    }
+  }, [ready]);
   // An opaque card takes the kit's plain surface: one View wearing the skin's
   // style untouched, which is byte for byte what GlassSurface itself renders in
   // solid mode, so an option list looks and lays out the same under either
   // theming surface, and no glass is hand-painted anywhere.
-  if (opaque) return <PlainSurface style={cardStyle}>{children}</PlainSurface>;
-  return <GlassSurface style={cardStyle}>{children}</GlassSurface>;
+  const content = ownsScroll ? children : <OverlayScrollView>{children}</OverlayScrollView>;
+  if (opaque) return <PlainSurface style={cardStyle} onLayout={onLayout}>{decoration}{content}</PlainSurface>;
+  return <GlassSurface style={cardStyle} onLayout={onLayout}>{decoration}{content}</GlassSurface>;
 }
 
 interface HostedProps {
@@ -219,7 +249,9 @@ interface HostedProps {
   rtl?: boolean;
   opaque?: boolean;
   onCardMount?: () => void;
+  ownsScroll?: boolean;
   children: ReactNode;
+  decoration?: ReactNode;
 }
 
 interface Rect {
@@ -282,18 +314,35 @@ export function placeOverlay(
   return { left: Math.max(CLAMP_INSET, x), top: below.top };
 }
 
-function HostedAnchoredOverlay({ host, open, onDismiss, triggerRef, gap, cardStyle, dismissable, cardWidth, centered, preferSide, alignEnd, rtl, opaque, onCardMount, children }: HostedProps) {
+function HostedAnchoredOverlay({ host, open, onDismiss, triggerRef, gap, cardStyle, dismissable, cardWidth, centered, preferSide, alignEnd, rtl, opaque, onCardMount, ownsScroll, children, decoration }: HostedProps) {
   const [rect, setRect] = useState<Rect | null>(null);
   // The outlet's width, captured alongside the trigger measure; only needed for
   // width-aware (clamped) placement.
   const [outletWidth, setOutletWidth] = useState<number | null>(null);
+  const [outlet, setOutlet] = useState<{ height: number; visibleTop: number; visibleBottom: number } | null>(null);
+  const [layoutRevision, setLayoutRevision] = useState(0);
+  const [sizes, setSizes] = useState<{ content: number | null; viewport: number | null; card: number | null; width: number | null }>({ content: null, viewport: null, card: null, width: null });
+  const lastSide = useRef<OverlaySide>("below");
+  const report = useMemo(() => ({
+    contentHeight: (content: number) => setSizes((previous) => previous.content === content ? previous : { ...previous, content }),
+    viewportHeight: (viewport: number) => setSizes((previous) => previous.viewport === viewport ? previous : { ...previous, viewport }),
+  }), []);
+  const onCardLayout = useCallback((event: LayoutChangeEvent) => {
+    const { height: card, width: cardWidth } = event.nativeEvent.layout;
+    setSizes((previous) => previous.card === card && previous.width === cardWidth ? previous : { ...previous, card, width: cardWidth });
+  }, []);
   // Re-measure on viewport changes (rotation / resize). Width/height feed the
   // effect deps; the values themselves aren't read.
   const { width, height } = useWindowDimensions();
 
+  useEffect(() => host.subscribeLayout?.(() => setLayoutRevision((revision) => revision + 1)), [host]);
+
   useEffect(() => {
     if (!open) {
       setRect(null);
+      setOutlet(null);
+      setSizes({ content: null, viewport: null, card: null, width: null });
+      lastSide.current = "below";
       return;
     }
     let cancelled = false;
@@ -316,11 +365,17 @@ function HostedAnchoredOverlay({ host, open, onDismiss, triggerRef, gap, cardSty
         // the trigger's box relative to the outlet — correct for a screen-level
         // host and a stage-scoped one alike, with scroll offsets cancelling out.
         trigger.measureInWindow((tx, ty, tw, th) => {
-          host.measureOutlet((ox, oy, ow) => {
+          host.measureOutlet((ox, oy, ow, oh) => {
             if (cancelled || (tw === 0 && th === 0)) return;
-            landed = true;
-            setRect({ x: tx - ox, y: ty - oy, width: tw, height: th });
-            setOutletWidth(ow);
+            const finish = (visible: { y: number; height: number }) => {
+              if (cancelled) return;
+              landed = true;
+              setRect({ x: tx - ox, y: ty - oy, width: tw, height: th });
+              setOutletWidth(ow);
+              setOutlet({ height: oh, visibleTop: visible.y - oy, visibleBottom: visible.y + visible.height - oy });
+            };
+            if (host.measureVisibleBounds) host.measureVisibleBounds(finish);
+            else finish({ y: oy, height: oh });
           });
         });
       }
@@ -335,37 +390,61 @@ function HostedAnchoredOverlay({ host, open, onDismiss, triggerRef, gap, cardSty
       cancelled = true;
       cancelAnimationFrame(raf);
     };
-  }, [open, width, height, host, triggerRef, gap]);
-
-  if (!open) return null;
+  }, [open, width, height, host, triggerRef, gap, layoutRevision]);
 
   // A width-aware card never renders wider than its outlet: when the outlet is
   // narrower than the card plus its edge insets (a phone-width screen or docs
   // stage), the card is clamped to the outlet minus the insets and placeOverlay
   // pins it at the inset. The minWidth in the override also retires any
   // trigger-derived minWidth in cardStyle, which would be unsatisfiable there.
+  const flatCardStyle = StyleSheet.flatten(cardStyle);
+  const requestedWidth = cardWidth == null ? undefined : Math.max(cardWidth, typeof flatCardStyle?.minWidth === "number" ? flatCardStyle.minWidth : 0);
   const fittedCardWidth =
-    cardWidth != null && outletWidth != null && outletWidth > 0
-      ? Math.min(cardWidth, Math.max(0, outletWidth - 2 * CLAMP_INSET))
-      : cardWidth;
+    requestedWidth != null && outletWidth != null && outletWidth > 0
+      ? Math.min(requestedWidth, Math.max(0, outletWidth - 2 * CLAMP_INSET))
+      : requestedWidth;
   const fittedCardStyle =
     fittedCardWidth != null && fittedCardWidth !== cardWidth
       ? [cardStyle, { width: fittedCardWidth, minWidth: fittedCardWidth }]
       : cardStyle;
+
+  const chrome = sizes.card !== null && sizes.viewport !== null ? Math.max(0, sizes.card - sizes.viewport) : null;
+  const measured = sizes.content !== null && chrome !== null;
+  const skinMaxHeight = flatCardStyle?.maxHeight;
+  const desiredHeight = measured ? Math.min(sizes.content! + chrome!, typeof skinMaxHeight === "number" ? skinMaxHeight : Infinity) : null;
+  const horizontal = rect ? placeOverlay(rect, { cardWidth: fittedCardWidth, centered, preferSide, alignEnd, rtl, gap, outletWidth }) : null;
+  const renderedCardWidth = sizes.width ?? fittedCardWidth;
+  const cardLeft = horizontal?.left ?? (horizontal?.right != null && outletWidth != null && renderedCardWidth != null ? outletWidth - horizontal.right - renderedCardWidth : undefined);
+  const anchorCenter = rect && cardLeft != null ? rect.x + rect.width / 2 - cardLeft : undefined;
+  // Host bounds are measured in one native window and inherited through
+  // content-sized providers; the card does not guess keyboard/screen offsets.
+  const fit = rect && outlet ? fitOverlayHeight({ triggerTop: rect.y, triggerHeight: rect.height, outletHeight: outlet.height, visibleTop: outlet.visibleTop, visibleBottom: outlet.visibleBottom, desiredHeight, currentSide: lastSide.current, gap, beside: horizontal?.top === rect.y }) : null;
+  const fittedSide = fit?.side;
+  const anchorGeometry = useMemo(() => ({ side: fittedSide ?? "below", centerX: anchorCenter, cardWidth: renderedCardWidth }), [fittedSide, anchorCenter, renderedCardWidth]);
+  useEffect(() => {
+    if (open && measured && fittedSide) lastSide.current = fittedSide;
+  }, [open, measured, fittedSide]);
+  const cappedStyle = fit ? [fittedCardStyle, { maxHeight: Math.min(fit.maxHeight, typeof skinMaxHeight === "number" ? skinMaxHeight : Infinity) }] : fittedCardStyle;
+
+  if (!open) return null;
 
   return (
     <Portal>
       {/* The dismiss backdrop only earns its keep when a tap on it can close the
           card; a non-dismissable overlay renders without it so the page under an
           always-open card stays interactive. */}
-      {dismissable ? <Pressable accessible={false} style={BACKDROP} onPress={onDismiss} /> : null}
+      {dismissable ? <Pressable accessible={false} focusable={false} tabIndex={-1} importantForAccessibility="no-hide-descendants" accessibilityElementsHidden aria-hidden style={BACKDROP} onPress={onDismiss} /> : null}
       {/* Hold the card until the first measurement lands, so it never flashes at
           (0,0). The backdrop above is transparent, so a frame before the card
           shows nothing. */}
-      {rect ? (
-        <Entrance anchor style={{ position: "absolute", ...placeOverlay(rect, { cardWidth: fittedCardWidth, centered, preferSide, alignEnd, rtl, gap, outletWidth }) }}>
-          <OverlayCard cardStyle={fittedCardStyle} opaque={opaque} onMount={onCardMount}>{children}</OverlayCard>
-        </Entrance>
+      {rect && horizontal && fit ? (
+        <OverlaySideContext.Provider value={anchorGeometry}>
+          <OverlayScrollContext.Provider value={report}>
+            <Entrance anchor anchorBottom={fit.side === "above"} ready={measured} style={{ position: "absolute", left: horizontal.left, right: horizontal.right, top: fit.top, bottom: fit.bottom }}>
+              <OverlayCard cardStyle={cappedStyle} opaque={opaque} onMount={onCardMount} ownsScroll={ownsScroll} onLayout={onCardLayout} ready={measured} decoration={decoration}>{children}</OverlayCard>
+            </Entrance>
+          </OverlayScrollContext.Provider>
+        </OverlaySideContext.Provider>
       ) : null}
     </Portal>
   );

@@ -35,6 +35,14 @@ const settle = async () => {
   await act(async () => {
     await new Promise((resolve) => setTimeout(resolve, 50));
   });
+  // happy-dom has no layout engine. Deliver RNW's native onLayout boundary
+  // after the portal mounts, so card fitting can commit before it takes focus.
+  act(() => {
+    for (const node of document.querySelectorAll("div")) {
+      const handler = (node as unknown as { __reactLayoutHandler?: (event: unknown) => void }).__reactLayoutHandler;
+      handler?.({ nativeEvent: { layout: { x: 10, y: 20, width: 160, height: 32 } } });
+    }
+  });
 };
 
 describe("Tabs roving keyboard navigation", () => {

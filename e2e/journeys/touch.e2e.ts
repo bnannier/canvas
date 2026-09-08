@@ -4,6 +4,19 @@ import { gotoDocs } from "../support/docs";
 // Locator.tap dispatches touch input in mobile contexts. Shrinking a desktop
 // viewport and clicking would leave the touch event path untested.
 for (const scheme of ["light", "dark"] as const) {
+  test(`touch reaches the final fitted overlay option in ${scheme}`, async ({ page }) => {
+    await gotoDocs(page, "/testing/overlay-placement", { scheme });
+    const input = page.getByRole("combobox", { name: "Edge autocomplete", exact: true });
+    await input.evaluate((element) => element.scrollIntoView({ block: "end" }));
+    await input.tap();
+    const last = page.getByRole("option", { name: "Option 40", exact: true });
+    await last.scrollIntoViewIfNeeded();
+    await expect(last).toBeInViewport({ ratio: 1 });
+    await last.tap();
+    await expect(input).toHaveValue("Option 40");
+    await expect(page.getByRole("listbox")).toHaveCount(0);
+  });
+
   test(`touch selects and clears an autocomplete in ${scheme}`, { tag: "@interaction:autocomplete-touch" }, async ({ page }) => {
     let trustedTouches = 0;
     await page.exposeFunction("__recordJourneyTouch", () => { trustedTouches++; });

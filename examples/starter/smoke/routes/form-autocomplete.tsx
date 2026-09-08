@@ -5,5 +5,5 @@ import { FormAutocompleteBody } from "../../testing/form-autocomplete";
 
 export default function FormAutocompleteRoute() {
   const { scenario } = useLocalSearchParams<{ scenario?: string }>();
-  return <Screen><Typography h2>Form and autocomplete</Typography><FormAutocompleteBody scenario={scenario} /></Screen>;
+  return <Screen><Typography h2>Form and autocomplete</Typography><FormAutocompleteBody key={scenario ?? "default"} scenario={scenario} /></Screen>;
 }
