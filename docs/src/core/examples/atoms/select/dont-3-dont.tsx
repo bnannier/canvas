@@ -8,7 +8,7 @@ export default function Example(scope: ExampleScope) {
 <View style={{ flexDirection: "row", alignItems: "flex-end", gap: 12, maxWidth: 420 }}>
   <View style={{ flexGrow: 1, flexShrink: 1, flexBasis: "0%" }}>
     <Text style={{ marginBottom: 6, fontSize: 14, lineHeight: 20, fontWeight: "500", color: tokens.foreground }}>City</Text>
-    <Input large value="Austin" />
+    <Input large accessibilityLabel="City" value="Austin" />
   </View>
   <View style={{ flexGrow: 1, flexShrink: 1, flexBasis: "0%" }}>
     <Text style={{ marginBottom: 6, fontSize: 14, lineHeight: 20, fontWeight: "500", color: tokens.foreground }}>State</Text>

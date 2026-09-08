@@ -15,6 +15,41 @@ const PROJECTS = [
 ];
 
 describe("Select with value/label options", () => {
+	it("names each trigger and result list and keeps their relationships unique", () => {
+		const { getByRole } = ui(<>
+			<Select open inline label="Project" accessibilityLabel="Destination project" options={PROJECTS} />
+			<Select open label="Region" required options={["EU", "US"]} />
+		</>);
+		const project = getByRole("button", { name: "Destination project" });
+		const projectList = getByRole("listbox", { name: "Destination project" });
+		const region = getByRole("button", { name: "Region, required" });
+		const regionList = getByRole("listbox", { name: "Region" });
+		expect(project.getAttribute("aria-controls")).toBe(projectList.id);
+		expect(region.getAttribute("aria-controls")).toBe(regionList.id);
+		expect(projectList.id).not.toBe(regionList.id);
+		expect(project.getAttribute("aria-haspopup")).toBe("listbox");
+		expect(region.hasAttribute("aria-required")).toBe(false);
+		expect(regionList.getAttribute("aria-required")).toBe("true");
+	});
+
+	it("keeps the prompt name after selection and removes the closed list relationship", () => {
+		const { getByRole, queryByRole } = ui(<Select placeholder="Choose a region" options={["EU", "US"]} />);
+		const trigger = getByRole("button", { name: "Choose a region" });
+		expect(trigger.hasAttribute("aria-controls")).toBe(false);
+		fireEvent.click(trigger);
+		expect(getByRole("listbox", { name: "Choose a region" })).toBeDefined();
+		fireEvent.click(getByRole("option", { name: "US" }));
+		expect(getByRole("button", { name: "Choose a region" }).textContent).toContain("US");
+		expect(trigger.hasAttribute("aria-controls")).toBe(false);
+		expect(queryByRole("listbox")).toBeNull();
+	});
+
+	it("announces a required field even when its purpose has no visible label", () => {
+		const { getByRole } = ui(<Select open required accessibilityLabel="Billing region" options={["EU"]} />);
+		expect(getByRole("button", { name: "Billing region, required" }).hasAttribute("aria-required")).toBe(false);
+		expect(getByRole("listbox", { name: "Billing region" }).getAttribute("aria-required")).toBe("true");
+	});
+
 	it("shows the label belonging to the current value", () => {
 		const { getByText } = ui(<Select options={PROJECTS} value="p2" />);
 		expect(getByText("proj2 (p2)")).toBeTruthy();

@@ -78,6 +78,50 @@ describe("Command search filtering", () => {
     expect(screen.getByPlaceholderText("Search commands...")).toBeDefined();
   });
 
+  it("preserves no highlight until navigation and never selects a nonexistent option", () => {
+    const selected: string[] = [];
+    const { getByRole } = ui(<Command defaultActive={-1} groups={groups} onSelect={(item) => selected.push(item.label)} />);
+    const input = getByRole("textbox");
+    expect(input.hasAttribute("aria-activedescendant")).toBe(false);
+    fireEvent.keyDown(input, { key: "Enter" });
+    expect(selected).toEqual([]);
+    fireEvent.keyDown(input, { key: "ArrowDown" });
+    expect(document.getElementById(input.getAttribute("aria-activedescendant")!)?.textContent).toBe("New File");
+    fireEvent.keyDown(input, { key: "Enter" });
+    expect(selected).toEqual(["New File"]);
+  });
+
+  it("keeps active references valid as controlled results shrink, empty and reopen", () => {
+    const view = (query: string, open = true, active = 20) => <ThemeProvider><Command trigger open={open} groups={groups} query={query} active={active} /></ThemeProvider>;
+    const { rerender, getByRole, queryByRole } = render(view(""));
+    const activeText = () => document.getElementById(getByRole("textbox").getAttribute("aria-activedescendant")!)?.textContent;
+    expect(activeText()).toBe("Go to Settings");
+    rerender(view("save"));
+    expect(activeText()).toBe("Save");
+    rerender(view("missing"));
+    expect(getByRole("textbox").hasAttribute("aria-activedescendant")).toBe(false);
+    rerender(view("", false));
+    expect(queryByRole("textbox")).toBeNull();
+    rerender(view(""));
+    expect(activeText()).toBe("Go to Settings");
+    for (const invalid of [-2, 0.5, NaN, Infinity]) {
+      rerender(view("", true, invalid));
+      expect(getByRole("textbox").hasAttribute("aria-activedescendant")).toBe(false);
+    }
+  });
+
+  it("associates each purpose-named search with its own named result list", () => {
+    const { getByRole } = ui(<>
+      <Command accessibilityLabel="Find a document" groups={groups} />
+      <Command placeholder="Navigate workspace" groups={groups} />
+    </>);
+    const first = getByRole("listbox", { name: "Find a document" });
+    const second = getByRole("listbox", { name: "Navigate workspace" });
+    expect(getByRole("textbox", { name: "Find a document" }).getAttribute("aria-controls")).toBe(first.id);
+    expect(getByRole("textbox", { name: "Navigate workspace" }).getAttribute("aria-controls")).toBe(second.id);
+    expect(first.id).not.toBe(second.id);
+  });
+
   it("preserves IME confirmation and modified text-editing keys", () => {
     const picked: string[] = [];
     const { container } = ui(<Command open groups={groups} onSelect={(item) => picked.push(item.label)} />);

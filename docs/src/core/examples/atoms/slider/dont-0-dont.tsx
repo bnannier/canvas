@@ -6,7 +6,7 @@ export default function Example(scope: ExampleScope) {
   const { View, Slider } = scope;
   return (
 <View style={{ width: 64 }}>
-  <Slider defaultValue={65} min={0} max={100} />
+  <Slider accessibilityLabel="Volume" defaultValue={65} min={0} max={100} />
 </View>
   );
 }

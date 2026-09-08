@@ -4,6 +4,8 @@ Cmd+K search: navigation, actions, recent items. The search row is a real
 input: typing filters the grouped rows to the matching labels, and a query
 that matches nothing shows a muted "No results" row.
 
+The search placeholder names the input and its result list. Supply `accessibilityLabel` when a more specific purpose is needed. `defaultActive={-1}` starts without a highlighted result: Enter selects nothing until navigation or hovering chooses a row. Either arrow key starts at the first result from this state. Controlled indices above the visible result count clamp to the last match; negative, fractional and non-finite indices leave no active result.
+
 ## Usage
 
 ```tsx

@@ -68,6 +68,9 @@ export interface CommandGroup {
 export interface CommandProps {
   /** Prompt shown in the empty search input. */
   placeholder?: string;
+  /** Accessible purpose for the search input and result list. Defaults to the
+   * search placeholder. Supply this when the placeholder does not explain the task. */
+  accessibilityLabel?: string;
   /**
    * The text typed into the search input (CONTROLLED). Filters the rows to the
    * labels matching it (case-insensitive). Omit and use `defaultQuery` for
@@ -181,11 +184,14 @@ export function createCommand(skin: CommandSkin) {
     const total = flatItems.length;
     // Filtering can shrink the list under a controlled `active` the parent never
     // updates; clamp so the highlight (and aria) always lands on a visible row.
-    const activeIndex = Math.min(active, Math.max(total - 1, 0));
+    const activeIndex = Number.isInteger(active) && active >= 0 ? Math.min(active, total - 1) : -1;
     const baseId = useId();
+    const listId = `${baseId}-results`;
     const optionId = (i: number) => `${baseId}-opt-${i}`;
+    const activeId = activeIndex >= 0 ? optionId(activeIndex) : undefined;
+    const fieldName = props.accessibilityLabel?.trim() || placeholder.trim() || "Search commands";
     const searchRef = useRef<RNTextInput>(null);
-    const results = useActiveOptionScroll(open && total > 0 ? optionId(activeIndex) : undefined, JSON.stringify(visibleGroups), open);
+    const results = useActiveOptionScroll(open ? activeId : undefined, JSON.stringify(visibleGroups), open);
     const onSearchKeyPress = (event: { nativeEvent: {
       key: string; isComposing?: boolean; keyCode?: number; repeat?: boolean;
       altKey?: boolean; ctrlKey?: boolean; metaKey?: boolean;
@@ -262,10 +268,11 @@ export function createCommand(skin: CommandSkin) {
             placeholder={placeholder}
             placeholderTextColor={skin.searchPlaceholder(tokens).color}
             selectionColor={tokens.primary} // brand cursor / selection on every platform
-            accessibilityLabel={placeholder}
-            aria-label={placeholder}
+            accessibilityLabel={fieldName}
+            aria-label={fieldName}
+            aria-controls={listId}
             // The search input drives the listbox highlight; point AT to the active row.
-            {...({ "aria-activedescendant": total > 0 ? optionId(activeIndex) : undefined } as object)}
+            {...({ "aria-activedescendant": activeId } as object)}
           />
         </View>
 
@@ -276,7 +283,7 @@ export function createCommand(skin: CommandSkin) {
           </View>
         ) : null}
 
-        <View ref={results.listContentRef} collapsable={false} role={LISTBOX}>
+        <View ref={results.listContentRef} collapsable={false} nativeID={listId} role={LISTBOX} accessibilityLabel={fieldName} aria-label={fieldName}>
         {visibleGroups.map((group, gi) => (
           <View key={`group-${gi}`} role="group" aria-label={group.heading ?? undefined}>
             {group.heading != null ? <Text style={s.groupHeading(tokens)}>{group.heading}</Text> : null}

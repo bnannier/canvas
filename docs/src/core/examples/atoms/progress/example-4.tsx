@@ -5,6 +5,6 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { Progress } = scope;
   return (
-<Progress small value={0.6} />
+<Progress small accessibilityLabel="Uploading files" value={0.6} />
   );
 }

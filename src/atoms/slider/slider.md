@@ -4,10 +4,12 @@ Drag (or tap) along a track to pick a value in a range. Controlled by `value`, b
 
 Pass `ref` to access the interactive adjustable track, including when a header is shown. Use `useRef<ComponentRef<typeof Slider>>(null)` from React, or `useRef<View>(null)` with React Native's `View` type. Object and callback refs are supported and detach on unmount. Calling `ref.current?.focus()` or `.blur()` delegates to the host without activating the control. Browser focus is supported; native focus depends on the platform and React Native version, and is separate from accessibility focus.
 
+Name the setting with string `children`, or pass `accessibilityLabel` when the visible title is omitted or contains rich content.
+
 ## Usage
 
 ```tsx
-<Slider defaultValue={60} min={0} max={100} />
+<Slider accessibilityLabel="Volume" defaultValue={60} min={0} max={100} />
 ```
 
 On iOS 26 the handle is a real Apple Liquid Glass control: a bright knob that springs up as you drag, with the material's edge-lensing and specular showing on a physical device (the OS "transforms controls into liquid glass during interaction"). This is automatic from the glass surface, the platform default there, so there is no prop to set; under a solid surface, Reduce Transparency, or Increase Contrast the handle falls back to a solid knob. The Android and web handles keep their own native look.
@@ -29,25 +31,25 @@ On iOS 26 the handle is a real Apple Liquid Glass control: a bright knob that sp
 ### Small
 
 ```tsx
-<Slider small defaultValue={40} />
+<Slider small accessibilityLabel="Volume" defaultValue={40} />
 ```
 
 ### Large
 
 ```tsx
-<Slider large defaultValue={75} />
+<Slider large accessibilityLabel="Volume" defaultValue={75} />
 ```
 
 ### Stepped
 
 ```tsx
-<Slider defaultValue={6} min={0} max={10} step={2} />
+<Slider accessibilityLabel="Playback speed" defaultValue={6} min={0} max={10} step={2} />
 ```
 
 ### Disabled
 
 ```tsx
-<Slider disabled defaultValue={30} />
+<Slider disabled accessibilityLabel="Volume" defaultValue={30} />
 ```
 
 ### Widths
@@ -75,7 +77,7 @@ On iOS 26 the handle is a real Apple Liquid Glass control: a bright knob that sp
 
 ```tsx
 <View style={{ width: 64 }}>
-  <Slider defaultValue={65} min={0} max={100} />
+  <Slider accessibilityLabel="Volume" defaultValue={65} min={0} max={100} />
 </View>
 ```
 
@@ -84,13 +86,13 @@ On iOS 26 the handle is a real Apple Liquid Glass control: a bright knob that sp
 **Do** — Pair the slider with its current value so the number is explicit, not just inferred from the thumb position. `showValue` renders the live readout above the track.
 
 ```tsx
-<Slider showValue narrow defaultValue={48} min={0} max={100} />
+<Slider showValue narrow defaultValue={48} min={0} max={100}>Volume</Slider>
 ```
 
-**Don't** — A slider with no readout and no label leaves users guessing what the value is and what it controls.
+**Don't** — A slider with no readout and no visible label leaves users guessing what the value is and what it controls.
 
 ```tsx
-<Slider defaultValue={48} min={0} max={100} />
+<Slider accessibilityLabel="Volume" defaultValue={48} min={0} max={100} />
 ```
 
 ### State
@@ -98,7 +100,7 @@ On iOS 26 the handle is a real Apple Liquid Glass control: a bright knob that sp
 **Do** — Use the disabled state for values the user cannot change yet; it dims clearly so it does not look interactive.
 
 ```tsx
-<Slider disabled defaultValue={20} min={0} max={100} />
+<Slider disabled accessibilityLabel="Volume" defaultValue={20} min={0} max={100} />
 ```
 
 **Don't** — Don't fake a disabled slider with a faint inline track; the real `disabled` prop also blocks the gesture and sets accessibility state.
