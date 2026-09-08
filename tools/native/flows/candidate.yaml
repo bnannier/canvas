@@ -6,6 +6,13 @@ name: Sealed Canvas native candidate
 # The router must mount before Android can deliver a warm-start link.
 - assertVisible: Your workspace
 - openLink: canvas-smoke:///testing/diagnostics
+# iOS can require first-use confirmation before opening the app's custom scheme.
+- runFlow:
+    when:
+      platform: iOS
+      visible: 'Open in “Canvas Starter Smoke”\?'
+    commands:
+      - tapOn: Open
 - assertVisible: Candidate runtime identity
 - assertVisible:
     id: smoke-input-mode
@@ -183,6 +190,7 @@ name: Sealed Canvas native candidate
     text: 'Changes: 2'
 - openLink: canvas-smoke:///testing/form-autocomplete?scenario=modal
 - tapOn: Open fruit drawer
+- takeScreenshot: drawer-field-before-keyboard
 - tapOn:
     id: drawer-fruit-input
 - inputText: Ap
@@ -195,6 +203,31 @@ name: Sealed Canvas native candidate
 - assertNotVisible: Apple
 - takeScreenshot: drawer-selection
 - hideKeyboard
+- openLink: canvas-smoke:///testing/form-autocomplete?scenario=action-sheet-safe-area
+- tapOn: Open safe area sheet
+- assertVisible: Safe area actions
+- assertVisible: Choose safe area action
+- takeScreenshot: action-sheet-bottom-clearance
+- tapOn: Choose safe area action
+- assertVisible:
+    id: sheet-selections
+    text: 'Selections: 1'
+- assertVisible:
+    id: sheet-closes
+    text: 'Closes: 1'
+- tapOn: Open safe area sheet
+- assertVisible: Choose safe area action
+- takeScreenshot: action-sheet-cancel-clearance
+# The full-window scrim shares the Cancel name. Select the actual bottom row.
+- tapOn:
+    text: Cancel safe area sheet
+    below: Choose safe area action
+- assertVisible:
+    id: sheet-selections
+    text: 'Selections: 1'
+- assertVisible:
+    id: sheet-closes
+    text: 'Closes: 2'
 # The diagnostic retains the actual visible host band after keyboard dismissal.
 # Keep the keyboard open until the previously obscured final match is selected.
 - openLink: canvas-smoke:///testing/form-autocomplete?scenario=keyboard
@@ -282,34 +315,80 @@ name: Sealed Canvas native candidate
     direction: UP
 - tapOn: Search...
 # Opening the actual mounted card must focus its input without another tap.
-- assertVisible:
-    text: Search work items
-    focused: true
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - assertVisible:
+          text: Search work items
+          focused: true
+# iOS can report focused=false for an active native text host. Actual typing
+# without another tap plus the visible software space key verifies input focus.
 - inputText: Work
+- assertVisible: Work
+- runFlow:
+    when:
+      platform: iOS
+    commands:
+      - assertVisible:
+          id: space
+# Native hierarchy visibility does not account for clipping by the results pane.
+# Require the last row above the actual footer before selecting it.
 - scrollUntilVisible:
     element:
       text: Work item 40
+      above: to navigate
     direction: DOWN
-- assertVisible:
-    text: Search work items
-    focused: true
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - assertVisible:
+          text: Search work items
+          focused: true
+- runFlow:
+    when:
+      platform: iOS
+    commands:
+      - assertVisible:
+          id: space
 - assertVisible: to navigate
 - assertVisible: to select
 - assertVisible: to close
 - takeScreenshot: command-final-result-with-keyboard
 # Typing after a real results drag proves that input focus was preserved.
 - inputText: ' item'
+- assertVisible: Work item
+- runFlow:
+    when:
+      platform: iOS
+    commands:
+      - assertVisible:
+          id: space
 - scrollUntilVisible:
     element:
       text: Work item 40
+      above: to navigate
     direction: DOWN
-- assertVisible:
-    text: Search work items
-    focused: true
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - assertVisible:
+          text: Search work items
+          focused: true
+- runFlow:
+    when:
+      platform: iOS
+    commands:
+      - assertVisible:
+          id: space
 - assertVisible: to navigate
 - assertVisible: to select
 - assertVisible: to close
-- tapOn: Work item 40
+- tapOn:
+    text: Work item 40
+    above: to navigate
 - hideKeyboard
 - scrollUntilVisible:
     element:

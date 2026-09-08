@@ -13,7 +13,10 @@ test("docs and native routes consume one maintained public-API fixture body", ()
     const ast = ts.createSourceFile("fixture.tsx", shared, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
     for (const statement of ast.statements) {
       if (ts.isImportDeclaration(statement) && ts.isStringLiteral(statement.moduleSpecifier)) {
-        expect(["react", "@nannier-com/canvas"]).toContain(statement.moduleSpecifier.text);
+        if (fixture === "form-autocomplete" && statement.moduleSpecifier.text === "react-native") {
+          const bindings = statement.importClause?.namedBindings;
+          expect(bindings && ts.isNamedImports(bindings) ? bindings.elements.map((entry) => entry.name.text) : []).toEqual(["Keyboard"]);
+        } else expect(["react", "@nannier-com/canvas"]).toContain(statement.moduleSpecifier.text);
       }
     }
     const docs = readFileSync(resolve(root, `docs/src/app/(home)/testing/${fixture}.tsx`), "utf8");
