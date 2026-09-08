@@ -157,7 +157,7 @@ export function createDropdown(skin: DropdownSkin) {
     // platform's own computation rather than invented here.
     const menuName = title ?? description ?? label;
 
-    // Escape dismisses the open menu on web (no-op natively).
+    // Escape dismisses the open menu via browser Escape or native accessibility escape.
     const escapeScope = useEscapeLayer(open, () => setOpen(false));
 
     // Roving-focus keyboard navigation for the open menu (the WAI-ARIA menu pattern):
@@ -276,6 +276,7 @@ export function createDropdown(skin: DropdownSkin) {
         )}
 
         <AnchoredOverlay
+          onAccessibilityEscape={escapeScope.onAccessibilityEscape}
           open={open}
           onDismiss={() => setOpen(false)}
           triggerRef={triggerRef}

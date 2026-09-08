@@ -2,6 +2,10 @@
 
 Multi-line input, with character count, with toolbar. Pass `label` (and `required`) to name the field: iOS and web render the label above the control, while Android floats the Material 3 in-container label at the top of the multiline box. The box renders at the standard width by default (`narrow` and `wide` pick the other modes, `block` fills the container).
 
+Inside an overlay, Escape follows the overlay's cancellation policy. A supplied
+`onKeyPress` runs first and can call `preventDefault()` to handle Escape locally.
+Cancelling an IME candidate keeps the overlay open.
+
 ## Usage
 
 ```tsx

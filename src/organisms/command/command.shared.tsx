@@ -157,7 +157,7 @@ export function createCommand(skin: CommandSkin) {
     const triggerRef = useRef<View>(null);
     const host = useOverlayHost();
 
-    // Escape dismisses the open TRIGGER-mode palette on web (no-op natively). The
+    // Escape dismisses the open TRIGGER-mode palette via browser Escape or native accessibility escape. The
     // bare inline card is left alone: it has no trigger to reopen it, so escape
     // would only strand it closed.
     const escapeScope = useEscapeLayer(!!trigger && open, () => setOpen(false));
@@ -383,6 +383,7 @@ export function createCommand(skin: CommandSkin) {
           <Kbd keys="⌘ K" style={s.triggerKbd} />
         </Pressable>
         <AnchoredOverlay
+          onAccessibilityEscape={escapeScope.onAccessibilityEscape}
           ownsScroll
           onCardMount={() => searchRef.current?.focus?.()}
           open={open}

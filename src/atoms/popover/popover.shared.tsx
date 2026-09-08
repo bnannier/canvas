@@ -123,7 +123,7 @@ export function createPopover(skin: PopoverSkin) {
       if (props.open === undefined) setInternalOpen(next);
       onOpenChange?.(next);
     };
-    // Escape dismisses the floating card on web (no-op natively). An inline
+    // Escape dismisses the floating card via browser Escape or native accessibility escape. An inline
     // panel is an always-visible surface, not a dismissable overlay, so it
     // never subscribes.
     const escapeScope = useEscapeLayer(open && !inline, () => setOpen(false));
@@ -202,6 +202,7 @@ export function createPopover(skin: PopoverSkin) {
             beak then follows the actual upper placement. Otherwise `top`
             retains its documented decoration-only behavior. */}
         <AnchoredOverlay
+          onAccessibilityEscape={escapeScope.onAccessibilityEscape}
           open={open}
           onDismiss={() => setOpen(false)}
           triggerRef={triggerRef}

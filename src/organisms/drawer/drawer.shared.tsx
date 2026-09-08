@@ -115,8 +115,8 @@ export function createDrawer(skin: DrawerSkin, Button: ButtonComponent = WebButt
     // event is consumed while the drawer is up and default back behavior runs
     // once it is closed; it also skips web, where the BackHandler shim would
     // console.error on every call.
-    useHardwareBack(open, () => setOpen(false));
     const escapeScope = useEscapeLayer(open, () => setOpen(false));
+    useHardwareBack(open, escapeScope.onRequestClose);
 
     // EVERY edge SLIDES by hand (translateX/translateY) behind a SEPARATE, stationary
     // dim layer that fades in. RN Modal's animationType can only slide vertically upward
@@ -243,8 +243,8 @@ export function createDrawer(skin: DrawerSkin, Button: ButtonComponent = WebButt
                   <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined} style={{ flex: 1 }}>
                     {/* The dim is an Animated layer that fades in behind a TRANSPARENT tap-to-close
                         layout; the panel rides in on translateX/translateY. The dim is a dismiss
-                        affordance, not a control, so it is unannounced (back/escape/trigger dismiss). */}
-                    <View style={{ flex: 1 }}>
+                        affordance, not a control, so it is unannounced; hardware back and accessibility escape dismiss. */}
+                    <View style={{ flex: 1 }} collapsable={false} onAccessibilityEscape={escapeScope.onAccessibilityEscape}>
                       <Animated.View style={[StyleSheet.absoluteFill, { backgroundColor: "rgb(0, 0, 0)", opacity: dimOpacity }]} />
                       <Pressable accessible={false} focusable={false} tabIndex={-1} importantForAccessibility="no" style={s.scrim(edge, 0)} onPress={() => setOpen(false)}>
                         <Animated.View style={{ transform: slideTransform }}>{panel}</Animated.View>

@@ -18,6 +18,7 @@ import { Slider } from "../src/atoms/slider/slider.tsx";
 import { Switch } from "../src/atoms/switch/switch.tsx";
 import { Typography } from "../src/atoms/typography/typography.tsx";
 import { DescriptionList } from "../src/molecules/description-lists/description-lists.tsx";
+import { AlertDialog } from "../src/molecules/alert-dialog/alert-dialog.tsx";
 import { ActionSheet } from "../src/organisms/action-sheet/action-sheet.tsx";
 import { Command } from "../src/organisms/command/command.tsx";
 import { DataTable } from "../src/organisms/data-table/data-table.tsx";
@@ -40,7 +41,7 @@ function fixture<Props extends object>(name: string, exported: string) {
     react: React,
     "react/jsx-runtime": JSX,
     "@nannier-com/canvas": {
-      ActionSheet, Autocomplete, Button, Checkbox, Column, Command, DataTable,
+      ActionSheet, AlertDialog, Autocomplete, Button, Checkbox, Column, Command, DataTable,
       DescriptionList, Dialog, Drawer, Dropdown, Listbox, Radio, RadioGroup,
       Row, Select, Slider, Switch, Tabs, ThemeProvider, Typography, useTheme,
     },
@@ -61,6 +62,33 @@ const ListboxBody = fixture<{ controlled?: boolean; disabled?: boolean }>("listb
 const EscapeLayersBody = fixture<{ scenario?: string }>("escape-layers", "EscapeLayersBody");
 const ControlRefsBody = fixture("control-refs", "ControlRefsBody");
 const text = (id: string) => screen.getByTestId(id).textContent;
+
+test("the gated alert fixture cancels without confirming and clears its field on reopen", () => {
+  render(<ThemeProvider><EscapeLayersBody scenario="alert-gated" /></ThemeProvider>);
+  fireEvent.click(screen.getByRole("button", { name: "Open gated alert" }));
+  const dialog = screen.getByRole("alertdialog", { name: "Delete draft?" });
+  const confirm = within(dialog).getByRole("button", { name: "Delete draft" });
+  expect(confirm.getAttribute("aria-disabled")).toBe("true");
+  const input = within(dialog).getByRole("textbox");
+  act(() => input.focus());
+  fireEvent.change(input, { target: { value: "DEL" } });
+  fireEvent.keyDown(input, { key: "Escape" });
+  fireEvent.keyUp(document.body, { key: "Escape" });
+  expect(screen.queryByRole("alertdialog") === null).toBe(true);
+  expect(text("alert-cancellations")).toBe("Cancellations: 1");
+  expect(text("alert-confirmations")).toBe("Confirmations: 0");
+  expect(text("alert-closes")).toBe("Closes: 1");
+  fireEvent.click(screen.getByRole("button", { name: "Open gated alert" }));
+  const reopened = screen.getByRole("alertdialog", { name: "Delete draft?" });
+  expect((within(reopened).getByRole("textbox") as HTMLInputElement).value).toBe("");
+  expect(within(reopened).getByRole("button", { name: "Delete draft" }).getAttribute("aria-disabled")).toBe("true");
+  fireEvent.change(within(reopened).getByRole("textbox"), { target: { value: "DELETE" } });
+  fireEvent.click(within(reopened).getByRole("button", { name: "Delete draft" }));
+  expect(screen.queryByRole("alertdialog")).toBeNull();
+  expect(text("alert-cancellations")).toBe("Cancellations: 1");
+  expect(text("alert-confirmations")).toBe("Confirmations: 1");
+  expect(text("alert-closes")).toBe("Closes: 2");
+});
 
 test("Tabs fixture reports the actual inactive selection once and keeps disabled items inert", async () => {
   await act(async () => { render(<ThemeProvider><TabsBody /></ThemeProvider>); });

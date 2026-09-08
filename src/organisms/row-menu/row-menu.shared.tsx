@@ -71,7 +71,7 @@ export function createRowMenu(skin: RowMenuSkin) {
       onOpenChange?.(next);
     };
 
-    // Escape dismisses the open menu on web (no-op natively).
+    // Escape dismisses the open menu via browser Escape or native accessibility escape.
     const escapeScope = useEscapeLayer(open, () => setOpen(false));
 
     // The wrapper tightly wraps the ⋯ trigger (the menu portals out when hosted),
@@ -120,6 +120,7 @@ export function createRowMenu(skin: RowMenuSkin) {
         </RippleClip>
 
         <AnchoredOverlay
+          onAccessibilityEscape={escapeScope.onAccessibilityEscape}
           open={open}
           onDismiss={() => setOpen(false)}
           triggerRef={triggerRef}

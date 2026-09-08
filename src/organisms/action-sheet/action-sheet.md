@@ -4,6 +4,11 @@ The iOS modal action menu: a bottom sheet of choices summoned in response to a u
 
 On light glass, muted header text uses the stronger surface foreground to remain readable over the dimmed background.
 
+iOS accessibility escape and Android system back request cancellation without
+running an action. An open child overlay handles the request first. Disabled
+actions do not disable cancellation, and a controlled owner can keep the sheet
+open. The visible Cancel row remains available to assistive technology.
+
 ## Usage
 
 ```tsx

@@ -294,6 +294,7 @@ export function createCalendar(skin: CalendarSkin) {
     // from under it, and let Escape dismiss it like any overlay.
     useEffect(() => setPeekDay(null), [month]);
     const escapeScope = useEscapeLayer(peekDay != null, () => setPeekDay(null));
+    const hoverEscapeScope = useEscapeLayer(hoverKey != null, () => setHoverKey(null));
 
     // The day the week/day views revolve around.
     const anchor = Math.min(Math.max(selected ?? today ?? 1, 1), daysInMonth);
@@ -590,6 +591,7 @@ export function createCalendar(skin: CalendarSkin) {
       const [start, end] = spanOf(e);
       return (
         <AnchoredOverlay
+          onAccessibilityEscape={hoverEscapeScope.onAccessibilityEscape}
           key={hoverKey}
           open
           onDismiss={() => setHoverKey(null)}
@@ -601,7 +603,7 @@ export function createCalendar(skin: CalendarSkin) {
           cardStyle={[skin.peekCard(tokens), { width: tm.peekWidth }]}
           inlineStyle={{ position: "absolute", top: "100%", left: 0 }}
         >
-          <EscapeLayerProvider scope={escapeScope}>
+          <EscapeLayerProvider scope={hoverEscapeScope}>
           <Text style={skin.peekTitle(tokens)}>{e.title ?? "Event"}</Text>
           <Text style={[skin.eventTime(tokens), { marginTop: 2 }]}>
             {`${WEEKDAYS_FULL[weekdayOf(e.day)]}, ${monthName} ${e.day} · ${formatHour(start, hour24)} – ${formatHour(end, hour24)}`}
@@ -629,6 +631,7 @@ export function createCalendar(skin: CalendarSkin) {
       const peekHours = Array.from({ length: re - rs }, (_, i) => rs + i);
       return (
         <AnchoredOverlay
+          onAccessibilityEscape={escapeScope.onAccessibilityEscape}
           key={peekDay}
           open
           onDismiss={() => setPeekDay(null)}

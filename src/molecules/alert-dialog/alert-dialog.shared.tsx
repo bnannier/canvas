@@ -170,9 +170,9 @@ export function createAlertDialog(skin: AlertDialogSkin, Input: InputComponent =
     };
 
     // Web focus management for the modal: move focus into the panel on open, trap
-    // Tab within it, and return focus to the trigger on close; Escape dismisses it
-    // as a Cancel. All of this is a no-op natively / under SSR (guarded on
-    // `document`).
+    // Tab within it, and return focus to the trigger on close. This focus helper
+    // does nothing natively or under SSR. The shared escape scope routes browser
+    // Escape and native accessibility escape through the same Cancel policy.
     const panelRef = useDialogFocus(open);
     const escapeScope = useEscapeLayer(open, handleCancel);
 
@@ -290,6 +290,7 @@ export function createAlertDialog(skin: AlertDialogSkin, Input: InputComponent =
             // (see useDialogFocus).
             role="alertdialog"
             accessibilityViewIsModal={true}
+            onAccessibilityEscape={escapeScope.onAccessibilityEscape}
             aria-modal={true}
             aria-labelledby={title != null ? titleId : undefined}
             aria-describedby={description != null ? descriptionId : undefined}

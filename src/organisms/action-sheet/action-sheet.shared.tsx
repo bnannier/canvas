@@ -129,8 +129,8 @@ export function createActionSheet(skin: ActionSheetSkin) {
     // event is consumed while the sheet is up and default back behavior runs once
     // it is closed; it also skips web, where the BackHandler shim would
     // console.error on every call.
-    useHardwareBack(open, close);
     const escapeScope = useEscapeLayer(open, close);
+    useHardwareBack(open, escapeScope.onRequestClose);
 
     // The sheet SLIDES up by hand (translateY) behind a SEPARATE, stationary dim
     // layer that FADES in. RN Modal's animationType="slide" transforms the whole
@@ -263,7 +263,7 @@ export function createActionSheet(skin: ActionSheetSkin) {
                   rows live in their own subtree. The content layer is lifted above the
                   absolute backdrop with zIndex, so a tap on the sheet hits the sheet and
                   a tap on the exposed scrim dismisses (no fall-through wrapper needed). */}
-              <View style={s.scrim}>
+              <View style={s.scrim} collapsable={false} onAccessibilityEscape={escapeScope.onAccessibilityEscape}>
                 {/* The stationary dim: it fades from transparent to the skin's alpha and
                     never moves, so the backdrop settles over the page while the sheet
                     rises. Purely decorative (the Pressable above it carries the dismiss
