@@ -104,16 +104,25 @@ const evaluateDrag = new Function("maestro", "output", expression.trim().slice(2
 const valid = { generation: 1, status: "ready", index: 1, page: 2, x: 24, y: 190, width: 354, height: 198,
   screenWidth: 402, screenHeight: 874, pixelRatio: 3, platform: "ios", rtl: false };
 function drag(values: Record<string, unknown> = {}) {
-  const output: { carouselDrag?: { start: string; end: string } } = {};
+  const output: { carouselDrag?: { startX: number; endX: number; y: number; roundingMargin: number } } = {};
   evaluateDrag({ copiedText: JSON.stringify({ ...valid, ...values }) }, output);
   return output.carouselDrag;
 }
 
-test("the exact Maestro expression derives one in-card drag in iOS points or Android pixels", () => {
-  expect(drag()).toMatchObject({ start: "307, 289", end: "95, 289" });
-  expect(drag({ platform: "android", pixelRatio: 2.625 })).toMatchObject({ start: "806, 759", end: "249, 759" });
-  const gesture = commands.find((command) => (command.swipe as { start?: string })?.start === "${output.carouselDrag.start}")?.swipe;
-  expect(gesture).toEqual({ start: "${output.carouselDrag.start}", end: "${output.carouselDrag.end}", duration: 400 });
+test("the guard checks the supported card-relative LEFT drag in each driver's units", () => {
+  const ios = drag()!;
+  expect(ios.startX).toBeCloseTo(307.2);
+  expect(ios.endX).toBeCloseTo(40.2);
+  expect(ios.y).toBe(289);
+  const android = drag({ platform: "android", pixelRatio: 2.625 })!;
+  expect(android.startX).toBeCloseTo(806.4);
+  expect(android.endX).toBeCloseTo(105.525);
+  expect(android.y).toBeCloseTo(758.625);
+  const gesture = commands.find((command) => (command.swipe as { from?: { id?: string } })?.from?.id === "carousel-slide-2")?.swipe;
+  expect(gesture).toEqual({ direction: "LEFT", from: { id: "carousel-slide-2", point: "80%, 50%" }, duration: 400 });
+  for (const measured of [ios, android]) {
+    expect(measured.startX - measured.endX - measured.roundingMargin * 2).toBeGreaterThan(0);
+  }
 });
 
 test("the actual gesture guard rejects stale, wrong-card, clipped and invalid measurements", () => {
@@ -122,5 +131,8 @@ test("the actual gesture guard rejects stale, wrong-card, clipped and invalid me
     { x: -1 }, { y: -1 }, { width: 0 }, { height: -1 }, { width: 1000 }, { height: 1000 },
     { pixelRatio: 0 }, { x: null }, { y: "190" }, { screenWidth: 0 }, { screenHeight: 0 },
     { platform: "web" }, { rtl: true }, { width: 1, height: 1 },
+    // A screen-relative terminal outside the card, insufficient travel, or
+    // a near-edge rounding dependency must fail before the driver touches it.
+    { x: 50, width: 300 }, { x: 24, width: 50 }, { x: 38, width: 300 },
   ]) expect(() => drag(values)).toThrow();
 });

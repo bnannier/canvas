@@ -63,11 +63,18 @@ jobs:
           key: native-smoke-${{ runner.os }}-${{ hashFiles('examples/starter/bun.lock', 'tools/native/maestro.json') }}
           restore-keys: native-smoke-${{ runner.os }}-
 
-      - name: Prepare the independent packed consumer
-        run: node scripts/native-smoke.mjs prepare --candidate "$RUNNER_TEMP/candidate" --artifacts "$RUNNER_TEMP/artifacts" --output "$RUNNER_TEMP/native-smoke"
-
       - name: Install the verified native test CLI
         run: node scripts/install-maestro.mjs "$RUNNER_TEMP/native-tools"
+
+      - name: Parse every native flow command before building
+        run: node scripts/verify-native-flow.mjs --maestro "$RUNNER_TEMP/native-tools/maestro/bin/maestro"
+
+      - name: Verify the installed parser regression cases
+        # Pure tooling tests need no React dependencies or the kit's UI preload.
+        run: CANVAS_MAESTRO_BIN="$RUNNER_TEMP/native-tools/maestro/bin/maestro" bun test --config=/dev/null ./tools/native/flow-parser.test.ts
+
+      - name: Prepare the independent packed consumer
+        run: node scripts/native-smoke.mjs prepare --candidate "$RUNNER_TEMP/candidate" --artifacts "$RUNNER_TEMP/artifacts" --output "$RUNNER_TEMP/native-smoke"
 
       - name: Select and boot an available iPhone simulator
         if: inputs.platform == 'ios'
