@@ -1,8 +1,29 @@
 import { useState } from "react";
 import {
   ActionSheet, Autocomplete, Column, Command, DataTable, DescriptionList,
-  Dialog, Drawer, Dropdown, Typography,
+  Dialog, Drawer, Dropdown, ThemeProvider, Typography, useTheme,
 } from "@nannier-com/canvas";
+
+function GlassMessagesBody() {
+  const { scheme } = useTheme();
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [sheetOpen, setSheetOpen] = useState(false);
+  return (
+    <ThemeProvider scheme={scheme} glass>
+      <Column relaxed>
+        <Dialog trigger="Open glass message dialog" title="Glass refund details"
+          description="Check the refund amount and reason before continuing." withBody
+          open={dialogOpen} onOpenChange={setDialogOpen}
+          confirmLabel="Refund" cancelLabel="Cancel" />
+        <ActionSheet trigger="Open glass message sheet" title="Glass sharing actions"
+          message="Choose a sharing action for this document."
+          open={sheetOpen} onOpenChange={setSheetOpen}
+          actions={[{ label: "Copy document link", onPress: () => {} }]}
+          cancelLabel="Close sheet" />
+      </Column>
+    </ThemeProvider>
+  );
+}
 
 export function EscapeLayersBody({ scenario }: { scenario?: string }) {
   const initiallyOpen = scenario === "initial";
@@ -15,6 +36,7 @@ export function EscapeLayersBody({ scenario }: { scenario?: string }) {
   const [commits, setCommits] = useState(0);
   const [menuSelected, setMenuSelected] = useState("None");
   const [menuSelections, setMenuSelections] = useState(0);
+  if (scenario === "glass-messages") return <GlassMessagesBody />;
   const menu = (
     <Dropdown trigger="Open menu" items={[{ label: "Rename" }, { label: "Archive", disabled: scenario === "drawer-disabled" }]}
       onSelect={(item) => {

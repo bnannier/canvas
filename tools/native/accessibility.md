@@ -145,3 +145,17 @@ A pass requires observed results for every step. Any missing device, signing
 identity or screen-reader service remains an explicit external limitation. Keep
 audio/video or accessibility inspector evidence where possible, with no personal
 data entered into the sample app.
+
+
+For glass visual evidence, open `testing/escape-layers?scenario=glass-messages`
+on the identified candidate in both light and dark appearance. The scenario uses
+forced glass with the inherited scheme and the containing Screen's plain backdrop.
+Open the built-in Dialog and capture its description, currency prefix, Amount and
+Reason fields; close it, then open the ActionSheet and capture its title/message.
+Inspect the actual material, text contrast and clipping in the screenshots, and
+compare the declared foreground color with the painted adjacent backdrop for
+contrast measurements. Cross-check glyph interiors, without substituting
+antialiased edge samples for the foreground color.
+The canonical flow captures both surfaces with ordinary taps. Visibility assertions
+and source tint-over-scrim calculations do not prove native pixel contrast or
+spoken feedback; keep those acceptance results separate.

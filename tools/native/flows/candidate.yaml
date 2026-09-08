@@ -436,6 +436,35 @@ name: Sealed Canvas native candidate
 - assertVisible:
     id: sheet-closes
     text: 'Closes: 2'
+# This scenario forces glass inside the inherited light/dark scheme. Use the
+# built-in Dialog body rather than custom children so description/currency paint.
+- openLink: canvas-smoke:///testing/escape-layers?scenario=glass-messages
+- assertVisible: Overlay keyboard checks
+- tapOn:
+    text: Open glass message dialog
+    retryTapIfNoChange: false
+- assertVisible: Glass refund details
+- assertVisible: Check the refund amount and reason before continuing.
+- assertVisible: Amount
+- assertVisible: Reason
+- assertVisible: '^\$$'
+- takeScreenshot: glass-dialog-built-in-message
+- tapOn:
+    text: Cancel
+    retryTapIfNoChange: false
+- assertNotVisible: Glass refund details
+- tapOn:
+    text: Open glass message sheet
+    retryTapIfNoChange: false
+- assertVisible: Glass sharing actions
+- assertVisible: Choose a sharing action for this document.
+- assertVisible: Copy document link
+- takeScreenshot: glass-action-sheet-header
+- tapOn:
+    text: Close sheet
+    below: Copy document link
+    retryTapIfNoChange: false
+- assertNotVisible: Glass sharing actions
 - openLink: canvas-smoke:///testing/carousel
 - assertVisible: Native carousel paging
 - assertVisible:

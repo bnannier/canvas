@@ -24,7 +24,8 @@ import { DataTable } from "../src/organisms/data-table/data-table.tsx";
 import { Dialog } from "../src/organisms/dialog/dialog.tsx";
 import { Drawer } from "../src/organisms/drawer/drawer.tsx";
 import { Tabs } from "../src/organisms/tabs/tabs.tsx";
-import { ThemeProvider } from "../src/style/theme.tsx";
+import { ThemeProvider, useTheme } from "../src/style/theme.tsx";
+import { colorsByScheme } from "../src/style/tokens.ts";
 import { layoutHostedEntrance } from "./entrance-layout.ts";
 
 afterEach(cleanup);
@@ -41,7 +42,7 @@ function fixture<Props extends object>(name: string, exported: string) {
     "@nannier-com/canvas": {
       ActionSheet, Autocomplete, Button, Checkbox, Column, Command, DataTable,
       DescriptionList, Dialog, Drawer, Dropdown, Listbox, Radio, RadioGroup,
-      Row, Select, Slider, Switch, Tabs, Typography,
+      Row, Select, Slider, Switch, Tabs, ThemeProvider, Typography, useTheme,
     },
   };
   const exports: Record<string, React.ComponentType<Props>> = {};
@@ -176,4 +177,55 @@ test("the reused refs fixture counts unchecked Radio changes and keeps a disable
   fireEvent.click(daily);
   expect(daily.getAttribute("aria-checked")).toBe("true");
   expect(text("ref-changes")).toBe("Changes: 2");
+});
+
+
+for (const scheme of ["light", "dark"] as const) {
+  test(`the ${scheme} glass-messages fixture renders real built-in fields and retained open/close state`, async () => {
+    render(<ThemeProvider scheme={scheme} solid><EscapeLayersBody scenario="glass-messages" /></ThemeProvider>);
+    const description = "Check the refund amount and reason before continuing.";
+    const message = "Choose a sharing action for this document.";
+    const color = colorsByScheme[scheme][scheme === "light" ? "popover-foreground" : "muted-foreground"];
+    const rgb = [1, 3, 5].map(index => parseInt(color.slice(index, index + 2), 16));
+    const expectMessageColor = (node: HTMLElement) => {
+      const rendered = /^rgba?\(\s*([\d.]+),\s*([\d.]+),\s*([\d.]+)(?:,\s*([\d.]+))?\)$/.exec(getComputedStyle(node).color);
+      expect(rendered).not.toBeNull();
+      expect(rendered!.slice(1, 4).map(Number)).toEqual(rgb);
+      expect(rendered![4] === undefined ? 1 : Number(rendered![4])).toBe(1);
+    };
+    expect(screen.queryByText(description)).toBeNull();
+    expect(screen.queryByText(message)).toBeNull();
+    for (let opening = 0; opening < 2; opening++) {
+      fireEvent.click(screen.getByRole("button", { name: "Open glass message dialog" }));
+      expect(screen.getByRole("dialog", { name: "Glass refund details" })).toBeDefined();
+      expectMessageColor(screen.getByText(description));
+      expectMessageColor(screen.getByText("$"));
+      expect(screen.getByRole("textbox", { name: "Amount" })).toHaveProperty("value", "90.00");
+      expect(screen.getByRole("textbox", { name: "Reason" })).toBeDefined();
+      fireEvent.click(screen.getByRole("button", { name: "Cancel" }));
+      expect(screen.queryByText(description)).toBeNull();
+      expect(screen.queryByText("$")).toBeNull();
+    }
+    fireEvent.click(screen.getByRole("button", { name: "Open glass message sheet" }));
+    expectMessageColor(await screen.findByText("Glass sharing actions"));
+    expectMessageColor(screen.getByText(message));
+    expect(screen.getByRole("button", { name: "Copy document link" })).toBeDefined();
+    // The sheet's scrim and visual Cancel row share a name. Click the real row's
+    // label, matching the native flow's below-action selector.
+    fireEvent.click(screen.getByText("Close sheet"));
+    await waitFor(() => expect(screen.queryByText(message)).toBeNull());
+    fireEvent.click(screen.getByRole("button", { name: "Open glass message sheet" }));
+    expect(await screen.findByText(message)).toBeDefined();
+    fireEvent.click(screen.getByRole("button", { name: "Copy document link" }));
+    await waitFor(() => expect(screen.queryByText("Glass sharing actions")).toBeNull());
+  });
+}
+
+test("the default Escape fixture still opens its custom-content dialog", () => {
+  render(<ThemeProvider><EscapeLayersBody /></ThemeProvider>);
+  fireEvent.click(screen.getByRole("button", { name: "Open dialog" }));
+  expect(screen.getByRole("dialog", { name: "Keyboard dialog" })).toBeDefined();
+  expect(screen.getByText("Dialog content")).toBeDefined();
+  expect(screen.getByRole("button", { name: "Open menu" })).toBeDefined();
+  expect(screen.queryByText("Glass refund details")).toBeNull();
 });
