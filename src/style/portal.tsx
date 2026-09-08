@@ -28,11 +28,12 @@ import {
   useContext,
   useEffect,
   useId,
+  useLayoutEffect,
   useMemo,
   useRef,
   useSyncExternalStore,
 } from "react";
-import { View, StyleSheet, type StyleProp, type ViewStyle } from "react-native";
+import { Keyboard, Platform, View, StyleSheet, type KeyboardEvent, type StyleProp, type ViewStyle } from "react-native";
 import {
   GlassBlurTargetContext,
   GlassWindowBlurTargetContext,
@@ -50,6 +51,28 @@ export interface OverlayHost {
   unmount(id: string): void;
   /** Measure the outlet's window rect, for relative anchoring. */
   measureOutlet(cb: (x: number, y: number, width: number, height: number) => void): void;
+  /** Observe host layout changes, including native keyboard resizing. */
+  subscribeLayout?(listener: () => void): () => void;
+  /** Measure the visible band inherited from this native window's viewport. */
+  measureVisibleBounds?(cb: (bounds: OverlayBounds) => void): void;
+}
+
+export interface OverlayBounds { x: number; y: number; width: number; height: number }
+
+export interface OverlayViewportInsets { top?: number; bottom?: number }
+
+/** Reserve app-declared vertical occlusions within a measured viewport. */
+export function insetOverlayBounds(bounds: OverlayBounds, insets: OverlayViewportInsets): OverlayBounds {
+  const positive = (value: number | undefined) => Number.isFinite(value) ? Math.max(0, value!) : 0;
+  const top = Math.min(bounds.height, positive(insets.top));
+  const bottom = Math.min(bounds.height - top, positive(insets.bottom));
+  return { ...bounds, y: bounds.y + top, height: bounds.height - top - bottom };
+}
+
+export function intersectOverlayBounds(a: OverlayBounds, b: OverlayBounds): OverlayBounds {
+  const x = Math.max(a.x, b.x);
+  const y = Math.max(a.y, b.y);
+  return { x, y, width: Math.max(0, Math.min(a.x + a.width, b.x + b.width) - x), height: Math.max(0, Math.min(a.y + a.height, b.y + b.height) - y) };
 }
 
 const OverlayContext = createContext<OverlayHost | null>(null);
@@ -78,6 +101,15 @@ const outletStyles = StyleSheet.create({
 
 export interface OverlayProviderProps {
   children: ReactNode;
+  /** Start a new measurement boundary inside a separate native Modal window. */
+  separateWindow?: boolean;
+  /** Constrain nested cards to this provider's measured viewport. Nested
+   * content-sized hosts otherwise inherit their window's visible bounds. */
+  viewport?: boolean;
+  /** Measured header/footer occlusions, relative to this provider's own box.
+   * Applies to root hosts and nested hosts with `viewport`; content hosts
+   * inherit their parent band instead. Vertical geometry only. */
+  viewportInsets?: OverlayViewportInsets;
   /**
    * Style for the positioning wrapper. Defaults to `flex: 1` so an app-root host
    * fills the screen; pass a style to override for a content-sized host (e.g. a
@@ -86,13 +118,41 @@ export interface OverlayProviderProps {
   style?: StyleProp<ViewStyle>;
 }
 
-export function OverlayProvider({ children, style }: OverlayProviderProps) {
+export function OverlayProvider({ children, style, separateWindow = false, viewport = false, viewportInsets }: OverlayProviderProps) {
+  const inheritedHost = useOverlayHost();
+  const parent = separateWindow ? null : inheritedHost;
   // The registry is an immutable Map snapshot held in a ref; each change swaps in
   // a new Map (new identity) so useSyncExternalStore detects it. Insertion order
   // is preserved, so a later-opened overlay paints over an earlier one.
   const snapshot = useRef<ReadonlyMap<string, ReactNode>>(new Map());
   const listeners = useRef<Set<() => void>>(new Set());
+  const layoutListeners = useRef<Set<() => void>>(new Set());
+  const topInset = viewportInsets?.top ?? 0;
+  const bottomInset = viewportInsets?.bottom ?? 0;
+  const insets = useRef({ top: topInset, bottom: bottomInset });
+  useLayoutEffect(() => {
+    if (insets.current.top === topInset && insets.current.bottom === bottomInset) return;
+    insets.current = { top: topInset, bottom: bottomInset };
+    // A changed header height invalidates measurements without replacing the
+    // portal host, which would unmount open content and discard its focus.
+    layoutListeners.current.forEach((listener) => listener());
+  }, [topInset, bottomInset]);
   const outletRef = useRef<View>(null);
+  const keyboard = useRef(Platform.OS === "ios" ? Keyboard.metrics?.() : undefined);
+  useEffect(() => {
+    if (parent || Platform.OS !== "ios") return;
+    const update = (event: KeyboardEvent) => {
+      keyboard.current = event.endCoordinates;
+      layoutListeners.current.forEach((listener) => listener());
+    };
+    const hide = () => {
+      keyboard.current = undefined;
+      layoutListeners.current.forEach((listener) => listener());
+    };
+    keyboard.current = Keyboard.metrics?.();
+    const subscriptions = [Keyboard.addListener("keyboardWillShow", update), Keyboard.addListener("keyboardWillChangeFrame", update), Keyboard.addListener("keyboardWillHide", hide)];
+    return () => subscriptions.forEach((subscription) => subscription.remove());
+  }, [parent]);
 
   // The Android sibling blur target (expo-blur 57+; see GlassBlurTargetContext in
   // glass-surface.shared). The host wraps `children` in a BlurTargetView holding
@@ -132,8 +192,31 @@ export function OverlayProvider({ children, style }: OverlayProviderProps) {
       measureOutlet(cb) {
         outletRef.current?.measureInWindow(cb);
       },
+      subscribeLayout(listener) {
+        layoutListeners.current.add(listener);
+        const unsubscribe = parent?.subscribeLayout?.(listener);
+        return () => { layoutListeners.current.delete(listener); unsubscribe?.(); };
+      },
+      measureVisibleBounds(cb) {
+        const measureOwn = (done: (bounds: OverlayBounds) => void) => {
+          outletRef.current?.measureInWindow((x, y, width, height) => {
+            // UIKit keyboard coordinates are window-relative on current RN.
+            // RN 0.74 exposes screen coordinates: its supported keyboard host
+            // configuration is a full-screen window with the same origin.
+            const own = insetOverlayBounds({ x, y, width, height }, insets.current);
+            const bottom = !parent && keyboard.current ? Math.min(own.y + own.height, keyboard.current.screenY) : own.y + own.height;
+            done({ ...own, height: Math.max(0, bottom - own.y) });
+          });
+        };
+        if (!parent) { measureOwn(cb); return; }
+        const measureParent = parent.measureVisibleBounds ?? ((done: (bounds: OverlayBounds) => void) => parent.measureOutlet((x, y, width, height) => done({ x, y, width, height })));
+        measureParent((bounds) => {
+          if (viewport) measureOwn((own) => cb(intersectOverlayBounds(own, bounds)));
+          else cb(bounds);
+        });
+      },
     };
-  }, []);
+  }, [parent, viewport]);
 
   const subscribe = useCallback((listener: () => void) => {
     listeners.current.add(listener);
@@ -142,6 +225,7 @@ export function OverlayProvider({ children, style }: OverlayProviderProps) {
     };
   }, []);
   const getSnapshot = useCallback(() => snapshot.current, []);
+  const onOutletLayout = useCallback(() => layoutListeners.current.forEach((listener) => listener()), []);
 
   return (
     <OverlayContext.Provider value={host}>
@@ -151,7 +235,7 @@ export function OverlayProvider({ children, style }: OverlayProviderProps) {
           targetRef={blurTargetRef}
           outlet={
             <GlassBlurTargetContext.Provider value={ownBlurTarget}>
-              <Outlet outletRef={outletRef} subscribe={subscribe} getSnapshot={getSnapshot} />
+              <Outlet outletRef={outletRef} subscribe={subscribe} getSnapshot={getSnapshot} onLayout={onOutletLayout} />
             </GlassBlurTargetContext.Provider>
           }
         >
@@ -166,14 +250,15 @@ interface OutletProps {
   outletRef: React.RefObject<View | null>;
   subscribe: (listener: () => void) => () => void;
   getSnapshot: () => ReadonlyMap<string, ReactNode>;
+  onLayout: () => void;
 }
 
 // The sole reader of the registry. Re-renders on registry changes only; being a
 // sibling of the provider's `children`, its updates never re-render them.
-function Outlet({ outletRef, subscribe, getSnapshot }: OutletProps) {
+function Outlet({ outletRef, subscribe, getSnapshot, onLayout }: OutletProps) {
   const nodes = useSyncExternalStore(subscribe, getSnapshot, getSnapshot);
   return (
-    <View ref={outletRef} style={outletStyles.outlet}>
+    <View ref={outletRef} style={outletStyles.outlet} onLayout={onLayout}>
       {[...nodes].map(([id, node]) => (
         <Fragment key={id}>{node}</Fragment>
       ))}

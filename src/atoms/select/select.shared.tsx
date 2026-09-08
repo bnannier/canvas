@@ -2,7 +2,8 @@ import { EscapeLayerProvider, useEscapeLayer } from "../../style/escape-layer.js
 import { forwardRef, useId, useRef } from "react";
 import { useComposedRefs } from "../../style/use-composed-refs.js";
 import { type Role } from "react-native";
-import { View, Pressable, Text, ScrollView, useTheme, useControllableState, useFieldWidth, AnchoredOverlay, useMeasuredWidth, FloatingLabel, LabelContent, RippleClip, cornerRadii, type FieldWidthProps, type StyleProp, type ViewStyle } from "../../style/index.js";
+import { View, Pressable, Text, useTheme, useControllableState, useFieldWidth, AnchoredOverlay, useOverlayHost, useMeasuredWidth, FloatingLabel, LabelContent, RippleClip, cornerRadii, type FieldWidthProps, type StyleProp, type ViewStyle } from "../../style/index.js";
+import { OverlayScrollView } from "../../style/overlay-scroll.js";
 
 // React Native's Role union omits the valid ARIA "listbox" role, so the option-list
 // container casts it. The value is correct on both web (DOM role) and native.
@@ -177,6 +178,7 @@ export function createSelect(skin: SelectSkin) {
     // list's minimum width when portaled over the page (a wider row can grow past
     // it), and AnchoredOverlay reads the trigger's box to place the list below it.
     const triggerRef = useRef<View>(null);
+    const host = useOverlayHost();
     const hostRef = useComposedRefs(triggerRef, ref);
     const { width: triggerWidth, onLayout: onTriggerLayout } = useMeasuredWidth();
 
@@ -201,7 +203,7 @@ export function createSelect(skin: SelectSkin) {
     const displayText = hasValue ? selectedLabel : floating && !open ? "" : placeholder;
 
     return (
-      <View style={[root, open ? rootLifted : null, widthCap, style]}>
+      <View style={[root, open && !host ? rootLifted : null, widthCap, style]}>
         {above ? (
           <Text nativeID={labelId} style={skin.label(tokens, size)}>
             <LabelContent label={label!} required={required} starColor={tokens.destructive} />
@@ -278,6 +280,7 @@ export function createSelect(skin: SelectSkin) {
         </RippleClip>
 
         <AnchoredOverlay
+          ownsScroll
           open={open}
           onDismiss={() => setOpen(false)}
           triggerRef={triggerRef}
@@ -298,7 +301,7 @@ export function createSelect(skin: SelectSkin) {
                 (4dp) `panel` card. RippleClip is still what rounds their bounded Android
                 ripples: a view cannot clip its own ripple, and the card's own clip does not
                 reach them through the card's padding. See src/style/ripple-clip. */}
-            <ScrollView style={optionScroll} bounces={false}>
+            <OverlayScrollView style={optionScroll} bounces={false}>
             <RippleClip shape={cornerRadii(skin.panel(tokens))}>
             <View role={LISTBOX}>
             {items.map((option, i) => {
@@ -340,7 +343,7 @@ export function createSelect(skin: SelectSkin) {
             })}
             </View>
             </RippleClip>
-            </ScrollView>
+            </OverlayScrollView>
         </EscapeLayerProvider>
         </AnchoredOverlay>
       </View>

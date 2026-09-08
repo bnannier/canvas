@@ -1,10 +1,21 @@
 import { afterEach, expect, it } from "bun:test";
 import { act, cleanup, renderHook } from "@testing-library/react";
 import type { LayoutChangeEvent } from "react-native";
-import { useHorizontalScrollFocus } from "../src/style/use-scroll-focus.ts";
+import { useHorizontalScrollFocus, useScrollFocus } from "../src/style/use-scroll-focus.ts";
 
 afterEach(cleanup);
 const layout = (width: number) => ({ nativeEvent: { layout: { x: 0, y: 0, width, height: 80 } } }) as LayoutChangeEvent;
+
+it("uses vertical overflow for capped menu content", () => {
+  const { result } = renderHook(() => useScrollFocus("vertical"));
+  act(() => result.current.onLayout(layout(320)));
+  act(() => result.current.onContentSizeChange(600, 80));
+  expect(result.current.tabIndex).toBe(-1);
+  act(() => result.current.onContentSizeChange(320, 300));
+  expect(result.current.tabIndex).toBe(0);
+  act(() => result.current.onContentSizeChange(320, 40));
+  expect(result.current.tabIndex).toBe(-1);
+});
 
 it("waits for both native measurements before exposing overflowing content to the keyboard", () => {
   const { result } = renderHook(useHorizontalScrollFocus);

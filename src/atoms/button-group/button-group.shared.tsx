@@ -1,6 +1,6 @@
 import { useRef, useState } from "react";
 import { type GestureResponderEvent } from "react-native";
-import { View, Pressable, Text, RippleClip, cornerRadii, useTheme, useControllableState, AnchoredOverlay, useMeasuredWidth, devWarn, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle } from "../../style/index.js";
+import { View, Pressable, Text, RippleClip, cornerRadii, useTheme, useControllableState, AnchoredOverlay, useOverlayHost, useMeasuredWidth, devWarn, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle } from "../../style/index.js";
 import { Icon, type IconName } from "../icon/icon.js";
 import * as s from "./button-group.styles.js";
 
@@ -312,6 +312,7 @@ export function createButtonGroup(skin: ButtonGroupSkin) {
     // render narrower than the button it drops from.
     const { width: triggerWidth, onLayout: onTriggerLayout } = useMeasuredWidth();
     const triggerRef = useRef<View>(null);
+    const host = useOverlayHost();
     // The skin's splitMenu merges the card visuals (fill/border/shadow/radius)
     // with the inline anchor (position/top/end/marginTop/zIndex). Split them so
     // AnchoredOverlay can style the portaled card via cardStyle and fall back to
@@ -322,7 +323,7 @@ export function createButtonGroup(skin: ButtonGroupSkin) {
     return (
       <View
         ref={triggerRef}
-        style={[s.splitContainer, open ? s.splitContainerLifted : null, disabled ? s.dim : null, style]}
+        style={[s.splitContainer, open && !host ? s.splitContainerLifted : null, disabled ? s.dim : null, style]}
         testID={testID}
         onLayout={onTriggerLayout}
       >

@@ -1,6 +1,6 @@
 import { EscapeLayerProvider, useEscapeLayer } from "../../style/escape-layer.js";
 import { useRef, useState } from "react";
-import { View, Pressable, Text, useTheme, AnchoredOverlay, useMeasuredWidth, RippleClip, cornerRadii, useMinTargetSlop, type StyleProp, type ViewStyle } from "../../style/index.js";
+import { View, Pressable, Text, useTheme, AnchoredOverlay, useOverlayHost, useMeasuredWidth, RippleClip, cornerRadii, useMinTargetSlop, type StyleProp, type ViewStyle } from "../../style/index.js";
 import { Icon } from "../../atoms/icon/icon.js";
 import { anchorLifted, type RowMenuItem, type RowMenuSkin } from "./row-menu.styles.js";
 
@@ -79,6 +79,7 @@ export function createRowMenu(skin: RowMenuSkin) {
     // measured width is a floor for the menu; a wide trigger never yields a
     // narrower menu than the skin's own minimum.
     const triggerRef = useRef<View>(null);
+    const host = useOverlayHost();
     const { width: triggerWidth, onLayout: onTriggerLayout } = useMeasuredWidth();
 
     const ripple = skin.ripple ? skin.ripple(tokens) : undefined;
@@ -89,7 +90,7 @@ export function createRowMenu(skin: RowMenuSkin) {
       <View
         ref={triggerRef}
         testID={testID}
-        style={[skin.anchor, open ? anchorLifted : null, style]}
+        style={[skin.anchor, open && !host ? anchorLifted : null, style]}
         onLayout={onTriggerLayout}
       >
         {/* RippleClip clips the Android bounded ripple to the ⋯ trigger's rounded

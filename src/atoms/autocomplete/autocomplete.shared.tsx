@@ -1,7 +1,9 @@
 import { consumeEscapeKey, EscapeLayerProvider, useEscapeLayer } from "../../style/escape-layer.js";
-import { forwardRef, useCallback, useEffect, useId, useRef, useState } from "react";
-import { type Role, type ScrollView as RNScrollView, type TextInput as RNTextInput } from "react-native";
-import { View, Pressable, Text, TextInput, ScrollView, useTheme, useControllableState, useFieldWidth, AnchoredOverlay, useMeasuredWidth, FloatingLabel, LabelContent, FOCUS_RESET, RippleClip, cornerRadii, type FieldWidthProps, type StyleProp, type ViewStyle, type TextStyle } from "../../style/index.js";
+import { forwardRef, useEffect, useId, useRef, useState } from "react";
+import { type Role, type TextInput as RNTextInput } from "react-native";
+import { View, Pressable, Text, TextInput, useTheme, useControllableState, useFieldWidth, AnchoredOverlay, useOverlayHost, useMeasuredWidth, FloatingLabel, LabelContent, FOCUS_RESET, RippleClip, cornerRadii, type FieldWidthProps, type StyleProp, type ViewStyle, type TextStyle } from "../../style/index.js";
+import { OverlayScrollView } from "../../style/overlay-scroll.js";
+import { useActiveOptionScroll } from "../../style/use-active-option-scroll.js";
 
 // React Native's Role union omits the valid ARIA "listbox" role, so the option-list
 // container casts it. The value is correct on both web (DOM role) and native.
@@ -180,6 +182,7 @@ export function createAutocomplete(skin: AutocompleteSkin) {
     // also spans the label and helper text). Measured via onLayout so the list
     // takes at least the field's width when portaled over the page.
     const fieldRef = useRef<View>(null);
+    const host = useOverlayHost();
     const { width: triggerWidth, onLayout: onTriggerLayout } = useMeasuredWidth();
 
     // Escape closes the open option list on web (no-op natively). A disabled
@@ -210,57 +213,8 @@ export function createAutocomplete(skin: AutocompleteSkin) {
       if (!open || activeIndex < 0) setActiveKey(null);
     }, [open, activeIndex]);
 
-    // Measure the active row in current content coordinates. RNW's onLayout is
-    // resize-driven, so cached y positions go stale when filtering moves a
-    // surviving row without resizing it. Native measureLayout handles both that
-    // case and wrapped labels without a DOM-specific scroll implementation.
-    const listRef = useRef<RNScrollView>(null);
-    const listContentRef = useRef<View>(null);
-    const rowRefs = useRef(new Map<string, View>());
-    const viewportHeight = useRef(0);
-    const scrollOffset = useRef(0);
-    const activeIdRef = useRef(activeId);
-    activeIdRef.current = activeId;
     const layoutKey = JSON.stringify(matches.map(({ id, key }) => [id, key]));
-    const layoutKeyRef = useRef(layoutKey);
-    layoutKeyRef.current = layoutKey;
-    const measurementSequence = useRef(0);
-    const scrollActiveIntoView = useCallback(() => {
-      const request = ++measurementSequence.current;
-      const id = activeIdRef.current;
-      const order = layoutKeyRef.current;
-      const row = id ? rowRefs.current.get(id) : undefined;
-      const content = listContentRef.current;
-      const list = listRef.current;
-      if (!id || !row || !content || !list || viewportHeight.current <= 0) return;
-      row.measureLayout(content, (_x, y, _width, height) => {
-        // A native measurement may return after another arrow, filter, reorder,
-        // or close/reopen. Its coordinates belong only to this row and request.
-        if (request !== measurementSequence.current || id !== activeIdRef.current
-          || order !== layoutKeyRef.current || row !== rowRefs.current.get(id)
-          || content !== listContentRef.current || list !== listRef.current
-          || !Number.isFinite(y) || height <= 0 || viewportHeight.current <= 0) return;
-        const top = scrollOffset.current;
-        const bottom = top + viewportHeight.current;
-        const next = y < top ? y
-          : y + height > bottom ? Math.min(y, y + height - viewportHeight.current)
-          : top;
-        if (next !== top) {
-          list.scrollTo({ y: next, animated: false });
-          scrollOffset.current = next;
-        }
-      }, () => {});
-    }, []);
-    // Layout callbacks can be queued before navigation and delivered afterward
-    // (RNW measures asynchronously). A stable callback reads today's active row
-    // so that late opening measurements still scroll the latest destination.
-    useEffect(scrollActiveIntoView, [activeId, layoutKey, scrollActiveIntoView]);
-    useEffect(() => {
-      if (!open) {
-        viewportHeight.current = 0;
-        scrollOffset.current = 0;
-      }
-    }, [open]);
+    const { listRef, listContentRef, rowRefs, onLayout: onListLayout, onScroll: onListScroll, onRowLayout, scrollActiveIntoView } = useActiveOptionScroll(activeId, layoutKey, open);
 
     const selectOption = (option: string) => {
       if (disabled) return;
@@ -283,7 +237,7 @@ export function createAutocomplete(skin: AutocompleteSkin) {
     const fieldHeight = asNum((skin.field(tokens, size, open) as { height?: unknown }).height, 56);
 
     return (
-      <View style={[wrapper, open ? wrapperLifted : null, widthCap, style]}>
+      <View style={[wrapper, open && !host ? wrapperLifted : null, widthCap, style]}>
         {above ? (
           <Text nativeID={labelId} style={skin.label(tokens, size)}>
             <LabelContent label={label!} required={required} starColor={tokens.destructive} />
@@ -432,6 +386,7 @@ export function createAutocomplete(skin: AutocompleteSkin) {
         </View>
 
         <AnchoredOverlay
+          ownsScroll
           open={open}
           onDismiss={() => setOpen(false)}
           triggerRef={fieldRef}
@@ -448,16 +403,13 @@ export function createAutocomplete(skin: AutocompleteSkin) {
           dismissable={openProp === undefined || onOpenChange !== undefined}
         >
           <EscapeLayerProvider scope={escapeScope}>
-            <ScrollView
+            <OverlayScrollView
               ref={listRef}
               style={optionScroll}
               bounces={false}
               keyboardShouldPersistTaps="handled"
-              onLayout={(event) => {
-                viewportHeight.current = event.nativeEvent.layout.height;
-                scrollActiveIntoView();
-              }}
-              onScroll={(event) => { scrollOffset.current = event.nativeEvent.contentOffset.y; }}
+              onLayout={onListLayout}
+              onScroll={onListScroll}
               scrollEventThrottle={16}
               onContentSizeChange={scrollActiveIntoView}
             >
@@ -481,9 +433,7 @@ export function createAutocomplete(skin: AutocompleteSkin) {
                           if (node) rowRefs.current.set(id, node);
                           else rowRefs.current.delete(id);
                         }}
-                        onLayout={() => {
-                          if (activeIdRef.current === id) scrollActiveIntoView();
-                        }}
+                        onLayout={() => onRowLayout(id)}
                         style={({ pressed }) => [
                           skin.row,
                           separator,
@@ -508,7 +458,7 @@ export function createAutocomplete(skin: AutocompleteSkin) {
                   })}
                 </View>
               </RippleClip>
-            </ScrollView>
+            </OverlayScrollView>
           </EscapeLayerProvider>
         </AnchoredOverlay>
 

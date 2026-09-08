@@ -78,9 +78,11 @@ export interface CommandSkin {
 // (radius/border/clip) is the skin's, with the per-OS radius/curve layered on via
 // `skin.cardShape`. This base is identical on every platform: only the rows and
 // the corner shape are re-skinned.
+export const CARD_WIDTH = 420;
+
 export function card(tokens: ColorTokens): ViewStyle {
   return {
-    width: 420,
+    width: CARD_WIDTH,
     maxWidth: "100%",
     borderRadius: 8,
     borderWidth: 1,
@@ -174,6 +176,7 @@ export function emptyText(tokens: ColorTokens): TextStyle {
 export function footerBar(tokens: ColorTokens): ViewStyle {
   return {
     flexDirection: "row",
+    flexWrap: "wrap",
     alignItems: "center",
     gap: 12,
     borderTopWidth: 1,

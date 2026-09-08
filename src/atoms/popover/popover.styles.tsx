@@ -45,7 +45,9 @@ export interface PopoverSkin {
   /** The supporting line beneath the title. */
   description: (t: ColorTokens) => TextStyle;
   /** Renders the anchor pointer toward the anchor, or null when the platform has none. */
-  arrow: ((t: ColorTokens, placement: Placement) => ReactNode) | null;
+  arrow: ((t: ColorTokens, placement: Placement, anchor?: { centerX: number; cardWidth: number }) => ReactNode) | null;
+  /** Standoff reserved for the solid arrow's protrusion. */
+  arrowGap?: number;
 }
 
 // --- shared layout fragments (identical across platforms) -------------------
@@ -126,6 +128,13 @@ const IOS_BEAK_W = 30; // base width where the beak meets the card edge
 const IOS_BEAK_H = 13; // protrusion past the card edge (taller than the tip is wide)
 const IOS_BEAK_FILLET = 7; // concave shoulder fillet near the card edge
 const IOS_BEAK_TIP = 3.5; // softly-rounded apex radius
+const IOS_CARD_RADIUS = 26;
+
+export function popoverArrowOffset(centerX: number, cardWidth: number): number {
+  // Keep the shoulders on the straight card edge, including narrow hosts.
+  const inset = Math.min(IOS_CARD_RADIUS, Math.max(0, (cardWidth - IOS_BEAK_W) / 2));
+  return Math.max(inset, Math.min(centerX - IOS_BEAK_W / 2, cardWidth - inset - IOS_BEAK_W));
+}
 
 // The pointing-UP beak path (apex at the top), drawn on a IOS_BEAK_W x IOS_BEAK_H
 // viewBox. Shoulders use cubic beziers whose first control point sits ON the card
@@ -151,7 +160,7 @@ export const iosSkin: PopoverSkin = {
   card: (t) => ({
     width: 260,
     maxWidth: "100%",
-    borderRadius: 26,
+    borderRadius: IOS_CARD_RADIUS,
     backgroundColor: t.popover,
     padding: 16,
     ...shadow("lg"),
@@ -166,7 +175,8 @@ export const iosSkin: PopoverSkin = {
   // by the shell flush to the card's anchor-facing edge, inset from the left so it
   // sits under the trigger. The viewBox is flipped vertically for the `top`
   // placement so the apex points down toward an anchor above the card.
-  arrow: (t, placement) => {
+  arrowGap: IOS_BEAK_H - 1,
+  arrow: (t, placement, anchor) => {
     const pointUp = placement === "bottom"; // card below the trigger -> beak points up
     return (
       <Svg
@@ -175,7 +185,7 @@ export const iosSkin: PopoverSkin = {
         viewBox={`0 0 ${IOS_BEAK_W} ${IOS_BEAK_H}`}
         style={{
           position: "absolute",
-          start: 24,
+          ...(anchor ? { left: popoverArrowOffset(anchor.centerX, anchor.cardWidth) } : { start: 24 }),
           // Overlap the card edge by ~1px so the seam welds shut: ride the TOP
           // edge (pointing up) when the card is below the trigger, and the BOTTOM
           // edge (pointing down) when the card is above it.

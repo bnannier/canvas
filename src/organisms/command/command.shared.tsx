@@ -1,7 +1,9 @@
-import { EscapeLayerProvider, useEscapeLayer } from "../../style/escape-layer.js";
-import { useEffect, useId, useRef, useState } from "react";
+import { consumeEscapeKey, EscapeLayerProvider, useEscapeLayer } from "../../style/escape-layer.js";
+import { useId, useRef, useState } from "react";
 import { type Role, type TextInput as RNTextInput, type TextStyle } from "react-native";
-import { View, Text, TextInput, Pressable, useTheme, useControllableState, AnchoredOverlay, GlassSurface, FOCUS_RESET, type StyleProp, type ViewStyle } from "../../style/index.js";
+import { View, Text, TextInput, Pressable, useTheme, useControllableState, AnchoredOverlay, useOverlayHost, GlassSurface, FOCUS_RESET, type StyleProp, type ViewStyle } from "../../style/index.js";
+import { OverlayScrollView } from "../../style/overlay-scroll.js";
+import { useActiveOptionScroll } from "../../style/use-active-option-scroll.js";
 
 // React Native's Role union omits the valid ARIA "listbox" role, so the command
 // list container casts it. The value is correct on both web (DOM role) and native.
@@ -150,6 +152,7 @@ export function createCommand(skin: CommandSkin) {
 
     // The trigger view AnchoredOverlay measures to anchor (and portal) the card.
     const triggerRef = useRef<View>(null);
+    const host = useOverlayHost();
 
     // Escape dismisses the open TRIGGER-mode palette on web (no-op natively). The
     // bare inline card is left alone: it has no trigger to reopen it, so escape
@@ -182,13 +185,24 @@ export function createCommand(skin: CommandSkin) {
     const baseId = useId();
     const optionId = (i: number) => `${baseId}-opt-${i}`;
     const searchRef = useRef<RNTextInput>(null);
-    const onSearchKeyPress = (event: { nativeEvent: { key: string }; preventDefault: () => void }) => {
-      if (event.nativeEvent.key === "Escape") {
+    const results = useActiveOptionScroll(open && total > 0 ? optionId(activeIndex) : undefined, JSON.stringify(visibleGroups), open);
+    const onSearchKeyPress = (event: { nativeEvent: {
+      key: string; isComposing?: boolean; keyCode?: number; repeat?: boolean;
+      altKey?: boolean; ctrlKey?: boolean; metaKey?: boolean;
+    }; preventDefault: () => void }) => {
+      const { key, isComposing, keyCode, repeat, altKey, ctrlKey, metaKey } = event.nativeEvent;
+      // IME confirmation and modified editing keys belong to the text input.
+      if (isComposing || keyCode === 229) {
+        if (key === "Escape") consumeEscapeKey({ nativeEvent: event.nativeEvent });
+        return;
+      }
+      if (key === "Escape") {
         escapeScope.onKeyPress(event);
         return;
       }
       if (total === 0) return;
-      switch (event.nativeEvent.key) {
+      if ((altKey || ctrlKey || metaKey) && (key === "ArrowDown" || key === "ArrowUp")) return;
+      switch (key) {
         case "ArrowDown":
           event.preventDefault();
           setActive(Math.min(activeIndex + 1, total - 1));
@@ -199,6 +213,7 @@ export function createCommand(skin: CommandSkin) {
           break;
         case "Enter": {
           event.preventDefault();
+          if (repeat) return;
           const item = flatItems[activeIndex];
           if (item) {
             onSelect?.(item, activeIndex);
@@ -210,13 +225,6 @@ export function createCommand(skin: CommandSkin) {
           return;
       }
     };
-    // Move focus into the palette when it opens via a trigger (a deliberate action);
-    // never for the always-open bare card, which would steal focus on page load.
-    useEffect(() => {
-      if (!trigger || !open) return;
-      searchRef.current?.focus?.();
-    }, [trigger, open]);
-
     // In trigger mode the collapsed search button is always shown; the palette
     // card below it is still gated by `open`. Otherwise the bare card is gated by
     // `open` and renders nothing when closed.
@@ -261,13 +269,14 @@ export function createCommand(skin: CommandSkin) {
           />
         </View>
 
+        <OverlayScrollView ref={results.listRef} onLayout={results.onLayout} onScroll={results.onScroll} onContentSizeChange={results.scrollActiveIntoView} scrollEventThrottle={16}>
         {q !== "" && total === 0 ? (
           <View style={s.emptyRow}>
             <Text style={s.emptyText(tokens)}>No results</Text>
           </View>
         ) : null}
 
-        <View role={LISTBOX}>
+        <View ref={results.listContentRef} collapsable={false} role={LISTBOX}>
         {visibleGroups.map((group, gi) => (
           <View key={`group-${gi}`} role="group" aria-label={group.heading ?? undefined}>
             {group.heading != null ? <Text style={s.groupHeading(tokens)}>{group.heading}</Text> : null}
@@ -279,6 +288,11 @@ export function createCommand(skin: CommandSkin) {
                 <Pressable
                   key={`item-${gi}-${ii}`}
                   nativeID={optionId(index)}
+                  ref={(node) => {
+                    if (node) results.rowRefs.current.set(optionId(index), node);
+                    else results.rowRefs.current.delete(optionId(index));
+                  }}
+                  onLayout={() => results.onRowLayout(optionId(index))}
                   style={({ pressed }) => [
                     skin.rowBase,
                     // The active row always takes the brand accent highlight. The
@@ -309,6 +323,7 @@ export function createCommand(skin: CommandSkin) {
           </View>
         ))}
         </View>
+        </OverlayScrollView>
 
         {footer ? (
           <View style={s.footerBar(tokens)}>
@@ -348,7 +363,7 @@ export function createCommand(skin: CommandSkin) {
     // anchor (s.cardFloating). The wrapper still lifts its own stacking context
     // while open for that inline-fallback case.
     return (
-      <View ref={triggerRef} testID={testID} style={[s.triggerWrapper, open ? s.triggerWrapperLifted : null, style]}>
+      <View ref={triggerRef} testID={testID} style={[s.triggerWrapper, open && !host ? s.triggerWrapperLifted : null, style]}>
         <Pressable
           accessibilityRole="button"
           accessibilityState={{ expanded: open }}
@@ -361,11 +376,14 @@ export function createCommand(skin: CommandSkin) {
           <Kbd keys="⌘ K" style={s.triggerKbd} />
         </Pressable>
         <AnchoredOverlay
+          ownsScroll
+          onCardMount={() => searchRef.current?.focus?.()}
           open={open}
           onDismiss={() => setOpen(false)}
           triggerRef={triggerRef}
           gap={12}
           cardStyle={[s.card(tokens), skin.cardShape]}
+          cardWidth={s.CARD_WIDTH}
           inlineStyle={s.cardFloating}
           // A controlled `open` with no onOpenChange can never actually close, so
           // the hosted dismiss backdrop is skipped (it would only block the page).

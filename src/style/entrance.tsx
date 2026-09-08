@@ -34,9 +34,9 @@ interface Size {
  * The relationship is linear in progress, so the pin holds exactly through spring overshoot
  * (scale > 1). Exported for unit tests.
  */
-export function entranceTranslation(size: Size, startScale: number): { x: number; y: number } {
+export function entranceTranslation(size: Size, startScale: number, anchorBottom = false): { x: number; y: number } {
   const k = 1 - startScale;
-  return { x: -(size.width / 2) * k, y: -(size.height / 2) * k };
+  return { x: -(size.width / 2) * k, y: (anchorBottom ? 1 : -1) * (size.height / 2) * k };
 }
 
 export interface EntranceProps {
@@ -45,12 +45,16 @@ export interface EntranceProps {
    * pinned). Omit for a dialog-style symmetric scale-fade about the center.
    */
   anchor?: boolean;
+  /** Pin the lower corner when an anchored card opens above its trigger. */
+  anchorBottom?: boolean;
+  /** Hold visibility until the owner has measured its final placement. */
+  ready?: boolean;
   /** Layout/position for the wrapper (a menu's absolute left/top; a dialog's width caps). */
   style?: StyleProp<ViewStyle>;
   children: ReactNode;
 }
 
-export function Entrance({ anchor, style, children }: EntranceProps) {
+export function Entrance({ anchor, anchorBottom = false, ready = true, style, children }: EntranceProps) {
   const reduced = useReducedMotion();
   const progress = useRef(new Animated.Value(0)).current;
   // Anchored mode needs the surface's own size to pin the corner; measured from the
@@ -59,6 +63,10 @@ export function Entrance({ anchor, style, children }: EntranceProps) {
   const startScale = anchor ? MENU_START_SCALE : PANEL_START_SCALE;
 
   useEffect(() => {
+    if (!ready) {
+      progress.setValue(0);
+      return;
+    }
     if (reduced) {
       // Static final frame: fully visible, no scale/translate (Apple: no morph under
       // Reduce Motion).
@@ -72,11 +80,11 @@ export function Entrance({ anchor, style, children }: EntranceProps) {
       ...(anchor ? MENU_SPRING : PANEL_SPRING),
       useNativeDriver: supportsNativeDriver, // one-shot: native off-thread on iOS/Android, JS on web
     }).start();
-  }, [reduced, anchor, size, progress]);
+  }, [reduced, anchor, size, progress, ready]);
 
   const opacity = progress.interpolate({ inputRange: [0, 1], outputRange: [0, 1], extrapolate: "clamp" });
   const scale = progress.interpolate({ inputRange: [0, 1], outputRange: [startScale, 1], extrapolate: "extend" });
-  const from = anchor && size ? entranceTranslation(size, startScale) : { x: 0, y: 0 };
+  const from = anchor && size ? entranceTranslation(size, startScale, anchorBottom) : { x: 0, y: 0 };
   const translateX = progress.interpolate({ inputRange: [0, 1], outputRange: [from.x, 0], extrapolate: "extend" });
   const translateY = progress.interpolate({ inputRange: [0, 1], outputRange: [from.y, 0], extrapolate: "extend" });
 
@@ -84,10 +92,10 @@ export function Entrance({ anchor, style, children }: EntranceProps) {
   // the surface is scaled about its center first, then translated into place (the
   // translate is in the parent's coordinate space), which is what pins the corner.
   const onLayout =
-    anchor && !size
+    anchor && (!size || !ready)
       ? (event: LayoutChangeEvent) => {
           const { width, height } = event.nativeEvent.layout;
-          setSize({ width, height });
+          setSize((previous) => previous?.width === width && previous.height === height ? previous : { width, height });
         }
       : undefined;
 

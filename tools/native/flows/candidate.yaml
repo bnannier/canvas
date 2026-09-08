@@ -194,3 +194,148 @@ name: Sealed Canvas native candidate
     text: Apricot
 - assertNotVisible: Apple
 - takeScreenshot: drawer-selection
+- hideKeyboard
+# The diagnostic retains the actual visible host band after keyboard dismissal.
+# Keep the keyboard open until the previously obscured final match is selected.
+- openLink: canvas-smoke:///testing/form-autocomplete?scenario=keyboard
+- scrollUntilVisible:
+    element:
+      id: overlay-visible-measurement
+      text: 'Visible: [1-9][0-9]* to [1-9][0-9]*'
+    direction: DOWN
+- takeScreenshot: autocomplete-visible-band-before-keyboard
+- scrollUntilVisible:
+    element:
+      id: fruit-input
+    direction: UP
+- tapOn:
+    id: fruit-input
+- inputText: Ap
+- scrollUntilVisible:
+    element:
+      text: Pineapple
+    direction: DOWN
+- takeScreenshot: autocomplete-final-match-with-keyboard
+- tapOn: Pineapple
+- assertVisible:
+    id: fruit-input
+    text: Pineapple
+- hideKeyboard
+- scrollUntilVisible:
+    element:
+      id: selection-count
+    direction: DOWN
+- assertVisible:
+    id: selection-count
+    text: '1'
+- assertVisible:
+    id: submit-count
+    text: '0'
+- scrollUntilVisible:
+    element:
+      id: overlay-resize-observation
+    direction: DOWN
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - assertVisible:
+          id: overlay-resize-observation
+          text: Visible overlay height shrank
+- takeScreenshot: autocomplete-visible-band-after-selection
+- openLink: canvas-smoke:///testing/form-autocomplete?scenario=modal-keyboard
+- tapOn: Open fruit drawer
+- assertVisible:
+    id: overlay-visible-measurement
+    text: 'Visible: [1-9][0-9]* to [1-9][0-9]*'
+- takeScreenshot: drawer-visible-band-before-keyboard
+- tapOn:
+    id: drawer-fruit-input
+- inputText: Ap
+- scrollUntilVisible:
+    element:
+      text: Pineapple
+    direction: DOWN
+- takeScreenshot: drawer-final-match-with-keyboard
+- tapOn: Pineapple
+- assertVisible:
+    id: drawer-fruit-input
+    text: Pineapple
+- hideKeyboard
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - assertVisible:
+          id: overlay-resize-observation
+          text: Visible overlay height shrank
+- takeScreenshot: drawer-visible-band-after-selection
+- openLink: canvas-smoke:///testing/form-autocomplete?scenario=command-keyboard
+- scrollUntilVisible:
+    element:
+      id: overlay-visible-measurement
+      text: 'Visible: [1-9][0-9]* to [1-9][0-9]*'
+    direction: DOWN
+- scrollUntilVisible:
+    element:
+      id: keyboard-command
+    direction: UP
+- tapOn: Search...
+# Opening the actual mounted card must focus its input without another tap.
+- assertVisible:
+    text: Search work items
+    focused: true
+- inputText: Work
+- scrollUntilVisible:
+    element:
+      text: Work item 40
+    direction: DOWN
+- assertVisible:
+    text: Search work items
+    focused: true
+- assertVisible: to navigate
+- assertVisible: to select
+- assertVisible: to close
+- takeScreenshot: command-final-result-with-keyboard
+# Typing after a real results drag proves that input focus was preserved.
+- inputText: ' item'
+- scrollUntilVisible:
+    element:
+      text: Work item 40
+    direction: DOWN
+- assertVisible:
+    text: Search work items
+    focused: true
+- assertVisible: to navigate
+- assertVisible: to select
+- assertVisible: to close
+- tapOn: Work item 40
+- hideKeyboard
+- scrollUntilVisible:
+    element:
+      id: command-selected-index
+    direction: DOWN
+- assertVisible:
+    id: command-query
+    text: 'Query: Work item'
+- assertVisible:
+    id: command-selected
+    text: 'Selected: Work item 40'
+- assertVisible:
+    id: command-selected-index
+    text: 'Selected index: 39'
+- assertVisible:
+    id: command-selections
+    text: 'Selections: 1'
+- scrollUntilVisible:
+    element:
+      id: overlay-resize-observation
+    direction: DOWN
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - assertVisible:
+          id: overlay-resize-observation
+          text: Visible overlay height shrank
+- takeScreenshot: command-selected-with-preserved-query

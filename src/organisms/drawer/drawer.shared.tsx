@@ -184,7 +184,7 @@ export function createDrawer(skin: DrawerSkin, Button: ButtonComponent = WebButt
     // bottom sheet clears the home indicator, a side drawer the notch/status bar); the opaque
     // `card` fill still reaches the screen edge, and insets resolve to 0 elsewhere.
     const panel = (
-      <Pressable accessible={false} style={[s.panelPos[edge], sheetCap]} onPress={() => {}} onLayout={isVertical ? (e) => setPanelH(e.nativeEvent.layout.height) : undefined}>
+      <Pressable accessible={false} focusable={false} tabIndex={-1} importantForAccessibility="no" style={[s.panelPos[edge], sheetCap]} onPress={() => {}} onLayout={isVertical ? (e) => setPanelH(e.nativeEvent.layout.height) : undefined}>
         <SafeAreaView style={[skin.panelShape(edge, width, tokens), style]}>
           {edge === "bottom" ? handleNode : null}
           {children}
@@ -230,7 +230,7 @@ export function createDrawer(skin: DrawerSkin, Button: ButtonComponent = WebButt
                   fills the window, outside the translated and clipped panel, so
                   outlet-relative measurements and outside-tap dismissal span the
                   whole Modal. Nested Drawers establish their own window host. */}
-              <OverlayProvider>
+              <OverlayProvider separateWindow>
                 {/* Lift the panel above the iOS software keyboard so a field inside the drawer stays
                     visible while typing. "padding" shrinks the layout by the keyboard height on iOS;
                     off iOS no behavior is passed (Android's window resizes, web has no soft keyboard). */}
@@ -240,7 +240,7 @@ export function createDrawer(skin: DrawerSkin, Button: ButtonComponent = WebButt
                       affordance, not a control, so it is unannounced (back/escape/trigger dismiss). */}
                   <View style={{ flex: 1 }}>
                     <Animated.View style={[StyleSheet.absoluteFill, { backgroundColor: "rgb(0, 0, 0)", opacity: dimOpacity }]} />
-                    <Pressable accessible={false} style={s.scrim(edge, 0)} onPress={() => setOpen(false)}>
+                    <Pressable accessible={false} focusable={false} tabIndex={-1} importantForAccessibility="no" style={s.scrim(edge, 0)} onPress={() => setOpen(false)}>
                       <Animated.View style={{ transform: slideTransform }}>{panel}</Animated.View>
                     </Pressable>
                   </View>
