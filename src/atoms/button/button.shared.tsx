@@ -1,11 +1,13 @@
-import { type ReactNode } from "react";
+import { forwardRef, type ReactNode } from "react";
 import {
   ActivityIndicator,
   type GestureResponderEvent,
   type MouseEvent,
   type NativeSyntheticEvent,
   type TargetedEvent,
+  type View,
 } from "react-native";
+import { useComposedRefs } from "../../style/use-composed-refs.js";
 import { Pressable, RippleClip, Text, useMinTargetSlop, useTheme, type StyleProp, type ViewStyle } from "../../style/index.js";
 import { type ButtonSkin, type Intent, type Size, FG_TOKEN } from "./button.styles.js";
 
@@ -113,9 +115,12 @@ function sizeOf(p: ButtonProps): Size {
 // test that reads it, do not change.
 export { minTargetSlop } from "../../style/touch-target.js";
 
-/** Build a Button component from a platform skin. */
+/** Build a Button component from a platform skin.
+ * @ref Ref to the interactive Pressable, including link buttons. Typed as a React Native View. On web, React Native Web exposes its DOM host; focus() and blur() move browser focus. Native host behavior depends on the platform and React Native version. Calling focus() does not activate the control or call accessibility focus APIs.
+ */
 export function createButton(skin: ButtonSkin) {
-  return function Button(props: ButtonProps) {
+  const Button = forwardRef<View, ButtonProps>(function Button(props, ref) {
+    const hostRef = useComposedRefs(ref);
     const { children, iconLeft, iconRight, accessibilityLabel, onPress, href, hrefAttrs, onHoverIn, onHoverOut, onFocus, onBlur, loading, disabled, block, icon, testID, style } = props;
     const { tokens } = useTheme();
     const intent = intentOf(props);
@@ -150,6 +155,7 @@ export function createButton(skin: ButtonSkin) {
     return (
       <RippleClip shape={clipShape} style={[block ? { width: "100%" } : null, style]}>
         <Pressable
+          ref={hostRef}
           {...(anchor ?? undefined)}
           onPress={onPress}
           onHoverIn={onHoverIn}
@@ -182,5 +188,7 @@ export function createButton(skin: ButtonSkin) {
         </Pressable>
       </RippleClip>
     );
-  };
+  });
+  Button.displayName = "Button";
+  return Button;
 }

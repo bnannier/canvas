@@ -1,4 +1,6 @@
-import { type ReactNode } from "react";
+import { forwardRef, type ReactNode } from "react";
+import { useComposedRefs } from "../../style/use-composed-refs.js";
+import { useSpaceActivation } from "../../style/use-space-activation.js";
 import { type GestureResponderEvent } from "react-native";
 import { Pressable, View, Text, useTheme, useControllableState, useMinTargetSlop, type ColorTokens, type StyleProp, type ViewStyle, type TouchTargetSkin } from "../../style/index.js";
 
@@ -14,7 +16,7 @@ export interface SwitchProps {
   checked?: boolean;
   /** Initial state for uncontrolled use (a bare <Switch /> is interactive). */
   defaultChecked?: boolean;
-  /** Fired with the next checked value when the switch is toggled (both modes). */
+  /** Fired with the next checked value when the switch is toggled (both modes). Web keyboard activation supports Space on release and Enter. */
   onChange?: (next: boolean) => void;
   /** Alias of onChange, for parity with RN's value-style callbacks. */
   onValueChange?: (next: boolean) => void;
@@ -60,9 +62,12 @@ export interface SwitchSkin extends TouchTargetSkin {
 const LABEL_FONT: Record<Size, number> = { small: 12, base: 14, large: 16 };
 const DESC_FONT: Record<Size, number> = { small: 11, base: 12, large: 14 };
 
-/** Build a Switch component from a platform skin. */
+/** Build a Switch component from a platform skin.
+ * @ref Ref to the interactive switch row, including its label. Typed as a React Native View. On web, React Native Web exposes its DOM host; focus() and blur() move browser focus. Native host behavior depends on the platform and React Native version. Calling focus() does not activate the control or call accessibility focus APIs.
+ */
 export function createSwitch(skin: SwitchSkin) {
-  return function Switch(props: SwitchProps) {
+  const Switch = forwardRef<View, SwitchProps>(function Switch(props, ref) {
+    const hostRef = useComposedRefs(ref);
     const { onChange, onValueChange, disabled, children, description, accessibilityLabel, style } = props;
     const { tokens, dark } = useTheme();
     const size = sizeOf(props);
@@ -81,6 +86,7 @@ export function createSwitch(skin: SwitchSkin) {
     const handlePress = (_event: GestureResponderEvent) => {
       setChecked(!checked);
     };
+    const keyboard = useSpaceActivation(!!disabled, handlePress);
 
     // The whole row is the control, and a base iOS track is 28pt tall, so the row is
     // short of the platform minimum even though it is wide. The touch area grows to
@@ -89,6 +95,8 @@ export function createSwitch(skin: SwitchSkin) {
 
     return (
       <Pressable
+        ref={hostRef}
+        {...(keyboard as object)}
         {...target}
         onPress={handlePress}
         disabled={disabled}
@@ -125,5 +133,7 @@ export function createSwitch(skin: SwitchSkin) {
         </View>
       </Pressable>
     );
-  };
+  });
+  Switch.displayName = "Switch";
+  return Switch;
 }

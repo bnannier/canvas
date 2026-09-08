@@ -156,6 +156,38 @@ function buildProps(checker: ts.TypeChecker, type: ts.Type, node: ts.Declaration
   return out;
 }
 
+// forwardRef adds ref to the returned component, not to its input Props
+// interface. Resolve that public call signature so the table documents the
+// real host type, including factories such as Input that already forward refs.
+function factoryRef(checker: ts.TypeChecker, source: ts.SourceFile, propsName: string, propsType: ts.Type): PropDoc | undefined {
+  const module = checker.getSymbolAtLocation(source);
+  if (!module) return undefined;
+  const factory = checker.getExportsOfModule(module).find((symbol) => symbol.name === `create${propsName.slice(0, -5)}`);
+  if (!factory) return undefined;
+  const component = checker.getTypeOfSymbolAtLocation(factory, source).getCallSignatures()[0]?.getReturnType();
+  const parameter = component?.getCallSignatures()[0]?.getParameters()[0];
+  if (!parameter) return undefined;
+  const publicProps = checker.getTypeOfSymbolAtLocation(parameter, source);
+  // The naming convention locates a candidate, not proof of ownership. Require
+  // the exact exported props type in the public signature: structurally equal
+  // but unrelated interfaces must not borrow another component's ref metadata.
+  const includesProps = (type: ts.Type): boolean => type === propsType
+    || (type.isIntersection() && type.types.some(includesProps));
+  if (!includesProps(publicProps)) return undefined;
+  const ref = publicProps.getProperty("ref");
+  if (!ref) return undefined;
+  const refType = checker.getTypeOfSymbolAtLocation(ref, source);
+  const description = ts.displayPartsToString(factory.getJsDocTags(checker).find((tag) => tag.name === "ref")?.text)
+    .replace(/\s+/g, " ").trim();
+  const optional = isOptional(ref);
+  return {
+    name: "ref",
+    type: clampType(checker.typeToString(refType, source, ts.TypeFormatFlags.NoTruncation | ts.TypeFormatFlags.UseAliasDefinedOutsideCurrentScope), optional),
+    required: !optional,
+    description: description || "Ref to the underlying React Native host. Supports object refs and callback refs; native methods follow the platform's behavior.",
+  };
+}
+
 /**
  * Extract the prop groups for each component directory. `dirs` pairs a docs dir key
  * with one source file to scan; pass a dir more than once to fold several files
@@ -163,8 +195,7 @@ function buildProps(checker: ts.TypeChecker, type: ts.Type, node: ts.Declaration
  * interface/type alias whose name ends in `Props` becomes a group, in file order,
  * de-duplicated by name so a re-exported interface is not listed twice.
  */
-export function extractProps(dirs: { dir: string; file: string }[]): Record<string, PropGroup[]> {
-  const prog = program();
+export function extractProps(dirs: { dir: string; file: string }[], prog = program()): Record<string, PropGroup[]> {
   const checker = prog.getTypeChecker();
   const out: Record<string, PropGroup[]> = {};
   const seen = new Map<string, Set<string>>();
@@ -182,6 +213,8 @@ export function extractProps(dirs: { dir: string; file: string }[]): Record<stri
       if (!name.endsWith("Props") || MIXIN_PROP_TYPES.has(name) || names.has(name)) return;
       const type = checker.getTypeAtLocation(node);
       const props = buildProps(checker, type, node);
+      const ref = factoryRef(checker, sf, name, type);
+      if (ref && !props.some((prop) => prop.name === "ref")) props.push(ref);
       if (props.length) {
         groups.push({ name, props });
         names.add(name);

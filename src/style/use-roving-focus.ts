@@ -49,6 +49,7 @@ export function useRovingFocus(options: RovingFocusOptions): {
   const { count, active, onActivate, orientation = "horizontal", rtl = false, loop = true } = options;
 
   const refs = useRef<Focusable[]>([]);
+  const refSetters = useRef<RovingItemProps["ref"][]>([]);
   // Latch live values so the memoized handlers never go stale without re-subscribing.
   const state = useRef({ count, active, onActivate, orientation, rtl, loop });
   state.current = { count, active, onActivate, orientation, rtl, loop };
@@ -121,14 +122,19 @@ export function useRovingFocus(options: RovingFocusOptions): {
   );
 
   const getItemProps = useCallback(
-    (index: number): RovingItemProps => ({
-      focusable: index === active,
-      tabIndex: index === active ? 0 : -1,
-      ref: (node: Focusable) => {
+    (index: number): RovingItemProps => {
+      // Selection updates tab order, not host identity. Keep each registration
+      // stable so composing it with a consumer ref does not reattach that ref.
+      refSetters.current[index] ??= (node) => {
         refs.current[index] = node;
-      },
-      onKeyDown,
-    }),
+      };
+      return {
+        focusable: index === active,
+        tabIndex: index === active ? 0 : -1,
+        ref: refSetters.current[index],
+        onKeyDown,
+      };
+    },
     [active, onKeyDown],
   );
 

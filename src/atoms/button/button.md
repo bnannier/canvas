@@ -2,6 +2,8 @@
 
 Six variants × four sizes × disabled / focus / hover states. Always semantic: variant communicates intent (default = primary action, destructive = irreversible, ghost = chrome).
 
+Pass `ref` to access the interactive Pressable, including link buttons. Use `useRef<ComponentRef<typeof Button>>(null)` from React, or `useRef<View>(null)` with React Native's `View` type. Object and callback refs are supported and detach on unmount. Calling `ref.current?.focus()` or `.blur()` delegates to the host without activating the control. Browser focus is supported; native focus depends on the platform and React Native version, and is separate from accessibility focus.
+
 ## Usage
 
 A button's whole job is to fire `onPress`. Wire it to your own handler and every press runs it; here each press commits a save, and the line underneath reports the result. (`Stateful` is a docs-only helper that holds the example's state — in your app that state is your own.)

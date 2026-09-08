@@ -1,4 +1,5 @@
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { forwardRef, useEffect, useRef, useState, type ReactNode } from "react";
+import { useComposedRefs } from "../../style/use-composed-refs.js";
 import {
   Animated,
   PanResponder,
@@ -184,9 +185,12 @@ function formatValue(v: number, step: number): string {
   return decimals > 0 ? v.toFixed(decimals) : String(v);
 }
 
-/** Build a Slider component from a platform skin. */
+/** Build a Slider component from a platform skin.
+ * @ref Ref to the interactive adjustable track, including when a header is shown. Typed as a React Native View. On web, React Native Web exposes its DOM host; focus() and blur() move browser focus. Native host behavior depends on the platform and React Native version. Calling focus() does not activate the control or call accessibility focus APIs.
+ */
 export function createSlider(skin: SliderSkin) {
-  return function Slider(props: SliderProps) {
+  const Slider = forwardRef<View, SliderProps>(function Slider(props, ref) {
+    const hostRef = useComposedRefs(ref);
     const { min = 0, max = 100, step = 1, onChange, disabled, accessibilityLabel, style, children, description, showValue } = props;
     const { tokens, surface } = useTheme();
     const reducedMotion = useReducedMotion();
@@ -422,6 +426,7 @@ export function createSlider(skin: SliderSkin) {
     // renders byte-for-byte as before.
     const interactive = (
       <View
+        ref={hostRef}
         {...pan.panHandlers}
         {...webKeyboardProps}
         onLayout={onLayout}
@@ -588,5 +593,7 @@ export function createSlider(skin: SliderSkin) {
         {interactive}
       </View>
     );
-  };
+  });
+  Slider.displayName = "Slider";
+  return Slider;
 }

@@ -2,6 +2,10 @@
 
 Multi-select option, single yes/no, grouped lists.
 
+Pass `ref` to access the interactive checkbox row, including its label. Use `useRef<ComponentRef<typeof Checkbox>>(null)` from React, or `useRef<View>(null)` with React Native's `View` type. Object and callback refs are supported and detach on unmount. Calling `ref.current?.focus()` or `.blur()` delegates to the host without activating the control. Browser focus is supported; native focus depends on the platform and React Native version, and is separate from accessibility focus.
+
+On the web, Space activates the focused control on key release, and Enter also activates it. Holding Space does not repeat the change. Moving focus away, disabling the control, or composing text cancels a pending Space press.
+
 ## Usage
 
 ```tsx
