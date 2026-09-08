@@ -1,4 +1,6 @@
-import { type ReactNode } from "react";
+import { forwardRef, type ReactNode } from "react";
+import { useComposedRefs } from "../../style/use-composed-refs.js";
+import { useSpaceActivation } from "../../style/use-space-activation.js";
 import { type GestureResponderEvent } from "react-native";
 import { View, Pressable, Text, useTheme, useControllableState, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle } from "../../style/index.js";
 import { CheckboxIndicatorBox, CHECKBOX_ROW } from "./indicator/shared.js";
@@ -31,7 +33,7 @@ export interface CheckboxProps {
    * Takes visual precedence over `checked`.
    */
   indeterminate?: boolean;
-  /** Fired with the next checked value when the row is pressed (both modes). */
+  /** Fired with the next checked value when the row is pressed (both modes). Web keyboard activation supports Space on release and Enter. */
   onChange?: (next: boolean) => void;
   /** Alias of onChange, for parity with RN's value-style callbacks. */
   onValueChange?: (next: boolean) => void;
@@ -87,9 +89,12 @@ export interface CheckboxSkin {
 // forcing the row wider.
 const TEXT_COLUMN: ViewStyle = { flexShrink: 1, gap: 8 };
 
-/** Build a Checkbox component from a platform skin. */
+/** Build a Checkbox component from a platform skin.
+ * @ref Ref to the interactive checkbox row, including its label. Typed as a React Native View. On web, React Native Web exposes its DOM host; focus() and blur() move browser focus. Native host behavior depends on the platform and React Native version. Calling focus() does not activate the control or call accessibility focus APIs.
+ */
 export function createCheckbox(skin: CheckboxSkin) {
-  return function Checkbox(props: CheckboxProps) {
+  const Checkbox = forwardRef<View, CheckboxProps>(function Checkbox(props, ref) {
+    const hostRef = useComposedRefs(ref);
     const { children, description, indeterminate, onChange, onValueChange, disabled, style } = props;
     const size = sizeOf(props);
     const { tokens } = useTheme();
@@ -110,11 +115,14 @@ export function createCheckbox(skin: CheckboxSkin) {
     const handlePress = (_event: GestureResponderEvent) => {
       setChecked(!checked);
     };
+    const keyboard = useSpaceActivation(!!disabled, handlePress);
 
     const ripple = skin.ripple ? skin.ripple(tokens) : undefined;
 
     return (
       <Pressable
+        ref={hostRef}
+        {...(keyboard as object)}
         onPress={handlePress}
         disabled={disabled}
         testID={props.testID}
@@ -149,5 +157,7 @@ export function createCheckbox(skin: CheckboxSkin) {
         ) : null}
       </Pressable>
     );
-  };
+  });
+  Checkbox.displayName = "Checkbox";
+  return Checkbox;
 }

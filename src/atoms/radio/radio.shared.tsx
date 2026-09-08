@@ -1,4 +1,6 @@
-import { type ReactNode } from "react";
+import { forwardRef, type ReactNode } from "react";
+import { useComposedRefs } from "../../style/use-composed-refs.js";
+import { useSpaceActivation } from "../../style/use-space-activation.js";
 import { type GestureResponderEvent } from "react-native";
 import { View, Pressable, Text, useTheme, surfaceRipple, RippleClip, cornerRadii, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle } from "../../style/index.js";
 import { useRadioGroup } from "./radio-context.js";
@@ -28,7 +30,7 @@ export interface RadioProps {
   checked?: boolean;
   /** Alias for `checked`, for callers that think in terms of "selected". */
   selected?: boolean;
-  /** Fired on press with the next checked value (always true for a radio). */
+  /** Fired on press with the next checked value (always true for a radio). Web keyboard activation supports Space on release and Enter; RadioGroup also handles arrows. */
   onChange?: (checked: boolean, event: GestureResponderEvent) => void;
   /** E2E hook forwarded to the pressable row. */
   testID?: string;
@@ -103,9 +105,11 @@ const ROW: ViewStyle = { flexDirection: "row", alignItems: "flex-start", gap: 8 
 // description wrap within the row instead of forcing the row wider.
 const TEXT_COLUMN: ViewStyle = { flexShrink: 1, gap: 8 };
 
-/** Build a Radio component from a platform skin. */
+/** Build a Radio component from a platform skin.
+ * @ref Ref to the interactive radio row, preserving group navigation. Typed as a React Native View. On web, React Native Web exposes its DOM host; focus() and blur() move browser focus. Native host behavior depends on the platform and React Native version. Calling focus() does not activate the control or call accessibility focus APIs.
+ */
 export function createRadio(skin: RadioSkin) {
-  return function Radio(props: RadioProps) {
+  const Radio = forwardRef<View, RadioProps>(function Radio(props, ref) {
     const { checked, selected, onChange, children, description, card, style } = props;
     const size = sizeOf(props);
     const { tokens } = useTheme();
@@ -125,6 +129,7 @@ export function createRadio(skin: RadioSkin) {
       if (inGroup) group.select(props.value as string | number, event);
       onChange?.(true, event);
     };
+    const keyboard = useSpaceActivation(disabled, handlePress);
 
     // Card mode: the whole control renders inside selectable Card chrome and the entire
     // card is the tap target. The chrome (border + tint) tracks isChecked, so choosing
@@ -142,14 +147,19 @@ export function createRadio(skin: RadioSkin) {
     // explicitly; `focusable`/`tabIndex`/`onKeyDown` ride through a cast (RN's
     // Pressable types omit onKeyDown). Undefined for a standalone radio.
     const roving = inGroup ? group.itemProps?.(props.value as string | number) : undefined;
+    const hostRef = useComposedRefs<View>(roving?.ref, ref);
     const rovingProps = roving
-      ? { focusable: roving.focusable, tabIndex: roving.tabIndex, onKeyDown: roving.onKeyDown }
+      ? { focusable: roving.focusable, tabIndex: roving.tabIndex }
       : {};
 
     const control = (
       <Pressable
-        ref={roving?.ref}
+        ref={hostRef}
         {...(rovingProps as object)}
+        {...({ ...keyboard, onKeyDown: (event: Parameters<typeof keyboard.onKeyDown>[0]) => {
+          keyboard.onKeyDown(event);
+          if (!event.defaultPrevented) roving?.onKeyDown(event);
+        } } as object)}
         onPress={handlePress}
         disabled={disabled}
         testID={props.testID}
@@ -198,5 +208,7 @@ export function createRadio(skin: RadioSkin) {
     ) : (
       control
     );
-  };
+  });
+  Radio.displayName = "Radio";
+  return Radio;
 }

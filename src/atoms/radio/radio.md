@@ -2,6 +2,10 @@
 
 Single-pick selection: stacked, inline, card-style.
 
+Pass `ref` to access the interactive radio row, preserving group navigation. Use `useRef<ComponentRef<typeof Radio>>(null)` from React, or `useRef<View>(null)` with React Native's `View` type. Object and callback refs are supported and detach on unmount. Calling `ref.current?.focus()` or `.blur()` delegates to the host without activating the control. Browser focus is supported; native focus depends on the platform and React Native version, and is separate from accessibility focus.
+
+On the web, Space activates the focused control on key release, and Enter also activates it. Holding Space does not repeat the change. Moving focus away, disabling the control, or composing text cancels a pending Space press. RadioGroup arrow keys continue to move focus and selection.
+
 ## Usage
 
 ```tsx

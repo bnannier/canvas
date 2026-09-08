@@ -1,5 +1,6 @@
 import { EscapeLayerProvider, useEscapeLayer } from "../../style/escape-layer.js";
-import { useId, useRef } from "react";
+import { forwardRef, useId, useRef } from "react";
+import { useComposedRefs } from "../../style/use-composed-refs.js";
 import { type Role } from "react-native";
 import { View, Pressable, Text, ScrollView, useTheme, useControllableState, useFieldWidth, AnchoredOverlay, useMeasuredWidth, FloatingLabel, LabelContent, RippleClip, cornerRadii, type FieldWidthProps, type StyleProp, type ViewStyle } from "../../style/index.js";
 
@@ -115,9 +116,11 @@ function sizeOf(p: SelectProps): Size {
 // Read a numeric style value (the Android trigger height), falling back when absent.
 const asNum = (v: unknown, fallback: number): number => (typeof v === "number" ? v : fallback);
 
-/** Build a Select component from a platform skin. */
+/** Build a Select component from a platform skin.
+ * @ref Ref to the interactive trigger, preserving overlay measurement. Typed as a React Native View. On web, React Native Web exposes its DOM host; focus() and blur() move browser focus. Native host behavior depends on the platform and React Native version. Calling focus() does not activate the control or call accessibility focus APIs.
+ */
 export function createSelect(skin: SelectSkin) {
-  return function Select(props: SelectProps) {
+  const Select = forwardRef<View, SelectProps>(function Select(props, ref) {
     const {
       options = [],
       label,
@@ -174,6 +177,7 @@ export function createSelect(skin: SelectSkin) {
     // list's minimum width when portaled over the page (a wider row can grow past
     // it), and AnchoredOverlay reads the trigger's box to place the list below it.
     const triggerRef = useRef<View>(null);
+    const hostRef = useComposedRefs(triggerRef, ref);
     const { width: triggerWidth, onLayout: onTriggerLayout } = useMeasuredWidth();
 
     const hasValue = value !== "";
@@ -210,7 +214,7 @@ export function createSelect(skin: SelectSkin) {
             field's standard width, which lives on the root View. */}
         <RippleClip shape={cornerRadii(skin.trigger(tokens, size, open))} style={{ alignSelf: "stretch" }}>
         <Pressable
-          ref={triggerRef}
+          ref={hostRef}
           onLayout={onTriggerLayout}
           style={({ pressed }) => [
             skin.trigger(tokens, size, open),
@@ -341,5 +345,7 @@ export function createSelect(skin: SelectSkin) {
         </AnchoredOverlay>
       </View>
     );
-  };
+  });
+  Select.displayName = "Select";
+  return Select;
 }

@@ -2,6 +2,8 @@
 
 Native select restyled to match Canvas inputs. Pass `label` (and `required`) to name the field: iOS and web render the label above the trigger, while Android floats the Material 3 in-container label once the menu opens or a value is selected. The trigger renders at the standard width by default (`narrow` and `wide` pick the other modes, `block` fills the container, `fit` hugs its own value).
 
+Pass `ref` to access the interactive trigger, preserving overlay measurement. Use `useRef<ComponentRef<typeof Select>>(null)` from React, or `useRef<View>(null)` with React Native's `View` type. Object and callback refs are supported and detach on unmount. Calling `ref.current?.focus()` or `.blur()` delegates to the host without activating the control. Browser focus is supported; native focus depends on the platform and React Native version, and is separate from accessibility focus.
+
 ## Usage
 
 ```tsx
