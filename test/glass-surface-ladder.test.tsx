@@ -4,6 +4,7 @@ import { Text } from "react-native";
 import { ThemeProvider, useTheme } from "../src/style/theme.tsx";
 import { glassByScheme } from "../src/style/tokens.ts";
 import { GlassSurface } from "../src/style/glass-surface/glass-surface.tsx";
+import { GlassSurface as IOSGlassSurface } from "../src/style/glass-surface/glass-surface.ios.tsx";
 import { GlassBox } from "../src/style/glass-surface/glass-surface.shared.tsx";
 
 // The glass accessibility ladder: under Reduce Transparency / Increase Contrast a glass
@@ -17,6 +18,41 @@ import { GlassBox } from "../src/style/glass-surface/glass-surface.shared.tsx";
 // publishes the glass material's own tokens, and GlassSurface applies the ladder.
 
 afterEach(cleanup);
+
+describe("GlassSurface accessibility landmarks", () => {
+  for (const [platform, Surface] of [["web", GlassSurface], ["ios", IOSGlassSurface]] as const) {
+    for (const [reducedTransparency, increasedContrast] of [[true, false], [false, true], [true, true]] as const) {
+      it(`${platform} preserves the landmark with transparency=${reducedTransparency}, contrast=${increasedContrast}`, async () => {
+        const spy = mockMatchMedia((query) =>
+          (reducedTransparency && query.includes("prefers-reduced-transparency")) ||
+          (increasedContrast && query.includes("prefers-contrast")),
+        );
+        try {
+          render(
+            <ThemeProvider light glass>
+              <Surface role="navigation" testID="landmark" tint="#ff00ff" sheer interactive
+                style={{ backgroundColor: "#ffffff", borderRadius: 12 }}>
+                <Text>Page navigation</Text>
+              </Surface>
+              <SurfaceProbe />
+            </ThemeProvider>,
+          );
+          await waitFor(() => expect(screen.getByText(new RegExp(`rt:${reducedTransparency}\\|ic:${increasedContrast}$`))).toBeDefined());
+          const node = screen.getByRole("navigation");
+          expect(node).toBe(screen.getByTestId("landmark"));
+          expect(node.textContent).toBe("Page navigation");
+          expect(node.style.backgroundColor).toMatch(/rgba?\(255, ?255, ?255/);
+          expect(node.style.borderWidth).toBe(increasedContrast ? "1px" : "");
+          expect(node.style.opacity).toBe("");
+          expect(node.children).toHaveLength(1);
+          expect(node.outerHTML).not.toMatch(/ff00ff|255, ?0, ?255|backdrop-filter|isinteractive|sheer|tint=/i);
+        } finally {
+          spy.mockRestore();
+        }
+      });
+    }
+  }
+});
 
 function mockMatchMedia(matching: (query: string) => boolean) {
   const listeners = new Set<(event: { matches: boolean }) => void>();

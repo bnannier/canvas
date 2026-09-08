@@ -284,7 +284,7 @@ export function degradedGlassSurface(
   if (!flags.increasedContrast && !flags.reducedTransparency) return null;
   const style = flags.increasedContrast ? [props.style, contrastBorder(flags.tokens)] : props.style;
   return (
-    <PlainSurface style={style} pointerEvents={props.pointerEvents} testID={props.testID} onLayout={props.onLayout}>
+    <PlainSurface style={style} pointerEvents={props.pointerEvents} testID={props.testID} role={props.role} onLayout={props.onLayout}>
       {props.children}
     </PlainSurface>
   );
