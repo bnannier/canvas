@@ -67,7 +67,9 @@ export interface DataTableColumn {
   /**
    * Derive the comparable value for sorting when this column's cells are custom
    * ReactNodes (a Badge, a link). String/number cells sort out of the box;
-   * without this, custom-node cells sort last.
+   * without this, custom-node cells sort last. Keep this function pure: its
+   * results are cached until rows or columns change. If it closes over changing
+   * external data, replace the function, its descriptor, and the columns array.
    */
   sortValue?: (cell: ReactNode, row: ReactNode[], rowIndex: number) => string | number | null | undefined;
 }
@@ -84,13 +86,16 @@ export interface DataTableProps {
   /**
    * Columns: a header label per column, or a `DataTableColumn` descriptor for
    * per-column alignment (`numeric`/`centered`), a fixed `width`, and sorting
-   * (`sortable`, `sortValue`). Strings and descriptors mix freely.
+   * (`sortable`, `sortValue`). Strings and descriptors mix freely. Treat the
+   * array and descriptors as immutable: replace both when a column changes.
    */
   columns: Array<string | DataTableColumn>;
   /**
    * Row data: an array of rows, each an array of cells (one per column). A cell is
    * a string (rendered in the default cell type) or any ReactNode for a custom
-   * cell — a link, a `Badge`, a monospace name, etc. (rendered directly).
+   * cell, such as a link, a `Badge`, or a monospace name (rendered directly).
+   * Treat this data as immutable: replace the outer array and each changed row
+   * when data changes, so cached sorting and pagination update correctly.
    */
   rows: ReactNode[][];
   /** Tint every other data row for easier horizontal scanning. */
@@ -221,7 +226,8 @@ export interface DataTableProps {
    * omitted, rows key off their original array index (safe for string/number
    * cells and stateless custom cells; selection then tracks row POSITIONS, so
    * supply a real key when the data itself can be reordered, inserted, or
-   * deleted).
+   * deleted). Keep this function pure; replace its identity when external data
+   * changes how keys are derived, so the cached selection summary updates.
    */
   rowKey?: (row: ReactNode[], index: number) => string | number;
   /** E2E hook forwarded to the root element. */
@@ -398,10 +404,15 @@ export function createDataTable(skin: DataTableSkin, parts: DataTableParts) {
     // The view pipeline: original row indices, sorted, then paged. Everything
     // downstream (keys, selection, onRowPress) reports ORIGINAL `rows` indices,
     // so a consumer's handlers are stable under sorting and paging.
-    let viewIndices = rows.map((_, i) => i);
-    if (activeCol) {
+    // Drafts, selection, delete arming, and layout do not alter committed data.
+    // Cache the full view pipeline on immutable inputs and primitive sort
+    // semantics, so a fresh but equivalent controlled sort object is harmless.
+    const descending = !!sortState?.descending;
+    const viewIndices = useMemo(() => {
+      const indices = rows.map((_, i) => i);
+      if (!activeCol) return indices;
       const ci = cols.indexOf(activeCol);
-      const dir = sortState?.descending ? -1 : 1;
+      const dir = descending ? -1 : 1;
       let sawOpaque = false;
       const values = rows.map((row, i) => {
         const cell = row[ci];
@@ -411,7 +422,7 @@ export function createDataTable(skin: DataTableSkin, parts: DataTableParts) {
         return null;
       });
       // Nulls (opaque custom cells without a sortValue) always sort last.
-      viewIndices = viewIndices.slice().sort((a, b) => {
+      indices.sort((a, b) => {
         const va = values[a];
         const vb = values[b];
         if (va == null && vb == null) return 0;
@@ -423,7 +434,8 @@ export function createDataTable(skin: DataTableSkin, parts: DataTableParts) {
         sawOpaque,
         `[canvas] <DataTable> column "${activeCol.key}" has custom ReactNode cells and no sortValue; those rows sort last.`,
       );
-    }
+      return indices;
+    }, [rows, cols, activeCol, descending]);
 
     // ---- selection ---------------------------------------------------------
     // Keyed by `rowKey` (original index fallback); compared as strings so a
@@ -436,8 +448,16 @@ export function createDataTable(skin: DataTableSkin, parts: DataTableParts) {
       props.onSelectionChange,
     );
     const selectedSet = useMemo(() => new Set(selected.map(String)), [selected]);
-    const allSelected = rows.length > 0 && rows.every((row, i) => selectedSet.has(keyOf(row, i)));
-    const someSelected = rows.some((row, i) => selectedSet.has(keyOf(row, i)));
+    const { allSelected, someSelected } = useMemo(() => {
+      if (!selectable || rows.length === 0 || selectedSet.size === 0) {
+        return { allSelected: false, someSelected: false };
+      }
+      let count = 0;
+      rows.forEach((row, i) => {
+        if (selectedSet.has(String(rowKey ? rowKey(row, i) : i))) count += 1;
+      });
+      return { allSelected: count === rows.length, someSelected: count > 0 };
+    }, [rows, rowKey, selectedSet, selectable]);
 
     const toggleAll = () => {
       disarmDelete();
@@ -460,9 +480,12 @@ export function createDataTable(skin: DataTableSkin, parts: DataTableParts) {
     const pageCount = Math.max(1, Math.ceil(rows.length / Math.max(1, pageSize)));
     const [page, setPage] = useControllableState<number>(props.page, props.defaultPage ?? 1, props.onPageChange);
     const current = Math.min(Math.max(1, page), pageCount);
-    const pageIndices = paginated ? viewIndices.slice((current - 1) * pageSize, current * pageSize) : viewIndices;
+    const pageIndices = useMemo(
+      () => paginated ? viewIndices.slice((current - 1) * pageSize, current * pageSize) : viewIndices,
+      [viewIndices, paginated, current, pageSize],
+    );
     // Original row index -> rendered position, for stable striping under sort/paging.
-    const viewPos = new Map(pageIndices.map((idx, pos) => [idx, pos]));
+    const viewPos = useMemo(() => new Map(pageIndices.map((idx, pos) => [idx, pos])), [pageIndices]);
 
     // ---- row interactions (edit / delete / inline cell editing) ------------
     // All three are keyed by ORIGINAL `rows` indices, like everything else in
