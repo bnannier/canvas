@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useLayoutEffect, useRef, useState, type ReactNode, type Ref } from "react";
+import { useCallback, useEffect, useRef, useState, type ReactNode, type Ref } from "react";
+import { useIsomorphicLayoutEffect } from "./use-isomorphic-layout-effect.js";
 import { AccessibilityInfo, Platform, type AccessibilityProps, type TextInput } from "react-native";
 import { useComposedRefs } from "./use-composed-refs.js";
 
@@ -32,14 +33,14 @@ export function useAccessibilityReturn(open: boolean, disabled: boolean, forward
   const inputRef = useComposedRefs(attachInput, forwardedRef);
 
   const cancel = useCallback(() => { intent.current = null; }, []);
-  useLayoutEffect(() => {
+  useIsomorphicLayoutEffect(() => {
     committed.current.mounted = true;
     return () => {
       committed.current.mounted = false;
       intent.current = null;
     };
   }, []);
-  useLayoutEffect(() => {
+  useIsomorphicLayoutEffect(() => {
     committed.current = { mounted: true, open, disabled, opening };
     const request = intent.current;
     if (!request) return;

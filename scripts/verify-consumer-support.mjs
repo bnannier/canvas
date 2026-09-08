@@ -60,7 +60,27 @@ async function checkNative(app, require, label) {
   }
 }
 
+async function checkServer(app, require, expectedReact, label) {
+  fs.copyFileSync(path.join(fixtures, "ssr.jsx"), path.join(app, "ssr.jsx"));
+  const result = await require("esbuild").build({
+    absWorkingDir: app, entryPoints: ["ssr.jsx"], outfile: "ssr.cjs", bundle: true,
+    platform: "node", format: "cjs", metafile: true,
+    alias: { "react-native": "react-native-web" },
+    resolveExtensions: [".web.tsx", ".web.ts", ".web.jsx", ".web.js", ".tsx", ".ts", ".jsx", ".js", ".json"],
+    define: { "process.env.NODE_ENV": '"development"', __DEV__: "true" }, logLevel: "silent",
+  });
+  const inputs = Object.keys(result.metafile.inputs);
+  if (!inputs.some((file) => file.endsWith("@nannier-com/canvas/dist/index.js"))) throw new Error("SSR did not use the installed public package");
+  if (inputs.some((file) => file.includes("@nannier-com/canvas/dist/native/"))) throw new Error("SSR selected native Canvas output");
+  const proof = JSON.parse(run(app, "node", ["ssr.cjs"]));
+  if (proof.reactVersion !== require("react").version || proof.layoutWarnings !== 0 || !(proof.htmlLength > 0)) {
+    throw new Error("SSR used the wrong React runtime or lost its rendered content/effect guarantee");
+  }
+  console.log(`${label}: React ${expectedReact} server rendering without layout-effect warnings passed`);
+}
+
 async function checkWeb(app, require, expectedReact, label) {
+  await checkServer(app, require, expectedReact, label);
   fs.copyFileSync(path.join(fixtures, "web.jsx"), path.join(app, "web.jsx"));
   // These are ordinary RNW consumer settings, including web sibling selection
   // for react-native-svg. Nothing aliases Canvas, rewrites .js requests or stubs peers.

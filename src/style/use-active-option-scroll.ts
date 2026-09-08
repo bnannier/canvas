@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useLayoutEffect, useRef } from "react";
+import { useCallback, useEffect, useRef } from "react";
+import { useIsomorphicLayoutEffect } from "./use-isomorphic-layout-effect.js";
 import type { LayoutChangeEvent, NativeScrollEvent, NativeSyntheticEvent, ScrollView, View } from "react-native";
 
 /** Keep an active-descendant row visible using native content coordinates. */
@@ -10,7 +11,7 @@ export function useActiveOptionScroll(activeId: string | undefined, layoutKey: s
   const scrollOffset = useRef(0);
   const committed = useRef({ activeId, layoutKey });
   const sequence = useRef(0);
-  useLayoutEffect(() => { committed.current = { activeId, layoutKey }; }, [activeId, layoutKey]);
+  useIsomorphicLayoutEffect(() => { committed.current = { activeId, layoutKey }; }, [activeId, layoutKey]);
 
   const scrollActiveIntoView = useCallback(() => {
     const request = ++sequence.current;

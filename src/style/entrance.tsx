@@ -4,7 +4,8 @@
 // replacing transform nodes or remounting its children. Overlays unmount on close,
 // so there is no exit animation.
 
-import { type ReactNode, useCallback, useContext, useLayoutEffect, useRef, useState } from "react";
+import { type ReactNode, useCallback, useContext, useRef, useState } from "react";
+import { useIsomorphicLayoutEffect } from "./use-isomorphic-layout-effect.js";
 import { Animated, type LayoutChangeEvent, type StyleProp, type ViewStyle } from "react-native";
 import { EntranceReadinessContext } from "./entrance-readiness.js";
 import { useReducedMotion, supportsNativeDriver } from "./motion.js";
@@ -112,7 +113,7 @@ export function Entrance({ anchor, anchorBottom = false, ready = true, style, ch
     graph.progress.stopAnimation();
   }, [graph]);
 
-  useLayoutEffect(() => {
+  useIsomorphicLayoutEffect(() => {
     const startScale = anchor ? MENU_START_SCALE : PANEL_START_SCALE;
     const from = anchor && positiveSize(size) ? entranceTranslation(size, startScale, anchorBottom) : { x: 0, y: 0 };
     const next = { delta: startScale - 1, x: from.x, y: from.y };
@@ -157,7 +158,7 @@ export function Entrance({ anchor, anchorBottom = false, ready = true, style, ch
     graph.initialized = true;
   }, [anchor, anchorBottom, graph, held, reduced, size, stop]);
 
-  useLayoutEffect(() => () => {
+  useIsomorphicLayoutEffect(() => () => {
     graph.gate.setValue(0);
     stop();
     // StrictMode can replay effect setup on the same host. Close this lifecycle
