@@ -1,12 +1,13 @@
 import { consumeEscapeKey, EscapeLayerProvider, useEscapeLayer } from "../../style/escape-layer.js";
 import { forwardRef, useEffect, useId, useRef, useState } from "react";
-import { type Role, type TextInput as RNTextInput } from "react-native";
+import { Platform, type Role, type TextInput as RNTextInput } from "react-native";
 import { View, Pressable, Text, TextInput, useTheme, useControllableState, useFieldWidth, AnchoredOverlay, useOverlayHost, useMeasuredWidth, FloatingLabel, LabelContent, FOCUS_RESET, RippleClip, cornerRadii, type FieldWidthProps, type StyleProp, type ViewStyle, type TextStyle } from "../../style/index.js";
 import { OverlayScrollView } from "../../style/overlay-scroll.js";
 import { useActiveOptionScroll } from "../../style/use-active-option-scroll.js";
 
 // React Native's Role union omits the valid ARIA "listbox" role, so the option-list
-// container casts it. The value is correct on both web (DOM role) and native.
+// container casts it for web semantics. Native options retain their labels and
+// selected accessibility state; Android does not map listbox to a native role.
 const LISTBOX = "listbox" as Role;
 import { wrapper, wrapperLifted } from "./autocomplete.styles.js";
 import { type AutocompleteSkin, type Size } from "./autocomplete.styles.js";
@@ -443,7 +444,9 @@ export function createAutocomplete(skin: AutocompleteSkin) {
                         onPress={() => selectOption(option)}
                         android_ripple={ripple}
                         role="option"
-                        tabIndex={-1}
+                        // Keep browser editing focus on the input. Native -1
+                        // would remove Android Pressable's click/hover support.
+                        tabIndex={Platform.select({ web: -1, default: undefined })}
                         accessibilityLabel={option}
                         aria-label={option}
                         // accessibilityState carries the native selected trait;

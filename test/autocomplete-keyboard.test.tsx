@@ -64,6 +64,9 @@ for (const [platform, Component] of [["web", Autocomplete], ["ios", Autocomplete
       const field = screen.getByRole("combobox") as HTMLInputElement;
       expect(ref.current).toBe(field as unknown as TextInput);
       focus(field);
+      // All three skins still run in the browser here. Suggestions never enter
+      // its Tab order, even though native rows retain Pressable click support.
+      expect(screen.getAllByRole("option").map((row) => row.tabIndex)).toEqual([-1, -1, -1]);
       const listId = screen.getByRole("listbox").id;
       expect(field.getAttribute("aria-controls")).toBe(listId);
       expect(field.getAttribute("aria-autocomplete")).toBe("list");
@@ -74,6 +77,7 @@ for (const [platform, Component] of [["web", Autocomplete], ["ios", Autocomplete
       expect(active(field)).toBe(screen.getByRole("option", { name: "Banana" }));
       expect(active(field)?.getAttribute("aria-selected")).toBe("false");
       expect(document.activeElement).toBe(field);
+      expect(screen.getAllByRole("option").every((row) => row.tabIndex === -1)).toBe(true);
       expect(key(field, "Enter")).toBe(false);
       expect(selected).toEqual(["Banana"]);
       expect(values).toEqual(["Banana"]);
