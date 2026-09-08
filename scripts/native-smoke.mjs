@@ -1,13 +1,15 @@
 // The ordinary starter stays registry-pinned. All candidate installs, generated
 // native projects and build outputs belong to a fresh isolated output directory.
 import { execFileSync } from "node:child_process";
+import { randomUUID } from "node:crypto";
 import * as fs from "node:fs";
 import * as path from "node:path";
 import { fileURLToPath } from "node:url";
 import { verifyArtifacts } from "./release.mjs";
 import { appInventory, assertInstalledPackage, fileInventory, packageIdentity, sha256 } from "../tools/native/candidate.mjs";
 import { installSmokeFixtures } from "../tools/native/fixtures.mjs";
-import { createEvidenceDirectory, recordNativeAttempt } from "../tools/native/evidence.mjs";
+import { createEvidenceDirectory, recordNativeAttempt, successfulMaestroReport } from "../tools/native/evidence.mjs";
+import { createCarouselContinuation, createCarouselMeasurementCommands, readCarouselEvidence } from "../tools/native/gesture.mjs";
 import { verifyNativeFlow } from "./verify-native-flow.mjs";
 
 const repo = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
@@ -102,20 +104,29 @@ export function testNativeSmoke(output, platform, device, maestro, requestedEvid
   if (JSON.stringify(build.identity) !== JSON.stringify(identity) || JSON.stringify(digest) !== JSON.stringify(build.digest)) throw new Error("Native binary changed or belongs to another candidate");
   const evidence = createEvidenceDirectory(output, platform, requestedEvidence);
   const startedAt = new Date().toISOString();
-  const sourceFlow = path.join(repo, "tools/native/flows/candidate.yaml");
   const flow = path.join(evidence, "candidate.yaml");
-  const result = { schema: 1, platform, device, identity, binaryDigest: digest, startedAt, status: "failed", voiceOver: "not-run", talkBack: "not-run" };
+  const postFlow = path.join(evidence, "after-carousel.yaml");
+  const result = { schema: 2, platform, device, identity, binaryDigest: digest, startedAt, status: "failed", voiceOver: "not-run", talkBack: "not-run" };
+  const verifyFlowInputs = () => {
+    for (const [file, expected] of Object.entries(result.flowInputs)) {
+      if (sha256(path.join(evidence, file)) !== expected) throw new Error("Preserved native flow changed during execution");
+    }
+  };
   const appearanceCommand = platform === "ios"
     ? ["xcrun", ["simctl", "ui", device, "appearance"]]
     : ["adb", ["-s", device, "shell", "cmd", "uimode", "night"]];
   const setAppearance = (value) => run(app, appearanceCommand[0], [...appearanceCommand[1], value], identity);
   recordNativeAttempt(evidence, result, () => {
-    // This flow is self-contained: nested runFlow commands are inline. Execute
-    // the preserved snapshot, so later source edits cannot change either scheme.
-    fs.copyFileSync(sourceFlow, flow, fs.constants.COPYFILE_EXCL);
-    result.flowSha256 = sha256(flow);
+    // The authored segments are self-contained. Snapshot both before building
+    // the attempt-specific measurement export and literal continuation.
+    result.flowInputs = {};
+    for (const file of ["candidate.yaml", "after-carousel.yaml"]) {
+      const preserved = path.join(evidence, file);
+      fs.copyFileSync(path.join(repo, "tools/native/flows", file), preserved, fs.constants.COPYFILE_EXCL);
+      result.flowInputs[file] = sha256(preserved);
+    }
     const inputs = ["scripts/native-smoke.mjs", "scripts/verify-native-flow.mjs", "scripts/release.mjs",
-      "tools/native/candidate.mjs", "tools/native/evidence.mjs", "tools/native/ParseFlow.java", "tools/native/maestro.json"];
+      "tools/native/candidate.mjs", "tools/native/evidence.mjs", "tools/native/gesture.mjs", "tools/native/ParseFlow.java", "tools/native/maestro.json"];
     result.testInfrastructure = {
       revision: run(repo, "git", ["rev-parse", "HEAD"], identity, true).trim(),
       dirty: run(repo, "git", ["status", "--porcelain", "--untracked-files=all"], identity, true).trim() !== "",
@@ -126,10 +137,9 @@ export function testNativeSmoke(output, platform, device, maestro, requestedEvid
     result.evidencePath = evidence;
     result.contextSha256 = sha256(path.join(output, "context.json"));
     result.buildManifestSha256 = sha256(path.join(output, `${platform}-build.json`));
-    const parsed = verifyNativeFlow({ maestro, flow });
-    result.maestroVersion = parsed.maestroVersion;
-    result.javaVersion = parsed.javaVersion;
-    result.flowCommandCount = parsed.commandCount;
+    result.staticFlowParsers = [flow, postFlow].map((file) => verifyNativeFlow({ maestro, flow: file }));
+    result.maestroVersion = result.staticFlowParsers[0].maestroVersion;
+    result.javaVersion = result.staticFlowParsers[0].javaVersion;
     const initial = run(app, appearanceCommand[0], appearanceCommand[1], identity, true).trim();
     const previous = platform === "ios" ? initial : /^Night mode: (no|yes|auto|custom)$/.exec(initial)?.[1];
     if (!previous || (platform === "ios" && !["light", "dark"].includes(previous))) throw new Error("Cannot safely restore the device's appearance");
@@ -143,19 +153,58 @@ export function testNativeSmoke(output, platform, device, maestro, requestedEvid
       result.deviceMetadata = run(app, "adb", ["-s", device, "shell", "getprop", "ro.build.fingerprint"], identity, true).trim();
     }
     result.schemes = {};
+    result.journeys = {};
     for (const scheme of ["light", "dark"]) {
-      if (sha256(flow) !== result.flowSha256) throw new Error("Preserved native flow changed during execution");
+      verifyFlowInputs();
       result.schemes[scheme] = "failed";
       setAppearance(platform === "ios" ? scheme : scheme === "dark" ? "yes" : "no");
       const directory = path.join(evidence, scheme);
       fs.mkdirSync(directory);
-      run(app, maestro, ["--device", device, "test", "--format", "junit", "--output", path.join(directory, "report.xml"),
-        "--test-output-dir", path.join(directory, "maestro"), "-e", `CANDIDATE=${identity.candidateRevision}`,
-        "-e", `PACKAGE_SHA256=${identity.packageSha256}`, "-e", `PACKAGE_VERSION=${identity.packageVersion.replaceAll(".", "\\.")}`,
-        "-e", `SCHEME=${scheme}`, flow], identity);
+      const expected = { nonce: randomUUID(), candidateRevision: identity.candidateRevision,
+        packageSha256: identity.packageSha256, packageVersion: identity.packageVersion, platform, scheme };
+      const journey = result.journeys[scheme] = { expected, phases: [] };
+      const executePhase = (name, file) => {
+        verifyFlowInputs();
+        const phaseDirectory = path.join(directory, name);
+        fs.mkdirSync(phaseDirectory);
+        const phase = { name, status: "failed", flow: file, flowSha256: sha256(file) };
+        journey.phases.push(phase);
+        phase.reportPath = path.join(phaseDirectory, "report.xml");
+        phase.parser = verifyNativeFlow({ maestro, flow: file });
+        phase.artifacts = path.join(phaseDirectory, "maestro");
+        run(app, maestro, ["--device", device, "test", "--format", "junit", "--output", phase.reportPath,
+          "--test-output-dir", phase.artifacts, "-e", `CANDIDATE=${identity.candidateRevision}`,
+          "-e", `PACKAGE_SHA256=${identity.packageSha256}`, "-e", `PACKAGE_VERSION=${identity.packageVersion.replaceAll(".", "\\.")}`,
+          "-e", `SCHEME=${scheme}`, file], identity);
+        phase.report = successfulMaestroReport(phase.reportPath);
+        if (sha256(file) !== phase.flowSha256) throw new Error("Native phase changed during execution");
+        verifyFlowInputs();
+        phase.status = "passed";
+        return phase;
+      };
+      const measurementFlow = path.join(directory, "measurement.yaml");
+      const exportCommands = createCarouselMeasurementCommands(expected).map((command) => "- " + JSON.stringify(command)).join("\n");
+      fs.writeFileSync(measurementFlow, fs.readFileSync(flow, "utf8") + exportCommands + "\n", { flag: "wx" });
+      const measuredPhase = executePhase("measurement", measurementFlow);
+      const measured = readCarouselEvidence({ artifactRoot: measuredPhase.artifacts, expected });
+      // Keep the original log and manifest where Maestro wrote them. Record
+      // their identities and exact executed line, without duplicating log bytes.
+      journey.measurement = {
+        record: measured.record, gesture: measured.gesture, source: measured.source,
+        manifest: { path: measured.manifest.path, sha256: measured.manifest.sha256 },
+        log: { path: measured.log.path, sha256: measured.log.sha256 },
+      };
+      write(path.join(directory, "measurement.json"), journey.measurement);
+      const continuation = createCarouselContinuation({ expected, measurement: measured.measurement, postFlow });
+      const continuationFlow = path.join(directory, "continuation.yaml");
+      fs.writeFileSync(continuationFlow, continuation.yaml, { flag: "wx" });
+      journey.postFlow = continuation.postFlow;
+      // No launch, navigation or appearance change between these invocations.
+      // The continuation proves retained generation 1, then remeasures once.
+      executePhase("continuation", continuationFlow);
       result.schemes[scheme] = "passed";
     }
-    if (sha256(flow) !== result.flowSha256) throw new Error("Preserved native flow changed during execution");
+    verifyFlowInputs();
   });
 }
 

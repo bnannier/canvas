@@ -67,9 +67,12 @@ jobs:
         run: node scripts/install-maestro.mjs "$RUNNER_TEMP/native-tools"
 
       - name: Parse every native flow command before building
-        run: node scripts/verify-native-flow.mjs --maestro "$RUNNER_TEMP/native-tools/maestro/bin/maestro"
+        run: |
+          node scripts/verify-native-flow.mjs --maestro "$RUNNER_TEMP/native-tools/maestro/bin/maestro" --flow tools/native/flows/candidate.yaml
+          node scripts/verify-native-flow.mjs --maestro "$RUNNER_TEMP/native-tools/maestro/bin/maestro" --flow tools/native/flows/after-carousel.yaml
 
       - name: Verify the installed parser regression cases
+        # Includes both authored segments and generated literal continuations.
         # Pure tooling tests need no React dependencies or the kit's UI preload.
         run: CANVAS_MAESTRO_BIN="$RUNNER_TEMP/native-tools/maestro/bin/maestro" bun test --config=/dev/null ./tools/native/flow-parser.test.ts
 

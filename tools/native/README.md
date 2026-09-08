@@ -70,17 +70,40 @@ directory must be a fresh direct child of the candidate output, named
 `ios-evidence-<label>` (or `android-evidence-<label>`). Existing files, directories
 and links are rejected. Earlier results remain intact. The new result records
 the current test revision, dirty state and tooling hashes separately from the
-original candidate identity and binary digest. It executes a preserved copy of
-the self-contained flow. This does not claim that an older binary was built from
+original candidate identity and binary digest. It preserves both authored flow
+segments and each generated phase with its parser result and checksum. This does not claim that an older binary was built from
 the newer test revision; changed package or app inputs require a new build.
 
 The preflight invokes the installed, pinned Maestro command parser through a
 small Java 17 source launcher before any device action. CI also runs it before
 building. Maestro 2.10's `check-syntax` only deserializes YAML and can accept
 commands that fail during conversion, including interpolated swipe coordinates.
-The Carousel flow therefore uses a supported Card-relative directional swipe.
-Its fresh measurement guard verifies that the driver's actual endpoint stays
-inside the card, with enough travel to cross half its width after quantization.
+The Carousel journey therefore uses two official CLI invocations per appearance.
+The first completes the earlier scenarios and measures the current card. It emits
+one validated console record with the candidate identity, appearance and a unique
+attempt nonce. The runner requires a successful process and JUnit case, finds the
+actual flow log through Maestro's artifact manifest, and rejects missing,
+ambiguous, malformed or mismatched records. It does not scrape command source or
+reuse a prior run's coordinates.
+
+The second invocation continues the same app state. Before a gesture it checks
+the retained page, zero change callbacks and measurement generation 1, then asks
+for generation 2 exactly once. All geometry, screen, scale and platform values
+must match. The runner generates literal coordinates from 80% to 20% of that
+card at its vertical center, using iOS points or Android physical pixels. The
+fresh guard recomputes those integers and requires both endpoints strictly inside
+the card, with travel greater than half its width. One 400 ms swipe must produce
+page 3 and one change callback; the picker then produces page 6 and two callbacks.
+All later authored scenarios run from the preserved `after-carousel.yaml`.
+
+There is no launch, reset, navigation or appearance change between the phases.
+Lost state or changed geometry fails the attempt before dragging. The complete
+command parser checks both authored segments and every generated phase, including
+the eagerly parsed nested post-flow. CI tests generated examples before building.
+The result records both phase reports, flow hashes and original measurement log
+identity; a scheme passes only when both phases succeed. Appearance restoration
+covers a failure in either phase.
+
 Parser success does not establish selector availability or gesture behavior;
 the native journey still checks page identity and callback count.
 
