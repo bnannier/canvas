@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState, Fragment } from "react";
 import { EscapeLayerProvider, useEscapeLayer } from "../../style/escape-layer.js";
+import { glassMessageStyle } from "../../style/glass-message.js";
 import { Animated, KeyboardAvoidingView, Modal, Platform, StyleSheet } from "react-native";
 import { SafeAreaProvider, SafeAreaView } from "../../style/safe-area.js";
 import {
@@ -77,7 +78,7 @@ export interface ActionSheetProps {
    */
   trigger?: string;
   /** Optional header title (a left-aligned primary-label heading on iOS, a short
-   *  centered gray heading on web, left-aligned on Android). */
+   *  centered heading on web, left-aligned on Android). */
   title?: string;
   /** Optional header message under the title. */
   message?: string;
@@ -99,7 +100,8 @@ export interface ActionSheetProps {
 export function createActionSheet(skin: ActionSheetSkin) {
   return function ActionSheet(props: ActionSheetProps) {
     const { open: openProp, onOpenChange, trigger, title, message, actions, cancelLabel = "Cancel", testID, style } = props;
-    const { tokens } = useTheme();
+    const theme = useTheme();
+    const { tokens } = theme;
 
     // Uncontrolled by default: the trigger opens the sheet and the scrim/Cancel
     // closes it; a controlled `open` prop overrides this.
@@ -175,8 +177,8 @@ export function createActionSheet(skin: ActionSheetSkin) {
     const headerNode = hasHeader ? (
       <Fragment>
         <View style={skin.header}>
-          {title != null ? <Text style={skin.headerTitle(tokens)}>{title}</Text> : null}
-          {message != null ? <Text style={skin.headerMessage(tokens)}>{message}</Text> : null}
+          {title != null ? <Text style={glassMessageStyle(skin.headerTitle(tokens), theme)}>{title}</Text> : null}
+          {message != null ? <Text style={glassMessageStyle(skin.headerMessage(tokens), theme)}>{message}</Text> : null}
         </View>
         {skin.divider ? <View style={skin.divider(tokens)} /> : null}
       </Fragment>

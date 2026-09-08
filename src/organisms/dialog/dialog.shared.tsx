@@ -6,6 +6,7 @@ import { Button } from "../../atoms/button/button.js";
 import { Input } from "../../atoms/input/input.js";
 import * as s from "./dialog.styles.js";
 import { type Size, type DialogSkin } from "./dialog.styles.js";
+import { glassMessageStyle } from "../../style/glass-message.js";
 
 // Shared Dialog shell. The structure (an optional trigger plus a modal panel
 // centered over a dimmed backdrop, a title, an optional description, an optional
@@ -125,7 +126,8 @@ export function createDialog(skin: DialogSkin) {
       testID,
       style,
     } = props;
-    const { tokens } = useTheme();
+    const theme = useTheme();
+    const { tokens } = theme;
 
     // Stable, per-instance ids so the panel's title/description can be wired as
     // the dialog's accessible name/description (aria-labelledby/aria-describedby).
@@ -305,7 +307,7 @@ export function createDialog(skin: DialogSkin) {
                         </Text>
                       ) : null}
                       {description != null ? (
-                        <Text nativeID={descriptionId} style={skin.body(tokens)}>
+                        <Text nativeID={descriptionId} style={glassMessageStyle(skin.body(tokens), theme)}>
                           {description}
                         </Text>
                       ) : null}
@@ -313,7 +315,7 @@ export function createDialog(skin: DialogSkin) {
                         <View style={skin.formBody}>
                           <Text nativeID={amountId} style={skin.fieldLabel(tokens)}>Amount</Text>
                           <View style={skin.amountRow}>
-                            <Text style={skin.currency(tokens)}>$</Text>
+                            <Text style={glassMessageStyle(skin.currency(tokens), theme)}>$</Text>
                             <Input value="90.00" block style={skin.amountInput} accessibilityLabel="Amount" aria-labelledby={amountId} />
                           </View>
                           <Text nativeID={reasonId} style={[skin.fieldLabel(tokens), skin.fieldLabelGap]}>Reason</Text>

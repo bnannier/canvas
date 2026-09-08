@@ -2,6 +2,8 @@
 
 A modal dialog: a centered panel over a dimmed, blurred backdrop, with a title, an optional description, a body for real content like a form, and right-aligned actions. Use it for a focused task that warrants interrupting the page; reach for the Alert Dialog for a terse yes/no confirmation.
 
+On light glass, the description and currency prefix use the stronger foreground color. For custom body content, use the default `Typography` foreground for message copy over the dimmed background.
+
 ## Usage
 
 ```tsx
@@ -112,7 +114,7 @@ A modal dialog: a centered panel over a dimmed, blurred backdrop, with a title, 
   <Column relaxed>
     <Column tight>
       <Typography lead semibold>Edit profile</Typography>
-      <Typography small muted>Update how your name and email appear to teammates.</Typography>
+      <Typography>Update how your name and email appear to teammates.</Typography>
     </Column>
     <Column relaxed>
       <Input block label="Name" defaultValue="Ada Lovelace" />
@@ -203,9 +205,9 @@ A modal dialog: a centered panel over a dimmed, blurred backdrop, with a title, 
   <Column relaxed>
     <Column tight>
       <Typography lead semibold>Unsaved changes</Typography>
-      <Typography small muted>You have edits that are not saved.</Typography>
+      <Typography>You have edits that are not saved.</Typography>
     </Column>
-    <Row end snug alignCenter>
+    <Row end snug alignCenter wrap>
       <Button ghost small>Discard</Button>
       <Button outline small>Keep editing</Button>
       <Button primary small>Save</Button>

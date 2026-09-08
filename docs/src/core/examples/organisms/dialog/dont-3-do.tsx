@@ -9,9 +9,9 @@ export default function Example(scope: ExampleScope) {
   <Column relaxed>
     <Column tight>
       <Typography lead semibold>Unsaved changes</Typography>
-      <Typography small muted>You have edits that are not saved.</Typography>
+      <Typography>You have edits that are not saved.</Typography>
     </Column>
-    <Row end snug alignCenter>
+    <Row end snug alignCenter wrap>
       <Button ghost small>Discard</Button>
       <Button outline small>Keep editing</Button>
       <Button primary small>Save</Button>

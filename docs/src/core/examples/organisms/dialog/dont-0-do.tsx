@@ -9,7 +9,7 @@ export default function Example(scope: ExampleScope) {
   <Column relaxed>
     <Column tight>
       <Typography lead semibold>Edit profile</Typography>
-      <Typography small muted>Update how your name and email appear to teammates.</Typography>
+      <Typography>Update how your name and email appear to teammates.</Typography>
     </Column>
     <Column relaxed>
       <Input block label="Name" defaultValue="Ada Lovelace" />

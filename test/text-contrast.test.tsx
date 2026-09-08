@@ -1,30 +1,75 @@
 import { afterEach, describe, expect, it } from "bun:test";
 import { readFileSync } from "node:fs";
 import { cleanup, render, screen } from "@testing-library/react";
+import { StyleSheet } from "react-native";
 import { ThemeProvider } from "../src/style/theme.tsx";
 import { createBadge } from "../src/atoms/badge/badge.shared.tsx";
 import * as badgeSkins from "../src/atoms/badge/badge.styles.ts";
 import { createAlert } from "../src/molecules/alert/alert.shared.tsx";
 import * as alertSkins from "../src/molecules/alert/alert.styles.ts";
-import { colorsByScheme, type ColorTokens } from "../src/style/tokens.ts";
+import { colorsByScheme, glassByScheme, type ColorTokens } from "../src/style/tokens.ts";
 import { androidSkin, iosSkin, webSkin } from "../src/atoms/button/button.styles.ts";
 import { blockDeclarations, cssColorToHex } from "../tools/tokens/css-tokens.ts";
-import { webSkin as actionSheetSkin } from "../src/organisms/action-sheet/action-sheet.styles.ts";
+import * as actionSheetSkins from "../src/organisms/action-sheet/action-sheet.styles.ts";
+import { ActionSheet } from "../src/organisms/action-sheet/action-sheet.tsx";
+import { ActionSheet as IOSActionSheet } from "../src/organisms/action-sheet/action-sheet.ios.tsx";
+import { ActionSheet as AndroidActionSheet } from "../src/organisms/action-sheet/action-sheet.android.tsx";
+import { Dialog } from "../src/organisms/dialog/dialog.tsx";
+import { Dialog as IOSDialog } from "../src/organisms/dialog/dialog.ios.tsx";
+import { Dialog as AndroidDialog } from "../src/organisms/dialog/dialog.android.tsx";
+import * as dialogSkins from "../src/organisms/dialog/dialog.styles.ts";
 
 afterEach(cleanup);
 
-function luminance(hex: string): number {
-  if (!/^#[0-9a-f]{6}$/i.test(hex)) throw new Error(`Expected an opaque sRGB color: ${hex}`);
-  const [r, g, b] = [1, 3, 5].map((i) => {
-    const value = parseInt(hex.slice(i, i + 2), 16) / 255;
-    return value <= 0.04045 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4;
-  });
-  return r * 0.2126 + g * 0.7152 + b * 0.0722;
+type Rgba = readonly [red: number, green: number, blue: number, alpha: number];
+type SrgbColor = string | Rgba;
+
+// Parse the hex and rgb/rgba forms used by the source tokens and rendered text.
+// Keep fractional channels throughout compositing, before WCAG linearization.
+function rgba(color: SrgbColor): Rgba {
+  if (typeof color !== "string") return color;
+  const hex = /^#([0-9a-f]{6})([0-9a-f]{2})?$/i.exec(color);
+  if (hex) return [
+    parseInt(hex[1]!.slice(0, 2), 16), parseInt(hex[1]!.slice(2, 4), 16), parseInt(hex[1]!.slice(4, 6), 16),
+    hex[2] ? parseInt(hex[2], 16) / 255 : 1,
+  ];
+  const functional = /^rgba?\(\s*([\d.]+)\s*,\s*([\d.]+)\s*,\s*([\d.]+)\s*(?:,\s*([\d.]+)\s*)?\)$/.exec(color);
+  if (functional) {
+    const channels = functional.slice(1, 4).map(Number);
+    const alpha = functional[4] === undefined ? 1 : Number(functional[4]);
+    if (channels.every(channel => Number.isFinite(channel) && channel >= 0 && channel <= 255) &&
+        Number.isFinite(alpha) && alpha >= 0 && alpha <= 1) {
+      return [channels[0]!, channels[1]!, channels[2]!, alpha];
+    }
+  }
+  throw new Error(`Expected an sRGB color: ${color}`);
 }
 
-function contrast(a: string, b: string): number {
+function composite(foreground: SrgbColor, background: SrgbColor): Rgba {
+  const front = rgba(foreground), back = rgba(background);
+  const alpha = front[3] + back[3] * (1 - front[3]);
+  if (alpha === 0) return [0, 0, 0, 0];
+  const channel = (index: 0 | 1 | 2) => (front[index] * front[3] + back[index] * back[3] * (1 - front[3])) / alpha;
+  return [channel(0), channel(1), channel(2), alpha];
+}
+
+function luminance(color: SrgbColor): number {
+  const channels = rgba(color);
+  if (channels[3] !== 1) throw new Error("Composite translucent colors onto an opaque backdrop before measuring contrast");
+  const [r, g, b] = channels.slice(0, 3).map(channel => {
+    const value = channel / 255;
+    return value <= 0.04045 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4;
+  });
+  return r! * 0.2126 + g! * 0.7152 + b! * 0.0722;
+}
+
+function contrast(a: SrgbColor, b: SrgbColor): number {
   const [low, high] = [luminance(a), luminance(b)].sort((x, y) => x - y);
-  return (high + 0.05) / (low + 0.05);
+  return (high! + 0.05) / (low! + 0.05);
+}
+
+function textContrast(text: SrgbColor, background: SrgbColor): number {
+  return contrast(composite(text, background), background);
 }
 
 const PAIRS: [keyof ColorTokens, keyof ColorTokens][] = [
@@ -42,17 +87,26 @@ describe("normal text contrast (WCAG 1.4.3)", () => {
     expect(contrast("#777777", "#ffffff")).toBeCloseTo(4.478, 3);
   });
 
+  it("composites alpha without rounding channels or treating translucent text as opaque", () => {
+    expect(composite("rgba(0, 0, 0, 0.5)", "#ffffff")).toEqual([127.5, 127.5, 127.5, 1]);
+    expect(composite("rgba(255, 0, 0, 0.5)", "rgba(0, 0, 255, 0.5)")).toEqual([170, 0, 85, 0.75]);
+    expect(composite("rgba(1, 2, 3, 0)", "rgba(4, 5, 6, 0)")).toEqual([0, 0, 0, 0]);
+    expect(rgba("#00000080")[3]).toBe(128 / 255);
+    expect(textContrast("rgba(0, 0, 0, 0.5)", "#ffffff")).toBeLessThan(contrast("#000000", "#ffffff"));
+    expect(() => contrast("rgba(0, 0, 0, 0.5)", "#ffffff")).toThrow("Composite translucent colors");
+  });
+
   for (const scheme of ["light", "dark"] as const) {
     const tokens = colorsByScheme[scheme];
     const declarations = blockDeclarations(css, scheme === "light" ? ":root" : ".dark").decls;
     it(`keeps every resting ${scheme} web ActionSheet action and Cancel readable`, () => {
-      const fill = actionSheetSkin.actionsCard(tokens).backgroundColor as string;
-      const cancelFill = actionSheetSkin.cancelCard!(tokens).backgroundColor as string;
+      const fill = actionSheetSkins.webSkin.actionsCard(tokens).backgroundColor as string;
+      const cancelFill = actionSheetSkins.webSkin.cancelCard!(tokens).backgroundColor as string;
       for (const destructive of [false, true]) {
-        const color = actionSheetSkin.rowLabel(tokens, destructive, false).color as string;
+        const color = actionSheetSkins.webSkin.rowLabel(tokens, destructive, false).color as string;
         expect(contrast(fill, color)).toBeGreaterThanOrEqual(4.5);
       }
-      expect(contrast(cancelFill, actionSheetSkin.cancelLabel(tokens).color as string)).toBeGreaterThanOrEqual(4.5);
+      expect(contrast(cancelFill, actionSheetSkins.webSkin.cancelLabel(tokens).color as string)).toBeGreaterThanOrEqual(4.5);
     });
 
     for (const [fill, foreground] of PAIRS) {
@@ -122,3 +176,94 @@ for (const scheme of ["light", "dark"] as const) {
     });
   }
 }
+
+
+const dialogPlatforms = [
+  { name: "web", Component: Dialog, skin: dialogSkins.webSkin },
+  { name: "ios", Component: IOSDialog, skin: dialogSkins.iosSkin },
+  { name: "android", Component: AndroidDialog, skin: dialogSkins.androidSkin },
+];
+
+describe("Dialog message contrast", () => {
+  for (const scheme of ["light", "dark"] as const) for (const surface of ["solid", "glass"] as const) {
+    const tokens = colorsByScheme[scheme];
+    for (const { name, Component, skin } of dialogPlatforms) {
+      it(`keeps actual ${scheme} ${surface} ${name} description and currency readable`, () => {
+        render(<ThemeProvider scheme={scheme} surface={surface}>
+          <Component open title="Refund payment" description="Refund the duplicate payment." withBody />
+        </ThemeProvider>);
+        const fields = [
+          { node: screen.getByText("Refund the duplicate payment."), original: skin.body(tokens) },
+          { node: screen.getByText("$"), original: skin.currency(tokens) },
+        ];
+        for (const { node, original } of fields) {
+          const rendered = node.style.color;
+          const expected = scheme === "light" && surface === "glass" ? tokens["popover-foreground"] : original.color;
+          expect(hexOf(rendered)).toBe(expected);
+          expect(Number.parseFloat(getComputedStyle(node).fontSize)).toBe(original.fontSize);
+          expect(Number.parseFloat(getComputedStyle(node).lineHeight)).toBe(original.lineHeight);
+          for (const underlying of ["background", "card", "muted"] as const) {
+            // This is a tint-over-scrim model from the source tokens, not native
+            // glass luminance. Device pixel acceptance validates the material.
+            const background = surface === "glass"
+              ? composite(glassByScheme[scheme]["glass-tint"], composite(skin.backdrop(tokens).backgroundColor as string, tokens[underlying]))
+              : rgba(skin.card(tokens).backgroundColor as string);
+            expect(textContrast(rendered, background)).toBeGreaterThanOrEqual(4.5);
+            if (scheme === "light" && surface === "glass") {
+              expect(textContrast(original.color as string, background)).toBeLessThan(4.5);
+            }
+          }
+        }
+        expect(hexOf(screen.getByText("Refund payment").style.color)).toBe(skin.title(tokens).color);
+        expect(hexOf(screen.getByText("Amount").style.color)).toBe(skin.fieldLabel(tokens).color);
+      });
+    }
+  }
+});
+
+
+const actionSheetPlatforms = [
+  { name: "web", Component: ActionSheet, skin: actionSheetSkins.webSkin },
+  { name: "ios", Component: IOSActionSheet, skin: actionSheetSkins.iosSkin },
+  { name: "android", Component: AndroidActionSheet, skin: actionSheetSkins.androidSkin },
+];
+
+describe("ActionSheet message contrast", () => {
+  for (const scheme of ["light", "dark"] as const) for (const surface of ["solid", "glass"] as const) {
+    const tokens = colorsByScheme[scheme];
+    for (const { name, Component, skin } of actionSheetPlatforms) {
+      it(`keeps actual ${scheme} ${surface} ${name} header colors readable and preserves curated alpha`, () => {
+        render(<ThemeProvider scheme={scheme} surface={surface}>
+          <Component open title="Share document" message="Choose how to share this document." actions={[{ label: "Copy link", onPress: () => {} }]} />
+        </ThemeProvider>);
+        const fields = [
+          { node: screen.getByText("Share document"), original: skin.headerTitle(tokens) },
+          { node: screen.getByText("Choose how to share this document."), original: skin.headerMessage(tokens) },
+        ];
+        const dim = rgba(StyleSheet.flatten(actionSheetSkins.scrimDim).backgroundColor as string);
+        const scrim: Rgba = [dim[0], dim[1], dim[2], dim[3] * skin.scrimOpacity];
+        for (const { node, original } of fields) {
+          const rendered = node.style.color;
+          const promoted = scheme === "light" && surface === "glass" && original.color === tokens["muted-foreground"];
+          const expected = promoted ? tokens["popover-foreground"] : original.color as string;
+          // Compare the alpha too: the readable iOS secondary label remains
+          // translucent foreground, and stronger titles keep their skin color.
+          expect(rgba(rendered)).toEqual(rgba(expected));
+          expect(Number.parseFloat(getComputedStyle(node).fontSize)).toBe(original.fontSize);
+          expect(Number.parseFloat(getComputedStyle(node).lineHeight)).toBe(original.lineHeight);
+          for (const underlying of ["background", "card", "muted"] as const) {
+            // Model the settled source scrim and tint, without claiming that a
+            // native blur or Liquid Glass surface has this exact luminance.
+            const background = surface === "glass"
+              ? composite(glassByScheme[scheme]["glass-tint"], composite(scrim, tokens[underlying]))
+              : rgba(skin.actionsCard(tokens).backgroundColor as string);
+            expect(textContrast(rendered, background)).toBeGreaterThanOrEqual(4.5);
+            if (promoted) expect(textContrast(original.color as string, background)).toBeLessThan(4.5);
+          }
+        }
+        expect(rgba(screen.getByText("Copy link").style.color)).toEqual(rgba(skin.rowLabel(tokens, false, false).color as string));
+        expect(rgba(screen.getByText("Cancel").style.color)).toEqual(rgba(skin.cancelLabel(tokens).color as string));
+      });
+    }
+  }
+});
