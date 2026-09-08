@@ -4,6 +4,7 @@ import { type GestureResponderEvent, type View as RNView, type ScrollView as RNS
 import { View, Pressable, Text, ScrollView, RippleClip, cornerRadii, useTheme, useControllableState, AnchoredOverlay, useMeasuredWidth, type StyleProp, type ViewStyle } from "../../style/index.js";
 import { ButtonGroup } from "../../atoms/button-group/button-group.js";
 import { type CalendarSkin, type DayState, type Density } from "./calendar.styles.js";
+import { calendarDayAccessibility } from "./calendar.accessibility.js";
 
 // Shared Calendar shell. The structure (header with prev/next chevrons + view
 // label, the month grid, and the week/day timelines), the density and view
@@ -458,8 +459,7 @@ export function createCalendar(skin: CalendarSkin) {
               accessibilityLabel={`${dayNum}${isToday ? ", today" : ""}${isSelected ? ", selected" : ""}${rangeNote}${
                 count > 0 ? `, ${count} event${count === 1 ? "" : "s"}` : ""
               }`}
-              accessibilityState={{ selected: isSelected }}
-              aria-selected={isSelected}
+              {...calendarDayAccessibility(isSelected)}
             >
               <Text style={[m.label, skin.dayLabel(tokens, state)]}>{dayNum}</Text>
               {count > 0 ? <View style={[skin.eventDot, skin.eventDotColor(tokens, state)]} /> : null}

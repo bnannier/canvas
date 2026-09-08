@@ -111,7 +111,7 @@ describe("Calendar", () => {
   it("reports the clicked day and marks the selected day", () => {
     let picked = 0;
     const { container } = ui(<Calendar selected={10} onSelect={(d) => { picked = d; }} />);
-    const sel = container.querySelector('[aria-selected="true"]');
+    const sel = container.querySelector('[aria-pressed="true"]');
     expect(sel?.textContent).toBe("10");
     fireEvent.click(screen.getByText("15"));
     expect(picked).toBe(15);
