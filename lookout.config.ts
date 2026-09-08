@@ -30,7 +30,8 @@ const sidebar = (navConfig as {
   web: { sidebar: { components?: { slug: string }[] }[] };
 }).web.sidebar;
 
-const componentSlugs = sidebar.flatMap((group) => group.components ?? []).map((c) => c.slug);
+// A component can appear in more than one navigation group; capture its route once.
+const componentSlugs = [...new Set(sidebar.flatMap((group) => group.components ?? []).map((c) => c.slug))];
 
 /** Overlay routes and the state that opens them (see states below). */
 const OVERLAY_STATE: Record<string, string> = {

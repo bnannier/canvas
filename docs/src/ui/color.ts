@@ -1,14 +1,5 @@
-// The landing leans on CSS `color-mix(... N%, transparent)` for its tinted chips,
-// badges, and washes. The Canvas tokens are plain 6-digit hex, so this turns a hex token
-// into an rgba() string at the given alpha — the RN-safe equivalent of mixing toward
-// transparent. (Mixing toward another color is done per-call where needed.)
-export function alpha(hex: string, a: number): string {
-  const h = hex.replace("#", "");
-  const r = parseInt(h.slice(0, 2), 16);
-  const g = parseInt(h.slice(2, 4), 16);
-  const b = parseInt(h.slice(4, 6), 16);
-  return `rgba(${r}, ${g}, ${b}, ${a})`;
-}
+// Keep token tinting on the kit's validated color helper, including hex alpha.
+export { alpha } from "@nannier-com/canvas";
 
 // Convert an HSL color to a 6-digit hex string. Pure math (no DOM, RN-safe), so
 // the chart/accent palettes (authored as HSL on the colors page) can show the
@@ -54,13 +45,13 @@ function srgbToLinear(v: number): number {
   return c <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
 }
 
-// Parse a hex (#rgb / #rrggbb / #rrggbbaa) or rgb()/rgba() string into 0-255
+// Parse a hex (#rgb / #rgba / #rrggbb / #rrggbbaa) or rgb()/rgba() string into 0-255
 // channels plus a 0-1 alpha, so translucent token fills convert like opaque ones.
 function parseColor(value: string): { r: number; g: number; b: number; a: number } {
   const v = value.trim();
   if (v.startsWith("#")) {
     let h = v.slice(1);
-    if (h.length === 3) h = h.split("").map((c) => c + c).join("");
+    if (h.length === 3 || h.length === 4) h = h.split("").map((c) => c + c).join("");
     return {
       r: parseInt(h.slice(0, 2), 16),
       g: parseInt(h.slice(2, 4), 16),

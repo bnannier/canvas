@@ -17,15 +17,15 @@ colors:
   secondary: "#f4f4f5"
   secondary-foreground: "#18181b"
   muted: "#f4f4f5"
-  muted-foreground: "#71717b"
+  muted-foreground: "#6d6d77"
   accent: "#f4f4f5"
   accent-foreground: "#18181b"
   destructive: "#e7000b"
   destructive-foreground: "#fafafa"
   success: "#16a34a"
-  success-foreground: "#ffffff"
+  success-foreground: "#042812"
   warning: "#d97708"
-  warning-foreground: "#ffffff"
+  warning-foreground: "#451a03"
   border: "#e4e4e7"
   input: "#88888b"
   ring: "#615fff"
@@ -37,7 +37,7 @@ colorsDark:
   popover: "#18181b"
   popover-foreground: "#fafafa"
   primary: "#615fff"
-  primary-foreground: "#fafafa"
+  primary-foreground: "#ffffff"
   secondary: "#27272a"
   secondary-foreground: "#fafafa"
   muted: "#27272a"
@@ -45,7 +45,7 @@ colorsDark:
   accent: "#27272a"
   accent-foreground: "#fafafa"
   destructive: "#ff6467"
-  destructive-foreground: "#fafafa"
+  destructive-foreground: "#460809"
   success: "#22c55e"
   success-foreground: "#052e16"
   warning: "#f59e09"
@@ -318,19 +318,19 @@ dark keys off a `.dark` class on the root rather than `prefers-color-scheme`.
 | `popover` | `#ffffff` | `#18181b` |
 | `popover-foreground` | `#09090b` | `#fafafa` |
 | `primary` | `#4f39f6` | `#615fff` |
-| `primary-foreground` | `#fafafa` | `#fafafa` |
+| `primary-foreground` | `#fafafa` | `#ffffff` |
 | `secondary` | `#f4f4f5` | `#27272a` |
 | `secondary-foreground` | `#18181b` | `#fafafa` |
 | `muted` | `#f4f4f5` | `#27272a` |
-| `muted-foreground` | `#71717b` | `#9f9fa9` |
+| `muted-foreground` | `#6d6d77` | `#9f9fa9` |
 | `accent` | `#f4f4f5` | `#27272a` |
 | `accent-foreground` | `#18181b` | `#fafafa` |
 | `destructive` | `#e7000b` | `#ff6467` |
-| `destructive-foreground` | `#fafafa` | `#fafafa` |
+| `destructive-foreground` | `#fafafa` | `#460809` |
 | `success` | `#16a34a` | `#22c55e` |
-| `success-foreground` | `#ffffff` | `#052e16` |
+| `success-foreground` | `#042812` | `#052e16` |
 | `warning` | `#d97708` | `#f59e09` |
-| `warning-foreground` | `#ffffff` | `#451a03` |
+| `warning-foreground` | `#451a03` | `#451a03` |
 | `border` | `#e4e4e7` | `#27272a` |
 | `input` | `#88888b` | `#747478` |
 | `ring` | `#615fff` | `#615fff` |

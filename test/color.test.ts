@@ -14,6 +14,22 @@ describe("alpha", () => {
     expect(alpha("#f00", 0.25)).toBe("rgba(255, 0, 0, 0.25)");
   });
 
+  it("replaces existing hex alpha consistently in short and long notation", () => {
+    expect(alpha("#0f08", 0.12)).toBe("rgba(0, 255, 0, 0.12)");
+    expect(alpha("#00ff0088", 0.12)).toBe("rgba(0, 255, 0, 0.12)");
+    expect(alpha("#AbCd", 1)).toBe("rgba(170, 187, 204, 1)");
+    expect(alpha("#AABBCC00", 1)).toBe("rgba(170, 187, 204, 1)");
+  });
+
+  it("does not emit invalid channels or opacity for malformed input", () => {
+    for (const color of ["", "#", "#ff", "#fffff", "#1234567", "#123456789", "#ggg", "#12zz00", "#12345z00"]) {
+      expect(alpha(color, 0.5)).toBe(color);
+    }
+    for (const opacity of [NaN, Infinity, -Infinity]) expect(alpha("#123456", opacity)).toBe("#123456");
+    expect(alpha("#123456", -0.2)).toBe("rgba(18, 52, 86, 0)");
+    expect(alpha("#123456", 1.2)).toBe("rgba(18, 52, 86, 1)");
+  });
+
   it("returns non-hex values unchanged (already-translucent tokens, transparent)", () => {
     expect(alpha("transparent", 0.5)).toBe("transparent");
     expect(alpha("rgba(0, 0, 0, 0.2)", 0.5)).toBe("rgba(0, 0, 0, 0.2)");
@@ -60,7 +76,10 @@ describe("mixOklab", () => {
     expect(mixOklab("#fff", "#000", 0.5)).toBe(mixOklab("#ffffff", "#000000", 0.5));
   });
 
-  it("returns the base unchanged for non-hex inputs (translucent tokens, transparent)", () => {
+  it("returns the base unchanged for translucent hex and non-hex inputs", () => {
+    expect(mixOklab("#0f08", "#ffffff", 0.5)).toBe("#0f08");
+    expect(mixOklab("#00ff0088", "#ffffff", 0.5)).toBe("#00ff0088");
+    expect(mixOklab("#ffffff", "#0f08", 0.5)).toBe("#ffffff");
     expect(mixOklab("transparent", "#000000", 0.5)).toBe("transparent");
     expect(mixOklab("#000000", "transparent", 0.5)).toBe("#000000");
     expect(mixOklab("rgba(0, 0, 0, 0.2)", "#ffffff", 0.5)).toBe("rgba(0, 0, 0, 0.2)");
