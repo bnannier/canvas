@@ -25,6 +25,8 @@ for (const width of [1280, 390]) {
       await gotoDocs(page, "/testing/carousel", { scheme, viewport: { width, height: 900 } });
       const root = page.getByTestId("carousel-uncontrolled");
       const viewport = scrollport(root);
+      // Tab entry belongs to the measured scrollport, which replaces the initial slide fallback.
+      await expect(viewport).toBeVisible();
       await page.getByTestId("before-carousel").focus();
       await page.keyboard.press("Tab");
       await expect(viewport).toBeFocused();
