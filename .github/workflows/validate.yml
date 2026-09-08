@@ -292,6 +292,23 @@ jobs:
       - name: End-to-end suite
         run: bunx playwright test --reporter=github,html
 
+      # This remains an independent registry consumer. The native jobs install the
+      # sealed candidate separately, with its artifact and runtime identity gates.
+      - name: Install the ordinary starter's pinned registry dependencies
+        working-directory: examples/starter
+        run: bun install --frozen-lockfile
+
+      - name: Typecheck and export the ordinary starter
+        working-directory: examples/starter
+        run: |
+          bun run typecheck
+          bun run build:web
+        env:
+          EXPO_PUBLIC_CANVAS_SMOKE: '0'
+
+      - name: Verify starter user journeys across browser engines and touch
+        run: bunx playwright test --config e2e/starter/playwright.config.ts
+
       # Only on failure: the report carries the traces, the failure screenshots and,
       # once the visual project lands, the expected/actual/diff images.
       - name: Upload the Playwright report
