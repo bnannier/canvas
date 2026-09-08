@@ -1,7 +1,7 @@
 import { type ComponentType } from "react";
 import { type ViewStyle, type TextStyle } from "react-native";
 import { surfaceRipple, type ColorTokens } from "../../style/index.js";
-import { type CheckboxProps } from "../../atoms/checkbox/checkbox.shared.js";
+import { type CheckboxIndicatorProps } from "../../atoms/checkbox/indicator/shared.js";
 import { type BadgeProps } from "../../atoms/badge/badge.shared.js";
 import { type ButtonProps } from "../../atoms/button/button.shared.js";
 
@@ -27,7 +27,7 @@ import { type ButtonProps } from "../../atoms/button/button.shared.js";
 export type Density = "compact" | "base";
 
 // The atoms FilterPanel composes are passed in per platform (see createFilterPanel).
-export type CheckboxComponent = ComponentType<CheckboxProps>;
+export type CheckboxComponent = ComponentType<CheckboxIndicatorProps>;
 export type BadgeComponent = ComponentType<BadgeProps>;
 export type ButtonComponent = ComponentType<ButtonProps>;
 

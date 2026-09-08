@@ -2,8 +2,8 @@ import { forwardRef, type ReactNode } from "react";
 import { useComposedRefs } from "../../style/use-composed-refs.js";
 import { useSpaceActivation } from "../../style/use-space-activation.js";
 import { type GestureResponderEvent } from "react-native";
-import { View, Pressable, Text, useTheme, useControllableState, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle } from "../../style/index.js";
-import { CheckboxIndicatorBox, CHECKBOX_ROW } from "./indicator/shared.js";
+import { View, Pressable, useTheme, useControllableState, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle } from "../../style/index.js";
+import { CheckboxContent, CHECKBOX_ROW } from "./indicator/shared.js";
 
 // Shared Checkbox shell. Uses React Native's primitives DIRECTLY and reads the
 // active brand tokens via useTheme, so colors follow light/dark and the glass
@@ -82,13 +82,6 @@ export interface CheckboxSkin {
   ripple: ((tokens: ColorTokens) => { color: string; borderless: boolean; radius?: number }) | null;
 }
 
-// Stacks the title over its description beside the box. The 8px gap mirrors
-// Radio's TEXT_COLUMN (the kit's title+description precedent) and the kit's
-// default snug column spacing, so every such control stacks its text the same
-// way. `flexShrink` lets a long description wrap within the row instead of
-// forcing the row wider.
-const TEXT_COLUMN: ViewStyle = { flexShrink: 1, gap: 8 };
-
 /** Build a Checkbox component from a platform skin.
  * @ref Ref to the interactive checkbox row, including its label. Typed as a React Native View. On web, React Native Web exposes its DOM host; focus() and blur() move browser focus. Native host behavior depends on the platform and React Native version. Calling focus() does not activate the control or call accessibility focus APIs.
  */
@@ -143,18 +136,10 @@ export function createCheckbox(skin: CheckboxSkin) {
           style,
         ]}
       >
-        <CheckboxIndicatorBox skin={skin} tokens={tokens} size={size} checked={checked}
-          indeterminate={indeterminate} nudge={hasText} />
-        {hasText ? (
-          description != null ? (
-            <View style={TEXT_COLUMN}>
-              {children != null ? <Text style={skin.label(tokens, size)}>{children}</Text> : null}
-              <Text style={skin.description(tokens, size)}>{description}</Text>
-            </View>
-          ) : (
-            <Text style={skin.label(tokens, size)}>{children}</Text>
-          )
-        ) : null}
+        <CheckboxContent skin={skin} tokens={tokens} size={size} checked={checked}
+          indeterminate={indeterminate} description={description}>
+          {children}
+        </CheckboxContent>
       </Pressable>
     );
   });

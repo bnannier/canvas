@@ -1,8 +1,10 @@
 import { describe, it, expect, afterEach } from "bun:test";
-import { render, screen, cleanup, fireEvent } from "@testing-library/react";
+import { act, render, screen, cleanup, fireEvent, within } from "@testing-library/react";
 import { type ReactNode } from "react";
 import { ThemeProvider } from "../src/style/theme.tsx";
 import { FilterPanel } from "../src/organisms/filter-panel/filter-panel.tsx";
+import { FilterPanel as FilterPanelIOS } from "../src/organisms/filter-panel/filter-panel.ios.tsx";
+import { FilterPanel as FilterPanelAndroid } from "../src/organisms/filter-panel/filter-panel.android.tsx";
 
 afterEach(cleanup);
 const ui = (node: ReactNode) => render(<ThemeProvider>{node}</ThemeProvider>);
@@ -71,3 +73,90 @@ describe("FilterPanel", () => {
     expect(screen.getByLabelText("Closed").getAttribute("aria-checked")).toBe("true");
   });
 });
+
+
+for (const [platform, Component] of [["web", FilterPanel], ["ios", FilterPanelIOS], ["android", FilterPanelAndroid]] as const) {
+  describe(`${platform} FilterPanel option accessibility`, () => {
+    const groups = [{ title: "Status", options: [
+      { label: "Active", value: "active", count: "128" },
+      { label: "Archived", value: "archived", count: "42" },
+    ] }];
+
+    it("exposes one named checkbox and tab stop per option with inert visuals", () => {
+      const { container, getAllByRole, getByRole } = ui(<Component groups={groups} />);
+      expect(getAllByRole("checkbox")).toHaveLength(2);
+      expect(container.querySelectorAll('[role="checkbox"]')).toHaveLength(2);
+      for (const name of ["Active, 128", "Archived, 42"]) {
+        const row = getByRole("checkbox", { name });
+        expect(row.tabIndex).toBe(0);
+        expect(row.querySelector('[tabindex], button, input, select, textarea, a[href], [contenteditable="true"]')).toBeNull();
+        expect(row.querySelector('[aria-hidden="true"]')).not.toBeNull();
+      }
+    });
+
+    it("toggles once on Space release and once on Enter, while retaining focus", () => {
+      const changes: string[][] = [];
+      const toggles: [number, number, boolean][] = [];
+      const { getByRole } = ui(<Component groups={groups}
+        onSelectionChange={(next) => changes.push(next)} onChange={(g, o, next) => toggles.push([g, o, next])} />);
+      const row = getByRole("checkbox", { name: "Active, 128" });
+      act(() => row.focus());
+      expect(fireEvent.keyDown(row, { key: " " })).toBe(false);
+      fireEvent.keyDown(row, { key: " ", repeat: true });
+      expect(changes).toEqual([]);
+      fireEvent.keyUp(row, { key: " " });
+      expect(changes).toEqual([["active"]]);
+      expect(toggles).toEqual([[0, 0, true]]);
+      expect(row.getAttribute("aria-checked")).toBe("true");
+      fireEvent.keyDown(row, { key: "Enter" });
+      fireEvent.keyUp(row, { key: "Enter" });
+      expect(changes).toEqual([["active"], []]);
+      expect(toggles).toEqual([[0, 0, true], [0, 0, false]]);
+      expect(row.getAttribute("aria-checked")).toBe("false");
+      expect(document.activeElement).toBe(row);
+    });
+
+    it("uses one selection path for the visible label, count and row body", () => {
+      const changes: string[][] = [];
+      const { getByRole } = ui(<Component groups={groups} onSelectionChange={(next) => changes.push(next)} />);
+      const row = getByRole("checkbox", { name: "Active, 128" });
+      fireEvent.click(within(row).getByText("Active"));
+      expect(changes).toEqual([["active"]]);
+      fireEvent.click(within(row).getByText("128"));
+      expect(changes).toEqual([["active"], []]);
+      fireEvent.click(row);
+      expect(changes).toEqual([["active"], [], ["active"]]);
+      expect(getByRole("checkbox", { name: "Active, 128" })).toBe(row);
+    });
+
+    it("keeps a focused stable-value row and its held Space sequence through reordering", () => {
+      const changes: string[][] = [];
+      const toggles: [number, number, boolean][] = [];
+      const view = (reversed: boolean) => <ThemeProvider><Component
+        groups={[{ title: "Status", options: reversed ? [...groups[0].options].reverse() : groups[0].options }]}
+        onSelectionChange={(next) => changes.push(next)} onChange={(g, o, next) => toggles.push([g, o, next])} /></ThemeProvider>;
+      const { getByRole, rerender } = render(view(false));
+      const row = getByRole("checkbox", { name: "Active, 128" });
+      act(() => row.focus());
+      fireEvent.keyDown(row, { key: " " });
+      rerender(view(true));
+      expect(getByRole("checkbox", { name: "Active, 128" })).toBe(row);
+      expect(document.activeElement).toBe(row);
+      fireEvent.keyUp(row, { key: " " });
+      expect(changes).toEqual([["active"]]);
+      expect(toggles).toEqual([[0, 1, true]]);
+      expect(row.getAttribute("aria-checked")).toBe("true");
+    });
+
+    it("cancels a held Space when focus leaves the row", () => {
+      const changes: string[][] = [];
+      const { getByRole } = ui(<Component groups={groups} onSelectionChange={(next) => changes.push(next)} />);
+      const row = getByRole("checkbox", { name: "Active, 128" });
+      act(() => row.focus());
+      fireEvent.keyDown(row, { key: " " });
+      act(() => getByRole("checkbox", { name: "Archived, 42" }).focus());
+      fireEvent.keyUp(row, { key: " " });
+      expect(changes).toEqual([]);
+    });
+  });
+}

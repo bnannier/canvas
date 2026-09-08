@@ -1,6 +1,6 @@
 import { createFilterPanel } from "./filter-panel.shared.js";
 import { androidSkin } from "./filter-panel.styles.js";
-import { Checkbox as CheckboxAndroid } from "../../atoms/checkbox/checkbox.android.js";
+import { CheckboxIndicator as CheckboxAndroid } from "../../atoms/checkbox/indicator/index.android.js";
 import { Badge as BadgeAndroid } from "../../atoms/badge/badge.android.js";
 import { Button as ButtonAndroid } from "../../atoms/button/button.android.js";
 

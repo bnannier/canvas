@@ -1,6 +1,6 @@
 import { createFilterPanel } from "./filter-panel.shared.js";
 import { iosSkin } from "./filter-panel.styles.js";
-import { Checkbox as CheckboxIOS } from "../../atoms/checkbox/checkbox.ios.js";
+import { CheckboxIndicator as CheckboxIOS } from "../../atoms/checkbox/indicator/index.ios.js";
 import { Badge as BadgeIOS } from "../../atoms/badge/badge.ios.js";
 import { Button as ButtonIOS } from "../../atoms/button/button.ios.js";
 
