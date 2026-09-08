@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { type GestureResponderEvent, StyleSheet } from "react-native";
+import { useHorizontalScrollFocus } from "../../style/use-scroll-focus.js";
 import { View, Pressable, Text, ScrollView, useTheme, useControllableState, surfaceRipple, pressDim, RippleClip, cornerRadii, splitElevation, devWarn, useMinTargetSlop, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle, type TouchTargetSkin } from "../../style/index.js";
 import { Icon } from "../../atoms/icon/icon.js";
 import { MONO, type Variant } from "./code-block.styles.js";
@@ -167,7 +168,7 @@ export interface CodeBlockProps {
   // Orthogonal modifiers.
   /** Show a copy affordance (header-hosted when a header/chrome exists, else pinned top-right). */
   copy?: boolean;
-  /** Soft-wrap long lines instead of scrolling them horizontally. */
+  /** Soft-wrap long lines instead of scrolling them horizontally. An overflowing unwrapped block is a keyboard tab stop; arrow keys use the platform's normal scrolling. */
   wrap?: boolean;
   /**
    * Render the code as a unified diff: the first column of every line is the
@@ -473,6 +474,7 @@ export function createCodeBlock(skin: CodeBlockSkin) {
       attached = false,
     } = props;
     const variant = variantOf(props);
+    const scrollFocus = useHorizontalScrollFocus();
     const { tokens, dark } = useTheme();
 
     // Tabs: the active tab supplies code/language/filename, falling back to the
@@ -636,7 +638,7 @@ export function createCodeBlock(skin: CodeBlockSkin) {
           {wrap ? (
             rows
           ) : (
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={GROW}>
+            <ScrollView {...scrollFocus} horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={GROW}>
               {rows}
             </ScrollView>
           )}
@@ -739,6 +741,7 @@ export function createCodeBlock(skin: CodeBlockSkin) {
               <View style={FLEX_FILL}>{rowsCol}</View>
             ) : (
               <ScrollView
+                {...scrollFocus}
                 horizontal
                 showsHorizontalScrollIndicator={false}
                 style={FLEX_FILL}

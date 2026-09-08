@@ -16,7 +16,7 @@ export function TokenH1({ children }: { children: ReactNode }) {
   const { tokens } = useTheme();
   const size = useFluidType(32, 40, 0.05);
   return (
-    <Text style={{ fontFamily: geist("700"), fontSize: size, letterSpacing: size * -0.025, color: tokens.foreground }}>
+    <Text accessibilityRole="header" aria-level={1} style={{ fontFamily: geist("700"), fontSize: size, letterSpacing: size * -0.025, color: tokens.foreground }}>
       {children}
     </Text>
   );
@@ -57,7 +57,7 @@ export function TokenSection({ title, description, anatomy, children }: {
   return (
     <Column relaxed>
       <Column tight>
-        <Text style={{ fontFamily: geist("600"), fontSize: 20, letterSpacing: -0.3, color: tokens.foreground }}>{title}</Text>
+        <Text accessibilityRole="header" aria-level={2} style={{ fontFamily: geist("600"), fontSize: 20, letterSpacing: -0.3, color: tokens.foreground }}>{title}</Text>
         {description ? (
           <Text style={{ fontFamily: geist("400"), fontSize: 13.5, lineHeight: 21.6, color: tokens["muted-foreground"], maxWidth: 640 }}>{description}</Text>
         ) : null}
