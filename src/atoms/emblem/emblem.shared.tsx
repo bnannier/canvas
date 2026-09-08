@@ -1,3 +1,4 @@
+import { primaryText } from "../../style/primary-text.js";
 import { cloneElement, isValidElement, type ReactElement, type ReactNode } from "react";
 import { View, Text, useTheme, alpha, type ColorTokens, type StyleProp, type ViewStyle } from "../../style/index.js";
 import { type EmblemSkin } from "./emblem.styles.js";
@@ -83,7 +84,7 @@ const ICON_TINT: Record<Tone, Record<string, boolean>> = {
 function labelColor(tokens: ColorTokens, tone: Tone): string {
   switch (tone) {
     case "primary":
-      return tokens.primary;
+      return primaryText(tokens);
     case "destructive":
       return tokens.destructive;
     case "success":

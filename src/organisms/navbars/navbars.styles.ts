@@ -1,3 +1,4 @@
+import { primaryText } from "../../style/primary-text.js";
 import { type ViewStyle, type TextStyle } from "react-native";
 import { type ColorTokens, shadow, alpha, FOCUS_RESET } from "../../style/index.js";
 import { type NavbarSkin } from "./navbars.shared.js";
@@ -176,7 +177,7 @@ export const iosSkin: NavbarSkin = {
       lineHeight: 20,
       fontWeight: "600",
       textAlign: "center",
-      color: active ? tokens["primary-foreground"] : tokens.primary,
+      color: active ? tokens["primary-foreground"] : primaryText(tokens),
     };
   },
 
@@ -251,7 +252,7 @@ export const androidSkin: NavbarSkin = {
       fontSize: 14,
       lineHeight: 20,
       fontWeight: "500",
-      color: active ? tokens.primary : tokens["muted-foreground"],
+      color: active ? primaryText(tokens) : tokens["muted-foreground"],
     };
   },
 

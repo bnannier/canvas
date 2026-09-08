@@ -8,6 +8,7 @@ import {
   type View,
 } from "react-native";
 import { useComposedRefs } from "../../style/use-composed-refs.js";
+import { primaryText } from "../../style/primary-text.js";
 import { Pressable, RippleClip, Text, useMinTargetSlop, useTheme, type StyleProp, type ViewStyle } from "../../style/index.js";
 import { type ButtonSkin, type Intent, type Size, FG_TOKEN } from "./button.styles.js";
 
@@ -181,7 +182,7 @@ export function createButton(skin: ButtonSkin) {
             skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null,
           ]}
         >
-          {loading ? <ActivityIndicator size="small" color={tokens[FG_TOKEN[intent]]} /> : null}
+          {loading ? <ActivityIndicator size="small" color={intent === "link" ? primaryText(tokens) : tokens[FG_TOKEN[intent]]} /> : null}
           {!loading && iconLeft != null ? iconLeft : null}
           {children != null ? <Text style={skin.label(tokens, intent, size)}>{children}</Text> : null}
           {!loading && iconRight != null ? iconRight : null}

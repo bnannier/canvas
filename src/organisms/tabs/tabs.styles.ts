@@ -1,3 +1,4 @@
+import { primaryText } from "../../style/primary-text.js";
 import { type ViewStyle, type TextStyle } from "react-native";
 import { type ColorTokens, shadow, customShadow, alpha, FOCUS_RESET } from "../../style/index.js";
 import { type TabsSkin } from "./tabs.shared.js";
@@ -360,7 +361,7 @@ export const androidSkin: TabsSkin = {
   },
   underlineLabel(tokens, selected) {
     // M3 titleSmall ~14sp; active label carries the brand indigo, inactive muted.
-    return { fontSize: 14, lineHeight: 20, fontWeight: "500", color: selected ? tokens.primary : tokens["muted-foreground"] };
+    return { fontSize: 14, lineHeight: 20, fontWeight: "500", color: selected ? primaryText(tokens) : tokens["muted-foreground"] };
   },
 
   // --- pills (M3 keeps the muted-track + tonal selected fill) ---
@@ -393,7 +394,7 @@ export const androidSkin: TabsSkin = {
     return selected ? { backgroundColor: alpha(tokens.primary, 0.12) } : { backgroundColor: "transparent" };
   },
   pillsLabel(tokens, selected) {
-    return { fontSize: 14, lineHeight: 20, fontWeight: "500", color: selected ? tokens.primary : tokens["muted-foreground"] };
+    return { fontSize: 14, lineHeight: 20, fontWeight: "500", color: selected ? primaryText(tokens) : tokens["muted-foreground"] };
   },
 
   // --- vertical (M3 navigation rail row; active item is a tonal pill) ---
@@ -414,7 +415,7 @@ export const androidSkin: TabsSkin = {
     return { backgroundColor: selected ? alpha(tokens.primary, 0.12) : "transparent" };
   },
   verticalLabel(tokens, selected) {
-    return { fontSize: 14, lineHeight: 20, fontWeight: "500", color: selected ? tokens.primary : tokens["muted-foreground"] };
+    return { fontSize: 14, lineHeight: 20, fontWeight: "500", color: selected ? primaryText(tokens) : tokens["muted-foreground"] };
   },
 
   // --- count badge ---

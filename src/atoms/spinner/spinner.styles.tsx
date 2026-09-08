@@ -20,11 +20,11 @@ export type Tone = "primary" | "muted" | "foreground";
 
 // Arc/spoke color token per tone: reads from the active brand tokens (via
 // useTheme) so it follows light/dark and the glass surface.
-export const TONE_TOKEN: Record<Tone, keyof ColorTokens> = {
+export const TONE_TOKEN = {
   primary: "primary",
   muted: "muted-foreground",
   foreground: "foreground",
-};
+} satisfies Record<Tone, keyof ColorTokens>;
 
 // The component-owned label + description type. The label is the kit's canonical
 // small (14) muted type; the description sits one step below (12), also muted.

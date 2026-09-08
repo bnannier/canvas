@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it } from "bun:test";
 import { readFileSync } from "node:fs";
-import { cleanup, render, screen } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
 import { StyleSheet } from "react-native";
 import { ThemeProvider } from "../src/style/theme.tsx";
 import { createBadge } from "../src/atoms/badge/badge.shared.tsx";
@@ -9,7 +9,7 @@ import { createAlert } from "../src/molecules/alert/alert.shared.tsx";
 import * as alertSkins from "../src/molecules/alert/alert.styles.ts";
 import { colorsByScheme, glassByScheme, type ColorTokens } from "../src/style/tokens.ts";
 import { androidSkin, iosSkin, webSkin } from "../src/atoms/button/button.styles.ts";
-import { blockDeclarations, cssColorToHex } from "../tools/tokens/css-tokens.ts";
+import { blockDeclarations, cssColorToHex, stripComments } from "../tools/tokens/css-tokens.ts";
 import * as actionSheetSkins from "../src/organisms/action-sheet/action-sheet.styles.ts";
 import { ActionSheet } from "../src/organisms/action-sheet/action-sheet.tsx";
 import { ActionSheet as IOSActionSheet } from "../src/organisms/action-sheet/action-sheet.ios.tsx";
@@ -18,6 +18,19 @@ import { Dialog } from "../src/organisms/dialog/dialog.tsx";
 import { Dialog as IOSDialog } from "../src/organisms/dialog/dialog.ios.tsx";
 import { Dialog as AndroidDialog } from "../src/organisms/dialog/dialog.android.tsx";
 import * as dialogSkins from "../src/organisms/dialog/dialog.styles.ts";
+import * as inputSkins from "../src/atoms/input/input.styles.ts";
+import * as alertDialogSkins from "../src/molecules/alert-dialog/alert-dialog.styles.ts";
+import * as toastSkins from "../src/organisms/toast/toast.styles.ts";
+import * as tabsSkins from "../src/organisms/tabs/tabs.styles.ts";
+import * as buttonGroupSkins from "../src/atoms/button-group/button-group.styles.ts";
+import * as paginationSkins from "../src/atoms/pagination/pagination.styles.ts";
+import * as sidebarSkins from "../src/organisms/sidebar/sidebar.styles.ts";
+import * as navbarSkins from "../src/organisms/navbars/navbars.styles.ts";
+import * as stepsSkins from "../src/organisms/steps/steps.styles.ts";
+import * as calendarSkins from "../src/organisms/calendar/calendar.styles.ts";
+import { toneColor } from "../src/atoms/typography/typography.styles.ts";
+import { Tabs as AndroidTabs } from "../src/organisms/tabs/tabs.android.tsx";
+import { Calendar } from "../src/organisms/calendar/calendar.tsx";
 
 afterEach(cleanup);
 
@@ -72,7 +85,8 @@ function textContrast(text: SrgbColor, background: SrgbColor): number {
   return contrast(composite(text, background), background);
 }
 
-const PAIRS: [keyof ColorTokens, keyof ColorTokens][] = [
+type PairedToken = Exclude<keyof ColorTokens, "primary-text">;
+const PAIRS: [PairedToken, PairedToken][] = [
   ["background", "foreground"], ["card", "card-foreground"], ["popover", "popover-foreground"],
   ["primary", "primary-foreground"], ["secondary", "secondary-foreground"], ["muted", "muted-foreground"],
   ["accent", "accent-foreground"], ["destructive", "destructive-foreground"],
@@ -155,6 +169,174 @@ const hexOf = (color: string): string => {
   return "#" + channels.slice(1).map((channel) => Number(channel).toString(16).padStart(2, "0")).join("");
 };
 
+function paint(style: { color?: unknown; backgroundColor?: unknown }, property: "color" | "backgroundColor" = "color"): string {
+  const value = style[property];
+  if (typeof value !== "string") throw new Error(`Expected a source ${property}, received ${String(value)}`);
+  return value;
+}
+
+// Pin the supported default surface set. Use the actual layered skin fills,
+// including the two built-in compositions a neutral-pair check cannot catch.
+function primaryTextSurfaces(tokens: ColorTokens): [string, SrgbColor][] {
+  const neutral = ["background", "card", "popover", "muted"] as const;
+  const tonal = paint(tabsSkins.androidSkin.pillsFill(tokens, true, false), "backgroundColor");
+  const navTile = paint(navbarSkins.iosSkin.linkTile(tokens, false), "backgroundColor");
+  return [
+    ...neutral.map((key): [string, SrgbColor] => [key, tokens[key]]),
+    ...neutral.map((key): [string, SrgbColor] => [`tonal selected on ${key}`, composite(tonal, tokens[key])]),
+    ...neutral.map((key): [string, SrgbColor] => [`iOS Navbar inactive on ${key}`, composite(navTile, tokens[key])]),
+    ["today within range", composite(
+      paint(calendarSkins.webSkin.dayCellState(tokens, { selected: false, today: true }), "backgroundColor"),
+      composite(paint(calendarSkins.webSkin.rangeBand(tokens), "backgroundColor"), tokens.card),
+    )],
+  ];
+}
+
+function neighborhood(color: SrgbColor): Rgba[] {
+  const [r, g, b, a] = rgba(color);
+  const bounded = (channel: number) => Math.max(0, Math.min(255, channel));
+  const values: Rgba[] = [];
+  for (const dr of [-1, 0, 1]) for (const dg of [-1, 0, 1]) for (const db of [-1, 0, 1]) {
+    values.push([bounded(r + dr), bounded(g + dg), bounded(b + db), a]);
+  }
+  return values;
+}
+
+function baseRule(selector: "a" | "a:hover"): CSSStyleDeclaration {
+  const base = readFileSync(new URL("../styles/tokens/base.css", import.meta.url), "utf8");
+  const rule = new RegExp(`(?:^|[{}])\\s*${selector}\\s*\\{([^}]+)\\}`, "m").exec(stripComments(base));
+  if (!rule) throw new Error(`Missing CSS handoff rule: ${selector}`);
+  const declaration = document.createElement("a").style;
+  declaration.cssText = rule[1]!;
+  return declaration;
+}
+
+describe("primary text on authored surfaces", () => {
+  it("maps the CSS text roles to primary-text and preserves fill/graphic roles", () => {
+    const platformCss = readFileSync(new URL("../styles/tokens/platforms.css", import.meta.url), "utf8");
+    const android = blockDeclarations(platformCss, '[data-platform="android"]').decls;
+    const ios = blockDeclarations(platformCss, '[data-platform="ios"]').decls;
+    const web = blockDeclarations(platformCss, ':root,[data-platform="web"]').decls;
+    for (const key of ["p-tab-label-selected", "p-tab-v-selected-label", "p-side-active-label", "p-nav-link-active-label",
+      "p-seg-selected-label", "p-page-selected-label", "p-alert-cancel-label", "p-alert-confirm-label", "p-ad-cancel-label", "p-ad-confirm-label"]) {
+      expect(android[key], key).toBe("var(--primary-text)");
+    }
+    expect(ios["p-nav-link-label"]).toBe("var(--primary-text)");
+    expect(ios["p-nav-link-active-fill"]).toBe("var(--primary)");
+    expect(ios["p-nav-link-active-label"]).toBe("var(--primary-foreground)");
+    expect(android["p-select-check-color"]).toBe("var(--primary)");
+    expect(web["p-sheet-row-label"]).toBe("var(--popover-foreground)");
+    expect(web["p-sheet-cancel-label"]).toBe("var(--popover-foreground)");
+    expect(baseRule("a").color).toBe("var(--primary-text)");
+  });
+
+  for (const scheme of ["light", "dark"] as const) {
+    const tokens = colorsByScheme[scheme];
+    it(`keeps ${scheme} RN/CSS primary text readable through the full rounding neighborhood`, () => {
+      const text = tokens["primary-text"];
+      expect(typeof text).toBe("string");
+      if (!text) throw new Error("Default themes must resolve primary-text");
+      const declarations = blockDeclarations(css, scheme === "light" ? ":root" : ".dark").decls;
+      expect(cssColorToHex(declarations["primary-text"])).toBe(text);
+      for (const [name, fill] of primaryTextSurfaces(tokens)) {
+        expect(contrast(text, fill), name).toBeGreaterThanOrEqual(4.65);
+        // Perturb both the text AND the final fractional composite, not just
+        // individual opaque tokens. Include every combined RGB direction.
+        for (const foreground of neighborhood(text)) for (const background of neighborhood(fill)) {
+          expect(contrast(foreground, background), name).toBeGreaterThanOrEqual(4.5);
+        }
+      }
+    });
+
+    it(`keeps actual CSS anchor hover readable on the four ${scheme} neutral surfaces`, () => {
+      const text = tokens["primary-text"];
+      if (!text) throw new Error("Default themes must resolve primary-text");
+      const opacity = Number(baseRule("a:hover").opacity);
+      expect(opacity).toBe(0.9);
+      const [r, g, b] = rgba(text);
+      const hovered: Rgba = [r, g, b, opacity];
+      for (const key of ["background", "card", "popover", "muted"] as const) {
+        const painted = composite(hovered, tokens[key]);
+        expect(contrast(painted, tokens[key]), key).toBeGreaterThanOrEqual(4.65);
+        for (const foreground of neighborhood(painted)) for (const background of neighborhood(tokens[key])) {
+          expect(contrast(foreground, background), key).toBeGreaterThanOrEqual(4.5);
+        }
+      }
+    });
+
+    it(`uses the foreground role in every ${scheme} primary text skin`, () => {
+      const expected = tokens["primary-text"];
+      const styles: [string, { color?: unknown }][] = [];
+      for (const [platform, skin] of Object.entries({ web: webSkin, ios: iosSkin, android: androidSkin })) {
+        for (const size of ["small", "base", "large"] as const) styles.push([`${platform} link ${size}`, skin.label(tokens, "link", size)]);
+      }
+      styles.push(
+        ["Typography primary", toneColor(tokens, scheme === "dark", "primary")],
+        ["iOS Input action", inputSkins.iosSkin.actionText(tokens)],
+        ["Android Input action", inputSkins.androidSkin.actionText(tokens)],
+        ["Android AlertDialog text button", alertDialogSkins.androidSkin.textButtonLabel(tokens, false)],
+        ["Android Dialog text button", dialogSkins.androidSkin.textButtonLabel(tokens, false)],
+        ["Web Toast action", toastSkins.webSkin.actionLabel(tokens)],
+        ["iOS Toast action", toastSkins.iosSkin.actionLabel(tokens)],
+        ["Android underline Tab", tabsSkins.androidSkin.underlineLabel(tokens, true)],
+        ["Android pill Tab", tabsSkins.androidSkin.pillsLabel(tokens, true)],
+        ["Android vertical Tab", tabsSkins.androidSkin.verticalLabel(tokens, true)],
+        ["Android ButtonGroup segment", buttonGroupSkins.androidSkin.segmentLabel(tokens, true)],
+        ["Android Pagination selected page", paginationSkins.androidSkin.pageLabel(tokens, true)],
+        ["Android Sidebar active label", sidebarSkins.androidSkin.label(tokens, true, "compact")],
+        ["iOS Navbar inactive label", navbarSkins.iosSkin.linkLabel(tokens, false)],
+        ["Android Navbar active label", navbarSkins.androidSkin.linkLabel(tokens, true)],
+      );
+      for (const platform of ["webSkin", "iosSkin", "androidSkin"] as const) {
+        styles.push(
+          [`${platform} current step number`, stepsSkins[platform].glyphState(tokens, "current")],
+          [`${platform} Calendar today`, calendarSkins[platform].dayLabel(tokens, { selected: false, today: true })],
+          [`${platform} Calendar event title`, calendarSkins[platform].eventTitle(tokens)],
+        );
+        expect(paint(calendarSkins[platform].dayLabel(tokens, { selected: true, today: true })))
+          .toBe(tokens["primary-foreground"]);
+        expect(paint(calendarSkins[platform].dayCellState(tokens, { selected: true, today: true }), "backgroundColor"))
+          .toBe(tokens.primary);
+      }
+      for (const [name, style] of styles) expect(paint(style), name).toBe(expected);
+      const inverse = paint(toastSkins.androidSkin.actionLabel(tokens));
+      expect(inverse).toBe(colorsByScheme[scheme === "light" ? "dark" : "light"]["primary-text"]);
+      expect(contrast(inverse, tokens.foreground)).toBeGreaterThanOrEqual(4.5);
+    });
+
+    it(`renders the actual ${scheme} Android pill label over its selected fill and muted track`, () => {
+      render(<ThemeProvider scheme={scheme}><AndroidTabs pills tabs={["Overview", "Activity"]} /></ThemeProvider>);
+      const track = screen.getByRole("tablist");
+      for (const name of ["Overview", "Activity"]) {
+        const tab = screen.getByRole("tab", { name });
+        fireEvent.click(tab);
+        expect(tab.getAttribute("aria-selected")).toBe("true");
+        const label = within(tab).getByText(name);
+        const background = composite(tab.style.backgroundColor, track.style.backgroundColor);
+        expect(hexOf(label.style.color)).toBe(tokens["primary-text"]);
+        expect(contrast(label.style.color, background)).toBeGreaterThanOrEqual(4.65);
+        if (scheme === "dark") expect(contrast(tokens.primary, background)).toBeLessThan(4.5);
+      }
+    });
+
+    it(`renders the actual ${scheme} Web Calendar today over the range band`, () => {
+      render(<ThemeProvider scheme={scheme}><Calendar range defaultRangeStart={2} defaultRangeEnd={6} today={4} month="September 2026" testID="calendar" /></ThemeProvider>);
+      const today = screen.getByRole("button", { name: "4, today, in range" });
+      const band = today.parentElement?.parentElement?.firstElementChild as HTMLElement | undefined;
+      expect(band?.style.backgroundColor).toBeTruthy();
+      const card = screen.getByTestId("calendar");
+      const background = composite(today.style.backgroundColor, composite(band!.style.backgroundColor, card.style.backgroundColor));
+      const label = within(today).getByText("4");
+      expect(hexOf(label.style.color)).toBe(tokens["primary-text"]);
+      expect(contrast(label.style.color, background)).toBeGreaterThanOrEqual(4.65);
+      expect(contrast(tokens.primary, background)).toBeLessThan(4.5);
+      const endpoint = screen.getByRole("button", { name: "2, selected, start of range" });
+      expect(hexOf(endpoint.style.backgroundColor)).toBe(tokens.primary);
+      expect(hexOf(within(endpoint).getByText("2").style.color)).toBe(tokens["primary-foreground"]);
+    });
+  }
+});
+
 for (const scheme of ["light", "dark"] as const) {
   for (const { name, Badge, Alert } of renderedPlatforms) {
     it(`keeps actual ${scheme} ${name} Badge and Alert status text readable`, () => {
@@ -216,6 +398,10 @@ describe("Dialog message contrast", () => {
         }
         expect(hexOf(screen.getByText("Refund payment").style.color)).toBe(skin.title(tokens).color);
         expect(hexOf(screen.getByText("Amount").style.color)).toBe(skin.fieldLabel(tokens).color);
+        if (name === "android") {
+          expect(hexOf(screen.getByText("Cancel").style.color)).toBe(tokens["primary-text"]);
+          expect(hexOf(screen.getByText("Confirm").style.color)).toBe(tokens["primary-text"]);
+        }
       });
     }
   }

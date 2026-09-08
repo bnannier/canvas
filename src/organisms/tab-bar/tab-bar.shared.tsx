@@ -1,3 +1,4 @@
+import { primaryText } from "../../style/primary-text.js";
 import { type ReactNode } from "react";
 import { View, Text, Pressable, GlassSurface, useTheme, useControllableState, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle } from "../../style/index.js";
 
@@ -104,7 +105,7 @@ export function createTabBar(skin: TabBarSkin) {
                 ) : (
                   it.icon(isActive)
                 )}
-                <Text numberOfLines={1} style={[skin.label(isActive), { color: isActive ? tokens.primary : tokens["muted-foreground"] }]}>{it.label}</Text>
+                <Text numberOfLines={1} style={[skin.label(isActive), { color: isActive ? primaryText(tokens) : tokens["muted-foreground"] }]}>{it.label}</Text>
               </Pressable>
             );
           })}

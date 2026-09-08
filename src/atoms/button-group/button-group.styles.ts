@@ -1,3 +1,4 @@
+import { primaryText } from "../../style/primary-text.js";
 import { type ViewStyle, type TextStyle } from "react-native";
 import { type ColorTokens, alpha, shadow, customShadow } from "../../style/index.js";
 import { type ButtonGroupSkin, type Size } from "./button-group.shared.js";
@@ -400,7 +401,7 @@ export const androidSkin: ButtonGroupSkin = {
   },
   segmentLabel(t, selected) {
     // labelMedium; selected reads in brand indigo (onSecondaryContainer ≈ primary).
-    return { fontWeight: "500", color: selected ? t.primary : t.foreground };
+    return { fontWeight: "500", color: selected ? primaryText(t) : t.foreground };
   },
   // Glyphs track the label: brand indigo on the tonal selected fill.
   segmentIconColor: (selected) => (selected ? "primary" : "foreground"),

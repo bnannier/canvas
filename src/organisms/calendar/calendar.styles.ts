@@ -1,3 +1,4 @@
+import { primaryText } from "../../style/primary-text.js";
 import { type ViewStyle, type TextStyle } from "react-native";
 import { type ColorTokens, alpha, shadow, FOCUS_RESET } from "../../style/index.js";
 
@@ -232,7 +233,7 @@ export const webSkin: CalendarSkin = {
   // Selected -> `text-primary-foreground`; today (unselected) -> `primary` text.
   dayLabel: (t, st) => {
     if (st.selected) return { fontWeight: "500", color: t["primary-foreground"] };
-    if (st.today) return { fontWeight: "500", color: t.primary };
+    if (st.today) return { fontWeight: "500", color: primaryText(t) };
     return { color: t.foreground };
   },
 
@@ -258,7 +259,7 @@ export const webSkin: CalendarSkin = {
     ...FOCUS_RESET,
   },
   eventBlockSurface: (t) => ({ backgroundColor: alpha(t.primary, 0.12), borderLeftColor: t.primary }),
-  eventTitle: (t) => ({ fontSize: 12, lineHeight: 16, fontWeight: "500", color: t.primary }),
+  eventTitle: (t) => ({ fontSize: 12, lineHeight: 16, fontWeight: "500", color: primaryText(t) }),
   eventTime: (t) => ({ fontSize: 10, lineHeight: 14, color: t["muted-foreground"] }),
 
   // Mirrors the web Popover card (radius 8, hairline border, lg shadow) with the
@@ -350,7 +351,7 @@ export const iosSkin: CalendarSkin = {
   // text, semibold; otherwise plain foreground.
   dayLabel: (t, st) => {
     if (st.selected) return { fontWeight: "600", color: t["primary-foreground"] };
-    if (st.today) return { fontWeight: "600", color: t.primary };
+    if (st.today) return { fontWeight: "600", color: primaryText(t) };
     return { color: t.foreground };
   },
 
@@ -379,7 +380,7 @@ export const iosSkin: CalendarSkin = {
     ...FOCUS_RESET,
   },
   eventBlockSurface: (t) => ({ backgroundColor: alpha(t.primary, 0.12), borderLeftColor: t.primary }),
-  eventTitle: (t) => ({ fontSize: 12, lineHeight: 16, fontWeight: "600", color: t.primary }),
+  eventTitle: (t) => ({ fontSize: 12, lineHeight: 16, fontWeight: "600", color: primaryText(t) }),
   eventTime: (t) => ({ fontSize: 11, lineHeight: 14, color: t["muted-foreground"] }),
 
   // The iOS popover DNA (borderless rounded card, lg shadow), tightened for a
@@ -470,7 +471,7 @@ export const androidSkin: CalendarSkin = {
   // otherwise plain foreground.
   dayLabel: (t, st) => {
     if (st.selected) return { fontWeight: "500", color: t["primary-foreground"] };
-    if (st.today) return { fontWeight: "500", color: t.primary };
+    if (st.today) return { fontWeight: "500", color: primaryText(t) };
     return { color: t.foreground };
   },
 
@@ -497,7 +498,7 @@ export const androidSkin: CalendarSkin = {
     overflow: "hidden",
   },
   eventBlockSurface: (t) => ({ backgroundColor: alpha(t.primary, 0.12), borderLeftColor: t.primary }),
-  eventTitle: (t) => ({ fontSize: 12, lineHeight: 16, fontWeight: "500", color: t.primary }),
+  eventTitle: (t) => ({ fontSize: 12, lineHeight: 16, fontWeight: "500", color: primaryText(t) }),
   eventTime: (t) => ({ fontSize: 11, lineHeight: 16, color: t["muted-foreground"] }),
 
   // The M3 menu-surface treatment (medium radius + md shadow), tightened for a

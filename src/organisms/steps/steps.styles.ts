@@ -1,3 +1,4 @@
+import { primaryText } from "../../style/primary-text.js";
 import { type ViewStyle, type TextStyle } from "react-native";
 import { alpha, TOUCH_TARGET, type ColorTokens, type TouchTargetSkin } from "../../style/index.js";
 
@@ -157,7 +158,7 @@ export const webSkin: StepsSkin = {
   glyphState(t, state) {
     switch (state) {
       case "completed": return { color: t["primary-foreground"] };
-      case "current": return { color: t.primary };
+      case "current": return { color: primaryText(t) };
       case "upcoming": return { color: t["muted-foreground"] };
     }
   },
@@ -206,7 +207,7 @@ export const iosSkin: StepsSkin = {
   glyphState(t, state) {
     switch (state) {
       case "completed": return { color: t["primary-foreground"] };
-      case "current": return { color: t.primary };
+      case "current": return { color: primaryText(t) };
       case "upcoming": return { color: t["muted-foreground"] };
     }
   },
@@ -255,7 +256,7 @@ export const androidSkin: StepsSkin = {
   glyphState(t, state) {
     switch (state) {
       case "completed": return { color: t["primary-foreground"] };
-      case "current": return { color: t.primary };
+      case "current": return { color: primaryText(t) };
       case "upcoming": return { color: t["muted-foreground"] };
     }
   },

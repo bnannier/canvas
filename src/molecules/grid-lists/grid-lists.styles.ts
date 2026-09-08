@@ -1,6 +1,7 @@
 import { type ViewStyle, type TextStyle, type DimensionValue } from "react-native";
 import { type ColorTokens, palette, alpha, surfaceRipple } from "../../style/index.js";
 import { type GridListSkin } from "./grid-lists.shared.js";
+import { primaryText } from "../../style/primary-text.js";
 
 // Co-located GridList skins, one per platform. GridList is a "Light" treatment:
 // ONE structure and ONE set of (semantic) colors live in grid-lists.shared.tsx;
@@ -78,7 +79,8 @@ export const actions: ViewStyle = { flexDirection: "row", gap: 8, marginTop: 8 }
 // palette key like "blue-500") to its hex. Falls back to the muted-foreground
 // token for an unknown name, so any tint composes safely.
 function resolveColor(tokens: ColorTokens, color: string): string {
-  if (color in tokens) return tokens[color as keyof ColorTokens];
+  if (color === "primary-text") return primaryText(tokens);
+  if (color in tokens) return tokens[color as keyof ColorTokens] ?? tokens["muted-foreground"];
   if (color in palette) return palette[color];
   return tokens["muted-foreground"];
 }

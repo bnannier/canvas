@@ -13,6 +13,7 @@ colors:
   popover: "#ffffff"
   popover-foreground: "#09090b"
   primary: "#4f39f6"
+  primary-text: "#4b30ef"
   primary-foreground: "#fafafa"
   secondary: "#f4f4f5"
   secondary-foreground: "#18181b"
@@ -37,6 +38,7 @@ colorsDark:
   popover: "#18181b"
   popover-foreground: "#fafafa"
   primary: "#615fff"
+  primary-text: "#8893fe"
   primary-foreground: "#ffffff"
   secondary: "#27272a"
   secondary-foreground: "#fafafa"
@@ -318,6 +320,7 @@ dark keys off a `.dark` class on the root rather than `prefers-color-scheme`.
 | `popover` | `#ffffff` | `#18181b` |
 | `popover-foreground` | `#09090b` | `#fafafa` |
 | `primary` | `#4f39f6` | `#615fff` |
+| `primary-text` | `#4b30ef` | `#8893fe` |
 | `primary-foreground` | `#fafafa` | `#ffffff` |
 | `secondary` | `#f4f4f5` | `#27272a` |
 | `secondary-foreground` | `#18181b` | `#fafafa` |

@@ -1,3 +1,4 @@
+import { primaryText } from "../../style/primary-text.js";
 import { type ViewStyle, type TextStyle } from "react-native";
 import { type ColorTokens, FOCUS_RESET, activeIndicator, type FloatingLabelStyles } from "../../style/index.js";
 
@@ -217,7 +218,7 @@ export const iosSkin: InputSkin = {
     ...(side === "left" ? { paddingStart: 12, paddingEnd: 8 } : { paddingStart: 8, paddingEnd: 12 }),
   }),
   addonText: (t) => ({ color: t["muted-foreground"] }),
-  actionText: (t) => ({ fontWeight: "600", color: t.primary }),
+  actionText: (t) => ({ fontWeight: "600", color: primaryText(t) }),
   iconOverlay: (side) => ({
     position: "absolute",
     top: 0,
@@ -254,7 +255,7 @@ const ANDROID_TOP_RADIUS = 4;
 // shell-resolved brand color (ring on focus / destructive on error) when active. `gap` is the
 // padding kept below the content so the thickening reserves a constant band (see activeIndicator).
 function androidUnderline(t: ColorTokens, borderColor: keyof ColorTokens, focused: boolean, error: boolean, gap: number): ViewStyle {
-  return activeIndicator({ active: focused || error, restColor: t["muted-foreground"], activeColor: t[borderColor], gap });
+  return activeIndicator({ active: focused || error, restColor: t["muted-foreground"], activeColor: t[borderColor] ?? t.ring, gap });
 }
 export const androidSkin: InputSkin = {
   // M3 body input is 16sp; nudge the base/large up, keep small readable.
@@ -312,7 +313,7 @@ export const androidSkin: InputSkin = {
     ...(side === "left" ? { paddingStart: 16, paddingEnd: 8 } : { paddingStart: 8, paddingEnd: 16 }),
   }),
   addonText: (t) => ({ color: t["muted-foreground"] }),
-  actionText: (t) => ({ fontWeight: "500", color: t.primary, textTransform: "uppercase", letterSpacing: 0.5 }),
+  actionText: (t) => ({ fontWeight: "500", color: primaryText(t), textTransform: "uppercase", letterSpacing: 0.5 }),
   iconOverlay: (side) => ({
     position: "absolute",
     top: 0,
