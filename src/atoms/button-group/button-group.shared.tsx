@@ -3,6 +3,7 @@ import { useRef, useState } from "react";
 import { type GestureResponderEvent } from "react-native";
 import { View, Pressable, Text, RippleClip, cornerRadii, useTheme, useControllableState, AnchoredOverlay, useOverlayHost, useMeasuredWidth, devWarn, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle } from "../../style/index.js";
 import { Icon, type IconName } from "../icon/icon.js";
+import { primaryText } from "../../style/primary-text.js";
 import * as s from "./button-group.styles.js";
 
 // Shared ButtonGroup shell. The structure (the four kinds, their layout, the
@@ -220,6 +221,8 @@ export function createButtonGroup(skin: ButtonGroupSkin) {
 
   function Segment({ label, icon, iconOnly, selected, selectable, corners, leading, standalone, block, size, disabled, onPress }: SegmentProps) {
     const { tokens } = useTheme();
+    const iconColor = skin.segmentIconColor(selected && selectable);
+    const iconTint = iconColor === "primary" ? { color: primaryText(tokens) } : iconColorProps(iconColor);
     // The equal-share flex must ride the segment's OUTERMOST node: the Pressable
     // itself when attached, but the RippleClip wrapper when standalone (see the
     // return below), because a `flex: 1` on the Pressable INSIDE that column
@@ -259,13 +262,13 @@ export function createButtonGroup(skin: ButtonGroupSkin) {
         {/* The M3 selected check yields to a segment glyph: an icon segmented
             control marks selection by the fill, not check + icon side by side. */}
         {skin.showSelectedCheck && selected && icon == null ? (
-          <Icon check primary size={s.chevronSize[size]} style={{ marginEnd: 6 }} />
+          <Icon check color={primaryText(tokens)} size={s.chevronSize[size]} style={{ marginEnd: 6 }} />
         ) : null}
         {icon != null ? (
           // decorative: the segment's name is the label (visible Text, or the
           // accessibilityLabel above when icon-only), so the glyph itself must
           // stay silent to assistive tech.
-          <Icon {...{ [icon]: true }} decorative size={s.chevronSize[size]} {...iconColorProps(skin.segmentIconColor(selected && selectable))} style={showIconAlone ? undefined : { marginEnd: 6 }} />
+          <Icon {...{ [icon]: true }} decorative size={s.chevronSize[size]} {...iconTint} style={showIconAlone ? undefined : { marginEnd: 6 }} />
         ) : null}
         {showIconAlone ? null : <Text style={[s.sizeLabel[size], skin.segmentLabel(tokens, selected)]}>{label}</Text>}
       </Pressable>

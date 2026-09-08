@@ -98,9 +98,12 @@ function radius(v: string): number {
 
 const COLOR_TOKENS = new Set<keyof ColorTokens>([
   "background", "foreground", "card", "card-foreground", "popover", "popover-foreground",
-  "primary", "primary-foreground", "secondary", "secondary-foreground", "muted", "muted-foreground",
+  "primary", "primary-text", "primary-foreground", "secondary", "secondary-foreground", "muted", "muted-foreground",
   "accent", "accent-foreground", "destructive", "destructive-foreground", "border", "input", "ring",
 ]);
+function tokenColor(tokens: ColorTokens, key: keyof ColorTokens): string {
+  return key === "primary-text" ? tokens[key] ?? tokens.primary : tokens[key];
+}
 function color(v: string, tokens: ColorTokens): string | undefined {
   v = v.trim();
   if (!v || v === "currentColor" || v === "inherit") return undefined;
@@ -109,7 +112,7 @@ function color(v: string, tokens: ColorTokens): string | undefined {
   const mix = v.match(/color-mix\(in oklch,\s*var\(--([a-z-]+)\)\s*([0-9.]+)%/);
   if (mix) {
     const tok = mix[1] as keyof ColorTokens;
-    if (COLOR_TOKENS.has(tok)) return alpha(tokens[tok], parseFloat(mix[2]) / 100);
+    if (COLOR_TOKENS.has(tok)) return alpha(tokenColor(tokens, tok), parseFloat(mix[2]) / 100);
   }
   if (v.startsWith("linear-gradient") || v.startsWith("radial-gradient")) {
     const inner = v.match(/var\(--([a-z-]+)\)|#[0-9a-fA-F]{3,8}|hsl\([^)]*\)|rgba?\([^)]*\)/);
@@ -118,7 +121,7 @@ function color(v: string, tokens: ColorTokens): string | undefined {
   const vm = v.match(/^var\(--([a-z-]+)/);
   if (vm) {
     const tok = vm[1] as keyof ColorTokens;
-    return COLOR_TOKENS.has(tok) ? tokens[tok] : undefined;
+    return COLOR_TOKENS.has(tok) ? tokenColor(tokens, tok) : undefined;
   }
   return v; // hex / hsl / rgb / named
 }
@@ -197,7 +200,7 @@ function parseStyle(styleStr: string, tokens: ColorTokens) {
       case "box-shadow": {
         // RN Web renders the boxShadow style string; resolve var() colors so the focus
         // rings and card elevation track the theme. (Native ignores it gracefully.)
-        const resolved = val.replace(/var\(--([a-z-]+)\)/g, (_w, name: string) => (COLOR_TOKENS.has(name as keyof ColorTokens) ? tokens[name as keyof ColorTokens] : "transparent"));
+        const resolved = val.replace(/var\(--([a-z-]+)\)/g, (_w, name: string) => (COLOR_TOKENS.has(name as keyof ColorTokens) ? tokenColor(tokens, name as keyof ColorTokens) : "transparent"));
         view.boxShadow = resolved;
         break;
       }
@@ -546,4 +549,3 @@ export function Mockup({ html }: { html: string }) {
   const inherited = { fontSize: 13, color: tokens.foreground, fontFamily: geist("400") };
   return <View style={{ gap: 0 }}>{nodes.map((n, i) => renderNode(n, String(i), inherited, tokens, dark, narrow))}</View>;
 }
-

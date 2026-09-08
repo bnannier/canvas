@@ -1,3 +1,4 @@
+import { primaryText } from "../../style/primary-text.js";
 import { type ViewStyle, type TextStyle } from "react-native";
 import { type ColorTokens, alpha, FOCUS_RESET } from "../../style/index.js";
 
@@ -256,7 +257,7 @@ export const androidSkin: PaginationSkin = {
   },
   pageLabel(t, selected) {
     // labelMedium; the active page reads in brand indigo (onSecondaryContainer ≈ primary).
-    return { fontWeight: "500", color: selected ? t.primary : t.foreground };
+    return { fontWeight: "500", color: selected ? primaryText(t) : t.foreground };
   },
   mutedLabel(t) {
     return { color: t["muted-foreground"] };

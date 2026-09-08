@@ -1,3 +1,4 @@
+import { primaryText } from "../../style/primary-text.js";
 import { type ViewStyle, type TextStyle } from "react-native";
 import { type ColorTokens, alpha, darkColors, lightColors, shadow } from "../../style/index.js";
 import { type ToastSkin } from "./toast.shared.js";
@@ -89,12 +90,11 @@ function isDarkFill(color: string): boolean {
 
 // The M3 inverse-primary role, brand-preserving: the OPPOSITE scheme's brand indigo,
 // picked off the bar's own fill (`foreground`) so the action reads on the inverted
-// surface: the lighter dark-scheme indigo (#615fff, ~4.35:1) on the near-black
-// light-mode bar, the deeper light-scheme indigo (#4f39f6, ~6.2:1) on the near-white
-// dark-mode bar. M3 puts the snackbar action in inversePrimary; this keeps that
-// role while staying on the Canvas brand hue.
+// surface: the lighter dark-scheme text role on the near-black light-mode bar,
+// the deeper light-scheme text role on the near-white dark-mode bar. Keep the
+// existing opposite-base-palette policy, independent of custom primary overrides.
 function inversePrimary(t: ColorTokens): string {
-  return isDarkFill(t.foreground) ? darkColors.primary : lightColors.primary;
+  return primaryText(isDarkFill(t.foreground) ? darkColors : lightColors);
 }
 
 // ---------- Web: the established Canvas look (sonner-style card) ----------
@@ -105,7 +105,7 @@ export const webSkin: ToastSkin = {
   message: (t) => ({ fontSize: 14, lineHeight: 20, fontWeight: "500", color: t["popover-foreground"] }),
   description: (t) => ({ fontSize: 13, lineHeight: 18, color: t["muted-foreground"] }),
   actionButton,
-  actionLabel: (t) => ({ fontSize: 13, lineHeight: 18, fontWeight: "600", color: t.primary }),
+  actionLabel: (t) => ({ fontSize: 13, lineHeight: 18, fontWeight: "600", color: primaryText(t) }),
   actionHitSlop: null,
   dismissButton,
   dismissIconSize: DISMISS_SIZE,
@@ -126,7 +126,7 @@ export const iosSkin: ToastSkin = {
   message: (t) => ({ fontSize: 15, lineHeight: 20, fontWeight: "600", letterSpacing: -0.24, color: t["popover-foreground"] }),
   description: (t) => ({ fontSize: 13, lineHeight: 18, letterSpacing: -0.08, color: t["muted-foreground"] }),
   actionButton,
-  actionLabel: (t) => ({ fontSize: 15, lineHeight: 20, fontWeight: "600", letterSpacing: -0.24, color: t.primary }),
+  actionLabel: (t) => ({ fontSize: 15, lineHeight: 20, fontWeight: "600", letterSpacing: -0.24, color: primaryText(t) }),
   actionHitSlop: IOS_ACTION_HIT_SLOP,
   dismissButton,
   dismissIconSize: DISMISS_SIZE,

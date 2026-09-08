@@ -1,3 +1,4 @@
+import { primaryText } from "../../style/primary-text.js";
 import { type ViewStyle, type TextStyle } from "react-native";
 import { type ColorTokens, alpha, FOCUS_RESET } from "../../style/index.js";
 import { type SidebarSkin } from "./sidebar.shared.js";
@@ -323,7 +324,7 @@ export const androidSkin: SidebarSkin = {
       flexBasis: "0%",
       ...(density === "compact" ? { fontSize: 13, lineHeight: 18 } : { fontSize: 14, lineHeight: 20 }),
       fontWeight: "500",
-      color: active ? tokens.primary : tokens.foreground,
+      color: active ? primaryText(tokens) : tokens.foreground,
     };
   },
 

@@ -234,7 +234,7 @@
   /* ActionSheet (action-sheet.styles.ts webSkin — the iOS idiom on web too) */
   --p-sheet-scrim:rgba(0,0,0,0.4);--p-sheet-stack-pad:8px;--p-sheet-stack-gap:8px;
   --p-sheet-card-radius:14px;--p-sheet-card-radius-top:14px;--p-sheet-card-pad:0px;--p-sheet-shadow:0px 10px 15px rgba(0,0,0,0.1);
-  --p-sheet-cancel-layout:separateCard /* @kind other */;--p-sheet-cancel-inset:0px;--p-sheet-cancel-radius:14px;--p-sheet-cancel-min-h:57px;--p-sheet-cancel-label:var(--primary);
+  --p-sheet-cancel-layout:separateCard /* @kind other */;--p-sheet-cancel-inset:0px;--p-sheet-cancel-radius:14px;--p-sheet-cancel-min-h:57px;--p-sheet-cancel-label:var(--popover-foreground);
   --p-sheet-handle-display:none /* @kind other */;
   --p-sheet-header-pad:14px 16px;--p-sheet-header-align:center /* @kind other */;--p-sheet-header-gap:2px;--p-sheet-title-align:center /* @kind other */;
   --p-sheet-title:13px;--p-sheet-title-lh:18px;--p-sheet-title-weight:600;--p-sheet-title-tracking:0px;--p-sheet-title-color:var(--muted-foreground);
@@ -242,7 +242,7 @@
   --p-sheet-divider-h:1px;--p-sheet-rows-gap:0px;
   --p-sheet-row-min-h:57px;--p-sheet-row-pad-x:16px;--p-sheet-row-radius:0px;--p-sheet-row-fill:transparent;
   --p-sheet-row-font:17px;--p-sheet-row-lh:22px;--p-sheet-row-weight:400;--p-sheet-row-tracking:0px;
-  --p-sheet-row-label:var(--primary);--p-sheet-row-align:center /* @kind other */;--p-sheet-row-justify:center /* @kind other */;--p-sheet-row-text-align:center /* @kind other */;
+  --p-sheet-row-label:var(--popover-foreground);--p-sheet-row-align:center /* @kind other */;--p-sheet-row-justify:center /* @kind other */;--p-sheet-row-text-align:center /* @kind other */;
   /* Command palette (command.styles.ts webSkin) */
   --p-cmd-radius:8px;--p-cmd-search-pad-x:12px;--p-cmd-search-pad-y:12px;--p-cmd-search-gap:8px;--p-cmd-search-min-h:0px;--p-cmd-glyph:16px;
   --p-cmd-row-pad-x:12px;--p-cmd-row-pad-y:8px;--p-cmd-row-min-h:0px;--p-cmd-row-font:14px;--p-cmd-row-lh:20px;--p-cmd-row-tracking:0px;
@@ -390,7 +390,7 @@
   /* Sidebar sections + collapse chrome (iOS): tight 2pt groups, capsule header at 12/4, 13pt HIG caret, 6pt dot */
   --p-side-group-gap:2px;--p-side-sechdr-gap:6px;--p-side-sechdr-pad-y:4px;
   --p-side-chevron:13px;--p-side-dot:6px;--p-side-toggle:15px;
-  --p-nav-link-fill:color-mix(in oklab, var(--secondary) 90%, transparent);--p-nav-link-label:var(--primary);
+  --p-nav-link-fill:color-mix(in oklab, var(--secondary) 90%, transparent);--p-nav-link-label:var(--primary-text);
   --p-nav-link-active-fill:var(--primary);--p-nav-link-active-label:var(--primary-foreground);
   /* Navbar — iOS 26: slim 44pt bar, 17pt SF title, circular tinted bar buttons */
   --p-nav-h:44px;--p-nav-brand:17px;--p-nav-brand-lh:22px;--p-nav-brand-weight:600;
@@ -612,18 +612,18 @@
   --p-overlay-radius:12px;--p-sheet-radius:12px;
   /* Popover (M3, no native popover): a 12dp borderless card on md elevation, no beak */
   --p-popover-radius:12px;--p-popover-border:0px;--p-popover-shadow:0px 4px 6px rgba(0,0,0,0.1);
-  --p-tab-item-pad-y:12px;--p-tab-indicator-h:3px;--p-tab-label-selected:var(--primary);
+  --p-tab-item-pad-y:12px;--p-tab-indicator-h:3px;--p-tab-label-selected:var(--primary-text);
   /* Tabs pills + vertical (M3): capsule tonal primary-12% fills with brand labels, flat (no thumb shadow) */
   --p-tab-pill-track-radius:9999px;--p-tab-pill-radius:9999px;--p-tab-pill-pad-x:14px;--p-tab-pill-pad-y:7px;
   --p-tab-pill-selected-bg:color-mix(in oklab, var(--primary) 12%, transparent);--p-tab-pill-selected-shadow:none;
   --p-tab-v-radius:9999px;--p-tab-v-pad-x:14px;--p-tab-v-pad-y:9px;
-  --p-tab-v-selected-fill:color-mix(in oklab, var(--primary) 12%, transparent);--p-tab-v-selected-label:var(--primary);
+  --p-tab-v-selected-fill:color-mix(in oklab, var(--primary) 12%, transparent);--p-tab-v-selected-label:var(--primary-text);
   /* Sidebar — M3 navigation drawer: tonal pills, 72dp rail */
   --p-side-w-collapsed:72px;
   --p-side-row-radius:9999px;--p-side-row-pad-x:16px;--p-side-row-pad-y:16px;--p-side-row-gap:12px;
   --p-side-label:14px;--p-side-label-lh:20px;--p-side-icon:18px;--p-side-body-pad:12px;
   --p-side-title:14px;--p-side-title-lh:20px;--p-side-title-weight:500;--p-side-title-transform:none /* @kind other */;--p-side-title-tracking:0px;
-  --p-side-active-fill:color-mix(in oklab, var(--primary) 12%, transparent);--p-side-active-label:var(--primary);--p-side-label-color:var(--foreground);--p-side-icon-active:var(--primary);
+  --p-side-active-fill:color-mix(in oklab, var(--primary) 12%, transparent);--p-side-active-label:var(--primary-text);--p-side-label-color:var(--foreground);--p-side-icon-active:var(--primary);
   /* Sidebar (M3): inactive glyphs keep the default foreground tint (androidSkin.iconTint), the M3
      drawer 16/6 section-title inset, 2dp groups, 18dp expand_more (rest 90deg, open 270deg), 6dp dot */
   --p-side-icon-color:var(--foreground);--p-side-group-gap:2px;
@@ -631,7 +631,7 @@
   --p-side-chevron:18px;--p-side-dot:6px;
   --p-side-chevron-rest:90deg /* @kind other */;--p-side-chevron-open:270deg /* @kind other */;
   --p-side-toggle:18px;--p-side-toggle-pad:8px;--p-side-toggle-radius:9999px;
-  --p-nav-link-active-fill:color-mix(in oklab, var(--primary) 12%, transparent);--p-nav-link-active-label:var(--primary);
+  --p-nav-link-active-fill:color-mix(in oklab, var(--primary) 12%, transparent);--p-nav-link-active-label:var(--primary-text);
   /* Navbar — M3 small top app bar: 64dp, 22sp leading title, no hairline */
   --p-nav-h:64px;--p-nav-rule:0px;--p-nav-brand:22px;--p-nav-brand-lh:28px;--p-nav-brand-weight:500;
   --p-nav-link-radius:9999px;--p-nav-link-pad-x:16px;--p-nav-link-pad-y:6px;
@@ -645,7 +645,7 @@
   --p-seg-track-radius:9999px;--p-seg-track-border:1px;--p-seg-track-fill:transparent;
   --p-seg-border:0px;--p-seg-divider:1px;--p-seg-overlap:0px;--p-seg-radius:0px;--p-seg-inner-radius:0px;
   --p-seg-rest-fill:transparent;--p-seg-selected-fill:color-mix(in oklab, var(--primary) 12%, transparent);
-  --p-seg-selected-border:var(--border);--p-seg-selected-label:var(--primary);
+  --p-seg-selected-border:var(--border);--p-seg-selected-label:var(--primary-text);
   --p-seg-check-display:inline /* @kind other */;
   /* Calendar — M3 date picker: 40dp cells, single-letter labels, today as a RING */
   --p-cal-radius:12px;--p-cal-cell-default:40px;--p-cal-cell-compact:36px;
@@ -704,7 +704,7 @@
   --p-steps-current-fill:color-mix(in oklab, var(--primary) 12%, transparent);--p-steps-connector-radius:0px;--p-steps-track-h:4px;
   /* Pagination — M3: flat cells, a 12% tonal active fill with a brand label */
   --p-page-radius:8px;--p-page-border:0px;--p-page-rest-fill:transparent;
-  --p-page-selected-fill:color-mix(in oklab, var(--primary) 12%, transparent);--p-page-selected-label:var(--primary);
+  --p-page-selected-fill:color-mix(in oklab, var(--primary) 12%, transparent);--p-page-selected-label:var(--primary-text);
   /* ActionSheet — M3 modal bottom sheet: one 28dp sheet, drag handle, Cancel as the last row */
   --p-sheet-scrim:rgba(0,0,0,0.32);--p-sheet-stack-pad:0px;--p-sheet-stack-gap:0px;
   --p-sheet-card-radius:0px;--p-sheet-card-radius-top:28px;--p-sheet-card-pad:0px 0px 8px;--p-sheet-shadow:none;
@@ -725,15 +725,15 @@
   --p-dialog-title:22px;--p-dialog-title-lh:28px;--p-dialog-title-weight:500;
   --p-dialog-body-gap:12px;--p-dialog-footer-top:24px;
   --p-alert-btn-min-h:40px;--p-alert-btn-pad:10px 12px;--p-alert-btn-radius:20px;--p-alert-btn-tracking:0.1px;
-  --p-alert-cancel-border:0px;--p-alert-cancel-fill:transparent;--p-alert-cancel-label:var(--primary);
-  --p-alert-confirm-fill:transparent;--p-alert-confirm-label:var(--primary);
+  --p-alert-cancel-border:0px;--p-alert-cancel-fill:transparent;--p-alert-cancel-label:var(--primary-text);
+  --p-alert-confirm-fill:transparent;--p-alert-confirm-label:var(--primary-text);
   --p-alert-confirm-destructive-fill:transparent;--p-alert-confirm-destructive-label:var(--destructive);
   /* AlertDialog — M3: 28dp elevated card, headline-small title, flat TEXT actions */
   --p-ad-scrim:rgba(0,0,0,0.32);--p-ad-radius:28px;--p-ad-border:0px;--p-ad-shadow:0px 4px 6px rgba(0,0,0,0.1);
   --p-ad-title:24px;--p-ad-title-lh:32px;--p-ad-title-weight:400;--p-ad-desc-gap:16px;
   --p-ad-btn-min-h:40px;--p-ad-btn-pad:10px 12px;--p-ad-btn-radius:20px;
-  --p-ad-cancel-border:0px;--p-ad-cancel-fill:transparent;--p-ad-cancel-label:var(--primary);
-  --p-ad-confirm-fill:transparent;--p-ad-confirm-label:var(--primary);
+  --p-ad-cancel-border:0px;--p-ad-cancel-fill:transparent;--p-ad-cancel-label:var(--primary-text);
+  --p-ad-confirm-fill:transparent;--p-ad-confirm-label:var(--primary-text);
   --p-ad-confirm-destructive-fill:transparent;--p-ad-confirm-destructive-label:var(--destructive);
   /* Drawer — M3 sheets: lineless, side 16dp / bottom 28dp, level-1 elevation, 32x4 handle */
   --p-drawer-scrim:rgba(0,0,0,0.32);--p-drawer-border:0px;--p-drawer-shadow:0px 1px 2px rgba(0,0,0,0.05);

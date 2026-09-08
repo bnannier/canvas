@@ -8,6 +8,7 @@
   --popover:oklch(1 0 0);
   --popover-foreground:oklch(0.141 0.005 285.823);
   --primary:oklch(0.511 0.262 276.966);
+  --primary-text:oklch(0.490 0.262 276.966);
   --primary-foreground:oklch(0.985 0 0);
   --secondary:oklch(0.967 0.001 286.375);
   --secondary-foreground:oklch(0.21 0.006 285.885);
@@ -77,6 +78,7 @@
   --popover:oklch(0.21 0.006 285.885);
   --popover-foreground:oklch(0.985 0 0);
   --primary:oklch(0.585 0.233 277.117);
+  --primary-text:oklch(0.701 0.157 277.117);
   /* Foregrounds are paired with their fills at >=4.5:1 for normal text.
      Preserve the semantic fills, including their use as standalone accents. */
   --primary-foreground:oklch(1 0 0);

@@ -1,3 +1,4 @@
+import { primaryText } from "../../style/primary-text.js";
 import { type TextStyle } from "react-native";
 import { alpha, type ColorTokens } from "../../style/index.js";
 import { type TypographySkin } from "./typography.shared.js";
@@ -134,7 +135,7 @@ export function toneColor(tokens: ColorTokens, dark: boolean, tone: Tone): TextS
     case "subtle":
       return { color: alpha(tokens.foreground, 0.6) };
     case "primary":
-      return { color: tokens.primary };
+      return { color: primaryText(tokens) };
     case "destructive":
       return { color: tokens.destructive };
     case "success":

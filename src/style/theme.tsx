@@ -27,6 +27,8 @@ export type Surface = "solid" | "glass";
  *   (the common rebrand: `tokens={{ primary: "#7c3aed" }}`).
  * - A `{ light, dark }` object overrides each scheme separately, for brands
  *   whose colors shift between appearances.
+ * - An explicit `primary-text` overrides brand text independently. A primary-only
+ *   override keeps its existing text color; custom brands own their contrast.
  *
  * The two shapes are unambiguous because `ColorTokens` has no `light`/`dark` key.
  */
@@ -186,7 +188,14 @@ export function ThemeProvider({ dark, light, scheme, ssrScheme, ssrBreakpoint, g
     // own fill (glassByScheme), so `popover` and `card` stay opaque in every mode and
     // only what renders through GlassSurface reads as glass.
     const brand = overridesFor(tokens, active);
-    const base = brand ? { ...colorsByScheme[active], ...brand } : colorsByScheme[active];
+    const base = brand ? {
+      ...colorsByScheme[active],
+      ...brand,
+      // A primary-only rebrand keeps its existing text color. Brands can supply
+      // primary-text separately for readable labels without changing the fill.
+      // Undefined is omission, so it cannot erase the scheme's authored role.
+      "primary-text": brand["primary-text"] ?? brand.primary ?? colorsByScheme[active]["primary-text"],
+    } : colorsByScheme[active];
     return {
       scheme: active,
       surface: resolved,

@@ -1,3 +1,4 @@
+import { primaryText } from "../../style/primary-text.js";
 import { type ViewStyle, type TextStyle } from "react-native";
 import { type ColorTokens } from "../../style/index.js";
 
@@ -49,7 +50,7 @@ export const FG_TOKEN: Record<Intent, keyof ColorTokens> = {
   destructive: "destructive-foreground",
   outline: "foreground",
   ghost: "foreground",
-  link: "primary",
+  link: "primary-text",
 };
 
 const DARK_FILL = new Set<Intent>(["primary", "destructive"]);
@@ -76,7 +77,7 @@ function labelColor(t: ColorTokens, intent: Intent): TextStyle {
     case "destructive": return { color: t["destructive-foreground"] };
     case "outline": return { color: t.foreground };
     case "ghost": return { color: t.foreground };
-    case "link": return { color: t.primary };
+    case "link": return { color: primaryText(t) };
   }
 }
 

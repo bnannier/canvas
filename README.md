@@ -156,6 +156,20 @@ const brand = { primary: "#7c3aed" };
 </ThemeProvider>
 ```
 
+`primary` colors filled controls, and `primary-foreground` colors their labels.
+The optional `primary-text` token colors brand text on neutral surfaces, including
+links and text actions. The default palette gives that text its own contrast-safe
+shade in each scheme. Existing `tokens={{ primary: ... }}` overrides keep their
+brand text color; provide `primary-text` too when your brand needs a separate shade.
+Custom colors still need contrast checks against the surfaces where you use them.
+The default text contrast checks cover solid and tonal surfaces. Glass materials
+depend on the content behind them and need verification in the rendered app.
+
+CSS hand-off consumers should override both `--primary` and `--primary-text` when
+rebranding. To retain the previous single-color behavior, set
+`--primary-text: var(--primary)` at the override scope. CSS does not perform the
+`ThemeProvider` override cascade.
+
 ## Documentation and components
 
 Full docs, live examples, and the complete prop reference live at **<https://canvas.nannier.com/>**.

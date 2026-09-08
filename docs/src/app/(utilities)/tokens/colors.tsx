@@ -39,6 +39,7 @@ import { TokenH1, TokenLede, TokenSection, Callout, GradientFill } from "../../.
 const BRAND_KEYS: { key: keyof ColorTokens; name: string }[] = [
   { key: "primary", name: "primary" },
   { key: "primary-foreground", name: "primary-foreground" },
+  { key: "primary-text", name: "primary-text" },
   { key: "ring", name: "ring" },
 ];
 
@@ -83,15 +84,17 @@ const ACCENTS: { name: string; step: string }[] = [
   { name: "Slate", step: "slate-600" },
 ];
 
-const TOKENS_SRC = `// tokens.ts — plain JS values, RN-usable (no CSS, no DOM)
+const TOKENS_SRC = `// tokens.ts: plain values for every platform
 export const lightColors = {
-  primary: "#4f46e5",
-  background: "#ffffff",
+  primary: "${colorsByScheme.light.primary}",
+  "primary-text": "${colorsByScheme.light["primary-text"]}",
+  background: "${colorsByScheme.light.background}",
   // …
 };
 export const darkColors = {
-  primary: "#6366f1",
-  background: "#09090b",
+  primary: "${colorsByScheme.dark.primary}",
+  "primary-text": "${colorsByScheme.dark["primary-text"]}",
+  background: "${colorsByScheme.dark.background}",
   // …
 };`;
 
@@ -99,15 +102,16 @@ const THEME_RUNTIME = `// ThemeProvider supplies the active scheme;
 // components read it through useTheme().
 const { tokens } = useTheme();
 
-tokens.primary; // "#4f46e5" light · "#6366f1" dark`;
+tokens.primary; // Fill: "${colorsByScheme.light.primary}" light, "${colorsByScheme.dark.primary}" dark
+tokens["primary-text"] ?? tokens.primary; // Brand text, including legacy token maps`;
 
 const DYNAMIC = `<Button primary>Save</Button>
 
 // You set the look with a prop, never a class. The skin
 // builds { backgroundColor: tokens.primary }, so one prop
-// resolves live per theme — no restyling:
-//   light       → #4f46e5
-//   dark        → #6366f1
+// resolves live per theme:
+//   light       → ${colorsByScheme.light.primary}
+//   dark        → ${colorsByScheme.dark.primary}
 //   teal accent → #0d9488`;
 
 // Do / don't pairs, each grounded in a Canvas principle (semantic prop styling,
@@ -160,6 +164,11 @@ function ramp(tone: StatusTone): string {
   return `${statusHues[tone]}-50 / 200 / 500 / 700`;
 }
 
+// The optional text role falls back for legacy complete token objects.
+function colorValue(tokens: ColorTokens, key: keyof ColorTokens): string {
+  return key === "primary-text" ? tokens[key] ?? tokens.primary : tokens[key];
+}
+
 export default function ColorsScreen() {
   const { tokens } = useTheme();
   const { width } = useWindowDimensions();
@@ -168,8 +177,8 @@ export default function ColorsScreen() {
   // The reference table carries both schemes in both notations, which is where the
   // density belongs once the samples above are calm.
   const referenceRows = (Object.keys(colorsByScheme.light) as (keyof ColorTokens)[]).sort().map((key) => {
-    const light = colorsByScheme.light[key];
-    const darkValue = colorsByScheme.dark[key];
+    const light = colorValue(colorsByScheme.light, key);
+    const darkValue = colorValue(colorsByScheme.dark, key);
     return [
       `--${key}`,
       light,
@@ -193,17 +202,18 @@ export default function ColorsScreen() {
 
         <TokenSection
           title="Brand"
-          description="The accent that carries the product: the primary fill, the text that sits on it, and the focus ring. Point these at a new hue and the whole system re-skins."
+          description="The brand has separate colors for filled controls, labels on those fills, and text on neutral surfaces. primary-text keeps links and text actions readable without changing the primary fill."
           anatomy="ring is the one brand token that does NOT flip with the scheme: the same indigo-500 in light and dark, so the focus outline reads against a light page, a dark page, and the primary fill it may sit on."
         >
           <Row wrap cozy alignStart>
             {BRAND_KEYS.map((t) => (
-              <Sample key={t.key} color={tokens[t.key]} name={t.name} />
+              <Sample key={t.key} color={colorValue(tokens, t.key)} name={t.name} />
             ))}
             {/* The one place the sheet shows the other scheme outright, because the
                 light/dark difference IS the point for the accent. */}
             <Sample color={colorsByScheme.dark.primary} name="primary (dark)" />
           </Row>
+          <Typography primary small>Brand text uses primary-text.</Typography>
         </TokenSection>
 
         <TokenSection
@@ -213,7 +223,7 @@ export default function ColorsScreen() {
         >
           <Row wrap cozy alignStart>
             {NEUTRAL_KEYS.map((t) => (
-              <Sample key={t.key} color={tokens[t.key]} name={t.name} />
+              <Sample key={t.key} color={colorValue(tokens, t.key)} name={t.name} />
             ))}
           </Row>
         </TokenSection>
@@ -225,7 +235,7 @@ export default function ColorsScreen() {
         >
           <Row wrap cozy alignStart>
             {SEMANTIC_KEYS.map((t) => (
-              <Sample key={t.key} color={tokens[t.key]} name={t.name} />
+              <Sample key={t.key} color={colorValue(tokens, t.key)} name={t.name} />
             ))}
           </Row>
         </TokenSection>
@@ -259,7 +269,7 @@ export default function ColorsScreen() {
         >
           <Row wrap cozy alignStart>
             {CHART_KEYS.map((key) => (
-              <Sample key={key} color={tokens[key]} name={key} basis={200} />
+              <Sample key={key} color={colorValue(tokens, key)} name={key} basis={200} />
             ))}
           </Row>
         </TokenSection>
@@ -325,14 +335,17 @@ export default function ColorsScreen() {
 
         <TokenSection
           title="Rebranding the accent"
-          description="The default accent is Indigo. Point primary and ring at any of these six curated steps to re-skin the system; they sit at similar perceived weight, so the rest of the palette still balances."
-          anatomy="An accent overrides primary and ring only. The foreground tokens are NOT recalculated: ThemeProvider merges your overrides over the active scheme, so if an accent needs a different foreground you pass that too."
+          description="The default accent is Indigo. These palette steps are starting points for a custom brand. Check your filled controls and text against their actual backgrounds in both schemes."
+          anatomy="ThemeProvider preserves an existing primary-only override by using it for primary-text too. Supply primary-text separately when links or text actions need a different shade. primary-foreground remains the label on the primary fill; it is not recalculated."
         >
           <Row wrap cozy alignStart>
             {ACCENTS.map((a) => (
               <Sample key={a.step} color={palette[a.step]} name={a.name} />
             ))}
           </Row>
+          <Typography small muted>
+            CSS hand-off rebrands set both --primary and --primary-text. Setting --primary-text: var(--primary) at the override scope retains the previous single-color behavior. CSS does not apply the ThemeProvider override cascade.
+          </Typography>
         </TokenSection>
 
         <TokenSection

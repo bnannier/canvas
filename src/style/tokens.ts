@@ -14,6 +14,8 @@ export interface ColorTokens {
   popover: string;
   "popover-foreground": string;
   primary: string;
+  /** Brand text on neutral/tinted surfaces. Omit in legacy maps to use primary. */
+  "primary-text"?: string;
   "primary-foreground": string;
   secondary: string;
   "secondary-foreground": string;
@@ -63,6 +65,7 @@ export const lightColors: ColorTokens = {
   popover: "#ffffff",
   "popover-foreground": "#09090b",
   primary: "#4f39f6",
+  "primary-text": "#4b30ef",
   "primary-foreground": "#fafafa",
   secondary: "#f4f4f5",
   "secondary-foreground": "#18181b",
@@ -110,6 +113,7 @@ export const darkColors: ColorTokens = {
   popover: "#18181b",
   "popover-foreground": "#fafafa",
   primary: "#615fff",
+  "primary-text": "#8893fe",
   "primary-foreground": "#ffffff",
   secondary: "#27272a",
   "secondary-foreground": "#fafafa",

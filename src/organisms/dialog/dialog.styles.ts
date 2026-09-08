@@ -1,3 +1,4 @@
+import { primaryText } from "../../style/primary-text.js";
 import { type ViewStyle, type TextStyle } from "react-native";
 import { type ColorTokens, shadow, alpha } from "../../style/index.js";
 
@@ -300,7 +301,7 @@ export const androidSkin: DialogSkin = {
     lineHeight: 20,
     fontWeight: "500",
     letterSpacing: 0.1,
-    color: destructive ? t.destructive : t.primary,
+    color: destructive ? t.destructive : primaryText(t),
   }),
   textButtonRipple: (t) => ({ color: alpha(t.primary, 0.12), borderless: false }),
   formBody: { marginTop: 20 },
