@@ -6,8 +6,8 @@
  * scanned twice, once at rest and once with the overlay open, because a menu, a
  * dialog and a listbox are exactly where the roles and the relationships live.
  *
- * Set E2E_AXE_REPORT=1 to attach findings without failing, which is how the list of
- * known component findings below was arrived at.
+ * Set E2E_AXE_REPORT=1 to attach findings without failing during an investigation.
+ * The normal gate permits no serious or critical violations.
  */
 import { componentRoutes } from "../support/routes";
 import { gotoDocs, platformRow } from "../support/docs";
@@ -17,42 +17,6 @@ import { expect, test } from "../support/fixtures";
 
 const REPORT_ONLY = process.env.E2E_AXE_REPORT === "1";
 const overlayFor = new Map(OVERLAYS.map((recipe) => [recipe.slug, recipe]));
-
-/**
- * Findings that stand today, by component and rule.
- *
- * Every one was surfaced by the first run of this suite, and every one is real: none
- * is a rule the kit disagrees with. They are recorded rather than suppressed so the gate is meaningful
- * everywhere else: a component not listed here must be clean, and a listed one must
- * not grow a rule it does not already have.
- *
- * The list is checked against itself: an entry naming a rule the component no longer
- * trips fails, so fixing something forces the entry out and the list cannot rot.
- */
-const KNOWN_FINDINGS: Record<string, string[]> = {
-  // A role="listbox" / "slider" / "progressbar" with no accessible name. The
-  // components accept accessibilityLabel and forward it; what they do not do is
-  // require one or fall back to something, so an example that omits it ships an
-  // unnamed control. The fix is per component and is a change to their public
-  // contract, so it is its own piece of work.
-  slider: ["aria-input-field-name"],
-  progress: ["aria-progressbar-name"],
-  spinner: ["aria-progressbar-name"],
-  command: ["aria-input-field-name", "aria-valid-attr-value"],
-  select: ["aria-input-field-name", "label"],
-  // Form fields inside the overlay's own example content, with a placeholder but no
-  // label. Docs-side, in the example rather than in the component.
-  dialog: ["label"],
-  popover: ["label"],
-  // Attributes the element's role does not allow. Kit-side, and narrow.
-  calendar: ["aria-allowed-attr"],
-  carousel: ["aria-allowed-attr", "target-size"],
-  // A pressable row wrapping a pressable control, and focusable content inside an
-  // aria-hidden subtree. Both kit-side and both structural.
-  "filter-panel": ["nested-interactive", "aria-hidden-focus"],
-  // The cancel row's label against the sheet fill.
-  "action-sheet": ["color-contrast"],
-};
 
 for (const route of componentRoutes()) {
   const recipe = overlayFor.get(route.name);
@@ -79,16 +43,9 @@ for (const route of componentRoutes()) {
       return;
     }
 
-    const known = KNOWN_FINDINGS[route.name] ?? [];
-    const unexpected = blocking.filter((f) => !known.includes(f.id));
-    expect(unexpected, `${route.name} has a NEW violation:\n${describeViolations(unexpected)}`).toEqual([]);
-
-    // The other half of the contract: an entry that no longer fires has to go, or the
-    // list slowly becomes a description of a codebase that no longer exists.
-    const fixed = known.filter((id) => !blocking.some((f) => f.id === id));
     expect(
-      fixed,
-      `${route.name} no longer trips ${fixed.join(", ")}; delete it from KNOWN_FINDINGS`,
+      blocking,
+      `${route.name} has a serious or critical violation:\n${describeViolations(blocking)}`,
     ).toEqual([]);
   });
 }
