@@ -129,7 +129,8 @@ jobs:
         if: always() && inputs.platform == 'android'
         run: node scripts/android-host-diagnostics.mjs finalize --output "$RUNNER_TEMP/native-smoke/android-host-diagnostics"
 
-      - name: Preserve candidate identity and native interaction evidence
+      # The wildcard also retains the passive ios-bundle-evidence directory.
+      - name: Preserve candidate identity, build observations and native interaction evidence
         if: always()
         uses: actions/upload-artifact@v7
         with:

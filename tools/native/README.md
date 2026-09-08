@@ -160,3 +160,29 @@ identity, then requests its final flush and stop with a bounded acknowledgement.
 are uploaded with the normal 14-day artifact retention. A hard runner loss can
 prevent finalization/upload. These records improve diagnosis; they do not fix a
 transport disconnect or make one later successful run proof of its cause.
+
+## iOS compiled-route build evidence
+
+After Xcode succeeds, the runner retains the exact pre-Hermes bundle, embedded
+bytecode, embedded Expo configuration and Info.plist in `ios-bundle-evidence/`.
+The build manifest records the report path and checksum; CI uploads this directory
+with the native evidence even when a later journey fails. Observation failures
+remain explicit and do not change the build outcome.
+
+The installed Babel parser and lexical bindings identify the compiled
+`TestingLayout` within the full Metro bundle. Only recognized unconditional JSX
+returns classify as smoke-enabled or redirect; missing, minified, ambiguous or
+unrecognized forms remain unavailable or unclassified. Dependency exports and
+route table entries are supporting syntax evidence, not proof of execution.
+
+The installed official Hermes decoder reads its source hash header, then the
+observer deliberately stops that process. Actual exit/signal, retained header,
+timeouts and truncation are recorded separately. A binding requires the header's
+SHA1 to match the retained plain bundle, with original and retained bundle bytes
+unchanged. A mismatch stays a mismatch. This does not compile another bundle.
+
+The report includes parser/compiler identities, embedded scheme/app identifier,
+candidate identity comparison, and only the runner's smoke flag and identity
+presence. Xcode script-phase environment inheritance remains unobserved. An
+enabled compiled route does not prove URL delivery or navigation; a compiled
+redirect does not establish where an incorrect build value originated.
