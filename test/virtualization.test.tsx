@@ -37,6 +37,63 @@ describe("StackedList virtualization", () => {
     expect(canvasWarnings()).toEqual([]);
   });
 
+  it("constructs only windowed rows for a large list, including on rerender", () => {
+    const inspected = new Set<number>();
+    let detailReads = 0;
+    const items = Array.from({ length: 10_000 }, (_, id) => ({
+      id,
+      name: `Person ${id}`,
+      get detail() {
+        detailReads += 1;
+        inspected.add(id);
+        return `Detail ${id}`;
+      },
+    }));
+    const { getByText, queryByText, rerender } = ui(
+      <StackedList virtualized items={items} style={{ maxHeight: 300 }} />,
+    );
+    expect(getByText("Detail 0")).toBeTruthy();
+    expect(detailReads).toBeGreaterThan(0);
+    expect(detailReads).toBeLessThan(items.length / 10);
+    expect(inspected.has(items.length - 1)).toBe(false);
+    expect(queryByText(`Detail ${items.length - 1}`)).toBeNull();
+
+    detailReads = 0;
+    rerender(
+      <ThemeProvider>
+        <StackedList virtualized title="People" items={items} style={{ maxHeight: 300 }} />
+      </ThemeProvider>,
+    );
+    expect(getByText("People")).toBeTruthy();
+    expect(detailReads).toBeLessThan(items.length / 10);
+    expect(inspected.has(items.length - 1)).toBe(false);
+  });
+
+  for (const mode of ["default", "unbounded", "reorderable"] as const) {
+    it(`constructs every row in the ${mode} eager path`, () => {
+      const inspected = new Set<number>();
+      const items = Array.from({ length: 25 }, (_, id) => ({
+        id,
+        name: `Person ${id}`,
+        get detail() {
+          inspected.add(id);
+          return `Detail ${id}`;
+        },
+      }));
+      const { getByText } = ui(
+        <StackedList
+          items={items}
+          virtualized={mode !== "default"}
+          reorderable={mode === "reorderable"}
+          style={mode === "reorderable" ? { maxHeight: 300 } : undefined}
+        />,
+      );
+      expect(getByText("Detail 24")).toBeTruthy();
+      expect(inspected.size).toBe(items.length);
+      expect(canvasWarnings().length).toBe(mode === "default" ? 0 : 1);
+    });
+  }
+
   it("warns and falls back to eager rendering when virtualized without a bounded height", () => {
     const { getByText } = ui(<StackedList virtualized items={PEOPLE} />);
     expect(getByText("Person 0")).toBeTruthy();

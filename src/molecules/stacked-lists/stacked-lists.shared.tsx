@@ -434,7 +434,9 @@ export function createStackedList(
       if (move) onReorder?.(move);
     };
 
-    const rows = items.map((item, index) => (
+    // Construct eager rows only in the branches that use them. Building this
+    // array before choosing FlatList would still allocate every offscreen row.
+    const renderEagerRows = () => items.map((item, index) => (
       <Fragment key={keyOf(item, index)}>
         {reorderable ? (
           <Draggable id={keyOf(item, index)} data={{ index }} label={item.name}>
@@ -449,7 +451,7 @@ export function createStackedList(
     const body = reorderable ? (
       <DragDropProvider>
         <DropZone id="rows" label={typeof title === "string" ? title : "List"} onDrop={handleReorder}>
-          {rows}
+          {renderEagerRows()}
         </DropZone>
       </DragDropProvider>
     ) : virtualized && bounded ? (
@@ -460,7 +462,7 @@ export function createStackedList(
         showsVerticalScrollIndicator={false}
       />
     ) : (
-      rows
+      renderEagerRows()
     );
 
     return (
