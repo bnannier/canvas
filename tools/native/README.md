@@ -21,6 +21,7 @@ directory, and the sealed `artifacts` directory. Use task-local output paths:
 ```sh
 node scripts/native-smoke.mjs prepare --candidate /tmp/candidate --artifacts /tmp/artifacts --output /tmp/native-candidate
 node scripts/install-maestro.mjs /tmp/native-tools
+node scripts/verify-native-flow.mjs --maestro /tmp/native-tools/maestro/bin/maestro
 node scripts/native-smoke.mjs build --output /tmp/native-candidate --platform ios --device SIMULATOR_UDID
 node scripts/native-smoke.mjs test --output /tmp/native-candidate --platform ios --device SIMULATOR_UDID --maestro /tmp/native-tools/maestro/bin/maestro
 ```
@@ -62,6 +63,26 @@ Binary digests and app source inventories prevent an old binary or edited fixtur
 from being reused as candidate evidence. Preserve these files with the candidate
 artifact. Device API level, OS and framework versions identify what was exercised;
 one device run does not prove every supported OS version.
+
+To exercise an unchanged binary after correcting test infrastructure, pass
+`--evidence /tmp/native-candidate/ios-evidence-flow-fix` to `test`. The requested
+directory must be a fresh direct child of the candidate output, named
+`ios-evidence-<label>` (or `android-evidence-<label>`). Existing files, directories
+and links are rejected. Earlier results remain intact. The new result records
+the current test revision, dirty state and tooling hashes separately from the
+original candidate identity and binary digest. It executes a preserved copy of
+the self-contained flow. This does not claim that an older binary was built from
+the newer test revision; changed package or app inputs require a new build.
+
+The preflight invokes the installed, pinned Maestro command parser through a
+small Java 17 source launcher before any device action. CI also runs it before
+building. Maestro 2.10's `check-syntax` only deserializes YAML and can accept
+commands that fail during conversion, including interpolated swipe coordinates.
+The Carousel flow therefore uses a supported Card-relative directional swipe.
+Its fresh measurement guard verifies that the driver's actual endpoint stays
+inside the card, with enough travel to cross half its width after quantization.
+Parser success does not establish selector availability or gesture behavior;
+the native journey still checks page identity and callback count.
 
 These flows exercise real native input and accessibility selectors. They do not
 run VoiceOver or TalkBack. Their fields remain `not-run`; follow

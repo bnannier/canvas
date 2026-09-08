@@ -7,6 +7,8 @@ import { fileURLToPath } from "node:url";
 import { verifyArtifacts } from "./release.mjs";
 import { appInventory, assertInstalledPackage, fileInventory, packageIdentity, sha256 } from "../tools/native/candidate.mjs";
 import { installSmokeFixtures } from "../tools/native/fixtures.mjs";
+import { createEvidenceDirectory, recordNativeAttempt } from "../tools/native/evidence.mjs";
+import { verifyNativeFlow } from "./verify-native-flow.mjs";
 
 const repo = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const read = (file) => JSON.parse(fs.readFileSync(file, "utf8"));
@@ -93,24 +95,46 @@ export function buildNativeSmoke(output, platform, device) {
   console.log(`Built embedded ${platform} candidate: ${binary}`);
 }
 
-export function testNativeSmoke(output, platform, device, maestro) {
+export function testNativeSmoke(output, platform, device, maestro, requestedEvidence) {
   const { app, identity } = context(output);
   const build = read(path.join(output, `${platform}-build.json`));
   const digest = platform === "ios" ? fileInventory(build.binary) : sha256(build.binary);
   if (JSON.stringify(build.identity) !== JSON.stringify(identity) || JSON.stringify(digest) !== JSON.stringify(build.digest)) throw new Error("Native binary changed or belongs to another candidate");
-  const evidence = path.join(output, `${platform}-evidence`);
-  fs.mkdirSync(evidence);
+  const evidence = createEvidenceDirectory(output, platform, requestedEvidence);
   const startedAt = new Date().toISOString();
-  const flow = path.join(repo, "tools/native/flows/candidate.yaml");
-  const result = { schema: 1, platform, device, identity, binaryDigest: digest, flowSha256: sha256(flow), startedAt, status: "failed", voiceOver: "not-run", talkBack: "not-run" };
+  const sourceFlow = path.join(repo, "tools/native/flows/candidate.yaml");
+  const flow = path.join(evidence, "candidate.yaml");
+  const result = { schema: 1, platform, device, identity, binaryDigest: digest, startedAt, status: "failed", voiceOver: "not-run", talkBack: "not-run" };
   const appearanceCommand = platform === "ios"
     ? ["xcrun", ["simctl", "ui", device, "appearance"]]
     : ["adb", ["-s", device, "shell", "cmd", "uimode", "night"]];
-  const initialAppearance = run(app, appearanceCommand[0], appearanceCommand[1], identity, true).trim();
-  const previousAppearance = platform === "ios" ? initialAppearance : /^Night mode: (no|yes|auto|custom)$/.exec(initialAppearance)?.[1];
-  if (!previousAppearance || (platform === "ios" && !["light", "dark"].includes(previousAppearance))) throw new Error("Cannot safely restore the device's appearance");
   const setAppearance = (value) => run(app, appearanceCommand[0], [...appearanceCommand[1], value], identity);
-  try {
+  recordNativeAttempt(evidence, result, () => {
+    // This flow is self-contained: nested runFlow commands are inline. Execute
+    // the preserved snapshot, so later source edits cannot change either scheme.
+    fs.copyFileSync(sourceFlow, flow, fs.constants.COPYFILE_EXCL);
+    result.flowSha256 = sha256(flow);
+    const inputs = ["scripts/native-smoke.mjs", "scripts/verify-native-flow.mjs", "scripts/release.mjs",
+      "tools/native/candidate.mjs", "tools/native/evidence.mjs", "tools/native/ParseFlow.java", "tools/native/maestro.json"];
+    result.testInfrastructure = {
+      revision: run(repo, "git", ["rev-parse", "HEAD"], identity, true).trim(),
+      dirty: run(repo, "git", ["status", "--porcelain", "--untracked-files=all"], identity, true).trim() !== "",
+      files: Object.fromEntries(inputs.map((file) => [file, sha256(path.join(repo, file))])),
+    };
+    result.artifactOutput = fs.realpathSync(output);
+    result.binaryPath = fs.realpathSync(build.binary);
+    result.evidencePath = evidence;
+    result.contextSha256 = sha256(path.join(output, "context.json"));
+    result.buildManifestSha256 = sha256(path.join(output, `${platform}-build.json`));
+    const parsed = verifyNativeFlow({ maestro, flow });
+    result.maestroVersion = parsed.maestroVersion;
+    result.javaVersion = parsed.javaVersion;
+    result.flowCommandCount = parsed.commandCount;
+    const initial = run(app, appearanceCommand[0], appearanceCommand[1], identity, true).trim();
+    const previous = platform === "ios" ? initial : /^Night mode: (no|yes|auto|custom)$/.exec(initial)?.[1];
+    if (!previous || (platform === "ios" && !["light", "dark"].includes(previous))) throw new Error("Cannot safely restore the device's appearance");
+    return previous;
+  }, setAppearance, () => {
     if (platform === "ios") {
       run(app, "xcrun", ["simctl", "install", device, build.binary], identity);
       result.deviceMetadata = JSON.parse(run(app, "xcrun", ["simctl", "list", "devices", "--json"], identity, true));
@@ -118,9 +142,10 @@ export function testNativeSmoke(output, platform, device, maestro) {
       run(app, "adb", ["-s", device, "install", "-r", build.binary], identity);
       result.deviceMetadata = run(app, "adb", ["-s", device, "shell", "getprop", "ro.build.fingerprint"], identity, true).trim();
     }
-    result.maestroVersion = run(app, maestro, ["--version"], identity, true).trim();
-    if (result.maestroVersion !== read(path.join(repo, "tools/native/maestro.json")).version) throw new Error("Maestro version differs from the reviewed native test tooling");
+    result.schemes = {};
     for (const scheme of ["light", "dark"]) {
+      if (sha256(flow) !== result.flowSha256) throw new Error("Preserved native flow changed during execution");
+      result.schemes[scheme] = "failed";
       setAppearance(platform === "ios" ? scheme : scheme === "dark" ? "yes" : "no");
       const directory = path.join(evidence, scheme);
       fs.mkdirSync(directory);
@@ -128,13 +153,10 @@ export function testNativeSmoke(output, platform, device, maestro) {
         "--test-output-dir", path.join(directory, "maestro"), "-e", `CANDIDATE=${identity.candidateRevision}`,
         "-e", `PACKAGE_SHA256=${identity.packageSha256}`, "-e", `PACKAGE_VERSION=${identity.packageVersion.replaceAll(".", "\\.")}`,
         "-e", `SCHEME=${scheme}`, flow], identity);
+      result.schemes[scheme] = "passed";
     }
-    result.status = "passed";
-  } finally {
-    try { setAppearance(previousAppearance); }
-    catch (error) { result.status = "failed"; result.restorationError = String(error); throw error; }
-    finally { write(path.join(evidence, "result.json"), { ...result, finishedAt: new Date().toISOString() }); }
-  }
+    if (sha256(flow) !== result.flowSha256) throw new Error("Preserved native flow changed during execution");
+  });
 }
 
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
@@ -142,10 +164,12 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
   const options = {};
   for (let index = 0; index < args.length; index += 2) {
     const key = args[index]?.replace(/^--/, "");
-    if (!["candidate", "artifacts", "output", "platform", "device", "maestro"].includes(key) || !args[index + 1] || args[index + 1].startsWith("--")) throw new Error("Expected named native smoke arguments");
+    if (!["candidate", "artifacts", "output", "platform", "device", "maestro", "evidence"].includes(key)
+      || key in options || !args[index + 1] || args[index + 1].startsWith("--")) throw new Error("Expected unique named native smoke arguments");
     options[key] = args[index + 1];
   }
   if (!options.output) throw new Error("--output is required");
+  if (options.evidence && command !== "test") throw new Error("--evidence is only valid for test");
   const output = path.resolve(options.output);
   if (command === "prepare") {
     if (!options.candidate || !options.artifacts) throw new Error("prepare requires --candidate and --artifacts");
@@ -153,7 +177,7 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
   } else {
     if (!["ios", "android"].includes(options.platform) || !options.device) throw new Error("build/test requires --platform and --device");
     if (command === "build") buildNativeSmoke(output, options.platform, options.device);
-    else if (command === "test") testNativeSmoke(output, options.platform, options.device, options.maestro ?? "maestro");
+    else if (command === "test") testNativeSmoke(output, options.platform, options.device, options.maestro ?? "maestro", options.evidence);
     else throw new Error("Expected prepare, build or test");
   }
 }
