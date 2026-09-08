@@ -34,12 +34,16 @@ export const STRUCTURAL_RULES = [
   "scrollable-region-focusable",
 ];
 
+type RawViolation = Awaited<ReturnType<AxeBuilder["analyze"]>>["violations"][number];
+
 export interface Violation {
   id: string;
   impact: string;
   help: string;
   nodes: number;
   target: string;
+  /** Original rule and every node/check, retained for diagnostic attachments. */
+  raw: RawViolation;
 }
 
 /** Run axe over `selector` and return the violations, worst first. */
@@ -62,7 +66,7 @@ export async function scanStructure(
   return summarize(results.violations);
 }
 
-function summarize(violations: Awaited<ReturnType<AxeBuilder["analyze"]>>["violations"]): Violation[] {
+export function summarize(violations: RawViolation[]): Violation[] {
   const order = ["critical", "serious", "moderate", "minor"];
   return violations
     .map((violation) => ({
@@ -71,15 +75,20 @@ function summarize(violations: Awaited<ReturnType<AxeBuilder["analyze"]>>["viola
       help: violation.help,
       nodes: violation.nodes.length,
       target: String(violation.nodes[0]?.target?.[0] ?? ""),
+      raw: violation,
     }))
     .sort((a, b) => order.indexOf(a.impact) - order.indexOf(b.impact));
 }
 
-/** Attach the full result to the report, so a failure explains itself. */
-export async function attach(testInfo: TestInfo, name: string, violations: Violation[]): Promise<void> {
+/** Keep the compact report and attach unabridged rule/node/check diagnostics. */
+export async function attach(testInfo: Pick<TestInfo, "attach">, name: string, violations: Violation[]): Promise<void> {
   if (violations.length === 0) return;
   await testInfo.attach(`axe-${name}.json`, {
-    body: JSON.stringify(violations, null, 2),
+    body: JSON.stringify(violations.map(({ raw: _raw, ...summary }) => summary), null, 2),
+    contentType: "application/json",
+  });
+  await testInfo.attach(`axe-${name}-raw.json`, {
+    body: JSON.stringify(violations.map(({ raw }) => raw), null, 2),
     contentType: "application/json",
   });
 }
