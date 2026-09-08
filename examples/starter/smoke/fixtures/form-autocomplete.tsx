@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Keyboard } from "react-native";
-import { ActionSheet, Autocomplete, Column, Command, Drawer, Form, Input, Switch, Typography, useOverlayHost, useWindowDimensions } from "@nannier-com/canvas";
+import { ActionSheet, Autocomplete, Button, Column, Command, Drawer, Form, Input, Switch, Typography, useOverlayHost, useWindowDimensions } from "@nannier-com/canvas";
 
 export const FRUIT = [
   "Apple", "Apricot", "Banana", "Cherry", "Dates", "Elderberry", "Fig", "Grapefruit",
@@ -142,6 +142,36 @@ function ActionSheetSafeAreaBody() {
   );
 }
 
+function AccessibilitySelectionBody({ destination }: { destination: boolean }) {
+  const [open, setOpen] = useState(false);
+  const [selected, setSelected] = useState("");
+  const [selections, setSelections] = useState(0);
+  const [changes, setChanges] = useState(0);
+  const [submits, setSubmits] = useState(0);
+  const [replaced, setReplaced] = useState(false);
+  return <Column relaxed>
+    <Typography h2>{destination ? "Selection destination" : "Suggestions remain open"}</Typography>
+    {!destination ? <Button onPress={() => setOpen((previous) => !previous)}>
+      {open ? "Close retained suggestions" : "Open retained suggestions"}
+    </Button> : null}
+    <Form submitLabel="Save accessible choice" onSubmit={() => setSubmits((count) => count + 1)}>
+      {replaced ? <Input autoFocus label="Next destination" testID="accessibility-destination-input" /> :
+        <Autocomplete label="Accessible fruit" testID="accessibility-fruit-input" options={FRUIT}
+          value={selected} open={destination ? undefined : open}
+          onValueChange={(next) => { setSelected(next); setChanges((count) => count + 1); }}
+          onSelect={() => {
+            setSelections((count) => count + 1);
+            if (destination) setReplaced(true);
+          }} />}
+    </Form>
+    <Typography testID="accessibility-selected">Selected: {selected || "None"}</Typography>
+    <Typography testID="accessibility-selections">Selections: {selections}</Typography>
+    <Typography testID="accessibility-value-changes">Value changes: {changes}</Typography>
+    <Typography testID="accessibility-submits">Submits: {submits}</Typography>
+    <Typography testID="accessibility-destination">{replaced ? "Destination mounted" : "Fruit mounted"}</Typography>
+  </Column>;
+}
+
 export function FormAutocompleteBody({ scenario }: { scenario?: string }) {
   const [value, setValue] = useState(scenario === "clear" ? "Apple" : "");
   const [disabled, setDisabled] = useState(scenario === "disabled");
@@ -150,6 +180,9 @@ export function FormAutocompleteBody({ scenario }: { scenario?: string }) {
   const [changes, setChanges] = useState(0);
   if (scenario === "command-keyboard") return <CommandKeyboardBody />;
   if (scenario === "action-sheet-safe-area") return <ActionSheetSafeAreaBody />;
+  if (scenario === "accessibility-kept-open" || scenario === "accessibility-destination") {
+    return <AccessibilitySelectionBody destination={scenario === "accessibility-destination"} />;
+  }
   return (
     scenario === "modal" || scenario === "modal-keyboard" ? (
         <Drawer trigger="Open fruit drawer" onOpenChange={(next) => { if (!next) setSubmits((count) => count + 1); }}>

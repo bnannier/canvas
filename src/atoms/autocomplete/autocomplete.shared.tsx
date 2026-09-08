@@ -4,6 +4,7 @@ import { Platform, type Role, type TextInput as RNTextInput } from "react-native
 import { View, Pressable, Text, TextInput, useTheme, useControllableState, useFieldWidth, AnchoredOverlay, useOverlayHost, useMeasuredWidth, FloatingLabel, LabelContent, FOCUS_RESET, RippleClip, cornerRadii, type FieldWidthProps, type StyleProp, type ViewStyle, type TextStyle } from "../../style/index.js";
 import { OverlayScrollView } from "../../style/overlay-scroll.js";
 import { useActiveOptionScroll } from "../../style/use-active-option-scroll.js";
+import { AccessibilityReturnBoundary, accessibilitySelectionProps, useAccessibilityReturn } from "../../style/use-accessibility-return.js";
 
 // React Native's Role union omits the valid ARIA "listbox" role, so the option-list
 // container casts it for web semantics. Native options retain their labels and
@@ -178,6 +179,7 @@ export function createAutocomplete(skin: AutocompleteSkin) {
       if (openProp === undefined) setInternalOpen(next);
       onOpenChange?.(next);
     };
+    const accessibilityReturn = useAccessibilityReturn(open, !!disabled, ref);
 
     // Anchor the floating option list to the FIELD (not the whole wrapper, which
     // also spans the label and helper text). Measured via onLayout so the list
@@ -188,7 +190,10 @@ export function createAutocomplete(skin: AutocompleteSkin) {
 
     // Escape closes the open option list on web (no-op natively). A disabled
     // control renders no list, so it never subscribes.
-    const escapeScope = useEscapeLayer(open, () => setOpen(false));
+    const escapeScope = useEscapeLayer(open, () => {
+      accessibilityReturn.cancel();
+      setOpen(false);
+    });
 
     // What the field shows: the typed query, then the selected value, else the
     // placeholder (rendered natively by the input, in the skin's muted color).
@@ -217,8 +222,9 @@ export function createAutocomplete(skin: AutocompleteSkin) {
     const layoutKey = JSON.stringify(matches.map(({ id, key }) => [id, key]));
     const { listRef, listContentRef, rowRefs, onLayout: onListLayout, onScroll: onListScroll, onRowLayout, scrollActiveIntoView } = useActiveOptionScroll(activeId, layoutKey, open);
 
-    const selectOption = (option: string) => {
+    const selectOption = (option: string, fromAccessibility = false) => {
       if (disabled) return;
+      if (!fromAccessibility) accessibilityReturn.cancel();
       setValue(option);
       onSelect?.(option);
       setQuery("");
@@ -253,7 +259,7 @@ export function createAutocomplete(skin: AutocompleteSkin) {
           ]}
         >
           <TextInput
-            ref={ref}
+            ref={accessibilityReturn.inputRef}
             // The field paints its own focus state (the skin's open border), so
             // the RNW default outline is suppressed; no-op on native.
             textAlignVertical="center"
@@ -272,6 +278,7 @@ export function createAutocomplete(skin: AutocompleteSkin) {
             value={fieldValue}
             onChangeText={(text) => {
               if (disabled) return;
+              accessibilityReturn.cancel();
               setActiveKey(null);
               setQuery(text);
               // Erasing the field to empty clears the committed selection, so the
@@ -282,12 +289,15 @@ export function createAutocomplete(skin: AutocompleteSkin) {
               if (!open) setOpen(true); // typing re-opens a closed list
             }}
             onFocus={() => {
+              accessibilityReturn.cancel();
               if (!open) setOpen(true);
             }}
+            onBlur={accessibilityReturn.cancel}
             // A press on a field that already holds the caret fires no focus event, so
             // without this there is no way back into a list you dismissed with Escape
             // while your query is still sitting in the field.
             onPressIn={() => {
+              accessibilityReturn.cancel();
               if (!open && !disabled) setOpen(true);
             }}
             // Keep the caret in the input; active-descendant identifies the row
@@ -295,6 +305,7 @@ export function createAutocomplete(skin: AutocompleteSkin) {
             // and stops propagation, so Escape must delegate to the layer here.
             onKeyPress={(event) => {
               if (disabled) return;
+              accessibilityReturn.cancel();
               const { key, isComposing, keyCode, repeat, altKey, ctrlKey, metaKey } = event.nativeEvent as {
                 key: string; isComposing?: boolean; keyCode?: number; repeat?: boolean;
                 altKey?: boolean; ctrlKey?: boolean; metaKey?: boolean;
@@ -358,7 +369,10 @@ export function createAutocomplete(skin: AutocompleteSkin) {
               skin.chevronTarget(size),
               skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null,
             ]}
-            onPress={() => setOpen(!open)}
+            onPress={() => {
+              accessibilityReturn.cancel();
+              setOpen(!open);
+            }}
             disabled={disabled}
             android_ripple={ripple}
             accessibilityRole="button"
@@ -389,7 +403,10 @@ export function createAutocomplete(skin: AutocompleteSkin) {
         <AnchoredOverlay
           ownsScroll
           open={open}
-          onDismiss={() => setOpen(false)}
+          onDismiss={() => {
+            accessibilityReturn.cancel();
+            setOpen(false);
+          }}
           triggerRef={fieldRef}
           gap={4}
           cardStyle={[skin.popover(tokens), { minWidth: triggerWidth }]}
@@ -403,66 +420,69 @@ export function createAutocomplete(skin: AutocompleteSkin) {
           // the hosted dismiss backdrop is skipped (it would only block the page).
           dismissable={openProp === undefined || onOpenChange !== undefined}
         >
-          <EscapeLayerProvider scope={escapeScope}>
-            <OverlayScrollView
-              ref={listRef}
-              style={optionScroll}
-              bounces={false}
-              keyboardShouldPersistTaps="handled"
-              onLayout={onListLayout}
-              onScroll={onListScroll}
-              scrollEventThrottle={16}
-              onContentSizeChange={scrollActiveIntoView}
-            >
-              {/* The card's padding separates its clip from the rows. RippleClip
-                  rounds bounded Android ripples without rounding each row. */}
-              <RippleClip shape={cornerRadii(skin.popover(tokens))}>
-                <View ref={listContentRef} collapsable={false} nativeID={listboxId} role={LISTBOX}
-                  accessibilityLabel={hasLabel ? label : undefined} aria-label={hasLabel ? label : undefined}>
-                  {matches.length === 0 ? (
-                    <View style={skin.emptyRow}>
-                      <Text style={skin.emptyText(tokens, size)}>No results</Text>
-                    </View>
-                  ) : matches.map(({ option, key, id }, index) => {
-                    const selected = option === value;
-                    const separator = index > 0 && skin.rowSeparator ? skin.rowSeparator(tokens) : null;
-                    return (
-                      <Pressable
-                        key={key}
-                        nativeID={id}
-                        ref={(node) => {
-                          if (node) rowRefs.current.set(id, node);
-                          else rowRefs.current.delete(id);
-                        }}
-                        onLayout={() => onRowLayout(id)}
-                        style={({ pressed }) => [
-                          skin.row,
-                          separator,
-                          selected ? skin.rowSelected(tokens) : null,
-                          pressed || index === activeIndex ? skin.rowPressed(tokens) : null,
-                        ]}
-                        onPress={() => selectOption(option)}
-                        android_ripple={ripple}
-                        role="option"
-                        // Keep browser editing focus on the input. Native -1
-                        // would remove Android Pressable's click/hover support.
-                        tabIndex={Platform.select({ web: -1, default: undefined })}
-                        accessibilityLabel={option}
-                        aria-label={option}
-                        // accessibilityState carries the native selected trait;
-                        // aria-selected supplies RNW's corresponding DOM state.
-                        accessibilityState={{ selected }}
-                        aria-selected={selected}
-                      >
-                        <Text style={skin.check(tokens, size)}>{selected ? "✓" : " "}</Text>
-                        <Text style={skin.optionText(tokens, size)}>{option}</Text>
-                      </Pressable>
-                    );
-                  })}
-                </View>
-              </RippleClip>
-            </OverlayScrollView>
-          </EscapeLayerProvider>
+          <AccessibilityReturnBoundary onMount={accessibilityReturn.onContentMount} onUnmount={accessibilityReturn.onContentUnmount}>
+            <EscapeLayerProvider scope={escapeScope}>
+              <OverlayScrollView
+                ref={listRef}
+                style={optionScroll}
+                bounces={false}
+                keyboardShouldPersistTaps="handled"
+                onLayout={onListLayout}
+                onScroll={onListScroll}
+                scrollEventThrottle={16}
+                onContentSizeChange={scrollActiveIntoView}
+              >
+                {/* The card's padding separates its clip from the rows. RippleClip
+                    rounds bounded Android ripples without rounding each row. */}
+                <RippleClip shape={cornerRadii(skin.popover(tokens))}>
+                  <View ref={listContentRef} collapsable={false} nativeID={listboxId} role={LISTBOX}
+                    accessibilityLabel={hasLabel ? label : undefined} aria-label={hasLabel ? label : undefined}>
+                    {matches.length === 0 ? (
+                      <View style={skin.emptyRow}>
+                        <Text style={skin.emptyText(tokens, size)}>No results</Text>
+                      </View>
+                    ) : matches.map(({ option, key, id }, index) => {
+                      const selected = option === value;
+                      const separator = index > 0 && skin.rowSeparator ? skin.rowSeparator(tokens) : null;
+                      return (
+                        <Pressable
+                          key={key}
+                          nativeID={id}
+                          ref={(node) => {
+                            if (node) rowRefs.current.set(id, node);
+                            else rowRefs.current.delete(id);
+                          }}
+                          onLayout={() => onRowLayout(id)}
+                          style={({ pressed }) => [
+                            skin.row,
+                            separator,
+                            selected ? skin.rowSelected(tokens) : null,
+                            pressed || index === activeIndex ? skin.rowPressed(tokens) : null,
+                          ]}
+                          onPress={() => selectOption(option)}
+                          {...accessibilitySelectionProps(() => accessibilityReturn.activate(() => selectOption(option, true)))}
+                          android_ripple={ripple}
+                          role="option"
+                          // Keep browser editing focus on the input. Native -1
+                          // would remove Android Pressable's click/hover support.
+                          tabIndex={Platform.select({ web: -1, default: undefined })}
+                          accessibilityLabel={option}
+                          aria-label={option}
+                          // accessibilityState carries the native selected trait;
+                          // aria-selected supplies RNW's corresponding DOM state.
+                          accessibilityState={{ selected }}
+                          aria-selected={selected}
+                        >
+                          <Text style={skin.check(tokens, size)}>{selected ? "✓" : " "}</Text>
+                          <Text style={skin.optionText(tokens, size)}>{option}</Text>
+                        </Pressable>
+                      );
+                    })}
+                  </View>
+                </RippleClip>
+              </OverlayScrollView>
+            </EscapeLayerProvider>
+          </AccessibilityReturnBoundary>
         </AnchoredOverlay>
 
         {helperText != null && helperText !== "" ? (

@@ -24,7 +24,7 @@ export default function FormAutocompleteFixture() {
             </Column>
           ))}
         </Column>
-      ) : <FormAutocompleteBody scenario={scenario} />}
+      ) : <FormAutocompleteBody key={scenario ?? "default"} scenario={scenario} />}
     </Page>
   );
 }
