@@ -1,3 +1,4 @@
+import { type ReactNode } from "react";
 import { View, Text, useTheme, type ColorTokens, type ViewStyle } from "../../../style/index.js";
 import type { CheckboxSkin, Size } from "../checkbox.shared.js";
 
@@ -39,13 +40,55 @@ export function CheckboxIndicatorBox({ skin, tokens, size, checked, indeterminat
   );
 }
 
-/** A label-less Checkbox's appearance for a parent that owns its interaction. */
+/** Shared text and indicator anatomy, with no interaction or semantic role. */
+export function CheckboxContent({ skin, tokens, size, checked, indeterminate, children, description }: {
+  skin: CheckboxSkin;
+  tokens: ColorTokens;
+  size: Size;
+  checked?: boolean;
+  indeterminate?: boolean;
+  children?: ReactNode;
+  description?: ReactNode;
+}) {
+  const hasText = children != null || description != null;
+  return (
+    <>
+      <CheckboxIndicatorBox skin={skin} tokens={tokens} size={size} checked={checked}
+        indeterminate={indeterminate} nudge={hasText} />
+      {hasText ? (
+        description != null ? (
+          <View style={TEXT_COLUMN}>
+            {children != null ? <Text style={skin.label(tokens, size)}>{children}</Text> : null}
+            <Text style={skin.description(tokens, size)}>{description}</Text>
+          </View>
+        ) : (
+          <Text style={skin.label(tokens, size)}>{children}</Text>
+        )
+      ) : null}
+    </>
+  );
+}
+
+// Same snug title/description spacing and shrink behavior as the interactive
+// Checkbox. Sharing this layout keeps private compound controls in sync.
+const TEXT_COLUMN: ViewStyle = { flexShrink: 1, gap: 8 };
+
+export interface CheckboxIndicatorProps {
+  checked?: boolean;
+  disabled?: boolean;
+  children?: ReactNode;
+  description?: ReactNode;
+}
+
+/** Checkbox visuals for a parent that owns the full row's interaction and name. */
 export function createCheckboxIndicator(skin: CheckboxSkin) {
-  return function CheckboxIndicator({ checked, disabled }: { checked?: boolean; disabled?: boolean }) {
+  return function CheckboxIndicator({ checked, disabled, children, description }: CheckboxIndicatorProps) {
     const { tokens } = useTheme();
     return (
       <View style={[CHECKBOX_ROW, disabled ? { opacity: skin.disabledOpacity } : null]}>
-        <CheckboxIndicatorBox skin={skin} tokens={tokens} size="base" checked={checked} nudge={false} />
+        <CheckboxContent skin={skin} tokens={tokens} size="base" checked={checked} description={description}>
+          {children}
+        </CheckboxContent>
       </View>
     );
   };

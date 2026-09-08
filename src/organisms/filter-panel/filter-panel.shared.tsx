@@ -2,7 +2,8 @@ import { useMemo } from "react";
 import { View, Text, Pressable, useTheme, useControllableState, useBreakpoint, breakpoints, RippleClip, cornerRadii, type BreakpointKey, type StyleProp, type ViewStyle } from "../../style/index.js";
 import { Badge as WebBadge } from "../../atoms/badge/badge.js";
 import { Button as WebButton } from "../../atoms/button/button.js";
-import { Checkbox as WebCheckbox } from "../../atoms/checkbox/checkbox.js";
+import { CheckboxIndicator as WebCheckbox } from "../../atoms/checkbox/indicator/index.js";
+import { useSpaceActivation } from "../../style/use-space-activation.js";
 import { Drawer } from "../drawer/drawer.js";
 import {
   type Density,
@@ -20,8 +21,8 @@ import {
 // density, group-heading type, and the press feedback on this component's OWN
 // option rows) and calls createFilterPanel.
 //
-// FilterPanel COMPOSES the already-skinned Checkbox, Badge, and Button atoms: each
-// platform wrapper passes its own Checkbox/Badge/Button variant into
+// FilterPanel composes shared Checkbox visuals with Badge and Button atoms: each
+// platform wrapper passes its own Checkbox visual/Badge/Button variant into
 // createFilterPanel (the way field passes the platform Input/Button), so the rows
 // and the header Clear action read native per OS without this organism re-skinning
 // any atom. The literal `.ios`/`.android` atom imports in those wrappers are
@@ -114,7 +115,7 @@ function densityOf(p: FilterPanelProps): Density {
 /**
  * Build a FilterPanel component from a platform skin.
  *
- * `Checkbox` / `Badge` / `Button` are the platform-correct atoms for the option
+ * `CheckboxVisual` / `Badge` / `Button` supply the platform-correct option
  * rows, the counts, and the header Clear action. Each platform's thin
  * `.tsx`/`.ios`/`.android` file passes the variants it already resolves for that
  * platform, so the panel matches its OS. They default to the WEB atoms because a
@@ -124,16 +125,42 @@ function densityOf(p: FilterPanelProps): Density {
  */
 export function createFilterPanel(
   skin: FilterPanelSkin,
-  Checkbox: CheckboxComponent = WebCheckbox,
+  CheckboxVisual: CheckboxComponent = WebCheckbox,
   Badge: BadgeComponent = WebBadge,
   Button: ButtonComponent = WebButton,
 ) {
+  function OptionRow({ option, checked, onToggle }: { option: FilterOption; checked: boolean; onToggle: () => void }) {
+    const { tokens } = useTheme();
+    const keyboard = useSpaceActivation(false, onToggle);
+    const ripple = skin.rowRipple ? skin.rowRipple(tokens) : undefined;
+    return (
+      <Pressable
+        {...keyboard}
+        style={({ pressed }) => [
+          skin.optionRow,
+          skin.rowPressedOpacity != null && pressed ? { opacity: skin.rowPressedOpacity } : null,
+        ]}
+        onPress={onToggle}
+        android_ripple={ripple}
+        accessibilityRole="checkbox"
+        accessibilityState={{ checked }}
+        aria-checked={checked}
+        accessibilityLabel={option.count != null ? `${option.label}, ${option.count}` : option.label}
+      >
+        {/* This row owns the only control. Shared Checkbox content preserves the
+            indicator, label typography and alignment without another tab stop. */}
+        <View style={{ flexShrink: 1 }} accessibilityElementsHidden importantForAccessibility="no-hide-descendants" aria-hidden>
+          <CheckboxVisual checked={checked}>{option.label}</CheckboxVisual>
+        </View>
+        {option.count != null ? <Badge secondary>{option.count}</Badge> : null}
+      </Pressable>
+    );
+  }
+
   return function FilterPanel(props: FilterPanelProps) {
     const { groups, activeCount, onClear, onChange, onSelectionChange, bordered, testID, style } = props;
     const { tokens } = useTheme();
     const density = densityOf(props);
-
-    const ripple = skin.rowRipple ? skin.rowRipple(tokens) : undefined;
 
     // Each option's stable key: its explicit `value`, else its group/option index.
     const keyOf = (gi: number, oi: number) => groups[gi].options[oi].value ?? `${gi}:${oi}`;
@@ -216,51 +243,7 @@ export function createFilterPanel(
             >
             <View style={[skin.groupColumn, skin.groupGap[density]]}>
               {group.options.map((option, oi) => (
-                // The option row is this component's OWN pressable: tapping it
-                // anywhere toggles the option, so the whole row is the tap target.
-                // Android shows a ripple; iOS/web dim the row on press (the web
-                // skin sets neither, so the web row stays visually identical to its
-                // previous plain-View look). The Checkbox is rendered as a
-                // non-interactive visual mirror of the state (`pointerEvents` off,
-                // no onChange) so the press goes to the row and there is a single
-                // toggle path, not a double-fire.
-                //
-                // The row Pressable owns the only checkbox role + state in the
-                // subtree, and names itself via accessibilityLabel (with the count
-                // appended when present) so it announces independent of the inner
-                // visual. The wrapper View hides the inner Checkbox atom entirely
-                // from assistive tech (accessibilityElementsHidden +
-                // importantForAccessibility on native, aria-hidden + role
-                // "presentation" on web), so the inner atom's own Pressable/role
-                // never surfaces a second, nested checkbox to the screen reader.
-                <Pressable
-                  key={oi}
-                  style={({ pressed }) => [
-                    skin.optionRow,
-                    skin.rowPressedOpacity != null && pressed
-                      ? { opacity: skin.rowPressedOpacity }
-                      : null,
-                  ]}
-                  onPress={() => toggle(gi, oi)}
-                  android_ripple={ripple}
-                  accessibilityRole="checkbox"
-                  accessibilityState={{ checked: isChecked(gi, oi) }}
-                  aria-checked={isChecked(gi, oi)}
-                  accessibilityLabel={
-                    option.count != null ? `${option.label}, ${option.count}` : option.label
-                  }
-                >
-                  <View
-                    style={{ pointerEvents: "none" }}
-                    accessibilityElementsHidden={true}
-                    importantForAccessibility="no-hide-descendants"
-                    role="presentation"
-                    aria-hidden
-                  >
-                    <Checkbox checked={isChecked(gi, oi)}>{option.label}</Checkbox>
-                  </View>
-                  {option.count != null ? <Badge secondary>{option.count}</Badge> : null}
-                </Pressable>
+                <OptionRow key={keyOf(gi, oi)} option={option} checked={isChecked(gi, oi)} onToggle={() => toggle(gi, oi)} />
               ))}
             </View>
             </RippleClip>
