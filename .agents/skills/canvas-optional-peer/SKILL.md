@@ -5,8 +5,8 @@ description: Add or consume an OPTIONAL peer dependency in the Canvas RN kit so 
 
 # Add or consume an optional peer dependency
 
-Canvas has three optional peers today: `react-native-qrcode-svg`, `expo-blur`,
-`expo-glass-effect`. The contract: a consumer who never installs the peer must
+Read `peerDependencies` and `peerDependenciesMeta` in `package.json` for the
+current optional-peer inventory. The contract: a consumer who never installs the peer must
 still `npm install` and BUILD `@nannier-com/canvas` cleanly, and the feature that
 needs it degrades to a labeled placeholder instead of crashing. A static
 `import "expo-blur"` breaks module resolution for EVERY consumer who skipped it,
@@ -20,38 +20,64 @@ From `src/style/glass-surface/glass-surface.tsx`:
 ```ts
 import type * as ExpoBlurTypes from "expo-blur"; // type-only: erased, never emitted
 
-declare const require: ((id: string) => unknown) | undefined;
+declare const require: (id: string) => unknown;
 let BlurView: typeof ExpoBlurTypes.BlurView | undefined;
+let supportsBlurTarget = false;
 try {
-  if (typeof require === "function") {
-    BlurView = (require("expo-blur") as { BlurView?: typeof ExpoBlurTypes.BlurView }).BlurView;
-  }
+  const mod = require("expo-blur") as {
+    BlurView?: typeof ExpoBlurTypes.BlurView;
+    BlurTargetView?: typeof ExpoBlurTypes.BlurTargetView;
+  };
+  BlurView = mod.BlurView;
+  supportsBlurTarget = mod.BlurTargetView !== undefined;
 } catch {
   BlurView = undefined;
 }
 ```
 
 Each line earns its place:
-- `import type * as …`: a TYPE-ONLY import. It is erased at compile time, so it
-  emits no runtime `require`/`import` and does not force the peer to resolve; it
-  only gives you the real types to annotate the guarded binding.
-- `declare const require: … | undefined;`: declares the symbol without pulling
-  `@types/node`. The `| undefined` is what lets `typeof require === "function"`
-  narrow safely.
-- `typeof require === "function"`: keeps a PURE-ESM runtime (where `require`
-  does not exist) alive. The binding just stays `undefined` and you fall back,
-  instead of a `ReferenceError`.
+- `import type * as …`: annotates this private binding and is erased from emitted
+  JavaScript. It still requires the peer's types while building Canvas. If retained
+  in a public `.d.ts`, it also requires those types in consumers. Keep exported
+  signatures independent of optional-peer types, as described below.
+- `declare const require: …`: declares the symbol without pulling `@types/node`.
+- The literal `require` sits directly inside the `try` block. Metro checks the
+  FIRST enclosing block to classify an optional dependency. An intervening
+  `if (typeof require === "function") { … }` makes the dependency required and
+  breaks consumers who skip it. See `src/organisms/backdrop/skia-runtime.ts`.
+  A pure-ESM runtime's missing `require` throws a `ReferenceError` that the same
+  `catch` already handles.
 - `require("expo-blur")` with a STRING-LITERAL id: a bundler that HAS the peer
   installed still statically sees the literal and includes it; a consumer without
-  it hits the `try/catch` at runtime and degrades.
+  it can degrade when the bundler supports optional dependencies. Expo and the
+  supported `@react-native/metro-config` defaults enable Metro's
+  `allowOptionalDependencies`; custom Metro configurations must preserve that
+  policy. The isolated consumer checks use the React Native defaults.
 - `catch { … = undefined }`: a missing module throws at require time, so swallow
   it and leave the binding `undefined`.
+
+Read additional exports from the same module binding inside the existing `try`.
+Do not add a separate probe for every export.
+
+## Public types must work without the peer
+
+A type-only import removes a runtime dependency, not a declaration dependency.
+Use small structural types built from React and React Native for exported APIs
+that would otherwise retain optional-peer names. `src/style/safe-area.tsx` defines
+its component props this way; `frostMethodProps` in
+`src/style/glass-surface/glass-surface.shared.tsx` has an explicit structural return
+type so inference cannot leak `expo-blur` into the published declaration graph.
+Keep private implementation bindings typed from the real installed peer when useful.
+Verify the emitted declarations with consumers that actually omit optional peers.
 
 Default-export peers (like `react-native-qrcode-svg`) need interop: take the
 `.default` if present, else the module itself
 (`src/atoms/qrcode/qrcode.shared.tsx`):
 
 ```ts
+import type RNQRCodeType from "react-native-qrcode-svg";
+
+// These statements belong directly inside the existing try block.
 const mod = require("react-native-qrcode-svg") as { default?: typeof RNQRCodeType } | typeof RNQRCodeType;
 RNQRCode = (mod as { default?: typeof RNQRCodeType }).default ?? (mod as typeof RNQRCodeType);
 ```
@@ -76,7 +102,7 @@ never a crash:
 - `QRCode` keeps its accessible frame and returns an empty `View` sized like the
   code (`width/height = sizeOf(props)`), so the layout does not collapse
   (`qrcode.shared.tsx`).
-- `GlassSurface` returns `PlainSurface` (the translucent `popover` fill), so the
+- `GlassSurface` returns `PlainSurface` with the skin's opaque fill, so the
   overlay still reads as a surface.
 
 Warn AT MOST ONCE in dev, gated by a module-level flag plus the runtime-agnostic
@@ -119,19 +145,29 @@ public install contract.
 ## Verify
 
 ```bash
-bun run build            # rm -rf dist && tsc -p tsconfig.build.json
-bun run verify-package   # bun scripts/verify-package.ts (after build)
+bun run build
+bun run verify-package
+bun test ./test ./tools
+bun run verify-consumer-support --artifacts /absolute/path/to/sealed/artifacts
 ```
 
-`scripts/verify-package.ts` only checks RELATIVE specifiers
-(`/(\.\.?\/…)/`) resolve in dist, so a bare literal id like `"expo-blur"` is
-correctly ignored and the guarded require passes. It also confirms platform forks
-survive (`.ios.js`/`.android.js`), no raw `.ts` leaks, and no DOM types in the
-public `.d.ts`. `verify-package` is wired into CI and `prepublishOnly`
-(`bun run build && bun run verify-package`); never `npm publish` locally, CI
-releases.
+`scripts/verify-package.ts` checks resolvable relative specifiers, native output and
+platform resolution, no raw source TypeScript, and no DOM-only public types. It
+also rejects static or dynamic imports of optional peers and requires each optional
+literal `require` to have a `try` with a `catch` as its first enclosing block.
 
-`test/dist-smoke.test.tsx` renders components FROM dist with NONE of the optional
-peers installed, so it exercises the fallback path: if a static import slipped in,
-the dist import throws here. Run the kit suite (`bun test`) after wiring a new
-peer.
+`test/dist-smoke.test.tsx` imports and renders the built artifact in the local RNW
+test environment. Its QRCode frame check must work whether the peer resolves or
+not; it is not proof of an isolated installation without optional peers. Build
+before the canonical unit suite so the artifact tests run.
+
+`scripts/verify-consumer-support.mjs` verifies exact sealed package bytes in isolated
+consumers, confirms every optional peer is absent, checks strict public declarations
+and refs without `skipLibCheck`, and exercises the declared React 18 / React Native
+0.74 floors and current versions, including web and native bundle resolution. Pass
+the real sealed artifacts directory from the candidate workflow. Without
+`--artifacts`, the command packs the local built package for development checks;
+that does not replace verification of the exact release artifact.
+
+Package verification and the sealed support matrix are CI gates. Never publish
+locally; add a changeset and let CI release after verification.
