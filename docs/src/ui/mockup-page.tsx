@@ -23,7 +23,7 @@ export function MockupDocPage({ name, description, sections }: { name: string; d
     <Page>
       <View style={{ gap: 28, maxWidth: 960 }}>
         <View style={{ gap: 6 }}>
-          <Text style={{ fontFamily: geist("600"), fontSize: 24, letterSpacing: -0.48, color: tokens.foreground }}>{name}</Text>
+          <Text accessibilityRole="header" aria-level={1} style={{ fontFamily: geist("600"), fontSize: 24, letterSpacing: -0.48, color: tokens.foreground }}>{name}</Text>
           <Text style={{ fontFamily: geist("400"), fontSize: 14, lineHeight: 22.4, color: tokens["muted-foreground"], maxWidth: 640 }}>{description}</Text>
         </View>
 

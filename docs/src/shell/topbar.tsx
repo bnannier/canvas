@@ -118,6 +118,7 @@ export function Topbar({ showMenu, onMenu, onSearch }: { showMenu: boolean; onMe
 
       {wideEnough ? (
         <Pressable
+          accessibilityRole="button"
           onPress={onSearch}
           style={{
             minWidth: 240,

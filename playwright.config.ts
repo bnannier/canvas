@@ -94,19 +94,19 @@ export default defineConfig({
     ...(["chromium", "firefox", "webkit"] as const).map((browserName) => ({
       name: `journeys-${browserName}`,
       testDir: "./e2e/journeys",
-      testMatch: ["**/keyboard.e2e.ts", "**/identity.e2e.ts", "**/control-refs.e2e.ts"],
+      testMatch: ["**/keyboard.e2e.ts", "**/identity.e2e.ts", "**/control-refs.e2e.ts", "**/shell-search.e2e.ts"],
       use: { browserName, userAgent: undefined },
     })),
     {
       name: "touch-chromium",
       testDir: "./e2e/journeys",
-      testMatch: ["**/touch.e2e.ts", "**/identity.e2e.ts", "**/control-refs.e2e.ts"],
+      testMatch: ["**/touch.e2e.ts", "**/identity.e2e.ts", "**/control-refs.e2e.ts", "**/shell-search.e2e.ts"],
       use: { ...devices["Pixel 7"], browserName: "chromium" },
     },
     {
       name: "touch-webkit",
       testDir: "./e2e/journeys",
-      testMatch: ["**/touch.e2e.ts", "**/identity.e2e.ts", "**/control-refs.e2e.ts"],
+      testMatch: ["**/touch.e2e.ts", "**/identity.e2e.ts", "**/control-refs.e2e.ts", "**/shell-search.e2e.ts"],
       use: { ...devices["iPhone 13"], browserName: "webkit" },
     },
     {

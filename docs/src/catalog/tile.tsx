@@ -74,7 +74,7 @@ export function CatGroup({ label, count, tiles }: { label: string; count: number
   return (
     <Column cozy>
       <Row flush between baseline>
-        <Text style={{ fontFamily: geist("600"), fontSize: 18, letterSpacing: -0.18, color: tokens.foreground }}>{label}</Text>
+        <Text accessibilityRole="header" aria-level={2} style={{ fontFamily: geist("600"), fontSize: 18, letterSpacing: -0.18, color: tokens.foreground }}>{label}</Text>
         <Text style={{ fontFamily: geist("500"), fontSize: 11, letterSpacing: 0.88, textTransform: "uppercase", color: tokens["muted-foreground"] }}>
           {count} components
         </Text>
