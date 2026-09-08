@@ -1,5 +1,11 @@
 # @nannier/canvas
 
+## 2.62.2
+
+### Patch Changes
+
+- deae1cd: Avoid constructing offscreen StackedList row elements when virtualization is active. Keep default, unbounded, and reorderable lists eager, and cover the distinction with large-data construction tests.
+
 ## 2.62.1
 
 ### Patch Changes
