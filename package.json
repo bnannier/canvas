@@ -3,6 +3,7 @@
   "version": "2.62.2",
   "description": "Universal React Native UI kit: one component API renders natively on iOS, Android, and web.",
   "license": "MIT",
+  "packageManager": "bun@1.4.0",
   "homepage": "https://canvas.nannier.com/",
   "repository": {
     "type": "git",
@@ -140,6 +141,7 @@
     "@testing-library/react": "^16.3.2",
     "@types/react": "^19.2.16",
     "@types/topojson-client": "^3.1.5",
+    "esbuild": "0.28.2",
     "eslint": "^9",
     "eslint-plugin-react": "^7.37.5",
     "eslint-plugin-react-hooks": "^7.1.1",
