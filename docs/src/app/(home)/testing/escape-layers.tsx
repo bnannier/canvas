@@ -4,7 +4,7 @@ import {
   ActionSheet, Autocomplete, Column, Command, DataTable, DescriptionList,
   Dialog, Drawer, Dropdown, Typography,
 } from "@nannier-com/canvas";
-import { Page, PageHeader } from "../../ui/page";
+import { Page, PageHeader } from "../../../ui/page";
 
 // Deliberately absent from navigation. Browser regressions exercise actual
 // Canvas components here, including portals and RNW Modal's keyup handling.

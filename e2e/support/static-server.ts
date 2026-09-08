@@ -22,8 +22,11 @@
  * It is plain node:http with no dependencies, so both bun (the webServer
  * command) and node (anything Playwright's own loader runs) execute it.
  */
-import { createServer, type IncomingMessage, type Server, type ServerResponse } from "node:http";
-import { readFile, stat } from "node:fs/promises";
+import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
+import { createServer as createSecureServer } from "node:https";
+import { execFileSync } from "node:child_process";
+import { mkdtemp, readFile, rm, stat, writeFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
 import { extname, join, normalize, resolve, sep } from "node:path";
 
 // Content types for everything the docs export ships. Anything unlisted is served
@@ -60,11 +63,14 @@ export interface ServerOptions {
   headers?: boolean;
   /** Answer extension-less misses with index.html (the expo-router SPA rewrite). */
   spa?: boolean;
+  /** Serve HTTPS with a disposable loopback certificate, without changing system trust. */
+  https?: boolean;
 }
 
 export interface RunningServer {
   url: string;
   port: number;
+  certificate?: string;
   close: () => Promise<void>;
 }
 
@@ -133,7 +139,7 @@ export async function startStaticServer(options: ServerOptions): Promise<Running
     res.end(body);
   };
 
-  const server: Server = createServer(async (req: IncomingMessage, res: ServerResponse) => {
+  const handle = async (req: IncomingMessage, res: ServerResponse) => {
     const url = new URL(req.url ?? "/", "http://127.0.0.1");
     let pathname = url.pathname;
 
@@ -180,7 +186,28 @@ export async function startStaticServer(options: ServerOptions): Promise<Running
     }
 
     send(res, 404, "Not found", "text/plain; charset=utf-8");
-  });
+  };
+
+  // WebKit enforces upgrade-insecure-requests even on loopback HTTP. Use the
+  // deployment's HTTPS transport and unchanged CSP, not a browser policy bypass.
+  // The key lives only for this server process and is never installed in a keychain.
+  let certificate: string | undefined;
+  let certificateDirectory: string | undefined;
+  let credentials: { key: string; cert: string } | undefined;
+  if (options.https) {
+    certificateDirectory = await mkdtemp(join(tmpdir(), "canvas-e2e-tls-"));
+    try {
+      const configuration = join(certificateDirectory, "openssl.cnf");
+      await writeFile(configuration, "[req]\ndistinguished_name=dn\nx509_extensions=ext\nprompt=no\n[dn]\nCN=localhost\n[ext]\nsubjectAltName=DNS:localhost,IP:127.0.0.1\n");
+      execFileSync("openssl", ["req", "-x509", "-newkey", "rsa:2048", "-nodes", "-days", "1", "-config", configuration,
+        "-keyout", join(certificateDirectory, "key.pem"), "-out", join(certificateDirectory, "cert.pem")], { stdio: "pipe" });
+      certificate = await readFile(join(certificateDirectory, "cert.pem"), "utf8");
+      credentials = { key: await readFile(join(certificateDirectory, "key.pem"), "utf8"), cert: certificate };
+    } finally {
+      await rm(certificateDirectory, { recursive: true, force: true });
+    }
+  }
+  const server = credentials ? createSecureServer(credentials, handle) : createServer(handle);
 
   await new Promise<void>((ok, fail) => {
     server.once("error", fail);
@@ -192,7 +219,8 @@ export async function startStaticServer(options: ServerOptions): Promise<Running
 
   return {
     port: address.port,
-    url: `http://127.0.0.1:${address.port}${base}`,
+    url: `${options.https ? "https" : "http"}://127.0.0.1:${address.port}${base}`,
+    certificate,
     close: () =>
       new Promise<void>((ok, fail) => {
         server.close((err) => (err ? fail(err) : ok()));

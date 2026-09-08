@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useLocalSearchParams } from "expo-router";
 import { Button, Checkbox, Column, Listbox, Row, Typography } from "@nannier-com/canvas";
-import { Page, PageHeader } from "../../ui/page";
+import { Page, PageHeader } from "../../../ui/page";
 
 const teams = [{ label: "Backend" }, { label: "Frontend", detail: "Web applications" }, { label: "Design" }];
 

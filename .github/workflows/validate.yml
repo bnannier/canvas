@@ -80,6 +80,9 @@ jobs:
       - name: Unit tests
         run: bun run test
 
+      - name: Validate interaction evidence registry
+        run: bun scripts/check-interaction-coverage.ts
+
       # Runs docgen ONCE for the whole pipeline and fails on ANY drift under
       # docs/src/core (tracked or untracked), so a breaking prop change or a forgotten
       # `bun run docs:gen` is caught here, and the docs steps below consume a validated
@@ -180,6 +183,8 @@ jobs:
       - name: Export web build
         working-directory: docs
         run: bun run build:web
+        env:
+          SOURCE_SHA: ${{ github.sha }}
 
       - name: Seal the tested release artifacts
         if: inputs.candidate
@@ -251,16 +256,16 @@ jobs:
 
       - run: bun install --frozen-lockfile
 
-      # Chromium is ~130 MB to download and never changes for a given Playwright
-      # version, which bun.lock pins.
-      - name: Cache the Playwright browser
+      # The lockfile selects all three engine builds. Focused keyboard and touch
+      # journeys complement the full Chromium suite without duplicating baselines.
+      - name: Cache the Playwright browsers
         uses: actions/cache@v6
         with:
           path: ~/.cache/ms-playwright
           key: playwright-${{ runner.os }}-${{ hashFiles('bun.lock') }}
 
-      - name: Install chromium
-        run: bunx playwright install --with-deps chromium
+      - name: Install Chromium, Firefox and WebKit
+        run: bunx playwright install --with-deps chromium firefox webkit
 
       # Not a fresh export: these are the bytes `check` already validated.
       - name: Download the web export
