@@ -91,8 +91,10 @@ The optional `bottom` inset similarly reserves an overlapping footer. Insets are
 relative to that host's own box and are intersected with the keyboard boundary;
 changing them updates open cards without remounting their content.
 
-Android keyboard avoidance requires the window's resize mode and a root provider
-that resizes with it. iOS uses the keyboard frame; at the RN 0.74 support floor,
+Android keyboard avoidance supports full-screen edge-to-edge windows through
+native keyboard events, and legacy resize-mode windows through their measured
+root bounds. Legacy pan/nothing modes and multi-window coordinates are not
+supported. iOS uses the keyboard frame; at the RN 0.74 support floor,
 this requires a full-screen window because that RN version reports screen
 coordinates. Current RN converts the frame to window coordinates. Web fitting
 uses the layout viewport; RNW does not expose the mobile keyboard's visual
