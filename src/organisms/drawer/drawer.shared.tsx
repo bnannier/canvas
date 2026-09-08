@@ -64,6 +64,8 @@ export interface DrawerProps {
   top?: boolean;
   /** Width of a side drawer in px (default 288). Ignored for the bottom/top sheet. */
   width?: number;
+  /** Accessible name for the modal surface. Required when the drawer has no trigger whose label can name it. */
+  accessibilityLabel?: string;
   /** E2E hook forwarded to the root element. */
   testID?: string;
   /** Outer layout composition for the panel surface, never a restyle hook. (Device safe-area insets are applied automatically.) */
@@ -92,7 +94,7 @@ function edgeOf(p: DrawerProps): Edge {
  */
 export function createDrawer(skin: DrawerSkin, Button: ButtonComponent = WebButton) {
   return function Drawer(props: DrawerProps) {
-    const { children, open: openProp, onOpenChange, trigger, width = 288, testID, style } = props;
+    const { children, open: openProp, onOpenChange, trigger, width = 288, accessibilityLabel, testID, style } = props;
     const { tokens, scheme } = useTheme();
     const edge = edgeOf(props);
 
@@ -212,6 +214,7 @@ export function createDrawer(skin: DrawerSkin, Button: ButtonComponent = WebButt
           transparent
           animationType="none"
           onRequestClose={escapeScope.onRequestClose}
+          accessibilityLabel={accessibilityLabel ?? trigger}
           testID={testID}
           // Tell assistive tech the content behind this full-screen overlay is
           // inert while the drawer is open (iOS VoiceOver honors this; a no-op

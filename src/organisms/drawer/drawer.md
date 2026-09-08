@@ -1,5 +1,8 @@
 # Drawer
 
+Give a controlled drawer an `accessibilityLabel` when it has no built-in
+`trigger`. A drawer with a trigger uses the trigger label as its modal name.
+
 A full-screen panel that slides in from an edge: a navigation drawer, a mobile menu, or a bottom action sheet. Built on React Native's Modal, so it floats over the whole app on iOS, Android, and the web. For a small contextual menu, reach for Dropdown or RowMenu instead.
 
 Drawer provides an overlay host inside its own window. Dropdown, Select, and other anchored children render above the panel without being clipped by its corners; no additional OverlayProvider is needed inside the drawer. A tap outside an open child menu dismisses that menu, and Escape dismisses the child before the drawer. Nested drawers each keep their overlays in their own window.

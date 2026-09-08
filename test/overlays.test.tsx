@@ -219,6 +219,21 @@ describe("Drawer (full-screen Modal overlay)", () => {
     expect(document.querySelector('[aria-modal="true"]')).not.toBeNull();
   });
 
+  it("names the modal surface from an explicit label or its trigger", () => {
+    const { rerender } = ui(
+      <Drawer open accessibilityLabel="Project settings">
+        <Text>Drawer body</Text>
+      </Drawer>,
+    );
+    expect(document.querySelector('[aria-modal="true"]')?.getAttribute("aria-label")).toBe("Project settings");
+    rerender(
+      <Drawer open trigger="Open menu">
+        <Text>Drawer body</Text>
+      </Drawer>,
+    );
+    expect(document.querySelector('[aria-modal="true"]')?.getAttribute("aria-label")).toBe("Open menu");
+  });
+
   it("supports every edge, including a top-edge sheet", () => {
     for (const edge of ["left", "right", "bottom", "top"] as const) {
       ui(
