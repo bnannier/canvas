@@ -3,6 +3,7 @@ import { render, cleanup, fireEvent } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { Text } from "react-native";
 import { ThemeProvider } from "../src/style/theme.tsx";
+import { layoutEntrances } from "./entrance-layout.ts";
 import { Checkbox } from "../src/atoms/checkbox/checkbox.tsx";
 import { Switch } from "../src/atoms/switch/switch.tsx";
 import { Dropdown } from "../src/atoms/dropdown/dropdown.tsx";
@@ -157,6 +158,7 @@ describe("listbox a11y (options announce as a selectable list, operably)", () =>
   it("Select: role=listbox + role=option rows carry aria-selected and stay operable", () => {
     let picked = "";
     const { container } = ui(<Select open options={["A", "B", "C"]} value="A" onSelect={(o) => { picked = o; }} />);
+    layoutEntrances(container, { width: 320, height: 144 });
     expect(container.querySelector('[role="listbox"]')).not.toBeNull();
     const opts = container.querySelectorAll('[role="option"]');
     expect(opts.length).toBe(3);
@@ -168,6 +170,7 @@ describe("listbox a11y (options announce as a selectable list, operably)", () =>
 
   it("Autocomplete: role=listbox + role=option rows carry aria-selected", () => {
     const { container } = ui(<Autocomplete open options={["A", "B"]} value="B" onSelect={() => {}} />);
+    layoutEntrances(container, { width: 320, height: 144 });
     expect(container.querySelector('[role="listbox"]')).not.toBeNull();
     const opts = container.querySelectorAll('[role="option"]');
     expect(opts.length).toBe(2);
@@ -201,6 +204,7 @@ describe("listbox a11y (options announce as a selectable list, operably)", () =>
         onSelect={(item) => picked.push(item.label)}
       />,
     );
+    layoutEntrances(container, { width: 240, height: 96 });
     const rows = Array.from(container.querySelectorAll('[role="menuitem"]'));
     expect(rows.length).toBe(2);
     // Only the disabled row carries the aria-disabled alias.

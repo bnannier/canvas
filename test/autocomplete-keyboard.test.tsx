@@ -11,11 +11,17 @@ import { Dialog } from "../src/organisms/dialog/dialog.tsx";
 import { Drawer } from "../src/organisms/drawer/drawer.tsx";
 import { OverlayProvider } from "../src/style/portal.tsx";
 import { ThemeProvider } from "../src/style/theme.tsx";
+import { layoutEntrance, layoutHostedEntrance, type FixtureSize } from "./entrance-layout.ts";
 
 const options = ["Apple", "Banana", "Cherry"];
 const themed = (node: ReactNode) => <ThemeProvider>{node}</ThemeProvider>;
 const ui = (node: ReactNode) => render(themed(node));
 const focus = (node: HTMLElement) => act(() => node.focus());
+const layoutSuggestions = (field: HTMLElement, size: FixtureSize = { width: 320, height: 144 }) => {
+  const list = document.getElementById(field.getAttribute("aria-controls")!);
+  expect(list).not.toBeNull();
+  layoutEntrance(list!, size);
+};
 // RNW PressResponder activates some controls on keyup. Always complete the
 // physical sequence, including when keydown closes and unmounts an option.
 const key = (target: HTMLElement, value: string, init: KeyboardEventInit = {}) => {
@@ -64,6 +70,7 @@ for (const [platform, Component] of [["web", Autocomplete], ["ios", Autocomplete
       const field = screen.getByRole("combobox") as HTMLInputElement;
       expect(ref.current).toBe(field as unknown as TextInput);
       focus(field);
+      layoutSuggestions(field);
       // All three skins still run in the browser here. Suggestions never enter
       // its Tab order, even though native rows retain Pressable click support.
       expect(screen.getAllByRole("option").map((row) => row.tabIndex)).toEqual([-1, -1, -1]);
@@ -88,6 +95,7 @@ for (const [platform, Component] of [["web", Autocomplete], ["ios", Autocomplete
       expect(screen.queryByRole("listbox")).toBeNull();
       expect(document.activeElement).toBe(field);
       key(field, "ArrowUp");
+      layoutSuggestions(field);
       expect(screen.getByRole("listbox").id).toBe(listId);
       expect(active(field)).toBe(screen.getByRole("option", { name: "Cherry" }));
       expect(screen.getByRole("option", { name: "Banana" }).getAttribute("aria-selected")).toBe("true");
@@ -101,6 +109,7 @@ describe("Autocomplete active options", () => {
     const props = { defaultOpen: true, onSelect: (value: string) => selected.push(value) };
     const { rerender } = ui(<Autocomplete {...props} options={["Apple", "Apple", "Banana"]} />);
     const field = screen.getByRole("combobox");
+    layoutSuggestions(field);
     const rows = screen.getAllByRole("option");
     key(field, "ArrowDown");
     expect(active(field)).toBe(rows[0]!);
@@ -118,6 +127,7 @@ describe("Autocomplete active options", () => {
     ui(<Autocomplete options={options} />);
     const field = screen.getByRole("combobox");
     focus(field);
+    layoutSuggestions(field);
     expect(key(field, "Home")).toBe(true);
     expect(key(field, "End")).toBe(true);
     key(field, "ArrowUp");
@@ -135,6 +145,7 @@ describe("Autocomplete active options", () => {
   it("filters with stable row IDs and clears stale active options when typing or options change", () => {
     const { rerender } = ui(<Autocomplete options={options} defaultOpen />);
     const field = screen.getByRole("combobox");
+    layoutSuggestions(field);
     const bananaId = screen.getByRole("option", { name: "Banana" }).id;
     key(field, "ArrowDown");
     fireEvent.change(field, { target: { value: "ban" } });
@@ -158,10 +169,12 @@ describe("Autocomplete active options", () => {
     ui(<Autocomplete options={options} onValueChange={(value) => values.push(value)} />);
     const field = screen.getByRole("combobox");
     key(field, "ArrowDown");
+    layoutSuggestions(field);
     expect(key(field, "Tab")).toBe(true);
     expect(field.getAttribute("aria-expanded")).toBe("false");
     expect(values).toEqual([]);
     key(field, "ArrowUp");
+    layoutSuggestions(field);
     expect(active(field)?.getAttribute("aria-label")).toBe("Cherry");
   });
 
@@ -171,6 +184,7 @@ describe("Autocomplete active options", () => {
     let ref: TextInput | null = null;
     const { unmount } = ui(<Autocomplete ref={(node) => { ref = node; }} options={options} defaultOpen
       onSelect={(value) => selected.push(value)} onValueChange={(value) => values.push(value)} />);
+    layoutSuggestions(screen.getByRole("combobox"));
     expect(ref).toBe(screen.getByRole("combobox") as unknown as TextInput);
     fireEvent.click(screen.getByRole("option", { name: "Apple" }));
     expect(selected).toEqual(["Apple"]);
@@ -182,6 +196,7 @@ describe("Autocomplete active options", () => {
   it("activates an accessible option once through RNW's complete PressResponder key sequence", () => {
     const selected: string[] = [];
     ui(<Autocomplete options={options} defaultOpen onSelect={(value) => selected.push(value)} />);
+    layoutSuggestions(screen.getByRole("combobox"));
     const option = screen.getByRole("option", { name: "Banana" });
     focus(option);
     key(option, "Enter");
@@ -193,6 +208,7 @@ describe("Autocomplete active options", () => {
     ui(<><Autocomplete label="First" options={options} defaultOpen />
       <Autocomplete label="Second" options={options} defaultOpen /></>);
     const fields = screen.getAllByRole("combobox");
+    for (const field of fields) layoutSuggestions(field);
     key(fields[0]!, "ArrowDown");
     key(fields[1]!, "ArrowDown");
     expect(fields[0]!.getAttribute("aria-controls")).not.toBe(fields[1]!.getAttribute("aria-controls"));
@@ -206,6 +222,7 @@ describe("Autocomplete active options", () => {
   it("scrolls measured variable-height rows into view through ScrollView's native API", () => {
     ui(<Autocomplete options={options} defaultOpen />);
     const field = screen.getByRole("combobox");
+    layoutSuggestions(field, { width: 160, height: 100 });
     const rows = screen.getAllByRole("option");
     // happy-dom has no layout engine. Feed RNW's installed onLayout handlers
     // the same events native Yoga sends, leaving the real ScrollView/ref intact.
@@ -252,6 +269,7 @@ describe("Autocomplete active options", () => {
       __reactLayoutHandler?: (event: unknown) => void;
       getScrollableNode?: () => HTMLElement;
     };
+    layoutSuggestions(field, { width: 160, height: 100 });
     const rows = screen.getAllByRole("option") as LayoutNode[];
     let scroll: LayoutNode | null = screen.getByRole("listbox");
     while (scroll && !scroll.getScrollableNode) scroll = scroll.parentElement;
@@ -290,6 +308,7 @@ describe("Autocomplete active options", () => {
       getScrollableNode?: () => HTMLElement;
       measureLayout: (relative: unknown, callback: (x: number, y: number, width: number, height: number) => void) => void;
     };
+    layoutSuggestions(field, { width: 160, height: 100 });
     const rows = screen.getAllByRole("option") as MeasuredNode[];
     let scroll: MeasuredNode | null = screen.getByRole("listbox") as MeasuredNode;
     while (scroll && !scroll.getScrollableNode) scroll = scroll.parentElement as MeasuredNode | null;
@@ -328,6 +347,7 @@ describe("Autocomplete active options", () => {
     const { rerender } = ui(<Autocomplete options={options} defaultOpen />);
     const field = screen.getByRole("combobox");
     type LayoutNode = HTMLElement & { __reactLayoutHandler?: (event: unknown) => void; getScrollableNode?: () => HTMLElement };
+    layoutSuggestions(field, { width: 160, height: 100 });
     let scroll: LayoutNode | null = screen.getByRole("listbox");
     while (scroll && !scroll.getScrollableNode) scroll = scroll.parentElement;
     const scrollTo = spyOn(scroll!, "scrollTo").mockImplementation(() => {});
@@ -364,6 +384,7 @@ describe("Autocomplete active options", () => {
     ui(<Autocomplete options={options} defaultOpen />);
     const field = screen.getByRole("combobox");
     type LayoutNode = HTMLElement & { __reactLayoutHandler?: (event: unknown) => void; getScrollableNode?: () => HTMLElement };
+    layoutSuggestions(field, { width: 160, height: 100 });
     let scroll: LayoutNode | null = screen.getByRole("listbox");
     while (scroll && !scroll.getScrollableNode) scroll = scroll.parentElement;
     const scrollTo = spyOn(scroll!, "scrollTo").mockImplementation(() => {});
@@ -401,6 +422,7 @@ describe("Autocomplete active options", () => {
       onValueChange={(value) => values.push(value)} onSelect={(value) => selected.push(value)}
       onQueryChange={(value) => queries.push(value)} onOpenChange={(value) => opens.push(value)} />);
     const field = screen.getByRole("combobox") as HTMLInputElement;
+    layoutSuggestions(field);
     key(field, "ArrowUp");
     key(field, "Enter");
     expect(values).toEqual(["Cherry"]);
@@ -427,6 +449,7 @@ describe("Autocomplete active options", () => {
     expect(field.value).toBe("");
     expect(values).toEqual([""]);
     expect(selected).toEqual([]);
+    layoutSuggestions(field);
     key(field, "ArrowDown");
     key(field, "Enter");
     expect(field.value).toBe("Apple");
@@ -449,6 +472,7 @@ describe("Autocomplete active options", () => {
     fireEvent.change(field, { target: { value: "ban" } });
     expect(field.value).toBe("ban");
     expect(values).toEqual([]);
+    layoutSuggestions(field);
     key(field, "ArrowDown");
     key(field, "Enter");
     expect(field.value).toBe("Banana");
@@ -461,6 +485,7 @@ describe("Autocomplete active options", () => {
       onQueryChange: (v: string) => changes.push(v), onValueChange: (v: string) => changes.push(v) };
     const { rerender } = ui(<Autocomplete {...props} />);
     const field = screen.getByRole("combobox") as HTMLInputElement;
+    layoutSuggestions(field);
     key(field, "ArrowDown");
     rerender(themed(<Autocomplete {...props} disabled />));
     expect(field.getAttribute("aria-expanded")).toBe("false");
@@ -476,6 +501,7 @@ describe("Autocomplete active options", () => {
     expect(changes).toEqual([]);
     expect(field.value).toBe("Apple");
     rerender(themed(<Autocomplete {...props} />));
+    layoutSuggestions(field);
     expect(field.getAttribute("aria-expanded")).toBe("true");
     expect(active(field)).toBeNull();
     key(field, "ArrowDown");
@@ -519,6 +545,7 @@ for (const composition of [{ isComposing: true }, { keyCode: 229 }]) {
       </Form>);
       const field = screen.getByRole("combobox");
       key(field, "ArrowDown");
+      layoutSuggestions(field);
       const initial = active(field);
       for (const value of ["ArrowDown", "ArrowUp", "Home", "End", "Enter", "Escape"]) {
         key(field, value, composition);
@@ -550,6 +577,14 @@ for (const hosted of [false, true]) {
         ui(hosted ? <OverlayProvider>{form}</OverlayProvider> : form);
         const field = screen.getByRole("combobox");
         focus(field);
+        if (hosted) {
+          let list: HTMLElement | null = null;
+          await waitFor(() => {
+            list = document.getElementById(field.getAttribute("aria-controls")!);
+            expect(list).not.toBeNull();
+          });
+          layoutHostedEntrance(list!, { width: 160, height: 144 });
+        } else layoutSuggestions(field);
         await screen.findByRole("listbox");
         key(field, "ArrowDown");
         key(field, "ArrowDown");
@@ -580,6 +615,7 @@ it("preserves child Escape ownership, query, and focus before a second Escape cl
   fireEvent.click(screen.getByRole("button", { name: "Edit fruit" }));
   const field = screen.getByRole("combobox") as HTMLInputElement;
   focus(field);
+  layoutSuggestions(field);
   key(field, "ArrowDown");
   key(field, "Escape");
   expect(field.value).toBe("a");

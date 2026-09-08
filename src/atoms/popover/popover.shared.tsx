@@ -1,5 +1,5 @@
 import { EscapeLayerProvider, useEscapeLayer } from "../../style/escape-layer.js";
-import { useRef, useState, type ReactNode } from "react";
+import { useCallback, useContext, useEffect, useRef, useState, type ReactNode, type RefObject } from "react";
 import { type Role } from "react-native";
 import { View, Text, useTheme, GlassSurface, AnchoredOverlay, useOverlayHost, useMeasuredWidth, usePopoverFocus, type StyleProp, type ViewStyle } from "../../style/index.js";
 import { Button } from "../button/button.js";
@@ -7,6 +7,28 @@ import { type PopoverSkin, type Placement } from "./popover.styles.js";
 import * as s from "./popover.styles.js";
 import { useOverlayAnchor } from "../../style/anchored-overlay.js";
 import type { ColorTokens } from "../../style/tokens.js";
+import { EntranceReadinessContext } from "../../style/entrance-readiness.js";
+
+function PopoverFocusPanel({ focusRef, children }: { focusRef: RefObject<View | null>; children: ReactNode }) {
+  const ready = useContext(EntranceReadinessContext);
+  const node = useRef<View | null>(null);
+  const [attachment, setAttachment] = useState(0);
+  const attach = useCallback((next: View | null) => {
+    node.current = next;
+    if (next === null) focusRef.current = null;
+    else setAttachment(version => version + 1);
+  }, [focusRef]);
+
+  useEffect(() => {
+    // The controller captures the opener on open, then focuses this same host
+    // once its entrance and enclosing overlays have committed their layout.
+    // Keep an attached session across a rehold: clearing it would restore focus
+    // to the trigger during a refit. Actual host detachment still clears above.
+    if (ready && node.current) focusRef.current = node.current;
+  }, [ready, attachment, focusRef]);
+
+  return <View ref={attach} tabIndex={-1} role={"dialog" as Role}>{children}</View>;
+}
 
 function PopoverArrow({ skin, tokens, placement }: { skin: PopoverSkin; tokens: ColorTokens; placement: Placement }) {
   const { side, centerX, cardWidth } = useOverlayAnchor();
@@ -202,9 +224,9 @@ export function createPopover(skin: PopoverSkin) {
           {/* A focusable (tabIndex -1) container so opening the popover moves focus
               here and closing restores it to the trigger (usePopoverFocus). role
               "dialog" pairs with the trigger's aria-haspopup="dialog". */}
-          <View ref={panelRef} tabIndex={-1} role={"dialog" as Role}>
+          <PopoverFocusPanel focusRef={panelRef}>
             {panelBody}
-          </View>
+          </PopoverFocusPanel>
         </EscapeLayerProvider>
         </AnchoredOverlay>
       </View>

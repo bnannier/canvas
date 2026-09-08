@@ -13,6 +13,7 @@ import { Drawer } from "../src/organisms/drawer/drawer.tsx";
 import { Button } from "../src/atoms/button/button.tsx";
 import { OverlayProvider } from "../src/style/portal.tsx";
 import { ThemeProvider } from "../src/style/theme.tsx";
+import { layoutHostedEntrance } from "./entrance-layout.ts";
 
 let measure: ReturnType<typeof spyOn>;
 beforeEach(() => {
@@ -71,6 +72,12 @@ it("the unnamed backdrop is excluded from focus and accessibility while outside 
     <Dropdown trigger="Actions" items={[{ label: "Archive" }]} onOpenChange={(next) => changes.push(next)} />
   </OverlayProvider></ThemeProvider>);
   fireEvent.click(screen.getByRole("button", { name: "Actions" }));
+  let menu: Element | null = null;
+  await waitFor(() => {
+    menu = container.querySelector('[role="menu"]');
+    expect(menu).not.toBeNull();
+  });
+  layoutHostedEntrance(menu!, { width: 240, height: 48 });
   await screen.findByRole("menuitem", { name: "Archive" });
   const outlet = [...container.querySelectorAll("div")].find((node) => getComputedStyle(node).zIndex === "1000")!;
   const backdrop = [...outlet.children].find((node) => {

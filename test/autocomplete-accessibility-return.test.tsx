@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, mock, spyOn } from "bun:test";
-import { act, cleanup, fireEvent, render, renderHook, screen } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, renderHook, screen, waitFor } from "@testing-library/react";
 import { StrictMode, createRef, useState, type ReactNode, type Ref } from "react";
 import { AccessibilityInfo, Platform, type AccessibilityActionEvent, type AccessibilityProps, type TextInput } from "react-native";
 import { Autocomplete } from "../src/atoms/autocomplete/autocomplete.tsx";
@@ -7,6 +7,7 @@ import { Input } from "../src/atoms/input/input.tsx";
 import { Form } from "../src/molecules/form/form.tsx";
 import { OverlayProvider } from "../src/style/portal.tsx";
 import { ThemeProvider } from "../src/style/theme.tsx";
+import { layoutEntrances, layoutHostedEntrance } from "./entrance-layout.ts";
 import { useAccessibilityReturn } from "../src/style/use-accessibility-return.tsx";
 
 afterEach(cleanup);
@@ -66,6 +67,14 @@ for (const runtime of ["ios", "android"] as const) {
         expect(ref.current).toBe(field as unknown as TextInput);
         act(() => field.focus());
         fireEvent.change(field, { target: { value: "Ap" } });
+        if (hosted) {
+          let list: HTMLElement | null = null;
+          await waitFor(() => {
+            list = document.getElementById(field.getAttribute("aria-controls")!);
+            expect(list).not.toBeNull();
+          });
+          layoutHostedEntrance(list!, { width: 320, height: 96 });
+        } else layoutEntrances(document.body, { width: 320, height: 96 });
         const option = await screen.findByRole("option", { name: "Pineapple" });
         const props = actions.at(-1)!;
         if (runtime === "android") {
@@ -121,9 +130,11 @@ for (const runtime of ["ios", "android"] as const) {
     const { rerender } = render(view());
     const field = screen.getByRole("combobox");
     act(() => field.focus());
+    layoutEntrances(document.body, { width: 320, height: 96 });
     fireEvent.click(screen.getByRole("option", { name: "Apple" }));
     expect(send).not.toHaveBeenCalled();
     rerender(view(true));
+    layoutEntrances(document.body, { width: 320, height: 96 });
     rerender(view(false));
     expect(send).not.toHaveBeenCalled();
   }));
@@ -134,6 +145,7 @@ for (const runtime of ["ios", "android"] as const) {
       value="Apple" query="" onSelect={(value) => selected.push(value)} onOpenChange={() => {}} />);
     const { rerender } = render(view(true));
     act(() => screen.getByRole("combobox").focus());
+    layoutEntrances(document.body, { width: 320, height: 96 });
     const action = actions.at(-1)!;
     act(() => activate(runtime, action));
     expect(selected).toEqual(["Apple"]);
@@ -160,6 +172,7 @@ for (const runtime of ["ios", "android"] as const) {
       }
       render(themed(<Fixture />));
       act(() => screen.getByRole("combobox").focus());
+      layoutEntrances(document.body, { width: 320, height: 96 });
       act(() => activate(runtime, actions.at(-1)!));
       expect(selections).toEqual(["Apple"]);
       expect(send).not.toHaveBeenCalled();
@@ -171,9 +184,11 @@ for (const runtime of ["ios", "android"] as const) {
     const selected: string[] = [];
     render(themed(<Autocomplete label="Fruit" options={["Apple"]} onSelect={(value) => selected.push(value)} />));
     act(() => screen.getByRole("combobox").focus());
+    layoutEntrances(document.body, { width: 320, height: 96 });
     const stale = actions.at(-1)!;
     fireEvent.click(screen.getByRole("button", { name: "Toggle options" }));
     fireEvent.click(screen.getByRole("button", { name: "Toggle options" }));
+    layoutEntrances(document.body, { width: 320, height: 96 });
     act(() => activate(runtime, stale));
     expect(selected).toEqual([]);
     expect(send).not.toHaveBeenCalled();
@@ -185,6 +200,7 @@ for (const runtime of ["ios", "android"] as const) {
       onSelect={(value) => selected.push(value)} />));
     expect(send).not.toHaveBeenCalled();
     const field = screen.getByRole("combobox");
+    layoutEntrances(document.body, { width: 320, height: 144 });
     const list = screen.getByRole("listbox");
     const pineapple = screen.getByRole("option", { name: "Pineapple" });
     act(() => field.focus());
@@ -202,6 +218,7 @@ for (const runtime of ["ios", "android"] as const) {
     const selected: string[] = [];
     render(themed(<Autocomplete label="Fruit" defaultOpen options={["Apple"]} onSelect={(value) => selected.push(value)} />));
     const field = screen.getByRole("combobox");
+    layoutEntrances(document.body, { width: 320, height: 48 });
     expect(document.activeElement).not.toBe(field);
     act(() => activate(runtime, actions.at(-1)!));
     expect(selected).toEqual(["Apple"]);

@@ -9,6 +9,7 @@ import { Dialog } from "../src/organisms/dialog/dialog.tsx";
 import { OverlayProvider, Portal } from "../src/style/portal.tsx";
 import { ThemeProvider } from "../src/style/theme.tsx";
 import { useDialogFocus, usePopoverFocus } from "../src/style/use-dialog-focus.ts";
+import { layoutHostedEntrance } from "./entrance-layout.ts";
 
 afterEach(cleanup);
 const themed = (node: ReactNode) => <ThemeProvider>{node}</ThemeProvider>;
@@ -49,16 +50,22 @@ describe("hosted panel focus", () => {
   }
 
   it("moves focus after a measured Popover mounts, leaves Tab free and restores its trigger", async () => {
-    const measure = spyOn(Element.prototype, "getBoundingClientRect").mockReturnValue({
-      x: 10, y: 20, width: 160, height: 32,
-      top: 20, left: 10, right: 170, bottom: 52, toJSON: () => ({}),
-    } as DOMRect);
+    const measure = spyOn(Element.prototype, "getBoundingClientRect").mockImplementation(function (this: Element) {
+      // The provider occupies a full page; only the trigger is 160 by 32.
+      const outlet = getComputedStyle(this).zIndex === "1000";
+      const [x, y, width, height] = outlet ? [0, 0, 640, 800] : [10, 20, 160, 32];
+      return { x, y, width, height, top: y, left: x, right: x + width, bottom: y + height, toJSON: () => ({}) };
+    });
     try {
       ui(<OverlayProvider><Popover trigger="Details" title="Information" actionLabel="Done" /></OverlayProvider>);
       const trigger = screen.getByRole("button", { name: "Details" });
       focus(trigger);
       fireEvent.click(trigger);
-      const panel = await screen.findByRole("dialog");
+      // The portal attaches concealed content first. Deliver the native card,
+      // scrollport and content layouts before querying or operating its controls.
+      const mountedPanel = await screen.findByRole("dialog", { hidden: true });
+      layoutHostedEntrance(mountedPanel, { width: 260, height: 120 }, { width: 226, height: 86 });
+      const panel = screen.getByRole("dialog");
       await waitFor(() => expect(document.activeElement === panel).toBe(true));
       const action = screen.getByRole("button", { name: "Done" });
       focus(action);

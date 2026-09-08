@@ -15,15 +15,19 @@ import { Drawer } from "../src/organisms/drawer/drawer.tsx";
 import { OverlayProvider } from "../src/style/portal.tsx";
 import { ThemeProvider } from "../src/style/theme.tsx";
 import { useEscapeKey } from "../src/style/use-escape-key.ts";
+import { layoutEntrance, layoutHostedEntrance } from "./entrance-layout.ts";
 
 let measure: ReturnType<typeof spyOn>;
 beforeEach(() => {
   // Real AnchoredOverlay waits for nonzero trigger measurements on the hosted
   // path. Supply layout geometry, not a Portal or overlay implementation mock.
-  measure = spyOn(Element.prototype, "getBoundingClientRect").mockReturnValue({
-    x: 10, y: 20, width: 160, height: 32, top: 20, left: 10, right: 170, bottom: 52,
-    toJSON: () => ({}),
-  } as DOMRect);
+  measure = spyOn(Element.prototype, "getBoundingClientRect").mockImplementation(function (this: Element) {
+    const style = getComputedStyle(this);
+    if (style.position === "absolute" && style.zIndex === "1000") {
+      return { x: 0, y: 0, width: 1280, height: 800, top: 0, left: 0, right: 1280, bottom: 800, toJSON: () => ({}) } as DOMRect;
+    }
+    return { x: 10, y: 20, width: 160, height: 32, top: 20, left: 10, right: 170, bottom: 52, toJSON: () => ({}) } as DOMRect;
+  });
 });
 afterEach(() => {
   cleanup();
@@ -41,6 +45,19 @@ const escape = (target: Element | Document = document.body) => {
 };
 const focus = (node: HTMLElement) => act(() => node.focus());
 const items = [{ label: "Rename" }, { label: "Archive" }];
+
+// The fixtures use two 32px rows and 10px of card padding/border. Wait for the
+// hidden structural mount, then supply layout before using accessible queries.
+async function layoutOptions(hosted: boolean, role = "menu", root: ParentNode = document) {
+  const panel = await waitFor(() => {
+    const node = root.querySelector(`[role="${role}"]`);
+    expect(node).not.toBeNull();
+    return node!;
+  });
+  if (hosted) layoutHostedEntrance(panel, { width: 160, height: 74 }, { width: 150, height: 64 });
+  else expect(layoutEntrance(panel, { width: 160, height: 74 })).toBe(true);
+}
+
 
 function NestedMenu({ hosted, initiallyOpen = false, cancelled, menuChanged }: {
   hosted: boolean; initiallyOpen?: boolean; cancelled: () => void; menuChanged: (value: boolean) => void;
@@ -69,6 +86,7 @@ for (const hosted of [false, true]) {
       const menuTrigger = await screen.findByRole("button", { name: "Menu" });
       focus(menuTrigger);
       fireEvent.click(menuTrigger);
+      await layoutOptions(hosted);
       const row = await screen.findByRole("menuitem", { name: "Rename" });
       focus(row);
       escape(row);
@@ -88,6 +106,7 @@ for (const hosted of [false, true]) {
       const menus: boolean[] = [];
       ui(<StrictMode><NestedMenu hosted={hosted} initiallyOpen cancelled={() => cancelled.push("parent")}
         menuChanged={(next) => menus.push(next)} /></StrictMode>);
+      await layoutOptions(hosted);
       await screen.findByRole("menuitem", { name: "Rename" });
       escape();
       await waitFor(() => expect(screen.queryByRole("menu")).toBeNull());
@@ -112,6 +131,9 @@ it("preserves ancestry through two nested hosted panels", async () => {
     </Dialog></OverlayProvider>;
   }
   ui(<Tree />);
+  const details = await screen.findByText("Details");
+  layoutHostedEntrance(details, { width: 320, height: 120 }, { width: 286, height: 86 });
+  await layoutOptions(true, "listbox");
   await screen.findByRole("option", { name: /Two/ });
   escape();
   await waitFor(() => expect(screen.queryByRole("option", { name: /Two/ })).toBeNull());
@@ -123,23 +145,27 @@ it("preserves ancestry through two nested hosted panels", async () => {
   expect(closed).toEqual(["select", "popover", "dialog"]);
 });
 
-it("orders siblings by activation, supports reopening, and drops unmounted owners", () => {
+it("orders siblings by activation, supports reopening, and drops unmounted owners", async () => {
   const closed: string[] = [];
   function Siblings({ second = true }: { second?: boolean }) {
-    return <><Dropdown trigger="First" items={items} onOpenChange={(next) => { if (!next) closed.push("first"); }} />
-      {second ? <Dropdown trigger="Second" items={items} onOpenChange={(next) => { if (!next) closed.push("second"); }} /> : null}</>;
+    return <><Dropdown testID="first-menu" trigger="First" items={items} onOpenChange={(next) => { if (!next) closed.push("first"); }} />
+      {second ? <Dropdown testID="second-menu" trigger="Second" items={items} onOpenChange={(next) => { if (!next) closed.push("second"); }} /> : null}</>;
   }
   const view = ui(<Siblings />);
   const first = screen.getByRole("button", { name: "First" });
   const second = screen.getByRole("button", { name: "Second" });
   fireEvent.click(first);
+  await layoutOptions(false, "menu", screen.getByTestId("first-menu"));
   fireEvent.click(second);
+  await layoutOptions(false, "menu", screen.getByTestId("second-menu"));
   escape();
   expect(closed).toEqual(["second"]);
   fireEvent.click(second);
+  await layoutOptions(false, "menu", screen.getByTestId("second-menu"));
   escape();
   expect(closed).toEqual(["second", "second"]);
   fireEvent.click(second);
+  await layoutOptions(false, "menu", screen.getByTestId("second-menu"));
   view.rerender(themed(<Siblings second={false} />));
   escape();
   expect(closed).toEqual(["second", "second", "first"]);
@@ -148,6 +174,7 @@ it("orders siblings by activation, supports reopening, and drops unmounted owner
 it("does not let held Escape repeats dismiss the parent after the child closes", async () => {
   const closed: string[] = [];
   ui(<NestedMenu hosted={false} initiallyOpen cancelled={() => closed.push("parent")} menuChanged={() => {}} />);
+  await layoutOptions(false);
   fireEvent.keyDown(document.body, { key: "Escape" });
   await waitFor(() => expect(screen.queryByRole("menu")).toBeNull());
   fireEvent.keyDown(document.body, { key: "Escape", repeat: true });
@@ -183,13 +210,14 @@ it("retains the public hook signature, fresh callbacks and cleanup", () => {
   expect(closed).toEqual(["current"]);
 });
 
-it("delegates TextInput Escape from Autocomplete, preserving its query and the parent", () => {
+it("delegates TextInput Escape from Autocomplete, preserving its query and the parent", async () => {
   const closed: string[] = [];
   const queries: string[] = [];
   ui(<Dialog open onCancel={() => closed.push("parent")}><Autocomplete options={["Apple", "Apricot"]}
     onQueryChange={(next) => queries.push(next)} /></Dialog>);
   const field = screen.getByRole("combobox");
   fireEvent.change(field, { target: { value: "Ap" } });
+  await layoutOptions(false, "listbox");
   expect(screen.getByRole("option", { name: /Apple/ })).toBeTruthy();
   escape(field);
   expect(screen.queryByRole("listbox")).toBeNull();
@@ -224,6 +252,7 @@ it("does not let a child's consumed keyup close its Drawer after the child unmou
     </Drawer>;
   }
   ui(<Tree />);
+  await layoutOptions(true);
   fireEvent.keyDown(await screen.findByRole("menuitem", { name: "Rename" }), { key: "Escape" });
   await waitFor(() => expect(screen.queryByRole("menu")).toBeNull());
   fireEvent.keyUp(screen.getByText("Drawer body"), { key: "Escape" });
@@ -241,6 +270,7 @@ it("keeps a pending Escape consumed when another key overlaps it", async () => {
     </Drawer>;
   }
   ui(<Tree />);
+  await layoutOptions(true);
   fireEvent.keyDown(await screen.findByRole("menuitem", { name: "Rename" }), { key: "Escape" });
   await waitFor(() => expect(screen.queryByRole("menu")).toBeNull());
   const body = screen.getByText("Drawer body");
@@ -275,8 +305,9 @@ it("supports a standalone ActionSheet's keyup-only request", () => {
   expect(closed).toEqual([false]);
 });
 
-it("does not carry a consumed key from an unmounted root into a new Modal", () => {
+it("does not carry a consumed key from an unmounted root into a new Modal", async () => {
   const previous = ui(<Dropdown open trigger="Old menu" items={items} />);
+  await layoutOptions(false);
   fireEvent.keyDown(document.body, { key: "Escape" });
   previous.unmount();
   const closed: boolean[] = [];

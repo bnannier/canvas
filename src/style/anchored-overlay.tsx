@@ -33,6 +33,7 @@ import { Portal, useOverlayHost, type OverlayHost } from "./portal.js";
 import { GlassSurface } from "./glass-surface/glass-surface.js";
 import { PlainSurface } from "./glass-surface/glass-surface.shared.js";
 import { Entrance } from "./entrance.js";
+import { EntranceReadinessContext } from "./entrance-readiness.js";
 import { fitOverlayHeight, type OverlaySide } from "./overlay-layout.js";
 import { OverlayScrollContext, OverlayScrollView } from "./overlay-scroll.js";
 
@@ -217,14 +218,16 @@ function OverlayCard({
   const mount = useRef(onMount);
   mount.current = onMount;
   const notified = useRef(false);
+  const entranceReady = useContext(EntranceReadinessContext);
   useEffect(() => {
-    // Focus only after the measured placement is committed. Focusing the
-    // initial uncapped card can scroll its ancestor before collision fitting.
-    if (ready && !notified.current) {
+    // The owner's fitted placement and Entrance's own layout must both be
+    // committed before focus enters the card. Ancestor readiness propagates
+    // through nested entrances without replaying a notified opening.
+    if (ready && entranceReady && !notified.current) {
       notified.current = true;
       mount.current?.();
     }
-  }, [ready]);
+  }, [ready, entranceReady]);
   // An opaque card takes the kit's plain surface: one View wearing the skin's
   // style untouched, which is byte for byte what GlassSurface itself renders in
   // solid mode, so an option list looks and lays out the same under either

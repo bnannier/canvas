@@ -10,6 +10,7 @@ import { Drawer as AndroidDrawer } from "../src/organisms/drawer/drawer.android.
 import { GlassBlurTargetContext, GlassWindowBlurTargetContext } from "../src/style/glass-surface/glass-surface.shared.tsx";
 import { OverlayProvider, Portal, useOverlayHost, type OverlayHost } from "../src/style/portal.tsx";
 import { ThemeProvider } from "../src/style/theme.tsx";
+import { layoutHostedEntrance } from "./entrance-layout.ts";
 
 const rect = (x: number, y: number, width: number, height: number): DOMRect => ({
   x, y, width, height, left: x, top: y, right: x + width, bottom: y + height, toJSON: () => ({}),
@@ -53,6 +54,17 @@ const trackMounts = (host: OverlayHost) => {
   return spy;
 };
 
+// Dropdown and Select use their web entries in these window-host tests. Report
+// their 32px rows plus card chrome through all four native layout boundaries.
+async function layoutOptions(role: "menu" | "listbox", rows: number) {
+  const panel = await waitFor(() => {
+    const node = document.querySelector(`[role="${role}"]`);
+    expect(node).not.toBeNull();
+    return node!;
+  });
+  layoutHostedEntrance(panel, { width: 160, height: rows * 32 + 10 }, { width: 150, height: rows * 32 });
+}
+
 describe("Drawer window overlay host", () => {
   for (const [platform, Component, edge] of [
     ["web", Drawer, { left: true }],
@@ -77,6 +89,7 @@ describe("Drawer window overlay host", () => {
       );
       const appMount = trackMounts(hosts.app);
       fireEvent.click(screen.getByRole("button", { name: "Actions" }));
+      await layoutOptions("menu", 1);
       const row = await screen.findByRole("menuitem", { name: "Archive" });
       const modal = screen.getByTestId("drawer-window");
       expect(appMount).not.toHaveBeenCalled();
@@ -103,6 +116,7 @@ describe("Drawer window overlay host", () => {
       expect(drawerChanges).toEqual([]);
 
       fireEvent.click(screen.getByText("Choose a size"));
+      await layoutOptions("listbox", 2);
       const option = await screen.findByRole("option", { name: "Large" });
       expect(modal.contains(option)).toBe(true);
       expect(appMount).not.toHaveBeenCalled();
@@ -111,6 +125,7 @@ describe("Drawer window overlay host", () => {
       expect(selected).toEqual(["Archive", "Large"]);
 
       fireEvent.click(screen.getByRole("button", { name: "Actions" }));
+      await layoutOptions("menu", 1);
       await screen.findByRole("menuitem", { name: "Archive" });
       const backdrop = [...outlet.children].find((child) => getComputedStyle(child).bottom === "0px")!;
       fireEvent.click(backdrop);
@@ -143,6 +158,7 @@ describe("Drawer window overlay host", () => {
     const appMount = trackMounts(hosts.app);
     const outerMount = trackMounts(hosts.outer);
     fireEvent.click(screen.getByRole("button", { name: "Inner actions" }));
+    await layoutOptions("menu", 1);
     const row = await screen.findByRole("menuitem", { name: "Rename" });
     expect(new Set(Object.values(hosts)).size).toBe(3);
     expect(screen.getByTestId("inner-window").contains(row)).toBe(true);
