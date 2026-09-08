@@ -11,6 +11,7 @@ import { installSmokeFixtures } from "../tools/native/fixtures.mjs";
 import { createEvidenceDirectory, recordNativeAttempt, successfulMaestroReport } from "../tools/native/evidence.mjs";
 import { createCarouselContinuation, createCarouselMeasurementCommands, readCarouselEvidence } from "../tools/native/gesture.mjs";
 import { verifyNativeFlow } from "./verify-native-flow.mjs";
+import { observeIosBundleEvidence } from "../tools/native/ios-bundle-evidence.mjs";
 
 const repo = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const read = (file) => JSON.parse(fs.readFileSync(file, "utf8"));
@@ -78,6 +79,7 @@ export function buildNativeSmoke(output, platform, device) {
   const { app, identity } = context(output);
   run(app, "node", ["node_modules/expo/bin/cli", "prebuild", "--platform", platform, "--no-install"], identity);
   let binary;
+  let bundleEvidence;
   if (platform === "ios") {
     run(app, "pod", ["install", "--project-directory=ios"], identity);
     const workspaces = fs.readdirSync(path.join(app, "ios")).filter((name) => name.endsWith(".xcworkspace"));
@@ -87,13 +89,16 @@ export function buildNativeSmoke(output, platform, device) {
     run(app, "xcodebuild", ["-workspace", workspace, "-scheme", scheme, "-configuration", "Release", "-sdk", "iphonesimulator",
       "-destination", `id=${device}`, "-derivedDataPath", path.join(output, "ios-build"), "CODE_SIGNING_ALLOWED=NO", "ONLY_ACTIVE_ARCH=YES", "build"], identity);
     binary = path.join(output, "ios-build/Build/Products/Release-iphonesimulator", `${scheme}.app`);
+    const buildEnvironment = env(identity);
+    bundleEvidence = observeIosBundleEvidence({ app, binary, output: path.join(output, "ios-bundle-evidence"), identity,
+      smokeFlag: buildEnvironment.EXPO_PUBLIC_CANVAS_SMOKE, identityProvided: Boolean(buildEnvironment.CANVAS_SMOKE_IDENTITY) });
   } else {
     run(path.join(app, "android"), "./gradlew", [":app:assembleRelease", "--no-daemon"], identity);
     binary = path.join(app, "android/app/build/outputs/apk/release/app-release.apk");
   }
   if (!fs.existsSync(binary)) throw new Error(`Native release output missing: ${binary}`);
   const digest = platform === "ios" ? fileInventory(binary) : sha256(binary);
-  write(path.join(output, `${platform}-build.json`), { identity, binary, digest });
+  write(path.join(output, `${platform}-build.json`), { identity, binary, digest, ...(bundleEvidence ? { bundleEvidence } : {}) });
   console.log(`Built embedded ${platform} candidate: ${binary}`);
 }
 
@@ -135,7 +140,7 @@ export function testNativeSmoke(output, platform, device, maestro, requestedEvid
     }
     const inputs = ["scripts/native-smoke.mjs", "scripts/verify-native-flow.mjs", "scripts/release.mjs",
       "tools/native/candidate.mjs", "tools/native/evidence.mjs", "tools/native/gesture.mjs", "tools/native/ParseFlow.java", "tools/native/maestro.json",
-      "scripts/android-host-diagnostics.mjs", "tools/native/android-host-diagnostics.mjs"];
+      "scripts/android-host-diagnostics.mjs", "tools/native/android-host-diagnostics.mjs", "tools/native/ios-bundle-evidence.mjs"];
     result.testInfrastructure = {
       revision: run(repo, "git", ["rev-parse", "HEAD"], identity, true).trim(),
       dirty: run(repo, "git", ["status", "--porcelain", "--untracked-files=all"], identity, true).trim() !== "",
