@@ -17,6 +17,10 @@ test("docs and native routes consume one maintained public-API fixture body", ()
         if (fixture === "form-autocomplete" && statement.moduleSpecifier.text === "react-native") {
           const bindings = statement.importClause?.namedBindings;
           expect(bindings && ts.isNamedImports(bindings) ? bindings.elements.map((entry) => entry.name.text) : []).toEqual(["Keyboard"]);
+        } else if (fixture === "carousel" && statement.moduleSpecifier.text === "react-native") {
+          const bindings = statement.importClause?.namedBindings;
+          expect(bindings && ts.isNamedImports(bindings) ? bindings.elements.map((entry) => entry.name.text) : [])
+            .toEqual(["Dimensions", "I18nManager", "PixelRatio", "Platform", "View"]);
         } else expect(["react", "@nannier-com/canvas"]).toContain(statement.moduleSpecifier.text);
       }
     }
