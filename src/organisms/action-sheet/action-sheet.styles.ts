@@ -7,7 +7,7 @@ import { type ColorTokens, alpha, shadow, surfaceRipple } from "../../style/inde
 // paints the active material over its own `glass-tint`; the `popover` token itself
 // is opaque in both modes and glass never rewrites it). ActionSheet is a
 // platform-forward "Full" treatment: the BRAND survives on every platform (the
-// indigo `primary` action tint and the `destructive` red), only the native SHAPE,
+// semantic foreground labels and the `destructive` red), only the native SHAPE,
 // structure, sizing, type, and press feedback change per OS:
 //
 //   iOS (iOS 27 Liquid Glass action sheet): ONE container anchored to the bottom —
@@ -28,8 +28,8 @@ import { type ColorTokens, alpha, shadow, surfaceRipple } from "../../style/inde
 //     sheet. The stack is capped at 640 and centered so it never renders edge-to-edge
 //     on a wide desktop window. Press = opacity dim.
 
-// The destructive tint and brand action tint are read from tokens so light/dark
-// (and glass) keep working; the skin never hard-codes the iOS system blue.
+// Ordinary action labels use the surface foreground for readable text in both
+// schemes. Destructive actions retain their semantic red.
 
 // How the Cancel affordance is structured. "separateCard" (iOS/web) renders a
 // second rounded card below the actions card holding a bold Cancel row;
@@ -118,7 +118,7 @@ export const scrimContent: ViewStyle = { zIndex: 1 };
 // ---------- Web: the established Canvas look (= the iOS action sheet) ----------
 // No web library ships an action sheet, so the kit's web look is the iOS idiom:
 // two separated rounded-14 cards anchored to the bottom, a centered gray header,
-// hairline-divided ~17pt brand action rows, a red destructive label, and a
+// hairline-divided ~17pt foreground action rows, a red destructive label, and a
 // separate bold Cancel card. Press = opacity dim.
 const WEB_RADIUS = 14;
 // Cap the bottom stack so it never spans a wide desktop window edge-to-edge (an
@@ -145,11 +145,11 @@ export const webSkin: ActionSheetSkin = {
     lineHeight: 22,
     fontWeight: "400",
     textAlign: "center",
-    color: destructive ? t.destructive : t.primary,
+    color: destructive ? t.destructive : t["popover-foreground"],
     opacity: disabled ? 0.4 : 1,
   }),
   cancelRow: { minHeight: 57, alignItems: "center", justifyContent: "center", paddingHorizontal: 16 },
-  cancelLabel: (t) => ({ fontSize: 17, lineHeight: 22, fontWeight: "600", textAlign: "center", color: t.primary }),
+  cancelLabel: (t) => ({ fontSize: 17, lineHeight: 22, fontWeight: "600", textAlign: "center", color: t["popover-foreground"] }),
   pressedOpacity: 0.8,
   ripple: null,
 };

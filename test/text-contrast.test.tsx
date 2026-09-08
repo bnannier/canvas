@@ -9,6 +9,7 @@ import * as alertSkins from "../src/molecules/alert/alert.styles.ts";
 import { colorsByScheme, type ColorTokens } from "../src/style/tokens.ts";
 import { androidSkin, iosSkin, webSkin } from "../src/atoms/button/button.styles.ts";
 import { blockDeclarations, cssColorToHex } from "../tools/tokens/css-tokens.ts";
+import { webSkin as actionSheetSkin } from "../src/organisms/action-sheet/action-sheet.styles.ts";
 
 afterEach(cleanup);
 
@@ -44,6 +45,16 @@ describe("normal text contrast (WCAG 1.4.3)", () => {
   for (const scheme of ["light", "dark"] as const) {
     const tokens = colorsByScheme[scheme];
     const declarations = blockDeclarations(css, scheme === "light" ? ":root" : ".dark").decls;
+    it(`keeps every resting ${scheme} web ActionSheet action and Cancel readable`, () => {
+      const fill = actionSheetSkin.actionsCard(tokens).backgroundColor as string;
+      const cancelFill = actionSheetSkin.cancelCard!(tokens).backgroundColor as string;
+      for (const destructive of [false, true]) {
+        const color = actionSheetSkin.rowLabel(tokens, destructive, false).color as string;
+        expect(contrast(fill, color)).toBeGreaterThanOrEqual(4.5);
+      }
+      expect(contrast(cancelFill, actionSheetSkin.cancelLabel(tokens).color as string)).toBeGreaterThanOrEqual(4.5);
+    });
+
     for (const [fill, foreground] of PAIRS) {
       it(`keeps ${scheme} ${foreground} at 4.5:1 on its fill in both RN and CSS`, () => {
         expect(contrast(tokens[fill], tokens[foreground])).toBeGreaterThanOrEqual(4.5);
