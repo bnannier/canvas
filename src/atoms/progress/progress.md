@@ -2,10 +2,12 @@
 
 A rounded bar that reports how far a task has gotten, or that work is underway. The bar renders at the standard field width (320px) and shrinks inside narrower parents; `narrow`, `wide`, and `block` adjust its measure.
 
+Name the task with string `children`, or pass `accessibilityLabel` when the visible title is omitted or contains rich content.
+
 ## Usage
 
 ```tsx
-<Progress value={0.6} />
+<Progress accessibilityLabel="Uploading files" value={0.6} />
 ```
 
 ## Variants
@@ -26,25 +28,25 @@ progress fills smoothly. (Reduce Motion snaps instead.)
 ### Determinate
 
 ```tsx
-<Progress value={0.4} />
+<Progress accessibilityLabel="Uploading files" value={0.4} />
 ```
 
 ### Indeterminate
 
 ```tsx
-<Progress indeterminate />
+<Progress accessibilityLabel="Connecting" indeterminate />
 ```
 
 ### Small
 
 ```tsx
-<Progress small value={0.6} />
+<Progress small accessibilityLabel="Uploading files" value={0.6} />
 ```
 
 ### Large
 
 ```tsx
-<Progress large value={0.6} />
+<Progress large accessibilityLabel="Uploading files" value={0.6} />
 ```
 
 ### Warning
@@ -91,7 +93,7 @@ the state with copy, since the tone carries no new accessible value on its own.
 ```tsx
 <View style={{ gap: 8 }}>
   <Text style={{ fontSize: 14, lineHeight: 20, color: tokens.foreground }}>Section</Text>
-  <Progress value={0.5} />
+  <Progress accessibilityLabel="Section progress" value={0.5} />
 </View>
 ```
 
@@ -108,7 +110,7 @@ the state with copy, since the tone carries no new accessible value on its own.
 ```tsx
 <View style={{ gap: 8 }}>
   <Text style={{ fontSize: 14, lineHeight: 20, color: tokens["muted-foreground"] }}>Step 3 of 4</Text>
-  <Progress indeterminate />
+  <Progress accessibilityLabel="Connecting" indeterminate />
 </View>
 ```
 

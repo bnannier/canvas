@@ -70,6 +70,9 @@ export interface SelectProps extends FieldWidthProps {
    * the menu opens or a value is selected). The label names the field for a11y.
    */
   label?: string;
+  /** Accessible purpose for the trigger and option list. Overrides the visible
+   * label for assistive technology; otherwise the label or placeholder names them. */
+  accessibilityLabel?: string;
   /**
    * Places the `label` as a LEADING cluster INSIDE the trigger row (a toolbar-style
    * labeled select) instead of the persistent above/floating placement. Takes effect
@@ -79,9 +82,8 @@ export interface SelectProps extends FieldWidthProps {
    */
   inline?: boolean;
   /**
-   * Marks the field as required: appends a destructive "*" to the label (hidden
-   * from the accessible name) and sets aria-required on the trigger. Takes effect
-   * only alongside `label`.
+   * Marks the field as required and announces "required" with the trigger name.
+   * A visible label also gets a decorative destructive "*".
    */
   required?: boolean;
   /** Renders a leading globe glyph inside the trigger, indented so the value clears it. */
@@ -142,6 +144,7 @@ export function createSelect(skin: SelectSkin) {
     const widthCap = useFieldWidth(props);
     // One collision-free id for the label so the floated label carries a nativeID.
     const labelId = useId();
+    const listId = `${labelId}-options`;
     // Controlled when `open`/`value` are provided, self-managed otherwise, so a
     // bare <Select options /> opens and picks out of the box (the standard
     // library contract): the trigger opens/closes the list, a select stores the
@@ -190,6 +193,8 @@ export function createSelect(skin: SelectSkin) {
     // select's focus equivalent) OR a value being selected; the trigger's resting
     // placeholder text is hidden while the floating label is the placeholder.
     const hasLabel = label != null && label !== "";
+    const fieldName = props.accessibilityLabel?.trim() || label?.trim() || placeholder.trim() || "Select an option";
+    const triggerName = required ? `${fieldName}, required` : fieldName;
     // `inline` routes the label into the trigger row as a leading cluster; it
     // overrides both the above (iOS/web) and floating (Android) placements, so a
     // toolbar-style labeled select owns its label instead of a hand-composed row.
@@ -231,15 +236,15 @@ export function createSelect(skin: SelectSkin) {
           accessibilityState={{ expanded: open, disabled: !!disabled }}
           aria-expanded={open}
           aria-disabled={!!disabled}
-          // Required is surfaced programmatically (aria-required), omitted when optional.
-          aria-required={required || undefined}
+          aria-haspopup="listbox"
+          aria-controls={open ? listId : undefined}
           // Name the trigger by its label on both channels so a screen reader
           // announces the field's name, not just the selected value/placeholder.
-          accessibilityLabel={hasLabel ? label : undefined}
-          aria-label={hasLabel ? label : undefined}
+          accessibilityLabel={triggerName}
+          aria-label={triggerName}
           // The inline label lives inside this Pressable, so link it by nativeID
           // (RNW forwards aria-labelledby to the DOM) as the trigger's name too.
-          aria-labelledby={inline ? labelId : undefined}
+          aria-labelledby={inline && !props.accessibilityLabel && !required ? labelId : undefined}
         >
           <View
             style={[
@@ -303,7 +308,7 @@ export function createSelect(skin: SelectSkin) {
                 reach them through the card's padding. See src/style/ripple-clip. */}
             <OverlayScrollView style={optionScroll} bounces={false}>
             <RippleClip shape={cornerRadii(skin.panel(tokens))}>
-            <View role={LISTBOX}>
+            <View nativeID={listId} role={LISTBOX} accessibilityLabel={fieldName} aria-label={fieldName} aria-required={required || undefined}>
             {items.map((option, i) => {
               const selected = option.value === value;
               return (

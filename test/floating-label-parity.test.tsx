@@ -86,7 +86,7 @@ describe("Textarea label names the field on every skin", () => {
 });
 
 // --- the required star never pollutes the accessible name -------------------
-describe("required marks aria-required but the name stays the bare label", () => {
+describe("required fields announce their requirement without reading the decorative star", () => {
   it("Autocomplete (android floating)", () => {
     ui(<AutocompleteAndroid label="Assignee" required options={["Ada"]} placeholder="Search…" />);
     // getByLabelText is exact: it only resolves if the name is "Assignee", not "Assignee *".
@@ -94,7 +94,8 @@ describe("required marks aria-required but the name stays the bare label", () =>
   });
   it("Select (android floating)", () => {
     ui(<SelectAndroid label="Region" required options={["EU"]} placeholder="Select a region" />);
-    expect(screen.getByLabelText("Region").getAttribute("aria-required")).toBe("true");
+    // A button cannot expose aria-required. Its name carries the requirement.
+    expect(screen.getByRole("button", { name: "Region, required" }).hasAttribute("aria-required")).toBe(false);
   });
   it("Textarea (ios above)", () => {
     ui(<TextareaIOS label="Description" required placeholder="A few words…" rows={3} />);

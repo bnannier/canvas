@@ -6,7 +6,7 @@ export default function Example(scope: ExampleScope) {
   const { Input, Popover } = scope;
   return (
 <Popover inline title="Rename this project?" actionLabel="Rename">
-  <Input defaultValue="Identity Platform" />
+  <Input label="Project name" defaultValue="Identity Platform" />
 </Popover>
   );
 }

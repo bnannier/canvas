@@ -7,7 +7,7 @@ export default function Example(scope: ExampleScope) {
   return (
 <View style={{ gap: 8 }}>
   <Text style={{ fontSize: 14, lineHeight: 20, color: tokens.foreground }}>Section</Text>
-  <Progress value={0.5} />
+  <Progress accessibilityLabel="Section progress" value={0.5} />
 </View>
   );
 }
