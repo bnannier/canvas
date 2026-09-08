@@ -3,7 +3,7 @@ import { Button, Checkbox, Column, Listbox, Row, Typography } from "@nannier-com
 
 const teams = [{ label: "Backend" }, { label: "Frontend", detail: "Web applications" }, { label: "Design" }];
 
-export function ListboxBody({ controlled = false }: { controlled?: boolean }) {
+export function ListboxBody({ controlled = false, disabled = false }: { controlled?: boolean; disabled?: boolean }) {
   const isControlled = controlled;
   const [single, setSingle] = useState(0);
   const [multi, setMulti] = useState<number[]>([]);
@@ -16,7 +16,7 @@ export function ListboxBody({ controlled = false }: { controlled?: boolean }) {
       <Column relaxed testID="listbox-checks">
         <Column snug>
           <Typography h2>Single selection</Typography>
-          <Listbox bordered items={teams} accessibilityLabel="Primary team" defaultSelected={0}
+          <Listbox bordered items={teams} accessibilityLabel="Primary team" testID="primary-team" defaultSelected={0} disabled={disabled}
             selected={isControlled ? single : undefined}
             onChange={(next) => {
               setSingle(Array.isArray(next) ? next[0] : next);
@@ -29,6 +29,7 @@ export function ListboxBody({ controlled = false }: { controlled?: boolean }) {
           <Typography h2>Multiple selections</Typography>
           <Button ghost small>Before teams</Button>
           <Listbox bordered multi items={teams} accessibilityLabel="Project teams" testID="project-teams"
+            disabled={disabled}
             selected={isControlled ? multi : undefined}
             onChange={(next) => {
               setMulti(Array.isArray(next) ? next : [next]);

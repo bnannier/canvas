@@ -104,6 +104,62 @@ name: Sealed Canvas native candidate
 - assertVisible:
     id: ref-attached
     text: 'Attached: 6'
+# Exercise an unchecked Radio before the other remounted controls. These are
+# ordinary taps; spoken-feedback clickability is a separate manual journey.
+- scrollUntilVisible:
+    element:
+      text: Weekly
+    direction: DOWN
+- tapOn:
+    text: Weekly
+    retryTapIfNoChange: false
+- scrollUntilVisible:
+    element:
+      id: ref-changes
+    direction: UP
+- assertVisible:
+    id: ref-changes
+    text: 'Changes: 1'
+- scrollUntilVisible:
+    element:
+      text: Disable controls
+    direction: UP
+- tapOn: Disable controls
+- scrollUntilVisible:
+    element:
+      id: ref-radio
+    direction: DOWN
+- tapOn:
+    id: ref-radio
+    retryTapIfNoChange: false
+- scrollUntilVisible:
+    element:
+      id: ref-changes
+    direction: UP
+- assertVisible:
+    id: ref-changes
+    text: 'Changes: 1'
+- takeScreenshot: radio-disabled-inert
+- scrollUntilVisible:
+    element:
+      text: Enable controls
+    direction: UP
+- tapOn: Enable controls
+- scrollUntilVisible:
+    element:
+      id: ref-radio
+    direction: DOWN
+- tapOn:
+    id: ref-radio
+    retryTapIfNoChange: false
+- scrollUntilVisible:
+    element:
+      id: ref-changes
+    direction: UP
+- assertVisible:
+    id: ref-changes
+    text: 'Changes: 2'
+- takeScreenshot: radio-changed-once-per-tap
 - scrollUntilVisible:
     element:
       id: ref-checkbox
@@ -122,7 +178,7 @@ name: Sealed Canvas native candidate
     direction: UP
 - assertVisible:
     id: ref-changes
-    text: 'Changes: 2'
+    text: 'Changes: 4'
 - takeScreenshot: refs-remounted-and-interactive
 - openLink: canvas-smoke:///testing/form-autocomplete
 - assertVisible: Form and autocomplete
@@ -152,6 +208,25 @@ name: Sealed Canvas native candidate
     text: '1'
 - openLink: canvas-smoke:///testing/listbox
 - assertVisible: Listbox input checks
+- scrollUntilVisible:
+    element:
+      id: primary-team
+    direction: DOWN
+- tapOn:
+    text: Frontend, Web applications
+    above: Multiple selections
+    retryTapIfNoChange: false
+- scrollUntilVisible:
+    element:
+      id: single-pick-count
+    direction: DOWN
+- assertVisible:
+    id: single-change-count
+    text: 'Changes: 1'
+- assertVisible:
+    id: single-pick-count
+    text: 'Picks: 1'
+- takeScreenshot: listbox-single-selected
 - scrollUntilVisible:
     element:
       id: project-teams
@@ -188,6 +263,125 @@ name: Sealed Canvas native candidate
 - assertVisible:
     id: multi-change-count
     text: 'Changes: 2'
+- assertVisible:
+    id: multi-pick-count
+    text: 'Picks: 2'
+- openLink: canvas-smoke:///testing/listbox?disabled=true
+- assertVisible: Listbox input checks
+- scrollUntilVisible:
+    element:
+      id: primary-team
+    direction: DOWN
+- tapOn:
+    text: Frontend, Web applications
+    above: Multiple selections
+    retryTapIfNoChange: false
+- scrollUntilVisible:
+    element:
+      id: single-pick-count
+    direction: DOWN
+- assertVisible:
+    id: single-change-count
+    text: 'Changes: 0'
+- assertVisible:
+    id: single-pick-count
+    text: 'Picks: 0'
+- scrollUntilVisible:
+    element:
+      id: project-teams
+    direction: DOWN
+- tapOn:
+    text: Frontend, Web applications
+    below: Before teams
+    above: After teams
+    retryTapIfNoChange: false
+- scrollUntilVisible:
+    element:
+      id: multi-pick-count
+    direction: DOWN
+- assertVisible:
+    id: multi-change-count
+    text: 'Changes: 0'
+- assertVisible:
+    id: multi-pick-count
+    text: 'Picks: 0'
+- takeScreenshot: listbox-disabled-inert
+- openLink: canvas-smoke:///testing/tabs
+- assertVisible: Tabs input checks
+- assertVisible:
+    id: tabs-selection
+    text: 'Selected tab: Overview'
+- tapOn:
+    text: Activity
+    retryTapIfNoChange: false
+- assertVisible:
+    id: tabs-selection
+    text: 'Selected tab: Activity'
+- assertVisible:
+    id: tabs-change-count
+    text: 'Changes: 1'
+- tapOn:
+    text: Unavailable
+    retryTapIfNoChange: false
+- assertVisible:
+    id: tabs-selection
+    text: 'Selected tab: Activity'
+- assertVisible:
+    id: tabs-change-count
+    text: 'Changes: 1'
+- takeScreenshot: tabs-inactive-selected-disabled-inert
+- openLink: canvas-smoke:///testing/tabs?disabled=true
+- assertVisible: Tabs input checks
+- tapOn:
+    text: Activity
+    retryTapIfNoChange: false
+- assertVisible:
+    id: tabs-selection
+    text: 'Selected tab: Overview'
+- assertVisible:
+    id: tabs-change-count
+    text: 'Changes: 0'
+- takeScreenshot: tabs-all-disabled-inert
+- openLink: canvas-smoke:///testing/escape-layers?scenario=drawer
+- tapOn: Open drawer
+- assertVisible: Drawer content
+- tapOn: Open menu
+- assertVisible: Archive
+- takeScreenshot: drawer-menu-before-archive
+- tapOn:
+    text: Archive
+    retryTapIfNoChange: false
+- assertNotVisible: Rename
+- assertVisible: Drawer content
+- assertVisible:
+    id: menu-selected
+    text: 'Selected: Archive'
+- assertVisible:
+    id: menu-select-count
+    text: 'Selections: 1'
+- takeScreenshot: drawer-archive-selected-once
+- openLink: canvas-smoke:///testing/escape-layers?scenario=drawer-disabled
+- tapOn: Open drawer
+- tapOn: Open menu
+- assertVisible: Archive
+- tapOn:
+    text: Archive
+    retryTapIfNoChange: false
+- assertVisible: Rename
+- assertVisible: Archive
+# The outside backdrop at the trigger closes the child without selecting.
+- tapOn:
+    text: Open menu
+    retryTapIfNoChange: false
+- assertNotVisible: Rename
+- assertVisible: Drawer content
+- assertVisible:
+    id: menu-selected
+    text: 'Selected: None'
+- assertVisible:
+    id: menu-select-count
+    text: 'Selections: 0'
+- takeScreenshot: drawer-archive-disabled-inert
 - openLink: canvas-smoke:///testing/form-autocomplete?scenario=modal
 - tapOn: Open fruit drawer
 - takeScreenshot: drawer-field-before-keyboard

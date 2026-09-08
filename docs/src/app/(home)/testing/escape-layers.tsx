@@ -7,7 +7,7 @@ export default function EscapeLayersFixture() {
   return (
     <Page>
       <PageHeader title="Overlay keyboard checks" description="Escape closes one layer at a time." />
-      <EscapeLayersBody scenario={scenario} />
+      <EscapeLayersBody key={scenario ?? "default"} scenario={scenario} />
     </Page>
   );
 }

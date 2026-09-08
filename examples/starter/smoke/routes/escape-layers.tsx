@@ -5,5 +5,5 @@ import { EscapeLayersBody } from "../../testing/escape-layers";
 
 export default function EscapeLayersRoute() {
   const { scenario } = useLocalSearchParams<{ scenario?: string }>();
-  return <Screen><Typography h2>Overlay keyboard checks</Typography><EscapeLayersBody scenario={scenario} /></Screen>;
+  return <Screen><Typography h2>Overlay keyboard checks</Typography><EscapeLayersBody key={scenario ?? "default"} scenario={scenario} /></Screen>;
 }

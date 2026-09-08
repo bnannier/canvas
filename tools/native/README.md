@@ -39,10 +39,20 @@ explicit submit must fire once; Listbox row taps must toggle once; and a Drawer
 must host and select its child Autocomplete in the native window.
 
 The shared public-ref fixture checks six attached hosts, positive Slider measurement,
-cleanup and reattachment, and that focus requests do not activate controls. Checkbox
-and Switch taps then exercise their change callbacks. A recorded focus request does
+cleanup and reattachment, and that focus requests do not activate controls. Radio,
+Checkbox and Switch taps then exercise their change callbacks. A recorded focus request does
 not prove native non-text focus or screen-reader focus; those depend on the OS and
 React Native configuration and require their own observed checks.
+
+The flow also selects the second Dropdown row (Archive) over the Drawer editor,
+an unselected single Listbox option, an unchecked multi Listbox row, an inactive
+Tab and an unchecked Radio. It checks identity or state and one callback per
+activation. Disabled Archive, both disabled Listboxes, an individually disabled
+Tab, whole disabled Tabs and a disabled RadioGroup retain their counters. The
+disabled fixture query creates a fresh body, so previous selections cannot leak
+into those checks. These are ordinary native taps, not proof of TalkBack hover
+targeting or accessibility activation. The separate screen-reader protocol uses
+these same controls in both appearances.
 
 Each platform runs the flow in light and dark appearance, verifies the resolved
 theme in diagnostics, and restores the device's prior appearance. It writes
