@@ -13,8 +13,14 @@ export function EscapeLayersBody({ scenario }: { scenario?: string }) {
   const [childCloses, setChildCloses] = useState(0);
   const [queryChanges, setQueryChanges] = useState(0);
   const [commits, setCommits] = useState(0);
+  const [menuSelected, setMenuSelected] = useState("None");
+  const [menuSelections, setMenuSelections] = useState(0);
   const menu = (
-    <Dropdown trigger="Open menu" items={[{ label: "Rename" }, { label: "Archive" }]}
+    <Dropdown trigger="Open menu" items={[{ label: "Rename" }, { label: "Archive", disabled: scenario === "drawer-disabled" }]}
+      onSelect={(item) => {
+        setMenuSelected(item.label);
+        setMenuSelections((count) => count + 1);
+      }}
       open={menuOpen} onOpenChange={(next) => {
         setMenuOpen(next);
         if (!next) setChildCloses((count) => count + 1);
@@ -27,7 +33,7 @@ export function EscapeLayersBody({ scenario }: { scenario?: string }) {
         <Typography testID="child-close-count">{childCloses}</Typography>
         <Typography testID="query-change-count">{queryChanges}</Typography>
         <Typography testID="commit-count">{commits}</Typography>
-        {scenario === "drawer" ? (
+        {scenario === "drawer" || scenario === "drawer-disabled" ? (
           <Drawer trigger="Open drawer" open={drawerOpen} onOpenChange={(next) => {
             setDrawerOpen(next);
             if (!next) setParentCloses((count) => count + 1);
@@ -41,6 +47,8 @@ export function EscapeLayersBody({ scenario }: { scenario?: string }) {
                 onUpdate={() => setCommits((count) => count + 1)} />
               <ActionSheet trigger="Open actions" actions={[{ label: "Share", onPress: () => {} }]}
                 onOpenChange={(next) => { if (!next) setChildCloses((count) => count + 1); }} />
+              <Typography small muted testID="menu-selected">Selected: {menuSelected}</Typography>
+              <Typography small muted testID="menu-select-count">Selections: {menuSelections}</Typography>
             </Column>
           </Drawer>
         ) : (

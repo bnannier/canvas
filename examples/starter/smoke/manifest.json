@@ -6,7 +6,8 @@
     "diagnostics",
     "escape-layers",
     "form-autocomplete",
-    "listbox"
+    "listbox",
+    "tabs"
   ],
   "routes": [
     "_layout",
@@ -15,6 +16,7 @@
     "diagnostics",
     "escape-layers",
     "form-autocomplete",
-    "listbox"
+    "listbox",
+    "tabs"
   ]
 }

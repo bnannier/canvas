@@ -27,7 +27,7 @@ test("docs and native routes consume one maintained public-API fixture body", ()
     const native = readFileSync(resolve(root, `examples/starter/smoke/routes/${fixture}.tsx`), "utf8");
     expect(native).toContain(`../../testing/${fixture}`);
   }
-  for (const fixture of ["form-autocomplete", "listbox", "escape-layers", "control-refs"]) {
+  for (const fixture of ["form-autocomplete", "listbox", "escape-layers", "control-refs", "tabs"]) {
     const docs = readFileSync(resolve(root, `docs/src/app/(home)/testing/${fixture}.tsx`), "utf8");
     expect(docs).toContain(`examples/starter/smoke/fixtures/${fixture}`);
   }
@@ -69,4 +69,27 @@ test("invalid smoke manifest paths fail before creating any app source", () => {
     expect(() => installSmokeFixtures(app)).toThrow("Invalid smoke routes manifest");
     expect(existsSync(join(app, "src"))).toBe(false);
   } finally { rmSync(app, { recursive: true, force: true }); }
+});
+
+test("every native flow link targets a route installed from the reviewed manifest", () => {
+  const manifest = JSON.parse(readFileSync(resolve(root, "examples/starter/smoke/manifest.json"), "utf8"));
+  const source = readFileSync(resolve(root, "tools/native/flows/candidate.yaml"), "utf8");
+  const commands: unknown = Bun.YAML.parse(source.split("\n---\n")[1]!);
+  const routes = new Set<string>();
+  function visit(value: unknown) {
+    if (Array.isArray(value)) value.forEach(visit);
+    else if (value && typeof value === "object") {
+      for (const [key, child] of Object.entries(value)) {
+        if (key === "openLink" && typeof child === "string") {
+          const route = new URL(child).pathname.replace(/^\/testing\//, "");
+          expect(manifest.routes).toContain(route);
+          expect(manifest.fixtures).toContain(route);
+          routes.add(route);
+        }
+        visit(child);
+      }
+    }
+  }
+  visit(commands);
+  expect([...routes].sort()).toEqual([...manifest.fixtures].sort());
 });
