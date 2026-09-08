@@ -157,7 +157,11 @@ export function createSpinner(skin: SpinnerSkin) {
         accessibilityLabel={hasText ? undefined : a11yLabel}
         style={{ flexShrink: 0, width: size, height: size, alignItems: "center", justifyContent: "center" }}
       >
-        {skin.render({ size, color, rotate, tokens })}
+        {/* The shell owns the loading announcement. Some visual renderers, such
+            as RNW's ActivityIndicator, add a progressbar role of their own. */}
+        <View aria-hidden accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
+          {skin.render({ size, color, rotate, tokens })}
+        </View>
       </Animated.View>
     );
 
