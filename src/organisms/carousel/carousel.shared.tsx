@@ -1,10 +1,12 @@
 import { type ReactNode, useCallback, useEffect, useRef, useState } from "react";
 import {
   FlatList,
+  Platform,
   type Insets,
   type LayoutChangeEvent,
   type NativeScrollEvent,
   type NativeSyntheticEvent,
+  type ViewProps,
 } from "react-native";
 import {
   View,
@@ -19,6 +21,7 @@ import {
   type TextStyle,
 } from "../../style/index.js";
 import { Icon } from "../../atoms/icon/icon.js";
+import { useHorizontalScrollFocus } from "../../style/use-scroll-focus.js";
 
 // Shared Carousel shell. The structure (a horizontally paged FlatList of slides
 // with snap paging, optional overlaid prev/next arrows, and a dot indicator
@@ -55,9 +58,7 @@ export interface CarouselSkin {
   /** Android arrow/dot ripple; null on iOS/web. */
   ripple: ((t: ColorTokens) => { color: string; borderless: boolean }) | null;
   /**
-   * Web-only focus-outline reset for the arrow/dot Pressables, so the
-   * react-native-web keyboard-focus blue ring (which a real device never shows)
-   * is suppressed. No-op natively, where `outline*` are not real styles.
+   * @deprecated Retained for skin compatibility. Keyboard focus stays visible.
    */
   focusOutlineReset?: ViewStyle;
 
@@ -82,9 +83,7 @@ export interface CarouselSkin {
    */
   arrowHitSlop?: number | Insets;
   /**
-   * hitSlop padding each dot's touch target out to the platform minimum. Larger
-   * on the cross axis (to reach the 44/48 strip height) than the main axis (kept
-   * near half the inter-dot pitch so adjacent dot targets barely overlap).
+   * @deprecated Retained for skin compatibility. Real dotTarget bounds replace slop.
    */
   dotHitSlop?: number | Insets;
 
@@ -100,6 +99,8 @@ export interface CarouselSkin {
 
   /** The dot strip layout (the centered Row below the slides). */
   dotsRow: (t: ColorTokens) => ViewStyle;
+  /** Real picker bounds. Omit to use the platform minimum. */
+  dotTarget?: ViewStyle;
   /** One indicator dot; `active` widens/tints it to the brand `primary`. */
   dot: (t: ColorTokens, active: boolean) => ViewStyle;
 
@@ -147,7 +148,7 @@ const DEFAULT_ITEMS: CarouselItem[] = [
 // Clamp `i` into [0, count-1], or wrap around when `loop` is set.
 function nextIndex(i: number, count: number, loop: boolean): number {
   if (count <= 0) return 0;
-  if (loop) return (i + count) % count;
+  if (loop) return ((i % count) + count) % count;
   return Math.max(0, Math.min(count - 1, i));
 }
 
@@ -178,7 +179,6 @@ export function createCarousel(skin: CarouselSkin) {
           aria-disabled={disabled}
           style={({ pressed }) => [
             skin.arrow(tokens),
-            skin.focusOutlineReset,
             disabled ? DISABLED_DIM : null,
             skin.pressedOpacity != null && pressed && !disabled ? { opacity: skin.pressedOpacity } : null,
           ]}
@@ -217,15 +217,29 @@ export function createCarousel(skin: CarouselSkin) {
     // Uncontrolled store, seeded once from defaultIndex; ignored when controlled.
     const [internal, setInternal] = useState(() => nextIndex(defaultIndex, count, false));
     const controlled = index !== undefined;
-    const current = controlled ? nextIndex(index!, count, false) : internal;
+    const current = nextIndex(controlled ? index! : internal, count, false);
+    const currentRef = useRef(current);
+    currentRef.current = current;
+    useEffect(() => {
+      if (!controlled && internal !== current) setInternal(current);
+    }, [controlled, internal, current]);
 
     // The measured viewport width. Width math is guarded against this 0 frame:
     // the FlatList renders only once a positive width has been measured.
     const [width, setWidth] = useState(0);
     const listRef = useRef<FlatList<CarouselItem>>(null);
+    const { onContentSizeChange: reportContentSize, ...scrollFocus } = useHorizontalScrollFocus();
+    const [contentWidth, setContentWidth] = useState(0);
+    const commanded = useRef<{ index: number; width: number; count: number } | null>(null);
+    const onContentSizeChange = useCallback((content: number, height: number) => {
+      reportContentSize(content, height);
+      setContentWidth(content);
+    }, [reportContentSize]);
 
     const onLayout = useCallback((e: LayoutChangeEvent) => {
-      const _l = e.nativeEvent.layout; if (!_l) return; const w = _l.width;
+      const layout = e.nativeEvent.layout;
+      if (!layout) return;
+      const w = layout.width;
       setWidth((prev) => (prev !== w ? w : prev));
     }, []);
 
@@ -233,9 +247,11 @@ export function createCarousel(skin: CarouselSkin) {
     // Reduce Motion jumps to the slide instead of animating the scroll.
     const scrollTo = useCallback(
       (i: number, animated: boolean) => {
-        if (width > 0) listRef.current?.scrollToOffset({ offset: i * width, animated: animated && !reduced });
+        if (width <= 0 || count === 0 || Math.abs(contentWidth - count * width) > 1) return;
+        commanded.current = { index: i, width, count };
+        listRef.current?.scrollToOffset({ offset: i * width, animated: animated && !reduced });
       },
-      [width, reduced],
+      [width, contentWidth, count, reduced],
     );
 
     // Commit a new current index: update the uncontrolled store, notify the
@@ -243,7 +259,9 @@ export function createCarousel(skin: CarouselSkin) {
     const goTo = useCallback(
       (i: number, animated = true) => {
         const target = nextIndex(i, count, loop);
+        if (count === 0 || target === currentRef.current) return;
         if (!controlled) {
+          currentRef.current = target;
           setInternal(target);
           scrollTo(target, animated);
         }
@@ -255,20 +273,45 @@ export function createCarousel(skin: CarouselSkin) {
     // Keep the scroll position in sync with a controlled `index` and after the
     // viewport first measures (so the initial slide is correct when width lands).
     useEffect(() => {
+      // A key or picker already issued the command before changing state.
+      // Avoid replacing its animation with an immediate duplicate command.
+      if (commanded.current?.index === current && commanded.current.width === width && commanded.current.count === count) return;
       scrollTo(current, false);
-    }, [current, width, scrollTo]);
+    }, [current, width, count, scrollTo]);
 
     // Read the settled page off the momentum end and report it upward.
     const onMomentumScrollEnd = useCallback(
       (e: NativeSyntheticEvent<NativeScrollEvent>) => {
         if (width <= 0) return;
         const i = Math.round(e.nativeEvent.contentOffset.x / width);
-        if (i === current) return;
-        if (!controlled) setInternal(i);
-        onIndexChange?.(nextIndex(i, count, false));
+        const target = nextIndex(i, count, false);
+        if (target === currentRef.current) return;
+        if (!controlled) {
+          currentRef.current = target;
+          commanded.current = { index: target, width, count };
+          setInternal(target);
+        }
+        onIndexChange?.(target);
       },
-      [width, current, controlled, onIndexChange, count],
+      [width, controlled, onIndexChange, count],
     );
+
+    const keyboardProps = {
+      onKeyDown(event: {
+        key: string; defaultPrevented: boolean; isComposing?: boolean; keyCode?: number;
+        nativeEvent?: { isComposing?: boolean; keyCode?: number };
+        target: unknown; currentTarget: unknown; preventDefault: () => void;
+      }) {
+        if (count <= 1 || event.defaultPrevented || event.target !== event.currentTarget
+          || event.isComposing || event.nativeEvent?.isComposing
+          || event.keyCode === 229 || event.nativeEvent?.keyCode === 229) return;
+        if (!["ArrowLeft", "ArrowRight", "Home", "End"].includes(event.key)) return;
+        event.preventDefault();
+        if (event.key === "Home") goTo(0);
+        else if (event.key === "End") goTo(count - 1);
+        else goTo(currentRef.current + (event.key === "ArrowRight" ? 1 : -1));
+      },
+    } as unknown as ViewProps;
 
     const atStart = current <= 0;
     const atEnd = current >= count - 1;
@@ -288,6 +331,9 @@ export function createCarousel(skin: CarouselSkin) {
         <View style={VIEWPORT} onLayout={onLayout}>
           {width > 0 ? (
             <FlatList
+              {...scrollFocus}
+              {...keyboardProps}
+              onContentSizeChange={onContentSizeChange}
               ref={listRef}
               data={items}
               // Pin the scroll container to the measured viewport width. Without a
@@ -321,26 +367,25 @@ export function createCarousel(skin: CarouselSkin) {
 
           {arrowsVisible && count > 1 ? (
             <>
-              <Arrow side="prev" disabled={prevDisabled} onPress={() => goTo(current - 1)} />
-              <Arrow side="next" disabled={nextDisabled} onPress={() => goTo(current + 1)} />
+              <Arrow side="prev" disabled={prevDisabled} onPress={() => goTo(currentRef.current - 1)} />
+              <Arrow side="next" disabled={nextDisabled} onPress={() => goTo(currentRef.current + 1)} />
             </>
           ) : null}
         </View>
 
         {dotsVisible && count > 1 ? (
-          <View style={skin.dotsRow(tokens)}>
+          <View role="group" accessibilityLabel="Choose a slide" style={skin.dotsRow(tokens)}>
             {items.map((item, i) => (
               <Pressable
                 key={item.key}
                 onPress={() => goTo(i)}
-                hitSlop={skin.dotHitSlop}
                 android_ripple={skin.ripple ? skin.ripple(tokens) : undefined}
                 accessibilityRole="button"
-                accessibilityLabel={`Go to slide ${i + 1}`}
+                accessibilityLabel={`Slide ${i + 1} of ${count}${i === current ? ", current slide" : ""}`}
                 accessibilityState={{ selected: i === current }}
-                aria-selected={i === current}
+                aria-current={i === current ? "true" : "false"}
                 style={({ pressed }) => [
-                  skin.focusOutlineReset,
+                  skin.dotTarget ?? DEFAULT_DOT_TARGET,
                   skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null,
                 ]}
               >
@@ -381,3 +426,10 @@ const arrowLayerStyles = StyleSheet.create({
 
 // opacity-40: the dimmed disabled look applied per end arrow.
 const DISABLED_DIM: ViewStyle = { opacity: 0.4 };
+
+const DEFAULT_DOT_TARGET: ViewStyle = {
+  minWidth: Platform.OS === "ios" ? 44 : Platform.OS === "android" ? 48 : 24,
+  height: Platform.OS === "ios" ? 44 : Platform.OS === "android" ? 48 : 24,
+  alignItems: "center",
+  justifyContent: "center",
+};

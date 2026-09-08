@@ -130,9 +130,9 @@ describe("Carousel", () => {
   ];
   it("renders one dot per slide with the current one selected", () => {
     const { container } = ui(<Carousel index={0} onIndexChange={() => {}} items={items} />);
-    const dots = container.querySelectorAll("[aria-selected]");
+    const dots = container.querySelectorAll("[aria-current]");
     expect(dots.length).toBe(3);
-    expect(dots[0].getAttribute("aria-selected")).toBe("true");
+    expect(dots[0].getAttribute("aria-current")).toBe("true");
   });
 
   it("advances the controlled index from the next arrow and the dots", () => {
@@ -140,7 +140,7 @@ describe("Carousel", () => {
     const { container } = ui(<Carousel index={0} onIndexChange={(i) => { idx = i; }} items={items} />);
     click('[aria-label="Next slide"]', container);
     expect(idx).toBe(1);
-    click('[aria-label="Go to slide 3"]', container);
+    click('[aria-label="Slide 3 of 3"]', container);
     expect(idx).toBe(2);
   });
 });

@@ -1,6 +1,7 @@
 {
   "schema": 1,
   "fixtures": [
+    "carousel",
     "control-refs",
     "diagnostics",
     "escape-layers",
@@ -9,6 +10,7 @@
   ],
   "routes": [
     "_layout",
+    "carousel",
     "control-refs",
     "diagnostics",
     "escape-layers",

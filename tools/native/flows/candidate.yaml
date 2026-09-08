@@ -228,6 +228,43 @@ name: Sealed Canvas native candidate
 - assertVisible:
     id: sheet-closes
     text: 'Closes: 2'
+- openLink: canvas-smoke:///testing/carousel
+- assertVisible: Native carousel paging
+- assertVisible:
+    id: carousel-current
+    text: 'Current page: 2'
+- assertVisible:
+    id: carousel-changes
+    text: 'Page changes: 0'
+- assertVisible: Slide 2 of 6, current slide
+- assertVisible:
+    id: carousel-page-2
+- takeScreenshot: carousel-default-page
+- swipe:
+    from:
+      id: carousel-slide-2
+    direction: LEFT
+- assertVisible:
+    id: carousel-current
+    text: 'Current page: 3'
+- assertVisible:
+    id: carousel-changes
+    text: 'Page changes: 1'
+- assertVisible: Slide 3 of 6, current slide
+- assertVisible:
+    id: carousel-page-3
+- takeScreenshot: carousel-swiped-page
+- tapOn: Slide 6 of 6
+- assertVisible:
+    id: carousel-current
+    text: 'Current page: 6'
+- assertVisible:
+    id: carousel-changes
+    text: 'Page changes: 2'
+- assertVisible: Slide 6 of 6, current slide
+- assertVisible:
+    id: carousel-page-6
+- takeScreenshot: carousel-picker-jump
 # The diagnostic retains the actual visible host band after keyboard dismissal.
 # Keep the keyboard open until the previously obscured final match is selected.
 - openLink: canvas-smoke:///testing/form-autocomplete?scenario=keyboard
