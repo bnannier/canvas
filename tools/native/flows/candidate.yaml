@@ -202,7 +202,21 @@ name: Sealed Canvas native candidate
     text: Apricot
 - assertNotVisible: Apple
 - takeScreenshot: drawer-selection
-- hideKeyboard
+# Submit the active iOS input through its real keyboard action. A generic
+# dismiss gesture cannot reach a keyboard inside this native Modal reliably.
+- runFlow:
+    when:
+      platform: iOS
+    commands:
+      - tapOn:
+          id: Return
+      - assertNotVisible:
+          id: space
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - hideKeyboard
 - openLink: canvas-smoke:///testing/form-autocomplete?scenario=action-sheet-safe-area
 - tapOn: Open safe area sheet
 - assertVisible: Safe area actions
@@ -331,7 +345,21 @@ name: Sealed Canvas native candidate
 - assertVisible:
     id: drawer-fruit-input
     text: Pineapple
-- hideKeyboard
+# Submit the active iOS input through its real keyboard action. A generic
+# dismiss gesture cannot reach a keyboard inside this native Modal reliably.
+- runFlow:
+    when:
+      platform: iOS
+    commands:
+      - tapOn:
+          id: Return
+      - assertNotVisible:
+          id: space
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - hideKeyboard
 - runFlow:
     when:
       platform: Android
@@ -395,7 +423,9 @@ name: Sealed Canvas native candidate
 - takeScreenshot: command-final-result-with-keyboard
 # Typing after a real results drag proves that input focus was preserved.
 - inputText: ' item'
-- assertVisible: Work item
+- assertVisible:
+    id: command-query
+    text: 'Query: Work item'
 - runFlow:
     when:
       platform: iOS
@@ -423,10 +453,13 @@ name: Sealed Canvas native candidate
 - assertVisible: to navigate
 - assertVisible: to select
 - assertVisible: to close
+- takeScreenshot: command-before-final-selection
 - tapOn:
     text: Work item 40
     above: to navigate
-- hideKeyboard
+# Observe search input closure after selection. A generic hideKeyboard can
+# send Android Back when the keyboard is already gone and leave this route.
+- assertNotVisible: Search work items
 - scrollUntilVisible:
     element:
       id: command-selected-index
