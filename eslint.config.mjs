@@ -29,6 +29,7 @@ const OPTIONAL_PEERS = Object.keys(packageMetadata.peerDependencies).filter(
 const SOURCES = [
   "src/**/*.{ts,tsx}",
   "tools/**/*.ts",
+  "tools/package/consumer-support/*.{tsx,jsx}",
   "scripts/**/*.ts",
   "test/**/*.{ts,tsx}",
   "docs/src/**/*.{ts,tsx}",
