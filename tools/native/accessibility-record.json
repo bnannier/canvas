@@ -1,0 +1,19 @@
+{
+  "schema": 1,
+  "status": "not-run",
+  "screenReader": null,
+  "screenReaderVersion": null,
+  "reviewer": null,
+  "date": null,
+  "device": null,
+  "osVersion": null,
+  "locale": null,
+  "candidateRevision": null,
+  "packageVersion": null,
+  "packageSha256": null,
+  "binaryDigest": null,
+  "journeys": [],
+  "observedAnnouncements": [],
+  "evidence": [],
+  "blocker": null
+}

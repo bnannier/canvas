@@ -11,6 +11,8 @@ export default function DiagnosticsFixture() {
   const build = Constants.expoConfig?.extra?.canvasBuild as Record<string, unknown> | undefined;
   const native = Platform.constants as { reactNativeVersion?: { major: number; minor: number; patch: number } } | undefined;
   const rn = native?.reactNativeVersion;
+  const sourceCode = NativeModules.SourceCode;
+  const bundleURL = sourceCode?.getConstants?.()?.scriptURL ?? sourceCode?.scriptURL;
   const values: Record<string, unknown> = {
     "input-mode": build?.inputMode,
     "source-revision": build?.sourceRevision,
@@ -23,7 +25,7 @@ export default function DiagnosticsFixture() {
     platform: Platform.OS,
     "app-version": Constants.nativeAppVersion ?? Constants.expoConfig?.version,
     "app-build": Constants.nativeBuildVersion,
-    "bundle-url": NativeModules.SourceCode?.scriptURL ?? "web export",
+    "bundle-url": bundleURL ?? (Platform.OS === "web" ? "web export" : "unavailable"),
     "update-id": Updates.updateId,
     "embedded-launch": Updates.isEmbeddedLaunch,
   };

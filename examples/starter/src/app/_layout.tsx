@@ -23,7 +23,7 @@ function AppFrame() {
         <View role="banner">
           <Navbar
             bordered brand="Canvas Starter" links={["Workspace", "Preferences"]}
-            active={path === "/preferences" ? 1 : 0} onSelect={navigate}
+            active={path === "/preferences" ? 1 : path === "/" ? 0 : -1} onSelect={navigate}
             actions={<Button ghost accessibilityLabel="Open workspace menu" iconLeft={<Icon settings decorative />} onPress={() => setDrawerOpen(true)} />}
           />
         </View>

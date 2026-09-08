@@ -1,0 +1,192 @@
+appId: com.nannier.canvas.starter.smoke
+name: Sealed Canvas native candidate
+---
+- launchApp:
+    clearState: true
+- openLink: canvas-smoke:///testing/diagnostics
+- assertVisible: Candidate runtime identity
+- assertVisible:
+    id: smoke-input-mode
+    text: package
+- assertVisible:
+    id: smoke-appearance
+    text: ${SCHEME}
+- assertVisible:
+    id: smoke-candidate-revision
+    text: ${CANDIDATE}
+- assertVisible:
+    id: smoke-package-sha256
+    text: ${PACKAGE_SHA256}
+- scrollUntilVisible:
+    element:
+      id: smoke-package-version
+    direction: DOWN
+- assertVisible:
+    id: smoke-package-version
+    text: ${PACKAGE_VERSION}
+- takeScreenshot: ${EVIDENCE}/identity
+- scrollUntilVisible:
+    element:
+      id: smoke-bundle-url
+    direction: DOWN
+- assertVisible:
+    id: smoke-bundle-url
+    text: (file:|assets:|/).*
+- openLink: canvas-smoke:///testing/control-refs
+- assertVisible: Control refs
+- tapOn: Inspect refs
+- assertVisible:
+    id: ref-attached
+    text: 'Attached: 6'
+- tapOn: Measure Slider
+- assertVisible:
+    id: ref-measurement
+    text: 'Measured: [1-9][0-9]* × [1-9][0-9]*'
+- tapOn: Focus Button
+- scrollUntilVisible:
+    element:
+      text: Focus Checkbox
+    direction: UP
+- tapOn: Focus Checkbox
+- scrollUntilVisible:
+    element:
+      text: Focus Switch
+    direction: UP
+- tapOn: Focus Switch
+- scrollUntilVisible:
+    element:
+      text: Focus Radio
+    direction: UP
+- tapOn: Focus Radio
+- scrollUntilVisible:
+    element:
+      text: Focus Select
+    direction: UP
+- tapOn: Focus Select
+- scrollUntilVisible:
+    element:
+      text: Focus Slider
+    direction: UP
+- tapOn: Focus Slider
+- scrollUntilVisible:
+    element:
+      id: ref-requested
+    direction: UP
+- assertVisible:
+    id: ref-requested
+    text: 'Requested: Slider'
+- assertVisible:
+    id: ref-changes
+    text: 'Changes: 0'
+- assertNotVisible: Ref dialog
+- assertNotVisible: Pear
+- takeScreenshot: ${EVIDENCE}/refs-measured-without-activation
+- scrollUntilVisible:
+    element:
+      text: Unmount controls
+    direction: UP
+- tapOn: Unmount controls
+- tapOn: Inspect refs
+- assertVisible:
+    id: ref-attached
+    text: 'Attached: 0'
+- tapOn: Mount controls
+- tapOn: Inspect refs
+- assertVisible:
+    id: ref-attached
+    text: 'Attached: 6'
+- scrollUntilVisible:
+    element:
+      id: ref-checkbox
+    direction: DOWN
+- tapOn:
+    id: ref-checkbox
+- scrollUntilVisible:
+    element:
+      id: ref-switch
+    direction: DOWN
+- tapOn:
+    id: ref-switch
+- scrollUntilVisible:
+    element:
+      id: ref-changes
+    direction: UP
+- assertVisible:
+    id: ref-changes
+    text: 'Changes: 2'
+- takeScreenshot: ${EVIDENCE}/refs-remounted-and-interactive
+- openLink: canvas-smoke:///testing/form-autocomplete
+- assertVisible: Form and autocomplete
+- tapOn:
+    id: fruit-input
+- inputText: Ap
+- assertVisible: Apricot
+- takeScreenshot: ${EVIDENCE}/autocomplete-open
+- tapOn: Apricot
+- hideKeyboard
+- scrollUntilVisible:
+    element:
+      id: selection-count
+    direction: DOWN
+- assertVisible:
+    id: fruit-value
+    text: Apricot
+- assertVisible:
+    id: selection-count
+    text: '1'
+- assertVisible:
+    id: submit-count
+    text: '0'
+- tapOn: Save choice
+- assertVisible:
+    id: submit-count
+    text: '1'
+- openLink: canvas-smoke:///testing/listbox
+- assertVisible: Listbox input checks
+- scrollUntilVisible:
+    element:
+      id: project-teams
+    direction: DOWN
+- tapOn:
+    text: Frontend.*
+    childOf:
+      id: project-teams
+- scrollUntilVisible:
+    element:
+      id: multi-pick-count
+    direction: DOWN
+- assertVisible:
+    id: multi-change-count
+    text: 'Changes: 1'
+- assertVisible:
+    id: multi-pick-count
+    text: 'Picks: 1'
+- takeScreenshot: ${EVIDENCE}/listbox-selected
+- scrollUntilVisible:
+    element:
+      id: project-teams
+    direction: UP
+- tapOn:
+    text: Frontend.*
+    childOf:
+      id: project-teams
+- scrollUntilVisible:
+    element:
+      id: multi-change-count
+    direction: DOWN
+- assertVisible:
+    id: multi-change-count
+    text: 'Changes: 2'
+- openLink: canvas-smoke:///testing/form-autocomplete?scenario=modal
+- tapOn: Open fruit drawer
+- tapOn:
+    id: drawer-fruit-input
+- inputText: Ap
+- assertVisible: Apricot
+- takeScreenshot: ${EVIDENCE}/drawer-hosted-options
+- tapOn: Apricot
+- assertVisible:
+    id: drawer-fruit-input
+    text: Apricot
+- assertNotVisible: Apple
+- takeScreenshot: ${EVIDENCE}/drawer-selection

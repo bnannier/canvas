@@ -73,10 +73,6 @@ jobs:
       - name: Verify package artifact
         run: bun run verify-package
 
-      - name: Bundle packed native consumer
-        if: ${{ !inputs.candidate }}
-        run: bun run verify-native-consumer
-
       - name: Unit tests
         run: bun run test
 
@@ -186,16 +182,29 @@ jobs:
         env:
           SOURCE_SHA: ${{ github.sha }}
 
-      - name: Seal the tested release artifacts
-        if: inputs.candidate
+      - name: Identify the non-publication candidate
+        if: ${{ !inputs.candidate }}
+        run: node scripts/release.mjs prepare "$RUNNER_TEMP/candidate"
+        env:
+          SOURCE_SHA: ${{ github.sha }}
+          RELEASE_NPM: 'false'
+
+      - name: Upload the non-publication candidate identity
+        if: ${{ !inputs.candidate }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: release-candidate
+          path: ${{ runner.temp }}/candidate
+          retention-days: 7
+          if-no-files-found: error
+
+      - name: Seal the tested artifacts
         run: node scripts/release.mjs seal "$RUNNER_TEMP/candidate" "$RUNNER_TEMP/artifacts"
 
-      - name: Bundle the exact sealed package on iOS and Android
-        if: inputs.candidate
-        run: bun run verify-native-consumer --artifacts "$RUNNER_TEMP/artifacts"
+      - name: Verify declared React and React Native support with the sealed package
+        run: bun run verify-consumer-support --artifacts "$RUNNER_TEMP/artifacts"
 
       - name: Upload sealed release artifacts
-        if: inputs.candidate
         uses: actions/upload-artifact@v7
         with:
           name: release-artifacts
@@ -203,15 +212,15 @@ jobs:
           retention-days: 7
           if-no-files-found: error
 
-      # The end-to-end job runs against these exact bytes rather than exporting again,
-      # so what it tests is what this job validated. Nothing reads the artifact after
-      # the run finishes, hence the one-day retention.
-      - name: Upload the web export for the end-to-end job
-        uses: actions/upload-artifact@v7
-        with:
-          name: docs-dist
-          path: docs/dist
-          retention-days: 1
+  native:
+    needs: check
+    strategy:
+      fail-fast: false
+      matrix:
+        platform: [ios, android]
+    uses: ./.github/workflows/native-smoke.yml
+    with:
+      platform: ${{ matrix.platform }}
 
   # Browser work is slow next to the library checks, and it fails for different
   # reasons, so it gets its own job and its own red box rather than quadrupling the
@@ -228,14 +237,12 @@ jobs:
           ref: ${{ github.sha }}
 
       - name: Download candidate
-        if: inputs.candidate
         uses: actions/download-artifact@v8
         with:
           name: release-candidate
           path: ${{ runner.temp }}/candidate
 
       - name: Restore the exact version candidate
-        if: inputs.candidate
         run: node scripts/release.mjs restore "$RUNNER_TEMP/candidate"
         env:
           SOURCE_SHA: ${{ github.sha }}
@@ -267,23 +274,13 @@ jobs:
       - name: Install Chromium, Firefox and WebKit
         run: bunx playwright install --with-deps chromium firefox webkit
 
-      # Not a fresh export: these are the bytes `check` already validated.
-      - name: Download the web export
-        if: ${{ !inputs.candidate }}
-        uses: actions/download-artifact@v8
-        with:
-          name: docs-dist
-          path: docs/dist
-
       - name: Download sealed artifacts
-        if: inputs.candidate
         uses: actions/download-artifact@v8
         with:
           name: release-artifacts
           path: ${{ runner.temp }}/artifacts
 
       - name: Verify and extract the sealed docs
-        if: inputs.candidate
         run: |
           node scripts/release.mjs verify "$RUNNER_TEMP/candidate" "$RUNNER_TEMP/artifacts"
           mkdir -p docs/dist

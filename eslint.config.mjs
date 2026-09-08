@@ -29,12 +29,14 @@ const OPTIONAL_PEERS = Object.keys(packageMetadata.peerDependencies).filter(
 const SOURCES = [
   "src/**/*.{ts,tsx}",
   "tools/**/*.ts",
+  "tools/native/*.mjs",
   "tools/package/consumer-support/*.{tsx,jsx}",
-  "scripts/**/*.ts",
+  "scripts/**/*.{ts,mjs}",
   "test/**/*.{ts,tsx}",
   "docs/src/**/*.{ts,tsx}",
   "docs/scripts/**/*.ts",
   "examples/starter/src/**/*.{ts,tsx}",
+  "examples/starter/smoke/**/*.{ts,tsx}",
   "e2e/**/*.ts",
   "playwright.config.ts",
 ];
