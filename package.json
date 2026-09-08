@@ -92,7 +92,8 @@
     "notices:scan": "bun tools/noticegen/scan.ts",
     "notices:gen": "bun tools/noticegen/generate.ts",
     "notices:gen:check": "bun tools/noticegen/generate.ts --check",
-    "verify-native-consumer": "node scripts/verify-native-consumer.mjs"
+    "verify-native-consumer": "node scripts/verify-native-consumer.mjs",
+    "verify-consumer-support": "node scripts/verify-consumer-support.mjs"
   },
   "publishConfig": {
     "registry": "https://registry.npmjs.org",

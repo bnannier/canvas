@@ -14,7 +14,6 @@
 
 import { createContext, useContext, type ReactNode, type RefObject } from "react";
 import { View, StyleSheet, type StyleProp, type ViewStyle, type ViewProps } from "react-native";
-import type * as ExpoBlurTypes from "expo-blur";
 import { type ColorTokens } from "../tokens.js";
 
 export interface GlassSurfaceProps {
@@ -141,10 +140,16 @@ export interface GlassBlurTargetHostProps {
 // GlassBlurTargetContext above — get one). Older expo-blur keeps the legacy prop
 // unchanged, which still blurs the content behind the surface there. Web ignores all
 // three props (its backdrop-filter path never reads them).
+// Keep the return contract structural: an Expo type here leaks into Canvas's
+// public declarations and forces consumers to install an otherwise optional peer.
 export function frostMethodProps(
   supportsBlurTarget: boolean,
   target: RefObject<View | null> | null,
-): Partial<ExpoBlurTypes.BlurViewProps> {
+): {
+  experimentalBlurMethod?: "dimezisBlurView";
+  blurMethod?: "dimezisBlurView" | "none";
+  blurTarget?: RefObject<View | null>;
+} {
   if (!supportsBlurTarget) return { experimentalBlurMethod: "dimezisBlurView" };
   return target ? { blurMethod: "dimezisBlurView", blurTarget: target } : { blurMethod: "none" };
 }
