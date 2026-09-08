@@ -254,10 +254,52 @@ name: Sealed Canvas native candidate
 - assertVisible:
     id: carousel-page-2
 - takeScreenshot: carousel-default-page
+- assertVisible:
+    id: carousel-measurement
+    text: '.*"generation":0,"status":"idle".*'
+- tapOn: Measure current slide
+- assertVisible:
+    id: carousel-measurement
+    text: '.*"generation":1,"status":"ready".*'
+- copyTextFrom:
+    id: carousel-measurement
+# These task apps use a full-screen, edge-to-edge native window. RN window
+# coordinates therefore share the screen origin. Maestro uses iOS points and
+# Android physical pixels, so only Android applies the measured PixelRatio.
+# Reject stale, clipped, zero-sized or wrong-card measurements before touching.
+- evalScript: |
+    ${output.carouselDrag = (function () {
+      var m = JSON.parse(maestro.copiedText);
+      if (m.generation !== 1 || m.status !== "ready" || m.index !== 1 || m.page !== 2)
+        throw new Error("Expected a fresh measurement of current page 2");
+      var fields = [m.x, m.y, m.width, m.height, m.screenWidth, m.screenHeight, m.pixelRatio];
+      if (!fields.every(function (value) { return typeof value === "number" && isFinite(value); })
+        || m.width <= 0 || m.height <= 0 || m.screenWidth <= 0 || m.screenHeight <= 0 || m.pixelRatio <= 0
+        || m.x < 0 || m.y < 0 || m.x + m.width > m.screenWidth || m.y + m.height > m.screenHeight)
+        throw new Error("Current card must have finite, positive bounds entirely inside the screen");
+      if ((m.platform !== "ios" && m.platform !== "android") || m.rtl !== false)
+        throw new Error("This journey requires an iOS or Android LTR candidate");
+      var scale = m.platform === "android" ? m.pixelRatio : 1;
+      var startX = Math.round((m.x + m.width * 0.8) * scale);
+      var endX = Math.round((m.x + m.width * 0.2) * scale);
+      var y = Math.round((m.y + m.height * 0.5) * scale);
+      if (startX - endX <= m.width * scale / 2
+        || endX <= m.x * scale || startX >= (m.x + m.width) * scale
+        || y <= m.y * scale || y >= (m.y + m.height) * scale)
+        throw new Error("The single drag must stay inside the card and cross more than half its width");
+      return { start: startX + ", " + y, end: endX + ", " + y, measurement: m };
+    })()}
+- assertVisible:
+    id: carousel-page-2
+- assertVisible: Slide 2 of 6, current slide
+- assertVisible:
+    id: carousel-changes
+    text: 'Page changes: 0'
+- takeScreenshot: carousel-measured-before-drag
 - swipe:
-    from:
-      id: carousel-slide-2
-    direction: LEFT
+    start: ${output.carouselDrag.start}
+    end: ${output.carouselDrag.end}
+    duration: 400
 - assertVisible:
     id: carousel-current
     text: 'Current page: 3'
