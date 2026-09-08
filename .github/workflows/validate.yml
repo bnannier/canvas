@@ -38,7 +38,7 @@ jobs:
 
       - uses: oven-sh/setup-bun@v2
         with:
-          bun-version: latest
+          bun-version-file: package.json
 
       # setup-bun does not cache installs. Bun's global content-addressable download
       # cache serves BOTH the root and docs installs, so one entry covers them.
@@ -242,7 +242,7 @@ jobs:
 
       - uses: oven-sh/setup-bun@v2
         with:
-          bun-version: latest
+          bun-version-file: package.json
 
       # The same key as `check`: bun's download cache is content-addressable, so one
       # entry serves both jobs.

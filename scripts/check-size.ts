@@ -1,10 +1,11 @@
-import { readdir, readFile } from "node:fs/promises";
+import { readdir, readFile, mkdtemp, mkdir, cp, copyFile, rm } from "node:fs/promises";
 import { existsSync } from "node:fs";
-import { join, relative } from "node:path";
+import { dirname, join, relative } from "node:path";
+import { tmpdir } from "node:os";
 import { gzipSync } from "node:zlib";
+import type { BuildOptions } from "esbuild";
 
 const ROOT = join(import.meta.dir, "..");
-const STYLES_DIR = join(ROOT, "styles");
 
 // Core (component + pattern + token) CSS budget.
 const CORE_MAX_TOTAL_GZIP = 30_720;
@@ -52,11 +53,55 @@ const CORE_FILE_GZIP_OVERRIDES: Record<string, number> = {
 // the measured figure. That is deliberately more slack than the 160KB cap ended up
 // with (1.4%, which meant any addition at all failed CI) and still far under the
 // 1.6x an accidental doubling would need.
-const JS_MAX_GZIP = 196_608; // 192 KB
+export const JS_MAX_GZIP = 196_608; // 192 KB
 
-// The optional/required peers a consumer resolves from the outside, excluded from
-// the kit's own JS size the same way their `import`s leave the bundle.
-const JS_EXTERNALS = Object.keys(JSON.parse(await readFile(join(ROOT, "package.json"), "utf8")).peerDependencies);
+export interface JavaScriptBudget {
+  label: string;
+  entry: string;
+  maxGzip: number;
+  requiredExports?: readonly string[];
+  platform?: "web" | "ios" | "android";
+}
+
+// Each fixture imports from the public package name and keeps its component plus
+// ThemeProvider exported, so tree shaking measures a usable named-import consumer.
+// The complete-kit limit cannot catch dependencies moving into common components.
+// Measured with esbuild 0.28.2 under Bun 1.4.0, in web / iOS / Android order:
+// Button 3,041 / 3,227 / 3,086B; Input 29,761 / 30,023 / 29,953B;
+// DataTable 36,866 / 37,214 / 36,946B; StackedList 47,425 / 46,077 / 47,518B.
+// Fixed ceilings leave room for deliberate growth while catching a heavy import.
+// These are independent budgets, not a combined total: shared modules legitimately
+// occur in more than one consumer. Changes require a fresh measurement and rationale.
+export const NAMED_IMPORT_BUDGETS: readonly JavaScriptBudget[] = [
+  { label: "Button + ThemeProvider", entry: "scripts/size-fixtures/button.ts", maxGzip: 3_584, requiredExports: ["Button", "ThemeProvider"] },
+  { label: "Input + ThemeProvider", entry: "scripts/size-fixtures/input.ts", maxGzip: 32_768, requiredExports: ["Input", "ThemeProvider"] },
+  { label: "DataTable + ThemeProvider", entry: "scripts/size-fixtures/data-table.ts", maxGzip: 40_960, requiredExports: ["DataTable", "ThemeProvider"] },
+  { label: "StackedList + ThemeProvider", entry: "scripts/size-fixtures/stacked-list.ts", maxGzip: 53_248, requiredExports: ["StackedList", "ThemeProvider"] },
+];
+
+export interface JavaScriptSize extends JavaScriptBudget {
+  raw: number;
+  gzip: number;
+  exceeded: boolean;
+}
+
+// The small structural result type lets tests exercise failed/empty builds
+// independently of the bundler's complete result shape.
+export type BundleBuilder = (options: BuildOptions) => Promise<{
+  success: boolean;
+  outputs: readonly Pick<Blob, "arrayBuffer">[];
+  logs: readonly unknown[];
+}>;
+
+// A pinned esbuild release provides supported conditional exports and extension
+// ordering. Bun's build API accepts but ignores resolveExtensions, so it cannot
+// measure Metro's platform files. This budgets distribution code, not an APK or
+// a Metro application bundle; stock Metro runtime checks remain separate.
+export const bundleJavaScript: BundleBuilder = async (options) => {
+  const { build } = await import("esbuild");
+  const result = await build(options);
+  return { success: result.errors.length === 0, outputs: (result.outputFiles ?? []).map((file) => new Blob([file.contents])), logs: result.errors };
+};
 
 interface FileSize {
   path: string;
@@ -128,60 +173,142 @@ function report(
   return failed;
 }
 
-const files = await collectCSSFiles(STYLES_DIR);
-const sizes: FileSize[] = [];
-
-for (const file of files) {
-  const content = await readFile(file);
-  sizes.push({
-    path: relative(ROOT, file),
-    raw: content.length,
-    gzip: gzipSync(content).length,
-  });
-}
-
-sizes.sort((a, b) => b.gzip - a.gzip);
-
-const cssFailed = report("Core CSS", sizes, CORE_MAX_TOTAL_GZIP, CORE_MAX_FILE_GZIP, CORE_FILE_GZIP_OVERRIDES);
-
 // ---- Shipped JavaScript budget --------------------------------------------------
-// Bundle the built kit the way a consumer's bundler would (externals resolved from
-// the outside), minify, and gzip. Skips gracefully if dist is not built yet.
-async function checkJs(): Promise<boolean> {
-  const entry = join(ROOT, "dist", "index.js");
-  if (!existsSync(entry)) {
-    console.log("\nJavaScript\n==========\n\ndist/index.js not found — run `bun run build` first; skipping JS budget.");
-    return false;
-  }
-  const built = await Bun.build({
-    entrypoints: [entry],
+export async function measureBundle(
+  root: string,
+  budget: JavaScriptBudget,
+  external: string[],
+  build: BundleBuilder = bundleJavaScript,
+): Promise<JavaScriptSize> {
+  const entry = join(root, budget.entry);
+  if (!existsSync(entry)) throw new Error(`${budget.label}: missing ${budget.entry}`);
+  const built = await build({
+    entryPoints: [entry],
+    bundle: true,
+    write: false,
+    logLevel: "silent",
     minify: true,
-    target: "browser",
-    external: JS_EXTERNALS,
+    platform: budget.platform && budget.platform !== "web" ? "neutral" : "browser",
+    format: "esm",
+    external,
+    ...(budget.platform && budget.platform !== "web" ? {
+      conditions: ["react-native"],
+      // Match Metro's platform-first source selection within the native entry.
+      resolveExtensions: [`.${budget.platform}.js`, ".native.js", ".js", ".json", ".ts", ".tsx"],
+    } : {}),
   });
-  if (!built.success || built.outputs.length === 0) {
-    console.log("\nJavaScript\n==========\n\nBundle failed:");
-    for (const log of built.logs) console.log(`  ${log}`);
-    return true;
+  if (!built.success) {
+    throw new Error(`${budget.label}: bundle failed\n${built.logs.map(String).join("\n")}`);
+  }
+  // These fixtures contain JavaScript only and do not split chunks. Measuring
+  // just the first output after that changes would hide uncounted shipped bytes.
+  if (built.outputs.length !== 1) {
+    throw new Error(`${budget.label}: expected one JavaScript output, received ${built.outputs.length}`);
   }
   const bytes = new Uint8Array(await built.outputs[0].arrayBuffer());
+  if (bytes.length === 0) throw new Error(`${budget.label}: JavaScript output is empty`);
+  if (budget.requiredExports) {
+    let scan: ReturnType<Bun.Transpiler["scan"]>;
+    try {
+      scan = new Bun.Transpiler({ loader: "js" }).scan(new TextDecoder().decode(bytes));
+    } catch {
+      throw new Error(`${budget.label}: bundle contains invalid JavaScript or unbound exports`);
+    }
+    const missing = budget.requiredExports.filter((name) => !scan.exports.includes(name));
+    if (missing.length) throw new Error(`${budget.label}: bundle lost required exports: ${missing.join(", ")}`);
+  }
   const raw = bytes.length;
   const gzip = gzipSync(bytes).length;
-  console.log("\nJavaScript\n==========\n");
-  console.log(`${"Bundle".padEnd(50)} ${(raw + "B").padStart(10)} ${(gzip + "B").padStart(10)}`);
-  console.log(`Budget: ${JS_MAX_GZIP}B gzip (externals: ${JS_EXTERNALS.join(", ")})`);
-  if (gzip > JS_MAX_GZIP) {
-    console.log(`\nJS bundle gzip ${gzip}B exceeds budget ${JS_MAX_GZIP}B`);
-    return true;
-  }
-  return false;
+  return { ...budget, raw, gzip, exceeded: gzip > budget.maxGzip };
 }
 
-const jsFailed = await checkJs();
+export async function measureJavaScript(root = ROOT, build: BundleBuilder = bundleJavaScript): Promise<JavaScriptSize[]> {
+  if (!existsSync(join(root, "dist", "index.js"))) {
+    throw new Error("dist/index.js not found. Run `bun run build` before checking size budgets.");
+  }
+  const metadata = JSON.parse(await readFile(join(root, "package.json"), "utf8"));
+  const nativeEntry = metadata.exports?.["."]?.["react-native"];
+  if (typeof nativeEntry !== "string" || !existsSync(join(root, nativeEntry))) {
+    throw new Error("Built react-native package entry not found. Run `bun run build` before checking size budgets.");
+  }
+  // Required and optional peers belong to the consuming application. Read the
+  // published metadata so new peers cannot accidentally creep into measured JS.
+  const external = Object.keys(metadata.peerDependencies);
+  const sizes: JavaScriptSize[] = [];
 
-const grandRaw = sizes.reduce((s, f) => s + f.raw, 0);
-const grandGzip = sizes.reduce((s, f) => s + f.gzip, 0);
-console.log(`\nCSS grand total (informational): ${grandRaw}B raw, ${grandGzip}B gzip`);
+  // Copy the real build and metadata into an ordinary consumer's node_modules,
+  // so package exports resolve as they do for an app. This also avoids measuring
+  // package self-reference special cases; the export/parse gate protects against
+  // the invalid, tiny self-reference output previously observed with Bun 1.4.
+  const consumer = await mkdtemp(join(tmpdir(), "canvas-size-consumer-"));
+  try {
+    const packageDir = join(consumer, "node_modules", metadata.name);
+    await mkdir(packageDir, { recursive: true });
+    await copyFile(join(root, "package.json"), join(packageDir, "package.json"));
+    await cp(join(root, "dist"), join(packageDir, "dist"), { recursive: true });
+    for (const budget of NAMED_IMPORT_BUDGETS) {
+      const source = await readFile(join(root, budget.entry), "utf8");
+      const scan = new Bun.Transpiler({ loader: "ts" }).scan(source);
+      if (scan.imports.length !== 1 || scan.imports[0].path !== metadata.name) {
+        throw new Error(`${budget.label}: fixture must import only from the public package root ${metadata.name}`);
+      }
+      const target = join(consumer, budget.entry);
+      await mkdir(dirname(target), { recursive: true });
+      await copyFile(join(root, budget.entry), target);
+    }
+    for (const platform of ["web", "ios", "android"] as const) {
+      sizes.push(await measureBundle(root, {
+        label: `${platform} whole kit`, platform,
+        entry: platform === "web" ? "dist/index.js" : nativeEntry,
+        maxGzip: JS_MAX_GZIP,
+      }, external, build));
+      for (const budget of NAMED_IMPORT_BUDGETS) {
+        sizes.push(await measureBundle(consumer, { ...budget, platform, label: `${platform} ${budget.label}` }, external, build));
+      }
+    }
+  } finally {
+    await rm(consumer, { recursive: true, force: true });
+  }
+  return sizes;
+}
 
-if (!cssFailed && !jsFailed) console.log("\nSize check passed.");
-else process.exit(1);
+export async function checkSize(root = ROOT): Promise<boolean> {
+  const metadata = JSON.parse(await readFile(join(root, "package.json"), "utf8"));
+  const expectedBun = metadata.packageManager?.replace(/^bun@/, "");
+  if (!expectedBun || Bun.version !== expectedBun) {
+    throw new Error(`Size budgets require the recorded toolchain ${metadata.packageManager ?? "(missing packageManager)"}; running bun@${Bun.version}.`);
+  }
+  const files = await collectCSSFiles(join(root, "styles"));
+  const sizes: FileSize[] = [];
+  for (const file of files) {
+    const content = await readFile(file);
+    sizes.push({ path: relative(root, file), raw: content.length, gzip: gzipSync(content).length });
+  }
+  sizes.sort((a, b) => b.gzip - a.gzip);
+  const cssFailed = report("Core CSS", sizes, CORE_MAX_TOTAL_GZIP, CORE_MAX_FILE_GZIP, CORE_FILE_GZIP_OVERRIDES);
+
+  const jsSizes = await measureJavaScript(root);
+  console.log("\nJavaScript\n==========\n");
+  console.log(`${"Consumer".padEnd(32)} ${"Raw".padStart(10)} ${"Gzip".padStart(10)} ${"Budget".padStart(10)}`);
+  for (const size of jsSizes) {
+    console.log(`${size.label.padEnd(32)} ${(size.raw + "B").padStart(10)} ${(size.gzip + "B").padStart(10)} ${(size.maxGzip + "B").padStart(10)}${size.exceeded ? " !" : ""}`);
+    if (size.exceeded) console.log(`  ${size.label} gzip ${size.gzip}B exceeds budget ${size.maxGzip}B`);
+  }
+  console.log("Required and optional peer dependencies are externalized in every JavaScript measurement.");
+
+  const grandRaw = sizes.reduce((s, f) => s + f.raw, 0);
+  const grandGzip = sizes.reduce((s, f) => s + f.gzip, 0);
+  console.log(`\nCSS grand total (informational): ${grandRaw}B raw, ${grandGzip}B gzip`);
+  const passed = !cssFailed && !jsSizes.some((size) => size.exceeded);
+  if (passed) console.log("\nSize check passed.");
+  return passed;
+}
+
+if (import.meta.main) {
+  try {
+    if (!await checkSize()) process.exitCode = 1;
+  } catch (error) {
+    console.error(error instanceof Error ? error.message : error);
+    process.exitCode = 1;
+  }
+}

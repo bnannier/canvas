@@ -5,6 +5,7 @@ bun run typecheck:e2e
 bun run lint
 bun run build
 bun run verify-package
+bun run check-size
 bun run test
 bun run docs:gen:check
 bun run raster:gen:check
