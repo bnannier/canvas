@@ -138,9 +138,9 @@ export function OverlayProvider({ children, style, separateWindow = false, viewp
     layoutListeners.current.forEach((listener) => listener());
   }, [topInset, bottomInset]);
   const outletRef = useRef<View>(null);
-  const keyboard = useRef(Platform.OS === "ios" ? Keyboard.metrics?.() : undefined);
+  const keyboard = useRef(Platform.OS !== "web" ? Keyboard.metrics?.() : undefined);
   useEffect(() => {
-    if (parent || Platform.OS !== "ios") return;
+    if (parent || Platform.OS === "web") return;
     const update = (event: KeyboardEvent) => {
       keyboard.current = event.endCoordinates;
       layoutListeners.current.forEach((listener) => listener());
@@ -150,7 +150,9 @@ export function OverlayProvider({ children, style, separateWindow = false, viewp
       layoutListeners.current.forEach((listener) => listener());
     };
     keyboard.current = Keyboard.metrics?.();
-    const subscriptions = [Keyboard.addListener("keyboardWillShow", update), Keyboard.addListener("keyboardWillChangeFrame", update), Keyboard.addListener("keyboardWillHide", hide)];
+    const subscriptions = Platform.OS === "ios"
+      ? [Keyboard.addListener("keyboardWillShow", update), Keyboard.addListener("keyboardWillChangeFrame", update), Keyboard.addListener("keyboardWillHide", hide)]
+      : [Keyboard.addListener("keyboardDidShow", update), Keyboard.addListener("keyboardDidHide", hide)];
     return () => subscriptions.forEach((subscription) => subscription.remove());
   }, [parent]);
 
@@ -203,6 +205,10 @@ export function OverlayProvider({ children, style, separateWindow = false, viewp
             // UIKit keyboard coordinates are window-relative on current RN.
             // RN 0.74 exposes screen coordinates: its supported keyboard host
             // configuration is a full-screen window with the same origin.
+            // Android edge-to-edge windows do not resize for the IME, but their
+            // full-screen window coordinates match the event. Legacy Android
+            // adjustResize already reduces the outlet: min keeps that smaller
+            // bound without subtracting the keyboard or status bar twice.
             const own = insetOverlayBounds({ x, y, width, height }, insets.current);
             const bottom = !parent && keyboard.current ? Math.min(own.y + own.height, keyboard.current.screenY) : own.y + own.height;
             done({ ...own, height: Math.max(0, bottom - own.y) });

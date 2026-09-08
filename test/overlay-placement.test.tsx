@@ -1,7 +1,7 @@
-import { afterEach, describe, expect, it } from "bun:test";
-import { cleanup, render } from "@testing-library/react";
+import { afterEach, describe, expect, it, spyOn } from "bun:test";
+import { act, cleanup, render } from "@testing-library/react";
 import { useEffect } from "react";
-import { View } from "react-native";
+import { Keyboard, Platform, View, type KeyboardEvent } from "react-native";
 import { fitOverlayHeight } from "../src/style/overlay-layout.ts";
 import { OverlayProvider, useOverlayHost, insetOverlayBounds, intersectOverlayBounds, type OverlayHost, type OverlayBounds } from "../src/style/portal.tsx";
 import { ThemeProvider } from "../src/style/theme.tsx";
@@ -76,6 +76,48 @@ function CaptureHost({ capture }: { capture: (host: OverlayHost) => void }) {
 }
 
 describe("overlay window boundaries", () => {
+  it("fits an unchanged Android window to the IME, keeps resized roots bounded, and restores on hide", async () => {
+    const platform = Object.getOwnPropertyDescriptor(Platform, "OS")!;
+    const originalRect = Element.prototype.getBoundingClientRect;
+    const listeners = new Map<string, (event: KeyboardEvent) => void>();
+    const subscription = spyOn(Keyboard, "addListener").mockImplementation((name, listener) => {
+      listeners.set(name, listener);
+      return { remove: () => { listeners.delete(name); } };
+    });
+    let height = 914;
+    Element.prototype.getBoundingClientRect = () => ({ x: 0, y: 0, width: 400, height, top: 0, left: 0, right: 400, bottom: height, toJSON() { return {}; } }) as DOMRect;
+    Object.defineProperty(Platform, "OS", { configurable: true, value: "android" });
+    try {
+      let host: OverlayHost | null = null;
+      const { unmount } = render(<OverlayProvider><CaptureHost capture={(value) => { host = value; }} /></OverlayProvider>);
+      const bounds = () => new Promise<OverlayBounds>((resolve) => host!.measureVisibleBounds!(resolve));
+      let revisions = 0;
+      const unsubscribe = host!.subscribeLayout!(() => { revisions += 1; });
+      expect((await bounds()).height).toBe(914);
+      const event = { duration: 0, easing: "keyboard", endCoordinates: { screenX: 0, screenY: 590, width: 400, height: 324 } } as KeyboardEvent;
+      act(() => listeners.get("keyboardDidShow")!(event));
+      expect((await bounds()).height).toBe(590);
+      expect(revisions).toBe(1);
+      // A resized legacy content root is smaller than screen-based keyboard Y.
+      // The provider must keep that real root edge, not deduct 324 again.
+      height = 566;
+      expect((await bounds()).height).toBe(566);
+      height = 914;
+      act(() => listeners.get("keyboardDidShow")!({ ...event, endCoordinates: { ...event.endCoordinates, screenY: 510, height: 404 } }));
+      expect((await bounds()).height).toBe(510);
+      act(() => listeners.get("keyboardDidHide")!(event));
+      expect((await bounds()).height).toBe(914);
+      unsubscribe();
+      unmount();
+      expect(listeners.size).toBe(0);
+    } finally {
+      cleanup();
+      subscription.mockRestore();
+      Object.defineProperty(Platform, "OS", platform);
+      Element.prototype.getBoundingClientRect = originalRect;
+    }
+  });
+
   it("intersects declared chrome with the keyboard band without subtracting it twice", () => {
     const own = insetOverlayBounds({ x: 0, y: 0, width: 400, height: 800 }, { top: 56, bottom: 64 });
     expect(own).toEqual({ x: 0, y: 56, width: 400, height: 680 });
