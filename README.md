@@ -67,6 +67,8 @@ export default function App() {
 
 That exact tree renders natively on iOS and Android and, through React Native Web, in the browser. There is no separate web component set to learn.
 
+For a complete runnable application, see the [Expo starter](./examples/starter/README.md). It independently installs the published Canvas package and includes workspace editing, validation, theme preferences, and nested overlays on web, iOS, and Android. Its source follows the repository's all-rights-reserved terms.
+
 ### Styling with semantic boolean props
 
 Every visual variation is a flat boolean prop named for its meaning; passing the prop turns it on, so the call site reads like natural language.

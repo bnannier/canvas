@@ -34,6 +34,7 @@ const SOURCES = [
   "test/**/*.{ts,tsx}",
   "docs/src/**/*.{ts,tsx}",
   "docs/scripts/**/*.ts",
+  "examples/starter/src/**/*.{ts,tsx}",
   "e2e/**/*.ts",
   "playwright.config.ts",
 ];
@@ -49,6 +50,10 @@ export default tseslint.config(
       "docs/.expo/**",
       "docs/android/**",
       "docs/ios/**",
+      "examples/starter/dist/**",
+      "examples/starter/.expo/**",
+      "examples/starter/android/**",
+      "examples/starter/ios/**",
       // Local Claude Code session state. It is gitignored, and it holds nested git
       // worktrees whose checkouts would otherwise be linted as if they were this one.
       ".claude/**",
