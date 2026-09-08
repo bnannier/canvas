@@ -114,3 +114,49 @@ run VoiceOver or TalkBack. Their fields remain `not-run`; follow
 Maestro is installed from an official release archive using the SHA256 in
 `maestro.json`. Java17+ is required by the
 [official CLI installation instructions](https://docs.maestro.dev/maestro-cli/how-to-install-maestro-cli).
+
+## Passive Android CI host evidence
+
+The Android workflow records `android-host-diagnostics/` alongside the native
+result. Its pre-emulator hook inventories executable ADB paths, hashes and local
+`adb version` output. It leaves server ownership, trace settings, SDK versions,
+build order and device commands unchanged. It does not open an ADB connection,
+start a server, reconnect a transport or replay a failed command.
+
+A task-owned collector samples the actual TCP 5037 listener inode and owning
+PID/file descriptor, verifies the descriptor still references that socket, and
+records process start ticks/executable. It also records the `canvas_candidate`
+emulator process, host memory/load/pressure and the observer's cgroup memory
+fields. Existing daemon logs are read through bounded tails, using verified
+listener stdout/stderr files and the documented ADB log path. The server may have
+a different environment, so log discovery and trace coverage remain explicit
+limitations. Missing tools, permissions or files are recorded as unavailable.
+
+History uses two segments totaling at most 2 MiB; four current daemon tails retain
+at most 256 KiB each. Up to 32 bounded lifecycle/failure snapshots preserve selected
+log tails and source identities. Every record has host UTC and monotonic time.
+Five-second sampling cannot exclude a brief intermediate process/transport event,
+and guest log timestamps are not assumed synchronized with the host. Log offsets,
+inodes and discarded-byte counts distinguish truncation and replacement.
+
+On a journey failure, host-only capture runs before the runner restores device
+appearance. This matters because restoration itself uses ADB. Capture has a
+five-second process deadline; its kernel journal read is capped at 400 lines,
+256 KiB and three seconds. It issues no new ADB status or shell command, since
+ordinary ADB clients can start or replace a server. Unavailable kernel evidence
+does not mean that no OOM or process exit occurred. Original journey/restoration
+errors and the wrapped child's exit code or signal survive diagnostic failures.
+Setup or finalization failures, including a rejected observation host/path, report
+unavailable diagnostics without changing the native job outcome. Rejected guards
+perform no observation I/O; a validated run still executes its native child once.
+Malformed or duplicate command arguments remain fatal. Diagnostics do not create
+the native candidate parent directory that preparation requires to be new.
+
+The collector startup handshake is bounded to three seconds. A timeout records
+unavailable startup acknowledgement; it does not start another collector or stop
+the native attempt. The original collector can become ready later. The finalizer
+uses its recorded owner identity even after that timeout, verifies PID start
+identity, then requests its final flush and stop with a bounded acknowledgement. It never signals ADB or the emulator. Partial diagnostics
+are uploaded with the normal 14-day artifact retention. A hard runner loss can
+prevent finalization/upload. These records improve diagnosis; they do not fix a
+transport disconnect or make one later successful run proof of its cause.

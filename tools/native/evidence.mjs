@@ -35,7 +35,13 @@ export function createEvidenceDirectory(output, platform, requested) {
 // Persist every failure after creating the evidence directory, including an
 // unreadable initial appearance. A failed restoration never erases the journey
 // error and never leaves an otherwise successful run marked as passed.
-export function recordNativeAttempt(evidence, result, initialAppearance, restoreAppearance, exercise) {
+export function recordNativeAttempt(evidence, result, initialAppearance, restoreAppearance, exercise, observeFailure) {
+  const observe = (phase, error) => {
+    if (!observeFailure) return;
+    result.failureObservations ??= [];
+    try { result.failureObservations.push({ phase, observation: observeFailure(phase, error) }); }
+    catch (observationError) { result.failureObservations.push({ phase, observation: { status: "unavailable", reason: String(observationError) } }); }
+  };
   let previous;
   let failure;
   try {
@@ -47,12 +53,14 @@ export function recordNativeAttempt(evidence, result, initialAppearance, restore
     failure = error;
     result.status = "failed";
     result.error = String(error);
+    observe("journey-failed", error);
   } finally {
     try {
       if (previous !== undefined) restoreAppearance(previous);
     } catch (error) {
       result.status = "failed";
       result.restorationError = String(error);
+      observe("restoration-failed", error);
       failure = failure ? new AggregateError([failure, error], "Native journey and appearance restoration failed") : error;
     } finally {
       result.finishedAt = new Date().toISOString();
