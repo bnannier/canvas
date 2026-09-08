@@ -7,7 +7,7 @@
  * dialog and a listbox are exactly where the roles and the relationships live.
  *
  * Set E2E_AXE_REPORT=1 to attach findings without failing, which is how the list of
- * known react-native-web rules in ../support/axe.ts was arrived at.
+ * known component findings below was arrived at.
  */
 import { componentRoutes } from "../support/routes";
 import { gotoDocs, platformRow } from "../support/docs";
@@ -22,8 +22,7 @@ const overlayFor = new Map(OVERLAYS.map((recipe) => [recipe.slug, recipe]));
  * Findings that stand today, by component and rule.
  *
  * Every one was surfaced by the first run of this suite, and every one is real: none
- * is a rule the kit disagrees with (those live in KNOWN_RNW_RULES, and there is
- * exactly one). They are recorded rather than suppressed so the gate is meaningful
+ * is a rule the kit disagrees with. They are recorded rather than suppressed so the gate is meaningful
  * everywhere else: a component not listed here must be clean, and a listed one must
  * not grow a rule it does not already have.
  *

@@ -36,16 +36,14 @@ export function SearchModal({ visible, onClose }: { visible: boolean; onClose: (
 
   const results = useMemo(() => search(query), [query]);
 
-  // Reset the query and selection each time the modal opens, and put focus in the input.
-  // The TextInput's autoFocus alone is not enough on web: RN-Web's Modal focus trap runs
-  // after mount and moves focus to the first focusable descendant (the backdrop), so we
-  // refocus the input here. This effect runs after the trap's, and the trap leaves focus
-  // alone once it is inside the modal, so this focus sticks.
+  // Reset search state on opening. Modal owns focus containment and restoration:
+  // its web trap records the previously focused opener when it mounts. Focusing
+  // a child before that capture would make the disappearing input the return target.
+  // onShow focuses the input once the native window or web transition is ready.
   useEffect(() => {
     if (visible) {
       setQuery("");
       setSelectedIndex(0);
-      inputRef.current?.focus();
     }
   }, [visible]);
 
@@ -124,7 +122,6 @@ export function SearchModal({ visible, onClose }: { visible: boolean; onClose: (
       <Icon search size={16} muted />
       <TextInput
         ref={inputRef}
-        autoFocus
         value={query}
         onChangeText={setQuery}
         onKeyPress={onKeyPress}
@@ -216,7 +213,8 @@ export function SearchModal({ visible, onClose }: { visible: boolean; onClose: (
   );
 
   return (
-    <Modal visible={visible} transparent animationType={mobile ? "slide" : "fade"} onRequestClose={onClose}>
+    <Modal visible={visible} transparent animationType={mobile ? "slide" : "fade"} onRequestClose={onClose}
+      onShow={() => inputRef.current?.focus()}>
       <Pressable
         style={{
           flex: 1,

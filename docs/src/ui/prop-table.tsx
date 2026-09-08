@@ -58,12 +58,16 @@ export function PropTables({ groups }: { groups: PropGroup[] }) {
   const multi = groups.length > 1;
   return (
     <View style={{ gap: 16 }}>
-      <Text style={{ fontFamily: geist("600"), fontSize: 20, letterSpacing: -0.3, color: tokens.foreground }}>Props</Text>
+      <Text accessibilityRole="header" aria-level={2} style={{ fontFamily: geist("600"), fontSize: 20, letterSpacing: -0.3, color: tokens.foreground }}>Props</Text>
       {groups.map((g) => (
         <View key={g.name} style={{ gap: 8 }}>
           {/* Only label each table when a component has more than one prop group
               (e.g. Avatar + AvatarGroup); a single group needs no sub-heading. */}
-          {multi ? <Typography mono semibold>{g.name.replace(/Props$/, "")}</Typography> : null}
+          {multi ? (
+            <View accessible accessibilityRole="header" aria-level={3}>
+              <Typography mono semibold>{g.name.replace(/Props$/, "")}</Typography>
+            </View>
+          ) : null}
           <GroupTable group={g} />
         </View>
       ))}

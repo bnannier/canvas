@@ -136,7 +136,7 @@ function SectionHead({ eyebrow, title, desc, titleSize }: { eyebrow: string; tit
       <Text style={{ fontFamily: geist("700"), fontSize: 12, letterSpacing: 1.68, textTransform: "uppercase", color: tokens.primary, marginBottom: 12 }}>
         {eyebrow}
       </Text>
-      <Text style={{ fontFamily: geist("600"), fontSize: titleSize, letterSpacing: titleSize * -0.025, lineHeight: titleSize * 1.1, color: tokens.foreground }}>
+      <Text accessibilityRole="header" aria-level={2} style={{ fontFamily: geist("600"), fontSize: titleSize, letterSpacing: titleSize * -0.025, lineHeight: titleSize * 1.1, color: tokens.foreground }}>
         {title}
       </Text>
       <Text style={{ fontFamily: geist("400"), fontSize: 15.5, lineHeight: 24.8, color: tokens["muted-foreground"], maxWidth: 672, marginTop: 12 }}>
@@ -313,7 +313,7 @@ export function Home() {
         <CardGrid cols={wide ? 2 : 1}>
           {PRINCIPLES.map((p) => (
             <View key={p.title} style={{ flex: 1, borderRadius: 14, borderWidth: 1, borderColor: tokens.border, backgroundColor: tokens.card, padding: 22 }}>
-              <Text style={{ fontFamily: geist("600"), fontSize: 16, letterSpacing: -0.16, color: tokens.foreground, marginBottom: 8 }}>{p.title}</Text>
+              <Text accessibilityRole="header" aria-level={3} style={{ fontFamily: geist("600"), fontSize: 16, letterSpacing: -0.16, color: tokens.foreground, marginBottom: 8 }}>{p.title}</Text>
               <Text style={{ fontFamily: geist("400"), fontSize: 14, lineHeight: 22.7, color: tokens["muted-foreground"] }}>{p.body}</Text>
             </View>
           ))}
@@ -325,7 +325,7 @@ export function Home() {
         <View style={{ flexDirection: wide ? "row" : "column", gap: wide ? 48 : 32, alignItems: "center" }}>
           <View style={{ flex: wide ? 0.9 : undefined, width: "100%" }}>
             <Text style={{ fontFamily: geist("700"), fontSize: 12, letterSpacing: 1.68, textTransform: "uppercase", color: tokens.primary, marginBottom: 12 }}>Get started</Text>
-            <Text style={{ fontFamily: geist("600"), fontSize: sectionTitle, letterSpacing: sectionTitle * -0.025, lineHeight: sectionTitle * 1.1, color: tokens.foreground }}>Three props to a styled button.</Text>
+            <Text accessibilityRole="header" aria-level={2} style={{ fontFamily: geist("600"), fontSize: sectionTitle, letterSpacing: sectionTitle * -0.025, lineHeight: sectionTitle * 1.1, color: tokens.foreground }}>Three props to a styled button.</Text>
             <Text style={{ fontFamily: geist("400"), fontSize: 15.5, lineHeight: 24.8, color: tokens["muted-foreground"], maxWidth: 672, marginTop: 12 }}>
               Install the package, import the stylesheet once, and compose. No enum strings, no className soup, no platform forks. Style props group into orthogonal axes (intent, size, density): pass at most one per axis, stack the rest freely.
             </Text>
@@ -378,7 +378,7 @@ export function Home() {
                   <Text style={{ fontFamily: geistMono("600"), fontSize: levelStack ? 22 : 30, color: alpha(tokens["muted-foreground"], 0.6) }}>0{i + 1}</Text>
                   <Row snug alignCenter>
                     {lvl.icon}
-                    <Text style={{ fontFamily: geist("600"), fontSize: 15, color: tokens.foreground }}>{lvl.label}</Text>
+                    <Text accessibilityRole="header" aria-level={3} style={{ fontFamily: geist("600"), fontSize: 15, color: tokens.foreground }}>{lvl.label}</Text>
                   </Row>
                 </View>
                 <View style={{ flex: 1, paddingVertical: 20, paddingHorizontal: 22, gap: 14 }}>
@@ -402,7 +402,7 @@ export function Home() {
       <View style={{ marginTop: 72, paddingVertical: 72, borderTopWidth: 1, borderColor: tokens.border, backgroundColor: alpha(tokens.muted, 0.22) }}>
         <Wrap>
           <Column flush alignCenter>
-            <Text style={{ fontFamily: geist("600"), fontSize: ctaTitle, letterSpacing: ctaTitle * -0.028, color: tokens.foreground, textAlign: "center" }}>Build your first screen.</Text>
+            <Text accessibilityRole="header" aria-level={2} style={{ fontFamily: geist("600"), fontSize: ctaTitle, letterSpacing: ctaTitle * -0.028, color: tokens.foreground, textAlign: "center" }}>Build your first screen.</Text>
             <Text style={{ fontFamily: geist("400"), fontSize: 16, lineHeight: 25.6, color: tokens["muted-foreground"], maxWidth: 544, textAlign: "center", marginTop: 14, marginBottom: 28 }}>
               Browse every component live, copy the JSX, and ship it to iOS, Android, and web.
             </Text>

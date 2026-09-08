@@ -3,6 +3,7 @@ import { COMPONENTS } from "../../../core/data/components";
 import { CONTENT_TOP_INSET } from "../../../shell/topbar";
 import { ScreenFrame } from "../../../shell/native-header";
 import { PageNav } from "../../../ui/page-nav";
+import { H1 } from "../../../ui/prose";
 import { geist } from "../../../ui/fonts";
 import { CatSubBar, CatGroup } from "../../../catalog/tile";
 import { TOKENS_TILES } from "../../../catalog/tokens";
@@ -40,6 +41,7 @@ export default function ComponentsIndex() {
       contentInsetAdjustmentBehavior="automatic"
       contentContainerStyle={{ paddingTop: CONTENT_TOP_INSET + 24, paddingHorizontal: 28, paddingBottom: 80, gap: 28, width: "100%", maxWidth: 1400, alignSelf: "center" }}
     >
+      <H1>Components</H1>
       <CatSubBar categories={CATEGORY_IDS} total={total} />
 
       <Text style={{ fontFamily: geist("400"), fontSize: 13, lineHeight: 20.8, maxWidth: 672, color: tokens["muted-foreground"], marginTop: -12 }}>

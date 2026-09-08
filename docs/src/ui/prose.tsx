@@ -12,7 +12,7 @@ export const MONO = geistMono("400");
 export function H1({ children }: { children: ReactNode }) {
   const { tokens } = useTheme();
   return (
-    <Text style={{ fontFamily: geist("600"), fontSize: 22, letterSpacing: -0.44, color: tokens.foreground }}>
+    <Text accessibilityRole="header" aria-level={1} style={{ fontFamily: geist("600"), fontSize: 22, letterSpacing: -0.44, color: tokens.foreground }}>
       {children}
     </Text>
   );
@@ -22,7 +22,7 @@ export function H1({ children }: { children: ReactNode }) {
 export function H2({ children }: { children: ReactNode }) {
   const { tokens } = useTheme();
   return (
-    <Text style={{ fontFamily: geist("600"), fontSize: 16, letterSpacing: -0.16, color: tokens.foreground }}>
+    <Text accessibilityRole="header" aria-level={2} style={{ fontFamily: geist("600"), fontSize: 16, letterSpacing: -0.16, color: tokens.foreground }}>
       {children}
     </Text>
   );
@@ -31,7 +31,7 @@ export function H2({ children }: { children: ReactNode }) {
 // Sub-heading — `.h5`: 0.9375rem / 600.
 export function H3({ children }: { children: ReactNode }) {
   const { tokens } = useTheme();
-  return <Text style={{ fontFamily: geist("600"), fontSize: 15, color: tokens.foreground }}>{children}</Text>;
+  return <Text accessibilityRole="header" aria-level={3} style={{ fontFamily: geist("600"), fontSize: 15, color: tokens.foreground }}>{children}</Text>;
 }
 
 // Body — `.body`: 0.875rem / 1.6.

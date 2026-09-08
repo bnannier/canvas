@@ -92,11 +92,11 @@ export function Donts({ donts }: { donts: DocDontPair[] }) {
 
   return (
     <Column relaxed>
-      <Text style={{ fontFamily: geist("600"), fontSize: 20, letterSpacing: -0.3, color: tokens.foreground }}>Don’ts</Text>
+      <Text accessibilityRole="header" aria-level={2} style={{ fontFamily: geist("600"), fontSize: 20, letterSpacing: -0.3, color: tokens.foreground }}>Don’ts</Text>
       {donts.map((d, i) => (
         <Column key={i} snug>
           {d.title ? (
-            <Text style={{ fontFamily: geist("600"), fontSize: 13, color: tokens.foreground }}>{d.title}</Text>
+            <Text accessibilityRole="header" aria-level={3} style={{ fontFamily: geist("600"), fontSize: 13, color: tokens.foreground }}>{d.title}</Text>
           ) : null}
           <View style={{ flexDirection: wide ? "row" : "column", gap: 16 }}>
             <DoDontCard dont caption={d.dont.caption} style={wide ? { flex: 1 } : null}>{d.dont.render(scope)}</DoDontCard>

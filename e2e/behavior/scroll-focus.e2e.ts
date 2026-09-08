@@ -1,4 +1,4 @@
-import { BLOCKING_IMPACTS, scan } from "../support/axe";
+import { BLOCKING_IMPACTS, scan, scanStructure } from "../support/axe";
 import { gotoDocs } from "../support/docs";
 import { expect, test } from "../support/fixtures";
 
@@ -23,6 +23,7 @@ for (const width of [1280, 390]) {
       await expect(page.getByTestId("scroll-inline").locator('[tabindex="0"]')).toHaveCount(0);
       const findings = await scan(page, "body");
       expect(findings.filter((finding) => BLOCKING_IMPACTS.has(finding.impact))).toEqual([]);
+      expect(await scanStructure(page, "body", ["scrollable-region-focusable"])).toEqual([]);
     });
   }
 }
@@ -55,6 +56,7 @@ for (const scheme of ["light", "dark"] as const) {
     await page.screenshot({ path: screenshot, fullPage: true });
     await testInfo.attach("token-colors-phone", { path: screenshot, contentType: "image/png" });
     const findings = await scan(page, "body");
-    expect(findings.filter((finding) => BLOCKING_IMPACTS.has(finding.impact) || finding.id === "page-has-heading-one")).toEqual([]);
+    expect(findings.filter((finding) => BLOCKING_IMPACTS.has(finding.impact))).toEqual([]);
+    expect(await scanStructure(page, "body", ["page-has-heading-one", "scrollable-region-focusable"])).toEqual([]);
   });
 }

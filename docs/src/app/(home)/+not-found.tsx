@@ -7,7 +7,7 @@ export default function NotFound() {
   return (
     <Page>
       <Column cozy alignStart style={{ paddingVertical: 40 }}>
-        <Text style={{ fontSize: 24, fontWeight: "700", color: tokens.foreground }}>Page not found</Text>
+        <Text accessibilityRole="header" aria-level={1} style={{ fontSize: 24, fontWeight: "700", color: tokens.foreground }}>Page not found</Text>
         <Text style={{ fontSize: 14, color: tokens["muted-foreground"] }}>That page doesn’t exist.</Text>
         <Link href="/" style={{ color: tokens.primary, fontSize: 14, fontWeight: "600" }}>
           ← Back to home

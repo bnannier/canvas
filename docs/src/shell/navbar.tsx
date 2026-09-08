@@ -147,27 +147,29 @@ function WebNav() {
         </View>
       </Row>
       {!wide ? (
-        <TabBar
-          items={[
-            ...MOBILE_SECTIONS.map((s) => ({
-              key: s.id,
-              label: s.label,
-              icon: (active: boolean) => <Icon {...sectionIcon(s.icon, active)} size={22} />,
-            })),
-            // Search opens the shared modal rather than navigating to a section.
-            { key: SEARCH_TAB, label: "Search", icon: () => <Icon search muted size={22} /> },
-          ]}
-          active={section}
-          onSelect={(key) => {
-            if (key === SEARCH_TAB) {
-              setSearchOpen(true);
-              return;
-            }
-            const s = MOBILE_SECTIONS.find((m) => m.id === key);
-            if (s) router.push(s.href as never);
-          }}
-          bottomInset={insets.bottom}
-        />
+        <View role="navigation" accessibilityLabel="Primary" aria-label="Primary">
+          <TabBar
+            items={[
+              ...MOBILE_SECTIONS.map((s) => ({
+                key: s.id,
+                label: s.label,
+                icon: (active: boolean) => <Icon {...sectionIcon(s.icon, active)} size={22} />,
+              })),
+              // Search opens the shared modal rather than navigating to a section.
+              { key: SEARCH_TAB, label: "Search", icon: () => <Icon search muted size={22} /> },
+            ]}
+            active={section}
+            onSelect={(key) => {
+              if (key === SEARCH_TAB) {
+                setSearchOpen(true);
+                return;
+              }
+              const s = MOBILE_SECTIONS.find((m) => m.id === key);
+              if (s) router.push(s.href as never);
+            }}
+            bottomInset={insets.bottom}
+          />
+        </View>
       ) : null}
       {!wide ? (
         <Sidebar responsive open={menuOpen} onOpenChange={setMenuOpen} onNavigate={() => setMenuOpen(false)} />

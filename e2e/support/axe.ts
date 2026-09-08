@@ -10,8 +10,8 @@
  *
  * The tag list is the WCAG success criteria only. axe's "best-practice" rules are
  * useful advice and mostly about document structure (landmarks, heading order, a
- * region for every piece of content), which is a page's job rather than a component
- * library's, and every react-native-web app trips them.
+ * region for every piece of content). The separate structural scan enforces these
+ * rules on complete documentation pages, including moderate-impact findings.
  */
 import AxeBuilder from "@axe-core/playwright";
 import type { Page, TestInfo } from "@playwright/test";
@@ -22,20 +22,17 @@ export const WCAG_TAGS = ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"
 /** Impacts that fail a run. Minor and moderate findings are attached, not enforced. */
 export const BLOCKING_IMPACTS = new Set(["serious", "critical"]);
 
-/**
- * Rules turned off, each with the reason.
- *
- * This list is meant to stay short and to hold only structural artifacts of
- * react-native-web itself, never a real defect that is inconvenient to fix.
- */
-export const KNOWN_RNW_RULES: Record<string, string> = {
-  "scrollable-region-focusable": [
-    "react-native-web renders every ScrollView as a scrollable div with no tabindex,",
-    "so a keyboard cannot scroll it without focusing something inside. That is a real",
-    "question for the kit, but it belongs to ScrollView and to react-native-web rather",
-    "than to any component page, and filing it on all 102 of them says nothing new.",
-  ].join(" "),
-};
+/** Whole-page requirements, explicitly selected because WCAG tags omit several. */
+export const STRUCTURAL_RULES = [
+  "heading-order",
+  "page-has-heading-one",
+  "landmark-one-main",
+  "landmark-no-duplicate-banner",
+  "landmark-banner-is-top-level",
+  "landmark-unique",
+  "region",
+  "scrollable-region-focusable",
+];
 
 export interface Violation {
   id: string;
@@ -50,11 +47,24 @@ export async function scan(page: Page, selector: string): Promise<Violation[]> {
   const results = await new AxeBuilder({ page })
     .include(selector)
     .withTags(WCAG_TAGS)
-    .disableRules(Object.keys(KNOWN_RNW_RULES))
     .analyze();
 
+  return summarize(results.violations);
+}
+
+/** Structural findings are enforced at every impact, separately from WCAG policy. */
+export async function scanStructure(
+  page: Page,
+  selector = "body",
+  rules = STRUCTURAL_RULES,
+): Promise<Violation[]> {
+  const results = await new AxeBuilder({ page }).include(selector).withRules(rules).analyze();
+  return summarize(results.violations);
+}
+
+function summarize(violations: Awaited<ReturnType<AxeBuilder["analyze"]>>["violations"]): Violation[] {
   const order = ["critical", "serious", "moderate", "minor"];
-  return results.violations
+  return violations
     .map((violation) => ({
       id: violation.id,
       impact: violation.impact ?? "unknown",

@@ -55,7 +55,7 @@ export function ComponentReference() {
     <Page>
       {/* Component pages use a larger title (28/700) than the generic page header. */}
       <View style={{ gap: 6 }}>
-        <Text style={{ fontFamily: geist("700"), fontSize: 28, letterSpacing: -0.42, color: tokens.foreground }}>{comp.name}</Text>
+        <Text accessibilityRole="header" aria-level={1} style={{ fontFamily: geist("700"), fontSize: 28, letterSpacing: -0.42, color: tokens.foreground }}>{comp.name}</Text>
         <Lead>{stripHtml(comp.description)}</Lead>
       </View>
       {examples.length > 0 ? (

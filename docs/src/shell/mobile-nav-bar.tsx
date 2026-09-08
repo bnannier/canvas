@@ -51,7 +51,7 @@ export function MobileNavBar({
 }) {
   const { tokens } = useTheme();
   return (
-    <GlassSurface style={{ height: BAR_HEIGHT, borderBottomWidth: 1, borderColor: tokens.border, backgroundColor: tokens.background }}>
+    <GlassSurface role="banner" style={{ height: BAR_HEIGHT, borderBottomWidth: 1, borderColor: tokens.border, backgroundColor: tokens.background }}>
       <Row flush fill alignCenter style={{ paddingHorizontal: 12 }}>
         <Column flush alignStart style={{ width: SIDE }}>
           {showBack ? <CircleButton label="Back" onPress={onBack} icon={<Icon chevronLeft size={20} />} /> : null}
