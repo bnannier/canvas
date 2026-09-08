@@ -80,6 +80,37 @@ Run these journeys in light and dark appearance, using screen-reader gestures:
    and backward navigation. Record clipped labels, missing state announcements,
    focus escapes and duplicate announcements as failures, with a reproduction.
 
+## iOS accessibility escape ownership
+
+On the identified physical VoiceOver device, run these checks in both appearances.
+Use the actual two-finger scrub gesture, not a simulated JavaScript event. Record
+the focused target, visible state, callback counters and resulting announcement.
+
+1. In `testing/escape-layers?scenario=drawer`, open the drawer and child menu.
+   Focus Archive and scrub once. Only the menu should close, without selecting;
+   scrub again from Drawer content to request the parent close. Repeat with
+   `drawer-disabled`: disabled Archive still permits cancellation. Verify nested
+   drawers on the Drawer docs page, with the inner drawer closing first.
+2. In the same drawer scenario, open the child ActionSheet and scrub. No action
+   should run; the drawer should remain. Repeat for the standalone sheet in
+   `testing/escape-layers?scenario=glass-messages`, and cancel its built-in Dialog.
+   Record the actual glass or accessibility-degraded material being exercised.
+3. Open `testing/escape-layers?scenario=alert-gated`, activate Open gated alert
+   and enter an incomplete confirmation token. Delete draft must stay disabled.
+   Scrub to cancel, then verify Cancellations: 1, Confirmations: 0 and Closes: 1.
+   Reopen and verify the confirmation field is empty and confirm remains disabled.
+4. With an explicitly controlled owner that keeps its child open, make two
+   distinct escape requests. Each must request child cancellation once; neither
+   may dismiss or confirm the parent. Record the owner's actual policy and
+   callbacks, not just the painted state.
+
+Source and host-event tests establish the intended ownership and callback policy.
+Simulator accessibility hierarchies do not establish this gesture or spoken focus
+return. If physical access or signing is missing, retain these checks as pending.
+Android system back and browser keyboard Escape are separate input paths; report
+their observations separately. Sidebar drill-down navigation also owns a separate
+back action, whereas accessibility escape dismisses its containing overlay.
+
 ## Autocomplete accessibility-focus return
 
 Run these additional journeys in both appearances on the identified candidate.

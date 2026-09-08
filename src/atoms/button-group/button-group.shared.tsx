@@ -1,3 +1,4 @@
+import { EscapeLayerProvider, useEscapeLayer } from "../../style/escape-layer.js";
 import { useRef, useState } from "react";
 import { type GestureResponderEvent } from "react-native";
 import { View, Pressable, Text, RippleClip, cornerRadii, useTheme, useControllableState, AnchoredOverlay, useOverlayHost, useMeasuredWidth, devWarn, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle } from "../../style/index.js";
@@ -307,6 +308,7 @@ export function createButtonGroup(skin: ButtonGroupSkin) {
   }) {
     const { tokens } = useTheme();
     const [open, setOpen] = useState(false);
+    const escapeScope = useEscapeLayer(open, () => setOpen(false));
     const triggerHeight = s.sizeHeight[size];
     // Measure the split control so the dropdown can match its width and never
     // render narrower than the button it drops from.
@@ -359,6 +361,7 @@ export function createButtonGroup(skin: ButtonGroupSkin) {
           </Pressable>
         </RippleClip>
         <AnchoredOverlay
+          onAccessibilityEscape={escapeScope.onAccessibilityEscape}
           open={open}
           onDismiss={() => setOpen(false)}
           triggerRef={triggerRef}
@@ -372,6 +375,7 @@ export function createButtonGroup(skin: ButtonGroupSkin) {
           // rules read straight between the items.
           opaque
         >
+          <EscapeLayerProvider scope={escapeScope}>
           {/* role="menu" gives the menuitem rows a valid ARIA parent; without it
               each menuitem is orphaned and web SRs/validators flag it. */}
           <View accessibilityRole="menu" role="menu" aria-label="More actions">
@@ -389,6 +393,7 @@ export function createButtonGroup(skin: ButtonGroupSkin) {
               </Pressable>
             ))}
           </View>
+          </EscapeLayerProvider>
         </AnchoredOverlay>
       </View>
     );

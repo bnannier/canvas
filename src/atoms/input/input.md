@@ -2,6 +2,10 @@
 
 The Input component is a React Native text field with semantic boolean props (`error`, `small`, `large`, `block`, `disabled`), plus prefix/suffix addons and overlaid icons. Input is single-line; for multi-line entry use the dedicated Textarea. Pass `label` (and `required`) to name the field: iOS and web render the label above the control, while Android floats the Material 3 in-container label. Select and the search field share its look, and Field and Form compose that label with helper and error text.
 
+Inside an overlay, Escape follows the overlay's cancellation policy. A supplied
+`onKeyPress` runs first and can call `preventDefault()` to handle Escape locally.
+Cancelling an IME candidate keeps the overlay open.
+
 ## Usage
 
 ```tsx

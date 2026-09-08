@@ -2,6 +2,12 @@
 
 Catalyst-style confirmation dialog: a centered panel over a dimmed, blurred backdrop, with a title, description, optional body, and action buttons. Reserve it for decisions that must block the rest of the app.
 
+Browser Escape and iOS accessibility escape cancel the dialog, clear its
+confirmation field and request `open=false`. The confirmation text gates only
+the confirm action; cancellation remains available while confirm is disabled.
+An open child overlay handles dismissal first. A controlled owner can refuse
+closure without passing that request to a parent or calling `onConfirm`.
+
 ## Usage
 
 ```tsx
@@ -77,8 +83,8 @@ button enables, so it is a real safety check rather than a decorative field. Pas
 ### Controlled
 
 Drive the open state from outside the dialog: omit `trigger`, own `open` yourself,
-and pass `onOpenChange` so every way the dialog closes (confirm, cancel, or Escape
-on the web) reports back and keeps your state in sync. The readout below is wired
+and pass `onOpenChange` so every way the dialog closes (confirm, cancel, browser
+Escape or iOS accessibility escape) reports back and keeps your state in sync. The readout below is wired
 to that same state, so it flips the moment `onOpenChange` fires. (`Stateful` is a
 docs-only state holder; in an app you would hold `open` with `useState`.)
 

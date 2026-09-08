@@ -28,7 +28,7 @@
 // palette, and the calendar peek keep the material.
 
 import { createContext, type ReactNode, type RefObject, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
-import { View, Pressable, StyleSheet, useWindowDimensions, type LayoutChangeEvent, type StyleProp, type ViewStyle } from "react-native";
+import { View, Pressable, StyleSheet, useWindowDimensions, type LayoutChangeEvent, type StyleProp, type ViewStyle, type ViewProps } from "react-native";
 import { Portal, useOverlayHost, type OverlayHost } from "./portal.js";
 import { GlassSurface } from "./glass-surface/glass-surface.js";
 import { PlainSurface } from "./glass-surface/glass-surface.shared.js";
@@ -52,6 +52,8 @@ export interface AnchoredOverlayProps {
   open: boolean;
   /** Called when a tap off the card should dismiss it. */
   onDismiss: () => void;
+  /** Native accessibility escape for the owning overlay scope. */
+  onAccessibilityEscape?: ViewProps["onAccessibilityEscape"];
   /** Ref to the trigger view the card anchors below. */
   triggerRef: RefObject<View | null>;
   /** Gap between the trigger's bottom edge and the card's top (default 4). */
@@ -137,6 +139,7 @@ export interface AnchoredOverlayProps {
 export function AnchoredOverlay({
   open,
   onDismiss,
+  onAccessibilityEscape,
   triggerRef,
   gap = 4,
   children,
@@ -161,7 +164,7 @@ export function AnchoredOverlay({
   if (!host) {
     return open ? (
       <Entrance anchor style={inlineStyle}>
-        <OverlayCard cardStyle={cardStyle} opaque={opaque} onMount={onCardMount} ownsScroll={ownsScroll} decoration={decoration}>{children}</OverlayCard>
+        <OverlayCard onAccessibilityEscape={onAccessibilityEscape} cardStyle={cardStyle} opaque={opaque} onMount={onCardMount} ownsScroll={ownsScroll} decoration={decoration}>{children}</OverlayCard>
       </Entrance>
     ) : null;
   }
@@ -171,6 +174,7 @@ export function AnchoredOverlay({
       host={host}
       open={open}
       onDismiss={onDismiss}
+      onAccessibilityEscape={onAccessibilityEscape}
       triggerRef={triggerRef}
       gap={gap}
       cardStyle={cardStyle}
@@ -202,6 +206,7 @@ function OverlayCard({
   decoration,
   ownsScroll,
   onLayout,
+  onAccessibilityEscape,
   ready = true,
 }: {
   cardStyle?: StyleProp<ViewStyle>;
@@ -211,6 +216,7 @@ function OverlayCard({
   decoration?: ReactNode;
   ownsScroll?: boolean;
   onLayout?: (event: LayoutChangeEvent) => void;
+  onAccessibilityEscape?: ViewProps["onAccessibilityEscape"];
   ready?: boolean;
 }) {
   // Latch the callback so the usual fresh-closure-per-render caller cannot re-arm
@@ -233,11 +239,12 @@ function OverlayCard({
   // solid mode, so an option list looks and lays out the same under either
   // theming surface, and no glass is hand-painted anywhere.
   const content = ownsScroll ? children : <OverlayScrollView>{children}</OverlayScrollView>;
-  if (opaque) return <PlainSurface style={cardStyle} onLayout={onLayout}>{decoration}{content}</PlainSurface>;
-  return <GlassSurface style={cardStyle} onLayout={onLayout}>{decoration}{content}</GlassSurface>;
+  if (opaque) return <PlainSurface style={cardStyle} onLayout={onLayout} onAccessibilityEscape={onAccessibilityEscape}>{decoration}{content}</PlainSurface>;
+  return <GlassSurface style={cardStyle} onLayout={onLayout} onAccessibilityEscape={onAccessibilityEscape}>{decoration}{content}</GlassSurface>;
 }
 
 interface HostedProps {
+  onAccessibilityEscape?: ViewProps["onAccessibilityEscape"];
   host: OverlayHost;
   open: boolean;
   onDismiss: () => void;
@@ -317,7 +324,7 @@ export function placeOverlay(
   return { left: Math.max(CLAMP_INSET, x), top: below.top };
 }
 
-function HostedAnchoredOverlay({ host, open, onDismiss, triggerRef, gap, cardStyle, dismissable, cardWidth, centered, preferSide, alignEnd, rtl, opaque, onCardMount, ownsScroll, children, decoration }: HostedProps) {
+function HostedAnchoredOverlay({ host, open, onDismiss, onAccessibilityEscape, triggerRef, gap, cardStyle, dismissable, cardWidth, centered, preferSide, alignEnd, rtl, opaque, onCardMount, ownsScroll, children, decoration }: HostedProps) {
   const [rect, setRect] = useState<Rect | null>(null);
   // The outlet's width, captured alongside the trigger measure; only needed for
   // width-aware (clamped) placement.
@@ -444,7 +451,7 @@ function HostedAnchoredOverlay({ host, open, onDismiss, triggerRef, gap, cardSty
         <OverlaySideContext.Provider value={anchorGeometry}>
           <OverlayScrollContext.Provider value={report}>
             <Entrance anchor anchorBottom={fit.side === "above"} ready={measured} style={{ position: "absolute", left: horizontal.left, right: horizontal.right, top: fit.top, bottom: fit.bottom }}>
-              <OverlayCard cardStyle={cappedStyle} opaque={opaque} onMount={onCardMount} ownsScroll={ownsScroll} onLayout={onCardLayout} ready={measured} decoration={decoration}>{children}</OverlayCard>
+              <OverlayCard onAccessibilityEscape={onAccessibilityEscape} cardStyle={cappedStyle} opaque={opaque} onMount={onCardMount} ownsScroll={ownsScroll} onLayout={onCardLayout} ready={measured} decoration={decoration}>{children}</OverlayCard>
             </Entrance>
           </OverlayScrollContext.Provider>
         </OverlaySideContext.Provider>

@@ -4,6 +4,11 @@ A modal dialog: a centered panel over a dimmed, blurred backdrop, with a title, 
 
 On light glass, the description and currency prefix use the stronger foreground color. For custom body content, use the default `Typography` foreground for message copy over the dimmed background.
 
+Browser Escape and iOS accessibility escape cancel the foremost open child
+overlay before the dialog. Cancelling the dialog calls `onCancel` and requests
+`open=false`, including destructive dialogs and dialogs with custom children.
+A controlled owner may keep it open; that request never confirms an action.
+
 ## Usage
 
 ```tsx

@@ -1,3 +1,4 @@
+import { useInputEscapeBridge } from "../../style/escape-layer.js";
 import { forwardRef, useId, useState } from "react";
 import { type TextInput as RNTextInput, type TextInputProps as RNTextInputProps } from "react-native";
 import { View, Text, TextInput, useTheme, useFieldWidth, FloatingLabel, LabelContent, FOCUS_RESET, type FieldWidthProps, type StyleProp, type TextStyle, type ViewStyle } from "../../style/index.js";
@@ -101,6 +102,7 @@ export function createTextarea(skin: TextareaSkin) {
     const size = sizeOf(props);
     const [focused, setFocused] = useState(false);
     const { tokens } = useTheme();
+    const onKeyPress = useInputEscapeBridge(props.onKeyPress);
     // Flush implies block: a flush textarea sits inside a framed container (a
     // toolbar Card) whose frame IS the field edge, so the container governs width
     // and a standard cap would leave a dead gutter inside the frame.
@@ -185,7 +187,7 @@ export function createTextarea(skin: TextareaSkin) {
       returnKeyType: props.returnKeyType,
       textContentType: props.textContentType,
       onSubmitEditing: props.onSubmitEditing,
-      onKeyPress: props.onKeyPress,
+      onKeyPress,
       testID: props.testID,
       // Internal focus styling chains with (never replaces) the consumer's handlers.
       onFocus: (e: Parameters<NonNullable<RNTextInputProps["onFocus"]>>[0]) => {

@@ -174,7 +174,7 @@ export function createSelect(skin: SelectSkin) {
       setOpen(false);
     };
 
-    // Escape closes the open option list on web (no-op natively).
+    // Escape closes the open option list via browser Escape or native accessibility escape.
     const escapeScope = useEscapeLayer(open, () => setOpen(false));
 
     // Anchor the floating option list to the trigger: its measured width is the
@@ -285,6 +285,7 @@ export function createSelect(skin: SelectSkin) {
         </RippleClip>
 
         <AnchoredOverlay
+          onAccessibilityEscape={escapeScope.onAccessibilityEscape}
           ownsScroll
           open={open}
           onDismiss={() => setOpen(false)}

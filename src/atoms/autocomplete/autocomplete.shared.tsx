@@ -188,7 +188,7 @@ export function createAutocomplete(skin: AutocompleteSkin) {
     const host = useOverlayHost();
     const { width: triggerWidth, onLayout: onTriggerLayout } = useMeasuredWidth();
 
-    // Escape closes the open option list on web (no-op natively). A disabled
+    // Escape closes the open option list via browser Escape or native accessibility escape. A disabled
     // control renders no list, so it never subscribes.
     const escapeScope = useEscapeLayer(open, () => {
       accessibilityReturn.cancel();
@@ -401,6 +401,7 @@ export function createAutocomplete(skin: AutocompleteSkin) {
         </View>
 
         <AnchoredOverlay
+          onAccessibilityEscape={escapeScope.onAccessibilityEscape}
           ownsScroll
           open={open}
           onDismiss={() => {

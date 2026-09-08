@@ -1,8 +1,31 @@
 import { useState } from "react";
 import {
-  ActionSheet, Autocomplete, Column, Command, DataTable, DescriptionList,
+  ActionSheet, AlertDialog, Autocomplete, Column, Command, DataTable, DescriptionList,
   Dialog, Drawer, Dropdown, ThemeProvider, Typography, useTheme,
 } from "@nannier-com/canvas";
+
+function GatedAlertBody() {
+  const [open, setOpen] = useState(false);
+  const [cancellations, setCancellations] = useState(0);
+  const [confirmations, setConfirmations] = useState(0);
+  const [closes, setCloses] = useState(0);
+  return (
+    <Column relaxed>
+      <Typography testID="alert-cancellations">Cancellations: {cancellations}</Typography>
+      <Typography testID="alert-confirmations">Confirmations: {confirmations}</Typography>
+      <Typography testID="alert-closes">Closes: {closes}</Typography>
+      <AlertDialog overlay destructive withInput trigger="Open gated alert"
+        title="Delete draft?" description="Type DELETE to confirm this sample action."
+        confirmLabel="Delete draft" cancelLabel="Keep draft" open={open}
+        onOpenChange={(next) => {
+          setOpen(next);
+          if (!next) setCloses((count) => count + 1);
+        }}
+        onCancel={() => setCancellations((count) => count + 1)}
+        onConfirm={() => setConfirmations((count) => count + 1)} />
+    </Column>
+  );
+}
 
 function GlassMessagesBody() {
   const { scheme } = useTheme();
@@ -37,6 +60,7 @@ export function EscapeLayersBody({ scenario }: { scenario?: string }) {
   const [menuSelected, setMenuSelected] = useState("None");
   const [menuSelections, setMenuSelections] = useState(0);
   if (scenario === "glass-messages") return <GlassMessagesBody />;
+  if (scenario === "alert-gated") return <GatedAlertBody />;
   const menu = (
     <Dropdown trigger="Open menu" items={[{ label: "Rename" }, { label: "Archive", disabled: scenario === "drawer-disabled" }]}
       onSelect={(item) => {

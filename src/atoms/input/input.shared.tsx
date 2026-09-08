@@ -1,3 +1,4 @@
+import { useInputEscapeBridge } from "../../style/escape-layer.js";
 import { forwardRef, useId, useState } from "react";
 import {
   type GestureResponderEvent,
@@ -200,6 +201,7 @@ export function createInput(skin: InputSkin) {
     const size = sizeOf(props);
     const [focused, setFocused] = useState(false);
     const { tokens } = useTheme();
+    const onKeyPress = useInputEscapeBridge(props.onKeyPress);
     const widthCap = useFieldWidth(props);
     // One collision-free id for the label so the field can name itself via
     // aria-labelledby (unconditional hook: the id is cheap and always available).
@@ -253,7 +255,7 @@ export function createInput(skin: InputSkin) {
       returnKeyType: props.returnKeyType,
       textContentType: props.textContentType,
       onSubmitEditing: props.onSubmitEditing,
-      onKeyPress: props.onKeyPress,
+      onKeyPress,
       testID: props.testID,
       // Internal focus styling chains with (never replaces) the consumer's handlers.
       onFocus: (e: Parameters<NonNullable<RNTextInputProps["onFocus"]>>[0]) => {

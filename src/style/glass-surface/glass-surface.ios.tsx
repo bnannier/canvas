@@ -43,7 +43,7 @@ try {
   BlurView = undefined;
 }
 
-export function GlassSurface({ style, children, pointerEvents, testID, role, onLayout, interactive = false, sheer, tint }: GlassSurfaceProps) {
+export function GlassSurface({ style, children, pointerEvents, testID, role, onLayout, onAccessibilityEscape, interactive = false, sheer, tint }: GlassSurfaceProps) {
   const { surface, dark, tokens, glass, reducedTransparency, increasedContrast } = useTheme();
   // The under-fill behind the material: the caller's `tint` for a bright glass control
   // (the Slider knob), else the glass material's OWN fill, `glass-tint`. It is not the
@@ -53,7 +53,7 @@ export function GlassSurface({ style, children, pointerEvents, testID, role, onL
 
   if (surface !== "glass") {
     return (
-      <PlainSurface style={style} pointerEvents={pointerEvents} testID={testID} role={role} onLayout={onLayout}>
+      <PlainSurface style={style} pointerEvents={pointerEvents} testID={testID} role={role} onLayout={onLayout} onAccessibilityEscape={onAccessibilityEscape}>
         {children}
       </PlainSurface>
     );
@@ -63,7 +63,7 @@ export function GlassSurface({ style, children, pointerEvents, testID, role, onL
   // material below, including the native GlassView: the wrapper's adaptation under
   // Increase Contrast is unverifiable, so the kit guarantees the opaque + bordered
   // result itself.
-  const degraded = degradedGlassSurface({ reducedTransparency, increasedContrast, tokens }, { style, children, pointerEvents, testID, role, onLayout });
+  const degraded = degradedGlassSurface({ reducedTransparency, increasedContrast, tokens }, { style, children, pointerEvents, testID, role, onLayout, onAccessibilityEscape });
   if (degraded) return degraded;
 
   // iOS 26+: the genuine system Liquid Glass material. The glass tint sits UNDER the
@@ -82,6 +82,7 @@ export function GlassSurface({ style, children, pointerEvents, testID, role, onL
         testID={testID}
         role={role}
         onLayout={onLayout}
+        onAccessibilityEscape={onAccessibilityEscape}
         material={
           <>
             <View style={[materialFill(style), { backgroundColor: underFill, opacity: sheer ? SHEER_FILL_OPACITY : 1, pointerEvents: "none" }]} />
@@ -105,6 +106,7 @@ export function GlassSurface({ style, children, pointerEvents, testID, role, onL
         testID={testID}
         role={role}
         onLayout={onLayout}
+        onAccessibilityEscape={onAccessibilityEscape}
         material={
           <>
             <View style={[materialFill(style), { backgroundColor: underFill, opacity: sheer ? SHEER_FILL_OPACITY : 1, pointerEvents: "none" }]} />
@@ -122,7 +124,7 @@ export function GlassSurface({ style, children, pointerEvents, testID, role, onL
   }
 
   return (
-    <PlainSurface style={style} pointerEvents={pointerEvents} testID={testID} role={role} onLayout={onLayout}>
+    <PlainSurface style={style} pointerEvents={pointerEvents} testID={testID} role={role} onLayout={onLayout} onAccessibilityEscape={onAccessibilityEscape}>
       {children}
     </PlainSurface>
   );

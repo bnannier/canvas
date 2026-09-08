@@ -66,12 +66,42 @@ Slider is the keyboard reference (`src/atoms/slider/slider.shared.tsx`):
 - Mirror it for VoiceOver/switch-control: `accessibilityActions` +
   `onAccessibilityAction` increment/decrement (lines 246-247, 174-180).
 
-Overlays close on Escape via `useEscapeKey(active, onEscape)`
-(`src/style/use-escape-key.ts`, re-exported from `src/style/index.ts:19`): a
-document-level keydown listener while `active`, no-op when `document` is
-undefined (native/SSR). Wired in dropdown (`:96`), select (`:89`), combobox
-(`:144`), popover (`:87`), row-menu (`:58`), dialog (`:135`), alert-dialog
-(`:157`). Applies to: sliders, and every anchored/portal overlay.
+Overlay shells use `useEscapeLayer(active, onEscape)` from
+`src/style/escape-layer.ts`. Republish `EscapeLayerProvider` inside portaled
+content so logical child ownership survives registry teleportation. The public
+`useEscapeKey` signature remains unchanged.
+
+Browser Escape uses the shared document listener and consumes matching keyup
+and repeat events. Native dismissal uses committed owner ancestry and the
+receiving owner's active descendants, independently of preview skin. Wire
+`scope.onAccessibilityEscape` to an existing content-containing native View;
+anchored cards pass it through `AnchoredOverlay`, which forwards it through the
+existing surface host. Retain a callback-bearing plain host with
+`collapsable={false}` when necessary. Do not add a layout wrapper or
+`accessible={true}` grouping, and do not attach the callback only to RN Modal,
+which does not forward arbitrary View events into its native window.
+
+RNW TextInput stops keydown propagation before calling `onKeyPress`. Semantic
+Input and Textarea use the internal `useInputEscapeBridge`: call the consumer's
+handler first, preserve IME cancellation and local default prevention, then
+dispatch Escape through the same ownership path. Specialized raw TextInput
+editors must explicitly preserve their local cancellation policy and delegate
+unhandled Escape. Test a focused field's actual keydown and matching keyup;
+dispatching only on `document` cannot verify this path.
+
+Route native Modal `onRequestClose` and existing hardware-back callbacks through
+the same scope. One request dismisses one foremost active owner. A controlled
+child refusing closure retains ownership of later requests; do not optimistically
+mark it inactive or fall through to its parent. Late requests from an inactive
+or unmounted host do nothing. Browser keyup bookkeeping does not apply to iOS
+accessibility escape gestures. The gesture cancels Dialog/AlertDialog even when
+confirmation is disabled, without confirming. Static inline Popover and
+trigger-less Command content do not become dismissal layers.
+
+Native host-event tests exercise callback wiring and state policy. They do not
+prove VoiceOver gestures, spoken announcements or native focus restoration;
+those require the identified physical-device protocol in
+`tools/native/accessibility.md`.
 
 ## (c) Dialog focus management
 
