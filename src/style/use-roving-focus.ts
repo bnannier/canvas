@@ -1,4 +1,5 @@
 import { useCallback, useRef } from "react";
+import { Platform } from "react-native";
 
 // Roving-focus keyboard navigation for composite widgets (tablist, radiogroup,
 // listbox, menu). The WAI-ARIA pattern: the group is ONE tab stop (the active item
@@ -6,11 +7,11 @@ import { useCallback, useRef } from "react";
 // activate the one focus lands on. This lives here once so Tabs, RadioGroup,
 // Listbox, and the Dropdown menu share a single implementation.
 //
-// Web-only in effect, like useEscapeKey and the Slider's own onKeyDown: react-native-web
-// forwards `onKeyDown` to the DOM node and `focusable` to tabIndex, while natively
-// there is no onKeyDown to fire and `focusable` only governs hardware-keyboard focus,
-// so the same code adds keyboard operability on the web without a render branch or a
-// Platform check. It moves DOM focus through refs the caller wires to each item.
+// Roving tab stops apply to the browser runtime. On Android, focusable=false
+// also removes Pressable's native click handler, so inactive rows would lose
+// TalkBack activation and let hover reach controls behind them. Native rows keep
+// focusable=true/tabIndex=0; their owner still supplies disabled when needed.
+// The web-only onKeyDown handler moves DOM focus through the registered refs.
 
 type Focusable = { focus?: () => void } | null;
 
@@ -30,10 +31,10 @@ export interface RovingFocusOptions {
 }
 
 export interface RovingItemProps {
-  /** Native focusability: in the D-pad/hardware-keyboard order only when active. */
+  /** Only the active row is focusable on web; native rows retain click support. */
   focusable: boolean;
-  /** Web tab order: 0 for the active item, -1 for the rest (react-native-web's
-   *  Pressable reads `tabIndex` directly and ignores `focusable`). */
+  /** Web tab order: 0 for the active item, -1 for the rest. Native uses 0 for
+   * every row so tabIndex does not disable Pressable's native click handler. */
   tabIndex: number;
   /** Ref that captures the item's host node so arrows can move focus to it. */
   ref: (node: Focusable) => void;
@@ -129,8 +130,10 @@ export function useRovingFocus(options: RovingFocusOptions): {
         refs.current[index] = node;
       };
       return {
-        focusable: index === active,
-        tabIndex: index === active ? 0 : -1,
+        ...Platform.select({
+          web: { focusable: index === active, tabIndex: index === active ? 0 : -1 },
+          default: { focusable: true, tabIndex: 0 },
+        }),
         ref: refSetters.current[index],
         onKeyDown,
       };

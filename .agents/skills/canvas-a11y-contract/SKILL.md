@@ -39,8 +39,20 @@ tab, disclosure trigger, listbox/select/combobox/command option, slider, progres
 ## (b) Keyboard operability on the web
 
 A focusable web control needs `onKeyDown`. `View` has no native `onKeyDown`, so
-route the handler in through a cast and the tab stop through `focusable`; both
-are no-ops on native. Slider is the reference (`src/atoms/slider/slider.shared.tsx`):
+route that handler through a cast. `focusable` and `tabIndex` DO affect native
+controls: RN 0.74 and 0.86 map `tabIndex={-1}` to `focusable={false}`, which
+removes an Android Pressable's native click handler. Its accessible label can
+remain in the tree while TalkBack hover passes through to a control behind it.
+
+Choose tab-stop metadata by runtime, independently of the preview skin.
+`useRovingFocus` keeps one browser tab stop but returns
+`{ focusable: true, tabIndex: 0 }` for every native row. Autocomplete suggestions
+use `Platform.select({ web: -1, default: undefined })` so native Pressable keeps
+its default activation without moving editing focus on open. Owners still set
+`disabled` for disabled controls. Do not apply this to intentionally inaccessible
+backdrops or assume a ScrollView has the same native prop behavior.
+
+Slider is the keyboard reference (`src/atoms/slider/slider.shared.tsx`):
 
 - Tab stop: `focusable={!disabled}` (RNW maps it to `tabIndex` 0/-1; disabled
   drops it OUT of the tab order), line 229.
