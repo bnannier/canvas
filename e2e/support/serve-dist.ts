@@ -9,6 +9,7 @@
  *   bun e2e/support/serve-dist.ts --root docs/dist --base /canvas # a subpath export
  */
 import { startStaticServer } from "./static-server";
+import { get } from "node:https";
 
 const flag = (name: string): string | undefined => {
   const argv = process.argv;
@@ -28,13 +29,20 @@ async function main() {
   const base = flag("base") ?? "";
   const spa = !has("no-spa");
 
-  const server = await startStaticServer({ root, port, base, headers: has("headers"), spa });
+  const server = await startStaticServer({ root, port, base, headers: has("headers"), spa, https: has("https") });
 
   // A stale or missing export is the single most likely reason a run fails
   // mysteriously, so say so here rather than letting every test time out.
   if (spa) {
-    const probe = await fetch(`${server.url}/`);
-    if (!probe.ok) {
+    const ok = server.certificate
+      ? await new Promise<boolean>((resolve, reject) => {
+          get(`${server.url}/`, { ca: server.certificate }, (response) => {
+            response.resume();
+            resolve(response.statusCode === 200);
+          }).on("error", reject);
+        })
+      : (await fetch(`${server.url}/`)).ok;
+    if (!ok) {
       console.error(
         `No index.html under ${root}. Build the docs export first:\n` +
           `  cd docs && bun run build:web\n` +

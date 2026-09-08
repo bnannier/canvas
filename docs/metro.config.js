@@ -10,11 +10,20 @@
 //     source (which also restores per-OS .ios/.android skin resolution on native).
 const { getDefaultConfig } = require("expo/metro-config");
 const path = require("path");
+const { createHash } = require("node:crypto");
+const { readBuildInfo } = require("./scripts/build-info.cjs");
 
 const projectRoot = __dirname;
 const repoRoot = path.resolve(projectRoot, "..");
 
 const config = getDefaultConfig(projectRoot);
+
+// Expo embeds Constants.expoConfig in its web transform. That transform does not
+// track dynamic app-config inputs such as Git revision or package metadata.
+// Include the same identity in Metro's cache key so a new candidate never reuses
+// a prior candidate's embedded manifest, on either a local export or CI.
+config.cacheVersion = `${config.cacheVersion ?? ""}:canvas-${createHash("sha256")
+  .update(JSON.stringify(readBuildInfo(repoRoot))).digest("hex")}`;
 
 config.watchFolders = [repoRoot];
 config.resolver.nodeModulesPaths = [path.resolve(projectRoot, "node_modules")];

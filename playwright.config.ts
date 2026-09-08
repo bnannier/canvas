@@ -28,7 +28,9 @@ const CI = !!process.env.CI;
 // The suite serves the export itself unless something is already running.
 const OWN_SERVER_PORT = 4173;
 const TOKENS_SERVER_PORT = 4174;
-const baseURL = process.env.E2E_BASE_URL ?? `http://127.0.0.1:${OWN_SERVER_PORT}`;
+const baseURL = process.env.E2E_BASE_URL ?? `https://127.0.0.1:${OWN_SERVER_PORT}`;
+const localCertificate = new URL(baseURL).protocol === "https:"
+  && ["localhost", "127.0.0.1"].includes(new URL(baseURL).hostname);
 const basePath = process.env.E2E_BASE_PATH ?? "";
 
 // Screenshot baselines are rasterized by the CI runner's font stack. macOS renders
@@ -64,6 +66,9 @@ export default defineConfig({
   use: {
     ...devices["Desktop Chrome"],
     baseURL,
+    // The fixture creates a short-lived loopback certificate. Trust it only in
+    // these isolated browser contexts, never in the host's certificate store.
+    ignoreHTTPSErrors: localCertificate,
     viewport: { width: 1280, height: 900 },
     deviceScaleFactor: 1,
     locale: "en-US",
@@ -86,6 +91,24 @@ export default defineConfig({
     { name: "responsive", testDir: "./e2e/responsive" },
     { name: "behavior", testDir: "./e2e/behavior" },
     { name: "a11y", testDir: "./e2e/a11y" },
+    ...(["chromium", "firefox", "webkit"] as const).map((browserName) => ({
+      name: `journeys-${browserName}`,
+      testDir: "./e2e/journeys",
+      testMatch: ["**/keyboard.e2e.ts", "**/identity.e2e.ts"],
+      use: { browserName, userAgent: undefined },
+    })),
+    {
+      name: "touch-chromium",
+      testDir: "./e2e/journeys",
+      testMatch: ["**/touch.e2e.ts", "**/identity.e2e.ts"],
+      use: { ...devices["Pixel 7"], browserName: "chromium" },
+    },
+    {
+      name: "touch-webkit",
+      testDir: "./e2e/journeys",
+      testMatch: ["**/touch.e2e.ts", "**/identity.e2e.ts"],
+      use: { ...devices["iPhone 13"], browserName: "webkit" },
+    },
     {
       name: "visual",
       testDir: "./e2e/visual",
@@ -98,8 +121,9 @@ export default defineConfig({
     ? undefined
     : [
         {
-          command: `bun e2e/support/serve-dist.ts --root docs/dist --port ${OWN_SERVER_PORT} --headers${basePath ? ` --base ${basePath}` : ""}`,
-          url: `http://127.0.0.1:${OWN_SERVER_PORT}${basePath}/`,
+          command: `bun e2e/support/serve-dist.ts --root docs/dist --port ${OWN_SERVER_PORT} --headers --https${basePath ? ` --base ${basePath}` : ""}`,
+          url: `https://127.0.0.1:${OWN_SERVER_PORT}${basePath}/`,
+          ignoreHTTPSErrors: true,
           reuseExistingServer: !CI,
           timeout: 20_000,
           stdout: "pipe",

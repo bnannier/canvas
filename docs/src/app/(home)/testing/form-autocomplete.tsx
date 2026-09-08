@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { useLocalSearchParams } from "expo-router";
 import { Autocomplete, Column, Drawer, Form, Input, Switch, Typography } from "@nannier-com/canvas";
-import { Autocomplete as IosAutocomplete } from "../../../../src/atoms/autocomplete/autocomplete.ios";
-import { Autocomplete as AndroidAutocomplete } from "../../../../src/atoms/autocomplete/autocomplete.android";
-import { Page, PageHeader } from "../../ui/page";
+import { Autocomplete as IosAutocomplete } from "../../../../../src/atoms/autocomplete/autocomplete.ios";
+import { Autocomplete as AndroidAutocomplete } from "../../../../../src/atoms/autocomplete/autocomplete.android";
+import { Page, PageHeader } from "../../../ui/page";
 
 const FRUIT = [
   "Apple", "Apricot", "Banana", "Cherry", "Dates", "Elderberry", "Fig", "Grapefruit",
