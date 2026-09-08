@@ -1,0 +1,233 @@
+appId: com.nannier.canvas.starter.smoke
+name: Sealed Canvas native candidate after measured drag
+---
+- assertVisible:
+    id: carousel-current
+    text: 'Current page: 3'
+- assertVisible:
+    id: carousel-changes
+    text: 'Page changes: 1'
+- assertVisible: Slide 3 of 6, current slide
+- assertVisible:
+    id: carousel-page-3
+- takeScreenshot: carousel-swiped-page
+- tapOn: Slide 6 of 6
+- assertVisible:
+    id: carousel-current
+    text: 'Current page: 6'
+- assertVisible:
+    id: carousel-changes
+    text: 'Page changes: 2'
+- assertVisible: Slide 6 of 6, current slide
+- assertVisible:
+    id: carousel-page-6
+- takeScreenshot: carousel-picker-jump
+# The diagnostic retains the actual visible host band after keyboard dismissal.
+# Keep the keyboard open until the previously obscured final match is selected.
+- openLink: canvas-smoke:///testing/form-autocomplete?scenario=keyboard
+- scrollUntilVisible:
+    element:
+      id: overlay-visible-measurement
+      text: 'Visible: [1-9][0-9]* to [1-9][0-9]*'
+    direction: DOWN
+- takeScreenshot: autocomplete-visible-band-before-keyboard
+- scrollUntilVisible:
+    element:
+      id: fruit-input
+    direction: UP
+- tapOn:
+    id: fruit-input
+- inputText: Ap
+- scrollUntilVisible:
+    element:
+      text: Pineapple
+    direction: DOWN
+- takeScreenshot: autocomplete-final-match-with-keyboard
+- tapOn: Pineapple
+- assertVisible:
+    id: fruit-input
+    text: Pineapple
+- hideKeyboard
+- scrollUntilVisible:
+    element:
+      id: selection-count
+    direction: DOWN
+- assertVisible:
+    id: selection-count
+    text: '1'
+- assertVisible:
+    id: submit-count
+    text: '0'
+- scrollUntilVisible:
+    element:
+      id: overlay-resize-observation
+    direction: DOWN
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - assertVisible:
+          id: overlay-resize-observation
+          text: Visible overlay height shrank
+- takeScreenshot: autocomplete-visible-band-after-selection
+- openLink: canvas-smoke:///testing/form-autocomplete?scenario=modal-keyboard
+- tapOn: Open fruit drawer
+- assertVisible:
+    id: overlay-visible-measurement
+    text: 'Visible: [1-9][0-9]* to [1-9][0-9]*'
+- takeScreenshot: drawer-visible-band-before-keyboard
+- tapOn:
+    id: drawer-fruit-input
+- inputText: Ap
+- scrollUntilVisible:
+    element:
+      text: Pineapple
+    direction: DOWN
+- takeScreenshot: drawer-final-match-with-keyboard
+- tapOn: Pineapple
+- assertVisible:
+    id: drawer-fruit-input
+    text: Pineapple
+# Submit the active iOS input through its real keyboard action. A generic
+# dismiss gesture cannot reach a keyboard inside this native Modal reliably.
+- runFlow:
+    when:
+      platform: iOS
+    commands:
+      - tapOn:
+          id: Return
+      - assertNotVisible:
+          id: space
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - hideKeyboard
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - assertVisible:
+          id: overlay-resize-observation
+          text: Visible overlay height shrank
+- takeScreenshot: drawer-visible-band-after-selection
+- openLink: canvas-smoke:///testing/form-autocomplete?scenario=command-keyboard
+- scrollUntilVisible:
+    element:
+      id: overlay-visible-measurement
+      text: 'Visible: [1-9][0-9]* to [1-9][0-9]*'
+    direction: DOWN
+- scrollUntilVisible:
+    element:
+      id: keyboard-command
+    direction: UP
+- tapOn: Search...
+# Opening the actual mounted card must focus its input without another tap.
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - assertVisible:
+          text: Search work items
+          focused: true
+# iOS can report focused=false for an active native text host. Actual typing
+# without another tap plus the visible software space key verifies input focus.
+- inputText: Work
+- assertVisible: Work
+- runFlow:
+    when:
+      platform: iOS
+    commands:
+      - assertVisible:
+          id: space
+# Native hierarchy visibility does not account for clipping by the results pane.
+# Require the last row above the actual footer before selecting it.
+- scrollUntilVisible:
+    element:
+      text: Work item 40
+      above: to navigate
+    direction: DOWN
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - assertVisible:
+          text: Search work items
+          focused: true
+- runFlow:
+    when:
+      platform: iOS
+    commands:
+      - assertVisible:
+          id: space
+- assertVisible: to navigate
+- assertVisible: to select
+- assertVisible: to close
+- takeScreenshot: command-final-result-with-keyboard
+# Typing after a real results drag proves that input focus was preserved.
+- inputText: ' item'
+- assertVisible:
+    id: command-query
+    text: 'Query: Work item'
+- runFlow:
+    when:
+      platform: iOS
+    commands:
+      - assertVisible:
+          id: space
+- scrollUntilVisible:
+    element:
+      text: Work item 40
+      above: to navigate
+    direction: DOWN
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - assertVisible:
+          text: Search work items
+          focused: true
+- runFlow:
+    when:
+      platform: iOS
+    commands:
+      - assertVisible:
+          id: space
+- assertVisible: to navigate
+- assertVisible: to select
+- assertVisible: to close
+- takeScreenshot: command-before-final-selection
+- tapOn:
+    text: Work item 40
+    above: to navigate
+# Observe search input closure after selection. A generic hideKeyboard can
+# send Android Back when the keyboard is already gone and leave this route.
+- assertNotVisible: Search work items
+- scrollUntilVisible:
+    element:
+      id: command-selected-index
+    direction: DOWN
+- assertVisible:
+    id: command-query
+    text: 'Query: Work item'
+- assertVisible:
+    id: command-selected
+    text: 'Selected: Work item 40'
+- assertVisible:
+    id: command-selected-index
+    text: 'Selected index: 39'
+- assertVisible:
+    id: command-selections
+    text: 'Selections: 1'
+- scrollUntilVisible:
+    element:
+      id: overlay-resize-observation
+    direction: DOWN
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - assertVisible:
+          id: overlay-resize-observation
+          text: Visible overlay height shrank
+- takeScreenshot: command-selected-with-preserved-query

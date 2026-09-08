@@ -1,5 +1,21 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
+import { createHash } from "node:crypto";
+
+/** The pinned CLI emits one JUnit case for each explicit flow invocation. */
+export function successfulMaestroReport(file) {
+  const bytes = fs.readFileSync(file);
+  const xml = bytes.toString("utf8");
+  const suites = [...xml.matchAll(/<testsuite\s[^>]*>/g)];
+  const cases = [...xml.matchAll(/<testcase\s[^>]*>/g)];
+  if (suites.length !== 1 || cases.length !== 1
+    || !/\btests="1"/.test(suites[0][0]) || !/\bfailures="0"/.test(suites[0][0])
+    || !/\bstatus="SUCCESS"/.test(cases[0][0])
+    || /<(?:failure|error|skipped)\b|<!DOCTYPE|<!ENTITY/.test(xml)) {
+    throw new Error("Expected one successful Maestro JUnit case");
+  }
+  return { path: fs.realpathSync(file), sha256: createHash("sha256").update(bytes).digest("hex") };
+}
 
 // Evidence is a fresh sibling of earlier attempts, never a directory inside
 // the installed app, sealed package, binary, source checkout or another attempt.

@@ -3,7 +3,7 @@ import { spawnSync } from "node:child_process";
 import { mkdirSync, mkdtempSync, readFileSync, realpathSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { createEvidenceDirectory, recordNativeAttempt } from "./evidence.mjs";
+import { createEvidenceDirectory, recordNativeAttempt, successfulMaestroReport } from "./evidence.mjs";
 import { fileURLToPath } from "node:url";
 
 const temporary: string[] = [];
@@ -14,6 +14,24 @@ function output() {
   return directory;
 }
 const readResult = (directory: string) => JSON.parse(readFileSync(join(directory, "result.json"), "utf8"));
+
+test("a phase requires one successful JUnit case before its evidence is consumed", () => {
+  const report = join(output(), "report.xml");
+  const success = '<testsuites><testsuite name="Test Suite" tests="1" failures="0"><testcase name="measurement" status="SUCCESS"/></testsuite></testsuites>';
+  writeFileSync(report, success);
+  expect(successfulMaestroReport(report)).toEqual({ path: report, sha256: expect.stringMatching(/^[a-f0-9]{64}$/) });
+  for (const invalid of [
+    "", success.replace('tests="1"', 'tests="0"'), success.replace('failures="0"', 'failures="1"'),
+    success.replace('status="SUCCESS"', 'status="ERROR"'),
+    success.replace('/></testsuite>', '><failure>failed</failure></testcase></testsuite>'),
+    success.replace('/></testsuite>', '><skipped/></testcase></testsuite>'),
+    success.replace('</testsuite>', '<testcase status="SUCCESS"/></testsuite>'),
+    `<!DOCTYPE testsuites>${success}`,
+  ]) {
+    writeFileSync(report, invalid);
+    expect(() => successfulMaestroReport(report)).toThrow("Expected one successful Maestro JUnit case");
+  }
+});
 
 test("invalid evidence CLI arguments fail before reading a candidate or touching a device", () => {
   const script = fileURLToPath(new URL("../../scripts/native-smoke.mjs", import.meta.url));

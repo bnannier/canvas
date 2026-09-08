@@ -6,6 +6,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { verifyNativeFlow } from "../../scripts/verify-native-flow.mjs";
+import { createCarouselContinuation, createCarouselMeasurementCommands } from "./gesture.mjs";
 
 const directories: string[] = [];
 afterEach(() => { for (const directory of directories.splice(0)) rmSync(directory, { recursive: true, force: true }); });
@@ -38,17 +39,46 @@ const maestro = process.env.CANVAS_MAESTRO_BIN;
 const integration = maestro ? test : test.skip;
 
 integration("the installed full parser accepts every canonical flow command", () => {
-  const result = verifyNativeFlow({ maestro });
   const expectedVersion = JSON.parse(readFileSync(new URL("./maestro.json", import.meta.url), "utf8")).version;
-  expect(result.maestroVersion).toBe(expectedVersion);
-  expect(Number.parseInt(result.javaVersion, 10)).toBeGreaterThanOrEqual(17);
-  expect(result.commandCount).toBeGreaterThan(1);
-  expect(result.flowSha256).toBe(createHash("sha256").update(readFileSync(result.flow)).digest("hex"));
-});
+  for (const file of ["candidate.yaml", "after-carousel.yaml"]) {
+    const result = verifyNativeFlow({ maestro, flow: fileURLToPath(new URL(`./flows/${file}`, import.meta.url)) });
+    expect(result.maestroVersion).toBe(expectedVersion);
+    expect(Number.parseInt(result.javaVersion, 10)).toBeGreaterThanOrEqual(17);
+    expect(result.commandCount).toBeGreaterThan(1);
+    expect(result.flowSha256).toBe(createHash("sha256").update(readFileSync(result.flow)).digest("hex"));
+  }
+}, 30_000);
+
+for (const platform of ["ios", "android"] as const) {
+  integration(`the full parser converts generated ${platform} measurement and continuation commands`, () => {
+    // Parser-only geometry. Runtime coordinates always come from that attempt's
+    // current native Card and are measured again before any gesture.
+    const measurement = { generation: 1, status: "ready", index: 1, page: 2,
+      x: 24, y: 190, width: 354, height: 198, screenWidth: 402, screenHeight: 874,
+      pixelRatio: 3, platform, rtl: false };
+    const expected = { nonce: "parser-example-0001", candidateRevision: "a".repeat(40),
+      packageSha256: "b".repeat(64), packageVersion: "1.0.0", platform, scheme: "light" };
+    const measurementFlow = flow(createCarouselMeasurementCommands(expected).map((command) => "- " + JSON.stringify(command)).join("\n"));
+    expect(verifyNativeFlow({ maestro, flow: measurementFlow }).commandCount).toBeGreaterThan(1);
+    const postFlow = fileURLToPath(new URL("./flows/after-carousel.yaml", import.meta.url));
+    const generated = createCarouselContinuation({ expected, measurement, postFlow });
+    const continuation = flow("- assertVisible: unused");
+    writeFileSync(continuation, generated.yaml);
+    const parsed = verifyNativeFlow({ maestro, flow: continuation });
+    expect(parsed.commandCount).toBeGreaterThan(1);
+    expect(parsed.flowSha256).toBe(generated.sha256);
+  }, 30_000);
+}
 
 integration("the installed full parser accepts literal absolute coordinates", () => {
   const file = flow('- swipe:\n    start: "307, 289"\n    end: "95, 289"\n    duration: 400');
   expect(verifyNativeFlow({ maestro, flow: file }).commandCount).toBe(2);
+});
+
+integration("nested flows convert eagerly even when their condition is false", () => {
+  const child = flow('- swipe:\n    start: "${output.start}"\n    end: "${output.end}"');
+  const parent = flow('- runFlow:\n    when:\n      true: "${false}"\n    file: ' + JSON.stringify(child));
+  expect(() => verifyNativeFlow({ maestro, flow: parent })).toThrow("For input string:");
 });
 
 const invalidPoints = [

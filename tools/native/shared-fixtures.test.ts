@@ -73,8 +73,10 @@ test("invalid smoke manifest paths fail before creating any app source", () => {
 
 test("every native flow link targets a route installed from the reviewed manifest", () => {
   const manifest = JSON.parse(readFileSync(resolve(root, "examples/starter/smoke/manifest.json"), "utf8"));
-  const source = readFileSync(resolve(root, "tools/native/flows/candidate.yaml"), "utf8");
-  const commands: unknown = Bun.YAML.parse(source.split("\n---\n")[1]!);
+  const commands: unknown = ["candidate.yaml", "after-carousel.yaml"].map((file) => {
+    const source = readFileSync(resolve(root, "tools/native/flows", file), "utf8");
+    return Bun.YAML.parse(source.split("\n---\n")[1]!);
+  });
   const routes = new Set<string>();
   function visit(value: unknown) {
     if (Array.isArray(value)) value.forEach(visit);
