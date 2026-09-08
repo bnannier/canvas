@@ -1,80 +1,63 @@
-import { View, Text, Icon, Column, useTheme, alpha } from "@nannier-com/canvas";
+import { Alert, Card, CodeBlock, Column, Grid, Typography } from "@nannier-com/canvas";
 import { Page, PageHeader } from "../../../ui/page";
 import { Section } from "../../../ui/section";
-import { P, H3, InlineCode, Rule } from "../../../ui/prose";
-import { Surface } from "../../../ui/tokens-kit";
+import { H3 } from "../../../ui/prose";
 import { PageNav } from "../../../ui/page-nav";
-import { geist } from "../../../ui/fonts";
 
-// Placeholder for the Boilerplate section: a ready-to-clone starter application built on
-// Canvas. The page is intentionally a stub for now; the real boilerplate app and its setup
-// guide are being prepared. The "What this will include" cards describe the planned content
-// so the section reads as work-in-progress rather than empty.
-const PLANNED = [
-  {
-    title: "Clone and run",
-    description:
-      "A starter app pre-wired with @nannier-com/canvas, the ThemeProvider, and the Geist fonts, so you get a running iOS, Android, and web app from the first commit instead of a blank Expo project.",
-  },
-  {
-    title: "Opinionated structure",
-    description:
-      "A sensible project layout (navigation shell, theming, example screens) you can pick up and build features on, following the same conventions as these docs.",
-  },
-  {
-    title: "Universal by default",
-    description:
-      "One codebase targeting iOS, Android, and the web through React Native Web, matching the Canvas react-native-everywhere principle out of the box.",
-  },
+const FEATURES = [
+  { title: "A working workspace", description: "Edit a workspace name, choose a city with Autocomplete, and select workstreams. Save updates the summary; validation explains missing values." },
+  { title: "Preferences you can try", description: "Switch between system, light, and dark appearance, and control the saved-summary panel. Preview immediately, then save or cancel." },
+  { title: "Universal navigation", description: "A Canvas Navbar adapts to smaller screens. A native Drawer hosts its own navigation dropdown, with safe-area and overlay providers in place." },
 ];
 
 export default function BoilerplateScreen() {
-  const { tokens } = useTheme();
   return (
     <Page>
-      <View style={{ gap: 28 }}>
-        <PageHeader
-          title="Boilerplate"
-          description="A ready-to-clone starter application built on Canvas: pick it up and start developing on iOS, Android, and the web from the first commit."
-        />
+      <Column loose>
+        <PageHeader title="Boilerplate" description="A runnable Expo starter for web, iOS, and Android, built with the published Canvas package." />
+        <Alert info block title="An independent consumer" description="The starter has its own package.json and lockfile. Expo resolves the installed Canvas package normally, without docs aliases or a source overlay." />
 
-        {/* Coming-soon callout. Placeholder until the boilerplate app + setup guide land. */}
-        <Surface
-          padding={16}
-          style={{ borderColor: alpha(tokens.primary, 0.32), backgroundColor: alpha(tokens.primary, 0.08) }}
-        >
-          <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
-            <Icon rocket size={18} primary />
-            <View style={{ flex: 1, gap: 2 }}>
-              <Text style={{ fontFamily: geist("600"), fontSize: 14, color: tokens.foreground }}>Coming soon</Text>
-              <Text style={{ fontFamily: geist("400"), fontSize: 13, lineHeight: 19, color: tokens["muted-foreground"] }}>
-                This section is a placeholder. The boilerplate application and its setup guide are being prepared.
-              </Text>
-            </View>
-          </View>
-        </Surface>
-
-        <Rule />
-
-        <Section title="What this will include">
-          <P muted>
-            The boilerplate will be a real Canvas app you can <InlineCode>git clone</InlineCode> and run, not a snippet.
-            Here is what it is shaping up to cover:
-          </P>
-          <Column relaxed style={{ marginTop: 4 }}>
-            {PLANNED.map((item) => (
-              <Surface key={item.title} padding={16}>
-                <Column tight>
-                  <H3>{item.title}</H3>
-                  <P muted>{item.description}</P>
-                </Column>
-              </Surface>
-            ))}
-          </Column>
+        <Section title="Clone and run">
+          <Typography>With access to the repository, install and run the starter from its own directory.</Typography>
+          <CodeBlock copy language="sh" code={[
+            "git clone https://github.com/nannier-com/canvas.git",
+            "cd canvas/examples/starter",
+            "bun install --frozen-lockfile",
+            "bun run web",
+          ].join("\n")} />
+          <Typography muted>The terminal prints the web development URL. For a native app, install the matching platform toolchain and boot a simulator or emulator, then run the appropriate command.</Typography>
+          <CodeBlock copy language="sh" code={["bun run ios", "# or", "bun run android"].join("\n")} />
+          <Typography muted>Native builds require compatible Xcode and CocoaPods on macOS, or the Android SDK and a supported JDK. The starter README contains setup and verification details.</Typography>
         </Section>
 
+        <Section title="Included flows">
+          <Grid columns={3} minTileWidth={240} relaxed>
+            {FEATURES.map((feature) => (
+              <Card key={feature.title}>
+                <Column snug>
+                  <H3>{feature.title}</H3>
+                  <Typography muted>{feature.description}</Typography>
+                </Column>
+              </Card>
+            ))}
+          </Grid>
+          <Typography>All changes live in React memory. Saving keeps them for the current session; reloading or choosing Reset session restores the sample data. There is no backend or account to configure.</Typography>
+        </Section>
+
+        <Section title="Verify your changes">
+          <CodeBlock copy language="sh" code={["bun run typecheck", "bun run build:web"].join("\n")} />
+          <Typography muted>The production web export is written to dist/. Configure an SPA fallback to index.html when hosting it so direct visits to /preferences resolve correctly.</Typography>
+        </Section>
+
+        <Section title="Make it your app">
+          <Typography>Start with src/app/index.tsx and preferences.tsx. The root layout supplies SafeAreaProvider, ThemeProvider, overlay hosting and the navigation stack; src/state/session.tsx owns immutable drafts, validation and saved values.</Typography>
+          <Typography muted>The UI uses Canvas components and semantic props. Typography follows Canvas's default platform/system fonts. No custom Geist assets are loaded, and Text is not globally modified.</Typography>
+          <Typography>For an existing application, install Canvas and its required peers in that app instead. The starter's SDK57 dependencies are a complete Expo application baseline, not a dependency migration recipe.</Typography>
+          <CodeBlock copy language="sh" code="npm install @nannier-com/canvas react react-native react-native-svg" />
+          <Typography muted>The npm package carries its own MIT license. This repository and the starter source remain all rights reserved; the example adds no source license grant.</Typography>
+        </Section>
         <PageNav />
-      </View>
+      </Column>
     </Page>
   );
 }
