@@ -52,7 +52,11 @@ test.skipIf(!existsSync(join(sourceRoot, "dist/index.js")))("release fixtures an
     // Run the real release suite in another process, never mutate this suite's
     // environment. It initializes fixtures, versions with Changesets, restores a
     // bundle, seals a real npm tarball and docs archive, and pushes local refs/tags.
-    const result = Bun.spawnSync([process.execPath, "test", join(sourceRoot, "tools/release/release.test.ts")], {
+    const childReport = join(root, "child-results.xml");
+    const result = Bun.spawnSync([
+      process.execPath, "test", join(sourceRoot, "tools/release/release.test.ts"),
+      "--reporter=junit", `--reporter-outfile=${childReport}`,
+    ], {
       cwd: sourceRoot,
       env: {
         ...env,
@@ -78,8 +82,13 @@ test.skipIf(!existsSync(join(sourceRoot, "dist/index.js")))("release fixtures an
     expect(snapshot()).toEqual(before);
     const diagnostics = result.stderr.toString();
     expect(result.exitCode, diagnostics.slice(-8000)).toBe(0);
-    expect(diagnostics).toContain("seals a real npm tarball and docs archive");
-    expect(diagnostics).not.toContain("(skip)");
+    // Read the child's MACHINE-READABLE report, never its console reporter: bun
+    // prints no per-test line for a passing test, so grepping stderr for a test
+    // name silently stops proving anything. The JUnit file names every case that
+    // ran and counts the skips, so a fixture that quietly skips still fails here.
+    const report = readFileSync(childReport, "utf8");
+    expect(report, diagnostics.slice(-8000)).toContain("seals a real npm tarball and docs archive");
+    expect(report).toMatch(/<testsuites[^>]*\sskipped="0"/);
   } finally {
     rmSync(root, { recursive: true, force: true });
   }
