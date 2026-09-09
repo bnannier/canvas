@@ -43,6 +43,7 @@
     "web": "expo start --web",
     "build:web": "expo export -p web && node scripts/preload-fonts.mjs dist && node scripts/inline-css.mjs dist && node scripts/prepare-pages.mjs dist",
     "lint": "expo lint",
+    "typecheck": "tsc --noEmit",
     "check:nav": "bun scripts/check-nav-sync.ts",
     "check:skins": "bun scripts/check-platform-skins.ts"
   },

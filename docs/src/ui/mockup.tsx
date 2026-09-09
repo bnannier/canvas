@@ -99,10 +99,15 @@ function radius(v: string): number {
 const COLOR_TOKENS = new Set<keyof ColorTokens>([
   "background", "foreground", "card", "card-foreground", "popover", "popover-foreground",
   "primary", "primary-text", "primary-foreground", "secondary", "secondary-foreground", "muted", "muted-foreground",
-  "accent", "accent-foreground", "destructive", "destructive-foreground", "border", "input", "ring",
+  "accent", "accent-foreground", "destructive", "destructive-text", "destructive-foreground",
+  "border", "input", "ring",
 ]);
+// The optional text roles fall back for legacy complete token objects, exactly as
+// the tokens screen resolves them.
 function tokenColor(tokens: ColorTokens, key: keyof ColorTokens): string {
-  return key === "primary-text" ? tokens[key] ?? tokens.primary : tokens[key];
+  if (key === "primary-text") return tokens[key] ?? tokens.primary;
+  if (key === "destructive-text") return tokens[key] ?? tokens.destructive;
+  return tokens[key];
 }
 function color(v: string, tokens: ColorTokens): string | undefined {
   v = v.trim();

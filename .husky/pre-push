@@ -11,3 +11,9 @@ bun run docs:gen:check
 bun run raster:gen:check
 bun run designmd:gen:check
 bunx tsc --noEmit -p docs/src/core/tsconfig.json
+# The core project above covers docs/src/core only. CI gates on the docs app's OWN
+# tsconfig, which also takes in docs/src/app and docs/src/ui, so run the same script
+# CI runs: a kit type change that only breaks a docs screen is invisible to every
+# other check in this hook. `--cwd` rather than a shell `cd`, so the docs workspace
+# resolves its own TypeScript and the hook still runs where docs/ is absent.
+bun run --cwd docs typecheck

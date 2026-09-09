@@ -132,7 +132,10 @@ describe("development hook installation", () => {
     expect(checks[0]).toBe("run typecheck");
     expect(checks.indexOf("run build")).toBeLessThan(checks.indexOf("run verify-package"));
     expect(checks.indexOf("run verify-package")).toBeLessThan(checks.indexOf("run test"));
-    expect(checks.at(-1)).toBe("tsc --noEmit -p docs/src/core/tsconfig.json");
+    expect(checks.at(-2)).toBe("tsc --noEmit -p docs/src/core/tsconfig.json");
+    // The docs app's own tsconfig is the LAST gate, and the one CI fails on: it
+    // covers docs/src/app and docs/src/ui, which the core project above does not.
+    expect(checks.at(-1)).toBe("run --cwd docs typecheck");
   });
 
   test("the first failing check blocks a real push before later successful checks", () => {
