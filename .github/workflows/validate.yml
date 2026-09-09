@@ -166,7 +166,7 @@ jobs:
       # real component prop types.
       - name: Typecheck docs (includes generated examples)
         working-directory: docs
-        run: bunx tsc --noEmit
+        run: bun run typecheck
 
       # Kept per-push: it is the only check that catches CI-only Metro/export bugs
       # before a Pages deploy trips over them. `build:web` is what deploy.yml runs, so
