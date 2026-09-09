@@ -89,7 +89,7 @@ On the web, Space activates the focused control on key release, and Enter also a
 
 ```tsx
 <Pressable style={{ maxWidth: 280, flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 16 }}>
-  <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: "500", color: tokens.destructive }}>Permanently delete account</Text>
+  <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: "500", color: tokens["destructive-text"] ?? tokens.destructive }}>Permanently delete account</Text>
   <View style={{ position: "relative", flexShrink: 0, borderRadius: 9999, width: 36, height: 20, backgroundColor: tokens.primary }}>
     <View style={{ position: "absolute", top: 2, right: 2, borderRadius: 9999, width: 16, height: 16, backgroundColor: tokens.background, ...shadow() }} />
   </View>

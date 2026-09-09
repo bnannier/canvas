@@ -1,3 +1,4 @@
+import { destructiveText } from "../../style/destructive-text.js";
 import { primaryText } from "../../style/primary-text.js";
 import { type ViewStyle, type TextStyle } from "react-native";
 import { type ColorTokens, shadow, alpha } from "../../style/index.js";
@@ -247,7 +248,7 @@ export const iosSkin: DialogSkin = {
     lineHeight: 22,
     fontWeight: "600",
     color: destructive
-      ? t.destructive
+      ? destructiveText(t)
       : confirm
         ? t["primary-foreground"]
         : t["secondary-foreground"],
@@ -301,7 +302,7 @@ export const androidSkin: DialogSkin = {
     lineHeight: 20,
     fontWeight: "500",
     letterSpacing: 0.1,
-    color: destructive ? t.destructive : primaryText(t),
+    color: destructive ? destructiveText(t) : primaryText(t),
   }),
   textButtonRipple: (t) => ({ color: alpha(t.primary, 0.12), borderless: false }),
   formBody: { marginTop: 20 },

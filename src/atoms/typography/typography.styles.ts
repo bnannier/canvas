@@ -1,3 +1,4 @@
+import { destructiveText } from "../../style/destructive-text.js";
 import { primaryText } from "../../style/primary-text.js";
 import { type TextStyle } from "react-native";
 import { alpha, type ColorTokens } from "../../style/index.js";
@@ -137,7 +138,7 @@ export function toneColor(tokens: ColorTokens, dark: boolean, tone: Tone): TextS
     case "primary":
       return { color: primaryText(tokens) };
     case "destructive":
-      return { color: tokens.destructive };
+      return { color: destructiveText(tokens) };
     case "success":
       return { color: tokens.success };
     case "warning":

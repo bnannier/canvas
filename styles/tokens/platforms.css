@@ -488,7 +488,7 @@
   --p-alert-btn-flex:1 1 0 /* @kind other */;--p-alert-btn-min-h:50px;--p-alert-btn-pad:14px 16px;--p-alert-btn-radius:22px;
   --p-alert-btn-font:17px;--p-alert-btn-lh:22px;--p-alert-btn-weight:600;
   --p-alert-cancel-border:0px;--p-alert-cancel-fill:var(--secondary);--p-alert-cancel-label:var(--secondary-foreground);
-  --p-alert-confirm-destructive-fill:var(--secondary);--p-alert-confirm-destructive-label:var(--destructive);
+  --p-alert-confirm-destructive-fill:var(--secondary);--p-alert-confirm-destructive-label:var(--destructive-text);
   /* AlertDialog — iOS 27: borderless 28pt card, two equal capsules; a destructive confirm keeps the GRAY fill and reds only its label */
   --p-ad-scrim:rgba(0,0,0,0.4);--p-ad-radius:28px;--p-ad-border:0px;--p-ad-shadow:0px 10px 15px rgba(0,0,0,0.1);
   --p-ad-title:20px;--p-ad-title-lh:25px;--p-ad-title-weight:700;
@@ -496,7 +496,7 @@
   --p-ad-actions-justify:stretch /* @kind other */;--p-ad-actions-gap:12px;
   --p-ad-btn-flex:1 1 0 /* @kind other */;--p-ad-btn-min-h:50px;--p-ad-btn-pad:14px 16px;--p-ad-btn-radius:999px;--p-ad-btn-font:17px;--p-ad-btn-lh:22px;
   --p-ad-cancel-border:0px;--p-ad-cancel-fill:var(--secondary);--p-ad-cancel-label:var(--secondary-foreground);--p-ad-cancel-weight:400;
-  --p-ad-confirm-weight:600;--p-ad-confirm-destructive-fill:var(--secondary);--p-ad-confirm-destructive-label:var(--destructive);
+  --p-ad-confirm-weight:600;--p-ad-confirm-destructive-fill:var(--secondary);--p-ad-confirm-destructive-label:var(--destructive-text);
   /* Drawer — iOS 27 sheets: lineless, 38pt continuous, soft 0/15/50 elevation, grabber */
   --p-drawer-scrim:rgba(0,0,0,0.2);--p-drawer-border:0px;--p-drawer-shadow:0px 15px 50px rgba(0,0,0,0.18);
   --p-drawer-side-radius:38px;--p-drawer-sheet-radius:38px;
@@ -525,7 +525,7 @@
   --p-menu-label-font:13px;--p-menu-label-lh:18px;--p-menu-label-weight:600;--p-menu-label-pad-x:16px;
   --p-menu-sep-margin:6px;
   --p-menu-row-radius:0px;--p-menu-row-pad-x:16px;--p-menu-row-pad-y:11px;--p-menu-row-gap:12px;--p-menu-row-min-h:44px;
-  --p-menu-row-font:17px;--p-menu-row-lh:22px;--p-menu-destructive:var(--destructive);
+  --p-menu-row-font:17px;--p-menu-row-lh:22px;--p-menu-destructive:var(--destructive-text);
   --p-menu-shortcut-font:15px;--p-menu-shortcut-lh:20px;--p-menu-shortcut-tracking:0.5px;
   /* Radio — iOS: a 22pt ring with a 1.5px border and a 10pt dot */
   --p-radio-ring-small:20px;--p-radio-ring-default:22px;--p-radio-ring-large:24px;
@@ -594,7 +594,8 @@
      labelReserve paddingTop 24): Android floats the M3 in-container label. It rests inside
      the filled box where the placeholder sits (the native placeholder yields, opacity 0)
      and floats up to body-small above the value once the field is open, focused, or
-     filled; the field reserves 24px of top padding so the value clears the floated label. */
+     filled; the field reserves 24px of top padding so the value clears the floated label.
+     Focus uses primary-text and error uses destructive-text, independently of the indicator. */
   --p-label-above-display:none /* @kind other */;--p-label-float-display:block /* @kind other */;
   --p-label-float-reserve:24px;--p-label-float-placeholder:0 /* @kind other */;
   --p-check-size:18px;--p-check-radius:2px;--p-check-border:2px;
@@ -727,14 +728,14 @@
   --p-alert-btn-min-h:40px;--p-alert-btn-pad:10px 12px;--p-alert-btn-radius:20px;--p-alert-btn-tracking:0.1px;
   --p-alert-cancel-border:0px;--p-alert-cancel-fill:transparent;--p-alert-cancel-label:var(--primary-text);
   --p-alert-confirm-fill:transparent;--p-alert-confirm-label:var(--primary-text);
-  --p-alert-confirm-destructive-fill:transparent;--p-alert-confirm-destructive-label:var(--destructive);
+  --p-alert-confirm-destructive-fill:transparent;--p-alert-confirm-destructive-label:var(--destructive-text);
   /* AlertDialog — M3: 28dp elevated card, headline-small title, flat TEXT actions */
   --p-ad-scrim:rgba(0,0,0,0.32);--p-ad-radius:28px;--p-ad-border:0px;--p-ad-shadow:0px 4px 6px rgba(0,0,0,0.1);
   --p-ad-title:24px;--p-ad-title-lh:32px;--p-ad-title-weight:400;--p-ad-desc-gap:16px;
   --p-ad-btn-min-h:40px;--p-ad-btn-pad:10px 12px;--p-ad-btn-radius:20px;
   --p-ad-cancel-border:0px;--p-ad-cancel-fill:transparent;--p-ad-cancel-label:var(--primary-text);
   --p-ad-confirm-fill:transparent;--p-ad-confirm-label:var(--primary-text);
-  --p-ad-confirm-destructive-fill:transparent;--p-ad-confirm-destructive-label:var(--destructive);
+  --p-ad-confirm-destructive-fill:transparent;--p-ad-confirm-destructive-label:var(--destructive-text);
   /* Drawer — M3 sheets: lineless, side 16dp / bottom 28dp, level-1 elevation, 32x4 handle */
   --p-drawer-scrim:rgba(0,0,0,0.32);--p-drawer-border:0px;--p-drawer-shadow:0px 1px 2px rgba(0,0,0,0.05);
   --p-drawer-side-radius:16px;--p-drawer-sheet-radius:28px;--p-drawer-sheet-max:640px /* @kind other */;
@@ -767,15 +768,15 @@
   --p-menu-label-tracking:0.5px;--p-menu-label-pad-x:16px;--p-menu-label-pad-y:8px;
   --p-menu-sep-h:0px;--p-menu-sep-margin:0px;
   --p-menu-row-radius:0px;--p-menu-row-pad-x:16px;--p-menu-row-pad-y:0px;--p-menu-row-gap:12px;--p-menu-row-min-h:48px;
-  --p-menu-destructive:var(--destructive);--p-menu-shortcut-tracking:0.5px;
+  --p-menu-destructive:var(--destructive-text);--p-menu-shortcut-tracking:0.5px;
   /* Tooltip — M3 plain tooltip: 4dp, flat, 400 label, 24dp min height */
   --p-tip-radius:4px;--p-tip-shadow:none;--p-tip-weight:400;--p-tip-min-h:24px;
   /* Radio — M3: a 20dp ring with a 2dp muted outline and a 10dp dot */
   --p-radio-ring-small:18px;--p-radio-ring-default:20px;--p-radio-ring-large:22px;
   --p-radio-dot-small:10px;--p-radio-dot-default:10px;--p-radio-dot-large:12px;
   --p-radio-rest-border:var(--muted-foreground);
-  /* Textarea — M3 filled: an 8% muted wash with a visible resting indicator */
-  --p-textarea-fill:color-mix(in oklab, var(--muted-foreground) 8%, transparent);
+  /* Textarea: M3 opaque muted filled surface with a visible resting indicator */
+  --p-textarea-fill:var(--muted);
   --p-textarea-underline-rest:var(--muted-foreground);--p-field-caption-tracking:0.4px;
   /* Form — M3: prominent 700 title weight, body-small description */
   --p-form-title-weight:700;--p-form-desc-tracking:0.4px;

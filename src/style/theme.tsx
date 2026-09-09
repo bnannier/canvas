@@ -29,6 +29,8 @@ export type Surface = "solid" | "glass";
  *   whose colors shift between appearances.
  * - An explicit `primary-text` overrides brand text independently. A primary-only
  *   override keeps its existing text color; custom brands own their contrast.
+ * - `destructive-text` behaves the same way for error/action text; a destructive-only
+ *   override retains its existing text color without changing the fill contract.
  *
  * The two shapes are unambiguous because `ColorTokens` has no `light`/`dark` key.
  */
@@ -191,10 +193,11 @@ export function ThemeProvider({ dark, light, scheme, ssrScheme, ssrBreakpoint, g
     const base = brand ? {
       ...colorsByScheme[active],
       ...brand,
-      // A primary-only rebrand keeps its existing text color. Brands can supply
-      // primary-text separately for readable labels without changing the fill.
+      // A primary-only or destructive-only rebrand keeps its existing text color.
+      // Explicit text roles can improve readability without changing those fills.
       // Undefined is omission, so it cannot erase the scheme's authored role.
       "primary-text": brand["primary-text"] ?? brand.primary ?? colorsByScheme[active]["primary-text"],
+      "destructive-text": brand["destructive-text"] ?? brand.destructive ?? colorsByScheme[active]["destructive-text"],
     } : colorsByScheme[active];
     return {
       scheme: active,

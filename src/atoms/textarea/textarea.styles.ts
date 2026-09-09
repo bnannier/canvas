@@ -1,5 +1,6 @@
+import { destructiveText } from "../../style/destructive-text.js";
 import { type TextStyle } from "react-native";
-import { type ColorTokens, alpha, type FloatingLabelStyles } from "../../style/index.js";
+import { type ColorTokens, type FloatingLabelStyles } from "../../style/index.js";
 
 // Co-located Textarea skins, one per platform. The field is a multiline
 // TextInput, so every fragment is a TextStyle. The BRAND survives on every
@@ -40,9 +41,9 @@ export interface TextareaSkin extends FloatingLabelStyles<Size> {
   field: (tokens: ColorTokens, state: TextareaFieldState) => TextStyle;
   /**
    * The live character-count line the component renders under the field when
-   * `showCount` is set (end-aligned, "N / max"). Muted at rest, `destructive`
+   * `showCount` is set (end-aligned, "N / max"). Muted at rest, `destructive-text`
    * once the count passes the soft cap so the overage reads as an error. The
-   * BRAND survives (destructive is the token, never a platform red); only the
+   * BRAND survives (the semantic text role, never a platform red); only the
    * type conventions (SF caption tracking on iOS, M3 body-small tracking on
    * Android) change per OS.
    */
@@ -104,7 +105,7 @@ export const webSkin: TextareaSkin = {
   labelAbove: (t, size) => ({ ...aboveLabelType(size), fontWeight: "500", color: t.foreground }),
   // The count line: the established Canvas caption (12/16), muted, turning
   // destructive once the count passes the soft cap.
-  count: (t, over) => ({ fontSize: 12, lineHeight: 16, color: over ? t.destructive : t["muted-foreground"] }),
+  count: (t, over) => ({ fontSize: 12, lineHeight: 16, color: over ? destructiveText(t) : t["muted-foreground"] }),
 };
 
 // ---------- iOS (HIG): .roundedBorder filled multiline field ----------
@@ -132,11 +133,11 @@ export const iosSkin: TextareaSkin = {
   labelAbove: (t, size) => ({ ...aboveLabelType(size), fontWeight: "600", letterSpacing: -0.15, color: t.foreground }),
   // The count line: an SF Pro caption (12/16, -0.08 tracking), the secondary
   // gray, turning destructive once the count passes the soft cap.
-  count: (t, over) => ({ fontSize: 12, lineHeight: 16, letterSpacing: -0.08, color: over ? t.destructive : t["muted-foreground"] }),
+  count: (t, over) => ({ fontSize: 12, lineHeight: 16, letterSpacing: -0.08, color: over ? destructiveText(t) : t["muted-foreground"] }),
 };
 
 // ---------- Android (Material 3 filled): subtle fill + active indicator ------
-// A subtle fill (~8% of the muted-foreground hue over the surface) with rounded
+// An opaque muted fill, shared with the other M3 filled fields, with rounded
 // top corners (~4) and a square bottom, carrying a bottom active indicator
 // (underline). The indicator is a 1px resting line (the input token) that
 // thickens to 2px indigo `primary` on focus, or destructive on error.
@@ -147,7 +148,7 @@ export const androidSkin: TextareaSkin = {
     borderTopEndRadius: 4,
     borderBottomStartRadius: 0,
     borderBottomEndRadius: 0,
-    backgroundColor: alpha(t["muted-foreground"], 0.08),
+    backgroundColor: t.muted,
     // The active indicator: only the bottom edge is drawn.
     borderBottomWidth: st.focused || st.error ? 2 : 1,
     // Rest baseline must read clearly (on-surface-variant ~ muted-foreground) so the
@@ -173,5 +174,5 @@ export const androidSkin: TextareaSkin = {
   // The count line: M3 supporting text (body-small 12/16, 0.4 tracking), the
   // on-surface-variant gray, turning destructive (M3 error) once the count
   // passes the soft cap.
-  count: (t, over) => ({ fontSize: 12, lineHeight: 16, letterSpacing: 0.4, color: over ? t.destructive : t["muted-foreground"] }),
+  count: (t, over) => ({ fontSize: 12, lineHeight: 16, letterSpacing: 0.4, color: over ? destructiveText(t) : t["muted-foreground"] }),
 };
