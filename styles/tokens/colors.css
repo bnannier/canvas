@@ -17,6 +17,7 @@
   --accent:oklch(0.967 0.001 286.375);
   --accent-foreground:oklch(0.21 0.006 285.885);
   --destructive:oklch(0.577 0.245 27.325);
+  --destructive-text:oklch(0.46 0.185 27.325);
   --destructive-foreground:oklch(0.985 0 0);
   --success:oklch(0.627 0.17 149.214);
   --success-foreground:oklch(0.244800 0.058170 152.469480);
@@ -48,8 +49,8 @@
   --orb-violet:#8b5cf6;
   --orb-cyan:#06b6d4;
 
-  /* Stats delta tone: a rise is green-600, a decline red-600 (400 in dark). */
-  --p-menu-destructive:#dc2626;
+  /* Fixed palette for menu/panel text and activity deltas. */
+  --p-menu-destructive:#b91c1c;
   --panel-danger:#b91c1c;
   --delta-up:#16a34a;
   --delta-down:#dc2626;
@@ -89,6 +90,7 @@
   --accent:oklch(0.274 0.006 286.033);
   --accent-foreground:oklch(0.985 0 0);
   --destructive:oklch(0.704 0.191 22.216);
+  --destructive-text:oklch(0.79 0.12 22.216);
   --destructive-foreground:oklch(0.258 0.092 26.042);
   --success:oklch(0.723 0.192 149.579);
   --success-foreground:oklch(0.266 0.063 152.934);

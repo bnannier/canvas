@@ -1,3 +1,4 @@
+import { destructiveText } from "../../style/destructive-text.js";
 import { StyleSheet, type ViewStyle, type TextStyle } from "react-native";
 import { type ColorTokens, alpha, shadow, surfaceRipple } from "../../style/index.js";
 
@@ -145,7 +146,7 @@ export const webSkin: ActionSheetSkin = {
     lineHeight: 22,
     fontWeight: "400",
     textAlign: "center",
-    color: destructive ? t.destructive : t["popover-foreground"],
+    color: destructive ? destructiveText(t) : t["popover-foreground"],
     opacity: disabled ? 0.4 : 1,
   }),
   cancelRow: { minHeight: 57, alignItems: "center", justifyContent: "center", paddingHorizontal: 16 },
@@ -211,7 +212,7 @@ export const iosSkin: ActionSheetSkin = {
     textAlign: "center",
     // Neutral primary label; red only for destructive; a disabled row goes tertiary
     // gray (the iOS "swap to the tertiary label color" disabled treatment).
-    color: disabled ? alpha(t.foreground, 0.3) : destructive ? t.destructive : t.foreground,
+    color: disabled ? alpha(t.foreground, 0.3) : destructive ? destructiveText(t) : t.foreground,
   }),
   cancelRow: { minHeight: 56, alignItems: "center", justifyContent: "center", paddingHorizontal: 16 },
   cancelLabel: (t) => ({ fontSize: 17, lineHeight: 22, fontWeight: "600", letterSpacing: -0.43, textAlign: "center", color: t.foreground }),
@@ -267,7 +268,7 @@ export const androidSkin: ActionSheetSkin = {
     lineHeight: 24,
     fontWeight: "400",
     letterSpacing: 0.5,
-    color: destructive ? t.destructive : t["popover-foreground"],
+    color: destructive ? destructiveText(t) : t["popover-foreground"],
     opacity: disabled ? 0.38 : 1,
   }),
   cancelRow: { minHeight: 56, flexDirection: "row", alignItems: "center", paddingHorizontal: 24 },

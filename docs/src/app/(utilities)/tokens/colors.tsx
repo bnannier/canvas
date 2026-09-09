@@ -56,6 +56,7 @@ const NEUTRAL_KEYS: { key: keyof ColorTokens; name: string }[] = [
 
 const SEMANTIC_KEYS: { key: keyof ColorTokens; name: string }[] = [
   { key: "destructive", name: "destructive" },
+  { key: "destructive-text", name: "destructive-text" },
   { key: "success", name: "success" },
   { key: "warning", name: "warning" },
   { key: "secondary", name: "secondary" },
@@ -88,12 +89,14 @@ const TOKENS_SRC = `// tokens.ts: plain values for every platform
 export const lightColors = {
   primary: "${colorsByScheme.light.primary}",
   "primary-text": "${colorsByScheme.light["primary-text"]}",
+  "destructive-text": "${colorsByScheme.light["destructive-text"]}",
   background: "${colorsByScheme.light.background}",
   // …
 };
 export const darkColors = {
   primary: "${colorsByScheme.dark.primary}",
   "primary-text": "${colorsByScheme.dark["primary-text"]}",
+  "destructive-text": "${colorsByScheme.dark["destructive-text"]}",
   background: "${colorsByScheme.dark.background}",
   // …
 };`;
@@ -103,7 +106,8 @@ const THEME_RUNTIME = `// ThemeProvider supplies the active scheme;
 const { tokens } = useTheme();
 
 tokens.primary; // Fill: "${colorsByScheme.light.primary}" light, "${colorsByScheme.dark.primary}" dark
-tokens["primary-text"] ?? tokens.primary; // Brand text, including legacy token maps`;
+tokens["primary-text"] ?? tokens.primary; // Brand text, including legacy token maps
+tokens["destructive-text"] ?? tokens.destructive; // Error text, including legacy token maps`;
 
 const DYNAMIC = `<Button primary>Save</Button>
 
@@ -164,9 +168,11 @@ function ramp(tone: StatusTone): string {
   return `${statusHues[tone]}-50 / 200 / 500 / 700`;
 }
 
-// The optional text role falls back for legacy complete token objects.
+// Optional text roles fall back for legacy complete token objects.
 function colorValue(tokens: ColorTokens, key: keyof ColorTokens): string {
-  return key === "primary-text" ? tokens[key] ?? tokens.primary : tokens[key];
+  if (key === "primary-text") return tokens[key] ?? tokens.primary;
+  if (key === "destructive-text") return tokens[key] ?? tokens.destructive;
+  return tokens[key];
 }
 
 export default function ColorsScreen() {
@@ -202,7 +208,7 @@ export default function ColorsScreen() {
 
         <TokenSection
           title="Brand"
-          description="The brand has separate colors for filled controls, labels on those fills, and text on neutral surfaces. primary-text keeps links and text actions readable without changing the primary fill."
+          description="The brand has separate colors for filled controls, labels on those fills, and text on neutral surfaces. primary-text colors links, text actions, and focused Android field labels."
           anatomy="ring is the one brand token that does NOT flip with the scheme: the same indigo-500 in light and dark, so the focus outline reads against a light page, a dark page, and the primary fill it may sit on."
         >
           <Row wrap cozy alignStart>
@@ -230,14 +236,15 @@ export default function ColorsScreen() {
 
         <TokenSection
           title="Semantic"
-          description="The meaning-bearing tones. Each one has a paired foreground token for legible content on top."
-          anatomy="Use the pair together (destructive with destructive-foreground) to guarantee contrast in both schemes; the full set is in the reference table below."
+          description="The meaning-bearing tones. Fill tokens have paired foregrounds for their labels; destructive-text supplies readable error and destructive text on neutral surfaces."
+          anatomy="Use destructive-foreground on a destructive fill, and destructive-text for error text and semantic destructive actions. The default text role also accounts for the kit's tonal capsules and enabled pressed states."
         >
           <Row wrap cozy alignStart>
             {SEMANTIC_KEYS.map((t) => (
               <Sample key={t.key} color={colorValue(tokens, t.key)} name={t.name} />
             ))}
           </Row>
+          <Typography destructive small>Destructive text uses destructive-text.</Typography>
         </TokenSection>
 
         <TokenSection
@@ -345,6 +352,9 @@ export default function ColorsScreen() {
           </Row>
           <Typography small muted>
             CSS hand-off rebrands set both --primary and --primary-text. Setting --primary-text: var(--primary) at the override scope retains the previous single-color behavior. CSS does not apply the ThemeProvider override cascade.
+          </Typography>
+          <Typography small muted>
+            The same override rule applies to destructive and destructive-text. ThemeProvider uses a destructive-only override for semantic error text too; supply destructive-text separately for a readable text shade. CSS consumers set --destructive-text explicitly, or use --destructive-text: var(--destructive) for the previous behavior. Menus with a documented fixed red palette retain their independent colors. Check custom colors against their actual resting and pressed surfaces.
           </Typography>
         </TokenSection>
 

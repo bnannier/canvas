@@ -1,3 +1,4 @@
+import { destructiveText } from "../../style/destructive-text.js";
 import { type ViewStyle, type TextStyle } from "react-native";
 import { type ColorTokens } from "../../style/index.js";
 
@@ -33,7 +34,7 @@ export const webSkin: FieldSkin = {
   message: (t, error) => ({
     fontSize: 12,
     lineHeight: 16,
-    color: error ? t.destructive : t["muted-foreground"],
+    color: error ? destructiveText(t) : t["muted-foreground"],
   }),
 };
 
@@ -49,7 +50,7 @@ export const iosSkin: FieldSkin = {
   message: (t, error) => ({
     fontSize: 12,
     lineHeight: 16,
-    color: error ? t.destructive : t["muted-foreground"],
+    color: error ? destructiveText(t) : t["muted-foreground"],
   }),
 };
 
@@ -66,6 +67,6 @@ export const androidSkin: FieldSkin = {
     fontSize: 12,
     lineHeight: 16,
     letterSpacing: 0.4,
-    color: error ? t.destructive : t["muted-foreground"],
+    color: error ? destructiveText(t) : t["muted-foreground"],
   }),
 };

@@ -1,3 +1,4 @@
+import { destructiveText } from "../../style/destructive-text.js";
 import { type ViewStyle, type TextStyle } from "react-native";
 import { type ColorTokens, palette, shadow, alpha } from "../../style/index.js";
 
@@ -21,7 +22,7 @@ import { type ColorTokens, palette, shadow, alpha } from "../../style/index.js";
 //   Web: the established Canvas look (the current dropdown, lifted verbatim) — a
 //     bordered popover card (6 radius, `border`, `popover` fill, shadow-lg,
 //     padding 4), rows with rounded-sm px-2 py-1.5 layout, hairline `border`
-//     separators, an `accent` pressed/active fill, and `red-600/red-400`
+//     separators, an `accent` pressed/active fill, and `red-700/red-400`
 //     destructive rows.
 
 // The contract a platform skin fulfills. The shell renders the wrapper, the
@@ -57,7 +58,7 @@ export interface DropdownSkin {
   itemTextType: TextStyle;
   /** Leading Canvas icon size (px), sized to sit with the label per platform. */
   iconSize: number;
-  /** Item icon + label color; branches on `destructive`. */
+  /** Item label color; branches on `destructive`. Icons retain their graphic role. */
   itemTextColor: (t: ColorTokens, dark: boolean, destructive: boolean) => TextStyle;
   /** Trailing keyboard shortcut, right-aligned and muted. */
   shortcut: (t: ColorTokens) => TextStyle;
@@ -95,7 +96,7 @@ export const customTrigger: ViewStyle = { alignSelf: "flex-start" };
 // shadow-lg) positioned absolutely below the trigger; rows with the
 // flex-row items-center gap-2 rounded-sm px-2 py-1.5 layout, hairline
 // my-1 h-px bg-border separators, an active:bg-accent pressed fill, and
-// text-red-600 dark:text-red-400 destructive rows.
+// text-red-700 dark:text-red-400 destructive rows.
 export const webSkin: DropdownSkin = {
   menuCard: (t) => ({
     borderRadius: 6,
@@ -131,7 +132,7 @@ export const webSkin: DropdownSkin = {
   itemTextType: { fontSize: 14, lineHeight: 20 },
   iconSize: 16,
   itemTextColor: (t, dark, destructive) => {
-    if (destructive) return { color: dark ? palette["red-400"] : palette["red-600"] };
+    if (destructive) return { color: dark ? palette["red-400"] : palette["red-700"] };
     return { color: t["popover-foreground"] };
   },
   shortcut: (t) => ({
@@ -152,7 +153,7 @@ export const webSkin: DropdownSkin = {
 // continuous radius, matching Apple's Liquid Glass pull-down kit render) over the `popover` fill
 // with NO visible border and a soft shadow; rows ~44pt tall with ~17pt labels,
 // full-bleed hairline `border` separators between groups, a destructive row in
-// the `destructive` red (icon + label), section titles in `muted-foreground`,
+// `destructive-text` labels and destructive icons, section titles in `muted-foreground`,
 // and an optional trailing SF-style icon (e.g. a submenu chevron). A pressed row
 // tints with a subtle `secondary` highlight (no ripple) at pressedOpacity 0.8.
 // iOS 26 menus are markedly rounder than legacy (~13pt) menus; the larger radius
@@ -198,7 +199,7 @@ export const iosSkin: DropdownSkin = {
   itemTextType: { fontSize: 17, lineHeight: 22 },
   iconSize: 20,
   itemTextColor: (t, _dark, destructive) => {
-    if (destructive) return { color: t.destructive };
+    if (destructive) return { color: destructiveText(t) };
     return { color: t["popover-foreground"] };
   },
   shortcut: (t) => ({
@@ -259,7 +260,7 @@ export const androidSkin: DropdownSkin = {
   itemTextType: { fontSize: 14, lineHeight: 20 },
   iconSize: 20,
   itemTextColor: (t, _dark, destructive) => {
-    if (destructive) return { color: t.destructive };
+    if (destructive) return { color: destructiveText(t) };
     return { color: t["popover-foreground"] };
   },
   shortcut: (t) => ({

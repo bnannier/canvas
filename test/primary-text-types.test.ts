@@ -2,7 +2,7 @@ import { expect, it } from "bun:test";
 import { resolve } from "node:path";
 import ts from "typescript";
 
-it("accepts legacy complete ColorTokens literals and the optional foreground role", () => {
+it("accepts legacy complete ColorTokens literals and both optional text roles", () => {
   const root = resolve(import.meta.dir, "..");
   const program = ts.createProgram({
     rootNames: [resolve(import.meta.dir, "fixtures/primary-text-consumer.ts")],

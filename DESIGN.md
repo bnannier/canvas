@@ -22,6 +22,7 @@ colors:
   accent: "#f4f4f5"
   accent-foreground: "#18181b"
   destructive: "#e7000b"
+  destructive-text: "#a70510"
   destructive-foreground: "#fafafa"
   success: "#16a34a"
   success-foreground: "#042812"
@@ -47,6 +48,7 @@ colorsDark:
   accent: "#27272a"
   accent-foreground: "#fafafa"
   destructive: "#ff6467"
+  destructive-text: "#fe9b97"
   destructive-foreground: "#460809"
   success: "#22c55e"
   success-foreground: "#052e16"
@@ -329,6 +331,7 @@ dark keys off a `.dark` class on the root rather than `prefers-color-scheme`.
 | `accent` | `#f4f4f5` | `#27272a` |
 | `accent-foreground` | `#18181b` | `#fafafa` |
 | `destructive` | `#e7000b` | `#ff6467` |
+| `destructive-text` | `#a70510` | `#fe9b97` |
 | `destructive-foreground` | `#fafafa` | `#460809` |
 | `success` | `#16a34a` | `#22c55e` |
 | `success-foreground` | `#042812` | `#052e16` |

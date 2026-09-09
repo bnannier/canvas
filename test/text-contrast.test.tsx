@@ -28,6 +28,10 @@ import * as sidebarSkins from "../src/organisms/sidebar/sidebar.styles.ts";
 import * as navbarSkins from "../src/organisms/navbars/navbars.styles.ts";
 import * as stepsSkins from "../src/organisms/steps/steps.styles.ts";
 import * as calendarSkins from "../src/organisms/calendar/calendar.styles.ts";
+import * as textareaSkins from "../src/atoms/textarea/textarea.styles.ts";
+import * as dropdownSkins from "../src/atoms/dropdown/dropdown.styles.ts";
+import * as rowMenuSkins from "../src/organisms/row-menu/row-menu.styles.ts";
+import { destructiveText } from "../src/style/destructive-text.ts";
 import { toneColor } from "../src/atoms/typography/typography.styles.ts";
 import { Tabs as AndroidTabs } from "../src/organisms/tabs/tabs.android.tsx";
 import { Calendar } from "../src/organisms/calendar/calendar.tsx";
@@ -85,7 +89,7 @@ function textContrast(text: SrgbColor, background: SrgbColor): number {
   return contrast(composite(text, background), background);
 }
 
-type PairedToken = Exclude<keyof ColorTokens, "primary-text">;
+type PairedToken = Exclude<keyof ColorTokens, "primary-text" | "destructive-text">;
 const PAIRS: [PairedToken, PairedToken][] = [
   ["background", "foreground"], ["card", "card-foreground"], ["popover", "popover-foreground"],
   ["primary", "primary-foreground"], ["secondary", "secondary-foreground"], ["muted", "muted-foreground"],
@@ -201,6 +205,101 @@ function neighborhood(color: SrgbColor): Rgba[] {
   }
   return values;
 }
+
+interface TextState { name: string; text: SrgbColor; fill: SrgbColor }
+function opacity(color: SrgbColor, value: number): Rgba {
+  const [r, g, b, a] = rgba(color);
+  return [r, g, b, a * value];
+}
+
+// Parent opacity composites the entire painted group onto its parent. The text
+// does not first blend into the already-dimmed row a second time.
+function groupState(name: string, text: SrgbColor, fill: SrgbColor, parent: SrgbColor, dim = 1): TextState {
+  return { name, text: composite(opacity(text, dim), parent), fill: composite(opacity(fill, dim), parent) };
+}
+
+function destructiveStates(t: ColorTokens): TextState[] {
+  const text = destructiveText(t);
+  const states: TextState[] = (["background", "card", "popover", "muted"] as const)
+    .map(key => ({ name: key, text, fill: t[key] }));
+  const field = textareaSkins.androidSkin.field(t, { focused: false, error: true });
+  states.push({ name: "Android filled Textarea", text, fill: paint(field, "backgroundColor") });
+  const dialog = dialogSkins.iosSkin;
+  const capsule = paint(dialog.capsule!(t, true, true), "backgroundColor");
+  const dialogText = paint(dialog.capsuleLabel!(t, true, true));
+  states.push(groupState("iOS Dialog resting", dialogText, capsule, t.popover));
+  states.push(groupState("iOS Dialog pressed", dialogText, capsule, t.popover, dialog.capsulePressedOpacity!));
+  const alert = alertDialogSkins.iosSkin;
+  states.push(groupState("iOS AlertDialog pressed", paint(alert.confirmLabelStyle!(t, true)),
+    paint(alert.confirmFill!(t, true), "backgroundColor"), t.popover, alert.pressedOpacity!));
+  const dropdown = dropdownSkins.iosSkin;
+  states.push(groupState("iOS Dropdown pressed", paint(dropdown.itemTextColor(t, false, true)),
+    paint(dropdown.itemPressed!(t), "backgroundColor"), t.popover, dropdown.pressedOpacity!));
+  for (const [name, skin] of [["web", actionSheetSkins.webSkin], ["ios", actionSheetSkins.iosSkin], ["android", actionSheetSkins.androidSkin]] as const) {
+    const surface = paint(skin.actionsCard(t), "backgroundColor");
+    const fill = skin.rowFill ? composite(paint(skin.rowFill(t), "backgroundColor"), surface) : surface;
+    const label = paint(skin.rowLabel(t, true, false));
+    states.push(groupState(`${name} ActionSheet resting`, label, fill, surface));
+    if (skin.pressedOpacity != null) {
+      states.push(groupState(`${name} ActionSheet pressed`, label, fill, surface, skin.pressedOpacity));
+    } else if (skin.ripple) {
+      // The ripple is behind the label; test its full declared state-layer alpha.
+      states.push({ name: `${name} ActionSheet ripple`, text: label, fill: composite(skin.ripple(t).color, fill) });
+    }
+  }
+  for (const [name, skin] of [["web", dropdownSkins.webSkin], ["ios", dropdownSkins.iosSkin], ["android", dropdownSkins.androidSkin]] as const) {
+    const label = paint(skin.itemTextColor(t, t === colorsByScheme.dark, true));
+    if (skin.ripple) states.push({ name: `${name} Dropdown ripple`, text: label, fill: composite(skin.ripple(t).color, t.popover) });
+    else if (skin.pressedOpacity == null) states.push({ name: `${name} Dropdown pressed`, text: label, fill: paint(skin.itemPressed!(t), "backgroundColor") });
+  }
+  for (const [name, skin] of [["web", rowMenuSkins.webSkin], ["ios", rowMenuSkins.iosSkin], ["android", rowMenuSkins.androidSkin]] as const) {
+    const label = paint(skin.rowTextColor({ label: "Delete", destructive: true }, false, t, t === colorsByScheme.dark));
+    const fill = skin.ripple ? composite(skin.ripple(t).color, t.popover) : paint(skin.itemPressed(t), "backgroundColor");
+    states.push({ name: `${name} fixed-red RowMenu pressed`, text: label, fill });
+  }
+  return states;
+}
+
+describe("error and destructive text on authored enabled surfaces", () => {
+  for (const scheme of ["light", "dark"] as const) {
+    const t = colorsByScheme[scheme];
+    it(`keeps ${scheme} error/action text readable through surface and press rounding`, () => {
+      const declarations = blockDeclarations(css, scheme === "light" ? ":root" : ".dark").decls;
+      expect(cssColorToHex(declarations["destructive-text"])).toBe(destructiveText(t));
+      for (const { name, text, fill } of destructiveStates(t)) {
+        for (const foreground of neighborhood(text)) for (const background of neighborhood(fill)) {
+          expect(contrast(foreground, background), `${scheme}: ${name}`).toBeGreaterThanOrEqual(4.5);
+        }
+      }
+    });
+
+    it(`keeps the ${scheme} Android Textarea rest label readable on its opaque filled surface`, () => {
+      const fill = paint(textareaSkins.androidSkin.field(t, { focused: false, error: false }), "backgroundColor");
+      expect(fill).toBe(t.muted);
+      for (const foreground of neighborhood(t["muted-foreground"])) for (const background of neighborhood(fill)) {
+        expect(contrast(foreground, background)).toBeGreaterThanOrEqual(4.5);
+      }
+    });
+  }
+
+  it("keeps CSS text aliases separate from fills, indicators and fixed-red menus", () => {
+    const platformCss = readFileSync(new URL("../styles/tokens/platforms.css", import.meta.url), "utf8");
+    for (const platform of ["ios", "android"] as const) {
+      const block = blockDeclarations(platformCss, `[data-platform="${platform}"]`).decls;
+      for (const key of ["p-alert-confirm-destructive-label", "p-ad-confirm-destructive-label", "p-menu-destructive"]) {
+        expect(block[key]).toBe("var(--destructive-text)");
+      }
+      expect(block["p-alert-confirm-destructive-fill"]).toBe(platform === "ios" ? "var(--secondary)" : "transparent");
+    }
+    const web = blockDeclarations(platformCss, ':root,[data-platform="web"]').decls;
+    expect(web["p-alert-confirm-destructive-fill"]).toBe("var(--destructive)");
+    expect(web["p-alert-confirm-destructive-label"]).toBe("var(--destructive-foreground)");
+    expect(blockDeclarations(platformCss, '[data-platform="android"]').decls["p-textarea-fill"]).toBe("var(--muted)");
+    expect(blockDeclarations(css, ":root").decls["p-menu-destructive"]).toBe("#b91c1c");
+    expect(blockDeclarations(css, ".dark").decls["p-menu-destructive"]).toBe("#f87171");
+    for (const t of Object.values(colorsByScheme)) expect(t.ring).toBe("#615fff");
+  });
+});
 
 function baseRule(selector: "a" | "a:hover"): CSSStyleDeclaration {
   const base = readFileSync(new URL("../styles/tokens/base.css", import.meta.url), "utf8");

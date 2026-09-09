@@ -3,12 +3,14 @@ import { Animated } from "react-native";
 import { Text, type TextStyle } from "./primitives.js";
 import { type ColorTokens } from "./tokens.js";
 import { useReducedMotion, supportsNativeDriver } from "./motion.js";
+import { primaryText } from "./primary-text.js";
+import { destructiveText } from "./destructive-text.js";
 
 // The Material 3 in-container FLOATING label, shared by every filled field family
 // (Input, Autocomplete, Select, Textarea). It is the SINGLE source of truth for the
 // label placement contract and its animation, so the four controls float their
 // label identically and a fix lands once. The BRAND survives (the floated tint is
-// the `ring`, the error tint the `destructive`, never a platform default); only
+// `primary-text`, the error tint `destructive-text`, never a platform default); only
 // the shape the per-OS skin describes changes.
 //
 // Placement per platform lives in each skin as a `FloatingLabelStyles` slice:
@@ -21,7 +23,7 @@ import { useReducedMotion, supportsNativeDriver } from "./motion.js";
  * The label-placement slice a filled-field skin fulfills. iOS + web render the
  * label ABOVE the field (`floatingLabel: false`), Android floats the M3
  * in-container label (`floatingLabel: true`, supplying the rest/floated/reserve
- * types). The label's COLOR (muted at rest, brand `ring` on focus, `destructive`
+ * types). The label's COLOR (muted at rest, `primary-text` on focus, `destructive-text`
  * on error) is animated by `FloatingLabel` from the active tokens, so it is not
  * described here.
  */
@@ -180,7 +182,7 @@ export function FloatingLabel<S extends string>({
   const scale = pos.interpolate({ inputRange: [0, 1], outputRange: [1, scaleTo] });
   const color = tint.interpolate({
     inputRange: [0, 1],
-    outputRange: [tokens["muted-foreground"], isError ? tokens.destructive : tokens.ring],
+    outputRange: [tokens["muted-foreground"], isError ? destructiveText(tokens) : primaryText(tokens)],
   });
 
   return (

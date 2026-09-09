@@ -1,5 +1,5 @@
 // Compile the public token interface with a complete literal written before the
-// optional foreground role existed. A required addition would break this consumer.
+// optional text roles existed. A required addition would break this consumer.
 import type { ColorTokens } from "../../src/style/tokens.js";
 
 export const legacy: ColorTokens = {
@@ -21,3 +21,7 @@ export const legacy: ColorTokens = {
 export const branded: ColorTokens = { ...legacy, "primary-text": "rgba(80, 40, 160, 0.9)" };
 // @ts-expect-error The optional role still accepts a color string, not a number.
 export const invalid: ColorTokens = { ...legacy, "primary-text": 42 };
+
+export const errors: ColorTokens = { ...legacy, "destructive-text": "rgba(160, 20, 40, 0.9)" };
+// @ts-expect-error Error text accepts a color string, not a number.
+export const invalidErrors: ColorTokens = { ...legacy, "destructive-text": 42 };

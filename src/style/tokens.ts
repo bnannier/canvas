@@ -24,6 +24,8 @@ export interface ColorTokens {
   accent: string;
   "accent-foreground": string;
   destructive: string;
+  /** Error/action text on neutral surfaces. Omit in legacy maps to use destructive. */
+  "destructive-text"?: string;
   "destructive-foreground": string;
   success: string;
   "success-foreground": string;
@@ -74,6 +76,9 @@ export const lightColors: ColorTokens = {
   accent: "#f4f4f5",
   "accent-foreground": "#18181b",
   destructive: "#e7000b",
+  // Retain the red hue while keeping enabled capsule/pressed text above 4.5:1,
+  // including +/-1 sRGB rounding. The authored OKLCH pair stays inside gamut.
+  "destructive-text": "#a70510",
   "destructive-foreground": "#fafafa",
   success: "#16a34a",
   "success-foreground": "#042812",
@@ -122,6 +127,7 @@ export const darkColors: ColorTokens = {
   accent: "#27272a",
   "accent-foreground": "#fafafa",
   destructive: "#ff6467",
+  "destructive-text": "#fe9b97",
   "destructive-foreground": "#460809",
   success: "#22c55e",
   "success-foreground": "#052e16",

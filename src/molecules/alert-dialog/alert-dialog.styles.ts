@@ -1,3 +1,4 @@
+import { destructiveText } from "../../style/destructive-text.js";
 import { primaryText } from "../../style/primary-text.js";
 import { type ComponentType } from "react";
 import { type ViewStyle, type TextStyle } from "react-native";
@@ -107,7 +108,7 @@ export interface AlertDialogSkin {
   /** The Cancel capsule label (regular 400 weight, on-secondary color). */
   cancelLabelStyle: ((t: ColorTokens) => TextStyle) | null;
   /** The Confirm capsule label (semibold 600; white on the filled primary fill,
-   *  `destructive` red over the gray fill when destructive). */
+   *  `destructive-text` over the gray fill when destructive). */
   confirmLabelStyle: ((t: ColorTokens, destructive: boolean) => TextStyle) | null;
   /** iOS/web dim on press; Android uses a ripple instead (null). */
   pressedOpacity: number | null;
@@ -195,8 +196,8 @@ export const webSkin: AlertDialogSkin = {
 // `popover` fill with a soft shadow and NO border; a LEFT-aligned bold title and a
 // LEFT-aligned `muted-foreground` message. The two actions are CAPSULES side by
 // side (no hairline divider): a gray Cancel capsule (`secondary` fill,
-// `secondary-foreground` text) and a filled Confirm capsule (`primary`, or
-// `destructive` when destructive) with white/`*-foreground` label. The brand
+// `secondary-foreground` text) and a primary Confirm capsule with its paired
+// foreground. A destructive confirm keeps secondary fill and destructive-text. The brand
 // survives: the iOS system blue becomes the indigo `primary` token. Press = opacity
 // dim (~0.85).
 const IOS_RADIUS = 28;
@@ -266,7 +267,7 @@ export const iosSkin: AlertDialogSkin = {
     fontSize: 17,
     lineHeight: 22,
     fontWeight: "600",
-    color: destructive ? t.destructive : t["primary-foreground"],
+    color: destructive ? destructiveText(t) : t["primary-foreground"],
   }),
   pressedOpacity: 0.85,
   ripple: null,
@@ -323,7 +324,7 @@ export const androidSkin: AlertDialogSkin = {
     lineHeight: 20,
     fontWeight: "500",
     letterSpacing: 0.1,
-    color: destructive ? t.destructive : primaryText(t),
+    color: destructive ? destructiveText(t) : primaryText(t),
   }),
   textButtonRipple: (t) => ({ color: alpha(t.primary, 0.12), borderless: false }),
   capsuleRow: null,
