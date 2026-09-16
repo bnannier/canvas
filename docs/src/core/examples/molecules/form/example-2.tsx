@@ -3,17 +3,11 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Checkbox, Form, FormSection, Input } = scope;
+  const { Form, Input } = scope;
   return (
-<Form submitLabel="Save">
-  <FormSection title="Personal info" description="This information will be displayed on your public profile.">
-    <Input label="Full name" defaultValue="Rachel Chen" />
-    <Input label="Email" defaultValue="rachel@example.com" />
-  </FormSection>
-  <FormSection title="Notifications" description="Choose how you'd like to be notified.">
-    <Checkbox defaultChecked>Email notifications</Checkbox>
-    <Checkbox>SMS alerts</Checkbox>
-  </FormSection>
+<Form sm start submitLabel="Sign in">
+  <Input label="Email" placeholder="sm step, pinned to the start (384)" />
+  <Input label="Password" />
 </Form>
   );
 }
