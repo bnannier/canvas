@@ -3,13 +3,22 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { DataTable } = scope;
+  const { Stateful, DataTable } = scope;
   return (
-<DataTable
-  columns={["Name", "Email", "Status"]}
-  rows={[]}
-  bordered
-  emptyMessage="No results found."
-/>
+<Stateful initial={[
+  ["Alice Johnson", "alice@example.com", "Admin"],
+  ["Bob Smith", "bob@example.com", "Editor"],
+  ["Rachel Chen", "rachel@example.com", "Viewer"]
+]}>
+  {(rows, setRows) => (
+    <DataTable
+      columns={["Name", "Email", "Role"]}
+      rows={rows}
+      onRowEdit={() => {}}
+      onRowCommit={(i, cells) => setRows(rows.map((row, r) => (r === i ? cells.map(String) : row)))}
+      onRowDelete={(i) => setRows(rows.filter((_row, r) => r !== i))}
+    />
+  )}
+</Stateful>
   );
 }
