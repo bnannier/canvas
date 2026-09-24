@@ -6,10 +6,9 @@ export default function Example(scope: ExampleScope) {
   const { AvatarMenu } = scope;
   return (
 <AvatarMenu
-  compact
-  name="Marcus Allen"
-  email="admin@example.com"
-  src="/marcus-allen.jpg"
+  name="Rachel Chen"
+  email="rachel.chen@example.com"
+  src="/rachel-chen.jpg"
   items={[
     { label: "Profile", icon: "user" },
     { label: "Settings", icon: "settings" },
