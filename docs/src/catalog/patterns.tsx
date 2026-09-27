@@ -1,4 +1,4 @@
-import { View, Text, Row, Column, useTheme, alpha, Container } from "@ionizeio/canvas";
+import { View, Text, Row, Column, useTheme, alpha, Container } from "@nannier/canvas";
 import Svg, { Defs, RadialGradient, Stop, Rect } from "react-native-svg";
 import { sans, geistMono } from "../ui/fonts";
 import { MiniBtn, type CatTile } from "./tile";

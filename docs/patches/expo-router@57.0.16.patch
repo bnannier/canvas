@@ -6,7 +6,7 @@ index f6c64bef9ecfa028a233566af9b12be79421d8d9..0ab194429116e6d4b9a44bd8b62c2346
      // We need to await the icon, as VectorIcon will load asynchronously
      const icon = (0, icon_1.useAwaitedScreensIcon)(options.icon);
      const selectedIcon = (0, icon_1.useAwaitedScreensIcon)(options.selectedIcon);
-+    // PATCH (@ionizeio/canvas-docs): a tab's `role` is its tab bar item role (iOS reads it
++    // PATCH (@nannier/canvas-docs): a tab's `role` is its tab bar item role (iOS reads it
 +    // from props.options as the tab's systemItem, and "search" draws the separate search
 +    // tab), not an accessibility role. Both platforms' Screen spread these options onto
 +    // react-native-screens' Tabs.Screen, which hands them to its native tab screen, whose

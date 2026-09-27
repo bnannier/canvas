@@ -37,7 +37,7 @@ export const THIRD_PARTY_INTRO =
   "Canvas is built on open source. This page lists every third-party package the app ships, with its licence and copyright notice, and reproduces the full text of each licence. It is generated from the packages actually installed, so it cannot drift from what is in the build.";
 
 export const THIRD_PARTY_CANVAS =
-  "Canvas itself is published to npm as @ionizeio/canvas under the MIT License, and its optional Android blur integration as @ionizeio/canvas-blur under the same licence. This app is their reference documentation.";
+  "Canvas itself is published to npm as @nannier/canvas under the MIT License, and its optional Android blur integration as @nannier/canvas-blur under the same licence. This app is their reference documentation.";
 
 export const THIRD_PARTY_FONTS =
   "The Manrope and Geist Mono typefaces are licensed under the SIL Open Font License 1.1, and the Material Symbols typeface under the Apache License 2.0. Both licences require their text to travel with the bundled font, and both are reproduced in full below.";

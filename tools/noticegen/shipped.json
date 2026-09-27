@@ -16,7 +16,7 @@
   "nativeOnly": [
     "@expo/dom-webview",
     "@expo/log-box",
-    "@ionizeio/canvas-blur",
+    "@nannier/canvas-blur",
     "expo-eas-client",
     "expo-file-system",
     "expo-json-utils",
@@ -57,10 +57,10 @@
     "@expo/ui": [
       "docs/node_modules/@expo/ui"
     ],
-    "@ionizeio/canvas": [
-      "docs/node_modules/@ionizeio/canvas"
+    "@nannier/canvas": [
+      "docs/node_modules/@nannier/canvas"
     ],
-    "@ionizeio/canvas-blur": [
+    "@nannier/canvas-blur": [
       "packages/canvas-blur"
     ],
     "@radix-ui/primitive": [

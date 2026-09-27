@@ -7,7 +7,7 @@ export default function Example(scope: ExampleScope) {
   return (
 <CodeBlock
   terminal
-  code={`$ npm install @ionizeio/canvas
+  code={`$ npm install @nannier/canvas
 added 42 packages in 3s`}
 />
   );

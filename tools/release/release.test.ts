@@ -41,11 +41,11 @@ function fixture(bump = "patch", blurBump?: string) {
   git(repo, "config", "core.hooksPath", path.join(dir, "no-hooks"));
   git(repo, "remote", "add", "origin", remote);
   const { main, types, exports, peerDependencies, peerDependenciesMeta, "react-native": nativeEntry } = JSON.parse(fs.readFileSync(path.resolve("package.json"), "utf8"));
-  write(path.join(repo, "package.json"), { name: "@ionizeio/canvas", version: "2.3.4", main, types, exports, "react-native": nativeEntry, peerDependencies, peerDependenciesMeta, files: ["dist", "styles"], scripts: { changeset: "changeset", "version-packages": "changeset version" } });
+  write(path.join(repo, "package.json"), { name: "@nannier/canvas", version: "2.3.4", main, types, exports, "react-native": nativeEntry, peerDependencies, peerDependenciesMeta, files: ["dist", "styles"], scripts: { changeset: "changeset", "version-packages": "changeset version" } });
   fs.writeFileSync(path.join(repo, "CHANGELOG.md"), "# Changes\n");
   fs.mkdirSync(path.join(repo, ".changeset"));
   fs.copyFileSync(path.resolve(".changeset/config.json"), path.join(repo, ".changeset/config.json"));
-  if (bump) fs.writeFileSync(path.join(repo, ".changeset/fix.md"), `---\n"@ionizeio/canvas": ${bump}\n---\n\nCorrect a behavior.\n`);
+  if (bump) fs.writeFileSync(path.join(repo, ".changeset/fix.md"), `---\n"@nannier/canvas": ${bump}\n---\n\nCorrect a behavior.\n`);
   if (blurBump !== undefined) {
     const metadataFile = path.join(repo, "package.json");
     const metadata = JSON.parse(fs.readFileSync(metadataFile, "utf8"));
@@ -53,7 +53,7 @@ function fixture(bump = "patch", blurBump?: string) {
     write(metadataFile, metadata);
     fs.mkdirSync(path.join(repo, "packages/canvas-blur"), { recursive: true });
     write(path.join(repo, "packages/canvas-blur/package.json"), { ...JSON.parse(fs.readFileSync(path.resolve("packages/canvas-blur/package.json"), "utf8")), version: "0.0.0" });
-    if (blurBump) fs.writeFileSync(path.join(repo, ".changeset/blur.md"), `---\n"@ionizeio/canvas-blur": ${blurBump}\n---\n\nAdd optional Android backdrop capture.\n`);
+    if (blurBump) fs.writeFileSync(path.join(repo, ".changeset/blur.md"), `---\n"@nannier/canvas-blur": ${blurBump}\n---\n\nAdd optional Android backdrop capture.\n`);
   }
   git(repo, "add", ".");
   git(repo, "commit", "-m", "source");
@@ -93,7 +93,7 @@ describe("frozen release transaction", () => {
     const f = fixture("minor", "minor");
     const c = prepare(f.repo, f.candidateDir, f.source, true);
     expect(c.packages.map((p) => [p.name, p.version, p.release])).toEqual([
-      ["@ionizeio/canvas", "2.4.0", true], ["@ionizeio/canvas-blur", "0.1.0", true],
+      ["@nannier/canvas", "2.4.0", true], ["@nannier/canvas-blur", "0.1.0", true],
     ]);
     expect(fs.existsSync(path.join(f.repo, "packages/canvas-blur/CHANGELOG.md"))).toBe(true);
     artifacts(f, c);
@@ -185,8 +185,8 @@ describe("frozen release transaction", () => {
     expect(JSON.parse(packed).version).toBe("2.3.5");
     expect(execFileSync("tar", ["-xOf", path.join(f.artifacts, "docs.tgz"), "./index.html"], { encoding: "utf8" })).toBe("Validated docs bytes");
     expect(execFileSync("tar", ["-xOf", path.join(f.artifacts, m.packageFile), "package/LICENSE"], { encoding: "utf8" })).toContain("MIT License");
-    const blur = path.join(f.artifacts, m.packageFiles["@ionizeio/canvas-blur"]);
-    expect(execFileSync("tar", ["-xOf", blur, "package/LICENSE"], { encoding: "utf8" })).toContain("npm as @ionizeio/canvas-blur");
+    const blur = path.join(f.artifacts, m.packageFiles["@nannier/canvas-blur"]);
+    expect(execFileSync("tar", ["-xOf", blur, "package/LICENSE"], { encoding: "utf8" })).toContain("npm as @nannier/canvas-blur");
     const entries = execFileSync("tar", ["-tzf", blur], { encoding: "utf8" });
     expect(entries).toContain("android/src/main/java/io/ionize/canvas/blur/CanvasBlurModule.kt");
     expect(entries).not.toContain("package/src/");

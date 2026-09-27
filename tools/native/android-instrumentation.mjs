@@ -10,7 +10,7 @@ export function androidInstrumentationPaths(output, app = path.join(output, "app
   const inputs = path.join(output, "android-instrumentation-inputs");
   return {
     inputs, tests: path.join(inputs, sourcePath), init: path.join(inputs, initPath),
-    module: path.join(app, "node_modules/@ionizeio/canvas-blur/android"),
+    module: path.join(app, "node_modules/@nannier/canvas-blur/android"),
     build: path.join(output, "android-capture-build"),
     evidence: path.join(output, "android-instrumentation-evidence"),
   };

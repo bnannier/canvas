@@ -3,7 +3,7 @@
   "configVersion": 1,
   "workspaces": {
     "": {
-      "name": "@nannier-com/canvas-docs",
+      "name": "@nannier/canvas-docs",
       "dependencies": {
         "expo": "~57.0.16",
         "expo-blur": "~57.0.2",

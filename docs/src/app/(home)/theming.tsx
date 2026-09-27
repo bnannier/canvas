@@ -1,4 +1,4 @@
-import { View, Text, Row, Column, ButtonGroup, Button, Card, Checkbox, Switch, ThemeProvider, Typography, useTheme } from "@ionizeio/canvas";
+import { View, Text, Row, Column, ButtonGroup, Button, Card, Checkbox, Switch, ThemeProvider, Typography, useTheme } from "@nannier/canvas";
 import { Page, PageHeader } from "../../ui/page";
 import { Section } from "../../ui/section";
 import { H3, P, Rule, InlineCode } from "../../ui/prose";
@@ -11,7 +11,7 @@ import { useDocsTheme } from "../../theme/docs-theme";
 // The page's teaching snippets. The helper ones mirror src/theme.ts behavior
 // exactly: the CSS handoff reads .dark and data-* attributes. React Native
 // components receive the same choices through their provider and semantic props.
-const NATIVE_PROVIDER = `import { ThemeProvider } from "@ionizeio/canvas";
+const NATIVE_PROVIDER = `import { ThemeProvider } from "@nannier/canvas";
 
 // Wrap the app once. ThemeProvider follows the OS appearance by default;
 // pass the dark / light boolean to force a scheme, mint for the mint palette,
@@ -23,14 +23,14 @@ export function App() {
     </ThemeProvider>
   );
 }`;
-const USE_THEME = `import { useTheme } from "@ionizeio/canvas";
+const USE_THEME = `import { useTheme } from "@nannier/canvas";
 
 // Read the active theme anywhere under the provider.
 const { scheme, palette, surface, tokens, dark } = useTheme();
 // scheme:  "light" | "dark"      palette: "blush" | "mint"
 // surface: "solid" | "glass"     tokens:  active color tokens
 // dark:    scheme === "dark"`;
-const NESTED = `import { ThemeProvider, useTheme } from "@ionizeio/canvas";
+const NESTED = `import { ThemeProvider, useTheme } from "@nannier/canvas";
 import { FONTS, BRAND } from "./theme"; // module constants
 
 // Register the faces once, on the root provider.
@@ -57,18 +57,18 @@ const DARK_TOGGLE = `<!-- Light (default) -->
 
 <!-- Dark -->
 <html class="dark">`;
-const JS_THEME = `import { getTheme, setTheme, toggleTheme } from "@ionizeio/canvas";
+const JS_THEME = `import { getTheme, setTheme, toggleTheme } from "@nannier/canvas";
 
 getTheme();        // "light" | "dark"
 setTheme("dark");  // applies .dark to <html>, persists to localStorage
 toggleTheme();     // switches and returns the new theme`;
-const SYSTEM_PREF = `import { setTheme } from "@ionizeio/canvas";
+const SYSTEM_PREF = `import { setTheme } from "@nannier/canvas";
 
 // Web only. On native, ThemeProvider already follows the OS appearance.
 const mq = window.matchMedia("(prefers-color-scheme: dark)");
 setTheme(mq.matches ? "dark" : "light");
 mq.addEventListener("change", (e) => setTheme(e.matches ? "dark" : "light"));`;
-const PALETTE = `import { ThemeProvider } from "@ionizeio/canvas";
+const PALETTE = `import { ThemeProvider } from "@nannier/canvas";
 
 // Blush is the light default; mint is the light alternative. Dark Factory
 // has one dark palette, so dark wins: <ThemeProvider dark mint> paints dark.
@@ -79,7 +79,7 @@ export function App() {
     </ThemeProvider>
   );
 }`;
-const JS_PALETTE = `import { ThemeProvider, getPalette, setPalette } from "@ionizeio/canvas";
+const JS_PALETTE = `import { ThemeProvider, getPalette, setPalette } from "@nannier/canvas";
 
 getPalette();          // "blush" | "mint", the persisted choice
 setPalette("mint");    // persists it, and sets data-palette="mint" on <html>
@@ -88,7 +88,7 @@ setPalette("blush");   // persists it, and removes the attribute
 // The CSS handoff reads data-palette, and .dark still wins over it. Pass the
 // same choice to ThemeProvider so React Native components follow it.
 <ThemeProvider mint={getPalette() === "mint"}>...</ThemeProvider>`;
-const GLASS = `import { ThemeProvider, getSurface } from "@ionizeio/canvas";
+const GLASS = `import { ThemeProvider, getSurface } from "@nannier/canvas";
 
 // Web: the same provider and the same booleans. getSurface() reads the choice
 // setSurface() persisted (see the helpers below), so it survives a reload.
@@ -100,7 +100,7 @@ export function App() {
     </ThemeProvider>
   );
 }`;
-const JS_SURFACE = `import { getSurface, setSurface } from "@ionizeio/canvas";
+const JS_SURFACE = `import { getSurface, setSurface } from "@nannier/canvas";
 
 getSurface();            // "solid" | "glass", the persisted choice
 setSurface("glass");     // persists it, and sets data-surface="glass" on <html>
@@ -112,7 +112,7 @@ const DENSITY = `// Density is per component, on every platform; omit both for t
 <Card compact>...</Card>
 <Card comfortable>...</Card>
 <DataTable compact columns={columns} rows={rows} />`;
-const JS_DENSITY = `import { getDensity, setDensity } from "@ionizeio/canvas";
+const JS_DENSITY = `import { getDensity, setDensity } from "@nannier/canvas";
 
 getDensity();            // "compact" | "regular" | "comfy", the persisted preference
 setDensity("compact");   // persists it, and sets data-density="compact" on <html>
@@ -124,7 +124,7 @@ const COMBINING = `// One provider carries scheme, palette and surface; density 
 <ThemeProvider light mint glass>
   <Card compact>...</Card>
 </ThemeProvider>`;
-const JS_COMBINE = `import { setTheme, setPalette, setSurface, setDensity } from "@ionizeio/canvas";
+const JS_COMBINE = `import { setTheme, setPalette, setSurface, setDensity } from "@nannier/canvas";
 
 setTheme("dark");       // flips .dark on <html>: the CSS token layer re-themes
 setPalette("mint");     // sets data-palette on <html>; .dark still wins
@@ -316,7 +316,7 @@ export default function ThemingScreen() {
             <Bullet>No semantic token changes: popover and card keep the same opaque values they carry in solid mode. Glass adds its own fills, glass-tint, glass-tint-content, glass-tint-control and glass-tint-dense, painted under the material by the surfaces of each layer</Bullet>
             <Bullet>Brand and status meanings remain readable in every material. Check contrast against actual backgrounds, including scrolling content; a tint token or a decorative rim alone does not establish it</Bullet>
             <Bullet>Solid surfaces retain their full opaque treatment without glass capture. Reduce Transparency and Increase Contrast require readable opaque treatment; Reduce Motion removes nonessential movement without requiring opacity by itself</Bullet>
-            <Bullet>Android blur needs a safe live backdrop target. The optional @ionizeio/canvas-blur integration on Android 12+ with Expo SDK 57 enables capture only while glass needs it. OverlayProvider supplies safe overlay targets. Missing or unsafe material uses the complete solid skin</Bullet>
+            <Bullet>Android blur needs a safe live backdrop target. The optional @nannier/canvas-blur integration on Android 12+ with Expo SDK 57 enables capture only while glass needs it. OverlayProvider supplies safe overlay targets. Missing or unsafe material uses the complete solid skin</Bullet>
             <Bullet>The CSS handoff always carries the web material&apos;s tints, blur and hairline; data-surface marks glass mode and gates the accessibility and print fallbacks that turn the material opaque. It paints no page backdrop of its own and supplies no native material</Bullet>
           </Column>
           <H3>Web helpers</H3>

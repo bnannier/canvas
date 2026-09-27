@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Row, Column, Card, Typography, Button, Badge, Stats, Feed, Tabs, LineChart, Progress, useToast, Grid } from "@ionizeio/canvas";
+import { Row, Column, Card, Typography, Button, Badge, Stats, Feed, Tabs, LineChart, Progress, useToast, Grid } from "@nannier/canvas";
 import type { TemplateDoc } from "../types";
 
 // Admin dashboard built from real Canvas components: a Stats hero row with

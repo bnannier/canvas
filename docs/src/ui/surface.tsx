@@ -1,5 +1,5 @@
 import { type ReactNode } from "react";
-import { GlassSurface, useTheme, type StyleProp, type ViewStyle } from "@ionizeio/canvas";
+import { GlassSurface, useTheme, type StyleProp, type ViewStyle } from "@nannier/canvas";
 
 // A docs CONTENT surface: the preview stages, prop tables, do/don't cards and the
 // long-form panels. In solid mode it is an opaque `card` (or `muted`) panel; in glass

@@ -89,7 +89,7 @@ function runnerFixture(mode: string) {
   const app = path.join(output, "app");
   const files = androidInstrumentationPaths(output, app);
   const inputs = preserveAndroidInstrumentation(repo, output, revision);
-  const name = "@ionizeio/canvas-blur";
+  const name = "@nannier/canvas-blur";
   const unpacked = path.join(output, "unpacked", name, "package");
   write(path.join(unpacked, "package.json"), JSON.stringify({ name, version: "0.1.0" }));
   write(path.join(unpacked, "android/src/main/Production.kt"), "sealed production");
@@ -99,7 +99,7 @@ function runnerFixture(mode: string) {
   write(binary, "sealed release binary");
   write(path.join(app, "package.json"), "{}");
   write(path.join(output, "blur.tgz"), "sealed archive fixture");
-  const identity = { candidateRevision: revision, sourceRevision: revision, packageName: "@ionizeio/canvas", packageVersion: "2.0.0" };
+  const identity = { candidateRevision: revision, sourceRevision: revision, packageName: "@nannier/canvas", packageVersion: "2.0.0" };
   write(path.join(output, "context.json"), JSON.stringify({ schema: 2, identity, appSources: appInventory(app),
     packages: [{ name, version: "0.1.0", filename: "blur.tgz", sha256: sha256(path.join(output, "blur.tgz")) }], androidInstrumentation: inputs }));
   write(path.join(output, "android-build.json"), JSON.stringify({ identity, binary, digest: sha256(binary) }));

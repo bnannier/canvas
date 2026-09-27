@@ -1,4 +1,4 @@
-import { View, Text, useTheme, ScrollView } from "@ionizeio/canvas";
+import { View, Text, useTheme, ScrollView } from "@nannier/canvas";
 import { Platform } from "react-native";
 import { COMPONENTS } from "../../../core/data/components";
 import { CONTENT_TOP_INSET, CONTENT_BOTTOM_INSET } from "../../../shell/topbar";

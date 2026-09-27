@@ -1,4 +1,4 @@
-import { View, Text, Row, Column, Typography, useTheme, useResponsive } from "@ionizeio/canvas";
+import { View, Text, Row, Column, Typography, useTheme, useResponsive } from "@nannier/canvas";
 import { Page } from "../../../ui/page";
 import { PageNav } from "../../../ui/page-nav";
 import { sans, geistMono } from "../../../ui/fonts";

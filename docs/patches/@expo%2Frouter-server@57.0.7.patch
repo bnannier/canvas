@@ -22,7 +22,7 @@ index 748a99e971118d0ad48616d5296805a413055adb..1e9bd430ab0ac0628b1355965081d8b9
 -        context: _ctx_1.ctx,
 -        wrapper: ({ children }) => ((0, jsx_runtime_1.jsx)(Root, { children: (0, jsx_runtime_1.jsx)("div", { id: "root", children: children }) })),
 -    });
-+    // PATCH (@ionizeio/canvas-docs): the app is ExpoRoot itself, in the shape the client
++    // PATCH (@nannier/canvas-docs): the app is ExpoRoot itself, in the shape the client
 +    // hydrates (expo-router/build/qualified-entry.js renders Head.Provider > ExpoRoot into
 +    // #root), with no document wrapper and no react-native-web AppContainer. The client
 +    // hydrates #root alone (expo/src/launch/AppRegistry.web.tsx calls hydrateRoot on it)
@@ -44,7 +44,7 @@ index 748a99e971118d0ad48616d5296805a413055adb..1e9bd430ab0ac0628b1355965081d8b9
 -    return { headContext, element, getStyleElement, loadedData };
 +    return { headContext, Root, element, loadedData };
 +}
-+// PATCH (@ionizeio/canvas-docs): react-native-web's stylesheet as the app's render filled
++// PATCH (@nannier/canvas-docs): react-native-web's stylesheet as the app's render filled
 +// it, the element registerStaticRootComponent's getStyleElement returned (expo's web
 +// AppRegistry reads the sheet the same way).
 +function getStyleElement() {
@@ -56,7 +56,7 @@ index 748a99e971118d0ad48616d5296805a413055adb..1e9bd430ab0ac0628b1355965081d8b9
 -        const { headContext, element, getStyleElement, loadedData } = prepareRenderContext(location, options);
 -        const html = server_1.default.renderToString((0, jsx_runtime_1.jsx)(head_1.default.Provider, { context: headContext, children: (0, jsx_runtime_1.jsx)(static_1.InnerRoot, { loadedData: loadedData, children: element }) }));
 +        const { headContext, Root, element, loadedData } = prepareRenderContext(location, options);
-+        // PATCH (@ionizeio/canvas-docs): two renders. The app first, as its own React tree
++        // PATCH (@nannier/canvas-docs): two renders. The app first, as its own React tree
 +        // (so its useId context starts empty, as the client's does), which also fills the
 +        // Helmet context, the stylesheet and the font registry that the steps below read.
 +        // Then the +html document with that markup placed into #root: the document is

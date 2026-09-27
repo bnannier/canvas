@@ -1,5 +1,5 @@
 {
-  "name": "@ionizeio/canvas",
+  "name": "@nannier/canvas",
   "version": "3.4.2",
   "description": "Universal React Native UI kit: one component API renders natively on iOS, Android, and web.",
   "license": "MIT",
@@ -7,10 +7,10 @@
   "homepage": "https://canvas.nannier.com/",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/ionizeio/canvas.git"
+    "url": "git+https://github.com/bnannier/canvas.git"
   },
   "bugs": {
-    "url": "https://github.com/ionizeio/canvas/issues"
+    "url": "https://github.com/bnannier/canvas/issues"
   },
   "keywords": [
     "react-native",
@@ -106,7 +106,7 @@
     "access": "public"
   },
   "peerDependencies": {
-    "@ionizeio/canvas-blur": "*",
+    "@nannier/canvas-blur": "*",
     "expo-blur": "*",
     "expo-clipboard": "*",
     "expo-glass-effect": "*",
@@ -118,7 +118,7 @@
     "react-native-svg": ">=14"
   },
   "peerDependenciesMeta": {
-    "@ionizeio/canvas-blur": {
+    "@nannier/canvas-blur": {
       "optional": true
     },
     "expo-blur": {

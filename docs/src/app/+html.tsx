@@ -1,6 +1,6 @@
 import type { PropsWithChildren } from "react";
 import { ScrollViewStyleReset, useServerDocumentContext } from "expo-router/html";
-import { breakpoints, type BreakpointKey } from "@ionizeio/canvas";
+import { breakpoints, type BreakpointKey } from "@nannier/canvas";
 import { FLUID_TEXT, fluidTextAt, type FluidRole } from "../lib/fluid-type";
 
 // The document every pre-rendered page is written into (app.json `web.output:

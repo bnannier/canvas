@@ -136,8 +136,8 @@ describe("CodeBlock collapsible", () => {
 
 describe("CodeBlock tabs", () => {
   const TABS = [
-    { label: "npm", code: "npm install @ionizeio/canvas" },
-    { label: "bun", code: "bun add @ionizeio/canvas" },
+    { label: "npm", code: "npm install @nannier/canvas" },
+    { label: "bun", code: "bun add @nannier/canvas" },
   ];
 
   it("is interactive out of the box: first tab active, press switches", () => {

@@ -42,7 +42,7 @@ setTheme(theme === "dark" ? "light" : "dark");`}
 ```tsx
 <CodeBlock
   terminal
-  code={`$ npm install @ionizeio/canvas
+  code={`$ npm install @nannier/canvas
 added 42 packages in 3s`}
 />
 ```
@@ -170,9 +170,9 @@ Build complete in 12s`}
 ```tsx
 <CodeBlock
   tabs={[
-    { label: "npm", code: "npm install @ionizeio/canvas" },
-    { label: "yarn", code: "yarn add @ionizeio/canvas" },
-    { label: "bun", code: "bun add @ionizeio/canvas" },
+    { label: "npm", code: "npm install @nannier/canvas" },
+    { label: "yarn", code: "yarn add @nannier/canvas" },
+    { label: "bun", code: "bun add @nannier/canvas" },
   ]}
 />
 ```
@@ -199,14 +199,14 @@ setTheme(theme === "dark" ? "light" : "dark");`} />
 **Do** — Use the terminal variant: the prompt stays out of the selection, so a copy yields only the command, not the shell glyph.
 
 ```tsx
-<CodeBlock terminal code="npm install @ionizeio/canvas" />
+<CodeBlock terminal code="npm install @nannier/canvas" />
 ```
 
 **Don't** — Selectable prompt text means a reader who copies the line drags the $ marker into their shell.
 
 ```tsx
 <View style={{ width: "100%", alignSelf: "flex-start", borderRadius: 8, backgroundColor: palette["zinc-900"], padding: 16 }}>
-  <Text style={{ fontSize: 13, color: palette["zinc-100"], fontFamily: "monospace" }}>$ npm install @ionizeio/canvas</Text>
+  <Text style={{ fontSize: 13, color: palette["zinc-100"], fontFamily: "monospace" }}>$ npm install @nannier/canvas</Text>
 </View>
 ```
 
@@ -260,8 +260,8 @@ setTheme(theme);`} />
 
 ```tsx
 <CodeBlock terminal tabs={[
-  { label: "npm", code: "npm install @ionizeio/canvas" },
-  { label: "bun", code: "bun add @ionizeio/canvas" },
+  { label: "npm", code: "npm install @nannier/canvas" },
+  { label: "bun", code: "bun add @nannier/canvas" },
 ]} />
 ```
 
@@ -269,9 +269,9 @@ setTheme(theme);`} />
 
 ```tsx
 <Column snug>
-  <CodeBlock terminal code="npm install @ionizeio/canvas" />
-  <CodeBlock terminal code="yarn add @ionizeio/canvas" />
-  <CodeBlock terminal code="bun add @ionizeio/canvas" />
+  <CodeBlock terminal code="npm install @nannier/canvas" />
+  <CodeBlock terminal code="yarn add @nannier/canvas" />
+  <CodeBlock terminal code="bun add @nannier/canvas" />
 </Column>
 ```
 
@@ -282,7 +282,7 @@ setTheme(theme);`} />
 ```tsx
 <Column snug>
   <Typography body>Run the setup command:</Typography>
-  <CodeBlock code={`npm install @ionizeio/canvas
+  <CodeBlock code={`npm install @nannier/canvas
 npm run build`} />
 </Column>
 ```
@@ -293,7 +293,7 @@ npm run build`} />
 <View style={{ maxWidth: 360, flexDirection: "row", flexWrap: "wrap", alignItems: "center" }}>
   <Text style={{ fontSize: 14, lineHeight: 28, color: tokens.foreground }}>Run </Text>
   <View style={{ alignSelf: "flex-start", borderRadius: 4, borderWidth: 1, borderColor: tokens.border, backgroundColor: tokens.muted, paddingHorizontal: 6, paddingVertical: 2 }}>
-    <Text style={{ fontSize: 13, color: tokens.foreground, fontFamily: "monospace" }}>npm install @ionizeio/canvas && npm run build && npm run preview</Text>
+    <Text style={{ fontSize: 13, color: tokens.foreground, fontFamily: "monospace" }}>npm install @nannier/canvas && npm run build && npm run preview</Text>
   </View>
   <Text style={{ fontSize: 14, lineHeight: 28, color: tokens.foreground }}> to start.</Text>
 </View>

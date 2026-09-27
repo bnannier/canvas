@@ -7,9 +7,9 @@ export default function Example(scope: ExampleScope) {
   return (
 <CodeBlock
   tabs={[
-    { label: "npm", code: "npm install @ionizeio/canvas" },
-    { label: "yarn", code: "yarn add @ionizeio/canvas" },
-    { label: "bun", code: "bun add @ionizeio/canvas" },
+    { label: "npm", code: "npm install @nannier/canvas" },
+    { label: "yarn", code: "yarn add @nannier/canvas" },
+    { label: "bun", code: "bun add @nannier/canvas" },
   ]}
 />
   );
