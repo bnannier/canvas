@@ -1,4 +1,4 @@
-import { View, Text, useTheme, alpha, Row, Container } from "@ionizeio/canvas";
+import { View, Text, useTheme, alpha, Row, Container } from "@nannier/canvas";
 import { sans, geistMono } from "../ui/fonts";
 import type { CatTile } from "./tile";
 

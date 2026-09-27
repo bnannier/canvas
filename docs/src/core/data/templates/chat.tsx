@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Row, Column, Card, Typography, Button, Input, Chip, Avatar, Spinner, EmptyState, Icon } from "@ionizeio/canvas";
+import { Row, Column, Card, Typography, Button, Input, Chip, Avatar, Spinner, EmptyState, Icon } from "@nannier/canvas";
 import type { TemplateDoc } from "../types";
 
 // Assistant chat built from real Canvas components. Bubbles are small Cards

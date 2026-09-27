@@ -1,7 +1,7 @@
 import { version as reactVersion } from "react";
 import { NativeModules, Platform } from "react-native";
 import Constants from "expo-constants";
-import { Column, Typography } from "@ionizeio/canvas";
+import { Column, Typography } from "@nannier/canvas";
 import { readUpdateIdentity } from "../../../core/update-identity";
 import { Page, PageHeader } from "../../../ui/page";
 

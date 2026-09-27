@@ -24,7 +24,7 @@ interface CaptureModule {
 declare const require: (id: string) => unknown;
 let integration: CaptureModule | undefined;
 try {
-  integration = require("@ionizeio/canvas-blur") as CaptureModule;
+  integration = require("@nannier/canvas-blur") as CaptureModule;
 } catch { /* Optional native module absent: use supported Expo frost or the solid skin. */ }
 
 // A partial or older integration cannot preserve paint ownership. Resolve all

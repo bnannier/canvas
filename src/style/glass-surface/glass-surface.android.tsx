@@ -1,5 +1,5 @@
 // Android material host: the layer's tint, then the canvas-blur capture frost when the
-// app installed @ionizeio/canvas-blur and a safe capture target is ready, else
+// app installed @nannier/canvas-blur and a safe capture target is ready, else
 // expo-blur's frost, then the specular rim. Only decoration changes when appearance
 // does. The web and iOS hosts are their own files (glass-surface.tsx and
 // glass-surface.ios.tsx), so a web material change never reaches Android.

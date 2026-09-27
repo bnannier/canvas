@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { Row, Column, Card, Typography, Button, Badge, DataTable, Tabs, Icon, Accordion, useToast, Grid } from "@ionizeio/canvas";
-import type { ToastOptions } from "@ionizeio/canvas";
+import { Row, Column, Card, Typography, Button, Badge, DataTable, Tabs, Icon, Accordion, useToast, Grid } from "@nannier/canvas";
+import type { ToastOptions } from "@nannier/canvas";
 import type { TemplateDoc } from "../types";
 
 // Live pricing page built from real Canvas components (the dogfood path): a

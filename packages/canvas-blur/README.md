@@ -1,7 +1,7 @@
 # Canvas Blur
 
-Optional native Android capture and frost renderer for `@ionizeio/canvas`.
-Install `@ionizeio/canvas-blur` 0.1.0 or newer alongside Canvas in an Expo SDK 57 app, then rebuild
+Optional native Android capture and frost renderer for `@nannier/canvas`.
+Install `@nannier/canvas-blur` 0.1.0 or newer alongside Canvas in an Expo SDK 57 app, then rebuild
 the native app so Expo autolinking includes the Android module. Expo Go cannot load
 this custom module. Canvas remains installable without this package.
 

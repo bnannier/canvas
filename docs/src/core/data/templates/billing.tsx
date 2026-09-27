@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Row, Column, Card, Typography, Button, Badge, DataTable, Progress, DescriptionList, Divider, Emblem, Icon, AlertDialog, useToast, Grid } from "@ionizeio/canvas";
+import { Row, Column, Card, Typography, Button, Badge, DataTable, Progress, DescriptionList, Divider, Emblem, Icon, AlertDialog, useToast, Grid } from "@nannier/canvas";
 import type { TemplateDoc } from "../types";
 
 // Billing settings built from real Canvas components: current plan + usage

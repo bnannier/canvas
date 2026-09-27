@@ -17,8 +17,8 @@ const repoRoot = resolve(projectRoot, "..");
 // resolver explicitly pins the bare package import to src/index.ts through this
 // symlink, preserving its live source and native skin resolution.
 const links = [
-  ["node_modules/@ionizeio/canvas", repoRoot],
-  ["node_modules/@ionizeio/canvas-blur", resolve(repoRoot, "packages/canvas-blur")],
+  ["node_modules/@nannier/canvas", repoRoot],
+  ["node_modules/@nannier/canvas-blur", resolve(repoRoot, "packages/canvas-blur")],
 ];
 
 for (const [rel, target] of links) {

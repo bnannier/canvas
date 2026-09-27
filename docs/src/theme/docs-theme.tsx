@@ -3,7 +3,7 @@ import { Appearance, Platform, useColorScheme } from "react-native";
 import { useGlobalSearchParams } from "expo-router";
 import * as Linking from "expo-linking";
 import { StatusBar } from "expo-status-bar";
-import { ThemeProvider, type Surface } from "@ionizeio/canvas";
+import { ThemeProvider, type Surface } from "@nannier/canvas";
 import { CANVAS_FONTS } from "../ui/fonts";
 import { subscribeThemeLinks, themeFromParams, themeFromURL } from "./theme-links";
 import { useHydrated } from "../lib/hydrated";

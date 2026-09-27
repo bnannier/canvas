@@ -6,9 +6,9 @@ export default function Example(scope: ExampleScope) {
   const { CodeBlock, Column } = scope;
   return (
 <Column snug>
-  <CodeBlock terminal code="npm install @ionizeio/canvas" />
-  <CodeBlock terminal code="yarn add @ionizeio/canvas" />
-  <CodeBlock terminal code="bun add @ionizeio/canvas" />
+  <CodeBlock terminal code="npm install @nannier/canvas" />
+  <CodeBlock terminal code="yarn add @nannier/canvas" />
+  <CodeBlock terminal code="bun add @nannier/canvas" />
 </Column>
   );
 }

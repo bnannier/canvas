@@ -5,8 +5,8 @@ import * as fs from "node:fs";
 import * as path from "node:path";
 import { fileURLToPath } from "node:url";
 
-const PACKAGE_PATHS = { "@ionizeio/canvas": ".", "@ionizeio/canvas-blur": "packages/canvas-blur" };
-const packageTag = (name, version) => name === "@ionizeio/canvas" ? `v${version}` : `canvas-blur@${version}`;
+const PACKAGE_PATHS = { "@nannier/canvas": ".", "@nannier/canvas-blur": "packages/canvas-blur" };
+const packageTag = (name, version) => name === "@nannier/canvas" ? `v${version}` : `canvas-blur@${version}`;
 function packages(cwd) {
   return Object.entries(PACKAGE_PATHS).filter(([, directory]) => fs.existsSync(path.join(cwd, directory, "package.json")))
     .map(([name, directory]) => {
@@ -80,7 +80,7 @@ export function readCandidate(dir) {
   const c = read(path.join(dir, "candidate.json"));
   const entries = c.packages;
   if (!SHA.test(c.source) || !SHA.test(c.candidate) || !VERSION.test(c.version) ||
-      c.name !== "@ionizeio/canvas" || typeof c.release !== "boolean" ||
+      c.name !== "@nannier/canvas" || typeof c.release !== "boolean" ||
       !["ready", "no-changesets", "not-requested", "blocked-major"].includes(c.status) ||
       c.tag !== `v${c.version}` || (c.release !== (c.status === "ready")) ||
       (!c.release && c.source !== c.candidate) || !Array.isArray(entries) || !entries.length ||

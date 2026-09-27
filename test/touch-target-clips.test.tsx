@@ -57,8 +57,8 @@ const ANDROID: Case[] = [
   { name: "a Pagination with size", load: entry("../src/atoms/pagination/pagination.android.tsx", "Pagination"), props: { total: 5, withSize: true }, pairs: 3 },
   { name: "pressable Steps", load: entry("../src/organisms/steps/steps.android.tsx", "Steps"), props: { steps: [{ label: "Cart" }, { label: "Ship" }, { label: "Pay" }], onStepPress: noop }, pairs: 3 },
   { name: "a RowMenu", load: entry("../src/organisms/row-menu/row-menu.android.tsx", "RowMenu"), props: { items: [{ label: "Edit" }] }, pairs: 1 },
-  { name: "a CodeBlock with a floating copy chip", load: entry("../src/molecules/code-block/code-block.android.tsx", "CodeBlock"), props: { copy: true, code: "bun add @ionizeio/canvas" }, pairs: 1 },
-  { name: "a CodeBlock with a header copy chip", load: entry("../src/molecules/code-block/code-block.android.tsx", "CodeBlock"), props: { copy: true, filename: "install.sh", code: "bun add @ionizeio/canvas" }, pairs: 1 },
+  { name: "a CodeBlock with a floating copy chip", load: entry("../src/molecules/code-block/code-block.android.tsx", "CodeBlock"), props: { copy: true, code: "bun add @nannier/canvas" }, pairs: 1 },
+  { name: "a CodeBlock with a header copy chip", load: entry("../src/molecules/code-block/code-block.android.tsx", "CodeBlock"), props: { copy: true, filename: "install.sh", code: "bun add @nannier/canvas" }, pairs: 1 },
   { name: "a Stepper", load: entry("../src/atoms/stepper/stepper.android.tsx", "Stepper"), props: { defaultValue: 1 }, pairs: 2 },
   { name: "a tappable Chip", load: entry("../src/atoms/chip/chip.android.tsx", "Chip"), props: { onPress: noop, children: "Tappable" }, pairs: 1 },
   { name: "a removable Chip", load: entry("../src/atoms/chip/chip.android.tsx", "Chip"), props: { onRemove: noop, children: "Removable" }, pairs: 0, measuredClip: true },
@@ -285,7 +285,7 @@ describe("the CodeBlock's copy chips sit in no clipping kit view", () => {
     for (const [name, props] of [["floating", {}], ["header", { filename: "install.sh" }]] as const) {
       it(`${name}, ${material}: only its own RippleClip clips around it`, async () => {
         const CodeBlock = await Android();
-        renderAndLayout(<CodeBlock copy code="bun add @ionizeio/canvas" {...props} />, TOUCH_TARGET.android, undefined, material);
+        renderAndLayout(<CodeBlock copy code="bun add @nannier/canvas" {...props} />, TOUCH_TARGET.android, undefined, material);
         // Under glass the root takes the code surface's shape but not its clip, which would cut
         // the chip's 11dp of slop at 9dp from the edge.
         expect(clipsAround().map((r) => r.kind)).toEqual(["ripple-clip"]);

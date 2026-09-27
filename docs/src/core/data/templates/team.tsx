@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { Row, Column, Card, Typography, Button, Badge, DataTable, Input, Select, Avatar, StackedList, EmptyState, Icon, useToast } from "@ionizeio/canvas";
-import type { StackedListItem } from "@ionizeio/canvas";
+import { Row, Column, Card, Typography, Button, Badge, DataTable, Input, Select, Avatar, StackedList, EmptyState, Icon, useToast } from "@nannier/canvas";
+import type { StackedListItem } from "@nannier/canvas";
 import type { TemplateDoc } from "../types";
 
 // Team management built from real Canvas components: an invite composer that

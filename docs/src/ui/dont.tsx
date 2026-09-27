@@ -1,6 +1,6 @@
 import { type ReactNode } from "react";
 import { Platform } from "react-native";
-import { View, Text, Icon, Column, alpha, palette, useTheme, useResponsive, type StyleProp, type ViewStyle } from "@ionizeio/canvas";
+import { View, Text, Icon, Column, alpha, palette, useTheme, useResponsive, type StyleProp, type ViewStyle } from "@nannier/canvas";
 import { buildScopes } from "../core/build-scopes";
 import type { DocDontPair } from "../core/scope";
 import { CodeBlock } from "./code-block";

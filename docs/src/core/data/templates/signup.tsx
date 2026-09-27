@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Row, Column, Card, Typography, Button, Input, Checkbox, Progress, Divider, Emblem, EmptyState, Icon, useToast } from "@ionizeio/canvas";
+import { Row, Column, Card, Typography, Button, Input, Checkbox, Progress, Divider, Emblem, EmptyState, Icon, useToast } from "@nannier/canvas";
 import type { TemplateDoc } from "../types";
 
 // Live sign-up flow built from real Canvas components: a registration card with

@@ -5,7 +5,7 @@
     "skipLibCheck": true,
     "types": ["node"],
     "paths": {
-      "@ionizeio/canvas": ["../src/index.ts"],
+      "@nannier/canvas": ["../src/index.ts"],
       "@nannier-com/canvas": ["../src/index.ts"]
     }
   },

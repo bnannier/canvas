@@ -5,7 +5,7 @@ import { runInNewContext } from "node:vm";
 const source = readFileSync(new URL("../../examples/starter/app.config.js", import.meta.url), "utf8");
 const identity = {
   schema: 1, inputMode: "package", sourceRevision: "a".repeat(40), candidateRevision: "b".repeat(40),
-  packageVersion: "2.62.1", packageSha256: "c".repeat(64), packageName: "@ionizeio/canvas", sourceDirty: false,
+  packageVersion: "2.62.1", packageSha256: "c".repeat(64), packageName: "@nannier/canvas", sourceDirty: false,
 };
 
 function config(env: Record<string, string> = {}) {
@@ -39,7 +39,7 @@ describe("starter verification identity", () => {
   });
 
   it("preserves optional native package identity and validates every field", () => {
-    const nativePackages = [{ packageName: "@ionizeio/canvas-blur", packageVersion: "0.1.0", packageSha256: "d".repeat(64) }];
+    const nativePackages = [{ packageName: "@nannier/canvas-blur", packageVersion: "0.1.0", packageSha256: "d".repeat(64) }];
     const payload = { ...identity, nativePackages };
     expect(config({ EXPO_PUBLIC_CANVAS_SMOKE: "1", CANVAS_SMOKE_IDENTITY: JSON.stringify(payload) }).extra.canvasBuild).toEqual(payload);
     for (const invalid of [null, [], [null], [{ ...nativePackages[0], packageName: "other" }],

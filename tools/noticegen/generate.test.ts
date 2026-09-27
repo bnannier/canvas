@@ -81,7 +81,7 @@ describe("reading each package from its recorded directory", () => {
   });
 
   it("skips the first-party packages without reading them", () => {
-    expect(notices({ "@ionizeio/canvas": ["docs/node_modules/@ionizeio/canvas"] }).packages).toEqual([]);
+    expect(notices({ "@nannier/canvas": ["docs/node_modules/@nannier/canvas"] }).packages).toEqual([]);
   });
 });
 

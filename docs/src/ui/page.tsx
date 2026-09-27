@@ -1,6 +1,6 @@
 import { type ReactNode } from "react";
 import { Platform } from "react-native";
-import { ScrollView, View, OverlayProvider, useTheme } from "@ionizeio/canvas";
+import { ScrollView, View, OverlayProvider, useTheme } from "@nannier/canvas";
 import { CONTENT_TOP_INSET, CONTENT_BOTTOM_INSET } from "../shell/topbar";
 import { ScreenFrame } from "../shell/native-header";
 import { H1, Lead } from "./prose";
