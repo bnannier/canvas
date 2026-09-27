@@ -6,7 +6,7 @@ index 65e42de23822e88fae9f00a3c86160a8a5732d89..eeb784dc10e8cb2015cdc27b0d646289
  
  import DevLoadingView from '../environment/DevLoadingView';
  
-+// PATCH (@ionizeio/canvas-docs): the root this wrapper returns is the root the client
++// PATCH (@nannier/canvas-docs): the root this wrapper returns is the root the client
 +// hydrates into #root, so it must be exactly the app. It used to return
 +// <><App /><DevLoadingView /></>, and a two-child array is a useId fork: in development
 +// every useId under the app gained a slot the server render and the production client

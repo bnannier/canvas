@@ -1,3 +1,3 @@
-import { Button, ThemeProvider } from "@ionizeio/canvas";
+import { Button, ThemeProvider } from "@nannier/canvas";
 
 export { Button, ThemeProvider };

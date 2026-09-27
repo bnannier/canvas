@@ -208,7 +208,7 @@ const config: LookoutConfig = {
     name: "Canvas",
     packageRoot: ".",
     componentRoots: ["./src/atoms", "./src/molecules", "./src/organisms", "./src/charts"],
-    importPrefixes: ["@ionizeio/canvas"],
+    importPrefixes: ["@nannier/canvas"],
     tokenFiles: ["./src/style/tokens.ts", "./styles/canvas.css"],
   },
 

@@ -1,6 +1,6 @@
 import { Platform } from "react-native";
 import { FontDisplay, useFonts } from "expo-font";
-import type { ThemeFonts } from "@ionizeio/canvas";
+import type { ThemeFonts } from "@nannier/canvas";
 
 // The seven faces, cut down to the glyphs the docs can show by scripts/subset-fonts.mjs
 // from the full files the @expo-google-fonts packages carry (those packages are dev

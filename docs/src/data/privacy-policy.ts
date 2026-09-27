@@ -17,7 +17,7 @@
  * Data Safety answers recorded in store/SUBMISSION.md.
  */
 
-export const PRIVACY_ISSUES_URL = "https://github.com/ionizeio/canvas/issues";
+export const PRIVACY_ISSUES_URL = "https://github.com/bnannier/canvas/issues";
 
 // Stated rather than computed, so the policy does not silently claim to have changed on
 // every rebuild.
@@ -29,7 +29,7 @@ export const PRIVACY_INTRO =
   "Canvas collects no personal information. This page explains exactly what the app does and does not do, and it matches the App Privacy and Data Safety declarations filed with the App Store and Google Play.";
 
 export const PRIVACY_SUMMARY =
-  `Canvas is a free reference app for the @ionizeio/canvas React Native UI kit. It collects no personal information, creates no user accounts, and contains no analytics, tracking, or advertising code. Effective ${PRIVACY_EFFECTIVE}.`;
+  `Canvas is a free reference app for the @nannier/canvas React Native UI kit. It collects no personal information, creates no user accounts, and contains no analytics, tracking, or advertising code. Effective ${PRIVACY_EFFECTIVE}.`;
 
 export interface PrivacyItem {
   title: string;
@@ -64,7 +64,7 @@ export const PRIVACY_NETWORK_COLUMNS = ["Host", "Why it is contacted", "What it 
 export const PRIVACY_NETWORK_ROWS: string[][] = [
   [
     "registry.npmjs.org",
-    "Reads the latest published version of @ionizeio/canvas for the version pill on the Home screen.",
+    "Reads the latest published version of @nannier/canvas for the version pill on the Home screen.",
     "Standard web request metadata (IP address, user agent). No app data is sent.",
   ],
   [

@@ -1,5 +1,5 @@
 import { Linking, Platform } from "react-native";
-import { View, Text, Pressable, Button, ButtonGroup, Kbd, Icon, useTheme, useBreakpoint, GlassSurface, liquidGlassAvailable, alpha } from "@ionizeio/canvas";
+import { View, Text, Pressable, Button, ButtonGroup, Kbd, Icon, useTheme, useBreakpoint, GlassSurface, liquidGlassAvailable, alpha } from "@nannier/canvas";
 import { usePathname } from "expo-router";
 import { getComponent } from "../core/data/components";
 import { getTemplate } from "../core/data/templates";
@@ -9,7 +9,7 @@ import { Github } from "../brand/brand-logos";
 import { sans } from "../ui/fonts";
 
 // The public repository the GitHub button in the bar links back to (mirrors the home page's link).
-const REPO_URL = "https://github.com/ionizeio/canvas";
+const REPO_URL = "https://github.com/bnannier/canvas";
 
 // The topbar overlays the scrolling content (so its glass frost refracts what
 // scrolls behind it). Content scrollers add this as a top inset so their first row

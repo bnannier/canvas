@@ -72,10 +72,10 @@ export function prepareNativeSmoke(candidate, artifacts, output) {
     if (installed.name !== input.name || installed.version !== input.version) throw new Error("Installed package differs from the candidate");
   }
   // Resolve from this isolated app, never from the repository's source link.
-  if (inputs.some((input) => input.name === "@ionizeio/canvas-blur")) {
+  if (inputs.some((input) => input.name === "@nannier/canvas-blur")) {
     const autolinking = JSON.parse(run(app, "bunx", ["--no-install", "expo-modules-autolinking", "resolve", "--platform", "android", "--json"], identity, true));
-    const linked = autolinking.modules.find((module) => module.packageName === "@ionizeio/canvas-blur");
-    const expected = path.join(app, "node_modules/@ionizeio/canvas-blur/android");
+    const linked = autolinking.modules.find((module) => module.packageName === "@nannier/canvas-blur");
+    const expected = path.join(app, "node_modules/@nannier/canvas-blur/android");
     if (!linked?.projects.some((project) => fs.realpathSync(project.sourceDir) === fs.realpathSync(expected)
       && project.modules.some((module) => module.classifier === "io.ionize.canvas.blur.CanvasBlurModule"))) {
       throw new Error("Sealed Android capture package did not autolink from the independent consumer");
@@ -92,7 +92,7 @@ export function prepareNativeSmoke(candidate, artifacts, output) {
     || configuration.scheme !== "canvas-smoke" || JSON.stringify(configuration.extra?.canvasBuild) !== JSON.stringify(identity)) {
     throw new Error("Smoke app ID, scheme or runtime identity is incorrect");
   }
-  const androidInstrumentation = inputs.some((input) => input.name === "@ionizeio/canvas-blur")
+  const androidInstrumentation = inputs.some((input) => input.name === "@nannier/canvas-blur")
     ? preserveAndroidInstrumentation(repo, output, identity.candidateRevision) : undefined;
   write(path.join(output, "context.json"), { schema: 2, identity, appSources: appInventory(app), packages: inputs, tarball: manifest.packageFile,
     ...(androidInstrumentation ? { androidInstrumentation } : {}) });
@@ -108,7 +108,7 @@ function context(output) {
     if (sha256(path.join(output, input.filename)) !== input.sha256) throw new Error("Native smoke candidate changed");
     assertInstalledPackage(path.join(output, "unpacked", input.name, "package"), path.join(app, "node_modules", input.installedAs ?? input.name));
   }
-  if (context.packages.some((input) => input.name === "@ionizeio/canvas-blur")) {
+  if (context.packages.some((input) => input.name === "@nannier/canvas-blur")) {
     assertAndroidInstrumentationInputs(output, context.identity, context.androidInstrumentation);
   }
   return { ...context, app };
@@ -155,7 +155,7 @@ export function instrumentNativeSmoke(output, device) {
   }
   const build = read(path.join(output, "android-build.json"));
   const result = { schema: 1, identity, device, startedAt: new Date().toISOString(), status: "failed",
-    package: packages.find((pkg) => pkg.name === "@ionizeio/canvas-blur"),
+    package: packages.find((pkg) => pkg.name === "@nannier/canvas-blur"),
     productionVariant: "debug", releaseBinaryDigest: build.digest, testInputs: androidInstrumentation,
     contextSha256: sha256(path.join(output, "context.json")), buildManifestSha256: sha256(path.join(output, "android-build.json")),
     command: ["./gradlew", ...androidGradleArguments(output, app, true)] };

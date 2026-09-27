@@ -6,7 +6,7 @@ import { fileURLToPath } from 'node:url';
 export function verifyBlurPackage(directory) {
   const read = (file) => readFileSync(join(directory, file), 'utf8');
   const pkg = JSON.parse(read('package.json'));
-  if (pkg.name !== '@ionizeio/canvas-blur' || pkg.types !== './dist/index.d.ts' || pkg.main !== './dist/index.js'
+  if (pkg.name !== '@nannier/canvas-blur' || pkg.types !== './dist/index.d.ts' || pkg.main !== './dist/index.js'
     || pkg.exports?.['.']?.types !== pkg.types || pkg.exports?.['.']?.default !== pkg.main
     || pkg['react-native'] !== pkg.main) throw new Error('Invalid blur package entry points');
   if (!pkg.peerDependencies?.['expo-modules-core'] || pkg.peerDependenciesMeta?.['expo-modules-core']?.optional

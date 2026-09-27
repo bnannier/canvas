@@ -13,7 +13,7 @@ import {
   Icon,
   useToast,
   type ToastHandle,
-} from "@ionizeio/canvas";
+} from "@nannier/canvas";
 import type { TemplateDoc } from "../types";
 
 // Live sign-in flows built from real Canvas components: the centered credential

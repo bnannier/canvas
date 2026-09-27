@@ -1,7 +1,7 @@
 import { Suspense, useState } from "react";
 import { Platform } from "react-native";
 import { Redirect, useLocalSearchParams } from "expo-router";
-import { View, Text, Skeleton, useTheme } from "@ionizeio/canvas";
+import { View, Text, Skeleton, useTheme } from "@nannier/canvas";
 import { getComponent } from "../core/data/components";
 import type { ComponentDoc } from "../core/data/types";
 import { useComponentDocs } from "../core/use-component-docs";

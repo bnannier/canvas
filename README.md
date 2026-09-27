@@ -1,10 +1,10 @@
-# @ionizeio/canvas
+# @nannier/canvas
 
 **One universal React Native UI kit that renders natively on iOS and Android, and on the web through React Native Web, from a single component API.**
 
-![The same Canvas component rendered as native iOS, Material 3 Android, and web, side by side](https://raw.githubusercontent.com/ionizeio/canvas/main/.github/assets/hero.gif)
+![The same Canvas component rendered as native iOS, Material 3 Android, and web, side by side](https://raw.githubusercontent.com/bnannier/canvas/main/.github/assets/hero.gif)
 
-[![npm](https://img.shields.io/npm/v/@ionizeio/canvas.svg)](https://www.npmjs.com/package/@ionizeio/canvas) [![CI](https://github.com/ionizeio/canvas/actions/workflows/ci.yml/badge.svg)](https://github.com/ionizeio/canvas/actions/workflows/ci.yml) [Documentation](https://canvas.nannier.com/)
+[![npm](https://img.shields.io/npm/v/@nannier/canvas.svg)](https://www.npmjs.com/package/@nannier/canvas) [![CI](https://github.com/bnannier/canvas/actions/workflows/ci.yml/badge.svg)](https://github.com/bnannier/canvas/actions/workflows/ci.yml) [Documentation](https://canvas.nannier.com/)
 
 **Try it live:** the [component catalog](https://canvas.nannier.com/components) renders the full library (atoms, molecules, organisms, and charts) in the browser, with dark mode, the glass surface, and density switchable site-wide.
 
@@ -13,7 +13,7 @@ Write your screen once and it runs everywhere. Canvas is built from React Native
 ## Install
 
 ```bash
-npm install @ionizeio/canvas
+npm install @nannier/canvas
 ```
 
 Canvas ships compiled (no build step in your app) and declares three **required** peer dependencies you install alongside it:
@@ -30,7 +30,7 @@ Install the optional peers needed by your app's features. The package remains us
 | --- | --- | --- |
 | `react-native-qrcode-svg` | you render QR codes with `QRCode` | the accessible, sized frame remains empty and warns once in development |
 | `expo-glass-effect` | you want native Liquid Glass on supported iOS 26+ devices | forced glass uses `expo-blur` when available, otherwise the skin's solid fill; automatic surface mode remains solid |
-| `@ionizeio/canvas-blur` | you want Canvas backdrop capture and frost on Android 12+ in Expo SDK 57 (module 0.1.0+) | Canvas uses another supported material or the complete solid appearance |
+| `@nannier/canvas-blur` | you want Canvas backdrop capture and frost on Android 12+ in Expo SDK 57 (module 0.1.0+) | Canvas uses another supported material or the complete solid appearance |
 | `expo-blur` | you want static frost on iOS, including content beneath iOS 26 Liquid Glass, or supported legacy Android frost | surfaces use their solid fill when no other material is available; browser frost/lenses, native Liquid Glass and the Android capture module remain independent |
 | `expo-video` | you play clips with `Video` | the frame keeps its size and poster, labeled, and warns once in development |
 | `expo-clipboard` | you want `CodeBlock` to copy text on native | web can use `navigator.clipboard`; native copying needs a supplied `onCopy` handler |
@@ -40,15 +40,15 @@ Install the optional peers needed by your app's features. The package remains us
 # add any subset you actually use
 npm install react-native-qrcode-svg expo-video expo-glass-effect expo-blur expo-clipboard react-native-safe-area-context
 # Android native capture also requires rebuilding your custom native app
-npm install @ionizeio/canvas-blur
+npm install @nannier/canvas-blur
 ```
 
 ## Quick start
 
-Wrap your app once in `ThemeProvider`, then compose components imported from `@ionizeio/canvas`. The provider supplies the active color scheme, surface, and token map to every component below it.
+Wrap your app once in `ThemeProvider`, then compose components imported from `@nannier/canvas`. The provider supplies the active color scheme, surface, and token map to every component below it.
 
 ```jsx
-import { ThemeProvider, Card, CardHeader, CardTitle, CardContent, Button } from "@ionizeio/canvas";
+import { ThemeProvider, Card, CardHeader, CardTitle, CardContent, Button } from "@nannier/canvas";
 
 export default function App() {
   return (
@@ -195,7 +195,7 @@ mode and material fallbacks must restore opaque fill, foreground, boundary and
 elevation without losing input focus or application state. Android blur needs a
 safe live backdrop target; a tint-only path does not establish native blur support.
 
-On Android 12+ with Expo SDK 57, the optional `@ionizeio/canvas-blur` integration
+On Android 12+ with Expo SDK 57, the optional `@nannier/canvas-blur` integration
 keeps a stable native content host and records only while a glass surface uses it.
 `OverlayProvider` supplies a sibling target to its overlays and a separate-window
 target to native modals. Without a safe target, supported
@@ -223,7 +223,7 @@ the shape and elevation scales, and the four API rules that are easy to break by
 accident. It is written to be read by an agent building on the kit as much as by a
 person, and its numbers are generated from the kit's own sources.
 
-The kit exports components across atoms, molecules, organisms, and charts, all from `@ionizeio/canvas`:
+The kit exports components across atoms, molecules, organisms, and charts, all from `@nannier/canvas`:
 
 - **Forms and inputs**: Button, Button Group, Input, Textarea, Checkbox, Radio, Switch, Slider, Stepper, Input OTP, Select, Autocomplete, Listbox.
 - **Overlays**: Dialog, Alert Dialog, Drawer, Popover, Tooltip, Dropdown, Action Sheet, Toast, Command palette.
@@ -247,7 +247,7 @@ public issues for security problems.
 
 ## License
 
-The compiled package distributed on npm as `@ionizeio/canvas` is licensed under
+The compiled package distributed on npm as `@nannier/canvas` is licensed under
 MIT. Its tarball includes the license and copyright notice.
 
 The source repository is not covered by that grant and remains all rights reserved.

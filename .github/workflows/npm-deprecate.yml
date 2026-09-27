@@ -1,7 +1,7 @@
-# Deprecate (or un-deprecate) published versions of @nannier/canvas on npm.
+# Deprecate (or un-deprecate) published versions of an npm package in this repo's history.
 #
 # WHY THIS EXISTS. `npm deprecate` is a write to the public registry, so it needs a
-# credential with publish rights to the @nannier scope. The repo's standing rule is that
+# credential with publish rights to the target scope. The repo's standing rule is that
 # registry operations go through CI rather than a local publish, and in practice the local
 # token drifts: the one in ~/.npmrc dated from May and returned 401 on /-/whoami, while the
 # NPM_TOKEN secret used by the deploy workflow was still valid. Routing deprecation through
@@ -9,6 +9,14 @@
 #
 # It is MANUAL ONLY (workflow_dispatch). Nothing here runs on push. A deprecation is
 # visible to every consumer on install, so it should be a deliberate button press.
+#
+# The package name is an INPUT, not hardcoded. This repo has renamed its npm scope four
+# times (@olympusoss -> @bnannier -> @nannier -> @nannier-com -> @ionizeio -> @nannier), and
+# a prior version of this workflow hardcoded the package it deprecates. That drifted one
+# migration out of date silently: its default message pointed readers at the then-new scope
+# while its actual deprecate call kept targeting the migration before that, and nothing
+# caught the mismatch because the workflow is manual-only and nobody ran it in between.
+# Passing the package explicitly every run means the next rename needs no code change here.
 #
 # Deprecation does NOT unpublish. The versions stay installable; npm just prints the
 # message when one is resolved. It is fully reversible: re-run with an empty message to
@@ -25,6 +33,10 @@ name: npm deprecate — canvas
 on:
   workflow_dispatch:
     inputs:
+      package:
+        description: 'Package to act on, e.g. "@ionizeio/canvas" or "@nannier-com/canvas"'
+        type: string
+        required: true
       range:
         description: 'Version range to act on, e.g. ">=7.0.0" or "8.1.1"'
         type: string
@@ -33,7 +45,7 @@ on:
         description: "Deprecation message. LEAVE EMPTY to UN-deprecate the range."
         type: string
         required: false
-        default: "Renamed. Use @ionizeio/canvas instead: npm i @ionizeio/canvas"
+        default: "Renamed. Use @nannier/canvas instead: npm i @nannier/canvas"
 
 # Never let two registry writes overlap.
 concurrency:
@@ -48,9 +60,11 @@ jobs:
       contents: read
     steps:
       - name: Authenticate npm (npmjs.org)
+        env:
+          PACKAGE: ${{ inputs.package }}
         run: |
           echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" >> ~/.npmrc
-          echo "@nannier:registry=https://registry.npmjs.org" >> ~/.npmrc
+          echo "${PACKAGE%%/*}:registry=https://registry.npmjs.org" >> ~/.npmrc
 
       # Fail early with a clear reason. npm reports an unauthorized WRITE as a 404
       # ("not in this registry"), which reads as if the package is missing and sends you
@@ -69,11 +83,13 @@ jobs:
       # stop-commands, so a line in a message cannot act as a workflow command.
       - name: Show what will change
         env:
+          PACKAGE: ${{ inputs.package }}
           RANGE: ${{ inputs.range }}
           MESSAGE: ${{ inputs.message }}
         run: |
           fence=$(openssl rand -hex 16)
           echo "::stop-commands::$fence"
+          echo "package: $PACKAGE"
           echo "range  : $RANGE"
           if [ -z "$MESSAGE" ]; then
             echo "action : UN-DEPRECATE (empty message clears the flag)"
@@ -83,24 +99,29 @@ jobs:
           fi
           echo "::$fence::"
           echo "--- current state ---"
-          npm view "@nannier/canvas" versions --json
+          npm view "$PACKAGE" versions --json
 
       - name: Apply
         env:
+          PACKAGE: ${{ inputs.package }}
           RANGE: ${{ inputs.range }}
           MESSAGE: ${{ inputs.message }}
-        run: npm deprecate "@nannier/canvas@$RANGE" "$MESSAGE"
+        run: npm deprecate "$PACKAGE@$RANGE" "$MESSAGE"
 
       # Read the registry back rather than trusting the command's exit code, and write the
       # result into the run summary so the outcome is visible without opening the log.
       - name: Verify against the registry
+        env:
+          PACKAGE: ${{ inputs.package }}
         run: |
           sleep 5
-          curl -s "https://registry.npmjs.org/@nannier/canvas" > /tmp/pkg.json
+          curl -s "https://registry.npmjs.org/$PACKAGE" > /tmp/pkg.json
           python3 - <<'PY' >> "$GITHUB_STEP_SUMMARY"
           import json
+          import os
+          package = os.environ["PACKAGE"]
           d = json.load(open("/tmp/pkg.json"))
-          print("## @nannier/canvas deprecation state\n")
+          print(f"## {package} deprecation state\n")
           print("| version | published | deprecated |")
           print("|---|---|---|")
           key = lambda v: tuple(int(x) for x in v.split(".")[:3])

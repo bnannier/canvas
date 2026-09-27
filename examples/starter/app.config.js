@@ -23,11 +23,11 @@ function readIdentity(raw) {
     candidateRevision: typeof value.candidateRevision === "string" && value.candidateRevision.length === 40 && /^[a-f0-9]{40}$/i.test(value.candidateRevision),
     packageVersion: isSemver(value.packageVersion),
     packageSha256: typeof value.packageSha256 === "string" && value.packageSha256.length === 64 && /^[a-f0-9]{64}$/i.test(value.packageSha256),
-    packageName: value.packageName === undefined || value.packageName === "@ionizeio/canvas",
+    packageName: value.packageName === undefined || value.packageName === "@nannier/canvas",
     sourceDirty: value.sourceDirty === undefined || value.sourceDirty === false,
     nativePackages: value.nativePackages === undefined || (Array.isArray(value.nativePackages)
       && value.nativePackages.length === 1 && value.nativePackages.every((pkg) =>
-        pkg && typeof pkg === "object" && pkg.packageName === "@ionizeio/canvas-blur" && isSemver(pkg.packageVersion)
+        pkg && typeof pkg === "object" && pkg.packageName === "@nannier/canvas-blur" && isSemver(pkg.packageVersion)
         && typeof pkg.packageSha256 === "string" && pkg.packageSha256.length === 64 && /^[a-f0-9]{64}$/.test(pkg.packageSha256))),
   };
   for (const [field, valid] of Object.entries(checks)) {

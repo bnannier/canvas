@@ -7,7 +7,7 @@ index 456611d4ba6a968f542293e5253eb8834d77e56f..12e815354a9af78a45729e0f5ab8722f
              ...value,
              filePath,
 -            pathname: filePathLocation.replace(/(\/?index)?$/, '')
-+            // PATCH (@ionizeio/canvas-docs): strip a trailing `index` only when it is a whole
++            // PATCH (@nannier/canvas-docs): strip a trailing `index` only when it is a whole
 +            // path segment. The original `/(\/?index)?$/` made the slash optional, so a last
 +            // segment that merely ENDS in "index" lost those letters as well: the page written
 +            // to components/carousel/defaultindex.html was rendered for the location

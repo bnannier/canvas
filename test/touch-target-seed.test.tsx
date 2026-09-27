@@ -212,7 +212,7 @@ describe("the kit's controls carry their slop before the first layout", () => {
     ["a RowMenu", "../src/organisms/row-menu/row-menu.ios.tsx", "RowMenu", { items: [{ label: "Edit" }] }, null],
     ["a numbered Pagination", "../src/atoms/pagination/pagination.android.tsx", "Pagination", { total: 5 }, ANDROID],
     ["a Pagination with size", "../src/atoms/pagination/pagination.android.tsx", "Pagination", { total: 5, withSize: true }, ANDROID],
-    ["a CodeBlock copy chip", "../src/molecules/code-block/code-block.android.tsx", "CodeBlock", { copy: true, code: "bun add @ionizeio/canvas" }, ANDROID],
+    ["a CodeBlock copy chip", "../src/molecules/code-block/code-block.android.tsx", "CodeBlock", { copy: true, code: "bun add @nannier/canvas" }, ANDROID],
     ["a Switch", "../src/atoms/switch/switch.ios.tsx", "Switch", { accessibilityLabel: "Wi-Fi" }, null],
     ["a tappable Android Chip", "../src/atoms/chip/chip.android.tsx", "Chip", { onPress: noop, children: "Tag" }, null],
     ["a tappable, removable Android Chip", "../src/atoms/chip/chip.android.tsx", "Chip", { onPress: noop, onRemove: noop, children: "Tag" }, null],

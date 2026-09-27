@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Row, Column, Card, Typography, Button, Input, Select, InputOTP, Steps, EmptyState, Icon, useToast } from "@ionizeio/canvas";
+import { Row, Column, Card, Typography, Button, Input, Select, InputOTP, Steps, EmptyState, Icon, useToast } from "@nannier/canvas";
 import type { TemplateDoc } from "../types";
 
 // Onboarding wizard built from real Canvas components: a controlled Steps

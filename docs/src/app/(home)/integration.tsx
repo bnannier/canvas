@@ -1,19 +1,19 @@
-import { View } from "@ionizeio/canvas";
+import { View } from "@nannier/canvas";
 import { Page, PageHeader } from "../../ui/page";
 import { Section } from "../../ui/section";
 import { P, H3, InlineCode, Rule } from "../../ui/prose";
 import { CodeBlock } from "../../ui/code-block";
 import { PageNav } from "../../ui/page-nav";
 
-const INSTALL = `npm install @ionizeio/canvas react react-native react-native-svg`;
+const INSTALL = `npm install @nannier/canvas react react-native react-native-svg`;
 
 const OPTIONAL_INSTALL = `# add only the ones whose feature you use
 npm install react-native-qrcode-svg expo-video react-native-safe-area-context expo-blur expo-glass-effect expo-clipboard
 
 # Android 12+ capture support in an Expo SDK 57 native build
-npm install @ionizeio/canvas-blur`;
+npm install @nannier/canvas-blur`;
 
-const QUICK_START = `import { ThemeProvider, Button } from "@ionizeio/canvas";
+const QUICK_START = `import { ThemeProvider, Button } from "@nannier/canvas";
 
 // Wrap the app once in ThemeProvider; it follows the OS appearance by default
 // (pass the dark or light boolean to force one). Components are React Native, so
@@ -48,11 +48,11 @@ export default defineConfig({
 });`;
 
 const WEB_ENTRY = `import { createRoot } from "react-dom/client";
-import { ThemeProvider } from "@ionizeio/canvas";
+import { ThemeProvider } from "@nannier/canvas";
 // The CSS token layer: plain custom properties, no build step. Carries the
 // .dark scheme hook and the [data-platform] skin hook, for the DOM theme
 // helpers and any custom CSS you write with var().
-import "@ionizeio/canvas/styles/canvas.css";
+import "@nannier/canvas/styles/canvas.css";
 import { App } from "./app";
 import { useHtmlScheme } from "./use-html-scheme";
 
@@ -88,14 +88,14 @@ export function useHtmlScheme(): "light" | "dark" {
   return useSyncExternalStore(subscribe, getSnapshot, () => "light");
 }`;
 
-const THEME_API = `import { setTheme, toggleTheme, setSurface, setDensity } from "@ionizeio/canvas";
+const THEME_API = `import { setTheme, toggleTheme, setSurface, setDensity } from "@nannier/canvas";
 
 setTheme("dark");       // toggles <html class="dark"> (the class the CSS reads) and persists
 toggleTheme();          // flips light <-> dark, returns the next theme
 setSurface("glass");    // persists, stamps <html data-surface="glass">  (solid is the default)
 setDensity("compact");  // persists, stamps <html data-density="compact"> (regular is the default)`;
 
-const TOKEN = `import { token, hsl } from "@ionizeio/canvas";
+const TOKEN = `import { token, hsl } from "@nannier/canvas";
 
 // Web only: reads a CSS custom property off <html>, so it reflects the live theme.
 // Requires canvas.css to be loaded; on native, theme values come from ThemeProvider.
@@ -107,7 +107,7 @@ token("radius-md");   // "6px"
 // translucent variant, mixed the same way the token layer does it:
 hsl("primary", 0.5);  // "color-mix(in oklab, oklch(0.511 0.262 276.966) 50%, transparent)"`;
 
-const BUILDING = `import { View, Text, useTheme } from "@ionizeio/canvas";
+const BUILDING = `import { View, Text, useTheme } from "@nannier/canvas";
 
 // Build your own components the way Canvas does: raw RN View/Text styled with a
 // style object built from the tokens, with flat boolean props for each style
@@ -131,12 +131,12 @@ export function Callout({ children, primary }: CalloutProps) {
 
 const EXPORTS = [
   {
-    path: "@ionizeio/canvas",
+    path: "@nannier/canvas",
     content:
       "Components, the style foundation (ThemeProvider, useTheme, useResponsive, shadow, alpha, and the View / Text / Pressable / TextInput / ScrollView primitives), and the token / theme utilities. Ships as compiled JavaScript with TypeScript declarations.",
   },
   {
-    path: "@ionizeio/canvas/styles/canvas.css",
+    path: "@nannier/canvas/styles/canvas.css",
     content:
       "The CSS token layer: plain custom properties, plus the .dark scheme hook and the [data-platform] skin hook. Web only, no build step.",
   },
@@ -153,7 +153,7 @@ export default function IntegrationScreen() {
 
         <Section title="Installation">
           <P muted>
-            Canvas is published as <InlineCode>@ionizeio/canvas</InlineCode> and lists{" "}
+            Canvas is published as <InlineCode>@nannier/canvas</InlineCode> and lists{" "}
             <InlineCode>react</InlineCode>, <InlineCode>react-native</InlineCode>, and{" "}
             <InlineCode>react-native-svg</InlineCode> as peer dependencies.
           </P>
@@ -184,7 +184,7 @@ export default function IntegrationScreen() {
             supported legacy Android frost. The browser frost is built in and does not need this peer.
           </P>
           <P muted>
-            <InlineCode>@ionizeio/canvas-blur</InlineCode>: optional Android 12+ capture and frost for Expo SDK 57 native
+            <InlineCode>@nannier/canvas-blur</InlineCode>: optional Android 12+ capture and frost for Expo SDK 57 native
             builds, using a safe live backdrop target. Install it in the native app and rebuild so Expo autolinks the module.
             Capture runs only while needed. Missing or unsafe material restores the complete opaque solid skin.
           </P>

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Button, Card, Carousel, CodeBlock, Column, DataTable, Feed, GridList, Heatmap, Select, StackedList, Typography } from "@ionizeio/canvas";
+import { Button, Card, Carousel, CodeBlock, Column, DataTable, Feed, GridList, Heatmap, Select, StackedList, Typography } from "@nannier/canvas";
 import { Page } from "../../../ui/page";
 
 const LONG = 'const destinations = ["Montréal", "Toronto", "Vancouver", "Halifax", "Victoria", "Québec", "Winnipeg", "Calgary", "Ottawa", "Edmonton"];';

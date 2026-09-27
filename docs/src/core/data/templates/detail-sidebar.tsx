@@ -1,4 +1,4 @@
-import { Row, Column, Card, Typography, Button, Badge, Breadcrumb, DataTable, Feed, DescriptionList, Divider, Avatar, Icon, useToast } from "@ionizeio/canvas";
+import { Row, Column, Card, Typography, Button, Badge, Breadcrumb, DataTable, Feed, DescriptionList, Divider, Avatar, Icon, useToast } from "@nannier/canvas";
 import type { TemplateDoc } from "../types";
 
 // Order detail built from real Canvas components: breadcrumb + header with the

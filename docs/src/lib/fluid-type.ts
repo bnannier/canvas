@@ -1,4 +1,4 @@
-import { breakpoints, useBreakpoint, type BreakpointKey } from "@ionizeio/canvas";
+import { breakpoints, useBreakpoint, type BreakpointKey } from "@nannier/canvas";
 
 // Fluid type for the docs app's marketing/reference typography: the RN spelling of
 // CSS clamp(lo, width * factor, hi), rounded to a whole px. This is app typography

@@ -7,7 +7,7 @@ import { appInventory, assertInstalledPackage, packageArtifacts, packageIdentity
 const temporary: string[] = [];
 afterEach(() => { for (const directory of temporary.splice(0)) rmSync(directory, { recursive: true, force: true }); });
 const manifest = {
-  name: "@ionizeio/canvas", source: "a".repeat(40), candidate: "b".repeat(40), version: "2.62.1",
+  name: "@nannier/canvas", source: "a".repeat(40), candidate: "b".repeat(40), version: "2.62.1",
   packageFile: "canvas.tgz", files: [{ name: "canvas.tgz", sha256: "c".repeat(64) }],
 };
 
@@ -56,11 +56,11 @@ test("prepared app inputs detect fixture edits while excluding generated native 
 
 
 test("native capture identity binds both package tarballs and rejects a missing module digest", () => {
-  const native = { ...manifest, packages: [{ name: manifest.name, version: manifest.version }, { name: "@ionizeio/canvas-blur", version: "0.1.0" }],
-    packageFiles: { [manifest.name]: "canvas.tgz", "@ionizeio/canvas-blur": "blur.tgz" },
+  const native = { ...manifest, packages: [{ name: manifest.name, version: manifest.version }, { name: "@nannier/canvas-blur", version: "0.1.0" }],
+    packageFiles: { [manifest.name]: "canvas.tgz", "@nannier/canvas-blur": "blur.tgz" },
     files: [...manifest.files, { name: "blur.tgz", sha256: "d".repeat(64) }] };
-  expect(packageIdentity(native).nativePackages).toEqual([{ packageName: "@ionizeio/canvas-blur", packageVersion: "0.1.0", packageSha256: "d".repeat(64) }]);
+  expect(packageIdentity(native).nativePackages).toEqual([{ packageName: "@nannier/canvas-blur", packageVersion: "0.1.0", packageSha256: "d".repeat(64) }]);
   expect(packageArtifacts(native)).toHaveLength(2);
   expect(() => packageIdentity({ ...native, files: manifest.files })).toThrow("Invalid native candidate packages");
-  expect(() => packageArtifacts({ ...native, packageFiles: { ...native.packageFiles, "@ionizeio/canvas-blur": "../blur.tgz" } })).toThrow("Invalid native candidate packages");
+  expect(() => packageArtifacts({ ...native, packageFiles: { ...native.packageFiles, "@nannier/canvas-blur": "../blur.tgz" } })).toThrow("Invalid native candidate packages");
 });

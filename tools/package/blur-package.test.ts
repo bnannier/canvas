@@ -20,8 +20,8 @@ test("docs autolink the local module without pinning consumer dependencies to so
   const docs = metadata("../../docs/package.json");
   const starter = metadata("../../examples/starter/package.json");
   expect(docs.expo.autolinking.nativeModulesDir).toBe("../packages");
-  expect(docs.dependencies["@ionizeio/canvas-blur"]).toBeUndefined();
-  expect(starter.dependencies["@ionizeio/canvas-blur"]).toBeUndefined();
+  expect(docs.dependencies["@nannier/canvas-blur"]).toBeUndefined();
+  expect(starter.dependencies["@nannier/canvas-blur"]).toBeUndefined();
   for (const pkg of [docs, starter]) {
     expect(Object.values(pkg.dependencies).some((value) => /^(file|link|workspace):/.test(String(value)))).toBe(false);
   }

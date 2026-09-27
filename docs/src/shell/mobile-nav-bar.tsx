@@ -1,5 +1,5 @@
 import { type ReactNode } from "react";
-import { Text, Pressable, Row, Column, Icon, GlassSurface, useTheme, alpha } from "@ionizeio/canvas";
+import { Text, Pressable, Row, Column, Icon, GlassSurface, useTheme, alpha } from "@nannier/canvas";
 import { sans } from "../ui/fonts";
 
 // The mobile-web top bar, built to match the iOS UINavigationBar: a centered title flanked by

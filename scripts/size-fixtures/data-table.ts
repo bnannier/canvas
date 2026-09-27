@@ -1,3 +1,3 @@
-import { DataTable, ThemeProvider } from "@ionizeio/canvas";
+import { DataTable, ThemeProvider } from "@nannier/canvas";
 
 export { DataTable, ThemeProvider };

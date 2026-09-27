@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { View, Text, Button, Row, Icon, Image, useTheme, useResponsive } from "@ionizeio/canvas";
+import { View, Text, Button, Row, Icon, Image, useTheme, useResponsive } from "@nannier/canvas";
 import { useRouter } from "expo-router";
 import { COMPONENTS } from "../core/data/components";
 import { FIRST_EXAMPLE_CODE } from "../core/previews";
