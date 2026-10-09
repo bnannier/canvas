@@ -12,8 +12,15 @@
 //   /ios      xcrun simctl openurl booted canvas:///<route>     (booted iOS sim)
 //   /android  adb shell am start -a android.intent.action.VIEW -d canvas:///<route>
 //
-// Safety: the route is validated to [a-z0-9/-] and passed as execFile arguments
-// (never shell-interpolated), and the server binds to 127.0.0.1 only.
+// The appearance axes the docs read from a launch URL (docs/src/theme/theme-links.ts)
+// ride along: `scheme` (light | dark), `surface` (solid | glass) and `palette`
+// (blush | mint) are each validated on their own and appended to the deep link and
+// the web redirect. An absent axis leaves the app's current choice alone; a value
+// outside its set is refused, so a mistyped palette never opens blush quietly.
+//
+// Safety: the route is validated to [a-z0-9/-], the axes to their closed sets, and
+// both are passed as execFile arguments (never shell-interpolated); the server binds
+// to 127.0.0.1 only.
 
 import http from "node:http";
 import { execFile } from "node:child_process";
@@ -24,10 +31,32 @@ const WEB_PORT = Number(process.env.EXPO_WEB_PORT ?? 8081);
 const PREVIEW_PORT = Number(process.env.PREVIEW_PORT ?? 8790);
 const HOST = "127.0.0.1";
 
+/** Each appearance axis a link may carry, with the values the docs accept for it. */
+const APPEARANCE_AXES = {
+  scheme: ["light", "dark"],
+  surface: ["solid", "glass"],
+  palette: ["blush", "mint"],
+};
+
 function sanitizeRoute(raw) {
   if (!raw) return null;
   const route = raw.replace(/^\/+/, "").replace(/\/+$/, "");
   return /^[a-z0-9]+(?:[/-][a-z0-9]+)*$/i.test(route) ? route : null;
+}
+
+// The appearance query to append, built only from the axes present and valid. The
+// first value of a repeated axis counts, as the app reads it. An invalid axis is
+// reported by name, with the values it takes, instead of being dropped.
+function appearanceQuery(searchParams) {
+  const query = new URLSearchParams();
+  for (const [axis, values] of Object.entries(APPEARANCE_AXES)) {
+    const raw = searchParams.get(axis);
+    if (raw === null) continue;
+    if (!values.includes(raw)) return { invalid: { axis, values } };
+    query.set(axis, raw);
+  }
+  const text = query.toString();
+  return { suffix: text ? `?${text}` : "" };
 }
 
 function escapeHtml(s) {
@@ -46,8 +75,8 @@ function html(res, code, body) {
   );
 }
 
-function openDeepLink(platform, route, res) {
-  const url = `${SCHEME}:///${route}`;
+function openDeepLink(platform, route, appearance, res) {
+  const url = `${SCHEME}:///${route}${appearance}`;
   const [cmd, args] =
     platform === "ios"
       ? ["xcrun", ["simctl", "openurl", "booted", url]]
@@ -72,7 +101,7 @@ function openDeepLink(platform, route, res) {
       res,
       200,
       `<h2>Opening on the ${label}…</h2>` +
-        `<p><code>${escapeHtml(route)}</code> should now be on your ${label}. ` +
+        `<p><code>${escapeHtml(route + appearance)}</code> should now be on your ${label}. ` +
         `You can close this tab.</p>`,
     );
   });
@@ -93,7 +122,12 @@ export function startPreviewServer({ port = PREVIEW_PORT } = {}) {
           `<li><code>/web?route=components/button</code> - browser</li>` +
           `<li><code>/ios?route=components/button</code> - booted iOS simulator</li>` +
           `<li><code>/android?route=components/button</code> - booted Android emulator</li>` +
-          `</ul>`,
+          `</ul>` +
+          `<p>Add an appearance with any of ` +
+          Object.entries(APPEARANCE_AXES)
+            .map(([axis, values]) => `<code>${axis}=${values.join("|")}</code>`)
+            .join(", ") +
+          `, e.g. <code>/web?route=components/button&amp;scheme=light&amp;palette=mint</code>.</p>`,
       );
     }
 
@@ -107,11 +141,22 @@ export function startPreviewServer({ port = PREVIEW_PORT } = {}) {
             `<p>Example: <code>?route=components/button</code></p>`,
         );
       }
+      const appearance = appearanceQuery(searchParams);
+      if (appearance.invalid) {
+        const { axis, values } = appearance.invalid;
+        return html(
+          res,
+          400,
+          `<h2>Invalid <code>${escapeHtml(axis)}</code></h2>` +
+            `<p>It takes one of ${values.map((value) => `<code>${escapeHtml(value)}</code>`).join(", ")}, ` +
+            `or leave it out to keep the app's current choice.</p>`,
+        );
+      }
       if (pathname === "/web") {
-        res.writeHead(302, { location: `http://localhost:${WEB_PORT}/${route}` });
+        res.writeHead(302, { location: `http://localhost:${WEB_PORT}/${route}${appearance.suffix}` });
         return res.end();
       }
-      return openDeepLink(pathname.slice(1), route, res);
+      return openDeepLink(pathname.slice(1), route, appearance.suffix, res);
     }
 
     html(res, 404, "<h2>Not found</h2>");

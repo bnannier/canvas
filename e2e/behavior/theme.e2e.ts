@@ -7,7 +7,8 @@
  * use), so an entire "light" screenshot set was really dark and nothing said so.
  * Reading the scheme back off the painted pixels is what makes a silent no-op fail.
  */
-import { gotoDocs, readScheme } from "../support/docs";
+import { colorsFor } from "../../src/style/tokens.ts";
+import { channels, gotoDocs, readBackground, readScheme } from "../support/docs";
 import { expect, test } from "../support/fixtures";
 
 test("the toggle really changes what is painted", async ({ page }) => {
@@ -36,4 +37,20 @@ test("the launch URL seeds the scheme, and a later navigation does not re-seed i
   await page.getByRole("tab").nth(1).click();
   await expect(page).toHaveURL(/scheme=light/);
   expect(await readScheme(page), "a client-side navigation re-seeded the scheme").toBe("dark");
+});
+
+test("?palette=mint paints the mint background", async ({ page }) => {
+  // gotoDocs itself fails when a page paints light in the wrong palette. This pins
+  // what that check rests on: the mint seed reaches the kit's ThemeProvider, and the
+  // two light palettes differ on the backdrop, so the check cannot pass by chance.
+  await gotoDocs(page, "/components/button", { scheme: "light", palette: "mint" });
+  const painted = await readBackground(page);
+  expect(painted).toEqual(channels(colorsFor("mint", "light").background));
+  expect(painted).not.toEqual(channels(colorsFor("blush", "light").background));
+});
+
+test("scheme=dark&palette=mint paints dark: the kit lets dark win over mint", async ({ page }) => {
+  await gotoDocs(page, "/components/button", { scheme: "dark", palette: "mint" });
+  expect(await readScheme(page)).toBe("dark");
+  expect(await readBackground(page)).toEqual(channels(colorsFor("mint", "dark").background));
 });
