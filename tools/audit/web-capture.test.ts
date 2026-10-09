@@ -3,7 +3,7 @@ import { join } from "node:path";
 import auditConfig from "../../playwright.audit.config.ts";
 import { CHROMIUM_ARGS } from "../../playwright.config.ts";
 import { FIXED_TIME } from "../../e2e/support/docs.ts";
-import { WEB_CELLS_PER_VARIANT, components, type InventoryComponent } from "./inventory.ts";
+import { WEB_CELLS_PER_VARIANT, components, pages, type InventoryComponent } from "./inventory.ts";
 import {
   AUDIT_ENV,
   DEFAULT_WORKERS,
@@ -13,17 +13,23 @@ import {
   captureSettings,
   cellDir,
   classifyServed,
+  describeKinds,
   describeServed,
   freshness,
   parseAxe,
+  parseKinds,
   parseRunArgs,
   parseWebFilters,
+  planPageCapture,
   planWebCapture,
   readCellRecords,
   runDirName,
   runStamp,
+  splitOnly,
+  stateCellId,
   summarizeCells,
   webCellId,
+  webPageCellId,
   workersFrom,
   type CellRecord,
   type ServedRecord,
@@ -150,6 +156,14 @@ describe("the runner's flags", () => {
     });
   });
 
+  it("take --states with or without a list after an =, and --pages with none", () => {
+    expect(parseRunArgs(["--states", "--only=button"]).env).toEqual({ AUDIT_STATES: "all", AUDIT_ONLY: "button" });
+    expect(parseRunArgs(["--states=hover,open"]).env).toEqual({ AUDIT_STATES: "hover,open" });
+    expect(parseRunArgs(["--pages"]).env).toEqual({ AUDIT_PAGES: "1" });
+    expect(parseRunArgs(["--states="]).errors).toEqual(["--states= needs a state, or drop the = for every state"]);
+    expect(parseRunArgs(["--pages=all"]).errors).toEqual(["--pages takes no value"]);
+  });
+
   it("name what is wrong with a bad command line", () => {
     expect(parseRunArgs(["--colour=red"]).errors).toEqual(["unknown flag --colour"]);
     expect(parseRunArgs(["--only"]).errors).toEqual(["--only needs a value"]);
@@ -165,6 +179,53 @@ describe("the runner's flags", () => {
     expect(DEFAULT_WORKERS).toBe(6);
     expect(workersFrom({ [AUDIT_ENV.workers]: "2" })).toBe(2);
     expect(() => workersFrom({ [AUDIT_ENV.workers]: "two" })).toThrow(/AUDIT_WORKERS/);
+  });
+});
+
+describe("what a run captures", () => {
+  const pageList = pages();
+
+  it("is the variants alone unless states or pages are asked for", () => {
+    expect(parseKinds({})).toEqual({ variants: true, states: null, pages: false });
+    expect(parseKinds({ [AUDIT_ENV.states]: "all" })).toEqual({ variants: false, states: ["hover", "focus", "pressed", "open", "invalid", "disabled"], pages: false });
+    expect(parseKinds({ [AUDIT_ENV.states]: "open,hover", [AUDIT_ENV.pages]: "1" })).toEqual({ variants: false, states: ["hover", "open"], pages: true });
+    expect(() => parseKinds({ [AUDIT_ENV.states]: "hover,dragged" })).toThrow(/AUDIT_STATES: unknown "dragged"/);
+    expect(() => parseKinds({ [AUDIT_ENV.pages]: "yes" })).toThrow(/AUDIT_PAGES must be 1/);
+    expect(describeKinds(parseKinds({ [AUDIT_ENV.states]: "focus", [AUDIT_ENV.pages]: "1" }))).toBe("states (focus), pages");
+  });
+
+  it("splits --only between components and pages, a page by id or slug, a slug that is both to each kind", () => {
+    const both = parseKinds({ [AUDIT_ENV.states]: "all", [AUDIT_ENV.pages]: "1" });
+    expect(splitOnly(["button", "template-signin", "glass", "calendar"], both, inventory, pageList)).toEqual({
+      components: ["button", "calendar"],
+      pages: ["template-signin", "pattern-glass", "template-calendar"],
+    });
+    expect(splitOnly(null, parseKinds({ [AUDIT_ENV.pages]: "1" }), inventory, pageList)).toEqual({ components: [], pages: null });
+    expect(splitOnly(null, parseKinds({}), inventory, pageList)).toEqual({ components: null, pages: [] });
+  });
+
+  it("refuses a name nothing has, or one only a kind the run does not capture has", () => {
+    expect(() => splitOnly(["buton"], parseKinds({}), inventory, pageList)).toThrow(/no component or page is called "buton"/);
+    expect(() => splitOnly(["template-signin"], parseKinds({ [AUDIT_ENV.states]: "all" }), inventory, pageList)).toThrow(/names a page, and this run captures no pages/);
+    expect(() => splitOnly(["button"], parseKinds({ [AUDIT_ENV.pages]: "1" }), inventory, pageList)).toThrow(/names a component, and this run captures only pages/);
+  });
+
+  it("plans 18 cells per page, its sections from the inventory, narrowed by id", () => {
+    const all = planPageCapture(pageList, parseWebFilters({}));
+    expect(all.pages).toBe(24);
+    expect(all.cells).toBe(24 * 18);
+    expect(all.groups.length).toBe(24 * 6);
+    const two = planPageCapture(pageList, { ...parseWebFilters({ [AUDIT_ENV.looks]: "dark", [AUDIT_ENV.widths]: "phone" }), only: ["template-signin"] });
+    expect(two).toMatchObject({ pages: 1, cells: 2 });
+    expect(two.groups[0]!.page.sections.map((s) => s.key)).toEqual(["centeredcard", "splitscreen", "magiclink"]);
+    expect(() => planPageCapture(pageList, { ...parseWebFilters({}), only: ["template-nope"] })).toThrow(/no pattern or template page is called "template-nope"/);
+  });
+
+  it("puts a state under web-states/<slug>/<state>.<row>/ and a page under web-pages/<kind>-<slug>/", () => {
+    const width = { key: "phone", width: 390, height: 844 } as const;
+    expect(stateCellId({ slug: "dialog", state: "open", row: "ios", width, look: "dark", surface: "glass" })).toBe("web-states/dialog/open.ios/phone.dark.glass");
+    const signin = pageList.find((p) => p.id === "template-signin")!;
+    expect(webPageCellId({ page: signin, width, look: "mint", surface: "solid" })).toBe("web-pages/template-signin/phone.mint.solid");
   });
 });
 
@@ -291,5 +352,19 @@ describe("the run's cell records", () => {
     expect(summary.flags).toEqual({ contrast: 2, "small-target": 1 });
     expect(summary.ms).toEqual({ mean: 3750, p50: 3000, p95: 6000, max: 6000 });
     expect(summary.failures).toEqual([{ id: "c", error: "boom" }]);
+    expect(summary).toMatchObject({ notReached: 0, unreached: [], kinds: { variant: 4, state: 0, page: 0 } });
+  });
+
+  it("count a state not reached apart from the ok and the failed, with its reason, and the cells by kind", () => {
+    const base = { width: "desktop", look: "dark", surface: "solid", flags: [], ms: 1000, bytes: 10, worker: 0, at: "2026-10-09T00:00:00.000Z" } as const;
+    const records: CellRecord[] = [
+      { ...base, kind: "state", id: "web-states/button/hover.web/desktop.dark.solid", slug: "button", variant: "default", label: "Usage", state: "hover", row: "web", status: "ok" },
+      { ...base, kind: "state", id: "web-states/video/pressed.web/desktop.dark.solid", slug: "video", variant: "default", label: "Usage", state: "pressed", row: "web", status: "state-not-reached", reason: "no press feedback" },
+      { ...base, kind: "page", id: "web-pages/template-signin/desktop.dark.solid", page: "template-signin", route: "/templates/signin", sections: 3, status: "ok" },
+      record("a", "ok", 1000),
+    ];
+    const summary = summarizeCells(records);
+    expect(summary).toMatchObject({ cells: 4, ok: 3, failed: 0, notReached: 1, kinds: { variant: 1, state: 2, page: 1 } });
+    expect(summary.unreached).toEqual([{ id: "web-states/video/pressed.web/desktop.dark.solid", reason: "no press feedback" }]);
   });
 });
