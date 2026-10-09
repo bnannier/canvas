@@ -22,6 +22,8 @@ import e_atoms_input_dont_0_do from "./dont-0-do";
 import e_atoms_input_dont_0_dont from "./dont-0-dont";
 import e_atoms_input_dont_1_do from "./dont-1-do";
 import e_atoms_input_dont_1_dont from "./dont-1-dont";
+import e_atoms_input_dont_2_do from "./dont-2-do";
+import e_atoms_input_dont_2_dont from "./dont-2-dont";
 
 export const docs: ComponentDocs = {
   dir: "input",
@@ -48,6 +50,7 @@ export const docs: ComponentDocs = {
   donts: [
     { title: "text", do: { caption: "Pass `label` so every field carries a persistent, programmatically-linked name.", code: "<Input label=\"Email\" placeholder=\"ada@acme.dev\" />", render: e_atoms_input_dont_0_do }, dont: { caption: "A placeholder is not a label; it vanishes the moment the user types and screen readers may skip it.", code: "<Input placeholder=\"Email\" />", render: e_atoms_input_dont_0_dont } },
     { title: "number", do: { caption: "Park the unit in a suffix addon so the value stays purely numeric.", code: "<Input label=\"Storage\" defaultValue=\"1024\" suffix=\"GB\" />", render: e_atoms_input_dont_1_do }, dont: { caption: "A plain text field lets users type the unit into the value, breaking parsing and validation.", code: "<Input label=\"Storage\" defaultValue=\"1024 GB\" />", render: e_atoms_input_dont_1_dont } },
+    { title: "Read only or disabled", do: { caption: "Pass `readOnly` for a value people still need to reach. On the web it stays in the tab order and its text stays selectable. On iOS and Android, React Native maps a read-only field to a disabled native view, so VoiceOver and TalkBack announce it as dimmed and Android cannot select its text.", code: "<Input label=\"Workspace ID\" readOnly defaultValue=\"ws_8f2k1\" />", render: e_atoms_input_dont_2_do }, dont: { caption: "Disable a field whose value people must read or copy. `disabled` takes it out of the tab order and announces it as unavailable on every platform.", code: "<Input label=\"Workspace ID\" disabled defaultValue=\"ws_8f2k1\" />", render: e_atoms_input_dont_2_dont } },
   ],
   // Extracted from the component's exported `*Props` interfaces by
   // tools/docgen/extract-props.ts (the TypeScript checker).

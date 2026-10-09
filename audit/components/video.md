@@ -23,7 +23,7 @@ Audit checklist for `/components/video`. The facts block and the variants table 
 | Interaction states | captured: focus on Default (web row; desktop), pressed on Default (web row; desktop). disabled controls its source renders and no rail example asks for: on its own surface. |
 | MeasureProps | not adopted |
 | Touch target | `video.styles.ts`: TOUCH_TARGET, minTarget |
-| Tests importing it | 5: `test/design-rules-skins.test.ts`, `test/dist-smoke.test.tsx`, `test/skins-smoke.test.tsx`, `test/touch-target-coverage.test.ts`, `test/video.test.tsx` |
+| Tests importing it | 6: `test/design-rules-skins.test.ts`, `test/dist-smoke.test.tsx`, `test/material-solid-fallback.test.tsx`, `test/skins-smoke.test.tsx`, `test/touch-target-coverage.test.ts`, `test/video.test.tsx` |
 | E2E naming it | 1: `e2e/journeys/keyboard.e2e.ts` |
 | E2E catalog sweeps | 6: `e2e/a11y/components.e2e.ts` (componentRoutes), `e2e/responsive/component-widths.e2e.ts` (contentRoutes, componentRoutes), `e2e/smoke/examples.e2e.ts` (componentExamples), `e2e/smoke/routes.e2e.ts` (allRoutes), `e2e/visual/components.e2e.ts` (componentRoutes), `e2e/visual/materials.e2e.ts` (MATERIAL_ROUTES) |
 <!-- audit:facts:end -->

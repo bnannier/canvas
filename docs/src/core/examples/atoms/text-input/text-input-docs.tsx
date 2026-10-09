@@ -4,8 +4,13 @@ import type { ComponentDocs } from "../../../scope";
 import e_atoms_text_input_example_0 from "./example-0";
 import e_atoms_text_input_example_1 from "./example-1";
 import e_atoms_text_input_example_2 from "./example-2";
+import e_atoms_text_input_example_3 from "./example-3";
 import e_atoms_text_input_dont_0_do from "./dont-0-do";
 import e_atoms_text_input_dont_0_dont from "./dont-0-dont";
+import e_atoms_text_input_dont_1_do from "./dont-1-do";
+import e_atoms_text_input_dont_1_dont from "./dont-1-dont";
+import e_atoms_text_input_dont_2_do from "./dont-2-do";
+import e_atoms_text_input_dont_2_dont from "./dont-2-dont";
 
 export const docs: ComponentDocs = {
   dir: "text-input",
@@ -14,9 +19,12 @@ export const docs: ComponentDocs = {
     { label: "Default", code: "<TextInput accessibilityLabel=\"Your name\" defaultValue=\"Ada Lovelace\" />", render: e_atoms_text_input_example_0 },
     { label: "Placeholder", code: "<TextInput placeholder=\"Search components...\" />", render: e_atoms_text_input_example_1 },
     { label: "Multiline", code: "<TextInput accessibilityLabel=\"Notes\" multiline defaultValue={\"Multi-line text\\nwraps and grows as you type.\"} />", render: e_atoms_text_input_example_2 },
+    { label: "Disabled", code: "<TextInput accessibilityLabel=\"Plan\" defaultValue=\"Pro\" editable={false} aria-disabled />", render: e_atoms_text_input_example_3 },
   ],
   donts: [
     { title: "Labelled fields", do: { caption: "Reach for `Input` for a form field: its `label` stays in view, names the field for assistive tech, and the field box is drawn for each platform.", code: "<Input label=\"Email\" placeholder=\"ada@example.com\" />", render: e_atoms_text_input_dont_0_do }, dont: { caption: "Let a bare TextInput's placeholder stand in for the label; it vanishes as soon as the user types, taking the field's only name with it.", code: "<TextInput placeholder=\"Email\" />", render: e_atoms_text_input_dont_0_dont } },
+    { title: "Disabled", do: { caption: "Pair `editable={false}` with `aria-disabled`. The browser then disables the field and takes it out of the tab order, and VoiceOver and TalkBack announce it as dimmed.", code: "<TextInput accessibilityLabel=\"Plan\" defaultValue=\"Pro\" editable={false} aria-disabled />", render: e_atoms_text_input_dont_1_do }, dont: { caption: "Stop at `editable={false}`. On the web that is only read-only: the field stays a Tab stop and is announced as read-only, not unavailable.", code: "<TextInput accessibilityLabel=\"Plan\" defaultValue=\"Pro\" editable={false} />", render: e_atoms_text_input_dont_1_dont } },
+    { title: "Focus ring", do: { caption: "Leave the keyboard focus ring to the primitive. It takes the theme's `ring` colour 2 px off the field, like every kit control, and the browser draws it on keyboard focus only.", code: "<TextInput accessibilityLabel=\"Your name\" defaultValue=\"Ada Lovelace\" />", render: e_atoms_text_input_dont_2_do }, dont: { caption: "Switch the outline off without painting a focus state of your own. A keyboard user then has no way to see which field takes their typing.", code: "<TextInput accessibilityLabel=\"Your name\" defaultValue=\"Ada Lovelace\" style={{ outlineWidth: 0, outlineStyle: \"solid\" }} />", render: e_atoms_text_input_dont_2_dont } },
   ],
   // Extracted from the component's exported `*Props` interfaces by
   // tools/docgen/extract-props.ts (the TypeScript checker).

@@ -226,8 +226,8 @@ export const webSkin: SliderSkin = {
       borderWidth: 1,
       borderColor: disabled ? t["muted-foreground"] : t.primary,
       ...customShadow({ offsetY: 1, radius: 2, opacity: 0.1, elevation: 1 }),
-      // Web press feedback: a faint primary focus ring grows on press (hover:ring-4 /
-      // focus-visible:ring-4 in shadcn).
+      // Web press feedback: a faint primary halo grows on press (shadcn's hover:ring-4).
+      // Keyboard focus is not this halo but the kit's focus ring, which the shell draws.
       ...(pressed && !disabled ? { borderColor: alpha(t.primary, 0.5), borderWidth: 4 } : null),
     };
   },

@@ -1,5 +1,5 @@
 import { describe, it, expect, afterEach } from "bun:test";
-import { render, cleanup } from "@testing-library/react";
+import { act, render, cleanup, fireEvent } from "@testing-library/react";
 import { createElement, type ReactNode } from "react";
 import { ThemeProvider } from "../src/style/theme.tsx";
 import { createSlider } from "../src/atoms/slider/slider.shared.tsx";
@@ -76,5 +76,47 @@ describe("Slider Liquid Glass handle", () => {
     );
     const h = handle(container);
     expect(h!.getAttribute("aria-disabled")).toBe("true");
+  });
+});
+
+// A press shows where a skin draws it: the web knob grows a primary halo in its border,
+// and that border is the press state, so it stays over the glass knob (a resting border
+// gives way to the material's rim). iOS keeps its knob as it is, so its resting hairline
+// still gives way under glass while pressed.
+describe("Slider press feedback over the glass knob", () => {
+  const press = (node: HTMLElement) => fireEvent.mouseDown(node, { button: 0, buttons: 1, clientX: 1, clientY: 1 });
+  const release = (node: HTMLElement) => fireEvent.mouseUp(node, { button: 0, buttons: 0, clientX: 1, clientY: 1 });
+  const transparent = /^rgba\(0, 0, 0, 0(\.0+)?\)$/;
+
+  it("keeps the web knob's halo over the material while pressed, and clears its rim at rest", () => {
+    const Slider = createSlider(webSkin);
+    const { container } = mount(<Slider testID="slider" defaultValue={40} />, "glass");
+    const root = handle(container)!;
+    const knob = container.querySelector('[data-testid="slider-thumb"]') as HTMLElement;
+    expect(knob.style.borderColor).toMatch(transparent);
+    press(root);
+    expect(knob.style.borderWidth).toBe("4px");
+    expect(knob.style.borderColor).not.toMatch(transparent);
+    release(root);
+    expect(knob.style.borderWidth).toBe("1px");
+    expect(knob.style.borderColor).toMatch(transparent);
+  });
+
+  it("lets the iOS knob's resting hairline give way to the material while pressed", () => {
+    const { container } = mount(<IOSSlider testID="slider" defaultValue={40} />, "glass");
+    const knob = container.querySelector('[data-testid="slider-thumb"]') as HTMLElement;
+    press(handle(container)!);
+    expect(knob.style.borderColor).toMatch(transparent);
+  });
+
+  it("leaves the solid knob's markup exactly as it was once keyboard focus moves on", () => {
+    const Slider = createSlider(webSkin);
+    const { container } = mount(<Slider testID="slider" defaultValue={40} />, "solid");
+    const root = handle(container)!;
+    const resting = container.innerHTML;
+    act(() => { fireEvent.keyUp(root, { key: "Tab" }); });
+    expect(container.innerHTML).not.toBe(resting);
+    act(() => { fireEvent.pointerDown(root); });
+    expect(container.innerHTML).toBe(resting);
   });
 });

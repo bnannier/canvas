@@ -22,6 +22,12 @@ Single-line (or multiline) text entry. Control it with `value` + `onChangeText`,
 <TextInput accessibilityLabel="Notes" multiline defaultValue={"Multi-line text\nwraps and grows as you type."} />
 ```
 
+### Disabled
+
+```tsx
+<TextInput accessibilityLabel="Plan" defaultValue="Pro" editable={false} aria-disabled />
+```
+
 ## Do & Don't
 
 ### Labelled fields
@@ -36,4 +42,32 @@ Single-line (or multiline) text entry. Control it with `value` + `onChangeText`,
 
 ```tsx
 <TextInput placeholder="Email" />
+```
+
+### Disabled
+
+**Do**: Pair `editable={false}` with `aria-disabled`. The browser then disables the field and takes it out of the tab order, and VoiceOver and TalkBack announce it as dimmed.
+
+```tsx
+<TextInput accessibilityLabel="Plan" defaultValue="Pro" editable={false} aria-disabled />
+```
+
+**Don't**: Stop at `editable={false}`. On the web that is only read-only: the field stays a Tab stop and is announced as read-only, not unavailable.
+
+```tsx
+<TextInput accessibilityLabel="Plan" defaultValue="Pro" editable={false} />
+```
+
+### Focus ring
+
+**Do**: Leave the keyboard focus ring to the primitive. It takes the theme's `ring` colour 2 px off the field, like every kit control, and the browser draws it on keyboard focus only.
+
+```tsx
+<TextInput accessibilityLabel="Your name" defaultValue="Ada Lovelace" />
+```
+
+**Don't**: Switch the outline off without painting a focus state of your own. A keyboard user then has no way to see which field takes their typing.
+
+```tsx
+<TextInput accessibilityLabel="Your name" defaultValue="Ada Lovelace" style={{ outlineWidth: 0, outlineStyle: "solid" }} />
 ```

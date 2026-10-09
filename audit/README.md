@@ -857,14 +857,29 @@ development app installed.
   only resting examples, none of which opens a portaled overlay, so the Android sweep shows
   that frost nowhere yet.
 
-  The black ring is a kit defect the audit has to record, not a capture artifact: Chip
-  reads its paint from `useMaterialTheme`, which demotes the surface to solid, but its
-  `GlassPane` reads `useTheme()`, still sees glass, and mounts a `GlassSurface` that
-  resolves solid and paints the pane's own shape as a plain view. That shape is the
+  The black ring was a kit defect, not a capture artifact, and the pane fix closes it:
+  Chip read its paint from `useMaterialTheme`, which demotes the surface to solid, but its
+  `GlassPane` read `useTheme()`, still saw glass, and mounted a `GlassSurface` that
+  resolved solid and painted the pane's own shape as a plain view. That shape is the
   skin's `base` (`androidBase` in `src/atoms/chip/chip.styles.ts`), which carries
   `borderWidth: 1` but no `borderColor` (the colour is set on the chip's `chrome` from its
-  tone), so Android draws the default black border. Button passes its resolved container
-  style as the pane's shape, which is why its cards stay byte-identical.
+  tone), so Android drew the default black border; Badge and Kbd shapes have the same
+  form, and a shape that names its colour drew a second hairline one border-width in.
+  Button never showed it because it mounts its pane only on its resolved `puck` flag
+  (`isGlass` of the theme `useMaterialTheme` returned), not because of the shape it
+  passes. A GlassPane now reads the same resolution as its host
+  (`useMaterialResolution` in `src/style/glass-surface/use-material-theme.ts`) and renders
+  nothing where it resolves solid, and `test/material-solid-fallback.test.tsx` holds every
+  pane host to the solid markup wherever requested glass cannot render.
+
+  **Android's glass column equals solid outside overlays, by design.** An in-page Android
+  surface has no capture plane it may safely sample, so with glass requested it resolves
+  to its complete solid skin (`missing-target`). After the pane fix, every Android cell of
+  a component in the page is expected to match its solid cell byte for byte; a difference
+  there is a defect to file, not the material. Android frost appears only on a surface in
+  an overlay outlet with a capture target or in a Modal sheet that bridges the window
+  target (Popover, the option menus, Drawer, ActionSheet), and only once a capture opens
+  one.
 - **Pages.** `pattern-glass` and `template-signin` in dark glass: iOS 2,350 points of the
   sign-in page in 4 segments, Android 2,075 dp in 3, stitched without a seam; 8 s a page on
   iOS and 25 s on Android (each segment is two grabs).

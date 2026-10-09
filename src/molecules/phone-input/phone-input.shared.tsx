@@ -1,4 +1,5 @@
 import { useTextEntryMaterial } from "../../style/text-entry-material.js";
+import { textEntryState } from "../../style/text-entry-state.js";
 import { EscapeLayerProvider, useEscapeLayer } from "../../style/escape-layer.js";
 import { forwardRef, useEffect, useId, useRef, useState } from "react";
 import { type TextInput as RNTextInput, type TextInputProps as RNTextInputProps } from "react-native";
@@ -155,7 +156,8 @@ export function createPhoneInput(skin: PhoneInputSkin) {
     const selected = countries.find((c) => c.code === code) ?? countries[0];
     const [open, setOpen] = useState(false);
     const [focused, setFocused] = useState(false);
-    const editable = !disabled && !readOnly;
+    const entry = textEntryState({ disabled, readOnly });
+    const { editable } = entry;
     const active = focused || open;
 
     // Border-colour precedence (error > active > rest), shared with Input: the skin
@@ -237,7 +239,9 @@ export function createPhoneInput(skin: PhoneInputSkin) {
             onChangeText={setNumber}
             placeholder={placeholder}
             placeholderTextColor={tokens["muted-foreground"]}
-            editable={editable}
+            // Disabled reaches the browser as disabled (out of the tab order) and VoiceOver
+            // and TalkBack as dimmed; read-only stays focusable on the web.
+            {...entry}
             selectionColor={tokens.primary}
             keyboardType="phone-pad"
             inputMode="tel"

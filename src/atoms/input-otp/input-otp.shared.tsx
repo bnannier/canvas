@@ -1,4 +1,5 @@
 import { useTextEntryMaterial } from "../../style/text-entry-material.js";
+import { textEntryState } from "../../style/text-entry-state.js";
 import { Fragment, forwardRef, useEffect, useMemo, useReducer, useRef, useState } from "react";
 import {
   Animated,
@@ -363,7 +364,7 @@ export function createInputOTP(skin: InputOTPSkin) {
             ref={ref}
             value={value}
             onChangeText={handleChange}
-            editable={!disabled}
+            {...textEntryState({ disabled })}
             autoFocus={autoFocus}
             onFocus={() => setFocused(true)}
             onBlur={() => setFocused(false)}
@@ -391,8 +392,6 @@ export function createInputOTP(skin: InputOTPSkin) {
             selectionColor={tokens.primary}
             accessibilityLabel="One-time code"
             aria-label="One-time code"
-            accessibilityState={{ disabled: !!disabled }}
-            aria-disabled={disabled}
             style={[
               {
                 position: "absolute",

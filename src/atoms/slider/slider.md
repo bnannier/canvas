@@ -117,3 +117,17 @@ On iOS 26 the handle is a real Apple Liquid Glass control, with the material's e
   </View>
 </View>
 ```
+
+### Keyboard
+
+**Do**: Name the slider and let it take keyboard focus. Tab lands on it and its thumb wears the kit's 2 px focus ring in the theme's `ring` colour, over the glass knob too; the arrows, Page Up, Page Down, Home and End then set the value. A click shows no ring.
+
+```tsx
+<Slider accessibilityLabel="Volume" defaultValue={48} min={0} max={100} />
+```
+
+**Don't**: Leave the slider unnamed. It still takes focus and shows the ring, but a screen reader announces a bare number with nothing to say what it sets.
+
+```tsx
+<Slider defaultValue={48} min={0} max={100} />
+```

@@ -1,4 +1,5 @@
 import { useTextEntryMaterial } from "../../style/text-entry-material.js";
+import { textEntryState } from "../../style/text-entry-state.js";
 import { useInputEscapeBridge } from "../../style/escape-layer.js";
 import { forwardRef, useId, useRef, useState } from "react";
 import {
@@ -315,7 +316,9 @@ export function createInput(skin: InputSkin) {
       onChangeText: handleChangeText,
       placeholder,
       placeholderTextColor: tokens["muted-foreground"],
-      editable: !disabled && !readOnly,
+      // Disabled reaches the browser as disabled (out of the tab order) and VoiceOver and
+      // TalkBack as dimmed; read-only stays focusable on the web (src/style/text-entry-state.ts).
+      ...textEntryState({ disabled, readOnly }),
       selectionColor: tokens.primary, // brand cursor / selection on every platform
       // Text-entry behavior passthrough (the curated TextEntryProps slice).
       defaultValue: props.defaultValue,

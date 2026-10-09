@@ -47,9 +47,10 @@ export interface GlassSurfaceProps {
    *  (the `glass-tint` token, or `tint` below). */
   style?: StyleProp<ViewStyle>;
   /**
-   * The style's border currently shows a state (a focused knob, an open trigger): under
-   * Increase Contrast it keeps its colour instead of taking the contrasting hairline (see
-   * `contrastBorderFor`). Defaults to false.
+   * The style's border currently shows a state (a pressed knob's halo, an open trigger):
+   * under glass it stays over the material, where a resting border gives way to the
+   * material's rim, and under Increase Contrast it keeps its colour instead of taking the
+   * contrasting hairline (see `contrastBorderFor`). Defaults to false.
    */
   stateBorder?: boolean;
   children?: ReactNode;
@@ -357,8 +358,13 @@ export function splitSurfaceStyle(style: StyleProp<ViewStyle>): Split {
 // clipped; content, focus rings, hit targets and the exterior shadow keep the
 // skin's own layout and overflow policy. Switching modes never reparents children.
 
-/** The fill and border colours of a style turned transparent: what the material supplies instead. */
-function clearedPaint(style: StyleProp<ViewStyle>): ViewStyle {
+/**
+ * The fill and border colours of a style turned transparent: what the material supplies
+ * instead. A border that shows a state keeps its colours (CLAUDE.md, the glass model: a
+ * state border stays over the pane, and only a resting hairline gives way to the rim).
+ */
+function clearedPaint(style: StyleProp<ViewStyle>, stateBorder: boolean): ViewStyle {
+  if (stateBorder) return { backgroundColor: "transparent" };
   const flat = (StyleSheet.flatten(style) ?? {}) as Record<string, unknown>;
   const clear: Record<string, unknown> = { backgroundColor: "transparent", borderColor: "transparent" };
   for (const key of Object.keys(flat)) {
@@ -368,11 +374,11 @@ function clearedPaint(style: StyleProp<ViewStyle>): ViewStyle {
 }
 
 export function GlassBox({
-  style, children, pointerEvents, testID, role, onLayout, onAccessibilityEscape,
+  style, children, pointerEvents, testID, role, onLayout, onAccessibilityEscape, stateBorder = false,
   material, solid = false,
 }: GlassSurfaceProps & { material: ReactNode; solid?: boolean }) {
   return (
-    <View style={[style, solid ? null : clearedPaint(style), pointerEvents ? { pointerEvents } : null]} testID={testID} role={role} onLayout={onLayout} onAccessibilityEscape={onAccessibilityEscape} collapsable={onAccessibilityEscape ? false : undefined}>
+    <View style={[style, solid ? null : clearedPaint(style, stateBorder), pointerEvents ? { pointerEvents } : null]} testID={testID} role={role} onLayout={onLayout} onAccessibilityEscape={onAccessibilityEscape} collapsable={onAccessibilityEscape ? false : undefined}>
       {material ? (
         <View testID="glass-material" accessible={false} accessibilityElementsHidden importantForAccessibility="no-hide-descendants" style={[materialFill(style), { overflow: "hidden", zIndex: -1 }]}>
           {material}

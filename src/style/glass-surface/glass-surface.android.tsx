@@ -3,26 +3,21 @@
 // expo-blur's frost, then the specular rim. Only decoration changes when appearance
 // does. The web and iOS hosts are their own files (glass-surface.tsx and
 // glass-surface.ios.tsx), so a web material change never reaches Android.
-import { useContext } from "react";
 import { View } from "react-native";
-import { useTheme } from "../theme.js";
-import { FrostView, useMaterialCapabilities, requiresBlurTarget } from "./material-runtime.android.js";
+import { FrostView, requiresBlurTarget } from "./material-runtime.android.js";
 import { NativeCaptureFrost } from "./capture-runtime.js";
-import { useReadyCaptureTarget, useCaptureDemand } from "./capture-target.js";
-import { resolveMaterial } from "./material-resolution.js";
+import { useCaptureDemand } from "./capture-target.js";
+import { useMaterialResolution } from "./use-material-theme.js";
 import {
-  GlassBox, CLEAR_INTENSITY, brandOverMaterial, clearSurfaceTint, contrastBorderFor, frostMethodProps, GlassBlurTargetContext,
+  GlassBox, CLEAR_INTENSITY, brandOverMaterial, clearSurfaceTint, contrastBorderFor, frostMethodProps,
   SHEER_FILL_OPACITY, materialFill, specularRim, surfaceUnderFill, surfaceIntensity, type GlassSurfaceProps,
 } from "./glass-surface.shared.js";
 
 const EMPTY_TARGET = { current: null };
 
 export function GlassSurface(props: GlassSurfaceProps) {
-  const theme = useTheme();
-  const requestedTarget = useContext(GlassBlurTargetContext);
-  const target = useReadyCaptureTarget(requestedTarget);
+  const { theme, material: resolved, requestedTarget, target } = useMaterialResolution(props);
   const { layer = "functional", sheer, tint, brand, style, clear } = props;
-  const resolved = resolveMaterial(theme, props, useMaterialCapabilities(), target !== null);
   const solid = resolved.renderer === "solid";
   useCaptureDemand(requestedTarget ?? EMPTY_TARGET, !solid && NativeCaptureFrost !== undefined);
   // Sheer is a content-only treatment. It must never thin a menu or error verdict.
