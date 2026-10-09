@@ -23,7 +23,7 @@ Audit checklist for `/components/feeds`. The facts block and the variants table 
 | Interaction states | static: An activity list whose rows are read-only in every rail example. focus exempt, verified: `onItemPress` makes each row a button, a tab stop, and `virtualized` scrolls the rows in a list that is one once they overflow; no rail example passes either. pressed exempt, verified: `onItemPress` makes each row a button; no rail example passes it. |
 | MeasureProps | not adopted |
 | Touch target | `feeds.shared.tsx`: minTarget; `feeds.styles.ts`: minTarget |
-| Tests importing it | 7: `test/behavior-smoke-c.test.tsx`, `test/design-rules-skins.test.ts`, `test/list-semantics.test.tsx`, `test/scroll-frame-ring.test.tsx`, `test/skins-smoke.test.tsx`, `test/touch-target-coverage.test.ts`, `test/virtualization.test.tsx` |
+| Tests importing it | 8: `test/behavior-smoke-c.test.tsx`, `test/design-rules-shape.test.ts`, `test/design-rules-skins.test.ts`, `test/list-semantics.test.tsx`, `test/scroll-frame-ring.test.tsx`, `test/skins-smoke.test.tsx`, `test/touch-target-coverage.test.ts`, `test/virtualization.test.tsx` |
 | E2E naming it | 2: `e2e/behavior/scroll-focus.e2e.ts`, `e2e/journeys/keyboard.e2e.ts` |
 | E2E catalog sweeps | 7: `e2e/a11y/components.e2e.ts` (componentRoutes), `e2e/journeys/keyboard.e2e.ts` (componentRoutes), `e2e/responsive/component-widths.e2e.ts` (contentRoutes, componentRoutes), `e2e/smoke/examples.e2e.ts` (componentExamples), `e2e/smoke/routes.e2e.ts` (allRoutes), `e2e/visual/components.e2e.ts` (componentRoutes), `e2e/visual/materials.e2e.ts` (MATERIAL_ROUTES) |
 <!-- audit:facts:end -->
