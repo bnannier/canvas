@@ -51,8 +51,10 @@ for (const width of [1280, 390]) {
               level: Number(heading.getAttribute("aria-level") ?? heading.tagName.slice(1)),
             })));
           expect(outline[0]).toEqual({ name: "Typography", level: 1 });
-          expect(outline.find((heading) => heading.name === "Props")?.level).toBe(2);
-          expect(outline.find((heading) => heading.name === DO_DONT_HEADING)?.level).toBe(2);
+          // Both lookups fail as "Expected: 2, Received: undefined", so each names its heading.
+          expect(outline.find((heading) => heading.name === "Props")?.level, "the Props section h2").toBe(2);
+          expect(outline.find((heading) => heading.name === DO_DONT_HEADING)?.level, `the ${DO_DONT_HEADING} section h2`)
+            .toBe(2);
           for (let index = 1; index < outline.length; index++) {
             expect(outline[index].level, `heading ${outline[index].name} follows ${outline[index - 1].name}`)
               .toBeLessThanOrEqual(outline[index - 1].level + 1);
