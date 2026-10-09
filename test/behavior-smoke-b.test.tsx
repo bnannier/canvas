@@ -259,10 +259,11 @@ describe("MediaObject", () => {
     expect(screen.getByText("2h ago")).toBeTruthy();
   });
 
-  it("onPress makes the row a button named after its title and fires the handler", () => {
+  it("onPress makes the row a button named by the lines it shows and fires the handler", () => {
     let pressed = false;
     ui(<MediaObject title="Open profile" description="tap me" onPress={() => { pressed = true; }} />);
-    const button = screen.getByRole("button", { name: "Open profile" });
+    // The label replaces the button's content, so it carries the description too.
+    const button = screen.getByRole("button", { name: "Open profile, tap me" });
     fireEvent.click(button);
     expect(pressed).toBe(true);
   });

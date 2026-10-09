@@ -96,8 +96,9 @@ export interface BreadcrumbProps {
   homeIcon?: boolean;
   /**
    * Collapse a long trail: when the trail has more than `maxItems` crumbs, keep
-   * the first crumb and the last `maxItems - 2`, and replace the middle with a
-   * single "…" crumb, so a deep path stays on one scannable line.
+   * the first crumb and the last `maxItems - 1` (so `maxItems` crumbs in all), and
+   * replace the middle with a single "…" crumb, so a deep path stays on one
+   * scannable line. Takes effect from 2.
    */
   maxItems?: number;
   /** Fired with the crumb label and its index when a link (non-last) is pressed. */
@@ -221,7 +222,7 @@ export function createBreadcrumb(skin: BreadcrumbSkin) {
     const glyph = SEPARATOR_GLYPH[separator];
 
     // Collapse a long trail: keep the first crumb + an ellipsis + the last
-    // `maxItems - 2` crumbs. `origIndex` preserves each visible crumb's index in
+    // `maxItems - 1` crumbs. `origIndex` preserves each visible crumb's index in
     // the full trail (so onItemPress reports the real position); the ellipsis is a
     // non-interactive muted crumb.
     type Crumb = { label: string; origIndex: number; ellipsis?: boolean };

@@ -45,8 +45,9 @@ wire.
 
 ### Tappable
 
-Passing `onPress` makes the whole row a single tap target; wire it to your own
-handler and every tap runs it.
+Passing `onPress` makes the whole row a single tap target, named by every line it
+shows; wire it to your own handler and every tap runs it. A trailing `action` stays
+its own control beside the row, never inside it.
 
 ```tsx
 <MediaObject onPress={() => {}} bordered avatar="RC" title="Rachel Chen" description="Engineering Lead" />
