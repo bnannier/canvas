@@ -88,6 +88,7 @@ One row per finding. Severity: critical, high, medium, low. Cell: a capture id f
 
 | ID | Severity | Cell | Summary | Status | Fix commit |
 |---|---|---|---|---|---|
+| select-corner-1 | low | source | The web option row drew 10, off the web row; an option row is a menu row, the `control` corner, 8, inside the 12 panel. The shape gate (test/design-rules-shape.test.ts) now takes a corner only as a role of its own platform's row that its component plays, the pill, square or a declared concentric corner. | fixed | d1339a2c |
 
 ## Sign-off
 

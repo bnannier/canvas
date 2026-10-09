@@ -83,6 +83,7 @@ One row per finding. Severity: critical, high, medium, low. Cell: a capture id f
 
 | ID | Severity | Cell | Summary | Status | Fix commit |
 |---|---|---|---|---|---|
+| media-objects-corner-1 | low | source | The iOS bordered surface drew 10 (now the iOS card corner, 12, as the web and Android surfaces play the card role) and the iOS compact icon box 7 (now the web's 6, shared, since iOS ships no media object). The shape gate (test/design-rules-shape.test.ts) now takes a corner only as a role of its own platform's row that its component plays, the pill, square or a declared concentric corner. | fixed | d1339a2c |
 
 ## Sign-off
 

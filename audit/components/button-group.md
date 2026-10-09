@@ -89,6 +89,7 @@ One row per finding. Severity: critical, high, medium, low. Cell: a capture id f
 
 | ID | Severity | Cell | Summary | Status | Fix commit |
 |---|---|---|---|---|---|
+| button-group-corner-1 | low | source | Corners off their roles: the SplitButton menu rows drew a shared 2 (now the web menu row's `control` 8, and square in the iOS and Android menus, whose rows run full bleed); the iOS SplitButton menu drew 12, the iOS card value, where the iOS menu corner is 26; the iOS spaced peers and the stepper kind's outer ends drew 8 where every iOS control is a capsule. The shape gate (test/design-rules-shape.test.ts) now takes a corner only as a role of its own platform's row that its component plays, the pill, square or a declared concentric corner. | fixed | d1339a2c |
 
 ## Sign-off
 

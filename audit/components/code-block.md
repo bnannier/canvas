@@ -92,6 +92,8 @@ One row per finding. Severity: critical, high, medium, low. Cell: a capture id f
 
 | ID | Severity | Cell | Summary | Status | Fix commit |
 |---|---|---|---|---|---|
+| code-block-corner-1 | low | source | The inline variant's box drew 4 where Typography's inline `code` draws Dark Factory's key step, 6; one inline code chip now has one corner, 6. The shape gate (test/design-rules-shape.test.ts) now takes a corner only as a role of its own platform's row that its component plays, the pill, square or a declared concentric corner. | fixed | d1339a2c |
+| code-block-role-1 | low | source | Role question for the Phase 4 audit: the code surface reads the `control` corner (8) though a code block is a content well, not a control. Options: keep 8 under a web role of its own; the `tile` corner (12, Dark Factory's inset well); the `card` corner (14). Each but the first changes every code block's look, so it is the owner's call. | open |  |
 
 ## Sign-off
 

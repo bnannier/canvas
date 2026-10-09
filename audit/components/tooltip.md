@@ -90,6 +90,7 @@ One row per finding. Severity: critical, high, medium, low. Cell: a capture id f
 
 | ID | Severity | Cell | Summary | Status | Fix commit |
 |---|---|---|---|---|---|
+| tooltip-corner-1 | low | source | The icon trigger drew 6 and the text trigger's press layer 4, off the web row; an icon button takes the `control` corner, 8, and an inline box Dark Factory's key step, 6. The shape gate (test/design-rules-shape.test.ts) now takes a corner only as a role of its own platform's row that its component plays, the pill, square or a declared concentric corner. | fixed | d1339a2c |
 
 ## Sign-off
 
