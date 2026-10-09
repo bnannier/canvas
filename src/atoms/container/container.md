@@ -76,14 +76,13 @@ stack) rather than to one component.
 </Container>
 ```
 
-**Don't**: Pin a width on the component; the number is invented at every call
-site and the component stops adapting to the parent it is placed in.
+**Don't**: Cap a raw View with a maxWidth of your own; the number is invented at the call site, drifts off the shared width scale, and pins the box to the start where a step would center it.
 
 ```tsx
-<Container md>
+<View style={{ maxWidth: 448 }}>
   <Card padded>
     <Typography medium>Billing</Typography>
     <Typography small muted>Plan, invoices, and payment method.</Typography>
   </Card>
-</Container>
+</View>
 ```

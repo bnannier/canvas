@@ -27,3 +27,19 @@ Plays a clip. Give it a `source` (a `{ uri }`, or a bundled asset from `require`
 ```tsx
 <Video source={{ uri: "/video-sample.mp4" }} poster={{ uri: "/video-sample.jpg" }} loop muted radius="lg" accessibilityLabel="Looping muted sample clip" />
 ```
+
+## Do & Don't
+
+### Clips with sound
+
+**Do**: Give a clip people watch with sound `controls`: they can seek, see how long it runs, and mute it.
+
+```tsx
+<Video source={{ uri: "/video-sample.mp4" }} poster={{ uri: "/video-sample.jpg" }} controls accessibilityLabel="Product walkthrough" />
+```
+
+**Don't**: Leave a clip with sound as an inline player; a tap can only play or pause it, so there is no way to seek, see its length, or mute it.
+
+```tsx
+<Video source={{ uri: "/video-sample.mp4" }} poster={{ uri: "/video-sample.jpg" }} accessibilityLabel="Product walkthrough" />
+```

@@ -80,6 +80,8 @@ does not, because that press belongs to the child.
 
 ## Do & Don't
 
+### Short labels
+
 **Do** — Keep tooltips short and supplementary; put essential steps in visible copy.
 
 ```tsx

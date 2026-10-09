@@ -104,6 +104,8 @@ to update it.)
 
 ## Do & Don't
 
+### Peer sections
+
 **Do** — Keep one disclosure group for a set of related, peer sections, and let the chevron carry the open/closed affordance.
 
 ```tsx

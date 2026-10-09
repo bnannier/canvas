@@ -54,6 +54,8 @@ On the web, Space activates the focused control on key release, and Enter also a
 
 ## Do & Don't
 
+### Default selection
+
 **Do**: Pre-select a sensible default so the common path needs no clicks, and name the set with the group's own `label`.
 
 ```tsx

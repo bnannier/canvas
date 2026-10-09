@@ -27,3 +27,31 @@ Numeric x/y point clouds with nice ticks and gridlines on both axes. Multi-serie
   ]}
 />
 ```
+
+## Do & Don't
+
+### Series per group
+
+**Do**: Split the points into one series per group; each takes its own series color and a legend entry, so the clusters can be told apart.
+
+```tsx
+<ScatterPlot
+  compact
+  series={[
+    { label: "us-east", points: [{ x: 94, y: 20 }, { x: 220, y: 37 }, { x: 339, y: 63 }, { x: 446, y: 71 }, { x: 596, y: 99 }, { x: 741, y: 115 }] },
+    { label: "eu-west", points: [{ x: 114, y: 33 }, { x: 227, y: 52 }, { x: 340, y: 92 }, { x: 455, y: 111 }, { x: 579, y: 129 }, { x: 737, y: 141 }] },
+    { label: "ap-south", points: [{ x: 133, y: 45 }, { x: 251, y: 72 }, { x: 377, y: 102 }, { x: 492, y: 135 }, { x: 613, y: 161 }, { x: 740, y: 171 }] }
+  ]}
+/>
+```
+
+**Don't**: Pour every group into one series; the points share one color and no legend, and the clusters run together.
+
+```tsx
+<ScatterPlot
+  compact
+  series={[
+    { label: "All regions", points: [{ x: 94, y: 20 }, { x: 220, y: 37 }, { x: 339, y: 63 }, { x: 446, y: 71 }, { x: 596, y: 99 }, { x: 741, y: 115 }, { x: 114, y: 33 }, { x: 227, y: 52 }, { x: 340, y: 92 }, { x: 455, y: 111 }, { x: 579, y: 129 }, { x: 737, y: 141 }, { x: 133, y: 45 }, { x: 251, y: 72 }, { x: 377, y: 102 }, { x: 492, y: 135 }, { x: 613, y: 161 }, { x: 740, y: 171 }] }
+  ]}
+/>
+```

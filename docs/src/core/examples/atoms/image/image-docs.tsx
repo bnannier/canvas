@@ -4,6 +4,8 @@ import type { ComponentDocs } from "../../../scope";
 import e_atoms_image_example_0 from "./example-0";
 import e_atoms_image_example_1 from "./example-1";
 import e_atoms_image_example_2 from "./example-2";
+import e_atoms_image_dont_0_do from "./dont-0-do";
+import e_atoms_image_dont_0_dont from "./dont-0-dont";
 
 export const docs: ComponentDocs = {
   dir: "image",
@@ -14,7 +16,7 @@ export const docs: ComponentDocs = {
     { label: "Cover", code: "<Image source={{ uri: \"/ada-lovelace.jpg\" }} cover width={240} height={96} />", render: e_atoms_image_example_2 },
   ],
   donts: [
-
+    { title: "Fitting a photo", do: { caption: "Fill a box of another shape with `cover`: the photo keeps its proportions and crops what falls outside the box.", code: "<Image source={{ uri: \"/grace-hopper.jpg\" }} cover width={240} height={96} accessibilityLabel=\"Grace Hopper\" />", render: e_atoms_image_dont_0_do }, dont: { caption: "Stretch a photo to a box of another shape; `stretch` scales each axis on its own, so the picture squashes out of proportion.", code: "<Image source={{ uri: \"/grace-hopper.jpg\" }} stretch width={240} height={96} accessibilityLabel=\"Grace Hopper\" />", render: e_atoms_image_dont_0_dont } },
   ],
   // Extracted from the component's exported `*Props` interfaces by
   // tools/docgen/extract-props.ts (the TypeScript checker).

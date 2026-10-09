@@ -9,6 +9,7 @@ import {
   widthShimViolations,
   bareWidthViolations,
   prosePhantomApiViolations,
+  docStructureViolations,
 } from "./parse-md.ts";
 
 // Unit tests for the docgen markdown parser (tools/docgen/parse-md.ts). These are
@@ -145,14 +146,26 @@ describe("splitDoc", () => {
     ]);
   });
 
-  it("handles a doc with no Variants section (Default only)", () => {
+  // The parser stays lenient about missing sections; docStructureViolations (below) is
+  // what rejects such a page (S3), so docs:gen never reaches the parser with one.
+  it("parses a doc with no Variants section (Default only)", () => {
     const md = `# X\n\nd\n\n## Usage\n\n${F}tsx\n<X />\n${F}`;
     expect(splitDoc(md).examples).toEqual([{ label: "Default", code: "<X />" }]);
   });
 
-  it("handles a doc with no Do & Don't section (empty donts)", () => {
+  it("parses a doc with no Do & Don't section (empty donts)", () => {
     const md = `# X\n\nd\n\n## Usage\n\n${F}tsx\n<X />\n${F}`;
     expect(splitDoc(md).donts).toEqual([]);
+  });
+
+  it("ends Do & Don't at the next '##', so a trailing section is not read into the last pair", () => {
+    const md =
+      `# X\n\nd\n\n## Usage\n\n${F}tsx\n<X />\n${F}\n\n## Do & Don't\n\n### T\n\n` +
+      `**Do**: a\n\n${F}tsx\n<G />\n${F}\n\n**Don't**: b\n\n${F}tsx\n<B />\n${F}\n\n` +
+      `## Touch area\n\n### Spacing\n\n**Do**: leave room\n\n${F}tsx\n<Trailing />\n${F}\n\n**Don't**: crowd it\n\n${F}tsx\n<Crowded />\n${F}\n`;
+    expect(splitDoc(md).donts).toEqual([
+      { title: "T", do: { caption: "a", code: "<G />" }, dont: { caption: "b", code: "<B />" } },
+    ]);
   });
 
   it("yields no examples and no donts when the doc has no '## ' sections at all", () => {
@@ -512,5 +525,212 @@ describe("prosePhantomApiViolations", () => {
     const md = `Clean intro.\n\nA line with box-shadow in it.`;
     const found = prosePhantomApiViolations(md);
     expect(found.some((v) => v.token === "box-shadow" && v.line === 3)).toBe(true);
+  });
+});
+
+describe("docStructureViolations", () => {
+  // A well-formed page, one line per entry so a test can name a line: the title is
+  // line 1, "## Usage" line 5, "## Variants" line 11, "## Do & Don't" line 19, its
+  // "### Labels" line 21, the **Do** line 23 and the **Don't** line 29 (its fence 31).
+  const PAGE = [
+    "# Widget",
+    "",
+    "A widget.",
+    "",
+    "## Usage",
+    "",
+    `${F}tsx`, "<Widget />", F,
+    "",
+    "## Variants",
+    "",
+    "### Small",
+    "",
+    `${F}tsx`, "<Widget small />", F,
+    "",
+    "## Do & Don't",
+    "",
+    "### Labels",
+    "",
+    "**Do**: Name it.",
+    "",
+    `${F}tsx`, `<Widget label="Name" />`, F,
+    "",
+    "**Don't**: Leave it unnamed.",
+    "",
+    `${F}tsx`, "<Widget />", F,
+    "",
+  ];
+  const page = (edit: (lines: string[]) => string[] = (l) => l) => edit([...PAGE]).join("\n");
+  // "<line> <rule>" per finding: the located part of each message.
+  const found = (md: string, name = "Widget") => docStructureViolations(md, { name }).map((v) => `${v.line} ${v.rule}`);
+  const messages = (md: string) => docStructureViolations(md, { name: "Widget" }).map((v) => v.message);
+
+  it("passes a well-formed page", () => {
+    expect(docStructureViolations(page(), { name: "Widget" })).toEqual([]);
+  });
+
+  it("passes a CRLF page", () => {
+    expect(found(page().replace(/\n/g, "\r\n"))).toEqual([]);
+  });
+
+  it("passes prose under a heading and a caption that runs onto a second line", () => {
+    const md = page((l) => [...l.slice(0, 13), "Prose about the small one.", ...l.slice(13, 23), "and its second line.", ...l.slice(23)]);
+    expect(found(md)).toEqual([]);
+  });
+
+  it("passes a section of the page's own after Do & Don't, fences and all", () => {
+    const md = page((l) => [...l, "## Touch area", "", "The touch area grows.", "", `${F}tsx`, "<Widget compact />", F, ""]);
+    expect(found(md)).toEqual([]);
+  });
+
+  describe("S1: the title", () => {
+    it("rejects a title that is not the registry name, at line 1", () => {
+      expect(found(page(), "Gadget")).toEqual(["1 S1"]);
+      expect(docStructureViolations(page(), { name: "Gadget" })[0].message).toContain(`"# Widget"`);
+    });
+
+    it("rejects a page that does not open with a '#' heading", () => {
+      expect(found(page((l) => l.slice(2)))).toEqual(["1 S1"]);
+    });
+
+    it("rejects a second '#' heading", () => {
+      expect(found(page((l) => [...l.slice(0, 4), "# Another title", ...l.slice(4)]))).toEqual(["5 S1"]);
+    });
+  });
+
+  describe("S2: the intro", () => {
+    it("rejects a page with no intro, at its first section", () => {
+      expect(found(page((l) => [l[0], ...l.slice(3)]))).toEqual(["3 S2"]);
+    });
+
+    it("rejects a fence in the intro", () => {
+      expect(found(page((l) => [...l.slice(0, 4), `${F}tsx`, "<Widget />", F, ...l.slice(4)]))).toEqual(["5 S2"]);
+    });
+
+    it("rejects a '###' heading or a marker in the intro", () => {
+      expect(found(page((l) => [...l.slice(0, 4), "### Early", ...l.slice(4)]))).toEqual(["5 S2"]);
+      expect(found(page((l) => [...l.slice(0, 4), "**Do**: early", ...l.slice(4)]))).toEqual(["5 S2"]);
+    });
+  });
+
+  describe("S3: the sections", () => {
+    it("rejects a missing Variants (Popover's old page), at the section it belongs before", () => {
+      expect(found(page((l) => [...l.slice(0, 10), ...l.slice(18)]))).toEqual(["11 S3"]);
+    });
+
+    it("rejects a missing Do & Don't (Image's old page), at the end of the page", () => {
+      expect(found(page((l) => l.slice(0, 17)))).toEqual(["17 S3"]);
+    });
+
+    it("rejects a missing Usage, at the section it belongs before", () => {
+      expect(found(page((l) => [...l.slice(0, 4), ...l.slice(10)]))).toEqual(["5 S3"]);
+    });
+
+    it("rejects a second Variants (Sparkline's old page) and names the first", () => {
+      const md = page((l) => [...l.slice(0, 18), "## Variants", "", "### Large", "", `${F}tsx`, "<Widget large />", F, "", ...l.slice(18)]);
+      expect(found(md)).toEqual(["19 S3"]);
+      expect(messages(md)[0]).toContain("line 11");
+    });
+
+    it("rejects the required sections out of order", () => {
+      // Variants (page lines 11 to 18) moved above Usage (lines 5 to 10).
+      const md = page((l) => [...l.slice(0, 4), ...l.slice(10, 18), ...l.slice(4, 10), ...l.slice(18)]);
+      expect(found(md)).toEqual(["5 S3"]);
+    });
+
+    it("rejects a section of the page's own before Do & Don't", () => {
+      expect(found(page((l) => [...l.slice(0, 18), "## Touch area", "", "Prose.", "", ...l.slice(18)]))).toEqual(["19 S3"]);
+    });
+
+    it("reads a section name exactly: '## Do & Don'ts' is not Do & Don't", () => {
+      expect(found(page((l) => l.map((x) => (x === "## Do & Don't" ? "## Do & Don'ts" : x))))).toEqual(["19 S3", "33 S3"]);
+    });
+
+    it("rejects a fence that never closes, under the rule of its section", () => {
+      expect(found(page((l) => l.slice(0, 32)))).toEqual(["31 S6"]);
+    });
+  });
+
+  describe("S4: Usage", () => {
+    it("rejects Usage with no fence, at its heading", () => {
+      expect(found(page((l) => [...l.slice(0, 6), ...l.slice(9)]))).toEqual(["5 S4"]);
+    });
+
+    it("rejects a second Usage fence, at the second fence", () => {
+      expect(found(page((l) => [...l.slice(0, 9), "", `${F}tsx`, "<Widget large />", F, ...l.slice(9)]))).toEqual(["11 S4"]);
+    });
+
+    it("rejects an empty Usage fence", () => {
+      expect(found(page((l) => [...l.slice(0, 7), ...l.slice(8)]))).toEqual(["7 S4"]);
+    });
+
+    it("rejects a '###' heading in Usage", () => {
+      expect(found(page((l) => [...l.slice(0, 6), "### Basic", "", ...l.slice(6)]))).toEqual(["7 S4"]);
+    });
+  });
+
+  describe("S5: Variants", () => {
+    it("rejects Variants with no '###' example, and the fence left without one", () => {
+      expect(found(page((l) => [...l.slice(0, 12), ...l.slice(14)]))).toEqual(["11 S5", "13 S5"]);
+    });
+
+    it("rejects a variant heading with two fences, at the second", () => {
+      expect(found(page((l) => [...l.slice(0, 17), "", `${F}tsx`, "<Widget large />", F, ...l.slice(17)]))).toEqual(["19 S5"]);
+    });
+
+    it("rejects a variant heading with no fence", () => {
+      expect(found(page((l) => [...l.slice(0, 17), "### Large", "", ...l.slice(17)]))).toEqual(["18 S5"]);
+    });
+
+    it("rejects a fence before the first '###'", () => {
+      expect(found(page((l) => [...l.slice(0, 12), `${F}tsx`, "<Widget large />", F, "", ...l.slice(12)]))).toEqual(["13 S5"]);
+    });
+
+    it("rejects an empty variant fence", () => {
+      expect(found(page((l) => [...l.slice(0, 15), ...l.slice(16)]))).toEqual(["15 S5"]);
+    });
+  });
+
+  describe("S6: Do & Don't", () => {
+    it("rejects an untitled pair, at each marker", () => {
+      expect(found(page((l) => [...l.slice(0, 20), ...l.slice(22)]))).toEqual(["21 S6", "27 S6"]);
+    });
+
+    it("rejects a section with no pair at all", () => {
+      expect(found(page((l) => l.slice(0, 20)))).toEqual(["19 S6"]);
+    });
+
+    it("rejects a Do with no Don't, at the group", () => {
+      expect(found(page((l) => l.slice(0, 28)))).toEqual(["21 S6"]);
+    });
+
+    it("rejects two pairs under one title (Switch's old 'On' group)", () => {
+      const second = ["", "**Do**: Name it twice.", "", `${F}tsx`, `<Widget label="Twice" />`, F, "", "**Don't**: Name nothing.", "", `${F}tsx`, "<Widget hidden />", F];
+      const md = page((l) => [...l.slice(0, 33), ...second, ""]);
+      expect(found(md)).toEqual(["21 S6"]);
+      expect(messages(md)[0]).toContain("2 **Do** and 2 **Don't**");
+    });
+
+    it("rejects a Don't fence that repeats its Do fence, whitespace aside (Container's old pair)", () => {
+      const md = page((l) => l.map((x, i) => (i === 31 ? `  <Widget   label="Name" />` : x)));
+      expect(found(md)).toEqual(["31 S6"]);
+      expect(messages(md)[0]).toContain("repeats its **Do** fence");
+    });
+
+    it("rejects a marker with no caption", () => {
+      expect(found(page((l) => l.map((x) => (x === "**Do**: Name it." ? "**Do**:" : x))))).toEqual(["23 S6"]);
+    });
+
+    it("rejects a marker with no fence", () => {
+      expect(found(page((l) => [...l.slice(0, 24), ...l.slice(28)]))).toEqual(["23 S6"]);
+    });
+
+    it("rejects a fence with no marker of its own", () => {
+      expect(found(page((l) => [...l.slice(0, 27), "", `${F}tsx`, "<Widget extra />", F, ...l.slice(27)]))).toEqual(["29 S6"]);
+    });
+
+    it("rejects an empty fence on either side", () => {
+      expect(found(page((l) => [...l.slice(0, 31), ...l.slice(32)]))).toEqual(["31 S6"]);
+    });
   });
 });

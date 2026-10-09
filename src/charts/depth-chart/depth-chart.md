@@ -53,3 +53,45 @@ The order-book view: cumulative bid and ask step areas mirrored around the sprea
   ]}
 />
 ```
+
+## Do & Don't
+
+### Both sides of the book
+
+**Do**: Pass the bids and the asks together; the two sides meet at the spread, the gap a trader reads first.
+
+```tsx
+<DepthChart
+  compact
+  bids={[
+    { price: 191.3, size: 90 },
+    { price: 191.15, size: 150 },
+    { price: 191.0, size: 220 },
+    { price: 190.85, size: 310 },
+    { price: 190.7, size: 420 }
+  ]}
+  asks={[
+    { price: 191.6, size: 110 },
+    { price: 191.75, size: 180 },
+    { price: 191.9, size: 260 },
+    { price: 192.05, size: 350 },
+    { price: 192.2, size: 470 }
+  ]}
+/>
+```
+
+**Don't**: Plot one side alone; with no asks there is no spread to read, and the empty half looks like a market with no sellers.
+
+```tsx
+<DepthChart
+  compact
+  bids={[
+    { price: 191.3, size: 90 },
+    { price: 191.15, size: 150 },
+    { price: 191.0, size: 220 },
+    { price: 190.85, size: 310 },
+    { price: 190.7, size: 420 }
+  ]}
+  asks={[]}
+/>
+```

@@ -99,6 +99,8 @@ On the web, Space activates the focused control on key release, and Enter also a
 </Pressable>
 ```
 
+### Label the setting
+
 **Do** — Label the setting, not the state; the switch communicates on or off.
 
 ```tsx

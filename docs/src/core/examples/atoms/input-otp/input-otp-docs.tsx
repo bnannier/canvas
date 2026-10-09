@@ -24,7 +24,7 @@ export const docs: ComponentDocs = {
     { label: "Disabled", code: "<InputOTP disabled defaultValue=\"1234\" />", render: e_atoms_input_otp_example_6 },
   ],
   donts: [
-    { do: { caption: "Size the field to the real code length with `length`, and split a long code with `groups` so the eye can chunk it the way the sender wrote it.", code: "<InputOTP length={6} groups={3} />", render: e_atoms_input_otp_dont_0_do }, dont: { caption: "Use `masked` for a code the user is meant to read back from an SMS; the bullets hide whether they typed it correctly.", code: "<InputOTP masked defaultValue=\"123456\" />", render: e_atoms_input_otp_dont_0_dont } },
+    { title: "Readable codes", do: { caption: "Size the field to the real code length with `length`, and split a long code with `groups` so the eye can chunk it the way the sender wrote it.", code: "<InputOTP length={6} groups={3} />", render: e_atoms_input_otp_dont_0_do }, dont: { caption: "Use `masked` for a code the user is meant to read back from an SMS; the bullets hide whether they typed it correctly.", code: "<InputOTP masked defaultValue=\"123456\" />", render: e_atoms_input_otp_dont_0_dont } },
   ],
   // Extracted from the component's exported `*Props` interfaces by
   // tools/docgen/extract-props.ts (the TypeScript checker).

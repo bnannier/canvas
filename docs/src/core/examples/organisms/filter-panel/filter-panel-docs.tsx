@@ -3,6 +3,8 @@
 import type { ComponentDocs } from "../../../scope";
 import e_organisms_filter_panel_example_0 from "./example-0";
 import e_organisms_filter_panel_example_1 from "./example-1";
+import e_organisms_filter_panel_dont_0_do from "./dont-0-do";
+import e_organisms_filter_panel_dont_0_dont from "./dont-0-dont";
 
 export const docs: ComponentDocs = {
   dir: "filter-panel",
@@ -12,7 +14,7 @@ export const docs: ComponentDocs = {
     { label: "Responsive drawer", code: "<FilterPanel\n  responsive\n  groups={[\n    { title: \"Status\", options: [\n      { label: \"Active\", checked: true },\n      { label: \"Archived\" }\n    ] },\n    { title: \"Schema\", options: [\n      { label: \"Default\" },\n      { label: \"Custom\" }\n    ] }\n  ]}\n/>", render: e_organisms_filter_panel_example_1 },
   ],
   donts: [
-
+    { title: "Group by facet", do: { caption: "Give each facet its own titled group, so a reader sees which options narrow the same field.", code: "<FilterPanel\n  groups={[\n    { title: \"Status\", options: [\n      { label: \"Active\", checked: true, count: \"128\" },\n      { label: \"Archived\", count: \"14\" }\n    ] },\n    { title: \"Region\", options: [\n      { label: \"North America\", count: \"86\" },\n      { label: \"Europe\", count: \"56\" }\n    ] }\n  ]}\n/>", render: e_organisms_filter_panel_dont_0_do }, dont: { caption: "Pour every option into one group; statuses and regions run together, and nothing says which choices narrow the same field.", code: "<FilterPanel\n  groups={[\n    { title: \"Filters\", options: [\n      { label: \"Active\", checked: true, count: \"128\" },\n      { label: \"North America\", count: \"86\" },\n      { label: \"Archived\", count: \"14\" },\n      { label: \"Europe\", count: \"56\" }\n    ] }\n  ]}\n/>", render: e_organisms_filter_panel_dont_0_dont } },
   ],
   // Extracted from the component's exported `*Props` interfaces by
   // tools/docgen/extract-props.ts (the TypeScript checker).
