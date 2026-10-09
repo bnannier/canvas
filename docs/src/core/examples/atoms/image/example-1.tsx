@@ -5,6 +5,6 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { Image } = scope;
   return (
-<Image source={{ uri: "/liang-bao.jpg" }} contain width={160} height={120} />
+<Image source={{ uri: "/liang-bao.jpg" }} alt="Portrait of Liang Bao" contain width={160} height={120} />
   );
 }

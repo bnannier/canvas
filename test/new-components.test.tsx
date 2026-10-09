@@ -5,6 +5,7 @@ import { Text } from "react-native";
 import { ThemeProvider } from "../src/style/theme.tsx";
 import { Row, Column } from "../src/atoms/layout/layout.tsx";
 import { Avatar, AvatarGroup } from "../src/atoms/avatar/avatar.tsx";
+import { Badge, BadgeGroup } from "../src/atoms/badge/badge.tsx";
 import { Chip } from "../src/atoms/chip/chip.tsx";
 import { createChip } from "../src/atoms/chip/chip.shared.tsx";
 import { androidSkin as chipAndroidSkin, iosSkin as chipIosSkin } from "../src/atoms/chip/chip.styles.ts";
@@ -122,6 +123,50 @@ describe("AvatarGroup", () => {
     );
     // The group clones each child with ring:true, which paints the hairline outline.
     expect(at(container, "av0").style.borderWidth).toBe("1.5px");
+  });
+});
+
+// BadgeGroup, AvatarGroup's sibling for badges: it owns the wrapping row and the gap so
+// no call site hand-writes one. Gap axis: cozy > snug > tight, snug (8) by default.
+describe("BadgeGroup", () => {
+  const gapOf = (props: Record<string, boolean>) => {
+    const { container } = ui(
+      <BadgeGroup testID="g" {...props}>
+        <Badge>One</Badge>
+        <Badge>Two</Badge>
+      </BadgeGroup>,
+    );
+    const gap = at(container, "g").style.gap;
+    cleanup();
+    return gap;
+  };
+
+  it("lays its badges out in a wrapping, centered row and forwards testID", () => {
+    const { container, getByText } = ui(
+      <BadgeGroup testID="g">
+        <Badge>Admin</Badge>
+        <Badge>Owner</Badge>
+      </BadgeGroup>,
+    );
+    const group = at(container, "g");
+    expect(group.style.flexDirection).toBe("row");
+    expect(group.style.flexWrap).toBe("wrap");
+    expect(group.style.alignItems).toBe("center");
+    expect(group.contains(getByText("Admin"))).toBe(true);
+    expect(group.contains(getByText("Owner"))).toBe(true);
+  });
+
+  it("spaces its badges snug (8) by default, tight at 4 and cozy at 12", () => {
+    expect(gapOf({})).toBe("8px");
+    expect(gapOf({ snug: true })).toBe("8px");
+    expect(gapOf({ tight: true })).toBe("4px");
+    expect(gapOf({ cozy: true })).toBe("12px");
+  });
+
+  it("resolves two gaps by first match, largest first: cozy > snug > tight", () => {
+    expect(gapOf({ cozy: true, tight: true })).toBe("12px");
+    expect(gapOf({ cozy: true, snug: true })).toBe("12px");
+    expect(gapOf({ snug: true, tight: true })).toBe("8px");
   });
 });
 

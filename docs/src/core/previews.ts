@@ -18,7 +18,7 @@ export const FIRST_EXAMPLE_CODE: Record<string, string> = {
   "emblem": "<Emblem>\n  <Icon shield />\n</Emblem>",
   "grid": "<Grid minTileWidth={220}>\n  <Card title=\"Overview\" />\n  <Card title=\"Deploys\" />\n  <Card title=\"Alerts\" />\n</Grid>",
   "icon": "<Icon shield />",
-  "image": "<Image source={{ uri: \"/kira-tanaka.jpg\" }} width={120} height={120} />",
+  "image": "<Image source={{ uri: \"/kira-tanaka.jpg\" }} alt=\"Portrait of Kira Tanaka\" width={120} height={120} />",
   "input": "<Input placeholder=\"rachel.chen@example.com\" />",
   "input-otp": "<InputOTP />",
   "kbd": "<Kbd keys=\"⌘ K\" />",

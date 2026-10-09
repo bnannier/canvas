@@ -11,7 +11,7 @@ import { AvatarMenu } from "../src/atoms/avatar/avatar.tsx";
 import { Select } from "../src/atoms/select/select.tsx";
 import { Autocomplete } from "../src/atoms/autocomplete/autocomplete.tsx";
 import { Chip } from "../src/atoms/chip/chip.tsx";
-import { Badge } from "../src/atoms/badge/badge.tsx";
+import { Badge, BadgeGroup } from "../src/atoms/badge/badge.tsx";
 import { Command } from "../src/organisms/command/command.tsx";
 import { TabBar } from "../src/organisms/tab-bar/tab-bar.tsx";
 import { Tabs } from "../src/organisms/tabs/tabs.tsx";
@@ -246,5 +246,31 @@ describe("Badge: a name needs a role it can legally sit on", () => {
     const labelled = container.querySelector("[aria-label]");
     expect(labelled).toBeNull();
     expect(container.textContent).toBe("Pending");
+  });
+
+  // BadgeGroup carries the same rule: its name sat on a role-less View, where it was
+  // discarded (axe only flags that for review, since the group always holds text).
+  it("names a labelled BadgeGroup as a group, keeping its badges' text", () => {
+    const { container } = ui(
+      <BadgeGroup accessibilityLabel="Rachel Chen's roles" testID="g">
+        <Badge>Admin</Badge>
+        <Badge status success>Active</Badge>
+      </BadgeGroup>,
+    );
+    const group = container.querySelector('[data-testid="g"]') as HTMLElement;
+    expect(group.getAttribute("role")).toBe("group");
+    expect(group.getAttribute("aria-label")).toBe("Rachel Chen's roles");
+    expect(group.textContent).toBe("AdminActive");
+  });
+
+  it("leaves an unlabelled BadgeGroup a plain row, with no role and no name", () => {
+    const { container } = ui(
+      <BadgeGroup testID="g">
+        <Badge>Admin</Badge>
+      </BadgeGroup>,
+    );
+    const group = container.querySelector('[data-testid="g"]') as HTMLElement;
+    expect(group.getAttribute("role")).toBeNull();
+    expect(group.getAttribute("aria-label")).toBeNull();
   });
 });
