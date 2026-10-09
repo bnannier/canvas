@@ -3,15 +3,19 @@ import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import sharp from "sharp";
-import { readRunCells, type AuditRun, type CapturedCell } from "./runs.ts";
+import { RUNS, checkoutWithRealRuns } from "./fixtures/real-runs.ts";
+import { currentCells, readRunCells, type AuditRun, type CapturedCell } from "./runs.ts";
 import {
   MAX_EDGE,
   MIN_SCALE,
+  PAGE_SHEET,
   SHEET,
   STATE_SHEET,
   commitOf,
+  hasPicture,
   layoutSheet,
   overlaySvg,
+  pageSheets,
   partFile,
   planSheets,
   renderSheet,
@@ -327,21 +331,56 @@ describe("drawing sheets", () => {
     expect(bySheet.get("row-web-tablet.jpg")!.sources.size).toBe(0);
   });
 
-  it("lays out the interaction states a component has, a state not reached as a hole", async () => {
-    dir = mkdtempSync(join(tmpdir(), "audit-sheets-"));
-    const run: AuditRun = { id: "20261009-100000-web-aaaaaaa", dir, platform: "web", startedAt: "2026-10-09T10:00:00.000Z", status: "complete", finished: true, sha: null, dirty: null, fingerprint: null, fresh: true, served: null };
-    await card(join(dir, "web-states/select/open/phone.blush.solid/card.png"), 300, 400, [250, 250, 250]);
-    const cells = readRunCells(run, [
-      JSON.stringify({ id: "web-states/select/open/phone.blush.solid", status: "ok", flags: [] }),
-      JSON.stringify({ id: "web-states/select/hover/phone.blush.solid", status: "state-not-reached", flags: [] }),
-      JSON.stringify({ id: "web-states/select/focus/desktop.dark.glass", status: "ok", flags: ["state-not-reached"] }),
-    ].join("\n")).cells;
-    const specs = await stateSheets("select", cells);
-    expect(specs.map((spec) => spec.file)).toEqual(["states.jpg", "states-desktop.jpg"]);
-    const rows = specs[0]!.grid.tiles;
-    expect(rows.map((row) => row[0]!.label)).toEqual(["web-states/select/open/phone.blush.solid", "web-states/select/hover/phone.blush.solid"]);
-    expect(rows[1]![0]).toMatchObject({ note: "state not reached", size: null });
-    expect(specs[1]!.grid.tiles[0]![5]).toMatchObject({ label: "web-states/select/focus/desktop.dark.glass", note: "state not reached" });
-    expect(await stateSheets("select", [])).toEqual([]);
+  it("lays out a component's real state captures by state and row, desktop first, a state not reached a hole saying why", async () => {
+    dir = checkoutWithRealRuns();
+    const { cells } = currentCells(dir, { only: null, runs: null });
+    const button = await stateSheets("button", cells);
+    expect(button.map((spec) => spec.file)).toEqual(["states.jpg"]);
+    const grid = button[0]!.grid;
+    expect(grid).toMatchObject({ rowsAre: "states", colsAre: "looks and surfaces", rowKeys: ["hover.web (Default)", "pressed.web (Default)"], colKeys: ["blush.solid", "blush.glass", "mint.solid", "mint.glass", "dark.solid", "dark.glass"], splitBy: "rows" });
+    expect(grid.title).toStartWith("button: interaction states at desktop width");
+    const hover = grid.tiles[0]![0]!;
+    expect(hover).toMatchObject({ label: "web-states/button/hover.web/desktop.blush.solid", capture: { run: RUNS.states, sha: "b87e5146150b0a0913c2b49496479368ba69c214", dirty: true }, density: 2 });
+    // state.png is the row with its 12 px margin, the shot's clip in probe.json: 966 x 109 CSS px.
+    expect(hover.size).toEqual({ width: 966, height: 109 });
+    expect(grid.tiles[0]![2]).toMatchObject({ label: "web-states/button/hover.web/desktop.mint.solid", note: "not captured", size: null });
+    // A state's own flags and its release's are said under its tile.
+    const slider = (await stateSheets("slider", cells))[0]!.grid.tiles[0]![0]!;
+    expect(slider).toMatchObject({ label: "web-states/slider/pressed.web/desktop.blush.solid", note: "flags: press-not-cancelled" });
+    // A tooltip opened at phone width is photographed in the viewport: 390 x 844.
+    const tooltip = await stateSheets("tooltip", cells);
+    expect(tooltip.map((spec) => spec.file)).toEqual(["states.jpg"]);
+    expect(tooltip[0]!.grid.tiles[0]![0]).toMatchObject({ label: "web-states/tooltip/open.web/phone.blush.solid", note: "flags: hover-unstable", size: { width: 390, height: 844 } });
+    const heatmap = (await stateSheets("heatmap", cells))[0]!;
+    expect(heatmap.grid.tiles[0]![0]!.size).toBeNull();
+    expect(heatmap.grid.tiles[0]![0]!.note).toStartWith("not reached: pressing [role=\"img\"]");
+    // Nothing to draw: the sheet is not written.
+    expect(hasPicture(heatmap)).toBe(false);
+    // Every sheet drawn within the edge.
+    for (const spec of [...button, ...tooltip]) {
+      for (const part of planSheets(spec.grid, (tile) => spec.sources.has(tile))) expectSound(part.layout);
+    }
+    expect(await stateSheets("button", [])).toEqual([]);
+  });
+
+  it("lays out a page's real first screens by look and width, per surface, and draws them", async () => {
+    dir = checkoutWithRealRuns();
+    const { cells } = currentCells(dir, { only: null, runs: null });
+    const specs = await pageSheets("template-signin", cells);
+    expect(specs.map((spec) => spec.file)).toEqual(["viewport-solid.jpg", "viewport-glass.jpg"]);
+    expect(hasPicture(specs[0]!)).toBe(false);
+    const glass = specs[1]!;
+    expect(glass.grid).toMatchObject({ title: "template-signin: the first screen, glass", rowsAre: "looks", colsAre: "widths", splitBy: "columns" });
+    expect(glass.grid.tiles[0]![0]).toMatchObject({ label: "web-pages/template-signin/phone.blush.glass", capture: { run: RUNS.pages }, size: { width: 390, height: 844 }, density: 2 });
+    expect(glass.grid.tiles[0]![1]).toMatchObject({ label: "web-pages/template-signin/tablet.blush.glass", note: "not captured" });
+    const parts = planSheets(glass.grid, (tile) => glass.sources.has(tile));
+    expect(parts).toHaveLength(1);
+    const out = join(dir, "viewport-glass.jpg");
+    await renderSheet(parts[0]!.layout, glass.sources, out);
+    const meta = await sharp(out).metadata();
+    expect([meta.format, meta.width, meta.height]).toEqual(["jpeg", parts[0]!.layout.width, parts[0]!.layout.height]);
+    expect(Math.max(meta.width!, meta.height!)).toBeLessThanOrEqual(MAX_EDGE);
+    expect(PAGE_SHEET.test("viewport-glass-2.jpg")).toBe(true);
+    expect(await pageSheets("pattern-glass", cells)).toEqual([]);
   });
 });

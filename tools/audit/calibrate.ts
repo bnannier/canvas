@@ -1,14 +1,18 @@
 #!/usr/bin/env bun
-// `bun run audit:calibrate`: how far the analysis' contrast read from a card's pixels can be
-// trusted (analyze.ts). It runs both pixel methods over the newest capture of every web
-// cell and sets their verdicts beside what the DOM says:
+// `bun run audit:calibrate`: how far the analysis' contrast read from a photograph's pixels
+// can be trusted (analyze.ts). It runs both pixel methods over the newest capture of every
+// web cell (the variant cards, the interaction states and the page sections, each region in
+// the photograph it was taken in, placed as the analysis places it) and sets their verdicts
+// beside what the DOM says:
 //
 // - Solid cells. On every text the DOM resolved (the probe composited its paint stack), the
-//   pixel methods read the card as if the DOM had not: of the DOM passes, how many read
-//   fail-likely (a false fail-likely) or review; of the DOM fails, how many read fail-likely
-//   (caught), review, or pass (missed); and how far the pixel reading strays from the DOM's.
+//   pixel methods read the photograph as if the DOM had not: of the DOM passes, how many
+//   read fail-likely (a false fail-likely) or review; of the DOM fails, how many read
+//   fail-likely (caught), review, or pass (missed); and how far the pixel reading strays
+//   from the DOM's. A region placed wrong in its photograph reads the wrong pixels, so this
+//   is also the check that the states' and pages' placement is right.
 // - Glass cells. Every glass text a method reads as fail-likely or review, beside its solid
-//   twin (the same text in the same row of the same variant, width and look, on the solid
+//   twin (the same text in the same region of the same cell, width and look, on the solid
 //   surface): how many of the twins pass on the DOM. Glass is a different material, so a
 //   twin that passes does not prove the glass verdict wrong; it is the share a reviewer
 //   should expect to clear on looking.
@@ -29,27 +33,30 @@ import { join } from "node:path";
 import { ROOT } from "../../e2e/support/routes.ts";
 import {
   CONTRAST_METHODS,
-  cardSampler,
-  decodeImage,
+  cellSamplers,
   paintedInk,
   paintedInkContrast,
   percentileContrast,
   pixelVerdict,
+  readCellProbe,
   type CardSampler,
-  type WebProbe,
+  type CellProbe,
+  type RegionPhoto,
 } from "./analyze.ts";
-import type { ProbeText, RowPlatform } from "./probe-math.ts";
-import { currentCells, notReached, parseToolArgs, pool, readJsonFile, type CapturedCell } from "./runs.ts";
-import { CARD_FILE, PROBE_FILE } from "./web-capture.ts";
+import type { ProbeText } from "./probe-math.ts";
+import { currentCells, parseToolArgs, pool, readJsonFile, type CapturedCell, type CellFamily } from "./runs.ts";
+import { PROBE_FILE } from "./web-capture.ts";
 
 export const PIXEL_METHODS = [CONTRAST_METHODS.paintedInk, CONTRAST_METHODS.percentiles] as const;
 export type PixelMethod = (typeof PIXEL_METHODS)[number];
 
-/** One text the DOM resolved, read again from the card's pixels by each method (null: not readable that way). */
+/** One text the DOM resolved, read again from its photograph's pixels by each method (null: not readable that way). */
 export interface SolidReading {
   run: string;
   cell: string;
-  row: RowPlatform;
+  family: CellFamily;
+  /** The region it is in (analyze.ts ProbedRegion `key`). */
+  region: string;
   text: string;
   required: number;
   dom: number;
@@ -69,13 +76,15 @@ export function readBoth(text: ProbeText, sampler: CardSampler): Record<PixelMet
   };
 }
 
-/** The solid readings of one cell: every text the DOM resolved. */
-export function solidReadings(run: string, cell: string, probe: Pick<WebProbe, "rows">, sampler: CardSampler): SolidReading[] {
+/** The solid readings of one cell: every text the DOM resolved and its photograph shows. */
+export function solidReadings(cell: Pick<CapturedCell, "id" | "family"> & { run: string }, probe: Pick<CellProbe, "regions">, samplerFor: (photo: RegionPhoto) => CardSampler | null): SolidReading[] {
   const out: SolidReading[] = [];
-  for (const row of probe.rows) {
-    for (const text of row.texts) {
-      if (text.contrast === null || !readable(text)) continue;
-      out.push({ run, cell, row: row.platform, text: text.text, required: text.required, dom: text.contrast, domFails: text.contrastFails, pixels: readBoth(text, sampler) });
+  for (const region of probe.regions) {
+    const sampler = "none" in region.photo ? null : samplerFor(region.photo);
+    if (!sampler) continue;
+    for (const text of region.texts) {
+      if (text.contrast === null || !readable(text) || !sampler.shows(text.box)) continue;
+      out.push({ run: cell.run, cell: cell.id, family: cell.family, region: region.key, text: text.text, required: text.required, dom: text.contrast, domFails: text.contrastFails, pixels: readBoth(text, sampler) });
     }
   }
   return out;
@@ -144,11 +153,11 @@ export function summarizeSolid(readings: SolidReading[]): SolidSummary {
 export type TwinVerdict = "passes" | "fails" | "unresolved" | "no twin";
 
 /**
- * The solid twin of a glass text: the text at the same place in the same row of the solid
- * cell, or failing that the first with the same words in that row.
+ * The solid twin of a glass text: the text at the same place in the same region of the solid
+ * cell, or failing that the first with the same words in that region.
  */
-export function twinOf(probe: Pick<WebProbe, "rows"> | null, row: RowPlatform, index: number, text: string): TwinVerdict {
-  const texts = probe?.rows.find((r) => r.platform === row)?.texts;
+export function twinOf(probe: Pick<CellProbe, "regions"> | null, region: string, index: number, text: string): TwinVerdict {
+  const texts = probe?.regions.find((r) => r.key === region)?.texts;
   if (!texts) return "no twin";
   const twin = texts[index]?.text === text ? texts[index] : texts.find((t) => t.text === text);
   if (!twin) return "no twin";
@@ -166,10 +175,12 @@ export interface GlassVerdicts {
 const twins = (): Record<TwinVerdict, number> => ({ passes: 0, fails: 0, unresolved: 0, "no twin": 0 });
 
 /** A glass cell's flagged texts per method, each beside its solid twin's DOM verdict. */
-export function glassVerdicts(probe: Pick<WebProbe, "rows">, sampler: CardSampler, twin: Pick<WebProbe, "rows"> | null, into: Record<PixelMethod, GlassVerdicts>): void {
-  for (const row of probe.rows) {
-    row.texts.forEach((text, index) => {
-      if (text.contrast !== null || !readable(text)) return;
+export function glassVerdicts(probe: Pick<CellProbe, "regions">, samplerFor: (photo: RegionPhoto) => CardSampler | null, twin: Pick<CellProbe, "regions"> | null, into: Record<PixelMethod, GlassVerdicts>): void {
+  for (const region of probe.regions) {
+    const sampler = "none" in region.photo ? null : samplerFor(region.photo);
+    if (!sampler) continue;
+    region.texts.forEach((text, index) => {
+      if (text.contrast !== null || !readable(text) || !sampler.shows(text.box)) return;
       const readings = readBoth(text, sampler);
       for (const method of PIXEL_METHODS) {
         const contrast = readings[method];
@@ -178,7 +189,7 @@ export function glassVerdicts(probe: Pick<WebProbe, "rows">, sampler: CardSample
         const verdict = pixelVerdict(contrast, text.required);
         if (verdict === "pass") continue;
         const bucket = verdict === "fail-likely" ? into[method].failLikely : into[method].review;
-        bucket[twinOf(twin, row.platform, index, text.text)] += 1;
+        bucket[twinOf(twin, region.key, index, text.text)] += 1;
       }
     });
   }
@@ -240,28 +251,35 @@ async function main(): Promise<number> {
   }
   for (const problem of selection.problems) console.warn(`  warning  ${problem}`);
   const started = Date.now();
-  const usable = (cell: CapturedCell) => cell.platform === "web" && cell.status === "ok" && !notReached(cell) && existsSync(join(cell.dir, CARD_FILE)) && existsSync(join(cell.dir, PROBE_FILE));
+  const usable = (cell: CapturedCell) => cell.platform === "web" && cell.status === "ok" && existsSync(join(cell.dir, PROBE_FILE));
   const cells = selection.cells.filter(usable);
   const byId = new Map(cells.map((cell) => [cell.id, cell]));
-  const probeOf = (cell: CapturedCell | undefined) => (cell ? readJsonFile<WebProbe>(join(cell.dir, PROBE_FILE)) : null);
+  const probeOf = (cell: CapturedCell | undefined): CellProbe | null => {
+    const json = cell ? readJsonFile<unknown>(join(cell.dir, PROBE_FILE)) : null;
+    return cell && json !== null ? readCellProbe(cell.family, json) : null;
+  };
   const solid: SolidReading[] = [];
   const glass = emptyGlass();
-  let glassCells = 0;
+  const glassCells: Record<CellFamily, number> = { variant: 0, state: 0, page: 0 };
   await pool(cells, 6, async (cell) => {
     const probe = probeOf(cell);
     if (!probe) return;
-    const sampler = cardSampler(await decodeImage(join(cell.dir, CARD_FILE)), probe.dpr);
-    if (cell.surface === "solid") solid.push(...solidReadings(cell.run.id, cell.id, probe, sampler));
+    // Every photograph a region was taken in, whether or not the DOM resolved its texts.
+    const samplers = await cellSamplers(cell.dir, probe, () => true);
+    if (cell.surface === "solid") solid.push(...solidReadings({ id: cell.id, family: cell.family, run: cell.run.id }, probe, samplers));
     else {
-      glassCells += 1;
-      glassVerdicts(probe, sampler, probeOf(byId.get(solidTwinId(cell.id))), glass);
+      glassCells[cell.family] += 1;
+      glassVerdicts(probe, samplers, probeOf(byId.get(solidTwinId(cell.id))), glass);
     }
   });
-  console.log(`audit:calibrate over ${cells.length} current web cell(s) from ${selection.runs.length} run(s), in ${((Date.now() - started) / 1000).toFixed(1)} s`);
+  const families = (Object.keys(glassCells) as CellFamily[]).map((family) => `${cells.filter((cell) => cell.family === family).length} ${family}`).join(", ");
+  console.log(`audit:calibrate over ${cells.length} current web cell(s) (${families}) from ${selection.runs.length} run(s), in ${((Date.now() - started) / 1000).toFixed(1)} s`);
   printSolid("solid", summarizeSolid(solid));
+  const present = (Object.keys(glassCells) as CellFamily[]).filter((family) => solid.some((reading) => reading.family === family));
+  if (present.length > 1) for (const family of present) printSolid(`solid, ${family} cells`, summarizeSolid(solid.filter((reading) => reading.family === family)));
   const runs = [...new Set(solid.map((reading) => reading.run))].sort();
   if (runs.length > 1) for (const run of runs) printSolid(`solid, run ${run}`, summarizeSolid(solid.filter((reading) => reading.run === run)));
-  printGlass(glass, glassCells);
+  printGlass(glass, Object.values(glassCells).reduce((a, b) => a + b, 0));
   return 0;
 }
 

@@ -12,9 +12,17 @@
 //   <variant>/compare.jpg, compare-glass.jpg   per look, the browser's iOS row (phone width)
 //                                              beside the iOS device's card, and the same
 //                                              for Android; solid, then glass
-//   states.jpg (states-<width>.jpg)            when the interaction-state runner has
-//                                              captured the component: each state by the
-//                                              looks and surfaces, phone width first
+//   states.jpg, states-tablet.jpg,             a component's interaction states
+//   states-phone.jpg                           (e2e/audit/state-cell.ts): a row per state
+//                                              and the browser card's row it was reached
+//                                              from, by the six looks and surfaces, each
+//                                              tile its state.png with the state's and
+//                                              its release's flags under it; desktop
+//                                              first, where every state is captured, then
+//                                              the widths only overlays are captured at
+//   viewport-solid.jpg, viewport-glass.jpg     a pattern or template page's first screen
+//                                              (viewport.png), widths x looks; its
+//                                              sections are linked from its index.md
 //
 // Every tile is labelled with its cell id (its path under its run) and the commit its
 // capture was taken at (its short sha, and "dirty" when the checkout had changes), and a
@@ -37,17 +45,20 @@
 //   bun run audit:sheets -- --only=button        one component
 //   bun run audit:sheets -- --run=<run id>       built from those runs only
 //
-// A variant's sheets directory is emptied before it is written, so a sheet whose cells are
-// gone does not linger. Exit status: 0, 1 when a sheet could not be written, 2 for a usage error.
+// A variant's sheets directory is emptied before it is written, and a component's state
+// sheets and a page's sheets are removed before they are written, so a sheet whose cells
+// are gone does not linger. Exit status: 0, 1 when a sheet could not be written, 2 for a
+// usage error.
 
 import { existsSync, mkdirSync, readdirSync, rmSync } from "node:fs";
 import { join, relative } from "node:path";
 import sharp, { type OverlayOptions } from "sharp";
 import { ROOT } from "../../e2e/support/routes.ts";
+import { RELEASE_FLAGS, STATE_FLAGS, STATE_NAMES } from "../../e2e/support/state-recipes.ts";
 import { LOOKS, SURFACES, WIDTHS, components, type Look, type Surface, type WidthKey } from "./inventory.ts";
 import type { Box, RowPlatform } from "./probe-math.ts";
 import { CURRENT_DIR, currentCells, notReached, parseToolArgs, pool, readJsonFile, type CapturedCell } from "./runs.ts";
-import { CARD_FILE, PROBE_FILE } from "./web-capture.ts";
+import { CARD_FILE, PAGES_DIR as WEB_PAGES_DIR, PROBE_FILE, STATES_DIR, STATE_FILE, VIEWPORT_FILE } from "./web-capture.ts";
 
 // --- Layout ---------------------------------------------------------------------------
 
@@ -468,15 +479,15 @@ export async function renderSheet(layout: SheetLayout, sources: Map<PlacedTile["
 
 interface CellPicture {
   cell: CapturedCell | undefined;
-  /** card.png's size in device pixels and its density, read once per cell. */
+  /** The photograph's size in device pixels and its density, read once per cell. */
   card: { path: string; width: number; height: number; dpr: number } | null;
   rows: Partial<Record<RowPlatform, Box>>;
 }
 
-/** What a cell can contribute to a sheet: its card picture and its row boxes, or why it has none. */
-async function pictureOf(cell: CapturedCell | undefined): Promise<CellPicture> {
+/** What a cell can contribute to a sheet: its photograph (`file`: card.png, state.png, viewport.png) and its row boxes, or why it has none. */
+async function pictureOf(cell: CapturedCell | undefined, file: string = CARD_FILE): Promise<CellPicture> {
   if (!cell || cell.status === "failed" || notReached(cell)) return { cell, card: null, rows: {} };
-  const path = join(cell.dir, CARD_FILE);
+  const path = join(cell.dir, file);
   if (!existsSync(path)) return { cell, card: null, rows: {} };
   const probe = readJsonFile<{ dpr?: number; rows?: { platform: RowPlatform; box: Box }[] }>(join(cell.dir, PROBE_FILE));
   const meta = await sharp(path).metadata();
@@ -492,18 +503,22 @@ async function pictureOf(cell: CapturedCell | undefined): Promise<CellPicture> {
 const captureOf = (picture: CellPicture): { capture: Capture } | Record<string, never> =>
   picture.cell ? { capture: { run: picture.cell.run.id, sha: picture.cell.run.sha, dirty: picture.cell.run.dirty } } : {};
 
-const why = (picture: CellPicture): string => {
+const firstLine = (text: string | null) => (text ?? "unknown").split("\n")[0]!.slice(0, 90);
+
+const why = (picture: CellPicture, file: string): string => {
   if (!picture.cell) return "not captured";
-  if (notReached(picture.cell)) return "state not reached";
-  if (picture.cell.status === "failed") return `failed: ${(picture.cell.error ?? "unknown").split("\n")[0]!.slice(0, 90)}`;
-  return "no card.png";
+  if (notReached(picture.cell)) return `not reached: ${firstLine(picture.cell.error)}`;
+  if (picture.cell.status === "failed") return `failed: ${firstLine(picture.cell.error)}`;
+  return `no ${file}`;
 };
 
-/** A tile showing a whole card. */
-export function cardTile(id: string, picture: CellPicture, sources: Map<TileInput, TileSource>): TileInput {
-  if (!picture.card) return { label: id, note: why(picture), ...captureOf(picture), size: null, density: null };
+/** A tile showing a whole photograph: a card, a state, a page's first screen. `flags` are said under it. */
+export function cardTile(id: string, picture: CellPicture, sources: Map<TileInput, TileSource>, file: string = CARD_FILE, flags: string[] = []): TileInput {
+  const said = flags.length ? `flags: ${flags.join(", ")}` : null;
+  if (!picture.card) return { label: id, note: [why(picture, file), said].filter(Boolean).join("; "), ...captureOf(picture), size: null, density: null };
   const { path, width, height, dpr } = picture.card;
-  const tile: TileInput = { label: id, ...(picture.cell?.status === "unstable" ? { note: "unstable: kept changing between grabs" } : {}), ...captureOf(picture), size: { width: width / dpr, height: height / dpr }, density: dpr };
+  const notes = [picture.cell?.status === "unstable" ? "unstable: kept changing between grabs" : null, said].filter(Boolean);
+  const tile: TileInput = { label: id, ...(notes.length ? { note: notes.join("; ") } : {}), ...captureOf(picture), size: { width: width / dpr, height: height / dpr }, density: dpr };
   sources.set(tile, { path });
   return tile;
 }
@@ -512,7 +527,7 @@ export function cardTile(id: string, picture: CellPicture, sources: Map<TileInpu
 function rowTile(id: string, picture: CellPicture, platform: RowPlatform, sources: Map<TileInput, TileSource>): TileInput {
   const label = `${id} [${platform} row]`;
   const box = picture.rows[platform];
-  if (!picture.card || !box) return { label, note: picture.card ? `no ${platform} row in probe.json` : why(picture), ...captureOf(picture), size: null, density: null };
+  if (!picture.card || !box) return { label, note: picture.card ? `no ${platform} row in probe.json` : why(picture, CARD_FILE), ...captureOf(picture), size: null, density: null };
   const { path, width, height, dpr } = picture.card;
   const left = Math.max(0, Math.round(box.x * dpr));
   const top = Math.max(0, Math.round(box.y * dpr));
@@ -619,47 +634,90 @@ export async function variantSheets(slug: string, variant: string, cells: Map<st
   return specs;
 }
 
-/** The interaction-state sheets of one component, one per width its states were captured at. */
+/** The widths a component's states are laid out at, the desktop first: every state is captured there, an overlay at the other two as well. */
+const STATE_WIDTHS: WidthKey[] = ["desktop", "tablet", "phone"];
+/** The browser card's rows a state is reached from, in the order a reader takes them: the web's own first. */
+const STATE_ROWS: RowPlatform[] = ["web", "ios", "android"];
+
+/** The state flags and release flags a state's capture recorded: what its tile says under it. */
+const stateFlagsOf = (cell: CapturedCell | undefined) => (cell ? cell.flags.filter((flag) => flag in STATE_FLAGS || flag in RELEASE_FLAGS) : []);
+
+/**
+ * The interaction-state sheets of one component (e2e/audit/state-cell.ts): one per width
+ * its states were captured at (`states.jpg` the desktop's, where every state is; then
+ * `states-tablet.jpg` and `states-phone.jpg`, where only the overlays are), a row per state
+ * and the platform row it was reached from, in the recipes' order, by the six looks and
+ * surfaces. Each tile is the state's photograph (state.png: the row with a margin, or the
+ * viewport an overlay opened in), its state and release flags said under it; a state not
+ * reached is a hole saying why.
+ */
 export async function stateSheets(slug: string, cells: CapturedCell[]): Promise<SheetSpec[]> {
-  const states = cells.filter((cell) => cell.family === "state");
+  const states = cells.filter((cell) => cell.family === "state" && cell.slug === slug);
   if (!states.length) return [];
   const specs: SheetSpec[] = [];
-  const widths = WIDTHS.map((w) => w.key).filter((key) => states.some((cell) => cell.width === key));
+  const rank = (cell: CapturedCell) => STATE_NAMES.indexOf(cell.state!) * STATE_ROWS.length + STATE_ROWS.indexOf(cell.row!);
+  const widths = STATE_WIDTHS.filter((key) => states.some((cell) => cell.width === key));
   for (const width of widths) {
-    const atWidth = states.filter((cell) => cell.width === width);
-    const keys = [...new Set(atWidth.map((cell) => `${cell.variant ? `${cell.variant}/` : ""}${cell.state}`))];
+    const atWidth = states.filter((cell) => cell.width === width).sort((a, b) => rank(a) - rank(b));
     const byId = new Map(atWidth.map((cell) => [cell.id, cell]));
+    const rows = [...new Map(atWidth.map((cell) => [`${cell.state}.${cell.row}`, cell])).entries()];
     const sources = new Map<TileInput, TileSource>();
     const tiles: TileInput[][] = [];
-    for (const key of keys) {
+    for (const [key] of rows) {
       const row: TileInput[] = [];
       for (const { look, surface } of LOOK_SURFACES) {
-        const id = `web-states/${slug}/${key}/${width}.${look}.${surface}`;
+        const id = `${STATES_DIR}/${slug}/${key}/${width}.${look}.${surface}`;
         const cell = byId.get(id);
-        row.push(cardTile(id, await stateCardPicture(cell), sources));
+        row.push(cardTile(id, await pictureOf(cell, STATE_FILE), sources, STATE_FILE, stateFlagsOf(cell)));
       }
       tiles.push(row);
     }
     specs.push({
       file: width === widths[0] ? "states.jpg" : `states-${width}.jpg`,
       sources,
-      // Cut per group of states when too tall to read: a state's looks and surfaces stay side by side.
-      grid: { title: `${slug}: interaction states at ${width} width`, rowsAre: "states", colsAre: "looks and surfaces", rowKeys: keys, colKeys: LOOK_SURFACE_KEYS, splitBy: "rows", tiles },
+      // Cut per group of states when too large to read: a state's looks and surfaces stay side by side.
+      grid: {
+        title: `${slug}: interaction states at ${width} width (state.row: the state, and the browser card's row it was reached from; the example in brackets)`,
+        rowsAre: "states",
+        colsAre: "looks and surfaces",
+        rowKeys: rows.map(([key, cell]) => `${key}${cell.label ? ` (${cell.label})` : ""}`),
+        colKeys: LOOK_SURFACE_KEYS,
+        splitBy: "rows",
+        tiles,
+      },
     });
   }
   return specs;
 }
 
-/** A state cell's picture: its card.png, or else the first other picture it wrote (never a failure shot). */
-async function stateCardPicture(cell: CapturedCell | undefined): Promise<CellPicture> {
-  const picture = await pictureOf(cell);
-  if (picture.card || !cell || cell.status === "failed" || notReached(cell) || !existsSync(cell.dir)) return picture;
-  const other = readdirSync(cell.dir).sort().find((name) => name.endsWith(".png") && name !== "failure.png");
-  if (!other) return picture;
-  const path = join(cell.dir, other);
-  const meta = await sharp(path).metadata();
-  const dpr = readJsonFile<{ dpr?: number }>(join(cell.dir, PROBE_FILE))?.dpr ?? 1;
-  return { ...picture, card: { path, width: meta.width ?? 0, height: meta.height ?? 0, dpr } };
+/**
+ * A pattern or template page's sheets (e2e/audit/page-cell.ts): its first screen
+ * (viewport.png) at every width by the three looks, `viewport-solid.jpg` and
+ * `viewport-glass.jpg`, cut per width when too large to read so a width's looks stay side by
+ * side. Each section's own photograph is linked from the page's index.md, not drawn here.
+ */
+export async function pageSheets(page: string, cells: CapturedCell[]): Promise<SheetSpec[]> {
+  const byId = new Map(cells.filter((cell) => cell.family === "page" && cell.platform === "web" && cell.slug === page).map((cell) => [cell.id, cell]));
+  if (!byId.size) return [];
+  const specs: SheetSpec[] = [];
+  for (const surface of SURFACES) {
+    const sources = new Map<TileInput, TileSource>();
+    const tiles: TileInput[][] = [];
+    for (const look of LOOKS) {
+      const row: TileInput[] = [];
+      for (const { key } of WIDTHS) {
+        const id = `${WEB_PAGES_DIR}/${page}/${key}.${look}.${surface}`;
+        row.push(cardTile(id, await pictureOf(byId.get(id), VIEWPORT_FILE), sources, VIEWPORT_FILE));
+      }
+      tiles.push(row);
+    }
+    specs.push({
+      file: `viewport-${surface}.jpg`,
+      sources,
+      grid: { title: `${page}: the first screen, ${surface}`, rowsAre: "looks", colsAre: "widths", rowKeys: [...LOOKS], colKeys: WIDTH_KEYS, splitBy: "columns", tiles },
+    });
+  }
+  return specs;
 }
 
 /** Whether a sheet has at least one picture: one with none is not written. */
@@ -691,6 +749,8 @@ async function writeSheets(dir: string, specs: SheetSpec[]): Promise<SheetResult
 
 /** A component's interaction-state sheet: states.jpg, states-<width>.jpg, and their numbered parts. */
 export const STATE_SHEET = /^states(-[a-z]+)?(-\d+)?\.jpg$/;
+/** A page's sheet: viewport-solid.jpg, viewport-glass.jpg, and their numbered parts. */
+export const PAGE_SHEET = /^viewport-(solid|glass)(-\d+)?\.jpg$/;
 
 const USAGE = "usage: bun run audit:sheets -- [--only=<slugs>] [--run=<run ids>]";
 
@@ -716,27 +776,34 @@ async function main(): Promise<number> {
   const order = new Map(components().flatMap((component, c) => component.variants.map((variant, v) => [`${component.slug}/${variant.variant}`, c * 1000 + v] as const)));
   const bySlug = new Map<string, CapturedCell[]>();
   for (const cell of selection.cells) {
-    if (cell.family === "page") continue;
     const list = bySlug.get(cell.slug);
     if (list) list.push(cell);
     else bySlug.set(cell.slug, [cell]);
   }
-  const jobs: { slug: string; variant: string | null; cells: CapturedCell[] }[] = [];
+  type Job = { kind: "variant"; slug: string; variant: string; cells: CapturedCell[] } | { kind: "states"; slug: string; cells: CapturedCell[] } | { kind: "page"; slug: string; cells: CapturedCell[] };
+  const jobs: Job[] = [];
   for (const [slug, cells] of bySlug) {
     const variants = [...new Set(cells.filter((cell) => cell.family === "variant").map((cell) => cell.variant!))]
       .sort((a, b) => (order.get(`${slug}/${a}`) ?? Infinity) - (order.get(`${slug}/${b}`) ?? Infinity) || a.localeCompare(b));
-    for (const variant of variants) jobs.push({ slug, variant, cells });
-    if (cells.some((cell) => cell.family === "state")) jobs.push({ slug, variant: null, cells });
+    for (const variant of variants) jobs.push({ kind: "variant", slug, variant, cells });
+    if (cells.some((cell) => cell.family === "state")) jobs.push({ kind: "states", slug, cells });
+    if (cells.some((cell) => cell.family === "page" && cell.platform === "web")) jobs.push({ kind: "page", slug, cells });
   }
   let failed = 0;
   const results = (await pool(jobs, 4, async (job) => {
     const base = join(ROOT, CURRENT_DIR, job.slug, "sheets");
+    // A component's or page's own sheets are cleared before they are written, so a sheet whose cells are gone does not linger.
+    const clear = (pattern: RegExp) => {
+      for (const name of existsSync(base) ? readdirSync(base) : []) if (pattern.test(name)) rmSync(join(base, name));
+    };
     try {
-      if (job.variant === null) {
-        for (const name of existsSync(base) ? readdirSync(base) : []) {
-          if (STATE_SHEET.test(name)) rmSync(join(base, name));
-        }
+      if (job.kind === "states") {
+        clear(STATE_SHEET);
         return await writeSheets(base, await stateSheets(job.slug, job.cells));
+      }
+      if (job.kind === "page") {
+        clear(PAGE_SHEET);
+        return await writeSheets(base, await pageSheets(job.slug, job.cells));
       }
       const dir = join(base, job.variant);
       rmSync(dir, { recursive: true, force: true });
@@ -744,7 +811,7 @@ async function main(): Promise<number> {
       return await writeSheets(dir, await variantSheets(job.slug, job.variant, byId));
     } catch (error) {
       failed += 1;
-      console.error(`  failed   ${job.slug}${job.variant ? `/${job.variant}` : " states"}: ${(error as Error).message}`);
+      console.error(`  failed   ${job.slug}${job.kind === "variant" ? `/${job.variant}` : ` ${job.kind}`}: ${(error as Error).message}`);
       return [];
     }
   })).flat();
@@ -752,7 +819,8 @@ async function main(): Promise<number> {
   const bytes = results.reduce((n, r) => n + r.bytes, 0);
   const longest = results.reduce((n, r) => Math.max(n, r.width, r.height), 0);
   const scales = results.map((r) => r.scale).sort((a, b) => a - b);
-  console.log(`audit:sheets: ${results.length} sheet(s) for ${jobs.filter((j) => j.variant).length} variant(s) of ${bySlug.size} component(s) from ${selection.runs.length} run(s)`);
+  const counted = (kind: Job["kind"]) => jobs.filter((job) => job.kind === kind).length;
+  console.log(`audit:sheets: ${results.length} sheet(s) for ${counted("variant")} variant(s), ${counted("states")} component(s)' states and ${counted("page")} page(s), from ${selection.runs.length} run(s)`);
   if (results.length) {
     console.log(`  size     ${(bytes / 1024 / 1024).toFixed(1)} MB, ${Math.round(bytes / results.length / 1024)} KB a sheet; longest edge ${longest} px; tile scale ${scales[0]!.toFixed(2)} to ${scales[scales.length - 1]!.toFixed(2)} px per layout unit (median ${scales[Math.floor(scales.length / 2)]!.toFixed(2)})`);
   }

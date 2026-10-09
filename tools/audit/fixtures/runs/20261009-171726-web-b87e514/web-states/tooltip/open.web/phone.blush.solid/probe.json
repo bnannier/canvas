@@ -1,0 +1,238 @@
+{
+  "schema": 1,
+  "cell": {
+    "id": "web-states/tooltip/open.web/phone.blush.solid",
+    "slug": "tooltip",
+    "state": "open",
+    "row": "web",
+    "variant": "onhover",
+    "label": "On hover",
+    "width": "phone",
+    "look": "blush",
+    "surface": "solid"
+  },
+  "recipe": {
+    "state": "open",
+    "variant": "onhover",
+    "how": "the pointer rests on the On hover example's trigger, in the row",
+    "frame": "viewport"
+  },
+  "url": "https://127.0.0.1:4627/components/tooltip/onhover?scheme=light&surface=solid&palette=blush",
+  "structure": {
+    "path": "/components/tooltip/onhover",
+    "selected": "On hover"
+  },
+  "dpr": 2,
+  "viewport": {
+    "initial": {
+      "width": 390,
+      "height": 844
+    },
+    "grown": {
+      "width": 390,
+      "height": 844
+    }
+  },
+  "status": "ok",
+  "evidence": {
+    "role": "alert",
+    "where": "in the row",
+    "before": 0,
+    "after": 1,
+    "pointer": {
+      "followedTrigger": 1,
+      "slidAway": true
+    },
+    "framing": "left in place: a resting pointer holds it open",
+    "box": {
+      "x": 144.9,
+      "y": 409,
+      "width": 100.2,
+      "height": 28
+    },
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "frame": "row",
+    "edgeToEdge": false,
+    "atBottom": false,
+    "inView": true
+  },
+  "shot": {
+    "file": "state.png",
+    "frame": "viewport",
+    "clip": null
+  },
+  "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/155.0.8059.12 Safari/537.36",
+  "row": {
+    "platform": "web",
+    "origin": {
+      "x": 24,
+      "y": 216
+    },
+    "box": {
+      "x": 1,
+      "y": 168,
+      "width": 340,
+      "height": 112
+    },
+    "aria": "- separator\n- alert: Open settings\n- button \"Hover me\" [expanded]\n- text: Web",
+    "material": {
+      "runtime": "browser",
+      "supportsBackdropFilter": true,
+      "activeBackdropEffects": 0,
+      "clearMaterials": 0,
+      "effects": []
+    },
+    "overflowX": 0,
+    "texts": [
+      {
+        "text": "Open settings",
+        "box": {
+          "x": 130.9,
+          "y": 198,
+          "width": 80.2,
+          "height": 17
+        },
+        "size": 12,
+        "computedSize": 12,
+        "scale": 1,
+        "weight": 600,
+        "family": "Manrope_600SemiBold",
+        "color": "rgb(245, 242, 254)",
+        "colorAlpha": 1,
+        "opacity": 1,
+        "ownOpacity": 1,
+        "svg": false,
+        "ariaHidden": false,
+        "disabled": false,
+        "background": "rgb(59, 60, 92)",
+        "painted": "rgb(245, 242, 254)",
+        "contrast": 9.57,
+        "required": 4.5,
+        "contrastFails": false,
+        "belowSourceFloor": false,
+        "underBodyFloor": false,
+        "clipped": null,
+        "scrolled": null,
+        "truncated": false,
+        "covered": false
+      },
+      {
+        "text": "Hover me",
+        "box": {
+          "x": 144.8,
+          "y": 234,
+          "width": 52.3,
+          "height": 15
+        },
+        "size": 11.5,
+        "computedSize": 11.5,
+        "scale": 1,
+        "weight": 700,
+        "family": "Manrope_700Bold",
+        "color": "rgb(59, 60, 92)",
+        "colorAlpha": 1,
+        "opacity": 1,
+        "ownOpacity": 1,
+        "svg": false,
+        "ariaHidden": false,
+        "disabled": false,
+        "background": "rgb(244, 243, 254)",
+        "painted": "rgb(59, 60, 92)",
+        "contrast": 9.61,
+        "required": 4.5,
+        "contrastFails": false,
+        "belowSourceFloor": false,
+        "underBodyFloor": true,
+        "clipped": null,
+        "scrolled": null,
+        "truncated": false,
+        "covered": false
+      }
+    ],
+    "interactive": [
+      {
+        "role": "button",
+        "name": "Hover me",
+        "tag": "button",
+        "box": {
+          "x": 129.8,
+          "y": 227,
+          "width": 82.3,
+          "height": 29
+        },
+        "state": {
+          "aria-expanded": "true"
+        },
+        "focusable": true,
+        "target": 24,
+        "unit": "px",
+        "belowTarget": false,
+        "note": "WCAG 2.5.8 minimum; its spacing exception is not evaluated"
+      }
+    ]
+  },
+  "panel": {
+    "inRow": true,
+    "platform": "web",
+    "origin": {
+      "x": 24,
+      "y": 216
+    },
+    "box": {
+      "x": 120.9,
+      "y": 193,
+      "width": 100.2,
+      "height": 28
+    },
+    "aria": "- alert: Open settings",
+    "material": {
+      "runtime": "browser",
+      "supportsBackdropFilter": true,
+      "activeBackdropEffects": 0,
+      "clearMaterials": 0,
+      "effects": []
+    }
+  },
+  "overflow": {
+    "document": 0,
+    "page": 0,
+    "card": 0,
+    "row:web": 0
+  },
+  "axe": {
+    "scanned": true,
+    "violations": []
+  },
+  "problems": [],
+  "summary": {
+    "texts": 2,
+    "textBelowSourceFloor": 0,
+    "textUnderBodyFloor": 1,
+    "contrastFailures": 0,
+    "contrastIndeterminate": 0,
+    "clippedText": 0,
+    "scrolledText": 0,
+    "truncatedText": 0,
+    "coveredText": 0,
+    "targets": 1,
+    "smallTargets": {
+      "ios": 0,
+      "android": 0,
+      "web": 0
+    },
+    "overflowing": [],
+    "axeViolations": 0,
+    "problems": 0,
+    "renderFailed": false
+  },
+  "flags": [
+    "hover-unstable"
+  ],
+  "release": {
+    "closed": true,
+    "by": "its own close"
+  }
+}

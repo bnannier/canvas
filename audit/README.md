@@ -184,10 +184,10 @@ as "by design".
 | `bun run audit:native:build -- --platform=ios,android` | builds the Canvas Audit app (the docs with the capture driver) in Release and installs it on the booted simulator and emulator, leaving the docs app's own `docs/ios` and `docs/android` as they were; `--incremental` reuses the parked native project while the native inputs are unchanged, `--dev` builds Debug for the fix loop |
 | `bun run audit:native -- --platform=ios,android` | photographs every component example and every pattern and template page on the devices in all six looks and surfaces; `--only`, `--looks`, `--surfaces`, `--a11y=none\|default\|all`, `--devices`, `--dev`, `--keep-motion` |
 | `bun run audit:web` | captures the web cells into a new run under `.audit/runs/` (see "Capturing on the web" below): the example variants, or with `--states` (every state, or `--states=hover,open`) the interaction states and with `--pages` the pattern and template pages instead (both flags for both); `--only` (component slugs, page ids or page slugs), `--variants` (the variant capture only), `--looks`, `--surfaces`, `--widths` narrow it, `--axe`, `--base`, `--workers` and `--allow-stale` tune it, `--help` lists them |
-| `bun run audit:analyze` | writes `analysis.json` beside the newest capture of every cell (see "Analysis, contact sheets and the index" below) |
-| `bun run audit:calibrate` | measures the analysis' contrast read from the photographs against the DOM's, on the newest captures; writes nothing |
-| `bun run audit:sheets` | writes the contact sheets under `.audit/current/<slug>/sheets/` |
-| `bun run audit:index` | writes `.audit/current/<slug>/index.md`, `SUMMARY.md` and `current.json` |
+| `bun run audit:analyze` | writes `analysis.json` beside the newest capture of every cell, variant, interaction state, page or device cell (see "Analysis, contact sheets and the index" below) |
+| `bun run audit:calibrate` | measures the analysis' contrast read from the photographs (cards, state shots, page sections) against the DOM's, on the newest captures; writes nothing |
+| `bun run audit:sheets` | writes the contact sheets under `.audit/current/<slug>/sheets/`: per variant, per component's states, per page |
+| `bun run audit:index` | writes `.audit/current/<slug>/index.md` (a component's cells and states, a page's cells and sections), `SUMMARY.md` and `current.json` |
 | `bun run audit:prune` | deletes old runs, keeping the newest two captures of every cell, and rebuilds the index over what remains (`--keep`, `--dry-run`) |
 
 The last five take `--only=<slugs>` (component slugs, page ids such as `template-signin`, or a
@@ -247,7 +247,12 @@ A run is `.audit/runs/<stamp>-web-<sha7>/`:
   are kept beside it), rendered weight, family, colour, the background composited from the
   DOM under it or `indeterminate` with the reason (a backdrop filter, a gradient, an image),
   its contrast and the ratio it owes, the type floors (both judged on the painted size),
-  clipping and truncation. A form control's own text is one of them, marked `field`: a text
+  clipping and truncation. For the analysis that reads a text's contrast off the photograph,
+  each text also records the opacity that dims its ink alone (`ownOpacity`: the opacity
+  groups its backdrop is not in) and, when it shares dimming groups with its backdrop (a
+  pressed control at 0.9 dims its fill and its label together), their opacity and the
+  outermost one's box (`shared`), and each row records where its boxes are measured from
+  in the viewport (`origin`). A form control's own text is one of them, marked `field`: a text
   field's value (a password's as its bullets) or its placeholder while it shows (in its
   `::placeholder` colour, opacity and font), and a drop-down select's chosen label, each on
   the control's own background; a field's value that runs past its box scrolls, so it is
@@ -360,7 +365,12 @@ ActionSheet) against the viewport. A row's photograph keeps a 12 px margin aroun
 
 A state cell is `web-states/<slug>/<state>.<row>/<width>.<look>.<surface>/` with `state.png`
 (a reached state) and `probe.json` (the recipe, the evidence, the release and its flags, and
-for a reached state the probe).
+for a reached state the probe: the row and the panel the state opened, each with its
+`origin`, and the shot's `clip`, so the analysis finds every text in `state.png`). A panel
+drawn inside its row (Dialog, AlertDialog, Toast, the Tooltip bubble) is read with the row,
+so its texts and targets count once; its own entry (`inRow: true`) keeps where it is, its
+tree and its material. The example a state is applied to is on its record (`variant`,
+`label`), not in its path: each component has one recipe per state.
 
 Two decisions differ from the plan's 1d:
 
@@ -413,8 +423,9 @@ it with the same 12 px margin as a state's row (`section.<key>.png`; a drop shad
 lift or a ring at the section's edge is not cropped; the margin stays inside the part of the
 page no top bar or floating tab bar covers, and the viewport grows for it when it must) and
 probes it as a variant's row is; probe.json adds the document's, the page scroller's and each
-section's overflow, axe over the sections where the axe policy says, each section's clip, and
-how long each step of the cell took (`ms`). A page cell is
+section's overflow, axe over the sections where the axe policy says, each section's clip and
+`origin` (so the analysis finds every text in its section's photograph), and how long each
+step of the cell took (`ms`). A page cell is
 `web-pages/<kind>-<slug>/<width>.<look>.<surface>/`.
 
 Every page is 432 cells (24 pages, 67 sections): 6 min 35 s and 284.8 MB on the same
@@ -655,130 +666,209 @@ development app installed.
 
 Three commands turn the runs into what a reviewer reads, a fourth keeps the disk in check,
 and a fifth measures the analysis' contrast against the DOM. All of them read the runs
-through one module (`tools/audit/runs.ts`), so they agree on
-what the **current capture** of a cell is: the newest one across every run under
-`.audit/runs/`, by when its record says it finished (`at`, which the web cells and the
-native host both write; a native record older than that stamp takes its run's start), then
-its run's start, then its line in `cells.jsonl`. A partial re-capture (`--only`,
-`--variants`) therefore replaces exactly the cells it took, and every other cell stays at
-the run that took it last. The newest record wins whatever its status: a cell that failed on
-its latest capture shows as failed, not as an older photograph. The readers already know the
-interaction-state and page layouts (`web-states/<slug>/[<variant>/]<state>/<leaf>`,
-`<platform>-pages/<kind>-<slug>/[<section>/]<leaf>`, a record whose status or flag is
-`state-not-reached` having no photograph), so those runs are taken in when they exist.
+through one module (`tools/audit/runs.ts`), so they agree on what the **current capture** of
+a cell is: the newest one across every run under `.audit/runs/`, by when its record says it
+finished (`at`, which the web cells and the native host both write; a native record older
+than that stamp takes its run's start), then its run's start, then its line in
+`cells.jsonl`. A partial re-capture (`--only`, `--variants`, `--states`, `--pages`) therefore
+replaces exactly the cells it took, and every other cell stays at the run that took it last.
+The newest record wins whatever its status: a cell that failed on its latest capture shows as
+failed, not as an older photograph.
+
+The module reads the paths the runners write, and refuses (as a warning naming the run) any
+other:
+
+| Cell | Path under its run | Files |
+|---|---|---|
+| a variant on the web | `web/<slug>/<variant>/<width>.<look>.<surface>` | `card.png`, `probe.json` |
+| a variant on a device | `ios/<slug>/<variant>/<look>.<surface>` (and `android/`) | `screen.png`, `card.png`, `probe.json`, `a11y.json` |
+| an interaction state | `web-states/<slug>/<state>.<row>/<width>.<look>.<surface>` | `state.png` (a reached state), `probe.json` |
+| a pattern or template page | `web-pages/<kind>-<slug>/<width>.<look>.<surface>` | `viewport.png`, `section.<key>.png` per section, `probe.json` |
+| a page on a device | `ios-pages/<kind>-<slug>/<look>.<surface>` (and `android-pages/`) | as a device variant's |
+
+A state's path names the state (one of the recipes' six) and the row of the browser card it
+was reached from; the example its recipe applies it to is on its record. A state its recipe
+could not reach has the status `state-not-reached`, its reason as the cell's error, and no
+photograph. A page's sections are files of its one cell, never a level of its path.
 
 1. `bun run audit:analyze` (`tools/audit/analyze.ts`) writes `analysis.json` beside each
    current cell's `probe.json`. Derived data: it is rewritten on every run, since a cell's
-   structure verdict depends on its peers' current captures.
+   structure verdict depends on its peers' current captures. Every web cell is read the
+   same way, as **regions** each judged by its platform's floors and photographed somewhere:
+   a variant's three platform rows in `card.png` (the card the boxes are measured from); a
+   reached state's row and the panel it opened (when the row does not draw it) in
+   `state.png`; a page's sections, each in its own `section.<key>.png`. A region's texts are
+   placed in its photograph by where the probe measured them from in the viewport (its
+   `origin`) less the shot's clip (the row with its 12 px margin, a section with its margin,
+   or none for a viewport shot).
    - **Contrast.** Where the probe resolved a text's background from the DOM, its verdict
      stands (method `dom`: fail under the 4.5 or 3 it owes). Where the DOM could not say (a
      backdrop filter, a gradient, an image: every glass cell), only the background is read
-     from `card.png`, method `painted-ink+pixel-background`: the ink is the text's colour as
-     the probe recorded it, with its own alpha (an SVG text's fill-opacity, a placeholder's
-     opacity: `colorAlpha` in `probe.json`) and its opacity groups, composited over that
-     background; the background is the dominant colour of the text's box (narrowed to the
-     ink's bounds, every pixel at least 1.25 in contrast from the box's median, one pixel of
-     margin) among the pixels that are neither ink nor antialiasing (at least half as far from
-     the ink's colour as the 95th-percentile pixel), binned 16 levels a channel and averaged
-     within one bin of the fullest. A photograph shows a glyph's ink only in its thickest
-     pixels, so reading the ink off the pixels reads thin text low (the destructive alert's
-     wrapped body, `rgb(59, 60, 92)` on its blush frost, read 2.74 that way and reads 8.54
-     this way; its solid twin is 8.82 on the DOM); the background fills most of the box and
-     reads true. A text whose painted colour the probe cannot give (a
-     colour it cannot read, a transparent one, an SVG or placeholder text in a probe older
-     than `colorAlpha`) falls back to reading both from the pixels, method
+     from the photograph, method `painted-ink+pixel-background`: the ink is the text's colour
+     as the probe recorded it, with its own alpha (an SVG text's fill-opacity, a
+     placeholder's opacity: `colorAlpha`) and the opacity groups its backdrop is not in
+     (`ownOpacity`), composited over that background; the background is the dominant colour
+     of the text's box (narrowed to the ink's bounds, every pixel at least 1.25 in contrast
+     from the box's median, one pixel of margin) among the pixels that are neither ink nor
+     antialiasing (at least half as far from the ink's colour as the 95th-percentile pixel),
+     binned 16 levels a channel and averaged within one bin of the fullest. A photograph shows
+     a glyph's ink only in its thickest pixels, so reading the ink off the pixels reads thin
+     text low (the destructive alert's wrapped body, `rgb(59, 60, 92)` on its blush frost,
+     read 2.74 that way and reads 8.54 this way; its solid twin is 8.82 on the DOM); the
+     background fills most of the box and reads true. A text inside dimming groups with its
+     backdrop (`shared`: a pressed control at 0.9 dims its fill and its label together) shows
+     both mixed with whatever lies behind the group, which the photograph shows around the
+     group's box, not under the text: that colour is read from a 3 px ring just outside the
+     box (`behind`) and the ink painted as `a*s*ink + (1 - a)*B + a*(1 - s)*behind`, with `a`
+     the ink's own alpha, `s` the groups' opacity and `B` the background read. Dimming the ink
+     over the photographed fill read the pressed Button's label at 3.70 (5.66 in dark) where
+     the DOM says 4.09 (6.8); leaving it undimmed read the pressed Dialog's Cancel at 9.71
+     where the DOM says 7.14; the ring reads both within 1.5%. A text whose painted colour the
+     probe cannot give (a colour it cannot read, a transparent one, an SVG or placeholder text
+     in a probe older than `colorAlpha`) falls back to reading both from the pixels, method
      `pixel-percentiles`: the 10th and 90th luminance percentiles of the ink's bounds; the
-     reason says why. Either way the background is a sample, so neither says "fail": under
-     8/9 of what the text owes (4.0 for 4.5, 2.67 for 3) is `fail-likely`, from there to what
-     it owes `review`. A disabled control's text owes nothing (WCAG 1.4.3's inactive
-     exception); a text something paints over, or one scrolled partly out of its scroller's
-     view, is not sampled.
+     reason says why. Either way the background is a sample, so neither says "fail": under 8/9
+     of what the text owes (4.0 for 4.5, 2.67 for 3) is `fail-likely`, from there to what it
+     owes `review`. A disabled control's text owes nothing (WCAG 1.4.3's inactive exception);
+     a text something paints over, one scrolled partly out of its scroller's view, or one its
+     photograph does not show is not sampled, and says why.
    - **Calibration** (`bun run audit:calibrate`, `tools/audit/calibrate.ts`). It runs both
-     pixel methods over the solid cells' texts the DOM resolved, as if it had not, and sets
-     each glass text a method flags beside its solid twin (the same text in the same row of
-     the same variant, width and look) and what the DOM says of the twin. On 2026-10-09,
-     over the current captures (876 web cells of button, alert, chip, data-table and switch:
-     the fresh run `20261009-155447-web-ac1ad55` in blush and dark, mint from
-     `20261009-135735-web-00d04a7` and `20261009-141332-web-00d04a7`), 6,081 solid texts with
-     6,051 DOM passes and 30 DOM fails:
+     pixel methods over every solid text the DOM resolved, in the photograph the analysis
+     would read it in (a card, a state's shot, a page's section, placed the same way), as if
+     the DOM had not, and sets each glass text a method flags beside its solid twin (the same
+     text in the same region of the same cell, width and look) and what the DOM says of the
+     twin. A region placed wrong in its photograph reads the wrong pixels, so the solid
+     readings of the states and the pages are also the check of their placement. On
+     2026-10-09, over the current captures (1,164 web cells: 996 variant, 132 reached state
+     and 36 page cells; the runs in "Measured end to end" below and 1e's earlier ones of
+     alert, chip and switch), 8,063 solid texts with 8,032 DOM passes and 31 DOM fails:
 
      | | `painted-ink+pixel-background` | `pixel-percentiles` |
      |---|---|---|
-     | DOM passes read `fail-likely` (false) | 0 (0.0%) | 22 (0.4%) |
-     | DOM passes read `review` | 0 (0.0%) | 39 (0.6%) |
-     | DOM fails read `fail-likely` | 21 of 30 | 21 of 30 |
-     | DOM fails read `review` | 9 of 30 | 9 of 30 |
+     | DOM passes read `fail-likely` (false) | 0 (0.0%) | 40 (0.5%) |
+     | DOM passes read `review` | 0 (0.0%) | 52 (0.6%) |
+     | DOM fails read `fail-likely` | 21 of 31 | 21 of 31 |
+     | DOM fails read `review` | 10 of 31 | 10 of 31 |
      | DOM fails read `pass` (missed) | 0 | 0 |
-     | reading against the DOM's | -2.8% to +7.6%, median 0.0% | -73.4% to +1.2%, median 0.0% |
-     | glass `fail-likely` whose solid twin passes on the DOM | 0 of 21 | 21 of 33 |
-     | glass `review` whose solid twin passes on the DOM | 24 of 33 | 33 of 42 |
+     | reading against the DOM's, variants (6,615 texts) | -2.8% to +7.6%, median 0.0% | -73.4% to +1.2% |
+     | reading against the DOM's, states (326 texts) | -0.3% to +1.5%, median 0.0% | -15.6% to +1.8% |
+     | reading against the DOM's, page sections (1,122 texts) | -1.2% to +2.7%, median 0.0% | -73.0% to +4.1% |
+     | glass `fail-likely` whose solid twin passes on the DOM | 26 of 47 | 57 of 69 |
+     | glass `review` whose solid twin passes on the DOM | 45 of 55 | 67 of 77 |
 
-     Every DOM fail is flagged; the 9 read as `review` are the dismissible alert's dark close
-     glyph, which fails at 4.36, inside the 4.0 to 4.5 the thresholds call review. The fresh
-     run alone gives the same (4,174 passes: 0 and 0, against 17 and 21 by the percentiles),
-     and so did the two solid runs it replaced (`20261009-135735-web-00d04a7`, 5,160 passes
-     and 12 fails: 0 and 0, all 12 fail-likely; `20261009-142710-web-e996cb0`, 861 passes and
-     18 fails: 0 and 0, 9 fail-likely and 9 review; the percentiles read 10 and 39, then 12
-     (1.4%) and 0). The +7.6% is a code pill wrapped over two lines of a paragraph, whose box
-     spans the paragraph's white as well as the pill. On glass, all 21 `fail-likely` texts
-     fail in solid too (the selectable data table's dark header and row glyphs, the
-     dismissible alert's blush close glyph); the 24 `review` texts whose twin passes are the
-     destructive button's label on brand-tinted glass (4.49 against 5.75 in solid: the
-     brand under-fill keeps as sheer as its ink's 4.5 allows) and the selectable chip's dark
-     label (4.48 against 6.33), a review a reader settles by looking.
+     Every DOM fail is flagged; the 10 read as `review` are the dismissible alert's dark close
+     glyph (4.36) and the pressed Button's solid label (4.09), both inside the 4.0 to 4.5 the
+     thresholds call review. The +7.6% is a code pill wrapped over two lines of a paragraph,
+     whose box spans the paragraph's white as well as the pill; the +2.7% a page heading. On
+     glass, the 21 `fail-likely` texts whose twin fails are the selectable data table's dark
+     header and row glyphs and the dismissible alert's blush close glyph; the 26 whose twin
+     passes are the sign-in template's brand panel (`#696b8d` muted text on its
+     primary-tinted card, 3.79 in blush and 3.73 in mint at every width, 24 texts), the
+     pressed Button's dark glass label (3.97: under glass the press dims the label alone, over
+     the brand pane) and the invalid Input's value in blush (3.81). The 45 `review` texts
+     whose twin passes are the destructive button's label on brand-tinted glass (4.49 against
+     5.75 in solid), the selectable chip's dark label (4.48), the sign-in brand panel in dark
+     (4.05), the open and pressed Dialog's Confirm label in dark (4.36) and its "Duplicate
+     charge" text in blush (4.15), and the pressed Button's blush glass label (4.06): reviews
+     a reader settles by looking. Before this
+     calibration covered states and pages it measured 6,081 variant texts only, with the same
+     zeroes on the passes; the state and page placements were checked by these numbers, not
+     assumed.
    - **Type.** The smallest painted size (the probe's computed size times its glyph scale)
      and the counts under the 10 px source floor and the 12 px body floor.
-   - **Targets.** Per row of the browser card, the interactive boxes under 24 px (web), 44 pt
-     (iOS) and 48 dp (Android; a hitSlop is not observable); on an Android device, the nodes
-     a user acts on (clickable or checkable) under 48 dp in the accessibility dump.
-   - **Structure invariance.** The web row's `ariaSnapshot()` must be the same across the
-     looks and surfaces of one variant at one width. The most common snapshot of the group
+   - **Targets.** Per platform, the interactive boxes under 24 px (web), 44 pt (iOS) and
+     48 dp (Android; a hitSlop is not observable), each with the region it is in; on an
+     Android device, the nodes a user acts on (clickable or checkable) under 48 dp in the
+     accessibility dump.
+   - **Regions.** Per region (a row, the panel, `section:<key>`), its texts, smallest font,
+     contrast fails, likely and review, and small targets, so a page's index can say which
+     section a finding is in.
+   - **Structure invariance.** A cell's tree must be the same across the looks and surfaces
+     of its group at one width: a variant's web row (its `ariaSnapshot()`), a state's row
+     with the panel it opened, a page's sections in order. The most common tree of the group
      is the group's (a tie goes to blush solid's); a cell that differs is flagged
      `structure-varies` with the first line that differs. A failed cell takes no part.
+   - **Interaction states.** A reached state keeps the flags its capture gave it: its own
+     (`STATE_FLAGS` in `e2e/support/state-recipes.ts`: `focus-ring-missing`,
+     `focus-ring-hidden`, `focus-ring-colour`, `expanded-not-announced`,
+     `error-not-described`, `disabled-tab-stop`, `hover-unstable`) and its release's
+     (`RELEASE_FLAGS`: `press-not-cancelled`, `press-selects-label`,
+     `inspection-not-cleared`, `overlay-not-closed`), split under `state` in
+     `analysis.json` beside the state, the row, the example and whether it was reached. Both
+     tables are typed into the recipes, so a recipe cannot raise a flag the index cannot
+     explain. A state not reached is filed under `state-not-reached` with its reason and its
+     release's flags, and nothing else, since nothing was photographed or probed.
    - **Native accessibility.** Android: every clickable or checkable node is named by its
      own label or by a named node inside it, as TalkBack reads it. iOS: XCUITest through
      Maestro reports no traits, so the check is that no element is announced by its value
      alone.
    - **Flags.** The capture's own (`render-failed`, `problems`, `text-floor`, `contrast`,
-     `clipped-text`, `small-target`, `small-visible-target`, `overflow`, `axe`) and the
-     analysis' (`failed` for a cell its record says failed, whatever it left on disk;
-     `contrast-likely`, `contrast-review`, `structure-varies`, `state-not-reached`; on a
-     device `unstable`, `problems`, `a11y-unnamed`, `a11y-error`, `small-visible-target`).
+     `clipped-text`, `small-target`, `small-visible-target`, `overflow`, `axe`, and a
+     state's), and the analysis' (`failed` for a cell its record says failed, whatever it
+     left on disk; `contrast-likely`, `contrast-review`, `structure-varies`,
+     `state-not-reached`; on a device `unstable`, `problems`, `a11y-unnamed`, `a11y-error`,
+     `small-visible-target`).
 2. `bun run audit:sheets` (`tools/audit/sheets.ts`) writes JPEG contact sheets under
-   `.audit/current/<slug>/sheets/`: per variant `card-solid.jpg` and `card-glass.jpg` (the
-   browser card, widths x looks), `row-<ios|android|web>-<width>.jpg` (one row of the browser
-   card cut at its box in `probe.json`, looks x surfaces), `native.jpg` (the iOS and Android
-   device cards x the six looks and surfaces), `compare.jpg` and `compare-glass.jpg` (per
-   look, the browser's iOS row at phone width beside the iOS device's card, and the same for
-   Android); per component `states.jpg` (`states-<width>.jpg` for further widths) when states
-   were captured. Every tile is labelled with its cell id and the commit it was captured at
-   (`commit 00d04a7 dirty`); every sheet's title names the runs its tiles come from and how
+   `.audit/current/<slug>/sheets/`:
+   - per variant, under `sheets/<variant>/`: `card-solid.jpg` and `card-glass.jpg` (the
+     browser card, widths x looks), `row-<ios|android|web>-<width>.jpg` (one row of the
+     browser card cut at its box in `probe.json`, looks x surfaces), `native.jpg` (the iOS
+     and Android device cards x the six looks and surfaces), `compare.jpg` and
+     `compare-glass.jpg` (per look, the browser's iOS row at phone width beside the iOS
+     device's card, and the same for Android);
+   - per component with states captured: `states.jpg` at desktop width, where every state
+     is, then `states-tablet.jpg` and `states-phone.jpg`, where only the overlays are: a row
+     per state and the browser card's row it was reached from (`open.ios (On hover)`), in the
+     recipes' order, by the six looks and surfaces; each tile is the state's `state.png` (the
+     row with its margin, or the viewport an overlay opened in) with the state's and its
+     release's flags under it in red (`flags: hover-unstable`), and a state not reached is a
+     hole saying why;
+   - per pattern or template page: `viewport-solid.jpg` and `viewport-glass.jpg`, the first
+     screen (`viewport.png`) at every width by the three looks; each section's own
+     photograph is linked from the page's `index.md`.
+
+   Every tile is labelled with its cell id and the commit it was captured at
+   (`commit b87e514 dirty`); every sheet's title names the runs its tiles come from and how
    many commits they span, and where they span more than one, a tile whose commit is not
    the sheet's most common one has its commit in bold blue, so a sheet that mixes a fresh
    capture with an older one says so on its face. A cell that failed, was not reached or was
-   never captured is a labelled placeholder. Neither edge of a sheet passes 1600 px: the tiles
-   share one scale (relative sizes stay true, a phone card narrower than a desktop one), no
-   more than the sharpest source's own density, in whichever orientation scales them larger.
-   A grid whose tiles would fall under 0.6 px a layout unit (a 12 px body line about 7 px
-   tall, the smallest a reader still reads in a JPEG) is cut into numbered sheets
-   (`card-solid-1.jpg`, `card-solid-2.jpg`, ..., each titled with what it holds, such as
+   never captured is a labelled placeholder. Neither edge of a sheet passes 1600 px: the
+   tiles share one scale (relative sizes stay true, a phone card narrower than a desktop
+   one), no more than the sharpest source's own density, in whichever orientation scales
+   them larger. A grid whose tiles would fall under 0.6 px a layout unit (a 12 px body line
+   about 7 px tall, the smallest a reader still reads in a JPEG) is cut into numbered sheets
+   (`card-solid-1.jpg`, `states-2.jpg`, ..., each titled with what it holds, such as
    `sheet 3 of 4: widths: desktop; looks: blush, mint`) along the axis a reader does not
-   compare across: a card sheet per width, so a width's looks stay side by side; the other
-   sheets per row (a look, a state), as many neighbouring rows a sheet as stay readable
-   together; a slice still too large by the other axis too. A card too tall for the floor
-   even alone (data-table's `stacked` at phone width, 342 x 2362 CSS px) is drawn as large as
-   1600 px allows, beside the looks that fit with it. A sheet with no picture is not written,
-   and a variant's sheets directory is emptied before it is written.
+   compare across: a card or page sheet per width, so a width's looks stay side by side; the
+   other sheets per row (a look, a state), as many neighbouring rows a sheet as stay
+   readable together; a slice still too large by the other axis too. A card too tall for the
+   floor even alone (data-table's `stacked` at phone width, 342 x 2362 CSS px) is drawn as
+   large as 1600 px allows, beside the looks that fit with it. A sheet with no picture is not
+   written, and a variant's sheets directory, a component's state sheets and a page's sheets
+   are removed before they are written. A desktop overlay photographed in the 1440 x 900
+   viewport is the largest state tile: four looks and surfaces a sheet at 0.64 px a layout
+   unit, so Tooltip's three open rows take six of its seven desktop sheets.
 3. `bun run audit:index` (`tools/audit/index.ts`) writes `.audit/current/<slug>/index.md` per
    component, pattern or template: the checklist, the sheets (a numbered sheet linked by its
    number), the runs its cells come from (commit, source fingerprint, what served them), its
    flag counts, and one row per cell with its status, flags, axe violations by impact,
    smallest painted font, contrast (DOM fails, pixel fail-likely, pixel review), overflow,
-   clipped text, small targets, console problems, a state not reached, and its run, commit
-   and fingerprint. `SUMMARY.md` ranks every captured component by its cells' flags and
-   names the ones never captured; `current.json` is the same selection for tools, with the
-   `--run` names it was built from. A cell's flags are its analysis' when the analysis is of
-   that capture, else the capture's own, and the index says how many are not analyzed.
+   clipped text, small targets, console problems, and its run, commit and fingerprint. A
+   component's interaction states have their own section (how many were reached and not,
+   and every state and release flag its states carry with what it means) and their own
+   table: each state cell with its example, reached or the reason it was not (whole), its
+   state flags, its release flags, its other flags and the same measures. A page's index
+   has a **Sections** table: each section, by width, linked to its photograph in every look
+   and surface, with what the analysis found in it (`contrast 0/4/0`, `2 small`). Its
+   "Captured" line counts states against what a full `--states` sweep plans for the
+   component (`planStateCapture`). `SUMMARY.md` ranks every captured component and page by
+   its cells' flags, with its states captured and not reached and its release flags, then
+   lists every state not reached (per component, state and row: the looks and surfaces and
+   the first reason) and every release flag with what it means and where it fired, and names
+   the components never captured; `current.json` is the same selection for tools (with each
+   state's state, row, example, reason and flags, and each page cell's section photographs),
+   and the `--run` names it was built from. A cell's flags are its analysis' when the analysis
+   is of that capture, else the capture's own, and the index says how many are not analyzed.
    `--only` narrows the `index.md` files written; `SUMMARY.md` and `current.json` are always
    rebuilt whole, and a whole build removes the `index.md` of a component or page with no
    current cell, so no page of the view links to a capture the view does not hold.
@@ -790,23 +880,38 @@ interaction-state and page layouts (`web-states/<slug>/[<variant>/]<state>/<leaf
    built before newer captures arrived can still point at a run that has become removable,
    so once a run is deleted the prune rebuilds `.audit/current` from the runs that remain
    (keeping the `--run` names the view was built from that still name a run), checks every
-   link of the view (each Markdown link of `SUMMARY.md` and every `index.md`, each run and
-   cell file `current.json` names) and exits 1 if one points at nothing. The current view
-   never loses a cell and never dangles. The contact sheets are images and keep what they
-   showed; `bun run audit:sheets` redraws them from the current captures. `--dry-run` says
-   what would go, why the rest stays, and how many entries of the view point into it.
+   link of the view (each Markdown link of `SUMMARY.md` and every `index.md`, each run, cell
+   file and section photograph `current.json` names) and exits 1 if one points at nothing.
+   The current view never loses a cell and never dangles. The contact sheets are images and
+   keep what they showed; `bun run audit:sheets` redraws them from the current captures.
+   `--dry-run` says what would go, why the rest stays, and how many entries of the view
+   point into it.
 
-Measured on 2026-10-09 over the runs above (1,128 current cells: 876 web, 126 iOS, 126
-Android): `audit:analyze` 2.6 s (6,201 texts read against the card's pixels, all by the
-painted ink), `audit:calibrate` 11.3 s, `audit:sheets` 28.8 s for 789 sheets of 54 variants
-(85.1 MB, 110 KB a sheet, tile scales 0.60 to 2.17 px per layout unit, median 1.08; 98
-numbered sheets), `audit:index` 0.1 s. The prune then removed
-`20261009-143249-web-e996cb0` (its one cell re-captured twice since), which the built view's
-`current.json` still listed, rebuilt the view, and found all 3,076 of its links whole.
+The readers' tests run on real records: `tools/audit/fixtures/runs/` holds three runs of
+this capture cut down to a few cells (a variant card, button and slider and heatmap and
+tooltip states, the sign-in template at phone width in blush glass) as the runners wrote
+them, and `tools/audit/fixtures/earlier-runs/` two earlier captures of one state cell for
+the pruner (`tools/audit/fixtures/real-runs.ts` says what each holds).
+
+### Measured end to end (2026-10-09)
+
+Against a static export of this checkout served on its own port, 6 workers, on this Mac:
+
+| Step | Command | What it took |
+|---|---|---|
+| variants | `audit:web -- --only=button,tooltip,heatmap,data-table --looks=blush,dark` | 504 of 504 cells ok in 2 min 48 s (1.6 s a cell), 48.1 MB |
+| states | `audit:web -- --states --only=button,tooltip,dialog,heatmap,histogram,slider,input --looks=blush,dark` | 140 cells (19 recipes) in 52 s (1.8 s a cell), 20.3 MB; 132 reached, 8 not reached (Input's Disabled, read-only rather than disabled; the Heatmap's press on a day, which a resting pointer has already opened), flagged `hover-unstable` 36, `press-not-cancelled` 4 (Slider), `error-not-described` 4, `focus-ring-missing` 2, `focus-ring-colour` 1, `focus-ring-hidden` 1 |
+| pages | `audit:web -- --pages --only=template-signin,pattern-glass` | 36 cells (9 sections) in 40 s (6.1 s a cell), 36.3 MB |
+| analysis | `audit:analyze` | 1,424 current cells (1,248 variant, 140 state, 36 page; 252 of them iOS and Android) in 3.9 s: 31 DOM fails, 7,973 texts read against their photographs (all by the painted ink), 47 fail-likely, 55 review, 246 unmeasured (all scrolled out of their scroller's view) |
+| calibration | `audit:calibrate` | 18.8 s over 1,164 web cells (above) |
+| sheets | `audit:sheets` | 970 sheets in 34.7 s, 103.2 MB (109 KB a sheet), tile scales 0.60 to 2.17 px a layout unit (median 1.08), 147 numbered; 39 state sheets for 7 components and 12 page sheets for 2 pages, 8.1 MB |
+| index | `audit:index` | 0.1 s; 13 `index.md`, 2,609 Markdown links (1,578 photographs, 970 sheets) and 1,603 paths in `current.json`, every one resolving (checked by a walker of its own, besides `brokenLinks`) |
+| prune | `audit:prune -- --dry-run` | 3 of 17 runs would go (the first capture of each kind, every cell of which has two newer captures since), 3 entries of the view pointing into them |
 
 The native runner photographs resting examples and pages only, so a state on iOS or Android
-is judged from the web's iOS and Android rows until it gets recipes of its own. The fixer
-loop (1h) is still to come.
+is judged from the web's iOS and Android rows until it gets recipes of its own, and no
+native page capture exists yet to draw a page's device sheet from. The fixer loop (1h) is
+still to come.
 
 A fixer re-captures one component with
 `bun run audit:web -- --only=<slug> --base=http://localhost:8081` against this checkout's
