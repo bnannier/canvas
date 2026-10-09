@@ -12,8 +12,10 @@
 //
 // TextInput also carries the kit's themed focus ring, exactly as the kit's Pressable
 // does (src/style/pressable.tsx): the palette's `ring` colour 2 px off the field, first
-// in the style list, so the browser's own keyboard ring takes the theme's colour on a raw
+// in the style list, so the browser's own ring takes the theme's colour on a raw
 // TextInput while a kit field that paints its own focus border (FOCUS_RESET) still wins.
+// Unlike a control's, a text field's ring shows on every focus, a click included: the
+// browser matches `:focus-visible` on any focus of a field that takes typing.
 // As for Pressable, Chromium paints its automatic ring in that colour, and Firefox and
 // Safari keep their own unless the CSS hand-off's `:focus-visible` rule is loaded.
 // Natively the outline keys draw nothing without a width.

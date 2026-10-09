@@ -4,7 +4,8 @@ import type { Locator, Page, TestInfo } from "@playwright/test";
 import { scanStructure } from "../support/axe";
 import { expect, test } from "../support/fixtures";
 import { gotoDocs, platformRow } from "../support/docs";
-import { ALL_SIDES, rgb, ringShows } from "../support/focus-ring";
+import { ALL_SIDES, rgb, ringlessStops, ringShows } from "../support/focus-ring";
+import { componentRoutes } from "../support/routes";
 import { colorsFor } from "../../src/style/tokens.ts";
 
 async function withDrawerFocusDiagnostics(page: Page, testInfo: TestInfo, run: () => Promise<void>) {
@@ -288,3 +289,114 @@ test("a windowed list's overflowing rows are one keyboard stop, in every engine"
     await expect.poll(() => draws(list)).toBe(false);
   }
 });
+
+test("Tab passes over a disabled field and stops on a read-only one, in every engine", async ({ page }) => {
+  // A disabled field is out of the tab order (the native disabled attribute,
+  // src/style/text-entry-state.ts); a read-only one stays a stop, so its value can still
+  // be reached, selected and copied. The Input page's "Read only or disabled" pair sets
+  // the two side by side, the disabled Don't before the read-only Do.
+  await gotoDocs(page, "/components/input", { scheme: "light" });
+  const disabled = page.getByRole("textbox", { name: "Workspace ID", disabled: true });
+  const readOnly = page.getByRole("textbox", { name: "Workspace ID", disabled: false });
+  await expect(disabled).toHaveCount(1);
+  await expect(readOnly).toHaveCount(1);
+  await expect(disabled).toHaveAttribute("aria-disabled", "true");
+  await expect(readOnly).toHaveAttribute("readonly", "");
+  await expect(readOnly).not.toHaveAttribute("aria-disabled");
+  // Start on the last stop before the disabled field in document order.
+  await disabled.evaluate((field) => {
+    const stops = [...document.querySelectorAll<HTMLElement>("input, textarea, button, select, a[href], [tabindex]")]
+      .filter((node) => node.tabIndex >= 0 && !(node as HTMLInputElement).disabled && node.getClientRects().length > 0
+        && (node.compareDocumentPosition(field) & Node.DOCUMENT_POSITION_FOLLOWING) !== 0);
+    const before = stops.at(-1);
+    if (!before) throw new Error("no keyboard stop precedes the disabled field");
+    before.focus();
+  });
+  await page.keyboard.press("Tab");
+  await expect(readOnly).toBeFocused();
+  // Its text stays selectable for copying.
+  expect(await readOnly.evaluate((field: HTMLInputElement) => {
+    field.select();
+    return field.value.slice(field.selectionStart ?? 0, field.selectionEnd ?? 0);
+  })).toBe("ws_8f2k1");
+});
+
+test("a raw TextInput's keyboard ring is the palette's ring", async ({ page }) => {
+  // The kit's TextInput primitive hands the browser the palette's `ring` and a 2 px offset,
+  // as its Pressable does (src/style/text.tsx), so the ring Tab draws on a raw field is the
+  // theme's, not the browser's default blue.
+  for (const look of [{ scheme: "light", palette: "blush" }, { scheme: "light", palette: "mint" }, { scheme: "dark", palette: "blush" }] as const) {
+    await gotoDocs(page, "/components/text-input", look);
+    const field = platformRow(page, "web").getByRole("textbox", { name: "Your name" });
+    await field.evaluate((node) => {
+      const before = [...document.querySelectorAll<HTMLElement>("[tabindex], input, textarea, button, a[href]")]
+        .filter((other) => other.tabIndex >= 0 && other.getClientRects().length > 0 && (other.compareDocumentPosition(node) & Node.DOCUMENT_POSITION_FOLLOWING) !== 0)
+        .at(-1);
+      before?.focus();
+    });
+    await page.keyboard.press("Tab");
+    await expect(field).toBeFocused();
+    const ring = await field.evaluate((node) => {
+      const style = getComputedStyle(node);
+      return { focusVisible: node.matches(":focus-visible"), color: style.outlineColor, offset: style.outlineOffset, draws: style.outlineStyle !== "none" };
+    });
+    expect(ring, `${look.scheme} ${look.palette}`).toEqual({ focusVisible: true, color: rgb(colorsFor(look.palette, look.scheme).ring), offset: "2px", draws: true });
+  }
+});
+
+test("a zoomable GeoMap's ring goes round the whole chart, clear of its zoom bar, in every engine", async ({ page }) => {
+  // The zoom bar sits over the map's bottom-right corner, so a ring around the map itself
+  // ran under the bar's buttons. The chart's surface draws it instead, outside its own
+  // edge, around the title, the map and the bar alike (src/style/focus-frame.tsx).
+  await gotoDocs(page, "/components/geo-map/zoomable", { scheme: "light", viewport: { width: 1280, height: 900 } });
+  const web = platformRow(page, "web");
+  const chart = web.getByRole("group", { name: "Sessions by city chart" });
+  const map = chart.getByRole("img", { name: /Sessions by city/ });
+  await expect(chart).toHaveCount(1);
+  await web.getByRole("button", { name: "Zoom out" }).evaluate((zoomOut) => {
+    // Start on the last stop before the map, so Tab lands on it.
+    const map = zoomOut.closest('[role="group"]')!.querySelector<HTMLElement>('[role="img"]')!;
+    const before = [...document.querySelectorAll<HTMLElement>("[tabindex], input, textarea, button, a[href]")]
+      .filter((node) => node.tabIndex >= 0 && node.getClientRects().length > 0 && (node.compareDocumentPosition(map) & Node.DOCUMENT_POSITION_FOLLOWING) !== 0)
+      .at(-1);
+    before?.focus();
+  });
+  await page.keyboard.press("Tab");
+  await expect(map).toBeFocused();
+  const ring = rgb(colorsFor("blush", "light").ring);
+  await chart.evaluate((node) => node.scrollIntoView({ block: "center" }));
+  await expect.poll(() => ringShows(page, chart, ring)).toEqual(ALL_SIDES);
+  // The map draws none of its own, so no ring line runs under the bar.
+  expect(await map.evaluate((node) => {
+    const style = getComputedStyle(node);
+    return style.outlineStyle === "auto" || (style.outlineStyle !== "none" && parseFloat(style.outlineWidth) > 0);
+  })).toBe(false);
+});
+
+// The kit has one focus ring (src/style/pressable.tsx, src/style/focus-frame.tsx): a
+// control the browser rings takes the palette's `ring`, a field that paints its own focus
+// state turns its border `ring`, and a node whose own ring cannot show hands it to the
+// frame around it. A control that bypasses all three (a raw scroller left to the browser's
+// own colour, a focus halo in another token, a state border the glass material clears, an
+// errored field whose red edge is its only state) leaves a keyboard user a cue in the
+// wrong colour or none at all. So every keyboard stop on every component page must show
+// one in `ring` when Tab lands on it: in the solid look and under glass, where a state
+// border has to stay over the material, and in two palettes whose `primary` sits apart
+// from `ring` by different amounts. It shows it once: a box that keeps its state border
+// while an overlay draws it again just inside reads as a doubled, 2 px ring.
+const SWEEP_LOOKS = [
+  { scheme: "light", surface: "solid", palette: "blush" },
+  { scheme: "light", surface: "glass", palette: "mint" },
+] as const;
+for (const route of componentRoutes()) {
+  test(`every keyboard stop on ${route.path} shows the kit's ring`, async ({ page }) => {
+    for (const look of SWEEP_LOOKS) {
+      await gotoDocs(page, route.path, look);
+      const { stops, ringless, doubled } = await ringlessStops(page, rgb(colorsFor(look.palette, look.scheme).ring));
+      const where = `${look.scheme} ${look.surface} ${look.palette}`;
+      expect(stops, `${route.path} (${where}) has a keyboard stop`).toBeGreaterThan(0);
+      expect(ringless, `stops on ${route.path} (${where}) whose focus shows no ring:\n${ringless.map((s) => `  ${s.stop}: outline ${s.outline}`).join("\n")}`).toEqual([]);
+      expect(doubled, `stops on ${route.path} (${where}) whose focus draws its ring twice:\n${doubled.map((s) => `  ${s.stop}: ${s.borders.join(" and ")}`).join("\n")}`).toEqual([]);
+    }
+  });
+}

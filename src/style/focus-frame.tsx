@@ -125,6 +125,28 @@ export function useFocusFrame(): FocusFrame {
 }
 
 /**
+ * The frame's handlers for a framed node that tracks its own focus too (a text field,
+ * whose border follows its focus): the node's focus and blur handlers run after the
+ * frame's. Spread the result in place of `target`, and compose `target.ref` with the
+ * node's own ref.
+ */
+export function frameHandlers<E>(target: FocusFrameTarget, own: { onFocus: (event: E) => void; onBlur: (event: E) => void }) {
+  const frame = target as unknown as Record<"onKeyUp" | "onPointerDown" | "onFocus" | "onBlur", (event: unknown) => void>;
+  return {
+    onKeyUp: frame.onKeyUp,
+    onPointerDown: frame.onPointerDown,
+    onFocus(event: E) {
+      frame.onFocus(event);
+      own.onFocus(event);
+    },
+    onBlur(event: E) {
+      frame.onBlur(event);
+      own.onBlur(event);
+    },
+  };
+}
+
+/**
  * The frame's `target`, for a framed node that another component renders: an option
  * list's scrollport inside the overlay card that frames it. Null where nothing frames
  * the node, which then wears its own ring.

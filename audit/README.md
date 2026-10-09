@@ -857,8 +857,9 @@ development app installed.
   only resting examples, none of which opens a portaled overlay, so the Android sweep shows
   that frost nowhere yet.
 
-  The black ring was a kit defect, not a capture artifact, and the pane fix closes it:
-  Chip read its paint from `useMaterialTheme`, which demotes the surface to solid, but its
+  The black ring was a kit defect, not a capture artifact, and the pane fix below removes
+  its cause in source; no Android capture has confirmed it yet (see the pending re-run at
+  the end of this note). Chip read its paint from `useMaterialTheme`, which demotes the surface to solid, but its
   `GlassPane` read `useTheme()`, still saw glass, and mounted a `GlassSurface` that
   resolved solid and painted the pane's own shape as a plain view. That shape is the
   skin's `base` (`androidBase` in `src/atoms/chip/chip.styles.ts`), which carries
@@ -869,8 +870,11 @@ development app installed.
   (`isGlass` of the theme `useMaterialTheme` returned), not because of the shape it
   passes. A GlassPane now reads the same resolution as its host
   (`useMaterialResolution` in `src/style/glass-surface/use-material-theme.ts`) and renders
-  nothing where it resolves solid, and `test/material-solid-fallback.test.tsx` holds every
-  pane host to the solid markup wherever requested glass cannot render.
+  nothing where it resolves solid. `test/material-solid-fallback.test.tsx` holds every
+  pane host to the solid markup wherever requested glass cannot render (the web stand-in:
+  a browser without a backdrop filter), and `test/material-resolution.test.tsx` renders a
+  pane host with Android's capabilities: no pane while no capture target is ready, the
+  frost once one is.
 
   **Android's glass column equals solid outside overlays, by design.** An in-page Android
   surface has no capture plane it may safely sample, so with glass requested it resolves
@@ -880,6 +884,12 @@ development app installed.
   an overlay outlet with a capture target or in a Modal sheet that bridges the window
   target (Popover, the option menus, Drawer, ActionSheet), and only once a capture opens
   one.
+
+  **Pending: the Android re-capture.** The expectation above rests on source and unit
+  tests; the cells measured above predate the fix. It is confirmed only by
+  `bun run audit:native -- --platform=android --only=chip,badge,kbd,switch,input,card,alert,checkbox,radio,steps --dev`
+  and the glass-versus-solid comparison above, which have not been run since: until they
+  are, the black ring and the doubled hairlines stay open on Android.
 - **Pages.** `pattern-glass` and `template-signin` in dark glass: iOS 2,350 points of the
   sign-in page in 4 segments, Android 2,075 dp in 3, stitched without a seam; 8 s a page on
   iOS and 25 s on Android (each segment is two grabs).

@@ -1,7 +1,7 @@
 import type { Locator, Page } from "@playwright/test";
 import { colorsFor } from "../../src/style/tokens.ts";
 import { BLOCKING_IMPACTS, scan, scanStructure } from "../support/axe";
-import { gotoDocs } from "../support/docs";
+import { gotoDocs, platformRow } from "../support/docs";
 import { ALL_SIDES, rgb, ringShows } from "../support/focus-ring";
 import { expect, test } from "../support/fixtures";
 
@@ -344,5 +344,31 @@ for (const scheme of ["light", "dark"] as const) {
     const findings = await scan(page, "body");
     expect(findings.filter((finding) => BLOCKING_IMPACTS.has(finding.impact))).toEqual([]);
     expect(await scanStructure(page, "body", ["page-has-heading-one", "scrollable-region-focusable"])).toEqual([]);
+  });
+}
+
+for (const scheme of ["light", "dark"] as const) {
+  test(`a raw ScrollView with nothing focusable inside takes the palette's ring on every side (${scheme})`, async ({ page }) => {
+    // Chromium makes an overflowing scroller with nothing focusable inside it a keyboard
+    // stop and draws its own ring there. The kit's ScrollView primitive hands it the
+    // palette's `ring` 2 px off the scroller (src/style/scroll-view.tsx), and nothing on
+    // the docs page clips it.
+    await gotoDocs(page, "/components/scroll-view", { scheme, viewport: { width: 1280, height: 900 } });
+    // The example's scroller is the web row's one stop, with no tab index of its own: the
+    // browser makes it one. Tab reaches it from the preview's last form-factor tab, past
+    // the iOS and Android rows' scrollers.
+    const web = platformRow(page, "web");
+    const scroller = web.locator(":focus");
+    await page.getByRole("tab", { name: "Full width" }).focus();
+    for (let k = 0; k < 10 && (await scroller.count()) === 0; k++) await page.keyboard.press("Tab");
+    await expect(scroller).toHaveCount(1);
+    expect(await scroller.getAttribute("tabindex")).toBeNull();
+    const ring = rgb(colorsFor("blush", scheme).ring);
+    expect(await scroller.evaluate((node) => {
+      const style = getComputedStyle(node);
+      return { focusVisible: node.matches(":focus-visible"), color: style.outlineColor, offset: style.outlineOffset };
+    })).toEqual({ focusVisible: true, color: ring, offset: "2px" });
+    await scroller.evaluate((node) => node.scrollIntoView({ block: "center" }));
+    await expect.poll(() => ringShows(page, scroller, ring)).toEqual(ALL_SIDES);
   });
 }

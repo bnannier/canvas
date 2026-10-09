@@ -9,9 +9,9 @@ Audit checklist for `/components/scroll-view`. The facts block and the variants 
 | Category | Atoms (`src/atoms/scroll-view/`) |
 | Markdown | `src/atoms/scroll-view/scroll-view.md` |
 | Source files | `scroll-view.md` |
-| Implementation | React Native's own `ScrollView`, re-exported from `src/style/primitives.ts`; the kit has no source of its own for it, and `src/atoms/scroll-view/` holds only its markdown |
+| Implementation | declared in `src/style/scroll-view.tsx`, which imports React Native's own `ScrollView`; `src/atoms/scroll-view/` holds only its markdown |
 | Exports | ScrollView |
-| Platform entries | none in the kit: React Native's own `ScrollView`, imported the same way on every platform |
+| Platform entries | none (`src/style/scroll-view.tsx` is one build on every platform) |
 | Platform-skins registry | none (every export is the web build, so the docs three-up renders it as is) |
 | Reference row | none: `PLATFORM-REFERENCES.md` has no row for this component (K8) |
 | Materials manifest | ScrollView: style, inherited; verification inherited-composition, semantic-state |
@@ -20,12 +20,11 @@ Audit checklist for `/components/scroll-view`. The facts block and the variants 
 | Hand-off metric gaps | none |
 | Interactions registry | in the inventory; evidence: none registered |
 | Overlay recipe | none |
-| Interaction states | static: A scroll container whose examples render no tab stop; its keyboard stop and ring, where content overflows, are e2e/behavior/scroll-focus.e2e.ts's. |
-| MeasureProps | not applicable: the kit has no source of its own for it |
-| Touch target | not applicable: the kit has no source of its own for it |
-| Tests importing it | 0: none |
-| E2E naming it | 0: none |
-| E2E catalog sweeps | 6: `e2e/a11y/components.e2e.ts` (componentRoutes), `e2e/responsive/component-widths.e2e.ts` (contentRoutes, componentRoutes), `e2e/smoke/examples.e2e.ts` (componentExamples), `e2e/smoke/routes.e2e.ts` (allRoutes), `e2e/visual/components.e2e.ts` (componentRoutes), `e2e/visual/materials.e2e.ts` (MATERIAL_ROUTES) |
+| MeasureProps | not adopted |
+| Touch target | no touch-target name (the exports of `src/style/touch-target.ts`, `src/style/touch-target-seed.ts`, `src/style/touch-seam.ts`, `src/style/clip-slop.ts`, the `TouchTargetSkin` fields, or `hitSlop`) in its implementation modules |
+| Tests importing it | 1: `test/focus-ring.test.tsx` |
+| E2E naming it | 1: `e2e/behavior/scroll-focus.e2e.ts` |
+| E2E catalog sweeps | 7: `e2e/a11y/components.e2e.ts` (componentRoutes), `e2e/journeys/keyboard.e2e.ts` (componentRoutes), `e2e/responsive/component-widths.e2e.ts` (contentRoutes, componentRoutes), `e2e/smoke/examples.e2e.ts` (componentExamples), `e2e/smoke/routes.e2e.ts` (allRoutes), `e2e/visual/components.e2e.ts` (componentRoutes), `e2e/visual/materials.e2e.ts` (MATERIAL_ROUTES) |
 <!-- audit:facts:end -->
 
 ## Variants

@@ -11,8 +11,9 @@
 // makes the ring a solid 2 px `--ring` in every browser wherever it is loaded. A control
 // that paints its own focus state (a field border, a segment) spreads FOCUS_RESET, which
 // still wins. Natively the outline keys draw nothing without a width, so there is no
-// native ring: iOS and Android own focus on their side. The kit's TextInput primitive
-// (src/style/text.tsx) carries the same ring, so a raw text field takes it too.
+// native ring: iOS and Android own focus on their side. The kit's TextInput and
+// ScrollView primitives (src/style/text.tsx, src/style/scroll-view.tsx) carry the same
+// ring, so a raw text field and a scroller the browser makes a keyboard stop take it too.
 //
 // It also gives a link its Enter key on the web (see useLinkEnter below).
 

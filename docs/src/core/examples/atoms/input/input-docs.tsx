@@ -44,7 +44,7 @@ export const docs: ComponentDocs = {
     { label: "Card number", code: "<Input label=\"Card Number\" trailingIcon icon=\"creditCard\" placeholder=\"•••• •••• •••• ••••\" keyboardType=\"number-pad\" autoComplete=\"cc-number\" textContentType=\"creditCardNumber\" />", render: e_atoms_input_example_12 },
     { label: "Error", code: "<Input error placeholder=\"rachel.chen@example.com\" />", render: e_atoms_input_example_13 },
     { label: "Disabled", code: "<Input disabled placeholder=\"rachel.chen@example.com\" />", render: e_atoms_input_example_14 },
-    { label: "Read only", code: "<Input readOnly defaultValue=\"rachel.chen@example.com\" />", render: e_atoms_input_example_15 },
+    { label: "Read only", code: "<Input readOnly accessibilityLabel=\"Email\" defaultValue=\"rachel.chen@example.com\" />", render: e_atoms_input_example_15 },
     { label: "Measure", code: "<Column snug>\n  <Input xs start placeholder=\"xs step, pinned to the start (320)\" />\n  <Input lg start placeholder=\"lg step, pinned to the start (512)\" />\n  <Container lg start><Input placeholder=\"Bare, in an lg Container: fills it (512)\" /></Container>\n</Column>", render: e_atoms_input_example_16 },
   ],
   donts: [

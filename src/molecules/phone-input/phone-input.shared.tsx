@@ -21,13 +21,12 @@ import {
   type MeasureProps,
   type ViewStyle,
   GlassPane,
-  paneStyle,
-  isGlass,
   withInnerFill,
   alpha,
 } from "../../style/index.js";
 import { OverlayScrollView } from "../../style/overlay-scroll.js";
 import { useComposedRefs } from "../../style/use-composed-refs.js";
+import { frameHandlers, useFocusFrame } from "../../style/focus-frame.js";
 import { LISTBOX } from "../../style/listbox-role.js";
 import { root, rootLifted, PANEL_ANCHOR } from "../../atoms/select/select.styles.js";
 import { type TextEntryProps } from "../../atoms/input/input.shared.js";
@@ -139,9 +138,9 @@ export function createPhoneInput(skin: PhoneInputSkin) {
     // GlassPane paints behind the country segment and editor. Clear web fields
     // paint their active/error outline in the foreground, outside the lens's
     // sampled backdrop. Native fields retain the original border owner. The box
-    // keeps only its STATE border (focus, error) over it, an errored box tints the
-    // pane, and the country segment's `muted` fill becomes an ink tint.
-    const glass = isGlass(theme);
+    // keeps only its STATE border (focus, error) over it, drawn once (`stateSurface`),
+    // an errored box tints the pane, and the country segment's `muted` fill becomes an
+    // ink tint.
     const widthCap = useFillStyle("PhoneInput", props);
     const labelId = useId();
     const listId = `${labelId}-countries`;
@@ -171,7 +170,11 @@ export function createPhoneInput(skin: PhoneInputSkin) {
     // The number field's own ref beside the forwarded one, so picking a country can
     // hand focus back to the number.
     const numberRef = useRef<RNTextInput>(null);
-    const hostRef = useComposedRefs(numberRef, ref);
+    // An errored box's border shows the error, not the number field's focus, so the box
+    // wears the kit's ring while the number field has keyboard focus
+    // (src/style/focus-frame.tsx), as an errored Input's group box does.
+    const errorFrame = useFocusFrame();
+    const hostRef = useComposedRefs(numberRef, ref, errorFrame.target.ref);
     // The whole box anchors the list (the trigger's measured width is its minimum).
     const boxRef = useRef<View>(null);
     const { width: boxWidth, onLayout: onBoxLayout } = useMeasuredWidth();
@@ -194,12 +197,12 @@ export function createPhoneInput(skin: PhoneInputSkin) {
     const ripple = field.ripple ? field.ripple(tokens) : undefined;
 
     const boxShape = field.groupContainer(tokens, borderColor, active, isError);
-    const glassBox: ViewStyle | null = glass ? { backgroundColor: "transparent", borderColor: (active || isError) && !entryMaterial.foregroundStateBorder ? tokens[borderColor] : "transparent" } : null;
+    const boxSurface = entryMaterial.stateSurface(boxShape, active || isError);
     const box = (
       <View
         ref={boxRef}
         onLayout={onBoxLayout}
-        style={[paneStyle(theme, boxShape, active || isError), { minHeight: field.groupedHeight(size) }, glassBox]}
+        style={[boxSurface.style, { minHeight: field.groupedHeight(size) }, isError ? errorFrame.ring() : null]}
       >
         <GlassPane {...entryMaterial.paneProps} shape={boxShape} tint={isError ? alpha(tokens.destructive, 0.18) : undefined} />
         <Pressable
@@ -253,14 +256,16 @@ export function createPhoneInput(skin: PhoneInputSkin) {
             onSubmitEditing={props.onSubmitEditing}
             onKeyPress={props.onKeyPress}
             testID={props.testID}
-            onFocus={(e: Parameters<NonNullable<RNTextInputProps["onFocus"]>>[0]) => {
-              setFocused(true);
-              props.onFocus?.(e);
-            }}
-            onBlur={(e: Parameters<NonNullable<RNTextInputProps["onBlur"]>>[0]) => {
-              setFocused(false);
-              props.onBlur?.(e);
-            }}
+            {...frameHandlers(errorFrame.target, {
+              onFocus: (e: Parameters<NonNullable<RNTextInputProps["onFocus"]>>[0]) => {
+                setFocused(true);
+                props.onFocus?.(e);
+              },
+              onBlur: (e: Parameters<NonNullable<RNTextInputProps["onBlur"]>>[0]) => {
+                setFocused(false);
+                props.onBlur?.(e);
+              },
+            })}
             aria-invalid={isError || undefined}
             aria-required={required || undefined}
             accessibilityLabel={accessibleName}
@@ -269,7 +274,7 @@ export function createPhoneInput(skin: PhoneInputSkin) {
             aria-describedby={props["aria-describedby"]}
           />
         </View>
-        {entryMaterial.stateBorder(boxShape, active || isError)}
+        {boxSurface.border}
       </View>
     );
 

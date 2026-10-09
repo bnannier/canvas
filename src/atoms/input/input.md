@@ -101,7 +101,7 @@ Cancelling an IME candidate keeps the overlay open.
 ### Read only
 
 ```tsx
-<Input readOnly defaultValue="rachel.chen@example.com" />
+<Input readOnly accessibilityLabel="Email" defaultValue="rachel.chen@example.com" />
 ```
 
 ### Measure

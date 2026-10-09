@@ -13,15 +13,16 @@
 // Text and TextInput are RN's own components wrapped once, in src/style/text.tsx,
 // so the theme's registered typefaces (ThemeProvider `fonts`) reach every kit label
 // without a fontFamily at any call site. Pressable is wrapped the same way, in
-// src/style/pressable.tsx, so the palette's `ring` colours every keyboard focus ring.
-// Their prop types are still RN's.
+// src/style/pressable.tsx, so the palette's `ring` colours every keyboard focus ring,
+// and so is ScrollView, in src/style/scroll-view.tsx, since a scroller the browser
+// makes a keyboard stop of its own takes the same ring. Their prop types are still RN's.
 
 export { Text, TextInput } from "./text.js";
 export { Pressable } from "./pressable.js";
+export { ScrollView } from "./scroll-view.js";
 
 export {
   View,
-  ScrollView,
   StyleSheet,
   type ViewProps,
   type TextProps,

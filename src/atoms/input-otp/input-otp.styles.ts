@@ -5,14 +5,13 @@ import { type InputOTPSkin, type Size } from "./input-otp.shared.js";
 
 // Co-located InputOTP skins, one per platform, all driven by the brand tokens
 // (passed in from useTheme so they follow light/dark). The BRAND survives on every
-// platform: the active/focused cell always lights up in the indigo `primary`/`ring`,
-// never a platform default (no iOS system blue, no M3 default). Only the native
+// platform: the active/focused cell always lights up in `ring`, the kit's one focus
+// colour, never a platform default (no iOS system blue, no M3 default). Only the native
 // SHAPE, sizing, and structure of the segmented field change per OS:
-//   iOS (HIG): rounded-square cells (the 8 field radius) on a `secondary` field fill, SEPARATED
-//     by a small gap; the active cell is ring-highlighted in `primary` (a 2pt brand
-//     border). Base cell ~44x52.
+//   iOS (HIG): rounded-square cells (the 8 field radius) on the `card` fill, SEPARATED
+//     by a small gap; the active cell's 1pt border turns `ring`. Base cell ~44x52.
 //   Android (Material 3): OUTLINED cells (1dp `border`), SEPARATED by a gap, M3 medium
-//     corner (~12 radius); the active cell border thickens to 2dp in `primary`. M3 type
+//     corner (~12 radius); the active cell border thickens to 2dp in `ring`. M3 type
 //     scale. Base cell ~52x56.
 //   Web: the established Canvas look, matched to shadcn input-otp — a CONNECTED group of
 //     bordered cells that share borders (gap 0), only the outer corners rounded (md/6),
@@ -122,7 +121,7 @@ export const iosSkin: InputOTPSkin = {
   disabledOpacity: 0.5,
 };
 
-// ---------- Android (Material 3): outlined cells, separated, 2dp primary on active ----------
+// ---------- Android (Material 3): outlined cells, separated, 2dp ring on active ----------
 const M3_RADIUS = 12; // M3 medium-component corner
 const M3_W: Record<Size, number> = { small: 44, base: 52, large: 60 };
 const M3_H: Record<Size, number> = { small: 48, base: 56, large: 64 };
@@ -136,9 +135,10 @@ export const androidSkin: InputOTPSkin = {
     height: M3_H[size],
     borderRadius: M3_RADIUS,
     backgroundColor: "transparent",
-    // M3 outlined field: 1dp outline at rest, thickening to a 2dp brand outline when active.
+    // M3 outlined field: 1dp outline at rest, thickening to a 2dp outline when active, in
+    // `ring`, the kit's one focus colour (the web and iOS cells' too).
     borderWidth: active ? 2 : 1,
-    borderColor: active ? t.primary : t.border,
+    borderColor: active ? t.ring : t.border,
   }),
   // M3 title-role digit scale (see androidDigitText).
   digit: androidDigitText,

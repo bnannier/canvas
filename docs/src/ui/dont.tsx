@@ -21,7 +21,10 @@ export function DoDontCard({ dont, caption, code, children }: DoDontCardProps) {
       <Badge destructive={dont} success={!dont}>{dont ? "Don’t" : "Do"}</Badge>
       {children === undefined ? null : (
         <View
-          {...(Platform.OS === "web" ? ({ dataSet: { previewStage: "" } } as object) : null)}
+          // A Don't specimen shows an anti-pattern on purpose (a field with its focus ring
+          // switched off, say), so the e2e checks that hold every example to the kit's rules
+          // find it by its own web-only tooling attribute and pass over it.
+          {...(Platform.OS === "web" ? ({ dataSet: dont ? { previewStage: "", dontSpecimen: "" } : { previewStage: "" } } as object) : null)}
           // An intentional bad example may overflow; contain only that specimen.
           style={dont ? { overflow: "hidden" } : undefined}
         >
