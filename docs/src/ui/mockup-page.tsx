@@ -1,9 +1,11 @@
 import { useEffect } from "react";
+import { Platform } from "react-native";
 import { usePathname } from "expo-router";
-import { Card, Column, Container, Typography } from "@nannier/canvas";
+import { Card, Column, Container, Typography, View } from "@nannier/canvas";
 import { Page } from "./page";
 import { PageNav } from "./page-nav";
 import { useAuditProbe } from "../audit/probe-context";
+import { variantSlug } from "../lib/variant";
 import type { DocSection } from "../core/data/types";
 
 // A shared reading layout around live Canvas patterns and templates. The render
@@ -24,12 +26,20 @@ export function MockupDocPage({ name, description, sections }: { name: string; d
             <Typography lead muted>{description}</Typography>
           </Column>
           {sections.map((section) => (
-            <Column key={section.title} cozy>
-              <Typography h2>{section.title}</Typography>
-              {section.description ? <Typography small muted>{section.description}</Typography> : null}
-              {section.anatomy ? <Card compact><Typography small><Typography semibold>Anatomy. </Typography>{section.anatomy}</Typography></Card> : null}
-              <Card>{section.render()}</Card>
-            </Column>
+            // Marks each section for tooling: the audit's page capture
+            // (e2e/audit/pages.audit.ts) finds and photographs a section by this key,
+            // its title slugified the way the audit inventory keys a section
+            // (tools/audit/inventory.ts `sectionKeys`). Web-only attribute, the same as
+            // the page scroller's mark in ./page.tsx; on native the wrapper is a plain
+            // View that lays out exactly as the section alone would.
+            <View key={section.title} {...(Platform.OS === "web" ? ({ dataSet: { mockupSection: variantSlug(section.title) } } as object) : null)}>
+              <Column cozy>
+                <Typography h2>{section.title}</Typography>
+                {section.description ? <Typography small muted>{section.description}</Typography> : null}
+                {section.anatomy ? <Card compact><Typography small><Typography semibold>Anatomy. </Typography>{section.anatomy}</Typography></Card> : null}
+                <Card>{section.render()}</Card>
+              </Column>
+            </View>
           ))}
           <PageNav />
         </Column>

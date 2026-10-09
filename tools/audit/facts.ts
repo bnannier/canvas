@@ -43,7 +43,7 @@ import { materialCoverage } from "../materials/manifest.ts";
 import { componentSkins, hasPlatformBuilds, resolveSource, traceExport, type ComponentSkins, type Platform as SkinPlatform } from "../skins/divergence.ts";
 import { registeredSkins } from "../skins/registry.ts";
 import { ModuleGraph, NOT_HANDLED, PathUnder, resolveModule, within, type Intercept } from "./hosts.ts";
-import type { InventoryPage } from "./inventory.ts";
+import { pageModule, pageSections, type InventoryPage } from "./inventory.ts";
 import { StaticReader, isValueRead, outermost, unwrap, type Binding } from "./static-eval.ts";
 import { catalogIntercept, insideFunctionNamed, navigationRoute, readSweeps, type Sweep } from "./sweeps.ts";
 import { splitRow, type TableShape } from "./table.ts";
@@ -1206,32 +1206,6 @@ export function componentFacts(slug: string, corpus: FactsCorpus): ComponentFact
   };
 }
 
-/** The `title` of each entry in the `sections` array of the object literal whose `slug` is the page's. */
-export function pageSections(file: string, source: string, slug: string): string[] {
-  const sf = parse(file, source);
-  const stringOf = (node: ts.ObjectLiteralExpression, key: string): string | null => {
-    for (const property of node.properties) {
-      if (!ts.isPropertyAssignment(property) || property.name.getText(sf) !== key) continue;
-      return ts.isStringLiteral(property.initializer) || ts.isNoSubstitutionTemplateLiteral(property.initializer) ? property.initializer.text : null;
-    }
-    return null;
-  };
-  let titles: string[] | null = null;
-  const visit = (node: ts.Node): void => {
-    if (titles) return;
-    if (ts.isObjectLiteralExpression(node) && stringOf(node, "slug") === slug) {
-      const sections = node.properties.find((p): p is ts.PropertyAssignment => ts.isPropertyAssignment(p) && p.name.getText(sf) === "sections");
-      if (sections && ts.isArrayLiteralExpression(sections.initializer)) {
-        titles = sections.initializer.elements.flatMap((element) => (ts.isObjectLiteralExpression(element) ? [stringOf(element, "title") ?? "(untitled)"] : []));
-        return;
-      }
-    }
-    ts.forEachChild(node, visit);
-  };
-  visit(sf);
-  return titles ?? [];
-}
-
 /**
  * The kit names a page's own entry uses: the object literal in its data module whose
  * `slug` is the page's, read with the static reader's scope rules. Every name its code
@@ -1282,7 +1256,7 @@ export function pageKitNames(file: string, source: string, slug: string): string
 }
 
 export function pageFacts(page: InventoryPage, corpus: FactsCorpus): PageFacts {
-  const module = page.kind === "pattern" ? "docs/src/core/data/patterns.tsx" : `docs/src/core/data/templates/${page.slug}.tsx`;
+  const module = pageModule(page.kind, page.slug);
   const source = readFileSync(join(corpus.root, module), "utf8");
   return {
     kind: page.kind,

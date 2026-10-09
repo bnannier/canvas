@@ -8,11 +8,15 @@
 // the docs' own nav config and each component's markdown, so the inventory cannot
 // drift from what the docs app serves. No React Native import: the docs' pattern and
 // template data modules compose real kit components, so this reads the nav config and
-// markdown the way the e2e suite does, and runs under plain bun.
+// markdown the way the e2e suite does, reads a page's sections out of its data module's
+// source (`pageSections`), and runs under plain bun.
 
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
+import ts from "typescript";
 import { COMPONENTS } from "../../docs/src/core/data/components.ts";
 import type { Category } from "../../docs/src/core/data/types.ts";
-import { componentExamples, contentRoutes, variantSlug } from "../../e2e/support/routes.ts";
+import { ROOT, componentExamples, contentRoutes, variantSlug } from "../../e2e/support/routes.ts";
 
 /** The three looks: the two light palettes and Dark Factory's one dark palette. */
 export const LOOKS = ["blush", "mint", "dark"] as const;
@@ -70,6 +74,14 @@ export interface InventoryPage {
   /** The checklist and capture directory name: `<kind>-<slug>`. */
   id: string;
   route: string;
+  /** The docs data module that composes the page, repo-relative. */
+  module: string;
+  /**
+   * The sections the page renders, in order: each title and its key (`sectionKeys`), which
+   * names the section's checklist row and its capture (the docs mark each section on the
+   * web with the same key, docs/src/ui/mockup-page.tsx).
+   */
+  sections: { key: string; title: string }[];
 }
 
 /** Every component page with its example variants, in docs order. */
@@ -93,11 +105,55 @@ export function components(): InventoryComponent[] {
   });
 }
 
-/** Every pattern and template page, in docs order. */
+/** Every pattern and template page, in docs order, with its sections. */
 export function pages(): InventoryPage[] {
   return contentRoutes()
     .filter((route): route is typeof route & { kind: PageKind } => route.kind === "pattern" || route.kind === "template")
-    .map((route) => ({ kind: route.kind, slug: route.name, id: `${route.kind}-${route.name}`, route: route.path }));
+    .map((route) => {
+      const kind = route.kind;
+      const slug = route.name;
+      const id = `${kind}-${slug}`;
+      const module = pageModule(kind, slug);
+      const titles = pageSections(module, readFileSync(join(ROOT, module), "utf8"), slug);
+      const keys = sectionKeys(id, titles);
+      return { kind, slug, id, route: route.path, module, sections: titles.map((title, i) => ({ key: keys[i]!, title })) };
+    });
+}
+
+/** The docs data module a pattern or template page renders from, repo-relative. */
+export function pageModule(kind: PageKind, slug: string): string {
+  return kind === "pattern" ? "docs/src/core/data/patterns.tsx" : `docs/src/core/data/templates/${slug}.tsx`;
+}
+
+/**
+ * The `title` of each entry in the `sections` array of the object literal whose `slug` is
+ * the page's, read from the data module's source: the modules compose real kit components,
+ * so they are parsed, never imported. A section without a literal title reads
+ * `(untitled)`; a page with no such entry has no sections.
+ */
+export function pageSections(file: string, source: string, slug: string): string[] {
+  const sf = ts.createSourceFile(file, source, ts.ScriptTarget.Latest, true, file.endsWith("x") ? ts.ScriptKind.TSX : ts.ScriptKind.TS);
+  const stringOf = (node: ts.ObjectLiteralExpression, key: string): string | null => {
+    for (const property of node.properties) {
+      if (!ts.isPropertyAssignment(property) || property.name.getText(sf) !== key) continue;
+      return ts.isStringLiteral(property.initializer) || ts.isNoSubstitutionTemplateLiteral(property.initializer) ? property.initializer.text : null;
+    }
+    return null;
+  };
+  let titles: string[] | null = null;
+  const visit = (node: ts.Node): void => {
+    if (titles) return;
+    if (ts.isObjectLiteralExpression(node) && stringOf(node, "slug") === slug) {
+      const sections = node.properties.find((p): p is ts.PropertyAssignment => ts.isPropertyAssignment(p) && p.name.getText(sf) === "sections");
+      if (sections && ts.isArrayLiteralExpression(sections.initializer)) {
+        titles = sections.initializer.elements.flatMap((element) => (ts.isObjectLiteralExpression(element) ? [stringOf(element, "title") ?? "(untitled)"] : []));
+        return;
+      }
+    }
+    ts.forEachChild(node, visit);
+  };
+  visit(sf);
+  return titles ?? [];
 }
 
 /** The key of a page's whole-page row, ahead of its section rows. */

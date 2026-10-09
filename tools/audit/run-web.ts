@@ -1,17 +1,25 @@
 #!/usr/bin/env bun
-// `bun run audit:web`: the component audit's web capture (plan 1c). Plans the cells from
-// the inventory and the flags, makes the run directory
+// `bun run audit:web`: the component audit's web capture (plans 1c and 1d). Plans the
+// cells from the inventory, the state recipes and the flags, makes the run directory
 // `.audit/runs/<stamp>-web-<sha7>/`, runs the Playwright capture
-// (playwright.audit.config.ts, e2e/audit/variants.audit.ts), and writes the run's
-// manifest.json beside the cells.jsonl the cells append to, then prints a summary.
+// (playwright.audit.config.ts, e2e/audit/{variants,states,pages}.audit.ts), and writes the
+// run's manifest.json beside the cells.jsonl the cells append to, then prints a summary.
 //
 //   bun run audit:web                                every component, all 18 cells per variant
 //   bun run audit:web -- --only=button,dialog        two components
 //   bun run audit:web -- --only=button --variants=default,primary --looks=dark --surfaces=solid --widths=phone
+//   bun run audit:web -- --states                    every interaction state instead of the variants
+//   bun run audit:web -- --states=hover,open --only=button,dialog
+//   bun run audit:web -- --pages                     every pattern and template page instead
+//   bun run audit:web -- --pages --only=template-signin,pattern-glass
+//   bun run audit:web -- --states --pages            both (the variants are captured only when neither is asked for)
 //   bun run audit:web -- --axe=all | --axe=none | --axe=phone,tablet,desktop   (default: solid at phone,desktop)
 //   bun run audit:web -- --base=http://localhost:8081   capture a running server (Metro) instead of docs/dist
 //   bun run audit:web -- --workers=4
 //   bun run audit:web -- --allow-stale                capture another checkout's source anyway
+//
+// `--only` names components for the variants and the states and pages for the pages (by id,
+// `template-signin`, or slug, `signin`); `--variants` narrows the variants only.
 //
 // Only this checkout's source is captured. The capture's global setup
 // (e2e/audit/global-setup.ts) opens /testing/diagnostics on the server the cells really hit
@@ -27,38 +35,52 @@
 // the launch switches) are read off playwright.audit.config.ts and e2e/support/docs.ts
 // FIXED_TIME, the same objects the capture runs with.
 //
-// Exit status: 0 when every planned cell was captured, 1 when a cell failed or the
-// capture stopped early, 2 for a refusal or a usage error.
+// Exit status: 0 when every planned cell was captured (a state not reached is captured:
+// its reason is the record), 1 when a cell failed or the capture stopped early, 2 for a
+// refusal or a usage error.
 
 import { spawn, execFileSync } from "node:child_process";
 import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { join, relative } from "node:path";
 import { ROOT } from "../../e2e/support/routes.ts";
-import { components } from "./inventory.ts";
+import { stateSpecsOf } from "../../e2e/support/state-recipes.ts";
+import { components, pages } from "./inventory.ts";
 import {
   AUDIT_ENV,
   CELLS_FILE,
   MANIFEST_FILE,
+  PAGES_DIR,
   RUNS_DIR,
   SERVED_FILE,
+  STATES_DIR,
   captureSettings,
   describeAxe,
+  describeKinds,
   describeServed,
+  parseKinds,
   parseRunArgs,
   parseWebFilters,
+  planPageCapture,
+  planStateCapture,
   planWebCapture,
   readCellRecords,
   runDirName,
+  splitOnly,
   summarizeCells,
   workersFrom,
+  type CaptureKinds,
   type CaptureSettings,
   type CellSummary,
+  type PagePlan,
   type ServedRecord,
+  type StatePlan,
+  type WebPlan,
 } from "./web-capture.ts";
 
-const USAGE = `usage: bun run audit:web -- [--only=<slugs>] [--variants=<keys>] [--looks=blush,mint,dark]
-                              [--surfaces=solid,glass] [--widths=phone,tablet,desktop]
-                              [--axe=none|all|<widths>] [--base=<url>] [--workers=<n>] [--allow-stale]`;
+const USAGE = `usage: bun run audit:web -- [--states[=<states>]] [--pages] [--only=<slugs or page ids>] [--variants=<keys>]
+                              [--looks=blush,mint,dark] [--surfaces=solid,glass] [--widths=phone,tablet,desktop]
+                              [--axe=none|all|<widths>] [--base=<url>] [--workers=<n>] [--allow-stale]
+  states: hover, focus, pressed, open, invalid, disabled`;
 
 function git(...args: string[]): string {
   // Local inspection only, as build-info.cjs does it: no hook may point it elsewhere.
@@ -114,13 +136,23 @@ async function main(): Promise<number> {
   // it does in the Playwright process that inherits it.
   Object.assign(process.env, args.env);
   const env: Record<string, string | undefined> = process.env;
-  let plan: ReturnType<typeof planWebCapture>;
+  let kinds: CaptureKinds;
+  let variantPlan: WebPlan | null = null;
+  let statePlan: StatePlan | null = null;
+  let pagePlan: PagePlan | null = null;
   let filters: ReturnType<typeof parseWebFilters>;
   let workers: number;
   let capture: CaptureSettings;
   try {
     filters = parseWebFilters(env);
-    plan = planWebCapture(components(), filters);
+    kinds = parseKinds(env);
+    if (filters.variants && !kinds.variants) throw new Error("--variants narrows the variant capture, which a run with --states or --pages does not take");
+    const inventory = components();
+    const pageList = pages();
+    const only = splitOnly(filters.only, kinds, inventory, pageList);
+    if (kinds.variants) variantPlan = planWebCapture(inventory, { ...filters, only: only.components });
+    if (kinds.states) statePlan = planStateCapture(inventory, stateSpecsOf, { ...filters, only: only.components }, kinds.states);
+    if (kinds.pages) pagePlan = planPageCapture(pageList, { ...filters, only: only.pages });
     workers = workersFrom(env);
     const [{ default: auditConfig }, { FIXED_TIME }] = await Promise.all([
       import("../../playwright.audit.config.ts"),
@@ -131,7 +163,11 @@ async function main(): Promise<number> {
     console.error(`audit:web: ${(error as Error).message}`);
     return 2;
   }
-  if (!plan.cells) {
+  const planned = {
+    cells: (variantPlan?.cells ?? 0) + (statePlan?.cells ?? 0) + (pagePlan?.cells ?? 0),
+    tests: (variantPlan?.groups.length ?? 0) + (statePlan?.groups.length ?? 0) + (pagePlan?.groups.length ?? 0),
+  };
+  if (!planned.cells) {
     console.error("audit:web: the filters leave no cell to capture");
     return 2;
   }
@@ -164,23 +200,40 @@ async function main(): Promise<number> {
     workers,
     capture,
     filters: {
+      kinds: describeKinds(kinds),
       only: filters.only,
       variants: filters.variants,
+      states: kinds.states,
       looks: filters.looks,
       surfaces: filters.surfaces,
       widths: filters.widths,
       axe: describeAxe(filters.axe),
     },
-    planned: { components: plan.components, variants: plan.variants, tests: plan.groups.length, cells: plan.cells },
+    planned: {
+      ...planned,
+      variants: variantPlan && { components: variantPlan.components, variants: variantPlan.variants, tests: variantPlan.groups.length, cells: variantPlan.cells },
+      states: statePlan && { components: statePlan.components, recipes: statePlan.recipes, tests: statePlan.groups.length, cells: statePlan.cells, byState: statePlan.byState },
+      pages: pagePlan && { pages: pagePlan.pages, sections: pagePlan.sections, tests: pagePlan.groups.length, cells: pagePlan.cells },
+    },
     results: null,
-    files: { cells: CELLS_FILE, cell: "web/<slug>/<variant>/<width>.<look>.<surface>/{card.png, probe.json}" },
+    files: {
+      cells: CELLS_FILE,
+      ...(variantPlan ? { cell: "web/<slug>/<variant>/<width>.<look>.<surface>/{card.png, probe.json}" } : {}),
+      ...(statePlan ? { state: `${STATES_DIR}/<slug>/<state>.<row>/<width>.<look>.<surface>/{state.png, probe.json} (probe.json alone for a state not reached)` } : {}),
+      ...(pagePlan ? { page: `${PAGES_DIR}/<kind>-<slug>/<width>.<look>.<surface>/{viewport.png, section.<key>.png, probe.json}` } : {}),
+    },
   };
   writeJson(manifestPath, manifest);
 
   console.log(`audit:web ${id}`);
+  if (variantPlan) console.log(`  planned  variants: ${variantPlan.components} component(s), ${variantPlan.variants} variant(s), ${variantPlan.cells} cells in ${variantPlan.groups.length} test(s)`);
+  if (statePlan) {
+    const byState = Object.entries(statePlan.byState).map(([state, n]) => `${state} ${n}`).join(", ");
+    console.log(`  planned  states: ${statePlan.components} component(s), ${statePlan.recipes} recipe(s), ${statePlan.cells} cells in ${statePlan.groups.length} test(s) (${byState})`);
+  }
+  if (pagePlan) console.log(`  planned  pages: ${pagePlan.pages} page(s) of ${pagePlan.sections} section(s), ${pagePlan.cells} cells in ${pagePlan.groups.length} test(s)`);
   console.log(
-    `  planned  ${plan.components} component(s), ${plan.variants} variant(s), ${plan.cells} cells in ${plan.groups.length} test(s); ` +
-    `looks ${filters.looks.join(",")}; surfaces ${filters.surfaces.join(",")}; widths ${filters.widths.join(",")}; axe ${describeAxe(filters.axe)}; ${workers} worker(s)`,
+    `  axes     looks ${filters.looks.join(",")}; surfaces ${filters.surfaces.join(",")}; widths ${filters.widths.join(",")}; axe ${describeAxe(filters.axe)}; ${workers} worker(s)`,
   );
 
   const childEnv: Record<string, string> = Object.fromEntries(Object.entries(env).filter((entry): entry is [string, string] => entry[1] !== undefined));
@@ -218,7 +271,7 @@ async function main(): Promise<number> {
   const { records, unreadable } = existsSync(cellsPath) ? readCellRecords(readFileSync(cellsPath, "utf8")) : { records: [], unreadable: 0 };
   const summary: CellSummary = summarizeCells(records);
   const refused = served !== null && !served.fresh && !served.allowStale;
-  const complete = !refused && !interrupted && summary.cells === plan.cells;
+  const complete = !refused && !interrupted && summary.cells === planned.cells;
   const status = refused ? "refused" : interrupted ? "interrupted" : complete ? "complete" : "incomplete";
   const wallMs = finished.getTime() - started.getTime();
   const bytes = diskBytes(runDir);
@@ -230,15 +283,18 @@ async function main(): Promise<number> {
     results: {
       playwrightExitCode: exitCode,
       cells: summary.cells,
+      kinds: summary.kinds,
       ok: summary.ok,
       failed: summary.failed,
-      missing: Math.max(0, plan.cells - summary.cells),
+      notReached: summary.notReached,
+      missing: Math.max(0, planned.cells - summary.cells),
       unreadableLines: unreadable,
       flags: summary.flags,
       msPerCell: summary.ms,
       wallMs,
       bytes,
       failures: summary.failures,
+      unreached: summary.unreached,
     },
   });
   writeJson(manifestPath, manifest);
@@ -251,13 +307,19 @@ async function main(): Promise<number> {
     console.log(`  manifest ${relative(ROOT, manifestPath)}`);
     return 2;
   }
-  console.log(`  captured ${summary.cells} of ${plan.cells} cells: ${summary.ok} ok, ${summary.failed} failed${summary.cells < plan.cells ? `, ${plan.cells - summary.cells} never reached` : ""}`);
+  console.log(
+    `  captured ${summary.cells} of ${planned.cells} cells: ${summary.ok} ok, ${summary.failed} failed` +
+      (kinds.states ? `, ${summary.notReached} state(s) not reached` : "") +
+      (summary.cells < planned.cells ? `, ${planned.cells - summary.cells} never captured` : ""),
+  );
   const flagged = Object.entries(summary.flags).sort((a, b) => b[1] - a[1]);
   console.log(`  flags    ${flagged.length ? flagged.map(([flag, n]) => `${flag} ${n}`).join(", ") : "none"}`);
   console.log(`  time     ${duration(wallMs)} wall; per cell mean ${seconds(summary.ms.mean)}, p50 ${seconds(summary.ms.p50)}, p95 ${seconds(summary.ms.p95)}, max ${seconds(summary.ms.max)} (${workers} worker(s))`);
   console.log(`  disk     ${size(bytes)}${summary.cells ? `, ${size(bytes / summary.cells)} per cell` : ""}`);
   for (const failure of summary.failures.slice(0, 20)) console.log(`  failed   ${failure.id}: ${failure.error.split("\n")[0]}`);
   if (summary.failures.length > 20) console.log(`  failed   ... and ${summary.failures.length - 20} more (manifest.json)`);
+  for (const miss of summary.unreached.slice(0, 20)) console.log(`  unreached ${miss.id}: ${miss.reason.split("\n")[0]}`);
+  if (summary.unreached.length > 20) console.log(`  unreached ... and ${summary.unreached.length - 20} more (manifest.json)`);
   if (unreadable) console.log(`  warning  ${unreadable} unreadable line(s) in ${CELLS_FILE}`);
   console.log(`  output   ${relative(ROOT, runDir)}`);
   return complete && summary.failed === 0 && exitCode === 0 ? 0 : 1;

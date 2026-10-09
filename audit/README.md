@@ -23,7 +23,13 @@ so it cannot drift from what the docs app serves.
 One variant is 18 web cells (3 widths x 3 looks x 2 surfaces) and 6 cells on each native
 platform (3 looks x 2 surfaces). A cell's id is its path under a capture run:
 `web/<slug>/<variant>/<width>.<look>.<surface>`, `ios/<slug>/<variant>/<look>.<surface>`,
-`android/...`; pages use `web-pages/<kind>-<slug>/...` and `<platform>-pages/...`.
+`android/...`; pages use `web-pages/<kind>-<slug>/...` and `<platform>-pages/...`, and the
+web's interaction states `web-states/<slug>/<state>.<row>/<width>.<look>.<surface>`.
+
+A page's sections come from its data module (`docs/src/core/data/patterns.tsx` or
+`templates/<slug>.tsx`), read from the source (`pageSections` in the inventory), each keyed
+by its title slugified (`Live comparison` is `livecomparison`); the docs mark each section
+with the same key on the web (`data-mockup-section`, `docs/src/ui/mockup-page.tsx`).
 
 ## The checklists
 
@@ -177,7 +183,7 @@ as "by design".
 | `bun tools/audit/facts.ts <slug>` | prints one component's facts as JSON |
 | `bun run audit:native:build -- --platform=ios,android` | builds the Canvas Audit app (the docs with the capture driver) in Release and installs it on the booted simulator and emulator, leaving the docs app's own `docs/ios` and `docs/android` as they were; `--incremental` reuses the parked native project while the native inputs are unchanged, `--dev` builds Debug for the fix loop |
 | `bun run audit:native -- --platform=ios,android` | photographs every component example and every pattern and template page on the devices in all six looks and surfaces; `--only`, `--looks`, `--surfaces`, `--a11y=none\|default\|all`, `--devices`, `--dev`, `--keep-motion` |
-| `bun run audit:web` | captures the web cells into a new run under `.audit/runs/` (see "Capturing on the web" below); `--only`, `--variants`, `--looks`, `--surfaces`, `--widths` narrow it, `--axe`, `--base`, `--workers` and `--allow-stale` tune it, `--help` lists them |
+| `bun run audit:web` | captures the web cells into a new run under `.audit/runs/` (see "Capturing on the web" below): the example variants, or with `--states` (every state, or `--states=hover,open`) the interaction states and with `--pages` the pattern and template pages instead (both flags for both); `--only` (component slugs, page ids or page slugs), `--variants` (the variant capture only), `--looks`, `--surfaces`, `--widths` narrow it, `--axe`, `--base`, `--workers` and `--allow-stale` tune it, `--help` lists them |
 | `bun run audit:analyze` | writes `analysis.json` beside the newest capture of every cell (see "Analysis, contact sheets and the index" below) |
 | `bun run audit:calibrate` | measures the analysis' contrast read from the photographs against the DOM's, on the newest captures; writes nothing |
 | `bun run audit:sheets` | writes the contact sheets under `.audit/current/<slug>/sheets/` |
@@ -258,6 +264,75 @@ A cell is flagged `render-failed`, `problems`, `text-floor` (under 10 px), `cont
 `overflow` or `axe`; the summary counts the rest (text under the 12 px body floor, which
 small and caption roles may be, scrolled and truncated text, contrast the DOM cannot
 resolve, which the analysis step samples from the photograph).
+
+### Interaction states
+
+`bun run audit:web -- --states` captures what a resting example cannot show: every
+component in the interaction registry (`tools/interactions/registry.ts`) hovered, focused,
+pressed, opened, invalid and disabled, as far as it has those states. The recipes are one
+table, `e2e/support/state-recipes.ts`: per component either the recipes for the states it
+has, each naming the example it is applied to, or `static: true` with the reason it has
+none (a layout primitive, a meter, a chart with no control and no keyboard stop).
+`tools/audit/state-recipes.test.ts` fails on a registry entry with neither, a recipe on an
+example its page does not have, a component whose own source reads the hover primitive
+(`useHover`, `src/style/hover.tsx`) without a hover recipe or one with a hover recipe that
+does not, an overlay of `overlay-recipes.ts` (or Tooltip, or AvatarMenu, which the e2e suite
+never opens) without an open recipe, and open rows that differ from the docs' platform-skin
+registry.
+
+Each recipe applies the state through the input a person uses, verifies it from the page's
+structure, and releases it:
+
+| State | Applied | Reached when | Photograph |
+|---|---|---|---|
+| hover | the pointer moves onto the control and rests (Dropdown: on its first item, with the menu open) | the control, its contents or its wrappers up to the row changed transform, box shadow or background (the lift and the wash `src/style/hover.tsx` applies); every watched property that changed is the evidence | the web row, desktop |
+| focus | Tab, from the tab stop before the control | focus is on or inside the control and it matches `:focus-visible`; the node whose edges the arriving focus changed is the ring, and `ringShows` (`e2e/support/focus-ring.ts`) looks for it in the pixels on every side, in the colour it paints at | the web row, desktop |
+| pressed | the pointer goes down on the hovered control and stays down | holding it changed a watched style against the hovered control (a press that looks like the hover is not reached, and says so); released by moving off before the button comes up, and the release reports whether the press cancelled | the web row, desktop |
+| open | the overlay recipes' own clicks (`OVERLAY_RECIPES`, `PHONE_INPUT_RECIPE`, `TOAST_RECIPE`), a hover on Tooltip's On hover example, a click on the AvatarMenu pill, from the web row and from every row whose platform build the docs registry injects (`docs/src/core/platform-skins.ts`; Toast's iOS row is the web build) | the opening added exactly the recipe's node (a dialog, a menu, a listbox, a speaking live region, the tooltip's bubble) where the Playground's overlays paint; the evidence says where it painted, whether it runs edge to edge on its frame's bottom (a sheet), whether it is in view and whether the trigger reports `aria-expanded="true"` | the viewport at the cell's own size, all three widths |
+| invalid | the example that shows the error; Textarea typed past its soft cap | the field carries `aria-invalid="true"`; the error text it is described by is the evidence | the web row, desktop |
+| disabled | the example that disables the control | `aria-disabled="true"` or a native `disabled` | the web row, desktop |
+
+Every state is captured in all six looks and surfaces. A state its recipe cannot confirm is
+recorded as `state-not-reached` with the reason in the record and in probe.json, and is
+never photographed: a missing state is a finding, not a picture of the resting control. A
+reached state is probed as a variant cell is (the row, and the panel an opening added, judged
+by the row's platform floors), and adds its own flags: `focus-ring-missing` (nothing drew a
+new edge), `focus-ring-hidden` (drawn, but not seen on every side), `focus-ring-colour` (not
+the look's `ring`), `expanded-not-announced`, `error-not-described`, `disabled-tab-stop` and
+`hover-unstable` (a tooltip whose bubble, opening in flow above its trigger, pushes the
+trigger out from under the resting pointer: the recipe follows the pointer to the trigger so
+the open bubble can be photographed, and records that it had to).
+An overlay the Playground contains in its row (Dialog, AlertDialog, Toast, Tooltip) is
+framed against that row; one placed against the window (an anchored menu, a Drawer, an
+ActionSheet) against the viewport.
+
+A state cell is `web-states/<slug>/<state>.<row>/<width>.<look>.<surface>/` with `state.png`
+(a reached state) and `probe.json` (the recipe, the evidence, the release, and for a reached
+state the probe and the flags).
+
+Measured on 2026-10-09 against a static export on this Mac, 6 workers: every state of every
+component is 1,530 cells (63 components with recipes, 255 cells per look and surface), 7 min
+09 s and 228.7 MB, 1.7 s a cell; 48 were not reached, every one a state the kit does not show
+on the web (a press with no feedback of its own on AvatarMenu, Command's trigger, the
+Description list's Update button, FilterPanel's checkbox and Video's play button in every
+look, and on Switch and ButtonGroup under glass; Input's and Textarea's Disabled examples,
+which are read-only rather than disabled).
+
+### Pages
+
+`bun run audit:web -- --pages` captures the 24 pattern and template pages at every width, look
+and surface. A cell opens the page, checks that the sections it marks are the inventory's in
+order (a renamed, added or dropped section fails the cell), photographs the first screen at
+the cell's viewport (`viewport.png`), then fits each section into a grown viewport, photographs
+it (`section.<key>.png`) and probes it as a variant's row is; probe.json adds the document's,
+the page scroller's and each section's overflow and axe over the sections where the axe policy
+says. A page cell is `web-pages/<kind>-<slug>/<width>.<look>.<surface>/`.
+
+Every page is 432 cells (24 pages, 67 sections): 6 min 35 s and 284.8 MB on the same
+machine, 3 s a cell at the median. `pattern-loading` was the outlier: up to 118 s a cell
+while its six look and surface tests ran at once, against 3.3 s for the same cell alone (a
+cell's limit is 180 s). Its loaders are the likely cause (a spinner is essential motion,
+which reduced motion leaves running), not yet measured.
 
 ## Capturing on devices
 
@@ -628,8 +703,9 @@ numbered sheets), `audit:index` 0.1 s. The prune then removed
 `20261009-143249-web-e996cb0` (its one cell re-captured twice since), which the built view's
 `current.json` still listed, rebuilt the view, and found all 3,076 of its links whole.
 
-The interaction-state recipes and page shots (1d) and the fixer loop (1h) are still to come;
-until the state runner lands, `states.jpg` is never written.
+The native runner photographs resting examples and pages only, so a state on iOS or Android
+is judged from the web's iOS and Android rows until it gets recipes of its own. The fixer
+loop (1h) is still to come.
 
 A fixer re-captures one component with
 `bun run audit:web -- --only=<slug> --base=http://localhost:8081` against this checkout's

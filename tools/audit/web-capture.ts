@@ -7,25 +7,35 @@
 // (e2e/audit/variants.audit.ts) and the unit tests read this one module, so the cells the
 // runner plans and the cells the spec captures cannot disagree.
 //
+// A run captures one or more kinds of cell (plan 1c and 1d): the example variants (the
+// default), the interaction states (`--states`, e2e/support/state-recipes.ts) and the
+// pattern and template pages (`--pages`).
+//
 // Output layout (plan, "Output layout"):
 //   .audit/runs/<stamp>-web-<sha7>/manifest.json
 //   .audit/runs/<stamp>-web-<sha7>/cells.jsonl
 //   .audit/runs/<stamp>-web-<sha7>/web/<slug>/<variant>/<width>.<look>.<surface>/{card.png, probe.json}
+//   .audit/runs/<stamp>-web-<sha7>/web-states/<slug>/<state>.<row>/<width>.<look>.<surface>/{state.png, probe.json}
+//   .audit/runs/<stamp>-web-<sha7>/web-pages/<kind>-<slug>/<width>.<look>.<surface>/{viewport.png, section.<key>.png, probe.json}
 // The analysis step (plan 1e) adds analysis.json beside them.
 
 import { join } from "node:path";
+import { STATE_NAMES, type StateName } from "../../e2e/support/state-recipes.ts";
 import {
   LOOKS,
   SURFACES,
   WIDTHS,
   cellId,
+  pageCellId,
   type ComponentVariant,
   type InventoryComponent,
+  type InventoryPage,
   type Look,
   type Platform,
   type Surface,
   type WidthKey,
 } from "./inventory.ts";
+import type { RowPlatform } from "./probe-math.ts";
 
 /** Where capture runs live, relative to the checkout root. Gitignored. */
 export const RUNS_DIR = ".audit/runs";
@@ -35,6 +45,15 @@ export const CARD_FILE = "card.png";
 export const PROBE_FILE = "probe.json";
 /** A failed cell's viewport, when the page could still be photographed. */
 export const FAILURE_FILE = "failure.png";
+/** Where a run's interaction-state cells and page cells go, beside `web/`. */
+export const STATES_DIR = "web-states";
+export const PAGES_DIR = "web-pages";
+/** A reached state's photograph: its row, or the viewport an overlay opened in. */
+export const STATE_FILE = "state.png";
+/** A page cell's first screen, above the fold at the cell's own viewport. */
+export const VIEWPORT_FILE = "viewport.png";
+/** A page cell's photograph of one section, by the section's key. */
+export const sectionFile = (key: string): string => `section.${key}.png`;
 /**
  * What the Playwright global setup read off the served export, for the runner to fold
  * into the manifest; the runner removes it once it has.
@@ -52,6 +71,10 @@ export const AUDIT_ENV = {
   workers: "AUDIT_WORKERS",
   runDir: "AUDIT_RUN_DIR",
   allowStale: "AUDIT_ALLOW_STALE",
+  /** `all`, or the interaction states to capture (comma-separated); unset captures none. */
+  states: "AUDIT_STATES",
+  /** `1` captures the pattern and template pages. */
+  pages: "AUDIT_PAGES",
 } as const;
 
 export const DEFAULT_WORKERS = 6;
@@ -211,6 +234,228 @@ export function cellDir(runDir: string, cell: WebCell): string {
   return join(runDir, webCellId(cell));
 }
 
+// --- What a run captures ---------------------------------------------------------------
+
+/** The kinds of cell a run captures. Variants are captured when neither states nor pages are asked for. */
+export interface CaptureKinds {
+  variants: boolean;
+  /** The interaction states captured, in their own order, or null when the run captures none. */
+  states: StateName[] | null;
+  pages: boolean;
+}
+
+/** The kinds, read from the environment: AUDIT_STATES (`all` or a list of states) and AUDIT_PAGES (`1`). */
+export function parseKinds(env: Env): CaptureKinds {
+  const named = env[AUDIT_ENV.states]?.trim();
+  const states = !named ? null : named === "all" ? [...STATE_NAMES] : pick(AUDIT_ENV.states, named, STATE_NAMES);
+  const pagesValue = env[AUDIT_ENV.pages]?.trim();
+  if (pagesValue && pagesValue !== "1") throw new Error(`${AUDIT_ENV.pages} must be 1 or unset, not "${pagesValue}"`);
+  const pages = pagesValue === "1";
+  return { variants: states === null && !pages, states, pages };
+}
+
+/** The kinds in a line, for the console and the manifest. */
+export function describeKinds(kinds: CaptureKinds): string {
+  return [
+    kinds.variants && "variants",
+    kinds.states && `states (${kinds.states.join(", ")})`,
+    kinds.pages && "pages",
+  ].filter(Boolean).join(", ");
+}
+
+/**
+ * `--only` split between the kinds a run captures: component slugs to the variants and
+ * states, page ids (`template-signin`) or page slugs (`signin`) to the pages; a slug that
+ * is both (`calendar`) goes to each kind that takes it. A name nothing has, or one only a
+ * kind the run does not capture has, throws, so a typo is not an empty run. Null for a
+ * kind means everything; an empty list means none.
+ */
+export function splitOnly(
+  only: string[] | null,
+  kinds: CaptureKinds,
+  inventory: InventoryComponent[],
+  pageList: InventoryPage[],
+): { components: string[] | null; pages: string[] | null } {
+  const takesComponents = kinds.variants || kinds.states !== null;
+  if (!only) return { components: takesComponents ? null : [], pages: kinds.pages ? null : [] };
+  const slugs = new Set(inventory.map((c) => c.slug));
+  const pageIds = new Map<string, string>();
+  for (const p of pageList) {
+    pageIds.set(p.id, p.id);
+    pageIds.set(p.slug, p.id);
+  }
+  const components: string[] = [];
+  const pages: string[] = [];
+  const unknown: string[] = [];
+  const pageOnly: string[] = [];
+  const componentOnly: string[] = [];
+  for (const name of only) {
+    const isComponent = slugs.has(name);
+    const page = pageIds.get(name);
+    if (!isComponent && !page) unknown.push(name);
+    else if (isComponent && takesComponents) {
+      components.push(name);
+      if (page && kinds.pages) pages.push(page);
+    } else if (page && kinds.pages) pages.push(page);
+    else if (page) pageOnly.push(name);
+    else componentOnly.push(name);
+  }
+  const quoted = (names: string[]) => names.map((n) => `"${n}"`).join(", ");
+  if (unknown.length) throw new Error(`${AUDIT_ENV.only}: no component or page is called ${quoted(unknown)}`);
+  if (pageOnly.length) throw new Error(`${AUDIT_ENV.only}: ${quoted(pageOnly)} names a page, and this run captures no pages (pass --pages)`);
+  if (componentOnly.length) throw new Error(`${AUDIT_ENV.only}: ${quoted(componentOnly)} names a component, and this run captures only pages (pass --states, or drop --pages for the variants)`);
+  return { components: takesComponents ? components : [], pages: kinds.pages ? [...new Set(pages)] : [] };
+}
+
+// --- Interaction states (plan 1d) -------------------------------------------------------
+
+/** What the planner needs of a state recipe (e2e/support/state-recipes.ts `stateSpecsOf`). */
+export interface StateSpec {
+  state: StateName;
+  variant: string;
+  rows: readonly RowPlatform[];
+  widths: "desktop" | "all";
+}
+
+/** One interaction-state cell: a component's state, from one row, at one width (the look and surface are its group's). */
+export interface StateCellPlan {
+  state: StateName;
+  variant: ComponentVariant;
+  row: RowPlatform;
+  width: WidthSpec;
+}
+
+/** One Playwright test: a component's states in one look and surface. */
+export interface StateGroup {
+  slug: string;
+  look: Look;
+  surface: Surface;
+  cells: StateCellPlan[];
+  /** How many examples the component's page has in all: one means it has no rail. */
+  examples: number;
+}
+
+export interface StatePlan {
+  groups: StateGroup[];
+  components: number;
+  /** State recipes captured (a recipe opened from three rows counts once). */
+  recipes: number;
+  cells: number;
+  /** Cells per state. */
+  byState: Partial<Record<StateName, number>>;
+}
+
+/**
+ * The state cells a run captures: every component (or the `only` ones, in docs order) that
+ * has recipes, each recipe of the named states, from each of its rows, at each of its widths
+ * the run keeps (hover, focus, pressed, invalid and disabled at the desktop; open at all
+ * three), in every look and surface named. A recipe naming an example its page does not
+ * have throws: the cell would photograph the wrong example.
+ */
+export function planStateCapture(
+  inventory: InventoryComponent[],
+  specsOf: (slug: string) => StateSpec[],
+  filters: WebFilters,
+  states: StateName[],
+): StatePlan {
+  if (filters.only) {
+    const known = new Set(inventory.map((c) => c.slug));
+    const unknown = filters.only.filter((slug) => !known.has(slug));
+    if (unknown.length) throw new Error(`${AUDIT_ENV.only}: no component page is called ${unknown.map((u) => `"${u}"`).join(", ")}`);
+  }
+  const chosen = filters.only ? inventory.filter((c) => filters.only!.includes(c.slug)) : inventory;
+  const groups: StateGroup[] = [];
+  const byState: Partial<Record<StateName, number>> = {};
+  let components = 0;
+  let recipes = 0;
+  for (const component of chosen) {
+    const cells: StateCellPlan[] = [];
+    for (const spec of specsOf(component.slug).filter((s) => states.includes(s.state))) {
+      const variant = component.variants.find((v) => v.variant === spec.variant);
+      if (!variant) throw new Error(`the ${component.slug} ${spec.state} recipe names the example "${spec.variant}", which ${component.route} does not have`);
+      const widths = WIDTHS.filter((w) => filters.widths.includes(w.key) && (spec.widths === "all" || w.key === "desktop"));
+      if (!widths.length) continue;
+      recipes += 1;
+      for (const row of spec.rows) for (const width of widths) cells.push({ state: spec.state, variant, row, width });
+    }
+    if (!cells.length) continue;
+    components += 1;
+    for (const look of filters.looks) {
+      for (const surface of filters.surfaces) {
+        groups.push({ slug: component.slug, look, surface, cells: [...cells], examples: component.variants.length });
+        for (const cell of cells) byState[cell.state] = (byState[cell.state] ?? 0) + 1;
+      }
+    }
+  }
+  return { groups, components, recipes, cells: groups.reduce((n, g) => n + g.cells.length, 0), byState };
+}
+
+/** One state cell, with its look and surface. */
+export interface StateCell extends StateCellPlan {
+  slug: string;
+  look: Look;
+  surface: Surface;
+}
+
+/** A state cell's id and path under a run: `web-states/<slug>/<state>.<row>/<width>.<look>.<surface>`. */
+export function stateCellId(cell: Pick<StateCell, "slug" | "state" | "row" | "look" | "surface"> & { width: { key: WidthKey } }): string {
+  return `${STATES_DIR}/${cell.slug}/${cell.state}.${cell.row}/${cell.width.key}.${cell.look}.${cell.surface}`;
+}
+
+// --- Pages (plan 1d) ------------------------------------------------------------------
+
+/** One Playwright test: a pattern or template page in one look and surface, looping widths. */
+export interface PageGroup {
+  page: InventoryPage;
+  look: Look;
+  surface: Surface;
+  widths: WidthSpec[];
+}
+
+export interface PagePlan {
+  groups: PageGroup[];
+  pages: number;
+  /** Sections photographed per pass over every page once. */
+  sections: number;
+  cells: number;
+}
+
+/** The page cells a run captures: every page (or the `only` ones, by id), at every width, look and surface named. */
+export function planPageCapture(pageList: InventoryPage[], filters: WebFilters): PagePlan {
+  if (filters.only) {
+    const known = new Set(pageList.map((p) => p.id));
+    const unknown = filters.only.filter((id) => !known.has(id));
+    if (unknown.length) throw new Error(`${AUDIT_ENV.only}: no pattern or template page is called ${unknown.map((u) => `"${u}"`).join(", ")}`);
+  }
+  const chosen = filters.only ? pageList.filter((p) => filters.only!.includes(p.id)) : pageList;
+  const widths = WIDTHS.filter((w) => filters.widths.includes(w.key));
+  const groups: PageGroup[] = [];
+  for (const page of chosen) {
+    for (const look of filters.looks) {
+      for (const surface of filters.surfaces) groups.push({ page, look, surface, widths: [...widths] });
+    }
+  }
+  return {
+    groups,
+    pages: chosen.length,
+    sections: chosen.reduce((n, p) => n + p.sections.length, 0),
+    cells: groups.reduce((n, g) => n + g.widths.length, 0),
+  };
+}
+
+/** One page cell. */
+export interface PageCell {
+  page: InventoryPage;
+  width: WidthSpec;
+  look: Look;
+  surface: Surface;
+}
+
+/** A page cell's id and path under a run: `web-pages/<kind>-<slug>/<width>.<look>.<surface>`. */
+export function webPageCellId(cell: PageCell): string {
+  return pageCellId({ platform: "web", page: cell.page.id, width: cell.width.key, look: cell.look, surface: cell.surface });
+}
+
 /** A run's timestamp: UTC, sortable, filename-safe (`20261009-143012`). */
 export function runStamp(date: Date): string {
   const iso = date.toISOString();
@@ -223,21 +468,24 @@ export function runDirName(date: Date, platform: Platform, sha: string): string 
   return `${runStamp(date)}-${platform}-${sha.slice(0, 7)}`;
 }
 
-export type CellStatus = "ok" | "failed";
+/**
+ * What happened to a cell: captured, failed (the capture machinery or the page broke), or,
+ * for an interaction state, not reached (its recipe could not confirm the state, so nothing
+ * was photographed; the reason is on the record and in probe.json).
+ */
+export type CellStatus = "ok" | "failed" | "state-not-reached";
 
-/** One line of cells.jsonl: what happened to one cell. */
-export interface CellRecord {
+interface CellRecordBase {
   id: string;
-  slug: string;
-  variant: string;
-  label: string;
   width: WidthKey;
   look: Look;
   surface: Surface;
   status: CellStatus;
   /** A failed cell: what stopped it. */
   error?: string;
-  /** A captured cell: what its probe found worth a reviewer's look (probe-math `flagsOf`). */
+  /** A state not reached: why. */
+  reason?: string;
+  /** A captured cell: what its probe found worth a reviewer's look (probe-math `flagsOf`, and a state's own). */
   flags: string[];
   /** Wall time of the cell, navigation to the last file written. */
   ms: number;
@@ -248,6 +496,37 @@ export interface CellRecord {
   /** When it finished (ISO). */
   at: string;
 }
+
+/** One line of cells.jsonl for an example variant (no `kind`: the lines runs wrote before states and pages). */
+export interface VariantCellRecord extends CellRecordBase {
+  kind?: "variant";
+  slug: string;
+  variant: string;
+  label: string;
+}
+
+/** One line of cells.jsonl for an interaction state. */
+export interface StateCellRecord extends CellRecordBase {
+  kind: "state";
+  slug: string;
+  variant: string;
+  label: string;
+  state: StateName;
+  row: RowPlatform;
+}
+
+/** One line of cells.jsonl for a pattern or template page. */
+export interface PageCellRecord extends CellRecordBase {
+  kind: "page";
+  /** `<kind>-<slug>`. */
+  page: string;
+  route: string;
+  /** Sections photographed. */
+  sections: number;
+}
+
+/** One line of cells.jsonl: what happened to one cell. */
+export type CellRecord = VariantCellRecord | StateCellRecord | PageCellRecord;
 
 /** Read cells.jsonl's text; a torn last line (a run killed mid-write) is skipped, not fatal. */
 export function readCellRecords(text: string): { records: CellRecord[]; unreadable: number } {
@@ -268,12 +547,18 @@ export interface CellSummary {
   cells: number;
   ok: number;
   failed: number;
+  /** Interaction states whose recipe could not confirm them. */
+  notReached: number;
   /** Captured cells per flag. */
   flags: Record<string, number>;
   /** Wall time per cell, in ms. */
   ms: { mean: number; p50: number; p95: number; max: number };
   bytes: number;
   failures: { id: string; error: string }[];
+  /** Every state not reached, with why. */
+  unreached: { id: string; reason: string }[];
+  /** Cells per kind. */
+  kinds: Record<"variant" | "state" | "page", number>;
 }
 
 function percentile(sorted: number[], p: number): number {
@@ -289,10 +574,13 @@ export function summarizeCells(all: CellRecord[]): CellSummary {
   const flags: Record<string, number> = {};
   for (const record of records) for (const flag of record.flags) flags[flag] = (flags[flag] ?? 0) + 1;
   const times = records.map((r) => r.ms).sort((a, b) => a - b);
+  const kinds = { variant: 0, state: 0, page: 0 };
+  for (const record of records) kinds[record.kind ?? "variant"] += 1;
   return {
     cells: records.length,
     ok: records.filter((r) => r.status === "ok").length,
     failed: records.filter((r) => r.status === "failed").length,
+    notReached: records.filter((r) => r.status === "state-not-reached").length,
     flags,
     ms: {
       mean: times.length ? Math.round(times.reduce((a, b) => a + b, 0) / times.length) : 0,
@@ -302,6 +590,8 @@ export function summarizeCells(all: CellRecord[]): CellSummary {
     },
     bytes: records.reduce((n, r) => n + r.bytes, 0),
     failures: records.filter((r) => r.status === "failed").map((r) => ({ id: r.id, error: r.error ?? "unknown" })),
+    unreached: records.filter((r) => r.status === "state-not-reached").map((r) => ({ id: r.id, reason: r.reason ?? "unknown" })),
+    kinds,
   };
 }
 
@@ -498,8 +788,10 @@ export interface RunArgs {
 
 /**
  * Map the command line onto the environment. Takes `--name=value` and `--name value`;
- * `--allow-stale` and `--help` take none. An unknown flag, a missing value, a worker count
- * that is not a positive integer or a base that is not an http(s) URL is an error.
+ * `--allow-stale`, `--pages` and `--help` take none, and `--states` takes one only after
+ * an `=` (`--states` is every state, `--states=hover,open` those two). An unknown flag, a
+ * missing value, a worker count that is not a positive integer or a base that is not an
+ * http(s) URL is an error.
  */
 export function parseRunArgs(argv: string[]): RunArgs {
   const result: RunArgs = { env: {}, allowStale: false, help: false, errors: [] };
@@ -512,10 +804,17 @@ export function parseRunArgs(argv: string[]): RunArgs {
       continue;
     }
     const name = match[1]!;
-    if (name === "allow-stale" || name === "help") {
+    if (name === "allow-stale" || name === "help" || name === "pages") {
       if (match[2] !== undefined) result.errors.push(`--${name} takes no value`);
       if (name === "allow-stale") result.allowStale = true;
+      else if (name === "pages") result.env[AUDIT_ENV.pages] = "1";
       else result.help = true;
+      continue;
+    }
+    if (name === "states") {
+      const value = match[2]?.trim();
+      if (value === "") result.errors.push("--states= needs a state, or drop the = for every state");
+      else result.env[AUDIT_ENV.states] = value ?? "all";
       continue;
     }
     const variable = FLAG_ENV[name];
