@@ -20,6 +20,7 @@ import {
   isGlass,
 } from "../../style/index.js";
 import { GESTURE_SURFACE, useWheel } from "../../style/index.js";
+import { useFocusRingStyle } from "../../style/pressable.js";
 import * as s from "../shared/charts.styles.js";
 import { type ChartSkin } from "../shared/types.js";
 import { CHART_ROOT } from "../shared/chart-frame.js";
@@ -279,6 +280,7 @@ export function createGeoMap(skin: ChartSkin, parts: GeoMapParts = {}) {
     const { tokens } = theme;
     const surfaceShape = s.surface(tokens, skin.surfaceRadius);
     const glass = isGlass(theme);
+    const focusRing = useFocusRingStyle();
     const compact = !!props.compact;
     const formatValue = props.formatValue ?? formatCompact;
 
@@ -536,8 +538,10 @@ export function createGeoMap(skin: ChartSkin, parts: GeoMapParts = {}) {
             : null)}
           // touchAction:'none' so a two-finger pinch reaches the responder system
           // instead of the browser zooming the whole page. Kit-internal, and only
-          // while the chart actually owns a gesture.
-          style={[{ width: "100%", aspectRatio: GEO_MAP_ASPECT }, zoomable ? GESTURE_SURFACE : null]}
+          // while the chart actually owns a gesture. The focusable map wears the kit's
+          // themed ring (the palette's `ring`, 2 px off the map, inside the frame's
+          // padding), which the browser draws on keyboard focus only.
+          style={[{ width: "100%", aspectRatio: GEO_MAP_ASPECT }, zoomable ? [GESTURE_SURFACE, focusRing] : null]}
         >
           {measured ? (
             <>

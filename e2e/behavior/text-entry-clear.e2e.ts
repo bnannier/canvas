@@ -108,8 +108,12 @@ for (const recipe of fields.filter(field => ["input", "input-otp", "phone-input"
     await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
     await page.keyboard.type("9");
     await expect(field).toHaveValue(value);
-    // Existing editable:false maps to readonly on RNW; Input and PhoneInput
-    // can still receive focus. This material change must preserve that contract.
+    // A disabled field reaches the browser disabled (src/style/text-entry-state.ts):
+    // editable:false keeps RNW's readonly, and aria-disabled adds the native disabled
+    // attribute, so the press gives it no focus and Tab passes it by.
     await expect(field).toHaveAttribute("readonly", "");
+    await expect(field).toBeDisabled();
+    await expect(field).toHaveAttribute("aria-disabled", "true");
+    await expect(field).not.toBeFocused();
   });
 }

@@ -15,6 +15,8 @@ import e_atoms_slider_dont_1_do from "./dont-1-do";
 import e_atoms_slider_dont_1_dont from "./dont-1-dont";
 import e_atoms_slider_dont_2_do from "./dont-2-do";
 import e_atoms_slider_dont_2_dont from "./dont-2-dont";
+import e_atoms_slider_dont_3_do from "./dont-3-do";
+import e_atoms_slider_dont_3_dont from "./dont-3-dont";
 
 export const docs: ComponentDocs = {
   dir: "slider",
@@ -33,6 +35,7 @@ export const docs: ComponentDocs = {
     { title: "Range", do: { caption: "Give the track room to breathe so the thumb has a clear travel path and the value reads at a glance. Pass the label as `children`; the slider owns the title above the rail.", code: "<Slider defaultValue={65} min={0} max={100}>Volume</Slider>", render: e_atoms_slider_dont_0_do }, dont: { caption: "Cramming the slider into a tiny width leaves no travel, so the thumb can barely move and the value is hard to set.", code: "<View style={{ width: 64 }}>\n  <Slider accessibilityLabel=\"Volume\" defaultValue={65} min={0} max={100} />\n</View>", render: e_atoms_slider_dont_0_dont } },
     { title: "Bounds", do: { caption: "Pair the slider with its current value so the number is explicit, not just inferred from the thumb position. `showValue` renders the live readout above the track.", code: "<Slider showValue defaultValue={48} min={0} max={100}>Volume</Slider>", render: e_atoms_slider_dont_1_do }, dont: { caption: "A slider with no readout and no visible label leaves users guessing what the value is and what it controls.", code: "<Slider accessibilityLabel=\"Volume\" defaultValue={48} min={0} max={100} />", render: e_atoms_slider_dont_1_dont } },
     { title: "State", do: { caption: "Use the disabled state for values the user cannot change yet; it dims clearly so it does not look interactive.", code: "<Slider disabled accessibilityLabel=\"Volume\" defaultValue={20} min={0} max={100} />", render: e_atoms_slider_dont_2_do }, dont: { caption: "Don't fake a disabled slider with a faint inline track; the real `disabled` prop also blocks the gesture and sets accessibility state.", code: "<View style={{ width: 320, maxWidth: \"100%\", height: 20, justifyContent: \"center\" }}>\n  <View style={{ width: \"100%\", height: 4, borderRadius: 999, backgroundColor: tokens.muted }}>\n    <View style={{ position: \"absolute\", left: 0, top: 0, bottom: 0, width: \"20%\", borderRadius: 999, backgroundColor: alpha(tokens.primary, 0.4) }} />\n  </View>\n</View>", render: e_atoms_slider_dont_2_dont } },
+    { title: "Keyboard", do: { caption: "Name the slider and let it take keyboard focus. Tab lands on it and its thumb wears the kit's 2 px focus ring in the theme's `ring` colour, over the glass knob too; the arrows, Page Up, Page Down, Home and End then set the value. A click shows no ring.", code: "<Slider accessibilityLabel=\"Volume\" defaultValue={48} min={0} max={100} />", render: e_atoms_slider_dont_3_do }, dont: { caption: "Leave the slider unnamed. It still takes focus and shows the ring, but a screen reader announces a bare number with nothing to say what it sets.", code: "<Slider defaultValue={48} min={0} max={100} />", render: e_atoms_slider_dont_3_dont } },
   ],
   // Extracted from the component's exported `*Props` interfaces by
   // tools/docgen/extract-props.ts (the TypeScript checker).

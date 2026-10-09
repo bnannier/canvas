@@ -1,7 +1,7 @@
-import { describe, it, expect, afterEach } from "bun:test";
-import { render, cleanup, fireEvent } from "@testing-library/react";
+import { describe, it, expect, afterEach, spyOn } from "bun:test";
+import { act, render, cleanup, fireEvent } from "@testing-library/react";
 import type { ReactNode } from "react";
-import { Text } from "react-native";
+import { Text, TextInput as RNTextInput, type TextInputProps } from "react-native";
 import { ThemeProvider } from "../src/style/theme.tsx";
 import { layoutEntrances } from "./entrance-layout.ts";
 import { Checkbox } from "../src/atoms/checkbox/checkbox.tsx";
@@ -19,6 +19,11 @@ import { RowMenu } from "../src/organisms/row-menu/row-menu.tsx";
 import { DataTable } from "../src/organisms/data-table/data-table.tsx";
 import { Stepper } from "../src/atoms/stepper/stepper.tsx";
 import { Listbox } from "../src/atoms/listbox/listbox.tsx";
+import { Input } from "../src/atoms/input/input.tsx";
+import { Input as AndroidInput } from "../src/atoms/input/input.android.tsx";
+import { Textarea } from "../src/atoms/textarea/textarea.tsx";
+import { InputOTP } from "../src/atoms/input-otp/input-otp.tsx";
+import { PhoneInput } from "../src/molecules/phone-input/phone-input.tsx";
 
 // react-native-web forwards NEITHER accessibilityState NOR accessibilityValue to
 // the DOM (verified empirically). The kit therefore carries the cross-platform
@@ -273,4 +278,78 @@ describe("Badge: a name needs a role it can legally sit on", () => {
     expect(group.getAttribute("role")).toBeNull();
     expect(group.getAttribute("aria-label")).toBeNull();
   });
+});
+
+describe("text fields: disabled is disabled, read-only stays reachable", () => {
+  // `editable={false}` alone reaches the browser as readonly only: a disabled field stayed
+  // a Tab stop and was read as read-only. Every kit field now says disabled through
+  // aria-disabled too, which react-native-web turns into the native disabled attribute,
+  // and through accessibilityState, the channel VoiceOver and TalkBack read
+  // (src/style/text-entry-state.ts).
+  const DISABLED: [string, ReactNode][] = [
+    ["Input", <Input label="Email" disabled />],
+    ["grouped Input", <Input label="Price" prefix="$" disabled />],
+    ["Android Input, floating label", <AndroidInput label="Email" disabled />],
+    ["Textarea", <Textarea label="Notes" disabled />],
+    ["PhoneInput", <PhoneInput label="Phone" disabled />],
+    ["Autocomplete", <Autocomplete label="Owner" options={["Ada Lovelace"]} disabled />],
+    ["InputOTP", <InputOTP disabled />],
+  ];
+
+  for (const [name, node] of DISABLED) {
+    it(`${name} reaches the browser disabled and takes no focus`, () => {
+      const { container } = ui(node);
+      const field = container.querySelector<HTMLInputElement>("input, textarea")!;
+      expect(field.disabled).toBe(true);
+      expect(field.getAttribute("aria-disabled")).toBe("true");
+      act(() => field.focus());
+      expect(document.activeElement).not.toBe(field);
+    });
+  }
+
+  it("hands VoiceOver and TalkBack the disabled state on every field", () => {
+    // accessibilityState is the native channel react-native-web drops from the DOM, so
+    // read it where React Native receives it: the props of its TextInput.
+    const component = RNTextInput as unknown as { render: (props: TextInputProps, ref: unknown) => ReactNode };
+    const seen: TextInputProps[] = [];
+    const original = component.render;
+    const spy = spyOn(component, "render").mockImplementation((props, ref) => {
+      seen.push(props);
+      return original(props, ref);
+    });
+    try {
+      for (const [name, node] of DISABLED) {
+        seen.length = 0;
+        ui(node);
+        const fields = seen.filter((props) => props.editable === false);
+        expect(fields.length, name).toBeGreaterThan(0);
+        for (const props of fields) expect(props.accessibilityState?.disabled, name).toBe(true);
+        cleanup();
+      }
+    } finally { spy.mockRestore(); }
+  });
+
+  it("leaves an enabled field's markup without a disabled state", () => {
+    const { container } = ui(<><Input label="Email" /><Textarea label="Notes" /><PhoneInput label="Phone" /></>);
+    for (const field of container.querySelectorAll<HTMLInputElement>("input, textarea")) {
+      expect(field.disabled).toBe(false);
+      expect(field.hasAttribute("aria-disabled")).toBe(false);
+      expect(field.readOnly).toBe(false);
+    }
+  });
+
+  for (const [name, node] of [
+    ["Input", <Input label="Email" readOnly defaultValue="ada@acme.dev" />],
+    ["PhoneInput", <PhoneInput label="Phone" readOnly defaultValue="5551234567" />],
+  ] as const) {
+    it(`a read-only ${name} stays focusable and is not announced disabled`, () => {
+      const { container } = ui(node);
+      const field = container.querySelector<HTMLInputElement>("input")!;
+      expect(field.readOnly).toBe(true);
+      expect(field.disabled).toBe(false);
+      expect(field.hasAttribute("aria-disabled")).toBe(false);
+      act(() => field.focus());
+      expect(document.activeElement).toBe(field);
+    });
+  }
 });

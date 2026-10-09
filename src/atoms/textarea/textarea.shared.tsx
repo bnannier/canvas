@@ -1,4 +1,5 @@
 import { useTextEntryMaterial } from "../../style/text-entry-material.js";
+import { textEntryState } from "../../style/text-entry-state.js";
 import { useInputEscapeBridge } from "../../style/escape-layer.js";
 import { INSET_FOCUS_RING, useFocusRingStyle } from "../../style/pressable.js";
 import { forwardRef, useId, useState } from "react";
@@ -195,7 +196,9 @@ export function createTextarea(skin: TextareaSkin) {
       onChangeText: handleChangeText,
       placeholderTextColor: tokens["muted-foreground"],
       selectionColor: tokens.primary, // brand cursor / selection on every platform
-      editable: !disabled,
+      // Disabled reaches the browser as disabled (out of the tab order) and VoiceOver and
+      // TalkBack as dimmed (src/style/text-entry-state.ts).
+      ...textEntryState({ disabled }),
       // Text-entry behavior passthrough (the curated TextEntryProps slice).
       defaultValue: props.defaultValue,
       secureTextEntry: props.secureTextEntry,

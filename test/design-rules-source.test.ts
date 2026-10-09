@@ -217,3 +217,55 @@ describe("widths come from the parent", () => {
     expect(offenders).toEqual([]);
   });
 });
+
+describe("a pane and its host read one material", () => {
+  // A node that paints a GlassPane behind its content drops its own fill and border
+  // under glass (`paneStyle`), and the pane mounts only where its material renders. Both
+  // must answer from the resolved material: a host that asked `useTheme()` would drop its
+  // fill on Android in the page, where glass is requested but resolves solid, and leave a
+  // bare box with no pane behind it. So every `paneStyle` theme comes from
+  // `useMaterialTheme` or `useTextEntryMaterial` (src/style/glass-surface/use-material-theme.ts),
+  // followed through the file's own bindings (`const { theme } = entryMaterial`); a chain
+  // that ends at a parameter (a chart frame handed its setup) needs the file to resolve
+  // the material itself, and one that reaches `useTheme()` is the defect.
+  const MATERIAL_HOOK = /^use(MaterialTheme|TextEntryMaterial)\(/;
+  const REQUESTED_THEME = /^useTheme\(/;
+
+  // The right-hand side of the nearest binding of `name` before `at`, or null.
+  function bindingOf(text: string, name: string, at: number): string | null {
+    const pattern = new RegExp(`const\\s+(?:${name}\\b|\\{[^}]*\\b${name}\\b[^}]*\\})\\s*=\\s*([^;\\n]+)`, "g");
+    let rhs: string | null = null;
+    for (const match of text.matchAll(pattern)) {
+      if (match.index! < at) rhs = match[1]!.trim();
+    }
+    return rhs;
+  }
+
+  // Whether an argument (`theme`, `material.theme`) names a resolved material theme.
+  function resolved(text: string, argument: string, at: number): boolean {
+    let name = argument.split(".")[0]!;
+    for (let hop = 0; hop < 4; hop++) {
+      const rhs = bindingOf(text, name, at);
+      if (rhs == null) return MATERIAL_HOOK.test(text.match(/\buse(MaterialTheme|TextEntryMaterial)\(/)?.[0] ?? "");
+      if (MATERIAL_HOOK.test(rhs)) return true;
+      if (REQUESTED_THEME.test(rhs) || !/^\w+$/.test(rhs)) return false;
+      name = rhs;
+    }
+    return false;
+  }
+
+  it("every paneStyle theme comes from the resolved material", () => {
+    const calls: string[] = [];
+    const offenders: string[] = [];
+    for (const { file, text } of sources) {
+      if (file === "src/style/glass-surface/glass-pane.tsx") continue;
+      for (const match of text.matchAll(/\bpaneStyle\(\s*([\w.]+)\s*,/g)) {
+        const line = text.slice(0, match.index).split("\n").length;
+        calls.push(`${file}:${line}`);
+        if (!resolved(text, match[1]!, match.index!)) offenders.push(`${file}:${line} paneStyle(${match[1]}, ...)`);
+      }
+    }
+    expect(calls.length).toBeGreaterThan(60);
+    expect(offenders).toEqual([]);
+  });
+});

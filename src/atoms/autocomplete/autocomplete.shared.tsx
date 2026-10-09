@@ -1,5 +1,6 @@
 import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
 import { useTextEntryMaterial } from "../../style/text-entry-material.js";
+import { textEntryState } from "../../style/text-entry-state.js";
 import { consumeEscapeKey, EscapeLayerProvider, useEscapeLayer } from "../../style/escape-layer.js";
 import { forwardRef, useEffect, useId, useRef, useState } from "react";
 import { Platform, type TextInput as RNTextInput } from "react-native";
@@ -147,6 +148,7 @@ export function createAutocomplete(skin: AutocompleteSkin) {
     const { theme } = entryMaterial;
     const menuTheme = useMaterialTheme({ layer: "dense" });
     const { tokens } = theme;
+    const entry = textEntryState({ disabled });
     const widthCap = useFillStyle("Autocomplete", props);
     // One collision-free id for the label so the floated label carries a nativeID.
     const labelId = useId();
@@ -363,15 +365,15 @@ export function createAutocomplete(skin: AutocompleteSkin) {
             // placeholder until the list opens (matching the M3 Input).
             placeholder={floating && !open ? undefined : placeholder}
             placeholderTextColor={skin.fieldText(tokens, size, true).color}
-            editable={!disabled}
+            {...entry}
             selectionColor={tokens.primary} // brand cursor / selection on every platform
             testID={props.testID}
             role="combobox"
             // accessibilityState is the NATIVE disclosure/disabled channel (iOS/Android);
-            // RNW drops it on the web, so aria-expanded/aria-disabled alias it there.
-            accessibilityState={{ expanded: open, disabled: !!disabled }}
+            // RNW drops it on the web, so aria-expanded and the entry's aria-disabled alias
+            // it there (src/style/text-entry-state.ts).
+            accessibilityState={{ ...entry.accessibilityState, expanded: open }}
             aria-expanded={open}
-            aria-disabled={!!disabled}
             // These ARIA relationships have no native RN equivalent. nativeID
             // and each row's selected trait retain native accessibility semantics.
             {...{ "aria-controls": listboxId, "aria-activedescendant": activeId,

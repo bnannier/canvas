@@ -1,0 +1,5 @@
+---
+"@nannier/canvas": patch
+---
+
+A GlassPane now renders nothing wherever its material resolves solid (an Android surface in the page, which has no capture plane it may sample; a missing optional peer; a browser without a backdrop filter), reading the same resolution as the component it sits in, so Android glass Chips, Badges and Kbds lose the black 1 dp ring and no pane draws a second hairline inside its host; the Video control bar keeps its fill there. A glass surface keeps a border that shows a state (the Slider's press halo) over its material. Disabled Input, Textarea, PhoneInput, Autocomplete and InputOTP fields now reach the browser as disabled (the disabled attribute and aria-disabled, out of the tab order) and report disabled to VoiceOver and TalkBack, while read-only fields stay focusable on the web. The TextInput primitive's keyboard focus ring takes the theme's ring colour, like every kit Pressable, and Slider and GeoMap show the kit's 2 px ring on keyboard focus in the ring colour, visible under glass.

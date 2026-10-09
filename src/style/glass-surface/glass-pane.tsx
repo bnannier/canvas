@@ -5,14 +5,20 @@
 // layout, its accessibility and its interaction; it drops its opaque fill under glass
 // (see `paneStyle`) and renders a GlassPane as its first child, which paints the
 // layer's tint, material and rim across the parent's box, clipped to the parent's
-// corners, with taps passing through. In solid mode it renders nothing at all, so the
-// solid tree is byte-identical to the pre-glass one.
+// corners, with taps passing through. Wherever its material resolves solid it renders
+// nothing at all: in solid mode, under Reduce Transparency or Increase Contrast, and
+// where glass is requested but cannot render (a missing optional peer, a browser
+// without a backdrop filter, an Android surface in the page, which has no capture
+// plane it may safely sample). The parent reads the same decision through
+// `useMaterialTheme`, keeps its complete solid skin there, and the solid tree is
+// byte-identical to the pre-glass one.
 
 import { StyleSheet, type StyleProp, type ViewStyle } from "react-native";
-import { useTheme, type ThemeValue } from "../theme.js";
+import { type ThemeValue } from "../theme.js";
 import { isGlass } from "../glass-fill.js";
 import { GlassSurface } from "./glass-surface.js";
 import { contrastBorderFor, type GlassLayer } from "./glass-surface.shared.js";
+import { useMaterialResolution } from "./use-material-theme.js";
 
 export interface GlassPaneProps {
   /** The layer of the glass model the parent belongs to (see GlassSurface). */
@@ -34,8 +40,11 @@ export interface GlassPaneProps {
 }
 
 export function GlassPane({ layer = "control", shape, tint, brand, interactive, testID, static: stable, clear }: GlassPaneProps) {
-  const theme = useTheme();
-  if (!isGlass(theme)) return null;
+  // A solid pane would paint a raw copy of the shape inside a host that already shows
+  // it: a second hairline one border-width in, or Android's default black where the
+  // shape names a border width without a colour.
+  const { material } = useMaterialResolution({ static: stable, layer });
+  if (material.renderer === "solid") return null;
   const flat = (StyleSheet.flatten(shape) ?? {}) as ViewStyle;
   const radii: ViewStyle = {
     backgroundColor: flat.backgroundColor,
@@ -65,6 +74,8 @@ export function GlassPane({ layer = "control", shape, tint, brand, interactive, 
  * them; a border would double the rim), in solid mode it is returned unchanged. Under
  * Increase Contrast it takes the contrasting border, except that a border showing a
  * state (`stateBorder`: a focused or errored field, an open trigger) keeps its colour.
+ * Pass the theme `useMaterialTheme` returns for the pane's layer (and `static`), so the
+ * node keeps its own fill and border exactly where the pane renders nothing.
  */
 export function paneStyle(appearance: boolean | ThemeValue, style: StyleProp<ViewStyle>, stateBorder = false): StyleProp<ViewStyle> {
   const glass = typeof appearance === "boolean" ? appearance : isGlass(appearance);

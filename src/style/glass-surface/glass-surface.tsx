@@ -6,9 +6,8 @@
 // expo-blur frost; glass-surface.ios.tsx: Liquid Glass and frost), so a web material
 // change never reaches a native build.
 import { Platform, View, type ViewStyle } from "react-native";
-import { useTheme } from "../theme.js";
-import { FrostView, useMaterialCapabilities, requiresBlurTarget } from "./material-runtime.js";
-import { resolveMaterial } from "./material-resolution.js";
+import { FrostView, requiresBlurTarget } from "./material-runtime.js";
+import { useMaterialResolution } from "./use-material-theme.js";
 import { WEB_FROST, webRimColor } from "./web-frost.js";
 import {
   GlassBox, CLEAR_INTENSITY, brandOverMaterial, clearSurfaceTint, contrastBorderFor, frostMethodProps,
@@ -16,11 +15,11 @@ import {
 } from "./glass-surface.shared.js";
 
 export function GlassSurface(props: GlassSurfaceProps) {
-  const theme = useTheme();
-  const { layer = "functional", sheer, tint, brand, style, clear } = props;
   // No capture target here: the browser's backdrop filter samples the page itself, and
-  // only Android's frost needs a target (glass-surface.android.tsx).
-  const resolved = resolveMaterial(theme, props, useMaterialCapabilities(), false);
+  // only Android's frost needs a target (glass-surface.android.tsx), so the shared
+  // resolution never finds one to require.
+  const { theme, material: resolved } = useMaterialResolution(props);
+  const { layer = "functional", sheer, tint, brand, style, clear } = props;
   const solid = resolved.renderer === "solid";
   // Sheer is a content-only treatment. It must never thin a menu or error verdict.
   const translucent = sheer && layer === "content";
