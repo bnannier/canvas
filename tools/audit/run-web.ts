@@ -11,14 +11,21 @@
 //   bun run audit:web -- --axe=all | --axe=none | --axe=phone,tablet,desktop   (default: solid at phone,desktop)
 //   bun run audit:web -- --base=http://localhost:8081   capture a running server (Metro) instead of docs/dist
 //   bun run audit:web -- --workers=4
-//   bun run audit:web -- --allow-stale                capture an export built from other source
+//   bun run audit:web -- --allow-stale                capture another checkout's source anyway
 //
-// Stale exports are refused. The export's source fingerprint (/testing/diagnostics, from
-// docs/scripts/build-info.cjs at export time) must equal this checkout's
-// `sourceFingerprint()`. The comparison runs in the capture's global setup
-// (e2e/audit/global-setup.ts), against the server the cells really hit, since without
-// --base the configuration reuses a server already on the export port; a refusal stops
-// the run before its first cell and lands in the manifest as `refused`.
+// Only this checkout's source is captured. The capture's global setup
+// (e2e/audit/global-setup.ts) opens /testing/diagnostics on the server the cells really hit
+// (without --base the configuration reuses a server already on the export port) and tells
+// a static export from a live dev server by how the page gets its code. A static export's
+// source fingerprint (docs/scripts/build-info.cjs at export time) must equal this
+// checkout's `sourceFingerprint()`; a live dev server (Metro) builds from the source on
+// disk, so it is recorded as one, and the project root its /status names must be this
+// checkout's docs app. A refusal stops the run before its first cell and lands in the
+// manifest as `refused`.
+//
+// The manifest's capture settings (browser, device scale, reduced motion, the fixed clock,
+// the launch switches) are read off playwright.audit.config.ts and e2e/support/docs.ts
+// FIXED_TIME, the same objects the capture runs with.
 //
 // Exit status: 0 when every planned cell was captured, 1 when a cell failed or the
 // capture stopped early, 2 for a refusal or a usage error.
@@ -34,7 +41,9 @@ import {
   MANIFEST_FILE,
   RUNS_DIR,
   SERVED_FILE,
+  captureSettings,
   describeAxe,
+  describeServed,
   parseRunArgs,
   parseWebFilters,
   planWebCapture,
@@ -42,7 +51,9 @@ import {
   runDirName,
   summarizeCells,
   workersFrom,
+  type CaptureSettings,
   type CellSummary,
+  type ServedRecord,
 } from "./web-capture.ts";
 
 const USAGE = `usage: bun run audit:web -- [--only=<slugs>] [--variants=<keys>] [--looks=blush,mint,dark]
@@ -88,19 +99,6 @@ function readJson<T>(path: string): T | null {
   }
 }
 
-interface Served {
-  url: string;
-  sourceFingerprint: string | null;
-  candidateRevision: string | null;
-  sourceDirty: string | null;
-  packageVersion: string | null;
-  inputMode: string | null;
-  checkoutFingerprint: string;
-  fresh: boolean;
-  reason?: string;
-  allowStale: boolean;
-}
-
 async function main(): Promise<number> {
   const args = parseRunArgs(process.argv.slice(2));
   if (args.help) {
@@ -111,15 +109,24 @@ async function main(): Promise<number> {
     console.error(`audit:web: ${args.errors.join("; ")}\n${USAGE}`);
     return 2;
   }
-  // The flags win over anything already in the environment.
-  const env: Record<string, string | undefined> = { ...process.env, ...args.env };
+  // The flags win over anything already in the environment. They go into this process's
+  // own environment, so the configuration read below for the manifest resolves exactly as
+  // it does in the Playwright process that inherits it.
+  Object.assign(process.env, args.env);
+  const env: Record<string, string | undefined> = process.env;
   let plan: ReturnType<typeof planWebCapture>;
   let filters: ReturnType<typeof parseWebFilters>;
   let workers: number;
+  let capture: CaptureSettings;
   try {
     filters = parseWebFilters(env);
     plan = planWebCapture(components(), filters);
     workers = workersFrom(env);
+    const [{ default: auditConfig }, { FIXED_TIME }] = await Promise.all([
+      import("../../playwright.audit.config.ts"),
+      import("../../e2e/support/docs.ts"),
+    ]);
+    capture = captureSettings(auditConfig, FIXED_TIME);
   } catch (error) {
     console.error(`audit:web: ${(error as Error).message}`);
     return 2;
@@ -155,7 +162,7 @@ async function main(): Promise<number> {
     base: env.E2E_BASE_URL ?? "docs/dist via the suite's export server (playwright.config.ts DOCS_SERVER)",
     allowStale: args.allowStale,
     workers,
-    capture: { browser: "chromium", deviceScaleFactor: 2, reducedMotion: "reduce", fixedTime: "2026-01-15T12:00:00Z" },
+    capture,
     filters: {
       only: filters.only,
       variants: filters.variants,
@@ -205,7 +212,7 @@ async function main(): Promise<number> {
   const finished = new Date();
 
   const servedPath = join(runDir, SERVED_FILE);
-  const served = readJson<Served>(servedPath);
+  const served = readJson<ServedRecord>(servedPath);
   if (served) rmSync(servedPath);
   const cellsPath = join(runDir, CELLS_FILE);
   const { records, unreadable } = existsSync(cellsPath) ? readCellRecords(readFileSync(cellsPath, "utf8")) : { records: [], unreadable: 0 };
@@ -238,9 +245,7 @@ async function main(): Promise<number> {
 
   console.log("");
   console.log(`audit:web ${id}: ${status}`);
-  if (served) {
-    console.log(`  served   ${served.url} (source ${served.sourceFingerprint?.slice(0, 12) ?? "unknown"}, ${served.fresh ? "matches this checkout" : served.allowStale ? "STALE, captured with --allow-stale" : "STALE"})`);
-  }
+  if (served) console.log(`  served   ${describeServed(served)}`);
   if (refused) {
     console.error(`  refused  ${served!.reason}`);
     console.log(`  manifest ${relative(ROOT, manifestPath)}`);

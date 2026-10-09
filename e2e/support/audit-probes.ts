@@ -12,6 +12,24 @@
  * control, an ARIA widget role, a tab stop): its role, an approximate accessible name, its
  * ARIA state and its visible box. And how far the row overflows its own box.
  *
+ * A text's size is read twice: the computed `font-size`, and the scale its glyphs paint at,
+ * which is what a reader sees. A floating label is laid out at its resting size and floated
+ * by a transform (src/style/floating-label.tsx), so a 16 px label can paint at 12. The scale
+ * is the vertical one of every transform above the text composed (each element's `zoom`,
+ * `rotate`, `scale` and `transform`, the way CSS orders them), and an SVG text's screen CTM,
+ * which takes in its viewBox and every ancestor's transform, HTML ones included.
+ *
+ * A form control paints its text from its value, and the DOM holds that text in no text
+ * node, so a text field's value (a password's as the bullets it paints), its placeholder
+ * while it shows (in the `::placeholder` style: its own colour, opacity and font) and a
+ * drop-down select's chosen label are read from the control. Their box is the control's
+ * content box narrowed to the text's width and the font's line metrics (a canvas
+ * `measureText` in the control's font), its overflow is the control's own scroll extent where
+ * Chromium reports one (a field's value; a textarea's value or placeholder) and the measured
+ * width against the content box where it does not (a placeholder in a single-line field, a
+ * select's label), and its paint stack starts at the control, so its own background is the
+ * first layer under the text.
+ *
  * The probe only reads; what the readings mean (the composited background, the contrast,
  * the floors, the targets, the flags) is decided in tools/audit/probe-math.ts, which is
  * unit tested and shared with the analysis step.
@@ -21,7 +39,7 @@
  * stack is read under a style that gives every element pointer events back, and the style
  * is removed before the function returns. It changes hit testing only, not paint or
  * layout, and the card has already been photographed. Everything else reads; nothing is
- * written to the page.
+ * written to the page (the canvas that measures a control's text is never attached).
  *
  * The row's platform watermark (the absolute, pointer-events-none "iOS" / "Android" /
  * "Web" tag the Playground floats over each row) is docs chrome, not the component, and is
@@ -133,12 +151,239 @@ function collectRow(row: Element): Omit<RawRow, "platform"> {
     return layer.kinds.length > 0 || (layer.fill !== null && !transparent(layer.fill));
   };
 
+  // How much the transforms above an element scale what it paints: the linear part of the
+  // matrix from its own space to the viewport's. CSS composes an element's own transform as
+  // translate, rotate, scale, then `transform` (`zoom` scales uniformly, so its place in the
+  // order does not matter), and an ancestor's after it. An SVG graphics element's screen CTM
+  // is that matrix already (its viewBox, its own and its SVG ancestors' transforms, and every
+  // HTML ancestor's), so the walk up stops at one; HTML inside a foreignObject reaches its
+  // CTM the same way.
+  const toDegrees = (token: string): number => {
+    const n = parseFloat(token);
+    if (token.endsWith("grad")) return n * 0.9;
+    if (token.endsWith("rad")) return (n * 180) / Math.PI;
+    if (token.endsWith("turn")) return n * 360;
+    return n;
+  };
+  const AXES: Record<string, [number, number, number]> = { x: [1, 0, 0], y: [0, 1, 0], z: [0, 0, 1] };
+  const ownLinear = (el: Element): DOMMatrix => {
+    const style = styleOf(el);
+    const m = new DOMMatrix();
+    const zoom = parseFloat(style.zoom);
+    if (zoom > 0 && zoom !== 1) m.scaleSelf(zoom, zoom);
+    if (style.rotate && style.rotate !== "none") {
+      const parts = style.rotate.trim().split(/\s+/);
+      const angle = toDegrees(parts.pop() ?? "0");
+      const axis = parts.length === 3 ? (parts.map(Number) as [number, number, number]) : AXES[parts[0] ?? "z"] ?? AXES.z!;
+      m.rotateAxisAngleSelf(axis[0], axis[1], axis[2], angle);
+    }
+    if (style.scale && style.scale !== "none") {
+      const [x = 1, y = x, z = 1] = style.scale.trim().split(/\s+/).map((t) => (t.endsWith("%") ? parseFloat(t) / 100 : parseFloat(t)));
+      m.scaleSelf(x, y, z);
+    }
+    if (style.transform && style.transform !== "none") m.multiplySelf(new DOMMatrix(style.transform));
+    return m;
+  };
+  const linear = new Map<Element, DOMMatrixReadOnly>();
+  const linearOf = (el: Element): DOMMatrixReadOnly => {
+    const known = linear.get(el);
+    if (known) return known;
+    let m: DOMMatrixReadOnly;
+    if (el instanceof SVGGraphicsElement) {
+      const ctm = el.getScreenCTM();
+      m = new DOMMatrixReadOnly(ctm ? [ctm.a, ctm.b, ctm.c, ctm.d, 0, 0] : undefined);
+    } else {
+      m = (el.parentElement ? linearOf(el.parentElement) : new DOMMatrixReadOnly()).multiply(ownLinear(el));
+    }
+    linear.set(el, m);
+    return m;
+  };
+  /** The scale an element's glyphs paint at: across (its x axis' length on screen) and up. */
+  const scaleOf = (el: Element) => {
+    const m = linearOf(el);
+    const r4 = (n: number) => Math.round(n * 10000) / 10000;
+    return { x: r4(Math.hypot(m.a, m.b)), y: r4(Math.hypot(m.c, m.d)) };
+  };
+
+  // The colour glyphs are filled with: -webkit-text-fill-color, which follows `color`
+  // unless something sets it (a reset on a disabled field, text clipped to a gradient).
+  const inkOf = (style: CSSStyleDeclaration) => style.getPropertyValue("-webkit-text-fill-color") || style.color;
+  const weightOf = (style: CSSStyleDeclaration) => Number(style.fontWeight) || (style.fontWeight === "bold" ? 700 : 400);
+  const familyOf = (style: CSSStyleDeclaration) => (style.fontFamily.split(",")[0] ?? "").trim().replace(/^["']|["']$/g, "");
+
+  type Edges = { left: number; top: number; right: number; bottom: number };
+  /** The first ancestor, up to the row, whose clipping box `union` runs out of. */
+  const clipperOf = (el: Element, union: Edges): RawText["clipper"] => {
+    for (let ancestor = el.parentElement; ancestor; ancestor = ancestor.parentElement) {
+      const s = styleOf(ancestor);
+      const clipX = s.overflowX !== "visible";
+      const clipY = s.overflowY !== "visible";
+      if (clipX || clipY) {
+        const r = ancestor.getBoundingClientRect();
+        const left = r.left + ancestor.clientLeft;
+        const top = r.top + ancestor.clientTop;
+        const right = left + (ancestor.clientWidth || r.width);
+        const bottom = top + (ancestor.clientHeight || r.height);
+        const excess = Math.max(
+          clipX ? Math.max(left - union.left, union.right - right) : 0,
+          clipY ? Math.max(top - union.top, union.bottom - bottom) : 0,
+        );
+        if (excess > 1) {
+          return { overflow: clipX && (left - union.left > 1 || union.right - right > 1) ? s.overflowX : s.overflowY, excess: round(excess) };
+        }
+      }
+      if (ancestor === row) break;
+    }
+    return null;
+  };
+
+  // A form control's own text, which the DOM holds in no text node: a text field's value, or
+  // its placeholder while that shows (in the ::placeholder style), and a drop-down select's
+  // chosen label. A list-box select lays its options out as text nodes of their own.
+  const TEXT_TYPES = new Set(["text", "search", "email", "url", "tel", "password", "number"]);
+  type FieldText = { control: "input" | "textarea" | "select"; part: "value" | "placeholder"; text: string; style: CSSStyleDeclaration };
+  const fieldTextOf = (el: Element): FieldText | null => {
+    let control: "input" | "textarea";
+    let value: string;
+    if (el instanceof HTMLInputElement && TEXT_TYPES.has(el.type)) {
+      control = "input";
+      // A password paints a bullet per character, and its value is not the probe's to record.
+      value = el.type === "password" ? "•".repeat(el.value.length) : el.value;
+    } else if (el instanceof HTMLTextAreaElement) {
+      control = "textarea";
+      value = el.value;
+    } else if (el instanceof HTMLSelectElement && !el.multiple && el.size <= 1) {
+      const label = el.selectedOptions[0]?.label ?? "";
+      return label.trim() ? { control: "select", part: "value", text: label, style: styleOf(el) } : null;
+    } else {
+      return null;
+    }
+    if (value.trim()) return { control, part: "value", text: value, style: styleOf(el) };
+    if (el.placeholder.trim() && el.matches(":placeholder-shown")) {
+      return { control, part: "placeholder", text: el.placeholder, style: getComputedStyle(el, "::placeholder") };
+    }
+    return null;
+  };
+  const pen = document.createElement("canvas").getContext("2d");
+  const transformText = (text: string, transform: string) => {
+    if (transform === "uppercase") return text.toUpperCase();
+    if (transform === "lowercase") return text.toLowerCase();
+    if (transform === "capitalize") return text.replace(/(^|\s)(\S)/g, (_, space: string, first: string) => space + first.toUpperCase());
+    return text;
+  };
+  /** One line of `text` in `style`'s font: its advance, and the font's ascent and descent. */
+  const measureLine = (text: string, style: CSSStyleDeclaration) => {
+    if (!pen) throw new Error("the probe has no 2D canvas to measure a form control's text with");
+    pen.font = `${style.fontStyle} ${style.fontWeight} ${style.fontSize} ${style.fontFamily}`;
+    pen.letterSpacing = style.letterSpacing === "normal" ? "0px" : style.letterSpacing;
+    const metrics = pen.measureText(transformText(text, style.textTransform));
+    return { width: metrics.width, ascent: metrics.fontBoundingBoxAscent, descent: metrics.fontBoundingBoxDescent };
+  };
+  /**
+   * Where a control paints its text: the content box, narrowed to the text's width and the
+   * font's line metrics (a single-line control centres its line, a textarea wraps at its
+   * content width from the top), placed by the text's alignment and carried through the
+   * control's own scale. And how far the text overflows the content box, in layout px.
+   */
+  const fieldGeometry = (el: HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement, field: FieldText, scale: { x: number; y: number }) => {
+    const own = styleOf(el);
+    const px = (value: string) => parseFloat(value) || 0;
+    const box = el.getBoundingClientRect();
+    const padLeft = px(own.paddingLeft);
+    const padTop = px(own.paddingTop);
+    const contentWidth = Math.max(0, el.clientWidth - padLeft - px(own.paddingRight));
+    const contentHeight = Math.max(0, el.clientHeight - padTop - px(own.paddingBottom));
+    const lines = field.text.split("\n").map((line) => measureLine(line, field.style));
+    const first = lines[0]!;
+    const contentArea = first.ascent + first.descent;
+    const lineHeight = field.style.lineHeight === "normal" ? contentArea : px(field.style.lineHeight);
+    const firstWidth = Math.min(first.width, contentWidth);
+    const rtl = own.direction === "rtl";
+    const align = field.style.textAlign;
+    const startOf = (width: number) => {
+      if (align.endsWith("center")) return (contentWidth - width) / 2;
+      const right = align.endsWith("right") || (align === "end" && !rtl) || ((align === "start" || align === "justify") && rtl);
+      return right ? contentWidth - width : 0;
+    };
+    let width = firstWidth;
+    let height = Math.min(contentHeight, contentArea);
+    let x = startOf(firstWidth);
+    let y = (contentHeight - contentArea) / 2;
+    if (field.control === "textarea") {
+      const rows = lines.reduce((n, line) => n + Math.max(1, Math.ceil(line.width / Math.max(contentWidth, 1))), 0);
+      if (rows > 1) {
+        width = contentWidth;
+        x = 0;
+      }
+      y = (lineHeight - contentArea) / 2;
+      height = Math.min(contentHeight, (rows - 1) * lineHeight + contentArea);
+    }
+    const originX = box.left + (el.clientLeft + padLeft) * scale.x;
+    const originY = box.top + (el.clientTop + padTop) * scale.y;
+    const left = originX + x * scale.x;
+    const top = originY + y * scale.y;
+    // Chromium reports a field's value and a textarea's placeholder in the control's scroll
+    // extent; a single-line placeholder and a select's label it does not, so those are measured.
+    const selfOverflow = field.control === "textarea"
+      ? { x: 0, y: el.scrollHeight - el.clientHeight }
+      : field.control === "input" && field.part === "value"
+        ? { x: el.scrollWidth - el.clientWidth, y: 0 }
+        : { x: round(Math.max(0, first.width - contentWidth)), y: 0 };
+    return {
+      union: { left, top, right: left + width * scale.x, bottom: top + height * scale.y },
+      point: { x: originX + (startOf(firstWidth) + firstWidth / 2) * scale.x, y: top + (contentArea * scale.y) / 2 },
+      selfOverflow,
+    };
+  };
+
+  const edgesToBox = (union: Edges) => boxOf({ left: union.left, top: union.top, width: union.right - union.left, height: union.bottom - union.top });
+  const flags = (el: Element) => ({
+    ariaHidden: el.closest('[aria-hidden="true"]') !== null,
+    disabled: el.closest('[aria-disabled="true"], [disabled]') !== null,
+  });
+
   // Pass one: every text leaf's styles, boxes and clipping, read before the stack style
   // goes in, so pointer-events reads its real value above.
   const pending: { el: Element; raw: RawText; point: { x: number; y: number } }[] = [];
   const range = document.createRange();
   for (const el of [row, ...Array.from(row.querySelectorAll("*"))]) {
     if (UNPAINTED.has(el.localName) || inChrome(el) || !visible(el)) continue;
+    const field = fieldTextOf(el);
+    if (field) {
+      const groups = groupsOf(el);
+      if (groups.some((id) => groupOpacity[id] === 0)) continue;
+      const control = el as HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement;
+      const scale = scaleOf(el);
+      const { union, point, selfOverflow } = fieldGeometry(control, field, scale);
+      pending.push({
+        el,
+        point,
+        raw: {
+          text: field.text.replace(/\s+/g, " ").trim().slice(0, 80),
+          box: edgesToBox(union),
+          size: parseFloat(field.style.fontSize),
+          scale: scale.y,
+          weight: weightOf(field.style),
+          family: familyOf(field.style),
+          color: inkOf(field.style),
+          // A placeholder's own opacity (Firefox's default is 0.54; Chromium's is 1).
+          colorAlpha: field.part === "placeholder" ? (Number.isFinite(parseFloat(field.style.opacity)) ? parseFloat(field.style.opacity) : 1) : 1,
+          svg: false,
+          field: { control: field.control, part: field.part },
+          ...flags(el),
+          groups,
+          selfOverflow,
+          // A control clips its text to its content box.
+          clipsSelf: true,
+          ellipsis: styleOf(el).textOverflow === "ellipsis",
+          clipper: clipperOf(el, union),
+          stack: null,
+          stackNote: null,
+          covered: false,
+        },
+      });
+      continue;
+    }
     const textNodes = Array.from(el.childNodes).filter((n) => n.nodeType === Node.TEXT_NODE && (n.textContent ?? "").trim() !== "");
     if (!textNodes.length) continue;
     const rects: DOMRect[] = [];
@@ -162,48 +407,27 @@ function collectRow(row: Element): Omit<RawRow, "platform"> {
       ? { x: html.scrollWidth - html.clientWidth, y: html.scrollHeight - html.clientHeight }
       : null;
     const lineClamp = style.getPropertyValue("-webkit-line-clamp");
-    let clipper: RawText["clipper"] = null;
-    for (let ancestor = el.parentElement; ancestor; ancestor = ancestor.parentElement) {
-      const s = styleOf(ancestor);
-      const clipX = s.overflowX !== "visible";
-      const clipY = s.overflowY !== "visible";
-      if (clipX || clipY) {
-        const r = ancestor.getBoundingClientRect();
-        const left = r.left + ancestor.clientLeft;
-        const top = r.top + ancestor.clientTop;
-        const right = left + (ancestor.clientWidth || r.width);
-        const bottom = top + (ancestor.clientHeight || r.height);
-        const excess = Math.max(
-          clipX ? Math.max(left - union.left, union.right - right) : 0,
-          clipY ? Math.max(top - union.top, union.bottom - bottom) : 0,
-        );
-        if (excess > 1) {
-          clipper = { overflow: clipX && (left - union.left > 1 || union.right - right > 1) ? s.overflowX : s.overflowY, excess: round(excess) };
-          break;
-        }
-      }
-      if (ancestor === row) break;
-    }
     const first = rects[0]!;
     pending.push({
       el,
       point: { x: first.left + first.width / 2, y: first.top + first.height / 2 },
       raw: {
         text: textNodes.map((n) => n.textContent ?? "").join("").replace(/\s+/g, " ").trim().slice(0, 80),
-        box: boxOf({ left: union.left, top: union.top, width: union.right - union.left, height: union.bottom - union.top }),
+        box: edgesToBox(union),
         size: parseFloat(style.fontSize),
-        weight: Number(style.fontWeight) || (style.fontWeight === "bold" ? 700 : 400),
-        family: (style.fontFamily.split(",")[0] ?? "").trim().replace(/^["']|["']$/g, ""),
-        color: svg ? style.fill : style.color,
+        scale: scaleOf(el).y,
+        weight: weightOf(style),
+        family: familyOf(style),
+        color: svg ? style.fill : inkOf(style),
         colorAlpha: svg ? parseFloat(style.fillOpacity || "1") : 1,
         svg,
-        ariaHidden: el.closest('[aria-hidden="true"]') !== null,
-        disabled: el.closest('[aria-disabled="true"], [disabled]') !== null,
+        field: null,
+        ...flags(el),
         groups,
         selfOverflow,
         clipsSelf: style.overflowX !== "visible" || style.overflowY !== "visible",
         ellipsis: style.textOverflow === "ellipsis" || (lineClamp !== "" && lineClamp !== "none"),
-        clipper,
+        clipper: clipperOf(el, union),
         stack: null,
         stackNote: null,
         covered: false,
@@ -308,6 +532,8 @@ function collectRow(row: Element): Omit<RawRow, "platform"> {
       if (value !== null) state[attribute] = value;
     }
     if ((el as HTMLButtonElement).disabled) state.disabled = "true";
+    // A field the user cannot edit (react-native-web's `editable={false}`) says so natively.
+    if ((el as HTMLInputElement).readOnly) state.readonly = "true";
     interactive.push({
       role: el.getAttribute("role") ?? implicitRole(el),
       name: nameOf(el),

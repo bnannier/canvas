@@ -4,10 +4,12 @@ import {
   contrastOf,
   deriveRow,
   deriveText,
+  fieldScrolls,
   flagsOf,
   flatten,
   isLargeText,
   overflowOf,
+  paintedSize,
   parseCssColor,
   renderedWeight,
   requiredContrast,
@@ -25,11 +27,13 @@ function text(overrides: Partial<RawText> = {}): RawText {
     text: "Label",
     box: { x: 0, y: 0, width: 40, height: 16 },
     size: 12.5,
+    scale: 1,
     weight: 500,
     family: "Manrope",
     color: "rgb(0, 0, 0)",
     colorAlpha: 1,
     svg: false,
+    field: null,
     ariaHidden: false,
     disabled: false,
     groups: [],
@@ -164,6 +168,89 @@ describe("a text leaf", () => {
 
   it("multiplies its opacity groups", () => {
     expect(deriveText(text({ groups: [0, 1] }), [0.5, 0.4]).opacity).toBe(0.2);
+  });
+});
+
+describe("the size a text paints at", () => {
+  it("is the computed size times the scale its glyphs paint at, to 1/100 px", () => {
+    expect(paintedSize(16, 0.75)).toBe(12);
+    expect(paintedSize(16, 0.7501)).toBe(12);
+    expect(paintedSize(12.5, 1)).toBe(12.5);
+  });
+
+  it("is what a floated label is read at: 16 px computed, 12 px painted, the computed size kept", () => {
+    const label = deriveText(text({ text: "Country", size: 16, scale: 0.75 }), []);
+    expect(label).toMatchObject({ size: 12, computedSize: 16, scale: 0.75, belowSourceFloor: false, underBodyFloor: false });
+    const scaledSmall = deriveText(text({ size: 12, scale: 0.75 }), []);
+    expect(scaledSmall).toMatchObject({ size: 9, computedSize: 12, belowSourceFloor: true, underBodyFloor: true });
+  });
+
+  it("decides the large-text threshold from the painted size, not the computed one", () => {
+    expect(deriveText(text({ size: 24, scale: 0.5 }), []).required).toBe(4.5);
+    expect(deriveText(text({ size: 16, scale: 1.5 }), []).required).toBe(3);
+    expect(deriveText(text({ size: 24, scale: 1 }), []).required).toBe(3);
+  });
+});
+
+describe("a form control's own text", () => {
+  const value = { control: "input", part: "value" } as const;
+  const placeholder = { control: "input", part: "placeholder" } as const;
+
+  it("is judged on the control's own background, with a placeholder's colour and opacity", () => {
+    // A placeholder in muted ink on the field's white fill, inside a page painted dark: the
+    // field's fill is the floor, so the page under it does not count.
+    const derived = deriveText(text({
+      text: "you@example.com",
+      field: placeholder,
+      color: "rgb(119, 119, 119)",
+      colorAlpha: 0.5,
+      stack: [layer("rgb(255, 255, 255)", [], [], "input"), layer("rgb(0, 0, 0)")],
+    }), []);
+    expect(derived.field).toEqual(placeholder);
+    expect(derived.background).toBe("rgb(255, 255, 255)");
+    expect(derived.painted).toBe("rgb(187, 187, 187)");
+    expect(derived.contrastFails).toBe(true);
+  });
+
+  it("carries no field marker on an ordinary text", () => {
+    expect("field" in deriveText(text(), [])).toBe(false);
+  });
+
+  it("scrolls a field's value that runs past its box, and cuts a placeholder or a select's label", () => {
+    expect(fieldScrolls(value)).toBe(true);
+    expect(fieldScrolls({ control: "textarea", part: "value" })).toBe(true);
+    expect(fieldScrolls(placeholder)).toBe(false);
+    expect(fieldScrolls({ control: "select", part: "value" })).toBe(false);
+    expect(fieldScrolls(null)).toBe(false);
+
+    const long = deriveText(text({ field: value, selfOverflow: { x: 307, y: 0 }, clipsSelf: true }), []);
+    expect(long.clipped).toBeNull();
+    expect(long.truncated).toBe(false);
+    expect(long.scrolled).toEqual({ overflow: "field", excess: 307 });
+
+    const cut = deriveText(text({ field: placeholder, selfOverflow: { x: 42, y: 0 }, clipsSelf: true }), []);
+    expect(cut.clipped).toEqual({ by: "self", overflow: "self", excess: 42 });
+    expect(cut.scrolled).toBeNull();
+
+    const ellipsis = deriveText(text({ field: placeholder, selfOverflow: { x: 42, y: 0 }, clipsSelf: true, ellipsis: true }), []);
+    expect(ellipsis).toMatchObject({ clipped: null, truncated: true, scrolled: null });
+
+    const select = deriveText(text({ field: { control: "select", part: "value" }, selfOverflow: { x: 8, y: 0 }, clipsSelf: true }), []);
+    expect(select.clipped).toEqual({ by: "self", overflow: "self", excess: 8 });
+  });
+
+  it("counts a scrolled field value in the summary without flagging the cell", () => {
+    const row = deriveRow({
+      platform: "web",
+      box: { x: 0, y: 0, width: 400, height: 100 },
+      scroll: { scrollWidth: 400, clientWidth: 400, scrollHeight: 100, clientHeight: 100 },
+      groupOpacity: [],
+      texts: [text({ field: value, selfOverflow: { x: 307, y: 0 }, clipsSelf: true })],
+      interactive: [],
+    });
+    const summary = summarizeProbe([row], [], { axeViolations: 0, problems: 0, renderFailed: false });
+    expect(summary).toMatchObject({ scrolledText: 1, clippedText: 0 });
+    expect(flagsOf(summary)).toEqual([]);
   });
 });
 
