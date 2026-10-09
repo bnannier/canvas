@@ -10,7 +10,7 @@ Audit checklist for `/templates/onboarding`. The facts block and the variants ta
 | Data module | `docs/src/core/data/templates/onboarding.tsx` |
 | Sections | 1. Setup wizard |
 | Kit imports in the module | Button, Card, Column, Container, EmptyState, Icon, Input, InputOTP, Row, Select, Steps, Typography, useToast |
-| E2E naming it | 0: none |
+| E2E driving it | 0: none |
 <!-- audit:facts:end -->
 
 ## Variants

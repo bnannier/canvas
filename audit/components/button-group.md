@@ -20,9 +20,9 @@ Audit checklist for `/components/button-group`. The facts block and the variants
 | Interactions registry | in the inventory; evidence: button-group-selection (unit-web, test/behavior.test.tsx) |
 | Overlay recipe | none |
 | MeasureProps | adopted in `button-group.shared.tsx` |
-| Touch target | no minTarget or useMinTargetSlop in the source directory |
+| Touch target | no minTarget or useMinTargetSlop in the source modules |
 | Tests importing it | 13: `test/action-role.test.tsx`, `test/anchored-overlay-dismissal.test.tsx`, `test/atom-material-roles.test.tsx`, `test/behavior.test.tsx`, `test/button-group-glass.test.tsx`, `test/button-group-look.test.tsx`, `test/dense-overlays.test.tsx`, `test/hosted-trigger-focus.test.tsx`, `test/native-accessibility-escape-hosts.test.tsx`, `test/native-material-coordinate-hosts.test.tsx`, `test/no-console-violations.test.tsx`, `test/sizing.test.tsx`, `test/text-contrast.test.tsx` |
-| E2E naming it | 1: `e2e/visual/material-states.e2e.ts` |
+| E2E importing or driving it | 2: `e2e/behavior/material-overlay-host.e2e.ts`, `e2e/visual/material-states.e2e.ts` |
 <!-- audit:facts:end -->
 
 ## Variants

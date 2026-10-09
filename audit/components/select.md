@@ -20,9 +20,9 @@ Audit checklist for `/components/select`. The facts block and the variants table
 | Interactions registry | in the inventory; evidence: none registered |
 | Overlay recipe | yes (listbox) |
 | MeasureProps | adopted in `select.shared.tsx` |
-| Touch target | no minTarget or useMinTargetSlop in the source directory |
+| Touch target | no minTarget or useMinTargetSlop in the source modules |
 | Tests importing it | 23: `test/a11y-state.test.tsx`, `test/anchored-overlay-dismissal.test.tsx`, `test/atom-material-feedback.test.tsx`, `test/control-refs.test.tsx`, `test/dense-overlays.test.tsx`, `test/drawer-host.test.tsx`, `test/escape-layers.test.tsx`, `test/field-focus-layout.test.tsx`, `test/field-focus-states.test.tsx`, `test/fixtures/control-refs-consumer.tsx`, `test/floating-label-color.test.tsx`, `test/floating-label-parity.test.tsx`, `test/hosted-trigger-focus.test.tsx`, `test/native-accessibility-escape-hosts.test.tsx`, `test/native-focus-fixtures.test.tsx`, `test/no-console-violations.test.tsx`, `test/overlay-escape.test.tsx`, `test/overlay-frame-ring.test.tsx`, `test/overlay-list-scroll.test.tsx`, `test/overlays.test.tsx`, `test/select-disabled.test.tsx`, `test/select-options.test.tsx`, `test/sizing.test.tsx` |
-| E2E naming it | 4: `e2e/behavior/hydration-ids.e2e.ts`, `e2e/behavior/text-entry-clear.e2e.ts`, `e2e/journeys/control-refs.e2e.ts`, `e2e/support/overlay-recipes.ts` |
+| E2E importing or driving it | 6: `e2e/behavior/hydration-ids.e2e.ts`, `e2e/behavior/scroll-focus.e2e.ts`, `e2e/journeys/control-refs.e2e.ts`, `e2e/journeys/keyboard.e2e.ts`, `e2e/journeys/overlay-placement.e2e.ts`, `e2e/journeys/touch.e2e.ts` |
 <!-- audit:facts:end -->
 
 ## Variants

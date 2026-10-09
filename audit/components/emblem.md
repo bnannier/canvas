@@ -20,9 +20,9 @@ Audit checklist for `/components/emblem`. The facts block and the variants table
 | Interactions registry | in the inventory; evidence: none registered |
 | Overlay recipe | none |
 | MeasureProps | not adopted |
-| Touch target | no minTarget or useMinTargetSlop in the source directory |
+| Touch target | no minTarget or useMinTargetSlop in the source modules |
 | Tests importing it | 4: `test/atom-material-roles.test.tsx`, `test/color-overrides.test.tsx`, `test/new-components.test.tsx`, `test/primary-text.test.tsx` |
-| E2E naming it | 0: none |
+| E2E importing or driving it | 0: none |
 <!-- audit:facts:end -->
 
 ## Variants

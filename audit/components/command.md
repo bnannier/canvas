@@ -20,9 +20,9 @@ Audit checklist for `/components/command`. The facts block and the variants tabl
 | Interactions registry | in the inventory; evidence: none registered |
 | Overlay recipe | yes (listbox) |
 | MeasureProps | not adopted |
-| Touch target | no minTarget or useMinTargetSlop in the source directory |
+| Touch target | no minTarget or useMinTargetSlop in the source modules |
 | Tests importing it | 13: `test/a11y-state.test.tsx`, `test/anchored-overlay-dismissal.test.tsx`, `test/command.test.tsx`, `test/dense-overlays.test.tsx`, `test/escape-layers.test.tsx`, `test/field-focus-states.test.tsx`, `test/hosted-trigger-focus.test.tsx`, `test/keyboard-nav.test.tsx`, `test/native-accessibility-escape-hosts.test.tsx`, `test/native-focus-fixtures.test.tsx`, `test/no-console-violations.test.tsx`, `test/organism-material-roles.test.tsx`, `test/overlay-frame-ring.test.tsx` |
-| E2E naming it | 3: `e2e/behavior/escape-layers.e2e.ts`, `e2e/journeys/overlay-placement.e2e.ts`, `e2e/support/keys.ts` |
+| E2E importing or driving it | 5: `e2e/behavior/escape-layers.e2e.ts`, `e2e/behavior/form-autocomplete.e2e.ts`, `e2e/journeys/keyboard.e2e.ts`, `e2e/journeys/overlay-placement.e2e.ts`, `e2e/journeys/touch.e2e.ts` |
 <!-- audit:facts:end -->
 
 ## Variants

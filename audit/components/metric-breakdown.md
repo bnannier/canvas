@@ -10,8 +10,8 @@ Audit checklist for `/components/metric-breakdown`. The facts block and the vari
 | Markdown | `src/charts/metric-breakdown/metric-breakdown.md` |
 | Source files | `metric-breakdown.android.tsx`, `metric-breakdown.ios.tsx`, `metric-breakdown.md`, `metric-breakdown.shared.tsx`, `metric-breakdown.tsx` |
 | Exports | MetricBreakdown |
-| Platform entries | iOS: own build: MetricBreakdown (injects platform parts (../../atoms/chip/chip.ios.js)). Android: own build: MetricBreakdown (injects platform parts (../../atoms/chip/chip.android.js)) |
-| Platform-skins registry | iOS: MetricBreakdown; Android: MetricBreakdown |
+| Platform entries | iOS: web build: MetricBreakdown. Android: own build: MetricBreakdown (injects platform parts (../../atoms/chip/chip.android.js)) |
+| Platform-skins registry | iOS: none; Android: MetricBreakdown |
 | Reference row | `charts` (Shared, Built). iOS: link [charts (iOS)](https://developer.apple.com/design/human-interface-guidelines/charts) (HIG Charts component page; built with the Swift Charts framework; no iOS 27 kit symbol group). Android: none (Material 3 has no charts component; data visualization guidance exists only in the Material 2 archive and an M3 accessibility blog post). Web: link [charts (Web)](https://ui.shadcn.com/docs/components/chart) |
 | Materials manifest | MetricBreakdown: charts, static; verification solid-appearance, glass-appearance, mode-switch, accessibility-fallback, runtime-capability, semantic-state |
 | Hand-off open gaps | none |
@@ -20,9 +20,9 @@ Audit checklist for `/components/metric-breakdown`. The facts block and the vari
 | Interactions registry | in the inventory; evidence: none registered |
 | Overlay recipe | none |
 | MeasureProps | not adopted |
-| Touch target | no minTarget or useMinTargetSlop in the source directory |
+| Touch target | no minTarget or useMinTargetSlop in the source modules |
 | Tests importing it | 3: `test/chart-materials.test.tsx`, `test/charts-buildout.test.tsx`, `test/dev-warn.test.tsx` |
-| E2E naming it | 0: none |
+| E2E importing or driving it | 0: none |
 <!-- audit:facts:end -->
 
 ## Variants

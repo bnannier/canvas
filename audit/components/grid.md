@@ -20,9 +20,9 @@ Audit checklist for `/components/grid`. The facts block and the variants table a
 | Interactions registry | in the inventory; evidence: none registered |
 | Overlay recipe | none |
 | MeasureProps | not adopted |
-| Touch target | no minTarget or useMinTargetSlop in the source directory |
+| Touch target | no minTarget or useMinTargetSlop in the source modules |
 | Tests importing it | 3: `test/hover-lift.test.tsx`, `test/layout-responsive.test.tsx`, `test/layout-spans.test.tsx` |
-| E2E naming it | 1: `e2e/responsive/template-state.e2e.ts` |
+| E2E importing or driving it | 0: none |
 <!-- audit:facts:end -->
 
 ## Variants

@@ -20,9 +20,9 @@ Audit checklist for `/components/listbox`. The facts block and the variants tabl
 | Interactions registry | in the inventory; evidence: listbox-keyboard (browser-keyboard, e2e/journeys/keyboard.e2e.ts), listbox-touch (browser-touch, e2e/journeys/touch.e2e.ts), listbox-selection (unit-web, test/behavior.test.tsx) |
 | Overlay recipe | none |
 | MeasureProps | adopted in `listbox.shared.tsx` |
-| Touch target | no minTarget or useMinTargetSlop in the source directory |
+| Touch target | no minTarget or useMinTargetSlop in the source modules |
 | Tests importing it | 10: `test/a11y-state.test.tsx`, `test/behavior.test.tsx`, `test/focus-runtime.test.tsx`, `test/keyboard-nav.test.tsx`, `test/listbox-a11y.test.tsx`, `test/native-focus-fixtures.test.tsx`, `test/no-console-violations.test.tsx`, `test/option-list-idiom.test.tsx`, `test/sizing.test.tsx`, `test/skins-smoke.test.tsx` |
-| E2E naming it | 2: `e2e/behavior/keyboard.e2e.ts`, `e2e/behavior/listbox.e2e.ts` |
+| E2E importing or driving it | 3: `e2e/behavior/listbox.e2e.ts`, `e2e/journeys/keyboard.e2e.ts`, `e2e/journeys/touch.e2e.ts` |
 <!-- audit:facts:end -->
 
 ## Variants

@@ -10,7 +10,7 @@ Audit checklist for `/components/description-lists`. The facts block and the var
 | Markdown | `src/molecules/description-lists/description-lists.md` |
 | Source files | `description-lists.android.tsx`, `description-lists.ios.tsx`, `description-lists.md`, `description-lists.shared.tsx`, `description-lists.styles.ts`, `description-lists.tsx` |
 | Exports | DescriptionList |
-| Platform entries | iOS: own build: DescriptionList (builds from its own iosSkin; injects platform parts (../../atoms/badge/badge.ios.js); injects platform parts (../../atoms/button/button.ios.js); injects platform parts (../../atoms/avatar/avatar.ios.js)). Android: own build: DescriptionList (builds from its own androidSkin; injects platform parts (../../atoms/badge/badge.android.js); injects platform parts (../../atoms/button/button.android.js); injects platform parts (../../atoms/avatar/avatar.android.js)) |
+| Platform entries | iOS: own build: DescriptionList (builds from its own iosSkin; injects platform parts (../../atoms/button/button.ios.js)). Android: own build: DescriptionList (builds from its own androidSkin; injects platform parts (../../atoms/button/button.android.js)) |
 | Platform-skins registry | iOS: DescriptionList; Android: DescriptionList |
 | Reference row | `description-lists` (Light, Built). iOS: link [description-lists (iOS 27)](https://www.sketch.com/s/04c24d8b-38fb-4afb-8836-36617e022f02/symbols?g=Lists) (value-style label-value list rows; SwiftUI LabeledContent). Android: none (Material 3 has no description list component; key-value content is typically laid out with list items or plain text styles). Web: link [description-lists (Web)](https://catalyst.tailwindui.com/docs/description-list) |
 | Materials manifest | DescriptionList: molecules, static + inherited; verification solid-appearance, glass-appearance, mode-switch, accessibility-fallback, runtime-capability, semantic-state |
@@ -20,9 +20,9 @@ Audit checklist for `/components/description-lists`. The facts block and the var
 | Interactions registry | in the inventory; evidence: description-edit (unit-web, test/behavior-smoke-b.test.tsx) |
 | Overlay recipe | none |
 | MeasureProps | not adopted |
-| Touch target | useMinTargetSlop in none; minTarget in `description-lists.android.tsx`, `description-lists.ios.tsx`, `description-lists.shared.tsx` |
+| Touch target | no minTarget or useMinTargetSlop in the source modules |
 | Tests importing it | 4: `test/behavior-smoke-b.test.tsx`, `test/escape-layers.test.tsx`, `test/native-focus-fixtures.test.tsx`, `test/responsive-narrow-fixes.test.tsx` |
-| E2E naming it | 0: none |
+| E2E importing or driving it | 2: `e2e/behavior/escape-layers.e2e.ts`, `e2e/journeys/keyboard.e2e.ts` |
 <!-- audit:facts:end -->
 
 ## Variants

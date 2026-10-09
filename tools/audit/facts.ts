@@ -3,7 +3,7 @@
 // divergence read from source text, the docs' platform-skin registry, the platform
 // reference catalog, the materials manifest, the hand-off parity records, the
 // interaction evidence registry, the overlay recipes, the test and e2e trees, and the
-// component's own source directory. Each fact names where it came from, so a reviewer
+// component's own source modules. Each fact names where it came from, so a reviewer
 // can go and look; none of them is a verdict.
 //
 // The hand-off parity records come from their source, `tools/handoff-parity/
@@ -29,6 +29,7 @@ import { materialCoverage } from "../materials/manifest.ts";
 import { componentSkins, type ComponentSkins, type Platform as SkinPlatform } from "../skins/divergence.ts";
 import { registeredSkins } from "../skins/registry.ts";
 import type { InventoryPage } from "./inventory.ts";
+import { splitRow, type TableShape } from "./table.ts";
 
 export interface SkinFact {
   /** Whether the platform entry diverges from the web build on this platform, for any export. */
@@ -94,7 +95,10 @@ export interface ComponentFacts {
   route: string;
   /** Repo-relative source directory, when the component has one (the raw primitives have only markdown). */
   sourceDir: string;
+  /** Every file under the source directory (nested ones, such as the Checkbox indicator, included), relative to it. */
   sourceFiles: string[];
+  /** The TypeScript modules among them, tests left out: what the source facts read. */
+  sourceModules: string[];
   markdown: string;
   /** The value names the web entry exports (the raw primitives: the component's name). */
   exports: string[];
@@ -110,11 +114,14 @@ export interface ComponentFacts {
   overlayRecipe: { role: string } | null;
   /** Files under test/ importing it from the kit (see `importsComponent`). */
   tests: string[];
-  /** Files under e2e/ naming one of its exports or its route. */
+  /**
+   * Files under e2e/ importing it from the kit, or driving the exact route (see
+   * `drivesRoute`) of its docs page or of a hidden `/testing/*` harness page that renders it.
+   */
   e2e: string[];
-  /** Source files adopting the measure axis. */
+  /** Source modules whose code names the measure axis (`MeasureProps`). */
   measureProps: string[];
-  /** Source files reading the touch-target floor. */
+  /** Source modules whose code reads the touch-target floor. */
   touchTarget: { useMinTargetSlop: string[]; minTarget: string[] };
 }
 
@@ -128,7 +135,7 @@ export interface PageFacts {
   sections: string[];
   /** The kit names the module imports from `@nannier/canvas`. */
   kitImports: string[];
-  /** Files under e2e/ naming its route. */
+  /** Files under e2e/ driving its exact route (see `drivesRoute`). */
   e2e: string[];
 }
 
@@ -187,16 +194,19 @@ function classifyCell(cell: string): ReferenceCell {
   return { kind: "text", text };
 }
 
+/** The catalog's table, read with the one table reader every audit table goes through. */
+const REFERENCE_SHAPE: TableShape = { name: "PLATFORM-REFERENCES.md", columns: ["Component", "Treatment", "Build", "iOS", "Android", "Web"], minCells: 6 };
+
 /** Every row of the catalog's table in `PLATFORM-REFERENCES.md`. */
 export function referenceRows(markdown: string): ReferenceRow[] {
   const rows: ReferenceRow[] = [];
-  for (const line of markdown.split("\n")) {
-    if (!line.startsWith("| ") || /^\|\s*Component\s*\|/.test(line) || /^\|-+\|/.test(line.replace(/\s/g, ""))) continue;
-    const cells = line.replace(/^\|\s?/, "").replace(/\s?\|$/, "").split(" | ");
-    if (cells.length !== 6) throw new Error(`PLATFORM-REFERENCES.md: expected 6 cells, found ${cells.length}: ${line}`);
-    const [component, treatment, build, ios, android, web] = cells.map((c) => c.trim());
+  markdown.split("\n").forEach((line, i) => {
+    if (!line.startsWith("| ") || /^\|\s*Component\s*\|/.test(line) || /^\|-+\|/.test(line.replace(/\s/g, ""))) return;
+    const split = splitRow(line, REFERENCE_SHAPE);
+    if ("reason" in split) throw new Error(`PLATFORM-REFERENCES.md:${i + 1}: ${split.reason}: ${line}`);
+    const [component, treatment, build, ios, android, web] = split.cells;
     rows.push({ key: component.split(" ")[0], component, treatment, build, ios: classifyCell(ios), android: classifyCell(android), web: classifyCell(web) });
-  }
+  });
   return rows;
 }
 
@@ -215,6 +225,16 @@ function walk(dir: string): string[] {
     return statSync(path).isDirectory() ? walk(path) : [path];
   });
 }
+
+/** Every file under a directory, relative to it with forward slashes, sorted. */
+function filesUnder(dir: string): string[] {
+  return walk(dir)
+    .map((path) => relative(dir, path).split(sep).join("/"))
+    .sort();
+}
+
+/** Whether a file is a TypeScript module of the component's source rather than its markdown or a test. */
+export const isSourceModule = (file: string): boolean => /\.tsx?$/.test(file) && !/\.(test|spec)\.tsx?$/.test(file);
 
 /** The hand-off parity records of a checkout, per hand-off component, in the report's order. */
 export function handoffRecords(root: string): { open: HandoffGap[]; settled: HandoffSettled[]; metricGaps: MetricGap[] } {
@@ -241,7 +261,7 @@ export function handoffRecords(root: string): { open: HandoffGap[]; settled: Han
   return { open, settled, metricGaps };
 }
 
-/** What a test file imports from the kit. */
+/** What a test, e2e or docs module imports from the kit. */
 export interface KitImports {
   /**
    * The repo-relative kit paths it imports, statically, through `import()` or through
@@ -256,11 +276,16 @@ export interface KitImports {
   names: Set<string>;
 }
 
-const KIT_PACKAGE = "@nannier/canvas";
+/**
+ * The names the kit is imported under: the package, and the starter's alias of it that
+ * the smoke fixtures import (docs/metro.config.js and docs/tsconfig.json resolve both to
+ * the kit's source).
+ */
+const KIT_PACKAGES = ["@nannier/canvas", "@nannier-com/canvas"];
 
 /** The repo-relative path a specifier reaches in the kit (`src/`, `dist/`, the package), or null outside it. */
 function kitPath(root: string, file: string, specifier: string): string | null {
-  if (specifier === KIT_PACKAGE || specifier.startsWith(`${KIT_PACKAGE}/`)) return "src";
+  if (KIT_PACKAGES.some((pkg) => specifier === pkg || specifier.startsWith(`${pkg}/`))) return "src";
   if (!specifier.startsWith(".")) return null;
   const path = relative(root, resolve(root, dirname(file), specifier)).split(sep).join("/");
   return /^(src|dist)(\/|$)/.test(path) ? path : null;
@@ -357,6 +382,65 @@ export function importsComponent(imports: KitImports, exports: string[], sourceD
   return imports.modules.some(({ path, prefix }) => path.startsWith(`${sourceDir}/`) || (!prefix && path === sourceDir));
 }
 
+/** The relative module specifiers a module imports or re-exports statically. */
+function relativeImports(file: string, source: string): string[] {
+  const out: string[] = [];
+  for (const statement of parse(file, source).statements) {
+    if (!(ts.isImportDeclaration(statement) || ts.isExportDeclaration(statement))) continue;
+    const specifier = statement.moduleSpecifier;
+    if (specifier && ts.isStringLiteral(specifier) && specifier.text.startsWith(".")) out.push(specifier.text);
+  }
+  return out;
+}
+
+/** The file a relative specifier names, extension-less or `.js`, or null when none exists. */
+function resolveModule(fromFile: string, specifier: string): string | null {
+  const base = resolve(dirname(fromFile), specifier);
+  const stem = base.replace(/\.js$/, "");
+  for (const candidate of [base, `${stem}.tsx`, `${stem}.ts`, join(base, "index.tsx"), join(base, "index.ts")]) {
+    if (existsSync(candidate) && statSync(candidate).isFile()) return candidate;
+  }
+  return null;
+}
+
+/** The hidden harness pages under the docs app's `/testing/*` routes. */
+export const TESTING_DIR = "docs/src/app/(home)/testing";
+
+/** The shared fixture bodies a harness page renders (CLAUDE.md, the tuning harness). */
+const FIXTURES_ROOT = "examples/";
+
+/**
+ * What a hidden `/testing/*` harness page renders from the kit: its own kit imports and
+ * those of the fixture bodies it imports from `examples/`, followed through the fixtures'
+ * own relative imports. The docs' page frame it sits in is scaffolding and is not read.
+ */
+export function testingRoutes(root: string): { route: string; file: string; imports: KitImports }[] {
+  const dir = join(root, TESTING_DIR);
+  if (!existsSync(dir)) return [];
+  return readdirSync(dir)
+    .filter((name) => /^[a-z0-9-]+\.tsx$/.test(name))
+    .sort()
+    .map((name) => {
+      const page = join(dir, name);
+      const imports: KitImports = { modules: [], names: new Set() };
+      const seen = new Set<string>();
+      const read = (path: string, follow: (target: string) => boolean): void => {
+        if (seen.has(path)) return;
+        seen.add(path);
+        const source = readFileSync(path, "utf8");
+        const own = kitImportsOf(root, relative(root, path), source);
+        imports.modules.push(...own.modules);
+        for (const n of own.names) imports.names.add(n);
+        for (const specifier of relativeImports(path, source)) {
+          const target = resolveModule(path, specifier);
+          if (target && follow(target)) read(target, follow);
+        }
+      };
+      read(page, (target) => relative(root, target).split(sep).join("/").startsWith(FIXTURES_ROOT));
+      return { route: `/testing/${name.replace(/\.tsx$/, "")}`, file: relative(root, page), imports };
+    });
+}
+
 /** The repo-wide records every component's facts read, loaded once. */
 export interface FactsCorpus {
   root: string;
@@ -368,8 +452,10 @@ export interface FactsCorpus {
   metricGaps: MetricGap[];
   /** Repo-relative path of every test file under test/, with what it imports from the kit. */
   tests: { file: string; imports: KitImports }[];
-  /** Repo-relative path and content of every file under e2e/. */
-  e2e: { file: string; text: string }[];
+  /** Repo-relative path of every file under e2e/, with what it imports from the kit and the string literals in its code. */
+  e2e: { file: string; imports: KitImports; literals: CodeLiteral[] }[];
+  /** The hidden `/testing/*` harness routes e2e drives, with what each renders from the kit. */
+  testingRoutes: ReturnType<typeof testingRoutes>;
 }
 
 export function loadCorpus(root = ROOT): FactsCorpus {
@@ -389,21 +475,68 @@ export function loadCorpus(root = ROOT): FactsCorpus {
     settled: handoff.settled,
     metricGaps: handoff.metricGaps,
     tests: tree("test", /\.tsx?$/).map(({ file, text }) => ({ file, imports: kitImportsOf(root, file, text) })),
-    e2e: tree("e2e", /\.ts$/),
+    e2e: tree("e2e", /\.tsx?$/).map(({ file, text }) => ({ file, imports: kitImportsOf(root, file, text), literals: codeLiterals(file, text) })),
+    testingRoutes: testingRoutes(root),
   };
 }
 
 const escapeRegExp = (s: string): string => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
-/** The files whose text names one of the words as a whole word, or contains one of the literals. */
-function mentions(files: { file: string; text: string }[], words: string[], literals: string[]): string[] {
-  const word = words.length ? new RegExp(`\\b(?:${words.map(escapeRegExp).join("|")})\\b`) : null;
-  return files.filter(({ text }) => (word?.test(text) ?? false) || literals.some((l) => text.includes(l))).map(({ file }) => file);
+/**
+ * A string in a module's code: a string literal, a template without substitutions, or
+ * one static piece of a template (`open` when a substitution follows it, so the text
+ * does not end there).
+ */
+export interface CodeLiteral {
+  text: string;
+  open: boolean;
 }
 
-/** The files among a component's sources whose text names the word. */
-function sourcesNaming(root: string, sourceDir: string, files: string[], word: RegExp): string[] {
-  return files.filter((file) => word.test(readFileSync(join(root, sourceDir, file), "utf8")));
+/** The strings a module's code holds, read with the TypeScript parser, so a comment or a word in prose is never one. */
+export function codeLiterals(file: string, source: string): CodeLiteral[] {
+  const out: CodeLiteral[] = [];
+  const visit = (node: ts.Node): void => {
+    if (ts.isStringLiteral(node) || ts.isNoSubstitutionTemplateLiteral(node) || ts.isTemplateTail(node)) out.push({ text: node.text, open: false });
+    else if (ts.isTemplateHead(node) || ts.isTemplateMiddle(node)) out.push({ text: node.text, open: true });
+    ts.forEachChild(node, visit);
+  };
+  visit(parse(file, source));
+  return out;
+}
+
+/**
+ * Whether a module's strings drive a docs route exactly: the route followed by a
+ * character that cannot continue a slug (`/`, `?`, `#`, a quote) or by the end of the
+ * string, so `/components/button` is not driven by `/components/button-group`. A
+ * template piece that a substitution follows does not end the route there.
+ */
+export function drivesRoute(literals: CodeLiteral[], route: string): boolean {
+  const followed = new RegExp(`${escapeRegExp(route)}(?=[^a-z0-9-])`);
+  const ended = new RegExp(`${escapeRegExp(route)}$`);
+  return literals.some(({ text, open }) => followed.test(text) || (!open && ended.test(text)));
+}
+
+/** The identifiers a module's code names (a comment, a string or markdown never names one). */
+const identifierCache = new Map<string, Set<string>>();
+
+function codeIdentifiers(path: string): Set<string> {
+  let names = identifierCache.get(path);
+  if (!names) {
+    const found = new Set<string>();
+    const visit = (node: ts.Node): void => {
+      if (ts.isIdentifier(node)) found.add(node.text);
+      ts.forEachChild(node, visit);
+    };
+    visit(parse(path, readFileSync(path, "utf8")));
+    names = found;
+    identifierCache.set(path, names);
+  }
+  return names;
+}
+
+/** The modules among a component's sources whose code names the identifier. */
+function sourcesNaming(root: string, sourceDir: string, modules: string[], identifier: string): string[] {
+  return modules.filter((file) => codeIdentifiers(join(root, sourceDir, file)).has(identifier));
 }
 
 export function componentFacts(slug: string, corpus: FactsCorpus): ComponentFacts {
@@ -413,7 +546,8 @@ export function componentFacts(slug: string, corpus: FactsCorpus): ComponentFact
   const group = GROUP_OF[doc.category];
   const sourceDir = `src/${group}/${dir}`;
   const absoluteDir = join(corpus.root, sourceDir);
-  const sourceFiles = existsSync(absoluteDir) ? readdirSync(absoluteDir).filter((f) => statSync(join(absoluteDir, f)).isFile()).sort() : [];
+  const sourceFiles = filesUnder(absoluteDir);
+  const sourceModules = sourceFiles.filter(isSourceModule);
   const markdown = relative(corpus.root, componentDocPath(doc.category, dir));
 
   const entry = [`${dir}.tsx`, `${dir}.ts`].find((f) => sourceFiles.includes(f));
@@ -428,6 +562,7 @@ export function componentFacts(slug: string, corpus: FactsCorpus): ComponentFact
   const keys = new Set(corpus.reference.map((row) => row.key));
   const referenceKey = referenceKeyFor(slug, doc.category, keys);
   const route = `/components/${slug}`;
+  const harnessRoutes = corpus.testingRoutes.filter((t) => importsComponent(t.imports, exports, sourceDir)).map((t) => t.route);
   const isOurs = (component: string) => exports.includes(component);
 
   return {
@@ -438,6 +573,7 @@ export function componentFacts(slug: string, corpus: FactsCorpus): ComponentFact
     route,
     sourceDir,
     sourceFiles,
+    sourceModules,
     markdown,
     exports,
     skins: { hasPlatformEntries: skins?.hasPlatformEntries ?? false, iOS: skinFact("iOS"), Android: skinFact("Android") },
@@ -464,11 +600,16 @@ export function componentFacts(slug: string, corpus: FactsCorpus): ComponentFact
         ? { role: "live region" }
         : null,
     tests: corpus.tests.filter(({ imports }) => importsComponent(imports, exports, sourceDir)).map(({ file }) => file),
-    e2e: mentions(corpus.e2e, exports, [route]),
-    measureProps: sourcesNaming(corpus.root, sourceDir, sourceFiles, /\bMeasureProps\b/),
+    // The same import rule as the tests where e2e imports the kit; otherwise the exact
+    // route it drives, the component's own docs page or a hidden harness page that
+    // renders it (e2e drives routes and imports almost nothing from the kit).
+    e2e: corpus.e2e
+      .filter(({ imports, literals }) => importsComponent(imports, exports, sourceDir) || [route, ...harnessRoutes].some((r) => drivesRoute(literals, r)))
+      .map(({ file }) => file),
+    measureProps: sourcesNaming(corpus.root, sourceDir, sourceModules, "MeasureProps"),
     touchTarget: {
-      useMinTargetSlop: sourcesNaming(corpus.root, sourceDir, sourceFiles, /\buseMinTargetSlop\b/),
-      minTarget: sourcesNaming(corpus.root, sourceDir, sourceFiles, /\bminTarget\b/),
+      useMinTargetSlop: sourcesNaming(corpus.root, sourceDir, sourceModules, "useMinTargetSlop"),
+      minTarget: sourcesNaming(corpus.root, sourceDir, sourceModules, "minTarget"),
     },
   };
 }
@@ -520,7 +661,7 @@ export function pageFacts(page: InventoryPage, corpus: FactsCorpus): PageFacts {
     module,
     sections: pageSections(module, source, page.slug),
     kitImports: kitImports(module, source),
-    e2e: mentions(corpus.e2e, [], [page.route]),
+    e2e: corpus.e2e.filter(({ literals }) => drivesRoute(literals, page.route)).map(({ file }) => file),
   };
 }
 

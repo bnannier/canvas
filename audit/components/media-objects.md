@@ -10,7 +10,7 @@ Audit checklist for `/components/media-objects`. The facts block and the variant
 | Markdown | `src/molecules/media-objects/media-objects.md` |
 | Source files | `media-objects.android.tsx`, `media-objects.ios.tsx`, `media-objects.md`, `media-objects.shared.tsx`, `media-objects.styles.ts`, `media-objects.tsx` |
 | Exports | MediaObject |
-| Platform entries | iOS: own build: MediaObject (builds from its own iosSkin; injects platform parts (../../atoms/avatar/avatar.ios.js)). Android: own build: MediaObject (builds from its own androidSkin; injects platform parts (../../atoms/avatar/avatar.android.js)) |
+| Platform entries | iOS: own build: MediaObject (builds from its own iosSkin). Android: own build: MediaObject (builds from its own androidSkin) |
 | Platform-skins registry | iOS: MediaObject; Android: MediaObject |
 | Reference row | `media-objects` (Light, Built). iOS: none (iOS has no media object component; the layout is composed ad hoc, typically a list row with a leading image; Apple's closest named control, Lockups, is tvOS only). Android: none (Material 3 has no media object component; the closest idiom is a list item with a leading avatar, icon, or video thumbnail). Web: link [media-objects (Web)](https://tailwindcss.com/plus/ui-blocks/application-ui/layout/media-objects) (Tailwind Plus, Application UI: Layout) |
 | Materials manifest | MediaObject: molecules, static + inherited; verification solid-appearance, glass-appearance, mode-switch, accessibility-fallback, runtime-capability, semantic-state |
@@ -22,7 +22,7 @@ Audit checklist for `/components/media-objects`. The facts block and the variant
 | MeasureProps | not adopted |
 | Touch target | useMinTargetSlop in none; minTarget in `media-objects.shared.tsx`, `media-objects.styles.ts` |
 | Tests importing it | 1: `test/behavior-smoke-b.test.tsx` |
-| E2E naming it | 0: none |
+| E2E importing or driving it | 0: none |
 <!-- audit:facts:end -->
 
 ## Variants

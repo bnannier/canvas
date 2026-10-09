@@ -112,7 +112,9 @@ import { DragDropProvider as DragDropProviderIOS, DropZone as DropZoneIOS, Dragg
 import { DragDropProvider as DragDropProviderAndroid, DropZone as DropZoneAndroid, Draggable as DraggableAndroid, DragHandle as DragHandleAndroid } from "../../../src/organisms/drag-drop/drag-drop.android.js";
 import { DashboardGrid as DashboardGridIOS } from "../../../src/organisms/dashboard-grid/dashboard-grid.ios.js";
 import { DashboardGrid as DashboardGridAndroid } from "../../../src/organisms/dashboard-grid/dashboard-grid.android.js";
-import { MetricBreakdown as MetricBreakdownIOS } from "../../../src/charts/metric-breakdown/metric-breakdown.ios.js";
+// MetricBreakdown's iOS build injects the iOS Chip, which aliases the web skin, over the
+// charts' shared skin, so it is the web build there and stays out of the ios table; its
+// Android build injects the Material 3 Chip.
 import { MetricBreakdown as MetricBreakdownAndroid } from "../../../src/charts/metric-breakdown/metric-breakdown.android.js";
 import { GeoMap as GeoMapIOS } from "../../../src/charts/geo-map/geo-map.ios.js";
 import { GeoMap as GeoMapAndroid } from "../../../src/charts/geo-map/geo-map.android.js";
@@ -138,7 +140,7 @@ export const PLATFORM_SKINS: Record<"ios" | "android", Record<string, unknown>> 
     Carousel: CarouselIOS,
     Board: BoardIOS, BreadcrumbItem: BreadcrumbItemIOS,
     DragDropProvider: DragDropProviderIOS, DropZone: DropZoneIOS, Draggable: DraggableIOS, DragHandle: DragHandleIOS,
-    DashboardGrid: DashboardGridIOS, MetricBreakdown: MetricBreakdownIOS, GeoMap: GeoMapIOS,
+    DashboardGrid: DashboardGridIOS, GeoMap: GeoMapIOS,
   },
   android: {
     Video: VideoAndroid, Switch: SwitchAndroid, Button: ButtonAndroid, Checkbox: CheckboxAndroid, Listbox: ListboxAndroid, Radio: RadioAndroid, RadioGroup: RadioGroupAndroid,

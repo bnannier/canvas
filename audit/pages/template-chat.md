@@ -10,7 +10,7 @@ Audit checklist for `/templates/chat`. The facts block and the variants table ar
 | Data module | `docs/src/core/data/templates/chat.tsx` |
 | Sections | 1. Conversation; 2. Empty thread |
 | Kit imports in the module | Avatar, Button, Card, Chip, Column, EmptyState, Icon, Input, Row, Spinner, Typography |
-| E2E naming it | 0: none |
+| E2E driving it | 0: none |
 <!-- audit:facts:end -->
 
 ## Variants

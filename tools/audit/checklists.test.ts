@@ -16,16 +16,19 @@ import {
   orphanChecklists,
   pageVariantRows,
   parseVariantsTable,
+  readFindings,
+  readSignOffs,
   readVariantsTable,
   renderVariantsTable,
   variantsHeader,
   writeChecklists,
   type ChecklistSources,
 } from "./checklists.ts";
-import { kitImportsOf, importsComponent, type PageFacts } from "./facts.ts";
+import { codeLiterals, componentFacts, drivesRoute, isSourceModule, kitImportsOf, importsComponent, testingRoutes, type PageFacts } from "./facts.ts";
 import { NATIVE_CELLS_PER_VARIANT, WEB_CELLS_PER_VARIANT, cellId, cellsFor, components, pageCellId, pages, sectionKeys } from "./inventory.ts";
 import { COMPONENT_PLANS, FAMILY_CHECKLISTS, UNIVERSAL_RUBRIC } from "./plan-specifics.ts";
-import { auditStatus, checklistStatus } from "./status.ts";
+import { auditStatus, checklistStatus, formatStatus } from "./status.ts";
+import { splitRow } from "./table.ts";
 
 // The facts read the kit's built prop surface for the hand-off parity records (through
 // tools/handoff-parity/compare.ts), so the cases that write real checklists need dist/.
@@ -272,6 +275,54 @@ describe.skipIf(!hasDist)("the audit checklists keep a reviewer's work", () => {
     }
   });
 
+  it("reports a malformed findings or sign-off row by line, so audit:status never counts around it silently", () => {
+    const dir = temp();
+    try {
+      writeChecklists(dir, sources);
+      const file = "components/button.md";
+      const edited = read(dir, file)
+        .replace("|---|---|---|---|---|---|\n\n## Sign-off", "|---|---|---|---|---|---|\n| BTN-1 | high | source | label clipped | wraps | open | |\n| BTN-2 | high | source | no status |\n\n## Sign-off")
+        .replace("| ios |  |  |  |  |", "| iOS | run | bn | 2026-10-09 | pass |\n| ios |  |  |  |  |");
+      writeFileSync(join(dir, file), edited);
+      const lineOf = (start: string) => edited.split("\n").findIndex((l) => l.startsWith(start)) + 1;
+      expect(checkChecklists(dir, sources)).toEqual([
+        `audit/components/button.md:${lineOf("| BTN-2 |")}: malformed findings row: too few cells (a findings row is \`| ID | Severity | Cell | Summary | Status | Fix commit |\`) (fix it by hand)`,
+        `audit/components/button.md:${lineOf("| ios |")}: malformed sign-off row: a second sign-off row for ios (the first is on line ${lineOf("| iOS |")}) (fix it by hand)`,
+      ]);
+      // The pipe in BTN-1's summary stays in the summary, so its status still reads open.
+      const status = checklistStatus(file, edited);
+      expect(status.findings).toEqual({ total: 1, open: 1, bySeverity: { high: 1 }, byStatus: { open: 1 } });
+      expect(status.signedOff).toEqual(["ios"]);
+      expect(status.unreadable.map((p) => p.line)).toEqual([lineOf("| BTN-2 |"), lineOf("| ios |")]);
+      // --write never rewrites the hand-maintained tables.
+      writeChecklists(dir, sources);
+      expect(read(dir, file)).toBe(edited);
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
+  it("reads source facts from TypeScript modules only, nested ones included, never the markdown", () => {
+    const button = componentFacts("button", sources.corpus);
+    expect(button.sourceFiles).toContain("button.md");
+    expect(button.sourceModules).not.toContain("button.md");
+    expect(button.sourceModules.every(isSourceModule)).toBe(true);
+    for (const file of [...button.measureProps, ...button.touchTarget.minTarget, ...button.touchTarget.useMinTargetSlop]) expect(button.sourceModules).toContain(file);
+    expect(componentFacts("checkbox", sources.corpus).sourceModules).toContain("indicator/shared.tsx");
+  });
+
+  it("credits e2e by import, by the exact docs route, or by a harness route that renders it, never by a word", () => {
+    // Button's route is a prefix of button-group's, which material-states drives; the
+    // route in routes.ts sits in a doc comment. Feed is driven only through the
+    // /testing/scroll-focus harness page, whose code names it in prose comments too.
+    const button = componentFacts("button", sources.corpus).e2e;
+    expect(button).toContain("e2e/behavior/theme.e2e.ts");
+    expect(button).not.toContain("e2e/visual/material-states.e2e.ts");
+    expect(button).not.toContain("e2e/support/routes.ts");
+    expect(componentFacts("feeds", sources.corpus).e2e).toEqual(["e2e/behavior/scroll-focus.e2e.ts", "e2e/journeys/keyboard.e2e.ts"]);
+    expect(componentFacts("text", sources.corpus).e2e).toEqual([]);
+  });
+
   it("keeps a page section's ticks when another section is inserted before it", () => {
     const dir = temp();
     try {
@@ -400,5 +451,133 @@ describe("tests naming a component", () => {
     // A word in the text, or a route literal, is not an import.
     expect(counts('// renders a Button inside a View\nconst path = "/components/view/conversions.h";', view)).toBe(false);
     expect(counts('import { Button } from "some-other-kit";', button)).toBe(false);
+  });
+});
+
+describe("findings and sign-off tables", () => {
+  const content = [
+    "# X",
+    "",
+    "## Findings",
+    "",
+    "One row per finding.",
+    "",
+    "| ID | Severity | Cell | Summary | Status | Fix commit |",
+    "|---|---|---|---|---|---|",
+    "| F1 | high | source | label clipped | wraps at 390 | open | |",
+    "| F2 | Medium | web/x/default/phone.dark.glass | ok \\| escaped | fixed | abc1234 |",
+    "| F3 | low | source | no fix yet | verified |",
+    "| F4 | high | source | missing a cell |",
+    "| F5 | severe | source | x | open | |",
+    "| F1 | low | source | taken | open | |",
+    "",
+    "| F6 | critical | source | below the blank line | open | |",
+    "",
+    "## Sign-off",
+    "",
+    "| Platform | Run id | Reviewer | Date | Result |",
+    "|---|---|---|---|---|",
+    "| web | 20261009-web-abc | bn | 2026-10-09 | pass | with a pipe |",
+    "| ios |  |  |  |  |",
+    "| android | run-2 | bn | 2026-10-09 |",
+    "| macos | x | | | |",
+    "",
+  ].join("\n");
+  const lineOf = (start: string, from = 0) => content.split("\n").findIndex((l, i) => i >= from && l.startsWith(start)) + 1;
+
+  it("keeps a pipe typed in a summary, reads an empty cell typed `| |`, and names every unreadable row by line", () => {
+    // The old reader split on " | ": F1's raw pipe moved "wraps at 390" into the Status
+    // column, and a trailing empty cell typed `| |` made the row too short to count.
+    const findings = readFindings(content);
+    expect(findings.found).toBe(true);
+    expect(findings.rows.map(({ id, severity, summary, status, fix }) => ({ id, severity, summary, status, fix }))).toEqual([
+      { id: "F1", severity: "high", summary: "label clipped | wraps at 390", status: "open", fix: "" },
+      { id: "F2", severity: "medium", summary: "ok \\| escaped", status: "fixed", fix: "abc1234" },
+      { id: "F3", severity: "low", summary: "no fix yet", status: "verified", fix: "" },
+    ]);
+    expect(findings.malformed).toEqual([
+      { line: lineOf("| F4 |"), reason: "too few cells (a findings row is `| ID | Severity | Cell | Summary | Status | Fix commit |`)" },
+      { line: lineOf("| F5 |"), reason: 'the Severity cell reads "severe", not one of critical, high, medium, low (a missing cell shifts the columns; write a pipe in a cell as `\\|`)' },
+      { line: lineOf("| F1 |", 10), reason: `a second finding F1 (the first is on line ${lineOf("| F1 |")})` },
+      { line: lineOf("| F6 |"), reason: "a findings row below the blank line that ends the table, so it does not render as a row; remove the blank line above it" },
+    ]);
+    const signOffs = readSignOffs(content);
+    expect(signOffs.rows.map((r) => [r.platform, r.runId, r.result])).toEqual([
+      ["web", "20261009-web-abc", "pass | with a pipe"],
+      ["ios", "", ""],
+      ["android", "run-2", ""],
+    ]);
+    expect(signOffs.malformed).toEqual([{ line: lineOf("| macos |"), reason: 'the Platform cell reads "macos", not one of web, ios, android' }]);
+  });
+
+  it("counts what it can read, lists the rest under the counts, and reads a changed header as unreadable", () => {
+    const status = checklistStatus("components/x.md", content);
+    expect(status.findings).toEqual({ total: 3, open: 2, bySeverity: { high: 1, low: 1 }, byStatus: { open: 1, fixed: 1, verified: 1 } });
+    expect(status.signedOff).toEqual(["web", "android"]);
+    expect(status.unreadable.map((p) => p.line)).toEqual([null, lineOf("| F4 |"), lineOf("| F5 |"), lineOf("| F1 |", 10), lineOf("| F6 |"), lineOf("| macos |")]);
+    const report = formatStatus([status]);
+    expect(report).toContain("  unreadable 6: left out of the counts above, which under-report by that much; fix each by hand");
+    expect(report).toContain(`    audit/components/x.md:${lineOf("| F5 |")}: malformed findings row: the Severity cell reads "severe"`);
+    const renamed = content.replace("| ID | Severity | Cell | Summary | Status | Fix commit |", "| ID | Sev | Cell | Summary | Status | Fix |");
+    expect(readFindings(renamed)).toMatchObject({ found: false, rows: [], malformed: [{ line: lineOf("| ID |") }] });
+    expect(readFindings("# X\n").found).toBe(false);
+  });
+
+  it("splits a row with no free column strictly", () => {
+    const shape = { name: "catalog", columns: ["A", "B"], minCells: 2 };
+    expect(splitRow("| a | b |", shape)).toEqual({ cells: ["a", "b"] });
+    expect(splitRow("| a \\| b | c", shape)).toEqual({ cells: ["a \\| b", "c"] });
+    expect(splitRow("| a | b | c |", shape)).toEqual({ reason: "3 cells where the table has 2 (write a pipe inside a cell as `\\|`)" });
+  });
+});
+
+describe("e2e driving a component", () => {
+  const literals = (source: string) => codeLiterals("/repo/e2e/x.e2e.ts", source);
+  const route = "/components/button";
+
+  it("credits the exact route in code: a slug that continues, a comment or a substitution after it does not count", () => {
+    expect(drivesRoute(literals('await gotoDocs(page, "/components/button");'), route)).toBe(true);
+    expect(drivesRoute(literals('await gotoDocs(page, "/components/button/primary");'), route)).toBe(true);
+    expect(drivesRoute(literals('await gotoDocs(page, "/components/button?scheme=dark");'), route)).toBe(true);
+    expect(drivesRoute(literals("const url = `${base}/components/button`;"), route)).toBe(true);
+    expect(drivesRoute(literals("const url = `/components/button/${variant}`;"), route)).toBe(true);
+    expect(drivesRoute(literals('await gotoDocs(page, "/components/button-group");'), route)).toBe(false);
+    expect(drivesRoute(literals("const url = `/components/button${suffix}`;"), route)).toBe(false);
+    expect(drivesRoute(literals("// opens /components/button first\nconst x = 1;"), route)).toBe(false);
+  });
+
+  it("reads what a hidden harness page renders from its fixtures, not from the docs page frame", () => {
+    const root = mkdtempSync(join(tmpdir(), "canvas-audit-routes-"));
+    try {
+      const write = (path: string, source: string) => {
+        mkdirSync(join(root, path, ".."), { recursive: true });
+        writeFileSync(join(root, path), source);
+      };
+      write("docs/src/app/(home)/testing/_layout.tsx", 'import { Slot } from "expo-router";');
+      write(
+        "docs/src/app/(home)/testing/lists.tsx",
+        'import { ListsBody } from "../../../../../examples/starter/smoke/fixtures/lists";\nimport { Page } from "../../../ui/page";\nimport { Typography } from "@nannier/canvas";',
+      );
+      write("docs/src/ui/page.tsx", 'import { Card } from "@nannier/canvas";');
+      write("examples/starter/smoke/fixtures/lists.tsx", 'import { Feed } from "@nannier-com/canvas";\nimport { rows } from "./rows";');
+      write("examples/starter/smoke/fixtures/rows.ts", 'import { GridList } from "@nannier-com/canvas";\nexport const rows = [];');
+      const routes = testingRoutes(root);
+      expect(routes.map((t) => t.route)).toEqual(["/testing/lists"]);
+      expect([...routes[0].imports.names].sort()).toEqual(["Feed", "GridList", "Typography"]);
+      expect(importsComponent(routes[0].imports, ["Card"], "src/molecules/card")).toBe(false);
+      expect(drivesRoute(literals('await gotoDocs(page, "/testing/lists?scheme=dark");'), routes[0].route)).toBe(true);
+      expect(drivesRoute(literals('await gotoDocs(page, "/testing/lists-wide");'), routes[0].route)).toBe(false);
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("credits a kit import by the same rule as the tests, never a word in prose or a DOM global", () => {
+    const imports = (source: string) => kitImportsOf("/repo", "/repo/e2e/behavior/x.e2e.ts", source);
+    const prose = imports("// the Text under the Image\nconst img = new Image();\nconst label = page.getByText(\"Text\");");
+    expect(importsComponent(prose, ["Text"], "src/atoms/text")).toBe(false);
+    expect(importsComponent(prose, ["Image"], "src/atoms/image")).toBe(false);
+    expect(importsComponent(imports('import { colorsFor } from "../../src/style/tokens.ts";'), ["Button"], "src/atoms/button")).toBe(false);
+    expect(importsComponent(imports('import { Button } from "../../src/index.ts";'), ["Button"], "src/atoms/button")).toBe(true);
   });
 });

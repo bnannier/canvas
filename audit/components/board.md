@@ -10,7 +10,7 @@ Audit checklist for `/components/board`. The facts block and the variants table 
 | Markdown | `src/organisms/board/board.md` |
 | Source files | `board.android.tsx`, `board.ios.tsx`, `board.logic.ts`, `board.md`, `board.shared.tsx`, `board.styles.ts`, `board.tsx`, `board.types.ts` |
 | Exports | Board, applyBoardMove |
-| Platform entries | iOS: own build: Board (builds from its own iosSkin; injects platform parts (../drag-drop/drag-drop.ios.js); injects platform parts (../../molecules/card/card.ios.js); injects platform parts (../../atoms/badge/badge.ios.js); injects platform parts (../row-menu/row-menu.ios.js)). Android: own build: Board (builds from its own androidSkin; injects platform parts (../drag-drop/drag-drop.android.js); injects platform parts (../../molecules/card/card.android.js); injects platform parts (../../atoms/badge/badge.android.js); injects platform parts (../row-menu/row-menu.android.js)) |
+| Platform entries | iOS: own build: Board (builds from its own iosSkin; injects platform parts (../drag-drop/drag-drop.ios.js); injects platform parts (../../molecules/card/card.ios.js); injects platform parts (../row-menu/row-menu.ios.js)). Android: own build: Board (builds from its own androidSkin; injects platform parts (../drag-drop/drag-drop.android.js); injects platform parts (../../molecules/card/card.android.js); injects platform parts (../row-menu/row-menu.android.js)) |
 | Platform-skins registry | iOS: Board; Android: Board |
 | Reference row | none: `PLATFORM-REFERENCES.md` has no row for this component (K8) |
 | Materials manifest | Board: organisms, static + liquid; verification solid-appearance, glass-appearance, mode-switch, accessibility-fallback, runtime-capability, semantic-state |
@@ -20,9 +20,9 @@ Audit checklist for `/components/board`. The facts block and the variants table 
 | Interactions registry | in the inventory; evidence: none registered |
 | Overlay recipe | none |
 | MeasureProps | not adopted |
-| Touch target | no minTarget or useMinTargetSlop in the source directory |
+| Touch target | no minTarget or useMinTargetSlop in the source modules |
 | Tests importing it | 5: `test/board-logic.test.ts`, `test/board.test.tsx`, `test/horizontal-scroller-drag.test.tsx`, `test/no-console-violations.test.tsx`, `test/touch-target-seams.test.tsx` |
-| E2E naming it | 0: none |
+| E2E importing or driving it | 0: none |
 <!-- audit:facts:end -->
 
 ## Variants

@@ -10,7 +10,7 @@ Audit checklist for `/templates/signup`. The facts block and the variants table 
 | Data module | `docs/src/core/data/templates/signup.tsx` |
 | Sections | 1. Registration card; 2. Confirm email |
 | Kit imports in the module | Button, Card, Checkbox, Column, Container, Divider, Emblem, EmptyState, Icon, Input, Progress, Row, Typography, useToast |
-| E2E naming it | 0: none |
+| E2E driving it | 0: none |
 <!-- audit:facts:end -->
 
 ## Variants

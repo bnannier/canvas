@@ -20,9 +20,9 @@ Audit checklist for `/components/action-panels`. The facts block and the variant
 | Interactions registry | in the inventory; evidence: action-panel-toggle (unit-web, test/behavior-smoke-b.test.tsx) |
 | Overlay recipe | none |
 | MeasureProps | not adopted |
-| Touch target | no minTarget or useMinTargetSlop in the source directory |
+| Touch target | no minTarget or useMinTargetSlop in the source modules |
 | Tests importing it | 1: `test/behavior-smoke-b.test.tsx` |
-| E2E naming it | 0: none |
+| E2E importing or driving it | 0: none |
 <!-- audit:facts:end -->
 
 ## Variants

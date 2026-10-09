@@ -10,7 +10,7 @@ Audit checklist for `/templates/errors`. The facts block and the variants table 
 | Data module | `docs/src/core/data/templates/errors.tsx` |
 | Sections | 1. Not found (404); 2. Something went wrong (500); 3. Maintenance; 4. First run |
 | Kit imports in the module | Alert, Badge, Button, Card, Column, Container, Emblem, EmptyState, Icon, Row, Typography, useToast |
-| E2E naming it | 0: none |
+| E2E driving it | 0: none |
 <!-- audit:facts:end -->
 
 ## Variants

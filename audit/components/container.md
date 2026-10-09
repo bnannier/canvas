@@ -20,9 +20,9 @@ Audit checklist for `/components/container`. The facts block and the variants ta
 | Interactions registry | in the inventory; evidence: none registered |
 | Overlay recipe | none |
 | MeasureProps | adopted in `container.shared.tsx` |
-| Touch target | no minTarget or useMinTargetSlop in the source directory |
+| Touch target | no minTarget or useMinTargetSlop in the source modules |
 | Tests importing it | 3: `test/layout-responsive.test.tsx`, `test/layout-spans.test.tsx`, `test/sizing.test.tsx` |
-| E2E naming it | 0: none |
+| E2E importing or driving it | 0: none |
 <!-- audit:facts:end -->
 
 ## Variants

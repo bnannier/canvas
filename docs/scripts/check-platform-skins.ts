@@ -15,11 +15,14 @@
 // What counts as "looks different" lives in tools/skins/divergence.ts, shared with the
 // kit's shells gate (test/design-rules-shells.test.ts): a built export diverges when
 // it builds from its own skin object (a spread of the web skin with overrides included)
-// rather than an identity alias of the web skin, or when it injects platform parts (the
-// shell draws the platform's Button, Drawer or DragDrop builds). The verdict is per
-// export, not per file: Avatar and AvatarGroup alias the web skin while AvatarMenu,
-// built in the same entry, injects the platform's Dropdown. An alias with no parts
-// renders identically by construction, so its absence from the registry is correct.
+// rather than an identity alias of the web skin, or when it injects a platform part that
+// itself diverges by the same read (the shell draws the platform's Button, Drawer or
+// DragDrop builds); a part that is the web build, as the iOS Avatar and the iOS Chip
+// are, changes nothing. A form the reader cannot resolve counts as divergent. The
+// verdict is per export, not per file: Avatar and AvatarGroup alias the web skin while
+// AvatarMenu, built in the same entry, injects the platform's Dropdown. An alias whose
+// parts are all web builds renders identically by construction, so its absence from the
+// registry is correct.
 // The check runs both ways: every divergent build must be registered, and a registered
 // name must be a divergent build, so the table never labels the web build a platform's.
 //

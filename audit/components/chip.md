@@ -20,9 +20,9 @@ Audit checklist for `/components/chip`. The facts block and the variants table a
 | Interactions registry | in the inventory; evidence: none registered |
 | Overlay recipe | none |
 | MeasureProps | not adopted |
-| Touch target | no minTarget or useMinTargetSlop in the source directory |
+| Touch target | no minTarget or useMinTargetSlop in the source modules |
 | Tests importing it | 9: `test/a11y-state.test.tsx`, `test/atom-material-feedback.test.tsx`, `test/atom-material-roles.test.tsx`, `test/chip.test.tsx`, `test/destructive-intent.test.tsx`, `test/glass-controls.test.tsx`, `test/new-components.test.tsx`, `test/touch-target-clips.test.tsx`, `test/touch-target-seams.test.tsx` |
-| E2E naming it | 0: none |
+| E2E importing or driving it | 0: none |
 <!-- audit:facts:end -->
 
 ## Variants

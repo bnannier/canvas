@@ -10,7 +10,7 @@ Audit checklist for `/components/grid-lists`. The facts block and the variants t
 | Markdown | `src/molecules/grid-lists/grid-lists.md` |
 | Source files | `grid-lists.android.tsx`, `grid-lists.ios.tsx`, `grid-lists.md`, `grid-lists.shared.tsx`, `grid-lists.styles.ts`, `grid-lists.tsx` |
 | Exports | GridList |
-| Platform entries | iOS: own build: GridList (builds from its own iosSkin; injects platform parts (../card/card.ios.js); injects platform parts (../../atoms/avatar/avatar.ios.js); injects platform parts (../../atoms/badge/badge.ios.js); injects platform parts (../../atoms/button/button.ios.js)). Android: own build: GridList (builds from its own androidSkin; injects platform parts (../card/card.android.js); injects platform parts (../../atoms/avatar/avatar.android.js); injects platform parts (../../atoms/badge/badge.android.js); injects platform parts (../../atoms/button/button.android.js)) |
+| Platform entries | iOS: own build: GridList (builds from its own iosSkin; injects platform parts (../card/card.ios.js); injects platform parts (../../atoms/button/button.ios.js)). Android: own build: GridList (builds from its own androidSkin; injects platform parts (../card/card.android.js); injects platform parts (../../atoms/button/button.android.js)) |
 | Platform-skins registry | iOS: GridList; Android: GridList |
 | Reference row | `grid-lists` (Light, Built). iOS: link [grid-lists (iOS)](https://developer.apple.com/design/human-interface-guidelines/collections) (no kit symbol). Android: none (Material 3 has no grid list component; M2's image lists, formerly called grid lists, were not carried into the M3 catalog, and M3 lists are strictly vertical indexes). Web: link [grid-lists (Web)](https://tailwindcss.com/plus/ui-blocks/application-ui/lists/grid-lists) (Tailwind Plus, formerly Tailwind UI; old tailwindui.com URL 301-redirects here) |
 | Materials manifest | GridList: molecules, static; verification solid-appearance, glass-appearance, mode-switch, accessibility-fallback, runtime-capability, semantic-state |
@@ -20,9 +20,9 @@ Audit checklist for `/components/grid-lists`. The facts block and the variants t
 | Interactions registry | in the inventory; evidence: none registered |
 | Overlay recipe | none |
 | MeasureProps | not adopted |
-| Touch target | no minTarget or useMinTargetSlop in the source directory |
+| Touch target | no minTarget or useMinTargetSlop in the source modules |
 | Tests importing it | 7: `test/behavior-smoke-c.test.tsx`, `test/destructive-text.test.tsx`, `test/list-semantics.test.tsx`, `test/primary-text.test.tsx`, `test/responsive-narrow-fixes.test.tsx`, `test/scroll-frame-ring.test.tsx`, `test/virtualization.test.tsx` |
-| E2E naming it | 2: `e2e/behavior/scroll-focus.e2e.ts`, `e2e/journeys/keyboard.e2e.ts` |
+| E2E importing or driving it | 2: `e2e/behavior/scroll-focus.e2e.ts`, `e2e/journeys/keyboard.e2e.ts` |
 <!-- audit:facts:end -->
 
 ## Variants

@@ -20,9 +20,9 @@ Audit checklist for `/components/autocomplete`. The facts block and the variants
 | Interactions registry | in the inventory; evidence: autocomplete-form-keyboard (browser-keyboard, e2e/journeys/keyboard.e2e.ts), autocomplete-touch (browser-touch, e2e/journeys/touch.e2e.ts), drawer-nested-touch (browser-touch, e2e/journeys/touch.e2e.ts), autocomplete-query (unit-web, test/behavior.test.tsx) |
 | Overlay recipe | yes (listbox) |
 | MeasureProps | adopted in `autocomplete.shared.tsx` |
-| Touch target | no minTarget or useMinTargetSlop in the source directory |
+| Touch target | no minTarget or useMinTargetSlop in the source modules |
 | Tests importing it | 22: `test/a11y-state.test.tsx`, `test/anchored-overlay-dismissal.test.tsx`, `test/autocomplete-accessibility-return.test.tsx`, `test/autocomplete-keyboard.test.tsx`, `test/behavior.test.tsx`, `test/dense-overlays.test.tsx`, `test/escape-layers.test.tsx`, `test/field-focus-layout.test.tsx`, `test/field-focus-states.test.tsx`, `test/floating-label-color.test.tsx`, `test/floating-label-parity.test.tsx`, `test/focus-runtime.test.tsx`, `test/hosted-trigger-focus.test.tsx`, `test/input-overlay-escape.test.tsx`, `test/native-accessibility-escape-hosts.test.tsx`, `test/native-focus-fixtures.test.tsx`, `test/no-console-violations.test.tsx`, `test/overlay-escape.test.tsx`, `test/overlay-frame-ring.test.tsx`, `test/overlay-list-scroll.test.tsx`, `test/sizing.test.tsx`, `test/text-entry-material.test.tsx` |
-| E2E naming it | 5: `e2e/behavior/escape-layers.e2e.ts`, `e2e/behavior/form-autocomplete.e2e.ts`, `e2e/behavior/hydration-ids.e2e.ts`, `e2e/behavior/keyboard.e2e.ts`, `e2e/behavior/text-entry-clear.e2e.ts` |
+| E2E importing or driving it | 6: `e2e/behavior/escape-layers.e2e.ts`, `e2e/behavior/form-autocomplete.e2e.ts`, `e2e/behavior/hydration-ids.e2e.ts`, `e2e/journeys/keyboard.e2e.ts`, `e2e/journeys/overlay-placement.e2e.ts`, `e2e/journeys/touch.e2e.ts` |
 <!-- audit:facts:end -->
 
 ## Variants

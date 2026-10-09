@@ -22,7 +22,7 @@ Audit checklist for `/components/steps`. The facts block and the variants table 
 | MeasureProps | not adopted |
 | Touch target | useMinTargetSlop in none; minTarget in `steps.shared.tsx`, `steps.styles.ts` |
 | Tests importing it | 6: `test/behavior-smoke-d.test.tsx`, `test/narrow-modes.test.tsx`, `test/organism-material-roles.test.tsx`, `test/text-contrast.test.tsx`, `test/touch-target-seams.test.tsx`, `test/touch-target-seed.test.tsx` |
-| E2E naming it | 0: none |
+| E2E importing or driving it | 0: none |
 <!-- audit:facts:end -->
 
 ## Variants

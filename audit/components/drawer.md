@@ -20,9 +20,9 @@ Audit checklist for `/components/drawer`. The facts block and the variants table
 | Interactions registry | in the inventory; evidence: drawer-nested-keyboard (browser-keyboard, e2e/journeys/keyboard.e2e.ts), drawer-nested-touch (browser-touch, e2e/journeys/touch.e2e.ts) |
 | Overlay recipe | yes (dialog) |
 | MeasureProps | not adopted |
-| Touch target | no minTarget or useMinTargetSlop in the source directory |
+| Touch target | no minTarget or useMinTargetSlop in the source modules |
 | Tests importing it | 11: `test/autocomplete-keyboard.test.tsx`, `test/command.test.tsx`, `test/drawer-host.test.tsx`, `test/escape-layers.test.tsx`, `test/hardware-back.test.tsx`, `test/hosted-trigger-focus.test.tsx`, `test/input-overlay-escape.test.tsx`, `test/native-accessibility-escape-hosts.test.tsx`, `test/native-focus-fixtures.test.tsx`, `test/overlay-escape.test.tsx`, `test/overlays.test.tsx` |
-| E2E naming it | 5: `e2e/behavior/escape-layers.e2e.ts`, `e2e/behavior/form-autocomplete.e2e.ts`, `e2e/journeys/touch.e2e.ts`, `e2e/starter/starter.spec.ts`, `e2e/visual/overlays.e2e.ts` |
+| E2E importing or driving it | 5: `e2e/behavior/escape-layers.e2e.ts`, `e2e/behavior/form-autocomplete.e2e.ts`, `e2e/behavior/material-overlay-host.e2e.ts`, `e2e/journeys/keyboard.e2e.ts`, `e2e/journeys/touch.e2e.ts` |
 <!-- audit:facts:end -->
 
 ## Variants
