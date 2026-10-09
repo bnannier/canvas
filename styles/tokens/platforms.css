@@ -169,6 +169,7 @@
   /* Radio (radio.styles.ts webSkin) */
   --p-radio-ring-small:16px;--p-radio-ring-default:20px;--p-radio-ring-large:24px;
   --p-radio-dot-small:6px;--p-radio-dot-default:8px;--p-radio-dot-large:10px;--p-radio-border:2px;--p-radio-rest-border:var(--input);
+  --p-radio-section-radius:0px;
   /* Textarea + field captions (textarea.styles.ts webSkin) */
   --p-textarea-fill:var(--background);--p-textarea-underline-rest:var(--input);--p-field-caption-tracking:0px;
   /* Form (form.styles.ts webSkin) */
@@ -227,7 +228,7 @@
   --p-dialog-scrim:rgba(0,0,0,0.6);--p-dialog-radius:18px;--p-dialog-border:1px;--p-dialog-shadow:var(--shadow-xl);
   --p-dialog-title:18px;--p-dialog-title-lh:28px;--p-dialog-title-weight:500;
   --p-dialog-body:14px;--p-dialog-body-lh:20px;--p-dialog-body-gap:8px;--p-dialog-footer-gap:8px;--p-dialog-footer-top:24px;
-  --p-alert-btn-flex:0 0 auto /* @kind other */;--p-alert-btn-min-h:0px;--p-alert-btn-pad:8px 14px;--p-alert-btn-radius:12px;
+  --p-alert-btn-flex:0 0 auto /* @kind other */;--p-alert-btn-min-h:0px;--p-alert-btn-pad:8px 14px;--p-alert-btn-radius:9999px;
   --p-alert-btn-font:14px;--p-alert-btn-lh:20px;--p-alert-btn-weight:500;--p-alert-btn-tracking:0px;
   --p-alert-cancel-border:1px;--p-alert-cancel-fill:transparent;--p-alert-cancel-label:var(--foreground);
   --p-alert-confirm-fill:var(--primary);--p-alert-confirm-label:var(--primary-foreground);
@@ -237,7 +238,7 @@
   --p-ad-title:18px;--p-ad-title-lh:28px;--p-ad-title-weight:500;
   --p-ad-desc:14px;--p-ad-desc-lh:20px;--p-ad-desc-gap:8px;
   --p-ad-actions-justify:flex-end /* @kind other */;--p-ad-actions-gap:8px;
-  --p-ad-btn-flex:0 0 auto /* @kind other */;--p-ad-btn-min-h:0px;--p-ad-btn-pad:8px 14px;--p-ad-btn-radius:12px;--p-ad-btn-font:14px;--p-ad-btn-lh:20px;
+  --p-ad-btn-flex:0 0 auto /* @kind other */;--p-ad-btn-min-h:0px;--p-ad-btn-pad:8px 14px;--p-ad-btn-radius:9999px;--p-ad-btn-font:14px;--p-ad-btn-lh:20px;
   --p-ad-cancel-border:1px;--p-ad-cancel-fill:transparent;--p-ad-cancel-label:var(--foreground);--p-ad-cancel-weight:500;
   --p-ad-confirm-fill:var(--primary);--p-ad-confirm-label:var(--primary-foreground);--p-ad-confirm-weight:500;
   --p-ad-confirm-destructive-fill:var(--destructive);--p-ad-confirm-destructive-label:var(--destructive-foreground);
@@ -685,7 +686,7 @@
   --p-slider-track-radius:8px;--p-slider-inner-radius:2px;--p-slider-gap:6px;--p-slider-row-min-h:48px;
   --p-slider-thumb-w-small:4px;--p-slider-thumb-w-base:4px;--p-slider-thumb-w-large:4px;
   --p-slider-thumb-h-small:44px;--p-slider-thumb-h-base:44px;--p-slider-thumb-h-large:44px;
-  --p-slider-thumb-radius:2px;--p-slider-thumb-fill:var(--primary);--p-slider-thumb-border:0px;--p-slider-thumb-shadow:none;
+  --p-slider-thumb-radius:9999px;--p-slider-thumb-fill:var(--primary);--p-slider-thumb-border:0px;--p-slider-thumb-shadow:none;
   --p-slider-stop:4px;--p-slider-stop-opacity:1 /* @kind other */;
   /* Stepper — M3: two outlined 40dp circles flanking the value */
   --p-stepper-btn-h:40px;--p-stepper-btn-w-small:32px;--p-stepper-btn-w-base:40px;--p-stepper-btn-w-large:48px;
@@ -712,7 +713,7 @@
   /* ActionSheet — M3 modal bottom sheet: one 28dp sheet, drag handle, Cancel as the last row */
   --p-sheet-scrim:rgba(0,0,0,0.32);--p-sheet-stack-pad:0px;--p-sheet-stack-gap:0px;
   --p-sheet-card-radius:0px;--p-sheet-card-radius-top:28px;--p-sheet-card-pad:0px 0px 8px;--p-sheet-shadow:none;
-  --p-sheet-cancel-layout:lastRow /* @kind other */;
+  --p-sheet-cancel-layout:lastRow /* @kind other */;--p-sheet-cancel-radius:0px;
   --p-sheet-handle-display:block /* @kind other */;
   --p-sheet-header-pad:8px 24px 12px;--p-sheet-header-align:flex-start /* @kind other */;--p-sheet-header-gap:4px;--p-sheet-title-align:left /* @kind other */;
   --p-sheet-title:16px;--p-sheet-title-lh:24px;--p-sheet-title-weight:500;--p-sheet-title-tracking:0.15px;--p-sheet-title-color:var(--popover-foreground);

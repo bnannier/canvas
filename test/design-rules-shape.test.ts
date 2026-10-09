@@ -50,7 +50,10 @@ async function skinsOf(module: string): Promise<Record<string, Skin>> {
 
 async function skinValue(family: SkinFamily, token: string, platform: PlatformKey): Promise<string | null> {
   const check = family.checks.find((c) => c.token === token)!;
-  return normalize(check.read((await skinsOf(family.module))[`${platform}Skin`], tokens));
+  // A part drawn with another kit component reads that component's skin for this platform.
+  const parts: Record<string, Skin> = {};
+  for (const [name, module] of Object.entries(check.parts ?? {})) parts[name] = (await skinsOf(module))[`${platform}Skin`];
+  return normalize(check.read((await skinsOf(family.module))[`${platform}Skin`], tokens, parts));
 }
 
 describe("the shape table", () => {
