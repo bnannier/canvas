@@ -3,8 +3,19 @@ import { render, cleanup } from "@testing-library/react";
 import { type ReactNode } from "react";
 import { Text } from "react-native";
 import { ThemeProvider } from "../src/style/theme.tsx";
-import { Card, CardMedia, CardContent } from "../src/molecules/card/card.tsx";
+import {
+  Card,
+  CardMedia,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+  CardFooter,
+  CardSeparator,
+} from "../src/molecules/card/card.tsx";
+import * as cardStyles from "../src/molecules/card/card.styles.ts";
 import { shape } from "../src/style/tokens.ts";
+import { LOOKS, lookProps } from "./fixtures/looks.ts";
 
 afterEach(cleanup);
 const ui = (node: ReactNode) => render(<ThemeProvider>{node}</ThemeProvider>);
@@ -109,6 +120,125 @@ describe("CardMedia", () => {
     // ...and the bottom edge stays flat where the content continues.
     expect(media.style.borderBottomLeftRadius).toBe("");
     expect(media.style.borderBottomRightRadius).toBe("");
+  });
+
+  // The cover is named through Image's own resolution, so `alt` (or its alias) reaches the
+  // web as a named image; before, react-native-web dropped `alt` and the cover was a
+  // decorative <img alt="">, whatever the caller wrote.
+  it("names the cover from `alt`, as an image", () => {
+    // A remote source, so react-native-web starts the load and mounts its hidden <img>.
+    const { getByTestId } = ui(<CardMedia src="https://example.com/kira-tanaka.jpg" alt="Portrait of Kira Tanaka" testID="m" />);
+    const media = getByTestId("m");
+    expect(media.getAttribute("role")).toBe("img");
+    expect(media.getAttribute("aria-label")).toBe("Portrait of Kira Tanaka");
+    expect(media.querySelector("img")?.getAttribute("alt")).toBe("Portrait of Kira Tanaka");
+  });
+
+  it("names it from `accessibilityLabel` too, with `alt` winning when both are set", () => {
+    const alias = ui(<CardMedia src="/kira-tanaka.jpg" accessibilityLabel="Cover photo" testID="m" />);
+    expect(alias.getByTestId("m").getAttribute("aria-label")).toBe("Cover photo");
+    cleanup();
+    const both = ui(<CardMedia src="/kira-tanaka.jpg" alt="Portrait" accessibilityLabel="Cover photo" testID="m" />);
+    expect(both.getByTestId("m").getAttribute("aria-label")).toBe("Portrait");
+  });
+
+  it("is decorative with no name", () => {
+    const { getByTestId } = ui(<CardMedia src="/kira-tanaka.jpg" testID="m" />);
+    expect(getByTestId("m").getAttribute("role")).toBeNull();
+    expect(getByTestId("m").getAttribute("aria-label")).toBeNull();
+  });
+});
+
+// The composition parts: what a caller assembles when the string props do not fit (a
+// cover over a header, a separator, a body and a footer row). Each part owns its section
+// padding, so a composed card never pads by hand; the expectations read the web skin's
+// section styles from card.styles.ts, so they pin the contract rather than the numbers.
+describe("Card composition parts", () => {
+  // react-native-web writes a color as `rgba(r, g, b, a.aa)`; a token may be hex.
+  const rgba = (color: string): string => {
+    const hex = /^#([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i.exec(color);
+    if (hex) return `${parseInt(hex[1], 16)},${parseInt(hex[2], 16)},${parseInt(hex[3], 16)},1.00`;
+    const m = /rgba?\(\s*(\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?\s*\)/.exec(color);
+    if (!m) throw new Error(`not a color: ${color}`);
+    return `${m[1]},${m[2]},${m[3]},${Number(m[4] ?? 1).toFixed(2)}`;
+  };
+  const px = (n: number | string | undefined) => `${n}px`;
+
+  const composed = (props: Record<string, unknown> = {}) =>
+    ui(
+      <Card flush testID="card" {...props}>
+        <CardMedia src="/kira-tanaka.jpg" height={120} alt="Cover" testID="media" />
+        <CardHeader>
+          <CardTitle>Northwind</CardTitle>
+          <CardDescription>Workspace settings</CardDescription>
+        </CardHeader>
+        <CardSeparator />
+        <CardContent>
+          <Text>Body copy</Text>
+        </CardContent>
+        <CardFooter>
+          <Text>Footer line</Text>
+        </CardFooter>
+      </Card>,
+    );
+
+  it("renders the parts in the order they were composed", () => {
+    const { getByText, getByTestId } = composed();
+    const order = [getByTestId("media"), getByText("Northwind"), getByText("Workspace settings"), getByText("Body copy"), getByText("Footer line")];
+    for (let i = 1; i < order.length; i++) {
+      expect(order[i - 1].compareDocumentPosition(order[i]) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    }
+  });
+
+  it("pads each section itself, so a flush card adds no inset of its own", () => {
+    const { getByText, getByTestId } = composed();
+    expect(getByTestId("card").style.padding).toBe("");
+    const header = getByText("Northwind").parentElement as HTMLElement;
+    expect(header.style.paddingTop).toBe(px(cardStyles.header.paddingTop));
+    expect(header.style.paddingBottom).toBe(px(cardStyles.header.paddingBottom));
+    expect(header.style.paddingLeft).toBe(px(cardStyles.header.paddingHorizontal));
+    expect(header.style.gap).toBe(px(cardStyles.header.gap));
+    const content = getByText("Body copy").parentElement as HTMLElement;
+    expect(content.style.paddingTop).toBe(px(cardStyles.content.paddingVertical));
+    expect(content.style.paddingLeft).toBe(px(cardStyles.content.paddingHorizontal));
+    const footer = getByText("Footer line").parentElement as HTMLElement;
+    expect(footer.style.flexDirection).toBe("row");
+    expect(footer.style.paddingTop).toBe(px(cardStyles.footer.paddingTop));
+    expect(footer.style.paddingBottom).toBe(px(cardStyles.footer.paddingBottom));
+  });
+
+  for (const look of LOOKS) {
+    it(`takes the title, muted and border tokens of the ${look.name} look`, () => {
+      const { getByText, container } = render(
+        <ThemeProvider {...lookProps(look)} solid>
+          <CardTitle>Title</CardTitle>
+          <CardDescription>Description</CardDescription>
+          <CardSeparator />
+        </ThemeProvider>,
+      );
+      expect(rgba(getByText("Title").style.color)).toBe(rgba(look.tokens["card-foreground"]));
+      expect(rgba(getByText("Description").style.color)).toBe(rgba(look.tokens["muted-foreground"]));
+      // The separator is the last node: a full-width 1px hairline in the border token.
+      const rule = [...container.querySelectorAll<HTMLElement>("div")].find((d) => d.style.height === "1px") as HTMLElement;
+      expect(rule).toBeTruthy();
+      expect(rule.style.width).toBe("100%");
+      expect(rgba(rule.style.backgroundColor)).toBe(rgba(look.tokens.border));
+    });
+  }
+
+  it("keeps the title and description type of the card's own string path", () => {
+    const parts = ui(
+      <>
+        <CardTitle>Title</CardTitle>
+        <CardDescription>Description</CardDescription>
+      </>,
+    );
+    const partTitle = parts.getByText("Title").style;
+    const partDescription = parts.getByText("Description").style;
+    cleanup();
+    const strings = ui(<Card title="Title" description="Description" />);
+    expect(partTitle.fontSize).toBe(strings.getByText("Title").style.fontSize);
+    expect(partDescription.fontSize).toBe(strings.getByText("Description").style.fontSize);
   });
 });
 

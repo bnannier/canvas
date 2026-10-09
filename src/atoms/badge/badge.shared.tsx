@@ -231,12 +231,17 @@ function badgeGapOf(p: BadgeGroupProps): BadgeGap {
 /** A wrapping row of badges. */
 export function BadgeGroup(props: BadgeGroupProps) {
   const { children, accessibilityLabel, testID, style } = props;
+  // A name needs a role that can carry it (Badge's own rule above): a bare View is a
+  // generic element, so a labelled group is a `group`, which accepts the name and keeps
+  // its badges' text readable. Unlabelled, it stays a plain layout row with no role.
+  const named = accessibilityLabel != null && accessibilityLabel !== "";
   return (
     <View
       style={[{ flexDirection: "row", flexWrap: "wrap", alignItems: "center", gap: BADGE_GAP[badgeGapOf(props)] }, style]}
       testID={testID}
-      accessibilityLabel={accessibilityLabel}
-      aria-label={accessibilityLabel}
+      role={named ? "group" : undefined}
+      accessibilityLabel={named ? accessibilityLabel : undefined}
+      aria-label={named ? accessibilityLabel : undefined}
     >
       {children}
     </View>
