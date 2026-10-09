@@ -272,25 +272,73 @@ component in the interaction registry (`tools/interactions/registry.ts`) hovered
 pressed, opened, invalid and disabled, as far as it has those states. The recipes are one
 table, `e2e/support/state-recipes.ts`: per component either the recipes for the states it
 has, each naming the example it is applied to, or `static: true` with the reason it has
-none (a layout primitive, a meter, a chart with no control and no keyboard stop).
-`tools/audit/state-recipes.test.ts` fails on a registry entry with neither, a recipe on an
-example its page does not have, a component whose own source reads the hover primitive
-(`useHover`, `src/style/hover.tsx`) without a hover recipe or one with a hover recipe that
-does not, an overlay of `overlay-recipes.ts` (or Tooltip, or AvatarMenu, which the e2e suite
-never opens) without an open recipe, and open rows that differ from the docs' platform-skin
-registry.
+none (a layout primitive, a meter, a chart whose source takes no input), and, beside
+either, `exempt` for a state its source gives it that no capture is due for, with a claim
+the unit test checks.
+
+What a component has is read from its own source, not taken from the table's word for it.
+`tools/audit/interaction-signals.ts` reads every module of the component's directory (the
+shared shell, the platform entries, the skins and the parts) and the shared chart modules
+they render, never run, for the inputs that have a state: a press handler (`onPress`,
+`onPressIn`, `onLongPress`) or a raw responder (a ScrubSurface, a PanResponder) gives a
+pressed state, `onHoverIn` or the hover primitive (`useHover`, `src/style/hover.tsx`) a
+hover state, a TextInput or a link (`href`, a `link` role) a focus state, and a function
+taking `pressed`, `hovered` or `focused` (a skin, a Pressable's style callback) the state
+it names. A press handed to another kit component (Divider's Button) is that component's.
+A signal can be gated: it renders only when the component is given a prop (`onItemPress`
+makes a Feeds row a button), read from the if, ternary, `&&` or early return around it and
+followed through the local and shared components it is reached through (a Steps circle is
+pressable when it is given `onPress`, which Steps gives it only with `onStepPress`).
+`tools/audit/state-coverage.ts` then holds the table to the source: every state a
+component's source gives it has a recipe, or an exemption whose claim holds, checked against
+the source and the page:
+
+| Claim | Holds when |
+|---|---|
+| `unpassed` (props) | every signal of the state is gated by one of the props, and no rail example's code names any of them (Feeds' `onItemPress`, Steps' `onStepPress`, Typography's `href` and `onPress`) |
+| `dismissLayers` | every signal of the state is a press on an element the source keeps from assistive technology, with no pressed look, whose handler is empty or closes, and the component has an open recipe (Drawer's scrim and panel) |
+
+An exemption for a state the source does not give, or beside a recipe for the same state,
+fails too. `tools/audit/state-recipes.test.ts` runs it over every component (and fails on
+the table as it stood before the charts got their recipes: Chart, AreaChart and Histogram
+scrub, the Heatmap's days take a resting pointer and a press), checks the reader on the kit
+and on a fixture of every gate form, and also fails on a registry entry with neither recipes
+nor a reason, a recipe on an example its page does not have, a hover recipe where the source
+gives no hover, an overlay of `overlay-recipes.ts` (or Tooltip, or AvatarMenu, which the e2e
+suite never opens) without an open recipe, and open rows that differ from the docs'
+platform-skin registry. Each checklist's facts block carries the result as its
+"Interaction states" row: the states captured (example, rows, widths), and any static or
+exempt state with its reason and whether its claim holds.
 
 Each recipe applies the state through the input a person uses, verifies it from the page's
 structure, and releases it:
 
 | State | Applied | Reached when | Photograph |
 |---|---|---|---|
-| hover | the pointer moves onto the control and rests (Dropdown: on its first item, with the menu open) | the control, its contents or its wrappers up to the row changed transform, box shadow or background (the lift and the wash `src/style/hover.tsx` applies); every watched property that changed is the evidence | the web row, desktop |
+| hover | the pointer moves onto the control and rests (Dropdown and Command: on a row, with the menu or palette open; the Heatmap: on a calendar day) | the control, its contents or its wrappers up to the row changed transform, box shadow or background (the lift and the wash `src/style/hover.tsx` applies; a Command row's active highlight); for the Heatmap, the readout it shows; every watched property that changed is the evidence | the web row, desktop (the viewport inside an overlay) |
 | focus | Tab, from the tab stop before the control | focus is on or inside the control and it matches `:focus-visible`; the node whose edges the arriving focus changed is the ring, and `ringShows` (`e2e/support/focus-ring.ts`) looks for it in the pixels on every side, in the colour it paints at | the web row, desktop |
-| pressed | the pointer goes down on the hovered control and stays down | holding it changed a watched style against the hovered control (a press that looks like the hover is not reached, and says so); released by moving off before the button comes up, and the release reports whether the press cancelled | the web row, desktop |
+| pressed | the pointer goes down on the hovered control and stays down (a Slider on its thumb; Dialog, AlertDialog, ActionSheet and Autocomplete on a control inside the opened overlay) | holding it changed a watched style against the hovered control (a press that looks like the hover is not reached, and says so) | the web row, desktop (the viewport inside an overlay) |
+| pressed, to inspect | a chart that inspects under a press is pressed on one datum, found from what it draws (above an axis label, a tile's or a stage's label, a mark): held down on a scrub surface, a click on a Pressable hit layer | the chart shows text it did not show with the pointer away (the value flag, a readout) or repaints its marks (the others dim); with the recipe's expected texts, those (`Q2`, `Revenue`, `70`) | the web row, desktop |
 | open | the overlay recipes' own clicks (`OVERLAY_RECIPES`, `PHONE_INPUT_RECIPE`, `TOAST_RECIPE`), a hover on Tooltip's On hover example, a click on the AvatarMenu pill, from the web row and from every row whose platform build the docs registry injects (`docs/src/core/platform-skins.ts`; Toast's iOS row is the web build) | the opening added exactly the recipe's node (a dialog, a menu, a listbox, a speaking live region, the tooltip's bubble) where the Playground's overlays paint; the evidence says where it painted, whether it runs edge to edge on its frame's bottom (a sheet), whether it is in view and whether the trigger reports `aria-expanded="true"` | the viewport at the cell's own size, all three widths |
 | invalid | the example that shows the error; Textarea typed past its soft cap | the field carries `aria-invalid="true"`; the error text it is described by is the evidence | the web row, desktop |
 | disabled | the example that disables the control | `aria-disabled="true"` or a native `disabled` | the web row, desktop |
+
+The release ends the state the way a person would and is measured, not assumed. A press ends
+by moving off before the button comes up, which cancels a press on every platform, or, on a
+slider's thumb or a drag handle that a move would drag, by coming up where it went down;
+then, with the pointer away again, the row's accessibility tree (or the overlay's), the
+page's address, and the pressed control's computed look and its pixels must be what they
+were before the press, or the cell is flagged `press-not-cancelled` with what differs (and
+where focus went), whether the control announces a state or not. Text the drag off the
+control selected on the way is recorded and cleared before that comparison, since the page
+selected it, not the press; when the selection takes in the control's own label the cell is
+flagged `press-selects-label` (Button and Chip keep their labels out of a selection; the
+first sweep found Checkbox, Radio, Switch, Tabs and others do not). An inspection is
+cleared by a second press on the same datum (the charts' documented toggle) or by the
+pointer moving off a heatmap day, and the row must be back to how it was
+(`inspection-not-cleared`). An overlay closes on Escape and must be gone 3 s later
+(`overlay-not-closed`). The release runs for a state not reached as well, so a press with no
+look of its own that still fires is caught.
 
 Every state is captured in all six looks and surfaces. A state its recipe cannot confirm is
 recorded as `state-not-reached` with the reason in the record and in probe.json, and is
@@ -298,25 +346,53 @@ never photographed: a missing state is a finding, not a picture of the resting c
 reached state is probed as a variant cell is (the row, and the panel an opening added, judged
 by the row's platform floors), and adds its own flags: `focus-ring-missing` (nothing drew a
 new edge), `focus-ring-hidden` (drawn, but not seen on every side), `focus-ring-colour` (not
-the look's `ring`), `expanded-not-announced`, `error-not-described`, `disabled-tab-stop` and
+the look's `ring`), `expanded-not-announced`, `error-not-described`, `disabled-tab-stop`,
 `hover-unstable` (a tooltip whose bubble, opening in flow above its trigger, pushes the
 trigger out from under the resting pointer: the recipe follows the pointer to the trigger so
-the open bubble can be photographed, and records that it had to).
+the open bubble can be photographed, and records that it had to), and the release's
+`press-not-cancelled`, `press-selects-label`, `inspection-not-cleared` and
+`overlay-not-closed`. Every flag is in
+the cell's line of `cells.jsonl` and counted in the run's summary.
 An overlay the Playground contains in its row (Dialog, AlertDialog, Toast, Tooltip) is
 framed against that row; one placed against the window (an anchored menu, a Drawer, an
-ActionSheet) against the viewport.
+ActionSheet) against the viewport. A row's photograph keeps a 12 px margin around the row
+(`SHOT_MARGIN`, `tools/audit/web-capture.ts`) for a ring or a lifted shade drawn just outside it.
 
 A state cell is `web-states/<slug>/<state>.<row>/<width>.<look>.<surface>/` with `state.png`
-(a reached state) and `probe.json` (the recipe, the evidence, the release, and for a reached
-state the probe and the flags).
+(a reached state) and `probe.json` (the recipe, the evidence, the release and its flags, and
+for a reached state the probe).
 
-Measured on 2026-10-09 against a static export on this Mac, 6 workers: every state of every
-component is 1,530 cells (63 components with recipes, 255 cells per look and surface), 7 min
-09 s and 228.7 MB, 1.7 s a cell; 48 were not reached, every one a state the kit does not show
-on the web (a press with no feedback of its own on AvatarMenu, Command's trigger, the
-Description list's Update button, FilterPanel's checkbox and Video's play button in every
-look, and on Switch and ButtonGroup under glass; Input's and Textarea's Disabled examples,
-which are read-only rather than disabled).
+Two decisions differ from the plan's 1d:
+
+- **Invalid is shown, not typed, for fields that do not validate on their own.** The plan
+  says invalid "types bad input and verifies `aria-invalid`". Only Textarea judges its own
+  input (past its soft character cap it marks itself invalid), so only its recipe types.
+  Input, Field, Form and PhoneInput take their error from the app (an `error` prop or
+  message) and never validate what is typed; typing into them would leave them valid and
+  photograph nothing, so their recipes use the rail example that shows the error, which is
+  the state the kit actually renders. A field that grows validation of its own gets a typing
+  recipe.
+- **A chart's press-to-inspect is its pressed state.** The plan's states are hover, focus,
+  pressed, open, invalid and disabled; a chart has no pressed look of its own, so its pressed
+  cell is the inspection its press opens (the value flag), verified by what it shows.
+
+Measured on 2026-10-09 against a static export on this Mac, 6 workers, before the
+press-to-inspect, overlay and Slider recipes and the release measurement: every state of
+every component was 1,530 cells (63 components with recipes, 255 cells per look and
+surface), 7 min 09 s and 228.7 MB, 1.7 s a cell; 48 were not reached. The current table's
+sweep is in the 1d report. A press with no feedback of its own on AvatarMenu, Command's
+trigger, the Description list's Update button, FilterPanel's checkbox and Video's play
+button in every look, and on Switch and ButtonGroup under glass, is a state the kit does not
+show on the web.
+
+Input's and Textarea's Disabled examples are an accessibility finding, not a state the kit
+leaves out: a disabled field is dimmed and made read-only (`src/atoms/input/input.shared.tsx`
+sets `editable: !disabled && !readOnly` at line 318 and the disabled opacity at lines 393 and
+490; `src/atoms/textarea/textarea.shared.tsx` sets `editable: !disabled` at line 198), but it
+carries neither `aria-disabled` nor a native `disabled`, so assistive technology meets a
+read-only field, not a disabled one. Their disabled cells stay `state-not-reached` (the
+recipe checks the announced state), and each cell's evidence records that the field is
+read-only.
 
 ### Pages
 
@@ -324,15 +400,31 @@ which are read-only rather than disabled).
 and surface. A cell opens the page, checks that the sections it marks are the inventory's in
 order (a renamed, added or dropped section fails the cell), photographs the first screen at
 the cell's viewport (`viewport.png`), then fits each section into a grown viewport, photographs
-it (`section.<key>.png`) and probes it as a variant's row is; probe.json adds the document's,
-the page scroller's and each section's overflow and axe over the sections where the axe policy
-says. A page cell is `web-pages/<kind>-<slug>/<width>.<look>.<surface>/`.
+it with the same 12 px margin as a state's row (`section.<key>.png`; a drop shadow, a hover
+lift or a ring at the section's edge is not cropped; the margin stays inside the part of the
+page no top bar or floating tab bar covers, and the viewport grows for it when it must) and
+probes it as a variant's row is; probe.json adds the document's, the page scroller's and each
+section's overflow, axe over the sections where the axe policy says, each section's clip, and
+how long each step of the cell took (`ms`). A page cell is
+`web-pages/<kind>-<slug>/<width>.<look>.<surface>/`.
 
 Every page is 432 cells (24 pages, 67 sections): 6 min 35 s and 284.8 MB on the same
-machine, 3 s a cell at the median. `pattern-loading` was the outlier: up to 118 s a cell
-while its six look and surface tests ran at once, against 3.3 s for the same cell alone (a
-cell's limit is 180 s). Its loaders are the likely cause (a spinner is essential motion,
-which reduced motion leaves running), not yet measured.
+machine, 3 s a cell at the median, before the loop fix below.
+
+`pattern-loading` cells took up to 146 s each while its six look and surface tests ran at
+once (3.3 s for the same cell alone). The step timings put almost all of it in fitting and
+photographing the sections, and the cause was the capture's own: every audit browser is
+launched as the suite's are, with `--disable-frame-rate-limit` (`CHROMIUM_ARGS` in
+`playwright.config.ts`, a mitigation for a Chromium frame-pipeline hang on CI), and the
+page's Spinner is an infinite CSS animation (essential motion, which reduced motion leaves
+running), so the browser drew frames without limit: 2.3 CPU seconds a second for that one
+page at rest, against 0.03 with the spinner paused or without the switch. Six such pages
+starved the machine. Nothing the capture does needs a loop to turn (every photograph
+disables animations, and no recipe reads one), so every audit page now holds each infinite
+animation still from the moment it starts (`holdLoops`, `e2e/audit/cell.ts`), finite ones
+untouched. The full `pattern-loading` sweep (18 cells, 6 workers) went from 4 min 54 s wall,
+97.2 s a cell on average and 146.5 s at most, to 18 s, 5.1 s and 5.5 s, with every one of its
+90 photographs byte for byte the same.
 
 ## Capturing on devices
 

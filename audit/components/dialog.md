@@ -20,6 +20,7 @@ Audit checklist for `/components/dialog`. The facts block and the variants table
 | Hand-off metric gaps | none |
 | Interactions registry | in the inventory; evidence: none registered |
 | Overlay recipe | yes (dialog) |
+| Interaction states | captured: pressed on Default (web row; desktop), open on Default (web, iOS, Android rows; phone, tablet and desktop). |
 | MeasureProps | not adopted |
 | Touch target | no touch-target name (the exports of `src/style/touch-target.ts`, `src/style/touch-target-seed.ts`, `src/style/touch-seam.ts`, `src/style/clip-slop.ts`, the `TouchTargetSkin` fields, or `hitSlop`) in its implementation modules. `test/touch-target-coverage.test.ts` records it as known gap: only the Android text buttons, at 40 against a 48 minimum |
 | Tests importing it | 18: `test/anchored-overlay-dismissal.test.tsx`, `test/autocomplete-keyboard.test.tsx`, `test/command.test.tsx`, `test/control-refs.test.tsx`, `test/design-rules-skins.test.ts`, `test/destructive-text-components.test.tsx`, `test/dialog-focus.test.tsx`, `test/dialog-hardware-back.test.tsx`, `test/dialog-overlay.test.tsx`, `test/dist-smoke.test.tsx`, `test/escape-layers.test.tsx`, `test/hosted-focus.test.tsx`, `test/input-overlay-escape.test.tsx`, `test/native-accessibility-escape-hosts.test.tsx`, `test/native-focus-fixtures.test.tsx`, `test/no-console-violations.test.tsx`, `test/skins-smoke.test.tsx`, `test/text-contrast.test.tsx` |

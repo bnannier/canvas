@@ -20,6 +20,7 @@ Audit checklist for `/components/view`. The facts block and the variants table a
 | Hand-off metric gaps | none |
 | Interactions registry | in the inventory; evidence: none registered |
 | Overlay recipe | none |
+| Interaction states | static: A layout primitive: it renders no control of its own and its examples hold none. |
 | MeasureProps | not applicable: the kit has no source of its own for it |
 | Touch target | not applicable: the kit has no source of its own for it |
 | Tests importing it | 4: `test/dist-smoke.test.tsx`, `test/touch-target-clips.test.tsx`, `test/touch-target-seams.test.tsx`, `test/touch-target-seed.test.tsx` |

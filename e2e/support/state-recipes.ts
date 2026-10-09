@@ -7,17 +7,22 @@
  * it, open it, find it invalid and find it disabled, and how to tell that it really is in
  * that state before it is photographed. Every component the interaction registry lists
  * (tools/interactions/registry.ts `inventory`) has an entry here: the recipes for the
- * states it has, or `static: true` with the reason it has none; and every recipe names
- * an example of its page. tools/audit/state-recipes.test.ts holds the table to both.
+ * states it has, or `static: true` with the reason it has none, and `exempt` for a state
+ * its source gives it that no capture is due for; every recipe names an example of its
+ * page. tools/audit/state-recipes.test.ts holds the table to the registry, the pages, and
+ * each component's own source (tools/audit/interaction-signals.ts reads the states a
+ * source gives: a press, a scrub surface, a hover or field handler, a pressed, hovered or
+ * focused look; tools/audit/state-coverage.ts checks that each has a recipe or an
+ * exemption whose claim holds).
  *
  * A recipe has three steps, each through the input a person uses:
  *
  *   apply    hover: the pointer moves onto the control. focus: the Tab key, from the tab
  *            stop before the control. pressed: the pointer goes down on the control and
- *            stays down. open: the overlay recipes' own click (or a hover, for a
- *            tooltip), from the platform row the cell names. invalid: the example that
- *            shows an error, or typing past a limit. disabled: the example that disables
- *            the control.
+ *            stays down (a chart is pressed on one datum to inspect it). open: the
+ *            overlay recipes' own click (or a hover, for a tooltip), from the platform
+ *            row the cell names. invalid: the example that shows an error, or typing
+ *            past a limit. disabled: the example that disables the control.
  *   verify   reads the page and says whether the state was reached, with the structural
  *            evidence: for hover, what changed in the computed style of the control, its
  *            contents and its wrappers up to the row (the lift's transform and shade and
@@ -26,15 +31,23 @@
  *            node that took focus, whether it matches :focus-visible, the node that draws
  *            the ring and whether the ring shows on every side (e2e/support/focus-ring.ts
  *            `ringShows`); for pressed, what holding the pointer down changed against the
- *            hovered control; for open, the panel the opening added, where it painted,
+ *            hovered control, or for a chart the value flag or readout the press shows
+ *            (text it did not show with the pointer away) or the marks it repaints; for
+ *            open, the panel the opening added, where it painted,
  *            whether it runs edge to edge at the viewport's bottom (a sheet) and whether
  *            the trigger says it is expanded; `aria-invalid` and `aria-disabled` (or a
  *            native `disabled`) for the last two. A state verify cannot confirm is not
  *            reached: the capture records the cell as `state-not-reached` with the reason,
  *            and photographs nothing.
  *   release  takes the state away (the pointer moves off; focus blurs; a press is
- *            cancelled by moving off before the button comes up, and release checks that
- *            nothing toggled; an overlay closes on Escape) and reports how that went.
+ *            cancelled by moving off before the button comes up, or ends in place on a
+ *            thumb or a drag handle that a move would drag; an inspection is cleared by a
+ *            second press on the same datum; an overlay closes on Escape) and measures how
+ *            that went against the page before the state was applied. What it finds wrong
+ *            is a flag like any other: `press-not-cancelled` (the row's accessibility tree,
+ *            the address, or the pressed control's computed look or pixels differ from
+ *            before the press), `press-selects-label` (dragging off the control selected
+ *            its own label's text), `inspection-not-cleared` and `overlay-not-closed`.
  *
  * What a defect looks like is recorded, not hidden: a focused control whose ring does not
  * show is still a reached focus state, flagged `focus-ring-missing` or
@@ -107,16 +120,46 @@ export interface StateRecipe {
   how: string;
   apply(scene: StateScene): Promise<unknown>;
   verify(scene: StateScene, applied: unknown): Promise<Verdict>;
-  release(scene: StateScene, applied: unknown): Promise<Record<string, unknown>>;
+  release(scene: StateScene, applied: unknown): Promise<Released>;
 }
 
-/** A component with no interaction state of its own, and why. */
-export interface StaticEntry {
-  static: true;
+/** What a release did (for probe.json), and the defects it found (the cell's flags). */
+export interface Released {
+  report: Record<string, unknown>;
+  flags: string[];
+}
+
+/**
+ * Why a component has no recipe for a state its own source gives it, as a claim
+ * tools/audit/state-coverage.ts checks against that source and the component's page
+ * (tools/audit/interaction-signals.ts reads the signals):
+ *
+ *   unpassed       every signal of the state is rendered only when one of these props is
+ *                  passed (`onItemPress` makes a Feeds row a button), and no rail example
+ *                  passes any of them, so no example shows the state.
+ *   dismissLayers  every signal of the state is a press on a node kept from assistive
+ *                  technology, with no pressed look, whose handler closes the overlay or
+ *                  does nothing (a scrim, a panel that swallows a stray press); the overlay
+ *                  itself has an open recipe.
+ */
+export type ExemptionClaim = { unpassed: readonly string[] } | { dismissLayers: true };
+
+export interface Exemption {
+  claim: ExemptionClaim;
+  /** What the exempt signals are and why no capture is due, in a sentence. */
   reason: string;
 }
 
-export type StateRecipes = { static?: undefined } & { [K in StateName]?: StateRecipe };
+export type Exemptions = { [K in StateName]?: Exemption };
+
+/** A component with no interaction state of its own, and why; `exempt` answers the states its source gives it anyway. */
+export interface StaticEntry {
+  static: true;
+  reason: string;
+  exempt?: Exemptions;
+}
+
+export type StateRecipes = { static?: undefined; exempt?: Exemptions } & { [K in StateName]?: StateRecipe };
 export type ComponentStates = StaticEntry | StateRecipes;
 
 // --- Reading the page --------------------------------------------------------------
@@ -132,6 +175,11 @@ const WATCHED = [
   "border-right-color",
   "border-bottom-color",
   "border-left-color",
+  // A ring drawn as a wider border (the web Slider thumb's pressed ring).
+  "border-top-width",
+  "border-right-width",
+  "border-bottom-width",
+  "border-left-width",
   "color",
   "opacity",
   "filter",
@@ -269,7 +317,7 @@ const NEUTRAL_POINT = { x: 1, y: 1 };
 function recipe<A>(r: Omit<StateRecipe, "apply" | "verify" | "release"> & {
   apply(scene: StateScene): Promise<A>;
   verify(scene: StateScene, applied: A): Promise<Verdict>;
-  release(scene: StateScene, applied: A): Promise<Record<string, unknown>>;
+  release(scene: StateScene, applied: A): Promise<Released>;
 }): StateRecipe {
   return r as unknown as StateRecipe;
 }
@@ -327,8 +375,11 @@ function hover(variant: string, target: Target, options: { within?: OpenSpec; ho
     },
     async release(scene, applied) {
       await scene.page.mouse.move(NEUTRAL_POINT.x, NEUTRAL_POINT.y);
-      if (within && !("missing" in applied) && applied.opened) return { pointer: "moved off", ...(await openClose(within, scene, applied.opened)) };
-      return { pointer: "moved off" };
+      if (within && !("missing" in applied) && applied.opened) {
+        const closed = await openClose(within, scene, applied.opened);
+        return { report: { pointer: "moved off", ...closed.report }, flags: closed.flags };
+      }
+      return { report: { pointer: "moved off" }, flags: [] };
     },
   });
 }
@@ -538,41 +589,174 @@ function focus(variant: string, target: Target, how = "Tab from the tab stop bef
         (document.activeElement as HTMLElement | null)?.blur();
         delete (window as unknown as Record<string, unknown>)[key];
       }, EDGES_KEY);
-      return { focus: "blurred" };
+      return { report: { focus: "blurred" }, flags: [] };
     },
   });
 }
 
 // --- Pressed -------------------------------------------------------------------------
 
-type Pressed = { control: Locator; rest: StyleSnapshot; hovered: StyleSnapshot; toggles: Record<string, string | null> } | { missing: string };
+/** A point on the page, in CSS pixels. */
+interface Point {
+  x: number;
+  y: number;
+}
+
+/** The middle of a node's box, once it is in view. */
+async function middleOf(node: Locator): Promise<Point | null> {
+  await node.scrollIntoViewIfNeeded().catch(() => {});
+  const box = await node.boundingBox();
+  return box ? { x: box.x + box.width / 2, y: box.y + box.height / 2 } : null;
+}
+
+/** What a press can leave behind: the scope's accessibility tree, the address, and how the pressed control looks. */
+interface PressRecord {
+  aria: string;
+  location: string;
+  styles: StyleSnapshot;
+  /** The control's pixels, PNG; null when it could not be photographed. */
+  shot: Buffer | null;
+  /** The element focus is on, as a reviewer would name it. */
+  focus: string;
+}
+
+async function pressRecord(page: Page, scope: Locator, control: Locator): Promise<PressRecord> {
+  const styles = await settledStyles(control);
+  return {
+    aria: await scope.ariaSnapshot({ timeout: 5_000 }).catch(() => "(the scope is gone)"),
+    location: await page.evaluate(() => location.pathname + location.search),
+    styles,
+    shot: await control.screenshot({ animations: "disabled", caret: "hide", timeout: 5_000 }).catch(() => null),
+    focus: await page.evaluate(() => {
+      const el = document.activeElement;
+      if (!el || el === document.body) return "nothing";
+      const role = el.getAttribute("role");
+      const name = (el.getAttribute("aria-label") ?? el.textContent ?? "").replace(/\s+/g, " ").trim().slice(0, 40);
+      return `<${el.localName}${role ? ` role="${role}"` : ""}>${name ? ` "${name}"` : ""}`;
+    }),
+  };
+}
+
+/**
+ * Runs in the page: how many pixels of two PNGs of the same node differ (by more than 24
+ * across the three channels, which no repaint of the same state reaches), or that their
+ * sizes differ.
+ */
+async function countChangedPixels(args: { a: string; b: string }): Promise<{ changed: number; total: number } | { size: string }> {
+  const decode = async (png: string) => {
+    const image = new Image();
+    image.src = `data:image/png;base64,${png}`;
+    await image.decode();
+    const canvas = document.createElement("canvas");
+    canvas.width = image.naturalWidth;
+    canvas.height = image.naturalHeight;
+    const context = canvas.getContext("2d")!;
+    context.drawImage(image, 0, 0);
+    return context.getImageData(0, 0, canvas.width, canvas.height);
+  };
+  const [a, b] = await Promise.all([decode(args.a), decode(args.b)]);
+  if (a.width !== b.width || a.height !== b.height) return { size: `${a.width}x${a.height} before, ${b.width}x${b.height} after` };
+  let changed = 0;
+  for (let i = 0; i < a.data.length; i += 4) {
+    const d = Math.abs(a.data[i]! - b.data[i]!) + Math.abs(a.data[i + 1]! - b.data[i + 1]!) + Math.abs(a.data[i + 2]! - b.data[i + 2]!);
+    if (d > 24) changed += 1;
+  }
+  return { changed, total: a.width * a.height };
+}
+
+/**
+ * Runs in the page: the text the page has selected, whether the selection takes in the
+ * control's own label, and then no selection at all; null when nothing was selected.
+ */
+function takeSelection(control: Element): { text: string; label: boolean } | null {
+  const selection = window.getSelection();
+  if (!selection || selection.isCollapsed || !selection.toString().trim()) return null;
+  const range = selection.getRangeAt(0);
+  const label = Array.from(control.querySelectorAll("*")).concat(control).some((node) => node.childNodes.length > 0 && range.intersectsNode(node) && !!(node.textContent ?? "").trim());
+  const text = selection.toString().replace(/\s+/g, " ").trim().slice(0, 80);
+  selection.removeAllRanges();
+  return { text, label };
+}
+
+/** What differs between two records of the same control: nothing when the press left no trace. */
+async function pressTrace(page: Page, before: PressRecord, after: PressRecord): Promise<string[]> {
+  const trace: string[] = [];
+  if (before.aria !== after.aria) trace.push("the accessibility tree of the row changed (its states, values or names)");
+  if (before.location !== after.location) trace.push(`the page moved from ${before.location} to ${after.location}`);
+  const { changes, structure } = diffStyles(before.styles, after.styles);
+  if (structure) trace.push(structure);
+  if (changes.length) trace.push(`the control's look changed: ${changes.slice(0, 6).map((c) => `${c.node} ${c.property} ${c.from} -> ${c.to}`).join("; ")}`);
+  if (before.shot && after.shot && !before.shot.equals(after.shot)) {
+    const pixels = await page.evaluate(countChangedPixels, { a: before.shot.toString("base64"), b: after.shot.toString("base64") });
+    if ("size" in pixels) trace.push(`the control's box changed (${pixels.size})`);
+    else if (pixels.changed > 0) trace.push(`${pixels.changed} of the control's ${pixels.total} pixels changed`);
+  } else if (!before.shot || !after.shot) trace.push("the control could not be photographed before and after the press");
+  return trace;
+}
+
+type Pressed =
+  | { control: Locator; scope: Locator; point: Point; rest: StyleSnapshot; hovered: StyleSnapshot; before: PressRecord; opened?: Opened }
+  | { missing: string; opened?: Opened };
+
+interface PressOptions {
+  how?: string;
+  /**
+   * How the press ends. `move-off` (the default): the pointer leaves the control before
+   * the button comes up, which cancels a press on every platform. `in-place`: the button
+   * comes up where it went down, for a slider's thumb or a drag handle, which a move would
+   * drag; a press that does not move changes nothing there.
+   */
+  release?: "move-off" | "in-place";
+  /** Where the pointer goes down, when not on the control itself (a slider's thumb inside the slider). */
+  at?: Target;
+  /** An overlay opened first: the control is found and pressed inside it, and it is closed after. */
+  within?: OpenSpec;
+}
 
 /**
  * The pointer goes down on the control and stays down. Reached when holding it changed a
  * watched style against the hovered control just before: a press that looks like the
  * hover is no pressed state of its own, and the evidence says what the hover changed.
- * Released by moving off the control before the button comes up, which cancels the press;
- * release checks that the control's toggles and the page's address did not change.
+ *
+ * Released as the press ends without taking effect (see `PressOptions.release`), and then
+ * measured: with the pointer away again, the row's (or the overlay's) accessibility tree,
+ * the page's address, and the pressed control's computed look and pixels must be what
+ * they were before the press. Anything that differs is listed and flags the cell
+ * `press-not-cancelled`, whether the control announces a state or not. Text the drag off
+ * the control selected is recorded and cleared first (`press-selects-label` when it takes
+ * in the control's own label, as a native button's label never is).
  */
-function pressed(variant: string, target: Target, how = "the pointer goes down on the control and is held"): StateRecipe {
+function pressed(variant: string, target: Target, options: PressOptions = {}): StateRecipe {
+  const { within } = options;
+  const ends = options.release ?? "move-off";
   return recipe<Pressed>({
     state: "pressed",
     variant,
     rows: ["web"],
     widths: "desktop",
-    frame: "row",
-    how,
+    frame: within ? "viewport" : "row",
+    how: options.how ?? (within ? "the overlay opens, then the pointer goes down on the control in it and is held" : "the pointer goes down on the control and is held"),
     async apply(scene) {
-      const control = target(scene.row);
+      const { page } = scene;
+      let scope = scene.row;
+      let opened: Opened | undefined;
+      if (within) {
+        opened = await openApply(within, scene);
+        const verdict = await openVerify(within, scene, opened);
+        if (!verdict.reached) return { missing: `the overlay the press is made in did not open: ${verdict.reason}`, opened };
+        scope = verdict.panel!;
+      }
+      const control = target(scope);
       const missing = await presence(control, "control to press");
-      if (missing) return { missing };
-      await scene.page.mouse.move(NEUTRAL_POINT.x, NEUTRAL_POINT.y);
-      const rest = await settledStyles(control);
-      await control.hover();
+      if (missing) return { missing, opened };
+      await page.mouse.move(NEUTRAL_POINT.x, NEUTRAL_POINT.y);
+      const before = await pressRecord(page, scope, control);
+      const point = await middleOf(options.at ? options.at(scope) : control);
+      if (!point) return { missing: "the place to press has no box", opened };
+      await page.mouse.move(point.x, point.y);
       const hovered = await settledStyles(control);
-      const toggles = await control.evaluate(readToggles);
-      await scene.page.mouse.down();
-      return { control, rest, hovered, toggles };
+      await page.mouse.down();
+      return { control, scope, point, rest: before.styles, hovered, before, opened };
     },
     async verify(_scene, applied) {
       if ("missing" in applied) return notReached(applied.missing);
@@ -591,14 +775,257 @@ function pressed(variant: string, target: Target, how = "the pointer goes down o
       return { reached: true, evidence, flags: [] };
     },
     async release(scene, applied) {
-      await scene.page.mouse.move(NEUTRAL_POINT.x, NEUTRAL_POINT.y);
-      await scene.page.mouse.up();
-      if ("missing" in applied) return { pointer: "up" };
+      const { page } = scene;
+      if (ends === "move-off") await page.mouse.move(NEUTRAL_POINT.x, NEUTRAL_POINT.y);
+      await page.mouse.up();
+      const pointer = ends === "move-off" ? "moved off, then up" : "up where it went down, then moved off";
+      await page.mouse.move(NEUTRAL_POINT.x, NEUTRAL_POINT.y);
+      const close = async (): Promise<Released> => (within && applied.opened ? openClose(within, scene, applied.opened) : { report: {}, flags: [] });
+      if ("missing" in applied) {
+        const closed = await close();
+        return { report: { pointer, ...closed.report }, flags: closed.flags };
+      }
       await pause(150);
-      const after = await applied.control.evaluate(readToggles).catch(() => null);
-      const changed = after ? Object.keys(applied.toggles).filter((key) => applied.toggles[key] !== after[key]) : ["the control is gone"];
-      return { pointer: "moved off, then up", cancelled: changed.length === 0, ...(changed.length ? { changed } : {}) };
+      // A pointer dragged off a control with the button down selects text on the way, as on
+      // any page. That is the page's doing, not the press's: it is recorded (and flagged when
+      // the selection takes in the control's own label), then cleared, so the comparison below
+      // is of the control alone.
+      const selection = await applied.control.evaluate(takeSelection);
+      const after = await pressRecord(page, applied.scope, applied.control);
+      const trace = await pressTrace(page, applied.before, after);
+      const closed = await close();
+      return {
+        report: {
+          pointer,
+          cancelled: trace.length === 0,
+          ...(trace.length ? { trace, focus: { before: applied.before.focus, after: after.focus } } : {}),
+          ...(selection ? { selected: selection } : {}),
+          ...closed.report,
+        },
+        flags: [...(trace.length ? ["press-not-cancelled"] : []), ...(selection?.label ? ["press-selects-label"] : []), ...closed.flags],
+      };
     },
+  });
+}
+
+// --- Press to inspect ------------------------------------------------------------------
+
+/**
+ * Where on a chart to put the pointer, read off what the chart draws, so the same datum
+ * is pressed in every look:
+ *
+ *   axis   above an axis label (a band's centre), `rise` px over the label's top (40: inside
+ *          the plot), moved `t` of the way toward the label `toward` (a histogram bin
+ *          between two ticks).
+ *   text   the middle of a text (a treemap tile's label, a funnel stage's).
+ *   mark   a node of the row (`selector`, the `index`th) at `fx`, `fy` of its box, plus
+ *          `dx`, `dy` px (a ring's stroke inside a radial chart's edge).
+ */
+export type PlotPoint =
+  | { axis: string; toward?: string; t?: number; rise?: number }
+  | { text: string }
+  | { mark: string; index?: number; fx?: number; fy?: number; dx?: number; dy?: number };
+
+async function plotPoint(row: Locator, where: PlotPoint): Promise<{ point: Point; at: string } | { missing: string }> {
+  await row.evaluate((node) => {
+    const box = node.getBoundingClientRect();
+    if (box.top < 0 || box.bottom > window.innerHeight) node.scrollIntoView({ block: "center" });
+  });
+  if ("axis" in where) {
+    const label = row.getByText(where.axis, { exact: true }).first();
+    if (!(await label.count())) return { missing: `the chart shows no label "${where.axis}"` };
+    const box = (await label.boundingBox())!;
+    let x = box.x + box.width / 2;
+    if (where.toward) {
+      const other = row.getByText(where.toward, { exact: true }).first();
+      if (!(await other.count())) return { missing: `the chart shows no label "${where.toward}"` };
+      const far = (await other.boundingBox())!;
+      x += ((far.x + far.width / 2) - x) * (where.t ?? 0.5);
+    }
+    const rise = where.rise ?? 40;
+    return { point: { x, y: box.y - rise }, at: `${rise} px above the axis label "${where.axis}"${where.toward ? `, ${where.t ?? 0.5} of the way to "${where.toward}"` : ""}` };
+  }
+  if ("text" in where) {
+    const point = await middleOf(row.getByText(where.text, { exact: true }).first());
+    return point ? { point, at: `the middle of "${where.text}"` } : { missing: `the chart shows no "${where.text}"` };
+  }
+  const node = row.locator(where.mark).nth(where.index ?? 0);
+  const box = (await node.count()) ? await node.boundingBox() : null;
+  if (!box) return { missing: `the row has no ${where.mark} #${where.index ?? 0}` };
+  return {
+    point: { x: box.x + box.width * (where.fx ?? 0.5) + (where.dx ?? 0), y: box.y + box.height * (where.fy ?? 0.5) + (where.dy ?? 0) },
+    at: `${where.mark} #${where.index ?? 0} at ${where.fx ?? 0.5}, ${where.fy ?? 0.5} of its box${where.dx || where.dy ? ` + ${where.dx ?? 0}, ${where.dy ?? 0} px` : ""}`,
+  };
+}
+
+/** What an inspection can change in a row: its text, how its marks paint, and how its other nodes paint. */
+export interface InspectionRecord {
+  /** The text of every leaf, in document order. */
+  texts: string[];
+  /** Each SVG node's fill, stroke and opacities, in document order. */
+  marks: string[];
+  /** Each other node's opacity, border, outline and background, in document order. */
+  others: string[];
+}
+
+/** Runs in the page. */
+function readInspection(row: Element): InspectionRecord {
+  const texts: string[] = [];
+  const marks: string[] = [];
+  const others: string[] = [];
+  for (const el of Array.from(row.querySelectorAll("*"))) {
+    const s = getComputedStyle(el);
+    if (el instanceof SVGElement) marks.push([s.fill, s.fillOpacity, s.stroke, s.strokeOpacity, s.opacity].join("|"));
+    else others.push([s.opacity, s.borderTopColor, s.outlineStyle, s.outlineColor, s.backgroundColor].join("|"));
+    if (el.children.length === 0) {
+      const text = (el.textContent ?? "").replace(/\s+/g, " ").trim();
+      if (text) texts.push(text);
+    }
+  }
+  return { texts, marks, others };
+}
+
+/** What `after` shows that `before` did not: texts added and removed (as multisets), and paints that changed. */
+export function inspectionDiff(before: InspectionRecord, after: InspectionRecord): { added: string[]; removed: string[]; marks: number; others: number } {
+  const minus = (a: string[], b: string[]) => {
+    const left = [...a];
+    for (const t of b) {
+      const i = left.indexOf(t);
+      if (i >= 0) left.splice(i, 1);
+    }
+    return left;
+  };
+  const changed = (a: string[], b: string[]) => (a.length !== b.length ? Math.max(a.length, b.length) : a.filter((v, i) => v !== b[i]).length);
+  return { added: minus(after.texts, before.texts), removed: minus(before.texts, after.texts), marks: changed(before.marks, after.marks), others: changed(before.others, after.others) };
+}
+
+type Inspected = { point: Point; at: string; rest: InspectionRecord; resting: InspectionRecord } | { missing: string };
+
+interface InspectOptions {
+  /**
+   * How the chart takes the press. `hold`: a responder scrub surface, which inspects while
+   * the pointer is down and keeps the selection when it comes up. `click`: a Pressable hit
+   * layer, which inspects once the press completes.
+   */
+  mode: "hold" | "click";
+  /** Texts the inspection must add (a flag's title and value); without them any added text or repainted mark is enough. */
+  expect?: readonly string[];
+  how: string;
+}
+
+/** Reached when the chart, against how it looked with the pointer away, shows text it did not (a value flag, a readout) or repaints its marks (the others dimmed). */
+function inspectionVerdict(rest: InspectionRecord, now: InspectionRecord, expect: readonly string[] | undefined, evidence: Record<string, unknown>, nothing: string): Verdict {
+  const diff = inspectionDiff(rest, now);
+  Object.assign(evidence, { added: diff.added.slice(0, 40), removed: diff.removed.slice(0, 40), marksRepainted: diff.marks, othersRepainted: diff.others });
+  if (!diff.added.length && !diff.marks) return notReached(nothing, evidence);
+  const missing = (expect ?? []).filter((text) => !diff.added.includes(text));
+  if (missing.length) return notReached(`the inspection does not show ${missing.map((t) => `"${t}"`).join(", ")} (it added ${diff.added.length ? diff.added.map((t) => `"${t}"`).join(", ") : "no text"})`, evidence);
+  return { reached: true, evidence, flags: [] };
+}
+
+/** Clear an inspection the way its chart documents (a second press on the same datum), and measure whether the row is back to how it was. */
+async function clearInspection(scene: StateScene, applied: Inspected, how: "press again" | "move off"): Promise<Released> {
+  const { page } = scene;
+  if ("missing" in applied) {
+    await page.mouse.move(NEUTRAL_POINT.x, NEUTRAL_POINT.y);
+    return { report: {}, flags: [] };
+  }
+  if (how === "press again") {
+    await page.mouse.move(applied.point.x, applied.point.y);
+    await page.mouse.down();
+    await page.mouse.up();
+  }
+  await page.mouse.move(NEUTRAL_POINT.x, NEUTRAL_POINT.y);
+  await pause(200);
+  const diff = inspectionDiff(applied.rest, await scene.row.evaluate(readInspection));
+  const cleared = !diff.added.length && !diff.removed.length && !diff.marks && !diff.others;
+  return {
+    report: { cleared, by: how === "press again" ? "a second press on the same point, then the pointer moved off" : "the pointer moved off", ...(cleared ? {} : { left: diff }) },
+    flags: cleared ? [] : ["inspection-not-cleared"],
+  };
+}
+
+/**
+ * Press to inspect: the pointer goes down on one datum of a chart (`PlotPoint`), as a
+ * person presses a chart to read a value. Reached when the chart then shows a value flag
+ * or a readout (text it did not show with the pointer away), or repaints its marks; with
+ * `expect`, the texts the inspection must show. How the chart looked once the pointer
+ * rested on the datum, before the press, is in the evidence, so a press that only takes
+ * away what the hover showed says so. Released by a second press on the same datum, the
+ * chart's documented way to clear an inspection; `inspection-not-cleared` when the row is
+ * not then back to how it was.
+ */
+function inspect(variant: string, where: PlotPoint, options: InspectOptions): StateRecipe {
+  return recipe<Inspected>({
+    state: "pressed",
+    variant,
+    rows: ["web"],
+    widths: "desktop",
+    frame: "row",
+    how: options.how,
+    async apply(scene) {
+      const { page } = scene;
+      await page.mouse.move(NEUTRAL_POINT.x, NEUTRAL_POINT.y);
+      const found = await plotPoint(scene.row, where);
+      if ("missing" in found) return found;
+      const rest = await scene.row.evaluate(readInspection);
+      await page.mouse.move(found.point.x, found.point.y);
+      await pause(150);
+      const resting = await scene.row.evaluate(readInspection);
+      await page.mouse.down();
+      if (options.mode === "click") await page.mouse.up();
+      return { point: found.point, at: found.at, rest, resting };
+    },
+    async verify(scene, applied) {
+      if ("missing" in applied) return notReached(applied.missing);
+      await pause(200);
+      const now = await scene.row.evaluate(readInspection);
+      const hover = inspectionDiff(applied.rest, applied.resting);
+      const evidence: Record<string, unknown> = {
+        at: applied.at,
+        point: applied.point,
+        mode: options.mode,
+        restingShowed: { added: hover.added.slice(0, 20), marksRepainted: hover.marks },
+      };
+      const rested = hover.added.length ? ` (the pointer resting on it before the press had shown ${hover.added.map((t) => `"${t}"`).join(", ")}, which the press took away)` : "";
+      return inspectionVerdict(applied.rest, now, options.expect, evidence, `pressing ${applied.at} showed nothing the chart did not show with the pointer away${rested}`);
+    },
+    async release(scene, applied) {
+      if (!("missing" in applied) && options.mode === "hold") await scene.page.mouse.up();
+      return clearInspection(scene, applied, "press again");
+    },
+  });
+}
+
+/**
+ * Hover to inspect: the pointer rests on one datum of a chart that inspects under a
+ * resting pointer (a heatmap's day). Reached as `inspect` is; released by moving off,
+ * which must leave the row as it was (`inspection-not-cleared` otherwise).
+ */
+function hoverInspect(variant: string, where: PlotPoint, options: { expect?: readonly string[]; how: string }): StateRecipe {
+  return recipe<Inspected>({
+    state: "hover",
+    variant,
+    rows: ["web"],
+    widths: "desktop",
+    frame: "row",
+    how: options.how,
+    async apply(scene) {
+      const { page } = scene;
+      await page.mouse.move(NEUTRAL_POINT.x, NEUTRAL_POINT.y);
+      const found = await plotPoint(scene.row, where);
+      if ("missing" in found) return found;
+      const rest = await scene.row.evaluate(readInspection);
+      await page.mouse.move(found.point.x, found.point.y);
+      return { point: found.point, at: found.at, rest, resting: rest };
+    },
+    async verify(scene, applied) {
+      if ("missing" in applied) return notReached(applied.missing);
+      await pause(200);
+      const now = await scene.row.evaluate(readInspection);
+      return inspectionVerdict(applied.rest, now, options.expect, { at: applied.at, point: applied.point }, `the pointer resting on ${applied.at} showed nothing the chart did not show with the pointer away`);
+    },
+    release: (scene, applied) => clearInspection(scene, applied, "move off"),
   });
 }
 
@@ -783,9 +1210,13 @@ async function openVerify(spec: OpenSpec, scene: StateScene, opened: Opened): Pr
   return { reached: true, evidence, flags, panel };
 }
 
-async function openClose(spec: OpenSpec, scene: StateScene, opened: Opened): Promise<Record<string, unknown>> {
-  if ("missing" in opened) return {};
-  if (spec.where === "announcement") return { closed: "a toast leaves by itself" };
+/**
+ * Close what an opening added, and count again: `overlay-not-closed` when the node is
+ * still there 3 s later.
+ */
+async function openClose(spec: OpenSpec, scene: StateScene, opened: Opened): Promise<Released> {
+  if ("missing" in opened) return { report: {}, flags: [] };
+  if (spec.where === "announcement") return { report: { closed: "a toast leaves by itself" }, flags: [] };
   if (spec.close) await spec.close(scene.page, scene.row);
   else await scene.page.keyboard.press("Escape");
   const nodes = openNodes(spec, scene);
@@ -795,7 +1226,12 @@ async function openClose(spec: OpenSpec, scene: StateScene, opened: Opened): Pro
     await pause(100);
     count = await nodes.count();
   }
-  return { closed: count === opened.before, by: spec.close ? "its own close" : "Escape" };
+  const closed = count === opened.before;
+  const by = spec.close ? "its own close" : "Escape";
+  return {
+    report: { closed, by, ...(closed ? {} : { left: `${count - opened.before} ${spec.role} node(s) still open 3 s after ${by}` }) },
+    flags: closed ? [] : ["overlay-not-closed"],
+  };
 }
 
 /** Opening the overlay from each named row, at every width (an overlay becomes a sheet on a phone). */
@@ -866,10 +1302,10 @@ function invalid(variant: string, target: Target, options: { type?: string; how?
       return { reached: true, evidence, flags: read.describedBy || read.errorMessage ? [] : ["error-not-described"] };
     },
     async release(scene, applied) {
-      if ("missing" in applied || applied.typed === null) return {};
+      if ("missing" in applied || applied.typed === null) return { report: {}, flags: [] };
       await applied.control.fill("");
       await scene.page.evaluate(() => (document.activeElement as HTMLElement | null)?.blur());
-      return { cleared: true };
+      return { report: { cleared: true }, flags: [] };
     },
   });
 }
@@ -912,7 +1348,7 @@ function disabled(variant: string, target: Target, how = "the example that disab
       return { reached: true, evidence, flags: read.tabIndex >= 0 && !read.nativeDisabled ? ["disabled-tab-stop"] : [] };
     },
     async release() {
-      return {};
+      return { report: {}, flags: [] };
     },
   });
 }
@@ -1035,13 +1471,22 @@ const viaRecipe = (slug: string) => `overlay-recipes.ts' ${slug} recipe, from th
 // --- The table -------------------------------------------------------------------------
 
 const LAYOUT = "A layout primitive: it renders no control of its own (the controls in its examples are kit components with recipes of their own).";
-const CHART_STATIC = "A chart with no control and no keyboard stop in any example: it displays data, and an inspected value is shown by an example that pins it.";
+/** A chart whose source takes no input at all (tools/audit/interaction-signals.ts finds no press, scrub, hover or field in it or the shared chart modules it renders). */
+const CHART_STATIC = "A chart that takes no input: no press, scrub or hover handler in its source or the shared chart modules it renders; it displays data.";
+
+/** An exemption for signals rendered only with props no rail example passes. */
+const unpassed = (reason: string, ...props: string[]): Exemption => ({ claim: { unpassed: props }, reason });
+
+/** The heatmap's day cells, in the order the grid renders them (a column of seven a week). */
+const HEATMAP_DAY: PlotPoint = { mark: '[role="img"] [tabindex="-1"]', index: 10 };
 
 /**
  * Every component in the interaction registry: the states it has, each with the example it
- * is reached on, or why it has none. A component whose web skin declares hover feedback
- * (src/style/hover.tsx) has a hover recipe; an overlay opens from every row whose platform
- * build the docs registry injects (docs/src/core/platform-skins.ts).
+ * is reached on, or why it has none, and the exempt states its source gives it. A
+ * component whose web skin declares hover feedback (src/style/hover.tsx) or takes a resting
+ * pointer has a hover recipe; one that takes a press, a pressed look or a scrub has a
+ * pressed recipe; an overlay opens from every row whose platform build the docs registry
+ * injects (docs/src/core/platform-skins.ts).
  */
 export const STATE_RECIPES: Record<string, ComponentStates> = {
   // Atoms
@@ -1067,6 +1512,7 @@ export const STATE_RECIPES: Record<string, ComponentStates> = {
   emblem: { static: true, reason: "A decorative identity mark: it takes no input." },
   autocomplete: {
     focus: focus("default", byRole("combobox")),
+    pressed: pressed("default", byRole("option", "Ada Lovelace"), { within: overlay("autocomplete"), how: "the list opens (a click and a typed letter), then the pointer goes down on its first option and is held" }),
     open: open("default", overlay("autocomplete"), ALL_ROWS, `${viaRecipe("autocomplete")}: the field takes a click and a typed letter`),
     disabled: disabled("disabled", byRole("combobox")),
   },
@@ -1109,6 +1555,7 @@ export const STATE_RECIPES: Record<string, ComponentStates> = {
   icon: { static: true, reason: "A glyph: it takes no input." },
   input: {
     focus: focus("default", byRole("textbox")),
+    pressed: pressed("password", byRole("button", "Show password")),
     invalid: invalid("error", byRole("textbox")),
     disabled: disabled("disabled", byRole("textbox")),
   },
@@ -1154,6 +1601,14 @@ export const STATE_RECIPES: Record<string, ComponentStates> = {
   skeleton: { static: true, reason: "A loading placeholder: it takes no input." },
   slider: {
     focus: focus("default", byRole("slider")),
+    // The web thumb takes a pressed ring (slider.styles.ts `webSkin.thumb`, from the shell's
+    // PanResponder). The pointer goes down on the thumb itself, so the value stays, and comes
+    // up there: moving off while held would drag it.
+    pressed: pressed("default", byRole("slider"), {
+      at: (scope) => scope.getByRole("slider").first().locator(":scope > *").last(),
+      release: "in-place",
+      how: "the pointer goes down on the slider's thumb and is held",
+    }),
     disabled: disabled("disabled", byRole("slider")),
   },
   spinner: { static: true, reason: "A loading indicator: it takes no input." },
@@ -1170,9 +1625,21 @@ export const STATE_RECIPES: Record<string, ComponentStates> = {
   },
   tooltip: {
     focus: focus("onhover", byRole("button", "Hover me")),
+    // The icon trigger is the tooltip's own pressable (`iconTrigger`), pinned open in its example.
+    pressed: pressed("icon", byRole("button", "Open settings")),
     open: open("onhover", TOOLTIP_OPEN, ALL_ROWS, "the pointer rests on the On hover example's trigger, in the row"),
   },
-  typography: { static: true, reason: "Text styles: they take no input." },
+  typography: {
+    static: true,
+    reason: "Text styles: no rail example makes the text a link or gives it a press, so none takes input.",
+    exempt: {
+      focus: unpassed(
+        "`href` makes the text a link (a tab stop); no rail example passes it: typography.md's Inline links (href) fence follows Do & Don't, which the docs page does not render, so the link example is not on the page at all.",
+        "href",
+      ),
+      pressed: unpassed("`onPress` makes the text pressable; no rail example passes it.", "onPress"),
+    },
+  },
   video: {
     focus: focus("default", byRole("button", /^Play /)),
     pressed: pressed("default", byRole("button", /^Play /)),
@@ -1193,6 +1660,7 @@ export const STATE_RECIPES: Record<string, ComponentStates> = {
     pressed: pressed("dismissible", byRole("button", "Dismiss")),
   },
   "alert-dialog": {
+    pressed: pressed("default", byRole("button", "Cancel"), { within: overlay("alert-dialog") }),
     open: open("default", overlay("alert-dialog"), ALL_ROWS, viaRecipe("alert-dialog")),
   },
   card: {
@@ -1218,7 +1686,11 @@ export const STATE_RECIPES: Record<string, ComponentStates> = {
     invalid: invalid("error", byRole("textbox", "Email")),
   },
   "empty-state": { static: true, reason: "A message block: it takes no input (the Action example's control is a Button, whose states the button recipes capture)." },
-  feeds: { static: true, reason: "A read-only activity list: it takes no input." },
+  feeds: {
+    static: true,
+    reason: "An activity list whose rows are read-only in every rail example.",
+    exempt: { pressed: unpassed("`onItemPress` makes each row a button; no rail example passes it.", "onItemPress") },
+  },
   form: {
     focus: focus("default", byRole("textbox", "Email")),
     invalid: invalid("creditcardwitherrors", byRole("textbox", "Card Number")),
@@ -1233,6 +1705,7 @@ export const STATE_RECIPES: Record<string, ComponentStates> = {
   },
   "phone-input": {
     focus: focus("default", byRole("textbox", "Phone number")),
+    pressed: pressed("default", byRole("button", /^Country,/)),
     open: open("default", PHONE_INPUT_RECIPE, ALL_ROWS, "overlay-recipes.ts' PHONE_INPUT_RECIPE (the country segment), from the row"),
     invalid: invalid("error", byRole("textbox", "Phone number")),
     disabled: disabled("disabled", byRole("button", /^Country,/)),
@@ -1248,6 +1721,7 @@ export const STATE_RECIPES: Record<string, ComponentStates> = {
 
   // Organisms
   "action-sheet": {
+    pressed: pressed("default", byRole("button", "Take Photo"), { within: overlay("action-sheet") }),
     open: open("default", overlay("action-sheet"), ALL_ROWS, viaRecipe("action-sheet")),
   },
   board: {
@@ -1263,6 +1737,8 @@ export const STATE_RECIPES: Record<string, ComponentStates> = {
     pressed: pressed("default", byRole("button", "Next slide")),
   },
   command: {
+    // Its rows take the active highlight under a resting pointer (onHoverIn); the first is active already.
+    hover: hover("default", byRole("option", /^Open File/), { within: overlay("command"), how: "the palette opens, then the pointer rests on its second row" }),
     focus: focus("default", byRole("button", /^Search/)),
     pressed: pressed("default", byRole("button", /^Search/)),
     open: open("default", overlay("command"), ALL_ROWS, viaRecipe("command")),
@@ -1275,14 +1751,24 @@ export const STATE_RECIPES: Record<string, ComponentStates> = {
     pressed: pressed("sortable", byRole("columnheader", /^Email/)),
   },
   dialog: {
+    pressed: pressed("default", byRole("button", "Cancel"), { within: overlay("dialog") }),
     open: open("default", overlay("dialog"), ALL_ROWS, viaRecipe("dialog")),
   },
   "drag-drop": {
     focus: focus("default", byRole("button", /^Reorder /)),
+    // The grip lifts its card while held (its PanResponder); a press that does not move
+    // drops it where it was, and a move would drag it.
+    pressed: pressed("default", byRole("button", "Reorder Design review"), { release: "in-place", how: "the pointer goes down on the first card's grip and is held" }),
     disabled: disabled("lockeditem", byRole("button", /^Locked task/)),
   },
   drawer: {
     open: open("default", overlay("drawer"), ALL_ROWS, viaRecipe("drawer")),
+    exempt: {
+      pressed: {
+        claim: { dismissLayers: true },
+        reason: "Its own presses are the dim scrim, which closes the drawer, and the panel, which swallows a stray press: neither is a control, and the open recipe captures the drawer itself.",
+      },
+    },
   },
   "filter-panel": {
     focus: focus("default", byRole("button", "Clear")),
@@ -1303,7 +1789,11 @@ export const STATE_RECIPES: Record<string, ComponentStates> = {
     pressed: pressed("default", byRole("button", "More options")),
     open: open("default", overlay("row-menu"), ALL_ROWS, viaRecipe("row-menu")),
   },
-  steps: { static: true, reason: "A progress display: its steps take no input." },
+  steps: {
+    static: true,
+    reason: "A progress display whose step circles are plain in every rail example.",
+    exempt: { pressed: unpassed("`onStepPress` makes each circle a button; no rail example passes it.", "onStepPress") },
+  },
   "tab-bar": {
     focus: focus("default", byRole("tablist")),
     pressed: pressed("default", byRole("tab", "Search")),
@@ -1314,22 +1804,45 @@ export const STATE_RECIPES: Record<string, ComponentStates> = {
     disabled: disabled("disabledtab", byRole("tab", "Billing")),
   },
   toast: {
+    // The With an action example renders its toast in the row, with its action button.
+    pressed: pressed("withanaction", byRole("button", "Undo")),
     // The iOS build is the web one (the docs registry injects no iOS Toast).
     open: open("default", TOAST_OPEN, ["web", "android"], "overlay-recipes.ts' TOAST_RECIPE (Show toast), from the row"),
   },
 
-  // Charts
-  chart: { static: true, reason: CHART_STATIC },
-  "line-chart": { static: true, reason: "A chart with no control and no keyboard stop: its Press to inspect example inspects under a pointer only, which the native capture and the example's own resting picture show." },
-  "area-chart": { static: true, reason: CHART_STATIC },
-  "pie-chart": { focus: focus("default", firstTabStop, "Tab onto the chart's inspection stop") },
-  "scatter-plot": { focus: focus("default", firstTabStop, "Tab onto the chart's inspection stop") },
-  "candlestick-chart": { static: true, reason: "A chart with no control and no keyboard stop: its Press to inspect example inspects under a pointer only, which the native capture and the example's own resting picture show." },
+  // Charts. A chart that inspects under a press has a press-to-inspect recipe on its Usage
+  // example (chart: the grouped bars, since the plain columns dim and show no flag); a chart
+  // whose source takes no input is static.
+  chart: {
+    pressed: inspect("groupedbars", { axis: "Q2" }, { mode: "hold", expect: ["Q2", "Revenue", "70"], how: "press-to-inspect: the pointer goes down over the Q2 cluster (its ScrubSurface) and is held" }),
+  },
+  "line-chart": {
+    pressed: inspect("default", { axis: "Apr" }, { mode: "hold", expect: ["Apr", "147"], how: "press-to-inspect: the pointer goes down over Apr (the shared frame's ScrubSurface) and is held" }),
+  },
+  "area-chart": {
+    pressed: inspect("default", { axis: "Apr" }, { mode: "hold", expect: ["Apr", "149"], how: "press-to-inspect: the pointer goes down over Apr (the shared frame's ScrubSurface) and is held" }),
+  },
+  "pie-chart": {
+    focus: focus("default", firstTabStop, "Tab onto the chart's inspection stop"),
+    // The first slice runs clockwise from 12 o'clock past 3: the plot's right middle is in it.
+    pressed: inspect("default", { mark: "svg", fx: 0.75, fy: 0.5 }, { mode: "click", how: "press-to-inspect: a press on the first slice (the plot's right middle); the other slices dim" }),
+  },
+  "scatter-plot": {
+    focus: focus("default", firstTabStop, "Tab onto the chart's inspection stop"),
+    pressed: inspect("default", { mark: "svg circle", index: 1 }, { mode: "click", expect: ["us-east", "(220, 37)"], how: "press-to-inspect: a press on the second us-east point" }),
+  },
+  "candlestick-chart": {
+    pressed: inspect("default", { axis: "D4" }, { mode: "hold", expect: ["D4", "Close", "64.2"], how: "press-to-inspect: the pointer goes down over D4 (the shared frame's ScrubSurface) and is held" }),
+  },
   "depth-chart": { static: true, reason: CHART_STATIC },
   sparkline: { static: true, reason: CHART_STATIC },
   "stacked-bar": { static: true, reason: CHART_STATIC },
   gauge: { static: true, reason: CHART_STATIC },
-  heatmap: { static: true, reason: "A chart whose day cells take a pointer only (no keyboard stop in any example); it displays data." },
+  heatmap: {
+    // The calendar's day cells inspect under a resting pointer and pin on a press; the plain grid takes no input.
+    hover: hoverInspect("calendar", HEATMAP_DAY, { how: "the pointer rests on the eleventh day of the calendar" }),
+    pressed: inspect("calendar", HEATMAP_DAY, { mode: "click", how: "press-to-inspect: a press on the eleventh day of the calendar" }),
+  },
   "bar-list": {
     focus: focus("drillinrows", byRole("button", /^news\.ycombinator/)),
     pressed: pressed("drillinrows", byRole("button", /^news\.ycombinator/)),
@@ -1342,15 +1855,36 @@ export const STATE_RECIPES: Record<string, ComponentStates> = {
   },
   "bullet-chart": { static: true, reason: CHART_STATIC },
   "progress-ring": { static: true, reason: CHART_STATIC },
-  "composed-chart": { static: true, reason: CHART_STATIC },
-  "range-area-chart": { static: true, reason: CHART_STATIC },
-  histogram: { static: true, reason: CHART_STATIC },
-  "box-plot": { static: true, reason: CHART_STATIC },
-  "waterfall-chart": { static: true, reason: CHART_STATIC },
-  "radial-bar-chart": { focus: focus("default", firstTabStop, "Tab onto the chart's inspection stop") },
-  "funnel-chart": { focus: focus("default", firstTabStop, "Tab onto the chart's inspection stop") },
+  "composed-chart": {
+    pressed: inspect("default", { axis: "Q2" }, { mode: "hold", expect: ["Q2", "510"], how: "press-to-inspect: the pointer goes down over Q2 (the shared frame's ScrubSurface) and is held" }),
+  },
+  "range-area-chart": {
+    pressed: inspect("default", { axis: "Wed" }, { mode: "hold", expect: ["Wed", "131"], how: "press-to-inspect: the pointer goes down over Wed (the shared frame's ScrubSurface) and is held" }),
+  },
+  histogram: {
+    // A quarter of the way from the 50 tick to the 60 tick is inside the 50 to 55 bin.
+    pressed: inspect("default", { axis: "50", toward: "60", t: 0.25 }, { mode: "hold", expect: ["50 to 55"], how: "press-to-inspect: the pointer goes down over the 50 to 55 bin (its ScrubSurface) and is held" }),
+  },
+  "box-plot": {
+    pressed: inspect("default", { axis: "eu-west" }, { mode: "hold", expect: ["eu-west", "Median", "59.5"], how: "press-to-inspect: the pointer goes down over eu-west (the shared frame's ScrubSurface) and is held" }),
+  },
+  "waterfall-chart": {
+    pressed: inspect("default", { axis: "Expansion" }, { mode: "hold", expect: ["Expansion", "460"], how: "press-to-inspect: the pointer goes down over Expansion (the shared frame's ScrubSurface) and is held" }),
+  },
+  "radial-bar-chart": {
+    focus: focus("default", firstTabStop, "Tab onto the chart's inspection stop"),
+    // The outer ring's 10 px stroke runs along the plot's edge (radial-bar-chart.shared.tsx `rOuter`): 5 px in from the top is on it.
+    pressed: inspect("default", { mark: "svg", fx: 0.5, fy: 0, dy: 5 }, { mode: "click", how: "press-to-inspect: a press on the outer ring at 12 o'clock; the other rings dim" }),
+  },
+  "funnel-chart": {
+    focus: focus("default", firstTabStop, "Tab onto the chart's inspection stop"),
+    pressed: inspect("default", { text: "Signups" }, { mode: "click", how: "press-to-inspect: a press on the Signups stage; the other stages dim" }),
+  },
   "radar-chart": { static: true, reason: CHART_STATIC },
-  treemap: { focus: focus("default", firstTabStop, "Tab onto the chart's inspection stop") },
+  treemap: {
+    focus: focus("default", firstTabStop, "Tab onto the chart's inspection stop"),
+    pressed: inspect("default", { text: "Media" }, { mode: "click", expect: ["Media", "620"], how: "press-to-inspect: a press on the Media tile" }),
+  },
   "geo-map": {
     focus: focus("zoomable", byRole("button", "Zoom in")),
     pressed: pressed("zoomable", byRole("button", "Zoom in")),

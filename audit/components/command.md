@@ -20,6 +20,7 @@ Audit checklist for `/components/command`. The facts block and the variants tabl
 | Hand-off metric gaps | none |
 | Interactions registry | in the inventory; evidence: none registered |
 | Overlay recipe | yes (listbox) |
+| Interaction states | captured: hover on Default (web row; desktop), focus on Default (web row; desktop), pressed on Default (web row; desktop), open on Default (web, iOS, Android rows; phone, tablet and desktop). |
 | MeasureProps | not adopted |
 | Touch target | no touch-target name (the exports of `src/style/touch-target.ts`, `src/style/touch-target-seed.ts`, `src/style/touch-seam.ts`, `src/style/clip-slop.ts`, the `TouchTargetSkin` fields, or `hitSlop`) in its implementation modules. `test/touch-target-coverage.test.ts` records it as covered another way: rows are 44/48 tall by skin |
 | Tests importing it | 15: `test/a11y-state.test.tsx`, `test/anchored-overlay-dismissal.test.tsx`, `test/command.test.tsx`, `test/dense-overlays.test.tsx`, `test/design-rules-skins.test.ts`, `test/escape-layers.test.tsx`, `test/field-focus-states.test.tsx`, `test/hosted-trigger-focus.test.tsx`, `test/keyboard-nav.test.tsx`, `test/native-accessibility-escape-hosts.test.tsx`, `test/native-focus-fixtures.test.tsx`, `test/no-console-violations.test.tsx`, `test/organism-material-roles.test.tsx`, `test/overlay-frame-ring.test.tsx`, `test/skins-smoke.test.tsx` |

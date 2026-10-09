@@ -12,23 +12,26 @@
  *   3. viewport.png: the first screen at the cell's own viewport, the page scrolled to its
  *      top, the way a reader lands on it.
  *   4. One section.<key>.png per section, each fitted into a viewport grown to hold it as a
- *      variant's card is (and the viewport put back after), and probed the way a variant
- *      cell's row is: the in-page probe (texts, contrast, floors, clipping, targets against
- *      the web's 24 px), its aria snapshot and its material effects.
+ *      variant's card is (and the viewport put back after), photographed with the state
+ *      shots' margin (tools/audit/web-capture.ts `SHOT_MARGIN`) so a shadow, a lift or a
+ *      ring at its edge is not cropped, the margin kept inside the part of the page no
+ *      chrome covers; and probed the way a variant cell's row is: the in-page probe (texts,
+ *      contrast, floors, clipping, targets against the web's 24 px), its aria snapshot and
+ *      its material effects.
  *   5. The page's overflow (the document, the page scroller and each section), axe over
  *      the sections where the run's policy says, and the console, CSP and request problems
- *      during the cell; all of it to probe.json.
+ *      during the cell; all of it to probe.json, with how long each step took.
  */
 import { mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { expect, type Page } from "@playwright/test";
+import { expect, type Locator, type Page } from "@playwright/test";
 import { scan } from "../support/axe";
 import { probePageOverflow, probeRow } from "../support/audit-probes";
-import { BASE_PATH, LOOKS, animationFrames, fitElementForScreenshot, gotoDocs, settled } from "../support/docs";
+import { BASE_PATH, LOOKS, animationFrames, fitElementForScreenshot, gotoDocs, settled, settledBox } from "../support/docs";
 import type { PageProblems } from "../support/fixtures";
 import { readMaterialEffects } from "../support/material-evidence";
 import { OVERFLOW_TOLERANCE, deriveRow, flagsOf, summarizeProbe, type ProbeRow } from "../../tools/audit/probe-math.ts";
-import { FAILURE_FILE, PROBE_FILE, VIEWPORT_FILE, sectionFile, webPageCellId, type PageCell, type PageCellRecord } from "../../tools/audit/web-capture.ts";
+import { FAILURE_FILE, PROBE_FILE, SHOT_MARGIN, VIEWPORT_FILE, marginClip, sectionFile, webPageCellId, type Box, type PageCell, type PageCellRecord } from "../../tools/audit/web-capture.ts";
 import { bytesOf, guardCell, markOf, problemsSince, type AuditSession } from "./cell";
 
 /** The longest one page cell may take: a template has up to a dozen sections to fit, shoot and probe. */
@@ -77,13 +80,74 @@ export async function capturePageCell(session: AuditSession, cell: PageCell, opt
   };
 }
 
+/**
+ * Runs in the page: the band of the viewport no docs chrome covers: below the top bar (or
+ * the page scroller's top, whichever is lower) and above a phone's floating tab bar (or the
+ * scroller's bottom).
+ */
+function exposedBand(): { left: number; top: number; right: number; bottom: number } {
+  const banner = document.querySelector('[role="banner"]')?.getBoundingClientRect();
+  const scroller = document.querySelector("[data-page-scroll]")?.getBoundingClientRect();
+  const nav = document.querySelector('nav[aria-label="Primary"], [role="navigation"][aria-label="Primary"]')?.getBoundingClientRect();
+  const top = Math.max(0, banner ? banner.bottom : 0, scroller ? scroller.top : 0);
+  let bottom = Math.min(window.innerHeight, scroller ? scroller.bottom : window.innerHeight);
+  // A navigation floating over the lower half of the page is the phone's tab bar.
+  if (nav && nav.top > window.innerHeight / 2) bottom = Math.min(bottom, nav.top);
+  return { left: 0, top, right: window.innerWidth, bottom };
+}
+
+/** Time each step of a cell, adding up repeats, for probe.json. */
+function stopwatch() {
+  const ms: Record<string, number> = {};
+  return {
+    ms,
+    async time<T>(step: string, work: () => Promise<T>): Promise<T> {
+      const started = Date.now();
+      try {
+        return await work();
+      } finally {
+        ms[step] = (ms[step] ?? 0) + (Date.now() - started);
+      }
+    },
+  };
+}
+
+/**
+ * Photograph a section with the shot margin around it: fitted as a card is, the viewport
+ * grown further when the uncovered band cannot hold the margin too, the section scrolled to
+ * a margin below the band's top, and the clip kept inside the band. Returns the clip.
+ */
+async function shootSection(page: Page, section: Locator, path: string): Promise<Box> {
+  await fitElementForScreenshot(page, section);
+  const { height } = await settledBox(section);
+  let band = await page.evaluate(exposedBand);
+  const short = height + 2 * SHOT_MARGIN - (band.bottom - band.top);
+  if (short > 0) {
+    const size = page.viewportSize()!;
+    await page.setViewportSize({ ...size, height: size.height + Math.ceil(short) });
+    band = await page.evaluate(exposedBand);
+  }
+  await section.evaluate((node, y) => {
+    const scroller = node.closest<HTMLElement>("[data-page-scroll]");
+    if (scroller) scroller.scrollTop += node.getBoundingClientRect().top - y;
+  }, band.top + SHOT_MARGIN);
+  await animationFrames(page, 2);
+  const box = await section.boundingBox();
+  if (!box) throw new Error("a section has no box once it is fitted");
+  const clip = marginClip(box, band);
+  await page.screenshot({ path, clip, animations: "disabled", caret: "hide" });
+  return clip;
+}
+
 async function capture(page: Page, problems: PageProblems, cell: PageCell, dir: string, options: PageCellOptions): Promise<string[]> {
   const mark = markOf(problems);
+  const watch = stopwatch();
+  const { time } = watch;
   const look = LOOKS.find((l) => l.id === cell.look);
   if (!look) throw new Error(`no docs look is called ${cell.look}`);
   const viewport = { width: cell.width.width, height: cell.width.height };
-  await gotoDocs(page, cell.page.route, { scheme: look.scheme, palette: look.palette, surface: cell.surface, viewport });
-  await page.evaluate(() => document.fonts.ready.then(() => undefined));
+  await time("goto", () => gotoDocs(page, cell.page.route, { scheme: look.scheme, palette: look.palette, surface: cell.surface, viewport }));
+  await time("fonts", () => page.evaluate(() => document.fonts.ready.then(() => undefined)));
 
   // Structure first: the address, then the sections the page marks against the inventory's.
   const expected = `${BASE_PATH}${cell.page.route}`;
@@ -97,38 +161,40 @@ async function capture(page: Page, problems: PageProblems, cell: PageCell, dir: 
   const readKeys = () => marked.evaluateAll((nodes, name) => nodes.map((node) => node.getAttribute(name) ?? ""), SECTION_ATTRIBUTE);
   let found: string[] = [];
   try {
-    await expect.poll(async () => (found = await readKeys()), { timeout: 10_000 }).toEqual(want);
+    await time("structure", () => expect.poll(async () => (found = await readKeys()), { timeout: 10_000 }).toEqual(want));
   } catch {
     throw new Error(`${expected} marks the sections [${found.join(", ")}] where the inventory has [${want.join(", ")}] (docs/src/ui/mockup-page.tsx against the page's data module)`);
   }
   // A page measures its grids and charts a frame or two after it hydrates: wait for its height to hold.
-  await animationFrames(page, 2);
-  await settled(() => page.locator("[data-page-scroll]").first().evaluate((node) => node.scrollHeight));
+  await time("settle", async () => {
+    await animationFrames(page, 2);
+    await settled(() => page.locator("[data-page-scroll]").first().evaluate((node) => node.scrollHeight));
+  });
 
   // The first screen, as a reader lands on it.
   await page.locator("[data-page-scroll]").first().evaluate((node) => node.scrollTo({ top: 0 }));
-  await page.screenshot({ path: join(dir, VIEWPORT_FILE), animations: "disabled", caret: "hide" });
+  await time("viewport shot", () => page.screenshot({ path: join(dir, VIEWPORT_FILE), animations: "disabled", caret: "hide" }));
 
   const sections: Record<string, unknown>[] = [];
   const rows: ProbeRow[] = [];
   let userAgent = "";
   for (const { key, title } of cell.page.sections) {
     const section = page.locator(`[${SECTION_ATTRIBUTE}="${key}"]`).first();
-    await fitElementForScreenshot(page, section);
-    const grown = page.viewportSize();
     const file = sectionFile(key);
-    await section.screenshot({ path: join(dir, file), animations: "disabled", caret: "hide" });
-    const derived = deriveRow(await probeRow(section, "web"));
+    const clip = await time("section shots", () => shootSection(page, section, join(dir, file)));
+    const grown = page.viewportSize();
+    const derived = deriveRow(await time("section probes", () => probeRow(section, "web")));
     rows.push(derived);
-    const { userAgent: agent, ...material } = await readMaterialEffects(section);
+    const { userAgent: agent, ...material } = await time("section materials", () => readMaterialEffects(section));
     userAgent = agent;
     sections.push({
       key,
       title,
       file,
       viewport: grown,
+      clip,
       box: derived.box,
-      aria: await section.ariaSnapshot(),
+      aria: await time("section aria", () => section.ariaSnapshot()),
       material,
       overflowX: derived.overflowX,
       texts: derived.texts,
@@ -139,7 +205,7 @@ async function capture(page: Page, problems: PageProblems, cell: PageCell, dir: 
   }
 
   // How far the document, the page scroller and each section run past their boxes.
-  const read = await probePageOverflow(page.locator(`[${SECTION_ATTRIBUTE}]`).first());
+  const read = await time("overflow", () => probePageOverflow(page.locator(`[${SECTION_ATTRIBUTE}]`).first()));
   const boxes: Record<string, number> = { document: read.document.scrollWidth - read.document.clientWidth };
   if (read.page) boxes.page = read.page.scrollWidth - read.page.clientWidth;
   cell.page.sections.forEach(({ key }, i) => {
@@ -149,7 +215,7 @@ async function capture(page: Page, problems: PageProblems, cell: PageCell, dir: 
 
   let axe: { scanned: boolean; violations: { id: string; impact: string; help: string; nodes: number; targets: string[] }[] } = { scanned: false, violations: [] };
   if (options.axe) {
-    const violations = await scan(page, `[${SECTION_ATTRIBUTE}]`);
+    const violations = await time("axe", () => scan(page, `[${SECTION_ATTRIBUTE}]`));
     axe = {
       scanned: true,
       violations: violations.map(({ id, impact, help, nodes, raw }) => ({ id, impact, help, nodes, targets: raw.nodes.slice(0, 20).map((node) => node.target.map(String).join(" ")) })),
@@ -170,6 +236,7 @@ async function capture(page: Page, problems: PageProblems, cell: PageCell, dir: 
     axe,
     problems: reported,
     summary,
+    ms: watch.ms,
   };
   writeFileSync(join(dir, PROBE_FILE), `${JSON.stringify(probe, null, 2)}\n`);
   return flagsOf(summary);

@@ -20,6 +20,7 @@ Audit checklist for `/components/code-block`. The facts block and the variants t
 | Hand-off metric gaps | none |
 | Interactions registry | in the inventory; evidence: code-copy (unit-web, test/behavior-smoke-b.test.tsx) |
 | Overlay recipe | none |
+| Interaction states | captured: focus on Copy button (web row; desktop), pressed on Copy button (web row; desktop). |
 | MeasureProps | not adopted |
 | Touch target | `code-block.shared.tsx`: hitSlop, minTarget, styleBox, useSeededMinTargetSlop; `code-block.styles.ts`: minTarget, platformMinTarget |
 | Tests importing it | 8: `test/behavior-smoke-b.test.tsx`, `test/code-block.test.tsx`, `test/design-rules-skins.test.ts`, `test/scroll-frame-ring.test.tsx`, `test/skins-smoke.test.tsx`, `test/touch-target-clips.test.tsx`, `test/touch-target-coverage.test.ts`, `test/touch-target-seed.test.tsx` |

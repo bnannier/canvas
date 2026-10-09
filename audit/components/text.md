@@ -20,6 +20,7 @@ Audit checklist for `/components/text`. The facts block and the variants table a
 | Hand-off metric gaps | none |
 | Interactions registry | in the inventory; evidence: none registered |
 | Overlay recipe | none |
+| Interaction states | static: A text primitive: it renders no control of its own and its examples hold none. |
 | MeasureProps | not adopted |
 | Touch target | no touch-target name (the exports of `src/style/touch-target.ts`, `src/style/touch-target-seed.ts`, `src/style/touch-seam.ts`, `src/style/clip-slop.ts`, the `TouchTargetSkin` fields, or `hitSlop`) in its implementation modules |
 | Tests importing it | 6: `test/data-table.test.tsx`, `test/dist-smoke.test.tsx`, `test/fonts.test.tsx`, `test/material-portal-context.test.tsx`, `test/numerals.test.tsx`, `test/organism-material-roles.test.tsx` |

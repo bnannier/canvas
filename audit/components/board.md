@@ -20,6 +20,7 @@ Audit checklist for `/components/board`. The facts block and the variants table 
 | Hand-off metric gaps | none |
 | Interactions registry | in the inventory; evidence: none registered |
 | Overlay recipe | none |
+| Interaction states | captured: focus on Card menus and press (web row; desktop), pressed on Card menus and press (web row; desktop). |
 | MeasureProps | not adopted |
 | Touch target | `board.shared.tsx`: SeamLimitProvider, splitSeam. `test/touch-target-coverage.test.ts` records it as known gap: the column and card affordances render 32x32 |
 | Tests importing it | 7: `test/board-logic.test.ts`, `test/board.test.tsx`, `test/design-rules-skins.test.ts`, `test/horizontal-scroller-drag.test.tsx`, `test/no-console-violations.test.tsx`, `test/skins-smoke.test.tsx`, `test/touch-target-seams.test.tsx` |

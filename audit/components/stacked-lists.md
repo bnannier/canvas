@@ -20,6 +20,7 @@ Audit checklist for `/components/stacked-lists`. The facts block and the variant
 | Hand-off metric gaps | none |
 | Interactions registry | in the inventory; evidence: none registered |
 | Overlay recipe | none |
+| Interaction states | captured: focus on Clickable (web row; desktop), pressed on Clickable (web row; desktop). |
 | MeasureProps | not adopted |
 | Touch target | `stacked-lists.shared.tsx`: hitSlop. `test/touch-target-coverage.test.ts` records it as covered another way: rows are 68/72 tall by skin |
 | Tests importing it | 10: `test/behavior-smoke-c.test.tsx`, `test/design-rules-skins.test.ts`, `test/list-semantics.test.tsx`, `test/no-console-violations.test.tsx`, `test/scroll-frame-ring.test.tsx`, `test/skins-smoke.test.tsx`, `test/stacked-list-reorder.test.tsx`, `test/stats-stackedlist-slots.test.tsx`, `test/touch-target-clips.test.tsx`, `test/virtualization.test.tsx` |

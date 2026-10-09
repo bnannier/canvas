@@ -20,6 +20,7 @@ Audit checklist for `/components/sidebar`. The facts block and the variants tabl
 | Hand-off metric gaps | none |
 | Interactions registry | in the inventory; evidence: none registered |
 | Overlay recipe | none |
+| Interaction states | captured: hover on Default (web row; desktop), focus on Default (web row; desktop), pressed on Default (web row; desktop). |
 | MeasureProps | not adopted |
 | Touch target | `sidebar.shared.tsx`: hitSlop. `test/touch-target-coverage.test.ts` records it as known gap: iOS rows render 36 tall against a 44 minimum |
 | Tests importing it | 6: `test/design-rules-skins.test.ts`, `test/focus-ring.test.tsx`, `test/hover-lift.test.tsx`, `test/sidebar.test.tsx`, `test/skins-smoke.test.tsx`, `test/text-contrast.test.tsx` |

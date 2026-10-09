@@ -20,6 +20,7 @@ Audit checklist for `/components/grid-lists`. The facts block and the variants t
 | Hand-off metric gaps | none |
 | Interactions registry | in the inventory; evidence: none registered |
 | Overlay recipe | none |
+| Interaction states | captured: focus on Tappable (web row; desktop), pressed on Tappable (web row; desktop). |
 | MeasureProps | not adopted |
 | Touch target | no touch-target name (the exports of `src/style/touch-target.ts`, `src/style/touch-target-seed.ts`, `src/style/touch-seam.ts`, `src/style/clip-slop.ts`, the `TouchTargetSkin` fields, or `hitSlop`) in its implementation modules. `test/touch-target-coverage.test.ts` records it as known gap: tile actions render 63x36 |
 | Tests importing it | 9: `test/behavior-smoke-c.test.tsx`, `test/design-rules-skins.test.ts`, `test/destructive-text.test.tsx`, `test/list-semantics.test.tsx`, `test/primary-text.test.tsx`, `test/responsive-narrow-fixes.test.tsx`, `test/scroll-frame-ring.test.tsx`, `test/skins-smoke.test.tsx`, `test/virtualization.test.tsx` |

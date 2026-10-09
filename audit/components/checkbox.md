@@ -20,6 +20,7 @@ Audit checklist for `/components/checkbox`. The facts block and the variants tab
 | Hand-off metric gaps | none |
 | Interactions registry | in the inventory; evidence: none registered |
 | Overlay recipe | none |
+| Interaction states | captured: focus on Default (web row; desktop), pressed on Default (web row; desktop), disabled on Disabled (web row; desktop). |
 | MeasureProps | not adopted |
 | Touch target | `checkbox.shared.tsx`: hitSlop. `test/touch-target-coverage.test.ts` records it as covered another way: hitSlop around the box when there is no label to press |
 | Tests importing it | 11: `test/a11y-state.test.tsx`, `test/atom-material-roles.test.tsx`, `test/checkbox-idiom.test.tsx`, `test/control-refs-types.test.ts`, `test/control-refs.test.tsx`, `test/control-space.test.tsx`, `test/design-rules-skins.test.ts`, `test/forms.test.tsx`, `test/glass-controls.test.tsx`, `test/native-focus-fixtures.test.tsx`, `test/skins-smoke.test.tsx` |

@@ -20,6 +20,7 @@ Audit checklist for `/components/listbox`. The facts block and the variants tabl
 | Hand-off metric gaps | none |
 | Interactions registry | in the inventory; evidence: listbox-keyboard (browser-keyboard, e2e/journeys/keyboard.e2e.ts), listbox-touch (browser-touch, e2e/journeys/touch.e2e.ts), listbox-selection (unit-web, test/behavior.test.tsx) |
 | Overlay recipe | none |
+| Interaction states | captured: hover on Default (web row; desktop), focus on Default (web row; desktop), pressed on Default (web row; desktop), disabled on Disabled (web row; desktop). |
 | MeasureProps | adopted in `listbox.shared.tsx` |
 | Touch target | no touch-target name (the exports of `src/style/touch-target.ts`, `src/style/touch-target-seed.ts`, `src/style/touch-seam.ts`, `src/style/clip-slop.ts`, the `TouchTargetSkin` fields, or `hitSlop`) in its implementation modules. `test/touch-target-coverage.test.ts` records it as known gap: rows render 33 tall (Dark Factory's menu row) and declare no minimum on any platform |
 | Tests importing it | 11: `test/a11y-state.test.tsx`, `test/behavior.test.tsx`, `test/design-rules-skins.test.ts`, `test/focus-runtime.test.tsx`, `test/keyboard-nav.test.tsx`, `test/listbox-a11y.test.tsx`, `test/native-focus-fixtures.test.tsx`, `test/no-console-violations.test.tsx`, `test/option-list-idiom.test.tsx`, `test/sizing.test.tsx`, `test/skins-smoke.test.tsx` |

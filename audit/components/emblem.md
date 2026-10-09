@@ -20,6 +20,7 @@ Audit checklist for `/components/emblem`. The facts block and the variants table
 | Hand-off metric gaps | none |
 | Interactions registry | in the inventory; evidence: none registered |
 | Overlay recipe | none |
+| Interaction states | static: A decorative identity mark: it takes no input. |
 | MeasureProps | not adopted |
 | Touch target | no touch-target name (the exports of `src/style/touch-target.ts`, `src/style/touch-target-seed.ts`, `src/style/touch-seam.ts`, `src/style/clip-slop.ts`, the `TouchTargetSkin` fields, or `hitSlop`) in its implementation modules |
 | Tests importing it | 7: `test/atom-material-roles.test.tsx`, `test/color-overrides.test.tsx`, `test/design-rules-skins.test.ts`, `test/dist-smoke.test.tsx`, `test/new-components.test.tsx`, `test/primary-text.test.tsx`, `test/skins-smoke.test.tsx` |

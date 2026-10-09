@@ -20,6 +20,7 @@ Audit checklist for `/components/row-column`. The facts block and the variants t
 | Hand-off metric gaps | none |
 | Interactions registry | in the inventory; evidence: none registered |
 | Overlay recipe | none |
+| Interaction states | static: A layout primitive: it renders no control of its own (the controls in its examples are kit components with recipes of their own). |
 | MeasureProps | not adopted |
 | Touch target | no touch-target name (the exports of `src/style/touch-target.ts`, `src/style/touch-target-seed.ts`, `src/style/touch-seam.ts`, `src/style/clip-slop.ts`, the `TouchTargetSkin` fields, or `hitSlop`) in its implementation modules |
 | Tests importing it | 12: `test/design-rules-skins.test.ts`, `test/dist-smoke.test.tsx`, `test/hover-lift.test.tsx`, `test/layout-responsive.test.tsx`, `test/layout-spans.test.tsx`, `test/native-carousel-fixture.test.tsx`, `test/native-focus-fixtures.test.tsx`, `test/new-components.test.tsx`, `test/prop-table.test.tsx`, `test/sizing.test.tsx`, `test/skins-smoke.test.tsx`, `test/switch-label.test.tsx` |
