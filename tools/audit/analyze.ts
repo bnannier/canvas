@@ -1,13 +1,18 @@
 #!/usr/bin/env bun
 // `bun run audit:analyze`: the component audit's analysis step (plan 1e). For the newest
 // capture of every cell across the runs under .audit/runs (runs.ts), it reads what the
-// capture recorded and writes `analysis.json` beside the cell's probe.json:
+// capture recorded and writes `analysis.json` beside the cell's probe.json. Every web cell
+// is read the same way, whichever capture wrote it: its regions (a variant card's platform
+// rows, photographed in card.png; an interaction state's row and the panel it opened,
+// photographed in state.png; a page's sections, each photographed in its own
+// section.<key>.png), each placed in its photograph by where its boxes are measured from
+// (`origin`) and the shot's clip, and judged by its platform's floors:
 //
 // - contrast: from the probe's DOM-composited background where it resolved (probe-math.ts,
 //   method "dom": fails under the 4.5 or 3 the text owes). Where the DOM could not say what
 //   is under a text (a backdrop filter, a gradient, an image), only the background is read
-//   from card.png, method "painted-ink+pixel-background": the ink is the text's colour as the
-//   probe recorded it (its own alpha and its opacity groups, composited over that
+//   from the photograph, method "painted-ink+pixel-background": the ink is the text's colour
+//   as the probe recorded it (its own alpha and its opacity groups, composited over that
 //   background), and the background is the dominant colour among the pixels of the text's
 //   box that are neither ink nor antialiasing. A photograph shows a glyph's ink only in its
 //   thickest pixels, which is why reading the ink off the pixels under-read thin text; the
@@ -19,22 +24,29 @@
 //   what the text owes (4.0 for 4.5, 2.67 for 3) is "fail-likely", from there up to what it
 //   owes is "review". `bun run audit:calibrate` measures both against the DOM (audit/README.md
 //   has the numbers). A disabled control's text owes nothing (WCAG 1.4.3's inactive
-//   exception), and a text something else paints over is not sampled.
+//   exception), and a text something else paints over, or one its photograph does not show,
+//   is not sampled.
 // - type: the smallest painted size (the probe's computed size times its glyph scale), and
 //   the counts under the 10 px source floor and the 12 px body floor.
-// - targets: per platform row, the interactive boxes under its floor (44 pt iOS, 48 dp
-//   Android, 24 px web; probe-math.ts TARGET_FLOORS); on a device, the Android
-//   accessibility nodes a user acts on under 48 dp.
-// - structure: the web row's ariaSnapshot must be identical across the looks and surfaces
-//   of one variant at one width; the cells that differ from the most common snapshot of
-//   their group are flagged with the first line that differs.
+// - targets: per platform, the interactive boxes under its floor (44 pt iOS, 48 dp Android,
+//   24 px web; probe-math.ts TARGET_FLOORS), each with the region it is in; on a device, the
+//   Android accessibility nodes a user acts on under 48 dp.
+// - structure: a cell's tree must be identical across the looks and surfaces of its group
+//   at one width: a variant's web row, a state's row and the panel it opened, a page's
+//   sections in order. The cells that differ from the group's most common tree are flagged
+//   with the first line that differs.
+// - interaction states: the state's own flags (e2e/support/state-recipes.ts STATE_FLAGS:
+//   a focus ring missing, hidden or off-colour, an overlay not announced as expanded, ...)
+//   and what its release found (RELEASE_FLAGS: a press not cancelled, an overlay not
+//   closed, ...); a state its recipe could not reach is filed under `state-not-reached`
+//   with the reason and its release's flags, and nothing else.
 // - native accessibility: every node a user acts on has a name a screen reader announces
 //   (Android: clickable or checkable nodes, named themselves or by a named node inside
 //   them, as TalkBack reads them; iOS: XCUITest through Maestro reports no traits, so a node
 //   announced only by its value is the one with no name).
 // - the cell's flags: the capture's own and the analysis' (ANALYSIS_FLAGS). A cell its record
-//   says failed is filed under `failed` whatever files it left, and its accessibility tree
-//   takes no part in its group's structure vote.
+//   says failed is filed under `failed` whatever files it left, and its tree takes no part
+//   in its group's structure vote.
 //
 //   bun run audit:analyze                         every current cell
 //   bun run audit:analyze -- --only=button,switch  those components' cells
@@ -48,10 +60,12 @@ import { existsSync, writeFileSync } from "node:fs";
 import { join, relative } from "node:path";
 import sharp from "sharp";
 import { ROOT } from "../../e2e/support/routes.ts";
+import { RELEASE_FLAGS, STATE_FLAGS } from "../../e2e/support/state-recipes.ts";
 import type { A11yNode, A11ySnapshot } from "./native/a11y.ts";
 import { TARGET_FLOORS, flagsOf, over, parseCssColor, type Box, type ProbeSummary, type ProbeTarget, type ProbeText, type RowPlatform } from "./probe-math.ts";
 import {
   ANALYSIS_FILE,
+  STATE_NOT_REACHED,
   currentCells,
   groupKey,
   notReached,
@@ -59,6 +73,7 @@ import {
   pool,
   readJsonFile,
   type CapturedCell,
+  type CellFamily,
 } from "./runs.ts";
 import { CARD_FILE, PROBE_FILE } from "./web-capture.ts";
 
@@ -233,28 +248,46 @@ export function boxToRegion(box: Box, dpr: number, image: Pick<RawImage, "width"
 /** A text's ink as it paints: its colour, and the alpha it paints that colour with. */
 export interface PaintedInk {
   rgb: RGB;
-  /** The colour's own alpha times the text's fill or placeholder opacity times its opacity groups. */
+  /** The colour's own alpha times the text's fill or placeholder opacity times the opacity groups its backdrop is not in. */
   alpha: number;
+  /**
+   * The opacity groups the text is inside with its backdrop, when they dim: their opacity,
+   * and the colour behind them (read from the photograph around the outermost group's box).
+   * They mix the ink and the backdrop alike with that colour.
+   */
+  shared?: { opacity: number; behind: RGB };
 }
 
 /**
  * The ink a text paints with, from what the probe recorded, or why there is none to take.
  * HTML text paints with its colour alone; an SVG text's fill-opacity and a placeholder's own
- * opacity are `colorAlpha`, which probes written before it was recorded do not carry.
+ * opacity are `colorAlpha`, which probes written before it was recorded do not carry. Of the
+ * opacity groups it paints inside, only those its backdrop is not in dim it against the
+ * background the photograph shows (`ownOpacity`); a probe written before that was recorded
+ * gives every group's.
  */
-export function paintedInk(text: Pick<ProbeText, "color" | "colorAlpha" | "opacity" | "svg" | "field">): PaintedInk | { none: string } {
+export function paintedInk(text: Pick<ProbeText, "color" | "colorAlpha" | "opacity" | "ownOpacity" | "svg" | "field">): PaintedInk | { none: string } {
   const color = parseCssColor(text.color);
   if (!color) return { none: `its colour ${text.color} cannot be read` };
   const own = text.colorAlpha ?? (text.svg || text.field?.part === "placeholder" ? null : 1);
   if (own === null) return { none: `the probe predates the ${text.svg ? "SVG fill-opacity" : "placeholder opacity"} it paints with` };
-  const alpha = color[3] * own * text.opacity;
+  const alpha = color[3] * own * (text.ownOpacity ?? text.opacity);
   if (!(alpha > 0)) return { none: "its colour is transparent, so something other than its colour paints its glyphs" };
   return { rgb: [color[0], color[1], color[2]], alpha: Math.min(1, alpha) };
 }
 
-/** `ink` as it paints over the opaque `background`. */
+/**
+ * `ink` as a photograph shows it where `background` shows around it. Inside the groups it
+ * shares with its backdrop the ink paints over the backdrop, and the groups then mix both
+ * with what lies behind them (O) at their opacity s, so with the ink's own alpha a over the
+ * photographed background B the pixel is a*s*ink + (1 - a)*B + a*(1 - s)*O; with no shared
+ * group that is the ink over B at its alpha.
+ */
 export function inkOver(ink: PaintedInk, background: RGB): RGB {
-  return ink.alpha >= 1 ? ink.rgb : over([ink.rgb[0], ink.rgb[1], ink.rgb[2], ink.alpha], background);
+  if (!ink.shared) return ink.alpha >= 1 ? ink.rgb : over([ink.rgb[0], ink.rgb[1], ink.rgb[2], ink.alpha], background);
+  const { opacity: s, behind } = ink.shared;
+  const a = ink.alpha;
+  return [0, 1, 2].map((c) => a * s * ink.rgb[c]! + (1 - a) * background[c]! + a * (1 - s) * behind[c]!) as RGB;
 }
 
 /** The percentile of the pixels' distances from the ink that stands for the background's: a stray pixel does not set it. */
@@ -297,16 +330,25 @@ function dominantFar(pixels: Uint8Array, reference: RGB): { rgb: RGB; count: num
   }
   const far = Float64Array.from(distance).sort()[percentileIndex(n, FAR_PERCENTILE)]!;
   const threshold = BACKGROUND_SHARE * far;
+  return dominant(pixels, (i) => distance[i]! >= threshold);
+}
+
+/**
+ * The dominant colour of the `pixels` (RGB triples) `taken` admits: binned 16 levels a
+ * channel, the mean of every taken pixel within one bin's width of the fullest bin's mean.
+ */
+function dominant(pixels: Uint8Array, taken: (i: number) => boolean): { rgb: RGB; count: number } {
+  const n = pixels.length / 3;
   const bins = new Uint32Array(BINS_PER_CHANNEL ** 3);
   const binOf = (i: number) => ((pixels[i * 3]! >> BIN_SHIFT) * BINS_PER_CHANNEL + (pixels[i * 3 + 1]! >> BIN_SHIFT)) * BINS_PER_CHANNEL + (pixels[i * 3 + 2]! >> BIN_SHIFT);
-  for (let i = 0; i < n; i++) if (distance[i]! >= threshold) bins[binOf(i)]! += 1;
+  for (let i = 0; i < n; i++) if (taken(i)) bins[binOf(i)]! += 1;
   let peak = 0;
   for (let bin = 1; bin < bins.length; bin++) if (bins[bin]! > bins[peak]!) peak = bin;
   const mean = (keep: (i: number) => boolean): { rgb: RGB; count: number } => {
     const sum = [0, 0, 0];
     let count = 0;
     for (let i = 0; i < n; i++) {
-      if (distance[i]! < threshold || !keep(i)) continue;
+      if (!taken(i) || !keep(i)) continue;
       sum[0] += pixels[i * 3]!;
       sum[1] += pixels[i * 3 + 1]!;
       sum[2] += pixels[i * 3 + 2]!;
@@ -340,26 +382,74 @@ export function sampleBackground(image: RawImage, region: PixelRegion, ink: Pain
     }
   }
   let found = dominantFar(pixels, ink.rgb);
-  if (ink.alpha < 1) found = dominantFar(pixels, inkOver(ink, found.rgb));
+  if (ink.alpha < 1 || ink.shared) found = dominantFar(pixels, inkOver(ink, found.rgb));
   return { rgb: found.rgb, samples: n, share: found.count / n, region: box };
 }
 
-/** Where the analysis reads a card's pixels for the texts the DOM could not resolve. */
+/** How wide a ring around an opacity group's box is read for the colour behind the group, CSS px. */
+export const BEHIND_RING = 3;
+
+/**
+ * The colour just outside `region` of `image` (a ring `ring` device pixels wide, as much of
+ * it as the image holds): what lies behind an opacity group whose element is that region.
+ * The dominant colour, so a neighbour's edge in the ring does not set it. Null when the image
+ * shows fewer than MIN_SAMPLES pixels of the ring.
+ */
+export function sampleAround(image: RawImage, region: PixelRegion, ring: number): { rgb: RGB; samples: number } | null {
+  const outer = clampRegion(image, { left: region.left - ring, top: region.top - ring, width: region.width + 2 * ring, height: region.height + 2 * ring });
+  const inside = (x: number, y: number) => x >= region.left && x < region.left + region.width && y >= region.top && y < region.top + region.height;
+  const values: number[] = [];
+  for (let y = outer.top; y < outer.top + outer.height; y++) {
+    for (let x = outer.left; x < outer.left + outer.width; x++) {
+      if (inside(x, y)) continue;
+      const offset = (y * image.width + x) * image.channels;
+      values.push(image.data[offset]!, image.data[offset + 1]!, image.data[offset + 2]!);
+    }
+  }
+  const n = values.length / 3;
+  if (n < MIN_SAMPLES) return null;
+  return { rgb: dominant(Uint8Array.from(values), () => true).rgb, samples: n };
+}
+
+/**
+ * Where the analysis reads a photograph's pixels for the texts the DOM could not resolve.
+ * The boxes it is given are the probe's, measured from the region's origin; the sampler
+ * places them in its photograph.
+ */
 export interface CardSampler {
+  /** Whether any of a text's box lies in the photograph. */
+  shows(box: Box): boolean;
+  /** The colour behind an opacity group whose element has `box`: the photograph just around it. */
+  around(box: Box): { rgb: RGB; samples: number } | null;
   /** The background behind a text's box (its ink's bounds), given the ink it paints with. */
   background(box: Box, ink: PaintedInk): BackgroundSample | null;
   /** The 10th and 90th luminance percentiles at a text's ink, for a text with no painted ink. */
   percentiles(box: Box): PixelSample | null;
 }
 
-/** A sampler over a decoded card image taken at `dpr` device pixels per CSS px. */
-export function cardSampler(image: RawImage, dpr: number): CardSampler {
+/**
+ * A sampler over a decoded photograph taken at `dpr` device pixels per CSS px, in which the
+ * origin the probe measured the boxes from sits at `offset` (CSS px): (0, 0) for card.png,
+ * which is the card itself; the region's origin less the shot's clip for a state or a page
+ * section, whose photograph is a clip of the viewport or the viewport itself.
+ */
+export function cardSampler(image: RawImage, dpr: number, offset: { x: number; y: number } = { x: 0, y: 0 }): CardSampler {
+  const placed = (box: Box): Box => ({ ...box, x: box.x + offset.x, y: box.y + offset.y });
   return {
+    shows: (box) => boxToRegion(placed(box), dpr, image) !== null,
+    around(box) {
+      const at = placed(box);
+      // The box as device pixels, unclamped: the ring is clamped to the image, the box is not.
+      const left = Math.floor(at.x * dpr);
+      const top = Math.floor(at.y * dpr);
+      const region = { left, top, width: Math.ceil((at.x + at.width) * dpr) - left, height: Math.ceil((at.y + at.height) * dpr) - top };
+      return sampleAround(image, region, Math.round(BEHIND_RING * dpr));
+    },
     background(box, ink) {
-      const region = boxToRegion(box, dpr, image);
+      const region = boxToRegion(placed(box), dpr, image);
       return region ? sampleBackground(image, inkRegion(image, region), ink) : null;
     },
-    percentiles: (box) => sampleText(image, box, dpr),
+    percentiles: (box) => sampleText(image, placed(box), dpr),
   };
 }
 
@@ -390,7 +480,10 @@ export function pixelVerdict(contrast: number, required: number): ContrastVerdic
 const hex = (rgb: RGB) => `#${rgb.map((c) => Math.round(c).toString(16).padStart(2, "0")).join("")}`;
 
 export interface TextContrast {
+  /** The floors it is held to: its row's platform (a page's sections are the web's). */
   row: RowPlatform;
+  /** The region of the cell it is in: a row (`web`, `ios`, `android`), `panel`, or `section:<key>`. */
+  region: string;
   text: string;
   size: number;
   required: number;
@@ -403,18 +496,36 @@ export interface TextContrast {
   samples?: number;
   /** painted-ink+pixel-background: the share of the sampled pixels the background's colour holds. */
   backgroundShare?: number;
+  /** painted-ink+pixel-background, for a text inside opacity groups with its backdrop: the colour behind the groups. */
+  behind?: string;
   /** Why it was not measured, why the DOM could not resolve it, and why the percentiles were used. */
   reason?: string;
 }
 
 /** A contrast read from the card's pixels, by the method the text's recorded ink allows. */
-export type PixelContrast = Required<Pick<TextContrast, "method" | "ink" | "background" | "samples">> & Pick<TextContrast, "backgroundShare"> & { contrast: number; fallback?: string };
+export type PixelContrast = Required<Pick<TextContrast, "method" | "ink" | "background" | "samples">> & Pick<TextContrast, "backgroundShare" | "behind"> & { contrast: number; fallback?: string; note?: string };
 
-/** A text's painted ink over the background its box shows, or null when its box holds too few pixels. */
-export function paintedInkContrast(text: Pick<ProbeText, "box">, ink: PaintedInk, sampler: CardSampler): PixelContrast | null {
-  const background = sampler.background(text.box, ink);
+/**
+ * A text's painted ink over the background its box shows, or null when its box holds too
+ * few pixels. A text inside opacity groups with its backdrop (`shared`) is painted with the
+ * colour behind them, read around the outermost group's box; where the photograph shows too
+ * little of that, the ink is dimmed over the background instead, as if the groups held the
+ * text alone, and `note` says so.
+ */
+export function paintedInkContrast(text: Pick<ProbeText, "box" | "shared">, ink: PaintedInk, sampler: CardSampler): PixelContrast | null {
+  let painting = ink;
+  let note: string | undefined;
+  if (text.shared && text.shared.opacity < 1) {
+    const behind = sampler.around(text.shared.box);
+    if (behind) painting = { ...ink, shared: { opacity: text.shared.opacity, behind: behind.rgb } };
+    else {
+      painting = { rgb: ink.rgb, alpha: ink.alpha * text.shared.opacity };
+      note = "the photograph shows too little around its opacity group to read what is behind it, so the group is taken to dim the ink alone";
+    }
+  }
+  const background = sampler.background(text.box, painting);
   if (!background) return null;
-  const painted = inkOver(ink, background.rgb);
+  const painted = inkOver(painting, background.rgb);
   return {
     method: CONTRAST_METHODS.paintedInk,
     contrast: Math.round(contrastOfLuminance(relativeLuminance(painted), relativeLuminance(background.rgb)) * 100) / 100,
@@ -422,6 +533,8 @@ export function paintedInkContrast(text: Pick<ProbeText, "box">, ink: PaintedInk
     background: hex(background.rgb),
     samples: background.samples,
     backgroundShare: Math.round(background.share * 100) / 100,
+    ...(painting.shared ? { behind: hex(painting.shared.behind) } : {}),
+    ...(note ? { note } : {}),
   };
 }
 
@@ -453,11 +566,12 @@ export function pixelContrast(text: ProbeText, sampler: CardSampler): PixelContr
 }
 
 /**
- * One text's contrast: the probe's DOM verdict where it resolved, else read from the card
- * image (when one is given; pixelContrast), else unmeasured with the reason.
+ * One text's contrast: the probe's DOM verdict where it resolved, else read from the
+ * region's photograph (pixelContrast), else unmeasured with the reason: `photo` is the
+ * photograph's sampler, or why the region has none.
  */
-export function textContrast(row: RowPlatform, text: ProbeText, sampler: CardSampler | null): TextContrast {
-  const base = { row, text: text.text, size: text.size, required: text.required };
+export function textContrast(row: RowPlatform, text: ProbeText, photo: CardSampler | { none: string }, region: string = row): TextContrast {
+  const base = { row, region, text: text.text, size: text.size, required: text.required };
   const none = CONTRAST_METHODS.none;
   if (text.disabled) return { ...base, method: text.contrast === null ? none : CONTRAST_METHODS.dom, contrast: text.contrast, verdict: "exempt", reason: "disabled: WCAG 1.4.3's inactive exception" };
   if (text.contrast !== null) {
@@ -466,42 +580,189 @@ export function textContrast(row: RowPlatform, text: ProbeText, sampler: CardSam
   const why = text.indeterminate ?? "indeterminate";
   if (text.covered) return { ...base, method: none, contrast: null, verdict: "unmeasured", reason: `covered: something else paints over it (${why})` };
   if (text.scrolled) return { ...base, method: none, contrast: null, verdict: "unmeasured", reason: `scrolled: part of its box is out of its scroller's view, so the photograph does not show it (${why})` };
-  if (!sampler) return { ...base, method: none, contrast: null, verdict: "unmeasured", reason: `${why}; no card image to sample` };
-  const measured = pixelContrast(text, sampler);
-  if (!measured) return { ...base, method: none, contrast: null, verdict: "unmeasured", reason: `${why}; its box holds too few pixels of the card to sample` };
-  const { fallback, ...reading } = measured;
-  return { ...base, ...reading, verdict: pixelVerdict(measured.contrast, text.required), reason: fallback ? `${why}; no painted ink colour: ${fallback}` : why };
+  if ("none" in photo) return { ...base, method: none, contrast: null, verdict: "unmeasured", reason: `${why}; ${photo.none}` };
+  if (!photo.shows(text.box)) return { ...base, method: none, contrast: null, verdict: "unmeasured", reason: `${why}; its box lies outside the photograph` };
+  const measured = pixelContrast(text, photo);
+  if (!measured) return { ...base, method: none, contrast: null, verdict: "unmeasured", reason: `${why}; its box holds too few pixels of the photograph to sample` };
+  const { fallback, note, ...reading } = measured;
+  const reason = [why, fallback ? `no painted ink colour: ${fallback}` : null, note ?? null].filter(Boolean).join("; ");
+  return { ...base, ...reading, verdict: pixelVerdict(measured.contrast, text.required), reason };
 }
 
-// --- The web cell ------------------------------------------------------------------
+// --- Reading a web cell's probe -----------------------------------------------------------
 
-/** probe.json as the web capture writes it (e2e/audit/cell.ts), the parts the analysis reads. */
-export interface WebProbe {
+/** One region a web capture probed (probe-math.ts ProbeRow as the captures write it), the parts the analysis reads. */
+export interface WrittenRegion {
+  platform: RowPlatform;
+  /** Where its boxes are measured from, in the viewport; probes written before it was recorded have none. */
+  origin?: { x: number; y: number };
+  box: Box;
+  aria?: string;
+  texts: ProbeText[];
+  interactive: ProbeTarget[];
+}
+
+type Axe = { scanned: boolean; violations: { id: string; impact: string; help: string; nodes: number }[] };
+
+/** probe.json as the variant capture writes it (e2e/audit/cell.ts). */
+export interface VariantProbe {
   dpr: number;
-  rows: { platform: RowPlatform; box: Box; aria?: string; texts: ProbeText[]; interactive: ProbeTarget[] }[];
+  rows: WrittenRegion[];
   overflow: Record<string, number>;
-  axe: { scanned: boolean; violations: { id: string; impact: string; help: string; nodes: number }[] };
+  axe: Axe;
   problems: unknown[];
   summary: ProbeSummary;
 }
+
+/** probe.json as the interaction-state capture writes it (e2e/audit/state-cell.ts). */
+export interface StateProbe {
+  status: "ok" | "state-not-reached";
+  dpr: number;
+  recipe: { state: string; variant: string; how: string; frame: "row" | "viewport" };
+  /** Why the state was not reached. */
+  reason?: string;
+  /** What verify read off the page. */
+  evidence?: Record<string, unknown>;
+  /** A reached state's photograph and the part of the viewport it shows (null: all of it). */
+  shot?: { file: string; frame: "row" | "viewport"; clip: Box | null };
+  row?: WrittenRegion;
+  /** The panel the state opened: read with the row when the row draws it (`inRow`; probes written before that have no `inRow`). */
+  panel?: (Partial<WrittenRegion> & { inRow?: boolean }) | null;
+  overflow?: Record<string, number>;
+  axe?: Axe;
+  problems: unknown[];
+  summary?: ProbeSummary;
+  /** The probe's flags with the state's own (STATE_FLAGS) and its release's (RELEASE_FLAGS). */
+  flags: string[];
+  release?: Record<string, unknown>;
+}
+
+/** probe.json as the page capture writes it (e2e/audit/page-cell.ts). */
+export interface PageProbe {
+  dpr: number;
+  viewport: { size: { width: number; height: number }; file: string };
+  sections: (WrittenRegion & { key: string; title: string; file: string; clip?: Box })[];
+  overflow: Record<string, number>;
+  axe: Axe;
+  problems: unknown[];
+  summary: ProbeSummary;
+}
+
+/** Where a region's texts are photographed: the file in the cell's directory, and where the region's origin sits in it (CSS px). */
+export interface RegionPhoto {
+  file: string;
+  offset: { x: number; y: number };
+}
+
+/** One region of a cell the analysis judges: a card's platform row, a state's row or the panel it opened, a page's section. */
+export interface ProbedRegion {
+  /** The region's name: the row's platform (`web`), `panel`, or `section:<key>`. */
+  key: string;
+  /** The floors its texts and targets are held to. */
+  platform: RowPlatform;
+  texts: ProbeText[];
+  interactive: ProbeTarget[];
+  /** Its photograph, or why it has none. */
+  photo: RegionPhoto | { none: string };
+}
+
+/** A web cell's probe, read the same way whatever kind of cell wrote it. */
+export interface CellProbe {
+  dpr: number;
+  regions: ProbedRegion[];
+  /**
+   * The tree held identical across the looks and surfaces of the cell's group: a variant's
+   * web row, a state's row and the panel it opened, a page's sections in order; null where
+   * the probe has none.
+   */
+  tree: string | null;
+  summary: ProbeSummary;
+  axe: Axe;
+  problems: unknown[];
+  /** The capture's flags beyond the probe's: a state's own and its release's. */
+  own: string[];
+}
+
+const PREDATES_ORIGIN = "the probe predates the region origins that place its texts in the photograph (re-capture the cell)";
+
+/** Where a region's origin sits in a photograph of the viewport, or of `clip` of it. */
+function photoOf(file: string, origin: { x: number; y: number } | undefined, clip: Box | null | undefined): RegionPhoto | { none: string } {
+  if (!origin) return { none: PREDATES_ORIGIN };
+  return { file, offset: { x: origin.x - (clip?.x ?? 0), y: origin.y - (clip?.y ?? 0) } };
+}
+
+/** A variant cell's probe: its rows, photographed in card.png, which is the card the boxes are measured from. */
+export function readVariantProbe(probe: VariantProbe): CellProbe {
+  return {
+    dpr: probe.dpr,
+    regions: probe.rows.map((row) => ({ key: row.platform, platform: row.platform, texts: row.texts, interactive: row.interactive, photo: { file: CARD_FILE, offset: { x: 0, y: 0 } } })),
+    tree: probe.rows.find((row) => row.platform === "web")?.aria ?? null,
+    summary: probe.summary,
+    axe: probe.axe,
+    problems: probe.problems,
+    own: [],
+  };
+}
+
+/** A reached state's probe: its row and the panel it opened (when not drawn in the row), photographed in state.png. Null for a state not reached. */
+export function readStateProbe(probe: StateProbe): CellProbe | null {
+  if (probe.status !== "ok" || !probe.row || !probe.shot || !probe.summary || !probe.axe) return null;
+  const { file, clip } = probe.shot;
+  const regions: ProbedRegion[] = [{ key: probe.row.platform, platform: probe.row.platform, texts: probe.row.texts, interactive: probe.row.interactive, photo: photoOf(file, probe.row.origin, clip) }];
+  const panel = probe.panel;
+  if (panel && !panel.inRow && panel.texts && panel.interactive) {
+    regions.push({ key: "panel", platform: panel.platform ?? probe.row.platform, texts: panel.texts, interactive: panel.interactive, photo: photoOf(file, panel.origin, clip) });
+  }
+  const trees = [probe.row.aria, panel?.aria].filter((tree): tree is string => typeof tree === "string");
+  return {
+    dpr: probe.dpr,
+    regions,
+    tree: trees.length ? trees.join("\n") : null,
+    summary: probe.summary,
+    axe: probe.axe,
+    problems: probe.problems,
+    own: probe.flags,
+  };
+}
+
+/** A page cell's probe: its sections, each photographed in its own section.<key>.png. */
+export function readPageProbe(probe: PageProbe): CellProbe {
+  return {
+    dpr: probe.dpr,
+    regions: probe.sections.map((section) => ({
+      key: `section:${section.key}`,
+      platform: section.platform ?? "web",
+      texts: section.texts,
+      interactive: section.interactive,
+      photo: photoOf(section.file, section.origin, section.clip),
+    })),
+    tree: probe.sections.map((section) => `[section ${section.key}]\n${section.aria ?? ""}`).join("\n"),
+    summary: probe.summary,
+    axe: probe.axe,
+    problems: probe.problems,
+    own: [],
+  };
+}
+
+// --- A web cell's analysis -------------------------------------------------------------
 
 export const AXE_IMPACTS = ["critical", "serious", "moderate", "minor"] as const;
 
 export interface Structure {
   /** The cells compared: this cell's look and surface peers at its width. */
   peers: number;
-  /** Whether its web row's snapshot is the group's most common one; null when there is nothing to compare. */
+  /** Whether its tree is the group's most common one; null when there is nothing to compare. */
   identical: boolean | null;
-  /** The peer cells whose snapshot is the most common one. */
+  /** The peer cells whose tree is the most common one. */
   agreesWith: string[];
-  /** The first line where this cell's snapshot leaves the most common one. */
+  /** The first line where this cell's tree leaves the most common one. */
   firstDifference?: { line: number; expected: string; found: string };
 }
 
-/** The flags the analysis files a cell under, beside the capture's own (probe-math.ts flagsOf). */
+/** The flags the analysis files a cell under, beside the capture's own (probe-math.ts flagsOf, and a state's STATE_FLAGS and RELEASE_FLAGS). */
 export const ANALYSIS_FLAGS = {
   failed: "failed",
-  notReached: "state-not-reached",
+  notReached: STATE_NOT_REACHED,
   contrastLikely: "contrast-likely",
   contrastReview: "contrast-review",
   structure: "structure-varies",
@@ -516,7 +777,30 @@ export interface TargetReport {
   floor: number;
   unit: string;
   note: string;
-  small: { role: string; name: string; width: number; height: number }[];
+  small: { region: string; role: string; name: string; width: number; height: number }[];
+}
+
+/** One region's share of a cell's analysis, for a reader looking for where a finding is. */
+export interface RegionAnalysis {
+  texts: number;
+  minFont: number | null;
+  contrast: { domFails: number; failLikely: number; review: number };
+  smallTargets: number;
+}
+
+/** What an interaction-state cell was, and what its capture found beyond the probe. */
+export interface StateAnalysis {
+  state: string;
+  row: RowPlatform | null;
+  /** The example the recipe applies the state to, and its label. */
+  variant: string | null;
+  label: string | null;
+  reached: boolean;
+  /** Why it was not reached. */
+  reason?: string;
+  /** The defects the state shows (STATE_FLAGS) and those its release found (RELEASE_FLAGS). */
+  stateFlags: string[];
+  releaseFlags: string[];
 }
 
 export interface CellAnalysis {
@@ -526,24 +810,28 @@ export interface CellAnalysis {
   capturedAt: string;
   analyzedAt: string;
   platform: "web" | "ios" | "android";
+  family: CellFamily;
   status: string;
   flags: string[];
   contrast: {
     dom: { checked: number; fails: number };
-    /** Texts read from the card's pixels, by either pixel method; `percentiles` of them had no painted ink colour. */
+    /** Texts read from the photographs, by either pixel method; `percentiles` of them had no painted ink colour. */
     pixels: { sampled: number; failLikely: number; review: number; passed: number; percentiles: number };
     exempt: number;
     unmeasured: number;
     /** Every text that did not pass on the DOM, and every sampled one. */
     texts: TextContrast[];
   };
-  fonts: { texts: number; min: number | null; minText: string | null; minRow: string | null; belowSourceFloor: number; underBodyFloor: number };
+  fonts: { texts: number; min: number | null; minText: string | null; minRegion: string | null; belowSourceFloor: number; underBodyFloor: number };
   targets: Partial<Record<RowPlatform, TargetReport>>;
   axe: { scanned: boolean; byImpact: Record<string, number>; rules: string[] };
   overflow: string[];
   clippedText: number;
   problems: number;
+  /** Per region (a row, a panel, a page's section): where the findings are. */
+  regions?: Record<string, RegionAnalysis>;
   structure?: Structure;
+  state?: StateAnalysis;
   a11y?: NativeA11y;
   stable?: boolean;
 }
@@ -563,10 +851,10 @@ export function firstDifference(expected: string, found: string): Structure["fir
 }
 
 /**
- * Structure invariance over one group (one variant at one width, its looks and surfaces):
- * the most common web-row snapshot is the group's; a tie goes to the snapshot the earliest
- * cell in `cells`' order has (the caller orders blush solid first). Cells with no snapshot
- * are left out and get null.
+ * Structure invariance over one group (one variant, state or page at one width, its looks
+ * and surfaces): the most common tree is the group's; a tie goes to the tree the earliest
+ * cell in `cells`' order has (the caller orders blush solid first). Cells with no tree are
+ * left out and get null.
  */
 export function structureOf(cells: { id: string; aria: string | null }[]): Map<string, Structure> {
   const result = new Map<string, Structure>();
@@ -595,50 +883,81 @@ export function structureOf(cells: { id: string; aria: string | null }[]): Map<s
 }
 
 const emptyContrast = (): CellAnalysis["contrast"] => ({ dom: { checked: 0, fails: 0 }, pixels: { sampled: 0, failLikely: 0, review: 0, passed: 0, percentiles: 0 }, exempt: 0, unmeasured: 0, texts: [] });
+const emptyFonts = (): CellAnalysis["fonts"] => ({ texts: 0, min: null, minText: null, minRegion: null, belowSourceFloor: 0, underBodyFloor: 0 });
+const noAxe = (): CellAnalysis["axe"] => ({ scanned: false, byImpact: Object.fromEntries(AXE_IMPACTS.map((impact) => [impact, 0])), rules: [] });
+
+/** What the analysis is told about the capture it judges. */
+export type AnalyzedCell = Pick<CapturedCell, "id" | "status" | "family" | "state" | "row" | "variant" | "label"> & { run: string; capturedAt: string };
+
+/** A state cell's flags split into the state's own and its release's. */
+function stateOf(cell: AnalyzedCell, own: string[], reason?: string): StateAnalysis {
+  return {
+    state: cell.state ?? "unknown",
+    row: cell.row,
+    variant: cell.variant,
+    label: cell.label,
+    reached: cell.status !== STATE_NOT_REACHED,
+    ...(reason ? { reason } : {}),
+    stateFlags: own.filter((flag) => flag in STATE_FLAGS),
+    releaseFlags: own.filter((flag) => flag in RELEASE_FLAGS),
+  };
+}
 
 /**
- * The analysis of one web cell from its probe and, where the DOM left a text indeterminate,
- * its card image. A cell its record says failed is filed under `failed` whatever it left on
- * disk: the probe a timed-out capture still wrote is read, but the cell is not a finished one.
+ * The analysis of one web cell (a variant, a reached state, a page) from its probe and,
+ * where the DOM left a text indeterminate, the photograph its region was taken in
+ * (`samplerFor` gives the photograph's sampler, or null when it could not be read). A cell
+ * its record says failed is filed under `failed` whatever it left on disk: the probe a
+ * timed-out capture still wrote is read, but the cell is not a finished one.
  */
-export function analyzeWebProbe(cell: Pick<CapturedCell, "id" | "status" | "flags"> & { run: string; capturedAt: string }, probe: WebProbe, sampler: CardSampler | null, structure: Structure | undefined, now: Date): CellAnalysis {
+export function analyzeWebCell(cell: AnalyzedCell, probe: CellProbe, samplerFor: (photo: RegionPhoto) => CardSampler | null, structure: Structure | undefined, now: Date): CellAnalysis {
   const contrast = emptyContrast();
-  const texts = probe.rows.flatMap((row) => row.texts.map((text) => ({ row: row.platform, text })));
-  for (const { row, text } of texts) {
-    const verdict = textContrast(row, text, sampler);
-    if (verdict.verdict === "exempt") contrast.exempt += 1;
-    else if (verdict.method === CONTRAST_METHODS.dom) {
-      contrast.dom.checked += 1;
-      if (verdict.verdict === "fail") contrast.dom.fails += 1;
-    } else if (isPixelMethod(verdict.method)) {
-      contrast.pixels.sampled += 1;
-      if (verdict.method === CONTRAST_METHODS.percentiles) contrast.pixels.percentiles += 1;
-      if (verdict.verdict === "fail-likely") contrast.pixels.failLikely += 1;
-      else if (verdict.verdict === "review") contrast.pixels.review += 1;
-      else contrast.pixels.passed += 1;
-    } else contrast.unmeasured += 1;
-    if (isPixelMethod(verdict.method) || verdict.verdict !== "pass") contrast.texts.push(verdict);
-  }
-  let min: { size: number; text: string; row: string } | null = null;
-  for (const { row, text } of texts) if (!min || text.size < min.size) min = { size: text.size, text: text.text, row };
+  const regions: Record<string, RegionAnalysis> = {};
+  let min: { size: number; text: string; region: string } | null = null;
   const targets: CellAnalysis["targets"] = {};
-  for (const row of probe.rows) {
-    const floor = TARGET_FLOORS[row.platform];
-    targets[row.platform] = {
-      floor: floor.size,
-      unit: floor.unit,
-      note: floor.note,
-      small: row.interactive.filter((item) => item.belowTarget).map((item) => ({ role: item.role, name: item.name, width: item.box.width, height: item.box.height })),
-    };
+  for (const region of probe.regions) {
+    const sampler = "none" in region.photo ? region.photo : samplerFor(region.photo) ?? { none: `its photograph ${region.photo.file} could not be read` };
+    const tally: RegionAnalysis = { texts: region.texts.length, minFont: null, contrast: { domFails: 0, failLikely: 0, review: 0 }, smallTargets: 0 };
+    for (const text of region.texts) {
+      const verdict = textContrast(region.platform, text, sampler, region.key);
+      if (verdict.verdict === "exempt") contrast.exempt += 1;
+      else if (verdict.method === CONTRAST_METHODS.dom) {
+        contrast.dom.checked += 1;
+        if (verdict.verdict === "fail") {
+          contrast.dom.fails += 1;
+          tally.contrast.domFails += 1;
+        }
+      } else if (isPixelMethod(verdict.method)) {
+        contrast.pixels.sampled += 1;
+        if (verdict.method === CONTRAST_METHODS.percentiles) contrast.pixels.percentiles += 1;
+        if (verdict.verdict === "fail-likely") {
+          contrast.pixels.failLikely += 1;
+          tally.contrast.failLikely += 1;
+        } else if (verdict.verdict === "review") {
+          contrast.pixels.review += 1;
+          tally.contrast.review += 1;
+        } else contrast.pixels.passed += 1;
+      } else contrast.unmeasured += 1;
+      if (isPixelMethod(verdict.method) || verdict.verdict !== "pass") contrast.texts.push(verdict);
+      if (tally.minFont === null || text.size < tally.minFont) tally.minFont = text.size;
+      if (!min || text.size < min.size) min = { size: text.size, text: text.text, region: region.key };
+    }
+    const floor = TARGET_FLOORS[region.platform];
+    const report = (targets[region.platform] ??= { floor: floor.size, unit: floor.unit, note: floor.note, small: [] });
+    for (const item of region.interactive) {
+      if (!item.belowTarget) continue;
+      report.small.push({ region: region.key, role: item.role, name: item.name, width: item.box.width, height: item.box.height });
+      tally.smallTargets += 1;
+    }
+    regions[region.key] = tally;
   }
   const byImpact: Record<string, number> = Object.fromEntries(AXE_IMPACTS.map((impact) => [impact, 0]));
   for (const violation of probe.axe.violations) byImpact[violation.impact] = (byImpact[violation.impact] ?? 0) + 1;
-  const flags = [...flagsOf(probe.summary)];
+  const flags = [...flagsOf(probe.summary), ...probe.own];
   if (cell.status === ANALYSIS_FLAGS.failed) flags.unshift(ANALYSIS_FLAGS.failed);
   if (contrast.pixels.failLikely) flags.push(ANALYSIS_FLAGS.contrastLikely);
   if (contrast.pixels.review) flags.push(ANALYSIS_FLAGS.contrastReview);
   if (structure?.identical === false) flags.push(ANALYSIS_FLAGS.structure);
-  if (cell.flags.includes(ANALYSIS_FLAGS.notReached) || cell.status === ANALYSIS_FLAGS.notReached) flags.push(ANALYSIS_FLAGS.notReached);
   return {
     schema: 1,
     id: cell.id,
@@ -646,14 +965,15 @@ export function analyzeWebProbe(cell: Pick<CapturedCell, "id" | "status" | "flag
     capturedAt: cell.capturedAt,
     analyzedAt: now.toISOString(),
     platform: "web",
+    family: cell.family,
     status: cell.status,
     flags: [...new Set(flags)],
     contrast,
     fonts: {
-      texts: texts.length,
+      texts: probe.regions.reduce((n, region) => n + region.texts.length, 0),
       min: min?.size ?? null,
       minText: min?.text ?? null,
-      minRow: min?.row ?? null,
+      minRegion: min?.region ?? null,
       belowSourceFloor: probe.summary.textBelowSourceFloor,
       underBodyFloor: probe.summary.textUnderBodyFloor,
     },
@@ -662,7 +982,37 @@ export function analyzeWebProbe(cell: Pick<CapturedCell, "id" | "status" | "flag
     overflow: probe.summary.overflowing,
     clippedText: probe.summary.clippedText,
     problems: probe.problems.length,
+    regions,
     ...(structure ? { structure } : {}),
+    ...(cell.family === "state" ? { state: stateOf(cell, probe.own) } : {}),
+  };
+}
+
+/**
+ * The analysis of a state its recipe could not reach: nothing was photographed or probed,
+ * so it is filed under `state-not-reached` and whatever its release found (a press with no
+ * look of its own can still fire when it should have been cancelled).
+ */
+export function analyzeUnreachedState(cell: AnalyzedCell, probe: Pick<StateProbe, "reason" | "flags" | "problems">, now: Date): CellAnalysis {
+  const state = stateOf(cell, probe.flags, probe.reason);
+  return {
+    schema: 1,
+    id: cell.id,
+    run: cell.run,
+    capturedAt: cell.capturedAt,
+    analyzedAt: now.toISOString(),
+    platform: "web",
+    family: "state",
+    status: cell.status,
+    flags: [...new Set([ANALYSIS_FLAGS.notReached, ...probe.flags])],
+    contrast: emptyContrast(),
+    fonts: emptyFonts(),
+    targets: {},
+    axe: noAxe(),
+    overflow: [],
+    clippedText: 0,
+    problems: probe.problems.length,
+    state,
   };
 }
 
@@ -727,7 +1077,7 @@ export interface NativeProbe {
 }
 
 /** The analysis of one native cell from its probe and accessibility dump. */
-export function analyzeNativeCell(cell: Pick<CapturedCell, "id" | "status" | "platform"> & { run: string; capturedAt: string }, probe: NativeProbe, snapshot: A11ySnapshot | null, now: Date): CellAnalysis {
+export function analyzeNativeCell(cell: Pick<CapturedCell, "id" | "status" | "platform" | "family"> & { run: string; capturedAt: string }, probe: NativeProbe, snapshot: A11ySnapshot | null, now: Date): CellAnalysis {
   const platform = cell.platform as "ios" | "android";
   let a11y: NativeA11y;
   if (snapshot) a11y = analyzeA11y(platform, snapshot);
@@ -743,7 +1093,7 @@ export function analyzeNativeCell(cell: Pick<CapturedCell, "id" | "status" | "pl
   if (a11y.smallTargets.length) flags.push(ANALYSIS_FLAGS.smallVisibleTarget);
   const targets: CellAnalysis["targets"] = {};
   if (platform === "android" && snapshot) {
-    targets.android = { floor: TARGET_FLOORS.android.size, unit: TARGET_FLOORS.android.unit, note: "the view's accessibility bounds; a hitSlop is not in the tree", small: a11y.smallTargets };
+    targets.android = { floor: TARGET_FLOORS.android.size, unit: TARGET_FLOORS.android.unit, note: "the view's accessibility bounds; a hitSlop is not in the tree", small: a11y.smallTargets.map((target) => ({ region: "device", ...target })) };
   }
   return {
     schema: 1,
@@ -752,12 +1102,13 @@ export function analyzeNativeCell(cell: Pick<CapturedCell, "id" | "status" | "pl
     capturedAt: cell.capturedAt,
     analyzedAt: now.toISOString(),
     platform,
+    family: cell.family,
     status: cell.status,
     flags,
     contrast: emptyContrast(),
-    fonts: { texts: 0, min: null, minText: null, minRow: null, belowSourceFloor: 0, underBodyFloor: 0 },
+    fonts: emptyFonts(),
     targets,
-    axe: { scanned: false, byImpact: Object.fromEntries(AXE_IMPACTS.map((impact) => [impact, 0])), rules: [] },
+    axe: noAxe(),
     overflow: [],
     clippedText: 0,
     problems: probe.problems.length,
@@ -774,6 +1125,34 @@ export async function decodeImage(path: string): Promise<RawImage> {
   return { data, width: info.width, height: info.height, channels: info.channels };
 }
 
+/** A web cell's probe.json read as a CellProbe by the family that wrote it; null for a state not reached. */
+export function readCellProbe(family: CellFamily, json: unknown): CellProbe | null {
+  if (family === "state") return readStateProbe(json as StateProbe);
+  if (family === "page") return readPageProbe(json as PageProbe);
+  return readVariantProbe(json as VariantProbe);
+}
+
+/** Whether a text needs its photograph read: the DOM did not resolve it, it owes contrast, and the photograph shows it. */
+export const needsPixels = (text: ProbeText) => text.contrast === null && !text.disabled && !text.covered && !text.scrolled;
+
+/**
+ * The samplers of a cell's photographs: each photograph a region `wanted` is taken in (by
+ * default, a region with a text the DOM could not resolve), decoded once. A photograph that
+ * is missing is left out, and its region's texts are unmeasured with the reason.
+ */
+export async function cellSamplers(dir: string, probe: CellProbe, wanted: (region: ProbedRegion) => boolean = (region) => region.texts.some(needsPixels)): Promise<(photo: RegionPhoto) => CardSampler | null> {
+  const images = new Map<string, RawImage>();
+  for (const region of probe.regions) {
+    if ("none" in region.photo || images.has(region.photo.file) || !wanted(region)) continue;
+    const path = join(dir, region.photo.file);
+    if (existsSync(path)) images.set(region.photo.file, await decodeImage(path));
+  }
+  return (photo) => {
+    const image = images.get(photo.file);
+    return image ? cardSampler(image, probe.dpr, photo.offset) : null;
+  };
+}
+
 /** A cell's look and surface order within its group, blush solid first, for ties in the structure vote. */
 const LOOK_ORDER = ["blush.solid", "blush.glass", "mint.solid", "mint.glass", "dark.solid", "dark.glass"];
 const lookRank = (cell: CapturedCell) => LOOK_ORDER.indexOf(`${cell.look}.${cell.surface}`);
@@ -782,32 +1161,41 @@ export interface AnalyzeTotals {
   cells: number;
   analyzed: number;
   skipped: number;
+  /** Analyzed cells per family. */
+  families: Record<CellFamily, number>;
   sampled: number;
   /** Of the sampled texts, those with no painted ink colour, read by the percentiles. */
   percentiles: number;
   failLikely: number;
   review: number;
   domFails: number;
+  /** Texts the DOM could not resolve and no photograph could answer for. */
+  unmeasured: number;
   flags: Record<string, number>;
 }
 
+const analyzedCell = (cell: CapturedCell): AnalyzedCell => ({ id: cell.id, status: cell.status, family: cell.family, state: cell.state, row: cell.row, variant: cell.variant, label: cell.label, run: cell.run.id, capturedAt: cell.capturedAt });
+
+/** One group of web cells (one variant, state or page at one width, its looks and surfaces), whose structure is voted on together. */
 async function analyzeGroup(group: CapturedCell[], now: Date, totals: AnalyzeTotals): Promise<void> {
-  const probes = group.map((cell) => ({ cell, probe: existsSync(join(cell.dir, PROBE_FILE)) ? readJsonFile<WebProbe>(join(cell.dir, PROBE_FILE)) : null }));
+  const read = group.map((cell) => {
+    const json = existsSync(join(cell.dir, PROBE_FILE)) ? readJsonFile<unknown>(join(cell.dir, PROBE_FILE)) : null;
+    return { cell, json, probe: json === null ? null : readCellProbe(cell.family, json) };
+  });
   // A failed cell's tree is not its variant's (a redirect, a wrong example, a page cut off mid-probe): it takes no part in the vote.
   const structures = structureOf(
-    [...probes]
+    [...read]
       .sort((a, b) => lookRank(a.cell) - lookRank(b.cell))
-      .map(({ cell, probe }) => ({ id: cell.id, aria: cell.status === ANALYSIS_FLAGS.failed ? null : probe?.rows.find((row) => row.platform === "web")?.aria ?? null })),
+      .map(({ cell, probe }) => ({ id: cell.id, aria: cell.status === ANALYSIS_FLAGS.failed ? null : probe?.tree ?? null })),
   );
-  for (const { cell, probe } of probes) {
-    if (!probe || notReached(cell)) {
+  for (const { cell, json, probe } of read) {
+    let analysis: CellAnalysis;
+    if (cell.family === "state" && notReached(cell) && json !== null) analysis = analyzeUnreachedState(analyzedCell(cell), json as StateProbe, now);
+    else if (probe) analysis = analyzeWebCell(analyzedCell(cell), probe, await cellSamplers(cell.dir, probe), structures.get(cell.id), now);
+    else {
       totals.skipped += 1;
       continue;
     }
-    const cardPath = join(cell.dir, CARD_FILE);
-    const needsPixels = probe.rows.some((row) => row.texts.some((text) => text.contrast === null && !text.disabled && !text.covered && !text.scrolled));
-    const image = needsPixels && existsSync(cardPath) ? await decodeImage(cardPath) : null;
-    const analysis = analyzeWebProbe({ id: cell.id, status: cell.status, flags: cell.flags, run: cell.run.id, capturedAt: cell.capturedAt }, probe, image ? cardSampler(image, probe.dpr) : null, structures.get(cell.id), now);
     writeFileSync(join(cell.dir, ANALYSIS_FILE), `${JSON.stringify(analysis, null, 2)}\n`);
     count(totals, analysis);
   }
@@ -815,11 +1203,13 @@ async function analyzeGroup(group: CapturedCell[], now: Date, totals: AnalyzeTot
 
 function count(totals: AnalyzeTotals, analysis: CellAnalysis) {
   totals.analyzed += 1;
+  totals.families[analysis.family] += 1;
   totals.sampled += analysis.contrast.pixels.sampled;
   totals.percentiles += analysis.contrast.pixels.percentiles;
   totals.failLikely += analysis.contrast.pixels.failLikely;
   totals.review += analysis.contrast.pixels.review;
   totals.domFails += analysis.contrast.dom.fails;
+  totals.unmeasured += analysis.contrast.unmeasured;
   for (const flag of analysis.flags) totals.flags[flag] = (totals.flags[flag] ?? 0) + 1;
 }
 
@@ -830,9 +1220,33 @@ async function analyzeNative(cell: CapturedCell, now: Date, totals: AnalyzeTotal
     return;
   }
   const snapshot = readJsonFile<A11ySnapshot>(join(cell.dir, "a11y.json"));
-  const analysis = analyzeNativeCell({ id: cell.id, status: cell.status, platform: cell.platform, run: cell.run.id, capturedAt: cell.capturedAt }, probe, snapshot, now);
+  const analysis = analyzeNativeCell({ id: cell.id, status: cell.status, platform: cell.platform, family: cell.family, run: cell.run.id, capturedAt: cell.capturedAt }, probe, snapshot, now);
   writeFileSync(join(cell.dir, ANALYSIS_FILE), `${JSON.stringify(analysis, null, 2)}\n`);
   count(totals, analysis);
+}
+
+/**
+ * Analyze `cells` (current captures, runs.ts currentCells) and write each one's
+ * analysis.json: the web cells in groups of one variant, state or page at one width (the
+ * structure vote is over the group), the native cells one by one.
+ */
+export async function analyzeCells(cells: CapturedCell[], now: Date): Promise<AnalyzeTotals> {
+  const totals: AnalyzeTotals = { cells: cells.length, analyzed: 0, skipped: 0, families: { variant: 0, state: 0, page: 0 }, sampled: 0, percentiles: 0, failLikely: 0, review: 0, domFails: 0, unmeasured: 0, flags: {} };
+  const groups = new Map<string, CapturedCell[]>();
+  const native: CapturedCell[] = [];
+  for (const cell of cells) {
+    if (cell.platform !== "web") {
+      native.push(cell);
+      continue;
+    }
+    const key = groupKey(cell);
+    const group = groups.get(key);
+    if (group) group.push(cell);
+    else groups.set(key, [cell]);
+  }
+  await pool([...groups.values()], 6, (group) => analyzeGroup(group, now, totals));
+  await pool(native, 8, (cell) => analyzeNative(cell, now, totals));
+  return totals;
 }
 
 const USAGE = "usage: bun run audit:analyze -- [--only=<slugs>] [--run=<run ids>]";
@@ -856,25 +1270,11 @@ async function main(): Promise<number> {
     return 2;
   }
   for (const problem of selection.problems) console.warn(`  warning  ${problem}`);
-  const now = new Date();
-  const totals: AnalyzeTotals = { cells: selection.cells.length, analyzed: 0, skipped: 0, sampled: 0, percentiles: 0, failLikely: 0, review: 0, domFails: 0, flags: {} };
-  const groups = new Map<string, CapturedCell[]>();
-  const native: CapturedCell[] = [];
-  for (const cell of selection.cells) {
-    if (cell.platform !== "web") {
-      native.push(cell);
-      continue;
-    }
-    const key = groupKey(cell);
-    const group = groups.get(key);
-    if (group) group.push(cell);
-    else groups.set(key, [cell]);
-  }
-  await pool([...groups.values()], 6, (group) => analyzeGroup(group, now, totals));
-  await pool(native, 8, (cell) => analyzeNative(cell, now, totals));
+  const totals = await analyzeCells(selection.cells, new Date());
   const ms = Date.now() - started;
-  console.log(`audit:analyze over ${selection.runs.length} run(s): ${totals.analyzed} of ${totals.cells} current cell(s) analyzed${totals.skipped ? `, ${totals.skipped} with no probe (failed or not reached)` : ""}`);
-  console.log(`  contrast  ${totals.domFails} DOM fail(s); ${totals.sampled} text(s) read against the card's pixels (${totals.sampled - totals.percentiles} ${CONTRAST_METHODS.paintedInk}, ${totals.percentiles} ${CONTRAST_METHODS.percentiles}): ${totals.failLikely} fail-likely, ${totals.review} to review`);
+  const families = (Object.entries(totals.families) as [CellFamily, number][]).filter(([, n]) => n).map(([family, n]) => `${n} ${family}`).join(", ");
+  console.log(`audit:analyze over ${selection.runs.length} run(s): ${totals.analyzed} of ${totals.cells} current cell(s) analyzed${families ? ` (${families})` : ""}${totals.skipped ? `, ${totals.skipped} with no probe (failed)` : ""}`);
+  console.log(`  contrast  ${totals.domFails} DOM fail(s); ${totals.sampled} text(s) read against their photograph's pixels (${totals.sampled - totals.percentiles} ${CONTRAST_METHODS.paintedInk}, ${totals.percentiles} ${CONTRAST_METHODS.percentiles}): ${totals.failLikely} fail-likely, ${totals.review} to review; ${totals.unmeasured} unmeasured`);
   const flags = Object.entries(totals.flags).sort((a, b) => b[1] - a[1]);
   console.log(`  flags     ${flags.length ? flags.map(([flag, n]) => `${flag} ${n}`).join(", ") : "none"}`);
   console.log(`  time      ${(ms / 1000).toFixed(1)} s (${totals.analyzed ? (ms / totals.analyzed).toFixed(1) : "0"} ms a cell)`);

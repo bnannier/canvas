@@ -2,9 +2,11 @@ import { afterEach, describe, expect, it } from "bun:test";
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
+import { analyzeCells } from "./analyze.ts";
+import { EARLIER, RUNS, checkoutWithRealRuns } from "./fixtures/real-runs.ts";
 import { brokenLinks, buildIndex, builtSelection } from "./index.ts";
 import { planPrune, pruneRuns, survivingSelection } from "./prune.ts";
-import { readRunCells, type AuditRun, type CapturedCell } from "./runs.ts";
+import { currentCells, readRunCells, type AuditRun, type CapturedCell } from "./runs.ts";
 
 const run = (id: string, startedAt: string, platform: AuditRun["platform"] = "web", finished = true): AuditRun => ({
   id, dir: `/r/${id}`, platform, startedAt, status: finished ? "complete" : "running", finished, sha: null, dirty: null, fingerprint: null, fresh: true, served: null,
@@ -159,5 +161,38 @@ describe("pruning under a built view", () => {
     expect(rebuilt.removed).toEqual([".audit/current/switch/index.md"]);
     expect(brokenLinks(root)).toEqual([]);
     expect(danglingLinks()).toEqual([]);
+  });
+});
+
+describe("pruning real runs", () => {
+  let root: string | null = null;
+  afterEach(() => {
+    if (root) rmSync(root, { recursive: true, force: true });
+    root = null;
+  });
+
+  it("removes the run whose one state cell has two newer captures, and rebuilds a view of states and page sections that resolves", async () => {
+    root = checkoutWithRealRuns({ earlier: true });
+    await analyzeCells(currentCells(root, { only: null, runs: null }).cells, new Date("2026-10-09T18:00:00Z"));
+    buildIndex(root, { runs: null, only: null }, "2026-10-09T18:00:00.000Z");
+    expect(brokenLinks(root)).toEqual([]);
+    const dry = pruneRuns(root, { keep: 2, only: null, runs: null, dryRun: true });
+    const decisions = new Map(dry.decisions.map((decision) => [decision.run.id, decision]));
+    expect(decisions.get(EARLIER[0])).toMatchObject({ remove: true, reason: "every one of its 1 cell(s) has 2 newer capture(s)" });
+    expect(decisions.get(EARLIER[1])).toMatchObject({ remove: false, reason: "holds one of the newest 2 captures of 1 cell(s)" });
+    expect(decisions.get(RUNS.pages)!.remove).toBe(false);
+    expect(decisions.get(RUNS.states)!.remove).toBe(false);
+    // The view names every run, the oldest included.
+    expect(dry.pointing).toBe(1);
+    const pruned = pruneRuns(root, { keep: 2, only: null, runs: null, dryRun: false });
+    expect(existsSync(join(root, ".audit", "runs", EARLIER[0]))).toBe(false);
+    expect(pruned.rebuilt).toMatchObject({ selection: null, result: { cells: 10, states: 7, notReached: 1 } });
+    expect(pruned.broken).toEqual([]);
+    const built = JSON.parse(readFileSync(join(root, ".audit", "current", "current.json"), "utf8")) as { runs: { id: string }[]; cells: { file: string | null; sections?: { file: string }[] }[] };
+    expect(built.runs.map((run) => run.id)).not.toContain(EARLIER[0]);
+    // Every file the rebuilt view names is there: each cell's photograph and each page section's.
+    const files = built.cells.flatMap((cell) => [cell.file, ...(cell.sections ?? []).map((section) => section.file)]).filter((file): file is string => file !== null);
+    expect(files.filter((file) => file.endsWith(".png"))).toHaveLength(9 + 3);
+    for (const file of files) expect(existsSync(join(root, file))).toBe(true);
   });
 });

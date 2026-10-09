@@ -1,0 +1,172 @@
+{
+  "schema": 1,
+  "id": "20261009-170859-web-1914767",
+  "platform": "web",
+  "status": "complete",
+  "startedAt": "2026-10-09T17:08:59.799Z",
+  "finishedAt": "2026-10-09T17:09:50.673Z",
+  "command": "bun run audit:web -- --states --only=button,tooltip,dialog,heatmap,histogram,slider,input --looks=blush,dark --base=https://127.0.0.1:4627",
+  "source": {
+    "sha": "1914767b065302222ef1800740c7f5ca2e7fc586",
+    "dirty": true,
+    "packageVersion": "3.5.1"
+  },
+  "served": {
+    "url": "https://127.0.0.1:4627/testing/diagnostics",
+    "mode": "static export",
+    "bundle": null,
+    "projectRoot": null,
+    "sourceFingerprint": "244030046d6bc47165dcce93ecba56e80a046516b054267ced192f11de8c01de",
+    "candidateRevision": "e0029fd2c4ef25a7746881d2cd23e144379ade72",
+    "sourceDirty": "true",
+    "packageVersion": "3.5.1",
+    "inputMode": "source",
+    "fresh": true,
+    "by": "source fingerprint",
+    "checkout": {
+      "fingerprint": "244030046d6bc47165dcce93ecba56e80a046516b054267ced192f11de8c01de",
+      "docsRoot": "<checkout>/docs"
+    },
+    "allowStale": false
+  },
+  "base": "https://127.0.0.1:4627",
+  "allowStale": false,
+  "workers": 6,
+  "capture": {
+    "browser": "chromium",
+    "deviceScaleFactor": 2,
+    "reducedMotion": "reduce",
+    "fixedTime": "2026-01-15T12:00:00.000Z",
+    "launchArgs": [
+      "--disable-frame-rate-limit"
+    ]
+  },
+  "filters": {
+    "kinds": "states (hover, focus, pressed, open, invalid, disabled)",
+    "only": [
+      "button",
+      "tooltip",
+      "dialog",
+      "heatmap",
+      "histogram",
+      "slider",
+      "input"
+    ],
+    "variants": null,
+    "states": [
+      "hover",
+      "focus",
+      "pressed",
+      "open",
+      "invalid",
+      "disabled"
+    ],
+    "looks": [
+      "blush",
+      "dark"
+    ],
+    "surfaces": [
+      "solid",
+      "glass"
+    ],
+    "widths": [
+      "phone",
+      "tablet",
+      "desktop"
+    ],
+    "axe": "solid at phone, desktop"
+  },
+  "planned": {
+    "cells": 140,
+    "tests": 28,
+    "variants": null,
+    "states": {
+      "components": 7,
+      "recipes": 19,
+      "tests": 28,
+      "cells": 140,
+      "byState": {
+        "hover": 8,
+        "focus": 16,
+        "pressed": 28,
+        "disabled": 12,
+        "invalid": 4,
+        "open": 72
+      }
+    },
+    "pages": null
+  },
+  "results": {
+    "playwrightExitCode": 0,
+    "cells": 140,
+    "kinds": {
+      "variant": 0,
+      "state": 140,
+      "page": 0
+    },
+    "ok": 132,
+    "failed": 0,
+    "notReached": 8,
+    "missing": 0,
+    "unreadableLines": 0,
+    "flags": {
+      "small-target": 4,
+      "error-not-described": 4,
+      "axe": 2,
+      "contrast": 1,
+      "focus-ring-colour": 1,
+      "focus-ring-missing": 2,
+      "focus-ring-hidden": 1,
+      "press-not-cancelled": 4,
+      "hover-unstable": 36,
+      "small-visible-target": 48
+    },
+    "msPerCell": {
+      "mean": 1799,
+      "p50": 1631,
+      "p95": 2921,
+      "max": 3560
+    },
+    "wallMs": 50874,
+    "bytes": 21292096,
+    "failures": [],
+    "unreached": [
+      {
+        "id": "web-states/input/disabled.web/desktop.blush.glass",
+        "reason": "<input> carries neither aria-disabled=\"true\" nor a native disabled (it is read-only)"
+      },
+      {
+        "id": "web-states/input/disabled.web/desktop.blush.solid",
+        "reason": "<input> carries neither aria-disabled=\"true\" nor a native disabled (it is read-only)"
+      },
+      {
+        "id": "web-states/input/disabled.web/desktop.dark.glass",
+        "reason": "<input> carries neither aria-disabled=\"true\" nor a native disabled (it is read-only)"
+      },
+      {
+        "id": "web-states/input/disabled.web/desktop.dark.solid",
+        "reason": "<input> carries neither aria-disabled=\"true\" nor a native disabled (it is read-only)"
+      },
+      {
+        "id": "web-states/heatmap/pressed.web/desktop.blush.glass",
+        "reason": "pressing [role=\"img\"] [tabindex=\"-1\"] #10 at 0.5, 0.5 of its box showed nothing the chart did not show with the pointer away (the pointer resting on it before the press had shown \"13 contributions\", \"Jul 16, 2025\", which the press took away)"
+      },
+      {
+        "id": "web-states/heatmap/pressed.web/desktop.blush.solid",
+        "reason": "pressing [role=\"img\"] [tabindex=\"-1\"] #10 at 0.5, 0.5 of its box showed nothing the chart did not show with the pointer away (the pointer resting on it before the press had shown \"13 contributions\", \"Jul 16, 2025\", which the press took away)"
+      },
+      {
+        "id": "web-states/heatmap/pressed.web/desktop.dark.solid",
+        "reason": "pressing [role=\"img\"] [tabindex=\"-1\"] #10 at 0.5, 0.5 of its box showed nothing the chart did not show with the pointer away (the pointer resting on it before the press had shown \"13 contributions\", \"Jul 16, 2025\", which the press took away)"
+      },
+      {
+        "id": "web-states/heatmap/pressed.web/desktop.dark.glass",
+        "reason": "pressing [role=\"img\"] [tabindex=\"-1\"] #10 at 0.5, 0.5 of its box showed nothing the chart did not show with the pointer away (the pointer resting on it before the press had shown \"13 contributions\", \"Jul 16, 2025\", which the press took away)"
+      }
+    ]
+  },
+  "files": {
+    "cells": "cells.jsonl",
+    "state": "web-states/<slug>/<state>.<row>/<width>.<look>.<surface>/{state.png, probe.json} (probe.json alone for a state not reached)"
+  }
+}

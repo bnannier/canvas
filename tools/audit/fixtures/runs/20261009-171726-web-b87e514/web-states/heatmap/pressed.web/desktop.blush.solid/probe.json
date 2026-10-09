@@ -1,0 +1,63 @@
+{
+  "schema": 1,
+  "cell": {
+    "id": "web-states/heatmap/pressed.web/desktop.blush.solid",
+    "slug": "heatmap",
+    "state": "pressed",
+    "row": "web",
+    "variant": "calendar",
+    "label": "Calendar",
+    "width": "desktop",
+    "look": "blush",
+    "surface": "solid"
+  },
+  "recipe": {
+    "state": "pressed",
+    "variant": "calendar",
+    "how": "press-to-inspect: a press on the eleventh day of the calendar",
+    "frame": "row"
+  },
+  "url": "https://127.0.0.1:4627/components/heatmap/calendar?scheme=light&surface=solid&palette=blush",
+  "structure": {
+    "path": "/components/heatmap/calendar",
+    "selected": "Calendar"
+  },
+  "dpr": 2,
+  "viewport": {
+    "initial": {
+      "width": 1440,
+      "height": 900
+    },
+    "grown": {
+      "width": 1440,
+      "height": 900
+    }
+  },
+  "status": "state-not-reached",
+  "reason": "pressing [role=\"img\"] [tabindex=\"-1\"] #10 at 0.5, 0.5 of its box showed nothing the chart did not show with the pointer away (the pointer resting on it before the press had shown \"13 contributions\", \"Jul 16, 2025\", which the press took away)",
+  "evidence": {
+    "at": "[role=\"img\"] [tabindex=\"-1\"] #10 at 0.5, 0.5 of its box",
+    "point": {
+      "x": 340.5,
+      "y": 533.5
+    },
+    "mode": "click",
+    "restingShowed": {
+      "added": [
+        "13 contributions",
+        "Jul 16, 2025"
+      ],
+      "marksRepainted": 0
+    },
+    "added": [],
+    "removed": [],
+    "marksRepainted": 0,
+    "othersRepainted": 0
+  },
+  "release": {
+    "cleared": true,
+    "by": "a second press on the same point, then the pointer moved off"
+  },
+  "flags": [],
+  "problems": []
+}
