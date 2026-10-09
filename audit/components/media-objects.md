@@ -89,6 +89,7 @@ One row per finding. Severity: critical, high, medium, low. Cell: a capture id f
 | K7-2 | medium | source | A tappable row was named by its title alone, so its description and meta were never announced. The label now carries every line the row shows. | fixed | 42eb980d |
 | K7-3 | low | source | A tappable row whose `body` is a node rather than text cannot read that body into its label, so the body is not announced. | open |  |
 | K7-4 | low | source | A photo row names its Avatar after the title, so the web reads the title twice (the image, then the text); see image K7-2 for the native side. | open |  |
+| K7-5 | low | source | With `onPress` and an `action`, 42eb980d moved `testID` onto the row inside the card. It marks the card again, as before the split, and the docs show the combined case. | fixed | 741fd4e6 |
 
 ## Sign-off
 
