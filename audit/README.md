@@ -183,11 +183,21 @@ the way `docs:gen` is run after a markdown change.
 `bun run audit:web` (`tools/audit/run-web.ts`) captures the web cells of the matrix above
 with Playwright (`playwright.audit.config.ts`, `e2e/audit/`; `bun run e2e` never runs it):
 Chromium at device scale 2, reduced motion, the page clock fixed at the suite's
-`FIXED_TIME`, 6 workers (`--workers`). It serves `docs/dist` through the suite's own export
-server on 4173 (reused when one is already up), or captures whatever `--base` names. Build
-the export first (`cd docs && bun run build:web`): the run reads `/testing/diagnostics` off
-the server it is about to capture and refuses an export whose source fingerprint
-(`docs/scripts/build-info.cjs`) is not this checkout's, unless `--allow-stale`.
+`FIXED_TIME`, 6 workers (`--workers`); the manifest records those settings as read off the
+configuration and `FIXED_TIME` themselves. It serves `docs/dist` through the suite's own
+export server on 4173 (reused when one is already up), or captures whatever `--base` names.
+
+Only this checkout's source is captured. Before the first cell the run opens
+`/testing/diagnostics` on the server it is about to capture and tells two kinds apart by how
+the page gets its code. A **static export** (the hashed files `bun run build:web` writes) is
+frozen when it is built, so its source fingerprint (`docs/scripts/build-info.cjs`) must be
+this checkout's: build the export first (`cd docs && bun run build:web`). A **live dev
+server** (Metro: `bun run dev` in `docs/`, `--base=http://localhost:8081`) builds the page's
+bundle from the source on disk when it is asked for it, so its fingerprint says nothing and
+is not compared; the run is recorded as a `live dev server`, and the project root Metro's
+`/status` names must be this checkout's `docs/`, since another checkout's Metro (the main
+checkout's, seen from a worktree) shows that checkout's source. Either mismatch refuses the
+run unless `--allow-stale`.
 
 One Playwright test covers a component in one look and surface and loops its variants by
 widths. Every cell is a fresh load in its look (`gotoDocs`), then, structure first: the page
@@ -199,20 +209,31 @@ one can still be taken); the run moves on.
 
 A run is `.audit/runs/<stamp>-web-<sha7>/`:
 
-- `manifest.json`: the command, the checkout (sha, dirty, version), the served export's
-  identity and freshness, the filters, the planned and captured counts, the flags, the time
-  per cell, the disk use and every failure. Written when the run starts (`running`) and
-  again when it ends (`complete`, `incomplete`, `interrupted` or `refused`).
+- `manifest.json`: the command, the checkout (sha, dirty, version), the capture settings
+  (browser, device scale, reduced motion, the fixed clock, the launch switches), what was
+  served (`static export` or `live dev server`, its bundle, its project root, the identity
+  `/testing/diagnostics` reports, and the verdict with what it compared), the filters, the
+  planned and captured counts, the flags, the time per cell, the disk use and every
+  failure. Written when the run starts (`running`) and again when it ends (`complete`,
+  `incomplete`, `interrupted` or `refused`).
 - `cells.jsonl`: one line per cell as it finishes (id, status, error, flags, time, bytes).
 - `web/<slug>/<variant>/<width>.<look>.<surface>/card.png`: the preview card, all three
   platform rows.
 - `.../probe.json`: the card's and each row's boxes (the row crops are cut later), each
   row's `ariaSnapshot()`, its material effects (`readMaterialEffects`) and the in-page probe
   (`e2e/support/audit-probes.ts`, judged by `tools/audit/probe-math.ts`): every text with its
-  size, rendered weight, family, colour, the background composited from the DOM under it or
-  `indeterminate` with the reason (a backdrop filter, a gradient, an image), its contrast and
-  the ratio it owes, the type floors, clipping and truncation; every interactive element
-  with its role, name, state and visible box against 44 pt (iOS row) or 48 dp (Android row),
+  size as painted (its computed size times the scale every transform above it paints its
+  glyphs at, so a floated label laid out at 16 px reads 12; the computed size and the scale
+  are kept beside it), rendered weight, family, colour, the background composited from the
+  DOM under it or `indeterminate` with the reason (a backdrop filter, a gradient, an image),
+  its contrast and the ratio it owes, the type floors (both judged on the painted size),
+  clipping and truncation. A form control's own text is one of them, marked `field`: a text
+  field's value (a password's as its bullets) or its placeholder while it shows (in its
+  `::placeholder` colour, opacity and font), and a drop-down select's chosen label, each on
+  the control's own background; a field's value that runs past its box scrolls, so it is
+  counted as scrolled, while a cut placeholder is clipped. Beside the texts: every
+  interactive element with its role, name, state (a native `disabled` or `readonly`
+  included) and visible box against 44 pt (iOS row) or 48 dp (Android row),
   labelled "hitSlop unobservable", or WCAG 2.5.8's 24 px (web row); how far the document,
   the page scroller, the card and each row overflow; axe on the web row (by default solid
   cells at phone and desktop width, every look; `--axe=all`, `--axe=none` or a list of
@@ -234,8 +255,10 @@ checklists are reviewed against the web captures and the existing evidence (`bun
 `bun run looks`, the docs three-up), and the cells are ticked only from photographs.
 
 Once they land, a fixer re-captures one component with
-`bun run audit:web -- --only=<slug> --base=http://localhost:8081` against Metro while
-iterating, then the same against a rebuilt export for the final check,
+`bun run audit:web -- --only=<slug> --base=http://localhost:8081` against this checkout's
+Metro while iterating (the run is recorded as a `live dev server`; from a worktree, start
+that worktree's own docs dev server, since 8081 shows the main checkout's source), then the
+same against a rebuilt export for the final check,
 `bun run audit:native -- --platform=ios --only=<slug> --dev` (and `android`) on the booted
 devices, and `bun run audit:sheets -- --only=<slug>` and `bun run audit:index -- --only=<slug>`
 to refresh that component's contact sheets and index under `.audit/current/`.

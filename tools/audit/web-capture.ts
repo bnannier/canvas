@@ -1,8 +1,9 @@
 // The web capture runner's rules, with no Playwright and no React Native import: which
 // cells a run captures (the inventory narrowed by the run's filters), where each cell's
 // files go, what one line of cells.jsonl says, how `bun run audit:web`'s flags map onto
-// the environment the Playwright side reads, how a served export is judged fresh, and how
-// a finished run is summarized. The runner (tools/audit/run-web.ts), the Playwright spec
+// the environment the Playwright side reads, what kind of server the cells hit and how it
+// is judged fresh, the capture settings a run's manifest records, and how a finished run is
+// summarized. The runner (tools/audit/run-web.ts), the Playwright spec
 // (e2e/audit/variants.audit.ts) and the unit tests read this one module, so the cells the
 // runner plans and the cells the spec captures cannot disagree.
 //
@@ -304,9 +305,36 @@ export function summarizeCells(all: CellRecord[]): CellSummary {
   };
 }
 
-/** The served export's build identity, as /testing/diagnostics reports it. */
+/**
+ * What kind of server the cells hit. A static export is a bundle frozen when it was built,
+ * so its source fingerprint says what it shows. A live dev server (Metro, `bun run dev` in
+ * docs/, the fixer loop's `--base=http://localhost:8081`) builds each bundle from the source
+ * on disk when it is asked for it, so a fingerprint it reports is only what the source was
+ * when that bundle was transformed, and what it shows is whatever its project's source is now.
+ */
+export const SERVED_MODES = { export: "static export", dev: "live dev server" } as const;
+export type ServedMode = (typeof SERVED_MODES)[keyof typeof SERVED_MODES];
+
+/** What Metro answers on `/status` (React Native's and Expo's dev servers alike). */
+export const PACKAGER_RUNNING = "packager-status:running";
+/** The response header in which Metro's `/status` names the project root it serves. */
+export const PROJECT_ROOT_HEADER = "x-react-native-project-root";
+
+/** What the server answered on `/status`, or null when it did not answer. */
+export interface PackagerStatus {
+  body: string;
+  /** The `X-React-Native-Project-Root` header, when it sent one. */
+  projectRoot: string | null;
+}
+
+/** The served bundle's identity: how the page gets its code, and what /testing/diagnostics reports. */
 export interface ServedIdentity {
   url: string;
+  mode: ServedMode;
+  /** The bundle a dev server builds for the page on request (`.../entry.bundle?platform=web&dev=true...`); null on an export. */
+  bundle: string | null;
+  /** The project a dev server serves, as its `/status` names it; null on an export, or when it names none. */
+  projectRoot: string | null;
   sourceFingerprint: string | null;
   candidateRevision: string | null;
   sourceDirty: string | null;
@@ -314,31 +342,139 @@ export interface ServedIdentity {
   inputMode: string | null;
 }
 
+/**
+ * Tell a live dev server from a static export by how the page gets its code: Metro serves
+ * the page a bundle it builds on request (a `.bundle` URL), an export the hashed files it
+ * wrote. A dev server's project root is read off its `/status` answer, and only when that is
+ * Metro's own.
+ */
+export function classifyServed(scripts: string[], status: PackagerStatus | null): Pick<ServedIdentity, "mode" | "bundle" | "projectRoot"> {
+  const bundle = scripts.find((src) => /\.bundle(?:[?#]|$)/.test(src)) ?? null;
+  if (!bundle) return { mode: SERVED_MODES.export, bundle: null, projectRoot: null };
+  const projectRoot = status !== null && status.body.trim() === PACKAGER_RUNNING ? status.projectRoot?.trim() || null : null;
+  return { mode: SERVED_MODES.dev, bundle, projectRoot };
+}
+
+/** This checkout, as the served bundle is compared with it. */
+export interface CheckoutIdentity {
+  /** `sourceFingerprint()` of docs/scripts/build-info.cjs, over this checkout now. */
+  fingerprint: string;
+  /** This checkout's docs app directory (the project a dev server for it serves), with symlinks resolved. */
+  docsRoot: string;
+}
+
 export interface Freshness {
   fresh: boolean;
+  /** What was compared: an export's source fingerprint, or a dev server's project root. */
+  by: "source fingerprint" | "project root";
   /** Why it is stale, as the refusal says it. */
   reason?: string;
 }
 
 /**
- * Whether the served export was built from this checkout's source as it is now: the
- * fingerprint /testing/diagnostics reports against `sourceFingerprint()` of
- * docs/scripts/build-info.cjs (a hash of src, styles, docs/src, the smoke fixtures and the
- * package and docs configs). The revision is not compared: an export built from a dirty
- * tree is fresh exactly when its source is what is checked out.
+ * Whether the served bundle shows this checkout's source as it is now.
+ *
+ * A static export: the fingerprint /testing/diagnostics reports against
+ * `sourceFingerprint()` of docs/scripts/build-info.cjs (a hash of src, styles, docs/src, the
+ * smoke fixtures and the package and docs configs). The revision is not compared: an export
+ * built from a dirty tree is fresh exactly when its source is what is checked out.
+ *
+ * A live dev server: it shows its project's source as it is on disk, so the question is
+ * whose source that is. It is fresh when the project root its `/status` names (resolved by
+ * the caller) is this checkout's docs app, whatever fingerprint it reports.
  */
-export function freshness(served: Pick<ServedIdentity, "url" | "sourceFingerprint">, sourceFingerprint: string): Freshness {
+export function freshness(served: Pick<ServedIdentity, "url" | "mode" | "sourceFingerprint" | "projectRoot">, checkout: CheckoutIdentity): Freshness {
+  if (served.mode === SERVED_MODES.dev) {
+    const by = "project root";
+    if (!served.projectRoot) {
+      return {
+        fresh: false,
+        by,
+        reason: `${served.url} is a live dev server that names no project root (Metro's /status answers with an X-React-Native-Project-Root header), so whose source it serves cannot be told: point --base at this checkout's docs dev server, or pass --allow-stale to capture it anyway`,
+      };
+    }
+    if (served.projectRoot !== checkout.docsRoot) {
+      return {
+        fresh: false,
+        by,
+        reason: `${served.url} is a live dev server for ${served.projectRoot}, not this checkout's docs app (${checkout.docsRoot}), so it shows another checkout's source: start the docs dev server in this checkout and point --base at it, or pass --allow-stale to capture it anyway`,
+      };
+    }
+    return { fresh: true, by };
+  }
+  const by = "source fingerprint";
   const fingerprint = served.sourceFingerprint;
   if (!fingerprint || !/^[a-f0-9]{64}$/.test(fingerprint)) {
-    return { fresh: false, reason: `${served.url} reports no source fingerprint (${fingerprint ?? "nothing"}), so what it serves cannot be matched to this checkout` };
+    return { fresh: false, by, reason: `${served.url} reports no source fingerprint (${fingerprint ?? "nothing"}), so what it serves cannot be matched to this checkout` };
   }
-  if (fingerprint !== sourceFingerprint) {
+  if (fingerprint !== checkout.fingerprint) {
     return {
       fresh: false,
-      reason: `${served.url} serves an export built from source ${fingerprint.slice(0, 12)}, but this checkout's source is ${sourceFingerprint.slice(0, 12)}: rebuild it (cd docs && bun run build:web), point --base at a server built from this checkout, or pass --allow-stale to capture it anyway`,
+      by,
+      reason: `${served.url} serves an export built from source ${fingerprint.slice(0, 12)}, but this checkout's source is ${checkout.fingerprint.slice(0, 12)}: rebuild it (cd docs && bun run build:web), point --base at a server built from this checkout, or pass --allow-stale to capture it anyway`,
     };
   }
-  return { fresh: true };
+  return { fresh: true, by };
+}
+
+/** What the capture's global setup records about the served bundle, for the runner's manifest. */
+export interface ServedRecord extends ServedIdentity, Freshness {
+  checkout: CheckoutIdentity;
+  allowStale: boolean;
+}
+
+/** One line on what was captured: the kind of server, whose source it shows, and the verdict. */
+export function describeServed(served: ServedRecord): string {
+  const verdict = served.fresh ? "this checkout" : served.allowStale ? "NOT this checkout, captured with --allow-stale" : "NOT this checkout";
+  if (served.mode === SERVED_MODES.dev) {
+    return `${served.url}: ${served.mode} for ${served.projectRoot ?? "a project it does not name"} (${verdict}; it builds from the source on disk, so its fingerprint is not compared)`;
+  }
+  return `${served.url}: ${served.mode} of source ${served.sourceFingerprint?.slice(0, 12) ?? "unknown"} (${verdict})`;
+}
+
+/** The settings a capture runs with, as its run's manifest records them. */
+export interface CaptureSettings {
+  browser: string;
+  deviceScaleFactor: number;
+  reducedMotion: string;
+  /** The instant the page clock is pinned to (e2e/support/docs.ts FIXED_TIME), ISO. */
+  fixedTime: string;
+  launchArgs: string[];
+}
+
+/** The part of a Playwright `use` block the capture settings come from. */
+interface CaptureUse {
+  browserName?: string;
+  deviceScaleFactor?: number;
+  contextOptions?: { reducedMotion?: string | null };
+  launchOptions?: { args?: string[] };
+}
+
+/**
+ * The capture settings of the audit's Playwright configuration, read off the configuration
+ * itself (its one project's `use` over its own, as Playwright merges them) and the clock the
+ * cells pin, so the manifest says what the capture ran with and cannot drift from it. A
+ * setting the configuration leaves to Playwright's default throws rather than being guessed.
+ */
+export function captureSettings(config: { use?: CaptureUse; projects?: { use?: CaptureUse }[] }, fixedTime: Date): CaptureSettings {
+  const projects = config.projects ?? [];
+  if (projects.length !== 1) throw new Error(`the audit configuration has ${projects.length} projects, where the capture runs exactly one`);
+  const use: CaptureUse = { ...config.use, ...projects[0]!.use };
+  const { browserName, deviceScaleFactor } = use;
+  const reducedMotion = use.contextOptions?.reducedMotion;
+  const unset = [
+    browserName === undefined && "browserName",
+    deviceScaleFactor === undefined && "deviceScaleFactor",
+    (reducedMotion === undefined || reducedMotion === null) && "contextOptions.reducedMotion",
+  ].filter((name): name is string => typeof name === "string");
+  if (unset.length) throw new Error(`the audit configuration does not set ${unset.join(", ")}`);
+  return {
+    browser: browserName!,
+    deviceScaleFactor: deviceScaleFactor!,
+    reducedMotion: reducedMotion!,
+    fixedTime: fixedTime.toISOString(),
+    launchArgs: use.launchOptions?.args ?? [],
+  };
 }
 
 /** `bun run audit:web`'s flags, and the environment variable each one sets. */

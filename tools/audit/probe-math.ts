@@ -9,10 +9,17 @@
 //   group flattened the way the browser flattens it, or "indeterminate" with the reason
 //   (a backdrop filter, a gradient, an image, a blend or a colour filter) when the DOM
 //   cannot say what is under it; the analysis samples the photograph for those;
+// - the size a text paints at: its computed size times the scale the transforms above it
+//   paint its glyphs at (a floating label laid out at 16 px and floated to 12 by a
+//   transform is 12 px to a reader);
 // - its WCAG contrast against that background and the ratio it owes (3 for large text,
-//   4.5 otherwise; a disabled control's text owes none, WCAG 1.4.3's inactive exception);
-// - the type floors (the 10 px source floor; 12 px body, which 11 px small and 10 px
-//   caption text may sit under by role, so that one is a count, not a failure);
+//   4.5 otherwise, by the painted size; a disabled control's text owes none, WCAG 1.4.3's
+//   inactive exception);
+// - the type floors, by the painted size (the 10 px source floor; 12 px body, which 11 px
+//   small and 10 px caption text may sit under by role, so that one is a count, not a
+//   failure);
+// - whether a text that does not fit is cut, truncated on purpose, or scrolled (a text
+//   field's own value scrolls: the caret reaches what does not fit);
 // - the touch targets against 44 pt on the iOS row and 48 dp on the Android row, whose
 //   visible box is all a browser can see ("hitSlop unobservable": a native skin may
 //   extend its target past it), and against WCAG 2.5.8's 24 px on the web row;
@@ -239,11 +246,24 @@ export function resolveContrast(
 
 // --- One row --------------------------------------------------------------------
 
-/** A text leaf as the probe read it: an element with text of its own. */
+/** Which of a form control's own texts a text is: the DOM holds these in no text node. */
+export interface FieldPart {
+  control: "input" | "textarea" | "select";
+  /** A field's value (a select's chosen label), or its placeholder while that shows. */
+  part: "value" | "placeholder";
+}
+
+/** A text leaf as the probe read it: an element with text of its own, or a form control's. */
 export interface RawText {
   text: string;
   box: Box;
+  /** The computed font size, CSS px (an SVG text's in its user units). */
   size: number;
+  /**
+   * The scale its glyphs paint at vertically: every transform above it composed (an SVG
+   * text's screen CTM, its viewBox included). 1 when nothing scales it.
+   */
+  scale: number;
   weight: number;
   family: string;
   /** The computed text colour (an SVG text's fill). */
@@ -251,6 +271,8 @@ export interface RawText {
   /** An SVG text's fill-opacity; 1 for HTML text. */
   colorAlpha: number;
   svg: boolean;
+  /** Set when the text is a form control's value or placeholder rather than a text node. */
+  field: FieldPart | null;
   ariaHidden: boolean;
   disabled: boolean;
   /** The opacity groups it paints inside, outermost first. */
@@ -293,13 +315,23 @@ export interface RawRow {
 export interface ProbeText {
   text: string;
   box: Box;
+  /**
+   * The size it paints at, CSS px: `computedSize` times `scale`, to 1/100. The floors and
+   * the large-text threshold are judged on this.
+   */
   size: number;
+  /** The computed font size, before any transform. */
+  computedSize: number;
+  /** The scale its glyphs paint at (1 when nothing scales it). */
+  scale: number;
   weight: number;
   family: string;
   color: string;
   /** The opacity it paints at: every group it is inside, multiplied. */
   opacity: number;
   svg: boolean;
+  /** A form control's value or placeholder, when that is what the text is. */
+  field?: FieldPart;
   ariaHidden: boolean;
   disabled: boolean;
   /** The resolved background as `rgb(...)`, or "indeterminate". */
@@ -314,7 +346,10 @@ export interface ProbeText {
   underBodyFloor: boolean;
   /** Cut by a box that hides overflow (its own, without an ellipsis, or an ancestor's). */
   clipped: { by: "self" | "ancestor"; overflow: string; excess: number } | null;
-  /** Running out of a scrolling ancestor: reachable by scrolling, so counted, not flagged. */
+  /**
+   * Reachable by scrolling, so counted, not flagged: running out of a scrolling ancestor, or
+   * a text field's value running past its content box (`overflow: "field"`).
+   */
   scrolled: { overflow: string; excess: number } | null;
   truncated: boolean;
   covered: boolean;
@@ -337,28 +372,50 @@ export interface ProbeRow {
 
 const SCROLLING = new Set(["auto", "scroll"]);
 
+/** The size a text paints at: its computed size times its glyph scale, to 1/100 px. */
+export function paintedSize(computedSize: number, scale: number): number {
+  return Math.round(computedSize * scale * 100) / 100;
+}
+
+/**
+ * Whether a control's text that runs past its content box can still be reached: a text
+ * field's value scrolls under the caret, while a placeholder and a select's label are cut.
+ */
+export function fieldScrolls(field: FieldPart | null): boolean {
+  return field !== null && field.part === "value" && field.control !== "select";
+}
+
 export function deriveText(raw: RawText, groupOpacity: readonly number[]): ProbeText {
   const opacity = raw.groups.reduce((product, id) => product * (groupOpacity[id] ?? 1), 1);
   const weight = renderedWeight(raw.family, raw.weight);
-  const required = requiredContrast(raw.size, weight);
+  const size = paintedSize(raw.size, raw.scale);
+  const required = requiredContrast(size, weight);
   const resolution: Resolution = raw.stack
     ? resolveContrast({ color: raw.color, alpha: raw.colorAlpha, groups: raw.groups }, raw.stack, groupOpacity)
     : { indeterminate: raw.stackNote ?? "no paint stack" };
   const resolved = "contrast" in resolution ? resolution : null;
-  const selfCut = raw.selfOverflow !== null && raw.clipsSelf && Math.max(raw.selfOverflow.x, raw.selfOverflow.y) > OVERFLOW_TOLERANCE;
+  const selfExcess = raw.selfOverflow ? Math.max(raw.selfOverflow.x, raw.selfOverflow.y) : 0;
+  const selfCut = raw.clipsSelf && selfExcess > OVERFLOW_TOLERANCE;
+  const scrollsItself = fieldScrolls(raw.field);
   const clipper = raw.clipper && raw.clipper.excess > OVERFLOW_TOLERANCE ? raw.clipper : null;
   let clipped: ProbeText["clipped"] = null;
-  if (selfCut && !raw.ellipsis) clipped = { by: "self", overflow: "self", excess: Math.max(raw.selfOverflow!.x, raw.selfOverflow!.y) };
+  if (selfCut && !raw.ellipsis && !scrollsItself) clipped = { by: "self", overflow: "self", excess: selfExcess };
   else if (clipper && !SCROLLING.has(clipper.overflow)) clipped = { by: "ancestor", overflow: clipper.overflow, excess: clipper.excess };
+  let scrolled: ProbeText["scrolled"] = null;
+  if (selfCut && scrollsItself) scrolled = { overflow: "field", excess: selfExcess };
+  else if (clipper && SCROLLING.has(clipper.overflow)) scrolled = { overflow: clipper.overflow, excess: clipper.excess };
   return {
     text: raw.text,
     box: raw.box,
-    size: raw.size,
+    size,
+    computedSize: raw.size,
+    scale: raw.scale,
     weight,
     family: raw.family,
     color: raw.color,
     opacity: Math.round(opacity * 1000) / 1000,
     svg: raw.svg,
+    ...(raw.field ? { field: raw.field } : {}),
     ariaHidden: raw.ariaHidden,
     disabled: raw.disabled,
     background: resolved ? rgbString(resolved.background) : "indeterminate",
@@ -366,11 +423,11 @@ export function deriveText(raw: RawText, groupOpacity: readonly number[]): Probe
     contrast: resolved ? resolved.contrast : null,
     required,
     contrastFails: resolved !== null && !raw.disabled && resolved.contrast < required,
-    belowSourceFloor: raw.size < SOURCE_FLOOR,
-    underBodyFloor: raw.size < BODY_FLOOR,
+    belowSourceFloor: size < SOURCE_FLOOR,
+    underBodyFloor: size < BODY_FLOOR,
     clipped,
-    scrolled: clipper && SCROLLING.has(clipper.overflow) ? { overflow: clipper.overflow, excess: clipper.excess } : null,
-    truncated: selfCut && raw.ellipsis,
+    scrolled,
+    truncated: selfCut && raw.ellipsis && !scrollsItself,
     covered: raw.covered,
   };
 }
