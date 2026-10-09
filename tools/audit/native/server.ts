@@ -95,6 +95,11 @@ export interface CellRecord {
   seconds: number;
   segments: number;
   a11y?: "ok" | "skipped" | string;
+  /**
+   * When the cell finished (ISO), so the reviewer index (tools/audit/index.ts) can tell the
+   * newest capture of a cell across runs from the cell itself rather than from its run.
+   */
+  at: string;
 }
 
 interface Segment {
@@ -282,7 +287,8 @@ export async function startAuditHost(runs: PlatformRun[], options: HostOptions):
   const bySession = (session: string | null) => [...states.values()].find((s) => s.session !== null && s.session === session);
   const total = (s: RunState) => s.queue.length;
 
-  async function record(s: RunState, rec: CellRecord) {
+  async function record(s: RunState, entry: Omit<CellRecord, "at">) {
+    const rec: CellRecord = { ...entry, at: new Date().toISOString() };
     s.records.push(rec);
     await appendFile(join(s.dir, "cells.jsonl"), `${JSON.stringify(rec)}\n`);
     events.cell(s.platform, rec, s.records.length, total(s));
