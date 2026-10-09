@@ -80,7 +80,7 @@ describe("rendering", () => {
         row("web/x/retired/phone.blush.solid"),
       ],
       runs: [web, newer],
-      sheets: { variants: new Map([["default", ["card-glass.jpg", "card-solid.jpg", "compare.jpg", "native.jpg", "row-web-phone.jpg"]]]), component: ["states.jpg"] },
+      sheets: { variants: new Map([["default", ["card-glass.jpg", "card-solid.jpg", "compare.jpg", "native.jpg", "row-web-phone.jpg"]], ["ghost", ["card-solid-1.jpg", "card-solid-10.jpg", "card-solid-2.jpg", "compare-glass.jpg", "row-ios-phone-1.jpg", "row-ios-phone-2.jpg"]]]), component: ["states.jpg"] },
       builtAt: "2026-10-09T12:00:00.000Z",
       root: ROOT,
     };
@@ -92,6 +92,7 @@ describe("rendering", () => {
     expect(md).toContain("| [20261009-100000-web-aaaaaaa](../../runs/20261009-100000-web-aaaaaaa/manifest.json) | web | 2026-10-09T10:00:00.000Z | 00d04a7 (dirty) | d824fbb9fb3c | static export | complete | 3 |");
     expect(md).toContain("| [20261009-110000-web-bbbbbbb](../../runs/20261009-110000-web-bbbbbbb/manifest.json) | web | 2026-10-09T10:00:00.000Z | bbbbbbb | eeeeeeeeeeee | static export | complete | 1 |");
     expect(md).toContain("| `default` | [solid](sheets/default/card-solid.jpg), [glass](sheets/default/card-glass.jpg) | web [phone](sheets/default/row-web-phone.jpg) | [native](sheets/default/native.jpg) | [solid](sheets/default/compare.jpg) |");
+    expect(md).toContain("| `ghost` | solid ([1](sheets/ghost/card-solid-1.jpg), [2](sheets/ghost/card-solid-2.jpg), [10](sheets/ghost/card-solid-10.jpg)) | ios phone ([1](sheets/ghost/row-ios-phone-1.jpg), [2](sheets/ghost/row-ios-phone-2.jpg)) | - | [glass](sheets/ghost/compare-glass.jpg) |");
     expect(md).toContain("Interaction states: [states.jpg](sheets/states.jpg)");
     expect(md).toContain("| [web/x/default/phone.blush.solid](../../runs/20261009-110000-web-bbbbbbb/web/x/default/phone.blush.solid/card.png) | ok | axe, contrast-likely | 1/2/0/0 | 10 | 0/2/1 | - | 0 | 3 | 1 | - | 20261009-110000-web-bbbbbbb | bbbbbbb | eeeeeeeeeeee |");
     expect(md).toContain("| web/x/ghost/phone.blush.solid | failed: rail \\| selected no tab | failed | - | - | - | - | - | - | - | - | 20261009-100000-web-aaaaaaa | aaaaaaa | ffffffffffff |");

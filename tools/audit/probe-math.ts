@@ -327,6 +327,13 @@ export interface ProbeText {
   weight: number;
   family: string;
   color: string;
+  /**
+   * The alpha its glyphs paint with beside the colour's own: an SVG text's fill-opacity, a
+   * placeholder's own opacity, 1 for every other text. With `color` and `opacity` it is the
+   * ink as painted, which the analysis composites over the photographed background where the
+   * DOM could not resolve one. Absent from probes written before it was recorded.
+   */
+  colorAlpha?: number;
   /** The opacity it paints at: every group it is inside, multiplied. */
   opacity: number;
   svg: boolean;
@@ -413,6 +420,7 @@ export function deriveText(raw: RawText, groupOpacity: readonly number[]): Probe
     weight,
     family: raw.family,
     color: raw.color,
+    colorAlpha: raw.colorAlpha,
     opacity: Math.round(opacity * 1000) / 1000,
     svg: raw.svg,
     ...(raw.field ? { field: raw.field } : {}),
