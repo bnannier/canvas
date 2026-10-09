@@ -178,6 +178,14 @@ as "by design".
 | `bun run audit:native:build -- --platform=ios,android` | builds the Canvas Audit app (the docs with the capture driver) in Release and installs it on the booted simulator and emulator, leaving the docs app's own `docs/ios` and `docs/android` as they were; `--incremental` reuses the parked native project while the native inputs are unchanged, `--dev` builds Debug for the fix loop |
 | `bun run audit:native -- --platform=ios,android` | photographs every component example and every pattern and template page on the devices in all six looks and surfaces; `--only`, `--looks`, `--surfaces`, `--a11y=none\|default\|all`, `--devices`, `--dev`, `--keep-motion` |
 | `bun run audit:web` | captures the web cells into a new run under `.audit/runs/` (see "Capturing on the web" below); `--only`, `--variants`, `--looks`, `--surfaces`, `--widths` narrow it, `--axe`, `--base`, `--workers` and `--allow-stale` tune it, `--help` lists them |
+| `bun run audit:analyze` | writes `analysis.json` beside the newest capture of every cell (see "Analysis, contact sheets and the index" below) |
+| `bun run audit:sheets` | writes the contact sheets under `.audit/current/<slug>/sheets/` |
+| `bun run audit:index` | writes `.audit/current/<slug>/index.md`, `SUMMARY.md` and `current.json` |
+| `bun run audit:prune` | deletes old runs, keeping the newest two captures of every cell (`--keep`, `--dry-run`) |
+
+The last four take `--only=<slugs>` (component slugs, page ids such as `template-signin`, or a
+page's slug; an unknown name is refused) and `--run=<run ids>` (a run's directory name, or a
+prefix naming exactly one).
 
 When a kit change alters a fact (a new test, a skin that stops aliasing the web skin, a
 reference row, a materials entry), run `bun run audit:checklists` and commit the result,
@@ -361,7 +369,8 @@ A run writes one directory per platform:
 .audit/runs/<stamp>-<ios|android>-<sha7>/
   manifest.json      device, app build identity, both fingerprints, options, device changes made and undone,
                      counts, timings, and why the run ended early (refused, abandoned) if it did
-  cells.jsonl        one line per cell as it finishes: status, attempts, seconds, segments, a11y
+  cells.jsonl        one line per cell as it finishes: status, attempts, seconds, segments, a11y,
+                     and when it finished (`at`; a run recorded before the stamp has none)
   driver-log.jsonl   console problems the app raised between items
   <platform>/<slug>/<variant>/<look>.<surface>/
     screen.png       the whole screen (screen-2.png and on for later segments)
@@ -465,9 +474,98 @@ development app installed.
   largest difference 0.06 on iOS and 0 on Android, against the 0.1 threshold), so no cell
   needed a third grab and none was marked unstable.
 
-The interaction-state recipes and page shots (1d), analysis and contact sheets (1e,
-`audit:sheets`, `audit:index`) and the fixer loop (1h) are still to come; until they land,
-cells are ticked only from the photographs these two runners take.
+## Analysis, contact sheets and the index
+
+Three commands turn the runs into what a reviewer reads, and a fourth keeps the disk in
+check. All four read the runs through one module (`tools/audit/runs.ts`), so they agree on
+what the **current capture** of a cell is: the newest one across every run under
+`.audit/runs/`, by when its record says it finished (`at`, which the web cells and the
+native host both write; a native record older than that stamp takes its run's start), then
+its run's start, then its line in `cells.jsonl`. A partial re-capture (`--only`,
+`--variants`) therefore replaces exactly the cells it took, and every other cell stays at
+the run that took it last. The newest record wins whatever its status: a cell that failed on
+its latest capture shows as failed, not as an older photograph. The readers already know the
+interaction-state and page layouts (`web-states/<slug>/[<variant>/]<state>/<leaf>`,
+`<platform>-pages/<kind>-<slug>/[<section>/]<leaf>`, a record whose status or flag is
+`state-not-reached` having no photograph), so those runs are taken in when they exist.
+
+1. `bun run audit:analyze` (`tools/audit/analyze.ts`) writes `analysis.json` beside each
+   current cell's `probe.json`. Derived data: it is rewritten on every run, since a cell's
+   structure verdict depends on its peers' current captures.
+   - **Contrast.** Where the probe resolved a text's background from the DOM, its verdict
+     stands (method `dom`: fail under the 4.5 or 3 it owes). Where the DOM could not say (a
+     backdrop filter, a gradient, an image: every glass cell), the text is sampled from
+     `card.png` (method `pixels`): its box in device pixels, narrowed to the ink inside it
+     (every pixel at least 1.25 in contrast from the box's median, one pixel of margin), and
+     the 10th and 90th luminance percentiles of that read as ink and background. Sampling
+     reads thin glyphs low, so it never says "fail": under 8/9 of what the text owes (4.0 for
+     4.5, 2.67 for 3) is `fail-likely`, from there to what it owes `review`. A disabled
+     control's text owes nothing (WCAG 1.4.3's inactive exception); a text something paints
+     over, or one scrolled partly out of its scroller's view, is not sampled. Calibrated on
+     the solid cells of the run below, where the DOM gives the answer, over 5,199 texts: the
+     pixel reading was never more than 1.1% above the DOM's, all 12 DOM fails read
+     `fail-likely`, and of 5,187 DOM passes 10 read `fail-likely` and 39 `review` (the worst
+     a two-line email whose ragged second line leaves the ink a small share of its box).
+     Without the narrowing to the ink, 102 passes read `fail-likely`.
+   - **Type.** The smallest painted size (the probe's computed size times its glyph scale)
+     and the counts under the 10 px source floor and the 12 px body floor.
+   - **Targets.** Per row of the browser card, the interactive boxes under 24 px (web), 44 pt
+     (iOS) and 48 dp (Android; a hitSlop is not observable); on an Android device, the nodes
+     a user acts on (clickable or checkable) under 48 dp in the accessibility dump.
+   - **Structure invariance.** The web row's `ariaSnapshot()` must be the same across the
+     looks and surfaces of one variant at one width. The most common snapshot of the group
+     is the group's (a tie goes to blush solid's); a cell that differs is flagged
+     `structure-varies` with the first line that differs.
+   - **Native accessibility.** Android: every clickable or checkable node is named by its
+     own label or by a named node inside it, as TalkBack reads it. iOS: XCUITest through
+     Maestro reports no traits, so the check is that no element is announced by its value
+     alone.
+   - **Flags.** The capture's own (`render-failed`, `problems`, `text-floor`, `contrast`,
+     `clipped-text`, `small-target`, `small-visible-target`, `overflow`, `axe`) and the
+     analysis' (`contrast-likely`, `contrast-review`, `structure-varies`, `state-not-reached`;
+     on a device `failed`, `unstable`, `problems`, `a11y-unnamed`, `a11y-error`,
+     `small-visible-target`).
+2. `bun run audit:sheets` (`tools/audit/sheets.ts`) writes JPEG contact sheets under
+   `.audit/current/<slug>/sheets/`: per variant `card-solid.jpg` and `card-glass.jpg` (the
+   browser card, widths x looks), `row-<ios|android|web>-<width>.jpg` (one row of the browser
+   card cut at its box in `probe.json`, looks x surfaces), `native.jpg` (the iOS and Android
+   device cards x the six looks and surfaces), `compare.jpg` and `compare-glass.jpg` (per
+   look, the browser's iOS row at phone width beside the iOS device's card, and the same for
+   Android); per component `states.jpg` (`states-<width>.jpg` for further widths) when states
+   were captured. Every tile is labelled with its cell id; a cell that failed, was not
+   reached or was never captured is a labelled placeholder. No sheet's long edge passes
+   1600 px: the tiles share one scale (relative sizes stay true, a phone card narrower than a
+   desktop one), no more than the sharpest source's own density, in whichever orientation
+   scales them larger. A sheet with no picture is not written, and a variant's sheets
+   directory is emptied before it is written. The 3 x 3 card sheets of a tall card are an
+   overview of the layout only (data-table's `stacked` card sheet tiles at 0.26 px a CSS px);
+   its row sheets are where its text is read.
+3. `bun run audit:index` (`tools/audit/index.ts`) writes `.audit/current/<slug>/index.md` per
+   component, pattern or template: the checklist, the sheets, the runs its cells come from
+   (commit, source fingerprint, what served them), its flag counts, and one row per cell
+   with its status, flags, axe violations by impact, smallest painted font, contrast (DOM
+   fails, pixel fail-likely, pixel review), overflow, clipped text, small targets, console
+   problems, a state not reached, and its run, commit and fingerprint. `SUMMARY.md` ranks every
+   captured component by its cells' flags and names the ones never captured; `current.json`
+   is the same selection for tools. A cell's flags are its analysis' when the analysis is of
+   that capture, else the capture's own, and the index says how many are not analyzed.
+   `--only` narrows the `index.md` files written; `SUMMARY.md` and `current.json` are always
+   rebuilt whole.
+4. `bun run audit:prune` (`tools/audit/prune.ts`) deletes a run only when nothing a reviewer
+   needs is in it: it is not one of the newest `--keep` (default 2) runs of its platform, it
+   has finished, and every cell it holds has at least `--keep` newer captures in other runs.
+   The newest two captures of every cell (the before and the after) survive, a full sweep is
+   never deleted while a later partial re-capture covers only some of it, and the current
+   view never loses a cell. `--dry-run` says what would go and why the rest stays.
+
+Measured on 2026-10-09 over `--only=button,switch,data-table` (684 web cells from a fresh
+export, 126 iOS and 126 Android cells copied from the 1g runs): `audit:analyze` 2.9 s for 936
+cells (5,325 texts sampled from pixels), `audit:sheets` 17.8 s for 515 sheets of 38 variants
+(55 MB, 109 KB a sheet, tile scales 0.26 to 2.17 px per layout unit, median 1.08),
+`audit:index` 0.2 s.
+
+The interaction-state recipes and page shots (1d) and the fixer loop (1h) are still to come;
+until the state runner lands, `states.jpg` is never written.
 
 A fixer re-captures one component with
 `bun run audit:web -- --only=<slug> --base=http://localhost:8081` against this checkout's
