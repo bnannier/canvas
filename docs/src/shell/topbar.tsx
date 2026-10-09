@@ -77,7 +77,7 @@ export function Topbar({ showMenu, onMenu, onSearch }: { showMenu: boolean; onMe
       actions={<>
         {onSearch ? (wideEnough ?
           <Button secondary small iconLeft={<Icon search />} iconRight={<Kbd>⌘K</Kbd>} onPress={onSearch}>Search components...</Button> :
-          <Button ghost icon small accessibilityLabel="Search" iconLeft={<Icon search />} onPress={onSearch} />) : null}
+          <Button ghost icon small accessibilityLabel="Search components" iconLeft={<Icon search />} onPress={onSearch} />) : null}
         <Button ghost icon small accessibilityLabel="View Canvas on GitHub" iconLeft={<Github size={16} color={tokens.foreground} />} onPress={() => Linking.openURL(REPO_URL)} />
         {!liquidGlassAvailable() ? <ButtonGroup segmented small accessibilityLabel="Surface" items={["Solid", "Glass"]} active={surface === "solid" ? 0 : 1} onSelect={(i) => setSurface(i === 0 ? "solid" : "glass")} /> : null}
         <Button ghost icon small accessibilityLabel="Toggle color scheme" iconLeft={scheme === "dark" ? <Icon sun /> : <Icon moon />} onPress={toggleScheme} />

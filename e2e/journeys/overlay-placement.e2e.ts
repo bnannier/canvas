@@ -25,8 +25,12 @@ for (const width of [1280, 390]) for (const scheme of ["light", "dark"] as const
     const actual = (await geometry())!;
     const anchor = (await trigger.boundingBox())!;
     expect(anchor.width).toBeGreaterThan(260);
-    const band = (await page.getByTestId("overlay-content-band").boundingBox())!;
-    expect(actual.card.width).toBeCloseTo(Math.min(anchor.width, band.width - 16), 0);
+    // The card asks for its trigger's width and the kit fits it 8px inside each edge
+    // of its frame's outlet: the page-level OverlayProvider, which fills the page
+    // scroller's content box (the Container gutters sit inside it, so the content
+    // band is narrower than the frame and is not what the clamp measures).
+    const outlet = await page.locator("[data-page-scroll]").evaluate((node) => node.clientWidth);
+    expect(actual.card.width).toBeCloseTo(Math.min(anchor.width, outlet - 16), 0);
     expect(actual.card.x).toBeGreaterThanOrEqual(0);
     expect(actual.card.right).toBeLessThanOrEqual(width);
     await expect(panel.getByRole("button", { name: "Close details", exact: true })).toBeInViewport({ ratio: 1 });

@@ -45,7 +45,11 @@ for (const width of [1280, 390]) {
 }
 
 test("search preserves resize state, description matches, shortcuts and the chosen row", async ({ page }) => {
-  await gotoDocs(page, "/tokens/colors");
+  // The journey starts on the desktop shell, the only one whose banner carries the
+  // search opener (the phone shell puts search in the tab bar), so the width is
+  // pinned here: the touch projects open at a device viewport, not the suite's
+  // desktop default, and the resize below is the journey itself.
+  await gotoDocs(page, "/tokens/colors", { viewport: { width: 1280, height: 900 } });
   const opener = page.getByRole("banner").getByRole("button", { name: /Search components/ });
   await opener.click();
   const input = page.getByRole("textbox", { name: "Search components", exact: true });
