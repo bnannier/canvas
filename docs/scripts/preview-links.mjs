@@ -3,6 +3,8 @@
 // that link on a booted iOS simulator or Android emulator. Nothing here listens,
 // spawns or reads the environment, so tools/docs/preview-server.test.ts pins it all.
 
+import { join } from "node:path";
+
 export const SCHEME = "canvas";
 
 /** Each appearance axis a link may carry, with the values the docs accept for it. */
@@ -77,10 +79,27 @@ export function shellCommand(words) {
  * never sees an axis after the first. The remote command is therefore built here as
  * one line with each word quoted for the device's shell, and passed as one argument.
  */
-export function openCommand(platform, url) {
+export function openCommand(platform, url, adb = "adb") {
   const [cmd, args] =
     platform === "ios"
       ? ["xcrun", ["simctl", "openurl", "booted", url]]
-      : ["adb", ["shell", shellCommand(["am", "start", "-a", "android.intent.action.VIEW", "-d", url])]];
+      : [adb, ["shell", shellCommand(["am", "start", "-a", "android.intent.action.VIEW", "-d", url])]];
   return { cmd, args, manual: shellCommand([cmd, ...args]) };
+}
+
+/**
+ * The adb to run, found the way Expo CLI finds the SDK: `$ANDROID_HOME`, then
+ * `$ANDROID_SDK_ROOT`, then the default SDK location, each with platform-tools/adb.
+ * Bare `adb` (a PATH lookup) is the last resort, since a dev server started from an
+ * editor or a login item often has no platform-tools on its PATH. The caller hands in
+ * the environment and the file check, so this module still reads neither.
+ */
+export function adbPath(env, exists) {
+  const roots = [env.ANDROID_HOME, env.ANDROID_SDK_ROOT, env.HOME && join(env.HOME, "Library", "Android", "sdk")];
+  for (const root of roots) {
+    if (!root) continue;
+    const adb = join(root, "platform-tools", "adb");
+    if (exists(adb)) return adb;
+  }
+  return "adb";
 }
