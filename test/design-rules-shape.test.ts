@@ -8,7 +8,7 @@ import { platformBlocks, platformValue, type PlatformKey } from "../tools/tokens
 import { SKIN_FAMILIES, normalize, type SkinFamily } from "../tools/tokens/skin-families.ts";
 import { COMPONENT_ROLES, CONCENTRIC_CORNERS, HANDOFF_SHAPE_TOKENS, NESTED_CORNERS, SHAPE_ROLES, type CornerSource, type ShapeRole } from "../tools/tokens/shape-roles.ts";
 import { CornerSites, type CornerValue } from "../tools/tokens/corner-sites.ts";
-import { componentOf, cornerVerdict, platformOf, siteOf } from "../tools/tokens/corner-rules.ts";
+import { componentOf, cornerVerdict, siteOf } from "../tools/tokens/corner-rules.ts";
 import { cornerClaims, handoffClaims } from "../tools/tokens/corner-comments.ts";
 
 // Design rules, shape side: every corner in the kit is a role of the row of the platform

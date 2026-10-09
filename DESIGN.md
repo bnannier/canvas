@@ -894,7 +894,9 @@ less the inset between them. Nothing else: not a number that happens to equal a 
 half of a height, not a step of the `radius` ladder (that ladder is the app's, which Image
 and Video take through their `radius` prop). A skin reads only its own platform's row,
 and only the roles its component draws, listed below; a part a native skin draws the
-web's way, where the platform ships no control for it, shares the web skin's part.
+web's way, where the platform ships no control for it, shares the web skin's part (the
+same part of the web skin draws it from the same place), and a constant no platform names
+is drawn by every skin that uses it.
 
 <!-- @generated:shape-roles -->
 | Role | Drawn by |
