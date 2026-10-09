@@ -10,8 +10,10 @@
  * one a trailing comment ends; tools/tokens/corner-sites.ts says what that code draws), and
  * every corner a hand-off comment states to the corner tokens it introduces. So a number in
  * a comment sits on the element that draws it: a comment over a menu card states the card's
- * corner, never its rows', and a module's header comment, which sits on an import or a type,
- * names roles ("the field corner", "a capsule") rather than numbers.
+ * corner, never its rows', and a comment over code that holds several elements with corners
+ * of their own (a whole skin) states a number only every one of them draws (`claimHolds`). A
+ * module's header comment, which sits on an import or a type, names roles ("the field
+ * corner", "a capsule") rather than numbers.
  *
  * Source comments are read from the TypeScript parse tree, so a URL or a string that looks
  * like a comment is not one, and no template literal hides the comments after it. Square
@@ -69,6 +71,20 @@ const CLAIMS = [
 ];
 
 const SHAPES = new Set([0, 999, 9999]);
+
+/**
+ * Whether a corner a comment states is the one the code it sits on draws, given the corners
+ * that code draws by element (`CornerSites.cornersIn`, or a table's rows). A number sits on
+ * the element that draws it, so where the code holds several elements with a corner of their
+ * own, the number has to be every one's: a comment over a whole skin whose outline draws 12
+ * and whose inline editor draws 8 cannot say which a "12pt corner" is, and states it on the
+ * element instead. An element that draws only square or the pill is a shape, not a corner of
+ * its own, and leaves the claim alone, as the claims themselves leave those numbers out.
+ */
+export function claimHolds(value: number, elements: ReadonlyMap<string, ReadonlySet<number>>): boolean {
+  const own = [...elements.values()].filter((set) => [...set].some((n) => !SHAPES.has(n)));
+  return own.length > 0 && own.every((set) => set.has(value));
+}
 
 /**
  * A comment's text with each line break and the comment marker that opens the next line

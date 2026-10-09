@@ -10,7 +10,7 @@ import { SKIN_FAMILIES, normalize, type SkinFamily } from "../tools/tokens/skin-
 import { COMPONENT_ROLES, CONCENTRIC_CORNERS, HANDOFF_SHAPE_TOKENS, NESTED_CORNERS, SHAPE_ROLES, SHARED_PARTS, type CornerSource, type ShapeRole } from "../tools/tokens/shape-roles.ts";
 import { CornerSites, platformOf, type CornerValue, type DrawnPlace } from "../tools/tokens/corner-sites.ts";
 import { componentOf, cornerVerdict, partOf, siteOf } from "../tools/tokens/corner-rules.ts";
-import { cornerClaims, handoffClaims } from "../tools/tokens/corner-comments.ts";
+import { claimHolds, cornerClaims, handoffClaims } from "../tools/tokens/corner-comments.ts";
 import { referenceKeyFor, referenceRows, type ReferenceCell } from "../tools/audit/facts.ts";
 import { COMPONENTS } from "../docs/src/core/data/components.ts";
 
@@ -235,15 +235,17 @@ describe("every corner in the kit", () => {
 describe("the comments state the corners the code draws", () => {
   // A number a comment states is a corner the code it sits on draws: the node it leads, or
   // the one a trailing comment ends (tools/tokens/corner-comments.ts), and what that node
-  // draws is what the corner scan found there (tools/tokens/corner-sites.ts). A comment in
-  // the file that defines the tables states the values of the rows it sits on.
+  // draws is what the corner scan found there, by element (tools/tokens/corner-sites.ts).
+  // Over several elements with corners of their own, the number is every one's
+  // (`claimHolds`). A comment in the file that defines the tables states the values of the
+  // rows it sits on, each row an element.
   const TABLES: Record<string, Record<string, Record<string, Record<string, number>>>> = {
     "src/style/tokens.ts": { shape: shape as unknown as Record<string, Record<string, number>> },
     "src/style/platform-shape.ts": { platformShape: platformShape as Record<string, Record<string, number>> },
   };
-  const rowsUnder = (file: string, start: number, end: number): Set<number> => {
+  const rowsUnder = (file: string, start: number, end: number): Map<string, Set<number>> => {
     const sf = ts.createSourceFile(file, readFileSync(join(ROOT, file), "utf8"), ts.ScriptTarget.Latest, true);
-    const out = new Set<number>();
+    const out = new Map<string, Set<number>>();
     const visit = (node: ts.Node) => {
       if (ts.isVariableDeclaration(node) && ts.isIdentifier(node.name) && node.name.text in TABLES[file] && node.initializer) {
         let init: ts.Expression = node.initializer;
@@ -252,7 +254,7 @@ describe("the comments state the corners the code draws", () => {
         for (const row of init.properties) {
           if (!ts.isPropertyAssignment(row) || !ts.isIdentifier(row.name)) continue;
           if (row.getEnd() <= start || row.getStart(sf) >= end) continue;
-          for (const value of Object.values(TABLES[file][node.name.text][row.name.text])) out.add(value);
+          out.set(`${node.name.text}.${row.name.text}`, new Set(Object.values(TABLES[file][node.name.text][row.name.text])));
         }
       }
       ts.forEachChild(node, visit);
@@ -263,7 +265,7 @@ describe("the comments state the corners the code draws", () => {
 
   it("in the source", () => {
     const wrong = cornerClaims(ROOT, files)
-      .filter((c) => !(c.file in TABLES ? rowsUnder(c.file, c.on.start, c.on.end) : sites.cornersIn(corners, c.file, c.on.start, c.on.end)).has(c.value))
+      .filter((c) => !claimHolds(c.value, c.file in TABLES ? rowsUnder(c.file, c.on.start, c.on.end) : sites.cornersIn(corners, c.file, c.on.start, c.on.end)))
       .map((c) => `${c.file}:${c.line} "${c.text}", on \`${c.on.text}\``);
     expect(wrong).toEqual([]);
   });
