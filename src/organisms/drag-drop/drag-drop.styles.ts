@@ -1,5 +1,6 @@
 import { type ViewStyle } from "react-native";
-import { type ColorTokens, shadow, alpha } from "../../style/index.js";
+import { type ColorTokens, shadow, alpha, shape } from "../../style/index.js";
+import { platformShape } from "../../style/platform-shape.js";
 
 // Co-located DragDrop skins, one per platform, all driven by the brand tokens (passed in from
 // useTheme so they follow light/dark and the glass surface). DragDrop is a "Light" treatment:
@@ -29,25 +30,31 @@ export interface DragDropSkin {
 
 // Shared affordances (identical on every platform): the drop ring, the grabbed ring, the
 // insertion line, and the ghost elevation are all brand `primary`, so a Canvas drag reads the
-// same everywhere. Only the handle differs per OS, below.
+// same everywhere. Only the handle differs per OS, below. The drop ring lies over the zone
+// at the card corner, the corner of the surface a zone is.
 function zoneActive(t: ColorTokens): ViewStyle {
-  return { borderWidth: 2, borderColor: t.primary, borderRadius: 10, backgroundColor: alpha(t.primary, 0.06) };
+  return { borderWidth: 2, borderColor: t.primary, borderRadius: shape.web.card, backgroundColor: alpha(t.primary, 0.06) };
 }
 function handleGrabbed(t: ColorTokens): ViewStyle {
   return { borderWidth: 2, borderColor: t.primary, backgroundColor: alpha(t.primary, 0.12) };
 }
+// The insertion line is a capsule along its 2px thickness.
 function indicator(t: ColorTokens): ViewStyle {
-  return { backgroundColor: t.primary, borderRadius: 2 };
+  return { backgroundColor: t.primary, borderRadius: 9999 };
 }
 function ghost(t: ColorTokens): ViewStyle {
-  return { borderRadius: 12, opacity: 0.96, ...shadow("lg", t) };
+  return { borderRadius: platformShape.web.dragGhost, opacity: 0.96, ...shadow("lg", t) };
 }
 
 const CENTER: ViewStyle = { alignItems: "center", justifyContent: "center" };
 
-// Web: a compact 28px grip.
+// The compact grip at the control corner: the web's, and iOS's too, since iOS ships no
+// drag handle control.
+const GRIP: ViewStyle = { ...CENTER, width: 32, height: 32, borderRadius: shape.web.control };
+
+// Web: a compact 32px grip.
 export const webSkin: DragDropSkin = {
-  handle: { ...CENTER, width: 32, height: 32, borderRadius: 8 },
+  handle: GRIP,
   handleIconSize: 16,
   handlePressedOpacity: 0.6,
   zoneActive,
@@ -56,10 +63,10 @@ export const webSkin: DragDropSkin = {
   ghost,
 };
 
-// iOS (HIG): a 32px grip. The row height already meets the 44pt target, so the grip stays
+// iOS (HIG): the 32px grip. The row height already meets the 44pt target, so the grip stays
 // visually compact within it while the whole row remains the comfortable touch area.
 export const iosSkin: DragDropSkin = {
-  handle: { ...CENTER, width: 32, height: 32, borderRadius: 8 },
+  handle: GRIP,
   handleIconSize: 18,
   handlePressedOpacity: 0.6,
   zoneActive,
@@ -70,7 +77,7 @@ export const iosSkin: DragDropSkin = {
 
 // Android (Material 3): a 40px circular grip (the M3 min touch target within a dense row).
 export const androidSkin: DragDropSkin = {
-  handle: { ...CENTER, width: 40, height: 40, borderRadius: 20 },
+  handle: { ...CENTER, width: 40, height: 40, borderRadius: shape.android.control },
   handleIconSize: 20,
   handlePressedOpacity: 0.6,
   zoneActive,

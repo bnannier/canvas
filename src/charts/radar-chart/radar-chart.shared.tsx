@@ -63,6 +63,8 @@ const PLOT = { default: { height: 240, radius: 88 }, compact: { height: 180, rad
 const MIN_AXES = 3;
 const MAX_SERIES = 4;
 const LABEL_W = 84;
+// An axis label around the web.
+const AXIS_LABEL_TYPE = { fontSize: 11, lineHeight: 14 };
 
 export function createRadarChart(skin: ChartSkin) {
   return function RadarChart(props: RadarChartProps) {
@@ -191,8 +193,7 @@ export function createRadarChart(skin: ChartSkin) {
                       top: p.y - 7 + dy * 8,
                       width: w,
                       textAlign: "center",
-                      fontSize: 11,
-                      lineHeight: 14,
+                      ...AXIS_LABEL_TYPE,
                       color: tokens["muted-foreground"],
                     }}
                   >

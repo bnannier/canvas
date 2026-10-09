@@ -297,7 +297,7 @@ components:
     ac-radius: "10px"
     ac-radius-bottom: "10px"
     ac-menu-radius: "12px"
-    ac-row-radius: "10px"
+    ac-row-radius: "8px"
   avatar:
     avatar-square-radius: "8px"
   buttongroup:
@@ -315,9 +315,9 @@ components:
     menu-radius: "12px"
     menu-row-radius: "8px"
   emblem:
-    emblem-radius-small: "10px"
+    emblem-radius-small: "12px"
     emblem-radius-default: "12px"
-    emblem-radius-large: "14px"
+    emblem-radius-large: "12px"
   input:
     field-radius: "10px"
     field-radius-bottom: "10px"
@@ -328,7 +328,7 @@ components:
     select-radius: "10px"
     select-radius-bottom: "10px"
     select-panel-radius: "12px"
-    select-row-radius: "10px"
+    select-row-radius: "8px"
   stepper:
     stepper-btn-radius: "0px"
   textarea:
@@ -391,9 +391,9 @@ components:
     popover-radius: "12px"
     popover-shadow: "var(--shadow-lg)"
   swatch:
-    swatch-radius-small: "10px"
+    swatch-radius-small: "12px"
     swatch-radius-default: "12px"
-    swatch-radius-large: "14px"
+    swatch-radius-large: "12px"
   tooltip:
     tip-radius: "8px"
     tip-shadow: "var(--shadow-md)"
@@ -468,9 +468,9 @@ platformSkins:
     feed:
       feed-radius: "12px"
     gridlist:
-      grid-gallery-radius: "10px"
+      grid-gallery-radius: "12px"
     mediaobject:
-      media-radius: "10px"
+      media-radius: "12px"
       media-icon-radius: "8px"
     stackedlist:
       list-shadow: none
@@ -506,9 +506,9 @@ platformSkins:
     popover:
       popover-radius: "26px"
     command:
-      cmd-radius: "16px"
+      cmd-radius: "12px"
     datatable:
-      table-radius: "10px"
+      table-radius: "12px"
     draghandle:
       drag-handle-size: "32px"
       drag-handle-radius: "8px"
@@ -621,12 +621,12 @@ platformSkins:
       tip-radius: "4px"
       tip-shadow: none
     command:
-      cmd-radius: "8px"
+      cmd-radius: "12px"
     datatable:
-      table-radius: "8px"
+      table-radius: "12px"
     draghandle:
       drag-handle-size: "40px"
-      drag-handle-radius: "20px"
+      drag-handle-radius: "9999px"
       drag-handle-icon: "20px"
     tabbar:
       tabbar-radius: "0px"
@@ -832,15 +832,16 @@ are a `Row stacks`.
 
 ## Shapes
 
-Corner radius by role and the platform touch minimums, which differ by design. The
-table is `shape` in `src/style/tokens.ts`, and a skin reads its platform's row for every
-corner that plays one of these roles. The web follows Dark Factory: 8 on rectangular
-controls, 10 on fields, 12 on menus and tiles, 14 on cards, 18 on dialogs, 22 on sheets
-and the app shell, and a pill on every capsule. iOS draws capsule controls, 8 on fields,
-12 on cards, 26 on menus, 28 on dialogs, the 38 sheet and the circular selection
-checkbox, with Apple's continuous curve; Material 3 draws stadium controls, 4 on the
-filled field's top corners and on menus, its 12 medium shape on cards and 28 on dialogs
-and sheets.
+Corner radius by role and the platform touch minimums, which differ by design. Every
+corner is a role of its platform's row, named where the corner is written: the roles
+every platform draws are `shape` in `src/style/tokens.ts`, below, and the roles only one
+platform or only the kit draws are that platform's own, in the second table. The web
+follows Dark Factory: 8 on rectangular controls, 10 on fields, 12 on menus and tiles, 14
+on cards, 18 on dialogs, 22 on sheets and the app shell, and a pill on every capsule.
+iOS draws capsule controls, 8 on fields, 12 on cards, 26 on menus, 28 on dialogs, the 38
+sheet and the circular selection checkbox, with Apple's continuous curve; Material 3
+draws stadium controls, 4 on the filled field's top corners and on menus, its 12 medium
+shape on cards and 28 on dialogs and sheets.
 
 <!-- @generated:shapes -->
 | Platform | Control | Field | Card | Dialog | Menu | Sheet | Checkbox | Pill | Tile | Minimum touch target |
@@ -848,6 +849,88 @@ and sheets.
 | web | 8px | 10px | 14px | 18px | 12px | 22px | 6px | 9999px | 12px | 0px |
 | ios | 9999px | 8px | 12px | 28px | 26px | 38px | 9999px | 9999px | 12px | 44px |
 | android | 9999px | 4px | 12px | 28px | 4px | 28px | 2px | 9999px | 12px | 48px |
+<!-- @/generated -->
+
+Each platform's own roles: on the web, Dark Factory's key step on keycaps and inline
+boxes, its chip step on the tooltip, a calendar event and a chart's bar, and the smaller
+chart marks; on iOS, the action sheet, the inset grouped list and the calendar event; on
+Android, each Material 3 component at the step of the M3 scale its spec names, and the
+kit's own Android parts at a step of the same scale.
+
+<!-- @generated:platform-shapes -->
+| Platform | Role | Corner |
+| --- | --- | --- |
+| web | `key` | 6px |
+| web | `tooltip` | 8px |
+| web | `event` | 8px |
+| web | `bar` | 8px |
+| web | `mark` | 4px |
+| web | `cell` | 2px |
+| web | `candle` | 1px |
+| web | `tableHeader` | 10px |
+| web | `dragGhost` | 12px |
+| ios | `actionSheet` | 34px |
+| ios | `groupedList` | 26px |
+| ios | `event` | 6px |
+| android | `chip` | 8px |
+| android | `event` | 8px |
+| android | `sliderTrack` | 8px |
+| android | `tooltip` | 4px |
+| android | `snackbar` | 4px |
+| android | `navigationDrawer` | 16px |
+| android | `sideSheet` | 16px |
+| android | `lane` | 16px |
+| android | `carouselItem` | 28px |
+| android | `codeCell` | 12px |
+| android | `iconBox` | 12px |
+| android | `compactIconBox` | 8px |
+| android | `tabIndicator` | 3px |
+| android | `sliderTrackInner` | 2px |
+<!-- @/generated -->
+
+Beyond a role, a corner is the pill (9999, which rounds every capsule and circle to half
+its shorter side), square, or concentric with what contains it: the container's corner
+less the inset between them. Nothing else: not a number that happens to equal a role, not
+half of a height, not a step of the `radius` ladder (that ladder is the app's, which Image
+and Video take through their `radius` prop). A skin reads only its own platform's row,
+and only the roles its component draws, listed below; a part a native skin draws the
+web's way, where the platform ships no control for it, shares the web skin's part.
+
+<!-- @generated:shape-roles -->
+| Role | Drawn by |
+| --- | --- |
+| `control` | `atoms/autocomplete`, `atoms/avatar`, `atoms/button`, `atoms/button-group`, `atoms/listbox`, `atoms/select`, `atoms/tooltip`, `molecules/alert`, `molecules/alert-dialog`, `molecules/code-block`, `molecules/grid-lists`, `molecules/media-objects`, `molecules/stacked-lists`, `organisms/board`, `organisms/calendar`, `organisms/data-table`, `organisms/dialog`, `organisms/drag-drop`, `organisms/navbars`, `organisms/row-menu`, `organisms/sidebar`, `organisms/tabs`, `organisms/toast`, `style` |
+| `field` | `atoms/autocomplete`, `atoms/input`, `atoms/input-otp`, `atoms/select`, `atoms/stepper`, `atoms/textarea`, `organisms/command`, `organisms/data-table` |
+| `card` | `atoms/skeleton`, `charts/shared`, `molecules/accordion`, `molecules/card`, `molecules/collapsible`, `molecules/description-lists`, `molecules/empty-state`, `molecules/feeds`, `molecules/media-objects`, `molecules/stacked-lists`, `molecules/stats`, `organisms/board`, `organisms/calendar`, `organisms/carousel`, `organisms/data-table`, `organisms/drag-drop`, `organisms/filter-panel`, `organisms/navbars`, `organisms/sidebar` |
+| `dialog` | `molecules/alert-dialog`, `organisms/action-sheet`, `organisms/dialog` |
+| `menu` | `atoms/autocomplete`, `atoms/button-group`, `atoms/dropdown`, `atoms/listbox`, `atoms/popover`, `atoms/select`, `charts/shared`, `organisms/calendar`, `organisms/command`, `organisms/row-menu`, `style` |
+| `sheet` | `organisms/action-sheet`, `organisms/drawer`, `organisms/toast` |
+| `checkbox` | `atoms/checkbox` |
+| `pill` | `atoms/badge`, `atoms/button`, `atoms/button-group`, `atoms/chip`, `atoms/pagination`, `atoms/skeleton`, `organisms/tabs`, `organisms/toast` |
+| `tile` | `atoms/emblem`, `atoms/qrcode`, `atoms/swatch`, `molecules/alert`, `molecules/grid-lists`, `organisms/dashboard-grid` |
+| `key` | `atoms/kbd`, `atoms/skeleton`, `atoms/tooltip`, `atoms/typography`, `charts/heatmap`, `molecules/code-block`, `molecules/media-objects` |
+| `tooltip` | `atoms/tooltip` |
+| `event` | `organisms/calendar` |
+| `bar` | `charts/shared` |
+| `mark` | `charts/sparkline`, `charts/stacked-bar`, `charts/treemap`, `charts/waterfall-chart` |
+| `cell` | `charts/bullet-chart`, `charts/heatmap`, `charts/shared` |
+| `candle` | `charts/candlestick-chart` |
+| `tableHeader` | `organisms/data-table` |
+| `dragGhost` | `organisms/drag-drop` |
+| `actionSheet` | `organisms/action-sheet` |
+| `groupedList` | `atoms/radio`, `molecules/description-lists`, `molecules/stacked-lists`, `organisms/board` |
+| `chip` | `atoms/chip` |
+| `sliderTrack` | `atoms/slider` |
+| `snackbar` | `organisms/toast` |
+| `navigationDrawer` | `organisms/drawer`, `organisms/sidebar` |
+| `sideSheet` | `organisms/filter-panel` |
+| `lane` | `organisms/board` |
+| `carouselItem` | `organisms/carousel` |
+| `codeCell` | `atoms/input-otp` |
+| `iconBox` | `molecules/media-objects` |
+| `compactIconBox` | `molecules/media-objects` |
+| `tabIndicator` | `organisms/tabs` |
+| `sliderTrackInner` | `atoms/slider` |
 <!-- @/generated -->
 
 A nested surface is never rounder than what contains it. Where a control is smaller

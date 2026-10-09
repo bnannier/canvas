@@ -1,5 +1,6 @@
 import { type ViewStyle, type TextStyle } from "react-native";
 import { type ColorTokens, alpha, surfaceRipple, shape } from "../../style/index.js";
+import { platformShape } from "../../style/platform-shape.js";
 import { typeScale } from "../../style/type-scale.js";
 
 // Co-located DataTable skins, one per platform. The table is laid out as flex
@@ -163,6 +164,10 @@ const SELECT_COL: ViewStyle = {
 // A content cell: equal-width column box (padding added per density).
 const DATA_CELL: ViewStyle = { flexGrow: 1, flexShrink: 1, flexBasis: "0%" };
 
+// A row action's icon button corner: the web's control corner, and iOS's too, since no
+// iOS table control draws a row's icon button.
+const ACTION_BUTTON_CORNER: ViewStyle = { borderRadius: shape.web.control };
+
 // ---------- Web: a soft header band over dashed rows ----------
 // The header is a soft 10px-cornered band with sentence-case medium labels, rows
 // are 56px tall at the regular density and separated by DASHED hairlines, status
@@ -175,7 +180,7 @@ export const webSkin: DataTableSkin = {
   liquidTextEntry: true,
   wrap: WRAP,
   borderedOutline: (t) => ({ borderRadius: shape.web.card, borderWidth: 1, borderColor: t.border }),
-  headerRow: (t) => ({ flexDirection: "row", backgroundColor: t.muted, borderRadius: 10 }),
+  headerRow: (t) => ({ flexDirection: "row", backgroundColor: t.muted, borderRadius: platformShape.web.tableHeader }),
   headerRowAttached: { borderRadius: 0 },
   headerPad: {
     compact: { paddingVertical: 8 },
@@ -216,13 +221,13 @@ export const webSkin: DataTableSkin = {
   // Row actions: 36px icon buttons (the pointer web needs no touch minimum);
   // two of them plus the gap and px-12 cell padding set the 108px column.
   actionsColWidth: 108,
-  actionButton: { width: 36, height: 36, borderRadius: shape.web.control, alignItems: "center", justifyContent: "center" },
+  actionButton: { width: 36, height: 36, ...ACTION_BUTTON_CORNER, alignItems: "center", justifyContent: "center" },
   actionIconSize: 16,
   // The inline editor: the 14/20 cell type inside a primary-ringed 36px field.
   editInput: (t) => ({
     alignSelf: "stretch",
     height: 36,
-    borderRadius: 8,
+    borderRadius: shape.web.field,
     borderWidth: 1,
     borderColor: t.primary,
     backgroundColor: t.card,
@@ -246,7 +251,7 @@ export const webSkin: DataTableSkin = {
 // ripple). Below the compact width the table collapses to its primary column.
 export const iosSkin: DataTableSkin = {
   wrap: WRAP,
-  borderedOutline: (t) => ({ borderRadius: 10, borderCurve: "continuous", borderWidth: 1, borderColor: t.border }),
+  borderedOutline: (t) => ({ borderRadius: shape.ios.card, borderCurve: "continuous", borderWidth: 1, borderColor: t.border }),
   headerRow: (t) => ({ flexDirection: "row", backgroundColor: t.muted }),
   headerRowAttached: null,
   headerPad: {
@@ -293,14 +298,14 @@ export const iosSkin: DataTableSkin = {
   // Row actions: 44pt HIG touch targets; two of them plus the gap and px-12
   // cell padding set the column width.
   actionsColWidth: 116,
-  actionButton: { width: 44, height: 44, borderRadius: 8, alignItems: "center", justifyContent: "center" },
+  actionButton: { width: 44, height: 44, ...ACTION_BUTTON_CORNER, alignItems: "center", justifyContent: "center" },
   actionIconSize: 17,
   // The inline editor: the 17/22 SF cell type inside a primary-ringed 32pt field
   // with the continuous iOS corner.
   editInput: (t) => ({
     alignSelf: "stretch",
     height: 32,
-    borderRadius: 6,
+    borderRadius: shape.ios.field,
     borderCurve: "continuous",
     borderWidth: 1,
     borderColor: t.primary,
@@ -327,7 +332,7 @@ export const iosSkin: DataTableSkin = {
 // foreground token at low alpha, NOT the primary tint).
 export const androidSkin: DataTableSkin = {
   wrap: WRAP,
-  borderedOutline: (t) => ({ borderRadius: 8, borderWidth: 1, borderColor: t.border }),
+  borderedOutline: (t) => ({ borderRadius: shape.android.card, borderWidth: 1, borderColor: t.border }),
   headerRow: (t) => ({ flexDirection: "row", backgroundColor: t.muted }),
   headerRowAttached: null,
   headerPad: {
@@ -373,13 +378,13 @@ export const androidSkin: DataTableSkin = {
   // Row actions: 48dp M3 touch targets on a circular state layer (the shell
   // ripples them with controlRipple); two plus the gap and px-12 padding.
   actionsColWidth: 124,
-  actionButton: { width: 48, height: 48, borderRadius: 24, alignItems: "center", justifyContent: "center" },
+  actionButton: { width: 48, height: 48, borderRadius: shape.android.control, alignItems: "center", justifyContent: "center" },
   actionIconSize: 18,
   // The inline editor: the 16/24 body-large cell type in a primary-ringed 36dp field.
   editInput: (t) => ({
     alignSelf: "stretch",
     height: 36,
-    borderRadius: 4,
+    borderRadius: shape.android.field,
     borderWidth: 1,
     borderColor: t.primary,
     backgroundColor: t.background,

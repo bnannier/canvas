@@ -1,6 +1,8 @@
 import { describe, it, expect } from "bun:test";
+import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { Glob } from "bun";
+import ts from "typescript";
 import { READING_FLOOR, TEXT_ROLES, type ReadingRole } from "../tools/tokens/type-roles.ts";
 import { TypeSites, type TypeValue } from "../tools/tokens/type-sites.ts";
 
@@ -33,6 +35,12 @@ function roleOf(v: TypeValue): { key: string; role: ReadingRole } | null {
 }
 
 const where = (v: TypeValue) => `${v.file}:${v.line} ${v.path} (${v.kind}) ${v.value}px`;
+
+/** Whether a node renders UI: a JSX element or fragment anywhere inside it. */
+function rendersJsx(node: ts.Node): boolean {
+  if (ts.isJsxElement(node) || ts.isJsxSelfClosingElement(node) || ts.isJsxFragment(node)) return true;
+  return ts.forEachChild(node, (child) => (rendersJsx(child) ? true : undefined)) ?? false;
+}
 
 describe("the reading floors", () => {
   it("are the design language's", () => {
@@ -71,6 +79,26 @@ describe("every text size in the kit", () => {
       return role && v.value < READING_FLOOR[role.role] ? [`${where(v)} is under the ${role.role} floor of ${READING_FLOOR[role.role]}px`] : [];
     });
     expect(under).toEqual([]);
+  });
+
+  it("declares a role on a text's own style, never on a component or a block of JSX", () => {
+    // A role on a whole component would cover any text added there later, body text included.
+    const blocks: string[] = [];
+    for (const [file, roles] of Object.entries(TEXT_ROLES)) {
+      const sf = ts.createSourceFile(file, readFileSync(join(ROOT, file), "utf8"), ts.ScriptTarget.Latest, true, file.endsWith("x") ? ts.ScriptKind.TSX : ts.ScriptKind.TS);
+      for (const key of Object.keys(roles)) {
+        const name = key.split(".").pop()!;
+        const visit = (node: ts.Node) => {
+          let named: ts.Node | undefined;
+          if ((ts.isVariableDeclaration(node) || ts.isPropertyAssignment(node)) && ts.isIdentifier(node.name) && node.name.text === name) named = node.initializer;
+          else if ((ts.isFunctionDeclaration(node) || ts.isMethodDeclaration(node)) && node.name && ts.isIdentifier(node.name) && node.name.text === name) named = node.body;
+          if (named && rendersJsx(named)) blocks.push(`${file} ${key}`);
+          ts.forEachChild(node, visit);
+        };
+        visit(sf);
+      }
+    }
+    expect(blocks).toEqual([]);
   });
 
   it("leaves no declared role without text under the body floor", () => {

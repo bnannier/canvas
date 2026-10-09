@@ -1,6 +1,7 @@
 import { type ComponentType } from "react";
 import { type ViewStyle, type TextStyle } from "react-native";
 import { surfaceRipple, type ColorTokens, shape } from "../../style/index.js";
+import { platformShape } from "../../style/platform-shape.js";
 import { type CheckboxIndicatorProps } from "../../atoms/checkbox/indicator/shared.js";
 import { type BadgeProps } from "../../atoms/badge/badge.shared.js";
 import { type ButtonProps } from "../../atoms/button/button.shared.js";
@@ -12,9 +13,9 @@ import { type ButtonProps } from "../../atoms/button/button.shared.js";
 // Badge) are NOT re-skinned here: the platform Checkbox/Badge are passed into
 // createFilterPanel by each wrapper.
 //
-//   Web: the established Canvas look (the current panel, lifted verbatim) — 8px
-//     card radius, p-3/p-4 inset, gap-3/gap-5 stacks, 12px / +0.4 tracking
-//     uppercase group headings, no row press feedback (the row was a plain View).
+//   Web: the bordered panel at the card corner, a 12 / 16 inset, 12 / 20 stacks,
+//     12px / +0.4 tracking uppercase group headings, no row press feedback (the row
+//     is a plain View).
 //   iOS (HIG): filters live in a sheet/popover built from standard controls, so
 //     the panel reads as an iOS grouped surface — a softer 12px card radius, the
 //     group heading uses SF-style footnote tracking (slightly tighter), the option
@@ -163,7 +164,7 @@ function androidTitleText(tokens: ColorTokens): TextStyle {
   };
 }
 
-// ---------- Web: the established Canvas look ----------
+// ---------- Web: the bordered panel at the card corner ----------
 export const webSkin: FilterPanelSkin = {
   panelBase: PANEL_BASE,
   // `bordered` wraps the panel as a rounded card: the card corner on the card
@@ -182,7 +183,7 @@ export const webSkin: FilterPanelSkin = {
   titleCluster: TITLE_CLUSTER,
   titleText,
   groupColumn: GROUP_COLUMN,
-  // Extra-small, medium, uppercase, wide tracking, muted (the original look).
+  // Extra-small, medium, uppercase, wide tracking, muted.
   groupTitle: (tokens) => ({
     fontSize: 12,
     lineHeight: 16,
@@ -205,7 +206,7 @@ export const iosSkin: FilterPanelSkin = {
   // continuous (superellipse) corner curve HIG surfaces use (RN iOS-only, no-op on
   // web/Android).
   borderedSurface: (tokens) => ({
-    borderRadius: 12,
+    borderRadius: shape.ios.card,
     borderCurve: "continuous",
     borderWidth: 1,
     borderColor: tokens.border,
@@ -245,9 +246,9 @@ export const iosSkin: FilterPanelSkin = {
 export const androidSkin: FilterPanelSkin = {
   // M3 side sheets docked-modal container width token = 256dp.
   panelBase: ANDROID_PANEL_BASE,
-  // M3 side sheets / large containers use a 16dp corner radius.
+  // M3 side sheets / large containers use the large shape (16dp).
   borderedSurface: (tokens) => ({
-    borderRadius: 16,
+    borderRadius: platformShape.android.sideSheet,
     borderWidth: 1,
     borderColor: tokens.border,
     backgroundColor: tokens.card,

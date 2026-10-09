@@ -1,5 +1,5 @@
 import { type ViewStyle, type TextStyle } from "react-native";
-import { alpha, type ColorTokens } from "../../style/index.js";
+import { alpha, type ColorTokens, shape } from "../../style/index.js";
 import { fieldBorder } from "../../style/field-colors.js";
 import { type StepperSkin, type Size } from "./stepper.shared.js";
 
@@ -19,8 +19,8 @@ import { type StepperSkin, type Size } from "./stepper.shared.js";
 //     1dp `border` outline (a FAINTER alpha outline when disabled, per the M3
 //     disabled treatment), flat (no shadow), 12%-alpha ripple on press, and hitSlop
 //     padding the touch target to the M3 48dp minimum.
-//   Web: the established Canvas look — a single bordered group [ − | value | + ] with
-//     1px divider lines between the slots (the shadcn-ish number field), 6 radius.
+//   Web: a single bordered group [ − | value | + ] with 1px divider lines between the
+//     slots, a number field at the field corner.
 // Disabled dims the whole control (opacity in the shell) and softens the ± glyph to
 // `muted` (handled in the shell).
 
@@ -33,10 +33,10 @@ function fieldText(size: Size): TextStyle {
 
 const ROW_CENTER: ViewStyle = { alignItems: "center", justifyContent: "center" };
 
-// ============================ Web: the established Canvas look ============================
-// A single bordered group [ − | value | + ] with 1px inner dividers, 6 radius, the
-// background fill, and an opacity dim on a pressed ± button (mirrors the kit's other
-// web skins). The glyph is the brand `primary`.
+// ============================ Web: the bordered number field ============================
+// A single bordered group [ − | value | + ] with 1px inner dividers, the field corner
+// (it is a field box, like Input's), the background fill, and an opacity dim on a
+// pressed ± button (mirrors the kit's other web skins). The glyph is the brand `primary`.
 const WEB_HEIGHT: Record<Size, number> = { small: 32, base: 36, large: 40 };
 const WEB_BTN_W: Record<Size, number> = { small: 32, base: 36, large: 40 };
 const WEB_FIELD_W: Record<Size, number> = { small: 48, base: 56, large: 64 };
@@ -51,7 +51,7 @@ export const webSkin: StepperSkin = {
     height: WEB_HEIGHT[size],
     borderWidth: 1,
     borderColor: focused ? t.ring : fieldBorder(t),
-    borderRadius: 6,
+    borderRadius: shape.web.field,
     backgroundColor: t.background,
     overflow: "hidden",
   }),
@@ -75,8 +75,8 @@ export const webSkin: StepperSkin = {
   ripple: null,
   hitSlop: null,
   fieldOnLeft: false,
-  // The established Canvas above-field title (the Field/Form label look): 14/20
-  // medium (500) at base, matching Input's web label scale.
+  // The above-field title (the Field/Form label look): 14/20 medium (500) at base,
+  // matching Input's web label scale.
   labelAbove: (t, size) => ({
     fontSize: size === "large" ? 16 : size === "small" ? 12 : 14,
     lineHeight: size === "large" ? 24 : size === "small" ? 16 : 20,
@@ -109,9 +109,9 @@ export const iosSkin: StepperSkin = {
     flexDirection: "row",
     alignItems: "stretch",
     height: IOS_HEIGHT[size],
-    // Full capsule (radius = height / 2) with Apple's smooth corner curve; the
-    // pre-iOS-26 ~8pt rounded rect is gone. borderCurve is iOS-only (no-op elsewhere).
-    borderRadius: IOS_HEIGHT[size] / 2,
+    // Full capsule (9999 clamps to half the height) with Apple's smooth corner curve;
+    // the pre-iOS-26 ~8pt rounded rect is gone. borderCurve is iOS-only (no-op elsewhere).
+    borderRadius: 9999,
     borderCurve: "continuous",
     backgroundColor: t.secondary,
     overflow: "hidden",

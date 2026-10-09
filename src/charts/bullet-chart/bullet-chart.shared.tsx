@@ -5,6 +5,7 @@ import { type Tone } from "../shared/charts.styles.js";
 import { type ChartSkin } from "../shared/types.js";
 import { CHART_ROOT } from "../shared/chart-frame.js";
 import { formatCompact } from "../shared/chart-math.js";
+import { platformShape } from "../../style/platform-shape.js";
 
 // Shared BulletChart shell. The goal-attainment rows: per datum a leading
 // label, a track holding qualitative background bands (ascending `ranges`
@@ -153,7 +154,7 @@ export function createBulletChart(skin: ChartSkin) {
                           bottom: 0,
                           width: `${pctOf(band.bound, max)}%`,
                           backgroundColor: alpha(tokens["muted-foreground"], band.wash),
-                          borderRadius: 2,
+                          borderRadius: platformShape.web.cell,
                         }}
                       />
                     ))}

@@ -8,6 +8,7 @@ import { DataTable as IOSDataTable } from "../src/organisms/data-table/data-tabl
 import { DataTable as AndroidDataTable } from "../src/organisms/data-table/data-table.android.tsx";
 import { Badge } from "../src/atoms/badge/badge.tsx";
 import { Pressable, Text } from "../src/style/index.js";
+import { platformShape } from "../src/style/platform-shape.ts";
 
 // DataTable behavior: the column model, sorting, row selection, pagination, and
 // the loading/empty states. Rendering is react-native-web under happy-dom, so
@@ -614,16 +615,16 @@ describe("DataTable loading and empty states", () => {
   });
 });
 
-// The web header band: a soft 10px-cornered band when the table stands
-// alone, squared to the frame when the table is framed (its own `bordered`
-// outline, or an `attached` parent frame), so no fill peeks out under the band's
-// bottom corners inside a clipped panel.
+// The web header band: a soft band at its own 10px corner (the web row's `tableHeader`)
+// when the table stands alone, squared to the frame when the table is framed (its own
+// `bordered` outline, or an `attached` parent frame), so no fill peeks out under the
+// band's bottom corners inside a clipped panel.
 describe("DataTable header band framing (web)", () => {
   const band = (container: HTMLElement) => container.querySelector('[role="row"]') as HTMLElement;
 
   it("floats the band with rounded corners when the table stands alone", () => {
     const { container } = ui(<DataTable columns={COLUMNS} rows={ROWS} />);
-    expect(band(container).style.borderRadius).toBe("10px");
+    expect(band(container).style.borderRadius).toBe(`${platformShape.web.tableHeader}px`);
   });
 
   it("`attached` squares the band to a frame the parent draws", () => {

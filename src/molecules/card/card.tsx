@@ -2,7 +2,7 @@ import { createCard, createCardMedia } from "./card.shared.js";
 import { webSkin } from "./card.styles.js";
 
 // Web Card (the base; Metro falls back to it on native, web bundlers resolve it).
-// Keeps the current, established Canvas card look: 8px radius, soft resting shadow.
+// Dark Factory's card: the web card corner and a soft resting shadow.
 /**
  * A content surface, flat, default or raised, compact or comfortable; compose it from
  * CardHeader, CardContent and CardFooter or bring your own structure.

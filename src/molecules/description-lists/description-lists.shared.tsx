@@ -132,10 +132,10 @@ export type BadgeComponent = ComponentType<BadgeProps>;
 export type ButtonComponent = ComponentType<ButtonProps>;
 
 // The per-OS-varying style pieces. Everything else (structure, semantic colors,
-// hairline rules, layout axes) is shared. Web keeps the current Canvas look;
+// hairline rules, layout axes) is shared. Web draws the Catalyst term-value card;
 // iOS follows the iOS 27 kit Lists value rows; Android uses Material 3.
 export interface DescriptionListSkin {
-  /** Card surface corner radius (web 8, iOS 26 inset-grouped, M3 12). */
+  /** Card surface corner radius (the web card corner, the iOS 26 inset grouped list, the M3 card). */
   cardRadius: number;
   /** Card corner curve: iOS continuous (superellipse); circular elsewhere (no-op off iOS). */
   cardCurve: "circular" | "continuous";

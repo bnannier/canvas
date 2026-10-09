@@ -13,7 +13,7 @@ import { type FormSkin } from "./form.shared.js";
 //   - Android: Material 3 has no form component; forms are composed from text
 //     fields, selection controls, and buttons, so the touches follow M3 type
 //     conventions (title weight, supporting-text tracking, field-density rhythm).
-//   - Web: the established Canvas look (shadcn Forms), lifted VERBATIM.
+//   - Web: the shadcn Forms layout.
 //
 // The interactive parts (the composed fields, the Submit/Cancel buttons) are the
 // already-skinned atoms; they bring their own per-OS fidelity (shape, press
@@ -29,7 +29,7 @@ export const flexAuto: ViewStyle = { flexGrow: 1, flexShrink: 1, flexBasis: "aut
 export const twoColumnGap = 16;
 export const twoColumnItem: ViewStyle = { minWidth: 200 };
 
-// ---------- Web: the established Canvas look (lifted verbatim) ----------
+// ---------- Web: the shadcn Forms layout ----------
 // 14/20 semibold section headings with a 12/16 muted description, a right-aligned
 // actions row (gap-2, mt-2), and the gap-4 stacked rhythm.
 export const webSkin: FormSkin = {

@@ -160,7 +160,7 @@ export const webSkin: AutocompleteSkin = {
     flexDirection: "row",
     alignItems: "center",
     gap: 10,
-    borderRadius: 10,
+    borderRadius: shape.web.control,
     paddingHorizontal: 12,
     paddingVertical: 10,
   },

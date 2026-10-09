@@ -16,11 +16,11 @@ import { destructiveText } from "../../style/destructive-text.js";
 // The BRAND survives on every platform: tile tints come from the same item color
 // resolved against the brand tokens, and the type colors are the same semantic
 // tokens. Only the native SHAPE/density/tracking/feedback shift:
-//   Web: the established Canvas look (lifted verbatim) — gallery block radius 6,
-//     gap 14 (compact 8), tile padding 20 (compact 16), title 14/600, subtitle 12,
-//     press = opacity dim (~0.9), no tracking adjustment.
-//   iOS (HIG Collections): SF conventions — a slightly softer 10pt thumbnail
-//     radius with Apple's continuous (superellipse) corner curve, the same
+//   Web: a gallery block at the control corner, gap 14 (compact 8), tile padding 20
+//     (compact 16), title 14/600, subtitle 12, press = opacity dim (~0.9), no
+//     tracking adjustment.
+//   iOS (HIG Collections): SF conventions — the iOS tile corner on the thumbnail
+//     with Apple's continuous (superellipse) corner curve, the same
 //     comfortable spacing, and SF Pro Text tracking (galleryTitle 12pt = 0,
 //     cardTitle 14pt = -0.15, subtitles 12pt = 0); press = opacity dim (~0.9).
 //   Android (Material 3): M3 corner + type conventions — a more-rounded 12dp
@@ -87,9 +87,9 @@ export function resolveColor(tokens: ColorTokens, color: string): string {
   return tokens["muted-foreground"];
 }
 
-// ---------- Web: the established Canvas look (lifted verbatim) ----------
-// gallery block radius 6; gap 14 (compact 8); tile padding 20 (compact 16);
-// title 14/600 card-foreground, subtitle 12 muted; press = opacity dim (0.9).
+// ---------- Web: the gallery grid ----------
+// gallery block at the control corner; gap 14 (compact 8); tile padding 20 (compact
+// 16); title 14/600 card-foreground, subtitle 12 muted; press = opacity dim (0.9).
 export const webSkin: GridListSkin = {
   galleryRadius: shape.web.control,
   gap: { default: 14, compact: 8 },
@@ -104,12 +104,12 @@ export const webSkin: GridListSkin = {
 
 // ---------- iOS (HIG Collections): SF type tightening, softer thumbnail ----------
 // HIG Collections describe a flexible grid of content tiles; iOS keeps the same
-// comfortable spacing as web, softens the thumbnail corner to a 10pt Apple
+// comfortable spacing as web, rounds the thumbnail at the iOS tile corner with Apple's
 // continuous (superellipse) curve, and applies SF Pro Text tracking: 12pt = 0
 // (galleryTitle / subtitles carry no adjustment) and 14pt = -0.15 (cardTitle).
 // Press = opacity dim (~0.9), the iOS norm.
 export const iosSkin: GridListSkin = {
-  galleryRadius: 10,
+  galleryRadius: shape.ios.tile,
   galleryCurve: "continuous",
   gap: { default: 14, compact: 8 },
   tilePad: { default: 20, compact: 16 },
@@ -129,7 +129,7 @@ export const iosSkin: GridListSkin = {
 // (14/20/500/+0.1), subtitles = body-small (12/16/400/+0.4). Press = the shared
 // surfaceRipple state layer (src/style/ripple.ts), no opacity dim.
 export const androidSkin: GridListSkin = {
-  galleryRadius: 12,
+  galleryRadius: shape.android.tile,
   gap: { default: 16, compact: 8 },
   tilePad: { default: 20, compact: 16 },
   galleryTitle: (t) => ({ fontSize: 12, lineHeight: 16, fontWeight: "500", letterSpacing: 0.5, color: t["card-foreground"] }),

@@ -26,10 +26,9 @@ import { type ColorTokens, shadow, alpha, widths, shape } from "../../style/inde
 //     buttons bottom-right (Cancel then Confirm/Delete), the confirm tinted with
 //     the brand `primary` and a destructive confirm in the `destructive` red.
 //     Press = android_ripple (brand state layer).
-//   Web: the established Canvas look (the current alert-dialog, lifted verbatim) —
-//     a bordered, dim-backed card (8 radius, 1px `border`, `popover` fill,
-//     shadow-xl, padding 24), a left-aligned 16pt/600 title and 14pt
-//     `muted-foreground` description, with a right-aligned action row of an
+//   Web: a bordered, dim-backed card at the dialog corner (1px `border`, `popover`
+//     fill, shadow-xl, padding 24), a left-aligned 18/500 title and 14
+//     `muted-foreground` description, with a right-aligned action row of a small
 //     `outline` Cancel Button plus a `primary`/`destructive` confirm Button.
 
 export type Width = "narrow" | "small" | "medium" | "large";
@@ -119,8 +118,10 @@ export interface AlertDialogSkin {
 // `triggerWrap` so it keeps its natural width rather than stretching to this width.
 // The overlay presentation: fills the nearest OverlayProvider rather than taking
 // part in page flow, so the scrim covers the page behind it and `aria-modal` is
-// a true statement.
+// a true statement. The scrim is square: it covers the whole layer, so the skin's
+// corner (which frames the card in a contained preview) does not apply.
 export const backdropOverlay: ViewStyle = {
+  borderRadius: 0,
   position: "absolute",
   top: 0,
   right: 0,
@@ -142,11 +143,11 @@ export const triggerGap: ViewStyle = { marginTop: 12 };
 // shape/fill/padding/shadow on top of this.
 export const cardBase: ViewStyle = { width: "100%" };
 
-// ---------- Web: the established Canvas look (lifted verbatim) ----------
-// The current alert-dialog: a contained dim scrim (rounded-md, black/50) centering
-// a bordered card (rounded-md border bg-popover p-6 shadow-xl); a left-aligned
-// 16pt/600 title and 14pt muted description; a right-aligned action row (gap-2,
-// mt-6) of an outline Cancel Button plus a primary/destructive confirm Button.
+// ---------- Web: the bordered card over a contained scrim ----------
+// A contained dim scrim at the dialog corner (padding 32) centering a bordered card at
+// the same corner (border, `popover` fill, padding 24, shadow-xl); a left-aligned
+// 18/500 title and a 14 muted description 8 below it; a right-aligned action row (gap
+// 8, 24 above) of a small outline Cancel Button plus a primary/destructive confirm.
 export const webSkin: AlertDialogSkin = {
   backdrop: (t) => ({
     alignItems: "center",
@@ -194,12 +195,12 @@ export const webSkin: AlertDialogSkin = {
 // survives: the iOS system blue becomes the `primary` token. Press = opacity
 // dim (~0.85).
 const IOS_RADIUS = shape.ios.dialog;
-const IOS_CAPSULE_RADIUS = 999;
+const IOS_CAPSULE_RADIUS = shape.ios.control;
 export const iosSkin: AlertDialogSkin = {
   backdrop: (t) => ({
     alignItems: "center",
     justifyContent: "center",
-    borderRadius: 8,
+    borderRadius: IOS_RADIUS,
     backgroundColor: scrimFill(t, 0.4),
     padding: 32,
   }),
@@ -273,16 +274,17 @@ export const iosSkin: AlertDialogSkin = {
 // Delete) — the confirm carries the brand `primary`, a destructive confirm the
 // `destructive` red. The shell renders these with its ghost (text) Buttons; press =
 // android_ripple, supplied here as the brand state layer.
+const ANDROID_RADIUS = shape.android.dialog;
 export const androidSkin: AlertDialogSkin = {
   backdrop: (t) => ({
     alignItems: "center",
     justifyContent: "center",
-    borderRadius: 8,
+    borderRadius: ANDROID_RADIUS,
     backgroundColor: scrimFill(t, 0.32),
     padding: 32,
   }),
   card: (t) => ({
-    borderRadius: shape.android.dialog,
+    borderRadius: ANDROID_RADIUS,
     backgroundColor: t.popover,
     padding: 24,
     ...shadow("md", t),
@@ -307,7 +309,8 @@ export const androidSkin: AlertDialogSkin = {
     justifyContent: "center",
     paddingHorizontal: 12,
     paddingVertical: 10,
-    borderRadius: 20,
+    // An M3 text button: the control role, a stadium.
+    borderRadius: shape.android.control,
     // clip the Material ripple to the rounded outline (else it bleeds past the corners as a rectangle)
     overflow: "hidden",
     minHeight: 40,

@@ -1,5 +1,6 @@
 import { type ViewStyle } from "react-native";
 import { shadow, shape } from "../../style/index.js";
+import { platformShape } from "../../style/platform-shape.js";
 import { type MediaObjectSkin } from "./media-objects.shared.js";
 
 // Per-OS MediaObject skins. MediaObject is a "Light" treatment: identical structure
@@ -9,8 +10,8 @@ import { type MediaObjectSkin } from "./media-objects.shared.js";
 // Reference (PLATFORM-REFERENCES.md, media-objects row):
 // - iOS: no native media-object control; the layout is composed ad hoc as a list row
 //   with a leading image (Apple's named "Lockups" is tvOS only). So the iOS skin keeps
-//   the structure and applies SF/HIG conventions only: a small inset-group corner radius
-//   (~10), no shadow (HIG groups are flat with a hairline), slightly tighter SF type
+//   the structure and applies SF/HIG conventions only: the iOS card corner on the
+//   bordered group, no shadow (HIG groups are flat with a hairline), slightly tighter SF type
 //   tracking, and an opacity dim on press (~0.8).
 // - Android: no native media-object control; the closest M3 idiom is a list item with a
 //   leading avatar, icon, or video thumbnail. So the Android skin keeps the structure and
@@ -19,8 +20,8 @@ import { type MediaObjectSkin } from "./media-objects.shared.js";
 //   body-medium 14/20/400/+0.25, body-small 12/16/400/+0.4), an M3 ELEVATED card
 //   (level-1 elevation, no outline), denser list-row spacing (gap 16), and a native
 //   ripple on press (so the opacity dim is suppressed).
-// - Web: keeps the CURRENT Canvas look EXACTLY (rounded-lg / lg-8 radius, gap-3, no
-//   shadow, the existing type scale, an opacity dim on press).
+// - Web: the card corner on the bordered surface, gap 12, no shadow, the web type scale,
+//   an opacity dim on press.
 
 export type Align = "center" | "start";
 export type Direction = "reversed" | "leading";
@@ -38,15 +39,21 @@ export const ALIGN_ITEMS: Record<Align, ViewStyle["alignItems"]> = {
   start: "flex-start",
 };
 
-// ── Web (the current Canvas look, preserved verbatim) ───────────────────────────────
+// The icon box's corner and the compact row's icon box: Dark Factory's. Neither platform
+// ships a media-object control, so the iOS skin draws these parts as the web does (with
+// Apple's continuous curve); Android draws Material 3's icon boxes.
+const ICON_BOX_CORNER: ViewStyle = { borderRadius: shape.web.control };
+const COMPACT_ICON_BOX: ViewStyle = { width: 28, height: 28, borderRadius: platformShape.web.key };
+
+// ── Web (the bordered card and the leading icon box) ───────────────────────────────
 
 export const webSkin: MediaObjectSkin = {
   // flex-row(-reverse) + gap-3 + items-* (the flexDirection/alignItems are composed on top).
   containerBase: { gap: 12 },
-  // bordered: rounded-lg border bg-card p-4.
+  // bordered: the card corner, a border on the card fill, padding 20.
   borderedSurface: () => ({ borderRadius: shape.web.card, borderWidth: 1, padding: 20 }),
-  // Leading icon box: shrink-0 items-center justify-center w-9 h-9 rounded-md bg-primary/15.
-  iconBox: { flexShrink: 0, alignItems: "center", justifyContent: "center", width: 40, height: 40, borderRadius: shape.web.control },
+  // Leading icon box: a 40px centered box at the control corner on a primary/15 tint.
+  iconBox: { flexShrink: 0, alignItems: "center", justifyContent: "center", width: 40, height: 40, ...ICON_BOX_CORNER },
   // Glyph: text-base font-semibold text-primary.
   iconGlyph: { fontSize: 16, lineHeight: 24, fontWeight: "600" },
   // Content column: min-w-0 flex-1 gap-0.5.
@@ -55,7 +62,7 @@ export const webSkin: MediaObjectSkin = {
   title: { fontSize: 14, lineHeight: 20, fontWeight: "600" },
   // Description: text-xs muted.
   description: { fontSize: 12, lineHeight: 16 },
-  // Body: text-sm leading-relaxed.
+  // Body: 14/28.
   body: { fontSize: 14, lineHeight: 28 },
   // Meta: shrink-0 text-xs muted.
   meta: { flexShrink: 0, fontSize: 12, lineHeight: 16 },
@@ -69,7 +76,7 @@ export const webSkin: MediaObjectSkin = {
   // and the type stepped down one step (title text-[13]/semibold, description text-[11]).
   compact: {
     containerBase: { gap: 8 },
-    iconBox: { width: 28, height: 28, borderRadius: 6 },
+    iconBox: COMPACT_ICON_BOX,
     title: { fontSize: 13, lineHeight: 18, fontWeight: "600" },
     description: { fontSize: 11, lineHeight: 14 },
   },
@@ -79,11 +86,12 @@ export const webSkin: MediaObjectSkin = {
 
 export const iosSkin: MediaObjectSkin = {
   containerBase: { gap: 12 },
-  // Inset-grouped corner radius (~10) with Apple's continuous (superellipse) corner
-  // curve, flat (no shadow; HIG groups carry a hairline). borderCurve is an iOS-only
-  // RN style prop (device-only visual; a no-op elsewhere and in the web docs preview).
-  borderedSurface: () => ({ borderRadius: 10, borderCurve: "continuous", borderWidth: 1, padding: 16 }),
-  iconBox: { flexShrink: 0, alignItems: "center", justifyContent: "center", width: 36, height: 36, borderRadius: 8, borderCurve: "continuous" },
+  // The iOS card corner (a grouped surface) with Apple's continuous (superellipse)
+  // corner curve, flat (no shadow; HIG groups carry a hairline). borderCurve is an
+  // iOS-only RN style prop (device-only visual; a no-op elsewhere and in the web docs
+  // preview). The icon box shares the web's corner (no iOS control draws one).
+  borderedSurface: () => ({ borderRadius: shape.ios.card, borderCurve: "continuous", borderWidth: 1, padding: 16 }),
+  iconBox: { flexShrink: 0, alignItems: "center", justifyContent: "center", width: 36, height: 36, ...ICON_BOX_CORNER, borderCurve: "continuous" },
   // SF Pro Text tracking at 16pt = -0.31 (Apple tracking table).
   iconGlyph: { fontSize: 16, lineHeight: 24, fontWeight: "600", letterSpacing: -0.31 },
   content: { minWidth: 0, flexGrow: 1, flexShrink: 1, flexBasis: "0%", gap: 2 },
@@ -98,10 +106,11 @@ export const iosSkin: MediaObjectSkin = {
   // HIG minimum tappable area 44x44pt (bare row backstop).
   minTarget: 44,
   // Compact (menu-header) density: tighter gap 8, a 28px `small` leading avatar, and SF
-  // type stepped down one step. SF Pro Text tracking: 13pt = -0.08, 11pt = +0.06.
+  // type stepped down one step. SF Pro Text tracking: 13pt = -0.08, 11pt = +0.06. The
+  // compact icon box is the web's (no iOS control draws one).
   compact: {
     containerBase: { gap: 8 },
-    iconBox: { width: 28, height: 28, borderRadius: 7, borderCurve: "continuous" },
+    iconBox: { ...COMPACT_ICON_BOX, borderCurve: "continuous" },
     title: { fontSize: 13, lineHeight: 18, fontWeight: "600", letterSpacing: -0.08 },
     description: { fontSize: 11, lineHeight: 14, letterSpacing: 0.06 },
   },
@@ -120,7 +129,7 @@ export const androidSkin: MediaObjectSkin = {
   // Elevation separates the M3 elevated card, so the outline is transparent.
   borderedBorderColor: () => "transparent",
   // M3 medium container radius on the leading icon box.
-  iconBox: { flexShrink: 0, alignItems: "center", justifyContent: "center", width: 36, height: 36, borderRadius: 12 },
+  iconBox: { flexShrink: 0, alignItems: "center", justifyContent: "center", width: 36, height: 36, borderRadius: platformShape.android.iconBox },
   iconGlyph: { fontSize: 16, lineHeight: 24, fontWeight: "600" },
   content: { minWidth: 0, flexGrow: 1, flexShrink: 1, flexBasis: "0%", gap: 2 },
   // M3 title-small: 14/20/500/+0.1 (500 is the role weight; 600 is not an M3 weight).
@@ -138,7 +147,7 @@ export const androidSkin: MediaObjectSkin = {
   // type stepped down (title 13/500/+0.1, description M3 label-small 11/16/+0.5).
   compact: {
     containerBase: { gap: 12 },
-    iconBox: { width: 28, height: 28, borderRadius: 8 },
+    iconBox: { width: 28, height: 28, borderRadius: platformShape.android.compactIconBox },
     title: { fontSize: 13, lineHeight: 18, fontWeight: "500", letterSpacing: 0.1 },
     description: { fontSize: 11, lineHeight: 16, letterSpacing: 0.5 },
   },

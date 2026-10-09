@@ -3,6 +3,7 @@ import * as s from "./charts.styles.js";
 import { type Tone } from "./charts.styles.js";
 import { estimateTextWidth } from "./chart-math.js";
 import { deltaTone } from "../../molecules/stats/stats.styles.js";
+import { platformShape } from "../../style/platform-shape.js";
 
 // The proportional row engine shared by BarList and MetricBreakdown: a column
 // of rows, each a color swatch, a truncating label, a right-aligned value, an
@@ -96,6 +97,10 @@ export interface BreakdownRowsProps {
 }
 
 /** The shared renderer. Each row is one accessible item; the bar is decorative. */
+// A row's share and its delta beside the value: value annotations.
+const SHARE_TYPE = { fontSize: 11, lineHeight: 16 };
+const DELTA_TYPE = { fontSize: 11, lineHeight: 16, fontWeight: "500" as const };
+
 export function BreakdownRows({ rows, share, percent, tone, compact, formatValue, onPressRow }: BreakdownRowsProps) {
   const { tokens } = useTheme();
   // Negative and non-finite values cannot carry a proportional bar; they are
@@ -121,7 +126,7 @@ export function BreakdownRows({ rows, share, percent, tone, compact, formatValue
           <>
             <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
               {/* Decorative swatch tying the row to its bar color. */}
-              <View style={{ width: 8, height: 8, borderRadius: 2, backgroundColor: fill }} />
+              <View style={{ width: 8, height: 8, borderRadius: platformShape.web.cell, backgroundColor: fill }} />
               <Text numberOfLines={1} style={{ flexGrow: 1, flexShrink: 1, fontSize: 12, lineHeight: 16, color: tokens["card-foreground"] }}>
                 {row.label}
               </Text>
@@ -129,12 +134,12 @@ export function BreakdownRows({ rows, share, percent, tone, compact, formatValue
                 {formatValue(Number.isFinite(row.value) ? row.value : 0)}
               </Text>
               {percent ? (
-                <Text style={{ fontSize: 11, lineHeight: 16, color: tokens["muted-foreground"], ...tabularNums() }}>{sharePct}%</Text>
+                <Text style={{ ...SHARE_TYPE, color: tokens["muted-foreground"], ...tabularNums() }}>{sharePct}%</Text>
               ) : null}
               {row.delta != null && row.delta !== "" ? (
                 <Text
                   style={[
-                    { fontSize: 11, lineHeight: 16, fontWeight: "500", minWidth: deltaWidth, textAlign: "right" },
+                    { ...DELTA_TYPE, minWidth: deltaWidth, textAlign: "right" },
                     row.steady ? { color: tokens["muted-foreground"] } : deltaTone(tokens, !!row.down),
                   ]}
                 >
@@ -144,8 +149,8 @@ export function BreakdownRows({ rows, share, percent, tone, compact, formatValue
             </View>
             {/* The proportional bar: muted track, row-colored fill. Decorative;
                 the share reaches AT through the row's name. */}
-            <View style={{ height: 3, borderRadius: 999, backgroundColor: tokens.muted, overflow: "hidden" }}>
-              <View style={{ height: 3, borderRadius: 999, backgroundColor: fill, width: `${widthPct}%` }} />
+            <View style={{ height: 3, borderRadius: 9999, backgroundColor: tokens.muted, overflow: "hidden" }}>
+              <View style={{ height: 3, borderRadius: 9999, backgroundColor: fill, width: `${widthPct}%` }} />
             </View>
           </>
         );
