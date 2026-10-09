@@ -18,7 +18,7 @@ function row(id: string, overrides: Partial<CellRow> = {}): CellRow {
   const state = head === "web-states";
   return {
     id, family: state ? "state" : head!.endsWith("-pages") ? "page" : "variant", platform: head!.startsWith("web") ? "web" : (head!.split("-")[0] as "ios" | "android"),
-    variant: state ? null : middle ?? null, label: null, state: state ? middle!.split(".")[0]! : null, row: state ? (middle!.split(".")[1] as CellRow["row"]) : null, width: head!.startsWith("web") ? id.split("/").pop()!.split(".")[0]! : null,
+    variant: state ? null : middle ?? null, label: null, state: state ? middle!.split(".")[0]!.split("-")[0]! : null, recipe: state ? middle!.split(".")[0]! : null, row: state ? (middle!.split(".")[1] as CellRow["row"]) : null, width: head!.startsWith("web") ? id.split("/").pop()!.split(".")[0]! : null,
     run: "20261009-100000-web-aaaaaaa", capturedAt: "2026-10-09T10:00:01.000Z", sha: "a".repeat(40), dirty: false, fingerprint: "f".repeat(64),
     status: "ok", error: null, analyzed: true, flags: [], stateFlags: [], releaseFlags: [], axe: null, minFont: 12, contrast: { dom: 0, likely: 0, review: 0 }, overflow: [], clipped: 0, smallTargets: 0, problems: 0,
     notReached: false, file: `.audit/runs/20261009-100000-web-aaaaaaa/${id}/card.png`, sections: [], ...overrides,
@@ -165,6 +165,34 @@ describe("the index over real run directories", () => {
     expect(md).toContain("| [web/x/ghost/phone.blush.solid](../../runs/20261009-100000-web-aaaaaaa/web/x/ghost/phone.blush.solid/card.png) | ok | axe |");
     expect(md).toMatch(/\| \[20261009-100000-web-aaaaaaa\]\(\.\.\/\.\.\/runs\/20261009-100000-web-aaaaaaa\/manifest\.json\) \| web \| .* \| aaaaaaa \| aaaaaaaaaaaa \| static export \| complete \| 1 \|/);
     expect(md).toMatch(/\| \[20261009-110000-web-bbbbbbb\]\(.*\) \| web \| .* \| bbbbbbb \| bbbbbbbbbbbb \| static export \| complete \| 2 \|/);
+  });
+});
+
+describe("state cells of recipes the table no longer has", () => {
+  let root: string | null = null;
+  afterEach(() => {
+    if (root) rmSync(root, { recursive: true, force: true });
+    root = null;
+  });
+
+  it("leaves them out with a warning, and lists a state's several recipes in the table's order", () => {
+    root = mkdtempSync(join(tmpdir(), "audit-index-"));
+    const name = "20261009-100000-web-aaaaaaa";
+    const dir = join(root, ".audit", "runs", name);
+    mkdirSync(dir, { recursive: true });
+    writeFileSync(join(dir, "manifest.json"), JSON.stringify({ platform: "web", status: "complete", startedAt: "2026-10-09T10:00:00.000Z", source: { sha: "a".repeat(40), dirty: false }, served: { mode: "static export", sourceFingerprint: "a".repeat(64), fresh: true } }));
+    // Dropdown's cells under the name its one disabled recipe had, then under the names of the two it has.
+    const ids = ["disabled", "disabled-disableditem", "disabled-disabledtrigger"].map((recipe) => `web-states/dropdown/${recipe}.web/desktop.blush.solid`);
+    writeFileSync(join(dir, "cells.jsonl"), ids.map((id, i) => JSON.stringify({ kind: "state", id, slug: "dropdown", status: "ok", flags: [], at: `2026-10-09T10:00:0${i}.000Z` })).join("\n"));
+    const result = buildIndex(root, { runs: null, only: ["dropdown"] }, "2026-10-09T12:00:00.000Z");
+    expect(result.warnings).toEqual(["1 current cell(s) of dropdown's state recipe(s) disabled, which the state table no longer has, are left out"]);
+    expect(result.states).toBe(2);
+    const md = readFileSync(join(root, ".audit", "current", "dropdown", "index.md"), "utf8");
+    expect(md).not.toContain(ids[0]!);
+    expect(md.indexOf(ids[2]!)).toBeGreaterThan(0);
+    expect(md.indexOf(ids[2]!)).toBeLessThan(md.indexOf(ids[1]!));
+    const built = JSON.parse(readFileSync(join(root, ".audit", "current", "current.json"), "utf8")) as { cells: { id: string; recipe?: string }[] };
+    expect(built.cells.map((cell) => `${cell.id} ${cell.recipe}`)).toEqual([`${ids[1]} disabled-disableditem`, `${ids[2]} disabled-disabledtrigger`]);
   });
 });
 

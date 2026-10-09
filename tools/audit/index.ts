@@ -48,7 +48,7 @@ import { AXE_IMPACTS, type CellAnalysis, type RegionAnalysis } from "./analyze.t
 import { COMPONENTS_DIR, PAGES_DIR } from "./checklists.ts";
 import { LOOKS, SURFACES, WIDTHS, components, pages, NATIVE_CELLS_PER_VARIANT, WEB_CELLS_PER_VARIANT, type Platform } from "./inventory.ts";
 import type { RowPlatform } from "./probe-math.ts";
-import { ANALYSIS_FILE, CURRENT_DIR, checkOnly, currentCells, notReached, parseToolArgs, readJsonFile, STATE_NOT_REACHED, type AuditRun, type CapturedCell } from "./runs.ts";
+import { ANALYSIS_FILE, CURRENT_DIR, checkOnly, currentCells, notReached, parseToolArgs, readJsonFile, recipeRank, STATE_NOT_REACHED, type AuditRun, type CapturedCell } from "./runs.ts";
 import { CARD_FILE, PROBE_FILE, RUNS_DIR, STATE_FILE, VIEWPORT_FILE, parseWebFilters, planStateCapture, sectionFile } from "./web-capture.ts";
 
 export const INDEX_FILE = "index.md";
@@ -73,6 +73,8 @@ export interface CellRow {
   /** A state cell's example label. */
   label: string | null;
   state: string | null;
+  /** A state cell's recipe, by its name (the state, or `<state>-<variant>` for a state with several recipes). */
+  recipe: string | null;
   /** The platform row of the browser card a state was reached from. */
   row: RowPlatform | null;
   width: string | null;
@@ -148,6 +150,7 @@ export function cellRow(cell: CapturedCell, analysis: CellAnalysis | null, root:
     variant: cell.variant,
     label: cell.label,
     state: cell.state,
+    recipe: cell.recipe,
     row: cell.row,
     width: cell.width,
     run: cell.run.id,
@@ -239,7 +242,7 @@ const LOOK_SURFACE = LOOKS.flatMap((look) => SURFACES.map((surface) => `${look}.
 /** The rows of the browser card a state is reached from, in the order a reader takes them. */
 const ROW_ORDER: RowPlatform[] = ["web", "ios", "android"];
 
-/** Rows in reading order: a state's state and row first, then platform, width, look and surface. */
+/** Rows in reading order: a state's recipe (in the state table's order) and row first, then platform, width, look and surface. */
 export function sortRows(rows: CellRow[]): CellRow[] {
   const leaf = (row: CellRow) => row.id.split("/").pop()!;
   const rank = (row: CellRow) => {
@@ -247,8 +250,9 @@ export function sortRows(rows: CellRow[]): CellRow[] {
     const width = row.platform === "web" ? WIDTH_ORDER.indexOf(parts[0]!) : 0;
     const ls = LOOK_SURFACE.indexOf(parts.slice(row.platform === "web" ? 1 : 0).join("."));
     const state = row.state ? STATE_NAMES.indexOf(row.state as (typeof STATE_NAMES)[number]) : -1;
+    const recipe = row.family === "state" ? recipeRank({ slug: row.id.split("/")[1]!, recipe: row.recipe }) : -1;
     const from = row.row ? ROW_ORDER.indexOf(row.row) : -1;
-    return [state, from, PLATFORM_ORDER.indexOf(row.platform), width, ls];
+    return [state, recipe, from, PLATFORM_ORDER.indexOf(row.platform), width, ls];
   };
   return [...rows].sort((a, b) => {
     const ra = rank(a);
@@ -447,7 +451,7 @@ export interface SummaryEntry {
   slug: string;
   name: string;
   kind: "component" | "page";
-  rows: Pick<CellRow, "id" | "flags" | "platform" | "family" | "notReached" | "releaseFlags" | "error" | "state" | "row" | "label">[];
+  rows: Pick<CellRow, "id" | "flags" | "platform" | "family" | "notReached" | "releaseFlags" | "error" | "state" | "recipe" | "row" | "label">[];
   expected: Expected;
   /** The index, relative to the checkout root, or null when it was not written. */
   index: string | null;
@@ -496,7 +500,7 @@ export function renderSummary(entries: SummaryEntry[], uncaptured: string[], run
     for (const entry of entries) {
       for (const row of entry.rows) {
         if (!row.notReached) continue;
-        const key = `${row.state}.${row.row}`;
+        const key = `${row.recipe ?? row.state}.${row.row}`;
         const id = `${entry.slug}/${key}`;
         const group = groups.get(id) ?? { entry, key, label: row.label, cells: [], reason: row.error ?? "no reason recorded" };
         group.cells.push(row.id.split("/").pop()!);
@@ -651,8 +655,12 @@ export function buildIndex(root: string, options: IndexOptions, builtAt = new Da
   let written = 0;
   const inventory = targets();
   for (const target of inventory) {
-    const cells = bySlug.get(target.slug);
-    if (!cells) {
+    // A state cell of a recipe the state table no longer has is left out, as a cell of a
+    // component the inventory no longer has is.
+    const stale = (bySlug.get(target.slug) ?? []).filter((cell) => cell.family === "state" && recipeRank(cell) < 0);
+    if (stale.length) warnings.push(`${stale.length} current cell(s) of ${target.slug}'s state recipe(s) ${[...new Set(stale.map((cell) => cell.recipe))].join(", ")}, which the state table no longer has, are left out`);
+    const cells = bySlug.get(target.slug)?.filter((cell) => !stale.includes(cell));
+    if (!cells?.length) {
       uncaptured.push(target.slug);
       continue;
     }
@@ -666,7 +674,7 @@ export function buildIndex(root: string, options: IndexOptions, builtAt = new Da
         run: row.run,
         capturedAt: row.capturedAt,
         status: row.status,
-        ...(row.family === "state" ? { state: row.state, row: row.row, variant: row.variant, notReached: row.notReached, ...(row.notReached ? { reason: row.error } : {}), stateFlags: row.stateFlags, releaseFlags: row.releaseFlags } : {}),
+        ...(row.family === "state" ? { state: row.state, recipe: row.recipe, row: row.row, variant: row.variant, notReached: row.notReached, ...(row.notReached ? { reason: row.error } : {}), stateFlags: row.stateFlags, releaseFlags: row.releaseFlags } : {}),
         analyzed: row.analyzed,
         flags: row.flags,
         sha: row.sha,

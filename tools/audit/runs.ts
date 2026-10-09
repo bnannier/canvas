@@ -15,12 +15,14 @@
 // web-capture.ts stateCellId and webPageCellId, the native host's):
 //   web/<slug>/<variant>/<width>.<look>.<surface>              {card.png, probe.json}
 //   ios|android/<slug>/<variant>/<look>.<surface>              {screen.png, card.png, probe.json, a11y.json}
-//   web-states/<slug>/<state>.<row>/<width>.<look>.<surface>   {state.png, probe.json}
+//   web-states/<slug>/<name>.<row>/<width>.<look>.<surface>    {state.png, probe.json}
 //   web-pages/<kind>-<slug>/<width>.<look>.<surface>           {viewport.png, section.<key>.png, probe.json}
 //   ios-pages|android-pages/<kind>-<slug>/<look>.<surface>     as a native variant's
-// A state cell's id names the state and the platform row it was reached from; the example
-// its recipe applies it to is on its record (`variant`, `label`), one per component and
-// state. A page cell holds every section of the page, each photographed beside the first
+// A state cell's id names its recipe and the platform row it was reached from: the recipe's
+// name is its state, or `<state>-<variant>` for a state a component has several recipes of
+// (a Dropdown disabled on its trigger and on an item in its menu); the example a recipe
+// applies the state to is on its record too (`variant`, `label`). A page cell holds every
+// section of the page, each photographed beside the first
 // screen. A state the recipe could not reach is recorded with the status
 // `state-not-reached` and the reason, and has no photograph.
 //
@@ -32,7 +34,7 @@
 
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
-import { STATE_NAMES, type StateName } from "../../e2e/support/state-recipes.ts";
+import { STATE_NAMES, stateSpecsOf, type StateName } from "../../e2e/support/state-recipes.ts";
 import { LOOKS, PLATFORMS, SURFACES, WIDTHS, components, pages, type Look, type Platform, type Surface, type WidthKey } from "./inventory.ts";
 import { ROW_PLATFORMS, type RowPlatform } from "./probe-math.ts";
 import { CELLS_FILE, MANIFEST_FILE, PAGES_DIR, RUNS_DIR, STATES_DIR, type CellStatus } from "./web-capture.ts";
@@ -58,6 +60,11 @@ export interface CellKey {
   variant: string | null;
   /** A state cell's state. */
   state: StateName | null;
+  /**
+   * A state cell's recipe, by its name: the state, or `<state>-<variant>` for a state the
+   * component has several recipes of (e2e/support/state-recipes.ts `recipeName`).
+   */
+  recipe: string | null;
   /** The platform row of the browser card a state cell was reached from. */
   row: RowPlatform | null;
   width: WidthKey | null;
@@ -104,18 +111,33 @@ export function parseCellId(id: string): CellKey | null {
   if (!isLook(look!) || !isSurface(surface!)) return null;
   let variant: string | null = null;
   let state: StateName | null = null;
+  let recipe: string | null = null;
   let row: RowPlatform | null = null;
   if (family === "variant") {
     if (middle.length !== 1) return null;
     variant = middle[0]!;
   } else if (family === "state") {
-    // `<state>.<row>`: the state, and the row of the browser card it was reached from.
+    // `<name>.<row>`: the recipe's name (`<state>` or `<state>-<variant>`), and the row of the browser card it was reached from.
     const named = middle.length === 1 ? middle[0]!.split(".") : [];
-    if (named.length !== 2 || !isState(named[0]!) || !isRow(named[1]!)) return null;
-    state = named[0];
+    if (named.length !== 2 || !isRow(named[1]!)) return null;
+    const recipeName = /^([a-z]+)(?:-([a-z0-9]+))?$/.exec(named[0]!);
+    if (!recipeName || !isState(recipeName[1]!)) return null;
+    recipe = named[0]!;
+    state = recipeName[1];
     row = named[1];
   } else if (middle.length !== 0) return null;
-  return { id, family, platform: platform as Platform, slug, variant, state, row, width: width as WidthKey | null, look, surface: surface! };
+  return { id, family, platform: platform as Platform, slug, variant, state, recipe, row, width: width as WidthKey | null, look, surface: surface! };
+}
+
+/**
+ * Where a state cell's recipe stands among its component's in the state table
+ * (e2e/support/state-recipes.ts, in capture order), or -1 for a recipe the table no longer
+ * has: a state that gained a second recipe names each of them for its example, so the cells
+ * its one recipe left under the plain state's name are no longer current.
+ */
+export function recipeRank(cell: Pick<CellKey, "slug" | "recipe">): number {
+  if (cell.recipe === null) return -1;
+  return stateSpecsOf(cell.slug).findIndex((spec) => spec.name === cell.recipe);
 }
 
 /** The id of a cell's group across looks and surfaces: its id with the look and surface taken off the leaf. */

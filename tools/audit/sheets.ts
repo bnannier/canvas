@@ -54,10 +54,10 @@ import { existsSync, mkdirSync, readdirSync, rmSync } from "node:fs";
 import { join, relative } from "node:path";
 import sharp, { type OverlayOptions } from "sharp";
 import { ROOT } from "../../e2e/support/routes.ts";
-import { RELEASE_FLAGS, STATE_FLAGS, STATE_NAMES } from "../../e2e/support/state-recipes.ts";
+import { RELEASE_FLAGS, STATE_FLAGS } from "../../e2e/support/state-recipes.ts";
 import { LOOKS, SURFACES, WIDTHS, components, type Look, type Surface, type WidthKey } from "./inventory.ts";
 import type { Box, RowPlatform } from "./probe-math.ts";
-import { CURRENT_DIR, currentCells, notReached, parseToolArgs, pool, readJsonFile, type CapturedCell } from "./runs.ts";
+import { CURRENT_DIR, currentCells, notReached, parseToolArgs, pool, readJsonFile, recipeRank, type CapturedCell } from "./runs.ts";
 import { CARD_FILE, PAGES_DIR as WEB_PAGES_DIR, PROBE_FILE, STATES_DIR, STATE_FILE, VIEWPORT_FILE } from "./web-capture.ts";
 
 // --- Layout ---------------------------------------------------------------------------
@@ -645,22 +645,23 @@ const stateFlagsOf = (cell: CapturedCell | undefined) => (cell ? cell.flags.filt
 /**
  * The interaction-state sheets of one component (e2e/audit/state-cell.ts): one per width
  * its states were captured at (`states.jpg` the desktop's, where every state is; then
- * `states-tablet.jpg` and `states-phone.jpg`, where only the overlays are), a row per state
- * and the platform row it was reached from, in the recipes' order, by the six looks and
- * surfaces. Each tile is the state's photograph (state.png: the row with a margin, or the
- * viewport an overlay opened in), its state and release flags said under it; a state not
- * reached is a hole saying why.
+ * `states-tablet.jpg` and `states-phone.jpg`, where only the overlays are), a row per
+ * recipe and the platform row it was reached from, in the recipes' order, by the six looks
+ * and surfaces. Each tile is the state's photograph (state.png: the row with a margin, or
+ * the viewport an overlay opened in), its state and release flags said under it; a state
+ * not reached is a hole saying why. A cell of a recipe the state table no longer has is not
+ * drawn (runs.ts `recipeRank`).
  */
 export async function stateSheets(slug: string, cells: CapturedCell[]): Promise<SheetSpec[]> {
-  const states = cells.filter((cell) => cell.family === "state" && cell.slug === slug);
+  const states = cells.filter((cell) => cell.family === "state" && cell.slug === slug && recipeRank(cell) >= 0);
   if (!states.length) return [];
   const specs: SheetSpec[] = [];
-  const rank = (cell: CapturedCell) => STATE_NAMES.indexOf(cell.state!) * STATE_ROWS.length + STATE_ROWS.indexOf(cell.row!);
+  const rank = (cell: CapturedCell) => recipeRank(cell) * STATE_ROWS.length + STATE_ROWS.indexOf(cell.row!);
   const widths = STATE_WIDTHS.filter((key) => states.some((cell) => cell.width === key));
   for (const width of widths) {
     const atWidth = states.filter((cell) => cell.width === width).sort((a, b) => rank(a) - rank(b));
     const byId = new Map(atWidth.map((cell) => [cell.id, cell]));
-    const rows = [...new Map(atWidth.map((cell) => [`${cell.state}.${cell.row}`, cell])).entries()];
+    const rows = [...new Map(atWidth.map((cell) => [`${cell.recipe}.${cell.row}`, cell])).entries()];
     const sources = new Map<TileInput, TileSource>();
     const tiles: TileInput[][] = [];
     for (const [key] of rows) {
@@ -677,7 +678,7 @@ export async function stateSheets(slug: string, cells: CapturedCell[]): Promise<
       sources,
       // Cut per group of states when too large to read: a state's looks and surfaces stay side by side.
       grid: {
-        title: `${slug}: interaction states at ${width} width (state.row: the state, and the browser card's row it was reached from; the example in brackets)`,
+        title: `${slug}: interaction states at ${width} width (state.row: the state, named for its example where it has several recipes, and the browser card's row it was reached from; the example in brackets)`,
         rowsAre: "states",
         colsAre: "looks and surfaces",
         rowKeys: rows.map(([key, cell]) => `${key}${cell.label ? ` (${cell.label})` : ""}`),

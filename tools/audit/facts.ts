@@ -153,14 +153,20 @@ export interface SweepFact {
 export interface StatesFact {
   /** Whether the table has an entry (it lists exactly the interaction registry's components). */
   listed: boolean;
-  /** The states captured: the example (variant key and rail label), the rows, the widths, the other states its capture shows, and the overlay it opens when its source renders more than one. */
-  recipes: { state: string; variant: string; label: string; rows: string[]; widths: string[]; alsoAnswers: string[]; opens: string | null }[];
+  /**
+   * The states captured: the example (variant key and rail label), the rows, the widths, the
+   * other states its capture shows, whether it is applied inside an overlay it opens first,
+   * and the overlay it opens when its source renders more than one.
+   */
+  recipes: { state: string; variant: string; label: string; rows: string[]; widths: string[]; alsoAnswers: string[]; inOverlay: boolean; opens: string | null }[];
   /** Why it has no state of its own, when the table says so. */
   static: string | null;
   /** States its source gives that the table exempts, each with its reason and why the claim fails (null: it holds). */
   exempt: { state: string; reason: string; failure: string | null }[];
-  /** States its source gives with neither a recipe nor an exemption. */
+  /** States its source gives with neither a recipe nor an exemption (a disabled one with the overlay it is in). */
   unanswered: string[];
+  /** Where its source disables a control no rail example asks for: `its own surface`, or `the overlay in <name>`. */
+  unshown: string[];
 }
 
 export interface ComponentFacts {
@@ -1058,16 +1064,17 @@ export function loadCorpus(root = ROOT): FactsCorpus {
 /** What the state table says about a component, and whether its exemptions hold against its source and page. */
 export function statesFact(slug: string, doc: { category: Category; dir: string; name: string }, corpus: FactsCorpus): StatesFact {
   const entry = STATE_RECIPES[slug];
-  if (!entry) return { listed: false, recipes: [], static: null, exempt: [], unanswered: [] };
+  if (!entry) return { listed: false, recipes: [], static: null, exempt: [], unanswered: [], unshown: [] };
   const rail = railExamples(doc);
   const labelOf = (variant: string) => rail.find((example) => variantSlug(example.label) === variant)?.label ?? variant;
   const coverage = coverageOf(slug, entry, componentSignals(corpus.signals, doc), rail);
   return {
     listed: true,
-    recipes: recipesOf(slug).map((r) => ({ state: r.state, variant: r.variant, label: labelOf(r.variant), rows: [...r.rows], widths: [...r.widths], alsoAnswers: [...(r.alsoAnswers ?? [])], opens: r.opens ?? null })),
+    recipes: recipesOf(slug).map((r) => ({ state: r.state, variant: r.variant, label: labelOf(r.variant), rows: [...r.rows], widths: [...r.widths], alsoAnswers: [...(r.alsoAnswers ?? [])], inOverlay: r.inOverlay === true, opens: r.opens ?? null })),
     static: entry.static ? entry.reason : null,
     exempt: coverage.answers.filter((a) => a.by === "exemption").map((a) => ({ state: a.state, reason: a.exemption!.reason, failure: a.failure ?? null })),
-    unanswered: coverage.answers.filter((a) => a.by === "nothing").map((a) => a.state),
+    unanswered: coverage.answers.filter((a) => a.by === "nothing").map((a) => (a.within ? `${a.state} in the overlay in ${a.within}` : a.state)),
+    unshown: coverage.answers.filter((a) => a.by === "unshown").map((a) => (a.within ? `the overlay in ${a.within}` : "its own surface")),
   };
 }
 

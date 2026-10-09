@@ -20,7 +20,7 @@ Audit checklist for `/components/video`. The facts block and the variants table 
 | Hand-off metric gaps | none |
 | Interactions registry | in the inventory; evidence: none registered |
 | Overlay recipe | none |
-| Interaction states | captured: focus on Default (web row; desktop), pressed on Default (web row; desktop). |
+| Interaction states | captured: focus on Default (web row; desktop), pressed on Default (web row; desktop). disabled controls its source renders and no rail example asks for: on its own surface. |
 | MeasureProps | not adopted |
 | Touch target | `video.styles.ts`: TOUCH_TARGET, minTarget |
 | Tests importing it | 5: `test/design-rules-skins.test.ts`, `test/dist-smoke.test.tsx`, `test/skins-smoke.test.tsx`, `test/touch-target-coverage.test.ts`, `test/video.test.tsx` |

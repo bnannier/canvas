@@ -196,13 +196,15 @@ function statesLine(facts: ComponentFacts): string {
   if (states.recipes.length) {
     parts.push(
       `captured: ${states.recipes
-        .map((r) => `${r.state} on ${r.label} (${r.rows.map((row) => ROW_NAMES[row] ?? row).join(", ")} ${r.rows.length > 1 ? "rows" : "row"}; ${andList([...r.widths])}${r.alsoAnswers.length ? `; also its ${andList([...r.alsoAnswers])}` : ""}${r.opens ? `; opens the overlay in \`${r.opens}\`` : ""})`)
+        .map((r) => `${r.state} on ${r.label}${r.inOverlay ? " inside the overlay it opens" : ""} (${r.rows.map((row) => ROW_NAMES[row] ?? row).join(", ")} ${r.rows.length > 1 ? "rows" : "row"}; ${andList([...r.widths])}${r.alsoAnswers.length ? `; also its ${andList([...r.alsoAnswers])}` : ""}${r.opens ? `; opens the overlay in \`${r.opens}\`` : ""})`)
         .join(", ")}`,
     );
   }
   if (states.static !== null) parts.push(`static: ${states.static}`);
   for (const e of states.exempt) parts.push(`${e.state} exempt, ${e.failure === null ? "verified" : `NOT verified (${e.failure})`}: ${e.reason}`);
   if (states.unanswered.length) parts.push(`given by its source with neither a recipe nor an exemption: ${states.unanswered.join(", ")}`);
+  const placeText = (place: string) => (place === "its own surface" ? `on ${place}` : `in ${place.replace(/^the overlay in (.*)$/, "the overlay in `$1`")}`);
+  if (states.unshown.length) parts.push(`disabled controls its source renders and no rail example asks for: ${andList(states.unshown.map(placeText))}`);
   // Each part is a sentence; the reasons bring their own full stops.
   return parts.map((part) => (/[.!?]$/.test(part) ? part : `${part}.`)).join(" ");
 }
