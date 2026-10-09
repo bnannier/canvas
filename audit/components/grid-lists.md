@@ -9,6 +9,7 @@ Audit checklist for `/components/grid-lists`. The facts block and the variants t
 | Category | Molecules (`src/molecules/grid-lists/`) |
 | Markdown | `src/molecules/grid-lists/grid-lists.md` |
 | Source files | `grid-lists.android.tsx`, `grid-lists.ios.tsx`, `grid-lists.md`, `grid-lists.shared.tsx`, `grid-lists.styles.ts`, `grid-lists.tsx` |
+| Implementation | its own source directory, `src/molecules/grid-lists/` (5 TypeScript modules) |
 | Exports | GridList |
 | Platform entries | iOS: own build: GridList (builds from its own iosSkin; injects platform parts (../card/card.ios.js); injects platform parts (../../atoms/button/button.ios.js)). Android: own build: GridList (builds from its own androidSkin; injects platform parts (../card/card.android.js); injects platform parts (../../atoms/button/button.android.js)) |
 | Platform-skins registry | iOS: GridList; Android: GridList |
@@ -20,9 +21,10 @@ Audit checklist for `/components/grid-lists`. The facts block and the variants t
 | Interactions registry | in the inventory; evidence: none registered |
 | Overlay recipe | none |
 | MeasureProps | not adopted |
-| Touch target | no minTarget or useMinTargetSlop in the source modules |
-| Tests importing it | 7: `test/behavior-smoke-c.test.tsx`, `test/destructive-text.test.tsx`, `test/list-semantics.test.tsx`, `test/primary-text.test.tsx`, `test/responsive-narrow-fixes.test.tsx`, `test/scroll-frame-ring.test.tsx`, `test/virtualization.test.tsx` |
-| E2E importing or driving it | 2: `e2e/behavior/scroll-focus.e2e.ts`, `e2e/journeys/keyboard.e2e.ts` |
+| Touch target | no touch-target name (the exports of `src/style/touch-target.ts`, `src/style/touch-target-seed.ts`, `src/style/touch-seam.ts`, `src/style/clip-slop.ts`, the `TouchTargetSkin` fields, or `hitSlop`) in its implementation modules. `test/touch-target-coverage.test.ts` records it as known gap: tile actions render 63x36 |
+| Tests importing it | 8: `test/behavior-smoke-c.test.tsx`, `test/destructive-text.test.tsx`, `test/list-semantics.test.tsx`, `test/primary-text.test.tsx`, `test/responsive-narrow-fixes.test.tsx`, `test/scroll-frame-ring.test.tsx`, `test/skins-smoke.test.tsx`, `test/virtualization.test.tsx` |
+| E2E naming it | 3: `e2e/behavior/scroll-focus.e2e.ts`, `e2e/journeys/keyboard.e2e.ts`, `e2e/responsive/overlay-state.e2e.ts` |
+| E2E catalog sweeps | 6: `e2e/a11y/components.e2e.ts` (componentRoutes), `e2e/responsive/component-widths.e2e.ts` (contentRoutes, componentRoutes), `e2e/smoke/examples.e2e.ts` (componentExamples), `e2e/smoke/routes.e2e.ts` (allRoutes), `e2e/visual/components.e2e.ts` (componentRoutes), `e2e/visual/materials.e2e.ts` (MATERIAL_ROUTES) |
 <!-- audit:facts:end -->
 
 ## Variants

@@ -9,6 +9,7 @@ Audit checklist for `/components/row-column`. The facts block and the variants t
 | Category | Atoms (`src/atoms/layout/`) |
 | Markdown | `src/atoms/layout/layout.md` |
 | Source files | `layout.android.tsx`, `layout.ios.tsx`, `layout.md`, `layout.shared.tsx`, `layout.styles.ts`, `layout.tsx` |
+| Implementation | its own source directory, `src/atoms/layout/` (5 TypeScript modules) |
 | Exports | Row, Column |
 | Platform entries | iOS: web build: Row, Column. Android: web build: Row, Column |
 | Platform-skins registry | none (every export is the web build, so the docs three-up renders it as is) |
@@ -20,9 +21,10 @@ Audit checklist for `/components/row-column`. The facts block and the variants t
 | Interactions registry | in the inventory; evidence: none registered |
 | Overlay recipe | none |
 | MeasureProps | not adopted |
-| Touch target | no minTarget or useMinTargetSlop in the source modules |
-| Tests importing it | 9: `test/hover-lift.test.tsx`, `test/layout-responsive.test.tsx`, `test/layout-spans.test.tsx`, `test/native-carousel-fixture.test.tsx`, `test/native-focus-fixtures.test.tsx`, `test/new-components.test.tsx`, `test/prop-table.test.tsx`, `test/sizing.test.tsx`, `test/switch-label.test.tsx` |
-| E2E importing or driving it | 12: `e2e/behavior/escape-layers.e2e.ts`, `e2e/behavior/form-autocomplete.e2e.ts`, `e2e/behavior/listbox.e2e.ts`, `e2e/behavior/material-overlay-host.e2e.ts`, `e2e/behavior/scroll-focus.e2e.ts`, `e2e/journeys/carousel.e2e.ts`, `e2e/journeys/control-refs.e2e.ts`, `e2e/journeys/identity.e2e.ts`, `e2e/journeys/keyboard.e2e.ts`, `e2e/journeys/overlay-placement.e2e.ts`, `e2e/journeys/touch.e2e.ts`, `e2e/starter/starter.spec.ts` |
+| Touch target | no touch-target name (the exports of `src/style/touch-target.ts`, `src/style/touch-target-seed.ts`, `src/style/touch-seam.ts`, `src/style/clip-slop.ts`, the `TouchTargetSkin` fields, or `hitSlop`) in its implementation modules |
+| Tests importing it | 10: `test/hover-lift.test.tsx`, `test/layout-responsive.test.tsx`, `test/layout-spans.test.tsx`, `test/native-carousel-fixture.test.tsx`, `test/native-focus-fixtures.test.tsx`, `test/new-components.test.tsx`, `test/prop-table.test.tsx`, `test/sizing.test.tsx`, `test/skins-smoke.test.tsx`, `test/switch-label.test.tsx` |
+| E2E naming it | 12: `e2e/behavior/escape-layers.e2e.ts`, `e2e/behavior/form-autocomplete.e2e.ts`, `e2e/behavior/listbox.e2e.ts`, `e2e/behavior/material-overlay-host.e2e.ts`, `e2e/behavior/scroll-focus.e2e.ts`, `e2e/journeys/carousel.e2e.ts`, `e2e/journeys/control-refs.e2e.ts`, `e2e/journeys/identity.e2e.ts`, `e2e/journeys/keyboard.e2e.ts`, `e2e/journeys/overlay-placement.e2e.ts`, `e2e/journeys/touch.e2e.ts`, `e2e/starter/starter.spec.ts` |
+| E2E catalog sweeps | 6: `e2e/a11y/components.e2e.ts` (componentRoutes), `e2e/responsive/component-widths.e2e.ts` (contentRoutes, componentRoutes), `e2e/smoke/examples.e2e.ts` (componentExamples), `e2e/smoke/routes.e2e.ts` (allRoutes), `e2e/visual/components.e2e.ts` (componentRoutes), `e2e/visual/materials.e2e.ts` (MATERIAL_ROUTES) |
 <!-- audit:facts:end -->
 
 ## Variants

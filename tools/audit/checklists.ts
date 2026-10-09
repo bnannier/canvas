@@ -37,7 +37,19 @@
 import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { ROOT } from "../../e2e/support/routes.ts";
-import { componentFacts, loadCorpus, pageFacts, type ComponentFacts, type FactsCorpus, type PageFacts, type ReferenceCell } from "./facts.ts";
+import {
+  TOUCH_TARGET_COVERAGE,
+  TOUCH_TARGET_MODULES,
+  TOUCH_TARGET_SKIN,
+  componentFacts,
+  loadCorpus,
+  pageFacts,
+  type ComponentFacts,
+  type FactsCorpus,
+  type PageFacts,
+  type ReferenceCell,
+  type SweepFact,
+} from "./facts.ts";
 import { NATIVE_CELLS_PER_VARIANT, PAGE_ROW_KEY, WEB_CELLS_PER_VARIANT, components, pages, sectionKeys, type InventoryComponent, type InventoryPage } from "./inventory.ts";
 import { COMPONENT_PLANS, FAMILY_CHECKLISTS, FAMILY_LABEL, PAGE_PLAN, UNIVERSAL_RUBRIC, type Family } from "./plan-specifics.ts";
 import { SEPARATOR_LINE, headerRow, readSectionTable, separatorRow, splitRow, type MalformedRow, type TableShape } from "./table.ts";
@@ -71,7 +83,11 @@ export const FINDINGS_SHAPE: TableShape = { name: "findings", columns: ["ID", "S
 export const SIGN_OFF_SHAPE: TableShape = { name: "sign-off", columns: ["Platform", "Run id", "Reviewer", "Date", "Result"], minCells: 4, free: 4 };
 
 export const FINDING_SEVERITIES = ["critical", "high", "medium", "low"] as const;
+/** The Status vocabulary, exactly as audit/README.md spells it (tools/audit/checklists.test.ts holds the two together). */
 export const FINDING_STATUSES = ["open", "verified", "fixed", "wontfix", "duplicate"] as const;
+
+/** A Fix commit cell: a commit SHA, 7 to 40 hex digits, back-ticked or not. */
+export const FIX_COMMIT = /^`?[0-9a-f]{7,40}`?$/i;
 
 export interface ChecklistSources {
   components: InventoryComponent[];
@@ -97,6 +113,51 @@ function referenceCell(label: string, c: ReferenceCell): string {
   return `${label}: ${c.text}`;
 }
 
+/** Who a package's own component belongs to, as a fact says it. */
+const packageOwner = (specifier: string): string => (specifier === "react-native" ? "React Native" : code(specifier));
+
+function implementationLine(facts: ComponentFacts): string {
+  const impl = facts.implementation;
+  const markdownOnly = `${code(`${facts.sourceDir}/`)} holds only its markdown`;
+  switch (impl.kind) {
+    case "directory":
+      return `its own source directory, ${code(`${facts.sourceDir}/`)} (${impl.modules.length} TypeScript modules)`;
+    case "module":
+      return `declared in ${list(impl.modules)}${impl.reactNative ? `, which imports React Native's own ${code(impl.reactNative)}` : ""}; ${markdownOnly}`;
+    case "package":
+      return `${packageOwner(impl.specifier)}'s own ${code(impl.name)}, re-exported from ${code(impl.via)}; the kit has no source of its own for it, and ${markdownOnly}`;
+    case "unresolved":
+      return `not found: ${code(`${facts.sourceDir}/`)} has no entry module and \`src/index.ts\` does not export ${code(facts.exports[0])}`;
+  }
+}
+
+function platformEntriesLine(facts: ComponentFacts): string {
+  const impl = facts.implementation;
+  if (impl.kind === "package") return `none in the kit: ${packageOwner(impl.specifier)}'s own ${code(impl.name)}, imported the same way on every platform`;
+  if (impl.kind === "module") {
+    return impl.platformBuilds
+      ? `${list(impl.modules)} has platform builds of its own, which tools/skins/divergence.ts does not read outside the component directories`
+      : `none (${list(impl.modules)} is one build on every platform)`;
+  }
+  return facts.skins.hasPlatformEntries ? `${skinLine("iOS", facts)}. ${skinLine("Android", facts)}` : "none (one build on every platform)";
+}
+
+/** What a source fact says when the component has no kit source to read. */
+const NO_SOURCE = "not applicable: the kit has no source of its own for it";
+
+function touchTargetLine(facts: ComponentFacts): string {
+  if (!facts.implementation.modules.length) return NO_SOURCE;
+  const { modules, coverage } = facts.touchTarget;
+  const names = modules.length
+    ? modules.map((t) => `${code(t.module)}: ${t.names.join(", ")}`).join("; ")
+    : `no touch-target name (the exports of ${TOUCH_TARGET_MODULES.map((m) => code(m)).join(", ")}, the ${code(TOUCH_TARGET_SKIN)} fields, or \`hitSlop\`) in its implementation modules`;
+  return coverage ? `${names}. ${code(TOUCH_TARGET_COVERAGE)} records it as ${coverage.list}: ${coverage.reason}` : names;
+}
+
+function sweepsLine(sweeps: SweepFact[]): string {
+  return `${sweeps.length}: ${sweeps.length ? sweeps.map((s) => `${code(s.file)} (${s.catalogs.join(", ")})`).join(", ") : "none"}`;
+}
+
 function skinLine(platform: "iOS" | "Android", facts: ComponentFacts): string {
   const skin = facts.skins[platform];
   const names = Object.keys(skin.exports);
@@ -116,11 +177,9 @@ export function renderComponentFacts(facts: ComponentFacts): string[] {
     ["Category", `${facts.category} (${code(`${facts.sourceDir}/`)})`],
     ["Markdown", code(facts.markdown)],
     ["Source files", list(facts.sourceFiles)],
+    ["Implementation", implementationLine(facts)],
     ["Exports", facts.exports.join(", ")],
-    [
-      "Platform entries",
-      facts.skins.hasPlatformEntries ? `${skinLine("iOS", facts)}. ${skinLine("Android", facts)}` : "none (one build on every platform)",
-    ],
+    ["Platform entries", platformEntriesLine(facts)],
     [
       "Platform-skins registry",
       facts.registry.ios.length || facts.registry.android.length
@@ -152,15 +211,11 @@ export function renderComponentFacts(facts: ComponentFacts): string[] {
       }`,
     ],
     ["Overlay recipe", facts.overlayRecipe ? `yes (${facts.overlayRecipe.role})` : "none"],
-    ["MeasureProps", facts.measureProps.length ? `adopted in ${list(facts.measureProps)}` : "not adopted"],
-    [
-      "Touch target",
-      facts.touchTarget.useMinTargetSlop.length || facts.touchTarget.minTarget.length
-        ? `useMinTargetSlop in ${list(facts.touchTarget.useMinTargetSlop)}; minTarget in ${list(facts.touchTarget.minTarget)}`
-        : "no minTarget or useMinTargetSlop in the source modules",
-    ],
+    ["MeasureProps", !facts.implementation.modules.length ? NO_SOURCE : facts.measureProps.length ? `adopted in ${list(facts.measureProps)}` : "not adopted"],
+    ["Touch target", touchTargetLine(facts)],
     ["Tests importing it", `${facts.tests.length}: ${list(facts.tests)}`],
-    ["E2E importing or driving it", `${facts.e2e.length}: ${list(facts.e2e)}`],
+    ["E2E naming it", `${facts.e2e.length}: ${list(facts.e2e)}`],
+    ["E2E catalog sweeps", sweepsLine(facts.e2eSweeps)],
   ];
   return ["| Fact | Value |", "|---|---|", ...rows.map(([fact, value]) => `| ${fact} | ${cell(value)} |`)];
 }
@@ -173,7 +228,8 @@ export function renderPageFacts(facts: PageFacts): string[] {
     ["Data module", code(facts.module)],
     ["Sections", facts.sections.length ? facts.sections.map((title, i) => `${i + 1}. ${title}`).join("; ") : "none parsed"],
     ["Kit imports in the module", facts.kitImports.join(", ") || "none"],
-    ["E2E driving it", `${facts.e2e.length}: ${list(facts.e2e)}`],
+    ["E2E naming it", `${facts.e2e.length}: ${list(facts.e2e)}`],
+    ["E2E catalog sweeps", sweepsLine(facts.e2eSweeps)],
   ];
   return ["| Fact | Value |", "|---|---|", ...rows.map(([fact, value]) => `| ${fact} | ${cell(value)} |`)];
 }
@@ -439,7 +495,8 @@ const oneOf = <T extends string>(values: readonly T[], value: string): T | null 
  * The findings under `## Findings`, read with the one table reader: a "|" typed in a
  * summary stays in the summary, an empty cell is an empty cell, and a row whose severity
  * or status is not one of the table's words (a missing cell shifts them), whose ID is
- * empty or taken, is reported by line rather than counted or dropped.
+ * empty or taken, that reads `fixed` with no Fix commit, or whose Fix commit is not a
+ * commit SHA, is reported by line rather than counted or dropped.
  */
 export function readFindings(content: string): FindingsTable {
   const table = readSectionTable(content, "Findings", FINDINGS_SHAPE);
@@ -453,6 +510,8 @@ export function readFindings(content: string): FindingsTable {
     if (!id) bad("the ID cell is empty");
     else if (!severity) bad(`the Severity cell reads "${severityCell}", not one of ${FINDING_SEVERITIES.join(", ")} (a missing cell shifts the columns; write a pipe in a cell as \`\\|\`)`);
     else if (!status) bad(`the Status cell reads "${statusCell}", not one of ${FINDING_STATUSES.join(", ")} (a missing cell shifts the columns; write a pipe in a cell as \`\\|\`)`);
+    else if (status === "fixed" && !fix) bad("the Status cell reads fixed but the Fix commit cell is empty; record the SHA of the commit that closed it");
+    else if (fix && !FIX_COMMIT.test(fix)) bad(`the Fix commit cell reads "${fix}", not a commit SHA (7 to 40 hex digits)`);
     else if (seen.has(id)) bad(`a second finding ${id} (the first is on line ${seen.get(id)})`);
     else {
       seen.set(id, line);

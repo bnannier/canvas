@@ -9,6 +9,7 @@ Audit checklist for `/components/skeleton`. The facts block and the variants tab
 | Category | Atoms (`src/atoms/skeleton/`) |
 | Markdown | `src/atoms/skeleton/skeleton.md` |
 | Source files | `skeleton.android.tsx`, `skeleton.ios.tsx`, `skeleton.md`, `skeleton.shared.tsx`, `skeleton.styles.ts`, `skeleton.tsx` |
+| Implementation | its own source directory, `src/atoms/skeleton/` (5 TypeScript modules) |
 | Exports | Skeleton |
 | Platform entries | iOS: web build: Skeleton. Android: web build: Skeleton |
 | Platform-skins registry | none (every export is the web build, so the docs three-up renders it as is) |
@@ -20,9 +21,10 @@ Audit checklist for `/components/skeleton`. The facts block and the variants tab
 | Interactions registry | in the inventory; evidence: none registered |
 | Overlay recipe | none |
 | MeasureProps | not adopted |
-| Touch target | no minTarget or useMinTargetSlop in the source modules |
-| Tests importing it | 2: `test/behavior-smoke-c.test.tsx`, `test/skeleton-accessibility.test.tsx` |
-| E2E importing or driving it | 0: none |
+| Touch target | no touch-target name (the exports of `src/style/touch-target.ts`, `src/style/touch-target-seed.ts`, `src/style/touch-seam.ts`, `src/style/clip-slop.ts`, the `TouchTargetSkin` fields, or `hitSlop`) in its implementation modules |
+| Tests importing it | 3: `test/behavior-smoke-c.test.tsx`, `test/skeleton-accessibility.test.tsx`, `test/skins-smoke.test.tsx` |
+| E2E naming it | 0: none |
+| E2E catalog sweeps | 6: `e2e/a11y/components.e2e.ts` (componentRoutes), `e2e/responsive/component-widths.e2e.ts` (contentRoutes, componentRoutes), `e2e/smoke/examples.e2e.ts` (componentExamples), `e2e/smoke/routes.e2e.ts` (allRoutes), `e2e/visual/components.e2e.ts` (componentRoutes), `e2e/visual/materials.e2e.ts` (MATERIAL_ROUTES) |
 <!-- audit:facts:end -->
 
 ## Variants

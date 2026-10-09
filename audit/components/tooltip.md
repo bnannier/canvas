@@ -9,6 +9,7 @@ Audit checklist for `/components/tooltip`. The facts block and the variants tabl
 | Category | Atoms (`src/atoms/tooltip/`) |
 | Markdown | `src/atoms/tooltip/tooltip.md` |
 | Source files | `tooltip.android.tsx`, `tooltip.ios.tsx`, `tooltip.md`, `tooltip.shared.tsx`, `tooltip.styles.ts`, `tooltip.tsx` |
+| Implementation | its own source directory, `src/atoms/tooltip/` (5 TypeScript modules) |
 | Exports | Tooltip |
 | Platform entries | iOS: own build: Tooltip (injects platform parts (../button/button.ios.js)). Android: own build: Tooltip (builds from its own androidSkin; injects platform parts (../button/button.android.js)) |
 | Platform-skins registry | iOS: Tooltip; Android: Tooltip |
@@ -20,9 +21,10 @@ Audit checklist for `/components/tooltip`. The facts block and the variants tabl
 | Interactions registry | in the inventory; evidence: none registered |
 | Overlay recipe | none |
 | MeasureProps | not adopted |
-| Touch target | no minTarget or useMinTargetSlop in the source modules |
-| Tests importing it | 3: `test/dense-overlays.test.tsx`, `test/no-console-violations.test.tsx`, `test/overlays.test.tsx` |
-| E2E importing or driving it | 0: none |
+| Touch target | `tooltip.shared.tsx`: hitSlop. `test/touch-target-coverage.test.ts` records it as covered another way: wraps the caller's node and adds hitSlop; the target is theirs |
+| Tests importing it | 4: `test/dense-overlays.test.tsx`, `test/no-console-violations.test.tsx`, `test/overlays.test.tsx`, `test/skins-smoke.test.tsx` |
+| E2E naming it | 0: none |
+| E2E catalog sweeps | 6: `e2e/a11y/components.e2e.ts` (componentRoutes), `e2e/responsive/component-widths.e2e.ts` (contentRoutes, componentRoutes), `e2e/smoke/examples.e2e.ts` (componentExamples), `e2e/smoke/routes.e2e.ts` (allRoutes), `e2e/visual/components.e2e.ts` (componentRoutes), `e2e/visual/materials.e2e.ts` (MATERIAL_ROUTES) |
 <!-- audit:facts:end -->
 
 ## Variants

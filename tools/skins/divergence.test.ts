@@ -2,7 +2,7 @@ import { describe, expect, it } from "bun:test";
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
-import { builtExports, componentSkins, exportDivergences, isWebSkinAlias } from "./divergence.ts";
+import { builtExports, componentSkins, exportDivergences, isWebSkinAlias, platformModuleOf, shellImportFindings, traceExport } from "./divergence.ts";
 import { registeredSkins } from "./registry.ts";
 
 const KIT = resolve(import.meta.dir, "../../src");
@@ -247,6 +247,133 @@ describe("skin divergence, per built export", () => {
       // so it counts as the platform's own: the safe error is a registry entry the docs
       // do not need, never a web build labelled iOS.
       expect(exportDivergences(join(root, "atoms/odd"), 'import { createOdd } from "./odd.shared.js";\nimport { iosSkin } from "./odd.styles.js";\nexport const Odd = createOdd(iosSkin());', "iOS")).toEqual({ Odd: "builds from its own iosSkin" });
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("classifies every form an entry exports in, and counts a form it cannot classify as the platform's own (item 5)", () => {
+    const root = kit({
+      "atoms/thing/thing.styles.ts": [
+        "export const webSkin = { radius: 8 };",
+        "export const iosSkin = webSkin;",
+        "export const iosOwnSkin = { radius: 4 };",
+        "export const androidSkin = webSkin;",
+        "export const androidOwnSkin = { radius: 2 };",
+      ].join("\n"),
+      "atoms/part/part.styles.ts": "export const webSkin = { h: 36 };\nexport const iosSkin = { h: 44 };\nexport const iosPlainSkin = webSkin;",
+      "atoms/part/part.ios.tsx": [
+        'import { createPart } from "./part.shared.js";',
+        'import { iosSkin, iosPlainSkin } from "./part.styles.js";',
+        "export const Part = createPart(iosSkin);",
+        "export const Plain = createPart(iosPlainSkin);",
+      ].join("\n"),
+      "atoms/other/other.styles.ts": "export const webSkin = { a: 1 };\nexport const iosSkin = { a: 2 };",
+      "atoms/other/other.ios.tsx": 'import { createOther } from "./other.shared.js";\nimport { iosSkin } from "./other.styles.js";\nexport const Other = createOther(iosSkin);',
+      "atoms/thing/tokenize.ts": "export const tokenize = () => [];",
+      "atoms/thing/elsewhere.ts": "export const ELSEWHERE = 1;",
+      "atoms/thing/odd.tsx": "export const Odd = 1;",
+      "atoms/thing/odd.ios.tsx": "export const Odd = 2;",
+      "atoms/thing/thing.ios.tsx": [
+        'import { createThing } from "./thing.shared.js";',
+        'import { iosSkin, iosOwnSkin } from "./thing.styles.js";',
+        // A function or class the entry writes itself cannot be read as the web build.
+        "export function Fn() { return null; }",
+        "export class Klass {}",
+        // A `let` may be reassigned after its initializer.
+        "export let Mutable = createThing(iosSkin);",
+        // Declared, then exported by list: judged like `export const`, under the exported name.
+        "const Local = createThing(iosSkin);",
+        "const Own = createThing(iosOwnSkin);",
+        "export { Local, Own as Renamed };",
+        // Another component's platform build: judged as a part.
+        'export { Part, Plain } from "../part/part.ios.js";',
+        'export * from "../other/other.ios.js";',
+        // One module on every platform: the shared module, a logic module, a package.
+        'export { helper } from "./thing.shared.js";',
+        'export * from "./thing.shared.js";',
+        'export { tokenize } from "./tokenize.js";',
+        'export * from "./elsewhere.js";',
+        'export { View } from "react-native";',
+        // A module with an iOS build of its own that the entry does not name, and one that does not resolve.
+        'export { Odd } from "./odd.js";',
+        'export { Gone } from "./gone.js";',
+        'export * as ns from "../part/part.ios.js";',
+        "export default createThing(iosOwnSkin);",
+      ].join("\n"),
+      "atoms/thing/thing.android.tsx": [
+        'import { createThing } from "./thing.shared.js";',
+        'import { androidSkin, androidOwnSkin } from "./thing.styles.js";',
+        "const D = createThing(androidSkin);",
+        "const E = createThing(androidOwnSkin);",
+        "export { E };",
+        "export default D;",
+      ].join("\n"),
+    });
+    try {
+      const thing = skinsOf(root, "thing");
+      const ios = Object.fromEntries(Object.entries(thing.exportDivergence).flatMap(([name, by]) => (by.iOS ? [[name, by.iOS]] : [])));
+      expect(ios).toEqual({
+        Fn: "exports Fn as a function declaration, a form the reader cannot classify; counted as the platform's own",
+        Klass: "exports Klass as a class declaration, a form the reader cannot classify; counted as the platform's own",
+        Mutable: "exports Mutable, the `let` or `var` Mutable, a form the reader cannot classify; counted as the platform's own",
+        Renamed: "builds from its own iosOwnSkin",
+        Part: "re-exports the iOS build of Part (../part/part.ios.js)",
+        Other: "re-exports the iOS build of Other (../other/other.ios.js)",
+        Odd: "re-exports Odd from ./odd.js (./odd.js has platform builds of its own that the entry does not import by their platform path), a form the reader cannot classify; counted as the platform's own",
+        Gone: "re-exports Gone from ./gone.js (./gone.js does not resolve), a form the reader cannot classify; counted as the platform's own",
+        ns: "re-exports ns, the namespace of ../part/part.ios.js, a form the reader cannot classify; counted as the platform's own",
+        default: "builds from its own iosOwnSkin",
+      });
+      // What it can prove is listed as the web build; what is one module everywhere is not listed.
+      expect(thing.exports).toEqual(expect.arrayContaining(["Local", "Plain"]));
+      for (const name of ["Local", "Plain"]) expect(thing.exportDivergence[name]?.iOS).toBeUndefined();
+      for (const name of ["helper", "tokenize", "ELSEWHERE", "View"]) expect(thing.exports).not.toContain(name);
+      // A default export of a local const is that const's build.
+      expect(thing.exportDivergence.E).toEqual({ Android: "builds from its own androidOwnSkin" });
+      expect(thing.exportDivergence.default).toEqual({ iOS: "builds from its own iosOwnSkin" });
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("follows a barrel to the module that builds a name, and judges a shell's import there (item 7)", () => {
+    const root = kit({
+      "atoms/button/button.styles.ts": "export const webSkin = { h: 36 };\nexport const iosSkin = { h: 44 };\nexport const androidSkin = webSkin;",
+      "atoms/button/button.tsx": 'import { createButton } from "./button.shared.js";\nimport { webSkin } from "./button.styles.js";\nexport const Button = createButton(webSkin);',
+      "atoms/button/button.ios.tsx": 'import { createButton } from "./button.shared.js";\nimport { iosSkin } from "./button.styles.js";\nexport const Button = createButton(iosSkin);',
+      "atoms/badge/badge.styles.ts": "export const webSkin = { r: 4 };\nexport const iosSkin = webSkin;",
+      "atoms/badge/badge.tsx": 'import { createBadge } from "./badge.shared.js";\nimport { webSkin } from "./badge.styles.js";\nexport const Badge = createBadge(webSkin);',
+      "atoms/badge/badge.ios.tsx": 'import { createBadge } from "./badge.shared.js";\nimport { iosSkin } from "./badge.styles.js";\nexport const Badge = createBadge(iosSkin);',
+      "atoms/index.ts": 'export * from "./button/button.js";\nexport * from "./badge/badge.js";',
+      "index.ts": 'export * from "./atoms/index.js";\nexport { View } from "react-native";',
+    });
+    try {
+      const barrel = join(root, "atoms/index.ts");
+      expect(traceExport(barrel, "Button")!.steps.map((s) => s.file)).toEqual([barrel, join(root, "atoms/button/button.tsx")]);
+      expect(traceExport(join(root, "index.ts"), "View")).toEqual({ steps: [{ file: join(root, "index.ts"), name: "View" }], package: { specifier: "react-native", name: "View" } });
+      expect(traceExport(barrel, "Nothing")).toBeNull();
+      expect(platformModuleOf(barrel, "Badge")).toEqual({ file: join(root, "atoms/badge/badge.tsx"), name: "Badge" });
+      const isComponent = (file: string) => /\/(atoms|molecules)\//.test(file);
+      const shell = join(root, "molecules/card/card.shared.tsx");
+      const judge = (source: string) => shellImportFindings(shell, source, "card.shared.tsx", isComponent);
+      // Through the group barrel and through the kit's entry, judged as a direct import is.
+      expect(judge('import { Button, Badge } from "../../atoms/index.js";')).toEqual({
+        judged: 2,
+        offenders: [
+          "card.shared.tsx imports Button from ../../atoms/index.js (through to button.tsx), which looks different on iOS; take it as a part (import { Button as WebButton }, parts.Button ?? WebButton)",
+        ],
+      });
+      expect(judge('import { Button } from "../../index.js";').offenders).toHaveLength(1);
+      expect(judge('import { Button } from "../../atoms/button/button.js";').offenders).toEqual([
+        "card.shared.tsx imports Button from ../../atoms/button/button.js, which looks different on iOS; take it as a part (import { Button as WebButton }, parts.Button ?? WebButton)",
+      ]);
+      // The part's web default is allowed; a namespace import of the barrel cannot inject parts.
+      expect(judge('import { Button as WebButton, Badge } from "../../atoms/index.js";')).toEqual({ judged: 2, offenders: [] });
+      expect(judge('import * as atoms from "../../atoms/index.js";').offenders).toEqual([
+        "card.shared.tsx imports ../../atoms/index.js whole; import each part by name so its platform build can be injected",
+      ]);
+      expect(judge('import { View } from "../../index.js";')).toEqual({ judged: 0, offenders: [] });
     } finally {
       rmSync(root, { recursive: true, force: true });
     }

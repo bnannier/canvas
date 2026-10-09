@@ -9,6 +9,7 @@ Audit checklist for `/components/empty-state`. The facts block and the variants 
 | Category | Molecules (`src/molecules/empty-state/`) |
 | Markdown | `src/molecules/empty-state/empty-state.md` |
 | Source files | `empty-state.android.tsx`, `empty-state.ios.tsx`, `empty-state.md`, `empty-state.shared.tsx`, `empty-state.styles.ts`, `empty-state.tsx` |
+| Implementation | its own source directory, `src/molecules/empty-state/` (5 TypeScript modules) |
 | Exports | EmptyState |
 | Platform entries | iOS: own build: EmptyState (builds from its own iosSkin; injects platform parts (../../atoms/button/button.ios.js)). Android: own build: EmptyState (builds from its own androidSkin; injects platform parts (../../atoms/button/button.android.js)) |
 | Platform-skins registry | iOS: EmptyState; Android: EmptyState |
@@ -20,9 +21,10 @@ Audit checklist for `/components/empty-state`. The facts block and the variants 
 | Interactions registry | in the inventory; evidence: none registered |
 | Overlay recipe | none |
 | MeasureProps | not adopted |
-| Touch target | no minTarget or useMinTargetSlop in the source modules |
-| Tests importing it | 1: `test/behavior-smoke-a.test.tsx` |
-| E2E importing or driving it | 0: none |
+| Touch target | no touch-target name (the exports of `src/style/touch-target.ts`, `src/style/touch-target-seed.ts`, `src/style/touch-seam.ts`, `src/style/clip-slop.ts`, the `TouchTargetSkin` fields, or `hitSlop`) in its implementation modules |
+| Tests importing it | 2: `test/behavior-smoke-a.test.tsx`, `test/skins-smoke.test.tsx` |
+| E2E naming it | 0: none |
+| E2E catalog sweeps | 6: `e2e/a11y/components.e2e.ts` (componentRoutes), `e2e/responsive/component-widths.e2e.ts` (contentRoutes, componentRoutes), `e2e/smoke/examples.e2e.ts` (componentExamples), `e2e/smoke/routes.e2e.ts` (allRoutes), `e2e/visual/components.e2e.ts` (componentRoutes), `e2e/visual/materials.e2e.ts` (MATERIAL_ROUTES) |
 <!-- audit:facts:end -->
 
 ## Variants

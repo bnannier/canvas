@@ -9,6 +9,7 @@ Audit checklist for `/components/video`. The facts block and the variants table 
 | Category | Atoms (`src/atoms/video/`) |
 | Markdown | `src/atoms/video/video.md` |
 | Source files | `video.android.tsx`, `video.controls.tsx`, `video.ios.tsx`, `video.md`, `video.shared.tsx`, `video.styles.ts`, `video.tsx` |
+| Implementation | its own source directory, `src/atoms/video/` (6 TypeScript modules) |
 | Exports | Video |
 | Platform entries | iOS: own build: Video (builds from its own iosSkin; injects platform parts (../spinner/spinner.ios.js)). Android: own build: Video (builds from its own androidSkin; injects platform parts (../spinner/spinner.android.js)) |
 | Platform-skins registry | iOS: Video; Android: Video |
@@ -20,9 +21,10 @@ Audit checklist for `/components/video`. The facts block and the variants table 
 | Interactions registry | in the inventory; evidence: none registered |
 | Overlay recipe | none |
 | MeasureProps | not adopted |
-| Touch target | useMinTargetSlop in none; minTarget in `video.styles.ts` |
-| Tests importing it | 1: `test/video.test.tsx` |
-| E2E importing or driving it | 1: `e2e/journeys/keyboard.e2e.ts` |
+| Touch target | `video.styles.ts`: TOUCH_TARGET, minTarget |
+| Tests importing it | 2: `test/skins-smoke.test.tsx`, `test/video.test.tsx` |
+| E2E naming it | 1: `e2e/journeys/keyboard.e2e.ts` |
+| E2E catalog sweeps | 6: `e2e/a11y/components.e2e.ts` (componentRoutes), `e2e/responsive/component-widths.e2e.ts` (contentRoutes, componentRoutes), `e2e/smoke/examples.e2e.ts` (componentExamples), `e2e/smoke/routes.e2e.ts` (allRoutes), `e2e/visual/components.e2e.ts` (componentRoutes), `e2e/visual/materials.e2e.ts` (MATERIAL_ROUTES) |
 <!-- audit:facts:end -->
 
 ## Variants

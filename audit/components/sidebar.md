@@ -9,6 +9,7 @@ Audit checklist for `/components/sidebar`. The facts block and the variants tabl
 | Category | Organisms (`src/organisms/sidebar/`) |
 | Markdown | `src/organisms/sidebar/sidebar.md` |
 | Source files | `sidebar.android.tsx`, `sidebar.drilldown.tsx`, `sidebar.ios.tsx`, `sidebar.item.tsx`, `sidebar.md`, `sidebar.shared.tsx`, `sidebar.styles.ts`, `sidebar.tsx` |
+| Implementation | its own source directory, `src/organisms/sidebar/` (7 TypeScript modules) |
 | Exports | Sidebar |
 | Platform entries | iOS: own build: Sidebar (builds from its own iosSkin; injects platform parts (../drawer/drawer.ios.js)). Android: own build: Sidebar (builds from its own androidSkin; injects platform parts (../drawer/drawer.android.js)) |
 | Platform-skins registry | iOS: Sidebar; Android: Sidebar |
@@ -20,9 +21,10 @@ Audit checklist for `/components/sidebar`. The facts block and the variants tabl
 | Interactions registry | in the inventory; evidence: none registered |
 | Overlay recipe | none |
 | MeasureProps | not adopted |
-| Touch target | no minTarget or useMinTargetSlop in the source modules |
-| Tests importing it | 4: `test/focus-ring.test.tsx`, `test/hover-lift.test.tsx`, `test/sidebar.test.tsx`, `test/text-contrast.test.tsx` |
-| E2E importing or driving it | 0: none |
+| Touch target | `sidebar.shared.tsx`: hitSlop. `test/touch-target-coverage.test.ts` records it as known gap: iOS rows render 36 tall against a 44 minimum |
+| Tests importing it | 5: `test/focus-ring.test.tsx`, `test/hover-lift.test.tsx`, `test/sidebar.test.tsx`, `test/skins-smoke.test.tsx`, `test/text-contrast.test.tsx` |
+| E2E naming it | 0: none |
+| E2E catalog sweeps | 6: `e2e/a11y/components.e2e.ts` (componentRoutes), `e2e/responsive/component-widths.e2e.ts` (contentRoutes, componentRoutes), `e2e/smoke/examples.e2e.ts` (componentExamples), `e2e/smoke/routes.e2e.ts` (allRoutes), `e2e/visual/components.e2e.ts` (componentRoutes), `e2e/visual/materials.e2e.ts` (MATERIAL_ROUTES) |
 <!-- audit:facts:end -->
 
 ## Variants

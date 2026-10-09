@@ -9,6 +9,7 @@ Audit checklist for `/components/breadcrumb`. The facts block and the variants t
 | Category | Atoms (`src/atoms/breadcrumb/`) |
 | Markdown | `src/atoms/breadcrumb/breadcrumb.md` |
 | Source files | `breadcrumb.android.tsx`, `breadcrumb.ios.tsx`, `breadcrumb.md`, `breadcrumb.shared.tsx`, `breadcrumb.styles.ts`, `breadcrumb.tsx` |
+| Implementation | its own source directory, `src/atoms/breadcrumb/` (5 TypeScript modules) |
 | Exports | Breadcrumb, BreadcrumbItem |
 | Platform entries | iOS: own build: Breadcrumb (builds from its own iosSkin); BreadcrumbItem (builds from its own iosSkin). Android: own build: Breadcrumb (builds from its own androidSkin); BreadcrumbItem (builds from its own androidSkin) |
 | Platform-skins registry | iOS: Breadcrumb, BreadcrumbItem; Android: Breadcrumb, BreadcrumbItem |
@@ -20,9 +21,10 @@ Audit checklist for `/components/breadcrumb`. The facts block and the variants t
 | Interactions registry | in the inventory; evidence: none registered |
 | Overlay recipe | none |
 | MeasureProps | not adopted |
-| Touch target | useMinTargetSlop in none; minTarget in `breadcrumb.shared.tsx`, `breadcrumb.styles.ts` |
-| Tests importing it | 1: `test/new-components.test.tsx` |
-| E2E importing or driving it | 0: none |
+| Touch target | `breadcrumb.shared.tsx`: hitSlop, minTarget; `breadcrumb.styles.ts`: minTarget |
+| Tests importing it | 2: `test/new-components.test.tsx`, `test/skins-smoke.test.tsx` |
+| E2E naming it | 0: none |
+| E2E catalog sweeps | 6: `e2e/a11y/components.e2e.ts` (componentRoutes), `e2e/responsive/component-widths.e2e.ts` (contentRoutes, componentRoutes), `e2e/smoke/examples.e2e.ts` (componentExamples), `e2e/smoke/routes.e2e.ts` (allRoutes), `e2e/visual/components.e2e.ts` (componentRoutes), `e2e/visual/materials.e2e.ts` (MATERIAL_ROUTES) |
 <!-- audit:facts:end -->
 
 ## Variants

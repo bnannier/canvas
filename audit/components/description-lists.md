@@ -9,6 +9,7 @@ Audit checklist for `/components/description-lists`. The facts block and the var
 | Category | Molecules (`src/molecules/description-lists/`) |
 | Markdown | `src/molecules/description-lists/description-lists.md` |
 | Source files | `description-lists.android.tsx`, `description-lists.ios.tsx`, `description-lists.md`, `description-lists.shared.tsx`, `description-lists.styles.ts`, `description-lists.tsx` |
+| Implementation | its own source directory, `src/molecules/description-lists/` (5 TypeScript modules) |
 | Exports | DescriptionList |
 | Platform entries | iOS: own build: DescriptionList (builds from its own iosSkin; injects platform parts (../../atoms/button/button.ios.js)). Android: own build: DescriptionList (builds from its own androidSkin; injects platform parts (../../atoms/button/button.android.js)) |
 | Platform-skins registry | iOS: DescriptionList; Android: DescriptionList |
@@ -20,9 +21,10 @@ Audit checklist for `/components/description-lists`. The facts block and the var
 | Interactions registry | in the inventory; evidence: description-edit (unit-web, test/behavior-smoke-b.test.tsx) |
 | Overlay recipe | none |
 | MeasureProps | not adopted |
-| Touch target | no minTarget or useMinTargetSlop in the source modules |
-| Tests importing it | 4: `test/behavior-smoke-b.test.tsx`, `test/escape-layers.test.tsx`, `test/native-focus-fixtures.test.tsx`, `test/responsive-narrow-fixes.test.tsx` |
-| E2E importing or driving it | 2: `e2e/behavior/escape-layers.e2e.ts`, `e2e/journeys/keyboard.e2e.ts` |
+| Touch target | no touch-target name (the exports of `src/style/touch-target.ts`, `src/style/touch-target-seed.ts`, `src/style/touch-seam.ts`, `src/style/clip-slop.ts`, the `TouchTargetSkin` fields, or `hitSlop`) in its implementation modules |
+| Tests importing it | 5: `test/behavior-smoke-b.test.tsx`, `test/escape-layers.test.tsx`, `test/native-focus-fixtures.test.tsx`, `test/responsive-narrow-fixes.test.tsx`, `test/skins-smoke.test.tsx` |
+| E2E naming it | 2: `e2e/behavior/escape-layers.e2e.ts`, `e2e/journeys/keyboard.e2e.ts` |
+| E2E catalog sweeps | 6: `e2e/a11y/components.e2e.ts` (componentRoutes), `e2e/responsive/component-widths.e2e.ts` (contentRoutes, componentRoutes), `e2e/smoke/examples.e2e.ts` (componentExamples), `e2e/smoke/routes.e2e.ts` (allRoutes), `e2e/visual/components.e2e.ts` (componentRoutes), `e2e/visual/materials.e2e.ts` (MATERIAL_ROUTES) |
 <!-- audit:facts:end -->
 
 ## Variants

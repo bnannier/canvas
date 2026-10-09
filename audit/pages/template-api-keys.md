@@ -10,7 +10,8 @@ Audit checklist for `/templates/api-keys`. The facts block and the variants tabl
 | Data module | `docs/src/core/data/templates/api-keys.tsx` |
 | Sections | 1. Create a key; 2. Active keys; 3. Danger zone |
 | Kit imports in the module | Alert, AlertDialog, Badge, Button, Card, Column, DataTable, Divider, EmptyState, Icon, Input, Row, Typography, useToast |
-| E2E driving it | 0: none |
+| E2E naming it | 0: none |
+| E2E catalog sweeps | 3: `e2e/behavior/hydration-ids.e2e.ts` (contentRoutes), `e2e/responsive/component-widths.e2e.ts` (contentRoutes), `e2e/smoke/routes.e2e.ts` (allRoutes) |
 <!-- audit:facts:end -->
 
 ## Variants

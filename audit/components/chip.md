@@ -9,6 +9,7 @@ Audit checklist for `/components/chip`. The facts block and the variants table a
 | Category | Atoms (`src/atoms/chip/`) |
 | Markdown | `src/atoms/chip/chip.md` |
 | Source files | `chip.android.tsx`, `chip.ios.tsx`, `chip.md`, `chip.shared.tsx`, `chip.styles.ts`, `chip.tsx` |
+| Implementation | its own source directory, `src/atoms/chip/` (5 TypeScript modules) |
 | Exports | Chip |
 | Platform entries | iOS: web build: Chip. Android: own build: Chip (builds from its own androidSkin) |
 | Platform-skins registry | iOS: none; Android: Chip |
@@ -20,9 +21,10 @@ Audit checklist for `/components/chip`. The facts block and the variants table a
 | Interactions registry | in the inventory; evidence: none registered |
 | Overlay recipe | none |
 | MeasureProps | not adopted |
-| Touch target | no minTarget or useMinTargetSlop in the source modules |
-| Tests importing it | 9: `test/a11y-state.test.tsx`, `test/atom-material-feedback.test.tsx`, `test/atom-material-roles.test.tsx`, `test/chip.test.tsx`, `test/destructive-intent.test.tsx`, `test/glass-controls.test.tsx`, `test/new-components.test.tsx`, `test/touch-target-clips.test.tsx`, `test/touch-target-seams.test.tsx` |
-| E2E importing or driving it | 0: none |
+| Touch target | `chip.shared.tsx`: hitSlop, inlineSide, leastLine, reachSlop, rowSeam, slopSides, styleBox, styleInsets, useClipSlop, useSeededMinTargetSlop; `chip.styles.ts`: TOUCH_TARGET, platformMinTarget. `test/touch-target-coverage.test.ts` records it as covered another way: Android measures a tappable chip and grows its touch area to the 48dp minimum (the skin's bodyMinTarget; a body beside a remove glyph reaches the pill's whole target), iOS keeps a fixed 11pt body slop that clears 44 around the 25pt pill, and the remove glyph pads to the minimum; split where body and glyph face each other, the tappable pill's RippleClip carries the body's slop, and the clipping Android pill carries what reaches past it |
+| Tests importing it | 10: `test/a11y-state.test.tsx`, `test/atom-material-feedback.test.tsx`, `test/atom-material-roles.test.tsx`, `test/chip.test.tsx`, `test/destructive-intent.test.tsx`, `test/glass-controls.test.tsx`, `test/new-components.test.tsx`, `test/skins-smoke.test.tsx`, `test/touch-target-clips.test.tsx`, `test/touch-target-seams.test.tsx` |
+| E2E naming it | 0: none |
+| E2E catalog sweeps | 6: `e2e/a11y/components.e2e.ts` (componentRoutes), `e2e/responsive/component-widths.e2e.ts` (contentRoutes, componentRoutes), `e2e/smoke/examples.e2e.ts` (componentExamples), `e2e/smoke/routes.e2e.ts` (allRoutes), `e2e/visual/components.e2e.ts` (componentRoutes), `e2e/visual/materials.e2e.ts` (MATERIAL_ROUTES) |
 <!-- audit:facts:end -->
 
 ## Variants

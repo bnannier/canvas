@@ -9,8 +9,9 @@ Audit checklist for `/components/view`. The facts block and the variants table a
 | Category | Atoms (`src/atoms/view/`) |
 | Markdown | `src/atoms/view/view.md` |
 | Source files | `view.md` |
+| Implementation | React Native's own `View`, re-exported from `src/style/primitives.ts`; the kit has no source of its own for it, and `src/atoms/view/` holds only its markdown |
 | Exports | View |
-| Platform entries | none (one build on every platform) |
+| Platform entries | none in the kit: React Native's own `View`, imported the same way on every platform |
 | Platform-skins registry | none (every export is the web build, so the docs three-up renders it as is) |
 | Reference row | none: `PLATFORM-REFERENCES.md` has no row for this component (K8) |
 | Materials manifest | View: style, inherited; verification inherited-composition, semantic-state |
@@ -19,10 +20,11 @@ Audit checklist for `/components/view`. The facts block and the variants table a
 | Hand-off metric gaps | none |
 | Interactions registry | in the inventory; evidence: none registered |
 | Overlay recipe | none |
-| MeasureProps | not adopted |
-| Touch target | no minTarget or useMinTargetSlop in the source modules |
+| MeasureProps | not applicable: the kit has no source of its own for it |
+| Touch target | not applicable: the kit has no source of its own for it |
 | Tests importing it | 0: none |
-| E2E importing or driving it | 0: none |
+| E2E naming it | 0: none |
+| E2E catalog sweeps | 6: `e2e/a11y/components.e2e.ts` (componentRoutes), `e2e/responsive/component-widths.e2e.ts` (contentRoutes, componentRoutes), `e2e/smoke/examples.e2e.ts` (componentExamples), `e2e/smoke/routes.e2e.ts` (allRoutes), `e2e/visual/components.e2e.ts` (componentRoutes), `e2e/visual/materials.e2e.ts` (MATERIAL_ROUTES) |
 <!-- audit:facts:end -->
 
 ## Variants

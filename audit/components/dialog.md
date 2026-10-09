@@ -9,6 +9,7 @@ Audit checklist for `/components/dialog`. The facts block and the variants table
 | Category | Organisms (`src/organisms/dialog/`) |
 | Markdown | `src/organisms/dialog/dialog.md` |
 | Source files | `dialog.android.tsx`, `dialog.ios.tsx`, `dialog.md`, `dialog.shared.tsx`, `dialog.styles.ts`, `dialog.tsx` |
+| Implementation | its own source directory, `src/organisms/dialog/` (5 TypeScript modules) |
 | Exports | Dialog |
 | Platform entries | iOS: own build: Dialog (builds from its own iosSkin; injects platform parts (../../atoms/button/button.ios.js); injects platform parts (../../atoms/input/input.ios.js)). Android: own build: Dialog (builds from its own androidSkin; injects platform parts (../../atoms/button/button.android.js); injects platform parts (../../atoms/input/input.android.js)) |
 | Platform-skins registry | iOS: Dialog; Android: Dialog |
@@ -20,9 +21,10 @@ Audit checklist for `/components/dialog`. The facts block and the variants table
 | Interactions registry | in the inventory; evidence: none registered |
 | Overlay recipe | yes (dialog) |
 | MeasureProps | not adopted |
-| Touch target | no minTarget or useMinTargetSlop in the source modules |
-| Tests importing it | 15: `test/anchored-overlay-dismissal.test.tsx`, `test/autocomplete-keyboard.test.tsx`, `test/command.test.tsx`, `test/control-refs.test.tsx`, `test/destructive-text-components.test.tsx`, `test/dialog-focus.test.tsx`, `test/dialog-hardware-back.test.tsx`, `test/dialog-overlay.test.tsx`, `test/escape-layers.test.tsx`, `test/hosted-focus.test.tsx`, `test/input-overlay-escape.test.tsx`, `test/native-accessibility-escape-hosts.test.tsx`, `test/native-focus-fixtures.test.tsx`, `test/no-console-violations.test.tsx`, `test/text-contrast.test.tsx` |
-| E2E importing or driving it | 5: `e2e/behavior/escape-layers.e2e.ts`, `e2e/behavior/material-overlay-host.e2e.ts`, `e2e/journeys/control-refs.e2e.ts`, `e2e/journeys/keyboard.e2e.ts`, `e2e/responsive/overlay-state.e2e.ts` |
+| Touch target | no touch-target name (the exports of `src/style/touch-target.ts`, `src/style/touch-target-seed.ts`, `src/style/touch-seam.ts`, `src/style/clip-slop.ts`, the `TouchTargetSkin` fields, or `hitSlop`) in its implementation modules. `test/touch-target-coverage.test.ts` records it as known gap: only the Android text buttons, at 40 against a 48 minimum |
+| Tests importing it | 16: `test/anchored-overlay-dismissal.test.tsx`, `test/autocomplete-keyboard.test.tsx`, `test/command.test.tsx`, `test/control-refs.test.tsx`, `test/destructive-text-components.test.tsx`, `test/dialog-focus.test.tsx`, `test/dialog-hardware-back.test.tsx`, `test/dialog-overlay.test.tsx`, `test/escape-layers.test.tsx`, `test/hosted-focus.test.tsx`, `test/input-overlay-escape.test.tsx`, `test/native-accessibility-escape-hosts.test.tsx`, `test/native-focus-fixtures.test.tsx`, `test/no-console-violations.test.tsx`, `test/skins-smoke.test.tsx`, `test/text-contrast.test.tsx` |
+| E2E naming it | 5: `e2e/behavior/escape-layers.e2e.ts`, `e2e/behavior/material-overlay-host.e2e.ts`, `e2e/journeys/control-refs.e2e.ts`, `e2e/journeys/keyboard.e2e.ts`, `e2e/responsive/overlay-state.e2e.ts` |
+| E2E catalog sweeps | 8: `e2e/a11y/components.e2e.ts` (componentRoutes), `e2e/behavior/overlays.e2e.ts` (OVERLAYS), `e2e/responsive/component-widths.e2e.ts` (contentRoutes, componentRoutes), `e2e/smoke/examples.e2e.ts` (componentExamples), `e2e/smoke/routes.e2e.ts` (allRoutes), `e2e/visual/components.e2e.ts` (componentRoutes), `e2e/visual/materials.e2e.ts` (MATERIAL_ROUTES), `e2e/visual/overlays.e2e.ts` (OVERLAYS) |
 <!-- audit:facts:end -->
 
 ## Variants

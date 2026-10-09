@@ -2,9 +2,12 @@
 // with no React Native import, so it runs under plain bun: the docs catalog, the skin
 // divergence read from source text, the docs' platform-skin registry, the platform
 // reference catalog, the materials manifest, the hand-off parity records, the
-// interaction evidence registry, the overlay recipes, the test and e2e trees, and the
-// component's own source modules. Each fact names where it came from, so a reviewer
-// can go and look; none of them is a verdict.
+// interaction evidence registry, the overlay recipes, the test and e2e trees (read with
+// the static reader in tools/audit/static-eval.ts where they reach the kit or a route
+// through data, and the e2e catalog sweeps in tools/audit/sweeps.ts), the touch-target
+// coverage test's tables, and the modules that build the component (its own directory,
+// or where the kit's entry leads a raw primitive's name). Each fact names where it came
+// from, so a reviewer can go and look; none of them is a verdict.
 //
 // The hand-off parity records come from their source, `tools/handoff-parity/
 // divergences.json`, never from the HANDOFF-PARITY.md generated from it. Which records
@@ -26,9 +29,11 @@ import { MATERIAL_OVERLAY_RECIPES, TOAST_RECIPE } from "../../e2e/support/overla
 import { KIND_LABEL, compareCheckout, isGap, redirectTargets } from "../handoff-parity/compare.ts";
 import { evidence as interactionEvidence, inventory as interactionInventory } from "../interactions/registry.ts";
 import { materialCoverage } from "../materials/manifest.ts";
-import { componentSkins, type ComponentSkins, type Platform as SkinPlatform } from "../skins/divergence.ts";
+import { componentSkins, hasPlatformBuilds, traceExport, type ComponentSkins, type Platform as SkinPlatform } from "../skins/divergence.ts";
 import { registeredSkins } from "../skins/registry.ts";
 import type { InventoryPage } from "./inventory.ts";
+import { StaticReader } from "./static-eval.ts";
+import { catalogHooks, readSweeps, type Sweep } from "./sweeps.ts";
 import { splitRow, type TableShape } from "./table.ts";
 
 export interface SkinFact {
@@ -87,6 +92,48 @@ export interface MetricGap {
   plannedIn: string;
 }
 
+/**
+ * Where a component is built. Most are built in their own source directory; the raw
+ * primitives' directories hold only their markdown, and each is either a kit module
+ * outside it (Text and TextInput in src/style/text.tsx, Pressable in
+ * src/style/pressable.tsx) or React Native's own component, which the kit re-exports
+ * (View and ScrollView, from src/style/primitives.ts). Read by following the kit's
+ * public entry, src/index.ts, through its re-exports (tools/skins/divergence.ts,
+ * traceExport).
+ */
+export type Implementation =
+  | { kind: "directory"; modules: string[] }
+  | { kind: "module"; modules: string[]; reactNative: string | null; platformBuilds: boolean }
+  | { kind: "package"; modules: []; specifier: string; name: string; via: string }
+  | { kind: "unresolved"; modules: [] };
+
+/** A module of a component whose code names the touch-target vocabulary, with the names it names. */
+export interface TouchTargetModule {
+  /** The module: relative to the source directory inside it, repo-relative outside it. */
+  module: string;
+  names: string[];
+}
+
+/** How test/touch-target-coverage.test.ts records a pressable component that declares no `minTarget` in its skin. */
+export interface TouchTargetRecord {
+  /** Which of its tables lists it. */
+  list: "covered another way" | "known gap";
+  reason: string;
+}
+
+/** What the component's code and the coverage test say about the touch-target floor. */
+export interface TouchTargetFact {
+  modules: TouchTargetModule[];
+  coverage: TouchTargetRecord | null;
+}
+
+/** An e2e module that sweeps a catalog of docs routes including this one (see tools/audit/sweeps.ts). */
+export interface SweepFact {
+  file: string;
+  /** The catalogs whose rows reach the route. */
+  catalogs: string[];
+}
+
 export interface ComponentFacts {
   slug: string;
   name: string;
@@ -97,8 +144,10 @@ export interface ComponentFacts {
   sourceDir: string;
   /** Every file under the source directory (nested ones, such as the Checkbox indicator, included), relative to it. */
   sourceFiles: string[];
-  /** The TypeScript modules among them, tests left out: what the source facts read. */
+  /** The TypeScript modules among them, tests left out. */
   sourceModules: string[];
+  /** Where it is built; its `modules` (repo-relative) are what the source facts read. */
+  implementation: Implementation;
   markdown: string;
   /** The value names the web entry exports (the raw primitives: the component's name). */
   exports: string[];
@@ -115,14 +164,17 @@ export interface ComponentFacts {
   /** Files under test/ importing it from the kit (see `importsComponent`). */
   tests: string[];
   /**
-   * Files under e2e/ importing it from the kit, or driving the exact route (see
-   * `drivesRoute`) of its docs page or of a hidden `/testing/*` harness page that renders it.
+   * Files under e2e/ importing it from the kit, or naming the exact route (see
+   * `drivesRoute`) of its docs page or of a hidden `/testing/*` harness page that renders
+   * it, in a string their code holds or builds.
    */
   e2e: string[];
-  /** Source modules whose code names the measure axis (`MeasureProps`). */
+  /** Files under e2e/ that sweep a catalog of docs routes including its page. */
+  e2eSweeps: SweepFact[];
+  /** Implementation modules whose code names the measure axis (`MeasureProps`), displayed as `TouchTargetModule.module` is. */
   measureProps: string[];
-  /** Source modules whose code reads the touch-target floor. */
-  touchTarget: { useMinTargetSlop: string[]; minTarget: string[] };
+  /** Implementation modules whose code names the touch-target vocabulary (`touchTargetVocabulary`), and the coverage test's record of it. */
+  touchTarget: TouchTargetFact;
 }
 
 export interface PageFacts {
@@ -135,8 +187,10 @@ export interface PageFacts {
   sections: string[];
   /** The kit names the module imports from `@nannier/canvas`. */
   kitImports: string[];
-  /** Files under e2e/ driving its exact route (see `drivesRoute`). */
+  /** Files under e2e/ naming its exact route (see `drivesRoute`) in a string their code holds or builds. */
   e2e: string[];
+  /** Files under e2e/ that sweep a catalog of docs routes including it. */
+  e2eSweeps: SweepFact[];
 }
 
 const GROUP_OF: Record<Category, string> = { Atoms: "atoms", Molecules: "molecules", Organisms: "organisms", Charts: "charts" };
@@ -265,13 +319,17 @@ export function handoffRecords(root: string): { open: HandoffGap[]; settled: Han
 export interface KitImports {
   /**
    * The repo-relative kit paths it imports, statically, through `import()` or through
-   * `require()`. A template literal specifier contributes its static head as a `prefix`
+   * `require()`. A template literal specifier is read with the static reader
+   * (tools/audit/static-eval.ts) once per row of the loops it reads, so
+   * `../src/${c.dir}/${c.file}${suffix}.tsx` over a CASES table names each row's module;
+   * where a substitution cannot be known, the text before it is a `prefix`
    * (`../src/atoms/avatar/${file}.tsx` is somewhere under `src/atoms/avatar/`).
    */
   modules: { path: string; prefix: boolean }[];
   /**
    * The names it imports from a kit module: named imports, the names a dynamic import is
-   * destructured into or read by, and the members read off a namespace import.
+   * destructured into or read by, and the members read off a namespace import, by name
+   * (`mod.Button`) or by a key the static reader can know (`mod[c.name]` over a table).
    */
   names: Set<string>;
 }
@@ -310,8 +368,32 @@ function importUse(call: ts.Node): ts.Node {
 /** What one test file imports from the kit, read with the TypeScript parser. */
 export function kitImportsOf(root: string, file: string, source: string): KitImports {
   const sf = parse(file, source);
+  const reader = new StaticReader(sf);
   const out: KitImports = { modules: [], names: new Set() };
   const namespaces = new Set<string>();
+  const seenModules = new Set<string>();
+  const addModule = (module: { path: string; prefix: boolean }): void => {
+    const key = `${module.path}#${module.prefix}`;
+    if (seenModules.has(key)) return;
+    seenModules.add(key);
+    out.modules.push(module);
+  };
+  /** The kit modules a dynamic specifier names, one per row of the loops it reads. */
+  const dynamicModules = (arg: ts.Expression): { path: string; prefix: boolean }[] => {
+    if (ts.isStringLiteral(arg) || ts.isNoSubstitutionTemplateLiteral(arg)) {
+      const path = kitPath(root, file, arg.text);
+      return path ? [{ path, prefix: false }] : [];
+    }
+    if (!ts.isTemplateExpression(arg)) return [];
+    const found: { path: string; prefix: boolean }[] = [];
+    for (const env of reader.envs(arg) ?? [new Map()]) {
+      const { text, complete } = reader.templateText(arg, env);
+      const path = text ? kitPath(root, file, text) : null;
+      // A text ending in a slash names a whole directory; resolving it drops the slash.
+      if (path) found.push(complete ? { path, prefix: false } : { path: text.endsWith("/") ? `${path}/` : path, prefix: true });
+    }
+    return found;
+  };
   const visit = (node: ts.Node): void => {
     if ((ts.isImportDeclaration(node) || ts.isExportDeclaration(node)) && node.moduleSpecifier && ts.isStringLiteral(node.moduleSpecifier)) {
       const path = kitPath(root, file, node.moduleSpecifier.text);
@@ -319,13 +401,13 @@ export function kitImportsOf(root: string, file: string, source: string): KitImp
         if (ts.isImportDeclaration(node)) {
           const clause = node.importClause;
           if (clause && !clause.isTypeOnly) {
-            out.modules.push({ path, prefix: false });
+            addModule({ path, prefix: false });
             const bindings = clause.namedBindings;
             if (bindings && ts.isNamespaceImport(bindings)) namespaces.add(bindings.name.text);
             else if (bindings) for (const element of bindings.elements) if (!element.isTypeOnly) out.names.add((element.propertyName ?? element.name).text);
           }
         } else if (!node.isTypeOnly) {
-          out.modules.push({ path, prefix: false });
+          addModule({ path, prefix: false });
           if (node.exportClause && ts.isNamedExports(node.exportClause)) {
             for (const element of node.exportClause.elements) if (!element.isTypeOnly) out.names.add((element.propertyName ?? element.name).text);
           }
@@ -336,17 +418,13 @@ export function kitImportsOf(root: string, file: string, source: string): KitImp
       node.arguments.length > 0 &&
       (node.expression.kind === ts.SyntaxKind.ImportKeyword || (ts.isIdentifier(node.expression) && node.expression.text === "require"))
     ) {
-      const arg = node.arguments[0];
-      const literal = ts.isStringLiteral(arg) || ts.isNoSubstitutionTemplateLiteral(arg) ? arg.text : null;
-      const head = ts.isTemplateExpression(arg) ? arg.head.text : null;
-      const path = literal !== null ? kitPath(root, file, literal) : head ? kitPath(root, file, head) : null;
-      if (path) {
-        // A head ending in a slash names a whole directory; resolving it drops the slash.
-        out.modules.push(literal !== null ? { path, prefix: false } : { path: head!.endsWith("/") ? `${path}/` : path, prefix: true });
+      const modules = dynamicModules(node.arguments[0]);
+      if (modules.length) {
+        modules.forEach(addModule);
         const use = importUse(node);
         const parent = use.parent;
         if (ts.isPropertyAccessExpression(parent) && parent.expression === use) out.names.add(parent.name.text);
-        else if (ts.isElementAccessExpression(parent) && parent.expression === use && ts.isStringLiteral(parent.argumentExpression)) out.names.add(parent.argumentExpression.text);
+        else if (ts.isElementAccessExpression(parent) && parent.expression === use) for (const name of reader.strings(parent.argumentExpression)) out.names.add(name);
         else if (ts.isVariableDeclaration(parent) && parent.initializer === use) {
           if (ts.isObjectBindingPattern(parent.name)) {
             for (const element of parent.name.elements) {
@@ -363,6 +441,10 @@ export function kitImportsOf(root: string, file: string, source: string): KitImp
   if (namespaces.size) {
     const members = (node: ts.Node): void => {
       if (ts.isPropertyAccessExpression(node) && ts.isIdentifier(node.expression) && namespaces.has(node.expression.text)) out.names.add(node.name.text);
+      // `mod[c.name]`: each key the reader can know, across the rows of the loops it reads.
+      if (ts.isElementAccessExpression(node) && ts.isIdentifier(node.expression) && namespaces.has(node.expression.text)) {
+        for (const name of reader.strings(node.argumentExpression)) out.names.add(name);
+      }
       ts.forEachChild(node, members);
     };
     members(sf);
@@ -452,10 +534,125 @@ export interface FactsCorpus {
   metricGaps: MetricGap[];
   /** Repo-relative path of every test file under test/, with what it imports from the kit. */
   tests: { file: string; imports: KitImports }[];
-  /** Repo-relative path of every file under e2e/, with what it imports from the kit and the string literals in its code. */
-  e2e: { file: string; imports: KitImports; literals: CodeLiteral[] }[];
+  /** Repo-relative path of every file under e2e/, with what it reaches (see `e2eReach`). */
+  e2e: ({ file: string } & E2eReach)[];
   /** The hidden `/testing/*` harness routes e2e drives, with what each renders from the kit. */
   testingRoutes: ReturnType<typeof testingRoutes>;
+  /** The names that implement the touch-target floor (see `touchTargetVocabulary`). */
+  touchVocabulary: string[];
+  /** The coverage test's record of each pressable component that declares no `minTarget`, by `<group>/<dir>` (see `touchTargetRecords`). */
+  touchRecords: Map<string, TouchTargetRecord>;
+}
+
+/** What one e2e module reaches. */
+export interface E2eReach {
+  /** What it imports from the kit. */
+  imports: KitImports;
+  /**
+   * The strings its code holds (see `codeLiterals`) and the strings the static reader can
+   * build (`/components/${slug}` over a literal array of slugs); a catalog loop's rows are
+   * left unbound here, because its routes are a sweep, not a route the spec names.
+   */
+  literals: CodeLiteral[];
+  /** The loops that sweep a catalog of docs routes (tools/audit/sweeps.ts). */
+  sweeps: Sweep[];
+}
+
+/** The expressions whose value is a finished string, not a receiver or a callee a larger expression reads further. */
+function isStringRoot(node: ts.Node): node is ts.Expression {
+  if (!(ts.isTemplateExpression(node) || ts.isCallExpression(node) || ts.isPropertyAccessExpression(node) || ts.isElementAccessExpression(node) || ts.isConditionalExpression(node))) {
+    if (!(ts.isBinaryExpression(node) && node.operatorToken.kind === ts.SyntaxKind.PlusToken)) return false;
+  }
+  const parent = node.parent;
+  if ((ts.isPropertyAccessExpression(parent) || ts.isElementAccessExpression(parent)) && parent.expression === node) return false;
+  return !(ts.isCallExpression(parent) && parent.expression === node);
+}
+
+/** Every string the static reader can build from a module's expressions. */
+function builtStrings(reader: StaticReader, sf: ts.SourceFile): CodeLiteral[] {
+  const out = new Set<string>();
+  const visit = (node: ts.Node): void => {
+    if (ts.isTypeNode(node) || ts.isImportDeclaration(node)) return;
+    if (isStringRoot(node)) for (const text of reader.strings(node)) out.add(text);
+    ts.forEachChild(node, visit);
+  };
+  visit(sf);
+  return [...out].map((text) => ({ text, open: false }));
+}
+
+/** What one e2e module reaches: its kit imports, the strings its code holds or builds, and the catalogs it sweeps. */
+export function e2eReach(root: string, file: string, source: string): E2eReach {
+  const sf = parse(file, source);
+  const { sweeps, catalogLoops } = readSweeps({ root, file, sf, reader: new StaticReader(sf, catalogHooks(root, file)) });
+  const named = new StaticReader(sf, catalogHooks(root, file, { skipLoop: (loop) => catalogLoops.has(loop) }));
+  return { imports: kitImportsOf(root, file, source), literals: [...codeLiterals(file, source), ...builtStrings(named, sf)], sweeps };
+}
+
+/** The sweeps among e2e modules that reach a route, per module. */
+function sweepsReaching(corpus: FactsCorpus, route: string): SweepFact[] {
+  return corpus.e2e.flatMap(({ file, sweeps }) => {
+    const reaching = sweeps.filter((sweep) => drivesRoute(sweep.routes.map((text) => ({ text, open: false })), route));
+    return reaching.length ? [{ file, catalogs: [...new Set(reaching.flatMap((sweep) => sweep.catalogs))] }] : [];
+  });
+}
+
+/**
+ * The kit's touch-target modules: the platform floor and its measured slop
+ * (touch-target.ts), the slop a control seeds from its skin's box (touch-target-seed.ts),
+ * the seam split between two of a component's own controls (touch-seam.ts), and the slop
+ * a clipping node carries for the pressables inside it (clip-slop.ts).
+ */
+export const TOUCH_TARGET_MODULES = ["src/style/touch-target.ts", "src/style/touch-target-seed.ts", "src/style/touch-seam.ts", "src/style/clip-slop.ts"];
+
+/** The interface a skin that owns a pressable implements, declared in touch-target.ts: its fields are the skin's half of the floor. */
+export const TOUCH_TARGET_SKIN = "TouchTargetSkin";
+
+/**
+ * The names that implement the touch-target floor, read from the modules themselves:
+ * every value they export, the fields of the skin interface (`minTarget`), and React
+ * Native's own `hitSlop`, which every one of them ends in.
+ */
+export function touchTargetVocabulary(root: string): string[] {
+  const names = new Set<string>(["hitSlop"]);
+  for (const module of TOUCH_TARGET_MODULES) {
+    const source = readFileSync(join(root, module), "utf8");
+    for (const name of valueExports(module, source)) names.add(name);
+    for (const s of parse(module, source).statements) {
+      if (!ts.isInterfaceDeclaration(s) || s.name.text !== TOUCH_TARGET_SKIN) continue;
+      for (const m of s.members) if (m.name && ts.isIdentifier(m.name)) names.add(m.name.text);
+    }
+  }
+  return [...names].sort();
+}
+
+/** The test that accounts for every pressable component's touch target, and its two tables. */
+export const TOUCH_TARGET_COVERAGE = "test/touch-target-coverage.test.ts";
+const TOUCH_TARGET_TABLES: Record<string, TouchTargetRecord["list"]> = { COVERED_ANOTHER_WAY: "covered another way", KNOWN_GAP: "known gap" };
+
+/**
+ * The coverage test's record of each pressable component whose skin declares no
+ * `minTarget`: how it meets the floor another way (a row tall by skin, a slop the shell
+ * adds), or the gap it is known to have. Read from the test's own tables, which it
+ * holds against every pressable in the kit; a table the reader cannot find is an error,
+ * never an empty record.
+ */
+export function touchTargetRecords(root: string): Map<string, TouchTargetRecord> {
+  const sf = parse(TOUCH_TARGET_COVERAGE, readFileSync(join(root, TOUCH_TARGET_COVERAGE), "utf8"));
+  const reader = new StaticReader(sf);
+  const out = new Map<string, TouchTargetRecord>();
+  for (const [table, list] of Object.entries(TOUCH_TARGET_TABLES)) {
+    const decl = sf.statements
+      .filter(ts.isVariableStatement)
+      .flatMap((s) => [...s.declarationList.declarations])
+      .find((d) => ts.isIdentifier(d.name) && d.name.text === table);
+    const value = decl?.initializer ? reader.evaluate(decl.initializer) : undefined;
+    if (value === null || typeof value !== "object" || Array.isArray(value)) throw new Error(`facts: ${TOUCH_TARGET_COVERAGE} has no ${table} table of literal strings to read`);
+    for (const [component, reason] of Object.entries(value)) {
+      if (typeof reason !== "string") throw new Error(`facts: ${TOUCH_TARGET_COVERAGE} ${table}["${component}"] is not a literal string`);
+      out.set(component, { list, reason });
+    }
+  }
+  return out;
 }
 
 export function loadCorpus(root = ROOT): FactsCorpus {
@@ -475,8 +672,10 @@ export function loadCorpus(root = ROOT): FactsCorpus {
     settled: handoff.settled,
     metricGaps: handoff.metricGaps,
     tests: tree("test", /\.tsx?$/).map(({ file, text }) => ({ file, imports: kitImportsOf(root, file, text) })),
-    e2e: tree("e2e", /\.tsx?$/).map(({ file, text }) => ({ file, imports: kitImportsOf(root, file, text), literals: codeLiterals(file, text) })),
+    e2e: tree("e2e", /\.tsx?$/).map(({ file, text }) => ({ file, ...e2eReach(root, file, text) })),
     testingRoutes: testingRoutes(root),
+    touchVocabulary: touchTargetVocabulary(root),
+    touchRecords: touchTargetRecords(root),
   };
 }
 
@@ -534,9 +733,36 @@ function codeIdentifiers(path: string): Set<string> {
   return names;
 }
 
-/** The modules among a component's sources whose code names the identifier. */
-function sourcesNaming(root: string, sourceDir: string, modules: string[], identifier: string): string[] {
-  return modules.filter((file) => codeIdentifiers(join(root, sourceDir, file)).has(identifier));
+/** A repo-relative module as a fact names it: relative to the component's source directory inside it, repo-relative outside it. */
+const displayModule = (sourceDir: string, module: string): string => (module.startsWith(`${sourceDir}/`) ? module.slice(sourceDir.length + 1) : module);
+
+/** The kit's public entry, where a component with no module of its own in its directory is followed from. */
+export const KIT_ENTRY = "src/index.ts";
+
+/**
+ * Where a component is built: its own directory when that holds its entry module, or
+ * else wherever the kit's public entry leads its name, a kit module that declares it or
+ * the package it is re-exported from.
+ */
+export function implementationOf(root: string, sourceDir: string, sourceModules: string[], hasEntry: boolean, name: string): Implementation {
+  if (hasEntry) return { kind: "directory", modules: sourceModules.map((m) => `${sourceDir}/${m}`) };
+  const trace = traceExport(join(root, KIT_ENTRY), name);
+  if (!trace) return { kind: "unresolved", modules: [] };
+  const rel = (path: string) => relative(root, path).split(sep).join("/");
+  const last = trace.steps[trace.steps.length - 1];
+  if (trace.package) return { kind: "package", modules: [], specifier: trace.package.specifier, name: trace.package.name, via: rel(last.file) };
+  // Whether the declaring module imports React Native's own component of the same name (and so wraps it).
+  const wraps = parse(last.file, readFileSync(last.file, "utf8")).statements.some(
+    (s) =>
+      ts.isImportDeclaration(s) &&
+      ts.isStringLiteral(s.moduleSpecifier) &&
+      s.moduleSpecifier.text === "react-native" &&
+      !s.importClause?.isTypeOnly &&
+      s.importClause?.namedBindings !== undefined &&
+      ts.isNamedImports(s.importClause.namedBindings) &&
+      s.importClause.namedBindings.elements.some((el) => !el.isTypeOnly && (el.propertyName ?? el.name).text === last.name),
+  );
+  return { kind: "module", modules: [rel(last.file)], reactNative: wraps ? last.name : null, platformBuilds: hasPlatformBuilds(last.file) };
 }
 
 export function componentFacts(slug: string, corpus: FactsCorpus): ComponentFacts {
@@ -552,6 +778,8 @@ export function componentFacts(slug: string, corpus: FactsCorpus): ComponentFact
 
   const entry = [`${dir}.tsx`, `${dir}.ts`].find((f) => sourceFiles.includes(f));
   const exports = entry ? valueExports(entry, readFileSync(join(absoluteDir, entry), "utf8")) : [doc.name.replace(/[^A-Za-z]/g, "")];
+  const implementation = implementationOf(corpus.root, sourceDir, sourceModules, entry !== undefined, exports[0]);
+  const naming = (identifier: string) => implementation.modules.filter((module) => codeIdentifiers(join(corpus.root, module)).has(identifier));
 
   const skins = corpus.skins.find((c) => c.group === group && c.dir === dir);
   const skinFact = (platform: SkinPlatform): SkinFact => ({
@@ -574,6 +802,7 @@ export function componentFacts(slug: string, corpus: FactsCorpus): ComponentFact
     sourceDir,
     sourceFiles,
     sourceModules,
+    implementation,
     markdown,
     exports,
     skins: { hasPlatformEntries: skins?.hasPlatformEntries ?? false, iOS: skinFact("iOS"), Android: skinFact("Android") },
@@ -606,10 +835,14 @@ export function componentFacts(slug: string, corpus: FactsCorpus): ComponentFact
     e2e: corpus.e2e
       .filter(({ imports, literals }) => importsComponent(imports, exports, sourceDir) || [route, ...harnessRoutes].some((r) => drivesRoute(literals, r)))
       .map(({ file }) => file),
-    measureProps: sourcesNaming(corpus.root, sourceDir, sourceModules, "MeasureProps"),
+    e2eSweeps: sweepsReaching(corpus, route),
+    measureProps: naming("MeasureProps").map((module) => displayModule(sourceDir, module)),
     touchTarget: {
-      useMinTargetSlop: sourcesNaming(corpus.root, sourceDir, sourceModules, "useMinTargetSlop"),
-      minTarget: sourcesNaming(corpus.root, sourceDir, sourceModules, "minTarget"),
+      modules: implementation.modules.flatMap((module) => {
+        const names = corpus.touchVocabulary.filter((name) => codeIdentifiers(join(corpus.root, module)).has(name));
+        return names.length ? [{ module: displayModule(sourceDir, module), names }] : [];
+      }),
+      coverage: corpus.touchRecords.get(`${group}/${dir}`) ?? null,
     },
   };
 }
@@ -662,6 +895,7 @@ export function pageFacts(page: InventoryPage, corpus: FactsCorpus): PageFacts {
     sections: pageSections(module, source, page.slug),
     kitImports: kitImports(module, source),
     e2e: corpus.e2e.filter(({ literals }) => drivesRoute(literals, page.route)).map(({ file }) => file),
+    e2eSweeps: sweepsReaching(corpus, page.route),
   };
 }
 

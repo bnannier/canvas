@@ -9,6 +9,7 @@ Audit checklist for `/components/icon`. The facts block and the variants table a
 | Category | Atoms (`src/atoms/icon/`) |
 | Markdown | `src/atoms/icon/icon.md` |
 | Source files | `icon.android.tsx`, `icon.glyphs.ts`, `icon.ios.tsx`, `icon.md`, `icon.shared.tsx`, `icon.stroke.ts`, `icon.tsx` |
+| Implementation | its own source directory, `src/atoms/icon/` (6 TypeScript modules) |
 | Exports | Icon |
 | Platform entries | iOS: re-exports the shared build (nothing built per platform). Android: re-exports the shared build (nothing built per platform) |
 | Platform-skins registry | none (every export is the web build, so the docs three-up renders it as is) |
@@ -20,9 +21,10 @@ Audit checklist for `/components/icon`. The facts block and the variants table a
 | Interactions registry | in the inventory; evidence: none registered |
 | Overlay recipe | none |
 | MeasureProps | not adopted |
-| Touch target | no minTarget or useMinTargetSlop in the source modules |
-| Tests importing it | 6: `test/design-rules-source.test.ts`, `test/destructive-text.test.tsx`, `test/icon-glyphs.test.ts`, `test/native-focus-fixtures.test.tsx`, `test/pagination-look.test.tsx`, `test/toast-look.test.tsx` |
-| E2E importing or driving it | 0: none |
+| Touch target | no touch-target name (the exports of `src/style/touch-target.ts`, `src/style/touch-target-seed.ts`, `src/style/touch-seam.ts`, `src/style/clip-slop.ts`, the `TouchTargetSkin` fields, or `hitSlop`) in its implementation modules |
+| Tests importing it | 7: `test/design-rules-source.test.ts`, `test/destructive-text.test.tsx`, `test/icon-glyphs.test.ts`, `test/native-focus-fixtures.test.tsx`, `test/pagination-look.test.tsx`, `test/skins-smoke.test.tsx`, `test/toast-look.test.tsx` |
+| E2E naming it | 0: none |
+| E2E catalog sweeps | 6: `e2e/a11y/components.e2e.ts` (componentRoutes), `e2e/responsive/component-widths.e2e.ts` (contentRoutes, componentRoutes), `e2e/smoke/examples.e2e.ts` (componentExamples), `e2e/smoke/routes.e2e.ts` (allRoutes), `e2e/visual/components.e2e.ts` (componentRoutes), `e2e/visual/materials.e2e.ts` (MATERIAL_ROUTES) |
 <!-- audit:facts:end -->
 
 ## Variants

@@ -9,6 +9,7 @@ Audit checklist for `/components/phone-input`. The facts block and the variants 
 | Category | Molecules (`src/molecules/phone-input/`) |
 | Markdown | `src/molecules/phone-input/phone-input.md` |
 | Source files | `countries.ts`, `phone-input.android.tsx`, `phone-input.ios.tsx`, `phone-input.md`, `phone-input.shared.tsx`, `phone-input.styles.ts`, `phone-input.tsx` |
+| Implementation | its own source directory, `src/molecules/phone-input/` (6 TypeScript modules) |
 | Exports | PhoneInput, PHONE_COUNTRIES, flagOf |
 | Platform entries | iOS: own build: PhoneInput (builds from its own iosSkin). Android: own build: PhoneInput (builds from its own androidSkin) |
 | Platform-skins registry | iOS: PhoneInput; Android: PhoneInput |
@@ -20,9 +21,10 @@ Audit checklist for `/components/phone-input`. The facts block and the variants 
 | Interactions registry | in the inventory; evidence: phone-input-country-pick (unit-web, test/phone-input.test.tsx) |
 | Overlay recipe | yes (listbox) |
 | MeasureProps | adopted in `phone-input.shared.tsx` |
-| Touch target | no minTarget or useMinTargetSlop in the source modules |
+| Touch target | no touch-target name (the exports of `src/style/touch-target.ts`, `src/style/touch-target-seed.ts`, `src/style/touch-seam.ts`, `src/style/clip-slop.ts`, the `TouchTargetSkin` fields, or `hitSlop`) in its implementation modules. `test/touch-target-coverage.test.ts` records it as covered another way: the country segment stretches to the 44/56 field box; its rows are Select's 44/48 by skin |
 | Tests importing it | 2: `test/phone-input.test.tsx`, `test/text-entry-material.test.tsx` |
-| E2E importing or driving it | 0: none |
+| E2E naming it | 0: none |
+| E2E catalog sweeps | 6: `e2e/a11y/components.e2e.ts` (componentRoutes), `e2e/responsive/component-widths.e2e.ts` (contentRoutes, componentRoutes), `e2e/smoke/examples.e2e.ts` (componentExamples), `e2e/smoke/routes.e2e.ts` (allRoutes), `e2e/visual/components.e2e.ts` (componentRoutes), `e2e/visual/materials.e2e.ts` (MATERIAL_ROUTES) |
 <!-- audit:facts:end -->
 
 ## Variants

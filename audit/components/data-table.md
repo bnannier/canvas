@@ -9,6 +9,7 @@ Audit checklist for `/components/data-table`. The facts block and the variants t
 | Category | Organisms (`src/organisms/data-table/`) |
 | Markdown | `src/organisms/data-table/data-table.md` |
 | Source files | `data-table.android.tsx`, `data-table.ios.tsx`, `data-table.md`, `data-table.shared.tsx`, `data-table.styles.ts`, `data-table.tsx` |
+| Implementation | its own source directory, `src/organisms/data-table/` (5 TypeScript modules) |
 | Exports | DataTable |
 | Platform entries | iOS: own build: DataTable (builds from its own iosSkin; injects platform parts (../../atoms/checkbox/checkbox.ios.js)). Android: own build: DataTable (builds from its own androidSkin; injects platform parts (../../atoms/checkbox/checkbox.android.js)) |
 | Platform-skins registry | iOS: DataTable; Android: DataTable |
@@ -20,9 +21,10 @@ Audit checklist for `/components/data-table`. The facts block and the variants t
 | Interactions registry | in the inventory; evidence: table-row-press (unit-web, test/behavior.test.tsx) |
 | Overlay recipe | none |
 | MeasureProps | not adopted |
-| Touch target | no minTarget or useMinTargetSlop in the source modules |
-| Tests importing it | 16: `test/a11y-state.test.tsx`, `test/behavior.test.tsx`, `test/checkbox-idiom.test.tsx`, `test/data-table-pan-identity.test.tsx`, `test/data-table-performance.test.tsx`, `test/data-table-stacks.test.tsx`, `test/data-table-text-entry-material.test.tsx`, `test/data-table.test.tsx`, `test/escape-layers.test.tsx`, `test/native-focus-fixtures.test.tsx`, `test/no-console-violations.test.tsx`, `test/numerals.test.tsx`, `test/organism-material-roles.test.tsx`, `test/prop-table.test.tsx`, `test/scroll-frame-ring.test.tsx`, `test/virtualization.test.tsx` |
-| E2E importing or driving it | 4: `e2e/behavior/escape-layers.e2e.ts`, `e2e/behavior/keyboard.e2e.ts`, `e2e/behavior/scroll-focus.e2e.ts`, `e2e/journeys/keyboard.e2e.ts` |
+| Touch target | no touch-target name (the exports of `src/style/touch-target.ts`, `src/style/touch-target-seed.ts`, `src/style/touch-seam.ts`, `src/style/clip-slop.ts`, the `TouchTargetSkin` fields, or `hitSlop`) in its implementation modules. `test/touch-target-coverage.test.ts` records it as covered another way: rows and action buttons carry pressableMinHeight |
+| Tests importing it | 17: `test/a11y-state.test.tsx`, `test/behavior.test.tsx`, `test/checkbox-idiom.test.tsx`, `test/data-table-pan-identity.test.tsx`, `test/data-table-performance.test.tsx`, `test/data-table-stacks.test.tsx`, `test/data-table-text-entry-material.test.tsx`, `test/data-table.test.tsx`, `test/escape-layers.test.tsx`, `test/native-focus-fixtures.test.tsx`, `test/no-console-violations.test.tsx`, `test/numerals.test.tsx`, `test/organism-material-roles.test.tsx`, `test/prop-table.test.tsx`, `test/scroll-frame-ring.test.tsx`, `test/skins-smoke.test.tsx`, `test/virtualization.test.tsx` |
+| E2E naming it | 4: `e2e/behavior/escape-layers.e2e.ts`, `e2e/behavior/keyboard.e2e.ts`, `e2e/behavior/scroll-focus.e2e.ts`, `e2e/journeys/keyboard.e2e.ts` |
+| E2E catalog sweeps | 6: `e2e/a11y/components.e2e.ts` (componentRoutes), `e2e/responsive/component-widths.e2e.ts` (contentRoutes, componentRoutes), `e2e/smoke/examples.e2e.ts` (componentExamples), `e2e/smoke/routes.e2e.ts` (allRoutes), `e2e/visual/components.e2e.ts` (componentRoutes), `e2e/visual/materials.e2e.ts` (MATERIAL_ROUTES) |
 <!-- audit:facts:end -->
 
 ## Variants

@@ -9,6 +9,7 @@ Audit checklist for `/components/select`. The facts block and the variants table
 | Category | Atoms (`src/atoms/select/`) |
 | Markdown | `src/atoms/select/select.md` |
 | Source files | `select.android.tsx`, `select.ios.tsx`, `select.md`, `select.shared.tsx`, `select.styles.ts`, `select.tsx` |
+| Implementation | its own source directory, `src/atoms/select/` (5 TypeScript modules) |
 | Exports | Select |
 | Platform entries | iOS: own build: Select (builds from its own iosSkin). Android: own build: Select (builds from its own androidSkin) |
 | Platform-skins registry | iOS: Select; Android: Select |
@@ -20,9 +21,10 @@ Audit checklist for `/components/select`. The facts block and the variants table
 | Interactions registry | in the inventory; evidence: none registered |
 | Overlay recipe | yes (listbox) |
 | MeasureProps | adopted in `select.shared.tsx` |
-| Touch target | no minTarget or useMinTargetSlop in the source modules |
-| Tests importing it | 23: `test/a11y-state.test.tsx`, `test/anchored-overlay-dismissal.test.tsx`, `test/atom-material-feedback.test.tsx`, `test/control-refs.test.tsx`, `test/dense-overlays.test.tsx`, `test/drawer-host.test.tsx`, `test/escape-layers.test.tsx`, `test/field-focus-layout.test.tsx`, `test/field-focus-states.test.tsx`, `test/fixtures/control-refs-consumer.tsx`, `test/floating-label-color.test.tsx`, `test/floating-label-parity.test.tsx`, `test/hosted-trigger-focus.test.tsx`, `test/native-accessibility-escape-hosts.test.tsx`, `test/native-focus-fixtures.test.tsx`, `test/no-console-violations.test.tsx`, `test/overlay-escape.test.tsx`, `test/overlay-frame-ring.test.tsx`, `test/overlay-list-scroll.test.tsx`, `test/overlays.test.tsx`, `test/select-disabled.test.tsx`, `test/select-options.test.tsx`, `test/sizing.test.tsx` |
-| E2E importing or driving it | 6: `e2e/behavior/hydration-ids.e2e.ts`, `e2e/behavior/scroll-focus.e2e.ts`, `e2e/journeys/control-refs.e2e.ts`, `e2e/journeys/keyboard.e2e.ts`, `e2e/journeys/overlay-placement.e2e.ts`, `e2e/journeys/touch.e2e.ts` |
+| Touch target | no touch-target name (the exports of `src/style/touch-target.ts`, `src/style/touch-target-seed.ts`, `src/style/touch-seam.ts`, `src/style/clip-slop.ts`, the `TouchTargetSkin` fields, or `hitSlop`) in its implementation modules. `test/touch-target-coverage.test.ts` records it as covered another way: the trigger is a field; its rows are 44/48 by skin |
+| Tests importing it | 24: `test/a11y-state.test.tsx`, `test/anchored-overlay-dismissal.test.tsx`, `test/atom-material-feedback.test.tsx`, `test/control-refs.test.tsx`, `test/dense-overlays.test.tsx`, `test/drawer-host.test.tsx`, `test/escape-layers.test.tsx`, `test/field-focus-layout.test.tsx`, `test/field-focus-states.test.tsx`, `test/fixtures/control-refs-consumer.tsx`, `test/floating-label-color.test.tsx`, `test/floating-label-parity.test.tsx`, `test/hosted-trigger-focus.test.tsx`, `test/native-accessibility-escape-hosts.test.tsx`, `test/native-focus-fixtures.test.tsx`, `test/no-console-violations.test.tsx`, `test/overlay-escape.test.tsx`, `test/overlay-frame-ring.test.tsx`, `test/overlay-list-scroll.test.tsx`, `test/overlays.test.tsx`, `test/select-disabled.test.tsx`, `test/select-options.test.tsx`, `test/sizing.test.tsx`, `test/skins-smoke.test.tsx` |
+| E2E naming it | 6: `e2e/behavior/hydration-ids.e2e.ts`, `e2e/behavior/scroll-focus.e2e.ts`, `e2e/journeys/control-refs.e2e.ts`, `e2e/journeys/keyboard.e2e.ts`, `e2e/journeys/overlay-placement.e2e.ts`, `e2e/journeys/touch.e2e.ts` |
+| E2E catalog sweeps | 8: `e2e/a11y/components.e2e.ts` (componentRoutes), `e2e/behavior/overlays.e2e.ts` (OVERLAYS), `e2e/responsive/component-widths.e2e.ts` (contentRoutes, componentRoutes), `e2e/smoke/examples.e2e.ts` (componentExamples), `e2e/smoke/routes.e2e.ts` (allRoutes), `e2e/visual/components.e2e.ts` (componentRoutes), `e2e/visual/materials.e2e.ts` (MATERIAL_ROUTES), `e2e/visual/overlays.e2e.ts` (OVERLAYS) |
 <!-- audit:facts:end -->
 
 ## Variants

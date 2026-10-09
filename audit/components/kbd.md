@@ -9,6 +9,7 @@ Audit checklist for `/components/kbd`. The facts block and the variants table ar
 | Category | Atoms (`src/atoms/kbd/`) |
 | Markdown | `src/atoms/kbd/kbd.md` |
 | Source files | `kbd.android.tsx`, `kbd.ios.tsx`, `kbd.md`, `kbd.shared.tsx`, `kbd.styles.ts`, `kbd.tsx` |
+| Implementation | its own source directory, `src/atoms/kbd/` (5 TypeScript modules) |
 | Exports | Kbd |
 | Platform entries | iOS: web build: Kbd. Android: web build: Kbd |
 | Platform-skins registry | none (every export is the web build, so the docs three-up renders it as is) |
@@ -20,9 +21,10 @@ Audit checklist for `/components/kbd`. The facts block and the variants table ar
 | Interactions registry | in the inventory; evidence: none registered |
 | Overlay recipe | none |
 | MeasureProps | not adopted |
-| Touch target | no minTarget or useMinTargetSlop in the source modules |
-| Tests importing it | 3: `test/atom-material-roles.test.tsx`, `test/glass-controls.test.tsx`, `test/kbd.test.tsx` |
-| E2E importing or driving it | 0: none |
+| Touch target | no touch-target name (the exports of `src/style/touch-target.ts`, `src/style/touch-target-seed.ts`, `src/style/touch-seam.ts`, `src/style/clip-slop.ts`, the `TouchTargetSkin` fields, or `hitSlop`) in its implementation modules |
+| Tests importing it | 4: `test/atom-material-roles.test.tsx`, `test/glass-controls.test.tsx`, `test/kbd.test.tsx`, `test/skins-smoke.test.tsx` |
+| E2E naming it | 0: none |
+| E2E catalog sweeps | 6: `e2e/a11y/components.e2e.ts` (componentRoutes), `e2e/responsive/component-widths.e2e.ts` (contentRoutes, componentRoutes), `e2e/smoke/examples.e2e.ts` (componentExamples), `e2e/smoke/routes.e2e.ts` (allRoutes), `e2e/visual/components.e2e.ts` (componentRoutes), `e2e/visual/materials.e2e.ts` (MATERIAL_ROUTES) |
 <!-- audit:facts:end -->
 
 ## Variants

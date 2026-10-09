@@ -9,6 +9,7 @@ Audit checklist for `/components/radio`. The facts block and the variants table 
 | Category | Atoms (`src/atoms/radio/`) |
 | Markdown | `src/atoms/radio/radio.md` |
 | Source files | `radio-context.ts`, `radio-group.shared.tsx`, `radio.android.tsx`, `radio.ios.tsx`, `radio.md`, `radio.shared.tsx`, `radio.styles.ts`, `radio.tsx` |
+| Implementation | its own source directory, `src/atoms/radio/` (7 TypeScript modules) |
 | Exports | Radio, RadioGroup |
 | Platform entries | iOS: own build: Radio (builds from its own iosSkin); RadioGroup (builds from its own iosSkin). Android: own build: Radio (builds from its own androidSkin); RadioGroup (builds from its own androidSkin) |
 | Platform-skins registry | iOS: Radio, RadioGroup; Android: Radio, RadioGroup |
@@ -20,9 +21,10 @@ Audit checklist for `/components/radio`. The facts block and the variants table 
 | Interactions registry | in the inventory; evidence: radio-selection (unit-web, test/behavior.test.tsx) |
 | Overlay recipe | none |
 | MeasureProps | not adopted |
-| Touch target | no minTarget or useMinTargetSlop in the source modules |
+| Touch target | `radio.shared.tsx`: hitSlop. `test/touch-target-coverage.test.ts` records it as covered another way: hitSlop around the ring when there is no label to press |
 | Tests importing it | 12: `test/atom-material-roles.test.tsx`, `test/behavior.test.tsx`, `test/control-refs.test.tsx`, `test/control-space.test.tsx`, `test/fixtures/control-refs-consumer.tsx`, `test/focus-runtime.test.tsx`, `test/keyboard-nav.test.tsx`, `test/native-focus-fixtures.test.tsx`, `test/radio-idiom.test.tsx`, `test/sizing.test.tsx`, `test/skins-smoke.test.tsx`, `test/touch-target-clips.test.tsx` |
-| E2E importing or driving it | 2: `e2e/behavior/keyboard.e2e.ts`, `e2e/journeys/control-refs.e2e.ts` |
+| E2E naming it | 2: `e2e/behavior/keyboard.e2e.ts`, `e2e/journeys/control-refs.e2e.ts` |
+| E2E catalog sweeps | 6: `e2e/a11y/components.e2e.ts` (componentRoutes), `e2e/responsive/component-widths.e2e.ts` (contentRoutes, componentRoutes), `e2e/smoke/examples.e2e.ts` (componentExamples), `e2e/smoke/routes.e2e.ts` (allRoutes), `e2e/visual/components.e2e.ts` (componentRoutes), `e2e/visual/materials.e2e.ts` (MATERIAL_ROUTES) |
 <!-- audit:facts:end -->
 
 ## Variants
