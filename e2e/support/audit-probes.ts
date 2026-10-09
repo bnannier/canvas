@@ -30,6 +30,11 @@
  * select's label), and its paint stack starts at the control, so its own background is the
  * first layer under the text.
  *
+ * Before a state's row or a page's section is photographed, `probePaint` reads what it and
+ * everything in it paints past its border box (each shadow, outline and box a transform
+ * moved, with the clips inside it), so the photograph's margin is that paint's extent
+ * (tools/audit/web-capture.ts `paintedMargin`), not a guess.
+ *
  * The probe only reads; what the readings mean (the composited background, the contrast,
  * the floors, the targets, the flags) is decided in tools/audit/probe-math.ts, which is
  * unit tested and shared with the analysis step.
@@ -47,11 +52,106 @@
  */
 import type { Locator } from "@playwright/test";
 import type { RawLayer, RawPageOverflow, RawRow, RawText, RawInteractive, RowPlatform } from "../../tools/audit/probe-math.ts";
+import type { RawCaster, RawPaint } from "../../tools/audit/web-capture.ts";
 
 /** Read one platform row (`[data-platform-row]`) of the preview card. */
 export async function probeRow(row: Locator, platform: RowPlatform): Promise<RawRow> {
   const raw = await row.evaluate(collectRow);
   return { ...raw, platform };
+}
+
+/**
+ * Read what an element and everything in it paints past its border box, for the margin its
+ * photograph needs (tools/audit/web-capture.ts `paintedMargin`).
+ */
+export async function probePaint(element: Locator): Promise<RawPaint> {
+  return element.evaluate(collectPaint);
+}
+
+/**
+ * Runs in the page. Every element in `root` (itself included) that paints past its own
+ * border box: a shadow, an outline, or a transform that moved or scaled its box. Each is
+ * read with its box on screen, its scale (its box over its layout size), and the clip the
+ * elements around it inside `root` put on it: an overflow that is not visible clips, on
+ * its axis, what it is the containing block chain of, so an absolutely placed element
+ * escapes the clips between it and its positioned ancestor, and a fixed one every clip
+ * below the element that contains it. Nothing that does not paint (display none, opacity
+ * 0, visibility hidden) is read; what clips `root` from outside is the page's business,
+ * and a margin past it shows only the page.
+ */
+export function collectPaint(root: Element): RawPaint {
+  type Clip = RawCaster["clip"];
+  // A computed value that is set: an engine without a property (the individual transform
+  // properties are recent) reports it as undefined, which sets nothing.
+  const has = (value: string | undefined) => !!value && value !== "none";
+  const edges = (r: DOMRect) => ({ left: r.left, top: r.top, right: r.right, bottom: r.bottom });
+  // An element as a reviewer finds it: its tag, test id and role, and its label or the start of its text.
+  const name = (el: Element) => {
+    const id = el.getAttribute("data-testid");
+    const role = el.getAttribute("role");
+    const text = (el.getAttribute("aria-label") ?? el.textContent ?? "").replace(/\s+/g, " ").trim();
+    return `<${el.localName}${id ? ` data-testid="${id}"` : ""}${role ? ` role="${role}"` : ""}>${text ? ` "${text.length > 40 ? `${text.slice(0, 40)}...` : text}"` : ""}`;
+  };
+  const intersect = (a: Clip, b: Clip): Clip => {
+    if (!a) return b;
+    if (!b) return a;
+    const pick = (x: number | null, y: number | null, f: (p: number, q: number) => number) => (x === null ? y : y === null ? x : f(x, y));
+    return { left: pick(a.left, b.left, Math.max), top: pick(a.top, b.top, Math.max), right: pick(a.right, b.right, Math.min), bottom: pick(a.bottom, b.bottom, Math.min) };
+  };
+  // What each element's contents are clipped to: its own clip and, where its overflow is
+  // not visible, its padding box on that axis.
+  const contentClip = new Map<Element, Clip>();
+  const casters: RawCaster[] = [];
+  const visit = (el: Element, inherited: Clip): void => {
+    const style = getComputedStyle(el);
+    if (style.display === "none" || Number(style.opacity) === 0) return;
+    // An absolutely placed element is clipped by the clips of its containing block (the
+    // nearest positioned ancestor, or one that contains fixed elements too), a fixed one by
+    // those of the nearest ancestor that contains fixed elements (a transform, a filter, a
+    // perspective, layout or paint containment); none inside `root` means none of root's
+    // clips reach it.
+    let clip = inherited;
+    if (style.position === "absolute" || style.position === "fixed") {
+      clip = null;
+      for (let up = el.parentElement; up; up = up.parentElement) {
+        if (!contentClip.has(up)) break;
+        const s = getComputedStyle(up);
+        const containsFixed = has(s.transform) || has(s.filter) || has(s.perspective) || /paint|layout|strict|content/.test(s.contain ?? "");
+        const contains = style.position === "absolute" ? s.position !== "static" || containsFixed : containsFixed;
+        if (contains) {
+          clip = contentClip.get(up) ?? null;
+          break;
+        }
+        if (up === root) break;
+      }
+    }
+    const rect = el.getBoundingClientRect();
+    const html = el instanceof HTMLElement ? el : null;
+    const scale = { x: html && html.offsetWidth ? rect.width / html.offsetWidth : 1, y: html && html.offsetHeight ? rect.height / html.offsetHeight : 1 };
+    if (style.visibility === "visible") {
+      const outlineWidth = parseFloat(style.outlineWidth) || 0;
+      const outline = style.outlineStyle !== "none" && outlineWidth > 0 ? { width: outlineWidth, offset: parseFloat(style.outlineOffset) || 0 } : null;
+      const transformed = has(style.transform) || has(style.translate) || has(style.scale) || has(style.rotate);
+      if (has(style.boxShadow) || outline || transformed) {
+        casters.push({ node: name(el), box: edges(rect), scale, boxShadow: style.boxShadow, outline, transformed, clip });
+      }
+    }
+    let inner = clip;
+    const clipsX = style.overflowX !== "visible";
+    const clipsY = style.overflowY !== "visible";
+    if (clipsX || clipsY) {
+      // The padding box: the border box less the borders (and a scroller's bars), on screen.
+      const left = html ? rect.left + html.clientLeft * scale.x : rect.left;
+      const top = html ? rect.top + html.clientTop * scale.y : rect.top;
+      const right = html ? left + html.clientWidth * scale.x : rect.right;
+      const bottom = html ? top + html.clientHeight * scale.y : rect.bottom;
+      inner = intersect(clip, { left: clipsX ? left : null, top: clipsY ? top : null, right: clipsX ? right : null, bottom: clipsY ? bottom : null });
+    }
+    contentClip.set(el, inner);
+    for (const child of Array.from(el.children)) visit(child, inner);
+  };
+  visit(root, null);
+  return { box: edges(root.getBoundingClientRect()), casters };
 }
 
 /** Read how far the document, the page scroller and the card overflow horizontally. */
