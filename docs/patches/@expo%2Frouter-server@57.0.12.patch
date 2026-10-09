@@ -1,5 +1,5 @@
 diff --git a/build/static/renderStaticContent.js b/build/static/renderStaticContent.js
-index 748a99e971118d0ad48616d5296805a413055adb..1e9bd430ab0ac0628b1355965081d8b9c753962c 100644
+index 748a99e971118d0ad48616d5296805a413055adb..b1b7bcddf3da3da4bcd8c85018b03deee58060bb 100644
 --- a/build/static/renderStaticContent.js
 +++ b/build/static/renderStaticContent.js
 @@ -52,6 +52,7 @@ const _ctx_1 = require("expo-router/_ctx");

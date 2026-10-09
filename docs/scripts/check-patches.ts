@@ -10,7 +10,7 @@
 //    one an Expo upgrade produces. So for each entry: the installed version is the key's,
 //    bun.lock lists it, and every line the patch adds is in the installed file.
 //
-// 2. The expo patch still does its job (patches/expo@57.0.16.patch). Expo's development
+// 2. The expo patch still does its job (patches/expo@57.0.27.patch). Expo's development
 //    wrapper around the root the client hydrates must add no useId fork, or every id a
 //    pre-rendered page hydrates differs from the server's on the dev server. This renders
 //    a useId probe on the server, hydrates it under the patched wrapper with the docs'
@@ -20,7 +20,7 @@
 //    its behaviour is guarded in a browser instead: e2e/behavior/hydration-ids.e2e.ts,
 //    which the CI e2e job runs on the export.
 //
-// 3. The @expo/cli patch still does its job (patches/@expo%2Fcli@57.0.18.patch). The
+// 3. The @expo/cli patch still does its job (patches/@expo%2Fcli@57.0.28.patch). The
 //    export names each page's file after its route and renders the page at a location
 //    derived from that name by stripping a trailing `index`. Unpatched, it stripped the
 //    letters from any last segment ENDING in "index", so the page shipped as
@@ -58,7 +58,7 @@ function readJson<T>(path: string): T {
   return JSON.parse(readFileSync(path, "utf8")) as T;
 }
 
-/** "@expo/router-server@57.0.7" -> ["@expo/router-server", "57.0.7"]. */
+/** "@expo/router-server@57.0.12" -> ["@expo/router-server", "57.0.12"]. */
 function splitKey(key: string): [string, string] {
   const at = key.lastIndexOf("@");
   return [key.slice(0, at), key.slice(at + 1)];

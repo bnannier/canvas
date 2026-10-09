@@ -9,9 +9,9 @@
  * #root alone, so every useId below #root differed between the two. React never patches
  * a hydrated attribute, so the page kept the server's ids beside client-rendered nodes
  * that use the client's: the Autocomplete's aria-controls pointed at nothing. The docs
- * now carry a patch for that (docs/patches/@expo%2Frouter-server@57.0.7.patch), and a
+ * now carry a patch for that (docs/patches/@expo%2Frouter-server@57.0.12.patch), and a
  * second one for the development wrapper that added the same kind of shift on the dev
- * server only (docs/patches/expo@57.0.16.patch).
+ * server only (docs/patches/expo@57.0.27.patch).
  *
  * The console gate (support/fixtures.ts) cannot catch this on the export: production
  * React does not diff hydrated attributes at all, so the canonical run reports nothing.
