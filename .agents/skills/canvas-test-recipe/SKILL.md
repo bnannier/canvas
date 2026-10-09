@@ -79,26 +79,31 @@ Capture callback payloads with a `let` closure (`onChange={(p) => { page = p; }}
 use `screen.getByDisplayValue` / `getByPlaceholderText` for inputs, `getByText`
 for labels, `container.querySelector('[role="option"]')` for structural asserts.
 
-## 4. Per-OS skin smoke (the ONLY layer that loads .ios/.android)
+## 4. Per-OS skin smoke (the floor for every platform entry)
 
-Every other suite imports `<name>.tsx` (web), so a `.ios.tsx`/`.android.tsx` skin
-that references a missing token, mis-shapes a StyleSheet, or throws at render ships
-untested. `test/skins-smoke.test.tsx` is the one net: a data-driven `CASES` array
-(one row per exported symbol: `{ name, dir, file, props?, children? }`) that
-dynamically imports BOTH builds and asserts export + non-throwing mount:
+Most suites import `<name>.tsx` (web); a component's own suite may also loop its
+`.ios.tsx`/`.android.tsx` entries for behaviour (`test/phone-input.test.tsx`,
+`test/checkbox-idiom.test.tsx`). `test/skins-smoke.test.tsx` is the floor under all of
+them: a data-driven `CASES` array (one row per exported symbol:
+`{ name, dir, file, label?, props?, children? }`) that dynamically imports every build
+and asserts export + non-throwing mount:
 
 ```tsx
-const mod = (await import(`../src/${c.dir}/${c.file}.${platform}.tsx`)) as Record<string, unknown>;
+const mod = (await import(`../src/${c.dir}/${c.file}${suffix}.tsx`)) as Record<string, unknown>;
 const Comp = mod[c.name];
 expect(Comp, `${c.name} not exported from …`).toBeDefined();
 expect(() => render(createElement(ThemeProvider, null, createElement(Comp as never, c.props ?? null, kids)))).not.toThrow();
 ```
 
-`PLATFORMS = ["ios", "android"]` loops both. When you add a component (or a new
-exported symbol from an existing skin, e.g. AvatarGroup, StackedBar), ADD A CASE
-here with the minimal props to render its body, or the skin is untested. Wrap raw
-string children in `<Text>` for View-only panels (the `txt()` helper); a `children`
-function receives the resolved module (see AvatarGroup building Avatars).
+`PLATFORMS = ["web", "ios", "android"]` loops all three. Its completeness guard loads
+every `src/{atoms,molecules,organisms,charts}/**/*.{ios,android}.tsx` and fails on any
+component-named export (a capital, then any lowercase: `QRCode` counts, `FLUID` and
+`gridColumns` do not) with no row, re-exports included (BadgeGroup, the Card parts). So
+when you add a component or export a new symbol from a platform entry, ADD A CASE with
+the minimal props to render its body; an export that genuinely cannot have a row goes in
+`EXEMPT` with its reason, and the guard fails on a stale exemption too. Wrap raw string
+children in `<Text>` for View-only panels (the `txt()` helper); a `children` function
+receives the resolved module (see AvatarGroup building Avatars).
 
 ## 5. The DOM-nesting console gate
 
