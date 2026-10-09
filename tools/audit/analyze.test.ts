@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it } from "bun:test";
-import { mkdtempSync, rmSync } from "node:fs";
+import { mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import sharp from "sharp";
@@ -7,11 +7,13 @@ import type { A11ySnapshot } from "./native/a11y.ts";
 import type { ProbeSummary, ProbeText } from "./probe-math.ts";
 import {
   analyzeA11y,
+  analyzeCells,
   analyzeNativeCell,
-  analyzeWebProbe,
+  analyzeWebCell,
   BACKGROUND_BIN,
   boxToRegion,
   cardSampler,
+  cellSamplers,
   CONTRAST_METHODS,
   contrastOfLuminance,
   decodeImage,
@@ -19,6 +21,7 @@ import {
   inkOver,
   inkRegion,
   paintedInk,
+  paintedInkContrast,
   percentileIndex,
   pixelContrast,
   pixelVerdict,
@@ -29,9 +32,15 @@ import {
   structureOf,
   textContrast,
   type RawImage,
+  readCellProbe,
+  readVariantProbe,
+  type CellAnalysis,
+  type RegionPhoto,
   type RGB,
-  type WebProbe,
+  type VariantProbe,
 } from "./analyze.ts";
+import { checkoutWithRealRuns } from "./fixtures/real-runs.ts";
+import { currentCells, type CapturedCell } from "./runs.ts";
 
 /** A white image of `width` x `height`, three channels, with `fill` rectangles painted on it. */
 function image(width: number, height: number, fills: { x: number; y: number; w: number; h: number; gray: number }[] = [], background = 255): RawImage {
@@ -188,6 +197,9 @@ describe("the painted ink over the photographed background", () => {
     expect("alpha" in faded && faded.alpha).toBeCloseTo(0.2, 6);
     expect(paintedInk(text({ svg: true, colorAlpha: 0.5 }))).toEqual({ rgb: [0, 0, 0], alpha: 0.5 });
     expect(paintedInk(text({ field: { control: "input", part: "value" } }))).toEqual({ rgb: [0, 0, 0], alpha: 1 });
+    // A label dimmed with the fill behind it (a pressed button at 0.9): the photograph shows both dimmed, so the ink is not dimmed again over it.
+    expect(paintedInk(text({ color: "rgb(255, 255, 255)", opacity: 0.9, ownOpacity: 1 }))).toEqual({ rgb: [255, 255, 255], alpha: 1 });
+    expect(paintedInk(text({ opacity: 0.4, ownOpacity: 0.8 }))).toEqual({ rgb: [0, 0, 0], alpha: 0.8 });
   });
 
   it("gives no ink, and says why, where the probe cannot say what paints the glyphs", () => {
@@ -226,6 +238,60 @@ describe("the painted ink over the photographed background", () => {
     expect(read.contrast).toBeCloseTo(contrastOfLuminance(relativeLuminance([200, 200, 200]), relativeLuminance([80, 80, 80])), 2);
   });
 
+  /**
+   * A control dimmed as a whole inside a card (`behind`): its fill and its label mixed with the
+   * card at opacity `s`, as the photograph shows them, the label in solid glyph blocks. The
+   * control is the box (10, 6) 60 x 18 of an 80 x 30 image, the label inside it.
+   */
+  function dimmedControl(behind: RGB, fill: RGB, ink: RGB, s: number): RawImage {
+    const mix = (c: RGB): RGB => [0, 1, 2].map((k) => s * c[k]! + (1 - s) * behind[k]!) as RGB;
+    const inControl = (x: number, y: number) => x >= 10 && x < 70 && y >= 6 && y < 24;
+    const glyph = (x: number, y: number) => x >= 16 && x < 64 && y >= 10 && y < 20 && x % 4 < 2;
+    const data = new Uint8Array(80 * 30 * 3);
+    for (let y = 0; y < 30; y++) {
+      for (let x = 0; x < 80; x++) {
+        const c = !inControl(x, y) ? behind : glyph(x, y) ? mix(ink) : mix(fill);
+        for (let k = 0; k < 3; k++) data[(y * 80 + x) * 3 + k] = Math.round(c[k]!);
+      }
+    }
+    return { data, width: 80, height: 30, channels: 3 };
+  }
+  const control = { x: 10, y: 6, width: 60, height: 18 };
+  const label = { x: 16, y: 10, width: 48, height: 10 };
+
+  it("paints a label dimmed with its backdrop over the colour behind their group, read around the group's box", () => {
+    // The pressed Button of the states run: a white label on its green fill, the button at 0.9 on a white card (4.09 on the DOM).
+    const white: RGB = [255, 255, 255];
+    const green: RGB = [33, 128, 75];
+    const pressed = dimmedControl(white, green, white, 0.9);
+    const truthOf = (behind: RGB, fill: RGB, ink: RGB, s: number) => {
+      const mix = (c: RGB): RGB => [0, 1, 2].map((k) => s * c[k]! + (1 - s) * behind[k]!) as RGB;
+      return contrastOfLuminance(relativeLuminance(mix(ink)), relativeLuminance(mix(fill)));
+    };
+    const sampler = cardSampler(pressed, 1);
+    expect(sampler.around(control)!.rgb).toEqual(white);
+    const shared = { opacity: 0.9, box: control };
+    const read = pixelContrast(indeterminate({ color: "rgb(255, 255, 255)", opacity: 0.9, ownOpacity: 1, shared, box: label }), sampler)!;
+    expect(read).toMatchObject({ method: CONTRAST_METHODS.paintedInk, behind: "#ffffff" });
+    expect(read.contrast).toBeCloseTo(truthOf(white, green, white, 0.9), 1);
+    // The dimmed Cancel of the pressed Dialog: a dark label on a pale wash, the button at 0.9 on the dialog's surface.
+    const surface: RGB = [250, 249, 255];
+    const cancel = dimmedControl(surface, [236, 235, 250], [59, 60, 92], 0.9);
+    const dark = pixelContrast(indeterminate({ color: "rgb(59, 60, 92)", opacity: 0.9, ownOpacity: 1, shared, box: label }), cardSampler(cancel, 1))!;
+    expect(dark.contrast).toBeCloseTo(truthOf(surface, [236, 235, 250], [59, 60, 92], 0.9), 1);
+    // Dimming the ink alone over the photographed fill under-reads the first, and leaving it undimmed over-reads the second.
+    expect(pixelContrast(indeterminate({ color: "rgb(255, 255, 255)", opacity: 0.9, box: label }), sampler)!.contrast).toBeLessThan(truthOf(white, green, white, 0.9) * 0.95);
+    expect(pixelContrast(indeterminate({ color: "rgb(59, 60, 92)", opacity: 0.9, ownOpacity: 1, box: label }), cardSampler(cancel, 1))!.contrast).toBeGreaterThan(truthOf(surface, [236, 235, 250], [59, 60, 92], 0.9) * 1.1);
+  });
+
+  it("dims the ink alone, and says so, where the photograph shows nothing around the group", () => {
+    const pressed = dimmedControl([255, 255, 255], [33, 128, 75], [255, 255, 255], 0.9);
+    // The group's box is the whole photograph: no ring around it.
+    const read = textContrast("web", indeterminate({ color: "rgb(255, 255, 255)", opacity: 0.9, ownOpacity: 1, shared: { opacity: 0.9, box: { x: 0, y: 0, width: 80, height: 30 } }, box: label }), cardSampler(pressed, 1));
+    expect(read.reason).toBe("backdrop-filter on div; the photograph shows too little around its opacity group to read what is behind it, so the group is taken to dim the ink alone");
+    expect(read.behind).toBeUndefined();
+  });
+
   it("takes the dominant colour of a mixed background, gathered across a bin's edge", () => {
     // 70% of the box one wash, 30% an orb's edge, black ink: the wash is the background.
     const wash = image(50, 20, [{ x: 35, y: 0, w: 15, h: 20, gray: 120 }, { x: 4, y: 6, w: 20, h: 8, gray: 0 }], 230);
@@ -256,9 +322,12 @@ describe("the painted ink over the photographed background", () => {
 describe("a text's contrast", () => {
   const sampler = (img: RawImage, dpr = 1) => cardSampler(img, dpr);
 
+  const noPhoto = { none: "no photograph" };
+
   it("takes the DOM's answer where it resolved", () => {
-    expect(textContrast("web", text(), null)).toMatchObject({ method: "dom", contrast: 21, verdict: "pass" });
-    expect(textContrast("ios", text({ contrast: 3.1, contrastFails: true }), null)).toMatchObject({ method: "dom", verdict: "fail", row: "ios" });
+    expect(textContrast("web", text(), noPhoto)).toMatchObject({ method: "dom", contrast: 21, verdict: "pass", region: "web" });
+    expect(textContrast("ios", text({ contrast: 3.1, contrastFails: true }), noPhoto)).toMatchObject({ method: "dom", verdict: "fail", row: "ios" });
+    expect(textContrast("web", text(), noPhoto, "section:centeredcard")).toMatchObject({ row: "web", region: "section:centeredcard" });
   });
 
   it("takes the painted ink where the DOM could not resolve the background, and reads only the background off the photograph", () => {
@@ -282,11 +351,24 @@ describe("a text's contrast", () => {
 
   it("owes nothing for a disabled control and does not sample what it cannot see", () => {
     expect(textContrast("web", indeterminate({ disabled: true }), sampler(image(10, 10)))).toMatchObject({ verdict: "exempt", method: "none" });
-    expect(textContrast("web", text({ disabled: true, contrast: 1.2 }), null)).toMatchObject({ verdict: "exempt", method: "dom" });
+    expect(textContrast("web", text({ disabled: true, contrast: 1.2 }), noPhoto)).toMatchObject({ verdict: "exempt", method: "dom" });
     expect(textContrast("web", indeterminate({ covered: true }), sampler(image(80, 30)))).toMatchObject({ verdict: "unmeasured", method: "none" });
     expect(textContrast("web", indeterminate({ scrolled: { overflow: "auto", excess: 30 } }), sampler(image(80, 30)))).toMatchObject({ verdict: "unmeasured" });
-    expect(textContrast("web", indeterminate(), null)).toMatchObject({ verdict: "unmeasured", reason: "backdrop-filter on div; no card image to sample" });
-    expect(textContrast("web", indeterminate({ box: { x: 0, y: 0, width: 2, height: 2 } }), sampler(image(80, 30)))).toMatchObject({ verdict: "unmeasured" });
+    expect(textContrast("web", indeterminate(), noPhoto)).toMatchObject({ verdict: "unmeasured", reason: "backdrop-filter on div; no photograph" });
+    expect(textContrast("web", indeterminate({ box: { x: 0, y: 0, width: 2, height: 2 } }), sampler(image(80, 30)))).toMatchObject({ verdict: "unmeasured", reason: "backdrop-filter on div; its box holds too few pixels of the photograph to sample" });
+    expect(textContrast("web", indeterminate({ box: { x: 90, y: 0, width: 40, height: 16 } }), sampler(image(80, 30)))).toMatchObject({ verdict: "unmeasured", reason: "backdrop-filter on div; its box lies outside the photograph" });
+  });
+
+  it("places the probe's boxes in a photograph whose origin is elsewhere: a clip of the viewport, or the viewport itself", () => {
+    // The region's origin (its card) sits at CSS (30, 10) of a DPR 2 photograph: the dark block is at device (70, 30) to (150, 54).
+    const img = image(200, 80, [{ x: 70, y: 30, w: 80, h: 24, gray: 0x30 }]);
+    const box = { x: 0, y: 0, width: 50, height: 20 };
+    const shifted = cardSampler(img, 2, { x: 30, y: 10 });
+    expect(shifted.shows(box)).toBe(true);
+    expect(shifted.background(box, { rgb: [255, 255, 255], alpha: 1 })!.rgb.map(Math.round)).toEqual([0x30, 0x30, 0x30]);
+    // Unplaced, the same box reads the white corner.
+    expect(cardSampler(img, 2).background(box, { rgb: [0, 0, 0], alpha: 1 })!.rgb.map(Math.round)).toEqual([255, 255, 255]);
+    expect(shifted.shows({ x: 80, y: 40, width: 10, height: 10 })).toBe(false);
   });
 
   let dir: string | null = null;
@@ -343,8 +425,12 @@ const summary = (overrides: Partial<ProbeSummary> = {}): ProbeSummary => ({
 });
 
 describe("a web cell's analysis", () => {
+  // The flag roll-up over a probe written by hand, so each contrast verdict is known; the real
+  // runs' variant, state and page probes are read in "the analysis over real runs" below.
+  const cell = { id: "web/x/default/phone.blush.glass", family: "variant" as const, state: null, row: null, variant: "default", label: null, run: "r", capturedAt: "t" };
+
   it("rolls the probe, the sampled contrast and the structure verdict into its flags", () => {
-    const probe: WebProbe = {
+    const probe: VariantProbe = {
       dpr: 1,
       rows: [{
         platform: "web",
@@ -362,25 +448,22 @@ describe("a web cell's analysis", () => {
       summary: summary({ contrastFailures: 1, axeViolations: 2, problems: 1, smallTargets: { ios: 0, android: 0, web: 1 } }),
     };
     const faint = image(100, 40, [{ x: 5, y: 4, w: 40, h: 12, gray: 0xa0 }]);
-    const analysis = analyzeWebProbe(
-      { id: "web/x/default/phone.blush.glass", status: "ok", flags: [], run: "r", capturedAt: "t" },
-      probe,
-      cardSampler(faint, 1),
-      { peers: 6, identical: false, agreesWith: [] },
-      new Date("2026-10-09T00:00:00Z"),
-    );
+    const analysis = analyzeWebCell({ ...cell, status: "ok" }, readVariantProbe(probe), () => cardSampler(faint, 1), { peers: 6, identical: false, agreesWith: [] }, new Date("2026-10-09T00:00:00Z"));
     expect(analysis.flags).toEqual(["problems", "contrast", "small-target", "axe", "contrast-likely", "structure-varies"]);
     expect(analysis.contrast.dom).toEqual({ checked: 1, fails: 1 });
     expect(analysis.contrast.pixels).toEqual({ sampled: 1, failLikely: 1, review: 0, passed: 0, percentiles: 0 });
     expect(analysis.contrast.texts.map((t) => [t.text, t.verdict])).toEqual([["Fails", "fail"], ["Faint", "fail-likely"]]);
-    expect(analysis.fonts).toMatchObject({ min: 11, minText: "Fails", minRow: "web", underBodyFloor: 1 });
-    expect(analysis.targets.web!.small).toEqual([{ role: "button", name: "Go", width: 20, height: 20 }]);
+    expect(analysis.fonts).toMatchObject({ min: 11, minText: "Fails", minRegion: "web", underBodyFloor: 1 });
+    expect(analysis.targets.web!.small).toEqual([{ region: "web", role: "button", name: "Go", width: 20, height: 20 }]);
+    expect(analysis.regions).toEqual({ web: { texts: 2, minFont: 11, contrast: { domFails: 1, failLikely: 1, review: 0 }, smallTargets: 1 } });
     expect(analysis.axe.byImpact).toEqual({ critical: 1, serious: 1, moderate: 0, minor: 0 });
     expect(analysis.problems).toBe(1);
+    expect(analysis.family).toBe("variant");
   });
 
   it("files a cell its record says failed under failed, though a probe was left behind", () => {
-    const probe: WebProbe = {
+    // No run on disk holds a failed cell, so the record's status is the one thing set by hand.
+    const probe: VariantProbe = {
       dpr: 1,
       rows: [{ platform: "web", box: { x: 0, y: 0, width: 100, height: 40 }, aria: "- button", texts: [text()], interactive: [] }],
       overflow: { document: 0 },
@@ -388,12 +471,11 @@ describe("a web cell's analysis", () => {
       problems: [],
       summary: summary(),
     };
-    const cell = { id: "web/x/default/phone.blush.solid", flags: [], run: "r", capturedAt: "t" };
     const now = new Date("2026-10-09T00:00:00Z");
-    const failed = analyzeWebProbe({ ...cell, status: "failed" }, probe, null, undefined, now);
+    const failed = analyzeWebCell({ ...cell, status: "failed" }, readVariantProbe(probe), () => null, undefined, now);
     expect(failed.flags).toEqual(["failed"]);
     expect(failed.status).toBe("failed");
-    expect(analyzeWebProbe({ ...cell, status: "ok" }, probe, null, undefined, now).flags).toEqual([]);
+    expect(analyzeWebCell({ ...cell, status: "ok" }, readVariantProbe(probe), () => null, undefined, now).flags).toEqual([]);
   });
 });
 
@@ -431,12 +513,84 @@ describe("native accessibility", () => {
   });
 
   it("files a native cell under unstable, problems and a dump that failed", () => {
-    const base = { id: "android/x/default/blush.solid", status: "unstable", platform: "android" as const, run: "r", capturedAt: "t" };
+    const base = { id: "android/x/default/blush.solid", status: "unstable", platform: "android" as const, family: "variant" as const, run: "r", capturedAt: "t" };
     const now = new Date();
     expect(analyzeNativeCell(base, { status: "unstable", a11y: { error: "dump timed out" }, problems: [{}], segments: [{ stable: false }] }, null, now).flags).toEqual(["unstable", "problems", "a11y-error"]);
     const quiet = analyzeNativeCell({ ...base, status: "ok" }, { status: "ok", a11y: "not requested", problems: [], segments: [{ stable: true }] }, null, now);
     expect(quiet.flags).toEqual([]);
     expect(quiet.a11y!.source).toBe("not requested");
     expect(quiet.targets).toEqual({});
+  });
+});
+
+describe("the analysis over real runs", () => {
+  let root: string | null = null;
+  afterEach(() => {
+    if (root) rmSync(root, { recursive: true, force: true });
+    root = null;
+  });
+  const analysisOf = (cell: CapturedCell) => JSON.parse(readFileSync(join(cell.dir, "analysis.json"), "utf8")) as CellAnalysis;
+
+  it("places every region's texts in the photograph it was taken in: a card, a row shot with its margin, a viewport, a section", async () => {
+    root = checkoutWithRealRuns();
+    const { cells } = currentCells(root, { only: null, runs: null });
+    const read = new Map<string, number>();
+    for (const cell of cells) {
+      const probe = readCellProbe(cell.family, JSON.parse(readFileSync(join(cell.dir, "probe.json"), "utf8")));
+      if (!probe) continue;
+      const samplerFor = await cellSamplers(cell.dir, probe, () => true);
+      for (const region of probe.regions) {
+        expect("file" in region.photo).toBe(true);
+        const sampler = samplerFor(region.photo as RegionPhoto)!;
+        for (const text of region.texts) {
+          // Every text the DOM resolved, read again from the pixels where it was placed, as if the DOM had not.
+          if (text.contrast === null || text.disabled || text.covered || text.scrolled) continue;
+          const ink = paintedInk(text);
+          if (!("rgb" in ink)) continue;
+          const pixels = paintedInkContrast(text, ink, sampler)!;
+          expect(Math.abs(pixels.contrast - text.contrast) / text.contrast).toBeLessThan(0.03);
+          read.set(cell.family, (read.get(cell.family) ?? 0) + 1);
+        }
+      }
+    }
+    // The variants' cards, the states' row and viewport shots, and the page's sections all held texts to place.
+    expect(read.get("variant")).toBeGreaterThan(0);
+    expect(read.get("state")).toBeGreaterThan(0);
+    expect(read.get("page")).toBeGreaterThan(0);
+  });
+
+  it("analyzes every family the same way, and files a state's own flags, its release's, and one not reached", async () => {
+    root = checkoutWithRealRuns();
+    const { cells } = currentCells(root, { only: null, runs: null });
+    const totals = await analyzeCells(cells, new Date("2026-10-09T18:00:00Z"));
+    expect(totals).toMatchObject({ cells: 10, analyzed: 10, skipped: 0, families: { variant: 2, state: 7, page: 1 }, unmeasured: 0 });
+    const of = (id: string) => analysisOf(cells.find((cell) => cell.id === id)!);
+    // The page: three sections, each its own region, read from its own photograph under glass.
+    const page = of("web-pages/template-signin/phone.blush.glass");
+    expect(page).toMatchObject({ family: "page", flags: ["contrast-likely"] });
+    expect(Object.keys(page.regions!)).toEqual(["section:centeredcard", "section:splitscreen", "section:magiclink"]);
+    expect(page.regions!["section:splitscreen"]!.contrast).toEqual({ domFails: 0, failLikely: 4, review: 0 });
+    expect(page.contrast.texts.filter((t) => t.verdict === "fail-likely").map((t) => [t.text, t.contrast])).toEqual([
+      ["Manage identities, sessions, and access policies from one dashboard.", 3.79],
+      ["Multi-factor authentication", 3.79],
+      ["OAuth2 and OIDC support", 3.79],
+      ["Audit logging and compliance", 3.79],
+    ]);
+    // A tooltip opened in its row: its bubble is read with the row, once, and its state flag kept.
+    const tooltip = of("web-states/tooltip/open.web/phone.blush.solid");
+    expect(Object.keys(tooltip.regions!)).toEqual(["web"]);
+    expect(tooltip.contrast.dom.checked).toBe(2);
+    expect(tooltip).toMatchObject({ flags: ["hover-unstable"], state: { state: "open", row: "web", variant: "onhover", label: "On hover", reached: true, stateFlags: ["hover-unstable"], releaseFlags: [] } });
+    // The pressed Button: dimmed as a whole in solid (a DOM fail at 4.09), its label alone dimmed over the brand pane under glass.
+    expect(of("web-states/button/pressed.web/desktop.blush.solid").contrast.texts).toMatchObject([{ method: "dom", contrast: 4.09, verdict: "fail" }]);
+    expect(of("web-states/button/pressed.web/desktop.blush.glass")).toMatchObject({ flags: ["contrast-review"], contrast: { texts: [{ method: CONTRAST_METHODS.paintedInk, contrast: 4.06, verdict: "review" }] } });
+    // A release that found the press not cancelled, and a state not reached with its reason.
+    expect(of("web-states/slider/pressed.web/desktop.blush.solid")).toMatchObject({ flags: ["press-not-cancelled"], state: { reached: true, releaseFlags: ["press-not-cancelled"] } });
+    const heatmap = of("web-states/heatmap/pressed.web/desktop.blush.solid");
+    expect(heatmap).toMatchObject({ family: "state", status: "state-not-reached", flags: ["state-not-reached"], state: { reached: false, variant: "calendar" } });
+    expect(heatmap.state!.reason).toStartWith("pressing [role=\"img\"]");
+    // The hover's looks and surfaces vote on its row's tree like a variant's.
+    expect(of("web-states/button/hover.web/desktop.blush.glass").structure).toMatchObject({ peers: 2, identical: true });
+    expect(of("web/button/default/desktop.blush.glass")).toMatchObject({ family: "variant", flags: ["small-visible-target"], structure: { peers: 2, identical: true } });
   });
 });

@@ -11,14 +11,18 @@
 //                   native host's (started, sourceRevision, sourceFingerprint)
 //   cells.jsonl     one record per finished cell; its `id` is the cell's path in the run
 //
-// Cell ids (inventory.ts cellId and pageCellId), and the two families the interaction
-// states and pages runners add beside them under the same conventions:
-//   web/<slug>/<variant>/<width>.<look>.<surface>
-//   ios|android/<slug>/<variant>/<look>.<surface>
-//   web-states/<slug>/[<variant>/]<state>/<width>.<look>.<surface>
-//   web-pages|ios-pages|android-pages/<kind>-<slug>/[<section>/]<leaf>
-// A record of a state the recipe could not reach carries the status or the flag
-// `state-not-reached` and has no photograph.
+// Cell ids, the cell's path under its run (inventory.ts cellId and pageCellId,
+// web-capture.ts stateCellId and webPageCellId, the native host's):
+//   web/<slug>/<variant>/<width>.<look>.<surface>              {card.png, probe.json}
+//   ios|android/<slug>/<variant>/<look>.<surface>              {screen.png, card.png, probe.json, a11y.json}
+//   web-states/<slug>/<state>.<row>/<width>.<look>.<surface>   {state.png, probe.json}
+//   web-pages/<kind>-<slug>/<width>.<look>.<surface>           {viewport.png, section.<key>.png, probe.json}
+//   ios-pages|android-pages/<kind>-<slug>/<look>.<surface>     as a native variant's
+// A state cell's id names the state and the platform row it was reached from; the example
+// its recipe applies it to is on its record (`variant`, `label`), one per component and
+// state. A page cell holds every section of the page, each photographed beside the first
+// screen. A state the recipe could not reach is recorded with the status
+// `state-not-reached` and the reason, and has no photograph.
 //
 // The newest capture of a cell is the one recorded last: by the time its record says it
 // finished (`at`, which the web cells and the native host both write), then by its run's
@@ -28,21 +32,18 @@
 
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
+import { STATE_NAMES, type StateName } from "../../e2e/support/state-recipes.ts";
 import { LOOKS, PLATFORMS, SURFACES, WIDTHS, components, pages, type Look, type Platform, type Surface, type WidthKey } from "./inventory.ts";
-import { CELLS_FILE, MANIFEST_FILE, RUNS_DIR } from "./web-capture.ts";
+import { ROW_PLATFORMS, type RowPlatform } from "./probe-math.ts";
+import { CELLS_FILE, MANIFEST_FILE, PAGES_DIR, RUNS_DIR, STATES_DIR, type CellStatus } from "./web-capture.ts";
 
 /** Where the reviewer's view of the newest captures is built, relative to the checkout root. */
 export const CURRENT_DIR = ".audit/current";
 /** The analysis step's output, written beside a cell's probe.json. */
 export const ANALYSIS_FILE = "analysis.json";
 
-/**
- * The status or flag a state recipe records when it could not bring the state about. The
- * states themselves (plan 1d: hover, focus, pressed, open, invalid, disabled; `open` is
- * e2e/support/overlay-recipes.ts) are read as whatever segment the id carries, so a state
- * the recipes add later needs nothing here.
- */
-export const STATE_NOT_REACHED = "state-not-reached";
+/** The status a state cell is recorded with when its recipe could not bring the state about (web-capture.ts CellStatus). */
+export const STATE_NOT_REACHED = "state-not-reached" satisfies CellStatus;
 
 export type CellFamily = "variant" | "state" | "page";
 
@@ -53,9 +54,12 @@ export interface CellKey {
   platform: Platform;
   /** The component slug, or a page's id (`<kind>-<slug>`). */
   slug: string;
+  /** A variant cell's example; null in a state id, whose example its record names (CapturedCell `variant`). */
   variant: string | null;
-  state: string | null;
-  section: string | null;
+  /** A state cell's state. */
+  state: StateName | null;
+  /** The platform row of the browser card a state cell was reached from. */
+  row: RowPlatform | null;
   width: WidthKey | null;
   look: Look;
   surface: Surface;
@@ -64,9 +68,12 @@ export interface CellKey {
 const WIDTH_KEYS = WIDTHS.map((w) => w.key) as readonly string[];
 const isLook = (value: string): value is Look => (LOOKS as readonly string[]).includes(value);
 const isSurface = (value: string): value is Surface => (SURFACES as readonly string[]).includes(value);
+const isState = (value: string): value is StateName => (STATE_NAMES as readonly string[]).includes(value);
+const isRow = (value: string): value is RowPlatform => (ROW_PLATFORMS as readonly string[]).includes(value);
 
 /**
- * Read a cell id, or null for one that follows none of the layouts above. The id is the
+ * Read a cell id, or null for one that follows none of the layouts above (a state the
+ * recipes do not name, a row no card has, a page id with a section in it). The id is the
  * source of truth for where the cell sits; a record's own fields are not consulted.
  */
 export function parseCellId(id: string): CellKey | null {
@@ -78,12 +85,13 @@ export function parseCellId(id: string): CellKey | null {
   const slug = parts[1]!;
   let family: CellFamily;
   let platform: string;
-  if (head.endsWith("-states")) {
+  if (head === STATES_DIR) {
     family = "state";
-    platform = head.slice(0, -"-states".length);
+    platform = "web";
   } else if (head.endsWith("-pages")) {
     family = "page";
     platform = head.slice(0, -"-pages".length);
+    if (platform === "web" && head !== PAGES_DIR) return null;
   } else {
     family = "variant";
     platform = head;
@@ -95,20 +103,19 @@ export function parseCellId(id: string): CellKey | null {
   if (width !== null && !WIDTH_KEYS.includes(width)) return null;
   if (!isLook(look!) || !isSurface(surface!)) return null;
   let variant: string | null = null;
-  let state: string | null = null;
-  let section: string | null = null;
+  let state: StateName | null = null;
+  let row: RowPlatform | null = null;
   if (family === "variant") {
     if (middle.length !== 1) return null;
     variant = middle[0]!;
   } else if (family === "state") {
-    if (middle.length === 1) state = middle[0]!;
-    else if (middle.length === 2) [variant, state] = middle as [string, string];
-    else return null;
-  } else {
-    if (middle.length > 1) return null;
-    section = middle[0] ?? null;
-  }
-  return { id, family, platform: platform as Platform, slug, variant, state, section, width: width as WidthKey | null, look, surface: surface! };
+    // `<state>.<row>`: the state, and the row of the browser card it was reached from.
+    const named = middle.length === 1 ? middle[0]!.split(".") : [];
+    if (named.length !== 2 || !isState(named[0]!) || !isRow(named[1]!)) return null;
+    state = named[0];
+    row = named[1];
+  } else if (middle.length !== 0) return null;
+  return { id, family, platform: platform as Platform, slug, variant, state, row, width: width as WidthKey | null, look, surface: surface! };
 }
 
 /** The id of a cell's group across looks and surfaces: its id with the look and surface taken off the leaf. */
@@ -232,11 +239,16 @@ export function listRuns(root: string): { runs: AuditRun[]; problems: string[] }
 
 /** One recorded capture of a cell in one run. */
 export interface CapturedCell extends CellKey {
+  /** The example: a variant cell's from its id, a state cell's from its record (the recipe's example). */
+  variant: string | null;
+  /** A state cell's example label, from its record. */
+  label: string | null;
   run: AuditRun;
   /** The cell's directory (absolute). */
   dir: string;
   /** ok, failed, unstable (native), or state-not-reached. */
   status: string;
+  /** Why a failed cell failed, or why a state was not reached. */
   error: string | null;
   /** The flags the capture filed the cell under (the web probe's; native and state records may carry none). */
   flags: string[];
@@ -248,8 +260,8 @@ export interface CapturedCell extends CellKey {
 }
 
 /** Whether a capture is a state the recipe could not reach. */
-export function notReached(cell: Pick<CapturedCell, "status" | "flags">): boolean {
-  return cell.status === STATE_NOT_REACHED || cell.flags.includes(STATE_NOT_REACHED);
+export function notReached(cell: Pick<CapturedCell, "status">): boolean {
+  return cell.status === STATE_NOT_REACHED;
 }
 
 /** The cells of one run's cells.jsonl text, the last record of an id winning; unreadable lines are counted. */
@@ -279,6 +291,8 @@ export function readRunCells(run: AuditRun, text: string): { cells: CapturedCell
     const flags = Array.isArray(record.flags) ? record.flags.filter((flag): flag is string => typeof flag === "string") : [];
     byId.set(id, {
       ...key,
+      variant: key.variant ?? (key.family === "state" ? str(record.variant) : null),
+      label: key.family === "state" ? str(record.label) : null,
       run,
       dir: join(run.dir, id),
       status: str(record.status) ?? "unknown",

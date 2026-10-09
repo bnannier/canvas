@@ -1,0 +1,195 @@
+{
+  "schema": 1,
+  "cell": {
+    "id": "web-states/slider/pressed.web/desktop.blush.solid",
+    "slug": "slider",
+    "state": "pressed",
+    "row": "web",
+    "variant": "default",
+    "label": "Default",
+    "width": "desktop",
+    "look": "blush",
+    "surface": "solid"
+  },
+  "recipe": {
+    "state": "pressed",
+    "variant": "default",
+    "how": "the pointer goes down on the slider's thumb and is held",
+    "frame": "row"
+  },
+  "url": "https://127.0.0.1:4627/components/slider?scheme=light&surface=solid&palette=blush",
+  "structure": {
+    "path": "/components/slider",
+    "selected": "Default"
+  },
+  "dpr": 2,
+  "viewport": {
+    "initial": {
+      "width": 1440,
+      "height": 900
+    },
+    "grown": {
+      "width": 1440,
+      "height": 900
+    }
+  },
+  "status": "ok",
+  "evidence": {
+    "control": "<div role=\"slider\"> \"Volume\"",
+    "changes": [
+      {
+        "node": "content 3 <div>",
+        "property": "border-top-color",
+        "from": "rgb(114, 98, 229)",
+        "to": "rgba(114, 98, 229, 0.5)"
+      },
+      {
+        "node": "content 3 <div>",
+        "property": "border-right-color",
+        "from": "rgb(114, 98, 229)",
+        "to": "rgba(114, 98, 229, 0.5)"
+      },
+      {
+        "node": "content 3 <div>",
+        "property": "border-bottom-color",
+        "from": "rgb(114, 98, 229)",
+        "to": "rgba(114, 98, 229, 0.5)"
+      },
+      {
+        "node": "content 3 <div>",
+        "property": "border-left-color",
+        "from": "rgb(114, 98, 229)",
+        "to": "rgba(114, 98, 229, 0.5)"
+      },
+      {
+        "node": "content 3 <div>",
+        "property": "border-top-width",
+        "from": "1px",
+        "to": "4px"
+      },
+      {
+        "node": "content 3 <div>",
+        "property": "border-right-width",
+        "from": "1px",
+        "to": "4px"
+      },
+      {
+        "node": "content 3 <div>",
+        "property": "border-bottom-width",
+        "from": "1px",
+        "to": "4px"
+      },
+      {
+        "node": "content 3 <div>",
+        "property": "border-left-width",
+        "from": "1px",
+        "to": "4px"
+      }
+    ],
+    "structure": null,
+    "hoverChanged": []
+  },
+  "shot": {
+    "file": "state.png",
+    "frame": "row",
+    "clip": {
+      "x": 253,
+      "y": 262,
+      "width": 966,
+      "height": 109
+    }
+  },
+  "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/155.0.8059.12 Safari/537.36",
+  "row": {
+    "platform": "web",
+    "origin": {
+      "x": 264,
+      "y": 72
+    },
+    "box": {
+      "x": 1,
+      "y": 202,
+      "width": 942,
+      "height": 85
+    },
+    "aria": "- separator\n- slider \"Volume\"\n- text: Web",
+    "material": {
+      "runtime": "browser",
+      "supportsBackdropFilter": true,
+      "activeBackdropEffects": 0,
+      "clearMaterials": 0,
+      "effects": []
+    },
+    "overflowX": 0,
+    "texts": [],
+    "interactive": [
+      {
+        "role": "slider",
+        "name": "Volume",
+        "tag": "div",
+        "box": {
+          "x": 25,
+          "y": 227,
+          "width": 894,
+          "height": 36
+        },
+        "state": {
+          "aria-valuenow": "60"
+        },
+        "focusable": true,
+        "target": 24,
+        "unit": "px",
+        "belowTarget": false,
+        "note": "WCAG 2.5.8 minimum; its spacing exception is not evaluated"
+      }
+    ]
+  },
+  "panel": null,
+  "overflow": {
+    "document": 0,
+    "page": 0,
+    "card": 0,
+    "row:web": 0
+  },
+  "axe": {
+    "scanned": true,
+    "violations": []
+  },
+  "problems": [],
+  "summary": {
+    "texts": 0,
+    "textBelowSourceFloor": 0,
+    "textUnderBodyFloor": 0,
+    "contrastFailures": 0,
+    "contrastIndeterminate": 0,
+    "clippedText": 0,
+    "scrolledText": 0,
+    "truncatedText": 0,
+    "coveredText": 0,
+    "targets": 1,
+    "smallTargets": {
+      "ios": 0,
+      "android": 0,
+      "web": 0
+    },
+    "overflowing": [],
+    "axeViolations": 0,
+    "problems": 0,
+    "renderFailed": false
+  },
+  "flags": [
+    "press-not-cancelled"
+  ],
+  "release": {
+    "pointer": "up where it went down, then moved off",
+    "cancelled": false,
+    "trace": [
+      "the control's look changed: content 3 <div> border-top-color rgb(114, 98, 229) -> rgba(114, 98, 229, 0.5); content 3 <div> border-right-color rgb(114, 98, 229) -> rgba(114, 98, 229, 0.5); content 3 <div> border-bottom-color rgb(114, 98, 229) -> rgba(114, 98, 229, 0.5); content 3 <div> border-left-color rgb(114, 98, 229) -> rgba(114, 98, 229, 0.5); content 3 <div> border-top-width 1px -> 4px; content 3 <div> border-right-width 1px -> 4px",
+      "857 of the control's 128736 pixels changed"
+    ],
+    "focus": {
+      "before": "nothing",
+      "after": "<div role=\"slider\"> \"Volume\""
+    }
+  }
+}

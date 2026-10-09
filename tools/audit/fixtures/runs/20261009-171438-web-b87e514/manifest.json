@@ -1,0 +1,114 @@
+{
+  "schema": 1,
+  "id": "20261009-171438-web-b87e514",
+  "platform": "web",
+  "status": "complete",
+  "startedAt": "2026-10-09T17:14:38.165Z",
+  "finishedAt": "2026-10-09T17:17:26.190Z",
+  "command": "bun run audit:web -- --only=button,tooltip,heatmap,data-table --looks=blush,dark --base=https://127.0.0.1:4627",
+  "source": {
+    "sha": "b87e5146150b0a0913c2b49496479368ba69c214",
+    "dirty": true,
+    "packageVersion": "3.5.1"
+  },
+  "served": {
+    "url": "https://127.0.0.1:4627/testing/diagnostics",
+    "mode": "static export",
+    "bundle": null,
+    "projectRoot": null,
+    "sourceFingerprint": "244030046d6bc47165dcce93ecba56e80a046516b054267ced192f11de8c01de",
+    "candidateRevision": "e0029fd2c4ef25a7746881d2cd23e144379ade72",
+    "sourceDirty": "true",
+    "packageVersion": "3.5.1",
+    "inputMode": "source",
+    "fresh": true,
+    "by": "source fingerprint",
+    "checkout": {
+      "fingerprint": "244030046d6bc47165dcce93ecba56e80a046516b054267ced192f11de8c01de",
+      "docsRoot": "<checkout>/docs"
+    },
+    "allowStale": false
+  },
+  "base": "https://127.0.0.1:4627",
+  "allowStale": false,
+  "workers": 6,
+  "capture": {
+    "browser": "chromium",
+    "deviceScaleFactor": 2,
+    "reducedMotion": "reduce",
+    "fixedTime": "2026-01-15T12:00:00.000Z",
+    "launchArgs": [
+      "--disable-frame-rate-limit"
+    ]
+  },
+  "filters": {
+    "kinds": "variants",
+    "only": [
+      "button",
+      "tooltip",
+      "heatmap",
+      "data-table"
+    ],
+    "variants": null,
+    "states": null,
+    "looks": [
+      "blush",
+      "dark"
+    ],
+    "surfaces": [
+      "solid",
+      "glass"
+    ],
+    "widths": [
+      "phone",
+      "tablet",
+      "desktop"
+    ],
+    "axe": "solid at phone, desktop"
+  },
+  "planned": {
+    "cells": 504,
+    "tests": 16,
+    "variants": {
+      "components": 4,
+      "variants": 42,
+      "tests": 16,
+      "cells": 504
+    },
+    "states": null,
+    "pages": null
+  },
+  "results": {
+    "playwrightExitCode": 0,
+    "cells": 504,
+    "kinds": {
+      "variant": 504,
+      "state": 0,
+      "page": 0
+    },
+    "ok": 504,
+    "failed": 0,
+    "notReached": 0,
+    "missing": 0,
+    "unreadableLines": 0,
+    "flags": {
+      "small-visible-target": 336,
+      "small-target": 60,
+      "contrast": 3
+    },
+    "msPerCell": {
+      "mean": 1589,
+      "p50": 1596,
+      "p95": 2261,
+      "max": 2665
+    },
+    "wallMs": 168025,
+    "bytes": 50396880,
+    "failures": [],
+    "unreached": []
+  },
+  "files": {
+    "cells": "cells.jsonl",
+    "cell": "web/<slug>/<variant>/<width>.<look>.<surface>/{card.png, probe.json}"
+  }
+}

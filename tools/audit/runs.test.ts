@@ -10,6 +10,7 @@ import {
   describeRun,
   groupKey,
   listRuns,
+  notReached,
   parseCellId,
   parseRunName,
   parseToolArgs,
@@ -19,25 +20,48 @@ import {
   unknownNames,
   type AuditRun,
 } from "./runs.ts";
+import { RUNS, checkoutWithRealRuns } from "./fixtures/real-runs.ts";
 
 const run = (id: string, startedAt: string, platform: AuditRun["platform"] = "web"): AuditRun => ({
   id, dir: `/runs/${id}`, platform, startedAt, status: "complete", finished: true, sha: "a".repeat(40), dirty: false, fingerprint: "f".repeat(64), fresh: true, served: "static export",
 });
 
 describe("cell ids", () => {
+  // Ids as the runners write them: the web variant runner (e2e/audit/cell.ts), the state and
+  // page runners (state-cell.ts, page-cell.ts) and the native host, each taken from a run.
   it("reads every family's layout", () => {
     expect(parseCellId("web/button/default/phone.blush.solid")).toEqual({
-      id: "web/button/default/phone.blush.solid", family: "variant", platform: "web", slug: "button", variant: "default", state: null, section: null, width: "phone", look: "blush", surface: "solid",
+      id: "web/button/default/phone.blush.solid", family: "variant", platform: "web", slug: "button", variant: "default", state: null, row: null, width: "phone", look: "blush", surface: "solid",
     });
-    expect(parseCellId("ios/switch/off/dark.glass")).toMatchObject({ family: "variant", platform: "ios", slug: "switch", variant: "off", width: null, look: "dark", surface: "glass" });
-    expect(parseCellId("web-states/select/open/tablet.mint.solid")).toMatchObject({ family: "state", platform: "web", slug: "select", variant: null, state: "open" });
-    expect(parseCellId("web-states/button/outline/hover/desktop.dark.glass")).toMatchObject({ family: "state", variant: "outline", state: "hover", width: "desktop" });
-    expect(parseCellId("web-pages/template-signin/phone.blush.glass")).toMatchObject({ family: "page", platform: "web", slug: "template-signin", section: null });
-    expect(parseCellId("android-pages/pattern-glass/hero/dark.glass")).toMatchObject({ family: "page", platform: "android", section: "hero", width: null });
+    expect(parseCellId("ios/switch/default/dark.glass")).toMatchObject({ family: "variant", platform: "ios", slug: "switch", variant: "default", width: null, look: "dark", surface: "glass" });
+    expect(parseCellId("web-states/tooltip/open.android/phone.mint.solid")).toEqual({
+      id: "web-states/tooltip/open.android/phone.mint.solid", family: "state", platform: "web", slug: "tooltip", variant: null, state: "open", row: "android", width: "phone", look: "mint", surface: "solid",
+    });
+    expect(parseCellId("web-states/button/pressed.web/desktop.dark.glass")).toMatchObject({ family: "state", state: "pressed", row: "web", width: "desktop" });
+    expect(parseCellId("web-pages/template-signin/phone.blush.glass")).toEqual({
+      id: "web-pages/template-signin/phone.blush.glass", family: "page", platform: "web", slug: "template-signin", variant: null, state: null, row: null, width: "phone", look: "blush", surface: "glass",
+    });
+    expect(parseCellId("android-pages/pattern-glass/dark.glass")).toMatchObject({ family: "page", platform: "android", slug: "pattern-glass", width: null });
   });
 
   it("refuses an id that follows no layout", () => {
-    for (const id of ["web/button/phone.blush.solid", "web/button/default/huge.blush.solid", "web/button/default/phone.teal.solid", "ios/button/default/phone.blush.solid", "mac/button/default/blush.solid", "web/button//phone.blush.solid", "web-states/a/b/c/d/phone.blush.solid"]) {
+    for (const id of [
+      "web/button/phone.blush.solid",
+      "web/button/default/huge.blush.solid",
+      "web/button/default/phone.teal.solid",
+      "ios/button/default/phone.blush.solid",
+      "mac/button/default/blush.solid",
+      "web/button//phone.blush.solid",
+      // A state with no row, a row no card has, a state the recipes do not name, a variant in a state's path.
+      "web-states/select/open/tablet.mint.solid",
+      "web-states/select/open.watch/tablet.mint.solid",
+      "web-states/select/dragged.web/tablet.mint.solid",
+      "web-states/button/outline/hover.web/desktop.dark.glass",
+      "ios-states/button/hover.web/dark.glass",
+      // A page's sections are files of its cell, never a level of its path.
+      "web-pages/template-signin/centeredcard/phone.blush.glass",
+      "android-pages/pattern-glass/hero/dark.glass",
+    ]) {
       expect(parseCellId(id)).toBeNull();
     }
   });
@@ -46,6 +70,8 @@ describe("cell ids", () => {
     expect(groupKey(parseCellId("web/button/default/phone.blush.solid")!)).toBe("web/button/default/phone");
     expect(groupKey(parseCellId("web/button/default/phone.dark.glass")!)).toBe("web/button/default/phone");
     expect(groupKey(parseCellId("ios/button/default/dark.glass")!)).toBe("ios/button/default/native");
+    expect(groupKey(parseCellId("web-states/tooltip/open.ios/tablet.dark.glass")!)).toBe("web-states/tooltip/open.ios/tablet");
+    expect(groupKey(parseCellId("web-pages/template-signin/desktop.mint.solid")!)).toBe("web-pages/template-signin/desktop");
   });
 });
 
@@ -191,5 +217,41 @@ describe("reading a checkout's runs", () => {
       "web/button/default/phone.blush.solid 20261009-100000-web-aaaaaaa",
       "web/switch/default/phone.blush.solid 20261009-100000-web-aaaaaaa",
     ]);
+  });
+});
+
+describe("reading real runs", () => {
+  let root: string | null = null;
+  afterEach(() => {
+    if (root) rmSync(root, { recursive: true, force: true });
+    root = null;
+  });
+
+  it("reads the variant, state and page runners' records as they write them", () => {
+    root = checkoutWithRealRuns();
+    const listed = listRuns(root);
+    expect(listed.problems).toEqual([]);
+    expect(listed.runs.map((run) => [run.id, run.status, run.served, run.fresh])).toEqual([
+      [RUNS.variants, "complete", "static export", true],
+      [RUNS.states, "complete", "static export", true],
+      [RUNS.pages, "complete", "static export", true],
+    ]);
+    const { cells, problems } = currentCells(root, { only: null, runs: null });
+    expect(problems).toEqual([]);
+    const byId = new Map(cells.map((cell) => [cell.id, cell]));
+    // A state's example comes from its record, since its id names only the state and the row.
+    expect(byId.get("web-states/tooltip/open.web/phone.blush.solid")).toMatchObject({ family: "state", state: "open", row: "web", variant: "onhover", label: "On hover", width: "phone", status: "ok", flags: ["hover-unstable"] });
+    expect(byId.get("web-states/slider/pressed.web/desktop.blush.solid")).toMatchObject({ flags: ["press-not-cancelled"] });
+    // A state not reached: its status, and the recipe's reason as the cell's error.
+    const heatmap = byId.get("web-states/heatmap/pressed.web/desktop.blush.solid")!;
+    expect(heatmap).toMatchObject({ family: "state", status: "state-not-reached", variant: "calendar", label: "Calendar" });
+    expect(notReached(heatmap)).toBe(true);
+    expect(heatmap.error).toStartWith("pressing [role=\"img\"]");
+    // A page cell holds every section; its id names the page alone.
+    expect(byId.get("web-pages/template-signin/phone.blush.glass")).toMatchObject({ family: "page", slug: "template-signin", variant: null, state: null, width: "phone" });
+    expect(byId.get("web/button/default/desktop.blush.glass")).toMatchObject({ family: "variant", variant: "default", label: null });
+    // --only takes a page by its slug, and a component's states with its variants.
+    expect(currentCells(root, { only: ["signin"], runs: null }).cells.map((cell) => cell.id)).toEqual(["web-pages/template-signin/phone.blush.glass"]);
+    expect(currentCells(root, { only: ["button"], runs: null }).cells.map((cell) => cell.family).sort()).toEqual(["state", "state", "state", "state", "variant", "variant"]);
   });
 });

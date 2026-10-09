@@ -1,0 +1,178 @@
+{
+  "schema": 1,
+  "cell": {
+    "id": "web-states/button/hover.web/desktop.blush.glass",
+    "slug": "button",
+    "state": "hover",
+    "row": "web",
+    "variant": "default",
+    "label": "Default",
+    "width": "desktop",
+    "look": "blush",
+    "surface": "glass"
+  },
+  "recipe": {
+    "state": "hover",
+    "variant": "default",
+    "how": "the pointer moves onto the control and rests there",
+    "frame": "row"
+  },
+  "url": "https://127.0.0.1:4627/components/button?scheme=light&surface=glass&palette=blush",
+  "structure": {
+    "path": "/components/button",
+    "selected": "Default"
+  },
+  "dpr": 2,
+  "viewport": {
+    "initial": {
+      "width": 1440,
+      "height": 900
+    },
+    "grown": {
+      "width": 1440,
+      "height": 900
+    }
+  },
+  "status": "ok",
+  "evidence": {
+    "control": "<button role=\"button\"> \"Save changes\"",
+    "changes": [
+      {
+        "node": "control <button>",
+        "property": "transform",
+        "from": "none",
+        "to": "matrix(1, 0, 0, 1, 0, -1)"
+      }
+    ],
+    "structure": null
+  },
+  "shot": {
+    "file": "state.png",
+    "frame": "row",
+    "clip": {
+      "x": 253,
+      "y": 248,
+      "width": 966,
+      "height": 109
+    }
+  },
+  "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/155.0.8059.12 Safari/537.36",
+  "row": {
+    "platform": "web",
+    "origin": {
+      "x": 264,
+      "y": 72
+    },
+    "box": {
+      "x": 1,
+      "y": 188,
+      "width": 942,
+      "height": 85
+    },
+    "aria": "- separator\n- button \"Save changes\"\n- text: Web",
+    "material": {
+      "runtime": "browser",
+      "supportsBackdropFilter": true,
+      "activeBackdropEffects": 1,
+      "clearMaterials": 0,
+      "effects": [
+        {
+          "filter": "blur(24px)",
+          "width": 117,
+          "height": 32
+        }
+      ]
+    },
+    "overflowX": 0,
+    "texts": [
+      {
+        "text": "Save changes",
+        "box": {
+          "x": 430.4,
+          "y": 221,
+          "width": 83.1,
+          "height": 17
+        },
+        "size": 12,
+        "computedSize": 12,
+        "scale": 1,
+        "weight": 800,
+        "family": "Manrope_800ExtraBold",
+        "color": "rgb(255, 255, 255)",
+        "colorAlpha": 1,
+        "opacity": 1,
+        "ownOpacity": 1,
+        "svg": false,
+        "ariaHidden": false,
+        "disabled": false,
+        "background": "indeterminate",
+        "indeterminate": "backdrop-filter on div",
+        "contrast": null,
+        "required": 4.5,
+        "contrastFails": false,
+        "belowSourceFloor": false,
+        "underBodyFloor": false,
+        "clipped": null,
+        "scrolled": null,
+        "truncated": false,
+        "covered": false
+      }
+    ],
+    "interactive": [
+      {
+        "role": "button",
+        "name": "Save changes",
+        "tag": "button",
+        "box": {
+          "x": 411.4,
+          "y": 212,
+          "width": 121.1,
+          "height": 36
+        },
+        "state": {},
+        "focusable": true,
+        "target": 24,
+        "unit": "px",
+        "belowTarget": false,
+        "note": "WCAG 2.5.8 minimum; its spacing exception is not evaluated"
+      }
+    ]
+  },
+  "panel": null,
+  "overflow": {
+    "document": 0,
+    "page": 0,
+    "card": 0,
+    "row:web": 0
+  },
+  "axe": {
+    "scanned": false,
+    "violations": []
+  },
+  "problems": [],
+  "summary": {
+    "texts": 1,
+    "textBelowSourceFloor": 0,
+    "textUnderBodyFloor": 0,
+    "contrastFailures": 0,
+    "contrastIndeterminate": 1,
+    "clippedText": 0,
+    "scrolledText": 0,
+    "truncatedText": 0,
+    "coveredText": 0,
+    "targets": 1,
+    "smallTargets": {
+      "ios": 0,
+      "android": 0,
+      "web": 0
+    },
+    "overflowing": [],
+    "axeViolations": 0,
+    "problems": 0,
+    "renderFailed": false
+  },
+  "flags": [],
+  "release": {
+    "pointer": "moved off"
+  }
+}
