@@ -1,6 +1,6 @@
 {
-  // The audit, skin-divergence and public API tools are typechecked as their own project,
-  // the way the e2e tree is: the root tsconfig includes only src/**, and bun runs
+  // The audit, skin-divergence, public API and token-reading tools are typechecked as
+  // their own project, the way the e2e tree is: the root tsconfig includes only src/**, and bun runs
   // TypeScript without checking it, so without this nothing would type-check them. Their
   // imports pull in what they read (the hand-off parity comparison, the docs catalog, the
   // e2e route helpers).
@@ -16,6 +16,6 @@
     "types": ["node"],
     "lib": ["ES2022", "DOM", "DOM.Iterable"]
   },
-  "include": ["./audit/**/*.ts", "./skins/**/*.ts", "./api/**/*.ts"],
+  "include": ["./audit/**/*.ts", "./skins/**/*.ts", "./api/**/*.ts", "./tokens/**/*.ts"],
   "exclude": ["./**/*.test.ts"]
 }
