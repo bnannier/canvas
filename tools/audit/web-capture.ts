@@ -566,7 +566,6 @@ function percentile(sorted: number[], p: number): number {
   return sorted[Math.min(sorted.length - 1, Math.max(0, Math.ceil((p / 100) * sorted.length) - 1))]!;
 }
 
-/** Counts and timings over a run's records. A cell captured twice counts once, by its last record. */
 /**
  * The margin around an element photographed for a state or a page section: a focus ring,
  * a lifted card's shade or a drop shadow drawn just outside the element's box shows in it.
@@ -592,6 +591,7 @@ export function marginClip(box: Box, bounds: { left: number; top: number; right:
   };
 }
 
+/** Counts and timings over a run's records. A cell captured twice counts once, by its last record. */
 export function summarizeCells(all: CellRecord[]): CellSummary {
   const byId = new Map<string, CellRecord>();
   for (const record of all) byId.set(record.id, record);
