@@ -30,11 +30,13 @@ export function CatGrid({ tiles }: { tiles: CatTile[] }) {
   );
 }
 
+// A category is a section of the catalog page, so its name is the h2 under the page's
+// h1: an h3 here skips a level for every heading reader and outline.
 export function CatGroup({ label, count, tiles }: { label: string; count: number; tiles: CatTile[] }) {
   return (
     <Column relaxed>
       <Row between baseline wrap>
-        <Typography h3>{label}</Typography>
+        <Typography h2>{label}</Typography>
         <Typography small muted>{count} components</Typography>
       </Row>
       <CatGrid tiles={tiles} />

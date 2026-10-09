@@ -79,7 +79,7 @@ function FeedsPreview() {
 function FormLayoutsPreview() {
   const { toast } = useToast();
   return (
-    <Form submitLabel="Sign in" onSubmit={() => toast({ success: true, message: "Demo form submitted" })}>
+    <Form accessibilityLabel="Sign in" submitLabel="Sign in" onSubmit={() => toast({ success: true, message: "Demo form submitted" })}>
       <Input label="Email" placeholder="you@example.com" />
       <Input label="Password" secureTextEntry />
     </Form>
