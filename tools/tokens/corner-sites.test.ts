@@ -383,10 +383,11 @@ describe("where a corner is drawn", () => {
     expect(!result.ok && result.reason).toContain("webSkin.menu draws shape.ios.menu");
   });
 
-  it("takes a part the native skin shares with the web skin's same part", () => {
+  it("takes a part the native skin shares with the web skin's same part, where its platform may share it", () => {
     const values = scanY();
-    expect(verdict(values, "ACTION").ok).toBe(true);
-    expect(verdict(values, "row").ok).toBe(true);
+    const sharing = { roles, sharesWebPart: () => true };
+    expect(cornerVerdict(one(values, "ACTION"), sharing).ok).toBe(true);
+    expect(cornerVerdict(one(values, "row"), sharing).ok).toBe(true);
     expect(partOf({ file: "src/atoms/y/y.styles.ts", path: "iosSkin.action" })).toBe(partOf({ file: "src/atoms/y/y.styles.ts", path: "webSkin.action" }));
     expect(partOf({ file: "src/atoms/y/y.ios.tsx", path: "IOS_RADIUS" })).toBe("src/atoms/y/y.tsx _RADIUS");
     // The same number on a different part of the web skin is no shared part.
@@ -400,7 +401,24 @@ describe("where a corner is drawn", () => {
         { file: "src/atoms/x/x.styles.ts", line: 3, at: 0, path: "iosSkin.splitMenu", platform: "ios" },
       ],
     });
-    expect(cornerVerdict(elsewhere, { roles: { "atoms/x": ["menu"] } }).ok).toBe(false);
+    expect(cornerVerdict(elsewhere, { roles: { "atoms/x": ["menu"] }, sharesWebPart: () => true }).ok).toBe(false);
+  });
+
+  it("refuses a shared part where the native platform keeps its own row", () => {
+    // The platform ships a control for the job (or the component has no reference row) and
+    // nothing declares the part: a native field does not take the web's field corner by
+    // sharing a part's name. No platform shares a part unless the context says it may.
+    const values = scanY();
+    for (const context of [{ roles }, { roles, sharesWebPart: () => false }]) {
+      const result = cornerVerdict(one(values, "ACTION"), context);
+      expect(result.ok).toBe(false);
+      expect(!result.ok && result.reason).toContain("it is the web skin's own part, but atoms/y keeps ios's row");
+      expect(!result.ok && result.reason).toContain("SHARED_PARTS does not declare src/atoms/y/y.styles.ts iosSkin.action");
+    }
+    // The predicate is asked about the native place that shares the part.
+    const asked: string[] = [];
+    cornerVerdict(one(values, "ACTION"), { roles, sharesWebPart: (place) => (asked.push(siteOf(place)), true) });
+    expect(asked).toEqual(["src/atoms/y/y.styles.ts iosSkin.action"]);
   });
 });
 
