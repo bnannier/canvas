@@ -19,7 +19,7 @@ import { destructiveText } from "../../style/destructive-text.js";
 //   Web: a gallery block at the control corner, gap 14 (compact 8), tile padding 20
 //     (compact 16), title 14/600, subtitle 12, press = opacity dim (~0.9), no
 //     tracking adjustment.
-//   iOS (HIG Collections): SF conventions — the iOS tile corner on the thumbnail
+//   iOS (HIG Collections): SF conventions, the iOS tile corner on the thumbnail
 //     with Apple's continuous (superellipse) corner curve, the same
 //     comfortable spacing, and SF Pro Text tracking (galleryTitle 12pt = 0,
 //     cardTitle 14pt = -0.15, subtitles 12pt = 0); press = opacity dim (~0.9).

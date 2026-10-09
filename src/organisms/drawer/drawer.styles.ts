@@ -12,7 +12,7 @@ import { platformShape } from "../../style/platform-shape.js";
 //   iOS (iOS 27 kit Sheets): a lineless panel (no border) with the iOS sheet's
 //     large CONTINUOUS 38pt corner radius on the inner edge — a side drawer rounds
 //     its leading (inner) edge 38, a bottom sheet rounds its top corners 38 (the
-//     concentric sheet corner of iOS 27, superseding the pre-iOS-26 16pt) — over a
+//     concentric sheet corner of iOS 27, superseding the pre-iOS-26 16pt), over a
 //     soft 0/15/50 rgba(0,0,0,0.18) elevation, plus an optional centered grabber
 //     on the sheet edges. The scrim resolves PER SCHEME (light 0.2, dark 0.48).
 //   Android (Material 3 side/bottom sheet): a lineless panel with the M3 rounding
