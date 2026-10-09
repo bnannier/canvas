@@ -545,6 +545,7 @@ function collectRow(row: Element): Omit<RawRow, "platform"> {
   }
 
   return {
+    origin: { x: round(cardBox.left), y: round(cardBox.top) },
     box: boxOf(row.getBoundingClientRect()),
     scroll: { scrollWidth: row.scrollWidth, clientWidth: row.clientWidth, scrollHeight: row.scrollHeight, clientHeight: row.clientHeight },
     groupOpacity,

@@ -83,12 +83,36 @@ export interface StateScene {
   ring: string;
 }
 
+/**
+ * The defects a reached state shows, beside the probe's own flags (`Reached.flags`), each
+ * with what it means. The reviewer's index (tools/audit/index.ts) says them in these words.
+ */
+export const STATE_FLAGS = {
+  "focus-ring-missing": "focus arrived on the control and nothing drew a new edge",
+  "focus-ring-hidden": "the focus ring is drawn but does not show on every side",
+  "focus-ring-colour": "the focus ring is not the look's ring colour",
+  "expanded-not-announced": "the overlay is open but its trigger does not report aria-expanded=\"true\"",
+  "error-not-described": "the field is aria-invalid but describes no error text",
+  "disabled-tab-stop": "the disabled control is still a tab stop",
+  "hover-unstable": "the tooltip's bubble pushed its trigger out from under the resting pointer, which had to follow it",
+} as const;
+export type StateFlag = keyof typeof STATE_FLAGS;
+
+/** What a release found wrong (`Released.flags`), each with what it means; recorded for a state not reached as well. */
+export const RELEASE_FLAGS = {
+  "press-not-cancelled": "moving off before the button came up did not cancel the press: the row's tree, the address, or the control's look or pixels changed",
+  "press-selects-label": "dragging off the control selected its own label's text",
+  "inspection-not-cleared": "a second press on the inspected datum did not clear the inspection",
+  "overlay-not-closed": "the overlay was still open 3 s after its close",
+} as const;
+export type ReleaseFlag = keyof typeof RELEASE_FLAGS;
+
 export interface Reached {
   reached: true;
   /** What verify read off the page that shows the state. */
   evidence: Record<string, unknown>;
   /** Defects the state shows, beside the probe's own flags. */
-  flags: string[];
+  flags: StateFlag[];
   /** The node the state opened (a menu, a dialog, a sheet, a bubble), probed beside the row. */
   panel?: Locator;
 }
@@ -126,7 +150,7 @@ export interface StateRecipe {
 /** What a release did (for probe.json), and the defects it found (the cell's flags). */
 export interface Released {
   report: Record<string, unknown>;
-  flags: string[];
+  flags: ReleaseFlag[];
 }
 
 /**
@@ -580,7 +604,7 @@ function focus(variant: string, target: Target, how = "Tab from the tab stop bef
       await handle.dispose();
       const shows = sides !== null && Object.values(sides).every(Boolean);
       evidence.ring = { how: ring.how, drawnBy: ring.drawnBy, color: ring.color, painted: ring.painted, themed: ring.themed, expected: scene.ring, sides };
-      const flags = !node ? ["focus-ring-missing"] : shows ? [] : ["focus-ring-hidden"];
+      const flags: StateFlag[] = !node ? ["focus-ring-missing"] : shows ? [] : ["focus-ring-hidden"];
       if (node && !ring.themed) flags.push("focus-ring-colour");
       return { reached: true, evidence, flags };
     },
@@ -794,6 +818,9 @@ function pressed(variant: string, target: Target, options: PressOptions = {}): S
       const after = await pressRecord(page, applied.scope, applied.control);
       const trace = await pressTrace(page, applied.before, after);
       const closed = await close();
+      const flags: ReleaseFlag[] = [];
+      if (trace.length) flags.push("press-not-cancelled");
+      if (selection?.label) flags.push("press-selects-label");
       return {
         report: {
           pointer,
@@ -802,7 +829,7 @@ function pressed(variant: string, target: Target, options: PressOptions = {}): S
           ...(selection ? { selected: selection } : {}),
           ...closed.report,
         },
-        flags: [...(trace.length ? ["press-not-cancelled"] : []), ...(selection?.label ? ["press-selects-label"] : []), ...closed.flags],
+        flags: [...flags, ...closed.flags],
       };
     },
   });
@@ -1058,7 +1085,7 @@ export interface OpenSpec {
    * opening the pointer holds, so a layout the opening changes cannot close it again
    * between the check and the photograph.
    */
-  steady?: (page: Page, scope: Locator, panel: Locator) => Promise<{ held: boolean; reason?: string; evidence: Record<string, unknown>; flags: string[] }>;
+  steady?: (page: Page, scope: Locator, panel: Locator) => Promise<{ held: boolean; reason?: string; evidence: Record<string, unknown>; flags: StateFlag[] }>;
   /** How it is closed again; Escape when not given. */
   close?: (page: Page, scope: Locator) => Promise<void>;
 }
@@ -1171,7 +1198,7 @@ async function openVerify(spec: OpenSpec, scene: StateScene, opened: Opened): Pr
     panel = nodes.nth(index);
     evidence.said = said[index];
   }
-  const flags: string[] = [];
+  const flags: StateFlag[] = [];
   if (spec.steady) {
     const steady = await spec.steady(scene.page, scene.row, panel);
     Object.assign(evidence, steady.evidence);
@@ -1387,7 +1414,7 @@ async function restOn(page: Page, node: Locator): Promise<boolean> {
  * did not stay open where the pointer first rested, which a person's resting pointer finds
  * too, so it is recorded and flagged `hover-unstable`.
  */
-async function followPointer(page: Page, trigger: Locator, bubble: Locator): Promise<{ held: boolean; reason?: string; evidence: Record<string, unknown>; flags: string[] }> {
+async function followPointer(page: Page, trigger: Locator, bubble: Locator): Promise<{ held: boolean; reason?: string; evidence: Record<string, unknown>; flags: StateFlag[] }> {
   const pointerOnTrigger = async () => {
     const point = restingPointer.get(page);
     if (!point) return false;
