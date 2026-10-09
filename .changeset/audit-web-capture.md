@@ -1,5 +1,0 @@
----
-"@nannier/canvas": patch
----
-
-The component audit gains its web capture runner: `bun run audit:web` photographs every example variant of every component page at phone, tablet and desktop width in the blush, mint and dark looks, solid and glass, and probes each cell into `.audit/runs/`: text at the size it paints (a transform-floated label at its scaled size, the computed size kept), its weight and its contrast against the background the DOM resolves, form-field values and placeholders included on the field's own background, clipping, interactive targets against 44 pt, 48 dp and 24 px, overflow, axe on the web row, and the page's console, CSP and request problems. It captures only this checkout's source: a static export must carry this checkout's source fingerprint, and a live dev server (Metro, for the fixer loop) is recorded as one and must serve this checkout's docs app. The manifest's capture settings are read off the audit's Playwright configuration and the suite's fixed clock. Repository tooling and docs only; nothing in the package changes.
