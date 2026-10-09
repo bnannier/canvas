@@ -4,6 +4,8 @@ import type { ComponentDocs } from "../../../scope";
 import e_atoms_text_input_example_0 from "./example-0";
 import e_atoms_text_input_example_1 from "./example-1";
 import e_atoms_text_input_example_2 from "./example-2";
+import e_atoms_text_input_dont_0_do from "./dont-0-do";
+import e_atoms_text_input_dont_0_dont from "./dont-0-dont";
 
 export const docs: ComponentDocs = {
   dir: "text-input",
@@ -14,7 +16,7 @@ export const docs: ComponentDocs = {
     { label: "Multiline", code: "<TextInput accessibilityLabel=\"Notes\" multiline defaultValue={\"Multi-line text\\nwraps and grows as you type.\"} />", render: e_atoms_text_input_example_2 },
   ],
   donts: [
-
+    { title: "Labelled fields", do: { caption: "Reach for `Input` for a form field: its `label` stays in view, names the field for assistive tech, and the field box is drawn for each platform.", code: "<Input label=\"Email\" placeholder=\"ada@example.com\" />", render: e_atoms_text_input_dont_0_do }, dont: { caption: "Let a bare TextInput's placeholder stand in for the label; it vanishes as soon as the user types, taking the field's only name with it.", code: "<TextInput placeholder=\"Email\" />", render: e_atoms_text_input_dont_0_dont } },
   ],
   // Extracted from the component's exported `*Props` interfaces by
   // tools/docgen/extract-props.ts (the TypeScript checker).

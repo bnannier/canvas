@@ -24,7 +24,43 @@ card is a static in-flow panel. Solid mode paints the skin's own panel.
 </Popover>
 ```
 
+## Variants
+
+### Inline
+
+```tsx
+<Popover inline title="Draft saved" description="Your changes are kept as a draft until you publish them." actionLabel="Publish" />
+```
+
+### Description only
+
+```tsx
+<Popover trigger="What is a workspace?" description="A workspace groups your projects, members, and billing under one plan." />
+```
+
+### Controlled
+
+```tsx
+<Stateful initial={false}>
+  {(open, setOpen) => (
+    <Column snug>
+      <Typography small muted>{open ? "The share popover is open." : "The share popover is closed."}</Typography>
+      <Popover
+        trigger="Share"
+        open={open}
+        onOpenChange={setOpen}
+        title="Share this project"
+        description="Anyone with the link can view it."
+        actionLabel="Copy link"
+      />
+    </Column>
+  )}
+</Stateful>
+```
+
 ## Do & Don't
+
+### Compact content
 
 **Do** — Keep popovers compact: a focused prompt with one input and a clear action.
 

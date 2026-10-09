@@ -65,19 +65,45 @@ Conventions inside the shell:
 ## 3. The .md grammar (parsed by tools/docgen/parse-md.ts)
 
 ```
-# Title
+# <Name>           (the component's name in docs/src/core/data/components.ts)
 One-paragraph description.
 ## Usage
 one ```tsx fence
 ## Variants
-### <label>        (each heading followed by exactly ONE fence, no prose between)
+### <label>        (each heading followed by exactly ONE fence; prose there is not rendered)
 ## Do & Don't
-### <topic>
-**Do** — caption.
+### <title>
+**Do**: caption, on one line.
 fence
-**Don't** — caption.
+**Don't**: caption, on one line.
 fence
+## <section>       (optional, the page's own, only after Do & Don't)
 ```
+
+`docs:gen` and `docs:gen:check` (the pre-push hook and CI) refuse to generate
+unless every page has this shape, and `tools/docgen/doc-structure.test.ts` runs
+the same check in `bun run test` (`docStructureViolations` in parse-md.ts, walked
+over the pages by `tools/docgen/pages.ts`). Each failure is located and names its
+rule:
+
+- **S1** The page opens with `# <Name>`, exactly the registry name, and has no
+  other `#` heading. Every page documents a registered component, and every
+  registered component (its `dir`, or its `slug` when they match) has a page.
+- **S2** A prose intro sits between the title and `## Usage`, with no fence,
+  `###` heading or Do/Don't marker in it.
+- **S3** `## Usage`, `## Variants` and `## Do & Don't` each appear exactly once,
+  in that order. Every page carries all three, the primitives and the charts
+  included. Do & Don't ends at the next `##`: a section of the page's own
+  (Button's `## Touch area`) goes after it, never before.
+- **S4** Usage holds exactly one non-empty fence and no `###` heading.
+- **S5** Variants holds at least one `### <label>`; each has exactly one
+  non-empty fence, and no fence sits before the first one. Show only what the
+  kit renders truthfully (a placement the component does not implement gets no
+  example).
+- **S6** Do & Don't holds at least one `### <title>` group and no marker or
+  fence outside one. A group is exactly one `**Do**` and one `**Don't**`, each
+  with a caption and exactly one non-empty fence of its own, and the Don't fence
+  differs from the Do fence. Every pair teaches the page's own component.
 
 - Every JSX tag in a fence must be in LIVE_SCOPE; fences are type-checked by
   `tsc` against the real exports.

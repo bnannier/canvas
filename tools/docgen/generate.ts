@@ -19,13 +19,12 @@ import * as fs from "node:fs";
 import * as path from "node:path";
 import { fileURLToPath } from "node:url";
 import { splitDoc, scopeNamesFromLiveScope, bannedStyleViolations, widthShimViolations, bareWidthViolations, prosePhantomApiViolations, BARE_WIDTH_MIN, type Example, type DontPair } from "./parse-md.ts";
+import { componentPages, pageStructureViolations, type Category } from "./pages.ts";
 import { extractProps, type PropGroup } from "./extract-props.ts";
 import { COMPONENTS } from "../../docs/src/core/data/components.ts";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const REPO = path.resolve(HERE, "..", "..");
-const CATEGORIES = ["atoms", "molecules", "organisms", "charts"] as const;
-type Category = (typeof CATEGORIES)[number];
 
 const EXAMPLES_DIR = path.join(REPO, "docs", "src", "core", "examples");
 const REGISTRY_FILE = path.join(REPO, "docs", "src", "core", "registry.ts");
@@ -359,6 +358,23 @@ export function loadComponentDocs(dir: string): ComponentDocsRequest | undefined
 }
 
 function main() {
+  // The shape of every page comes first (S1 to S6, docStructureViolations in
+  // parse-md.ts), before anything is written. Unlike the style and prose guardrails it
+  // has no DOCGEN_STYLE_STRICT downgrade: a page without its Usage, Variants or
+  // Do & Don't is not a component page, so it always fails, the way an unbound fence
+  // tag does.
+  const pages = componentPages(REPO);
+  const structure = pageStructureViolations(pages, COMPONENTS);
+  if (structure.length) {
+    throw new Error(
+      `docs:gen: ${structure.length} component page structure violation(s). A page is "# <Name>" and a prose intro, ` +
+        `then "## Usage" (one fence), "## Variants" ("### <label>" over one fence each) and "## Do & Don't" ` +
+        `("### <title>" groups of one **Do** and one different **Don't**, each a caption over its own fence), and ` +
+        `nothing but a section of the page's own after that (.agents/skills/canvas-new-component/SKILL.md, section 3):\n` +
+        structure.map((v) => `    ${v}`).join("\n"),
+    );
+  }
+
   fs.mkdirSync(EXAMPLES_DIR, { recursive: true });
 
   const entries: Entry[] = [];
@@ -366,24 +382,17 @@ function main() {
   let exampleCount = 0;
   let dontCount = 0;
 
-  for (const category of CATEGORIES) {
-    const catDir = path.join(REPO, "src", category);
-    if (!fs.existsSync(catDir)) continue;
-    for (const dir of fs.readdirSync(catDir).sort()) {
-      const md = path.join(catDir, dir, `${dir}.md`);
-      if (!fs.existsSync(md)) continue;
-      const content = fs.readFileSync(md, "utf8");
-      recordProse(content, `src/${category}/${dir}/${dir}.md`);
-      const { examples, donts } = splitDoc(content);
-      if (examples.length === 0 && donts.length === 0) continue;
-      entries.push(buildEntry(category, dir, examples, donts));
-      // Collect this dir's Props-bearing source files for the prop tables.
-      for (const f of fs.readdirSync(path.join(catDir, dir)).sort()) {
-        if (IS_PROP_SOURCE(f)) propSources.push({ dir, file: path.join(catDir, dir, f) });
-      }
-      exampleCount += examples.length;
-      dontCount += donts.length;
+  for (const { category, dir, source, content } of pages) {
+    recordProse(content, source);
+    const { examples, donts } = splitDoc(content);
+    entries.push(buildEntry(category, dir, examples, donts));
+    // Collect this dir's Props-bearing source files for the prop tables.
+    const srcDir = path.join(REPO, "src", category, dir);
+    for (const f of fs.readdirSync(srcDir).sort()) {
+      if (IS_PROP_SOURCE(f)) propSources.push({ dir, file: path.join(srcDir, f) });
     }
+    exampleCount += examples.length;
+    dontCount += donts.length;
   }
 
   if (tagViolations.length) {

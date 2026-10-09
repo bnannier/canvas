@@ -58,6 +58,8 @@ Toast is usually driven imperatively: mount a `<ToastProvider>` near your app ro
 
 ## Do & Don't
 
+### One short message
+
 **Do** — Keep a toast to one short, plain message (with an optional one-line description), and pair a destructive or success intent with the matching message.
 
 ```tsx

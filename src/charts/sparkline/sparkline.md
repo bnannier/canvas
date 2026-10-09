@@ -49,8 +49,6 @@ Views to draw an inline trend on a stat card or dashboard.
 </Container>
 ```
 
-## Variants
-
 ### Track
 
 `track` paints the plot area with the muted track, so the strip keeps a visible

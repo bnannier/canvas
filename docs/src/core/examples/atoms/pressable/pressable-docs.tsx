@@ -4,6 +4,10 @@ import type { ComponentDocs } from "../../../scope";
 import e_atoms_pressable_example_0 from "./example-0";
 import e_atoms_pressable_example_1 from "./example-1";
 import e_atoms_pressable_example_2 from "./example-2";
+import e_atoms_pressable_dont_0_do from "./dont-0-do";
+import e_atoms_pressable_dont_0_dont from "./dont-0-dont";
+import e_atoms_pressable_dont_1_do from "./dont-1-do";
+import e_atoms_pressable_dont_1_dont from "./dont-1-dont";
 
 export const docs: ComponentDocs = {
   dir: "pressable",
@@ -14,7 +18,8 @@ export const docs: ComponentDocs = {
     { label: "Disabled", code: "<Pressable disabled style={{ padding: 12, borderRadius: 8, backgroundColor: tokens.muted, opacity: 0.5 }}>\n  <Text style={{ color: tokens.foreground }}>Disabled</Text>\n</Pressable>", render: e_atoms_pressable_example_2 },
   ],
   donts: [
-
+    { title: "Press feedback", do: { caption: "Answer the press with a style function: `({ pressed }) => style` changes the surface while the finger is down, so the tap visibly lands.", code: "<Pressable accessibilityRole=\"button\" style={({ pressed }) => ({ padding: 12, borderRadius: 8, borderWidth: 1, borderColor: tokens.border, backgroundColor: pressed ? tokens.accent : tokens.card })}>\n  <Typography small>Open the weekly report</Typography>\n</Pressable>", render: e_atoms_pressable_dont_0_do }, dont: { caption: "Give the surface a fixed style; nothing changes under the finger, so a tap feels dropped and a slow response reads as a missed press.", code: "<Pressable accessibilityRole=\"button\" style={{ padding: 12, borderRadius: 8, borderWidth: 1, borderColor: tokens.border, backgroundColor: tokens.card }}>\n  <Typography small>Open the weekly report</Typography>\n</Pressable>", render: e_atoms_pressable_dont_0_dont } },
+    { title: "Kit controls first", do: { caption: "Use the kit's control when one fits the job: a Button already carries the brand fill, press feedback, focus ring, role and disabled state on every platform.", code: "<Button primary onPress={() => {}}>Save changes</Button>", render: e_atoms_pressable_dont_1_do }, dont: { caption: "Rebuild a button from Pressable and a style object; it drifts from the brand the moment the kit's Button changes, and it misses every state the kit draws for you.", code: "<Pressable style={({ pressed }) => ({ alignSelf: \"flex-start\", paddingHorizontal: 16, paddingVertical: 10, borderRadius: 8, backgroundColor: pressed ? alpha(tokens.primary, 0.8) : tokens.primary })}>\n  <Text style={{ color: tokens[\"primary-foreground\"], fontWeight: \"600\" }}>Save changes</Text>\n</Pressable>", render: e_atoms_pressable_dont_1_dont } },
   ],
   // Extracted from the component's exported `*Props` interfaces by
   // tools/docgen/extract-props.ts (the TypeScript checker).

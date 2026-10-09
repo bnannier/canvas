@@ -3,6 +3,8 @@
 import type { ComponentDocs } from "../../../scope";
 import e_charts_depth_chart_example_0 from "./example-0";
 import e_charts_depth_chart_example_1 from "./example-1";
+import e_charts_depth_chart_dont_0_do from "./dont-0-do";
+import e_charts_depth_chart_dont_0_dont from "./dont-0-dont";
 
 export const docs: ComponentDocs = {
   dir: "depth-chart",
@@ -12,7 +14,7 @@ export const docs: ComponentDocs = {
     { label: "Compact", code: "<DepthChart\n  compact\n  bids={[\n    { price: 191.3, size: 90 },\n    { price: 191.15, size: 150 },\n    { price: 191.0, size: 220 },\n    { price: 190.85, size: 310 },\n    { price: 190.7, size: 420 }\n  ]}\n  asks={[\n    { price: 191.6, size: 110 },\n    { price: 191.75, size: 180 },\n    { price: 191.9, size: 260 },\n    { price: 192.05, size: 350 },\n    { price: 192.2, size: 470 }\n  ]}\n/>", render: e_charts_depth_chart_example_1 },
   ],
   donts: [
-
+    { title: "Both sides of the book", do: { caption: "Pass the bids and the asks together; the two sides meet at the spread, the gap a trader reads first.", code: "<DepthChart\n  compact\n  bids={[\n    { price: 191.3, size: 90 },\n    { price: 191.15, size: 150 },\n    { price: 191.0, size: 220 },\n    { price: 190.85, size: 310 },\n    { price: 190.7, size: 420 }\n  ]}\n  asks={[\n    { price: 191.6, size: 110 },\n    { price: 191.75, size: 180 },\n    { price: 191.9, size: 260 },\n    { price: 192.05, size: 350 },\n    { price: 192.2, size: 470 }\n  ]}\n/>", render: e_charts_depth_chart_dont_0_do }, dont: { caption: "Plot one side alone; with no asks there is no spread to read, and the empty half looks like a market with no sellers.", code: "<DepthChart\n  compact\n  bids={[\n    { price: 191.3, size: 90 },\n    { price: 191.15, size: 150 },\n    { price: 191.0, size: 220 },\n    { price: 190.85, size: 310 },\n    { price: 190.7, size: 420 }\n  ]}\n  asks={[]}\n/>", render: e_charts_depth_chart_dont_0_dont } },
   ],
   // Extracted from the component's exported `*Props` interfaces by
   // tools/docgen/extract-props.ts (the TypeScript checker).
