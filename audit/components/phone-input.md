@@ -86,6 +86,7 @@ One row per finding. Severity: critical, high, medium, low. Cell: a capture id f
 
 | ID | Severity | Cell | Summary | Status | Fix commit |
 |---|---|---|---|---|---|
+| phone-input-corner-1 | low | source | The web country list's rows are Select's (`menu: selectWeb`), so they drew Select's off-row 10; an option row is a menu row, the `control` corner, 8, inside the 12 panel, and they now draw it with Select's (select-corner-1). | fixed | d1339a2c |
 
 ## Sign-off
 
