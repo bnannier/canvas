@@ -9,19 +9,27 @@ import {
   analyzeA11y,
   analyzeNativeCell,
   analyzeWebProbe,
+  BACKGROUND_BIN,
   boxToRegion,
+  cardSampler,
+  CONTRAST_METHODS,
   contrastOfLuminance,
   decodeImage,
   firstDifference,
+  inkOver,
   inkRegion,
+  paintedInk,
   percentileIndex,
+  pixelContrast,
   pixelVerdict,
   relativeLuminance,
+  sampleBackground,
   sampleRegion,
   sampleText,
   structureOf,
   textContrast,
   type RawImage,
+  type RGB,
   type WebProbe,
 } from "./analyze.ts";
 
@@ -150,20 +158,126 @@ describe("percentile sampling", () => {
   });
 });
 
+/** An image of `background` with `ink` painted over it at `coverage(x, y)` (0 none, 1 solid), blended the way a browser antialiases glyphs. */
+function inked(width: number, height: number, background: RGB, ink: RGB, coverage: (x: number, y: number) => number): RawImage {
+  const data = new Uint8Array(width * height * 3);
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+      const c = coverage(x, y);
+      for (let k = 0; k < 3; k++) data[(y * width + x) * 3 + k] = Math.round(background[k]! * (1 - c) + ink[k]! * c);
+    }
+  }
+  return { data, width, height, channels: 3 };
+}
+
+/**
+ * Two wrapped lines of thin body text: in each glyph row a stroke every 8 px, antialiased
+ * across three columns (30%, 80%, 30%), so not one pixel shows the ink at full strength and
+ * the solid-looking 80% column is an eighth of a glyph row.
+ */
+const STROKES = [0, 0, 0.3, 0.8, 0.3, 0, 0, 0];
+const thinText = (x: number, y: number) => {
+  const line = y % 17;
+  return line >= 3 && line < 14 ? STROKES[x % 8]! : 0;
+};
+
+describe("the painted ink over the photographed background", () => {
+  it("takes the ink from the colour the probe recorded, its own alpha and its opacity", () => {
+    expect(paintedInk(text({ color: "rgb(59, 60, 92)" }))).toEqual({ rgb: [59, 60, 92], alpha: 1 });
+    const faded = paintedInk(text({ color: "rgba(0, 0, 0, 0.5)", opacity: 0.4 }));
+    expect("alpha" in faded && faded.alpha).toBeCloseTo(0.2, 6);
+    expect(paintedInk(text({ svg: true, colorAlpha: 0.5 }))).toEqual({ rgb: [0, 0, 0], alpha: 0.5 });
+    expect(paintedInk(text({ field: { control: "input", part: "value" } }))).toEqual({ rgb: [0, 0, 0], alpha: 1 });
+  });
+
+  it("gives no ink, and says why, where the probe cannot say what paints the glyphs", () => {
+    expect(paintedInk(text({ svg: true }))).toEqual({ none: "the probe predates the SVG fill-opacity it paints with" });
+    expect(paintedInk(text({ field: { control: "input", part: "placeholder" } }))).toEqual({ none: "the probe predates the placeholder opacity it paints with" });
+    expect(paintedInk(text({ color: "transparent" }))).toEqual({ none: "its colour is transparent, so something other than its colour paints its glyphs" });
+    expect(paintedInk(text({ color: "oklch(0.5 0 0)" }))).toEqual({ none: "its colour oklch(0.5 0 0) cannot be read" });
+  });
+
+  it("reads thin antialiased body text at its true contrast, where the percentiles read the antialiasing as the ink", () => {
+    // web/alert/destructive/phone.blush.glass: rgb(59, 60, 92) on the frost's #f3e4e8, 8.6 in truth.
+    const background: RGB = [0xf3, 0xe4, 0xe8];
+    const ink: RGB = [59, 60, 92];
+    const img = inked(240, 34, background, ink, thinText);
+    const truth = contrastOfLuminance(relativeLuminance(ink), relativeLuminance(background));
+    const box = { x: 0, y: 0, width: 240, height: 34 };
+    const glyphs = indeterminate({ color: "rgb(59, 60, 92)", box });
+    const read = pixelContrast(glyphs, cardSampler(img, 1))!;
+    expect(read).toMatchObject({ method: CONTRAST_METHODS.paintedInk, ink: "#3b3c5c", background: "#f3e4e8" });
+    expect(read.contrast).toBeCloseTo(truth, 1);
+    expect(pixelVerdict(read.contrast, 4.5)).toBe("pass");
+    // The percentiles take the 10th-darkest pixel for the ink: a 30% blend, a fail-likely 1.9.
+    const percentiles = sampleText(img, box, 1)!;
+    expect(percentiles.contrast).toBeLessThan(4);
+  });
+
+  it("composites a translucent ink over the background it reads", () => {
+    // rgba(0, 0, 0, 0.6) over gray 200 paints gray 80.
+    const img = image(60, 20, [{ x: 5, y: 4, w: 30, h: 12, gray: 80 }], 200);
+    const ink = paintedInk(text({ color: "rgba(0, 0, 0, 0.6)" }));
+    if (!("rgb" in ink)) throw new Error("expected an ink");
+    const background = sampleBackground(img, { left: 0, top: 0, width: 60, height: 20 }, ink)!;
+    expect(background.rgb).toEqual([200, 200, 200]);
+    expect(inkOver(ink, background.rgb)).toEqual([80, 80, 80]);
+    const read = pixelContrast(indeterminate({ color: "rgba(0, 0, 0, 0.6)", box: { x: 0, y: 0, width: 60, height: 20 } }), cardSampler(img, 1))!;
+    expect(read.contrast).toBeCloseTo(contrastOfLuminance(relativeLuminance([200, 200, 200]), relativeLuminance([80, 80, 80])), 2);
+  });
+
+  it("takes the dominant colour of a mixed background, gathered across a bin's edge", () => {
+    // 70% of the box one wash, 30% an orb's edge, black ink: the wash is the background.
+    const wash = image(50, 20, [{ x: 35, y: 0, w: 15, h: 20, gray: 120 }, { x: 4, y: 6, w: 20, h: 8, gray: 0 }], 230);
+    const ink = { rgb: [0, 0, 0] as RGB, alpha: 1 };
+    expect(sampleBackground(wash, { left: 0, top: 0, width: 50, height: 20 }, ink)!.rgb).toEqual([230, 230, 230]);
+    // A wash dithered between 127 and 128, either side of a bin's edge, reads as one colour.
+    const dithered = inked(40, 20, [127, 127, 127], [128, 128, 128], (x, y) => (x + y) % 2);
+    const read = sampleBackground(dithered, { left: 0, top: 0, width: 40, height: 20 }, ink)!;
+    expect(read.rgb[0]).toBeCloseTo(127.5, 6);
+    expect(read.share).toBe(1);
+    expect(BACKGROUND_BIN).toBe(16);
+  });
+
+  it("reads text the colour of its background as no contrast, and refuses a box too small to sample", () => {
+    const flat = image(30, 30, [], 200);
+    const read = pixelContrast(indeterminate({ color: "rgb(200, 200, 200)", box: { x: 0, y: 0, width: 30, height: 30 } }), cardSampler(flat, 1))!;
+    expect(read.contrast).toBe(1);
+    expect(sampleBackground(flat, { left: 0, top: 0, width: 3, height: 3 }, { rgb: [0, 0, 0], alpha: 1 })).toBeNull();
+  });
+
+  it("measures a text the DOM did resolve the same way, which is how the method is calibrated", () => {
+    const img = image(60, 20, [{ x: 5, y: 4, w: 30, h: 12, gray: 0x76 }]);
+    const read = pixelContrast(text({ color: "rgb(118, 118, 118)", box: { x: 0, y: 0, width: 60, height: 20 }, contrast: 4.54 }), cardSampler(img, 1))!;
+    expect(read).toMatchObject({ method: CONTRAST_METHODS.paintedInk, contrast: 4.54, background: "#ffffff" });
+  });
+});
+
 describe("a text's contrast", () => {
-  const sampler = (img: RawImage, dpr = 1) => (box: { x: number; y: number; width: number; height: number }) => sampleText(img, box, dpr);
+  const sampler = (img: RawImage, dpr = 1) => cardSampler(img, dpr);
 
   it("takes the DOM's answer where it resolved", () => {
     expect(textContrast("web", text(), null)).toMatchObject({ method: "dom", contrast: 21, verdict: "pass" });
     expect(textContrast("ios", text({ contrast: 3.1, contrastFails: true }), null)).toMatchObject({ method: "dom", verdict: "fail", row: "ios" });
   });
 
-  it("samples the photograph where the DOM could not resolve it, and names the ink by the text's own colour", () => {
-    // White text on a dark wash: the lighter percentile is the ink.
+  it("takes the painted ink where the DOM could not resolve the background, and reads only the background off the photograph", () => {
+    // White text on a dark wash.
     const img = image(80, 30, [{ x: 10, y: 8, w: 40, h: 14, gray: 255 }], 0x30);
     const verdict = textContrast("web", indeterminate({ color: "rgb(255, 255, 255)", box: { x: 0, y: 0, width: 80, height: 30 } }), sampler(img));
-    expect(verdict).toMatchObject({ method: "pixels", verdict: "pass", ink: "#ffffff", background: "#303030", reason: "backdrop-filter on div" });
+    expect(verdict).toMatchObject({ method: CONTRAST_METHODS.paintedInk, verdict: "pass", ink: "#ffffff", background: "#303030", reason: "backdrop-filter on div" });
+    expect(verdict.contrast).toBeCloseTo(contrastOfLuminance(1, relativeLuminance([0x30, 0x30, 0x30])), 2);
+  });
+
+  it("falls back to the percentiles, and says so, only for a text whose painted ink the probe cannot give", () => {
+    // White text on a dark wash, its colour in a syntax the probe cannot read: the two percentiles, whichever is the ink.
+    const img = image(80, 30, [{ x: 10, y: 8, w: 40, h: 14, gray: 255 }], 0x30);
+    const verdict = textContrast("web", indeterminate({ color: "oklch(1 0 0)", box: { x: 0, y: 0, width: 80, height: 30 } }), sampler(img));
+    expect(verdict).toMatchObject({ method: CONTRAST_METHODS.percentiles, verdict: "pass", reason: "backdrop-filter on div; no painted ink colour: its colour oklch(1 0 0) cannot be read" });
+    expect([verdict.ink, verdict.background].sort()).toEqual(["#303030", "#ffffff"]);
     expect(verdict.contrast).toBeGreaterThan(12);
+    const svg = textContrast("web", indeterminate({ svg: true, color: "rgb(0, 0, 0)", box: { x: 0, y: 0, width: 80, height: 30 } }), sampler(image(80, 30, [{ x: 10, y: 8, w: 40, h: 14, gray: 0 }])));
+    expect(svg).toMatchObject({ method: CONTRAST_METHODS.percentiles, reason: "backdrop-filter on div; no painted ink colour: the probe predates the SVG fill-opacity it paints with" });
   });
 
   it("owes nothing for a disabled control and does not sample what it cannot see", () => {
@@ -238,7 +352,7 @@ describe("a web cell's analysis", () => {
         aria: "- button",
         texts: [
           text({ text: "Fails", contrast: 3.2, contrastFails: true, size: 11 }),
-          indeterminate({ text: "Faint", box: { x: 0, y: 0, width: 60, height: 20 }, size: 12.5 }),
+          indeterminate({ text: "Faint", color: "rgb(160, 160, 160)", box: { x: 0, y: 0, width: 60, height: 20 }, size: 12.5 }),
         ],
         interactive: [{ role: "button", name: "Go", tag: "button", box: { x: 0, y: 0, width: 20, height: 20 }, state: {}, focusable: true, target: 24, unit: "px", belowTarget: true, note: "" }],
       }],
@@ -251,18 +365,35 @@ describe("a web cell's analysis", () => {
     const analysis = analyzeWebProbe(
       { id: "web/x/default/phone.blush.glass", status: "ok", flags: [], run: "r", capturedAt: "t" },
       probe,
-      (box) => sampleText(faint, box, 1),
+      cardSampler(faint, 1),
       { peers: 6, identical: false, agreesWith: [] },
       new Date("2026-10-09T00:00:00Z"),
     );
     expect(analysis.flags).toEqual(["problems", "contrast", "small-target", "axe", "contrast-likely", "structure-varies"]);
     expect(analysis.contrast.dom).toEqual({ checked: 1, fails: 1 });
-    expect(analysis.contrast.pixels).toEqual({ sampled: 1, failLikely: 1, review: 0, passed: 0 });
+    expect(analysis.contrast.pixels).toEqual({ sampled: 1, failLikely: 1, review: 0, passed: 0, percentiles: 0 });
     expect(analysis.contrast.texts.map((t) => [t.text, t.verdict])).toEqual([["Fails", "fail"], ["Faint", "fail-likely"]]);
     expect(analysis.fonts).toMatchObject({ min: 11, minText: "Fails", minRow: "web", underBodyFloor: 1 });
     expect(analysis.targets.web!.small).toEqual([{ role: "button", name: "Go", width: 20, height: 20 }]);
     expect(analysis.axe.byImpact).toEqual({ critical: 1, serious: 1, moderate: 0, minor: 0 });
     expect(analysis.problems).toBe(1);
+  });
+
+  it("files a cell its record says failed under failed, though a probe was left behind", () => {
+    const probe: WebProbe = {
+      dpr: 1,
+      rows: [{ platform: "web", box: { x: 0, y: 0, width: 100, height: 40 }, aria: "- button", texts: [text()], interactive: [] }],
+      overflow: { document: 0 },
+      axe: { scanned: false, violations: [] },
+      problems: [],
+      summary: summary(),
+    };
+    const cell = { id: "web/x/default/phone.blush.solid", flags: [], run: "r", capturedAt: "t" };
+    const now = new Date("2026-10-09T00:00:00Z");
+    const failed = analyzeWebProbe({ ...cell, status: "failed" }, probe, null, undefined, now);
+    expect(failed.flags).toEqual(["failed"]);
+    expect(failed.status).toBe("failed");
+    expect(analyzeWebProbe({ ...cell, status: "ok" }, probe, null, undefined, now).flags).toEqual([]);
   });
 });
 

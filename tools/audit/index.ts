@@ -14,7 +14,13 @@
 //                                    targets, console problems, an interaction state not
 //                                    reached, and the cell's run, commit and fingerprint
 //   .audit/current/SUMMARY.md        every component ranked by its cells' flags
-//   .audit/current/current.json      the same selection, one entry per cell, for tools
+//   .audit/current/current.json      the same selection, one entry per cell, for tools, and
+//                                    the --run names it was built from
+//
+// A whole build (no --only) also removes the index.md of a component or page with no
+// current cell, so no page of the view points at a capture the view does not hold;
+// `audit:prune` rebuilds the view after it deletes a run, for the same reason
+// (`brokenLinks` is the check).
 //
 // A cell's flags are its analysis' (analyze.ts, analysis.json) when it has been analyzed,
 // else the capture's own, so run `bun run audit:analyze` first; the index says which
@@ -27,14 +33,14 @@
 //
 // Exit status: 0, or 2 for a usage error.
 
-import { existsSync, mkdirSync, readdirSync, writeFileSync } from "node:fs";
-import { join, relative } from "node:path";
+import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
+import { dirname, join, relative } from "node:path";
 import { ROOT } from "../../e2e/support/routes.ts";
 import { AXE_IMPACTS, type CellAnalysis } from "./analyze.ts";
 import { COMPONENTS_DIR, PAGES_DIR } from "./checklists.ts";
 import { LOOKS, SURFACES, WIDTHS, components, pages, NATIVE_CELLS_PER_VARIANT, WEB_CELLS_PER_VARIANT, type Platform } from "./inventory.ts";
 import { ANALYSIS_FILE, CURRENT_DIR, checkOnly, currentCells, notReached, parseToolArgs, readJsonFile, STATE_NOT_REACHED, type AuditRun, type CapturedCell } from "./runs.ts";
-import { CARD_FILE, PROBE_FILE } from "./web-capture.ts";
+import { CARD_FILE, PROBE_FILE, RUNS_DIR } from "./web-capture.ts";
 
 export const INDEX_FILE = "index.md";
 export const SUMMARY_FILE = "SUMMARY.md";
@@ -205,9 +211,19 @@ function cellLine(row: CellRow, dir: string): string {
 
 const SHEET_ORDER = ["card-solid", "card-glass", "native", "compare", "compare-glass"];
 
+/** A sheet file's stem: its name without the part number of a numbered sheet (sheets.ts partFile) or the extension. */
+export const sheetStem = (file: string) => file.replace(/(-\d+)?\.jpg$/, "");
+const partNumber = (file: string) => Number(/-(\d+)\.jpg$/.exec(file)?.[1] ?? 0);
+
 function sheetLine(variant: string, files: string[], dir: string): string {
   const href = (file: string) => link(dir, join(dir, "sheets", variant, file));
-  const named = (stem: string, text: string) => (files.includes(`${stem}.jpg`) ? `[${text}](${href(`${stem}.jpg`)})` : null);
+  // One sheet links by its name; a grid cut into numbered sheets links each by its number.
+  const named = (stem: string, text: string) => {
+    const parts = files.filter((file) => sheetStem(file) === stem).sort((a, b) => partNumber(a) - partNumber(b));
+    if (!parts.length) return null;
+    if (parts.length === 1 && parts[0] === `${stem}.jpg`) return `[${text}](${href(parts[0])})`;
+    return `${text} (${parts.map((file) => `[${partNumber(file)}](${href(file)})`).join(", ")})`;
+  };
   const cards = [named("card-solid", "solid"), named("card-glass", "glass")].filter(Boolean).join(", ") || dash;
   const rows = (["ios", "android", "web"] as const)
     .map((platform) => {
@@ -217,7 +233,7 @@ function sheetLine(variant: string, files: string[], dir: string): string {
     .filter(Boolean)
     .join("; ") || dash;
   const compare = [named("compare", "solid"), named("compare-glass", "glass")].filter(Boolean).join(", ") || dash;
-  const others = files.filter((file) => !SHEET_ORDER.includes(file.replace(/\.jpg$/, "")) && !file.startsWith("row-"));
+  const others = files.filter((file) => !SHEET_ORDER.includes(sheetStem(file)) && !file.startsWith("row-"));
   return `| \`${variant}\` | ${cards} | ${rows} | ${named("native", "native") ?? dash} | ${compare}${others.length ? `; ${others.map((file) => `[${file}](${href(file)})`).join(", ")}` : ""} |`;
 }
 
@@ -249,7 +265,7 @@ export function renderComponentIndex(model: ComponentIndex, dir: string): string
   out.push("");
   const sheetVariants = model.variants.filter((variant) => model.sheets.variants.has(variant.key));
   if (sheetVariants.length || model.sheets.component.length) {
-    out.push("## Sheets", "", "Contact sheets (`bun run audit:sheets`), every tile labelled with its cell id.", "");
+    out.push("## Sheets", "", "Contact sheets (`bun run audit:sheets`), every tile labelled with its cell id and the commit it was captured at, every sheet titled with the runs it draws from. A numbered sheet is one share of a grid too large to read on one.", "");
     if (sheetVariants.length) {
       out.push("| Variant | Card (widths x looks) | Rows (looks x surfaces) | Devices | Browser beside device |", "|---|---|---|---|---|");
       for (const variant of sheetVariants) out.push(sheetLine(variant.key, model.sheets.variants.get(variant.key)!, dir));
@@ -370,31 +386,45 @@ function sheetFiles(dir: string): SheetLinks {
   return { variants, component: component.sort() };
 }
 
-const USAGE = "usage: bun run audit:index -- [--only=<slugs>] [--run=<run ids>]";
+export interface IndexOptions {
+  /** Only these runs (ids or prefixes), or every run. */
+  runs: string[] | null;
+  /** Write only these components' and pages' index.md; SUMMARY.md and current.json are always whole. */
+  only: string[] | null;
+}
 
-async function main(): Promise<number> {
-  const args = parseToolArgs(process.argv.slice(2));
-  if (args.help) {
-    console.log(USAGE);
-    return 0;
-  }
-  if (args.errors.length) {
-    console.error(`audit:index: ${args.errors.join("; ")}\n${USAGE}`);
-    return 2;
-  }
-  const started = Date.now();
-  let selection: ReturnType<typeof currentCells>;
-  try {
-    checkOnly(args.only);
-    // SUMMARY.md and current.json always cover every cell; --only narrows the index.md files written.
-    selection = currentCells(ROOT, { runs: args.runs, only: null });
-  } catch (error) {
-    console.error(`audit:index: ${(error as Error).message}`);
-    return 2;
-  }
-  for (const problem of selection.problems) console.warn(`  warning  ${problem}`);
-  const builtAt = new Date().toISOString();
-  const current = join(ROOT, CURRENT_DIR);
+export interface IndexResult {
+  runs: AuditRun[];
+  cells: number;
+  entries: number;
+  flagged: number;
+  unanalyzed: number;
+  written: number;
+  /** index.md files of components and pages with no current cell, removed by a whole build. */
+  removed: string[];
+  /** Run problems and cells the inventory no longer has. */
+  warnings: string[];
+}
+
+/** The selection a built view records, so a rebuild (audit:prune) keeps it. */
+export interface CurrentSelection {
+  /** The --run names the view was built from, or null for every run. */
+  runs: string[] | null;
+}
+
+/**
+ * Build `root`/.audit/current from the newest capture of every cell in the chosen runs:
+ * each component's and page's index.md (only the `only` ones when given), SUMMARY.md and
+ * current.json. A whole build (no `only`) removes the index.md of every component or page
+ * that has no current cell, so nothing in the view points at a capture the view no longer
+ * holds. Throws on an unknown `only` name or `--run`.
+ */
+export function buildIndex(root: string, options: IndexOptions, builtAt = new Date().toISOString()): IndexResult {
+  checkOnly(options.only);
+  // SUMMARY.md and current.json always cover every cell; `only` narrows the index.md files written.
+  const selection = currentCells(root, { runs: options.runs, only: null });
+  const warnings = [...selection.problems];
+  const current = join(root, CURRENT_DIR);
   mkdirSync(current, { recursive: true });
   const bySlug = new Map<string, CapturedCell[]>();
   for (const cell of selection.cells) {
@@ -407,47 +437,128 @@ async function main(): Promise<number> {
   const uncaptured: string[] = [];
   const records: unknown[] = [];
   let written = 0;
-  for (const target of targets()) {
+  const inventory = targets();
+  for (const target of inventory) {
     const cells = bySlug.get(target.slug);
     if (!cells) {
       uncaptured.push(target.slug);
       continue;
     }
-    const rows = cells.map((cell) => cellRow(cell, readJsonFile<CellAnalysis>(join(cell.dir, ANALYSIS_FILE)), ROOT));
+    const rows = cells.map((cell) => cellRow(cell, readJsonFile<CellAnalysis>(join(cell.dir, ANALYSIS_FILE)), root));
     all.push(...rows);
     for (const row of rows) records.push({ id: row.id, run: row.run, capturedAt: row.capturedAt, status: row.status, analyzed: row.analyzed, flags: row.flags, sha: row.sha, fingerprint: row.fingerprint, file: row.file });
     const dir = join(CURRENT_DIR, target.slug);
     const indexPath = join(dir, INDEX_FILE);
-    const wanted = !args.only || args.only.includes(target.slug) || args.only.some((name) => target.kind === "page" && target.slug.endsWith(`-${name}`));
+    const wanted = !options.only || options.only.includes(target.slug) || options.only.some((name) => target.kind === "page" && target.slug.endsWith(`-${name}`));
     if (wanted) {
-      mkdirSync(join(ROOT, dir), { recursive: true });
+      mkdirSync(join(root, dir), { recursive: true });
       const runIds = new Set(rows.map((row) => row.run));
       // A page's sections are known from its captures; the whole page comes first.
       const sections = target.kind === "page" ? [...new Set(rows.map((row) => row.section).filter((section): section is string => section !== null))].sort() : [];
       const model: ComponentIndex = {
         ...target,
         variants: [...target.variants, ...sections.map((key) => ({ key, label: `section ${key}` }))],
-        root: ROOT,
-        checklistExists: existsSync(join(ROOT, target.checklist)),
+        root,
+        checklistExists: existsSync(join(root, target.checklist)),
         rows,
         runs: selection.runs.filter((run) => runIds.has(run.id)),
-        sheets: sheetFiles(join(ROOT, dir)),
+        sheets: sheetFiles(join(root, dir)),
         builtAt,
       };
-      writeFileSync(join(ROOT, indexPath), renderComponentIndex(model, dir));
+      writeFileSync(join(root, indexPath), renderComponentIndex(model, dir));
       written += 1;
     }
-    entries.push({ slug: target.slug, name: target.name, kind: target.kind, rows, expected: target.expected, index: existsSync(join(ROOT, indexPath)) ? indexPath : null });
+    entries.push({ slug: target.slug, name: target.name, kind: target.kind, rows, expected: target.expected, index: existsSync(join(root, indexPath)) ? indexPath : null });
   }
-  const strays = [...bySlug.keys()].filter((slug) => !targets().some((target) => target.slug === slug));
-  for (const slug of strays) console.warn(`  warning  ${bySlug.get(slug)!.length} current cell(s) of "${slug}", which the inventory no longer has, are left out`);
+  const removed: string[] = [];
+  if (!options.only) {
+    const indexed = new Set(entries.map((entry) => entry.slug));
+    for (const entry of readdirSync(current, { withFileTypes: true })) {
+      const stale = join(CURRENT_DIR, entry.name, INDEX_FILE);
+      if (entry.isDirectory() && !indexed.has(entry.name) && existsSync(join(root, stale))) {
+        rmSync(join(root, stale));
+        removed.push(stale);
+      }
+    }
+  }
+  const known = new Set(inventory.map((target) => target.slug));
+  for (const [slug, cells] of bySlug) if (!known.has(slug)) warnings.push(`${cells.length} current cell(s) of "${slug}", which the inventory no longer has, are left out`);
   writeFileSync(join(current, SUMMARY_FILE), renderSummary(entries, uncaptured, selection.runs, builtAt, CURRENT_DIR));
-  writeFileSync(join(current, CURRENT_FILE), `${JSON.stringify({ schema: 1, builtAt, runs: selection.runs.map((run) => ({ id: run.id, platform: run.platform, startedAt: run.startedAt, status: run.status, sha: run.sha, dirty: run.dirty, fingerprint: run.fingerprint, fresh: run.fresh })), cells: records }, null, 2)}\n`);
-  console.log(`audit:index: ${all.length} current cell(s) of ${entries.length} component(s) and page(s) from ${selection.runs.length} run(s); ${written} index.md written`);
-  console.log(`  flagged  ${all.filter((row) => row.flags.length).length} cell(s); not analyzed ${all.filter((row) => !row.analyzed).length}`);
-  console.log(`  summary  ${relative(ROOT, join(current, SUMMARY_FILE))}`);
+  const recorded: CurrentSelection = { runs: options.runs };
+  writeFileSync(join(current, CURRENT_FILE), `${JSON.stringify({ schema: 1, builtAt, selection: recorded, runs: selection.runs.map((run) => ({ id: run.id, platform: run.platform, startedAt: run.startedAt, status: run.status, sha: run.sha, dirty: run.dirty, fingerprint: run.fingerprint, fresh: run.fresh })), cells: records }, null, 2)}\n`);
+  return {
+    runs: selection.runs,
+    cells: all.length,
+    entries: entries.length,
+    flagged: all.filter((row) => row.flags.length).length,
+    unanalyzed: all.filter((row) => !row.analyzed).length,
+    written,
+    removed,
+    warnings,
+  };
+}
+
+/** The selection the built view at `root` records, or null when there is no built view. */
+export function builtSelection(root: string): CurrentSelection | null {
+  const path = join(root, CURRENT_DIR, CURRENT_FILE);
+  if (!existsSync(path)) return null;
+  const built = readJsonFile<{ selection?: CurrentSelection }>(path);
+  return { runs: built?.selection?.runs ?? null };
+}
+
+const LINK = /\]\(([^)\s]+)\)/g;
+
+/**
+ * Every link in the built view at `root` whose target is missing: the Markdown links of
+ * SUMMARY.md and every index.md, resolved from the file's directory, and the cell files and
+ * run directories current.json names. Empty when the view is whole.
+ */
+export function brokenLinks(root: string): string[] {
+  const current = join(root, CURRENT_DIR);
+  if (!existsSync(current)) return [];
+  const broken: string[] = [];
+  const pages = [join(current, SUMMARY_FILE), ...readdirSync(current, { withFileTypes: true }).filter((entry) => entry.isDirectory()).map((entry) => join(current, entry.name, INDEX_FILE))];
+  for (const page of pages) {
+    if (!existsSync(page)) continue;
+    for (const match of readFileSync(page, "utf8").matchAll(LINK)) {
+      const target = match[1]!;
+      if (/^[a-z]+:/i.test(target)) continue;
+      if (!existsSync(join(dirname(page), target))) broken.push(`${relative(root, page)} -> ${target}`);
+    }
+  }
+  const built = readJsonFile<{ runs?: { id: string }[]; cells?: { id: string; file: string | null }[] }>(join(current, CURRENT_FILE));
+  for (const run of built?.runs ?? []) if (!existsSync(join(root, RUNS_DIR, run.id))) broken.push(`${CURRENT_DIR}/${CURRENT_FILE} -> run ${run.id}`);
+  for (const cell of built?.cells ?? []) if (cell.file && !existsSync(join(root, cell.file))) broken.push(`${CURRENT_DIR}/${CURRENT_FILE} -> ${cell.file}`);
+  return broken;
+}
+
+const USAGE = "usage: bun run audit:index -- [--only=<slugs>] [--run=<run ids>]";
+
+function main(): number {
+  const args = parseToolArgs(process.argv.slice(2));
+  if (args.help) {
+    console.log(USAGE);
+    return 0;
+  }
+  if (args.errors.length) {
+    console.error(`audit:index: ${args.errors.join("; ")}\n${USAGE}`);
+    return 2;
+  }
+  const started = Date.now();
+  let result: IndexResult;
+  try {
+    result = buildIndex(ROOT, { runs: args.runs, only: args.only });
+  } catch (error) {
+    console.error(`audit:index: ${(error as Error).message}`);
+    return 2;
+  }
+  for (const warning of result.warnings) console.warn(`  warning  ${warning}`);
+  console.log(`audit:index: ${result.cells} current cell(s) of ${result.entries} component(s) and page(s) from ${result.runs.length} run(s); ${result.written} index.md written`);
+  if (result.removed.length) console.log(`  removed  ${result.removed.length} index.md of components and pages with no current cell: ${result.removed.join(", ")}`);
+  console.log(`  flagged  ${result.flagged} cell(s); not analyzed ${result.unanalyzed}`);
+  console.log(`  summary  ${join(CURRENT_DIR, SUMMARY_FILE)}`);
   console.log(`  time     ${((Date.now() - started) / 1000).toFixed(1)} s`);
   return 0;
 }
 
-if (import.meta.main) process.exit(await main());
+if (import.meta.main) process.exit(main());
