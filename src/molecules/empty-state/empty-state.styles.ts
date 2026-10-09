@@ -17,9 +17,9 @@ import { type ColorTokens, alpha, shape } from "../../style/index.js";
 //   Android (Material 3): an M3 medium-shape card (radius 12), M3 type roles
 //     (title-medium 16/24/500/+0.15, body-medium 14/20/+0.25); the action is the
 //     M3-skinned Button atom, which carries its own ripple, so this surface adds none.
-//   Web: the established Canvas look (the current empty-state, lifted verbatim) — a
-//     rounded-md bordered card (radius 8), padding 16/24 (compact) or 24/32, a
-//     16pt/600 title and a 14pt `muted-foreground` description, no extra tracking.
+//   Web: a dashed drop-zone card at the card corner, padding 16/24 (compact) or
+//     24/40, a 16/500 title and a 14 `muted-foreground` description, no extra
+//     tracking.
 
 export type Tone = "success" | "default";
 
@@ -82,7 +82,7 @@ const GLYPH: TextStyle = { fontSize: 20, lineHeight: 28 };
 
 const ACTION_SPACING: ViewStyle = { marginTop: 16 };
 
-// ---- Web (the established Canvas look, lifted verbatim) ----------------------
+// ---- Web (the dashed drop-zone card) ------------------------------------------
 export const webSkin: EmptyStateSkin = {
   container: CONTAINER,
   // The drop zone: the card corner and a dashed hairline.

@@ -232,6 +232,19 @@ describe("the brand is Dark Factory's", () => {
     expect(offenders).toEqual([]);
   });
 
+  it("never calls the look it replaced the Canvas look", () => {
+    // "The established Canvas look" and "the CURRENT Canvas look" marked skins carried over
+    // from the brand Dark Factory replaced, and the numbers beside them went stale with it:
+    // a comment states the look a skin draws now.
+    const offenders: string[] = [];
+    for (const { file, text } of files) {
+      text.split("\n").forEach((line, i) => {
+        if (/\b(?:established|current) Canvas (?:web )?look\b/i.test(line)) offenders.push(`${file}:${i + 1} ${line.trim()}`);
+      });
+    }
+    expect(offenders).toEqual([]);
+  });
+
   it("names indigo only as a palette hue, never as the primary", () => {
     const offenders: string[] = [];
     for (const { file, text } of files) {

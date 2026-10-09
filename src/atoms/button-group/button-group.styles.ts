@@ -87,11 +87,11 @@ export const splitContainer: ViewStyle = {
 // together — above everything painted after it.
 export const splitContainerLifted: ViewStyle = { zIndex: 50 };
 
-// A split-menu dropdown row: padded, rounded; the pressed branch tints it.
+// A split-menu dropdown row: padded; each skin's pressed branch tints it in its own
+// menu row's shape (Dropdown's rows: the control corner on the web, square natively).
 export const splitMenuItem: ViewStyle = {
   flexDirection: "row",
   alignItems: "center",
-  borderRadius: 2,
   paddingHorizontal: 8,
   paddingVertical: 6,
 };
@@ -266,7 +266,7 @@ export const webSkin: ButtonGroupSkin = {
     };
   },
   splitMenuItemPressed(t) {
-    return { backgroundColor: t.accent };
+    return { backgroundColor: t.accent, borderRadius: shape.web.control };
   },
   splitMenuText(t) {
     return { fontSize: 14, lineHeight: 20, color: t["popover-foreground"] };
@@ -331,7 +331,7 @@ export const iosSkin: ButtonGroupSkin = {
     // track; the selected one floats as a raised white capsule.
     return { borderRadius: 9999 };
   },
-  spacedCorners: { borderRadius: 8 },
+  spacedCorners: { borderRadius: shape.ios.control },
   overlap: null, // no shared borders; the track's padding spaces them
   segmentSurface(t, selected) {
     return selected
@@ -387,7 +387,7 @@ export const iosSkin: ButtonGroupSkin = {
       zIndex: 50,
       marginTop: 6,
       minWidth: 200,
-      borderRadius: 12, // HIG menu sheet
+      borderRadius: shape.ios.menu,
       borderWidth: 0,
       borderColor: t.border,
       backgroundColor: t.popover,
@@ -414,8 +414,8 @@ export const iosSkin: ButtonGroupSkin = {
       height,
     };
   },
-  stepperArrowLeft: { borderTopStartRadius: 8, borderBottomStartRadius: 8 },
-  stepperArrowRight: { marginStart: 1, borderTopEndRadius: 8, borderBottomEndRadius: 8 },
+  stepperArrowLeft: { borderTopStartRadius: shape.ios.control, borderBottomStartRadius: shape.ios.control },
+  stepperArrowRight: { marginStart: 1, borderTopEndRadius: shape.ios.control, borderBottomEndRadius: shape.ios.control },
   stepperMiddle(t) {
     return {
       flexDirection: "row",
@@ -514,7 +514,7 @@ export const androidSkin: ButtonGroupSkin = {
       zIndex: 50,
       marginTop: 4,
       minWidth: 200,
-      borderRadius: 4, // M3 menu container
+      borderRadius: shape.android.menu,
       borderWidth: 0,
       borderColor: t.border,
       backgroundColor: t.popover,

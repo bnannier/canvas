@@ -42,7 +42,7 @@ function containerBordered(tokens: ColorTokens): ViewStyle {
 // (added by the shell) the press fill. Size adds the padding. overflow:hidden clips the
 // Material ripple to the rounded outline so the bounded ripple does not bleed past the
 // corners on Android.
-const rowBase: ViewStyle = { flexDirection: "row", alignItems: "center", gap: 10, borderRadius: 8, overflow: "hidden" };
+const rowBase: ViewStyle = { flexDirection: "row", alignItems: "center", gap: 10, borderRadius: shape.web.control, overflow: "hidden" };
 
 // Per-row padding by size: medium is Dark Factory's menu row (33 tall), small and large
 // step two either way.

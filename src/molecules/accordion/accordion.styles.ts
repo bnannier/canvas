@@ -12,12 +12,12 @@ import { type AccordionSkin } from "./accordion.shared.js";
 // variants use static content frost with this skin as their complete opaque
 // fallback. Unfilled variants inherit their host surface.
 //
-//   Web (Radix / shadcn accordion, the established Canvas look): no outer
+//   Web (the Radix / shadcn accordion): no outer
 //     container; each item is separated by a `border-b` hairline; the header is a
 //     full-width row (`py-4`, text-sm / 14px, font-medium) with a trailing
 //     ChevronDown (16px, muted) that rotates 0->180deg to point up on open (the
 //     shadcn `[data-state=open]>svg]:rotate-180` idiom); the content panel pads
-//     `pb-4` and reads in 14px foreground. Press dims the header.
+//     `pb-4` and reads in 14px muted text. Press dims the header.
 //   iOS (HIG inset-grouped disclosure / SwiftUI DisclosureGroup): a rounded (12px,
 //     continuous-curve) inset-grouped card with a hairline `border`, hairline row
 //     separators inset to the 16pt text leading edge (the iOS grouped-list
@@ -32,7 +32,7 @@ import { type AccordionSkin } from "./accordion.shared.js";
 //     `android_ripple` state layer instead of an opacity dim.
 
 // =============================================================================
-// Web: the established Canvas / shadcn look.
+// Web: the Radix / shadcn accordion.
 // =============================================================================
 
 export const webSkin: AccordionSkin = {
@@ -54,7 +54,7 @@ export const webSkin: AccordionSkin = {
   container() {
     return {};
   },
-  // The `card` variant: an outlined card surface (the web Card's 20px corner and
+  // The `card` variant: an outlined card surface (the web Card's corner and
   // hairline border on the `card` fill) wrapping the whole group; overflow hidden
   // clips the header ink and the full-bleed dividers to the rounded corner.
   cardContainer(t) {
@@ -101,13 +101,13 @@ export const webSkin: AccordionSkin = {
 // iOS (HIG inset-grouped disclosure / SwiftUI DisclosureGroup).
 // =============================================================================
 
-// The iOS inset-grouped card: rounded 12px with the iOS superellipse (continuous)
+// The iOS inset-grouped card: the iOS card corner with the superellipse (continuous)
 // corner curve, a hairline border, a flat (no-shadow) grouped surface filled with
 // the content `card` token (solid). `borderCurve` is an RN iOS-only prop (no-op
 // elsewhere). Shared by `container` (the default look) AND `cardContainer`: the
 // default iOS Accordion already IS the card surface, so `card` is a documented
 // no-op on iOS.
-const insetGroupedCard = (t: ColorTokens): ViewStyle => ({
+const iosInsetGroupedCard = (t: ColorTokens): ViewStyle => ({
   borderRadius: shape.ios.card,
   borderCurve: "continuous",
   borderWidth: 1,
@@ -127,11 +127,11 @@ export const iosSkin: AccordionSkin = {
   chevronGlyph: "chevronRight",
   chevronSpinTo: 90,
 
-  // The default iOS look IS the inset-grouped card (see insetGroupedCard above).
-  container: insetGroupedCard,
+  // The default iOS look IS the inset-grouped card (see iosInsetGroupedCard above).
+  container: iosInsetGroupedCard,
   // `card` is a documented no-op on iOS: it aliases the same container styles,
   // and the idempotent insets below match the header/content's own 16px.
-  cardContainer: insetGroupedCard,
+  cardContainer: iosInsetGroupedCard,
   cardHeaderInset: { paddingHorizontal: 16 },
   cardContentInset: { paddingHorizontal: 16 },
   // Hairline row separators between grouped rows (the shell renders it only when

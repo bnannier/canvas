@@ -109,7 +109,7 @@ export const webSkin: TextareaSkin = {
   // Field/Form composers and the Input).
   floatingLabel: false,
   labelAbove: (t, size) => ({ ...aboveLabelType(size), fontWeight: "500", color: t.foreground }),
-  // The count line: the established Canvas caption (12/16), muted, turning
+  // The count line: the 12/16 caption, muted, turning
   // destructive once the count passes the soft cap.
   count: (t, over) => ({ fontSize: 12, lineHeight: 16, color: over ? destructiveText(t) : t["muted-foreground"] }),
 };

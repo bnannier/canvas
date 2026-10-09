@@ -191,7 +191,7 @@ export function createDialog(skin: DialogSkin, parts: DialogParts = {}) {
 
     // The confirm/cancel footer. Three platform shapes:
     //   - web (footerKind "buttons", no skin.textButton): the outline Cancel +
-    //     primary/destructive Confirm Button row (verbatim Canvas look).
+    //     primary/destructive Confirm Button row.
     //   - Android (footerKind "buttons", skin.textButton set): flat text buttons,
     //     Cancel then Confirm, in `primary-text`, with a ripple.
     //   - iOS (footerKind "capsules"): a side-by-side row of capsule buttons, a
@@ -306,9 +306,9 @@ export function createDialog(skin: DialogSkin, parts: DialogParts = {}) {
             aria-labelledby={children == null && title != null ? titleId : undefined}
             aria-describedby={children == null && description != null ? descriptionId : undefined}
             style={[
+              skin.backdrop(tokens),
               trigger != null && !overlay ? s.backdropTriggerGap : null,
               overlay ? s.backdropOverlay : s.backdropLayout,
-              skin.backdrop(tokens),
             ]}
           >
             {props.dismissible ? (

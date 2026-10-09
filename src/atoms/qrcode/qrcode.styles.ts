@@ -1,4 +1,5 @@
 import { type ViewStyle } from "react-native";
+import { shape } from "../../style/index.js";
 import { type QRCodeSkin } from "./qrcode.shared.js";
 
 // Per-OS QRCode skins. QRCode is a "Shared" treatment: there is no native QR control on
@@ -11,7 +12,7 @@ import { type QRCodeSkin } from "./qrcode.shared.js";
 // HUG via the shell's `useHugStyle()`, not a static alignSelf.
 const frame: ViewStyle = {
   padding: 12,
-  borderRadius: 12,
+  borderRadius: shape.web.tile,
   backgroundColor: "#ffffff",
 };
 

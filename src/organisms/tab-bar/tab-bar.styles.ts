@@ -78,7 +78,7 @@ export const androidSkin: TabBarSkin = {
   label: (active) => ({ fontSize: 12, lineHeight: 16, fontWeight: active ? "600" : "500", letterSpacing: 0.5 }),
   ripple: (t: ColorTokens) => ({ color: alpha(t.primary, 0.12), borderless: true, radius: 36 }),
   pressedOpacity: null,
-  // M3 active-indicator pill: 56x32dp, fully rounded (16 radius). Fill is a tonal brand
+  // M3 active-indicator pill: 56x32dp, fully rounded (a capsule). Fill is a tonal brand
   // tint (alpha(primary, 0.16)) standing in for M3's secondary-container: this shadcn
   // token set has no secondary-container, and the flat `secondary` gray is nearly the bar
   // fill, so it would not read as a pill. It carries NO insets: an absolutely-positioned
@@ -89,7 +89,7 @@ export const androidSkin: TabBarSkin = {
     position: "absolute",
     width: 56,
     height: 32,
-    borderRadius: 16,
+    borderRadius: 9999,
     backgroundColor: alpha(t.primary, 0.16),
   }),
 };

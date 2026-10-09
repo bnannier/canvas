@@ -1,5 +1,5 @@
 import { type ViewStyle } from "react-native";
-import { type ColorTokens, spacing } from "../../style/index.js";
+import { type ColorTokens, spacing, shape } from "../../style/index.js";
 
 // Co-located DashboardGrid skins, one per platform. DashboardGrid is a "Shared" treatment:
 // the whole component is LAYOUT (a wrapping 12-column row of measured cells) plus one edit-
@@ -40,7 +40,7 @@ export const webSkin: DashboardGridSkin = {
     borderWidth: 1,
     borderStyle: "dashed",
     borderColor: t.border,
-    borderRadius: 12,
+    borderRadius: shape.web.tile,
     backgroundColor: t.muted,
     padding: spacing["1.5"],
     gap: spacing["1"],

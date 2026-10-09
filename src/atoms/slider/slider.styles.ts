@@ -1,13 +1,14 @@
 import { type ViewStyle, type TextStyle } from "react-native";
 import { alpha, customShadow, tabularNums, type ColorTokens } from "../../style/index.js";
+import { platformShape } from "../../style/platform-shape.js";
 import { type SliderSkin, type Size } from "./slider.shared.js";
 
 // Co-located Slider skins, one per platform, all driven by the brand tokens (passed
 // in from useTheme so they follow light/dark). The BRAND survives on every platform:
 // the filled range is always the `primary`, never a platform default (no iOS
 // system blue, no M3 default). Only the native SHAPE changes per OS:
-//   iOS (iOS 27 kit, Sliders symbol group): a 6pt rail with 3pt radius and Apple
-//     smooth (continuous) corners, and a 37x24pt capsule knob (borderCurve
+//   iOS (iOS 27 kit, Sliders symbol group): a 6pt capsule rail with Apple's smooth
+//     (continuous) corner curve, and a 37x24pt capsule knob (borderCurve
 //     continuous, soft drop shadow), brand fill on the rail. On iOS 26+ the knob
 //     "transforms into liquid glass during interaction" (WWDC25): it renders through
 //     GlassSurface, so it is a real Apple Liquid Glass puck refracting
@@ -24,15 +25,16 @@ import { type SliderSkin, type Size } from "./slider.shared.js";
 //     and NO circular thumb or state-layer disc (Expressive dropped both). Stepped
 //     sliders add 4dp stop dots at each interior step (on-primary over the active
 //     segment, on-secondary-container -> `muted-foreground` over the inactive one).
-//   Web: the established Canvas look, an iOS-like thin rail with a small bordered
-//     white thumb (matched to shadcn's slider: h-1.5 bg-muted track, bg-primary
-//     range, a size-4 white thumb with a primary border and a soft shadow).
+//   Web: a thin capsule rail with a bordered white thumb: a 6/8/10px `muted` track
+//     per size, a `primary` range, and a 16/20/24px thumb with a 1px primary border
+//     and a soft shadow, whose border widens to a 4px half-alpha ring on press.
 // Disabled dims the whole control (opacity in the shell) and softens the fill toward
 // `muted` here.
 
-const RAIL: ViewStyle = { width: "100%", borderRadius: 999, overflow: "visible" };
-const FILL_BASE: ViewStyle = { position: "absolute", left: 0, top: 0, bottom: 0, borderRadius: 999 };
-const THUMB_BASE: ViewStyle = { position: "absolute", borderRadius: 999 };
+// Fully rounded (9999 clamps to half the shorter side): a capsule rail, range and thumb.
+const RAIL: ViewStyle = { width: "100%", borderRadius: 9999, overflow: "visible" };
+const FILL_BASE: ViewStyle = { position: "absolute", left: 0, top: 0, bottom: 0, borderRadius: 9999 };
+const THUMB_BASE: ViewStyle = { position: "absolute", borderRadius: 9999 };
 
 // iOS soft knob shadow (the iOS 27 kit floats the knob just off the rail).
 const IOS_THUMB_SHADOW: ViewStyle = customShadow({ offsetY: 1, radius: 3, opacity: 0.18, elevation: 3 });
@@ -64,9 +66,9 @@ function value(tokens: ColorTokens, size: Size): TextStyle {
   return { fontWeight: "500", color: tokens["muted-foreground"], ...tabularNums(), ...LABEL_TYPE[size] };
 }
 
-// ----- iOS (iOS 27 kit): 6pt rail (radius 3), 37x24pt capsule knob -----
-// Rail: the kit's Track/Fill are 6pt tall with 3pt radius and Apple smooth
-// (continuous) corners; small/large scale the base proportionally.
+// ----- iOS (iOS 27 kit): 6pt capsule rail, 37x24pt capsule knob -----
+// Rail: the kit's Track/Fill are 6pt tall capsules with Apple's smooth (continuous)
+// corner curve; small/large scale the base proportionally.
 const IOS_TRACK_H: Record<Size, number> = { small: 5, base: 6, large: 7 };
 // Knob: the kit's Knob symbol is a 37x24pt horizontal capsule (NOT a circle);
 // small/large scale it proportionally, radius = height / 2.
@@ -85,7 +87,7 @@ export const iosSkin: SliderSkin = {
   track: (t, size) => ({
     width: "100%",
     height: IOS_TRACK_H[size],
-    borderRadius: IOS_TRACK_H[size] / 2,
+    borderRadius: 9999,
     borderCurve: "continuous",
     overflow: "visible",
     // The iOS inactive rail is a light fill; `muted` reads correctly on both schemes.
@@ -96,7 +98,7 @@ export const iosSkin: SliderSkin = {
     left: 0,
     top: 0,
     height: IOS_TRACK_H[size],
-    borderRadius: IOS_TRACK_H[size] / 2,
+    borderRadius: 9999,
     borderCurve: "continuous",
     backgroundColor: disabled ? t["muted-foreground"] : t.primary,
   }),
@@ -106,7 +108,7 @@ export const iosSkin: SliderSkin = {
       position: "absolute",
       width: k.w,
       height: k.h,
-      borderRadius: k.h / 2,
+      borderRadius: 9999,
       borderCurve: "continuous",
       // The shell sets `top` to vertically center the knob on the rail.
       backgroundColor: "#ffffff",
@@ -144,8 +146,8 @@ export const iosSkin: SliderSkin = {
 // 4dp-wide x 44dp-tall primary bar at every mapped size, inset by a 6dp gap from
 // both track segments; the inactive end carries a 4dp stop indicator dot.
 const M3_TRACK_H: Record<Size, number> = { small: 16, base: 16, large: 24 };
-const M3_TRACK_R = 8; // outer track shape (XS + S)
-const M3_INNER_R = 2; // the segment edge facing the handle gap
+const M3_TRACK_R = platformShape.android.sliderTrack; // outer track shape (XS + S), the M3 small shape
+const M3_INNER_R = platformShape.android.sliderTrackInner; // the segment edge facing the handle gap
 const M3_HANDLE_W = 4;
 const M3_HANDLE_H = 44;
 
@@ -181,7 +183,7 @@ export const androidSkin: SliderSkin = {
     ...THUMB_BASE,
     width: M3_HANDLE_W,
     height: M3_HANDLE_H,
-    borderRadius: M3_HANDLE_W / 2,
+    borderRadius: 9999,
     // The shell sets `top` to vertically center the bar handle on the track.
     backgroundColor: disabled ? t["muted-foreground"] : t.primary,
     // Flat and static: M3 Expressive dropped the drop shadow AND the pressed
@@ -197,7 +199,7 @@ export const androidSkin: SliderSkin = {
   value,
 };
 
-// ----- Web: the established Canvas look (shadcn-matched) -----
+// ----- Web: the thin rail and bordered thumb -----
 const WEB_TRACK_H: Record<Size, number> = { small: 6, base: 8, large: 10 };
 const WEB_THUMB: Record<Size, number> = { small: 16, base: 20, large: 24 };
 

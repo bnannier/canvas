@@ -7,6 +7,7 @@ import { CartesianFrame, CHART_ROOT } from "../shared/chart-frame.js";
 import { ChartValueFlag, announceSelection, DIM_OPACITY } from "../shared/chart-inspect.js";
 import { PLOT_HEIGHT } from "../shared/cartesian-series.js";
 import { formatCompact, waterfallLayout } from "../shared/chart-math.js";
+import { platformShape } from "../../style/platform-shape.js";
 
 // WaterfallChart: the running-total bridge (a P&L walk, a headcount bridge).
 // Each step floats from the running total by its signed value; a `total`
@@ -158,7 +159,7 @@ export function createWaterfallChart(skin: ChartSkin) {
                         y={yTop}
                         width={barW}
                         height={Math.max(1, yBot - yTop)}
-                        rx={Math.min(skin.barRadius / 2, barW / 4)}
+                        rx={Math.min(platformShape.web.mark, barW / 4)}
                         fill={barFill(bar.kind)}
                         opacity={dim}
                       />

@@ -1,5 +1,6 @@
 import { type ViewStyle } from "react-native";
 import { platformMinTarget, TOUCH_TARGET, shape } from "../../style/index.js";
+import { platformShape } from "../../style/platform-shape.js";
 import { typeScale } from "../../style/type-scale.js";
 import { type ChipSkin } from "./chip.shared.js";
 
@@ -72,7 +73,7 @@ export const iosSkin: ChipSkin = webSkin;
 const androidBase: ViewStyle = {
   ...shell,
   gap: 8, // M3 8dp padding between elements
-  borderRadius: 8, // M3 8dp corner (not a pill)
+  borderRadius: platformShape.android.chip, // the M3 chip corner, the small shape (8dp, not a pill)
   paddingVertical: 6, // 20 label lineHeight + 2*6 = 32dp container height
   // Bound the press ripple (state layer) to the rounded container; this skin is
   // shadow-free, so the clip is set directly here per src/style/ripple.ts.

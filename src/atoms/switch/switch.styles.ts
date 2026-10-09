@@ -46,8 +46,9 @@ const WEB_TRACK: Record<Size, { width: number; height: number }> = {
 
 const WEB_THUMB: Record<Size, number> = { small: 16, base: 20, large: 24 };
 
-const PILL: ViewStyle = { borderRadius: 999, position: "relative" };
-const ABS: ViewStyle = { position: "absolute", borderRadius: 999 };
+// Fully rounded (9999 clamps to half the shorter side): the pill track and the round thumb.
+const PILL: ViewStyle = { borderRadius: 9999, position: "relative" };
+const ABS: ViewStyle = { position: "absolute", borderRadius: 9999 };
 const IOS_SHADOW: ViewStyle = customShadow({ offsetY: 1, radius: 2, opacity: 0.2, elevation: 2 });
 
 // iOS (iOS 27 UI Kit Toggles): a ~1.64 pill with a white rounded-rect CAPSULE
@@ -76,10 +77,9 @@ export const iosSkin: SwitchSkin = {
   }),
   thumb: (_t, checked, size) => {
     const { width, height } = IOS_THUMB[size];
-    const radius = height / 2;
     return {
       position: "absolute",
-      borderRadius: radius,
+      borderRadius: 9999,
       ...IOS_SHADOW,
       top: 2,
       width,
@@ -113,7 +113,7 @@ export const androidSkin: SwitchSkin = {
   },
 };
 
-// Web: the current Canvas look, a compact pill with a surface-colored thumb.
+// Web: a compact pill with a surface-colored thumb.
 export const webSkin: SwitchSkin = {
   minTarget: null,
   track: (t, _dark, checked, size) => ({

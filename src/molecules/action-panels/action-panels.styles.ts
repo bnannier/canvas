@@ -19,9 +19,8 @@ import { type ColorTokens, statusColors } from "../../style/index.js";
 //     tracking and a roomier inline gap, matching iOS settings-row rhythm.
 //   Android (Material 3 list / card): M3 label tracking on the title (positive
 //     tracking, M3 title-medium convention) over the same scale.
-//   Web: the established Canvas look (the current action-panel, lifted verbatim):
-//     14pt/600 title, 14pt muted description, 4pt copy gap, 24pt inline gap,
-//     16pt stacked gap, no tracking.
+//   Web: a 14/600 title, a 14 muted description, a 4px copy gap, a 24px inline gap,
+//     a 16px stacked gap, no tracking.
 //
 // ActionPanel itself has NO pressable rows of its own (its only interactive
 // elements are the composed Button / Switch atoms), so there is no per-OS press
@@ -60,10 +59,9 @@ export function titleColor(tokens: ColorTokens, tone: Tone): string {
   return tone === "destructive" ? statusColors(tokens, "error").ink : tokens["card-foreground"];
 }
 
-// ---------- Web: the established Canvas look (lifted verbatim) ----------
-// The current action-panel: a 14pt/600 title sharing the settings-row scale, a
-// 14pt muted description, a 4pt copy gap, a 24pt inline-row gap, and a 16pt
-// stacked gap. No type tracking.
+// ---------- Web: the settings-row scale ----------
+// A 14/600 title sharing the settings-row scale, a 14 muted description, a 4px copy
+// gap, a 24px inline-row gap, and a 16px stacked gap. No type tracking.
 export const webSkin: ActionPanelSkin = {
   titleType: { fontSize: 14, lineHeight: 20, fontWeight: "600" },
   descriptionType: { fontSize: 14, lineHeight: 20 },

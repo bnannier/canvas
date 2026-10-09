@@ -46,7 +46,7 @@ import { type StackedListSkin } from "./stacked-lists.styles.js";
 // (semantic) colors, with per-OS touches limited to corner radius, density /
 // spacing, type tracking, shadow/elevation, divider inset, and press feedback
 // (Android android_ripple on this component's own pressable rows; iOS/web
-// pressedOpacity). Web keeps the current Canvas look exactly; iOS uses SF/HIG
+// pressedOpacity). Web draws a bordered card of ruled rows; iOS uses SF/HIG
 // inset-list conventions; Android uses Material 3 list / card conventions.
 //
 // The framed list uses static content frost in glass mode. Its rows inherit

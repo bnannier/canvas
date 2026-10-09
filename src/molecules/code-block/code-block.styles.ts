@@ -1,5 +1,6 @@
 import { type ViewStyle, type TextStyle } from "react-native";
 import { palette, shadow, alpha, MONO_FONT, platformMinTarget, shape, type ColorTokens } from "../../style/index.js";
+import { platformShape } from "../../style/platform-shape.js";
 import { type CodeBlockSkin } from "./code-block.shared.js";
 
 // Co-located CodeBlock skins. Layout-only fragments are static objects; anything
@@ -42,13 +43,18 @@ function codeText(tokens: ColorTokens): TextStyle {
 // literally from a Tailwind bg-muted/50 in the kit's shadcn-era origins, which meant
 // a code block sitting over any backdrop (a photo, a glass page)
 // showed it straight through the code.
+// The code card's corner, which its header bar and the terminal window share, and its
+// hairline, the inset the expander's corners sit inside.
+const CARD_RADIUS = shape.web.control;
+const CARD_BORDER = 1;
+
 function surface(tokens: ColorTokens): ViewStyle {
   return {
     width: "100%",
     alignSelf: "flex-start",
     overflow: "hidden",
-    borderRadius: shape.web.control,
-    borderWidth: 1,
+    borderRadius: CARD_RADIUS,
+    borderWidth: CARD_BORDER,
     borderColor: tokens.border,
     backgroundColor: tokens.muted,
   };
@@ -95,8 +101,8 @@ function headerBar(tokens: ColorTokens): ViewStyle {
     justifyContent: "space-between",
     alignSelf: "flex-start",
     width: "100%",
-    borderTopStartRadius: 8,
-    borderTopEndRadius: 8,
+    borderTopStartRadius: CARD_RADIUS,
+    borderTopEndRadius: CARD_RADIUS,
     borderWidth: 1,
     borderBottomWidth: 0,
     borderColor: tokens.border,
@@ -232,6 +238,10 @@ function expanderBar(tokens: ColorTokens): ViewStyle {
   };
 }
 
+// The expander's ripple clip: the card's bottom corners inside its 1px border, so the
+// press layer follows the card's curve.
+const expanderClip: ViewStyle = { borderBottomStartRadius: CARD_RADIUS - CARD_BORDER, borderBottomEndRadius: CARD_RADIUS - CARD_BORDER };
+
 function expanderLabel(tokens: ColorTokens): TextStyle {
   return {
     fontSize: 12,
@@ -250,7 +260,7 @@ function terminalOuter(tokens: ColorTokens): ViewStyle {
     width: "100%",
     alignSelf: "flex-start",
     overflow: "hidden",
-    borderRadius: 8,
+    borderRadius: CARD_RADIUS,
     borderWidth: 1,
     borderColor: tokens.border,
     ...shadow("sm", tokens),
@@ -307,7 +317,7 @@ const terminalOutput: TextStyle = { color: palette["zinc-400"] };
 function inlineBox(tokens: ColorTokens): ViewStyle {
   return {
     alignSelf: "flex-start",
-    borderRadius: 4,
+    borderRadius: platformShape.web.key,
     borderWidth: 1,
     borderColor: tokens.border,
     backgroundColor: tokens.muted,
@@ -333,7 +343,7 @@ function copyButton(tokens: ColorTokens, dark: boolean, floating: boolean): View
     flexDirection: "row",
     alignItems: "center",
     gap: 5,
-    borderRadius: 6,
+    borderRadius: platformShape.web.key,
     borderWidth: 1,
     paddingHorizontal: 10,
     paddingVertical: 4,
@@ -355,10 +365,10 @@ function copyText(tokens: ColorTokens, dark: boolean): TextStyle {
   };
 }
 
-// ---------- Web: the established Canvas look (lifted verbatim) ----------
-// The current code-block surface: a muted, bordered, rounded card with the
-// terminal / numbered / inline variants and the copy chip described above. This is
-// the single source of truth for the one shared look.
+// ---------- Web: the code card, the one look every platform shares ----------
+// A muted, bordered, rounded card with the terminal / numbered / inline variants and
+// the copy chip described above. This is the single source of truth for the one
+// shared look.
 export const webSkin: CodeBlockSkin = {
   // One shared skin across the three platforms (a code surface is
   // platform-neutral), so the minimum comes from the platform at runtime.
@@ -385,6 +395,7 @@ export const webSkin: CodeBlockSkin = {
   gutterRow,
   gutterText,
   expanderBar,
+  expanderClip,
   expanderLabel,
   terminalOuter,
   terminalChrome,

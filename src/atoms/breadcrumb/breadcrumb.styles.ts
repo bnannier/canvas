@@ -10,7 +10,7 @@ import { type BreadcrumbSkin } from "./breadcrumb.shared.js";
 // match Web's Catalyst/shadcn trail (text-sm, muted-foreground links, a font-medium
 // foreground current page, a 60%-muted divider) and layer only the platform reading
 // conventions on top:
-//   - Web keeps the current Canvas look exactly, with an active:opacity-70 link dim.
+//   - Web draws the trail with a 0.7 opacity dim on a pressed link.
 //   - iOS applies SF Pro Text tracking at 14pt (-0.15) and the same 0.7 opacity dim.
 //   - Android applies Material 3 body/label tracking (+0.1 / +0.5) and a borderless
 //     android_ripple on press (no opacity dim, so the ripple is the only signal).

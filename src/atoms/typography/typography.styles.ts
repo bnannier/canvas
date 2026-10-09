@@ -3,6 +3,7 @@ import { primaryText } from "../../style/primary-text.js";
 import { type TextStyle } from "react-native";
 import { alpha, type ColorTokens } from "../../style/index.js";
 import { typeScale } from "../../style/type-scale.js";
+import { platformShape } from "../../style/platform-shape.js";
 import { type TypographySkin } from "./typography.shared.js";
 
 // Co-located Typography styles. One axis (role), each role mapping to a single
@@ -64,7 +65,7 @@ const roleType: Record<Role, TextStyle> = {
   // `useHugStyle()` for this role instead of a static alignSelf, so it keeps its content
   // width in a Column without pinning a Row child.
   code: {
-    borderRadius: 6,
+    borderRadius: platformShape.web.key,
     paddingHorizontal: 6,
     paddingVertical: 2,
     fontSize: typeScale.small.fontSize,

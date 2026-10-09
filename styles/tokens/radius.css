@@ -11,13 +11,13 @@
   --radius-control:8px;   /* web icon button, menu row, nav highlight (capsules read --radius-pill) */
   --radius-field:10px;    /* web text field, select, autocomplete */
   --radius-card:14px;     /* web card surface */
-  --radius-dialog:18px;   /* web dialog, alert, toast */
+  --radius-dialog:18px;   /* web dialog, alert dialog */
   --radius-menu:12px;     /* web menu, popover, select list */
   --radius-sheet:22px;    /* web sheet, drawer, app shell */
-  --radius-tile:12px;     /* web KPI card, stat tile, icon tile */
+  --radius-tile:12px;     /* web icon tile, swatch, alert banner */
   --radius-checkbox:6px;  /* web checkbox box */
   --radius-control-ios:var(--radius-pill); /* shape.ios.control: every iOS control is a capsule */
   --radius-card-ios:12px;
   --radius-card-android:12px;
-  --radius-pill:9999px;   /* iOS capsule button, M3 stadium button, chips, status */
+  --radius-pill:9999px;   /* web pill button, chip, badge, toast; iOS capsule, M3 stadium */
 }

@@ -1,6 +1,7 @@
 import { destructiveText } from "../../style/destructive-text.js";
 import { StyleSheet, type ViewStyle, type TextStyle } from "react-native";
 import { type ColorTokens, alpha, shadow, surfaceRipple, shape } from "../../style/index.js";
+import { platformShape } from "../../style/platform-shape.js";
 
 // Co-located ActionSheet skins, one per platform, all driven by the brand tokens
 // (passed in from useTheme so they follow light/dark and read as glass when the
@@ -24,9 +25,8 @@ import { type ColorTokens, alpha, shadow, surfaceRipple, shape } from "../../sty
 //     at 16sp; the destructive item tints its label red. Cancel is the LAST row in
 //     the same sheet (M3 has no separate cancel card). Flat (the sheet's own
 //     elevation comes from the scrim), press = android_ripple (neutral state layer).
-//   Web: the established Canvas look (two separated rounded-14 cards with a centered
-//     gray header and hairline-divided rows), since no web library ships an action
-//     sheet. The stack is capped at 640 and centered so it never renders edge-to-edge
+//   Web: two separated cards at the dialog corner with a centered gray header and
+//     hairline-divided rows, since no web library ships an action sheet. The stack is capped at 640 and centered so it never renders edge-to-edge
 //     on a wide desktop window. Press = opacity dim.
 
 // Ordinary action labels use the surface foreground for readable text in both
@@ -117,9 +117,9 @@ export const scrimDim = StyleSheet.create({
 // scrim reaches the dismiss control.
 export const scrimContent: ViewStyle = { zIndex: 1 };
 
-// ---------- Web: the established Canvas look (= the iOS action sheet) ----------
+// ---------- Web: two separated cards (the earlier iOS action sheet) ----------
 // No web library ships an action sheet, so the kit's web look is the iOS idiom:
-// two separated rounded-14 cards anchored to the bottom, a centered gray header,
+// two separated cards at the dialog corner anchored to the bottom, a centered gray header,
 // hairline-divided ~17pt foreground action rows, a red destructive label, and a
 // separate bold Cancel card. Press = opacity dim.
 const WEB_RADIUS = shape.web.dialog;
@@ -174,7 +174,7 @@ export const webSkin: ActionSheetSkin = {
 //   - Cancel: a SEPARATE detached capsule below the container (its own glass card),
 //     aligned with the action buttons via a 14pt side margin; bold (600) primary
 //     label. Press = opacity dim (~0.8).
-const IOS_RADIUS = 34;
+const IOS_RADIUS = platformShape.ios.actionSheet;
 const IOS_CAPSULE = 9999; // full capsule (calc(infinity*1px)); the renderer clamps to height/2
 const IOS_ROW_FILL = 0.1; // translucent neutral fill on the capsules (iOS system-fill idiom)
 export const iosSkin: ActionSheetSkin = {
@@ -243,13 +243,13 @@ export const androidSkin: ActionSheetSkin = {
     paddingBottom: 8,
   }),
   cancelCard: null,
-  // The M3 drag handle: a 32x4 rounded bar, centered at the top, in the on-surface
+  // The M3 drag handle: a 32x4 capsule, centered at the top, in the on-surface
   // color at low alpha (the M3 "surfaceContainerHighest on-surface variant" cue).
   // M3 pads it 22dp top AND bottom so the handle sits in a ~48dp touch zone.
   handle: (t) => ({
     width: 32,
     height: 4,
-    borderRadius: 2,
+    borderRadius: 9999,
     alignSelf: "center",
     marginTop: 22,
     marginBottom: 22,

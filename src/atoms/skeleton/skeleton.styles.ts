@@ -1,4 +1,5 @@
 import { shape } from "../../style/index.js";
+import { platformShape } from "../../style/platform-shape.js";
 import { type SkeletonSkin } from "./skeleton.shared.js";
 
 // Per-OS Skeleton skins. Skeleton is a "Shared" treatment: neither iOS nor
@@ -13,7 +14,7 @@ import { type SkeletonSkin } from "./skeleton.shared.js";
 // circle, and a card-cornered surface (14) matches the real card.
 
 export const webSkin: SkeletonSkin = {
-  lineRadius: 6,
+  lineRadius: platformShape.web.key,
   buttonRadius: shape.web.pill,
   avatarRadius: 9999,
   cardRadius: shape.web.card,

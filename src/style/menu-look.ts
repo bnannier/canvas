@@ -39,7 +39,7 @@ export const menuRow: ViewStyle = {
   flexDirection: "row",
   alignItems: "center",
   gap: 10,
-  borderRadius: 8,
+  borderRadius: shape.web.control,
   paddingHorizontal: 10,
   paddingVertical: 8,
 };

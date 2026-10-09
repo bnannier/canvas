@@ -7,6 +7,7 @@ import { CartesianFrame, CHART_ROOT, type CartesianLayout } from "../shared/char
 import { ChartLegend } from "../shared/chart-legend.js";
 import { ChartValueFlag, announceSelection, DIM_OPACITY } from "../shared/chart-inspect.js";
 import { DENSE_SERIES, formatCompact, linePath, linearScale } from "../shared/chart-math.js";
+import { platformShape } from "../../style/platform-shape.js";
 
 // CandlestickChart: the trading instrument view. OHLC candles (a body between
 // open and close, a wick between high and low) colored by direction from the
@@ -165,7 +166,7 @@ export function createCandlestickChart(skin: ChartSkin) {
             return (
               <G key={`c${i}`} opacity={dim}>
                 <Line x1={cx} y1={layout.y(num(c.high))} x2={cx} y2={layout.y(num(c.low))} stroke={color} strokeWidth={1.5} />
-                <Rect x={cx - bodyW / 2} y={yTop} width={bodyW} height={Math.max(1, yBottom - yTop)} fill={color} rx={1} />
+                <Rect x={cx - bodyW / 2} y={yTop} width={bodyW} height={Math.max(1, yBottom - yTop)} fill={color} rx={platformShape.web.candle} />
               </G>
             );
           })}

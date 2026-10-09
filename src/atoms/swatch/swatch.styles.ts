@@ -35,13 +35,13 @@ const box: Record<SwatchSize, number> = { small: 40, default: 56, large: 72 };
 const gap = 8;
 const lineGap = 2;
 
-// Web: Dark Factory's tile corners (the tile role at the default size, 10 / 12 / 14), the
-// continuous corner curve where the platform draws one (iOS; ignored elsewhere), and its
-// label weights, a 700 name over a 500 value and a 400 detail. A color sample has no
-// platform control, so the native skins are the web skin.
+// Web: Dark Factory's tile corner at every size, the continuous corner curve where the
+// platform draws one (iOS; ignored elsewhere), and its label weights, a 700 name over a
+// 500 value and a 400 detail. A color sample has no platform control, so the native skins
+// are the web skin.
 export const webSkin: SwatchSkin = {
   box,
-  radius: { small: shape.web.tile - 2, default: shape.web.tile, large: shape.web.tile + 2 },
+  radius: { small: shape.web.tile, default: shape.web.tile, large: shape.web.tile },
   shape: { borderCurve: "continuous" },
   gap,
   lineGap,

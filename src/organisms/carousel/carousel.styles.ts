@@ -1,4 +1,5 @@
 import { type ColorTokens, alpha, shadow, controlRipple, shape } from "../../style/index.js";
+import { platformShape } from "../../style/platform-shape.js";
 import { type CarouselSkin } from "./carousel.shared.js";
 
 // Co-located Carousel skins, one per platform. The shell resolves the paging,
@@ -42,7 +43,7 @@ export const webSkin: CarouselSkin = {
   pressedOpacity: 0.9,
   ripple: null,
 
-  // Web (pointer): the established Canvas look shows both arrows and dots, and a
+  // Web (pointer): both arrows and dots show by default, and a
   // mouse has no minimum touch target, so no hitSlop padding.
   defaultShowArrows: true,
   defaultShowDots: true,
@@ -210,7 +211,7 @@ export const androidSkin: CarouselSkin = {
 
   slide(tokens) {
     return {
-      borderRadius: 28, // M3 carousel item corner radius (extra-large, all layouts)
+      borderRadius: platformShape.android.carouselItem, // the M3 carousel item corner (extra-large, all layouts)
       overflow: "hidden",
       backgroundColor: tokens.card,
       // M3's outlined-card edge: the viewport clips an elevation shadow, and a slide on

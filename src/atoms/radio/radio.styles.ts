@@ -1,5 +1,6 @@
 import { StyleSheet, type ViewStyle, type TextStyle } from "react-native";
 import { type ColorTokens, alpha } from "../../style/index.js";
+import { platformShape } from "../../style/platform-shape.js";
 import { type RadioSkin, type Size } from "./radio.shared.js";
 import {
   type CardSkin,
@@ -22,8 +23,8 @@ import {
 //   Android (Material 3): a 20dp outer ring (2dp border), brand ring + ~10dp solid
 //     inner dot when selected; press = android_ripple over a 40dp state layer;
 //     disabled opacity 0.38.
-//   Web: the established Canvas look (the current radio, lifted verbatim) —
-//     14/16/20px ring per size, 2px border, brand ring + 6/8/10px primary dot.
+//   Web: a 16/20/24px ring per size with a 2px border, a brand ring and a 6/8/10px
+//     primary dot when selected.
 
 // Ring diameter per size, per ring family. Default is the form control; small pairs
 // with dense rows, large with touch-first layouts.
@@ -104,7 +105,7 @@ function dotBase(box: number): ViewStyle {
 function cardChrome(card: CardSkin, tokens: ColorTokens, checked: boolean): ViewStyle {
   return {
     ...cardBase, // borderWidth: 1 (the shared Card hairline)
-    borderRadius: card.radius, // 8 web / 12 iOS / 12 Android
+    borderRadius: card.radius, // the platform's card corner
     ...(card.curve ? { borderCurve: card.curve } : null), // iOS continuous corner curve
     ...card.surface(tokens, "flat"), // the M3 OUTLINED / Light bordered surface: tokens.border on tokens.card
     ...card.padded, // per-OS padded inset (24 web/iOS, 16 Android)
@@ -116,7 +117,7 @@ function cardChrome(card: CardSkin, tokens: ColorTokens, checked: boolean): View
   };
 }
 
-// ---------- Web: the established Canvas look ----------
+// ---------- Web: the ring and dot ----------
 export const webSkin: RadioSkin = {
   mark: {
     kind: "ring",
@@ -153,7 +154,7 @@ export const iosSkin: RadioSkin = {
   description,
   card: (t, checked) => cardChrome(iosCardSkin, t, checked),
   list: {
-    section: (t) => ({ borderRadius: 26, borderCurve: "continuous", backgroundColor: t.card, overflow: "hidden" }),
+    section: (t) => ({ borderRadius: platformShape.ios.groupedList, borderCurve: "continuous", backgroundColor: t.card, overflow: "hidden" }),
     separator: (t) => ({ height: StyleSheet.hairlineWidth, marginStart: IOS_CELL_INSET, backgroundColor: t.border }),
     cell: { paddingHorizontal: IOS_CELL_INSET, paddingVertical: 11, minHeight: 44 },
     cellPressed: (t) => ({ backgroundColor: t.accent }),

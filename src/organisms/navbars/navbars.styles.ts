@@ -20,13 +20,13 @@ import { type NavbarSkin } from "./navbars.shared.js";
 //     no hairline border, a flat `background` surface (soft elevation only when
 //     `floating`); nav links use a tonal `primary` active fill; press =
 //     android_ripple.
-//   Web: the established Canvas look (h-14 bar, bottom hairline / rounded outline
-//     / floating shadowed card), lifted verbatim from the original file.
+//   Web: a 72px bar, resting on a bottom hairline, boxed in an outline at the card
+//     corner, or lifted as a shadowed card at the card corner.
 
 export type Surface = "default" | "bordered" | "floating";
 
 // =============================================================================
-// Web: the established Canvas look (lifted verbatim from the original file).
+// Web: the 72px bar.
 // =============================================================================
 
 export const webSkin: NavbarSkin = {
@@ -126,15 +126,16 @@ export const iosSkin: NavbarSkin = {
     return { backgroundColor: tokens.background };
   },
   // default: a 1px hairline bottom separator only (no shadow). bordered keeps the
-  // rounded outline; floating lifts a light card (HIG keeps elevation subtle).
+  // rounded outline at the card corner; floating lifts a light card (HIG keeps
+  // elevation subtle).
   surfaceContainer(tokens, surface) {
     switch (surface) {
       case "default":
         return { borderBottomWidth: 1, borderColor: tokens.border };
       case "bordered":
-        return { borderRadius: 10, borderWidth: 1, borderColor: tokens.border };
+        return { borderRadius: shape.ios.card, borderWidth: 1, borderColor: tokens.border };
       case "floating":
-        return { borderRadius: 10, borderWidth: 1, borderColor: tokens.border, ...shadow("sm", tokens) };
+        return { borderRadius: shape.ios.card, borderWidth: 1, borderColor: tokens.border, ...shadow("sm", tokens) };
     }
   },
 
@@ -214,9 +215,9 @@ export const androidSkin: NavbarSkin = {
       case "default":
         return {}; // flat, no hairline; the background fill carries the bar
       case "bordered":
-        return { borderRadius: 12, borderWidth: 1, borderColor: tokens.border };
+        return { borderRadius: shape.android.card, borderWidth: 1, borderColor: tokens.border };
       case "floating":
-        return { borderRadius: 12, ...shadow("md", tokens) };
+        return { borderRadius: shape.android.card, ...shadow("md", tokens) };
     }
   },
 

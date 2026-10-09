@@ -766,9 +766,13 @@ export type PlatformKey = "web" | "ios" | "android";
  * `dialog` a dialog or alert dialog; `menu` a menu, popover, or select list;
  * `sheet` a sheet, drawer, or app shell; `checkbox` the box of a checkbox; `pill`
  * a chip, badge, or capsule; `tile` an icon tile, a swatch, or an alert banner.
- * tools/tokens/shape-roles.ts lists the skins that draw each role per platform, and
- * test/design-rules-shape.test.ts holds them to these values. The web row is mirrored as
- * `--radius-*` in styles/tokens/radius.css.
+ * The roles only one platform or only the kit draws (a Material 3 chip, the iOS action
+ * sheet, a keycap) are the rest of each platform's row, the kit-internal `platformShape`
+ * (src/style/platform-shape.ts). tools/tokens/shape-roles.ts lists the skins that draw
+ * each role per platform and the roles each component plays, and
+ * test/design-rules-shape.test.ts holds every corner in the kit to the row of the platform
+ * its skin draws: a role its component plays, the pill (9999), square (0), or concentric
+ * with its container. The web row is mirrored as `--radius-*` in styles/tokens/radius.css.
  */
 export interface ShapeTokens {
   control: number;
@@ -779,7 +783,7 @@ export interface ShapeTokens {
   sheet: number;
   checkbox: number;
   pill: number;
-  /** A tile: a KPI card, a stat tile, an icon tile; tighter than a content card. */
+  /** A tile: an icon tile, a swatch, an alert banner; tighter than a content card. */
   tile: number;
 }
 

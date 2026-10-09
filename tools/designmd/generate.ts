@@ -34,6 +34,8 @@ import {
   type PlatformKey,
 } from "../tokens/css-tokens.ts";
 import { SKIN_FAMILIES } from "../tokens/skin-families.ts";
+import { COMPONENT_ROLES } from "../tokens/shape-roles.ts";
+import { platformShape } from "../../src/style/platform-shape.ts";
 import {
   breakpoints,
   darkColors,
@@ -211,6 +213,26 @@ function shapeTable(): string {
   ].join("\n");
 }
 
+/** Each platform's own roles, read from `platformShape` (src/style/platform-shape.ts). */
+function platformShapeTable(): string {
+  const rows = (["web", "ios", "android"] as PlatformKey[]).flatMap((platform) =>
+    Object.entries(platformShape[platform] as Record<string, number>).map(([role, value]) => `| ${platform} | \`${role}\` | ${value}px |`),
+  );
+  return ["| Platform | Role | Corner |", "| --- | --- | --- |", ...rows].join("\n");
+}
+
+/** The components that draw each role, read from COMPONENT_ROLES (the shape gate holds the skins to it). */
+function shapeRolesTable(): string {
+  const roles = [...Object.keys(shape.web), ...new Set(Object.values(platformShape).flatMap((row) => Object.keys(row)))];
+  const drawers = (role: string) =>
+    Object.entries(COMPONENT_ROLES)
+      .filter(([, played]) => played.includes(role))
+      .map(([component]) => component)
+      .sort();
+  const rows = [...new Set(roles)].map((role) => `| \`${role}\` | ${drawers(role).map((c) => `\`${c}\``).join(", ")} |`);
+  return ["| Role | Drawn by |", "| --- | --- |", ...rows].join("\n");
+}
+
 function elevationTable(): string {
   const rows = Object.entries(elevation()).map(([name, value]) => `| \`${name}\` | \`${value}\` |`);
   return ["| Level | Value |", "| --- | --- |", ...rows].join("\n");
@@ -278,6 +300,8 @@ const BLOCKS: Record<string, string> = {
   typography: typeTable(),
   spacing: spacingLine(),
   shapes: shapeTable(),
+  "platform-shapes": platformShapeTable(),
+  "shape-roles": shapeRolesTable(),
   elevation: elevationTable(),
   motion: motionTable(),
 };

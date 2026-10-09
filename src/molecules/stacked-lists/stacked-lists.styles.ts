@@ -1,5 +1,6 @@
 import { type ViewStyle, type TextStyle } from "react-native";
 import { type ColorTokens, shadow, surfaceRipple, shape } from "../../style/index.js";
+import { platformShape } from "../../style/platform-shape.js";
 
 // Co-located StackedList skins, one per platform. StackedList is a "Light"
 // treatment: identical structure and semantic colors (those live in
@@ -8,11 +9,10 @@ import { type ColorTokens, shadow, surfaceRipple, shape } from "../../style/inde
 // survives on every platform (the primary token and the type stay the same);
 // only the native shape/sizing/feedback change.
 //
-//   Web: the established Canvas look, lifted verbatim. A rounded-lg (8) bordered
-//     card with shadow-sm; rows px-5 py-3 (20/12); a full-width 1px hairline
-//     between ruled rows; text-sm/font-medium name + text-xs muted detail; a
-//     14/600 header title; the overflow menu rounded-md (6). Press = the accent
-//     surface (no opacity dim, no ripple), matching the current web behavior.
+//   Web: a bordered card at the card corner with the default shadow; rows 20/12
+//     padded; a full-width 1px hairline between ruled rows; a 14/500 name + 12 muted
+//     detail; a 16/500 header title; the overflow menu at the control corner. Press =
+//     the accent surface (no opacity dim, no ripple).
 //   iOS (SF / HIG inset-grouped list, iOS 27 kit Lists/Rows/Large): a 26-radius
 //     card with the continuous (superellipse) corner curve, FLAT and BORDERLESS
 //     (the iOS 27 grouped Table View is fill-differentiated, not outlined, and
@@ -22,8 +22,8 @@ import { type ColorTokens, shadow, surfaceRipple, shape } from "../../style/inde
 //     iOS), plus an accent press surface AND a press-opacity dim (~0.8); SF type
 //     (name Title 17/22 regular -0.43, subtitle 15/18 regular -0.24, trailing
 //     detail 17/22 regular -0.43); a 15/600 header title -0.24; the drilldown
-//     chevron is an SF semibold 17/22 tertiary glyph; overflow menu rounded-md
-//     (6) with a 44pt hitSlop target.
+//     chevron is an SF semibold 17/22 tertiary glyph; overflow menu at the web's
+//     control corner with a 44pt hitSlop target.
 //   Android (Material 3 list / card): a 12-radius bordered card, FLAT (no shadow,
 //     M3 outlined card); the two-line list item is a FIXED 72dp row (M3 lists
 //     token); a full-width hairline divider; M3 body type with M3 tracking
@@ -114,10 +114,10 @@ const MENU: ViewStyle = {
   backgroundColor: "transparent",
 };
 
-// ---------- Web: the established Canvas look (lifted verbatim) ----------
-// rounded-lg (8) border bg-card shadow-sm; rows px-5 py-3 (20/12); a full-width
-// 1px hairline; text-sm/font-medium name + text-xs muted detail; 14/600 header;
-// overflow menu rounded-md (6). Press = the accent surface.
+// ---------- Web: the bordered card ----------
+// the card corner, a border on the card fill, the default shadow; rows 20/12 padded; a
+// full-width 1px hairline; 14/500 name + 12 muted detail; 16/500 header; overflow menu
+// at the control corner. Press = the accent surface.
 export const webSkin: StackedListSkin = {
   cardSurface: (t) => ({
     borderRadius: shape.web.card,
@@ -145,7 +145,7 @@ export const webSkin: StackedListSkin = {
   headerTitle: (t) => ({ fontSize: 16, lineHeight: 24, fontWeight: "500", color: t.foreground }),
   chevronGlyph: (t) => ({ fontSize: 12, lineHeight: 16, color: t["muted-foreground"] }),
   chevronIcon: null,
-  menuButton: { ...MENU, borderRadius: 10 },
+  menuButton: { ...MENU, borderRadius: shape.web.control },
   menuHitSlop: 0,
   pressedOpacity: null,
   ripple: null,
@@ -160,7 +160,7 @@ export const webSkin: StackedListSkin = {
 // SF type: Title 17/22 regular (letter-spacing Auto -> -0.43), subtitle 15/18
 // regular (-0.24), trailing detail 17/22 regular (-0.43). Press = the accent
 // surface plus an opacity dim (~0.8), the iOS row highlight.
-const IOS_RADIUS = 26;
+const IOS_RADIUS = platformShape.ios.groupedList;
 const IOS_ROW_HEIGHT = 68;
 // Separators inset past the leading avatar (avatar default 40 + the 16 row gap +
 // the 16 leading padding = 72), so the rule starts at the text column.
@@ -191,7 +191,8 @@ export const iosSkin: StackedListSkin = {
   // The iOS 27 kit row chevron: SF semibold 17/22, tertiary (muted) color.
   chevronGlyph: (t) => ({ fontSize: 17, lineHeight: 22, fontWeight: "600", letterSpacing: -0.43, color: t["muted-foreground"] }),
   chevronIcon: null,
-  menuButton: { ...MENU, borderRadius: 6 },
+  // The iOS control corner: a circle on the 28pt box.
+  menuButton: { ...MENU, borderRadius: shape.ios.control },
   // 28pt box + 8pt each side = a 44pt HIG-minimum touch target.
   menuHitSlop: 8,
   pressedOpacity: 0.8,
