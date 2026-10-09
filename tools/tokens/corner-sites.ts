@@ -72,13 +72,15 @@ export interface CornerValue {
   sets: CornerPlace[];
   /**
    * Every place that draws the corner, with the platform it draws it on. A corner set in a
-   * skin is drawn by that skin. One set in a style constant or helper no platform names (a
-   * `const EDIT = { borderRadius: ... }` spread into a skin's field, a `menuCard()` a skin
-   * calls, a number constant a skin reads) is drawn by every place that uses it, followed
-   * until a platform's name or shared code: so a native skin cannot draw another platform's
-   * row by reading it through a neutral name. A corner set in a shell is drawn where its
-   * number is written (the skin field the shell reads); one a shell writes itself is shared
-   * code.
+   * skin is drawn by that skin. One set in a constant, helper or component no platform names
+   * (a `const EDIT = { borderRadius: ... }` spread into a skin's field, a `menuCard()` a skin
+   * calls, a number constant a skin reads, a component an entry renders), in any module, is
+   * drawn by every place that uses it, followed until a platform's name or shared code: so a
+   * native skin cannot draw another platform's row by reading it through a neutral name,
+   * wherever that name is declared. Shared code is a shell's own code (a function the
+   * entries build a component with by handing it a skin) and what only shared code uses. A
+   * corner a shell or helper is handed (the skin field a shell reads, a prop) is drawn where
+   * its number is written.
    */
   drawn: DrawnPlace[];
 }
@@ -116,12 +118,14 @@ export function platformOf(place: { file: string; path: string }): PlatformKey |
 }
 
 /**
- * The style modules: a component's `.styles.ts(x)` and src/style/. A constant or helper
- * written there with no platform in its name is a part some skin or shell uses, so the
- * places that use it say where it is drawn. Anything else without a platform's name (a
- * shell, a component, an entry with no platform suffix) is code every platform runs.
+ * The style modules: a component's `.styles.ts(x)` (its skins and their parts) and
+ * src/style/. A call written there builds a style, never a component, whatever it is
+ * handed (see `buildsWithASkin`).
  */
 const STYLE_MODULE = /\.styles\.tsx?$|^src\/style\//;
+
+/** A skin module: a component's `.styles.ts(x)`, which exports its platforms' skins. */
+const SKIN_MODULE = /\.styles\.tsx?$/;
 
 const PLATFORMS = new Set<string>(Object.keys(shape));
 const RADIUS = radius as Record<string, number>;
@@ -243,12 +247,14 @@ export class CornerSites extends SourceFolder {
       const set = this.place(s.node, s.sf);
       let places = [set];
       if (!set.platform) {
-        // A helper that rounds whatever corner it is handed (`capsule(radius)`) draws it for
-        // the caller that hands it, so the number's own place says where; so does a shell.
+        // A function that rounds whatever corner it is handed (a helper's `capsule(radius)`,
+        // a shell's `skin.radius`, a component's `radius` prop) draws it for the caller that
+        // hands it, so the number's own place says where. A corner written where it is set
+        // is drawn by every place that uses that code.
         const helper = this.topDeclarationOf(s.node, s.sf);
         const written = this.topDeclarationOf(o.node, o.sf);
         const handed = helper !== null && isFunction(helper.node) && written?.node !== helper.node;
-        places = !STYLE_MODULE.test(s.sf.fileName) || handed ? this.placesOf(o.node, o.sf, new Set()) : this.placesOf(s.node, s.sf, new Set());
+        places = handed ? this.placesOf(o.node, o.sf, new Set()) : this.placesOf(s.node, s.sf, new Set());
       }
       for (const place of places) out.set(`${place.file}:${place.at}`, place);
     }
@@ -286,17 +292,51 @@ export class CornerSites extends SourceFolder {
     return named;
   }
 
-  /** Where a place in the source draws: its platform's name, shared code, or every place that uses its style constant. */
+  /**
+   * Where a place in the source draws: its platform's name; else every place that uses the
+   * module-level const or function it is written in, in whatever module, followed the same
+   * way. The places that end the walk as shared code are a shell's own code (a function a
+   * platform entry or another shell builds a component with by handing it a skin, which
+   * runs on every platform with the skin it is handed), code no module-level declaration
+   * holds, and a declaration nothing in the scan uses (a public export only the app uses).
+   */
   private placesOf(node: ts.Node, sf: ts.SourceFile, chain: Set<ts.Node>): DrawnPlace[] {
     const here = this.place(node, sf);
-    if (here.platform || !STYLE_MODULE.test(sf.fileName)) return [here];
+    if (here.platform) return [here];
     const decl = this.topDeclarationOf(node, sf);
     if (!decl) return [here];
     if (chain.has(decl.node)) return [];
     const uses = this.referencesTo(decl);
     if (uses.length === 0) return [here];
     const next = new Set(chain).add(decl.node);
-    return uses.flatMap((use) => this.placesOf(use.node, use.sf, next));
+    return uses.flatMap((use) => (this.buildsWithASkin(use.node, use.sf) ? [here] : this.placesOf(use.node, use.sf, next)));
+  }
+
+  /**
+   * Whether a use of a function builds a component with it by handing it a skin: the
+   * function is called, outside the style modules, with a skin among its arguments (a skin
+   * module's exported `*Skin`, an object spreading one, or a shell's own `skin` handed on to
+   * a part it builds). That is how a platform entry makes its component from a shell
+   * (`createCheckbox(iosSkin, parts)`), so the function is a shell and its own code is
+   * shared by every platform. A call in a style module is a skin calling a helper, which
+   * draws for that skin.
+   */
+  private buildsWithASkin(id: ts.Identifier, sf: ts.SourceFile): boolean {
+    if (STYLE_MODULE.test(sf.fileName)) return false;
+    const callee = ts.isPropertyAccessExpression(id.parent) && id.parent.name === id ? id.parent : id;
+    const call = callee.parent;
+    if (!ts.isCallExpression(call) || call.expression !== callee) return false;
+    return call.arguments.some((arg) => this.isSkin(arg, sf));
+  }
+
+  /** Whether an expression is a platform's skin (see `buildsWithASkin`). */
+  private isSkin(expr: ts.Expression, sf: ts.SourceFile): boolean {
+    const node = unwrap(expr);
+    if (ts.isObjectLiteralExpression(node)) return node.properties.some((p) => ts.isSpreadAssignment(p) && this.isSkin(p.expression, sf));
+    if (!ts.isIdentifier(node)) return false;
+    const decl = this.resolve(node, sf);
+    if (decl?.kind === "param") return ts.isIdentifier(decl.node.name) && decl.node.name.text === "skin";
+    return decl?.kind === "var" && ts.isIdentifier(decl.node.name) && /Skin$/.test(decl.node.name.text) && SKIN_MODULE.test(decl.sf.fileName);
   }
 
   protected sinkOf(node: ts.Node): ts.Expression | null {

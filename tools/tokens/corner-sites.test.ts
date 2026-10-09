@@ -146,6 +146,84 @@ export const androidSkin = {
 };
 `,
   );
+  // The same, through modules that are no style module: a component's own parts module, its
+  // shell, and a component of its own beside them.
+  write(
+    "src/atoms/z/z-parts.ts",
+    `
+import { shape } from "../../style/index.js";
+export const EDIT_SHAPE = { borderRadius: shape.web.field };
+export function actionShape() {
+  return { borderRadius: shape.web.control };
+}
+`,
+  );
+  write(
+    "src/atoms/z/z.styles.ts",
+    `
+import { shape } from "../../style/index.js";
+import { EDIT_SHAPE, actionShape } from "./z-parts.js";
+import { shellHelper } from "./z.shared.js";
+const iosBaseSkin = {};
+function rowWith(skin: unknown) {
+  return { borderRadius: shape.web.control };
+}
+export const webSkin = { radius: shape.web.card };
+export const iosSkin = {
+  radius: shape.ios.card,
+  edit: { ...EDIT_SHAPE },
+  action: actionShape(),
+  helper: shellHelper(),
+  row: rowWith(iosBaseSkin),
+};
+`,
+  );
+  write(
+    "src/atoms/z/z.shared.tsx",
+    `
+import { shape } from "../../style/index.js";
+import { Frame } from "./z-frame.js";
+export function createZ(skin: { radius: number }) {
+  return function Z() {
+    return (
+      <>
+        <View style={{ borderRadius: skin.radius }} />
+        <View style={{ borderRadius: shape.web.control }} />
+        <Frame />
+      </>
+    );
+  };
+}
+export function shellHelper() {
+  return { borderRadius: shape.web.menu };
+}
+`,
+  );
+  write(
+    "src/atoms/z/z-frame.tsx",
+    `
+import { shape } from "../../style/index.js";
+export function Frame() {
+  return <View style={{ borderRadius: shape.web.tile }} />;
+}
+export function EntryFrame() {
+  return <View style={{ borderRadius: shape.web.sheet }} />;
+}
+`,
+  );
+  write("src/atoms/z/z.tsx", `import { createZ } from "./z.shared.js";\nimport { webSkin } from "./z.styles.js";\nexport const Z = createZ(webSkin);\n`);
+  write(
+    "src/atoms/z/z.ios.tsx",
+    `import { createZ } from "./z.shared.js";
+import { iosSkin } from "./z.styles.js";
+import { EntryFrame } from "./z-frame.js";
+export const Z = createZ(iosSkin);
+export const Roomy = createZ({ ...iosSkin, gap: 6 });
+export function Extra() {
+  return <EntryFrame />;
+}
+`,
+  );
 });
 
 afterAll(() => rmSync(root, { recursive: true, force: true }));
@@ -261,6 +339,42 @@ describe("where a corner is drawn", () => {
       expect(!result.ok && result.reason, path).toContain("another platform's row: it draws ios");
     }
     expect(!verdict(values, "EDIT_CORNER").ok && (verdict(values, "EDIT_CORNER") as { reason: string }).reason).toContain("src/atoms/y/y.styles.ts:25 iosSkin.edit draws shape.web.field");
+  });
+
+  const scanZ = () =>
+    new CornerSites(root).scan(["src/atoms/z/z-parts.ts", "src/atoms/z/z.styles.ts", "src/atoms/z/z.shared.tsx", "src/atoms/z/z-frame.tsx", "src/atoms/z/z.tsx", "src/atoms/z/z.ios.tsx"]).values;
+  const rolesZ = { "atoms/z": ["control", "field", "menu", "tile", "sheet", "card"] };
+
+  it("follows a constant or helper in any module, not only a style module, to the skins that use it", () => {
+    const values = scanZ();
+    // A style object and a helper in the component's own parts module, a helper in its
+    // shell module, and a style-module helper handed a skin by the iOS skin itself.
+    expect(drawnBy(values, "EDIT_SHAPE")).toEqual(["ios iosSkin.edit"]);
+    expect(drawnBy(values, "actionShape")).toEqual(["ios iosSkin.action"]);
+    expect(drawnBy(values, "shellHelper")).toEqual(["ios iosSkin.helper"]);
+    expect(drawnBy(values, "rowWith")).toEqual(["ios iosSkin.row"]);
+    for (const path of ["EDIT_SHAPE", "actionShape", "shellHelper", "rowWith"]) {
+      const result = cornerVerdict(one(values, path), { roles: rolesZ });
+      expect(result.ok, path).toBe(false);
+      expect(!result.ok && result.reason, path).toContain("another platform's row: it draws ios");
+    }
+  });
+
+  it("follows a component to where it is rendered: a shell's code is shared, a platform entry's is its platform's", () => {
+    const values = scanZ();
+    // The shell's own corner, and a component only the shell renders, are drawn by code
+    // every platform runs (each entry builds the component by handing the shell its skin,
+    // a skin spread into an object included); a component only the iOS entry renders is
+    // drawn on iOS.
+    expect(drawnBy(values, "createZ")).toEqual(["shared createZ"]);
+    expect(drawnBy(values, "Frame")).toEqual(["shared createZ"]);
+    expect(drawnBy(values, "EntryFrame")).toEqual(["ios Extra"]);
+    expect(cornerVerdict(one(values, "createZ"), { roles: rolesZ }).ok).toBe(true);
+    expect(cornerVerdict(one(values, "Frame"), { roles: rolesZ }).ok).toBe(true);
+    const entryOnly = cornerVerdict(one(values, "EntryFrame"), { roles: rolesZ });
+    expect(!entryOnly.ok && entryOnly.reason).toContain("src/atoms/z/z.ios.tsx:7 Extra draws shape.web.sheet");
+    // A corner a shell is handed is the skin's, where the skin writes it.
+    expect(drawnBy(values, "iosSkin.radius")).toEqual(["ios iosSkin.radius"]);
   });
 
   it("refuses a web skin drawing a native row through a constant named for the platform", () => {
