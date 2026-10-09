@@ -2,24 +2,31 @@ import { describe, it, expect, afterEach } from "bun:test";
 import { render, cleanup, screen } from "@testing-library/react";
 import { createElement, type ReactNode } from "react";
 import { Text } from "react-native";
+import { join } from "node:path";
+import { Glob } from "bun";
 import { ThemeProvider } from "../src/style/theme.tsx";
 
-// Skin smoke test — the ONLY layer that loads the per-OS *.ios.tsx / *.android.tsx
-// skin files. Every other suite imports the base `<name>.tsx` (the web build), so a
-// skin that references a missing token, mis-shapes a StyleSheet, or throws at render
-// on iOS or Android alone would ship untested. Here we dynamically import BOTH the
-// iOS and the Android build of every skinned component and render each once inside
-// ThemeProvider, asserting the export exists and the mount does not throw.
+// Skin smoke test: the floor every per-OS entry (*.ios.tsx / *.android.tsx) is held to.
+// Many component suites load their native entries for behaviour (phone-input,
+// checkbox-idiom, the touch-target and focus suites, ...), but each covers its own
+// component; this table mounts EVERY component a platform entry exports, so a skin that
+// references a missing token, mis-shapes a StyleSheet, or throws at render on iOS or
+// Android alone fails here even when no behaviour test loads it. Each row runs on the
+// web build too. The guard at the bottom keeps the table complete: a component exported
+// from a platform entry with no row (a new export, or a re-export such as BadgeGroup
+// or the Card parts) fails it.
 //
 // Data-driven: one row per exported component, keyed by its directory + file base +
 // export name, with the minimal props needed to render its body. We import the skin
-// file by a variable path (../src/<dir>/<file>.<platform>.tsx) — bun resolves the
+// file by a variable path (../src/<dir>/<file>.<platform>.tsx); bun resolves the
 // react-native -> react-native-web alias transitively through the dynamic import,
-// exactly as the static suites get it — and render with React.createElement so a
-// single loop covers ~130 mounts without hand-writing each JSX case.
+// exactly as the static suites get it, and renders with React.createElement so a
+// single loop covers every mount without hand-writing each JSX case.
 //
-// Deliberately NOT covered here: `useToast` (a hook, not a renderable component — it
-// is exercised via ToastProvider below and in components-extra.test.tsx). StackedBar,
+// Deliberately NOT a row: `useToast` (a hook, not a renderable component; it is
+// exercised via ToastProvider below and in components-extra.test.tsx), and the
+// helpers and constants the entries re-export beside their components (gridColumns,
+// FLUID, PHONE_COUNTRIES), which the guard does not count as components. StackedBar,
 // Gauge, and Heatmap live in the platform-neutral charts-viz.tsx but are re-exported
 // from the charts skin files, so importing them through the skin still loads and
 // mounts them per platform.
@@ -77,6 +84,18 @@ const CASES: SkinCase[] = [
     },
   },
   { name: "Badge", dir: "atoms/badge", file: "badge", children: "New" },
+  {
+    // Layout-only and re-exported unchanged, but it is the platform entry's export, so a
+    // dropped re-export on one platform fails here.
+    name: "BadgeGroup",
+    dir: "atoms/badge",
+    file: "badge",
+    props: { accessibilityLabel: "Roles" },
+    children: (mod) => [
+      createElement(mod.Badge as never, { key: "a" }, "Admin"),
+      createElement(mod.Badge as never, { key: "b", success: true }, "Active"),
+    ],
+  },
   { name: "Breadcrumb", dir: "atoms/breadcrumb", file: "breadcrumb", props: { items: ["Home", "Library", "Data"] } },
   { name: "BreadcrumbItem", dir: "atoms/breadcrumb", file: "breadcrumb", props: { current: true }, children: "Home" },
   { name: "ButtonGroup", dir: "atoms/button-group", file: "button-group", props: { items: ["Day", "Week", "Month"], active: 0 } },
@@ -93,6 +112,21 @@ const CASES: SkinCase[] = [
   { name: "Kbd", dir: "atoms/kbd", file: "kbd", children: "K" },
   { name: "Row", dir: "atoms/layout", file: "layout", children: txt("row") },
   { name: "Column", dir: "atoms/layout", file: "layout", children: txt("col") },
+  // A capped, padded measure, so the step and the gutter both read the native skin.
+  { name: "Container", dir: "atoms/container", file: "container", props: { sm: true, pad: true }, children: txt("Contained") },
+  {
+    // A tile floor and a column cap, with one wide tile, so the measured cells mount.
+    name: "Grid",
+    dir: "atoms/grid",
+    file: "grid",
+    props: { minTileWidth: 160, columns: 3 },
+    children: (mod) => [
+      createElement(mod.GridItem as never, { key: "a" }, txt("Tile A")),
+      createElement(mod.GridItem as never, { key: "b", wide: true }, txt("Tile B")),
+      createElement(mod.GridItem as never, { key: "c" }, txt("Tile C")),
+    ],
+  },
+  { name: "GridItem", dir: "atoms/grid", file: "grid", children: txt("Lone tile") },
   { name: "Listbox", dir: "atoms/listbox", file: "listbox", props: { items: [{ label: "One", selected: true }, { label: "Two" }] } },
   { name: "Listbox", label: "Listbox multi", dir: "atoms/listbox", file: "listbox", props: { multi: true, accessibilityLabel: "Teams", items: [{ label: "One", selected: true }, { label: "Two" }] } },
   { name: "Stepper", dir: "atoms/stepper", file: "stepper", props: { value: 3, min: 0, max: 10, onChange: noop } },
@@ -136,6 +170,34 @@ const CASES: SkinCase[] = [
   { name: "AlertDialog", dir: "molecules/alert-dialog", file: "alert-dialog", props: { open: true, title: "Are you sure?", description: "This deletes the record.", confirmLabel: "Delete", cancelLabel: "Cancel" } },
   { name: "Alert", dir: "molecules/alert", file: "alert", props: { title: "Heads up", description: "Your trial ends soon.", info: true } },
   { name: "Card", dir: "molecules/card", file: "card", props: { title: "Card", description: "Subtitle", body: "Body copy", footer: "Footer" } },
+  // The composition parts, each its own row so a dropped re-export fails per platform,
+  // then all of them composed in a flush Card under the skinned cover.
+  { name: "CardMedia", dir: "molecules/card", file: "card", props: { src: "https://example.com/cover.png", alt: "Cover" } },
+  { name: "CardHeader", dir: "molecules/card", file: "card", children: txt("Header") },
+  { name: "CardTitle", dir: "molecules/card", file: "card", children: "Title" },
+  { name: "CardDescription", dir: "molecules/card", file: "card", children: "Description" },
+  { name: "CardContent", dir: "molecules/card", file: "card", children: txt("Content") },
+  { name: "CardFooter", dir: "molecules/card", file: "card", children: txt("Footer") },
+  { name: "CardSeparator", dir: "molecules/card", file: "card" },
+  {
+    name: "Card",
+    label: "Card composition",
+    dir: "molecules/card",
+    file: "card",
+    props: { flush: true },
+    children: (mod) => [
+      createElement(mod.CardMedia as never, { key: "media", src: "https://example.com/cover.png", alt: "Cover", height: 120 }),
+      createElement(
+        mod.CardHeader as never,
+        { key: "header" },
+        createElement(mod.CardTitle as never, null, "Title"),
+        createElement(mod.CardDescription as never, null, "Description"),
+      ),
+      createElement(mod.CardSeparator as never, { key: "separator" }),
+      createElement(mod.CardContent as never, { key: "content" }, txt("Content")),
+      createElement(mod.CardFooter as never, { key: "footer" }, txt("Footer")),
+    ],
+  },
   { name: "CodeBlock", dir: "molecules/code-block", file: "code-block", props: { code: "const x = 1;\nconsole.log(x);", language: "ts" } },
   // `card` + `description` exercise the card-surface and stacked-label skin
   // fields with an open panel on both native skins.
@@ -148,6 +210,7 @@ const CASES: SkinCase[] = [
   { name: "FormSection", dir: "molecules/form", file: "form", props: { title: "Personal info", description: "Displayed on your profile.", children: "Stitched fields" } },
   { name: "GridList", dir: "molecules/grid-lists", file: "grid-lists", props: { items: [{ title: "Design", subtitle: "12 files" }, { title: "Research", subtitle: "3 files" }] } },
   { name: "MediaObject", dir: "molecules/media-objects", file: "media-objects", props: { title: "Rachel Chen", description: "Product designer", avatar: "RC" } },
+  { name: "PhoneInput", dir: "molecules/phone-input", file: "phone-input", props: { label: "Phone number", defaultCountry: "US" } },
   { name: "StackedList", dir: "molecules/stacked-lists", file: "stacked-lists", props: { items: [{ name: "Ada Lovelace", detail: "ada@acme.dev" }, { name: "Alan Turing", detail: "alan@acme.dev" }] } },
   // Reorderable + trailing mount the per-OS drag grips and the trailing-slot branch.
   {
@@ -358,3 +421,47 @@ for (const platform of PLATFORMS) {
     }
   });
 }
+
+// The completeness guard. A component is an export named like one: a capital letter
+// and at least one lowercase letter, so `QRCode` counts while the constants (FLUID,
+// PHONE_COUNTRIES) and the helpers (gridColumns, useToast) do not. The names are read
+// off each loaded entry, so a re-export (`export { BadgeGroup } from ...`, the Card
+// parts) counts exactly like a component the entry builds itself.
+const ROOT = join(import.meta.dir, "..");
+const PLATFORM_ENTRIES = "src/{atoms,molecules,organisms,charts}/**/*.{ios,android}.tsx";
+const isComponentName = (name: string) => /^[A-Z]/.test(name) && /[a-z]/.test(name);
+
+/** Platform-entry components with no row, keyed `<dir>/<file>#<export>`, each with why. */
+const EXEMPT: Record<string, string> = {
+  "atoms/checkbox/indicator/index#CheckboxIndicator":
+    "an internal part with an Android entry only (no iOS file for a row to load); the Listbox indicator test above mounts it on the web and Android against the platform Checkbox",
+};
+
+async function platformEntryComponents(): Promise<{ key: string; entry: string }[]> {
+  const out: { key: string; entry: string }[] = [];
+  for (const entry of [...new Glob(PLATFORM_ENTRIES).scanSync(ROOT)].sort()) {
+    const mod = (await import(join(ROOT, entry))) as Record<string, unknown>;
+    const base = entry.replace(/^src\//, "").replace(/\.(ios|android)\.tsx$/, "");
+    for (const name of Object.keys(mod).filter(isComponentName)) out.push({ key: `${base}#${name}`, entry });
+  }
+  return out;
+}
+
+describe("every component a platform entry exports has a CASES row", () => {
+  it("finds no platform-entry component without a row or a recorded exemption", async () => {
+    const rows = new Set(CASES.map((c) => `${c.dir}/${c.file}#${c.name}`));
+    const missing = (await platformEntryComponents())
+      .filter(({ key }) => !rows.has(key) && !(key in EXEMPT))
+      .map(({ key, entry }) => `${entry}: ${key.split("#")[1]}`);
+    expect(missing, "add a CASES row (or an EXEMPT entry with its reason) for each").toEqual([]);
+  });
+
+  it("exempts only real platform-entry components that have no row", async () => {
+    const rows = new Set(CASES.map((c) => `${c.dir}/${c.file}#${c.name}`));
+    const found = new Set((await platformEntryComponents()).map(({ key }) => key));
+    for (const key of Object.keys(EXEMPT)) {
+      expect(found.has(key), `${key} is exempted but no platform entry exports it`).toBe(true);
+      expect(rows.has(key), `${key} is exempted but has a row`).toBe(false);
+    }
+  });
+});
