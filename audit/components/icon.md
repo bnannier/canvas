@@ -20,6 +20,7 @@ Audit checklist for `/components/icon`. The facts block and the variants table a
 | Hand-off metric gaps | none |
 | Interactions registry | in the inventory; evidence: none registered |
 | Overlay recipe | none |
+| Interaction states | static: A glyph: it takes no input. |
 | MeasureProps | not adopted |
 | Touch target | no touch-target name (the exports of `src/style/touch-target.ts`, `src/style/touch-target-seed.ts`, `src/style/touch-seam.ts`, `src/style/clip-slop.ts`, the `TouchTargetSkin` fields, or `hitSlop`) in its implementation modules |
 | Tests importing it | 7: `test/design-rules-source.test.ts`, `test/destructive-text.test.tsx`, `test/icon-glyphs.test.ts`, `test/native-focus-fixtures.test.tsx`, `test/pagination-look.test.tsx`, `test/skins-smoke.test.tsx`, `test/toast-look.test.tsx` |

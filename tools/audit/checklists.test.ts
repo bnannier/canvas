@@ -365,6 +365,18 @@ describe.skipIf(!hasDist)("the audit checklists keep a reviewer's work", () => {
     expect(renderComponentFacts(text).join("\n")).toContain("| Implementation | declared in `src/style/text.tsx`, which imports React Native's own `Text`; `src/atoms/text/` holds only its markdown |");
   });
 
+  it("states the interaction states captured, and each static or exempt state with its checked reason", () => {
+    const row = (slug: string) => renderComponentFacts(componentFacts(slug, sources.corpus)).find((line) => line.startsWith("| Interaction states |"));
+    expect(row("heatmap")).toBe("| Interaction states | captured: hover on Calendar (web row; desktop), pressed on Calendar (web row; desktop). |");
+    expect(row("dialog")).toBe("| Interaction states | captured: pressed on Default (web row; desktop), open on Default (web, iOS, Android rows; phone, tablet and desktop). |");
+    expect(row("feeds")).toBe(
+      "| Interaction states | static: An activity list whose rows are read-only in every rail example. pressed exempt, verified: `onItemPress` makes each row a button; no rail example passes it. |",
+    );
+    expect(row("badge")).toBe("| Interaction states | static: A status label: it takes no input. |");
+    const steps = componentFacts("steps", sources.corpus).states;
+    expect(steps).toMatchObject({ listed: true, recipes: [], unanswered: [], exempt: [{ state: "pressed", failure: null }] });
+  });
+
   it("credits every component of the skins smoke test's CASES table, read statically (item 1)", () => {
     // The smoke test mounts each row through one computed import and `mod[c.name]`.
     for (const slug of ["accordion", "board", "chip", "drag-drop", "toast", "row-column", "geo-map"]) {

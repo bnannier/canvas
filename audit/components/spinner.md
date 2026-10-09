@@ -20,6 +20,7 @@ Audit checklist for `/components/spinner`. The facts block and the variants tabl
 | Hand-off metric gaps | none |
 | Interactions registry | in the inventory; evidence: none registered |
 | Overlay recipe | none |
+| Interaction states | static: A loading indicator: it takes no input. |
 | MeasureProps | not adopted |
 | Touch target | no touch-target name (the exports of `src/style/touch-target.ts`, `src/style/touch-target-seed.ts`, `src/style/touch-seam.ts`, `src/style/clip-slop.ts`, the `TouchTargetSkin` fields, or `hitSlop`) in its implementation modules |
 | Tests importing it | 2: `test/skins-smoke.test.tsx`, `test/spinner-accessibility.test.tsx` |

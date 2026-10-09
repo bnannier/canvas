@@ -20,6 +20,7 @@ Audit checklist for `/components/stepper`. The facts block and the variants tabl
 | Hand-off metric gaps | none |
 | Interactions registry | in the inventory; evidence: none registered |
 | Overlay recipe | none |
+| Interaction states | captured: focus on Default (web row; desktop), pressed on Default (web row; desktop), disabled on Disabled (web row; desktop). |
 | MeasureProps | not adopted |
 | Touch target | `stepper.shared.tsx`: hitSlop, rowSeam; `stepper.styles.ts`: hitSlop. `test/touch-target-coverage.test.ts` records it as covered another way: hitSlop on both halves, split where they face the value, which their RippleClips carry on Android; the iOS 32pt group is UIStepper's own size |
 | Tests importing it | 12: `test/a11y-state.test.tsx`, `test/atom-material-feedback.test.tsx`, `test/components-extra.test.tsx`, `test/design-rules-skins.test.ts`, `test/field-focus-layout.test.tsx`, `test/field-focus-states.test.tsx`, `test/skins-smoke.test.tsx`, `test/stepper-a11y.test.tsx`, `test/stepper-decimal.test.tsx`, `test/text-entry-material.test.tsx`, `test/touch-target-clips.test.tsx`, `test/touch-target-seams.test.tsx` |

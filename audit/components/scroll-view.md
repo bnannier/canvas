@@ -20,6 +20,7 @@ Audit checklist for `/components/scroll-view`. The facts block and the variants 
 | Hand-off metric gaps | none |
 | Interactions registry | in the inventory; evidence: none registered |
 | Overlay recipe | none |
+| Interaction states | static: A scroll container whose examples render no tab stop; its keyboard stop and ring, where content overflows, are e2e/behavior/scroll-focus.e2e.ts's. |
 | MeasureProps | not applicable: the kit has no source of its own for it |
 | Touch target | not applicable: the kit has no source of its own for it |
 | Tests importing it | 0: none |

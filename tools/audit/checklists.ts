@@ -184,6 +184,27 @@ function skinLine(platform: "iOS" | "Android", facts: ComponentFacts): string {
   return `${platform}: ${parts.join("; ")}`;
 }
 
+const ROW_NAMES: Record<string, string> = { web: "web", ios: "iOS", android: "Android" };
+
+/** The interaction states the audit captures for a component, and the ones it exempts or calls static, with their reasons. */
+function statesLine(facts: ComponentFacts): string {
+  const states = facts.states;
+  if (!states.listed) return "not in the state table (`e2e/support/state-recipes.ts` lists the interaction registry's components)";
+  const parts: string[] = [];
+  if (states.recipes.length) {
+    parts.push(
+      `captured: ${states.recipes
+        .map((r) => `${r.state} on ${r.label} (${r.rows.map((row) => ROW_NAMES[row] ?? row).join(", ")} ${r.rows.length > 1 ? "rows" : "row"}; ${r.widths === "all" ? "phone, tablet and desktop" : "desktop"})`)
+        .join(", ")}`,
+    );
+  }
+  if (states.static !== null) parts.push(`static: ${states.static}`);
+  for (const e of states.exempt) parts.push(`${e.state} exempt, ${e.failure === null ? "verified" : `NOT verified (${e.failure})`}: ${e.reason}`);
+  if (states.unanswered.length) parts.push(`given by its source with neither a recipe nor an exemption: ${states.unanswered.join(", ")}`);
+  // Each part is a sentence; the reasons bring their own full stops.
+  return parts.map((part) => (/[.!?]$/.test(part) ? part : `${part}.`)).join(" ");
+}
+
 /** The lines of a component's facts block, between the markers. */
 export function renderComponentFacts(facts: ComponentFacts): string[] {
   const rows: [string, string][] = [
@@ -225,6 +246,7 @@ export function renderComponentFacts(facts: ComponentFacts): string[] {
       }`,
     ],
     ["Overlay recipe", facts.overlayRecipe ? `yes (${facts.overlayRecipe.role})` : "none"],
+    ["Interaction states", statesLine(facts)],
     ["MeasureProps", !facts.implementation.modules.length ? NO_SOURCE : facts.measureProps.length ? `adopted in ${list(facts.measureProps)}` : "not adopted"],
     ["Touch target", touchTargetLine(facts)],
     ["Tests importing it", `${facts.tests.length}: ${list(facts.tests)}`],

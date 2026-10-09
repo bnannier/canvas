@@ -20,6 +20,7 @@ Audit checklist for `/components/container`. The facts block and the variants ta
 | Hand-off metric gaps | none |
 | Interactions registry | in the inventory; evidence: none registered |
 | Overlay recipe | none |
+| Interaction states | static: A layout primitive: it renders no control of its own (the controls in its examples are kit components with recipes of their own). |
 | MeasureProps | adopted in `container.shared.tsx` |
 | Touch target | no touch-target name (the exports of `src/style/touch-target.ts`, `src/style/touch-target-seed.ts`, `src/style/touch-seam.ts`, `src/style/clip-slop.ts`, the `TouchTargetSkin` fields, or `hitSlop`) in its implementation modules |
 | Tests importing it | 4: `test/design-rules-skins.test.ts`, `test/layout-responsive.test.tsx`, `test/layout-spans.test.tsx`, `test/sizing.test.tsx` |

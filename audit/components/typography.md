@@ -20,6 +20,7 @@ Audit checklist for `/components/typography`. The facts block and the variants t
 | Hand-off metric gaps | none |
 | Interactions registry | in the inventory; evidence: none registered |
 | Overlay recipe | none |
+| Interaction states | static: Text styles: no rail example makes the text a link or gives it a press, so none takes input. focus exempt, verified: `href` makes the text a link (a tab stop); no rail example passes it: typography.md's Inline links (href) fence follows Do & Don't, which the docs page does not render, so the link example is not on the page at all. pressed exempt, verified: `onPress` makes the text pressable; no rail example passes it. |
 | MeasureProps | not adopted |
 | Touch target | no touch-target name (the exports of `src/style/touch-target.ts`, `src/style/touch-target-seed.ts`, `src/style/touch-seam.ts`, `src/style/clip-slop.ts`, the `TouchTargetSkin` fields, or `hitSlop`) in its implementation modules |
 | Tests importing it | 14: `test/action-role.test.tsx`, `test/design-rules-skins.test.ts`, `test/destructive-text.test.tsx`, `test/df-type-scale.test.ts`, `test/fonts.test.tsx`, `test/layout-responsive.test.tsx`, `test/native-carousel-fixture.test.tsx`, `test/native-focus-fixtures.test.tsx`, `test/new-components.test.tsx`, `test/primary-text.test.tsx`, `test/prop-table.test.tsx`, `test/skins-smoke.test.tsx`, `test/text-contrast.test.tsx`, `test/typography-leading.test.tsx` |

@@ -35,14 +35,17 @@ import { dirname, isAbsolute, join, relative, resolve, sep } from "node:path";
 import ts from "typescript";
 import { COMPONENTS } from "../../docs/src/core/data/components.ts";
 import type { Category } from "../../docs/src/core/data/types.ts";
-import { ROOT, componentDocPath } from "../../e2e/support/routes.ts";
+import { ROOT, componentDocPath, variantSlug } from "../../e2e/support/routes.ts";
 import { MATERIAL_OVERLAY_RECIPES, TOAST_RECIPE } from "../../e2e/support/overlay-recipes.ts";
+import { STATE_RECIPES, recipesOf } from "../../e2e/support/state-recipes.ts";
 import { KIND_LABEL, compareCheckout, isGap, redirectTargets } from "../handoff-parity/compare.ts";
 import { evidence as interactionEvidence, inventory as interactionInventory } from "../interactions/registry.ts";
 import { materialCoverage } from "../materials/manifest.ts";
 import { componentSkins, hasPlatformBuilds, resolveSource, traceExport, type ComponentSkins, type Platform as SkinPlatform } from "../skins/divergence.ts";
 import { registeredSkins } from "../skins/registry.ts";
 import { ModuleGraph, NOT_HANDLED, PathUnder, resolveModule, within, type Intercept } from "./hosts.ts";
+import { SignalReader } from "./interaction-signals.ts";
+import { componentSignals, coverageOf, railExamples } from "./state-coverage.ts";
 import { pageModule, pageSections, type InventoryPage } from "./inventory.ts";
 import { StaticReader, isValueRead, outermost, unwrap, type Binding } from "./static-eval.ts";
 import { catalogIntercept, insideFunctionNamed, navigationRoute, readSweeps, type Sweep } from "./sweeps.ts";
@@ -146,6 +149,20 @@ export interface SweepFact {
   catalogs: string[];
 }
 
+/** A component's interaction states in the state table (e2e/support/state-recipes.ts), and how the table answers the states its source gives it (tools/audit/state-coverage.ts). */
+export interface StatesFact {
+  /** Whether the table has an entry (it lists exactly the interaction registry's components). */
+  listed: boolean;
+  /** The states captured: the example (variant key and rail label), the rows and the widths. */
+  recipes: { state: string; variant: string; label: string; rows: string[]; widths: "desktop" | "all" }[];
+  /** Why it has no state of its own, when the table says so. */
+  static: string | null;
+  /** States its source gives that the table exempts, each with its reason and why the claim fails (null: it holds). */
+  exempt: { state: string; reason: string; failure: string | null }[];
+  /** States its source gives with neither a recipe nor an exemption. */
+  unanswered: string[];
+}
+
 export interface ComponentFacts {
   slug: string;
   name: string;
@@ -173,6 +190,8 @@ export interface ComponentFacts {
   interactions: { inInventory: boolean; evidence: { id: string; layer: string; file: string; test: string }[] };
   /** The e2e overlay recipe that opens it, when one exists. */
   overlayRecipe: { role: string } | null;
+  /** Its interaction states: what the audit captures, and what it exempts with a verified reason. */
+  states: StatesFact;
   /**
    * The test files under test/ (the files `bun test` runs, `*.test.ts(x)`) importing it
    * from the kit, themselves or through the support modules they reach under test/ (see
@@ -839,6 +858,8 @@ export interface FactsCorpus {
   touchVocabulary: string[];
   /** The coverage test's record of each pressable component that declares no `minTarget`, by `<group>/<dir>` (see `touchTargetRecords`). */
   touchRecords: Map<string, TouchTargetRecord>;
+  /** Reads the interaction signals of a component's source (tools/audit/interaction-signals.ts). */
+  signals: SignalReader;
 }
 
 /** The modules `bun test` preloads into every test (bunfig.toml: the top level and `[test]`), repo-relative. */
@@ -1030,6 +1051,23 @@ export function loadCorpus(root = ROOT): FactsCorpus {
     testingRoutes: harness,
     touchVocabulary: touchTargetVocabulary(root),
     touchRecords: touchTargetRecords(root),
+    signals: new SignalReader(root),
+  };
+}
+
+/** What the state table says about a component, and whether its exemptions hold against its source and page. */
+export function statesFact(slug: string, doc: { category: Category; dir: string; name: string }, corpus: FactsCorpus): StatesFact {
+  const entry = STATE_RECIPES[slug];
+  if (!entry) return { listed: false, recipes: [], static: null, exempt: [], unanswered: [] };
+  const rail = railExamples(doc);
+  const labelOf = (variant: string) => rail.find((example) => variantSlug(example.label) === variant)?.label ?? variant;
+  const coverage = coverageOf(slug, entry, componentSignals(corpus.signals, doc), rail);
+  return {
+    listed: true,
+    recipes: recipesOf(slug).map((r) => ({ state: r.state, variant: r.variant, label: labelOf(r.variant), rows: [...r.rows], widths: r.widths })),
+    static: entry.static ? entry.reason : null,
+    exempt: coverage.answers.filter((a) => a.by === "exemption").map((a) => ({ state: a.state, reason: a.exemption!.reason, failure: a.failure ?? null })),
+    unanswered: coverage.answers.filter((a) => a.by === "nothing").map((a) => a.state),
   };
 }
 
@@ -1187,6 +1225,7 @@ export function componentFacts(slug: string, corpus: FactsCorpus): ComponentFact
       : TOAST_RECIPE.slug === slug
         ? { role: "live region" }
         : null,
+    states: statesFact(slug, { category: doc.category, dir, name: doc.name }, corpus),
     tests: corpus.tests.filter(({ imports }) => importsComponent(imports, exports, sourceDir)).map(({ file }) => file),
     // The same import rule as the tests where e2e imports the kit; otherwise the exact
     // route it drives, the component's own docs page or a hidden harness page that

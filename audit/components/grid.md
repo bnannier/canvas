@@ -20,6 +20,7 @@ Audit checklist for `/components/grid`. The facts block and the variants table a
 | Hand-off metric gaps | none |
 | Interactions registry | in the inventory; evidence: none registered |
 | Overlay recipe | none |
+| Interaction states | static: A layout primitive: it renders no control of its own (the controls in its examples are kit components with recipes of their own). |
 | MeasureProps | not adopted |
 | Touch target | no touch-target name (the exports of `src/style/touch-target.ts`, `src/style/touch-target-seed.ts`, `src/style/touch-seam.ts`, `src/style/clip-slop.ts`, the `TouchTargetSkin` fields, or `hitSlop`) in its implementation modules |
 | Tests importing it | 4: `test/design-rules-skins.test.ts`, `test/hover-lift.test.tsx`, `test/layout-responsive.test.tsx`, `test/layout-spans.test.tsx` |

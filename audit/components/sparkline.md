@@ -20,6 +20,7 @@ Audit checklist for `/components/sparkline`. The facts block and the variants ta
 | Hand-off metric gaps | none |
 | Interactions registry | in the inventory; evidence: none registered |
 | Overlay recipe | none |
+| Interaction states | static: A chart that takes no input: no press, scrub or hover handler in its source or the shared chart modules it renders; it displays data. |
 | MeasureProps | not adopted |
 | Touch target | no touch-target name (the exports of `src/style/touch-target.ts`, `src/style/touch-target-seed.ts`, `src/style/touch-seam.ts`, `src/style/clip-slop.ts`, the `TouchTargetSkin` fields, or `hitSlop`) in its implementation modules |
 | Tests importing it | 9: `test/chart-materials.test.tsx`, `test/charts-cartesian.test.tsx`, `test/design-rules-skins.test.ts`, `test/dev-warn.test.tsx`, `test/dist-smoke.test.tsx`, `test/new-components.test.tsx`, `test/skins-smoke.test.tsx`, `test/sparkline.test.tsx`, `test/stats-stackedlist-slots.test.tsx` |

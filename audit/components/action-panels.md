@@ -20,6 +20,7 @@ Audit checklist for `/components/action-panels`. The facts block and the variant
 | Hand-off metric gaps | none |
 | Interactions registry | in the inventory; evidence: action-panel-toggle (unit-web, test/behavior-smoke-b.test.tsx) |
 | Overlay recipe | none |
+| Interaction states | captured: focus on Default (web row; desktop), pressed on Default (web row; desktop). |
 | MeasureProps | not adopted |
 | Touch target | no touch-target name (the exports of `src/style/touch-target.ts`, `src/style/touch-target-seed.ts`, `src/style/touch-seam.ts`, `src/style/clip-slop.ts`, the `TouchTargetSkin` fields, or `hitSlop`) in its implementation modules |
 | Tests importing it | 3: `test/behavior-smoke-b.test.tsx`, `test/design-rules-skins.test.ts`, `test/skins-smoke.test.tsx` |
