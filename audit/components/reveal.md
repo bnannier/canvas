@@ -10,7 +10,7 @@ Audit checklist for `/components/reveal`. The facts block and the variants table
 | Markdown | `src/atoms/reveal/reveal.md` |
 | Source files | `reveal-context.ts`, `reveal-group.tsx`, `reveal.android.tsx`, `reveal.ios.tsx`, `reveal.md`, `reveal.shared.tsx`, `reveal.styles.ts`, `reveal.tsx` |
 | Implementation | its own source directory, `src/atoms/reveal/` (7 TypeScript modules) |
-| Exports | Reveal |
+| Exports | Reveal, RevealGroup |
 | Platform entries | iOS: web build: Reveal. Android: web build: Reveal |
 | Platform-skins registry | none (every export is the web build, so the docs three-up renders it as is) |
 | Reference row | none: `PLATFORM-REFERENCES.md` has no row for this component (K8) |

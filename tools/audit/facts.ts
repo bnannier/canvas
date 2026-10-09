@@ -1172,7 +1172,37 @@ export function implementationOf(root: string, sourceDir: string, sourceModules:
   return { kind: "module", modules: [rel(last.file)], reactNative: wraps ? last.name : null, platformBuilds: hasPlatformBuilds(last.file) };
 }
 
-/** Where a component's source lives, and the value names its entry exports (a raw primitive's: its name). */
+/**
+ * The value names a group barrel (`src/<group>/index.ts`) publishes from modules inside
+ * one component directory, in the barrel's order: its entry and any sibling module the
+ * barrel also re-exports (Reveal's `reveal-group.tsx`, the home of RevealGroup). Empty
+ * when the barrel names nothing there (a raw primitive's directory holds only markdown).
+ */
+function barrelExports(root: string, group: string, sourceDir: string): string[] {
+  const barrel = join(root, "src", group, "index.ts");
+  const dir = join(root, sourceDir);
+  const names: string[] = [];
+  const add = (name: string) => {
+    if (!names.includes(name)) names.push(name);
+  };
+  for (const s of parse(barrel, readFileSync(barrel, "utf8")).statements) {
+    if (!ts.isExportDeclaration(s) || s.isTypeOnly || !s.moduleSpecifier || !ts.isStringLiteral(s.moduleSpecifier)) continue;
+    const target = resolveModule(barrel, s.moduleSpecifier.text);
+    if (!target || !within(dir, target)) continue;
+    if (s.exportClause && ts.isNamedExports(s.exportClause)) {
+      for (const element of s.exportClause.elements) if (!element.isTypeOnly) add(element.name.text);
+    } else if (!s.exportClause) {
+      for (const name of valueExports(target, readFileSync(target, "utf8"))) add(name);
+    }
+  }
+  return names;
+}
+
+/**
+ * Where a component's source lives, and the value names it publishes: every name its
+ * group barrel re-exports from its directory, else its entry's exports, else (a raw
+ * primitive) its name.
+ */
 function componentSource(root: string, doc: (typeof COMPONENTS)[number]) {
   const dir = doc.dir ?? doc.slug;
   const group = GROUP_OF[doc.category];
@@ -1180,7 +1210,12 @@ function componentSource(root: string, doc: (typeof COMPONENTS)[number]) {
   const absoluteDir = join(root, sourceDir);
   const sourceFiles = filesUnder(absoluteDir);
   const entry = [`${dir}.tsx`, `${dir}.ts`].find((f) => sourceFiles.includes(f));
-  const exports = entry ? valueExports(entry, readFileSync(join(absoluteDir, entry), "utf8")) : [doc.name.replace(/[^A-Za-z]/g, "")];
+  const published = barrelExports(root, group, sourceDir);
+  const exports = published.length
+    ? published
+    : entry
+      ? valueExports(entry, readFileSync(join(absoluteDir, entry), "utf8"))
+      : [doc.name.replace(/[^A-Za-z]/g, "")];
   return { dir, group, sourceDir, sourceFiles, entry, exports };
 }
 
