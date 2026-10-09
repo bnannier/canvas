@@ -343,6 +343,15 @@ export interface ProbeText {
   colorAlpha?: number;
   /** The opacity it paints at: every group it is inside, multiplied. */
   opacity: number;
+  /**
+   * The opacity of the groups it is inside that the layer painting right under it is not:
+   * what dims its ink against the background a photograph shows. A group holding the text
+   * and its backdrop (a pressed button dimmed as a whole) dims both together, so the two
+   * keep their contrast in the photograph. Absent when the probe read no paint stack under
+   * the text, and from probes written before it was recorded; the analysis then takes
+   * `opacity`.
+   */
+  ownOpacity?: number;
   svg: boolean;
   /** A form control's value or placeholder, when that is what the text is. */
   field?: FieldPart;
@@ -401,8 +410,27 @@ export function fieldScrolls(field: FieldPart | null): boolean {
   return field !== null && field.part === "value" && field.control !== "select";
 }
 
+/** Whether a layer of a paint stack paints anything: a fill that is not transparent, or something the DOM cannot resolve. */
+function paints(layer: RawLayer): boolean {
+  if (layer.kinds.length) return true;
+  if (layer.fill === null) return false;
+  const color = parseCssColor(layer.fill);
+  return color === null || color[3] * layer.fillAlpha > 0;
+}
+
+/**
+ * The opacity of the groups a text is inside that its backdrop (the topmost layer under it
+ * that paints) is not, or null when there is no stack to find the backdrop in.
+ */
+export function ownOpacity(raw: Pick<RawText, "groups" | "stack">, groupOpacity: readonly number[]): number | null {
+  if (!raw.stack) return null;
+  const shared = new Set(raw.stack.find(paints)?.groups ?? []);
+  return raw.groups.filter((id) => !shared.has(id)).reduce((product, id) => product * (groupOpacity[id] ?? 1), 1);
+}
+
 export function deriveText(raw: RawText, groupOpacity: readonly number[]): ProbeText {
   const opacity = raw.groups.reduce((product, id) => product * (groupOpacity[id] ?? 1), 1);
+  const own = ownOpacity(raw, groupOpacity);
   const weight = renderedWeight(raw.family, raw.weight);
   const size = paintedSize(raw.size, raw.scale);
   const required = requiredContrast(size, weight);
@@ -431,6 +459,7 @@ export function deriveText(raw: RawText, groupOpacity: readonly number[]): Probe
     color: raw.color,
     colorAlpha: raw.colorAlpha,
     opacity: Math.round(opacity * 1000) / 1000,
+    ...(own === null ? {} : { ownOpacity: Math.round(own * 1000) / 1000 }),
     svg: raw.svg,
     ...(raw.field ? { field: raw.field } : {}),
     ariaHidden: raw.ariaHidden,

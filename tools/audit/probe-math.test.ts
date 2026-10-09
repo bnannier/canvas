@@ -172,8 +172,20 @@ describe("a text leaf", () => {
 
   it("records the ink as painted where the background is indeterminate: its colour, its own alpha and its opacity", () => {
     const glass = deriveText(text({ svg: true, colorAlpha: 0.6, groups: [0], stack: [layer("rgba(255, 255, 255, 0.4)", [], ["backdrop-filter"])] }), [0.5]);
-    expect(glass).toMatchObject({ color: "rgb(0, 0, 0)", colorAlpha: 0.6, opacity: 0.5, contrast: null, indeterminate: "backdrop-filter on div" });
+    expect(glass).toMatchObject({ color: "rgb(0, 0, 0)", colorAlpha: 0.6, opacity: 0.5, ownOpacity: 0.5, contrast: null, indeterminate: "backdrop-filter on div" });
     expect(glass.painted).toBeUndefined();
+  });
+
+  it("tells the opacity that dims its ink from the opacity it shares with its backdrop", () => {
+    // A pressed button dimmed to 0.9 as a whole (the run's Button pressed state): the label and its fill dim together.
+    const pressed = deriveText(text({ color: "rgb(255, 255, 255)", groups: [0], stack: [layer("rgba(0, 0, 0, 0)", [0], [], "span"), layer("rgb(33, 128, 75)", [0], [], "button"), layer("rgb(255, 255, 255)")] }), [0.9]);
+    expect(pressed).toMatchObject({ opacity: 0.9, ownOpacity: 1 });
+    // A faded label on a card: its ink alone is dimmed.
+    expect(deriveText(text({ groups: [0], stack: [layer("rgba(0, 0, 0, 0)", [0]), layer("rgb(255, 255, 255)")] }), [0.6])).toMatchObject({ opacity: 0.6, ownOpacity: 0.6 });
+    // Nested: the outer group holds the fill too, the inner one the label alone.
+    expect(deriveText(text({ groups: [0, 1], stack: [layer("rgb(240, 240, 240)", [0]), layer("rgb(255, 255, 255)")] }), [0.5, 0.8])).toMatchObject({ opacity: 0.4, ownOpacity: 0.8 });
+    // No stack read: nothing to tell them apart by.
+    expect(deriveText(text({ groups: [0], stack: null, stackNote: "offscreen" }), [0.5]).ownOpacity).toBeUndefined();
   });
 });
 
