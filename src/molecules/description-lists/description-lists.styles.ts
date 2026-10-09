@@ -21,11 +21,12 @@ import { type DescriptionListSkin } from "./description-lists.shared.js";
 //   iOS  — the iOS 27 kit Lists value row: the term is the PRIMARY SF Pro 17/22
 //          Regular label (Labels/1) LEFT and the value is the SECONDARY gray
 //          17/22 detail (Labels/2), the OPPOSITE emphasis and 3pt larger than the
-//          web idiom; ~52pt center-aligned rows, 16 inset, inside a FLAT 26-radius
-//          inset-grouped card with the continuous (superellipse) corner curve.
+//          web idiom; ~52pt center-aligned rows, 16 inset, inside a FLAT
+//          inset-grouped card at the inset grouped list corner, with the continuous
+//          (superellipse) corner curve.
 //   Android — Material 3 has no description-list control; key-value content is a
 //          plain list/text layout, so the surface follows the M3 outlined card:
-//          a 12-radius outlined surface kept FLAT (no shadow, elevation 0), 16dp
+//          an outlined surface at the card corner kept FLAT (no shadow, elevation 0), 16dp
 //          inset, a slightly more breathable 14 row gap, and M3 type roles (term
 //          body-medium 14/20/+0.1, value title-small 14/20/500/+0.1, stacked
 //          label-medium 12/16/500/+0.5, header title-medium 16/24/500/+0.15).

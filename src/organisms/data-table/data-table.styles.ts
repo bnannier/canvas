@@ -16,23 +16,23 @@ import { typeScale } from "../../style/type-scale.js";
 // row rhythm, header type/tracking, hairline, stripe fill, outer radius, and
 // press feedback change per OS:
 //   Web: a bordered table takes the card corner; the header band on `muted` is
-//     soft-cornered (10px) when the table stands alone, with py-12 (py-8
-//     compact) and 14/20 medium sentence-case muted-foreground labels; data cells
-//     px-16/py-18 (py-10 compact) with 14/20 foreground text; a DASHED 1px
+//     soft-cornered (the table header corner) when the table stands alone, with
+//     py-12 (py-8 compact) and 14/20 medium sentence-case muted-foreground labels;
+//     data cells px-16/py-18 (py-10 compact) with 14/20 foreground text; a DASHED 1px
 //     `border` hairline under each row; stripe = muted @ 30%; press = `accent` fill.
 //     Header and data cells both carry per-cell horizontal padding (shadcn th/td
 //     px-2 class) so labels never jam, and the wrap holds a 320 width floor.
-//   iOS (SwiftUI Table / grouped-list rhythm): a 10-radius CONTINUOUS outer
-//     corner; the header reads as regular-case secondary labels (13/18, weight
-//     400, -0.08 tracking — HIG title-style column headings, NOT the uppercase
-//     grouped-section-header idiom); ~52pt-rhythm rows (py-15, py-8 compact) with
+//   iOS (SwiftUI Table / grouped-list rhythm): a CONTINUOUS outer corner at the
+//     iOS card corner; the header reads as regular-case secondary labels (13/18,
+//     weight 400, -0.08 tracking: HIG title-style column headings, NOT the
+//     uppercase grouped-section-header idiom); ~52pt-rhythm rows (py-15, py-8 compact) with
 //     17/22 body text at -0.43 SF tracking; thin ~0.5pt separator hairlines INSET
 //     16pt to the content leading edge; stripe = muted @ 24%; press = `secondary`
 //     system fill. Below the compact (sm) width the table collapses to its
 //     PRIMARY (first) column, matching SwiftUI Table on iPhone.
 //   Android (Material 3 list rhythm; M3 has no data table, so the M3 LIST
-//     conventions apply): a flat 8-radius wrap (M3 surfaces are flat, no
-//     shadow); the header is an M3 label-medium band (12/16, weight 500, +0.5
+//     conventions apply): a flat wrap at the Android card corner (M3 surfaces are
+//     flat, no shadow); the header is an M3 label-medium band (12/16, weight 500, +0.5
 //     tracking, NOT uppercased — M3 labels are sentence/normal case); ~52dp
 //     rows (py-14, py-10 compact) with 16/24/+0.5 body-large text; 1px
 //     outline-variant hairlines; stripe = surface-variant (muted) @ 20%; press
@@ -246,8 +246,8 @@ export const webSkin: DataTableSkin = {
 // case, 13pt regular, secondary color — HIG "descriptive column headings ...
 // title-style capitalization", NOT the uppercase grouped-section-header idiom);
 // rows sit on the iOS one-line list rhythm (52pt) with 17pt body text and thin
-// (~0.5pt) separator hairlines inset 16pt to the content leading edge; a 10pt
-// continuous outer corner; pressed rows take the iOS `secondary` system fill (no
+// (~0.5pt) separator hairlines inset 16pt to the content leading edge; a continuous
+// outer corner at the iOS card corner; pressed rows take the iOS `secondary` system fill (no
 // ripple). Below the compact width the table collapses to its primary column.
 export const iosSkin: DataTableSkin = {
   wrap: WRAP,

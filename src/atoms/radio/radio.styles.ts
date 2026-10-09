@@ -18,8 +18,8 @@ import {
 //   iOS (HIG): no radio button at all, so a single choice is a CHECKMARK LIST (the
 //     inline picker in a grouped Form): the label leads, the chosen option carries a
 //     trailing brand check, and inside a RadioGroup the options are one inset-grouped
-//     section (44pt rows, 16pt insets, inset hairline separators, the 26pt continuous
-//     corner of the kit's iOS lists); press = the row highlight (a plain row dims ~0.8).
+//     section (44pt rows, 16pt insets, inset hairline separators, the continuous
+//     inset grouped list corner of the kit's iOS lists); press = the row highlight (a plain row dims ~0.8).
 //   Android (Material 3): a 20dp outer ring (2dp border), brand ring + ~10dp solid
 //     inner dot when selected; press = android_ripple over a 40dp state layer;
 //     disabled opacity 0.38.
@@ -140,8 +140,8 @@ export const webSkin: RadioSkin = {
 // ---------- iOS (HIG): a checkmark list, no ring ----------
 // The check is the SF body checkmark at the label's own size, semibold, in the brand
 // `primary` (iOS tints a picker's check with the app's accent). The list section is the
-// kit's iOS grouped list (see stacked-lists.styles.ts): a 26pt continuous corner, the
-// `card` fill, borderless, clipped so a row's highlight cannot poke past the corners.
+// kit's iOS grouped list (see stacked-lists.styles.ts): the inset grouped list corner,
+// continuous, the `card` fill, borderless, clipped so a row's highlight cannot poke past the corners.
 // Rows are 44pt cells with 16pt insets; separators are hairlines inset to the text
 // column and run to the trailing edge, as iOS draws them.
 const IOS_CELL_INSET = 16;

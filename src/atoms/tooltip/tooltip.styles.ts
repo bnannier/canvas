@@ -11,11 +11,11 @@ import { platformShape } from "../../style/platform-shape.js";
 // has no tooltip; its only dark bubble, the toast pill, keeps one colour in every theme,
 // which would all but vanish on the dark page, so the bubble keeps the per-scheme inverse
 // and takes Dark Factory's type and corners:
-//   Web: an 8-radius bubble (Dark Factory's chip step), 6 x 10 padding, a soft `md` lift, the
-//     label in Dark Factory's 12px label weight (600) at its 1.3 line height.
+//   Web: a bubble at the tooltip corner (Dark Factory's chip step), 6 x 10 padding, a soft
+//     `md` lift, the label in Dark Factory's 12px label weight (600) at its 1.3 line height.
 //   iOS: no system tooltip, so the web skin.
-//   Android (Material 3 plain tooltip): a small rounded rect (radius 4), the inverse
-//     fill, body-small 12sp, padding 8 x 4, flat (no elevation per M3 plain), a 24dp
+//   Android (Material 3 plain tooltip): a small rounded rect (its extra-small corner), the
+//     inverse fill, body-small 12sp, padding 8 x 4, flat (no elevation per M3 plain), a 24dp
 //     minimum height.
 
 export type Placement = "top" | "bottom" | "left" | "right";

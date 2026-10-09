@@ -12,7 +12,7 @@ import { typeScale } from "../../style/type-scale.js";
 // heading and supporting line are Dark Factory's type on every platform (its heading
 // over its body in the muted ink); the shape follows the design language:
 //   iOS 27 (iOS 26+, Liquid Glass) popover, the iPad control: a largely rounded card
-//     (26 radius) over the `popover` material, no visible border, a soft lg shadow,
+//     (the iOS menu corner) over the `popover` material, no visible border, a soft lg shadow,
 //     16pt padding, and a slim tapered BEAK pointing toward the anchor (up when the
 //     card is below the trigger, down when above).
 //   Web: Dark Factory's panel (its Popover): a fixed 260px card at the menu corner

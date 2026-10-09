@@ -15,8 +15,8 @@ import { type IconName } from "../../atoms/icon/icon.js";
 //     icon, groups split by hairline separators, destructive rows in
 //     `destructive-text`, a `secondary` highlight on press. The ⋯ trigger dims to 0.8
 //     on press; a disabled row dims to 0.4.
-//   Android (Material 3 menu): an elevated surface (4 radius, `popover`, soft shadow)
-//     with no border; rows about 48dp tall with a leading icon and an
+//   Android (Material 3 menu): an elevated surface (the Material 3 menu corner,
+//     `popover`, soft shadow) with no border; rows about 48dp tall with a leading icon and an
 //     alpha(primary, 0.12) ripple; an item that sets `separatorBefore` gets the 1dp M3
 //     divider. The ⋯ trigger shares the ripple; a disabled row dims to 0.38.
 //   Web: Dark Factory's menu (src/style/menu-look.ts), the same one the web Dropdown
@@ -139,8 +139,8 @@ export const webSkin: RowMenuSkin = {
 };
 
 // ---------- iOS 27 (Liquid Glass context menu): big-radius popover, leading icons, hairlines ----------
-// Apple's iOS 26+/iOS 27 context menu: a floating, deeply rounded card (~28pt
-// continuous corner, the kit's iOS menu corner, up from the old ~13pt) over `popover` with a soft shadow and
+// Apple's iOS 26+/iOS 27 context menu: a floating, deeply rounded card (the kit's iOS
+// menu corner, continuous, up from the old ~13pt) over `popover` with a soft shadow and
 // NO border; rows are ~44pt tall with comfortable horizontal padding and a LEADING
 // glyph; groups are split by full-bleed hairline separators; a destructive row is
 // red; the pressed row tints with the `secondary` system fill (not a ripple). The

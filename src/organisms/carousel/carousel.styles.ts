@@ -13,8 +13,8 @@ import { type CarouselSkin } from "./carousel.shared.js";
 //
 //   iOS: the App Store paged-card idiom with a UIPageControl dot strip. Small
 //     circular dots (7px): the active one fills brand `primary`,
-//     inactive ones are `muted-foreground` at low alpha. Slide radius 12 with
-//     Apple's continuous (superellipse) corners. Arrows default OFF (App Store
+//     inactive ones are `muted-foreground` at low alpha. The slide at the iOS card
+//     corner with Apple's continuous (superellipse) corners. Arrows default OFF (App Store
 //     cards swipe with page-control dots, no overlay chrome); the `showArrows`
 //     prop opts them in as a subtle translucent circular chip beside the slides,
 //     press = dim ~0.8.

@@ -12,18 +12,18 @@ import { type ColorTokens, shadow, alpha, widths, shape } from "../../style/inde
 // survives on every platform (the `primary` confirm action, the
 // `destructive` red for an irreversible confirm); only the native SHAPE, sizing,
 // title alignment, body type, footer layout, and backdrop dimming change per OS:
-//   iOS (iOS 27 / Liquid Glass alert): a centered card (28 radius, `popover`
-//     fill, NO border, soft lg shadow) over a ~0.30 black backdrop; a LEFT-aligned
+//   iOS (iOS 27 / Liquid Glass alert): a centered card (the iOS dialog corner,
+//     `popover` fill, NO border, soft lg shadow) over a ~0.30 black backdrop; a LEFT-aligned
 //     ~20pt/700 title, a ~15pt muted LEFT body, and a side-by-side row of CAPSULE
 //     action buttons (a gray `secondary` Cancel capsule + a `primary`
 //     Confirm capsule; a destructive confirm is a gray capsule with `destructive`
 //     red text), NO hairline dividers; press = opacity dim (~0.8).
-//   Android (Material 3 basic dialog): a card (28 radius, `popover` elevated
-//     surface, shadow lg) over a ~0.32 black scrim; a LEFT-aligned ~22pt title,
+//   Android (Material 3 basic dialog): a card (the Material 3 dialog corner,
+//     `popover` elevated surface, shadow lg) over a ~0.32 black scrim; a LEFT-aligned ~22pt title,
 //     a 14sp body, and TEXT-button actions (no fill) bottom-RIGHT in a row
 //     (Cancel then Confirm) in `primary-text`, an android_ripple on each, and
 //     NO dividers.
-//   Web: a bordered card at the 18px dialog corner (`border`, `popover` fill, xl
+//   Web: a bordered card at the dialog corner (`border`, `popover` fill, xl
 //     shadow) over the theme's scrim; an 18/28 medium left title, a 14/20 muted
 //     body, and a right-aligned action row of an outline Cancel + a
 //     primary/destructive Confirm Button.

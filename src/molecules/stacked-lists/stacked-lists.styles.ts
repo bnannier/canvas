@@ -13,8 +13,8 @@ import { platformShape } from "../../style/platform-shape.js";
 //     padded; a full-width 1px hairline between ruled rows; a 14/500 name + 12 muted
 //     detail; a 16/500 header title; the overflow menu at the control corner. Press =
 //     the accent surface (no opacity dim, no ripple).
-//   iOS (SF / HIG inset-grouped list, iOS 27 kit Lists/Rows/Large): a 26-radius
-//     card with the continuous (superellipse) corner curve, FLAT and BORDERLESS
+//   iOS (SF / HIG inset-grouped list, iOS 27 kit Lists/Rows/Large): a card at the
+//     inset grouped list corner with the continuous (superellipse) corner curve, FLAT and BORDERLESS
 //     (the iOS 27 grouped Table View is fill-differentiated, not outlined, and
 //     separators are the only hairlines); the two-line row is a FIXED 68pt
 //     centered horizontal stack, gap 16, padding 16 sides / 0 vertical; hairline
@@ -22,9 +22,9 @@ import { platformShape } from "../../style/platform-shape.js";
 //     iOS), plus an accent press surface AND a press-opacity dim (~0.8); SF type
 //     (name Title 17/22 regular -0.43, subtitle 15/18 regular -0.24, trailing
 //     detail 17/22 regular -0.43); a 15/600 header title -0.24; the drilldown
-//     chevron is an SF semibold 17/22 tertiary glyph; overflow menu at the web's
-//     control corner with a 44pt hitSlop target.
-//   Android (Material 3 list / card): a 12-radius bordered card, FLAT (no shadow,
+//     chevron is an SF semibold 17/22 tertiary glyph; the overflow menu a circle
+//     (the iOS control corner) with a 44pt hitSlop target.
+//   Android (Material 3 list / card): a bordered card at the card corner, FLAT (no shadow,
 //     M3 outlined card); the two-line list item is a FIXED 72dp row (M3 lists
 //     token); a full-width hairline divider; M3 body type with M3 tracking
 //     (name body-large 16/24/+0.5, subtitle body-medium 14/20/+0.25 on muted,

@@ -13,8 +13,8 @@ import { type ListboxSkin, type Size } from "./listbox.shared.js";
 // Neither iOS nor Material 3 has a listbox control (selecting one option from a
 // list is a pop-up button / picker menu on iOS, the exposed dropdown menu on
 // Android), so the row look is Dark Factory's menu row on every platform and the
-// androidSkin is the SAME object as webSkin: bold 12.5 px labels at an 8 px corner, 2 px
-// apart, the instant hover wash on the web (native pointer hover waits on the owner, so
+// androidSkin is the SAME object as webSkin: bold 12.5 px labels at the control corner,
+// 2 px apart, the instant hover wash on the web (native pointer hover waits on the owner, so
 // it goes through webHover), the chosen single-select row in the selection violet
 // (`primary-text`, with the ✓ in `primary`) and no fill, where Dark Factory paints its
 // selected menu row green (the design language reserves green for calls to action). The

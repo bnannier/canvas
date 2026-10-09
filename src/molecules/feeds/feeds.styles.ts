@@ -11,14 +11,13 @@ import { type FeedSkin } from "./feeds.shared.js";
 // the shared frame. Only the small native touches shift per OS:
 //   Web: a card at the card corner with a 1px `border`, no shadow; rows pressed dim
 //     to 0.7 opacity (the kit's content default).
-//   iOS (HIG / SF conventions): a softer 12-radius card (the iOS grouped-list
-//     corner), an extra hair of row breathing room, SF-style tightened tracking
-//     on the labels, and an opacity dim (~0.8) on press, matching the iOS
-//     list-row highlight. No connector/avatar structure changes (iOS composes
+//   iOS (HIG / SF conventions): a card at the iOS card corner, an extra hair of row
+//     breathing room, SF-style tightened tracking on the labels, and an opacity dim
+//     (~0.8) on press, matching the iOS list-row highlight. No connector/avatar structure changes (iOS composes
 //     feeds from plain lists, so the kit keeps its structure and applies only
 //     iOS conventions).
-//   Android (Material 3): the M3 medium-shape corner (12-radius, matching M3
-//     cards and the kit's own Android Card atom), a flat surface (no shadow — M3
+//   Android (Material 3): the M3 medium-shape corner (the Android card corner, as M3
+//     cards and the kit's own Android Card atom), a flat surface (no shadow: M3
 //     cards are flat unless elevation is specified; the kit keeps the 1px
 //     hairline so the card stays legible on either theme), M3 type tracking
 //     (body-medium +0.25 action, body-small +0.4 timestamp), and a brand

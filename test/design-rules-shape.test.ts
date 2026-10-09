@@ -1,6 +1,7 @@
 import { describe, it, expect } from "bun:test";
 import { readFileSync } from "node:fs";
-import { dirname, join } from "node:path";
+import { join } from "node:path";
+import ts from "typescript";
 import { Glob } from "bun";
 import { lightColors, shape } from "../src/style/tokens.ts";
 import { platformShape } from "../src/style/platform-shape.ts";
@@ -106,7 +107,8 @@ describe("the hand-off's role tokens follow the shape table", () => {
 // Every corner the source sets. The icons are left out: a glyph's `rx` rounds a stroke in
 // the icon's own 24-unit drawing, scaled with the glyph, not a corner of the UI.
 const files = [...new Glob("src/**/*.{ts,tsx}").scanSync(ROOT)].filter((f) => !f.endsWith(".d.ts") && !f.startsWith("src/atoms/icon/")).sort();
-const { values: corners, unresolved } = new CornerSites(ROOT).scan(files);
+const sites = new CornerSites(ROOT);
+const { values: corners, unresolved } = sites.scan(files);
 const where = (v: CornerValue) => `${v.file}:${v.line} ${v.path} (${v.text})`;
 const concentricSites = new Set(CONCENTRIC_CORNERS.map((c) => c.site));
 
@@ -186,30 +188,38 @@ describe("every corner in the kit", () => {
 });
 
 describe("the comments state the corners the code draws", () => {
-  // The corners each source file draws: those written in its component's directory or set
-  // there, and those written in the style modules it imports by name (a menu's rows come
-  // from src/style/menu-look.ts). A comment in the file that defines the tables states the
-  // tables' own values.
-  const byDir = new Map<string, Set<number>>();
-  const byFile = new Map<string, Set<number>>();
-  const add = (map: Map<string, Set<number>>, key: string, value: number) => map.set(key, (map.get(key) ?? new Set()).add(value));
-  for (const v of corners) {
-    add(byFile, v.file, v.value);
-    for (const dir of v.rounds) add(byDir, dir, v.value);
-  }
-  const imported = (file: string): string[] =>
-    [...readFileSync(join(ROOT, file), "utf8").matchAll(/from "(\.{1,2}\/[^"]+)\.js"/g)]
-      .map((m) => join(dirname(file), m[1]))
-      .filter((base) => !base.endsWith("/index"))
-      .flatMap((base) => [`${base}.ts`, `${base}.tsx`]);
-  const drawnBy = (file: string): Set<number> => new Set([...(byDir.get(dirname(file)) ?? []), ...imported(file).flatMap((f) => [...(byFile.get(f) ?? [])])]);
-  const tables = new Set([shape, platformShape].flatMap((table) => Object.values(table).flatMap((row) => Object.values(row as Record<string, number>))));
-  const TABLE_FILES = new Set(["src/style/tokens.ts", "src/style/platform-shape.ts"]);
+  // A number a comment states is a corner the code it sits on draws: the node it leads, or
+  // the one a trailing comment ends (tools/tokens/corner-comments.ts), and what that node
+  // draws is what the corner scan found there (tools/tokens/corner-sites.ts). A comment in
+  // the file that defines the tables states the values of the rows it sits on.
+  const TABLES: Record<string, Record<string, Record<string, Record<string, number>>>> = {
+    "src/style/tokens.ts": { shape: shape as unknown as Record<string, Record<string, number>> },
+    "src/style/platform-shape.ts": { platformShape: platformShape as Record<string, Record<string, number>> },
+  };
+  const rowsUnder = (file: string, start: number, end: number): Set<number> => {
+    const sf = ts.createSourceFile(file, readFileSync(join(ROOT, file), "utf8"), ts.ScriptTarget.Latest, true);
+    const out = new Set<number>();
+    const visit = (node: ts.Node) => {
+      if (ts.isVariableDeclaration(node) && ts.isIdentifier(node.name) && node.name.text in TABLES[file] && node.initializer) {
+        let init: ts.Expression = node.initializer;
+        while (ts.isAsExpression(init) || ts.isSatisfiesExpression(init)) init = init.expression;
+        if (!ts.isObjectLiteralExpression(init)) return;
+        for (const row of init.properties) {
+          if (!ts.isPropertyAssignment(row) || !ts.isIdentifier(row.name)) continue;
+          if (row.getEnd() <= start || row.getStart(sf) >= end) continue;
+          for (const value of Object.values(TABLES[file][node.name.text][row.name.text])) out.add(value);
+        }
+      }
+      ts.forEachChild(node, visit);
+    };
+    visit(sf);
+    return out;
+  };
 
   it("in the source", () => {
     const wrong = cornerClaims(ROOT, files)
-      .filter((c) => !(TABLE_FILES.has(c.file) ? tables : drawnBy(c.file)).has(c.value))
-      .map((c) => `${c.file}:${c.line} "${c.text}"`);
+      .filter((c) => !(c.file in TABLES ? rowsUnder(c.file, c.on.start, c.on.end) : sites.cornersIn(corners, c.file, c.on.start, c.on.end)).has(c.value))
+      .map((c) => `${c.file}:${c.line} "${c.text}", on \`${c.on.text}\``);
     expect(wrong).toEqual([]);
   });
 

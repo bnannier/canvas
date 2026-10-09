@@ -12,17 +12,17 @@ import { platformShape } from "../../style/platform-shape.js";
 // semantic foreground labels and the `destructive` red), only the native SHAPE,
 // structure, sizing, type, and press feedback change per OS:
 //
-//   iOS (iOS 27 Liquid Glass action sheet): ONE container anchored to the bottom —
-//     corner radius 34 with continuous (superellipse) corners, 14pt inner padding,
-//     a LEFT-aligned header (17/22 semibold primary-label title + 15/18 secondary
+//   iOS (iOS 27 Liquid Glass action sheet): ONE container anchored to the bottom, at
+//     the action sheet corner with continuous (superellipse) corners, 14pt inner
+//     padding, a LEFT-aligned header (17/22 semibold primary-label title + 15/18 secondary
 //     message) over a vertical stack of DETACHED ~48pt full-capsule action buttons
 //     (gap 10, translucent neutral fill, 17/22 MEDIUM primary-label labels; red
 //     `destructive` only, no hairline dividers). Cancel is a SEPARATE detached
 //     capsule below it, aligned with the action buttons. ~8pt side inset, capped at
 //     640 on wide viewports. Press = opacity dim (~0.8).
-//   Android (Material 3 modal bottom sheet): a SINGLE rounded-top (28dp) sheet that
-//     spans the width, a 32x4 drag handle at the top, then left-aligned list items
-//     at 16sp; the destructive item tints its label red. Cancel is the LAST row in
+//   Android (Material 3 modal bottom sheet): a SINGLE sheet rounded on top at the
+//     Material 3 sheet corner that spans the width, a 32x4 drag handle at the top,
+//     then left-aligned list items at 16sp; the destructive item tints its label red. Cancel is the LAST row in
 //     the same sheet (M3 has no separate cancel card). Flat (the sheet's own
 //     elevation comes from the scrim), press = android_ripple (neutral state layer).
 //   Web: two separated cards at the dialog corner with a centered gray header and

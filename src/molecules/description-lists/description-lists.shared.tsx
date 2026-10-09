@@ -62,8 +62,8 @@ import { type Layout } from "./description-lists.styles.js";
 // idiom (a small muted term beside a full-weight foreground value); iOS follows
 // the iOS 27 kit Lists value row, where the term is the PRIMARY 17/22 label and
 // the value is the SECONDARY gray 17/22 detail (the label/value emphasis is
-// inverted and the type is larger), inside a flat 26-radius inset-grouped card
-// with the continuous corner curve. The skin carries the card shape/elevation,
+// inverted and the type is larger), inside a flat inset-grouped card at the inset
+// grouped list corner, with the continuous corner curve. The skin carries the card shape/elevation,
 // row density and metrics, and the full term/value/header type per OS.
 //
 // The list has no pressable rows of its own; the only interactive affordance is

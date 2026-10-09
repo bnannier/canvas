@@ -11,13 +11,15 @@ import { platformShape } from "../../style/platform-shape.js";
 //
 //   Web: columns are `muted` wells at the card corner, 14/500 headers, 14/500 card titles
 //     + 12 muted descriptions; press = the accent surface.
-//   iOS (HIG): columns as inset-grouped wells with the 26 continuous (superellipse) corner
-//     curve over `muted` (fill-differentiated, borderless, per the iOS grouped conventions);
-//     SF type (header subheadline 15/600 -0.24, title 15/600 -0.24, description footnote
-//     13/18 -0.08); press = the accent surface plus the ~0.8 opacity dim.
-//   Android (Material 3): columns as 16-radius `muted` surface containers; M3 type with M3
-//     tracking (header title-small 14/20/500/+0.1, title title-small, description body-small
-//     12/16/+0.4); press = android_ripple (the neutral surface state layer), no dim.
+//   iOS (HIG): columns as inset-grouped wells at the inset grouped list corner, with the
+//     continuous (superellipse) corner curve, over `muted` (fill-differentiated,
+//     borderless, per the iOS grouped conventions); SF type (header subheadline 15/600
+//     -0.24, title 15/600 -0.24, description footnote 13/18 -0.08); press = the accent
+//     surface plus the ~0.8 opacity dim.
+//   Android (Material 3): columns as `muted` surface containers at the lane corner; M3
+//     type with M3 tracking (header title-small 14/20/500/+0.1, title title-small,
+//     description body-small 12/16/+0.4); press = android_ripple (the neutral surface
+//     state layer), no dim.
 //
 // Lanes and composed Card surfaces use static content frost in glass mode. The
 // skin keeps their complete opaque treatment for solid and unavailable material.

@@ -12,22 +12,22 @@ import { fieldBorder } from "../../style/field-colors.js";
 // brand tokens, never a platform default); only the native SHAPE, sizing,
 // fill, border/underline treatment, and press feedback change per OS:
 //   iOS: the "iOS Mobile Input Fields" reference's country select (see
-//     input.styles.ts): the same white `card` box as the Input (8 radius, the 1pt
-//     gray-300 `field-border` hairline, `ring` when open), ~44pt tall, a 16pt
+//     input.styles.ts): the same white `card` box as the Input (the iOS field corner,
+//     the 1pt gray-300 `field-border` hairline, `ring` when open), ~44pt tall, a 16pt
 //     value, and a trailing ▾ caret in `muted-foreground`; press = opacity dim
-//     (~0.8). The menu is the very rounded Liquid Glass popover (26 radius,
+//     (~0.8). The menu is the very rounded Liquid Glass popover (the iOS menu corner,
 //     `popover`, soft shadow, ~17pt rows ~42pt tall, hairline group separators);
 //     the selected row shows a LEADING brand checkmark.
 //   Android (Material 3 exposed dropdown): a filled trigger (subtle `muted`
-//     fill, 4dp TOP corners, flat bottom) with a bottom active-indicator
+//     fill, the Material 3 field corner on TOP, flat bottom) with a bottom active-indicator
 //     underline (1dp `muted-foreground` at rest -> 2dp `primary` when open) and a trailing
 //     chevron-down; press = android_ripple. The menu is an elevated surface
-//     (4 radius, `popover`, soft shadow); pressed rows tint with the ripple
+//     (the Material 3 menu corner, `popover`, soft shadow); pressed rows tint with the ripple
 //     (alpha(primary, 0.12) state layer) and the selected row is tinted.
-//   Web: a `card` trigger at the 10px field corner with a 1px `field-border`
-//     hairline (`ring` when open), 40/48/56 tall, a trailing ▾ chevron in
-//     `muted-foreground`; the menu is a bordered popover at the 12px menu corner
-//     (`border`, shadow-lg, an 8px inset) and the selected row carries the
+//   Web: a `card` trigger at the field corner with a 1px `field-border` hairline
+//     (`ring` when open), 40/48/56 tall, a trailing ▾ chevron in `muted-foreground`;
+//     the menu is a bordered popover at the menu corner (`border`, shadow-lg, an 8px
+//     inset) around rows at the control corner, and the selected row carries the
 //     `accent` fill with a LEADING ✓ in the gutter.
 
 export type Size = "small" | "default" | "large";
@@ -161,8 +161,8 @@ export const webSkin: SelectSkin = {
   valueText: (t, size, hasValue) => ({ color: hasValue ? t.foreground : t["muted-foreground"], ...TEXT_SIZE[size] }),
   chevron: (t, size) => ({ color: t["muted-foreground"], ...TEXT_SIZE[size] }),
   chevronGlyph: "▾",
-  // The list: a card at the menu corner with an 8px inset, 40px rows (at the default
-  // size) with a 10px corner, the soft `accent` fill marking the selected row.
+  // The list: a card at the menu corner with an 8px inset around 40px rows (at the
+  // default size).
   panel: (t) => ({
     maxHeight: 280,
     overflow: "hidden", // clip rows to the rounded card; the list scrolls inside
@@ -173,6 +173,8 @@ export const webSkin: SelectSkin = {
     padding: 8,
     ...shadow("lg", t),
   }),
+  // A row at the control corner, as a Dropdown menu's rows; the soft `accent` fill
+  // marks the selected one.
   optionRow: (t, selected) => ({
     flexDirection: "row",
     alignItems: "center",
@@ -197,7 +199,7 @@ export const webSkin: SelectSkin = {
 // Apple's iOS 26 pop-up button is a PLAIN, lightly outlined row (not a heavy
 // filled gray capsule): the value text followed by a trailing chevron-up-down
 // disclosure, drawn as the reference's field box: `card` fill, the resting
-// `field-border` hairline, `ring` when open, 44pt tall, the 8pt field corner. The
+// `field-border` hairline, `ring` when open, 44pt tall, the iOS field corner. The
 // MENU it opens is the Liquid Glass surface from Apple's kit: a VERY rounded
 // popover (26pt continuous corners), `popover` fill, a soft drop shadow, ~17pt
 // rows that are ~42pt tall (the kit's iPhone "Menu Item, Title" is 198x42), with

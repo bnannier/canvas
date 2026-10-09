@@ -15,7 +15,7 @@ import { type MediaObjectSkin } from "./media-objects.shared.js";
 //   tracking, and an opacity dim on press (~0.8).
 // - Android: no native media-object control; the closest M3 idiom is a list item with a
 //   leading avatar, icon, or video thumbnail. So the Android skin keeps the structure and
-//   applies Material 3 conventions only: more rounding (M3 medium container radius 12 on
+//   applies Material 3 conventions only: more rounding (the M3 medium container corner on
 //   the bordered card and the icon box), M3 type roles (title-small 14/20/500/+0.1,
 //   body-medium 14/20/400/+0.25, body-small 12/16/400/+0.4), an M3 ELEVATED card
 //   (level-1 elevation, no outline), denser list-row spacing (gap 16), and a native
