@@ -418,11 +418,12 @@ describe.skipIf(!hasDist)("the audit checklists keep a reviewer's work", () => {
 
   it("credits every component of the skins smoke test's CASES table, read statically (item 1)", () => {
     // The smoke test mounts each row through one computed import and `mod[c.name]`.
-    for (const slug of ["accordion", "board", "chip", "drag-drop", "toast", "row-column", "geo-map"]) {
+    for (const slug of ["accordion", "board", "chip", "drag-drop", "toast", "row-column", "geo-map", "phone-input", "container", "grid", "card"]) {
       expect(componentFacts(slug, sources.corpus).tests).toContain("test/skins-smoke.test.tsx");
     }
-    // A component with no CASES row is not credited by the table.
-    for (const slug of ["phone-input", "container", "text", "view"]) expect(componentFacts(slug, sources.corpus).tests).not.toContain("test/skins-smoke.test.tsx");
+    // A component with no CASES row is not credited by the table: every platform entry
+    // has rows (the table's own guard), so these are the ones with no platform entries.
+    for (const slug of ["text", "view", "scroll-view", "image"]) expect(componentFacts(slug, sources.corpus).tests).not.toContain("test/skins-smoke.test.tsx");
   });
 
   it("lists the catalog sweeps that drive a page apart from the specs that name it (item 2)", () => {
