@@ -359,8 +359,9 @@ export class CornerSites extends SourceFolder {
     ) {
       sink = node.right;
     } else if (ts.isJsxAttribute(node) && ts.isIdentifier(node.name) && SVG_CORNER.has(node.name.text)) {
+      // `rx={4}` or `rx="4"`; an empty expression is reported as untraced.
       const init = node.initializer;
-      if (init && ts.isJsxExpression(init) && init.expression) sink = init.expression;
+      if (init) sink = ts.isJsxExpression(init) ? (init.expression ?? init) : init;
     }
     // A corner copied off another style (`borderRadius: flat.borderRadius`, a pane taking its
     // surface's corners) is not a corner of its own: the one it copies is traced where it is set.

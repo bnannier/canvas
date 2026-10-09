@@ -49,6 +49,16 @@ export function createX(skin: XSkin) {
 export function Loose(props: { size: number }) {
   return <Text style={{ fontSize: props.size }} />;
 }
+const AXIS = 8;
+export function Axis() {
+  return (
+    <Svg>
+      <SvgText fontSize={AXIS}>a</SvgText>
+      <SvgText fontSize="9.5">b</SvgText>
+      <SvgText fontSize={}>c</SvgText>
+    </Svg>
+  );
+}
 `,
   );
 });
@@ -93,8 +103,14 @@ describe("TypeSites", () => {
     expect(values.filter((v) => v.kind === "computed").map((v) => v.value).sort((a, b) => a - b)).toEqual([14, 17]);
   });
 
+  it("reads an SVG text's fontSize attribute, as an expression or a string", () => {
+    const { values } = scan();
+    expect(at(values, "AXIS")).toEqual([8]);
+    expect(at(values, "Axis")).toEqual([9.5]);
+  });
+
   it("reports what it cannot trace instead of guessing", () => {
     const { unresolved } = scan();
-    expect(unresolved.map((u) => u.path)).toEqual(["Loose"]);
+    expect(unresolved.map((u) => u.path)).toEqual(["Loose", "Axis"]);
   });
 });

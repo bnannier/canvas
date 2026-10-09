@@ -19,7 +19,8 @@
  * read by a key or by any key, a function's return values at a call, a parameter through
  * every call of its function among the scanned files (a component's destructured prop
  * through its default and every JSX use), a component shell's `skin` through the skins its
- * sibling styles module exports, and names imported from another module of the scan. Anything
+ * sibling styles module exports, names imported from another module of the scan, and a
+ * number written as a string (an SVG attribute's, `fontSize="11"`). Anything
  * else is reported as unresolved rather than guessed, so a number the folder cannot see
  * fails its gate instead of passing it.
  */
@@ -181,6 +182,8 @@ export abstract class SourceFolder {
     const next = new Set(seen).add(node);
 
     if (ts.isNumericLiteral(node)) return [{ value: Number(node.text), node, sf, kind: "literal" }];
+    // A number written as a string, as an SVG attribute takes one (`rx="4"`, `fontSize="11"`).
+    if (ts.isStringLiteral(node) && /^-?\d+(?:\.\d+)?$/.test(node.text)) return [{ value: Number(node.text), node, sf, kind: "literal" }];
     if (ts.isPrefixUnaryExpression(node) && node.operator === ts.SyntaxKind.MinusToken) {
       const inner = this.values(node.operand, sf, next);
       return inner && inner.map((o) => ({ ...o, value: -o.value }));

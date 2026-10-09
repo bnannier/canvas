@@ -63,6 +63,7 @@ export function createX(skin: { r: number }) {
         <View style={s.surface(tokens, skin.r)} />
         <View style={{ borderRadius: flat.borderRadius }} />
         <Rect rx={Math.min(skin.r, w / 4)} />
+        <Rect rx="9999" ry={} />
         <Frame radius={6} />
         <Frame />
       </>
@@ -293,7 +294,9 @@ describe("CornerSites", () => {
   it("skips a corner copied off another style, and reports what it cannot trace", () => {
     const { values, unresolved } = scan();
     expect(values.some((v) => v.text.includes("flat."))).toBe(false);
-    expect(unresolved.map((u) => u.path)).toEqual(["Loose"]);
+    // An SVG corner written as a string is read; an empty one is reported.
+    expect(values.some((v) => v.path === "createX" && v.text === '"9999"' && v.value === 9999)).toBe(true);
+    expect(unresolved.map((u) => `${u.path} ${u.text}`)).toEqual(["createX ry={}", "Loose borderTopStartRadius: props.corner"]);
   });
 });
 
