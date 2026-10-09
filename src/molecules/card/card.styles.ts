@@ -20,7 +20,7 @@ import { type HoverMotion } from "../../style/hover.js";
 //   density also carries the card's own flat-child gap (padding implies rhythm). A
 //   pressable card takes Dark Factory's hover lift (`hover`).
 // - iOS follows HIG conventions: iOS has no card control, so the structure is kept
-//   and only iOS touches are applied: a larger 12pt radius with Apple's continuous
+//   and only iOS touches are applied: the iOS card corner with Apple's continuous
 //   (superellipse) corner curve, and the shared Light-treatment 1px border. Native
 //   iOS grouped surfaces are flat, so the resting card drops to no shadow (raised
 //   still lifts).
@@ -28,7 +28,7 @@ import { type HoverMotion } from "../../style/hover.js";
 //   exclusive: the default card is the M3 ELEVATED card (level-1 elevation, NO
 //   visible outline), `flat` is the M3 OUTLINED card (1dp outline, elevation 0),
 //   `raised` lifts the elevated card to M3 level 3 (6dp). Plus the M3 medium
-//   shape (12dp corner radius) and tighter M3 density steps.
+//   shape (the Android card corner) and tighter M3 density steps.
 
 export type Elevation = "raised" | "flat" | "default";
 export type Density = "compact" | "comfortable" | "default";

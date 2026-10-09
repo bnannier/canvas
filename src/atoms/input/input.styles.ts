@@ -8,17 +8,17 @@ import { type ColorTokens, FOCUS_RESET, activeIndicator, shape, type FloatingLab
 // `ring`, never a platform default), and only the native SHAPE, sizing, fill,
 // border treatment, and press feedback change per OS:
 //   iOS: the "iOS Mobile Input Fields" reference (Figma N8TScrzAPwpmwxFS1032my,
-//     see src/style/field-colors.ts): a white `card` box, 44pt tall, an 8pt corner,
-//     a 1pt gray-300 resting hairline (`field-border`), 12pt inset, a 16pt value,
+//     see src/style/field-colors.ts): a white `card` box, 44pt tall, at the iOS field
+//     corner, a 1pt gray-300 resting hairline (`field-border`), 12pt inset, a 16pt value,
 //     a 14pt regular muted title above. Focus tints the border, the glyph and the
 //     caret to the brand (`ring`/`primary`); error tints the border and the glyph
 //     `destructive` and washes the box with a red-50 fill. A prefix/suffix is a
 //     boxed, muted addon with a divider; press (action suffix) = opacity dim.
-//   Android (Material 3 filled): a subtle fill (`muted`), TOP corners ~4 radius
-//     and a flat bottom, a bottom active-indicator underline (1dp `border` at
+//   Android (Material 3 filled): a subtle fill (`muted`), the Material 3 field corner
+//     on TOP and a flat bottom, a bottom active-indicator underline (1dp `border` at
 //     rest -> 2dp `ring` on focus, `destructive` on error), ~56dp tall; the
 //     action suffix uses android_ripple; disabled opacity 0.38.
-//   Web: a white (`card`) box at the 10px field corner with a full 1px border
+//   Web: a white (`card`) box at the field corner with a full 1px border
 //     (error > focus > the resting `field-border` hairline, see
 //     src/style/field-colors.ts), 48 tall at the base size (40 small, 56 large),
 //     16px inset, opacity 0.5 disabled, action press opacity 0.9.
@@ -178,7 +178,7 @@ export const webSkin: InputSkin = {
 
 // ---------- iOS: the iOS input-field reference ----------
 // Drawn to the "iOS Mobile Input Fields" Figma kit (N8TScrzAPwpmwxFS1032my), light
-// and dark: a white `card` box with an 8pt corner (`shape.ios.field`) and a 1pt
+// and dark: a white `card` box at the iOS field corner (`shape.ios.field`) and a 1pt
 // border that resolves error (`destructive`) > focus (`ring`) > the resting
 // gray-300 hairline (`field-border`, see src/style/field-colors.ts for the disclosed
 // contrast trade-off). The error state also washes the box with the reference's

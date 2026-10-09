@@ -10,18 +10,18 @@ import { typeScale } from "../../style/type-scale.js";
 // and its rows stay legible; in solid mode each skin paints its own card. Menus exist
 // on both platforms, so iOS and Android keep their own shapes in the theme's colours
 // (the design language's item 3), and the web takes Dark Factory's menu:
-//   iOS (iOS 26 / Liquid Glass pull-down menu): a very rounded panel (26 radius,
-//     `popover` fill, no border, soft shadow), rows about 44pt tall with 17pt labels,
+//   iOS (iOS 26 / Liquid Glass pull-down menu): a very rounded panel (the iOS menu
+//     corner, `popover` fill, no border, soft shadow), rows about 44pt tall with 17pt labels,
 //     hairline `border` separators between groups, destructive rows in
 //     `destructive-text`; a pressed row tints with a `secondary` highlight (no ripple)
 //     at pressedOpacity 0.8; a disabled row dims to 0.4.
-//   Android (Material 3 menu): an elevated surface (4 radius, `popover`, shadow md,
-//     paddingVertical 8), rows about 48dp tall with 14sp labels and a leading icon
-//     gutter, an android_ripple (alpha(primary, 0.12) state layer) on rows, no
+//   Android (Material 3 menu): an elevated surface (the Material 3 menu corner,
+//     `popover`, shadow md, paddingVertical 8), rows about 48dp tall with 14sp labels
+//     and a leading icon gutter, an android_ripple (alpha(primary, 0.12) state layer) on rows, no
 //     separators; a disabled row dims to 0.38.
 //   Web: Dark Factory's menu (src/style/menu-look.ts): the `popover` card at the menu
 //     corner with an 8px inset, its popover shadow and hairline, 33px rows 2px apart at
-//     an 8px corner with 12.5 / 700 labels, the instant `hover` wash, the eyebrow section
+//     the control corner with 12.5 / 700 labels, the instant `hover` wash, the eyebrow section
 //     heading, the caption shortcut, and a disabled row in the muted ink rather than a dim.
 
 // The contract a platform skin fulfills. The shell renders the wrapper, the
@@ -142,8 +142,8 @@ export const iosSkin: DropdownSkin = {
     backgroundColor: t.popover,
     paddingVertical: 6,
     // Clip the pressed-row highlight and full-bleed separators to the heavily
-    // rounded panel so they don't poke past the ~26pt corners. iOS still draws
-    // the soft shadow outside these bounds.
+    // rounded panel so they don't poke past its corners. iOS still draws the soft
+    // shadow outside these bounds.
     overflow: "hidden",
     ...shadow("lg", t),
   }),

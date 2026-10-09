@@ -11,7 +11,7 @@ import { typeScale } from "./type-scale.js";
 // The panel is the `popover` card at the menu corner with an 8px inset, Dark Factory's
 // popover shadow and its hairline. Dark Factory draws the hairline as a 1px ring outside
 // the box; the kit keeps it as the card's own 1px `border`, the same line one pixel in,
-// which is what the glass material replaces with its rim. Rows sit 2px apart: an 8px
+// which is what the glass material replaces with its rim. Rows sit 2px apart: the control
 // corner, 8 x 10 padding and a 12.5 / 700 label at Dark Factory's 1.3 line height (33
 // tall), with 14px icons. A resting row takes the `hover` wash at once, as Dark Factory's
 // do; a pressed one the firmer `accent`. The section heading is Dark Factory's eyebrow

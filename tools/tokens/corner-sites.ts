@@ -11,7 +11,8 @@
  * app's own pick through a public prop, or a bare number; and every place that draws
  * it, with the platform it draws on (`CornerValue.drawn`), so a constant no platform names
  * is judged on every skin that uses it. tools/tokens/corner-rules.ts judges each one per
- * platform and test/design-rules-shape.test.ts holds the kit to it.
+ * platform and test/design-rules-shape.test.ts holds the kit to it; the same test holds a
+ * comment's corner to what the code it sits on draws (`cornersIn`).
  *
  * The tracing is tools/tokens/source-folder.ts; this module names what it traces (the
  * corner properties) and the tables it reads by name: `shape` and the public `radius`
@@ -19,11 +20,10 @@
  * (src/style/platform-shape.ts).
  */
 
-import { dirname } from "node:path";
 import ts from "typescript";
 import { radius, shape, type PlatformKey, type ShapeTokens } from "../../src/style/tokens.ts";
 import { platformShape } from "../../src/style/platform-shape.ts";
-import { SourceFolder, lineOf, nameOf, unwrap, type Origin, type Sink, type Unresolved } from "./source-folder.ts";
+import { SourceFolder, lineOf, nameOf, namesADeclaration, unwrap, type Origin, type Sink, type Unresolved } from "./source-folder.ts";
 
 /** A corner property: `borderRadius` and its per-corner longhands, physical and logical. */
 export const CORNER_PROPERTY = /^border(?:Top|Bottom|Start|End)?(?:Left|Right|Start|End)?Radius$/;
@@ -66,12 +66,7 @@ export interface CornerValue {
   concentric: string | null;
   /** The source text of the place, for a report. */
   text: string;
-  /**
-   * The directories of the components this number rounds: where it is written and every
-   * place it sets a corner (a Card corner a Radio card reads rounds the Radio too).
-   */
-  rounds: string[];
-  /** Where in its file the number is written (an offset). */
+  /** Where in its file the number is written (an offset), so a comment can be held to the code it sits on. */
   at: number;
   /** Every place the number sets a corner: the property, attribute or assignment. */
   sets: CornerPlace[];
@@ -228,7 +223,6 @@ export class CornerSites extends SourceFolder {
       ...(isRead ? { read: readOf(o) } : {}),
       concentric: o.kind === "computed" ? concentricOf(o) : null,
       text: o.node.getText(o.sf),
-      rounds: [...new Set([dirname(o.sf.fileName), ...sinks.map((s) => dirname(s.sf.fileName))])],
       at: o.node.getStart(o.sf),
       sets: sinks.map((s) => this.place(s.node, s.sf)),
       drawn: this.drawnPlaces(o, sinks),
@@ -259,6 +253,37 @@ export class CornerSites extends SourceFolder {
       for (const place of places) out.set(`${place.file}:${place.at}`, place);
     }
     return [...out.values()];
+  }
+
+  /**
+   * The corners the code in a span of a scanned file draws, from the corners `scan` found:
+   * every corner written, set or drawn in the span; or, for code that draws none itself (a
+   * platform entry handing its skin to the shell), the corners of the module-level consts
+   * it names, followed the same way.
+   */
+  cornersIn(values: CornerValue[], file: string, start: number, end: number): Set<number> {
+    return this.cornersInSpan(values, this.load(file), start, end, new Set());
+  }
+
+  private cornersInSpan(values: CornerValue[], sf: ts.SourceFile, start: number, end: number, seen: Set<ts.Node>): Set<number> {
+    const within = (place: { file: string; at: number }) => place.file === sf.fileName && place.at >= start && place.at < end;
+    const direct = new Set(values.filter((v) => within(v) || v.sets.some(within) || v.drawn.some(within)).map((v) => v.value));
+    if (direct.size > 0) return direct;
+    const named = new Set<number>();
+    const visit = (node: ts.Node) => {
+      if (ts.isIdentifier(node) && node.getStart(sf) >= start && namesADeclaration(node)) {
+        const decl = this.resolve(node, sf);
+        if (decl?.kind === "var" && !seen.has(decl.node) && this.topDeclarationOf(decl.node, decl.sf)?.node === decl.node && !isFunction(decl.node)) {
+          seen.add(decl.node);
+          for (const value of this.cornersInSpan(values, decl.sf, decl.node.getStart(decl.sf), decl.node.getEnd(), seen)) named.add(value);
+        }
+      }
+      ts.forEachChild(node, (child) => {
+        if (child.getEnd() > start && child.getStart(sf) < end) visit(child);
+      });
+    };
+    visit(sf);
+    return named;
   }
 
   /** Where a place in the source draws: its platform's name, shared code, or every place that uses its style constant. */

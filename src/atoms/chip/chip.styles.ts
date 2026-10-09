@@ -14,7 +14,7 @@ import { type ChipSkin } from "./chip.shared.js";
 //     iOS ships no chip control, so its skin is the web skin; the remove control still
 //     pads out to the 44pt HIG minimum through platformMinTarget.
 //   Android (Material 3 chips, m3.material.io/components/chips/specs): a 32dp
-//     container with an 8dp corner radius (NOT a pill), 16dp side padding that
+//     container at the Material 3 chip corner (NOT a pill), 16dp side padding that
 //     drops to 8dp beside an icon (`sidePadding`, resolved per side in the shell),
 //     8dp between elements, a label-large label (14/20, 500, tracking 0), an 18dp
 //     remove glyph with a 48dp close target, the idle chip's 1dp outline, and the

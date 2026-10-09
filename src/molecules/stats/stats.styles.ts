@@ -21,13 +21,13 @@ import { type StatsSkin } from "./stats.shared.js";
 //     default shadow, padding 24), the plain parent the same, gaps 16/24, a 36/400
 //     tabular value, a 16 muted label, a 12/500 delta. Press = opacity dim (0.9).
 //   iOS (HIG / SF): iOS has no stat-tile control, so this stays a card-like inset
-//     surface following SF conventions — a softer 12-radius continuous
-//     (superellipse) corner, the same hairline border with NO shadow (iOS
+//     surface following SF conventions: the iOS card corner, continuous
+//     (superellipse), the same hairline border with NO shadow (iOS
 //     inset-grouped surfaces read flat), slightly tighter density, SF tracking
 //     tightened on the value (-0.5), and SF Pro Text table tracking on the rest
 //     (16pt -0.31, 14pt -0.15, 12pt 0). Press = opacity dim (~0.8).
 //   Android (Material 3 card): M3 has no stat component, so this stays an M3
-//     outlined card — a 12-radius corner, a 1px outline and NO shadow (M3 outlined
+//     outlined card: the Android card corner, a 1px outline and NO shadow (M3 outlined
 //     cards are flat), M3 type roles (value headline-small 24/32/400/0, title
 //     title-medium 16/24/500/+0.15 or title-small 14/20/500/+0.1, label body-medium
 //     14/20/400/+0.25, delta label-medium 12/16/500/+0.5). Press = android_ripple

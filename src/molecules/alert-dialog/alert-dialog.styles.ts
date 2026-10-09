@@ -11,8 +11,8 @@ import { type ColorTokens, shadow, alpha, widths, shape } from "../../style/inde
 // action is never see-through. The BRAND survives on every platform (the `primary`
 // confirm and the `destructive` red); only the native SHAPE, sizing, title
 // alignment, action layout, and press feedback change per OS:
-//   iOS (iOS 27 / Liquid Glass alert): a rounded card (~28 radius, `popover`
-//     fill, soft shadow, no border), a LEFT-aligned bold title and a left-aligned
+//   iOS (iOS 27 / Liquid Glass alert): a rounded card (the iOS dialog corner,
+//     `popover` fill, soft shadow, no border), a LEFT-aligned bold title and a left-aligned
 //     `muted-foreground` message; exactly two actions rendered as two CAPSULES
 //     side by side (no divider) — a gray Cancel capsule (`secondary` fill, 400
 //     label) and a Confirm capsule. The non-destructive PRIMARY confirm is a
@@ -21,8 +21,8 @@ import { type ColorTokens, shadow, alpha, widths, shape } from "../../style/inde
 //     (`destructive`), it is NOT a red-filled capsule. The body confirmation
 //     field renders the iOS-styled Input (the skin owns it), a flat gray-filled
 //     borderless field with no focus ring. Press = opacity dim (~0.85).
-//   Android (Material 3 AlertDialog): an elevated surface (28 radius, `popover`
-//     fill, soft shadow), a LEFT-aligned title and left-aligned body; two M3 TEXT
+//   Android (Material 3 AlertDialog): an elevated surface (the Material 3 dialog
+//     corner, `popover` fill, soft shadow), a LEFT-aligned title and left-aligned body; two M3 TEXT
 //     buttons bottom-right (Cancel then Confirm/Delete), the confirm tinted with
 //     the brand `primary` and a destructive confirm in the `destructive` red.
 //     Press = android_ripple (brand state layer).

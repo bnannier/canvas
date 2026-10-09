@@ -23,8 +23,8 @@ import { destructiveText } from "../../style/destructive-text.js";
 //     with Apple's continuous (superellipse) corner curve, the same
 //     comfortable spacing, and SF Pro Text tracking (galleryTitle 12pt = 0,
 //     cardTitle 14pt = -0.15, subtitles 12pt = 0); press = opacity dim (~0.9).
-//   Android (Material 3): M3 corner + type conventions — a more-rounded 12dp
-//     thumbnail (M3 medium shape), a touch more breathing room in the grid gap,
+//   Android (Material 3): M3 corner + type conventions: a more-rounded thumbnail at
+//     the tile corner (M3 medium shape), a touch more breathing room in the grid gap,
 //     and M3 type roles: galleryTitle = label-medium (12/16/500/+0.5), cardTitle =
 //     title-small (14/20/500/+0.1), subtitles = body-small (12/16/400/+0.4); press
 //     = surfaceRipple (a neutral surface state layer), no opacity dim.

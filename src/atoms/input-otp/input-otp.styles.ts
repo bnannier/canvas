@@ -9,14 +9,14 @@ import { type InputOTPSkin, type Size } from "./input-otp.shared.js";
 // platform: the active/focused cell always lights up in `ring`, the kit's one focus
 // colour, never a platform default (no iOS system blue, no M3 default). Only the native
 // SHAPE, sizing, and structure of the segmented field change per OS:
-//   iOS (HIG): rounded-square cells at the 8pt field corner on the `card` fill,
+//   iOS (HIG): rounded-square cells at the iOS field corner on the `card` fill,
 //     SEPARATED by a small gap; a 1pt `field-border` hairline turns `ring` on the
 //     active cell. Base cell 44x52.
-//   Android (Material 3): OUTLINED cells (1dp `border`), SEPARATED by a gap, M3 medium
-//     corner (~12 radius); the active cell border thickens to 2dp in `ring`. M3 type
+//   Android (Material 3): OUTLINED cells (1dp `border`), SEPARATED by a gap, the M3
+//     medium corner; the active cell border thickens to 2dp in `ring`. M3 type
 //     scale. Base cell ~52x56.
 //   Web: matched to shadcn input-otp, a CONNECTED group of `card` cells that share a
-//     `field-border` hairline (gap 0), only the outer corners rounded at the 10px field
+//     `field-border` hairline (gap 0), only the outer corners rounded at the field
 //     corner, the active cell tinted `ring` with a soft 3px ring at 50% alpha. Base
 //     cell 48x48.
 // Disabled dims the whole control (opacity in the shell). Each cell centers its digit;
@@ -96,8 +96,8 @@ function caretBar(color: string, size: Size): ViewStyle {
 
 // ---------- iOS: the reference's field box per cell, separated, ring on active ----------
 // Each cell is the iOS input-field reference's box (see input.styles.ts): `card`
-// fill, the 8pt corner, a 1pt resting `field-border` hairline that turns `ring` on
-// the active cell, so a code field under an Input reads as the same family.
+// fill, the iOS field corner, a 1pt resting `field-border` hairline that turns `ring`
+// on the active cell, so a code field under an Input reads as the same family.
 const IOS_W: Record<Size, number> = { small: 38, base: 44, large: 52 };
 const IOS_H: Record<Size, number> = { small: 44, base: 52, large: 60 };
 

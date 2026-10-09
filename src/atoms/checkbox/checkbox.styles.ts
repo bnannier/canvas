@@ -12,11 +12,11 @@ import { type CheckboxSkin, type Size } from "./checkbox.shared.js";
 //     SELECTION: the edit-mode selection circle, a 22pt ring in the control boundary
 //     when empty, the brand fill with a white check (or dash) when selected; press =
 //     opacity dim (~0.8).
-//   Android (Material 3): an 18dp square with a 2dp corner radius and a 2dp outline
-//     when empty, brand fill + white check when checked; press = android_ripple over
+//   Android (Material 3): an 18dp square at the Material 3 checkbox corner with a 2dp
+//     outline when empty, brand fill + white check when checked; press = android_ripple over
 //     a 40dp state layer; disabled opacity 0.38.
-//   Web: a 16/20/24px box per size with the 6px corner and a 1px `input` border, the
-//     brand fill with the `primary-foreground` check.
+//   Web: a 16/20/24px box per size at the checkbox corner with a 1px `input` border,
+//     the brand fill with the `primary-foreground` check.
 
 // Box dimensions per size.
 const WEB_BOX: Record<Size, number> = { small: 16, base: 20, large: 24 };

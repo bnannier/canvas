@@ -10,15 +10,15 @@ import { platformShape } from "../../style/platform-shape.js";
 // dimming. The BRAND survives on every platform (the SOLID `card` fill and the
 // content type are unchanged); only the native SHAPE/elevation/scrim shift:
 //   iOS (iOS 27 kit Sheets): a lineless panel (no border) with the iOS sheet's
-//     large CONTINUOUS 38pt corner radius on the inner edge — a side drawer rounds
-//     its leading (inner) edge 38, a bottom sheet rounds its top corners 38 (the
+//     large CONTINUOUS corner on the inner edge: a side drawer rounds its leading
+//     (inner) edge at the iOS sheet corner, a bottom sheet its top corners (the
 //     concentric sheet corner of iOS 27, superseding the pre-iOS-26 16pt), over a
 //     soft 0/15/50 rgba(0,0,0,0.18) elevation, plus an optional centered grabber
 //     on the sheet edges. The scrim resolves PER SCHEME (light 0.2, dark 0.48).
-//   Android (Material 3 side/bottom sheet): a lineless panel with the M3 rounding
-//     — a side sheet rounds its INNER (content-facing) vertical edge 16, a bottom
-//     sheet rounds its top corners 28 — over the M3 modal-sheet elevation level 1
-//     (1dp). The bottom sheet caps at 640dp (56dp margins beyond) and the side
+//   Android (Material 3 side/bottom sheet): a lineless panel with the M3 rounding:
+//     a side sheet rounds its INNER (content-facing) vertical edge at the M3 large
+//     shape, a bottom sheet its top corners at the Android sheet corner, over the M3
+//     modal-sheet elevation level 1 (1dp). The bottom sheet caps at 640dp (56dp margins beyond) and the side
 //     sheet at 400dp (M3 docked width tokens); a 32x4 M3 drag handle tops the
 //     bottom sheet. The scrim is the M3 standard scrim (~0.32).
 //   Web: an opaque `card` panel at the sheet corner on its inner edge, with a 1px
@@ -216,10 +216,10 @@ export const iosSkin: DrawerSkin = {
 };
 
 // ---------- Android (Material 3 side/bottom sheet): lineless, M3 rounding, level-1 elevation ----------
-// The M3 modal sheets: a lineless panel (no border) with the M3 rounding — a side
-// sheet rounds its INNER (content-facing) vertical edge 16 (the M3 large shape), a
-// bottom sheet rounds its top corners 28 (the M3 extra-large shape) — over the M3
-// modal-sheet container elevation level 1 (1dp, shadow("sm"), NOT the 8dp
+// The M3 modal sheets: a lineless panel (no border) with the M3 rounding: a side
+// sheet rounds its INNER (content-facing) vertical edge at the M3 large shape, a
+// bottom sheet its top corners at the M3 extra-large shape (the Android sheet
+// corner), over the M3 modal-sheet container elevation level 1 (1dp, shadow("sm"), NOT the 8dp
 // shadow("lg") it replaces). The bottom sheet caps at the M3 640dp max-width
 // (centered, 56dp margins beyond) and the side sheet at the 400dp docked max,
 // with a 32x4 M3 drag handle atop the bottom sheet. The scrim is the M3 standard

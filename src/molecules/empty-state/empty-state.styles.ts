@@ -10,11 +10,11 @@ import { type ColorTokens, alpha, shape } from "../../style/index.js";
 // ContentUnavailableView is code-only) or Android (Material 3 dropped the M1/M2
 // empty-states pattern), so there is no native shape to match — each skin keeps the
 // established structure and applies only the platform's own surface conventions:
-//   iOS (HIG): a continuous-corner bordered card (radius 12 with
+//   iOS (HIG): a continuous-corner bordered card (the iOS card corner with
 //     borderCurve:"continuous", the grouped-inset feel), SF Pro Text tracking on the
 //     title (16pt: -0.31) and description (14pt: -0.15); press feedback is N/A (the
 //     surface has no pressable of its own; the action is the iOS-skinned Button atom).
-//   Android (Material 3): an M3 medium-shape card (radius 12), M3 type roles
+//   Android (Material 3): an M3 medium-shape card (the Android card corner), M3 type roles
 //     (title-medium 16/24/500/+0.15, body-medium 14/20/+0.25); the action is the
 //     M3-skinned Button atom, which carries its own ripple, so this surface adds none.
 //   Web: a dashed drop-zone card at the card corner, padding 16/24 (compact) or
