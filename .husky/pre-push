@@ -24,6 +24,7 @@ bun run check-size
 bun run test
 bun run docs:gen:check
 bun run check:docs-components
+bun run audit:checklists:check
 bun run privacy:gen:check
 bun run raster:gen:check
 bun run designmd:gen:check
