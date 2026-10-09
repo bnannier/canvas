@@ -114,6 +114,34 @@ describe("a loosely spelled heading on a real page", () => {
   }
 });
 
+// The same probe for a "##" where Do & Don't wants none: a pair's "###" title typed as
+// "##", or a "##" with no name. Markdown and the parser both read it as a new section,
+// which ends Do & Don't there and takes the pairs after it off the page, so the gate
+// fails it at its line instead of passing a page that renders a fraction of its pairs.
+describe("a stray '##' inside Do & Don't on a real page", () => {
+  const badge = componentPages(REPO).find((p) => p.dir === "badge");
+  if (!badge) throw new Error("src/atoms/badge/badge.md is gone; point this probe at another page");
+  const lines = badge.content.split("\n");
+  const pristine = splitDoc(badge.content).donts;
+  // The second pair's "###" title, so a pair still precedes the stray heading.
+  const dontsAt = lines.indexOf("## Do & Don't");
+  const titles = lines.map((l, i) => (i > dontsAt && l.startsWith("### ") ? i : -1)).filter((i) => i !== -1);
+  const second = titles[1];
+  if (second === undefined) throw new Error("src/atoms/badge/badge.md has fewer than two Do & Don't pairs; point this probe at another page");
+
+  it(`"## ${lines[second].slice(4)}" for its "###" title fails S3 at its line`, () => {
+    const md = lines.map((l, i) => (i === second ? `## ${l.slice(4)}` : l)).join("\n");
+    expect(splitDoc(md).donts).toEqual(pristine.slice(0, 1));
+    expect(docStructureViolations(md, { name: "Badge" }).map((v) => `${v.line} ${v.rule}`)).toEqual([`${second + 1} S3`]);
+  });
+
+  it(`a "##" with no name before "${lines[second]}" fails S3 at its line`, () => {
+    const md = [...lines.slice(0, second), "##", "", ...lines.slice(second)].join("\n");
+    expect(splitDoc(md).donts).toEqual(pristine.slice(0, 1));
+    expect(docStructureViolations(md, { name: "Badge" }).map((v) => `${v.line} ${v.rule}`)).toEqual([`${second + 1} S3`]);
+  });
+});
+
 describe("pageStructureViolations", () => {
   const body =
     `A widget.\n\n## Usage\n\n${F}tsx\n<Widget />\n${F}\n\n## Variants\n\n### Small\n\n${F}tsx\n<Widget small />\n${F}\n\n` +

@@ -95,11 +95,15 @@ function headingOf(line: string): { level: number; text: string; raw: string } |
 // - S2  A prose intro sits between the title and the first "##" section, with no
 //       fence, "###" heading or Do/Don't marker in it.
 // - S3  "## Usage", "## Variants" and "## Do & Don't" each appear exactly once and in
-//       that order, Usage first. Do & Don't ends at the next "##"; a section of the
-//       page's own ("## Touch area") may follow it, never come before it.
-// - S4  Usage holds exactly one non-empty fence and no "###" heading.
+//       that order, Usage first, and every "##" names its section. Do & Don't ends at
+//       the next "##"; a section of the page's own ("## Touch area") may follow it,
+//       never come before it, and holds no Do/Don't marker (a pair under it would never
+//       reach the page, the mark of a pair's "###" title typed as "##").
+// - S4  Usage holds exactly one non-empty fence and no "###" heading or Do/Don't
+//       marker.
 // - S5  Variants holds at least one "### <label>"; each is followed by exactly one
-//       non-empty fence, and no fence sits before the first one.
+//       non-empty fence, and no fence sits before the first one. No Do/Don't marker
+//       sits here: pairs go under Do & Don't.
 // - S6  Do & Don't holds at least one "### <title>" group and every marker and fence
 //       sits in one; a group is exactly one **Do** and one **Don't**, each with a
 //       caption and exactly one non-empty fence of its own, and the Don't fence
@@ -295,8 +299,22 @@ export function docStructureViolations(src: string, { name }: { name: string }):
   }
   const dontsAt = firstAt[2] === -1 ? sections.length : firstAt[2];
   sections.forEach((s, i) => {
-    if (!required(s) && i < dontsAt) {
+    // A "##" with no name still opens a section, in Markdown and in the parser, and ends
+    // whatever is above it, so nothing under it reaches the page; it is never the page's
+    // own section.
+    if (s.name === "") {
+      add(s.heading.line, "S3", `a "##" with no section name; it still opens a section that ends whatever is above it, and nothing under it reaches the page: name the section or remove the line`);
+      return;
+    }
+    if (required(s)) return;
+    // A section of the page's own is not Do & Don't, so a pair under it never reaches the
+    // page. Most often it is a pair's "###" title typed as "##", which ends Do & Don't
+    // there and takes that pair and every one after it off the page.
+    const markers = s.blocks.filter((b): b is MarkerBlock => b.kind === "marker");
+    if (i < dontsAt) {
       add(s.heading.line, "S3", `"## ${s.name}" sits before "## Do & Don't"; a section of the page's own goes after Do & Don't`);
+    } else if (markers.length) {
+      add(s.heading.line, "S3", `"## ${s.name}" holds Do/Don't markers (line ${markers.map((m) => m.line).join(", ")}), but Do & Don't ends at a "##", so they never reach the page; a pair's title is a "###" under "## Do & Don't"`);
     }
   });
   const sectionRule = (s: Section): StructureRule => (required(s) ? SECTION_RULE[s.name] : "S3");
@@ -333,6 +351,7 @@ export function docStructureViolations(src: string, { name }: { name: string }):
     for (const b of s.blocks) {
       if (b.kind === "fence" && isBlank(b.code)) add(b.line, "S4", "the Usage fence is empty");
       if (b.kind === "heading") add(b.line, "S4", `"### ${b.text}" in Usage; a labelled example belongs under "## Variants"`);
+      if (b.kind === "marker") add(b.line, "S4", `a ${markerName(b.side)} marker in Usage; pairs go under "## Do & Don't"`);
     }
   }
 
@@ -341,6 +360,7 @@ export function docStructureViolations(src: string, { name }: { name: string }):
     const { lead, groups } = subsections(s.blocks);
     if (groups.length === 0) add(s.heading.line, "S5", `Variants has no "### <label>" example`);
     for (const b of lead) if (b.kind === "fence") add(b.line, "S5", `a fence before the first "###"; every variant sits under its own "### <label>"`);
+    for (const b of s.blocks) if (b.kind === "marker") add(b.line, "S5", `a ${markerName(b.side)} marker in Variants; pairs go under "## Do & Don't"`);
     for (const g of groups) {
       if (g.title === "") add(g.line, "S5", "a variant heading with no label");
       const fences = g.blocks.filter((b) => b.kind === "fence");

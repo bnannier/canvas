@@ -717,6 +717,27 @@ describe("docStructureViolations", () => {
       expect(found(page((l) => [...l.slice(0, 18), "## Touch area", "", "Prose.", "", ...l.slice(18)]))).toEqual(["19 S3"]);
     });
 
+    it("rejects a '##' with no name, once, before Do & Don't or after it", () => {
+      expect(found(page((l) => [...l.slice(0, 18), "##", "", ...l.slice(18)]))).toEqual(["19 S3"]);
+      expect(found(page((l) => [...l, "##", "", "Prose.", ""]))).toEqual(["35 S3"]);
+      expect(found(page((l) => [...l, "##  ", ""]))).toEqual(["35 S3"]);
+    });
+
+    // A second pair whose "### Hints" title starts at line 35.
+    const HINTS = ["### Hints", "", "**Do**: Hint it.", "", `${F}tsx`, `<Widget hint="Name" />`, F, "", "**Don't**: Hint nothing.", "", `${F}tsx`, `<Widget hint="" />`, F, ""];
+
+    it("rejects a pair's '###' title typed as '##', which ends Do & Don't and drops the pair", () => {
+      const md = page((l) => [...l, "## Hints", ...HINTS.slice(1)]);
+      expect(splitDoc(md).donts.map((d) => d.title)).toEqual(["Labels"]);
+      expect(found(md)).toEqual(["35 S3"]);
+      expect(messages(md)[0]).toContain("(line 37, 43)");
+      expect(found(page((l) => [...l, ...HINTS]))).toEqual([]);
+    });
+
+    it("rejects a Do/Don't marker in a section of the page's own", () => {
+      expect(found(page((l) => [...l, "## Touch area", "", "**Don't**: shrink it.", ""]))).toEqual(["35 S3"]);
+    });
+
     it("reads a section name exactly: '## Do & Don'ts' is not Do & Don't", () => {
       expect(found(page((l) => l.map((x) => (x === "## Do & Don't" ? "## Do & Don'ts" : x))))).toEqual(["19 S3", "33 S3"]);
     });
@@ -742,6 +763,10 @@ describe("docStructureViolations", () => {
     it("rejects a '###' heading in Usage", () => {
       expect(found(page((l) => [...l.slice(0, 6), "### Basic", "", ...l.slice(6)]))).toEqual(["7 S4"]);
     });
+
+    it("rejects a Do/Don't marker in Usage", () => {
+      expect(found(page((l) => [...l.slice(0, 6), "**Do**: stray", "", ...l.slice(6)]))).toEqual(["7 S4"]);
+    });
   });
 
   describe("S5: Variants", () => {
@@ -763,6 +788,10 @@ describe("docStructureViolations", () => {
 
     it("rejects an empty variant fence", () => {
       expect(found(page((l) => [...l.slice(0, 15), ...l.slice(16)]))).toEqual(["15 S5"]);
+    });
+
+    it("rejects a Do/Don't marker in Variants", () => {
+      expect(found(page((l) => [...l.slice(0, 14), "**Don't**: stray", "", ...l.slice(14)]))).toEqual(["15 S5"]);
     });
   });
 
