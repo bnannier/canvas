@@ -18,12 +18,12 @@ Audit checklist for `/components/breadcrumb`. The facts block and the variants t
 | Hand-off open gaps | none |
 | Hand-off settled | Breadcrumb.separator (Boolean axis: `chevron`, `slash`, `dot`) |
 | Hand-off metric gaps | none |
-| Interactions registry | in the inventory; evidence: none registered |
+| Interactions registry | in the inventory; evidence: breadcrumb-press (unit-web, test/breadcrumb.test.tsx) |
 | Overlay recipe | none |
 | Interaction states | captured: focus on Default (web row; desktop), pressed on Default (web row; desktop). |
 | MeasureProps | not adopted |
 | Touch target | `breadcrumb.shared.tsx`: hitSlop, minTarget; `breadcrumb.styles.ts`: minTarget |
-| Tests importing it | 4: `test/design-rules-skins.test.ts`, `test/new-components.test.tsx`, `test/skins-smoke.test.tsx`, `test/touch-target-coverage.test.ts` |
+| Tests importing it | 5: `test/breadcrumb.test.tsx`, `test/design-rules-skins.test.ts`, `test/new-components.test.tsx`, `test/skins-smoke.test.tsx`, `test/touch-target-coverage.test.ts` |
 | E2E naming it | 0: none |
 | E2E catalog sweeps | 6: `e2e/a11y/components.e2e.ts` (componentRoutes), `e2e/responsive/component-widths.e2e.ts` (contentRoutes, componentRoutes), `e2e/smoke/examples.e2e.ts` (componentExamples), `e2e/smoke/routes.e2e.ts` (allRoutes), `e2e/visual/components.e2e.ts` (componentRoutes), `e2e/visual/materials.e2e.ts` (MATERIAL_ROUTES) |
 <!-- audit:facts:end -->
@@ -84,6 +84,10 @@ One row per finding. Severity: critical, high, medium, low. Cell: a capture id f
 
 | ID | Severity | Cell | Summary | Status | Fix commit |
 |---|---|---|---|---|---|
+| K7-1 | low | source | The `maxItems` JSDoc said the last `maxItems - 2` crumbs are kept; the code keeps `maxItems - 1`, as the docs intend. The JSDoc and the comment now say so. | fixed | 42eb980d |
+| K7-2 | medium | source | The home icon reports onItemPress("Home", 0), the same index as the trail's first crumb, and a trail that starts at Home then has two links named Home. Owner decision pending: an `onHomePress`, index -1, or keep 0 and document it. | open |  |
+| K7-3 | low | source | The chevron direction is read once at module load (SEPARATOR_GLYPH), so it cannot follow a runtime direction change on the web. | open |  |
+| K7-4 | medium | source | Crumbs are role=link Pressables with no href, so on the web they are not real links (no URL, no open in a new tab). | open |  |
 
 ## Sign-off
 

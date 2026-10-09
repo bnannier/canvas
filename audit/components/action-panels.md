@@ -23,7 +23,7 @@ Audit checklist for `/components/action-panels`. The facts block and the variant
 | Interaction states | static: A panel of text beside its actions: its controls are kit Buttons, Switches and fields, whose own recipes capture them. |
 | MeasureProps | not adopted |
 | Touch target | no touch-target name (the exports of `src/style/touch-target.ts`, `src/style/touch-target-seed.ts`, `src/style/touch-seam.ts`, `src/style/clip-slop.ts`, the `TouchTargetSkin` fields, or `hitSlop`) in its implementation modules |
-| Tests importing it | 3: `test/behavior-smoke-b.test.tsx`, `test/design-rules-skins.test.ts`, `test/skins-smoke.test.tsx` |
+| Tests importing it | 4: `test/action-panel.test.tsx`, `test/behavior-smoke-b.test.tsx`, `test/design-rules-skins.test.ts`, `test/skins-smoke.test.tsx` |
 | E2E naming it | 0: none |
 | E2E catalog sweeps | 6: `e2e/a11y/components.e2e.ts` (componentRoutes), `e2e/responsive/component-widths.e2e.ts` (contentRoutes, componentRoutes), `e2e/smoke/examples.e2e.ts` (componentExamples), `e2e/smoke/routes.e2e.ts` (allRoutes), `e2e/visual/components.e2e.ts` (componentRoutes), `e2e/visual/materials.e2e.ts` (MATERIAL_ROUTES) |
 <!-- audit:facts:end -->
@@ -84,6 +84,9 @@ One row per finding. Severity: critical, high, medium, low. Cell: a capture id f
 
 | ID | Severity | Cell | Summary | Status | Fix commit |
 |---|---|---|---|---|---|
+| K7-1 | medium | source | The toggle was a bare Switch named by the title beside sibling copy, the hand-composed label anatomy CLAUDE.md bans (a split tap target, its own type). The title is now the Switch's label and the description its muted line, and the whole row toggles. | fixed | 42eb980d |
+| K7-2 | medium | source | `inline` never stacked at phone width: the shell had no container measurement. The row now measures itself and stacks the action under the copy at or below the `md` measure, from the window on a phone's first frame. | fixed | 42eb980d |
+| K7-3 | low | source | Since the toggle row is the Switch's own anatomy, `destructive` no longer reddens a toggle's title (a Switch label carries no tone). Owner decision if a destructive setting row needs a tone. | open |  |
 
 ## Sign-off
 

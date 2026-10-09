@@ -23,7 +23,7 @@ Audit checklist for `/components/media-objects`. The facts block and the variant
 | Interaction states | captured: focus on Tappable (web row; desktop), pressed on Tappable (web row; desktop). |
 | MeasureProps | not adopted |
 | Touch target | `media-objects.shared.tsx`: minTarget; `media-objects.styles.ts`: minTarget |
-| Tests importing it | 4: `test/behavior-smoke-b.test.tsx`, `test/design-rules-skins.test.ts`, `test/skins-smoke.test.tsx`, `test/touch-target-coverage.test.ts` |
+| Tests importing it | 6: `test/behavior-smoke-b.test.tsx`, `test/design-rules-skins.test.ts`, `test/media-object.test.tsx`, `test/no-console-violations.test.tsx`, `test/skins-smoke.test.tsx`, `test/touch-target-coverage.test.ts` |
 | E2E naming it | 0: none |
 | E2E catalog sweeps | 6: `e2e/a11y/components.e2e.ts` (componentRoutes), `e2e/responsive/component-widths.e2e.ts` (contentRoutes, componentRoutes), `e2e/smoke/examples.e2e.ts` (componentExamples), `e2e/smoke/routes.e2e.ts` (allRoutes), `e2e/visual/components.e2e.ts` (componentRoutes), `e2e/visual/materials.e2e.ts` (MATERIAL_ROUTES) |
 <!-- audit:facts:end -->
@@ -84,6 +84,10 @@ One row per finding. Severity: critical, high, medium, low. Cell: a capture id f
 
 | ID | Severity | Cell | Summary | Status | Fix commit |
 |---|---|---|---|---|---|
+| K7-1 | high | source | With `onPress` and an `action`, the action rendered inside the row's button: invalid nesting (a React DOM error) and one ambiguous control. The surface is now a frame holding the pressable row and the action as siblings, with the card's inset split so the row's tap area still reaches the edge. | fixed | 42eb980d |
+| K7-2 | medium | source | A tappable row was named by its title alone, so its description and meta were never announced. The label now carries every line the row shows. | fixed | 42eb980d |
+| K7-3 | low | source | A tappable row whose `body` is a node rather than text cannot read that body into its label, so the body is not announced. | open |  |
+| K7-4 | low | source | A photo row names its Avatar after the title, so the web reads the title twice (the image, then the text); see image K7-2 for the native side. | open |  |
 
 ## Sign-off
 

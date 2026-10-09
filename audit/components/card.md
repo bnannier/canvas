@@ -92,6 +92,10 @@ One row per finding. Severity: critical, high, medium, low. Cell: a capture id f
 
 | ID | Severity | Cell | Summary | Status | Fix commit |
 |---|---|---|---|---|---|
+| K7-1 | high | source | CardMedia's `alt` and `accessibilityLabel` never named the cover on the web: it passes `alt` to Image, which react-native-web dropped. Fixed through Image's name resolution; test/card.test.tsx pins it. | fixed | 3926fe19 |
+| K7-2 | medium | source | CardTitle is plain Text with no heading semantics. Owner decision pending: a heading role with a default level and a level prop, or plain text with the Card's `title` owning the heading. | open |  |
+| K7-3 | low | source | CardSeparator is a bare View: neither role=separator nor hidden from assistive tech. | open |  |
+| K7-4 | low | source | The parts' `style` props are `StyleProp<TextStyle>` (CardTitle, CardDescription) and `StyleProp<ViewStyle>` (CardSeparator) rather than `LayoutStyle`, a style escape hatch by rubric item 1. | open |  |
 
 ## Sign-off
 

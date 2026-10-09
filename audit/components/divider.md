@@ -23,7 +23,7 @@ Audit checklist for `/components/divider`. The facts block and the variants tabl
 | Interaction states | static: A separator: it takes no input (the Action example's control is a Button, whose states the button recipes capture). |
 | MeasureProps | not adopted |
 | Touch target | no touch-target name (the exports of `src/style/touch-target.ts`, `src/style/touch-target-seed.ts`, `src/style/touch-seam.ts`, `src/style/clip-slop.ts`, the `TouchTargetSkin` fields, or `hitSlop`) in its implementation modules |
-| Tests importing it | 3: `test/behavior-smoke-c.test.tsx`, `test/design-rules-skins.test.ts`, `test/skins-smoke.test.tsx` |
+| Tests importing it | 4: `test/behavior-smoke-c.test.tsx`, `test/design-rules-skins.test.ts`, `test/divider.test.tsx`, `test/skins-smoke.test.tsx` |
 | E2E naming it | 0: none |
 | E2E catalog sweeps | 6: `e2e/a11y/components.e2e.ts` (componentRoutes), `e2e/responsive/component-widths.e2e.ts` (contentRoutes, componentRoutes), `e2e/smoke/examples.e2e.ts` (componentExamples), `e2e/smoke/routes.e2e.ts` (allRoutes), `e2e/visual/components.e2e.ts` (componentRoutes), `e2e/visual/materials.e2e.ts` (MATERIAL_ROUTES) |
 <!-- audit:facts:end -->
@@ -81,6 +81,8 @@ One row per finding. Severity: critical, high, medium, low. Cell: a capture id f
 
 | ID | Severity | Cell | Summary | Status | Fix commit |
 |---|---|---|---|---|---|
+| K7-1 | medium | source | A vertical Divider was a separator with no aria-orientation, so the web announced it as horizontal. | fixed | 3926fe19 |
+| K7-2 | medium | source | A labelled Divider kept role=separator, whose children are presentational, with no name, so its label was never read on the web. It is now named by its label through aria-labelledby, which leaves the native tree reading the label once. | fixed | 3926fe19 |
 
 ## Sign-off
 
