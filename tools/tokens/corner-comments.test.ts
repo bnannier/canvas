@@ -3,7 +3,7 @@ import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { CornerSites } from "./corner-sites.ts";
-import { cornerClaims, handoffClaims, type SourceClaim } from "./corner-comments.ts";
+import { claimHolds, cornerClaims, handoffClaims, type SourceClaim } from "./corner-comments.ts";
 
 // The comment side of test/design-rules-shape.test.ts: a corner a comment states is held to
 // what the code the comment sits on draws, not to anything its component draws elsewhere.
@@ -36,6 +36,12 @@ export const webSkin = {
 const label = \`\${webSkin.field.borderRadius}\`;
 // After a template literal: the 8pt corner of the iOS row.
 export const iosSkin = { row: { borderRadius: shape.ios.field }, label };
+// Size-dependent, one element: the 6px corner small and the 8px corner large.
+export const sizedSkin = { box: (size: Size) => ({ borderRadius: size === "small" ? 6 : 8 }) };
+// The whole skin: a 12pt card corner and an 8pt editor corner.
+export const wholeSkin = { outline: { borderRadius: shape.ios.card }, editor: { borderRadius: shape.ios.field }, dot: { borderRadius: 9999 } };
+// The menu skin at its 12px corner, its dots round.
+export const menuSkin = { card: { borderRadius: shape.web.menu }, dot: { borderRadius: 9999 } };
 `;
 
 const ENTRY = `import { iosSkin } from "./z.styles.js";
@@ -71,7 +77,7 @@ describe("a corner a comment states", () => {
       file: c.file,
       value: c.value,
       on: c.on.text,
-      drawn: sites.cornersIn(values, c.file, c.on.start, c.on.end).has(c.value),
+      drawn: claimHolds(c.value, sites.cornersIn(values, c.file, c.on.start, c.on.end)),
     }));
   };
   const at = (file: string, line: number) => judged().filter((c) => c.file === file && c.line === line);
@@ -103,6 +109,28 @@ describe("a corner a comment states", () => {
 
   it("finds the comments after a template literal", () => {
     expect(at(FILES[0], 21).map((c) => [c.value, c.drawn])).toEqual([[8, true]]);
+  });
+
+  it("is every element's corner where the code holds several, square and the pill aside", () => {
+    // One element drawing a corner per size is one element.
+    expect(at(FILES[0], 23).map((c) => [c.value, c.drawn])).toEqual([
+      [6, true],
+      [8, true],
+    ]);
+    // A whole skin whose outline draws 12 and whose editor draws 8: neither number says
+    // which element it is, so each belongs on its element.
+    expect(at(FILES[0], 25).map((c) => [c.value, c.drawn])).toEqual([
+      [12, false],
+      [8, false],
+    ]);
+    // A dot drawn as the pill is a shape, not a corner of its own.
+    expect(at(FILES[0], 27).map((c) => [c.value, c.drawn])).toEqual([[12, true]]);
+  });
+
+  it("is held to some element: code that draws no corner holds no claim", () => {
+    expect(claimHolds(8, new Map())).toBe(false);
+    expect(claimHolds(8, new Map([["a", new Set([9999])]]))).toBe(false);
+    expect(claimHolds(8, new Map([["a", new Set([8, 9999])], ["b", new Set([0])]]))).toBe(true);
   });
 
   it("follows a platform entry to the skin it hands its shell", () => {

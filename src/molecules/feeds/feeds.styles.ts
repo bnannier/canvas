@@ -96,7 +96,7 @@ export const webSkin: FeedSkin = {
 
 // ---------- iOS (HIG / SF conventions): softer card, tighter SF tracking ----------
 // iOS has no activity-feed control, so the kit keeps its structure and applies
-// only iOS conventions: the iOS grouped-list corner (12 radius), a hair more row
+// only iOS conventions: the iOS card corner (12 radius), a hair more row
 // breathing room (default avatar py 17 / connector p 26), SF-style negative
 // tracking on the labels, and the iOS list-row highlight (opacity dim ~0.8) on
 // press. The brand survives; nothing here substitutes an iOS system color.
