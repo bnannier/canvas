@@ -4,9 +4,10 @@
 // gives it (tools/audit/interaction-signals.ts: a scrub surface, a press, hover or field
 // handler, the hover primitive, a tab stop, an overlay it opens, a pressed, hovered or
 // focused look, whether written on the tag or spread onto it) has a recipe or an
-// exemption whose claim holds (tools/audit/state-coverage.ts), every overlay the e2e
-// suite opens (and Tooltip and AvatarMenu, which it never opens) has an open recipe, and
-// an overlay opens from exactly the rows whose platform build the docs registry injects.
+// exemption whose claim holds (tools/audit/state-coverage.ts), each overlay a component
+// opens is opened by a recipe that names it when it opens more than one, every overlay
+// the e2e suite opens (and Tooltip's in-row bubble) has an open recipe, and an overlay
+// opens from exactly the rows whose platform build the docs registry injects.
 import { describe, expect, it } from "bun:test";
 import { mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -132,12 +133,17 @@ describe("the state recipe table", () => {
     expect([...HOVER_PROPERTIES].sort()).toEqual(["background-color", "box-shadow", "scale", "transform", "translate"]);
   });
 
-  it("opens every overlay the e2e suite opens, and Tooltip and AvatarMenu, which it never does", () => {
+  it("opens every overlay a component's source opens, every one the e2e suite opens, and Tooltip's in-row bubble", () => {
     const opens = Object.keys(STATE_RECIPES).filter((slug) => recipesOf(slug).some((r) => r.state === "open")).sort();
     const overlays = [...MATERIAL_OVERLAY_RECIPES.map((r) => r.slug), TOAST_RECIPE.slug];
     for (const slug of overlays) expect(opens).toContain(slug);
-    expect(opens).toContain("tooltip");
-    expect(opens).toContain("avatar");
+    // Held to the source: every component whose source renders an overlay, or hands a kit
+    // overlay its open state, has an open recipe, AvatarMenu's injected Dropdown included.
+    const bySource = pages.filter((c) => STATE_RECIPES[c.slug] && componentSignals(reader, c).some((s) => s.kind === "overlay")).map((c) => c.slug).sort();
+    for (const slug of bySource) expect(opens).toContain(slug);
+    expect(bySource).toContain("avatar");
+    // The one opening no overlay primitive carries: Tooltip draws its bubble in flow beside its trigger.
+    expect(opens.filter((slug) => !bySource.includes(slug))).toEqual(["tooltip"]);
     expect(opens).toEqual(Object.keys(OPENED_EXPORT).sort());
   });
 
@@ -246,6 +252,34 @@ describe("the states each component's source gives it", () => {
     expect(errors[0]).toContain("onHoverIn on <Pressable> at src/organisms/calendar/calendar.shared.tsx:");
   });
 
+  it("names each overlay a component opens, and holds a component that opens two to a recipe for each", () => {
+    // The Calendar renders two: the hover card a resting pointer floats, and the day peek a press opens.
+    const overlays = (slug: string) => signalsOf(slug).filter((s) => s.kind === "overlay").map((s) => `${s.overlay}: ${s.what}`);
+    expect(overlays("calendar")).toEqual(["hoverCard: a <AnchoredOverlay>", "dayPeekOverlay: a <AnchoredOverlay>"]);
+    const calendar = STATE_RECIPES.calendar as Record<string, StateRecipe>;
+    expect([calendar.hover!.opens, calendar.open!.opens]).toEqual(["hoverCard", "dayPeekOverlay"]);
+    // The errors without where the source renders each signal: "(a <AnchoredOverlay> at src/...:614)".
+    const bare = (errors: string[]) => errors.map((e) => e.replace(/ \(a <[^>]+>.*? at src\/[^)]*\)/, ""));
+    const check = (slug: string, entry: Record<string, unknown>) => bare(coverageOf(slug, entry as ComponentStates, signalsOf(slug), railExamples(component(slug))).errors);
+    expect(check("calendar", calendar)).toEqual([]);
+    // A hover recipe that does not open the card leaves the card to nothing, whatever the day peek's recipe opens.
+    expect(check("calendar", { ...calendar, hover: { ...recipeFor("sidebar", "hover"), variant: "week" } })).toEqual([
+      "calendar: its source opens the overlay in hoverCard, which no recipe opens, with no exemption",
+    ]);
+    // Two overlays, so an opening that does not say which one it opens is refused.
+    const { opens: _opens, ...unnamed } = calendar.open!;
+    expect(check("calendar", { ...calendar, open: unnamed })).toEqual([
+      "calendar: its source renders 2 overlays (hoverCard, dayPeekOverlay), so its open recipe must name the one it opens",
+      "calendar: its source opens the overlay in dayPeekOverlay, which no recipe opens, with no exemption",
+    ]);
+    // A name the source does not render is stale.
+    expect(check("calendar", { ...calendar, open: { ...calendar.open!, opens: "monthPeek" } })[0]).toBe("calendar: its open recipe opens the overlay in monthPeek, which its source does not render (it renders hoverCard, dayPeekOverlay)");
+    // AvatarMenu hands its open state to the Dropdown its platform entries inject, typed by Dropdown's props.
+    expect(overlays("avatar")).toEqual(["AvatarMenu: a <Dropdown> (an overlay) given `open`"]);
+    const { open: _open, ...closed } = STATE_RECIPES.avatar as Record<string, unknown>;
+    expect(check("avatar", closed)).toEqual(["avatar: its source gives it an open state, with neither an open recipe nor an exemption"]);
+  });
+
   it("fails an overlay's own tab stops with no focus recipe, and a hover with no resting-pointer opening to answer it", () => {
     for (const slug of ["dialog", "alert-dialog", "action-sheet", "toast"]) {
       const { focus: _focus, ...rest } = STATE_RECIPES[slug] as Record<string, unknown>;
@@ -330,6 +364,9 @@ describe("the states each component's source gives it", () => {
     for (const slug of ["view", "text", "scroll-view"]) expect({ slug, states: states(slug) }).toEqual({ slug, states: [] });
     expect(states("pressable")).toEqual(["focus a tab stop: <Pressable>", "pressed a function taking `pressed` on <Pressable>"]);
     expect(states("text-input")).toEqual(["focus a TextInput"]);
+    // An example's props are read as a source's are, spread onto the tag included.
+    const spread = reader.exampleSignals("View", [{ label: "Spread", code: "<View {...{ onHoverIn: () => {}, focusable: true }} />" }], "src/atoms/view/view.md");
+    expect(spread.map((s) => `${s.state} ${s.what}`)).toEqual(["focus focusable on <View>", "hover onHoverIn on <View>"]);
     // A component with source of its own is read from it, not from its examples.
     expect(reader.hasSource(sourceDirOf(component("button")))).toBe(true);
     expect(reader.hasSource(sourceDirOf(component("view")))).toBe(false);

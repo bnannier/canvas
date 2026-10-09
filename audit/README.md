@@ -293,7 +293,9 @@ index of 0 unless the source takes it out with `focusable={false}`, `tabIndex={-
 `disabled`; a button, checkbox, radio, switch or textbox role; `focusable` or tab index 0
 on any primitive); an overlay it renders (React Native's Modal, the style layer's
 AnchoredOverlay or Portal), or another kit component whose source renders one and to which
-it hands the open state (FilterPanel's and Sidebar's Drawer), an open state; and a function
+it hands the open state (FilterPanel's and Sidebar's Drawer, and AvatarMenu's Dropdown, a
+part its platform entries inject, known by the component its parameter's type names), an
+open state, each overlay named by the function that renders it; and a function
 taking `pressed`, `hovered` or `focused` (a skin, a Pressable's style callback) the state
 it names. Props are read wherever the element gets them: on its tag, or spread onto it from
 a value the reader can follow (an object literal through constants, conditionals, `&&`,
@@ -317,8 +319,13 @@ the source and the page:
 
 A state is answered by a recipe of its own, or by another state's recipe whose capture
 shows it (`alsoAnswers`): an opening a resting pointer makes is its trigger's hover, so
-Tooltip's open recipe answers the hover its triggers' `{...disclosure}` gives. An exemption
-for a state the source does not give, or beside a recipe for the same state, fails too.
+Tooltip's open recipe answers the hover its triggers' `{...disclosure}` gives, and the
+Calendar's hover recipe, which floats the event's card, answers that card's opening. A
+component whose source renders more than one overlay owes each its own recipe: every recipe
+that opens one names it (`opens`, the function the source renders it in, the Calendar's
+`hoverCard` and `dayPeekOverlay`), an overlay no recipe names is unanswered, and a name the
+source no longer renders fails. An exemption for a state the source does not give, or beside
+a recipe for the same state, fails too.
 `tools/audit/state-recipes.test.ts` runs it over every component (and fails on the table as
 it stood before the charts got their recipes: Chart, AreaChart and Histogram scrub, the
 Heatmap's days take a resting pointer and a press; on the Calendar marked static, for its
@@ -326,13 +333,14 @@ hover, focus, pressed and open states; and on Dialog, AlertDialog, ActionSheet a
 without the focus recipes their own tab stops need), checks the reader on the kit and on
 fixtures of every gate form and every spread form, tab stop and overlay, and also fails on a
 registry entry with neither recipes nor a reason, a recipe on an example its page does not
-have, a hover recipe where the source gives no hover, an overlay of `overlay-recipes.ts` (or
-Tooltip, or AvatarMenu, which the e2e suite never opens) without an open recipe, and open
+have, a hover recipe where the source gives no hover, an overlay its source opens or one of
+`overlay-recipes.ts` (or Tooltip's in-row bubble, which no overlay primitive carries) without
+an open recipe, and open
 rows that differ from the docs' platform-skin registry (Sidebar's page shows one preview,
 the web build, so it opens from the web row alone). Each checklist's facts block carries the
-result as its "Interaction states" row: the states captured (example, rows, widths, and the
-states a capture also shows), and any static or exempt state with its reason and whether its
-claim holds.
+result as its "Interaction states" row: the states captured (example, rows, widths, the
+states a capture also shows and the overlay it opens when there are several), and any static
+or exempt state with its reason and whether its claim holds.
 
 Each recipe applies the state through the input a person uses, verifies it from the page's
 structure, and releases it:

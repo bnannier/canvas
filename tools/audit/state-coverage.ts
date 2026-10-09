@@ -4,6 +4,9 @@
 // tools/audit/state-recipes.test.ts runs it over every component, and the checklists'
 // "Interaction states" fact (tools/audit/facts.ts) reports what it found.
 //
+// An overlay is answered one by one: when a component's source renders more than one (the
+// Calendar's hover card and its day peek), each needs a recipe that names it (`opens`).
+//
 // The claims are checked, not taken on trust:
 //
 //   unpassed       every signal of the state names one of the props among its gates (it is
@@ -23,7 +26,7 @@ import { ROOT, componentDocPath } from "../../e2e/support/routes.ts";
 import { STATE_NAMES, type ComponentStates, type Exemption, type StateName, type StateRecipes } from "../../e2e/support/state-recipes.ts";
 import { splitDoc, type Example } from "../docgen/parse-md.ts";
 import type { InventoryComponent } from "./inventory.ts";
-import { SignalReader, exampleSignals, type Signal, type SignalState } from "./interaction-signals.ts";
+import { SignalReader, type Signal, type SignalState } from "./interaction-signals.ts";
 
 /** The states a signal can give: the ones the source decides (invalid and disabled are the examples'). */
 export const SIGNAL_STATES: readonly SignalState[] = ["hover", "focus", "pressed", "open"];
@@ -67,17 +70,45 @@ export function railExamples(component: Pick<InventoryComponent, "category" | "d
 export function componentSignals(reader: SignalReader, component: Pick<InventoryComponent, "category" | "dir" | "name">): Signal[] {
   const sourceDir = sourceDirOf(component);
   if (reader.hasSource(sourceDir)) return reader.signalsOf(sourceDir);
-  return exampleSignals(component.name, railExamples(component), relative(ROOT, componentDocPath(component.category, component.dir)));
+  return reader.exampleSignals(component.name, railExamples(component), relative(ROOT, componentDocPath(component.category, component.dir)));
 }
 
 const recipeFor = (entry: ComponentStates, state: StateName) => (entry.static ? undefined : (entry as StateRecipes)[state]);
 
-/** The recipe that captures a state: its own, or another state's whose capture also shows it (`alsoAnswers`). */
-function answeringRecipe(entry: ComponentStates, state: StateName): { state: StateName } | undefined {
-  if (entry.static) return undefined;
-  if (recipeFor(entry, state)) return { state };
-  const other = STATE_NAMES.find((name) => (entry as StateRecipes)[name]?.alsoAnswers?.includes(state));
-  return other ? { state: other } : undefined;
+/** The recipes that capture a state: its own, then those of other states whose capture also shows it (`alsoAnswers`). */
+function answeringRecipes(entry: ComponentStates, state: StateName): { state: StateName; opens?: string }[] {
+  if (entry.static) return [];
+  const recipes = entry as StateRecipes;
+  const own = recipes[state];
+  const others = STATE_NAMES.filter((name) => name !== state && recipes[name]?.alsoAnswers?.includes(state));
+  return [...(own ? [own] : []), ...others.map((name) => recipes[name]!)].map((r) => ({ state: r.state, ...(r.opens ? { opens: r.opens } : {}) }));
+}
+
+/**
+ * Which of a state's signals the table's recipes answer, and which are left for an
+ * exemption. Every recipe that answers it does, except for the overlays a component opens:
+ * when its source renders more than one, each is answered only by a recipe that names it
+ * (`opens`, the function the source renders it in), so the Calendar's day peek cannot stand
+ * in for its hover card. A recipe naming an overlay the source does not render is an error.
+ */
+function recipeAnswers(slug: string, entry: ComponentStates, state: SignalState, own: Signal[]): { answered: Signal[]; rest: Signal[]; recipe?: StateName; errors: string[] } {
+  const recipes = answeringRecipes(entry, state);
+  const errors: string[] = [];
+  if (state !== "open") return recipes.length ? { answered: own, rest: [], recipe: recipes[0]!.state, errors } : { answered: [], rest: own, errors };
+  const sites = [...new Set(own.map((s) => s.overlay ?? ""))];
+  const named = sites.join(", ");
+  for (const recipe of recipes) {
+    if (recipe.opens && !sites.includes(recipe.opens)) errors.push(`${slug}: its ${recipe.state} recipe opens the overlay in ${recipe.opens}, which its source does not render (it renders ${named})`);
+  }
+  if (!recipes.length) return { answered: [], rest: own, errors };
+  if (sites.length <= 1) return { answered: own, rest: [], recipe: recipes[0]!.state, errors };
+  for (const recipe of recipes) {
+    if (!recipe.opens) errors.push(`${slug}: its source renders ${sites.length} overlays (${named}), so its ${recipe.state} recipe must name the one it opens`);
+  }
+  const opened = new Set(recipes.flatMap((r) => (r.opens ? [r.opens] : [])));
+  const answered = own.filter((s) => opened.has(s.overlay ?? ""));
+  const by = recipes.find((r) => r.opens && opened.has(r.opens));
+  return { answered, rest: own.filter((s) => !opened.has(s.overlay ?? "")), ...(by ? { recipe: by.state } : {}), errors };
 }
 
 /** A handler that does nothing or closes what is open. */
@@ -117,27 +148,32 @@ export function coverageOf(slug: string, entry: ComponentStates, signals: Signal
   for (const state of SIGNAL_STATES) {
     const own = signals.filter((s) => s.state === state);
     const exemption = exempt[state];
-    const recipe = answeringRecipe(entry, state);
     if (!own.length) {
       if (exemption) errors.push(`${slug}: exempts ${state}, which its source does not give it`);
       continue;
     }
-    if (recipe) {
+    const { answered, rest, recipe, errors: named } = recipeAnswers(slug, entry, state, own);
+    errors.push(...named);
+    if (answered.length) answers.push({ state, signals: answered, by: "recipe", ...(recipe && recipe !== state ? { recipe } : {}) });
+    if (!rest.length) {
       if (exemption) errors.push(`${slug}: has a ${state} recipe and a ${state} exemption`);
-      answers.push({ state, signals: own, by: "recipe", ...(recipe.state !== state ? { recipe: recipe.state } : {}) });
       continue;
     }
     if (exemption) {
-      const failure = exemptionFailure(state, exemption, own, rail, entry);
+      const failure = exemptionFailure(state, exemption, rest, rail, entry);
       if (failure) errors.push(`${slug}: the ${state} exemption does not hold: ${failure}`);
-      answers.push({ state, signals: own, by: "exemption", exemption, ...(failure ? { failure } : {}) });
+      answers.push({ state, signals: rest, by: "exemption", exemption, ...(failure ? { failure } : {}) });
       continue;
     }
-    const first = own[0]!;
+    const first = rest[0]!;
+    const where = `${first.what} at ${first.at}${first.via.length ? ` via ${first.via.join(" > ")}` : ""}`;
     errors.push(
-      `${slug}: its source gives it ${article(state)} ${state} state (${first.what} at ${first.at}${first.via.length ? ` via ${first.via.join(" > ")}` : ""}${own.length > 1 ? `, and ${own.length - 1} more` : ""}), with neither ${article(state)} ${state} recipe nor an exemption`,
+      answered.length
+        ? // An overlay no recipe names, beside ones a recipe opens.
+          `${slug}: its source opens the overlay in ${first.overlay} (${where}), which no recipe opens, with no exemption`
+        : `${slug}: its source gives it ${article(state)} ${state} state (${where}${rest.length > 1 ? `, and ${rest.length - 1} more` : ""}), with neither ${article(state)} ${state} recipe nor an exemption`,
     );
-    answers.push({ state, signals: own, by: "nothing" });
+    answers.push({ state, signals: rest, by: "nothing" });
   }
   // Exemptions for states no signal can give (open, invalid, disabled) are never checked, so never allowed.
   for (const state of STATE_NAMES) if (!SIGNAL_STATES.includes(state as SignalState) && exempt[state]) errors.push(`${slug}: exempts ${state}, which no source signal gives`);
