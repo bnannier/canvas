@@ -9,7 +9,7 @@
  * server rendered the page's redirect to the bare component URL: no stage, no props,
  * and a canonical link to a page that does not exist. The client then hydrated the real
  * variant page over that markup and production React threw error #418. The docs carry a
- * patch for it (docs/patches/@expo%2Fcli@57.0.18.patch), and `bun run check:patches`
+ * patch for it (docs/patches/@expo%2Fcli@57.0.28.patch), and `bun run check:patches`
  * runs the export's own path function over a name ending in "index".
  *
  * This loads the page the defect shipped. The console gate (support/fixtures.ts) fails

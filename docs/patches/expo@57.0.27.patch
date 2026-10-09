@@ -1,5 +1,5 @@
 diff --git a/src/launch/withDevTools.web.tsx b/src/launch/withDevTools.web.tsx
-index 65e42de23822e88fae9f00a3c86160a8a5732d89..eeb784dc10e8cb2015cdc27b0d6462895629beeb 100644
+index 65e42de23822e88fae9f00a3c86160a8a5732d89..ff03f37eadebe8184711e807b33e02bf6228ce2c 100644
 --- a/src/launch/withDevTools.web.tsx
 +++ b/src/launch/withDevTools.web.tsx
 @@ -2,16 +2,37 @@ import * as React from 'react';
