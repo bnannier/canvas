@@ -1,8 +1,9 @@
 {
-  // The audit and skin-divergence tools are typechecked as their own project, the way the
-  // e2e tree is: the root tsconfig includes only src/**, and bun runs TypeScript without
-  // checking it, so without this nothing would type-check them. Their imports pull in what
-  // they read (the hand-off parity comparison, the docs catalog, the e2e route helpers).
+  // The audit, skin-divergence and public API tools are typechecked as their own project,
+  // the way the e2e tree is: the root tsconfig includes only src/**, and bun runs
+  // TypeScript without checking it, so without this nothing would type-check them. Their
+  // imports pull in what they read (the hand-off parity comparison, the docs catalog, the
+  // e2e route helpers).
   // Test files are left out, as the root project leaves src/**/*.test.ts out: their
   // `bun:test` import has no type declarations installed. Run by `bun run typecheck`, so CI
   // and the pre-push hook cover it.
@@ -15,6 +16,6 @@
     "types": ["node"],
     "lib": ["ES2022", "DOM", "DOM.Iterable"]
   },
-  "include": ["./audit/**/*.ts", "./skins/**/*.ts"],
+  "include": ["./audit/**/*.ts", "./skins/**/*.ts", "./api/**/*.ts"],
   "exclude": ["./**/*.test.ts"]
 }
