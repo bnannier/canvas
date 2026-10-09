@@ -85,6 +85,7 @@ One row per finding. Severity: critical, high, medium, low. Cell: a capture id f
 
 | ID | Severity | Cell | Summary | Status | Fix commit |
 |---|---|---|---|---|---|
+| calendar-corner-1 | low | source | The iOS peek card drew 20, on neither row; the peek plays the menu role on the web, so iOS takes its menu corner, 26. The shape gate (test/design-rules-shape.test.ts) now takes a corner only as a role of its own platform's row that its component plays, the pill, square or a declared concentric corner. | fixed | d1339a2c |
 
 ## Sign-off
 

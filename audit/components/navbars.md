@@ -80,6 +80,7 @@ One row per finding. Severity: critical, high, medium, low. Cell: a capture id f
 
 | ID | Severity | Cell | Summary | Status | Fix commit |
 |---|---|---|---|---|---|
+| navbars-corner-1 | low | source | The iOS bordered and floating surface drew 10, off the iOS row; the web and Android surfaces play the card role, so iOS draws its card corner, 12. The shape gate (test/design-rules-shape.test.ts) now takes a corner only as a role of its own platform's row that its component plays, the pill, square or a declared concentric corner. | fixed | d1339a2c |
 
 ## Sign-off
 

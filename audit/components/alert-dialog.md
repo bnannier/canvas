@@ -87,6 +87,7 @@ One row per finding. Severity: critical, high, medium, low. Cell: a capture id f
 
 | ID | Severity | Cell | Summary | Status | Fix commit |
 |---|---|---|---|---|---|
+| alert-dialog-corner-1 | low | source | The overlay scrim took the skin's corner (18 on the web, 8 natively); it is square now. The contained preview's backdrop drew 8 on iOS and Android around a 28 card; it takes the dialog corner, 28. The shape gate (test/design-rules-shape.test.ts) now takes a corner only as a role of its own platform's row that its component plays, the pill, square or a declared concentric corner. | fixed | d1339a2c |
 
 ## Sign-off
 

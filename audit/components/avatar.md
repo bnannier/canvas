@@ -100,6 +100,7 @@ One row per finding. Severity: critical, high, medium, low. Cell: a capture id f
 
 | ID | Severity | Cell | Summary | Status | Fix commit |
 |---|---|---|---|---|---|
+| avatar-role-1 | low | source | Role question for the Phase 4 audit: the `rounded` (square) avatar reads the `control` corner (8) though an avatar is not a control. Options: keep 8 under a web role of its own; the `tile` corner (12). | open |  |
 
 ## Sign-off
 
