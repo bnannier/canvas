@@ -13,7 +13,7 @@ import { type DescriptionListSkin } from "./description-lists.shared.js";
 //
 // DescriptionList keeps one structure and one set of semantic colors on every
 // platform, but the per-OS TYPE ROLES differ:
-//   Web  — the Catalyst term-value list: a card at the card corner, a 1px `border`,
+//   Web: the Catalyst term-value list: a card at the card corner, a 1px `border`,
 //          the `card` fill, a soft shadow("sm"), 24 padding, gap 12 between rows;
 //          a 14/20 muted term beside a 14/20/500
 //          foreground value; the stacked term is 12pt/500 uppercase with 0.4
