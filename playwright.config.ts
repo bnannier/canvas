@@ -76,6 +76,19 @@ const compareSnapshots = process.platform === "linux" || !!process.env.E2E_FORCE
 // Chromium 153's default pacing it had hung 8 times in 32.
 export const CHROMIUM_ARGS = ["--disable-frame-rate-limit"];
 
+/**
+ * The docs export on OWN_SERVER_PORT, served the way Pages serves it. The component
+ * audit's configuration (playwright.audit.config.ts) serves through the same entry.
+ */
+export const DOCS_SERVER = {
+  command: `bun e2e/support/serve-dist.ts --root docs/dist --port ${OWN_SERVER_PORT} --headers --https${basePath ? ` --base ${basePath}` : ""}`,
+  url: `https://127.0.0.1:${OWN_SERVER_PORT}${basePath}/`,
+  ignoreHTTPSErrors: true,
+  reuseExistingServer: !CI,
+  timeout: 20_000,
+  stdout: "pipe" as const,
+};
+
 type SuiteProject = Project<PlaywrightTestOptions, PlaywrightWorkerOptions>;
 
 /** Add CHROMIUM_ARGS to every project that runs Chromium (the default browser here). */
@@ -171,14 +184,7 @@ export default defineConfig({
   webServer: process.env.E2E_BASE_URL
     ? undefined
     : [
-        {
-          command: `bun e2e/support/serve-dist.ts --root docs/dist --port ${OWN_SERVER_PORT} --headers --https${basePath ? ` --base ${basePath}` : ""}`,
-          url: `https://127.0.0.1:${OWN_SERVER_PORT}${basePath}/`,
-          ignoreHTTPSErrors: true,
-          reuseExistingServer: !CI,
-          timeout: 20_000,
-          stdout: "pipe",
-        },
+        DOCS_SERVER,
         {
           // The token stylesheet fixture (test/tokens.html) links ../styles/canvas.css
           // exactly as a consumer would, so it is served from the checkout root. No SPA

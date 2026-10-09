@@ -76,6 +76,7 @@
     "audit:checklists": "bun tools/audit/checklists.ts --write",
     "audit:checklists:check": "bun tools/audit/checklists.ts --check",
     "audit:status": "bun tools/audit/status.ts",
+    "audit:web": "bun tools/audit/run-web.ts",
     "check:docs-components": "bun scripts/check-docs-components.ts",
     "check-parity": "bun scripts/check-handoff-parity.ts",
     "check-parity:check": "bun scripts/check-handoff-parity.ts --check",
