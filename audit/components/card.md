@@ -23,7 +23,7 @@ Audit checklist for `/components/card`. The facts block and the variants table a
 | Interaction states | captured: hover on Pressable (web row; desktop), focus on Pressable (web row; desktop), pressed on Pressable (web row; desktop). |
 | MeasureProps | not adopted |
 | Touch target | no touch-target name (the exports of `src/style/touch-target.ts`, `src/style/touch-target-seed.ts`, `src/style/touch-seam.ts`, `src/style/clip-slop.ts`, the `TouchTargetSkin` fields, or `hitSlop`) in its implementation modules. `test/touch-target-coverage.test.ts` records it as known gap: a pressable card is sized by its content, which can be anything |
-| Tests importing it | 9: `test/card.test.tsx`, `test/design-rules-skins.test.ts`, `test/dist-smoke.test.tsx`, `test/hover-lift.test.tsx`, `test/layout-responsive.test.tsx`, `test/molecule-material-state.test.tsx`, `test/native-carousel-fixture.test.tsx`, `test/new-components.test.tsx`, `test/skins-smoke.test.tsx` |
+| Tests importing it | 10: `test/card.test.tsx`, `test/design-rules-skins.test.ts`, `test/dist-smoke.test.tsx`, `test/hover-lift.test.tsx`, `test/image.test.tsx`, `test/layout-responsive.test.tsx`, `test/molecule-material-state.test.tsx`, `test/native-carousel-fixture.test.tsx`, `test/new-components.test.tsx`, `test/skins-smoke.test.tsx` |
 | E2E naming it | 3: `e2e/behavior/material-overlay-host.e2e.ts`, `e2e/behavior/scroll-focus.e2e.ts`, `e2e/journeys/keyboard.e2e.ts` |
 | E2E catalog sweeps | 6: `e2e/a11y/components.e2e.ts` (componentRoutes), `e2e/responsive/component-widths.e2e.ts` (contentRoutes, componentRoutes), `e2e/smoke/examples.e2e.ts` (componentExamples), `e2e/smoke/routes.e2e.ts` (allRoutes), `e2e/visual/components.e2e.ts` (componentRoutes), `e2e/visual/materials.e2e.ts` (MATERIAL_ROUTES) |
 <!-- audit:facts:end -->
@@ -96,6 +96,7 @@ One row per finding. Severity: critical, high, medium, low. Cell: a capture id f
 | K7-2 | medium | source | CardTitle is plain Text with no heading semantics. Owner decision pending: a heading role with a default level and a level prop, or plain text with the Card's `title` owning the heading. | open |  |
 | K7-3 | low | source | CardSeparator is a bare View: neither role=separator nor hidden from assistive tech. | open |  |
 | K7-4 | low | source | The parts' `style` props are `StyleProp<TextStyle>` (CardTitle, CardDescription) and `StyleProp<ViewStyle>` (CardSeparator) rather than `LayoutStyle`, a style escape hatch by rubric item 1. | open |  |
+| K7-5 | low | source | CardMedia let `alt` win over `accessibilityLabel` while Image lets `accessibilityLabel` win (React Native's order), two naming contracts for one picture. Both now resolve through one `imageLabel` (aria-label, accessibilityLabel, alt); CardMedia hands the result to Image as `alt`, so the cover stays its own accessibility element natively. test/card.test.tsx compares it with a bare Image. | open |  |
 
 ## Sign-off
 

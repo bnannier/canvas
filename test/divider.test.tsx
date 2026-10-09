@@ -12,7 +12,10 @@ import type { DividerProps } from "../src/atoms/divider/divider.shared.tsx";
 // a separator announces its orientation when it is not the horizontal default, and a
 // labelled separator is named by its label, because ARIA makes a separator's children
 // presentational (the "OR" inside it was never read). The action pattern, whose child is
-// a control, carries no separator role at all.
+// a control, carries no separator role at all. These run the iOS and Android entries in
+// the browser runtime, so they pin the props each entry hands React Native; how VoiceOver
+// and TalkBack read a labelled separator is a device check still owed
+// (audit/components/divider.md).
 
 afterEach(cleanup);
 const ui = (n: ReactNode) => render(<ThemeProvider>{n}</ThemeProvider>);

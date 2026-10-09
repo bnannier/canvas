@@ -8,8 +8,8 @@ Audit checklist for `/components/image`. The facts block and the variants table 
 | Route | `/components/image` |
 | Category | Atoms (`src/atoms/image/`) |
 | Markdown | `src/atoms/image/image.md` |
-| Source files | `image.md`, `image.shared.tsx`, `image.tsx` |
-| Implementation | its own source directory, `src/atoms/image/` (2 TypeScript modules) |
+| Source files | `image.accessibility.ts`, `image.md`, `image.shared.tsx`, `image.tsx` |
+| Implementation | its own source directory, `src/atoms/image/` (3 TypeScript modules) |
 | Exports | Image |
 | Platform entries | none (one build on every platform) |
 | Platform-skins registry | none (every export is the web build, so the docs three-up renders it as is) |
@@ -23,7 +23,7 @@ Audit checklist for `/components/image`. The facts block and the variants table 
 | Interaction states | static: An image: it takes no input. |
 | MeasureProps | not adopted |
 | Touch target | no touch-target name (the exports of `src/style/touch-target.ts`, `src/style/touch-target-seed.ts`, `src/style/touch-seam.ts`, `src/style/clip-slop.ts`, the `TouchTargetSkin` fields, or `hitSlop`) in its implementation modules |
-| Tests importing it | 1: `test/image.test.tsx` |
+| Tests importing it | 2: `test/card.test.tsx`, `test/image.test.tsx` |
 | E2E naming it | 0: none |
 | E2E catalog sweeps | 6: `e2e/a11y/components.e2e.ts` (componentRoutes), `e2e/responsive/component-widths.e2e.ts` (contentRoutes, componentRoutes), `e2e/smoke/examples.e2e.ts` (componentExamples), `e2e/smoke/routes.e2e.ts` (allRoutes), `e2e/visual/components.e2e.ts` (componentRoutes), `e2e/visual/materials.e2e.ts` (MATERIAL_ROUTES) |
 <!-- audit:facts:end -->
@@ -79,9 +79,9 @@ One row per finding. Severity: critical, high, medium, low. Cell: a capture id f
 
 | ID | Severity | Cell | Summary | Status | Fix commit |
 |---|---|---|---|---|---|
-| K7-1 | high | source | `alt` was dropped on the web: react-native-web names an image only from aria-label or accessibilityLabel, so an `alt`-only Image rendered a decorative `<img alt="">` under a role-less box (WCAG 1.1.1). The shell now resolves the name (aria-label, accessibilityLabel, alt) and a named image is role=img; an unnamed one stays decorative. | fixed | 3926fe19 |
+| K7-1 | high | source | `alt` was dropped on the web: react-native-web names an image only from aria-label or accessibilityLabel, so an `alt`-only Image rendered a decorative `<img alt="">` under a role-less box (WCAG 1.1.1). The shell now resolves the name (aria-label, accessibilityLabel, alt) and hands it to react-native-web, whose hidden `<img alt>` carries it; an unnamed one stays decorative. | fixed | 3926fe19 |
 | K7-2 | medium | source | On iOS and Android an image named only through `accessibilityLabel` is not its own accessibility element (React Native makes one for `alt` or `accessible`), so VoiceOver and TalkBack skip it. Making it one would add a second TalkBack stop inside a pressable Avatar's button and repeat the title beside MediaObject's photo, so it needs a device check and one decision across Image, Avatar and MediaObject. | open |  |
-| K7-3 | low | source | A named Image is role=img over react-native-web's hidden image with the same alt, so Chromium's tree holds an image inside an image under one name (Avatar photos and CardMedia too); axe passes, and an unnamed image stays hidden. react-native-web 0.21 gives the root's aria-label and the hidden image's alt one value, so a single image node needs a wrapper carrying the role and name around an unnamed image: a box-model change (a bundled asset's intrinsic size, ImageStyle-only keys, clipping) for every Image, Avatar photo and CardMedia, to be judged by photograph on three platforms with a device check. | open |  |
+| K7-3 | medium | source | 3926fe19 put role=img on react-native-web's root above its hidden `<img>` with the same alt, so Chromium's tree held two images under one name for every named Image, Avatar photo, CardMedia and MediaObject photo (`getByRole('img')` counted 2 per photo; axe passed). react-native-web already exposes a named image once through that `<img alt>`, so the image role is now chosen by the runtime (`image.accessibility.ts`, the calendar day's rule): none on the web, `img` natively, where it is the image trait. test/image.test.tsx counts one image per photo, Image and the kit's own. | open |  |
 
 ## Sign-off
 

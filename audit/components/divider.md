@@ -82,7 +82,8 @@ One row per finding. Severity: critical, high, medium, low. Cell: a capture id f
 | ID | Severity | Cell | Summary | Status | Fix commit |
 |---|---|---|---|---|---|
 | K7-1 | medium | source | A vertical Divider was a separator with no aria-orientation, so the web announced it as horizontal. | fixed | 3926fe19 |
-| K7-2 | medium | source | A labelled Divider kept role=separator, whose children are presentational, with no name, so its label was never read on the web. It is now named by its label through aria-labelledby, which leaves the native tree reading the label once. | fixed | 3926fe19 |
+| K7-2 | medium | source | A labelled Divider kept role=separator, whose children are presentational, with no name, so its label was never read on the web. It is now named by its label through aria-labelledby (test/divider.test.tsx, every entry in the browser runtime). | fixed | 3926fe19 |
+| K7-3 | low | source | The native reading of a labelled Divider is unverified. From React Native's source, iOS has no labelled-by relation and VoiceOver should reach the label Text itself, and Android maps aria-labelledby to `setLabeledBy`, so TalkBack should read the label once; neither has been run on a device. Owes a VoiceOver and TalkBack check. | open |  |
 
 ## Sign-off
 

@@ -104,6 +104,7 @@ describe("the shells that build each component", () => {
     "src/organisms/action-sheet/action-sheet.shared.tsx": "iOS's keyboard pushes the sheet up by padding (KeyboardAvoidingView behavior)",
     "src/atoms/autocomplete/autocomplete.shared.tsx": "the web keeps option rows out of the tab order (tabIndex -1), a DOM focus mechanism",
     "src/organisms/calendar/calendar.accessibility.ts": "the web states a selected day as aria-pressed, native as accessibilityState",
+    "src/atoms/image/image.accessibility.ts": "react-native-web names an image through its own hidden <img alt>, so only native takes the image role",
     "src/atoms/stepper/stepper.accessibility.ts": "each platform's spinbutton spelling (role and actions)",
     "src/organisms/carousel/carousel.shared.tsx": "the dot target's fallback size when a skin declares none (every shipped skin declares one)",
   };

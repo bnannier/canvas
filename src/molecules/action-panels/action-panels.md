@@ -1,6 +1,6 @@
 # ActionPanel
 
-Section card with headline, body text, and a primary action. Used to surface a single decision or call-to-action. `inline` sets the action beside the copy, and stacks it under the copy when the panel's row is narrower than the `md` measure (a phone, a side column). `toggle` makes the panel a setting row: the Switch's own row, with the title as its label, the description as its muted line, and the whole row as the tap target.
+Section card with headline, body text, and a primary action. Used to surface a single decision or call-to-action.
 
 ## Usage
 
