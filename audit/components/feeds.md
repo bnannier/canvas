@@ -20,6 +20,7 @@ Audit checklist for `/components/feeds`. The facts block and the variants table 
 | Hand-off metric gaps | none |
 | Interactions registry | in the inventory; evidence: none registered |
 | Overlay recipe | none |
+| Interaction states | static: An activity list whose rows are read-only in every rail example. pressed exempt, verified: `onItemPress` makes each row a button; no rail example passes it. |
 | MeasureProps | not adopted |
 | Touch target | `feeds.shared.tsx`: minTarget; `feeds.styles.ts`: minTarget |
 | Tests importing it | 7: `test/behavior-smoke-c.test.tsx`, `test/design-rules-skins.test.ts`, `test/list-semantics.test.tsx`, `test/scroll-frame-ring.test.tsx`, `test/skins-smoke.test.tsx`, `test/touch-target-coverage.test.ts`, `test/virtualization.test.tsx` |

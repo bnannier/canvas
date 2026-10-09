@@ -20,6 +20,7 @@ Audit checklist for `/components/divider`. The facts block and the variants tabl
 | Hand-off metric gaps | none |
 | Interactions registry | in the inventory; evidence: none registered |
 | Overlay recipe | none |
+| Interaction states | static: A separator: it takes no input (the Action example's control is a Button, whose states the button recipes capture). |
 | MeasureProps | not adopted |
 | Touch target | no touch-target name (the exports of `src/style/touch-target.ts`, `src/style/touch-target-seed.ts`, `src/style/touch-seam.ts`, `src/style/clip-slop.ts`, the `TouchTargetSkin` fields, or `hitSlop`) in its implementation modules |
 | Tests importing it | 3: `test/behavior-smoke-c.test.tsx`, `test/design-rules-skins.test.ts`, `test/skins-smoke.test.tsx` |

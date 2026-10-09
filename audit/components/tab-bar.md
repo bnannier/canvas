@@ -20,6 +20,7 @@ Audit checklist for `/components/tab-bar`. The facts block and the variants tabl
 | Hand-off metric gaps | none |
 | Interactions registry | in the inventory; evidence: none registered |
 | Overlay recipe | none |
+| Interaction states | captured: focus on Default (web row; desktop), pressed on Default (web row; desktop). |
 | MeasureProps | not adopted |
 | Touch target | no touch-target name (the exports of `src/style/touch-target.ts`, `src/style/touch-target-seed.ts`, `src/style/touch-seam.ts`, `src/style/clip-slop.ts`, the `TouchTargetSkin` fields, or `hitSlop`) in its implementation modules. `test/touch-target-coverage.test.ts` records it as known gap: the bar owns its own platform heights and is measured with them |
 | Tests importing it | 7: `test/a11y-state.test.tsx`, `test/design-rules-skins.test.ts`, `test/native-focus-fixtures.test.tsx`, `test/no-console-violations.test.tsx`, `test/primary-text.test.tsx`, `test/skins-smoke.test.tsx`, `test/tab-bar-floating.test.tsx` |

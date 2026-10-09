@@ -16,6 +16,7 @@ import {
   describeKinds,
   describeServed,
   freshness,
+  marginClip,
   parseAxe,
   parseKinds,
   parseRunArgs,
@@ -366,5 +367,28 @@ describe("the run's cell records", () => {
     const summary = summarizeCells(records);
     expect(summary).toMatchObject({ cells: 4, ok: 3, failed: 0, notReached: 1, kinds: { variant: 1, state: 2, page: 1 } });
     expect(summary.unreached).toEqual([{ id: "web-states/video/pressed.web/desktop.dark.solid", reason: "no press feedback" }]);
+  });
+
+  it("count a release's flags like any other, a state not reached's too", () => {
+    const base = { width: "desktop", look: "dark", surface: "solid", ms: 1000, bytes: 10, worker: 0, at: "2026-10-09T00:00:00.000Z", variant: "default", label: "Default", row: "web" } as const;
+    const summary = summarizeCells([
+      // A press with no look of its own that still fired when the pointer left before coming up.
+      { ...base, kind: "state", id: "web-states/video/pressed.web/desktop.dark.solid", slug: "video", state: "pressed", status: "state-not-reached", reason: "no press feedback", flags: ["press-not-cancelled"] },
+      { ...base, kind: "state", id: "web-states/dialog/open.web/desktop.dark.solid", slug: "dialog", state: "open", status: "ok", flags: ["overlay-not-closed"] },
+      { ...base, kind: "state", id: "web-states/chart/pressed.web/desktop.dark.solid", slug: "chart", state: "pressed", status: "ok", flags: ["contrast", "inspection-not-cleared"] },
+    ]);
+    expect(summary.flags).toEqual({ "press-not-cancelled": 1, "overlay-not-closed": 1, contrast: 1, "inspection-not-cleared": 1 });
+  });
+});
+
+describe("the shot margin", () => {
+  const viewport = { left: 0, top: 0, right: 1440, bottom: 900 };
+  it("grows a box by 12 px on every side, so a shadow or a ring just outside it is photographed", () => {
+    expect(marginClip({ x: 100, y: 200, width: 300, height: 50 }, viewport)).toEqual({ x: 88, y: 188, width: 324, height: 74 });
+  });
+  it("keeps the margin inside the bounds: the viewport's edges, or the band no chrome covers", () => {
+    expect(marginClip({ x: 4, y: 890, width: 1432, height: 8 }, viewport)).toEqual({ x: 0, y: 878, width: 1440, height: 22 });
+    // Under a 72 px top bar the margin above a section stops at the bar.
+    expect(marginClip({ x: 252, y: 80, width: 1024, height: 400 }, { left: 0, top: 72, right: 1440, bottom: 900 })).toEqual({ x: 240, y: 72, width: 1048, height: 420 });
   });
 });

@@ -20,6 +20,7 @@ Audit checklist for `/components/field`. The facts block and the variants table 
 | Hand-off metric gaps | none |
 | Interactions registry | in the inventory; evidence: none registered |
 | Overlay recipe | none |
+| Interaction states | captured: focus on Default (web row; desktop), invalid on Error (web row; desktop). |
 | MeasureProps | adopted in `field.shared.tsx` |
 | Touch target | no touch-target name (the exports of `src/style/touch-target.ts`, `src/style/touch-target-seed.ts`, `src/style/touch-seam.ts`, `src/style/clip-slop.ts`, the `TouchTargetSkin` fields, or `hitSlop`) in its implementation modules |
 | Tests importing it | 8: `test/design-rules-skins.test.ts`, `test/destructive-text-components.test.tsx`, `test/destructive-text.test.tsx`, `test/dist-smoke.test.tsx`, `test/field.test.tsx`, `test/phone-input.test.tsx`, `test/sizing.test.tsx`, `test/skins-smoke.test.tsx` |

@@ -20,6 +20,7 @@ Audit checklist for `/components/kbd`. The facts block and the variants table ar
 | Hand-off metric gaps | none |
 | Interactions registry | in the inventory; evidence: none registered |
 | Overlay recipe | none |
+| Interaction states | static: A keycap: it takes no input (the In a button example's control is a Button, whose states the button recipes capture). |
 | MeasureProps | not adopted |
 | Touch target | no touch-target name (the exports of `src/style/touch-target.ts`, `src/style/touch-target-seed.ts`, `src/style/touch-seam.ts`, `src/style/clip-slop.ts`, the `TouchTargetSkin` fields, or `hitSlop`) in its implementation modules |
 | Tests importing it | 5: `test/atom-material-roles.test.tsx`, `test/design-rules-skins.test.ts`, `test/glass-controls.test.tsx`, `test/kbd.test.tsx`, `test/skins-smoke.test.tsx` |

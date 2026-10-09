@@ -20,6 +20,7 @@ Audit checklist for `/components/pagination`. The facts block and the variants t
 | Hand-off metric gaps | none |
 | Interactions registry | in the inventory; evidence: pagination-press (unit-web, test/behavior.test.tsx) |
 | Overlay recipe | none |
+| Interaction states | captured: hover on Default (web row; desktop), focus on Default (web row; desktop), pressed on Default (web row; desktop), disabled on First and last page (web row; desktop). |
 | MeasureProps | not adopted |
 | Touch target | `pagination.shared.tsx`: hitSlop, minTarget, styleBox, useSeededMinTargetSlop; `pagination.styles.ts`: minTarget, platformMinTarget |
 | Tests importing it | 12: `test/behavior.test.tsx`, `test/design-rules-skins.test.ts`, `test/focus-ring.test.tsx`, `test/glass-controls.test.tsx`, `test/native-focus-fixtures.test.tsx`, `test/no-console-violations.test.tsx`, `test/pagination-look.test.tsx`, `test/skins-smoke.test.tsx`, `test/text-contrast.test.tsx`, `test/touch-target-clips.test.tsx`, `test/touch-target-coverage.test.ts`, `test/touch-target-seed.test.tsx` |

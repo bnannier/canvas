@@ -20,6 +20,7 @@ Audit checklist for `/components/steps`. The facts block and the variants table 
 | Hand-off metric gaps | none |
 | Interactions registry | in the inventory; evidence: none registered |
 | Overlay recipe | none |
+| Interaction states | static: A progress display whose step circles are plain in every rail example. pressed exempt, verified: `onStepPress` makes each circle a button; no rail example passes it. |
 | MeasureProps | not adopted |
 | Touch target | `steps.shared.tsx`: hitSlop, inlineSide, leastLine, minTarget, slopSides, splitSeam, styleBox, useSeededMinTargetSlop; `steps.styles.ts`: TOUCH_TARGET, minTarget |
 | Tests importing it | 10: `test/behavior-smoke-d.test.tsx`, `test/design-rules-skins.test.ts`, `test/narrow-modes.test.tsx`, `test/organism-material-roles.test.tsx`, `test/skins-smoke.test.tsx`, `test/text-contrast.test.tsx`, `test/touch-target-clips.test.tsx`, `test/touch-target-coverage.test.ts`, `test/touch-target-seams.test.tsx`, `test/touch-target-seed.test.tsx` |

@@ -20,6 +20,7 @@ Audit checklist for `/components/progress`. The facts block and the variants tab
 | Hand-off metric gaps | none |
 | Interactions registry | in the inventory; evidence: none registered |
 | Overlay recipe | none |
+| Interaction states | static: A meter: it shows a value and takes no input. |
 | MeasureProps | adopted in `progress.shared.tsx` |
 | Touch target | no touch-target name (the exports of `src/style/touch-target.ts`, `src/style/touch-target-seed.ts`, `src/style/touch-seam.ts`, `src/style/clip-slop.ts`, the `TouchTargetSkin` fields, or `hitSlop`) in its implementation modules |
 | Tests importing it | 6: `test/atom-material-roles.test.tsx`, `test/design-rules-skins.test.ts`, `test/feedback.test.tsx`, `test/progress.test.tsx`, `test/sizing.test.tsx`, `test/skins-smoke.test.tsx` |

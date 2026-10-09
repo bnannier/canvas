@@ -20,6 +20,7 @@ Audit checklist for `/components/drawer`. The facts block and the variants table
 | Hand-off metric gaps | none |
 | Interactions registry | in the inventory; evidence: drawer-nested-keyboard (browser-keyboard, e2e/journeys/keyboard.e2e.ts), drawer-nested-touch (browser-touch, e2e/journeys/touch.e2e.ts) |
 | Overlay recipe | yes (dialog) |
+| Interaction states | captured: open on Default (web, iOS, Android rows; phone, tablet and desktop). pressed exempt, verified: Its own presses are the dim scrim, which closes the drawer, and the panel, which swallows a stray press: neither is a control, and the open recipe captures the drawer itself. |
 | MeasureProps | not adopted |
 | Touch target | no touch-target name (the exports of `src/style/touch-target.ts`, `src/style/touch-target-seed.ts`, `src/style/touch-seam.ts`, `src/style/clip-slop.ts`, the `TouchTargetSkin` fields, or `hitSlop`) in its implementation modules. `test/touch-target-coverage.test.ts` records it as known gap: the scrim is a dismiss target, not a control |
 | Tests importing it | 13: `test/autocomplete-keyboard.test.tsx`, `test/command.test.tsx`, `test/design-rules-skins.test.ts`, `test/drawer-host.test.tsx`, `test/escape-layers.test.tsx`, `test/hardware-back.test.tsx`, `test/hosted-trigger-focus.test.tsx`, `test/input-overlay-escape.test.tsx`, `test/native-accessibility-escape-hosts.test.tsx`, `test/native-focus-fixtures.test.tsx`, `test/overlay-escape.test.tsx`, `test/overlays.test.tsx`, `test/skins-smoke.test.tsx` |

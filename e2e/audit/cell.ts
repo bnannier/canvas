@@ -68,6 +68,36 @@ export function auditRunDir(): string {
   return dir;
 }
 
+/**
+ * Runs in every page an audit session opens, before the page's own scripts: hold each
+ * infinite CSS animation still from the moment it starts.
+ *
+ * The capture launches Chromium as the suite does, with `--disable-frame-rate-limit`
+ * (playwright.config.ts CHROMIUM_ARGS), so a page with a loop running draws frames as
+ * fast as the machine allows. The loops are the kit's essential motion, which reduced
+ * motion leaves running (a Spinner, the Skeleton shimmer, the indeterminate Progress: CSS
+ * keyframe animations through src/style/loop.tsx), and one Spinner kept a browser at about
+ * 2.3 CPU seconds a second where the same page at rest took 0.03; six such pages at once
+ * (one look and surface each) starved the machine and a pattern-loading page cell took up
+ * to 146 s instead of 3. Nothing here needs a loop to turn: every photograph disables
+ * animations (Playwright cancels an infinite one to its initial state for the shot, and
+ * plays it again after, which starts it, so this pauses it again) and no recipe reads one.
+ * A finite animation (a transition, the hover lift) is never touched.
+ */
+function holdLoops(): void {
+  document.addEventListener(
+    "animationstart",
+    (event) => {
+      const target = event.target as Element | null;
+      for (const animation of target?.getAnimations?.() ?? []) {
+        const css = animation as Animation & { animationName?: string };
+        if (css.animationName === event.animationName && animation.effect?.getTiming().iterations === Infinity && animation.playState === "running") animation.pause();
+      }
+    },
+    true,
+  );
+}
+
 /** The page a test's cells run in, reopened after a cell fails. */
 export class AuditSession {
   private current: { page: Page; problems: PageProblems } | null = null;
@@ -78,6 +108,7 @@ export class AuditSession {
     await stubRegistry(context);
     // The clock is the context's, so every page the session opens starts at FIXED_TIME.
     await context.clock.setFixedTime(FIXED_TIME);
+    await context.addInitScript(holdLoops);
     return new AuditSession(context);
   }
 

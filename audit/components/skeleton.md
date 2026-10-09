@@ -20,6 +20,7 @@ Audit checklist for `/components/skeleton`. The facts block and the variants tab
 | Hand-off metric gaps | none |
 | Interactions registry | in the inventory; evidence: none registered |
 | Overlay recipe | none |
+| Interaction states | static: A loading placeholder: it takes no input. |
 | MeasureProps | not adopted |
 | Touch target | no touch-target name (the exports of `src/style/touch-target.ts`, `src/style/touch-target-seed.ts`, `src/style/touch-seam.ts`, `src/style/clip-slop.ts`, the `TouchTargetSkin` fields, or `hitSlop`) in its implementation modules |
 | Tests importing it | 4: `test/behavior-smoke-c.test.tsx`, `test/design-rules-skins.test.ts`, `test/skeleton-accessibility.test.tsx`, `test/skins-smoke.test.tsx` |

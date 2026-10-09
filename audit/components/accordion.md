@@ -20,6 +20,7 @@ Audit checklist for `/components/accordion`. The facts block and the variants ta
 | Hand-off metric gaps | none |
 | Interactions registry | in the inventory; evidence: none registered |
 | Overlay recipe | none |
+| Interaction states | captured: focus on Default (web row; desktop), pressed on Default (web row; desktop), disabled on Disabled row (web row; desktop). |
 | MeasureProps | not adopted |
 | Touch target | no touch-target name (the exports of `src/style/touch-target.ts`, `src/style/touch-target-seed.ts`, `src/style/touch-seam.ts`, `src/style/clip-slop.ts`, the `TouchTargetSkin` fields, or `hitSlop`) in its implementation modules. `test/touch-target-coverage.test.ts` records it as covered another way: triggers are 44/56 tall by skin |
 | Tests importing it | 4: `test/design-rules-skins.test.ts`, `test/disclosure.test.tsx`, `test/focus-ring.test.tsx`, `test/skins-smoke.test.tsx` |

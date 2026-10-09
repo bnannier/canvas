@@ -20,6 +20,7 @@ Audit checklist for `/components/card`. The facts block and the variants table a
 | Hand-off metric gaps | none |
 | Interactions registry | in the inventory; evidence: none registered |
 | Overlay recipe | none |
+| Interaction states | captured: hover on Pressable (web row; desktop), focus on Pressable (web row; desktop), pressed on Pressable (web row; desktop). |
 | MeasureProps | not adopted |
 | Touch target | no touch-target name (the exports of `src/style/touch-target.ts`, `src/style/touch-target-seed.ts`, `src/style/touch-seam.ts`, `src/style/clip-slop.ts`, the `TouchTargetSkin` fields, or `hitSlop`) in its implementation modules. `test/touch-target-coverage.test.ts` records it as known gap: a pressable card is sized by its content, which can be anything |
 | Tests importing it | 9: `test/card.test.tsx`, `test/design-rules-skins.test.ts`, `test/dist-smoke.test.tsx`, `test/hover-lift.test.tsx`, `test/layout-responsive.test.tsx`, `test/molecule-material-state.test.tsx`, `test/native-carousel-fixture.test.tsx`, `test/new-components.test.tsx`, `test/skins-smoke.test.tsx` |
