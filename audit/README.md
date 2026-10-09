@@ -172,6 +172,8 @@ as "by design".
 | `bun run audit:checklists:check` | fails on a route with no checklist, an orphan checklist (a `.md` file no route calls for), a stale facts block, a malformed variants, findings or sign-off row (by line number, a finding whose cell is not one of the checklist's capture ids or `source` included), variant rows that drift from the inventory, a variants table `--write` would rewrite, or a missing findings table or sign-off section; runs in CI (`validate.yml`) and the pre-push hook |
 | `bun run audit:status` | counts ticked variant cells per platform, ticked checklist items, open findings by severity and signed-off platforms across every checklist (`--json` for the rows); lists any row or table it cannot read by file and line under the counts, and exits non-zero when there is one, since the counts then under-report |
 | `bun tools/audit/facts.ts <slug>` | prints one component's facts as JSON |
+| `bun run audit:native:build -- --platform=ios,android` | builds the Canvas Audit app (the docs with the capture driver) in Release and installs it on the booted simulator and emulator; `--incremental` keeps the generated native projects after a JS-only change, `--dev` builds Debug for the fix loop |
+| `bun run audit:native -- --platform=ios,android` | photographs every component example and every pattern and template page on the devices in all six looks and surfaces; `--only`, `--looks`, `--surfaces`, `--a11y=none\|default\|all`, `--devices`, `--dev`, `--keep-motion` |
 | `bun run audit:web` | captures the web cells into a new run under `.audit/runs/` (see "Capturing on the web" below); `--only`, `--variants`, `--looks`, `--surfaces`, `--widths` narrow it, `--axe`, `--base`, `--workers` and `--allow-stale` tune it, `--help` lists them |
 
 When a kit change alters a fact (a new test, a skin that stops aliasing the web skin, a
@@ -245,16 +247,141 @@ A cell is flagged `render-failed`, `problems`, `text-floor` (under 10 px), `cont
 small and caption roles may be, scrolled and truncated text, contrast the DOM cannot
 resolve, which the analysis step samples from the photograph).
 
-## Capturing (pending)
+## Capturing on devices
 
-The rest of the capture infrastructure is not in the repository yet: the interaction-state
-recipes and page shots (1d), analysis and contact sheets (1e, `audit:sheets`,
-`audit:index`), the in-app native driver (1f), the native host runner and builds (1g,
-`audit:native`, `audit:native:build`) and the fixer loop (1h). Until they land, the
-checklists are reviewed against the web captures and the existing evidence (`bun run e2e`,
-`bun run looks`, the docs three-up), and the cells are ticked only from photographs.
+The docs app photographs itself on the booted iOS simulator and Android emulator. A
+separate app, **Canvas Audit** (`com.nannier.canvas.audit`, URL scheme `canvas-audit`), is
+the docs app built with `CANVAS_AUDIT_BUILD=1` (its identity, updates off, and the two
+config plugins under `docs/plugins/`: cleartext HTTP to loopback, and the Release Gradle
+daemon's memory) and `EXPO_PUBLIC_CANVAS_AUDIT=1` (the driver). It installs beside the
+docs development app `com.nannier.canvas` that the Preview links open and never replaces
+it; giving it its own scheme keeps `canvas://` links unambiguous on both platforms.
 
-Once they land, a fixer re-captures one component with
+1. `bun run audit:native:build -- --platform=ios,android` runs `expo prebuild --clean` and
+   `expo run:<platform>` in Release with `--no-bundler`, so the bundle is embedded and is
+   exactly this checkout. iOS is built for the generic simulator destination into
+   `.audit/builds/ios` and installed with `simctl install`: installed by Expo, the app is
+   opened on a dev-client URL it cannot handle, and iOS leaves an "Open in Canvas Audit?"
+   alert over every app on the simulator. `--incremental` keeps the generated native
+   projects (a JS-only change rebuilds in under a minute); `--dev` builds Debug, which
+   loads its bundle from Metro on 8081, so Metro must be the one started in this checkout
+   with both flags.
+2. `bun run audit:native -- --platform=ios,android` starts the host on `127.0.0.1:8791`
+   (`tools/audit/native/server.ts`), puts each device into its capture state, launches the
+   app, and serves it the queue: every component example and every pattern and template
+   page, look-major (all of blush solid, then blush glass, and so on, so the theme changes
+   six times a run). The app's driver (`docs/src/audit/driver.native.tsx`) says hello with
+   its build identity, and the host refuses a build whose source fingerprint
+   (`docs/scripts/build-info.cjs`) is not this checkout's, an app that is not the audit
+   build, a downloaded update, and a Debug build unless `--dev` asked for one.
+3. For each item the driver sets the look through the docs theme's own setters (only the
+   axes that change) and waits until the kit's `useTheme()` reports it, `router.replace`s
+   to the example's route, waits for the pathname and for the Playground to register the
+   card with the example's label (`docs/src/audit/probe-context.tsx`; a pattern or template
+   page registers itself), lets the JS thread go idle (`requestIdleCallback`, React
+   Native 0.86's replacement for the deprecated `runAfterInteractions`), three frames and
+   the host's settle time, then scrolls the card to the top of the visible band and
+   posts one `/ready` per segment (a card taller than the band is taken in segments and
+   stitched).
+4. The host grabs the screen until two grabs in a row agree on the card's rows (mean
+   difference at most 0.1 on a 128 px grayscale thumbnail; a card that never holds still
+   after five grabs is kept and marked `unstable`), cuts the card out by its rect, and on
+   the cells the `--a11y` policy names dumps the accessibility tree inside the card
+   (Android: UI Automator; iOS: the pinned Maestro's `hierarchy`, which reads XCUITest's
+   tree). An item gets 30 s of the driver's time and a second attempt; a stalled app is
+   relaunched.
+
+The card's rect is computed, not read from the screen: its layout within the scroller's
+content (`measureLayout`) and a scroll offset the driver sets itself. Read with
+`measureInWindow` on iOS, a card came back 158 and 274 points above where it was drawn,
+because the scroller's content offset under the automatic inset adjustment is not the one
+Fabric's layout reads. The offsets run past the content's own range by the bars lying
+over the scroller, to where a user's scroll rests on iOS (the content's top just under the
+transparent header, its bottom just above the tab bar); React Native's `scrollTo` clamps
+those away, so the page frame allows overflow in the audit build only. Without it the last
+83 points of every iOS page (the tab bar's height) could not be brought into the band. The visible band is the narrowest of the screen's frame, the window
+safe area and the stack header's height, and on iOS the tab bar, which no source inside the
+app reports (a safe area read inside the screen comes back with the window's insets only):
+the host reads the tab bar's frame from the accessibility tree once per run and sends it
+with every item. iOS runs therefore need Maestro: `node scripts/install-maestro.mjs
+.audit/tools/maestro-2.10.0` (JDK 17, from `JAVA_HOME` or `/opt/homebrew/opt/openjdk@17`).
+
+The device changes a run makes, each read first and restored on the way out (success,
+failure or Ctrl-C), and listed in the run's manifest: iOS, a 9:41 status bar override
+(left alone if someone else's override is in place) and Reduce Motion on through `simctl
+spawn defaults`; Android, `adb reverse tcp:8791`, System UI demo mode (9:41, full battery
+and signal, no notifications) and the three animation scales at 0, which React Native
+reads as reduced motion. `--keep-motion` leaves the motion settings alone.
+
+A run writes one directory per platform:
+
+```
+.audit/runs/<stamp>-<ios|android>-<sha7>/
+  manifest.json      device, app build identity, options, device changes made and undone, counts, timings
+  cells.jsonl        one line per cell as it finishes: status, attempts, seconds, segments, a11y
+  driver-log.jsonl   console problems the app raised between items
+  <platform>/<slug>/<variant>/<look>.<surface>/
+    screen.png       the whole screen (screen-2.png and on for later segments)
+    card.png         the card, stitched from its segments
+    probe.json       the item, the resolved look, region, band and its sources, scroll offset,
+                     grabs and their differences, console problems, timings
+    a11y.json        the accessibility nodes inside the card, when the policy asks for them
+  <platform>-pages/<kind>-<slug>/<look>.<surface>/...
+```
+
+Nothing of the driver ships anywhere else. The root layout requires it only inside
+`if (process.env.EXPO_PUBLIC_CANVAS_AUDIT === "1")`, which Expo inlines and Metro folds
+away in every other production bundle, and `tools/docs/audit-driver-bundle.test.ts` keeps
+that the only way in. Expo does not key Metro's transform cache on `EXPO_PUBLIC_`
+variables, so `docs/metro.config.js` adds the flag to the cache version: without it a
+flagged export run after an ordinary one reused the ordinary transform of the root layout
+and carried no driver.
+
+### Native spike (2026-10-09)
+
+Recorded on the iPhone 17 Pro simulator ("Canvas Audit", iOS 27.0) and the `canvas_audit`
+AVD (Pixel-class 1080x2400 at 420 dpi, Android 15, API 35), both booted with the docs
+development app installed.
+
+- **HTTP in Release.** Reachable on both. The iOS simulator shares the Mac's loopback; the
+  emulator reaches it through `adb reverse`, with `usesCleartextTraffic` from the config
+  plugin. With updates off, expo-updates reports no update id and a non-embedded launch,
+  so the host refuses only an update id with a non-embedded launch.
+- **Seconds per shot** (`--only=button,switch --a11y=default`, 126 cells per platform, both
+  platforms at once, 17 minutes): iOS 1.8 s a cell (median; 95 cells) and 8.5 s with an
+  accessibility dump (31 cells); Android 7.0 s and 10.4 s. At those rates a full sweep's
+  3,666 variant cells a platform, 1,131 of them with a dump under the default policy, take
+  about 4 hours on iOS and 8 on Android, run side by side, before the 144 page cells (not
+  yet timed; a page is several segments). Android's floor is `adb exec-out screencap`
+  itself, 1.5 to 2.1 s a grab on this emulator, raw or PNG; the emulator console's `adb
+  emu screenrecord screenshot` takes 0.43 s but its pixels differ from the device's own
+  composite (mean difference 0.57, 1.3 million of 7.8 million bytes), so the host keeps
+  screencap. A Maestro dump costs iOS about 7 s a cell and UI Automator about 3.5 s on
+  Android, which is why the default `--a11y` policy dumps every variant only in blush
+  solid.
+- **Reduce Motion through `simctl spawn defaults`.** Works: written before launch, the
+  app's `AccessibilityInfo.isReduceMotionEnabled()` reports true, and restoring the
+  previous value at exit works.
+- **Android glass under `-gpu host`.** Not measured: the shared emulator runs with the
+  default GPU mode, which here is SwiftShader (`ANGLE (Google, Vulkan 1.3.0 (SwiftShader
+  Device ...))`), and restarting it with `-gpu host` would have disturbed the docs
+  development app session it serves. Under SwiftShader the glass surface paints exactly
+  the solid treatment on the Playground card (`button/default`: the glass and solid cards
+  are byte-identical in blush and in dark), while iOS glass differs visibly from solid
+  (mean difference 2.6 in blush, 12 in dark). Whether Android's blur appears under a host
+  GPU is open.
+- **Pages.** `pattern-glass` and `template-signin` in dark glass: iOS 2,350 points of the
+  sign-in page in 4 segments, Android 2,075 dp in 3, stitched without a seam; 8 s a page on
+  iOS and 25 s on Android (each segment is two grabs).
+- **Stability.** Every Button and Switch card held still between the first two grabs (the
+  largest difference 0.06 on iOS and 0 on Android, against the 0.1 threshold), so no cell
+  needed a third grab and none was marked unstable.
+
+The interaction-state recipes and page shots (1d), analysis and contact sheets (1e,
+`audit:sheets`, `audit:index`) and the fixer loop (1h) are still to come; until they land,
+cells are ticked only from the photographs these two runners take.
+
+A fixer re-captures one component with
 `bun run audit:web -- --only=<slug> --base=http://localhost:8081` against this checkout's
 Metro while iterating (the run is recorded as a `live dev server`; from a worktree, start
 that worktree's own docs dev server, since 8081 shows the main checkout's source), then the

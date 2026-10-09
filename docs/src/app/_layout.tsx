@@ -1,9 +1,22 @@
+import type { ComponentType, ReactNode } from "react";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { OverlayProvider, ToastProvider } from "@nannier/canvas";
 import { DocsThemeProvider } from "../theme/docs-theme";
 import { useDocsFonts } from "../ui/fonts";
 import { DocsHead, DocsLookMarker } from "../ui/docs-head";
 import { Navbar } from "../shell/navbar";
+
+// The component audit's in-app driver (docs/src/audit/driver.native.tsx), present only in
+// the native audit build, which is bundled with EXPO_PUBLIC_CANVAS_AUDIT=1
+// (tools/audit/native/build.ts). Expo inlines the variable into a production bundle, so
+// in every other build the condition is the constant `undefined === "1"` and Metro folds
+// the branch away, require and all, before it collects the bundle's dependencies. Keep
+// the require inside this exact condition: tools/docs/audit-driver-bundle.test.ts holds
+// the shape.
+let AuditDriver: ComponentType<{ children: ReactNode }> | null = null;
+if (process.env.EXPO_PUBLIC_CANVAS_AUDIT === "1") {
+  AuditDriver = (require("../audit/driver") as typeof import("../audit/driver")).AuditDriver;
+}
 
 // On native the bottom tab triggers are declared (in nav.config.json's mobile.tabs order)
 // as Home, Components, Utilities, Search — Search rightmost, mirroring the web shell. The
@@ -38,18 +51,22 @@ export const unstable_settings = { initialRouteName: "(home)" };
 // before the first frame.
 export default function RootLayout() {
   const [fontsLoaded] = useDocsFonts();
+  const shell = (
+    <OverlayProvider>
+      <ToastProvider>
+        <Navbar />
+      </ToastProvider>
+    </OverlayProvider>
+  );
   return (
     <SafeAreaProvider>
       <DocsHead />
       <DocsThemeProvider>
         <DocsLookMarker />
-        {fontsLoaded ? (
-          <OverlayProvider>
-            <ToastProvider>
-              <Navbar />
-            </ToastProvider>
-          </OverlayProvider>
-        ) : null}
+        {/* The audit driver wraps the shell so the screens can reach its probe, and it
+            sits inside the theme provider because it changes the look through the
+            docs' own setters. */}
+        {fontsLoaded ? (AuditDriver ? <AuditDriver>{shell}</AuditDriver> : shell) : null}
       </DocsThemeProvider>
     </SafeAreaProvider>
   );

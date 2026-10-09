@@ -70,6 +70,10 @@ export const DOCS_USAGE_EXCEPTIONS: readonly DocsUsageException[] = [
     reason: "The overlay host wraps scroll content rather than using its app-root flex default, which would collapse the scroll child.",
   },
   {
+    file: "docs/src/audit/driver.native.tsx", owner: "BandSensor", tag: "View", attribute: "style", keys: ["bottom", "left", "position", "right", "top"], occurrences: 1,
+    reason: "The component audit's band sensor, built only into the native audit app: an empty, untouchable view laid over the page frame so the capture driver can measure the screen's frame; it draws nothing.",
+  },
+  {
     file: "docs/src/ui/playground.tsx", owner: "PlatformRow", tag: "View", attribute: "style", keys: ["left", "position", "top"], occurrences: 1,
     reason: "The noninteractive platform caption is overlaid on the comparison stage without changing the measured component bounds.",
   },
