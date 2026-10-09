@@ -23,10 +23,13 @@ import {
   STATE_RECIPES,
   checkStateTable,
   inspectionDiff,
+  pressFired,
+  pressTrace,
   recipeFor,
   recipesOf,
   stateSpecsOf,
   type ComponentStates,
+  type PressRecord,
   type StateRecipe,
 } from "../../e2e/support/state-recipes.ts";
 import { inventory as registry } from "../interactions/registry.ts";
@@ -507,6 +510,35 @@ export function createProbe(parts: { Sheet?: typeof WebSheet } = {}) {
     } finally {
       rmSync(root, { recursive: true, force: true });
     }
+  });
+});
+
+describe("the press release", () => {
+  const record = (over: Partial<PressRecord> = {}): PressRecord => ({
+    aria: '- button "Cancel"',
+    location: "/components/dialog",
+    connected: true,
+    styles: { nodes: [{ key: "control <div>", values: { opacity: "1" } }], size: 1 },
+    shot: null,
+    focus: "nothing",
+    ...over,
+  });
+  // The pixel comparison is the only reading that needs the page; none of these get to it.
+  const page = { evaluate: () => Promise.reject(new Error("no page")) } as unknown as Parameters<typeof pressTrace>[0];
+
+  it("counts a click the control is delivered after a move-off as the press firing, and one on a thumb coming up in place as none", () => {
+    expect(pressFired("move-off", [])).toBeNull();
+    expect(pressFired("move-off", ['<div role="button">'])).toBe('a click reached <div role="button"> in the control as the button came up, so its press fired');
+    expect(pressFired("in-place", ["<div>"])).toBeNull();
+  });
+
+  it("reads a control the press took out of the page, and the overlay it closed, as the press taking effect", async () => {
+    expect(await pressTrace(page, record({ shot: null }), record({ shot: null }))).toEqual(["the control could not be photographed before and after the press"]);
+    const gone = record({ aria: "(the scope is gone)", connected: false, styles: null });
+    expect(await pressTrace(page, record(), gone)).toEqual(["the overlay the control was pressed in closed", "the pressed control left the page"]);
+    // Still there, but looking pressed: the look is compared.
+    const dimmed = record({ styles: { nodes: [{ key: "control <div>", values: { opacity: "0.6" } }], size: 1 } });
+    expect(await pressTrace(page, record(), dimmed)).toEqual(["the control's look changed: control <div> opacity 1 -> 0.6", "the control could not be photographed before and after the press"]);
   });
 });
 
