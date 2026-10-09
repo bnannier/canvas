@@ -80,6 +80,8 @@ One row per finding. Severity: critical, high, medium, low. Cell: a capture id f
 
 | ID | Severity | Cell | Summary | Status | Fix commit |
 |---|---|---|---|---|---|
+| sidebar-corner-1 | low | source | The iOS bordered column drew 10, off the iOS row; it plays the card role, as the web column does, so it draws the iOS card corner, 12. The shape gate (test/design-rules-shape.test.ts) now takes a corner only as a role of its own platform's row that its component plays, the pill, square or a declared concentric corner. | fixed | d1339a2c |
+| sidebar-nested-1 | low | source | The iOS rows are capsules (about 18 on a 36pt row) inside the bordered column's 12 corner with an 8 inset, so a corner row is rounder than its container; the nested-corner check runs on the web only (NESTED_CORNERS). Options: a concentric iOS column corner (row half-height plus inset, about 26, the iOS grouped list); check the pair on iOS and accept the capsule rows as the platform's. | open |  |
 
 ## Sign-off
 

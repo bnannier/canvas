@@ -100,6 +100,7 @@ One row per finding. Severity: critical, high, medium, low. Cell: a capture id f
 
 | ID | Severity | Cell | Summary | Status | Fix commit |
 |---|---|---|---|---|---|
+| data-table-corner-1 | low | source | Corners off their rows: the web inline edit field 8 (now the field corner, 10), the iOS outline 10 and edit field 6 (now the iOS card 12 and field 8), the Android outline 8 (now the card corner, 12). The web header band keeps its 10 as the web row's own `tableHeader` role. The shape gate (test/design-rules-shape.test.ts) now takes a corner only as a role of its own platform's row that its component plays, the pill, square or a declared concentric corner. | fixed | d1339a2c |
 
 ## Sign-off
 
