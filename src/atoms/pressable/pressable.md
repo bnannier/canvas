@@ -1,6 +1,6 @@
 # Pressable
 
-The touchable primitive: wraps content and fires onPress. Its style prop accepts a function of the press state, `({ pressed }) => style`, so you can show press feedback with no extra wrapper. Pass `focusable={false}` for a surface only a pointer should reach, such as a row whose keyboard path is a button inside it: it still presses, and it leaves the tab order on the web too, where react-native-web's own Pressable would keep it a tab stop.
+The touchable primitive: wraps content and fires onPress. Its style prop accepts a function of the press state, `({ pressed }) => style`, so you can show press feedback with no extra wrapper. Pass `focusable={false}` for a surface only a pointer should reach, such as a row whose keyboard path is a button inside it: it still presses, and it leaves the tab order on the web too, where react-native-web's own Pressable would keep it a tab stop. A Pressable with the `link` role presses on Enter (and not on Space), as a link does, on the web too: react-native-web's own Pressable leaves that key to the browser, which activates only a link that has an `href`.
 
 ## Usage
 

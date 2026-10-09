@@ -11,7 +11,7 @@ Audit checklist for `/components/container`. The facts block and the variants ta
 | Source files | `container.android.tsx`, `container.ios.tsx`, `container.md`, `container.shared.tsx`, `container.styles.ts`, `container.tsx` |
 | Implementation | its own source directory, `src/atoms/container/` (5 TypeScript modules) |
 | Exports | Container, containerStyle, measureOf, FLUID |
-| Platform entries | iOS: web build: Container. Android: web build: Container |
+| Platform entries | iOS: web build: Container; re-exports the shared build: containerStyle, measureOf, FLUID. Android: web build: Container; re-exports the shared build: containerStyle, measureOf, FLUID |
 | Platform-skins registry | none (every export is the web build, so the docs three-up renders it as is) |
 | Reference row | none: `PLATFORM-REFERENCES.md` has no row for this component (K8) |
 | Materials manifest | Container: atoms, inherited; verification inherited-composition, semantic-state |

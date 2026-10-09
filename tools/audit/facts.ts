@@ -41,7 +41,7 @@ import { STATE_RECIPES, recipesOf } from "../../e2e/support/state-recipes.ts";
 import { KIND_LABEL, compareCheckout, isGap, redirectTargets } from "../handoff-parity/compare.ts";
 import { evidence as interactionEvidence, inventory as interactionInventory } from "../interactions/registry.ts";
 import { materialCoverage } from "../materials/manifest.ts";
-import { componentSkins, hasPlatformBuilds, resolveSource, traceExport, type ComponentSkins, type Platform as SkinPlatform } from "../skins/divergence.ts";
+import { ENTRY, componentSkins, hasPlatformBuilds, resolveSource, traceExport, type ComponentSkins, type Platform as SkinPlatform } from "../skins/divergence.ts";
 import { registeredSkins } from "../skins/registry.ts";
 import { ModuleGraph, NOT_HANDLED, PathUnder, resolveModule, within, type Intercept } from "./hosts.ts";
 import { SignalReader } from "./interaction-signals.ts";
@@ -56,6 +56,12 @@ export interface SkinFact {
   divergent: boolean;
   /** Per built export: the reason it diverges, or null for the web build. */
   exports: Record<string, string | null>;
+  /**
+   * The component's exports the platform entry passes on without building them (BadgeGroup
+   * beside Badge, GridItem beside Grid): re-exported from a module that is one build on
+   * every platform, so `exports` (the builds) does not list them.
+   */
+  shared: string[];
 }
 
 export interface ReferenceCell {
@@ -1229,10 +1235,15 @@ export function componentFacts(slug: string, corpus: FactsCorpus): ComponentFact
   const naming = (identifier: string) => implementation.modules.filter((module) => codeIdentifiers(join(corpus.root, module)).has(identifier));
 
   const skins = corpus.skins.find((c) => c.group === group && c.dir === dir);
-  const skinFact = (platform: SkinPlatform): SkinFact => ({
-    divergent: Boolean(skins?.divergent[platform]),
-    exports: Object.fromEntries((skins?.exports ?? []).map((name) => [name, skins?.exportDivergence[name]?.[platform] ?? null])),
-  });
+  const skinFact = (platform: SkinPlatform): SkinFact => {
+    const built = skins?.exports ?? [];
+    const entryFile = join(corpus.root, sourceDir, `${dir}${ENTRY[platform].ext}`);
+    return {
+      divergent: Boolean(skins?.divergent[platform]),
+      exports: Object.fromEntries(built.map((name) => [name, skins?.exportDivergence[name]?.[platform] ?? null])),
+      shared: existsSync(entryFile) ? exports.filter((name) => !built.includes(name) && traceExport(entryFile, name) !== null) : [],
+    };
+  };
 
   const keys = new Set(corpus.reference.map((row) => row.key));
   const referenceKey = referenceKeyFor(slug, doc.category, keys);

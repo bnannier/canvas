@@ -94,24 +94,42 @@ function typeText(checker: ts.TypeChecker, sym: ts.Symbol, optional: boolean): s
 
 type DescSource = "jsdoc" | "line" | "none";
 
-// A member's description: its own `/** */` JSDoc, else the `//` line comment
-// immediately above it (the kit introduces boolean axes with a group `//` line
-// rather than per-prop JSDoc), else empty. The source is returned so the caller can
-// carry a group `//` comment forward across the axis's later members.
+// A member's description: its own `/** */` JSDoc, else the `//` comment immediately
+// above it (the kit introduces boolean axes with a group `//` comment rather than
+// per-prop JSDoc), else empty. A `//` comment that wraps is one comment run over
+// several lines, so the run is read whole: the last `//` line and every `//` line
+// directly above it with no blank line between. The source is returned so the
+// caller can carry a group `//` comment forward across the axis's later members.
 function describe(checker: ts.TypeChecker, sym: ts.Symbol): { desc: string; source: DescSource } {
   const jsdoc = ts.displayPartsToString(sym.getDocumentationComment(checker)).replace(/\s+/g, " ").trim();
   if (jsdoc) return { desc: jsdoc, source: "jsdoc" };
   const decl = (sym.getDeclarations() ?? [])[0];
   if (decl) {
     const full = decl.getSourceFile().getFullText();
-    const ranges = ts.getLeadingCommentRanges(full, decl.getFullStart()) ?? [];
-    const line = [...ranges].reverse().find((r) => r.kind === ts.SyntaxKind.SingleLineCommentTrivia);
-    if (line) {
-      const text = full.slice(line.pos, line.end).replace(/^\/\/\s?/, "").trim();
-      if (text) return { desc: text, source: "line" };
-    }
+    const text = lineCommentRun(full, ts.getLeadingCommentRanges(full, decl.getFullStart()) ?? []);
+    if (text) return { desc: text, source: "line" };
   }
   return { desc: "", source: "none" };
+}
+
+// The text of the last run of `//` lines among a member's leading comments, joined
+// with single spaces: two `//` lines belong to one run when only a line break and
+// indentation separate them, so a blank line (or a block comment) ends the run. A
+// line's list bullet (`- `) is dropped, since the table cell is prose.
+function lineCommentRun(full: string, ranges: readonly ts.CommentRange[]): string {
+  const isLine = (r: ts.CommentRange) => r.kind === ts.SyntaxKind.SingleLineCommentTrivia;
+  let last = ranges.length - 1;
+  while (last >= 0 && !isLine(ranges[last])) last--;
+  if (last < 0) return "";
+  let first = last;
+  while (first > 0 && isLine(ranges[first - 1]) && /^[ \t]*\r?\n[ \t]*$/.test(full.slice(ranges[first - 1].end, ranges[first].pos))) first--;
+  return ranges
+    .slice(first, last + 1)
+    .map((r) => full.slice(r.pos, r.end).replace(/^\/\/\s*/, "").replace(/^[-*]\s+/, "").trim())
+    .filter(Boolean)
+    .join(" ")
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
 // Source-order sort key: own-file members in declaration order first, then any

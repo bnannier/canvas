@@ -11,7 +11,7 @@ Audit checklist for `/components/badge`. The facts block and the variants table 
 | Source files | `badge.android.tsx`, `badge.ios.tsx`, `badge.md`, `badge.shared.tsx`, `badge.styles.ts`, `badge.tsx` |
 | Implementation | its own source directory, `src/atoms/badge/` (5 TypeScript modules) |
 | Exports | Badge, BadgeGroup |
-| Platform entries | iOS: web build: Badge. Android: web build: Badge |
+| Platform entries | iOS: web build: Badge; re-exports the shared build: BadgeGroup. Android: web build: Badge; re-exports the shared build: BadgeGroup |
 | Platform-skins registry | none (every export is the web build, so the docs three-up renders it as is) |
 | Reference row | `badge` (Light, Built). iOS: link [badge (iOS)](https://developer.apple.com/design/human-interface-guidelines/notifications#Badging) (Badging section; no kit symbol; iOS badges are notification counts on app icons and tab items, not text label pills). Android: link [badge (Android)](https://m3.material.io/components/badges/overview). Web: link [badge (Web)](https://catalyst.tailwindui.com/docs/badge) |
 | Materials manifest | Badge: atoms, static; verification solid-appearance, glass-appearance, mode-switch, accessibility-fallback, runtime-capability, semantic-state. BadgeGroup: atoms, inherited; verification inherited-composition, semantic-state |

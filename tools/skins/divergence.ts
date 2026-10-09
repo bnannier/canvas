@@ -92,7 +92,8 @@ export interface ComponentSkins {
 
 export const GROUPS = ["atoms", "molecules", "organisms", "charts"] as const;
 
-const ENTRY: Record<Platform, { ext: string; suffix: string }> = {
+/** A component's platform entry: `<dir>` plus `ext` in its directory, imported by `suffix`. */
+export const ENTRY: Record<Platform, { ext: string; suffix: string }> = {
   iOS: { ext: ".ios.tsx", suffix: ".ios.js" },
   Android: { ext: ".android.tsx", suffix: ".android.js" },
 };

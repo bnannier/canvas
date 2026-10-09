@@ -52,6 +52,7 @@ export interface IconInternalProps {
 export interface IconProps extends IconGlyphProps, IconInternalProps {
   // Name axis (one boolean per glyph, first-match precedence, default shield) is
   // supplied by IconGlyphProps, generated in ./icon.glyphs.ts from tools/icongen.
+
   // Color axis: pass one (default foreground). First match wins.
   primary?: boolean;
   /** Contrast color for a glyph on a primary surface (e.g. a primary button). */

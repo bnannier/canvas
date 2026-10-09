@@ -50,3 +50,29 @@ test("a matching factory name cannot attach another structurally identical props
   expect(groups.find((group) => group.name === "MistakenProps")?.props.some((prop) => prop.name === "ref")).toBe(false);
   expect(groups.find((group) => group.name === "OtherProps")?.props.some((prop) => prop.name === "ref")).toBe(false);
 });
+
+test("a `//` comment that wraps is read whole, and a blank line, a block comment or a previous member's trailing comment bounds it", () => {
+  const file = path.join(import.meta.dir, "fixtures/line-comments.tsx");
+  const prog = ts.createProgram([file], { strict: true, skipLibCheck: true, jsx: ts.JsxEmit.ReactJSX, module: ts.ModuleKind.ESNext });
+  const rows = Object.fromEntries(extractProps([{ dir: "fixtures", file }], prog).fixtures[0].props.map((prop) => [prop.name, prop.description]));
+  expect(rows).toEqual({
+    label: "A JSDoc description wins over any line comment.",
+    destructive: "Tone (pick one; default neutral): a red title and a destructive Button. The run wraps over two lines.",
+    small: "Size (pick one). A one-line header carries to the axis's later booleans.",
+    large: "Size (pick one). A one-line header carries to the axis's later booleans.",
+    disabled: "State.",
+    success: "Two families: Semantic status: success / warning.",
+    warning: "Two families: Semantic status: success / warning.",
+    compact: "Only this line is read.",
+    dense: "Only this line is read.",
+    loose: "Loose comes after it.",
+  });
+});
+
+test("ActionPanel's axis rows read their whole wrapped comments", () => {
+  const file = path.join(root, "src/molecules/action-panels/action-panels.shared.tsx");
+  const rows = Object.fromEntries(extractProps([{ dir: "action-panels", file }])["action-panels"][0].props.map((prop) => [prop.name, prop.description]));
+  expect(rows.destructive).toBe("Tone (omit for the neutral, primary-action default): a red title and a destructive Button. A toggle's Switch label carries no tone.");
+  expect(rows.inline).toBe("Layout (pick one; default stacks the action below the copy). Inline stacks too when the row is narrower than the `md` measure.");
+  expect(rows.toggle).toBe("Affordance: render the action as an on/off Switch instead of a Button. The panel is the Switch's own setting row in this mode: the title is its label and the description its muted line, and the whole row toggles.");
+});

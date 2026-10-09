@@ -11,7 +11,7 @@ Audit checklist for `/components/stacked-bar`. The facts block and the variants 
 | Source files | `stacked-bar.android.tsx`, `stacked-bar.ios.tsx`, `stacked-bar.md`, `stacked-bar.shared.tsx`, `stacked-bar.tsx` |
 | Implementation | its own source directory, `src/charts/stacked-bar/` (4 TypeScript modules) |
 | Exports | StackedBar |
-| Platform entries | iOS: re-exports the shared build (nothing built per platform). Android: re-exports the shared build (nothing built per platform) |
+| Platform entries | iOS: re-exports the shared build: StackedBar (nothing built per platform). Android: re-exports the shared build: StackedBar (nothing built per platform) |
 | Platform-skins registry | none (every export is the web build, so the docs three-up renders it as is) |
 | Reference row | `charts` (Shared, Built). iOS: link [charts (iOS)](https://developer.apple.com/design/human-interface-guidelines/charts) (HIG Charts component page; built with the Swift Charts framework; no iOS 27 kit symbol group). Android: none (Material 3 has no charts component; data visualization guidance exists only in the Material 2 archive and an M3 accessibility blog post). Web: link [charts (Web)](https://ui.shadcn.com/docs/components/chart) |
 | Materials manifest | StackedBar: charts, inherited; verification inherited-composition, semantic-state, inspection |
