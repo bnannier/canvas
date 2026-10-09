@@ -85,9 +85,11 @@ function collectRow(row: Element): Omit<RawRow, "platform"> {
   const transparent = (color: string) => color === "transparent" || /^rgba\(.*,\s*0\)$/.test(color);
 
   // Opacity groups: every element with opacity under 1 flattens what it contains, so a
-  // layer and the text above it are told which groups they paint inside.
+  // layer and the text above it are told which groups they paint inside, and where each
+  // group's element is (a photograph shows what lies behind a group around its box).
   const groupIds = new Map<Element, number>();
   const groupOpacity: number[] = [];
+  const groupBoxes: ReturnType<typeof boxOf>[] = [];
   const groupsOf = (el: Element): number[] => {
     const chain: number[] = [];
     for (let node: Element | null = el; node; node = node.parentElement) {
@@ -97,6 +99,7 @@ function collectRow(row: Element): Omit<RawRow, "platform"> {
       if (id === undefined) {
         id = groupOpacity.length;
         groupOpacity.push(opacity);
+        groupBoxes.push(boxOf(node.getBoundingClientRect()));
         groupIds.set(node, id);
       }
       chain.unshift(id);
@@ -549,6 +552,7 @@ function collectRow(row: Element): Omit<RawRow, "platform"> {
     box: boxOf(row.getBoundingClientRect()),
     scroll: { scrollWidth: row.scrollWidth, clientWidth: row.clientWidth, scrollHeight: row.scrollHeight, clientHeight: row.clientHeight },
     groupOpacity,
+    groupBoxes,
     texts: pending.map((p) => p.raw),
     interactive,
   };

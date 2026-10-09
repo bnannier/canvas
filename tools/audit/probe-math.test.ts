@@ -176,16 +176,23 @@ describe("a text leaf", () => {
     expect(glass.painted).toBeUndefined();
   });
 
-  it("tells the opacity that dims its ink from the opacity it shares with its backdrop", () => {
-    // A pressed button dimmed to 0.9 as a whole (the run's Button pressed state): the label and its fill dim together.
-    const pressed = deriveText(text({ color: "rgb(255, 255, 255)", groups: [0], stack: [layer("rgba(0, 0, 0, 0)", [0], [], "span"), layer("rgb(33, 128, 75)", [0], [], "button"), layer("rgb(255, 255, 255)")] }), [0.9]);
-    expect(pressed).toMatchObject({ opacity: 0.9, ownOpacity: 1 });
+  it("tells the opacity that dims its ink alone from the opacity it shares with its backdrop", () => {
+    const button = { x: 420, y: 210, width: 104, height: 36 };
+    // A pressed button dimmed to 0.9 as a whole (the Button's pressed state in the states run): the label and its fill dim together.
+    const pressed = deriveText(text({ color: "rgb(255, 255, 255)", groups: [0], stack: [layer("rgba(0, 0, 0, 0)", [0], [], "span"), layer("rgb(33, 128, 75)", [0], [], "button"), layer("rgb(255, 255, 255)")] }), [0.9], [button]);
+    expect(pressed).toMatchObject({ opacity: 0.9, ownOpacity: 1, shared: { opacity: 0.9, box: button } });
     // A faded label on a card: its ink alone is dimmed.
-    expect(deriveText(text({ groups: [0], stack: [layer("rgba(0, 0, 0, 0)", [0]), layer("rgb(255, 255, 255)")] }), [0.6])).toMatchObject({ opacity: 0.6, ownOpacity: 0.6 });
+    const faded = deriveText(text({ groups: [0], stack: [layer("rgba(0, 0, 0, 0)", [0]), layer("rgb(255, 255, 255)")] }), [0.6], [button]);
+    expect(faded).toMatchObject({ opacity: 0.6, ownOpacity: 0.6 });
+    expect(faded.shared).toBeUndefined();
     // Nested: the outer group holds the fill too, the inner one the label alone.
-    expect(deriveText(text({ groups: [0, 1], stack: [layer("rgb(240, 240, 240)", [0]), layer("rgb(255, 255, 255)")] }), [0.5, 0.8])).toMatchObject({ opacity: 0.4, ownOpacity: 0.8 });
+    expect(deriveText(text({ groups: [0, 1], stack: [layer("rgb(240, 240, 240)", [0]), layer("rgb(255, 255, 255)")] }), [0.5, 0.8], [button, { x: 0, y: 0, width: 1, height: 1 }])).toMatchObject({ opacity: 0.4, ownOpacity: 0.8, shared: { opacity: 0.5, box: button } });
+    // Without the shared group's box, every group counts as the text's own.
+    const unplaced = deriveText(text({ groups: [0], stack: [layer("rgb(33, 128, 75)", [0]), layer("rgb(255, 255, 255)")] }), [0.9]);
+    expect(unplaced).toMatchObject({ opacity: 0.9, ownOpacity: 0.9 });
+    expect(unplaced.shared).toBeUndefined();
     // No stack read: nothing to tell them apart by.
-    expect(deriveText(text({ groups: [0], stack: null, stackNote: "offscreen" }), [0.5]).ownOpacity).toBeUndefined();
+    expect(deriveText(text({ groups: [0], stack: null, stackNote: "offscreen" }), [0.5], [button]).ownOpacity).toBeUndefined();
   });
 });
 
@@ -264,6 +271,7 @@ describe("a form control's own text", () => {
       box: { x: 0, y: 0, width: 400, height: 100 },
       scroll: { scrollWidth: 400, clientWidth: 400, scrollHeight: 100, clientHeight: 100 },
       groupOpacity: [],
+      groupBoxes: [],
       texts: [text({ field: value, selfOverflow: { x: 307, y: 0 }, clipsSelf: true })],
       interactive: [],
     });
@@ -280,6 +288,7 @@ describe("a platform row", () => {
     box: { x: 0, y: 0, width: 400, height: 100 },
     scroll: { scrollWidth: 412, clientWidth: 400, scrollHeight: 100, clientHeight: 100 },
     groupOpacity: [],
+    groupBoxes: [],
     texts: [text()],
     interactive: [{ role: "button", name: "Save", tag: "div", box: { x: 0, y: 0, width, height }, state: {}, focusable: true }],
   });

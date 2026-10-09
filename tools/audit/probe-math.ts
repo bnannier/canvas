@@ -315,6 +315,8 @@ export interface RawRow {
   scroll: { scrollWidth: number; clientWidth: number; scrollHeight: number; clientHeight: number };
   /** Opacity by group id. */
   groupOpacity: number[];
+  /** Each group's element box by group id, measured from `origin` as every other box. */
+  groupBoxes: Box[];
   texts: RawText[];
   interactive: RawInteractive[];
 }
@@ -344,14 +346,19 @@ export interface ProbeText {
   /** The opacity it paints at: every group it is inside, multiplied. */
   opacity: number;
   /**
-   * The opacity of the groups it is inside that the layer painting right under it is not:
-   * what dims its ink against the background a photograph shows. A group holding the text
-   * and its backdrop (a pressed button dimmed as a whole) dims both together, so the two
-   * keep their contrast in the photograph. Absent when the probe read no paint stack under
-   * the text, and from probes written before it was recorded; the analysis then takes
-   * `opacity`.
+   * The opacity of the groups it is inside that the layer painting right under it (its
+   * backdrop) is not: what dims its ink over the background a photograph shows around it.
+   * Absent when the probe read no paint stack under the text, and from probes written
+   * before it was recorded; the analysis then takes `opacity`.
    */
   ownOpacity?: number;
+  /**
+   * The groups it is inside with its backdrop, when they dim: their opacity multiplied, and
+   * the box of the outermost one's element. Such a group (a pressed button dimmed to 0.9 as a
+   * whole) mixes the ink and its backdrop alike with what lies behind the group, which a
+   * photograph shows around that box, not under the text.
+   */
+  shared?: { opacity: number; box: Box };
   svg: boolean;
   /** A form control's value or placeholder, when that is what the text is. */
   field?: FieldPart;
@@ -419,18 +426,25 @@ function paints(layer: RawLayer): boolean {
 }
 
 /**
- * The opacity of the groups a text is inside that its backdrop (the topmost layer under it
- * that paints) is not, or null when there is no stack to find the backdrop in.
+ * How a text's opacity groups divide between the text alone and the text with its backdrop
+ * (the topmost layer under it that paints), or null when there is no stack to find the
+ * backdrop in. `own` is the opacity of the groups the backdrop is not in; `shared` the
+ * groups both are in, when they dim and the outermost one's box is known. Without that box
+ * nothing tells the shared groups apart, and every group counts as the text's own.
  */
-export function ownOpacity(raw: Pick<RawText, "groups" | "stack">, groupOpacity: readonly number[]): number | null {
+export function opacitySplit(raw: Pick<RawText, "groups" | "stack">, groupOpacity: readonly number[], groupBoxes: readonly Box[]): { own: number; shared: ProbeText["shared"] | null } | null {
   if (!raw.stack) return null;
-  const shared = new Set(raw.stack.find(paints)?.groups ?? []);
-  return raw.groups.filter((id) => !shared.has(id)).reduce((product, id) => product * (groupOpacity[id] ?? 1), 1);
+  const backdrop = new Set(raw.stack.find(paints)?.groups ?? []);
+  const of = (ids: number[]) => ids.reduce((product, id) => product * (groupOpacity[id] ?? 1), 1);
+  const sharedIds = raw.groups.filter((id) => backdrop.has(id));
+  const box = sharedIds.length ? groupBoxes[sharedIds[0]!] : undefined;
+  if (!box) return { own: of(raw.groups), shared: null };
+  return { own: of(raw.groups.filter((id) => !backdrop.has(id))), shared: { opacity: Math.round(of(sharedIds) * 1000) / 1000, box } };
 }
 
-export function deriveText(raw: RawText, groupOpacity: readonly number[]): ProbeText {
+export function deriveText(raw: RawText, groupOpacity: readonly number[], groupBoxes: readonly Box[] = []): ProbeText {
   const opacity = raw.groups.reduce((product, id) => product * (groupOpacity[id] ?? 1), 1);
-  const own = ownOpacity(raw, groupOpacity);
+  const split = opacitySplit(raw, groupOpacity, groupBoxes);
   const weight = renderedWeight(raw.family, raw.weight);
   const size = paintedSize(raw.size, raw.scale);
   const required = requiredContrast(size, weight);
@@ -459,7 +473,7 @@ export function deriveText(raw: RawText, groupOpacity: readonly number[]): Probe
     color: raw.color,
     colorAlpha: raw.colorAlpha,
     opacity: Math.round(opacity * 1000) / 1000,
-    ...(own === null ? {} : { ownOpacity: Math.round(own * 1000) / 1000 }),
+    ...(split === null ? {} : { ownOpacity: Math.round(split.own * 1000) / 1000, ...(split.shared ? { shared: split.shared } : {}) }),
     svg: raw.svg,
     ...(raw.field ? { field: raw.field } : {}),
     ariaHidden: raw.ariaHidden,
@@ -491,7 +505,7 @@ export function deriveRow(raw: RawRow): ProbeRow {
     origin: raw.origin,
     box: raw.box,
     overflowX: raw.scroll.scrollWidth - raw.scroll.clientWidth,
-    texts: raw.texts.map((text) => deriveText(text, raw.groupOpacity)),
+    texts: raw.texts.map((text) => deriveText(text, raw.groupOpacity, raw.groupBoxes)),
     interactive: raw.interactive.map((item) => ({
       ...item,
       target: floor.size,
