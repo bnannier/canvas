@@ -119,7 +119,7 @@ export const webSkin: SidebarSkin = {
 
   // --- collapse ---
   collapsedWidth: 64,
-  collapseToggle: () => ({ padding: 6, borderRadius: 8 }),
+  collapseToggle: () => ({ padding: 6, borderRadius: shape.web.control }),
   collapseIconSize: 14,
 
   // --- shell slots ---
@@ -206,7 +206,7 @@ export const iosSkin: SidebarSkin = {
       alignItems: "center",
       justifyContent: collapsed ? "center" : "flex-start",
       gap: collapsed ? 0 : 10,
-      borderRadius: 9999,
+      borderRadius: shape.ios.control,
       paddingHorizontal: collapsed ? 0 : 12,
       paddingVertical: density === "compact" ? 6 : 8,
     };
@@ -318,7 +318,7 @@ export const androidSkin: SidebarSkin = {
       alignItems: "center",
       justifyContent: collapsed ? "center" : "flex-start",
       gap: collapsed ? 0 : 12,
-      borderRadius: 9999,
+      borderRadius: shape.android.control,
       // Clip the Material ripple to the rounded pill outline.
       overflow: "hidden",
       paddingHorizontal: collapsed ? 0 : 16,
@@ -348,7 +348,7 @@ export const androidSkin: SidebarSkin = {
 
   // --- collapse ---
   collapsedWidth: 72,
-  collapseToggle: () => ({ padding: 8, borderRadius: 9999, overflow: "hidden" }),
+  collapseToggle: () => ({ padding: 8, borderRadius: shape.android.control, overflow: "hidden" }),
   collapseIconSize: 18,
 
   // --- shell slots ---

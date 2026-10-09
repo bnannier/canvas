@@ -114,7 +114,7 @@ export const webSkin: EmptyStateSkin = {
 export const iosSkin: EmptyStateSkin = {
   container: CONTAINER,
   // The superellipse corner curve of Apple's grouped-inset surfaces (iOS-only prop).
-  borderedBase: { borderRadius: 12, borderWidth: 1, borderCurve: "continuous" },
+  borderedBase: { borderRadius: shape.ios.card, borderWidth: 1, borderCurve: "continuous" },
   borderedPad: {
     compact: { paddingHorizontal: 16, paddingVertical: 24 },
     default: { paddingHorizontal: 24, paddingVertical: 32 },
@@ -143,7 +143,7 @@ export const iosSkin: EmptyStateSkin = {
 // ---- Android (Material 3): M3 medium shape, M3 type roles --------------------
 export const androidSkin: EmptyStateSkin = {
   container: CONTAINER,
-  borderedBase: { borderRadius: 12, borderWidth: 1 },
+  borderedBase: { borderRadius: shape.android.card, borderWidth: 1 },
   borderedPad: {
     compact: { paddingHorizontal: 16, paddingVertical: 24 },
     default: { paddingHorizontal: 24, paddingVertical: 32 },

@@ -157,8 +157,8 @@ export const webSkin: DrawerSkin = {
 // elevation, with an optional centered grabber (60x4, r2, 5pt below the exposed
 // edge) on the sheet edges. The scrim dims PER SCHEME (light 0.2, dark 0.48). The
 // SOLID `card` fill is unchanged (the iOS 27 kit sheet container is opaque too).
-const IOS_SHEET_RADIUS = 38;
-const IOS_SIDE_RADIUS = 38;
+const IOS_SHEET_RADIUS = shape.ios.sheet;
+const IOS_SIDE_RADIUS = shape.ios.sheet;
 // The iOS 27 kit Sheets Large-Detent container shadow: 0 15px 50px rgba(0,0,0,0.18)
 // (wider + softer than the shadow("xl") preset it replaces).
 const iosSheetShadow = customShadow({ offsetY: 15, radius: 50, opacity: 0.18 });
@@ -225,7 +225,7 @@ export const iosSkin: DrawerSkin = {
 // with a 32x4 M3 drag handle atop the bottom sheet. The scrim is the M3 standard
 // scrim (~0.32). The SOLID `card` fill is unchanged.
 const ANDROID_SIDE_RADIUS = 16;
-const ANDROID_SHEET_RADIUS = 28;
+const ANDROID_SHEET_RADIUS = shape.android.sheet;
 // M3 side-sheet docked container max-width token.
 const ANDROID_SIDE_MAX = 400;
 export const androidSkin: DrawerSkin = {

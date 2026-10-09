@@ -116,7 +116,7 @@ export const androidSkin: MediaObjectSkin = {
   // preset = elevation 1) and NO visible outline (M3 never combines an outline with
   // nonzero elevation, mirroring the kit Card fix). The 1dp border WIDTH is kept but
   // painted transparent (see borderedBorderColor) so content metrics stay identical.
-  borderedSurface: (t) => ({ borderRadius: 12, borderWidth: 1, padding: 16, ...shadow("sm", t) }),
+  borderedSurface: (t) => ({ borderRadius: shape.android.card, borderWidth: 1, padding: 16, ...shadow("sm", t) }),
   // Elevation separates the M3 elevated card, so the outline is transparent.
   borderedBorderColor: () => "transparent",
   // M3 medium container radius on the leading icon box.

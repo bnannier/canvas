@@ -71,7 +71,10 @@ describe("a selection Checkbox", () => {
       shapes[platform] = { width: box.style.width, radius: box.style.borderTopLeftRadius || box.style.borderRadius };
       view.unmount();
     }
-    expect(shapes.ios).toEqual({ width: "22px", radius: "11px" });
+    // A corner of at least half the side is a full round: the shape table's 9999, which
+    // every renderer clamps to the circle on the 22pt box.
+    expect(shapes.ios.width).toBe("22px");
+    expect(Number.parseFloat(shapes.ios.radius)).toBeGreaterThanOrEqual(Number.parseFloat(shapes.ios.width) / 2);
     expect(Number.parseFloat(shapes.web.radius)).toBeLessThan(Number.parseFloat(shapes.web.width) / 2);
     expect(Number.parseFloat(shapes.android.radius)).toBeLessThan(Number.parseFloat(shapes.android.width) / 2);
   });

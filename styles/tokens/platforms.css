@@ -375,7 +375,7 @@
   --p-field-fill:var(--card);--p-field-radius-bottom:8px;--p-field-pad-x:12px;--p-field-font:16px;--p-field-lh:24px;
   --p-field-border:var(--field-border);--p-label-color:var(--muted-foreground);--p-field-icon:20px;
   --p-label-weight:400;--p-label-tracking:-0.15px;
-  --p-check-size:22px;--p-check-radius:11px;--p-check-border:1.5px;
+  --p-check-size:22px;--p-check-radius:9999px;--p-check-border:1.5px;
   --p-switch-w:46px;--p-switch-h:28px;--p-switch-thumb-w:28px;--p-switch-thumb-h:24px;--p-switch-thumb-fill:#ffffff;
   /* Switch (switch.styles.ts IOS_OFF_TRACK): systemGray3 off track, never the washed-out input token; the white capsule knob keeps its soft shadow in both states */
   --p-switch-off-track:#c7c7cc;--p-switch-thumb-off-w:28px;--p-switch-thumb-off-h:24px;--p-switch-thumb-off-fill:#ffffff;
@@ -387,7 +387,7 @@
   --p-crumb-tracking:-0.15px;--p-crumb-sep-tracking:-0.15px;--p-crumb-current-weight:600;
   /* EmptyState (empty-state.styles.ts iosSkin: 12pt continuous card, SF tracking) */
   --p-empty-radius:12px;--p-empty-title-tracking:-0.31px;--p-empty-desc-tracking:-0.15px;
-  --p-overlay-radius:12px;--p-sheet-radius:12px;
+  --p-overlay-radius:28px;--p-sheet-radius:38px;
   /* Popover (iOS 27, Liquid Glass): a largely rounded ~26pt borderless card with the anchor beak */
   --p-popover-radius:26px;--p-popover-border:0px;--p-popover-beak-display:block /* @kind other */;
   /* Spinner (iOS): the UIActivityIndicatorView ring of fading spokes */
@@ -618,7 +618,7 @@
   /* Chip (M3): 18dp remove glyph; the selected filter chip leads with an 18dp check and drops its
      outline (the border-color token resolves only here; web/iOS fall back to the tone border). */
   --p-chip-remove:18px;--p-chip-check-display:inline-flex /* @kind other */;--p-chip-selected-border-color:transparent;
-  --p-overlay-radius:12px;--p-sheet-radius:12px;
+  --p-overlay-radius:28px;--p-sheet-radius:28px;
   --p-tab-item-pad-y:12px;--p-tab-indicator-h:3px;--p-tab-label-selected:var(--primary-text);
   /* Tabs pills + vertical (M3): capsule tonal primary-12% fills with brand labels, flat (no thumb shadow) */
   --p-tab-pill-track-radius:9999px;--p-tab-pill-radius:9999px;--p-tab-pill-pad-x:14px;--p-tab-pill-pad-y:7px;

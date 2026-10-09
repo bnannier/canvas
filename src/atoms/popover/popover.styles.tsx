@@ -124,7 +124,7 @@ const IOS_BEAK_W = 30; // base width where the beak meets the card edge
 const IOS_BEAK_H = 13; // protrusion past the card edge (taller than the tip is wide)
 const IOS_BEAK_FILLET = 7; // concave shoulder fillet near the card edge
 const IOS_BEAK_TIP = 3.5; // softly-rounded apex radius
-const IOS_CARD_RADIUS = 26;
+const IOS_CARD_RADIUS = shape.ios.menu;
 
 export function popoverArrowOffset(centerX: number, cardWidth: number): number {
   // Keep the shoulders on the straight card edge, including narrow hosts.

@@ -42,6 +42,7 @@ import {
   lightColors,
   mintColors,
   radius,
+  shape,
   spacing,
   type ColorTokens,
 } from "../../src/style/tokens.ts";
@@ -195,14 +196,17 @@ function typeTable(): string {
   return ["| Role | Size | Line height | Weight |", "| --- | --- | --- | --- |", ...rows].join("\n");
 }
 
+/** The shape table, one row per platform, read from `shape` (the skins read the same table). */
 function shapeTable(): string {
+  const roles = Object.keys(shape.web) as (keyof typeof shape.web)[];
+  const corner = (value: number) => `${value}px`;
   const rows = (["web", "ios", "android"] as PlatformKey[]).map((platform) => {
-    const at = (token: string) => platformValue(platforms, platform, token) ?? "-";
-    return `| ${platform} | ${at("p-btn-radius")} | ${at("p-card-radius")} | ${at("p-field-radius")} | ${at("p-min-target")} |`;
+    const target = platformValue(platforms, platform, "p-min-target") ?? "-";
+    return `| ${platform} | ${roles.map((role) => corner(shape[platform][role])).join(" | ")} | ${target} |`;
   });
   return [
-    "| Platform | Button | Card | Field | Minimum touch target |",
-    "| --- | --- | --- | --- | --- |",
+    `| Platform | ${roles.map((role) => role[0].toUpperCase() + role.slice(1)).join(" | ")} | Minimum touch target |`,
+    `| --- | ${roles.map(() => "---").join(" | ")} | --- |`,
     ...rows,
   ].join("\n");
 }

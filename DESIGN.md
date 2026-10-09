@@ -442,7 +442,7 @@ platformSkins:
     button:
       btn-radius: "9999px"
     checkbox:
-      check-radius: "11px"
+      check-radius: "9999px"
     dropdown:
       menu-radius: "26px"
       menu-row-radius: "0px"
@@ -832,18 +832,22 @@ are a `Row stacks`.
 
 ## Shapes
 
-Corner radius and the platform touch minimums, which differ by design: iOS rounds to a
-continuous 10 to 12, Material 3 uses its medium shape and a full pill on buttons, and
-the web follows Dark Factory: 8 on rectangular controls, 10 on fields, 12 on menus and
-tiles, 14 on cards, 18 on dialogs, 22 on sheets and the app shell, and a pill on every
-capsule (`shape` in `src/style/tokens.ts`).
+Corner radius by role and the platform touch minimums, which differ by design. The
+table is `shape` in `src/style/tokens.ts`, and a skin reads its platform's row for every
+corner that plays one of these roles. The web follows Dark Factory: 8 on rectangular
+controls, 10 on fields, 12 on menus and tiles, 14 on cards, 18 on dialogs, 22 on sheets
+and the app shell, and a pill on every capsule. iOS draws capsule controls, 8 on fields,
+12 on cards, 26 on menus, 28 on dialogs, the 38 sheet and the circular selection
+checkbox, with Apple's continuous curve; Material 3 draws stadium controls, 4 on the
+filled field's top corners and on menus, its 12 medium shape on cards and 28 on dialogs
+and sheets.
 
 <!-- @generated:shapes -->
-| Platform | Button | Card | Field | Minimum touch target |
-| --- | --- | --- | --- | --- |
-| web | 9999px | 14px | 10px | 0px |
-| ios | 9999px | 12px | 8px | 44px |
-| android | 9999px | 12px | 4px | 48px |
+| Platform | Control | Field | Card | Dialog | Menu | Sheet | Checkbox | Pill | Tile | Minimum touch target |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| web | 8px | 10px | 14px | 18px | 12px | 22px | 6px | 9999px | 12px | 0px |
+| ios | 9999px | 8px | 12px | 28px | 26px | 38px | 9999px | 9999px | 12px | 44px |
+| android | 9999px | 4px | 12px | 28px | 4px | 28px | 2px | 9999px | 12px | 48px |
 <!-- @/generated -->
 
 A nested surface is never rounder than what contains it. Where a control is smaller

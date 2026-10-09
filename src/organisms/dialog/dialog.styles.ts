@@ -205,7 +205,7 @@ export const webSkin: DialogSkin = {
 // indigo Confirm capsule, with NO hairline dividers. A destructive confirm keeps
 // the gray `secondary` capsule but draws its label in the `destructive` red. Each
 // capsule shares the row evenly; a pressed capsule dims (no ripple) at 0.8.
-const IOS_RADIUS = 28;
+const IOS_RADIUS = shape.ios.dialog;
 const IOS_CAPSULE_RADIUS = 22;
 export const iosSkin: DialogSkin = {
   backdrop: (t) => ({ borderRadius: 8, backgroundColor: scrimFill(t, 0.3) }),
@@ -272,7 +272,7 @@ export const iosSkin: DialogSkin = {
 // shadow) on a ~0.32 black scrim; a LEFT-aligned ~22sp title, a 14sp body, and
 // TEXT-button actions (no fill) bottom-RIGHT in a row — Cancel then Confirm — in
 // brand-indigo text, an android_ripple on each, and NO dividers.
-const ANDROID_RADIUS = 28;
+const ANDROID_RADIUS = shape.android.dialog;
 export const androidSkin: DialogSkin = {
   backdrop: (t) => ({ borderRadius: 8, backgroundColor: scrimFill(t, 0.32) }),
   card: (t) => ({

@@ -140,11 +140,15 @@ are a `Row stacks`.
 
 ## Shapes
 
-Corner radius and the platform touch minimums, which differ by design: iOS rounds to a
-continuous 10 to 12, Material 3 uses its medium shape and a full pill on buttons, and
-the web follows Dark Factory: 8 on rectangular controls, 10 on fields, 12 on menus and
-tiles, 14 on cards, 18 on dialogs, 22 on sheets and the app shell, and a pill on every
-capsule (`shape` in `src/style/tokens.ts`).
+Corner radius by role and the platform touch minimums, which differ by design. The
+table is `shape` in `src/style/tokens.ts`, and a skin reads its platform's row for every
+corner that plays one of these roles. The web follows Dark Factory: 8 on rectangular
+controls, 10 on fields, 12 on menus and tiles, 14 on cards, 18 on dialogs, 22 on sheets
+and the app shell, and a pill on every capsule. iOS draws capsule controls, 8 on fields,
+12 on cards, 26 on menus, 28 on dialogs, the 38 sheet and the circular selection
+checkbox, with Apple's continuous curve; Material 3 draws stadium controls, 4 on the
+filled field's top corners and on menus, its 12 medium shape on cards and 28 on dialogs
+and sheets.
 
 <!-- @generated:shapes -->
 <!-- @/generated -->

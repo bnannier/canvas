@@ -207,7 +207,7 @@ export const iosSkin: StackedListSkin = {
 // affordance is a 24dp Icon, and the overflow menu is rounded-full with a 48dp
 // hitSlop target (the M3 icon-button target auto-fills the item height). Press =
 // android_ripple (a neutral surface state layer); no opacity dim.
-const ANDROID_RADIUS = 12;
+const ANDROID_RADIUS = shape.android.card;
 const ANDROID_ROW_HEIGHT = 72;
 export const androidSkin: StackedListSkin = {
   cardSurface: (t) => ({

@@ -182,7 +182,7 @@ export const webSkin: ButtonSkin = {
     return {
       ...ROW,
       gap: 6,
-      borderRadius: 9999,
+      borderRadius: shape.web.pill,
       ...(o.icon
         ? sq(WEB_SQUARE[size])
         : intent === "link" ? { paddingHorizontal: 0, paddingVertical: 0 }
@@ -229,7 +229,7 @@ export const iosSkin: ButtonSkin = {
   container: (t, intent, size, o) => ({
     ...ROW,
     gap: 6,
-    borderRadius: 9999, // iOS 27 prominent buttons are capsules (full pill at every size); icon = circle
+    borderRadius: shape.ios.control, // iOS 27 prominent buttons are capsules (full pill at every size); icon = circle
     ...(o.icon
       ? sq(size === "small" ? 36 : size === "large" ? 52 : 44)
       // Heights: base ~50pt (lineHeight 22 + 2*14) = the iOS 27 prominent button; large ~58pt
@@ -259,7 +259,7 @@ export const androidSkin: ButtonSkin = {
   container: (t, intent, size, o) => ({
     ...ROW,
     gap: 8,
-    borderRadius: 9999, // M3 filled button = fully rounded (stadium); icon = circle
+    borderRadius: shape.android.control, // M3 filled button = fully rounded (stadium); icon = circle
     // The Material ripple is clipped to this pill by the shell's <RippleClip> parent, NOT here:
     // a bounded android_ripple is the pressable's own rectangular-masked background, which a
     // same-node overflow:"hidden" cannot clip (RN only path-clips CHILDREN). See ripple-clip.tsx.
@@ -282,9 +282,9 @@ export const androidSkin: ButtonSkin = {
   raised: raisedGlow,
   pressedOpacity: null,
   ripple: androidRipple,
-  // Clip the bounded ripple to the pill (icon = circle). Same 9999 radius as `container`, so
+  // Clip the bounded ripple to the pill (icon = circle). Same corner as `container`, so
   // the <RippleClip> parent's rounded outline matches the button's own corners at every size.
-  rippleClipShape: () => ({ borderRadius: 9999 }),
+  rippleClipShape: () => ({ borderRadius: shape.android.control }),
   minTarget: 48, // M3 minimum touch target 48x48dp (small = 30dp, base = 40dp; extended via hitSlop)
 };
 

@@ -157,7 +157,7 @@ export const iosSkin: NavbarSkin = {
     return {
       height: 32,
       minWidth: 32,
-      borderRadius: 9999,
+      borderRadius: shape.ios.control,
       paddingHorizontal: 12,
       alignItems: "center",
       justifyContent: "center",
@@ -234,7 +234,7 @@ export const androidSkin: NavbarSkin = {
   // alpha(primary, .12)); inactive sits flat with a muted label.
   linkTile(tokens, active) {
     return {
-      borderRadius: 9999,
+      borderRadius: shape.android.control,
       // clip the Material ripple to the rounded outline (without this, the bounded
       // android_ripple paints a rectangle past the pill corners).
       overflow: "hidden",

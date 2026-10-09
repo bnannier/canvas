@@ -140,7 +140,7 @@ export const webSkin: StatsSkin = {
 // ---------- iOS (HIG / SF): inset card-like surface, flat, SF tracking ----------
 export const iosSkin: StatsSkin = {
   cardSurface: (tokens: ColorTokens): ViewStyle => ({
-    borderRadius: 12,
+    borderRadius: shape.ios.card,
     // The superellipse corner curve of Apple's inset-grouped surfaces (iOS-only prop).
     borderCurve: "continuous",
     borderWidth: 1,
@@ -150,7 +150,7 @@ export const iosSkin: StatsSkin = {
     // iOS inset-grouped surfaces read flat (no drop shadow).
   }),
   plainContainer: (tokens: ColorTokens): ViewStyle => ({
-    borderRadius: 12,
+    borderRadius: shape.ios.card,
     borderCurve: "continuous",
     borderWidth: 1,
     borderColor: tokens.border,
@@ -184,7 +184,7 @@ export const iosSkin: StatsSkin = {
 // ---------- Android (Material 3): outlined card, flat, M3 tracking, ripple ----------
 export const androidSkin: StatsSkin = {
   cardSurface: (tokens: ColorTokens): ViewStyle => ({
-    borderRadius: 12,
+    borderRadius: shape.android.card,
     // Clip the Material ripple to the rounded outline (a tappable card carries a bounded android_ripple).
     overflow: "hidden",
     borderWidth: 1,
@@ -194,7 +194,7 @@ export const androidSkin: StatsSkin = {
     // M3 outlined cards are flat (no elevation).
   }),
   plainContainer: (tokens: ColorTokens): ViewStyle => ({
-    borderRadius: 12,
+    borderRadius: shape.android.card,
     borderWidth: 1,
     borderColor: tokens.border,
     backgroundColor: tokens.card,
