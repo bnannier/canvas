@@ -4,6 +4,7 @@ import { join, relative as relativePath } from "node:path";
 import { Glob } from "bun";
 import ts from "typescript";
 import { ICON_STROKE_WIDTH } from "../src/atoms/icon/icon.stroke.ts";
+import { TypeSites } from "../tools/tokens/type-sites.ts";
 
 // Design rules, source side: the handful that are properties of the code itself
 // rather than of a token or a skin object.
@@ -36,15 +37,14 @@ describe("text stays legible", () => {
   const FLOOR = 10;
 
   it(`no rendered text is smaller than ${FLOOR}px`, () => {
-    const offenders: string[] = [];
-    for (const { file, text } of sources) {
-      text.split("\n").forEach((line, i) => {
-        for (const m of line.matchAll(/fontSize:\s*([\d.]+)/g)) {
-          if (Number(m[1]) < FLOOR) offenders.push(`${file}:${i + 1} fontSize ${m[1]}`);
-        }
-      });
-    }
-    expect(offenders).toEqual([]);
+    // Every size the kit sets, traced to the place its number is written: a `fontSize`
+    // property, an SVG text's `fontSize` attribute, a type-scale style, and the tables and
+    // helpers a skin builds its type from (tools/tokens/type-sites.ts, the folder the
+    // per-role floors in design-rules-type-floors read). A size it cannot trace fails.
+    const { values, unresolved } = new TypeSites(ROOT).scan(sources.map((s) => s.file));
+    expect(values.length).toBeGreaterThan(500);
+    expect(unresolved.map((u) => `${u.file}:${u.line} ${u.path}: ${u.text}`)).toEqual([]);
+    expect(values.filter((v) => v.value < FLOOR).map((v) => `${v.file}:${v.line} ${v.path} fontSize ${v.value}`)).toEqual([]);
   });
 });
 
