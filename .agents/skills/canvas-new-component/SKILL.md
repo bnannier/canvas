@@ -73,12 +73,19 @@ one ```tsx fence
 ### <label>        (each heading followed by exactly ONE fence; prose there is not rendered)
 ## Do & Don't
 ### <title>
-**Do**: caption, on one line.
+**Do**: caption    (one paragraph: it may wrap, and a blank line ends it)
 fence
-**Don't**: caption, on one line.
+**Don't**: caption
 fence
 ## <section>       (optional, the page's own, only after Do & Don't)
 ```
+
+Write every heading the one way: the `#` run at the start of the line, one
+space, the text, nothing after it. Markdown and the parser also read
+`##  Variants`, `##\tVariants`, an indented heading or a closing `#` run as the
+section, but the gate rejects those spellings so the source reads the way the
+page renders. A code span in a caption or a Do & Don't title (`` `cover` ``)
+renders in the mono face.
 
 `docs:gen` and `docs:gen:check` (the pre-push hook and CI) refuse to generate
 unless every page has this shape, and `tools/docgen/doc-structure.test.ts` runs
@@ -88,7 +95,8 @@ rule:
 
 - **S1** The page opens with `# <Name>`, exactly the registry name, and has no
   other `#` heading. Every page documents a registered component, and every
-  registered component (its `dir`, or its `slug` when they match) has a page.
+  registered component (its `dir`, or its `slug` when they match) has a page; a
+  missing one is reported at its entry's `slug` line in the registry.
 - **S2** A prose intro sits between the title and `## Usage`, with no fence,
   `###` heading or Do/Don't marker in it.
 - **S3** `## Usage`, `## Variants` and `## Do & Don't` each appear exactly once,
@@ -103,7 +111,13 @@ rule:
 - **S6** Do & Don't holds at least one `### <title>` group and no marker or
   fence outside one. A group is exactly one `**Do**` and one `**Don't**`, each
   with a caption and exactly one non-empty fence of its own, and the Don't fence
-  differs from the Do fence. Every pair teaches the page's own component.
+  differs from the Do fence. The page shows only the captions and the fences, so
+  any other prose in the section (a second paragraph under a marker, a note
+  after a fence) fails. Every pair teaches the page's own component, and its
+  captions describe what the fences really render.
+
+A heading spelled loosely fails under the rule that owns it: S1 for `#`, S3 for
+`##`, and for `###` the rule of its section.
 
 - Every JSX tag in a fence must be in LIVE_SCOPE; fences are type-checked by
   `tsc` against the real exports.

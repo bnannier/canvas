@@ -19,7 +19,7 @@ import * as fs from "node:fs";
 import * as path from "node:path";
 import { fileURLToPath } from "node:url";
 import { splitDoc, scopeNamesFromLiveScope, bannedStyleViolations, widthShimViolations, bareWidthViolations, prosePhantomApiViolations, BARE_WIDTH_MIN, type Example, type DontPair } from "./parse-md.ts";
-import { componentPages, pageStructureViolations, type Category } from "./pages.ts";
+import { componentPages, pageStructureViolations, registeredComponents, type Category } from "./pages.ts";
 import { extractProps, type PropGroup } from "./extract-props.ts";
 import { COMPONENTS } from "../../docs/src/core/data/components.ts";
 
@@ -364,7 +364,7 @@ function main() {
   // Do & Don't is not a component page, so it always fails, the way an unbound fence
   // tag does.
   const pages = componentPages(REPO);
-  const structure = pageStructureViolations(pages, COMPONENTS);
+  const structure = pageStructureViolations(pages, registeredComponents(REPO));
   if (structure.length) {
     throw new Error(
       `docs:gen: ${structure.length} component page structure violation(s). A page is "# <Name>" and a prose intro, ` +

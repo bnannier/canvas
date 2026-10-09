@@ -1,0 +1,5 @@
+---
+"@nannier/canvas": patch
+---
+
+The docs generator and the component page gate now read a page through one model, so they can no longer disagree: before, a heading spelled `##  Variants` or `##\tDo & Don't` passed the gate while the generator dropped the whole section. The gate also rejects such loose heading spellings (an extra space, a tab, an indent, a closing `#` run) under the rule that owns the heading, rejects prose in Do & Don't that the page never shows, and locates a registered component with no page at its entry's line in the docs registry. A caption that wraps onto the lines below its marker is now read whole, so the Grid, Field and Carousel Do & Don't captions that were cut off mid-sentence show in full, and a caption that opens on a quote or a parenthesis keeps it. Code spans in Do & Don't captions and titles render in the mono face instead of showing their backticks, and DepthChart's one-sided Don't caption describes what the chart draws (the bids stretch across the price axis and the Asks legend entry labels nothing). Repository tooling and docs only; nothing in the package changes.

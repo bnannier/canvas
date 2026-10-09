@@ -168,6 +168,42 @@ describe("splitDoc", () => {
     ]);
   });
 
+  it("reads a caption that wraps onto the lines below its marker whole, as Markdown reads the paragraph", () => {
+    const md =
+      `# X\n\nd\n\n## Usage\n\n${F}tsx\n<X />\n${F}\n\n## Do & Don't\n\n### T\n\n` +
+      `**Do**: keep the\nwhole sentence\n\n${F}tsx\n<G />\n${F}\n\n**Don't**: lose\n  its tail\n${F}tsx\n<B />\n${F}\n`;
+    expect(splitDoc(md).donts).toEqual([
+      { title: "T", do: { caption: "keep the whole sentence", code: "<G />" }, dont: { caption: "lose its tail", code: "<B />" } },
+    ]);
+  });
+
+  // The gate rejects these spellings (S1, S3, S5, S6); the parser reads them as Markdown
+  // does, so a page the gate somehow let through would still lose nothing.
+  it("reads a loosely spelled heading as its section, the way the gate reads it", () => {
+    const canonical =
+      `# X\n\nd\n\n## Usage\n\n${F}tsx\n<X />\n${F}\n\n## Variants\n\n### Small\n\n${F}tsx\n<X small />\n${F}\n\n` +
+      `## Do & Don't\n\n### T\n\n**Do**: a\n\n${F}tsx\n<G />\n${F}\n\n**Don't**: b\n\n${F}tsx\n<B />\n${F}\n`;
+    const want = splitDoc(canonical);
+    expect(want.examples.map((e) => e.label)).toEqual(["Default", "Small"]);
+    expect(want.donts.map((d) => d.title)).toEqual(["T"]);
+    for (const [from, to] of [
+      ["## Variants", "##  Variants"],
+      ["## Variants", "##\tVariants"],
+      ["## Do & Don't", "   ## Do & Don't"],
+      ["## Do & Don't", "## Do & Don't ##"],
+      ["## Usage", "## Usage  "],
+      ["### Small", "###\tSmall"],
+      ["### T", "### T ###"],
+    ]) {
+      expect(splitDoc(canonical.replace(`\n${from}\n`, `\n${to}\n`))).toEqual(want);
+    }
+  });
+
+  it("does not read a '#' run with no space after it, or one indented four spaces, as a heading", () => {
+    const md = `# X\n\nd\n\n## Usage\n\n${F}tsx\n<X />\n${F}\n\n##Variants\n\n    ### Small\n\n${F}tsx\n<X small />\n${F}\n`;
+    expect(splitDoc(md).examples).toEqual([{ label: "Default", code: "<X />" }]);
+  });
+
   it("yields no examples and no donts when the doc has no '## ' sections at all", () => {
     const md = `# Placeholder\n\nJust a header and prose, no sections yet.`;
     expect(splitDoc(md)).toEqual({ examples: [], donts: [] });
@@ -204,11 +240,25 @@ describe("parseDonts", () => {
   it("strips the leading separator (em dash, colon, or hyphen) from a caption", () => {
     const mk = (marker: string) =>
       `### T\n\n**Do** ${marker} keep it\n\n${F}tsx\n<G />\n${F}\n\n**Don't** ${marker} not this\n\n${F}tsx\n<B />\n${F}`;
-    for (const sep of ["—", "–", "-", ":"]) {
+    for (const sep of ["\u2014", "\u2013", "-", ":", ""]) {
       const [pair] = parseDonts(mk(sep));
       expect(pair.do.caption).toBe("keep it");
       expect(pair.dont.caption).toBe("not this");
     }
+  });
+
+  it("strips only the separator: a caption that opens on a quote or a parenthesis keeps it", () => {
+    const section =
+      `### T\n\n**Do**: "Save" names the action\n\n${F}tsx\n<G />\n${F}\n\n` +
+      `**Don't** \u2014 (optional) is not a label\n\n${F}tsx\n<B />\n${F}`;
+    const [pair] = parseDonts(section);
+    expect(pair.do.caption).toBe(`"Save" names the action`);
+    expect(pair.dont.caption).toBe("(optional) is not a label");
+  });
+
+  it("ends a caption at a blank line: a second paragraph is not part of it", () => {
+    const section = `### T\n\n**Do**: a\nb\n\nnot the caption\n\n${F}tsx\n<G />\n${F}\n\n**Don't**: c\n\n${F}tsx\n<B />\n${F}`;
+    expect(parseDonts(section)[0].do.caption).toBe("a b");
   });
 
   it("recognizes a curly-apostrophe Don’t marker", () => {
@@ -573,7 +623,7 @@ describe("docStructureViolations", () => {
     expect(found(page().replace(/\n/g, "\r\n"))).toEqual([]);
   });
 
-  it("passes prose under a heading and a caption that runs onto a second line", () => {
+  it("passes prose under a variant heading and a caption that wraps onto a second line", () => {
     const md = page((l) => [...l.slice(0, 13), "Prose about the small one.", ...l.slice(13, 23), "and its second line.", ...l.slice(23)]);
     expect(found(md)).toEqual([]);
   });
@@ -581,6 +631,31 @@ describe("docStructureViolations", () => {
   it("passes a section of the page's own after Do & Don't, fences and all", () => {
     const md = page((l) => [...l, "## Touch area", "", "The touch area grows.", "", `${F}tsx`, "<Widget compact />", F, ""]);
     expect(found(md)).toEqual([]);
+  });
+
+  describe("heading spelling, under the rule that owns the heading", () => {
+    const respell = (from: string, to: string) => page((l) => l.map((x) => (x === from ? to : x)));
+
+    it("rejects a loosely spelled title under S1", () => {
+      expect(found(respell("# Widget", "#  Widget"))).toEqual(["1 S1"]);
+    });
+
+    it("rejects every loose spelling of a '##' section under S3, at its line", () => {
+      for (const loose of ["##  Variants", "##\tVariants", " ## Variants", "## Variants ##", "## Variants "]) {
+        expect(found(respell("## Variants", loose))).toEqual(["11 S3"]);
+      }
+    });
+
+    it("names the heading as the parser reads it", () => {
+      expect(messages(respell("## Variants", "##\tVariants"))).toEqual([
+        `the heading "##\\tVariants" reads as "## Variants"; write it exactly so: its "#" run, one space, the text`,
+      ]);
+    });
+
+    it("rejects a loosely spelled '###' under the rule of its section", () => {
+      expect(found(respell("### Small", "###  Small"))).toEqual(["13 S5"]);
+      expect(found(respell("### Labels", "### Labels ###"))).toEqual(["21 S6"]);
+    });
   });
 
   describe("S1: the title", () => {
@@ -731,6 +806,22 @@ describe("docStructureViolations", () => {
 
     it("rejects an empty fence on either side", () => {
       expect(found(page((l) => [...l.slice(0, 31), ...l.slice(32)]))).toEqual(["31 S6"]);
+    });
+
+    // A caption is its marker's paragraph and the page shows nothing else from this
+    // section, so other prose here would be dropped without a word.
+    it("rejects a second paragraph between a caption and its fence", () => {
+      expect(found(page((l) => [...l.slice(0, 23), "", "A second paragraph.", ...l.slice(23)]))).toEqual(["25 S6"]);
+    });
+
+    it("rejects prose after a fence, before the first marker, or before the first '###'", () => {
+      expect(found(page((l) => [...l, "A note after the pair.", ""]))).toEqual(["35 S6"]);
+      expect(found(page((l) => [...l.slice(0, 21), "", "Why labels matter.", ...l.slice(21)]))).toEqual(["23 S6"]);
+      expect(found(page((l) => [...l.slice(0, 19), "", "Lead prose.", ...l.slice(19)]))).toEqual(["21 S6"]);
+    });
+
+    it("rejects a '####' heading, which the grammar reads as prose", () => {
+      expect(found(page((l) => [...l.slice(0, 21), "", "#### Note", ...l.slice(21)]))).toEqual(["23 S6"]);
     });
   });
 });
