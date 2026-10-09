@@ -262,26 +262,33 @@ export class CornerSites extends SourceFolder {
   }
 
   /**
-   * The corners the code in a span of a scanned file draws, from the corners `scan` found:
-   * every corner written, set or drawn in the span; or, for code that draws none itself (a
-   * platform entry handing its skin to the shell), the corners of the module-level consts
-   * it names, followed the same way.
+   * The corners the code in a span of a scanned file draws, from the corners `scan` found,
+   * by the element that draws each: every corner written, set or drawn in the span, under
+   * the file and path of its place there (`iosSkin.outline`, `IOS_RADIUS`); or, for code
+   * that draws none itself (a platform entry handing its skin to the shell), the elements
+   * of the module-level consts it names, followed the same way. One element can draw
+   * several numbers (a corner per size, a shell's corner from every skin).
    */
-  cornersIn(values: CornerValue[], file: string, start: number, end: number): Set<number> {
+  cornersIn(values: CornerValue[], file: string, start: number, end: number): Map<string, Set<number>> {
     return this.cornersInSpan(values, this.load(file), start, end, new Set());
   }
 
-  private cornersInSpan(values: CornerValue[], sf: ts.SourceFile, start: number, end: number, seen: Set<ts.Node>): Set<number> {
+  private cornersInSpan(values: CornerValue[], sf: ts.SourceFile, start: number, end: number, seen: Set<ts.Node>): Map<string, Set<number>> {
     const within = (place: { file: string; at: number }) => place.file === sf.fileName && place.at >= start && place.at < end;
-    const direct = new Set(values.filter((v) => within(v) || v.sets.some(within) || v.drawn.some(within)).map((v) => v.value));
-    if (direct.size > 0) return direct;
-    const named = new Set<number>();
+    const elements = new Map<string, Set<number>>();
+    const add = (into: Map<string, Set<number>>, element: string, value: number) => into.set(element, (into.get(element) ?? new Set()).add(value));
+    for (const v of values) {
+      for (const place of [v, ...v.sets, ...v.drawn]) if (within(place)) add(elements, `${place.file} ${place.path}`, v.value);
+    }
+    if (elements.size > 0) return elements;
     const visit = (node: ts.Node) => {
       if (ts.isIdentifier(node) && node.getStart(sf) >= start && namesADeclaration(node)) {
         const decl = this.resolve(node, sf);
         if (decl?.kind === "var" && !seen.has(decl.node) && this.topDeclarationOf(decl.node, decl.sf)?.node === decl.node && !isFunction(decl.node)) {
           seen.add(decl.node);
-          for (const value of this.cornersInSpan(values, decl.sf, decl.node.getStart(decl.sf), decl.node.getEnd(), seen)) named.add(value);
+          for (const [element, set] of this.cornersInSpan(values, decl.sf, decl.node.getStart(decl.sf), decl.node.getEnd(), seen)) {
+            for (const value of set) add(elements, element, value);
+          }
         }
       }
       ts.forEachChild(node, (child) => {
@@ -289,7 +296,7 @@ export class CornerSites extends SourceFolder {
       });
     };
     visit(sf);
-    return named;
+    return elements;
   }
 
   /**

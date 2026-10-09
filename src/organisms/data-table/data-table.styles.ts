@@ -169,17 +169,17 @@ const DATA_CELL: ViewStyle = { flexGrow: 1, flexShrink: 1, flexBasis: "0%" };
 const ACTION_BUTTON_CORNER: ViewStyle = { borderRadius: shape.web.control };
 
 // ---------- Web: a soft header band over dashed rows ----------
-// The header is a soft 10px-cornered band with sentence-case medium labels, rows
-// are 56px tall at the regular density and separated by DASHED hairlines, status
-// reads as pills, the row kebab is a 36px square with the control corner, and a
-// bordered table takes the card corner. The band's own corners belong to the
-// STANDALONE table; framed by an
-// outline or an `attached` parent it squares up, so the frame's corners are the
-// only rounded ones and no fill peeks out under the band's bottom corners.
+// The header is a soft band with sentence-case medium labels, rows are 56px tall at
+// the regular density and separated by DASHED hairlines, status reads as pills, the
+// row kebab is a 36px square with the control corner, and a bordered table takes the
+// card corner. The band's own corners belong to the STANDALONE table; framed by an
+// outline or an `attached` parent it squares up, so the frame's corners are the only
+// rounded ones and no fill peeks out under the band's bottom corners.
 export const webSkin: DataTableSkin = {
   liquidTextEntry: true,
   wrap: WRAP,
   borderedOutline: (t) => ({ borderRadius: shape.web.card, borderWidth: 1, borderColor: t.border }),
+  // The soft band, at the web's own table-header corner (10px).
   headerRow: (t) => ({ flexDirection: "row", backgroundColor: t.muted, borderRadius: platformShape.web.tableHeader }),
   headerRowAttached: { borderRadius: 0 },
   headerPad: {
