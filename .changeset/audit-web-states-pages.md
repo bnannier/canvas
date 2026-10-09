@@ -1,0 +1,5 @@
+---
+"@nannier/canvas": patch
+---
+
+The component audit's web capture gains interaction states and pages. `bun run audit:web -- --states` hovers, focuses (with the Tab key), presses, opens, and finds invalid and disabled every component the interaction registry lists, through one recipe table that names each state's example, verifies the state from the page before photographing it (the hover's lift or wash, `:focus-visible` and the ring in the pixels on every side, the pressed style against the hovered one, the opened panel and where it painted, `aria-invalid`, `aria-disabled`), and records a state it cannot confirm as not reached instead of photographing it; overlays open from the web row and from the iOS and Android rows whose builds the docs inject, at every width, Tooltip and AvatarMenu among them. `bun run audit:web -- --pages` photographs every pattern and template page's first screen and each of its sections, marked on the web by the docs page layout, and probes them. Repository tooling and docs only; nothing in the package changes.

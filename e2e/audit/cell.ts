@@ -56,10 +56,10 @@ import {
 export const CELL_TIMEOUT_MS = 90_000;
 
 /** What ExampleErrorBoundary paints in place of an example that threw (docs/src/ui/playground.tsx). */
-const RENDER_FAILURE = "Example failed to render";
+export const RENDER_FAILURE = "Example failed to render";
 
 const PROBLEM_KINDS = ["consoleErrors", "pageErrors", "cspViolations", "badResponses", "failedRequests"] as const;
-type ProblemMark = Record<(typeof PROBLEM_KINDS)[number], number>;
+export type ProblemMark = Record<(typeof PROBLEM_KINDS)[number], number>;
 
 /** The run directory the runner made for this run. */
 export function auditRunDir(): string {
@@ -103,7 +103,7 @@ export class AuditSession {
 }
 
 /** Reject after `ms` with what timed out; the caller closes the page to stop the work. */
-async function withTimeout<T>(work: Promise<T>, ms: number, what: string): Promise<T> {
+export async function withTimeout<T>(work: Promise<T>, ms: number, what: string): Promise<T> {
   let timer: ReturnType<typeof setTimeout> | undefined;
   const timeout = new Promise<never>((_, reject) => {
     timer = setTimeout(() => reject(new Error(`${what} did not finish in ${ms / 1000} s`)), ms);
@@ -115,11 +115,11 @@ async function withTimeout<T>(work: Promise<T>, ms: number, what: string): Promi
   }
 }
 
-const markOf = (problems: PageProblems): ProblemMark =>
+export const markOf = (problems: PageProblems): ProblemMark =>
   Object.fromEntries(PROBLEM_KINDS.map((kind) => [kind, problems[kind].length])) as ProblemMark;
 
 /** The problems reported since `mark`, as the e2e gate would word them. */
-function problemsSince(problems: PageProblems, mark: ProblemMark): string[] {
+export function problemsSince(problems: PageProblems, mark: ProblemMark): string[] {
   const slice = Object.fromEntries(PROBLEM_KINDS.map((kind) => [kind, problems[kind].slice(mark[kind])])) as Pick<PageProblems, (typeof PROBLEM_KINDS)[number]>;
   return describeProblems({ ...slice, expectNotFound: false, documentStatus: null });
 }
@@ -128,7 +128,7 @@ function problemsSince(problems: PageProblems, mark: ProblemMark): string[] {
  * The page is where the cell opened it and shows the expected example. Throws, naming what
  * it found, when either is not so.
  */
-async function verifyStructure(page: Page, cell: WebCell, examples: number): Promise<{ path: string; selected: string | null }> {
+export async function verifyStructure(page: Page, cell: Pick<WebCell, "path" | "label">, examples: number): Promise<{ path: string; selected: string | null }> {
   const expected = `${BASE_PATH}${cell.path}`;
   try {
     await expect.poll(() => new URL(page.url()).pathname, { timeout: 5_000 }).toBe(expected);
@@ -151,7 +151,7 @@ async function verifyStructure(page: Page, cell: WebCell, examples: number): Pro
   return { path: expected, selected: cell.label };
 }
 
-function bytesOf(dir: string, files: string[]): number {
+export function bytesOf(dir: string, files: string[]): number {
   let total = 0;
   for (const file of files) {
     try {
@@ -172,6 +172,40 @@ export interface CellOptions {
   axe: boolean;
 }
 
+/** What a guarded cell's work returned, or what stopped it. */
+export type Guarded<T> = { ok: true; value: T } | { ok: false; error: string };
+
+/**
+ * Run one cell's work on the session's page within `timeoutMs`. Whatever stops it is
+ * returned, never thrown: the page's viewport goes to failure.png in `dir` when the page
+ * can still be photographed, and the page is closed so nothing the work left hanging (an
+ * evaluate on a stalled renderer, a crashed tab) reaches the next cell. Every kind of cell
+ * runs through it: the variants here, the states (./state-cell.ts) and the pages
+ * (./page-cell.ts).
+ */
+export async function guardCell<T>(
+  session: AuditSession,
+  dir: string,
+  what: string,
+  timeoutMs: number,
+  work: (page: Page, problems: PageProblems) => Promise<T>,
+): Promise<Guarded<T>> {
+  let page: Page | null = null;
+  try {
+    const opened = await session.page();
+    page = opened.page;
+    return { ok: true, value: await withTimeout(work(opened.page, opened.problems), timeoutMs, what) };
+  } catch (error) {
+    // Playwright's assertion messages carry terminal colours; the record is read as text.
+    const message = (error instanceof Error ? error.message : String(error)).replace(/\u001b\[[0-9;]*m/g, "").split("\n").slice(0, 6).join("\n");
+    if (page && !page.isClosed()) {
+      await withTimeout(page.screenshot({ path: join(dir, FAILURE_FILE), timeout: 5_000 }), 8_000, "the failure screenshot").catch(() => {});
+    }
+    await session.discard();
+    return { ok: false, error: message };
+  }
+}
+
 /** Capture one cell into its directory and return its record. Never throws. */
 export async function captureCell(session: AuditSession, cell: WebCell, options: CellOptions): Promise<CellRecord> {
   const started = Date.now();
@@ -188,29 +222,19 @@ export async function captureCell(session: AuditSession, cell: WebCell, options:
     surface: cell.surface,
     worker: options.worker,
   };
-  let page: Page | null = null;
-  try {
-    const opened = await session.page();
-    page = opened.page;
-    const flags = await withTimeout(capture(opened.page, opened.problems, cell, dir, options), CELL_TIMEOUT_MS, `the cell ${id}`);
-    return { ...base, status: "ok", flags, ms: Date.now() - started, bytes: bytesOf(dir, [CARD_FILE, PROBE_FILE]), at: new Date().toISOString() };
-  } catch (error) {
-    // Playwright's assertion messages carry terminal colours; the record is read as text.
-    const message = (error instanceof Error ? error.message : String(error)).replace(/\u001b\[[0-9;]*m/g, "").split("\n").slice(0, 6).join("\n");
-    if (page && !page.isClosed()) {
-      await withTimeout(page.screenshot({ path: join(dir, FAILURE_FILE), timeout: 5_000 }), 8_000, "the failure screenshot").catch(() => {});
-    }
-    await session.discard();
-    return {
-      ...base,
-      status: "failed",
-      error: message,
-      flags: [],
-      ms: Date.now() - started,
-      bytes: bytesOf(dir, [CARD_FILE, PROBE_FILE, FAILURE_FILE]),
-      at: new Date().toISOString(),
-    };
+  const result = await guardCell(session, dir, `the cell ${id}`, CELL_TIMEOUT_MS, (page, problems) => capture(page, problems, cell, dir, options));
+  if (result.ok) {
+    return { ...base, status: "ok", flags: result.value, ms: Date.now() - started, bytes: bytesOf(dir, [CARD_FILE, PROBE_FILE]), at: new Date().toISOString() };
   }
+  return {
+    ...base,
+    status: "failed",
+    error: result.error,
+    flags: [],
+    ms: Date.now() - started,
+    bytes: bytesOf(dir, [CARD_FILE, PROBE_FILE, FAILURE_FILE]),
+    at: new Date().toISOString(),
+  };
 }
 
 async function capture(page: Page, problems: PageProblems, cell: WebCell, dir: string, options: CellOptions): Promise<string[]> {

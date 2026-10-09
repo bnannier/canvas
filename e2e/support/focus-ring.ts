@@ -1,6 +1,13 @@
-// Focus-ring pixel checks, shared by the scroll-focus spec (Chromium) and the keyboard
-// journeys (Chromium, Firefox and WebKit).
-import type { Locator, Page } from "@playwright/test";
+// Focus-ring pixel checks, shared by the scroll-focus spec (Chromium), the keyboard
+// journeys (Chromium, Firefox and WebKit) and the audit's focus state recipes
+// (e2e/support/state-recipes.ts), which find the node drawing the ring in the page and
+// so hand over an element handle rather than a locator.
+import type { Page } from "@playwright/test";
+
+/** Anything with a box on the page: a Locator, or an ElementHandle. */
+export interface Framed {
+  boundingBox(): Promise<{ x: number; y: number; width: number; height: number } | null>;
+}
 
 export const rgb = (hex: string) => {
   const n = parseInt(hex.slice(1), 16);
@@ -10,7 +17,7 @@ export const rgb = (hex: string) => {
 // outline proves nothing when a parent clips it or the scrolled content paints over it.
 // The page decodes a screenshot of the frame's edges and looks for ring-coloured pixels
 // along the middle of every side, within 6 px of the frame's edge on either side.
-export async function ringShows(page: Page, frame: Locator, color: string) {
+export async function ringShows(page: Page, frame: Framed, color: string) {
   const box = await frame.boundingBox();
   if (!box) throw new Error("the frame has no box");
   const pad = 6;
