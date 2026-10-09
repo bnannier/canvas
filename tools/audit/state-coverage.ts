@@ -25,8 +25,8 @@ import { splitDoc, type Example } from "../docgen/parse-md.ts";
 import type { InventoryComponent } from "./inventory.ts";
 import { SignalReader, exampleSignals, type Signal, type SignalState } from "./interaction-signals.ts";
 
-/** The states a signal can give: the ones the source decides (open, invalid and disabled are the examples'). */
-export const SIGNAL_STATES: readonly SignalState[] = ["hover", "focus", "pressed"];
+/** The states a signal can give: the ones the source decides (invalid and disabled are the examples'). */
+export const SIGNAL_STATES: readonly SignalState[] = ["hover", "focus", "pressed", "open"];
 
 export interface StateAnswer {
   state: SignalState;
@@ -34,6 +34,8 @@ export interface StateAnswer {
   signals: Signal[];
   /** How the table answers it. */
   by: "recipe" | "exemption" | "nothing";
+  /** For a state answered by a recipe of another state (a tooltip's hover by its open recipe, which a resting pointer opens): that state. */
+  recipe?: StateName;
   exemption?: Exemption;
   /** Why the exemption's claim does not hold; absent when it holds. */
   failure?: string;
@@ -70,6 +72,14 @@ export function componentSignals(reader: SignalReader, component: Pick<Inventory
 
 const recipeFor = (entry: ComponentStates, state: StateName) => (entry.static ? undefined : (entry as StateRecipes)[state]);
 
+/** The recipe that captures a state: its own, or another state's whose capture also shows it (`alsoAnswers`). */
+function answeringRecipe(entry: ComponentStates, state: StateName): { state: StateName } | undefined {
+  if (entry.static) return undefined;
+  if (recipeFor(entry, state)) return { state };
+  const other = STATE_NAMES.find((name) => (entry as StateRecipes)[name]?.alsoAnswers?.includes(state));
+  return other ? { state: other } : undefined;
+}
+
 /** A handler that does nothing or closes what is open. */
 const DISMISSES = /^\(\)\s*=>\s*\{\s*\}$|^\(\)\s*=>\s*(?:set\w*Open\(false\)|on(?:Close|Dismiss|OpenChange)\??\.?\((?:false)?\)|(?:close|dismiss)\w*\(\))$/;
 
@@ -97,6 +107,8 @@ export function exemptionFailure(state: SignalState, exemption: Exemption, signa
   return null;
 }
 
+const article = (state: string) => (/^[aeiou]/.test(state) ? "an" : "a");
+
 /** How the table answers each state a component's source gives it, and what is wrong. */
 export function coverageOf(slug: string, entry: ComponentStates, signals: Signal[], rail: readonly Example[]): Coverage {
   const answers: StateAnswer[] = [];
@@ -105,14 +117,14 @@ export function coverageOf(slug: string, entry: ComponentStates, signals: Signal
   for (const state of SIGNAL_STATES) {
     const own = signals.filter((s) => s.state === state);
     const exemption = exempt[state];
-    const recipe = recipeFor(entry, state);
+    const recipe = answeringRecipe(entry, state);
     if (!own.length) {
       if (exemption) errors.push(`${slug}: exempts ${state}, which its source does not give it`);
       continue;
     }
     if (recipe) {
       if (exemption) errors.push(`${slug}: has a ${state} recipe and a ${state} exemption`);
-      answers.push({ state, signals: own, by: "recipe" });
+      answers.push({ state, signals: own, by: "recipe", ...(recipe.state !== state ? { recipe: recipe.state } : {}) });
       continue;
     }
     if (exemption) {
@@ -123,7 +135,7 @@ export function coverageOf(slug: string, entry: ComponentStates, signals: Signal
     }
     const first = own[0]!;
     errors.push(
-      `${slug}: its source gives it a ${state} state (${first.what} at ${first.at}${first.via.length ? ` via ${first.via.join(" > ")}` : ""}${own.length > 1 ? `, and ${own.length - 1} more` : ""}), with neither a ${state} recipe nor an exemption`,
+      `${slug}: its source gives it ${article(state)} ${state} state (${first.what} at ${first.at}${first.via.length ? ` via ${first.via.join(" > ")}` : ""}${own.length > 1 ? `, and ${own.length - 1} more` : ""}), with neither ${article(state)} ${state} recipe nor an exemption`,
     );
     answers.push({ state, signals: own, by: "nothing" });
   }

@@ -20,7 +20,7 @@ Audit checklist for `/components/heatmap`. The facts block and the variants tabl
 | Hand-off metric gaps | none |
 | Interactions registry | in the inventory; evidence: none registered |
 | Overlay recipe | none |
-| Interaction states | captured: hover on Calendar (web row; desktop), pressed on Calendar (web row; desktop). |
+| Interaction states | captured: hover on Calendar (web row; desktop), focus on Calendar (web row; phone), pressed on Calendar (web row; desktop). |
 | MeasureProps | not adopted |
 | Touch target | no touch-target name (the exports of `src/style/touch-target.ts`, `src/style/touch-target-seed.ts`, `src/style/touch-seam.ts`, `src/style/clip-slop.ts`, the `TouchTargetSkin` fields, or `hitSlop`) in its implementation modules. `test/touch-target-coverage.test.ts` records it as covered another way: the pressable is the day cell, sized by the grid |
 | Tests importing it | 7: `test/chart-materials.test.tsx`, `test/dev-warn.test.tsx`, `test/dist-smoke.test.tsx`, `test/heatmap-scroll-focus.test.tsx`, `test/horizontal-scroller-drag.test.tsx`, `test/new-components.test.tsx`, `test/skins-smoke.test.tsx` |

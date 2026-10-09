@@ -120,6 +120,8 @@ export function defaultSources(root = ROOT): ChecklistSources {
 const cell = (value: string): string => value.replace(/\s*\n\s*/g, " ").replace(/(?<!\\)\|/g, "\\|").trim();
 const code = (value: string): string => `\`${value}\``;
 const list = (values: string[], empty = "none"): string => (values.length ? values.map(code).join(", ") : empty);
+/** Words in a sentence: `a`, `a and b`, `a, b and c`. */
+const andList = (values: string[]): string => (values.length <= 1 ? values.join("") : `${values.slice(0, -1).join(", ")} and ${values[values.length - 1]}`);
 
 function referenceCell(label: string, c: ReferenceCell): string {
   if (c.kind === "none") return `${label}: none (${c.text})`;
@@ -194,7 +196,7 @@ function statesLine(facts: ComponentFacts): string {
   if (states.recipes.length) {
     parts.push(
       `captured: ${states.recipes
-        .map((r) => `${r.state} on ${r.label} (${r.rows.map((row) => ROW_NAMES[row] ?? row).join(", ")} ${r.rows.length > 1 ? "rows" : "row"}; ${r.widths === "all" ? "phone, tablet and desktop" : "desktop"})`)
+        .map((r) => `${r.state} on ${r.label} (${r.rows.map((row) => ROW_NAMES[row] ?? row).join(", ")} ${r.rows.length > 1 ? "rows" : "row"}; ${andList([...r.widths])}${r.alsoAnswers.length ? `; also its ${andList([...r.alsoAnswers])}` : ""})`)
         .join(", ")}`,
     );
   }

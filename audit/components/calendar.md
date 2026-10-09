@@ -20,7 +20,7 @@ Audit checklist for `/components/calendar`. The facts block and the variants tab
 | Hand-off metric gaps | none |
 | Interactions registry | in the inventory; evidence: calendar-selection (unit-web, test/behavior.test.tsx) |
 | Overlay recipe | none |
-| Interaction states | captured: focus on Default (web row; desktop), pressed on Default (web row; desktop). |
+| Interaction states | captured: hover on Week (web row; desktop), focus on Default (web row; desktop), pressed on Default (web row; desktop), open on Day peek (web, iOS, Android rows; phone, tablet and desktop). |
 | MeasureProps | not adopted |
 | Touch target | `calendar.shared.tsx`: hitSlop. `test/touch-target-coverage.test.ts` records it as covered another way: hitSlop on the month chevrons |
 | Tests importing it | 9: `test/behavior.test.tsx`, `test/calendar-accessibility.test.tsx`, `test/design-rules-skins.test.ts`, `test/native-accessibility-escape-hosts.test.tsx`, `test/native-focus-fixtures.test.tsx`, `test/organism-material-roles.test.tsx`, `test/responsive-narrow-fixes.test.tsx`, `test/skins-smoke.test.tsx`, `test/text-contrast.test.tsx` |

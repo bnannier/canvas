@@ -314,7 +314,8 @@ export interface StateSpec {
   state: StateName;
   variant: string;
   rows: readonly RowPlatform[];
-  widths: "desktop" | "all";
+  /** The widths the recipe is captured at. */
+  widths: readonly WidthKey[];
 }
 
 /** One interaction-state cell: a component's state, from one row, at one width (the look and surface are its group's). */
@@ -349,8 +350,9 @@ export interface StatePlan {
  * The state cells a run captures: every component (or the `only` ones, in docs order) that
  * has recipes, each recipe of the named states, from each of its rows, at each of its widths
  * the run keeps (hover, focus, pressed, invalid and disabled at the desktop; open at all
- * three), in every look and surface named. A recipe naming an example its page does not
- * have throws: the cell would photograph the wrong example.
+ * three; a state that exists only at some widths, at those), in every look and surface
+ * named. A recipe naming an example its page does not have throws: the cell would
+ * photograph the wrong example.
  */
 export function planStateCapture(
   inventory: InventoryComponent[],
@@ -373,7 +375,7 @@ export function planStateCapture(
     for (const spec of specsOf(component.slug).filter((s) => states.includes(s.state))) {
       const variant = component.variants.find((v) => v.variant === spec.variant);
       if (!variant) throw new Error(`the ${component.slug} ${spec.state} recipe names the example "${spec.variant}", which ${component.route} does not have`);
-      const widths = WIDTHS.filter((w) => filters.widths.includes(w.key) && (spec.widths === "all" || w.key === "desktop"));
+      const widths = WIDTHS.filter((w) => filters.widths.includes(w.key) && spec.widths.includes(w.key));
       if (!widths.length) continue;
       recipes += 1;
       for (const row of spec.rows) for (const width of widths) cells.push({ state: spec.state, variant, row, width });
