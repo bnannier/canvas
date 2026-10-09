@@ -79,6 +79,7 @@ One row per finding. Severity: critical, high, medium, low. Cell: a capture id f
 
 | ID | Severity | Cell | Summary | Status | Fix commit |
 |---|---|---|---|---|---|
+| K7-1 | high | source | A Pressable with the link role and no href got no Enter activation on the web: react-native-web's press responder counts a link as natively interactive and leaves the key to the browser, which clicks only a link with an href. The kit Pressable presses it on the Enter keyup, once per key that went down and came up on it, and lets the keyup bubble so react-native-web releases its press state; Space and a link with an href are left as they were. | fixed | 741fd4e6 |
 
 ## Sign-off
 

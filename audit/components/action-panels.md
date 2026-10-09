@@ -87,6 +87,8 @@ One row per finding. Severity: critical, high, medium, low. Cell: a capture id f
 | K7-1 | medium | source | The toggle was a bare Switch named by the title beside sibling copy, the hand-composed label anatomy CLAUDE.md bans (a split tap target, its own type). The title is now the Switch's label and the description its muted line, and the whole row toggles. | fixed | 42eb980d |
 | K7-2 | medium | source | `inline` never stacked at phone width: the shell had no container measurement. The row now measures itself and stacks the action under the copy at or below the `md` measure, from the window on a phone's first frame. | fixed | 42eb980d |
 | K7-3 | low | source | Since the toggle row is the Switch's own anatomy, `destructive` no longer reddens a toggle's title (a Switch label carries no tone). Owner decision if a destructive setting row needs a tone. | open |  |
+| K7-4 | medium | source | The props table showed fragments for `destructive` and `inline` (and `toggle` before): docgen read only the last line of a wrapped `//` comment. It reads the whole run now, for every component. | fixed | 741fd4e6 |
+| K7-5 | low | source | A toggle panel's copy is the Switch's own type (a 14 px medium label over a 12 px description) while the Button panels draw the skin's 14 px semibold title over a 14 px description, so the two read differently on one page. The skins' 14 px predates Dark Factory's dense type (design language item 4); moving ActionPanel to it converges the two, judged by photograph on three platforms. | open |  |
 
 ## Sign-off
 
