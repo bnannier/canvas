@@ -172,7 +172,7 @@ as "by design".
 | `bun run audit:checklists:check` | fails on a route with no checklist, an orphan checklist (a `.md` file no route calls for), a stale facts block, a malformed variants, findings or sign-off row (by line number, a finding whose cell is not one of the checklist's capture ids or `source` included), variant rows that drift from the inventory, a variants table `--write` would rewrite, or a missing findings table or sign-off section; runs in CI (`validate.yml`) and the pre-push hook |
 | `bun run audit:status` | counts ticked variant cells per platform, ticked checklist items, open findings by severity and signed-off platforms across every checklist (`--json` for the rows); lists any row or table it cannot read by file and line under the counts, and exits non-zero when there is one, since the counts then under-report |
 | `bun tools/audit/facts.ts <slug>` | prints one component's facts as JSON |
-| `bun run audit:native:build -- --platform=ios,android` | builds the Canvas Audit app (the docs with the capture driver) in Release and installs it on the booted simulator and emulator; `--incremental` keeps the generated native projects after a JS-only change, `--dev` builds Debug for the fix loop |
+| `bun run audit:native:build -- --platform=ios,android` | builds the Canvas Audit app (the docs with the capture driver) in Release and installs it on the booted simulator and emulator, leaving the docs app's own `docs/ios` and `docs/android` as they were; `--incremental` reuses the parked native project while the native inputs are unchanged, `--dev` builds Debug for the fix loop |
 | `bun run audit:native -- --platform=ios,android` | photographs every component example and every pattern and template page on the devices in all six looks and surfaces; `--only`, `--looks`, `--surfaces`, `--a11y=none\|default\|all`, `--devices`, `--dev`, `--keep-motion` |
 | `bun run audit:web` | captures the web cells into a new run under `.audit/runs/` (see "Capturing on the web" below); `--only`, `--variants`, `--looks`, `--surfaces`, `--widths` narrow it, `--axe`, `--base`, `--workers` and `--allow-stale` tune it, `--help` lists them |
 
@@ -262,18 +262,45 @@ it; giving it its own scheme keeps `canvas://` links unambiguous on both platfor
    exactly this checkout. iOS is built for the generic simulator destination into
    `.audit/builds/ios` and installed with `simctl install`: installed by Expo, the app is
    opened on a dev-client URL it cannot handle, and iOS leaves an "Open in Canvas Audit?"
-   alert over every app on the simulator. `--incremental` keeps the generated native
-   projects (a JS-only change rebuilds in under a minute); `--dev` builds Debug, which
-   loads its bundle from Metro on 8081, so Metro must be the one started in this checkout
-   with both flags.
+   alert over every app on the simulator. `--dev` builds Debug, which loads its bundle
+   from Metro on 8081, so Metro must be the one started in this checkout with both flags.
+
+   The audit's native projects never stay in `docs/`. Expo generates and builds a project
+   only at `docs/ios` and `docs/android`, and `expo run:ios` (the docs' `bun run ios`)
+   prebuilds only when that directory is missing (`ensureNativeProjectAsync` in
+   `@expo/cli`), building whatever is there otherwise, so an audit project left in
+   `docs/ios` would be what the next `bun run ios` built and installed as
+   `com.nannier.canvas.audit`. A build therefore sets the docs app's own project aside in
+   `.audit/native/docs-<platform>`, generates (or reuses) the audit project in
+   `docs/<platform>`, builds, then parks the audit project in `.audit/native/<platform>`
+   and renames the docs project back, untouched, whether the build succeeded, failed or was
+   stopped with Ctrl-C. When there was no docs project, `docs/<platform>` is left empty
+   and the next `bun run ios` prebuilds the docs app as usual. A build killed outright
+   (`kill -9`, a crash) leaves both directories where the next build finds them and puts
+   right before it starts; it refuses, touching nothing, if `docs/<platform>` meanwhile
+   holds another non-audit project. While a build runs, `docs/<platform>` is the audit's,
+   so do not run the docs' own native build in the same checkout at the same time.
+
+   The generated project records, in `canvas-audit.json`, the native fingerprint it was
+   generated from (`nativeFingerprint` in `docs/scripts/build-info.cjs`: `docs/app.json`,
+   `docs/app.config.js`, `docs/plugins/`, `docs/patches/`, `docs/package.json`,
+   `docs/bun.lock` and the local native modules under `packages/`, their build products and
+   installs left out), and the build stamps it into the app's `extra.canvasBuild` beside
+   the source fingerprint (`CANVAS_AUDIT_NATIVE_FINGERPRINT`, read by `docs/app.config.js`).
+   `--incremental` reuses the parked project, so a JS-only change rebuilds in a minute or
+   two, only while this checkout's native fingerprint is the one the project was generated
+   from; otherwise the build says why and prebuilds afresh.
 2. `bun run audit:native -- --platform=ios,android` starts the host on `127.0.0.1:8791`
    (`tools/audit/native/server.ts`), puts each device into its capture state, launches the
    app, and serves it the queue: every component example and every pattern and template
    page, look-major (all of blush solid, then blush glass, and so on, so the theme changes
    six times a run). The app's driver (`docs/src/audit/driver.native.tsx`) says hello with
-   its build identity, and the host refuses a build whose source fingerprint
-   (`docs/scripts/build-info.cjs`) is not this checkout's, an app that is not the audit
-   build, a downloaded update, and a Debug build unless `--dev` asked for one.
+   its build identity, and the host refuses a build whose source fingerprint or native
+   fingerprint (`docs/scripts/build-info.cjs`) is not this checkout's, or that carries no
+   native fingerprint, a downloaded update, and a Debug build unless `--dev` asked for one;
+   any of these ends that platform's run. A hello from another app carrying the driver (a
+   docs development build on a Metro started with the audit flag) is answered with a
+   refusal and logged, and the audit app's run goes on.
 3. For each item the driver sets the look through the docs theme's own setters (only the
    axes that change) and waits until the kit's `useTheme()` reports it, `router.replace`s
    to the example's route, waits for the pathname and for the Playground to register the
@@ -283,13 +310,25 @@ it; giving it its own scheme keeps `canvas://` links unambiguous on both platfor
    the host's settle time, then scrolls the card to the top of the visible band and
    posts one `/ready` per segment (a card taller than the band is taken in segments and
    stitched).
-4. The host grabs the screen until two grabs in a row agree on the card's rows (mean
-   difference at most 0.1 on a 128 px grayscale thumbnail; a card that never holds still
-   after five grabs is kept and marked `unstable`), cuts the card out by its rect, and on
-   the cells the `--a11y` policy names dumps the accessibility tree inside the card
-   (Android: UI Automator; iOS: the pinned Maestro's `hierarchy`, which reads XCUITest's
-   tree). An item gets 30 s of the driver's time and a second attempt; a stalled app is
-   relaunched.
+4. The host checks each segment before it photographs it: the look the kit's `useTheme()`
+   resolved (scheme, surface, palette, and a dark flag that agrees with the scheme), the
+   router's pathname and the Playground's example label must be the item's (a pattern or
+   template page must have registered itself). The driver waits for the same things
+   before it posts; the host checks rather than trusts, and a mismatch fails the attempt
+   with the difference as its reason (`verify: ...`) before any shot is taken. It then
+   grabs the screen until two grabs in a row agree on the card's rows (mean difference at
+   most 0.1 on a 128 px grayscale thumbnail; a card that never holds still after five
+   grabs is kept and marked `unstable`), cuts the card out by its rect, and on the cells
+   the `--a11y` policy names dumps the accessibility tree inside the card (Android: UI
+   Automator; iOS: the pinned Maestro's `hierarchy`, which reads XCUITest's tree).
+5. An item gets 30 s of the driver's time and a second attempt. The host's own work on an
+   item (its grabs, its accessibility dump, writing its card) is not the driver's time,
+   finished or still in flight, so a slow animated card is marked `unstable`, never failed
+   for the host's slowness. A stalled app (an item past its time, an app that stops asking
+   for items or never says hello) is relaunched; after three relaunches in a row during
+   which the app never took an item, the platform's run is abandoned with the reason in
+   the console, the manifest (`abandoned`) and the exit code, so an unattended sweep always
+   finishes. A failed relaunch counts as one that did not bring the app back.
 
 The card's rect is computed, not read from the screen: its layout within the scroller's
 content (`measureLayout`) and a scroll offset the driver sets itself. Read with
@@ -317,7 +356,8 @@ A run writes one directory per platform:
 
 ```
 .audit/runs/<stamp>-<ios|android>-<sha7>/
-  manifest.json      device, app build identity, options, device changes made and undone, counts, timings
+  manifest.json      device, app build identity, both fingerprints, options, device changes made and undone,
+                     counts, timings, and why the run ended early (refused, abandoned) if it did
   cells.jsonl        one line per cell as it finishes: status, attempts, seconds, segments, a11y
   driver-log.jsonl   console problems the app raised between items
   <platform>/<slug>/<variant>/<look>.<surface>/
@@ -362,14 +402,59 @@ development app installed.
 - **Reduce Motion through `simctl spawn defaults`.** Works: written before launch, the
   app's `AccessibilityInfo.isReduceMotionEnabled()` reports true, and restoring the
   previous value at exit works.
-- **Android glass under `-gpu host`.** Not measured: the shared emulator runs with the
-  default GPU mode, which here is SwiftShader (`ANGLE (Google, Vulkan 1.3.0 (SwiftShader
-  Device ...))`), and restarting it with `-gpu host` would have disturbed the docs
-  development app session it serves. Under SwiftShader the glass surface paints exactly
-  the solid treatment on the Playground card (`button/default`: the glass and solid cards
-  are byte-identical in blush and in dark), while iOS glass differs visibly from solid
-  (mean difference 2.6 in blush, 12 in dark). Whether Android's blur appears under a host
-  GPU is open.
+- **Android glass under `-gpu host`.** Measured on 2026-10-09 with the emulator on the
+  host GPU (`dumpsys SurfaceFlinger`: `GLES: Google (Apple), Android Emulator OpenGL ES
+  Translator (Apple M4 Pro), OpenGL ES 3.0 (4.1 Metal - 91.7)`, also in each run's
+  manifest under `device.details.renderer`). The Playground cards are still the solid
+  treatment under glass, so the GPU was never the cause. Mean absolute difference per
+  channel between the glass and solid `card.png` of the same cell, and the share of pixels
+  that differ:
+
+  | Cell | Blush | Dark |
+  |---|---|---|
+  | Android `button/default` | 0 (0 pixels) | 0 (0 pixels) |
+  | Android `chip/emphasis` | 2.50 (1.42%) | 0.65 (1.42%) |
+  | Android `tooltip/default` | 0.006 (0.02%) | 0.007 (0.02%) |
+  | iOS `chip/emphasis`, for comparison | 3.09 (98.1%) | 14.7 (98.3%) |
+  | iOS `tooltip/default`, for comparison | 7.26 (98.8%) | 22.7 (98.9%) |
+
+  Every other Android Button variant compared (outline, secondary, destructive, ghost) is
+  byte-identical too. The chip's difference is not the material: it is a black 1 dp ring
+  just inside the Neutral and Accent chips (and every status chip) under glass, and the
+  tooltip's is the bubble's corner antialiasing. The cause is in the kit's material
+  resolution, by design. On Android `materialCapabilities()`
+  (`src/style/glass-surface/material-runtime.android.ts`) reports `requiresTarget: true`,
+  twice over: `@nannier/canvas-blur` is autolinked from `packages/` and reports `supported`
+  on API 31 and up (`nativeCaptureAvailable`), and expo-blur 57 exports `BlurTargetView`
+  (`requiresBlurTarget`). `resolveMaterial` (`material-resolution.ts`) then resolves any
+  glass surface without a safe capture target to `solid` with the fallback
+  `missing-target`, and only two places publish a target (`GlassBlurTargetContext`): an
+  `OverlayProvider` publishes its own content plane to its outlet alone, and only when its
+  host style grows (`blurTargetMountable` in `glass-blur-target.android.tsx`, `portal.tsx`),
+  and `GlassModalBlurTarget` bridges the window target into a Drawer's or ActionSheet's
+  Modal. A surface in the page, the docs stage and everything on a Playground card
+  included, has none, since sampling an ancestor plane would be a render-node cycle
+  (`glass-surface.shared.tsx`: "Targetless surfaces resolve to their complete solid
+  skin"). The Tooltip bubble is drawn in flow beside its trigger, not in the outlet, so
+  it is a page surface too. The theme is not the cause: the platform default (solid on
+  Android) never applies, because the docs theme passes `glass` explicitly
+  (`<ThemeProvider glass={surface === "glass"} ...>` in `docs/src/theme/docs-theme.tsx`),
+  and the host checks that every glass cell's `useTheme()` resolved `glass`. Where a target
+  exists the frost does render on the host GPU: the Popover's panel, opened by hand in the
+  audit app on `/components/popover` in the dark scheme, is a portaled overlay drawn in an
+  outlet with a capture target, and under glass it is frosted, the colours behind it
+  blurred through, differing from solid by 11.0 a channel over 97.6% of the panel. The capture photographs
+  only resting examples, none of which opens a portaled overlay, so the Android sweep shows
+  that frost nowhere yet.
+
+  The black ring is a kit defect the audit has to record, not a capture artifact: Chip
+  reads its paint from `useMaterialTheme`, which demotes the surface to solid, but its
+  `GlassPane` reads `useTheme()`, still sees glass, and mounts a `GlassSurface` that
+  resolves solid and paints the pane's own shape as a plain view. That shape is the
+  skin's `base` (`androidBase` in `src/atoms/chip/chip.styles.ts`), which carries
+  `borderWidth: 1` but no `borderColor` (the colour is set on the chip's `chrome` from its
+  tone), so Android draws the default black border. Button passes its resolved container
+  style as the pane's shape, which is why its cards stay byte-identical.
 - **Pages.** `pattern-glass` and `template-signin` in dark glass: iOS 2,350 points of the
   sign-in page in 4 segments, Android 2,075 dp in 3, stitched without a seam; 8 s a page on
   iOS and 25 s on Android (each segment is two grabs).
