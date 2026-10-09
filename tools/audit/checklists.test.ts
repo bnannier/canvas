@@ -407,6 +407,15 @@ describe.skipIf(!hasDist)("the audit checklists keep a reviewer's work", () => {
     expect(steps).toMatchObject({ listed: true, recipes: [], unanswered: [], unshown: [], devices: [], exempt: [{ state: "focus", failure: null }, { state: "pressed", failure: null }] });
   });
 
+  it("reads a component's exports from every module its group barrel publishes from its directory", () => {
+    // RevealGroup lives in reveal-group.tsx beside the entry, and src/atoms/index.ts
+    // re-exports both, so the facts name both and credit the tests of either.
+    expect(componentFacts("reveal", sources.corpus).exports).toEqual(["Reveal", "RevealGroup"]);
+    expect(componentFacts("avatar", sources.corpus).exports).toEqual(["Avatar", "AvatarGroup", "AvatarMenu"]);
+    // A raw primitive's directory holds only markdown: its name stands in.
+    expect(componentFacts("view", sources.corpus).exports).toEqual(["View"]);
+  });
+
   it("credits every component of the skins smoke test's CASES table, read statically (item 1)", () => {
     // The smoke test mounts each row through one computed import and `mod[c.name]`.
     for (const slug of ["accordion", "board", "chip", "drag-drop", "toast", "row-column", "geo-map"]) {
