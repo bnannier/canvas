@@ -118,7 +118,11 @@ function WebNav() {
   // Only the navigation siblings change: desktop gets the sidebar rail and Topbar;
   // narrow web gets MobileNavBar, bottom tabs and the responsive sidebar drawer.
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: tokens.background }} edges={["top"]}>
+    // The shell paints the page backdrop on the web (TabShell's contentStyle does it
+    // natively), so it is marked for tooling the way page.tsx marks its scroller: the
+    // e2e paint check reads the backdrop off the Page scroller, and off this node on a
+    // route with no Page mounted yet (a runtime fixture before its client-only body).
+    <SafeAreaView {...({ dataSet: { shellBackdrop: "" } } as object)} style={{ flex: 1, backgroundColor: tokens.background }} edges={["top"]}>
       <WebScrollbarTheme />
       <WebScrollPadding top={headerHeight} bottom={wide ? 0 : barHeight} />
       <Row flush fill>

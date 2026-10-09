@@ -29,7 +29,9 @@ export function Page({ children, viewportOverlays = false }: { children: ReactNo
       <ScrollView
         // Marks the page's scroller for tooling. The docs scroll in an INNER view, not
         // the window, so a check for "does this page scroll sideways" has to ask this
-        // node and not the document. Web-only attribute; a no-op on native.
+        // node and not the document. Its fill is the page backdrop, so the e2e paint
+        // check (gotoDocs) reads the scheme and palette off it too. Web-only
+        // attribute; a no-op on native.
         {...(Platform.OS === "web" ? ({ dataSet: { pageScroll: "" } } as object) : null)}
         style={{ flex: 1, backgroundColor: tokens.background }}
         contentInsetAdjustmentBehavior="automatic"

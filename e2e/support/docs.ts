@@ -50,41 +50,69 @@ export const LOOKS: readonly Look[] = [
 export const BASE_PATH = (process.env.E2E_BASE_PATH ?? "").replace(/\/+$/, "");
 
 /**
- * The largest opaque background on the page, as [r, g, b].
+ * The page backdrop, as [r, g, b]: the fill the page's content sits on.
  *
  * The docs are react-native-web, so the DOM carries only generated `css-*` class
  * names: there is no `.dark` class and no data attribute to read the scheme off.
- * Reading what the app actually paints is the only honest answer. `body` is in the
- * scan for the one route that is not the RN app: the baked static page under
- * docs/public shadows /privacy and paints its background straight onto body.
+ * Reading what the app actually paints is the only honest answer, and it has to be
+ * read off the node that paints the backdrop. The largest opaque box is not that
+ * node: a solid card paints the `card` token, opaque white in both light palettes,
+ * and its bounds can run past the viewport on a long page, so on
+ * /components/grid-lists the largest opaque box is a white card. Its luminance still
+ * reads as light, which is how the scheme check got by on it; it names no palette.
+ *
+ * The app marks its backdrop painters (web-only tooling attributes): the Page
+ * scroller (`data-page-scroll`, docs/src/ui/page.tsx), and the web shell around every
+ * route (`data-shell-backdrop`, docs/src/shell/navbar.tsx), which is what is painted
+ * on a route with no Page mounted yet. A painter that is fully transparent shows its
+ * parent's fill exactly, so the read walks up through those; one that is translucent
+ * composites with what lies under it, and that reads as no opaque backdrop rather
+ * than as a guess. Only a page with neither marker, which is not the docs app (the
+ * baked static page under docs/public shadows /privacy and paints straight onto
+ * body), falls back to the largest opaque background, with `body` in the scan.
  *
  * Runs in the page, so it must stay self-contained.
  */
-function dominantBackground(): [number, number, number] | null {
+function pageBackdrop(): [number, number, number] | null {
+  // [r, g, b, alpha] of a node's own background, or null for one that is not a color.
+  const fill = (el: Element): [number, number, number, number] | null => {
+    const m = /^rgba?\(([\d.]+),\s*([\d.]+),\s*([\d.]+)(?:,\s*([\d.]+))?\)$/.exec(
+      getComputedStyle(el).backgroundColor,
+    );
+    return m ? [Number(m[1]), Number(m[2]), Number(m[3]), m[4] === undefined ? 1 : Number(m[4])] : null;
+  };
+  // Only an opaque surface says which scheme is being painted; the translucent scrims
+  // and glass fills layered over the page fall below this.
+  const OPAQUE = 0.9;
+  const painter = document.querySelector("[data-page-scroll]") ?? document.querySelector("[data-shell-backdrop]");
+  if (painter) {
+    for (let el: Element | null = painter; el; el = el.parentElement) {
+      const color = fill(el);
+      if (color && color[3] === 0) continue;
+      return color && color[3] >= OPAQUE ? [color[0], color[1], color[2]] : null;
+    }
+    return null;
+  }
   let bestArea = 0;
   let best: [number, number, number] | null = null;
   for (const el of Array.from(document.querySelectorAll("body, div"))) {
     const box = el.getBoundingClientRect();
     const area = box.width * box.height;
     if (area < 20000 || area <= bestArea) continue;
-    const m = /^rgba?\(([\d.]+),\s*([\d.]+),\s*([\d.]+)(?:,\s*([\d.]+))?\)$/.exec(
-      getComputedStyle(el).backgroundColor,
-    );
-    // Skip the translucent scrims and glass fills layered over the page: only an
-    // opaque surface says which scheme is being painted.
-    if (!m || (m[4] !== undefined && Number(m[4]) < 0.9)) continue;
+    const color = fill(el);
+    if (!color || color[3] < OPAQUE) continue;
     bestArea = area;
-    best = [Number(m[1]), Number(m[2]), Number(m[3])];
+    best = [color[0], color[1], color[2]];
   }
   return best;
 }
 
-/** The background the page is currently painting as [r, g, b], or null before it has painted at all. */
+/** The page backdrop as [r, g, b], or null before an opaque one is painted. */
 export async function readBackground(page: Page): Promise<[number, number, number] | null> {
-  return page.evaluate(dominantBackground).catch(() => null);
+  return page.evaluate(pageBackdrop).catch(() => null);
 }
 
-/** The scheme the page is currently painting, or null before it has painted at all. */
+/** The scheme the page backdrop is painted in, or null before an opaque one is painted. */
 export async function readScheme(page: Page): Promise<Scheme | null> {
   const rgb = await readBackground(page);
   if (!rgb) return null;
@@ -100,8 +128,10 @@ export function channels(hex: string): [number, number, number] {
 
 // How far, per channel, a painted background may sit from the palette's token. A
 // computed style reports a hex fill exactly; the allowance is for a renderer that
-// rounds a composited fill, not for a different color (the two light palettes are 5
-// or more apart on every channel).
+// rounds a composited fill, not for a different color. The two light backdrops are
+// close: blush #f5f2fe and mint #f0f7fd sit 5 apart on red and on green but only 1
+// apart on blue. The check measures the LARGEST channel distance, so the 5 is what
+// separates them, and the allowance stays below it.
 const PALETTE_TOLERANCE = 2;
 
 export interface GotoOptions {
@@ -127,10 +157,10 @@ export interface GotoOptions {
  * `emulateMedia` matters for exactly one page: the baked static /privacy export
  * follows prefers-color-scheme, since it is plain HTML and never sees the seed.
  *
- * In the light scheme the painted background is then held to the palette's own
- * token (`colorsFor`), since a light page in the wrong palette reads as light all
- * the same. That page without an app has no palette axis at all: a palette asked
- * for by name fails there rather than passing unpainted.
+ * In the light scheme the painted backdrop is then held to the palette's own
+ * `background` token (`colorsFor`), since a light page in the wrong palette reads as
+ * light all the same. That page without an app has no palette axis at all: a
+ * palette asked for by name fails there rather than passing unpainted.
  */
 export async function gotoDocs(page: Page, route: string, options: GotoOptions = {}): Promise<void> {
   const scheme = options.scheme ?? "dark";
@@ -147,7 +177,7 @@ export async function gotoDocs(page: Page, route: string, options: GotoOptions =
     await page.locator("html[data-hydrated]").waitFor({ state: "attached", timeout: 20_000 });
   }
   // What the poll saw decides what a failure says. A page read in the wrong look, or
-  // with nothing opaque, has a paint problem; a page whose evaluation was still out
+  // with no opaque backdrop, has a paint problem; a page whose evaluation was still out
   // when the wait ran out stopped answering, whatever it painted. Blaming the paint for
   // the second sent the first look at a Firefox failure (Deploy 36101320198) after a
   // cause the trace ruled out: that page was painted dark, and the detector's first
@@ -166,7 +196,7 @@ export async function gotoDocs(page: Page, route: string, options: GotoOptions =
       }, { timeout: 20_000 })
       .toBe(scheme);
   } catch (error) {
-    const lastReading = `the last ${last ?? "finding no opaque background"}`;
+    const lastReading = `the last ${last ?? "finding no opaque backdrop"}`;
     throw new Error(
       answering
         ? `${route} never painted in ${scheme}: ${readings} readings, ${lastReading} (a missing font or a failed bundle both look like this)`
@@ -186,7 +216,7 @@ export async function gotoDocs(page: Page, route: string, options: GotoOptions =
   const distance = painted ? Math.max(...painted.map((channel, i) => Math.abs(channel - expected[i]))) : Infinity;
   if (distance > PALETTE_TOLERANCE) {
     throw new Error(
-      `${route} painted in light but not in ${palette}: the background is ${painted ? `rgb(${painted.join(", ")})` : "no opaque surface"} where ${palette}'s is rgb(${expected.join(", ")})`,
+      `${route} painted in light but not in ${palette}: the backdrop is ${painted ? `rgb(${painted.join(", ")})` : "not opaque"} where ${palette}'s is rgb(${expected.join(", ")})`,
     );
   }
 }
