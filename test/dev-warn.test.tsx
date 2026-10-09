@@ -3,7 +3,7 @@ import { render, cleanup } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { ThemeProvider } from "../src/style/theme.tsx";
 import { devWarn, resetDevWarnings } from "../src/style/dev-warn.ts";
-import { Chart, StackedBar, Gauge, Heatmap, BarList, MetricBreakdown, UptimeBar, ServiceHealthList, BulletChart, ProgressRing, ComposedChart, RangeAreaChart, Histogram, BoxPlot, WaterfallChart, RadialBarChart, FunnelChart, RadarChart, Treemap } from "../src/index.ts";
+import { Chart, StackedBar, Gauge, Heatmap, BarList, MetricBreakdown, UptimeBar, ServiceHealthList, BulletChart, ProgressRing, ComposedChart, RangeAreaChart, Histogram, BoxPlot, WaterfallChart, RadialBarChart, FunnelChart, RadarChart, Treemap, DepthChart, CandlestickChart, GeoMap, PieChart, ScatterPlot } from "../src/index.ts";
 import { Sparkline } from "../src/charts/sparkline/sparkline.tsx";
 
 // The kit resolves degenerate data silently at runtime (empty series render an
@@ -183,6 +183,81 @@ describe("component data-misuse warnings", () => {
     expect(sawWarning("`low` exceeds its `high`")).toBe(true);
   });
 
+  it("DepthChart warns when the book is empty", () => {
+    ui(<DepthChart bids={[]} asks={[]} />);
+    expect(sawWarning("<DepthChart />")).toBe(true);
+    expect(sawWarning("`bids` and `asks` are empty")).toBe(true);
+  });
+
+  it("DepthChart warns when the best bid is priced above the best ask", () => {
+    ui(<DepthChart bids={[{ price: 105, size: 1 }]} asks={[{ price: 100, size: 1 }]} />);
+    expect(sawWarning("crossed book")).toBe(true);
+  });
+
+  it("CandlestickChart warns when candles is empty", () => {
+    ui(<CandlestickChart labels={[]} candles={[]} />);
+    expect(sawWarning("<CandlestickChart />")).toBe(true);
+    expect(sawWarning("`candles` is empty")).toBe(true);
+  });
+
+  it("CandlestickChart warns when candles, volume or an overlay drift from labels", () => {
+    ui(
+      <CandlestickChart
+        labels={["Mon", "Tue"]}
+        candles={[{ open: 1, high: 3, low: 0.5, close: 2 }]}
+        volume={[10]}
+        overlays={[{ label: "Average", values: [1] }]}
+      />,
+    );
+    expect(sawWarning("`candles` length differs from `labels`")).toBe(true);
+    expect(sawWarning("`volume` length differs from `labels`")).toBe(true);
+    expect(sawWarning("an overlay's `values` length differs from `labels`")).toBe(true);
+  });
+
+  it("GeoMap warns when points is empty", () => {
+    ui(<GeoMap points={[]} />);
+    expect(sawWarning("<GeoMap />")).toBe(true);
+    expect(sawWarning("`points` is empty")).toBe(true);
+  });
+
+  it("GeoMap warns past 60 bubbles, on a bad count and on coordinates off the globe", () => {
+    const crowd = Array.from({ length: 61 }, (_, i) => ({ label: `P${i}`, lat: (i % 60) - 30, lng: i * 2 - 60, count: 1 }));
+    ui(<GeoMap points={[...crowd, { label: "Bad count", lat: 0, lng: 0, count: -4 }, { label: "Off the globe", lat: 95, lng: 200, count: 1 }]} />);
+    expect(sawWarning("read as noise on a world map")).toBe(true);
+    expect(sawWarning("`count` is negative or not a number")).toBe(true);
+    expect(sawWarning("coordinates are outside ±90 / ±180")).toBe(true);
+  });
+
+  it("PieChart warns when slices is empty", () => {
+    ui(<PieChart label="Traffic" slices={[]} />);
+    expect(sawWarning("<PieChart />")).toBe(true);
+    expect(sawWarning("`slices` is empty")).toBe(true);
+  });
+
+  it("PieChart warns when every slice is zero, and past 8 slices", () => {
+    ui(
+      <>
+        <PieChart label="Zero" slices={[{ label: "A", value: 0 }, { label: "B", value: 0 }]} />
+        <PieChart label="Crowded" slices={Array.from({ length: 9 }, (_, i) => ({ label: `S${i}`, value: i + 1 }))} />
+      </>,
+    );
+    expect(sawWarning("all slice values are zero")).toBe(true);
+    expect(sawWarning("more than 8 slices")).toBe(true);
+  });
+
+  it("ScatterPlot warns when series is empty", () => {
+    ui(<ScatterPlot series={[]} />);
+    expect(sawWarning("<ScatterPlot />")).toBe(true);
+    expect(sawWarning("`series` is empty")).toBe(true);
+  });
+
+  it("ScatterPlot warns on a tone over several series, and past 50 points", () => {
+    const points = Array.from({ length: 51 }, (_, i) => ({ x: i, y: i }));
+    ui(<ScatterPlot success series={[{ label: "A", points }, { label: "B", points: [{ x: 1, y: 1 }] }]} />);
+    expect(sawWarning("tone props apply to single-series plots only")).toBe(true);
+    expect(sawWarning("consider pre-aggregating")).toBe(true);
+  });
+
   it("stays silent for valid data across every wired component", () => {
     ui(
       <>
@@ -207,6 +282,11 @@ describe("component data-misuse warnings", () => {
         <FunnelChart stages={[{ label: "Visits", value: 10 }, { label: "Paid", value: 4 }]} />
         <RadarChart axes={["A", "B", "C"]} series={[{ label: "X", values: [1, 2, 3] }]} />
         <Treemap data={[{ label: "A", value: 3 }, { label: "B", value: 1 }]} />
+        <DepthChart bids={[{ price: 99, size: 5 }]} asks={[{ price: 101, size: 4 }]} />
+        <CandlestickChart labels={["Mon", "Tue"]} candles={[{ open: 1, high: 3, low: 0.5, close: 2 }, { open: 2, high: 4, low: 1.5, close: 1.8 }]} volume={[10, 12]} overlays={[{ label: "Average", values: [1.5, 1.9] }]} />
+        <GeoMap points={[{ label: "London", lat: 51.5, lng: -0.13, count: 40 }, { label: "Tokyo", lat: 35.69, lng: 139.69, count: 12 }]} />
+        <PieChart label="Traffic" slices={[{ label: "Direct", value: 60 }, { label: "Search", value: 40 }]} />
+        <ScatterPlot series={[{ label: "A", points: [{ x: 1, y: 2 }, { x: 3, y: 4 }] }]} />
       </>,
     );
     expect(canvasWarnings()).toEqual([]);
