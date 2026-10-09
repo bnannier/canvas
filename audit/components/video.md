@@ -11,7 +11,7 @@ Audit checklist for `/components/video`. The facts block and the variants table 
 | Source files | `video.android.tsx`, `video.controls.tsx`, `video.ios.tsx`, `video.md`, `video.shared.tsx`, `video.styles.ts`, `video.tsx` |
 | Implementation | its own source directory, `src/atoms/video/` (6 TypeScript modules) |
 | Exports | Video |
-| Platform entries | iOS: own build: Video (builds from its own iosSkin; injects platform parts (../spinner/spinner.ios.js)). Android: own build: Video (builds from its own androidSkin; injects platform parts (../spinner/spinner.android.js)) |
+| Platform entries | iOS: own build: Video (builds from its own iosSkin; injects platform parts (../spinner/spinner.ios.js); passes `nativeControls: true` which the web entry does not; counted as the platform's own). Android: own build: Video (builds from its own androidSkin; injects platform parts (../spinner/spinner.android.js); passes `nativeControls: true` which the web entry does not; counted as the platform's own) |
 | Platform-skins registry | iOS: Video; Android: Video |
 | Reference row | none: `PLATFORM-REFERENCES.md` has no row for this component (K8) |
 | Materials manifest | Video: atoms, static + inherited; verification solid-appearance, glass-appearance, mode-switch, accessibility-fallback, runtime-capability, semantic-state |
@@ -22,7 +22,7 @@ Audit checklist for `/components/video`. The facts block and the variants table 
 | Overlay recipe | none |
 | MeasureProps | not adopted |
 | Touch target | `video.styles.ts`: TOUCH_TARGET, minTarget |
-| Tests importing it | 2: `test/skins-smoke.test.tsx`, `test/video.test.tsx` |
+| Tests importing it | 5: `test/design-rules-skins.test.ts`, `test/dist-smoke.test.tsx`, `test/skins-smoke.test.tsx`, `test/touch-target-coverage.test.ts`, `test/video.test.tsx` |
 | E2E naming it | 1: `e2e/journeys/keyboard.e2e.ts` |
 | E2E catalog sweeps | 6: `e2e/a11y/components.e2e.ts` (componentRoutes), `e2e/responsive/component-widths.e2e.ts` (contentRoutes, componentRoutes), `e2e/smoke/examples.e2e.ts` (componentExamples), `e2e/smoke/routes.e2e.ts` (allRoutes), `e2e/visual/components.e2e.ts` (componentRoutes), `e2e/visual/materials.e2e.ts` (MATERIAL_ROUTES) |
 <!-- audit:facts:end -->

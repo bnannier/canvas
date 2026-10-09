@@ -8,7 +8,8 @@
 // in a summary does not shift the Status column and an empty cell typed `| |` does not
 // drop the row. A finding is counted only when its Status is one of audit/README.md's
 // words (open, verified, fixed, wontfix, duplicate), a `fixed` one names its Fix commit,
-// and a Fix commit is a commit SHA. A row it cannot read, or a table it cannot find, is
+// a Fix commit is a commit SHA, and its Cell is one of the checklist's capture ids in the
+// inventory or `source`. A row it cannot read, or a table it cannot find, is
 // not counted: it is listed by file and line under the counts, and the command exits
 // non-zero, because the counts above it under-report by that much.
 //
@@ -19,6 +20,7 @@ import { join } from "node:path";
 import { ROOT } from "../../e2e/support/routes.ts";
 import {
   COMPONENTS_DIR,
+  captureCells,
   FACTS_BEGIN,
   FACTS_END,
   FINDING_SEVERITIES,
@@ -56,7 +58,12 @@ export interface ChecklistStatus {
 
 const ticked = (cellText: string): boolean => /^\[x\]/i.test(cellText.trim());
 
-export function checklistStatus(file: string, content: string): ChecklistStatus {
+/**
+ * One checklist's counts. With `cells` (its capture ids, from the inventory), a finding
+ * whose Cell is neither one of them nor `source` is unreadable, by line, as
+ * audit:checklists:check reports it.
+ */
+export function checklistStatus(file: string, content: string, cells?: ReadonlySet<string>): ChecklistStatus {
   const variants = findBlock(content, VARIANTS_BEGIN, VARIANTS_END);
   const table = variants ? readVariantsTable(variants.lines, blockFirstLine(content, variants)) : { rows: [], malformed: [] };
   const rows = table.rows.map((row) => row.ticks);
@@ -64,7 +71,7 @@ export function checklistStatus(file: string, content: string): ChecklistStatus 
   const facts = findBlock(content, FACTS_BEGIN, FACTS_END);
   const hand = [facts, variants].reduce((text, block) => (block ? text.replace(content.slice(block.start, block.end), "") : text), content);
   const boxes = [...hand.matchAll(/^\s*- \[( |x|X)\] /gm)];
-  const findings = readFindings(content).rows;
+  const findings = readFindings(content, cells).rows;
   const bySeverity: Record<string, number> = {};
   const byStatus: Record<string, number> = {};
   const isOpen = (status: string) => (OPEN_FINDING_STATUSES as readonly string[]).includes(status);
@@ -75,7 +82,7 @@ export function checklistStatus(file: string, content: string): ChecklistStatus 
   const unreadable: StatusProblem[] = [
     ...(variants ? [] : [{ line: null, message: "variants table markers missing" }]),
     ...table.malformed.map((row) => ({ line: row.line, message: `malformed variants row: ${row.reason}` })),
-    ...handTableProblems(content),
+    ...handTableProblems(content, cells),
   ];
   return {
     file,
@@ -99,14 +106,16 @@ export function checklistStatus(file: string, content: string): ChecklistStatus 
   };
 }
 
-export function auditStatus(auditDir: string): ChecklistStatus[] {
+/** Every checklist's counts; `cells` maps each checklist to its capture ids (the inventory's, by default). */
+export function auditStatus(auditDir: string, cells: ReadonlyMap<string, ReadonlySet<string>> = captureCells()): ChecklistStatus[] {
   const out: ChecklistStatus[] = [];
   for (const dir of [COMPONENTS_DIR, PAGES_DIR]) {
     const absolute = join(auditDir, dir);
     if (!existsSync(absolute)) continue;
     for (const name of readdirSync(absolute).sort()) {
       if (!name.endsWith(".md")) continue;
-      out.push(checklistStatus(`${dir}/${name}`, readFileSync(join(absolute, name), "utf8")));
+      const file = `${dir}/${name}`;
+      out.push(checklistStatus(file, readFileSync(join(absolute, name), "utf8"), cells.get(file)));
     }
   }
   return out;

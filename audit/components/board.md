@@ -22,7 +22,7 @@ Audit checklist for `/components/board`. The facts block and the variants table 
 | Overlay recipe | none |
 | MeasureProps | not adopted |
 | Touch target | `board.shared.tsx`: SeamLimitProvider, splitSeam. `test/touch-target-coverage.test.ts` records it as known gap: the column and card affordances render 32x32 |
-| Tests importing it | 6: `test/board-logic.test.ts`, `test/board.test.tsx`, `test/horizontal-scroller-drag.test.tsx`, `test/no-console-violations.test.tsx`, `test/skins-smoke.test.tsx`, `test/touch-target-seams.test.tsx` |
+| Tests importing it | 7: `test/board-logic.test.ts`, `test/board.test.tsx`, `test/design-rules-skins.test.ts`, `test/horizontal-scroller-drag.test.tsx`, `test/no-console-violations.test.tsx`, `test/skins-smoke.test.tsx`, `test/touch-target-seams.test.tsx` |
 | E2E naming it | 0: none |
 | E2E catalog sweeps | 6: `e2e/a11y/components.e2e.ts` (componentRoutes), `e2e/responsive/component-widths.e2e.ts` (contentRoutes, componentRoutes), `e2e/smoke/examples.e2e.ts` (componentExamples), `e2e/smoke/routes.e2e.ts` (allRoutes), `e2e/visual/components.e2e.ts` (componentRoutes), `e2e/visual/materials.e2e.ts` (MATERIAL_ROUTES) |
 <!-- audit:facts:end -->

@@ -9,7 +9,7 @@ Audit checklist for `/templates/errors`. The facts block and the variants table 
 | Kind | template |
 | Data module | `docs/src/core/data/templates/errors.tsx` |
 | Sections | 1. Not found (404); 2. Something went wrong (500); 3. Maintenance; 4. First run |
-| Kit imports in the module | Alert, Badge, Button, Card, Column, Container, Emblem, EmptyState, Icon, Row, Typography, useToast |
+| Kit names its entry uses | Alert, Badge, Button, Card, Column, Container, Emblem, EmptyState, Icon, Row, Typography, useToast |
 | E2E naming it | 0: none |
 | E2E catalog sweeps | 3: `e2e/behavior/hydration-ids.e2e.ts` (contentRoutes), `e2e/responsive/component-widths.e2e.ts` (contentRoutes), `e2e/smoke/routes.e2e.ts` (allRoutes) |
 <!-- audit:facts:end -->

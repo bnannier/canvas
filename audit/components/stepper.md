@@ -22,8 +22,8 @@ Audit checklist for `/components/stepper`. The facts block and the variants tabl
 | Overlay recipe | none |
 | MeasureProps | not adopted |
 | Touch target | `stepper.shared.tsx`: hitSlop, rowSeam; `stepper.styles.ts`: hitSlop. `test/touch-target-coverage.test.ts` records it as covered another way: hitSlop on both halves, split where they face the value, which their RippleClips carry on Android; the iOS 32pt group is UIStepper's own size |
-| Tests importing it | 10: `test/a11y-state.test.tsx`, `test/atom-material-feedback.test.tsx`, `test/components-extra.test.tsx`, `test/field-focus-layout.test.tsx`, `test/field-focus-states.test.tsx`, `test/skins-smoke.test.tsx`, `test/stepper-a11y.test.tsx`, `test/stepper-decimal.test.tsx`, `test/text-entry-material.test.tsx`, `test/touch-target-seams.test.tsx` |
-| E2E naming it | 1: `e2e/journeys/keyboard.e2e.ts` |
+| Tests importing it | 12: `test/a11y-state.test.tsx`, `test/atom-material-feedback.test.tsx`, `test/components-extra.test.tsx`, `test/design-rules-skins.test.ts`, `test/field-focus-layout.test.tsx`, `test/field-focus-states.test.tsx`, `test/skins-smoke.test.tsx`, `test/stepper-a11y.test.tsx`, `test/stepper-decimal.test.tsx`, `test/text-entry-material.test.tsx`, `test/touch-target-clips.test.tsx`, `test/touch-target-seams.test.tsx` |
+| E2E naming it | 2: `e2e/behavior/text-entry-clear.e2e.ts`, `e2e/journeys/keyboard.e2e.ts` |
 | E2E catalog sweeps | 6: `e2e/a11y/components.e2e.ts` (componentRoutes), `e2e/responsive/component-widths.e2e.ts` (contentRoutes, componentRoutes), `e2e/smoke/examples.e2e.ts` (componentExamples), `e2e/smoke/routes.e2e.ts` (allRoutes), `e2e/visual/components.e2e.ts` (componentRoutes), `e2e/visual/materials.e2e.ts` (MATERIAL_ROUTES) |
 <!-- audit:facts:end -->
 

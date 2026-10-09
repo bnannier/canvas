@@ -22,7 +22,7 @@ Audit checklist for `/components/radio`. The facts block and the variants table 
 | Overlay recipe | none |
 | MeasureProps | not adopted |
 | Touch target | `radio.shared.tsx`: hitSlop. `test/touch-target-coverage.test.ts` records it as covered another way: hitSlop around the ring when there is no label to press |
-| Tests importing it | 12: `test/atom-material-roles.test.tsx`, `test/behavior.test.tsx`, `test/control-refs.test.tsx`, `test/control-space.test.tsx`, `test/fixtures/control-refs-consumer.tsx`, `test/focus-runtime.test.tsx`, `test/keyboard-nav.test.tsx`, `test/native-focus-fixtures.test.tsx`, `test/radio-idiom.test.tsx`, `test/sizing.test.tsx`, `test/skins-smoke.test.tsx`, `test/touch-target-clips.test.tsx` |
+| Tests importing it | 13: `test/atom-material-roles.test.tsx`, `test/behavior.test.tsx`, `test/control-refs-types.test.ts`, `test/control-refs.test.tsx`, `test/control-space.test.tsx`, `test/design-rules-skins.test.ts`, `test/focus-runtime.test.tsx`, `test/keyboard-nav.test.tsx`, `test/native-focus-fixtures.test.tsx`, `test/radio-idiom.test.tsx`, `test/sizing.test.tsx`, `test/skins-smoke.test.tsx`, `test/touch-target-clips.test.tsx` |
 | E2E naming it | 2: `e2e/behavior/keyboard.e2e.ts`, `e2e/journeys/control-refs.e2e.ts` |
 | E2E catalog sweeps | 6: `e2e/a11y/components.e2e.ts` (componentRoutes), `e2e/responsive/component-widths.e2e.ts` (contentRoutes, componentRoutes), `e2e/smoke/examples.e2e.ts` (componentExamples), `e2e/smoke/routes.e2e.ts` (allRoutes), `e2e/visual/components.e2e.ts` (componentRoutes), `e2e/visual/materials.e2e.ts` (MATERIAL_ROUTES) |
 <!-- audit:facts:end -->

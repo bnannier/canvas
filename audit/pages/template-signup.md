@@ -9,7 +9,7 @@ Audit checklist for `/templates/signup`. The facts block and the variants table 
 | Kind | template |
 | Data module | `docs/src/core/data/templates/signup.tsx` |
 | Sections | 1. Registration card; 2. Confirm email |
-| Kit imports in the module | Button, Card, Checkbox, Column, Container, Divider, Emblem, EmptyState, Icon, Input, Progress, Row, Typography, useToast |
+| Kit names its entry uses | Button, Card, Checkbox, Column, Container, Divider, Emblem, EmptyState, Icon, Input, Progress, Row, Typography, useToast |
 | E2E naming it | 0: none |
 | E2E catalog sweeps | 3: `e2e/behavior/hydration-ids.e2e.ts` (contentRoutes), `e2e/responsive/component-widths.e2e.ts` (contentRoutes), `e2e/smoke/routes.e2e.ts` (allRoutes) |
 <!-- audit:facts:end -->

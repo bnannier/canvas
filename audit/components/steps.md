@@ -22,7 +22,7 @@ Audit checklist for `/components/steps`. The facts block and the variants table 
 | Overlay recipe | none |
 | MeasureProps | not adopted |
 | Touch target | `steps.shared.tsx`: hitSlop, inlineSide, leastLine, minTarget, slopSides, splitSeam, styleBox, useSeededMinTargetSlop; `steps.styles.ts`: TOUCH_TARGET, minTarget |
-| Tests importing it | 7: `test/behavior-smoke-d.test.tsx`, `test/narrow-modes.test.tsx`, `test/organism-material-roles.test.tsx`, `test/skins-smoke.test.tsx`, `test/text-contrast.test.tsx`, `test/touch-target-seams.test.tsx`, `test/touch-target-seed.test.tsx` |
+| Tests importing it | 10: `test/behavior-smoke-d.test.tsx`, `test/design-rules-skins.test.ts`, `test/narrow-modes.test.tsx`, `test/organism-material-roles.test.tsx`, `test/skins-smoke.test.tsx`, `test/text-contrast.test.tsx`, `test/touch-target-clips.test.tsx`, `test/touch-target-coverage.test.ts`, `test/touch-target-seams.test.tsx`, `test/touch-target-seed.test.tsx` |
 | E2E naming it | 0: none |
 | E2E catalog sweeps | 6: `e2e/a11y/components.e2e.ts` (componentRoutes), `e2e/responsive/component-widths.e2e.ts` (contentRoutes, componentRoutes), `e2e/smoke/examples.e2e.ts` (componentExamples), `e2e/smoke/routes.e2e.ts` (allRoutes), `e2e/visual/components.e2e.ts` (componentRoutes), `e2e/visual/materials.e2e.ts` (MATERIAL_ROUTES) |
 <!-- audit:facts:end -->

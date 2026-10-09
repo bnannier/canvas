@@ -9,7 +9,7 @@ Audit checklist for `/patterns/accessibility`. The facts block and the variants 
 | Kind | pattern |
 | Data module | `docs/src/core/data/patterns.tsx` |
 | Sections | 1. Focus ring; 2. Keyboard shortcuts; 3. ARIA essentials; 4. Cross-platform support; 5. Color contrast |
-| Kit imports in the module | Accordion, Alert, Badge, Button, Card, Checkbox, CodeBlock, Column, Container, DataTable, Dialog, Field, Grid, GridItem, Input, Kbd, Progress, Row, Sidebar, Skeleton, Slider, Spinner, StackedList, Switch, Tabs, ThemeProvider, Typography, contrastRatio, useFormFactor, useTheme |
+| Kit names its entry uses | Accordion, Alert, Badge, Button, Card, Checkbox, Column, DataTable, Dialog, Input, Kbd, Progress, Row, Slider, Switch, Tabs, Typography, contrastRatio, useTheme |
 | E2E naming it | 2: `e2e/a11y/shell.e2e.ts`, `e2e/a11y/structure.e2e.ts` |
 | E2E catalog sweeps | 2: `e2e/responsive/component-widths.e2e.ts` (contentRoutes), `e2e/smoke/routes.e2e.ts` (allRoutes) |
 <!-- audit:facts:end -->
