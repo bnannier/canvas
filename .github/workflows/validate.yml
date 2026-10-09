@@ -81,6 +81,9 @@ jobs:
       - name: Verify both package artifacts
         run: bun run verify-package
 
+      - name: Install zsh for the opener's paste-shell quoting tests
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq zsh
+
       - name: Unit tests
         run: bun run test
 
