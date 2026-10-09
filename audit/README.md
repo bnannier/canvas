@@ -179,11 +179,12 @@ as "by design".
 | `bun run audit:native -- --platform=ios,android` | photographs every component example and every pattern and template page on the devices in all six looks and surfaces; `--only`, `--looks`, `--surfaces`, `--a11y=none\|default\|all`, `--devices`, `--dev`, `--keep-motion` |
 | `bun run audit:web` | captures the web cells into a new run under `.audit/runs/` (see "Capturing on the web" below); `--only`, `--variants`, `--looks`, `--surfaces`, `--widths` narrow it, `--axe`, `--base`, `--workers` and `--allow-stale` tune it, `--help` lists them |
 | `bun run audit:analyze` | writes `analysis.json` beside the newest capture of every cell (see "Analysis, contact sheets and the index" below) |
+| `bun run audit:calibrate` | measures the analysis' contrast read from the photographs against the DOM's, on the newest captures; writes nothing |
 | `bun run audit:sheets` | writes the contact sheets under `.audit/current/<slug>/sheets/` |
 | `bun run audit:index` | writes `.audit/current/<slug>/index.md`, `SUMMARY.md` and `current.json` |
-| `bun run audit:prune` | deletes old runs, keeping the newest two captures of every cell (`--keep`, `--dry-run`) |
+| `bun run audit:prune` | deletes old runs, keeping the newest two captures of every cell, and rebuilds the index over what remains (`--keep`, `--dry-run`) |
 
-The last four take `--only=<slugs>` (component slugs, page ids such as `template-signin`, or a
+The last five take `--only=<slugs>` (component slugs, page ids such as `template-signin`, or a
 page's slug; an unknown name is refused) and `--run=<run ids>` (a run's directory name, or a
 prefix naming exactly one).
 
@@ -476,8 +477,9 @@ development app installed.
 
 ## Analysis, contact sheets and the index
 
-Three commands turn the runs into what a reviewer reads, and a fourth keeps the disk in
-check. All four read the runs through one module (`tools/audit/runs.ts`), so they agree on
+Three commands turn the runs into what a reviewer reads, a fourth keeps the disk in check,
+and a fifth measures the analysis' contrast against the DOM. All of them read the runs
+through one module (`tools/audit/runs.ts`), so they agree on
 what the **current capture** of a cell is: the newest one across every run under
 `.audit/runs/`, by when its record says it finished (`at`, which the web cells and the
 native host both write; a native record older than that stamp takes its run's start), then
@@ -494,19 +496,60 @@ interaction-state and page layouts (`web-states/<slug>/[<variant>/]<state>/<leaf
    structure verdict depends on its peers' current captures.
    - **Contrast.** Where the probe resolved a text's background from the DOM, its verdict
      stands (method `dom`: fail under the 4.5 or 3 it owes). Where the DOM could not say (a
-     backdrop filter, a gradient, an image: every glass cell), the text is sampled from
-     `card.png` (method `pixels`): its box in device pixels, narrowed to the ink inside it
-     (every pixel at least 1.25 in contrast from the box's median, one pixel of margin), and
-     the 10th and 90th luminance percentiles of that read as ink and background. Sampling
-     reads thin glyphs low, so it never says "fail": under 8/9 of what the text owes (4.0 for
-     4.5, 2.67 for 3) is `fail-likely`, from there to what it owes `review`. A disabled
-     control's text owes nothing (WCAG 1.4.3's inactive exception); a text something paints
-     over, or one scrolled partly out of its scroller's view, is not sampled. Calibrated on
-     the solid cells of the run below, where the DOM gives the answer, over 5,199 texts: the
-     pixel reading was never more than 1.1% above the DOM's, all 12 DOM fails read
-     `fail-likely`, and of 5,187 DOM passes 10 read `fail-likely` and 39 `review` (the worst
-     a two-line email whose ragged second line leaves the ink a small share of its box).
-     Without the narrowing to the ink, 102 passes read `fail-likely`.
+     backdrop filter, a gradient, an image: every glass cell), only the background is read
+     from `card.png`, method `painted-ink+pixel-background`: the ink is the text's colour as
+     the probe recorded it, with its own alpha (an SVG text's fill-opacity, a placeholder's
+     opacity: `colorAlpha` in `probe.json`) and its opacity groups, composited over that
+     background; the background is the dominant colour of the text's box (narrowed to the
+     ink's bounds, every pixel at least 1.25 in contrast from the box's median, one pixel of
+     margin) among the pixels that are neither ink nor antialiasing (at least half as far from
+     the ink's colour as the 95th-percentile pixel), binned 16 levels a channel and averaged
+     within one bin of the fullest. A photograph shows a glyph's ink only in its thickest
+     pixels, so reading the ink off the pixels reads thin text low (the destructive alert's
+     wrapped body, `rgb(59, 60, 92)` on its blush frost, read 2.74 that way and reads 8.54
+     this way; its solid twin is 8.82 on the DOM); the background fills most of the box and
+     reads true. A text whose painted colour the probe cannot give (a
+     colour it cannot read, a transparent one, an SVG or placeholder text in a probe older
+     than `colorAlpha`) falls back to reading both from the pixels, method
+     `pixel-percentiles`: the 10th and 90th luminance percentiles of the ink's bounds; the
+     reason says why. Either way the background is a sample, so neither says "fail": under
+     8/9 of what the text owes (4.0 for 4.5, 2.67 for 3) is `fail-likely`, from there to what
+     it owes `review`. A disabled control's text owes nothing (WCAG 1.4.3's inactive
+     exception); a text something paints over, or one scrolled partly out of its scroller's
+     view, is not sampled.
+   - **Calibration** (`bun run audit:calibrate`, `tools/audit/calibrate.ts`). It runs both
+     pixel methods over the solid cells' texts the DOM resolved, as if it had not, and sets
+     each glass text a method flags beside its solid twin (the same text in the same row of
+     the same variant, width and look) and what the DOM says of the twin. On 2026-10-09,
+     over the current captures (876 web cells of button, alert, chip, data-table and switch:
+     the fresh run `20261009-155447-web-ac1ad55` in blush and dark, mint from
+     `20261009-135735-web-00d04a7` and `20261009-141332-web-00d04a7`), 6,081 solid texts with
+     6,051 DOM passes and 30 DOM fails:
+
+     | | `painted-ink+pixel-background` | `pixel-percentiles` |
+     |---|---|---|
+     | DOM passes read `fail-likely` (false) | 0 (0.0%) | 22 (0.4%) |
+     | DOM passes read `review` | 0 (0.0%) | 39 (0.6%) |
+     | DOM fails read `fail-likely` | 21 of 30 | 21 of 30 |
+     | DOM fails read `review` | 9 of 30 | 9 of 30 |
+     | DOM fails read `pass` (missed) | 0 | 0 |
+     | reading against the DOM's | -2.8% to +7.6%, median 0.0% | -73.4% to +1.2%, median 0.0% |
+     | glass `fail-likely` whose solid twin passes on the DOM | 0 of 21 | 21 of 33 |
+     | glass `review` whose solid twin passes on the DOM | 24 of 33 | 33 of 42 |
+
+     Every DOM fail is flagged; the 9 read as `review` are the dismissible alert's dark close
+     glyph, which fails at 4.36, inside the 4.0 to 4.5 the thresholds call review. The fresh
+     run alone gives the same (4,174 passes: 0 and 0, against 17 and 21 by the percentiles),
+     and so did the two solid runs it replaced (`20261009-135735-web-00d04a7`, 5,160 passes
+     and 12 fails: 0 and 0, all 12 fail-likely; `20261009-142710-web-e996cb0`, 861 passes and
+     18 fails: 0 and 0, 9 fail-likely and 9 review; the percentiles read 10 and 39, then 12
+     (1.4%) and 0). The +7.6% is a code pill wrapped over two lines of a paragraph, whose box
+     spans the paragraph's white as well as the pill. On glass, all 21 `fail-likely` texts
+     fail in solid too (the selectable data table's dark header and row glyphs, the
+     dismissible alert's blush close glyph); the 24 `review` texts whose twin passes are the
+     destructive button's label on brand-tinted glass (4.49 against 5.75 in solid: the
+     brand under-fill keeps as sheer as its ink's 4.5 allows) and the selectable chip's dark
+     label (4.48 against 6.33), a review a reader settles by looking.
    - **Type.** The smallest painted size (the probe's computed size times its glyph scale)
      and the counts under the 10 px source floor and the 12 px body floor.
    - **Targets.** Per row of the browser card, the interactive boxes under 24 px (web), 44 pt
@@ -515,16 +558,16 @@ interaction-state and page layouts (`web-states/<slug>/[<variant>/]<state>/<leaf
    - **Structure invariance.** The web row's `ariaSnapshot()` must be the same across the
      looks and surfaces of one variant at one width. The most common snapshot of the group
      is the group's (a tie goes to blush solid's); a cell that differs is flagged
-     `structure-varies` with the first line that differs.
+     `structure-varies` with the first line that differs. A failed cell takes no part.
    - **Native accessibility.** Android: every clickable or checkable node is named by its
      own label or by a named node inside it, as TalkBack reads it. iOS: XCUITest through
      Maestro reports no traits, so the check is that no element is announced by its value
      alone.
    - **Flags.** The capture's own (`render-failed`, `problems`, `text-floor`, `contrast`,
      `clipped-text`, `small-target`, `small-visible-target`, `overflow`, `axe`) and the
-     analysis' (`contrast-likely`, `contrast-review`, `structure-varies`, `state-not-reached`;
-     on a device `failed`, `unstable`, `problems`, `a11y-unnamed`, `a11y-error`,
-     `small-visible-target`).
+     analysis' (`failed` for a cell its record says failed, whatever it left on disk;
+     `contrast-likely`, `contrast-review`, `structure-varies`, `state-not-reached`; on a
+     device `unstable`, `problems`, `a11y-unnamed`, `a11y-error`, `small-visible-target`).
 2. `bun run audit:sheets` (`tools/audit/sheets.ts`) writes JPEG contact sheets under
    `.audit/current/<slug>/sheets/`: per variant `card-solid.jpg` and `card-glass.jpg` (the
    browser card, widths x looks), `row-<ios|android|web>-<width>.jpg` (one row of the browser
@@ -532,37 +575,58 @@ interaction-state and page layouts (`web-states/<slug>/[<variant>/]<state>/<leaf
    device cards x the six looks and surfaces), `compare.jpg` and `compare-glass.jpg` (per
    look, the browser's iOS row at phone width beside the iOS device's card, and the same for
    Android); per component `states.jpg` (`states-<width>.jpg` for further widths) when states
-   were captured. Every tile is labelled with its cell id; a cell that failed, was not
-   reached or was never captured is a labelled placeholder. No sheet's long edge passes
-   1600 px: the tiles share one scale (relative sizes stay true, a phone card narrower than a
-   desktop one), no more than the sharpest source's own density, in whichever orientation
-   scales them larger. A sheet with no picture is not written, and a variant's sheets
-   directory is emptied before it is written. The 3 x 3 card sheets of a tall card are an
-   overview of the layout only (data-table's `stacked` card sheet tiles at 0.26 px a CSS px);
-   its row sheets are where its text is read.
+   were captured. Every tile is labelled with its cell id and the commit it was captured at
+   (`commit 00d04a7 dirty`); every sheet's title names the runs its tiles come from and how
+   many commits they span, and where they span more than one, a tile whose commit is not
+   the sheet's most common one has its commit in bold blue, so a sheet that mixes a fresh
+   capture with an older one says so on its face. A cell that failed, was not reached or was
+   never captured is a labelled placeholder. Neither edge of a sheet passes 1600 px: the tiles
+   share one scale (relative sizes stay true, a phone card narrower than a desktop one), no
+   more than the sharpest source's own density, in whichever orientation scales them larger.
+   A grid whose tiles would fall under 0.6 px a layout unit (a 12 px body line about 7 px
+   tall, the smallest a reader still reads in a JPEG) is cut into numbered sheets
+   (`card-solid-1.jpg`, `card-solid-2.jpg`, ..., each titled with what it holds, such as
+   `sheet 3 of 4: widths: desktop; looks: blush, mint`) along the axis a reader does not
+   compare across: a card sheet per width, so a width's looks stay side by side; the other
+   sheets per row (a look, a state), as many neighbouring rows a sheet as stay readable
+   together; a slice still too large by the other axis too. A card too tall for the floor
+   even alone (data-table's `stacked` at phone width, 342 x 2362 CSS px) is drawn as large as
+   1600 px allows, beside the looks that fit with it. A sheet with no picture is not written,
+   and a variant's sheets directory is emptied before it is written.
 3. `bun run audit:index` (`tools/audit/index.ts`) writes `.audit/current/<slug>/index.md` per
-   component, pattern or template: the checklist, the sheets, the runs its cells come from
-   (commit, source fingerprint, what served them), its flag counts, and one row per cell
-   with its status, flags, axe violations by impact, smallest painted font, contrast (DOM
-   fails, pixel fail-likely, pixel review), overflow, clipped text, small targets, console
-   problems, a state not reached, and its run, commit and fingerprint. `SUMMARY.md` ranks every
-   captured component by its cells' flags and names the ones never captured; `current.json`
-   is the same selection for tools. A cell's flags are its analysis' when the analysis is of
+   component, pattern or template: the checklist, the sheets (a numbered sheet linked by its
+   number), the runs its cells come from (commit, source fingerprint, what served them), its
+   flag counts, and one row per cell with its status, flags, axe violations by impact,
+   smallest painted font, contrast (DOM fails, pixel fail-likely, pixel review), overflow,
+   clipped text, small targets, console problems, a state not reached, and its run, commit
+   and fingerprint. `SUMMARY.md` ranks every captured component by its cells' flags and
+   names the ones never captured; `current.json` is the same selection for tools, with the
+   `--run` names it was built from. A cell's flags are its analysis' when the analysis is of
    that capture, else the capture's own, and the index says how many are not analyzed.
    `--only` narrows the `index.md` files written; `SUMMARY.md` and `current.json` are always
-   rebuilt whole.
+   rebuilt whole, and a whole build removes the `index.md` of a component or page with no
+   current cell, so no page of the view links to a capture the view does not hold.
 4. `bun run audit:prune` (`tools/audit/prune.ts`) deletes a run only when nothing a reviewer
    needs is in it: it is not one of the newest `--keep` (default 2) runs of its platform, it
    has finished, and every cell it holds has at least `--keep` newer captures in other runs.
-   The newest two captures of every cell (the before and the after) survive, a full sweep is
-   never deleted while a later partial re-capture covers only some of it, and the current
-   view never loses a cell. `--dry-run` says what would go and why the rest stays.
+   The newest two captures of every cell (the before and the after) survive, and a full
+   sweep is never deleted while a later partial re-capture covers only some of it. A view
+   built before newer captures arrived can still point at a run that has become removable,
+   so once a run is deleted the prune rebuilds `.audit/current` from the runs that remain
+   (keeping the `--run` names the view was built from that still name a run), checks every
+   link of the view (each Markdown link of `SUMMARY.md` and every `index.md`, each run and
+   cell file `current.json` names) and exits 1 if one points at nothing. The current view
+   never loses a cell and never dangles. The contact sheets are images and keep what they
+   showed; `bun run audit:sheets` redraws them from the current captures. `--dry-run` says
+   what would go, why the rest stays, and how many entries of the view point into it.
 
-Measured on 2026-10-09 over `--only=button,switch,data-table` (684 web cells from a fresh
-export, 126 iOS and 126 Android cells copied from the 1g runs): `audit:analyze` 2.9 s for 936
-cells (5,325 texts sampled from pixels), `audit:sheets` 17.8 s for 515 sheets of 38 variants
-(55 MB, 109 KB a sheet, tile scales 0.26 to 2.17 px per layout unit, median 1.08),
-`audit:index` 0.2 s.
+Measured on 2026-10-09 over the runs above (1,128 current cells: 876 web, 126 iOS, 126
+Android): `audit:analyze` 2.6 s (6,201 texts read against the card's pixels, all by the
+painted ink), `audit:calibrate` 11.3 s, `audit:sheets` 28.8 s for 789 sheets of 54 variants
+(85.1 MB, 110 KB a sheet, tile scales 0.60 to 2.17 px per layout unit, median 1.08; 98
+numbered sheets), `audit:index` 0.1 s. The prune then removed
+`20261009-143249-web-e996cb0` (its one cell re-captured twice since), which the built view's
+`current.json` still listed, rebuilt the view, and found all 3,076 of its links whole.
 
 The interaction-state recipes and page shots (1d) and the fixer loop (1h) are still to come;
 until the state runner lands, `states.jpg` is never written.

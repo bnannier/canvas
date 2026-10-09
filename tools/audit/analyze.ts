@@ -4,14 +4,22 @@
 // capture recorded and writes `analysis.json` beside the cell's probe.json:
 //
 // - contrast: from the probe's DOM-composited background where it resolved (probe-math.ts,
-//   method "dom": fails under the 4.5 or 3 the text owes); where the DOM could not say what
-//   is under a text (a backdrop filter, a gradient, an image), sampled from card.png at the
-//   text's box, method "pixels": the 10th and 90th luminance percentiles of the box are taken
-//   as ink and background, which keeps antialiasing and a stray pixel from deciding it.
-//   Sampling under-reads thin glyphs, so it never says "fail" outright: under 8/9 of what
-//   the text owes (4.0 for 4.5, 2.67 for 3) is "fail-likely", from there up to what it owes
-//   is "review". A disabled control's text owes nothing (WCAG 1.4.3's inactive exception),
-//   and a text something else paints over is not sampled.
+//   method "dom": fails under the 4.5 or 3 the text owes). Where the DOM could not say what
+//   is under a text (a backdrop filter, a gradient, an image), only the background is read
+//   from card.png, method "painted-ink+pixel-background": the ink is the text's colour as the
+//   probe recorded it (its own alpha and its opacity groups, composited over that
+//   background), and the background is the dominant colour among the pixels of the text's
+//   box that are neither ink nor antialiasing. A photograph shows a glyph's ink only in its
+//   thickest pixels, which is why reading the ink off the pixels under-read thin text; the
+//   background fills most of the box and reads true. A text whose painted colour the probe
+//   cannot give (a colour it cannot read, a transparent one, a probe older than the SVG fill
+//   or placeholder opacity) falls back to the photograph alone, method "pixel-percentiles":
+//   the 10th and 90th luminance percentiles of its ink's bounds read as ink and background.
+//   Either way the background is a sample, so neither says "fail" outright: under 8/9 of
+//   what the text owes (4.0 for 4.5, 2.67 for 3) is "fail-likely", from there up to what it
+//   owes is "review". `bun run audit:calibrate` measures both against the DOM (audit/README.md
+//   has the numbers). A disabled control's text owes nothing (WCAG 1.4.3's inactive
+//   exception), and a text something else paints over is not sampled.
 // - type: the smallest painted size (the probe's computed size times its glyph scale), and
 //   the counts under the 10 px source floor and the 12 px body floor.
 // - targets: per platform row, the interactive boxes under its floor (44 pt iOS, 48 dp
@@ -24,7 +32,9 @@
 //   (Android: clickable or checkable nodes, named themselves or by a named node inside
 //   them, as TalkBack reads them; iOS: XCUITest through Maestro reports no traits, so a node
 //   announced only by its value is the one with no name).
-// - the cell's flags: the capture's own and the analysis' (ANALYSIS_FLAGS).
+// - the cell's flags: the capture's own and the analysis' (ANALYSIS_FLAGS). A cell its record
+//   says failed is filed under `failed` whatever files it left, and its accessibility tree
+//   takes no part in its group's structure vote.
 //
 //   bun run audit:analyze                         every current cell
 //   bun run audit:analyze -- --only=button,switch  those components' cells
@@ -39,7 +49,7 @@ import { join, relative } from "node:path";
 import sharp from "sharp";
 import { ROOT } from "../../e2e/support/routes.ts";
 import type { A11yNode, A11ySnapshot } from "./native/a11y.ts";
-import { TARGET_FLOORS, flagsOf, parseCssColor, type Box, type ProbeSummary, type ProbeTarget, type ProbeText, type RowPlatform } from "./probe-math.ts";
+import { TARGET_FLOORS, flagsOf, over, parseCssColor, type Box, type ProbeSummary, type ProbeTarget, type ProbeText, type RowPlatform } from "./probe-math.ts";
 import {
   ANALYSIS_FILE,
   currentCells,
@@ -52,11 +62,11 @@ import {
 } from "./runs.ts";
 import { CARD_FILE, PROBE_FILE } from "./web-capture.ts";
 
-// --- Pixel contrast ---------------------------------------------------------------
+// --- Contrast from the card's pixels ------------------------------------------------
 
 export type RGB = [number, number, number];
 
-/** The percentiles the pixel method reads as ink and background. */
+/** The percentiles the percentile method reads as ink and background. */
 export const PIXEL_PERCENTILES = { low: 10, high: 90 } as const;
 /** The share of what a text owes under which a sampled contrast is "fail-likely" rather than "review": 4.0 of 4.5. */
 export const FAIL_LIKELY_SHARE = 4 / 4.5;
@@ -202,7 +212,7 @@ export function sampleRegion(image: RawImage, region: PixelRegion, percentiles: 
   return { samples: n, low, high, contrast: Math.round(contrastOfLuminance(low.luminance, high.luminance) * 100) / 100, region: { left, top, width, height } };
 }
 
-/** A text's sampled contrast: its box as device pixels, narrowed to its ink, then the percentiles. */
+/** A text's percentile contrast: its box as device pixels, narrowed to its ink, then the percentiles. */
 export function sampleText(image: RawImage, box: Box, dpr: number): PixelSample | null {
   const region = boxToRegion(box, dpr, image);
   return region ? sampleRegion(image, inkRegion(image, region)) : null;
@@ -218,7 +228,157 @@ export function boxToRegion(box: Box, dpr: number, image: Pick<RawImage, "width"
   return { left, top, width: right - left, height: bottom - top };
 }
 
+// --- The painted ink over the photographed background ---------------------------------
+
+/** A text's ink as it paints: its colour, and the alpha it paints that colour with. */
+export interface PaintedInk {
+  rgb: RGB;
+  /** The colour's own alpha times the text's fill or placeholder opacity times its opacity groups. */
+  alpha: number;
+}
+
+/**
+ * The ink a text paints with, from what the probe recorded, or why there is none to take.
+ * HTML text paints with its colour alone; an SVG text's fill-opacity and a placeholder's own
+ * opacity are `colorAlpha`, which probes written before it was recorded do not carry.
+ */
+export function paintedInk(text: Pick<ProbeText, "color" | "colorAlpha" | "opacity" | "svg" | "field">): PaintedInk | { none: string } {
+  const color = parseCssColor(text.color);
+  if (!color) return { none: `its colour ${text.color} cannot be read` };
+  const own = text.colorAlpha ?? (text.svg || text.field?.part === "placeholder" ? null : 1);
+  if (own === null) return { none: `the probe predates the ${text.svg ? "SVG fill-opacity" : "placeholder opacity"} it paints with` };
+  const alpha = color[3] * own * text.opacity;
+  if (!(alpha > 0)) return { none: "its colour is transparent, so something other than its colour paints its glyphs" };
+  return { rgb: [color[0], color[1], color[2]], alpha: Math.min(1, alpha) };
+}
+
+/** `ink` as it paints over the opaque `background`. */
+export function inkOver(ink: PaintedInk, background: RGB): RGB {
+  return ink.alpha >= 1 ? ink.rgb : over([ink.rgb[0], ink.rgb[1], ink.rgb[2], ink.alpha], background);
+}
+
+/** The percentile of the pixels' distances from the ink that stands for the background's: a stray pixel does not set it. */
+export const FAR_PERCENTILE = 95;
+/**
+ * The share of the background's distance from the ink a pixel must reach to be taken for
+ * background: a glyph's antialiased edge, a blend of ink and background, mostly falls short.
+ */
+export const BACKGROUND_SHARE = 0.5;
+/** A colour bin's width in 8-bit sRGB levels, and the radius the dominant colour's cluster is gathered within. */
+export const BACKGROUND_BIN = 16;
+export interface BackgroundSample {
+  rgb: RGB;
+  /** The pixels of the region sampled. */
+  samples: number;
+  /** The share of them the background's cluster holds. */
+  share: number;
+  /** The region sampled: the ink's bounds inside the text's box (`inkRegion`). */
+  region: PixelRegion;
+}
+
+const BIN_SHIFT = Math.log2(BACKGROUND_BIN);
+const BINS_PER_CHANNEL = 256 / BACKGROUND_BIN;
+
+/**
+ * The background among `pixels` (RGB triples) behind ink that paints `reference`. Every
+ * pixel at least BACKGROUND_SHARE of the far distance from the ink (the FAR_PERCENTILE of
+ * the distances) is taken for background, the rest for ink or its antialiasing; those are
+ * binned, and the background is the mean of every one of them within one bin's width of the
+ * fullest bin's mean.
+ */
+function dominantFar(pixels: Uint8Array, reference: RGB): { rgb: RGB; count: number } {
+  const n = pixels.length / 3;
+  const distance = new Float64Array(n);
+  for (let i = 0; i < n; i++) {
+    const dr = pixels[i * 3]! - reference[0];
+    const dg = pixels[i * 3 + 1]! - reference[1];
+    const db = pixels[i * 3 + 2]! - reference[2];
+    distance[i] = Math.sqrt(dr * dr + dg * dg + db * db);
+  }
+  const far = Float64Array.from(distance).sort()[percentileIndex(n, FAR_PERCENTILE)]!;
+  const threshold = BACKGROUND_SHARE * far;
+  const bins = new Uint32Array(BINS_PER_CHANNEL ** 3);
+  const binOf = (i: number) => ((pixels[i * 3]! >> BIN_SHIFT) * BINS_PER_CHANNEL + (pixels[i * 3 + 1]! >> BIN_SHIFT)) * BINS_PER_CHANNEL + (pixels[i * 3 + 2]! >> BIN_SHIFT);
+  for (let i = 0; i < n; i++) if (distance[i]! >= threshold) bins[binOf(i)]! += 1;
+  let peak = 0;
+  for (let bin = 1; bin < bins.length; bin++) if (bins[bin]! > bins[peak]!) peak = bin;
+  const mean = (keep: (i: number) => boolean): { rgb: RGB; count: number } => {
+    const sum = [0, 0, 0];
+    let count = 0;
+    for (let i = 0; i < n; i++) {
+      if (distance[i]! < threshold || !keep(i)) continue;
+      sum[0] += pixels[i * 3]!;
+      sum[1] += pixels[i * 3 + 1]!;
+      sum[2] += pixels[i * 3 + 2]!;
+      count += 1;
+    }
+    return { rgb: [sum[0]! / count, sum[1]! / count, sum[2]! / count], count };
+  };
+  const centre = mean((i) => binOf(i) === peak).rgb;
+  return mean((i) => Math.hypot(pixels[i * 3]! - centre[0], pixels[i * 3 + 1]! - centre[1], pixels[i * 3 + 2]! - centre[2]) <= BACKGROUND_BIN);
+}
+
+/**
+ * The background inside `region` of `image` behind a text that paints with `ink`: the
+ * dominant colour among the pixels that are neither ink nor its antialiasing (dominantFar).
+ * A translucent ink paints between its colour and the background, so the pixels are
+ * measured again from what it paints over the first reading. Null when the region holds
+ * fewer than MIN_SAMPLES pixels.
+ */
+export function sampleBackground(image: RawImage, region: PixelRegion, ink: PaintedInk): BackgroundSample | null {
+  const box = clampRegion(image, region);
+  const n = box.width * box.height;
+  if (n < MIN_SAMPLES) return null;
+  const pixels = new Uint8Array(n * 3);
+  let i = 0;
+  for (let y = box.top; y < box.top + box.height; y++) {
+    for (let x = box.left; x < box.left + box.width; x++) {
+      const offset = (y * image.width + x) * image.channels;
+      pixels[i++] = image.data[offset]!;
+      pixels[i++] = image.data[offset + 1]!;
+      pixels[i++] = image.data[offset + 2]!;
+    }
+  }
+  let found = dominantFar(pixels, ink.rgb);
+  if (ink.alpha < 1) found = dominantFar(pixels, inkOver(ink, found.rgb));
+  return { rgb: found.rgb, samples: n, share: found.count / n, region: box };
+}
+
+/** Where the analysis reads a card's pixels for the texts the DOM could not resolve. */
+export interface CardSampler {
+  /** The background behind a text's box (its ink's bounds), given the ink it paints with. */
+  background(box: Box, ink: PaintedInk): BackgroundSample | null;
+  /** The 10th and 90th luminance percentiles at a text's ink, for a text with no painted ink. */
+  percentiles(box: Box): PixelSample | null;
+}
+
+/** A sampler over a decoded card image taken at `dpr` device pixels per CSS px. */
+export function cardSampler(image: RawImage, dpr: number): CardSampler {
+  return {
+    background(box, ink) {
+      const region = boxToRegion(box, dpr, image);
+      return region ? sampleBackground(image, inkRegion(image, region), ink) : null;
+    },
+    percentiles: (box) => sampleText(image, box, dpr),
+  };
+}
+
 export type ContrastVerdict = "pass" | "fail" | "review" | "fail-likely" | "exempt" | "unmeasured";
+
+/** How a text's contrast was measured. */
+export const CONTRAST_METHODS = {
+  /** The probe's composite of the DOM's paint stack. */
+  dom: "dom",
+  /** The text's painted ink over the background read from the card's pixels. */
+  paintedInk: "painted-ink+pixel-background",
+  /** Both colours read from the card's pixels: only for a text with no painted ink colour. */
+  percentiles: "pixel-percentiles",
+  none: "none",
+} as const;
+export type ContrastMethod = (typeof CONTRAST_METHODS)[keyof typeof CONTRAST_METHODS];
+
+/** Whether a method read the card's pixels, so its verdicts are fail-likely or review rather than fail. */
+export const isPixelMethod = (method: ContrastMethod) => method === CONTRAST_METHODS.paintedInk || method === CONTRAST_METHODS.percentiles;
 
 /** A sampled contrast's verdict against what the text owes. */
 export function pixelVerdict(contrast: number, required: number): ContrastVerdict {
@@ -234,33 +394,41 @@ export interface TextContrast {
   text: string;
   size: number;
   required: number;
-  method: "dom" | "pixels" | "none";
+  method: ContrastMethod;
   contrast: number | null;
   verdict: ContrastVerdict;
-  /** The text's colour as painted (dom) or the sampled percentile nearer the text's own colour (pixels). */
+  /** The text's colour as painted: the DOM's composite, the painted ink over the sampled background, or the sampled percentile nearer the text's own colour. */
   ink?: string;
   background?: string;
   samples?: number;
-  /** Why it was not measured, or why the DOM could not resolve it. */
+  /** painted-ink+pixel-background: the share of the sampled pixels the background's colour holds. */
+  backgroundShare?: number;
+  /** Why it was not measured, why the DOM could not resolve it, and why the percentiles were used. */
   reason?: string;
 }
 
-/**
- * One text's contrast: the probe's DOM verdict where it resolved, else sampled from the
- * card image (when one is given), else unmeasured with the reason.
- */
-export function textContrast(row: RowPlatform, text: ProbeText, sample: ((box: Box) => PixelSample | null) | null): TextContrast {
-  const base = { row, text: text.text, size: text.size, required: text.required };
-  if (text.disabled) return { ...base, method: text.contrast === null ? "none" : "dom", contrast: text.contrast, verdict: "exempt", reason: "disabled: WCAG 1.4.3's inactive exception" };
-  if (text.contrast !== null) {
-    return { ...base, method: "dom", contrast: text.contrast, verdict: text.contrastFails ? "fail" : "pass", ink: text.painted, background: text.background };
-  }
-  const why = text.indeterminate ?? "indeterminate";
-  if (text.covered) return { ...base, method: "none", contrast: null, verdict: "unmeasured", reason: `covered: something else paints over it (${why})` };
-  if (text.scrolled) return { ...base, method: "none", contrast: null, verdict: "unmeasured", reason: `scrolled: part of its box is out of its scroller's view, so the photograph does not show it (${why})` };
-  if (!sample) return { ...base, method: "none", contrast: null, verdict: "unmeasured", reason: `${why}; no card image to sample` };
-  const measured = sample(text.box);
-  if (!measured) return { ...base, method: "none", contrast: null, verdict: "unmeasured", reason: `${why}; its box holds too few pixels of the card to sample` };
+/** A contrast read from the card's pixels, by the method the text's recorded ink allows. */
+export type PixelContrast = Required<Pick<TextContrast, "method" | "ink" | "background" | "samples">> & Pick<TextContrast, "backgroundShare"> & { contrast: number; fallback?: string };
+
+/** A text's painted ink over the background its box shows, or null when its box holds too few pixels. */
+export function paintedInkContrast(text: Pick<ProbeText, "box">, ink: PaintedInk, sampler: CardSampler): PixelContrast | null {
+  const background = sampler.background(text.box, ink);
+  if (!background) return null;
+  const painted = inkOver(ink, background.rgb);
+  return {
+    method: CONTRAST_METHODS.paintedInk,
+    contrast: Math.round(contrastOfLuminance(relativeLuminance(painted), relativeLuminance(background.rgb)) * 100) / 100,
+    ink: hex(painted),
+    background: hex(background.rgb),
+    samples: background.samples,
+    backgroundShare: Math.round(background.share * 100) / 100,
+  };
+}
+
+/** A text's contrast from the percentiles of its ink's bounds alone, or null when its box holds too few pixels. */
+export function percentileContrast(text: Pick<ProbeText, "box" | "color">, sampler: CardSampler): PixelContrast | null {
+  const measured = sampler.percentiles(text.box);
+  if (!measured) return null;
   // The percentile nearer the text's declared colour is its ink; contrast is symmetric either way.
   const declared = parseCssColor(text.color);
   let [ink, background] = [measured.low, measured.high];
@@ -268,16 +436,41 @@ export function textContrast(row: RowPlatform, text: ProbeText, sample: ((box: B
     const target = relativeLuminance([declared[0], declared[1], declared[2]]);
     if (Math.abs(measured.high.luminance - target) < Math.abs(measured.low.luminance - target)) [ink, background] = [measured.high, measured.low];
   }
-  return {
-    ...base,
-    method: "pixels",
-    contrast: measured.contrast,
-    verdict: pixelVerdict(measured.contrast, text.required),
-    ink: hex(ink.rgb),
-    background: hex(background.rgb),
-    samples: measured.samples,
-    reason: why,
-  };
+  return { method: CONTRAST_METHODS.percentiles, contrast: measured.contrast, ink: hex(ink.rgb), background: hex(background.rgb), samples: measured.samples };
+}
+
+/**
+ * One text's contrast from the card's pixels: its painted ink over the sampled background
+ * where the probe recorded the ink, else the percentiles (with why, as `fallback`), or null
+ * when its box holds too few pixels. The DOM's own answer plays no part, so this also
+ * measures the method against the texts the DOM did resolve (calibrate.ts).
+ */
+export function pixelContrast(text: ProbeText, sampler: CardSampler): PixelContrast | null {
+  const ink = paintedInk(text);
+  if ("rgb" in ink) return paintedInkContrast(text, ink, sampler);
+  const measured = percentileContrast(text, sampler);
+  return measured ? { ...measured, fallback: ink.none } : null;
+}
+
+/**
+ * One text's contrast: the probe's DOM verdict where it resolved, else read from the card
+ * image (when one is given; pixelContrast), else unmeasured with the reason.
+ */
+export function textContrast(row: RowPlatform, text: ProbeText, sampler: CardSampler | null): TextContrast {
+  const base = { row, text: text.text, size: text.size, required: text.required };
+  const none = CONTRAST_METHODS.none;
+  if (text.disabled) return { ...base, method: text.contrast === null ? none : CONTRAST_METHODS.dom, contrast: text.contrast, verdict: "exempt", reason: "disabled: WCAG 1.4.3's inactive exception" };
+  if (text.contrast !== null) {
+    return { ...base, method: CONTRAST_METHODS.dom, contrast: text.contrast, verdict: text.contrastFails ? "fail" : "pass", ink: text.painted, background: text.background };
+  }
+  const why = text.indeterminate ?? "indeterminate";
+  if (text.covered) return { ...base, method: none, contrast: null, verdict: "unmeasured", reason: `covered: something else paints over it (${why})` };
+  if (text.scrolled) return { ...base, method: none, contrast: null, verdict: "unmeasured", reason: `scrolled: part of its box is out of its scroller's view, so the photograph does not show it (${why})` };
+  if (!sampler) return { ...base, method: none, contrast: null, verdict: "unmeasured", reason: `${why}; no card image to sample` };
+  const measured = pixelContrast(text, sampler);
+  if (!measured) return { ...base, method: none, contrast: null, verdict: "unmeasured", reason: `${why}; its box holds too few pixels of the card to sample` };
+  const { fallback, ...reading } = measured;
+  return { ...base, ...reading, verdict: pixelVerdict(measured.contrast, text.required), reason: fallback ? `${why}; no painted ink colour: ${fallback}` : why };
 }
 
 // --- The web cell ------------------------------------------------------------------
@@ -337,7 +530,8 @@ export interface CellAnalysis {
   flags: string[];
   contrast: {
     dom: { checked: number; fails: number };
-    pixels: { sampled: number; failLikely: number; review: number; passed: number };
+    /** Texts read from the card's pixels, by either pixel method; `percentiles` of them had no painted ink colour. */
+    pixels: { sampled: number; failLikely: number; review: number; passed: number; percentiles: number };
     exempt: number;
     unmeasured: number;
     /** Every text that did not pass on the DOM, and every sampled one. */
@@ -400,25 +594,30 @@ export function structureOf(cells: { id: string; aria: string | null }[]): Map<s
   return result;
 }
 
-const emptyContrast = (): CellAnalysis["contrast"] => ({ dom: { checked: 0, fails: 0 }, pixels: { sampled: 0, failLikely: 0, review: 0, passed: 0 }, exempt: 0, unmeasured: 0, texts: [] });
+const emptyContrast = (): CellAnalysis["contrast"] => ({ dom: { checked: 0, fails: 0 }, pixels: { sampled: 0, failLikely: 0, review: 0, passed: 0, percentiles: 0 }, exempt: 0, unmeasured: 0, texts: [] });
 
-/** The analysis of one web cell from its probe and, where the DOM left a text indeterminate, its card image. */
-export function analyzeWebProbe(cell: Pick<CapturedCell, "id" | "status" | "flags"> & { run: string; capturedAt: string }, probe: WebProbe, sample: ((box: Box) => PixelSample | null) | null, structure: Structure | undefined, now: Date): CellAnalysis {
+/**
+ * The analysis of one web cell from its probe and, where the DOM left a text indeterminate,
+ * its card image. A cell its record says failed is filed under `failed` whatever it left on
+ * disk: the probe a timed-out capture still wrote is read, but the cell is not a finished one.
+ */
+export function analyzeWebProbe(cell: Pick<CapturedCell, "id" | "status" | "flags"> & { run: string; capturedAt: string }, probe: WebProbe, sampler: CardSampler | null, structure: Structure | undefined, now: Date): CellAnalysis {
   const contrast = emptyContrast();
   const texts = probe.rows.flatMap((row) => row.texts.map((text) => ({ row: row.platform, text })));
   for (const { row, text } of texts) {
-    const verdict = textContrast(row, text, sample);
+    const verdict = textContrast(row, text, sampler);
     if (verdict.verdict === "exempt") contrast.exempt += 1;
-    else if (verdict.method === "dom") {
+    else if (verdict.method === CONTRAST_METHODS.dom) {
       contrast.dom.checked += 1;
       if (verdict.verdict === "fail") contrast.dom.fails += 1;
-    } else if (verdict.method === "pixels") {
+    } else if (isPixelMethod(verdict.method)) {
       contrast.pixels.sampled += 1;
+      if (verdict.method === CONTRAST_METHODS.percentiles) contrast.pixels.percentiles += 1;
       if (verdict.verdict === "fail-likely") contrast.pixels.failLikely += 1;
       else if (verdict.verdict === "review") contrast.pixels.review += 1;
       else contrast.pixels.passed += 1;
     } else contrast.unmeasured += 1;
-    if (verdict.method === "pixels" || verdict.verdict !== "pass") contrast.texts.push(verdict);
+    if (isPixelMethod(verdict.method) || verdict.verdict !== "pass") contrast.texts.push(verdict);
   }
   let min: { size: number; text: string; row: string } | null = null;
   for (const { row, text } of texts) if (!min || text.size < min.size) min = { size: text.size, text: text.text, row };
@@ -435,6 +634,7 @@ export function analyzeWebProbe(cell: Pick<CapturedCell, "id" | "status" | "flag
   const byImpact: Record<string, number> = Object.fromEntries(AXE_IMPACTS.map((impact) => [impact, 0]));
   for (const violation of probe.axe.violations) byImpact[violation.impact] = (byImpact[violation.impact] ?? 0) + 1;
   const flags = [...flagsOf(probe.summary)];
+  if (cell.status === ANALYSIS_FLAGS.failed) flags.unshift(ANALYSIS_FLAGS.failed);
   if (contrast.pixels.failLikely) flags.push(ANALYSIS_FLAGS.contrastLikely);
   if (contrast.pixels.review) flags.push(ANALYSIS_FLAGS.contrastReview);
   if (structure?.identical === false) flags.push(ANALYSIS_FLAGS.structure);
@@ -583,6 +783,8 @@ export interface AnalyzeTotals {
   analyzed: number;
   skipped: number;
   sampled: number;
+  /** Of the sampled texts, those with no painted ink colour, read by the percentiles. */
+  percentiles: number;
   failLikely: number;
   review: number;
   domFails: number;
@@ -591,10 +793,11 @@ export interface AnalyzeTotals {
 
 async function analyzeGroup(group: CapturedCell[], now: Date, totals: AnalyzeTotals): Promise<void> {
   const probes = group.map((cell) => ({ cell, probe: existsSync(join(cell.dir, PROBE_FILE)) ? readJsonFile<WebProbe>(join(cell.dir, PROBE_FILE)) : null }));
+  // A failed cell's tree is not its variant's (a redirect, a wrong example, a page cut off mid-probe): it takes no part in the vote.
   const structures = structureOf(
     [...probes]
       .sort((a, b) => lookRank(a.cell) - lookRank(b.cell))
-      .map(({ cell, probe }) => ({ id: cell.id, aria: probe?.rows.find((row) => row.platform === "web")?.aria ?? null })),
+      .map(({ cell, probe }) => ({ id: cell.id, aria: cell.status === ANALYSIS_FLAGS.failed ? null : probe?.rows.find((row) => row.platform === "web")?.aria ?? null })),
   );
   for (const { cell, probe } of probes) {
     if (!probe || notReached(cell)) {
@@ -604,8 +807,7 @@ async function analyzeGroup(group: CapturedCell[], now: Date, totals: AnalyzeTot
     const cardPath = join(cell.dir, CARD_FILE);
     const needsPixels = probe.rows.some((row) => row.texts.some((text) => text.contrast === null && !text.disabled && !text.covered && !text.scrolled));
     const image = needsPixels && existsSync(cardPath) ? await decodeImage(cardPath) : null;
-    const sample = image ? (box: Box) => sampleText(image, box, probe.dpr) : null;
-    const analysis = analyzeWebProbe({ id: cell.id, status: cell.status, flags: cell.flags, run: cell.run.id, capturedAt: cell.capturedAt }, probe, sample, structures.get(cell.id), now);
+    const analysis = analyzeWebProbe({ id: cell.id, status: cell.status, flags: cell.flags, run: cell.run.id, capturedAt: cell.capturedAt }, probe, image ? cardSampler(image, probe.dpr) : null, structures.get(cell.id), now);
     writeFileSync(join(cell.dir, ANALYSIS_FILE), `${JSON.stringify(analysis, null, 2)}\n`);
     count(totals, analysis);
   }
@@ -614,6 +816,7 @@ async function analyzeGroup(group: CapturedCell[], now: Date, totals: AnalyzeTot
 function count(totals: AnalyzeTotals, analysis: CellAnalysis) {
   totals.analyzed += 1;
   totals.sampled += analysis.contrast.pixels.sampled;
+  totals.percentiles += analysis.contrast.pixels.percentiles;
   totals.failLikely += analysis.contrast.pixels.failLikely;
   totals.review += analysis.contrast.pixels.review;
   totals.domFails += analysis.contrast.dom.fails;
@@ -654,7 +857,7 @@ async function main(): Promise<number> {
   }
   for (const problem of selection.problems) console.warn(`  warning  ${problem}`);
   const now = new Date();
-  const totals: AnalyzeTotals = { cells: selection.cells.length, analyzed: 0, skipped: 0, sampled: 0, failLikely: 0, review: 0, domFails: 0, flags: {} };
+  const totals: AnalyzeTotals = { cells: selection.cells.length, analyzed: 0, skipped: 0, sampled: 0, percentiles: 0, failLikely: 0, review: 0, domFails: 0, flags: {} };
   const groups = new Map<string, CapturedCell[]>();
   const native: CapturedCell[] = [];
   for (const cell of selection.cells) {
@@ -671,7 +874,7 @@ async function main(): Promise<number> {
   await pool(native, 8, (cell) => analyzeNative(cell, now, totals));
   const ms = Date.now() - started;
   console.log(`audit:analyze over ${selection.runs.length} run(s): ${totals.analyzed} of ${totals.cells} current cell(s) analyzed${totals.skipped ? `, ${totals.skipped} with no probe (failed or not reached)` : ""}`);
-  console.log(`  contrast  ${totals.domFails} DOM fail(s); ${totals.sampled} text(s) sampled from pixels: ${totals.failLikely} fail-likely, ${totals.review} to review`);
+  console.log(`  contrast  ${totals.domFails} DOM fail(s); ${totals.sampled} text(s) read against the card's pixels (${totals.sampled - totals.percentiles} ${CONTRAST_METHODS.paintedInk}, ${totals.percentiles} ${CONTRAST_METHODS.percentiles}): ${totals.failLikely} fail-likely, ${totals.review} to review`);
   const flags = Object.entries(totals.flags).sort((a, b) => b[1] - a[1]);
   console.log(`  flags     ${flags.length ? flags.map(([flag, n]) => `${flag} ${n}`).join(", ") : "none"}`);
   console.log(`  time      ${(ms / 1000).toFixed(1)} s (${totals.analyzed ? (ms / totals.analyzed).toFixed(1) : "0"} ms a cell)`);

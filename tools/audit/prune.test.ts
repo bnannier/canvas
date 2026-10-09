@@ -1,5 +1,9 @@
-import { describe, expect, it } from "bun:test";
-import { planPrune } from "./prune.ts";
+import { afterEach, describe, expect, it } from "bun:test";
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { dirname, join } from "node:path";
+import { brokenLinks, buildIndex, builtSelection } from "./index.ts";
+import { planPrune, pruneRuns, survivingSelection } from "./prune.ts";
 import { readRunCells, type AuditRun, type CapturedCell } from "./runs.ts";
 
 const run = (id: string, startedAt: string, platform: AuditRun["platform"] = "web", finished = true): AuditRun => ({
@@ -55,5 +59,105 @@ describe("pruning", () => {
     expect(only.get("b")!.reason).toBe("captured components or pages --only does not name");
     expect(only.get("empty")!.reason).toBe("holds no cell, and --only names components");
     expect(() => planPrune(runs, cells, { keep: 0, candidates: null, only: null })).toThrow(/at least 1/);
+  });
+
+  it("keeps the --run names of a built view that still name a run, and every run when none does", () => {
+    const remaining = [run("20261009-110000-web-bbbbbbb", "2026-10-09T11:00:00Z"), run("20261009-120000-web-ccccccc", "2026-10-09T12:00:00Z")];
+    expect(survivingSelection(null, remaining)).toBeNull();
+    expect(survivingSelection(["20261009-110000", "20261009-100000-web-aaaaaaa"], remaining)).toEqual(["20261009-110000"]);
+    expect(survivingSelection(["20261009-100000-web-aaaaaaa"], remaining)).toBeNull();
+  });
+});
+
+describe("pruning under a built view", () => {
+  let root: string | null = null;
+  afterEach(() => {
+    if (root) rmSync(root, { recursive: true, force: true });
+    root = null;
+  });
+
+  const IDS = ["web/button/default/phone.blush.solid", "web/button/default/phone.dark.glass", "web/switch/default/desktop.mint.solid"];
+
+  function writeRun(name: string, startedAt: string, sha: string, ids: string[]) {
+    const dir = join(root!, ".audit", "runs", name);
+    mkdirSync(dir, { recursive: true });
+    writeFileSync(join(dir, "manifest.json"), JSON.stringify({ platform: "web", status: "complete", startedAt, source: { sha, dirty: false }, served: { mode: "static export", sourceFingerprint: sha[0]!.repeat(64), fresh: true } }));
+    const at = (i: number) => new Date(Date.parse(startedAt) + (i + 1) * 1000).toISOString();
+    writeFileSync(join(dir, "cells.jsonl"), ids.map((id, i) => JSON.stringify({ id, status: "ok", flags: [], at: at(i) })).join("\n"));
+    for (const id of ids) {
+      mkdirSync(join(dir, id), { recursive: true });
+      writeFileSync(join(dir, id, "card.png"), "");
+      writeFileSync(join(dir, id, "probe.json"), "{}");
+    }
+  }
+
+  /** Every link of the view, checked here on its own terms: each Markdown link from its page's directory, each file and run current.json names. */
+  function danglingLinks(): string[] {
+    const current = join(root!, ".audit", "current");
+    const dangling: string[] = [];
+    const pages = [join(current, "SUMMARY.md"), ...readdirSync(current, { withFileTypes: true }).filter((e) => e.isDirectory()).map((e) => join(current, e.name, "index.md")).filter(existsSync)];
+    let links = 0;
+    for (const page of pages) {
+      for (const [, target] of readFileSync(page, "utf8").matchAll(/\]\(([^)\s]+)\)/g)) {
+        links += 1;
+        if (!existsSync(join(dirname(page), target!))) dangling.push(`${page}: ${target}`);
+      }
+    }
+    const built = JSON.parse(readFileSync(join(current, "current.json"), "utf8")) as { runs: { id: string }[]; cells: { run: string; file: string | null }[] };
+    for (const r of built.runs) if (!existsSync(join(root!, ".audit", "runs", r.id))) dangling.push(`current.json run ${r.id}`);
+    for (const cell of built.cells) {
+      links += 1;
+      if (!cell.file || !existsSync(join(root!, cell.file))) dangling.push(`current.json ${cell.file}`);
+      if (!existsSync(join(root!, ".audit", "runs", cell.run))) dangling.push(`current.json cell run ${cell.run}`);
+    }
+    expect(links).toBeGreaterThan(IDS.length);
+    return dangling;
+  }
+
+  it("rebuilds the view after deleting a run it still pointed at, so no link dangles", () => {
+    root = mkdtempSync(join(tmpdir(), "audit-prune-"));
+    writeRun("20261009-100000-web-aaaaaaa", "2026-10-09T10:00:00.000Z", "a".repeat(40), IDS);
+    const first = buildIndex(root, { runs: null, only: null }, "2026-10-09T10:30:00.000Z");
+    expect(first).toMatchObject({ cells: 3, written: 2 });
+    expect(builtSelection(root)).toEqual({ runs: null });
+    // Two newer sweeps arrive and the view is not rebuilt: it still points at the first run.
+    writeRun("20261009-110000-web-bbbbbbb", "2026-10-09T11:00:00.000Z", "b".repeat(40), IDS);
+    writeRun("20261009-120000-web-ccccccc", "2026-10-09T12:00:00.000Z", "c".repeat(40), IDS);
+    expect(danglingLinks()).toEqual([]);
+    const view = readFileSync(join(root, ".audit", "current", "button", "index.md"), "utf8");
+    expect(view).toContain("20261009-100000-web-aaaaaaa");
+
+    const dry = pruneRuns(root, { keep: 2, only: null, runs: null, dryRun: true });
+    expect(dry.decisions.filter((d) => d.remove).map((d) => d.run.id)).toEqual(["20261009-100000-web-aaaaaaa"]);
+    // One run entry and three cells of current.json point into it.
+    expect(dry.pointing).toBe(4);
+    expect(dry.rebuilt).toBeNull();
+    expect(existsSync(join(root, ".audit", "runs", "20261009-100000-web-aaaaaaa"))).toBe(true);
+
+    const pruned = pruneRuns(root, { keep: 2, only: null, runs: null, dryRun: false });
+    expect(existsSync(join(root, ".audit", "runs", "20261009-100000-web-aaaaaaa"))).toBe(false);
+    expect(pruned.rebuilt).toMatchObject({ selection: null, was: null, result: { cells: 3, written: 2 } });
+    expect(pruned.broken).toEqual([]);
+    expect(danglingLinks()).toEqual([]);
+    const rebuilt = readFileSync(join(root, ".audit", "current", "button", "index.md"), "utf8");
+    expect(rebuilt).not.toContain("20261009-100000-web-aaaaaaa");
+    expect(rebuilt).toContain("](../../runs/20261009-120000-web-ccccccc/web/button/default/phone.blush.solid/card.png)");
+  });
+
+  it("finds the links a run deleted by hand leaves dangling, and a whole build drops the index of a component with no cell left", () => {
+    root = mkdtempSync(join(tmpdir(), "audit-prune-"));
+    writeRun("20261009-100000-web-aaaaaaa", "2026-10-09T10:00:00.000Z", "a".repeat(40), [IDS[2]!]);
+    writeRun("20261009-110000-web-bbbbbbb", "2026-10-09T11:00:00.000Z", "b".repeat(40), IDS.slice(0, 2));
+    buildIndex(root, { runs: null, only: null });
+    expect(brokenLinks(root)).toEqual([]);
+    rmSync(join(root, ".audit", "runs", "20261009-100000-web-aaaaaaa"), { recursive: true });
+    const broken = brokenLinks(root);
+    expect(broken).toContain(".audit/current/switch/index.md -> ../../runs/20261009-100000-web-aaaaaaa/manifest.json");
+    expect(broken).toContain(".audit/current/current.json -> run 20261009-100000-web-aaaaaaa");
+    expect(broken).toContain(`.audit/current/current.json -> .audit/runs/20261009-100000-web-aaaaaaa/${IDS[2]}/card.png`);
+    const rebuilt = buildIndex(root, { runs: null, only: null });
+    expect(rebuilt.removed).toEqual([".audit/current/switch/index.md"]);
+    expect(brokenLinks(root)).toEqual([]);
+    expect(danglingLinks()).toEqual([]);
   });
 });

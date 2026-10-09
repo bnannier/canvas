@@ -169,6 +169,12 @@ describe("a text leaf", () => {
   it("multiplies its opacity groups", () => {
     expect(deriveText(text({ groups: [0, 1] }), [0.5, 0.4]).opacity).toBe(0.2);
   });
+
+  it("records the ink as painted where the background is indeterminate: its colour, its own alpha and its opacity", () => {
+    const glass = deriveText(text({ svg: true, colorAlpha: 0.6, groups: [0], stack: [layer("rgba(255, 255, 255, 0.4)", [], ["backdrop-filter"])] }), [0.5]);
+    expect(glass).toMatchObject({ color: "rgb(0, 0, 0)", colorAlpha: 0.6, opacity: 0.5, contrast: null, indeterminate: "backdrop-filter on div" });
+    expect(glass.painted).toBeUndefined();
+  });
 });
 
 describe("the size a text paints at", () => {
