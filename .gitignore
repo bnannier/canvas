@@ -19,6 +19,12 @@ blob-report/
 # where lookout looks for them.
 .lookout/
 
+# The component audit's captures: runs of screenshots, probes and analysis under
+# .audit/runs/ and the contact sheets and index under .audit/current/. Regenerable
+# and large (a full run is tens of GB), so none of it is committed. What IS committed
+# is audit/ at the repository root: the per-component checklists and the README.
+.audit/
+
 # Local Claude Code session state
 .claude/
 

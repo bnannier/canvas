@@ -41,7 +41,6 @@ import { Spinner as SpinnerIOS } from "../../../src/atoms/spinner/spinner.ios.js
 import { Spinner as SpinnerAndroid } from "../../../src/atoms/spinner/spinner.android.js";
 import { TabBar as TabBarIOS } from "../../../src/organisms/tab-bar/tab-bar.ios.js";
 import { TabBar as TabBarAndroid } from "../../../src/organisms/tab-bar/tab-bar.android.js";
-import { Tabs as TabsIOS } from "../../../src/organisms/tabs/tabs.ios.js";
 import { Tabs as TabsAndroid } from "../../../src/organisms/tabs/tabs.android.js";
 import { Steps as StepsIOS } from "../../../src/organisms/steps/steps.ios.js";
 import { Steps as StepsAndroid } from "../../../src/organisms/steps/steps.android.js";
@@ -53,8 +52,10 @@ import { Calendar as CalendarIOS } from "../../../src/organisms/calendar/calenda
 import { Calendar as CalendarAndroid } from "../../../src/organisms/calendar/calendar.android.js";
 import { Board as BoardIOS } from "../../../src/organisms/board/board.ios.js";
 import { Board as BoardAndroid } from "../../../src/organisms/board/board.android.js";
-import { Avatar as AvatarIOS, AvatarGroup as AvatarGroupIOS, AvatarMenu as AvatarMenuIOS } from "../../../src/atoms/avatar/avatar.ios.js";
-import { Avatar as AvatarAndroid, AvatarGroup as AvatarGroupAndroid, AvatarMenu as AvatarMenuAndroid } from "../../../src/atoms/avatar/avatar.android.js";
+// Avatar and AvatarGroup alias the web skin on both platforms, so they are the web build
+// by construction and stay out of the tables; only the pill's menu differs per OS.
+import { AvatarMenu as AvatarMenuIOS } from "../../../src/atoms/avatar/avatar.ios.js";
+import { AvatarMenu as AvatarMenuAndroid } from "../../../src/atoms/avatar/avatar.android.js";
 import { Breadcrumb as BreadcrumbIOS, BreadcrumbItem as BreadcrumbItemIOS } from "../../../src/atoms/breadcrumb/breadcrumb.ios.js";
 import { Breadcrumb as BreadcrumbAndroid, BreadcrumbItem as BreadcrumbItemAndroid } from "../../../src/atoms/breadcrumb/breadcrumb.android.js";
 import { Slider as SliderIOS } from "../../../src/atoms/slider/slider.ios.js";
@@ -124,9 +125,9 @@ export const PLATFORM_SKINS: Record<"ios" | "android", Record<string, unknown>> 
     Input: InputIOS, Textarea: TextareaIOS, ButtonGroup: ButtonGroupIOS, Select: SelectIOS,
     Autocomplete: AutocompleteIOS, Dropdown: DropdownIOS, Popover: PopoverIOS, Tooltip: TooltipIOS,
     RowMenu: RowMenuIOS, Dialog: DialogIOS, AlertDialog: AlertDialogIOS,
-    Spinner: SpinnerIOS, TabBar: TabBarIOS, Tabs: TabsIOS, Steps: StepsIOS,
+    Spinner: SpinnerIOS, TabBar: TabBarIOS, Steps: StepsIOS,
     Navbar: NavbarIOS, Sidebar: SidebarIOS, Calendar: CalendarIOS,
-    Avatar: AvatarIOS, AvatarGroup: AvatarGroupIOS, AvatarMenu: AvatarMenuIOS,
+    AvatarMenu: AvatarMenuIOS,
     Breadcrumb: BreadcrumbIOS, Slider: SliderIOS, Progress: ProgressIOS,
     Accordion: AccordionIOS, ActionSheet: ActionSheetIOS,
     ActionPanel: ActionPanelIOS, Card: CardIOS, CardMedia: CardMediaIOS, DescriptionList: DescriptionListIOS,
@@ -146,7 +147,7 @@ export const PLATFORM_SKINS: Record<"ios" | "android", Record<string, unknown>> 
     RowMenu: RowMenuAndroid, Dialog: DialogAndroid, AlertDialog: AlertDialogAndroid,
     Spinner: SpinnerAndroid, TabBar: TabBarAndroid, Tabs: TabsAndroid, Steps: StepsAndroid,
     Navbar: NavbarAndroid, Sidebar: SidebarAndroid, Calendar: CalendarAndroid,
-    Avatar: AvatarAndroid, AvatarGroup: AvatarGroupAndroid, AvatarMenu: AvatarMenuAndroid,
+    AvatarMenu: AvatarMenuAndroid,
     Breadcrumb: BreadcrumbAndroid, Slider: SliderAndroid, Progress: ProgressAndroid,
     Accordion: AccordionAndroid, ActionSheet: ActionSheetAndroid,
     ActionPanel: ActionPanelAndroid, Card: CardAndroid, CardMedia: CardMediaAndroid, DescriptionList: DescriptionListAndroid,

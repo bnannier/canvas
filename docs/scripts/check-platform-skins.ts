@@ -13,10 +13,12 @@
 // floating it inside).
 //
 // What counts as "looks different" lives in tools/skins/divergence.ts, shared with the
-// kit's shells gate (test/design-rules-shells.test.ts): a platform entry diverges when
+// kit's shells gate (test/design-rules-shells.test.ts): a built export diverges when
 // it builds from its own skin object (a spread of the web skin with overrides included)
 // rather than an identity alias of the web skin, or when it injects platform parts (the
-// shell draws the platform's Button, Drawer or DragDrop builds). An alias with no parts
+// shell draws the platform's Button, Drawer or DragDrop builds). The verdict is per
+// export, not per file: Avatar and AvatarGroup alias the web skin while AvatarMenu,
+// built in the same entry, injects the platform's Dropdown. An alias with no parts
 // renders identically by construction, so its absence from the registry is correct.
 // The check runs both ways: every divergent build must be registered, and a registered
 // name must be a divergent build, so the table never labels the web build a platform's.
@@ -30,6 +32,7 @@ import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 import { componentSkins, type Platform } from "../../tools/skins/divergence.js";
+import { registeredSkins } from "../../tools/skins/registry.js";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const KIT = join(HERE, "..", "..", "src");
@@ -38,22 +41,15 @@ const REGISTRY = join(HERE, "..", "src", "core", "platform-skins.ts");
 const components = componentSkins(KIT);
 const divergent = components.filter((c) => Object.keys(c.divergent).length > 0);
 
-const registry = readFileSync(REGISTRY, "utf8");
-function registeredIn(table: "ios" | "android"): Set<string> {
-  const block = registry.split(`${table}: {`)[1]?.split("},")[0] ?? "";
-  const suffix = table === "ios" ? "IOS" : "Android";
-  return new Set([...block.matchAll(new RegExp(`(\\w+):\\s*\\w+${suffix}`, "g"))].map((m) => m[1]));
-}
-const iosTable = registeredIn("ios");
-const androidTable = registeredIn("android");
-
-const TABLE: Record<Platform, Set<string>> = { iOS: iosTable, Android: androidTable };
+const registry = registeredSkins(readFileSync(REGISTRY, "utf8"));
+const TABLE: Record<Platform, Set<string>> = { iOS: registry.ios, Android: registry.android };
+const tableName = (platform: Platform): string => (platform === "iOS" ? "ios" : "android");
 
 const missing: string[] = [];
-for (const c of divergent) {
-  for (const platform of Object.keys(c.divergent) as Platform[]) {
-    for (const name of c.exports) {
-      if (!TABLE[platform].has(name)) missing.push(`  ${name} (src/${c.group}/${c.dir}) is absent from the ${platform === "iOS" ? "ios" : "android"} table: its entry ${c.divergent[platform]}`);
+for (const c of components) {
+  for (const [name, byPlatform] of Object.entries(c.exportDivergence)) {
+    for (const platform of Object.keys(byPlatform) as Platform[]) {
+      if (!TABLE[platform].has(name)) missing.push(`  ${name} (src/${c.group}/${c.dir}) is absent from the ${tableName(platform)} table: its build ${byPlatform[platform]}`);
     }
   }
 }
@@ -62,7 +58,7 @@ const stale: string[] = [];
 for (const platform of ["iOS", "Android"] as const) {
   for (const name of TABLE[platform]) {
     const owner = components.find((c) => c.exports.includes(name));
-    if (!owner || !owner.divergent[platform]) stale.push(`  ${name} is in the ${platform === "iOS" ? "ios" : "android"} table but its ${platform} build is the web build`);
+    if (!owner?.exportDivergence[name]?.[platform]) stale.push(`  ${name} is in the ${tableName(platform)} table but its ${platform} build is the web build`);
   }
 }
 
@@ -85,5 +81,5 @@ if (missing.length || stale.length) {
 
 console.log(
   `✓ platform-skins.ts covers every divergent build (${divergent.length} components render per-OS; ` +
-    `${iosTable.size} iOS and ${androidTable.size} Android entries registered, none stale)`,
+    `${registry.ios.size} iOS and ${registry.android.size} Android entries registered, none stale)`,
 );
