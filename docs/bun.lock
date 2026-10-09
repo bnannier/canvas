@@ -41,6 +41,13 @@
       },
     },
   },
+  "patchedDependencies": {
+    "expo@57.0.27": "patches/expo@57.0.27.patch",
+    "expo-router@57.0.25": "patches/expo-router@57.0.25.patch",
+    "@expo/cli@57.0.28": "patches/@expo%2Fcli@57.0.28.patch",
+    "@expo/router-server@57.0.12": "patches/@expo%2Frouter-server@57.0.12.patch",
+    "expo-modules-jsi@57.1.1": "patches/expo-modules-jsi@57.1.1.patch",
+  },
   "packages": {
     "@babel/code-frame": ["@babel/code-frame@7.29.7", "", { "dependencies": { "@babel/helper-validator-identifier": "^7.29.7", "js-tokens": "^4.0.0", "picocolors": "^1.1.1" } }, "sha512-Aup7aUOfpbAUg2ROOJN6Iw5f9DMBlzu0mIkm/malLQFN/YQgO48wCj0Kxa3sEHJvPVFg7siR+qRInwXd2qhQKw=="],
 

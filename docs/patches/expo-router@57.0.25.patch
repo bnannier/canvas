@@ -1,5 +1,5 @@
 diff --git a/build/native-tabs/NativeTabsView.shared.js b/build/native-tabs/NativeTabsView.shared.js
-index f6c64bef9ecfa028a233566af9b12be79421d8d9..0ab194429116e6d4b9a44bd8b62c2346b44bb82d 100644
+index f6c64bef9ecfa028a233566af9b12be79421d8d9..753265671f15749bd1aff34eaacaf13f13601827 100644
 --- a/build/native-tabs/NativeTabsView.shared.js
 +++ b/build/native-tabs/NativeTabsView.shared.js
 @@ -52,8 +52,15 @@ function useSharedScreenProps(props) {
