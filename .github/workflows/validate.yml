@@ -93,6 +93,13 @@ jobs:
       - name: Validate material coverage against public exports and docs
         run: bun run check:materials
 
+      # Every component and page route has an audit checklist under audit/, and each
+      # checklist's generated facts block and variants table match the inventory the
+      # kit's own records produce (tools/audit). A component, example, skin, reference
+      # row or test added without `bun run audit:checklists` is caught here.
+      - name: Check the audit checklists match the inventory
+        run: bun run audit:checklists:check
+
       # Runs docgen ONCE for the whole pipeline and fails on ANY drift under
       # docs/src/core (tracked or untracked), so a breaking prop change or a forgotten
       # `bun run docs:gen` is caught here, and the docs steps below consume a validated

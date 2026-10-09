@@ -19,7 +19,8 @@ import type { ExampleScope, PreviewScope } from "./scope";
 // DO carry the baseUrl prefix, so the photos load at the root and under a subpath.
 //
 // Wrap AFTER the skin spread so each column wraps its own effective component
-// (PLATFORM_SKINS overrides Avatar, MediaObject, GridList and Feed per OS).
+// (PLATFORM_SKINS overrides AvatarMenu, MediaObject, GridList and Feed per OS; Avatar
+// itself aliases the web skin everywhere, so every column wraps the web build).
 function columnScope(skins: Record<string, unknown>, tokens: ColorTokens): ExampleScope {
   const scope: Record<string, unknown> = { ...Canvas, ...skins };
   applyResolvedPhotos(scope);
