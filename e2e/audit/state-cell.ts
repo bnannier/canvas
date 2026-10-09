@@ -14,15 +14,17 @@
  *   4. The recipe's apply, then its verify. A state verify cannot confirm is recorded as
  *      `state-not-reached` with the reason and the evidence, released, and never
  *      photographed.
- *   5. A reached state is photographed (state.png: the row with the shot margin, 12 px, for a ring
- *      or a lifted shade, or the viewport), then probed the way a variant cell is: the
- *      row (and the panel the state opened, judged by the row's platform floors; a panel
- *      drawn inside the row is read with the row, so its texts count once) through the
- *      in-page probe, their aria snapshots and material effects, the page's overflow, axe
- *      on the web row where the run's policy says, and the page's console, CSP and
- *      request problems during the cell. The state's flags join the probe's. Each region
- *      records where its boxes are measured from in the viewport (`origin`) and the shot
- *      its clip, so the analysis finds every text in state.png (tools/audit/analyze.ts).
+ *   5. A reached state is photographed (state.png: the row with the margin its paint needs
+ *      while the state holds, tools/audit/web-capture.ts `paintedMargin`, so a ring or a
+ *      lifted shade drawn past it is in the picture; or the viewport), then probed the way
+ *      a variant cell is: the row (and the panel the state opened, judged by the row's
+ *      platform floors; a panel drawn inside the row is read with the row, so its texts
+ *      count once) through the in-page probe, their aria snapshots and material effects,
+ *      the page's overflow, axe on the web row where the run's policy says, and the page's
+ *      console, CSP and request problems during the cell. The state's flags join the
+ *      probe's. Each region records where its boxes are measured from in the viewport
+ *      (`origin`) and the shot its clip, so the analysis finds every text in state.png
+ *      (tools/audit/analyze.ts).
  *   6. The recipe's release, which ends the state the way a person would and measures how
  *      that went (a press that should have been cancelled and was not, an inspection or an
  *      overlay that would not clear): its report goes into probe.json and its flags into
@@ -33,14 +35,28 @@ import { join } from "node:path";
 import type { Locator, Page } from "@playwright/test";
 import { colorsFor } from "../../src/style/tokens.ts";
 import { scan } from "../support/axe";
-import { probePageOverflow, probeRow } from "../support/audit-probes";
+import { probePageOverflow, probePaint, probeRow } from "../support/audit-probes";
 import { LOOKS, fitElementForScreenshot, gotoDocs, platformRow, previewCard, settledBox, stage } from "../support/docs";
 import type { PageProblems } from "../support/fixtures";
 import { rgb } from "../support/focus-ring";
 import { readMaterialEffects } from "../support/material-evidence";
 import type { StateRecipe, StateScene } from "../support/state-recipes";
 import { deriveRow, flagsOf, overflowOf, summarizeProbe, type ProbeRow } from "../../tools/audit/probe-math.ts";
-import { FAILURE_FILE, PROBE_FILE, STATE_FILE, marginClip, stateCellId, type StateCell, type StateCellRecord } from "../../tools/audit/web-capture.ts";
+import {
+  FAILURE_FILE,
+  PROBE_FILE,
+  STATE_FILE,
+  cutSides,
+  marginClip,
+  paintedMargin,
+  stateCellId,
+  type Box,
+  type Margin,
+  type PaintedMargin,
+  type Side,
+  type StateCell,
+  type StateCellRecord,
+} from "../../tools/audit/web-capture.ts";
 import { RENDER_FAILURE, bytesOf, guardCell, markOf, problemsSince, verifyStructure, type AuditSession } from "./cell";
 
 /** The longest one state cell may take before it is recorded as failed and its page closed. */
@@ -56,6 +72,16 @@ export interface StateCellOptions {
   examples: number;
   /** Whether axe scans the web row (a state reached in the web row only). */
   axe: boolean;
+}
+
+/** What state.png is: the row with the margin its paint needs (and the sides the viewport cut), or the viewport. */
+interface StateShot {
+  file: string;
+  frame: StateRecipe["frame"];
+  clip: Box | null;
+  margin?: Margin;
+  marginBy?: PaintedMargin["by"];
+  cut?: Side[];
 }
 
 interface Outcome {
@@ -178,13 +204,19 @@ async function capture(page: Page, problems: PageProblems, cell: StateCell, reci
     return { status: "state-not-reached", reason: verdict.reason, flags: release.flags };
   }
 
-  // The photograph, while the state holds.
+  // The photograph, while the state holds: the row with the margin its paint needs now (a
+  // lifted card's shade, a ring drawn outside a control), kept inside the viewport, which
+  // cannot grow without moving what the pointer rests on; a side the viewport cuts is said.
   const size = page.viewportSize() ?? viewport;
-  let clip: { x: number; y: number; width: number; height: number } | null = null;
+  let clip: Box | null = null;
+  let margin: Pick<StateShot, "margin" | "marginBy" | "cut"> = {};
   if (recipe.frame === "row") {
     const box = await row.boundingBox();
     if (!box) throw new Error(`the ${cell.row} row has no box once the state is applied`);
-    clip = marginClip(box, { left: 0, top: 0, right: size.width, bottom: size.height });
+    const painted = paintedMargin(await probePaint(row));
+    clip = marginClip(box, { left: 0, top: 0, right: size.width, bottom: size.height }, painted.margin);
+    const cut = cutSides(box, clip, painted.margin);
+    margin = { margin: painted.margin, marginBy: painted.by, ...(cut.length ? { cut } : {}) };
     await page.screenshot({ path: join(dir, STATE_FILE), clip, animations: "disabled", caret: "hide" });
   } else {
     await page.screenshot({ path: join(dir, STATE_FILE), animations: "disabled", caret: "hide" });
@@ -227,7 +259,7 @@ async function capture(page: Page, problems: PageProblems, cell: StateCell, reci
     ...header,
     status: "ok",
     evidence: verdict.evidence,
-    shot: { file: STATE_FILE, frame: recipe.frame, clip },
+    shot: { file: STATE_FILE, frame: recipe.frame, clip, ...margin } satisfies StateShot,
     userAgent: rowProbe.userAgent,
     row: region(rowProbe),
     panel: !panelProbe

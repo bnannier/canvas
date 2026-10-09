@@ -35,7 +35,7 @@ import {
   type Surface,
   type WidthKey,
 } from "./inventory.ts";
-import type { RowPlatform } from "./probe-math.ts";
+import { parseCssColor, type RowPlatform } from "./probe-math.ts";
 
 /** Where capture runs live, relative to the checkout root. Gitignored. */
 export const RUNS_DIR = ".audit/runs";
@@ -568,12 +568,6 @@ function percentile(sorted: number[], p: number): number {
   return sorted[Math.min(sorted.length - 1, Math.max(0, Math.ceil((p / 100) * sorted.length) - 1))]!;
 }
 
-/**
- * The margin around an element photographed for a state or a page section: a focus ring,
- * a lifted card's shade or a drop shadow drawn just outside the element's box shows in it.
- */
-export const SHOT_MARGIN = 12;
-
 export interface Box {
   x: number;
   y: number;
@@ -581,15 +575,204 @@ export interface Box {
   height: number;
 }
 
-/** A box grown by `margin` on every side and kept inside `bounds` (the viewport, or the part of the page no chrome covers). */
-export function marginClip(box: Box, bounds: { left: number; top: number; right: number; bottom: number }, margin = SHOT_MARGIN): Box {
-  const x = Math.max(bounds.left, box.x - margin);
-  const y = Math.max(bounds.top, box.y - margin);
+/** A rectangle by its edges, in viewport px. */
+export interface Edges {
+  left: number;
+  top: number;
+  right: number;
+  bottom: number;
+}
+
+/** A clip by its edges; a null edge is an axis nothing clips. */
+export type ClipEdges = { [K in keyof Edges]: number | null };
+
+/**
+ * One element that paints past its own border box, as the in-page reader finds it
+ * (e2e/support/audit-probes.ts `probePaint`): its shadows, its outline, or a transform that
+ * moves or scales its box (a hover lift).
+ */
+export interface RawCaster {
+  /** The element, as a reviewer would name it. */
+  node: string;
+  /** Its border box in the viewport, every transform applied (a lift included). */
+  box: Edges;
+  /** Its size on screen over its layout size, per axis: what a transform scales its shadow lengths by. */
+  scale: { x: number; y: number };
+  /** Its computed `box-shadow` (`none`, or one or more `<color> <x> <y> <blur> <spread> [inset]`). */
+  boxShadow: string;
+  /** Its outline, when it draws one: the computed width and offset, in its own px. */
+  outline: { width: number; offset: number } | null;
+  /** Whether a transform moves or scales its box away from where layout put it. */
+  transformed: boolean;
+  /** What the elements around it inside the photographed element clip it to; null when nothing does. */
+  clip: ClipEdges | null;
+}
+
+/** What an element and everything in it paints past its border box. */
+export interface RawPaint {
+  /** The element's own border box in the viewport. */
+  box: Edges;
+  casters: RawCaster[];
+}
+
+/** One `box-shadow` layer, in the element's own px. */
+export interface Shadow {
+  x: number;
+  y: number;
+  blur: number;
+  spread: number;
+  inset: boolean;
+  /** Its colour's alpha: a transparent shadow paints nothing. */
+  alpha: number;
+}
+
+/** Split at the commas outside parentheses: a colour's own commas stay inside it. */
+function splitTopLevel(value: string): string[] {
+  const parts: string[] = [];
+  let depth = 0;
+  let start = 0;
+  for (let i = 0; i < value.length; i++) {
+    const c = value[i];
+    if (c === "(") depth += 1;
+    else if (c === ")") depth -= 1;
+    else if (c === "," && depth === 0) {
+      parts.push(value.slice(start, i));
+      start = i + 1;
+    }
+  }
+  parts.push(value.slice(start));
+  return parts.map((p) => p.trim()).filter(Boolean);
+}
+
+/**
+ * A computed `box-shadow`, layer by layer: the lengths (`x y [blur [spread]]`, in px), whether
+ * it is inset, and its colour's alpha (1 when the colour cannot be read, so an unknown
+ * colour counts as painting).
+ */
+export function parseBoxShadows(value: string): Shadow[] {
+  if (!value || value.trim() === "none") return [];
+  return splitTopLevel(value).flatMap((layer) => {
+    const colour = /(?:rgba?|hsla?|hwb|lab|lch|oklab|oklch|color)\([^)]*\)|#[0-9a-f]{3,8}\b|\btransparent\b/i.exec(layer);
+    const rest = colour ? layer.replace(colour[0], " ") : layer;
+    const lengths = [...rest.matchAll(/(-?\d*\.?\d+(?:e[-+]?\d+)?)px/gi)].map((m) => Number(m[1]));
+    if (lengths.length < 2) return [];
+    const parsed = colour ? parseCssColor(colour[0]) : null;
+    return [{ x: lengths[0]!, y: lengths[1]!, blur: lengths[2] ?? 0, spread: lengths[3] ?? 0, inset: /\binset\b/i.test(rest), alpha: parsed ? parsed[3] : 1 }];
+  });
+}
+
+/**
+ * The rectangle an outer shadow paints, in the viewport: the caster's box grown by the
+ * spread, moved by the offset, and grown again by the blur, which is how far the CSS blur
+ * carries the shade past the shape's edge (a Gaussian of half the blur radius, faded to
+ * under 3 % of the colour by then). Each length is scaled as the caster's box is. Null for
+ * an inset shadow, a transparent one, and one whose negative spread leaves no shape.
+ */
+export function shadowEdges(box: Edges, scale: { x: number; y: number }, shadow: Shadow): Edges | null {
+  if (shadow.inset || shadow.alpha <= 0) return null;
+  const spreadX = shadow.spread * scale.x;
+  const spreadY = shadow.spread * scale.y;
+  if (box.right - box.left + 2 * spreadX <= 0 || box.bottom - box.top + 2 * spreadY <= 0) return null;
+  const x = shadow.x * scale.x;
+  const y = shadow.y * scale.y;
+  const blurX = shadow.blur * scale.x;
+  const blurY = shadow.blur * scale.y;
+  return {
+    left: box.left - spreadX + x - blurX,
+    top: box.top - spreadY + y - blurY,
+    right: box.right + spreadX + x + blurX,
+    bottom: box.bottom + spreadY + y + blurY,
+  };
+}
+
+/** A rectangle cut to a clip; null when nothing of it is left. */
+function clipEdges(edges: Edges, clip: ClipEdges | null): Edges | null {
+  if (!clip) return edges;
+  const cut = {
+    left: clip.left === null ? edges.left : Math.max(edges.left, clip.left),
+    top: clip.top === null ? edges.top : Math.max(edges.top, clip.top),
+    right: clip.right === null ? edges.right : Math.min(edges.right, clip.right),
+    bottom: clip.bottom === null ? edges.bottom : Math.min(edges.bottom, clip.bottom),
+  };
+  return cut.right > cut.left && cut.bottom > cut.top ? cut : null;
+}
+
+export type Side = keyof Edges;
+const SIDES: readonly Side[] = ["top", "right", "bottom", "left"];
+
+/** How far a photograph reaches past its element's box on each side, in px. */
+export type Margin = Record<Side, number>;
+
+export interface PaintedMargin {
+  margin: Margin;
+  /** What reaches furthest on each side the paint passes the box, for the probe: the element and the paint. */
+  by: Partial<Record<Side, string>>;
+}
+
+/**
+ * The margin a photograph of an element needs so that nothing it paints is cropped: on
+ * each side, how far past the element's border box the furthest paint of it or anything in
+ * it reaches. The paint is each outer shadow (offset, spread and blur, scaled with its
+ * caster), each outline (its width past its offset), and the box of anything a transform
+ * moved (a hover lift), each cut to what clips it inside the element; rounded up to whole px.
+ * Nothing painted past the box is a margin of 0.
+ */
+export function paintedMargin(paint: RawPaint): PaintedMargin {
+  const margin: Margin = { top: 0, right: 0, bottom: 0, left: 0 };
+  const by: Partial<Record<Side, string>> = {};
+  const reach = (edges: Edges | null, clip: ClipEdges | null, what: string) => {
+    const painted = edges ? clipEdges(edges, clip) : null;
+    if (!painted) return;
+    const past: Margin = {
+      top: paint.box.top - painted.top,
+      right: painted.right - paint.box.right,
+      bottom: painted.bottom - paint.box.bottom,
+      left: paint.box.left - painted.left,
+    };
+    for (const side of SIDES) {
+      // Whole px, up; the boxes are sums of fractions, so 40.0000001 is read as the 40 it is.
+      const px = Math.ceil(Number(past[side].toFixed(3)));
+      if (px > margin[side]) {
+        margin[side] = px;
+        by[side] = what;
+      }
+    }
+  };
+  for (const caster of paint.casters) {
+    for (const shadow of parseBoxShadows(caster.boxShadow)) {
+      reach(shadowEdges(caster.box, caster.scale, shadow), caster.clip, `${caster.node} box-shadow ${shadow.x}px ${shadow.y}px ${shadow.blur}px ${shadow.spread}px`);
+    }
+    if (caster.outline && caster.outline.width > 0) {
+      const ox = (caster.outline.width + caster.outline.offset) * caster.scale.x;
+      const oy = (caster.outline.width + caster.outline.offset) * caster.scale.y;
+      reach({ left: caster.box.left - ox, top: caster.box.top - oy, right: caster.box.right + ox, bottom: caster.box.bottom + oy }, caster.clip, `${caster.node} outline ${caster.outline.width}px offset ${caster.outline.offset}px`);
+    }
+    if (caster.transformed) reach(caster.box, caster.clip, `${caster.node} moved by a transform`);
+  }
+  return { margin, by };
+}
+
+/** The sides on which a clip stops short of the margin it was asked for: the bounds cut the paint there. */
+export function cutSides(box: Box, clip: Box, margin: Margin): Side[] {
+  const short = (a: number, b: number) => Number(a.toFixed(3)) < Number(b.toFixed(3));
+  const reach: Record<Side, boolean> = {
+    top: short(box.y - margin.top, clip.y),
+    right: short(clip.x + clip.width, box.x + box.width + margin.right),
+    bottom: short(clip.y + clip.height, box.y + box.height + margin.bottom),
+    left: short(box.x - margin.left, clip.x),
+  };
+  return SIDES.filter((side) => reach[side]);
+}
+
+/** A box grown by `margin` on each side and kept inside `bounds` (the viewport, or the part of the page no chrome covers). */
+export function marginClip(box: Box, bounds: Edges, margin: Margin): Box {
+  const x = Math.max(bounds.left, box.x - margin.left);
+  const y = Math.max(bounds.top, box.y - margin.top);
   return {
     x,
     y,
-    width: Math.min(bounds.right, box.x + box.width + margin) - x,
-    height: Math.min(bounds.bottom, box.y + box.height + margin) - y,
+    width: Math.min(bounds.right, box.x + box.width + margin.right) - x,
+    height: Math.min(bounds.bottom, box.y + box.height + margin.bottom) - y,
   };
 }
 

@@ -16,8 +16,11 @@ import {
   describeKinds,
   describeServed,
   freshness,
+  cutSides,
   marginClip,
+  paintedMargin,
   parseAxe,
+  parseBoxShadows,
   parseKinds,
   parseRunArgs,
   parseWebFilters,
@@ -33,6 +36,7 @@ import {
   webPageCellId,
   workersFrom,
   type CellRecord,
+  type RawCaster,
   type ServedRecord,
 } from "./web-capture.ts";
 
@@ -383,12 +387,79 @@ describe("the run's cell records", () => {
 
 describe("the shot margin", () => {
   const viewport = { left: 0, top: 0, right: 1440, bottom: 900 };
-  it("grows a box by 12 px on every side, so a shadow or a ring just outside it is photographed", () => {
-    expect(marginClip({ x: 100, y: 200, width: 300, height: 50 }, viewport)).toEqual({ x: 88, y: 188, width: 324, height: 74 });
+  // The shades as the export computes them (src/style/shadow.ts in the blush palette): the
+  // resting card, and the raised (and hovered) one.
+  const RESTING = "rgba(121, 100, 214, 0.22) 0px 20px 44px -24px";
+  const RAISED = "rgba(121, 100, 214, 0.22) 0px 30px 54px -24px";
+  const caster = (over: Partial<RawCaster> = {}): RawCaster => ({
+    node: '<div> "Lifted above the page"',
+    box: { left: 289, top: 97, right: 1183, bottom: 168 },
+    scale: { x: 1, y: 1 },
+    boxShadow: RAISED,
+    outline: null,
+    transformed: false,
+    clip: null,
+    ...over,
   });
-  it("keeps the margin inside the bounds: the viewport's edges, or the band no chrome covers", () => {
-    expect(marginClip({ x: 4, y: 890, width: 1432, height: 8 }, viewport)).toEqual({ x: 0, y: 878, width: 1440, height: 22 });
-    // Under a 72 px top bar the margin above a section stops at the bar.
-    expect(marginClip({ x: 252, y: 80, width: 1024, height: 400 }, { left: 0, top: 72, right: 1440, bottom: 900 })).toEqual({ x: 240, y: 72, width: 1048, height: 420 });
+
+  it("reads a computed box-shadow layer by layer, the colour's commas inside it", () => {
+    expect(parseBoxShadows(RAISED)).toEqual([{ x: 0, y: 30, blur: 54, spread: -24, inset: false, alpha: 0.22 }]);
+    expect(parseBoxShadows("rgb(0, 0, 0) 0px 0px 0px 2px inset, rgba(0, 0, 0, 0) 1px 2px 3px 0px, rgba(0, 0, 0, 0.45) 0px 50px 100px -30px")).toEqual([
+      { x: 0, y: 0, blur: 0, spread: 2, inset: true, alpha: 1 },
+      { x: 1, y: 2, blur: 3, spread: 0, inset: false, alpha: 0 },
+      { x: 0, y: 50, blur: 100, spread: -30, inset: false, alpha: 0.45 },
+    ]);
+    expect(parseBoxShadows("none")).toEqual([]);
+  });
+
+  it("reaches as far as a raised card's shade: 60 px below it and 30 px to each side, none above", () => {
+    // The Card page's Raised example, as the export paints it (src/style/shadow.ts md: 30 px down, 54 px blur, -24 px spread).
+    const raised = paintedMargin({ box: caster().box, casters: [caster()] });
+    expect(raised.margin).toEqual({ top: 0, right: 30, bottom: 60, left: 30 });
+    expect(raised.by.bottom).toBe('<div> "Lifted above the page" box-shadow 0px 30px 54px -24px');
+    // A resting card in a page section, 24 px inside it: 40 px below the card is 16 past the section.
+    const section = { left: 265, top: 73, right: 1207, bottom: 192 };
+    expect(paintedMargin({ box: section, casters: [caster({ boxShadow: RESTING })] }).margin).toEqual({ top: 0, right: 0, bottom: 16, left: 0 });
+  });
+
+  it("takes a lift in: a card a hover moved up 2 px past its column's top, with the raised shade it took", () => {
+    // The Card page's Pressable example under the pointer: transform matrix(1, 0, 0, 1, 0, -2).
+    const column = { left: 289, top: 97, right: 1183, bottom: 289 };
+    const lifted = caster({ box: { left: 289, top: 95, right: 1183, bottom: 183 }, transformed: true });
+    const resting = caster({ box: { left: 289, top: 201, right: 1183, bottom: 289 }, boxShadow: RESTING });
+    expect(paintedMargin({ box: column, casters: [lifted, resting] }).margin).toEqual({ top: 2, right: 30, bottom: 40, left: 30 });
+    // At rest neither moves, and the resting shade sets every side.
+    expect(paintedMargin({ box: column, casters: [caster({ box: { left: 289, top: 97, right: 1183, bottom: 185 }, boxShadow: RESTING }), resting] }).margin).toEqual({ top: 0, right: 20, bottom: 40, left: 20 });
+  });
+
+  it("scales a shadow with its caster, and cuts it to what clips it inside the element", () => {
+    // Scaled 1.5 across and 2 down (a 100 px tall card on screen at 200): every length with it.
+    const tall = { left: 289, top: 97, right: 1183, bottom: 297 };
+    expect(paintedMargin({ box: tall, casters: [caster({ box: tall, scale: { x: 1.5, y: 2 } })] }).margin).toEqual({ top: 0, right: 45, bottom: 120, left: 45 });
+    // Scaled down until its negative spread swallows the shape, it paints nothing.
+    expect(paintedMargin({ box: caster().box, casters: [caster({ scale: { x: 1.5, y: 2 } })] }).margin).toEqual({ top: 0, right: 0, bottom: 0, left: 0 });
+    // A scroller around the card clips its shade 10 px below the card, and not on the sides.
+    const clip = { left: null, top: 0, right: null, bottom: 178 };
+    expect(paintedMargin({ box: caster().box, casters: [caster({ clip })] }).margin).toEqual({ top: 0, right: 30, bottom: 10, left: 30 });
+  });
+
+  it("counts an outline past its offset, and nothing for an inset, a transparent or a vanished shadow", () => {
+    expect(paintedMargin({ box: caster().box, casters: [caster({ boxShadow: "none", outline: { width: 2, offset: 2 } })] }).margin).toEqual({ top: 4, right: 4, bottom: 4, left: 4 });
+    const none = ["rgb(164, 150, 255) 0px 0px 0px 2px inset", "rgba(0, 0, 0, 0) 0px 20px 44px 0px", "rgb(0, 0, 0) 0px 0px 10px -40px"];
+    for (const boxShadow of none) expect(paintedMargin({ box: caster().box, casters: [caster({ boxShadow, box: { left: 0, top: 0, right: 60, bottom: 60 } })] }).margin).toEqual({ top: 0, right: 0, bottom: 0, left: 0 });
+    // Fractional boxes round up to whole px, without a float's noise adding one.
+    expect(paintedMargin({ box: { left: 0, top: 0, right: 10, bottom: 10.25 }, casters: [caster({ box: { left: 0, top: 0, right: 10, bottom: 10.25 }, boxShadow: "rgb(0, 0, 0) 0px 0.1px 0.2px 0px" })] }).margin.bottom).toBe(1);
+  });
+
+  it("grows a box by the margin on each side, keeps it inside the bounds, and says which sides the bounds cut", () => {
+    const margin = { top: 0, right: 30, bottom: 60, left: 30 };
+    const box = { x: 289, y: 97, width: 894, height: 71 };
+    expect(marginClip(box, viewport, margin)).toEqual({ x: 259, y: 97, width: 954, height: 131 });
+    expect(cutSides(box, marginClip(box, viewport, margin), margin)).toEqual([]);
+    // Under a 72 px top bar the margin above a section stops at the bar; the viewport's foot cuts the shade below.
+    const low = { x: 252, y: 80, width: 1024, height: 800 };
+    const clip = marginClip(low, { left: 0, top: 72, right: 1440, bottom: 900 }, { top: 12, right: 12, bottom: 40, left: 12 });
+    expect(clip).toEqual({ x: 240, y: 72, width: 1048, height: 828 });
+    expect(cutSides(low, clip, { top: 12, right: 12, bottom: 40, left: 12 })).toEqual(["top", "bottom"]);
   });
 });

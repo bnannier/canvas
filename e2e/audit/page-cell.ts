@@ -12,10 +12,12 @@
  *   3. viewport.png: the first screen at the cell's own viewport, the page scrolled to its
  *      top, the way a reader lands on it.
  *   4. One section.<key>.png per section, each fitted into a viewport grown to hold it as a
- *      variant's card is (and the viewport put back after), photographed with the state
- *      shots' margin (tools/audit/web-capture.ts `SHOT_MARGIN`) so a shadow, a lift or a
- *      ring at its edge is not cropped, the margin kept inside the part of the page no
- *      chrome covers; and probed the way a variant cell's row is: the in-page probe (texts,
+ *      variant's card is (and the viewport put back after), photographed with the margin
+ *      its own paint needs (tools/audit/web-capture.ts `paintedMargin`: how far past the
+ *      section's box the furthest shadow, outline or lifted box of it or anything in it
+ *      reaches, side by side), so a card's drop shadow at its edge is not cropped, the
+ *      viewport grown again when the part of the page no chrome covers cannot hold the
+ *      margin too; and probed the way a variant cell's row is: the in-page probe (texts,
  *      contrast, floors, clipping, targets against the web's 24 px), its aria snapshot and
  *      its material effects. The section's `origin` (where its boxes are measured from, in
  *      the viewport) and the shot's `clip` place every text in its photograph for the
@@ -28,12 +30,27 @@ import { mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { expect, type Locator, type Page } from "@playwright/test";
 import { scan } from "../support/axe";
-import { probePageOverflow, probeRow } from "../support/audit-probes";
+import { probePageOverflow, probePaint, probeRow } from "../support/audit-probes";
 import { BASE_PATH, LOOKS, animationFrames, fitElementForScreenshot, gotoDocs, settled, settledBox } from "../support/docs";
 import type { PageProblems } from "../support/fixtures";
 import { readMaterialEffects } from "../support/material-evidence";
 import { OVERFLOW_TOLERANCE, deriveRow, flagsOf, summarizeProbe, type ProbeRow } from "../../tools/audit/probe-math.ts";
-import { FAILURE_FILE, PROBE_FILE, SHOT_MARGIN, VIEWPORT_FILE, marginClip, sectionFile, webPageCellId, type Box, type PageCell, type PageCellRecord } from "../../tools/audit/web-capture.ts";
+import {
+  FAILURE_FILE,
+  PROBE_FILE,
+  VIEWPORT_FILE,
+  cutSides,
+  marginClip,
+  paintedMargin,
+  sectionFile,
+  webPageCellId,
+  type Box,
+  type Margin,
+  type PageCell,
+  type PageCellRecord,
+  type PaintedMargin,
+  type Side,
+} from "../../tools/audit/web-capture.ts";
 import { bytesOf, guardCell, markOf, problemsSince, type AuditSession } from "./cell";
 
 /** The longest one page cell may take: a template has up to a dozen sections to fit, shoot and probe. */
@@ -114,31 +131,47 @@ function stopwatch() {
   };
 }
 
+/** What a section's photograph took in: its clip, the margin its paint needs, what sets each side, and the sides the band still cut. */
+interface SectionShot {
+  clip: Box;
+  margin: Margin;
+  by: PaintedMargin["by"];
+  /** Sides whose paint reaches past the band no chrome covers even after the viewport grew (the page ends there): the photograph cuts it as the page does. */
+  cut: Side[];
+}
+
 /**
- * Photograph a section with the shot margin around it: fitted as a card is, the viewport
- * grown further when the uncovered band cannot hold the margin too, the section scrolled to
- * a margin below the band's top, and the clip kept inside the band. Returns the clip.
+ * Photograph a section with the margin its own paint needs around it (the furthest shadow,
+ * outline or lifted box of it or anything in it, tools/audit/web-capture.ts
+ * `paintedMargin`): fitted as a card is, the viewport grown further when the uncovered band
+ * cannot hold the section and its margin too, the section scrolled to its top margin below
+ * the band's top, and the clip kept inside the band.
  */
-async function shootSection(page: Page, section: Locator, path: string): Promise<Box> {
+async function shootSection(page: Page, section: Locator, path: string): Promise<SectionShot> {
   await fitElementForScreenshot(page, section);
-  const { height } = await settledBox(section);
   let band = await page.evaluate(exposedBand);
-  const short = height + 2 * SHOT_MARGIN - (band.bottom - band.top);
-  if (short > 0) {
+  let painted = paintedMargin(await probePaint(section));
+  // Growing the viewport can reflow the page, so the margin is read again until the band holds it.
+  for (let pass = 0; pass < 3; pass++) {
+    const { height } = await settledBox(section);
+    const short = height + painted.margin.top + painted.margin.bottom - (band.bottom - band.top);
+    if (short <= 0) break;
     const size = page.viewportSize()!;
     await page.setViewportSize({ ...size, height: size.height + Math.ceil(short) });
     band = await page.evaluate(exposedBand);
+    painted = paintedMargin(await probePaint(section));
   }
   await section.evaluate((node, y) => {
     const scroller = node.closest<HTMLElement>("[data-page-scroll]");
     if (scroller) scroller.scrollTop += node.getBoundingClientRect().top - y;
-  }, band.top + SHOT_MARGIN);
+  }, band.top + painted.margin.top);
   await animationFrames(page, 2);
   const box = await section.boundingBox();
   if (!box) throw new Error("a section has no box once it is fitted");
-  const clip = marginClip(box, band);
+  painted = paintedMargin(await probePaint(section));
+  const clip = marginClip(box, band, painted.margin);
   await page.screenshot({ path, clip, animations: "disabled", caret: "hide" });
-  return clip;
+  return { clip, margin: painted.margin, by: painted.by, cut: cutSides(box, clip, painted.margin) };
 }
 
 async function capture(page: Page, problems: PageProblems, cell: PageCell, dir: string, options: PageCellOptions): Promise<string[]> {
@@ -183,7 +216,7 @@ async function capture(page: Page, problems: PageProblems, cell: PageCell, dir: 
   for (const { key, title } of cell.page.sections) {
     const section = page.locator(`[${SECTION_ATTRIBUTE}="${key}"]`).first();
     const file = sectionFile(key);
-    const clip = await time("section shots", () => shootSection(page, section, join(dir, file)));
+    const shot = await time("section shots", () => shootSection(page, section, join(dir, file)));
     const grown = page.viewportSize();
     const derived = deriveRow(await time("section probes", () => probeRow(section, "web")));
     rows.push(derived);
@@ -194,7 +227,10 @@ async function capture(page: Page, problems: PageProblems, cell: PageCell, dir: 
       title,
       file,
       viewport: grown,
-      clip,
+      clip: shot.clip,
+      margin: shot.margin,
+      marginBy: shot.by,
+      ...(shot.cut.length ? { cut: shot.cut } : {}),
       origin: derived.origin,
       box: derived.box,
       aria: await time("section aria", () => section.ariaSnapshot()),

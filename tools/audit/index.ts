@@ -348,7 +348,7 @@ function sectionTable(model: ComponentIndex, dir: string): string[] {
   const out = [
     "## Sections",
     "",
-    "Each section photographed on its own (`section.<key>.png`), fitted with a margin, by width, look and surface. Beside a photograph, what the analysis found in that section: contrast DOM fails, likely and review, and small targets (web 24 px).",
+    "Each section photographed on its own (`section.<key>.png`), fitted with the margin its own paint needs, by width, look and surface. Beside a photograph, what the analysis found in that section: contrast DOM fails, likely and review, and small targets (web 24 px).",
     "",
     `| Section | Width | ${LOOK_SURFACE.map((ls) => ls.replace(".", " ")).join(" | ")} |`,
     `|---|---|${LOOK_SURFACE.map(() => "---").join("|")}|`,
