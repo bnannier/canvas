@@ -23,7 +23,7 @@ Audit checklist for `/components/qrcode`. The facts block and the variants table
 | Interaction states | static: A code image: it takes no input. |
 | MeasureProps | not adopted |
 | Touch target | no touch-target name (the exports of `src/style/touch-target.ts`, `src/style/touch-target-seed.ts`, `src/style/touch-seam.ts`, `src/style/clip-slop.ts`, the `TouchTargetSkin` fields, or `hitSlop`) in its implementation modules |
-| Tests importing it | 3: `test/design-rules-skins.test.ts`, `test/dist-smoke.test.tsx`, `test/skins-smoke.test.tsx` |
+| Tests importing it | 4: `test/design-rules-skins.test.ts`, `test/dist-smoke.test.tsx`, `test/qrcode.test.tsx`, `test/skins-smoke.test.tsx` |
 | E2E naming it | 0: none |
 | E2E catalog sweeps | 6: `e2e/a11y/components.e2e.ts` (componentRoutes), `e2e/responsive/component-widths.e2e.ts` (contentRoutes, componentRoutes), `e2e/smoke/examples.e2e.ts` (componentExamples), `e2e/smoke/routes.e2e.ts` (allRoutes), `e2e/visual/components.e2e.ts` (componentRoutes), `e2e/visual/materials.e2e.ts` (MATERIAL_ROUTES) |
 <!-- audit:facts:end -->
@@ -79,6 +79,9 @@ One row per finding. Severity: critical, high, medium, low. Cell: a capture id f
 
 | ID | Severity | Cell | Summary | Status | Fix commit |
 |---|---|---|---|---|---|
+| K7-1 | medium | source | The quiet zone is the frame's fixed 12 px padding, about 2 modules for a version-2 code at 140 px, where ISO/IEC 18004 asks for 4 (about 22 px). A fix (the renderer's quietZone, or padding from the module count) is a visual change judged by photograph. | open |  |
+| K7-2 | low | source | The test preload's react-native-svg stub lacked `Image`, which react-native-qrcode-svg imports, so the renderer never loaded under bun and every QRCode test and smoke row rendered the missing-peer frame. The stub now carries it. | fixed | 376e96d6 |
+| K7-3 | low | source | An empty `value` draws a code for a single space (the renderer throws on an empty string) and is named "QR code encoding " with nothing after it; it does not warn in development. | open |  |
 
 ## Sign-off
 
