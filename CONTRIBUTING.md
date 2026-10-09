@@ -53,6 +53,7 @@ bun run lint              # ESLint, including docs and tests
 bun run build             # refresh the published package's compiled output
 bun run verify-package    # compiled entry points, imports, and public types
 bun run test              # unit tests and compiled-package smoke tests
+bun run check:api         # every export classified, every docs claim true
 bun run docs:gen:check     # generated docs match their source
 bun run raster:gen:check   # generated native menu glyphs match their source
 bun run designmd:gen:check # generated design reference matches its source
@@ -69,6 +70,16 @@ starting with `./`, for example `bun test ./test/behavior.test.tsx`. Rooted path
 keep Bun's discovery within the test trees instead of scanning the entire
 checkout and retaining enough directory handles to break subprocess tests on
 macOS.
+
+### Adding, removing or documenting an export
+
+Every export of `@nannier/canvas` and every file under `@nannier/canvas/styles/*`
+has an entry in `tools/api/manifest.ts`: its kind (component, part, hook, token,
+utility, type, deprecated alias, or internal by accident) and the docs route that
+names it, or `undocumented`. `bun run check:api` fails when an export or a file
+appears or disappears without its entry, when a kind disagrees with the source, or
+when a named route does not exist or never names the export. Read the source and
+the page before writing an entry; `tools/api/README.md` has the rules.
 
 ## Changesets and releases
 

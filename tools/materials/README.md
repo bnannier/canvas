@@ -6,7 +6,9 @@ graph and the generated component docs catalog. It catches added, removed or
 misclassified API ownership and route drift without importing React Native at
 runtime. Named components, React classes, forwarded refs, aliases and compound
 members participate. Public types, constants, hooks and React context objects do
-not count as component entries.
+not count as component entries. What counts as a renderable is one definition,
+`componentType` in `tools/api/discover.ts`, shared with the public API manifest
+(`bun run check:api`), which classifies every export, renderable or not.
 
 `manifest.ts` is an authored design inventory. Each public renderable declares
 its family, docs route, owned surface context, material roles, unfilled variants

@@ -22,6 +22,8 @@ bun run build
 bun run verify-package
 bun run check-size
 bun run test
+# Every export and styles/* file classified in tools/api/manifest.ts, every docs claim true.
+bun run check:api
 bun run docs:gen:check
 bun run check:docs-components
 bun run audit:checklists:check
