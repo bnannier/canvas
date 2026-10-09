@@ -3,21 +3,14 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Command } = scope;
+  const { Card, Command } = scope;
   return (
-<Command
-  defaultQuery="file"
-  groups={[
-    { heading: "Actions", items: [
-      { label: "New File" },
-      { label: "Open File" },
-      { label: "Save" }
-    ] },
-    { heading: "Navigation", items: [
-      { label: "Go to Dashboard" },
-      { label: "Go to Settings" }
+<Card flush>
+  <Command embedded filtered defaultQuery="universal" groups={[
+    { heading: "Guides", items: [
+      { label: "Canvas", description: "A universal interface kit" }
     ] }
-  ]}
-/>
+  ]} />
+</Card>
   );
 }

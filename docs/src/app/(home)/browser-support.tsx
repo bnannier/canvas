@@ -1,9 +1,8 @@
-import { View, Text, DataTable, useTheme } from "@nannier/canvas";
+import { Column, Typography, DataTable } from "@nannier/canvas";
 import { Page, PageHeader } from "../../ui/page";
 import { Section } from "../../ui/section";
-import { P, H3, InlineCode, Rule, MONO } from "../../ui/prose";
-import { Surface } from "../../ui/tokens-kit";
-import { DocsSurface } from "../../ui/surface";
+import { P, H3, InlineCode, Rule } from "../../ui/prose";
+import { Card } from "@nannier/canvas";
 import { PageNav } from "../../ui/page-nav";
 
 const PLATFORMS = [
@@ -48,10 +47,9 @@ const NOTES = [
 ];
 
 export default function BrowserSupportScreen() {
-  const { tokens } = useTheme();
   return (
     <Page>
-      <View style={{ gap: 28 }}>
+      <Column loose>
         <PageHeader
           title="Platform & Browser Support"
           description="The platforms Canvas runs on (iOS, Android, and the web through react-native-web) and the web browser baseline."
@@ -62,9 +60,9 @@ export default function BrowserSupportScreen() {
             Canvas is a universal React Native UI kit. It runs natively on iOS and Android, and on the web through{" "}
             <InlineCode>react-native-web</InlineCode>.
           </P>
-          <DocsSurface bordered>
+          <Card flush>
             <DataTable columns={["Platform", "Runtime", "Minimum"]} rows={PLATFORMS} />
-          </DocsSurface>
+          </Card>
         </Section>
 
         <Rule />
@@ -73,18 +71,18 @@ export default function BrowserSupportScreen() {
           <P muted>
             These peers set the platform floor. Install them alongside <InlineCode>@nannier/canvas</InlineCode>.
           </P>
-          <DocsSurface bordered>
+          <Card flush>
             <DataTable
               columns={["Package", "Range", "Role"]}
               rows={PEERS.map(([pkg, range, role]) => [
-                <Text key="pkg" style={{ fontFamily: MONO, fontSize: 14, lineHeight: 20, color: tokens.foreground }}>
+                <Typography key="pkg" mono>
                   {pkg}
-                </Text>,
+                </Typography>,
                 range,
                 role,
               ])}
             />
-          </DocsSurface>
+          </Card>
         </Section>
 
         <Rule />
@@ -94,28 +92,28 @@ export default function BrowserSupportScreen() {
             On the web, the modern-browser floor is set by the <InlineCode>canvas.css</InlineCode> token layer, which
             needs only oklch() and color-mix():
           </P>
-          <DocsSurface bordered>
+          <Card flush>
             <DataTable columns={["Browser", "Minimum Version", "Reason"]} rows={WEB_BASELINE} />
-          </DocsSurface>
+          </Card>
         </Section>
 
         <Rule />
 
         <Section title="Notes">
-          <View style={{ gap: 16 }}>
+          <Column relaxed>
             {NOTES.map((n) => (
-              <Surface key={n.title} padding={16}>
-                <View style={{ gap: 4 }}>
+              <Card key={n.title} >
+                <Column tight>
                   <H3>{n.title}</H3>
                   <P muted>{n.description}</P>
-                </View>
-              </Surface>
+                </Column>
+              </Card>
             ))}
-          </View>
+          </Column>
         </Section>
 
         <PageNav />
-      </View>
+      </Column>
     </Page>
   );
 }

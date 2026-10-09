@@ -1,6 +1,6 @@
 import { consumeEscapeKey, EscapeLayerProvider, useEscapeLayer } from "../../style/escape-layer.js";
-import { useId, useRef, useState } from "react";
-import { type TextInput as RNTextInput, type TextStyle } from "react-native";
+import { useEffect, useId, useRef, useState } from "react";
+import { type TextInput as RNTextInput, type TextStyle, type TextInputProps } from "react-native";
 import { View, Text, TextInput, Pressable, useTheme, useControllableState, AnchoredOverlay, useOverlayHost, GlassSurface, FOCUS_RESET, type StyleProp, type ViewStyle } from "../../style/index.js";
 import { OverlayScrollView } from "../../style/overlay-scroll.js";
 import { FocusFrameContext, useFocusFrame } from "../../style/focus-frame.js";
@@ -49,6 +49,8 @@ import * as s from "./command.styles.js";
 export interface CommandItem {
   /** The row's primary text. */
   label: string;
+  /** Optional supporting text, announced with the result label. */
+  description?: string;
   /** Optional leading Canvas glyph, named from the kit icon set (e.g. `"file"`,
    *  `"folder"`, `"save"`). Rendered through the `Icon` atom. */
   icon?: IconName;
@@ -81,6 +83,16 @@ export interface CommandProps {
   onQueryChange?: (query: string) => void;
   /** Grouped result rows. */
   groups?: CommandGroup[];
+  /** Groups are already filtered and ranked by the owner; preserve their order and contents. */
+  filtered?: boolean;
+  /** Fill the parent and inherit its surface, for composition inside a Dialog or Drawer. Ignored with trigger. */
+  embedded?: boolean;
+  /** Focus the inline search field after mounting, allowing the containing overlay to capture its opener first. */
+  autoFocus?: boolean;
+  /** Input keyboard handler, called before built-in navigation. preventDefault cancels built-in handling. */
+  onKeyPress?: TextInputProps["onKeyPress"];
+  /** Content shown when there are no result rows, including an empty query. */
+  emptyMessage?: string;
   /** Flat index of the highlighted row (CONTROLLED), counted across the visible (query-matching) rows. Omit for uncontrolled use. */
   active?: number;
   /** Initial highlighted row for uncontrolled use (hovering a row moves it, typing resets it to the first match). */
@@ -170,7 +182,7 @@ export function createCommand(skin: CommandSkin) {
     // drop out, heading included, so the visible list stays scannable.
     const q = query.trim().toLowerCase();
     const visibleGroups =
-      q === ""
+      props.filtered || q === ""
         ? groups
         : groups
             .map((g) => ({ ...g, items: g.items.filter((it) => it.label.toLowerCase().includes(q)) }))
@@ -195,11 +207,24 @@ export function createCommand(skin: CommandSkin) {
     const fieldName = props.accessibilityLabel?.trim() || placeholder.trim() || "Search commands";
     const searchRef = useRef<RNTextInput>(null);
     const results = useActiveOptionScroll(open ? activeId : undefined, JSON.stringify(visibleGroups), open);
-    const onSearchKeyPress = (event: { nativeEvent: {
-      key: string; isComposing?: boolean; keyCode?: number; repeat?: boolean;
-      altKey?: boolean; ctrlKey?: boolean; metaKey?: boolean;
-    }; preventDefault: () => void }) => {
-      const { key, isComposing, keyCode, repeat, altKey, ctrlKey, metaKey } = event.nativeEvent;
+    // Defer until parent overlay effects have captured the opener. Passing the
+    // host input's autoFocus would focus during commit, before that capture.
+    useEffect(() => {
+      if (!props.autoFocus || trigger || !open) return;
+      const focus = setTimeout(() => searchRef.current?.focus(), 0);
+      return () => clearTimeout(focus);
+    }, [props.autoFocus, trigger, open]);
+    const onSearchKeyPress: NonNullable<TextInputProps["onKeyPress"]> = (event) => {
+      props.onKeyPress?.(event);
+      const native = event.nativeEvent as typeof event.nativeEvent & {
+        isComposing?: boolean; keyCode?: number; repeat?: boolean;
+        altKey?: boolean; ctrlKey?: boolean; metaKey?: boolean; defaultPrevented?: boolean;
+      };
+      const { key, isComposing, keyCode, repeat, altKey, ctrlKey, metaKey } = native;
+      if (event.defaultPrevented || native.defaultPrevented) {
+        if (key === "Escape") consumeEscapeKey(event);
+        return;
+      }
       // IME confirmation and modified editing keys belong to the text input.
       if (isComposing || keyCode === 229) {
         if (key === "Escape") consumeEscapeKey({ nativeEvent: event.nativeEvent });
@@ -281,10 +306,10 @@ export function createCommand(skin: CommandSkin) {
           />
         </View>
 
-        <OverlayScrollView ref={results.listRef} onLayout={results.onLayout} onScroll={results.onScroll} onContentSizeChange={results.scrollActiveIntoView} scrollEventThrottle={16}>
-        {q !== "" && total === 0 ? (
+        <OverlayScrollView style={s.results} ref={results.listRef} onLayout={results.onLayout} onScroll={results.onScroll} onContentSizeChange={results.scrollActiveIntoView} scrollEventThrottle={16}>
+        {total === 0 && (q !== "" || props.emptyMessage != null) ? (
           <View style={s.emptyRow}>
-            <Text style={s.emptyText(tokens)}>No results</Text>
+            <Text style={s.emptyText(tokens)}>{props.emptyMessage ?? "No results"}</Text>
           </View>
         ) : null}
 
@@ -324,10 +349,18 @@ export function createCommand(skin: CommandSkin) {
                   }}
                   android_ripple={ripple}
                   role="option"
+                  accessibilityLabel={item.description == null ? undefined : `${item.label}. ${item.description}`}
+                  aria-label={item.description == null ? undefined : `${item.label}. ${item.description}`}
+                  accessibilityState={{ selected: isActive }}
                   aria-selected={isActive}
                 >
                   {item.icon != null ? <Icon {...{ [item.icon]: true }} size={skin.iconSize} decorative /> : null}
-                  <Text style={skin.rowLabel(tokens)}>{item.label}</Text>
+                  {item.description != null ? (
+                    <View style={s.rowText}>
+                      <Text numberOfLines={1} style={[skin.rowLabel(tokens), s.stackedLabel]}>{item.label}</Text>
+                      <Text numberOfLines={1} style={s.rowDescription(tokens)}>{item.description}</Text>
+                    </View>
+                  ) : <Text style={skin.rowLabel(tokens)}>{item.label}</Text>}
                   {item.shortcut != null ? <Kbd>{item.shortcut}</Kbd> : null}
                 </Pressable>
               );
@@ -360,6 +393,9 @@ export function createCommand(skin: CommandSkin) {
     // Bare (trigger-less) mode: the card IS the root and carries the testID. The
     // early return above already gated it on `open`, so it renders open here; the
     // per-OS `cardShape` layers the iOS continuous corner over the shared card.
+    if (!trigger && props.embedded) {
+      return <View testID={testID} style={s.embedded}>{cardContent}</View>;
+    }
     if (!trigger) {
       return (
         <GlassSurface testID={testID} style={[s.card(tokens), skin.cardShape, focusFrame.ring()]}>

@@ -1,27 +1,18 @@
 import { type ReactNode } from "react";
-import { Linking, Platform } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { View, Text, Pressable, Button, ScrollView, Row, Column, Icon, useTheme, useFormFactor, useResponsive } from "@nannier/canvas";
+import { Linking } from "react-native";
+import { Button, Row, Column, Icon, useTheme, useFormFactor, Typography, Badge, Card, Grid, Container, Divider } from "@nannier/canvas";
 import { useRouter } from "expo-router";
 import { COMPONENTS } from "../core/data/components";
 import { CanvasMark } from "../brand/canvas-mark";
 import { Github } from "../brand/brand-logos";
 import { ThreeLooksRotator, LOOKS_AVAILABLE } from "./three-looks-rotator";
 import { CodeBlock } from "../ui/code-block";
-import { sans, geistMono } from "../ui/fonts";
-import { alpha } from "../ui/color";
+import { Page } from "../ui/page";
 import { useLatestVersion } from "../ui/use-latest-version";
-import { useFluidText, fluidMarker, type FluidTextStyle } from "../lib/fluid-type";
-import { CONTENT_TOP_INSET, CONTENT_BOTTOM_INSET } from "./topbar";
-import { ScreenFrame } from "./native-header";
 
 const REPO_URL = "https://github.com/bnannier/canvas";
 const NPM_URL = "https://www.npmjs.com/package/@nannier/canvas";
 const PLATFORMS = ["iOS", "Android", "Web", "React Native Web"];
-
-// The hosted EAS Update preview link that opens these docs in Expo Go. Set this to the
-// `exp://u.expo.dev/...` preview URL printed by `eas update`; while empty, the whole
-// "Get the app" section is hidden (there is nothing to scan until the update is published).
 
 const INSTALL_BASH = "bun add @nannier/canvas";
 const INSTALL_TSX = [
@@ -123,360 +114,78 @@ const FOOTER_COLS: { head: string; links: { label: string; to?: string; url?: st
   ] },
 ];
 
-// .landing-wrap: the centered 1140 column with 24px gutters.
-// A `data-*` marker for the pre-hydration sheet in app/+html.tsx (a web attribute;
-// nothing on iOS or Android reads it). Spelled as a spread because the primitives'
-// prop types do not name react-native-web's `dataSet`.
-const marker = (name: string): object => ({ dataSet: { [name]: "" } });
-
-function Wrap({ children, style }: { children: ReactNode; style?: object }) {
-  return <View style={[{ width: "100%", maxWidth: 1140, alignSelf: "center", paddingHorizontal: 24 }, style]}>{children}</View>;
-}
-
-function SectionHead({ eyebrow, title, desc, titleSize }: { eyebrow: string; title: string; desc: string; titleSize: FluidTextStyle }) {
-  const { tokens } = useTheme();
-  return (
-    <View style={{ marginBottom: 28 }}>
-      <Text style={{ fontFamily: sans("700"), fontSize: 12, letterSpacing: 1.68, textTransform: "uppercase", color: tokens.primary, marginBottom: 12 }}>
-        {eyebrow}
-      </Text>
-      <Text accessibilityRole="header" aria-level={2} {...fluidMarker("sectionTitle")} style={{ fontFamily: sans("600"), ...titleSize, color: tokens.foreground }}>
-        {title}
-      </Text>
-      <Text style={{ fontFamily: sans("400"), fontSize: 15.5, lineHeight: 24.8, color: tokens["muted-foreground"], maxWidth: 672, marginTop: 12 }}>
-        {desc}
-      </Text>
-    </View>
-  );
+function SectionHead({ eyebrow, title, desc }: { eyebrow: string; title: string; desc: string }) {
+  return <Column snug>
+    <Typography caption primary semibold>{eyebrow}</Typography>
+    <Typography h2>{title}</Typography>
+    <Container xxl start><Typography subtle>{desc}</Typography></Container>
+  </Column>;
 }
 
 export function Home() {
   const { tokens } = useTheme();
-  const insets = useSafeAreaInsets();
   const router = useRouter();
   const go = (to: string) => router.push(to as never);
   const version = useLatestVersion();
-
-  // Viewport decisions go through the kit's bucket hooks, never a raw window read:
-  // they resolve to desktop on the server and for the hydration render, so every
-  // pre-rendered page ships the desktop layout and hydrates against exactly that
-  // (a raw width is 0 there, which stacked the whole hero and drew a collapsed orbit),
-  // and they re-render only when the bucket changes. Side by side above the tablet
-  // tier (width > lg, 1024); the four principles stack at and below md (768).
   const formFactor = useFormFactor();
-  const wide = formFactor === "desktop";
-  const levelStack = useResponsive({ base: false, md: true });
-
-  // The "Three native looks" comparison is DESKTOP WEB ONLY, and deliberately so.
-  //
-  // The native bundles already skip it: their looks-shots map is empty, so
-  // LOOKS_AVAILABLE is false on iOS and Android. That left mobile web, where the
-  // rotator drops below its 760px column threshold and stacks the three panes into a
-  // tall run of full device screenshots, one of them an Android handset.
-  //
-  // App Review rejected build 7 under Guideline 2.3.10 for exactly that framing:
-  // "the app or metadata includes information about third-party platforms". A phone
-  // browser is the surface most likely to be mistaken for the app, so the section is
-  // gated on the kit's desktop tier (width above lg, 1024) rather than merely on the
-  // shots existing. Its own comparison, not `wide`, so a future tweak to `wide` cannot
-  // silently re-expose it.
   const showThreeLooks = LOOKS_AVAILABLE && formFactor === "desktop";
-  // The fluid sizes (docs/src/lib/fluid-type.ts). Each fluid text also carries the
-  // role's `data-fluid` marker, which the pre-hydration sheet in app/+html.tsx reads to
-  // size the same text for a phone or tablet before the bundle runs.
-  const heroTitle = useFluidText("heroTitle");
-  const sectionTitle = useFluidText("sectionTitle");
-  const ctaTitle = useFluidText("ctaTitle");
-
-  return (
-    <ScreenFrame>
-    <ScrollView
-      // The page scroller marker the web shell's scroll padding and the e2e helpers read
-      // (docs/src/ui/page.tsx carries the same). Web-only attribute; a no-op on native.
-      {...(Platform.OS === "web" ? ({ dataSet: { pageScroll: "" } } as object) : null)}
-      style={{ flex: 1, backgroundColor: tokens.background }}
-      // "automatic" lets iOS inset the content below the transparent nav bar (and it is a
-      // no-op on web, where CONTENT_TOP_INSET clears the topbar).
-      contentInsetAdjustmentBehavior="automatic"
-      contentContainerStyle={{ paddingTop: CONTENT_TOP_INSET, paddingBottom: insets.bottom + (Platform.OS === "web" ? CONTENT_BOTTOM_INSET : 49) }}
-    >
-      {/* ── Hero ──
-          Every pre-rendered page carries the desktop hero (the bucket hooks resolve to
-          desktop on the server). The `data-hero*` markers let the pre-hydration sheet in
-          app/+html.tsx lay the phone hero out below the kit's desktop cut before
-          hydration; once hydrated, these inline values are the same ones. */}
-      <View {...marker("heroSection")} style={{ paddingTop: wide ? 18 : 8, paddingBottom: 56 }}>
-        <Wrap>
-          <View {...marker("hero")}>
-            {/* Copy */}
-            <View {...marker("heroCopy")} style={{ width: "100%", minWidth: 0 }}>
-              <Row snug alignCenter style={{ alignSelf: "flex-start", paddingVertical: 5, paddingLeft: 10, paddingRight: 12, borderRadius: 9999, borderWidth: 1, borderColor: tokens.border, backgroundColor: alpha(tokens.card, 0.7), marginBottom: 22 }}>
-                {/* The dot keeps a 7px layout box; the 3px halo ring overflows it (a 0 0 0 3px box-shadow at primary@22%). */}
-                <Column flush center alignCenter style={{ width: 7, height: 7 }}>
-                  <View style={{ position: "absolute", width: 13, height: 13, borderRadius: 9999, backgroundColor: alpha(tokens.primary, 0.22) }} />
-                  <View style={{ width: 7, height: 7, borderRadius: 9999, backgroundColor: tokens.primary }} />
-                </Column>
-                <Text style={{ fontFamily: geistMono("600"), fontSize: 12, color: tokens["muted-foreground"] }}>
-                  {version} ·{" "}
-                  <Text
-                    accessibilityRole="link"
-                    onPress={() => Linking.openURL(NPM_URL)}
-                    style={{ color: tokens.primary }}
-                  >
-                    @nannier/canvas
-                  </Text>
-                </Text>
-              </Row>
-
-              {/* The page's one level-one heading. Spelled as a heading role rather than
-                  a Typography h1 because the size here is fluid (h1Size tracks the
-                  viewport) where the role's type scale is fixed; the semantics are what
-                  matter, and React Native Web turns this pair into a real <h1>. */}
-              <Text accessibilityRole="header" aria-level={1} {...fluidMarker("heroTitle")} style={{ fontFamily: sans("600"), ...heroTitle, color: tokens.foreground }}>
-                One codebase. <Text style={{ color: tokens.primary }}>Every platform.</Text> One component API.
-              </Text>
-
-              <Text style={{ fontFamily: sans("400"), fontSize: 16.5, lineHeight: 26.4, color: tokens["muted-foreground"], maxWidth: 576, marginTop: 22 }}>
-                Canvas is a universal React Native UI kit. The same components render natively on iOS and Android and on the web through React Native Web, styled with flat, semantic boolean props that read like a sentence.
-              </Text>
-
-              {/* On a phone the prop-proof line and the platform checks are hidden; desktop
-                  keeps them. The `heroWide` wrappers are the sheet's hook for hiding them
-                  before hydration; the CTAs stay on every width. */}
-              <View {...marker("heroWide")}>
-                {wide ? (
-                  <Row snug wrap alignCenter style={{ marginTop: 18 }}>
-                    <View style={{ paddingVertical: 2, paddingHorizontal: 8, borderRadius: 6, backgroundColor: alpha(tokens.primary, 0.12), borderWidth: 1, borderColor: alpha(tokens.primary, 0.26) }}>
-                      <Text style={{ fontFamily: geistMono("400"), fontSize: 12.5, color: tokens.primary }}>{"<Button primary large block>"}</Text>
-                    </View>
-                    <Text style={{ fontFamily: sans("400"), fontSize: 13.5, color: tokens["muted-foreground"] }}>the prop name is the value.</Text>
-                  </Row>
-                ) : null}
-              </View>
-
-              <Row cozy wrap style={{ marginTop: 30 }}>
-                <Button primary large iconRight={<Icon arrowRight primaryForeground size={16} />} onPress={() => go("/components/button")}>Browse components</Button>
-                <Button outline large onPress={() => go("/tokens/colors")}>Explore tokens</Button>
-              </Row>
-
-              <View {...marker("heroWide")}>
-                {wide ? (
-                  <View style={{ flexDirection: "row", flexWrap: "wrap", rowGap: 8, columnGap: 18, marginTop: 26 }}>
-                    {PLATFORMS.map((p) => (
-                      <View key={p} style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
-                        <Icon check primary size={13} />
-                        <Text style={{ fontFamily: sans("500"), fontSize: 13.5, color: tokens["muted-foreground"] }}>{p}</Text>
-                      </View>
-                    ))}
-                  </View>
-                ) : null}
-              </View>
-            </View>
-          </View>
-        </Wrap>
-      </View>
-
-      {/* ── Three native looks ── the comparison hero: full-mobile screenshots of
-           each atom's page on the iPhone simulator, the Pixel emulator, and phone
-           web, stepped alphabetically with the CTA following the atom on stage.
-           Desktop web only (see showThreeLooks above): on a device you ARE the
-           platform, the native bundles skip the images, and mobile web is gated out
-           because the stacked panes read as cross-platform promotion. */}
-      {showThreeLooks ? (
-        <Wrap style={{ paddingTop: 56, paddingBottom: 8 }}>
-          <SectionHead
-            eyebrow="Platform-adaptive"
-            title="One component API. Three native looks."
-            desc="Every Canvas component carries a skin per platform: an iOS look, Material 3 on Android, and a web look, all driven by the same JSX and the same semantic boolean props. These are real captures of every atom's page, straight from the iPhone simulator, the Pixel emulator, and the browser."
-            titleSize={sectionTitle}
-          />
-          <ThreeLooksRotator />
-        </Wrap>
-      ) : null}
-
-      {/* ── "Get the app" REMOVED (2026-07-27) ────────────────────────────────────
-           This block rendered a QR code plus "Install Expo Go from the App Store or
-           Google Play" with an outline button linking to play.google.com.
-
-           It never shipped: APP_INSTALL_URL was "" so the whole thing was gated off,
-           and it was NOT part of the build App Review saw. It is deleted rather than
-           left dormant because the moment anyone set that constant the iOS app would
-           link straight to a competing app store and instruct users to run the
-           software through a third-party client. That is a live App Store violation
-           sitting one assignment away, and it flatly contradicts the position we are
-           putting to App Review: that the app names other platforms as technical fact
-           and never sends anyone off iOS to obtain the software.
-
-           If a hosted preview is ever wanted, put it on the DOCS SITE, not in the app.
-      */}
-
-      {/* ── Principles ── */}
-      <Wrap style={{ paddingTop: 56, paddingBottom: 8 }}>
-        <SectionHead
-          eyebrow="The system"
-          title="Four principles, one API."
-          desc="The non-negotiable rules every component follows, so the styling stays predictable from the smallest atom to a full template."
-          titleSize={sectionTitle}
-        />
-        <CardGrid cols={wide ? 2 : 1}>
-          {PRINCIPLES.map((p) => (
-            <View key={p.title} style={{ flex: 1, borderRadius: 14, borderWidth: 1, borderColor: tokens.border, backgroundColor: tokens.card, padding: 22 }}>
-              <Text accessibilityRole="header" aria-level={3} style={{ fontFamily: sans("600"), fontSize: 16, letterSpacing: -0.16, color: tokens.foreground, marginBottom: 8 }}>{p.title}</Text>
-              <Text style={{ fontFamily: sans("400"), fontSize: 14, lineHeight: 22.7, color: tokens["muted-foreground"] }}>{p.body}</Text>
-            </View>
-          ))}
-        </CardGrid>
-      </Wrap>
-
-      {/* ── Get started ── */}
-      <Wrap style={{ paddingTop: 56, paddingBottom: 8 }}>
-        <View style={{ flexDirection: wide ? "row" : "column", gap: wide ? 48 : 32, alignItems: "center" }}>
-          <View style={{ flex: wide ? 0.9 : undefined, width: "100%" }}>
-            <Text style={{ fontFamily: sans("700"), fontSize: 12, letterSpacing: 1.68, textTransform: "uppercase", color: tokens.primary, marginBottom: 12 }}>Get started</Text>
-            <Text accessibilityRole="header" aria-level={2} {...fluidMarker("sectionTitle")} style={{ fontFamily: sans("600"), ...sectionTitle, color: tokens.foreground }}>Three props to a styled button.</Text>
-            <Text style={{ fontFamily: sans("400"), fontSize: 15.5, lineHeight: 24.8, color: tokens["muted-foreground"], maxWidth: 672, marginTop: 12 }}>
-              Install the package, import the stylesheet once, and compose. No enum strings, no className soup, no platform forks. Style props group into orthogonal axes (intent, size, density): pass at most one per axis, stack the rest freely.
-            </Text>
-            <Pressable onPress={() => go("/integration")} style={{ flexDirection: "row", alignItems: "center", gap: 6, marginTop: 22 }}>
-              <Text style={{ fontFamily: sans("500"), fontSize: 14.5, color: tokens.primary }}>Read the integration guide</Text>
-              <Icon arrowRight primary size={15} />
-            </Pressable>
-          </View>
-
-          <View style={{ flex: wide ? 1.1 : undefined, width: "100%", borderRadius: 14, borderWidth: 1, borderColor: tokens.border, backgroundColor: tokens.card, overflow: "hidden", shadowColor: tokens.foreground, shadowOpacity: 0.12, shadowRadius: 30, shadowOffset: { width: 0, height: 20 } }}>
-            <Row cozy alignCenter style={{ height: 40, paddingHorizontal: 14, borderBottomWidth: 1, borderColor: tokens.border, backgroundColor: alpha(tokens.muted, 0.35) }}>
-              <View style={{ flexDirection: "row", gap: 7 }}>
-                {[0, 1, 2].map((i) => <View key={i} style={{ width: 11, height: 11, borderRadius: 9999, backgroundColor: alpha(tokens["muted-foreground"], 0.35) }} />)}
-              </View>
-              <Text style={{ fontFamily: geistMono("400"), fontSize: 12, color: tokens["muted-foreground"] }}>app.tsx</Text>
-            </Row>
-            <Column snug padTight>
-              <CodeBlock code={INSTALL_BASH} />
-              <CodeBlock code={INSTALL_TSX} />
-            </Column>
-          </View>
-        </View>
-      </Wrap>
-
-      {/* ── Atomic levels ── */}
-      <Wrap style={{ paddingTop: 56, paddingBottom: 8 }}>
-        <SectionHead
-          eyebrow="Architecture"
-          title="Atomic design, end to end."
-          desc={`Every page in this site is one of six levels of abstraction, and all ${COMPONENTS.length} components render as real React Native components, straight from their markdown example docs.`}
-          titleSize={sectionTitle}
-        />
-        <Column cozy>
-          {ATOMIC_LEVELS.map((lvl, i) => {
-            return (
-              <View key={lvl.id} style={{ flexDirection: levelStack ? "column" : "row", borderRadius: 14, borderWidth: 1, borderColor: tokens.border, backgroundColor: tokens.card, overflow: "hidden" }}>
-                <View style={{
-                  width: levelStack ? "100%" : 220,
-                  flexDirection: levelStack ? "row" : "column",
-                  alignItems: levelStack ? "center" : "flex-start",
-                  justifyContent: levelStack ? "flex-start" : "center",
-                  gap: levelStack ? 14 : 12,
-                  paddingVertical: levelStack ? 14 : 22,
-                  paddingHorizontal: levelStack ? 18 : 22,
-                  backgroundColor: alpha(tokens.muted, 0.28),
-                  borderRightWidth: levelStack ? 0 : 1,
-                  borderBottomWidth: levelStack ? 1 : 0,
-                  borderColor: tokens.border,
-                }}>
-                  <Text style={{ fontFamily: geistMono("600"), fontSize: levelStack ? 22 : 30, color: alpha(tokens["muted-foreground"], 0.6) }}>0{i + 1}</Text>
-                  <Row snug alignCenter>
-                    {lvl.icon}
-                    <Text accessibilityRole="header" aria-level={3} style={{ fontFamily: sans("600"), fontSize: 15, color: tokens.foreground }}>{lvl.label}</Text>
-                  </Row>
-                </View>
-                <View style={{ flex: 1, paddingVertical: 20, paddingHorizontal: 22, gap: 14 }}>
-                  <Text style={{ fontFamily: sans("400"), fontSize: 14, lineHeight: 22.4, color: tokens["muted-foreground"], maxWidth: 704 }}>{lvl.blurb}</Text>
-                  <Row snug wrap>
-                    {lvl.pages.map((pg) => (
-                      <Pressable key={pg.to} onPress={() => go(pg.to)} style={{ flexDirection: "row", alignItems: "center", gap: 4, paddingVertical: 5, paddingHorizontal: 11, borderRadius: 9999, borderWidth: 1, borderColor: tokens.border, backgroundColor: tokens.background }}>
-                        <Text style={{ fontFamily: sans("500"), fontSize: 12.5, color: tokens.foreground }}>{pg.label}</Text>
-                        <Icon chevronRight size={11} muted />
-                      </Pressable>
-                    ))}
-                  </Row>
-                </View>
-              </View>
-            );
-          })}
-        </Column>
-      </Wrap>
-
-      {/* ── Closing CTA band ── */}
-      <View style={{ marginTop: 72, paddingVertical: 72, borderTopWidth: 1, borderColor: tokens.border, backgroundColor: alpha(tokens.muted, 0.22) }}>
-        <Wrap>
-          <Column flush alignCenter>
-            <Text accessibilityRole="header" aria-level={2} {...fluidMarker("ctaTitle")} style={{ fontFamily: sans("600"), ...ctaTitle, color: tokens.foreground, textAlign: "center" }}>Build your first screen.</Text>
-            <Text style={{ fontFamily: sans("400"), fontSize: 16, lineHeight: 25.6, color: tokens["muted-foreground"], maxWidth: 544, textAlign: "center", marginTop: 14, marginBottom: 28 }}>
-              Browse every component live, copy the JSX, and ship it to iOS, Android, and web.
-            </Text>
-            <Row cozy wrap center>
-              <Button primary large iconRight={<Icon arrowRight primaryForeground size={16} />} onPress={() => go("/components/button")}>Browse components</Button>
-              <Button outline large iconLeft={<Github size={16} color={tokens.foreground} />} onPress={() => Linking.openURL(REPO_URL)}>View on GitHub</Button>
-            </Row>
-          </Column>
-        </Wrap>
-      </View>
-
-      {/* ── Footer ── */}
-      <View style={{ borderTopWidth: 1, borderColor: tokens.border, backgroundColor: tokens.background, paddingTop: 48, paddingBottom: 32 }}>
-        <Wrap>
-          <View style={{ flexDirection: wide ? "row" : "column", gap: wide ? 40 : 32, paddingBottom: 40 }}>
-            <View style={{ flex: wide ? 1.2 : undefined }}>
-              <Pressable onPress={() => go("/")} style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
-                <CanvasMark size={26} />
-                <View>
-                  <Text style={{ fontFamily: sans("600"), fontSize: 15, letterSpacing: -0.15, color: tokens.foreground }}>Canvas</Text>
-                  <Text style={{ fontFamily: sans("500"), fontSize: 11, letterSpacing: 0.22, color: tokens["muted-foreground"] }}>design system</Text>
-                </View>
-              </Pressable>
-              <Text style={{ fontFamily: sans("400"), fontSize: 13.5, lineHeight: 21.6, color: tokens["muted-foreground"], maxWidth: 352, marginTop: 16 }}>
-                A universal React Native UI kit. Native iOS and Android, plus web.
-              </Text>
-            </View>
-            <View style={{ flex: wide ? 2 : undefined, flexDirection: "row", flexWrap: "wrap", gap: 28 }}>
-              {FOOTER_COLS.map((col) => (
-                <View key={col.head} style={{ flex: 1, minWidth: 130, gap: 11 }}>
-                  <Text style={{ fontFamily: sans("700"), fontSize: 12, letterSpacing: 0.96, textTransform: "uppercase", color: tokens.foreground, marginBottom: 3 }}>{col.head}</Text>
-                  {col.links.map((l) => (
-                    <Pressable key={l.label} onPress={() => (l.url ? Linking.openURL(l.url) : go(l.to!))}>
-                      <Text style={{ fontFamily: sans("400"), fontSize: 14, color: tokens["muted-foreground"] }}>{l.label}</Text>
-                    </Pressable>
-                  ))}
-                </View>
-              ))}
-            </View>
-          </View>
-          <Row snug wrap between style={{ paddingTop: 22, borderTopWidth: 1, borderColor: tokens.border }}>
-            <Text style={{ fontFamily: sans("400"), fontSize: 12.5, color: tokens["muted-foreground"] }}>© 2026 Canvas · @nannier/canvas {version}</Text>
-            <Text style={{ fontFamily: sans("400"), fontSize: 12.5, color: tokens["muted-foreground"] }}>Universal React Native, native iOS and Android plus web.</Text>
-          </Row>
-        </Wrap>
-      </View>
-    </ScrollView>
-    </ScreenFrame>
-  );
-}
-
-// A numbered step row for the "Get the app" instructions.
-
-// A simple equal-width grid: chunk children into rows of `cols` and lay each row out
-// with flex:1 cells (RN has no CSS grid; this keeps the cards even).
-function CardGrid({ children, cols }: { children: ReactNode[]; cols: number }) {
-  const rows: ReactNode[][] = [];
-  for (let i = 0; i < children.length; i += cols) rows.push(children.slice(i, i + cols));
-  return (
-    <Column relaxed>
-      {rows.map((row, i) => (
-        <Row key={i} relaxed>
-          {row}
-          {row.length < cols ? Array.from({ length: cols - row.length }).map((_, j) => <View key={`pad-${j}`} style={{ flex: 1 }} />) : null}
-        </Row>
-      ))}
+  return <Page>
+    <Column loose>
+      <Row snug wrap alignCenter>
+        <Badge success>{version}</Badge>
+        <Button link small href={NPM_URL} onPress={() => Linking.openURL(NPM_URL)}>@nannier/canvas</Button>
+      </Row>
+      <Typography h1>One codebase. Every platform. One component API.</Typography>
+      <Container xxl start><Typography lead subtle>Canvas is a universal React Native UI kit. The same components render natively on iOS and Android and on the web through React Native Web, styled with flat, semantic boolean props that read like a sentence.</Typography></Container>
+      <Row snug wrap alignCenter>
+        <Typography code>{"<Button primary large block>"}</Typography>
+        <Typography small subtle>The prop name is the value.</Typography>
+      </Row>
+      <Row cozy wrap>
+        <Button primary large href="/components/button" iconRight={<Icon arrowRight primaryForeground />} onPress={() => go("/components/button")}>Browse components</Button>
+        <Button outline large href="/tokens/colors" onPress={() => go("/tokens/colors")}>Explore tokens</Button>
+      </Row>
+      <Row relaxed wrap>{PLATFORMS.map(p => <Row tight alignCenter key={p}><Icon check primary /><Typography small>{p}</Typography></Row>)}</Row>
     </Column>
-  );
+    {showThreeLooks ? <Column relaxed>
+      <SectionHead eyebrow="Platform-adaptive" title="One component API. Three native looks." desc="Real captures from the iPhone simulator, Pixel emulator, and browser. Platform controls keep their native shape; the rest share the Dark Factory look." />
+      <ThreeLooksRotator />
+    </Column> : null}
+    <Divider />
+    <Column relaxed>
+      <SectionHead eyebrow="The system" title="Four principles, one API." desc="The rules every component follows, from the smallest atom to a full template." />
+      <Grid columns={2} minTileWidth={320} relaxed>{PRINCIPLES.map(p => <Card key={p.title} title={p.title}><Typography subtle>{p.body}</Typography></Card>)}</Grid>
+    </Column>
+    <Column relaxed>
+      <SectionHead eyebrow="Quick start" title="Install. Import. Build." desc="Use semantic props and the kit's layout components to assemble your first screen." />
+      <CodeBlock code={INSTALL_BASH} language="bash" />
+      <CodeBlock code={INSTALL_TSX} />
+      <Button link href="/integration" onPress={() => go("/integration")}>Read the integration guide</Button>
+    </Column>
+    <Column relaxed>
+      <SectionHead eyebrow="Atomic design" title="A system from tokens to templates." desc={`Explore all ${COMPONENTS.length} component references, live examples, and complete screen templates.`} />
+      {ATOMIC_LEVELS.map((lvl) => <Card key={lvl.id} title={lvl.label} icon={lvl.icon}>
+        <Column relaxed>
+          <Typography subtle>{lvl.blurb}</Typography>
+          <Row snug wrap>{lvl.pages.map(pg => <Button key={pg.to} outline small href={pg.to} onPress={() => go(pg.to)} iconRight={<Icon chevronRight />}>{pg.label}</Button>)}</Row>
+        </Column>
+      </Card>)}
+    </Column>
+    <Card raised title="Build your first screen." description="Browse every component live, copy the JSX, and ship it to iOS, Android, and web.">
+      <Row cozy wrap>
+        <Button primary href="/components" onPress={() => go("/components")}>Browse components</Button>
+        <Button outline href={REPO_URL} onPress={() => Linking.openURL(REPO_URL)} iconLeft={<Github size={16} color={tokens.foreground} />}>View on GitHub</Button>
+      </Row>
+    </Card>
+    <Divider />
+    <Column loose>
+      <Button ghost href="/" onPress={() => go("/")} iconLeft={<CanvasMark size={26} />}>Canvas design system</Button>
+      <Typography subtle>A universal React Native UI kit. Native iOS and Android, plus web.</Typography>
+      <Grid columns={3} minTileWidth={192} relaxed>{FOOTER_COLS.map(col => <Column snug key={col.head}>
+        <Typography h3>{col.head}</Typography>
+        {col.links.map(l => <Button link small key={l.label} href={l.url ?? l.to} onPress={() => l.url ? Linking.openURL(l.url) : go(l.to!)}>{l.label}</Button>)}
+      </Column>)}</Grid>
+      <Typography tiny subtle>© 2026 Canvas · @nannier/canvas {version}</Typography>
+    </Column>
+  </Page>;
 }

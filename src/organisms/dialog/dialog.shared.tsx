@@ -80,6 +80,8 @@ export interface DialogProps {
    * `OverlayProvider` at the app root for this to cover the screen.
    */
   overlay?: boolean;
+  /** Cancel when the backdrop is pressed. Off by default, including destructive dialogs. */
+  dismissible?: boolean;
   /**
    * The dialog's accessible name, for the case where `children` supply the panel
    * body. Children REPLACE the built-in title/description, so there is no
@@ -176,7 +178,8 @@ export function createDialog(skin: DialogSkin, parts: DialogParts = {}) {
       setOpen(false);
     };
 
-    // Web focus management for the modal: move focus into the panel on open, trap
+    // Web focus management for the modal: include the scrim in the boundary,
+    // so dismissing by pointer also restores the opener. Move focus in on open, trap
     // Tab within it, and return focus to the trigger on close. This focus helper
     // does nothing natively or under SSR. The shared escape scope routes browser
     // Escape and native accessibility escape through the same Cancel policy.
@@ -284,6 +287,8 @@ export function createDialog(skin: DialogSkin, parts: DialogParts = {}) {
           <Present overlay={overlay}>
           <EscapeLayerProvider scope={escapeScope}>
           <View
+            ref={panelRef}
+            tabIndex={-1}
             // The overlay carries the dialog semantics so assistive tech announces
             // it. `role` ("dialog", or "alertdialog" for a destructive confirm) +
             // `aria-modal` make web screen readers treat it as a modal dialog and
@@ -291,7 +296,7 @@ export function createDialog(skin: DialogSkin, parts: DialogParts = {}) {
             // the data-driven case) are wired as the accessible name/description via
             // aria-labelledby/aria-describedby. `accessibilityViewIsModal` keeps iOS
             // VoiceOver honoring the inert backdrop (RNW drops it, hence the
-            // aria-modal alias). On the web the panel below also traps Tab focus and
+            // aria-modal alias). On the web this boundary also traps Tab focus and
             // returns focus to the trigger on close (see useDialogFocus).
             role={destructive ? "alertdialog" : "dialog"}
             accessibilityViewIsModal={true}
@@ -306,15 +311,18 @@ export function createDialog(skin: DialogSkin, parts: DialogParts = {}) {
               skin.backdrop(tokens),
             ]}
           >
+            {props.dismissible ? (
+              <Pressable accessible={false} focusable={false} tabIndex={-1}
+                importantForAccessibility="no" style={s.dismissBackdrop} onPress={cancel} />
+            ) : null}
             <Entrance style={[s.cardSizing, s.cardWidth(size), style]}>
             <GlassSurface style={[s.cardLayout, skin.card(tokens)]}>
-              {/* The panel content region: a focusable (tabIndex -1) container the
-                  web focus manager pulls focus into and traps Tab within, wrapping
-                  the content in a KeyboardAvoidingView so the iOS keyboard never
+              {/* The panel content region wraps the content in a
+                  KeyboardAvoidingView so the iOS keyboard never
                   covers a form field (padding behavior on iOS; a plain passthrough
-                  View on web/Android). Neither wrapper adds layout of its own. */}
-              <View ref={panelRef} tabIndex={-1}>
-                <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined}>
+                  View on web/Android). Both shrink when the overlay bounds the content. */}
+              <View style={s.contentSizing}>
+                <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined} style={s.contentSizing}>
                   {children != null ? (
                     children
                   ) : (

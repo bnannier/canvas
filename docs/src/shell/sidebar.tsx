@@ -1,5 +1,5 @@
 import { Platform } from "react-native";
-import { Sidebar as KitSidebar, Pressable, Row, Column, Typography, useFormFactor, type IconName, type SidebarSection } from "@nannier/canvas";
+import { Sidebar as KitSidebar, Button, Row, Column, Typography, useFormFactor, type IconName, type SidebarSection } from "@nannier/canvas";
 import { usePathname, useRouter } from "expo-router";
 import { CanvasMark } from "../brand/canvas-mark";
 import { ThemeToggles } from "./theme-toggles";
@@ -90,45 +90,11 @@ export function Sidebar({
           router.push("/");
           onNavigate?.();
         };
-        return isCollapsed ? (
-          <Pressable onPress={goHome} accessibilityRole="link" accessibilityLabel="Canvas, go to home">
-            <CanvasMark size={26} />
-          </Pressable>
-        ) : (
-          // The mark is sized to the text lockup beside it: the two-line text block is 33px
-          // (`body` 14 + `tiny` 12, both `tightLeading` to 1.25x -> 18 + 15), and the 32 mark
-          // box sits just under it, `alignCenter` co-centering the two so the logo reads about
-          // the same height as the text. (A mark larger than 26 is why the wordmark no longer starts on the item
-          // LABEL column: with the 14px header inset + `snug` 8px gap, only a 26 mark lands the
-          // text at x=48, and any larger mark pushes it right. The bigger logo wins that trade.)
-          // `body` keeps the wordmark on `foreground` at 14 (the next step down from `lead`; the
-          // 14px `small`/`muted` roles would grey it). `tiny` alone is already muted-foreground,
-          // and adding `muted` would win the role axis and size the tagline at the wordmark's own
-          // size. `flush` adds nothing between the lines (a gap prop can only add), leaving the
-          // roles' own optical gap.
-          // No accessibilityLabel here on purpose, so the accessible name is computed from
-          // the content and is therefore exactly the visible text: "Canvas design system".
-          // That satisfies WCAG 2.5.3 (Label in Name) by construction. An explicit label
-          // cannot: this lockup is two stacked lines, and axe joins their text with no
-          // separator, so it compares the name against "Canvasdesign system" (verified by
-          // running the rule against the deployed page) which no readable label contains.
-          // The role already announces it as a link, and a logo returning home is the
-          // convention, so the dropped "go to home" wording costs nothing. The collapsed
-          // variant above still needs its label, having no visible text to name it.
-          <Pressable onPress={goHome} accessibilityRole="link">
-            <Row snug alignCenter>
-              <CanvasMark size={32} />
-              <Column flush>
-                <Typography body semibold tightLeading>
-                  Canvas
-                </Typography>
-                <Typography tiny tightLeading>
-                  design system
-                </Typography>
-              </Column>
-            </Row>
-          </Pressable>
-        );
+        return <Button ghost small href="/" icon={isCollapsed} onPress={goHome}
+          accessibilityLabel={isCollapsed ? "Canvas, go to home" : undefined}
+          iconLeft={<CanvasMark size={26} />}>
+          {isCollapsed ? null : "Canvas design system"}
+        </Button>;
       }}
       footer={
         // Only the mobile-web drawer carries a footer: the appearance toggles (their old

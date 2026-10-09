@@ -44,17 +44,15 @@ export interface GuidePage {
   section: "Foundations" | "Guides";
 }
 
-export interface TemplateSection {
+/** A live example whose named component owns its state. */
+export interface DocSection {
   title: string;
   description?: string;
   anatomy?: string;
-  /** Legacy raw-HTML mockup, rendered through the interpreter. Being replaced by
-   *  `render` (real kit components); a section supplies one or the other. */
-  html?: string;
-  /** The section's live example built from real Canvas components (the dogfood
-   *  path). When present it renders instead of `html`. */
-  render?: () => ReactNode;
+  render: () => ReactNode;
 }
+
+export type TemplateSection = DocSection;
 
 export interface TemplateDoc {
   slug: string;
@@ -63,17 +61,7 @@ export interface TemplateDoc {
   sections: TemplateSection[];
 }
 
-export interface PatternSection {
-  title: string;
-  description?: string;
-  anatomy?: string;
-  /** Legacy raw-HTML mockup, rendered through the interpreter. Being replaced by
-   *  `render` (real kit components); a section supplies one or the other. */
-  html?: string;
-  /** The section's live example built from real Canvas components (the dogfood
-   *  path). When present it renders instead of `html`. */
-  render?: () => ReactNode;
-}
+export type PatternSection = DocSection;
 
 export interface PatternDoc {
   slug: string;

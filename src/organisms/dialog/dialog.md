@@ -9,6 +9,10 @@ overlay before the dialog. Cancelling the dialog calls `onCancel` and requests
 `open=false`, including destructive dialogs and dialogs with custom children.
 A controlled owner may keep it open; that request never confirms an action.
 
+Pass `dismissible` to let a backdrop press follow the same cancel policy. It is
+off by default, so existing dialogs and destructive confirmations keep their
+current outside-press behavior. The scrim is excluded from keyboard navigation.
+
 ## Usage
 
 ```tsx
@@ -21,6 +25,12 @@ A controlled owner may keep it open; that request never confirms an action.
 ```
 
 ## Variants
+
+### Dismissible
+
+```tsx
+<Dialog trigger="Open details" title="Workspace details" dismissible />
+```
 
 ### Extra small
 

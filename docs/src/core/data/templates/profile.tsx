@@ -19,7 +19,7 @@ function HeroLive() {
         <Column cozy>
           <Row relaxed alignCenter wrap>
             <Avatar large name="RC" />
-            <Column tight fill style={{ minWidth: 200 }}>
+            <Column tight fill>
               <Typography h4>Rachel Chen</Typography>
               <Typography small>Engineering Lead</Typography>
               <Row tight wrap>
@@ -77,8 +77,8 @@ function FacetsLive() {
   };
 
   const overview = (
-    <Row relaxed alignStart wrap>
-      <Column fill style={{ flexBasis: 380, minWidth: 280 }}>
+    <Row stacks relaxed stackBreakpoint="md">
+      <Column fill span={7}>
         <Card>
           <Column cozy>
             <Typography h4>Traits</Typography>
@@ -95,7 +95,7 @@ function FacetsLive() {
           </Column>
         </Card>
       </Column>
-      <Column fill style={{ flexBasis: 200, minWidth: 260 }}>
+      <Column fill span={5}>
         <Card>
           <Column cozy>
             <Typography h4>Metadata</Typography>
@@ -132,16 +132,16 @@ function FacetsLive() {
           Two-factor authentication
         </Switch>
         <Divider />
-        <Row between alignCenter wrap>
-          <Column tight fill style={{ minWidth: 220 }}>
+        <Row stacks between alignCenter>
+          <Column tight fill>
             <Typography small medium>Password</Typography>
             <Typography tiny>Last changed 4 months ago.</Typography>
           </Column>
           <Button outline small onPress={() => toast({ message: "Change password", description: "This would open the password update flow." })}>Change password</Button>
         </Row>
         <Divider />
-        <Row between alignCenter wrap>
-          <Column tight fill style={{ minWidth: 220 }}>
+        <Row stacks between alignCenter>
+          <Column tight fill>
             <Typography small medium>Recovery codes</Typography>
             <Typography tiny>{codes} of 10 unused codes remain.</Typography>
           </Column>
@@ -162,7 +162,7 @@ function FacetsLive() {
 
   const sessionsPane = (
     <Column cozy>
-      <Row between alignCenter wrap>
+      <Row stacks between alignCenter>
         <Typography tiny>Signed in on {sessions.length} {sessions.length === 1 ? "device" : "devices"}.</Typography>
         <Button
           destructive

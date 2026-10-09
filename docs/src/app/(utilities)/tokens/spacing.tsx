@@ -1,111 +1,56 @@
-import { View, Container } from "@nannier/canvas";
+import { Column, DataTable, Grid, Card, Emblem, Icon, Avatar, Badge, Row, Typography, radius, shape, spacing, shadow, useTheme } from "@nannier/canvas";
 import { Page } from "../../../ui/page";
 import { PageNav } from "../../../ui/page-nav";
 import { Playground } from "../../../ui/playground";
 import type { DocExample } from "../../../core/scope";
 import { TokenH1, TokenLede, TokenSection } from "../../../ui/tokens-kit";
 
-// The kit's 4px-grid spacing scale, shown as padding steps.
-const SPACING = [4, 8, 12, 16, 20, 24, 32, 40, 48];
-
-// The radius ladder (styles/tokens/radius.css; radius in src/style/tokens.ts).
-// "base" is the unnamed --radius / radius.DEFAULT step.
-const RADII = [
-  { name: "none", px: 0 }, { name: "sm", px: 2 }, { name: "base", px: 4 }, { name: "md", px: 6 },
-  { name: "lg", px: 8 }, { name: "xl", px: 12 }, { name: "2xl", px: 16 }, { name: "3xl", px: 24 },
-  { name: "full", px: 9999 },
-];
-
-// The six-level shadow() preset (src/style/shadow.ts), each called with the theme's
-// tokens so the shade takes the active palette. "DEFAULT" is the unnamed middle level.
-// There is no "2xl".
-const SHADOW_LEVELS = [
-  { key: "none", label: 'shadow("none")' }, { key: "sm", label: 'shadow("sm", tokens)' }, { key: "DEFAULT", label: 'shadow("DEFAULT", tokens)' },
-  { key: "md", label: 'shadow("md", tokens)' }, { key: "lg", label: 'shadow("lg", tokens)' }, { key: "xl", label: 'shadow("xl", tokens)' },
+const GAPS = [
+  { prop: "flush", step: "0" }, { prop: "tight", step: "1" },
+  { prop: "snug", step: "2" }, { prop: "cozy", step: "3" },
+  { prop: "relaxed", step: "4" }, { prop: "loose", step: "6" },
 ] as const;
+const PADDING = [
+  { prop: "padTight", step: "2" }, { prop: "pad", step: "4" }, { prop: "padLoose", step: "6" },
+] as const;
+const SHADOW_LEVELS = ["none", "sm", "DEFAULT", "md", "lg", "xl"] as const;
 
-// Spacing scale as live padding demos: the outer box is padded by the step, so the
-// inset between it and the inner box IS the spacing value.
-const spacingExamples: DocExample[] = SPACING.map((px) => ({
-  label: `padding: ${px}`,
-  code: `<View style={{ alignSelf: "center", padding: ${px}, borderRadius: 8, backgroundColor: alpha(tokens.primary, 0.2) }}>
-  <View style={{ width: 96, height: 48, borderRadius: 6, backgroundColor: alpha(tokens.primary, 0.4) }} />
-</View>`,
-  render: (scope) => {
-    const { View, tokens, alpha } = scope;
-    return (
-      <View style={{ alignSelf: "center", padding: px, borderRadius: 8, backgroundColor: alpha(tokens.primary, 0.2) }}>
-        <View style={{ width: 96, height: 48, borderRadius: 6, backgroundColor: alpha(tokens.primary, 0.4) }} />
-      </View>
-    );
-  },
+const gapExamples: DocExample[] = GAPS.map(({ prop, step }) => ({
+  label: `${prop} · ${spacing[step]}px`,
+  code: `<Row ${prop} alignCenter>
+  <Emblem label="A" />
+  <Emblem label="B" />
+  <Emblem label="C" />
+</Row>`,
+  render: ({ Row, Emblem }) => <Row {...{ [prop]: true }} alignCenter><Emblem label="A" /><Emblem label="B" /><Emblem label="C" /></Row>,
 }));
 
-const radiusExamples: DocExample[] = RADII.map((r) => ({
-  label: r.name === "full" ? "full" : `${r.name} · ${r.px}px`,
-  code: `<View style={{ width: 96, height: 96, borderRadius: ${r.px}, backgroundColor: alpha(tokens.primary, 0.2), borderWidth: 1, borderColor: alpha(tokens.primary, 0.4) }} />`,
-  render: (scope) => {
-    const { View, tokens, alpha } = scope;
-    return (
-      <View style={{ width: 96, height: 96, borderRadius: r.px, backgroundColor: alpha(tokens.primary, 0.2), borderWidth: 1, borderColor: alpha(tokens.primary, 0.4) }} />
-    );
-  },
+const paddingExamples: DocExample[] = PADDING.map(({ prop, step }) => ({
+  label: `${prop} · ${spacing[step]}px`,
+  code: `<Card flush>
+  <Column ${prop} snug>
+    <Typography medium>Workspace</Typography>
+    <Typography small>One inset around the whole group.</Typography>
+  </Column>
+</Card>`,
+  render: ({ Card, Column, Typography }) => <Card flush><Column {...{ [prop]: true }} snug><Typography medium>Workspace</Typography><Typography small>One inset around the whole group.</Typography></Column></Card>,
 }));
 
-// Each level renders the real shadow() helper, so the Web row shows Dark Factory's
-// downward shade and the iOS / Android rows the platform geometry the preset ships.
-const shadowExamples: DocExample[] = SHADOW_LEVELS.map((s) => ({
-  label: s.label,
-  code: `<View style={[{ width: 96, height: 96, borderRadius: 12, backgroundColor: tokens.card, borderWidth: 1, borderColor: tokens.border }, ${s.label}]} />`,
-  render: (scope) => {
-    const { View, tokens, shadow } = scope;
-    return (
-      <View style={[{ width: 96, height: 96, borderRadius: 12, backgroundColor: tokens.card, borderWidth: 1, borderColor: tokens.border }, shadow(s.key, tokens)]} />
-    );
-  },
-}));
-
-// Three overlapping cards at the real reserve levels: the higher zIndex paints on
-// top regardless of document order, so 50 covers 10 covers the unlayered base.
-const zIndexExamples: DocExample[] = [
-  {
-    label: "Stacking",
-    code: `<View style={{ width: 230, height: 116 }}>
-  <View style={{ position: "absolute", left: 0, top: 6, width: 100, height: 68, borderRadius: 8, alignItems: "center", justifyContent: "center", backgroundColor: tokens.card, borderWidth: 1, borderColor: alpha(tokens.primary, 0.5), zIndex: 50 }}>
-    <Text style={{ fontSize: 12, fontWeight: "600", color: tokens.primary }}>zIndex: 50</Text>
-  </View>
-  <View style={{ position: "absolute", left: 64, top: 24, width: 100, height: 68, borderRadius: 8, alignItems: "center", justifyContent: "center", backgroundColor: tokens.card, borderWidth: 1, borderColor: alpha(tokens.primary, 0.5), zIndex: 10 }}>
-    <Text style={{ fontSize: 12, fontWeight: "600", color: tokens.primary }}>zIndex: 10</Text>
-  </View>
-  <View style={{ position: "absolute", left: 128, top: 42, width: 100, height: 68, borderRadius: 8, alignItems: "center", justifyContent: "center", backgroundColor: tokens.card, borderWidth: 1, borderColor: alpha(tokens.primary, 0.5) }}>
-    <Text style={{ fontSize: 12, fontWeight: "600", color: tokens.primary }}>no zIndex</Text>
-  </View>
-</View>`,
-    render: (scope) => {
-      const { View, Text, tokens, alpha } = scope;
-      return (
-        <View style={{ width: 230, height: 116 }}>
-          <View style={{ position: "absolute", left: 0, top: 6, width: 100, height: 68, borderRadius: 8, alignItems: "center", justifyContent: "center", backgroundColor: tokens.card, borderWidth: 1, borderColor: alpha(tokens.primary, 0.5), zIndex: 50 }}>
-            <Text style={{ fontSize: 12, fontWeight: "600", color: tokens.primary }}>zIndex: 50</Text>
-          </View>
-          <View style={{ position: "absolute", left: 64, top: 24, width: 100, height: 68, borderRadius: 8, alignItems: "center", justifyContent: "center", backgroundColor: tokens.card, borderWidth: 1, borderColor: alpha(tokens.primary, 0.5), zIndex: 10 }}>
-            <Text style={{ fontSize: 12, fontWeight: "600", color: tokens.primary }}>zIndex: 10</Text>
-          </View>
-          <View style={{ position: "absolute", left: 128, top: 42, width: 100, height: 68, borderRadius: 8, alignItems: "center", justifyContent: "center", backgroundColor: tokens.card, borderWidth: 1, borderColor: alpha(tokens.primary, 0.5) }}>
-            <Text style={{ fontSize: 12, fontWeight: "600", color: tokens.primary }}>no zIndex</Text>
-          </View>
-        </View>
-      );
-    },
-  },
+const elevationExamples: DocExample[] = [
+  { label: "Flat", code: `<Card flat><Typography>Flat surface</Typography></Card>`, render: ({ Card, Typography }) => <Card flat><Typography>Flat surface</Typography></Card> },
+  { label: "Default", code: `<Card><Typography>Default surface</Typography></Card>`, render: ({ Card, Typography }) => <Card><Typography>Default surface</Typography></Card> },
+  { label: "Raised", code: `<Card raised><Typography>Raised surface</Typography></Card>`, render: ({ Card, Typography }) => <Card raised><Typography>Raised surface</Typography></Card> },
 ];
 
-// Card carries a real density axis (compact / default / comfortable), so it shows
-// the spacing change on an actual component.
-// The inner text column is identical in all three; only the card's own density
-// changes, so the surface inset (16 / 24 / 32) is the whole visual difference.
-// Density retunes the surface inset on the raw-children path only (the string
-// form's sections pad themselves), hence the composed children here.
+const layerExamples: DocExample[] = [{
+  label: "Anchored overlay",
+  code: `<Column relaxed>
+  <Popover trigger="Open layer" title="A floating surface" description="The kit positions this panel above the content." actionLabel="Close" />
+  <Card><Typography>Content beneath the overlay</Typography></Card>
+</Column>`,
+  render: ({ Column, Popover, Card, Typography }) => <Column relaxed><Popover trigger="Open layer" title="A floating surface" description="The kit positions this panel above the content." actionLabel="Close" /><Card><Typography>Content beneath the overlay</Typography></Card></Column>,
+}];
+
 const densityExamples: DocExample[] = [
   {
     label: "compact",
@@ -182,56 +127,59 @@ const densityExamples: DocExample[] = [
 ];
 
 export default function SpacingScreen() {
+  const { tokens } = useTheme();
   return (
     <Page>
-      <View style={{ gap: 40 }}>
-        {/* Intro */}
-        <View style={{ gap: 12 }}>
+      <Column loose>
+        <Column cozy>
           <TokenH1>Spacing & Shape</TokenH1>
-          <TokenLede>
-            The 4px grid governs all of Canvas. Every padding, margin, gap, width, and height is a multiple of 4. Radii follow a fixed ladder from none to 3xl (0 to 24px, around the unnamed 4px base) plus full for pills; components read those radius tokens directly. Shadows are a fixed elevation preset (none, sm, the default, md, lg, xl), shipped by the shadow() helper.
-          </TokenLede>
-        </View>
+          <TokenLede>Semantic layout props choose spacing; components own their shape and elevation. The token tables below expose the underlying values for reference, while the examples use the same public APIs as an application.</TokenLede>
+        </Column>
 
-        <TokenSection
-          title="Spacing ramp"
-          description="The kit's own 4px-based scale (here applied as padding; the same numbers back margin and gap). We use 4 through 48 in practice; anything larger should probably be a layout decision instead of an in-component value. Switch the rail to compare the steps."
-        >
-          <Playground examples={spacingExamples} />
+        <TokenSection title="Gap" description="Row and Column share a six-step gap axis. snug is the default. Switch the example to compare the space between real components.">
+          <Playground examples={gapExamples} />
+          <DataTable columns={["Prop", "Spacing token", "Gap"]} rows={GAPS.map(({ prop, step }) => [prop, step, `${spacing[step]}px`])} />
         </TokenSection>
 
-        <TokenSection
-          title="Radius scale"
-          description="A fixed ladder, none through 3xl, plus full for pills. The unnamed 4px base is the --radius token on the web and radius.DEFAULT in JS; native and web read the same scale, step for step. Shape aliases pin components to a step: control (6) and card (8) on the web, control-ios (10) and card-ios / card-android (12) on native, pill for capsules."
-          anatomy="Components pin to a relative tier or a shape alias rather than hardcoding pixels, so radii stay proportional across the kit. The tiers are fixed tokens, not a runtime-adjustable knob."
-        >
-          <Playground examples={radiusExamples} />
+        <TokenSection title="Padding" description="padTight, pad and padLoose inset a layout group. A normal Card already owns its inset; flush removes that inset when a child layout must provide it.">
+          <Playground examples={paddingExamples} stageAlign="start" />
         </TokenSection>
 
-        <TokenSection
-          title="Shadows"
-          description="A fixed elevation preset, low to high, from the shadow() helper. Pass the theme's tokens and every level takes the palette's shade: on the web it is Dark Factory's shade, cast straight down and pooling under the lower edge, and on iOS and Android the same level keeps its platform shadow and elevation, retinted. xl, the dialog's shade, is black on every palette. Choose by elevation, not by style."
-        >
-          <Playground examples={shadowExamples} />
+        <TokenSection title="Spacing reference" description="The shared numeric scale includes the hairline and half steps alongside the 4px progression. Components and layout primitives map their semantic props onto this scale.">
+          <DataTable columns={["Token", "Value"]} rows={Object.entries(spacing).sort((a, b) => a[1] - b[1]).map(([name, value]) => [name, `${value}px`])} />
         </TokenSection>
 
-        <TokenSection
-          title="Z-index reserves"
-          description="Canvas keeps a deliberately shallow z-index scale. Components reach for just two reserves; every floating overlay shares the top one rather than escalating into magic numbers. The higher zIndex paints on top regardless of document order, so 50 covers 10 covers the unlayered base."
-          anatomy="The reserves: 10 for in-component layering (input addons, button-group overlaps) and 50 for every floating overlay (dropdowns, popovers, selects, autocomplete, command, row menus). Above them sit only two pieces of infrastructure, the drag layer (900) and the portal outlet (1000); no component style escalates past 50 on its own."
-        >
-          <Playground examples={zIndexExamples} />
+        <TokenSection title="Radius and shape" description="The radius ladder is a reference for component skins. Use a component's supported shape prop at a call site, such as Emblem circle; other components choose their shape for their own role and platform.">
+          <Grid minTileWidth={280} columns={2} relaxed>
+            <DataTable columns={["Radius", "Value"]} rows={Object.entries(radius).map(([name, value]) => [name, `${value}px`])} />
+            <Card>
+              <Typography h3>Shapes in use</Typography>
+              <Row snug alignCenter wrap><Emblem><Icon shield /></Emblem><Emblem circle><Icon shield /></Emblem><Avatar name="Ada Lovelace" /><Badge>Member</Badge></Row>
+              <Typography small muted>These are Emblem, Avatar and Badge, with their own shapes and materials.</Typography>
+            </Card>
+          </Grid>
+          <DataTable columns={["Shape token", "Web", "iOS", "Android"]} rows={Object.keys(shape.web).map((key) => {
+            const role = key as keyof typeof shape.web;
+            return [key, String(shape.web[role]), String(shape.ios[role]), String(shape.android[role])];
+          })} />
+          <Typography small muted>The shape table records platform token values. Each component selects the platform shape only when that platform defines a control for its job; other native skins use the web shape.</Typography>
         </TokenSection>
 
-        <TokenSection
-          title="Component density"
-          description="Density is a per-component axis: compact and comfortable are boolean props each component maps to its own metrics, so there is no single global padding token and no app-wide density stylesheet. The Card below shows the levels: compact tightens to 16px padding and comfortable opens to 32px, bracketing the 24px default. On the web, setDensity() only persists a preference and broadcasts it for the app to read back (getDensity) and map onto these props; the data-density attribute it writes restyles nothing by itself."
-        >
+        <TokenSection title="Elevation" description="Card exposes flat, default and raised appearances. These examples use those appearances directly; the reference lists the shadow helper's output on the running platform in the active theme.">
+          <Playground examples={elevationExamples} />
+          <DataTable columns={["Preset", "Resolved shadow"]} rows={SHADOW_LEVELS.map((level) => [level, JSON.stringify(shadow(level, tokens))])} />
+        </TokenSection>
+
+        <TokenSection title="Layering" description="Floating components own their placement and stacking. Open the Popover to see the real overlay above its sibling Card.">
+          <Playground examples={layerExamples} />
+          <DataTable columns={["Reserve", "Owner"]} rows={[["10", "Local component layers"], ["50", "Floating overlays"], ["900", "Drag layer"], ["1000", "Portal outlet"]]} />
+        </TokenSection>
+
+        <TokenSection title="Component density" description="compact and comfortable adjust a component's own metrics. Omit both for its regular density. There is no global padding override: the same props are resolved by each component's skin.">
           <Playground examples={densityExamples} />
         </TokenSection>
-
         <PageNav />
-      </View>
+      </Column>
     </Page>
   );
 }

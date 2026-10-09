@@ -146,12 +146,14 @@ export const backdropLayout: ViewStyle = {
 
 // The card layout box (width up to its per-size cap). Shape/fill/shadow come
 // from the skin; this owns the box-model that every platform shares.
-export const cardLayout: ViewStyle = { width: "100%", padding: 24 };
+export const cardLayout: ViewStyle = { width: "100%", padding: 24, flexShrink: 1, minHeight: 0 };
 
 // The sizing box for the animated Entrance wrapper: it fills the centered backdrop
 // (up to cardWidth's cap) so the card keeps its width while the wrapper owns the
 // scale-fade. The card's own padding stays on cardLayout, inside the wrapper.
-export const cardSizing: ViewStyle = { width: "100%" };
+export const cardSizing: ViewStyle = { width: "100%", maxHeight: "100%", flexShrink: 1, minHeight: 0 };
+export const contentSizing: ViewStyle = { flexShrink: 1, minHeight: 0 };
+export const dismissBackdrop: ViewStyle = { position: "absolute", top: 0, right: 0, bottom: 0, left: 0 };
 
 // Per-size panel width: a dialog is a floating container (a bounds provider for
 // its own content), so it spans its backdrop and caps at its size's step of the

@@ -92,8 +92,8 @@ function CreateKeyLive() {
   return (
     <Column cozy>
       <Card>
-        <Row snug wrap alignEnd>
-          <Column fill style={{ minWidth: 220 }}>
+        <Row snug stacks alignEnd>
+          <Column fill>
             <Input label="Key name" placeholder="production-backend" value={name} onChangeText={setName} />
           </Column>
           <Button primary onPress={create}>Create key</Button>
@@ -160,8 +160,8 @@ function DangerZoneLive() {
     <Card>
       <Column cozy>
         <Typography h4 destructive>Danger zone</Typography>
-        <Row between alignCenter wrap>
-          <Column tight fill style={{ minWidth: 220 }}>
+        <Row stacks between alignCenter>
+          <Column tight fill>
             <Typography small medium>Revoke all keys</Typography>
             <Typography tiny>Every integration stops working immediately.</Typography>
           </Column>
@@ -196,8 +196,8 @@ function DangerZoneLive() {
           />
         ) : null}
         <Divider />
-        <Row between alignCenter wrap>
-          <Column tight fill style={{ minWidth: 220 }}>
+        <Row stacks between alignCenter>
+          <Column tight fill>
             <Typography small medium>Rotate signing secret</Typography>
             <Typography tiny>Webhook signatures change; consumers must update.</Typography>
           </Column>

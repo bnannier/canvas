@@ -1,13 +1,12 @@
 import { type ReactNode } from "react";
 import { Platform } from "react-native";
-import { ScrollView, View, OverlayProvider, useTheme } from "@nannier/canvas";
+import { ScrollView, View, Column, Container, OverlayProvider, useTheme } from "@nannier/canvas";
 import { CONTENT_TOP_INSET, CONTENT_BOTTOM_INSET } from "../shell/topbar";
 import { ScreenFrame } from "../shell/native-header";
 import { H1, Lead } from "./prose";
 import { DocsHead } from "./docs-head";
 
-// The standard scrollable content frame, mirroring `.app-content` (max-width 1400,
-// the 24/28/80 padding, centered). ScreenFrame adds the native header + search overlay
+// The standard scrollable content frame uses the kit page measure and padding. ScreenFrame adds the native header + search overlay
 // on iOS/Android and is a transparent passthrough on web.
 //
 // The OverlayProvider is the page-level overlay host: overlays opened anywhere in
@@ -35,15 +34,12 @@ export function Page({ children, viewportOverlays = false }: { children: ReactNo
         style={{ flex: 1, backgroundColor: tokens.background }}
         contentInsetAdjustmentBehavior="automatic"
         contentContainerStyle={{
-          // Web: clear the absolute Topbar overlay (CONTENT_TOP_INSET = 56). Native: iOS
+          // Web: clear the absolute Topbar overlay (CONTENT_TOP_INSET = 72). Native: iOS
           // owns the inset via contentInsetAdjustmentBehavior, so we add 0 and let content
           // sit under the transparent nav bar.
           paddingTop: CONTENT_TOP_INSET + 24,
-          paddingHorizontal: 28,
           paddingBottom: Math.max(80, CONTENT_BOTTOM_INSET + 24),
           width: "100%",
-          maxWidth: 1400,
-          alignSelf: "center",
         }}
       >
         {/* The longhands override the provider's app-root default (flex: 1) so the
@@ -51,7 +47,7 @@ export function Page({ children, viewportOverlays = false }: { children: ReactNo
             which collapses a content-sized scroll child to 0 height, so basis is
             set to auto explicitly. The column gap moves here from the content
             container, which now has one child. */}
-        <ContentHost style={{ flexGrow: 0, flexShrink: 0, flexBasis: "auto", gap: 28 }}>{children}</ContentHost>
+        <ContentHost style={{ flexGrow: 0, flexShrink: 0, flexBasis: "auto" }}><Container page padLoose><Column loose>{children}</Column></Container></ContentHost>
       </ScrollView>
   );
   return (
@@ -63,10 +59,10 @@ export function Page({ children, viewportOverlays = false }: { children: ReactNo
 
 export function PageHeader({ title, description }: { title: string; description?: string }) {
   return (
-    <View style={{ gap: 6 }}>
+    <Column snug>
       <DocsHead title={title} />
       <H1>{title}</H1>
       {description ? <Lead>{description}</Lead> : null}
-    </View>
+    </Column>
   );
 }

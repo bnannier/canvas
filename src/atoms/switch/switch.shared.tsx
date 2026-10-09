@@ -63,6 +63,9 @@ export interface SwitchSkin extends TouchTargetSkin {
 
 const LABEL_FONT: Record<Size, number> = { small: 12, base: 14, large: 16 };
 const DESC_FONT: Record<Size, number> = { small: 11, base: 12, large: 14 };
+// The label takes the space left by the fixed-size track and wraps within it.
+// Without shrink, a long description makes the whole switch wider than its parent.
+const TEXT_COLUMN: ViewStyle = { flexShrink: 1, minWidth: 0 };
 
 /** Build a Switch component from a platform skin.
  * @ref Ref to the interactive switch row, including its label. Typed as a React Native View. On web, React Native Web exposes its DOM host; focus() and blur() move browser focus. Native host behavior depends on the platform and React Native version. Calling focus() does not activate the control or call accessibility focus APIs.
@@ -133,7 +136,7 @@ export function createSwitch(skin: SwitchSkin) {
         ]}
       >
         {children != null || description != null ? (
-          <View>
+          <View style={TEXT_COLUMN}>
             {children != null ? (
               <Text style={{ fontWeight: "500", color: disabled ? tokens["muted-foreground"] : tokens.foreground, fontSize: LABEL_FONT[size] }}>{children}</Text>
             ) : null}

@@ -23,6 +23,8 @@ bun run verify-package
 bun run check-size
 bun run test
 bun run docs:gen:check
+bun run check:docs-components
+bun run privacy:gen:check
 bun run raster:gen:check
 bun run designmd:gen:check
 # A package.json or lockfile change can stale the third-party notices, and CI checks them.

@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
-import { View, Text, Icon, OverlayProvider, useTheme, Row, Column, Button, Typography, Card, Avatar, Skeleton, type IconProps, type ToastHandle } from "@nannier/canvas";
+import { View, Grid, Container, Navbar, Icon, OverlayProvider, Row, Column, Button, Typography, Card, Avatar, Skeleton, type IconProps, type ToastHandle } from "@nannier/canvas";
 import { useReducedMotion, useResponsive } from "../../../src/style/index.js";
 // The kit's glyph table, read straight from source like the style helpers above (the
 // public Icon renders one glyph at a time and does not expose the catalog). Used only by
@@ -71,28 +71,13 @@ export function WithToast({
 // bounded region that hosts its OWN OverlayProvider, so the toast re-anchors to this screen and
 // floats within view — and because each 3-up column renders its own AppScreen, each platform's
 // toast stays contained to its column instead of stacking at the bottom of the whole stage. It
-// stands in for "your app root" (which likewise mounts an OverlayProvider). A fixed width avoids
-// the FitStage %-width collapse; styling is free here because this is the live-example frame, not
-// a fence. Keep its type in sync with the `AppScreenHelper` alias in ./scope.ts.
+// stands in for "your app root" (which likewise mounts an OverlayProvider). Container supplies the bounds; the frame only establishes an overlay viewport. Keep its type in sync with the `AppScreenHelper` alias in ./scope.ts.
 export function AppScreen({ children }: { children: ReactNode }): ReactNode {
-  const { tokens } = useTheme();
-  return (
-    <OverlayProvider
-      style={{
-        width: 420,
-        maxWidth: "100%",
-        minHeight: 220,
-        alignItems: "center",
-        justifyContent: "center",
-        borderRadius: 16,
-        borderWidth: 1,
-        borderColor: tokens.border,
-        overflow: "hidden",
-      }}
-    >
-      {children}
+  return <Container md><Card flush>
+    <OverlayProvider style={{ minHeight: 220, overflow: "hidden" }}>
+      <Column fill center alignCenter pad>{children}</Column>
     </OverlayProvider>
-  );
+  </Card></Container>;
 }
 
 // Docs-only live-example frame: a compact, RESPONSIVE app shell that showcases a Sidebar the
@@ -103,8 +88,7 @@ export function AppScreen({ children }: { children: ReactNode }): ReactNode {
 // with its width-appropriate control, and a placeholder page) so the fence stays focused on
 // the Sidebar API. Like AppScreen it hosts its OWN OverlayProvider, so the drawer the Sidebar
 // portals at narrow widths stays contained to this frame instead of taking over the docs page.
-// The width test mirrors the Sidebar's own drawer breakpoint (`lg` = 1024). Styling is free
-// here because this is the live-example frame, not a fence. Keep its type in sync with the
+// The width test mirrors the Sidebar's own drawer breakpoint (`lg` = 1024). The frame only owns the bounded overlay viewport. Keep its type in sync with the
 // `AppShellHelper` alias in ./scope.ts.
 export function AppShell({
   children,
@@ -116,7 +100,6 @@ export function AppShell({
     select: (item: { label: string }) => void;
   }) => ReactNode;
 }): ReactNode {
-  const { tokens } = useTheme();
   const narrow = useResponsive({ base: false, lg: true });
   const [open, setOpen] = useState(false);
   const [active, setActive] = useState("Dashboard");
@@ -131,21 +114,11 @@ export function AppShell({
   // The mock page beside (or under) the rail: a top bar + a couple of placeholder cards, so the
   // sidebar reads as app chrome instead of a lone rail floating in the stage.
   const page = (
-    <Column fill style={{ backgroundColor: tokens.muted, minWidth: 0 }}>
-      <Row
-        alignCenter
-        snug
-        style={{ height: 52, paddingHorizontal: 16, borderBottomWidth: 1, borderColor: tokens.border, backgroundColor: tokens.background }}
-      >
-        {narrow ? (
-          <Button ghost icon small accessibilityLabel="Open menu" iconLeft={<Icon menu size={18} />} onPress={() => setOpen(true)} />
-        ) : null}
-        <Typography body semibold>
-          {active}
-        </Typography>
-        <View style={{ flex: 1 }} />
-        <Avatar small name="Rachel Chen" />
-      </Row>
+    <Column fill flush>
+      <Navbar brand={active}
+        brandContent={narrow ? <Button ghost icon small accessibilityLabel="Open menu" iconLeft={<Icon menu />} onPress={() => setOpen(true)} /> : undefined}
+        actions={<Avatar small name="Rachel Chen" />}
+      />
       <Column pad relaxed fill>
         <Typography h4>Good morning, Rachel</Typography>
         <Row wrap relaxed>
@@ -163,18 +136,8 @@ export function AppShell({
   );
 
   return (
-    <OverlayProvider
-      style={{
-        width: "100%",
-        height: 480,
-        maxWidth: "100%",
-        borderRadius: 16,
-        borderWidth: 1,
-        borderColor: tokens.border,
-        overflow: "hidden",
-        backgroundColor: tokens.background,
-      }}
-    >
+    <Card flush>
+    <OverlayProvider style={{ height: 480, overflow: "hidden" }}>
       {narrow ? (
         // Narrow: the rail collapses to a hamburger; the Sidebar renders the drill-down drawer
         // as an overlay portaled into this frame (position in the tree is irrelevant).
@@ -193,6 +156,7 @@ export function AppShell({
         </Row>
       )}
     </OverlayProvider>
+    </Card>
   );
 }
 
@@ -263,31 +227,19 @@ export const IconSearchContext = createContext("");
 // the Icon page's "Gallery" example — once per platform column, so all three columns filter
 // together from the single search field the Playground draws above the stage. The kit Icon draws
 // a single glyph; browsing the whole set is a docs concern, so the catalog lives here rather than
-// as an Icon prop. Grid layout is docs-only infrastructure, so it composes raw Views (as the
-// Playground harness does), not kit layout props. Keep its type in sync with the
+// as an Icon prop. The kit Grid handles the responsive layout. Keep its type in sync with the
 // `IconGalleryHelper` alias in ./scope.ts.
 export function IconGallery(): ReactNode {
-  const { tokens } = useTheme();
   const query = useContext(IconSearchContext);
   const q = query.trim().toLowerCase();
   const matches = q
     ? NAMES.filter(({ key, label }) => key.toLowerCase().includes(q) || label.toLowerCase().includes(q))
     : NAMES;
-  if (matches.length === 0) {
-    return (
-      <Text style={{ fontSize: 13, color: tokens["muted-foreground"], paddingVertical: 8 }}>
-        No icons match "{query}".
-      </Text>
-    );
-  }
-  return (
-    <View style={{ width: "100%", flexDirection: "row", flexWrap: "wrap" }}>
-      {matches.map(({ key, label }) => (
-        <View key={key} style={{ width: 80, alignItems: "center", gap: 6, borderRadius: 8, paddingHorizontal: 4, paddingVertical: 10 }}>
-          <Icon {...glyphByName(key)} size={20} />
-          <Text style={{ fontSize: 10, color: tokens["muted-foreground"] }}>{label}</Text>
-        </View>
-      ))}
-    </View>
-  );
+  if (matches.length === 0) return <Typography subtle>No icons match "{query}".</Typography>;
+  return <Grid minTileWidth={80} columns={12} snug>
+    {matches.map(({ key, label }) => <Column key={key} snug alignCenter padTight>
+      <Icon {...glyphByName(key)} size={20} />
+      <Typography tiny subtle>{label}</Typography>
+    </Column>)}
+  </Grid>;
 }
