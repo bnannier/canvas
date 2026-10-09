@@ -40,6 +40,7 @@ const SOURCES = [
   "examples/starter/smoke/**/*.{ts,tsx}",
   "e2e/**/*.ts",
   "playwright.config.ts",
+  "playwright.audit.config.ts",
 ];
 
 export default tseslint.config(

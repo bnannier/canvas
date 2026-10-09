@@ -5,11 +5,10 @@
  */
 import { MATERIAL_ROUTES } from "../support/material-routes";
 import { MATERIAL_OVERLAYS, TOAST } from "../support/overlays";
-import { gotoDocs, platformRow, previewCard, stage } from "../support/docs";
+import { FIXED_TIME, gotoDocs, platformRow, previewCard, stage } from "../support/docs";
 import { attachMaterialEvidence, expectNoMaterialEffects, readMaterialEffects } from "../support/material-evidence";
 import { expect, test } from "../support/fixtures";
 
-const FIXED_TIME = new Date("2026-01-15T12:00:00Z");
 const VIEWPORTS = {
   desktop: { width: 1280, height: 900 },
   phone: { width: 390, height: 844 },

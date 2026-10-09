@@ -14,12 +14,8 @@
  * See the `visual` project in playwright.config.ts.
  */
 import { componentRoutes } from "../support/routes";
-import { fitElementForScreenshot, gotoDocs, previewCard } from "../support/docs";
+import { FIXED_TIME, fitElementForScreenshot, gotoDocs, previewCard } from "../support/docs";
 import { expect, test } from "../support/fixtures";
-
-// Several examples render today's date or a live-looking clock. A fixed instant makes
-// them the same picture tomorrow.
-const FIXED_TIME = new Date("2026-01-15T12:00:00Z");
 
 for (const scheme of ["dark", "light"] as const) {
   for (const route of componentRoutes()) {

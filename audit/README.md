@@ -172,20 +172,66 @@ as "by design".
 | `bun run audit:checklists:check` | fails on a route with no checklist, an orphan checklist (a `.md` file no route calls for), a stale facts block, a malformed variants, findings or sign-off row (by line number, a finding whose cell is not one of the checklist's capture ids or `source` included), variant rows that drift from the inventory, a variants table `--write` would rewrite, or a missing findings table or sign-off section; runs in CI (`validate.yml`) and the pre-push hook |
 | `bun run audit:status` | counts ticked variant cells per platform, ticked checklist items, open findings by severity and signed-off platforms across every checklist (`--json` for the rows); lists any row or table it cannot read by file and line under the counts, and exits non-zero when there is one, since the counts then under-report |
 | `bun tools/audit/facts.ts <slug>` | prints one component's facts as JSON |
+| `bun run audit:web` | captures the web cells into a new run under `.audit/runs/` (see "Capturing on the web" below); `--only`, `--variants`, `--looks`, `--surfaces`, `--widths` narrow it, `--axe`, `--base`, `--workers` and `--allow-stale` tune it, `--help` lists them |
 
 When a kit change alters a fact (a new test, a skin that stops aliasing the web skin, a
 reference row, a materials entry), run `bun run audit:checklists` and commit the result,
 the way `docs:gen` is run after a markdown change.
 
+## Capturing on the web
+
+`bun run audit:web` (`tools/audit/run-web.ts`) captures the web cells of the matrix above
+with Playwright (`playwright.audit.config.ts`, `e2e/audit/`; `bun run e2e` never runs it):
+Chromium at device scale 2, reduced motion, the page clock fixed at the suite's
+`FIXED_TIME`, 6 workers (`--workers`). It serves `docs/dist` through the suite's own export
+server on 4173 (reused when one is already up), or captures whatever `--base` names. Build
+the export first (`cd docs && bun run build:web`): the run reads `/testing/diagnostics` off
+the server it is about to capture and refuses an export whose source fingerprint
+(`docs/scripts/build-info.cjs`) is not this checkout's, unless `--allow-stale`.
+
+One Playwright test covers a component in one look and surface and loops its variants by
+widths. Every cell is a fresh load in its look (`gotoDocs`), then, structure first: the page
+must still be at the example's own address and the example rail must have exactly that
+example's label selected, so a silent redirect fails the cell instead of photographing the
+wrong example. Then the card is fitted into the viewport and photographed once, and probed.
+A cell that fails is recorded as failed with its reason (and a `failure.png` of the page when
+one can still be taken); the run moves on.
+
+A run is `.audit/runs/<stamp>-web-<sha7>/`:
+
+- `manifest.json`: the command, the checkout (sha, dirty, version), the served export's
+  identity and freshness, the filters, the planned and captured counts, the flags, the time
+  per cell, the disk use and every failure. Written when the run starts (`running`) and
+  again when it ends (`complete`, `incomplete`, `interrupted` or `refused`).
+- `cells.jsonl`: one line per cell as it finishes (id, status, error, flags, time, bytes).
+- `web/<slug>/<variant>/<width>.<look>.<surface>/card.png`: the preview card, all three
+  platform rows.
+- `.../probe.json`: the card's and each row's boxes (the row crops are cut later), each
+  row's `ariaSnapshot()`, its material effects (`readMaterialEffects`) and the in-page probe
+  (`e2e/support/audit-probes.ts`, judged by `tools/audit/probe-math.ts`): every text with its
+  size, rendered weight, family, colour, the background composited from the DOM under it or
+  `indeterminate` with the reason (a backdrop filter, a gradient, an image), its contrast and
+  the ratio it owes, the type floors, clipping and truncation; every interactive element
+  with its role, name, state and visible box against 44 pt (iOS row) or 48 dp (Android row),
+  labelled "hitSlop unobservable", or WCAG 2.5.8's 24 px (web row); how far the document,
+  the page scroller, the card and each row overflow; axe on the web row (by default solid
+  cells at phone and desktop width, every look; `--axe=all`, `--axe=none` or a list of
+  widths); and the page's console, CSP and request problems during the cell.
+
+A cell is flagged `render-failed`, `problems`, `text-floor` (under 10 px), `contrast`,
+`clipped-text`, `small-target` (web), `small-visible-target` (iOS or Android visible box),
+`overflow` or `axe`; the summary counts the rest (text under the 12 px body floor, which
+small and caption roles may be, scrolled and truncated text, contrast the DOM cannot
+resolve, which the analysis step samples from the photograph).
+
 ## Capturing (pending)
 
-The capture runners are the next pieces of the audit infrastructure and are not in the
-repository yet: the web runner (1c, `audit:web`), the interaction-state recipes and page
-shots (1d), analysis and contact sheets (1e, `audit:sheets`, `audit:index`), the in-app
-native driver (1f), the native host runner and builds (1g, `audit:native`,
-`audit:native:build`) and the fixer loop (1h). Until they land, the checklists are reviewed
-against the existing evidence (`bun run e2e`, `bun run looks`, the docs three-up) and the
-cells are ticked only from photographs.
+The rest of the capture infrastructure is not in the repository yet: the interaction-state
+recipes and page shots (1d), analysis and contact sheets (1e, `audit:sheets`,
+`audit:index`), the in-app native driver (1f), the native host runner and builds (1g,
+`audit:native`, `audit:native:build`) and the fixer loop (1h). Until they land, the
+checklists are reviewed against the web captures and the existing evidence (`bun run e2e`,
+`bun run looks`, the docs three-up), and the cells are ticked only from photographs.
 
 Once they land, a fixer re-captures one component with
 `bun run audit:web -- --only=<slug> --base=http://localhost:8081` against Metro while
