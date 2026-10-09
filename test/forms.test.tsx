@@ -118,6 +118,23 @@ describe("Form (composition)", () => {
     expect(container.querySelectorAll('[role="button"]').length).toBe(0);
   });
 
+  it("names its form landmark from accessibilityLabel, and stays unnamed without one", () => {
+    const named = ui(
+      <Form accessibilityLabel="Sign in">
+        <Input block label="Email" />
+      </Form>,
+    );
+    expect(named.getByRole("form", { name: "Sign in" })).toBeDefined();
+    named.unmount();
+    const { container } = ui(
+      <Form>
+        <Input block label="Email" />
+      </Form>,
+    );
+    const form = container.querySelector('[role="form"]');
+    expect(form?.hasAttribute("aria-label")).toBe(false);
+  });
+
   it("fires onSubmit and onCancel from the actions row buttons", () => {
     let submitted = 0;
     let cancelled = 0;

@@ -34,7 +34,7 @@ function SettingsPreview() {
 
 function SigninPreview() {
   const { toast } = useToast();
-  return <Form submitLabel="Try sign-in" onSubmit={() => toast({ success: true, message: "Demo sign-in complete" })}><Typography small muted>Acme demo · no account needed</Typography><Input label="Email" placeholder="you@example.com" /><Input label="Password" secureTextEntry /></Form>;
+  return <Form accessibilityLabel="Demo sign-in" submitLabel="Try sign-in" onSubmit={() => toast({ success: true, message: "Demo sign-in complete" })}><Typography small muted>Acme demo · no account needed</Typography><Input label="Email" placeholder="you@example.com" /><Input label="Password" secureTextEntry /></Form>;
 }
 
 export const TEMPLATES_TILES: CatTile[] = [

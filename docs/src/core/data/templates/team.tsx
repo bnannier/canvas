@@ -113,7 +113,12 @@ function InviteLive() {
               }}
             />
           </Column>
-          <Select label="Role" value={role} options={ROLES} onSelect={setRole} />
+          {/* The toolbar cell (`.col-auto`): the Select hugs its value, so the email
+              field keeps the remainder of the row. A bare Select fills the row and
+              leaves the field's fill column nothing. */}
+          <Column>
+            <Select label="Role" value={role} options={ROLES} onSelect={setRole} />
+          </Column>
           <Button primary onPress={sendInvite}>Send invite</Button>
         </Row>
       </Card>

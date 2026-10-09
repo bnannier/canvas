@@ -2,7 +2,7 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 import { OverlayProvider, ToastProvider } from "@nannier/canvas";
 import { DocsThemeProvider } from "../theme/docs-theme";
 import { useDocsFonts } from "../ui/fonts";
-import { DocsHead } from "../ui/docs-head";
+import { DocsHead, DocsLookMarker } from "../ui/docs-head";
 import { Navbar } from "../shell/navbar";
 
 // On native the bottom tab triggers are declared (in nav.config.json's mobile.tabs order)
@@ -42,6 +42,7 @@ export default function RootLayout() {
     <SafeAreaProvider>
       <DocsHead />
       <DocsThemeProvider>
+        <DocsLookMarker />
         {fontsLoaded ? (
           <OverlayProvider>
             <ToastProvider>

@@ -235,7 +235,19 @@ export function createButton(skin: ButtonSkin) {
               // Keep this row in every mode to retain foreground child state.
               puck ? { opacity: pressed && skin.pressedOpacity != null ? skin.pressedOpacity : container.opacity ?? 1 } : null,
             ]}>
-              {loading ? <ActivityIndicator size="small" color={skin.foreground(tokens, intent, opts)} /> : null}
+              {/* The button announces the wait itself (busy, with its own label), so the
+                  indicator is decorative: react-native-web draws ActivityIndicator as a
+                  `progressbar` with no name, which assistive tech would read as a second,
+                  unnamed control inside the button. Spinner hides its renderer the same way. */}
+              {loading ? (
+                <ActivityIndicator
+                  size="small"
+                  color={skin.foreground(tokens, intent, opts)}
+                  aria-hidden
+                  accessibilityElementsHidden
+                  importantForAccessibility="no-hide-descendants"
+                />
+              ) : null}
               {!loading && iconLeft != null ? iconLeft : null}
               {children != null ? <Text style={skin.label(tokens, intent, size, opts)}>{children}</Text> : null}
               {!loading && iconRight != null ? iconRight : null}

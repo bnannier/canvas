@@ -24,6 +24,10 @@ export const DOCS_USAGE_EXCEPTIONS: readonly DocsUsageException[] = [
     reason: "Expo Router head metadata sets the document title, canonical address and hydration marker; it is not app UI.",
   })),
   {
+    file: "docs/src/ui/docs-head.tsx", owner: "DocsLookMarker", tag: "html", attribute: "html", keys: ["html"], occurrences: 1,
+    reason: "Expo Router head metadata marks the scheme and surface the docs theme has committed on the root element, for the browser suite; it is not app UI.",
+  },
+  {
     file: "docs/src/theme/docs-theme.tsx", owner: "DocsThemeProvider", tag: "StatusBar", attribute: "style", keys: ["<string:dark>", "<string:light>"], occurrences: 1,
     reason: "Expo StatusBar's style is its light/dark system-bar API, not a React Native style object.",
   },

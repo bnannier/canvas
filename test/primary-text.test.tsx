@@ -124,7 +124,9 @@ describe("primary-text compatibility", () => {
 
   it("keeps a loading link indicator in the same foreground as its label", () => {
     render(<ThemeProvider dark tokens={{ primary: "#123456", "primary-text": "#abcdef" }}><Button link loading>Loading action</Button></ThemeProvider>);
-    const progress = screen.getByRole("progressbar");
+    // The spinner is decorative (the busy button announces the wait), so it is found
+    // among the nodes hidden from assistive tech.
+    const progress = screen.getByRole("progressbar", { hidden: true });
     const indicator = progress.querySelector("circle:last-child");
     expect(indicator).not.toBeNull();
     expect(cssColor((indicator as SVGElement).style.stroke)).toBe(cssColor("#abcdef"));

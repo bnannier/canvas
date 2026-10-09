@@ -98,7 +98,12 @@ function ActivityLive() {
                 onChangeText={setQuery}
               />
             </Column>
-            <Select label="Actor" defaultValue="Anyone" options={ACTORS} onSelect={setActor} />
+            {/* The toolbar cell (`.col-auto`): the Select hugs its value, so the search
+                field keeps the remainder of the row. A bare Select fills the row and
+                leaves the field's fill column nothing. */}
+            <Column>
+              <Select label="Actor" defaultValue="Anyone" options={ACTORS} onSelect={setActor} />
+            </Column>
             <Button
               outline
               onPress={() =>

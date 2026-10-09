@@ -8,6 +8,8 @@ On the web, Enter confirms an active Autocomplete suggestion before it can submi
 
 Form is a composition surface: you stitch the field atoms as children and keep their state; Form supplies the vertical rhythm, the actions row, and `onSubmit`, which fires from the submit button or from Enter in a single-line field on the web. 
 
+On the web a Form is a form landmark. Name it with `accessibilityLabel`, a brief statement of its purpose such as "Sign in", so a screen reader's landmark list can tell it apart; a page that holds more than one form needs a distinct name on each.
+
 ```tsx
 <Form submitLabel="Sign in">
   <Input label="Email" placeholder="you@example.com" />

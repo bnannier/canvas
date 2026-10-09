@@ -1,7 +1,7 @@
 import { useState } from "react";
 import {
   Autocomplete, Avatar, AvatarGroup, Badge, BadgeGroup, Breadcrumb, Button, ButtonGroup,
-  Checkbox, Column, Divider, Dropdown, Icon, Image, Input, Pagination, Pressable, Radio,
+  Checkbox, Chip, Column, Divider, Dropdown, Icon, Image, Input, Pagination, Pressable, Radio,
   RadioGroup, Row, ScrollView, Select, Skeleton, Switch, Text, Textarea,
   Tooltip, Typography, Video, View, useToast,
 } from "@nannier/canvas";
@@ -15,8 +15,13 @@ function PressablePreview() {
 }
 function ImagePreview() { return <Image source={require("../../public/kira-tanaka.jpg")} width={120} height={120} accessibilityLabel="Kira Tanaka" />; }
 function VideoPreview() { return <Video source={require("../../public/video-sample.mp4")} poster={require("../../public/video-sample.jpg")} controls accessibilityLabel="Sample clip" />; }
+// A filter bar wider than its tile. ScrollView is React Native's own primitive, with no
+// keyboard stop of its own, so what it scrolls has to be reachable: every chip is a real
+// toggle, Tab walks onto the ones scrolled out of view, and the browser scrolls each one
+// in as it takes focus. Static labels here would leave the overflow out of keyboard reach.
+const SCROLL_FILTERS = ["Projects", "People", "Activity", "Settings", "Reports", "Billing", "Security"];
 function ScrollViewPreview() {
-  return <ScrollView horizontal><Row cozy><Badge>Scroll horizontally</Badge><Badge>Projects</Badge><Badge>People</Badge><Badge>Activity</Badge><Badge>Settings</Badge><Badge>Reports</Badge></Row></ScrollView>;
+  return <ScrollView horizontal><Row cozy>{SCROLL_FILTERS.map((label, i) => <Chip key={label} selectable defaultSelected={i === 0}>{label}</Chip>)}</Row></ScrollView>;
 }
 function AvatarsPreview() { return <AvatarGroup max={3}><Avatar name="Ada Lovelace" /><Avatar name="Grace Hopper" /><Avatar name="Rachel Chen" /><Avatar name="Liang Bao" /></AvatarGroup>; }
 function BadgesPreview() { return <BadgeGroup><Badge default>Admin</Badge><Badge secondary>Tag</Badge><Badge status success>Active</Badge><Badge status warning>Pending</Badge></BadgeGroup>; }

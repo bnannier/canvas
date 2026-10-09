@@ -87,6 +87,13 @@ export interface FormProps extends MeasureProps {
   onCancel?: () => void;
   /** Disables the actions row and Enter-to-submit. */
   disabled?: boolean;
+  /**
+   * The form's name for assistive tech, a brief statement of its purpose ("Sign in",
+   * "Invite a teammate"). Form is a form landmark on the web, and ARIA asks every
+   * form landmark for a name: it is how a landmark list tells two forms on one page
+   * apart. Omit it and the form stays unnamed, as before.
+   */
+  accessibilityLabel?: string;
   /** E2E hook forwarded to the root element. */
   testID?: string;
   /** Composition within a parent only, never a restyle hook and never a width: the parent layout container provides the bounds. */
@@ -125,7 +132,10 @@ export function createFormSection(skin: FormSkin) {
 /** Build a Form component from a platform skin (plus the platform-correct Button its actions row composes; defaults to the web base when omitted). */
 export function createForm(skin: FormSkin, Button: ButtonComponent = WebButton) {
   return function Form(props: FormProps) {
-    const { children, twoColumn, submitLabel, cancelLabel, onSubmit, onCancel, disabled, testID, style } = props;
+    const { children, twoColumn, submitLabel, cancelLabel, onSubmit, onCancel, disabled, accessibilityLabel, testID, style } = props;
+    // The landmark's name, set as both the RN prop and its aria alias (FormSection's
+    // dual-alias precedent). An unnamed form renders exactly the markup it did before.
+    const nameProps = accessibilityLabel != null ? { accessibilityLabel, "aria-label": accessibilityLabel } : null;
 
     // The two-column flow: rows wrap into a two-up grid in wide CONTAINERS and
     // collapse to a single full-width column in narrow ones (desktop-first). The
@@ -232,7 +242,7 @@ export function createForm(skin: FormSkin, Button: ButtonComponent = WebButton) 
     }, [enterActive, formId]);
 
     return (
-      <View ref={rootRef} nativeID={formId} testID={testID} role={FORM} style={[skin.stack, fill, style]}>
+      <View ref={rootRef} nativeID={formId} testID={testID} role={FORM} {...nameProps} style={[skin.stack, fill, style]}>
         {rows}
         {actions}
       </View>
