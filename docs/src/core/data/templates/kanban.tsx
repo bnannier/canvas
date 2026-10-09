@@ -9,7 +9,7 @@ import {
   Badge,
   Chip,
   Avatar,
-  ScrollView,
+  Grid,
   Icon,
   Stats,
   Progress,
@@ -26,7 +26,6 @@ import {
   DropZone,
   Draggable,
   DragHandle,
-  useFormFactor,
   useToast,
   type RowMenuItem,
   type ToastHandle,
@@ -58,12 +57,8 @@ import type { TemplateDoc } from "../types";
 // One `Overlay` union drives every dialog surface, so at most one is ever open;
 // delete-from-detail swaps the overlay rather than stacking dialogs. Columns and
 // tasks carry stable IDS (names are editable), so all references are by id.
-// `useFormFactor` is used in ONE place: the filter toolbar's density. The board
-// pans and the dialogs cap their own width. The toolbar is one element tree at
-// every width (the tag chips and Reset on one row, then the assignee Select and
-// the search Input, each filling the width up to a cap), so a resize never
-// remounts the search field; phones only move the Select's label above it, give
-// the search Input its full size, and loosen the gap between the rows.
+// Grid measures the board's container and wraps whole columns. Fields use the
+// shared measure axis, and every control stays mounted when the stage resizes.
 
 const TAGS = ["security", "billing", "docs", "infra"] as const;
 type Tag = (typeof TAGS)[number];
@@ -177,9 +172,9 @@ function TaskCard({ task, columnName, menuItems, onOpen, onMenuSelect, draggable
     <Card compact>
       <Column tight>
         <Row between alignCenter>
-          <Row snug alignCenter style={{ flexShrink: 1 }}>
+          <Row snug alignCenter shrink>
             {draggable ? <DragHandle label={`Reorder ${task.title}`} /> : null}
-            <Pressable onPress={onOpen} accessibilityRole="button" accessibilityLabel={`Open ${task.title}`} style={{ flexShrink: 1 }}>
+            <Pressable onPress={onOpen} accessibilityRole="button" accessibilityLabel={`Open ${task.title}`}>
               <Typography small medium>{task.title}</Typography>
             </Pressable>
           </Row>
@@ -273,7 +268,7 @@ function TaskDetailDialog({ columns, taskId, onMove, onEdit, onComment, onDelete
         ) : (
           <Column relaxed>
             <Row between alignCenter wrap>
-              <Column tight style={{ flexShrink: 1 }}>
+              <Column tight shrink>
                 <Typography lead semibold>{task.title}</Typography>
                 <Typography small muted>{task.detail || "No description."}</Typography>
               </Column>
@@ -298,7 +293,7 @@ function TaskDetailDialog({ columns, taskId, onMove, onEdit, onComment, onDelete
                 task.comments.map((c) => (
                   <Row key={c.id} snug alignStart>
                     <Avatar small name={c.who} />
-                    <Typography small style={{ flexShrink: 1 }}>{c.text}</Typography>
+                    <Typography small>{c.text}</Typography>
                   </Row>
                 ))
               )}
@@ -407,10 +402,10 @@ function BoardColumnView({ column, columns, tagFilter, assigneeFilter, query, dn
   const over = !!column.wipLimit && column.tasks.length > column.wipLimit;
   const atLimit = !!column.wipLimit && column.tasks.length === column.wipLimit;
   return (
-    <Column snug style={{ width: 260 }}>
+    <Column snug>
       <Row between alignCenter>
-        <Row snug alignCenter style={{ flexShrink: 1 }}>
-          <Typography small semibold style={{ flexShrink: 1 }}>{column.name}</Typography>
+        <Row snug alignCenter shrink>
+          <Typography small semibold>{column.name}</Typography>
           <Badge secondary>{visible.length}</Badge>
         </Row>
         <RowMenu items={columnMenu} onSelect={(_item, index) => onColumnMenu(column.id, index)} triggerLabel={`Actions for ${column.name}`} />
@@ -421,7 +416,7 @@ function BoardColumnView({ column, columns, tagFilter, assigneeFilter, query, dn
           <Typography tiny>{`${column.tasks.length} of ${column.wipLimit} WIP`}</Typography>
         </Column>
       ) : null}
-      <DropZone id={column.id} label={column.name} disabled={!dndEnabled} onDrop={(e) => onMove(e.id, e.to, e.index)} style={{ minHeight: 24 }}>
+      <DropZone id={column.id} label={column.name} disabled={!dndEnabled} onDrop={(e) => onMove(e.id, e.to, e.index)}>
         <Column snug>
           {visible.map((task) => {
             const card = (
@@ -464,9 +459,6 @@ function BoardColumnView({ column, columns, tagFilter, assigneeFilter, query, dn
 // one overlay union that guarantees at most one dialog surface is open at a time.
 function BoardLive() {
   const { toast } = useToast() as ToastHandle;
-  // Phones take the labeled Select and the full-size search Input (props only;
-  // see the header note).
-  const phone = useFormFactor() === "phone";
   const [columns, setColumns] = useState<BoardColumn[]>(SEED_COLUMNS);
   const [tagFilter, setTagFilter] = useState<Tag | null>(null);
   const [assigneeFilter, setAssigneeFilter] = useState<string | null>(null);
@@ -669,7 +661,7 @@ function BoardLive() {
           { label: "Done", value: `${donePct}%` },
         ]}
       />
-      <Column snug={!phone} relaxed={phone}>
+      <Column relaxed>
         <Row between wrap alignCenter>
           <Row snug wrap alignCenter>
             {TAGS.map((tag) => (
@@ -678,12 +670,12 @@ function BoardLive() {
           </Row>
           <Button ghost small iconLeft={<Icon rotateCcw size={16} />} onPress={resetBoard}>Reset board</Button>
         </Row>
-        <Select xxl start inline={!phone} label="Assignee" options={["Anyone", ...PEOPLE]} value={assigneeFilter ?? "Anyone"} onSelect={(o) => setAssigneeFilter(o === "Anyone" ? null : o)} />
-        <Input xxl start small={!phone} leadingIcon icon="search" placeholder="Search tasks…" value={query} onChangeText={setQuery} />
+        <Select xxl start label="Assignee" options={["Anyone", ...PEOPLE]} value={assigneeFilter ?? "Anyone"} onSelect={(o) => setAssigneeFilter(o === "Anyone" ? null : o)} />
+        <Input xxl start leadingIcon icon="search" placeholder="Search tasks…" value={query} onChangeText={setQuery} />
       </Column>
 
       {/* The overlay slot: dialogs are contained inline backdrops, so they live
-          here, outside the panning ScrollView and near the top of the section. */}
+          here, outside the responsive Grid and near the top of the section. */}
       {overlay?.kind === "detail" ? (
         <TaskDetailDialog
           columns={columns}
@@ -735,8 +727,7 @@ function BoardLive() {
           panning ScrollView (so the ghost is never clipped) and coordinates the columns as
           drop zones. */}
       <DragDropProvider>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-          <Row relaxed alignStart>
+        <Grid minTileWidth={256} relaxed>
             {columns.map((column) => (
               <BoardColumnView
                 key={column.id}
@@ -754,11 +745,10 @@ function BoardLive() {
                 onColumnMenu={onColumnMenu}
               />
             ))}
-            <Column snug style={{ width: 260 }}>
+            <Column snug>
               <Button outline block iconLeft={<Icon plus size={16} />} onPress={() => setOverlay({ kind: "addColumn" })}>Add column</Button>
             </Column>
-          </Row>
-        </ScrollView>
+        </Grid>
       </DragDropProvider>
 
       <Column tight>
@@ -778,7 +768,7 @@ export const KANBAN_TEMPLATE: TemplateDoc = {
     {
       title: "Board",
       anatomy:
-        "A Stats strip (live totals) over a filter toolbar (selectable tag Chips, an assignee Select, a search Input, Reset). Below, one DragDropProvider wraps a horizontal ScrollView of fixed-width columns: each column is a DropZone headed by its visible-count Badge and a RowMenu (sort, rename, clear, the last disabled when empty), the WIP column adds a Progress meter that goes amber at the limit and red over it, and cards are Draggables with a DragHandle grip plus their own action menu. Dragging a card lifts a floating ghost and drops it at a position within or across columns; the grip is keyboard- and screen-reader-operable, and the RowMenu 'Move to' items are the always-on fallback (drag is disabled while a filter is active). Pressing a card opens a detail Dialog (DescriptionList rows, a comment thread, an Edit mode, move and delete actions); Add task and Add column open small Dialogs; deletes and clears confirm through an AlertDialog; moves, reorders, and deletes offer Undo from a toast. A Feed logs recent activity. On phones the board pans instead of squeezing.",
+        "A Stats strip (live totals) over a filter toolbar (selectable tag Chips, an assignee Select, a search Input, Reset). Below, one DragDropProvider wraps a container-measured Grid of columns: each column is a DropZone headed by its visible-count Badge and a RowMenu (sort, rename, clear, the last disabled when empty), the WIP column adds a Progress meter that goes amber at the limit and red over it, and cards are Draggables with a DragHandle grip plus their own action menu. Dragging a card lifts a floating ghost and drops it at a position within or across columns; the grip is keyboard- and screen-reader-operable, and the RowMenu 'Move to' items are the always-on fallback (drag is disabled while a filter is active). Pressing a card opens a detail Dialog (DescriptionList rows, a comment thread, an Edit mode, move and delete actions); Add task and Add column open small Dialogs; deletes and clears confirm through an AlertDialog; moves, reorders, and deletes offer Undo from a toast. A Feed logs recent activity. Narrow stages wrap columns without squeezing cards.",
       render: () => <BoardLive />,
     },
   ],

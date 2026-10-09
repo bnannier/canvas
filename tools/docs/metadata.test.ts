@@ -26,3 +26,13 @@ test("the static privacy page carries the current shared policy and contact", ()
   expect(PRIVACY_ISSUES_URL).toBe(`${repository}/issues`);
   expect(manifest.bugs.url).toBe(PRIVACY_ISSUES_URL);
 });
+
+test("the public privacy policy is a script-free Canvas render with local fonts", () => {
+  const page = readFileSync(new URL("../../docs/public/privacy/index.html", import.meta.url), "utf8");
+  expect(page).toContain('id="react-native-stylesheet"');
+  expect(page).not.toMatch(/<script\b/i);
+  expect(page.match(/<main data-privacy-theme=/g)).toHaveLength(2);
+  const fontPaths = [...page.matchAll(/src:url\("(\/privacy\/fonts\/[^\"]+)"\)/g)].map(match => match[1]);
+  expect(fontPaths).toHaveLength(4);
+  for (const path of fontPaths) expect(readFileSync(new URL(`../../docs/public${path}`, import.meta.url)).byteLength).toBeGreaterThan(1000);
+});

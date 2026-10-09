@@ -16,8 +16,8 @@ export function htmlPages(dir) {
 
 /**
  * The pages the app rendered: the documents with an app root. The export also
- * carries plain HTML from public/ (the baked privacy policy), which has no root,
- * no bundle and no faces, and which the app-page rewrites must leave alone.
+ * carries the static Canvas policy from public/, which has no app root or bundle
+ * and uses its own same-origin fonts. App-page rewrites must leave it alone.
  */
 export function appPages(dir) {
   return htmlPages(dir).filter((page) => fs.readFileSync(page, "utf8").includes('id="root"'));

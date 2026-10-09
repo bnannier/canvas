@@ -1,7 +1,5 @@
-import { View, Text, Column, Row, Typography, Badge, DataTable, useTheme } from "@nannier/canvas";
+import { Column, Row, Typography, Badge, DataTable } from "@nannier/canvas";
 import type { PropGroup } from "../core/scope";
-import { DocsSurface } from "./surface";
-import { sans } from "./fonts";
 
 // The generated prop tables for a component page. Data comes from
 // each component's generated docs module (extracted from its `*Props` interface by
@@ -30,19 +28,9 @@ function PropRowName({ name, type, required }: { name: string; type: string; req
 }
 
 function GroupTable({ group }: { group: PropGroup }) {
-  // Wrap the table in a DocsSurface so it reads as a solid card in solid mode and a
-  // real frost in glass/frost mode (DocsSurface routes through the kit GlassSurface),
-  // exactly like the live-example stage and the do/don't cards. Without it the table
-  // is a clear hole: its rows are transparent between the muted stripes, so in frost
-  // mode the page behind bleeds straight through and washes the rows out.
-  // The surface owns the rounded bordered frame now, so the table drops its own
-  // `bordered` outline to avoid doubling it and passes `attached` instead: the
-  // header band squares up to the surface's frame rather than floating as a
-  // rounded band with the card fill peeking out under its bottom corners.
   return (
-    <DocsSurface bordered>
       <DataTable
-        attached
+        bordered
         striped
         compact
         stacks
@@ -57,28 +45,24 @@ function GroupTable({ group }: { group: PropGroup }) {
           ),
         ])}
       />
-    </DocsSurface>
   );
 }
 
 export function PropTables({ groups }: { groups: PropGroup[] }) {
-  const { tokens } = useTheme();
   const multi = groups.length > 1;
   return (
-    <View style={{ gap: 16 }}>
-      <Text accessibilityRole="header" aria-level={2} style={{ fontFamily: sans("600"), fontSize: 20, letterSpacing: -0.3, color: tokens.foreground }}>Props</Text>
+    <Column relaxed>
+      <Typography h2>Props</Typography>
       {groups.map((g) => (
-        <View key={g.name} style={{ gap: 8 }}>
+        <Column key={g.name} snug>
           {/* Only label each table when a component has more than one prop group
               (e.g. Avatar + AvatarGroup); a single group needs no sub-heading. */}
           {multi ? (
-            <View accessible accessibilityRole="header" aria-level={3}>
-              <Typography mono semibold>{g.name.replace(/Props$/, "")}</Typography>
-            </View>
+            <Typography h3>{g.name.replace(/Props$/, "")}</Typography>
           ) : null}
           <GroupTable group={g} />
-        </View>
+        </Column>
       ))}
-    </View>
+    </Column>
   );
 }

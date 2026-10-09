@@ -20,8 +20,7 @@ import { TEAM_TEMPLATE } from "./templates/team";
 
 // Every template is a LIVE demo built from real Canvas components: one file per
 // template under ./templates/ (see ./templates/README.md for the authoring
-// contract). The legacy HTML-string mockups are gone; patterns still carry some
-// and render them through the Mockup interpreter.
+// contract). Patterns use the same typed render contract.
 const TEMPLATES: TemplateDoc[] = [
   ACTIVITY_TEMPLATE,
   API_KEYS_TEMPLATE,

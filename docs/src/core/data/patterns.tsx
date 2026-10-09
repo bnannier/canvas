@@ -1,5 +1,224 @@
-import { Row, Column, Card, Typography, Input, Button, CodeBlock } from "@nannier/canvas";
+import { useEffect, useRef, useState } from "react";
+import type { TextInput as NativeInput } from "react-native";
+import {
+  Row, Column, Container, Grid, GridItem, Card, Typography, Input, Button, CodeBlock,
+  DataTable, Kbd, Field, Alert, Badge, Checkbox, Switch, Slider, Progress, Spinner,
+  Skeleton, StackedList, Dialog, Tabs, Accordion, ThemeProvider, Sidebar,
+  contrastRatio, useTheme, useFormFactor,
+} from "@nannier/canvas";
 import type { PatternDoc } from "./types";
+
+// Patterns compose the public kit API. Their controls own real local state, and
+// stable component identities keep it intact when their container changes size.
+function Notes({ items }: { items: ReadonlyArray<readonly [string, string]> }) {
+  return <Grid minTileWidth={220} relaxed>{items.map(([title, body]) => (
+    <Card key={title}><Typography h4>{title}</Typography><Typography small muted>{body}</Typography></Card>
+  ))}</Grid>;
+}
+
+function FocusDemo() {
+  const field = useRef<NativeInput>(null);
+  const [count, setCount] = useState(0);
+  return <Column cozy>
+    <Typography small muted>Use Tab to move through these controls. Focus input moves real focus into the field; no ring is painted onto an unfocused control.</Typography>
+    <Row stacks cozy alignCenter>
+      <Button onPress={() => setCount((value) => value + 1)}>Activated {count} times</Button>
+      <Input ref={field} label="Focus example" defaultValue="Edit this text" />
+      <Button outline onPress={() => field.current?.focus()}>Focus input</Button>
+    </Row>
+  </Column>;
+}
+
+function AriaDemo() {
+  const [tab, setTab] = useState(0);
+  const [open, setOpen] = useState(false);
+  const [notice, setNotice] = useState(false);
+  return <Column cozy>
+    <Tabs tabs={["Overview", "Activity"]} active={tab} onSelect={setTab} />
+    <Card><Typography>{tab === 0 ? "Overview selected" : "Activity selected"}</Typography></Card>
+    <Switch defaultChecked description="The control announces its current checked state.">Notifications</Switch>
+    <Row snug wrap>
+      <Button outline onPress={() => setOpen(true)}>Open named dialog</Button>
+      <Button outline onPress={() => setNotice((value) => !value)}>{notice ? "Clear alert" : "Show alert"}</Button>
+    </Row>
+    {notice ? <Alert success title="Settings saved" description="This alert is announced when it appears." /> : null}
+    <Dialog overlay open={open} onOpenChange={setOpen} title="Accessible dialog" description="Tab stays inside while this dialog is open. Escape or Cancel closes it and returns focus to the opener." onCancel={() => setOpen(false)} onConfirm={() => setOpen(false)} />
+  </Column>;
+}
+
+function CrossPlatformDemo() {
+  const [value, setValue] = useState(35);
+  return <Column relaxed>
+    <Accordion items={[{ key: "disclosure", title: "Disclosure", content: "Open state is exposed by the component on every platform." }]} />
+    <Checkbox description="Standalone Checkbox uses the platform's appropriate control.">Email updates</Checkbox>
+    <Slider value={value} onChange={setValue} accessibilityLabel="Example value" />
+    <Progress value={value / 100} showValue>Example value</Progress>
+  </Column>;
+}
+
+function ContrastDemo() {
+  const { tokens } = useTheme();
+  const pairs = [
+    ["foreground / background", tokens.foreground, tokens.background],
+    ["muted-foreground / background", tokens["muted-foreground"], tokens.background],
+    ["primary-foreground / primary", tokens["primary-foreground"], tokens.primary],
+  ];
+  return <DataTable bordered compact stacks columns={["Token pair", "Measured ratio", "Normal text AA"]} rows={pairs.map(([label, ink, fill]) => {
+    const ratio = contrastRatio(ink, fill);
+    return [label, `${ratio.toFixed(2)}:1`, <Badge key={label} success={ratio >= 4.5} warning={ratio < 4.5}>{ratio >= 4.5 ? "Pass" : "Review"}</Badge>];
+  })} />;
+}
+
+const emailValid = (value: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+function ValidationStates() {
+  const [email, setEmail] = useState("bad-email");
+  return <Grid minTileWidth={220} relaxed>
+    <Field label="Default" helper="Type a value."><Input placeholder="Enter value" /></Field>
+    <Field label="Focus" helper="Tab or tap here to see the actual focus state."><Input placeholder="Focus me" /></Field>
+    <Field label="Email" error={!emailValid(email) ? "Please enter a valid email address." : undefined} helper="Email address is valid.">
+      <Input value={email} onChangeText={setEmail} autoCapitalize="none" keyboardType="email-address" />
+    </Field>
+    <Field label="Disabled" helper="Unavailable fields cannot be edited."><Input disabled defaultValue="Read only" /></Field>
+  </Grid>;
+}
+
+function ValidationForm({ lifecycle = false }: { lifecycle?: boolean }) {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [touched, setTouched] = useState(false);
+  const [passwordTouched, setPasswordTouched] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
+  const error = touched && !emailValid(email) ? "Enter a valid email address." : undefined;
+  const passwordError = passwordTouched && password.length < 8 ? "Use at least 8 characters." : undefined;
+  const submit = () => {
+    setTouched(true);
+    setPasswordTouched(true);
+    setSubmitted(emailValid(email) && password.length >= 8);
+  };
+  return <Container sm start><Card><Column cozy>
+    <Typography h4>{lifecycle ? "Try touch-on-blur" : "Sign in to Acme Corp"}</Typography>
+    <Typography small muted>Demo only. Nothing is sent or stored.</Typography>
+    <Field label="Email" required helper={touched && !error ? "Email address is valid." : "Validation starts when you leave the field."} error={error}>
+      <Input value={email} onChangeText={(text) => { setEmail(text); setSubmitted(false); }} onBlur={() => setTouched(true)} keyboardType="email-address" autoCapitalize="none" />
+    </Field>
+    {!lifecycle ? <Field label="Password" required helper="Use at least 8 characters." error={passwordError}>
+      <Input secureTextEntry value={password} onChangeText={(text) => { setPassword(text); setSubmitted(false); }} onBlur={() => setPasswordTouched(true)} />
+    </Field> : null}
+    {lifecycle ? <Button outline onPress={() => { setEmail(""); setTouched(false); }}>Reset validation</Button> : <Button primary block onPress={submit}>Sign in</Button>}
+    {submitted ? <Alert success title="Demo sign-in complete" description="Both fields passed validation." /> : null}
+  </Column></Card></Container>;
+}
+
+function GlassDemo() {
+  const { dark, palette, tokens } = useTheme();
+  const [glass, setGlass] = useState(false);
+  const [saved, setSaved] = useState(false);
+  return <Column cozy>
+    <Switch checked={glass} onChange={setGlass} description="The provider changes material while the form remains mounted.">Request glass</Switch>
+    <ThemeProvider dark={dark} light={!dark} mint={palette === "mint"} tokens={tokens} glass={glass} solid={!glass}>
+      <Card><Column cozy>
+        <Typography h4>{glass ? "Glass requested" : "Solid appearance"}</Typography>
+        <Typography small muted>Available material follows the platform and accessibility settings.</Typography>
+        <Input label="Project name" defaultValue="Keep my draft" />
+        <Checkbox defaultChecked>Notify the team</Checkbox>
+        <Button onPress={() => setSaved(true)}>Save example</Button>
+        {saved ? <Alert success title="Example saved" /> : null}
+      </Column></Card>
+    </ThemeProvider>
+  </Column>;
+}
+
+function useDemoDelay() {
+  const [loading, setLoading] = useState(false);
+  const [done, setDone] = useState(false);
+  useEffect(() => {
+    if (!loading) return;
+    const timer = setTimeout(() => { setLoading(false); setDone(true); }, 900);
+    return () => clearTimeout(timer);
+  }, [loading]);
+  return { loading, done, start: () => { setDone(false); setLoading(true); } };
+}
+
+function LoadingButtonDemo() {
+  const { loading, done, start } = useDemoDelay();
+  return <Column cozy>
+    <Button primary loading={loading} onPress={start}>{loading ? "Saving…" : "Save changes"}</Button>
+    {done ? <Alert success title="Changes saved" /> : <Typography small muted>Press Save changes to run a short simulated request.</Typography>}
+  </Column>;
+}
+
+function SkeletonDemo() {
+  const { loading, done, start } = useDemoDelay();
+  return <Column cozy>
+    <Button outline disabled={loading} onPress={start}>{done ? "Reload members" : "Load members"}</Button>
+    {loading ? <Skeleton list animate accessibilityLabel="Loading members" /> : <StackedList card title="Members" items={done ? [{ name: "Ada Lovelace", detail: "Engineering" }, { name: "Grace Hopper", detail: "Platform" }] : []} />}
+  </Column>;
+}
+
+function ProgressDemo() {
+  const [value, setValue] = useState(0);
+  const [running, setRunning] = useState(false);
+  useEffect(() => {
+    if (!running) return;
+    const timer = setInterval(() => setValue((previous) => Math.min(1, previous + 0.1)), 180);
+    return () => clearInterval(timer);
+  }, [running]);
+  useEffect(() => { if (value >= 1) setRunning(false); }, [value]);
+  return <Container md start><Card><Column cozy>
+    <Progress value={value} showValue description={`${(value * 3.5).toFixed(1)} MB of 3.5 MB`}>{value >= 1 ? "Upload complete" : "Uploading report.pdf"}</Progress>
+    <Row snug wrap>
+      <Button disabled={running} onPress={() => { setValue(0); setRunning(true); }}>{value >= 1 ? "Upload again" : "Start upload"}</Button>
+      <Button outline disabled={!running} onPress={() => setRunning(false)}>Pause</Button>
+      <Button ghost disabled={running || value <= 0 || value >= 1} onPress={() => setRunning(true)}>Resume</Button>
+    </Row>
+  </Column></Card></Container>;
+}
+
+function ResponsiveSidebarDemo() {
+  const [open, setOpen] = useState(false);
+  const [active, setActive] = useState("overview");
+  const [collapsed, setCollapsed] = useState(false);
+  const desktop = useFormFactor() === "desktop";
+  return <Column cozy>
+    <Button outline onPress={() => desktop ? setCollapsed((value) => !value) : setOpen(true)}>{desktop ? "Toggle rail" : "Open navigation"}</Button>
+    <Row stacks relaxed>
+      <Sidebar responsive compact collapsed={collapsed} active={active} open={open} onOpenChange={setOpen} items={[{ id: "overview", label: "Overview", icon: "home" }, { id: "activity", label: "Activity", icon: "activity" }]} onSelect={(item) => { setActive(String(item.id)); setOpen(false); }} />
+      <Column fill><Card><Typography h4>{active === "overview" ? "Overview" : "Activity"}</Typography><Input label="Draft preserved on resize" /></Card></Column>
+    </Row>
+  </Column>;
+}
+
+function DensityToolbar({ label, compact = false, comfortable = false }: { label: string; compact?: boolean; comfortable?: boolean }) {
+  const [query, setQuery] = useState("");
+  const [activeOnly, setActiveOnly] = useState(false);
+  const items = ["Active project", "Archived project"].filter((item) => item.toLowerCase().includes(query.toLowerCase()) && (!activeOnly || item.startsWith("Active")));
+  return <Column tight>
+    <Typography small semibold>{label}</Typography>
+    <Card compact={compact} comfortable={comfortable}>
+      <Row stacks snug alignCenter>
+        <Input accessibilityLabel={`${label} search`} placeholder="Search projects" small={compact} large={comfortable} value={query} onChangeText={setQuery} />
+        <Checkbox checked={activeOnly} onChange={setActiveOnly}>Active only</Checkbox>
+      </Row>
+      <Typography small muted>{items.length} results</Typography>
+    </Card>
+  </Column>;
+}
+
+function ResponsiveLayoutDemo() {
+  const [query, setQuery] = useState("");
+  const [onlyActive, setOnlyActive] = useState(false);
+  const [names, setNames] = useState(["Build API", "Write guide", "Review release", "Ship update"]);
+  const visible = names.filter((name, index) => name.toLowerCase().includes(query.toLowerCase()) && (!onlyActive || index % 2 === 0));
+  return <Column relaxed>
+    <Row stacks cozy alignCenter>
+      <Input leadingIcon icon="search" label="Search runs" value={query} onChangeText={setQuery} />
+      <Checkbox checked={onlyActive} onChange={setOnlyActive}>Active only</Checkbox>
+      <Button onPress={() => setNames((items) => [...items, `Run ${items.length + 1}`])}>New run</Button>
+    </Row>
+    <Grid minTileWidth={140} columns={4} snug>{visible.map((name) => <Card key={name}><Typography>{name}</Typography></Card>)}</Grid>
+    <Grid minTileWidth={180} columns={3} snug><GridItem wide><Card><Typography>Wide tile spans two cells when room is available.</Typography></Card></GridItem><Card><Typography>Regular tile</Typography></Card></Grid>
+  </Column>;
+}
 
 const PATTERNS: PatternDoc[] = [
   // ── Accessibility ───────────────────────────────────────
@@ -12,100 +231,27 @@ const PATTERNS: PatternDoc[] = [
         title: "Focus ring",
         description: "Every interactive element gets a visible focus indicator on keyboard focus. The kit's Pressable colours the browser's own ring with the palette's ring token, 2px off the control; a field paints its own ring-coloured border instead, and a full-bleed row draws the ring just inside itself so its container cannot clip it.",
         anatomy: "The ring appears on keyboard focus only (the browser's :focus-visible), never on a mouse click, and follows the control's border-radius. Chromium paints it in the ring colour; Firefox and Safari keep their own ring colour unless the page loads the CSS hand-off, whose :focus-visible rule draws a solid 2px ring in --ring everywhere.",
-        html: `<div style="display:flex;gap:16px;flex-wrap:wrap;align-items:center">
-  <button class="btn btn-primary" style="box-shadow:0 0 0 2px var(--background),0 0 0 4px var(--ring)">Focused button</button>
-  <input class="input" value="Focused input" style="max-width:200px;box-shadow:0 0 0 2px var(--background),0 0 0 4px var(--ring)">
-  <a href="#" style="padding:4px 8px;border-radius:var(--radius-md,8px);box-shadow:0 0 0 2px var(--background),0 0 0 4px var(--ring);text-decoration:none;color:var(--primary);font-size:13px">Focused link</a>
-</div>`,
+        render: () => (<FocusDemo />),
       },
       {
         title: "Keyboard shortcuts",
         description: "Standard keyboard patterns used across Canvas components.",
-        html: `<div style="display:flex;flex-direction:column;gap:0;font-size:13px">
-  <div style="display:flex;padding:10px 0;border-bottom:1px solid var(--border)"><span style="width:200px;color:var(--muted-foreground)">Open command palette</span><span style="display:flex;gap:4px"><kbd class="kbd">&#8984;</kbd><kbd class="kbd">K</kbd></span></div>
-  <div style="display:flex;padding:10px 0;border-bottom:1px solid var(--border)"><span style="width:200px;color:var(--muted-foreground)">Close dialog / drawer</span><span><kbd class="kbd">Esc</kbd></span></div>
-  <div style="display:flex;padding:10px 0;border-bottom:1px solid var(--border)"><span style="width:200px;color:var(--muted-foreground)">Navigate list items</span><span style="display:flex;gap:4px"><kbd class="kbd">&uarr;</kbd><kbd class="kbd">&darr;</kbd></span></div>
-  <div style="display:flex;padding:10px 0;border-bottom:1px solid var(--border)"><span style="width:200px;color:var(--muted-foreground)">Select / activate</span><span><kbd class="kbd">Enter</kbd></span></div>
-  <div style="display:flex;padding:10px 0"><span style="width:200px;color:var(--muted-foreground)">Move focus forward</span><span><kbd class="kbd">Tab</kbd></span></div>
-</div>`,
+        render: () => (<DataTable bordered compact stacks columns={["Action", "Keys"]} rows={[["Open command palette", <Row key="command" tight><Kbd>⌘</Kbd><Kbd>K</Kbd></Row>], ["Close dialog or drawer", <Kbd key="escape">Esc</Kbd>], ["Navigate list items", <Row key="arrows" tight><Kbd>↑</Kbd><Kbd>↓</Kbd></Row>], ["Select or activate", <Kbd key="enter">Enter</Kbd>], ["Move focus forward", <Kbd key="tab">Tab</Kbd>]]} />),
       },
       {
         title: "ARIA essentials",
         description: "Minimum ARIA attributes required on common Canvas patterns.",
-        html: `<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px">
-  <div class="section-card" style="padding:16px">
-    <div style="font-size:13px;font-weight:600;margin-bottom:8px">Dialog</div>
-    <code style="font-size:11.5px;display:block;padding:8px;background:color-mix(in oklch, var(--muted) 30%, transparent);border-radius:var(--radius-sm,4px);line-height:1.6">role="dialog"<br>aria-modal="true"<br>aria-labelledby="title-id"</code>
-  </div>
-  <div class="section-card" style="padding:16px">
-    <div style="font-size:13px;font-weight:600;margin-bottom:8px">Tabs</div>
-    <code style="font-size:11.5px;display:block;padding:8px;background:color-mix(in oklch, var(--muted) 30%, transparent);border-radius:var(--radius-sm,4px);line-height:1.6">role="tablist"<br>role="tab" + aria-selected<br>role="tabpanel"</code>
-  </div>
-  <div class="section-card" style="padding:16px">
-    <div style="font-size:13px;font-weight:600;margin-bottom:8px">Alert</div>
-    <code style="font-size:11.5px;display:block;padding:8px;background:color-mix(in oklch, var(--muted) 30%, transparent);border-radius:var(--radius-sm,4px);line-height:1.6">role="alert"<br>aria-live="assertive"</code>
-  </div>
-  <div class="section-card" style="padding:16px">
-    <div style="font-size:13px;font-weight:600;margin-bottom:8px">Toggle</div>
-    <code style="font-size:11.5px;display:block;padding:8px;background:color-mix(in oklch, var(--muted) 30%, transparent);border-radius:var(--radius-sm,4px);line-height:1.6">role="switch"<br>aria-checked="true|false"</code>
-  </div>
-</div>`,
+        render: () => (<AriaDemo />),
       },
       {
         title: "Cross-platform support",
         description: "Canvas components announce their role and state to assistive tech on iOS, Android, and the web from one codebase, and the role follows the control each platform draws: a one-setting Checkbox is the switch on iOS and Android and announces as one there, while a selection Checkbox stays a checkbox everywhere. react-native-web does not forward accessibilityState or accessibilityValue to the DOM, so each component also carries the matching aria-* attribute (React Native maps it back to the native state). You get VoiceOver, TalkBack, and web screen-reader support from one codebase.",
-        html: `<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px">
-  <div class="section-card" style="padding:16px">
-    <div style="font-size:13px;font-weight:600;margin-bottom:8px">Disclosure</div>
-    <div style="font-size:12px;color:var(--muted-foreground);margin-bottom:8px">Accordion, Collapsible, Dropdown, Select, Autocomplete</div>
-    <code style="font-size:11.5px;display:block;padding:8px;background:color-mix(in oklch, var(--muted) 30%, transparent);border-radius:var(--radius-sm,4px);line-height:1.6">aria-expanded="true|false"<br>+ accessibilityState</code>
-  </div>
-  <div class="section-card" style="padding:16px">
-    <div style="font-size:13px;font-weight:600;margin-bottom:8px">Selection</div>
-    <div style="font-size:12px;color:var(--muted-foreground);margin-bottom:8px">Tabs, TabBar, Listbox, Select &amp; Command options, Pagination, Calendar</div>
-    <code style="font-size:11.5px;display:block;padding:8px;background:color-mix(in oklch, var(--muted) 30%, transparent);border-radius:var(--radius-sm,4px);line-height:1.6">role="option" / "tab"<br>aria-selected="true|false"</code>
-  </div>
-  <div class="section-card" style="padding:16px">
-    <div style="font-size:13px;font-weight:600;margin-bottom:8px">Checkable</div>
-    <div style="font-size:12px;color:var(--muted-foreground);margin-bottom:8px">Checkbox, Switch, Radio</div>
-    <code style="font-size:11.5px;display:block;padding:8px;background:color-mix(in oklch, var(--muted) 30%, transparent);border-radius:var(--radius-sm,4px);line-height:1.6">aria-checked="true|false|mixed"</code>
-  </div>
-  <div class="section-card" style="padding:16px">
-    <div style="font-size:13px;font-weight:600;margin-bottom:8px">Value</div>
-    <div style="font-size:12px;color:var(--muted-foreground);margin-bottom:8px">Slider, Progress, Stepper</div>
-    <code style="font-size:11.5px;display:block;padding:8px;background:color-mix(in oklch, var(--muted) 30%, transparent);border-radius:var(--radius-sm,4px);line-height:1.6">aria-valuemin / valuemax<br>aria-valuenow</code>
-  </div>
-</div>`,
+        render: () => (<CrossPlatformDemo />),
       },
       {
         title: "Color contrast",
         description: "Canvas tokens are designed for WCAG AA contrast (4.5:1 for normal text, 3:1 for large text). Verify contrast when customizing theme colors.",
-        html: `<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px">
-  <div class="section-card" style="padding:16px">
-    <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
-      <span style="width:24px;height:24px;border-radius:4px;background:var(--foreground)"></span>
-      <span style="width:24px;height:24px;border-radius:4px;background:var(--background);border:1px solid var(--border)"></span>
-    </div>
-    <div style="font-size:12px;font-weight:500">foreground / background</div>
-    <div style="font-size:11px;color:hsl(142 71% 45%);font-weight:600;margin-top:2px">&#10003; AA pass</div>
-  </div>
-  <div class="section-card" style="padding:16px">
-    <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
-      <span style="width:24px;height:24px;border-radius:4px;background:var(--muted-foreground)"></span>
-      <span style="width:24px;height:24px;border-radius:4px;background:var(--background);border:1px solid var(--border)"></span>
-    </div>
-    <div style="font-size:12px;font-weight:500">muted-foreground / background</div>
-    <div style="font-size:11px;color:hsl(142 71% 45%);font-weight:600;margin-top:2px">&#10003; AA pass</div>
-  </div>
-  <div class="section-card" style="padding:16px">
-    <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
-      <span style="width:24px;height:24px;border-radius:4px;background:var(--primary)"></span>
-      <span style="width:24px;height:24px;border-radius:4px;background:white;border:1px solid var(--border)"></span>
-    </div>
-    <div style="font-size:12px;font-weight:500">primary / white</div>
-    <div style="font-size:11px;color:hsl(142 71% 45%);font-weight:600;margin-top:2px">&#10003; AA pass</div>
-  </div>
-</div>`,
+        render: () => (<ContrastDemo />),
       },
     ],
   },
@@ -120,7 +266,7 @@ const PATTERNS: PatternDoc[] = [
         title: "How it works",
         description: "Pass compact for tight spacing, comfortable for generous spacing, or neither for the regular default. Each component resolves its own padding and gaps from the prop; no document attribute or stylesheet changes density globally.",
         render: () => (
-          <Row relaxed wrap>
+          <Grid minTileWidth={200} relaxed>
             {[
               { label: "Compact", code: "compact", blurb: "Tight spacing for dense data views (tables, admin panels)" },
               { label: "Regular", code: "default", blurb: "Balanced spacing for most interfaces", selected: true },
@@ -134,44 +280,17 @@ const PATTERNS: PatternDoc[] = [
                 </Column>
               </Card>
             ))}
-          </Row>
+          </Grid>
         ),
       },
       {
         title: "Live demo",
         description: "The same search toolbar rendered at each density level.",
-        render: () => (
-          <Column relaxed>
-            {[
-              { label: "Compact", density: "compact" as const, size: "small" as const },
-              { label: "Regular (default)", density: "regular" as const, size: undefined },
-              { label: "Comfortable", density: "comfortable" as const, size: "large" as const },
-            ].map((d) => (
-              <Column key={d.label} tight>
-                <Typography tiny semibold muted>{d.label}</Typography>
-                <Card compact={d.density === "compact"} comfortable={d.density === "comfortable"}>
-                  <Row alignCenter between>
-                    <Row alignCenter snug>
-                      <Input
-                        placeholder="Search..."
-                        small={d.size === "small"}
-                        large={d.size === "large"}
-                      />
-                      <Button
-                        outline
-                        small={d.size === "small"}
-                        large={d.size === "large"}
-                      >
-                        Filter
-                      </Button>
-                    </Row>
-                    <Typography small muted>24 results</Typography>
-                  </Row>
-                </Card>
-              </Column>
-            ))}
-          </Column>
-        ),
+        render: () => <Column relaxed>
+          <DensityToolbar label="Compact" compact />
+          <DensityToolbar label="Regular" />
+          <DensityToolbar label="Comfortable" comfortable />
+        </Column>,
       },
       {
         title: "Extending",
@@ -179,16 +298,14 @@ const PATTERNS: PatternDoc[] = [
         render: () => (
           <CodeBlock
             language="tsx"
-            code={`// The density axis is resolved inside the component, from its booleans.
-function MyRow({ compact, comfortable, children }: MyRowProps) {
-  const paddingVertical = compact ? 8 : comfortable ? 16 : 12;
-  return <View style={{ paddingVertical }}>{children}</View>;
-}
+            code={`// The density axis is resolved by each component.
+<Card compact>...</Card>
+<Card comfortable>...</Card>
 
-// Persisting a preference: setDensity stores it; the APP applies it via props.
+// An app may persist a preference, then apply it through props.
 setDensity("compact");
-const density = getDensity(); // "compact" | "regular" | "comfy"
-<MyRow compact={density === "compact"} comfortable={density === "comfy"}>...</MyRow>;`}
+const density = getDensity();
+<Card compact={density === "compact"} comfortable={density === "comfy"}>...</Card>;`}
           />
         ),
       },
@@ -204,85 +321,22 @@ const density = getDensity(); // "compact" | "regular" | "comfy"
       {
         title: "States",
         description: "Each state has a distinct visual treatment. Error and success states include helper text below the field.",
-        html: `<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px">
-  <div>
-    <label class="label">Default</label>
-    <input class="input" placeholder="Enter value">
-  </div>
-  <div>
-    <label class="label">Focused</label>
-    <input class="input" placeholder="Enter value" style="border-color:var(--ring);box-shadow:0 0 0 2px color-mix(in oklch, var(--ring) 20%, transparent)">
-  </div>
-  <div>
-    <label class="label">Error</label>
-    <input class="input input-error" value="bad-email">
-    <p class="field-helper field-error" style="margin-top:4px">Please enter a valid email address</p>
-  </div>
-  <div>
-    <label class="label">Success</label>
-    <input class="input" value="valid@email.com" style="border-color:hsl(142 71% 45%)">
-    <p class="field-helper" style="margin-top:4px;color:hsl(142 71% 45%)">Email verified</p>
-  </div>
-  <div>
-    <label class="label">Disabled</label>
-    <input class="input" value="locked" disabled>
-  </div>
-</div>`,
+        render: () => (<ValidationStates />),
       },
       {
         title: "Validation lifecycle",
         description: "Touch-on-blur: validate when the field loses focus (not on every keystroke). Show errors inline. Clear errors as the user corrects them.",
-        anatomy: "1. User focuses field. 2. User types and leaves (blur). 3. If invalid, show error state + message. 4. On next keystroke, re-validate live until valid. 5. Show success briefly, then return to default.",
-        html: `<div style="display:flex;gap:12px;flex-wrap:wrap">
-  <div class="section-card" style="padding:16px;flex:1;min-width:180px;text-align:center">
-    <div style="width:32px;height:32px;border-radius:50%;background:var(--muted);display:inline-flex;align-items:center;justify-content:center;margin-bottom:8px;font-size:14px;font-weight:600">1</div>
-    <div style="font-size:12px;font-weight:500">Focus</div>
-    <div style="font-size:11px;color:var(--muted-foreground);margin-top:2px">Ring appears</div>
-  </div>
-  <div class="section-card" style="padding:16px;flex:1;min-width:180px;text-align:center">
-    <div style="width:32px;height:32px;border-radius:50%;background:var(--muted);display:inline-flex;align-items:center;justify-content:center;margin-bottom:8px;font-size:14px;font-weight:600">2</div>
-    <div style="font-size:12px;font-weight:500">Blur</div>
-    <div style="font-size:11px;color:var(--muted-foreground);margin-top:2px">Validate on leave</div>
-  </div>
-  <div class="section-card" style="padding:16px;flex:1;min-width:180px;text-align:center">
-    <div style="width:32px;height:32px;border-radius:50%;background:color-mix(in oklch, var(--destructive) 15%, transparent);color:var(--destructive);display:inline-flex;align-items:center;justify-content:center;margin-bottom:8px;font-size:14px;font-weight:600">3</div>
-    <div style="font-size:12px;font-weight:500">Error</div>
-    <div style="font-size:11px;color:var(--muted-foreground);margin-top:2px">Show inline message</div>
-  </div>
-  <div class="section-card" style="padding:16px;flex:1;min-width:180px;text-align:center">
-    <div style="width:32px;height:32px;border-radius:50%;background:hsl(142 71% 45%/0.15);color:hsl(142 71% 45%);display:inline-flex;align-items:center;justify-content:center;margin-bottom:8px;font-size:14px;font-weight:600">4</div>
-    <div style="font-size:12px;font-weight:500">Corrected</div>
-    <div style="font-size:11px;color:var(--muted-foreground);margin-top:2px">Clear error live</div>
-  </div>
-</div>`,
+        anatomy: "1. User focuses field. 2. User types and leaves (blur). 3. If invalid, show error state + message. 4. On next keystroke, re-validate live until valid. 5. Confirm valid input through Field’s helper text.",
+        render: () => (<ValidationForm lifecycle />),
       },
       {
         title: "Example form",
         description: "A sign-in form demonstrating error states with inline helper text.",
-        html: `<div style="max-width:380px">
-  <div class="card">
-    <div class="card-header">
-      <h3 style="margin:0 0 4px;font-size:18px;font-weight:600">Sign in</h3>
-      <p style="margin:0;font-size:13px;color:var(--muted-foreground)">Enter your credentials</p>
-    </div>
-    <div class="card-content" style="display:flex;flex-direction:column;gap:14px">
-      <div>
-        <label class="label">Email</label>
-        <input class="input input-error" value="rachel@">
-        <p class="field-helper field-error" style="margin-top:4px">Please enter a valid email address</p>
-      </div>
-      <div>
-        <label class="label">Password</label>
-        <input class="input" type="password" placeholder="••••••••">
-      </div>
-      <button class="btn btn-primary" style="width:100%">Sign in</button>
-    </div>
-  </div>
-</div>`,
+        render: () => (<ValidationForm />),
       },
       {
         title: "Production stack",
-        html: `<div style="max-width:680px;padding:1rem;border-radius:8px;background:color-mix(in oklch, var(--muted) 40%, transparent);border:1px solid var(--border);font-size:12.5px;color:var(--muted-foreground);line-height:1.6"><span style="font-weight:600;color:var(--foreground)">In production:</span> use <code>react-hook-form</code> for state and <code>zod</code> via <code>@hookform/resolvers/zod</code> for validation. Canvas demonstrates the visual states; the runtime wiring is the consumer's choice.</div>`,
+        render: () => (<Card><Typography small>In production, a form-state library such as react-hook-form can own values and touched state, while a schema library such as zod validates them. Pass the resulting error through Field; Canvas owns the visual and accessible field anatomy.</Typography></Card>),
       },
     ],
   },
@@ -297,114 +351,32 @@ const density = getDensity(); // "compact" | "regular" | "comfy"
         title: "What 'glass' means in Canvas",
         description: "Material, density, and motion are separate decisions. Reading panes, field wells, passive badges, and chart frames use stable frost. Functional floating shells and controls can use Liquid Glass where supported, with native feedback first. Labels, images, chart marks, layout wrappers, and unfilled variants inherit their host instead of gaining a pane. Shared GlassSurface and GlassPane rendering supplies the material; glass-tint, glass-tint-content, glass-tint-control, and glass-tint-dense control coverage without replacing semantic colors. A dense menu can remain Liquid Glass while keeping its rows legible. A liquid material names the surface, never a motion: nothing deforms, travels or springs.",
         anatomy: "Toggle with the Solid / Glass switch in the topbar, or pass the boolean to the provider: <ThemeProvider glass> forces glass, <ThemeProvider solid> forces flat, and omitting both picks the platform default (glass on iOS 26+ via liquidGlassAvailable(), solid elsewhere).",
-        html: `<div class="section-card" style="padding:1.25rem"><p style="margin:0;font-size:13.5px;color:var(--muted-foreground);line-height:1.6">Component APIs stay the same, and shared rendering owns the material. The --popover and --card tokens remain opaque. Eligible functional surfaces can use Apple Liquid Glass via expo-glass-effect on supported iOS 26+ or a browser lens where supported; stable content panes use frost. Browser frost is built in. Native frost uses available native support, including optional @nannier/canvas-blur on Android 12+ with a safe live target, or supported expo-blur paths. Missing or unsafe material restores the complete solid skin, never an unsupported translucent tint alone. Reduce Transparency, Increase Contrast, and print use opaque treatment. Focus, values, open state, and scrolling survive changes in either direction; solid appearance creates no material capture demand.</p></div>`,
+        render: () => (<Card><Typography small>Component APIs stay the same. Shared rendering supplies native Liquid Glass where supported, Dark Factory’s plain frost on the web, and supported native blur elsewhere. Semantic card and popover colors stay opaque. Unavailable or unsafe material, Reduce Transparency, and Increase Contrast restore the complete solid appearance.</Typography></Card>),
       },
       {
         title: "The four ingredients",
         description: "Supported material combines a live backdrop, readable tint, and the platform skin's shape. The renderer keeps crisp content above it and restores the full solid skin when material is unavailable.",
-        html: `<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px">
-  <div class="section-card" style="padding:16px;text-align:center">
-    <div style="font-size:24px;margin-bottom:8px">&#x1F4A8;</div>
-    <div style="font-size:13px;font-weight:600;margin-bottom:4px">Blur material</div>
-    <code style="font-size:11px;color:var(--muted-foreground)">native Liquid Glass / browser lens / native or browser frost</code>
-  </div>
-  <div class="section-card" style="padding:16px;text-align:center">
-    <div style="font-size:24px;margin-bottom:8px">&#x1F3A8;</div>
-    <div style="font-size:13px;font-weight:600;margin-bottom:4px">Translucent tint</div>
-    <code style="font-size:11px;color:var(--muted-foreground)">glass-tint: rgba(255,255,255,0.20)</code>
-  </div>
-  <div class="section-card" style="padding:16px;text-align:center">
-    <div style="font-size:24px;margin-bottom:8px">&#x2728;</div>
-    <div style="font-size:13px;font-weight:600;margin-bottom:4px">The skin's shape</div>
-    <code style="font-size:11px;color:var(--muted-foreground)">radius + border, fill stripped</code>
-  </div>
-  <div class="section-card" style="padding:16px;text-align:center">
-    <div style="font-size:24px;margin-bottom:8px">&#x1F30C;</div>
-    <div style="font-size:13px;font-weight:600;margin-bottom:4px">A live backdrop</div>
-    <code style="font-size:11px;color:var(--muted-foreground)">content behind feeds the blur</code>
-  </div>
-</div>`,
+        render: () => (<Notes items={[["Blur material", "Supported native Liquid Glass or native frost; the web uses a 24px plain backdrop blur."], ["Readable tint", "The functional, content, control, and dense layers each have a tint chosen for their role."], ["The skin’s shape", "Shared material rendering keeps the component’s radius and replaces its resting fill and border."], ["A safe live backdrop", "The renderer samples content behind the surface without capturing itself. Text and icons remain crisp."]]} />),
       },
       {
         title: "Surface inventory",
         description: "Representative surfaced roles and tint density. The component variant and surrounding context determine whether a pane exists. Reading content remains still, functional surfaces use supported liquid material, and unfilled variants inherit. Density does not select motion.",
-        html: `<div style="font-size:13px">
-  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:0;border:1px solid var(--border);border-radius:var(--radius-md,8px);overflow:hidden">
-    <div style="padding:8px 12px;font-weight:600;background:color-mix(in oklch, var(--muted) 30%, transparent);border-bottom:1px solid var(--border)">Surface</div>
-    <div style="padding:8px 12px;font-weight:600;background:color-mix(in oklch, var(--muted) 30%, transparent);border-bottom:1px solid var(--border)">Layer</div>
-    <div style="padding:8px 12px;font-weight:600;background:color-mix(in oklch, var(--muted) 30%, transparent);border-bottom:1px solid var(--border)">In glass mode</div>
-    <div style="padding:8px 12px;border-bottom:1px solid var(--border)">Floating Navbar / Tab bar / Sidebar</div>
-    <div style="padding:8px 12px;border-bottom:1px solid var(--border);color:var(--muted-foreground)">Functional</div>
-    <div style="padding:8px 12px;border-bottom:1px solid var(--border);color:var(--muted-foreground)">Functional glass; complete solid fallback</div>
-    <div style="padding:8px 12px;border-bottom:1px solid var(--border)">Dialog / Action sheet / Drawer</div>
-    <div style="padding:8px 12px;border-bottom:1px solid var(--border);color:var(--muted-foreground)">Functional</div>
-    <div style="padding:8px 12px;border-bottom:1px solid var(--border);color:var(--muted-foreground)">Functional glass; complete solid fallback</div>
-    <div style="padding:8px 12px;border-bottom:1px solid var(--border)">Popover / Command palette</div>
-    <div style="padding:8px 12px;border-bottom:1px solid var(--border);color:var(--muted-foreground)">Functional</div>
-    <div style="padding:8px 12px;border-bottom:1px solid var(--border);color:var(--muted-foreground)">Functional glass; complete solid fallback</div>
-    <div style="padding:8px 12px;border-bottom:1px solid var(--border)">Dropdown / Select / Autocomplete / Row menu / Avatar menu</div>
-    <div style="padding:8px 12px;border-bottom:1px solid var(--border);color:var(--muted-foreground)">Dense</div>
-    <div style="padding:8px 12px;border-bottom:1px solid var(--border);color:var(--muted-foreground)">Glass under the densest tint (glass-tint-dense)</div>
-    <div style="padding:8px 12px;border-bottom:1px solid var(--border)">Alert dialog / Toast / Tooltip / Chart flag</div>
-    <div style="padding:8px 12px;border-bottom:1px solid var(--border);color:var(--muted-foreground)">Dense</div>
-    <div style="padding:8px 12px;border-bottom:1px solid var(--border);color:var(--muted-foreground)">Glass under the densest tint; the inverse ones (tooltip, M3 snackbar) tint with the ink</div>
-    <div style="padding:8px 12px;border-bottom:1px solid var(--border)">Card / List / Table / Calendar / Chart / Alert</div>
-    <div style="padding:8px 12px;border-bottom:1px solid var(--border);color:var(--muted-foreground)">Content</div>
-    <div style="padding:8px 12px;border-bottom:1px solid var(--border);color:var(--muted-foreground)">Static frost under glass-tint-content; chart and text ink stay crisp</div>
-    <div style="padding:8px 12px">Field / Button / Tabs / Chip / Badge / Switch / Checkbox</div>
-    <div style="padding:8px 12px;color:var(--muted-foreground)">Control</div>
-    <div style="padding:8px 12px;color:var(--muted-foreground)">Static for reading; liquid for controls; unfilled variants inherit</div>
-  </div>
-</div>`,
+        render: () => (<DataTable bordered compact stacks columns={["Surface", "Layer", "Treatment"]} rows={[["Navbar, Sidebar, Dialog, Drawer, Popover, Command", "Functional", "Supported glass with complete solid fallback"], ["Card, list, table, calendar, chart, alert", "Content", "Stable frost for reading"], ["Fields, buttons, tabs, chips, switches", "Control", "Role-appropriate material; bare variants stay bare"], ["Option menus, AlertDialog, Toast, Tooltip", "Dense", "Denser tint for legibility; inverse surfaces retain inverse ink"]]} />),
       },
       {
         title: "Live comparison",
-        description: "An illustrative pair: the same panel drawn opaque and with a frosted material over a colorful backdrop. In the kit a real stat card takes the content layer's denser tint; the Solid / Glass toggle in the topbar switches the whole docs shell at once.",
-        html: `<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;border-radius:12px;padding:20px;background:radial-gradient(120% 120% at 0% 0%, hsl(262 83% 58% / 0.25), transparent 50%), radial-gradient(120% 120% at 100% 100%, hsl(190 90% 50% / 0.2), transparent 50%), var(--background)">
-  <div>
-    <div style="font-size:11px;text-transform:uppercase;letter-spacing:0.06em;color:var(--muted-foreground);margin-bottom:8px">Solid</div>
-    <div class="section-card" style="padding:16px;background:var(--card)"><div style="font-size:13px;font-weight:600;margin-bottom:4px">Active sessions</div><div style="font-size:22px;font-weight:700">1,204</div></div>
-  </div>
-  <div>
-    <div style="font-size:11px;text-transform:uppercase;letter-spacing:0.06em;color:var(--muted-foreground);margin-bottom:8px">Glass</div>
-    <div style="padding:16px;border-radius:12px;backdrop-filter:blur(18px) saturate(1.4);-webkit-backdrop-filter:blur(18px) saturate(1.4);background:hsl(255 100% 100% / 0.12);border:1px solid hsl(255 100% 100% / 0.25);box-shadow:inset 0 1px 0 hsl(255 100% 100% / 0.25)"><div style="font-size:13px;font-weight:600;margin-bottom:4px">Active sessions</div><div style="font-size:22px;font-weight:700">1,204</div></div>
-  </div>
-</div>`,
+        description: "A real Card and its controls under one ThemeProvider. Change the material and verify that the typed draft and checkbox state remain intact. The material falls back according to platform capabilities and accessibility preferences.",
+        render: () => (<GlassDemo />),
       },
       {
         title: "When NOT to use glass",
         description: "Use the complete solid appearance when the material cannot preserve readability, performance, or accessibility. A static content frame is appropriate only when its content remains clear.",
-        html: `<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px">
-  <div class="section-card" style="padding:16px;border-color:color-mix(in oklch, var(--destructive) 30%, transparent)">
-    <div style="font-size:13px;font-weight:600;margin-bottom:4px;color:var(--destructive)">Dense data tables</div>
-    <div style="font-size:12px;color:var(--muted-foreground)">Share one static frame instead of blurring every row. Verify dense text over moving content and choose solid when readability or performance fails.</div>
-  </div>
-  <div class="section-card" style="padding:16px;border-color:color-mix(in oklch, var(--destructive) 30%, transparent)">
-    <div style="font-size:13px;font-weight:600;margin-bottom:4px;color:var(--destructive)">Low-end devices</div>
-    <div style="font-size:12px;color:var(--muted-foreground)">backdrop-filter is GPU-intensive. Degrade to solid on devices without hardware acceleration.</div>
-  </div>
-  <div class="section-card" style="padding:16px;border-color:color-mix(in oklch, var(--destructive) 30%, transparent)">
-    <div style="font-size:13px;font-weight:600;margin-bottom:4px;color:var(--destructive)">Print stylesheets</div>
-    <div style="font-size:12px;color:var(--muted-foreground)">Glass has no meaning on paper. Reset to opaque backgrounds in @media print.</div>
-  </div>
-  <div class="section-card" style="padding:16px;border-color:color-mix(in oklch, var(--destructive) 30%, transparent)">
-    <div style="font-size:13px;font-weight:600;margin-bottom:4px;color:var(--destructive)">Safety-critical UI</div>
-    <div style="font-size:12px;color:var(--muted-foreground)">When misreading a value is dangerous (medical, financial), never rely on translucent surfaces.</div>
-  </div>
-</div>`,
+        render: () => (<Notes items={[["Accessibility preferences", "Reduce Transparency and Increase Contrast use a complete opaque appearance."], ["Unsupported material", "A platform or capture configuration without safe blur falls back to solid."], ["Unfilled variants", "Layout wrappers and ghost or link actions inherit their surroundings without another pane."]]} />),
       },
       {
         title: "Implementation",
         description: "ThemeProvider carries the preference: pass glass or solid (glass wins if both are set), or omit both for the platform default reported by liquidGlassAvailable(). Shared rendering selects a supported material for each surfaced role, with complete opaque fallback when accessibility or capability requires it. Material changes preserve interaction state and native host identity. On the web, setSurface(\"glass\") persists the choice and sets data-surface for the CSS handoff's material mode and page backdrop. Also pass the choice from getSurface() to ThemeProvider so React Native components follow it. CSS variables do not style native components.",
-        html: `<div style="max-width:680px;font-family:var(--font-mono);font-size:12px;background:color-mix(in oklch, var(--muted) 40%, transparent);border:1px solid var(--border);border-radius:8px;padding:1rem;white-space:pre;overflow:auto;color:var(--foreground)">// The surface axis is boolean, like every other Canvas axis.
-&lt;ThemeProvider glass&gt;...&lt;/ThemeProvider&gt;  // force the material on the glass surfaces
-&lt;ThemeProvider solid&gt;...&lt;/ThemeProvider&gt;  // force flat
-&lt;ThemeProvider&gt;...&lt;/ThemeProvider&gt;  // default: glass on iOS 26+, solid elsewhere
-
-// Web persistence: store the choice, then sync it into the provider.
-setSurface("glass"); // persists + updates the CSS handoff attribute
-const surface = getSurface();
-&lt;ThemeProvider glass={surface === "glass"} solid={surface === "solid"}&gt;</div>`,
+        render: () => (<CodeBlock language="tsx" code={"// Request material through the provider.\n<ThemeProvider glass>...</ThemeProvider>\n<ThemeProvider solid>...</ThemeProvider>\n\n// Keep the same tree when a user changes the preference.\n<ThemeProvider glass={glass} solid={!glass}>\n  <Card><Input label=\"Project name\" /></Card>\n</ThemeProvider>"} />),
       },
     ],
   },
@@ -413,82 +385,27 @@ const surface = getSurface();
   {
     slug: "loading",
     name: "Loading",
-    description: "Three loading strategies: skeleton (predictable layout, >300ms), spinner (indeterminate, <300ms), and progressive disclosure (keep parent usable).",
+    description: "Three loading strategies: skeleton for predictable content, spinner for an indeterminate request, and progressive disclosure to keep existing content usable.",
     sections: [
       {
         title: "Choose by intent",
         description: "Pick the right loading pattern based on what the user is waiting for and how long they'll wait.",
-        html: `<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px">
-  <div class="section-card" style="padding:16px">
-    <div style="font-size:13px;font-weight:600;margin-bottom:4px">Skeleton</div>
-    <div style="font-size:12px;color:var(--muted-foreground);margin-bottom:12px">Layout is predictable. Feels faster because shape is visible immediately.</div>
-    <div style="font-size:11px;padding:4px 8px;border-radius:var(--radius-sm,4px);background:color-mix(in oklch, var(--primary) 10%, transparent);color:var(--primary);display:inline-block">Best for: page loads, lists</div>
-  </div>
-  <div class="section-card" style="padding:16px">
-    <div style="font-size:13px;font-weight:600;margin-bottom:4px">Spinner</div>
-    <div style="font-size:12px;color:var(--muted-foreground);margin-bottom:12px">Indeterminate. Good for short waits where content shape is unknown.</div>
-    <div style="font-size:11px;padding:4px 8px;border-radius:var(--radius-sm,4px);background:hsl(38 92% 50%/0.1);color:hsl(38 92% 50%);display:inline-block">Best for: button actions, saves</div>
-  </div>
-  <div class="section-card" style="padding:16px">
-    <div style="font-size:13px;font-weight:600;margin-bottom:4px">Progressive</div>
-    <div style="font-size:12px;color:var(--muted-foreground);margin-bottom:12px">Show what you have, load the rest. Keeps parent interactive.</div>
-    <div style="font-size:11px;padding:4px 8px;border-radius:var(--radius-sm,4px);background:hsl(142 71% 45%/0.1);color:hsl(142 71% 45%);display:inline-block">Best for: dashboards, feeds</div>
-  </div>
-</div>`,
+        render: () => (<Grid minTileWidth={200} relaxed><Card><Typography h4>Skeleton</Typography><Typography small muted>Show the shape of predictable content while it loads.</Typography><Skeleton text short /></Card><Card><Typography h4>Spinner</Typography><Spinner>Waiting for a response</Spinner></Card><Card><Typography h4>Progressive</Typography><Typography small muted>Keep available content usable while another part loads.</Typography><Progress value={0.6} showValue>Loaded sections</Progress></Card></Grid>),
       },
       {
         title: "Spinner in button",
-        description: "Replace button label with spinner during async actions. Disable the button to prevent double submission.",
-        html: `<div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">
-  <button class="btn btn-primary" disabled style="display:inline-flex;align-items:center;gap:8px">
-    <span class="spinner" style="width:14px;height:14px"></span> Saving...
-  </button>
-  <button class="btn btn-outline" disabled style="display:inline-flex;align-items:center;gap:8px">
-    <span class="spinner" style="width:14px;height:14px"></span> Loading
-  </button>
-  <button class="btn btn-destructive" disabled style="display:inline-flex;align-items:center;gap:8px">
-    <span class="spinner" style="width:14px;height:14px"></span> Deleting...
-  </button>
-</div>`,
+        description: "Set loading during an asynchronous action. Button renders its own spinner and prevents duplicate submission while preserving its label.",
+        render: () => (<LoadingButtonDemo />),
       },
       {
         title: "Skeleton row",
         description: "Animated placeholder rows that match the shape of the content being loaded.",
-        html: `<div class="section-card" style="padding:0;overflow:hidden">
-  <div style="display:flex;flex-direction:column">
-    <div style="display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid var(--border)">
-      <div class="skeleton" style="width:32px;height:32px;border-radius:50%"></div>
-      <div style="flex:1"><div class="skeleton" style="width:60%;height:12px;border-radius:4px;margin-bottom:6px"></div><div class="skeleton" style="width:40%;height:10px;border-radius:4px"></div></div>
-      <div class="skeleton" style="width:60px;height:10px;border-radius:4px"></div>
-    </div>
-    <div style="display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid var(--border)">
-      <div class="skeleton" style="width:32px;height:32px;border-radius:50%"></div>
-      <div style="flex:1"><div class="skeleton" style="width:50%;height:12px;border-radius:4px;margin-bottom:6px"></div><div class="skeleton" style="width:35%;height:10px;border-radius:4px"></div></div>
-      <div class="skeleton" style="width:48px;height:10px;border-radius:4px"></div>
-    </div>
-    <div style="display:flex;align-items:center;gap:12px;padding:12px 16px">
-      <div class="skeleton" style="width:32px;height:32px;border-radius:50%"></div>
-      <div style="flex:1"><div class="skeleton" style="width:70%;height:12px;border-radius:4px;margin-bottom:6px"></div><div class="skeleton" style="width:45%;height:10px;border-radius:4px"></div></div>
-      <div class="skeleton" style="width:54px;height:10px;border-radius:4px"></div>
-    </div>
-  </div>
-</div>`,
+        render: () => (<SkeletonDemo />),
       },
       {
         title: "Inline progress bar",
         description: "Determinate progress for file uploads, multi-step processes, or batch operations.",
-        html: `<div style="max-width:400px">
-  <div class="section-card" style="padding:16px">
-    <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:8px">
-      <span style="font-weight:500">Uploading report.pdf</span>
-      <span style="color:var(--muted-foreground)">68%</span>
-    </div>
-    <div style="height:6px;border-radius:9999px;background:var(--muted);overflow:hidden">
-      <div style="width:68%;height:100%;border-radius:9999px;background:var(--primary);transition:width 300ms"></div>
-    </div>
-    <div style="font-size:11px;color:var(--muted-foreground);margin-top:6px">2.4 MB of 3.5 MB</div>
-  </div>
-</div>`,
+        render: () => (<ProgressDemo />),
       },
     ],
   },
@@ -502,122 +419,36 @@ const surface = getSurface();
       {
         title: "Breakpoints",
         description: "Canvas is desktop-first. The base value is the desktop case; a breakpoint entry (sm, md, lg, xl, 2xl) applies at that width and below. useResponsive resolves a value map, useBreakpoint returns the active bucket, and useFormFactor collapses it to phone / tablet / desktop (phone at or below sm, tablet at or below lg, desktop above; macOS and desktop web are the desktop form factor). An unknown viewport (SSR, the pre-layout first frame) resolves to base, the desktop variant; SSR apps that know better pass ThemeProvider's ssrBreakpoint.",
-        html: `<div style="font-size:13px">
-  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:0;border:1px solid var(--border);border-radius:var(--radius-md,8px);overflow:hidden">
-    <div style="padding:8px 12px;font-weight:600;background:color-mix(in oklch, var(--muted) 30%, transparent);border-bottom:1px solid var(--border)">Name</div>
-    <div style="padding:8px 12px;font-weight:600;background:color-mix(in oklch, var(--muted) 30%, transparent);border-bottom:1px solid var(--border)">Applies at</div>
-    <div style="padding:8px 12px;font-weight:600;background:color-mix(in oklch, var(--muted) 30%, transparent);border-bottom:1px solid var(--border)">Typical use</div>
-    <div style="padding:8px 12px;border-bottom:1px solid var(--border);font-weight:500">base</div>
-    <div style="padding:8px 12px;border-bottom:1px solid var(--border);font-family:var(--font-mono);font-size:12px">default</div>
-    <div style="padding:8px 12px;border-bottom:1px solid var(--border);color:var(--muted-foreground)">The desktop base; the widest layouts, where the side table-of-contents shows</div>
-    <div style="padding:8px 12px;border-bottom:1px solid var(--border);font-weight:500">2xl</div>
-    <div style="padding:8px 12px;border-bottom:1px solid var(--border);font-family:var(--font-mono);font-size:12px">&#8804; 1536px</div>
-    <div style="padding:8px 12px;border-bottom:1px solid var(--border);color:var(--muted-foreground)">Large monitors</div>
-    <div style="padding:8px 12px;border-bottom:1px solid var(--border);font-weight:500">xl</div>
-    <div style="padding:8px 12px;border-bottom:1px solid var(--border);font-family:var(--font-mono);font-size:12px">&#8804; 1280px</div>
-    <div style="padding:8px 12px;border-bottom:1px solid var(--border);color:var(--muted-foreground)">Desktops</div>
-    <div style="padding:8px 12px;border-bottom:1px solid var(--border);font-weight:500">lg</div>
-    <div style="padding:8px 12px;border-bottom:1px solid var(--border);font-family:var(--font-mono);font-size:12px">&#8804; 1024px</div>
-    <div style="padding:8px 12px;border-bottom:1px solid var(--border);color:var(--muted-foreground)">Small laptops; the sidebar collapses to a drawer at lg and below</div>
-    <div style="padding:8px 12px;border-bottom:1px solid var(--border);font-weight:500">md</div>
-    <div style="padding:8px 12px;border-bottom:1px solid var(--border);font-family:var(--font-mono);font-size:12px">&#8804; 768px</div>
-    <div style="padding:8px 12px;border-bottom:1px solid var(--border);color:var(--muted-foreground)">Tablets</div>
-    <div style="padding:8px 12px;font-weight:500">sm</div>
-    <div style="padding:8px 12px;font-family:var(--font-mono);font-size:12px">&#8804; 640px</div>
-    <div style="padding:8px 12px;color:var(--muted-foreground)">Phones</div>
-  </div>
-  <p style="margin:12px 0 0;font-size:12.5px;color:var(--muted-foreground);line-height:1.6">A breakpoint is active when the viewport is at its width or narrower, so several match at once on a small screen. The smallest matching breakpoint wins: at 700px wide, md applies (sm at 640px does not match yet), and sm takes over at 640px and below.</p>
-</div>`,
+        render: () => (<DataTable bordered compact stacks columns={["Bucket", "Applies at", "Typical use"]} rows={[["base", "Default", "Desktop base and unknown width"], ["2xl", "≤ 1536px", "Large monitors"], ["xl", "≤ 1280px", "Desktops"], ["lg", "≤ 1024px", "Tablet or narrow app chrome"], ["md", "≤ 768px", "Tablet containers"], ["sm", "≤ 640px", "Phone containers"]]} />),
       },
       {
         title: "The parent provides the bounds",
         description: "A component never dictates its own width. It is FILL (a field, a card, a table, a chart: width 100% plus flexShrink so it fills a Column and shares a Row) or HUG (a button, a badge, a chip: its content's width), and the nearest layout container provides the bounds from one width scale. Container conforms to its parent by default and caps at a named step (xxxs 192 through page 1280) when asked; a Row child's span is its width in twelfths; Grid fits equal tiles. The fields, Field, Form, Button, and ButtonGroup can also name a step of their own (the measure axis: xs, lg, start), which is that same cap moved onto the component. That is Bootstrap's contract in React Native terms, and the reason no component takes a width or maxWidth in its style.",
-        html: `<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:0.75rem">
-  <div class="section-card" style="padding:1rem"><div style="font-size:14px;font-weight:600;margin-bottom:4px">FILL</div><div style="font-size:12.5px;color:var(--muted-foreground);line-height:1.5">Input, Select, Textarea, Card, Alert, DataTable, every chart: width 100% with the row-sharing pair. Fills a Column, takes the remainder beside a hugging Button in a Row, splits a Row equally with another fill sibling, takes its own line in a wrap Row.</div></div>
-  <div class="section-card" style="padding:1rem"><div style="font-size:14px;font-weight:600;margin-bottom:4px">HUG</div><div style="font-size:12.5px;color:var(--muted-foreground);line-height:1.5">Button, Badge, Chip, Kbd, ButtonGroup: the content's own width, resolved against the nearest kit container so a hug component keeps its width inside a stretching Column and stays centered in a Row. block turns a Button or ButtonGroup into FILL, and a measure step (md, lg) makes it FILL up to that width.</div></div>
-  <div class="section-card" style="padding:1rem"><div style="font-size:14px;font-weight:600;margin-bottom:4px">Container steps</div><div style="font-size:12.5px;color:var(--muted-foreground);line-height:1.5">One width scale, Tailwind's max-w ladder copied by hand: xxxs 192, xxs 256, xs 320, sm 384, md 448, lg 512, xl 576, xxl 672, xxxl 768, wide 896, wider 1024, widest 1152, page 1280. Container conforms to its parent by default (full width, no cap); a step caps and centers it, start pins the leading edge. The measure axis puts the same steps on Input, Textarea, Select, Autocomplete, Listbox, Slider, Progress, Field, Form, Button, and ButtonGroup: a step is FILL capped at that width (fluid below it), centered unless start pins it, the cap alone inside a Row.</div></div>
-  <div class="section-card" style="padding:1rem"><div style="font-size:14px;font-weight:600;margin-bottom:4px">Row spans and Grid</div><div style="font-size:12.5px;color:var(--muted-foreground);line-height:1.5">A Row child's span is twelfths of the Row, measured into px cells with the gaps in the arithmetic; stacks ignores spans once stacked (col-12 col-md-6 without a second prop). A bare Column inside a Row hugs its content (col-auto), the toolbar cell for a Select. Grid fits equal-width, equal-height tiles.</div></div>
-</div>`,
+        render: () => (<Column relaxed><Container sm start><Input label="FILL within a sm Container" placeholder="Fluid below 384px" /></Container><Row snug wrap><Badge outline>HUG badge</Badge><Badge>HUG badge</Badge></Row><Grid minTileWidth={220} columns={2} relaxed><Card><Typography>One grid cell</Typography></Card><Card><Typography>Another grid cell</Typography></Card></Grid></Column>),
       },
       {
         title: "Choosing a mechanism",
         description: "Three official layers, in order of preference. Rule of thumb: viewport for the shell, container for the components, intrinsic wherever possible.",
-        html: `<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:0.75rem">
-  <div class="section-card" style="padding:1rem"><div style="font-size:14px;font-weight:600;margin-bottom:4px">1. Intrinsic sizing</div><div style="font-size:12.5px;color:var(--muted-foreground);line-height:1.5">A component is FILL or HUG and the parent provides the bounds: a Container step, a Row span, a Grid cell; plus minWidth floors with wrapping (Stats). Zero JS, correct in any definite container, correct on the server. Never give a component root a fixed width, and never make a parent content-sized where a fill child must resolve: in such a parent the child tracks its own content.</div></div>
-  <div class="section-card" style="padding:1rem"><div style="font-size:14px;font-weight:600;margin-bottom:4px">2. Container measurement</div><div style="font-size:12.5px;color:var(--muted-foreground);line-height:1.5">A component that switches layout measures its OWN width (useContainerBreakpoint, useMeasuredWidth), never the window: it cannot know whether it is on a phone or in a 320px desktop panel. DataTable, Grid, Row stacks, the Navbar collapse, and Form's two-column stack all work this way.</div></div>
-  <div class="section-card" style="padding:1rem"><div style="font-size:14px;font-weight:600;margin-bottom:4px">3. Viewport breakpoints</div><div style="font-size:12.5px;color:var(--muted-foreground);line-height:1.5">Only window-level chrome reads the viewport (useBreakpoint, useFormFactor, useResponsive): the Sidebar's drawer mode, the FilterPanel's drawer, app shells. If the component could plausibly sit inside a column, it is not window-level chrome.</div></div>
-  <div class="section-card" style="padding:1rem"><div style="font-size:14px;font-weight:600;margin-bottom:4px">Pointer capability</div><div style="font-size:12.5px;color:var(--muted-foreground);line-height:1.5">usePointerCoarse and useHoverCapable expose the input class: touch-first constants on native, live media queries on the web, desktop-first on the server. The desktop form factor is a size AND an input class.</div></div>
-</div>`,
+        render: () => (<Notes items={[["1. Intrinsic sizing", "Use FILL or HUG with bounds from a Container step, Row span, or Grid cell. This works on the first frame and server."], ["2. Container measurement", "Grid and Row stacks react to their own width; a component may live in a narrow desktop panel."], ["3. Viewport breakpoints", "Reserve viewport hooks for window-level Sidebar or FilterPanel drawer modes and app shells."], ["Pointer capability", "usePointerCoarse and useHoverCapable express input capability separately from viewport size."]]} />),
       },
       {
         title: "Sidebar - drawer ↔ fixed",
         description: "The kit Sidebar's `responsive` prop does this: a fixed accordion rail on the desktop base, and at lg (1024px) and below a start-edge drill-down drawer opened by the hamburger button. Above lg, the fixed panel stays.",
-        html: `<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
-  <div class="section-card" style="padding:16px">
-    <div style="font-size:13px;font-weight:600;margin-bottom:8px">lg and below (drawer)</div>
-    <div style="display:flex;gap:0;border:1px solid var(--border);border-radius:var(--radius-md,8px);overflow:hidden;height:120px">
-      <div style="flex:1;padding:8px;font-size:11px;display:flex;align-items:start">
-        <div style="width:24px;height:24px;border-radius:4px;background:var(--muted);display:inline-flex;align-items:center;justify-content:center;font-size:10px;cursor:pointer">&#9776;</div>
-        <span style="margin-left:8px;color:var(--muted-foreground)">Full-width content</span>
-      </div>
-    </div>
-    <div style="font-size:11px;color:var(--muted-foreground);margin-top:6px">Sidebar hidden. Hamburger opens drawer overlay.</div>
-  </div>
-  <div class="section-card" style="padding:16px">
-    <div style="font-size:13px;font-weight:600;margin-bottom:8px">Above lg (fixed)</div>
-    <div style="display:flex;gap:0;border:1px solid var(--border);border-radius:var(--radius-md,8px);overflow:hidden;height:120px">
-      <div style="width:48px;background:var(--card);border-right:1px solid var(--border);padding:6px;font-size:9px;color:var(--muted-foreground)">Nav</div>
-      <div style="flex:1;padding:8px;font-size:11px;color:var(--muted-foreground)">Main content area</div>
-    </div>
-    <div style="font-size:11px;color:var(--muted-foreground);margin-top:6px">Sidebar fixed. Collapsible via toggle.</div>
-  </div>
-</div>`,
+        render: () => (<ResponsiveSidebarDemo />),
       },
       {
         title: "Layout primitives: Grid and Row stacks",
         description: "Equal-width tiles belong to Grid: minTileWidth sets the floor (default 240), columns caps the desktop count, and the measured container decides how many fit, exactly like the auto-fit demo below. Content-sized rows that should stack at narrow widths belong to Row stacks (a toolbar, a label beside its actions); when stacked, the Row is the Column with the same props.",
-        html: `<div style="display:flex;flex-direction:column;gap:16px">
-  <div>
-    <div style="font-size:12px;font-weight:600;margin-bottom:6px">Grid minTileWidth={140}: as many tiles as fit</div>
-    <div style="display:grid;gap:8px;grid-template-columns:repeat(auto-fit,minmax(140px,1fr))">
-      <div class="section-card" style="padding:10px;text-align:center;font-size:12px">Tile</div>
-      <div class="section-card" style="padding:10px;text-align:center;font-size:12px">Tile</div>
-      <div class="section-card" style="padding:10px;text-align:center;font-size:12px">Tile</div>
-      <div class="section-card" style="padding:10px;text-align:center;font-size:12px">Tile</div>
-    </div>
-  </div>
-  <div>
-    <div style="font-size:12px;font-weight:600;margin-bottom:6px">GridItem wide: a hero tile spanning two cells</div>
-    <div style="display:grid;gap:8px;grid-template-columns:repeat(3,1fr)">
-      <div class="section-card" style="padding:10px;font-size:12px;grid-column:span 2">Wide tile</div>
-      <div class="section-card" style="padding:10px;text-align:center;font-size:12px">Tile</div>
-    </div>
-  </div>
-  <div>
-    <div style="font-size:12px;font-weight:600;margin-bottom:6px">Row stacks: a toolbar that becomes a column in narrow containers</div>
-    <div style="display:flex;gap:8px;justify-content:space-between;align-items:center">
-      <div class="section-card" style="padding:8px 12px;font-size:12px;flex:1">Search runs&#8230;</div>
-      <div class="section-card" style="padding:8px 12px;font-size:12px">Filter</div>
-      <div class="section-card" style="padding:8px 12px;font-size:12px">New run</div>
-    </div>
-  </div>
-</div>`,
+        render: () => (<ResponsiveLayoutDemo />),
       },
       {
         title: "What's behind the scenes",
         description: "Specific responsive treatments worth noting beyond just stacking grids.",
-        html: `<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:0.75rem">
-  <div class="section-card" style="padding:1rem"><div style="font-size:14px;font-weight:600;margin-bottom:4px">DataTable: pan or collapse</div><div style="font-size:12.5px;color:var(--muted-foreground);line-height:1.5">The table measures its own container. Below sm, web and Android pan the columns in a horizontal scroller with readable minimums; iOS collapses to the primary column, the SwiftUI compact-width treatment. The 320px floor drops once a narrower container is measured.</div></div>
-  <div class="section-card" style="padding:1rem"><div style="font-size:14px;font-weight:600;margin-bottom:4px">Navbar: automatic menu</div><div style="font-size:12.5px;color:var(--muted-foreground);line-height:1.5">At and below sm container width, the links row swaps for a menu button opening the platform dropdown, with the active link checkmarked. No prop: links never clip off a phone screen.</div></div>
-  <div class="section-card" style="padding:1rem"><div style="font-size:14px;font-weight:600;margin-bottom:4px">Overlays: outlet clamp</div><div style="font-size:12.5px;color:var(--muted-foreground);line-height:1.5">Anchored cards (popovers, the calendar peek) clamp both their position and their width inside the overlay outlet, so a fixed-width card fits a phone-width screen instead of running off it.</div></div>
-  <div class="section-card" style="padding:1rem"><div style="font-size:14px;font-weight:600;margin-bottom:4px">Calendar: fluid month cells</div><div style="font-size:12.5px;color:var(--muted-foreground);line-height:1.5">The month grid is seven fixed cells; in a container narrower than the natural grid, the cell shrinks toward a 32px floor so the month fits a 320pt phone with no breakpoint.</div></div>
-  <div class="section-card" style="padding:1rem"><div style="font-size:14px;font-weight:600;margin-bottom:4px">Density is orthogonal</div><div style="font-size:12.5px;color:var(--muted-foreground);line-height:1.5">The compact and comfortable booleans are per-component and independent of the viewport, so a dense surface keeps its tight padding at every width.</div></div>
-  <div class="section-card" style="padding:1rem"><div style="font-size:14px;font-weight:600;margin-bottom:4px">Opt-in narrow modes</div><div style="font-size:12.5px;color:var(--muted-foreground);line-height:1.5">Sidebar responsive becomes a drill-down drawer, FilterPanel responsive becomes a Filters button opening a drawer, Steps stacks goes vertical, and vertical Tabs responsive flattens to the underline bar.</div></div>
-</div>`,
+        render: () => (<Notes items={[["DataTable", "Measures its own container. Narrow tables pan or use the chosen stacked treatment."], ["Navbar", "Its links collapse into the platform menu when its own container narrows."], ["Overlays", "Anchored cards clamp their position and width inside their overlay outlet."], ["Calendar", "Month cells respond to available space without a window breakpoint."], ["Density", "compact and comfortable are independent of viewport size."], ["Narrow modes", "Sidebar and FilterPanel can become drawers; Steps stacks and responsive vertical Tabs use their own narrow treatments."]]} />),
       },
       {
         title: "Try it yourself",
-        html: `<div style="max-width:680px;padding:1rem;border-radius:8px;background:color-mix(in oklch, var(--muted) 40%, transparent);border:1px solid var(--border);font-size:12.5px;color:var(--muted-foreground);line-height:1.6">Resize this browser window. Watch the sidebar collapse into a drawer, the page header stack, and the grids reflow. The same patterns apply across every page in the system.</div>`,
+        render: () => (<Card><Typography small>Resize the preview and edit a field. Grid tiles reflow and Row stacks changes arrangement while the same controls remain mounted, preserving values and selection.</Typography></Card>),
       },
     ],
   },

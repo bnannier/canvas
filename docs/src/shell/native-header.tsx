@@ -2,7 +2,7 @@ import { useState, type ReactNode } from "react";
 import { Platform } from "react-native";
 import { Stack, usePathname, useRouter, useIsFocused } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { View, Pressable, Icon, useTheme } from "@nannier/canvas";
+import { View, Row, Button, Icon } from "@nannier/canvas";
 import { titleFor } from "./topbar";
 import { nativeMenuFor, sectionFor, getActiveGroup, getActiveSlug, type MenuNode } from "../data/nav";
 import { GLYPH_RASTERS } from "../core/glyph-rasters";
@@ -139,12 +139,10 @@ export function NativeHeader() {
         options={{
           headerTitle: title,
           headerRight: () => (
-            <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+            <Row snug alignCenter>
               <ThemeToggles compact />
-              <Pressable onPress={() => setMenuOpen(true)} hitSlop={8} style={{ paddingHorizontal: 8 }} accessibilityRole="button" accessibilityLabel="Menu">
-                <Icon menu size={22} />
-              </Pressable>
-            </View>
+              <Button ghost icon small onPress={() => setMenuOpen(true)} accessibilityLabel="Menu" iconLeft={<Icon menu />} />
+            </Row>
           ),
         }}
       />

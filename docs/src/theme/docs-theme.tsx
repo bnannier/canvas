@@ -1,4 +1,4 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
+import { createContext, startTransition, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 import { Appearance, Platform, useColorScheme } from "react-native";
 import { useGlobalSearchParams } from "expo-router";
 import * as Linking from "expo-linking";
@@ -6,7 +6,6 @@ import { StatusBar } from "expo-status-bar";
 import { ThemeProvider, type Surface } from "@nannier/canvas";
 import { CANVAS_FONTS } from "../ui/fonts";
 import { subscribeThemeLinks, themeFromParams, themeFromURL } from "./theme-links";
-import { useHydrated } from "../lib/hydrated";
 
 // The docs' theme controls. Canvas's ThemeProvider is driven by the dark/light
 // and glass/solid boolean axes; this holds that state and exposes setters to the toggles, so the
@@ -34,9 +33,9 @@ const SERVER_SCHEME: Scheme = "dark";
 const SERVER_SURFACE: Surface = "glass";
 
 // A link's `?scheme=light&surface=solid` is a fact only the browser knows, so the
-// hydration render must reproduce the server's dark glass (src/lib/hydrated.ts) and
-// the seed lands one commit later, instead of React finding markup the server never
-// sent and rebuilding the page.
+// hydration render must reproduce the server's dark glass. Apply the browser's
+// launch choice in a transition so a lazy component page can finish hydrating its
+// Suspense boundary before the theme changes its material markup.
 
 export function useDocsTheme(): DocsThemeContext {
   const c = useContext(Ctx);
@@ -47,7 +46,7 @@ export function useDocsTheme(): DocsThemeContext {
 export function DocsThemeProvider({ children }: { children: ReactNode }) {
   const system = useColorScheme();
   const systemScheme: Scheme = system === "dark" ? "dark" : "light";
-  // Web links seed the first render. On native, Expo's synchronous launch URL
+  // Capture the launch parameters once. On native, Expo's synchronous launch URL
   // also covers the interval before the router publishes its first params.
   // Later in-app navigation keeps the user's manual appearance choices.
   const params = useGlobalSearchParams<{ scheme?: string; surface?: string }>();
@@ -58,12 +57,23 @@ export function DocsThemeProvider({ children }: { children: ReactNode }) {
   // The web topbar sun/moon and the native Appearance controls (the iOS header menu
   // rows, the Android overflow-sheet footer) change the scheme; choosing System
   // restores live OS tracking. The Solid/Glass toggle (shown where glass is not the
-  // OS material) flips the surface. Until hydrated, both read as the server's.
-  const hydrated = useHydrated();
-  const [override, setOverride] = useState<Scheme | null>(seed.scheme ?? SERVER_SCHEME);
-  const scheme: Scheme = hydrated ? (override ?? systemScheme) : SERVER_SCHEME;
-  const [surfaceChoice, setSurface] = useState<Surface>(seed.surface ?? SERVER_SURFACE);
-  const surface: Surface = hydrated ? surfaceChoice : SERVER_SURFACE;
+  // OS material) flips the surface. Web always starts with the exported appearance;
+  // native has no server markup to hydrate and uses the launch choice immediately.
+  const [override, setOverride] = useState<Scheme | null>(() =>
+    Platform.OS === "web" ? SERVER_SCHEME : seed.scheme ?? SERVER_SCHEME,
+  );
+  const scheme: Scheme = override ?? systemScheme;
+  const [surface, setSurface] = useState<Surface>(() =>
+    Platform.OS === "web" ? SERVER_SURFACE : seed.surface ?? SERVER_SURFACE,
+  );
+
+  useEffect(() => {
+    if (Platform.OS !== "web") return;
+    startTransition(() => {
+      if (seed.scheme) setOverride(seed.scheme);
+      if (seed.surface) setSurface(seed.surface);
+    });
+  }, [seed]);
 
   // Sync the native system chrome (the iOS Liquid Glass bars, Android's Material
   // bars) to the initial scheme once at startup, since the initial override is

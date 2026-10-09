@@ -1,30 +1,14 @@
 import {
-  View,
-  Text,
-  alpha,
-  useTheme,
-  colorsByScheme,
-  mintColors,
-  palette,
-  statusHues,
-  Swatch,
-  Row,
-  Column,
-  Card,
-  Alert,
-  Badge,
-  DataTable,
-  GlassSurface,
-  Typography,
-  type ColorTokens,
-  type StatusTone,
-  Grid, useResponsive } from "@nannier/canvas";
+  useTheme, colorsByScheme, mintColors, palette, statusHues, Swatch, Row,
+  Column, Card, Alert, Badge, BadgeGroup, DataTable, Typography, Grid,
+  ThemeProvider, Navbar, Input, Dropdown, useToast, type ColorTokens, type StatusTone,
+} from "@nannier/canvas";
 import { Page } from "../../../ui/page";
 import { PageNav } from "../../../ui/page-nav";
 import { CodeBlock } from "../../../ui/code-block";
 import { DoDontCard } from "../../../ui/dont";
 import { colorFormats } from "../../../ui/color";
-import { TokenH1, TokenLede, TokenSection, Callout, GradientFill } from "../../../ui/tokens-kit";
+import { TokenH1, TokenLede, TokenSection, Callout } from "../../../ui/tokens-kit";
 
 // Every value on this page is read from the kit at render time (useTheme,
 // colorsByScheme, mintColors, palette, the active glass tints). Nothing is restated here:
@@ -217,10 +201,26 @@ function samples(tokens: ColorTokens, keys: { key: keyof ColorTokens; name: stri
   });
 }
 
+function MaterialSample({ glass }: { glass?: boolean }) {
+  const { dark, tokens } = useTheme();
+  const { toast } = useToast();
+  return (
+    <ThemeProvider dark={dark} light={!dark} tokens={tokens} glass={glass} solid={!glass}>
+      <Column cozy>
+        <Typography h3>{glass ? "Glass" : "Solid"}</Typography>
+        <Navbar brand="Workspace" links={["Home", "Library", "Settings"]} />
+        <Card>
+          <Typography medium>Project settings</Typography>
+          <Input label="Project name" defaultValue="Identity Platform" />
+          <Dropdown trigger="Project actions" items={[{ label: "Archive project" }, { label: "Duplicate project" }]} onSelect={(item) => toast({ message: item.label })} />
+        </Card>
+      </Column>
+    </ThemeProvider>
+  );
+}
+
 export default function ColorsScreen() {
   const { tokens, glass } = useTheme();
-  // Two columns above md (768), by the kit's viewport bucket (desktop on the server).
-  const wide = useResponsive({ base: true, md: false });
 
   // The reference table carries both schemes in both notations, which is where the
   // density belongs once the samples above are calm.
@@ -239,7 +239,7 @@ export default function ColorsScreen() {
 
   return (
     <Page>
-      <View style={{ gap: 40 }}>
+      <Column loose>
         {/* Intro */}
         <Column cozy>
           <TokenH1>Colors & Theme</TokenH1>
@@ -306,13 +306,13 @@ export default function ColorsScreen() {
               <Alert error title="error" description={ramp("error")} icon={<Badge status error accessibilityLabel="error" />} />
               <Alert info title="info" description={ramp("info")} icon={<Badge status info accessibilityLabel="info" />} />
             </Grid>
-            <Row wrap snug alignCenter>
+            <BadgeGroup>
               <Badge status success>Active</Badge>
               <Badge status warning>Pending</Badge>
               <Badge status error>Failed</Badge>
               <Badge status info>Info</Badge>
               <Badge status neutral>Inactive</Badge>
-            </Row>
+            </BadgeGroup>
           </Column>
         </TokenSection>
 
@@ -332,55 +332,21 @@ export default function ColorsScreen() {
           anatomy={`Glass publishes its OWN fills instead of rewriting a semantic one, one per layer of the model, and each platform has its own set. Here, in the active scheme: the functional shells paint glass-tint (${glass["glass-tint"]}), the content panes the denser glass-tint-content (${glass["glass-tint-content"]}), the controls the glass-tint-control puck (${glass["glass-tint-control"]}), and the read-and-act surfaces (menus, alert dialogs, toasts, tooltips) the densest glass-tint-dense (${glass["glass-tint-dense"]}). The web's are Dark Factory's frost tints; iOS and Android keep their own (glassByScheme). popover and card keep their opaque values in BOTH schemes, so solid mode is untouched and the fills stay independent; every surface takes its tint UNDER the real material.`}
         >
           <Column cozy>
-            {/* A live material sample: the bar floats over content, which is the only
-                condition under which glass reads as glass at all. */}
-            {/* Docs illustration, not a reusable control: a plate of stand-in content
-                with a bar floating over it. Built from the raw primitives on purpose,
-                and every colour still comes from a token (primary-foreground is the
-                kit's "text on a saturated fill"), never a literal. */}
-            <GradientFill colors={[colorsByScheme.light.primary, colorsByScheme.light["chart-2"]]} height={236}>
-              {/* A dark scrim over the violet-to-teal wash: the material has to bend something,
-                  and it reads on a deep backdrop the way the design system's own
-                  glass sheet shows it. */}
-              <View style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, backgroundColor: alpha(palette["zinc-950"], 0.55) }} />
-              {/* Stand-in content, run the full height so it passes BEHIND the bar.
-                  A glass bar with nothing behind it renders flat, which is the one
-                  thing this card must not demonstrate. */}
-              <View style={{ position: "absolute", left: 22, right: 22, top: 18, gap: 7 }}>
-                {[100, 72, 88, 54, 96, 66, 100, 78, 90, 58, 94, 70].map((w, i) => (
-                  <View key={i} style={{ height: 9, width: `${w}%`, borderRadius: 5, backgroundColor: alpha(tokens["primary-foreground"], 0.34) }} />
-                ))}
-              </View>
-              {/* No backgroundColor here on purpose: GlassSurface paints its own
-                  under-fill (the glass-tint token, the material's own fill, never a
-                  semantic surface token) behind the frost and the specular rim.
-                  Passing a fill stacks an opaque layer over the material and
-                  flattens it, which is exactly what this card exists to show. */}
-              {/* `sheer`: the see-through frost for content that floats over a live
-                  backdrop. The default frost is tuned for functional overlays, which
-                  must occlude what they open over; a showcase bar must do the
-                  opposite and let the content read through the material. */}
-              <GlassSurface sheer style={{ position: "absolute", left: 16, right: 16, bottom: 14, height: 56, borderRadius: 9999, flexDirection: "row", alignItems: "center", justifyContent: "space-around" }}>
-                {/* The bar is a functional-layer overlay, so its labels take
-                    popover-foreground, the text partner of the overlay surface: the
-                    pair flips together with the scheme, which is the rule this page
-                    teaches two sections down. */}
-                {["Home", "Library", "Settings"].map((label) => (
-                  <Text key={label} style={{ fontSize: 13, lineHeight: 18, color: tokens["popover-foreground"] }}>{label}</Text>
-                ))}
-              </GlassSurface>
-            </GradientFill>
-            <Typography tiny muted>
-              Glass is layered. Navigation and overlays float in the sheer functional layer; the content panes beneath them take a denser tint so text keeps its contrast; the controls on those panes are bright pucks, brand-tinted where their fill is the brand; and the surfaces you read and act on (a menu, an alert, a toast) take the densest tint so nothing reads through their rows. Each layer bends the one beneath it.
+            <Grid minTileWidth={300} columns={2} relaxed>
+              <MaterialSample />
+              <MaterialSample glass />
+            </Grid>
+            <Typography small muted>
+              Both samples use the same Navbar, Card, Input and Dropdown components. The provider selects their material. Open a menu to compare its dense overlay with the content panel beneath it.
             </Typography>
-            <Typography tiny muted>
-              GlassSurface paints the real material per platform: Apple's Liquid Glass through expo-glass-effect on iOS 26+, Dark Factory's plain frost on the web (the layer's tint over a 24px backdrop blur, edged by a 1px hairline, with no refraction and no highlight), a genuine frosted blur through expo-blur on Android and older iOS, and the glass-tint fill above on its own as the final fallback. It is never a hand-painted blur on one component, and it never reaches into the semantic color set.
+            <Typography small muted>
+              Functional navigation and overlays, content panels, controls and dense menus each use their own tint. Inner fills become ink tints so selected rows and code pills remain part of the surface.
             </Typography>
-            <Typography tiny muted>
-              It only reads over something worth bending. Over a flat fill it renders flat, so a glass bar has to have content passing behind it.
+            <Typography small muted>
+              Supported iOS devices use native Liquid Glass for eligible functional surfaces; web surfaces use Dark Factory frost with a 24px blur and inset hairline. Native frost uses supported blur integrations. Missing or unsafe material support restores the complete opaque appearance.
             </Typography>
-            <Typography tiny muted>
-              Fills inside a surface (a hovered row, a header band, a code pill) become ink tints under glass so they never sit as opaque patches on the material, and the inverse surfaces (a tooltip bubble, the Material snackbar) tint with the ink at the dense alpha so their inverse text keeps its contrast. Under Reduce Transparency or Increase Contrast every layer degrades to its opaque token.
+            <Typography small muted>
+              Reduce Transparency and Increase Contrast also select opaque surfaces. The text, controls and layout stay usable in every mode.
             </Typography>
           </Column>
         </TokenSection>
@@ -422,14 +388,17 @@ export default function ColorsScreen() {
         >
           <Column relaxed>
             <Grid minTileWidth={320} relaxed>
-              <Card title="1 · Tokens (tokens.ts)">
+              <Card>
+                <Typography h3>1 · Tokens (tokens.ts)</Typography>
                 <CodeBlock code={TOKENS_SRC} />
               </Card>
-              <Card title="2 · The theme runtime (useTheme)">
+              <Card>
+                <Typography h3>2 · The theme runtime (useTheme)</Typography>
                 <CodeBlock code={THEME_RUNTIME} />
               </Card>
             </Grid>
-            <Card title="3 · One prop, resolved live">
+            <Card>
+              <Typography h3>3 · One prop, resolved live</Typography>
               <Column cozy>
                 <CodeBlock code={DYNAMIC} />
                 <Typography small muted>
@@ -446,16 +415,16 @@ export default function ColorsScreen() {
         >
           <Column relaxed>
             {DO_DONT.map((pair, i) => (
-              <View key={i} style={{ flexDirection: wide ? "row" : "column", gap: 16 }}>
-                <DoDontCard dont caption={pair.bad.note} code={pair.bad.code} style={wide ? { flex: 1 } : null} />
-                <DoDontCard do caption={pair.good.note} code={pair.good.code} style={wide ? { flex: 1 } : null} />
-              </View>
+              <Row key={i} stacks stackBreakpoint="xl" relaxed>
+                <Column span={6}><DoDontCard dont caption={pair.bad.note} code={pair.bad.code} /></Column>
+                <Column span={6}><DoDontCard do caption={pair.good.note} code={pair.good.code} /></Column>
+              </Row>
             ))}
           </Column>
         </TokenSection>
 
         <PageNav />
-      </View>
+      </Column>
     </Page>
   );
 }
