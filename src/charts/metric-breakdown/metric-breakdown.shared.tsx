@@ -95,6 +95,9 @@ export function rateColor(tokens: ColorTokens, p: MetricBreakdownProps): string 
 
 
 // The uppercase caption under the headline and the rate (11/14 muted).
+// The trend's trailing value tag: a value annotation.
+const SPARK_TAG_TYPE = { fontSize: 11, lineHeight: 14, fontWeight: "500" as const };
+
 function captionStyle(tokens: ColorTokens) {
   return {
     fontSize: 11,
@@ -192,7 +195,7 @@ export function createMetricBreakdown(skin: ChartSkin, parts: MetricBreakdownPar
               importantForAccessibility="no-hide-descendants"
               style={{ alignSelf: "flex-end", paddingHorizontal: 4 }}
             >
-              <Text style={{ fontSize: 11, lineHeight: 14, fontWeight: "500", color: tagColor, ...tabularNums() }}>
+              <Text style={{ ...SPARK_TAG_TYPE, color: tagColor, ...tabularNums() }}>
                 {sparkUnit != null && sparkUnit !== "" ? `${formatValue(last)} ${sparkUnit}` : formatValue(last)}
               </Text>
             </View>

@@ -177,7 +177,7 @@ export const webSkin: SelectSkin = {
     flexDirection: "row",
     alignItems: "center",
     gap: 10,
-    borderRadius: 10,
+    borderRadius: shape.web.control,
     paddingHorizontal: 12,
     paddingVertical: 10,
     ...(selected ? { backgroundColor: t.accent } : null),

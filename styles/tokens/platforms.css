@@ -8,7 +8,7 @@
 
      <div data-platform="ios">…</div>     iOS 26 / HIG
      <div data-platform="android">…</div> Material 3
-     (default / data-platform="web")      the established Canvas web look
+     (default / data-platform="web")      Dark Factory's web look
 
    Values are lifted verbatim from the upstream skins. */
 :root,[data-platform="web"]{
@@ -140,14 +140,14 @@
   --p-cal-dot:4px;--p-cal-dot-bottom:4px;
   /* Collapsible (collapsible.styles.ts webSkin: the Radix caret, 0→90°) */
   --p-collapse-glyph:"chevron-right" /* @kind other */;--p-collapse-spin:90deg /* @kind other */;
-  /* Progress (progress.styles.ts webSkin: shadcn h-2 track at primary/20) */
+  /* Progress (progress.styles.ts webSkin: Dark Factory's 6px capsule meter on its line-colored track) */
   --p-progress-h-small:4px;--p-progress-h-base:6px;--p-progress-h-large:8px;
   --p-progress-track:var(--border);
   --p-progress-gap:0px;--p-progress-stop:0px;--p-progress-stop-opacity:0 /* @kind other */;
   /* Emblem (emblem.styles.ts webSkin: the Catalyst rounded square) */
   --p-emblem-box-small:32px;--p-emblem-box-default:40px;--p-emblem-box-large:48px;
   --p-emblem-icon-small:16px;--p-emblem-icon-default:20px;--p-emblem-icon-large:24px;
-  --p-emblem-radius-small:10px;--p-emblem-radius-default:12px;--p-emblem-radius-large:14px;
+  --p-emblem-radius-small:12px;--p-emblem-radius-default:12px;--p-emblem-radius-large:12px;
   --p-emblem-monogram-weight:700;--p-emblem-monogram-tracking:0px;
   /* StackedList (stacked-lists.styles.ts webSkin) */
   --p-list-radius:14px;--p-list-border:1px;--p-list-shadow:var(--shadow);
@@ -190,7 +190,7 @@
   --p-select-font:14px;--p-select-lh:20px;--p-select-chevron:"▾" /* @kind other */;--p-select-chevron-color:var(--muted-foreground);--p-select-chevron-weight:400;
   --p-select-panel-max:280px;--p-select-panel-radius:12px;--p-select-panel-border:1px;--p-select-panel-pad-x:8px;--p-select-panel-pad-y:8px;
   --p-select-panel-shadow:var(--shadow-lg);
-  --p-select-row-radius:10px;--p-select-row-pad-x:12px;--p-select-row-pad-y:10px;--p-select-row-gap:10px;--p-select-row-min-h:0px;
+  --p-select-row-radius:8px;--p-select-row-pad-x:12px;--p-select-row-pad-y:10px;--p-select-row-gap:10px;--p-select-row-min-h:0px;
   --p-select-row-font:14px;--p-select-row-lh:20px;--p-select-row-selected-fill:var(--accent);
   --p-select-check-color:var(--popover-foreground);--p-select-check-weight:400;
   /* AvatarMenu identity pill (avatar.styles.ts webMenuSkin, every platform: Dark Factory's
@@ -208,7 +208,7 @@
   --p-ac-font:14px;--p-ac-lh:20px;--p-ac-chevron:var(--muted-foreground);
   --p-ac-menu-max:280px;--p-ac-menu-radius:12px;--p-ac-menu-border:1px;--p-ac-menu-pad-x:8px;--p-ac-menu-pad-y:8px;
   --p-ac-menu-shadow:var(--shadow-lg);
-  --p-ac-row-radius:10px;--p-ac-row-pad-x:12px;--p-ac-row-pad-y:10px;--p-ac-row-gap:10px;--p-ac-row-min-h:0px;--p-ac-row-separator:0px;
+  --p-ac-row-radius:8px;--p-ac-row-pad-x:12px;--p-ac-row-pad-y:10px;--p-ac-row-gap:10px;--p-ac-row-min-h:0px;--p-ac-row-separator:0px;
   --p-ac-row-font:14px;--p-ac-row-lh:20px;--p-ac-row-selected:var(--accent);
   --p-ac-check-w:14px;--p-ac-check-color:var(--popover-foreground);
   /* Dropdown and RowMenu menus (src/style/menu-look.ts: Dark Factory's menu, 33px rows 2px
@@ -283,10 +283,10 @@
   --p-page-arrow-border:var(--border);--p-page-hover-fill:var(--hover);
   /* Slider (slider.styles.ts webSkin — shadcn-matched) */
   --p-slider-track-h-small:6px;--p-slider-track-h-base:8px;--p-slider-track-h-large:10px;
-  --p-slider-track-radius:999px;--p-slider-inner-radius:999px;--p-slider-gap:0px;--p-slider-row-min-h:16px;
+  --p-slider-track-radius:9999px;--p-slider-inner-radius:9999px;--p-slider-gap:0px;--p-slider-row-min-h:16px;
   --p-slider-thumb-w-small:16px;--p-slider-thumb-w-base:20px;--p-slider-thumb-w-large:24px;
   --p-slider-thumb-h-small:16px;--p-slider-thumb-h-base:20px;--p-slider-thumb-h-large:24px;
-  --p-slider-thumb-radius:999px;--p-slider-thumb-fill:var(--background);
+  --p-slider-thumb-radius:9999px;--p-slider-thumb-fill:var(--background);
   --p-slider-thumb-border:1px;--p-slider-thumb-border-color:var(--primary);--p-slider-thumb-shadow:0px 1px 2px rgba(0,0,0,0.1);
   --p-slider-stop:0px;--p-slider-stop-opacity:0 /* @kind other */;
   /* Stepper (stepper.styles.ts webSkin) */
@@ -296,7 +296,7 @@
   --p-stepper-field-font:14px;--p-stepper-field-lh:20px;--p-stepper-field-justify:center /* @kind other */;--p-stepper-field-pad:4px;
   --p-stepper-field-left-display:none /* @kind other */;--p-stepper-field-inline-display:inline-flex /* @kind other */;
   --p-stepper-divider-display:inline-flex /* @kind other */;--p-stepper-divider-w:1px;--p-stepper-divider-inset:0px;--p-stepper-divider-color:var(--border);
-  --p-stepper-group-radius:6px;--p-stepper-group-border:1px;--p-stepper-group-fill:var(--background);--p-stepper-group-gap:0px;--p-stepper-outer-gap:0px;
+  --p-stepper-group-radius:10px;--p-stepper-group-border:1px;--p-stepper-group-fill:var(--background);--p-stepper-group-gap:0px;--p-stepper-outer-gap:0px;
   /* InputOTP (input-otp.styles.ts webSkin — shadcn input-otp) */
   --p-otp-seam:0px;--p-otp-seam-active:0px;--p-otp-shared-edge:0 /* @kind other */;--p-otp-gap-small:0px;--p-otp-gap-base:0px;--p-otp-gap-large:0px;
   --p-otp-w-small:40px;--p-otp-w-base:48px;--p-otp-w-large:56px;
@@ -352,7 +352,7 @@
 
   /* Swatch (swatch.styles.ts webSkin) */
   --p-swatch-box-small:40px;--p-swatch-box-default:56px;--p-swatch-box-large:72px;
-  --p-swatch-radius-small:10px;--p-swatch-radius-default:12px;--p-swatch-radius-large:14px;
+  --p-swatch-radius-small:12px;--p-swatch-radius-default:12px;--p-swatch-radius-large:12px;
   --p-swatch-name-tracking:0px;--p-swatch-mono-tracking:0px;--p-swatch-value-weight:500;
 }
 
@@ -415,7 +415,7 @@
   --p-nav-links-gap:8px;--p-nav-link-radius:9999px;--p-nav-link-pad-x:12px;--p-nav-link-pad-y:6px;
   --p-nav-link-font:15px;--p-nav-link-lh:20px;
   /* DataTable — SwiftUI Table: title-case 13pt headings, 52pt rows, 17pt body */
-  --p-table-radius:10px;
+  --p-table-radius:12px;
   --p-table-head-font:13px;--p-table-head-lh:18px;--p-table-head-weight:400;--p-table-head-transform:none /* @kind other */;--p-table-head-tracking:-0.08px;
   --p-table-cell-font:17px;--p-table-cell-lh:22px;--p-table-cell-tracking:-0.43px;--p-table-cell-pad-y:15px;--p-table-cell-pad-y-compact:8px;
   /* ButtonGroup — UISegmentedControl (iOS 26): a muted capsule track, raised selected pill */
@@ -447,11 +447,11 @@
   --p-dl-term-font:17px;--p-dl-term-lh:22px;--p-dl-term-tracking:-0.43px;--p-dl-term-color:var(--foreground);
   --p-dl-value-font:17px;--p-dl-value-lh:22px;--p-dl-value-weight:400;--p-dl-value-tracking:-0.43px;--p-dl-value-color:var(--muted-foreground);
   --p-dl-stacked-tracking:0.06px;--p-dl-header-tracking:-0.2px;
-  /* MediaObject — iOS: 10pt continuous surface, 8pt icon tile, SF tracking */
-  --p-media-radius:10px;--p-media-icon-radius:8px;--p-media-glyph-tracking:-0.31px;--p-media-title-tracking:-0.15px;--p-media-body-tracking:-0.15px;
-  /* GridList — HIG Collections: 10pt continuous thumbnail, SF-tracked card title */
-  --p-grid-gallery-radius:10px;--p-grid-card-title-tracking:-0.15px;
-  /* Slider — iOS 27: 6pt rail (3pt radius) + a 37x24pt white capsule knob */
+  /* MediaObject (media-objects.styles.ts iosSkin: the 12pt continuous card, the web's 8pt icon box, SF tracking) */
+  --p-media-radius:12px;--p-media-icon-radius:8px;--p-media-glyph-tracking:-0.31px;--p-media-title-tracking:-0.15px;--p-media-body-tracking:-0.15px;
+  /* GridList (grid-lists.styles.ts iosSkin: the 12pt continuous tile thumbnail, SF-tracked card title) */
+  --p-grid-gallery-radius:12px;--p-grid-card-title-tracking:-0.15px;
+  /* Slider (slider.styles.ts iosSkin: a 6pt capsule rail and a 37x24pt white capsule knob, the iOS 27 kit's) */
   --p-slider-track-h-small:5px;--p-slider-track-h-base:6px;--p-slider-track-h-large:7px;
   --p-slider-row-min-h:44px;
   --p-slider-thumb-w-small:32px;--p-slider-thumb-w-base:37px;--p-slider-thumb-w-large:42px;
@@ -493,15 +493,15 @@
   --p-sheet-divider-h:0px;--p-sheet-rows-gap:10px;
   --p-sheet-row-min-h:48px;--p-sheet-row-radius:9999px;--p-sheet-row-fill:color-mix(in oklab, var(--foreground) 10%, transparent);
   --p-sheet-row-weight:500;--p-sheet-row-tracking:-0.43px;--p-sheet-row-label:var(--foreground);
-  /* Command — iOS: 16pt continuous card, 44pt rows at 17/22 */
-  --p-cmd-radius:16px;--p-cmd-search-pad-x:16px;--p-cmd-search-pad-y:14px;--p-cmd-search-gap:10px;--p-cmd-search-min-h:44px;--p-cmd-glyph:20px;
+  /* Command (iOS): the web menu corner (12) with the continuous curve, 44pt rows at 17/22 */
+  --p-cmd-radius:12px;--p-cmd-search-pad-x:16px;--p-cmd-search-pad-y:14px;--p-cmd-search-gap:10px;--p-cmd-search-min-h:44px;--p-cmd-glyph:20px;
   --p-cmd-row-pad-x:16px;--p-cmd-row-pad-y:11px;--p-cmd-row-min-h:44px;--p-cmd-row-font:17px;--p-cmd-row-lh:22px;--p-cmd-row-tracking:-0.4px;
   /* Dialog — iOS 27 alert: borderless 28pt card, 30% scrim, capsule actions */
   --p-dialog-scrim:rgba(0,0,0,0.3);--p-dialog-radius:28px;--p-dialog-border:0px;--p-dialog-shadow:var(--shadow-lg);
   --p-dialog-title:20px;--p-dialog-title-lh:25px;--p-dialog-title-weight:700;
   --p-dialog-body:15px;--p-dialog-body-lh:20px;
   --p-dialog-footer-gap:12px;--p-dialog-footer-top:20px;
-  --p-alert-btn-flex:1 1 0 /* @kind other */;--p-alert-btn-min-h:50px;--p-alert-btn-pad:14px 16px;--p-alert-btn-radius:22px;
+  --p-alert-btn-flex:1 1 0 /* @kind other */;--p-alert-btn-min-h:50px;--p-alert-btn-pad:14px 16px;--p-alert-btn-radius:9999px;
   --p-alert-btn-font:17px;--p-alert-btn-lh:22px;--p-alert-btn-weight:600;
   --p-alert-cancel-border:0px;--p-alert-cancel-fill:var(--secondary);--p-alert-cancel-label:var(--secondary-foreground);
   --p-alert-confirm-destructive-fill:var(--secondary);--p-alert-confirm-destructive-label:var(--destructive-text);
@@ -510,14 +510,14 @@
   --p-ad-title:20px;--p-ad-title-lh:25px;--p-ad-title-weight:700;
   --p-ad-desc:16px;--p-ad-desc-lh:21px;
   --p-ad-actions-justify:stretch /* @kind other */;--p-ad-actions-gap:12px;
-  --p-ad-btn-flex:1 1 0 /* @kind other */;--p-ad-btn-min-h:50px;--p-ad-btn-pad:14px 16px;--p-ad-btn-radius:999px;--p-ad-btn-font:17px;--p-ad-btn-lh:22px;
+  --p-ad-btn-flex:1 1 0 /* @kind other */;--p-ad-btn-min-h:50px;--p-ad-btn-pad:14px 16px;--p-ad-btn-radius:9999px;--p-ad-btn-font:17px;--p-ad-btn-lh:22px;
   --p-ad-cancel-border:0px;--p-ad-cancel-fill:var(--secondary);--p-ad-cancel-label:var(--secondary-foreground);--p-ad-cancel-weight:400;
   --p-ad-confirm-weight:600;--p-ad-confirm-destructive-fill:var(--secondary);--p-ad-confirm-destructive-label:var(--destructive-text);
   /* Drawer — iOS 27 sheets: lineless, 38pt continuous, soft 0/15/50 elevation, grabber */
   --p-drawer-scrim:rgba(0,0,0,0.2);--p-drawer-border:0px;--p-drawer-shadow:0px 15px 50px rgba(0,0,0,0.18);
   --p-drawer-side-radius:38px;--p-drawer-sheet-radius:38px;
   --p-drawer-handle-w:60px;--p-drawer-handle-h:4px;--p-drawer-handle-top:5px;
-  /* Autocomplete — iOS 27: a filled 10pt continuous field, 26pt menu, check-only selection */
+  /* Autocomplete (autocomplete.styles.ts iosSkin: a filled 8pt continuous field, the 26pt menu, check-only selection) */
   --p-ac-h:44px;--p-ac-radius:8px;--p-ac-radius-bottom:8px;--p-ac-fill:var(--secondary);
   --p-ac-font:15px;--p-ac-lh:20px;--p-ac-chevron:var(--primary);
   --p-ac-menu-max:260px;--p-ac-menu-radius:26px;--p-ac-menu-border:0px;--p-ac-menu-pad-x:0px;--p-ac-menu-pad-y:6px;
@@ -728,14 +728,14 @@
   --p-dialog-scrim:rgba(0,0,0,0.32);--p-dialog-radius:28px;--p-dialog-border:0px;--p-dialog-shadow:var(--shadow-lg);
   --p-dialog-title:22px;--p-dialog-title-lh:28px;--p-dialog-title-weight:500;
   --p-dialog-body-gap:12px;--p-dialog-footer-top:24px;
-  --p-alert-btn-min-h:40px;--p-alert-btn-pad:10px 12px;--p-alert-btn-radius:20px;--p-alert-btn-tracking:0.1px;
+  --p-alert-btn-min-h:40px;--p-alert-btn-pad:10px 12px;--p-alert-btn-radius:9999px;--p-alert-btn-tracking:0.1px;
   --p-alert-cancel-border:0px;--p-alert-cancel-fill:transparent;--p-alert-cancel-label:var(--primary-text);
   --p-alert-confirm-fill:transparent;--p-alert-confirm-label:var(--primary-text);
   --p-alert-confirm-destructive-fill:transparent;--p-alert-confirm-destructive-label:var(--destructive-text);
   /* AlertDialog — M3: 28dp elevated card, headline-small title, flat TEXT actions */
   --p-ad-scrim:rgba(0,0,0,0.32);--p-ad-radius:28px;--p-ad-border:0px;--p-ad-shadow:var(--shadow-md);
   --p-ad-title:24px;--p-ad-title-lh:32px;--p-ad-title-weight:400;--p-ad-desc-gap:16px;
-  --p-ad-btn-min-h:40px;--p-ad-btn-pad:10px 12px;--p-ad-btn-radius:20px;
+  --p-ad-btn-min-h:40px;--p-ad-btn-pad:10px 12px;--p-ad-btn-radius:9999px;
   --p-ad-cancel-border:0px;--p-ad-cancel-fill:transparent;--p-ad-cancel-label:var(--primary-text);
   --p-ad-confirm-fill:transparent;--p-ad-confirm-label:var(--primary-text);
   --p-ad-confirm-destructive-fill:transparent;--p-ad-confirm-destructive-label:var(--destructive-text);
@@ -825,10 +825,10 @@
   --p-board-card-desc-font:12px;--p-board-card-desc-lh:16px;
 
   /* DragHandle (drag-drop.styles.ts androidSkin: 40dp circular grip, the M3 min touch target; 20px glyph) */
-  --p-drag-handle-size:40px;--p-drag-handle-radius:20px;--p-drag-handle-icon:20px;
+  --p-drag-handle-size:40px;--p-drag-handle-radius:9999px;--p-drag-handle-icon:20px;
 
   /* Declared where the skin differs from the web value this block would otherwise inherit. */
-  --p-acc-card-radius:12px;--p-cmd-radius:8px;--p-table-radius:8px;--p-tab-track-radius:0px;--p-tab-item-radius:0px;--p-tabbar-radius:0px;--p-tabbar-item-radius:0px;
+  --p-acc-card-radius:12px;--p-cmd-radius:12px;--p-table-radius:12px;--p-tab-track-radius:0px;--p-tab-item-radius:0px;--p-tabbar-radius:0px;--p-tabbar-item-radius:0px;
 }
 
 /* iOS skin values that resolve PER SCHEME upstream: the drawer scrim

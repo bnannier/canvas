@@ -9,9 +9,8 @@ import { type FeedSkin } from "./feeds.shared.js";
 // and divider follow light/dark). Feed uses one static content frame in glass
 // mode and the opaque tokens.card fill for its solid fallback; rows inherit
 // the shared frame. Only the small native touches shift per OS:
-//   Web: the established Canvas look (the current feed, lifted verbatim) — an
-//     8-radius card with a 1px `border`, no shadow; rows pressed dim to 0.7
-//     opacity (the kit's content default).
+//   Web: a card at the card corner with a 1px `border`, no shadow; rows pressed dim
+//     to 0.7 opacity (the kit's content default).
 //   iOS (HIG / SF conventions): a softer 12-radius card (the iOS grouped-list
 //     corner), an extra hair of row breathing room, SF-style tightened tracking
 //     on the labels, and an opacity dim (~0.8) on press, matching the iOS
@@ -49,8 +48,8 @@ export function nodeDot(tokens: ColorTokens): ViewStyle {
   return { height: 6, width: 6, borderRadius: 9999, backgroundColor: tokens["muted-foreground"] };
 }
 
-// ---------- Web: the established Canvas look (lifted verbatim) ----------
-// The current feed: an 8-radius card with a 1px `border` and no shadow; a
+// ---------- Web: the bordered feed card ----------
+// A card at the card corner with a 1px `border` and no shadow; a
 // 14pt/20 line with a 500-weight actor and muted action; a 12pt/16 muted
 // timestamp; a 28px bordered connector node carrying 12pt/500 initials; a 1px
 // connector line under the node center; hairline-ruled avatar rows. Pressable

@@ -140,17 +140,38 @@ are a `Row stacks`.
 
 ## Shapes
 
-Corner radius by role and the platform touch minimums, which differ by design. The
-table is `shape` in `src/style/tokens.ts`, and a skin reads its platform's row for every
-corner that plays one of these roles. The web follows Dark Factory: 8 on rectangular
-controls, 10 on fields, 12 on menus and tiles, 14 on cards, 18 on dialogs, 22 on sheets
-and the app shell, and a pill on every capsule. iOS draws capsule controls, 8 on fields,
-12 on cards, 26 on menus, 28 on dialogs, the 38 sheet and the circular selection
-checkbox, with Apple's continuous curve; Material 3 draws stadium controls, 4 on the
-filled field's top corners and on menus, its 12 medium shape on cards and 28 on dialogs
-and sheets.
+Corner radius by role and the platform touch minimums, which differ by design. Every
+corner is a role of its platform's row, named where the corner is written: the roles
+every platform draws are `shape` in `src/style/tokens.ts`, below, and the roles only one
+platform or only the kit draws are that platform's own, in the second table. The web
+follows Dark Factory: 8 on rectangular controls, 10 on fields, 12 on menus and tiles, 14
+on cards, 18 on dialogs, 22 on sheets and the app shell, and a pill on every capsule.
+iOS draws capsule controls, 8 on fields, 12 on cards, 26 on menus, 28 on dialogs, the 38
+sheet and the circular selection checkbox, with Apple's continuous curve; Material 3
+draws stadium controls, 4 on the filled field's top corners and on menus, its 12 medium
+shape on cards and 28 on dialogs and sheets.
 
 <!-- @generated:shapes -->
+<!-- @/generated -->
+
+Each platform's own roles: on the web, Dark Factory's key step on keycaps and inline
+boxes, its chip step on the tooltip, a calendar event and a chart's bar, and the smaller
+chart marks; on iOS, the action sheet, the inset grouped list and the calendar event; on
+Android, each Material 3 component at the step of the M3 scale its spec names, and the
+kit's own Android parts at a step of the same scale.
+
+<!-- @generated:platform-shapes -->
+<!-- @/generated -->
+
+Beyond a role, a corner is the pill (9999, which rounds every capsule and circle to half
+its shorter side), square, or concentric with what contains it: the container's corner
+less the inset between them. Nothing else: not a number that happens to equal a role, not
+half of a height, not a step of the `radius` ladder (that ladder is the app's, which Image
+and Video take through their `radius` prop). A skin reads only its own platform's row,
+and only the roles its component draws, listed below; a part a native skin draws the
+web's way, where the platform ships no control for it, shares the web skin's part.
+
+<!-- @generated:shape-roles -->
 <!-- @/generated -->
 
 A nested surface is never rounder than what contains it. Where a control is smaller

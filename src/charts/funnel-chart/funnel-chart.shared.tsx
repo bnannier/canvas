@@ -50,6 +50,8 @@ export interface FunnelChartProps {
 
 const FUNNEL_HEIGHT = { default: 220, compact: 150 } as const;
 const STAGE_GAP = 3;
+// A stage's detail line under its label: a value annotation.
+const STAGE_DETAIL_TYPE = { fontSize: 11, lineHeight: 14 };
 
 // pointerEvents must come from StyleSheet.create: react-native-web silently
 // drops it from inline style objects (the ChartValueFlag rule).
@@ -174,7 +176,7 @@ export function createFunnelChart(skin: ChartSkin) {
                     {stageH >= 34 ? (
                       <Text
                         numberOfLines={1}
-                        style={{ fontSize: 11, lineHeight: 14, color: inside ? tokens.card : tokens["muted-foreground"], opacity: inside ? 0.85 : 1, ...tabularNums() }}
+                        style={{ ...STAGE_DETAIL_TYPE, color: inside ? tokens.card : tokens["muted-foreground"], opacity: inside ? 0.85 : 1, ...tabularNums() }}
                       >
                         {detail}
                       </Text>

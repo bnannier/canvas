@@ -15,7 +15,7 @@ import { type CollapsibleSkin } from "./collapsible.shared.js";
 // Accordion's per-platform looks: a single disclosure reads exactly like one
 // accordion row.
 //
-//   Web (Radix / shadcn collapsible, the established Canvas look): no outer
+//   Web (the Radix / shadcn collapsible): no outer
 //     container; the header is a full-width row (`py-4`, text-sm / 14px,
 //     font-medium) with a trailing chevron (16px, muted) that rotates from 0 to
 //     90deg on open; the content panel pads `pb-4` and reads in 14px muted text.
@@ -34,7 +34,7 @@ import { type CollapsibleSkin } from "./collapsible.shared.js";
 //     state layer instead of an opacity dim.
 
 // =============================================================================
-// Web: the established Canvas / shadcn look.
+// Web: the Radix / shadcn collapsible.
 // =============================================================================
 
 export const webSkin: CollapsibleSkin = {
@@ -57,7 +57,7 @@ export const webSkin: CollapsibleSkin = {
   container() {
     return {};
   },
-  // The `card` variant: an outlined card surface (the web Card's 8px radius and
+  // The `card` variant: an outlined card surface (the web Card's corner and
   // hairline border on the `card` fill) wrapping the whole disclosure; overflow
   // hidden clips the header ink to the rounded corner.
   cardContainer(t) {
@@ -99,14 +99,14 @@ export const webSkin: CollapsibleSkin = {
 // iOS (HIG inset-grouped disclosure / SwiftUI DisclosureGroup).
 // =============================================================================
 
-// The iOS inset-grouped card: rounded 12px with the iOS superellipse (continuous)
+// The iOS inset-grouped card: the iOS card corner with the superellipse (continuous)
 // corner curve, a hairline border, a flat (no-shadow) grouped surface filled with
 // the content `card` token (solid). `borderCurve` is an RN iOS-only prop (no-op
 // elsewhere). Shared by `container` (the default look) AND `cardContainer`: the
 // default iOS Collapsible already IS the card surface, so `card` is a documented
 // no-op on iOS.
-const insetGroupedCard = (t: ColorTokens): ViewStyle => ({
-  borderRadius: 12,
+const iosInsetGroupedCard = (t: ColorTokens): ViewStyle => ({
+  borderRadius: shape.ios.card,
   borderCurve: "continuous",
   borderWidth: 1,
   borderColor: t.border,
@@ -126,11 +126,11 @@ export const iosSkin: CollapsibleSkin = {
   chevronGlyph: "chevronRight",
   chevronSpinTo: 90,
 
-  // The default iOS look IS the inset-grouped card (see insetGroupedCard above).
-  container: insetGroupedCard,
+  // The default iOS look IS the inset-grouped card (see iosInsetGroupedCard above).
+  container: iosInsetGroupedCard,
   // `card` is a documented no-op on iOS: it aliases the same container styles,
   // and the idempotent insets below match the header/content's own 16px.
-  cardContainer: insetGroupedCard,
+  cardContainer: iosInsetGroupedCard,
   cardHeaderInset: { paddingHorizontal: 16 },
   cardContentInset: { paddingHorizontal: 16 },
   // Inset-grouped row: 16px horizontal inset, 11px vertical for a ~44pt target.
@@ -190,7 +190,7 @@ export const androidSkin: CollapsibleSkin = {
   // 1dp outline on the `card` fill, elevation 0); overflow hidden clips the
   // header ripple to the rounded corner.
   cardContainer(t) {
-    return { borderRadius: 12, borderWidth: 1, borderColor: t.border, backgroundColor: t.card, overflow: "hidden" };
+    return { borderRadius: shape.android.card, borderWidth: 1, borderColor: t.border, backgroundColor: t.card, overflow: "hidden" };
   },
   // M3 card content inset is 16dp, which the header/content below already carry;
   // the card-mode insets are idempotent per-key overrides, kept explicit so the

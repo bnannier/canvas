@@ -13,8 +13,7 @@ import { type SpinnerSkin } from "./spinner.shared.js";
 //   Android (M3 CircularProgressIndicator, indeterminate): a SINGLE ARC, a ~270deg
 //     stroke of a ring with a rounded cap, in the brand color, sweeping
 //     continuously around the circle.
-//   Web: the established Canvas look, a React Native ActivityIndicator driven by
-//     the same tone/size props, lifted verbatim from the original component.
+//   Web: a React Native ActivityIndicator driven by the same tone/size props.
 
 export type Tone = "primary" | "muted" | "foreground";
 
@@ -132,10 +131,8 @@ export const androidSkin: SpinnerSkin = {
   description,
 };
 
-// Web: the current Canvas look, a React Native ActivityIndicator driven by the
-// same tone/size props (numeric size + token color), lifted verbatim from the
-// original single-file component. It animates itself, so it ignores the shared
-// rotate value.
+// Web: a React Native ActivityIndicator driven by the same tone/size props (numeric
+// size + token color). It animates itself, so it ignores the shared rotate value.
 export const webSkin: SpinnerSkin = {
   // The ActivityIndicator animates itself and never reads the shared `rotate`
   // value, so the shell must NOT drive a perpetual Animated loop for it.

@@ -34,6 +34,8 @@ export interface UptimeBarProps {
 }
 
 const PILL_HEIGHT = { default: 24, compact: 14 } as const;
+// The strip's edge captions, a time axis.
+const EDGE_CAPTION_TYPE = { fontSize: 11, lineHeight: 14 };
 
 /**
  * A status strip: one pill per period (operational, degraded, down, unknown) with a
@@ -61,8 +63,8 @@ export function UptimeBar(props: UptimeBarProps) {
       {/* Edge captions pin to the strip's physical edges (a time axis). */}
       {hasEdges ? (
         <View style={{ flexDirection: "row", justifyContent: "space-between", direction: "ltr" }}>
-          <Text style={{ fontSize: 11, lineHeight: 14, color: tokens["muted-foreground"] }}>{startLabel ?? ""}</Text>
-          <Text style={{ fontSize: 11, lineHeight: 14, color: tokens["muted-foreground"] }}>{endLabel ?? ""}</Text>
+          <Text style={{ ...EDGE_CAPTION_TYPE, color: tokens["muted-foreground"] }}>{startLabel ?? ""}</Text>
+          <Text style={{ ...EDGE_CAPTION_TYPE, color: tokens["muted-foreground"] }}>{endLabel ?? ""}</Text>
         </View>
       ) : null}
     </View>

@@ -31,7 +31,7 @@ const DISMISS: ViewStyle = {
   width: DISMISS_BOX,
   alignItems: "center",
   justifyContent: "center",
-  borderRadius: 8,
+  borderRadius: shape.web.control,
 };
 
 const ACTIONS: ViewStyle = { flexDirection: "row", gap: 8, marginTop: 12 };

@@ -7,8 +7,11 @@
  * Factory's 9.5 eyebrows to 10). A size of 12 or more clears every floor, so only the text
  * under 12 has a role to declare, and it declares it here: by the file and the name the
  * number is written under (tools/tokens/type-sites.ts reports both), the longest declared
- * name that prefixes the text's own name winning. test/design-rules-type-floors.test.ts
- * fails on a text under 12 with no role here, on one under its role's floor, and on an
+ * name that prefixes the text's own name winning. A role is declared on a text's own
+ * style (a named style, a table row, a skin field), never on a component or a block of
+ * JSX: a text added to that component later must declare its own role, not inherit one.
+ * test/design-rules-type-floors.test.ts fails on a text under 12 with no role here, on one
+ * under its role's floor, on an entry that names a component or a block of JSX, and on an
  * entry that no longer covers any text under 12.
  *
  * The roles are the Typography roles the floors are written for. `small` is a control's
@@ -72,17 +75,17 @@ export const TEXT_ROLES: Record<string, Record<string, ReadingRole>> = {
   "src/atoms/avatar/avatar.styles.ts": { LABEL: "caption", "webMenuSkin.menuPillSecondary": "tiny" },
   "src/molecules/code-block/code-block.styles.ts": { headerBadge: "tiny" },
   "src/molecules/stacked-lists/stacked-lists.styles.ts": { "androidSkin.metaLabel": "tiny" },
-  "src/charts/funnel-chart/funnel-chart.shared.tsx": { createFunnelChart: "tiny" },
-  "src/charts/metric-breakdown/metric-breakdown.shared.tsx": { captionStyle: "tiny", createMetricBreakdown: "tiny" },
-  "src/charts/shared/breakdown-rows.tsx": { "BreakdownRows.inner": "tiny" },
-  "src/charts/treemap/treemap.shared.tsx": { createTreemap: "tiny" },
+  "src/charts/funnel-chart/funnel-chart.shared.tsx": { STAGE_DETAIL_TYPE: "tiny" },
+  "src/charts/metric-breakdown/metric-breakdown.shared.tsx": { captionStyle: "tiny", SPARK_TAG_TYPE: "tiny" },
+  "src/charts/shared/breakdown-rows.tsx": { SHARE_TYPE: "tiny", DELTA_TYPE: "tiny" },
+  "src/charts/treemap/treemap.shared.tsx": { TILE_VALUE_TYPE: "tiny" },
 
   // Eyebrows, axis and hour labels, tab-bar labels, keycaps.
   "src/atoms/divider/divider.styles.ts": { "webSkin.labelType": "caption" },
   "src/atoms/kbd/kbd.styles.ts": { LABEL_TYPE: "caption" },
-  "src/charts/heatmap/heatmap.shared.tsx": { CalendarHeatmap: "caption" },
-  "src/charts/radar-chart/radar-chart.shared.tsx": { createRadarChart: "caption" },
-  "src/charts/uptime-bar/uptime-bar.shared.tsx": { UptimeBar: "caption" },
+  "src/charts/heatmap/heatmap.shared.tsx": { CAL_MONTH_TYPE: "caption", CAL_WEEKDAY_TYPE: "caption", FLAG_DETAIL_TYPE: "tiny" },
+  "src/charts/radar-chart/radar-chart.shared.tsx": { AXIS_LABEL_TYPE: "caption" },
+  "src/charts/uptime-bar/uptime-bar.shared.tsx": { EDGE_CAPTION_TYPE: "caption" },
   "src/organisms/calendar/calendar.styles.ts": {
     "webSkin.hourLabel": "caption",
     "webSkin.eventTime": "caption",

@@ -1,5 +1,6 @@
 import { type ViewStyle, type TextStyle } from "react-native";
 import { type ColorTokens, statusColors, shadow, shape } from "../../style/index.js";
+import { platformShape } from "../../style/platform-shape.js";
 import { type ChartSeries, type ChartSkin } from "./types.js";
 
 // Co-located Chart styles. Layout-only fragments are static objects; anything
@@ -235,7 +236,7 @@ export const zoomBar: ViewStyle = { position: "absolute", right: 0, bottom: 0, f
 
 export const webSkin: ChartSkin = {
   surfaceRadius: shape.web.card,
-  barRadius: 8,
+  barRadius: platformShape.web.bar,
 };
 
 // Shared treatment: no per-OS divergence, so the native skins are the web skin.

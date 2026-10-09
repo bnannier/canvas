@@ -1,6 +1,6 @@
 import { useRef, type ReactNode } from "react";
 import { AccessibilityInfo, StyleSheet } from "react-native";
-import { View, Text, useTheme, shadow, GlassPane, paneStyle, isGlass, type StyleProp, type ViewStyle, type LayoutStyle } from "../../style/index.js";
+import { View, Text, useTheme, shadow, GlassPane, paneStyle, isGlass, type StyleProp, type ViewStyle, type LayoutStyle, shape } from "../../style/index.js";
 import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
 import { estimateTextWidth } from "./chart-math.js";
 
@@ -31,7 +31,7 @@ const LINE = 16;
 const PAD = 10;
 
 /** Shared material behind a chart's existing, touch-through inspection flag. */
-export function ChartInspectionSurface({ children, radius = 12, style }: {
+export function ChartInspectionSurface({ children, radius = shape.web.menu, style }: {
   children: ReactNode;
   radius?: number;
   style?: StyleProp<ViewStyle>;

@@ -399,7 +399,7 @@ export interface CardMediaProps {
 //   </Card>
 export function createCardMedia(skin: CardSkin) {
   // The nested top radius: the card's corner minus the border it sits inside.
-  const radius = Math.max(0, skin.radius - 1);
+  const radius = Math.max(0, skin.radius - s.CARD_BORDER);
   const shape = {
     borderTopLeftRadius: radius,
     borderTopRightRadius: radius,

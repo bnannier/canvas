@@ -7,6 +7,7 @@ import { type ChartSkin } from "../shared/types.js";
 import { CHART_ROOT } from "../shared/chart-frame.js";
 import { ChartValueFlag, announceSelection, pressPoint, DIM_OPACITY } from "../shared/chart-inspect.js";
 import { estimateTextWidth, formatCompact, squarify } from "../shared/chart-math.js";
+import { platformShape } from "../../style/platform-shape.js";
 
 // Shared Treemap shell. Squarified value tiles (Bruls layout through the
 // shared chart-math helper): each datum becomes a ramp-colored rectangle
@@ -51,6 +52,8 @@ export interface TreemapProps {
 
 const PLOT_HEIGHT = { default: 240, compact: 160 } as const;
 const MAX_TILES = 24;
+// A tile's value under its label: a value annotation.
+const TILE_VALUE_TYPE = { fontSize: 11, lineHeight: 14 };
 
 export function createTreemap(skin: ChartSkin) {
   return function Treemap(props: TreemapProps) {
@@ -133,7 +136,7 @@ export function createTreemap(skin: ChartSkin) {
                   // (the pie slice rule, as a border on a View).
                   borderWidth: 1,
                   borderColor: tokens.card,
-                  borderRadius: Math.min(skin.barRadius, 4),
+                  borderRadius: platformShape.web.mark,
                   padding: 6,
                   opacity: selected != null && selected !== i ? DIM_OPACITY : 1,
                 }}
@@ -144,7 +147,7 @@ export function createTreemap(skin: ChartSkin) {
                   </Text>
                 ) : null}
                 {valueFits ? (
-                  <Text numberOfLines={1} style={{ fontSize: 11, lineHeight: 14, color: tokens.card, opacity: 0.85, ...tabularNums() }}>
+                  <Text numberOfLines={1} style={{ ...TILE_VALUE_TYPE, color: tokens.card, opacity: 0.85, ...tabularNums() }}>
                     {formatValue(clean[i])}
                   </Text>
                 ) : null}

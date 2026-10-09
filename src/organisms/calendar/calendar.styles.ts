@@ -1,6 +1,7 @@
 import { primaryText } from "../../style/primary-text.js";
 import { type ViewStyle, type TextStyle } from "react-native";
 import { type ColorTokens, alpha, shadow, shape } from "../../style/index.js";
+import { platformShape } from "../../style/platform-shape.js";
 
 // Co-located Calendar skins, one per platform. The shell resolves the density
 // metrics (compact vs default cell sizing), the leading-blank padding, and the
@@ -21,9 +22,8 @@ import { type ColorTokens, alpha, shadow, shape } from "../../style/index.js";
 //     TODAY is an OUTLINED ring (1px `primary`) on a transparent fill; weekday
 //     headers are single-letter; day cells get a circular `android_ripple`
 //     (alpha(primary, 0.12)); slightly larger touch targets.
-//   Web: the established Canvas look (rounded-full primary fill for any
-//     highlighted day, Su/Mo two-letter weekday labels), lifted verbatim from the
-//     original file.
+//   Web: a date card at the card corner; the selected day is a round `primary` fill
+//     and today a soft primary tint; Su/Mo two-letter weekday labels.
 
 export type Density = "compact" | "default";
 
@@ -159,8 +159,8 @@ const WEEKDAYS_TWO_UPPER = ["SU", "MO", "TU", "WE", "TH", "FR", "SA"];
 // Natively the ring draws nothing.
 
 // =============================================================================
-// Web: the established Canvas look (lifted verbatim from the original file).
-// Any highlighted day (selected OR today) gets a `primary` rounded-full fill.
+// Web: the date card. The selected day gets a round `primary` fill and today
+// (unselected) a soft primary tint.
 // =============================================================================
 
 export const webSkin: CalendarSkin = {
@@ -246,7 +246,7 @@ export const webSkin: CalendarSkin = {
   slotLine: (t) => ({ borderTopWidth: 1, borderTopColor: t.border }),
   colDivider: (t) => ({ borderLeftWidth: 1, borderLeftColor: t.border }),
   eventBlock: {
-    borderRadius: 8,
+    borderRadius: platformShape.web.event,
     borderLeftWidth: 3,
     paddingHorizontal: 6,
     paddingVertical: 3,
@@ -256,8 +256,8 @@ export const webSkin: CalendarSkin = {
   eventTitle: (t) => ({ fontSize: 12, lineHeight: 16, fontWeight: "500", color: primaryText(t) }),
   eventTime: (t) => ({ fontSize: 10, lineHeight: 14, color: t["muted-foreground"] }),
 
-  // Mirrors the web Popover card (the 16px menu corner, hairline border, lg
-  // shadow) with the tighter padding a timeline slice wants.
+  // Mirrors the web Popover card (the menu corner, hairline border, lg shadow)
+  // with the tighter padding a timeline slice wants.
   peekCard: (t) => ({
     borderRadius: shape.web.menu,
     borderWidth: 1,
@@ -363,7 +363,7 @@ export const iosSkin: CalendarSkin = {
   colDivider: (t) => ({ borderLeftWidth: 1, borderLeftColor: t.border }),
   // iOS event blocks: tinted rounded rectangle with a leading accent bar.
   eventBlock: {
-    borderRadius: 6,
+    borderRadius: platformShape.ios.event,
     borderLeftWidth: 3,
     paddingHorizontal: 6,
     paddingVertical: 3,
@@ -373,10 +373,10 @@ export const iosSkin: CalendarSkin = {
   eventTitle: (t) => ({ fontSize: 12, lineHeight: 16, fontWeight: "600", color: primaryText(t) }),
   eventTime: (t) => ({ fontSize: 11, lineHeight: 14, color: t["muted-foreground"] }),
 
-  // The iOS popover DNA (borderless rounded card, lg shadow), tightened for a
-  // timeline slice.
+  // The iOS Popover card (borderless, at the iOS menu corner, lg shadow), tightened
+  // for a timeline slice.
   peekCard: (t) => ({
-    borderRadius: 20,
+    borderRadius: shape.ios.menu,
     backgroundColor: t.popover,
     padding: 12,
     ...shadow("lg", t),
@@ -481,7 +481,7 @@ export const androidSkin: CalendarSkin = {
   colDivider: (t) => ({ borderLeftWidth: 1, borderLeftColor: t.border }),
   // M3 event chips: larger radius, tonal `primary` container with an accent bar.
   eventBlock: {
-    borderRadius: 8,
+    borderRadius: platformShape.android.event,
     borderLeftWidth: 3,
     paddingHorizontal: 8,
     paddingVertical: 4,
@@ -494,7 +494,7 @@ export const androidSkin: CalendarSkin = {
   // The M3 menu-surface treatment (medium radius + md shadow), tightened for a
   // timeline slice.
   peekCard: (t) => ({
-    borderRadius: 12,
+    borderRadius: shape.android.card,
     backgroundColor: t.popover,
     padding: 12,
     ...shadow("md", t),

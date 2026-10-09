@@ -1,5 +1,6 @@
 import { type ViewStyle, type TextStyle } from "react-native";
 import { typeScale } from "../../style/type-scale.js";
+import { platformShape } from "../../style/platform-shape.js";
 import { type KbdSkin } from "./kbd.shared.js";
 
 // Per-OS Kbd skins. Kbd is a "Shared" treatment: neither iOS nor Material 3 ships a
@@ -22,7 +23,7 @@ const CAP_BOX: ViewStyle = {
   minWidth: 20,
   alignItems: "center",
   justifyContent: "center",
-  borderRadius: 6,
+  borderRadius: platformShape.web.key,
   borderWidth: 1,
   paddingHorizontal: 5,
 };

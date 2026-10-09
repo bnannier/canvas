@@ -7,8 +7,8 @@ import { type ProgressSkin, type Size } from "./progress.shared.js";
 // from useTheme so they follow light/dark). A progress bar is a meter, so its active fill
 // is the call-to-action `action` color on every platform (Dark Factory fills its meters
 // with its green accent), never a platform default. Only the native SHAPE of the bar
-// (track thickness, end radius, and the inactive-track tone) changes per OS, matched to
-// each platform's real progress reference:
+// (track thickness and the inactive-track tone) changes per OS, matched to each
+// platform's real progress reference; the bar is a capsule on every platform:
 //
 //   iOS (UIProgressView / SwiftUI ProgressView, iOS 27 kit Progress Indicators, Table
 //     View Row symbol): a THIN ~4pt track with FULLY ROUNDED ends (radius = height/2 → a
@@ -27,19 +27,15 @@ import { type ProgressSkin, type Size } from "./progress.shared.js";
 // iOS: a thin 4pt bar across all sizes, nudged up/down a hair by the size axis so `small`
 // and `large` still read as distinct without ever losing the hairline iOS feel.
 const IOS_HEIGHT: Record<Size, number> = { small: 3, base: 4, large: 6 };
-// Fully rounded ends (capsule): radius = height / 2.
-const IOS_RADIUS: Record<Size, number> = { small: 1.5, base: 2, large: 3 };
 
 // Android (M3): the M3 linear indicator is 4dp; the size axis steps it 3/4/8 so the axis
-// is meaningful while the default stays on the M3 4dp spec.
+// is meaningful while the default stays on the M3 4dp spec. Every platform's bar is a
+// capsule (the shell rounds it fully).
 const ANDROID_HEIGHT: Record<Size, number> = { small: 3, base: 4, large: 8 };
-// M3 rounds the ends fully (radius = height / 2).
-const ANDROID_RADIUS: Record<Size, number> = { small: 1.5, base: 2, large: 4 };
 
 // Web (Dark Factory): 6px default, fully rounded; the size axis steps it 4/6/8 while
 // keeping the rounded ends.
 const WEB_HEIGHT: Record<Size, number> = { small: 4, base: 6, large: 8 };
-const WEB_RADIUS: Record<Size, number> = { small: 2, base: 3, large: 4 };
 
 // Header type shared across every platform (the label is brand type, not a platform face,
 // matching Checkbox/Radio/Switch). The canonical scale: the title line is 14/20 medium
@@ -59,7 +55,6 @@ function valueReadout(t: ColorTokens): TextStyle {
 
 export const iosSkin: ProgressSkin = {
   height: IOS_HEIGHT,
-  radius: IOS_RADIUS,
   // iOS trackTint: a NEUTRAL translucent system fill, never a wash of the progressTint.
   // The iOS 27 kit track is rgba(120,120,120,0.2) in Light and rgba(120,120,128,0.36) in
   // Dark; a 25% wash of the neutral `muted-foreground` token (#71717b light / #9f9fa9
@@ -74,7 +69,6 @@ export const iosSkin: ProgressSkin = {
 
 export const androidSkin: ProgressSkin = {
   height: ANDROID_HEIGHT,
-  radius: ANDROID_RADIUS,
   // M3 inactive track = secondary container; the `secondary` token is the closest
   // semantic surface in light and dark. Active indicator + stop indicator = the action fill.
   trackColor: (t: ColorTokens) => t.secondary,
@@ -103,7 +97,6 @@ function dfValueReadout(t: ColorTokens): TextStyle {
 
 export const webSkin: ProgressSkin = {
   height: WEB_HEIGHT,
-  radius: WEB_RADIUS,
   // Dark Factory: its line color as the rest of the meter, the call-to-action as the fill.
   trackColor: (t: ColorTokens) => t.border,
   fillColor: (t: ColorTokens) => actionFill(t),

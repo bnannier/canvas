@@ -15,7 +15,8 @@ import { alpha, TOUCH_TARGET, type ColorTokens, type TouchTargetSkin } from "../
 //   Android (M3): step indicators with FLAT (square-capped) connectors; completed
 //     = filled `primary`; current = `primary` ring; press = android_ripple on
 //     interactive step circles.
-//   Web: the established Canvas look (lifted verbatim from the original file).
+//   Web: circular step indicators with square-capped connectors and a 6px capsule
+//     progress track; completed = filled `primary`; current = a `primary` ring.
 //
 // The State axis (completed / current / upcoming) maps each colored part to a
 // token set. Layout-only fragments are shared static objects (below); anything
@@ -141,7 +142,7 @@ function labelState(t: ColorTokens, state: State): TextStyle {
 }
 
 // =============================================================================
-// Web: the established Canvas look (lifted verbatim from the original file).
+// Web: circular indicators, square-capped connectors.
 // =============================================================================
 
 export const webSkin: StepsSkin = {

@@ -105,7 +105,7 @@ const HEADER_COLUMN: ViewStyle = { gap: 2 };
 const TITLE_ROW: ViewStyle = { flexDirection: "row", alignItems: "center" };
 const VALUE_READOUT_LAYOUT: TextStyle = { marginLeft: "auto", paddingLeft: 8 };
 
-// What a platform skin owns: the track height + radius per size, the track (inactive)
+// What a platform skin owns: the track height per size, the track (inactive)
 // fill, the active fill, the header text type (label/description/value readout), the
 // fraction of the track width the sliding indeterminate bar occupies, and the optional
 // M3 segmented anatomy (active/track gap + stop indicator). Everything else (structure,
@@ -113,8 +113,6 @@ const VALUE_READOUT_LAYOUT: TextStyle = { marginLeft: "auto", paddingLeft: 8 };
 export interface ProgressSkin {
   /** Track thickness (px) per size. */
   height: Record<Size, number>;
-  /** Corner radius (px) per size for both the track and the fill. */
-  radius: Record<Size, number>;
   /** Inactive track fill. */
   trackColor: (tokens: ColorTokens) => string;
   /** Active (filled) bar color. */
@@ -173,7 +171,8 @@ export function createProgress(skin: ProgressSkin, parts: ProgressParts = {}) {
     const widthStyle = useFillStyle("Progress", props);
 
     const height = skin.height[size];
-    const radius = skin.radius[size];
+    // The track and the fill are capsules on every platform: 9999 clamps to half the bar.
+    const radius = 9999;
     const trackColor = glass ? innerFill(theme, "muted", "soft") : skin.trackColor(tokens);
     // The active fill: the skin's `action` fill by default, or the tone's solid color when
     // `warning`/`danger` is set. Every fill render path below reads this one
@@ -449,7 +448,7 @@ export function createProgress(skin: ProgressSkin, parts: ProgressParts = {}) {
                   end: stopInset,
                   width: stopSize,
                   height: stopSize,
-                  borderRadius: stopSize / 2,
+                  borderRadius: 9999,
                   backgroundColor: fillColor,
                 }}
               />

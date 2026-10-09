@@ -19,8 +19,8 @@ import { fieldBorder } from "../../style/field-colors.js";
 // material, the card shell, the collapsed trigger, the group heading, the footer
 // hint bar, and the Kbd caps stay shared in the shell and are NOT re-skinned.
 //
-// Reference catalog (PLATFORM-REFERENCES.md, command row): the web look matches
-// shadcn/cmdk (the current Canvas look, lifted verbatim). iOS and Android have
+// Reference catalog (PLATFORM-REFERENCES.md, command row): the web look follows
+// shadcn/cmdk in Dark Factory's menu corner. iOS and Android have
 // NO native command palette (both `(none)`), so those skins keep the same
 // structure and apply only the platform's list-row conventions:
 //   iOS (HIG grouped list rows): comfortable ~44pt rows, body type (17/22) with
@@ -31,9 +31,8 @@ import { fieldBorder } from "../../style/field-colors.js";
 //     +0.5 tracking), an M3 search row; the active/pressed row tints with
 //     `accent` and press shows an android_ripple (the surfaceRipple state layer:
 //     on-surface ink at ~10%).
-//   Web: the established Canvas look (the current command rows, lifted verbatim)
-//     — a 12/12 search row, 14/20 muted type, 12/8 result rows, 14/20 foreground
-//     type, the `accent` fill for both the active and the pressed row.
+//   Web: a 16/14 search row with 14/20 muted type, 16/10 result rows with 14/20
+//     foreground type, the `accent` fill for both the active and the pressed row.
 
 // The contract a platform skin fulfills. The shell owns the structure (the
 // GlassSurface panel, the card shell, the trigger, the group heading, the footer)
@@ -78,24 +77,25 @@ export interface CommandSkin {
 }
 
 // ---------- card shell (shared across platforms) ----------
-// The floating palette card: the standard 420px width, rounded, bordered,
-// raised, clipping its rounded corners. (w-[420px] rounded-lg border
-// border-border bg-popover shadow-xl overflow-hidden.) `maxWidth:"100%"` beside the
-// width is the floating-container pattern (a palette is a bounds provider for its
-// own content): it keeps the 420px desktop palette but shrinks the card inside a
-// narrower parent, so it
-// never overflows a 390/393pt iPhone or a 360dp Android phone. GlassSurface
-// strips the fill and supplies the material when the surface is glass; the shape
-// (radius/border/clip) is the skin's, with the per-OS radius/curve layered on via
-// `skin.cardShape`. This base is identical on every platform: only the rows and
-// the corner shape are re-skinned.
+// The floating palette card: the standard 420px width, bordered, raised, clipping
+// its rounded corners. `maxWidth:"100%"` beside the width is the floating-container
+// pattern (a palette is a bounds provider for its own content): it keeps the 420px
+// desktop palette but shrinks the card inside a narrower parent, so it never
+// overflows a 390/393pt iPhone or a 360dp Android phone. GlassSurface strips the fill
+// and supplies the material when the surface is glass; the shape (border/clip) is the
+// skin's, and the corner is the per-OS `skin.cardShape` layered over this base, which
+// every use applies with it. This base is identical on every platform: only the rows
+// and the corner shape are re-skinned.
 export const CARD_WIDTH = 420;
+
+// The palette card's corner: the web's menu corner on every platform, since neither iOS
+// nor Android ships a command palette.
+const CARD_CORNER: ViewStyle = { borderRadius: shape.web.menu };
 
 export function card(tokens: ColorTokens): ViewStyle {
   return {
     width: CARD_WIDTH,
     maxWidth: "100%",
-    borderRadius: 8,
     borderWidth: 1,
     borderColor: tokens.border,
     backgroundColor: tokens.popover,
@@ -151,9 +151,8 @@ export const triggerWrapper: ViewStyle = { position: "relative", width: "100%" }
 // trigger and palette together — above everything painted after it.
 export const triggerWrapperLifted: ViewStyle = { zIndex: 50 };
 
-// The collapsed full-width search trigger button.
-// (flex-row items-center gap-2 w-full justify-start rounded-md border
-//  border-input bg-transparent px-3 py-1.5.)
+// The collapsed full-width search trigger: a search field at the field corner (a row of
+// glyph and placeholder, gap 8, a border on a transparent fill, padding 12/6).
 export function triggerRow(tokens: ColorTokens): ViewStyle {
   return {
     flexDirection: "row",
@@ -161,7 +160,7 @@ export function triggerRow(tokens: ColorTokens): ViewStyle {
     gap: 8,
     width: "100%",
     justifyContent: "flex-start",
-    borderRadius: 6,
+    borderRadius: shape.web.field,
     borderWidth: 1,
     backgroundColor: "transparent",
     paddingHorizontal: 12,
@@ -215,11 +214,11 @@ export function footerText(tokens: ColorTokens): TextStyle {
   return { fontSize: 12, lineHeight: 16, color: tokens["muted-foreground"] };
 }
 
-// ---------- Web: the established Canvas look (lifted verbatim) ----------
-// A 12/12 search row with a hairline under it (px-3 py-3, 14/20 muted glyph +
-// placeholder), result rows at px-3 py-2 (gap-3, 14/20 foreground), and the
-// `accent` fill for both the active and the pressed row (active:bg-accent). The
-// press feedback IS the accent fill (no opacity dim, no ripple).
+// ---------- Web: shadcn/cmdk rows in the menu corner ----------
+// A search row (16 sides, 14 above) with a hairline under it (a 16px muted glyph +
+// 14/20 placeholder), result rows at 16/10 (gap 12, 14/20 foreground), and the
+// `accent` fill for both the active and the pressed row. The press feedback IS the
+// accent fill (no opacity dim, no ripple).
 export const webSkin: CommandSkin = {
   searchRow: (t, focused) => ({
     flexDirection: "row",
@@ -234,8 +233,8 @@ export const webSkin: CommandSkin = {
   searchGlyphSize: 16,
   searchPlaceholder: (t) => ({ fontSize: 14, lineHeight: 20, color: t["muted-foreground"] }),
   // The palette card: the 12px menu corner.
-  cardShape: { borderRadius: shape.web.menu },
-  // A 40px trigger, the height of the web menu rows.
+  cardShape: CARD_CORNER,
+  // A 40px trigger, the height of its own result rows (10 above and below a 20 line).
   triggerMinHeight: 40,
   triggerBorder: (t) => fieldBorder(t),
   rowBase: {
@@ -285,10 +284,10 @@ export const iosSkin: CommandSkin = {
     letterSpacing: -0.4,
     color: t["muted-foreground"],
   }),
-  // iOS floating functional surfaces read rounder and smooth-cornered: a larger
-  // 16pt radius with the continuous (superellipse) corner curve (borderCurve is a
-  // no-op on web/Android). GlassSurface strips the border under glass.
-  cardShape: { borderRadius: 16, borderCurve: "continuous" },
+  // No iOS control is a command palette, so the card takes the web's corner, with the
+  // continuous (superellipse) corner curve iOS surfaces use (borderCurve is a no-op on
+  // web/Android). GlassSurface strips the border under glass.
+  cardShape: { ...CARD_CORNER, borderCurve: "continuous" },
   // HIG minimum interactive target 44x44pt.
   triggerMinHeight: 44,
   triggerBorder: (t) => fieldBorder(t),
@@ -341,8 +340,9 @@ export const androidSkin: CommandSkin = {
     letterSpacing: 0.5,
     color: t["muted-foreground"],
   }),
-  // Android keeps the 8px card corner (the shared web look; borderCurve is iOS-only).
-  cardShape: { borderRadius: 8 },
+  // Android has no command palette, so the card takes the web's corner (the Dark Factory
+  // look; borderCurve is iOS-only).
+  cardShape: CARD_CORNER,
   // M3 minimum touch target 48x48dp.
   triggerMinHeight: 48,
   triggerBorder: (t) => t.input,

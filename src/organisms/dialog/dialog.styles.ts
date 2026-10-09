@@ -122,8 +122,11 @@ export const backdropTriggerGap: ViewStyle = { marginTop: 12 };
 // container caps the panel (the card's maxWidth:"100%") instead of overflowing.
 // The overlay presentation: fills the nearest OverlayProvider rather than
 // taking part in page flow, so the scrim genuinely covers the page behind it and
-// `aria-modal` is a true statement. No minHeight here, the layer supplies it.
+// `aria-modal` is a true statement. No minHeight here, the layer supplies it. The
+// scrim is square: it covers the whole layer, so the skin's corner (which frames the
+// card in a contained preview) does not apply.
 export const backdropOverlay: ViewStyle = {
+  borderRadius: 0,
   position: "absolute",
   top: 0,
   right: 0,
@@ -203,9 +206,9 @@ export const webSkin: DialogSkin = {
 // the gray `secondary` capsule but draws its label in the `destructive` red. Each
 // capsule shares the row evenly; a pressed capsule dims (no ripple) at 0.8.
 const IOS_RADIUS = shape.ios.dialog;
-const IOS_CAPSULE_RADIUS = 22;
+const IOS_CAPSULE_RADIUS = shape.ios.control;
 export const iosSkin: DialogSkin = {
-  backdrop: (t) => ({ borderRadius: 8, backgroundColor: scrimFill(t, 0.3) }),
+  backdrop: (t) => ({ borderRadius: IOS_RADIUS, backgroundColor: scrimFill(t, 0.3) }),
   card: (t) => ({
     borderRadius: IOS_RADIUS,
     backgroundColor: t.popover,
@@ -271,7 +274,7 @@ export const iosSkin: DialogSkin = {
 // `primary-text`, an android_ripple on each, and NO dividers.
 const ANDROID_RADIUS = shape.android.dialog;
 export const androidSkin: DialogSkin = {
-  backdrop: (t) => ({ borderRadius: 8, backgroundColor: scrimFill(t, 0.32) }),
+  backdrop: (t) => ({ borderRadius: ANDROID_RADIUS, backgroundColor: scrimFill(t, 0.32) }),
   card: (t) => ({
     borderRadius: ANDROID_RADIUS,
     backgroundColor: t.popover,
@@ -290,7 +293,8 @@ export const androidSkin: DialogSkin = {
     justifyContent: "center",
     paddingHorizontal: 12,
     paddingVertical: 10,
-    borderRadius: 20,
+    // An M3 text button: the control role, a stadium.
+    borderRadius: shape.android.control,
     // clip the Material ripple to the rounded outline (else it bleeds past the corners as a rectangle)
     overflow: "hidden",
     minHeight: 40,

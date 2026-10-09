@@ -2,6 +2,7 @@ import { hoverFill } from "../../style/hover.js";
 import { primaryText } from "../../style/primary-text.js";
 import { type ViewStyle, type TextStyle } from "react-native";
 import { type ColorTokens, alpha, shape } from "../../style/index.js";
+import { platformShape } from "../../style/platform-shape.js";
 import { INSET_FOCUS_RING } from "../../style/pressable.js";
 import { HOVER } from "../../style/motion.js";
 import { type SidebarSkin } from "./sidebar.shared.js";
@@ -25,9 +26,10 @@ import { type SidebarSkin } from "./sidebar.shared.js";
 //     + label in brand `primary`; inactive transparent with `foreground`; ~56dp
 //     item height; press = android_ripple; collapsed rail = the 72dp M3 navigation
 //     rail; collapsible-section chevron = the M3 expand_more (0 -> 180deg).
-//   Web: the established Canvas look (row radius 6, `accent` fill on the active OR
-//     pressed row, foreground/muted label + icon), lifted verbatim from the
-//     original file; collapsible-section chevron = the Radix right caret (0 -> 90deg).
+//   Web: the settings rail, rows at the control corner with the `accent` fill on the
+//     active or pressed row and Dark Factory's nav wash under the pointer, a
+//     foreground/muted label + icon; collapsible-section chevron = the right caret
+//     (0 -> 90deg).
 
 export type Density = "default" | "compact";
 export type Frame = "flush" | "bordered";
@@ -52,7 +54,7 @@ function makeColumn(radius: number, collapsedWidth: number, pad: ViewStyle) {
 }
 
 // =============================================================================
-// Web: the established Canvas look (lifted verbatim from the original file).
+// Web: the settings rail.
 // =============================================================================
 
 // The settings rail: a column at the card corner, rows at the control corner that are
@@ -145,7 +147,7 @@ export const webSkin: SidebarSkin = {
 
   // --- collapsible section header ---
   sectionHeaderRow() {
-    return { flexDirection: "row", alignItems: "center", gap: 4, paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8 };
+    return { flexDirection: "row", alignItems: "center", gap: 4, paddingHorizontal: 12, paddingVertical: 6, borderRadius: shape.web.control };
   },
   sectionHeaderTitle(tokens) {
     return {
@@ -164,7 +166,7 @@ export const webSkin: SidebarSkin = {
   sectionChevronSpinTo: 90,
   sectionChevronSize: 11,
   activeDot(tokens) {
-    return { width: 4, height: 4, borderRadius: 2, backgroundColor: tokens.primary };
+    return { width: 4, height: 4, borderRadius: 9999, backgroundColor: tokens.primary };
   },
   drillBackRow(tokens) {
     return { flexDirection: "row", alignItems: "center", gap: 6, paddingHorizontal: 12, paddingVertical: 10, borderBottomWidth: 1, borderColor: tokens.border, marginBottom: 4 };
@@ -185,7 +187,8 @@ export const iosSkin: SidebarSkin = {
 
   focusRing: INSET_FOCUS_RING,
 
-  column: makeColumn(10, 56, { gap: 16, padding: 8 }),
+  // A bordered sidebar is an iOS grouped surface, at the card corner.
+  column: makeColumn(shape.ios.card, 56, { gap: 16, padding: 8 }),
 
   group: { gap: 2 },
 
@@ -277,7 +280,7 @@ export const iosSkin: SidebarSkin = {
   sectionChevronSpinTo: 90,
   sectionChevronSize: 13,
   activeDot(tokens) {
-    return { width: 6, height: 6, borderRadius: 3, backgroundColor: tokens.primary };
+    return { width: 6, height: 6, borderRadius: 9999, backgroundColor: tokens.primary };
   },
   drillBackRow(tokens) {
     return { flexDirection: "row", alignItems: "center", gap: 6, paddingHorizontal: 12, paddingVertical: 10, borderBottomWidth: 1, borderColor: tokens.border, marginBottom: 4 };
@@ -297,7 +300,8 @@ export const androidSkin: SidebarSkin = {
   ripple: (tokens) => ({ color: alpha(tokens.primary, 0.12), borderless: false }),
   focusRing: INSET_FOCUS_RING,
 
-  column: makeColumn(16, 72, { gap: 16, paddingHorizontal: 12, paddingVertical: 8 }),
+  // A bordered sidebar takes the M3 navigation drawer's large shape.
+  column: makeColumn(platformShape.android.navigationDrawer, 72, { gap: 16, paddingHorizontal: 12, paddingVertical: 8 }),
 
   group: { gap: 2 },
 
@@ -391,7 +395,7 @@ export const androidSkin: SidebarSkin = {
   sectionChevronSpinTo: 180,
   sectionChevronSize: 18,
   activeDot(tokens) {
-    return { width: 6, height: 6, borderRadius: 3, backgroundColor: tokens.primary };
+    return { width: 6, height: 6, borderRadius: 9999, backgroundColor: tokens.primary };
   },
   drillBackRow(tokens) {
     return { flexDirection: "row", alignItems: "center", gap: 8, paddingHorizontal: 16, paddingVertical: 12, borderBottomWidth: 1, borderColor: tokens.border, marginBottom: 4 };

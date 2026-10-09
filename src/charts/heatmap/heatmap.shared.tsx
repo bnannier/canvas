@@ -5,6 +5,7 @@ import { announceSelection, ChartInspectionSurface } from "../shared/chart-inspe
 import { estimateTextWidth } from "../shared/chart-math.js";
 import { useHorizontalScrollFocus } from "../../style/use-scroll-focus.js";
 import { useFocusRingStyle } from "../../style/pressable.js";
+import { platformShape } from "../../style/platform-shape.js";
 
 // Heatmap is a "Shared" platform treatment (data visualization is
 // platform-neutral): one implementation serves iOS, Android, and the web.
@@ -100,7 +101,7 @@ export function Heatmap(props: HeatmapProps) {
 function GridHeatmap({ cells, label, hideLegend, testID, style }: HeatmapProps & { cells: HeatmapCell[] }) {
   const { tokens } = useTheme();
   const cell = (intensity: number, box: number, key: number) => (
-    <View key={key} style={{ borderRadius: 2, height: box, width: box, backgroundColor: alpha(tokens.primary, Math.max(0.08, clamp01(intensity))) }} />
+    <View key={key} style={{ borderRadius: platformShape.web.cell, height: box, width: box, backgroundColor: alpha(tokens.primary, Math.max(0.08, clamp01(intensity))) }} />
   );
   // Name the grid with its size so assistive tech hears the scope of the data.
   const name = `${label ?? "Heatmap"}, ${cells.length} cells`;
@@ -130,7 +131,7 @@ function HeatmapLevelLegend({ tokens }: { tokens: ColorTokens }) {
       {[0, 1, 2, 3, 4].map((lvl) => (
         <View
           key={lvl}
-          style={{ width: 11, height: 11, borderRadius: 2, backgroundColor: levelFill(tokens, lvl), borderWidth: 1, borderColor: lvl === 0 ? tokens.border : "transparent" }}
+          style={{ width: 11, height: 11, borderRadius: platformShape.web.cell, backgroundColor: levelFill(tokens, lvl), borderWidth: 1, borderColor: lvl === 0 ? tokens.border : "transparent" }}
         />
       ))}
       <Text style={{ fontSize: 12, lineHeight: 16, color: tokens["muted-foreground"] }}>More</Text>
@@ -158,6 +159,11 @@ const CAL_PITCH = CAL_CELL + CAL_GAP;
 const CAL_ROWS = 7;
 const CAL_GUTTER = 32; // weekday-label column, wide enough for "Wed" at 10px
 const CAL_MONTH_H = 15; // month-label row
+// The calendar's axis labels (the month row, the weekday gutter) and the inspection
+// flag's second line.
+const CAL_MONTH_TYPE = { fontSize: 10, lineHeight: CAL_MONTH_H };
+const CAL_WEEKDAY_TYPE = { fontSize: 10, lineHeight: 11 };
+const FLAG_DETAIL_TYPE = { fontSize: 11, lineHeight: 15 };
 
 function CalendarHeatmap({ cells, label, caption, hideLegend, testID, style }: HeatmapProps & { cells: HeatmapCell[] }) {
   const { tokens } = useTheme();
@@ -224,7 +230,7 @@ function CalendarHeatmap({ cells, label, caption, hideLegend, testID, style }: H
             <View style={{ height: CAL_MONTH_H, marginLeft: CAL_GUTTER, width: gridW }}>
               {monthLabels.map((m, c) =>
                 m ? (
-                  <Text key={c} numberOfLines={1} style={{ position: "absolute", left: c * CAL_PITCH, top: 0, fontSize: 10, lineHeight: CAL_MONTH_H, color: tokens["muted-foreground"] }}>
+                  <Text key={c} numberOfLines={1} style={{ position: "absolute", left: c * CAL_PITCH, top: 0, ...CAL_MONTH_TYPE, color: tokens["muted-foreground"] }}>
                     {m}
                   </Text>
                 ) : null,
@@ -236,7 +242,7 @@ function CalendarHeatmap({ cells, label, caption, hideLegend, testID, style }: H
             <View style={{ width: CAL_GUTTER, gap: CAL_GAP, paddingRight: 4 }}>
               {HEATMAP_WEEKDAYS.map((wd, r) => (
                 <View key={r} style={{ height: CAL_CELL, justifyContent: "center" }}>
-                  {wd ? <Text numberOfLines={1} style={{ fontSize: 10, lineHeight: 11, textAlign: "right", color: tokens["muted-foreground"] }}>{wd}</Text> : null}
+                  {wd ? <Text numberOfLines={1} style={{ ...CAL_WEEKDAY_TYPE, textAlign: "right", color: tokens["muted-foreground"] }}>{wd}</Text> : null}
                 </View>
               ))}
             </View>
@@ -262,7 +268,7 @@ function CalendarHeatmap({ cells, label, caption, hideLegend, testID, style }: H
                           style={{
                             width: CAL_CELL,
                             height: CAL_CELL,
-                            borderRadius: 2,
+                            borderRadius: platformShape.web.cell,
                             backgroundColor: levelFill(tokens, lvl),
                             borderWidth: 1,
                             borderColor: isActive ? tokens.foreground : lvl === 0 ? tokens.border : "transparent",
@@ -275,7 +281,7 @@ function CalendarHeatmap({ cells, label, caption, hideLegend, testID, style }: H
               </View>
               {activeCell ? (
                 <ChartInspectionSurface
-                  radius={6}
+                  radius={platformShape.web.key}
                   style={{
                     position: "absolute",
                     top: flagTop,
@@ -287,7 +293,7 @@ function CalendarHeatmap({ cells, label, caption, hideLegend, testID, style }: H
                   }}
                 >
                   <Text numberOfLines={1} style={{ fontSize: 12, lineHeight: 16, fontWeight: "600", color: tokens["card-foreground"] }}>{flagTitle}</Text>
-                  {flagSub ? <Text numberOfLines={1} style={{ fontSize: 11, lineHeight: 15, color: tokens["muted-foreground"] }}>{flagSub}</Text> : null}
+                  {flagSub ? <Text numberOfLines={1} style={{ ...FLAG_DETAIL_TYPE, color: tokens["muted-foreground"] }}>{flagSub}</Text> : null}
                 </ChartInspectionSurface>
               ) : null}
             </View>

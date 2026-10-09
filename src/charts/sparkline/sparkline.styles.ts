@@ -1,4 +1,5 @@
 import { type Size } from "./sparkline.shared.js";
+import { platformShape } from "../../style/platform-shape.js";
 
 // Co-located Sparkline skins. Sparkline is a "Shared" treatment: a token-colored
 // bar strip renders identically on every platform, so iosSkin and androidSkin
@@ -24,7 +25,8 @@ export interface SparklineSkin {
 export const SPARK_STRIP_HEIGHT = 24;
 
 export const webSkin: SparklineSkin = {
-  barRadius: 4,
+  // A bar is a compact chart mark: the web's mark corner.
+  barRadius: platformShape.web.mark,
   gap: 2,
   height: { compact: 16, default: SPARK_STRIP_HEIGHT, tall: 32 },
 };

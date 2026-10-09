@@ -377,7 +377,7 @@ export function createSlider(skin: SliderSkin) {
       top: cy - dot / 2,
       width: dot,
       height: dot,
-      borderRadius: dot / 2,
+      borderRadius: 9999,
       pointerEvents: "none",
     });
     // The M3 stop indicator sits centered inside the inactive track's end cap; it

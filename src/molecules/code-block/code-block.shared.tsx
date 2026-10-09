@@ -99,6 +99,8 @@ export interface CodeBlockSkin extends TouchTargetSkin {
   gutterText: (t: ColorTokens) => TextStyle;
   /** The expander bar under a collapsed block. */
   expanderBar: (t: ColorTokens) => ViewStyle;
+  /** The expander's ripple clip: the surface's bottom corners, inside its border. */
+  expanderClip: ViewStyle;
   /** The expander label type. */
   expanderLabel: (t: ColorTokens) => TextStyle;
   /** Terminal outer window: shape, border, shadow/elevation, clipping. */
@@ -783,7 +785,7 @@ export function createCodeBlock(skin: CodeBlockSkin) {
             )}
           </View>
           {folds ? (
-            <RippleClip shape={{ borderBottomStartRadius: 7, borderBottomEndRadius: 7 }}>
+            <RippleClip shape={skin.expanderClip}>
               <Pressable
                 android_ripple={surfaceRipple(tokens)}
                 onPress={() => setExpanded(!expanded)}

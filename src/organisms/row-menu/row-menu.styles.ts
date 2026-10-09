@@ -151,12 +151,13 @@ const IOS_RADIUS = shape.ios.menu;
 export const iosSkin: RowMenuSkin = {
   minTarget: TOUCH_TARGET.ios,
   anchor: { position: "relative", alignItems: "flex-start" },
+  // The iOS control corner, a circle on the 32pt trigger (it paints no fill; the press dims it).
   trigger: {
     width: 32,
     height: 32,
     alignItems: "center",
     justifyContent: "center",
-    borderRadius: 8,
+    borderRadius: shape.ios.control,
   },
   triggerIconSize: 17,
   triggerIconColor: (t) => t.foreground,
@@ -214,7 +215,7 @@ export const iosSkin: RowMenuSkin = {
 // ripple on press (alpha(primary, 0.12) state layer); M3 menus do NOT draw
 // dividers between every group, so separators are suppressed. Destructive rows
 // are red. The ⋯ trigger shares the ripple.
-const ANDROID_RADIUS = 4;
+const ANDROID_RADIUS = shape.android.menu;
 export const androidSkin: RowMenuSkin = {
   minTarget: TOUCH_TARGET.android,
   anchor: { position: "relative", alignItems: "flex-start" },
@@ -223,7 +224,8 @@ export const androidSkin: RowMenuSkin = {
     height: 40,
     alignItems: "center",
     justifyContent: "center",
-    borderRadius: 20,
+    // An M3 icon button: the control role, a circle on its square box.
+    borderRadius: shape.android.control,
     // Clip the Material ripple to the circular outline (without this, the bounded
     // RippleDrawable paints a rectangle past the rounded corners on Android).
     overflow: "hidden",

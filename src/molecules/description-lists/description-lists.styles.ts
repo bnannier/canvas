@@ -1,5 +1,6 @@
 import { type ViewStyle, type TextStyle } from "react-native";
 import { type ColorTokens, shadow, MONO_FONT, FOCUS_RESET, shape } from "../../style/index.js";
+import { platformShape } from "../../style/platform-shape.js";
 import { type DescriptionListSkin } from "./description-lists.shared.js";
 
 // Co-located DescriptionList skins and shared style fragments. Layout-only
@@ -12,9 +13,9 @@ import { type DescriptionListSkin } from "./description-lists.shared.js";
 //
 // DescriptionList keeps one structure and one set of semantic colors on every
 // platform, but the per-OS TYPE ROLES differ:
-//   Web  — the established Canvas / Catalyst look, lifted verbatim: a card with
-//          8 radius, a 1px `border`, the `card` fill, a soft shadow("sm"), 24
-//          padding, gap 12 between rows; a 14/20 muted term beside a 14/20/500
+//   Web  — the Catalyst term-value list: a card at the card corner, a 1px `border`,
+//          the `card` fill, a soft shadow("sm"), 24 padding, gap 12 between rows;
+//          a 14/20 muted term beside a 14/20/500
 //          foreground value; the stacked term is 12pt/500 uppercase with 0.4
 //          letter-spacing.
 //   iOS  — the iOS 27 kit Lists value row: the term is the PRIMARY SF Pro 17/22
@@ -213,7 +214,7 @@ export function headerSubtitle(tokens: ColorTokens): TextStyle {
 
 // --- per-OS skins -----------------------------------------------------------
 
-// Web: the current Canvas look, preserved verbatim.
+// Web: the Catalyst term-value card.
 export const webSkin: DescriptionListSkin = {
   cardRadius: shape.web.card,
   cardCurve: "circular",
@@ -235,7 +236,7 @@ export const webSkin: DescriptionListSkin = {
 // card with the continuous corner curve. SF Pro Text tracking at 17pt = -0.43;
 // the 14pt stacked value = -0.15.
 export const iosSkin: DescriptionListSkin = {
-  cardRadius: 26,
+  cardRadius: platformShape.ios.groupedList,
   cardCurve: "continuous",
   cardShadow: () => shadow("none"),
   rowGap: 12,

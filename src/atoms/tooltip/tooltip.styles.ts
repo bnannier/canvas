@@ -1,6 +1,7 @@
 import { type ViewStyle, type TextStyle } from "react-native";
-import { type ColorTokens, shadow } from "../../style/index.js";
+import { type ColorTokens, shadow, shape } from "../../style/index.js";
 import { typeScale } from "../../style/type-scale.js";
+import { platformShape } from "../../style/platform-shape.js";
 
 // Co-located Tooltip skins, one per platform, all driven by the theme tokens (passed
 // in from useTheme so they follow the palette, the scheme and the glass surface). A
@@ -10,7 +11,7 @@ import { typeScale } from "../../style/type-scale.js";
 // has no tooltip; its only dark bubble, the toast pill, keeps one colour in every theme,
 // which would all but vanish on the dark page, so the bubble keeps the per-scheme inverse
 // and takes Dark Factory's type and corners:
-//   Web: an 8-radius bubble (the control corner), 6 x 10 padding, a soft `md` lift, the
+//   Web: an 8-radius bubble (Dark Factory's chip step), 6 x 10 padding, a soft `md` lift, the
 //     label in Dark Factory's 12px label weight (600) at its 1.3 line height.
 //   iOS: no system tooltip, so the web skin.
 //   Android (Material 3 plain tooltip): a small rounded rect (radius 4), the inverse
@@ -61,7 +62,7 @@ export const iconTrigger: ViewStyle = {
   width: 40,
   alignItems: "center",
   justifyContent: "center",
-  borderRadius: 6,
+  borderRadius: shape.web.control,
 };
 
 // The text trigger: the `trigger` string rendered as a pressable inline word (a
@@ -74,7 +75,7 @@ export const textTrigger: ViewStyle = {
   alignSelf: "flex-start",
   paddingHorizontal: 2,
   paddingVertical: 2,
-  borderRadius: 4,
+  borderRadius: platformShape.web.key,
 };
 
 // The text-trigger label: the brand `foreground` ink at body size (14/20 medium)
@@ -92,7 +93,7 @@ export const textTriggerLabel = (t: ColorTokens): TextStyle => ({
 // ---------- Web: Dark Factory's type on the inverse bubble ----------
 export const webSkin: TooltipSkin = {
   bubble: (t) => ({
-    borderRadius: 8,
+    borderRadius: platformShape.web.tooltip,
     backgroundColor: t.foreground,
     paddingHorizontal: 10,
     paddingVertical: 6,
@@ -111,7 +112,7 @@ export const iosSkin: TooltipSkin = webSkin;
 // tooltip spec. A 24dp minimum height keeps single-line tips at the spec height.
 export const androidSkin: TooltipSkin = {
   bubble: (t) => ({
-    borderRadius: 4,
+    borderRadius: platformShape.android.tooltip,
     backgroundColor: t.foreground,
     paddingHorizontal: 8,
     paddingVertical: 4,

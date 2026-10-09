@@ -1,6 +1,7 @@
 import { type ViewStyle, type TextStyle } from "react-native";
 import { alpha, shape, type ColorTokens } from "../../style/index.js";
 import { fieldBorder } from "../../style/field-colors.js";
+import { platformShape } from "../../style/platform-shape.js";
 import { type InputOTPSkin, type Size } from "./input-otp.shared.js";
 
 // Co-located InputOTP skins, one per platform, all driven by the brand tokens
@@ -30,7 +31,7 @@ const CELL_BASE: ViewStyle = {
 };
 
 // Digit type scale per size (the digit is the value; size scales it with the box).
-// Used by the web (18 base, the established Canvas look) and iOS (600 weight) skins.
+// Used by the web (500 weight, 18 at base) and iOS (600 weight) skins.
 const DIGIT_SIZE: Record<Size, number> = { small: 15, base: 18, large: 22 };
 
 function digitText(t: ColorTokens, size: Size, weight: TextStyle["fontWeight"]): TextStyle {
@@ -89,7 +90,8 @@ function separatorText(t: ColorTokens, fontSize: number): TextStyle {
 // (see `caretBlink` on the skin contract).
 function caretBar(color: string, size: Size): ViewStyle {
   const height = DIGIT_SIZE[size];
-  return { width: 1.5, height, borderRadius: 1, backgroundColor: color };
+  // A capsule: the full round on the 1.5px bar.
+  return { width: 1.5, height, borderRadius: 9999, backgroundColor: color };
 }
 
 // ---------- iOS: the reference's field box per cell, separated, ring on active ----------
@@ -123,7 +125,7 @@ export const iosSkin: InputOTPSkin = {
 };
 
 // ---------- Android (Material 3): outlined cells, separated, 2dp ring on active ----------
-const M3_RADIUS = 12; // M3 medium-component corner
+const M3_RADIUS = platformShape.android.codeCell;
 const M3_W: Record<Size, number> = { small: 44, base: 52, large: 60 };
 const M3_H: Record<Size, number> = { small: 48, base: 56, large: 64 };
 
@@ -195,7 +197,7 @@ export const webSkin: InputOTPSkin = {
   },
   digit: (t, size) => digitText(t, size, "500"),
   separator: (t, size) => separatorText(t, DIGIT_SIZE[size]),
-  // The established Canvas caret: a static `foreground` bar (the web row is the baseline).
+  // The web caret: a static `foreground` bar.
   caret: (t, size) => caretBar(t.foreground, size),
   caretBlink: false,
   disabledOpacity: 0.5,

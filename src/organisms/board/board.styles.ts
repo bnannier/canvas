@@ -1,5 +1,6 @@
 import { type ViewStyle, type TextStyle } from "react-native";
 import { type ColorTokens, surfaceRipple, shape } from "../../style/index.js";
+import { platformShape } from "../../style/platform-shape.js";
 
 // Co-located Board skins, one per platform. Board is a "Light" treatment: the structure (the
 // horizontal lanes ScrollView, the DropZone columns, the Draggable cards and their anatomy)
@@ -8,8 +9,8 @@ import { type ColorTokens, surfaceRipple, shape } from "../../style/index.js";
 // card body. The BRAND survives everywhere (token colors, the primary drop affordances from
 // the composed DnD family); only native shape/sizing/feedback shift per OS.
 //
-//   Web: the established Canvas look. Columns are rounded-lg (10) `muted` wells, 13/600
-//     headers, 14/500 card titles + 12 muted descriptions; press = the accent surface.
+//   Web: columns are `muted` wells at the card corner, 14/500 headers, 14/500 card titles
+//     + 12 muted descriptions; press = the accent surface.
 //   iOS (HIG): columns as inset-grouped wells with the 26 continuous (superellipse) corner
 //     curve over `muted` (fill-differentiated, borderless, per the iOS grouped conventions);
 //     SF type (header subheadline 15/600 -0.24, title 15/600 -0.24, description footnote
@@ -64,8 +65,11 @@ const CARD_ROW: ViewStyle = { flexDirection: "row", alignItems: "flex-start", ga
 const TRAILING: ViewStyle = { flexDirection: "column", alignItems: "flex-end", gap: 8 };
 const CLUSTER: ViewStyle = { flexDirection: "row", alignItems: "center", gap: 2 };
 const CHIPS: ViewStyle = { flexDirection: "row", flexWrap: "wrap", alignItems: "center", gap: 6 };
+// The press layer under a card's body: Dark Factory's control corner on every platform,
+// since no platform ships a board control.
+const PRESSABLE_BODY: ViewStyle = { borderRadius: shape.web.control };
 
-// ---------- Web: the established Canvas look ----------
+// ---------- Web: muted wells ----------
 export const webSkin: BoardSkin = {
   lanes: (compact) => ({ flexDirection: "row", alignItems: "flex-start", gap: compact ? 12 : 16 }),
   column: (t, compact) => ({ backgroundColor: t.muted, borderRadius: shape.web.card, padding: compact ? 8 : 12, gap: compact ? 8 : 10 }),
@@ -80,7 +84,7 @@ export const webSkin: BoardSkin = {
   trailingColumn: TRAILING,
   trailingCluster: CLUSTER,
   emptyLabel: (t) => ({ fontSize: 12, lineHeight: 16, color: t["muted-foreground"] }),
-  pressableBody: { borderRadius: shape.web.control },
+  pressableBody: PRESSABLE_BODY,
   pressedSurface: (t) => ({ backgroundColor: t.accent }),
   pressedOpacity: null,
   ripple: null,
@@ -89,7 +93,7 @@ export const webSkin: BoardSkin = {
 // ---------- iOS (HIG inset-grouped wells, SF type) ----------
 export const iosSkin: BoardSkin = {
   lanes: (compact) => ({ flexDirection: "row", alignItems: "flex-start", gap: compact ? 12 : 16 }),
-  column: (t, compact) => ({ backgroundColor: t.muted, borderRadius: 26, borderCurve: "continuous", padding: compact ? 10 : 14, gap: compact ? 8 : 12 }),
+  column: (t, compact) => ({ backgroundColor: t.muted, borderRadius: platformShape.ios.groupedList, borderCurve: "continuous", padding: compact ? 10 : 14, gap: compact ? 8 : 12 }),
   columnHeader: HEADER,
   columnLabel: (t) => ({ fontSize: 15, lineHeight: 20, fontWeight: "600", letterSpacing: -0.24, color: t.foreground }),
   cardList: (compact) => ({ gap: compact ? 8 : 10, minHeight: 52 }),
@@ -101,7 +105,7 @@ export const iosSkin: BoardSkin = {
   trailingColumn: TRAILING,
   trailingCluster: CLUSTER,
   emptyLabel: (t) => ({ fontSize: 13, lineHeight: 18, letterSpacing: -0.08, color: t["muted-foreground"] }),
-  pressableBody: { borderRadius: 8, borderCurve: "continuous" },
+  pressableBody: { ...PRESSABLE_BODY, borderCurve: "continuous" },
   pressedSurface: (t) => ({ backgroundColor: t.accent }),
   pressedOpacity: 0.8,
   ripple: null,
@@ -110,7 +114,7 @@ export const iosSkin: BoardSkin = {
 // ---------- Android (Material 3 surface-container lanes, M3 type) ----------
 export const androidSkin: BoardSkin = {
   lanes: (compact) => ({ flexDirection: "row", alignItems: "flex-start", gap: compact ? 12 : 16 }),
-  column: (t, compact) => ({ backgroundColor: t.muted, borderRadius: 16, padding: compact ? 8 : 12, gap: compact ? 8 : 12 }),
+  column: (t, compact) => ({ backgroundColor: t.muted, borderRadius: platformShape.android.lane, padding: compact ? 8 : 12, gap: compact ? 8 : 12 }),
   columnHeader: HEADER,
   columnLabel: (t) => ({ fontSize: 14, lineHeight: 20, fontWeight: "500", letterSpacing: 0.1, color: t.foreground }),
   cardList: (compact) => ({ gap: compact ? 6 : 8, minHeight: 52 }),
@@ -124,7 +128,7 @@ export const androidSkin: BoardSkin = {
   emptyLabel: (t) => ({ fontSize: 12, lineHeight: 16, letterSpacing: 0.4, color: t["muted-foreground"] }),
   // The bounded Material ripple is clipped to these corners by the shell's RippleClip
   // parent (a node can never clip its own ripple on Android; see src/style/ripple-clip.tsx).
-  pressableBody: { borderRadius: 8 },
+  pressableBody: PRESSABLE_BODY,
   pressedSurface: () => ({}),
   pressedOpacity: null,
   ripple: (t) => surfaceRipple(t),

@@ -2,6 +2,7 @@ import { View, useTheme, devWarn, alpha, type StyleProp, type ViewStyle, type La
 import { seriesFill } from "../shared/charts.styles.js";
 import { ChartLegend } from "../shared/chart-legend.js";
 import { type StackedSegment } from "../shared/types.js";
+import { platformShape } from "../../style/platform-shape.js";
 
 // StackedBar is a "Shared" platform treatment (data visualization is
 // platform-neutral): one implementation serves iOS, Android, and the web.
@@ -19,7 +20,7 @@ const SUBTLE_ALPHA = 0.35;
 // The `tall` size, matching what a Sparkline plots in: the same band height and
 // the same radius its bars carry, so the two draw as one family.
 const STRIP_HEIGHT = 24;
-const STRIP_BAR_RADIUS = 4;
+const STRIP_BAR_RADIUS = platformShape.web.mark;
 
 export interface StackedBarProps {
   segments: StackedSegment[];

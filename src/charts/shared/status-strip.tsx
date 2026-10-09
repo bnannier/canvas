@@ -1,4 +1,5 @@
 import { View, statusColors, type ColorTokens } from "../../style/index.js";
+import { platformShape } from "../../style/platform-shape.js";
 
 // The period-pill strip shared by UptimeBar and ServiceHealthList: a single
 // row of flex-grown pills, one per period, colored by the period's status.
@@ -71,7 +72,7 @@ export function StatusStrip({ periods, height, tokens }: { periods: UptimePeriod
             flexShrink: 1,
             flexBasis: "0%",
             height,
-            borderRadius: 2,
+            borderRadius: platformShape.web.cell,
             backgroundColor: statusColor(tokens, periodStatus(p)),
           }}
         />

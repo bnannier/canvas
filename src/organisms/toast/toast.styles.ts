@@ -2,6 +2,7 @@ import { inverseFill, inverseInk, inversePrimary, inverseStatus } from "../../st
 import { type ViewStyle } from "react-native";
 import { type ColorTokens, alpha, platformMinTarget, shadow, shape } from "../../style/index.js";
 import { typeScale } from "../../style/type-scale.js";
+import { platformShape } from "../../style/platform-shape.js";
 import { type ToastSkin } from "./toast.shared.js";
 
 // Co-located Toast skins. Under glass the shell renders the capsule through
@@ -50,20 +51,21 @@ function capsule(t: ColorTokens, radius: number): ViewStyle {
   };
 }
 
-const actionButton = (): ViewStyle => ({
+// The snackbar's text action and close icon are Material 3 buttons, stadium-shaped.
+const m3ActionButton = (): ViewStyle => ({
   paddingHorizontal: 12,
   paddingVertical: 6,
-  borderRadius: 10,
+  borderRadius: shape.android.control,
   // clip the Material ripple to the rounded outline (Android clipToOutline)
   overflow: "hidden",
   alignItems: "center",
   justifyContent: "center",
 });
 
-const dismissButton = (): ViewStyle => ({
+const m3DismissButton = (): ViewStyle => ({
   width: 24,
   height: 24,
-  borderRadius: 12,
+  borderRadius: shape.android.control,
   // clip the Material ripple to the rounded outline (Android clipToOutline)
   overflow: "hidden",
   alignItems: "center",
@@ -123,7 +125,7 @@ export const iosSkin: ToastSkin = webSkin;
 // action/dismiss is present (M3 measurements).
 export const androidSkin: ToastSkin = {
   container: (t, hasTrailing) => ({
-    ...capsule(t, 4),
+    ...capsule(t, platformShape.android.snackbar),
     gap: 8,
     backgroundColor: inverseFill(t),
     paddingStart: 16,
@@ -136,10 +138,10 @@ export const androidSkin: ToastSkin = {
   intentColor: null,
   message: (t) => ({ fontSize: 14, lineHeight: 20, fontWeight: "400", color: inverseInk(t) }),
   description: (t) => ({ fontSize: 13, lineHeight: 18, color: alpha(inverseInk(t), 0.7) }),
-  actionButton,
+  actionButton: m3ActionButton,
   actionLabel: (t) => ({ fontSize: 14, lineHeight: 20, fontWeight: "500", color: inversePrimary(t) }),
   actionHitSlop: ANDROID_ACTION_HIT_SLOP,
-  dismissButton,
+  dismissButton: m3DismissButton,
   dismissIconSize: DISMISS_SIZE_ANDROID,
   dismissColor: (t) => inverseInk(t),
   dismissHitSlop: ANDROID_DISMISS_HIT_SLOP,

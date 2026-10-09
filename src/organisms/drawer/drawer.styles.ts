@@ -1,5 +1,6 @@
 import { type ViewStyle } from "react-native";
 import { type ColorScheme, type ColorTokens, alpha, customShadow, shadow, shape } from "../../style/index.js";
+import { platformShape } from "../../style/platform-shape.js";
 
 // Co-located Drawer skins, one per platform, all driven by the brand tokens
 // (passed in from useTheme so they follow light/dark). Drawer is a "Light"
@@ -11,7 +12,7 @@ import { type ColorScheme, type ColorTokens, alpha, customShadow, shadow, shape 
 //   iOS (iOS 27 kit Sheets): a lineless panel (no border) with the iOS sheet's
 //     large CONTINUOUS 38pt corner radius on the inner edge — a side drawer rounds
 //     its leading (inner) edge 38, a bottom sheet rounds its top corners 38 (the
-//     iOS 27 concentric sheet radius, superseding the pre-iOS-26 16pt) — over a
+//     concentric sheet corner of iOS 27, superseding the pre-iOS-26 16pt) — over a
 //     soft 0/15/50 rgba(0,0,0,0.18) elevation, plus an optional centered grabber
 //     on the sheet edges. The scrim resolves PER SCHEME (light 0.2, dark 0.48).
 //   Android (Material 3 side/bottom sheet): a lineless panel with the M3 rounding
@@ -20,9 +21,8 @@ import { type ColorScheme, type ColorTokens, alpha, customShadow, shadow, shape 
 //     (1dp). The bottom sheet caps at 640dp (56dp margins beyond) and the side
 //     sheet at 400dp (M3 docked width tokens); a 32x4 M3 drag handle tops the
 //     bottom sheet. The scrim is the M3 standard scrim (~0.32).
-//   Web: the established Canvas look (the current drawer, lifted verbatim) — an
-//     opaque `card` panel with a 1px `border` hairline on its inner edge (a 16
-//     rounded-top bottom sheet), no shadow, over a 0.5 black scrim.
+//   Web: an opaque `card` panel at the sheet corner on its inner edge, with a 1px
+//     `border` hairline there and the xl shade, over a 0.5 black scrim.
 //
 // The skins paint the SOLID `card` fill; under glass the shell renders the panel
 // through GlassSurface as a FUNCTIONAL-layer surface (the sheet material over the
@@ -166,7 +166,7 @@ export const iosSkin: DrawerSkin = {
   scrimOpacity: (scheme) => (scheme === "dark" ? 0.48 : 0.2),
   sheetMaxWidth: null,
   triggerMinHeight: 44,
-  // The iOS grabber: a centered 60x4 bar (radius 2) sitting 5pt inside the
+  // The iOS grabber: a centered 60x4 capsule sitting 5pt inside the
   // exposed edge (below the top on a bottom sheet, above the bottom on a top
   // sheet); side drawers carry none. Fill is a translucent neutral gray that
   // adapts to light/dark via the muted-foreground token.
@@ -175,7 +175,7 @@ export const iosSkin: DrawerSkin = {
     return {
       width: 60,
       height: 4,
-      borderRadius: 2,
+      borderRadius: 9999,
       alignSelf: "center",
       backgroundColor: alpha(t["muted-foreground"], 0.4),
       ...(edge === "bottom" ? { marginTop: 5, marginBottom: 8 } : { marginTop: 8, marginBottom: 5 }),
@@ -224,7 +224,7 @@ export const iosSkin: DrawerSkin = {
 // (centered, 56dp margins beyond) and the side sheet at the 400dp docked max,
 // with a 32x4 M3 drag handle atop the bottom sheet. The scrim is the M3 standard
 // scrim (~0.32). The SOLID `card` fill is unchanged.
-const ANDROID_SIDE_RADIUS = 16;
+const ANDROID_SIDE_RADIUS = platformShape.android.navigationDrawer;
 const ANDROID_SHEET_RADIUS = shape.android.sheet;
 // M3 side-sheet docked container max-width token.
 const ANDROID_SIDE_MAX = 400;
@@ -233,7 +233,7 @@ export const androidSkin: DrawerSkin = {
   // M3 bottom sheet: full width up to a 640dp max, centered on wider windows.
   sheetMaxWidth: 640,
   triggerMinHeight: 48,
-  // The M3 drag handle atop the bottom sheet: a 32x4 rounded bar (radius 2),
+  // The M3 drag handle atop the bottom sheet: a 32x4 capsule,
   // centered, on-surface-variant at low alpha (mirrors the ActionSheet android
   // skin). Side/top edges carry none.
   handle: (edge, t) => {
@@ -241,7 +241,7 @@ export const androidSkin: DrawerSkin = {
     return {
       width: 32,
       height: 4,
-      borderRadius: 2,
+      borderRadius: 9999,
       alignSelf: "center",
       marginTop: 16,
       marginBottom: 8,

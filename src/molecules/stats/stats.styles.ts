@@ -17,10 +17,9 @@ import { type StatsSkin } from "./stats.shared.js";
 // M3 outline, and the press feedback on a tappable item. Neither iOS nor Android
 // ships a stat-tile control, so the native skins keep the structure and apply only
 // platform conventions; they do NOT invent a new shape.
-//   Web: the established Canvas look (the current stats, lifted verbatim) — a
-//     bordered card surface (8 radius, 1px `border`, `card` fill, shadow-sm, p20),
-//     the plain parent at p24, gaps 14/24, value 24/600 with -0.4 tracking, label
-//     14 muted, delta 12/500. Press = opacity dim (0.9).
+//   Web: a bordered card surface at the card corner (1px `border`, `card` fill, the
+//     default shadow, padding 24), the plain parent the same, gaps 16/24, a 36/400
+//     tabular value, a 16 muted label, a 12/500 delta. Press = opacity dim (0.9).
 //   iOS (HIG / SF): iOS has no stat-tile control, so this stays a card-like inset
 //     surface following SF conventions — a softer 12-radius continuous
 //     (superellipse) corner, the same hairline border with NO shadow (iOS
@@ -90,7 +89,7 @@ export function deltaTone(tokens: ColorTokens, down: boolean): TextStyle {
   return { color: statusColors(tokens, down ? "error" : "success").ink };
 }
 
-// ---------- Web: the established Canvas look (lifted verbatim) ----------
+// ---------- Web: the bordered stat card ----------
 export const webSkin: StatsSkin = {
   // The stat card: the card corner, a soft hairline, the ambient shade, a 24px
   // inset.

@@ -98,7 +98,7 @@ export function createServiceHealthList(skin: ChartSkin) {
             const header = (
               <>
                 {/* Status dot, decorative beside the composed name. */}
-                <View style={{ width: 8, height: 8, borderRadius: 999, backgroundColor: statusColor(tokens, status) }} />
+                <View style={{ width: 8, height: 8, borderRadius: 9999, backgroundColor: statusColor(tokens, status) }} />
                 <Text numberOfLines={1} style={{ flexGrow: 1, flexShrink: 1, fontSize: 14, lineHeight: 20, color: tokens["card-foreground"] }}>
                   {item.label}
                 </Text>

@@ -1,6 +1,7 @@
 import { primaryText } from "../../style/primary-text.js";
 import { StyleSheet, type StyleProp, type ViewStyle, type TextStyle } from "react-native";
 import { type ColorTokens, shadow, customShadow, alpha, shape } from "../../style/index.js";
+import { platformShape } from "../../style/platform-shape.js";
 import { type TabsSkin } from "./tabs.shared.js";
 
 // Co-located Tabs skins, one per platform. The shell resolves the look axis
@@ -281,8 +282,8 @@ export const androidSkin: TabsSkin = {
       paddingVertical: 12,
     };
   },
-  // M3 indicator: a 3px brand `primary` bar with a slight top rounding under
-  // the active tab.
+  // M3 indicator: a 3px brand `primary` bar under the active tab, its top corners
+  // rounded at its own height.
   underlineIndicator(tokens, selected) {
     return {
       position: "absolute",
@@ -290,8 +291,8 @@ export const androidSkin: TabsSkin = {
       start: 0,
       end: 0,
       height: 3,
-      borderTopStartRadius: 3,
-      borderTopEndRadius: 3,
+      borderTopStartRadius: platformShape.android.tabIndicator,
+      borderTopEndRadius: platformShape.android.tabIndicator,
       backgroundColor: selected ? tokens.primary : "transparent",
     };
   },

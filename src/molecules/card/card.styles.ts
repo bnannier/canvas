@@ -150,7 +150,10 @@ export const androidSkin: CardSkin = {
 // `surface`, so Android can paint the elevated card's border transparent while
 // content metrics stay identical everywhere).
 
-export const cardBase: ViewStyle = { borderWidth: 1 };
+/** The card's hairline: the inset its full-bleed media's corner sits inside. */
+export const CARD_BORDER = 1;
+
+export const cardBase: ViewStyle = { borderWidth: CARD_BORDER };
 
 export const header: ViewStyle = { gap: 6, paddingHorizontal: 20, paddingBottom: 16, paddingTop: 20 };
 
