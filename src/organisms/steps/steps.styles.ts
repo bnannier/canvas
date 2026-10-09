@@ -6,7 +6,7 @@ import { alpha, TOUCH_TARGET, type ColorTokens, type TouchTargetSkin } from "../
 // the same multi-step progress STRUCTURE on every platform (numbered/check
 // circles joined by connectors, plus the vertical and progress-bar layouts),
 // with only small native touches per OS. The BRAND survives everywhere (the
-// indigo `primary` token and the semantic tokens, never a platform default);
+// `primary` token and the semantic tokens, never a platform default);
 // only the indicator shape, the connector cap, the current-step emphasis, and
 // the press feedback change per OS:
 //   iOS (HIG): circular step indicators with ROUNDED connector caps; completed =

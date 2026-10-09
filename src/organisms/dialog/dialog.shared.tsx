@@ -193,14 +193,14 @@ export function createDialog(skin: DialogSkin, parts: DialogParts = {}) {
     //   - web (footerKind "buttons", no skin.textButton): the outline Cancel +
     //     primary/destructive Confirm Button row (verbatim Canvas look).
     //   - Android (footerKind "buttons", skin.textButton set): flat text buttons,
-    //     Cancel then Confirm, brand-indigo, with a ripple.
+    //     Cancel then Confirm, in `primary-text`, with a ripple.
     //   - iOS (footerKind "capsules"): a side-by-side row of capsule buttons, a
     //     gray Cancel capsule then a primary (or destructive-red-labeled) Confirm
     //     capsule, no dividers; a pressed capsule dims.
     const footer =
       skin.footerKind === "capsules" ? (
         <View style={skin.footer(tokens)}>
-          {/* Cancel capsule (gray) on the left, Confirm capsule (indigo, or gray
+          {/* Cancel capsule (gray) on the left, Confirm capsule (`primary`, or gray
               with red label when destructive) on the right. */}
           {(
             [

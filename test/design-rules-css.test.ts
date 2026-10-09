@@ -161,7 +161,7 @@ describe("elevation in the hand-off", () => {
 
 describe("one neutral family", () => {
   // Mixing a warm gray with a cool one in the same interface is the defect. Dark Factory's
-  // neutrals are TINTED on purpose (indigo-slate inks over blush-violet surfaces), so the
+  // neutrals are TINTED on purpose (blue-slate inks over blush-violet surfaces), so the
   // rule is read per class: the surfaces share one hue, the inks share one hue, the two
   // classes sit in one family (medians within 25 degrees), and a neutral stays quiet next
   // to the intents (its chroma at most 0.06 and at most half the least intent's). `accent`

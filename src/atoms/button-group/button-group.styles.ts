@@ -7,16 +7,16 @@ import { type ButtonGroupSkin, type Size } from "./button-group.shared.js";
 // Co-located ButtonGroup skins, one per platform. The group is laid out per
 // segment in JS (there are no `first:`/`last:` style variants, so the joined-
 // corner and shared-border math is computed here). The BRAND survives on every
-// platform (the indigo `primary` token and the semantic tokens, never a platform
+// platform (the `primary` token and the semantic tokens, never a platform
 // default), and only the native SHAPE, sizing, structure, and press feedback
 // change per OS:
-//   iOS (UISegmentedControl): a gray rounded CONTAINER (radius 8, muted fill,
-//     ~3px inset) holding segments; the SELECTED segment is a raised white pill
-//     (radius 6, small shadow) with NO visible dividers (iOS 13+ style); labels
-//     ~13pt. Press = opacity dim.
+//   iOS (UISegmentedControl): a gray CAPSULE container (muted fill, a 3px inset)
+//     holding segments; the SELECTED segment is a raised white capsule (small
+//     shadow) with NO visible dividers (iOS 13+ style); labels ~13pt. Press =
+//     opacity dim.
 //   Android (M3 SegmentedButton): the GROUP is a fully-rounded stadium (1dp
 //     `border` outline); segments share 1dp borders (no gap); the SELECTED
-//     segment is a tonal fill (alpha(primary, .12)) with a brand-indigo label and
+//     segment is a tonal fill (alpha(primary, .12)) with a `primary-text` label and
 //     a leading check; press = android_ripple.
 //   Web: Dark Factory's segmented control (a card2 pill track with a hairline, 3px
 //     inset and a 2px gap, the selected segment a white card pill on DF's segment
@@ -466,10 +466,10 @@ export const androidSkin: ButtonGroupSkin = {
     return selected ? { backgroundColor: alpha(t.primary, 0.12) } : { backgroundColor: "transparent" };
   },
   segmentLabel(t, selected) {
-    // labelMedium; selected reads in brand indigo (onSecondaryContainer ≈ primary).
+    // labelMedium; selected reads in the brand `primary-text` (onSecondaryContainer ≈ primary).
     return { fontWeight: "500", color: selected ? primaryText(t) : t.foreground };
   },
-  // Glyphs track the label: brand indigo on the tonal selected fill.
+  // Glyphs track the label: the brand `primary` on the tonal selected fill.
   segmentIconColor: (selected) => (selected ? "primary" : "foreground"),
   showSelectedCheck: true,
 

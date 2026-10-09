@@ -188,7 +188,7 @@ export const COMPONENT_PLANS: ComponentPlan[] = [
     specifics: ["iOS capsule 44, 17/600, dim 0.8", "M3 40 dp + 48 target, 14/500, ripple", "DF pill 12/700 (CTA 800), 1 px hover lift", "loading width and busy", "`href` links", "dropped doc sections (K2)"],
   },
   { slug: "button-group", families: ["actions"], native: "HIG / M3", specifics: ["iOS segmented", "M3 Expressive connected group", "DF segmented", "held state", "split overflow menu dense", "roving arrows"] },
-  { slug: "checkbox", families: ["selection"], native: "switch on iOS / M3 18 dp", specifics: ["one-job substitution via parts", "indeterminate `mixed`", "error", "description anatomy", "K9 radius mismatch"] },
+  { slug: "checkbox", families: ["selection"], native: "switch on iOS / M3 18 dp", specifics: ["one-job substitution via parts", "indeterminate `mixed`", "error", "description anatomy"] },
   { slug: "chip", families: ["actions"], native: "DF / M3", specifics: ["M3 chip 32 dp, 8 corners, 16 padding, label-large, selected filter chip leads with a check", "remove button named and 44/48", "`aria-pressed` toggle"] },
   { slug: "container", families: ["layout"], native: "n/a", specifics: ["measure steps and `start`", "no reference row (K8)"] },
   { slug: "divider", families: ["layout"], native: "HIG / M3", specifics: ["vertical in Row", "inset", "decorative hidden", "smoke-only tests (K7)"] },

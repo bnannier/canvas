@@ -233,9 +233,9 @@ export const webSkin: CommandSkin = {
   // (never a color emoji).
   searchGlyphSize: 16,
   searchPlaceholder: (t) => ({ fontSize: 14, lineHeight: 20, color: t["muted-foreground"] }),
-  // The Riskora palette card: the 16px menu corner.
+  // The palette card: the 12px menu corner.
   cardShape: { borderRadius: shape.web.menu },
-  // 40px rows, the Riskora menu row.
+  // A 40px trigger, the height of the web menu rows.
   triggerMinHeight: 40,
   triggerBorder: (t) => fieldBorder(t),
   rowBase: {

@@ -18,10 +18,10 @@ import { type ColorTokens, FOCUS_RESET, activeIndicator, shape, type FloatingLab
 //     and a flat bottom, a bottom active-indicator underline (1dp `border` at
 //     rest -> 2dp `ring` on focus, `destructive` on error), ~56dp tall; the
 //     action suffix uses android_ripple; disabled opacity 0.38.
-//   Web: the Riskora dashboard field — a white (`card`) box with the field
-//     corner and a full 1px border (error > focus > the resting `field-border`
-//     hairline, see src/style/field-colors.ts), 48 tall at the base size (40 small,
-//     56 large), 16px inset, opacity 0.5 disabled, action press opacity 0.9.
+//   Web: a white (`card`) box at the 10px field corner with a full 1px border
+//     (error > focus > the resting `field-border` hairline, see
+//     src/style/field-colors.ts), 48 tall at the base size (40 small, 56 large),
+//     16px inset, opacity 0.5 disabled, action press opacity 0.9.
 
 export type Size = "small" | "base" | "large";
 
@@ -96,7 +96,7 @@ function webText(_t: ColorTokens, size: Size): TextStyle {
   return { fontSize: 14, lineHeight: 20 };
 }
 
-// ---------- Web: the Riskora dashboard field ----------
+// ---------- Web: the field box with a full 1px border ----------
 // The border by state, shared by the web and iOS boxes: the shell resolves the token
 // KEY (error > focus > input); at rest the box reads the `field-border` hairline
 // instead of the 3:1 `input` boundary (the disclosed trade-off in field-colors.ts).
@@ -164,8 +164,9 @@ export const webSkin: InputSkin = {
   disabledOpacity: 0.5,
   pressedOpacity: 0.9,
   ripple: null,
-  // The label sits ABOVE the field (Riskora's form rows: a 14/20 medium title over
-  // the box), which is the visual the Field/Form composers render.
+  // The label sits ABOVE the field (a 14/20 medium title over the box at the base
+  // size, 12/16 small and 16/24 large), which is the visual the Field/Form composers
+  // render.
   floatingLabel: false,
   labelAbove: (t, size) => ({
     fontSize: size === "large" ? 16 : size === "small" ? 12 : 14,

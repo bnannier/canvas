@@ -10,7 +10,7 @@ import { type ColorTokens } from "../../style/index.js";
 // Field paints no surface and owns no pressable of its own: the control it wraps brings its own
 // per-OS press feedback from its own skin, so nothing here declares ripple or opacity.
 //
-//   Web: the Riskora form row — a 14/20 medium label, an 8px stack gap, and a 12/16
+//   Web: a 14/20 medium label, an 8px stack gap, and a 12/16
 //     message line. Matches what Input already renders above itself, so a wrapped and an unwrapped
 //     field line up in one column.
 //   iOS: the "iOS Mobile Input Fields" reference (Figma N8TScrzAPwpmwxFS1032my): a 14pt

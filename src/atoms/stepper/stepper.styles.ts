@@ -5,7 +5,7 @@ import { type StepperSkin, type Size } from "./stepper.shared.js";
 
 // Co-located Stepper skins, one per platform, all driven by the brand tokens
 // (passed in from useTheme so they follow light/dark). The BRAND survives wherever
-// the platform idiom carries an accent: the web glyphs are the indigo `primary`, and
+// the platform idiom carries an accent: the web glyphs are the `primary`, and
 // the Android ripple is 12%-alpha brand ink. The iOS 27 stepper has NO accent slot
 // at all (its glyphs are neutral label-colored), so the iOS glyphs stay `foreground`
 // rather than inventing a tint. Only the native SHAPE, sizing, and structure change:

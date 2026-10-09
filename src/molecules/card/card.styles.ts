@@ -15,7 +15,7 @@ import { type HoverMotion } from "../../style/hover.js";
 // CardSeparator) are STATIC shared members, so their insets and type are shared
 // (one value across platforms); only the main surface is skin-parameterized.
 //
-// - Web is the Riskora card: the card corner (`shape.web.card`), a soft 1px hairline, the
+// - Web is the card corner (`shape.web.card`), a soft 1px hairline, the
 //   ambient standard shade at rest (raised lifts to md), a 24px inset; the default
 //   density also carries the card's own flat-child gap (padding implies rhythm). A
 //   pressable card takes Dark Factory's hover lift (`hover`).
@@ -65,7 +65,7 @@ export interface CardSkin {
 // `flat`): the hairline tokens.border outline on the tokens.card fill.
 const lightSurface = (tokens: ColorTokens): ViewStyle => ({ borderColor: tokens.border, backgroundColor: tokens.card });
 
-// --- web (the Riskora card) --------------------------------------------------
+// --- web (the card corner, a hairline, the ambient shade) ---------------------
 
 const WEB_DENSITY: Record<Density, ViewStyle> = {
   compact: { padding: 16, gap: 12 },
@@ -154,7 +154,7 @@ export const cardBase: ViewStyle = { borderWidth: 1 };
 
 export const header: ViewStyle = { gap: 6, paddingHorizontal: 20, paddingBottom: 16, paddingTop: 20 };
 
-// Riskora's card title is Title/H6: 20 at the regular weight, no tracking.
+// The card title: 20/30 at the regular weight, no tracking.
 export const title = (tokens: ColorTokens): TextStyle => ({ fontSize: 20, lineHeight: 30, fontWeight: "400", color: tokens["card-foreground"] });
 
 export const description = (tokens: ColorTokens): TextStyle => ({ fontSize: 14, lineHeight: 20, color: tokens["muted-foreground"] });

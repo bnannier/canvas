@@ -85,6 +85,7 @@ One row per finding. Severity: critical, high, medium, low. Cell: a capture id f
 
 | ID | Severity | Cell | Summary | Status | Fix commit |
 |---|---|---|---|---|---|
+| stats-df-1 | medium | source | Dark Factory fidelity: the web stat card's type is the pre-Dark Factory set (a 20/30 weight-400 card title, a 16/24 label, a 36/44 weight-400 value in stats.styles.ts `webSkin`) where Dark Factory's stat value is 18/20 at weight 800 (`typeScale.statValue`), so the web Stats does not take Dark Factory's look (design language item 2). Its code comment named the old brand until the brand-name guard; this row now tracks the gap. | open |  |
 
 ## Sign-off
 

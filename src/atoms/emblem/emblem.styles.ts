@@ -22,10 +22,10 @@ export interface EmblemSkin {
 const box: Record<EmblemSize, number> = { small: 32, default: 40, large: 48 };
 const iconSize: Record<EmblemSize, number> = { small: 16, default: 20, large: 24 };
 
-// Web: the Riskora identity tile (a 12px rounded square at the default size).
-// Dark Factory's tile: its corner grows with the tile (10 / 12 / 14), the continuous corner
-// curve where the platform draws one (iOS; ignored elsewhere), and a bold monogram. No
-// platform ships an icon tile, so the native skins are the web skin.
+// Web: Dark Factory's tile, a rounded square whose corner is the tile role at the default
+// size and grows with the tile (10 / 12 / 14), the continuous corner curve where the
+// platform draws one (iOS; ignored elsewhere), and a bold monogram. No platform ships an
+// icon tile, so the native skins are the web skin.
 export const webSkin: EmblemSkin = {
   box,
   iconSize,

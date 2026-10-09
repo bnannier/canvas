@@ -7,7 +7,7 @@ import { type TabsSkin } from "./tabs.shared.js";
 // (underline / pills / vertical), the selection/block/disabled state, and the
 // badges; the skin supplies only the native SHAPE, sizing, label weight, fill,
 // indicator, and press feedback. The BRAND survives on every platform (the
-// indigo `primary` token and the semantic tokens, never a platform default), so
+// `primary` token and the semantic tokens, never a platform default), so
 // each follows light/dark and the glass surface.
 //
 //   iOS (iOS 27 / Liquid Glass segmented control): the default underline look
@@ -23,8 +23,8 @@ import { type TabsSkin } from "./tabs.shared.js";
 //     the web tab is to look like the iOS tab, and under glass that is the
 //     capsule track with the liquid-glass puck the shared shell derives from
 //     these fills), the kit's themed keyboard focus ring included (it draws
-//     nothing natively). The former web look (an underline rule, the Riskora card
-//     of hairlined segments) is gone; do not bring it back as a mode-dependent
+//     nothing natively). The former web look (an underline rule, a card of
+//     hairlined segments) is gone; do not bring it back as a mode-dependent
 //     shape, the skin owns the anatomy and the surface mode owns the material.
 
 export type Variant = "underline" | "pills" | "vertical";
@@ -296,7 +296,7 @@ export const androidSkin: TabsSkin = {
     };
   },
   underlineLabel(tokens, selected) {
-    // M3 titleSmall ~14sp; active label carries the brand indigo, inactive muted.
+    // M3 titleSmall ~14sp; active label carries the brand `primary-text`, inactive muted.
     return { fontSize: 14, lineHeight: 20, fontWeight: "500", color: selected ? primaryText(tokens) : tokens["muted-foreground"] };
   },
 

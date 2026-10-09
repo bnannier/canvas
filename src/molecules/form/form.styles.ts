@@ -42,7 +42,7 @@ export const webSkin: FormSkin = {
 
 // ---------- iOS (HIG "Entering data" / SwiftUI Form) ----------
 // SwiftUI Form is a grouped inset list with a touch more breathing room. The
-// brand survives (the indigo `primary` Submit, the foreground/muted text); only
+// brand survives (the `primary` Submit, the foreground/muted text); only
 // the SF type touches and the grouped-list rhythm change: section headings read
 // as SF footnote-emphasized (13/600, tightened tracking) with a 13 secondary
 // footnote description, and the stack carries the grouped-list rhythm (20).

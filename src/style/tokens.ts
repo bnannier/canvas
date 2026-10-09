@@ -414,9 +414,9 @@ export interface BrandColors {
   "orb-cyan": string;
 }
 
-// The keys are historical (the orbs were indigo/violet/cyan and renaming them would
-// break consumers reading `brandColors["orb-indigo"]`); the values are the former
-// Riskora sky family: sky/400, blue/300, sky/400 dark.
+// The keys are historical (named for the hues the orbs once had; renaming them would
+// break consumers reading `brandColors["orb-indigo"]`); the values are the sky family
+// the kit used before Dark Factory, kept as they were.
 /**
  * @deprecated The brand orbs painted the removed Backdrop organism, and the kit's colors
  * are Dark Factory's now; nothing in the kit reads these. Kept, with their former values,
@@ -803,9 +803,9 @@ export const shape: Record<PlatformKey, ShapeTokens> = {
 };
 
 /**
- * Font size and matching line height, in px: the Riskora ladder (Paragraph X Small
- * 12 up to Title H1 64), mirrored in styles/tokens/typography.css `--text-*` /
- * `--leading-*`.
+ * Font size and matching line height, in px: a ladder from 12/16 (`xs`) up to 64/70
+ * (`7xl`), mirrored in styles/tokens/typography.css `--text-*` / `--leading-*`. No kit
+ * component reads it.
  */
 export const fontSize: Record<string, { fontSize: number; lineHeight: number }> = {
   xs: { fontSize: 12, lineHeight: 16 },

@@ -29,7 +29,7 @@ import {
 //     divider on the field side that takes the field's state colour (rest hairline,
 //     ring on focus, destructive on error); the dial code sits inline in the
 //     placeholder gray, 12pt from the divider, 12pt before the number.
-//   Web: the Riskora addon box (a `muted` cluster with a `border` divider), the
+//   Web: an addon box (a `muted` cluster with a `border` divider), the
 //     ▾ caret in `muted-foreground`, the dial code inline.
 //   Android (Material 3): an inline leading cluster with no fill and no divider
 //     (M3 draws prefixes inline), a `muted-foreground` caret that turns `primary`
@@ -64,7 +64,7 @@ const FLAG_SIZE: Record<Size, TextStyle> = {
   large: { fontSize: 22, lineHeight: 28 },
 };
 
-// ---------- Web: the Riskora addon cluster ----------
+// ---------- Web: a `muted` addon cluster ----------
 export const webSkin: PhoneInputSkin = {
   field: inputWeb,
   menu: selectWeb,

@@ -15,11 +15,11 @@ import { type ColorTokens, shape, type FloatingLabelStyles } from "../../style/i
 //     red-50 wash on error, a 16pt value; the brand cursor/selection is `primary`
 //     (set on the shell, never a system blue).
 //   Android (Material 3 filled): a subtle fill with a flat bottom active
-//     indicator (underline). Top corners ~4, square bottom. The indicator is a
-//     1px resting line that thickens to 2px `ring` on focus (destructive on
-//     error).
-//   Web: the Riskora dashboard field — full-width, the 12px field corner,
-//     1px border, on the card fill; border is error > focus(ring) > input.
+//     indicator (underline). Top corners 4, square bottom. The indicator is a
+//     1px `muted-foreground` resting line that thickens to 2px `ring` on focus
+//     (destructive on error).
+//   Web: full-width, the 10px field corner, a 1px border on the `card` fill; the
+//     border is error > focus(ring) > the resting `field-border` hairline.
 
 export type Size = "small" | "base" | "large";
 
@@ -89,8 +89,8 @@ export function minHeight(rows?: number): TextStyle {
   return { minHeight: r == null ? 80 : r * 22 + 16 };
 }
 
-// ---------- Web: the Riskora dashboard field ----------
-// Full width, a white (`card`) box with the 12px field corner and a full 1px
+// ---------- Web: the field box with a full 1px border ----------
+// Full width, a white (`card`) box with the 10px field corner and a full 1px
 // border, 16px inset, with the foreground text color. Border resolves error >
 // focus(ring) > the resting `field-border` hairline (see src/style/field-colors.ts).
 export const webSkin: TextareaSkin = {
@@ -147,10 +147,10 @@ export const iosSkin: TextareaSkin = {
 
 // ---------- Android (Material 3 filled): subtle fill + active indicator ------
 // An opaque muted fill, shared with the other M3 filled fields, with rounded
-// top corners (~4) and a square bottom, carrying a bottom active indicator
-// (underline). The indicator is a 1px resting line (the input token) that
-// thickens to 2px `ring` on focus (the kit's one focus colour, as the Android Input's
-// indicator), or destructive on error.
+// top corners (4, the M3 field corner) and a square bottom, carrying a bottom active
+// indicator (underline). The indicator is a 1px resting line in `muted-foreground`
+// that thickens to 2px `ring` on focus (the kit's one focus colour, as the Android
+// Input's indicator), or destructive on error.
 export const androidSkin: TextareaSkin = {
   field: (t, st) => ({
     width: "100%",
