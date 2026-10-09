@@ -101,13 +101,16 @@ rule:
   `###` heading or Do/Don't marker in it.
 - **S3** `## Usage`, `## Variants` and `## Do & Don't` each appear exactly once,
   in that order. Every page carries all three, the primitives and the charts
-  included. Do & Don't ends at the next `##`: a section of the page's own
-  (Button's `## Touch area`) goes after it, never before.
-- **S4** Usage holds exactly one non-empty fence and no `###` heading.
+  included, and every `##` names its section. Do & Don't ends at the next `##`:
+  a section of the page's own (Button's `## Touch area`) goes after it, never
+  before, and holds no Do/Don't marker, so a pair's `###` title typed as `##`
+  (which would take that pair and every one after it off the page) fails here.
+- **S4** Usage holds exactly one non-empty fence and no `###` heading or
+  Do/Don't marker.
 - **S5** Variants holds at least one `### <label>`; each has exactly one
-  non-empty fence, and no fence sits before the first one. Show only what the
-  kit renders truthfully (a placement the component does not implement gets no
-  example).
+  non-empty fence, and no fence sits before the first one. No Do/Don't marker
+  sits here. Show only what the kit renders truthfully (a placement the
+  component does not implement gets no example).
 - **S6** Do & Don't holds at least one `### <title>` group and no marker or
   fence outside one. A group is exactly one `**Do**` and one `**Don't**`, each
   with a caption and exactly one non-empty fence of its own, and the Don't fence
