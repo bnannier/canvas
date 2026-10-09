@@ -211,7 +211,10 @@ export function createStepper(skin: StepperSkin) {
     const groupSurfaced = groupFill != null && groupFill !== "transparent";
     const liquidActions = !groupSurfaced && isGlass(actionTheme);
     const disabledInk = liquidActions && disabled ? { opacity: 0.5 } : null;
-    const groupStyle = groupSurfaced ? paneStyle(theme, groupShape, focused && !!skin.groupShowsFocus) : groupShape;
+    // The web box shows the value field's focus as a state border, drawn once by the
+    // text-entry material (the box's own border, or the clear well's overlay).
+    const groupSurface = groupSurfaced ? entryMaterial.stateSurface(groupShape, focused && !!skin.groupShowsFocus) : null;
+    const groupStyle = groupSurface ? groupSurface.style : groupShape;
     const groupPane = groupSurfaced ? <GlassPane {...entryMaterial.paneProps} shape={groupShape} /> : null;
     const buttonPane = (shape: ViewStyle, inactive: boolean) => (groupSurfaced ? null : <GlassPane layer="control" shape={shape} interactive={!inactive} />);
 
@@ -470,6 +473,7 @@ export function createStepper(skin: StepperSkin) {
               {MinusButton}
               {makeDivider("d")}
               {PlusButton}
+              {groupSurface?.border}
             </View>
           </View>
         ) : (
@@ -480,7 +484,7 @@ export function createStepper(skin: StepperSkin) {
             {Field}
             {makeDivider("d2")}
             {PlusButton}
-            {skin.groupShowsFocus ? entryMaterial.stateBorder(groupShape, focused) : null}
+            {groupSurface?.border}
           </View>
         )}
       </View>

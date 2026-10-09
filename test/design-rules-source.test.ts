@@ -2,6 +2,7 @@ import { describe, it, expect } from "bun:test";
 import { readFileSync } from "node:fs";
 import { join, relative as relativePath } from "node:path";
 import { Glob } from "bun";
+import ts from "typescript";
 import { ICON_STROKE_WIDTH } from "../src/atoms/icon/icon.stroke.ts";
 
 // Design rules, source side: the handful that are properties of the code itself
@@ -267,5 +268,145 @@ describe("a pane and its host read one material", () => {
     }
     expect(calls.length).toBeGreaterThan(60);
     expect(offenders).toEqual([]);
+  });
+
+  // Reading one hook is not enough: a GlassPane resolves its own options (`static`,
+  // `layer`), so the host's paneStyle theme and its pane must ask for the same density,
+  // the one thing `resolveMaterial` decides from (`static`, else the content layer).
+  // Where they differ the two answers split on a platform that renders one density and
+  // not the other (iOS 26 with expo-glass-effect but no expo-blur renders Liquid Glass
+  // for a functional surface and the solid skin for a static one): the host drops its
+  // fill with no pane behind it, or keeps its skin with a pane painted inside. A pane
+  // that spreads a text-entry material's `paneProps` asks what its theme asked by
+  // construction, so it only has to spread the hook's own. Each pane is read against
+  // its component, the nearest enclosing function that calls a material hook, and the
+  // densities that component's paneStyle themes resolve; a pane whose component calls
+  // none (a chart frame handed its setup) is read against the file's hooks.
+  type Hook = { call: ts.CallExpression; entry: boolean; densities: Set<string> };
+  const HOOKS = new Set(["useMaterialTheme", "useTextEntryMaterial"]);
+  const asHook = (node: ts.Node | undefined): ts.CallExpression | null =>
+    node && ts.isCallExpression(node) && ts.isIdentifier(node.expression) && HOOKS.has(node.expression.text) ? node : null;
+  const valueOf = (expression: ts.Expression): string =>
+    expression.kind === ts.SyntaxKind.TrueKeyword ? "true" : expression.kind === ts.SyntaxKind.FalseKeyword ? "false" : `expr:${expression.getText()}`;
+  const layerDensities = (layer: ts.Expression | undefined): Set<string> => {
+    if (!layer) return new Set(["false"]);
+    if (ts.isStringLiteral(layer)) return new Set([String(layer.text === "content")]);
+    if (ts.isParenthesizedExpression(layer)) return layerDensities(layer.expression);
+    if (ts.isConditionalExpression(layer)) return new Set([...layerDensities(layer.whenTrue), ...layerDensities(layer.whenFalse)]);
+    return new Set([`layer:${layer.getText()}`]);
+  };
+  function hookOf(call: ts.CallExpression): Hook {
+    if ((call.expression as ts.Identifier).text === "useTextEntryMaterial") return { call, entry: true, densities: new Set(["text-entry"]) };
+    const options = call.arguments[0];
+    if (!options) return { call, entry: false, densities: new Set(["false"]) };
+    if (!ts.isObjectLiteralExpression(options)) return { call, entry: false, densities: new Set([`expr:${options.getText()}`]) };
+    const option = (name: string) => options.properties.find((p): p is ts.PropertyAssignment => ts.isPropertyAssignment(p) && p.name.getText() === name)?.initializer;
+    const stable = option("static");
+    return { call, entry: false, densities: stable ? new Set([valueOf(stable)]) : layerDensities(option("layer")) };
+  }
+  // Every `const name = init` and `const { a, b: c } = init` in `scope`, by bound name.
+  function bindingsIn(scope: ts.Node): Map<string, ts.Expression> {
+    const bound = new Map<string, ts.Expression>();
+    const visit = (node: ts.Node) => {
+      if (ts.isVariableDeclaration(node) && node.initializer) {
+        if (ts.isIdentifier(node.name)) bound.set(node.name.text, node.initializer);
+        else if (ts.isObjectBindingPattern(node.name)) {
+          for (const element of node.name.elements) if (ts.isIdentifier(element.name)) bound.set(element.name.text, node.initializer);
+        }
+      }
+      ts.forEachChild(node, visit);
+    };
+    visit(scope);
+    return bound;
+  }
+  // The material hook an expression (`theme`, `material.theme`, `entryMaterial.paneProps`)
+  // comes from, followed through the scope's own bindings.
+  function hookBehind(expression: ts.Expression, bound: Map<string, ts.Expression>): ts.CallExpression | null {
+    let node: ts.Expression = expression;
+    for (let hop = 0; hop < 6; hop++) {
+      const call = asHook(node);
+      if (call) return call;
+      while (ts.isPropertyAccessExpression(node)) node = node.expression;
+      if (!ts.isIdentifier(node)) return null;
+      const next = bound.get(node.text);
+      if (!next) return null;
+      node = next;
+    }
+    return null;
+  }
+  function paneDensityMismatches(file: string, text: string): string[] {
+    const source = ts.createSourceFile(file, text, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
+    const fileHooks: Hook[] = [];
+    const panes: ts.JsxOpeningLikeElement[] = [];
+    const visit = (node: ts.Node) => {
+      const call = asHook(node);
+      if (call) fileHooks.push(hookOf(call));
+      if ((ts.isJsxSelfClosingElement(node) || ts.isJsxOpeningElement(node)) && node.tagName.getText() === "GlassPane") panes.push(node);
+      ts.forEachChild(node, visit);
+    };
+    visit(source);
+    const offenders: string[] = [];
+    for (const pane of panes) {
+      const line = source.getLineAndCharacterOfPosition(pane.getStart()).line + 1;
+      // The pane's component: the nearest enclosing function that calls a material hook.
+      let scope: ts.Node | undefined = pane.parent;
+      while (scope && !(ts.isFunctionLike(scope) && fileHooks.some((hook) => {
+        for (let up: ts.Node | undefined = hook.call.parent; up; up = up.parent) if (ts.isFunctionLike(up)) return up === scope;
+        return false;
+      }))) scope = scope.parent;
+      const bound = bindingsIn(scope ?? source);
+      let stable: string | undefined;
+      let layer: ts.Expression | undefined;
+      let spread: ts.Expression | undefined;
+      for (const attribute of pane.attributes.properties) {
+        if (ts.isJsxSpreadAttribute(attribute)) { spread = attribute.expression; continue; }
+        const init = attribute.initializer;
+        const value = init && (ts.isStringLiteral(init) ? init : ts.isJsxExpression(init) ? init.expression : undefined);
+        if (attribute.name.getText() === "static") stable = init ? (value ? valueOf(value) : "unreadable") : "true";
+        if (attribute.name.getText() === "layer") layer = value;
+      }
+      if (spread) {
+        const hook = hookBehind(spread, bound);
+        if (!hook || (hook.expression as ts.Identifier).text !== "useTextEntryMaterial" || !spread.getText().endsWith("paneProps")) {
+          offenders.push(`${file}:${line} <GlassPane {...${spread.getText()}}> spreads something other than its text-entry material's paneProps`);
+        }
+        continue;
+      }
+      const wanted = stable ? new Set([stable]) : layerDensities(layer);
+      // The densities this component's paneStyle themes resolve.
+      const offered = new Set<string>();
+      const read = (node: ts.Node) => {
+        if (ts.isCallExpression(node) && ts.isIdentifier(node.expression) && node.expression.text === "paneStyle" && node.arguments[0]) {
+          const hook = hookBehind(node.arguments[0], bound);
+          if (hook) for (const density of hookOf(hook).densities) offered.add(density);
+        }
+        ts.forEachChild(node, read);
+      };
+      read(scope ?? source);
+      if (offered.size === 0) for (const hook of fileHooks) for (const density of hook.densities) offered.add(density);
+      const missing = [...wanted].filter((density) => !offered.has(density));
+      if (missing.length > 0) offenders.push(`${file}:${line} <GlassPane> asks for static=${[...wanted].join("|")}, its host's paneStyle theme for static=${[...offered].join("|") || "nothing"}`);
+    }
+    return offenders;
+  }
+
+  it("every pane asks for the density its host's theme resolved", () => {
+    const files = sources.filter(({ file, text }) => file !== "src/style/glass-surface/glass-pane.tsx" && text.includes("<GlassPane"));
+    expect(files.length).toBeGreaterThan(40);
+    expect(files.flatMap(({ file, text }) => paneDensityMismatches(file, text))).toEqual([]);
+  });
+
+  it("the density check catches a host and a pane that ask for different materials", () => {
+    const host = (pane: string) => `
+      function Host() {
+        const theme = useMaterialTheme({ layer: "control" });
+        const entry = useTextEntryMaterial(true);
+        return <View style={paneStyle(theme, shape)}>${pane}</View>;
+      }`;
+    expect(paneDensityMismatches("host.tsx", host(`<GlassPane layer="control" shape={shape} />`))).toEqual([]);
+    expect(paneDensityMismatches("host.tsx", host(`<GlassPane {...entry.paneProps} shape={shape} />`))).toEqual([]);
+    expect(paneDensityMismatches("host.tsx", host(`<GlassPane static layer="control" shape={shape} />`))).toHaveLength(1);
+    expect(paneDensityMismatches("host.tsx", host(`<GlassPane layer="content" shape={shape} />`))).toHaveLength(1);
+    expect(paneDensityMismatches("host.tsx", host(`<GlassPane {...other} shape={shape} />`))).toHaveLength(1);
   });
 });

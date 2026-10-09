@@ -18,9 +18,11 @@ import {
   GlassPane,
   paneStyle,
   isGlass,
+  FOCUS_RESET,
 } from "../../style/index.js";
 import { GESTURE_SURFACE, useWheel } from "../../style/index.js";
-import { useFocusRingStyle } from "../../style/pressable.js";
+import { useFocusFrame } from "../../style/focus-frame.js";
+import { useComposedRefs } from "../../style/use-composed-refs.js";
 import * as s from "../shared/charts.styles.js";
 import { type ChartSkin } from "../shared/types.js";
 import { CHART_ROOT } from "../shared/chart-frame.js";
@@ -280,7 +282,12 @@ export function createGeoMap(skin: ChartSkin, parts: GeoMapParts = {}) {
     const { tokens } = theme;
     const surfaceShape = s.surface(tokens, skin.surfaceRadius);
     const glass = isGlass(theme);
-    const focusRing = useFocusRingStyle();
+    // A zoomable map is a keyboard stop, and its zoom bar sits over the map's bottom-right
+    // corner (s.zoomBar), so a ring drawn around the map itself would run under the bar's
+    // buttons. The map hands its ring to the chart's surface instead
+    // (src/style/focus-frame.tsx), which draws it around the whole chart, bar included,
+    // while the map has keyboard focus.
+    const frame = useFocusFrame();
     const compact = !!props.compact;
     const formatValue = props.formatValue ?? formatCompact;
 
@@ -393,6 +400,7 @@ export function createGeoMap(skin: ChartSkin, parts: GeoMapParts = {}) {
       live.current.setCamera(next);
       return true;
     });
+    const mapRef = useComposedRefs(wheelRef, frame.target.ref);
 
     // Pinch, and drag-to-pan once zoomed.
     const gesture = useRef<GeoMapGesture>(GEO_MAP_GESTURE_IDLE);
@@ -494,6 +502,7 @@ export function createGeoMap(skin: ChartSkin, parts: GeoMapParts = {}) {
           compact ? s.surfacePadCompact : s.surfacePadDefault,
           CHART_ROOT,
           style,
+          zoomable ? frame.ring() : null,
         ]}
       >
         {/* The chart frame is a CONTENT-layer pane under glass (nothing in solid mode). */}
@@ -508,7 +517,8 @@ export function createGeoMap(skin: ChartSkin, parts: GeoMapParts = {}) {
           role="img"
           accessibilityLabel={name}
           aria-label={name}
-          ref={zoomable ? wheelRef : undefined}
+          {...(zoomable ? frame.target : null)}
+          ref={zoomable ? mapRef : undefined}
           onLayout={onLayout}
           {...(zoomable ? responder.panHandlers : null)}
           // A pointer-free user has no wheel and no fingers to pinch with, so the
@@ -538,10 +548,9 @@ export function createGeoMap(skin: ChartSkin, parts: GeoMapParts = {}) {
             : null)}
           // touchAction:'none' so a two-finger pinch reaches the responder system
           // instead of the browser zooming the whole page. Kit-internal, and only
-          // while the chart actually owns a gesture. The focusable map wears the kit's
-          // themed ring (the palette's `ring`, 2 px off the map, inside the frame's
-          // padding), which the browser draws on keyboard focus only.
-          style={[{ width: "100%", aspectRatio: GEO_MAP_ASPECT }, zoomable ? [GESTURE_SURFACE, focusRing] : null]}
+          // while the chart actually owns a gesture. The chart's surface draws the
+          // focusable map's ring (see `frame` above), so the map drops the browser's own.
+          style={[{ width: "100%", aspectRatio: GEO_MAP_ASPECT }, zoomable ? [GESTURE_SURFACE, FOCUS_RESET] : null]}
         >
           {measured ? (
             <>

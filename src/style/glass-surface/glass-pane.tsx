@@ -70,17 +70,26 @@ export function GlassPane({ layer = "control", shape, tint, brand, interactive, 
 
 /**
  * A surface style for a node that renders a GlassPane behind its content: under
- * glass its opaque fill and its border are dropped (the pane's material and rim carry
- * them; a border would double the rim), in solid mode it is returned unchanged. Under
- * Increase Contrast it takes the contrasting border, except that a border showing a
- * state (`stateBorder`: a focused or errored field, an open trigger) keeps its colour.
- * Pass the theme `useMaterialTheme` returns for the pane's layer (and `static`), so the
- * node keeps its own fill and border exactly where the pane renders nothing.
+ * glass its opaque fill and its resting border are dropped (the pane's material and rim
+ * carry them; a border would double the rim), in solid mode it is returned unchanged. A
+ * border showing a state (`stateBorder`: a focused or errored field, an open trigger,
+ * an active cell) keeps its colour: under glass it stays over the pane, as GlassBox
+ * keeps one over its material, and under Increase Contrast the contrasting border does
+ * not overwrite it.
+ *
+ * `appearance` must be the RESOLVED material for the pane's layer and `static`, the
+ * decision the pane itself mounts from, so the node keeps its own fill and border exactly
+ * where the pane renders nothing. The kit's components read it from the kit-internal
+ * `useMaterialTheme`. A theme from `useTheme()` is the requested surface, not the
+ * resolved one: wherever requested glass resolves solid (an Android surface in the page,
+ * a missing optional peer, a browser without a backdrop filter) the node would drop its
+ * fill and border while its pane renders nothing.
  */
 export function paneStyle(appearance: boolean | ThemeValue, style: StyleProp<ViewStyle>, stateBorder = false): StyleProp<ViewStyle> {
   const glass = typeof appearance === "boolean" ? appearance : isGlass(appearance);
   if (!glass) return typeof appearance !== "boolean" && appearance.increasedContrast
     ? [style, contrastBorderFor(appearance.tokens, style, stateBorder)] : style;
+  if (stateBorder) return [style, { backgroundColor: "transparent" }];
   const flat = (StyleSheet.flatten(style) ?? {}) as Record<string, unknown>;
   const clear: Record<string, unknown> = { backgroundColor: "transparent", borderColor: "transparent" };
   for (const key of Object.keys(flat)) {

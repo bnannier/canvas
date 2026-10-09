@@ -11,6 +11,7 @@ import {
 } from "react-native";
 import { View, Pressable, Text, TextInput, useFillStyle, FloatingLabel, LabelContent, FOCUS_RESET, type ColorTokens, type LayoutStyle, type MeasureProps, type StyleProp, type ViewStyle, type TextStyle, GlassPane, paneStyle, isGlass, withInnerFill, alpha, PANE_SIBLING_INPUT } from "../../style/index.js";
 import { useComposedRefs } from "../../style/use-composed-refs.js";
+import { frameHandlers, useFocusFrame } from "../../style/focus-frame.js";
 import { rowSeam } from "../../style/touch-seam.js";
 import { Icon, type IconName } from "../icon/icon.js";
 import { type InputSkin, type Size } from "./input.styles.js";
@@ -76,6 +77,10 @@ export function actionOverhang(iconSize: number, boxHeight: number): Insets | un
 // (addon) layout that ring is clipped by the rounded, overflow-hidden container
 // and reads as half-baked, so the shared FOCUS_RESET suppresses it there and the
 // group shows focus on its shared border instead. Natively its zero width draws nothing.
+// An errored field's border shows the error, not its focus, so there it paints no focus
+// state of its own: the kit's ring marks keyboard focus around the red edge instead
+// (src/style/focus-frame.tsx), drawn by the node that owns the border (the field, or the
+// group box), and FOCUS_RESET keeps the browser's own ring off, so the two never stack.
 
 /**
  * The curated slice of React Native's TextInput behavior forwarded by Input and
@@ -257,10 +262,11 @@ export function createInput(skin: InputSkin) {
     const [focused, setFocused] = useState(false);
     // The password toggle's own state: masked until the eye is pressed.
     const [revealed, setRevealed] = useState(false);
-    const { theme, paneProps, foregroundStateBorder, stateBorder } = useTextEntryMaterial(!!skin.liquid);
+    const { theme, paneProps, stateSurface } = useTextEntryMaterial(!!skin.liquid);
     const { tokens } = theme;
     // GlassPane paints behind the editor. A grouped clear web field moves its
-    // focus/error outline above the material so the lens cannot sample it.
+    // focus/error outline above the material so the lens cannot sample it
+    // (`stateSurface`, which clears the box's own border there, so it draws once).
     // Bare editors and native fields retain their existing state-border owner.
     const glass = isGlass(theme);
     const onKeyPress = useInputEscapeBridge(props.onKeyPress);
@@ -268,7 +274,9 @@ export function createInput(skin: InputSkin) {
     // The clear button empties the NATIVE field too (an uncontrolled field keeps its
     // own text), so the shell holds a ref of its own beside the forwarded one.
     const fieldRef = useRef<RNTextInput>(null);
-    const hostRef = useComposedRefs(fieldRef, ref);
+    // The ring an errored field wears on keyboard focus (see the note above FOCUS_RESET).
+    const errorFrame = useFocusFrame();
+    const hostRef = useComposedRefs(fieldRef, ref, errorFrame.target.ref);
     // One collision-free id for the label so the field can name itself via
     // aria-labelledby (unconditional hook: the id is cheap and always available).
     const labelId = useId();
@@ -306,8 +314,8 @@ export function createInput(skin: InputSkin) {
     const hasClear = !!clearable && populated && !disabled && !readOnly;
     const hasAddons = prefix != null || suffix != null || !!leadingIcon || !!trailingIcon || !!action || hasEye || !!clearable;
     const labelGap: ViewStyle = { gap: skin.labelGap };
-    // Under glass the box drops its fill and its resting hairline (the pane's material
-    // and rim carry them) and keeps the focus ring / error border as its state.
+    // Under glass the bare field drops its fill and its resting hairline (the pane's
+    // material and rim carry them) and keeps the focus ring / error border as its state.
     const glassBox: ViewStyle = { ...PANE_SIBLING_INPUT, backgroundColor: "transparent", borderColor: focused || isError ? (tokens[borderColor] ?? tokens.input) : "transparent" };
     const paneTint = isError ? alpha(tokens.destructive, 0.18) : undefined;
 
@@ -337,14 +345,16 @@ export function createInput(skin: InputSkin) {
       onKeyPress,
       testID: props.testID,
       // Internal focus styling chains with (never replaces) the consumer's handlers.
-      onFocus: (e: Parameters<NonNullable<RNTextInputProps["onFocus"]>>[0]) => {
-        setFocused(true);
-        props.onFocus?.(e);
-      },
-      onBlur: (e: Parameters<NonNullable<RNTextInputProps["onBlur"]>>[0]) => {
-        setFocused(false);
-        props.onBlur?.(e);
-      },
+      ...frameHandlers(errorFrame.target, {
+        onFocus: (e: Parameters<NonNullable<RNTextInputProps["onFocus"]>>[0]) => {
+          setFocused(true);
+          props.onFocus?.(e);
+        },
+        onBlur: (e: Parameters<NonNullable<RNTextInputProps["onBlur"]>>[0]) => {
+          setFocused(false);
+          props.onBlur?.(e);
+        },
+      }),
       // Surface the validation problem programmatically, not just as a red border
       // (WCAG 1.4.1 / 4.1.2). `aria-invalid` is the cross-platform alias RNW
       // forwards to the DOM input as aria-invalid="true" so web screen readers
@@ -392,7 +402,7 @@ export function createInput(skin: InputSkin) {
       // top of the indicator. No-op on native; matches the grouped path and the
       // Autocomplete/Textarea/Stepper shells.
       const bareShape = skin.bareField(tokens, borderColor, focused, isError);
-      const bareStyle = [paneStyle(theme, bareShape, focused || isError), skin.bareBox(size), text, FOCUS_RESET, glass ? glassBox : null];
+      const bareStyle = [paneStyle(theme, bareShape, focused || isError), skin.bareBox(size), text, FOCUS_RESET, glass ? glassBox : null, isError ? errorFrame.ring() : null];
       const disabledDim = disabled ? { opacity: skin.disabledOpacity } : null;
       // The puck behind a bare field (nothing in solid mode).
       const barePane = <GlassPane {...paneProps} shape={bareShape} tint={paneTint} />;
@@ -482,17 +492,17 @@ export function createInput(skin: InputSkin) {
       fieldRef.current?.focus();
     };
     const groupShape = skin.groupContainer(tokens, borderColor, focused, isError);
+    const groupSurface = stateSurface(groupShape, focused || isError);
     const groupedField = (
       <View
         hitSlop={hasClear || hasEye ? actionOverhang(skin.iconSize, height) : undefined}
         style={[
-          paneStyle(theme, groupShape, focused || isError),
+          groupSurface.style,
           { minHeight: height },
-          glass ? glassBox : null,
-          foregroundStateBorder ? { borderColor: "transparent" } : null,
           above ? null : disabled ? { opacity: skin.disabledOpacity } : null,
           above ? null : widthCap,
           above ? null : style,
+          isError ? errorFrame.ring() : null,
         ]}
       >
         <GlassPane {...paneProps} shape={groupShape} tint={paneTint} />
@@ -580,7 +590,7 @@ export function createInput(skin: InputSkin) {
             </View>
           )
         ) : null}
-        {stateBorder(groupShape, focused || isError)}
+        {groupSurface.border}
       </View>
     );
 

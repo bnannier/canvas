@@ -5,8 +5,9 @@ import { type ColorTokens, shape, type FloatingLabelStyles } from "../../style/i
 
 // Co-located Textarea skins, one per platform. The field is a multiline
 // TextInput, so every fragment is a TextStyle. The BRAND survives on every
-// platform (the focus/active cue is always the indigo `ring`/`primary` token,
-// the error cue the `destructive` token, never a platform default); only the
+// platform (the focus/active cue is always the `ring` token, the brand cursor and
+// selection `primary`, the error cue the `destructive` token, never a platform
+// default); only the
 // native SHAPE, fill, border/underline, and focus feedback change per OS:
 //   iOS: the "iOS Mobile Input Fields" reference (see input.styles.ts): the same
 //     white `card` box as the single-line Input, an 8pt corner, the 1pt gray-300
@@ -15,7 +16,7 @@ import { type ColorTokens, shape, type FloatingLabelStyles } from "../../style/i
 //     (set on the shell, never a system blue).
 //   Android (Material 3 filled): a subtle fill with a flat bottom active
 //     indicator (underline). Top corners ~4, square bottom. The indicator is a
-//     1px resting line that thickens to 2px indigo on focus (destructive on
+//     1px resting line that thickens to 2px `ring` on focus (destructive on
 //     error).
 //   Web: the Riskora dashboard field — full-width, the 12px field corner,
 //     1px border, on the card fill; border is error > focus(ring) > input.
@@ -148,7 +149,8 @@ export const iosSkin: TextareaSkin = {
 // An opaque muted fill, shared with the other M3 filled fields, with rounded
 // top corners (~4) and a square bottom, carrying a bottom active indicator
 // (underline). The indicator is a 1px resting line (the input token) that
-// thickens to 2px indigo `primary` on focus, or destructive on error.
+// thickens to 2px `ring` on focus (the kit's one focus colour, as the Android Input's
+// indicator), or destructive on error.
 export const androidSkin: TextareaSkin = {
   field: (t, st) => ({
     width: "100%",
@@ -161,7 +163,7 @@ export const androidSkin: TextareaSkin = {
     borderBottomWidth: st.focused || st.error ? 2 : 1,
     // Rest baseline must read clearly (on-surface-variant ~ muted-foreground) so the
     // M3 filled field is distinct from the iOS lineless capsule.
-    borderBottomColor: st.error ? t.destructive : st.focused ? t.primary : t["muted-foreground"],
+    borderBottomColor: st.error ? t.destructive : st.focused ? t.ring : t["muted-foreground"],
     paddingHorizontal: 12,
     paddingTop: 10,
     paddingBottom: 8,

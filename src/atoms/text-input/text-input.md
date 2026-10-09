@@ -60,7 +60,7 @@ Single-line (or multiline) text entry. Control it with `value` + `onChangeText`,
 
 ### Focus ring
 
-**Do**: Leave the keyboard focus ring to the primitive. It takes the theme's `ring` colour 2 px off the field, like every kit control, and the browser draws it on keyboard focus only.
+**Do**: Leave the focus ring to the primitive. It takes the theme's `ring` colour 2 px off the field, like every kit control. The browser draws a text field's ring on every focus, a click included, since the field takes typing however it was focused.
 
 ```tsx
 <TextInput accessibilityLabel="Your name" defaultValue="Ada Lovelace" />

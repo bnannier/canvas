@@ -3,6 +3,7 @@ import { useEffect, useRef, useState, type ComponentType } from "react";
 import { type ImageSourcePropType, type StyleProp, type ViewStyle } from "react-native";
 import { devWarn } from "../../style/dev-warn.js";
 import { inertProps } from "../../style/inert.js";
+import { INSET_FOCUS_RING, useFocusRingStyle } from "../../style/pressable.js";
 import { Pressable, View, radius as radiusScale, useFillStyle, useReducedMotion, useTheme, type LayoutStyle } from "../../style/index.js";
 import { Emblem as WebEmblem } from "../emblem/emblem.js";
 import { Icon as WebIcon } from "../icon/icon.js";
@@ -144,6 +145,7 @@ function Player({ api, props, skin, kit, nativeControls, frame, picture, label }
   const { source, poster, autoplay, loop, muted, controls, testID } = props;
   const { tokens } = useTheme();
   const reducedMotion = useReducedMotion();
+  const focusRing = useFocusRingStyle();
   const platformControls = !!controls && nativeControls;
   const kitBar = !!controls && !nativeControls;
   const fit = fitOf(props);
@@ -273,6 +275,11 @@ function Player({ api, props, skin, kit, nativeControls, frame, picture, label }
   // Native has no such prop and drops it. Full screen is a request on the <video> itself
   // and still works from inside the layer.
   const surfaceLayer = platformControls ? null : inertProps();
+  // With the platform's own controls the surface is the control, and on the web it is a
+  // <video controls>, a keyboard stop the browser rings: it takes the kit's themed ring,
+  // drawn just inside it because the picture clips to its corners. Natively the outline
+  // keys draw nothing without a width.
+  const surfaceStyle = platformControls ? [skin.layer, focusRing, INSET_FOCUS_RING] : skin.layer;
 
   return (
     <View style={frame} testID={testID}>
@@ -281,7 +288,7 @@ function Player({ api, props, skin, kit, nativeControls, frame, picture, label }
           <api.VideoView
             ref={view}
             player={player}
-            style={skin.layer}
+            style={surfaceStyle}
             contentFit={fit}
             nativeControls={platformControls}
             fullscreenOptions={{ enable: true }}

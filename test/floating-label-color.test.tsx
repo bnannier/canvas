@@ -30,7 +30,8 @@ async function labelColor(label: string, expected: string) {
 describe("floating labels use text roles without recoloring control indicators", () => {
   for (const scheme of ["light", "dark"] as const) {
     const t = colorsByScheme[scheme];
-    for (const [name, Component, indicator] of [["Input", Input, t.ring], ["Textarea", Textarea, t.primary]] as const) {
+    // Both fields' focused indicator is `ring`, the kit's one focus colour.
+    for (const [name, Component, indicator] of [["Input", Input, t.ring], ["Textarea", Textarea, t.ring]] as const) {
       it(`${scheme} ${name} preserves rest, focus, populated, error and recovery transitions`, async () => {
         const ui = (error = false) => <ThemeProvider scheme={scheme}><Component label="Project name" required error={error} placeholder="Enter a name" /></ThemeProvider>;
         const { rerender } = render(ui());
