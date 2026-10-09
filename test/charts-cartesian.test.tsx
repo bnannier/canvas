@@ -1,5 +1,5 @@
 import { describe, it, expect, afterEach, mock } from "bun:test";
-import { render, cleanup, fireEvent } from "@testing-library/react";
+import { render, cleanup, fireEvent, act } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { ThemeProvider } from "../src/style/theme.tsx";
 import { Chart } from "../src/charts/chart/chart.tsx";
@@ -8,6 +8,7 @@ import { AreaChart } from "../src/charts/area-chart/area-chart.tsx";
 import { PieChart } from "../src/charts/pie-chart/pie-chart.tsx";
 import { ScatterPlot } from "../src/charts/scatter-plot/scatter-plot.tsx";
 import { CandlestickChart } from "../src/charts/candlestick-chart/candlestick-chart.tsx";
+import { DepthChart } from "../src/charts/depth-chart/depth-chart.tsx";
 import { ComposedChart } from "../src/charts/composed-chart/composed-chart.tsx";
 import { RangeAreaChart } from "../src/charts/range-area-chart/range-area-chart.tsx";
 import { Histogram } from "../src/charts/histogram/histogram.tsx";
@@ -363,6 +364,64 @@ describe("CandlestickChart", () => {
     );
     expect(container.querySelector('[role="group"]')?.getAttribute("aria-label")).toBe("OLY - daily chart");
     expect(container.textContent).toContain("5-day average");
+  });
+});
+
+describe("DepthChart", () => {
+  // Two bid and two ask levels: best bid 99, best ask 101, totals 8 and 10.
+  const bids = [{ price: 98, size: 3 }, { price: 99, size: 5 }];
+  const asks = [{ price: 102, size: 6 }, { price: 101, size: 4 }];
+
+  type LayoutHost = HTMLElement & { __reactLayoutHandler?: (event: unknown) => void };
+  /** Feed the frame its width, as the native engine would (happy-dom has no layout). */
+  const measure = (plot: HTMLElement, width: number) => {
+    const host = plot.firstElementChild as LayoutHost;
+    act(() => host.__reactLayoutHandler!({ nativeEvent: { layout: { x: 0, y: 0, width, height: 200 } }, timeStamp: 1 }));
+  };
+  /** The frame's fixed height: the top pad, the plot and (with axes) the tick band. */
+  const frameHeight = (c: HTMLElement) => parseFloat(((c.querySelector('[role="img"]') as HTMLElement).firstElementChild!.firstElementChild as HTMLElement).style.height);
+
+  it("summarizes the book in the plot's name: best bid and ask, level counts and totals", () => {
+    const { container } = ui(<DepthChart bids={bids} asks={asks} />);
+    expect(plotName(container)).toBe("Depth: best bid 99, best ask 101; 2 bid levels totalling 8, 2 ask levels totalling 10");
+  });
+
+  it("formats the name's values and the price ticks with formatValue", () => {
+    const { container } = ui(<DepthChart bids={bids} asks={asks} formatValue={(v) => `$${v}`} />);
+    expect(plotName(container)).toBe("Depth: best bid $99, best ask $101; 2 bid levels totalling $8, 2 ask levels totalling $10");
+    measure(container.querySelector('[role="img"]') as HTMLElement, 480);
+    const ticks = [...container.querySelectorAll('[role="img"] div')].map((n) => n.textContent ?? "").filter((t) => t.startsWith("$"));
+    expect(ticks.length).toBeGreaterThan(0);
+  });
+
+  it("reads an empty side as none, with zero levels", () => {
+    const { container } = ui(<DepthChart bids={bids} asks={[]} />);
+    expect(plotName(container)).toBe("Depth: best bid 99, best ask none; 2 bid levels totalling 8, 0 ask levels totalling 0");
+  });
+
+  it("names the root group after the title, and is no group untitled", () => {
+    const titled = ui(<DepthChart title="ACME book" bids={bids} asks={asks} />).container;
+    expect(titled.querySelector('[role="group"]')?.getAttribute("aria-label")).toBe("ACME book chart");
+    expect(plotName(titled)).toStartWith("ACME book: best bid 99");
+    cleanup();
+    expect(ui(<DepthChart bids={bids} asks={asks} />).container.querySelector('[role="group"]')).toBeNull();
+  });
+
+  it("labels its legend in text, so the sides are not told apart by color alone, and hideLegend drops it", () => {
+    const { container } = ui(<DepthChart bids={bids} asks={asks} />);
+    expect(container.textContent).toContain("Bids");
+    expect(container.textContent).toContain("Asks");
+    cleanup();
+    const bare = ui(<DepthChart hideLegend bids={bids} asks={asks} />).container;
+    expect(bare.textContent).not.toContain("Bids");
+    expect(bare.textContent).not.toContain("Asks");
+  });
+
+  it("draws a 120 plot under compact, 60 shorter than the default 180", () => {
+    const tall = frameHeight(ui(<DepthChart hideAxes bids={bids} asks={asks} />).container);
+    cleanup();
+    const short = frameHeight(ui(<DepthChart compact hideAxes bids={bids} asks={asks} />).container);
+    expect(tall - short).toBe(60);
   });
 });
 
