@@ -23,8 +23,15 @@ const config = getDefaultConfig(projectRoot);
 // track dynamic app-config inputs such as Git revision or package metadata.
 // Include the same identity in Metro's cache key so a new candidate never reuses
 // a prior candidate's embedded manifest, on either a local export or CI.
+//
+// The component audit's flag is in the key for the same reason: Expo inlines
+// EXPO_PUBLIC_CANVAS_AUDIT into a production transform and the key does not track it,
+// so without this a flagged `expo export` run after an ordinary one reused the root
+// layout's transform and carried no driver (seen), and the other order would put the
+// driver into an ordinary bundle.
+const auditBuild = process.env.EXPO_PUBLIC_CANVAS_AUDIT === "1" ? ":canvas-audit" : "";
 config.cacheVersion = `${config.cacheVersion ?? ""}:canvas-${createHash("sha256")
-  .update(JSON.stringify(readBuildInfo(repoRoot))).digest("hex")}`;
+  .update(JSON.stringify(readBuildInfo(repoRoot))).digest("hex")}${auditBuild}`;
 
 config.watchFolders = [repoRoot];
 // The whole repo is watched so the kit source is live, and that root also holds

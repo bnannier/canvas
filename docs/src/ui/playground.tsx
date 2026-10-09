@@ -1,8 +1,9 @@
-import { Component, Fragment, type ReactNode, useEffect, useState } from "react";
+import { Component, Fragment, type ReactNode, useEffect, useRef, useState } from "react";
 import { Platform } from "react-native";
 import { ScrollView, View, Typography, Card, Alert, Divider, Container, Row, Column, Tabs, Input, ButtonGroup, OverlayProvider, BreakpointOverride, useMeasuredWidth, useTheme, type IconName, type BreakpointKey, useContainerBreakpoint } from "@nannier/canvas";
 import { buildScopes } from "../core/build-scopes";
 import { IconSearchContext } from "../core/live-state";
+import { useAuditProbe } from "../audit/probe-context";
 import type { DocExample, ExampleScope } from "../core/scope";
 import { CodeBlock } from "./code-block";
 
@@ -156,6 +157,14 @@ export function Playground({ examples, stageAlign, singlePreview, selected: sele
   // it never overstates the frame.
   const { width: cardWidth, onLayout: onCardLayout } = useMeasuredWidth();
   const ex = examples[selected] ?? examples[0];
+  // The preview card and the example it shows, published to the native audit driver
+  // (docs/src/audit/probe-context.tsx): it waits for this label before photographing
+  // the card, so a route that landed on another example is caught, not captured. The
+  // probe is null outside the audit build, where this registers nothing.
+  const probe = useAuditProbe();
+  const cardRef = useRef<View>(null);
+  const label = ex?.label;
+  useEffect(() => (probe && label !== undefined ? probe.card({ ref: cardRef, label }) : undefined), [probe, label]);
   if (!ex) return null;
 
   const allPreviews = buildScopes(tokens);
@@ -256,6 +265,7 @@ export function Playground({ examples, stageAlign, singlePreview, selected: sele
             // Marks the preview card (the platform-rows surface, without the
             // switcher row or the code block) for tooling screenshots.
             {...(Platform.OS === "web" ? ({ dataSet: { previewCard: "" } } as object) : null)}
+            ref={cardRef}
             onLayout={onCardLayout}
             // Above the code block that follows it, so an example's shadow (a lifted card's
             // hover shade) falls over the block's edge instead of being painted under it.

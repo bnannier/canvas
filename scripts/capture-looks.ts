@@ -27,6 +27,7 @@ import { join } from "node:path";
 import sharp from "sharp";
 import { chromium, type Page } from "@playwright/test";
 import { COMPONENTS } from "../docs/src/core/data/components.ts";
+import { fingerprint, meanAbsDiff } from "../tools/audit/native/fingerprint.ts";
 
 const ROOT = join(import.meta.dir, "..");
 const RAW = join(ROOT, ".looks-raw");
@@ -147,18 +148,9 @@ async function encode(raw: string, out: string) {
 
 // A deep link that has not routed yet leaves the PREVIOUS atom's page on screen, which
 // is painted and full-size, so the blank guard sails right past it. Compare each grab
-// with the last accepted one on the same surface: a real navigation changes the title
-// and body enough to move this well past the threshold, a stale frame barely moves.
-async function fingerprint(file: string) {
-  return await sharp(file).grayscale().resize(64, 139, { fit: "fill" }).raw().toBuffer();
-}
-
-function meanAbsDiff(a: Buffer, b: Buffer) {
-  let sum = 0;
-  for (let i = 0; i < a.length; i++) sum += Math.abs(a[i] - b[i]);
-  return sum / a.length;
-}
-
+// with the last accepted one on the same surface (fingerprint and meanAbsDiff, shared
+// with the native audit host): a real navigation changes the title and body enough to
+// move this well past the threshold, a stale frame barely moves.
 const STALE_MAD = 4;
 
 async function writeMap() {
