@@ -141,7 +141,7 @@ Cancelling an IME candidate keeps the overlay open.
 
 ### Disabled
 
-**Do** — Use the disabled attribute so the field blocks editing and focus, matching its dimmed look.
+**Do**: Pass `disabled` so the field blocks editing and focus, matching its dimmed look: the browser takes it out of the tab order, and VoiceOver and TalkBack announce it as dimmed.
 
 ```tsx
 <Textarea label="Description" rows={3} disabled value="Read-only content the user must not change." />

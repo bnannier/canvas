@@ -1,5 +1,6 @@
 import { type ViewStyle } from "react-native";
-import { GlassPane, paneStyle, useTheme, View } from "../../style/index.js";
+import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
+import { GlassPane, paneStyle, View } from "../../style/index.js";
 import { Button as WebButton } from "../button/button.js";
 import { Icon } from "../icon/icon.js";
 import { Row } from "../layout/layout.js";
@@ -49,7 +50,8 @@ export function VideoControls(props: VideoTransport) {
   const Slider = props.Slider ?? WebSlider;
   // The bar is a content pane under glass (the clip above it keeps its own pixels): the
   // node keeps its layout and drops its fill, and the pane paints the material behind it.
-  const theme = useTheme();
+  // Where that material resolves solid the pane renders nothing, so the bar keeps its fill.
+  const theme = useMaterialTheme({ layer: "content" });
   return (
     <View style={paneStyle(theme, props.style)}>
       <GlassPane layer="content" shape={props.style} />

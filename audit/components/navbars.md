@@ -18,12 +18,11 @@ Audit checklist for `/components/navbars`. The facts block and the variants tabl
 | Hand-off open gaps | none |
 | Hand-off settled | Navbar.title (Renamed: `brand`), Navbar.items (Renamed: `links`), Navbar.glass (Not offered: none) |
 | Hand-off metric gaps | none |
-| Interactions registry | in the inventory; evidence: navbar-link-enter (unit-web, test/pressable-link-enter.test.tsx) |
+| Interactions registry | in the inventory; evidence: none registered |
 | Overlay recipe | none |
-| Interaction states | captured: focus on Default (web row; desktop), pressed on Default (web row; desktop). |
 | MeasureProps | not adopted |
 | Touch target | no touch-target name (the exports of `src/style/touch-target.ts`, `src/style/touch-target-seed.ts`, `src/style/touch-seam.ts`, `src/style/clip-slop.ts`, the `TouchTargetSkin` fields, or `hitSlop`) in its implementation modules. `test/touch-target-coverage.test.ts` records it as known gap: links render 50x28; they abut, so the fix is vertical slop |
-| Tests importing it | 6: `test/behavior-smoke-d.test.tsx`, `test/design-rules-skins.test.ts`, `test/narrow-modes.test.tsx`, `test/pressable-link-enter.test.tsx`, `test/skins-smoke.test.tsx`, `test/text-contrast.test.tsx` |
+| Tests importing it | 6: `test/behavior-smoke-d.test.tsx`, `test/design-rules-skins.test.ts`, `test/material-solid-fallback.test.tsx`, `test/narrow-modes.test.tsx`, `test/skins-smoke.test.tsx`, `test/text-contrast.test.tsx` |
 | E2E naming it | 0: none |
 | E2E catalog sweeps | 6: `e2e/a11y/components.e2e.ts` (componentRoutes), `e2e/responsive/component-widths.e2e.ts` (contentRoutes, componentRoutes), `e2e/smoke/examples.e2e.ts` (componentExamples), `e2e/smoke/routes.e2e.ts` (allRoutes), `e2e/visual/components.e2e.ts` (componentRoutes), `e2e/visual/materials.e2e.ts` (MATERIAL_ROUTES) |
 <!-- audit:facts:end -->
@@ -81,7 +80,6 @@ One row per finding. Severity: critical, high, medium, low. Cell: a capture id f
 
 | ID | Severity | Cell | Summary | Status | Fix commit |
 |---|---|---|---|---|---|
-| K7-1 | high | source | Navbar's links are role=link Pressables with no href, so on the web they did not activate on Enter (react-native-web leaves a link's Enter to the browser; Breadcrumb K7-5). Fixed in the kit Pressable, which presses such a link on the Enter keyup. | fixed | 741fd4e6 |
 
 ## Sign-off
 

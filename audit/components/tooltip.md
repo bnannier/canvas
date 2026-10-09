@@ -23,7 +23,7 @@ Audit checklist for `/components/tooltip`. The facts block and the variants tabl
 | Interaction states | captured: focus on Icon (web row; desktop), pressed on Icon (web row; desktop), open on On hover (web, iOS, Android rows; phone, tablet and desktop; also its hover). |
 | MeasureProps | not adopted |
 | Touch target | `tooltip.shared.tsx`: hitSlop. `test/touch-target-coverage.test.ts` records it as covered another way: wraps the caller's node and adds hitSlop; the target is theirs |
-| Tests importing it | 5: `test/dense-overlays.test.tsx`, `test/design-rules-skins.test.ts`, `test/no-console-violations.test.tsx`, `test/overlays.test.tsx`, `test/skins-smoke.test.tsx` |
+| Tests importing it | 6: `test/dense-overlays.test.tsx`, `test/design-rules-skins.test.ts`, `test/material-solid-fallback.test.tsx`, `test/no-console-violations.test.tsx`, `test/overlays.test.tsx`, `test/skins-smoke.test.tsx` |
 | E2E naming it | 0: none |
 | E2E catalog sweeps | 6: `e2e/a11y/components.e2e.ts` (componentRoutes), `e2e/responsive/component-widths.e2e.ts` (contentRoutes, componentRoutes), `e2e/smoke/examples.e2e.ts` (componentExamples), `e2e/smoke/routes.e2e.ts` (allRoutes), `e2e/visual/components.e2e.ts` (componentRoutes), `e2e/visual/materials.e2e.ts` (MATERIAL_ROUTES) |
 <!-- audit:facts:end -->

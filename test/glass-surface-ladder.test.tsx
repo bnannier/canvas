@@ -280,6 +280,47 @@ describe("GlassBox structure (real material path)", () => {
     expect(clip.firstElementChild?.textContent).toBe("material-layer");
     expect(screen.getByText("surface content")).toBeDefined();
   });
+
+  // CLAUDE.md, the glass model: a state border (a focus ring, an error edge, an open
+  // trigger, a pressed knob's halo) stays over the pane; only a resting hairline gives
+  // way to the material's rim. The fill gives way either way.
+  it("keeps a border that shows a state over the material, and still drops the fill", () => {
+    const style = { borderRadius: 16, borderWidth: 4, borderColor: "#123456", backgroundColor: "#ffffff" };
+    render(
+      <>
+        <GlassBox testID="state" stateBorder style={style} material={<Text>material</Text>} />
+        <GlassBox testID="resting" style={style} material={<Text>material</Text>} />
+      </>,
+    );
+    const state = screen.getByTestId("state") as HTMLElement;
+    const resting = screen.getByTestId("resting") as HTMLElement;
+    expect(state.style.borderColor).toMatch(/rgba?\(18, ?52, ?86/);
+    expect(state.style.borderWidth).toBe("4px");
+    expect(state.style.backgroundColor).toMatch(/rgba\(0, ?0, ?0, ?0/);
+    expect(resting.style.borderColor).toMatch(/rgba\(0, ?0, ?0, ?0/);
+    expect(resting.style.backgroundColor).toMatch(/rgba\(0, ?0, ?0, ?0/);
+  });
+
+  it("keeps a state border's colour on a glass surface and under Increase Contrast alike", async () => {
+    const style = { borderRadius: 12, borderWidth: 2, borderColor: "#123456" };
+    render(<ThemeProvider glass><GlassSurface testID="glass" stateBorder style={style} /></ThemeProvider>);
+    const glass = screen.getByTestId("glass") as HTMLElement;
+    // The material path, not the solid fallback, is the one that used to clear it.
+    expect(glass.querySelector('[data-testid="glass-material"]')).not.toBeNull();
+    expect(glass.style.borderColor).toMatch(/rgba?\(18, ?52, ?86/);
+    cleanup();
+    const spy = mockMatchMedia((q) => q.includes("prefers-contrast"));
+    try {
+      render(<ThemeProvider glass><GlassSurface testID="contrast" stateBorder style={style} /></ThemeProvider>);
+      await waitFor(() => {
+        const node = screen.getByTestId("contrast") as HTMLElement;
+        expect(node.style.borderColor).toMatch(/rgba?\(18, ?52, ?86/);
+        expect(node.style.borderWidth).toBe("2px");
+      });
+    } finally {
+      spy.mockRestore();
+    }
+  });
 });
 
 describe("iOS glass-surface platform file", () => {

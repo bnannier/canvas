@@ -143,3 +143,17 @@ Cancelling an IME candidate keeps the overlay open.
 ```tsx
 <Input label="Storage" defaultValue="1024 GB" />
 ```
+
+### Read only or disabled
+
+**Do**: Pass `readOnly` for a value people still need to reach. On the web it stays in the tab order and its text stays selectable. On iOS and Android, React Native maps a read-only field to a disabled native view, so VoiceOver and TalkBack announce it as dimmed and Android cannot select its text.
+
+```tsx
+<Input label="Workspace ID" readOnly defaultValue="ws_8f2k1" />
+```
+
+**Don't**: Disable a field whose value people must read or copy. `disabled` takes it out of the tab order and announces it as unavailable on every platform.
+
+```tsx
+<Input label="Workspace ID" disabled defaultValue="ws_8f2k1" />
+```

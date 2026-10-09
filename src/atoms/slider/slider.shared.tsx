@@ -9,6 +9,7 @@ import {
 } from "react-native";
 import { View, Text, GlassSurface, useControllableState, useFillStyle, isRTL, FOCUS_RESET, type ColorTokens, type ViewProps, type ViewStyle, type TextStyle, type StyleProp, type LayoutStyle, type MeasureProps } from "../../style/index.js";
 import { GlassPane, paneStyle } from "../../style/glass-surface/glass-pane.js";
+import { useFocusFrame } from "../../style/focus-frame.js";
 import { clamp } from "../../style/math.js";
 
 // Shared Slider shell. Uses React Native's primitives DIRECTLY (no engine className
@@ -174,7 +175,11 @@ function formatValue(v: number, step: number): string {
  */
 export function createSlider(skin: SliderSkin) {
   const Slider = forwardRef<View, SliderProps>(function Slider(props, ref) {
-    const hostRef = useComposedRefs(ref);
+    // Keyboard focus is the kit's ring (src/style/focus-frame.tsx): the adjustable root is
+    // the focused node and the thumb, the part a user moves, draws the ring. An outline is
+    // no border, so it shows over the glass knob too.
+    const frame = useFocusFrame();
+    const hostRef = useComposedRefs(ref, frame.target.ref);
     const { min = 0, max = 100, step = 1, onChange, disabled, accessibilityLabel, style, children, description, showValue } = props;
     const theme = useMaterialTheme({ layer: "control" });
     const railTheme = useMaterialTheme({ static: true, layer: "control" });
@@ -225,9 +230,6 @@ export function createSlider(skin: SliderSkin) {
     const [trackWidth, setTrackWidth] = useState(0);
     const widthRef = useRef(0);
     const [pressed, setPressed] = useState(false);
-    // Web keyboard focus: paint the thumb's focus ring (the same ring the drag
-    // shows) while the slider holds focus. Stays false on native touch usage.
-    const [focused, setFocused] = useState(false);
 
     // Losing interactivity cancels the engaged decoration without changing the
     // value.
@@ -339,6 +341,13 @@ export function createSlider(skin: SliderSkin) {
     const thumbTop = rowHeight / 2 - thumbH / 2;
     const trackTop = rowHeight / 2 - trackHeight / 2;
     const railShape = skin.track(tokens, size, !!disabled);
+    // The knob. Where a press changes its border (the web's halo) that border is the
+    // press state: it stays over the glass knob and keeps its colour under Increase
+    // Contrast instead of taking the contrasting hairline. A skin whose press leaves the
+    // border alone (iOS's resting hairline, Android's borderless handle) shows no state there.
+    const thumbShape = skin.thumb(tokens, size, !!disabled, pressed);
+    const restingThumb = skin.thumb(tokens, size, !!disabled, false);
+    const pressBorder = pressed && (thumbShape.borderColor !== restingThumb.borderColor || thumbShape.borderWidth !== restingThumb.borderWidth);
 
     // Segmented (M3 Expressive) geometry: active | gap | handle | gap | inactive.
     const activeWidth = Math.max(0, thumbLeft - gap);
@@ -385,6 +394,7 @@ export function createSlider(skin: SliderSkin) {
     // renders byte-for-byte as before.
     const interactive = (
       <View
+        {...frame.target}
         ref={hostRef}
         {...pan.panHandlers}
         {...webKeyboardProps}
@@ -394,8 +404,6 @@ export function createSlider(skin: SliderSkin) {
         // arrow/page/home/end keys then drive it through onKeyDown above. Disabled drops
         // it out of the tab order.
         focusable={!disabled}
-        onFocus={() => setFocused(true)}
-        onBlur={() => setFocused(false)}
         accessibilityRole="adjustable"
         accessibilityLabel={accessibleName}
         accessibilityValue={{ min, max, now: current }}
@@ -420,8 +428,8 @@ export function createSlider(skin: SliderSkin) {
             height: rowHeight,
             opacity: disabled && surface !== "glass" ? 0.5 : 1,
           },
-          // The thumb paints the focus ring, so suppress RNW's default outline on the
-          // focused container (no-op on native).
+          // The thumb draws the focus ring (the frame's), so the focused container drops
+          // the browser's own outline (no-op on native).
           FOCUS_RESET,
           // FILL. With a header these move up to the wrapping column (below) so the
           // label aligns to the track width; a bare slider keeps them here.
@@ -484,23 +492,22 @@ export function createSlider(skin: SliderSkin) {
         )}
         {/* The thumb. The parent View's PanResponder owns the whole gesture (tapping the
             track to jump AND dragging the thumb), so the thumb only PAINTS the value
-            position and the per-OS press feedback (the web focus ring; iOS keeps the knob
-            opaque, Android's M3 Expressive handle has no state layer), driven by `pressed`
-            from the PanResponder OR web keyboard `focused`. It carries pointerEvents="none"
-            so it never competes with the parent for the touch responder, keeping the
-            drag/jump on one code path. */}
+            position, the per-OS press feedback (the web's halo; iOS keeps the knob opaque,
+            Android's M3 Expressive handle has no state layer), driven by `pressed` from the
+            PanResponder, and the kit's focus ring while the root has keyboard focus. It
+            carries pointerEvents="none" so it never competes with the parent for the touch
+            responder, keeping the drag/jump on one code path. */}
         <GlassSurface
           layer="control"
           interactive
           pointerEvents="none"
           testID={props.testID ? `${props.testID}-thumb` : undefined}
           tint={skin.glassTint?.(tokens)}
-          // A pressed or focused knob's border is its state (the web skin's focus ring),
-          // so Increase Contrast keeps its colour instead of the contrasting hairline.
-          stateBorder={(pressed || focused) && !disabled}
+          stateBorder={pressBorder}
           style={[
-            skin.thumb(tokens, size, !!disabled, pressed || focused),
+            thumbShape,
             { left: rtl ? Math.max(0, trackWidth - thumbW) - thumbLeft : thumbLeft, top: thumbTop },
+            frame.ring(),
           ]}
         />
       </View>

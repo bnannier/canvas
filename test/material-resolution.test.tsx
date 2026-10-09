@@ -6,7 +6,7 @@ import { ThemeProvider, useTheme } from "../src/style/theme.tsx";
 import { GlassSurface } from "../src/style/glass-surface/glass-surface.tsx";
 import { GlassPane, paneStyle } from "../src/style/glass-surface/glass-pane.tsx";
 import { resolveMaterial, type MaterialCapabilities } from "../src/style/glass-surface/material-resolution.ts";
-import { useMaterialTheme } from "../src/style/glass-surface/use-material-theme.ts";
+import { useMaterialResolution, useMaterialTheme } from "../src/style/glass-surface/use-material-theme.ts";
 import { innerFill, withInnerFill } from "../src/style/glass-fill.ts";
 import { lightColors } from "../src/style/tokens.ts";
 
@@ -95,20 +95,62 @@ describe("material mode changes", () => {
     } finally { restore(); }
   });
 
-  it("restores the pane skin when no material can render", () => {
+  // A host and its pane read one resolution: where glass is requested but cannot render,
+  // the host keeps its complete solid skin and the pane renders nothing, so no raw copy of
+  // the shape is painted inside it. The shape names a border width without a colour, the
+  // way the Android chip skin's does: a pane that painted it would draw Android's default
+  // black ring one hairline inside the host.
+  function PaneHost() {
+    const theme = useMaterialTheme({ static: true, layer: "control" });
+    const shape = { borderRadius: 12, borderWidth: 1 };
+    const chrome = [shape, { backgroundColor: "#123456", borderColor: "#abcdef" }];
+    return <View testID="host" style={paneStyle(theme, chrome)}><GlassPane static layer="control" shape={shape} testID="pane" /><Text>Readable</Text></View>;
+  }
+
+  it("keeps the host's own skin and mounts no pane when no material can render", () => {
     const restore = browserSupport(false);
-    function LegacyPane() {
-      const shape = { backgroundColor: "#123456", borderRadius: 12, borderWidth: 2, borderColor: "#abcdef" };
-      return <View style={paneStyle(true, shape)}><GlassPane shape={shape} testID="pane" /><Text>Readable</Text></View>;
-    }
     try {
-      render(<ThemeProvider glass><LegacyPane /></ThemeProvider>);
-      const pane = screen.getByTestId("pane");
-      expect(pane.style.backgroundColor).toMatch(/18, ?52, ?86/);
-      expect(pane.style.borderWidth).toBe("2px");
-      expect(pane.style.borderColor).toMatch(/171, ?205, ?239/);
-      expect(materialsIn(pane).length).toBe(0);
+      render(<ThemeProvider glass><PaneHost /></ThemeProvider>);
+      const host = screen.getByTestId("host");
+      expect(host.style.backgroundColor).toMatch(/18, ?52, ?86/);
+      expect(host.style.borderWidth).toBe("1px");
+      expect(host.style.borderColor).toMatch(/171, ?205, ?239/);
+      expect(screen.queryByTestId("pane")).toBeNull();
+      expect(materialsIn(host).length).toBe(0);
+      expect(host.children.length).toBe(1);
     } finally { restore(); }
+  });
+
+  it("mounts exactly one material behind a host whose glass renders", () => {
+    const restore = browserSupport();
+    try {
+      render(<ThemeProvider glass><PaneHost /></ThemeProvider>);
+      const host = screen.getByTestId("host");
+      // react-native-web writes `transparent` as a zero-alpha rgba.
+      expect(host.style.backgroundColor).toMatch(/^rgba\(0, 0, 0, 0(\.0+)?\)$/);
+      expect(host.style.borderColor).toMatch(/^rgba\(0, 0, 0, 0(\.0+)?\)$/);
+      expect(screen.getByTestId("pane")).toBeDefined();
+      expect(materialsIn(host).length).toBe(1);
+    } finally { restore(); }
+  });
+
+  it("hands the host the same decision its pane and surface render from", () => {
+    const seen: string[] = [];
+    function Probe() {
+      const options = { static: true, layer: "control" } as const;
+      seen.push(`${useMaterialResolution(options).material.renderer}:${useMaterialTheme(options).surface}`);
+      return <GlassSurface static layer="control" testID="surface" />;
+    }
+    for (const [supported, expected, materials] of [[true, "frost:glass", 1], [false, "solid:solid", 0]] as const) {
+      const restore = browserSupport(supported);
+      try {
+        seen.length = 0;
+        render(<ThemeProvider glass><Probe /></ThemeProvider>);
+        expect(seen.at(-1)).toBe(expected);
+        expect(materialsIn(screen.getByTestId("surface")).length).toBe(materials);
+        cleanup();
+      } finally { restore(); }
+    }
   });
 
   it("uses the solid foreground/state recipe when capability is absent", () => {

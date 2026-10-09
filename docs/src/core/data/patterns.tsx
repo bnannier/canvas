@@ -371,7 +371,7 @@ const density = getDensity();
       {
         title: "When NOT to use glass",
         description: "Use the complete solid appearance when the material cannot preserve readability, performance, or accessibility. A static content frame is appropriate only when its content remains clear.",
-        render: () => (<Notes items={[["Accessibility preferences", "Reduce Transparency and Increase Contrast use a complete opaque appearance."], ["Unsupported material", "A platform or capture configuration without safe blur falls back to solid."], ["Unfilled variants", "Layout wrappers and ghost or link actions inherit their surroundings without another pane."]]} />),
+        render: () => (<Notes items={[["Accessibility preferences", "Reduce Transparency and Increase Contrast use a complete opaque appearance."], ["Unsupported material", "A platform or capture configuration without safe blur falls back to solid."], ["Android page surfaces", "Android frosts only what floats over a separate capture plane: overlays in an OverlayProvider outlet and sheets in a window of their own. A surface in the page itself has no plane it can sample without capturing itself, so with glass requested it keeps its complete solid skin, by design."], ["Unfilled variants", "Layout wrappers and ghost or link actions inherit their surroundings without another pane."]]} />),
       },
       {
         title: "Implementation",
