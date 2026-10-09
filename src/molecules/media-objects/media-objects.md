@@ -53,6 +53,16 @@ its own control beside the row, never inside it.
 <MediaObject onPress={() => {}} bordered avatar="RC" title="Rachel Chen" description="Engineering Lead" />
 ```
 
+### Tappable with an action
+
+With both, the row and the action are two controls side by side: tapping the row runs
+`onPress`, tapping the action runs the action's own handler, and neither sits inside
+the other.
+
+```tsx
+<MediaObject onPress={() => {}} bordered src="/ada-lovelace.jpg" title="Ada Lovelace" description="ada@example.com" action={<Button outline small>Invite</Button>} />
+```
+
 ## Do & Don't
 
 ### Avatar

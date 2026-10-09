@@ -57,6 +57,7 @@ export interface SliderProps extends MeasureProps {
   large?: boolean;
   // Width: a slider is FILL (src/style/sizing.ts) like the other input-like
   // controls; the parent layout container provides the bounds.
+
   // State.
   disabled?: boolean;
   /** Accessible name for the slider (e.g. "Volume"). */

@@ -177,12 +177,14 @@ function sweepsLine(sweeps: SweepFact[]): string {
 function skinLine(platform: "iOS" | "Android", facts: ComponentFacts): string {
   const skin = facts.skins[platform];
   const names = Object.keys(skin.exports);
-  if (!names.length) return `${platform}: re-exports the shared build (nothing built per platform)`;
+  const shared = skin.shared.length ? `: ${skin.shared.join(", ")}` : "";
+  if (!names.length) return `${platform}: re-exports the shared build${shared} (nothing built per platform)`;
   const web = names.filter((name) => skin.exports[name] === null);
   const own = names.filter((name) => skin.exports[name] !== null).map((name) => `${name} (${skin.exports[name]})`);
   const parts = [];
   if (web.length) parts.push(`web build: ${web.join(", ")}`);
   if (own.length) parts.push(`own build: ${own.join("; ")}`);
+  if (skin.shared.length) parts.push(`re-exports the shared build${shared}`);
   return `${platform}: ${parts.join("; ")}`;
 }
 

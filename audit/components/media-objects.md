@@ -41,6 +41,7 @@ Web: 18 cells per variant (3 widths x 3 looks x 2 surfaces). iOS and Android: 6 
 | `icon` | Icon | [ ] | [ ] | [ ] |  |
 | `action` | Action | [ ] | [ ] | [ ] |  |
 | `tappable` | Tappable | [ ] | [ ] | [ ] |  |
+| `tappablewithanaction` | Tappable with an action | [ ] | [ ] | [ ] |  |
 <!-- audit:variants:end -->
 
 ## Universal rubric

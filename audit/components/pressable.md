@@ -18,12 +18,12 @@ Audit checklist for `/components/pressable`. The facts block and the variants ta
 | Hand-off open gaps | none |
 | Hand-off settled | none |
 | Hand-off metric gaps | none |
-| Interactions registry | in the inventory; evidence: none registered |
+| Interactions registry | in the inventory; evidence: link-enter (unit-web, test/pressable-link-enter.test.tsx) |
 | Overlay recipe | none |
 | Interaction states | captured: focus on Default (web row; desktop), pressed on Opacity (web row; desktop), disabled on Disabled (web row; desktop). |
 | MeasureProps | not adopted |
 | Touch target | no touch-target name (the exports of `src/style/touch-target.ts`, `src/style/touch-target-seed.ts`, `src/style/touch-seam.ts`, `src/style/clip-slop.ts`, the `TouchTargetSkin` fields, or `hitSlop`) in its implementation modules |
-| Tests importing it | 7: `test/data-table.test.tsx`, `test/dist-smoke.test.tsx`, `test/focus-ring.test.tsx`, `test/pressable-tab-stop.test.tsx`, `test/touch-target-clips.test.tsx`, `test/touch-target-seams.test.tsx`, `test/touch-target-seed.test.tsx` |
+| Tests importing it | 8: `test/data-table.test.tsx`, `test/dist-smoke.test.tsx`, `test/focus-ring.test.tsx`, `test/pressable-link-enter.test.tsx`, `test/pressable-tab-stop.test.tsx`, `test/touch-target-clips.test.tsx`, `test/touch-target-seams.test.tsx`, `test/touch-target-seed.test.tsx` |
 | E2E naming it | 0: none |
 | E2E catalog sweeps | 6: `e2e/a11y/components.e2e.ts` (componentRoutes), `e2e/responsive/component-widths.e2e.ts` (contentRoutes, componentRoutes), `e2e/smoke/examples.e2e.ts` (componentExamples), `e2e/smoke/routes.e2e.ts` (allRoutes), `e2e/visual/components.e2e.ts` (componentRoutes), `e2e/visual/materials.e2e.ts` (MATERIAL_ROUTES) |
 <!-- audit:facts:end -->

@@ -11,7 +11,7 @@ Audit checklist for `/components/grid`. The facts block and the variants table a
 | Source files | `grid.android.tsx`, `grid.ios.tsx`, `grid.md`, `grid.shared.tsx`, `grid.styles.ts`, `grid.tsx` |
 | Implementation | its own source directory, `src/atoms/grid/` (5 TypeScript modules) |
 | Exports | Grid, GridItem, gridColumns, gridCellWidth |
-| Platform entries | iOS: web build: Grid. Android: web build: Grid |
+| Platform entries | iOS: web build: Grid; re-exports the shared build: GridItem, gridColumns, gridCellWidth. Android: web build: Grid; re-exports the shared build: GridItem, gridColumns, gridCellWidth |
 | Platform-skins registry | none (every export is the web build, so the docs three-up renders it as is) |
 | Reference row | none: `PLATFORM-REFERENCES.md` has no row for this component (K8) |
 | Materials manifest | Grid: atoms, inherited; verification inherited-composition, semantic-state. GridItem: atoms, inherited; verification inherited-composition, semantic-state |

@@ -1,5 +1,5 @@
 import { describe, it, expect, afterEach } from "bun:test";
-import { render, cleanup, screen, fireEvent } from "@testing-library/react";
+import { render, cleanup, screen, fireEvent, within } from "@testing-library/react";
 import type { ComponentType, ReactNode } from "react";
 import { Text } from "react-native";
 import { ThemeProvider } from "../src/style/theme.tsx";
@@ -139,6 +139,8 @@ for (const [platform, MediaObject, skin] of SKINS) {
       const invite = screen.getByRole("button", { name: "Invite" });
       expect(row.contains(invite)).toBe(false);
       expect(invite.contains(row)).toBe(false);
+      // The testID still marks the whole card, which holds both.
+      expect(at("row").contains(row) && at("row").contains(invite)).toBe(true);
       fireEvent.click(invite);
       expect([rows, invites]).toEqual([0, 1]);
       fireEvent.click(row);
@@ -155,9 +157,10 @@ for (const [platform, MediaObject, skin] of SKINS) {
       const inset = insetOf(skin);
       // The row: top and bottom and its outer side; the action column: the other outer side.
       for (const [id, rowSide, actionSide] of [["l", "Left", "Right"], ["r", "Right", "Left"]] as const) {
-        const row = at(id);
+        const frame = at(id);
+        const row = within(frame).getByRole("button", { name: id === "l" ? "Leading" : "Reversed" });
         const action = row.nextElementSibling as HTMLElement;
-        const frame = row.parentElement as HTMLElement;
+        expect(row.parentElement).toBe(frame);
         expect(row.style.paddingTop).toBe(inset);
         expect(row.style.paddingBottom).toBe(inset);
         expect(row.style[`padding${rowSide}`]).toBe(inset);
@@ -178,8 +181,9 @@ for (const [platform, MediaObject, skin] of SKINS) {
           <MediaObject title="Top" onPress={() => {}} action={<Button small>Go</Button>} testID="t" />
         </>,
       );
-      expect((at("c").nextElementSibling as HTMLElement).style.justifyContent).toBe("center");
-      expect((at("t").nextElementSibling as HTMLElement).style.justifyContent).toBe("flex-start");
+      const actionColumn = (id: string, name: string) => within(at(id)).getByRole("button", { name }).nextElementSibling as HTMLElement;
+      expect(actionColumn("c", "Centered").style.justifyContent).toBe("center");
+      expect(actionColumn("t", "Top").style.justifyContent).toBe("flex-start");
     });
 
     it("exposes no button without onPress", () => {

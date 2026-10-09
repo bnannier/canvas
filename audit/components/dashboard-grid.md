@@ -11,7 +11,7 @@ Audit checklist for `/components/dashboard-grid`. The facts block and the varian
 | Source files | `dashboard-grid.android.tsx`, `dashboard-grid.ios.tsx`, `dashboard-grid.logic.ts`, `dashboard-grid.md`, `dashboard-grid.shared.tsx`, `dashboard-grid.styles.ts`, `dashboard-grid.tsx` |
 | Implementation | its own source directory, `src/organisms/dashboard-grid/` (6 TypeScript modules) |
 | Exports | DashboardGrid, clearStoredDashboardOrder, DASHBOARD_COLUMNS, effectiveSpan, moveWidget, orderedWidgets |
-| Platform entries | iOS: own build: DashboardGrid (injects platform parts (../drag-drop/drag-drop.ios.js)). Android: own build: DashboardGrid (injects platform parts (../drag-drop/drag-drop.android.js)) |
+| Platform entries | iOS: own build: DashboardGrid (injects platform parts (../drag-drop/drag-drop.ios.js)); re-exports the shared build: clearStoredDashboardOrder, DASHBOARD_COLUMNS, effectiveSpan, moveWidget, orderedWidgets. Android: own build: DashboardGrid (injects platform parts (../drag-drop/drag-drop.android.js)); re-exports the shared build: clearStoredDashboardOrder, DASHBOARD_COLUMNS, effectiveSpan, moveWidget, orderedWidgets |
 | Platform-skins registry | iOS: DashboardGrid; Android: DashboardGrid |
 | Reference row | none: `PLATFORM-REFERENCES.md` has no row for this component (K8) |
 | Materials manifest | DashboardGrid: organisms, inherited; verification inherited-composition, semantic-state |

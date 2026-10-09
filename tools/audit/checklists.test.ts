@@ -416,6 +416,20 @@ describe.skipIf(!hasDist)("the audit checklists keep a reviewer's work", () => {
     expect(componentFacts("view", sources.corpus).exports).toEqual(["View"]);
   });
 
+  it("names what a platform entry passes on unbuilt beside what it builds", () => {
+    // badge.ios.tsx builds Badge from its skin and re-exports the shared BadgeGroup;
+    // grid.ios.tsx builds Grid and re-exports GridItem and two helpers.
+    const badge = componentFacts("badge", sources.corpus).skins;
+    expect(badge.iOS).toMatchObject({ exports: { Badge: null }, shared: ["BadgeGroup"] });
+    expect(badge.Android.shared).toEqual(["BadgeGroup"]);
+    expect(componentFacts("grid", sources.corpus).skins.iOS.shared).toEqual(["GridItem", "gridColumns", "gridCellWidth"]);
+    // Avatar's entries build all three, so nothing is passed on unbuilt.
+    expect(componentFacts("avatar", sources.corpus).skins.iOS.shared).toEqual([]);
+    const lines = (slug: string) => renderComponentFacts(componentFacts(slug, sources.corpus)).join("\n");
+    expect(lines("badge")).toContain("| Platform entries | iOS: web build: Badge; re-exports the shared build: BadgeGroup. Android: web build: Badge; re-exports the shared build: BadgeGroup |");
+    expect(lines("gauge")).toContain("| Platform entries | iOS: re-exports the shared build: Gauge (nothing built per platform).");
+  });
+
   it("credits every component of the skins smoke test's CASES table, read statically (item 1)", () => {
     // The smoke test mounts each row through one computed import and `mod[c.name]`.
     for (const slug of ["accordion", "board", "chip", "drag-drop", "toast", "row-column", "geo-map", "phone-input", "container", "grid", "card"]) {
