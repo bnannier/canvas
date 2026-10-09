@@ -341,7 +341,7 @@ describe("drawing sheets", () => {
     expect(grid.title).toStartWith("button: interaction states at desktop width");
     const hover = grid.tiles[0]![0]!;
     expect(hover).toMatchObject({ label: "web-states/button/hover.web/desktop.blush.solid", capture: { run: RUNS.states, sha: "b87e5146150b0a0913c2b49496479368ba69c214", dirty: true }, density: 2 });
-    // state.png is the row with its 12 px margin, the shot's clip in probe.json: 966 x 109 CSS px.
+    // state.png is the row and the margin it was shot with, the shot's clip in probe.json: 966 x 109 CSS px.
     expect(hover.size).toEqual({ width: 966, height: 109 });
     expect(grid.tiles[0]![2]).toMatchObject({ label: "web-states/button/hover.web/desktop.mint.solid", note: "not captured", size: null });
     // A state's own flags and its release's are said under its tile.

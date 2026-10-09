@@ -393,8 +393,16 @@ the open bubble can be photographed, and records that it had to), and the releas
 the cell's line of `cells.jsonl` and counted in the run's summary.
 An overlay the Playground contains in its row (Dialog, AlertDialog, Toast, Tooltip) is
 framed against that row; one placed against the window (an anchored menu, a Drawer, an
-ActionSheet) against the viewport. A row's photograph keeps a 12 px margin around the row
-(`SHOT_MARGIN`, `tools/audit/web-capture.ts`) for a ring or a lifted shade drawn just outside it.
+ActionSheet) against the viewport. A row's photograph keeps the margin the row's paint needs
+while the state holds: before the shot, `probePaint` (`e2e/support/audit-probes.ts`) reads
+every shadow, outline and transform-moved box of the row and of everything in it, each cut to
+the overflow clips inside the row that reach it (an absolutely placed element escapes the
+clips below its containing block), and `paintedMargin` (`tools/audit/web-capture.ts`) takes,
+side by side, how far past the row's box the furthest of them reaches: an outer shadow's
+offset, spread and blur, scaled with its element; an outline's width past its offset; a box a
+hover lift moved. A row whose paint stays inside it has no margin. The viewport is not grown
+for a state (that would move what the pointer rests on), so a side it cuts is recorded in the
+shot's `cut`, beside the `margin` and what set each side (`marginBy`).
 
 A state cell is `web-states/<slug>/<state>.<row>/<width>.<look>.<surface>/` with `state.png`
 (a reached state) and `probe.json` (the recipe, the evidence, the release and its flags, and
@@ -452,17 +460,30 @@ read-only.
 and surface. A cell opens the page, checks that the sections it marks are the inventory's in
 order (a renamed, added or dropped section fails the cell), photographs the first screen at
 the cell's viewport (`viewport.png`), then fits each section into a grown viewport, photographs
-it with the same 12 px margin as a state's row (`section.<key>.png`; a drop shadow, a hover
-lift or a ring at the section's edge is not cropped; the margin stays inside the part of the
-page no top bar or floating tab bar covers, and the viewport grows for it when it must) and
+it with the margin its own paint needs, read as a state's row's is (`section.<key>.png`; a
+card's drop shadow at the section's edge, 40 px below a resting card and 60 px below a raised
+one, is not cropped; the margin stays inside the part of the page no top bar or floating tab
+bar covers, the viewport grows for it and the margin is read again until the band holds it,
+and a side still cut where the page itself ends is recorded in the section's `cut`) and
 probes it as a variant's row is; probe.json adds the document's, the page scroller's and each
-section's overflow, axe over the sections where the axe policy says, each section's clip and
-`origin` (so the analysis finds every text in its section's photograph), and how long each
-step of the cell took (`ms`). A page cell is
+section's overflow, axe over the sections where the axe policy says, each section's clip,
+`margin`, `marginBy` and `origin` (so the analysis finds every text in its section's
+photograph), and how long each step of the cell took (`ms`). A page cell is
 `web-pages/<kind>-<slug>/<width>.<look>.<surface>/`.
 
 Every page is 432 cells (24 pages, 67 sections): 6 min 35 s and 284.8 MB on the same
 machine, 3 s a cell at the median, before the loop fix below.
+
+With the margin read from the paint (run `20261009-220505-web-05cafc4`, a rebuilt export,
+6 workers): 432 cells in 4 min 47 s and 301.0 MB, 3.9 s a cell at the median. Every one of
+the 1,206 section photographs takes 20 px to each side and 40 px below from the resting
+card's shade (`0 20px 44px -24px`; no pattern or template rests a raised card), and none is
+cut. The fixed 12 px margin it replaces stopped a section's photograph while the shade under
+its card was still 9 luminance levels darker than the page beside it (template-pricing's Plan
+tiers, blush, desktop); now the column under the card reaches the page's own level (243
+against 243 and 244) before the edge. The Card page's Raised example, read the same way,
+needs 30 px to each side and 60 px below, and its Pressable example under the pointer 2 px
+above for the lift.
 
 `pattern-loading` cells took up to 146 s each while its six look and surface tests ran at
 once (3.3 s for the same cell alone). The step timings put almost all of it in fitting and
@@ -732,8 +753,8 @@ photograph. A page's sections are files of its one cell, never a level of its pa
    reached state's row and the panel it opened (when the row does not draw it) in
    `state.png`; a page's sections, each in its own `section.<key>.png`. A region's texts are
    placed in its photograph by where the probe measured them from in the viewport (its
-   `origin`) less the shot's clip (the row with its 12 px margin, a section with its margin,
-   or none for a viewport shot).
+   `origin`) less the shot's clip (a row or a section with the margin its paint needs, or
+   none for a viewport shot).
    - **Contrast.** Where the probe resolved a text's background from the DOM, its verdict
      stands (method `dom`: fail under the 4.5 or 3 it owes). Where the DOM could not say (a
      backdrop filter, a gradient, an image: every glass cell), only the background is read
