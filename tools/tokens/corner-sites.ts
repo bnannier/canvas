@@ -8,8 +8,10 @@
  * row, or a literal. The shape rules are a decision made where the number is written, so
  * that is the place this module reports, with what the number is: a read of one of the
  * corner tables, a container's corner less an inset (or a capsule's corner plus one), the
- * app's own pick through a public prop, or a bare number. tools/tokens/corner-rules.ts
- * judges each one per platform and test/design-rules-shape.test.ts holds the kit to it.
+ * app's own pick through a public prop, or a bare number; and every place that draws
+ * it, with the platform it draws on (`CornerValue.drawn`), so a constant no platform names
+ * is judged on every skin that uses it. tools/tokens/corner-rules.ts judges each one per
+ * platform and test/design-rules-shape.test.ts holds the kit to it.
  *
  * The tracing is tools/tokens/source-folder.ts; this module names what it traces (the
  * corner properties) and the tables it reads by name: `shape` and the public `radius`
@@ -69,7 +71,62 @@ export interface CornerValue {
    * place it sets a corner (a Card corner a Radio card reads rounds the Radio too).
    */
   rounds: string[];
+  /** Where in its file the number is written (an offset). */
+  at: number;
+  /** Every place the number sets a corner: the property, attribute or assignment. */
+  sets: CornerPlace[];
+  /**
+   * Every place that draws the corner, with the platform it draws it on. A corner set in a
+   * skin is drawn by that skin. One set in a style constant or helper no platform names (a
+   * `const EDIT = { borderRadius: ... }` spread into a skin's field, a `menuCard()` a skin
+   * calls, a number constant a skin reads) is drawn by every place that uses it, followed
+   * until a platform's name or shared code: so a native skin cannot draw another platform's
+   * row by reading it through a neutral name. A corner set in a shell is drawn where its
+   * number is written (the skin field the shell reads); one a shell writes itself is shared
+   * code.
+   */
+  drawn: DrawnPlace[];
 }
+
+/** A place in the source: its file, line, offset and the names enclosing it. */
+export interface CornerPlace {
+  file: string;
+  line: number;
+  /** The offset of the place in its file. */
+  at: number;
+  /** The names enclosing the place, outermost first, a corner property left off (`iosSkin.editInput`). */
+  path: string;
+}
+
+/** A place that draws a corner, and the platform it draws it on. */
+export interface DrawnPlace extends CornerPlace {
+  /** The platform whose skin draws here (`platformOf`), or null for code every platform shares, which draws the web look. */
+  platform: PlatformKey | null;
+}
+
+/**
+ * The platform a place is written for, or null for code every platform shares: its file
+ * (`card.ios.tsx`), else the innermost of the names enclosing it that names a platform
+ * (`iosSkin`, `IOS_RADIUS`, `M3_TRACK_R` for Material 3, `androidBase`).
+ */
+export function platformOf(place: { file: string; path: string }): PlatformKey | null {
+  const byFile = place.file.match(/\.(ios|android|web)\.tsx?$/);
+  if (byFile) return byFile[1] as PlatformKey;
+  const names = place.path.split(".");
+  for (let i = names.length - 1; i >= 0; i--) {
+    const m = names[i].match(/^(web|ios|android|m3)(?=[A-Z_]|$)/i);
+    if (m) return m[1].toLowerCase() === "m3" ? "android" : (m[1].toLowerCase() as PlatformKey);
+  }
+  return null;
+}
+
+/**
+ * The style modules: a component's `.styles.ts(x)` and src/style/. A constant or helper
+ * written there with no platform in its name is a part some skin or shell uses, so the
+ * places that use it say where it is drawn. Anything else without a platform's name (a
+ * shell, a component, an entry with no platform suffix) is code every platform runs.
+ */
+const STYLE_MODULE = /\.styles\.tsx?$|^src\/style\//;
 
 const PLATFORMS = new Set<string>(Object.keys(shape));
 const RADIUS = radius as Record<string, number>;
@@ -99,6 +156,13 @@ function platformRead(expr: ts.Expression, sf: ts.SourceFile, table: "shape" | "
   const rows = table === "shape" ? (shape as unknown as Record<PlatformKey, Record<string, number>>) : PLATFORM_SHAPE;
   if (!(node.name.text in rows[platform as PlatformKey])) return null;
   return { platform: platform as PlatformKey, key: node.name.text };
+}
+
+/** Whether a module-level declaration is a function: a function declaration, or a const holding an arrow or function expression. */
+function isFunction(node: ts.VariableDeclaration | ts.FunctionDeclaration): boolean {
+  if (ts.isFunctionDeclaration(node)) return true;
+  const init = node.initializer && unwrap(node.initializer);
+  return init !== undefined && (ts.isArrowFunction(init) || ts.isFunctionExpression(init));
 }
 
 /** A computation that halves a named value: `height / 2` or `size * 0.5`, never a halved bare number. */
@@ -165,7 +229,49 @@ export class CornerSites extends SourceFolder {
       concentric: o.kind === "computed" ? concentricOf(o) : null,
       text: o.node.getText(o.sf),
       rounds: [...new Set([dirname(o.sf.fileName), ...sinks.map((s) => dirname(s.sf.fileName))])],
+      at: o.node.getStart(o.sf),
+      sets: sinks.map((s) => this.place(s.node, s.sf)),
+      drawn: this.drawnPlaces(o, sinks),
     };
+  }
+
+  private place(node: ts.Node, sf: ts.SourceFile): DrawnPlace {
+    // A shorthand use (`{ zoneActive }`) is the key it sets, as `zoneActive: zoneActive` would be.
+    const key = ts.isShorthandPropertyAssignment(node.parent) && node.parent.name === node ? `.${node.parent.name.text}` : "";
+    const place = { file: sf.fileName, line: lineOf(sf, node), at: node.getStart(sf), path: this.pathOf(node) + key };
+    return { ...place, platform: platformOf(place) };
+  }
+
+  /** Every place that draws a number set at these sinks (see `CornerValue.drawn`). */
+  private drawnPlaces(o: Origin, sinks: Sink[]): DrawnPlace[] {
+    const out = new Map<string, DrawnPlace>();
+    for (const s of sinks) {
+      const set = this.place(s.node, s.sf);
+      let places = [set];
+      if (!set.platform) {
+        // A helper that rounds whatever corner it is handed (`capsule(radius)`) draws it for
+        // the caller that hands it, so the number's own place says where; so does a shell.
+        const helper = this.topDeclarationOf(s.node, s.sf);
+        const written = this.topDeclarationOf(o.node, o.sf);
+        const handed = helper !== null && isFunction(helper.node) && written?.node !== helper.node;
+        places = !STYLE_MODULE.test(s.sf.fileName) || handed ? this.placesOf(o.node, o.sf, new Set()) : this.placesOf(s.node, s.sf, new Set());
+      }
+      for (const place of places) out.set(`${place.file}:${place.at}`, place);
+    }
+    return [...out.values()];
+  }
+
+  /** Where a place in the source draws: its platform's name, shared code, or every place that uses its style constant. */
+  private placesOf(node: ts.Node, sf: ts.SourceFile, chain: Set<ts.Node>): DrawnPlace[] {
+    const here = this.place(node, sf);
+    if (here.platform || !STYLE_MODULE.test(sf.fileName)) return [here];
+    const decl = this.topDeclarationOf(node, sf);
+    if (!decl) return [here];
+    if (chain.has(decl.node)) return [];
+    const uses = this.referencesTo(decl);
+    if (uses.length === 0) return [here];
+    const next = new Set(chain).add(decl.node);
+    return uses.flatMap((use) => this.placesOf(use.node, use.sf, next));
   }
 
   protected sinkOf(node: ts.Node): ts.Expression | null {

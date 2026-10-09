@@ -25,28 +25,35 @@
  * step of the public `radius` ladder that the app picks through a public prop (Image's and
  * Video's `radius`) is the call site's corner, not the kit's, and is not judged here.
  *
- * The platform a number is written for comes from its file (`.ios.tsx`) or the names it is
- * written under (`iosSkin`, `IOS_RADIUS`, `M3_TRACK_R`, `androidBase`); a number under no
- * platform's name is in shared code, which draws the web look on every platform.
+ * The platform a corner is drawn on is the skin that draws it (tools/tokens/corner-sites.ts,
+ * `CornerValue.drawn`): its file (`.ios.tsx`) or the names it is set under (`iosSkin`,
+ * `IOS_RADIUS`, `M3_TRACK_R`, `androidBase`), and for a style constant or helper no platform
+ * names, every skin that uses it. Code every platform shares (a shell, a part only shared
+ * code uses) draws the web look on every platform. A native skin may draw a web-row corner
+ * only as the web skin's own part: the same part of the web skin (the path with the
+ * platform's name taken off, `webSkin.actionButton` for `iosSkin.actionButton`) draws the
+ * same number from the same place.
  */
 
 import { dirname, relative } from "node:path";
 import type { PlatformKey } from "../../src/style/tokens.ts";
-import type { CornerValue } from "./corner-sites.ts";
+import type { CornerValue, DrawnPlace } from "./corner-sites.ts";
 import { COMPONENT_ROLES } from "./shape-roles.ts";
 
 const PILL = 9999;
 
-/** The platform a corner is written for, or null for code every platform shares. */
-export function platformOf(v: Pick<CornerValue, "file" | "path">): PlatformKey | null {
-  const byFile = v.file.match(/\.(ios|android|web)\.tsx?$/);
-  if (byFile) return byFile[1] as PlatformKey;
-  const names = v.path.split(".");
-  for (let i = names.length - 1; i >= 0; i--) {
-    const m = names[i].match(/^(web|ios|android|m3)(?=[A-Z_]|$)/i);
-    if (m) return m[1].toLowerCase() === "m3" ? "android" : (m[1].toLowerCase() as PlatformKey);
-  }
-  return null;
+/**
+ * The part a place draws, the same on every platform: its file without a platform suffix
+ * and its path without the platform's name (`x.styles.ts Skin.actionButton` for both
+ * `webSkin.actionButton` and `iosSkin.actionButton`).
+ */
+export function partOf(place: Pick<DrawnPlace, "file" | "path">): string {
+  const file = place.file.replace(/\.(?:ios|android|web)(\.tsx?)$/, "$1");
+  const path = place.path
+    .split(".")
+    .map((name) => name.replace(/^(?:web|ios|android|m3)(?=[A-Z_]|$)/i, ""))
+    .join(".");
+  return `${file} ${path}`;
 }
 
 /** Where a corner is written, as CONCENTRIC_CORNERS names a site: its file and its path. */
@@ -62,36 +69,47 @@ export interface CornerContext {
   roles?: Readonly<Record<string, readonly string[]>>;
 }
 
-/** How a corner is right on its platform, or why it is not, naming the skin it is written in. */
+/** How a corner is right on every platform that draws it, or why it is not, naming the skin that draws it. */
 export function cornerVerdict(v: CornerValue, context: CornerContext = {}): { ok: true; form: string } | { ok: false; reason: string } {
   const { concentric = new Set<string>(), roles = COMPONENT_ROLES } = context;
-  const platform = platformOf(v);
-  const draws: PlatformKey = platform ?? "web";
-  const skin = `${v.file} ${v.path || "(top level)"}`;
-  const row = platform ? `${platform}'s row` : "the web row (shared code draws the web look)";
+  const written = `${v.file}:${v.line} ${v.path || "(top level)"} (${v.text})`;
+  const skin = (place: DrawnPlace) => `${place.file}:${place.line} ${place.path || "(top level)"}`;
+  const rowOf = (place: DrawnPlace) => (place.platform ? `${place.platform}'s row` : "the web row (shared code draws the web look)");
   if (v.kind === "consumer") return { ok: true, form: "the app's own pick, through a public prop" };
+  if (v.drawn.length === 0) return { ok: false, reason: `${written} draws no corner anywhere the scan can see` };
   const read = v.read;
   if (read?.table === "shape" || read?.table === "platformShape") {
-    if (read.platform !== draws) {
-      return { ok: false, reason: `${skin} reads ${read.table}.${read.platform}.${read.key}, another platform's row: it draws ${draws}, so it reads ${row} (a part drawn the web's way shares the web skin's part)` };
+    const table = `${read.table}.${read.platform}.${read.key}`;
+    for (const place of v.drawn) {
+      const draws: PlatformKey = place.platform ?? "web";
+      if (read.platform === draws) continue;
+      const shared = read.platform === "web" && place.platform !== null && v.drawn.some((w) => w.platform === "web" && partOf(w) === partOf(place));
+      if (shared) continue;
+      const how = read.platform === "web" && place.platform ? ", or is the web skin's own part (the web skin's same part draws this number; none does)" : "";
+      return {
+        ok: false,
+        reason: `${skin(place)} draws ${table} (${written}), another platform's row: it draws ${draws}, so it reads ${rowOf(place)}${how}`,
+      };
     }
     const component = componentOf(v.file);
     if (!(roles[component] ?? []).includes(read.key)) {
-      return { ok: false, reason: `${skin} reads the ${read.key} role, which ${component} does not play (COMPONENT_ROLES in tools/tokens/shape-roles.ts)` };
+      return { ok: false, reason: `${written} reads the ${read.key} role, which ${component} does not play (COMPONENT_ROLES in tools/tokens/shape-roles.ts)` };
     }
-    return { ok: true, form: `the ${read.key} role of ${draws}'s row` };
+    const on = [...new Set(v.drawn.map((place) => place.platform ?? "shared code"))].join(", ");
+    return { ok: true, form: `the ${read.key} role of ${read.platform}'s row, drawn on ${on}` };
   }
+  const place = v.drawn[0];
   if (read?.table === "radius") {
-    return { ok: false, reason: `${skin} reads the radius ladder (radius.${read.key ?? "*"}, ${v.value}), which names no role: read the role it plays from ${row}` };
+    return { ok: false, reason: `${skin(place)} draws the radius ladder (radius.${read.key ?? "*"}, ${v.value}, ${written}), which names no role: read the role it plays from ${rowOf(place)}` };
   }
   if (v.value === 0) return { ok: true, form: "square" };
   if (v.value === PILL) return { ok: true, form: "the pill" };
   if (v.concentric) {
     if (concentric.has(siteOf(v))) return { ok: true, form: `concentric, ${v.concentric}` };
-    return { ok: false, reason: `${skin} writes ${v.value} ${v.concentric}, but CONCENTRIC_CORNERS declares no container for it` };
+    return { ok: false, reason: `${written} writes ${v.value} ${v.concentric}, but CONCENTRIC_CORNERS declares no container for it` };
   }
   return {
     ok: false,
-    reason: `${skin} writes ${v.value} (${v.text}), which is no role of ${row}: read the role its element plays, or write the pill (9999), square (0) or a declared concentric corner`,
+    reason: `${skin(place)} draws ${v.value} (${written}), which is no role of ${rowOf(place)}: read the role its element plays, or write the pill (9999), square (0) or a declared concentric corner`,
   };
 }

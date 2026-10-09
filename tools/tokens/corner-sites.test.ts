@@ -2,12 +2,12 @@ import { describe, it, expect, beforeAll, afterAll } from "bun:test";
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { CornerSites, type CornerValue } from "./corner-sites.ts";
-import { componentOf, cornerVerdict, platformOf, siteOf } from "./corner-rules.ts";
+import { CornerSites, platformOf, type CornerValue } from "./corner-sites.ts";
+import { componentOf, cornerVerdict, partOf, siteOf } from "./corner-rules.ts";
 
 // The folder behind test/design-rules-shape.test.ts: every way a corner reaches a view is
-// traced to the place its number is written, with what that number is, and the rules
-// judge it on the platform it is written for.
+// traced to the place its number is written, with what that number is and every skin that
+// draws it, and the rules judge it on each platform that draws it.
 
 let root = "";
 const write = (relative: string, text: string) => {
@@ -97,6 +97,55 @@ export function Picked({ step }: { step: "sm" }) {
   );
   write("src/atoms/x/x.tsx", `import { createX } from "./x.shared.js";\nimport { webSkin } from "./x.styles.js";\nexport const X = createX(webSkin);\n`);
   write("src/atoms/x/x.ios.tsx", `import { createX } from "./x.shared.js";\nimport { iosSkin } from "./x.styles.js";\nexport const X = createX(iosSkin);\n`);
+  // Where a corner is drawn: constants and helpers no platform names, and the skins that use them.
+  write(
+    "src/style/look.ts",
+    `
+import { shape } from "./index.js";
+export const row = { borderRadius: shape.web.control };
+export function panel() {
+  return { borderRadius: shape.web.menu };
+}
+`,
+  );
+  write(
+    "src/atoms/y/y.styles.ts",
+    `
+import { shape } from "../../style/index.js";
+import * as look from "../../style/look.js";
+import { panel as panelLook } from "../../style/look.js";
+const EDIT_CORNER = shape.web.field;
+const EDIT = { borderRadius: shape.web.field };
+const ACTION = { borderRadius: shape.web.control };
+const IOS_MENU = shape.ios.menu;
+function menuCard() {
+  return { borderRadius: shape.web.menu };
+}
+function capsule(corner: number) {
+  return { borderRadius: corner };
+}
+export interface YSkin {
+  action: unknown;
+}
+export const webSkin = {
+  action: { ...ACTION },
+  menu: { borderRadius: IOS_MENU },
+  row: look.row,
+  bar: capsule(shape.web.pill),
+};
+export const iosSkin = {
+  edit: { borderRadius: EDIT_CORNER },
+  editBox: { ...EDIT },
+  action: { ...ACTION },
+  menu: menuCard(),
+  row: look.row,
+  panel: panelLook,
+};
+export const androidSkin = {
+  bar: capsule(shape.android.control),
+};
+`,
+  );
 });
 
 afterAll(() => rmSync(root, { recursive: true, force: true }));
@@ -170,18 +219,78 @@ describe("CornerSites", () => {
   });
 });
 
-describe("the corner rules", () => {
-  const corner = (over: Partial<CornerValue>): CornerValue => ({
-    value: 0,
-    file: "src/atoms/x/x.styles.ts",
-    line: 1,
-    path: "webSkin.box",
-    kind: "literal",
-    concentric: null,
-    text: "",
-    rounds: ["src/atoms/x"],
-    ...over,
+/** A corner as the scan reports it, drawn where it is written unless a test says where else. */
+const corner = (over: Partial<CornerValue>): CornerValue => {
+  const v = { value: 0, file: "src/atoms/x/x.styles.ts", line: 1, at: 0, path: "webSkin.box", kind: "literal" as const, concentric: null, text: "", rounds: ["src/atoms/x"], ...over };
+  const here = { file: v.file, line: v.line, at: v.at, path: v.path };
+  return { sets: [here], drawn: [{ ...here, platform: platformOf(here) }], ...v };
+};
+
+describe("where a corner is drawn", () => {
+  const scanY = () => new CornerSites(root).scan(["src/style/look.ts", "src/atoms/y/y.styles.ts"]).values;
+  const drawnBy = (values: CornerValue[], path: string) =>
+    one(values, path)
+      .drawn.map((d) => `${d.platform ?? "shared"} ${d.path}`)
+      .sort();
+  const roles = { "atoms/y": ["field", "control", "menu", "pill"], style: ["control", "menu"] };
+  const verdict = (values: CornerValue[], path: string) => cornerVerdict(one(values, path), { roles });
+
+  it("follows a constant no platform names to every skin that uses it", () => {
+    const values = scanY();
+    // A number constant the iOS skin reads, and a style object it spreads.
+    expect(drawnBy(values, "EDIT_CORNER")).toEqual(["ios iosSkin.edit"]);
+    expect(drawnBy(values, "EDIT")).toEqual(["ios iosSkin.editBox"]);
+    // A helper the iOS skin calls, a module's member read through a namespace import, and
+    // an export taken under an alias.
+    expect(drawnBy(values, "menuCard")).toEqual(["ios iosSkin.menu"]);
+    expect(drawnBy(values, "row")).toEqual(["ios iosSkin.row", "web webSkin.row"]);
+    expect(drawnBy(values, "panel")).toEqual(["ios iosSkin.panel"]);
   });
+
+  it("draws a corner a helper is handed for the skin that hands it", () => {
+    const values = scanY();
+    const bar = values.filter((v) => v.path === "webSkin.bar" || v.path === "androidSkin.bar");
+    expect(bar.map((v) => `${v.path}: ${v.drawn.map((d) => d.platform).join(", ")}`).sort()).toEqual(["androidSkin.bar: android", "webSkin.bar: web"]);
+  });
+
+  it("refuses a native skin drawing another platform's row through a name no platform names", () => {
+    const values = scanY();
+    for (const path of ["EDIT_CORNER", "EDIT", "menuCard", "panel"]) {
+      const result = verdict(values, path);
+      expect(result.ok, path).toBe(false);
+      expect(!result.ok && result.reason, path).toContain("another platform's row: it draws ios");
+    }
+    expect(!verdict(values, "EDIT_CORNER").ok && (verdict(values, "EDIT_CORNER") as { reason: string }).reason).toContain("src/atoms/y/y.styles.ts:25 iosSkin.edit draws shape.web.field");
+  });
+
+  it("refuses a web skin drawing a native row through a constant named for the platform", () => {
+    const result = verdict(scanY(), "IOS_MENU");
+    expect(result.ok).toBe(false);
+    expect(!result.ok && result.reason).toContain("webSkin.menu draws shape.ios.menu");
+  });
+
+  it("takes a part the native skin shares with the web skin's same part", () => {
+    const values = scanY();
+    expect(verdict(values, "ACTION").ok).toBe(true);
+    expect(verdict(values, "row").ok).toBe(true);
+    expect(partOf({ file: "src/atoms/y/y.styles.ts", path: "iosSkin.action" })).toBe(partOf({ file: "src/atoms/y/y.styles.ts", path: "webSkin.action" }));
+    expect(partOf({ file: "src/atoms/y/y.ios.tsx", path: "IOS_RADIUS" })).toBe("src/atoms/y/y.tsx _RADIUS");
+    // The same number on a different part of the web skin is no shared part.
+    const elsewhere = corner({
+      value: 12,
+      kind: "read",
+      path: "SHARED",
+      read: { table: "shape", platform: "web", key: "menu" },
+      drawn: [
+        { file: "src/atoms/x/x.styles.ts", line: 2, at: 0, path: "webSkin.menu", platform: "web" },
+        { file: "src/atoms/x/x.styles.ts", line: 3, at: 0, path: "iosSkin.splitMenu", platform: "ios" },
+      ],
+    });
+    expect(cornerVerdict(elsewhere, { roles: { "atoms/x": ["menu"] } }).ok).toBe(false);
+  });
+});
+
+describe("the corner rules", () => {
   const roles = { "atoms/x": ["card", "actionSheet", "key"] };
   const read = (table: "shape" | "platformShape", platform: "web" | "ios" | "android", key: string, path: string, value = 12) =>
     cornerVerdict(corner({ value, kind: "read", path, read: { table, platform, key } as CornerValue["read"] }), { roles });
@@ -201,7 +310,7 @@ describe("the corner rules", () => {
     // An iOS menu drawn at 12 equals the iOS card corner while the menu role is 26.
     const menu = cornerVerdict(corner({ value: 12, path: "iosSkin.splitMenu", text: "12" }), { roles });
     expect(menu.ok).toBe(false);
-    expect(!menu.ok && menu.reason).toContain("src/atoms/x/x.styles.ts iosSkin.splitMenu");
+    expect(!menu.ok && menu.reason).toContain("src/atoms/x/x.styles.ts:1 iosSkin.splitMenu");
     expect(cornerVerdict(corner({ value: 6, path: "CAP_BOX" }), { roles }).ok).toBe(false);
     expect(cornerVerdict(corner({ value: 999, path: "RAIL" }), { roles }).ok).toBe(false);
   });

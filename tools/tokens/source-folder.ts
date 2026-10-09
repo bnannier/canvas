@@ -63,6 +63,9 @@ export interface Unresolved {
 }
 
 type Table = { node: ts.ObjectLiteralExpression | ts.ArrayLiteralExpression; sf: ts.SourceFile };
+
+/** A module-level const or function, in its module. */
+export type TopDeclaration = { node: ts.VariableDeclaration | ts.FunctionDeclaration; sf: ts.SourceFile };
 type Expr = { expr: ts.Expression; sf: ts.SourceFile };
 type FunctionNode = ts.FunctionDeclaration | ts.ArrowFunction | ts.FunctionExpression;
 
@@ -105,6 +108,10 @@ export abstract class SourceFolder {
   /** The files of the current scan, where a function's callers are looked for. */
   private scope: string[] = [];
   private callIndex: Map<ts.Node, CallSite[]> | null = null;
+  /** The identifiers of the scan that can name a declaration, by their text (see `referencesTo`). */
+  private nameIndex: Map<string, { id: ts.Identifier; sf: ts.SourceFile }[]> | null = null;
+  /** For an exported name, the local names other modules import it under (`import { a as b }`). */
+  private aliasIndex: Map<string, Set<string>> | null = null;
 
   constructor(protected readonly root: string) {}
 
@@ -137,6 +144,8 @@ export abstract class SourceFolder {
   protected trace(relativeFiles: string[]): { origins: Origin[]; sinks: Map<Origin, Sink[]>; unresolved: Unresolved[] } {
     this.scope = relativeFiles;
     this.callIndex = null;
+    this.nameIndex = null;
+    this.aliasIndex = null;
     const origins = new Map<string, Origin>();
     const sinks = new Map<Origin, Sink[]>();
     const unresolved: Unresolved[] = [];
@@ -592,6 +601,81 @@ export abstract class SourceFolder {
   }
 
   /**
+   * Every place among the scanned files that names a module-level declaration, outside the
+   * declaration itself: a read of a const, a spread of a style object, a call of a function,
+   * by its own name, an import alias or a namespace member. Each place is the identifier
+   * that names it, so `pathOf` says what uses it (`iosSkin.editInput` for a constant spread
+   * into the iOS skin's edit field).
+   */
+  protected referencesTo(decl: TopDeclaration): { node: ts.Identifier; sf: ts.SourceFile }[] {
+    const target = decl.node;
+    const name = target.name && ts.isIdentifier(target.name) ? target.name.text : null;
+    if (!name) return [];
+    const { names, aliases } = this.indexNames();
+    const out: { node: ts.Identifier; sf: ts.SourceFile }[] = [];
+    for (const local of [name, ...(aliases.get(name) ?? [])]) {
+      for (const { id, sf } of names.get(local) ?? []) {
+        if (sf === decl.sf && id.pos >= target.pos && id.end <= target.end) continue;
+        const parent = id.parent;
+        let found: Decl | null;
+        if (ts.isPropertyAccessExpression(parent) && parent.name === id) {
+          // `styles.menuPanel` through `import * as styles`.
+          const ns = ts.isIdentifier(parent.expression) ? this.resolve(parent.expression, sf) : null;
+          found = ns?.kind === "module" ? this.exported(ns.sf, id.text, new Set()) : null;
+        } else found = this.resolve(id, sf);
+        if (found && found.kind !== "module" && found.kind !== "param" && found.node === target) out.push({ node: id, sf });
+      }
+    }
+    return out;
+  }
+
+  /** The module-level const or function a node is written in, or null at the top level itself. */
+  protected topDeclarationOf(node: ts.Node, sf: ts.SourceFile): TopDeclaration | null {
+    for (let at: ts.Node | undefined = node; at; at = at.parent) {
+      if (ts.isFunctionDeclaration(at) && at.parent === sf) return { node: at, sf };
+      if (ts.isVariableDeclaration(at) && ts.isVariableDeclarationList(at.parent) && ts.isVariableStatement(at.parent.parent) && at.parent.parent.parent === sf) {
+        return { node: at, sf };
+      }
+    }
+    return null;
+  }
+
+  /** The identifiers of the scan that can name a declaration, and the import aliases. */
+  private indexNames(): { names: Map<string, { id: ts.Identifier; sf: ts.SourceFile }[]>; aliases: Map<string, Set<string>> } {
+    if (!this.nameIndex || !this.aliasIndex) {
+      const names = new Map<string, { id: ts.Identifier; sf: ts.SourceFile }[]>();
+      const aliases = new Map<string, Set<string>>();
+      for (const relative of this.scope) {
+        const sf = this.load(relative);
+        const visit = (node: ts.Node) => {
+          if (ts.isImportDeclaration(node)) {
+            const bindings = node.importClause?.namedBindings;
+            if (bindings && ts.isNamedImports(bindings)) {
+              for (const element of bindings.elements) {
+                if (!element.propertyName) continue;
+                const exported = element.propertyName.text;
+                aliases.set(exported, (aliases.get(exported) ?? new Set()).add(element.name.text));
+              }
+            }
+            return;
+          }
+          if (ts.isTypeNode(node) || ts.isInterfaceDeclaration(node) || ts.isTypeAliasDeclaration(node) || ts.isExportDeclaration(node)) return;
+          if (ts.isIdentifier(node) && namesADeclaration(node)) {
+            const list = names.get(node.text) ?? [];
+            list.push({ id: node, sf });
+            names.set(node.text, list);
+          }
+          ts.forEachChild(node, visit);
+        };
+        visit(sf);
+      }
+      this.nameIndex = names;
+      this.aliasIndex = aliases;
+    }
+    return { names: this.nameIndex, aliases: this.aliasIndex };
+  }
+
+  /**
    * The names enclosing a node, outermost first: declarations, functions, methods and
    * object keys. A traced property's own key is left off, since the path names the thing
    * styled, not the property (`iosSkin.hourLabel`, not `iosSkin.hourLabel.fontSize`).
@@ -608,6 +692,38 @@ export abstract class SourceFolder {
     if (names.length > 0 && this.isSinkName(names[names.length - 1])) names.pop();
     return names.join(".");
   }
+}
+
+/**
+ * Whether an identifier can name a declaration where it stands: not a declaration's own
+ * name, a parameter, a property key, a JSX attribute or a member name (a namespace import's
+ * member is checked where it is read).
+ */
+export function namesADeclaration(id: ts.Identifier): boolean {
+  const parent = id.parent;
+  if (
+    (ts.isVariableDeclaration(parent) || ts.isFunctionDeclaration(parent) || ts.isFunctionExpression(parent) || ts.isParameter(parent)) &&
+    parent.name === id
+  ) {
+    return false;
+  }
+  if (ts.isBindingElement(parent) && (parent.name === id || parent.propertyName === id)) return false;
+  if (
+    (ts.isPropertyAssignment(parent) ||
+      ts.isMethodDeclaration(parent) ||
+      ts.isGetAccessorDeclaration(parent) ||
+      ts.isPropertyDeclaration(parent) ||
+      ts.isPropertySignature(parent) ||
+      ts.isMethodSignature(parent) ||
+      ts.isEnumMember(parent) ||
+      ts.isClassDeclaration(parent)) &&
+    parent.name === id
+  ) {
+    return false;
+  }
+  if (ts.isJsxAttribute(parent) || ts.isLabeledStatement(parent)) return false;
+  if (ts.isPropertyAccessExpression(parent) && parent.name === id) return ts.isIdentifier(parent.expression);
+  return true;
 }
 
 /** A const, a destructured const, or a function declared by these statements under a name. */
