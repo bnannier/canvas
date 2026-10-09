@@ -1,10 +1,11 @@
-import { type ReactNode } from "react";
+import { type ReactNode, useEffect, useRef } from "react";
 import { Platform } from "react-native";
 import { ScrollView, View, Column, Container, OverlayProvider, useTheme } from "@nannier/canvas";
 import { CONTENT_TOP_INSET, CONTENT_BOTTOM_INSET } from "../shell/topbar";
 import { ScreenFrame } from "../shell/native-header";
 import { H1, Lead } from "./prose";
 import { DocsHead } from "./docs-head";
+import { useAuditProbe } from "../audit/probe-context";
 
 // The standard scrollable content frame uses the kit page measure and padding. ScreenFrame adds the native header + search overlay
 // on iOS/Android and is a transparent passthrough on web.
@@ -22,11 +23,25 @@ import { DocsHead } from "./docs-head";
 // host and place their overlays within the stage the same way.
 export function Page({ children, viewportOverlays = false }: { children: ReactNode; viewportOverlays?: boolean }) {
   const { tokens } = useTheme();
+  // The scroller, published to the native audit driver (docs/src/audit/probe-context.tsx)
+  // so it can bring a card taller than the screen into view one segment at a time. The
+  // probe is null outside the audit build, where this registers nothing and no sensor
+  // renders.
+  const probe = useAuditProbe();
+  const Sensor = probe?.Sensor;
+  const scrollerRef = useRef<ScrollView>(null);
+  useEffect(() => probe?.scroller({ ref: scrollerRef }), [probe]);
   // Runtime fixtures need viewport modals and a sibling capture plane. Keep the
   // catalogue's content host by default so anchored previews scroll as before.
   const ContentHost = viewportOverlays ? View : OverlayProvider;
   const content = (
       <ScrollView
+        ref={scrollerRef}
+        // The audit driver scrolls a page's ends to where a user's scroll rests on iOS,
+        // under the transparent header and above the tab bar (the automatic inset
+        // adjustment), which React Native's scrollTo otherwise clamps away. Not passed
+        // outside the audit build.
+        {...(probe ? { scrollToOverflowEnabled: true } : null)}
         // Marks the page's scroller for tooling. The docs scroll in an INNER view, not
         // the window, so a check for "does this page scroll sideways" has to ask this
         // node and not the document. Its fill is the page backdrop, so the e2e paint
@@ -55,6 +70,7 @@ export function Page({ children, viewportOverlays = false }: { children: ReactNo
   return (
     <ScreenFrame>
       {viewportOverlays ? <OverlayProvider viewport>{content}</OverlayProvider> : content}
+      {Sensor ? <Sensor /> : null}
     </ScreenFrame>
   );
 }
