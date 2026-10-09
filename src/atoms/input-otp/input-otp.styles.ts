@@ -8,19 +8,20 @@ import { type InputOTPSkin, type Size } from "./input-otp.shared.js";
 // platform: the active/focused cell always lights up in `ring`, the kit's one focus
 // colour, never a platform default (no iOS system blue, no M3 default). Only the native
 // SHAPE, sizing, and structure of the segmented field change per OS:
-//   iOS (HIG): rounded-square cells (the 8 field radius) on the `card` fill, SEPARATED
-//     by a small gap; the active cell's 1pt border turns `ring`. Base cell ~44x52.
+//   iOS (HIG): rounded-square cells at the 8pt field corner on the `card` fill,
+//     SEPARATED by a small gap; a 1pt `field-border` hairline turns `ring` on the
+//     active cell. Base cell 44x52.
 //   Android (Material 3): OUTLINED cells (1dp `border`), SEPARATED by a gap, M3 medium
 //     corner (~12 radius); the active cell border thickens to 2dp in `ring`. M3 type
 //     scale. Base cell ~52x56.
-//   Web: the established Canvas look, matched to shadcn input-otp — a CONNECTED group of
-//     bordered cells that share borders (gap 0), only the outer corners rounded (md/6),
-//     active cell tinted `ring` with a soft 3px ring at 50% alpha. Base cell ~36x36.
+//   Web: matched to shadcn input-otp, a CONNECTED group of `card` cells that share a
+//     `field-border` hairline (gap 0), only the outer corners rounded at the 10px field
+//     corner, the active cell tinted `ring` with a soft 3px ring at 50% alpha. Base
+//     cell 48x48.
 // Disabled dims the whole control (opacity in the shell). Each cell centers its digit;
 // the empty active cell draws a thin caret bar — brand `primary` and blinking on the
 // native rows (the iOS insertion point is always the tint color, the M3 cursor is the
-// primary color, and both blink), static `foreground` on the web row (the established
-// Canvas baseline).
+// primary color, and both blink), static `foreground` on the web row.
 
 // ---- shared geometry helpers ----
 const CELL_BASE: ViewStyle = {
@@ -149,12 +150,12 @@ export const androidSkin: InputOTPSkin = {
   disabledOpacity: 0.38, // M3 disabled opacity
 };
 
-// ---------- Web: the Riskora field, as a connected run of cells ----------
+// ---------- Web: the field box, as a connected run of cells ----------
 // Connected group of bordered cells sharing borders (gap 0): the left edge is drawn
 // only on the cell that STARTS a run, every cell draws top/right/bottom, and only a
-// run's outer corners are rounded (md). With `groups` the row holds several runs, one
-// per chunk, so each chunk closes and rounds its own ends (the 12px field corner). The active cell tints to
-// `ring` with a soft 3px ring.
+// run's outer corners are rounded, at the 10px field corner. With `groups` the row
+// holds several runs, one per chunk, so each chunk closes and rounds its own ends.
+// The active cell tints to `ring` with a soft 3px ring.
 const WEB_RADIUS = shape.web.field;
 const WEB_SIZE: Record<Size, number> = { small: 40, base: 48, large: 56 };
 

@@ -12,7 +12,7 @@ import { type SidebarSkin } from "./sidebar.shared.js";
 // only the native SHAPE of the nav row (its radius and height), the selected-row
 // highlight (fill + label/icon color), the section heading, the frame (outer
 // column), the collapse + accordion + header/footer chrome, and the press feedback.
-// The BRAND survives on every platform (the indigo `primary`/`accent` tokens, never
+// The BRAND survives on every platform (the `primary` and `accent` tokens, never
 // a platform default), so each follows light/dark and the glass surface.
 //
 //   iOS 27 (Liquid Glass) sidebar: grouped rows; the SELECTED row is a CAPSULE
@@ -55,9 +55,9 @@ function makeColumn(radius: number, collapsedWidth: number, pad: ViewStyle) {
 // Web: the established Canvas look (lifted verbatim from the original file).
 // =============================================================================
 
-// The Riskora settings rail: a column at the card corner, rows at the control corner that are
-// 48px tall (the active one on the soft `accent` panel), a 16px section eyebrow at
-// the medium weight, 20px glyphs.
+// The settings rail: a column at the card corner, rows at the control corner that are
+// 48px tall (the active one on the soft `accent` panel), a 12/16 uppercase section
+// eyebrow at the medium weight, 20px glyphs.
 export const webSkin: SidebarSkin = {
   pressedFill: true,
   pressedOpacity: null,

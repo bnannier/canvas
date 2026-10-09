@@ -65,11 +65,11 @@ describe("Swatch accessible name", () => {
 
   it("uses the explicit accessibilityLabel when provided", () => {
     const { container } = ui(
-      <Swatch color="#4f39f6" value="--primary" accessibilityLabel="Brand indigo">
+      <Swatch color="#4f39f6" value="--primary" accessibilityLabel="Brand primary">
         primary
       </Swatch>,
     );
-    expect(rootOf(container).getAttribute("aria-label")).toBe("Brand indigo");
+    expect(rootOf(container).getAttribute("aria-label")).toBe("Brand primary");
   });
 });
 
@@ -101,7 +101,7 @@ describe("Swatch dev warning", () => {
   it("stays quiet for a text name, and for a node name that carries accessibilityLabel", () => {
     ui(<Swatch color="#4f39f6" value="--primary">primary</Swatch>);
     ui(
-      <Swatch color="#4f39f6" value="--primary" accessibilityLabel="Brand indigo">
+      <Swatch color="#4f39f6" value="--primary" accessibilityLabel="Brand primary">
         <Text>primary</Text>
       </Swatch>,
     );

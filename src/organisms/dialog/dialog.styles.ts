@@ -9,25 +9,24 @@ import { type ColorTokens, shadow, alpha, widths, shape } from "../../style/inde
 // shell renders the panel through GlassSurface, which strips the skin's fill and
 // paints the active material over its own `glass-tint`; the `popover` token itself
 // is opaque in both modes and glass never rewrites it). The BRAND
-// survives on every platform (the indigo `primary` confirm action, the
+// survives on every platform (the `primary` confirm action, the
 // `destructive` red for an irreversible confirm); only the native SHAPE, sizing,
 // title alignment, body type, footer layout, and backdrop dimming change per OS:
 //   iOS (iOS 27 / Liquid Glass alert): a centered card (28 radius, `popover`
 //     fill, NO border, soft lg shadow) over a ~0.30 black backdrop; a LEFT-aligned
 //     ~20pt/700 title, a ~15pt muted LEFT body, and a side-by-side row of CAPSULE
-//     action buttons (a gray `secondary` Cancel capsule + a `primary` indigo
+//     action buttons (a gray `secondary` Cancel capsule + a `primary`
 //     Confirm capsule; a destructive confirm is a gray capsule with `destructive`
 //     red text), NO hairline dividers; press = opacity dim (~0.8).
 //   Android (Material 3 basic dialog): a card (28 radius, `popover` elevated
 //     surface, shadow lg) over a ~0.32 black scrim; a LEFT-aligned ~22pt title,
 //     a 14sp body, and TEXT-button actions (no fill) bottom-RIGHT in a row
-//     (Cancel then Confirm) in brand-indigo text, an android_ripple on each, and
+//     (Cancel then Confirm) in `primary-text`, an android_ripple on each, and
 //     NO dividers.
-//   Web: the established Canvas look (the current dialog, lifted verbatim) — a
-//     bordered card (8 radius, `border`, `popover` fill, xl shadow) over a 0.50
-//     black backdrop; a 16pt/600 left title, a 14pt muted body, and a
-//     right-aligned action row of an outline Cancel + a primary/destructive
-//     Confirm Button.
+//   Web: a bordered card at the 18px dialog corner (`border`, `popover` fill, xl
+//     shadow) over the theme's scrim; an 18/28 medium left title, a 14/20 muted
+//     body, and a right-aligned action row of an outline Cancel + a
+//     primary/destructive Confirm Button.
 
 export type Size = "xs" | "small" | "medium" | "default" | "large" | "wide";
 
@@ -75,13 +74,13 @@ export interface DialogSkin {
    *  share the row evenly. `confirm` true for the primary/confirm capsule. */
   capsule: ((t: ColorTokens, confirm: boolean, destructive: boolean) => ViewStyle) | null;
   /** The label inside a capsule; `confirm` true for the primary confirm action
-   *  (drawn on the indigo fill), `destructive` true for an irreversible confirm
+   *  (drawn on the `primary` fill), `destructive` true for an irreversible confirm
    *  (red text on a gray capsule). */
   capsuleLabel: ((t: ColorTokens, confirm: boolean, destructive: boolean) => TextStyle) | null;
   /** Opacity applied to a pressed capsule (iOS dims; null elsewhere). */
   capsulePressedOpacity: number | null;
   // --- text-button (Android) footer pieces; null elsewhere -------------------
-  /** An Android text-button touch target (no fill, brand-indigo label). */
+  /** An Android text-button touch target (no fill, a `primary-text` label). */
   textButton: ViewStyle | null;
   /** The Android text-button label; `destructive` reds an irreversible confirm. */
   textButtonLabel: ((t: ColorTokens, destructive: boolean) => TextStyle) | null;
@@ -164,13 +163,11 @@ export function cardWidth(size: Size): ViewStyle {
   return { width: "100%", maxWidth: PANEL_MAX_WIDTH[size] };
 }
 
-// ---------- Web: the established Canvas look (lifted verbatim) ----------
-// The current dialog: a card (rounded-lg border bg-popover p-6 shadow-xl) over a
-// bg-black/50 backdrop; a 16/24 600 title, a 14/20 muted-foreground body, and a
-// right-aligned action row (gap-2, mt-6) of an outline Cancel + a primary/
+// ---------- Web: a bordered card at the dialog corner ----------
+// A card at the dialog corner (`border`, `popover` fill, the ambient xl shade) under
+// the theme's scrim; an 18/28 medium title over a 14/20 muted body, and a
+// right-aligned action row (gap 8, 24 above) of an outline Cancel + a primary/
 // destructive Confirm Button.
-// The Riskora dialog: a card at the dialog corner under the theme's scrim, the ambient xl shade,
-// an 18px medium title over muted body copy.
 export const webSkin: DialogSkin = {
   backdrop: (t) => ({ borderRadius: shape.web.dialog, backgroundColor: scrimFill(t, 0.6) }),
   card: (t) => ({
@@ -201,8 +198,8 @@ export const webSkin: DialogSkin = {
 // iOS 27 (iOS 26+ / Liquid Glass) alert: a centered card (28pt radius) over the
 // `popover` fill with NO border and a soft shadow, on a ~0.30 black backdrop; a
 // LEFT-aligned 20pt/700 title, a 15pt muted LEFT body, and a side-by-side row of
-// CAPSULE action buttons — a gray `secondary` Cancel capsule + a `primary`
-// indigo Confirm capsule, with NO hairline dividers. A destructive confirm keeps
+// CAPSULE action buttons, a gray `secondary` Cancel capsule + a `primary`
+// Confirm capsule, with NO hairline dividers. A destructive confirm keeps
 // the gray `secondary` capsule but draws its label in the `destructive` red. Each
 // capsule shares the row evenly; a pressed capsule dims (no ripple) at 0.8.
 const IOS_RADIUS = shape.ios.dialog;
@@ -231,7 +228,7 @@ export const iosSkin: DialogSkin = {
   footerKind: "capsules",
   footer: () => ({ flexDirection: "row", gap: 12, marginTop: 20 }),
   // A capsule sized to share the row evenly. The Confirm capsule fills with the
-  // indigo `primary`; Cancel and a destructive Confirm both fill with the gray
+  // `primary`; Cancel and a destructive Confirm both fill with the gray
   // `secondary` surface (the destructive variant only reds its label).
   capsule: (t, confirm, destructive) => ({
     flexGrow: 1,
@@ -270,8 +267,8 @@ export const iosSkin: DialogSkin = {
 // ---------- Android (Material 3 basic dialog): 28 radius, left title, text-button row ----------
 // M3 basic dialog: a card (28dp radius) over the `popover` ELEVATED surface (soft
 // shadow) on a ~0.32 black scrim; a LEFT-aligned ~22sp title, a 14sp body, and
-// TEXT-button actions (no fill) bottom-RIGHT in a row — Cancel then Confirm — in
-// brand-indigo text, an android_ripple on each, and NO dividers.
+// TEXT-button actions (no fill) bottom-RIGHT in a row (Cancel then Confirm) in
+// `primary-text`, an android_ripple on each, and NO dividers.
 const ANDROID_RADIUS = shape.android.dialog;
 export const androidSkin: DialogSkin = {
   backdrop: (t) => ({ borderRadius: 8, backgroundColor: scrimFill(t, 0.32) }),

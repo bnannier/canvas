@@ -10,15 +10,15 @@ import { typeScale } from "../../style/type-scale.js";
 // its solid skin remains the complete fallback, and data ink stays crisp.
 //
 // DataTable is a "Light" treatment: ONE structure (header band + flex-row grid)
-// with small per-OS touches. The BRAND survives on every platform (the tokens
-// carry the indigo brand; no platform default color leaks in); only the native
+// with small per-OS touches. The BRAND survives on every platform (the brand
+// tokens carry every color; no platform default color leaks in); only the native
 // row rhythm, header type/tracking, hairline, stripe fill, outer radius, and
 // press feedback change per OS:
-//   Web (the established Canvas / shadcn look, lifted VERBATIM): an 8-radius
-//     bordered wrap; header band on `muted` with px-16/py-8 (py-6 compact),
-//     12/16 uppercase muted-foreground labels at +0.4 tracking; data cells
-//     px-16/py-12 (py-8 compact) with 14/20 foreground text; 1px `border`
-//     hairline under each row; stripe = muted @ 30%; press = `accent` fill.
+//   Web: a bordered table takes the card corner; the header band on `muted` is
+//     soft-cornered (10px) when the table stands alone, with py-12 (py-8
+//     compact) and 14/20 medium sentence-case muted-foreground labels; data cells
+//     px-16/py-18 (py-10 compact) with 14/20 foreground text; a DASHED 1px
+//     `border` hairline under each row; stripe = muted @ 30%; press = `accent` fill.
 //     Header and data cells both carry per-cell horizontal padding (shadcn th/td
 //     px-2 class) so labels never jam, and the wrap holds a 320 width floor.
 //   iOS (SwiftUI Table / grouped-list rhythm): a 10-radius CONTINUOUS outer
@@ -163,12 +163,12 @@ const SELECT_COL: ViewStyle = {
 // A content cell: equal-width column box (padding added per density).
 const DATA_CELL: ViewStyle = { flexGrow: 1, flexShrink: 1, flexBasis: "0%" };
 
-// ---------- Web: the established Canvas look (lifted VERBATIM) ----------
-// The Riskora table: the header is a soft 10px-cornered band with sentence-case
-// medium labels, rows are 56px tall and separated by DASHED hairlines, status
+// ---------- Web: a soft header band over dashed rows ----------
+// The header is a soft 10px-cornered band with sentence-case medium labels, rows
+// are 56px tall at the regular density and separated by DASHED hairlines, status
 // reads as pills, the row kebab is a 36px square with the control corner, and a
-// bordered table takes the card corner. The band's own corners belong to
-// the STANDALONE table (Riskora floats it inside a padded card); framed by an
+// bordered table takes the card corner. The band's own corners belong to the
+// STANDALONE table; framed by an
 // outline or an `attached` parent it squares up, so the frame's corners are the
 // only rounded ones and no fill peeks out under the band's bottom corners.
 export const webSkin: DataTableSkin = {

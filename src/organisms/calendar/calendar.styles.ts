@@ -7,7 +7,7 @@ import { type ColorTokens, alpha, shadow, shape } from "../../style/index.js";
 // per-day selected/today/highlight state; the skin supplies only the native
 // SHAPE, sizing, weekday-label style, day-cell fill, today treatment, and press
 // feedback. The BRAND survives on every platform (the selected day fills with the
-// indigo `primary` token, never a platform default), so each follows light/dark.
+// `primary` token, never a platform default), so each follows light/dark.
 // The calendar frame uses static content frost in glass mode. The opaque `card`
 // token remains its solid fallback; date labels and selection states stay crisp
 // above the material. Glass swaps no semantic token.
@@ -182,7 +182,7 @@ export const webSkin: CalendarSkin = {
   pressedOpacity: 0.9,
   ripple: null,
 
-  // The Riskora date card: the card corner, a hairline, a 16px inset.
+  // The date card: the card corner, a hairline, a 16px inset.
   containerBase: {
     alignSelf: "flex-start",
     borderRadius: shape.web.card,
@@ -322,7 +322,7 @@ export const iosSkin: CalendarSkin = {
     borderRadius: shape.ios.control,
     backgroundColor: "transparent",
   },
-  // HIG: the chevrons carry the brand indigo (system-accent style), heavier glyph.
+  // HIG: the chevrons carry the brand `primary` (system-accent style), heavier glyph.
   chevronText: (t) => ({ fontSize: 22, lineHeight: 24, fontWeight: "500", color: t.primary }),
   // HIG: a bold ~17pt month/year title.
   monthLabel: (t) => ({ fontSize: 17, lineHeight: 22, fontWeight: "600", color: t.foreground }),
@@ -336,7 +336,7 @@ export const iosSkin: CalendarSkin = {
 
   dayCellBase: { alignItems: "center", justifyContent: "center", borderRadius: 9999 },
   // Selected wins: filled `primary` circle. Today (when not selected): no fill
-  // (the day label carries the brand indigo instead).
+  // (the day label carries the brand `primary-text` instead).
   dayCellState: (t, st) => (st.selected ? { backgroundColor: t.primary } : {}),
   // Selected -> `primary-foreground`; today (unselected) -> `primary` colored
   // text, semibold; otherwise plain foreground.
@@ -348,7 +348,7 @@ export const iosSkin: CalendarSkin = {
 
   // HIG month grids mark event days with a small dot under the number (~5pt).
   eventDot: { position: "absolute", bottom: 3, width: 5, height: 5, borderRadius: 9999 },
-  // Inverts on the selected `primary` fill; rides the brand indigo otherwise
+  // Inverts on the selected `primary` fill; rides the brand `primary` otherwise
   // (including on today's unfilled cell, whose label is already `primary`).
   eventDotColor: (t, st) =>
     st.selected ? { backgroundColor: t["primary-foreground"] } : { backgroundColor: t.primary },

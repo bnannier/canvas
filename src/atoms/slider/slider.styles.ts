@@ -4,7 +4,7 @@ import { type SliderSkin, type Size } from "./slider.shared.js";
 
 // Co-located Slider skins, one per platform, all driven by the brand tokens (passed
 // in from useTheme so they follow light/dark). The BRAND survives on every platform:
-// the filled range is always the indigo `primary`, never a platform default (no iOS
+// the filled range is always the `primary`, never a platform default (no iOS
 // system blue, no M3 default). Only the native SHAPE changes per OS:
 //   iOS (iOS 27 kit, Sliders symbol group): a 6pt rail with 3pt radius and Apple
 //     smooth (continuous) corners, and a 37x24pt capsule knob (borderCurve

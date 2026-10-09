@@ -181,6 +181,68 @@ describe("animation length", () => {
   });
 });
 
+describe("the brand is Dark Factory's", () => {
+  // The kit took Dark Factory's look on 2026-09-23 (CLAUDE.md, "Design language"), and the
+  // migration rewrote values while the comments describing them kept naming the brand they
+  // replaced: its corners that were no longer drawn, an "indigo" primary that is violet. A
+  // comment that names the old brand is wrong twice, about the brand and usually about the
+  // number beside it, so neither may return. Indigo stays a palette hue: a palette step, the
+  // deprecated orb key, a hue name in quotes, and Chip's `indigo` prop. This file holds the
+  // patterns themselves, so it is the one file not scanned, and it spells the old brand's
+  // name in two halves so that a search for the name finds nothing under src/, styles/ or
+  // test/.
+  const SELF = "test/design-rules-source.test.ts";
+  const OLD_BRAND = new RegExp("risk" + "ora", "i");
+  const files = [...new Glob("{src,styles,test}/**/*.{ts,tsx,md,css,html}").scanSync(ROOT)]
+    .filter((file) => file !== SELF)
+    .sort()
+    .map((file) => ({ file, text: readFileSync(join(ROOT, file), "utf8") }));
+  // Each hue-name form is struck from the line before looking, so a line that names the
+  // hue AND calls the brand indigo still fails.
+  const HUE_NAMES: [RegExp, string][] = [
+    [/\bindigo-\d+/gi, ""],
+    [/orb-indigo/gi, ""],
+    [/["'`]indigo["'`]/gi, ""],
+    [/\bindigo\?:/g, ""],
+    [/(<Chip\b[^>]*?)\bindigo\b/g, "$1"],
+    [/^\s*\/\/\s*indigo\s*$/gi, ""],
+  ];
+  const namesTheBrandIndigo = (line: string) => /indigo/i.test(HUE_NAMES.reduce((rest, [form, keep]) => rest.replace(form, keep), line));
+
+  it("scans the kit, the hand-off and the tests", () => {
+    expect(files.length).toBeGreaterThan(800);
+  });
+
+  it("tells a hue name from the brand", () => {
+    expect(namesTheBrandIndigo("  \"indigo-500\": \"#6366f1\",")).toBe(false);
+    expect(namesTheBrandIndigo("  --indigo-500:#6366f1;--indigo-600:#4f46e5;")).toBe(false);
+    expect(namesTheBrandIndigo("  <Chip indigo>Frontend</Chip>")).toBe(false);
+    expect(namesTheBrandIndigo("  indigo?: boolean;")).toBe(false);
+    expect(namesTheBrandIndigo("// the selected day fills with the indigo `primary` token")).toBe(true);
+    expect(namesTheBrandIndigo("// a `primary` indigo Confirm capsule beside an \"indigo\" chip")).toBe(true);
+  });
+
+  it("never names the brand it replaced", () => {
+    const offenders: string[] = [];
+    for (const { file, text } of files) {
+      text.split("\n").forEach((line, i) => {
+        if (OLD_BRAND.test(line)) offenders.push(`${file}:${i + 1} ${line.trim()}`);
+      });
+    }
+    expect(offenders).toEqual([]);
+  });
+
+  it("names indigo only as a palette hue, never as the primary", () => {
+    const offenders: string[] = [];
+    for (const { file, text } of files) {
+      text.split("\n").forEach((line, i) => {
+        if (namesTheBrandIndigo(line)) offenders.push(`${file}:${i + 1} ${line.trim()}`);
+      });
+    }
+    expect(offenders).toEqual([]);
+  });
+});
+
 describe("widths come from the parent", () => {
   // A component never renders AT a width of its own (src/style/sizing.ts): it is
   // FILL or HUG and the parent layout container provides the bounds. The pattern

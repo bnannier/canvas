@@ -11,7 +11,7 @@ import {
 
 // Co-located Radio skins, one per platform, all driven by the brand tokens (passed
 // in from useTheme so they follow light/dark and the glass surface). The BRAND
-// survives on every platform (the selected ring + dot are always the indigo
+// survives on every platform (the selected ring + dot are always the
 // `primary`, never a platform default), and only the native SHAPE, sizing, border
 // weight, and press feedback change per OS:
 //   iOS (HIG): no radio button at all, so a single choice is a CHECKMARK LIST (the

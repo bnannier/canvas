@@ -4,24 +4,25 @@ import { fieldBorder } from "../../style/field-colors.js";
 
 // Co-located Autocomplete skins, one per platform. An Autocomplete is a searchable
 // single-select: an editable field that filters an open option list. The BRAND
-// survives on every platform (the indigo `primary`/`accent` tokens stay; the
-// focus accent is the `ring`, never a platform default) and only the native
-// SHAPE, sizing, fill, border/underline treatment, popover elevation, and press
-// feedback change per OS. The treatment mirrors Input/Select:
-//   iOS 27 (iOS 26+/Liquid Glass): a plain field, transparent, no capsule, just
-//     a bottom hairline (`border` at rest -> brand `primary` when open); the
-//     trailing chevron is `muted-foreground`; the open list is a large
-//     continuous-corner `popover` card (~27 radius) with a soft shadow and roomy
-//     rows. Press = opacity dim (~0.8).
-//   Android (Material 3 filled): a subtle `muted` fill, TOP corners ~4 radius and
-//     a flat bottom, a bottom active-indicator underline (1dp `border` at rest ->
-//     2dp `ring` brand when open); the menu surface is a flat-cornered (~4)
-//     elevated `popover` sheet (M3 elevation, no soft drop shadow), full-width
-//     rows ~48dp tall; press = android_ripple.
-//   Web: the established Canvas look (the current field, lifted verbatim) —
-//     full 1px `input` border, 6 radius, `background` fill, h-8/9/10; the popover
-//     is a 6-radius bordered `popover` card with `shadow-lg`, 4px padding, 2-radius
-//     accent rows. Press dims nothing (the active accent fill is the feedback).
+// survives on every platform (the `primary` and `accent` tokens stay; the focus
+// accent is the `ring`, never a platform default) and only the native SHAPE,
+// sizing, fill, border/underline treatment, popover elevation, and press feedback
+// change per OS. The treatment mirrors Input/Select:
+//   iOS 27: the reference's rounded-border field (`card` fill, the 8pt field
+//     corner, a 1pt `field-border` hairline turning `ring` while active) under a
+//     stacked label, with the gray trailing caret; the open list is a 26pt
+//     continuous-corner `popover` card with a soft shadow and roomy rows. Press =
+//     opacity dim (~0.8).
+//   Android (Material 3 filled): a subtle `muted` fill, 4dp TOP corners and a
+//     flat bottom, a bottom active-indicator underline (a 1dp `muted-foreground`
+//     baseline at rest -> 2dp `ring` while active); the menu surface is a
+//     4dp-cornered elevated `popover` sheet (M3 elevation, no soft drop shadow),
+//     full-width rows ~48dp tall; press = android_ripple.
+//   Web: a stacked label over a `card` box at the 10px field corner with a 1px
+//     `field-border` hairline turning `ring` while active, 40/48/56px tall per
+//     size; the list is a bordered `popover` card at the 12px menu corner with
+//     `shadow-lg`, an 8px inset and 10px-cornered `accent` rows. Press dims
+//     nothing (the accent fill is the feedback).
 
 export type Size = "small" | "default" | "large";
 
@@ -117,7 +118,7 @@ function webText(size: Size): TextStyle {
 // Field height per size; mirrors Input's footprint per platform.
 const WEB_FIELD_BOX: Record<Size, number> = { small: 40, default: 48, large: 56 };
 
-// ---------- Web: the Riskora dashboard field + menu ----------
+// ---------- Web: a stacked label over the field box, and a bordered menu card ----------
 export const webSkin: AutocompleteSkin = {
   liquid: true,
   text: webText,
@@ -141,8 +142,8 @@ export const webSkin: AutocompleteSkin = {
     alignSelf: "stretch", alignItems: "center", justifyContent: "center", flexShrink: 0,
     width: 24, minHeight: 24,
   }),
-  // The list is the Riskora menu: a card at the menu corner with an 8px inset and
-  // 40px rows with a 10px corner (matches Select's panel).
+  // The list: a card at the menu corner with an 8px inset and 40px rows (at the
+  // default size) with a 10px corner, matching Select's panel.
   popover: (t) => ({
     maxHeight: 280,
     overflow: "hidden", // clip rows to the rounded card; the list scrolls inside
@@ -172,7 +173,7 @@ export const webSkin: AutocompleteSkin = {
   disabledOpacity: 0.5,
   pressedOpacity: null, // web shows press via the active accent fill, not opacity
   ripple: null,
-  // The label sits ABOVE the field (Riskora's form rows).
+  // The label sits ABOVE the field.
   floatingLabel: false,
 };
 
@@ -180,22 +181,24 @@ export const webSkin: AutocompleteSkin = {
 // The iOS combo box reads like SwiftUI's `.roundedBorder` text field: a subtly filled,
 // rounded rectangle (continuous corners) with a 1pt border that tints to the brand
 // `ring` when the list is open. A full border box, never a bottom underline, so it
-// reads as a native iOS field rather than the Material one. The field value, placeholder,
-// and label use the iOS-native scale (13/15/17pt). The open list is the iOS 26+
+// reads as a native iOS field rather than the Material one. The field value and
+// placeholder use the iOS-native scale (13/16/17pt), with the label above at
+// 12/14/16pt. The open list is the iOS 26+
 // menu surface: a large continuous-corner `popover` card (26 radius, matching the
 // co-located iOS Select menu) floating on a soft shadow, with roomy ~42pt rows
 // pinned to the iOS body 17pt and hairline group separators between them. Selection
 // is the leading brand check ONLY (no rest fill); the transient press highlight is
 // the neutral iOS list tint `secondary`. Press dims the field surface (~0.8); no
-// ripple. The brand survives: the open hairline, the leading check, and the
-// trailing disclosure are all the indigo `primary`, never iOS system blue.
+// ripple. The brand survives: the active hairline is the `ring` and the leading
+// check the `primary`, never iOS system blue; the trailing disclosure is the
+// reference's gray caret.
 const IOS_MENU_RADIUS = shape.ios.menu;
 // Small retains its compact typography, but its entire field must contain the
 // 44pt disclosure target: native hit testing cannot extend beyond its parent.
 const IOS_FIELD_BOX: Record<Size, number> = { small: 44, default: 44, large: 50 };
-// iOS-native field scale (matches select.styles.ts IOS_TEXT): the field value,
-// placeholder, and stacked label sit a notch larger than the brand web scale so
-// the control reads at the iOS-native footprint (13/15/17pt).
+// iOS-native field scale (matches select.styles.ts IOS_TEXT): the field value and
+// placeholder sit a notch larger than the web scale so the control reads at the
+// iOS-native footprint (13/16/17pt).
 // The reference's 16pt value (the same ladder as the Input's iOS skin).
 const IOS_TEXT: Record<Size, TextStyle> = {
   small: { fontSize: 13, lineHeight: 16 },

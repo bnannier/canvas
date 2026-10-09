@@ -614,7 +614,7 @@ describe("DataTable loading and empty states", () => {
   });
 });
 
-// The web header band: Riskora's soft 10px-cornered band when the table stands
+// The web header band: a soft 10px-cornered band when the table stands
 // alone, squared to the frame when the table is framed (its own `bordered`
 // outline, or an `attached` parent frame), so no fill peeks out under the band's
 // bottom corners inside a clipped panel.

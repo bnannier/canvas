@@ -37,7 +37,7 @@ const NATIVE_TRACK: Record<Size, { width: number; height: number }> = {
   large: { width: 56, height: 34 },
 };
 
-// Riskora's toggle: a 44x24 pill at the base size with a 20px thumb inset 2px.
+// Web: a 44x24 pill at the base size with a 20px thumb inset 2px.
 const WEB_TRACK: Record<Size, { width: number; height: number }> = {
   small: { width: 36, height: 20 },
   base: { width: 44, height: 24 },

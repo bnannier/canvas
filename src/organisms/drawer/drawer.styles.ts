@@ -99,8 +99,8 @@ function panelBase(t: ColorTokens): ViewStyle {
   return { backgroundColor: t.card, overflow: "hidden" };
 }
 
-// ---------- Web: the Riskora sheet ----------
-// An opaque `card` surface with the 30px shell corner on the edge that faces the
+// ---------- Web: an opaque sheet at the sheet corner ----------
+// An opaque `card` surface with the 22px sheet corner on the edge that faces the
 // content (the bottom sheet rounds its top corners, the side drawer its inner
 // corners), a 1px `border` hairline on that edge, the ambient xl shade, under a
 // 0.5 black scrim.

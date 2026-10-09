@@ -74,7 +74,7 @@ Native shape owed per `PLATFORM-REFERENCES.md` (iOS / Android): switch on iOS / 
 - [ ] indeterminate `mixed`
 - [ ] error
 - [ ] description anatomy
-- [ ] K9 radius mismatch
+- [x] K9 radius mismatch
 
 ## Findings
 
@@ -82,6 +82,7 @@ One row per finding. Severity: critical, high, medium, low. Cell: a capture id f
 
 | ID | Severity | Cell | Summary | Status | Fix commit |
 |---|---|---|---|---|---|
+| checkbox-k9 | low | source | K9: `shape.ios.checkbox` said 5 while the iOS skin drew the selection circle (`IOS_BOX / 2`, 11 at the base size) and the hand-off said 11px; no surface drew 5. The row is 9999 now, the iOS and Android skins read `shape.<platform>.checkbox`, the hand-off says 9999px, and test/design-rules-shape.test.ts holds every role corner to the shape table. | fixed | 65c2060d |
 
 ## Sign-off
 

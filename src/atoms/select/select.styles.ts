@@ -9,7 +9,7 @@ import { fieldBorder } from "../../style/field-colors.js";
 // the glass material and its options never have the page reading through them.
 // The BRAND survives
 // on every platform (the open/focus accent and the selected-row indicator are the
-// indigo `primary`, never a platform default); only the native SHAPE, sizing,
+// brand tokens, never a platform default); only the native SHAPE, sizing,
 // fill, border/underline treatment, and press feedback change per OS:
 //   iOS: the "iOS Mobile Input Fields" reference's country select (see
 //     input.styles.ts): the same white `card` box as the Input (8 radius, the 1pt
@@ -19,16 +19,16 @@ import { fieldBorder } from "../../style/field-colors.js";
 //     `popover`, soft shadow, ~17pt rows ~42pt tall, hairline group separators);
 //     the selected row shows a LEADING brand checkmark.
 //   Android (Material 3 exposed dropdown): a filled trigger (subtle `muted`
-//     fill, TOP corners ~4 radius, flat bottom) with a bottom active-indicator
-//     underline — 1dp `input` at rest -> 2dp `primary` when open — and a trailing
+//     fill, 4dp TOP corners, flat bottom) with a bottom active-indicator
+//     underline (1dp `muted-foreground` at rest -> 2dp `primary` when open) and a trailing
 //     chevron-down; press = android_ripple. The menu is an elevated surface
 //     (4 radius, `popover`, soft shadow); pressed rows tint with the ripple
 //     (alpha(primary, 0.12) state layer) and the selected row is tinted.
-//   Web: the established Canvas look (the current select, lifted verbatim) — a
-//     full 1px `input` border, 6 radius, `background` fill, 32/36/40 tall, a
-//     trailing ▾ chevron in `muted-foreground`; the menu is a bordered popover
-//     (6 radius, `border`, shadow-lg) and the selected row carries the `accent`
-//     fill with a LEADING ✓ in the gutter.
+//   Web: a `card` trigger at the 10px field corner with a 1px `field-border`
+//     hairline (`ring` when open), 40/48/56 tall, a trailing ▾ chevron in
+//     `muted-foreground`; the menu is a bordered popover at the 12px menu corner
+//     (`border`, shadow-lg, an 8px inset) and the selected row carries the
+//     `accent` fill with a LEADING ✓ in the gutter.
 
 export type Size = "small" | "default" | "large";
 
@@ -137,7 +137,7 @@ const TRIGGER_ROW: ViewStyle = {
 // it when hosted). The skins own the card's shape/fill/shadow only.
 export const PANEL_ANCHOR: ViewStyle = { position: "absolute", top: "100%", start: 0, end: 0, zIndex: 50, marginTop: 4 };
 
-// ---------- Web: the Riskora dashboard field + menu ----------
+// ---------- Web: a stacked label over the field box, and a bordered menu card ----------
 // Trigger height per size; mirrors the Input control's footprint (40 / 48 / 56).
 const WEB_TRIGGER_BOX: Record<Size, number> = { small: 40, default: 48, large: 56 };
 export const webSkin: SelectSkin = {
@@ -161,8 +161,8 @@ export const webSkin: SelectSkin = {
   valueText: (t, size, hasValue) => ({ color: hasValue ? t.foreground : t["muted-foreground"], ...TEXT_SIZE[size] }),
   chevron: (t, size) => ({ color: t["muted-foreground"], ...TEXT_SIZE[size] }),
   chevronGlyph: "▾",
-  // The list is the Riskora menu: a card at the menu corner with an 8px inset, 40px
-  // rows with a 10px corner, the soft panel fill marking the selected row.
+  // The list: a card at the menu corner with an 8px inset, 40px rows (at the default
+  // size) with a 10px corner, the soft `accent` fill marking the selected row.
   panel: (t) => ({
     maxHeight: 280,
     overflow: "hidden", // clip rows to the rounded card; the list scrolls inside
@@ -189,7 +189,7 @@ export const webSkin: SelectSkin = {
   disabledOpacity: 0.5,
   pressedOpacity: 0.9,
   ripple: null,
-  // The label sits ABOVE the trigger (Riskora's form rows).
+  // The label sits ABOVE the trigger.
   floatingLabel: false,
 };
 
@@ -273,7 +273,7 @@ export const iosSkin: SelectSkin = {
   rowSeparator: (t) => ({ borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: t.border }),
   optionPressed: (t) => ({ backgroundColor: t.secondary }),
   optionText: (t, _size) => ({ color: t["popover-foreground"], ...IOS_ROW_TEXT }),
-  // The selected-row checkmark is the brand indigo, LEADING-aligned (iOS 26
+  // The selected-row checkmark is the brand `primary`, LEADING-aligned (iOS 26
   // selectable menu marks the leading edge).
   indicator: (t, _size) => ({ color: t.primary, fontWeight: "600", ...IOS_ROW_TEXT }),
   selectedSide: "leading",

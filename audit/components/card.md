@@ -91,6 +91,7 @@ One row per finding. Severity: critical, high, medium, low. Cell: a capture id f
 
 | ID | Severity | Cell | Summary | Status | Fix commit |
 |---|---|---|---|---|---|
+| card-df-1 | medium | source | Dark Factory fidelity: the shared CardTitle is 20/30 at weight 400 (`title` in card.styles.ts), the pre-Dark Factory title; Dark Factory's scale has no 400-weight 20 px style, so the web card title does not take Dark Factory's look (design language item 2). Its code comment named the old brand until the brand-name guard; this row now tracks the gap. | open |  |
 
 ## Sign-off
 
