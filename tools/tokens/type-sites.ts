@@ -1,8 +1,9 @@
 /**
  * Every text size the kit's source sets, traced back to where the number is written.
  *
- * A font size reaches a Text through a `fontSize` property, through a style taken whole
- * from the type scale (`...typeScale.caption`, `labelType: typeScale.eyebrowLg`), or
+ * A font size reaches a Text through a `fontSize` property, through an SVG text's
+ * `fontSize` attribute (`<SvgText fontSize={11}>`, `fontSize="11"`), through a style taken
+ * whole from the type scale (`...typeScale.caption`, `labelType: typeScale.eyebrowLg`), or
  * through the helpers and tables a skin builds its type from (`glyphType(WEB_GLYPH[size])`,
  * `FS(11.5, 15)`, `const [fontSize] = M3_DIGIT[size]`). The reading floors are a property
  * of the text, so the place that decides a size is where its role is declared, and that
@@ -59,6 +60,14 @@ export class TypeSites extends SourceFolder {
   protected sinkOf(node: ts.Node, sf: ts.SourceFile): ts.Expression | null {
     if (ts.isPropertyAssignment(node) && nameOf(node.name) === "fontSize") return node.initializer;
     if (ts.isShorthandPropertyAssignment(node) && node.name.text === "fontSize") return node.name;
+    // An SVG text sizes itself through its attribute: `fontSize={11}` or `fontSize="11"`. An
+    // empty expression is reported as untraced; a bare `fontSize` is `true`, which no text
+    // takes (a type error), so there is no number to trace.
+    if (ts.isJsxAttribute(node) && nameOf(node.name) === "fontSize") {
+      const init = node.initializer;
+      if (!init) return null;
+      return ts.isJsxExpression(init) ? (init.expression ?? init) : init;
+    }
     // A type-scale style taken whole (spread, assigned, passed on) sets its size; a read of
     // one of its fields (`.fontSize` inside a fontSize property, `.lineHeight`) is not a
     // style of its own. The scale's own definition is the source, not a use.
