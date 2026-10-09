@@ -154,12 +154,12 @@ export interface GotoOptions {
  * over (docs/src/ui/docs-head.tsx), and that is the moment a click means anything.
  * The seeded look lands later, in a transition after hydration (so a lazy page can
  * finish hydrating its Suspense boundary first), and the app marks the look it has
- * committed as `data-look` (DocsLookMarker). The paint check alone cannot stand in for
- * that marker: the server's dark glass already reads as dark, so a dark run used to
- * return while the page still showed the server's glass and its measured layout had
- * not settled, and the a11y scans of Deploy 37895747440 caught a code block's
- * scroller there before its keyboard stop was measured. So the wait is for the
- * marker, then for the paint.
+ * committed as `data-look` (DocsLookMarker: its scheme, surface and palette). The
+ * paint check alone cannot stand in for that marker: the server's dark glass already
+ * reads as dark, so a dark run used to return while the page still showed the
+ * server's glass and its measured layout had not settled, and the a11y scans of
+ * Deploy 37895747440 caught a code block's scroller there before its keyboard stop
+ * was measured. So the wait is for the marker, then for the paint.
  *
  * `emulateMedia` matters for exactly one page: the baked static /privacy export
  * follows prefers-color-scheme, since it is plain HTML and never sees the seed.
@@ -182,7 +182,7 @@ export async function gotoDocs(page: Page, route: string, options: GotoOptions =
   const app = (await page.locator("#root").count()) > 0;
   if (app) {
     await page.locator("html[data-hydrated]").waitFor({ state: "attached", timeout: 20_000 });
-    await page.locator(`html[data-look="${scheme} ${surface}"]`).waitFor({ state: "attached", timeout: 20_000 });
+    await page.locator(`html[data-look="${scheme} ${surface} ${palette}"]`).waitFor({ state: "attached", timeout: 20_000 });
   }
   // What the poll saw decides what a failure says. A page read in the wrong look, or
   // with no opaque backdrop, has a paint problem; a page whose evaluation was still out
