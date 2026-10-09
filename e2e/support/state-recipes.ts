@@ -149,6 +149,13 @@ export interface StateRecipe {
    */
   alsoAnswers?: readonly StateName[];
   /**
+   * For a recipe that opens an overlay, the one it opens, named as the component's source
+   * names the function that renders it (tools/audit/interaction-signals.ts `Signal.overlay`):
+   * given when the source renders more than one, so each is answered by the recipe that
+   * shows it (the Calendar's `hoverCard` and `dayPeekOverlay`).
+   */
+  opens?: string;
+  /**
    * What the photograph frames: the row the state is in (the card is fitted into a viewport
    * grown to hold it, as a variant cell's is), or the viewport at the cell's own size,
    * since an open overlay can paint anywhere in it and a sheet is placed against it.
@@ -1208,6 +1215,8 @@ export interface OpenSpec {
   steady?: (page: Page, scope: Locator, panel: Locator) => Promise<{ held: boolean; reason?: string; evidence: Record<string, unknown>; flags: StateFlag[] }>;
   /** How it is closed again; Escape when not given. */
   close?: (page: Page, scope: Locator) => Promise<void>;
+  /** The overlay it opens, as the source names the function that renders it (`StateRecipe.opens`), for a component that renders more than one. */
+  opens?: string;
 }
 
 type Opened = { before: number; said: string[]; expanded: string | null } | { missing: string };
@@ -1437,6 +1446,7 @@ function open(variant: string, spec: OpenSpec, rows: readonly RowPlatform[], how
     frame: "viewport",
     how,
     ...(spec.pointerHeld ? { alsoAnswers: ["hover"] as const } : {}),
+    ...(spec.opens ? { opens: spec.opens } : {}),
     apply: (scene) => openApply(spec, scene),
     verify: (scene, opened) => openVerify(spec, scene, opened),
     release: (scene, opened) => openClose(spec, scene, opened),
@@ -1447,7 +1457,8 @@ function open(variant: string, spec: OpenSpec, rows: readonly RowPlatform[], how
  * The pointer rests on a control and opens a card (the Calendar's hover card over a timed
  * event): a hover whose effect is the card, not a lift or a wash of the control. Reached and
  * released as an opening is, from the web row at the desktop; framed against the row when
- * the card draws in it, against the viewport when it is placed against the window.
+ * the card draws in it, against the viewport when it is placed against the window. Its
+ * capture is the card open, so it also answers the opening of that overlay.
  */
 function hoverOpen(variant: string, spec: OpenSpec, how: string): StateRecipe {
   return recipe<Opened>({
@@ -1457,6 +1468,8 @@ function hoverOpen(variant: string, spec: OpenSpec, how: string): StateRecipe {
     widths: DESKTOP,
     frame: spec.where === "row" ? "row" : "viewport",
     how,
+    alsoAnswers: ["open"],
+    ...(spec.opens ? { opens: spec.opens } : {}),
     apply: (scene) => openApply(spec, scene),
     verify: (scene, opened) => openVerify(spec, scene, opened),
     release: (scene, opened) => openClose(spec, scene, opened),
@@ -1710,6 +1723,7 @@ const CALENDAR_HOVER_CARD: OpenSpec = {
   close: async (page) => {
     await page.mouse.move(NEUTRAL_POINT.x, NEUTRAL_POINT.y);
   },
+  opens: "hoverCard",
 };
 
 /** The Calendar's day peek: a press on a day with events opens its timeline beside it, a card with no role, found by its title. */
@@ -1720,6 +1734,7 @@ const CALENDAR_DAY_PEEK: OpenSpec = {
   trigger: (_page, scope) => scope.getByRole("button", { name: /^24(?:,|$)/ }).last(),
   role: { shows: /^Saturday, May 24/ },
   adds: 1,
+  opens: "dayPeekOverlay",
 };
 
 /** FilterPanel's responsive drawer: below its breakpoint the panel is a Filters (n) trigger that opens it in a Drawer. */

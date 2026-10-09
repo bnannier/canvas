@@ -196,7 +196,7 @@ function statesLine(facts: ComponentFacts): string {
   if (states.recipes.length) {
     parts.push(
       `captured: ${states.recipes
-        .map((r) => `${r.state} on ${r.label} (${r.rows.map((row) => ROW_NAMES[row] ?? row).join(", ")} ${r.rows.length > 1 ? "rows" : "row"}; ${andList([...r.widths])}${r.alsoAnswers.length ? `; also its ${andList([...r.alsoAnswers])}` : ""})`)
+        .map((r) => `${r.state} on ${r.label} (${r.rows.map((row) => ROW_NAMES[row] ?? row).join(", ")} ${r.rows.length > 1 ? "rows" : "row"}; ${andList([...r.widths])}${r.alsoAnswers.length ? `; also its ${andList([...r.alsoAnswers])}` : ""}${r.opens ? `; opens the overlay in \`${r.opens}\`` : ""})`)
         .join(", ")}`,
     );
   }
