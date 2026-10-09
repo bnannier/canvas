@@ -105,7 +105,7 @@ export const webSkin: FeedSkin = {
 export const iosSkin: FeedSkin = {
   cardSurface: (t) => ({
     width: "100%",
-    borderRadius: 12,
+    borderRadius: shape.ios.card,
     // Apple's smooth/continuous (superellipse) corners; RN iOS-only, no-op elsewhere.
     borderCurve: "continuous",
     borderWidth: 1,
@@ -154,7 +154,7 @@ export const androidSkin: FeedSkin = {
   cardSurface: (t) => ({
     width: "100%",
     // M3 medium shape (12dp), matching M3 cards and the kit's own Android Card atom.
-    borderRadius: 12,
+    borderRadius: shape.android.card,
     borderWidth: 1,
     borderColor: t.border,
     backgroundColor: t.card,

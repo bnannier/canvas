@@ -1,6 +1,6 @@
 import { primaryText } from "../../style/primary-text.js";
 import { StyleSheet, type StyleProp, type ViewStyle, type TextStyle } from "react-native";
-import { type ColorTokens, shadow, customShadow, alpha } from "../../style/index.js";
+import { type ColorTokens, shadow, customShadow, alpha, shape } from "../../style/index.js";
 import { type TabsSkin } from "./tabs.shared.js";
 
 // Co-located Tabs skins, one per platform. The shell resolves the look axis
@@ -170,7 +170,7 @@ const capsuleSkin: TabsSkin = {
       columnGap: 0,
       rowGap: wrap ? CAPSULE_INSET : 0,
       alignSelf: "flex-start",
-      borderRadius: wrap ? CAPSULE_WRAP_RADIUS : 9999,
+      borderRadius: wrap ? CAPSULE_WRAP_RADIUS : shape.web.pill,
       backgroundColor: tokens.muted,
       padding: CAPSULE_INSET,
     };
@@ -181,7 +181,7 @@ const capsuleSkin: TabsSkin = {
       alignItems: "center",
       justifyContent: "center",
       gap: 6,
-      borderRadius: 9999,
+      borderRadius: shape.web.pill,
       paddingHorizontal: 14,
       paddingVertical: CAPSULE_PILL_PAD_Y,
     };
@@ -202,7 +202,7 @@ const capsuleSkin: TabsSkin = {
       flexDirection: "row",
       alignItems: "center",
       gap: 6,
-      borderRadius: 8,
+      borderRadius: shape.web.control,
       paddingHorizontal: 12,
       paddingVertical: 9,
     };
@@ -307,7 +307,7 @@ export const androidSkin: TabsSkin = {
       alignItems: "center",
       gap: M3_PILL_INSET,
       alignSelf: "flex-start",
-      borderRadius: wrap ? M3_PILL_WRAP_RADIUS : 9999,
+      borderRadius: wrap ? M3_PILL_WRAP_RADIUS : shape.android.pill,
       backgroundColor: tokens.muted,
       padding: M3_PILL_INSET,
     };
@@ -318,7 +318,7 @@ export const androidSkin: TabsSkin = {
       alignItems: "center",
       justifyContent: "center",
       gap: 6,
-      borderRadius: 9999,
+      borderRadius: shape.android.pill,
       // clip the Material ripple to the rounded (capsule) outline
       overflow: "hidden",
       paddingHorizontal: 14,
@@ -340,7 +340,7 @@ export const androidSkin: TabsSkin = {
       flexDirection: "row",
       alignItems: "center",
       gap: 6,
-      borderRadius: 9999,
+      borderRadius: shape.android.control,
       // clip the Material ripple to the rounded outline
       overflow: "hidden",
       paddingHorizontal: 14,

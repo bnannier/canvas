@@ -1,5 +1,5 @@
 import { type ViewStyle } from "react-native";
-import { platformMinTarget, TOUCH_TARGET } from "../../style/index.js";
+import { platformMinTarget, TOUCH_TARGET, shape } from "../../style/index.js";
 import { typeScale } from "../../style/type-scale.js";
 import { type ChipSkin } from "./chip.shared.js";
 
@@ -36,7 +36,7 @@ const shell: ViewStyle = {
 const pill: ViewStyle = {
   ...shell,
   gap: 7,
-  borderRadius: 9999,
+  borderRadius: shape.web.pill,
   paddingHorizontal: 10,
   paddingVertical: 4,
 };

@@ -228,7 +228,7 @@ export const iosSkin: ActionSheetSkin = {
 // 16sp (the destructive item tints its label red). Cancel folds into the SAME
 // sheet as its last list row (no separate cancel card). Press = android_ripple
 // (neutral state layer); the sheet is flat (the scrim supplies the separation).
-const ANDROID_RADIUS = 28;
+const ANDROID_RADIUS = shape.android.sheet;
 export const androidSkin: ActionSheetSkin = {
   scrimOpacity: 0.32,
   cancelLayout: "lastRow",

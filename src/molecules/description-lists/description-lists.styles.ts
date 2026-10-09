@@ -253,7 +253,7 @@ export const iosSkin: DescriptionListSkin = {
 // Android (Material 3 outlined surface): a rounder, FLAT outlined card (no
 // shadow), 16dp inset, slightly more breathing room, and M3 type roles/tracking.
 export const androidSkin: DescriptionListSkin = {
-  cardRadius: 12,
+  cardRadius: shape.android.card,
   cardCurve: "circular",
   cardShadow: () => shadow("none"),
   rowGap: 14,

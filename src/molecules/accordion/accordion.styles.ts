@@ -108,7 +108,7 @@ export const webSkin: AccordionSkin = {
 // default iOS Accordion already IS the card surface, so `card` is a documented
 // no-op on iOS.
 const insetGroupedCard = (t: ColorTokens): ViewStyle => ({
-  borderRadius: 12,
+  borderRadius: shape.ios.card,
   borderCurve: "continuous",
   borderWidth: 1,
   borderColor: t.border,
@@ -197,7 +197,7 @@ export const androidSkin: AccordionSkin = {
   // 1dp outline on the `card` fill, elevation 0); overflow hidden clips the
   // header ripples and full-bleed dividers to the rounded corner.
   cardContainer(t) {
-    return { borderRadius: 12, borderWidth: 1, borderColor: t.border, backgroundColor: t.card, overflow: "hidden" };
+    return { borderRadius: shape.android.card, borderWidth: 1, borderColor: t.border, backgroundColor: t.card, overflow: "hidden" };
   },
   // M3 card content inset is 16dp, which the headers/content below already carry;
   // the card-mode insets are idempotent per-key overrides, kept explicit so the

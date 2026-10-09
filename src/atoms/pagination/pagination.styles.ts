@@ -1,5 +1,5 @@
 import { type ViewStyle, type TextStyle } from "react-native";
-import { type ColorTokens, type TouchTargetSkin, alpha, platformMinTarget } from "../../style/index.js";
+import { type ColorTokens, type TouchTargetSkin, alpha, platformMinTarget, shape } from "../../style/index.js";
 import { hoverFill, webHover } from "../../style/hover.js";
 
 // The Pagination skin. Neither iOS nor Material 3 ships a numbered pagination (PLATFORM-
@@ -108,7 +108,7 @@ export const gapBox: ViewStyle = { paddingHorizontal: 4 };
 // The centered-row base every cell shares (the skin layers fill, border and corners on top).
 const CELL_ROW: ViewStyle = { flexDirection: "row", alignItems: "center", justifyContent: "center" };
 
-const PILL = 9999;
+const PILL = shape.web.pill;
 
 // =============================================================================
 // Dark Factory's pager, on every platform.

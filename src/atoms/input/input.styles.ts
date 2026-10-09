@@ -309,7 +309,7 @@ export const iosSkin: InputSkin = {
 // and a bottom active-indicator underline — 1dp `border` at rest, 2dp `ring`
 // (brand) on focus, `destructive` on error. The brand survives via the focused
 // indicator color and the action suffix's primary label + ripple.
-const ANDROID_TOP_RADIUS = 4;
+const ANDROID_TOP_RADIUS = shape.android.field;
 // M3 active indicator: a VISIBLE baseline at rest (on-surface-variant ~ `muted-foreground`,
 // so the filled field stays distinct from the iOS lineless capsule), thickening to 2dp in the
 // shell-resolved brand color (ring on focus / destructive on error) when active. `gap` is the

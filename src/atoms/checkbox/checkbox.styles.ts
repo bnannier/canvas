@@ -4,9 +4,9 @@ import { type CheckboxSkin, type Size } from "./checkbox.shared.js";
 
 // Co-located Checkbox skins, one per platform, all driven by the brand tokens
 // (passed in from useTheme so they follow light/dark and the glass surface). The
-// BRAND survives on every platform (the filled box is always the indigo `primary`,
+// BRAND survives on every platform (the filled box is always the `primary` token,
 // never a platform default), and only the native SHAPE, sizing, border weight, and
-// press feedback change per OS:
+// press feedback change per OS. Each corner is the platform's `shape.checkbox`:
 //   iOS (HIG): no native checkbox, so a one-setting Checkbox is the iOS switch (the
 //     entry passes it as the Standalone part) and the box drawn here is only ever a
 //     SELECTION: the edit-mode selection circle, a 22pt ring in the control boundary
@@ -15,8 +15,8 @@ import { type CheckboxSkin, type Size } from "./checkbox.shared.js";
 //   Android (Material 3): an 18dp square with a 2dp corner radius and a 2dp outline
 //     when empty, brand fill + white check when checked; press = android_ripple over
 //     a 40dp state layer; disabled opacity 0.38.
-//   Web: the established Canvas look (the current checkbox, lifted verbatim) —
-//     14/16/20px box per size, 3 radius, 1px border, brand fill + foreground check.
+//   Web: a 16/20/24px box per size with the 6px corner and a 1px `input` border, the
+//     brand fill with the `primary-foreground` check.
 
 // Box dimensions per size.
 const WEB_BOX: Record<Size, number> = { small: 16, base: 20, large: 24 };
@@ -71,7 +71,7 @@ function boxBase(box: number, nudge: boolean): ViewStyle {
   };
 }
 
-// ---------- Web: the Riskora dashboard checkbox (a 20px box with the 6px corner) ----------
+// ---------- Web: a 20px box at the base size with the 6px corner ----------
 export const webSkin: CheckboxSkin = {
   box: (t, filled, size, nudge) => ({
     ...boxBase(WEB_BOX[size], nudge),
@@ -93,7 +93,8 @@ export const webSkin: CheckboxSkin = {
 export const iosSkin: CheckboxSkin = {
   box: (t, filled, size, nudge) => ({
     ...boxBase(IOS_BOX[size], nudge),
-    borderRadius: IOS_BOX[size] / 2,
+    // A full round on the square box: the selection circle at every size.
+    borderRadius: shape.ios.checkbox,
     // The empty ring is the control boundary (`input`, 3:1 on every surface); the
     // fill hides it when selected.
     borderWidth: 1.5,
@@ -113,7 +114,7 @@ export const iosSkin: CheckboxSkin = {
 export const androidSkin: CheckboxSkin = {
   box: (t, filled, size, nudge) => ({
     ...boxBase(ANDROID_BOX[size], nudge),
-    borderRadius: 2,
+    borderRadius: shape.android.checkbox,
     borderWidth: 2,
     ...(filled
       ? { borderColor: t.primary, backgroundColor: t.primary }

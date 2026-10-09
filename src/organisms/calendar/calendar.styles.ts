@@ -302,7 +302,7 @@ export const iosSkin: CalendarSkin = {
 
   containerBase: {
     alignSelf: "flex-start",
-    borderRadius: 12, // HIG larger corner radius
+    borderRadius: shape.ios.card,
     borderWidth: 1,
     padding: 12,
   },
@@ -319,7 +319,7 @@ export const iosSkin: CalendarSkin = {
     width: 30,
     alignItems: "center",
     justifyContent: "center",
-    borderRadius: 9999,
+    borderRadius: shape.ios.control,
     backgroundColor: "transparent",
   },
   // HIG: the chevrons carry the brand indigo (system-accent style), heavier glyph.
@@ -417,7 +417,7 @@ export const androidSkin: CalendarSkin = {
 
   containerBase: {
     alignSelf: "flex-start",
-    borderRadius: 12, // M3 large corner
+    borderRadius: shape.android.card, // M3's 12 medium shape
     borderWidth: 1,
     padding: 12,
   },
@@ -434,7 +434,7 @@ export const androidSkin: CalendarSkin = {
     width: 40,
     alignItems: "center",
     justifyContent: "center",
-    borderRadius: 9999,
+    borderRadius: shape.android.control,
     backgroundColor: "transparent",
   },
   chevronText: (t) => ({ fontSize: 22, lineHeight: 24, color: t["muted-foreground"] }),

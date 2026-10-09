@@ -1,4 +1,5 @@
 import { type TextStyle, type ViewStyle } from "react-native";
+import { shape } from "../../style/index.js";
 import { type EmblemSize } from "./emblem.shared.js";
 
 // Co-located Emblem skins. The box, icon size, and semantic tint (in the shell) are
@@ -28,7 +29,7 @@ const iconSize: Record<EmblemSize, number> = { small: 16, default: 20, large: 24
 export const webSkin: EmblemSkin = {
   box,
   iconSize,
-  radius: { small: 10, default: 12, large: 14 },
+  radius: { small: shape.web.tile - 2, default: shape.web.tile, large: shape.web.tile + 2 },
   shape: { borderCurve: "continuous" },
   monogram: { fontWeight: "700" },
 };

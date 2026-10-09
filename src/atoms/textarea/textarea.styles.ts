@@ -154,8 +154,8 @@ export const iosSkin: TextareaSkin = {
 export const androidSkin: TextareaSkin = {
   field: (t, st) => ({
     width: "100%",
-    borderTopStartRadius: 4,
-    borderTopEndRadius: 4,
+    borderTopStartRadius: shape.android.field,
+    borderTopEndRadius: shape.android.field,
     borderBottomStartRadius: 0,
     borderBottomEndRadius: 0,
     backgroundColor: t.muted,

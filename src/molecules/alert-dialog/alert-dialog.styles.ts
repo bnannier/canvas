@@ -193,7 +193,7 @@ export const webSkin: AlertDialogSkin = {
 // foreground. A destructive confirm keeps secondary fill and destructive-text. The brand
 // survives: the iOS system blue becomes the indigo `primary` token. Press = opacity
 // dim (~0.85).
-const IOS_RADIUS = 28;
+const IOS_RADIUS = shape.ios.dialog;
 const IOS_CAPSULE_RADIUS = 999;
 export const iosSkin: AlertDialogSkin = {
   backdrop: (t) => ({
@@ -282,7 +282,7 @@ export const androidSkin: AlertDialogSkin = {
     padding: 32,
   }),
   card: (t) => ({
-    borderRadius: 28,
+    borderRadius: shape.android.dialog,
     backgroundColor: t.popover,
     padding: 24,
     ...shadow("md", t),
