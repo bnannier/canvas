@@ -9,6 +9,7 @@ Audit checklist for `/components/divider`. The facts block and the variants tabl
 | Category | Atoms (`src/atoms/divider/`) |
 | Markdown | `src/atoms/divider/divider.md` |
 | Source files | `divider.android.tsx`, `divider.ios.tsx`, `divider.md`, `divider.shared.tsx`, `divider.styles.ts`, `divider.tsx` |
+| Implementation | its own source directory, `src/atoms/divider/` (5 TypeScript modules) |
 | Exports | Divider |
 | Platform entries | iOS: web build: Divider. Android: web build: Divider |
 | Platform-skins registry | none (every export is the web build, so the docs three-up renders it as is) |
@@ -20,9 +21,10 @@ Audit checklist for `/components/divider`. The facts block and the variants tabl
 | Interactions registry | in the inventory; evidence: none registered |
 | Overlay recipe | none |
 | MeasureProps | not adopted |
-| Touch target | no minTarget or useMinTargetSlop in the source modules |
-| Tests importing it | 1: `test/behavior-smoke-c.test.tsx` |
-| E2E importing or driving it | 0: none |
+| Touch target | no touch-target name (the exports of `src/style/touch-target.ts`, `src/style/touch-target-seed.ts`, `src/style/touch-seam.ts`, `src/style/clip-slop.ts`, the `TouchTargetSkin` fields, or `hitSlop`) in its implementation modules |
+| Tests importing it | 2: `test/behavior-smoke-c.test.tsx`, `test/skins-smoke.test.tsx` |
+| E2E naming it | 0: none |
+| E2E catalog sweeps | 6: `e2e/a11y/components.e2e.ts` (componentRoutes), `e2e/responsive/component-widths.e2e.ts` (contentRoutes, componentRoutes), `e2e/smoke/examples.e2e.ts` (componentExamples), `e2e/smoke/routes.e2e.ts` (allRoutes), `e2e/visual/components.e2e.ts` (componentRoutes), `e2e/visual/materials.e2e.ts` (MATERIAL_ROUTES) |
 <!-- audit:facts:end -->
 
 ## Variants

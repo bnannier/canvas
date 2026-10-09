@@ -9,6 +9,7 @@ Audit checklist for `/components/container`. The facts block and the variants ta
 | Category | Atoms (`src/atoms/container/`) |
 | Markdown | `src/atoms/container/container.md` |
 | Source files | `container.android.tsx`, `container.ios.tsx`, `container.md`, `container.shared.tsx`, `container.styles.ts`, `container.tsx` |
+| Implementation | its own source directory, `src/atoms/container/` (5 TypeScript modules) |
 | Exports | Container, containerStyle, measureOf, FLUID |
 | Platform entries | iOS: web build: Container. Android: web build: Container |
 | Platform-skins registry | none (every export is the web build, so the docs three-up renders it as is) |
@@ -20,9 +21,10 @@ Audit checklist for `/components/container`. The facts block and the variants ta
 | Interactions registry | in the inventory; evidence: none registered |
 | Overlay recipe | none |
 | MeasureProps | adopted in `container.shared.tsx` |
-| Touch target | no minTarget or useMinTargetSlop in the source modules |
+| Touch target | no touch-target name (the exports of `src/style/touch-target.ts`, `src/style/touch-target-seed.ts`, `src/style/touch-seam.ts`, `src/style/clip-slop.ts`, the `TouchTargetSkin` fields, or `hitSlop`) in its implementation modules |
 | Tests importing it | 3: `test/layout-responsive.test.tsx`, `test/layout-spans.test.tsx`, `test/sizing.test.tsx` |
-| E2E importing or driving it | 0: none |
+| E2E naming it | 0: none |
+| E2E catalog sweeps | 6: `e2e/a11y/components.e2e.ts` (componentRoutes), `e2e/responsive/component-widths.e2e.ts` (contentRoutes, componentRoutes), `e2e/smoke/examples.e2e.ts` (componentExamples), `e2e/smoke/routes.e2e.ts` (allRoutes), `e2e/visual/components.e2e.ts` (componentRoutes), `e2e/visual/materials.e2e.ts` (MATERIAL_ROUTES) |
 <!-- audit:facts:end -->
 
 ## Variants

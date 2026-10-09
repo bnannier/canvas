@@ -9,6 +9,7 @@ Audit checklist for `/components/input`. The facts block and the variants table 
 | Category | Atoms (`src/atoms/input/`) |
 | Markdown | `src/atoms/input/input.md` |
 | Source files | `input.android.tsx`, `input.ios.tsx`, `input.md`, `input.shared.tsx`, `input.styles.ts`, `input.tsx` |
+| Implementation | its own source directory, `src/atoms/input/` (5 TypeScript modules) |
 | Exports | Input |
 | Platform entries | iOS: own build: Input (builds from its own iosSkin). Android: own build: Input (builds from its own androidSkin) |
 | Platform-skins registry | iOS: Input; Android: Input |
@@ -20,9 +21,10 @@ Audit checklist for `/components/input`. The facts block and the variants table 
 | Interactions registry | in the inventory; evidence: input-password-toggle (unit-web, test/input-actions.test.tsx), input-clear (unit-web, test/input-actions.test.tsx) |
 | Overlay recipe | none |
 | MeasureProps | adopted in `input.shared.tsx` |
-| Touch target | no minTarget or useMinTargetSlop in the source modules |
-| Tests importing it | 21: `test/atom-material-roles.test.tsx`, `test/autocomplete-accessibility-return.test.tsx`, `test/autocomplete-keyboard.test.tsx`, `test/behavior-smoke-b.test.tsx`, `test/destructive-text.test.tsx`, `test/field-focus-layout.test.tsx`, `test/field-focus-states.test.tsx`, `test/field.test.tsx`, `test/floating-label-color.test.tsx`, `test/focus-ring.test.tsx`, `test/forms.test.tsx`, `test/glass-controls.test.tsx`, `test/input-actions.test.tsx`, `test/input-label.test.tsx`, `test/input-overlay-escape.test.tsx`, `test/responsive-narrow-fixes.test.tsx`, `test/sizing.test.tsx`, `test/text-contrast.test.tsx`, `test/text-entry-material.test.tsx`, `test/touch-target-clips.test.tsx`, `test/touch-target-seams.test.tsx` |
-| E2E importing or driving it | 6: `e2e/behavior/form-autocomplete.e2e.ts`, `e2e/behavior/material-overlay-host.e2e.ts`, `e2e/journeys/carousel.e2e.ts`, `e2e/journeys/keyboard.e2e.ts`, `e2e/journeys/touch.e2e.ts`, `e2e/visual/material-states.e2e.ts` |
+| Touch target | `input.shared.tsx`: hitSlop, rowSeam. `test/touch-target-coverage.test.ts` records it as covered another way: a field is 44/56 tall by skin, above both minimums; the clear and eye glyphs carry slop, split where they face each other or the value, and the grouped box carries the part that overhangs it |
+| Tests importing it | 22: `test/atom-material-roles.test.tsx`, `test/autocomplete-accessibility-return.test.tsx`, `test/autocomplete-keyboard.test.tsx`, `test/behavior-smoke-b.test.tsx`, `test/destructive-text.test.tsx`, `test/field-focus-layout.test.tsx`, `test/field-focus-states.test.tsx`, `test/field.test.tsx`, `test/floating-label-color.test.tsx`, `test/focus-ring.test.tsx`, `test/forms.test.tsx`, `test/glass-controls.test.tsx`, `test/input-actions.test.tsx`, `test/input-label.test.tsx`, `test/input-overlay-escape.test.tsx`, `test/responsive-narrow-fixes.test.tsx`, `test/sizing.test.tsx`, `test/skins-smoke.test.tsx`, `test/text-contrast.test.tsx`, `test/text-entry-material.test.tsx`, `test/touch-target-clips.test.tsx`, `test/touch-target-seams.test.tsx` |
+| E2E naming it | 6: `e2e/behavior/form-autocomplete.e2e.ts`, `e2e/behavior/material-overlay-host.e2e.ts`, `e2e/journeys/carousel.e2e.ts`, `e2e/journeys/keyboard.e2e.ts`, `e2e/journeys/touch.e2e.ts`, `e2e/visual/material-states.e2e.ts` |
+| E2E catalog sweeps | 6: `e2e/a11y/components.e2e.ts` (componentRoutes), `e2e/responsive/component-widths.e2e.ts` (contentRoutes, componentRoutes), `e2e/smoke/examples.e2e.ts` (componentExamples), `e2e/smoke/routes.e2e.ts` (allRoutes), `e2e/visual/components.e2e.ts` (componentRoutes), `e2e/visual/materials.e2e.ts` (MATERIAL_ROUTES) |
 <!-- audit:facts:end -->
 
 ## Variants

@@ -10,7 +10,8 @@ Audit checklist for `/patterns/glass`. The facts block and the variants table ar
 | Data module | `docs/src/core/data/patterns.tsx` |
 | Sections | 1. What 'glass' means in Canvas; 2. The four ingredients; 3. Surface inventory; 4. Live comparison; 5. When NOT to use glass; 6. Implementation |
 | Kit imports in the module | Accordion, Alert, Badge, Button, Card, Checkbox, CodeBlock, Column, Container, DataTable, Dialog, Field, Grid, GridItem, Input, Kbd, Progress, Row, Sidebar, Skeleton, Slider, Spinner, StackedList, Switch, Tabs, ThemeProvider, Typography, contrastRatio, useFormFactor, useTheme |
-| E2E driving it | 0: none |
+| E2E naming it | 0: none |
+| E2E catalog sweeps | 2: `e2e/responsive/component-widths.e2e.ts` (contentRoutes), `e2e/smoke/routes.e2e.ts` (allRoutes) |
 <!-- audit:facts:end -->
 
 ## Variants

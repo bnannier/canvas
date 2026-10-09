@@ -10,7 +10,8 @@ Audit checklist for `/patterns/form-validation`. The facts block and the variant
 | Data module | `docs/src/core/data/patterns.tsx` |
 | Sections | 1. States; 2. Validation lifecycle; 3. Example form; 4. Production stack |
 | Kit imports in the module | Accordion, Alert, Badge, Button, Card, Checkbox, CodeBlock, Column, Container, DataTable, Dialog, Field, Grid, GridItem, Input, Kbd, Progress, Row, Sidebar, Skeleton, Slider, Spinner, StackedList, Switch, Tabs, ThemeProvider, Typography, contrastRatio, useFormFactor, useTheme |
-| E2E driving it | 0: none |
+| E2E naming it | 0: none |
+| E2E catalog sweeps | 2: `e2e/responsive/component-widths.e2e.ts` (contentRoutes), `e2e/smoke/routes.e2e.ts` (allRoutes) |
 <!-- audit:facts:end -->
 
 ## Variants

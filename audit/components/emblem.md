@@ -9,6 +9,7 @@ Audit checklist for `/components/emblem`. The facts block and the variants table
 | Category | Atoms (`src/atoms/emblem/`) |
 | Markdown | `src/atoms/emblem/emblem.md` |
 | Source files | `emblem.android.tsx`, `emblem.ios.tsx`, `emblem.md`, `emblem.shared.tsx`, `emblem.styles.ts`, `emblem.tsx` |
+| Implementation | its own source directory, `src/atoms/emblem/` (5 TypeScript modules) |
 | Exports | Emblem |
 | Platform entries | iOS: web build: Emblem. Android: web build: Emblem |
 | Platform-skins registry | none (every export is the web build, so the docs three-up renders it as is) |
@@ -20,9 +21,10 @@ Audit checklist for `/components/emblem`. The facts block and the variants table
 | Interactions registry | in the inventory; evidence: none registered |
 | Overlay recipe | none |
 | MeasureProps | not adopted |
-| Touch target | no minTarget or useMinTargetSlop in the source modules |
-| Tests importing it | 4: `test/atom-material-roles.test.tsx`, `test/color-overrides.test.tsx`, `test/new-components.test.tsx`, `test/primary-text.test.tsx` |
-| E2E importing or driving it | 0: none |
+| Touch target | no touch-target name (the exports of `src/style/touch-target.ts`, `src/style/touch-target-seed.ts`, `src/style/touch-seam.ts`, `src/style/clip-slop.ts`, the `TouchTargetSkin` fields, or `hitSlop`) in its implementation modules |
+| Tests importing it | 5: `test/atom-material-roles.test.tsx`, `test/color-overrides.test.tsx`, `test/new-components.test.tsx`, `test/primary-text.test.tsx`, `test/skins-smoke.test.tsx` |
+| E2E naming it | 0: none |
+| E2E catalog sweeps | 6: `e2e/a11y/components.e2e.ts` (componentRoutes), `e2e/responsive/component-widths.e2e.ts` (contentRoutes, componentRoutes), `e2e/smoke/examples.e2e.ts` (componentExamples), `e2e/smoke/routes.e2e.ts` (allRoutes), `e2e/visual/components.e2e.ts` (componentRoutes), `e2e/visual/materials.e2e.ts` (MATERIAL_ROUTES) |
 <!-- audit:facts:end -->
 
 ## Variants

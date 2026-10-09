@@ -9,6 +9,7 @@ Audit checklist for `/components/avatar`. The facts block and the variants table
 | Category | Atoms (`src/atoms/avatar/`) |
 | Markdown | `src/atoms/avatar/avatar.md` |
 | Source files | `avatar-menu.shared.tsx`, `avatar.android.tsx`, `avatar.ios.tsx`, `avatar.md`, `avatar.shared.tsx`, `avatar.styles.ts`, `avatar.tsx` |
+| Implementation | its own source directory, `src/atoms/avatar/` (6 TypeScript modules) |
 | Exports | Avatar, AvatarGroup, AvatarMenu |
 | Platform entries | iOS: web build: Avatar, AvatarGroup; own build: AvatarMenu (builds a part from dropdown's own iosSkin (../dropdown/dropdown.styles.js)). Android: web build: Avatar, AvatarGroup; own build: AvatarMenu (builds a part from dropdown's own androidSkin (../dropdown/dropdown.styles.js)) |
 | Platform-skins registry | iOS: AvatarMenu; Android: AvatarMenu |
@@ -20,9 +21,10 @@ Audit checklist for `/components/avatar`. The facts block and the variants table
 | Interactions registry | in the inventory; evidence: none registered |
 | Overlay recipe | none |
 | MeasureProps | not adopted |
-| Touch target | useMinTargetSlop in none; minTarget in `avatar.shared.tsx`, `avatar.styles.ts` |
+| Touch target | `avatar.shared.tsx`: hitSlop, minTarget; `avatar.styles.ts`: minTarget, platformMinTarget |
 | Tests importing it | 9: `test/a11y-state.test.tsx`, `test/atom-material-feedback.test.tsx`, `test/atom-material-roles.test.tsx`, `test/avatar-menu.test.tsx`, `test/dense-overlays.test.tsx`, `test/new-components.test.tsx`, `test/no-console-violations.test.tsx`, `test/skins-smoke.test.tsx`, `test/text-contrast.test.tsx` |
-| E2E importing or driving it | 1: `e2e/a11y/structure.e2e.ts` |
+| E2E naming it | 1: `e2e/a11y/structure.e2e.ts` |
+| E2E catalog sweeps | 6: `e2e/a11y/components.e2e.ts` (componentRoutes), `e2e/responsive/component-widths.e2e.ts` (contentRoutes, componentRoutes), `e2e/smoke/examples.e2e.ts` (componentExamples), `e2e/smoke/routes.e2e.ts` (allRoutes), `e2e/visual/components.e2e.ts` (componentRoutes), `e2e/visual/materials.e2e.ts` (MATERIAL_ROUTES) |
 <!-- audit:facts:end -->
 
 ## Variants

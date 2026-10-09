@@ -9,6 +9,7 @@ Audit checklist for `/components/board`. The facts block and the variants table 
 | Category | Organisms (`src/organisms/board/`) |
 | Markdown | `src/organisms/board/board.md` |
 | Source files | `board.android.tsx`, `board.ios.tsx`, `board.logic.ts`, `board.md`, `board.shared.tsx`, `board.styles.ts`, `board.tsx`, `board.types.ts` |
+| Implementation | its own source directory, `src/organisms/board/` (7 TypeScript modules) |
 | Exports | Board, applyBoardMove |
 | Platform entries | iOS: own build: Board (builds from its own iosSkin; injects platform parts (../drag-drop/drag-drop.ios.js); injects platform parts (../../molecules/card/card.ios.js); injects platform parts (../row-menu/row-menu.ios.js)). Android: own build: Board (builds from its own androidSkin; injects platform parts (../drag-drop/drag-drop.android.js); injects platform parts (../../molecules/card/card.android.js); injects platform parts (../row-menu/row-menu.android.js)) |
 | Platform-skins registry | iOS: Board; Android: Board |
@@ -20,9 +21,10 @@ Audit checklist for `/components/board`. The facts block and the variants table 
 | Interactions registry | in the inventory; evidence: none registered |
 | Overlay recipe | none |
 | MeasureProps | not adopted |
-| Touch target | no minTarget or useMinTargetSlop in the source modules |
-| Tests importing it | 5: `test/board-logic.test.ts`, `test/board.test.tsx`, `test/horizontal-scroller-drag.test.tsx`, `test/no-console-violations.test.tsx`, `test/touch-target-seams.test.tsx` |
-| E2E importing or driving it | 0: none |
+| Touch target | `board.shared.tsx`: SeamLimitProvider, splitSeam. `test/touch-target-coverage.test.ts` records it as known gap: the column and card affordances render 32x32 |
+| Tests importing it | 6: `test/board-logic.test.ts`, `test/board.test.tsx`, `test/horizontal-scroller-drag.test.tsx`, `test/no-console-violations.test.tsx`, `test/skins-smoke.test.tsx`, `test/touch-target-seams.test.tsx` |
+| E2E naming it | 0: none |
+| E2E catalog sweeps | 6: `e2e/a11y/components.e2e.ts` (componentRoutes), `e2e/responsive/component-widths.e2e.ts` (contentRoutes, componentRoutes), `e2e/smoke/examples.e2e.ts` (componentExamples), `e2e/smoke/routes.e2e.ts` (allRoutes), `e2e/visual/components.e2e.ts` (componentRoutes), `e2e/visual/materials.e2e.ts` (MATERIAL_ROUTES) |
 <!-- audit:facts:end -->
 
 ## Variants

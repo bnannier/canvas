@@ -10,7 +10,8 @@ Audit checklist for `/templates/pricing`. The facts block and the variants table
 | Data module | `docs/src/core/data/templates/pricing.tsx` |
 | Sections | 1. Plan tiers; 2. Feature comparison; 3. Billing FAQ |
 | Kit imports in the module | Accordion, Badge, Button, Card, Column, DataTable, Grid, Icon, Row, Tabs, ToastOptions, Typography, useToast |
-| E2E driving it | 0: none |
+| E2E naming it | 0: none |
+| E2E catalog sweeps | 3: `e2e/behavior/hydration-ids.e2e.ts` (contentRoutes), `e2e/responsive/component-widths.e2e.ts` (contentRoutes), `e2e/smoke/routes.e2e.ts` (allRoutes) |
 <!-- audit:facts:end -->
 
 ## Variants

@@ -9,6 +9,7 @@ Audit checklist for `/components/listbox`. The facts block and the variants tabl
 | Category | Atoms (`src/atoms/listbox/`) |
 | Markdown | `src/atoms/listbox/listbox.md` |
 | Source files | `listbox.android.tsx`, `listbox.ios.tsx`, `listbox.md`, `listbox.shared.tsx`, `listbox.styles.ts`, `listbox.tsx` |
+| Implementation | its own source directory, `src/atoms/listbox/` (5 TypeScript modules) |
 | Exports | Listbox |
 | Platform entries | iOS: own build: Listbox (builds from its own iosSkin). Android: own build: Listbox (injects platform parts (../checkbox/indicator/index.android.js)) |
 | Platform-skins registry | iOS: Listbox; Android: Listbox |
@@ -20,9 +21,10 @@ Audit checklist for `/components/listbox`. The facts block and the variants tabl
 | Interactions registry | in the inventory; evidence: listbox-keyboard (browser-keyboard, e2e/journeys/keyboard.e2e.ts), listbox-touch (browser-touch, e2e/journeys/touch.e2e.ts), listbox-selection (unit-web, test/behavior.test.tsx) |
 | Overlay recipe | none |
 | MeasureProps | adopted in `listbox.shared.tsx` |
-| Touch target | no minTarget or useMinTargetSlop in the source modules |
+| Touch target | no touch-target name (the exports of `src/style/touch-target.ts`, `src/style/touch-target-seed.ts`, `src/style/touch-seam.ts`, `src/style/clip-slop.ts`, the `TouchTargetSkin` fields, or `hitSlop`) in its implementation modules. `test/touch-target-coverage.test.ts` records it as known gap: rows render 33 tall (Dark Factory's menu row) and declare no minimum on any platform |
 | Tests importing it | 10: `test/a11y-state.test.tsx`, `test/behavior.test.tsx`, `test/focus-runtime.test.tsx`, `test/keyboard-nav.test.tsx`, `test/listbox-a11y.test.tsx`, `test/native-focus-fixtures.test.tsx`, `test/no-console-violations.test.tsx`, `test/option-list-idiom.test.tsx`, `test/sizing.test.tsx`, `test/skins-smoke.test.tsx` |
-| E2E importing or driving it | 3: `e2e/behavior/listbox.e2e.ts`, `e2e/journeys/keyboard.e2e.ts`, `e2e/journeys/touch.e2e.ts` |
+| E2E naming it | 3: `e2e/behavior/listbox.e2e.ts`, `e2e/journeys/keyboard.e2e.ts`, `e2e/journeys/touch.e2e.ts` |
+| E2E catalog sweeps | 6: `e2e/a11y/components.e2e.ts` (componentRoutes), `e2e/responsive/component-widths.e2e.ts` (contentRoutes, componentRoutes), `e2e/smoke/examples.e2e.ts` (componentExamples), `e2e/smoke/routes.e2e.ts` (allRoutes), `e2e/visual/components.e2e.ts` (componentRoutes), `e2e/visual/materials.e2e.ts` (MATERIAL_ROUTES) |
 <!-- audit:facts:end -->
 
 ## Variants

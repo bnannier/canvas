@@ -9,6 +9,7 @@ Audit checklist for `/components/pagination`. The facts block and the variants t
 | Category | Atoms (`src/atoms/pagination/`) |
 | Markdown | `src/atoms/pagination/pagination.md` |
 | Source files | `pagination.android.tsx`, `pagination.ios.tsx`, `pagination.md`, `pagination.shared.tsx`, `pagination.styles.ts`, `pagination.tsx` |
+| Implementation | its own source directory, `src/atoms/pagination/` (5 TypeScript modules) |
 | Exports | Pagination |
 | Platform entries | iOS: web build: Pagination. Android: web build: Pagination |
 | Platform-skins registry | none (every export is the web build, so the docs three-up renders it as is) |
@@ -20,9 +21,10 @@ Audit checklist for `/components/pagination`. The facts block and the variants t
 | Interactions registry | in the inventory; evidence: pagination-press (unit-web, test/behavior.test.tsx) |
 | Overlay recipe | none |
 | MeasureProps | not adopted |
-| Touch target | useMinTargetSlop in none; minTarget in `pagination.shared.tsx`, `pagination.styles.ts` |
-| Tests importing it | 8: `test/behavior.test.tsx`, `test/focus-ring.test.tsx`, `test/glass-controls.test.tsx`, `test/native-focus-fixtures.test.tsx`, `test/no-console-violations.test.tsx`, `test/pagination-look.test.tsx`, `test/text-contrast.test.tsx`, `test/touch-target-seed.test.tsx` |
-| E2E importing or driving it | 0: none |
+| Touch target | `pagination.shared.tsx`: hitSlop, minTarget, styleBox, useSeededMinTargetSlop; `pagination.styles.ts`: minTarget, platformMinTarget |
+| Tests importing it | 9: `test/behavior.test.tsx`, `test/focus-ring.test.tsx`, `test/glass-controls.test.tsx`, `test/native-focus-fixtures.test.tsx`, `test/no-console-violations.test.tsx`, `test/pagination-look.test.tsx`, `test/skins-smoke.test.tsx`, `test/text-contrast.test.tsx`, `test/touch-target-seed.test.tsx` |
+| E2E naming it | 0: none |
+| E2E catalog sweeps | 6: `e2e/a11y/components.e2e.ts` (componentRoutes), `e2e/responsive/component-widths.e2e.ts` (contentRoutes, componentRoutes), `e2e/smoke/examples.e2e.ts` (componentExamples), `e2e/smoke/routes.e2e.ts` (allRoutes), `e2e/visual/components.e2e.ts` (componentRoutes), `e2e/visual/materials.e2e.ts` (MATERIAL_ROUTES) |
 <!-- audit:facts:end -->
 
 ## Variants

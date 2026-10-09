@@ -9,6 +9,7 @@ Audit checklist for `/components/button-group`. The facts block and the variants
 | Category | Atoms (`src/atoms/button-group/`) |
 | Markdown | `src/atoms/button-group/button-group.md` |
 | Source files | `button-group-glass.tsx`, `button-group.android.tsx`, `button-group.ios.tsx`, `button-group.md`, `button-group.shared.tsx`, `button-group.styles.ts`, `button-group.tsx` |
+| Implementation | its own source directory, `src/atoms/button-group/` (6 TypeScript modules) |
 | Exports | ButtonGroup |
 | Platform entries | iOS: own build: ButtonGroup (builds from its own iosSkin). Android: own build: ButtonGroup (builds from its own androidSkin) |
 | Platform-skins registry | iOS: ButtonGroup; Android: ButtonGroup |
@@ -20,9 +21,10 @@ Audit checklist for `/components/button-group`. The facts block and the variants
 | Interactions registry | in the inventory; evidence: button-group-selection (unit-web, test/behavior.test.tsx) |
 | Overlay recipe | none |
 | MeasureProps | adopted in `button-group.shared.tsx` |
-| Touch target | no minTarget or useMinTargetSlop in the source modules |
-| Tests importing it | 13: `test/action-role.test.tsx`, `test/anchored-overlay-dismissal.test.tsx`, `test/atom-material-roles.test.tsx`, `test/behavior.test.tsx`, `test/button-group-glass.test.tsx`, `test/button-group-look.test.tsx`, `test/dense-overlays.test.tsx`, `test/hosted-trigger-focus.test.tsx`, `test/native-accessibility-escape-hosts.test.tsx`, `test/native-material-coordinate-hosts.test.tsx`, `test/no-console-violations.test.tsx`, `test/sizing.test.tsx`, `test/text-contrast.test.tsx` |
-| E2E importing or driving it | 2: `e2e/behavior/material-overlay-host.e2e.ts`, `e2e/visual/material-states.e2e.ts` |
+| Touch target | no touch-target name (the exports of `src/style/touch-target.ts`, `src/style/touch-target-seed.ts`, `src/style/touch-seam.ts`, `src/style/clip-slop.ts`, the `TouchTargetSkin` fields, or `hitSlop`) in its implementation modules. `test/touch-target-coverage.test.ts` records it as known gap: segments render 47x32; they abut, so the fix is vertical slop |
+| Tests importing it | 14: `test/action-role.test.tsx`, `test/anchored-overlay-dismissal.test.tsx`, `test/atom-material-roles.test.tsx`, `test/behavior.test.tsx`, `test/button-group-glass.test.tsx`, `test/button-group-look.test.tsx`, `test/dense-overlays.test.tsx`, `test/hosted-trigger-focus.test.tsx`, `test/native-accessibility-escape-hosts.test.tsx`, `test/native-material-coordinate-hosts.test.tsx`, `test/no-console-violations.test.tsx`, `test/sizing.test.tsx`, `test/skins-smoke.test.tsx`, `test/text-contrast.test.tsx` |
+| E2E naming it | 2: `e2e/behavior/material-overlay-host.e2e.ts`, `e2e/visual/material-states.e2e.ts` |
+| E2E catalog sweeps | 6: `e2e/a11y/components.e2e.ts` (componentRoutes), `e2e/responsive/component-widths.e2e.ts` (contentRoutes, componentRoutes), `e2e/smoke/examples.e2e.ts` (componentExamples), `e2e/smoke/routes.e2e.ts` (allRoutes), `e2e/visual/components.e2e.ts` (componentRoutes), `e2e/visual/materials.e2e.ts` (MATERIAL_ROUTES) |
 <!-- audit:facts:end -->
 
 ## Variants

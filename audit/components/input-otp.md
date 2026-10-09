@@ -9,6 +9,7 @@ Audit checklist for `/components/input-otp`. The facts block and the variants ta
 | Category | Atoms (`src/atoms/input-otp/`) |
 | Markdown | `src/atoms/input-otp/input-otp.md` |
 | Source files | `input-otp.android.tsx`, `input-otp.ios.tsx`, `input-otp.md`, `input-otp.shared.tsx`, `input-otp.styles.ts`, `input-otp.tsx` |
+| Implementation | its own source directory, `src/atoms/input-otp/` (5 TypeScript modules) |
 | Exports | InputOTP |
 | Platform entries | iOS: own build: InputOTP (builds from its own iosSkin). Android: own build: InputOTP (builds from its own androidSkin) |
 | Platform-skins registry | iOS: InputOTP; Android: InputOTP |
@@ -20,9 +21,10 @@ Audit checklist for `/components/input-otp`. The facts block and the variants ta
 | Interactions registry | in the inventory; evidence: none registered |
 | Overlay recipe | none |
 | MeasureProps | not adopted |
-| Touch target | no minTarget or useMinTargetSlop in the source modules |
-| Tests importing it | 2: `test/components-extra.test.tsx`, `test/text-entry-material.test.tsx` |
-| E2E importing or driving it | 0: none |
+| Touch target | no touch-target name (the exports of `src/style/touch-target.ts`, `src/style/touch-target-seed.ts`, `src/style/touch-seam.ts`, `src/style/clip-slop.ts`, the `TouchTargetSkin` fields, or `hitSlop`) in its implementation modules |
+| Tests importing it | 3: `test/components-extra.test.tsx`, `test/skins-smoke.test.tsx`, `test/text-entry-material.test.tsx` |
+| E2E naming it | 0: none |
+| E2E catalog sweeps | 6: `e2e/a11y/components.e2e.ts` (componentRoutes), `e2e/responsive/component-widths.e2e.ts` (contentRoutes, componentRoutes), `e2e/smoke/examples.e2e.ts` (componentExamples), `e2e/smoke/routes.e2e.ts` (allRoutes), `e2e/visual/components.e2e.ts` (componentRoutes), `e2e/visual/materials.e2e.ts` (MATERIAL_ROUTES) |
 <!-- audit:facts:end -->
 
 ## Variants

@@ -9,6 +9,7 @@ Audit checklist for `/components/field`. The facts block and the variants table 
 | Category | Molecules (`src/molecules/field/`) |
 | Markdown | `src/molecules/field/field.md` |
 | Source files | `field.android.tsx`, `field.ios.tsx`, `field.md`, `field.shared.tsx`, `field.styles.ts`, `field.tsx` |
+| Implementation | its own source directory, `src/molecules/field/` (5 TypeScript modules) |
 | Exports | Field |
 | Platform entries | iOS: own build: Field (builds from its own iosSkin; injects platform parts (../../atoms/input/input.ios.js); injects platform parts (../../atoms/textarea/textarea.ios.js); injects platform parts (../../atoms/select/select.ios.js); injects platform parts (../../atoms/autocomplete/autocomplete.ios.js); injects platform parts (../phone-input/phone-input.ios.js)). Android: own build: Field (builds from its own androidSkin; injects platform parts (../../atoms/input/input.android.js); injects platform parts (../../atoms/textarea/textarea.android.js); injects platform parts (../../atoms/select/select.android.js); injects platform parts (../../atoms/autocomplete/autocomplete.android.js); injects platform parts (../phone-input/phone-input.android.js)) |
 | Platform-skins registry | iOS: Field; Android: Field |
@@ -20,9 +21,10 @@ Audit checklist for `/components/field`. The facts block and the variants table 
 | Interactions registry | in the inventory; evidence: none registered |
 | Overlay recipe | none |
 | MeasureProps | adopted in `field.shared.tsx` |
-| Touch target | no minTarget or useMinTargetSlop in the source modules |
-| Tests importing it | 5: `test/destructive-text-components.test.tsx`, `test/destructive-text.test.tsx`, `test/field.test.tsx`, `test/phone-input.test.tsx`, `test/sizing.test.tsx` |
-| E2E importing or driving it | 0: none |
+| Touch target | no touch-target name (the exports of `src/style/touch-target.ts`, `src/style/touch-target-seed.ts`, `src/style/touch-seam.ts`, `src/style/clip-slop.ts`, the `TouchTargetSkin` fields, or `hitSlop`) in its implementation modules |
+| Tests importing it | 6: `test/destructive-text-components.test.tsx`, `test/destructive-text.test.tsx`, `test/field.test.tsx`, `test/phone-input.test.tsx`, `test/sizing.test.tsx`, `test/skins-smoke.test.tsx` |
+| E2E naming it | 0: none |
+| E2E catalog sweeps | 6: `e2e/a11y/components.e2e.ts` (componentRoutes), `e2e/responsive/component-widths.e2e.ts` (contentRoutes, componentRoutes), `e2e/smoke/examples.e2e.ts` (componentExamples), `e2e/smoke/routes.e2e.ts` (allRoutes), `e2e/visual/components.e2e.ts` (componentRoutes), `e2e/visual/materials.e2e.ts` (MATERIAL_ROUTES) |
 <!-- audit:facts:end -->
 
 ## Variants

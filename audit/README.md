@@ -32,8 +32,12 @@ route. Each file is half generated and half hand-maintained:
 
 - **Facts** (generated, between `<!-- audit:facts:begin -->` and `<!-- audit:facts:end -->`):
   what the repo's own records say about the component, gathered by `tools/audit/facts.ts`
-  with no React Native import. Its route, source files, markdown and exports; which of its
-  builds differ per platform (`tools/skins/divergence.ts`, read per export) and which are in
+  with no React Native import. Its route, source files, markdown and exports; where it is
+  built (its own source directory, or, for the raw primitives whose directory holds only
+  markdown, the kit module the kit's `src/index.ts` leads its name to, `src/style/text.tsx`
+  for Text and TextInput and `src/style/pressable.tsx` for Pressable, or React Native's own
+  View and ScrollView, re-exported from `src/style/primitives.ts`); which of its builds
+  differ per platform (`tools/skins/divergence.ts`, read per export) and which are in
   the docs' platform-skin registry; its row in `PLATFORM-REFERENCES.md` (treatment, build,
   and whether each platform cell is a real reference link or a `none` note); its
   `tools/materials/manifest.ts` entries; its hand-off parity records split into open gaps,
@@ -44,14 +48,28 @@ route. Each file is half generated and half hand-maintained:
   surface, so the facts read `dist/` and `bun run build` comes first); its interaction
   evidence and overlay recipe; the test files importing it (one of its exports imported
   from the kit, or any module in its source directory, so a `View` imported from
-  `react-native` or the word "Text" in a test does not count); the e2e files importing it
-  by the same rule, or driving the exact route of its docs page or of a hidden `/testing/*`
-  harness page whose module or fixtures render it (a string in code, not a comment, with
-  the route followed by a character that cannot continue a slug, so
-  `/components/button-group` does not credit Button); and its `MeasureProps`, `minTarget`
-  and `useMinTargetSlop` adoption, read as identifiers in the code of its TypeScript
-  modules (nested ones included, tests and the markdown left out).
-  `bun tools/audit/facts.ts <slug>` prints the same as JSON.
+  `react-native` or the word "Text" in a test does not count; a table-driven import, such as
+  the skins smoke test's ``import(`../src/${c.dir}/${c.file}${suffix}.tsx`)`` and
+  `mod[c.name]` over its CASES table, is read row by row by a static reader,
+  `tools/audit/static-eval.ts`, that never runs the code and never guesses); the e2e files
+  naming it, by the same import rule, or by the exact route of its docs page or of a hidden
+  `/testing/*` harness page whose module or fixtures render it, in a string their code
+  holds or the static reader can build (`/components/${slug}` over a literal list of slugs;
+  not a comment, and with the route followed by a character that cannot continue a slug,
+  so `/components/button-group` does not credit Button); separately, the e2e catalog
+  sweeps that drive it, the specs that loop over a whole catalog of docs routes
+  (`componentRoutes()`, `contentRoutes()`, `allRoutes()`, `componentExamples()`,
+  `MATERIAL_ROUTES`, the overlay recipes; `tools/audit/sweeps.ts`) and navigate to each
+  row's route, with the catalog each one iterates (a loop over a catalog that only checks
+  its data drives nothing, and one the reader cannot follow fails the generator rather than
+  under-report); its `MeasureProps` adoption; and its touch-target vocabulary: every value
+  `src/style/touch-target.ts`, `touch-target-seed.ts`, `touch-seam.ts` and `clip-slop.ts`
+  export, the `TouchTargetSkin` field `minTarget`, and `hitSlop`, per module, with
+  `test/touch-target-coverage.test.ts`'s record of how a pressable that declares no
+  `minTarget` meets the floor (or the gap it is known to have). The source facts are read
+  as identifiers in the code of its implementation's TypeScript modules (nested ones
+  included, tests and the markdown left out). `bun tools/audit/facts.ts <slug>` prints the
+  same as JSON.
 - **Variants** (generated, between `<!-- audit:variants:begin -->` and
   `<!-- audit:variants:end -->`): one row per variant with a tick cell per platform (Web 18,
   iOS 6, Android 6) and a notes cell. Rows are merged by variant key on regeneration, so
@@ -75,7 +93,8 @@ route. Each file is half generated and half hand-maintained:
   `tools/audit/plan-specifics.ts`, so a new checklist always starts from the same text.
 - **Findings** (hand-maintained): one row per finding with id, severity, cell, summary,
   status (`open`, `verified`, `fixed`, `wontfix` with the owner's reason, `duplicate`) and
-  the fix commit, which may be left off until there is one.
+  the fix commit, a commit SHA (7 to 40 hex digits), which may be left off until there is
+  one and is required once the status is `fixed`.
 - **Sign-off** (hand-maintained): one row per platform with the run id of the after-capture
   run that shows the component passing, the reviewer, the date and the result.
 
@@ -83,7 +102,8 @@ Every table is read with one reader (`tools/audit/table.ts`): cells split on une
 pipes only, an empty cell typed `| |` is an empty cell, and a `|` typed in a free-text
 column (a variant's note, a finding's summary, a sign-off's result) stays in that cell.
 A row it cannot read (too few cells, a severity or status that is not one of the table's
-words, an ID or platform twice, a row below the blank line that ends the table) is
+words, a `fixed` finding with no fix commit, a fix commit that is not a SHA, an ID or
+platform twice, a row below the blank line that ends the table) is
 named by line by `audit:checklists:check` and listed under `audit:status`'s counts, never
 dropped from them silently.
 

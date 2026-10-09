@@ -9,6 +9,7 @@ Audit checklist for `/components/carousel`. The facts block and the variants tab
 | Category | Organisms (`src/organisms/carousel/`) |
 | Markdown | `src/organisms/carousel/carousel.md` |
 | Source files | `carousel.android.tsx`, `carousel.ios.tsx`, `carousel.md`, `carousel.shared.tsx`, `carousel.styles.ts`, `carousel.tsx` |
+| Implementation | its own source directory, `src/organisms/carousel/` (5 TypeScript modules) |
 | Exports | Carousel |
 | Platform entries | iOS: own build: Carousel (builds from its own iosSkin). Android: own build: Carousel (builds from its own androidSkin) |
 | Platform-skins registry | iOS: Carousel; Android: Carousel |
@@ -20,9 +21,10 @@ Audit checklist for `/components/carousel`. The facts block and the variants tab
 | Interactions registry | in the inventory; evidence: none registered |
 | Overlay recipe | none |
 | MeasureProps | not adopted |
-| Touch target | no minTarget or useMinTargetSlop in the source modules |
-| Tests importing it | 7: `test/carousel-arrows.test.tsx`, `test/carousel-keyboard.test.tsx`, `test/carousel-slide-identity.test.tsx`, `test/components-extra.test.tsx`, `test/native-carousel-fixture.test.tsx`, `test/organism-material-roles.test.tsx`, `test/scroll-frame-ring.test.tsx` |
-| E2E importing or driving it | 6: `e2e/behavior/prerendered-location.e2e.ts`, `e2e/behavior/scroll-focus.e2e.ts`, `e2e/journeys/carousel.e2e.ts`, `e2e/journeys/fonts.e2e.ts`, `e2e/journeys/keyboard.e2e.ts`, `e2e/journeys/touch.e2e.ts` |
+| Touch target | `carousel.shared.tsx`: hitSlop. `test/touch-target-coverage.test.ts` records it as covered another way: hitSlop on the dots and the arrows |
+| Tests importing it | 8: `test/carousel-arrows.test.tsx`, `test/carousel-keyboard.test.tsx`, `test/carousel-slide-identity.test.tsx`, `test/components-extra.test.tsx`, `test/native-carousel-fixture.test.tsx`, `test/organism-material-roles.test.tsx`, `test/scroll-frame-ring.test.tsx`, `test/skins-smoke.test.tsx` |
+| E2E naming it | 6: `e2e/behavior/prerendered-location.e2e.ts`, `e2e/behavior/scroll-focus.e2e.ts`, `e2e/journeys/carousel.e2e.ts`, `e2e/journeys/fonts.e2e.ts`, `e2e/journeys/keyboard.e2e.ts`, `e2e/journeys/touch.e2e.ts` |
+| E2E catalog sweeps | 6: `e2e/a11y/components.e2e.ts` (componentRoutes), `e2e/responsive/component-widths.e2e.ts` (contentRoutes, componentRoutes), `e2e/smoke/examples.e2e.ts` (componentExamples), `e2e/smoke/routes.e2e.ts` (allRoutes), `e2e/visual/components.e2e.ts` (componentRoutes), `e2e/visual/materials.e2e.ts` (MATERIAL_ROUTES) |
 <!-- audit:facts:end -->
 
 ## Variants

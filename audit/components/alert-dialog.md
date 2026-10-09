@@ -9,6 +9,7 @@ Audit checklist for `/components/alert-dialog`. The facts block and the variants
 | Category | Molecules (`src/molecules/alert-dialog/`) |
 | Markdown | `src/molecules/alert-dialog/alert-dialog.md` |
 | Source files | `alert-dialog.android.tsx`, `alert-dialog.ios.tsx`, `alert-dialog.md`, `alert-dialog.shared.tsx`, `alert-dialog.styles.ts`, `alert-dialog.tsx` |
+| Implementation | its own source directory, `src/molecules/alert-dialog/` (5 TypeScript modules) |
 | Exports | AlertDialog |
 | Platform entries | iOS: own build: AlertDialog (builds from its own iosSkin; injects platform parts (../../atoms/button/button.ios.js); injects platform parts (../../atoms/input/input.ios.js)). Android: own build: AlertDialog (builds from its own androidSkin; injects platform parts (../../atoms/button/button.android.js); injects platform parts (../../atoms/input/input.android.js)) |
 | Platform-skins registry | iOS: AlertDialog; Android: AlertDialog |
@@ -20,9 +21,10 @@ Audit checklist for `/components/alert-dialog`. The facts block and the variants
 | Interactions registry | in the inventory; evidence: none registered |
 | Overlay recipe | yes (alertdialog) |
 | MeasureProps | not adopted |
-| Touch target | no minTarget or useMinTargetSlop in the source modules |
-| Tests importing it | 10: `test/dense-overlays.test.tsx`, `test/destructive-text-components.test.tsx`, `test/dialog-focus.test.tsx`, `test/dialog-hardware-back.test.tsx`, `test/dialog-overlay.test.tsx`, `test/hosted-focus.test.tsx`, `test/input-overlay-escape.test.tsx`, `test/native-accessibility-escape-hosts.test.tsx`, `test/native-focus-fixtures.test.tsx`, `test/text-contrast.test.tsx` |
-| E2E importing or driving it | 2: `e2e/behavior/escape-layers.e2e.ts`, `e2e/journeys/keyboard.e2e.ts` |
+| Touch target | no touch-target name (the exports of `src/style/touch-target.ts`, `src/style/touch-target-seed.ts`, `src/style/touch-seam.ts`, `src/style/clip-slop.ts`, the `TouchTargetSkin` fields, or `hitSlop`) in its implementation modules. `test/touch-target-coverage.test.ts` records it as known gap: only the Android text buttons, at 40 against a 48 minimum |
+| Tests importing it | 11: `test/dense-overlays.test.tsx`, `test/destructive-text-components.test.tsx`, `test/dialog-focus.test.tsx`, `test/dialog-hardware-back.test.tsx`, `test/dialog-overlay.test.tsx`, `test/hosted-focus.test.tsx`, `test/input-overlay-escape.test.tsx`, `test/native-accessibility-escape-hosts.test.tsx`, `test/native-focus-fixtures.test.tsx`, `test/skins-smoke.test.tsx`, `test/text-contrast.test.tsx` |
+| E2E naming it | 2: `e2e/behavior/escape-layers.e2e.ts`, `e2e/journeys/keyboard.e2e.ts` |
+| E2E catalog sweeps | 8: `e2e/a11y/components.e2e.ts` (componentRoutes), `e2e/behavior/overlays.e2e.ts` (OVERLAYS), `e2e/responsive/component-widths.e2e.ts` (contentRoutes, componentRoutes), `e2e/smoke/examples.e2e.ts` (componentExamples), `e2e/smoke/routes.e2e.ts` (allRoutes), `e2e/visual/components.e2e.ts` (componentRoutes), `e2e/visual/materials.e2e.ts` (MATERIAL_ROUTES), `e2e/visual/overlays.e2e.ts` (OVERLAYS) |
 <!-- audit:facts:end -->
 
 ## Variants

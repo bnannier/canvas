@@ -9,6 +9,7 @@ Audit checklist for `/components/slider`. The facts block and the variants table
 | Category | Atoms (`src/atoms/slider/`) |
 | Markdown | `src/atoms/slider/slider.md` |
 | Source files | `slider.android.tsx`, `slider.ios.tsx`, `slider.md`, `slider.shared.tsx`, `slider.styles.ts`, `slider.tsx` |
+| Implementation | its own source directory, `src/atoms/slider/` (5 TypeScript modules) |
 | Exports | Slider |
 | Platform entries | iOS: own build: Slider (builds from its own iosSkin). Android: own build: Slider (builds from its own androidSkin) |
 | Platform-skins registry | iOS: Slider; Android: Slider |
@@ -20,9 +21,10 @@ Audit checklist for `/components/slider`. The facts block and the variants table
 | Interactions registry | in the inventory; evidence: none registered |
 | Overlay recipe | none |
 | MeasureProps | adopted in `slider.shared.tsx` |
-| Touch target | no minTarget or useMinTargetSlop in the source modules |
-| Tests importing it | 8: `test/control-refs.test.tsx`, `test/feedback.test.tsx`, `test/fixtures/control-refs-consumer.tsx`, `test/keyboard-nav.test.tsx`, `test/native-focus-fixtures.test.tsx`, `test/sizing.test.tsx`, `test/slider-glass.test.tsx`, `test/ws3-a11y-theming.test.tsx` |
-| E2E importing or driving it | 3: `e2e/behavior/keyboard.e2e.ts`, `e2e/behavior/material-overlay-host.e2e.ts`, `e2e/journeys/control-refs.e2e.ts` |
+| Touch target | no touch-target name (the exports of `src/style/touch-target.ts`, `src/style/touch-target-seed.ts`, `src/style/touch-seam.ts`, `src/style/clip-slop.ts`, the `TouchTargetSkin` fields, or `hitSlop`) in its implementation modules |
+| Tests importing it | 9: `test/control-refs.test.tsx`, `test/feedback.test.tsx`, `test/fixtures/control-refs-consumer.tsx`, `test/keyboard-nav.test.tsx`, `test/native-focus-fixtures.test.tsx`, `test/sizing.test.tsx`, `test/skins-smoke.test.tsx`, `test/slider-glass.test.tsx`, `test/ws3-a11y-theming.test.tsx` |
+| E2E naming it | 3: `e2e/behavior/keyboard.e2e.ts`, `e2e/behavior/material-overlay-host.e2e.ts`, `e2e/journeys/control-refs.e2e.ts` |
+| E2E catalog sweeps | 6: `e2e/a11y/components.e2e.ts` (componentRoutes), `e2e/responsive/component-widths.e2e.ts` (contentRoutes, componentRoutes), `e2e/smoke/examples.e2e.ts` (componentExamples), `e2e/smoke/routes.e2e.ts` (allRoutes), `e2e/visual/components.e2e.ts` (componentRoutes), `e2e/visual/materials.e2e.ts` (MATERIAL_ROUTES) |
 <!-- audit:facts:end -->
 
 ## Variants

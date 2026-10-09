@@ -9,6 +9,7 @@ Audit checklist for `/components/popover`. The facts block and the variants tabl
 | Category | Atoms (`src/atoms/popover/`) |
 | Markdown | `src/atoms/popover/popover.md` |
 | Source files | `popover.android.tsx`, `popover.ios.tsx`, `popover.md`, `popover.shared.tsx`, `popover.styles.tsx`, `popover.tsx` |
+| Implementation | its own source directory, `src/atoms/popover/` (5 TypeScript modules) |
 | Exports | Popover |
 | Platform entries | iOS: own build: Popover (builds from its own iosSkin; injects platform parts (../button/button.ios.js)). Android: own build: Popover (injects platform parts (../button/button.android.js)) |
 | Platform-skins registry | iOS: Popover; Android: Popover |
@@ -20,9 +21,10 @@ Audit checklist for `/components/popover`. The facts block and the variants tabl
 | Interactions registry | in the inventory; evidence: none registered |
 | Overlay recipe | yes (dialog) |
 | MeasureProps | not adopted |
-| Touch target | no minTarget or useMinTargetSlop in the source modules |
-| Tests importing it | 10: `test/anchored-overlay-dismissal.test.tsx`, `test/dense-overlays.test.tsx`, `test/entrance-readiness.test.tsx`, `test/escape-layers.test.tsx`, `test/hosted-focus.test.tsx`, `test/hosted-trigger-focus.test.tsx`, `test/native-accessibility-escape-hosts.test.tsx`, `test/overlay-placement.test.tsx`, `test/overlays.test.tsx`, `test/popover.test.tsx` |
-| E2E importing or driving it | 2: `e2e/journeys/overlay-placement.e2e.ts`, `e2e/journeys/touch.e2e.ts` |
+| Touch target | no touch-target name (the exports of `src/style/touch-target.ts`, `src/style/touch-target-seed.ts`, `src/style/touch-seam.ts`, `src/style/clip-slop.ts`, the `TouchTargetSkin` fields, or `hitSlop`) in its implementation modules |
+| Tests importing it | 11: `test/anchored-overlay-dismissal.test.tsx`, `test/dense-overlays.test.tsx`, `test/entrance-readiness.test.tsx`, `test/escape-layers.test.tsx`, `test/hosted-focus.test.tsx`, `test/hosted-trigger-focus.test.tsx`, `test/native-accessibility-escape-hosts.test.tsx`, `test/overlay-placement.test.tsx`, `test/overlays.test.tsx`, `test/popover.test.tsx`, `test/skins-smoke.test.tsx` |
+| E2E naming it | 2: `e2e/journeys/overlay-placement.e2e.ts`, `e2e/journeys/touch.e2e.ts` |
+| E2E catalog sweeps | 8: `e2e/a11y/components.e2e.ts` (componentRoutes), `e2e/behavior/overlays.e2e.ts` (OVERLAYS), `e2e/responsive/component-widths.e2e.ts` (contentRoutes, componentRoutes), `e2e/smoke/examples.e2e.ts` (componentExamples), `e2e/smoke/routes.e2e.ts` (allRoutes), `e2e/visual/components.e2e.ts` (componentRoutes), `e2e/visual/materials.e2e.ts` (MATERIAL_ROUTES), `e2e/visual/overlays.e2e.ts` (OVERLAYS) |
 <!-- audit:facts:end -->
 
 ## Variants

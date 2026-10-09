@@ -9,6 +9,7 @@ Audit checklist for `/components/stacked-lists`. The facts block and the variant
 | Category | Molecules (`src/molecules/stacked-lists/`) |
 | Markdown | `src/molecules/stacked-lists/stacked-lists.md` |
 | Source files | `stacked-lists.android.tsx`, `stacked-lists.ios.tsx`, `stacked-lists.md`, `stacked-lists.reorder.ts`, `stacked-lists.shared.tsx`, `stacked-lists.styles.ts`, `stacked-lists.tsx` |
+| Implementation | its own source directory, `src/molecules/stacked-lists/` (6 TypeScript modules) |
 | Exports | StackedList |
 | Platform entries | iOS: own build: StackedList (builds from its own iosSkin; injects platform parts (../../atoms/button/button.ios.js); injects platform parts (../../organisms/drag-drop/drag-drop.ios.js)). Android: own build: StackedList (builds from its own androidSkin; injects platform parts (../../atoms/button/button.android.js); injects platform parts (../../organisms/drag-drop/drag-drop.android.js)) |
 | Platform-skins registry | iOS: StackedList; Android: StackedList |
@@ -20,9 +21,10 @@ Audit checklist for `/components/stacked-lists`. The facts block and the variant
 | Interactions registry | in the inventory; evidence: none registered |
 | Overlay recipe | none |
 | MeasureProps | not adopted |
-| Touch target | no minTarget or useMinTargetSlop in the source modules |
-| Tests importing it | 7: `test/behavior-smoke-c.test.tsx`, `test/list-semantics.test.tsx`, `test/no-console-violations.test.tsx`, `test/scroll-frame-ring.test.tsx`, `test/stacked-list-reorder.test.tsx`, `test/stats-stackedlist-slots.test.tsx`, `test/virtualization.test.tsx` |
-| E2E importing or driving it | 2: `e2e/behavior/scroll-focus.e2e.ts`, `e2e/journeys/keyboard.e2e.ts` |
+| Touch target | `stacked-lists.shared.tsx`: hitSlop. `test/touch-target-coverage.test.ts` records it as covered another way: rows are 68/72 tall by skin |
+| Tests importing it | 8: `test/behavior-smoke-c.test.tsx`, `test/list-semantics.test.tsx`, `test/no-console-violations.test.tsx`, `test/scroll-frame-ring.test.tsx`, `test/skins-smoke.test.tsx`, `test/stacked-list-reorder.test.tsx`, `test/stats-stackedlist-slots.test.tsx`, `test/virtualization.test.tsx` |
+| E2E naming it | 2: `e2e/behavior/scroll-focus.e2e.ts`, `e2e/journeys/keyboard.e2e.ts` |
+| E2E catalog sweeps | 6: `e2e/a11y/components.e2e.ts` (componentRoutes), `e2e/responsive/component-widths.e2e.ts` (contentRoutes, componentRoutes), `e2e/smoke/examples.e2e.ts` (componentExamples), `e2e/smoke/routes.e2e.ts` (allRoutes), `e2e/visual/components.e2e.ts` (componentRoutes), `e2e/visual/materials.e2e.ts` (MATERIAL_ROUTES) |
 <!-- audit:facts:end -->
 
 ## Variants

@@ -10,7 +10,8 @@ Audit checklist for `/templates/settings`. The facts block and the variants tabl
 | Data module | `docs/src/core/data/templates/settings.tsx` |
 | Sections | 1. Settings layout |
 | Kit imports in the module | Button, Card, Column, Divider, Input, Row, Select, Switch, Tabs, Typography, useToast |
-| E2E driving it | 0: none |
+| E2E naming it | 1: `e2e/responsive/template-state.e2e.ts` |
+| E2E catalog sweeps | 3: `e2e/behavior/hydration-ids.e2e.ts` (contentRoutes), `e2e/responsive/component-widths.e2e.ts` (contentRoutes), `e2e/smoke/routes.e2e.ts` (allRoutes) |
 <!-- audit:facts:end -->
 
 ## Variants

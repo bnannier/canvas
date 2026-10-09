@@ -9,6 +9,7 @@ Audit checklist for `/components/toast`. The facts block and the variants table 
 | Category | Organisms (`src/organisms/toast/`) |
 | Markdown | `src/organisms/toast/toast.md` |
 | Source files | `toast.android.tsx`, `toast.ios.tsx`, `toast.md`, `toast.shared.tsx`, `toast.styles.ts`, `toast.tsx` |
+| Implementation | its own source directory, `src/organisms/toast/` (5 TypeScript modules) |
 | Exports | Toast, ToastProvider, useToast |
 | Platform entries | iOS: web build: Toast, ToastProvider, useToast. Android: own build: Toast (builds from its own androidSkin); ToastProvider (builds from its own androidSkin); useToast (builds from its own androidSkin) |
 | Platform-skins registry | iOS: none; Android: Toast, ToastProvider, useToast |
@@ -20,9 +21,10 @@ Audit checklist for `/components/toast`. The facts block and the variants table 
 | Interactions registry | in the inventory; evidence: none registered |
 | Overlay recipe | yes (live region) |
 | MeasureProps | not adopted |
-| Touch target | no minTarget or useMinTargetSlop in the source modules |
-| Tests importing it | 8: `test/components-extra.test.tsx`, `test/dense-overlays.test.tsx`, `test/destructive-intent.test.tsx`, `test/no-console-violations.test.tsx`, `test/text-contrast.test.tsx`, `test/toast-look.test.tsx`, `test/touch-target-seams.test.tsx`, `test/ws3-a11y-theming.test.tsx` |
-| E2E importing or driving it | 1: `e2e/behavior/overlays.e2e.ts` |
+| Touch target | `toast.shared.tsx`: hitSlop, rowSeam; `toast.styles.ts`: platformMinTarget. `test/touch-target-coverage.test.ts` records it as covered another way: hitSlop on the dismiss and the action, split where they face each other, which their RippleClips carry on Android |
+| Tests importing it | 9: `test/components-extra.test.tsx`, `test/dense-overlays.test.tsx`, `test/destructive-intent.test.tsx`, `test/no-console-violations.test.tsx`, `test/skins-smoke.test.tsx`, `test/text-contrast.test.tsx`, `test/toast-look.test.tsx`, `test/touch-target-seams.test.tsx`, `test/ws3-a11y-theming.test.tsx` |
+| E2E naming it | 1: `e2e/behavior/overlays.e2e.ts` |
+| E2E catalog sweeps | 6: `e2e/a11y/components.e2e.ts` (componentRoutes), `e2e/responsive/component-widths.e2e.ts` (contentRoutes, componentRoutes), `e2e/smoke/examples.e2e.ts` (componentExamples), `e2e/smoke/routes.e2e.ts` (allRoutes), `e2e/visual/components.e2e.ts` (componentRoutes), `e2e/visual/materials.e2e.ts` (MATERIAL_ROUTES) |
 <!-- audit:facts:end -->
 
 ## Variants

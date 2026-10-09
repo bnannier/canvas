@@ -18,7 +18,9 @@
 // rather than an identity alias of the web skin, or when it injects a platform part that
 // itself diverges by the same read (the shell draws the platform's Button, Drawer or
 // DragDrop builds); a part that is the web build, as the iOS Avatar and the iOS Chip
-// are, changes nothing. A form the reader cannot resolve counts as divergent. The
+// are, changes nothing. A form the reader cannot resolve counts as divergent, and so does
+// an export it cannot classify (`export function`, a `let`, a namespace or `export *`
+// re-export it cannot list), so this asks for a registry entry rather than pass it. The
 // verdict is per export, not per file: Avatar and AvatarGroup alias the web skin while
 // AvatarMenu, built in the same entry, injects the platform's Dropdown. An alias whose
 // parts are all web builds renders identically by construction, so its absence from the

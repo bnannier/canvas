@@ -9,6 +9,7 @@ Audit checklist for `/components/command`. The facts block and the variants tabl
 | Category | Organisms (`src/organisms/command/`) |
 | Markdown | `src/organisms/command/command.md` |
 | Source files | `command.android.tsx`, `command.ios.tsx`, `command.md`, `command.shared.tsx`, `command.styles.ts`, `command.tsx` |
+| Implementation | its own source directory, `src/organisms/command/` (5 TypeScript modules) |
 | Exports | Command |
 | Platform entries | iOS: own build: Command (builds from its own iosSkin). Android: own build: Command (builds from its own androidSkin) |
 | Platform-skins registry | iOS: Command; Android: Command |
@@ -20,9 +21,10 @@ Audit checklist for `/components/command`. The facts block and the variants tabl
 | Interactions registry | in the inventory; evidence: none registered |
 | Overlay recipe | yes (listbox) |
 | MeasureProps | not adopted |
-| Touch target | no minTarget or useMinTargetSlop in the source modules |
-| Tests importing it | 13: `test/a11y-state.test.tsx`, `test/anchored-overlay-dismissal.test.tsx`, `test/command.test.tsx`, `test/dense-overlays.test.tsx`, `test/escape-layers.test.tsx`, `test/field-focus-states.test.tsx`, `test/hosted-trigger-focus.test.tsx`, `test/keyboard-nav.test.tsx`, `test/native-accessibility-escape-hosts.test.tsx`, `test/native-focus-fixtures.test.tsx`, `test/no-console-violations.test.tsx`, `test/organism-material-roles.test.tsx`, `test/overlay-frame-ring.test.tsx` |
-| E2E importing or driving it | 5: `e2e/behavior/escape-layers.e2e.ts`, `e2e/behavior/form-autocomplete.e2e.ts`, `e2e/journeys/keyboard.e2e.ts`, `e2e/journeys/overlay-placement.e2e.ts`, `e2e/journeys/touch.e2e.ts` |
+| Touch target | no touch-target name (the exports of `src/style/touch-target.ts`, `src/style/touch-target-seed.ts`, `src/style/touch-seam.ts`, `src/style/clip-slop.ts`, the `TouchTargetSkin` fields, or `hitSlop`) in its implementation modules. `test/touch-target-coverage.test.ts` records it as covered another way: rows are 44/48 tall by skin |
+| Tests importing it | 14: `test/a11y-state.test.tsx`, `test/anchored-overlay-dismissal.test.tsx`, `test/command.test.tsx`, `test/dense-overlays.test.tsx`, `test/escape-layers.test.tsx`, `test/field-focus-states.test.tsx`, `test/hosted-trigger-focus.test.tsx`, `test/keyboard-nav.test.tsx`, `test/native-accessibility-escape-hosts.test.tsx`, `test/native-focus-fixtures.test.tsx`, `test/no-console-violations.test.tsx`, `test/organism-material-roles.test.tsx`, `test/overlay-frame-ring.test.tsx`, `test/skins-smoke.test.tsx` |
+| E2E naming it | 5: `e2e/behavior/escape-layers.e2e.ts`, `e2e/behavior/form-autocomplete.e2e.ts`, `e2e/journeys/keyboard.e2e.ts`, `e2e/journeys/overlay-placement.e2e.ts`, `e2e/journeys/touch.e2e.ts` |
+| E2E catalog sweeps | 8: `e2e/a11y/components.e2e.ts` (componentRoutes), `e2e/behavior/overlays.e2e.ts` (OVERLAYS), `e2e/responsive/component-widths.e2e.ts` (contentRoutes, componentRoutes), `e2e/smoke/examples.e2e.ts` (componentExamples), `e2e/smoke/routes.e2e.ts` (allRoutes), `e2e/visual/components.e2e.ts` (componentRoutes), `e2e/visual/materials.e2e.ts` (MATERIAL_ROUTES), `e2e/visual/overlays.e2e.ts` (OVERLAYS) |
 <!-- audit:facts:end -->
 
 ## Variants

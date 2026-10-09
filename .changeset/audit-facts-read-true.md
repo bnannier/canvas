@@ -1,0 +1,5 @@
+---
+"@nannier/canvas": patch
+---
+
+The audit checklists' generated facts now hold for every component and page. A static reader (`tools/audit/static-eval.ts`) reads table-driven test imports row by row, so the skins smoke test credits each component of its CASES table, and builds the routes an e2e spec names from literal lists. The e2e catalog sweeps (every spec that loops over `componentRoutes()`, `contentRoutes()`, `allRoutes()`, `componentExamples()`, `MATERIAL_ROUTES` or the overlay recipes and navigates to each row) are credited per route in a row of their own, apart from the specs that name a page. The touch-target fact names the kit's whole touch-target vocabulary and the coverage test's record of each pressable, the raw primitives' facts read the modules that build them (or say React Native's own component is re-exported), the skin divergence reader counts any platform-entry export form it cannot classify as the platform's own, the shells gate follows barrel re-exports to the module that builds each name, and a `fixed` finding needs its fix commit. Repository tooling and docs only; nothing in the package changes.

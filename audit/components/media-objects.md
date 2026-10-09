@@ -9,6 +9,7 @@ Audit checklist for `/components/media-objects`. The facts block and the variant
 | Category | Molecules (`src/molecules/media-objects/`) |
 | Markdown | `src/molecules/media-objects/media-objects.md` |
 | Source files | `media-objects.android.tsx`, `media-objects.ios.tsx`, `media-objects.md`, `media-objects.shared.tsx`, `media-objects.styles.ts`, `media-objects.tsx` |
+| Implementation | its own source directory, `src/molecules/media-objects/` (5 TypeScript modules) |
 | Exports | MediaObject |
 | Platform entries | iOS: own build: MediaObject (builds from its own iosSkin). Android: own build: MediaObject (builds from its own androidSkin) |
 | Platform-skins registry | iOS: MediaObject; Android: MediaObject |
@@ -20,9 +21,10 @@ Audit checklist for `/components/media-objects`. The facts block and the variant
 | Interactions registry | in the inventory; evidence: media-press (unit-web, test/behavior-smoke-b.test.tsx) |
 | Overlay recipe | none |
 | MeasureProps | not adopted |
-| Touch target | useMinTargetSlop in none; minTarget in `media-objects.shared.tsx`, `media-objects.styles.ts` |
-| Tests importing it | 1: `test/behavior-smoke-b.test.tsx` |
-| E2E importing or driving it | 0: none |
+| Touch target | `media-objects.shared.tsx`: minTarget; `media-objects.styles.ts`: minTarget |
+| Tests importing it | 2: `test/behavior-smoke-b.test.tsx`, `test/skins-smoke.test.tsx` |
+| E2E naming it | 0: none |
+| E2E catalog sweeps | 6: `e2e/a11y/components.e2e.ts` (componentRoutes), `e2e/responsive/component-widths.e2e.ts` (contentRoutes, componentRoutes), `e2e/smoke/examples.e2e.ts` (componentExamples), `e2e/smoke/routes.e2e.ts` (allRoutes), `e2e/visual/components.e2e.ts` (componentRoutes), `e2e/visual/materials.e2e.ts` (MATERIAL_ROUTES) |
 <!-- audit:facts:end -->
 
 ## Variants
