@@ -1,19 +1,21 @@
 import { describe, expect, it } from "bun:test";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
-import ts from "typescript";
 import { MATERIAL_OVERLAY_RECIPES, OVERLAY_RECIPES } from "../../e2e/support/overlay-recipes.ts";
 import { ROOT, componentRoutes, contentRoutes } from "../../e2e/support/routes.ts";
-import { e2eReach } from "./facts.ts";
-import { StaticReader } from "./static-eval.ts";
-import { CATALOGS, UnreadableSweep, catalogHooks, readSweeps } from "./sweeps.ts";
+import { UnreadableNavigation, e2eIntercept, e2eReach, isSpecFile } from "./facts.ts";
+import { ModuleGraph } from "./hosts.ts";
+import { CATALOGS, UnreadableSweep, readSweeps } from "./sweeps.ts";
 
 /** The sweeps of a spec written at e2e/x/spec.e2e.ts, so `../support/routes` is the real catalog module. */
 function sweepsOf(source: string) {
   const file = "e2e/x/spec.e2e.ts";
-  const sf = ts.createSourceFile(file, source, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
-  return readSweeps({ root: ROOT, file, sf, reader: new StaticReader(sf, catalogHooks(ROOT, file)) }).sweeps;
+  const reader = new ModuleGraph(ROOT, e2eIntercept(ROOT)).reader(file, source);
+  return readSweeps({ root: ROOT, file, sf: reader.sf, reader }).sweeps;
 }
+
+/** What a spec at e2e/x/spec.e2e.ts reaches. */
+const reachOf = (source: string, file = "e2e/x/spec.e2e.ts") => e2eReach(ROOT, file, source);
 
 const header = 'import { componentRoutes, contentRoutes, allRoutes } from "../support/routes";\nimport { OVERLAYS } from "../support/overlays";\nimport { gotoDocs } from "../support/docs";\n';
 const paths = (rows: { path: string }[]) => rows.map((r) => r.path);
@@ -57,7 +59,7 @@ describe("e2e catalog sweeps", () => {
     const reach = e2eReach(
       ROOT,
       "e2e/x/spec.e2e.ts",
-      `${header}for (const recipe of OVERLAYS) gotoDocs(page, \`/components/\${recipe.slug}\`);\nfor (const slug of ["dialog", "row-menu"]) gotoDocs(page, \`/components/\${slug}\`);\nconst first = contentRoutes().find((r) => r.kind === "pattern")!.path;`,
+      `${header}for (const recipe of OVERLAYS) gotoDocs(page, \`/components/\${recipe.slug}\`);\nfor (const slug of ["dialog", "row-menu"]) gotoDocs(page, \`/components/\${slug}\`);\ngotoDocs(page, contentRoutes().find((r) => r.kind === "pattern")!.path);`,
     );
     const built = reach.literals.filter((l) => !l.open).map((l) => l.text);
     expect(built).toContain("/components/dialog");
@@ -77,6 +79,63 @@ describe("e2e catalog sweeps", () => {
     const rows = (name: string) => CATALOGS.find((c) => c.module === "e2e/support/overlays" && c.name === name)!.rows([]);
     expect(rows("OVERLAYS")).toEqual(OVERLAY_RECIPES);
     expect(rows("MATERIAL_OVERLAYS")).toEqual(MATERIAL_OVERLAY_RECIPES);
+  });
+
+  it("follows an indexed for, a for...in and a .map() callback that navigates (item b)", () => {
+    const all = paths(componentRoutes());
+    const [indexed] = sweepsOf(`${header}const routes = componentRoutes();\nfor (let i = 0; i < routes.length; i++) test(routes[i].name, ({ page }) => gotoDocs(page, routes[i].path));`);
+    expect(indexed).toMatchObject({ catalogs: ["componentRoutes"], routes: all });
+    const [keyed] = sweepsOf(`${header}const routes = componentRoutes();\nfor (const k in routes) test(k, ({ page }) => gotoDocs(page, routes[k].path));`);
+    expect(keyed).toMatchObject({ catalogs: ["componentRoutes"], routes: all });
+    const [mapped] = sweepsOf(`${header}componentRoutes().map((route) => test(route.name, ({ page }) => gotoDocs(page, route.path)));`);
+    expect(mapped).toMatchObject({ catalogs: ["componentRoutes"], routes: all });
+    // A callback that stops at the first row it decides cannot say which rows it drives.
+    expect(() => sweepsOf(`${header}componentRoutes().some((route) => gotoDocs(page, route.path));`)).toThrow(UnreadableSweep);
+    // A catalog's rows the spec changes are not the catalog's (item g).
+    expect(() => sweepsOf(`${header}const routes = componentRoutes();\nroutes.push({ path: "/x" });\nfor (const r of routes) gotoDocs(page, r.path);`)).toThrow(/routes, a catalog's rows the module changes at line 5/);
+    // An indexed loop in another form is not followed, and says so.
+    expect(() => sweepsOf(`${header}const routes = componentRoutes();\nfor (let i = 0; i < componentRoutes().length; i += 2) gotoDocs(page, routes[i].path);`)).toThrow(UnreadableSweep);
+  });
+
+  it("credits a sweep with the rows its guards let through, and fails on a guard it cannot read (item b)", () => {
+    const guarded = sweepsOf(`${header}for (const route of componentRoutes()) {\n  if (route.name !== "button") continue;\n  test(route.name, ({ page }) => gotoDocs(page, route.path));\n}`);
+    expect(guarded).toMatchObject([{ catalogs: ["componentRoutes"], routes: ["/components/button"] }]);
+    expect(() => reachOf(`${header}for (const route of componentRoutes()) {\n  if (process.env[route.name]) continue;\n  test(route.name, ({ page }) => gotoDocs(page, route.path));\n}`)).toThrow(UnreadableNavigation);
+  });
+
+  it("names the route a helper builds from its caller's row, and fails on a navigation it cannot resolve (HIGH 1)", () => {
+    // e2e/behavior/text-entry-clear.e2e.ts's shape: the route is built in a helper from the row a loop hands it.
+    const reach = reachOf(
+      [
+        header,
+        'const fields = [{ slug: "textarea" }, { slug: "input-otp" }];',
+        'const additional = [{ slug: "phone-input", variant: "Default" }];',
+        "async function entry(page, recipe, width: number) {",
+        "  await gotoDocs(page, `/components/${recipe.slug}`, { viewport: { width, height: 900 } });",
+        "}",
+        "for (const recipe of [...fields, ...additional]) for (const width of [1280, 390]) {",
+        '  if (recipe.variant === "Default" && width !== 390) continue;',
+        "  test(recipe.slug, async ({ page }) => { await entry(page, recipe, width); });",
+        "}",
+      ].join("\n"),
+    );
+    expect(reach.navigations.flatMap((n) => n.named).sort()).toEqual(["/components/input-otp", "/components/phone-input", "/components/textarea"]);
+    // A route read from a test's fixture, a let, or a helper the spec exports cannot be named.
+    expect(() => reachOf(`${header}test("x", async ({ page, route }) => gotoDocs(page, route));`)).toThrow(UnreadableNavigation);
+    expect(() => reachOf(`${header}let slug = "dialog";\ntest("x", async ({ page }) => gotoDocs(page, \`/components/\${slug}\`));`)).toThrow(/e2e\/x\/spec.e2e.ts:5/);
+    expect(() => reachOf(`${header}export async function open(page, slug: string) { await gotoDocs(page, \`/components/\${slug}\`); }`)).toThrow(/open is exported/);
+    // The suite's mount prefix is no part of a docs route.
+    expect(reachOf('import { BASE_PATH } from "../support/docs";\ntest("p", async ({ page }) => page.goto(`${BASE_PATH}/privacy/`));').navigations[0].named).toEqual(["/privacy/"]);
+  });
+
+  it("counts the docs specs only: the starter's own suite and the audit's runner are not the docs (item d)", () => {
+    expect(isSpecFile("e2e/behavior/text-entry-clear.e2e.ts")).toBe(true);
+    expect(isSpecFile("e2e/starter/starter.spec.ts")).toBe(false);
+    expect(isSpecFile("e2e/audit/variants.audit.ts")).toBe(false);
+    expect(isSpecFile("e2e/audit/cell.e2e.ts")).toBe(false);
+    expect(isSpecFile("e2e/support/docs.ts")).toBe(false);
+    // A support module that navigates on its own would credit no spec: it fails.
+    expect(() => reachOf(`${header}export async function home(page) { await page.goto("/"); }`, "e2e/support/home.ts")).toThrow(/a support module navigates/);
   });
 
   it("finds the real catalog sweeps the facts credit, and not the data check", () => {

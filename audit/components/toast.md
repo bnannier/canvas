@@ -22,7 +22,7 @@ Audit checklist for `/components/toast`. The facts block and the variants table 
 | Overlay recipe | yes (live region) |
 | MeasureProps | not adopted |
 | Touch target | `toast.shared.tsx`: hitSlop, rowSeam; `toast.styles.ts`: platformMinTarget. `test/touch-target-coverage.test.ts` records it as covered another way: hitSlop on the dismiss and the action, split where they face each other, which their RippleClips carry on Android |
-| Tests importing it | 9: `test/components-extra.test.tsx`, `test/dense-overlays.test.tsx`, `test/destructive-intent.test.tsx`, `test/no-console-violations.test.tsx`, `test/skins-smoke.test.tsx`, `test/text-contrast.test.tsx`, `test/toast-look.test.tsx`, `test/touch-target-seams.test.tsx`, `test/ws3-a11y-theming.test.tsx` |
+| Tests importing it | 12: `test/components-extra.test.tsx`, `test/dense-overlays.test.tsx`, `test/design-rules-skins.test.ts`, `test/destructive-intent.test.tsx`, `test/dist-smoke.test.tsx`, `test/no-console-violations.test.tsx`, `test/skins-smoke.test.tsx`, `test/text-contrast.test.tsx`, `test/toast-look.test.tsx`, `test/touch-target-clips.test.tsx`, `test/touch-target-seams.test.tsx`, `test/ws3-a11y-theming.test.tsx` |
 | E2E naming it | 1: `e2e/behavior/overlays.e2e.ts` |
 | E2E catalog sweeps | 6: `e2e/a11y/components.e2e.ts` (componentRoutes), `e2e/responsive/component-widths.e2e.ts` (contentRoutes, componentRoutes), `e2e/smoke/examples.e2e.ts` (componentExamples), `e2e/smoke/routes.e2e.ts` (allRoutes), `e2e/visual/components.e2e.ts` (componentRoutes), `e2e/visual/materials.e2e.ts` (MATERIAL_ROUTES) |
 <!-- audit:facts:end -->

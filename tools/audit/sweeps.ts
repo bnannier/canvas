@@ -6,12 +6,19 @@
 //
 // A catalog is one of the e2e support exports below, whose rows the facts compute by
 // calling the same function (or reading the same constant) the spec does. A spec sweeps
-// a catalog when a `for...of` (or a `.forEach`) iterates it, alone, through `.filter()`
-// with a predicate the static reader can evaluate on every row, through `.map()`, or
-// spread into an array literal, AND the loop navigates with a route that reads the
-// loop's variable (`gotoDocs(page, route.path)`, `page.goto(...)`): a loop that only
-// checks the catalog's data (e2e/visual/material-coverage.e2e.ts) drives nothing. A loop
-// over a catalog in a form the reader cannot follow is an error, never a silent miss,
+// a catalog when a loop iterates it (a `for...of`, a `for...in`, an indexed `for` up to
+// its length, or the callback of `.forEach()`, `.map()`, `.flatMap()` or `.filter()`),
+// alone, through `.filter()` with a predicate the static reader can evaluate on every
+// row, through `.map()`, or spread into an array literal, AND the loop navigates with a
+// route that reads the loop's variable (`gotoDocs(page, route.path)`, `page.goto(...)`),
+// directly or through a helper of the module it hands the variable to: a loop that only
+// checks the catalog's data (e2e/visual/material-coverage.e2e.ts) drives nothing. A
+// sweep is credited with the rows its navigations reach, so a row a guard skips
+// (`if (...) continue;`) is not credited; whether a guard can be read is the navigation
+// check's to answer (tools/audit/facts.ts), which fails on one it cannot read.
+//
+// A loop over a catalog in a form the reader cannot follow (`.slice()`, a callback that
+// stops early, `.some()`, a loop it cannot tell runs) is an error, never a silent miss,
 // because the facts would then under-report every route it drives.
 
 import { dirname, relative, resolve, sep } from "node:path";
@@ -19,7 +26,8 @@ import ts from "typescript";
 import { MATERIAL_ROUTES, nativeMaterialRoutes } from "../../e2e/support/material-routes.ts";
 import { MATERIAL_OVERLAY_RECIPES, OVERLAY_RECIPES } from "../../e2e/support/overlay-recipes.ts";
 import { aliasRoutes, allRoutes, componentExamples, componentRoutes, contentRoutes, examplesFor, guideRoutes } from "../../e2e/support/routes.ts";
-import { Host, StaticReader, UNKNOWN, isValueRead, unwrap, type EvalHooks, type Env } from "./static-eval.ts";
+import { NOT_HANDLED, type Intercept } from "./hosts.ts";
+import { Host, StaticReader, UNKNOWN, indexedLoop, isFunctionNode, isValueRead, outermost, unwrap, type Env, type LoopNode } from "./static-eval.ts";
 
 export interface Catalog {
   /** The support module that exports it, repo-relative, without its extension. */
@@ -77,22 +85,19 @@ function rowsOf(catalog: Catalog, args: unknown[]): readonly unknown[] {
   return rows;
 }
 
-/** The catalog a module's import names, or null. */
+/** The catalog a module's import names (the module repo-relative or absolute), or null. */
 function catalogImported(root: string, file: string, specifier: string, imported: string): Catalog | null {
   if (!specifier.startsWith(".")) return null;
   const module = relative(root, resolve(root, dirname(file), specifier)).split(sep).join("/").replace(/\.(tsx?|js)$/, "");
   return CATALOGS.find((c) => c.module === module && c.name === imported) ?? null;
 }
 
-/** The hooks that hand the static reader each catalog a module imports: a constant's rows, or a function it may call. */
-export function catalogHooks(root: string, file: string, extra: Omit<EvalHooks, "importValue"> = {}): EvalHooks {
-  return {
-    ...extra,
-    importValue(specifier, imported) {
-      const catalog = catalogImported(root, file, specifier, imported);
-      if (!catalog) return UNKNOWN;
-      return catalog.call ? new Host((args) => rowsOf(catalog, args)) : rowsOf(catalog, []);
-    },
+/** The catalogs, handed to the module graph (tools/audit/hosts.ts): a constant's rows, or a function it may call. */
+export function catalogIntercept(root: string): Intercept {
+  return (file, specifier, imported) => {
+    const catalog = catalogImported(root, file, specifier, imported);
+    if (!catalog) return NOT_HANDLED;
+    return catalog.call ? new Host((args) => rowsOf(catalog, args)) : rowsOf(catalog, []);
   };
 }
 
@@ -108,7 +113,7 @@ export class UnreadableSweep extends Error {
   constructor(file: string, sf: ts.SourceFile, node: ts.Node, what: string) {
     const line = sf.getLineAndCharacterOfPosition(node.getStart(sf)).line + 1;
     super(
-      `${file}:${line}: ${what}; the audit facts cannot tell which routes it drives. Iterate the catalog alone, through .filter() whose predicate compares the row's fields with literals, through .map(), or spread into an array literal (tools/audit/sweeps.ts)`,
+      `${file}:${line}: ${what}; the audit facts cannot tell which routes it drives. Iterate the catalog alone, through .filter() whose predicate compares the row's fields with literals, through .map(), or spread into an array literal, in a for...of, a for...in, an indexed for or a .forEach() or .map() callback (tools/audit/sweeps.ts)`,
     );
     this.name = "UnreadableSweep";
   }
@@ -135,8 +140,10 @@ function readsCatalog(root: string, file: string, reader: StaticReader, node: ts
 
 export interface SweepContext {
   root: string;
+  /** The module, repo-relative. */
   file: string;
   sf: ts.SourceFile;
+  /** The module's full reader: catalogs' rows bound, no loop skipped. */
   reader: StaticReader;
 }
 
@@ -145,7 +152,14 @@ function items(ctx: SweepContext, expr: ts.Expression, env: Env): Item[] | null 
   const e = unwrap(expr);
   if (ts.isIdentifier(e)) {
     const b = ctx.reader.resolve(e);
-    if (b?.kind === "const" && b.path.length === 0 && b.decl.initializer) return items(ctx, b.decl.initializer, b.topLevel ? new Map() : env);
+    if (b?.kind === "const" && b.path.length === 0 && b.decl.initializer) {
+      // A table the module changes is not its initializer's rows.
+      const changed = ctx.reader.mutationOf(b.id);
+      if (changed && readsCatalog(ctx.root, ctx.file, ctx.reader, b.decl.initializer)) {
+        throw new UnreadableSweep(ctx.file, ctx.sf, e, `it iterates ${b.id.text}, a catalog's rows the module changes at ${ctx.reader.at(changed)}`);
+      }
+      return items(ctx, b.decl.initializer, b.topLevel ? new Map() : env);
+    }
   }
   if (ts.isArrayLiteralExpression(e)) {
     // The spread pieces; a plain element is a route the spec names itself.
@@ -176,7 +190,7 @@ function items(ctx: SweepContext, expr: ts.Expression, env: Env): Item[] | null 
 }
 
 /** How each navigation call names its route: `gotoDocs(page, route)` (e2e/support/docs.ts) and Playwright's `page.goto(route)`. */
-function navigationRoute(call: ts.CallExpression): ts.Expression | undefined {
+export function navigationRoute(call: ts.CallExpression): ts.Expression | undefined {
   const callee = unwrap(call.expression);
   if (ts.isIdentifier(callee) && callee.text === "gotoDocs") return call.arguments[1];
   if (ts.isPropertyAccessExpression(callee) && callee.name.text === "goto") return call.arguments[0];
@@ -203,7 +217,7 @@ function readsBinding(reader: StaticReader, node: ts.Node, ids: Set<ts.Identifie
 }
 
 /** The function a call reaches in the module itself: a function declaration, or a const bound to a function literal. */
-function localFunction(reader: StaticReader, call: ts.CallExpression): ts.SignatureDeclaration & { body?: ts.Node } | null {
+function localFunction(reader: StaticReader, call: ts.CallExpression): (ts.SignatureDeclaration & { body?: ts.Node }) | null {
   const callee = unwrap(call.expression);
   if (!ts.isIdentifier(callee)) return null;
   const b = reader.resolve(callee);
@@ -216,20 +230,16 @@ function localFunction(reader: StaticReader, call: ts.CallExpression): ts.Signat
 }
 
 /**
- * Whether a loop body navigates to a route built from the loop's own variables, directly
- * or through a local helper it hands them to (`expectFits(page, route.path, ...)`, whose
- * own `gotoDocs(page, path)` reads that parameter).
+ * The navigations a loop body makes with a route built from the loop's own variables,
+ * directly or through a local helper it hands them to (`expectFits(page, route.path, ...)`,
+ * whose own `gotoDocs(page, path)` reads that parameter).
  */
-function navigates(reader: StaticReader, body: ts.Node, ids: Set<ts.Identifier>, seen = new Set<ts.Node>()): boolean {
-  let found = false;
+function navigationsFrom(reader: StaticReader, body: ts.Node, ids: Set<ts.Identifier>, seen = new Set<ts.Node>()): ts.CallExpression[] {
+  const found: ts.CallExpression[] = [];
   const visit = (n: ts.Node): void => {
-    if (found) return;
     if (ts.isCallExpression(n)) {
       const route = navigationRoute(n);
-      if (route && readsBinding(reader, route, ids)) {
-        found = true;
-        return;
-      }
+      if (route && readsBinding(reader, route, ids)) found.push(n);
       const helper = localFunction(reader, n);
       if (helper?.body && !seen.has(helper)) {
         const params = new Set<ts.Identifier>();
@@ -237,10 +247,7 @@ function navigates(reader: StaticReader, body: ts.Node, ids: Set<ts.Identifier>,
           const param = helper.parameters[i];
           if (param && readsBinding(reader, arg, ids)) for (const id of idsOf(param.name)) params.add(id);
         });
-        if (params.size && navigates(reader, helper.body, params, new Set([...seen, helper]))) {
-          found = true;
-          return;
-        }
+        if (params.size) found.push(...navigationsFrom(reader, helper.body, params, new Set([...seen, helper])));
       }
     }
     ts.forEachChild(n, visit);
@@ -255,46 +262,66 @@ export interface Sweep {
   line: number;
   /** The catalogs it iterates, by their exported names. */
   catalogs: string[];
-  /** The docs route each row it iterates drives. */
+  /** The docs route each row it iterates drives, for the rows its navigations reach. */
   routes: string[];
 }
 
 export interface SweepRead {
   /** The loops that navigate to each row of a catalog. */
   sweeps: Sweep[];
-  /** Every loop over a catalog, sweep or not: the static reader leaves their rows unbound when it reads a route the spec names itself. */
-  catalogLoops: Set<ts.ForOfStatement>;
+  /** Every loop over a catalog, sweep or not: the named reader leaves their rows unbound when it reads a route the spec names itself. */
+  catalogLoops: Set<LoopNode>;
 }
+
+const EVERY_ROW = new Set(["forEach", "map", "flatMap", "filter"]);
+const EARLY_STOP = new Set(["some", "every", "find", "findIndex", "findLast", "findLastIndex"]);
 
 /** The catalog sweeps of one e2e module. */
 export function readSweeps(ctx: SweepContext): SweepRead {
   const out: SweepRead = { sweeps: [], catalogLoops: new Set() };
-  const consider = (node: ts.Node, iterable: ts.Expression, body: ts.Node, ids: Set<ts.Identifier>, loop?: ts.ForOfStatement): void => {
+  const line = (node: ts.Node) => ctx.sf.getLineAndCharacterOfPosition(node.getStart(ctx.sf)).line + 1;
+  const consider = (node: ts.Node, iterable: ts.Expression, body: ts.Node, ids: Set<ts.Identifier>, loop: LoopNode, early: string | null): void => {
     const found: Item[] = [];
     let reached = false;
-    for (const env of ctx.reader.envs(iterable) ?? [new Map()]) {
-      const part = items(ctx, iterable, env);
+    const { candidates, overflow } = ctx.reader.contexts(iterable);
+    for (const c of candidates) {
+      const part = items(ctx, iterable, c.env);
       if (!part) continue;
+      if (overflow) throw new UnreadableSweep(ctx.file, ctx.sf, node, `it iterates ${part[0]?.catalog.name ?? "a catalog"} where ${overflow}`);
+      if (c.doubt?.filters) throw new UnreadableSweep(ctx.file, ctx.sf, node, `it iterates ${part[0]?.catalog.name ?? "a catalog"}, but the reader cannot tell which rows reach the loop (${c.doubt.why})`);
       reached = true;
       found.push(...part);
     }
     if (!reached) return;
-    if (loop) out.catalogLoops.add(loop);
-    if (!navigates(ctx.reader, body, ids)) return;
+    out.catalogLoops.add(loop);
+    const navigations = navigationsFrom(ctx.reader, body, ids);
+    if (!navigations.length) return;
+    if (early) throw new UnreadableSweep(ctx.file, ctx.sf, node, `its .${early}() callback navigates, and .${early}() stops at the first row the callback decides`);
+    // The routes the body's navigations reach, guards and helpers included.
+    const reachedRoutes = new Set<string>();
+    for (const nav of navigations) for (const value of ctx.reader.values(navigationRoute(nav)!).reached) if (typeof value.value === "string") reachedRoutes.add(value.value);
+    const routes = [...new Set(found.map((item) => item.catalog.route(item.row as never)))];
     out.sweeps.push({
-      line: ctx.sf.getLineAndCharacterOfPosition(node.getStart(ctx.sf)).line + 1,
+      line: line(node),
       catalogs: [...new Set(found.map((item) => item.catalog.name))],
-      routes: [...new Set(found.map((item) => item.catalog.route(item.row as never)))],
+      routes: routes.filter((route) => reachedRoutes.has(route)),
     });
   };
   const visit = (node: ts.Node): void => {
-    if (ts.isForOfStatement(node) && ts.isVariableDeclarationList(node.initializer)) {
+    if ((ts.isForOfStatement(node) || ts.isForInStatement(node)) && ts.isVariableDeclarationList(node.initializer)) {
       const ids = new Set(node.initializer.declarations.flatMap((decl) => idsOf(decl.name)));
-      consider(node, node.expression, node.statement, ids, node);
-    } else if (ts.isCallExpression(node) && ts.isPropertyAccessExpression(node.expression) && node.expression.name.text === "forEach") {
+      consider(node, node.expression, node.statement, ids, node, null);
+    } else if (ts.isForStatement(node)) {
+      const indexed = indexedLoop(node);
+      const end = indexed ? unwrap(indexed.end) : null;
+      // `i < X.length`: the rows of X, by index.
+      if (indexed && end && ts.isPropertyAccessExpression(end) && end.name.text === "length") consider(node, end.expression, node.statement, new Set([indexed.id]), node, null);
+      else if (node.condition && readsCatalog(ctx.root, ctx.file, ctx.reader, node.condition)) throw new UnreadableSweep(ctx.file, ctx.sf, node, "a for loop over a catalog that is not `for (let i = 0; i < X.length; i++)`");
+    } else if (ts.isCallExpression(node) && ts.isPropertyAccessExpression(node.expression)) {
+      const method = node.expression.name.text;
       const fn = node.arguments[0] ? unwrap(node.arguments[0]) : undefined;
-      if (fn && (ts.isArrowFunction(fn) || ts.isFunctionExpression(fn)) && fn.parameters[0]) {
-        consider(node, node.expression.expression, fn.body, new Set(idsOf(fn.parameters[0].name)));
+      if (fn && (ts.isArrowFunction(fn) || ts.isFunctionExpression(fn)) && fn.parameters[0] && (EVERY_ROW.has(method) || EARLY_STOP.has(method)) && outermost(fn) === node.arguments[0]) {
+        consider(node, node.expression.expression, fn.body, new Set(idsOf(fn.parameters[0].name)), fn, EARLY_STOP.has(method) ? method : null);
       }
     }
     ts.forEachChild(node, visit);
@@ -306,4 +333,10 @@ export function readSweeps(ctx: SweepContext): SweepRead {
 function idsOf(name: ts.BindingName): ts.Identifier[] {
   if (ts.isIdentifier(name)) return [name];
   return name.elements.flatMap((el) => (ts.isOmittedExpression(el) ? [] : idsOf(el.name)));
+}
+
+/** Whether a node lies in the body of a function declaration of this name. */
+export function insideFunctionNamed(node: ts.Node, name: string): boolean {
+  for (let n: ts.Node | undefined = node.parent; n; n = n.parent) if (isFunctionNode(n) && ts.isFunctionDeclaration(n) && n.name?.text === name) return true;
+  return false;
 }

@@ -39,6 +39,15 @@
 //   builds nor re-exports.
 // - A `let` or `var` binding can be reassigned, so the reader never follows one.
 //
+// - Data the entry writes itself is judged against the web entry beside it (`x.tsx`
+//   beside `x.ios.tsx`), walked side by side with the web export of the same name: a
+//   literal is the web build's only where the web entry has the same literal at the same
+//   place (Row's `createFlex(iosSkin, "row")` against `createFlex(webSkin, "row")`). An
+//   object is never the web skin by being an object: `createChip({ radius: 3 })` and
+//   `const skin = { radius: 3 }; createChip(skin)` are the platform's own, and so is a
+//   literal option the web entry does not pass (Video's `nativeControls: true`), a
+//   function written in the entry, and data in a helper's body or any other expression.
+//
 // Every value an entry exports is classified, whatever form the export takes. A `const`
 // (exported directly, or declared and then listed in `export { X }`, or the expression of
 // `export default`) is judged as above. A name re-exported from the platform's build of
@@ -586,16 +595,209 @@ function readEntry(compDir: string, sf: ts.SourceFile, platform: Platform, visit
     return `re-exports ${imported} from ${specifier}, which the reader cannot resolve; counted as the platform's own`;
   };
 
+  // ---------- data the entry writes itself ----------
+
+  const web = webSideOf(sf.fileName);
+
+  /** A web expression past the web entry's own top-level consts (`const KIND = "row"`). */
+  const throughWeb = (expr: ts.Expression | null): ts.Expression | null => {
+    let e = expr ? unwrap(expr) : null;
+    const seen = new Set<string>();
+    while (e && web && ts.isIdentifier(e) && !seen.has(e.text)) {
+      seen.add(e.text);
+      const decl = web.decls.get(e.text);
+      if (!decl?.init || decl.mutable || decl.destructured) break;
+      e = unwrap(decl.init);
+    }
+    return e;
+  };
+
+  /** Why a piece of data the entry writes is its own: the web entry has something else, or nothing, at that place. */
+  const ownData = (label: ts.Node, w: ts.Expression | null, exported: boolean): string => {
+    const there = !exported
+      ? "and there is no web export of that name to match it against"
+      : w
+        ? `where the web entry has \`${snippet(web!.sf, w)}\``
+        : "which the web entry does not";
+    return `passes \`${snippet(sf, label)}\` ${there}; counted as the platform's own`;
+  };
+
+  /** Whether an expression holds data of its own anywhere: a literal, a function, an object not already judged. */
+  const holdsData = (root: ts.Node, judged: Set<ts.Node>): boolean => {
+    let found = false;
+    const visit = (node: ts.Node): void => {
+      if (found || ts.isTypeNode(node) || judged.has(node)) return;
+      if (isDatum(node) || ts.isArrowFunction(node) || ts.isFunctionExpression(node) || ts.isClassExpression(node)) found = true;
+      else ts.forEachChild(node, visit);
+    };
+    visit(root);
+    return found;
+  };
+
+  /**
+   * Why the data an export's expression hands its factory is not provably the web
+   * build's: walked side by side with the web entry's export of the same name, call
+   * argument by argument (where both call the same factory), object property by
+   * property, array element by element, and through each side's own top-level consts.
+   * A literal (a string, a number, a boolean, a regular expression) is the web build's
+   * only where the web entry has the same literal at the same place; an object is never
+   * the web skin by being an object (`createChip({ radius: 3 })`, `const skin = { radius:
+   * 3 }; createChip(skin)`), only its references are judged as references are; a
+   * function, a method, or data inside any other expression (a ternary, a template, a
+   * helper's body) is the platform's own. A spread with overrides of the web skin is
+   * already judged by `webSkinUse`, so its literal is not judged twice.
+   */
+  const dataReasons = (p: ts.Expression, w: ts.Expression | null, exported: boolean, judged: Set<ts.Node>, seen: Set<string>, label: ts.Node = p): string[] => {
+    const pe = unwrap(p);
+    const we = throughWeb(w);
+    if (isDatum(pe)) return we && isDatum(we) && datumValue(pe) === datumValue(we) ? [] : [ownData(label, we, exported)];
+    if (ts.isObjectLiteralExpression(pe)) {
+      if (judged.has(pe)) return [];
+      const wObj = we && ts.isObjectLiteralExpression(we) ? we : null;
+      if (!pe.properties.length) return wObj && !wObj.properties.length ? [] : [ownData(label, we, exported)];
+      const out: string[] = [];
+      for (const member of pe.properties) {
+        if (ts.isShorthandPropertyAssignment(member)) continue;
+        if (ts.isSpreadAssignment(member)) out.push(...dataReasons(member.expression, null, exported, judged, seen));
+        else if (ts.isPropertyAssignment(member)) {
+          const key = propertyKey(member.name);
+          const wMember = wObj && key !== null ? webProperty(wObj, key) : null;
+          // Against a web expression that is not an object, the place is the whole object's.
+          out.push(...dataReasons(member.initializer, wObj ? wMember : we, exported, judged, seen, member));
+        } else out.push(ownData(member, null, exported));
+      }
+      return out;
+    }
+    if (ts.isArrayLiteralExpression(pe)) {
+      const wArr = we && ts.isArrayLiteralExpression(we) ? we : null;
+      return pe.elements.flatMap((el, i) =>
+        ts.isSpreadElement(el) ? dataReasons(el.expression, null, exported, judged, seen) : ts.isOmittedExpression(el) ? [] : dataReasons(el, wArr?.elements[i] ?? (wArr ? null : we), exported, judged, seen),
+      );
+    }
+    if (ts.isCallExpression(pe)) {
+      const wCall = we && ts.isCallExpression(we) && unwrap(we.expression).getText(web!.sf) === unwrap(pe.expression).getText(sf) ? we : null;
+      const out = pe.arguments.flatMap((arg, i) => dataReasons(arg, wCall ? (wCall.arguments[i] ?? null) : null, exported, judged, seen));
+      // A helper of the entry's own: whatever data its body holds is the entry's.
+      const callee = unwrap(pe.expression);
+      if (ts.isIdentifier(callee) && !seen.has(callee.text)) {
+        const local = decls.get(callee.text);
+        const helper = functions.get(callee.text)?.body ?? (local?.init && !local.mutable ? unwrap(local.init) : undefined);
+        if (helper && !imports.has(callee.text)) {
+          const body = ts.isArrowFunction(helper) || ts.isFunctionExpression(helper) ? helper.body : ts.isBlock(helper) ? helper : undefined;
+          if (body && holdsData(body, judged)) out.push(`builds data of its own in ${callee.text}() (${snippet(sf, pe)}); counted as the platform's own`);
+        }
+      }
+      return out;
+    }
+    if (ts.isIdentifier(pe)) {
+      if (imports.has(pe.text) || seen.has(pe.text)) return [];
+      const local = decls.get(pe.text);
+      if (local?.init && !local.mutable) {
+        if (webSkinOf(local.init, new Set([pe.text]))) return [];
+        if (local.destructured) return holdsData(local.init, judged) ? [ownData(label, we, exported)] : [];
+        return dataReasons(local.init, we, exported, judged, new Set([...seen, pe.text]), label === p ? local.init : label);
+      }
+      // A function of the entry's own, handed over as a value.
+      if (functions.has(pe.text)) return [ownData(label, we, exported)];
+      return [];
+    }
+    if (ts.isArrowFunction(pe) || ts.isFunctionExpression(pe) || ts.isClassExpression(pe)) return [ownData(label, we, exported)];
+    if (ts.isPropertyAccessExpression(pe)) return [];
+    return holdsData(pe, judged) ? [ownData(label, we, exported)] : [];
+  };
+
   const out: Record<string, string | null> = {};
   for (const [name, form] of entryExports(compDir, sf, platform, visiting)) {
     if (form.kind === "unknown") out[name] = `${form.what}, a form the reader cannot classify; counted as the platform's own`;
     else if (form.kind === "part") out[name] = reexportReason(form.imported, form.specifier);
     else {
-      const reasons = reasonsOf(form.expr, new Set([form.local]), new Set());
+      const judged = new Set<ts.Node>();
+      const reasons = reasonsOf(form.expr, new Set([form.local]), judged);
+      const webExpr = web ? webExport(web, name) : null;
+      reasons.push(...dataReasons(form.expr, webExpr, webExpr !== null, judged, new Set([form.local])));
       out[name] = reasons.length ? [...new Set(reasons)].join("; ") : null;
     }
   }
   return out;
+}
+
+/** A literal datum: a string, a number, a boolean, null, a regular expression, a negated number. */
+function isDatum(node: ts.Node): boolean {
+  return (
+    ts.isStringLiteral(node) ||
+    ts.isNoSubstitutionTemplateLiteral(node) ||
+    ts.isNumericLiteral(node) ||
+    ts.isBigIntLiteral(node) ||
+    ts.isRegularExpressionLiteral(node) ||
+    node.kind === ts.SyntaxKind.TrueKeyword ||
+    node.kind === ts.SyntaxKind.FalseKeyword ||
+    node.kind === ts.SyntaxKind.NullKeyword ||
+    (ts.isPrefixUnaryExpression(node) && (node.operator === ts.SyntaxKind.MinusToken || node.operator === ts.SyntaxKind.PlusToken) && ts.isNumericLiteral(node.operand))
+  );
+}
+
+/** A datum's value, as a comparable key. */
+function datumValue(node: ts.Expression): string {
+  if (ts.isStringLiteral(node) || ts.isNoSubstitutionTemplateLiteral(node)) return `s:${node.text}`;
+  if (ts.isNumericLiteral(node)) return `n:${Number(node.text)}`;
+  if (ts.isPrefixUnaryExpression(node) && ts.isNumericLiteral(node.operand)) return `n:${node.operator === ts.SyntaxKind.MinusToken ? -Number(node.operand.text) : Number(node.operand.text)}`;
+  if (ts.isBigIntLiteral(node)) return `b:${node.text}`;
+  if (ts.isRegularExpressionLiteral(node)) return `r:${node.text}`;
+  return `k:${node.kind}`;
+}
+
+/** An object literal property's key, or null for a computed one. */
+function propertyKey(name: ts.PropertyName): string | null {
+  return ts.isIdentifier(name) || ts.isStringLiteral(name) || ts.isNumericLiteral(name) || ts.isPrivateIdentifier(name) ? name.text : null;
+}
+
+/** The value a web object literal gives a key, or null when it gives none (a spread of something else hides it too). */
+function webProperty(obj: ts.ObjectLiteralExpression, key: string): ts.Expression | null {
+  for (const member of obj.properties) {
+    if (ts.isPropertyAssignment(member) && propertyKey(member.name) === key) return member.initializer;
+    if (ts.isShorthandPropertyAssignment(member) && member.name.text === key) return member.name;
+  }
+  return null;
+}
+
+/** The web entry beside a platform entry (`x.tsx` beside `x.ios.tsx`), parsed with its top-level bindings, or null. */
+interface WebSide {
+  sf: ts.SourceFile;
+  decls: Map<string, Declaration>;
+}
+
+function webSideOf(platformFile: string): WebSide | null {
+  const stem = platformFile.replace(/\.(ios|android)\.tsx?$/, "");
+  if (stem === platformFile) return null;
+  for (const path of [`${stem}.tsx`, `${stem}.ts`]) {
+    if (!existsSync(path)) continue;
+    const sf = parsedModule(path);
+    return { sf, decls: declarations(sf) };
+  }
+  return null;
+}
+
+/** The expression the web entry exports under a name: `export const`, a const listed in `export { }`, `export default`; null otherwise. */
+function webExport(web: WebSide, name: string): ts.Expression | null {
+  const localInit = (local: string): ts.Expression | null => {
+    const decl = web.decls.get(local);
+    return decl?.init && !decl.mutable ? decl.init : null;
+  };
+  for (const s of web.sf.statements) {
+    if (ts.isVariableStatement(s) && hasExportModifier(s)) {
+      for (const decl of s.declarationList.declarations) {
+        const names = ts.isIdentifier(decl.name) ? [decl.name.text] : ts.isObjectBindingPattern(decl.name) ? decl.name.elements.flatMap((el) => (ts.isIdentifier(el.name) ? [el.name.text] : [])) : [];
+        if (names.includes(name)) return decl.initializer ?? null;
+      }
+    } else if (ts.isExportDeclaration(s) && !s.isTypeOnly && !s.moduleSpecifier && s.exportClause && ts.isNamedExports(s.exportClause)) {
+      const el = s.exportClause.elements.find((e) => !e.isTypeOnly && e.name.text === name);
+      if (el) return localInit((el.propertyName ?? el.name).text);
+    } else if (ts.isExportAssignment(s) && !s.isExportEquals && name === "default") {
+      const e = unwrap(s.expression);
+      return ts.isIdentifier(e) ? localInit(e.text) : s.expression;
+    }
+  }
+  return null;
 }
 
 /** How a platform entry exports one value: the expression that builds it, a platform build it re-exports, or a form the reader cannot classify. */

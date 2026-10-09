@@ -37,7 +37,9 @@ route. Each file is half generated and half hand-maintained:
   markdown, the kit module the kit's `src/index.ts` leads its name to, `src/style/text.tsx`
   for Text and TextInput and `src/style/pressable.tsx` for Pressable, or React Native's own
   View and ScrollView, re-exported from `src/style/primitives.ts`); which of its builds
-  differ per platform (`tools/skins/divergence.ts`, read per export) and which are in
+  differ per platform (`tools/skins/divergence.ts`, read per export; data an entry writes
+  itself counts as the platform's own unless the web entry has the same literal at the same
+  place, so `createChip({ radius: 3 })` is never read as the web skin) and which are in
   the docs' platform-skin registry; its row in `PLATFORM-REFERENCES.md` (treatment, build,
   and whether each platform cell is a real reference link or a `none` note); its
   `tools/materials/manifest.ts` entries; its hand-off parity records split into open gaps,
@@ -46,30 +48,52 @@ route. Each file is half generated and half hand-maintained:
   `HANDOFF-PARITY.md` is generated from: a `global` record covers every hand-off prop the
   kit lacks under that name, which takes the hand-off snapshot and the kit's built prop
   surface, so the facts read `dist/` and `bun run build` comes first); its interaction
-  evidence and overlay recipe; the test files importing it (one of its exports imported
-  from the kit, or any module in its source directory, so a `View` imported from
-  `react-native` or the word "Text" in a test does not count; a table-driven import, such as
-  the skins smoke test's ``import(`../src/${c.dir}/${c.file}${suffix}.tsx`)`` and
-  `mod[c.name]` over its CASES table, is read row by row by a static reader,
-  `tools/audit/static-eval.ts`, that never runs the code and never guesses); the e2e files
-  naming it, by the same import rule, or by the exact route of its docs page or of a hidden
-  `/testing/*` harness page whose module or fixtures render it, in a string their code
-  holds or the static reader can build (`/components/${slug}` over a literal list of slugs;
-  not a comment, and with the route followed by a character that cannot continue a slug,
-  so `/components/button-group` does not credit Button); separately, the e2e catalog
-  sweeps that drive it, the specs that loop over a whole catalog of docs routes
+  evidence and overlay recipe; the test files importing it (the files `bun test` runs, one
+  of its exports imported from the kit, or any module in its source directory, so a `View`
+  imported from `react-native` or the word "Text" in a test does not count; a test is
+  credited with what its own support modules under `test/` import, the fixtures it imports
+  or names by a path, and the fixtures are not tests themselves); the e2e specs naming it
+  (the docs suite's `*.e2e.ts`, the starter app's own suite and the audit's capture runner
+  left out), by the same import rule, or by the exact route of its docs page or of a hidden
+  `/testing/*` harness page whose module or fixtures render it, in a string literal of the
+  spec or as the route one of its navigations (`gotoDocs`, `page.goto`) builds outside a
+  catalog sweep (not a comment, and with the route followed by a character that cannot
+  continue a slug, so `/components/button-group` does not credit Button); separately, the
+  e2e catalog sweeps that drive it, the specs that loop over a whole catalog of docs routes
   (`componentRoutes()`, `contentRoutes()`, `allRoutes()`, `componentExamples()`,
-  `MATERIAL_ROUTES`, the overlay recipes; `tools/audit/sweeps.ts`) and navigate to each
-  row's route, with the catalog each one iterates (a loop over a catalog that only checks
-  its data drives nothing, and one the reader cannot follow fails the generator rather than
-  under-report); its `MeasureProps` adoption; and its touch-target vocabulary: every value
+  `MATERIAL_ROUTES`, the overlay recipes; `tools/audit/sweeps.ts`), in a `for...of`, a
+  `for...in`, an indexed `for` or an array method's callback, and navigate to each row's
+  route, credited with the rows their guards let through and the catalog each iterates (a
+  loop over a catalog that only checks its data drives nothing); its `MeasureProps` adoption; and its touch-target vocabulary: every value
   `src/style/touch-target.ts`, `touch-target-seed.ts`, `touch-seam.ts` and `clip-slop.ts`
   export, the `TouchTargetSkin` field `minTarget`, and `hitSlop`, per module, with
   `test/touch-target-coverage.test.ts`'s record of how a pressable that declares no
   `minTarget` meets the floor (or the gap it is known to have). The source facts are read
   as identifiers in the code of its implementation's TypeScript modules (nested ones
   included, tests and the markdown left out). `bun tools/audit/facts.ts <slug>` prints the
-  same as JSON.
+  same as JSON. A page's facts name its data module, its sections, the kit names its own
+  entry in that module uses (through the module's local functions and consts that entry
+  reaches, so a pattern is never credited with a sibling pattern's components, and a type
+  is not a name), and the specs and sweeps that drive it.
+
+  A fact is exactly true, or the generator fails with the file and line of the code it
+  cannot read; it never drops what it cannot read and never guesses. The test and e2e trees
+  are read by a static reader (`tools/audit/static-eval.ts`) that never runs the code: it
+  follows literals, consts, the rows of the loops around a node (a table-driven import such
+  as the skins smoke test's ``import(`../src/${c.dir}/${c.file}${suffix}.tsx`)`` and
+  `mod[c.name]` over its CASES table is read row by row), the parameters of a helper bound
+  at every call site in the module (a route `entry(page, recipe)` builds from its caller's
+  row, a component `entry(path, name)` loads), the guards on the way (`if (...) continue;`
+  drops the rows it skips), the namespace reads through any cast, the files a test lists
+  from the checkout (`tools/audit/hosts.ts`: node:path, read-only node:fs and Bun's Glob
+  inside the checkout, `import.meta`, the repo's own exported consts), and never a `const`
+  the module changes (push, splice, a length or index assignment). Every dynamic import and
+  every navigation must resolve that way, and every route a spec reaches must be one it
+  names or one a sweep is credited with; otherwise loading the facts fails
+  (`UnreadableImport`, `UnreadableNavigation`, `UnreadableSweep`). A module a test copies
+  into a `mkdtemp` directory has a name no reader can know, but it is provably some path
+  inside the temporary directory, outside the checkout, so never the kit's. The docs
+  suite's mount prefix (`BASE_PATH`) is no part of a route, so it is read as empty.
 - **Variants** (generated, between `<!-- audit:variants:begin -->` and
   `<!-- audit:variants:end -->`): one row per variant with a tick cell per platform (Web 18,
   iOS 6, Android 6) and a notes cell. Rows are merged by variant key on regeneration, so
@@ -91,10 +115,11 @@ route. Each file is half generated and half hand-maintained:
   (HIG keeps the iOS control's shape, M3 the Material 3 shape, DF means the native skin is
   the Dark Factory look and should alias the web skin). The seed is data,
   `tools/audit/plan-specifics.ts`, so a new checklist always starts from the same text.
-- **Findings** (hand-maintained): one row per finding with id, severity, cell, summary,
-  status (`open`, `verified`, `fixed`, `wontfix` with the owner's reason, `duplicate`) and
-  the fix commit, a commit SHA (7 to 40 hex digits), which may be left off until there is
-  one and is required once the status is `fixed`.
+- **Findings** (hand-maintained): one row per finding with id, severity, cell (one of that
+  checklist's capture ids in the inventory, back-ticked or not, or `source` for a finding
+  read in the code), summary, status (`open`, `verified`, `fixed`, `wontfix` with the
+  owner's reason, `duplicate`) and the fix commit, a commit SHA (7 to 40 hex digits), which
+  may be left off until there is one and is required once the status is `fixed`.
 - **Sign-off** (hand-maintained): one row per platform with the run id of the after-capture
   run that shows the component passing, the reviewer, the date and the result.
 
@@ -102,8 +127,9 @@ Every table is read with one reader (`tools/audit/table.ts`): cells split on une
 pipes only, an empty cell typed `| |` is an empty cell, and a `|` typed in a free-text
 column (a variant's note, a finding's summary, a sign-off's result) stays in that cell.
 A row it cannot read (too few cells, a severity or status that is not one of the table's
-words, a `fixed` finding with no fix commit, a fix commit that is not a SHA, an ID or
-platform twice, a row below the blank line that ends the table) is
+words, a cell that is neither one of the checklist's capture ids nor `source`, a `fixed`
+finding with no fix commit, a fix commit that is not a SHA, an ID or platform twice, a row
+below the blank line that ends the table) is
 named by line by `audit:checklists:check` and listed under `audit:status`'s counts, never
 dropped from them silently.
 
@@ -143,7 +169,7 @@ as "by design".
 | Command | What it does |
 |---|---|
 | `bun run audit:checklists` | writes new checklists and regenerates the facts block and variants table of existing ones; exits non-zero naming any file it left untouched to keep a reviewer's work |
-| `bun run audit:checklists:check` | fails on a route with no checklist, an orphan checklist (a `.md` file no route calls for), a stale facts block, a malformed variants, findings or sign-off row (by line number), variant rows that drift from the inventory, a variants table `--write` would rewrite, or a missing findings table or sign-off section; runs in CI (`validate.yml`) and the pre-push hook |
+| `bun run audit:checklists:check` | fails on a route with no checklist, an orphan checklist (a `.md` file no route calls for), a stale facts block, a malformed variants, findings or sign-off row (by line number, a finding whose cell is not one of the checklist's capture ids or `source` included), variant rows that drift from the inventory, a variants table `--write` would rewrite, or a missing findings table or sign-off section; runs in CI (`validate.yml`) and the pre-push hook |
 | `bun run audit:status` | counts ticked variant cells per platform, ticked checklist items, open findings by severity and signed-off platforms across every checklist (`--json` for the rows); lists any row or table it cannot read by file and line under the counts, and exits non-zero when there is one, since the counts then under-report |
 | `bun tools/audit/facts.ts <slug>` | prints one component's facts as JSON |
 

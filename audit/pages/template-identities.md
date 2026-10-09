@@ -9,7 +9,7 @@ Audit checklist for `/templates/identities`. The facts block and the variants ta
 | Kind | template |
 | Data module | `docs/src/core/data/templates/identities.tsx` |
 | Sections | 1. The shape of a list; 2. Live preview; 3. Bulk-action toolbar swap |
-| Kit imports in the module | Avatar, Badge, Button, Card, Column, Container, DataTable, Divider, Icon, Input, Pagination, Row, Select, Typography, useToast |
+| Kit names its entry uses | Avatar, Badge, Button, Card, Column, Container, DataTable, Divider, Icon, Input, Pagination, Row, Select, Typography, useToast |
 | E2E naming it | 0: none |
 | E2E catalog sweeps | 3: `e2e/behavior/hydration-ids.e2e.ts` (contentRoutes), `e2e/responsive/component-widths.e2e.ts` (contentRoutes), `e2e/smoke/routes.e2e.ts` (allRoutes) |
 <!-- audit:facts:end -->

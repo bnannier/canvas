@@ -9,7 +9,7 @@ Audit checklist for `/templates/inbox`. The facts block and the variants table a
 | Kind | template |
 | Data module | `docs/src/core/data/templates/inbox.tsx` |
 | Sections | 1. List and thread |
-| Kit imports in the module | Avatar, Badge, Button, Card, Column, Divider, Icon, Input, Row, StackedList, StackedListItem, Typography, useToast |
+| Kit names its entry uses | Avatar, Badge, Button, Card, Column, Divider, Icon, Input, Row, StackedList, Typography, useToast |
 | E2E naming it | 1: `e2e/responsive/template-state.e2e.ts` |
 | E2E catalog sweeps | 3: `e2e/behavior/hydration-ids.e2e.ts` (contentRoutes), `e2e/responsive/component-widths.e2e.ts` (contentRoutes), `e2e/smoke/routes.e2e.ts` (allRoutes) |
 <!-- audit:facts:end -->

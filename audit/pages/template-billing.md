@@ -9,7 +9,7 @@ Audit checklist for `/templates/billing`. The facts block and the variants table
 | Kind | template |
 | Data module | `docs/src/core/data/templates/billing.tsx` |
 | Sections | 1. Plan and usage; 2. Payment method; 3. Invoices |
-| Kit imports in the module | AlertDialog, Badge, Button, Card, Column, DataTable, DescriptionList, Divider, Emblem, Grid, Icon, Progress, Row, Typography, useToast |
+| Kit names its entry uses | AlertDialog, Badge, Button, Card, Column, DataTable, DescriptionList, Divider, Emblem, Grid, Icon, Progress, Row, Typography, useToast |
 | E2E naming it | 0: none |
 | E2E catalog sweeps | 3: `e2e/behavior/hydration-ids.e2e.ts` (contentRoutes), `e2e/responsive/component-widths.e2e.ts` (contentRoutes), `e2e/smoke/routes.e2e.ts` (allRoutes) |
 <!-- audit:facts:end -->

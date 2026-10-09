@@ -30,9 +30,10 @@
 // `--check` (wired as audit:checklists:check, in CI and the pre-push hook) fails on a
 // route with no checklist, an orphan checklist (a `.md` file no route calls for), a
 // stale facts block, a malformed variants, findings or sign-off row (by line number;
-// audit:status could not count it), variant rows that drift from the inventory, a
-// variants table `--write` would rewrite, and a missing findings table or sign-off
-// section.
+// audit:status could not count it), a finding whose Cell is neither one of that
+// checklist's capture ids in tools/audit/inventory.ts nor `source` (by line), variant
+// rows that drift from the inventory, a variants table `--write` would rewrite, and a
+// missing findings table or sign-off section.
 
 import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
@@ -50,7 +51,20 @@ import {
   type ReferenceCell,
   type SweepFact,
 } from "./facts.ts";
-import { NATIVE_CELLS_PER_VARIANT, PAGE_ROW_KEY, WEB_CELLS_PER_VARIANT, components, pages, sectionKeys, type InventoryComponent, type InventoryPage } from "./inventory.ts";
+import {
+  NATIVE_CELLS_PER_VARIANT,
+  PAGE_ROW_KEY,
+  WEB_CELLS_PER_VARIANT,
+  cellId,
+  cellsFor,
+  components,
+  pageCellId,
+  pageCellsFor,
+  pages,
+  sectionKeys,
+  type InventoryComponent,
+  type InventoryPage,
+} from "./inventory.ts";
 import { COMPONENT_PLANS, FAMILY_CHECKLISTS, FAMILY_LABEL, PAGE_PLAN, UNIVERSAL_RUBRIC, type Family } from "./plan-specifics.ts";
 import { SEPARATOR_LINE, headerRow, readSectionTable, separatorRow, splitRow, type MalformedRow, type TableShape } from "./table.ts";
 
@@ -227,7 +241,7 @@ export function renderPageFacts(facts: PageFacts): string[] {
     ["Kind", facts.kind],
     ["Data module", code(facts.module)],
     ["Sections", facts.sections.length ? facts.sections.map((title, i) => `${i + 1}. ${title}`).join("; ") : "none parsed"],
-    ["Kit imports in the module", facts.kitImports.join(", ") || "none"],
+    ["Kit names its entry uses", facts.kitNames.join(", ") || "none"],
     ["E2E naming it", `${facts.e2e.length}: ${list(facts.e2e)}`],
     ["E2E catalog sweeps", sweepsLine(facts.e2eSweeps)],
   ];
@@ -491,19 +505,43 @@ export interface FindingsTable {
 
 const oneOf = <T extends string>(values: readonly T[], value: string): T | null => (values as readonly string[]).includes(value) ? (value as T) : null;
 
+/** The word a finding's Cell takes when it was found by reading the source rather than in a capture. */
+export const SOURCE_CELL = "source";
+
+/** The capture ids a component's checklist may name in its Findings Cell column: every cell of every variant (tools/audit/inventory.ts). */
+export function componentCells(component: InventoryComponent): Set<string> {
+  return new Set(component.variants.flatMap((v) => cellsFor(component.slug, v.variant).map(cellId)));
+}
+
+/** The capture ids a page's checklist may name in its Findings Cell column. */
+export function pageCells(page: InventoryPage): Set<string> {
+  return new Set(pageCellsFor(page.id).map(pageCellId));
+}
+
+/** Every checklist the inventory calls for (its path under audit/), with the capture ids its findings may name. */
+export function captureCells(): Map<string, Set<string>> {
+  return new Map([
+    ...components().map((c) => [`${COMPONENTS_DIR}/${c.slug}.md`, componentCells(c)] as const),
+    ...pages().map((p) => [`${PAGES_DIR}/${p.id}.md`, pageCells(p)] as const),
+  ]);
+}
+
 /**
  * The findings under `## Findings`, read with the one table reader: a "|" typed in a
  * summary stays in the summary, an empty cell is an empty cell, and a row whose severity
  * or status is not one of the table's words (a missing cell shifts them), whose ID is
  * empty or taken, that reads `fixed` with no Fix commit, or whose Fix commit is not a
- * commit SHA, is reported by line rather than counted or dropped.
+ * commit SHA, is reported by line rather than counted or dropped. With `cells` (the
+ * checklist's capture ids, `componentCells` / `pageCells`), a Cell that is neither one
+ * of them nor `source` is reported by line too (back-ticks around it are allowed).
  */
-export function readFindings(content: string): FindingsTable {
+export function readFindings(content: string, cells?: ReadonlySet<string>): FindingsTable {
   const table = readSectionTable(content, "Findings", FINDINGS_SHAPE);
   const out: FindingsTable = { found: table.found, rows: [], malformed: [...table.malformed] };
   const seen = new Map<string, number>();
-  for (const { cells, line } of table.rows) {
-    const [id, severityCell, cell, summary, statusCell, fix] = cells;
+  for (const { cells: row, line } of table.rows) {
+    const [id, severityCell, cellText, summary, statusCell, fix] = row;
+    const cell = cellText.replace(/^`([^`]*)`$/, "$1");
     const severity = oneOf(FINDING_SEVERITIES, severityCell.toLowerCase());
     const status = oneOf(FINDING_STATUSES, statusCell.toLowerCase());
     const bad = (reason: string) => out.malformed.push({ line, reason });
@@ -512,6 +550,9 @@ export function readFindings(content: string): FindingsTable {
     else if (!status) bad(`the Status cell reads "${statusCell}", not one of ${FINDING_STATUSES.join(", ")} (a missing cell shifts the columns; write a pipe in a cell as \`\\|\`)`);
     else if (status === "fixed" && !fix) bad("the Status cell reads fixed but the Fix commit cell is empty; record the SHA of the commit that closed it");
     else if (fix && !FIX_COMMIT.test(fix)) bad(`the Fix commit cell reads "${fix}", not a commit SHA (7 to 40 hex digits)`);
+    else if (cells && cell !== SOURCE_CELL && !cells.has(cell)) {
+      bad(`the Cell cell reads "${cellText}", not one of this checklist's capture ids (tools/audit/inventory.ts: \`web/<slug>/<variant>/<width>.<look>.<surface>\`, \`ios/<slug>/<variant>/<look>.<surface>\`, \`web-pages/<kind>-<slug>/<width>.<look>.<surface>\`, ...) or \`${SOURCE_CELL}\``);
+    }
     else if (seen.has(id)) bad(`a second finding ${id} (the first is on line ${seen.get(id)})`);
     else {
       seen.set(id, line);
@@ -559,8 +600,8 @@ export function readSignOffs(content: string): SignOffTable {
 }
 
 /** Every line of a checklist's hand-maintained tables that cannot be read, and a table that is missing, as messages. */
-export function handTableProblems(content: string): { line: number | null; message: string }[] {
-  const findings = readFindings(content);
+export function handTableProblems(content: string, cells?: ReadonlySet<string>): { line: number | null; message: string }[] {
+  const findings = readFindings(content, cells);
   const signOffs = readSignOffs(content);
   const problems: { line: number | null; message: string }[] = [];
   if (!findings.found && !findings.malformed.length) {
@@ -645,6 +686,8 @@ export interface ChecklistEntry {
   file: string;
   factsLines: string[];
   rows: VariantRow[];
+  /** The capture ids its findings may name in their Cell (besides `source`). */
+  cells: Set<string>;
   seed: () => string;
 }
 
@@ -656,6 +699,7 @@ export function checklistEntries(sources: ChecklistSources): ChecklistEntry[] {
       file: `${COMPONENTS_DIR}/${component.slug}.md`,
       factsLines: renderComponentFacts(facts),
       rows: componentVariantRows(component),
+      cells: componentCells(component),
       seed: () => seedComponentChecklist(component, facts),
     };
   });
@@ -665,6 +709,7 @@ export function checklistEntries(sources: ChecklistSources): ChecklistEntry[] {
       file: `${PAGES_DIR}/${page.id}.md`,
       factsLines: renderPageFacts(facts),
       rows: pageVariantRows(page.id, facts),
+      cells: pageCells(page),
       seed: () => seedPageChecklist(page, facts),
     });
   }
@@ -726,7 +771,7 @@ export function checkChecklists(auditDir: string, sources: ChecklistSources): st
     const variants = findBlock(content, VARIANTS_BEGIN, VARIANTS_END);
     if (!variants) errors.push(`audit/${entry.file}: variants table markers missing`);
     else errors.push(...variantsErrors(entry, content, variants));
-    for (const problem of handTableProblems(content)) {
+    for (const problem of handTableProblems(content, entry.cells)) {
       errors.push(problem.line === null ? `audit/${entry.file}: ${problem.message}` : `audit/${entry.file}:${problem.line}: ${problem.message} (fix it by hand)`);
     }
   }
