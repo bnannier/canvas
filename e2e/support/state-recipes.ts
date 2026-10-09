@@ -118,7 +118,10 @@ export interface Reached {
   evidence: Record<string, unknown>;
   /** Defects the state shows, beside the probe's own flags. */
   flags: StateFlag[];
-  /** The node the state opened (a menu, a dialog, a sheet, a bubble), probed beside the row. */
+  /**
+   * The node the state opened (a menu, a dialog, a sheet, a bubble), or the one a state
+   * applied inside an overlay is in (`StateRecipe.inOverlay`), probed beside the row.
+   */
   panel?: Locator;
 }
 
@@ -160,7 +163,9 @@ export interface StateRecipe {
   /**
    * The state is applied inside an overlay the recipe opens first (a hover, a focus, a press
    * or a disabled control in an opened menu, dialog or sheet), so it answers what the source
-   * renders in that overlay (`Signal.within`), not on the component's own surface.
+   * renders in that overlay (`Signal.within`), not on the component's own surface. Its
+   * verdict hands the capture that overlay (`Reached.panel`), which is probed beside the
+   * row, so the texts and targets of the photograph's overlay are read too.
    */
   inOverlay?: true;
   /**
@@ -404,7 +409,7 @@ const insideOf = (within: OpenSpec | undefined): Pick<StateRecipe, "inOverlay" |
 
 // --- Hover ---------------------------------------------------------------------------
 
-type Hovered = { control: Locator; rest: StyleSnapshot; opened?: Opened } | { missing: string; opened?: Opened };
+type Hovered = { control: Locator; rest: StyleSnapshot; opened?: Opened; panel?: Locator } | { missing: string; opened?: Opened };
 
 /**
  * The pointer rests on the control. Reached when the control, its contents or its
@@ -436,7 +441,7 @@ function hover(variant: string, target: Target, options: { within?: OpenSpec; ho
       await scene.page.mouse.move(NEUTRAL_POINT.x, NEUTRAL_POINT.y);
       const rest = await settledStyles(control);
       await control.hover();
-      return { control, rest, opened };
+      return { control, rest, opened, ...(within ? { panel: scope } : {}) };
     },
     async verify(_scene, applied) {
       if ("missing" in applied) return notReached(applied.missing);
@@ -450,7 +455,7 @@ function hover(variant: string, target: Target, options: { within?: OpenSpec; ho
           evidence,
         );
       }
-      return { reached: true, evidence, flags: [] };
+      return { reached: true, evidence, flags: [], ...(applied.panel ? { panel: applied.panel } : {}) };
     },
     async release(scene, applied) {
       await scene.page.mouse.move(NEUTRAL_POINT.x, NEUTRAL_POINT.y);
@@ -685,7 +690,7 @@ function focus(variant: string, target: Target, options: FocusOptions = {}): Sta
       evidence.ring = { how: ring.how, drawnBy: ring.drawnBy, color: ring.color, painted: ring.painted, themed: ring.themed, expected: scene.ring, sides };
       const flags: StateFlag[] = !node ? ["focus-ring-missing"] : shows ? [] : ["focus-ring-hidden"];
       if (node && !ring.themed) flags.push("focus-ring-colour");
-      return { reached: true, evidence, flags };
+      return { reached: true, evidence, flags, ...(within ? { panel: applied.scope } : {}) };
     },
     async release(scene, applied) {
       await scene.page.evaluate((key) => {
@@ -939,7 +944,7 @@ function pressed(variant: string, target: Target, options: PressOptions = {}): S
           evidence,
         );
       }
-      return { reached: true, evidence, flags: [] };
+      return { reached: true, evidence, flags: [], ...(within ? { panel: applied.scope } : {}) };
     },
     async release(scene, applied) {
       const { page } = scene;
@@ -1577,7 +1582,7 @@ function readDisabled(el: Element): { ariaDisabled: string | null; nativeDisable
   };
 }
 
-type Disabled = { control: Locator; opened?: Opened } | { missing: string; opened?: Opened };
+type Disabled = { control: Locator; opened?: Opened; panel?: Locator } | { missing: string; opened?: Opened };
 
 /**
  * The example that disables the control, or, for a control disabled inside an overlay the
@@ -1585,7 +1590,7 @@ type Disabled = { control: Locator; opened?: Opened } | { missing: string; opene
  * dialog's confirm until its token is typed), the overlay opened from the web row first and
  * the control found in it (`within`). Reached when the control carries aria-disabled="true"
  * or a native `disabled`; one the Tab key still stops on is flagged `disabled-tab-stop`. The
- * release closes the overlay it opened.
+ * overlay is probed beside the row, and the release closes it.
  */
 function disabled(variant: string, target: Target, options: { within?: OpenSpec; how?: string } = {}): StateRecipe {
   const within = options.within;
@@ -1608,7 +1613,7 @@ function disabled(variant: string, target: Target, options: { within?: OpenSpec;
       }
       const control = target(scope);
       const missing = await presence(control, `control the example disables${within ? " in the overlay" : ""}`);
-      return missing ? { missing, opened } : { control, opened };
+      return missing ? { missing, opened } : { control, opened, ...(within ? { panel: scope } : {}) };
     },
     async verify(_scene, applied) {
       if ("missing" in applied) return notReached(applied.missing);
@@ -1618,7 +1623,7 @@ function disabled(variant: string, target: Target, options: { within?: OpenSpec;
         return notReached(`${evidence.control} carries neither aria-disabled="true" nor a native disabled${read.readOnly ? " (it is read-only)" : ""}`, evidence);
       }
       // A disabled control the Tab key still stops on is announced and reachable, but inert.
-      return { reached: true, evidence, flags: read.tabIndex >= 0 && !read.nativeDisabled ? ["disabled-tab-stop"] : [] };
+      return { reached: true, evidence, flags: read.tabIndex >= 0 && !read.nativeDisabled ? ["disabled-tab-stop"] : [], ...(applied.panel ? { panel: applied.panel } : {}) };
     },
     async release(scene, applied) {
       return within && applied.opened ? openClose(within, scene, applied.opened) : { report: {}, flags: [] };
