@@ -16,10 +16,13 @@
  *      photographed.
  *   5. A reached state is photographed (state.png: the row with the shot margin, 12 px, for a ring
  *      or a lifted shade, or the viewport), then probed the way a variant cell is: the
- *      row (and the panel the state opened, judged by the row's platform floors) through
- *      the in-page probe, their aria snapshots and material effects, the page's overflow,
- *      axe on the web row where the run's policy says, and the page's console, CSP and
- *      request problems during the cell. The state's flags join the probe's.
+ *      row (and the panel the state opened, judged by the row's platform floors; a panel
+ *      drawn inside the row is read with the row, so its texts count once) through the
+ *      in-page probe, their aria snapshots and material effects, the page's overflow, axe
+ *      on the web row where the run's policy says, and the page's console, CSP and
+ *      request problems during the cell. The state's flags join the probe's. Each region
+ *      records where its boxes are measured from in the viewport (`origin`) and the shot
+ *      its clip, so the analysis finds every text in state.png (tools/audit/analyze.ts).
  *   6. The recipe's release, which ends the state the way a person would and measures how
  *      that went (a press that should have been cancelled and was not, an inspection or an
  *      overlay that would not clear): its report goes into probe.json and its flags into
@@ -187,10 +190,13 @@ async function capture(page: Page, problems: PageProblems, cell: StateCell, reci
     await page.screenshot({ path: join(dir, STATE_FILE), animations: "disabled", caret: "hide" });
   }
 
-  // The probe, while the state holds.
+  // The probe, while the state holds. A panel drawn inside the row (a Dialog, an
+  // AlertDialog, a Toast, a Tooltip's bubble) is already read with the row: its texts and
+  // targets are judged once, and its own entry keeps where it is, its tree and its material.
   const rowProbe = await probeRegion(row, cell.row);
   const panelProbe = verdict.panel ? await probeRegion(verdict.panel, cell.row) : null;
-  const regions = [rowProbe.derived, ...(panelProbe ? [panelProbe.derived] : [])];
+  const panelInRow = verdict.panel ? await row.evaluate((node, panel) => node.contains(panel), await verdict.panel.elementHandle()) : false;
+  const regions = [rowProbe.derived, ...(panelProbe && !panelInRow ? [panelProbe.derived] : [])];
   const overflow = overflowOf(await probePageOverflow(card), [rowProbe.derived]);
   const renderFailed = (await card.getByText(RENDER_FAILURE, { exact: true }).count()) > 0;
   let axe: { scanned: boolean; violations: { id: string; impact: string; help: string; nodes: number; targets: string[] }[] } = { scanned: false, violations: [] };
@@ -209,6 +215,7 @@ async function capture(page: Page, problems: PageProblems, cell: StateCell, reci
 
   const region = (probe: typeof rowProbe) => ({
     platform: probe.derived.platform,
+    origin: probe.derived.origin,
     box: probe.derived.box,
     aria: probe.aria,
     material: probe.material,
@@ -223,7 +230,11 @@ async function capture(page: Page, problems: PageProblems, cell: StateCell, reci
     shot: { file: STATE_FILE, frame: recipe.frame, clip },
     userAgent: rowProbe.userAgent,
     row: region(rowProbe),
-    panel: panelProbe ? region(panelProbe) : null,
+    panel: !panelProbe
+      ? null
+      : panelInRow
+        ? { inRow: true, platform: panelProbe.derived.platform, origin: panelProbe.derived.origin, box: panelProbe.derived.box, aria: panelProbe.aria, material: panelProbe.material }
+        : { inRow: false, ...region(panelProbe) },
     overflow: overflow.boxes,
     axe,
     problems: reported,

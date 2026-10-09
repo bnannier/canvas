@@ -17,7 +17,9 @@
  *      ring at its edge is not cropped, the margin kept inside the part of the page no
  *      chrome covers; and probed the way a variant cell's row is: the in-page probe (texts,
  *      contrast, floors, clipping, targets against the web's 24 px), its aria snapshot and
- *      its material effects.
+ *      its material effects. The section's `origin` (where its boxes are measured from, in
+ *      the viewport) and the shot's `clip` place every text in its photograph for the
+ *      analysis (tools/audit/analyze.ts).
  *   5. The page's overflow (the document, the page scroller and each section), axe over
  *      the sections where the run's policy says, and the console, CSP and request problems
  *      during the cell; all of it to probe.json, with how long each step took.
@@ -193,6 +195,7 @@ async function capture(page: Page, problems: PageProblems, cell: PageCell, dir: 
       file,
       viewport: grown,
       clip,
+      origin: derived.origin,
       box: derived.box,
       aria: await time("section aria", () => section.ariaSnapshot()),
       material,
