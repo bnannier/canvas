@@ -12,10 +12,8 @@
  * are full-page.
  */
 import { OVERLAYS } from "../support/overlays";
-import { fitElementForScreenshot, gotoDocs, settledBox, stage } from "../support/docs";
+import { FIXED_TIME, fitElementForScreenshot, gotoDocs, settledBox, stage } from "../support/docs";
 import { expect, test } from "../support/fixtures";
-
-const FIXED_TIME = new Date("2026-01-15T12:00:00Z");
 
 for (const scheme of ["dark", "light"] as const) {
   for (const recipe of OVERLAYS) {

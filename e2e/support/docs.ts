@@ -47,6 +47,13 @@ export const LOOKS: readonly Look[] = [
   { id: "dark", scheme: "dark" },
 ];
 
+/**
+ * The instant every picture is taken at. Several examples render today's date or a
+ * live-looking clock, so a capture pins `page.clock` to this before it navigates and the
+ * same example is the same picture tomorrow.
+ */
+export const FIXED_TIME = new Date("2026-01-15T12:00:00Z");
+
 /** The prefix an EXPO_BASE_URL build is mounted under; empty for a root-served export. */
 export const BASE_PATH = (process.env.E2E_BASE_PATH ?? "").replace(/\/+$/, "");
 

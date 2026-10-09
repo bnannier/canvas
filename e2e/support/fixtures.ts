@@ -23,7 +23,7 @@
  *
  * All are `auto`, so a spec gets them without naming them.
  */
-import { test as base, expect, type Page } from "@playwright/test";
+import { test as base, expect, type BrowserContext, type Page } from "@playwright/test";
 import { hangProbeDelay, probeHang } from "./hang-probe";
 import { protocolRecorder } from "./protocol-events";
 
@@ -50,7 +50,13 @@ export interface PageProblems {
  */
 const BENIGN_FAILURES = /net::ERR_ABORTED/;
 
-async function watchForProblems(page: Page): Promise<PageProblems> {
+/**
+ * Record what the page reports while it runs: console errors, uncaught errors, CSP
+ * violations, failed same-origin responses and failed requests. The arrays grow for the
+ * page's whole life, so a caller that drives several captures through one page (the
+ * audit's capture runner, e2e/audit/cell.ts) reads each capture's share by length.
+ */
+export async function watchForProblems(page: Page): Promise<PageProblems> {
   const problems: PageProblems = {
     consoleErrors: [],
     pageErrors: [],
@@ -110,7 +116,8 @@ async function watchForProblems(page: Page): Promise<PageProblems> {
   return problems;
 }
 
-function describe(problems: PageProblems): string[] {
+/** One line per problem, labelled by kind, for a failure message or a capture record. */
+export function describeProblems(problems: PageProblems): string[] {
   const lines: string[] = [];
   const add = (label: string, items: string[]) => {
     for (const item of items) lines.push(`${label}: ${item}`);
@@ -121,6 +128,21 @@ function describe(problems: PageProblems): string[] {
   add("response", problems.badResponses);
   add("request failed", problems.failedRequests);
   return lines;
+}
+
+/**
+ * Answer the npm registry with a fixed version, so nothing depends on the network or on
+ * npm's latency (the version badge re-fetches on every focus). On a context it covers
+ * every page the context opens.
+ */
+export async function stubRegistry(target: Page | BrowserContext): Promise<void> {
+  await target.route("https://registry.npmjs.org/**", (route) =>
+    route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({ version: "0.0.0-e2e" }),
+    }),
+  );
 }
 
 export const test = base.extend<{ problems: PageProblems; registry: void; hangProbe: void; protocolEvents: void }>({
@@ -139,13 +161,7 @@ export const test = base.extend<{ problems: PageProblems; registry: void; hangPr
 
   registry: [
     async ({ page }, use) => {
-      await page.route("https://registry.npmjs.org/**", (route) =>
-        route.fulfill({
-          status: 200,
-          contentType: "application/json",
-          body: JSON.stringify({ version: "0.0.0-e2e" }),
-        }),
-      );
+      await stubRegistry(page);
       await use();
     },
     { auto: true },
@@ -174,7 +190,7 @@ export const test = base.extend<{ problems: PageProblems; registry: void; hangPr
       // Only gate a test that was otherwise passing: on a test that already failed,
       // these are usually consequences of the real failure and would bury it.
       if (testInfo.status !== testInfo.expectedStatus) return;
-      const lines = describe(problems);
+      const lines = describeProblems(problems);
       expect(lines, `the page reported ${lines.length} problem(s):\n  ${lines.join("\n  ")}`).toEqual([]);
       if (problems.expectNotFound) {
         expect(problems.documentStatus, "an unknown route must be a real 404, not a 200 with the not-found page in it").toBe(404);
