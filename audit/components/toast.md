@@ -20,9 +20,9 @@ Audit checklist for `/components/toast`. The facts block and the variants table 
 | Interactions registry | in the inventory; evidence: none registered |
 | Overlay recipe | yes (live region) |
 | MeasureProps | not adopted |
-| Touch target | no minTarget or useMinTargetSlop in the source directory |
+| Touch target | no minTarget or useMinTargetSlop in the source modules |
 | Tests importing it | 8: `test/components-extra.test.tsx`, `test/dense-overlays.test.tsx`, `test/destructive-intent.test.tsx`, `test/no-console-violations.test.tsx`, `test/text-contrast.test.tsx`, `test/toast-look.test.tsx`, `test/touch-target-seams.test.tsx`, `test/ws3-a11y-theming.test.tsx` |
-| E2E naming it | 2: `e2e/behavior/overlays.e2e.ts`, `e2e/support/overlay-recipes.ts` |
+| E2E importing or driving it | 1: `e2e/behavior/overlays.e2e.ts` |
 <!-- audit:facts:end -->
 
 ## Variants

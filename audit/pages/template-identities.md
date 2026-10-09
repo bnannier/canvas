@@ -10,7 +10,7 @@ Audit checklist for `/templates/identities`. The facts block and the variants ta
 | Data module | `docs/src/core/data/templates/identities.tsx` |
 | Sections | 1. The shape of a list; 2. Live preview; 3. Bulk-action toolbar swap |
 | Kit imports in the module | Avatar, Badge, Button, Card, Column, Container, DataTable, Divider, Icon, Input, Pagination, Row, Select, Typography, useToast |
-| E2E naming it | 0: none |
+| E2E driving it | 0: none |
 <!-- audit:facts:end -->
 
 ## Variants

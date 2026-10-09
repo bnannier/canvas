@@ -10,7 +10,7 @@ Audit checklist for `/components/data-table`. The facts block and the variants t
 | Markdown | `src/organisms/data-table/data-table.md` |
 | Source files | `data-table.android.tsx`, `data-table.ios.tsx`, `data-table.md`, `data-table.shared.tsx`, `data-table.styles.ts`, `data-table.tsx` |
 | Exports | DataTable |
-| Platform entries | iOS: own build: DataTable (builds from its own iosSkin; injects platform parts (../../atoms/checkbox/checkbox.ios.js); injects platform parts (../../atoms/pagination/pagination.ios.js); injects platform parts (../../atoms/skeleton/skeleton.ios.js)). Android: own build: DataTable (builds from its own androidSkin; injects platform parts (../../atoms/checkbox/checkbox.android.js); injects platform parts (../../atoms/pagination/pagination.android.js); injects platform parts (../../atoms/skeleton/skeleton.android.js)) |
+| Platform entries | iOS: own build: DataTable (builds from its own iosSkin; injects platform parts (../../atoms/checkbox/checkbox.ios.js)). Android: own build: DataTable (builds from its own androidSkin; injects platform parts (../../atoms/checkbox/checkbox.android.js)) |
 | Platform-skins registry | iOS: DataTable; Android: DataTable |
 | Reference row | `data-table` (Light, Built). iOS: link [data-table (iOS)](https://developer.apple.com/design/human-interface-guidelines/lists-and-tables) (SwiftUI Table: multi-column and sortable on iPadOS 16+; collapses to its first column in compact width on iPhone; no iOS 27 kit group). Android: none (Material 3 has no data table component; M2's data tables were never carried into M3, so apps use lists or third-party table implementations). Web: link [data-table (Web)](https://ui.shadcn.com/docs/components/data-table) |
 | Materials manifest | DataTable: organisms, static + liquid; verification solid-appearance, glass-appearance, mode-switch, accessibility-fallback, runtime-capability, semantic-state |
@@ -20,9 +20,9 @@ Audit checklist for `/components/data-table`. The facts block and the variants t
 | Interactions registry | in the inventory; evidence: table-row-press (unit-web, test/behavior.test.tsx) |
 | Overlay recipe | none |
 | MeasureProps | not adopted |
-| Touch target | no minTarget or useMinTargetSlop in the source directory |
+| Touch target | no minTarget or useMinTargetSlop in the source modules |
 | Tests importing it | 16: `test/a11y-state.test.tsx`, `test/behavior.test.tsx`, `test/checkbox-idiom.test.tsx`, `test/data-table-pan-identity.test.tsx`, `test/data-table-performance.test.tsx`, `test/data-table-stacks.test.tsx`, `test/data-table-text-entry-material.test.tsx`, `test/data-table.test.tsx`, `test/escape-layers.test.tsx`, `test/native-focus-fixtures.test.tsx`, `test/no-console-violations.test.tsx`, `test/numerals.test.tsx`, `test/organism-material-roles.test.tsx`, `test/prop-table.test.tsx`, `test/scroll-frame-ring.test.tsx`, `test/virtualization.test.tsx` |
-| E2E naming it | 3: `e2e/behavior/keyboard.e2e.ts`, `e2e/journeys/keyboard.e2e.ts`, `e2e/responsive/component-widths.e2e.ts` |
+| E2E importing or driving it | 4: `e2e/behavior/escape-layers.e2e.ts`, `e2e/behavior/keyboard.e2e.ts`, `e2e/behavior/scroll-focus.e2e.ts`, `e2e/journeys/keyboard.e2e.ts` |
 <!-- audit:facts:end -->
 
 ## Variants

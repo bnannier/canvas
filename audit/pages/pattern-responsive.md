@@ -10,7 +10,7 @@ Audit checklist for `/patterns/responsive`. The facts block and the variants tab
 | Data module | `docs/src/core/data/patterns.tsx` |
 | Sections | 1. Breakpoints; 2. The parent provides the bounds; 3. Choosing a mechanism; 4. Sidebar - drawer ↔ fixed; 5. Layout primitives: Grid and Row stacks; 6. What's behind the scenes; 7. Try it yourself |
 | Kit imports in the module | Accordion, Alert, Badge, Button, Card, Checkbox, CodeBlock, Column, Container, DataTable, Dialog, Field, Grid, GridItem, Input, Kbd, Progress, Row, Sidebar, Skeleton, Slider, Spinner, StackedList, Switch, Tabs, ThemeProvider, Typography, contrastRatio, useFormFactor, useTheme |
-| E2E naming it | 0: none |
+| E2E driving it | 0: none |
 <!-- audit:facts:end -->
 
 ## Variants

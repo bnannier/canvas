@@ -20,9 +20,9 @@ Audit checklist for `/components/progress`. The facts block and the variants tab
 | Interactions registry | in the inventory; evidence: none registered |
 | Overlay recipe | none |
 | MeasureProps | adopted in `progress.shared.tsx` |
-| Touch target | no minTarget or useMinTargetSlop in the source directory |
+| Touch target | no minTarget or useMinTargetSlop in the source modules |
 | Tests importing it | 4: `test/atom-material-roles.test.tsx`, `test/feedback.test.tsx`, `test/progress.test.tsx`, `test/sizing.test.tsx` |
-| E2E naming it | 0: none |
+| E2E importing or driving it | 0: none |
 <!-- audit:facts:end -->
 
 ## Variants

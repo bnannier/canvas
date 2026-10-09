@@ -20,9 +20,9 @@ Audit checklist for `/components/row-column`. The facts block and the variants t
 | Interactions registry | in the inventory; evidence: none registered |
 | Overlay recipe | none |
 | MeasureProps | not adopted |
-| Touch target | no minTarget or useMinTargetSlop in the source directory |
+| Touch target | no minTarget or useMinTargetSlop in the source modules |
 | Tests importing it | 9: `test/hover-lift.test.tsx`, `test/layout-responsive.test.tsx`, `test/layout-spans.test.tsx`, `test/native-carousel-fixture.test.tsx`, `test/native-focus-fixtures.test.tsx`, `test/new-components.test.tsx`, `test/prop-table.test.tsx`, `test/sizing.test.tsx`, `test/switch-label.test.tsx` |
-| E2E naming it | 1: `e2e/responsive/template-state.e2e.ts` |
+| E2E importing or driving it | 12: `e2e/behavior/escape-layers.e2e.ts`, `e2e/behavior/form-autocomplete.e2e.ts`, `e2e/behavior/listbox.e2e.ts`, `e2e/behavior/material-overlay-host.e2e.ts`, `e2e/behavior/scroll-focus.e2e.ts`, `e2e/journeys/carousel.e2e.ts`, `e2e/journeys/control-refs.e2e.ts`, `e2e/journeys/identity.e2e.ts`, `e2e/journeys/keyboard.e2e.ts`, `e2e/journeys/overlay-placement.e2e.ts`, `e2e/journeys/touch.e2e.ts`, `e2e/starter/starter.spec.ts` |
 <!-- audit:facts:end -->
 
 ## Variants

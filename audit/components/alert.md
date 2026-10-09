@@ -20,9 +20,9 @@ Audit checklist for `/components/alert`. The facts block and the variants table 
 | Interactions registry | in the inventory; evidence: alert-dismiss (unit-web, test/behavior-smoke-a.test.tsx) |
 | Overlay recipe | none |
 | MeasureProps | not adopted |
-| Touch target | no minTarget or useMinTargetSlop in the source directory |
+| Touch target | no minTarget or useMinTargetSlop in the source modules |
 | Tests importing it | 5: `test/behavior-smoke-a.test.tsx`, `test/destructive-intent.test.tsx`, `test/glass-controls.test.tsx`, `test/text-contrast.test.tsx`, `test/touch-target-seams.test.tsx` |
-| E2E naming it | 0: none |
+| E2E importing or driving it | 0: none |
 <!-- audit:facts:end -->
 
 ## Variants

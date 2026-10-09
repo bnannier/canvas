@@ -10,7 +10,7 @@ Audit checklist for `/templates/dashboard`. The facts block and the variants tab
 | Data module | `docs/src/core/data/templates/dashboard.tsx` |
 | Sections | 1. Hero stats; 2. Activity and chart; 3. Secondary widgets |
 | Kit imports in the module | Badge, Button, Card, Column, Feed, Grid, LineChart, Progress, Row, Stats, Tabs, Typography, useToast |
-| E2E naming it | 0: none |
+| E2E driving it | 0: none |
 <!-- audit:facts:end -->
 
 ## Variants

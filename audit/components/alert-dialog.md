@@ -20,9 +20,9 @@ Audit checklist for `/components/alert-dialog`. The facts block and the variants
 | Interactions registry | in the inventory; evidence: none registered |
 | Overlay recipe | yes (alertdialog) |
 | MeasureProps | not adopted |
-| Touch target | no minTarget or useMinTargetSlop in the source directory |
+| Touch target | no minTarget or useMinTargetSlop in the source modules |
 | Tests importing it | 10: `test/dense-overlays.test.tsx`, `test/destructive-text-components.test.tsx`, `test/dialog-focus.test.tsx`, `test/dialog-hardware-back.test.tsx`, `test/dialog-overlay.test.tsx`, `test/hosted-focus.test.tsx`, `test/input-overlay-escape.test.tsx`, `test/native-accessibility-escape-hosts.test.tsx`, `test/native-focus-fixtures.test.tsx`, `test/text-contrast.test.tsx` |
-| E2E naming it | 0: none |
+| E2E importing or driving it | 2: `e2e/behavior/escape-layers.e2e.ts`, `e2e/journeys/keyboard.e2e.ts` |
 <!-- audit:facts:end -->
 
 ## Variants

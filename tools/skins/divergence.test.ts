@@ -35,6 +35,28 @@ describe("skin divergence, per built export", () => {
     expect(Object.keys(avatar.divergent).sort()).toEqual(["Android", "iOS"]);
   });
 
+  it("counts a platform part only when the export it imports diverges", () => {
+    // Corrected truth: the old read counted any `.ios.js` / `.android.js` import as a
+    // divergent part, so Feed, MediaObject, GridList, StackedList, DescriptionList and
+    // Navbar listed avatar.ios.js although Avatar is the web build on every platform, and
+    // MetricBreakdown's iOS build was called divergent for an iOS Chip that aliases the
+    // web skin. A part now counts only when its own export diverges by this same read.
+    expect(skinsOf(KIT, "feeds").exportDivergence.Feed).toEqual({ iOS: "builds from its own iosSkin", Android: "builds from its own androidSkin" });
+    expect(skinsOf(KIT, "media-objects").exportDivergence.MediaObject).toEqual({ iOS: "builds from its own iosSkin", Android: "builds from its own androidSkin" });
+    for (const dir of ["feeds", "media-objects", "grid-lists", "stacked-lists", "description-lists", "navbars"]) {
+      expect(Object.values(skinsOf(KIT, dir).divergent).join("; ")).not.toContain("avatar.");
+    }
+    expect(skinsOf(KIT, "navbars").exportDivergence.Navbar?.iOS).toBe(
+      "builds from its own iosSkin; injects platform parts (../../atoms/dropdown/dropdown.ios.js); injects platform parts (../../atoms/button/button.ios.js)",
+    );
+    expect(skinsOf(KIT, "metric-breakdown").exportDivergence.MetricBreakdown).toEqual({ Android: "injects platform parts (../../atoms/chip/chip.android.js)" });
+    // A part the part's module only re-exports from its shared module (the Icon) is one
+    // build everywhere; a part under a nested directory (the Checkbox indicator) is read
+    // the same way as any entry.
+    expect(skinsOf(KIT, "video").exportDivergence.Video?.iOS).toBe("builds from its own iosSkin; injects platform parts (../spinner/spinner.ios.js)");
+    expect(skinsOf(KIT, "listbox").exportDivergence.Listbox?.Android).toBe("injects platform parts (../checkbox/indicator/index.android.js)");
+  });
+
   it("follows a local alias chain to the same object, and a styles re-export to its source", () => {
     // Tabs: `iosSkin = capsuleSkin; webSkin = capsuleSkin;` is one object under two names.
     const tabs = skinsOf(KIT, "tabs");
@@ -56,18 +78,29 @@ describe("skin divergence, per built export", () => {
         'export const iosMenuSkin = webMenuSkin;',
       ].join("\n"),
       "atoms/other/other.styles.ts": 'export const webSkin = { a: 1 };\nexport const iosSkin = { a: 2 };\nexport const androidSkin = webSkin;',
+      // The parts: a Button that builds its own iOS skin, a Badge that aliases the web
+      // skin, and an Icon whose entry only re-exports the shared build. Only the Button
+      // makes the build that injects it diverge.
+      "atoms/button/button.styles.ts": 'export const webSkin = { h: 36 };\nexport const iosSkin = { h: 44 };',
+      "atoms/button/button.ios.tsx": 'import { createButton } from "./button.shared.js";\nimport { iosSkin } from "./button.styles.js";\nexport const Button = createButton(iosSkin);',
+      "atoms/badge/badge.styles.ts": 'export const webSkin = { r: 4 };\nexport const iosSkin = webSkin;',
+      "atoms/badge/badge.ios.tsx": 'import { createBadge } from "./badge.shared.js";\nimport { iosSkin } from "./badge.styles.js";\nexport const Badge = createBadge(iosSkin);',
+      "atoms/icon/icon.ios.tsx": 'export { Icon } from "./icon.shared.js";',
       "atoms/thing/thing.ios.tsx": [
         'import { createThing, createMenu, createBare } from "./thing.shared.js";',
         'import { createOther } from "../other/other.shared.js";',
         'import { iosSkin as otherSkin } from "../other/other.styles.js";',
         'import { iosSkin, iosMenuSkin } from "./thing.styles.js";',
         'import { Button } from "../button/button.ios.js";',
+        'import { Badge } from "../badge/badge.ios.js";',
+        'import { Icon } from "../icon/icon.ios.js";',
         'import type { Props } from "./thing.shared.js";',
         'export const Thing = createThing(iosSkin);',
         'const Menu = createOther({ ...otherSkin, gap: 6 });',
         'export const ThingMenu = createMenu(iosMenuSkin, Menu);',
-        'export const Bare = createBare(iosSkin, { Button });',
+        'export const Bare = createBare(iosSkin, { Button, Badge });',
         'export const { A, B } = createThing(iosSkin, { trailing: Button });',
+        'export const WebParts = createBare(iosSkin, { Badge, Icon });',
         'export { helper } from "./thing.shared.js";',
         'export type { Props };',
       ].join("\n"),
@@ -79,7 +112,8 @@ describe("skin divergence, per built export", () => {
     });
     try {
       const thing = skinsOf(root, "thing");
-      expect(thing.exports).toEqual(["Thing", "ThingMenu", "Bare", "A", "B"]);
+      expect(thing.exports).toEqual(["Thing", "ThingMenu", "Bare", "A", "B", "WebParts"]);
+      // WebParts injects only parts that are the web build, so it is the web build.
       expect(thing.exportDivergence).toEqual({
         ThingMenu: { iOS: "builds a part from other's own iosSkin (../other/other.styles.js)" },
         Bare: { iOS: "injects platform parts (../button/button.ios.js)" },
@@ -128,6 +162,74 @@ describe("skin divergence, per built export", () => {
       });
       // A spread that adds nothing, and the bare alias, are the web build on both platforms.
       expect(flat.divergent.Android).toBeUndefined();
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("counts every form it cannot follow as the platform's own, never the web build (K4, fail safe)", () => {
+    const root = kit({
+      "atoms/look/look.styles.ts": 'export const webSkin = { radius: 8 };\nexport const iosSkin = webSkin;\nexport const iosOwnSkin = { radius: 4 };',
+      "atoms/part/part.styles.ts": 'export const webSkin = { h: 36 };\nexport const iosSkin = { h: 44 };\nexport const iosPlainSkin = webSkin;',
+      "atoms/part/part.ios.tsx": [
+        'import { createPart } from "./part.shared.js";',
+        'import { iosSkin, iosPlainSkin } from "./part.styles.js";',
+        'export const Part = createPart(iosSkin);',
+        'export const Plain = createPart(iosPlainSkin);',
+      ].join("\n"),
+      "atoms/look/look.ios.tsx": [
+        'import { createLook } from "./look.shared.js";',
+        'import type { Skin } from "./look.shared.js";',
+        'import * as look from "./look.styles.js";',
+        'import lookDefault from "./look.styles.js";',
+        'import { iosSkin } from "./look.styles.js";',
+        'import * as parts from "../part/part.ios.js";',
+        'import { tweak } from "./tweak.js";',
+        // A namespace import is judged through its member reads, like a named import...
+        'export const NsAlias = createLook(look.iosSkin);',
+        'export const NsOwn = createLook(look.iosOwnSkin);',
+        'export const NsSpread = createLook({ ...look.iosSkin, radius: 4 });',
+        'export const NsPart = createLook(iosSkin, { Part: parts.Part });',
+        'export const NsPlainPart = createLook(iosSkin, { Plain: parts.Plain });',
+        // ...and read whole, or as a default import, it cannot be followed.
+        'export const NsWhole = createLook(look[key]);',
+        'export const NsParts = createLook(iosSkin, parts);',
+        'export const Default = createLook(lookDefault);',
+        // A helper: whatever it does with the web skin, the reader does not follow it.
+        'function rounded() { return { ...iosSkin, radius: 4 }; }',
+        'function same() { return iosSkin; }',
+        'const viaArrow = () => ({ ...iosSkin, gap: 2 });',
+        'export const Helper = createLook(rounded());',
+        'export const HelperSame = createLook(same());',
+        'export const Arrow = createLook(viaArrow());',
+        'export const Tweaked = createLook(tweak(iosSkin));',
+        // A parenthesised or cast spread is the spread it wraps; a cast argument is the argument.
+        'export const Paren = createLook({ ...(iosSkin), radius: 4 });',
+        'export const Cast = createLook({ ...(iosSkin as Skin), radius: 4 });',
+        'export const CastOnly = createLook({ ...(iosSkin satisfies Skin) });',
+        'export const CastArg = createLook(iosSkin as Skin);',
+      ].join("\n"),
+    });
+    try {
+      const look = skinsOf(root, "look");
+      const ios = Object.fromEntries(Object.entries(look.exportDivergence).map(([name, byPlatform]) => [name, byPlatform.iOS]));
+      expect(ios).toEqual({
+        NsOwn: "builds from its own iosOwnSkin",
+        NsSpread: "builds its own skin (a spread of iosSkin, the web skin, with radius)",
+        NsPart: "injects platform parts (../part/part.ios.js)",
+        NsWhole: "builds from the namespace look, read whole (./look.styles.js), which the reader cannot resolve; counted as its own skin",
+        NsParts: "injects platform parts (../part/part.ios.js, through the namespace parts, read whole, which the reader cannot resolve; counted as the platform's own)",
+        Default: "builds from the default import lookDefault (./look.styles.js), which the reader cannot resolve; counted as its own skin",
+        Helper: "builds its own skin (a spread of iosSkin, the web skin, with radius)",
+        HelperSame: "builds its own skin (iosSkin, the web skin, read in `return iosSkin;`, a form the reader does not follow)",
+        Arrow: "builds its own skin (a spread of iosSkin, the web skin, with gap)",
+        Tweaked: "builds its own skin (iosSkin, the web skin, handed to tweak(), which the reader does not follow)",
+        Paren: "builds its own skin (a spread of iosSkin, the web skin, with radius)",
+        Cast: "builds its own skin (a spread of iosSkin, the web skin, with radius)",
+      });
+      // What it can prove stays the web build: an alias read off the namespace, a part that
+      // is the web build, a cast argument, a cast spread that adds nothing.
+      for (const name of ["NsAlias", "NsPlainPart", "CastOnly", "CastArg"]) expect(look.exports).toContain(name);
     } finally {
       rmSync(root, { recursive: true, force: true });
     }

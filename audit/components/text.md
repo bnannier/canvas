@@ -20,9 +20,9 @@ Audit checklist for `/components/text`. The facts block and the variants table a
 | Interactions registry | in the inventory; evidence: none registered |
 | Overlay recipe | none |
 | MeasureProps | not adopted |
-| Touch target | no minTarget or useMinTargetSlop in the source directory |
+| Touch target | no minTarget or useMinTargetSlop in the source modules |
 | Tests importing it | 5: `test/data-table.test.tsx`, `test/fonts.test.tsx`, `test/material-portal-context.test.tsx`, `test/numerals.test.tsx`, `test/organism-material-roles.test.tsx` |
-| E2E naming it | 1: `e2e/support/static-server.ts` |
+| E2E importing or driving it | 0: none |
 <!-- audit:facts:end -->
 
 ## Variants

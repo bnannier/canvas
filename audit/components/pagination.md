@@ -22,7 +22,7 @@ Audit checklist for `/components/pagination`. The facts block and the variants t
 | MeasureProps | not adopted |
 | Touch target | useMinTargetSlop in none; minTarget in `pagination.shared.tsx`, `pagination.styles.ts` |
 | Tests importing it | 8: `test/behavior.test.tsx`, `test/focus-ring.test.tsx`, `test/glass-controls.test.tsx`, `test/native-focus-fixtures.test.tsx`, `test/no-console-violations.test.tsx`, `test/pagination-look.test.tsx`, `test/text-contrast.test.tsx`, `test/touch-target-seed.test.tsx` |
-| E2E naming it | 0: none |
+| E2E importing or driving it | 0: none |
 <!-- audit:facts:end -->
 
 ## Variants

@@ -10,7 +10,7 @@ Audit checklist for `/templates/calendar`. The facts block and the variants tabl
 | Data module | `docs/src/core/data/templates/calendar.tsx` |
 | Sections | 1. Month view |
 | Kit imports in the module | Badge, Button, Calendar, Card, CardContent, CardHeader, CardSeparator, Column, Divider, Icon, Row, Typography, useToast |
-| E2E naming it | 0: none |
+| E2E driving it | 0: none |
 <!-- audit:facts:end -->
 
 ## Variants

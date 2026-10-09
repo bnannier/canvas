@@ -44,8 +44,13 @@ route. Each file is half generated and half hand-maintained:
   surface, so the facts read `dist/` and `bun run build` comes first); its interaction
   evidence and overlay recipe; the test files importing it (one of its exports imported
   from the kit, or any module in its source directory, so a `View` imported from
-  `react-native` or the word "Text" in a test does not count) and the e2e files naming its
-  exports or route; and its `MeasureProps`, `minTarget` and `useMinTargetSlop` adoption.
+  `react-native` or the word "Text" in a test does not count); the e2e files importing it
+  by the same rule, or driving the exact route of its docs page or of a hidden `/testing/*`
+  harness page whose module or fixtures render it (a string in code, not a comment, with
+  the route followed by a character that cannot continue a slug, so
+  `/components/button-group` does not credit Button); and its `MeasureProps`, `minTarget`
+  and `useMinTargetSlop` adoption, read as identifiers in the code of its TypeScript
+  modules (nested ones included, tests and the markdown left out).
   `bun tools/audit/facts.ts <slug>` prints the same as JSON.
 - **Variants** (generated, between `<!-- audit:variants:begin -->` and
   `<!-- audit:variants:end -->`): one row per variant with a tick cell per platform (Web 18,
@@ -70,9 +75,17 @@ route. Each file is half generated and half hand-maintained:
   `tools/audit/plan-specifics.ts`, so a new checklist always starts from the same text.
 - **Findings** (hand-maintained): one row per finding with id, severity, cell, summary,
   status (`open`, `verified`, `fixed`, `wontfix` with the owner's reason, `duplicate`) and
-  the fix commit.
+  the fix commit, which may be left off until there is one.
 - **Sign-off** (hand-maintained): one row per platform with the run id of the after-capture
   run that shows the component passing, the reviewer, the date and the result.
+
+Every table is read with one reader (`tools/audit/table.ts`): cells split on unescaped
+pipes only, an empty cell typed `| |` is an empty cell, and a `|` typed in a free-text
+column (a variant's note, a finding's summary, a sign-off's result) stays in that cell.
+A row it cannot read (too few cells, a severity or status that is not one of the table's
+words, an ID or platform twice, a row below the blank line that ends the table) is
+named by line by `audit:checklists:check` and listed under `audit:status`'s counts, never
+dropped from them silently.
 
 The seeded sections are written only when a file is first created; after that `--write`
 replaces the two generated blocks and carries everything else over byte for byte. Running
@@ -110,8 +123,8 @@ as "by design".
 | Command | What it does |
 |---|---|
 | `bun run audit:checklists` | writes new checklists and regenerates the facts block and variants table of existing ones; exits non-zero naming any file it left untouched to keep a reviewer's work |
-| `bun run audit:checklists:check` | fails on a route with no checklist, an orphan checklist (a `.md` file no route calls for), a stale facts block, a malformed variants row (by line number), variant rows that drift from the inventory, a variants table `--write` would rewrite, or a missing sign-off section; runs in CI (`validate.yml`) and the pre-push hook |
-| `bun run audit:status` | counts ticked variant cells per platform, ticked checklist items, open findings by severity and signed-off platforms across every checklist (`--json` for the rows) |
+| `bun run audit:checklists:check` | fails on a route with no checklist, an orphan checklist (a `.md` file no route calls for), a stale facts block, a malformed variants, findings or sign-off row (by line number), variant rows that drift from the inventory, a variants table `--write` would rewrite, or a missing findings table or sign-off section; runs in CI (`validate.yml`) and the pre-push hook |
+| `bun run audit:status` | counts ticked variant cells per platform, ticked checklist items, open findings by severity and signed-off platforms across every checklist (`--json` for the rows); lists any row or table it cannot read by file and line under the counts, and exits non-zero when there is one, since the counts then under-report |
 | `bun tools/audit/facts.ts <slug>` | prints one component's facts as JSON |
 
 When a kit change alters a fact (a new test, a skin that stops aliasing the web skin, a

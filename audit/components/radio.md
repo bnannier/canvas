@@ -20,9 +20,9 @@ Audit checklist for `/components/radio`. The facts block and the variants table 
 | Interactions registry | in the inventory; evidence: radio-selection (unit-web, test/behavior.test.tsx) |
 | Overlay recipe | none |
 | MeasureProps | not adopted |
-| Touch target | no minTarget or useMinTargetSlop in the source directory |
+| Touch target | no minTarget or useMinTargetSlop in the source modules |
 | Tests importing it | 12: `test/atom-material-roles.test.tsx`, `test/behavior.test.tsx`, `test/control-refs.test.tsx`, `test/control-space.test.tsx`, `test/fixtures/control-refs-consumer.tsx`, `test/focus-runtime.test.tsx`, `test/keyboard-nav.test.tsx`, `test/native-focus-fixtures.test.tsx`, `test/radio-idiom.test.tsx`, `test/sizing.test.tsx`, `test/skins-smoke.test.tsx`, `test/touch-target-clips.test.tsx` |
-| E2E naming it | 3: `e2e/behavior/keyboard.e2e.ts`, `e2e/journeys/control-refs.e2e.ts`, `e2e/responsive/component-widths.e2e.ts` |
+| E2E importing or driving it | 2: `e2e/behavior/keyboard.e2e.ts`, `e2e/journeys/control-refs.e2e.ts` |
 <!-- audit:facts:end -->
 
 ## Variants

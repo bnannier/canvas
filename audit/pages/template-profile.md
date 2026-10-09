@@ -10,7 +10,7 @@ Audit checklist for `/templates/profile`. The facts block and the variants table
 | Data module | `docs/src/core/data/templates/profile.tsx` |
 | Sections | 1. Identity header; 2. Record facets; 3. Layout principles |
 | Kit imports in the module | Avatar, Badge, Breadcrumb, Button, Card, Column, DataTable, DescriptionList, Divider, Grid, Icon, Row, Stats, Switch, Tabs, Typography, useToast |
-| E2E naming it | 0: none |
+| E2E driving it | 0: none |
 <!-- audit:facts:end -->
 
 ## Variants

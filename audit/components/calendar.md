@@ -20,9 +20,9 @@ Audit checklist for `/components/calendar`. The facts block and the variants tab
 | Interactions registry | in the inventory; evidence: calendar-selection (unit-web, test/behavior.test.tsx) |
 | Overlay recipe | none |
 | MeasureProps | not adopted |
-| Touch target | no minTarget or useMinTargetSlop in the source directory |
+| Touch target | no minTarget or useMinTargetSlop in the source modules |
 | Tests importing it | 7: `test/behavior.test.tsx`, `test/calendar-accessibility.test.tsx`, `test/native-accessibility-escape-hosts.test.tsx`, `test/native-focus-fixtures.test.tsx`, `test/organism-material-roles.test.tsx`, `test/responsive-narrow-fixes.test.tsx`, `test/text-contrast.test.tsx` |
-| E2E naming it | 0: none |
+| E2E importing or driving it | 0: none |
 <!-- audit:facts:end -->
 
 ## Variants

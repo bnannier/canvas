@@ -10,7 +10,7 @@ Audit checklist for `/templates/settings`. The facts block and the variants tabl
 | Data module | `docs/src/core/data/templates/settings.tsx` |
 | Sections | 1. Settings layout |
 | Kit imports in the module | Button, Card, Column, Divider, Input, Row, Select, Switch, Tabs, Typography, useToast |
-| E2E naming it | 0: none |
+| E2E driving it | 0: none |
 <!-- audit:facts:end -->
 
 ## Variants

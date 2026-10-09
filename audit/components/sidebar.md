@@ -10,7 +10,7 @@ Audit checklist for `/components/sidebar`. The facts block and the variants tabl
 | Markdown | `src/organisms/sidebar/sidebar.md` |
 | Source files | `sidebar.android.tsx`, `sidebar.drilldown.tsx`, `sidebar.ios.tsx`, `sidebar.item.tsx`, `sidebar.md`, `sidebar.shared.tsx`, `sidebar.styles.ts`, `sidebar.tsx` |
 | Exports | Sidebar |
-| Platform entries | iOS: own build: Sidebar (builds from its own iosSkin; injects platform parts (../drawer/drawer.ios.js); injects platform parts (../../atoms/badge/badge.ios.js)). Android: own build: Sidebar (builds from its own androidSkin; injects platform parts (../drawer/drawer.android.js); injects platform parts (../../atoms/badge/badge.android.js)) |
+| Platform entries | iOS: own build: Sidebar (builds from its own iosSkin; injects platform parts (../drawer/drawer.ios.js)). Android: own build: Sidebar (builds from its own androidSkin; injects platform parts (../drawer/drawer.android.js)) |
 | Platform-skins registry | iOS: Sidebar; Android: Sidebar |
 | Reference row | `sidebar` (Full, Built). iOS: link [sidebar (iOS 27)](https://www.sketch.com/s/04c24d8b-38fb-4afb-8836-36617e022f02/symbols?g=Sidebar). Android: link [sidebar (Android)](https://m3.material.io/components/navigation-drawer/overview). Web: link [sidebar (Web)](https://catalyst.tailwindui.com/docs/sidebar) |
 | Materials manifest | Sidebar: organisms, liquid + inherited; verification solid-appearance, glass-appearance, mode-switch, accessibility-fallback, runtime-capability, semantic-state |
@@ -20,9 +20,9 @@ Audit checklist for `/components/sidebar`. The facts block and the variants tabl
 | Interactions registry | in the inventory; evidence: none registered |
 | Overlay recipe | none |
 | MeasureProps | not adopted |
-| Touch target | no minTarget or useMinTargetSlop in the source directory |
+| Touch target | no minTarget or useMinTargetSlop in the source modules |
 | Tests importing it | 4: `test/focus-ring.test.tsx`, `test/hover-lift.test.tsx`, `test/sidebar.test.tsx`, `test/text-contrast.test.tsx` |
-| E2E naming it | 1: `e2e/a11y/structure.e2e.ts` |
+| E2E importing or driving it | 0: none |
 <!-- audit:facts:end -->
 
 ## Variants

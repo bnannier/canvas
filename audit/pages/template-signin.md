@@ -10,7 +10,7 @@ Audit checklist for `/templates/signin`. The facts block and the variants table 
 | Data module | `docs/src/core/data/templates/signin.tsx` |
 | Sections | 1. Centered card; 2. Split-screen; 3. Magic link |
 | Kit imports in the module | Button, Card, Checkbox, Column, Container, Divider, Emblem, EmptyState, Icon, Input, Row, ToastHandle, Typography, useToast |
-| E2E naming it | 1: `e2e/behavior/hydration-ids.e2e.ts` |
+| E2E driving it | 1: `e2e/behavior/hydration-ids.e2e.ts` |
 <!-- audit:facts:end -->
 
 ## Variants

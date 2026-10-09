@@ -10,7 +10,7 @@ Audit checklist for `/templates/billing`. The facts block and the variants table
 | Data module | `docs/src/core/data/templates/billing.tsx` |
 | Sections | 1. Plan and usage; 2. Payment method; 3. Invoices |
 | Kit imports in the module | AlertDialog, Badge, Button, Card, Column, DataTable, DescriptionList, Divider, Emblem, Grid, Icon, Progress, Row, Typography, useToast |
-| E2E naming it | 0: none |
+| E2E driving it | 0: none |
 <!-- audit:facts:end -->
 
 ## Variants
