@@ -1,15 +1,22 @@
-import { describe, it, expect, afterEach } from "bun:test";
-import { render, cleanup } from "@testing-library/react";
+import { describe, it, expect, afterEach, spyOn } from "bun:test";
+import { render, cleanup, screen } from "@testing-library/react";
 import { type ReactNode } from "react";
+import { Platform } from "react-native";
 import { ThemeProvider } from "../src/style/theme.tsx";
 import { radius } from "../src/style/tokens.ts";
 import { Image } from "../src/atoms/image/image.tsx";
+import { imageLabel, namedImageRole } from "../src/atoms/image/image.accessibility.ts";
+import { Avatar } from "../src/atoms/avatar/avatar.tsx";
+import { CardMedia } from "../src/molecules/card/card.tsx";
+import { MediaObject } from "../src/molecules/media-objects/media-objects.tsx";
 
 // Image is display-only, so what has to hold is the fit axis (each boolean reaches the
 // rendered fill, first match wins), the box it is given, and the name: react-native-web
 // names an image only from aria-label / accessibilityLabel and drops `alt`, so the shell
-// resolves the label itself and a named image is a role="img" with it, while an unnamed
-// one stays decorative (no role, no name, an empty alt on the hidden <img>).
+// resolves the label itself and hands it to react-native-web, whose hidden <img alt> is
+// then the one image node with that name; an unnamed image stays decorative (no role, no
+// name, an empty alt on the hidden <img>). The image role is native's alone: on the web
+// it would sit on the root above that <img> and name a second image.
 //
 // react-native-web draws the picture as a background layer (the root's first child) and
 // keeps a transparent <img> beside it for the context menu and the alt text; it mounts
@@ -83,34 +90,69 @@ describe("Image box", () => {
 });
 
 describe("Image name", () => {
-  it("names a role=img from `alt`, and the alt text reaches the hidden <img>", () => {
+  it("names one image from `alt`: the hidden <img>, under a root that takes no role", () => {
     const { container } = ui(<Image source={SRC} alt="Portrait of Kira Tanaka" testID="i" />);
     const root = rootOf(container);
-    expect(root.getAttribute("role")).toBe("img");
-    expect(root.getAttribute("aria-label")).toBe("Portrait of Kira Tanaka");
+    const named = screen.getAllByRole("img", { name: "Portrait of Kira Tanaka" });
+    expect(named).toHaveLength(1);
+    expect(named[0]).toBe(root.querySelector("img")!);
+    expect(root.getAttribute("role")).toBeNull();
     expect(altOf(container)).toBe("Portrait of Kira Tanaka");
   });
 
   it("names it the same way from `accessibilityLabel`", () => {
     const { container } = ui(<Image source={SRC} accessibilityLabel="Portrait of Kira Tanaka" testID="i" />);
-    const root = rootOf(container);
-    expect(root.getAttribute("role")).toBe("img");
-    expect(root.getAttribute("aria-label")).toBe("Portrait of Kira Tanaka");
+    expect(screen.getAllByRole("img", { name: "Portrait of Kira Tanaka" })).toHaveLength(1);
+    expect(rootOf(container).getAttribute("role")).toBeNull();
     expect(altOf(container)).toBe("Portrait of Kira Tanaka");
   });
 
   it("lets accessibilityLabel win over alt, and aria-label over both (React Native's order)", () => {
     const both = ui(<Image source={SRC} alt="Alt text" accessibilityLabel="Label" testID="i" />).container;
-    expect(rootOf(both).getAttribute("aria-label")).toBe("Label");
     expect(altOf(both)).toBe("Label");
     cleanup();
     const all = ui(<Image source={SRC} alt="Alt text" accessibilityLabel="Label" aria-label="Aria" testID="i" />).container;
-    expect(rootOf(all).getAttribute("aria-label")).toBe("Aria");
+    expect(altOf(all)).toBe("Aria");
+    // The resolver Image and CardMedia share, empty strings naming nothing.
+    expect(imageLabel({ alt: "Alt text", accessibilityLabel: "Label" })).toBe("Label");
+    expect(imageLabel({ alt: "Alt text", accessibilityLabel: "" })).toBe("Alt text");
+    expect(imageLabel({ alt: "" })).toBeUndefined();
   });
 
   it("keeps a caller's own role on a named image", () => {
     const { container } = ui(<Image source={SRC} alt="Chart preview" role="figure" testID="i" />);
     expect(rootOf(container).getAttribute("role")).toBe("figure");
+  });
+
+  it("takes no role on the web runtime and the image role on native", () => {
+    expect(namedImageRole()).toBeUndefined();
+    for (const platform of ["ios", "android"] as const) {
+      // react-native-web's Platform.select always picks web: exercise the native branch
+      // without changing the platform other test files see (the calendar's pattern).
+      const select = spyOn(Platform, "select").mockImplementation((specifics) => specifics[platform] ?? specifics.native ?? specifics.default);
+      try {
+        expect(namedImageRole(), platform).toBe("img");
+      } finally {
+        select.mockRestore();
+      }
+    }
+  });
+});
+
+// The kit's own pictures go through Image, so each one is a single image node too: an
+// Avatar photo, a CardMedia cover and a MediaObject's photo.
+describe("Image inside the kit", () => {
+  it("names each kit photo once", () => {
+    ui(
+      <>
+        <Avatar src="https://example.com/ada.jpg" name="Ada Lovelace" />
+        <CardMedia src="https://example.com/cover.jpg" alt="Workspace cover" />
+        <MediaObject src="https://example.com/rc.jpg" title="Rachel Chen" />
+      </>,
+    );
+    for (const name of ["Ada Lovelace", "Workspace cover", "Rachel Chen"]) {
+      expect(screen.getAllByRole("img", { name }), name).toHaveLength(1);
+    }
   });
 });
 

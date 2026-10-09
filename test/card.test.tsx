@@ -3,6 +3,7 @@ import { render, cleanup } from "@testing-library/react";
 import { type ReactNode } from "react";
 import { Text } from "react-native";
 import { ThemeProvider } from "../src/style/theme.tsx";
+import { Image } from "../src/atoms/image/image.tsx";
 import {
   Card,
   CardMedia,
@@ -122,24 +123,28 @@ describe("CardMedia", () => {
     expect(media.style.borderBottomRightRadius).toBe("");
   });
 
-  // The cover is named through Image's own resolution, so `alt` (or its alias) reaches the
-  // web as a named image; before, react-native-web dropped `alt` and the cover was a
-  // decorative <img alt="">, whatever the caller wrote.
-  it("names the cover from `alt`, as an image", () => {
+  // The cover is named through Image's own resolution, so `alt` (or `accessibilityLabel`)
+  // reaches the web as a named image; before, react-native-web dropped `alt` and the cover
+  // was a decorative <img alt="">, whatever the caller wrote.
+  it("names the cover from `alt`, as one image", () => {
     // A remote source, so react-native-web starts the load and mounts its hidden <img>.
-    const { getByTestId } = ui(<CardMedia src="https://example.com/kira-tanaka.jpg" alt="Portrait of Kira Tanaka" testID="m" />);
+    const { getByTestId, getAllByRole } = ui(<CardMedia src="https://example.com/kira-tanaka.jpg" alt="Portrait of Kira Tanaka" testID="m" />);
     const media = getByTestId("m");
-    expect(media.getAttribute("role")).toBe("img");
-    expect(media.getAttribute("aria-label")).toBe("Portrait of Kira Tanaka");
-    expect(media.querySelector("img")?.getAttribute("alt")).toBe("Portrait of Kira Tanaka");
+    const named = getAllByRole("img", { name: "Portrait of Kira Tanaka" });
+    expect(named).toHaveLength(1);
+    expect(named[0]).toBe(media.querySelector("img")!);
   });
 
-  it("names it from `accessibilityLabel` too, with `alt` winning when both are set", () => {
-    const alias = ui(<CardMedia src="/kira-tanaka.jpg" accessibilityLabel="Cover photo" testID="m" />);
-    expect(alias.getByTestId("m").getAttribute("aria-label")).toBe("Cover photo");
+  it("names it from `accessibilityLabel` too, in Image's order: accessibilityLabel wins over alt", () => {
+    const alias = ui(<CardMedia src="https://example.com/kira-tanaka.jpg" accessibilityLabel="Cover photo" testID="m" />);
+    expect(alias.getAllByRole("img", { name: "Cover photo" })).toHaveLength(1);
     cleanup();
-    const both = ui(<CardMedia src="/kira-tanaka.jpg" alt="Portrait" accessibilityLabel="Cover photo" testID="m" />);
-    expect(both.getByTestId("m").getAttribute("aria-label")).toBe("Portrait");
+    const both = ui(<CardMedia src="https://example.com/kira-tanaka.jpg" alt="Portrait" accessibilityLabel="Cover photo" testID="m" />);
+    expect(both.getByTestId("m").querySelector("img")?.getAttribute("alt")).toBe("Cover photo");
+    cleanup();
+    // The same pair on a bare Image resolves to the same name.
+    const image = ui(<Image source={{ uri: "https://example.com/kira-tanaka.jpg" }} alt="Portrait" accessibilityLabel="Cover photo" testID="i" />);
+    expect(image.getByTestId("i").querySelector("img")?.getAttribute("alt")).toBe("Cover photo");
   });
 
   it("is decorative with no name", () => {

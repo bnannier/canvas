@@ -63,9 +63,7 @@ export interface MediaObjectSkin {
   /** Row gap between the leading media, content column, and trailing slot. */
   containerBase: ViewStyle;
   /** Bordered card shape, padding, and elevation. Shared rendering supplies static
-   *  content frost in glass mode and the opaque token fill for solid fallback. State the
-   *  inset as the one `padding`: a tappable row with a trailing action splits it between
-   *  the row's tap area and the action column. */
+   *  content frost in glass mode and the opaque token fill for solid fallback. */
   borderedSurface: (tokens: ColorTokens) => ViewStyle;
   /** bordered-card border-color resolver. web/iOS paint the hairline tokens.border; on
    *  Android the M3 ELEVATED card separates by elevation, not an outline, so it returns
@@ -138,8 +136,7 @@ export interface MediaObjectProps {
   compact?: boolean;
   // Layout.
   truncate?: boolean;
-  /** E2E hook on the card. With both `onPress` and an `action` the card holds the row's
-   *  button and the action side by side, so the hook marks the card, not the button. */
+  /** E2E hook forwarded to the root element. */
   testID?: string;
   /** Composition within a parent only, never a restyle hook and never a width: the parent layout container provides the bounds. */
   style?: LayoutStyle;
@@ -172,9 +169,6 @@ function borderedColors(tokens: ColorTokens, skin: MediaObjectSkin): ViewStyle {
     backgroundColor: tokens.card,
   };
 }
-
-// The pressable row beside a trailing action: it takes the width the action leaves.
-const ROW_REGION: ViewStyle = { flexGrow: 1, flexShrink: 1, flexBasis: "0%", minWidth: 0 };
 
 /**
  * Build a MediaObject from a platform skin and the platform-correct leading Avatar
@@ -231,7 +225,7 @@ export function createMediaObject(skin: MediaObjectSkin, Avatar: AvatarComponent
 
     // The engine has no truncate utility; RN clamps text via numberOfLines, which
     // is the supported equivalent (single line with an ellipsis on overflow).
-    const lead = (
+    const inner = (
       <>
         {media}
         <View style={skin.content}>
@@ -248,11 +242,6 @@ export function createMediaObject(skin: MediaObjectSkin, Avatar: AvatarComponent
           {body != null ? <Text style={[skin.body, { color: tokens.foreground }]}>{body}</Text> : null}
         </View>
         {meta != null ? <Text style={[skin.meta, { color: tokens["muted-foreground"] }]}>{meta}</Text> : null}
-      </>
-    );
-    const inner = (
-      <>
-        {lead}
         {action != null ? <View style={skin.actionBox}>{action}</View> : null}
       </>
     );
@@ -261,13 +250,11 @@ export function createMediaObject(skin: MediaObjectSkin, Avatar: AvatarComponent
     // affordance, so a tappable media row needs no hand-rolled Pressable. Android
     // shows the native surface ripple; iOS/web dim opacity on press.
     if (props.onPress) {
-      // A button's content is presentational and its label replaces it, so the label
-      // has to carry every line the row shows (the title alone left the description
-      // and meta unannounced). The media stays out of it: the avatar repeats the
-      // title, and an icon glyph is decoration. A body that is not plain text cannot be
-      // read into a label. A row with no text at all names nothing, as before.
-      const textBody = typeof body === "string" || typeof body === "number" ? String(body) : null;
-      const a11yLabel = [title, description, textBody, meta].filter((line) => line != null && line !== "").join(", ") || undefined;
+      // A tappable row's accessible name is otherwise derived only from its
+      // descendant Text. An icon-only or photo-only row (no title/description/meta)
+      // would expose an unlabeled button, so fall back to the first available text
+      // prop to give the control a name for screen readers.
+      const a11yLabel = title ?? description ?? meta ?? undefined;
       // A bare (non-bordered) row is only as tall as its content, so back it out to the
       // platform minimum tap height (native minHeight; web = 0, unchanged). A bordered
       // row is already tall enough from its padding.
@@ -278,73 +265,19 @@ export function createMediaObject(skin: MediaObjectSkin, Avatar: AvatarComponent
       // surface's `elevation` moves to the wrapper while the inner keeps the iOS `shadow*`.
       const borderedElevation = bordered ? { elevation: bordered.elevation } : null;
       const { parent: elevParent, child: elevZero } = splitElevation(borderedElevation);
-
-      if (action == null) {
-        return (
-          <RippleClip shape={bordered ? cornerRadii(bordered) : undefined} style={[elevParent, fill, style]}>
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel={a11yLabel}
-              onPress={props.onPress}
-              testID={testID}
-              android_ripple={surfaceRipple(tokens)}
-              style={({ pressed }) => [props.bordered ? paneStyle(theme, surface) : surface, minTarget, elevZero, pressDim(pressed, skin.pressedOpacity)]}
-            >
-              {props.bordered ? <GlassPane layer="content" shape={surface} /> : null}
-              {inner}
-            </Pressable>
-          </RippleClip>
-        );
-      }
-
-      // With a trailing action the row cannot be one button: a control inside a button
-      // is invalid nesting (react-native-web renders both as <button>), and a screen
-      // reader meets one ambiguous control. So the surface is a plain frame holding two
-      // siblings, the pressable row and the action. The card's inset moves onto them:
-      // the row keeps it on its outer side and top and bottom, so its tap area still
-      // reaches the card's edge, and the action column keeps it on the other outer side.
-      // The frame's own gap separates the two exactly as it separated the action before,
-      // and is dead space between two targets. At rest it lays out as the one-node row did.
-      // The frame is the card, so it carries the testID, as the one-node card did.
-      const { padding: inset = 0, ...frame }: ViewStyle = bordered ?? {};
-      const rowAxis = { flexDirection: DIRECTION_ROW[direction] };
-      const frameStyle: StyleProp<ViewStyle> = [
-        skin.containerBase,
-        density?.containerBase,
-        rowAxis,
-        { alignItems: "stretch" },
-        bordered ? [frame, borderedColors(tokens, skin)] : null,
-      ];
-      // Start and end are the reading direction's; a reversed row puts the row at the end.
-      const rowOuter: ViewStyle = direction === "reversed" ? { paddingEnd: inset } : { paddingStart: inset };
-      const actionOuter: ViewStyle = direction === "reversed" ? { paddingStart: inset } : { paddingEnd: inset };
       return (
         <RippleClip shape={bordered ? cornerRadii(bordered) : undefined} style={[elevParent, fill, style]}>
-          <View testID={testID} style={[props.bordered ? paneStyle(theme, frameStyle) : frameStyle, elevZero]}>
-            {props.bordered ? <GlassPane layer="content" shape={frameStyle} /> : null}
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel={a11yLabel}
-              onPress={props.onPress}
-              android_ripple={surfaceRipple(tokens)}
-              style={({ pressed }) => [
-                skin.containerBase,
-                density?.containerBase,
-                rowAxis,
-                { alignItems: ALIGN_ITEMS[align] },
-                ROW_REGION,
-                { paddingVertical: inset },
-                rowOuter,
-                minTarget,
-                pressDim(pressed, skin.pressedOpacity),
-              ]}
-            >
-              {lead}
-            </Pressable>
-            <View style={[skin.actionBox, { justifyContent: align === "center" ? "center" : "flex-start", paddingVertical: inset }, actionOuter]}>
-              {action}
-            </View>
-          </View>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={a11yLabel}
+            onPress={props.onPress}
+            testID={testID}
+            android_ripple={surfaceRipple(tokens)}
+            style={({ pressed }) => [props.bordered ? paneStyle(theme, surface) : surface, minTarget, elevZero, pressDim(pressed, skin.pressedOpacity)]}
+          >
+            {props.bordered ? <GlassPane layer="content" shape={surface} /> : null}
+            {inner}
+          </Pressable>
         </RippleClip>
       );
     }

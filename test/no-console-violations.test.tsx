@@ -23,7 +23,6 @@ import { DashboardGrid } from "../src/organisms/dashboard-grid/dashboard-grid.ts
 import { StackedList } from "../src/molecules/stacked-lists/stacked-lists.tsx";
 import { Tooltip } from "../src/atoms/tooltip/tooltip.tsx";
 import { Button } from "../src/atoms/button/button.tsx";
-import { MediaObject } from "../src/molecules/media-objects/media-objects.tsx";
 
 // A console-error gate: React DOM (which react-native-web renders through) logs a
 // DOM-nesting violation whenever one interactive element ends up inside another —
@@ -180,16 +179,6 @@ describe("no DOM-nesting console violations at render", () => {
         <Tooltip open label="Glass on">
           <Button ghost icon accessibilityLabel="Glass on" iconLeft={<Text>G</Text>} onPress={() => {}} />
         </Tooltip>
-        {/* A tappable MediaObject with a trailing action keeps the action BESIDE the
-            row's button (it used to render inside it). */}
-        <MediaObject
-          bordered
-          avatar="AL"
-          title="Ada Lovelace"
-          description="ada@example.com"
-          onPress={() => {}}
-          action={<Button outline small onPress={() => {}}>Invite</Button>}
-        />
       </>,
     );
     expect(violations).toEqual([]);

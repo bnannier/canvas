@@ -125,8 +125,9 @@ export function createDivider(skin: DividerSkin) {
           role={isText ? "separator" : undefined}
           // A separator's children are presentational, so the web never read the label
           // inside it: the separator takes its name from the label instead. A reference
-          // rather than a copied aria-label, so the native tree, which reads the label
-          // text itself, is not handed the same words twice.
+          // rather than a copied aria-label, meant to leave the native tree reading the
+          // label text once: iOS has no labelled-by relation and reaches the label Text
+          // itself, and Android only links the two (setLabeledBy).
           aria-labelledby={isText ? labelId : undefined}
           testID={testID}
           style={[{ flexDirection: "row", alignItems: "center", gap: skin.labelGap }, style]}

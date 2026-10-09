@@ -1,5 +1,5 @@
 import { type ComponentType, type ReactNode } from "react";
-import { View, Text, useTheme, useContainerWidth, widths, type StyleProp, type ViewStyle, type LayoutStyle } from "../../style/index.js";
+import { View, Text, useTheme, type StyleProp, type ViewStyle, type LayoutStyle } from "../../style/index.js";
 import { Card as WebCard } from "../card/card.js";
 import { type CardProps } from "../card/card.shared.js";
 import { Button as WebButton } from "../../atoms/button/button.js";
@@ -31,13 +31,12 @@ import { type ActionPanelSkin, type Tone, type Layout, titleColor } from "./acti
 //   (red) Button; omit for the neutral tone, where the action is a primary
 //   Button. This is the "danger zone" switch.
 // - Layout (pick one): `inline` floats the action to the right of the copy, the
-//   two reading as one side-by-side row (a row narrower than the `md` measure,
-//   measured on the row itself, stacks the action under the copy); omit for the
-//   default, where the action sits on its own line below the copy.
+//   two reading as one side-by-side row; omit for the default, where the action
+//   sits on its own line below the copy.
 // - Affordance: `toggle` makes the action an on/off Switch (its state is
-//   `checked`) instead of a Button; the panel is a setting row, the Switch's own
-//   row with the title as its label and the description as its muted line. Omit
-//   for the default Button action.
+//   `checked`) instead of a Button; the panel reads as a setting row, always
+//   laid out inline with the Switch pinned to the right. Omit for the default
+//   Button action.
 //
 // The axes are orthogonal: `<ActionPanel destructive inline />` is a red
 // action sitting to the right of its danger copy, and `<ActionPanel toggle
@@ -61,15 +60,12 @@ export interface ActionPanelProps {
   actionLabel?: string;
   /** Fired when the action button is pressed. */
   onAction?: () => void;
-  // Tone (omit for the neutral, primary-action default): a red title and a destructive
-  // Button. A toggle's Switch label carries no tone.
+  // Tone (omit for the neutral, primary-action default).
   destructive?: boolean;
-  // Layout (pick one; default stacks the action below the copy). Inline stacks too
-  // when the row is narrower than the `md` measure.
+  // Layout (pick one; default stacks the action below the copy).
   inline?: boolean;
   // Affordance: render the action as an on/off Switch instead of a Button. The
-  // panel is the Switch's own setting row in this mode: the title is its label and
-  // the description its muted line, and the whole row toggles.
+  // panel always lays out inline in this mode.
   toggle?: boolean;
   /** The Switch on/off state when `toggle` is set (CONTROLLED). Omit for uncontrolled use. */
   checked?: boolean;
@@ -142,53 +138,13 @@ export function createActionPanel(
     const { title, description, actionLabel, onAction, toggle, checked, defaultChecked, onToggle, children, testID, style } = props;
     const { tokens } = useTheme();
     const tone = toneOf(props);
-    // The inline row measures its own width (the container tier, never the window):
-    // a panel can be narrow on a phone or in a desktop side column alike. Until it has
-    // measured, the window stands in, so a phone's first frame already stacks.
-    const { width: rowWidth, onLayout: onRowLayout } = useContainerWidth();
+    // The toggle affordance always reads as an inline settings row.
+    const layout = toggle ? "inline" : layoutOf(props);
 
-    // The toggle affordance is a setting row, and the Switch owns its label anatomy:
-    // the title is its label, the description its muted line, and the whole row is
-    // the tap target (a switch beside sibling copy split that target and drifted from
-    // the Switch's own type). A title-less panel names the switch by its action label.
-    // The Switch's label carries no tone, so `destructive` changes nothing here.
-    if (toggle) {
-      const setting = (
-        <Switch
-          checked={checked}
-          defaultChecked={defaultChecked}
-          onValueChange={onToggle}
-          description={description}
-          accessibilityLabel={title == null ? actionLabel : undefined}
-        >
-          {title}
-        </Switch>
-      );
-      return (
-        <Card padded testID={testID} style={style}>
-          {children != null ? (
-            <View style={{ gap: skin.stackedGap }}>
-              {setting}
-              {children}
-            </View>
-          ) : (
-            setting
-          )}
-        </Card>
-      );
-    }
-
-    const layout = layoutOf(props);
-    // An inline row narrower than the `md` measure (a phone's card, a side column)
-    // stacks its action under the copy; at `md` and wider the copy keeps a readable
-    // column beside the action.
-    const narrow = layout === "inline" && rowWidth > 0 && rowWidth <= widths.md;
-    const sideBySide = layout === "inline" && !narrow;
-
-    // The copy block: title above its consequence line. Beside the action it grows
-    // to push the action to the right; stacked, it sits above the action.
+    // The copy block: title above its consequence line. In the inline layout it
+    // grows to push the action to the right; stacked, it sits above the action.
     const copy = (
-      <View style={[{ gap: skin.copyGap }, sideBySide ? copyGrow : null]}>
+      <View style={[{ gap: skin.copyGap }, layout === "inline" ? copyGrow : null]}>
         {title != null ? (
           <Text style={[skin.titleType, { color: titleColor(tokens, tone) }]}>{title}</Text>
         ) : null}
@@ -198,56 +154,57 @@ export function createActionPanel(
       </View>
     );
 
-    // The action: a destructive (red) Button in the danger zone or a primary Button
+    // The action. In toggle mode it is an on/off Switch pinned to the right;
+    // otherwise a destructive (red) Button in the danger zone or a primary Button
     // otherwise, small to sit comfortably inside the panel.
-    const action =
-      actionLabel != null ? (
-        <View style={sideBySide ? actionPinned : actionStacked}>
-          <Button small destructive={tone === "destructive"} primary={tone !== "destructive"} onPress={onAction}>
-            {actionLabel}
-          </Button>
-        </View>
-      ) : null;
+    const action = toggle ? (
+      <View style={actionPinned}>
+        <Switch
+          checked={checked}
+          defaultChecked={defaultChecked}
+          onValueChange={onToggle}
+          accessibilityLabel={title ?? actionLabel}
+        />
+      </View>
+    ) : actionLabel != null ? (
+      <View style={layout === "inline" ? actionPinned : actionStacked}>
+        <Button small destructive={tone === "destructive"} primary={tone !== "destructive"} onPress={onAction}>
+          {actionLabel}
+        </Button>
+      </View>
+    ) : null;
 
     // The body. Stacked, the whole panel IS one gap column, so embedded children
-    // simply take their place in it between the copy and the action. Inline, the
-    // action is pinned beside the copy, so the row stays intact and the children
-    // hang below it, full width, in a gap column of the same stacked rhythm; a row
-    // too narrow for both stacks the action under its copy and keeps the children
-    // below. Absent children the inline body is the bare row it has always been:
-    // the Card keeps receiving exactly one child either way, so the panel, not the
-    // Card's own flat-children gap, owns the spacing.
-    if (layout === "inline") {
-      const row = (
-        <View
-          onLayout={onRowLayout}
-          style={sideBySide ? { flexDirection: "row", alignItems: skin.inlineAlign, gap: skin.inlineGap } : { gap: skin.stackedGap }}
-        >
+    // simply take their place in it between the copy and the action. Inline (and
+    // in toggle mode) the action is pinned beside the copy, so the row stays
+    // intact and the children hang below it, full width, in a gap column of the
+    // same stacked rhythm. Absent children the inline body is the bare row it has
+    // always been: the Card keeps receiving exactly one child either way, so the
+    // panel, not the Card's own flat-children gap, owns the spacing.
+    const body =
+      layout === "inline" ? (
+        <View style={{ flexDirection: "row", alignItems: skin.inlineAlign, gap: skin.inlineGap }}>
           {copy}
           {action}
         </View>
-      );
-      return (
-        <Card padded testID={testID} style={style}>
-          {children != null ? (
-            <View style={{ gap: skin.stackedGap }}>
-              {row}
-              {children}
-            </View>
-          ) : (
-            row
-          )}
-        </Card>
-      );
-    }
-
-    return (
-      <Card padded testID={testID} style={style}>
+      ) : (
         <View style={{ gap: skin.stackedGap }}>
           {copy}
           {children}
           {action}
         </View>
+      );
+
+    return (
+      <Card padded testID={testID} style={style}>
+        {layout === "inline" && children != null ? (
+          <View style={{ gap: skin.stackedGap }}>
+            {body}
+            {children}
+          </View>
+        ) : (
+          body
+        )}
       </Card>
     );
   };
