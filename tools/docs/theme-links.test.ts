@@ -33,11 +33,51 @@ describe("docs external appearance links", () => {
   });
 
   it("ignores absent, malformed and unsupported axes without resetting anything", () => {
-    for (const url of [null, "", "not a url", "canvas:///components/button", "canvas:///theming?scheme=system&surface=flat"]) {
+    for (const url of [null, "", "not a url", "canvas:///components/button", "canvas:///theming?scheme=system&surface=flat&palette=teal"]) {
       expect(themeFromURL(url)).toEqual({});
     }
-    expect(themeFromParams({ scheme: [], surface: ["invalid", "solid"] })).toEqual({});
+    expect(themeFromParams({ scheme: [], surface: ["invalid", "solid"], palette: ["invalid", "mint"] })).toEqual({});
     expect(themeFromURL("https://canvas.nannier.com/theming?scheme=light&surface=invalid")).toEqual({ scheme: "light" });
+  });
+
+  it("reads the palette axis beside the other two and accepts only the kit's light palettes", () => {
+    expect(themeFromURL("canvas:///theming?palette=mint")).toEqual({ palette: "mint" });
+    expect(themeFromURL("canvas:///theming?palette=blush")).toEqual({ palette: "blush" });
+    expect(themeFromURL("canvas:///theming?palette=Mint")).toEqual({});
+    expect(themeFromParams({ palette: ["mint", "blush"] })).toEqual({ palette: "mint" });
+    expect(themeFromURL("https://canvas.nannier.com/components/button?scheme=light&surface=solid&palette=mint")).toEqual({ scheme: "light", surface: "solid", palette: "mint" });
+  });
+
+  it("carries dark and mint together: the kit, not the link, resolves dark over mint", () => {
+    expect(themeFromURL("canvas:///components/button?scheme=dark&palette=mint")).toEqual({ scheme: "dark", palette: "mint" });
+    expect(themeFromParams({ scheme: "dark", palette: "mint" })).toEqual({ scheme: "dark", palette: "mint" });
+  });
+
+  it("applies a warm palette-only request, including the same link reopened after a manual change", () => {
+    const url = "canvas:///theming?palette=mint";
+    const links = nativeLinks(url);
+    let theme: ThemeLinkOverrides = { scheme: "dark", surface: "glass", palette: "blush" };
+    const unsubscribe = subscribeThemeLinks(links.source, url, (next) => { theme = { ...theme, ...next }; });
+    expect(theme).toEqual({ scheme: "dark", surface: "glass", palette: "blush" });
+    links.open(url);
+    expect(theme).toEqual({ scheme: "dark", surface: "glass", palette: "mint" });
+    theme = { ...theme, palette: "blush" };
+    links.open(url);
+    expect(theme).toEqual({ scheme: "dark", surface: "glass", palette: "mint" });
+    unsubscribe();
+  });
+
+  it("preserves the palette a link omits, and the other axes when a link names only the palette", () => {
+    const links = nativeLinks(null);
+    let theme: ThemeLinkOverrides = { scheme: "light", surface: "solid", palette: "mint" };
+    const unsubscribe = subscribeThemeLinks(links.source, null, (next) => { theme = { ...theme, ...next }; });
+    links.open("canvas:///theming?scheme=dark");
+    expect(theme).toEqual({ scheme: "dark", surface: "solid", palette: "mint" });
+    links.open("canvas:///theming?palette=blush");
+    expect(theme).toEqual({ scheme: "dark", surface: "solid", palette: "blush" });
+    links.open("canvas:///theming?palette=teal");
+    expect(theme).toEqual({ scheme: "dark", surface: "solid", palette: "blush" });
+    unsubscribe();
   });
 
   it("applies a warm external request including the same link reopened after a manual toggle", () => {

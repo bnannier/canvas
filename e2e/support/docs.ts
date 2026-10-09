@@ -9,22 +9,42 @@
  *      trade recorded in docs/src/app/_layout.tsx: rendering early moved Cumulative
  *      Layout Shift from 0.006 to 0.16). So "loaded" is not "painted", and the wait
  *      has to be for paint.
- *   2. The scheme and surface are seeded from the LAUNCH url only (?scheme, ?surface,
- *      read once via a ref in docs/src/theme/docs-theme.tsx, since the docs store
- *      nothing by privacy declaration). A client-side navigation cannot change them,
- *      and the app defaults to dark + glass.
+ *   2. The scheme, surface and palette are seeded from the LAUNCH url only (?scheme,
+ *      ?surface, ?palette, read once via a ref in docs/src/theme/docs-theme.tsx, since
+ *      the docs store nothing by privacy declaration). A client-side navigation cannot
+ *      change them, and the app defaults to dark + glass (+ blush once light).
  *
- * Reading the scheme back off the painted pixels covers both at once, and it is what
- * keeps a silent no-op from passing as a capture: the screenshot script this suite
- * replaced once seeded a localStorage key no part of the docs app reads (it belongs
- * to the kit's web CSS hand-off, which the docs do not use), so an entire "light"
- * screenshot set was really dark and nothing said so. This function fails instead.
+ * Reading the scheme and the palette back off the painted pixels covers both at once,
+ * and it is what keeps a silent no-op from passing as a capture: the screenshot script
+ * this suite replaced once seeded a localStorage key no part of the docs app reads (it
+ * belongs to the kit's web CSS hand-off, which the docs do not use), so an entire
+ * "light" screenshot set was really dark and nothing said so. This function fails
+ * instead.
  */
 import { expect, type Locator, type Page } from "@playwright/test";
+import { colorsFor } from "../../src/style/tokens.ts";
 
 export type Scheme = "dark" | "light";
 export type Surface = "solid" | "glass";
+export type Palette = "blush" | "mint";
 export type FormFactor = "phone" | "largePhone" | "tablet" | "laptop" | "desktop" | "full";
+
+/**
+ * A look the docs open in: a scheme, and for the light scheme the palette it paints.
+ * Dark names no palette, since the kit paints its one dark palette whatever the link
+ * says (`colorsFor` resolves it the same way). The id names a capture's directory.
+ */
+export interface Look {
+  id: "blush" | "mint" | "dark";
+  scheme: Scheme;
+  palette?: Palette;
+}
+
+export const LOOKS: readonly Look[] = [
+  { id: "blush", scheme: "light", palette: "blush" },
+  { id: "mint", scheme: "light", palette: "mint" },
+  { id: "dark", scheme: "dark" },
+];
 
 /** The prefix an EXPO_BASE_URL build is mounted under; empty for a root-served export. */
 export const BASE_PATH = (process.env.E2E_BASE_PATH ?? "").replace(/\/+$/, "");
@@ -59,18 +79,37 @@ function dominantBackground(): [number, number, number] | null {
   return best;
 }
 
+/** The background the page is currently painting as [r, g, b], or null before it has painted at all. */
+export async function readBackground(page: Page): Promise<[number, number, number] | null> {
+  return page.evaluate(dominantBackground).catch(() => null);
+}
+
 /** The scheme the page is currently painting, or null before it has painted at all. */
 export async function readScheme(page: Page): Promise<Scheme | null> {
-  const rgb = await page.evaluate(dominantBackground).catch(() => null);
+  const rgb = await readBackground(page);
   if (!rgb) return null;
   const [r, g, b] = rgb;
   return (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255 < 0.5 ? "dark" : "light";
 }
 
+/** A `#rrggbb` token as the [r, g, b] a computed style reports it. */
+export function channels(hex: string): [number, number, number] {
+  const n = parseInt(hex.slice(1), 16);
+  return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
+}
+
+// How far, per channel, a painted background may sit from the palette's token. A
+// computed style reports a hex fill exactly; the allowance is for a renderer that
+// rounds a composited fill, not for a different color (the two light palettes are 5
+// or more apart on every channel).
+const PALETTE_TOLERANCE = 2;
+
 export interface GotoOptions {
   scheme?: Scheme;
   /** Solid is the default here (glass frosts are GPU-nondeterministic). */
   surface?: Surface;
+  /** The light palette; blush, the kit's default, unless named. Dark paints the one dark palette whichever is named. */
+  palette?: Palette;
   /** Resize before navigating, so the app lays out once at the target width. */
   viewport?: { width: number; height: number };
 }
@@ -87,17 +126,24 @@ export interface GotoOptions {
  *
  * `emulateMedia` matters for exactly one page: the baked static /privacy export
  * follows prefers-color-scheme, since it is plain HTML and never sees the seed.
+ *
+ * In the light scheme the painted background is then held to the palette's own
+ * token (`colorsFor`), since a light page in the wrong palette reads as light all
+ * the same. That page without an app has no palette axis at all: a palette asked
+ * for by name fails there rather than passing unpainted.
  */
 export async function gotoDocs(page: Page, route: string, options: GotoOptions = {}): Promise<void> {
   const scheme = options.scheme ?? "dark";
   const surface = options.surface ?? "solid";
+  const palette = options.palette ?? "blush";
   if (options.viewport) await page.setViewportSize(options.viewport);
   await page.emulateMedia({ colorScheme: scheme });
-  const query = `scheme=${scheme}&surface=${surface}`;
+  const query = `scheme=${scheme}&surface=${surface}&palette=${palette}`;
   const separator = route.includes("?") ? "&" : "?";
   await page.goto(`${BASE_PATH}${route}${separator}${query}`, { waitUntil: "load" });
   // The baked /privacy page is plain HTML with no app root and nothing to hydrate.
-  if ((await page.locator("#root").count()) > 0) {
+  const app = (await page.locator("#root").count()) > 0;
+  if (app) {
     await page.locator("html[data-hydrated]").waitFor({ state: "attached", timeout: 20_000 });
   }
   // What the poll saw decides what a failure says. A page read in the wrong look, or
@@ -126,6 +172,21 @@ export async function gotoDocs(page: Page, route: string, options: GotoOptions =
         ? `${route} never painted in ${scheme}: ${readings} readings, ${lastReading} (a missing font or a failed bundle both look like this)`
         : `${route} stopped answering: the paint check's evaluation did not return, after ${readings} readings${readings ? `, ${lastReading}` : ""}; what the page painted is unknown`,
       { cause: error },
+    );
+  }
+  if (scheme !== "light") return;
+  if (!app) {
+    if (options.palette) throw new Error(`${route} is baked HTML with no app to seed a palette into, so it cannot open in ${options.palette}`);
+    return;
+  }
+  // The palette lands in the same commit as the scheme (one transition applies the
+  // whole seed), so by now the backdrop is the palette's, or it is the wrong one.
+  const expected = channels(colorsFor(palette, "light").background);
+  const painted = await readBackground(page);
+  const distance = painted ? Math.max(...painted.map((channel, i) => Math.abs(channel - expected[i]))) : Infinity;
+  if (distance > PALETTE_TOLERANCE) {
+    throw new Error(
+      `${route} painted in light but not in ${palette}: the background is ${painted ? `rgb(${painted.join(", ")})` : "no opaque surface"} where ${palette}'s is rgb(${expected.join(", ")})`,
     );
   }
 }
