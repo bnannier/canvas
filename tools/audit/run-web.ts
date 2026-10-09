@@ -219,7 +219,7 @@ async function main(): Promise<number> {
     files: {
       cells: CELLS_FILE,
       ...(variantPlan ? { cell: "web/<slug>/<variant>/<width>.<look>.<surface>/{card.png, probe.json}" } : {}),
-      ...(statePlan ? { state: `${STATES_DIR}/<slug>/<state>.<row>/<width>.<look>.<surface>/{state.png, probe.json} (probe.json alone for a state not reached)` } : {}),
+      ...(statePlan ? { state: `${STATES_DIR}/<slug>/<name>.<row>/<width>.<look>.<surface>/{state.png, probe.json} (the name: the state, or <state>-<variant> for a state with several recipes; probe.json alone for a state not reached)` } : {}),
       ...(pagePlan ? { page: `${PAGES_DIR}/<kind>-<slug>/<width>.<look>.<surface>/{viewport.png, section.<key>.png, probe.json}` } : {}),
     },
   };

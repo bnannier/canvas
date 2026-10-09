@@ -38,7 +38,7 @@ if (kinds.states) {
           const record = await captureStateCell(
             session,
             { ...cell, slug: group.slug, look: group.look, surface: group.surface },
-            recipeFor(group.slug, cell.state),
+            recipeFor(group.slug, cell.name),
             { runDir, worker: testInfo.workerIndex, examples: group.examples, axe: axeApplies(filters.axe, cell.width.key, group.surface) },
           );
           recordCell(runDir, record);

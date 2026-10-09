@@ -363,6 +363,17 @@ describe("drawing sheets", () => {
     expect(await stateSheets("button", [])).toEqual([]);
   });
 
+  it("draws a row per recipe of a state a component has several of, in the state table's order, and none for a recipe the table no longer has", async () => {
+    dir = mkdtempSync(join(tmpdir(), "audit-sheets-"));
+    const run: AuditRun = { id: "20261009-100000-web-aaaaaaa", dir: join(dir, "web-run"), platform: "web", startedAt: "2026-10-09T10:00:00.000Z", status: "complete", finished: true, sha: null, dirty: null, fingerprint: null, fresh: true, served: null };
+    // The name Dropdown's one disabled recipe had before it gained a second, then the two it has, out of order.
+    const ids = ["disabled", "disabled-disableditem", "disabled-disabledtrigger"].map((name) => `web-states/dropdown/${name}.web/desktop.blush.solid`);
+    const { cells } = readRunCells(run, ids.map((id) => JSON.stringify({ kind: "state", id, status: "ok", flags: [] })).join("\n"));
+    const [sheet] = await stateSheets("dropdown", cells);
+    expect(sheet!.grid.rowKeys).toEqual(["disabled-disabledtrigger.web", "disabled-disableditem.web"]);
+    expect(sheet!.grid.tiles.map((row) => row[0]!.label)).toEqual([ids[2], ids[1]]);
+  });
+
   it("lays out a page's real first screens by look and width, per surface, and draws them", async () => {
     dir = checkoutWithRealRuns();
     const { cells } = currentCells(dir, { only: null, runs: null });

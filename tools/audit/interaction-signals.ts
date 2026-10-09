@@ -33,6 +33,18 @@
 //               opens two (the Calendar's hover card and its day peek) owes each a recipe.
 //   look        a function of the component (a skin, a Pressable's style callback) taking
 //               `pressed`, `hovered` or `focused`: its look changes with that state.
+//   disabled    `disabled`, `aria-disabled` or the `disabled` of an `accessibilityState`,
+//               given a value that can be true, on a primitive, or `disabled` handed to
+//               another kit component (AlertDialog's confirm Button): a control the
+//               component disables; a disabled state. What makes it disabled is read from
+//               its value (`disabledBy`): the props it is true with (`disabled`, or
+//               `withInput` through `const confirmGated = !!withInput && ...`), and the keys
+//               of the data it reads (`item.disabled`), which an example writes in the items
+//               it passes (`{ label: "Archive", disabled: true }`). One rendered inside an overlay
+//               the component opens is placed there (`within`): it is on the page only once
+//               the overlay opens. One inside an overlay that its own gate keeps closed (a
+//               Select's option rows, disabled with the Select, whose list `!disabled && ...`
+//               never opens) is never on the page, so gives nothing.
 //
 // The props are read wherever the element gets them: written on its tag, or spread onto it
 // (`{...hoverProps}`, `{...(open ? a : b)}`, `{...target}`) from a value the reader can
@@ -69,10 +81,10 @@ import { dirname, join, relative, resolve } from "node:path";
 import ts from "typescript";
 import { StaticReader, boundNames, unwrap, type Binding } from "./static-eval.ts";
 
-export type SignalKind = "press" | "responder" | "hover-in" | "hover" | "text-entry" | "link" | "tab-stop" | "overlay" | "look";
+export type SignalKind = "press" | "responder" | "hover-in" | "hover" | "text-entry" | "link" | "tab-stop" | "overlay" | "look" | "disabled";
 
 /** The states a signal gives a component. */
-export type SignalState = "hover" | "focus" | "pressed" | "open";
+export type SignalState = "hover" | "focus" | "pressed" | "open" | "disabled";
 
 export interface Signal {
   kind: SignalKind;
@@ -97,6 +109,20 @@ export interface Signal {
    * recipe that opens one names it (e2e/support/state-recipes.ts `StateRecipe.opens`).
    */
   overlay?: string;
+  /**
+   * For a disabled control: the ways it is disabled, apart from what renders it (`gates`),
+   * each with the component's props its value is true only with (`disabled`, `withInput`)
+   * and the keys of the data it reads (`item.disabled`), which an example writes in the items
+   * it passes (`{ label: "Archive", disabled: true }`); `disabled || loading` has two. A way
+   * with neither is the component disabling it by itself (a stepper's minus at its minimum, a
+   * carousel's previous arrow on its first slide).
+   */
+  disabledBy?: DisabledBy;
+  /**
+   * For a disabled control rendered inside an overlay the component opens: that overlay, by
+   * the name its own signal carries (`overlay`). Absent for one on the component's own surface.
+   */
+  within?: string;
 }
 
 /** What the source says about the element a handler is on. */
@@ -119,6 +145,50 @@ const TAB_STOP_ROLES = new Set(["button", "checkbox", "radio", "switch", "textbo
 const OVERLAY_TAGS = new Set(["Modal", "AnchoredOverlay", "Portal"]);
 /** The props a kit overlay component opens on. */
 const OPEN_PROPS = ["open", "visible"];
+/** The props that disable a primitive outright; an `accessibilityState` disables it through its `disabled`. */
+const DISABLED_PROPS = new Set(["disabled", "aria-disabled"]);
+
+/** One way a disabled value is true: the props it is true only with, and the keys of the data it reads. */
+export interface DisabledWay {
+  props: string[];
+  keys: string[];
+}
+
+/** The ways a disabled value is true (`disabled || loading` has two); it is when any one of them holds. */
+export type DisabledBy = DisabledWay[];
+
+/**
+ * The overlay a node renders inside: its name (the one the overlay's own signal carries), and
+ * the component's props that, passed, keep it closed (`disabled`, for a menu whose `const
+ * open = !disabled && ...`).
+ */
+interface Around {
+  name: string;
+  closedBy: string[];
+}
+
+/**
+ * Whether a disabled control inside an overlay is never on the page: the overlay is kept
+ * closed whenever the control renders (a gate that closes it), or whichever way the control
+ * is disabled (a Select's option rows, disabled with the Select, whose list never opens then).
+ */
+const shutIn = (around: Around, gates: readonly string[], ways: DisabledBy): boolean =>
+  gates.some((prop) => around.closedBy.includes(prop)) || ways.every((way) => way.props.some((prop) => around.closedBy.includes(prop)));
+
+/** True with nothing in particular: the component disables the control by itself. */
+const BY_ITSELF: DisabledBy = [{ props: [], keys: [] }];
+const uniqueWays = (ways: DisabledBy): DisabledBy => {
+  const seen = new Map<string, DisabledWay>();
+  for (const way of ways) {
+    const tidy = { props: [...new Set(way.props)].sort(), keys: [...new Set(way.keys)].sort() };
+    seen.set(JSON.stringify(tidy), tidy);
+  }
+  return [...seen.values()];
+};
+/** True when both are: every way of one beside every way of the other. */
+const allOf = (a: DisabledBy, b: DisabledBy): DisabledBy => uniqueWays(a.flatMap((x) => b.map((y) => ({ props: [...x.props, ...y.props], keys: [...x.keys, ...y.keys] }))));
+/** True when either is. */
+const anyOf = (a: DisabledBy, b: DisabledBy): DisabledBy => uniqueWays([...a, ...b]);
 
 /**
  * A prop an element is given, written on its tag or spread onto it. `value` is null for a
@@ -347,6 +417,13 @@ export class SignalReader {
       if ((op === ts.SyntaxKind.EqualsEqualsEqualsToken || op === ts.SyntaxKind.EqualsEqualsToken) && ts.isTypeOfExpression(unwrap(e.left))) {
         return this.truthyProps(module, (unwrap(e.left) as ts.TypeOfExpression).expression);
       }
+      // A kind picked from the props (`kind === "split"`, `const kind = kindOf(props)`): the props that pick it.
+      if (op === ts.SyntaxKind.EqualsEqualsEqualsToken || op === ts.SyntaxKind.EqualsEqualsToken) {
+        const left = unwrap(e.left);
+        const right = unwrap(e.right);
+        const literal = ts.isStringLiteral(right) ? right : ts.isStringLiteral(left) ? left : null;
+        if (literal) return this.pickedBy(module, literal === right ? e.left : e.right, literal.text) ?? [];
+      }
       return [];
     }
     const prop = this.propOf(module, e);
@@ -359,6 +436,76 @@ export class SignalReader {
         const init = binding.decl.initializer;
         return [...new Set([...(this.passedProps(module, init) ?? []), ...this.truthyProps(module, init)])];
       }
+    }
+    return [];
+  }
+
+  /**
+   * The props a value must have been given for it to be the string `text`: null when it
+   * never is, [] when it is with nothing in particular. Read through a local constant, a
+   * conditional (`split ? "split" : ...`) and a local helper that picks a kind from the props
+   * object it is handed (`kindOf(props)`, whose `if (p.split) return "split"` says `split`);
+   * where several paths give it, only the props every one needs.
+   */
+  private pickedBy(module: Parsed, expr: ts.Expression, text: string, depth = 0): string[] | null {
+    const e = unwrap(expr);
+    if (depth > 6) return [];
+    if (ts.isStringLiteral(e) || ts.isNoSubstitutionTemplateLiteral(e)) return e.text === text ? [] : null;
+    const common = (paths: (string[] | null)[]): string[] | null => {
+      const open = paths.filter((p): p is string[] => p !== null);
+      if (!open.length) return null;
+      return open.reduce((a, b) => a.filter((prop) => b.includes(prop)));
+    };
+    if (ts.isConditionalExpression(e)) {
+      const yes = this.pickedBy(module, e.whenTrue, text, depth + 1);
+      const no = this.pickedBy(module, e.whenFalse, text, depth + 1);
+      return common([yes && [...yes, ...this.truthyProps(module, e.condition)], no && [...no, ...this.falsyProps(module, e.condition)]]);
+    }
+    if (ts.isIdentifier(e) && !this.propOf(module, e)) {
+      const binding = module.reader.resolve(e);
+      if (binding?.kind === "const" && !binding.path.length && binding.decl.initializer) return this.pickedBy(module, binding.decl.initializer, text, depth + 1);
+      return [];
+    }
+    if (ts.isCallExpression(e) && ts.isIdentifier(unwrap(e.expression))) {
+      const callee = unwrap(e.expression) as ts.Identifier;
+      const binding = module.reader.resolve(callee);
+      const fn = binding?.kind === "function" ? binding.decl : binding?.kind === "const" && !binding.path.length && binding.decl.initializer ? functionOf(binding.decl.initializer) : null;
+      if (!fn?.body) return [];
+      // The helper's parameters handed the component's own props object.
+      const handed = new Set<ts.Node>();
+      fn.parameters.forEach((param, i) => {
+        const arg = e.arguments[i] ? unwrap(e.arguments[i]!) : null;
+        if (!arg || !ts.isIdentifier(arg) || !ts.isIdentifier(param.name)) return;
+        const source = module.reader.resolve(arg);
+        const first = source?.kind === "param" ? source.fn.parameters[0] : undefined;
+        if (source?.kind === "param" && isComponentFunction(source.fn) && first && ts.isIdentifier(first.name) && first.name === source.id) handed.add(param.name);
+      });
+      // A condition on the helper's parameter (`p.split`, `!!p.split`): the props it reads.
+      const reads = (cond: ts.Expression): string[] => {
+        const c = unwrap(cond);
+        if (ts.isPrefixUnaryExpression(c) && c.operator === ts.SyntaxKind.ExclamationToken) {
+          const inner = unwrap(c.operand);
+          return ts.isPrefixUnaryExpression(inner) && inner.operator === ts.SyntaxKind.ExclamationToken ? reads(inner.operand) : [];
+        }
+        if (ts.isBinaryExpression(c) && c.operatorToken.kind === ts.SyntaxKind.AmpersandAmpersandToken) return [...reads(c.left), ...reads(c.right)];
+        if (ts.isPropertyAccessExpression(c) && ts.isIdentifier(c.expression)) {
+          const owner = module.reader.resolve(c.expression);
+          if (owner?.kind === "param" && owner.fn === fn && handed.has(owner.id)) return [c.name.text];
+        }
+        return [];
+      };
+      const paths: (string[] | null)[] = [];
+      for (const result of bodyResults(fn)) {
+        if (this.pickedBy(module, result, text, depth + 1) === null) continue;
+        // The ifs around the return statement that gives it.
+        const props: string[] = [];
+        for (let current: ts.Node = result; current !== fn.body && current.parent; current = current.parent) {
+          const parent = current.parent;
+          if (ts.isIfStatement(parent) && parent.thenStatement === current) props.push(...reads(parent.expression));
+        }
+        paths.push(props);
+      }
+      return common(paths);
     }
     return [];
   }
@@ -393,6 +540,196 @@ export class SignalReader {
     if (prop) return [prop];
     // `onPressRow={props.onPressItem}` through an optional call is still the prop.
     return [];
+  }
+
+  /**
+   * The ways a disabled value is true: null when it never is (`false`, `undefined`), else each
+   * way with the props it is true only with (`disabled`, `!!disabled`, `disabled ? true :
+   * undefined`, a local constant's condition such as `confirmGated = !!withInput && ...`) and
+   * the keys of the data it reads (`item.disabled`, `!!action.disabled`, `item.disabled ||
+   * undefined`); `disabled || loading` is true either way. A value the reader cannot follow
+   * (`page <= 1`, a state) is true with nothing in particular: the component disables the
+   * control by itself. `null` (a bare attribute) is true.
+   */
+  private disabledBy(module: Parsed, value: ts.Expression | null, depth = 0): DisabledBy | null {
+    if (value === null) return BY_ITSELF;
+    const v = unwrap(value);
+    if (isNullish(v) || v.kind === ts.SyntaxKind.FalseKeyword) return null;
+    if (v.kind === ts.SyntaxKind.TrueKeyword || depth > 6) return BY_ITSELF;
+    if (ts.isPrefixUnaryExpression(v) && v.operator === ts.SyntaxKind.ExclamationToken) {
+      const inner = unwrap(v.operand);
+      // `!!x` is true when x is.
+      if (ts.isPrefixUnaryExpression(inner) && inner.operator === ts.SyntaxKind.ExclamationToken) return this.disabledBy(module, inner.operand, depth + 1);
+      return [{ props: this.falsyProps(module, v.operand), keys: [] }];
+    }
+    if (ts.isConditionalExpression(v)) return this.eitherSide(module, v, (side) => this.disabledBy(module, side, depth + 1), depth);
+    if (ts.isBinaryExpression(v)) {
+      const op = v.operatorToken.kind;
+      if (op === ts.SyntaxKind.AmpersandAmpersandToken) {
+        const l = this.disabledBy(module, v.left, depth + 1);
+        const r = this.disabledBy(module, v.right, depth + 1);
+        return l && r ? allOf(l, r) : null;
+      }
+      if (op === ts.SyntaxKind.BarBarToken || op === ts.SyntaxKind.QuestionQuestionToken) {
+        const l = this.disabledBy(module, v.left, depth + 1);
+        const r = this.disabledBy(module, v.right, depth + 1);
+        return l && r ? anyOf(l, r) : (l ?? r);
+      }
+      return BY_ITSELF;
+    }
+    if (ts.isPropertyAccessExpression(v)) {
+      const prop = this.propOf(module, v);
+      if (prop) return [{ props: [prop], keys: [] }];
+      // A member of the data the component is handed: the key an example writes in an item.
+      const owner = this.propOf(module, v.expression);
+      return [{ props: owner ? [owner] : [], keys: [v.name.text] }];
+    }
+    if (ts.isIdentifier(v)) {
+      const prop = this.propOf(module, v);
+      if (prop) return [{ props: [prop], keys: [] }];
+      const binding = module.reader.resolve(v);
+      if (binding?.kind === "const" && binding.decl.initializer) {
+        if (!binding.path.length) return this.disabledBy(module, binding.decl.initializer, depth + 1);
+        // `const { disabled } = item`: the key, when it is not the component's own props.
+        const key = binding.path[binding.path.length - 1];
+        const init = unwrap(binding.decl.initializer);
+        if (binding.path.length === 1 && typeof key === "string" && ts.isIdentifier(init)) {
+          const source = module.reader.resolve(init);
+          if (!(source?.kind === "param" && isComponentFunction(source.fn))) return [{ props: [], keys: [key] }];
+        }
+      }
+    }
+    return BY_ITSELF;
+  }
+
+  /**
+   * The ways a conditional is true, from the ways each side is (`read`): the true side's
+   * with what makes the condition true, the false side's with what makes it false. Null
+   * when neither side ever is.
+   */
+  private eitherSide(module: Parsed, v: ts.ConditionalExpression, read: (side: ts.Expression) => DisabledBy | null, depth: number): DisabledBy | null {
+    const yes = read(v.whenTrue);
+    const no = read(v.whenFalse);
+    const condition = yes ? this.disabledBy(module, v.condition, depth + 1) : null;
+    const ways = [...(yes && condition ? allOf(condition, yes) : []), ...(no ? allOf([{ props: this.falsyProps(module, v.condition), keys: [] }], no) : [])];
+    return ways.length ? uniqueWays(ways) : null;
+  }
+
+  /** The ways an `accessibilityState`'s `disabled` is true, or null when it has none the reader can read. */
+  private stateDisabled(module: Parsed, value: ts.Expression | null, depth = 0): DisabledBy | null {
+    if (!value || depth > 6) return null;
+    const v = unwrap(value);
+    if (ts.isObjectLiteralExpression(v)) {
+      for (const property of v.properties) {
+        const name = property.name && (ts.isIdentifier(property.name) || ts.isStringLiteral(property.name)) ? property.name.text : null;
+        if (name !== "disabled") continue;
+        if (ts.isPropertyAssignment(property)) return this.disabledBy(module, property.initializer, depth + 1);
+        if (ts.isShorthandPropertyAssignment(property)) return this.disabledBy(module, property.name, depth + 1);
+      }
+      return null;
+    }
+    if (ts.isConditionalExpression(v)) return this.eitherSide(module, v, (side) => this.stateDisabled(module, side, depth + 1), depth);
+    if (ts.isIdentifier(v)) {
+      const binding = module.reader.resolve(v);
+      if (binding?.kind === "const" && !binding.path.length && binding.decl.initializer) return this.stateDisabled(module, binding.decl.initializer, depth + 1);
+    }
+    return null;
+  }
+
+  /**
+   * The component's props that, passed, make an overlay's open value false: `!disabled`, and
+   * either side of `&&` (`const open = !disabled && (openProp ?? internalOpen)`).
+   */
+  private closedBy(module: Parsed, expr: ts.Expression, depth = 0): string[] {
+    const e = unwrap(expr);
+    if (depth > 6) return [];
+    if (ts.isPrefixUnaryExpression(e) && e.operator === ts.SyntaxKind.ExclamationToken) return this.truthyProps(module, e.operand);
+    if (ts.isBinaryExpression(e) && e.operatorToken.kind === ts.SyntaxKind.AmpersandAmpersandToken) return [...new Set([...this.closedBy(module, e.left, depth + 1), ...this.closedBy(module, e.right, depth + 1)])];
+    if (ts.isIdentifier(e) && !this.propOf(module, e)) {
+      const binding = module.reader.resolve(e);
+      if (binding?.kind === "const" && !binding.path.length && binding.decl.initializer) return this.closedBy(module, binding.decl.initializer, depth + 1);
+    }
+    return [];
+  }
+
+  /** Whether an overlay given these props can open: no open prop (a bare Modal or Portal), a bare `open`, or a value that can be there. */
+  private opensWith(given: readonly Attr[]): Attr | true | null {
+    const opened = given.find((a) => OPEN_PROPS.includes(a.name));
+    if (!opened) return true;
+    // A bare `open` is true; `open={false}` or `open={undefined}` never opens it.
+    return opened.value === null || (!isLiteralFalse(opened.value) && this.passedProps(opened.module, opened.value) !== null) ? opened : null;
+  }
+
+  /**
+   * The overlay a node renders inside (`Around`), or null on the component's own surface.
+   * Read up the tree to `scope`: an overlay primitive the node is a child of, another kit
+   * component given its open state, or a local or shared component that renders its
+   * `children` inside one (AlertDialog's `Present`, whose own props are its business, so
+   * nothing outside says what keeps it closed); a constant that holds the node is placed
+   * where it is used (ActionSheet's `actionRows`, AlertDialog's `actionRow`).
+   */
+  private overlayAround(module: Parsed, node: ts.Node, scope: ts.Node, own: string, seen: Set<ts.Node> = new Set()): Around | null {
+    for (let current: ts.Node = node; current !== scope && current.parent; current = current.parent) {
+      const parent = current.parent;
+      if (ts.isJsxElement(parent) && current !== parent.openingElement && current !== parent.closingElement) {
+        const found = this.overlayOf(module, parent.openingElement, own, seen);
+        if (found) return found;
+      }
+      if (ts.isVariableDeclaration(parent) && parent.initializer === current && ts.isIdentifier(parent.name)) {
+        if (seen.has(parent)) return null;
+        seen.add(parent);
+        for (const use of usesOf(module, parent, scope)) {
+          const found = this.overlayAround(module, use, scope, own, seen);
+          if (found) return found;
+        }
+        return null;
+      }
+    }
+    return null;
+  }
+
+  /** The overlay a JSX element opens around its children (`Around`), or null. */
+  private overlayOf(module: Parsed, opening: ts.JsxOpeningElement, own: string, seen: Set<ts.Node>): Around | null {
+    const tag = this.tagOf(module, opening.tagName, own);
+    const around = (opened: Attr | true): Around => ({ name: renderedIn(module, opening), closedBy: opened !== true && opened.value ? this.closedBy(opened.module, opened.value) : [] });
+    if (tag.place === "primitive") {
+      const opens = OVERLAY_TAGS.has(tag.name) ? this.opensWith(this.attributes(module, opening.attributes.properties)) : null;
+      return opens ? around(opens) : null;
+    }
+    if (tag.fn && (tag.place === "own" || tag.place === "shared")) {
+      const name = this.childrenOverlay(tag.fn, own, seen);
+      return name ? { name, closedBy: [] } : null;
+    }
+    const file = this.componentFile(module, opening.tagName);
+    if (!file || !this.rendersOverlay(file)) return null;
+    const opened = this.attributes(module, opening.attributes.properties).find((a) => OPEN_PROPS.includes(a.name));
+    const opens = opened ? this.opensWith([opened]) : null;
+    return opens ? around(opens) : null;
+  }
+
+  /** The overlay a local or shared component renders its `children` inside (`<Portal>{children}</Portal>`), by name, or null. */
+  private childrenOverlay(fn: Fn, own: string, seen: Set<ts.Node>): string | null {
+    if (seen.has(fn.node)) return null;
+    seen.add(fn.node);
+    if (!fn.node.parameters[0] || !fn.node.body) return null;
+    const ofParam = (id: ts.Identifier) => {
+      const binding = fn.module.reader.resolve(id);
+      return binding?.kind === "param" && binding.fn === fn.node;
+    };
+    let found: string | null = null;
+    const visit = (node: ts.Node): void => {
+      if (found) return;
+      const isChildren =
+        (ts.isIdentifier(node) && node.text === "children" && !ts.isPropertyAccessExpression(node.parent) && !ts.isBindingElement(node.parent) && ofParam(node)) ||
+        (ts.isPropertyAccessExpression(node) && node.name.text === "children" && ts.isIdentifier(node.expression) && ofParam(node.expression));
+      if (isChildren) {
+        found = this.overlayAround(fn.module, node, fn.node, own, seen)?.name ?? null;
+        if (found) return;
+      }
+      ts.forEachChild(node, visit);
+    };
+    visit(fn.node.body);
+    return found;
   }
 
   /** Every prop an element's attributes give it: the ones written on the tag, and the ones its spreads bring. */
@@ -676,13 +1013,23 @@ export class SignalReader {
           });
           if (tag.name === "TextInput") add({ kind: "text-entry", state: "focus", what: "a TextInput" }, node);
           if (OVERLAY_TAGS.has(tag.name)) {
-            const opened = given.find((a) => OPEN_PROPS.includes(a.name));
-            // A bare `open` is true; `open={false}` or `open={undefined}` never opens it.
-            const opens = !opened || opened.value === null || (!isLiteralFalse(opened.value) && this.passedProps(opened.module, opened.value) !== null);
+            const opens = this.opensWith(given);
             if (opens) {
+              const opened = opens === true ? null : opens;
               const where = opened ? placed(opened, opened.value ? (this.passedProps(opened.module, opened.value) ?? []) : []) : { at: this.at(module, node), gates: this.gatesOf(module, node, scope) };
               out.push({ kind: "overlay", state: "open", what: `a <${tag.name}>`, via: [], ...where, overlay: renderedIn(module, node) });
             }
+          }
+          // The controls it disables: `disabled` and `aria-disabled` given a value that can be
+          // true, and an `accessibilityState` whose `disabled` can be.
+          let around: Around | null | undefined;
+          for (const attr of given) {
+            const by = DISABLED_PROPS.has(attr.name) ? this.disabledBy(attr.module, attr.value) : attr.name === "accessibilityState" ? this.stateDisabled(attr.module, attr.value) : null;
+            if (!by) continue;
+            const where = placed(attr);
+            if (around === undefined) around = this.overlayAround(module, node, scope, own);
+            if (around && shutIn(around, where.gates, by)) continue;
+            out.push({ kind: "disabled", state: "disabled", what: `${attr.name} on <${tag.name}>`, via: [], ...where, disabledBy: by, ...(around ? { within: around.name } : {}) });
           }
           const stop = tabStop(tag.name, given);
           if (stop) {
@@ -718,19 +1065,31 @@ export class SignalReader {
         } else {
           // Another kit component given its open state by this one: an overlay this component opens.
           const file = this.componentFile(module, node.tagName);
+          const given = file ? this.attributes(module, attrs) : [];
+          const handed = (attr: Attr, extra: string[]) => ({
+            at: this.at(attr.module, attr.node),
+            gates: [...new Set([...this.gatesOf(module, attr.site, scope), ...attr.gates, ...extra])],
+          });
           if (file && this.rendersOverlay(file)) {
-            const opened = this.attributes(module, attrs).find((a) => OPEN_PROPS.includes(a.name));
-            if (opened && (opened.value === null || (!isLiteralFalse(opened.value) && this.passedProps(opened.module, opened.value) !== null))) {
+            const opened = given.find((a) => OPEN_PROPS.includes(a.name));
+            if (opened && this.opensWith([opened])) {
               out.push({
                 kind: "overlay",
                 state: "open",
                 what: `a <${tag.name}> (an overlay) given \`${opened.name}\``,
-                at: this.at(opened.module, opened.node),
                 via: [],
-                gates: [...new Set([...this.gatesOf(module, opened.site, scope), ...opened.gates, ...(opened.value ? (this.passedProps(opened.module, opened.value) ?? []) : [])])],
+                ...handed(opened, opened.value ? (this.passedProps(opened.module, opened.value) ?? []) : []),
                 overlay: renderedIn(module, node),
               });
             }
+          }
+          // Another kit component disabled by this one (AlertDialog's confirm Button, until its token is typed).
+          const disabled = given.find((a) => a.name === "disabled");
+          const by = disabled ? this.disabledBy(disabled.module, disabled.value) : null;
+          if (disabled && by) {
+            const where = handed(disabled, []);
+            const around = this.overlayAround(module, node, scope, own);
+            if (!(around && shutIn(around, where.gates, by))) out.push({ kind: "disabled", state: "disabled", what: `disabled on <${tag.name}>`, via: [], ...where, disabledBy: by, ...(around ? { within: around.name } : {}) });
           }
         }
       }
@@ -745,17 +1104,22 @@ export class SignalReader {
     // A shared module's own tag components are its business; the component's are the caller's.
     const inner = this.summary(fn, own, fn.module.path.startsWith(`${own}/`) ? skip : this.tagComponents([fn.module], own));
     const around = this.gatesOf(module, site, scope);
+    const valueAt = (attr: ts.JsxAttribute) => (attr.initializer && ts.isJsxExpression(attr.initializer) && attr.initializer.expression ? attr.initializer.expression : null);
+    const attrNamed = (name: string) => attrs?.find((a): a is ts.JsxAttribute => ts.isJsxAttribute(a) && ts.isIdentifier(a.name) && a.name.text === name);
+    // The disabled controls the function renders sit inside whatever overlay the use is in.
+    let siteOverlay: Around | null | undefined;
+    const overlayAtSite = () => (siteOverlay === undefined ? (siteOverlay = this.overlayAround(module, site, scope, own)) : siteOverlay);
     for (const signal of inner) {
       let gates: string[] | null = [...around];
       if (attrs) {
         for (const gate of signal.gates) {
-          const attr = attrs.find((a): a is ts.JsxAttribute => ts.isJsxAttribute(a) && ts.isIdentifier(a.name) && a.name.text === gate);
+          const attr = attrNamed(gate);
           if (!attr) {
             // A spread may pass it; nothing else does.
             if (!attrs.some(ts.isJsxSpreadAttribute)) gates = null;
             break;
           }
-          const value = attr.initializer && ts.isJsxExpression(attr.initializer) && attr.initializer.expression ? attr.initializer.expression : null;
+          const value = valueAt(attr);
           const passed = value ? this.passedProps(module, value) : [];
           if (passed === null) {
             gates = null;
@@ -765,8 +1129,56 @@ export class SignalReader {
         }
       }
       if (gates === null) continue;
-      out.push({ ...signal, via: [fn.name, ...signal.via], gates: [...new Set(gates)] });
+      const placed: Partial<Signal> = {};
+      if (signal.disabledBy) {
+        // What disables it, through the values the use gives the props it is true with
+        // (`disabled={!!disabled}`, `disabled={item.disabled}`); one never given, or given a
+        // value that is never true, never disables it.
+        const by = attrs ? this.disabledThrough(module, signal.disabledBy, attrs, valueAt, attrNamed) : signal.disabledBy;
+        if (!by) continue;
+        placed.disabledBy = by;
+        if (signal.within) placed.within = signal.within;
+        else {
+          // Placed where the use is: inside the overlay around it, unless that overlay is kept closed whenever it is disabled.
+          const around = overlayAtSite();
+          if (around && shutIn(around, gates, by)) continue;
+          if (around) placed.within = around.name;
+        }
+      }
+      out.push({ ...signal, via: [fn.name, ...signal.via], gates: [...new Set(gates)], ...placed });
     }
+  }
+
+  /**
+   * A local component's `disabledBy` in the props of the component that uses it: each prop a
+   * way needs, read through the value the use gives it. A way the use never takes (its prop
+   * is not given and no spread could give it, or is given a value that is never true) is
+   * dropped; null when none is left. A prop a spread may give says nothing in particular.
+   */
+  private disabledThrough(
+    module: Parsed,
+    inner: DisabledBy,
+    attrs: ts.NodeArray<ts.JsxAttributeLike>,
+    valueAt: (attr: ts.JsxAttribute) => ts.Expression | null,
+    attrNamed: (name: string) => ts.JsxAttribute | undefined,
+  ): DisabledBy | null {
+    const ways: DisabledWay[] = [];
+    for (const way of inner) {
+      let here: DisabledBy | null = [{ props: [], keys: way.keys }];
+      for (const prop of way.props) {
+        const attr = attrNamed(prop);
+        if (!attr) {
+          if (!attrs.some(ts.isJsxSpreadAttribute)) here = null;
+          if (!here) break;
+          continue;
+        }
+        const by = this.disabledBy(module, valueAt(attr));
+        here = by ? allOf(here, by) : null;
+        if (!here) break;
+      }
+      if (here) ways.push(...here);
+    }
+    return ways.length ? uniqueWays(ways) : null;
   }
 
   /** A function's signals, gated by its own props; `skip` holds the components read where they are used. */
@@ -822,7 +1234,7 @@ export class SignalReader {
     // One signal per place and route to it.
     const seen = new Set<string>();
     return signals.filter((s) => {
-      const key = `${s.kind}|${s.state}|${s.what}|${s.at}|${s.via.join(">")}|${[...s.gates].sort().join(",")}`;
+      const key = `${s.kind}|${s.state}|${s.what}|${s.at}|${s.via.join(">")}|${[...s.gates].sort().join(",")}|${s.disabledBy ? JSON.stringify(s.disabledBy) : ""}|${s.within ?? ""}`;
       if (seen.has(key)) return false;
       seen.add(key);
       return true;
@@ -830,9 +1242,10 @@ export class SignalReader {
   }
 
   /**
-   * The signals a raw primitive's rail examples give it: the handler props, `href` and a
-   * pressed look on its own tag (`tag`, the component's name), and the tag itself when it is
-   * the TextInput. The props are read as a source's are, written on the tag or spread onto
+   * The signals a raw primitive's rail examples give it: the handler props, `href`, a pressed
+   * look and a disabling prop (disabled by itself as a prop, since the example that passes it
+   * is the one that shows it) on its own tag (`tag`, the component's name), and the tag itself when it
+   * is the TextInput. The props are read as a source's are, written on the tag or spread onto
    * it from a value the example's own code lets the reader follow. `where` names the
    * markdown, for `at`.
    */
@@ -855,6 +1268,9 @@ export class SignalReader {
             else if (HOVER_PROPS.has(prop)) add("hover-in", "hover", `${prop} on <${tag}>`);
             else if (prop === "href") add("link", "focus", `href on <${tag}>`);
             if (takesParameter(attr.value ?? attr.node, "pressed")) add("look", "pressed", `a function taking \`pressed\` on <${tag}>`);
+            // A control the example disables: rendered so only with the prop it passes.
+            const by = DISABLED_PROPS.has(prop) ? this.disabledBy(module, attr.value) : prop === "accessibilityState" ? this.stateDisabled(module, attr.value) : null;
+            if (by) signals.push({ kind: "disabled", state: "disabled", what: `${prop} on <${tag}>`, at, via: [], gates: [], disabledBy: [{ props: [prop], keys: [] }] });
           }
         }
         ts.forEachChild(node, visit);
@@ -881,6 +1297,29 @@ function renderedIn(module: Parsed, node: ts.Node): string {
     }
   }
   return module.path.split(/[\\/]/).pop()!;
+}
+
+/** The identifiers in `scope` that read the constant a declaration binds: its uses, not its own name or a property of the same name. */
+function usesOf(module: Parsed, decl: ts.VariableDeclaration, scope: ts.Node): ts.Identifier[] {
+  const name = (decl.name as ts.Identifier).text;
+  const out: ts.Identifier[] = [];
+  const visit = (node: ts.Node): void => {
+    if (ts.isIdentifier(node) && node.text === name && node !== decl.name) {
+      const parent = node.parent;
+      const isName =
+        (ts.isPropertyAccessExpression(parent) && parent.name === node) ||
+        (ts.isPropertyAssignment(parent) && parent.name === node) ||
+        ts.isJsxAttribute(parent) ||
+        ts.isBindingElement(parent);
+      if (!isName) {
+        const binding = module.reader.resolve(node);
+        if (binding?.kind === "const" && binding.decl === decl) out.push(node);
+      }
+    }
+    ts.forEachChild(node, visit);
+  };
+  visit(scope);
+  return out;
 }
 
 /** A function an initializer is: an arrow or a function expression, through memo(), forwardRef() and `as`. */

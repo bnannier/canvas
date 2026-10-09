@@ -24,7 +24,8 @@ One variant is 18 web cells (3 widths x 3 looks x 2 surfaces) and 6 cells on eac
 platform (3 looks x 2 surfaces). A cell's id is its path under a capture run:
 `web/<slug>/<variant>/<width>.<look>.<surface>`, `ios/<slug>/<variant>/<look>.<surface>`,
 `android/...`; pages use `web-pages/<kind>-<slug>/...` and `<platform>-pages/...`, and the
-web's interaction states `web-states/<slug>/<state>.<row>/<width>.<look>.<surface>`.
+web's interaction states `web-states/<slug>/<name>.<row>/<width>.<look>.<surface>`, the
+name being the state's (`<state>-<variant>` for a state a component has several recipes of).
 
 A page's sections come from its data module (`docs/src/core/data/patterns.tsx` or
 `templates/<slug>.tsx`), read from the source (`pageSections` in the inventory), each keyed
@@ -297,7 +298,17 @@ it hands the open state (FilterPanel's and Sidebar's Drawer, and AvatarMenu's Dr
 part its platform entries inject, known by the component its parameter's type names), an
 open state, each overlay named by the function that renders it; and a function
 taking `pressed`, `hovered` or `focused` (a skin, a Pressable's style callback) the state
-it names. Props are read wherever the element gets them: on its tag, or spread onto it from
+it names; and `disabled`, `aria-disabled` or an `accessibilityState`'s `disabled` given a
+value that can be true, or `disabled` handed to another kit component (AlertDialog's confirm
+Button), a disabled state, with the ways its value is true (`disabledBy`: the props it is
+true with, `disabled` or `withInput` through `const confirmGated = !!withInput && ...`, and
+the keys of the item data it reads, `item.disabled`; `disabled || loading` is true either
+way, and a value the reader cannot follow, a stepper's minus at its minimum, is the
+component disabling it by itself) and the overlay it renders inside (`within`: the overlay a
+JSX parent opens, through a constant used inside one, `actionRows`, and through a local
+component that renders its children inside one, AlertDialog's `Present`). A disabled control
+inside an overlay the same prop keeps closed (a Select's option rows, whose list
+`!disabled && ...` never opens) is never on the page and gives nothing. Props are read wherever the element gets them: on its tag, or spread onto it from
 a value the reader can follow (an object literal through constants, conditionals, `&&`,
 `??`, member reads, a local or shared helper's return, `useMemo`, or a style-layer hook's
 own return, as the Calendar's `{...hoverProps}`, Tooltip's `{...disclosure}`, the hover
@@ -326,11 +337,29 @@ that opens one names it (`opens`, the function the source renders it in, the Cal
 `hoverCard` and `dayPeekOverlay`), an overlay no recipe names is unanswered, and a name the
 source no longer renders fails. An exemption for a state the source does not give, or beside
 a recipe for the same state, fails too.
+
+The disabled state is the examples': a control is disabled where an example asks for it, by
+passing what its source disables it with (a prop written on a tag, or a key written in an
+item, `{ label: "Archive", disabled: true }`, read with the TypeScript parser, neither given
+`false`). It is answered place by place: on the component's own surface, and inside each
+overlay it opens, since a control in an overlay is on the page only once the overlay opens
+and no variant cell photographs it. A place where a rail example asks for a disabled control
+needs a disabled recipe there: one applied inside an overlay (`inOverlay`) opens it first,
+and names it (`opens`) when the source renders more than one. A place no example asks for
+needs nothing, nor does a control the component disables by itself, which every capture of
+its place already shows; there is no exemption for disabled. A state a component shows in
+more than one place has a recipe for each (Dropdown: its Disabled trigger, and the Archive
+item inside the menu its Disabled item example opens), and their cells are named for their
+examples. The invalid state is not read from the source: its recipes are the examples that
+show an error, and Textarea's typing past its soft cap (below).
 `tools/audit/state-recipes.test.ts` runs it over every component (and fails on the table as
 it stood before the charts got their recipes: Chart, AreaChart and Histogram scrub, the
 Heatmap's days take a resting pointer and a press; on the Calendar marked static, for its
-hover, focus, pressed and open states; and on Dialog, AlertDialog, ActionSheet and Toast
-without the focus recipes their own tab stops need), checks the reader on the kit and on
+hover, focus, pressed and open states; on Dialog, AlertDialog, ActionSheet and Toast
+without the focus recipes their own tab stops need; and on ActionSheet's Disabled action,
+RowMenu's and Dropdown's Disabled item and AlertDialog's Body field, whose disabled
+controls are inside the overlay each opens, without the disabled recipes that open it),
+checks the reader on the kit and on
 fixtures of every gate form and every spread form, tab stop and overlay, and also fails on a
 registry entry with neither recipes nor a reason, a recipe on an example its page does not
 have, a hover recipe where the source gives no hover, an overlay its source opens or one of
@@ -338,9 +367,10 @@ have, a hover recipe where the source gives no hover, an overlay its source open
 an open recipe, and open
 rows that differ from the docs' platform-skin registry (Sidebar's page shows one preview,
 the web build, so it opens from the web row alone). Each checklist's facts block carries the
-result as its "Interaction states" row: the states captured (example, rows, widths, the
-states a capture also shows and the overlay it opens when there are several), and any static
-or exempt state with its reason and whether its claim holds.
+result as its "Interaction states" row: the states captured (example, whether it is applied
+inside the overlay it opens, rows, widths, the states a capture also shows and the overlay it
+opens when there are several), any static or exempt state with its reason and whether its
+claim holds, and where the source disables controls no rail example asks for.
 
 Each recipe applies the state through the input a person uses, verifies it from the page's
 structure, and releases it:
@@ -353,7 +383,7 @@ structure, and releases it:
 | pressed, to inspect | a chart that inspects under a press is pressed on one datum, found from what it draws (above an axis label, a tile's or a stage's label, a mark): held down on a scrub surface, a click on a Pressable hit layer | the chart shows text it did not show with the pointer away (the value flag, a readout) or repaints its marks (the others dim); with the recipe's expected texts, those (`Q2`, `Revenue`, `70`) | the web row, desktop |
 | open | the overlay recipes' own clicks (`OVERLAY_RECIPES`, `PHONE_INPUT_RECIPE`, `TOAST_RECIPE`), a hover on Tooltip's On hover example, a click on the AvatarMenu pill, ButtonGroup's split chevron, the Calendar's Day peek 24th, FilterPanel's Filters (n) trigger and the Sidebar example's hamburger, from the web row and from every row whose platform build the docs registry injects (`docs/src/core/platform-skins.ts`; Toast's iOS row is the web build; Sidebar's page shows the web row alone) | the opening added exactly the recipe's node (a dialog, a menu, a listbox, a speaking live region, the tooltip's bubble), or for a card with no role (the Calendar's day peek and hover card) exactly one new subtree holding the text it shows, where the Playground's overlays paint; the evidence says where it painted, whether it runs edge to edge on its frame's bottom (a sheet), whether it is in view and whether the trigger reports `aria-expanded="true"` | the viewport at the cell's own size, all three widths (a drawer a component becomes at and below a breakpoint: those widths, FilterPanel's at a phone's, Sidebar's at a phone's and a tablet's) |
 | invalid | the example that shows the error; Textarea typed past its soft cap | the field carries `aria-invalid="true"`; the error text it is described by is the evidence | the web row, desktop |
-| disabled | the example that disables the control | `aria-disabled="true"` or a native `disabled` | the web row, desktop |
+| disabled | the example that disables the control (ActionSheet's Disabled action, RowMenu's and Dropdown's Disabled item and AlertDialog's Body field: inside the overlay the example's trigger opens) | `aria-disabled="true"` or a native `disabled`; one still a tab stop is flagged `disabled-tab-stop` | the web row, desktop (the viewport inside an overlay) |
 
 The release ends the state the way a person would and is measured, not assumed. A press ends
 by moving off before the button comes up, which cancels a press on every platform, or, on a
@@ -404,14 +434,17 @@ hover lift moved. A row whose paint stays inside it has no margin. The viewport 
 for a state (that would move what the pointer rests on), so a side it cuts is recorded in the
 shot's `cut`, beside the `margin` and what set each side (`marginBy`).
 
-A state cell is `web-states/<slug>/<state>.<row>/<width>.<look>.<surface>/` with `state.png`
+A state cell is `web-states/<slug>/<name>.<row>/<width>.<look>.<surface>/` with `state.png`
 (a reached state) and `probe.json` (the recipe, the evidence, the release and its flags, and
 for a reached state the probe: the row and the panel the state opened, each with its
 `origin`, and the shot's `clip`, so the analysis finds every text in `state.png`). A panel
 drawn inside its row (Dialog, AlertDialog, Toast, the Tooltip bubble) is read with the row,
 so its texts and targets count once; its own entry (`inRow: true`) keeps where it is, its
 tree and its material. The example a state is applied to is on its record (`variant`,
-`label`), not in its path: each component has one recipe per state.
+`label`); it is in the path only for a state the component has several recipes of
+(`disabled-disabledtrigger`, `disabled-disableditem`). A cell of a recipe the table no longer
+has (one named for its state before the state gained a second recipe) is left out of the
+index and the sheets, with a warning.
 
 Two decisions differ from the plan's 1d:
 
@@ -736,7 +769,7 @@ other:
 |---|---|---|
 | a variant on the web | `web/<slug>/<variant>/<width>.<look>.<surface>` | `card.png`, `probe.json` |
 | a variant on a device | `ios/<slug>/<variant>/<look>.<surface>` (and `android/`) | `screen.png`, `card.png`, `probe.json`, `a11y.json` |
-| an interaction state | `web-states/<slug>/<state>.<row>/<width>.<look>.<surface>` | `state.png` (a reached state), `probe.json` |
+| an interaction state | `web-states/<slug>/<name>.<row>/<width>.<look>.<surface>` (the name: the state, or `<state>-<variant>`) | `state.png` (a reached state), `probe.json` |
 | a pattern or template page | `web-pages/<kind>-<slug>/<width>.<look>.<surface>` | `viewport.png`, `section.<key>.png` per section, `probe.json` |
 | a page on a device | `ios-pages/<kind>-<slug>/<look>.<surface>` (and `android-pages/`) | as a device variant's |
 
