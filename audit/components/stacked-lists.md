@@ -10,7 +10,7 @@ Audit checklist for `/components/stacked-lists`. The facts block and the variant
 | Markdown | `src/molecules/stacked-lists/stacked-lists.md` |
 | Source files | `stacked-lists.android.tsx`, `stacked-lists.ios.tsx`, `stacked-lists.md`, `stacked-lists.reorder.ts`, `stacked-lists.shared.tsx`, `stacked-lists.styles.ts`, `stacked-lists.tsx` |
 | Exports | StackedList |
-| Platform entries | iOS: own build: StackedList (builds from its own iosSkin; injects platform parts (../../atoms/avatar/avatar.ios.js); injects platform parts (../../atoms/badge/badge.ios.js); injects platform parts (../../atoms/button/button.ios.js); injects platform parts (../../organisms/drag-drop/drag-drop.ios.js)). Android: own build: StackedList (builds from its own androidSkin; injects platform parts (../../atoms/avatar/avatar.android.js); injects platform parts (../../atoms/badge/badge.android.js); injects platform parts (../../atoms/button/button.android.js); injects platform parts (../../organisms/drag-drop/drag-drop.android.js)) |
+| Platform entries | iOS: own build: StackedList (builds from its own iosSkin; injects platform parts (../../atoms/button/button.ios.js); injects platform parts (../../organisms/drag-drop/drag-drop.ios.js)). Android: own build: StackedList (builds from its own androidSkin; injects platform parts (../../atoms/button/button.android.js); injects platform parts (../../organisms/drag-drop/drag-drop.android.js)) |
 | Platform-skins registry | iOS: StackedList; Android: StackedList |
 | Reference row | `stacked-lists` (Light, Built). iOS: link [stacked-lists (iOS 27)](https://www.sketch.com/s/04c24d8b-38fb-4afb-8836-36617e022f02/symbols?g=Lists). Android: link [stacked-lists (Android)](https://m3.material.io/components/lists/overview). Web: link [stacked-lists (Web)](https://tailwindcss.com/plus/ui-blocks/application-ui/lists/stacked-lists) (Tailwind Plus, formerly Tailwind UI) |
 | Materials manifest | StackedList: molecules, static + liquid + inherited; verification solid-appearance, glass-appearance, mode-switch, accessibility-fallback, runtime-capability, semantic-state |
@@ -20,9 +20,9 @@ Audit checklist for `/components/stacked-lists`. The facts block and the variant
 | Interactions registry | in the inventory; evidence: none registered |
 | Overlay recipe | none |
 | MeasureProps | not adopted |
-| Touch target | no minTarget or useMinTargetSlop in the source directory |
+| Touch target | no minTarget or useMinTargetSlop in the source modules |
 | Tests importing it | 7: `test/behavior-smoke-c.test.tsx`, `test/list-semantics.test.tsx`, `test/no-console-violations.test.tsx`, `test/scroll-frame-ring.test.tsx`, `test/stacked-list-reorder.test.tsx`, `test/stats-stackedlist-slots.test.tsx`, `test/virtualization.test.tsx` |
-| E2E naming it | 2: `e2e/behavior/scroll-focus.e2e.ts`, `e2e/journeys/keyboard.e2e.ts` |
+| E2E importing or driving it | 2: `e2e/behavior/scroll-focus.e2e.ts`, `e2e/journeys/keyboard.e2e.ts` |
 <!-- audit:facts:end -->
 
 ## Variants

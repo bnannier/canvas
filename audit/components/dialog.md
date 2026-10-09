@@ -20,9 +20,9 @@ Audit checklist for `/components/dialog`. The facts block and the variants table
 | Interactions registry | in the inventory; evidence: none registered |
 | Overlay recipe | yes (dialog) |
 | MeasureProps | not adopted |
-| Touch target | no minTarget or useMinTargetSlop in the source directory |
+| Touch target | no minTarget or useMinTargetSlop in the source modules |
 | Tests importing it | 15: `test/anchored-overlay-dismissal.test.tsx`, `test/autocomplete-keyboard.test.tsx`, `test/command.test.tsx`, `test/control-refs.test.tsx`, `test/destructive-text-components.test.tsx`, `test/dialog-focus.test.tsx`, `test/dialog-hardware-back.test.tsx`, `test/dialog-overlay.test.tsx`, `test/escape-layers.test.tsx`, `test/hosted-focus.test.tsx`, `test/input-overlay-escape.test.tsx`, `test/native-accessibility-escape-hosts.test.tsx`, `test/native-focus-fixtures.test.tsx`, `test/no-console-violations.test.tsx`, `test/text-contrast.test.tsx` |
-| E2E naming it | 2: `e2e/behavior/overlays.e2e.ts`, `e2e/responsive/overlay-state.e2e.ts` |
+| E2E importing or driving it | 5: `e2e/behavior/escape-layers.e2e.ts`, `e2e/behavior/material-overlay-host.e2e.ts`, `e2e/journeys/control-refs.e2e.ts`, `e2e/journeys/keyboard.e2e.ts`, `e2e/responsive/overlay-state.e2e.ts` |
 <!-- audit:facts:end -->
 
 ## Variants

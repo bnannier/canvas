@@ -22,7 +22,7 @@ Audit checklist for `/components/breadcrumb`. The facts block and the variants t
 | MeasureProps | not adopted |
 | Touch target | useMinTargetSlop in none; minTarget in `breadcrumb.shared.tsx`, `breadcrumb.styles.ts` |
 | Tests importing it | 1: `test/new-components.test.tsx` |
-| E2E naming it | 0: none |
+| E2E importing or driving it | 0: none |
 <!-- audit:facts:end -->
 
 ## Variants

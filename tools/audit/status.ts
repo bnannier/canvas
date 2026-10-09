@@ -3,15 +3,44 @@
 // many findings are open and at what severity, and which platforms are signed off.
 // Counts only: a tick is a reviewer's claim, and this reports it, never verifies it.
 //
+// Every table is read with the one escape-aware reader the checklists are written and
+// checked with (tools/audit/table.ts, through tools/audit/checklists.ts), so a "|" typed
+// in a summary does not shift the Status column and an empty cell typed `| |` does not
+// drop the row. A row it cannot read, or a table it cannot find, is not counted: it is
+// listed by file and line under the counts, and the command exits non-zero, because the
+// counts above it under-report by that much.
+//
 // `bun run audit:status` prints the summary; `--json` prints the per-checklist rows.
 
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { ROOT } from "../../e2e/support/routes.ts";
-import { COMPONENTS_DIR, FACTS_BEGIN, FACTS_END, PAGES_DIR, SIGN_OFF_PLATFORMS, VARIANTS_BEGIN, VARIANTS_END, findBlock, parseVariantsTable } from "./checklists.ts";
+import {
+  COMPONENTS_DIR,
+  FACTS_BEGIN,
+  FACTS_END,
+  FINDING_SEVERITIES,
+  PAGES_DIR,
+  SIGN_OFF_PLATFORMS,
+  VARIANTS_BEGIN,
+  VARIANTS_END,
+  blockFirstLine,
+  findBlock,
+  handTableProblems,
+  readFindings,
+  readSignOffs,
+  readVariantsTable,
+} from "./checklists.ts";
 
 export const OPEN_FINDING_STATUSES = ["open", "verified"] as const;
-export const SEVERITIES = ["critical", "high", "medium", "low"] as const;
+export const SEVERITIES = FINDING_SEVERITIES;
+
+/** A line or table the counts leave out, because it cannot be read. */
+export interface StatusProblem {
+  /** The 1-based line in the checklist, or null for a table that is missing as a whole. */
+  line: number | null;
+  message: string;
+}
 
 export interface ChecklistStatus {
   file: string;
@@ -19,52 +48,33 @@ export interface ChecklistStatus {
   items: { total: number; ticked: number };
   findings: { total: number; open: number; bySeverity: Record<string, number>; byStatus: Record<string, number> };
   signedOff: string[];
+  /** What the counts above leave out: rows that cannot be read and tables that are missing. */
+  unreadable: StatusProblem[];
 }
 
 const ticked = (cellText: string): boolean => /^\[x\]/i.test(cellText.trim());
 
-/** The rows of a findings table: every `| ... |` row after the header under `## Findings`. */
-export function parseFindings(content: string): { severity: string; status: string }[] {
-  const at = content.indexOf("\n## Findings");
-  if (at === -1) return [];
-  const section = content.slice(at).split(/\n## (?!Findings)/)[0];
-  const rows: { severity: string; status: string }[] = [];
-  for (const line of section.split("\n")) {
-    if (!line.startsWith("| ") || /^\|\s*ID\s*\|/.test(line) || /^\|-+\|/.test(line.replace(/\s/g, ""))) continue;
-    const cells = line.replace(/^\|\s?/, "").replace(/\s?\|$/, "").split(" | ").map((c) => c.trim());
-    if (cells.length < 6) continue;
-    rows.push({ severity: cells[1].toLowerCase(), status: cells[4].toLowerCase() });
-  }
-  return rows;
-}
-
-/** The platforms whose sign-off row carries a run id. */
-export function parseSignOffs(content: string): string[] {
-  const at = content.indexOf("\n## Sign-off");
-  if (at === -1) return [];
-  const section = content.slice(at).split(/\n## (?!Sign-off)/)[0];
-  return SIGN_OFF_PLATFORMS.filter((platform) => {
-    const row = section.split("\n").find((line) => line.startsWith(`| ${platform} |`));
-    if (!row) return false;
-    const cells = row.replace(/^\|\s?/, "").replace(/\s?\|$/, "").split(" | ").map((c) => c.trim());
-    return Boolean(cells[1]);
-  });
-}
-
 export function checklistStatus(file: string, content: string): ChecklistStatus {
   const variants = findBlock(content, VARIANTS_BEGIN, VARIANTS_END);
-  const rows = variants ? [...parseVariantsTable(variants.lines).values()] : [];
+  const table = variants ? readVariantsTable(variants.lines, blockFirstLine(content, variants)) : { rows: [], malformed: [] };
+  const rows = table.rows.map((row) => row.ticks);
   // Hand-maintained items: the task boxes outside the generated blocks.
   const facts = findBlock(content, FACTS_BEGIN, FACTS_END);
   const hand = [facts, variants].reduce((text, block) => (block ? text.replace(content.slice(block.start, block.end), "") : text), content);
   const boxes = [...hand.matchAll(/^\s*- \[( |x|X)\] /gm)];
-  const findings = parseFindings(content);
+  const findings = readFindings(content).rows;
   const bySeverity: Record<string, number> = {};
   const byStatus: Record<string, number> = {};
+  const isOpen = (status: string) => (OPEN_FINDING_STATUSES as readonly string[]).includes(status);
   for (const finding of findings) {
     byStatus[finding.status] = (byStatus[finding.status] ?? 0) + 1;
-    if ((OPEN_FINDING_STATUSES as readonly string[]).includes(finding.status)) bySeverity[finding.severity] = (bySeverity[finding.severity] ?? 0) + 1;
+    if (isOpen(finding.status)) bySeverity[finding.severity] = (bySeverity[finding.severity] ?? 0) + 1;
   }
+  const unreadable: StatusProblem[] = [
+    ...(variants ? [] : [{ line: null, message: "variants table markers missing" }]),
+    ...table.malformed.map((row) => ({ line: row.line, message: `malformed variants row: ${row.reason}` })),
+    ...handTableProblems(content),
+  ];
   return {
     file,
     variants: {
@@ -76,11 +86,14 @@ export function checklistStatus(file: string, content: string): ChecklistStatus 
     items: { total: boxes.length, ticked: boxes.filter((m) => m[1] !== " ").length },
     findings: {
       total: findings.length,
-      open: findings.filter((f) => (OPEN_FINDING_STATUSES as readonly string[]).includes(f.status)).length,
+      open: findings.filter((f) => isOpen(f.status)).length,
       bySeverity,
       byStatus,
     },
-    signedOff: parseSignOffs(content),
+    signedOff: readSignOffs(content)
+      .rows.filter((row) => row.runId !== "")
+      .map((row) => row.platform),
+    unreadable,
   };
 }
 
@@ -111,11 +124,17 @@ export function formatStatus(rows: ChecklistStatus[]): string {
     `  findings ${sum(rows, (r) => r.findings.total)}: open ${open} (${severity})`,
     `  signed off: ${signed}`,
   ];
-  const active = rows.filter((r) => r.variants.web + r.variants.ios + r.variants.android + r.items.ticked + r.findings.total + r.signedOff.length > 0);
+  const unreadable = rows.flatMap((r) => r.unreadable.map((p) => `    audit/${r.file}${p.line === null ? "" : `:${p.line}`}: ${p.message}`));
+  if (unreadable.length) {
+    lines.push(`  unreadable ${unreadable.length}: left out of the counts above, which under-report by that much; fix each by hand`, ...unreadable);
+  }
+  const active = rows.filter((r) => r.variants.web + r.variants.ios + r.variants.android + r.items.ticked + r.findings.total + r.signedOff.length + r.unreadable.length > 0);
   if (active.length) {
-    lines.push("", "| Checklist | Variants web/ios/android | Items | Open findings | Signed off |", "|---|---|---|---|---|");
+    lines.push("", "| Checklist | Variants web/ios/android | Items | Open findings | Signed off | Unreadable |", "|---|---|---|---|---|---|");
     for (const r of active) {
-      lines.push(`| ${r.file} | ${r.variants.web}/${r.variants.ios}/${r.variants.android} of ${r.variants.total} | ${r.items.ticked}/${r.items.total} | ${r.findings.open} of ${r.findings.total} | ${r.signedOff.join(", ") || "none"} |`);
+      lines.push(
+        `| ${r.file} | ${r.variants.web}/${r.variants.ios}/${r.variants.android} of ${r.variants.total} | ${r.items.ticked}/${r.items.total} | ${r.findings.open} of ${r.findings.total} | ${r.signedOff.join(", ") || "none"} | ${r.unreadable.length} |`,
+      );
     }
   }
   return lines.join("\n");
@@ -125,4 +144,5 @@ if (import.meta.main) {
   const rows = auditStatus(join(ROOT, "audit"));
   if (process.argv.includes("--json")) console.log(JSON.stringify(rows, null, 2));
   else console.log(formatStatus(rows));
+  if (rows.some((row) => row.unreadable.length)) process.exit(1);
 }

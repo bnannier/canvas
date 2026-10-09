@@ -20,9 +20,9 @@ Audit checklist for `/components/input`. The facts block and the variants table 
 | Interactions registry | in the inventory; evidence: input-password-toggle (unit-web, test/input-actions.test.tsx), input-clear (unit-web, test/input-actions.test.tsx) |
 | Overlay recipe | none |
 | MeasureProps | adopted in `input.shared.tsx` |
-| Touch target | no minTarget or useMinTargetSlop in the source directory |
+| Touch target | no minTarget or useMinTargetSlop in the source modules |
 | Tests importing it | 21: `test/atom-material-roles.test.tsx`, `test/autocomplete-accessibility-return.test.tsx`, `test/autocomplete-keyboard.test.tsx`, `test/behavior-smoke-b.test.tsx`, `test/destructive-text.test.tsx`, `test/field-focus-layout.test.tsx`, `test/field-focus-states.test.tsx`, `test/field.test.tsx`, `test/floating-label-color.test.tsx`, `test/focus-ring.test.tsx`, `test/forms.test.tsx`, `test/glass-controls.test.tsx`, `test/input-actions.test.tsx`, `test/input-label.test.tsx`, `test/input-overlay-escape.test.tsx`, `test/responsive-narrow-fixes.test.tsx`, `test/sizing.test.tsx`, `test/text-contrast.test.tsx`, `test/text-entry-material.test.tsx`, `test/touch-target-clips.test.tsx`, `test/touch-target-seams.test.tsx` |
-| E2E naming it | 3: `e2e/behavior/text-entry-clear.e2e.ts`, `e2e/responsive/component-widths.e2e.ts`, `e2e/visual/material-states.e2e.ts` |
+| E2E importing or driving it | 6: `e2e/behavior/form-autocomplete.e2e.ts`, `e2e/behavior/material-overlay-host.e2e.ts`, `e2e/journeys/carousel.e2e.ts`, `e2e/journeys/keyboard.e2e.ts`, `e2e/journeys/touch.e2e.ts`, `e2e/visual/material-states.e2e.ts` |
 <!-- audit:facts:end -->
 
 ## Variants

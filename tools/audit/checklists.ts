@@ -22,10 +22,16 @@
 // `--write` never touches them: everything outside the two marker pairs is carried over
 // byte for byte, so running `--write` twice changes nothing.
 //
+// Every table here is read with the one escape-aware reader in tools/audit/table.ts:
+// the variants table, and the hand-maintained findings and sign-off tables that
+// audit:status counts, so a "|" typed in a summary or an empty cell typed `| |` reads the
+// same in all three, and a row that cannot be read is named by line, never dropped.
+//
 // `--check` (wired as audit:checklists:check, in CI and the pre-push hook) fails on a
 // route with no checklist, an orphan checklist (a `.md` file no route calls for), a
-// stale facts block, a malformed variants row (by line number), variant rows that drift
-// from the inventory, a variants table `--write` would rewrite, and a missing sign-off
+// stale facts block, a malformed variants, findings or sign-off row (by line number;
+// audit:status could not count it), variant rows that drift from the inventory, a
+// variants table `--write` would rewrite, and a missing findings table or sign-off
 // section.
 
 import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
@@ -34,6 +40,9 @@ import { ROOT } from "../../e2e/support/routes.ts";
 import { componentFacts, loadCorpus, pageFacts, type ComponentFacts, type FactsCorpus, type PageFacts, type ReferenceCell } from "./facts.ts";
 import { NATIVE_CELLS_PER_VARIANT, PAGE_ROW_KEY, WEB_CELLS_PER_VARIANT, components, pages, sectionKeys, type InventoryComponent, type InventoryPage } from "./inventory.ts";
 import { COMPONENT_PLANS, FAMILY_CHECKLISTS, FAMILY_LABEL, PAGE_PLAN, UNIVERSAL_RUBRIC, type Family } from "./plan-specifics.ts";
+import { SEPARATOR_LINE, headerRow, readSectionTable, separatorRow, splitRow, type MalformedRow, type TableShape } from "./table.ts";
+
+export type { MalformedRow } from "./table.ts";
 
 export const FACTS_BEGIN = "<!-- audit:facts:begin -->";
 export const FACTS_END = "<!-- audit:facts:end -->";
@@ -51,6 +60,18 @@ export const TICK_COLUMNS = [
 ] as const;
 
 export const SIGN_OFF_PLATFORMS = ["web", "ios", "android"] as const;
+
+/** A variants row as the reader splits it; the label and the note are free text, and a "|" typed in the note stays in it. */
+export const VARIANTS_SHAPE: TableShape = { name: "variants", columns: ["variant", "label", "web", "ios", "android", "notes"], minCells: 5, free: 5 };
+
+/** The findings table: a "|" typed in a summary stays in it, and a finding with no fix commit yet may leave that cell off. */
+export const FINDINGS_SHAPE: TableShape = { name: "findings", columns: ["ID", "Severity", "Cell", "Summary", "Status", "Fix commit"], minCells: 5, free: 3 };
+
+/** The sign-off table: a "|" typed in a result stays in it, and the result may be left off. */
+export const SIGN_OFF_SHAPE: TableShape = { name: "sign-off", columns: ["Platform", "Run id", "Reviewer", "Date", "Result"], minCells: 4, free: 4 };
+
+export const FINDING_SEVERITIES = ["critical", "high", "medium", "low"] as const;
+export const FINDING_STATUSES = ["open", "verified", "fixed", "wontfix", "duplicate"] as const;
 
 export interface ChecklistSources {
   components: InventoryComponent[];
@@ -136,10 +157,10 @@ export function renderComponentFacts(facts: ComponentFacts): string[] {
       "Touch target",
       facts.touchTarget.useMinTargetSlop.length || facts.touchTarget.minTarget.length
         ? `useMinTargetSlop in ${list(facts.touchTarget.useMinTargetSlop)}; minTarget in ${list(facts.touchTarget.minTarget)}`
-        : "no minTarget or useMinTargetSlop in the source directory",
+        : "no minTarget or useMinTargetSlop in the source modules",
     ],
     ["Tests importing it", `${facts.tests.length}: ${list(facts.tests)}`],
-    ["E2E naming it", `${facts.e2e.length}: ${list(facts.e2e)}`],
+    ["E2E importing or driving it", `${facts.e2e.length}: ${list(facts.e2e)}`],
   ];
   return ["| Fact | Value |", "|---|---|", ...rows.map(([fact, value]) => `| ${fact} | ${cell(value)} |`)];
 }
@@ -152,7 +173,7 @@ export function renderPageFacts(facts: PageFacts): string[] {
     ["Data module", code(facts.module)],
     ["Sections", facts.sections.length ? facts.sections.map((title, i) => `${i + 1}. ${title}`).join("; ") : "none parsed"],
     ["Kit imports in the module", facts.kitImports.join(", ") || "none"],
-    ["E2E naming it", `${facts.e2e.length}: ${list(facts.e2e)}`],
+    ["E2E driving it", `${facts.e2e.length}: ${list(facts.e2e)}`],
   ];
   return ["| Fact | Value |", "|---|---|", ...rows.map(([fact, value]) => `| ${fact} | ${cell(value)} |`)];
 }
@@ -193,12 +214,6 @@ export interface VariantsTableRow {
   line: number;
 }
 
-/** A line inside the variants markers that is not a readable row, and why. */
-export interface MalformedRow {
-  line: number;
-  reason: string;
-}
-
 export interface VariantsTable {
   rows: VariantsTableRow[];
   malformed: MalformedRow[];
@@ -207,22 +222,15 @@ export interface VariantsTable {
 const KEY_CELL = /^`([^`]+)`$/;
 const TICK_CELL = /^\[[ xX]\]/;
 const HEADER_LINE = /^\|\s*Variant\s*\|/;
-const SEPARATOR_LINE = /^\|(\s*:?-+:?\s*\|)+$/;
-
-/** The offsets of a line's unescaped pipes: a pipe right after a backslash is cell text, as `cell` writes it. */
-function pipeOffsets(line: string): number[] {
-  const out: number[] = [];
-  for (let i = 0; i < line.length; i++) if (line[i] === "|" && line[i - 1] !== "\\") out.push(i);
-  return out;
-}
 
 /**
  * The rows of a variants table, read so that nothing a reviewer wrote is lost: the cells
- * are split on unescaped pipes only, and the note is everything after the three tick
- * cells (a "|" typed in a note stays in the note). The header and separator lines are
- * recognized by their text, not their position, and blank lines carry nothing. Any
- * other line that does not read as a row is returned as malformed, with its line
- * number (`firstLine` is the file line of `lines[0]`).
+ * are split on unescaped pipes only (tools/audit/table.ts, the one reader every audit
+ * table goes through), and the note is everything after the three tick cells (a "|"
+ * typed in a note stays in the note). The header and separator lines are recognized by
+ * their text, not their position, and blank lines carry nothing. Any other line that
+ * does not read as a row is returned as malformed, with its line number (`firstLine` is
+ * the file line of `lines[0]`).
  */
 export function readVariantsTable(lines: string[], firstLine = 1): VariantsTable {
   const table: VariantsTable = { rows: [], malformed: [] };
@@ -232,23 +240,18 @@ export function readVariantsTable(lines: string[], firstLine = 1): VariantsTable
     const text = raw.trim();
     if (!text || HEADER_LINE.test(text) || SEPARATOR_LINE.test(text)) return;
     const bad = (reason: string) => table.malformed.push({ line, reason });
-    const p = pipeOffsets(text);
-    if (p[0] !== 0) return bad("not a table row (a variants row starts with `|`)");
-    if (p.length < 6) return bad("too few cells (a variants row is `| variant | label | web | ios | android | notes |`)");
-    const between = (a: number, b: number) => text.slice(p[a] + 1, p[b]).trim();
-    const keyCell = between(0, 1);
+    const split = splitRow(text, VARIANTS_SHAPE);
+    if ("reason" in split) return bad(split.reason);
+    const [keyCell, , web, ios, android, notes] = split.cells;
     const key = KEY_CELL.exec(keyCell)?.[1];
     if (!key) return bad(`the variant cell reads "${keyCell}", not a back-ticked key`);
-    const ticks = { web: between(2, 3), ios: between(3, 4), android: between(4, 5) };
+    const ticks = { web, ios, android };
     for (const column of TICK_COLUMNS) {
       const value = ticks[column.key];
       if (!TICK_CELL.test(value)) {
         return bad(`the ${column.heading} cell reads "${value}", not \`[ ]\` or \`[x]\` (a "|" in the label, or a missing cell, shifts the columns; write a pipe in a cell as \`\\|\`)`);
       }
     }
-    // Everything after the tick cells is the note, less the row's closing pipe.
-    const last = p[p.length - 1];
-    const notes = text.slice(p[5] + 1, last > p[5] && last === text.length - 1 ? last : undefined).trim();
     const first = seen.get(key);
     if (first !== undefined) return bad(`a second row for \`${key}\` (the first is on line ${first})`);
     seen.set(key, line);
@@ -329,8 +332,8 @@ function findingsSection(): string[] {
     "",
     "One row per finding. Severity: critical, high, medium, low. Cell: a capture id from the inventory (`web/<slug>/<variant>/<width>.<look>.<surface>`, `ios/<slug>/<variant>/<look>.<surface>`) or `source`. Status: open, verified, fixed, wontfix (the owner's decision, with the reason in the summary), duplicate. Fix commit: the short SHA that closed it.",
     "",
-    "| ID | Severity | Cell | Summary | Status | Fix commit |",
-    "|---|---|---|---|---|---|",
+    headerRow(FINDINGS_SHAPE),
+    separatorRow(FINDINGS_SHAPE),
     "",
   ];
 }
@@ -341,8 +344,8 @@ function signOffSection(): string[] {
     "",
     "A platform is signed off when every variant cell for it is ticked, no critical or high finding is open, every medium or low is fixed or carries the owner's decision, and the run id names the after-capture run under `.audit/runs/` that shows it.",
     "",
-    "| Platform | Run id | Reviewer | Date | Result |",
-    "|---|---|---|---|---|",
+    headerRow(SIGN_OFF_SHAPE),
+    separatorRow(SIGN_OFF_SHAPE),
     ...SIGN_OFF_PLATFORMS.map((platform) => `| ${platform} |  |  |  |  |`),
     "",
   ];
@@ -408,6 +411,111 @@ export function seedPageChecklist(page: InventoryPage, facts: PageFacts): string
     ...findingsSection(),
     ...signOffSection(),
   ].join("\n");
+}
+
+// ---------- the hand-maintained tables ----------
+
+/** A finding as a reviewer wrote it, with its 1-based line number in the file. */
+export interface Finding {
+  id: string;
+  severity: (typeof FINDING_SEVERITIES)[number];
+  cell: string;
+  summary: string;
+  status: (typeof FINDING_STATUSES)[number];
+  fix: string;
+  line: number;
+}
+
+/** The findings table: whether it is there, its readable rows, and every line it could not read. */
+export interface FindingsTable {
+  found: boolean;
+  rows: Finding[];
+  malformed: MalformedRow[];
+}
+
+const oneOf = <T extends string>(values: readonly T[], value: string): T | null => (values as readonly string[]).includes(value) ? (value as T) : null;
+
+/**
+ * The findings under `## Findings`, read with the one table reader: a "|" typed in a
+ * summary stays in the summary, an empty cell is an empty cell, and a row whose severity
+ * or status is not one of the table's words (a missing cell shifts them), whose ID is
+ * empty or taken, is reported by line rather than counted or dropped.
+ */
+export function readFindings(content: string): FindingsTable {
+  const table = readSectionTable(content, "Findings", FINDINGS_SHAPE);
+  const out: FindingsTable = { found: table.found, rows: [], malformed: [...table.malformed] };
+  const seen = new Map<string, number>();
+  for (const { cells, line } of table.rows) {
+    const [id, severityCell, cell, summary, statusCell, fix] = cells;
+    const severity = oneOf(FINDING_SEVERITIES, severityCell.toLowerCase());
+    const status = oneOf(FINDING_STATUSES, statusCell.toLowerCase());
+    const bad = (reason: string) => out.malformed.push({ line, reason });
+    if (!id) bad("the ID cell is empty");
+    else if (!severity) bad(`the Severity cell reads "${severityCell}", not one of ${FINDING_SEVERITIES.join(", ")} (a missing cell shifts the columns; write a pipe in a cell as \`\\|\`)`);
+    else if (!status) bad(`the Status cell reads "${statusCell}", not one of ${FINDING_STATUSES.join(", ")} (a missing cell shifts the columns; write a pipe in a cell as \`\\|\`)`);
+    else if (seen.has(id)) bad(`a second finding ${id} (the first is on line ${seen.get(id)})`);
+    else {
+      seen.set(id, line);
+      out.rows.push({ id, severity, cell, summary, status, fix, line });
+    }
+  }
+  out.malformed.sort((a, b) => a.line - b.line);
+  return out;
+}
+
+/** A sign-off row as a reviewer left it. */
+export interface SignOff {
+  platform: (typeof SIGN_OFF_PLATFORMS)[number];
+  runId: string;
+  reviewer: string;
+  date: string;
+  result: string;
+  line: number;
+}
+
+/** The sign-off table: whether it is there, its readable rows, and every line it could not read. */
+export interface SignOffTable {
+  found: boolean;
+  rows: SignOff[];
+  malformed: MalformedRow[];
+}
+
+/** The sign-off rows under `## Sign-off`, one per platform, read with the one table reader. */
+export function readSignOffs(content: string): SignOffTable {
+  const table = readSectionTable(content, "Sign-off", SIGN_OFF_SHAPE);
+  const out: SignOffTable = { found: table.found, rows: [], malformed: [...table.malformed] };
+  const seen = new Map<string, number>();
+  for (const { cells, line } of table.rows) {
+    const [platformCell, runId, reviewer, date, result] = cells;
+    const platform = oneOf(SIGN_OFF_PLATFORMS, platformCell.toLowerCase());
+    if (!platform) out.malformed.push({ line, reason: `the Platform cell reads "${platformCell}", not one of ${SIGN_OFF_PLATFORMS.join(", ")}` });
+    else if (seen.has(platform)) out.malformed.push({ line, reason: `a second sign-off row for ${platform} (the first is on line ${seen.get(platform)})` });
+    else {
+      seen.set(platform, line);
+      out.rows.push({ platform, runId, reviewer, date, result, line });
+    }
+  }
+  out.malformed.sort((a, b) => a.line - b.line);
+  return out;
+}
+
+/** Every line of a checklist's hand-maintained tables that cannot be read, and a table that is missing, as messages. */
+export function handTableProblems(content: string): { line: number | null; message: string }[] {
+  const findings = readFindings(content);
+  const signOffs = readSignOffs(content);
+  const problems: { line: number | null; message: string }[] = [];
+  if (!findings.found && !findings.malformed.length) {
+    problems.push({ line: null, message: `findings table missing (a "## Findings" heading over the \`${headerRow(FINDINGS_SHAPE)}\` table)` });
+  }
+  problems.push(...findings.malformed.map((row) => ({ line: row.line, message: `malformed findings row: ${row.reason}` })));
+  const missing = SIGN_OFF_PLATFORMS.filter((platform) => !signOffs.rows.some((row) => row.platform === platform));
+  if (!signOffs.found && !signOffs.malformed.length) {
+    problems.push({ line: null, message: `sign-off section missing (a "## Sign-off" heading with a row per platform: ${SIGN_OFF_PLATFORMS.join(", ")})` });
+  } else if (signOffs.found && missing.length) {
+    problems.push({ line: null, message: `sign-off table has no readable row for ${missing.join(", ")} (one row per platform: ${SIGN_OFF_PLATFORMS.join(", ")})` });
+  }
+  problems.push(...signOffs.malformed.map((row) => ({ line: row.line, message: `malformed sign-off row: ${row.reason}` })));
+  return problems;
 }
 
 // ---------- merging ----------
@@ -541,13 +649,6 @@ export function writeChecklists(auditDir: string, sources: ChecklistSources): Wr
   return result;
 }
 
-function hasSignOff(content: string): boolean {
-  const at = content.indexOf("\n## Sign-off");
-  if (at === -1) return false;
-  const section = content.slice(at).split(/\n## (?!Sign-off)/)[0];
-  return SIGN_OFF_PLATFORMS.every((platform) => new RegExp(`^\\| ${platform} \\|`, "m").test(section));
-}
-
 /** Every way a checklist can be out of step with the inventory, as messages; empty when none. */
 export function checkChecklists(auditDir: string, sources: ChecklistSources): string[] {
   const errors: string[] = [];
@@ -566,7 +667,9 @@ export function checkChecklists(auditDir: string, sources: ChecklistSources): st
     const variants = findBlock(content, VARIANTS_BEGIN, VARIANTS_END);
     if (!variants) errors.push(`audit/${entry.file}: variants table markers missing`);
     else errors.push(...variantsErrors(entry, content, variants));
-    if (!hasSignOff(content)) errors.push(`audit/${entry.file}: sign-off section missing (a "## Sign-off" heading with a row per platform: web, ios, android)`);
+    for (const problem of handTableProblems(content)) {
+      errors.push(problem.line === null ? `audit/${entry.file}: ${problem.message}` : `audit/${entry.file}:${problem.line}: ${problem.message} (fix it by hand)`);
+    }
   }
   errors.push(...orphanChecklists(auditDir, expected));
   return errors;

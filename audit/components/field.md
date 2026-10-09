@@ -20,9 +20,9 @@ Audit checklist for `/components/field`. The facts block and the variants table 
 | Interactions registry | in the inventory; evidence: none registered |
 | Overlay recipe | none |
 | MeasureProps | adopted in `field.shared.tsx` |
-| Touch target | no minTarget or useMinTargetSlop in the source directory |
+| Touch target | no minTarget or useMinTargetSlop in the source modules |
 | Tests importing it | 5: `test/destructive-text-components.test.tsx`, `test/destructive-text.test.tsx`, `test/field.test.tsx`, `test/phone-input.test.tsx`, `test/sizing.test.tsx` |
-| E2E naming it | 0: none |
+| E2E importing or driving it | 0: none |
 <!-- audit:facts:end -->
 
 ## Variants

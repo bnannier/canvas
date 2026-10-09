@@ -10,7 +10,7 @@ Audit checklist for `/templates/inbox`. The facts block and the variants table a
 | Data module | `docs/src/core/data/templates/inbox.tsx` |
 | Sections | 1. List and thread |
 | Kit imports in the module | Avatar, Badge, Button, Card, Column, Divider, Icon, Input, Row, StackedList, StackedListItem, Typography, useToast |
-| E2E naming it | 0: none |
+| E2E driving it | 0: none |
 <!-- audit:facts:end -->
 
 ## Variants

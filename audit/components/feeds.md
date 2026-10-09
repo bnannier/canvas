@@ -10,7 +10,7 @@ Audit checklist for `/components/feeds`. The facts block and the variants table 
 | Markdown | `src/molecules/feeds/feeds.md` |
 | Source files | `feeds.android.tsx`, `feeds.ios.tsx`, `feeds.md`, `feeds.shared.tsx`, `feeds.styles.ts`, `feeds.tsx` |
 | Exports | Feed |
-| Platform entries | iOS: own build: Feed (builds from its own iosSkin; injects platform parts (../../atoms/avatar/avatar.ios.js)). Android: own build: Feed (builds from its own androidSkin; injects platform parts (../../atoms/avatar/avatar.android.js)) |
+| Platform entries | iOS: own build: Feed (builds from its own iosSkin). Android: own build: Feed (builds from its own androidSkin) |
 | Platform-skins registry | iOS: Feed; Android: Feed |
 | Reference row | `feeds` (Light, Built). iOS: none (iOS has no activity feed component or HIG pattern; apps compose feeds from plain lists or collection views, and the similarly named Activity Views and Live Activities are unrelated). Android: none (Material 3 has no activity feed component; feeds are composed from lists or cards, and M3 offers only a feed canonical layout, a content card grid, not an actor-and-timestamp feed). Web: link [feeds (Web)](https://tailwindcss.com/plus/ui-blocks/application-ui/lists/feeds) (Tailwind Plus, formerly Tailwind UI; activity feed lists with icons, comments, and timestamps) |
 | Materials manifest | Feed: molecules, static + inherited; verification solid-appearance, glass-appearance, mode-switch, accessibility-fallback, runtime-capability, semantic-state |
@@ -22,7 +22,7 @@ Audit checklist for `/components/feeds`. The facts block and the variants table 
 | MeasureProps | not adopted |
 | Touch target | useMinTargetSlop in none; minTarget in `feeds.shared.tsx`, `feeds.styles.ts` |
 | Tests importing it | 4: `test/behavior-smoke-c.test.tsx`, `test/list-semantics.test.tsx`, `test/scroll-frame-ring.test.tsx`, `test/virtualization.test.tsx` |
-| E2E naming it | 2: `e2e/behavior/scroll-focus.e2e.ts`, `e2e/journeys/keyboard.e2e.ts` |
+| E2E importing or driving it | 2: `e2e/behavior/scroll-focus.e2e.ts`, `e2e/journeys/keyboard.e2e.ts` |
 <!-- audit:facts:end -->
 
 ## Variants

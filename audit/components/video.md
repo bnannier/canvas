@@ -10,7 +10,7 @@ Audit checklist for `/components/video`. The facts block and the variants table 
 | Markdown | `src/atoms/video/video.md` |
 | Source files | `video.android.tsx`, `video.controls.tsx`, `video.ios.tsx`, `video.md`, `video.shared.tsx`, `video.styles.ts`, `video.tsx` |
 | Exports | Video |
-| Platform entries | iOS: own build: Video (builds from its own iosSkin; injects platform parts (../emblem/emblem.ios.js); injects platform parts (../icon/icon.ios.js); injects platform parts (../spinner/spinner.ios.js)). Android: own build: Video (builds from its own androidSkin; injects platform parts (../emblem/emblem.android.js); injects platform parts (../icon/icon.android.js); injects platform parts (../spinner/spinner.android.js)) |
+| Platform entries | iOS: own build: Video (builds from its own iosSkin; injects platform parts (../spinner/spinner.ios.js)). Android: own build: Video (builds from its own androidSkin; injects platform parts (../spinner/spinner.android.js)) |
 | Platform-skins registry | iOS: Video; Android: Video |
 | Reference row | none: `PLATFORM-REFERENCES.md` has no row for this component (K8) |
 | Materials manifest | Video: atoms, static + inherited; verification solid-appearance, glass-appearance, mode-switch, accessibility-fallback, runtime-capability, semantic-state |
@@ -22,7 +22,7 @@ Audit checklist for `/components/video`. The facts block and the variants table 
 | MeasureProps | not adopted |
 | Touch target | useMinTargetSlop in none; minTarget in `video.styles.ts` |
 | Tests importing it | 1: `test/video.test.tsx` |
-| E2E naming it | 1: `e2e/journeys/keyboard.e2e.ts` |
+| E2E importing or driving it | 1: `e2e/journeys/keyboard.e2e.ts` |
 <!-- audit:facts:end -->
 
 ## Variants

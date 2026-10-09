@@ -10,7 +10,7 @@ Audit checklist for `/templates/detail-sidebar`. The facts block and the variant
 | Data module | `docs/src/core/data/templates/detail-sidebar.tsx` |
 | Sections | 1. Order detail |
 | Kit imports in the module | Avatar, Badge, Breadcrumb, Button, Card, Column, DataTable, DescriptionList, Divider, Feed, Icon, Row, Typography, useToast |
-| E2E naming it | 0: none |
+| E2E driving it | 0: none |
 <!-- audit:facts:end -->
 
 ## Variants

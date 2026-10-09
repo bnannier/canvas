@@ -20,9 +20,9 @@ Audit checklist for `/components/card`. The facts block and the variants table a
 | Interactions registry | in the inventory; evidence: none registered |
 | Overlay recipe | none |
 | MeasureProps | not adopted |
-| Touch target | no minTarget or useMinTargetSlop in the source directory |
+| Touch target | no minTarget or useMinTargetSlop in the source modules |
 | Tests importing it | 6: `test/card.test.tsx`, `test/hover-lift.test.tsx`, `test/layout-responsive.test.tsx`, `test/molecule-material-state.test.tsx`, `test/native-carousel-fixture.test.tsx`, `test/new-components.test.tsx` |
-| E2E naming it | 0: none |
+| E2E importing or driving it | 3: `e2e/behavior/material-overlay-host.e2e.ts`, `e2e/behavior/scroll-focus.e2e.ts`, `e2e/journeys/keyboard.e2e.ts` |
 <!-- audit:facts:end -->
 
 ## Variants

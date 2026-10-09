@@ -20,9 +20,9 @@ Audit checklist for `/components/slider`. The facts block and the variants table
 | Interactions registry | in the inventory; evidence: none registered |
 | Overlay recipe | none |
 | MeasureProps | adopted in `slider.shared.tsx` |
-| Touch target | no minTarget or useMinTargetSlop in the source directory |
+| Touch target | no minTarget or useMinTargetSlop in the source modules |
 | Tests importing it | 8: `test/control-refs.test.tsx`, `test/feedback.test.tsx`, `test/fixtures/control-refs-consumer.tsx`, `test/keyboard-nav.test.tsx`, `test/native-focus-fixtures.test.tsx`, `test/sizing.test.tsx`, `test/slider-glass.test.tsx`, `test/ws3-a11y-theming.test.tsx` |
-| E2E naming it | 2: `e2e/behavior/keyboard.e2e.ts`, `e2e/journeys/control-refs.e2e.ts` |
+| E2E importing or driving it | 3: `e2e/behavior/keyboard.e2e.ts`, `e2e/behavior/material-overlay-host.e2e.ts`, `e2e/journeys/control-refs.e2e.ts` |
 <!-- audit:facts:end -->
 
 ## Variants

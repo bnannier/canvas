@@ -10,7 +10,7 @@ Audit checklist for `/components/filter-panel`. The facts block and the variants
 | Markdown | `src/organisms/filter-panel/filter-panel.md` |
 | Source files | `filter-panel.android.tsx`, `filter-panel.ios.tsx`, `filter-panel.md`, `filter-panel.shared.tsx`, `filter-panel.styles.ts`, `filter-panel.tsx` |
 | Exports | FilterPanel |
-| Platform entries | iOS: own build: FilterPanel (builds from its own iosSkin; injects platform parts (../../atoms/badge/badge.ios.js); injects platform parts (../../atoms/button/button.ios.js); injects platform parts (../drawer/drawer.ios.js)). Android: own build: FilterPanel (builds from its own androidSkin; injects platform parts (../../atoms/checkbox/indicator/index.android.js); injects platform parts (../../atoms/badge/badge.android.js); injects platform parts (../../atoms/button/button.android.js); injects platform parts (../drawer/drawer.android.js)) |
+| Platform entries | iOS: own build: FilterPanel (builds from its own iosSkin; injects platform parts (../../atoms/button/button.ios.js); injects platform parts (../drawer/drawer.ios.js)). Android: own build: FilterPanel (builds from its own androidSkin; injects platform parts (../../atoms/checkbox/indicator/index.android.js); injects platform parts (../../atoms/button/button.android.js); injects platform parts (../drawer/drawer.android.js)) |
 | Platform-skins registry | iOS: FilterPanel; Android: FilterPanel |
 | Reference row | `filter-panel` (Light, Built). iOS: none (iOS has no filter panel control; filters are typically presented in a sheet, popover, or menu built from standard controls). Android: link [filter-panel (Android)](https://m3.material.io/components/side-sheets/overview). Web: link [filter-panel (Web)](https://tailwindcss.com/plus/ui-blocks/ecommerce/components/category-filters) (Tailwind UI category filters; sidebar and slide-over filter panel examples) |
 | Materials manifest | FilterPanel: organisms, static + liquid; verification solid-appearance, glass-appearance, mode-switch, accessibility-fallback, runtime-capability, semantic-state |
@@ -20,9 +20,9 @@ Audit checklist for `/components/filter-panel`. The facts block and the variants
 | Interactions registry | in the inventory; evidence: none registered |
 | Overlay recipe | none |
 | MeasureProps | not adopted |
-| Touch target | no minTarget or useMinTargetSlop in the source directory |
+| Touch target | no minTarget or useMinTargetSlop in the source modules |
 | Tests importing it | 4: `test/filter-panel.test.tsx`, `test/narrow-modes.test.tsx`, `test/option-list-idiom.test.tsx`, `test/organism-material-roles.test.tsx` |
-| E2E naming it | 0: none |
+| E2E importing or driving it | 0: none |
 <!-- audit:facts:end -->
 
 ## Variants

@@ -10,7 +10,7 @@ Audit checklist for `/templates/kanban`. The facts block and the variants table 
 | Data module | `docs/src/core/data/templates/kanban.tsx` |
 | Sections | 1. Board |
 | Kit imports in the module | AlertDialog, Avatar, Badge, Button, Card, Chip, Column, DescriptionList, Dialog, DragDropProvider, DragHandle, Draggable, DropZone, EmptyState, Feed, FeedItem, Grid, Icon, Input, Pressable, Progress, Row, RowMenu, RowMenuItem, Select, Stats, Textarea, ToastHandle, Typography, useToast |
-| E2E naming it | 0: none |
+| E2E driving it | 0: none |
 <!-- audit:facts:end -->
 
 ## Variants

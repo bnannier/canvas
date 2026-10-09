@@ -10,7 +10,7 @@ Audit checklist for `/components/navbars`. The facts block and the variants tabl
 | Markdown | `src/organisms/navbars/navbars.md` |
 | Source files | `navbars.android.tsx`, `navbars.ios.tsx`, `navbars.md`, `navbars.shared.tsx`, `navbars.styles.ts`, `navbars.tsx` |
 | Exports | Navbar |
-| Platform entries | iOS: own build: Navbar (builds from its own iosSkin; injects platform parts (../../atoms/dropdown/dropdown.ios.js); injects platform parts (../../atoms/button/button.ios.js); injects platform parts (../../atoms/avatar/avatar.ios.js)). Android: own build: Navbar (builds from its own androidSkin; injects platform parts (../../atoms/dropdown/dropdown.android.js); injects platform parts (../../atoms/button/button.android.js); injects platform parts (../../atoms/avatar/avatar.android.js)) |
+| Platform entries | iOS: own build: Navbar (builds from its own iosSkin; injects platform parts (../../atoms/dropdown/dropdown.ios.js); injects platform parts (../../atoms/button/button.ios.js)). Android: own build: Navbar (builds from its own androidSkin; injects platform parts (../../atoms/dropdown/dropdown.android.js); injects platform parts (../../atoms/button/button.android.js)) |
 | Platform-skins registry | iOS: Navbar; Android: Navbar |
 | Reference row | `navbars` (Full, Built). iOS: link [navbars (iOS 27)](https://www.sketch.com/s/04c24d8b-38fb-4afb-8836-36617e022f02/symbols?g=Toolbars) (iOS 26+ nav bars are toolbars). Android: link [navbars (Android)](https://m3.material.io/components/app-bars/overview). Web: link [navbars (Web)](https://catalyst.tailwindui.com/docs/navbar) |
 | Materials manifest | Navbar: organisms, liquid; verification solid-appearance, glass-appearance, mode-switch, accessibility-fallback, runtime-capability, semantic-state |
@@ -20,9 +20,9 @@ Audit checklist for `/components/navbars`. The facts block and the variants tabl
 | Interactions registry | in the inventory; evidence: none registered |
 | Overlay recipe | none |
 | MeasureProps | not adopted |
-| Touch target | no minTarget or useMinTargetSlop in the source directory |
+| Touch target | no minTarget or useMinTargetSlop in the source modules |
 | Tests importing it | 3: `test/behavior-smoke-d.test.tsx`, `test/narrow-modes.test.tsx`, `test/text-contrast.test.tsx` |
-| E2E naming it | 1: `e2e/responsive/component-widths.e2e.ts` |
+| E2E importing or driving it | 0: none |
 <!-- audit:facts:end -->
 
 ## Variants

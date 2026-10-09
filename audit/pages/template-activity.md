@@ -10,7 +10,7 @@ Audit checklist for `/templates/activity`. The facts block and the variants tabl
 | Data module | `docs/src/core/data/templates/activity.tsx` |
 | Sections | 1. Audit log |
 | Kit imports in the module | Button, Card, Chip, Column, EmptyState, Feed, Icon, Input, Row, Select, Typography, useToast |
-| E2E naming it | 1: `e2e/a11y/structure.e2e.ts` |
+| E2E driving it | 1: `e2e/a11y/structure.e2e.ts` |
 <!-- audit:facts:end -->
 
 ## Variants

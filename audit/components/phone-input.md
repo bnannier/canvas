@@ -20,9 +20,9 @@ Audit checklist for `/components/phone-input`. The facts block and the variants 
 | Interactions registry | in the inventory; evidence: phone-input-country-pick (unit-web, test/phone-input.test.tsx) |
 | Overlay recipe | yes (listbox) |
 | MeasureProps | adopted in `phone-input.shared.tsx` |
-| Touch target | no minTarget or useMinTargetSlop in the source directory |
+| Touch target | no minTarget or useMinTargetSlop in the source modules |
 | Tests importing it | 2: `test/phone-input.test.tsx`, `test/text-entry-material.test.tsx` |
-| E2E naming it | 1: `e2e/behavior/text-entry-clear.e2e.ts` |
+| E2E importing or driving it | 0: none |
 <!-- audit:facts:end -->
 
 ## Variants

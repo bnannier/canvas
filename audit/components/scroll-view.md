@@ -20,9 +20,9 @@ Audit checklist for `/components/scroll-view`. The facts block and the variants 
 | Interactions registry | in the inventory; evidence: none registered |
 | Overlay recipe | none |
 | MeasureProps | not adopted |
-| Touch target | no minTarget or useMinTargetSlop in the source directory |
+| Touch target | no minTarget or useMinTargetSlop in the source modules |
 | Tests importing it | 0: none |
-| E2E naming it | 1: `e2e/behavior/material-overlay-host.e2e.ts` |
+| E2E importing or driving it | 0: none |
 <!-- audit:facts:end -->
 
 ## Variants

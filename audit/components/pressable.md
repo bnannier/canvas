@@ -20,9 +20,9 @@ Audit checklist for `/components/pressable`. The facts block and the variants ta
 | Interactions registry | in the inventory; evidence: none registered |
 | Overlay recipe | none |
 | MeasureProps | not adopted |
-| Touch target | no minTarget or useMinTargetSlop in the source directory |
+| Touch target | no minTarget or useMinTargetSlop in the source modules |
 | Tests importing it | 3: `test/data-table.test.tsx`, `test/focus-ring.test.tsx`, `test/pressable-tab-stop.test.tsx` |
-| E2E naming it | 2: `e2e/behavior/keyboard.e2e.ts`, `e2e/behavior/overlays.e2e.ts` |
+| E2E importing or driving it | 0: none |
 <!-- audit:facts:end -->
 
 ## Variants

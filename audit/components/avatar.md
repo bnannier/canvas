@@ -22,7 +22,7 @@ Audit checklist for `/components/avatar`. The facts block and the variants table
 | MeasureProps | not adopted |
 | Touch target | useMinTargetSlop in none; minTarget in `avatar.shared.tsx`, `avatar.styles.ts` |
 | Tests importing it | 9: `test/a11y-state.test.tsx`, `test/atom-material-feedback.test.tsx`, `test/atom-material-roles.test.tsx`, `test/avatar-menu.test.tsx`, `test/dense-overlays.test.tsx`, `test/new-components.test.tsx`, `test/no-console-violations.test.tsx`, `test/skins-smoke.test.tsx`, `test/text-contrast.test.tsx` |
-| E2E naming it | 2: `e2e/a11y/structure.e2e.ts`, `e2e/journeys/shell-search.e2e.ts` |
+| E2E importing or driving it | 1: `e2e/a11y/structure.e2e.ts` |
 <!-- audit:facts:end -->
 
 ## Variants
