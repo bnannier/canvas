@@ -2,7 +2,8 @@
 // cover: every component the interaction registry lists has recipes or a reason it has
 // none, every recipe names an example its page has, every state a component's own source
 // gives it (tools/audit/interaction-signals.ts: a scrub surface, a press, hover or field
-// handler, the hover primitive, a pressed, hovered or focused look) has a recipe or an
+// handler, the hover primitive, a tab stop, an overlay it opens, a pressed, hovered or
+// focused look, whether written on the tag or spread onto it) has a recipe or an
 // exemption whose claim holds (tools/audit/state-coverage.ts), every overlay the e2e
 // suite opens (and Tooltip and AvatarMenu, which it never opens) has an open recipe, and
 // an overlay opens from exactly the rows whose platform build the docs registry injects.
@@ -10,9 +11,13 @@ import { describe, expect, it } from "bun:test";
 import { mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
+import { COMPONENTS } from "../../docs/src/core/data/components.ts";
 import { MATERIAL_OVERLAY_RECIPES, TOAST_RECIPE } from "../../e2e/support/overlay-recipes.ts";
 import { ROOT } from "../../e2e/support/routes.ts";
+import { breakpoints } from "../../src/style/tokens.ts";
 import {
+  DESKTOP,
+  EVERY_WIDTH,
   HOVER_PROPERTIES,
   STATE_NAMES,
   STATE_RECIPES,
@@ -27,7 +32,7 @@ import {
 import { inventory as registry } from "../interactions/registry.ts";
 import { registeredSkins } from "../skins/registry.ts";
 import { SignalReader, type Signal } from "./interaction-signals.ts";
-import { components } from "./inventory.ts";
+import { WIDTHS, components, widthsAtOrBelow } from "./inventory.ts";
 import { componentSignals, coverageOf, exemptionFailure, railExamples, sourceDirOf, tableCoverage } from "./state-coverage.ts";
 import { parseWebFilters, planStateCapture } from "./web-capture.ts";
 
@@ -41,6 +46,10 @@ const examplesOf = (slug: string) => pages.find((c) => c.slug === slug)?.variant
 
 /** The export whose platform builds an open recipe's rows follow, per component that opens something. */
 const OPENED_EXPORT: Record<string, string> = {
+  "button-group": "ButtonGroup",
+  calendar: "Calendar",
+  "filter-panel": "FilterPanel",
+  sidebar: "Sidebar",
   dialog: "Dialog",
   "alert-dialog": "AlertDialog",
   popover: "Popover",
@@ -101,15 +110,21 @@ describe("the state recipe table", () => {
     ]);
   });
 
-  it("has a hover recipe for every component whose source reads the hover primitive or takes a resting pointer, and no other", () => {
+  it("captures the hover of every component whose source takes a resting pointer, and no other", () => {
     const withHover = Object.keys(STATE_RECIPES).filter((slug) => recipesOf(slug).some((r) => r.state === "hover")).sort();
+    const byOpening = Object.keys(STATE_RECIPES).filter((slug) => recipesOf(slug).some((r) => r.alsoAnswers?.includes("hover"))).sort();
+    const resting = pages.filter((c) => STATE_RECIPES[c.slug] && componentSignals(reader, c).some((s) => s.state === "hover")).map((c) => c.slug).sort();
+    // Held to the source, not to a list: a component the source gives a hover has a hover
+    // recipe or an opening a resting pointer makes, and no hover recipe goes without one.
+    expect([...new Set([...withHover, ...byOpening])].sort()).toEqual(resting);
+    // Every reader of the hover primitive is among them.
     expect(hoverDeclarers()).toEqual(["avatar", "button", "card", "dropdown", "listbox", "pagination", "row-menu", "sidebar"]);
     for (const slug of hoverDeclarers()) expect(withHover).toContain(slug);
-    // Command's rows take the active highlight under the pointer and the heatmap's days
-    // inspect under it (onHoverIn); nothing else takes a resting pointer.
-    const resting = pages.filter((c) => STATE_RECIPES[c.slug] && signalsOf(c.slug).some((s) => s.state === "hover")).map((c) => c.slug).sort();
-    expect(resting).toEqual([...hoverDeclarers(), "command", "heatmap"].sort());
-    expect(withHover).toEqual(resting);
+    // Spread handlers count: the Calendar's blocks take `{...hoverProps}` and Tooltip's
+    // triggers `{...disclosure}`; Tooltip's hover is its open recipe's (a resting pointer opens it).
+    expect(resting).toContain("calendar");
+    expect(resting).toContain("tooltip");
+    expect(byOpening).toEqual(["tooltip"]);
     // The hover is judged by what src/style/hover.tsx changes: the lift and the wash.
     expect([...HOVER_PROPERTIES].sort()).toEqual(["background-color", "box-shadow", "scale", "transform", "translate"]);
   });
@@ -125,38 +140,56 @@ describe("the state recipe table", () => {
 
   it("opens each overlay from the web row and from every row whose platform build the docs registry injects", () => {
     const registered = registeredSkins(readFileSync(join(ROOT, "docs/src/core/platform-skins.ts"), "utf8"));
+    // A page that shows one preview (Sidebar's full app frame) has the web row alone.
+    const single = new Set(COMPONENTS.filter((c) => c.singlePreview).map((c) => c.slug));
+    expect([...single]).toEqual(["sidebar"]);
     for (const [slug, name] of Object.entries(OPENED_EXPORT)) {
-      const expected = ["web", ...(["ios", "android"] as const).filter((platform) => registered[platform].has(name))];
+      const expected = ["web", ...(single.has(slug) ? [] : (["ios", "android"] as const).filter((platform) => registered[platform].has(name)))];
       expect({ slug, rows: [...recipeFor(slug, "open").rows] }).toEqual({ slug, rows: expected });
     }
     // Toast has no iOS build of its own: its iOS row is the web one.
     expect([...recipeFor("toast", "open").rows]).toEqual(["web", "android"]);
   });
 
-  it("captures hover, focus, pressed, invalid and disabled at the desktop in the row (in the viewport inside an overlay), and open at every width in the viewport", () => {
+  it("captures hover, focus, pressed, invalid and disabled at the desktop in the row (in the viewport inside an overlay), and open at every width in the viewport, but where a state exists only at some widths", () => {
+    // A state that exists only at some widths is captured there alone: the drawers FilterPanel
+    // and Sidebar become at and below their breakpoints, and the Heatmap's scroller, a tab
+    // stop only where the year overflows it, below `sm`.
+    const only: Record<string, readonly string[]> = {
+      "filter-panel open": widthsAtOrBelow("sm"),
+      "sidebar open": widthsAtOrBelow("lg"),
+      "heatmap focus": widthsAtOrBelow("sm"),
+    };
     for (const slug of Object.keys(STATE_RECIPES)) {
       for (const recipe of recipesOf(slug)) {
-        const where = { slug, state: recipe.state, widths: recipe.widths, frame: recipe.frame };
-        if (recipe.state === "open") expect(where).toEqual({ slug, state: "open", widths: "all", frame: "viewport" });
-        else if ((recipe.state === "hover" || recipe.state === "pressed") && recipe.frame === "viewport") expect(where.widths).toBe("desktop");
-        else expect(where).toEqual({ slug, state: recipe.state, widths: "desktop", frame: "row" });
+        const key = `${slug} ${recipe.state}`;
+        const widths = only[key] ?? (recipe.state === "open" ? EVERY_WIDTH : DESKTOP);
+        expect({ key, widths: [...recipe.widths] }).toEqual({ key, widths: [...widths] });
+        if (recipe.state === "open") expect({ key, frame: recipe.frame }).toEqual({ key, frame: "viewport" });
+        // Inside an overlay (a hover, a focus or a press in an opened menu, dialog or sheet,
+        // or a card a resting pointer floats) the photograph is the viewport.
+        else if (recipe.frame === "viewport") expect(["hover", "focus", "pressed"]).toContain(recipe.state);
         if (recipe.state !== "open") expect([...recipe.rows]).toEqual(["web"]);
         expect(recipe.how.trim()).not.toBe("");
       }
     }
+    // The kit's own breakpoints, read off the audit's widths: a phone sits under sm, a tablet under lg.
+    expect(widthsAtOrBelow("sm")).toEqual(WIDTHS.filter((w) => w.width <= breakpoints.sm).map((w) => w.key));
+    expect([widthsAtOrBelow("sm"), widthsAtOrBelow("lg"), widthsAtOrBelow("xl"), widthsAtOrBelow("2xl")]).toEqual([["phone"], ["phone", "tablet"], ["phone", "tablet"], ["phone", "tablet", "desktop"]]);
   });
 
-  it("plans a state per row and width in every look and surface: button 24 cells, dialog 60", () => {
+  it("plans a state per row and width in every look and surface: button 24 cells, dialog 66, filter panel at a phone's width alone", () => {
     const filters = parseWebFilters({});
     const button = planStateCapture(pages, stateSpecsOf, { ...filters, only: ["button"] }, [...STATE_NAMES]);
     expect(button.byState).toEqual({ hover: 6, focus: 6, pressed: 6, disabled: 6 });
     expect(button.cells).toBe(24);
     expect(button.groups.length).toBe(6);
     const dialog = planStateCapture(pages, stateSpecsOf, { ...filters, only: ["dialog"] }, [...STATE_NAMES]);
-    // Open from three rows at three widths; the press on its Cancel, inside it, at the desktop.
-    expect(dialog.byState).toEqual({ pressed: 6, open: 3 * 3 * 6 });
-    expect(dialog.cells).toBe(60);
+    // Open from three rows at three widths; the focus and the press on its Cancel, inside it, at the desktop.
+    expect(dialog.byState).toEqual({ focus: 6, pressed: 6, open: 3 * 3 * 6 });
+    expect(dialog.cells).toBe(66);
     expect(dialog.groups[0]!.cells.map((c) => `${c.state} ${c.row}.${c.width.key}`)).toEqual([
+      "focus web.desktop",
       "pressed web.desktop",
       "open web.phone", "open web.tablet", "open web.desktop",
       "open ios.phone", "open ios.tablet", "open ios.desktop",
@@ -166,10 +199,13 @@ describe("the state recipe table", () => {
     const phone = planStateCapture(pages, stateSpecsOf, parseWebFilters({ AUDIT_ONLY: "button,dialog", AUDIT_WIDTHS: "phone" }), [...STATE_NAMES]);
     expect(phone.byState).toEqual({ open: 3 * 6 });
     expect(phone.components).toBe(1);
+    // The drawer exists only at a phone's width (`sm`): one width, three rows.
+    const drawer = planStateCapture(pages, stateSpecsOf, { ...filters, only: ["filter-panel"] }, ["open"]);
+    expect(drawer.groups[0]!.cells.map((c) => `${c.row}.${c.width.key}`)).toEqual(["web.phone", "ios.phone", "android.phone"]);
   });
 
   it("refuses a recipe naming an example the page does not have", () => {
-    const specs = () => [{ state: "hover" as const, variant: "nosuchexample", rows: ["web" as const], widths: "desktop" as const }];
+    const specs = () => [{ state: "hover" as const, variant: "nosuchexample", rows: ["web" as const], widths: DESKTOP }];
     expect(() => planStateCapture(pages, specs, { ...parseWebFilters({}), only: ["button"] }, ["hover"])).toThrow(/names the example "nosuchexample"/);
   });
 });
@@ -180,7 +216,45 @@ describe("the states each component's source gives it", () => {
     expect(coverage.flatMap((c) => c.errors)).toEqual([]);
     // Every exemption in the table, and that it holds.
     const exempt = coverage.flatMap((c) => c.answers.filter((a) => a.by === "exemption").map((a) => `${c.slug} ${a.state}: ${a.failure ?? "holds"}`));
-    expect(exempt.sort()).toEqual(["drawer pressed: holds", "feeds pressed: holds", "steps pressed: holds", "typography focus: holds", "typography pressed: holds"]);
+    expect(exempt.sort()).toEqual([
+      "drawer pressed: holds",
+      "feeds focus: holds",
+      "feeds pressed: holds",
+      "steps focus: holds",
+      "steps pressed: holds",
+      "typography focus: holds",
+      "typography pressed: holds",
+    ]);
+    // A state answered by another state's recipe: Tooltip's hover, by the open recipe a resting pointer applies.
+    const via = coverage.flatMap((c) => c.answers.filter((a) => a.recipe).map((a) => `${c.slug} ${a.state} by ${a.recipe}`));
+    expect(via).toEqual(["tooltip hover by open"]);
+  });
+
+  it("fails the Calendar marked static on every state its source gives it, the hover read from its spread", () => {
+    const calendar = component("calendar");
+    const errors = coverageOf("calendar", { static: true, reason: "a test" }, componentSignals(reader, calendar), railExamples(calendar)).errors;
+    expect(errors.map((e) => e.replace(/ \(.*\),/, ","))).toEqual([
+      "calendar: its source gives it a hover state, with neither a hover recipe nor an exemption",
+      "calendar: its source gives it a focus state, with neither a focus recipe nor an exemption",
+      "calendar: its source gives it a pressed state, with neither a pressed recipe nor an exemption",
+      "calendar: its source gives it an open state, with neither an open recipe nor an exemption",
+    ]);
+    // The hover is the blocks' `{...hoverProps}`, written in the object the spread takes.
+    expect(errors[0]).toContain("onHoverIn on <Pressable> at src/organisms/calendar/calendar.shared.tsx:");
+  });
+
+  it("fails an overlay's own tab stops with no focus recipe, and a hover with no resting-pointer opening to answer it", () => {
+    for (const slug of ["dialog", "alert-dialog", "action-sheet", "toast"]) {
+      const { focus: _focus, ...rest } = STATE_RECIPES[slug] as Record<string, unknown>;
+      const errors = coverageOf(slug, rest as ComponentStates, signalsOf(slug), railExamples(component(slug))).errors;
+      expect({ slug, errors: errors.map((e) => e.replace(/ \(.*\),/, ",")) }).toEqual({ slug, errors: [`${slug}: its source gives it a focus state, with neither a focus recipe nor an exemption`] });
+    }
+    // Tooltip's open recipe answers its hover only because a resting pointer opens it.
+    const tooltip = STATE_RECIPES.tooltip as Record<string, StateRecipe>;
+    const clicked = { ...tooltip, open: { ...tooltip.open!, alsoAnswers: undefined } } as ComponentStates;
+    expect(coverageOf("tooltip", clicked, signalsOf("tooltip"), railExamples(component("tooltip"))).errors.map((e) => e.replace(/ \(.*\),/, ","))).toEqual([
+      "tooltip: its source gives it a hover state, with neither a hover recipe nor an exemption",
+    ]);
   });
 
   it("fails the charts and the heatmap the table used to call static", () => {
@@ -198,6 +272,7 @@ describe("the states each component's source gives it", () => {
       "chart: its source gives it a pressed state, with neither a pressed recipe nor an exemption",
       "area-chart: its source gives it a pressed state, with neither a pressed recipe nor an exemption",
       "heatmap: its source gives it a hover state, with neither a hover recipe nor an exemption",
+      "heatmap: its source gives it a focus state, with neither a focus recipe nor an exemption",
       "heatmap: its source gives it a pressed state, with neither a pressed recipe nor an exemption",
       "histogram: its source gives it a pressed state, with neither a pressed recipe nor an exemption",
     ]);
@@ -216,17 +291,30 @@ describe("the states each component's source gives it", () => {
     // The breakdown rows are buttons only with onPressRow: BarList passes its onPressItem, MetricBreakdown nothing.
     expect(states("bar-list")).toContain("pressed press: onPress on <Pressable> [onPressItem] via BreakdownRows");
     expect(states("metric-breakdown")).toEqual([]);
-    // The heatmap's day cells exist only in the calendar layout.
+    // The heatmap's day cells exist only in the calendar layout, kept out of the tab order
+    // (`focusable={false}`, tab index -1); its scroller is a stop once the year overflows it
+    // (`{...scrollport}`, the style layer's useHorizontalScrollFocus).
     expect(states("heatmap")).toEqual([
+      "focus tab-stop: focusable on <ScrollView> [calendar] via CalendarHeatmap",
       "hover hover-in: onHoverIn on <Pressable> [calendar] via CalendarHeatmap",
       "hover hover-in: onHoverOut on <Pressable> [calendar] via CalendarHeatmap",
       "pressed press: onPress on <Pressable> [calendar] via CalendarHeatmap",
     ]);
     // A local component's gate, mapped through the prop its use passes.
-    expect(states("steps")).toEqual(["pressed look: a function taking `pressed` [onStepPress] via Circle", "pressed press: onPress on <Pressable> [onStepPress] via Circle"]);
-    expect(states("feeds")).toEqual(["pressed look: a function taking `pressed` [onItemPress]", "pressed press: onPress on <Pressable> [onItemPress]"]);
-    // A link role reached only with href; a press only with onPress.
-    expect(states("typography")).toEqual(['focus link: accessibilityRole "link" on <Text> [href]', "pressed press: onPress on <Text> [onPress]"]);
+    expect(states("steps")).toEqual([
+      "focus tab-stop: a tab stop: <Pressable> [onStepPress] via Circle",
+      "pressed look: a function taking `pressed` [onStepPress] via Circle",
+      "pressed press: onPress on <Pressable> [onStepPress] via Circle",
+    ]);
+    expect(states("feeds")).toEqual([
+      "focus tab-stop: a tab stop: <Pressable> [onItemPress]",
+      "focus tab-stop: focusable on <FlatList> [virtualized]",
+      "pressed look: a function taking `pressed` [onItemPress]",
+      "pressed press: onPress on <Pressable> [onItemPress]",
+    ]);
+    // A link role and href reached only with href; a press only with onPress (a Text with
+    // onPress and no role is no tab stop on the web).
+    expect(states("typography")).toEqual(['focus link: accessibilityRole "link" on <Text> [href]', "focus link: href on <Text> [href]", "pressed press: onPress on <Text> [onPress]"]);
     // The slider's thumb: its PanResponder and the skin's pressed ring.
     expect(states("slider")).toEqual(expect.arrayContaining(["pressed responder: PanResponder.create()", "pressed look: a function taking `pressed`"]));
     // A kit Button's press is the Button's, not the EmptyState's that renders it.
@@ -237,7 +325,7 @@ describe("the states each component's source gives it", () => {
     const states = (slug: string) => [...new Set(componentSignals(reader, component(slug)).map((s) => `${s.state} ${s.what}`))].sort();
     // React Native's own View, Text and ScrollView: no example hands them a handler.
     for (const slug of ["view", "text", "scroll-view"]) expect({ slug, states: states(slug) }).toEqual({ slug, states: [] });
-    expect(states("pressable")).toEqual(["pressed a function taking `pressed` on <Pressable>"]);
+    expect(states("pressable")).toEqual(["focus a tab stop: <Pressable>", "pressed a function taking `pressed` on <Pressable>"]);
     expect(states("text-input")).toEqual(["focus a TextInput"]);
     // A component with source of its own is read from it, not from its examples.
     expect(reader.hasSource(sourceDirOf(component("button")))).toBe(true);
@@ -314,6 +402,12 @@ export function Probe(props: { onTap?: () => void; onLong?: () => void; editable
 `,
       );
       expect(new SignalReader(root).signalsOf("src/atoms/probe").map(line).sort()).toEqual([
+        // Every Pressable is a tab stop on the web, under the same gates as its press.
+        "focus tab-stop: a tab stop: <Pressable>",
+        "focus tab-stop: a tab stop: <Pressable>",
+        "focus tab-stop: a tab stop: <Pressable> [onLong]",
+        "focus tab-stop: a tab stop: <Pressable> [onTap]",
+        "focus tab-stop: a tab stop: <Pressable> [tone] via Dot",
         // A ternary's false branch is rendered when the prop is NOT passed: no gate.
         "focus text-entry: a TextInput",
         "hover hover-in: onHoverIn on <Pressable>",
@@ -321,6 +415,94 @@ export function Probe(props: { onTap?: () => void; onLong?: () => void; editable
         "pressed press: onPress on <Pressable> [onTap]",
         // The early return gates Dot's Pressable on its onPress, which Probe gives only with tone; the bare <Dot /> gives none.
         "pressed press: onPress on <Pressable> [tone] via Dot",
+      ]);
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("reads the props a spread gives, the tab stops react-native-web makes, and the overlays a component opens", () => {
+    const root = mkdtempSync(join(tmpdir(), "signals-"));
+    const write = (path: string, text: string) => {
+      mkdirSync(dirname(join(root, path)), { recursive: true });
+      writeFileSync(join(root, path), text);
+    };
+    try {
+      write("src/style.ts", "export const Pressable = null; export const View = null; export const AnchoredOverlay = null;\n");
+      // A style-layer hook whose result is spread: the reader builds its value where the hook does.
+      write(
+        "src/style/hoverish.ts",
+        `import { useMemo } from "react";
+export function useHoverish() {
+  const target = useMemo(() => ({ onPointerEnter: () => {}, onPointerLeave: () => {} }), []);
+  return { hovered: false, target };
+}
+`,
+      );
+      // Another kit component that renders an overlay primitive.
+      write("src/atoms/sheet/sheet.tsx", `import { Modal } from "react-native";\nexport function Sheet(props: { open?: boolean }) {\n  return <Modal visible={props.open} />;\n}\n`);
+      write(
+        "src/atoms/probe/probe.shared.tsx",
+        `import { useMemo } from "react";
+import { Modal } from "react-native";
+import { Pressable, View, AnchoredOverlay } from "../../style.js";
+import { useHoverish } from "../../style/hoverish.js";
+import { Sheet as WebSheet } from "../sheet/sheet.js";
+function helper(onPress: () => void) {
+  return { onPress, accessibilityRole: "button" as const };
+}
+export function createProbe(parts: { Sheet?: typeof WebSheet } = {}) {
+  const Sheet = parts.Sheet ?? WebSheet;
+  return function Probe(props: { pin?: boolean; onTap?: () => void; flag?: boolean; responsive?: boolean; peek?: boolean }) {
+    const hoverProps = props.pin ? {} : { onHoverIn: () => {}, onHoverOut: () => {} };
+    const memo = useMemo(() => ({ onLongPress: () => {} }), []);
+    const { target } = useHoverish();
+    const asSheet = !!props.responsive;
+    return (
+      <View>
+        <Pressable {...hoverProps} focusable={false} />
+        <View {...(props.onTap ? { onPress: props.onTap } : undefined)} />
+        <View {...memo} />
+        <View {...helper(() => {})} />
+        <View {...target} />
+        <View focusable />
+        <View accessibilityRole={props.flag ? "button" : undefined} />
+        <Pressable tabIndex={-1} onPress={() => {}} />
+        <Pressable disabled onPress={() => {}} />
+        {props.peek ? <AnchoredOverlay open /> : null}
+        <Modal visible={false} />
+        {asSheet ? <Sheet open={props.flag} /> : null}
+        <Sheet />
+      </View>
+    );
+  };
+}
+`,
+      );
+      expect(new SignalReader(root).signalsOf("src/atoms/probe").map(line).sort()).toEqual([
+        // `focusable` on a View, and a role react-native-web makes a stop, gated by its condition.
+        'focus tab-stop: accessibilityRole "button" on <View>',
+        'focus tab-stop: accessibilityRole "button" on <View> [flag]',
+        "focus tab-stop: focusable on <View>",
+        // The hover-in pair from an object chosen by a ternary (a falsy `pin` says no prop was
+        // passed), and the pointer pair a style-layer hook builds with useMemo; the Pressable
+        // they are on is kept out of the tab order.
+        "hover hover-in: onHoverIn on <Pressable>",
+        "hover hover-in: onHoverOut on <Pressable>",
+        "hover hover-in: onPointerEnter on <View>",
+        "hover hover-in: onPointerLeave on <View>",
+        // An overlay primitive shown only with `peek`; a kit component that renders one,
+        // given its open state under `!!props.responsive` (and its value, `flag`). Neither
+        // `visible={false}` nor a Sheet given no open state opens anything.
+        "open overlay: a <AnchoredOverlay> [peek]",
+        "open overlay: a <Sheet> (an overlay) given `open` [flag&responsive]",
+        // A spread from a conditional, from useMemo and from a local helper's return; the
+        // Pressables taken out of the tab order (tab index -1, disabled) still press.
+        "pressed press: onLongPress on <View>",
+        "pressed press: onPress on <Pressable>",
+        "pressed press: onPress on <Pressable>",
+        "pressed press: onPress on <View>",
+        "pressed press: onPress on <View> [onTap]",
       ]);
     } finally {
       rmSync(root, { recursive: true, force: true });

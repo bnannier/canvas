@@ -20,7 +20,7 @@ Audit checklist for `/components/action-sheet`. The facts block and the variants
 | Hand-off metric gaps | none |
 | Interactions registry | in the inventory; evidence: none registered |
 | Overlay recipe | yes (dialog) |
-| Interaction states | captured: pressed on Default (web row; desktop), open on Default (web, iOS, Android rows; phone, tablet and desktop). |
+| Interaction states | captured: focus on Default (web row; desktop), pressed on Default (web row; desktop), open on Default (web, iOS, Android rows; phone, tablet and desktop). |
 | MeasureProps | not adopted |
 | Touch target | no touch-target name (the exports of `src/style/touch-target.ts`, `src/style/touch-target-seed.ts`, `src/style/touch-seam.ts`, `src/style/clip-slop.ts`, the `TouchTargetSkin` fields, or `hitSlop`) in its implementation modules. `test/touch-target-coverage.test.ts` records it as covered another way: rows are 48/56 tall by skin |
 | Tests importing it | 12: `test/design-rules-skins.test.ts`, `test/destructive-text-components.test.tsx`, `test/disclosure.test.tsx`, `test/escape-layers.test.tsx`, `test/hardware-back.test.tsx`, `test/native-accessibility-escape-hosts.test.tsx`, `test/native-focus-fixtures.test.tsx`, `test/no-console-violations.test.tsx`, `test/overlay-escape.test.tsx`, `test/overlays.test.tsx`, `test/skins-smoke.test.tsx`, `test/text-contrast.test.tsx` |

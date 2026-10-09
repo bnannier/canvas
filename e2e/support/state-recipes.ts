@@ -62,7 +62,8 @@
  * are types only, so the runner (tools/audit/run-web.ts) and the unit test read this
  * table under bun. The in-page readers below must stay self-contained.
  */
-import type { JSHandle, Locator, Page } from "@playwright/test";
+import type { ElementHandle, JSHandle, Locator, Page } from "@playwright/test";
+import { WIDTHS, widthsAtOrBelow, type WidthKey } from "../../tools/audit/inventory.ts";
 import type { RowPlatform } from "../../tools/audit/probe-math.ts";
 import { ringShows } from "./focus-ring";
 import { MATERIAL_OVERLAY_RECIPES, PHONE_INPUT_RECIPE, TOAST_RECIPE, type OverlayRecipe } from "./overlay-recipes";
@@ -132,8 +133,19 @@ export interface StateRecipe {
   variant: string;
   /** The platform rows it is applied from. */
   rows: readonly RowPlatform[];
-  /** The widths it is captured at: the desktop alone, or all three, since an overlay becomes a sheet on a phone. */
-  widths: "desktop" | "all";
+  /**
+   * The widths it is captured at: the desktop (`DESKTOP`) for a state the pointer or the
+   * keyboard gives, every width (`EVERY_WIDTH`) for an opening, since an overlay becomes a
+   * sheet on a phone, and the widths a state exists at when it exists only there (a drawer a
+   * component becomes at and below a breakpoint, `widthsAtOrBelow`; a scroll region that is a
+   * tab stop only where its content overflows).
+   */
+  widths: readonly WidthKey[];
+  /**
+   * The other states its capture shows, for the source signals a state of its own would
+   * answer: an opening under a resting pointer (a tooltip's bubble) is its trigger's hover.
+   */
+  alsoAnswers?: readonly StateName[];
   /**
    * What the photograph frames: the row the state is in (the card is fitted into a viewport
    * grown to hold it, as a variant cell's is), or the viewport at the cell's own size,
@@ -337,6 +349,12 @@ async function presence(control: Locator, what: string): Promise<string | null> 
 
 const NEUTRAL_POINT = { x: 1, y: 1 };
 
+/** The desktop alone: where the pointer and the keyboard states are captured. */
+export const DESKTOP: readonly WidthKey[] = ["desktop"];
+/** Every audit width: an opening is captured at each, since an overlay becomes a sheet on a phone. */
+export const EVERY_WIDTH: readonly WidthKey[] = WIDTHS.map((w) => w.key);
+
+
 /** A recipe whose steps share one typed hand-off; erased to the table's shape. */
 function recipe<A>(r: Omit<StateRecipe, "apply" | "verify" | "release"> & {
   apply(scene: StateScene): Promise<A>;
@@ -363,7 +381,7 @@ function hover(variant: string, target: Target, options: { within?: OpenSpec; ho
     state: "hover",
     variant,
     rows: ["web"],
-    widths: "desktop",
+    widths: DESKTOP,
     frame: within ? "viewport" : "row",
     how: options.how ?? "the pointer moves onto the control and rests there",
     async apply(scene) {
@@ -491,11 +509,12 @@ interface RingNode {
  * document order (an OTP's active cell sits beside its hidden input). A node that draws the
  * browser's own outline counts even when nothing changed.
  */
-function findRing(args: { ring: string; key: string }): RingNode {
+function findRing(args: { ring: string; key: string; scope: Element | null }): RingNode {
   const none = (drawnBy: string): RingNode => ({ node: null, how: "none", color: null, painted: null, themed: false, drawnBy });
   const active = document.activeElement;
   if (!active) return none("nothing is focused");
-  const row = active.closest("[data-platform-row]") ?? document.body;
+  // The scope whose edges were remembered: the row, or the overlay the control is in.
+  const row = args.scope && args.scope.contains(active) ? args.scope : (active.closest("[data-platform-row]") ?? document.body);
   const before = (window as unknown as Record<string, unknown>)[args.key] as WeakMap<Element, string> | undefined;
   const describe = (el: Element): string => `<${el.localName}${el.getAttribute("role") ? ` role="${el.getAttribute("role")}"` : ""}>`;
   const channels = (color: string): number[] | null => {
@@ -554,32 +573,52 @@ function findRing(args: { ring: string; key: string }): RingNode {
   return none("nothing in the row drew a new edge when focus arrived");
 }
 
-type Focused = { control: Locator; from: string | null; expected: string } | { missing: string };
+type Focused = { control: Locator; scope: Locator; from: string | null; expected: string; opened?: Opened } | { missing: string; opened?: Opened };
+
+interface FocusOptions {
+  how?: string;
+  /** An overlay opened first: the control is found and focused inside it, and it is closed after. */
+  within?: OpenSpec;
+  /**
+   * The widths the control is a tab stop at, when not the desktop: a scroll region is one
+   * only where its content overflows (the calendar Heatmap's, below `sm`).
+   */
+  widths?: readonly WidthKey[];
+}
 
 /**
  * The Tab key lands on the control from the tab stop before it, as a keyboard user
  * reaches it. Reached when focus is on (or inside) the control and matches
  * :focus-visible; the ring is then found and checked in the pixels on every side.
  */
-function focus(variant: string, target: Target, how = "Tab from the tab stop before the control"): StateRecipe {
+function focus(variant: string, target: Target, options: FocusOptions = {}): StateRecipe {
+  const { within } = options;
   return recipe<Focused>({
     state: "focus",
     variant,
     rows: ["web"],
-    widths: "desktop",
-    frame: "row",
-    how,
+    widths: options.widths ?? DESKTOP,
+    frame: within ? "viewport" : "row",
+    how: options.how ?? (within ? "the overlay opens, then Tab from the tab stop before the control in it" : "Tab from the tab stop before the control"),
     async apply(scene) {
-      const control = target(scene.row);
+      let scope = scene.row;
+      let opened: Opened | undefined;
+      if (within) {
+        opened = await openApply(within, scene);
+        const verdict = await openVerify(within, scene, opened);
+        if (!verdict.reached) return { missing: `the overlay the focus is read in did not open: ${verdict.reason}`, opened };
+        scope = verdict.panel!;
+      }
+      const control = target(scope);
       const missing = await presence(control, "control to focus");
-      if (missing) return { missing };
+      if (missing) return { missing, opened };
       const before = await control.evaluate(focusTabStopBefore);
-      if ("missing" in before) return before;
-      // How the row draws its edges with focus on the stop before, so verify can tell
+      if ("missing" in before) return { ...before, opened };
+      // How the scope draws its edges with focus on the stop before, so verify can tell
       // which node the arriving focus changed.
-      await scene.row.evaluate(rememberEdges, EDGES_KEY);
+      await scope.evaluate(rememberEdges, EDGES_KEY);
       await scene.page.keyboard.press("Tab");
-      return { control, ...before };
+      return { control, scope, ...before, opened };
     },
     async verify(scene, applied) {
       if ("missing" in applied) return notReached(applied.missing);
@@ -595,7 +634,9 @@ function focus(variant: string, target: Target, how = "Tab from the tab stop bef
         const box = node.getBoundingClientRect();
         if (box.top < 0 || box.left < 0 || box.bottom > window.innerHeight || box.right > window.innerWidth) node.scrollIntoView({ block: "center", inline: "nearest" });
       });
-      const handle: JSHandle<RingNode> = await scene.page.evaluateHandle(findRing, { ring: scene.ring, key: EDGES_KEY });
+      const scope = await applied.scope.elementHandle();
+      const handle: JSHandle<RingNode> = await scene.page.evaluateHandle(findRing, { ring: scene.ring, key: EDGES_KEY, scope });
+      await scope?.dispose();
       // The description crosses as JSON; the node stays a handle for the pixel check, which
       // looks for the colour the indicator paints at.
       const ring = await handle.evaluate(({ how, color, painted, themed, drawnBy }) => ({ how, color, painted, themed, drawnBy }));
@@ -608,11 +649,15 @@ function focus(variant: string, target: Target, how = "Tab from the tab stop bef
       if (node && !ring.themed) flags.push("focus-ring-colour");
       return { reached: true, evidence, flags };
     },
-    async release(scene) {
+    async release(scene, applied) {
       await scene.page.evaluate((key) => {
         (document.activeElement as HTMLElement | null)?.blur();
         delete (window as unknown as Record<string, unknown>)[key];
       }, EDGES_KEY);
+      if (within && applied.opened) {
+        const closed = await openClose(within, scene, applied.opened);
+        return { report: { focus: "blurred", ...closed.report }, flags: closed.flags };
+      }
       return { report: { focus: "blurred" }, flags: [] };
     },
   });
@@ -757,7 +802,7 @@ function pressed(variant: string, target: Target, options: PressOptions = {}): S
     state: "pressed",
     variant,
     rows: ["web"],
-    widths: "desktop",
+    widths: DESKTOP,
     frame: within ? "viewport" : "row",
     how: options.how ?? (within ? "the overlay opens, then the pointer goes down on the control in it and is held" : "the pointer goes down on the control and is held"),
     async apply(scene) {
@@ -987,7 +1032,7 @@ function inspect(variant: string, where: PlotPoint, options: InspectOptions): St
     state: "pressed",
     variant,
     rows: ["web"],
-    widths: "desktop",
+    widths: DESKTOP,
     frame: "row",
     how: options.how,
     async apply(scene) {
@@ -1034,7 +1079,7 @@ function hoverInspect(variant: string, where: PlotPoint, options: { expect?: rea
     state: "hover",
     variant,
     rows: ["web"],
-    widths: "desktop",
+    widths: DESKTOP,
     frame: "row",
     how: options.how,
     async apply(scene) {
@@ -1062,9 +1107,13 @@ function hoverInspect(variant: string, where: PlotPoint, options: { expect?: rea
 export interface OpenSpec {
   open: (page: Page, scope: Locator) => Promise<void>;
   trigger: (page: Page, scope: Locator) => Locator;
-  /** The ARIA role the opened node carries. */
-  role: string;
-  /** How many nodes of that role one opening adds. */
+  /**
+   * What the opening adds, by the ARIA role the opened node carries, or, for a card that
+   * carries none (the Calendar's hover card and day peek), by the text it shows: the panel
+   * is then the root of the subtree the opening added that holds the text (exactly one).
+   */
+  role: string | { shows: RegExp };
+  /** How many nodes of that role one opening adds (one, for a card found by its text). */
   adds: number;
   /** Whether the trigger carries aria-expanded. */
   expands?: boolean;
@@ -1092,8 +1141,11 @@ export interface OpenSpec {
 
 type Opened = { before: number; said: string[]; expanded: string | null } | { missing: string };
 
-/** The nodes an opening is counted among. */
-function openNodes(spec: OpenSpec, scene: StateScene): Locator {
+/** What an opening adds is described by: its role, or the text a role-less card shows. */
+const describeOpening = (spec: OpenSpec): string => (typeof spec.role === "string" ? spec.role : `card showing ${spec.role.shows}`);
+
+/** The nodes an opening is counted among, for an opening found by its role. */
+function openNodes(spec: OpenSpec & { role: string }, scene: StateScene): Locator {
   const { page } = scene;
   if (spec.where === "row") return scene.row.getByRole(spec.role as Role);
   if (spec.where === "announcement") return page.getByRole("status").filter({ hasText: /\S/ });
@@ -1104,14 +1156,51 @@ function openNodes(spec: OpenSpec, scene: StateScene): Locator {
   return scene.stage.locator("..").getByRole(spec.role as Role).or(page.getByRole(spec.role as Role).and(page.locator(":not([data-page-scroll] *)")));
 }
 
+/** Where the page keeps every element it had before an opening, for a card found by its text. */
+const SEEN_KEY = "__canvasAuditSeen";
+/** The attribute a card found by its text is marked with, so the capture can photograph and probe it. */
+const OPENED_MARK = "data-audit-opened";
+
+/** Runs in the page: remember every element, so a later reading can tell what an opening added. */
+function rememberElements(key: string): void {
+  const seen = new WeakSet<Element>();
+  for (const el of Array.from(document.querySelectorAll("*"))) seen.add(el);
+  (window as unknown as Record<string, unknown>)[key] = seen;
+}
+
+/**
+ * Runs in the page: the roots of the subtrees added since `rememberElements` whose text
+ * matches, each marked (and every earlier mark taken off), and how many there are.
+ */
+function markAdded(args: { key: string; source: string; flags: string; mark: string }): number {
+  const seen = (window as unknown as Record<string, unknown>)[args.key] as WeakSet<Element> | undefined;
+  for (const el of Array.from(document.querySelectorAll(`[${args.mark}]`))) el.removeAttribute(args.mark);
+  if (!seen) return 0;
+  const pattern = new RegExp(args.source, args.flags);
+  let count = 0;
+  for (const el of Array.from(document.querySelectorAll("*"))) {
+    if (seen.has(el) || !el.parentElement || !seen.has(el.parentElement)) continue;
+    if (!pattern.test(el.textContent ?? "")) continue;
+    el.setAttribute(args.mark, "");
+    count += 1;
+  }
+  return count;
+}
+
+/** How many of what the opening adds the page has: nodes of its role, or added cards showing its text. */
+async function countOpened(spec: OpenSpec, scene: StateScene): Promise<number> {
+  if (typeof spec.role === "string") return openNodes(spec as OpenSpec & { role: string }, scene).count();
+  return scene.page.evaluate(markAdded, { key: SEEN_KEY, source: spec.role.shows.source, flags: spec.role.shows.flags, mark: OPENED_MARK });
+}
+
 async function openApply(spec: OpenSpec, scene: StateScene): Promise<Opened> {
   const trigger = spec.trigger(scene.page, scene.row);
   const missing = await presence(trigger, `trigger in the ${scene.platform} row`);
   if (missing) return { missing };
   await trigger.evaluate((node) => node.scrollIntoView({ block: "center", inline: "nearest" }));
-  const nodes = openNodes(spec, scene);
-  const before = await nodes.count();
-  const said = spec.where === "announcement" ? await nodes.allInnerTexts() : [];
+  if (typeof spec.role !== "string") await scene.page.evaluate(rememberElements, SEEN_KEY);
+  const before = await countOpened(spec, scene);
+  const said = spec.where === "announcement" ? await openNodes(spec as OpenSpec & { role: string }, scene).allInnerTexts() : [];
   const expanded = spec.expands ? await trigger.getAttribute("aria-expanded") : null;
   await spec.open(scene.page, scene.row);
   return { before, said, expanded };
@@ -1176,20 +1265,21 @@ function placementOf(node: Element): Record<string, unknown> {
 
 async function openVerify(spec: OpenSpec, scene: StateScene, opened: Opened): Promise<Verdict> {
   if ("missing" in opened) return notReached(opened.missing);
-  const nodes = openNodes(spec, scene);
   const want = opened.before + spec.adds;
   let after = opened.before;
   const deadline = Date.now() + 5_000;
   for (;;) {
-    after = await nodes.count();
+    after = await countOpened(spec, scene);
     if (after >= want || Date.now() > deadline) break;
     await pause(100);
   }
-  const evidence: Record<string, unknown> = { role: spec.role, where: spec.where ?? "overlay", before: opened.before, after };
+  const what = describeOpening(spec);
+  const evidence: Record<string, unknown> = { role: typeof spec.role === "string" ? spec.role : null, ...(typeof spec.role === "string" ? {} : { shows: String(spec.role.shows) }), where: spec.where ?? "overlay", before: opened.before, after };
   if (after !== want) {
     evidence.roles = await scene.page.evaluate(countRoles);
-    return notReached(`opening from the ${scene.platform} row added ${after - opened.before} ${spec.role} node(s) where ${spec.adds} was expected`, evidence);
+    return notReached(`opening from the ${scene.platform} row added ${after - opened.before} ${what} node(s) where ${spec.adds} was expected`, evidence);
   }
+  const nodes = typeof spec.role === "string" ? openNodes(spec as OpenSpec & { role: string }, scene) : scene.page.locator(`[${OPENED_MARK}]`);
   let panel = nodes.last();
   if (spec.where === "announcement") {
     const said = await nodes.allInnerTexts();
@@ -1203,12 +1293,12 @@ async function openVerify(spec: OpenSpec, scene: StateScene, opened: Opened): Pr
     const steady = await spec.steady(scene.page, scene.row, panel);
     Object.assign(evidence, steady.evidence);
     flags.push(...steady.flags);
-    if (!steady.held) return notReached(steady.reason ?? `the ${spec.role} did not stay open`, evidence);
+    if (!steady.held) return notReached(steady.reason ?? `the ${what} did not stay open`, evidence);
   }
   try {
     await panel.waitFor({ state: "visible", timeout: 3_000 });
   } catch {
-    return notReached(`the ${spec.role} the opening added is not visible`, evidence);
+    return notReached(`the ${what} the opening added is not visible`, evidence);
   }
   // An anchored card is placed once its trigger and the outlet are measured, a layout pass
   // or two after it mounts: wait for its box to hold still, bring it into view when it
@@ -1244,31 +1334,57 @@ async function openVerify(spec: OpenSpec, scene: StateScene, opened: Opened): Pr
 async function openClose(spec: OpenSpec, scene: StateScene, opened: Opened): Promise<Released> {
   if ("missing" in opened) return { report: {}, flags: [] };
   if (spec.where === "announcement") return { report: { closed: "a toast leaves by itself" }, flags: [] };
+  // What the state left open: a press inside the overlay (Dialog's Cancel) may have closed it already.
+  if ((await countOpened(spec, scene)) === opened.before) return { report: { closed: true, by: "already closed before its close" }, flags: [] };
   if (spec.close) await spec.close(scene.page, scene.row);
   else await scene.page.keyboard.press("Escape");
-  const nodes = openNodes(spec, scene);
   const deadline = Date.now() + 3_000;
-  let count = await nodes.count();
+  let count = await countOpened(spec, scene);
   while (count !== opened.before && Date.now() < deadline) {
     await pause(100);
-    count = await nodes.count();
+    count = await countOpened(spec, scene);
   }
   const closed = count === opened.before;
   const by = spec.close ? "its own close" : "Escape";
   return {
-    report: { closed, by, ...(closed ? {} : { left: `${count - opened.before} ${spec.role} node(s) still open 3 s after ${by}` }) },
+    report: { closed, by, ...(closed ? {} : { left: `${count - opened.before} ${describeOpening(spec)} node(s) still open 3 s after ${by}` }) },
     flags: closed ? [] : ["overlay-not-closed"],
   };
 }
 
-/** Opening the overlay from each named row, at every width (an overlay becomes a sheet on a phone). */
-function open(variant: string, spec: OpenSpec, rows: readonly RowPlatform[], how: string): StateRecipe {
+/**
+ * Opening the overlay from each named row, at every width (an overlay becomes a sheet on a
+ * phone), or at the widths it exists at (a drawer a component becomes only at and below a
+ * breakpoint). An opening under a resting pointer (a tooltip) is also its trigger's hover.
+ */
+function open(variant: string, spec: OpenSpec, rows: readonly RowPlatform[], how: string, widths: readonly WidthKey[] = EVERY_WIDTH): StateRecipe {
   return recipe<Opened>({
     state: "open",
     variant,
     rows,
-    widths: "all",
+    widths,
     frame: "viewport",
+    how,
+    ...(spec.pointerHeld ? { alsoAnswers: ["hover"] as const } : {}),
+    apply: (scene) => openApply(spec, scene),
+    verify: (scene, opened) => openVerify(spec, scene, opened),
+    release: (scene, opened) => openClose(spec, scene, opened),
+  });
+}
+
+/**
+ * The pointer rests on a control and opens a card (the Calendar's hover card over a timed
+ * event): a hover whose effect is the card, not a lift or a wash of the control. Reached and
+ * released as an opening is, from the web row at the desktop; framed against the row when
+ * the card draws in it, against the viewport when it is placed against the window.
+ */
+function hoverOpen(variant: string, spec: OpenSpec, how: string): StateRecipe {
+  return recipe<Opened>({
+    state: "hover",
+    variant,
+    rows: ["web"],
+    widths: DESKTOP,
+    frame: spec.where === "row" ? "row" : "viewport",
     how,
     apply: (scene) => openApply(spec, scene),
     verify: (scene, opened) => openVerify(spec, scene, opened),
@@ -1308,7 +1424,7 @@ function invalid(variant: string, target: Target, options: { type?: string; how?
     state: "invalid",
     variant,
     rows: ["web"],
-    widths: "desktop",
+    widths: DESKTOP,
     frame: "row",
     how: options.how ?? "the example that shows the control's error",
     async apply(scene) {
@@ -1356,7 +1472,7 @@ function disabled(variant: string, target: Target, how = "the example that disab
     state: "disabled",
     variant,
     rows: ["web"],
-    widths: "desktop",
+    widths: DESKTOP,
     frame: "row",
     how,
     async apply(scene) {
@@ -1495,6 +1611,66 @@ const TOAST_OPEN: OpenSpec = {
 
 const viaRecipe = (slug: string) => `overlay-recipes.ts' ${slug} recipe, from the row`;
 
+/** ButtonGroup's split button: its chevron, named More actions, opens the overflow menu. */
+const SPLIT_MENU_OPEN: OpenSpec = {
+  open: async (_page, scope) => {
+    await scope.getByRole("button", { name: "More actions", exact: true }).last().click();
+  },
+  trigger: (_page, scope) => scope.getByRole("button", { name: "More actions", exact: true }).last(),
+  role: "menu",
+  adds: 1,
+  expands: true,
+};
+
+/**
+ * The Calendar's hover card: a pointer resting on a timed event floats the event's detail
+ * card beside it. The card carries no role, so it is found by the line it shows (the day and
+ * the hours, which nothing else on the page shows), and the page is never scrolled under the
+ * resting pointer.
+ */
+const CALENDAR_HOVER_CARD: OpenSpec = {
+  open: async (page, scope) => {
+    await restOn(page, scope.getByLabel(/^Design review,/).last());
+  },
+  trigger: (_page, scope) => scope.getByLabel(/^Design review,/).last(),
+  role: { shows: /Monday, May 19 · 11 AM – 12:30 PM/ },
+  adds: 1,
+  pointerHeld: true,
+  close: async (page) => {
+    await page.mouse.move(NEUTRAL_POINT.x, NEUTRAL_POINT.y);
+  },
+};
+
+/** The Calendar's day peek: a press on a day with events opens its timeline beside it, a card with no role, found by its title. */
+const CALENDAR_DAY_PEEK: OpenSpec = {
+  open: async (_page, scope) => {
+    await scope.getByRole("button", { name: /^24(?:,|$)/ }).last().click();
+  },
+  trigger: (_page, scope) => scope.getByRole("button", { name: /^24(?:,|$)/ }).last(),
+  role: { shows: /^Saturday, May 24/ },
+  adds: 1,
+};
+
+/** FilterPanel's responsive drawer: below its breakpoint the panel is a Filters (n) trigger that opens it in a Drawer. */
+const FILTER_DRAWER_OPEN: OpenSpec = {
+  open: async (_page, scope) => {
+    await scope.getByRole("button", { name: /^Filters \(\d+\)/ }).last().click();
+  },
+  trigger: (_page, scope) => scope.getByRole("button", { name: /^Filters \(\d+\)/ }).last(),
+  role: "dialog",
+  adds: 1,
+};
+
+/** Sidebar's responsive drawer, opened by the Usage example's app frame hamburger. */
+const SIDEBAR_DRAWER_OPEN: OpenSpec = {
+  open: async (_page, scope) => {
+    await scope.getByRole("button", { name: "Open menu", exact: true }).last().click();
+  },
+  trigger: (_page, scope) => scope.getByRole("button", { name: "Open menu", exact: true }).last(),
+  role: "dialog",
+  adds: 1,
+};
+
 // --- The table -------------------------------------------------------------------------
 
 const LAYOUT = "A layout primitive: it renders no control of its own (the controls in its examples are kit components with recipes of their own).";
@@ -1558,6 +1734,8 @@ export const STATE_RECIPES: Record<string, ComponentStates> = {
   "button-group": {
     focus: focus("default", byRole("tablist")),
     pressed: pressed("default", byRole("tab", "Week")),
+    // The split button's chevron opens its overflow menu (an AnchoredOverlay).
+    open: open("split", SPLIT_MENU_OPEN, ALL_ROWS, "a click on the Split example's chevron (More actions), from the row"),
     disabled: disabled("disabled", byRole("tab", "Day")),
   },
   button: {
@@ -1651,6 +1829,8 @@ export const STATE_RECIPES: Record<string, ComponentStates> = {
     disabled: disabled("disabled", byRole("switch")),
   },
   tooltip: {
+    // Its hover is its open recipe's: the pointer resting on the trigger opens the bubble
+    // (the examples whose trigger is its own pin the bubble open, so a hover changes nothing there).
     focus: focus("onhover", byRole("button", "Hover me")),
     // The icon trigger is the tooltip's own pressable (`iconTrigger`), pinned open in its example.
     pressed: pressed("icon", byRole("button", "Open settings")),
@@ -1687,6 +1867,7 @@ export const STATE_RECIPES: Record<string, ComponentStates> = {
     pressed: pressed("dismissible", byRole("button", "Dismiss")),
   },
   "alert-dialog": {
+    focus: focus("default", byRole("button", "Cancel"), { within: overlay("alert-dialog") }),
     pressed: pressed("default", byRole("button", "Cancel"), { within: overlay("alert-dialog") }),
     open: open("default", overlay("alert-dialog"), ALL_ROWS, viaRecipe("alert-dialog")),
   },
@@ -1716,7 +1897,14 @@ export const STATE_RECIPES: Record<string, ComponentStates> = {
   feeds: {
     static: true,
     reason: "An activity list whose rows are read-only in every rail example.",
-    exempt: { pressed: unpassed("`onItemPress` makes each row a button; no rail example passes it.", "onItemPress") },
+    exempt: {
+      focus: unpassed(
+        "`onItemPress` makes each row a button, a tab stop, and `virtualized` scrolls the rows in a list that is one once they overflow; no rail example passes either.",
+        "onItemPress",
+        "virtualized",
+      ),
+      pressed: unpassed("`onItemPress` makes each row a button; no rail example passes it.", "onItemPress"),
+    },
   },
   form: {
     focus: focus("default", byRole("textbox", "Email")),
@@ -1748,6 +1936,7 @@ export const STATE_RECIPES: Record<string, ComponentStates> = {
 
   // Organisms
   "action-sheet": {
+    focus: focus("default", byRole("button", "Take Photo"), { within: overlay("action-sheet") }),
     pressed: pressed("default", byRole("button", "Take Photo"), { within: overlay("action-sheet") }),
     open: open("default", overlay("action-sheet"), ALL_ROWS, viaRecipe("action-sheet")),
   },
@@ -1756,8 +1945,11 @@ export const STATE_RECIPES: Record<string, ComponentStates> = {
     pressed: pressed("cardmenusandpress", byRole("button", /^Rotate webhook/)),
   },
   calendar: {
+    // A pointer resting on a timed event floats its detail card (the Week example's Design review).
+    hover: hoverOpen("week", CALENDAR_HOVER_CARD, "the pointer rests on the Week example's Design review block, which floats its detail card"),
     focus: focus("default", byRole("button", /^1(?:,|$)/)),
     pressed: pressed("default", byRole("button", /^2(?:,|$)/)),
+    open: open("daypeek", CALENDAR_DAY_PEEK, ALL_ROWS, "a click on the Day peek example's 24th, which opens the day's timeline beside it, from the row"),
   },
   carousel: {
     focus: focus("default", byRole("button", "Next slide")),
@@ -1778,6 +1970,7 @@ export const STATE_RECIPES: Record<string, ComponentStates> = {
     pressed: pressed("sortable", byRole("columnheader", /^Email/)),
   },
   dialog: {
+    focus: focus("default", byRole("button", "Cancel"), { within: overlay("dialog") }),
     pressed: pressed("default", byRole("button", "Cancel"), { within: overlay("dialog") }),
     open: open("default", overlay("dialog"), ALL_ROWS, viaRecipe("dialog")),
   },
@@ -1800,6 +1993,8 @@ export const STATE_RECIPES: Record<string, ComponentStates> = {
   "filter-panel": {
     focus: focus("default", byRole("button", "Clear")),
     pressed: pressed("default", byRole("checkbox", /^Active/)),
+    // `responsive` collapses the panel to its Filters (n) trigger and a drawer at and below `drawerBreakpoint` (sm by default).
+    open: open("responsivedrawer", FILTER_DRAWER_OPEN, ALL_ROWS, "a click on the Responsive drawer example's Filters (1) trigger, from the row", widthsAtOrBelow("sm")),
   },
   navbars: {
     focus: focus("default", byRole("link", "Dashboard")),
@@ -1809,6 +2004,10 @@ export const STATE_RECIPES: Record<string, ComponentStates> = {
     hover: hover("default", byRole("button", "Dashboard")),
     focus: focus("default", byRole("button", "Dashboard")),
     pressed: pressed("default", byRole("button", /^Inbox/)),
+    // `responsive` makes it a drill-down drawer at and below `drawerBreakpoint` (lg by default),
+    // which the Usage example's app frame opens from its hamburger. The page shows one preview
+    // (the web build), so it opens from the web row alone.
+    open: open("default", SIDEBAR_DRAWER_OPEN, ["web"], "a click on the Usage example's Open menu hamburger, from the row", widthsAtOrBelow("lg")),
   },
   "row-menu": {
     hover: hover("default", byRole("button", "More options")),
@@ -1819,7 +2018,10 @@ export const STATE_RECIPES: Record<string, ComponentStates> = {
   steps: {
     static: true,
     reason: "A progress display whose step circles are plain in every rail example.",
-    exempt: { pressed: unpassed("`onStepPress` makes each circle a button; no rail example passes it.", "onStepPress") },
+    exempt: {
+      focus: unpassed("`onStepPress` makes each circle a button, a tab stop; no rail example passes it.", "onStepPress"),
+      pressed: unpassed("`onStepPress` makes each circle a button; no rail example passes it.", "onStepPress"),
+    },
   },
   "tab-bar": {
     focus: focus("default", byRole("tablist")),
@@ -1832,6 +2034,7 @@ export const STATE_RECIPES: Record<string, ComponentStates> = {
   },
   toast: {
     // The With an action example renders its toast in the row, with its action button.
+    focus: focus("withanaction", byRole("button", "Undo")),
     pressed: pressed("withanaction", byRole("button", "Undo")),
     // The iOS build is the web one (the docs registry injects no iOS Toast).
     open: open("default", TOAST_OPEN, ["web", "android"], "overlay-recipes.ts' TOAST_RECIPE (Show toast), from the row"),
@@ -1850,12 +2053,12 @@ export const STATE_RECIPES: Record<string, ComponentStates> = {
     pressed: inspect("default", { axis: "Apr" }, { mode: "hold", expect: ["Apr", "149"], how: "press-to-inspect: the pointer goes down over Apr (the shared frame's ScrubSurface) and is held" }),
   },
   "pie-chart": {
-    focus: focus("default", firstTabStop, "Tab onto the chart's inspection stop"),
+    focus: focus("default", firstTabStop, { how: "Tab onto the chart's inspection stop" }),
     // The first slice runs clockwise from 12 o'clock past 3: the plot's right middle is in it.
     pressed: inspect("default", { mark: "svg", fx: 0.75, fy: 0.5 }, { mode: "click", how: "press-to-inspect: a press on the first slice (the plot's right middle); the other slices dim" }),
   },
   "scatter-plot": {
-    focus: focus("default", firstTabStop, "Tab onto the chart's inspection stop"),
+    focus: focus("default", firstTabStop, { how: "Tab onto the chart's inspection stop" }),
     pressed: inspect("default", { mark: "svg circle", index: 1 }, { mode: "click", expect: ["us-east", "(220, 37)"], how: "press-to-inspect: a press on the second us-east point" }),
   },
   "candlestick-chart": {
@@ -1868,6 +2071,9 @@ export const STATE_RECIPES: Record<string, ComponentStates> = {
   heatmap: {
     // The calendar's day cells inspect under a resting pointer and pin on a press; the plain grid takes no input.
     hover: hoverInspect("calendar", HEATMAP_DAY, { how: "the pointer rests on the eleventh day of the calendar" }),
+    // Its scroller is a tab stop only where the year overflows it, below `sm` (e2e/behavior/scroll-focus.e2e.ts);
+    // the day cells are pointer-only.
+    focus: focus("calendar", firstTabStop, { how: "Tab onto the calendar's scroller, which the year overflows at a phone's width", widths: widthsAtOrBelow("sm") }),
     pressed: inspect("calendar", HEATMAP_DAY, { mode: "click", how: "press-to-inspect: a press on the eleventh day of the calendar" }),
   },
   "bar-list": {
@@ -1899,17 +2105,17 @@ export const STATE_RECIPES: Record<string, ComponentStates> = {
     pressed: inspect("default", { axis: "Expansion" }, { mode: "hold", expect: ["Expansion", "460"], how: "press-to-inspect: the pointer goes down over Expansion (the shared frame's ScrubSurface) and is held" }),
   },
   "radial-bar-chart": {
-    focus: focus("default", firstTabStop, "Tab onto the chart's inspection stop"),
+    focus: focus("default", firstTabStop, { how: "Tab onto the chart's inspection stop" }),
     // The outer ring's 10 px stroke runs along the plot's edge (radial-bar-chart.shared.tsx `rOuter`): 5 px in from the top is on it.
     pressed: inspect("default", { mark: "svg", fx: 0.5, fy: 0, dy: 5 }, { mode: "click", how: "press-to-inspect: a press on the outer ring at 12 o'clock; the other rings dim" }),
   },
   "funnel-chart": {
-    focus: focus("default", firstTabStop, "Tab onto the chart's inspection stop"),
+    focus: focus("default", firstTabStop, { how: "Tab onto the chart's inspection stop" }),
     pressed: inspect("default", { text: "Signups" }, { mode: "click", how: "press-to-inspect: a press on the Signups stage; the other stages dim" }),
   },
   "radar-chart": { static: true, reason: CHART_STATIC },
   treemap: {
-    focus: focus("default", firstTabStop, "Tab onto the chart's inspection stop"),
+    focus: focus("default", firstTabStop, { how: "Tab onto the chart's inspection stop" }),
     pressed: inspect("default", { text: "Media" }, { mode: "click", expect: ["Media", "620"], how: "press-to-inspect: a press on the Media tile" }),
   },
   "geo-map": {
@@ -1928,7 +2134,7 @@ export function recipesOf(slug: string): StateRecipe[] {
 }
 
 /** What the capture's planner needs of a component's recipes (tools/audit/web-capture.ts `planStateCapture`). */
-export function stateSpecsOf(slug: string): { state: StateName; variant: string; rows: readonly RowPlatform[]; widths: "desktop" | "all" }[] {
+export function stateSpecsOf(slug: string): { state: StateName; variant: string; rows: readonly RowPlatform[]; widths: readonly WidthKey[] }[] {
   return recipesOf(slug).map(({ state, variant, rows, widths }) => ({ state, variant, rows, widths }));
 }
 

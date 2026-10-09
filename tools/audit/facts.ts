@@ -153,8 +153,8 @@ export interface SweepFact {
 export interface StatesFact {
   /** Whether the table has an entry (it lists exactly the interaction registry's components). */
   listed: boolean;
-  /** The states captured: the example (variant key and rail label), the rows and the widths. */
-  recipes: { state: string; variant: string; label: string; rows: string[]; widths: "desktop" | "all" }[];
+  /** The states captured: the example (variant key and rail label), the rows, the widths, and the other states its capture shows. */
+  recipes: { state: string; variant: string; label: string; rows: string[]; widths: string[]; alsoAnswers: string[] }[];
   /** Why it has no state of its own, when the table says so. */
   static: string | null;
   /** States its source gives that the table exempts, each with its reason and why the claim fails (null: it holds). */
@@ -1064,7 +1064,7 @@ export function statesFact(slug: string, doc: { category: Category; dir: string;
   const coverage = coverageOf(slug, entry, componentSignals(corpus.signals, doc), rail);
   return {
     listed: true,
-    recipes: recipesOf(slug).map((r) => ({ state: r.state, variant: r.variant, label: labelOf(r.variant), rows: [...r.rows], widths: r.widths })),
+    recipes: recipesOf(slug).map((r) => ({ state: r.state, variant: r.variant, label: labelOf(r.variant), rows: [...r.rows], widths: [...r.widths], alsoAnswers: [...(r.alsoAnswers ?? [])] })),
     static: entry.static ? entry.reason : null,
     exempt: coverage.answers.filter((a) => a.by === "exemption").map((a) => ({ state: a.state, reason: a.exemption!.reason, failure: a.failure ?? null })),
     unanswered: coverage.answers.filter((a) => a.by === "nothing").map((a) => a.state),

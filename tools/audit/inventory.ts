@@ -17,6 +17,7 @@ import ts from "typescript";
 import { COMPONENTS } from "../../docs/src/core/data/components.ts";
 import type { Category } from "../../docs/src/core/data/types.ts";
 import { ROOT, componentExamples, contentRoutes, variantSlug } from "../../e2e/support/routes.ts";
+import { breakpoints, type BreakpointKey } from "../../src/style/tokens.ts";
 
 /** The three looks: the two light palettes and Dark Factory's one dark palette. */
 export const LOOKS = ["blush", "mint", "dark"] as const;
@@ -36,6 +37,16 @@ export const WIDTHS = [
   { key: "desktop", width: 1440, height: 900 },
 ] as const;
 export type WidthKey = (typeof WIDTHS)[number]["key"];
+
+/**
+ * The web widths at and below a breakpoint of the kit's scale (src/style/tokens.ts
+ * `breakpoints`): where a component that switches on the viewport's bucket (`useBreakpoint`)
+ * takes the form it has at and below that breakpoint, as FilterPanel's and Sidebar's
+ * drawers do at and below their `drawerBreakpoint`.
+ */
+export function widthsAtOrBelow(breakpoint: BreakpointKey): WidthKey[] {
+  return WIDTHS.filter((w) => w.width <= breakpoints[breakpoint]).map((w) => w.key);
+}
 
 export const PLATFORMS = ["web", "ios", "android"] as const;
 export type Platform = (typeof PLATFORMS)[number];
