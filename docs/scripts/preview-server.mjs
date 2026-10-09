@@ -25,8 +25,9 @@
 
 import http from "node:http";
 import { execFile } from "node:child_process";
+import { existsSync } from "node:fs";
 import { pathToFileURL } from "node:url";
-import { APPEARANCE_AXES, appearanceQuery, deepLink, openCommand, sanitizeRoute } from "./preview-links.mjs";
+import { APPEARANCE_AXES, adbPath, appearanceQuery, deepLink, openCommand, sanitizeRoute } from "./preview-links.mjs";
 
 const WEB_PORT = Number(process.env.EXPO_WEB_PORT ?? 8081);
 const PREVIEW_PORT = Number(process.env.PREVIEW_PORT ?? 8790);
@@ -48,9 +49,9 @@ function html(res, code, body) {
   );
 }
 
-function openDeepLink(run, platform, route, appearance, res) {
+function openDeepLink(run, adb, platform, route, appearance, res) {
   const url = deepLink(route, appearance);
-  const { cmd, args, manual } = openCommand(platform, url);
+  const { cmd, args, manual } = openCommand(platform, url, adb);
   const label = platform === "ios" ? "iOS simulator" : "Android emulator";
   run(cmd, args, { timeout: 15000 }, (err, _stdout, stderr) => {
     if (err) {
@@ -59,7 +60,7 @@ function openDeepLink(run, platform, route, appearance, res) {
         502,
         `<h2>Could not open on the ${label}</h2>` +
           `<p>Deep link: <code>${escapeHtml(url)}</code></p>` +
-          `<p>Make sure a ${label.toLowerCase()} is booted with the Canvas docs dev app ` +
+          `<p>Make sure an ${label} is booted with the Canvas docs dev app ` +
           `installed, then run it by hand:</p>` +
           `<pre><code>${escapeHtml(manual)}</code></pre>` +
           `<p style="color:#b00">${escapeHtml(String(stderr || err.message).trim())}</p>`,
@@ -81,7 +82,7 @@ function openDeepLink(run, platform, route, appearance, res) {
  * execFile's signature; the tests pass a recorder in its place, so they can read the
  * exact argv without a simulator or an emulator.
  */
-export function createPreviewServer({ webPort = WEB_PORT, run = execFile } = {}) {
+export function createPreviewServer({ webPort = WEB_PORT, run = execFile, adb = adbPath(process.env, existsSync) } = {}) {
   return http.createServer((req, res) => {
     const { pathname, searchParams } = new URL(req.url, `http://${HOST}`);
 
@@ -130,7 +131,7 @@ export function createPreviewServer({ webPort = WEB_PORT, run = execFile } = {})
         res.writeHead(302, { location: `http://localhost:${webPort}/${route}${appearance.suffix}` });
         return res.end();
       }
-      return openDeepLink(run, pathname.slice(1), route, appearance.suffix, res);
+      return openDeepLink(run, adb, pathname.slice(1), route, appearance.suffix, res);
     }
 
     html(res, 404, "<h2>Not found</h2>");

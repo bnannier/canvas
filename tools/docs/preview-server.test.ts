@@ -3,7 +3,7 @@ import { spawnSync } from "node:child_process";
 import { existsSync } from "node:fs";
 import { get } from "node:http";
 import type { AddressInfo } from "node:net";
-import { appearanceQuery, deepLink, openCommand, sanitizeRoute, shellCommand, shellQuote } from "../../docs/scripts/preview-links.mjs";
+import { adbPath, appearanceQuery, deepLink, openCommand, sanitizeRoute, shellCommand, shellQuote } from "../../docs/scripts/preview-links.mjs";
 import { createPreviewServer } from "../../docs/scripts/preview-server.mjs";
 import { themeFromURL } from "../../docs/src/theme/theme-links";
 
@@ -18,8 +18,14 @@ import { themeFromURL } from "../../docs/src/theme/theme-links";
 const LINK = "canvas:///components/button?scheme=light&surface=solid&palette=mint";
 
 // Every POSIX shell the quoting meets: sh stands in for Android's mksh (the device side
-// of `adb shell`), zsh is the macOS login shell a hand-run command is pasted into.
-const SHELLS = ["/bin/sh", "/bin/zsh"].filter((shell) => existsSync(shell));
+// of `adb shell`), zsh is the macOS login shell a hand-run command is pasted into, and
+// the one whose `?` glob broke the old unquoted line. Both are required, never skipped:
+// CI installs zsh before the unit tests (.github/workflows/validate.yml).
+const SHELLS = ["/bin/sh", "/bin/zsh"];
+
+it("has every shell the quoting is checked against", () => {
+  expect(SHELLS.filter((shell) => !existsSync(shell))).toEqual([]);
+});
 
 // The words `shell` splits `line` into, read back by defining `program` (the word the
 // line starts with) as a function that prints its arguments NUL-separated.
@@ -33,7 +39,7 @@ function wordsOf(shell: string, program: string, line: string): string[] {
 type Run = (cmd: string, args: string[], options: object, callback: (error: Error | null, stdout: string, stderr: string) => void) => void;
 
 async function withServer(run: Run, body: (base: string) => Promise<void>): Promise<void> {
-  const server = createPreviewServer({ webPort: 8081, run });
+  const server = createPreviewServer({ webPort: 8081, run, adb: "adb" });
   await new Promise<void>((resolve) => server.listen(0, "127.0.0.1", resolve));
   const { port } = server.address() as AddressInfo;
   try {
@@ -118,6 +124,19 @@ describe("preview opener shell quoting", () => {
       expect(wordsOf(shell, "say", `say ${shellCommand(words)}`)).toEqual(words);
     });
   }
+
+  it("finds adb the way Expo CLI finds the SDK, before falling back to PATH", () => {
+    const at = (...present: string[]) => (path: string) => present.includes(path);
+    const env = { ANDROID_HOME: "/sdk/home", ANDROID_SDK_ROOT: "/sdk/root", HOME: "/Users/me" };
+    expect(adbPath(env, at("/sdk/home/platform-tools/adb", "/sdk/root/platform-tools/adb"))).toBe("/sdk/home/platform-tools/adb");
+    expect(adbPath(env, at("/sdk/root/platform-tools/adb"))).toBe("/sdk/root/platform-tools/adb");
+    expect(adbPath(env, at("/Users/me/Library/Android/sdk/platform-tools/adb"))).toBe("/Users/me/Library/Android/sdk/platform-tools/adb");
+    expect(adbPath(env, at())).toBe("adb");
+    expect(adbPath({}, at())).toBe("adb");
+    const { cmd, manual } = openCommand("android", LINK, "/sdk/home/platform-tools/adb");
+    expect(cmd).toBe("/sdk/home/platform-tools/adb");
+    expect(manual.startsWith("/sdk/home/platform-tools/adb shell ")).toBe(true);
+  });
 
   it("passes the iOS link to simctl as one argv element, with no shell in between", () => {
     const { cmd, args } = openCommand("ios", LINK);
