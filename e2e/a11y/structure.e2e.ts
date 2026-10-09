@@ -14,6 +14,11 @@ const PAGES = [
   { path: "/patterns/accessibility", title: "Accessibility" },
 ];
 
+// A component page's Do/Don't section heading (docs/src/ui/dont.tsx), named after the
+// `## Do & Don't` section of the component's .md source, with the typographic apostrophe
+// the page sets. One h2 for the section; each pair's title is an h3 under it.
+const DO_DONT_HEADING = "Do & Don’t";
+
 for (const width of [1280, 390]) {
   for (const scheme of ["light", "dark"] as const) {
     for (const entry of PAGES) {
@@ -27,8 +32,9 @@ for (const width of [1280, 390]) {
         if (entry.path === "/components/avatar") {
           await expect(main.getByRole("heading", { level: 2, name: "Props", exact: true })).toHaveCount(1);
           await expect(main.getByRole("heading", { level: 3, name: "AvatarMenu", exact: true })).toHaveCount(1);
-          await expect(main.getByRole("heading", { level: 2, name: "Don’ts", exact: true })).toHaveCount(1);
+          await expect(main.getByRole("heading", { level: 2, name: DO_DONT_HEADING, exact: true })).toHaveCount(1);
           await expect(main.getByRole("heading", { level: 3, name: "Identity", exact: true })).toHaveCount(1);
+          // Each card's Do or Don't is a Badge label, never a heading of its own.
           await expect(main.getByRole("heading", { name: /^(Do|Don’t)$/ })).toHaveCount(0);
         }
         await expect(page.getByRole("banner")).toHaveCount(1);
@@ -46,7 +52,7 @@ for (const width of [1280, 390]) {
             })));
           expect(outline[0]).toEqual({ name: "Typography", level: 1 });
           expect(outline.find((heading) => heading.name === "Props")?.level).toBe(2);
-          expect(outline.find((heading) => heading.name === "Don’ts")?.level).toBe(2);
+          expect(outline.find((heading) => heading.name === DO_DONT_HEADING)?.level).toBe(2);
           for (let index = 1; index < outline.length; index++) {
             expect(outline[index].level, `heading ${outline[index].name} follows ${outline[index - 1].name}`)
               .toBeLessThanOrEqual(outline[index - 1].level + 1);
