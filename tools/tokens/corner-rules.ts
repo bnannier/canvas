@@ -27,12 +27,9 @@
  *
  * The platform a corner is drawn on is the skin that draws it (tools/tokens/corner-sites.ts,
  * `CornerValue.drawn`): its file (`.ios.tsx`) or the names it is set under (`iosSkin`,
- * `IOS_RADIUS`, `M3_TRACK_R`, `androidBase`), and for a style constant or helper no platform
- * names, every skin that uses it. Code every platform shares (a shell, a part only shared
- * code uses) draws the web look on every platform. A native skin may draw a web-row corner
- * only as the web skin's own part: the same part of the web skin (the path with the
- * platform's name taken off, `webSkin.actionButton` for `iosSkin.actionButton`) draws the
- * same number from the same place.
+ * `IOS_RADIUS`, `M3_TRACK_R`, `androidBase`), and for a constant, helper or component no
+ * platform names, in whatever module, every place that uses it. Code every platform shares
+ * (a shell's own code, a part only shared code uses) draws the web look on every platform.
  */
 
 import { dirname, relative } from "node:path";
