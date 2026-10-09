@@ -10,7 +10,7 @@
 // Endpoints (all GET, query param `route`, e.g. route=components/button):
 //   /web      302 -> http://localhost:8081/<route>              (opens the browser)
 //   /ios      xcrun simctl openurl booted canvas:///<route>     (booted iOS sim)
-//   /android  adb shell am start -a android.intent.action.VIEW -d canvas:///<route>
+//   /android  adb shell "am start -a android.intent.action.VIEW -d 'canvas:///<route>'"
 //
 // The appearance axes the docs read from a launch URL (docs/src/theme/theme-links.ts)
 // ride along: `scheme` (light | dark), `surface` (solid | glass) and `palette`
@@ -19,45 +19,18 @@
 // outside its set is refused, so a mistyped palette never opens blush quietly.
 //
 // Safety: the route is validated to [a-z0-9/-], the axes to their closed sets, and
-// both are passed as execFile arguments (never shell-interpolated); the server binds
-// to 127.0.0.1 only.
+// both reach the device as execFile arguments, never through a shell on this machine;
+// the one shell on the way, the device's own behind `adb shell`, gets every word
+// quoted (preview-links.mjs). The server binds to 127.0.0.1 only.
 
 import http from "node:http";
 import { execFile } from "node:child_process";
 import { pathToFileURL } from "node:url";
+import { APPEARANCE_AXES, appearanceQuery, deepLink, openCommand, sanitizeRoute } from "./preview-links.mjs";
 
-const SCHEME = "canvas";
 const WEB_PORT = Number(process.env.EXPO_WEB_PORT ?? 8081);
 const PREVIEW_PORT = Number(process.env.PREVIEW_PORT ?? 8790);
 const HOST = "127.0.0.1";
-
-/** Each appearance axis a link may carry, with the values the docs accept for it. */
-const APPEARANCE_AXES = {
-  scheme: ["light", "dark"],
-  surface: ["solid", "glass"],
-  palette: ["blush", "mint"],
-};
-
-function sanitizeRoute(raw) {
-  if (!raw) return null;
-  const route = raw.replace(/^\/+/, "").replace(/\/+$/, "");
-  return /^[a-z0-9]+(?:[/-][a-z0-9]+)*$/i.test(route) ? route : null;
-}
-
-// The appearance query to append, built only from the axes present and valid. The
-// first value of a repeated axis counts, as the app reads it. An invalid axis is
-// reported by name, with the values it takes, instead of being dropped.
-function appearanceQuery(searchParams) {
-  const query = new URLSearchParams();
-  for (const [axis, values] of Object.entries(APPEARANCE_AXES)) {
-    const raw = searchParams.get(axis);
-    if (raw === null) continue;
-    if (!values.includes(raw)) return { invalid: { axis, values } };
-    query.set(axis, raw);
-  }
-  const text = query.toString();
-  return { suffix: text ? `?${text}` : "" };
-}
 
 function escapeHtml(s) {
   return String(s).replace(
@@ -75,15 +48,11 @@ function html(res, code, body) {
   );
 }
 
-function openDeepLink(platform, route, appearance, res) {
-  const url = `${SCHEME}:///${route}${appearance}`;
-  const [cmd, args] =
-    platform === "ios"
-      ? ["xcrun", ["simctl", "openurl", "booted", url]]
-      : ["adb", ["shell", "am", "start", "-a", "android.intent.action.VIEW", "-d", url]];
+function openDeepLink(run, platform, route, appearance, res) {
+  const url = deepLink(route, appearance);
+  const { cmd, args, manual } = openCommand(platform, url);
   const label = platform === "ios" ? "iOS simulator" : "Android emulator";
-  const manual = `${cmd} ${args.join(" ")}`;
-  execFile(cmd, args, { timeout: 15000 }, (err, _stdout, stderr) => {
+  run(cmd, args, { timeout: 15000 }, (err, _stdout, stderr) => {
     if (err) {
       html(
         res,
@@ -107,9 +76,14 @@ function openDeepLink(platform, route, appearance, res) {
   });
 }
 
-export function startPreviewServer({ port = PREVIEW_PORT } = {}) {
-  const server = http.createServer((req, res) => {
-    const { pathname, searchParams } = new URL(req.url, `http://${HOST}:${port}`);
+/**
+ * The opener's HTTP server, not yet listening. `run` is how a deep link is launched,
+ * execFile's signature; the tests pass a recorder in its place, so they can read the
+ * exact argv without a simulator or an emulator.
+ */
+export function createPreviewServer({ webPort = WEB_PORT, run = execFile } = {}) {
+  return http.createServer((req, res) => {
+    const { pathname, searchParams } = new URL(req.url, `http://${HOST}`);
 
     if (pathname === "/health") return html(res, 200, "ok");
 
@@ -153,15 +127,18 @@ export function startPreviewServer({ port = PREVIEW_PORT } = {}) {
         );
       }
       if (pathname === "/web") {
-        res.writeHead(302, { location: `http://localhost:${WEB_PORT}/${route}${appearance.suffix}` });
+        res.writeHead(302, { location: `http://localhost:${webPort}/${route}${appearance.suffix}` });
         return res.end();
       }
-      return openDeepLink(pathname.slice(1), route, appearance.suffix, res);
+      return openDeepLink(run, pathname.slice(1), route, appearance.suffix, res);
     }
 
     html(res, 404, "<h2>Not found</h2>");
   });
+}
 
+export function startPreviewServer({ port = PREVIEW_PORT } = {}) {
+  const server = createPreviewServer();
   server.listen(port, HOST, () => {
     console.log(
       `\n  Preview opener ready: http://localhost:${port}  (clickable ios/android/web opens)\n`,
