@@ -5,11 +5,15 @@ const { createHash } = require("node:crypto");
 const { existsSync, readdirSync, readFileSync } = require("node:fs");
 const { join, relative } = require("node:path");
 
-function sourceFingerprint(root) {
+// Every file under the named directories and the named files, by path and bytes, in a
+// fixed order. A directory entry whose name is in `skip` is left out, so build products
+// sitting inside a source tree do not count.
+function fingerprint(root, { directories, files, skip = new Set() }) {
   const hash = createHash("sha256");
   function visit(directory) {
     if (!existsSync(directory)) return;
     for (const entry of readdirSync(directory, { withFileTypes: true }).sort((a, b) => a.name.localeCompare(b.name))) {
+      if (skip.has(entry.name)) continue;
       const file = join(directory, entry.name);
       if (entry.isDirectory()) visit(file);
       else if (entry.isFile()) {
@@ -17,12 +21,36 @@ function sourceFingerprint(root) {
       }
     }
   }
-  for (const directory of ["src", "styles", "docs/src", "examples/starter/smoke/fixtures"]) visit(join(root, directory));
-  for (const name of ["package.json", "bun.lock", "docs/package.json", "docs/bun.lock", "docs/app.json", "docs/app.config.js", "docs/metro.config.js"]) {
+  for (const directory of directories) visit(join(root, directory));
+  for (const name of files) {
     const file = join(root, name);
     if (existsSync(file)) hash.update(name).update("\0").update(readFileSync(file)).update("\0");
   }
   return hash.digest("hex");
+}
+
+function sourceFingerprint(root) {
+  return fingerprint(root, {
+    directories: ["src", "styles", "docs/src", "examples/starter/smoke/fixtures"],
+    files: ["package.json", "bun.lock", "docs/package.json", "docs/bun.lock", "docs/app.json", "docs/app.config.js", "docs/metro.config.js"],
+  });
+}
+
+// What a native build of the docs app is made from beyond its bundle: the app config and
+// the config plugins `expo prebuild` generates the native project from, the dependency
+// manifest, lockfile and patches that decide the native code under node_modules, and the
+// local native modules autolinked from packages/ (docs/package.json `nativeModulesDir`),
+// their build products and installs left out. The component audit's build stamps it
+// (tools/audit/native/build.ts) and its capture host refuses an app whose stamp is not
+// this checkout's, the native half of what sourceFingerprint is for the JS.
+const NATIVE_BUILD_PRODUCTS = new Set(["node_modules", "dist", "build", ".gradle", ".cxx", ".kotlin"]);
+
+function nativeFingerprint(root) {
+  return fingerprint(root, {
+    directories: ["docs/plugins", "docs/patches", "packages"],
+    files: ["docs/app.json", "docs/app.config.js", "docs/package.json", "docs/bun.lock"],
+    skip: NATIVE_BUILD_PRODUCTS,
+  });
 }
 
 function repositoryRevision(root, environment) {
@@ -54,4 +82,4 @@ function readBuildInfo(root, environment = process.env, inspect = repositoryRevi
   };
 }
 
-module.exports = { readBuildInfo, sourceFingerprint };
+module.exports = { readBuildInfo, sourceFingerprint, nativeFingerprint };

@@ -20,7 +20,15 @@ module.exports = ({ config }) => {
 // published over-the-air bundle from `updates.url` and photograph that instead of this
 // checkout, so updates are off. The plugins let it speak plain HTTP to the capture host
 // on the loopback address, and give the Release Gradle build the memory it needs.
+//
+// The build identity also carries the native fingerprint of the native project being
+// built (docs/scripts/build-info.cjs nativeFingerprint, as it was when that project was
+// generated), which the build passes in and the capture host checks: the source
+// fingerprint alone is computed when the config is read, so it would call a build fresh
+// whose native project was generated from an older config or plugin.
 function auditApp(config) {
+  const native = process.env.CANVAS_AUDIT_NATIVE_FINGERPRINT;
+  if (native !== undefined && !/^[a-f0-9]{64}$/.test(native)) throw new Error("CANVAS_AUDIT_NATIVE_FINGERPRINT must be a 64-digit hex fingerprint.");
   return {
     ...config,
     name: "Canvas Audit",
@@ -29,5 +37,6 @@ function auditApp(config) {
     android: { ...config.android, package: "com.nannier.canvas.audit" },
     updates: { ...config.updates, enabled: false },
     plugins: [...(config.plugins ?? []), "./plugins/with-cleartext-loopback.js", "./plugins/with-gradle-release-memory.js"],
+    extra: { ...config.extra, canvasBuild: { ...config.extra.canvasBuild, nativeFingerprint: native ?? null } },
   };
 }
