@@ -22,10 +22,12 @@
 //   --keep-motion            leave the OS's motion settings alone
 //
 // The audit app must be built from this checkout first (`bun run audit:native:build`):
-// the host refuses a build whose source fingerprint differs. For the run, each device is
-// put into a capture state (a 9:41 status bar, Android demo mode, reduced motion: iOS
-// Reduce Motion, Android animation scales 0) and every change is undone on the way out,
-// on success, failure or Ctrl-C.
+// the host refuses a build whose source or native fingerprint differs. A run always ends:
+// an app that stays silent through three relaunches in a row abandons its platform's run,
+// which the manifest and the summary name. For the run, each device is put into a capture
+// state (a 9:41 status bar, Android demo mode, reduced motion: iOS Reduce Motion, Android
+// animation scales 0) and every change is undone on the way out, on success, failure or
+// Ctrl-C.
 
 import { execFileSync, spawn } from "node:child_process";
 import { mkdir, writeFile } from "node:fs/promises";
@@ -36,10 +38,10 @@ import { components, LOOKS, pages, SURFACES, cellId, pageCellId, type Look, type
 import type { AuditItem, AuditLook, AuditPlatform, HelloRequest } from "../../../docs/src/audit/protocol.ts";
 import { findMaestro, MAESTRO_DIR } from "./a11y.ts";
 import { AUDIT_APP_ID, parseDeviceOverrides, resolveDevice, type AuditDevice, type DeviceInfo } from "./devices.ts";
-import { startAuditHost, ITEM_TIMEOUT_MS, MAX_ATTEMPTS, STABLE_MAD, type AuditHost, type CellRecord, type PlatformRun, type QueueItem } from "./server.ts";
+import { startAuditHost, ITEM_TIMEOUT_MS, MAX_ATTEMPTS, MAX_RELAUNCHES, STABLE_MAD, type AuditHost, type CellRecord, type PlatformRun, type QueueItem } from "./server.ts";
 
 const require = createRequire(import.meta.url);
-const { sourceFingerprint } = require("../../../docs/scripts/build-info.cjs") as { sourceFingerprint(root: string): string };
+const { sourceFingerprint, nativeFingerprint } = require("../../../docs/scripts/build-info.cjs") as { sourceFingerprint(root: string): string; nativeFingerprint(root: string): string };
 
 export type A11yPolicy = "none" | "default" | "all";
 
@@ -161,13 +163,14 @@ function summary(records: CellRecord[]) {
   };
 }
 
-async function writeManifest(setup: PlatformSetup, options: RunOptions, extra: { sha: string; fingerprint: string; hello: HelloRequest | null; refused: string | null; records: CellRecord[]; finished: number | null }) {
+async function writeManifest(setup: PlatformSetup, options: RunOptions, extra: { sha: string; fingerprint: string; nativeFingerprint: string; hello: HelloRequest | null; refused: string | null; abandoned: string | null; records: CellRecord[]; finished: number | null }) {
   const manifest = {
     schema: 1,
     run: setup.run.dir.split("/").pop(),
     platform: setup.run.platform,
     sourceRevision: extra.sha,
     sourceFingerprint: extra.fingerprint,
+    nativeFingerprint: extra.nativeFingerprint,
     started: new Date(setup.started).toISOString(),
     finished: extra.finished === null ? null : new Date(extra.finished).toISOString(),
     wallSeconds: extra.finished === null ? null : Number(((extra.finished - setup.started) / 1000).toFixed(1)),
@@ -179,8 +182,9 @@ async function writeManifest(setup: PlatformSetup, options: RunOptions, extra: {
       reduceTransparency: extra.hello.reduceTransparency, liquidGlass: extra.hello.liquidGlass, osVersion: extra.hello.osVersion, constants: extra.hello.constants,
     } : null,
     refused: extra.refused,
+    abandoned: extra.abandoned,
     options: { only: options.only, looks: options.looks, surfaces: options.surfaces, a11y: options.a11y, dev: options.dev, reduceMotion: options.reduceMotion },
-    host: { itemTimeoutSeconds: ITEM_TIMEOUT_MS / 1000, maxAttempts: MAX_ATTEMPTS, stableMad: STABLE_MAD },
+    host: { itemTimeoutSeconds: ITEM_TIMEOUT_MS / 1000, maxAttempts: MAX_ATTEMPTS, maxRelaunches: MAX_RELAUNCHES, stableMad: STABLE_MAD },
     devicePrepared: setup.prepared,
     deviceRestored: setup.restored,
     queued: setup.run.queue.length,
@@ -198,6 +202,7 @@ async function main() {
   }
   const sha = execFileSync("git", ["rev-parse", "HEAD"], { cwd: ROOT, encoding: "utf8" }).trim();
   const fingerprint = sourceFingerprint(ROOT);
+  const native = nativeFingerprint(ROOT);
   const stamp = runStamp();
   const setups: PlatformSetup[] = [];
   for (const platform of options.platforms) {
@@ -236,10 +241,12 @@ async function main() {
     }
     host = await startAuditHost(setups.map((s) => s.run), {
       fingerprint,
+      nativeFingerprint: native,
       events: {
         log: (platform, line) => console.log(`[${platform}] ${line}`),
         hello: (platform, hello) => console.log(`[${platform}] hello from ${hello.app.name} ${hello.app.id}: ${hello.window.width}x${hello.window.height} @${hello.dpr}x, reduce motion ${hello.reduceMotion}, liquid glass ${hello.liquidGlass}`),
         refused: (platform, why) => console.error(`[${platform}] REFUSED: ${why}`),
+        abandoned: (platform, why) => console.error(`[${platform}] ABANDONED: ${why}`),
         cell: (platform, rec, done, total) => console.log(`[${platform}] ${done}/${total} ${rec.status.padEnd(8)} ${rec.seconds.toFixed(1)}s ${rec.id}${rec.reason ? `: ${rec.reason}` : ""}`),
         stalled: async (platform, why) => {
           console.log(`[${platform}] relaunching the app: ${why}`);
@@ -255,7 +262,7 @@ async function main() {
       setup.started = Date.now();
       await setup.device.terminate(AUDIT_APP_ID);
       await setup.device.launch(AUDIT_APP_ID);
-      await writeManifest(setup, options, { sha, fingerprint, hello: null, refused: null, records: [], finished: null });
+      await writeManifest(setup, options, { sha, fingerprint, nativeFingerprint: native, hello: null, refused: null, abandoned: null, records: [], finished: null });
     }
     await host.finished;
   } finally {
@@ -267,12 +274,15 @@ async function main() {
   for (const setup of setups) {
     const records = host?.records(setup.run.platform) ?? [];
     const refused = host?.refused(setup.run.platform) ?? null;
-    await writeManifest(setup, options, { sha, fingerprint, hello: host?.hello(setup.run.platform) ?? null, refused, records, finished: Date.now() });
+    const abandoned = host?.abandoned(setup.run.platform) ?? null;
+    await writeManifest(setup, options, { sha, fingerprint, nativeFingerprint: native, hello: host?.hello(setup.run.platform) ?? null, refused, abandoned, records, finished: Date.now() });
     const s = summary(records);
     console.log(`\n[${setup.run.platform}] ${s.cells}/${setup.run.queue.length} cells: ${s.ok} ok, ${s.unstable} unstable, ${s.failed} failed (${s.retried} needed a second attempt); ${s.secondsPerCell ?? "n/a"} s per cell (median ${s.secondsPerCellMedian ?? "n/a"}); a11y ${s.a11y.captured}/${s.a11y.requested}`);
     console.log(`[${setup.run.platform}] ${setup.run.dir}`);
     for (const rec of records.filter((r) => r.status !== "ok")) console.log(`  ${rec.status} ${rec.id}${rec.reason ? `: ${rec.reason}` : ""}`);
-    if (refused || s.failed > 0 || s.cells < setup.run.queue.length) failed = true;
+    if (refused) console.log(`  refused: ${refused}`);
+    if (abandoned) console.log(`  abandoned: ${abandoned}`);
+    if (refused || abandoned || s.failed > 0 || s.cells < setup.run.queue.length) failed = true;
   }
   process.exit(failed ? 1 : 0);
 }

@@ -5,11 +5,16 @@
 //
 // The queue is look-major (every item in one look and surface before the next), so the
 // app changes its theme six times a run, not once an item. Each item gets 30 s of the
-// driver's time; past that it is failed and the app relaunched, and a failed item is
-// tried once more before it is recorded as failed. The host takes every screenshot
-// itself, twice at least, and keeps a frame only once two grabs in a row agree; a card
-// that never holds still (a spinner, a caret) is kept and marked unstable. The card is
-// cut from the screen by the rect the driver measured, segment by segment, and stitched.
+// driver's time (the host's own shots and accessibility dumps are not the driver's
+// time); past that it is failed and the app relaunched, and a failed item is tried once
+// more before it is recorded as failed. An app that stays silent through three
+// relaunches in a row ends its platform's run, so an unattended sweep always finishes.
+// The host does not take the driver's word for what is on screen: every segment's
+// resolved look, route and example label must be the item's, or the attempt fails. The
+// host takes every screenshot itself, twice at least, and keeps a frame only once two
+// grabs in a row agree; a card that never holds still (a spinner, a caret) is kept and
+// marked unstable. The card is cut from the screen by the rect the driver measured,
+// segment by segment, and stitched.
 
 import { appendFile, mkdir, writeFile } from "node:fs/promises";
 import { createServer } from "node:http";
@@ -36,6 +41,28 @@ import { fingerprint, meanAbsDiff } from "./fingerprint.ts";
 export const ITEM_TIMEOUT_MS = 30_000;
 /** Attempts an item gets before it is recorded as failed. */
 export const MAX_ATTEMPTS = 2;
+/**
+ * Relaunches in a row that may pass without the app taking an item before its platform's
+ * run is abandoned. A relaunch after which the app asks for an item again resets the count,
+ * so an occasional stuck item never ends a sweep; an app that crashes on launch, cannot
+ * reach the host or never asks does.
+ */
+export const MAX_RELAUNCHES = 3;
+/** How long an app with a session may go without a request before it is relaunched. */
+const STALL_MS = ITEM_TIMEOUT_MS + 15_000;
+/** How often the watchdog looks. */
+const WATCHDOG_TICK_MS = 1000;
+
+/** The watchdog's clock: the defaults above, shortened by the tests. */
+export interface HostTiming {
+  itemTimeoutMs: number;
+  /** Quiet time before an app with a session is relaunched; twice this for an app that never said hello. */
+  stallMs: number;
+  tickMs: number;
+  maxRelaunches: number;
+}
+
+const DEFAULT_TIMING: HostTiming = { itemTimeoutMs: ITEM_TIMEOUT_MS, stallMs: STALL_MS, tickMs: WATCHDOG_TICK_MS, maxRelaunches: MAX_RELAUNCHES };
 /** The wait between the grabs of the stability check, and how many grabs it takes at most. */
 const STABILITY_GAP_MS = 250;
 const MAX_GRABS = 5;
@@ -84,10 +111,22 @@ interface Current {
   queued: QueueItem;
   attempt: number;
   started: number;
-  /** Host time spent inside requests (shots, accessibility dumps), which the timeout does not count. */
+  /** Host time spent inside finished requests (shots, accessibility dumps, the card's files), which the timeout does not count. */
   hostMs: number;
+  /** Host work in flight for this item, and when the host last went from idle to busy. */
+  busy: number;
+  busySince: number;
   segments: Segment[];
   a11y?: A11ySnapshot | { error: string };
+}
+
+/**
+ * The item's time that was the driver's: everything since it was handed out except the
+ * host's own work, finished or still in flight. A slow shot or dump is the host's time,
+ * never a reason to fail the item.
+ */
+export function driverMs(current: Pick<Current, "started" | "hostMs" | "busy" | "busySince">, now: number): number {
+  return now - current.started - current.hostMs - (current.busy > 0 ? now - current.busySince : 0);
 }
 
 export interface PlatformRun {
@@ -110,9 +149,12 @@ interface RunState extends PlatformRun {
   retry: { queued: QueueItem; attempt: number } | null;
   current: Current | null;
   lastContact: number;
+  /** Relaunches since the app last took an item. */
+  relaunches: number;
   records: CellRecord[];
   finished: boolean;
   refused: string | null;
+  abandoned: string | null;
   resolve: () => void;
   done: Promise<void>;
 }
@@ -123,8 +165,10 @@ export interface HostEvents {
   stalled(platform: AuditPlatform, why: string): Promise<void>;
   /** The first hello of a platform, with what it said. */
   hello(platform: AuditPlatform, hello: HelloRequest): void;
-  /** The host refused the app (a stale build, a foreign app): the platform's run is over. */
+  /** The host refused the audit app (a stale build, a Debug build, a downloaded update): the platform's run is over. */
   refused(platform: AuditPlatform, why: string): void;
+  /** The app stayed silent through every relaunch the host allows: the platform's run is over. */
+  abandoned(platform: AuditPlatform, why: string): void;
   cell(platform: AuditPlatform, record: CellRecord, done: number, total: number): void;
 }
 
@@ -140,12 +184,32 @@ const sleep = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve,
 export interface AuditHost {
   /** The port the host listens on (AUDIT_PORT unless the caller asked for another). */
   port: number;
-  /** Resolves when every platform's queue is done, or its app was refused. */
+  /** Resolves when every platform's queue is done, or its app was refused or abandoned. */
   finished: Promise<void>;
   records(platform: AuditPlatform): CellRecord[];
   hello(platform: AuditPlatform): HelloRequest | null;
   refused(platform: AuditPlatform): string | null;
+  abandoned(platform: AuditPlatform): string | null;
   stop(): void;
+}
+
+/**
+ * Why a segment is not the item the host handed out, or null when it is: the look the
+ * kit's theme resolved, the route the router is on and the example the Playground shows
+ * (a page names itself) must all be the item's. The driver waits for the same things
+ * before it posts; this is the host checking rather than trusting it.
+ */
+export function identityMismatch(item: AuditItem, request: Pick<ReadyRequest, "look" | "pathname" | "label">): string | null {
+  const problems: string[] = [];
+  const { look } = request;
+  const want = item.look;
+  if (look.scheme !== want.scheme || look.surface !== want.surface || look.palette !== want.palette || look.dark !== (want.scheme === "dark")) {
+    problems.push(`the theme resolved ${look.scheme} ${look.surface} ${look.palette}${look.dark !== (look.scheme === "dark") ? ` (dark ${look.dark})` : ""}, not ${want.scheme} ${want.surface} ${want.palette}`);
+  }
+  if (request.pathname !== item.route) problems.push(`the router is on ${request.pathname}, not ${item.route}`);
+  if (item.kind === "component" && request.label !== item.label) problems.push(`the Playground shows the example "${request.label}", not "${item.label}"`);
+  if (item.kind === "page" && request.label.trim() === "") problems.push("no page registered itself on the screen");
+  return problems.length > 0 ? problems.join("; ") : null;
 }
 
 /** The wire item for the driver, with the host's timings. */
@@ -173,17 +237,46 @@ export async function systemChrome(platform: AuditPlatform, device: AuditDevice)
   }
 }
 
-export async function startAuditHost(runs: PlatformRun[], options: { fingerprint: string; events: HostEvents; port?: number; chrome?: typeof systemChrome }): Promise<AuditHost> {
+export interface HostOptions {
+  /** This checkout's source fingerprint (docs/scripts/build-info.cjs sourceFingerprint): the JS the app must carry. */
+  fingerprint: string;
+  /** This checkout's native fingerprint (build-info.cjs nativeFingerprint): the native project the app must be built from. */
+  nativeFingerprint: string;
+  events: HostEvents;
+  port?: number;
+  chrome?: typeof systemChrome;
+  timing?: Partial<HostTiming>;
+}
+
+export async function startAuditHost(runs: PlatformRun[], options: HostOptions): Promise<AuditHost> {
   const { events } = options;
+  const timing: HostTiming = { ...DEFAULT_TIMING, ...options.timing };
   const states = new Map<AuditPlatform, RunState>();
   for (const run of runs) {
     let resolve = () => {};
     const done = new Promise<void>((r) => (resolve = r));
     states.set(run.platform, {
       ...run, chrome: undefined, session: null, sessions: 0, hello: null, next: 0, retry: null, current: null,
-      lastContact: Date.now(), records: [], finished: run.queue.length === 0, refused: null, resolve, done,
+      lastContact: Date.now(), relaunches: 0, records: [], finished: run.queue.length === 0, refused: null, abandoned: null, resolve, done,
     });
     if (run.queue.length === 0) resolve();
+  }
+
+  function finish(s: RunState) {
+    if (s.finished) return;
+    s.finished = true;
+    s.resolve();
+  }
+
+  // Host work on an item (its shots, its accessibility dump, writing its card) runs on the
+  // host's clock, not the driver's: the watchdog leaves the item alone while any is in flight.
+  async function hostWork<T>(current: Current, work: () => Promise<T>): Promise<T> {
+    if (current.busy++ === 0) current.busySince = Date.now();
+    try {
+      return await work();
+    } finally {
+      if (--current.busy === 0) current.hostMs += Date.now() - current.busySince;
+    }
   }
 
   const bySession = (session: string | null) => [...states.values()].find((s) => s.session !== null && s.session === session);
@@ -286,14 +379,19 @@ export async function startAuditHost(runs: PlatformRun[], options: { fingerprint
   async function onReady(s: RunState, request: ReadyRequest): Promise<Reply> {
     const current = s.current;
     if (!current || current.queued.item.id !== request.id) return json(410, { error: `${request.id} is not the item in hand` });
-    const began = Date.now();
-    try {
+    // Before any shot: a screen that is not the item is not photographed under its name.
+    const mismatch = identityMismatch(current.queued.item, request);
+    if (mismatch) {
+      await failAttempt(s, mismatch, "verify");
+      return json(409, { error: `segment ${request.segment} is not ${request.id}: ${mismatch}` });
+    }
+    await hostWork(current, async () => {
       const shot = await steadyShot(s, request);
       current.segments.push({ request, screen: shot.screen, crop: shot.crop, grabs: shot.grabs, mads: shot.mads, stable: shot.stable });
       if (current.queued.a11y && request.segment === 0) current.a11y = await accessibility(s, request);
-    } finally {
-      current.hostMs += Date.now() - began;
-    }
+    });
+    // The app restarted while the host was shooting: the item was failed under it.
+    if (s.current !== current) return json(410, { error: `${request.id} is not the item in hand` });
     return json(200, { ok: true });
   }
 
@@ -315,6 +413,10 @@ export async function startAuditHost(runs: PlatformRun[], options: { fingerprint
   async function onDone(s: RunState, request: DoneRequest): Promise<Reply> {
     const current = s.current;
     if (!current || current.queued.item.id !== request.id) return json(410, { error: `${request.id} is not the item in hand` });
+    return hostWork(current, () => finishItem(s, current, request));
+  }
+
+  async function finishItem(s: RunState, current: Current, request: DoneRequest): Promise<Reply> {
     const cellDir = join(s.dir, current.queued.item.id);
     await mkdir(cellDir, { recursive: true });
     const dpr = s.hello?.dpr ?? 1;
@@ -368,24 +470,20 @@ export async function startAuditHost(runs: PlatformRun[], options: { fingerprint
       handout = { queued: s.queue[s.next], attempt: 1 };
       s.next++;
     }
+    // The app is driving: whatever relaunches it took to get here are behind it.
+    s.relaunches = 0;
     if (!handout) {
-      if (!s.finished) {
-        s.finished = true;
-        s.resolve();
-      }
+      finish(s);
       return json(200, { done: true } satisfies NextResponse);
     }
-    s.current = { queued: handout.queued, attempt: handout.attempt, started: Date.now(), hostMs: 0, segments: [] };
+    s.current = { queued: handout.queued, attempt: handout.attempt, started: Date.now(), hostMs: 0, busy: 0, busySince: 0, segments: [] };
     return json(200, { done: false, item: wireItem(handout.queued.item, s.chrome) } satisfies NextResponse);
   }
 
   function refuse(s: RunState, why: string): Reply {
     s.refused = why;
     events.refused(s.platform, why);
-    if (!s.finished) {
-      s.finished = true;
-      s.resolve();
-    }
+    finish(s);
     return json(409, { error: why });
   }
 
@@ -394,10 +492,28 @@ export async function startAuditHost(runs: PlatformRun[], options: { fingerprint
     const s = states.get(request.platform);
     if (!s) return json(409, { error: `no ${request.platform} run is in progress` });
     if (s.finished) return json(409, { error: `the ${request.platform} run is over` });
-    if (request.app.id !== AUDIT_APP_ID) return refuse(s, `the app saying hello is ${request.app.id}, not the audit build ${AUDIT_APP_ID}`);
+    // Another app carrying the driver (a docs development build on a Metro started with
+    // the audit flag) is turned away on its own; the audit app's run goes on.
+    if (request.app.id !== AUDIT_APP_ID) {
+      events.log(s.platform, `ignored a hello from ${request.app.id ?? "an app with no id"} (${request.app.name ?? "unnamed"}): only the audit build ${AUDIT_APP_ID} is driven`);
+      return json(409, { error: `this host drives ${AUDIT_APP_ID}, not ${request.app.id}` });
+    }
+    // The audit app is up: however long the checks below take (the tab bar is read
+    // through Maestro), the watchdog does not take it for silent.
+    s.lastContact = Date.now();
+    const rebuild = `run bun run audit:native:build -- --platform=${request.platform}`;
     const built = request.build?.sourceFingerprint;
     if (built !== options.fingerprint) {
-      return refuse(s, `the installed build is stale: it was built from source fingerprint ${String(built).slice(0, 12)}, this checkout is ${options.fingerprint.slice(0, 12)}; run bun run audit:native:build -- --platform=${request.platform}`);
+      return refuse(s, `the installed build is stale: it was built from source fingerprint ${String(built).slice(0, 12)}, this checkout is ${options.fingerprint.slice(0, 12)}; ${rebuild}`);
+    }
+    // The native project's inputs (the app config, the config plugins, the native
+    // dependencies, the local native modules) as they were when the build generated it.
+    const native = request.build?.nativeFingerprint;
+    if (typeof native !== "string") {
+      return refuse(s, `the installed build carries no native fingerprint, so its native project cannot be checked against this checkout (it was built before the stamp existed, or outside audit:native:build); ${rebuild}`);
+    }
+    if (native !== options.nativeFingerprint) {
+      return refuse(s, `the installed build's native project is stale: it was generated from native inputs ${native.slice(0, 12)} (docs/app.json, docs/app.config.js, docs/plugins, docs/patches, the docs dependencies, packages/), this checkout's are ${options.nativeFingerprint.slice(0, 12)}; ${rebuild}`);
     }
     // With updates off (the audit build) expo-updates reports no update id and a
     // non-embedded launch; only an update id with a non-embedded launch is a download.
@@ -418,6 +534,7 @@ export async function startAuditHost(runs: PlatformRun[], options: { fingerprint
     s.hello = request;
     s.sessions++;
     s.session = `${request.platform}-${s.sessions}`;
+    s.lastContact = Date.now();
     return json(200, { session: s.session });
   }
 
@@ -434,15 +551,20 @@ export async function startAuditHost(runs: PlatformRun[], options: { fingerprint
     const s = bySession(session);
     if (!s) return json(410, { error: `no session ${session}` });
     s.lastContact = Date.now();
-    if (route === "GET /next") return onNext(s);
-    if (route === "POST /ready") return onReady(s, body as ReadyRequest);
-    if (route === "POST /done") return onDone(s, body as DoneRequest);
-    if (route === "POST /fail") {
-      const fail = body as FailRequest;
-      if (s.current?.queued.item.id === fail.id) await failAttempt(s, fail.reason, fail.phase, fail.problems);
-      return json(200, { ok: true });
+    try {
+      if (route === "GET /next") return await onNext(s);
+      if (route === "POST /ready") return await onReady(s, body as ReadyRequest);
+      if (route === "POST /done") return await onDone(s, body as DoneRequest);
+      if (route === "POST /fail") {
+        const fail = body as FailRequest;
+        if (s.current?.queued.item.id === fail.id) await failAttempt(s, fail.reason, fail.phase, fail.problems);
+        return json(200, { ok: true });
+      }
+      return json(404, { error: `no ${route}` });
+    } finally {
+      // The app cannot speak again until it has the answer: its quiet time starts here.
+      s.lastContact = Date.now();
     }
-    return json(404, { error: `no ${route}` });
   }
 
   // node:http rather than Bun.serve: a Bun.serve handler answers with the global
@@ -473,29 +595,43 @@ export async function startAuditHost(runs: PlatformRun[], options: { fingerprint
   const address = server.address();
   const port = typeof address === "object" && address ? address.port : options.port ?? AUDIT_PORT;
 
-  // The watchdog: an item past its time, or an app that has gone quiet with work left,
-  // is a stalled app. The item is failed (and retried once) and the app relaunched.
-  const STALL_MS = ITEM_TIMEOUT_MS + 15_000;
+  // The watchdog: an item past its time (the driver's time, not the host's), or an app
+  // that has gone quiet with work left, is a stalled app. The item is failed (and retried
+  // once) and the app relaunched, up to timing.maxRelaunches times in a row without the
+  // app taking an item; one more stall after that abandons the platform's run.
+  const seconds = (ms: number) => `${Math.round(ms / 100) / 10} s`;
   const relaunching = new Set<AuditPlatform>();
   const watchdog = setInterval(() => {
     for (const s of states.values()) {
       if (s.finished || relaunching.has(s.platform)) continue;
       const now = Date.now();
       const current = s.current;
-      const overdue = current && now - current.started - current.hostMs > ITEM_TIMEOUT_MS;
-      const quiet = !current && s.session !== null && now - s.lastContact > STALL_MS;
-      const silent = s.session === null && now - s.lastContact > STALL_MS * 2;
+      const overdue = current !== null && driverMs(current, now) > timing.itemTimeoutMs;
+      const quiet = !current && s.session !== null && now - s.lastContact > timing.stallMs;
+      const silent = s.session === null && now - s.lastContact > timing.stallMs * 2;
       if (!overdue && !quiet && !silent) continue;
-      const why = overdue ? `${current?.queued.item.id} took over ${ITEM_TIMEOUT_MS / 1000} s` : quiet ? "the app stopped asking for items" : "the app never said hello";
+      const why = overdue ? `${current?.queued.item.id} took over ${seconds(timing.itemTimeoutMs)}` : quiet ? "the app stopped asking for items" : "the app never said hello";
       relaunching.add(s.platform);
       void (async () => {
-        if (overdue) await failAttempt(s, `timed out after ${ITEM_TIMEOUT_MS / 1000} s`, "watchdog");
+        if (overdue) await failAttempt(s, `timed out after ${seconds(timing.itemTimeoutMs)} of the driver's time`, "watchdog");
         s.session = null;
-        await events.stalled(s.platform, why);
+        if (s.relaunches >= timing.maxRelaunches) {
+          s.abandoned = `${why}, and ${s.relaunches} relaunch${s.relaunches === 1 ? "" : "es"} in a row did not bring the app back to taking an item; the rest of its queue is not captured`;
+          events.abandoned(s.platform, s.abandoned);
+          finish(s);
+          return;
+        }
+        s.relaunches++;
+        try {
+          await events.stalled(s.platform, `${why} (relaunch ${s.relaunches} of ${timing.maxRelaunches})`);
+        } catch (error) {
+          // A relaunch that fails counts as one that did not bring the app back.
+          events.log(s.platform, `the relaunch failed: ${error instanceof Error ? error.message : String(error)}`);
+        }
         s.lastContact = Date.now();
       })().finally(() => relaunching.delete(s.platform));
     }
-  }, 1000);
+  }, timing.tickMs);
 
   return {
     port,
@@ -503,6 +639,7 @@ export async function startAuditHost(runs: PlatformRun[], options: { fingerprint
     records: (platform) => states.get(platform)?.records ?? [],
     hello: (platform) => states.get(platform)?.hello ?? null,
     refused: (platform) => states.get(platform)?.refused ?? null,
+    abandoned: (platform) => states.get(platform)?.abandoned ?? null,
     stop() {
       clearInterval(watchdog);
       server.closeAllConnections();
