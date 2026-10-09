@@ -9,6 +9,7 @@ import {
   FACTS_END,
   VARIANTS_BEGIN,
   VARIANTS_END,
+  captureCells,
   checkChecklists,
   defaultSources,
   findBlock,
@@ -21,12 +22,28 @@ import {
   readSignOffs,
   readVariantsTable,
   renderComponentFacts,
+  renderPageFacts,
   renderVariantsTable,
   variantsHeader,
   writeChecklists,
   type ChecklistSources,
 } from "./checklists.ts";
-import { codeLiterals, componentFacts, drivesRoute, isSourceModule, kitImportsOf, importsComponent, pageFacts, testingRoutes, touchTargetVocabulary, type PageFacts } from "./facts.ts";
+import {
+  UnreadableImport,
+  codeLiterals,
+  componentFacts,
+  drivesRoute,
+  isSourceModule,
+  isSpecFile,
+  isTestFile,
+  kitImportsOf,
+  importsComponent,
+  pageFacts,
+  pageKitNames,
+  testingRoutes,
+  touchTargetVocabulary,
+  type PageFacts,
+} from "./facts.ts";
 import { NATIVE_CELLS_PER_VARIANT, WEB_CELLS_PER_VARIANT, cellId, cellsFor, components, pageCellId, pages, sectionKeys } from "./inventory.ts";
 import { COMPONENT_PLANS, FAMILY_CHECKLISTS, UNIVERSAL_RUBRIC } from "./plan-specifics.ts";
 import { auditStatus, checklistStatus, formatStatus } from "./status.ts";
@@ -394,6 +411,52 @@ describe.skipIf(!hasDist)("the audit checklists keep a reviewer's work", () => {
     expect(componentFacts("text", sources.corpus).e2e).toEqual([]);
   });
 
+  it("credits the text-entry specs and the helper-loaded tests the facts used to drop (HIGH 1, HIGH 2, item a)", () => {
+    // e2e/behavior/text-entry-clear.e2e.ts builds `/components/${recipe.slug}` in its `entry` helper.
+    for (const slug of ["textarea", "input-otp", "phone-input", "input", "autocomplete", "stepper", "data-table"]) {
+      expect(componentFacts(slug, sources.corpus).e2e).toContain("e2e/behavior/text-entry-clear.e2e.ts");
+    }
+    // test/touch-target-clips.test.tsx loads each component through `entry(path, name)`, and
+    // test/dist-smoke.test.tsx reads `(kit as Record<string, unknown>)[name]` over a literal list.
+    for (const slug of ["button", "pagination", "steps", "row-menu", "stepper", "toast", "stacked-lists"]) {
+      expect(componentFacts(slug, sources.corpus).tests).toContain("test/touch-target-clips.test.tsx");
+    }
+    for (const slug of ["chip", "sparkline", "data-table", "qrcode"]) expect(componentFacts(slug, sources.corpus).tests).toContain("test/dist-smoke.test.tsx");
+    expect(componentFacts("phone-input", sources.corpus).tests).not.toContain("test/dist-smoke.test.tsx");
+  });
+
+  it("counts the files `bun test` runs and the docs specs, crediting a test with the fixtures it reaches (items d, e)", () => {
+    expect(isTestFile("test/chip.test.tsx")).toBe(true);
+    expect(isTestFile("test/fixtures/control-refs-consumer.tsx")).toBe(false);
+    expect(isTestFile("test/setup.ts")).toBe(false);
+    for (const { file } of sources.corpus.tests) expect(isTestFile(file)).toBe(true);
+    for (const { file } of sources.corpus.e2e) expect(isSpecFile(file)).toBe(true);
+    // The fixture the type test hands the compiler by path is the type test's.
+    const button = componentFacts("button", sources.corpus).tests;
+    expect(button).toContain("test/control-refs-types.test.ts");
+    expect(button.some((file) => file.startsWith("test/fixtures/"))).toBe(false);
+    // The starter app's own suite drives the starter, not the docs.
+    for (const slug of ["row-column", "typography"]) expect(componentFacts(slug, sources.corpus).e2e.some((file) => file.startsWith("e2e/starter/"))).toBe(false);
+  });
+
+  it("credits a pattern with the kit names its own entry uses, never a sibling's or a type (item f)", () => {
+    const patterns = readFileSync(join(ROOT, "docs/src/core/data/patterns.tsx"), "utf8");
+    const glass = pageKitNames("docs/src/core/data/patterns.tsx", patterns, "glass");
+    // GlassDemo's material switch and the inventory's table; not Accessibility's Kbd or Responsive's Sidebar.
+    expect(glass).toEqual(expect.arrayContaining(["Alert", "Card", "DataTable", "Switch", "ThemeProvider", "useTheme"]));
+    for (const name of ["Kbd", "Sidebar", "Container", "Progress"]) expect(glass).not.toContain(name);
+    const source = [
+      'import type { Doc } from "./types";',
+      'import { Card, Badge, type CardProps } from "@nannier/canvas";',
+      "function Demo() { return <Card />; }",
+      'const DOCS: Doc[] = [{ slug: "one", sections: [{ render: () => <Demo /> }] }, { slug: "two", sections: [{ render: () => <Badge /> }] }];',
+    ].join("\n");
+    expect(pageKitNames("x.tsx", source, "one")).toEqual(["Card"]);
+    expect(pageKitNames("x.tsx", source, "two")).toEqual(["Badge"]);
+    expect(() => pageKitNames("x.tsx", source, "three")).toThrow(/no entry whose slug is "three"/);
+    expect(renderPageFacts(pageFacts(all!.pages.find((p) => p.id === "pattern-glass")!, sources.corpus)).join("\n")).toContain("| Kit names its entry uses | Alert, Button, Card,");
+  });
+
   it("keeps a page section's ticks when another section is inserted before it", () => {
     const dir = temp();
     try {
@@ -495,13 +558,15 @@ describe("variants rows, orphans and section keys", () => {
 });
 
 describe("tests naming a component", () => {
+  const root = "/repo";
+  const read = (source: string) => kitImportsOf(root, "test/x.test.tsx", source);
+  const view = { exports: ["View"], sourceDir: "src/atoms/view" };
+  const avatar = { exports: ["Avatar", "AvatarGroup", "AvatarMenu"], sourceDir: "src/atoms/avatar" };
+  const button = { exports: ["Button"], sourceDir: "src/atoms/button" };
+  const chip = { exports: ["Chip"], sourceDir: "src/atoms/chip" };
+  const counts = (source: string, c: { exports: string[]; sourceDir: string }) => importsComponent(read(source), c.exports, c.sourceDir);
+
   it("counts a test that imports the component from the kit or reads its own directory, never a react-native import", () => {
-    const root = "/repo";
-    const read = (source: string) => kitImportsOf(root, "/repo/test/x.test.tsx", source);
-    const view = { exports: ["View"], sourceDir: "src/atoms/view" };
-    const avatar = { exports: ["Avatar", "AvatarGroup", "AvatarMenu"], sourceDir: "src/atoms/avatar" };
-    const button = { exports: ["Button"], sourceDir: "src/atoms/button" };
-    const counts = (source: string, c: { exports: string[]; sourceDir: string }) => importsComponent(read(source), c.exports, c.sourceDir);
     // react-native's own View is not the kit's.
     expect(counts('import { View, Text } from "react-native";\nconst v = <View />;', view)).toBe(false);
     expect(counts('import { View } from "../src/style/primitives.ts";', view)).toBe(true);
@@ -510,14 +575,13 @@ describe("tests naming a component", () => {
     // A module inside the component's directory, a skin or a platform entry, statically or not.
     expect(counts('import { iosSkin } from "../src/atoms/button/button.styles.ts";', button)).toBe(true);
     expect(counts('import * as skins from "../src/atoms/button/button.styles.ts";', button)).toBe(true);
-    expect(counts("const load = async (file: string) => (await import(`../src/atoms/avatar/${file}.tsx`)).AvatarMenu;", avatar)).toBe(true);
-    // A template head that stops mid-name (`button` could be `button-group`) is not the directory.
-    expect(counts("const m = await import(`../src/atoms/button${suffix}.tsx`);", button)).toBe(false);
+    expect(counts('const load = async (file: string) => (await import(`../src/atoms/avatar/${file}.tsx`)).AvatarMenu;\nawait load("avatar.ios");', avatar)).toBe(true);
+    // A helper no code calls loads nothing.
+    expect(counts("const load = async (file: string) => (await import(`../src/atoms/avatar/${file}.tsx`)).AvatarMenu;", avatar)).toBe(false);
     // Names read off a dynamic import or a namespace of a kit module.
     expect(counts('const { Button, ThemeProvider } = await import("../dist/index.js");', button)).toBe(true);
     expect(counts('const B = ((await import("../src/index.ts")) as Kit).Button;', button)).toBe(true);
-    expect(counts('const mod = await import(`../src/atoms/${dir}/${dir}.tsx`);\nmod.Button;', button)).toBe(true);
-    expect(counts('const mod = await import(`../src/atoms/${dir}/${dir}.tsx`);\nmod.Avatar;', button)).toBe(false);
+    expect(counts('for (const dir of ["button", "chip"]) {\n  const mod = await import(`../src/atoms/${dir}/${dir}.tsx`);\n  mod.Avatar;\n}', avatar)).toBe(true);
     expect(counts('import * as kit from "../src/index.ts";\nrender(<kit.Button />);', button)).toBe(true);
     // A word in the text, or a route literal, is not an import.
     expect(counts('// renders a Button inside a View\nconst path = "/components/view/conversions.h";', view)).toBe(false);
@@ -525,8 +589,6 @@ describe("tests naming a component", () => {
   });
 
   it("reads a table-driven dynamic import row by row: each row's module and the name it reads (item 1)", () => {
-    const root = "/repo";
-    const read = (source: string) => kitImportsOf(root, "/repo/test/x.test.tsx", source);
     // The skins smoke test's shape: a CASES table, a platform loop, a suffix const, and `mod[c.name]`.
     const smoke = read(
       [
@@ -549,8 +611,7 @@ describe("tests naming a component", () => {
         '}',
       ].join("\n"),
     );
-    expect(smoke.modules.every((m) => !m.prefix)).toBe(true);
-    expect(smoke.modules.map((m) => m.path).sort()).toEqual(
+    expect([...smoke.modules].sort()).toEqual(
       ["src/atoms/avatar/avatar", "src/atoms/layout/layout", "src/organisms/board/board"].flatMap((stem) => [".android", ".ios", ""].map((suffix) => `${stem}${suffix}.tsx`)),
     );
     expect([...smoke.names].sort()).toEqual(["Avatar", "Board", "Row"]);
@@ -570,11 +631,78 @@ describe("tests naming a component", () => {
         '}',
       ].join("\n"),
     );
-    expect(refs.modules.map((m) => m.path).sort()).toEqual(["src/atoms/checkbox/checkbox.ios.tsx", "src/atoms/checkbox/checkbox.tsx", "src/atoms/switch/switch.ios.tsx", "src/atoms/switch/switch.tsx"]);
+    expect([...refs.modules].sort()).toEqual(["src/atoms/checkbox/checkbox.ios.tsx", "src/atoms/checkbox/checkbox.tsx", "src/atoms/switch/switch.ios.tsx", "src/atoms/switch/switch.tsx"]);
     expect([...refs.names].sort()).toEqual(["Checkbox", "Switch"]);
-    // A `let` table is not followed: it may change before the loop reads it.
-    const mutable = read('let CASES = [{ dir: "atoms/chip" }];\nfor (const c of CASES) await import(`../src/${c.dir}/x.tsx`);');
-    expect(mutable.modules).toEqual([{ path: "src/", prefix: true }]);
+  });
+
+  it("binds a helper's parameters at each call site: a component loaded through `entry(path, name)` is credited (HIGH 2)", () => {
+    // test/touch-target-clips.test.tsx's shape: the import and the member read sit in a
+    // helper's returned loader, and only the table of calls names the modules.
+    const clips = read(
+      [
+        "type Load = () => Promise<unknown>;",
+        "const entry = (path: string, name: string): Load => async () => (await import(path))[name];",
+        "const ANDROID = [",
+        '  { name: "a Button", load: entry("../src/atoms/button/button.android.tsx", "Button") },',
+        '  { name: "a Chip", load: entry("../src/atoms/chip/chip.android.tsx", "Chip") },',
+        "];",
+        "for (const c of ANDROID) it(c.name, async () => { await c.load(); });",
+      ].join("\n"),
+    );
+    expect([...clips.modules].sort()).toEqual(["src/atoms/button/button.android.tsx", "src/atoms/chip/chip.android.tsx"]);
+    expect([...clips.names].sort()).toEqual(["Button", "Chip"]);
+    expect(importsComponent(clips, chip.exports, chip.sourceDir)).toBe(true);
+    // A helper the module hands on, or exports, may be called with anything: its import fails.
+    expect(() => read("export const load = async (path: string) => import(path);")).toThrow(UnreadableImport);
+    expect(() => read("const load = async (path: string) => import(path);\ntest(\"x\", load);")).toThrow(/load is used as a value at line 2/);
+  });
+
+  it("reads a namespace through parentheses and casts, and `spyOn(ns, key)` (item a)", () => {
+    // test/dist-smoke.test.tsx: a namespace from a dynamic import, read through a cast over a literal list.
+    const smoke = read(
+      ['const kit = await import("../dist/index.js");', 'for (const name of ["Button", "Chip"]) {', "  expect(typeof (kit as Record<string, unknown>)[name]).not.toBe(\"undefined\");", "}"].join("\n"),
+    );
+    expect([...smoke.names].sort()).toEqual(["Button", "Chip"]);
+    expect(read('import * as kit from "../src/index.ts";\nconst B = (kit as unknown as Kit).Button;').names.has("Button")).toBe(true);
+    expect(read('import { spyOn } from "bun:test";\nimport * as style from "../src/style/index.ts";\nspyOn(style, "View");').names.has("View")).toBe(true);
+    // Read whole, a namespace is recorded for the corpus to judge, by line.
+    expect(read('import * as kit from "../src/index.ts";\nconst all = Object.keys(kit);').whole).toEqual([{ file: "test/x.test.tsx", module: "src/index.ts", line: 2, what: "Object.keys(kit)" }]);
+  });
+
+  it("fails on an import or a member it cannot resolve, never drops it", () => {
+    // A specifier built from a global, a key from a global, a let table.
+    expect(() => read("const m = await import(`../src/atoms/button${suffix}.tsx`);")).toThrow(UnreadableImport);
+    expect(() => read('import * as kit from "../src/index.ts";\nconst C = kit[process.env.NAME!];')).toThrow(/test\/x.test.tsx:2: it reads a member of a kit namespace by a key the reader cannot know/);
+    expect(() => read('let CASES = [{ dir: "atoms/chip" }];\nfor (const c of CASES) await import(`../src/${c.dir}/x.tsx`);')).toThrow(UnreadableImport);
+    // A const the module changes is not read as its literal (item g), and the message says where it changes.
+    expect(() => read('const CASES = [{ dir: "atoms/chip" }];\nCASES.push({ dir: "atoms/button" });\nfor (const c of CASES) await import(`../src/${c.dir}/x.tsx`);')).toThrow(/CASES \(line 1\) is changed at line 2/);
+    // A module copied into a run-time directory outside the checkout is provably not the kit's;
+    // one whose directory the reader cannot place fails.
+    const copied = [
+      'import { mkdtemp } from "node:fs/promises";',
+      'import { tmpdir } from "node:os";',
+      'import { join } from "node:path";',
+      "const temporary: string[] = [];",
+      'const fresh = async () => { const dir = await mkdtemp(join(tmpdir(), "copy-")); temporary.push(dir); return dir; };',
+      'it("loads the copy", async () => { const module = join(await fresh(), "check-size.ts"); await import(module); });',
+    ].join("\n");
+    expect(read(copied).modules).toEqual([]);
+    expect(() => read(copied.replace("join(tmpdir(), \"copy-\")", "process.env.DIR!"))).toThrow(UnreadableImport);
+  });
+
+  it("credits only the rows a readable guard lets through, and fails on a guard it cannot read (item b)", () => {
+    const guarded = read(
+      [
+        'for (const dir of ["button", "chip"]) {',
+        '  if (dir === "chip") continue;',
+        "  it(dir, async () => { await import(`../src/atoms/${dir}/${dir}.styles.ts`); });",
+        "}",
+      ].join("\n"),
+    );
+    expect(guarded.modules).toEqual(["src/atoms/button/button.styles.ts"]);
+    expect(() =>
+      read(['for (const dir of ["button", "chip"]) {', "  if (process.env[dir]) continue;", "  it(dir, async () => { await import(`../src/atoms/${dir}/${dir}.styles.ts`); });", "}"].join("\n")),
+    ).toThrow(/a guard the reader cannot read/);
   });
 });
 
@@ -689,6 +817,40 @@ describe("findings and sign-off tables", () => {
     const status = checklistStatus("components/x.md", table);
     expect(status.findings).toEqual({ total: 3, open: 1, bySeverity: { low: 1 }, byStatus: { fixed: 2, verified: 1 } });
     expect(status.unreadable.filter((p) => p.line !== null).map((p) => p.line)).toEqual([lineOf("G3"), lineOf("G4"), lineOf("G5")]);
+  });
+
+  it("holds the Cell column to the checklist's capture ids or `source`, by line (item h)", () => {
+    const cells = new Set(["web/x/default/phone.dark.glass", "ios/x/default/dark.glass"]);
+    const table = [
+      "## Findings",
+      "",
+      "| ID | Severity | Cell | Summary | Status | Fix commit |",
+      "|---|---|---|---|---|---|",
+      "| F1 | high | source | read in the source | open | |",
+      "| F2 | low | `web/x/default/phone.dark.glass` | back-ticked | open | |",
+      "| F3 | low | ios/x/default/dark.glass | native | open | |",
+      "| F4 | low | web/x/default/desktop.dark.glass | a cell this inventory does not have | open | |",
+      "| F5 | low | web/y/default/phone.dark.glass | another checklist's cell | open | |",
+      "| F6 | low | anywhere | not an id | open | |",
+      "",
+    ].join("\n");
+    const lineOf = (id: string) => table.split("\n").findIndex((l) => l.startsWith(`| ${id} |`)) + 1;
+    const findings = readFindings(table, cells);
+    expect(findings.rows.map((r) => [r.id, r.cell])).toEqual([
+      ["F1", "source"],
+      ["F2", "web/x/default/phone.dark.glass"],
+      ["F3", "ios/x/default/dark.glass"],
+    ]);
+    expect(findings.malformed.map((m) => m.line)).toEqual([lineOf("F4"), lineOf("F5"), lineOf("F6")]);
+    expect(findings.malformed[0].reason).toStartWith('the Cell cell reads "web/x/default/desktop.dark.glass", not one of this checklist\'s capture ids');
+    expect(checklistStatus("components/x.md", table, cells).unreadable.filter((u) => u.line !== null).map((u) => u.line)).toEqual([lineOf("F4"), lineOf("F5"), lineOf("F6")]);
+    // The inventory's own ids, per checklist.
+    const real = captureCells();
+    expect(real.get("components/button.md")!.has("web/button/default/phone.blush.solid")).toBe(true);
+    expect(real.get("components/button.md")!.has("android/button/default/dark.glass")).toBe(true);
+    expect(real.get("components/button.md")!.has("web/chip/default/phone.blush.solid")).toBe(false);
+    expect(real.get("pages/pattern-glass.md")!.has("web-pages/pattern-glass/desktop.dark.glass")).toBe(true);
+    expect(real.get("pages/pattern-glass.md")!.has("ios-pages/pattern-glass/mint.solid")).toBe(true);
   });
 
   it("spells the Status vocabulary exactly as audit/README.md and the seeded prose do", () => {

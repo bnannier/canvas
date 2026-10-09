@@ -160,3 +160,16 @@ export function pageCellId(cell: PageCell): string {
   const leaf = cell.platform === "web" ? `${cell.width}.${cell.look}.${cell.surface}` : `${cell.look}.${cell.surface}`;
   return `${cell.platform}-pages/${cell.page}/${leaf}`;
 }
+
+/** Every cell of one page: 18 on the web and 6 on each native platform. */
+export function pageCellsFor(page: string): PageCell[] {
+  const cells: PageCell[] = [];
+  for (const look of LOOKS) {
+    for (const surface of SURFACES) {
+      for (const { key } of WIDTHS) cells.push({ platform: "web", page, width: key, look, surface });
+      cells.push({ platform: "ios", page, look, surface });
+      cells.push({ platform: "android", page, look, surface });
+    }
+  }
+  return cells;
+}

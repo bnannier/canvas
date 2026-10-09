@@ -9,7 +9,7 @@ Audit checklist for `/templates/team`. The facts block and the variants table ar
 | Kind | template |
 | Data module | `docs/src/core/data/templates/team.tsx` |
 | Sections | 1. Invite a teammate; 2. Members |
-| Kit imports in the module | Avatar, Badge, Button, Card, Column, DataTable, EmptyState, Icon, Input, Row, Select, StackedList, StackedListItem, Typography, useToast |
+| Kit names its entry uses | Avatar, Badge, Button, Card, Column, DataTable, EmptyState, Icon, Input, Row, Select, StackedList, Typography, useToast |
 | E2E naming it | 1: `e2e/behavior/hydration-ids.e2e.ts` |
 | E2E catalog sweeps | 3: `e2e/behavior/hydration-ids.e2e.ts` (contentRoutes), `e2e/responsive/component-widths.e2e.ts` (contentRoutes), `e2e/smoke/routes.e2e.ts` (allRoutes) |
 <!-- audit:facts:end -->

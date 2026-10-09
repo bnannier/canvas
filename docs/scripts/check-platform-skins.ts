@@ -14,8 +14,9 @@
 //
 // What counts as "looks different" lives in tools/skins/divergence.ts, shared with the
 // kit's shells gate (test/design-rules-shells.test.ts): a built export diverges when
-// it builds from its own skin object (a spread of the web skin with overrides included)
-// rather than an identity alias of the web skin, or when it injects a platform part that
+// it builds from its own skin object (a spread of the web skin with overrides included,
+// or any object or literal it hands its factory that the web entry does not have at the
+// same place) rather than an identity alias of the web skin, or when it injects a platform part that
 // itself diverges by the same read (the shell draws the platform's Button, Drawer or
 // DragDrop builds); a part that is the web build, as the iOS Avatar and the iOS Chip
 // are, changes nothing. A form the reader cannot resolve counts as divergent, and so does

@@ -28,9 +28,10 @@ describe("skin divergence, per built export", () => {
     expect(avatar.exports).toEqual(["Avatar", "AvatarGroup", "AvatarMenu"]);
     expect(avatar.exportDivergence.Avatar).toBeUndefined();
     expect(avatar.exportDivergence.AvatarGroup).toBeUndefined();
+    // The pill's menu also stands off by 6, which the web entry's menu does not.
     expect(avatar.exportDivergence.AvatarMenu).toEqual({
-      iOS: "builds a part from dropdown's own iosSkin (../dropdown/dropdown.styles.js)",
-      Android: "builds a part from dropdown's own androidSkin (../dropdown/dropdown.styles.js)",
+      iOS: "builds a part from dropdown's own iosSkin (../dropdown/dropdown.styles.js); passes `menuGap: 6` where the web entry has `dropdownWebSkin`; counted as the platform's own",
+      Android: "builds a part from dropdown's own androidSkin (../dropdown/dropdown.styles.js); passes `menuGap: 6` where the web entry has `dropdownWebSkin`; counted as the platform's own",
     });
     expect(Object.keys(avatar.divergent).sort()).toEqual(["Android", "iOS"]);
   });
@@ -53,7 +54,10 @@ describe("skin divergence, per built export", () => {
     // A part the part's module only re-exports from its shared module (the Icon) is one
     // build everywhere; a part under a nested directory (the Checkbox indicator) is read
     // the same way as any entry.
-    expect(skinsOf(KIT, "video").exportDivergence.Video?.iOS).toBe("builds from its own iosSkin; injects platform parts (../spinner/spinner.ios.js)");
+    // Video's native builds also hand the frame to the platform's own player controls.
+    expect(skinsOf(KIT, "video").exportDivergence.Video?.iOS).toBe(
+      "builds from its own iosSkin; injects platform parts (../spinner/spinner.ios.js); passes `nativeControls: true` which the web entry does not; counted as the platform's own",
+    );
     expect(skinsOf(KIT, "listbox").exportDivergence.Listbox?.Android).toBe("injects platform parts (../checkbox/indicator/index.android.js)");
   });
 
@@ -115,14 +119,14 @@ describe("skin divergence, per built export", () => {
       expect(thing.exports).toEqual(["Thing", "ThingMenu", "Bare", "A", "B", "WebParts"]);
       // WebParts injects only parts that are the web build, so it is the web build.
       expect(thing.exportDivergence).toEqual({
-        ThingMenu: { iOS: "builds a part from other's own iosSkin (../other/other.styles.js)" },
+        ThingMenu: { iOS: "builds a part from other's own iosSkin (../other/other.styles.js); passes `gap: 6` and there is no web export of that name to match it against; counted as the platform's own" },
         Bare: { iOS: "injects platform parts (../button/button.ios.js)" },
         A: { iOS: "injects platform parts (../button/button.ios.js)" },
         B: { iOS: "injects platform parts (../button/button.ios.js)" },
         Thing: { Android: "builds from its own androidSkin" },
       });
       expect(thing.divergent).toEqual({
-        iOS: "builds a part from other's own iosSkin (../other/other.styles.js); injects platform parts (../button/button.ios.js)",
+        iOS: "builds a part from other's own iosSkin (../other/other.styles.js); passes `gap: 6` and there is no web export of that name to match it against; counted as the platform's own; injects platform parts (../button/button.ios.js)",
         Android: "builds from its own androidSkin",
       });
       expect(builtExports('export const X = 1;\nexport const { A, B } = f();\nconst y = 2;\nexport { z } from "./z.js";')).toEqual(["X", "A", "B"]);
@@ -230,6 +234,65 @@ describe("skin divergence, per built export", () => {
       // What it can prove stays the web build: an alias read off the namespace, a part that
       // is the web build, a cast argument, a cast spread that adds nothing.
       for (const name of ["NsAlias", "NsPlainPart", "CastOnly", "CastArg"]) expect(look.exports).toContain(name);
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("counts data the entry writes itself as the platform's own unless the web entry has the same at that place (item c)", () => {
+    const root = kit({
+      "atoms/chip/chip.styles.ts": "export const webSkin = { radius: 8 };\nexport const iosSkin = webSkin;",
+      "atoms/chip/chip.tsx": [
+        'import { createChip, createRow } from "./chip.shared.js";',
+        'import { webSkin } from "./chip.styles.js";',
+        'const KIND = "row";',
+        "export const Chip = createChip(webSkin);",
+        "export const Local = createChip(webSkin);",
+        "export const Empty = createChip(webSkin);",
+        'export const Row = createRow(webSkin, "row");',
+        'export const Named = createRow(webSkin, KIND);',
+        'export const Column = createRow(webSkin, "column");',
+        "export const Option = createChip(webSkin, { dense: true });",
+        "export const Fn = createChip(webSkin);",
+        "export const Helper = createChip(webSkin);",
+        "export const Picked = createChip(webSkin);",
+      ].join("\n"),
+      "atoms/chip/chip.ios.tsx": [
+        'import { createChip, createRow } from "./chip.shared.js";',
+        'import { iosSkin } from "./chip.styles.js";',
+        "const skin = { radius: 3 };",
+        "function tweak() { return { radius: 2 }; }",
+        // An object is never the web skin by being an object.
+        "export const Chip = createChip({ radius: 3 });",
+        "export const Local = createChip(skin);",
+        "export const Empty = createChip({});",
+        // The same literal at the same place as the web entry is the web build's, through a web const too.
+        'export const Row = createRow(iosSkin, "row");',
+        'export const Named = createRow(iosSkin, "row");',
+        'export const Column = createRow(iosSkin, "row");',
+        "export const Option = createChip(iosSkin, { dense: true });",
+        // A function written here, a helper's own data, a choice the reader cannot place.
+        "export const Fn = createChip(iosSkin, { render: () => null });",
+        "export const Helper = createChip(tweak());",
+        'export const Picked = createChip(iosSkin, { size: Math.random() > 0.5 ? "s" : "m" });',
+        // An export the web entry does not have.
+        'export const Extra = createRow(iosSkin, "row");',
+      ].join("\n"),
+    });
+    try {
+      const ios = Object.fromEntries(Object.entries(skinsOf(root, "chip").exportDivergence).map(([name, by]) => [name, by.iOS]));
+      expect(ios).toEqual({
+        Chip: "passes `radius: 3` where the web entry has `webSkin`; counted as the platform's own",
+        Local: "passes `radius: 3` where the web entry has `webSkin`; counted as the platform's own",
+        Empty: "passes `{}` where the web entry has `webSkin`; counted as the platform's own",
+        Column: 'passes `"row"` where the web entry has `"column"`; counted as the platform\'s own',
+        Fn: "passes `render: () => null` which the web entry does not; counted as the platform's own",
+        Helper: "builds data of its own in tweak() (tweak()); counted as the platform's own",
+        Picked: 'passes `size: Math.random() > 0.5 ? "s" : "m"` which the web entry does not; counted as the platform\'s own',
+        Extra: 'passes `"row"` and there is no web export of that name to match it against; counted as the platform\'s own',
+      });
+      // Row, Named and Option match the web entry literal for literal: the web build.
+      for (const name of ["Row", "Named", "Option"]) expect(ios[name]).toBeUndefined();
     } finally {
       rmSync(root, { recursive: true, force: true });
     }
