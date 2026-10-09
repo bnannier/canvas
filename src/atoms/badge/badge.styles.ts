@@ -1,4 +1,5 @@
 import { type ViewStyle } from "react-native";
+import { shape } from "../../style/index.js";
 import { typeScale } from "../../style/type-scale.js";
 import { type BadgeSkin } from "./badge.shared.js";
 
@@ -16,7 +17,7 @@ const PILL: ViewStyle = {
   flexDirection: "row",
   alignItems: "center",
   borderWidth: 1,
-  borderRadius: 9999,
+  borderRadius: shape.web.pill,
   paddingHorizontal: 8,
   paddingVertical: 2,
 };

@@ -204,7 +204,7 @@ export const webSkin: SelectSkin = {
 // a hairline group separator between rows. The SELECTED row is marked by a
 // LEADING brand checkmark (the kit's "Menu Item - Selectable" puts the check on
 // the leading edge), in `primary`.
-const IOS_MENU_RADIUS = 26;
+const IOS_MENU_RADIUS = shape.ios.menu;
 const IOS_TRIGGER_BOX: Record<Size, number> = { small: 36, default: 44, large: 50 };
 // The reference's 16pt value (the same ladder as the Input's iOS skin).
 const IOS_TEXT: Record<Size, TextStyle> = {
@@ -293,7 +293,7 @@ export const iosSkin: SelectSkin = {
 // (brand) when open — and a trailing dropdown arrow (chevron-down). The menu is
 // an elevated surface (4dp, `popover`, soft shadow); pressed rows tint with the
 // ripple (alpha(primary, 0.12) state layer) and the selected row is tinted.
-const ANDROID_TOP_RADIUS = 4;
+const ANDROID_TOP_RADIUS = shape.android.field;
 const ANDROID_TRIGGER_BOX: Record<Size, number> = { small: 48, default: 56, large: 60 };
 const ANDROID_TEXT: Record<Size, TextStyle> = {
   small: { fontSize: 14, lineHeight: 20 },
@@ -337,7 +337,7 @@ export const androidSkin: SelectSkin = {
   panel: (t) => ({
     maxHeight: 280,
     overflow: "hidden", // clip rows to the rounded card; the list scrolls inside
-    borderRadius: 4,
+    borderRadius: shape.android.menu,
     backgroundColor: t.popover,
     paddingVertical: 8,
     ...shadow("md", t),

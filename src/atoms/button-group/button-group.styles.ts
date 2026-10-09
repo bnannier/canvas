@@ -163,7 +163,7 @@ export const glassDivider = (t: ColorTokens, height: number): ViewStyle => ({
 // action with its chevron half, the stepper and the spaced peers DF's hairline pills.
 // =============================================================================
 
-const PILL = 9999;
+const PILL = shape.web.pill;
 const WEB_SEGMENT: Record<Size, ViewStyle> = {
   small: { height: 23, paddingHorizontal: 12 },
   default: { height: 27, paddingHorizontal: 16 },
@@ -321,7 +321,7 @@ export const iosSkin: ButtonGroupSkin = {
       flexDirection: "row",
       alignItems: "center",
       padding: 3,
-      borderRadius: 9999,
+      borderRadius: shape.ios.pill,
       backgroundColor: t.muted,
     };
   },
@@ -445,7 +445,7 @@ export const androidSkin: ButtonGroupSkin = {
     return {
       flexDirection: "row",
       alignItems: "center",
-      borderRadius: 9999,
+      borderRadius: shape.android.pill,
       borderWidth: 1,
       borderColor: t.border,
       overflow: "hidden",

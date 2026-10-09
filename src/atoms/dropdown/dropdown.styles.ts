@@ -1,6 +1,6 @@
 import { destructiveText } from "../../style/destructive-text.js";
 import { type ViewStyle, type TextStyle } from "react-native";
-import { type ColorTokens, shadow, alpha } from "../../style/index.js";
+import { type ColorTokens, shadow, alpha, shape } from "../../style/index.js";
 import { MENU_ICON, MENU_OFFSET, MENU_ROW_GAP, menuDetail, menuPanel, menuRow, menuRowHover, menuRowLabel, menuRowPressed, menuSection, menuSeparator } from "../../style/menu-look.js";
 import { typeScale } from "../../style/type-scale.js";
 
@@ -135,7 +135,7 @@ export const webSkin: DropdownSkin = {
 // tints with a subtle `secondary` highlight (no ripple) at pressedOpacity 0.8.
 // iOS 26 menus are markedly rounder than legacy (~13pt) menus; the larger radius
 // is the headline shape change.
-const IOS_RADIUS = 26;
+const IOS_RADIUS = shape.ios.menu;
 export const iosSkin: DropdownSkin = {
   menuCard: (t) => ({
     borderRadius: IOS_RADIUS,
@@ -202,7 +202,7 @@ export const iosSkin: DropdownSkin = {
 // 8dp vertical padding); rows ~48dp tall with 14sp labels and a leading icon
 // gutter, an android_ripple (alpha(primary, 0.12) state layer) on each row, and
 // NO separators (M3 menus group with spacing, not dividers).
-const ANDROID_RADIUS = 4;
+const ANDROID_RADIUS = shape.android.menu;
 export const androidSkin: DropdownSkin = {
   menuCard: (t) => ({
     borderRadius: ANDROID_RADIUS,

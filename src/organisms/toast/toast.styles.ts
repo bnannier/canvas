@@ -88,7 +88,7 @@ export const webSkin: ToastSkin = {
     paddingVertical: 11,
     paddingStart: 18,
     paddingEnd: hasTrailing ? 12 : 18,
-    borderRadius: hasDescription ? shape.web.sheet : 9999,
+    borderRadius: hasDescription ? shape.web.sheet : shape.web.pill,
     maxWidth: MAX_WIDTH,
     backgroundColor: inverseFill(t),
     boxShadow: PILL_SHADOW,

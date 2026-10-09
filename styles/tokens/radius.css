@@ -1,9 +1,9 @@
-/* Corner radius scale in px, and the per-platform shape values the skins use
-   (src/style/tokens.ts `shape`): the web is Dark Factory's, 8 on rectangular controls,
-   10 on fields, 12 on menus and tiles, 14 on cards, 18 on dialogs, 22 on sheets and the
-   app shell, every capsule a pill; iOS rounds
-   to 10-12 with Apple's continuous curve and 28 alerts; Android uses the M3 medium
-   shape (12) for cards, 28 for dialogs and a full pill on buttons. */
+/* Corner radius scale in px, and the shape values the skins read
+   (src/style/tokens.ts `shape`): the web row in full, Dark Factory's 8 on rectangular
+   controls, 10 on fields, 12 on menus and tiles, 14 on cards, 18 on dialogs, 22 on
+   sheets and the app shell, every capsule a pill; and three native values, the iOS
+   capsule control and the 12 card on iOS and on Android (the M3 medium shape). The full
+   native rows are in DESIGN.md's Shapes table. */
 :root{
   --radius-none:0px;--radius-sm:2px;--radius:4px;--radius-md:6px;--radius-lg:8px;
   --radius-xl:12px;--radius-2xl:16px;--radius-3xl:24px;--radius-full:9999px;

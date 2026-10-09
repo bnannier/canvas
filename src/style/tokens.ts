@@ -760,16 +760,15 @@ export type PlatformKey = "web" | "ios" | "android";
 /**
  * The corner radii a platform's skins share, by what the corner belongs to. Skins
  * read these instead of spelling a number, so a shape decision is made once per
- * platform: `control` is a rectangular control (an icon button, a menu row, a nav highlight;
- * a capsule control reads `pill`);
+ * platform: `control` is a rectangular control on the web (an icon button, a menu row, a
+ * nav highlight; a capsule control reads `pill`) and every iOS and Android control;
  * `field` a text field, select, or autocomplete box; `card` a content surface;
- * `dialog` a dialog, alert, or toast; `menu` a menu, popover, or select list;
+ * `dialog` a dialog or alert dialog; `menu` a menu, popover, or select list;
  * `sheet` a sheet, drawer, or app shell; `checkbox` the box of a checkbox; `pill`
- * a chip, badge, or capsule; `tile` a KPI card, a stat tile or an icon tile. The web
- * skins consume these (Dark Factory's shapes); the
- * iOS and Android rows record the values their skins already spell per component,
- * so the three columns can be read side by side. Mirrored as `--radius-*` in
- * styles/tokens/radius.css.
+ * a chip, badge, or capsule; `tile` an icon tile, a swatch, or an alert banner.
+ * tools/tokens/shape-roles.ts lists the skins that draw each role per platform, and
+ * test/design-rules-shape.test.ts holds them to these values. The web row is mirrored as
+ * `--radius-*` in styles/tokens/radius.css.
  */
 export interface ShapeTokens {
   control: number;
@@ -795,8 +794,9 @@ export const shape: Record<PlatformKey, ShapeTokens> = {
   // shell, a 6 checkbox; every capsule (a chip, a badge, a pill button) reads `pill`.
   web: { control: 8, field: 10, card: 14, dialog: 18, menu: 12, sheet: 22, checkbox: 6, pill: 9999, tile: 12 },
   // HIG / iOS 26: capsule buttons, 8 rounded-border fields (the iOS input-field kit), 12 grouped surfaces
-  // with the continuous curve, 28 alerts, 26 menus, the 38 sheet corner, a 5 box.
-  ios: { control: 9999, field: 8, card: 12, dialog: 28, menu: 26, sheet: 38, checkbox: 5, pill: 9999, tile: 12 },
+  // with the continuous curve, 28 alerts, 26 menus, the 38 sheet corner, and the edit-mode
+  // selection circle for a checkbox (a full round on its square box at every size).
+  ios: { control: 9999, field: 8, card: 12, dialog: 28, menu: 26, sheet: 38, checkbox: 9999, pill: 9999, tile: 12 },
   // Material 3: stadium buttons, the 4 filled-field top corner, the 12 medium shape
   // for cards, 28 extra-large dialogs and sheets, 4 extra-small menus, a 2 box.
   android: { control: 9999, field: 4, card: 12, dialog: 28, menu: 4, sheet: 28, checkbox: 2, pill: 9999, tile: 12 },

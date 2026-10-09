@@ -91,7 +91,7 @@ export const webSkin: CardSkin = {
 // --- iOS (HIG conventions: continuous corner curve, flat resting surface) ----
 
 export const iosSkin: CardSkin = {
-  radius: 12,
+  radius: shape.ios.card,
   // Apple's superellipse corner curve (an iOS-only RN style prop; device-only
   // visual, a no-op on other platforms and in the web docs preview).
   curve: "continuous",
@@ -117,7 +117,7 @@ const M3_DENSITY: Record<Density, ViewStyle> = {
 
 export const androidSkin: CardSkin = {
   // M3 medium shape token (cards).
-  radius: 12,
+  radius: shape.android.card,
   // M3 cards never combine an outline with nonzero elevation, so the default and
   // `raised` cards read as M3 ELEVATED (no visible outline) and `flat` reads as M3
   // OUTLINED (1dp outline, elevation 0). The non-outlined variants keep the shared

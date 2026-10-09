@@ -1,4 +1,5 @@
 import { type TextStyle, type ViewStyle } from "react-native";
+import { shape } from "../../style/index.js";
 import { type SwatchSize } from "./swatch.shared.js";
 
 // Co-located Swatch skins. The block sizes, the label lockup, and every color (in the
@@ -40,7 +41,7 @@ const lineGap = 2;
 // no platform control, so the native skins are the web skin.
 export const webSkin: SwatchSkin = {
   box,
-  radius: { small: 10, default: 12, large: 14 },
+  radius: { small: shape.web.tile - 2, default: shape.web.tile, large: shape.web.tile + 2 },
   shape: { borderCurve: "continuous" },
   gap,
   lineGap,

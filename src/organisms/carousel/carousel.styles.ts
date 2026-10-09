@@ -131,7 +131,7 @@ export const iosSkin: CarouselSkin = {
 
   slide(tokens) {
     return {
-      borderRadius: 12,
+      borderRadius: shape.ios.card,
       borderCurve: "continuous", // Apple superellipse corners on the rounded slide
       overflow: "hidden",
       backgroundColor: tokens.card,

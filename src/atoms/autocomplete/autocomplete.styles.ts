@@ -189,7 +189,7 @@ export const webSkin: AutocompleteSkin = {
 // the neutral iOS list tint `secondary`. Press dims the field surface (~0.8); no
 // ripple. The brand survives: the open hairline, the leading check, and the
 // trailing disclosure are all the indigo `primary`, never iOS system blue.
-const IOS_MENU_RADIUS = 26;
+const IOS_MENU_RADIUS = shape.ios.menu;
 // Small retains its compact typography, but its entire field must contain the
 // 44pt disclosure target: native hit testing cannot extend beyond its parent.
 const IOS_FIELD_BOX: Record<Size, number> = { small: 44, default: 44, large: 50 };
@@ -285,7 +285,7 @@ export const iosSkin: AutocompleteSkin = {
 // flat-cornered (~4) elevated `popover` sheet (M3 elevation via `elevation`, no
 // soft iOS drop shadow), full-width rows ~48dp tall whose active/selected state
 // is the `accent` state layer. The action feedback is android_ripple.
-const ANDROID_TOP_RADIUS = 4;
+const ANDROID_TOP_RADIUS = shape.android.field;
 const ANDROID_FIELD_BOX: Record<Size, number> = { small: 48, default: 56, large: 60 };
 export const androidSkin: AutocompleteSkin = {
   // M3 body text is 16sp; nudge base/large up, keep small readable.
@@ -330,7 +330,7 @@ export const androidSkin: AutocompleteSkin = {
   popover: (t) => ({
     maxHeight: 280,
     overflow: "hidden", // clip rows to the rounded card; the list scrolls inside
-    borderRadius: 4,
+    borderRadius: shape.android.menu,
     backgroundColor: t.popover,
     paddingVertical: 8,
     elevation: 8,
