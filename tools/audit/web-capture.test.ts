@@ -1,11 +1,19 @@
 import { describe, expect, it } from "bun:test";
 import { join } from "node:path";
+import auditConfig from "../../playwright.audit.config.ts";
+import { CHROMIUM_ARGS } from "../../playwright.config.ts";
+import { FIXED_TIME } from "../../e2e/support/docs.ts";
 import { WEB_CELLS_PER_VARIANT, components, type InventoryComponent } from "./inventory.ts";
 import {
   AUDIT_ENV,
   DEFAULT_WORKERS,
+  PACKAGER_RUNNING,
+  SERVED_MODES,
   axeApplies,
+  captureSettings,
   cellDir,
+  classifyServed,
+  describeServed,
   freshness,
   parseAxe,
   parseRunArgs,
@@ -18,6 +26,7 @@ import {
   webCellId,
   workersFrom,
   type CellRecord,
+  type ServedRecord,
 } from "./web-capture.ts";
 
 const inventory = components();
@@ -159,19 +168,101 @@ describe("the runner's flags", () => {
   });
 });
 
-describe("the served export's freshness", () => {
-  const source = "a".repeat(64);
-  it("is fresh only when the served fingerprint is this checkout's", () => {
-    expect(freshness({ url: "u", sourceFingerprint: source }, source)).toEqual({ fresh: true });
-    const stale = freshness({ url: "https://127.0.0.1:4173/testing/diagnostics", sourceFingerprint: "b".repeat(64) }, source);
-    expect(stale.fresh).toBe(false);
+describe("the server the cells hit", () => {
+  const METRO_BUNDLE = "http://localhost:8081/node_modules/expo-router/entry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.routerRoot=src%2Fapp";
+  const EXPORT_SCRIPTS = [
+    "https://127.0.0.1:4173/_expo/static/js/web/__expo-metro-runtime-1f8f5d3ca6b7f58204d51e14506d73fb.js",
+    "https://127.0.0.1:4173/_expo/static/js/web/entry-59356601ec37742861210508174b32d6.js",
+  ];
+  const metro = { body: `${PACKAGER_RUNNING}\n`, projectRoot: "/work/canvas/docs" };
+
+  it("is a live dev server when the page loads a bundle built on request, with the root Metro names", () => {
+    expect(classifyServed([METRO_BUNDLE], metro)).toEqual({ mode: SERVED_MODES.dev, bundle: METRO_BUNDLE, projectRoot: "/work/canvas/docs" });
+    expect(SERVED_MODES.dev).toBe("live dev server");
+  });
+
+  it("names no project root that Metro's own /status did not", () => {
+    expect(classifyServed([METRO_BUNDLE], null).projectRoot).toBeNull();
+    expect(classifyServed([METRO_BUNDLE], { body: "<!doctype html>", projectRoot: "/elsewhere" }).projectRoot).toBeNull();
+    expect(classifyServed([METRO_BUNDLE], { body: PACKAGER_RUNNING, projectRoot: null })).toMatchObject({ mode: SERVED_MODES.dev, projectRoot: null });
+  });
+
+  it("is a static export when the page loads the hashed files an export wrote, whatever answers /status", () => {
+    expect(classifyServed(EXPORT_SCRIPTS, null)).toEqual({ mode: SERVED_MODES.export, bundle: null, projectRoot: null });
+    expect(classifyServed(EXPORT_SCRIPTS, metro)).toEqual({ mode: SERVED_MODES.export, bundle: null, projectRoot: null });
+  });
+});
+
+describe("the served bundle's freshness", () => {
+  const checkout = { fingerprint: "a".repeat(64), docsRoot: "/work/canvas/docs" };
+  const exported = { url: "https://127.0.0.1:4173/testing/diagnostics", mode: SERVED_MODES.export, projectRoot: null };
+
+  it("is fresh for an export only when the served fingerprint is this checkout's", () => {
+    expect(freshness({ ...exported, sourceFingerprint: checkout.fingerprint }, checkout)).toEqual({ fresh: true, by: "source fingerprint" });
+    const stale = freshness({ ...exported, sourceFingerprint: "b".repeat(64) }, checkout);
+    expect(stale).toMatchObject({ fresh: false, by: "source fingerprint" });
     expect(stale.reason).toContain("bbbbbbbbbbbb");
     expect(stale.reason).toContain("--allow-stale");
   });
 
-  it("is stale when the server reports no fingerprint", () => {
-    expect(freshness({ url: "u", sourceFingerprint: null }, source).fresh).toBe(false);
-    expect(freshness({ url: "u", sourceFingerprint: "unavailable" }, source).reason).toContain("no source fingerprint");
+  it("is stale for an export that reports no fingerprint", () => {
+    expect(freshness({ ...exported, sourceFingerprint: null }, checkout).fresh).toBe(false);
+    expect(freshness({ ...exported, sourceFingerprint: "unavailable" }, checkout).reason).toContain("no source fingerprint");
+  });
+
+  it("is fresh for a live dev server of this checkout's docs app, whatever fingerprint it reports", () => {
+    const dev = { url: "http://localhost:8081/testing/diagnostics", mode: SERVED_MODES.dev, projectRoot: "/work/canvas/docs" };
+    expect(freshness({ ...dev, sourceFingerprint: "b".repeat(64) }, checkout)).toEqual({ fresh: true, by: "project root" });
+    expect(freshness({ ...dev, sourceFingerprint: null }, checkout)).toEqual({ fresh: true, by: "project root" });
+  });
+
+  it("is stale for a live dev server of another checkout, or one that names no project", () => {
+    const other = freshness({ url: "http://localhost:8081/testing/diagnostics", mode: SERVED_MODES.dev, projectRoot: "/work/canvas-main/docs", sourceFingerprint: checkout.fingerprint }, checkout);
+    expect(other).toMatchObject({ fresh: false, by: "project root" });
+    expect(other.reason).toContain("/work/canvas-main/docs");
+    expect(other.reason).toContain("--allow-stale");
+    const unnamed = freshness({ url: "u", mode: SERVED_MODES.dev, projectRoot: null, sourceFingerprint: null }, checkout);
+    expect(unnamed).toMatchObject({ fresh: false, by: "project root" });
+    expect(unnamed.reason).toContain("names no project root");
+  });
+
+  it("is described in one line, a dev server as one", () => {
+    const base: ServedRecord = {
+      url: "http://localhost:8081/testing/diagnostics", mode: SERVED_MODES.dev, bundle: "b", projectRoot: "/work/canvas-main/docs",
+      sourceFingerprint: null, candidateRevision: null, sourceDirty: null, packageVersion: null, inputMode: null,
+      fresh: false, by: "project root", checkout, allowStale: true,
+    };
+    expect(describeServed(base)).toBe("http://localhost:8081/testing/diagnostics: live dev server for /work/canvas-main/docs (NOT this checkout, captured with --allow-stale; it builds from the source on disk, so its fingerprint is not compared)");
+    expect(describeServed({ ...base, mode: SERVED_MODES.export, projectRoot: null, sourceFingerprint: "c".repeat(64), fresh: true, by: "source fingerprint", allowStale: false }))
+      .toBe("http://localhost:8081/testing/diagnostics: static export of source cccccccccccc (this checkout)");
+  });
+});
+
+describe("the capture settings a manifest records", () => {
+  it("are read off the audit configuration and the suite's fixed clock", () => {
+    expect(captureSettings(auditConfig, FIXED_TIME)).toEqual({
+      browser: "chromium",
+      deviceScaleFactor: 2,
+      reducedMotion: "reduce",
+      fixedTime: FIXED_TIME.toISOString(),
+      launchArgs: CHROMIUM_ARGS,
+    });
+  });
+
+  it("follow the configuration: a project's use wins, as Playwright merges them", () => {
+    const config = {
+      use: { deviceScaleFactor: 2, contextOptions: { reducedMotion: "reduce" }, launchOptions: { args: ["--a"] } },
+      projects: [{ use: { browserName: "firefox", deviceScaleFactor: 3 } }],
+    };
+    expect(captureSettings(config, new Date("2026-02-01T00:00:00Z"))).toEqual({
+      browser: "firefox", deviceScaleFactor: 3, reducedMotion: "reduce", fixedTime: "2026-02-01T00:00:00.000Z", launchArgs: ["--a"],
+    });
+  });
+
+  it("refuse a configuration that leaves a setting to Playwright's default, or runs other than one project", () => {
+    expect(() => captureSettings({ use: {}, projects: [{ use: { browserName: "chromium" } }] }, FIXED_TIME))
+      .toThrow("the audit configuration does not set deviceScaleFactor, contextOptions.reducedMotion");
+    expect(() => captureSettings({ projects: [] }, FIXED_TIME)).toThrow(/0 projects/);
   });
 });
 
