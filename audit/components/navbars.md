@@ -81,6 +81,7 @@ One row per finding. Severity: critical, high, medium, low. Cell: a capture id f
 
 | ID | Severity | Cell | Summary | Status | Fix commit |
 |---|---|---|---|---|---|
+| K7-1 | high | source | Navbar's links are role=link Pressables with no href, so on the web they did not activate on Enter (react-native-web leaves a link's Enter to the browser; Breadcrumb K7-5). Fixed in the kit Pressable, which presses such a link on the Enter keyup. | fixed | 741fd4e6 |
 
 ## Sign-off
 
