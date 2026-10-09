@@ -1,4 +1,4 @@
-import { type ReactNode } from "react";
+import { type ReactNode, useId } from "react";
 import {
   View,
   Text,
@@ -84,6 +84,8 @@ export function createDivider(skin: DividerSkin) {
     const emphasis = emphasisOf(props);
     const { tokens } = useTheme();
     const fill = ruleFill(tokens, emphasis);
+    // The label's id, for the separator that names itself after it (below).
+    const labelId = useId();
 
     if (orientation === "vertical") {
       // A thin vertical rule that adapts to the row height it sits in.
@@ -94,6 +96,9 @@ export function createDivider(skin: DividerSkin) {
           // AccessibilityRole union has no "separator" member; `role` carries it
           // cross-platform (VoiceOver/TalkBack natively, the DOM role on web).
           role="separator"
+          // A separator is horizontal unless it says otherwise, so a vertical rule
+          // has to: without it the web announced a vertical rule as horizontal.
+          aria-orientation="vertical"
           testID={testID}
           style={[{ width: skin.ruleThickness, alignSelf: "stretch" }, fill, style]}
         />
@@ -118,12 +123,17 @@ export function createDivider(skin: DividerSkin) {
           // wrapper is a plain group and the child's own role (button/link/...) is what
           // assistive tech exposes. The two flanking hairlines still carry the visual break.
           role={isText ? "separator" : undefined}
+          // A separator's children are presentational, so the web never read the label
+          // inside it: the separator takes its name from the label instead. A reference
+          // rather than a copied aria-label, so the native tree, which reads the label
+          // text itself, is not handed the same words twice.
+          aria-labelledby={isText ? labelId : undefined}
           testID={testID}
           style={[{ flexDirection: "row", alignItems: "center", gap: skin.labelGap }, style]}
         >
           <View style={[flankRule, fill]} />
           {isText ? (
-            <Text style={[skin.labelType, labelColor(tokens)]}>{children}</Text>
+            <Text nativeID={labelId} style={[skin.labelType, labelColor(tokens)]}>{children}</Text>
           ) : (
             children
           )}
