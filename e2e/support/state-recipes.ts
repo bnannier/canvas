@@ -12,8 +12,10 @@
  * page. tools/audit/state-recipes.test.ts holds the table to the registry, the pages, and
  * each component's own source (tools/audit/interaction-signals.ts reads the states a
  * source gives: a press, a scrub surface, a hover or field handler, a pressed, hovered or
- * focused look; tools/audit/state-coverage.ts checks that each has a recipe or an
- * exemption whose claim holds).
+ * focused look, an overlay, a disabled control and the overlay it is in;
+ * tools/audit/state-coverage.ts checks that each has a recipe or an exemption whose claim
+ * holds, and that every place an example asks for a disabled control in, the component's
+ * own surface or an overlay it opens, has a disabled recipe there).
  *
  * A recipe has three steps, each through the input a person uses:
  *
@@ -156,6 +158,12 @@ export interface StateRecipe {
    */
   opens?: string;
   /**
+   * The state is applied inside an overlay the recipe opens first (a hover, a focus, a press
+   * or a disabled control in an opened menu, dialog or sheet), so it answers what the source
+   * renders in that overlay (`Signal.within`), not on the component's own surface.
+   */
+  inOverlay?: true;
+  /**
    * What the photograph frames: the row the state is in (the card is fitted into a viewport
    * grown to hold it, as a variant cell's is), or the viewport at the cell's own size,
    * since an open overlay can paint anywhere in it and a sheet is placed against it.
@@ -204,8 +212,22 @@ export interface StaticEntry {
   exempt?: Exemptions;
 }
 
-export type StateRecipes = { static?: undefined; exempt?: Exemptions } & { [K in StateName]?: StateRecipe };
+/**
+ * A component's recipes, by state: one, or, for a state it shows in more than one place (a
+ * Dropdown's disabled trigger, and the disabled item inside its menu), one per place.
+ */
+export type StateRecipes = { static?: undefined; exempt?: Exemptions } & { [K in StateName]?: StateRecipe | readonly StateRecipe[] };
 export type ComponentStates = StaticEntry | StateRecipes;
+
+const isRecipeList = (value: StateRecipe | readonly StateRecipe[]): value is readonly StateRecipe[] => Array.isArray(value);
+
+/** An entry's recipes for one state, in the table's order; none for a static entry. */
+export function recipesIn(entry: ComponentStates, state: StateName): StateRecipe[] {
+  if (entry.static) return [];
+  const found = (entry as StateRecipes)[state];
+  if (!found) return [];
+  return isRecipeList(found) ? [...found] : [found];
+}
 
 // --- Reading the page --------------------------------------------------------------
 
@@ -376,9 +398,13 @@ function recipe<A>(r: Omit<StateRecipe, "apply" | "verify" | "release"> & {
 
 const notReached = (reason: string, evidence: Record<string, unknown> = {}): NotReached => ({ reached: false, reason, evidence });
 
+/** What a recipe applied inside an overlay says about it: that it is, and which overlay it opens when the spec names one. */
+const insideOf = (within: OpenSpec | undefined): Pick<StateRecipe, "inOverlay" | "opens"> =>
+  within ? { inOverlay: true, ...(within.opens ? { opens: within.opens } : {}) } : {};
+
 // --- Hover ---------------------------------------------------------------------------
 
-type Hovered = { control: Locator; rest: StyleSnapshot; opened?: Opened } | { missing: string };
+type Hovered = { control: Locator; rest: StyleSnapshot; opened?: Opened } | { missing: string; opened?: Opened };
 
 /**
  * The pointer rests on the control. Reached when the control, its contents or its
@@ -393,6 +419,7 @@ function hover(variant: string, target: Target, options: { within?: OpenSpec; ho
     rows: ["web"],
     widths: DESKTOP,
     frame: within ? "viewport" : "row",
+    ...insideOf(within),
     how: options.how ?? "the pointer moves onto the control and rests there",
     async apply(scene) {
       let scope = scene.row;
@@ -400,12 +427,12 @@ function hover(variant: string, target: Target, options: { within?: OpenSpec; ho
       if (within) {
         opened = await openApply(within, scene);
         const verdict = await openVerify(within, scene, opened);
-        if (!verdict.reached) return { missing: `the overlay the hover is read in did not open: ${verdict.reason}` };
+        if (!verdict.reached) return { missing: `the overlay the hover is read in did not open: ${verdict.reason}`, opened };
         scope = verdict.panel!;
       }
       const control = target(scope);
       const missing = await presence(control, "control to hover");
-      if (missing) return { missing };
+      if (missing) return { missing, opened };
       await scene.page.mouse.move(NEUTRAL_POINT.x, NEUTRAL_POINT.y);
       const rest = await settledStyles(control);
       await control.hover();
@@ -427,7 +454,7 @@ function hover(variant: string, target: Target, options: { within?: OpenSpec; ho
     },
     async release(scene, applied) {
       await scene.page.mouse.move(NEUTRAL_POINT.x, NEUTRAL_POINT.y);
-      if (within && !("missing" in applied) && applied.opened) {
+      if (within && applied.opened) {
         const closed = await openClose(within, scene, applied.opened);
         return { report: { pointer: "moved off", ...closed.report }, flags: closed.flags };
       }
@@ -609,6 +636,7 @@ function focus(variant: string, target: Target, options: FocusOptions = {}): Sta
     rows: ["web"],
     widths: options.widths ?? DESKTOP,
     frame: within ? "viewport" : "row",
+    ...insideOf(within),
     how: options.how ?? (within ? "the overlay opens, then Tab from the tab stop before the control in it" : "Tab from the tab stop before the control"),
     async apply(scene) {
       let scope = scene.row;
@@ -870,6 +898,7 @@ function pressed(variant: string, target: Target, options: PressOptions = {}): S
     rows: ["web"],
     widths: DESKTOP,
     frame: within ? "viewport" : "row",
+    ...insideOf(within),
     how: options.how ?? (within ? "the overlay opens, then the pointer goes down on the control in it and is held" : "the pointer goes down on the control and is held"),
     async apply(scene) {
       const { page } = scene;
@@ -1548,21 +1577,38 @@ function readDisabled(el: Element): { ariaDisabled: string | null; nativeDisable
   };
 }
 
-type Disabled = { control: Locator } | { missing: string };
+type Disabled = { control: Locator; opened?: Opened } | { missing: string; opened?: Opened };
 
-/** The example that disables the control. Reached when it carries aria-disabled="true" or a native `disabled`. */
-function disabled(variant: string, target: Target, how = "the example that disables the control"): StateRecipe {
+/**
+ * The example that disables the control, or, for a control disabled inside an overlay the
+ * component opens (a menu's disabled item, an action sheet's disabled action, an alert
+ * dialog's confirm until its token is typed), the overlay opened from the web row first and
+ * the control found in it (`within`). Reached when the control carries aria-disabled="true"
+ * or a native `disabled`; one the Tab key still stops on is flagged `disabled-tab-stop`. The
+ * release closes the overlay it opened.
+ */
+function disabled(variant: string, target: Target, options: { within?: OpenSpec; how?: string } = {}): StateRecipe {
+  const within = options.within;
   return recipe<Disabled>({
     state: "disabled",
     variant,
     rows: ["web"],
     widths: DESKTOP,
-    frame: "row",
-    how,
+    frame: within ? "viewport" : "row",
+    ...insideOf(within),
+    how: options.how ?? (within ? "the overlay opens, then the control the example disables in it" : "the example that disables the control"),
     async apply(scene) {
-      const control = target(scene.row);
-      const missing = await presence(control, "control the example disables");
-      return missing ? { missing } : { control };
+      let scope = scene.row;
+      let opened: Opened | undefined;
+      if (within) {
+        opened = await openApply(within, scene);
+        const verdict = await openVerify(within, scene, opened);
+        if (!verdict.reached) return { missing: `the overlay the disabled control is in did not open: ${verdict.reason}`, opened };
+        scope = verdict.panel!;
+      }
+      const control = target(scope);
+      const missing = await presence(control, `control the example disables${within ? " in the overlay" : ""}`);
+      return missing ? { missing, opened } : { control, opened };
     },
     async verify(_scene, applied) {
       if ("missing" in applied) return notReached(applied.missing);
@@ -1574,8 +1620,8 @@ function disabled(variant: string, target: Target, how = "the example that disab
       // A disabled control the Tab key still stops on is announced and reachable, but inert.
       return { reached: true, evidence, flags: read.tabIndex >= 0 && !read.nativeDisabled ? ["disabled-tab-stop"] : [] };
     },
-    async release() {
-      return { report: {}, flags: [] };
+    async release(scene, applied) {
+      return within && applied.opened ? openClose(within, scene, applied.opened) : { report: {}, flags: [] };
     },
   });
 }
@@ -1586,6 +1632,22 @@ const overlay = (slug: string): OverlayRecipe => {
   const found = MATERIAL_OVERLAY_RECIPES.find((r) => r.slug === slug);
   if (!found) throw new Error(`state-recipes: overlay-recipes.ts has no recipe for ${slug}`);
   return found;
+};
+
+/**
+ * An overlay recipe opened from another example's trigger: the last button in the row named
+ * `name` (the Disabled action example's ActionSheet opens from "File options", not the Usage
+ * example's "Add photo").
+ */
+const openedFrom = (spec: OverlayRecipe, name: string | RegExp): OpenSpec => {
+  const trigger = (_page: Page, scope: Locator) => scope.getByRole("button", { name, exact: typeof name === "string" }).last();
+  return {
+    ...spec,
+    open: async (page, scope) => {
+      await trigger(page, scope).click();
+    },
+    trigger,
+  };
 };
 
 /** The rows an overlay opens from: the web row, and each platform whose docs registry injects the component's own build. */
@@ -1841,7 +1903,11 @@ export const STATE_RECIPES: Record<string, ComponentStates> = {
     focus: focus("default", byRole("button", "Actions")),
     pressed: pressed("default", byRole("button", "Actions")),
     open: open("default", overlay("dropdown"), ALL_ROWS, viaRecipe("dropdown")),
-    disabled: disabled("disabledtrigger", byRole("button", "Actions")),
+    // Disabled in two places: the trigger, and an item inside the menu it opens.
+    disabled: [
+      disabled("disabledtrigger", byRole("button", "Actions")),
+      disabled("disableditem", byRole("menuitem", "Archive"), { within: overlay("dropdown"), how: "the menu opens, then its Archive item, which the example disables" }),
+    ],
   },
   icon: { static: true, reason: "A glyph: it takes no input." },
   input: {
@@ -1956,6 +2022,8 @@ export const STATE_RECIPES: Record<string, ComponentStates> = {
     focus: focus("default", byRole("button", "Cancel"), { within: overlay("alert-dialog") }),
     pressed: pressed("default", byRole("button", "Cancel"), { within: overlay("alert-dialog") }),
     open: open("default", overlay("alert-dialog"), ALL_ROWS, viaRecipe("alert-dialog")),
+    // `withInput` keeps the confirm disabled until its token is typed in the dialog's field.
+    disabled: disabled("bodyfield", byRole("button", "Delete"), { within: overlay("alert-dialog"), how: "the dialog opens, then its Delete button, disabled until DELETE is typed in its field" }),
   },
   card: {
     hover: hover("pressable", byRole("button", /^Scout/)),
@@ -2025,6 +2093,10 @@ export const STATE_RECIPES: Record<string, ComponentStates> = {
     focus: focus("default", byRole("button", "Take Photo"), { within: overlay("action-sheet") }),
     pressed: pressed("default", byRole("button", "Take Photo"), { within: overlay("action-sheet") }),
     open: open("default", overlay("action-sheet"), ALL_ROWS, viaRecipe("action-sheet")),
+    disabled: disabled("disabledaction", byRole("button", "Save As…"), {
+      within: openedFrom(overlay("action-sheet"), "File options"),
+      how: "the sheet opens from the Disabled action example's File options, then its Save As… action, which the example disables",
+    }),
   },
   board: {
     focus: focus("cardmenusandpress", byRole("button", /^Rotate webhook/)),
@@ -2100,6 +2172,7 @@ export const STATE_RECIPES: Record<string, ComponentStates> = {
     focus: focus("default", byRole("button", "More options")),
     pressed: pressed("default", byRole("button", "More options")),
     open: open("default", overlay("row-menu"), ALL_ROWS, viaRecipe("row-menu")),
+    disabled: disabled("disableditem", byRole("menuitem", "Clear column"), { within: overlay("row-menu"), how: "the menu opens, then its Clear column item, which the example disables" }),
   },
   steps: {
     static: true,
@@ -2214,23 +2287,47 @@ export const STATE_RECIPES: Record<string, ComponentStates> = {
 /** A component's recipes in capture order; none for a static component or one the table lacks. */
 export function recipesOf(slug: string): StateRecipe[] {
   const entry = STATE_RECIPES[slug];
-  if (!entry || entry.static) return [];
-  const recipes = entry as StateRecipes;
-  return STATE_NAMES.flatMap((state) => (recipes[state] ? [recipes[state]!] : []));
+  if (!entry) return [];
+  return STATE_NAMES.flatMap((state) => recipesIn(entry, state));
+}
+
+/**
+ * A recipe's name among its component's, which names its cells (tools/audit/web-capture.ts
+ * `stateCellId`): its state, or, for a state the component has more than one recipe of (a
+ * Dropdown disabled on its trigger and on an item inside its menu), `<state>-<variant>`,
+ * named for the example each is applied to.
+ */
+export function recipeName(recipe: Pick<StateRecipe, "state" | "variant">, several: boolean): string {
+  return several ? `${recipe.state}-${recipe.variant}` : recipe.state;
+}
+
+/** An entry's recipes in capture order, each with its name (`recipeName`). */
+export function namedRecipes(entry: ComponentStates): { name: string; recipe: StateRecipe }[] {
+  return STATE_NAMES.flatMap((state) => {
+    const recipes = recipesIn(entry, state);
+    return recipes.map((recipe) => ({ name: recipeName(recipe, recipes.length > 1), recipe }));
+  });
+}
+
+/** A component's recipes in capture order, each with its name; none for one the table lacks. */
+export function namedRecipesOf(slug: string): { name: string; recipe: StateRecipe }[] {
+  const entry = STATE_RECIPES[slug];
+  return entry ? namedRecipes(entry) : [];
 }
 
 /** What the capture's planner needs of a component's recipes (tools/audit/web-capture.ts `planStateCapture`). */
-export function stateSpecsOf(slug: string): { state: StateName; variant: string; rows: readonly RowPlatform[]; widths: readonly WidthKey[] }[] {
-  return recipesOf(slug).map(({ state, variant, rows, widths }) => ({ state, variant, rows, widths }));
+export function stateSpecsOf(slug: string): { name: string; state: StateName; variant: string; rows: readonly RowPlatform[]; widths: readonly WidthKey[] }[] {
+  return namedRecipesOf(slug).map(({ name, recipe: { state, variant, rows, widths } }) => ({ name, state, variant, rows, widths }));
 }
 
 /**
  * What is wrong with a state table against the interaction registry's inventory and the
  * component pages: a registered component with no entry, an entry for a component the
  * registry does not list, a static entry with no reason or with recipes beside it, an entry
- * with neither recipes nor `static`, a recipe filed under another state's key, or a recipe
+ * with neither recipes nor `static`, a recipe filed under another state's key, a recipe
  * naming an example its page does not have (`examplesOf` gives a page's variant keys, null
- * for a slug with no page). Empty when the table is whole.
+ * for a slug with no page), or two recipes of one state on the same example, whose cells
+ * would share a name. Empty when the table is whole.
  */
 export function checkStateTable(
   registry: readonly string[],
@@ -2241,28 +2338,41 @@ export function checkStateTable(
   for (const slug of registry) if (!(slug in table)) errors.push(`${slug}: in the interaction registry with neither state recipes nor static and a reason`);
   for (const [slug, entry] of Object.entries(table)) {
     if (!registry.includes(slug)) errors.push(`${slug}: has state recipes but is not in the interaction registry`);
-    const recipes = STATE_NAMES.filter((state) => (entry as StateRecipes)[state] !== undefined);
+    const states = STATE_NAMES.filter((state) => (entry as StateRecipes)[state] !== undefined);
     if (entry.static) {
       if (!entry.reason.trim()) errors.push(`${slug}: static with no reason`);
-      if (recipes.length) errors.push(`${slug}: static, yet it has ${recipes.join(", ")} recipes`);
+      if (states.length) errors.push(`${slug}: static, yet it has ${states.join(", ")} recipes`);
       continue;
     }
-    if (!recipes.length) errors.push(`${slug}: neither state recipes nor static and a reason`);
+    if (!states.length) errors.push(`${slug}: neither state recipes nor static and a reason`);
     const examples = examplesOf(slug);
-    for (const state of recipes) {
-      const found = (entry as StateRecipes)[state]!;
-      if (found.state !== state) errors.push(`${slug}: the ${state} entry holds a ${found.state} recipe`);
-      if (examples === null) errors.push(`${slug}: has a ${state} recipe but no component page`);
-      else if (!examples.includes(found.variant)) errors.push(`${slug}: the ${state} recipe names the example "${found.variant}", which its page does not have`);
-      if (!found.rows.length) errors.push(`${slug}: the ${state} recipe is applied from no row`);
+    for (const state of states) {
+      const recipes = recipesIn(entry, state);
+      if (!recipes.length) errors.push(`${slug}: the ${state} entry holds no recipe`);
+      const seen = new Set<string>();
+      for (const found of recipes) {
+        if (found.state !== state) errors.push(`${slug}: the ${state} entry holds a ${found.state} recipe`);
+        if (examples === null) errors.push(`${slug}: has a ${state} recipe but no component page`);
+        else if (!examples.includes(found.variant)) errors.push(`${slug}: the ${state} recipe names the example "${found.variant}", which its page does not have`);
+        if (!found.rows.length) errors.push(`${slug}: the ${state} recipe is applied from no row`);
+        if (seen.has(found.variant)) errors.push(`${slug}: two ${state} recipes name the example "${found.variant}", so their cells would share a name`);
+        seen.add(found.variant);
+      }
     }
   }
   return errors;
 }
 
-/** A component's recipe for one state; throws when it has none, since the planner only plans the ones it has. */
-export function recipeFor(slug: string, state: StateName): StateRecipe {
-  const found = recipesOf(slug).find((r) => r.state === state);
-  if (!found) throw new Error(`state-recipes: ${slug} has no ${state} recipe`);
-  return found;
+/**
+ * A component's recipe by its name (`recipeName`: the state, or `<state>-<variant>` for a
+ * state it has several recipes of); throws when it has none, since the planner only plans
+ * the ones it has.
+ */
+export function recipeFor(slug: string, name: string): StateRecipe {
+  const found = namedRecipesOf(slug).find((r) => r.name === name);
+  if (!found) {
+    const several = namedRecipesOf(slug).filter((r) => r.recipe.state === name).map((r) => r.name);
+    throw new Error(`state-recipes: ${slug} has no recipe named ${name}${several.length ? ` (its ${name} recipes are ${several.join(", ")})` : ""}`);
+  }
+  return found.recipe;
 }

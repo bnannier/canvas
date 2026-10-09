@@ -226,9 +226,11 @@ describe("what a run captures", () => {
     expect(() => planPageCapture(pageList, { ...parseWebFilters({}), only: ["template-nope"] })).toThrow(/no pattern or template page is called "template-nope"/);
   });
 
-  it("puts a state under web-states/<slug>/<state>.<row>/ and a page under web-pages/<kind>-<slug>/", () => {
+  it("puts a state under web-states/<slug>/<name>.<row>/ and a page under web-pages/<kind>-<slug>/", () => {
     const width = { key: "phone", width: 390, height: 844 } as const;
-    expect(stateCellId({ slug: "dialog", state: "open", row: "ios", width, look: "dark", surface: "glass" })).toBe("web-states/dialog/open.ios/phone.dark.glass");
+    expect(stateCellId({ slug: "dialog", name: "open", row: "ios", width, look: "dark", surface: "glass" })).toBe("web-states/dialog/open.ios/phone.dark.glass");
+    // A state with several recipes: each recipe's cells are named for its example.
+    expect(stateCellId({ slug: "dropdown", name: "disabled-disableditem", row: "web", width: { key: "desktop" }, look: "blush", surface: "solid" })).toBe("web-states/dropdown/disabled-disableditem.web/desktop.blush.solid");
     const signin = pageList.find((p) => p.id === "template-signin")!;
     expect(webPageCellId({ page: signin, width, look: "mint", surface: "solid" })).toBe("web-pages/template-signin/phone.mint.solid");
   });

@@ -15,7 +15,8 @@
 //   .audit/runs/<stamp>-web-<sha7>/manifest.json
 //   .audit/runs/<stamp>-web-<sha7>/cells.jsonl
 //   .audit/runs/<stamp>-web-<sha7>/web/<slug>/<variant>/<width>.<look>.<surface>/{card.png, probe.json}
-//   .audit/runs/<stamp>-web-<sha7>/web-states/<slug>/<state>.<row>/<width>.<look>.<surface>/{state.png, probe.json}
+//   .audit/runs/<stamp>-web-<sha7>/web-states/<slug>/<name>.<row>/<width>.<look>.<surface>/{state.png, probe.json}
+//     (<name>: the state, or <state>-<variant> for a state a component has several recipes of)
 //   .audit/runs/<stamp>-web-<sha7>/web-pages/<kind>-<slug>/<width>.<look>.<surface>/{viewport.png, section.<key>.png, probe.json}
 // The analysis step (plan 1e) adds analysis.json beside them.
 
@@ -311,6 +312,8 @@ export function splitOnly(
 
 /** What the planner needs of a state recipe (e2e/support/state-recipes.ts `stateSpecsOf`). */
 export interface StateSpec {
+  /** The recipe's name among its component's (e2e/support/state-recipes.ts `recipeName`): its state, or `<state>-<variant>` for a state with several. */
+  name: string;
   state: StateName;
   variant: string;
   rows: readonly RowPlatform[];
@@ -320,6 +323,8 @@ export interface StateSpec {
 
 /** One interaction-state cell: a component's state, from one row, at one width (the look and surface are its group's). */
 export interface StateCellPlan {
+  /** Its recipe's name (`StateSpec.name`), which names the cell. */
+  name: string;
   state: StateName;
   variant: ComponentVariant;
   row: RowPlatform;
@@ -378,7 +383,7 @@ export function planStateCapture(
       const widths = WIDTHS.filter((w) => filters.widths.includes(w.key) && spec.widths.includes(w.key));
       if (!widths.length) continue;
       recipes += 1;
-      for (const row of spec.rows) for (const width of widths) cells.push({ state: spec.state, variant, row, width });
+      for (const row of spec.rows) for (const width of widths) cells.push({ name: spec.name, state: spec.state, variant, row, width });
     }
     if (!cells.length) continue;
     components += 1;
@@ -399,9 +404,13 @@ export interface StateCell extends StateCellPlan {
   surface: Surface;
 }
 
-/** A state cell's id and path under a run: `web-states/<slug>/<state>.<row>/<width>.<look>.<surface>`. */
-export function stateCellId(cell: Pick<StateCell, "slug" | "state" | "row" | "look" | "surface"> & { width: { key: WidthKey } }): string {
-  return `${STATES_DIR}/${cell.slug}/${cell.state}.${cell.row}/${cell.width.key}.${cell.look}.${cell.surface}`;
+/**
+ * A state cell's id and path under a run: `web-states/<slug>/<name>.<row>/<width>.<look>.<surface>`,
+ * the name being its recipe's (the state, or `<state>-<variant>` for a state the component
+ * has several recipes of).
+ */
+export function stateCellId(cell: Pick<StateCell, "slug" | "name" | "row" | "look" | "surface"> & { width: { key: WidthKey } }): string {
+  return `${STATES_DIR}/${cell.slug}/${cell.name}.${cell.row}/${cell.width.key}.${cell.look}.${cell.surface}`;
 }
 
 // --- Pages (plan 1d) ------------------------------------------------------------------

@@ -27,6 +27,7 @@ import {
   pressFired,
   pressTrace,
   recipeFor,
+  recipesIn,
   recipesOf,
   stateSpecsOf,
   type ComponentStates,
@@ -37,7 +38,7 @@ import { inventory as registry } from "../interactions/registry.ts";
 import { registeredSkins } from "../skins/registry.ts";
 import { SignalReader, type Signal } from "./interaction-signals.ts";
 import { WIDTHS, components, widthsAtOrBelow } from "./inventory.ts";
-import { componentSignals, coverageOf, exemptionFailure, railExamples, sourceDirOf, tableCoverage } from "./state-coverage.ts";
+import { asksFor, componentSignals, coverageOf, exemptionFailure, railExamples, sourceDirOf, tableCoverage } from "./state-coverage.ts";
 import { parseWebFilters, planStateCapture } from "./web-capture.ts";
 
 const pages = components();
@@ -175,9 +176,14 @@ describe("the state recipe table", () => {
         const widths = only[key] ?? (recipe.state === "open" ? EVERY_WIDTH : DESKTOP);
         expect({ key, widths: [...recipe.widths] }).toEqual({ key, widths: [...widths] });
         if (recipe.state === "open") expect({ key, frame: recipe.frame }).toEqual({ key, frame: "viewport" });
-        // Inside an overlay (a hover, a focus or a press in an opened menu, dialog or sheet,
-        // or a card a resting pointer floats) the photograph is the viewport.
-        else if (recipe.frame === "viewport") expect(["hover", "focus", "pressed"]).toContain(recipe.state);
+        else {
+          // Inside an overlay (a hover, a focus, a press or a disabled control in an opened
+          // menu, dialog or sheet, or a card a resting pointer floats) the photograph is the viewport.
+          if (recipe.frame === "viewport") expect(["hover", "focus", "pressed", "disabled"]).toContain(recipe.state);
+          // A recipe applied inside an overlay it opens says so; the card a resting pointer floats is the opening itself.
+          const opening = recipe.alsoAnswers?.includes("open") ?? false;
+          expect({ key, inOverlay: recipe.inOverlay === true }).toEqual({ key, inOverlay: recipe.frame === "viewport" && !opening });
+        }
         if (recipe.state !== "open") expect([...recipe.rows]).toEqual(["web"]);
         expect(recipe.how.trim()).not.toBe("");
       }
@@ -214,8 +220,35 @@ describe("the state recipe table", () => {
   });
 
   it("refuses a recipe naming an example the page does not have", () => {
-    const specs = () => [{ state: "hover" as const, variant: "nosuchexample", rows: ["web" as const], widths: DESKTOP }];
+    const specs = () => [{ name: "hover", state: "hover" as const, variant: "nosuchexample", rows: ["web" as const], widths: DESKTOP }];
     expect(() => planStateCapture(pages, specs, { ...parseWebFilters({}), only: ["button"] }, ["hover"])).toThrow(/names the example "nosuchexample"/);
+  });
+
+  it("names each recipe of a state a component has several of for its example, and plans each its own cells", () => {
+    // Dropdown is disabled in two places: its trigger, and an item inside the menu it opens.
+    const dropdown = recipesOf("dropdown").filter((r) => r.state === "disabled");
+    expect(dropdown.map((r) => ({ variant: r.variant, inOverlay: r.inOverlay === true, frame: r.frame }))).toEqual([
+      { variant: "disabledtrigger", inOverlay: false, frame: "row" },
+      { variant: "disableditem", inOverlay: true, frame: "viewport" },
+    ]);
+    expect(stateSpecsOf("dropdown").map((spec) => spec.name)).toEqual(["hover", "focus", "pressed", "open", "disabled-disabledtrigger", "disabled-disableditem"]);
+    // A state with one recipe keeps the state's name, so every other cell keeps its id.
+    expect(stateSpecsOf("button").map((spec) => spec.name)).toEqual(["hover", "focus", "pressed", "disabled"]);
+    expect(recipeFor("dropdown", "disabled-disableditem").variant).toBe("disableditem");
+    expect(() => recipeFor("dropdown", "disabled")).toThrow("dropdown has no recipe named disabled (its disabled recipes are disabled-disabledtrigger, disabled-disableditem)");
+    const plan = planStateCapture(pages, stateSpecsOf, { ...parseWebFilters({}), only: ["dropdown"] }, ["disabled"]);
+    expect(plan.byState).toEqual({ disabled: 2 * 6 });
+    expect(plan.groups[0]!.cells.map((c) => `${c.name} ${c.row}.${c.width.key}`)).toEqual(["disabled-disabledtrigger web.desktop", "disabled-disableditem web.desktop"]);
+  });
+
+  it("fails two recipes of one state on one example, whose cells would share a name, and a list holding another state's recipe", () => {
+    const [trigger, item] = recipesOf("dropdown").filter((r) => r.state === "disabled");
+    const focus = recipeFor("dropdown", "focus");
+    const table: Record<string, ComponentStates> = { dropdown: { disabled: [trigger!, { ...item!, variant: "disabledtrigger" }, focus] } };
+    expect(checkStateTable(["dropdown"], table, examplesOf)).toEqual([
+      'dropdown: two disabled recipes name the example "disabledtrigger", so their cells would share a name',
+      "dropdown: the disabled entry holds a focus recipe",
+    ]);
   });
 });
 
@@ -237,6 +270,105 @@ describe("the states each component's source gives it", () => {
     // A state answered by another state's recipe: Tooltip's hover, by the open recipe a resting pointer applies.
     const via = coverage.flatMap((c) => c.answers.filter((a) => a.recipe).map((a) => `${c.slug} ${a.state} by ${a.recipe}`));
     expect(via).toEqual(["tooltip hover by open"]);
+    // The disabled controls inside an overlay, each answered by a recipe that opens it first.
+    const inOverlays = coverage.flatMap((c) => c.answers.filter((a) => a.state === "disabled" && a.within).map((a) => `${c.slug} in ${a.within}: ${a.by}`));
+    expect(inOverlays.sort()).toEqual([
+      "action-sheet in ActionSheet: recipe",
+      "alert-dialog in Present: recipe",
+      "button-group in SplitButton: unshown",
+      "dropdown in Dropdown: recipe",
+      "row-menu in RowMenu: recipe",
+    ]);
+    // Where a source disables a control no example asks for: nothing to capture.
+    const unshown = coverage.flatMap((c) => c.answers.filter((a) => a.by === "unshown").map((a) => `${c.slug}${a.within ? ` in ${a.within}` : ""}`));
+    expect(unshown.sort()).toEqual(["button-group in SplitButton", "carousel", "chip", "form", "radio", "sidebar", "video"]);
+  });
+
+  it("fails a disabled control an example asks for inside an overlay with no recipe that opens it, and one on the component's own surface with none there", () => {
+    const check = (slug: string, entry: ComponentStates) => coverageOf(slug, entry, signalsOf(slug), railExamples(component(slug))).errors;
+    // The four the table once left uncaptured: each example's disabled control is in the overlay the component opens.
+    const without = (slug: string) => {
+      const { disabled: _disabled, ...rest } = STATE_RECIPES[slug] as Record<string, unknown>;
+      return rest as ComponentStates;
+    };
+    expect(check("action-sheet", without("action-sheet"))).toEqual([
+      "action-sheet: its Disabled action example asks for a disabled control in the overlay in ActionSheet (disabled on <Pressable> at src/organisms/action-sheet/action-sheet.shared.tsx:204), with no disabled recipe there",
+    ]);
+    expect(check("row-menu", without("row-menu"))).toEqual([
+      "row-menu: its Disabled item example asks for a disabled control in the overlay in RowMenu (disabled on <Pressable> at src/organisms/row-menu/row-menu.shared.tsx:79 via MenuRow), with no disabled recipe there",
+    ]);
+    // AlertDialog's confirm stays disabled until the token is typed, only with `withInput`; Present portals the dialog.
+    expect(check("alert-dialog", without("alert-dialog"))).toEqual([
+      "alert-dialog: its Body field example asks for a disabled control in the overlay in Present (disabled on <Pressable> at src/molecules/alert-dialog/alert-dialog.shared.tsx:209), with no disabled recipe there",
+    ]);
+    // Dropdown's trigger recipe answers its own surface, not the menu it opens; the item recipe, the menu alone.
+    const [trigger, item] = recipesIn(STATE_RECIPES.dropdown!, "disabled");
+    expect(check("dropdown", { ...without("dropdown"), disabled: trigger! })).toEqual([
+      "dropdown: its Disabled item example asks for a disabled control in the overlay in Dropdown (disabled on <Pressable> at src/atoms/dropdown/dropdown.shared.tsx:177 via MenuRow), with no disabled recipe there",
+    ]);
+    expect(check("dropdown", { ...without("dropdown"), disabled: item! })).toEqual([
+      // The kit Button it hands `disabled` (its Pressable trigger is an element trigger's, given `children`).
+      "dropdown: its Disabled trigger example asks for a disabled control on its own surface (disabled on <Button> at src/atoms/dropdown/dropdown.shared.tsx:340), with no disabled recipe there",
+    ]);
+    // An own-surface recipe a disabled example asks for (Button's `disabled`, one of the two ways `disabled || loading` is true).
+    expect(check("button", without("button"))).toEqual([
+      "button: its Disabled example asks for a disabled control on its own surface (disabled on <Pressable> at src/atoms/button/button.shared.tsx:207), with no disabled recipe there",
+    ]);
+  });
+
+  it("holds a disabled recipe applied inside an overlay to an overlay its source renders, and refuses an exemption for disabled", () => {
+    const check = (slug: string, entry: ComponentStates) => coverageOf(slug, entry, signalsOf(slug), railExamples(component(slug))).errors;
+    const item = recipeFor("dropdown", "disabled-disableditem");
+    expect(check("button", { ...(STATE_RECIPES.button as object), disabled: { ...item, variant: "disabled" } } as ComponentStates)).toEqual([
+      "button: its disabled recipe on the disabled example is applied inside an overlay, and its source renders none",
+      "button: its Disabled example asks for a disabled control on its own surface (disabled on <Pressable> at src/atoms/button/button.shared.tsx:207), with no disabled recipe there",
+    ]);
+    const dropdown = STATE_RECIPES.dropdown as Record<string, unknown>;
+    expect(check("dropdown", { ...dropdown, disabled: [recipeFor("dropdown", "disabled-disabledtrigger"), { ...item, opens: "Popover" }] } as ComponentStates)[0]).toBe(
+      "dropdown: its disabled recipe on the disableditem example opens the overlay in Popover, which its source does not render (it renders Dropdown)",
+    );
+    // The Calendar renders two overlays, so a recipe inside one must name it.
+    expect(check("calendar", { ...(STATE_RECIPES.calendar as object), disabled: { ...item, variant: "week" } } as ComponentStates)).toEqual([
+      "calendar: its source renders 2 overlays (hoverCard, dayPeekOverlay), so its disabled recipe on the week example must name the one it opens",
+    ]);
+    const exemption = { claim: { unpassed: ["disabled"] }, reason: "test" };
+    expect(check("radio", { ...(STATE_RECIPES.radio as object), exempt: { disabled: exemption } } as ComponentStates)).toEqual([
+      "radio: exempts disabled, which a recipe answers where an example asks for it and nothing needs where none does",
+    ]);
+  });
+
+  it("reads where each disabled control is and what disables it: an overlay's own, a constant placed where it is used, the ways a value is true", () => {
+    const disabled = (slug: string) =>
+      [...new Set(signalsOf(slug).filter((s) => s.state === "disabled").map((s) => `${s.what}${s.gates.length ? ` [${s.gates.join("&")}]` : ""} by ${s.disabledBy!.map((w) => `${w.props.join("&") || "-"}/${w.keys.join("&") || "-"}`).join(" | ")}${s.within ? ` in ${s.within}` : ""}`))].sort();
+    // ActionSheet's rows (a constant, `actionRows`, rendered inside its Modal) read the action's `disabled`.
+    expect(disabled("action-sheet")).toEqual(["accessibilityState on <Pressable> by -/disabled in ActionSheet", "disabled on <Pressable> by -/disabled in ActionSheet"]);
+    // RowMenu's and Dropdown's rows: a local MenuRow, rendered inside the AnchoredOverlay, reading its item's `disabled`.
+    expect(disabled("row-menu")).toEqual(["accessibilityState on <Pressable> by -/disabled in RowMenu", "aria-disabled on <Pressable> by -/disabled in RowMenu", "disabled on <Pressable> by -/disabled in RowMenu"]);
+    expect(disabled("dropdown")).toEqual([
+      "accessibilityState on <Pressable> [children] by disabled/-",
+      "accessibilityState on <Pressable> by -/disabled in Dropdown",
+      "aria-disabled on <Pressable> [children] by disabled/-",
+      "aria-disabled on <Pressable> by -/disabled in Dropdown",
+      "disabled on <Button> by disabled/-",
+      "disabled on <Pressable> [children] by disabled/-",
+      "disabled on <Pressable> by -/disabled in Dropdown",
+    ]);
+    // AlertDialog's confirm, a constant (`actionRow`) used inside Present, whose children go into a Portal:
+    // disabled through `const confirmGated = !!withInput && ...`, on its own Pressables and on the kit Button it hands `disabled`.
+    expect(disabled("alert-dialog")).toEqual([
+      "accessibilityState on <Pressable> by withInput/- in Present",
+      "aria-disabled on <Pressable> by withInput/- in Present",
+      "disabled on <Button> [destructive] by withInput/- in Present",
+      "disabled on <Button> by withInput/- in Present",
+      "disabled on <Pressable> by withInput/- in Present",
+    ]);
+    // A Select's option rows are disabled with the Select, whose list `!disabled && ...` never opens: nothing.
+    expect(disabled("select").filter((line) => line.includes(" in "))).toEqual([]);
+    // `disabled || loading`: either way; a carousel's arrows at the ends of its slides: by itself.
+    expect(disabled("button")).toContain("disabled on <Pressable> by disabled/- | loading/-");
+    expect(disabled("carousel")).toEqual(["accessibilityState on <Pressable> by -/-", "aria-disabled on <Pressable> by -/-", "disabled on <Pressable> by -/-"]);
+    // The split menu's rows render only for the split kind (`kindOf(props) === "split"`).
+    expect(disabled("button-group")).toContain("disabled on <Pressable> [split] by disabled/- in SplitButton");
   });
 
   it("fails the Calendar marked static on every state its source gives it, the hover read from its spread", () => {
@@ -343,10 +475,15 @@ describe("the states each component's source gives it", () => {
       "pressed look: a function taking `pressed` [onStepPress] via Circle",
       "pressed press: onPress on <Pressable> [onStepPress] via Circle",
     ]);
+    // The rows' lead is a kind picked from the props (`lead === "avatar"`, `if (p.avatar) return "avatar"`), so the avatar row's are gated by `avatar` too.
     expect(states("feeds")).toEqual([
+      "focus tab-stop: a tab stop: <Pressable> [avatar&onItemPress]",
       "focus tab-stop: a tab stop: <Pressable> [onItemPress]",
+      "focus tab-stop: focusable on <FlatList> [avatar&virtualized]",
       "focus tab-stop: focusable on <FlatList> [virtualized]",
+      "pressed look: a function taking `pressed` [avatar&onItemPress]",
       "pressed look: a function taking `pressed` [onItemPress]",
+      "pressed press: onPress on <Pressable> [avatar&onItemPress]",
       "pressed press: onPress on <Pressable> [onItemPress]",
     ]);
     // A link role and href reached only with href; a press only with onPress (a Text with
@@ -362,7 +499,7 @@ describe("the states each component's source gives it", () => {
     const states = (slug: string) => [...new Set(componentSignals(reader, component(slug)).map((s) => `${s.state} ${s.what}`))].sort();
     // React Native's own View, Text and ScrollView: no example hands them a handler.
     for (const slug of ["view", "text", "scroll-view"]) expect({ slug, states: states(slug) }).toEqual({ slug, states: [] });
-    expect(states("pressable")).toEqual(["focus a tab stop: <Pressable>", "pressed a function taking `pressed` on <Pressable>"]);
+    expect(states("pressable")).toEqual(["disabled disabled on <Pressable>", "focus a tab stop: <Pressable>", "pressed a function taking `pressed` on <Pressable>"]);
     expect(states("text-input")).toEqual(["focus a TextInput"]);
     // An example's props are read as a source's are, spread onto the tag included.
     const spread = reader.exampleSignals("View", [{ label: "Spread", code: "<View {...{ onHoverIn: () => {}, focusable: true }} />" }], "src/atoms/view/view.md");
@@ -520,6 +657,8 @@ export function createProbe(parts: { Sheet?: typeof WebSheet } = {}) {
 `,
       );
       expect(new SignalReader(root).signalsOf("src/atoms/probe").map(line).sort()).toEqual([
+        // A Pressable disabled outright: a disabled control the component disables by itself.
+        "disabled disabled: disabled on <Pressable>",
         // `focusable` on a View, and a role react-native-web makes a stop, gated by its condition.
         'focus tab-stop: accessibilityRole "button" on <View>',
         'focus tab-stop: accessibilityRole "button" on <View> [flag]',
@@ -544,6 +683,90 @@ export function createProbe(parts: { Sheet?: typeof WebSheet } = {}) {
         "pressed press: onPress on <View>",
         "pressed press: onPress on <View> [onTap]",
       ]);
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("places a disabled control in the overlay it renders inside, reads the ways it is disabled, and drops one its overlay's own gate keeps closed", () => {
+    const root = mkdtempSync(join(tmpdir(), "signals-"));
+    const write = (path: string, text: string) => {
+      mkdirSync(dirname(join(root, path)), { recursive: true });
+      writeFileSync(join(root, path), text);
+    };
+    try {
+      write("src/style.ts", "export const Pressable = null; export const View = null; export const AnchoredOverlay = null; export const Portal = null;\n");
+      // Another kit component that renders an overlay primitive, and one that is a plain button.
+      write("src/atoms/sheet/sheet.tsx", `import { Modal } from "react-native";\nexport function Sheet(props: { open?: boolean; children?: unknown }) {\n  return <Modal visible={props.open}>{props.children as never}</Modal>;\n}\n`);
+      write("src/atoms/knob/knob.tsx", `export function Knob(props: { disabled?: boolean }) {\n  return null;\n}\n`);
+      write(
+        "src/atoms/probe/probe.shared.tsx",
+        `import { useState } from "react";
+import { Pressable, View, AnchoredOverlay, Portal } from "../../style.js";
+import { Sheet } from "../sheet/sheet.js";
+import { Knob } from "../knob/knob.js";
+function Present({ children }: { children: unknown }) {
+  return <Portal>{children as never}</Portal>;
+}
+function Row({ item, off }: { item: { label: string; disabled?: boolean }; off?: boolean }) {
+  return <Pressable disabled={item.disabled} aria-disabled={off} accessibilityState={item.disabled ? { disabled: true } : undefined} />;
+}
+function kindOf(p: { menu?: boolean }) {
+  if (p.menu) return "menu";
+  return "plain";
+}
+export function Probe(props: { items: { label: string; disabled?: boolean }[]; disabled?: boolean; loading?: boolean; gated?: boolean; menu?: boolean }) {
+  const { items, disabled, loading, gated } = props;
+  const [typed, setTyped] = useState("");
+  const blocked = !!gated && typed !== "OK";
+  const open = !disabled && typed === "";
+  const kind = kindOf(props);
+  const confirm = <Pressable disabled={blocked} onPress={() => setTyped("")} />;
+  return (
+    <View>
+      <Knob disabled={disabled || loading} />
+      <AnchoredOverlay open={open}>
+        {items.map((item) => <Row key={item.label} item={item} off={!!disabled} />)}
+        <Row item={items[0]!} />
+      </AnchoredOverlay>
+      <Present>{confirm}</Present>
+      {kind === "menu" ? <Sheet open={typed === "x"}><Pressable disabled={loading} /></Sheet> : null}
+    </View>
+  );
+}
+`,
+      );
+      const signals = new SignalReader(root).signalsOf("src/atoms/probe");
+      const lines = signals
+        .filter((s) => s.state === "disabled")
+        .map((s) => `${s.what}${s.gates.length ? ` [${s.gates.join("&")}]` : ""} by ${s.disabledBy!.map((w) => `${w.props.join("&") || "-"}/${w.keys.join("&") || "-"}`).join(" | ")}${s.within ? ` in ${s.within}` : ""}`)
+        .sort();
+      expect(lines).toEqual([
+        // The rows inside the menu read the item's `disabled` (the key an example writes in an
+        // item); a conditional state object is read through its condition. The rows' own
+        // `aria-disabled={off}` is given `!!disabled`, which also keeps the menu closed
+        // (`const open = !disabled && ...`), so it is never on the page. The confirm, a
+        // constant used inside a local component that portals its children, is disabled only
+        // with `gated` (`const blocked = !!gated && ...`).
+        "accessibilityState on <Pressable> by -/disabled in Probe",
+        // A press handed to a kit Button is the Button's, but `disabled` handed to one is the component's: either way.
+        "disabled on <Knob> by disabled/- | loading/-",
+        // The sheet's button renders only for the `menu` kind (`kindOf(props) === "menu"`);
+        // the sheet is rendered in Probe too, but it is the menu's `!disabled` that keeps the
+        // menu's rows off the page, not the sheet's.
+        "disabled on <Pressable> [menu] by loading/- in Probe",
+        "disabled on <Pressable> by -/disabled in Probe",
+        "disabled on <Pressable> by gated/- in Present",
+      ]);
+      // What an example asks for: props written on a tag, keys written in an item, never one given `false`.
+      const confirm = signals.find((s) => s.what === "disabled on <Pressable>" && s.within === "Present")!;
+      const item = signals.find((s) => s.what === "disabled on <Pressable>" && s.within === "Probe" && !s.gates.length)!;
+      expect(asksFor(confirm, { code: "<Probe gated items={[]} />" })).toBe(true);
+      expect(asksFor(confirm, { code: "<Probe gated={false} items={[]} />" })).toBe(false);
+      expect(asksFor(confirm, { code: '<Probe items={[{ label: "gated" }]} />' })).toBe(false);
+      expect(asksFor(item, { code: '<Probe items={[{ label: "A", disabled: true }]} />' })).toBe(true);
+      expect(asksFor(item, { code: '<Probe items={[{ label: "A", disabled: false }]} />' })).toBe(false);
+      expect(asksFor(item, { code: "<Probe disabled items={[]} />" })).toBe(false);
     } finally {
       rmSync(root, { recursive: true, force: true });
     }

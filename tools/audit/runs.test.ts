@@ -16,6 +16,7 @@ import {
   parseToolArgs,
   pickRuns,
   readRunCells,
+  recipeRank,
   selectCurrent,
   unknownNames,
   type AuditRun,
@@ -31,15 +32,17 @@ describe("cell ids", () => {
   // page runners (state-cell.ts, page-cell.ts) and the native host, each taken from a run.
   it("reads every family's layout", () => {
     expect(parseCellId("web/button/default/phone.blush.solid")).toEqual({
-      id: "web/button/default/phone.blush.solid", family: "variant", platform: "web", slug: "button", variant: "default", state: null, row: null, width: "phone", look: "blush", surface: "solid",
+      id: "web/button/default/phone.blush.solid", family: "variant", platform: "web", slug: "button", variant: "default", state: null, recipe: null, row: null, width: "phone", look: "blush", surface: "solid",
     });
     expect(parseCellId("ios/switch/default/dark.glass")).toMatchObject({ family: "variant", platform: "ios", slug: "switch", variant: "default", width: null, look: "dark", surface: "glass" });
     expect(parseCellId("web-states/tooltip/open.android/phone.mint.solid")).toEqual({
-      id: "web-states/tooltip/open.android/phone.mint.solid", family: "state", platform: "web", slug: "tooltip", variant: null, state: "open", row: "android", width: "phone", look: "mint", surface: "solid",
+      id: "web-states/tooltip/open.android/phone.mint.solid", family: "state", platform: "web", slug: "tooltip", variant: null, state: "open", recipe: "open", row: "android", width: "phone", look: "mint", surface: "solid",
     });
-    expect(parseCellId("web-states/button/pressed.web/desktop.dark.glass")).toMatchObject({ family: "state", state: "pressed", row: "web", width: "desktop" });
+    expect(parseCellId("web-states/button/pressed.web/desktop.dark.glass")).toMatchObject({ family: "state", state: "pressed", recipe: "pressed", row: "web", width: "desktop" });
+    // A state a component has several recipes of names each for its example.
+    expect(parseCellId("web-states/dropdown/disabled-disableditem.web/desktop.blush.solid")).toMatchObject({ family: "state", state: "disabled", recipe: "disabled-disableditem", row: "web", width: "desktop" });
     expect(parseCellId("web-pages/template-signin/phone.blush.glass")).toEqual({
-      id: "web-pages/template-signin/phone.blush.glass", family: "page", platform: "web", slug: "template-signin", variant: null, state: null, row: null, width: "phone", look: "blush", surface: "glass",
+      id: "web-pages/template-signin/phone.blush.glass", family: "page", platform: "web", slug: "template-signin", variant: null, state: null, recipe: null, row: null, width: "phone", look: "blush", surface: "glass",
     });
     expect(parseCellId("android-pages/pattern-glass/dark.glass")).toMatchObject({ family: "page", platform: "android", slug: "pattern-glass", width: null });
   });
@@ -56,6 +59,9 @@ describe("cell ids", () => {
       "web-states/select/open/tablet.mint.solid",
       "web-states/select/open.watch/tablet.mint.solid",
       "web-states/select/dragged.web/tablet.mint.solid",
+      "web-states/dropdown/dragged-disableditem.web/desktop.blush.solid",
+      "web-states/dropdown/disabled-.web/desktop.blush.solid",
+      "web-states/dropdown/disabled-Disabled-Item.web/desktop.blush.solid",
       "web-states/button/outline/hover.web/desktop.dark.glass",
       "ios-states/button/hover.web/dark.glass",
       // A page's sections are files of its cell, never a level of its path.
@@ -64,6 +70,16 @@ describe("cell ids", () => {
     ]) {
       expect(parseCellId(id)).toBeNull();
     }
+  });
+
+  it("ranks a state cell's recipe in the state table's order, and a recipe the table no longer has at -1", () => {
+    const rank = (id: string) => recipeRank(parseCellId(id)!);
+    // Dropdown's states in capture order: hover, focus, pressed, open, then its two disabled recipes.
+    expect(["hover", "focus", "pressed", "open", "disabled-disabledtrigger", "disabled-disableditem"].map((name) => rank(`web-states/dropdown/${name}.web/desktop.blush.solid`))).toEqual([0, 1, 2, 3, 4, 5]);
+    // The name its one disabled recipe had before the second, and a state it has no recipe of.
+    expect(rank("web-states/dropdown/disabled.web/desktop.blush.solid")).toBe(-1);
+    expect(rank("web-states/dropdown/invalid.web/desktop.blush.solid")).toBe(-1);
+    expect(rank("web-states/button/disabled.web/desktop.blush.solid")).toBe(3);
   });
 
   it("groups a cell with its looks and surfaces at its width", () => {
