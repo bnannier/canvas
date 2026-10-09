@@ -12,10 +12,13 @@
 // that paints its own focus state (a field border, a segment) spreads FOCUS_RESET, which
 // still wins. Natively the outline keys draw nothing without a width, so there is no
 // native ring: iOS and Android own focus on their side.
+//
+// It also gives a link its Enter key on the web (see useLinkEnter below).
 
-import { forwardRef, useMemo } from "react";
+import { forwardRef, useMemo, useRef, type KeyboardEvent } from "react";
 import {
   Pressable as RNPressable,
+  type GestureResponderEvent,
   type PressableProps,
   type PressableStateCallbackType,
   type StyleProp,
@@ -57,6 +60,46 @@ function useRingStyle(style: PressableStyle): PressableStyle {
     : [ring, style], [style, ring]);
 }
 
+// A web key event as react-native-web delivers it; natively a key event carries its key
+// on `nativeEvent` only, so `key` is absent there and nothing below ever fires.
+type KeyEvent = Pick<KeyboardEvent, "key" | "repeat" | "target" | "currentTarget">;
+type KeyHandler = ((event: KeyEvent) => void) | null | undefined;
+// The web-only props react-native-web's Pressable takes beside React Native's own.
+type WebPressableProps = PressableProps & { href?: string; onKeyDown?: KeyHandler; onKeyUp?: KeyHandler };
+
+// A link presses on Enter. react-native-web's press responder leaves Enter on a `link` role
+// to the browser, whose native click only an <a href> gets, so a link the kit draws
+// without an href (a breadcrumb crumb, a navbar link) never activated from the keyboard.
+// For that link the kit presses on the Enter keyup itself, the moment react-native-web
+// presses its buttons, and only for a key that went down and came up on the link (a held
+// key presses once). The keyup still bubbles: react-native-web releases its own press
+// state (onPressOut, `pressed`) from a document listener. Space stays out, as the APG
+// link pattern has it, and a link with an href keeps the browser's own activation.
+function useLinkEnter(props: WebPressableProps): Pick<WebPressableProps, "onKeyDown" | "onKeyUp" | "onBlur"> {
+  const armed = useRef<unknown>(null);
+  const { onPress, disabled, onBlur, onKeyDown, onKeyUp } = props;
+  const role = props.role ?? props.accessibilityRole;
+  if (role !== "link" || props.href != null) return {};
+  return {
+    onKeyDown(event) {
+      if (event.key === "Enter" && !event.repeat && !disabled && event.target === event.currentTarget) armed.current = event.currentTarget;
+      onKeyDown?.(event);
+    },
+    onKeyUp(event) {
+      if (event.key === "Enter") {
+        const pressed = armed.current === event.currentTarget && event.target === event.currentTarget;
+        armed.current = null;
+        if (pressed && !disabled) onPress?.(event as unknown as GestureResponderEvent);
+      }
+      onKeyUp?.(event);
+    },
+    onBlur(event) {
+      armed.current = null;
+      onBlur?.(event);
+    },
+  };
+}
+
 /**
  * React Native's Pressable with the theme's focus ring (the palette's `ring` color, set
  * off the control) and `focusable={false}` honoured on the web. Every kit control presses
@@ -70,5 +113,6 @@ export const Pressable = forwardRef<View, PressableProps>(function Pressable({ s
   // index -1, unless the caller chose one, takes it out of the web's tab order and asks
   // for nothing new natively: React Native's View reads tab index -1 as focusable false.
   const tabIndex = rest.tabIndex ?? (rest.focusable === false ? -1 : undefined);
-  return <RNPressable ref={ref} {...rest} tabIndex={tabIndex} style={useRingStyle(style)} />;
+  const linkEnter = useLinkEnter(rest);
+  return <RNPressable ref={ref} {...rest} {...linkEnter} tabIndex={tabIndex} style={useRingStyle(style)} />;
 });

@@ -11,7 +11,7 @@ Audit checklist for `/components/board`. The facts block and the variants table 
 | Source files | `board.android.tsx`, `board.ios.tsx`, `board.logic.ts`, `board.md`, `board.shared.tsx`, `board.styles.ts`, `board.tsx`, `board.types.ts` |
 | Implementation | its own source directory, `src/organisms/board/` (7 TypeScript modules) |
 | Exports | Board, applyBoardMove |
-| Platform entries | iOS: own build: Board (builds from its own iosSkin; injects platform parts (../drag-drop/drag-drop.ios.js); injects platform parts (../../molecules/card/card.ios.js); injects platform parts (../row-menu/row-menu.ios.js)). Android: own build: Board (builds from its own androidSkin; injects platform parts (../drag-drop/drag-drop.android.js); injects platform parts (../../molecules/card/card.android.js); injects platform parts (../row-menu/row-menu.android.js)) |
+| Platform entries | iOS: own build: Board (builds from its own iosSkin; injects platform parts (../drag-drop/drag-drop.ios.js); injects platform parts (../../molecules/card/card.ios.js); injects platform parts (../row-menu/row-menu.ios.js)); re-exports the shared build: applyBoardMove. Android: own build: Board (builds from its own androidSkin; injects platform parts (../drag-drop/drag-drop.android.js); injects platform parts (../../molecules/card/card.android.js); injects platform parts (../row-menu/row-menu.android.js)); re-exports the shared build: applyBoardMove |
 | Platform-skins registry | iOS: Board; Android: Board |
 | Reference row | none: `PLATFORM-REFERENCES.md` has no row for this component (K8) |
 | Materials manifest | Board: organisms, static + liquid; verification solid-appearance, glass-appearance, mode-switch, accessibility-fallback, runtime-capability, semantic-state |

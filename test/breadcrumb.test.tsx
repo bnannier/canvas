@@ -1,5 +1,5 @@
 import { describe, it, expect, afterEach } from "bun:test";
-import { render, cleanup, screen, fireEvent } from "@testing-library/react";
+import { render, cleanup, screen, fireEvent, act } from "@testing-library/react";
 import type { ComponentType, ReactNode } from "react";
 import { ThemeProvider } from "../src/style/theme.tsx";
 import { Breadcrumb as BreadcrumbWeb, BreadcrumbItem as BreadcrumbItemWeb } from "../src/atoms/breadcrumb/breadcrumb.tsx";
@@ -54,6 +54,25 @@ for (const [platform, Breadcrumb, BreadcrumbItem] of SKINS) {
       fireEvent.click(screen.getByRole("link", { name: "Home" }));
       fireEvent.click(screen.getByText("Data"));
       expect(pressed).toEqual([["Library", 1], ["Home", 0]]);
+    });
+
+    it("activates a focused link on Enter, never on Space (the APG link pattern), with the same label and index", () => {
+      const pressed: [string, number][] = [];
+      ui(<Breadcrumb maxItems={3} items={TRAIL} onItemPress={(item, index) => pressed.push([item, index])} />);
+      const canvas = screen.getByRole("link", { name: "Canvas" });
+      act(() => canvas.focus());
+      expect(document.activeElement).toBe(canvas);
+      fireEvent.keyDown(canvas, { key: " " });
+      fireEvent.keyUp(canvas, { key: " " });
+      expect(pressed).toEqual([]);
+      fireEvent.keyDown(canvas, { key: "Enter" });
+      fireEvent.keyUp(canvas, { key: "Enter" });
+      expect(pressed).toEqual([["Canvas", 3]]);
+      const home = screen.getByRole("link", { name: "Home" });
+      act(() => home.focus());
+      fireEvent.keyDown(home, { key: "Enter" });
+      fireEvent.keyUp(home, { key: "Enter" });
+      expect(pressed).toEqual([["Canvas", 3], ["Home", 0]]);
     });
 
     it("collapses past maxItems to the first crumb and the last maxItems - 1, reporting original indices", () => {

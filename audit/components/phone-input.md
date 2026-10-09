@@ -11,7 +11,7 @@ Audit checklist for `/components/phone-input`. The facts block and the variants 
 | Source files | `countries.ts`, `phone-input.android.tsx`, `phone-input.ios.tsx`, `phone-input.md`, `phone-input.shared.tsx`, `phone-input.styles.ts`, `phone-input.tsx` |
 | Implementation | its own source directory, `src/molecules/phone-input/` (6 TypeScript modules) |
 | Exports | PhoneInput, PHONE_COUNTRIES, flagOf |
-| Platform entries | iOS: own build: PhoneInput (builds from its own iosSkin). Android: own build: PhoneInput (builds from its own androidSkin) |
+| Platform entries | iOS: own build: PhoneInput (builds from its own iosSkin); re-exports the shared build: PHONE_COUNTRIES, flagOf. Android: own build: PhoneInput (builds from its own androidSkin); re-exports the shared build: PHONE_COUNTRIES, flagOf |
 | Platform-skins registry | iOS: PhoneInput; Android: PhoneInput |
 | Reference row | none: `PLATFORM-REFERENCES.md` has no row for this component (K8) |
 | Materials manifest | PhoneInput: molecules, static + liquid; verification solid-appearance, glass-appearance, mode-switch, accessibility-fallback, runtime-capability, semantic-state, open-surface |

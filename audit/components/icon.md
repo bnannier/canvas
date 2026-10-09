@@ -11,7 +11,7 @@ Audit checklist for `/components/icon`. The facts block and the variants table a
 | Source files | `icon.android.tsx`, `icon.glyphs.ts`, `icon.ios.tsx`, `icon.md`, `icon.shared.tsx`, `icon.stroke.ts`, `icon.tsx` |
 | Implementation | its own source directory, `src/atoms/icon/` (6 TypeScript modules) |
 | Exports | Icon |
-| Platform entries | iOS: re-exports the shared build (nothing built per platform). Android: re-exports the shared build (nothing built per platform) |
+| Platform entries | iOS: re-exports the shared build: Icon (nothing built per platform). Android: re-exports the shared build: Icon (nothing built per platform) |
 | Platform-skins registry | none (every export is the web build, so the docs three-up renders it as is) |
 | Reference row | `icon` (Shared, Built). iOS: link [icon (iOS)](https://developer.apple.com/design/human-interface-guidelines/sf-symbols) (SF Symbols). Android: link [icon (Android)](https://m3.material.io/styles/icons/overview). Web: link [icon (Web)](https://www.radix-ui.com/icons) |
 | Materials manifest | Icon: atoms, inherited; verification inherited-composition, semantic-state |

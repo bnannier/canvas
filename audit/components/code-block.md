@@ -11,7 +11,7 @@ Audit checklist for `/components/code-block`. The facts block and the variants t
 | Source files | `code-block.android.tsx`, `code-block.ios.tsx`, `code-block.md`, `code-block.shared.tsx`, `code-block.styles.ts`, `code-block.tsx`, `tokenize.ts` |
 | Implementation | its own source directory, `src/molecules/code-block/` (6 TypeScript modules) |
 | Exports | CodeBlock, tokenize, syntaxColor |
-| Platform entries | iOS: web build: CodeBlock. Android: web build: CodeBlock |
+| Platform entries | iOS: web build: CodeBlock; re-exports the shared build: tokenize, syntaxColor. Android: web build: CodeBlock; re-exports the shared build: tokenize, syntaxColor |
 | Platform-skins registry | none (every export is the web build, so the docs three-up renders it as is) |
 | Reference row | `code-block` (Shared, Built). iOS: none (iOS has no code display control; UIKit and SwiftUI ship no code view, apps build custom views with monospaced text styles). Android: none (Material 3 has no code block component; nothing in the M3 catalog covers code display). Web: link [code-block (Web)](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/code) (standard HTML pattern: pre wrapping code for multi-line blocks) |
 | Materials manifest | CodeBlock: molecules, static + liquid; verification solid-appearance, glass-appearance, mode-switch, accessibility-fallback, runtime-capability, semantic-state |

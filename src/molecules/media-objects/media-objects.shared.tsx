@@ -138,7 +138,8 @@ export interface MediaObjectProps {
   compact?: boolean;
   // Layout.
   truncate?: boolean;
-  /** E2E hook forwarded to the root element. */
+  /** E2E hook on the card. With both `onPress` and an `action` the card holds the row's
+   *  button and the action side by side, so the hook marks the card, not the button. */
   testID?: string;
   /** Composition within a parent only, never a restyle hook and never a width: the parent layout container provides the bounds. */
   style?: LayoutStyle;
@@ -304,6 +305,7 @@ export function createMediaObject(skin: MediaObjectSkin, Avatar: AvatarComponent
       // reaches the card's edge, and the action column keeps it on the other outer side.
       // The frame's own gap separates the two exactly as it separated the action before,
       // and is dead space between two targets. At rest it lays out as the one-node row did.
+      // The frame is the card, so it carries the testID, as the one-node card did.
       const { padding: inset = 0, ...frame }: ViewStyle = bordered ?? {};
       const rowAxis = { flexDirection: DIRECTION_ROW[direction] };
       const frameStyle: StyleProp<ViewStyle> = [
@@ -318,13 +320,12 @@ export function createMediaObject(skin: MediaObjectSkin, Avatar: AvatarComponent
       const actionOuter: ViewStyle = direction === "reversed" ? { paddingStart: inset } : { paddingEnd: inset };
       return (
         <RippleClip shape={bordered ? cornerRadii(bordered) : undefined} style={[elevParent, fill, style]}>
-          <View style={[props.bordered ? paneStyle(theme, frameStyle) : frameStyle, elevZero]}>
+          <View testID={testID} style={[props.bordered ? paneStyle(theme, frameStyle) : frameStyle, elevZero]}>
             {props.bordered ? <GlassPane layer="content" shape={frameStyle} /> : null}
             <Pressable
               accessibilityRole="button"
               accessibilityLabel={a11yLabel}
               onPress={props.onPress}
-              testID={testID}
               android_ripple={surfaceRipple(tokens)}
               style={({ pressed }) => [
                 skin.containerBase,
