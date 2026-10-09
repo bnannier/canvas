@@ -1,3 +1,8 @@
+/**
+ * Reads a design token from the web CSS hand-off: the value of the `--<name>` custom
+ * property on the document root, or an empty string off the web and during server
+ * rendering.
+ */
 export function token(name: string): string {
   // Web-only helper (reads the CSS variable off the DOM). Guarded so importing
   // the barrel never touches DOM globals on native or during SSR.

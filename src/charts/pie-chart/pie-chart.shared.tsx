@@ -38,6 +38,7 @@ export interface PieChartProps {
   style?: LayoutStyle;
 }
 
+/** Proportional slices with a percent legend; as a donut it shows the total in its center. */
 export function PieChart(props: PieChartProps) {
   const { slices, label, donut, hideLegend, compact, testID, style } = props;
   const { tokens } = useTheme();

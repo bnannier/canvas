@@ -4,5 +4,6 @@ import { webSkin } from "../shared/charts.styles.js";
 // WaterfallChart is a "Shared" platform treatment: the implementation is platform-
 // neutral, so every platform entry builds from the same skin. The per-OS
 // files exist only so the architecture is uniform across the kit.
+/** A running-total bridge: rises, falls and totals with connectors between steps. */
 export const WaterfallChart = createWaterfallChart(webSkin);
 export type { WaterfallChartProps, WaterfallStep } from "./waterfall-chart.shared.js";

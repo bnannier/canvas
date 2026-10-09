@@ -7,6 +7,8 @@
 // than from a prose document. Edit a shipped checklist in place; change this file to
 // change what a NEW checklist starts with.
 
+import { materialCoverage } from "../materials/manifest.ts";
+
 export type Family =
   | "actions"
   | "selection"
@@ -308,26 +310,17 @@ export function planFor(slug: string): ComponentPlan | null {
 }
 
 /**
- * The style-layer renderables, each audited for its contract and given docs (K12) on
- * the page the materials manifest names. They have no docs route of their own, so they
- * have no checklist file; the README lists them with this line.
+ * The style-layer renderables with no component page of their own, so no checklist file:
+ * the material inventory's style tier less the primitives whose docs route is a component
+ * page (View, Text and the rest). Derived, not kept by hand: tools/materials/manifest.ts
+ * records each one's docs route, check:api holds that route to the public API manifest's
+ * (the documenting page, or none while PENDING_DOCS stages it), and
+ * tools/audit/checklists.test.ts holds the audit/README.md line that lists them to this.
  */
-export const STYLE_LAYER_RENDERABLES = [
-  "GlassSurface",
-  "GlassPane",
-  "ThemeProvider",
-  "AnchoredOverlay",
-  "Portal",
-  "OverlayProvider",
-  "Entrance",
-  "LoopView",
-  "FloatingLabel",
-  "LabelContent",
-  "RippleClip",
-  "BreakpointOverride",
-  "LayoutAxisProvider",
-  "GlassModalBlurTarget",
-] as const;
+export const STYLE_LAYER_RENDERABLES: readonly string[] = materialCoverage
+  .filter((entry) => entry.tier === "style" && !entry.docsRoute?.startsWith("components/"))
+  .map((entry) => entry.name)
+  .sort((a, b) => a.localeCompare(b));
 
 /** The pages' plan: the patterns and templates family checklist plus their one specific. */
 export const PAGE_PLAN = {

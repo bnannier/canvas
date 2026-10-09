@@ -126,6 +126,10 @@ export interface ColorTokens {
 // kit legibility floor. tools/darkfactory/derive-tokens.ts derives them from
 // the vendored DF theme and tools/darkfactory/tokens.json records each role's source;
 // scripts/check-df-parity.ts keeps the hand-off and this file equal to that table.
+/**
+ * The light scheme's semantic color tokens in the default blush palette (Dark Factory's).
+ * A frozen constant: read the live set from `useTheme().tokens`.
+ */
 export const lightColors: ColorTokens = {
   background: "#f5f2fe",
   foreground: "#3b3c5c",
@@ -176,6 +180,10 @@ export const lightColors: ColorTokens = {
   "chart-8": "#a37e05",
 };
 
+/**
+ * The dark scheme's semantic color tokens (Dark Factory's one dark palette). A frozen
+ * constant: read the live set from `useTheme().tokens`.
+ */
 export const darkColors: ColorTokens = {
   background: "#272544",
   foreground: "#ebebf7",
@@ -226,6 +234,7 @@ export const darkColors: ColorTokens = {
   "chart-8": "#a37e05",
 };
 
+/** The blush palette's semantic color tokens by scheme: lightColors and darkColors. */
 export const colorsByScheme: Record<ColorScheme, ColorTokens> = {
   light: lightColors,
   dark: darkColors,
@@ -354,6 +363,10 @@ export interface GlassTokens {
   "glass-tint-dense": string;
 }
 
+/**
+ * The light scheme's native glass under-fills, one per material layer (functional,
+ * content, control, dense), as glassByScheme carries them.
+ */
 export const lightGlass: GlassTokens = {
   "glass-tint": "rgba(255, 255, 255, 0.20)",
   "glass-tint-content": "rgba(255, 255, 255, 0.62)",
@@ -361,6 +374,10 @@ export const lightGlass: GlassTokens = {
   "glass-tint-dense": "rgba(255, 255, 255, 0.88)",
 };
 
+/**
+ * The dark scheme's native glass under-fills, one per material layer (functional, content,
+ * control, dense), as glassByScheme carries them.
+ */
 export const darkGlass: GlassTokens = {
   // Dark glass: less light behind it to bend, so the tint drops dimmer rather than
   // brighter, and the rim carries more of the read (see --glass-tint in the .dark
@@ -767,6 +784,11 @@ export interface ShapeTokens {
   tile: number;
 }
 
+/**
+ * The corner radius each platform's skins give a role (a control, a field, a card, a
+ * dialog, a menu, a sheet, a checkbox, a pill, a tile), mirrored as `--radius-*` in the
+ * CSS hand-off.
+ */
 export const shape: Record<PlatformKey, ShapeTokens> = {
   // Dark Factory: 8 on rectangular controls (an icon button, a menu row, a nav highlight),
   // 10 on fields, 12 on menus and tiles, 14 on cards, 18 on dialogs, 22 on sheets and the

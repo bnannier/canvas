@@ -57,6 +57,11 @@ function useRingStyle(style: PressableStyle): PressableStyle {
     : [ring, style], [style, ring]);
 }
 
+/**
+ * React Native's Pressable with the theme's focus ring (the palette's `ring` color, set
+ * off the control) and `focusable={false}` honoured on the web. Every kit control presses
+ * through it.
+ */
 export const Pressable = forwardRef<View, PressableProps>(function Pressable({ style, ...rest }, ref) {
   // `focusable={false}` marks a pointer-only surface (a row's press area, a picture
   // under its own control bar). react-native-web 0.21's Pressable always passes a tab

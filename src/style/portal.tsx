@@ -122,6 +122,11 @@ export interface OverlayProviderProps {
   style?: StyleProp<ViewStyle>;
 }
 
+/**
+ * The overlay host: mount one at the app root, inside ThemeProvider, so menus, popovers,
+ * tooltips and other floating content render above the page in its outlet. Without one,
+ * overlays render inline where they are declared.
+ */
 export function OverlayProvider({ children, style, separateWindow = false, viewport = false, viewportInsets }: OverlayProviderProps) {
   const inheritedHost = useOverlayHost();
   const parent = separateWindow ? null : inheritedHost;

@@ -26,8 +26,9 @@ export type { Theme, Density } from "./theme.js";
 // desktop-first responsive helpers, the shadow/alpha helpers, and the raw React
 // Native primitives (View/Text/Pressable/TextInput/ScrollView; Image graduated to
 // a Canvas atom). This also exports the Surface type (the glass/default theming
-// switch).
-export * from "./style/index.js";
+// switch). The explicit list, not the internal style hub (./style/index.ts), so a
+// helper the kit adds for its own skins never becomes public by accident.
+export * from "./style/public.js";
 
 // Components, grouped by atomic-design level (atoms / molecules / organisms).
 export * from "./atoms/index.js";

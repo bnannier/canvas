@@ -138,11 +138,14 @@ replaces the two generated blocks and carries everything else over byte for byte
 it twice changes nothing. A file whose markers are gone is refused, not guessed at: restore
 the markers or delete the file to reseed it.
 
-Fourteen style-layer renderables have no docs route and so no checklist of their own:
-GlassSurface, GlassPane, ThemeProvider, AnchoredOverlay, Portal, OverlayProvider, Entrance,
-LoopView, FloatingLabel, LabelContent, RippleClip, BreakpointOverride, LayoutAxisProvider and
-GlassModalBlurTarget. Each is audited for its contract and given docs (K12) on the page the
-materials manifest names (`theming`, or the component page that hosts it).
+The style-layer renderables with no component page have no checklist of their own:
+AnchoredOverlay, BreakpointOverride, Entrance, FloatingLabel, GlassModalBlurTarget, GlassPane,
+GlassSurface, LabelContent, LayoutAxisProvider, LoopView, OverlayProvider, Portal, RippleClip
+and ThemeProvider. Each is audited for its contract on the page `tools/api/manifest.ts`
+documents it on, or, while that file's `PENDING_DOCS` stages its docs (K12), on the page
+planned for it. The list is the material inventory's style tier less the primitives with a
+component page (`STYLE_LAYER_RENDERABLES` in `tools/audit/plan-specifics.ts`), and the
+checklist tests hold this paragraph to it.
 
 ## The process
 

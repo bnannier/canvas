@@ -94,9 +94,11 @@ jobs:
         run: bun run check:materials
 
       # Every export of the package entry points (named exports of ".", identical on
-      # the web build and under Metro's iOS and Android resolution, and every file
-      # "./styles/*" reaches) is classified in tools/api/manifest.ts, and every docs
-      # route the manifest names exists and names the export. An export added or
+      # the web build and under Metro's iOS and Android resolution, and every file npm
+      # packs under "./styles/*") is classified in tools/api/manifest.ts, every public
+      # value carries a JSDoc summary, every docs route the manifest names exists and
+      # names the export, a name without one is staged in PENDING_DOCS with its planned
+      # page, and the materials manifest records the same routes. An export added or
       # removed without its entry is caught here.
       - name: Check the public API manifest
         run: bun run check:api

@@ -11,5 +11,6 @@ import { PhoneInput } from "../phone-input/phone-input.js";
 // platform's entries, so the delegation test is exact rather than name-based.
 const LABEL_OWNERS = [Input, Textarea, Select, Autocomplete, PhoneInput] as unknown as React.ComponentType<never>[];
 
+/** A form row: a label, the control, and one helper or error line under it. */
 export const Field = createField(webSkin, LABEL_OWNERS);
 export type { FieldProps } from "./field.shared.js";

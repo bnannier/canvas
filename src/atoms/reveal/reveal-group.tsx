@@ -38,6 +38,7 @@ export interface RevealGroupProps {
   children?: ReactNode;
 }
 
+/** Staggers the entrances of the Reveal children inside it. */
 export function RevealGroup({ children }: RevealGroupProps) {
   return (
     <>

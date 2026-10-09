@@ -23,6 +23,14 @@ Every owned surface also follows `solidMaterialContract`: complete opaque
 appearance, no glass rendering work, and state-preserving switching in both
 directions. A liquid role names the material, never a motion.
 
+A renderable's docs route is the page that documents it, and the public API manifest
+(tools/api/manifest.ts) is the authority on that: `check:api` fails when the two
+manifests name different routes. A product-tier renderable always names its family's
+component page; a style-tier one names the page the API manifest documents it on, or no
+route while that manifest stages its docs in `PENDING_DOCS` (the planned route is also
+accepted). `check:materials` fails on a public foundation renderable (a component or
+part in the API manifest) with no route whose docs are not staged.
+
 When adding or changing an export, update its exact entry after reviewing the
 source and docs. Do not assign roles by substring matching component names:
 `Row` is not `RowMenu`, and `Grid` is not `GridList`. Structural compound parts
