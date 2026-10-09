@@ -1,7 +1,7 @@
 import { Suspense, useState } from "react";
 import { Platform } from "react-native";
 import { Redirect, useLocalSearchParams } from "expo-router";
-import { View, Text, Skeleton, useTheme } from "@nannier/canvas";
+import { Column, Typography, Alert, Skeleton } from "@nannier/canvas";
 import { getComponent } from "../core/data/components";
 import type { ComponentDoc } from "../core/data/types";
 import { useComponentDocs } from "../core/use-component-docs";
@@ -13,7 +13,6 @@ import { Donts } from "./dont";
 import { PageNav } from "./page-nav";
 import { stripHtml } from "../lib/html";
 import { variantSlug } from "../lib/variant";
-import { sans } from "./fonts";
 import { DocsHead } from "./docs-head";
 
 // The generic component reference page, shared by the default route
@@ -25,7 +24,6 @@ import { DocsHead } from "./docs-head";
 // URL so each variant has exactly one canonical address.
 export function ComponentReference() {
   const { slug, variant } = useLocalSearchParams<{ slug: string; variant?: string }>();
-  const { tokens } = useTheme();
 
   const comp = slug ? getComponent(slug) : undefined;
   if (!comp) return <Redirect href="/components" />;
@@ -33,11 +31,10 @@ export function ComponentReference() {
   return (
     <Page>
       <DocsHead title={comp.name} />
-      {/* Component pages use a larger title (28/700) than the generic page header. */}
-      <View style={{ gap: 6 }}>
-        <Text accessibilityRole="header" aria-level={1} style={{ fontFamily: sans("700"), fontSize: 28, letterSpacing: -0.42, color: tokens.foreground }}>{comp.name}</Text>
+      <Column snug>
+        <Typography h1>{comp.name}</Typography>
         <Lead>{stripHtml(comp.description)}</Lead>
-      </View>
+      </Column>
       {/* The docs module is the page's own chunk in the web export. It is on the page
           before the bundle runs, so this never suspends on a page load; a client-side
           navigation to another component fetches that one's chunk, and the stage holds
@@ -51,7 +48,6 @@ export function ComponentReference() {
 }
 
 function ComponentBody({ comp, variant }: { comp: ComponentDoc; variant?: string }) {
-  const { tokens } = useTheme();
   const entry = useComponentDocs(comp.dir ?? comp.slug);
   const propGroups = entry?.props;
   const examples = entry?.examples ?? [];
@@ -103,11 +99,7 @@ function ComponentBody({ comp, variant }: { comp: ComponentDoc; variant?: string
       {examples.length > 0 ? (
         <Playground examples={examples} stageAlign={comp.stageAlign} singlePreview={comp.singlePreview} selected={selected} onSelect={onSelect} />
       ) : (
-        <View style={{ borderRadius: 10, borderWidth: 1, borderColor: tokens.border, padding: 16 }}>
-          <Text style={{ fontSize: 13, color: tokens["muted-foreground"] }}>
-            No live examples for this component yet.
-          </Text>
-        </View>
+        <Alert title="No live examples for this component yet." />
       )}
       {propGroups && propGroups.length > 0 ? <PropTables groups={propGroups} /> : null}
       {entry && entry.donts.length > 0 ? <Donts donts={entry.donts} /> : null}

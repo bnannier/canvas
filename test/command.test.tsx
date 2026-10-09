@@ -1,9 +1,13 @@
 import { describe, it, expect, afterEach } from "bun:test";
-import { render, screen, cleanup, fireEvent } from "@testing-library/react";
-import { type ReactNode } from "react";
+import { render, screen, cleanup, fireEvent, waitFor, act } from "@testing-library/react";
+import { useState, type ReactNode } from "react";
 import { ThemeProvider } from "../src/style/theme.tsx";
 import { layoutEntrances } from "./entrance-layout.ts";
 import { Command } from "../src/organisms/command/command.tsx";
+import { Dialog } from "../src/organisms/dialog/dialog.tsx";
+import { Drawer } from "../src/organisms/drawer/drawer.tsx";
+import { Button } from "../src/atoms/button/button.tsx";
+import { OverlayProvider } from "../src/style/portal.tsx";
 
 afterEach(cleanup);
 const ui = (node: ReactNode) => render(<ThemeProvider>{node}</ThemeProvider>);
@@ -145,5 +149,95 @@ describe("Command search filtering", () => {
     expect(picked).toEqual([]);
     fireEvent.keyDown(input, { key: "Enter" });
     expect(picked).toEqual(["New File"]);
+  });
+});
+
+
+describe("Command composition", () => {
+  it("preserves externally ranked description matches and selects that exact item", () => {
+    const remote = { label: "Canvas", description: "A universal interface kit" };
+    const local = { label: "Interface patterns", description: "Working examples" };
+    let selected: unknown;
+    const { getByRole, getAllByRole } = ui(<Command filtered query="universal" groups={[
+      { heading: "Guides", items: [remote] }, { heading: "Patterns", items: [local] },
+    ]} onSelect={(item) => { selected = item; }} />);
+    expect(getAllByRole("option").map((row) => row.textContent)).toEqual([
+      "CanvasA universal interface kit", "Interface patternsWorking examples",
+    ]);
+    expect(getByRole("option", { name: "Canvas. A universal interface kit" })).toBeDefined();
+    const input = getByRole("textbox");
+    fireEvent.keyDown(input, { key: "ArrowDown" });
+    const active = document.getElementById(input.getAttribute("aria-activedescendant")!);
+    expect(active?.getAttribute("aria-selected")).toBe("true");
+    fireEvent.keyDown(input, { key: "Enter" });
+    expect(selected).toBe(local);
+  });
+
+  it("exposes the empty prompt before typing and lets consumers cancel navigation", () => {
+    const empty = ui(<Command embedded emptyMessage="Search the documentation" />);
+    expect(empty.getByText("Search the documentation")).toBeDefined();
+    cleanup();
+    const { getByRole } = ui(<Command groups={[{ items: [{ label: "First" }, { label: "Second" }] }]}
+      onKeyPress={(event) => event.preventDefault()} />);
+    const input = getByRole("textbox");
+    const before = input.getAttribute("aria-activedescendant");
+    fireEvent.keyDown(input, { key: "ArrowDown" });
+    expect(input.getAttribute("aria-activedescendant")).toBe(before);
+  });
+
+  for (const sheet of [false, true]) {
+    it(`focuses after ${sheet ? "Drawer" : "Dialog"} captures the opener and restores it on Escape`, async () => {
+      function Search() {
+        const [open, setOpen] = useState(false);
+        const command = <Command embedded autoFocus groups={[{ items: [{ label: "Canvas" }] }]} />;
+        return <><Button onPress={() => setOpen(true)}>Search docs</Button>{open ? sheet
+          ? <Drawer bottom open onOpenChange={setOpen} accessibilityLabel="Find docs">{command}</Drawer>
+          : <Dialog overlay dismissible open onOpenChange={setOpen} accessibilityLabel="Find docs">{command}</Dialog>
+          : null}</>;
+      }
+      const { getByRole, queryByRole } = ui(<OverlayProvider><Search /></OverlayProvider>);
+      const opener = getByRole("button", { name: "Search docs" });
+      act(() => opener.focus());
+      fireEvent.click(opener);
+      const input = await screen.findByRole("textbox");
+      await waitFor(() => expect(document.activeElement).toBe(input));
+      fireEvent.keyDown(input, { key: "Escape" });
+      fireEvent.keyUp(input, { key: "Escape" });
+      await waitFor(() => expect(queryByRole("textbox")).toBeNull());
+      expect(document.activeElement).toBe(opener);
+    });
+  }
+
+  it("restores the opener after a pointer focuses the Dialog scrim before dismissing", async () => {
+    function Search() {
+      const [open, setOpen] = useState(false);
+      return <><Button onPress={() => setOpen(true)}>Find</Button><Dialog overlay dismissible open={open}
+        accessibilityLabel="Find docs" onOpenChange={setOpen}><Command embedded autoFocus /></Dialog></>;
+    }
+    const { getByRole, queryByRole } = ui(<OverlayProvider><Search /></OverlayProvider>);
+    const opener = getByRole("button", { name: "Find" });
+    act(() => opener.focus());
+    fireEvent.click(opener);
+    const input = await screen.findByRole("textbox");
+    await waitFor(() => expect(document.activeElement).toBe(input));
+    const scrim = getByRole("dialog").firstElementChild as HTMLElement;
+    act(() => scrim.focus());
+    fireEvent.click(scrim);
+    expect(queryByRole("dialog")).toBeNull();
+    expect(document.activeElement).toBe(opener);
+  });
+
+  it("keeps default Dialog backdrops inert and lets dismissible dialogs cancel from the scrim", () => {
+    const cancelled: boolean[] = [];
+    const view = (dismissible: boolean) => <ThemeProvider><Dialog open dismissible={dismissible}
+      title="Search" onCancel={() => cancelled.push(true)} /></ThemeProvider>;
+    const { getByRole, rerender } = render(view(false));
+    fireEvent.click(getByRole("dialog"));
+    expect(cancelled).toEqual([]);
+    rerender(view(true));
+    const scrim = getByRole("dialog").firstElementChild as HTMLElement;
+    expect(scrim.getAttribute("tabindex")).toBe("-1");
+    fireEvent.click(scrim);
+    expect(cancelled).toEqual([true]);
   });
 });

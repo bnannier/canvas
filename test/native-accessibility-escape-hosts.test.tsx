@@ -35,13 +35,28 @@ async function withNativeHosts(run: (host: (content: Element) => Host) => void |
   };
   const original = component.render;
   const metadata = new WeakMap<HTMLElement, ViewProps>();
+  // Preserve ref identity as well as its value. A new forwarding callback on
+  // every render would detach and reattach useDialogFocus's notifying object ref,
+  // turning an observed accessibility host into an artificial render loop.
+  const forwards = new Map<unknown, { props: ViewProps; node: HTMLElement | null; callback: (node: unknown) => void }>();
   const observer = spyOn(component, "render").mockImplementation((props, ref) => {
     if (!props.onAccessibilityEscape) return original(props, ref);
-    return original(props, (node: unknown) => {
-      if (node instanceof HTMLElement) metadata.set(node, props);
-      if (typeof ref === "function") ref(node);
-      else if (ref) ref.current = node;
-    });
+    const key = ref ?? props.onAccessibilityEscape;
+    let forward = forwards.get(key);
+    if (!forward) {
+      const record = { props, node: null as HTMLElement | null, callback: (_node: unknown) => {} };
+      record.callback = (node: unknown) => {
+        record.node = node instanceof HTMLElement ? node : null;
+        if (record.node) metadata.set(record.node, record.props);
+        if (typeof ref === "function") ref(node);
+        else if (ref) ref.current = node;
+      };
+      forward = record;
+      forwards.set(key, record);
+    }
+    forward.props = props;
+    if (forward.node) metadata.set(forward.node, props);
+    return original(props, forward.callback);
   });
   const select = spyOn(Platform, "select").mockImplementation(specifics =>
     "ios" in specifics ? specifics.ios : "native" in specifics ? specifics.native : specifics.default,

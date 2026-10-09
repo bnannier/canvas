@@ -1,5 +1,5 @@
 import { Fragment, useState } from "react";
-import { Row, Column, Card, CardHeader, CardSeparator, CardContent, Typography, Button, Badge, Calendar, Divider, Icon, useFormFactor, useToast } from "@nannier/canvas";
+import { Row, Column, Card, CardHeader, CardSeparator, CardContent, Typography, Button, Badge, Calendar, Divider, Icon, useToast } from "@nannier/canvas";
 import type { TemplateDoc } from "../types";
 
 // Month-view calendar built from real Canvas components: the Calendar organism
@@ -73,11 +73,6 @@ const TODAY_DAY = 24;
 
 function MonthViewLive() {
   const { toast } = useToast();
-  // Phones get the denser look: a `compact` Calendar and a tighter gap above
-  // the event panel. The flag drives props only, never which elements render,
-  // so a resize or the switch from the server's desktop layout after hydration
-  // restyles the grid and panel in place instead of remounting them.
-  const narrow = useFormFactor() === "phone";
   const [monthIndex, setMonthIndex] = useState(TODAY_MONTH);
   const [selected, setSelected] = useState(TODAY_DAY);
   const month = MONTHS[monthIndex];
@@ -138,7 +133,6 @@ function MonthViewLive() {
       onSelect={setSelected}
       onPrev={prevMonth}
       onNext={nextMonth}
-      compact={narrow}
     />
   );
 
@@ -179,7 +173,7 @@ function MonthViewLive() {
   return (
     <Column relaxed>
       {header}
-      <Column loose={!narrow} relaxed={narrow}>
+      <Column relaxed>
         {grid}
         {panel}
       </Column>
@@ -194,7 +188,7 @@ export const CALENDAR_TEMPLATE: TemplateDoc = {
   sections: [
     {
       title: "Month view",
-      anatomy: "Page header (title + prev/next icon Buttons + Today) over the Calendar organism, with the selected day's event Card below it; selecting a day syncs the panel. On phones the Calendar turns compact and the gap above the panel tightens.",
+      anatomy: "Page header (title + prev/next icon Buttons + Today) over the Calendar organism, with the selected day's event Card below it; selecting a day syncs the panel. The Calendar fits its own container and keeps the selected day when the stage resizes.",
       render: () => <MonthViewLive />,
     },
   ],

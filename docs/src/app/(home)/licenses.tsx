@@ -3,8 +3,7 @@ import { Column, Row, Badge, DataTable, Accordion, Button, Icon, useResponsive }
 import { Page, PageHeader } from "../../ui/page";
 import { Section } from "../../ui/section";
 import { P, H3, Rule, InlineCode } from "../../ui/prose";
-import { Surface } from "../../ui/tokens-kit";
-import { DocsSurface } from "../../ui/surface";
+import { Card } from "@nannier/canvas";
 import { PageNav } from "../../ui/page-nav";
 import {
   THIRD_PARTY_TITLE,
@@ -103,12 +102,12 @@ export default function LicensesScreen() {
         <Rule />
 
         <Section title="Fonts">
-          <Surface padding={16}>
+          <Card >
             <Column tight>
               <H3>Typeface licences</H3>
               <P muted>{THIRD_PARTY_FONTS}</P>
             </Column>
-          </Surface>
+          </Card>
           <Row snug wrap>
             <Button
               outline
@@ -152,14 +151,14 @@ export default function LicensesScreen() {
         <Rule />
 
         <Section title={`Packages (${THIRD_PARTY_PACKAGE_COUNT})`}>
-          <DocsSurface bordered>
+          <Card flush>
             <DataTable
               columns={wide ? ["Package", "Version", "License"] : ["Package", "License"]}
               rows={rows}
               striped
               compact
             />
-          </DocsSurface>
+          </Card>
         </Section>
 
         <Rule />

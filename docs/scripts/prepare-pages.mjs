@@ -66,8 +66,8 @@ export function preparePages(dist) {
   const bakedPrivacy = path.join(dist, "privacy/index.html");
   const routePrivacy = path.join(dist, "privacy.html");
   if (fs.existsSync(bakedPrivacy) && fs.existsSync(routePrivacy)) fs.rmSync(routePrivacy);
-  // Every app page preloads the faces it registered (the baked privacy page is plain
-  // HTML with no app root and no faces). A preload aimed at a missing path is worse than
+  // Every hydrated app page preloads the faces it registered (the static Canvas policy
+  // has no app root or bundle; it uses its own same-origin font files). A preload aimed at a missing path is worse than
   // none, since it spends a high-priority connection on a 404 and then fetches the real
   // font anyway.
   const pages = appPages(dist);

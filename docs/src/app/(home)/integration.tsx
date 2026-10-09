@@ -1,4 +1,4 @@
-import { View } from "@nannier/canvas";
+import { Column } from "@nannier/canvas";
 import { Page, PageHeader } from "../../ui/page";
 import { Section } from "../../ui/section";
 import { P, H3, InlineCode, Rule } from "../../ui/prose";
@@ -107,25 +107,17 @@ token("radius-md");   // "6px"
 // translucent variant, mixed the same way the token layer does it:
 hsl("primary", 0.5);  // "color-mix(in oklab, oklch(0.511 0.262 276.966) 50%, transparent)"`;
 
-const BUILDING = `import { View, Text, useTheme } from "@nannier/canvas";
+const BUILDING = `import { Alert, Button, Column, Typography } from "@nannier/canvas";
 
-// Build your own components the way Canvas does: raw RN View/Text styled with a
-// style object built from the tokens, with flat boolean props for each style
-// choice (not string enums).
-interface CalloutProps {
-  children: React.ReactNode;
-  /** Emphasised, filled style. */
-  primary?: boolean;
-}
-
-export function Callout({ children, primary }: CalloutProps) {
-  const { tokens } = useTheme();
+// Compose existing kit components with their semantic APIs.
+export function AccountNotice({ onReview }) {
   return (
-    <View style={{ borderRadius: 6, borderWidth: 1, borderColor: tokens.border, padding: 16, backgroundColor: primary ? tokens.primary : tokens.card }}>
-      <Text style={{ fontSize: 14, lineHeight: 20, color: primary ? tokens["primary-foreground"] : tokens.foreground }}>
-        {children}
-      </Text>
-    </View>
+    <Alert info title="Review your account">
+      <Column snug>
+        <Typography small>Keep your contact details up to date.</Typography>
+        <Button small onPress={onReview}>Review details</Button>
+      </Column>
+    </Alert>
   );
 }`;
 
@@ -145,7 +137,7 @@ const EXPORTS = [
 export default function IntegrationScreen() {
   return (
     <Page>
-      <View style={{ gap: 28 }}>
+      <Column loose>
         <PageHeader
           title="Integration"
           description="Consume Canvas, a universal React Native UI kit, on native and on the web."
@@ -267,11 +259,10 @@ export default function IntegrationScreen() {
 
         <Section title="Building on Canvas">
           <P>
-            Compose Canvas components directly, or build your own on the React Native primitives (<InlineCode>View</InlineCode>,{" "}
-            <InlineCode>Text</InlineCode>, <InlineCode>Pressable</InlineCode>, <InlineCode>TextInput</InlineCode>,{" "}
-            <InlineCode>ScrollView</InlineCode>; <InlineCode>Image</InlineCode> is a Canvas atom, not a primitive). Follow the Canvas convention: one
-            flat boolean prop per style choice, not string-enum <InlineCode>variant</InlineCode>/<InlineCode>size</InlineCode>{" "}
-            props.
+            Compose existing Canvas components and use their semantic boolean props.
+            Use Row, Column, Container, and Grid for arrangement. If a component lacks
+            a real functional capability, extend it in the kit so every consumer gets
+            the same behavior, accessibility, and platform skin.
           </P>
           <CodeBlock code={BUILDING} />
         </Section>
@@ -280,17 +271,17 @@ export default function IntegrationScreen() {
 
         <Section title="Package exports">
           {EXPORTS.map((e) => (
-            <View key={e.path} style={{ gap: 2 }}>
+            <Column key={e.path} tight>
               <P>
                 <InlineCode>{e.path}</InlineCode>
               </P>
               <P muted>{e.content}</P>
-            </View>
+            </Column>
           ))}
         </Section>
 
         <PageNav />
-      </View>
+      </Column>
     </Page>
   );
 }

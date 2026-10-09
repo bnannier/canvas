@@ -97,6 +97,12 @@ jobs:
       - name: Check generated docs core is up to date
         run: bun run docs:gen:check
 
+      - name: Check handwritten docs use Canvas components
+        run: bun run check:docs-components
+
+      - name: Check the static Canvas privacy policy is up to date
+        run: bun run privacy:gen:check
+
       # Coverage gate for the native iOS menu glyph rasters: every nav glyph must have a
       # bundled PNG + map entry, so a forgotten `bun run raster:gen` after a nav-icon change
       # is caught. Coverage only (not PNG bytes), since sharp output can differ macOS<->CI.

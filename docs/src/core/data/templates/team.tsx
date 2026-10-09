@@ -100,8 +100,8 @@ function InviteLive() {
   return (
     <Column cozy>
       <Card>
-        <Row snug wrap alignEnd>
-          <Column fill style={{ minWidth: 220 }}>
+        <Row snug stacks alignEnd>
+          <Column fill>
             <Input
               label="Email address"
               placeholder="teammate@company.com"

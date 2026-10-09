@@ -1,6 +1,5 @@
-import { View, Text, Row, Icon, Button, ButtonGroup, useTheme, liquidGlassAvailable } from "@nannier/canvas";
+import { Typography, Row, Icon, Button, ButtonGroup, liquidGlassAvailable } from "@nannier/canvas";
 import { useDocsTheme } from "../theme/docs-theme";
-import { sans } from "../ui/fonts";
 
 // The scheme + surface toggles, shown always-visible in the native Android AND iOS top bars
 // (`compact`, placed beside the hamburger) and in the mobile web drill-down sheet's footer
@@ -9,7 +8,6 @@ import { sans } from "../ui/fonts";
 // glass is opt-in. The label names the surface MODE, not the material a given platform
 // happens to paint for it (Liquid Glass, a lens, or a frost).
 export function ThemeToggles({ compact = false }: { compact?: boolean }) {
-  const { tokens } = useTheme();
   const { scheme, surface, toggleScheme, setSurface } = useDocsTheme();
   const glassAvailable = !liquidGlassAvailable();
 
@@ -31,7 +29,7 @@ export function ThemeToggles({ compact = false }: { compact?: boolean }) {
   // Solid/Glass segmented control is kept for the roomier surfaces below.)
   if (compact) {
     return (
-      <View style={{ flexDirection: "row", alignItems: "center", gap: 2 }}>
+      <Row tight alignCenter>
         <Button
           ghost
           icon
@@ -41,13 +39,13 @@ export function ThemeToggles({ compact = false }: { compact?: boolean }) {
           onPress={() => setSurface(surface === "glass" ? "solid" : "glass")}
         />
         {schemeToggle}
-      </View>
+      </Row>
     );
   }
 
   return (
     <>
-      <Text style={{ fontFamily: sans("500"), fontSize: 13, color: tokens["muted-foreground"] }}>Appearance</Text>
+      <Typography small subtle>Appearance</Typography>
       <Row snug alignCenter>
         {glassAvailable ? (
           <ButtonGroup

@@ -1,11 +1,10 @@
-import { View, Text, Row, Column, ButtonGroup, Button, Card, Checkbox, Switch, ThemeProvider, Typography, useTheme } from "@nannier/canvas";
+import { Row, Column, ButtonGroup, Button, Card, Checkbox, Switch, ThemeProvider, Typography } from "@nannier/canvas";
 import { Page, PageHeader } from "../../ui/page";
 import { Section } from "../../ui/section";
 import { H3, P, Rule, InlineCode } from "../../ui/prose";
 import { PageNav } from "../../ui/page-nav";
 import { CodeBlock } from "../../ui/code-block";
 import { Callout } from "../../ui/tokens-kit";
-import { sans } from "../../ui/fonts";
 import { useDocsTheme } from "../../theme/docs-theme";
 
 // The page's teaching snippets. The helper ones mirror src/theme.ts behavior
@@ -155,13 +154,7 @@ function PalettePreview({ mint, label }: { mint?: boolean; label: string }) {
 }
 
 function Bullet({ children }: { children: React.ReactNode }) {
-  const { tokens } = useTheme();
-  return (
-    <Row snug>
-      <Text style={{ fontFamily: sans("400"), fontSize: 14, lineHeight: 24, color: tokens["muted-foreground"] }}>•</Text>
-      <Text style={{ flex: 1, fontFamily: sans("400"), fontSize: 14, lineHeight: 24, color: tokens["muted-foreground"] }}>{children}</Text>
-    </Row>
-  );
+  return <Row snug><Typography subtle>•</Typography><Column fill><Typography subtle>{children}</Typography></Column></Row>;
 }
 
 export default function ThemingScreen() {
@@ -169,7 +162,7 @@ export default function ThemingScreen() {
 
   return (
     <Page>
-      <View style={{ gap: 28 }}>
+      <Column loose>
         <PageHeader
           title="Theming"
           description="Four theming axes (light/dark, palette, glass surface, density) on one model: ThemeProvider carries scheme, palette and glass on every platform; on the web, helpers persist all four choices and update the CSS handoff attributes."
@@ -358,7 +351,7 @@ export default function ThemingScreen() {
         </Section>
 
         <PageNav />
-      </View>
+      </Column>
     </Page>
   );
 }

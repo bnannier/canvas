@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Row, Column, Card, Typography, Button, Input, Select, InputOTP, Steps, EmptyState, Icon, useToast } from "@nannier/canvas";
+import { Container, Row, Column, Card, Typography, Button, Input, Select, InputOTP, Steps, EmptyState, Icon, useToast } from "@nannier/canvas";
 import type { TemplateDoc } from "../types";
 
 // Onboarding wizard built from real Canvas components: a controlled Steps
@@ -56,7 +56,7 @@ function WizardLive() {
 
   return (
     <Row center>
-      <Column relaxed style={{ width: "100%", maxWidth: 560 }}>
+      <Container xl><Column relaxed>
         <Steps steps={STEPS} current={step} onStepPress={setStep} />
         <Steps progress steps={[]} label="Setup progress" value={Math.round((step / last) * 100)} />
         <Card>
@@ -124,7 +124,7 @@ function WizardLive() {
             </Row>
           </Column>
         </Card>
-      </Column>
+      </Column></Container>
     </Row>
   );
 }

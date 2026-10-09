@@ -6,8 +6,8 @@
  * resized across 640 dropped the field's focus (and its text, where the state lived
  * below the swap), and a phone load remounted every field right after hydration,
  * because the server renders the desktop variant and the client switches. A two-pane
- * template is now a `Row stacks` of spans (the Row measures its own container and only
- * its layout changes), and a breakpoint flag drives props only.
+ * template is now a `Row stacks` of spans, while the kanban board uses Grid. Both
+ * measure their own container and change layout without replacing their children.
  *
  * Each case holds the field's DOM node from the first render and checks that the same
  * node is still connected, focused, and holding the typed text after every resize. The
@@ -29,9 +29,8 @@ interface Case {
   partner?: (page: Page) => Locator;
   /** Where the partner sits at the desktop width; it sits above once stacked. */
   wide?: Arrangement;
-  /** One-pane templates prove their phone layout by the field itself: a density
-   *  prop flips on phones and the field grows taller. */
-  tallerOnPhones?: boolean;
+  /** Two adjacent Grid tiles: desktop places them beside each other, phones stack. */
+  gridTiles?: (page: Page) => [Locator, Locator];
 }
 
 const CASES: Case[] = [
@@ -57,7 +56,10 @@ const CASES: Case[] = [
   {
     slug: "kanban",
     field: (page) => page.getByPlaceholder("Search tasks…"),
-    tallerOnPhones: true,
+    gridTiles: (page) => [
+      page.getByRole("button", { name: "Actions for To do", exact: true }),
+      page.getByRole("button", { name: "Actions for In progress", exact: true }),
+    ],
   },
 ];
 
@@ -80,7 +82,10 @@ for (const c of CASES) {
     const typed = await field.inputValue();
     const node = await field.elementHandle();
     expect(node, `${c.slug}: the field has no node`).not.toBeNull();
-    const desktopHeight = (await field.boundingBox())?.height ?? 0;
+    if (c.gridTiles) {
+      const [first, second] = c.gridTiles(page);
+      await expect.poll(() => arrangement(second, first), { message: `${c.slug} never formed desktop Grid columns` }).toBe("beside");
+    }
 
     // 600 and 390 are phone widths, below every pane split's stacking cut; 1280 in
     // between and at the end crosses back.
@@ -90,13 +95,11 @@ for (const c of CASES) {
         await expect
           .poll(() => arrangement(field, c.partner!(page)), { message: `${c.slug} never reached its ${width}px layout` })
           .toBe(width >= 1280 ? c.wide : "above");
-      } else if (c.tallerOnPhones) {
-        const height = async () => (await settled(async () => field.boundingBox()))?.height ?? 0;
-        if (width >= 1280) {
-          await expect.poll(height, { message: `${c.slug} never reached its ${width}px layout` }).toBe(desktopHeight);
-        } else {
-          await expect.poll(height, { message: `${c.slug} never reached its ${width}px layout` }).toBeGreaterThan(desktopHeight);
-        }
+      } else if (c.gridTiles) {
+        const [first, second] = c.gridTiles(page);
+        await expect
+          .poll(() => arrangement(second, first), { message: `${c.slug} Grid never reached its ${width}px layout` })
+          .toBe(width >= 1280 ? "beside" : "above");
       }
       expect(await node!.evaluate((n) => n.isConnected), `${c.slug}: resizing to ${width} remounted the field`).toBe(true);
       expect(await node!.evaluate((n) => n === document.activeElement), `${c.slug}: resizing to ${width} dropped focus`).toBe(true);
@@ -127,6 +130,9 @@ for (const c of CASES) {
     await field.scrollIntoViewIfNeeded();
     if (c.partner) {
       await expect.poll(() => arrangement(field, c.partner!(page)), { message: `${c.slug} never stacked at 390` }).toBe("above");
+    } else if (c.gridTiles) {
+      const [first, second] = c.gridTiles(page);
+      await expect.poll(() => arrangement(second, first), { message: `${c.slug} Grid never stacked at 390` }).toBe("above");
     }
     const node = await field.elementHandle();
     // Settings' fields hold a saved value; type after it. The line's end, not End:

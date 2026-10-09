@@ -163,7 +163,7 @@ function EmptyThreadLive() {
           description="The assistant answers from your workspace's docs and settings."
         />
       ) : (
-        <Column snug style={{ width: "100%" }}>
+        <Column snug>
           {messages.map((m, i) => (
             <Bubble key={i} from={m.from} text={m.text} />
           ))}

@@ -1,19 +1,18 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Keyboard, Platform, StyleSheet, type NativeSyntheticEvent, type TextInputFocusEventData } from "react-native";
+import { Keyboard, Platform, type NativeSyntheticEvent, type TextInputFocusEventData } from "react-native";
 import { Redirect, Stack, useFocusEffect, useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import type { SearchBarCommands } from "react-native-screens";
-import { View, Text, Pressable, GlassSurface, useTheme, alpha } from "@nannier/canvas";
+import { View, Card, Column, ScrollView, StackedList, useTheme } from "@nannier/canvas";
 import { search } from "../../core/data/search";
 import type { SearchEntry } from "../../core/data/types";
-import { sans } from "../../ui/fonts";
 
 // The Search tab's screen. On native (iOS/Android) the rightmost bottom tab opens this and the
 // nav bar hosts the system search field (a real UISearchController on iOS 26 / Material search on
 // Android), auto-focused on open. On web the Search tab opens the cmd-K modal (see WebNav), so a
 // /search deep link just redirects home.
 //
-// Results live in a Liquid Glass "bubble" anchored to the TOP of the search field: it stays
+// Results use a Canvas content card anchored above the system search field: it stays
 // hidden until you type, then rises above the bar with the matches. Matches are ranked so the
 // CLOSEST one sits at the BOTTOM of the bubble, nearest the field (and bottom-aligned, so the
 // bubble grows upward as more match). `obscureBackground:false` keeps iOS from dimming the
@@ -110,7 +109,7 @@ function NativeSearch() {
           },
         }}
       />
-      {/* The Liquid Glass results bubble: anchored just above the field, grows upward, closest
+      {/* The Canvas results card: anchored just above the field, grows upward, closest
           match at the bottom. box-none lets taps outside the bubble reach the field/content. */}
       {showBubble ? (
         <View
@@ -125,37 +124,16 @@ function NativeSearch() {
             pointerEvents: "box-none",
           }}
         >
-          {/* The bubble is a content-sized rounded box (the rows size it); GlassSurface fills
-              BEHIND them as an absolute background, since a content-sized GlassSurface would
-              collapse (its core puts flex:1 on the clip box). The list is capped so it fits. */}
-          <View style={{ flex: 1, justifyContent: "flex-end" }}>
-            <View style={{ borderRadius: 24, overflow: "hidden", borderWidth: 1, borderColor: alpha(tokens.border, 0.7) }}>
-              <GlassSurface style={StyleSheet.absoluteFill} pointerEvents="none" />
-              <View style={{ paddingVertical: 6 }}>
-                {results.map((item, i) => {
-                  const closest = i === results.length - 1;
-                  return (
-                    <Pressable
-                      key={item.path}
-                      onPress={() => go(item.path)}
-                      style={({ pressed }) => ({
-                        paddingHorizontal: 16,
-                        paddingVertical: 9,
-                        backgroundColor: pressed ? alpha(tokens.foreground, 0.06) : "transparent",
-                      })}
-                    >
-                      <Text numberOfLines={1} style={{ fontFamily: sans(closest ? "600" : "500"), fontSize: 14, color: tokens.foreground }}>
-                        {item.title}
-                      </Text>
-                      <Text numberOfLines={1} style={{ fontFamily: sans("400"), fontSize: 12, color: tokens["muted-foreground"], marginTop: 1 }}>
-                        {item.description}
-                      </Text>
-                    </Pressable>
-                  );
-                })}
-              </View>
-            </View>
-          </View>
+          <Column grow shrink end>
+            <Card flush>
+              <ScrollView keyboardShouldPersistTaps="handled">
+                <StackedList clickable label="Search results"
+                  items={results.map((item) => ({ id: item.path, name: item.title, detail: item.description }))}
+                  onPressItem={(index) => go(results[index].path)}
+                />
+              </ScrollView>
+            </Card>
+          </Column>
         </View>
       ) : null}
     </View>

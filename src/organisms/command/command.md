@@ -10,6 +10,17 @@ filters the rows. Solid mode paints the skin's own palette.
 
 The search placeholder names the input and its result list. Supply `accessibilityLabel` when a more specific purpose is needed. `defaultActive={-1}` starts without a highlighted result: Enter selects nothing until navigation or hovering chooses a row. Either arrow key starts at the first result from this state. Controlled indices above the visible result count clamp to the last match; negative, fractional and non-finite indices leave no active result.
 
+Use `filtered` when a search service or index supplies ranked groups; Command keeps
+those rows and their order instead of filtering their labels again. An item's
+`description` supplies its secondary text. `emptyMessage` provides both the initial
+prompt and the no-match message.
+
+Use `embedded` inside a `Dialog` or `Drawer` to inherit its surface and fill its
+bounds. It has no effect when `trigger` is set. Long results scroll within the
+palette. `autoFocus` focuses the inline field after the containing overlay captures
+its opener, so closing restores the original control. `onKeyPress` runs before
+built-in navigation; call `preventDefault()` to handle an application shortcut.
+
 ## Usage
 
 ```tsx
@@ -66,6 +77,18 @@ The search placeholder names the input and its result list. Supply `accessibilit
     ] }
   ]}
 />
+```
+
+### Embedded search
+
+```tsx
+<Card flush>
+  <Command embedded filtered defaultQuery="universal" groups={[
+    { heading: "Guides", items: [
+      { label: "Canvas", description: "A universal interface kit" }
+    ] }
+  ]} />
+</Card>
 ```
 
 ### Filtering

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import {
+  Container,
   Row,
   Column,
   Card,
@@ -42,7 +43,7 @@ function CenteredCardLive() {
   const [remember, setRemember] = useState(false);
   return (
     <Row center>
-      <Column cozy style={{ width: "100%", maxWidth: 400 }}>
+      <Container sm><Column cozy>
         <Card>
           <Column cozy>
             <Column tight alignCenter>
@@ -114,7 +115,7 @@ function CenteredCardLive() {
             </Row>
           </Column>
         </Card>
-      </Column>
+      </Column></Container>
     </Row>
   );
 }
@@ -194,7 +195,7 @@ function MagicLinkLive() {
   };
   return (
     <Row center>
-      <Column cozy style={{ width: "100%", maxWidth: 400 }}>
+      <Container sm><Column cozy>
         <Card>
           {sent ? (
             <Column cozy alignCenter>
@@ -237,7 +238,7 @@ function MagicLinkLive() {
             </Column>
           )}
         </Card>
-      </Column>
+      </Column></Container>
     </Row>
   );
 }
@@ -251,7 +252,7 @@ export const SIGNIN_TEMPLATE: TemplateDoc = {
     {
       title: "Centered card",
       anatomy:
-        "Emblem logo + email/password Inputs + remember-me Checkbox + forgot-password link + primary CTA + OAuth Divider row. Max width 400, centered.",
+        "Emblem logo + email/password Inputs + remember-me Checkbox + forgot-password link + primary CTA + OAuth Divider row. A centered sm Container caps the form and stays fluid on narrow screens.",
       render: () => <CenteredCardLive />,
     },
     {

@@ -1,12 +1,10 @@
 import { Component, Fragment, type ReactNode, useEffect, useState } from "react";
 import { Platform } from "react-native";
-import { ScrollView, View, Text, Row, Column, Tabs, Input, ButtonGroup, OverlayProvider, BreakpointOverride, useMeasuredWidth, useTheme, type IconName, type BreakpointKey, useResponsive } from "@nannier/canvas";
+import { ScrollView, View, Typography, Card, Alert, Divider, Container, Row, Column, Tabs, Input, ButtonGroup, OverlayProvider, BreakpointOverride, useMeasuredWidth, useTheme, type IconName, type BreakpointKey, useContainerBreakpoint } from "@nannier/canvas";
 import { buildScopes } from "../core/build-scopes";
 import { IconSearchContext } from "../core/live-state";
 import type { DocExample, ExampleScope } from "../core/scope";
 import { CodeBlock } from "./code-block";
-import { DocsSurface } from "./surface";
-import { sans } from "./fonts";
 
 // Docs-only: example helpers whose fence renders a searchable catalog. When the selected
 // example's code uses one, the Playground draws a SINGLE search field above the 3-up stage and
@@ -53,13 +51,7 @@ export class ExampleErrorBoundary extends Component<{ children: ReactNode }, { e
 }
 
 function ErrorNote({ message }: { message: string }) {
-  const { tokens } = useTheme();
-  return (
-    <Column tight style={{ borderRadius: 8, borderWidth: 1, borderColor: tokens.destructive, padding: 10 }}>
-      <Text style={{ fontFamily: sans("600"), fontSize: 12, color: tokens.destructive }}>Example failed to render</Text>
-      <Text style={{ fontSize: 11, color: tokens["muted-foreground"] }}>{message}</Text>
-    </Column>
-  );
+  return <Alert destructive title="Example failed to render" description={message} />;
 }
 
 // Holds a preview sized to the stage. The stage is a DEFINITE-width box that centers
@@ -82,14 +74,7 @@ function ErrorNote({ message }: { message: string }) {
 // "start" pins the example to the leading edge and stretches it (a block-level,
 // leading-aligned component such as Breadcrumb spans the row and reads from the left).
 export function FitStage({ children, align = "center" }: { children: ReactNode; align?: "center" | "start" }) {
-  const fill = align === "start";
-  return (
-    <View style={{ width: "100%", alignItems: fill ? "stretch" : "center", justifyContent: "center" }}>
-      <View style={{ width: "100%", alignItems: fill ? "stretch" : "center" }}>
-        {children}
-      </View>
-    </View>
-  );
+  return <Container><Column flush center alignCenter={align === "center"}>{children}</Column></Container>;
 }
 
 // One platform row in the stage: the centered live render, tagged with a small platform
@@ -107,30 +92,29 @@ function PlatformRow({ label, scope, render, resetKey, first, showLabel, stageAl
   showLabel: boolean;
   stageAlign?: "center" | "start";
 }) {
-  const { tokens } = useTheme();
   return (
     <View
       // Marks the row with its platform for tooling (element crops, row-level
       // assertions). Web-only attribute; a no-op on native, where a single
       // unlabeled preview renders. Same dataSet pattern as previewStage below.
       {...(Platform.OS === "web" ? ({ dataSet: { platformRow: label.toLowerCase() } } as object) : null)}
-      style={{ borderTopWidth: first ? 0 : 1, borderColor: tokens.border }}
     >
       {/* The live render cell. The overlay host is ONE per stage (see Playground),
           not per cell: a per-cell host traps its outlet inside the cell's stacking
           context, so an open menu on an upper row is clipped by the cell and painted
           under lower rows. A single stage-level outlet floats overlays above every
           row instead. */}
-      <Column flush center alignCenter padLoose style={{ minWidth: 0, minHeight: 84 }}>
+      {first ? null : <Divider />}
+      <Column flush center alignCenter padLoose>
         <ExampleErrorBoundary key={resetKey}>
           <FitStage align={stageAlign}>{render(scope)}</FitStage>
         </ExampleErrorBoundary>
       </Column>
       {showLabel ? (
         <View pointerEvents="none" style={{ position: "absolute", top: 8, left: 12 }}>
-          <Text style={{ fontFamily: sans("600"), fontSize: 10, letterSpacing: 0.6, textTransform: "uppercase", color: tokens["muted-foreground"], opacity: 0.55 }}>
+          <Typography caption subtle>
             {label}
-          </Text>
+          </Typography>
         </View>
       ) : null}
     </View>
@@ -150,9 +134,9 @@ export function Playground({ examples, stageAlign, singlePreview, selected: sele
   onSelect?: (index: number) => void;
 }) {
   const { tokens } = useTheme();
-  // The wide stage above the tablet tier (width > lg, 1024), through the kit's bucket
-  // hook so the server and the hydration render agree on the desktop layout.
-  const wide = useResponsive({ base: true, lg: false });
+  // The example rail follows the room available to this playground, including
+  // when the docs sidebar takes part of a desktop viewport.
+  const { value: wide, onLayout: onPlaygroundLayout } = useContainerBreakpoint({ base: true, md: false });
   const [selectedState, setSelectedState] = useState(0);
   const selected = selectedProp ?? selectedState;
   const setSelected = onSelectProp ?? setSelectedState;
@@ -237,9 +221,9 @@ export function Playground({ examples, stageAlign, singlePreview, selected: sele
           {Platform.OS === "web" ? (
             <Row tight end alignCenter>
               {simulating ? (
-                <Text style={{ fontFamily: sans("500"), fontSize: 11, color: tokens["muted-foreground"] }}>
+                <Typography tiny>
                   {`${cardWidth || simulated.width}px`}
-                </Text>
+                </Typography>
               ) : null}
               <ButtonGroup
                 segmented
@@ -253,7 +237,7 @@ export function Playground({ examples, stageAlign, singlePreview, selected: sele
             </Row>
           ) : null}
           {/* The stage is a content surface: a solid card in solid mode, a frost in glass mode
-              (DocsSurface routes through the kit GlassSurface), so the preview never reads as a
+              (Card routes through the kit GlassSurface), so the preview never reads as a
               clear hole. The cells below inherit it. The card is a fully-rounded, fully-bordered
               frame that sits a gap above the code block (never flush to it). When simulating,
               it narrows to the tier's width, centered, while the code block stays full width,
@@ -277,18 +261,11 @@ export function Playground({ examples, stageAlign, singlePreview, selected: sele
             // hover shade) falls over the block's edge instead of being painted under it.
             style={[{ zIndex: 1 }, simulating ? { width: simulated.width ?? undefined, maxWidth: "100%", alignSelf: "center" } : null]}
           >
-            <DocsSurface
-              fill="card"
-              style={{
-                borderWidth: 1,
-                borderColor: tokens.border,
-                borderRadius: 12,
-              }}
-            >
+            <Card flush>
               {previews.map((p, i) => (
                 <PlatformRow key={p.platform} label={p.label} scope={p.scope} render={ex.render} resetKey={`${p.platform}:${selected}`} first={i === 0} showLabel={showLabels} stageAlign={stageAlign} />
               ))}
-            </DocsSurface>
+            </Card>
           </View>
           <CodeBlock code={ex.code} />
         </Column>
@@ -306,21 +283,21 @@ export function Playground({ examples, stageAlign, singlePreview, selected: sele
   const labels = examples.map((e) => e.label);
 
   // Wide: Tabs' `vertical` rail (a settings-style side rail, active row filled)
-  // beside the stage, in a fixed 200px scroller so many examples still scroll.
+  // beside the stage, in a Container xxxs scroller so many examples still scroll.
   // Narrow: the horizontal `underline` tab bar above the stage, wrapping (the
   // kit's `wrap`) so every example is on screen at once on a phone or tablet.
   // The kit's overflow scroller, which this rode before, showed only the first
   // few labels and panned the rest with no scrollbar to say they were there.
   const rail = wide ? (
-    <ScrollView style={{ width: 200, flexGrow: 0 }} showsVerticalScrollIndicator={false}>
+    <Container xxxs start><ScrollView showsVerticalScrollIndicator={false}>
       <Tabs vertical block testID="playground-examples" tabs={labels} active={selected} onSelect={setSelected} />
-    </ScrollView>
+    </ScrollView></Container>
   ) : (
     <Tabs underline wrap testID="playground-examples" tabs={labels} active={selected} onSelect={setSelected} />
   );
 
   return (
-    <View style={{ flexDirection: wide ? "row" : "column", gap: wide ? 16 : 10 }}>
+    <View onLayout={onPlaygroundLayout}><Row stacks stackBreakpoint="md" relaxed>
       {/* Stable sibling keys preserve the live example when the rail moves above it. */}
       {wide ? (
         <>
@@ -333,6 +310,6 @@ export function Playground({ examples, stageAlign, singlePreview, selected: sele
           <Fragment key="stage">{stage}</Fragment>
         </>
       )}
-    </View>
+    </Row></View>
   );
 }

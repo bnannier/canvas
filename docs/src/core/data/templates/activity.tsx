@@ -88,8 +88,8 @@ function ActivityLive() {
     <Column relaxed>
       <Card>
         <Column snug>
-          <Row snug wrap alignEnd>
-            <Column fill style={{ minWidth: 220 }}>
+          <Row snug stacks alignEnd>
+            <Column fill>
               <Input
                 leadingIcon
                 icon="search"

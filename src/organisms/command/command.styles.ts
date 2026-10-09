@@ -104,6 +104,16 @@ export function card(tokens: ColorTokens): ViewStyle {
   };
 }
 
+// Embedded palettes inherit the containing overlay's surface and width. The
+// scrollport caps long result sets and may shrink further with its parent.
+export const embedded: ViewStyle = { width: "100%", minWidth: 0, minHeight: 0, flexShrink: 1 };
+export const results: ViewStyle = { maxHeight: 320, minHeight: 0 };
+export const rowText: ViewStyle = { flex: 1, minWidth: 0 };
+export const stackedLabel: TextStyle = { flexGrow: 0, flexBasis: "auto" };
+export function rowDescription(tokens: ColorTokens): TextStyle {
+  return { fontSize: 12, lineHeight: 18, color: tokens["muted-foreground"] };
+}
+
 // In trigger mode the card floats below the collapsed trigger button.
 // (absolute top-full left-0 z-50 mt-3.)
 export const cardFloating: ViewStyle = {

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Row, Column, Card, Typography, Button, Input, Checkbox, Progress, Divider, Emblem, EmptyState, Icon, useToast } from "@nannier/canvas";
+import { Container, Row, Column, Card, Typography, Button, Input, Checkbox, Progress, Divider, Emblem, EmptyState, Icon, useToast } from "@nannier/canvas";
 import type { TemplateDoc } from "../types";
 
 // Live sign-up flow built from real Canvas components: a registration card with
@@ -31,7 +31,7 @@ function SignupLive() {
   };
   return (
     <Row center>
-      <Column cozy style={{ width: "100%", maxWidth: 400 }}>
+      <Container sm><Column cozy>
         <Card>
           <Column cozy>
             <Column tight alignCenter>
@@ -67,7 +67,7 @@ function SignupLive() {
             </Row>
           </Column>
         </Card>
-      </Column>
+      </Column></Container>
     </Row>
   );
 }
@@ -93,7 +93,7 @@ export const SIGNUP_TEMPLATE: TemplateDoc = {
   sections: [
     {
       title: "Registration card",
-      anatomy: "Logo Emblem + name/email/password Inputs + strength Progress (fills as you type) + terms Checkbox + primary CTA + OAuth Divider row. Max width 400, centered.",
+      anatomy: "Logo Emblem + name/email/password Inputs + strength Progress (fills as you type) + terms Checkbox + primary CTA + OAuth Divider row. A centered sm Container caps the form and stays fluid on narrow screens.",
       render: () => <SignupLive />,
     },
     {
