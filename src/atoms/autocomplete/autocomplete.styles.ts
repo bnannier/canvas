@@ -8,20 +8,21 @@ import { fieldBorder } from "../../style/field-colors.js";
 // accent is the `ring`, never a platform default) and only the native SHAPE,
 // sizing, fill, border/underline treatment, popover elevation, and press feedback
 // change per OS. The treatment mirrors Input/Select:
-//   iOS 27: the reference's rounded-border field (`card` fill, the 8pt field
+//   iOS 27: the reference's rounded-border field (`card` fill, the iOS field
 //     corner, a 1pt `field-border` hairline turning `ring` while active) under a
-//     stacked label, with the gray trailing caret; the open list is a 26pt
-//     continuous-corner `popover` card with a soft shadow and roomy rows. Press =
+//     stacked label, with the gray trailing caret; the open list is a `popover` card
+//     at the iOS menu corner (continuous) with a soft shadow and roomy rows. Press =
 //     opacity dim (~0.8).
-//   Android (Material 3 filled): a subtle `muted` fill, 4dp TOP corners and a
-//     flat bottom, a bottom active-indicator underline (a 1dp `muted-foreground`
-//     baseline at rest -> 2dp `ring` while active); the menu surface is a
-//     4dp-cornered elevated `popover` sheet (M3 elevation, no soft drop shadow),
-//     full-width rows ~48dp tall; press = android_ripple.
-//   Web: a stacked label over a `card` box at the 10px field corner with a 1px
+//   Android (Material 3 filled): a subtle `muted` fill, the Material 3 field corner
+//     on TOP and a flat bottom, a bottom active-indicator underline (a 1dp
+//     `muted-foreground` baseline at rest -> 2dp `ring` while active); the menu
+//     surface is an elevated `popover` sheet at the Material 3 menu corner (M3
+//     elevation, no soft drop shadow), full-width rows ~48dp tall; press =
+//     android_ripple.
+//   Web: a stacked label over a `card` box at the field corner with a 1px
 //     `field-border` hairline turning `ring` while active, 40/48/56px tall per
-//     size; the list is a bordered `popover` card at the 12px menu corner with
-//     `shadow-lg`, an 8px inset and 10px-cornered `accent` rows. Press dims
+//     size; the list is a bordered `popover` card at the menu corner with
+//     `shadow-lg`, an 8px inset and `accent` rows at the control corner. Press dims
 //     nothing (the accent fill is the feedback).
 
 export type Size = "small" | "default" | "large";
@@ -142,8 +143,8 @@ export const webSkin: AutocompleteSkin = {
     alignSelf: "stretch", alignItems: "center", justifyContent: "center", flexShrink: 0,
     width: 24, minHeight: 24,
   }),
-  // The list: a card at the menu corner with an 8px inset and 40px rows (at the
-  // default size) with a 10px corner, matching Select's panel.
+  // The list: a card at the menu corner with an 8px inset around 40px rows (at the
+  // default size), matching Select's panel.
   popover: (t) => ({
     maxHeight: 280,
     overflow: "hidden", // clip rows to the rounded card; the list scrolls inside
@@ -156,6 +157,7 @@ export const webSkin: AutocompleteSkin = {
   }),
   emptyRow: { paddingHorizontal: 12, paddingVertical: 10 },
   emptyText: (t, size) => ({ color: t["muted-foreground"], ...TEXT_SIZE[size] }),
+  // A row at the control corner, as a Dropdown menu's rows.
   row: {
     flexDirection: "row",
     alignItems: "center",

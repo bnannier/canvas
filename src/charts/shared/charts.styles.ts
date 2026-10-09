@@ -213,9 +213,10 @@ export function verticalLabel(tokens: ColorTokens): TextStyle {
 // Chart is a "Shared" treatment: data visualization is platform-neutral. The iOS HIG
 // Charts page (Swift Charts) and the shadcn web chart are the same plotted-bar idiom,
 // and Material 3 ships no charts component at all, so there is no native shape to match
-// and the look is identical on every platform. `webSkin` carries the chart look
-// (the card corner on the surface, 8px bar corners, dashed gridlines drawn by the frame); the
-// iOS and Android skins reference it directly so the three columns stay byte-identical.
+// and the look is identical on every platform. `webSkin` carries the chart look (the
+// card corner on the surface, the bar corner on the bars, dashed gridlines drawn by the
+// frame); the iOS and Android skins reference it directly so the three columns stay
+// byte-identical.
 
 /**
  * The zoom control bar, laid OVER a zoomable chart's plot at its bottom-right, the

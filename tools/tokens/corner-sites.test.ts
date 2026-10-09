@@ -221,7 +221,7 @@ describe("CornerSites", () => {
 
 /** A corner as the scan reports it, drawn where it is written unless a test says where else. */
 const corner = (over: Partial<CornerValue>): CornerValue => {
-  const v = { value: 0, file: "src/atoms/x/x.styles.ts", line: 1, at: 0, path: "webSkin.box", kind: "literal" as const, concentric: null, text: "", rounds: ["src/atoms/x"], ...over };
+  const v = { value: 0, file: "src/atoms/x/x.styles.ts", line: 1, at: 0, path: "webSkin.box", kind: "literal" as const, concentric: null, text: "", ...over };
   const here = { file: v.file, line: v.line, at: v.at, path: v.path };
   return { sets: [here], drawn: [{ ...here, platform: platformOf(here) }], ...v };
 };

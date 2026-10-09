@@ -402,7 +402,7 @@ export const iosSkin: ButtonGroupSkin = {
     return { fontSize: 15, lineHeight: 20, color: t["popover-foreground"] };
   },
 
-  // --- stepper (HIG: gray-tracked prev/current/next, rounded 8) ---
+  // --- stepper (HIG: gray-tracked prev/current/next, capsule ends) ---
   stepperArrow(t, height) {
     return {
       flexDirection: "row",

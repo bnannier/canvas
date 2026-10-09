@@ -10,15 +10,15 @@ import { type ColorTokens, shape, type FloatingLabelStyles } from "../../style/i
 // default); only the
 // native SHAPE, fill, border/underline, and focus feedback change per OS:
 //   iOS: the "iOS Mobile Input Fields" reference (see input.styles.ts): the same
-//     white `card` box as the single-line Input, an 8pt corner, the 1pt gray-300
+//     white `card` box as the single-line Input, the iOS field corner, the 1pt gray-300
 //     resting hairline (`field-border`), `ring` on focus, `destructive` plus the
 //     red-50 wash on error, a 16pt value; the brand cursor/selection is `primary`
 //     (set on the shell, never a system blue).
 //   Android (Material 3 filled): a subtle fill with a flat bottom active
-//     indicator (underline). Top corners 4, square bottom. The indicator is a
-//     1px `muted-foreground` resting line that thickens to 2px `ring` on focus
+//     indicator (underline). The Material 3 field corner on top, square bottom. The
+//     indicator is a 1px `muted-foreground` resting line that thickens to 2px `ring` on focus
 //     (destructive on error).
-//   Web: full-width, the 10px field corner, a 1px border on the `card` fill; the
+//   Web: full-width, the field corner, a 1px border on the `card` fill; the
 //     border is error > focus(ring) > the resting `field-border` hairline.
 
 export type Size = "small" | "base" | "large";

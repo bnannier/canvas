@@ -7,8 +7,8 @@ import { webHover } from "../../style/hover.js";
 // The Avatar skin. No platform ships an avatar control, so every platform takes Dark
 // Factory's identity disc (the gradient and the initials' ink live in avatar.shared.tsx and
 // src/style/identity-hue.ts) and the native skins are the web skin: bold (800) initials at
-// a third of the disc (about 0.4 on the two small discs), one line tall, and the 8px
-// control corner for the `rounded` square. The press feedback stays each
+// a third of the disc (about 0.4 on the two small discs), one line tall, and the control
+// corner for the `rounded` square. The press feedback stays each
 // platform's own: the ripple is Android's (a no-op elsewhere), the dim the rest's (the
 // shell skips it on Android), and the touch target each platform's minimum (44pt HIG, 48dp
 // Material, a 44px floor for touch on the web).

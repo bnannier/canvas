@@ -332,10 +332,10 @@ export function createSelect(skin: SelectSkin) {
           dismissable={props.open === undefined || onOpenChange !== undefined}
         >
           <EscapeLayerProvider scope={escapeScope}>
-            {/* The option rows have no radius of their own and sit inside the rounded
-                (4dp) `panel` card. RippleClip is still what rounds their bounded Android
-                ripples: a view cannot clip its own ripple, and the card's own clip does not
-                reach them through the card's padding. See src/style/ripple-clip. */}
+            {/* The Android option rows have no radius of their own and sit inside the
+                rounded `panel` card, so RippleClip rounds their bounded ripples to the
+                card's corners: a view cannot clip its own ripple, and the card's own clip
+                does not reach them through the card's padding. See src/style/ripple-clip. */}
             <OverlayScrollView style={optionScroll} bounces={false}>
             <RippleClip shape={cornerRadii(skin.panel(tokens))}>
             <View nativeID={listId} role={LISTBOX} accessibilityLabel={fieldName} aria-label={fieldName} aria-required={required || undefined}>

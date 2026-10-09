@@ -5,7 +5,7 @@ import { type AlertSkin } from "./alert.shared.js";
 
 // Per-OS Alert skins. Neither iOS nor Material 3 ships an inline alert banner, so the
 // Alert is Dark Factory's panel on every platform and the native skins are the web skin:
-// Dark Factory's 12px tile corner, a 1px border (the neutral card's hairline,
+// Dark Factory's tile corner, a 1px border (the neutral card's hairline,
 // transparent on a toned wash), 16 by 12 padding, its dense type (a 12.5 bold title over
 // a 12.5 body), and a 24px dismiss control that dims on press (Android's ripple carries
 // its press instead, see pressDim) and pads its touch area out to each platform's minimum

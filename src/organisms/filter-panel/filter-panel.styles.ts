@@ -17,13 +17,13 @@ import { type ButtonProps } from "../../atoms/button/button.shared.js";
 //     12px / +0.4 tracking uppercase group headings, no row press feedback (the row
 //     is a plain View).
 //   iOS (HIG): filters live in a sheet/popover built from standard controls, so
-//     the panel reads as an iOS grouped surface — a softer 12px card radius, the
+//     the panel reads as an iOS grouped surface: the iOS card corner, the
 //     group heading uses SF-style footnote tracking (slightly tighter), the option
 //     row marks a chosen filter the way an iOS list does (the label leads, the
 //     count follows, and a trailing check in the accent closes the row), and the
 //     row dims to ~0.8 opacity on press (the iOS press idiom).
-//   Android (Material 3): the side-sheet surface — a larger 16dp card radius, the
-//     group heading uses M3 title-small tracking (+0.1) and is NOT uppercased
+//   Android (Material 3): the side-sheet surface: the side sheet corner (M3 large),
+//     the group heading uses M3 title-small tracking (+0.1) and is NOT uppercased
 //     (M3 section headers are sentence/Title case), and the option row shows a
 //     native ripple state layer instead of an opacity dim.
 

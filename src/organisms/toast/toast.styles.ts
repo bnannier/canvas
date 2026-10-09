@@ -19,10 +19,10 @@ import { type ToastSkin } from "./toast.shared.js";
 //     intent glyphs in the dark scheme's status inks (inverseStatus). Press = DF's 0.9
 //     dim. iOS has no toast control, so it takes this skin; its action and dismiss reach
 //     the 44pt HIG target through hitSlop.
-//   Android (Material 3 snackbar): a small-radius (4dp) bar on the same inverse pill
-//     with its white ink, 14sp body, NO leading intent glyph (the M3 snackbar anatomy
-//     has none), the action in `inverse-primary`, the close x in the pill's ink at the
-//     24dp spec size, trailing padding 8dp beside a trailing control, 48dp touch targets
+//   Android (Material 3 snackbar): a bar at the snackbar corner (M3 extra-small) in
+//     the same inverse fill with its white ink, 14sp body, NO leading intent glyph (the
+//     M3 snackbar anatomy has none), the action in `inverse-primary`, the close x in
+//     the pill's ink at the 24dp spec size, trailing padding 8dp beside a trailing control, 48dp touch targets
 //     via hitSlop, press = ripple in the pill's ink.
 
 const ICON_SIZE = 18;
