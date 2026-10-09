@@ -10,7 +10,7 @@ export default function OverlayPlacementFixture() {
   return (
     <Page>
       <PageHeader title="Overlay placement" description="Long menus remain reachable near the viewport edges." />
-      <Column loose testID="overlay-content-band">
+      <Column loose>
         <IOSPopover trigger="Review this project's settings and sharing permissions" title="Wide-trigger details" description="The pointer follows the measured trigger and card." actionLabel="Close details" />
         {Array.from({ length: 20 }, (_, index) => <Typography key={index}>Page content {index + 1}</Typography>)}
         <Autocomplete label="Edge autocomplete" options={options} />
