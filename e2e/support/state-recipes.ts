@@ -44,10 +44,12 @@
  *            thumb or a drag handle that a move would drag; an inspection is cleared by a
  *            second press on the same datum; an overlay closes on Escape) and measures how
  *            that went against the page before the state was applied. What it finds wrong
- *            is a flag like any other: `press-not-cancelled` (the row's accessibility tree,
- *            the address, or the pressed control's computed look or pixels differ from
- *            before the press), `press-selects-label` (dragging off the control selected
- *            its own label's text), `inspection-not-cleared` and `overlay-not-closed`.
+ *            is a flag like any other: `press-not-cancelled` (a click reached the control as
+ *            the button came up after moving off, which is a Pressable's press firing; the
+ *            control left the page; or the row's accessibility tree, the address, or the
+ *            pressed control's computed look or pixels differ from before the press),
+ *            `press-selects-label` (dragging off the control selected its own label's
+ *            text), `inspection-not-cleared` and `overlay-not-closed`.
  *
  * What a defect looks like is recorded, not hidden: a focused control whose ring does not
  * show is still a reached focus state, flagged `focus-ring-missing` or
@@ -101,7 +103,7 @@ export type StateFlag = keyof typeof STATE_FLAGS;
 
 /** What a release found wrong (`Released.flags`), each with what it means; recorded for a state not reached as well. */
 export const RELEASE_FLAGS = {
-  "press-not-cancelled": "moving off before the button came up did not cancel the press: the row's tree, the address, or the control's look or pixels changed",
+  "press-not-cancelled": "the press took effect where it should have been cancelled: a click reached the control as the button came up after moving off, the control left the page, or the row's tree, the address, or the control's look or pixels changed",
   "press-selects-label": "dragging off the control selected its own label's text",
   "inspection-not-cleared": "a second press on the inspected datum did not clear the inspection",
   "overlay-not-closed": "the overlay was still open 3 s after its close",
@@ -290,8 +292,9 @@ const pause = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
  * `holdMs`. Under the capture's reduced motion the hover transitions run in 0 ms, so this
  * waits on React's commit and the browser's style pass, not on an animation.
  */
-async function settledStyles(control: Locator, timeoutMs = 2_000, holdMs = 200): Promise<StyleSnapshot> {
-  const read = () => control.evaluate(readStyles, WATCHED);
+async function settledStyles(control: Locator | ElementHandle<Element>, timeoutMs = 2_000, holdMs = 200): Promise<StyleSnapshot> {
+  // A pinned element (a pressed control) is read as itself, even once a locator would find another.
+  const read = () => ("count" in control ? control.evaluate(readStyles, WATCHED) : control.evaluate(readStyles, WATCHED));
   let previous = await read();
   let since = Date.now();
   const deadline = Date.now() + timeoutMs;
@@ -679,23 +682,33 @@ async function middleOf(node: Locator): Promise<Point | null> {
 }
 
 /** What a press can leave behind: the scope's accessibility tree, the address, and how the pressed control looks. */
-interface PressRecord {
+export interface PressRecord {
   aria: string;
   location: string;
-  styles: StyleSnapshot;
+  /** Whether the pressed control is still in the page; when it is not, it has no look or pixels to compare. */
+  connected: boolean;
+  styles: StyleSnapshot | null;
   /** The control's pixels, PNG; null when it could not be photographed. */
   shot: Buffer | null;
   /** The element focus is on, as a reviewer would name it. */
   focus: string;
 }
 
-async function pressRecord(page: Page, scope: Locator, control: Locator): Promise<PressRecord> {
-  const styles = await settledStyles(control);
+/** The scope's tree, or that it is gone (an overlay a press inside it closed). */
+async function scopeTree(scope: Locator): Promise<string> {
+  if ((await scope.count()) === 0) return "(the scope is gone)";
+  return scope.ariaSnapshot({ timeout: 5_000 }).catch(() => "(the scope is gone)");
+}
+
+/** A record of the pressed control, read through the element pinned when the press began. */
+async function pressRecord(page: Page, scope: Locator, control: ElementHandle<Element>): Promise<PressRecord> {
+  const connected = await control.evaluate((node) => node.isConnected);
   return {
-    aria: await scope.ariaSnapshot({ timeout: 5_000 }).catch(() => "(the scope is gone)"),
+    aria: await scopeTree(scope),
     location: await page.evaluate(() => location.pathname + location.search),
-    styles,
-    shot: await control.screenshot({ animations: "disabled", caret: "hide", timeout: 5_000 }).catch(() => null),
+    connected,
+    styles: connected ? await settledStyles(control) : null,
+    shot: connected ? await control.screenshot({ animations: "disabled", caret: "hide", timeout: 5_000 }).catch(() => null) : null,
     focus: await page.evaluate(() => {
       const el = document.activeElement;
       if (!el || el === document.body) return "nothing";
@@ -747,11 +760,25 @@ function takeSelection(control: Element): { text: string; label: boolean } | nul
   return { text, label };
 }
 
+/**
+ * Whether the clicks a release delivered to the control are its press firing: after a
+ * move-off any click there is (react-native-web runs a Pressable's `onPress` from it);
+ * coming up in place on a thumb or a grip is a click by design.
+ */
+export function pressFired(ends: "move-off" | "in-place", clicks: readonly string[]): string | null {
+  if (ends !== "move-off" || !clicks.length) return null;
+  return `a click reached ${clicks[0]} in the control as the button came up, so its press fired`;
+}
+
 /** What differs between two records of the same control: nothing when the press left no trace. */
-async function pressTrace(page: Page, before: PressRecord, after: PressRecord): Promise<string[]> {
+export async function pressTrace(page: Pick<Page, "evaluate">, before: PressRecord, after: PressRecord): Promise<string[]> {
   const trace: string[] = [];
-  if (before.aria !== after.aria) trace.push("the accessibility tree of the row changed (its states, values or names)");
+  if (before.aria !== after.aria) trace.push(after.aria === "(the scope is gone)" ? "the overlay the control was pressed in closed" : "the accessibility tree of the row changed (its states, values or names)");
   if (before.location !== after.location) trace.push(`the page moved from ${before.location} to ${after.location}`);
+  if (!after.connected || !before.styles || !after.styles) {
+    if (!after.connected) trace.push("the pressed control left the page");
+    return trace;
+  }
   const { changes, structure } = diffStyles(before.styles, after.styles);
   if (structure) trace.push(structure);
   if (changes.length) trace.push(`the control's look changed: ${changes.slice(0, 6).map((c) => `${c.node} ${c.property} ${c.from} -> ${c.to}`).join("; ")}`);
@@ -764,8 +791,37 @@ async function pressTrace(page: Page, before: PressRecord, after: PressRecord): 
 }
 
 type Pressed =
-  | { control: Locator; scope: Locator; point: Point; rest: StyleSnapshot; hovered: StyleSnapshot; before: PressRecord; opened?: Opened }
+  | { control: Locator; pinned: ElementHandle<Element>; scope: Locator; point: Point; rest: StyleSnapshot; hovered: StyleSnapshot; before: PressRecord; opened?: Opened }
   | { missing: string; opened?: Opened };
+
+/** Where the page keeps the clicks a release delivers to the pressed control, between two evaluations. */
+const CLICKS_KEY = "__canvasAuditClicks";
+
+/**
+ * Runs in the page: start recording every click whose target is the pressed control or
+ * inside it, in the capture phase at the window, before react-native-web's own handler (a
+ * Pressable runs `onPress` from the native click, and stops it there).
+ */
+function watchClicks(control: Element, key: string): void {
+  const clicks: string[] = [];
+  const listener = (event: Event) => {
+    const target = event.target;
+    if (!(target instanceof Element) || !control.contains(target)) return;
+    const role = target.getAttribute("role");
+    clicks.push(`<${target.localName}${role ? ` role="${role}"` : ""}>`);
+  };
+  window.addEventListener("click", listener, true);
+  (window as unknown as Record<string, unknown>)[key] = { listener, clicks };
+}
+
+/** Runs in the page: stop recording, and the clicks the control was delivered. */
+function takeClicks(key: string): string[] {
+  const watch = (window as unknown as Record<string, unknown>)[key] as { listener: (event: Event) => void; clicks: string[] } | undefined;
+  if (!watch) return [];
+  window.removeEventListener("click", watch.listener, true);
+  delete (window as unknown as Record<string, unknown>)[key];
+  return watch.clicks;
+}
 
 interface PressOptions {
   how?: string;
@@ -788,12 +844,15 @@ interface PressOptions {
  * hover is no pressed state of its own, and the evidence says what the hover changed.
  *
  * Released as the press ends without taking effect (see `PressOptions.release`), and then
- * measured: with the pointer away again, the row's (or the overlay's) accessibility tree,
- * the page's address, and the pressed control's computed look and pixels must be what
- * they were before the press. Anything that differs is listed and flags the cell
- * `press-not-cancelled`, whether the control announces a state or not. Text the drag off
- * the control selected is recorded and cleared first (`press-selects-label` when it takes
- * in the control's own label, as a native button's label never is).
+ * measured on the element pressed, pinned when the press began. After a move-off no click
+ * may reach it as the button comes up: react-native-web runs a Pressable's `onPress` from
+ * the native click, so a click there is the press firing, whatever its handler shows. With
+ * the pointer away again the control must still be in the page, and the row's (or the
+ * overlay's) accessibility tree, the page's address, and the control's computed look and
+ * pixels must be what they were before the press. Anything that differs is listed and flags
+ * the cell `press-not-cancelled`, whether the control announces a state or not. Text the
+ * drag off the control selected is recorded and cleared first (`press-selects-label` when it
+ * takes in the control's own label, as a native button's label never is).
  */
 function pressed(variant: string, target: Target, options: PressOptions = {}): StateRecipe {
   const { within } = options;
@@ -818,19 +877,22 @@ function pressed(variant: string, target: Target, options: PressOptions = {}): S
       const control = target(scope);
       const missing = await presence(control, "control to press");
       if (missing) return { missing, opened };
+      // The element pressed, pinned: the release measures this node, even when the press
+      // takes it out of the page (a dialog's Cancel), where a locator would wait for another.
+      const pinned = (await control.elementHandle())!;
       await page.mouse.move(NEUTRAL_POINT.x, NEUTRAL_POINT.y);
-      const before = await pressRecord(page, scope, control);
+      const before = await pressRecord(page, scope, pinned);
       const point = await middleOf(options.at ? options.at(scope) : control);
       if (!point) return { missing: "the place to press has no box", opened };
       await page.mouse.move(point.x, point.y);
-      const hovered = await settledStyles(control);
+      const hovered = await settledStyles(pinned);
       await page.mouse.down();
-      return { control, scope, point, rest: before.styles, hovered, before, opened };
+      return { control, pinned, scope, point, rest: before.styles!, hovered, before, opened };
     },
     async verify(_scene, applied) {
       if ("missing" in applied) return notReached(applied.missing);
       // Short of a long press (500 ms): the settle reads every 50 ms and holds 200.
-      const now = await settledStyles(applied.control, 400, 200);
+      const now = await settledStyles(applied.pinned, 400, 200);
       const { changes, structure } = diffStyles(applied.hovered, now);
       const hover = [...new Set(diffStyles(applied.rest, applied.hovered).changes.map((c) => c.property))];
       const evidence = { control: await describeTarget(applied.control), changes: changes.slice(0, 40), structure, hoverChanged: hover };
@@ -845,6 +907,10 @@ function pressed(variant: string, target: Target, options: PressOptions = {}): S
     },
     async release(scene, applied) {
       const { page } = scene;
+      // The clicks the control is delivered as the button comes up: a Pressable runs its
+      // `onPress` from the native click, so one reaching the control after a move-off means
+      // the press fired, whether or not its handler changes anything to see.
+      if (!("missing" in applied)) await applied.pinned.evaluate(watchClicks, CLICKS_KEY);
       if (ends === "move-off") await page.mouse.move(NEUTRAL_POINT.x, NEUTRAL_POINT.y);
       await page.mouse.up();
       const pointer = ends === "move-off" ? "moved off, then up" : "up where it went down, then moved off";
@@ -855,13 +921,17 @@ function pressed(variant: string, target: Target, options: PressOptions = {}): S
         return { report: { pointer, ...closed.report }, flags: closed.flags };
       }
       await pause(150);
+      const clicks = await page.evaluate(takeClicks, CLICKS_KEY);
       // A pointer dragged off a control with the button down selects text on the way, as on
       // any page. That is the page's doing, not the press's: it is recorded (and flagged when
       // the selection takes in the control's own label), then cleared, so the comparison below
       // is of the control alone.
-      const selection = await applied.control.evaluate(takeSelection);
-      const after = await pressRecord(page, applied.scope, applied.control);
+      const selection = await applied.pinned.evaluate(takeSelection);
+      const after = await pressRecord(page, applied.scope, applied.pinned);
       const trace = await pressTrace(page, applied.before, after);
+      const fired = pressFired(ends, clicks);
+      if (fired) trace.unshift(fired);
+      await applied.pinned.dispose();
       const closed = await close();
       const flags: ReleaseFlag[] = [];
       if (trace.length) flags.push("press-not-cancelled");
@@ -870,6 +940,7 @@ function pressed(variant: string, target: Target, options: PressOptions = {}): S
         report: {
           pointer,
           cancelled: trace.length === 0,
+          clicked: clicks.length > 0,
           ...(trace.length ? { trace, focus: { before: applied.before.focus, after: after.focus } } : {}),
           ...(selection ? { selected: selection } : {}),
           ...closed.report,

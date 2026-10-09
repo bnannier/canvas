@@ -349,11 +349,16 @@ structure, and releases it:
 
 The release ends the state the way a person would and is measured, not assumed. A press ends
 by moving off before the button comes up, which cancels a press on every platform, or, on a
-slider's thumb or a drag handle that a move would drag, by coming up where it went down;
-then, with the pointer away again, the row's accessibility tree (or the overlay's), the
-page's address, and the pressed control's computed look and its pixels must be what they
-were before the press, or the cell is flagged `press-not-cancelled` with what differs (and
-where focus went), whether the control announces a state or not. Text the drag off the
+slider's thumb or a drag handle that a move would drag, by coming up where it went down.
+The measurement is of the element pressed, pinned when the press began, so a press that
+takes its control out of the page (a dialog's Cancel) is read, not waited for. After a
+move-off no click may reach the control as the button comes up: react-native-web runs a
+Pressable's `onPress` from the native click, so a click there is the press firing, even when
+its handler changes nothing to see (the docs' Save changes). Then, with the pointer away
+again, the control must still be in the page, and the row's accessibility tree (or the
+overlay's), the page's address, and the control's computed look and its pixels must be what
+they were before the press, or the cell is flagged `press-not-cancelled` with what differs
+(and where focus went), whether the control announces a state or not. Text the drag off the
 control selected on the way is recorded and cleared before that comparison, since the page
 selected it, not the press; when the selection takes in the control's own label the cell is
 flagged `press-selects-label` (Button and Chip keep their labels out of a selection; the

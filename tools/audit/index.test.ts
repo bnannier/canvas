@@ -194,7 +194,7 @@ describe("the index over real runs", () => {
     expect(heatmap).toContain(`| [web-states/heatmap/pressed.web/desktop.blush.solid](${states}/heatmap/pressed.web/desktop.blush.solid/probe.json) | Calendar (\`calendar\`) | not reached: pressing [role="img"] [tabindex="-1"] #10 at 0.5, 0.5 of its box showed nothing the chart did not show with the pointer away (the pointer resting on it before the press had shown "13 contributions", "Jul 16, 2025", which the press took away) | - | - | - | - | - | - | - | - | 0 |`);
 
     const slider = read("slider");
-    expect(slider).toContain("| press-not-cancelled | 1 | moving off before the button came up did not cancel the press: the row's tree, the address, or the control's look or pixels changed |");
+    expect(slider).toContain("| press-not-cancelled | 1 | the press took effect where it should have been cancelled: a click reached the control as the button came up after moving off, the control left the page, or the row's tree, the address, or the control's look or pixels changed |");
     expect(slider).toContain("| yes | - | press-not-cancelled | - |");
 
     const tooltip = read("tooltip");
@@ -212,7 +212,7 @@ describe("the index over real runs", () => {
     const summary = readFileSync(join(root, ".audit", "current", "SUMMARY.md"), "utf8");
     expect(summary).toContain("- Of them: 2 example variant cell(s), 7 interaction-state cell(s) (1 not reached), 1 page cell(s)");
     expect(summary).toContain("| [Heatmap](heatmap/index.md) | pressed.web | Calendar | 1: desktop.blush.solid | pressing [role=\"img\"]");
-    expect(summary).toContain("| press-not-cancelled | moving off before the button came up did not cancel the press: the row's tree, the address, or the control's look or pixels changed | 1 | [Slider](slider/index.md) 1 |");
+    expect(summary).toContain("| press-not-cancelled | the press took effect where it should have been cancelled: a click reached the control as the button came up after moving off, the control left the page, or the row's tree, the address, or the control's look or pixels changed | 1 | [Slider](slider/index.md) 1 |");
     // A full sweep holds 18 of Slider's state cells: its states, their rows and widths, by the six looks and surfaces.
     expect(summary).toContain("| [Slider](slider/index.md) | 1 | 1 of 1 | 0/144 0/48 0/48 | 1/18 (0) | press-not-cancelled 1 | press-not-cancelled 1 |");
     expect(summary).toContain("| [template-signin](template-signin/index.md) | 1 | 1 of 1 | 1/18 0/6 0/6 | - | - | contrast-likely 1 |");
