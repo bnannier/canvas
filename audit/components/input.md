@@ -99,6 +99,7 @@ One row per finding. Severity: critical, high, medium, low. Cell: a capture id f
 
 | ID | Severity | Cell | Summary | Status | Fix commit |
 |---|---|---|---|---|---|
+| input-df-1 | medium | source | Dark Factory fidelity: the web label above the field is 14/20 at weight 500 (12/16 small, 16/24 large; `labelAbove` in input.styles.ts), the pre-Dark Factory form row, where Dark Factory's label is 12/17 at weight 600 (`typeScale.label`), so the web Input label does not take Dark Factory's look (design language item 2). Its code comment named the old brand until the brand-name guard; this row now tracks the gap. | open |  |
 
 ## Sign-off
 

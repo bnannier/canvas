@@ -7,7 +7,7 @@ import { type NavbarSkin } from "./navbars.shared.js";
 // (default / bordered / floating), the brand + link cluster, and the action +
 // avatar cluster; the skin supplies only the native SHAPE, sizing, label weight,
 // fill, separator, and press feedback. The BRAND survives on every platform (the
-// indigo `primary` token and the semantic tokens, never a platform default), so
+// `primary` token and the semantic tokens, never a platform default), so
 // each follows light/dark and the glass surface.
 //
 //   iOS (iOS 26+ / Liquid Glass navigation bar): a slim 44pt bar with a 1px
@@ -34,7 +34,7 @@ export const webSkin: NavbarSkin = {
   pressedOpacity: 0.9,
   ripple: null,
 
-  // The Riskora top bar: 72px tall with a 24px gutter, the brand at left, the
+  // The top bar: 72px tall with a 24px gutter, the brand at left, the
   // link pills in the middle, the search field and the 44px icon tiles at right.
   bar() {
     return {
@@ -75,7 +75,7 @@ export const webSkin: NavbarSkin = {
     return { flexDirection: "row", alignItems: "center", gap: 4 };
   },
   // A 40px link pill with the control corner; the active pill fills the soft
-  // `accent` panel (Riskora's "Dashboard" pill).
+  // `accent` panel.
   linkTile(tokens, active) {
     return {
       borderRadius: shape.web.control,

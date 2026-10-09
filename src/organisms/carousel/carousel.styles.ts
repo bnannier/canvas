@@ -7,7 +7,7 @@ import { type CarouselSkin } from "./carousel.shared.js";
 // radius, hairline and text inset, the arrow button shape/feedback and its
 // gutters beside the slides, and the dot indicator look (size, shape, the
 // active-dot widening + brand tint). The BRAND survives on every
-// platform (the indigo `primary` token, never a platform default), so each
+// platform (the `primary` token, never a platform default), so each
 // follows light/dark.
 //
 //   iOS: the App Store paged-card idiom with a UIPageControl dot strip. Small
@@ -63,8 +63,8 @@ export const webSkin: CarouselSkin = {
   slidePadding: 20,
 
   // shadcn CarouselPrevious/Next: variant="outline" size="icon", rounded-full, a
-  // 1px border over the `card` fill, with a small lift; 40px since the Riskora
-  // restyle. shadcn hangs them outside the track; here they sit in the carousel's
+  // 1px border over the `card` fill, with a small lift, 40px square. shadcn hangs
+  // them outside the track; here they sit in the carousel's
   // own gutters. A pointer has no slop to keep inside, but the focus ring draws
   // outside the arrow (the browser's ring at FOCUS_RING_OFFSET 2), so the 4px inset
   // keeps it inside the carousel where a clipping parent sits flush with it.

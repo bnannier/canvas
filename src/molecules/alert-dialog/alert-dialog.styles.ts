@@ -191,7 +191,7 @@ export const webSkin: AlertDialogSkin = {
 // side (no hairline divider): a gray Cancel capsule (`secondary` fill,
 // `secondary-foreground` text) and a primary Confirm capsule with its paired
 // foreground. A destructive confirm keeps secondary fill and destructive-text. The brand
-// survives: the iOS system blue becomes the indigo `primary` token. Press = opacity
+// survives: the iOS system blue becomes the `primary` token. Press = opacity
 // dim (~0.85).
 const IOS_RADIUS = shape.ios.dialog;
 const IOS_CAPSULE_RADIUS = 999;
