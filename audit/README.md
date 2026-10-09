@@ -462,22 +462,30 @@ Two decisions differ from the plan's 1d:
   cell is the inspection its press opens (the value flag), verified by what it shows.
 
 Measured on 2026-10-09 against a static export on this Mac, 6 workers (run
-`20261009-162815-web-93f62e9`, a clean tree): every state of every component is 1,692 cells
-(73 components with recipes, 282 cells per look and surface), 9 min 10 s and 246.6 MB,
-1.9 s a cell; none failed and 54 were not reached, every one a state the kit does not show
-on the web or a finding: a press with no feedback of its own on AvatarMenu (its pressed look
-is its hover look), Command's trigger, the Description list's Update button, FilterPanel's
-checkbox and Video's play button in every look, and on Switch and ButtonGroup under glass;
-the Heatmap's press on a calendar day in every look (the resting pointer has already opened
-the day's readout, and the click toggles it off, so a mouse can never pin it); and Input's
-and Textarea's Disabled examples (below). The releases flagged `press-selects-label` on
-Pressable, Autocomplete, Breadcrumb, ButtonGroup, Checkbox, Listbox, Radio, Switch,
-FilterPanel, Navbars, TabBar and Tabs in every look, and `press-not-cancelled` on Slider in
-every look: its thumb keeps the pressed ring after a pointer press, because the ring is also
-its focus look and the press leaves it focused (under glass the ring is a 4 px transparent
-border that only shrinks the knob). No inspection or overlay failed to clear. The first
-sweep of 1d, before the press-to-inspect, overlay and Slider recipes and the release
-measurement, was 1,530 cells, 7 min 09 s and 228.7 MB, 48 not reached.
+`20261009-232215-web-7052eef`, a clean tree): every state of every component is 1,890 cells
+(73 components with recipes, 187 recipes, 315 cells per look and surface), 9 min 18 s and
+295.7 MB, 1.8 s a cell; none failed and 54 were not reached, every one a state the kit does
+not show on the web or a finding: a press with no feedback of its own on AvatarMenu (its
+pressed look is its hover look), Command's trigger, the Description list's Update button,
+FilterPanel's checkbox and Video's play button in every look, and on Switch and ButtonGroup
+under glass; the Heatmap's press on a calendar day in every look (the resting pointer has
+already opened the day's readout, and the click toggles it off, so a mouse can never pin
+it); and Input's and Textarea's Disabled examples (below). The releases flagged
+`press-selects-label` on Pressable, Autocomplete, Breadcrumb, ButtonGroup, Checkbox,
+Listbox, Radio, Switch, FilterPanel, Navbars, TabBar and Tabs in every look, and
+`press-not-cancelled` on Slider in every look: its thumb keeps the pressed ring after a
+pointer press, because the ring is also its focus look and the press leaves it focused
+(under glass the ring is a 4 px transparent border that only shrinks the knob). No
+inspection or overlay failed to clear. The 24 cells of the disabled controls inside an
+overlay (ActionSheet's Save As…, RowMenu's Clear column, Dropdown's Archive and
+AlertDialog's Delete, every look) were all reached, each `aria-disabled="true"` with a tab
+index of -1 (`disabled-tab-stop` on none), its overlay probed beside the row, so the
+analysis reads the disabled label with the rest of the overlay (each exempt from the
+contrast floor as WCAG 1.4.3's inactive control). The sweeps before: 1,692 cells (run
+`20261009-162815-web-93f62e9`, 9 min 10 s and 246.6 MB, the same 54 not reached), before
+every overlay a component opens had its own recipe and before the disabled controls inside
+an overlay; and the first sweep of 1d, before the press-to-inspect, overlay and Slider
+recipes and the release measurement, 1,530 cells, 7 min 09 s and 228.7 MB, 48 not reached.
 
 Input's and Textarea's Disabled examples are an accessibility finding, not a state the kit
 leaves out: a disabled field is dimmed and made read-only (`src/atoms/input/input.shared.tsx`
