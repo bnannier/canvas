@@ -31,7 +31,7 @@ export const evidence: InteractionEvidence[] = [
   { id: "action-panel-toggle", components: ["action-panels"], layer: "unit-web", file: "test/behavior-smoke-b.test.tsx", test: "toggle axis swaps the Button action for a Switch that fires onToggle" },
   { id: "code-copy", components: ["code-block"], layer: "unit-web", file: "test/behavior-smoke-b.test.tsx", test: "copy affordance renders a labelled button and passes the code back on press" },
   { id: "description-edit", components: ["description-lists"], layer: "unit-web", file: "test/behavior-smoke-b.test.tsx", test: "Update opens the in-place editor; committing shows the new value and fires onUpdate" },
-  { id: "media-press", components: ["media-objects"], layer: "unit-web", file: "test/behavior-smoke-b.test.tsx", test: "onPress makes the row a button named by the lines it shows and fires the handler" },
+  { id: "media-press", components: ["media-objects"], layer: "unit-web", file: "test/behavior-smoke-b.test.tsx", test: "onPress makes the row a button named after its title and fires the handler" },
   { id: "breadcrumb-press", components: ["breadcrumb"], layer: "unit-web", file: "test/breadcrumb.test.tsx", test: "reports a pressed ancestor's label and index" },
   { id: "breadcrumb-enter", components: ["breadcrumb"], layer: "unit-web", file: "test/breadcrumb.test.tsx", test: "activates a focused link on Enter, never on Space (the APG link pattern), with the same label and index" },
   { id: "link-enter", components: ["pressable"], layer: "unit-web", file: "test/pressable-link-enter.test.tsx", test: "presses once on the Enter keyup, and react-native-web still releases its press state" },

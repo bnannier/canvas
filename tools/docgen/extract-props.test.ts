@@ -69,10 +69,10 @@ test("a `//` comment that wraps is read whole, and a blank line, a block comment
   });
 });
 
-test("ActionPanel's axis rows read their whole wrapped comments", () => {
+test("ActionPanel's axis rows read whole, the wrapped toggle comment included", () => {
   const file = path.join(root, "src/molecules/action-panels/action-panels.shared.tsx");
   const rows = Object.fromEntries(extractProps([{ dir: "action-panels", file }])["action-panels"][0].props.map((prop) => [prop.name, prop.description]));
-  expect(rows.destructive).toBe("Tone (omit for the neutral, primary-action default): a red title and a destructive Button. A toggle's Switch label carries no tone.");
-  expect(rows.inline).toBe("Layout (pick one; default stacks the action below the copy). Inline stacks too when the row is narrower than the `md` measure.");
-  expect(rows.toggle).toBe("Affordance: render the action as an on/off Switch instead of a Button. The panel is the Switch's own setting row in this mode: the title is its label and the description its muted line, and the whole row toggles.");
+  expect(rows.destructive).toBe("Tone (omit for the neutral, primary-action default).");
+  expect(rows.inline).toBe("Layout (pick one; default stacks the action below the copy).");
+  expect(rows.toggle).toBe("Affordance: render the action as an on/off Switch instead of a Button. The panel always lays out inline in this mode.");
 });

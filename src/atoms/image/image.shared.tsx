@@ -7,6 +7,7 @@ import {
   type StyleProp,
 } from "react-native";
 import { radius as radiusScale } from "../../style/index.js";
+import { imageLabel, namedImageRole } from "./image.accessibility.js";
 
 // Shared Image shell. Canvas wraps React Native's Image so the fit mode is chosen with a
 // boolean prop (the kit's variant convention, like Badge/Chip) instead of RN's
@@ -17,8 +18,11 @@ import { radius as radiusScale } from "../../style/index.js";
 // and Android, but react-native-web names an image only from `aria-label` /
 // `accessibilityLabel` and lets `alt` fall away, which left an `alt`-only image (and
 // every CardMedia) unnamed on the web: a decorative <img alt=""> under a role-less box.
-// So the label is resolved here (aria-label, then accessibilityLabel, then alt) and a
-// named image takes role="img" with it on every platform; `alt` still reaches React
+// So the label is resolved here (aria-label, then accessibilityLabel, then alt;
+// image.accessibility.ts) and handed to react-native-web as the label, which writes it
+// onto its hidden <img alt>: the web's one image node. Natively the named image also
+// takes role="img", the image trait; on the web that role would sit on the root above
+// the <img> and name a second image, so the runtime picks it. `alt` still reaches React
 // Native, which makes the image its own accessibility element natively. An image with no
 // name stays decorative, with no role and an empty alt.
 //
@@ -62,9 +66,9 @@ export interface ImageProps extends Omit<RNImageProps, "resizeMode" | "width" | 
    */
   accessibilityLabel?: string;
   /**
-   * The image's alt text: a named image is announced as an image (role `img`) with this
-   * name on every platform. With no name here or in `accessibilityLabel` the image is
-   * decorative, and assistive tech skips it.
+   * The image's alt text: a named image is announced as an image with this name on every
+   * platform (the web's <img alt>, the image role natively). With no name here or in
+   * `accessibilityLabel` the image is decorative, and assistive tech skips it.
    */
   alt?: string;
   /** E2E hook forwarded to the underlying image. */
@@ -96,9 +100,9 @@ export function Image(props: ImageProps) {
   if (width !== undefined) box.width = width;
   if (height !== undefined) box.height = height;
   if (radius !== undefined) box.borderRadius = radiusScale[radius];
-  // React Native's own order: aria-label, then accessibilityLabel, then alt. An empty
-  // string names nothing, exactly like an empty alt.
-  const label = rest["aria-label"] || rest.accessibilityLabel || rest.alt || undefined;
-  const name = label ? { role: rest.role ?? ("img" as const), accessibilityLabel: label, "aria-label": label } : null;
+  // React Native's own order: aria-label, then accessibilityLabel, then alt. A caller's
+  // own role stays; otherwise the runtime's role for a named image (none on the web).
+  const label = imageLabel(rest);
+  const name = label ? { role: rest.role ?? namedImageRole(), accessibilityLabel: label, "aria-label": label } : null;
   return <RNImage {...rest} {...name} style={[box, style]} resizeMode={fitOf(props)} />;
 }

@@ -1,44 +1,36 @@
 import { describe, it, expect, afterEach } from "bun:test";
-import { render, cleanup, screen, fireEvent, within } from "@testing-library/react";
+import { render, cleanup, screen, fireEvent } from "@testing-library/react";
 import type { ComponentType, ReactNode } from "react";
-import { Text } from "react-native";
+import { I18nManager, Text, View } from "react-native";
 import { ThemeProvider } from "../src/style/theme.tsx";
-import { Button } from "../src/atoms/button/button.tsx";
 import { MediaObject as MediaObjectWeb } from "../src/molecules/media-objects/media-objects.tsx";
 import { MediaObject as MediaObjectIOS } from "../src/molecules/media-objects/media-objects.ios.tsx";
 import { MediaObject as MediaObjectAndroid } from "../src/molecules/media-objects/media-objects.android.tsx";
-import { iosSkin, webSkin, androidSkin } from "../src/molecules/media-objects/media-objects.styles.ts";
-import type { MediaObjectProps, MediaObjectSkin } from "../src/molecules/media-objects/media-objects.shared.tsx";
+import type { MediaObjectProps } from "../src/molecules/media-objects/media-objects.shared.tsx";
 
 // MediaObject on every entry (the shell is shared; each platform passes its own skin and
-// Avatar): the leading-media precedence, the alignment and direction axes, the compact
-// avatar, truncation that keeps the full text, and the tappable row. A tappable row is
-// one button named by every line it shows, and a trailing action sits BESIDE that
-// button, never inside it (a control in a button is invalid nesting and one ambiguous
-// control), with the card's inset split so the row's tap area still reaches the edge.
-// The split pads by start and end, which each platform resolves for its reading
-// direction (react-native-web through its locale context), so a reversed row is the
-// mirror case these tests pin.
+// Avatar): the leading-media precedence, the alignment and direction axes (and the
+// reading direction, which each platform mirrors itself), the compact avatar, truncation
+// that keeps the full text, and the tappable row. Three defects stay open for Phase 4
+// (audit/components/media-objects.md): a trailing action renders inside a tappable row's
+// button, the row is named by its title alone, and a photo row reads the title twice.
 
 afterEach(cleanup);
 const ui = (n: ReactNode) => render(<ThemeProvider>{n}</ThemeProvider>);
 const at = (id: string) => screen.getByTestId(id);
 
-const SKINS: [string, ComponentType<MediaObjectProps>, MediaObjectSkin][] = [
-  ["web", MediaObjectWeb, webSkin],
-  ["ios", MediaObjectIOS, iosSkin],
-  ["android", MediaObjectAndroid, androidSkin],
+const SKINS: [string, ComponentType<MediaObjectProps>][] = [
+  ["web", MediaObjectWeb],
+  ["ios", MediaObjectIOS],
+  ["android", MediaObjectAndroid],
 ];
 
-/** The inset a skin's bordered card pads by (the one `padding` the shell splits). */
-const insetOf = (skin: MediaObjectSkin) => `${skin.borderedSurface({} as never).padding}px`;
-
-for (const [platform, MediaObject, skin] of SKINS) {
+for (const [platform, MediaObject] of SKINS) {
   describe(`MediaObject on ${platform}`, () => {
     it("leads with the photo over the initials over the icon, one at a time", () => {
       ui(<MediaObject src="https://example.com/rc.jpg" avatar="RC" icon="★" title="Rachel Chen" />);
-      // The photo is the platform Avatar's image, named after the row's title.
-      expect(screen.getAllByRole("img", { name: "Rachel Chen" }).length).toBeGreaterThan(0);
+      // The photo is the platform Avatar's image, named after the row's title, once.
+      expect(screen.getAllByRole("img", { name: "Rachel Chen" })).toHaveLength(1);
       expect(screen.queryByText("★")).toBeNull();
       cleanup();
       ui(<MediaObject avatar="RC" icon="★" title="Rachel Chen" />);
@@ -82,6 +74,29 @@ for (const [platform, MediaObject, skin] of SKINS) {
       expect(at("b").style.flexDirection).toBe("row-reverse");
     });
 
+    it("leaves right-to-left mirroring to the platform, so the media leads on the reading side", () => {
+      // Yoga mirrors a logical row natively under I18nManager's RTL, and the browser
+      // mirrors it under a `dir="rtl"` ancestor. A shell that flipped the row itself on
+      // RTL would mirror it twice, so the row stays logical with RTL forced on.
+      const original = I18nManager.getConstants;
+      I18nManager.getConstants = () => ({ ...original.call(I18nManager), isRTL: true });
+      try {
+        ui(
+          <View dir="rtl">
+            <MediaObject avatar="RC" title="Leading" testID="l" />
+            <MediaObject avatar="RC" title="Reversed" reversed testID="r" />
+          </View>,
+        );
+        expect(at("l").style.flexDirection).toBe("row");
+        expect(at("r").style.flexDirection).toBe("row-reverse");
+        expect(at("l").closest('[dir="rtl"]')).not.toBeNull();
+        // The media is still the row's first child: the leading side is the reading start.
+        expect(at("l").firstElementChild?.textContent).toBe("RC");
+      } finally {
+        I18nManager.getConstants = original;
+      }
+    });
+
     it("steps the leading avatar down to the 28px `small` size under compact", () => {
       ui(
         <>
@@ -107,83 +122,38 @@ for (const [platform, MediaObject, skin] of SKINS) {
       expect(getComputedStyle(screen.getByText(email)).textOverflow).not.toBe("ellipsis");
     });
 
-    it("is one button named by every line it shows, and fires onPress", () => {
+    it("is one button named after its title, and fires onPress", () => {
       let presses = 0;
-      ui(<MediaObject avatar="RC" title="Rachel Chen" description="Engineering Lead" body="Building the identity platform." meta="1h" onPress={() => presses++} />);
-      const row = screen.getByRole("button", { name: "Rachel Chen, Engineering Lead, Building the identity platform., 1h" });
+      ui(<MediaObject avatar="RC" title="Rachel Chen" description="Engineering Lead" meta="1h" onPress={() => presses++} />);
+      const row = screen.getByRole("button", { name: "Rachel Chen" });
       fireEvent.click(row);
       expect(presses).toBe(1);
       expect(screen.getAllByRole("button")).toHaveLength(1);
     });
 
-    it("leaves a body that is not plain text out of the row's name", () => {
-      ui(<MediaObject title="Rachel Chen" body={<Text>rich body</Text>} onPress={() => {}} />);
-      expect(screen.getByRole("button", { name: "Rachel Chen" })).toBeTruthy();
+    it("names a title-less row from its first text prop", () => {
+      ui(<MediaObject src="https://example.com/rc.jpg" description="Engineering Lead" onPress={() => {}} />);
+      expect(screen.getByRole("button", { name: "Engineering Lead" })).toBeTruthy();
+      cleanup();
+      ui(<MediaObject icon="★" meta="1h" onPress={() => {}} />);
+      expect(screen.getByRole("button", { name: "1h" })).toBeTruthy();
     });
 
-    it("keeps a trailing action beside the row's button, not inside it", () => {
-      let rows = 0;
-      let invites = 0;
-      ui(
-        <MediaObject
-          bordered
-          avatar="AL"
-          title="Ada Lovelace"
-          description="ada@example.com"
-          onPress={() => rows++}
-          action={<Button outline small onPress={() => invites++}>Invite</Button>}
-          testID="row"
-        />,
-      );
-      const row = screen.getByRole("button", { name: "Ada Lovelace, ada@example.com" });
-      const invite = screen.getByRole("button", { name: "Invite" });
-      expect(row.contains(invite)).toBe(false);
-      expect(invite.contains(row)).toBe(false);
-      // The testID still marks the whole card, which holds both.
-      expect(at("row").contains(row) && at("row").contains(invite)).toBe(true);
-      fireEvent.click(invite);
-      expect([rows, invites]).toEqual([0, 1]);
+    it("keeps a bordered tappable row one button, the card itself", () => {
+      // The card a static bordered row paints, to compare the button with.
+      ui(<MediaObject bordered avatar="AL" title="Ada Lovelace" testID="static" />);
+      const card = at("static").style;
+      const edge = [card.borderTopWidth, card.borderTopColor, card.borderTopLeftRadius, card.paddingTop];
+      cleanup();
+      let presses = 0;
+      ui(<MediaObject bordered avatar="AL" title="Ada Lovelace" description="ada@example.com" onPress={() => presses++} testID="card" />);
+      const row = screen.getByRole("button", { name: "Ada Lovelace" });
+      expect(screen.getAllByRole("button")).toHaveLength(1);
+      // The button is the bordered card: it carries the testID and the card's own edge.
+      expect(at("card")).toBe(row);
+      expect([row.style.borderTopWidth, row.style.borderTopColor, row.style.borderTopLeftRadius, row.style.paddingTop]).toEqual(edge);
       fireEvent.click(row);
-      expect([rows, invites]).toEqual([1, 1]);
-    });
-
-    it("splits the card's inset so the row's tap area reaches the card's edge", () => {
-      ui(
-        <>
-          <MediaObject bordered title="Leading" onPress={() => {}} action={<Button small>Go</Button>} testID="l" />
-          <MediaObject bordered reversed title="Reversed" onPress={() => {}} action={<Button small>Go</Button>} testID="r" />
-        </>,
-      );
-      const inset = insetOf(skin);
-      // The row: top and bottom and its outer side; the action column: the other outer side.
-      for (const [id, rowSide, actionSide] of [["l", "Left", "Right"], ["r", "Right", "Left"]] as const) {
-        const frame = at(id);
-        const row = within(frame).getByRole("button", { name: id === "l" ? "Leading" : "Reversed" });
-        const action = row.nextElementSibling as HTMLElement;
-        expect(row.parentElement).toBe(frame);
-        expect(row.style.paddingTop).toBe(inset);
-        expect(row.style.paddingBottom).toBe(inset);
-        expect(row.style[`padding${rowSide}`]).toBe(inset);
-        expect(row.style[`padding${actionSide}`]).toBe("");
-        expect(action.style[`padding${actionSide}`]).toBe(inset);
-        expect(action.style.paddingTop).toBe(inset);
-        // The frame paints the card and pads nothing itself; its gap parts the two.
-        expect(frame.style.paddingTop).toBe("");
-        expect(frame.style.borderTopWidth).toBe("1px");
-        expect(frame.style.gap).not.toBe("");
-      }
-    });
-
-    it("centers the action with a centered row and top-aligns it otherwise", () => {
-      ui(
-        <>
-          <MediaObject center title="Centered" onPress={() => {}} action={<Button small>Go</Button>} testID="c" />
-          <MediaObject title="Top" onPress={() => {}} action={<Button small>Go</Button>} testID="t" />
-        </>,
-      );
-      const actionColumn = (id: string, name: string) => within(at(id)).getByRole("button", { name }).nextElementSibling as HTMLElement;
-      expect(actionColumn("c", "Centered").style.justifyContent).toBe("center");
-      expect(actionColumn("t", "Top").style.justifyContent).toBe("flex-start");
+      expect(presses).toBe(1);
     });
 
     it("exposes no button without onPress", () => {

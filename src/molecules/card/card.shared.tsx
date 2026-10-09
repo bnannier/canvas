@@ -3,6 +3,7 @@ import { type ReactNode } from "react";
 import { View, Pressable, Text, StyleSheet, useFillStyle, useTheme, useLayoutAxis, useReducedMotion, surfaceRipple, pressDim, RippleClip, cornerRadii, splitElevation, alpha, devWarn, GlassSurface, GlassPane, paneStyle, type StyleProp, type ViewStyle, type TextStyle, type LayoutStyle } from "../../style/index.js";
 import { RAISED, liftStyle, useHover, useRaiseCell, useSettling } from "../../style/hover.js";
 import { Image } from "../../atoms/image/image.shared.js";
+import { imageLabel } from "../../atoms/image/image.accessibility.js";
 import * as s from "./card.styles.js";
 import { type CardSkin, type Elevation, type Density } from "./card.styles.js";
 
@@ -380,7 +381,7 @@ export interface CardMediaProps {
   height?: number;
   /** Accessible name / alt text announced for the image. */
   alt?: string;
-  /** Alias for `alt` (native naming). */
+  /** Accessible name for the image, as `alt` gives; when both are set it wins, as on Image. */
   accessibilityLabel?: string;
   /** E2E hook forwarded to the image. */
   testID?: string;
@@ -411,7 +412,9 @@ export function createCardMedia(skin: CardSkin) {
         width="100%"
         height={height}
         style={shape}
-        alt={alt ?? accessibilityLabel}
+        // Image's own naming order (accessibilityLabel, then alt), handed over as `alt` so
+        // the cover stays its own accessibility element natively however it was named.
+        alt={imageLabel({ accessibilityLabel, alt })}
         testID={testID}
       />
     );
