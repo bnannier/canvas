@@ -57,8 +57,10 @@ describe("nested corners", () => {
   // reads as a mistake: the container's corner cuts the inner one. Only pairs that
   // actually sit flush are listed. Deliberately absent: the iOS action sheet's
   // capsule rows inside their 34pt container (iOS 26 detaches and insets them, so
-  // the corners never meet) and the accordion card, whose container radius is 0 on
-  // web and Android because there is no container.
+  // the corners never meet), the accordion card, whose container radius is 0 on
+  // web and Android because there is no container, and the slider thumb, which no
+  // track contains: the web's 20px thumb and iOS's 24pt knob ride over a thinner
+  // rail, and Material 3's 44dp handle bar stands between the track's segments.
   const NESTED: [string, string, string][] = [
     ["menu row", "p-menu-row-radius", "p-menu-radius"],
     ["select row", "p-select-row-radius", "p-select-panel-radius"],
@@ -66,7 +68,6 @@ describe("nested corners", () => {
     ["one-time-code cell", "p-otp-inner-radius", "p-otp-radius"],
     ["segmented thumb", "p-seg-inner-radius", "p-seg-radius"],
     ["tab pill", "p-tab-pill-radius", "p-tab-pill-track-radius"],
-    ["slider thumb", "p-slider-thumb-radius", "p-slider-track-radius"],
     ["board card", "p-board-card-radius", "p-board-col-radius"],
   ];
 

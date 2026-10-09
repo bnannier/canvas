@@ -13,11 +13,13 @@
  * A skin whose value is a function of (tokens, intent, size) is invoked with the default
  * arguments (the base size, the resting state), and every such check was first swept
  * across the other arguments to confirm the value it reads does not depend on them, so a
- * check never fails for a guess. Every corner radius in the hand-off that a skin sets is
- * held here, except the few with no single-module reading: a slider and a stepper whose
- * iOS capsule is half their height at each size, and the Dialog and AlertDialog footer
- * buttons, which are kit Buttons. Adding a family here is the cheapest way to widen the
- * guard.
+ * check never fails for a guess. Every corner radius in the hand-off is held here, or in
+ * HANDOFF_SHAPE_TOKENS (tools/tokens/shape-roles.ts) when it names a role rather than one
+ * skin's corner, and test/design-rules-skins.test.ts fails a corner token held by neither.
+ * A part the skin draws with another kit component (the Dialog and AlertDialog footers'
+ * Buttons on the web) is read from that component's skin for the same platform, which the
+ * caller loads from the check's `parts` and hands the reader. Adding a
+ * family here is the cheapest way to widen the guard.
  */
 
 /** A skin value, already reduced to something comparable with a CSS declaration. */
@@ -27,12 +29,19 @@ export interface FamilyCheck {
   /** The custom property, without the leading dashes. */
   token: string;
   /**
+   * The kit components the skin draws a part with, by name: each one's module path under
+   * src/, without the `.styles.ts` suffix (a Dialog footer's `button`). The reader is handed
+   * each one's skin for the same platform, the build the component's platform entry passes
+   * its shell (a web Dialog draws the web Button, an iOS one the iOS Button).
+   */
+  parts?: Record<string, string>;
+  /**
    * What to pull out of the skin object. Several skin fields are functions of the
    * active colour tokens (a surface needs `tokens.card` to fill with), so the reader
    * is handed a token set to call them with; the shapes and lengths it reads back do
    * not depend on which set. Return null when the skin declares nothing.
    */
-  read: (skin: Record<string, unknown>, tokens: Record<string, string>) => SkinValue;
+  read: (skin: Record<string, unknown>, tokens: Record<string, string>, parts: Record<string, Record<string, unknown>>) => SkinValue;
 }
 
 export interface SkinFamily {
@@ -80,6 +89,17 @@ function boxShadow(value: unknown): SkinValue {
   if (typeof value !== "object" || value === null) return "none";
   const shadow = (value as Record<string, unknown>).boxShadow;
   return typeof shadow === "string" ? shadow : "none";
+}
+
+/**
+ * A dialog footer action's corner, by the structure its shell renders: the skin's own
+ * capsule (iOS), else its own text button (Android), else the kit Button the platform's
+ * build passes the shell, at the footer's small size (the web).
+ */
+function footerAction(capsule: Record<string, unknown> | null, textButton: unknown, button: Record<string, unknown>, tokens: Record<string, string>): SkinValue {
+  if (capsule) return num(capsule.borderRadius);
+  if (typeof textButton === "object" && textButton !== null) return num((textButton as Record<string, unknown>).borderRadius);
+  return num(styleOf(button.container, tokens, "primary", "small", { icon: false, block: false, dim: false })?.borderRadius);
 }
 
 /** Card's elevation is keyed by name, then tinted by the tokens. */
@@ -219,7 +239,25 @@ export const SKIN_FAMILIES: SkinFamily[] = [
     module: "atoms/stepper/stepper",
     checks: [
       { token: "p-stepper-btn-radius", read: (s, t) => num(styleOf(s.button, t, "base", "left", false, false)?.borderRadius) ?? 0 },
+      { token: "p-stepper-group-radius", read: (s, t) => num(styleOf(s.group, t, "base", false, false)?.borderRadius) ?? 0 },
     ],
+  },
+  {
+    // The inactive track's outer end and the active fill's edge toward the handle: the
+    // same capsule on the web and iOS, Material 3's split track on Android.
+    name: "Slider",
+    module: "atoms/slider/slider",
+    checks: [
+      { token: "p-slider-track-radius", read: (s, t) => { const r = styleOf(s.track, t, "base"); return num(r?.borderTopRightRadius ?? r?.borderRadius); } },
+      { token: "p-slider-inner-radius", read: (s, t) => { const r = styleOf(s.fill, t, "base", false); return num(r?.borderTopRightRadius ?? r?.borderRadius); } },
+      { token: "p-slider-thumb-radius", read: (s, t) => num(styleOf(s.thumb, t, "base", false, false)?.borderRadius) },
+    ],
+  },
+  {
+    // iOS's checkmark list sits in an inset grouped section; the web and Android draw none.
+    name: "Radio",
+    module: "atoms/radio/radio",
+    checks: [{ token: "p-radio-section-radius", read: (s, t) => num(styleOf(at(s, "list", "section"), t)?.borderRadius) ?? 0 }],
   },
   {
     name: "Textarea",
@@ -242,6 +280,11 @@ export const SKIN_FAMILIES: SkinFamily[] = [
     module: "molecules/alert-dialog/alert-dialog",
     checks: [
       { token: "p-ad-radius", read: (s, t) => num(styleOf(s.card, t)?.borderRadius) },
+      {
+        token: "p-ad-btn-radius",
+        parts: { button: "atoms/button/button" },
+        read: (s, t, p) => footerAction(s.actionLayout === "capsule" ? (at(s, "capsuleCell") as Record<string, unknown> | null) : null, s.textButton, p.button, t),
+      },
     ],
   },
   {
@@ -297,6 +340,8 @@ export const SKIN_FAMILIES: SkinFamily[] = [
       { token: "p-sheet-card-radius-top", read: (s, t) => { const c = styleOf(s.actionsCard, t); return num(c?.borderTopStartRadius ?? c?.borderRadius) ?? 0; } },
       { token: "p-sheet-card-radius", read: (s, t) => { const c = styleOf(s.actionsCard, t); return num(c?.borderBottomStartRadius ?? c?.borderRadius) ?? 0; } },
       { token: "p-sheet-row-radius", read: (s) => num(at(s, "row", "borderRadius")) ?? 0 },
+      // No cancel card (Android's Cancel is the sheet's last row): nothing rounds.
+      { token: "p-sheet-cancel-radius", read: (s, t) => num(styleOf(s.cancelCard, t)?.borderRadius) ?? 0 },
     ],
   },
   {
@@ -328,6 +373,11 @@ export const SKIN_FAMILIES: SkinFamily[] = [
     checks: [
       { token: "p-dialog-shadow", read: (s, t) => boxShadow(styleOf(s.card, t)) },
       { token: "p-dialog-radius", read: (s, t) => num(styleOf(s.card, t)?.borderRadius) },
+      {
+        token: "p-alert-btn-radius",
+        parts: { button: "atoms/button/button" },
+        read: (s, t, p) => footerAction(s.footerKind === "capsules" ? styleOf(s.capsule, t, true, false) : null, s.textButton, p.button, t),
+      },
     ],
   },
   {
@@ -365,6 +415,8 @@ export const SKIN_FAMILIES: SkinFamily[] = [
     module: "organisms/toast/toast",
     checks: [
       { token: "p-toast-radius", read: (s, t) => num(styleOf(s.container, t)?.borderRadius) },
+      // A toast with a description (two lines) under its title.
+      { token: "p-toast-radius-multiline", read: (s, t) => num(styleOf(s.container, t, false, true)?.borderRadius) },
     ],
   },
   {

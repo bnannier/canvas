@@ -331,6 +331,13 @@ components:
     select-row-radius: "8px"
   stepper:
     stepper-btn-radius: "0px"
+    stepper-group-radius: "10px"
+  slider:
+    slider-track-radius: "9999px"
+    slider-inner-radius: "9999px"
+    slider-thumb-radius: "9999px"
+  radio:
+    radio-section-radius: "0px"
   textarea:
     field-radius: "10px"
     field-radius-bottom: "10px"
@@ -339,6 +346,7 @@ components:
     acc-container-radius: "0px"
   alertdialog:
     ad-radius: "18px"
+    ad-btn-radius: "9999px"
   alert:
     alert-radius: "12px"
   descriptionlist:
@@ -359,6 +367,7 @@ components:
     sheet-card-radius-top: "18px"
     sheet-card-radius: "18px"
     sheet-row-radius: "0px"
+    sheet-cancel-radius: "18px"
   board:
     board-col-radius: "14px"
     board-card-radius: "8px"
@@ -370,6 +379,7 @@ components:
   dialog:
     dialog-shadow: "var(--shadow-xl)"
     dialog-radius: "18px"
+    alert-btn-radius: "9999px"
   drawer:
     drawer-side-radius: "22px"
     drawer-sheet-radius: "22px"
@@ -382,6 +392,7 @@ components:
     steps-connector-radius: "0px"
   toast:
     toast-radius: "9999px"
+    toast-radius-multiline: "22px"
   badge:
     badge-radius: "9999px"
   inputotp:
@@ -454,6 +465,10 @@ platformSkins:
       select-radius-bottom: "8px"
       select-panel-radius: "26px"
       select-row-radius: "0px"
+    stepper:
+      stepper-group-radius: "9999px"
+    radio:
+      radio-section-radius: "26px"
     textarea:
       field-radius: "8px"
       field-radius-bottom: "8px"
@@ -462,6 +477,7 @@ platformSkins:
       acc-container-radius: "12px"
     alertdialog:
       ad-radius: "28px"
+      ad-btn-radius: "9999px"
     descriptionlist:
       dl-shadow: none
       dl-radius: "26px"
@@ -479,6 +495,7 @@ platformSkins:
       sheet-card-radius-top: "34px"
       sheet-card-radius: "34px"
       sheet-row-radius: "9999px"
+      sheet-cancel-radius: "9999px"
     board:
       board-col-radius: "26px"
       board-card-radius: "8px"
@@ -490,6 +507,7 @@ platformSkins:
     dialog:
       dialog-shadow: "var(--shadow-lg)"
       dialog-radius: "28px"
+      alert-btn-radius: "9999px"
     drawer:
       drawer-side-radius: "38px"
       drawer-sheet-radius: "38px"
@@ -567,6 +585,11 @@ platformSkins:
       select-row-radius: "0px"
     stepper:
       stepper-btn-radius: "9999px"
+      stepper-group-radius: "0px"
+    slider:
+      slider-track-radius: "8px"
+      slider-inner-radius: "2px"
+      slider-thumb-radius: "9999px"
     textarea:
       field-radius: "4px"
       field-radius-bottom: "0px"
@@ -574,6 +597,7 @@ platformSkins:
       acc-card-radius: "12px"
     alertdialog:
       ad-radius: "28px"
+      ad-btn-radius: "9999px"
     descriptionlist:
       dl-shadow: none
       dl-radius: "12px"
@@ -591,6 +615,7 @@ platformSkins:
     actionsheet:
       sheet-card-radius-top: "28px"
       sheet-card-radius: "0px"
+      sheet-cancel-radius: "0px"
     board:
       board-col-radius: "16px"
       board-card-radius: "8px"
@@ -602,6 +627,7 @@ platformSkins:
     dialog:
       dialog-shadow: "var(--shadow-lg)"
       dialog-radius: "28px"
+      alert-btn-radius: "9999px"
     drawer:
       drawer-side-radius: "16px"
       drawer-sheet-radius: "28px"
@@ -614,6 +640,7 @@ platformSkins:
       steps-connector-radius: "0px"
     toast:
       toast-radius: "4px"
+      toast-radius-multiline: "4px"
     inputotp:
       otp-radius: "12px"
       otp-inner-radius: "12px"

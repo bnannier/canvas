@@ -5,6 +5,7 @@ import { Glob } from "bun";
 import { lightColors } from "../src/style/tokens.ts";
 import { declarationsIn, platformBlocks, platformValue, resolveVars, type PlatformKey } from "../tools/tokens/css-tokens.ts";
 import { SKIN_FAMILIES, normalize } from "../tools/tokens/skin-families.ts";
+import { HANDOFF_SHAPE_TOKENS } from "../tools/tokens/shape-roles.ts";
 
 // Design rules, skin side: the per-OS style objects components actually paint with,
 // and whether the web CSS hand-off still says the same thing they do.
@@ -83,7 +84,13 @@ describe("the web hand-off still says what the skins say", () => {
         expect(skin, `${family.module} exports no ${platform}Skin`).toBeDefined();
 
         for (const check of family.checks) {
-          const fromSkin = normalize(check.read(skin, lightColors as unknown as Record<string, string>));
+          // A part drawn with another kit component reads that component's skin for this platform.
+          const parts: Record<string, Skin> = {};
+          for (const [name, module] of Object.entries(check.parts ?? {})) {
+            parts[name] = ((await import(join(ROOT, "src", `${module}.styles.js`))) as Record<string, Skin>)[`${platform}Skin`];
+            expect(parts[name], `${module} exports no ${platform}Skin`).toBeDefined();
+          }
+          const fromSkin = normalize(check.read(skin, lightColors as unknown as Record<string, string>, parts));
           const fromCss = normalize(resolved(platformValue(blocks, platform, check.token)));
           expect(fromCss, `--${check.token} is missing from the hand-off`).not.toBeNull();
           expect(fromSkin, `--${check.token} on ${platform}`).toBe(fromCss);
@@ -91,6 +98,18 @@ describe("the web hand-off still says what the skins say", () => {
       });
     }
   }
+});
+
+describe("every corner the hand-off declares", () => {
+  // A corner token no check reads is a transcription nothing keeps honest: nine of them
+  // sat unchecked, and the web Dialog and AlertDialog footer buttons said 12px while the
+  // web draws its pill Buttons there.
+  it("is held to a skin, or to the shape table's role it is named for", () => {
+    const held = new Set([...SKIN_FAMILIES.flatMap((f) => f.checks.map((c) => c.token)), ...Object.keys(HANDOFF_SHAPE_TOKENS)]);
+    const declared = new Set(PLATFORMS.flatMap((p) => Object.keys(blocks[p].decls)).filter((token) => /radius/.test(token)));
+    expect(declared.size).toBeGreaterThan(80);
+    expect([...declared].filter((token) => !held.has(token)).sort()).toEqual([]);
+  });
 });
 
 describe("every component ships three skins", () => {
