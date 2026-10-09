@@ -48,6 +48,8 @@ Animated loading spinner in three sizes.
 
 ## Do & Don't
 
+### Label
+
 **Do** — Pair longer waits with a short label so the spinner has context.
 
 ```tsx

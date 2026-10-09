@@ -122,6 +122,8 @@ last slide returns to the first.
 
 ## Do & Don't
 
+### Current slide
+
 **Do** — Keep one current slide and let the dots mirror it, so the position in
 the set is always clear.
 

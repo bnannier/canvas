@@ -83,6 +83,8 @@ Pass `ref` to access the interactive trigger, preserving overlay measurement. Us
 
 ## Do & Don't
 
+### Placeholder
+
 **Do** — Use the placeholder prop for the prompt so it can never be submitted as a value.
 
 ```tsx

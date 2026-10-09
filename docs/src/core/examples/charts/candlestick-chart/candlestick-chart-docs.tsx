@@ -5,6 +5,8 @@ import e_charts_candlestick_chart_example_0 from "./example-0";
 import e_charts_candlestick_chart_example_1 from "./example-1";
 import e_charts_candlestick_chart_example_2 from "./example-2";
 import e_charts_candlestick_chart_example_3 from "./example-3";
+import e_charts_candlestick_chart_dont_0_do from "./dont-0-do";
+import e_charts_candlestick_chart_dont_0_dont from "./dont-0-dont";
 
 export const docs: ComponentDocs = {
   dir: "candlestick-chart",
@@ -16,7 +18,7 @@ export const docs: ComponentDocs = {
     { label: "Press to inspect", code: "<CandlestickChart\n  defaultSelected={5}\n  labels={[\"D1\", \"D2\", \"D3\", \"D4\", \"D5\", \"D6\", \"D7\", \"D8\", \"D9\", \"D10\"]}\n  candles={[\n    { open: 64.0, high: 64.3, low: 62.7, close: 63.5 },\n    { open: 63.5, high: 64.6, low: 63.2, close: 63.9 },\n    { open: 63.9, high: 64.9, low: 62.4, close: 63.6 },\n    { open: 63.6, high: 65.2, low: 62.4, close: 64.2 },\n    { open: 64.2, high: 64.4, low: 64.0, close: 64.2 },\n    { open: 64.2, high: 65.3, low: 62.8, close: 64.4 },\n    { open: 64.4, high: 65.4, low: 63.8, close: 64.4 },\n    { open: 64.4, high: 64.5, low: 62.6, close: 63.8 },\n    { open: 63.8, high: 65.8, low: 63.6, close: 64.7 },\n    { open: 64.7, high: 65.1, low: 63.9, close: 64.6 }\n  ]}\n/>", render: e_charts_candlestick_chart_example_3 },
   ],
   donts: [
-
+    { title: "OHLC data", do: { caption: "Feed the candles real open, high, low and close prices; each body shows the session's move and each wick its range.", code: "<CandlestickChart\n  compact\n  labels={[\"D1\", \"D2\", \"D3\", \"D4\", \"D5\", \"D6\"]}\n  candles={[\n    { open: 64.0, high: 64.3, low: 62.7, close: 63.5 },\n    { open: 63.5, high: 64.6, low: 63.2, close: 63.9 },\n    { open: 63.9, high: 64.9, low: 62.4, close: 63.6 },\n    { open: 63.6, high: 65.2, low: 62.4, close: 64.2 },\n    { open: 64.2, high: 65.3, low: 62.8, close: 64.4 },\n    { open: 64.4, high: 65.4, low: 63.8, close: 65.1 }\n  ]}\n/>", render: e_charts_candlestick_chart_dont_0_do }, dont: { caption: "Fill the candles from a close-only series by repeating the close as open, high and low; every candle collapses to a flat tick, and the chart shows less than a line of the closes would.", code: "<CandlestickChart\n  compact\n  labels={[\"D1\", \"D2\", \"D3\", \"D4\", \"D5\", \"D6\"]}\n  candles={[\n    { open: 63.5, high: 63.5, low: 63.5, close: 63.5 },\n    { open: 63.9, high: 63.9, low: 63.9, close: 63.9 },\n    { open: 63.6, high: 63.6, low: 63.6, close: 63.6 },\n    { open: 64.2, high: 64.2, low: 64.2, close: 64.2 },\n    { open: 64.4, high: 64.4, low: 64.4, close: 64.4 },\n    { open: 65.1, high: 65.1, low: 65.1, close: 65.1 }\n  ]}\n/>", render: e_charts_candlestick_chart_dont_0_dont } },
   ],
   // Extracted from the component's exported `*Props` interfaces by
   // tools/docgen/extract-props.ts (the TypeScript checker).

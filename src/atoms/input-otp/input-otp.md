@@ -52,6 +52,8 @@ A segmented one-time-code field: `length` cells display the typed characters whi
 
 ## Do & Don't
 
+### Readable codes
+
 **Do** — Size the field to the real code length with `length`, and split a long code with `groups` so the eye can chunk it the way the sender wrote it.
 
 ```tsx

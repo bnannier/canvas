@@ -24,7 +24,7 @@ export const docs: ComponentDocs = {
     { label: "Dismissible, informational", code: "<Toast info message=\"A new version is available\" onDismiss={() => {}} />", render: e_organisms_toast_example_6 },
   ],
   donts: [
-    { do: { caption: "Keep a toast to one short, plain message (with an optional one-line description), and pair a destructive or success intent with the matching message.", code: "<Toast success message=\"Copied to clipboard\" />", render: e_organisms_toast_dont_0_do }, dont: { caption: "Don't crowd a toast with long paragraphs or more than one action; a toast is a glance, not a dialog.", code: "<Toast\n  message=\"We were unable to complete your request because the server returned an unexpected error and the operation was rolled back\"\n/>", render: e_organisms_toast_dont_0_dont } },
+    { title: "One short message", do: { caption: "Keep a toast to one short, plain message (with an optional one-line description), and pair a destructive or success intent with the matching message.", code: "<Toast success message=\"Copied to clipboard\" />", render: e_organisms_toast_dont_0_do }, dont: { caption: "Don't crowd a toast with long paragraphs or more than one action; a toast is a glance, not a dialog.", code: "<Toast\n  message=\"We were unable to complete your request because the server returned an unexpected error and the operation was rolled back\"\n/>", render: e_organisms_toast_dont_0_dont } },
   ],
   // Extracted from the component's exported `*Props` interfaces by
   // tools/docgen/extract-props.ts (the TypeScript checker).

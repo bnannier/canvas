@@ -21,3 +21,19 @@ Displays a local or remote image. Set the `source` (`{ uri }`) and a size, then 
 ```tsx
 <Image source={{ uri: "/ada-lovelace.jpg" }} cover width={240} height={96} />
 ```
+
+## Do & Don't
+
+### Fitting a photo
+
+**Do**: Fill a box of another shape with `cover`: the photo keeps its proportions and crops what falls outside the box.
+
+```tsx
+<Image source={{ uri: "/grace-hopper.jpg" }} cover width={240} height={96} accessibilityLabel="Grace Hopper" />
+```
+
+**Don't**: Stretch a photo to a box of another shape; `stretch` scales each axis on its own, so the picture squashes out of proportion.
+
+```tsx
+<Image source={{ uri: "/grace-hopper.jpg" }} stretch width={240} height={96} accessibilityLabel="Grace Hopper" />
+```

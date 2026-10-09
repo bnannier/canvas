@@ -58,6 +58,8 @@ inset-grouped card, so `card` changes nothing there (a documented no-op).
 
 ## Do & Don't
 
+### One block of detail
+
 **Do** — Use one Collapsible to hide a single block of secondary detail behind a clear label, and let the chevron carry the open/closed affordance.
 
 ```tsx

@@ -3,6 +3,8 @@
 import type { ComponentDocs } from "../../../scope";
 import e_atoms_scroll_view_example_0 from "./example-0";
 import e_atoms_scroll_view_example_1 from "./example-1";
+import e_atoms_scroll_view_dont_0_do from "./dont-0-do";
+import e_atoms_scroll_view_dont_0_dont from "./dont-0-dont";
 
 export const docs: ComponentDocs = {
   dir: "scroll-view",
@@ -12,7 +14,7 @@ export const docs: ComponentDocs = {
     { label: "Horizontal", code: "<ScrollView horizontal style={{ width: \"100%\", borderRadius: 10, borderWidth: 1, borderColor: tokens.border }} contentContainerStyle={{ padding: 12, gap: 12 }}>\n  <View style={{ width: 200, height: 60, borderRadius: 6, backgroundColor: alpha(tokens.primary, 0.15) }} />\n  <View style={{ width: 200, height: 60, borderRadius: 6, backgroundColor: alpha(tokens.primary, 0.15) }} />\n  <View style={{ width: 200, height: 60, borderRadius: 6, backgroundColor: alpha(tokens.primary, 0.15) }} />\n  <View style={{ width: 200, height: 60, borderRadius: 6, backgroundColor: alpha(tokens.primary, 0.15) }} />\n  <View style={{ width: 200, height: 60, borderRadius: 6, backgroundColor: alpha(tokens.primary, 0.15) }} />\n  <View style={{ width: 200, height: 60, borderRadius: 6, backgroundColor: alpha(tokens.primary, 0.15) }} />\n</ScrollView>", render: e_atoms_scroll_view_example_1 },
   ],
   donts: [
-
+    { title: "Bounded height", do: { caption: "Give the ScrollView a bounded height, its own or its parent's; the content past that edge scrolls inside it.", code: "<ScrollView style={{ height: 120, width: \"100%\", borderRadius: 10, borderWidth: 1, borderColor: tokens.border }} contentContainerStyle={{ padding: 12, gap: 8 }}>\n  <Typography small>Deploy started</Typography>\n  <Typography small>Dependencies restored from cache</Typography>\n  <Typography small>Tests passed</Typography>\n  <Typography small>Image pushed to the registry</Typography>\n  <Typography small>Rollout reached half the fleet</Typography>\n  <Typography small>Rollout complete</Typography>\n</ScrollView>", render: e_atoms_scroll_view_dont_0_do }, dont: { caption: "Leave the height to the content; an unbounded ScrollView grows to fit all of it, so nothing scrolls and the page grows instead.", code: "<ScrollView style={{ width: \"100%\", borderRadius: 10, borderWidth: 1, borderColor: tokens.border }} contentContainerStyle={{ padding: 12, gap: 8 }}>\n  <Typography small>Deploy started</Typography>\n  <Typography small>Dependencies restored from cache</Typography>\n  <Typography small>Tests passed</Typography>\n  <Typography small>Image pushed to the registry</Typography>\n  <Typography small>Rollout reached half the fleet</Typography>\n  <Typography small>Rollout complete</Typography>\n</ScrollView>", render: e_atoms_scroll_view_dont_0_dont } },
   ],
   // Extracted from the component's exported `*Props` interfaces by
   // tools/docgen/extract-props.ts (the TypeScript checker).

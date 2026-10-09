@@ -5,6 +5,8 @@ import e_atoms_video_example_0 from "./example-0";
 import e_atoms_video_example_1 from "./example-1";
 import e_atoms_video_example_2 from "./example-2";
 import e_atoms_video_example_3 from "./example-3";
+import e_atoms_video_dont_0_do from "./dont-0-do";
+import e_atoms_video_dont_0_dont from "./dont-0-dont";
 
 export const docs: ComponentDocs = {
   dir: "video",
@@ -16,7 +18,7 @@ export const docs: ComponentDocs = {
     { label: "Loop and muted", code: "<Video source={{ uri: \"/video-sample.mp4\" }} poster={{ uri: \"/video-sample.jpg\" }} loop muted radius=\"lg\" accessibilityLabel=\"Looping muted sample clip\" />", render: e_atoms_video_example_3 },
   ],
   donts: [
-
+    { title: "Clips with sound", do: { caption: "Give a clip people watch with sound `controls`: they can seek, see how long it runs, and mute it.", code: "<Video source={{ uri: \"/video-sample.mp4\" }} poster={{ uri: \"/video-sample.jpg\" }} controls accessibilityLabel=\"Product walkthrough\" />", render: e_atoms_video_dont_0_do }, dont: { caption: "Leave a clip with sound as an inline player; a tap can only play or pause it, so there is no way to seek, see its length, or mute it.", code: "<Video source={{ uri: \"/video-sample.mp4\" }} poster={{ uri: \"/video-sample.jpg\" }} accessibilityLabel=\"Product walkthrough\" />", render: e_atoms_video_dont_0_dont } },
   ],
   // Extracted from the component's exported `*Props` interfaces by
   // tools/docgen/extract-props.ts (the TypeScript checker).

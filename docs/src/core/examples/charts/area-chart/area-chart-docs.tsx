@@ -3,6 +3,8 @@
 import type { ComponentDocs } from "../../../scope";
 import e_charts_area_chart_example_0 from "./example-0";
 import e_charts_area_chart_example_1 from "./example-1";
+import e_charts_area_chart_dont_0_do from "./dont-0-do";
+import e_charts_area_chart_dont_0_dont from "./dont-0-dont";
 
 export const docs: ComponentDocs = {
   dir: "area-chart",
@@ -12,7 +14,7 @@ export const docs: ComponentDocs = {
     { label: "Stacked", code: "<AreaChart\n  stacked\n  labels={[\"Jan\", \"Feb\", \"Mar\", \"Apr\", \"May\", \"Jun\", \"Jul\", \"Aug\"]}\n  series={[\n    { label: \"Direct\", values: [37, 46, 49, 61, 53, 49, 54, 56] },\n    { label: \"Search\", values: [77, 90, 83, 82, 82, 85, 85, 92] },\n    { label: \"Social\", values: [18, 28, 34, 41, 48, 55, 50, 57] }\n  ]}\n/>", render: e_charts_area_chart_example_1 },
   ],
   donts: [
-
+    { title: "Stacking", do: { caption: "Stack series that are parts of one total, like sessions by device; the top edge is the total and each band is its share.", code: "<AreaChart\n  stacked\n  labels={[\"Jan\", \"Feb\", \"Mar\", \"Apr\", \"May\", \"Jun\"]}\n  series={[\n    { label: \"Mobile\", values: [42, 48, 51, 57, 63, 70] },\n    { label: \"Desktop\", values: [35, 36, 38, 37, 40, 41] },\n    { label: \"Tablet\", values: [8, 9, 9, 10, 11, 11] }\n  ]}\n/>", render: e_charts_area_chart_dont_0_do }, dont: { caption: "Stack rates that do not add up; conversion, bounce and churn rates summed into one band draw a total that means nothing.", code: "<AreaChart\n  stacked\n  labels={[\"Jan\", \"Feb\", \"Mar\", \"Apr\", \"May\", \"Jun\"]}\n  series={[\n    { label: \"Conversion rate\", values: [3.1, 3.4, 3.2, 3.8, 4.0, 4.2] },\n    { label: \"Bounce rate\", values: [41, 39, 40, 37, 36, 35] },\n    { label: \"Churn rate\", values: [2.4, 2.2, 2.5, 2.1, 2.0, 1.9] }\n  ]}\n/>", render: e_charts_area_chart_dont_0_dont } },
   ],
   // Extracted from the component's exported `*Props` interfaces by
   // tools/docgen/extract-props.ts (the TypeScript checker).

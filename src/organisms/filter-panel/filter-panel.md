@@ -51,3 +51,39 @@ drawer.
   ]}
 />
 ```
+
+## Do & Don't
+
+### Group by facet
+
+**Do**: Give each facet its own titled group, so a reader sees which options narrow the same field.
+
+```tsx
+<FilterPanel
+  groups={[
+    { title: "Status", options: [
+      { label: "Active", checked: true, count: "128" },
+      { label: "Archived", count: "14" }
+    ] },
+    { title: "Region", options: [
+      { label: "North America", count: "86" },
+      { label: "Europe", count: "56" }
+    ] }
+  ]}
+/>
+```
+
+**Don't**: Pour every option into one group; statuses and regions run together, and nothing says which choices narrow the same field.
+
+```tsx
+<FilterPanel
+  groups={[
+    { title: "Filters", options: [
+      { label: "Active", checked: true, count: "128" },
+      { label: "North America", count: "86" },
+      { label: "Archived", count: "14" },
+      { label: "Europe", count: "56" }
+    ] }
+  ]}
+/>
+```

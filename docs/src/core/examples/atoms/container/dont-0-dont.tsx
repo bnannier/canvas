@@ -3,13 +3,13 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Card, Typography, Container } = scope;
+  const { View, Card, Typography } = scope;
   return (
-<Container md>
+<View style={{ maxWidth: 448 }}>
   <Card padded>
     <Typography medium>Billing</Typography>
     <Typography small muted>Plan, invoices, and payment method.</Typography>
   </Card>
-</Container>
+</View>
   );
 }

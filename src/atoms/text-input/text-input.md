@@ -21,3 +21,19 @@ Single-line (or multiline) text entry. Control it with `value` + `onChangeText`,
 ```tsx
 <TextInput accessibilityLabel="Notes" multiline defaultValue={"Multi-line text\nwraps and grows as you type."} />
 ```
+
+## Do & Don't
+
+### Labelled fields
+
+**Do**: Reach for `Input` for a form field: its `label` stays in view, names the field for assistive tech, and the field box is drawn for each platform.
+
+```tsx
+<Input label="Email" placeholder="ada@example.com" />
+```
+
+**Don't**: Let a bare TextInput's placeholder stand in for the label; it vanishes as soon as the user types, taking the field's only name with it.
+
+```tsx
+<TextInput placeholder="Email" />
+```
