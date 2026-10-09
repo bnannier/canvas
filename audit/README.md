@@ -411,8 +411,9 @@ look of its own that still fires is caught.
 Every state is captured in all six looks and surfaces. A state its recipe cannot confirm is
 recorded as `state-not-reached` with the reason in the record and in probe.json, and is
 never photographed: a missing state is a finding, not a picture of the resting control. A
-reached state is probed as a variant cell is (the row, and the panel an opening added, judged
-by the row's platform floors), and adds its own flags: `focus-ring-missing` (nothing drew a
+reached state is probed as a variant cell is (the row, and the panel an opening added or the
+overlay a state applied inside one is in, judged by the row's platform floors), and adds its
+own flags: `focus-ring-missing` (nothing drew a
 new edge), `focus-ring-hidden` (drawn, but not seen on every side), `focus-ring-colour` (not
 the look's `ring`), `expanded-not-announced`, `error-not-described`, `disabled-tab-stop`,
 `hover-unstable` (a tooltip whose bubble, opening in flow above its trigger, pushes the
