@@ -286,10 +286,22 @@ What a component has is read from its own source, not taken from the table's wor
 shared shell, the platform entries, the skins and the parts) and the shared chart modules
 they render, never run, for the inputs that have a state: a press handler (`onPress`,
 `onPressIn`, `onLongPress`) or a raw responder (a ScrubSurface, a PanResponder) gives a
-pressed state, `onHoverIn` or the hover primitive (`useHover`, `src/style/hover.tsx`) a
-hover state, a TextInput or a link (`href`, a `link` role) a focus state, and a function
+pressed state; `onHoverIn`, `onPointerEnter` or the hover primitive (`useHover`,
+`src/style/hover.tsx`) a hover state; a TextInput, a link (`href`, a `link` role) or any
+other tab stop react-native-web makes a focus state (every Pressable, which it gives a tab
+index of 0 unless the source takes it out with `focusable={false}`, `tabIndex={-1}` or
+`disabled`; a button, checkbox, radio, switch or textbox role; `focusable` or tab index 0
+on any primitive); an overlay it renders (React Native's Modal, the style layer's
+AnchoredOverlay or Portal), or another kit component whose source renders one and to which
+it hands the open state (FilterPanel's and Sidebar's Drawer), an open state; and a function
 taking `pressed`, `hovered` or `focused` (a skin, a Pressable's style callback) the state
-it names. A press handed to another kit component (Divider's Button) is that component's.
+it names. Props are read wherever the element gets them: on its tag, or spread onto it from
+a value the reader can follow (an object literal through constants, conditionals, `&&`,
+`??`, member reads, a local or shared helper's return, `useMemo`, or a style-layer hook's
+own return, as the Calendar's `{...hoverProps}`, Tooltip's `{...disclosure}`, the hover
+primitive's `{...target}` and the scroll regions' `{...scrollport}`); a spread it cannot
+follow (a parameter, another component's export) gives nothing. A press handed to another
+kit component (Divider's Button) is that component's.
 A signal can be gated: it renders only when the component is given a prop (`onItemPress`
 makes a Feeds row a button), read from the if, ternary, `&&` or early return around it and
 followed through the local and shared components it is reached through (a Steps circle is
@@ -303,28 +315,35 @@ the source and the page:
 | `unpassed` (props) | every signal of the state is gated by one of the props, and no rail example's code names any of them (Feeds' `onItemPress`, Steps' `onStepPress`, Typography's `href` and `onPress`) |
 | `dismissLayers` | every signal of the state is a press on an element the source keeps from assistive technology, with no pressed look, whose handler is empty or closes, and the component has an open recipe (Drawer's scrim and panel) |
 
-An exemption for a state the source does not give, or beside a recipe for the same state,
-fails too. `tools/audit/state-recipes.test.ts` runs it over every component (and fails on
-the table as it stood before the charts got their recipes: Chart, AreaChart and Histogram
-scrub, the Heatmap's days take a resting pointer and a press), checks the reader on the kit
-and on a fixture of every gate form, and also fails on a registry entry with neither recipes
-nor a reason, a recipe on an example its page does not have, a hover recipe where the source
-gives no hover, an overlay of `overlay-recipes.ts` (or Tooltip, or AvatarMenu, which the e2e
-suite never opens) without an open recipe, and open rows that differ from the docs'
-platform-skin registry. Each checklist's facts block carries the result as its
-"Interaction states" row: the states captured (example, rows, widths), and any static or
-exempt state with its reason and whether its claim holds.
+A state is answered by a recipe of its own, or by another state's recipe whose capture
+shows it (`alsoAnswers`): an opening a resting pointer makes is its trigger's hover, so
+Tooltip's open recipe answers the hover its triggers' `{...disclosure}` gives. An exemption
+for a state the source does not give, or beside a recipe for the same state, fails too.
+`tools/audit/state-recipes.test.ts` runs it over every component (and fails on the table as
+it stood before the charts got their recipes: Chart, AreaChart and Histogram scrub, the
+Heatmap's days take a resting pointer and a press; on the Calendar marked static, for its
+hover, focus, pressed and open states; and on Dialog, AlertDialog, ActionSheet and Toast
+without the focus recipes their own tab stops need), checks the reader on the kit and on
+fixtures of every gate form and every spread form, tab stop and overlay, and also fails on a
+registry entry with neither recipes nor a reason, a recipe on an example its page does not
+have, a hover recipe where the source gives no hover, an overlay of `overlay-recipes.ts` (or
+Tooltip, or AvatarMenu, which the e2e suite never opens) without an open recipe, and open
+rows that differ from the docs' platform-skin registry (Sidebar's page shows one preview,
+the web build, so it opens from the web row alone). Each checklist's facts block carries the
+result as its "Interaction states" row: the states captured (example, rows, widths, and the
+states a capture also shows), and any static or exempt state with its reason and whether its
+claim holds.
 
 Each recipe applies the state through the input a person uses, verifies it from the page's
 structure, and releases it:
 
 | State | Applied | Reached when | Photograph |
 |---|---|---|---|
-| hover | the pointer moves onto the control and rests (Dropdown and Command: on a row, with the menu or palette open; the Heatmap: on a calendar day) | the control, its contents or its wrappers up to the row changed transform, box shadow or background (the lift and the wash `src/style/hover.tsx` applies; a Command row's active highlight); for the Heatmap, the readout it shows; every watched property that changed is the evidence | the web row, desktop (the viewport inside an overlay) |
-| focus | Tab, from the tab stop before the control | focus is on or inside the control and it matches `:focus-visible`; the node whose edges the arriving focus changed is the ring, and `ringShows` (`e2e/support/focus-ring.ts`) looks for it in the pixels on every side, in the colour it paints at | the web row, desktop |
+| hover | the pointer moves onto the control and rests (Dropdown and Command: on a row, with the menu or palette open; the Heatmap: on a calendar day; the Calendar: on the Week example's Design review block, which floats its detail card) | the control, its contents or its wrappers up to the row changed transform, box shadow or background (the lift and the wash `src/style/hover.tsx` applies; a Command row's active highlight); for the Heatmap, the readout it shows; for the Calendar, the card the resting pointer opened, found as an opening is; every watched property that changed is the evidence | the web row, desktop (the viewport inside an overlay, or for a card the pointer floats over the window) |
+| focus | Tab, from the tab stop before the control (Dialog, AlertDialog and ActionSheet: inside the opened overlay; Toast: the With an action example's Undo; the Heatmap: its calendar's scroller, at a phone's width, the only width the year overflows it) | focus is on or inside the control and it matches `:focus-visible`; the node whose edges the arriving focus changed is the ring, and `ringShows` (`e2e/support/focus-ring.ts`) looks for it in the pixels on every side, in the colour it paints at | the web row, desktop (the viewport inside an overlay) |
 | pressed | the pointer goes down on the hovered control and stays down (a Slider on its thumb; Dialog, AlertDialog, ActionSheet and Autocomplete on a control inside the opened overlay) | holding it changed a watched style against the hovered control (a press that looks like the hover is not reached, and says so) | the web row, desktop (the viewport inside an overlay) |
 | pressed, to inspect | a chart that inspects under a press is pressed on one datum, found from what it draws (above an axis label, a tile's or a stage's label, a mark): held down on a scrub surface, a click on a Pressable hit layer | the chart shows text it did not show with the pointer away (the value flag, a readout) or repaints its marks (the others dim); with the recipe's expected texts, those (`Q2`, `Revenue`, `70`) | the web row, desktop |
-| open | the overlay recipes' own clicks (`OVERLAY_RECIPES`, `PHONE_INPUT_RECIPE`, `TOAST_RECIPE`), a hover on Tooltip's On hover example, a click on the AvatarMenu pill, from the web row and from every row whose platform build the docs registry injects (`docs/src/core/platform-skins.ts`; Toast's iOS row is the web build) | the opening added exactly the recipe's node (a dialog, a menu, a listbox, a speaking live region, the tooltip's bubble) where the Playground's overlays paint; the evidence says where it painted, whether it runs edge to edge on its frame's bottom (a sheet), whether it is in view and whether the trigger reports `aria-expanded="true"` | the viewport at the cell's own size, all three widths |
+| open | the overlay recipes' own clicks (`OVERLAY_RECIPES`, `PHONE_INPUT_RECIPE`, `TOAST_RECIPE`), a hover on Tooltip's On hover example, a click on the AvatarMenu pill, ButtonGroup's split chevron, the Calendar's Day peek 24th, FilterPanel's Filters (n) trigger and the Sidebar example's hamburger, from the web row and from every row whose platform build the docs registry injects (`docs/src/core/platform-skins.ts`; Toast's iOS row is the web build; Sidebar's page shows the web row alone) | the opening added exactly the recipe's node (a dialog, a menu, a listbox, a speaking live region, the tooltip's bubble), or for a card with no role (the Calendar's day peek and hover card) exactly one new subtree holding the text it shows, where the Playground's overlays paint; the evidence says where it painted, whether it runs edge to edge on its frame's bottom (a sheet), whether it is in view and whether the trigger reports `aria-expanded="true"` | the viewport at the cell's own size, all three widths (a drawer a component becomes at and below a breakpoint: those widths, FilterPanel's at a phone's, Sidebar's at a phone's and a tablet's) |
 | invalid | the example that shows the error; Textarea typed past its soft cap | the field carries `aria-invalid="true"`; the error text it is described by is the evidence | the web row, desktop |
 | disabled | the example that disables the control | `aria-disabled="true"` or a native `disabled` | the web row, desktop |
 
@@ -342,7 +361,8 @@ sweep below lists the controls that do not). An inspection is
 cleared by a second press on the same datum (the charts' documented toggle) or by the
 pointer moving off a heatmap day, and the row must be back to how it was
 (`inspection-not-cleared`). An overlay closes on Escape and must be gone 3 s later
-(`overlay-not-closed`). The release runs for a state not reached as well, so a press with no
+(`overlay-not-closed`); one a press inside it already closed (Dialog's Cancel) is recorded
+as closed before its close. The release runs for a state not reached as well, so a press with no
 look of its own that still fires is caught.
 
 Every state is captured in all six looks and surfaces. A state its recipe cannot confirm is

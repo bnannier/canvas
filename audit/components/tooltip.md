@@ -20,7 +20,7 @@ Audit checklist for `/components/tooltip`. The facts block and the variants tabl
 | Hand-off metric gaps | none |
 | Interactions registry | in the inventory; evidence: none registered |
 | Overlay recipe | none |
-| Interaction states | captured: focus on On hover (web row; desktop), pressed on Icon (web row; desktop), open on On hover (web, iOS, Android rows; phone, tablet and desktop). |
+| Interaction states | captured: focus on On hover (web row; desktop), pressed on Icon (web row; desktop), open on On hover (web, iOS, Android rows; phone, tablet and desktop; also its hover). |
 | MeasureProps | not adopted |
 | Touch target | `tooltip.shared.tsx`: hitSlop. `test/touch-target-coverage.test.ts` records it as covered another way: wraps the caller's node and adds hitSlop; the target is theirs |
 | Tests importing it | 5: `test/dense-overlays.test.tsx`, `test/design-rules-skins.test.ts`, `test/no-console-violations.test.tsx`, `test/overlays.test.tsx`, `test/skins-smoke.test.tsx` |

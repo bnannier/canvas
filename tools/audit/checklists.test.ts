@@ -367,14 +367,19 @@ describe.skipIf(!hasDist)("the audit checklists keep a reviewer's work", () => {
 
   it("states the interaction states captured, and each static or exempt state with its checked reason", () => {
     const row = (slug: string) => renderComponentFacts(componentFacts(slug, sources.corpus)).find((line) => line.startsWith("| Interaction states |"));
-    expect(row("heatmap")).toBe("| Interaction states | captured: hover on Calendar (web row; desktop), pressed on Calendar (web row; desktop). |");
-    expect(row("dialog")).toBe("| Interaction states | captured: pressed on Default (web row; desktop), open on Default (web, iOS, Android rows; phone, tablet and desktop). |");
+    // A state that exists only at some widths names them (the Heatmap's scroller is a stop at a phone's).
+    expect(row("heatmap")).toBe("| Interaction states | captured: hover on Calendar (web row; desktop), focus on Calendar (web row; phone), pressed on Calendar (web row; desktop). |");
+    expect(row("dialog")).toBe(
+      "| Interaction states | captured: focus on Default (web row; desktop), pressed on Default (web row; desktop), open on Default (web, iOS, Android rows; phone, tablet and desktop). |",
+    );
+    // A capture that also shows another state says so.
+    expect(row("tooltip")).toContain("open on On hover (web, iOS, Android rows; phone, tablet and desktop; also its hover)");
     expect(row("feeds")).toBe(
-      "| Interaction states | static: An activity list whose rows are read-only in every rail example. pressed exempt, verified: `onItemPress` makes each row a button; no rail example passes it. |",
+      "| Interaction states | static: An activity list whose rows are read-only in every rail example. focus exempt, verified: `onItemPress` makes each row a button, a tab stop, and `virtualized` scrolls the rows in a list that is one once they overflow; no rail example passes either. pressed exempt, verified: `onItemPress` makes each row a button; no rail example passes it. |",
     );
     expect(row("badge")).toBe("| Interaction states | static: A status label: it takes no input. |");
     const steps = componentFacts("steps", sources.corpus).states;
-    expect(steps).toMatchObject({ listed: true, recipes: [], unanswered: [], exempt: [{ state: "pressed", failure: null }] });
+    expect(steps).toMatchObject({ listed: true, recipes: [], unanswered: [], exempt: [{ state: "focus", failure: null }, { state: "pressed", failure: null }] });
   });
 
   it("credits every component of the skins smoke test's CASES table, read statically (item 1)", () => {
