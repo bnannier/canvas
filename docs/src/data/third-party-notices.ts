@@ -125,7 +125,7 @@ export const THIRD_PARTY_PACKAGES: NoticePackage[] = [
   },
   {
     "name": "@expo/cli",
-    "version": "57.0.18",
+    "version": "57.0.28",
     "licenses": [
       "MIT"
     ],
@@ -145,7 +145,7 @@ export const THIRD_PARTY_PACKAGES: NoticePackage[] = [
   },
   {
     "name": "@expo/log-box",
-    "version": "57.0.3",
+    "version": "57.0.4",
     "licenses": [
       "MIT"
     ],
@@ -155,7 +155,7 @@ export const THIRD_PARTY_PACKAGES: NoticePackage[] = [
   },
   {
     "name": "@expo/metro-runtime",
-    "version": "57.0.13",
+    "version": "57.0.16",
     "licenses": [
       "MIT"
     ],
@@ -165,7 +165,7 @@ export const THIRD_PARTY_PACKAGES: NoticePackage[] = [
   },
   {
     "name": "@expo/ui",
-    "version": "57.0.13",
+    "version": "57.0.22",
     "licenses": [
       "MIT"
     ],
@@ -333,7 +333,7 @@ export const THIRD_PARTY_PACKAGES: NoticePackage[] = [
   },
   {
     "name": "@react-native/assets-registry",
-    "version": "0.86.2",
+    "version": "0.86.3",
     "licenses": [
       "MIT"
     ],
@@ -341,7 +341,7 @@ export const THIRD_PARTY_PACKAGES: NoticePackage[] = [
   },
   {
     "name": "@react-native/js-polyfills",
-    "version": "0.86.2",
+    "version": "0.86.3",
     "licenses": [
       "MIT"
     ],
@@ -349,7 +349,7 @@ export const THIRD_PARTY_PACKAGES: NoticePackage[] = [
   },
   {
     "name": "@react-native/normalize-colors",
-    "version": "0.86.2",
+    "version": "0.86.3",
     "licenses": [
       "MIT"
     ],
@@ -357,7 +357,7 @@ export const THIRD_PARTY_PACKAGES: NoticePackage[] = [
   },
   {
     "name": "@react-native/virtualized-lists",
-    "version": "0.86.2",
+    "version": "0.86.3",
     "licenses": [
       "MIT"
     ],
@@ -573,7 +573,7 @@ export const THIRD_PARTY_PACKAGES: NoticePackage[] = [
   },
   {
     "name": "expo",
-    "version": "57.0.16",
+    "version": "57.0.27",
     "licenses": [
       "MIT"
     ],
@@ -583,7 +583,7 @@ export const THIRD_PARTY_PACKAGES: NoticePackage[] = [
   },
   {
     "name": "expo-asset",
-    "version": "57.0.14",
+    "version": "57.0.19",
     "licenses": [
       "MIT"
     ],
@@ -593,7 +593,7 @@ export const THIRD_PARTY_PACKAGES: NoticePackage[] = [
   },
   {
     "name": "expo-blur",
-    "version": "57.0.2",
+    "version": "57.0.3",
     "licenses": [
       "MIT"
     ],
@@ -603,7 +603,7 @@ export const THIRD_PARTY_PACKAGES: NoticePackage[] = [
   },
   {
     "name": "expo-clipboard",
-    "version": "57.0.1",
+    "version": "57.0.2",
     "licenses": [
       "MIT"
     ],
@@ -613,7 +613,7 @@ export const THIRD_PARTY_PACKAGES: NoticePackage[] = [
   },
   {
     "name": "expo-constants",
-    "version": "57.0.14",
+    "version": "57.0.21",
     "licenses": [
       "MIT"
     ],
@@ -623,7 +623,7 @@ export const THIRD_PARTY_PACKAGES: NoticePackage[] = [
   },
   {
     "name": "expo-eas-client",
-    "version": "57.0.1",
+    "version": "57.0.5",
     "licenses": [
       "MIT"
     ],
@@ -633,7 +633,7 @@ export const THIRD_PARTY_PACKAGES: NoticePackage[] = [
   },
   {
     "name": "expo-file-system",
-    "version": "57.0.5",
+    "version": "57.0.7",
     "licenses": [
       "MIT"
     ],
@@ -653,7 +653,7 @@ export const THIRD_PARTY_PACKAGES: NoticePackage[] = [
   },
   {
     "name": "expo-glass-effect",
-    "version": "57.0.1",
+    "version": "57.0.4",
     "licenses": [
       "MIT"
     ],
@@ -663,7 +663,7 @@ export const THIRD_PARTY_PACKAGES: NoticePackage[] = [
   },
   {
     "name": "expo-json-utils",
-    "version": "57.0.1",
+    "version": "57.0.2",
     "licenses": [
       "MIT"
     ],
@@ -673,7 +673,7 @@ export const THIRD_PARTY_PACKAGES: NoticePackage[] = [
   },
   {
     "name": "expo-keep-awake",
-    "version": "57.0.1",
+    "version": "57.0.2",
     "licenses": [
       "MIT"
     ],
@@ -683,7 +683,7 @@ export const THIRD_PARTY_PACKAGES: NoticePackage[] = [
   },
   {
     "name": "expo-linking",
-    "version": "57.0.7",
+    "version": "57.0.12",
     "licenses": [
       "MIT"
     ],
@@ -693,7 +693,7 @@ export const THIRD_PARTY_PACKAGES: NoticePackage[] = [
   },
   {
     "name": "expo-manifests",
-    "version": "57.0.1",
+    "version": "57.0.2",
     "licenses": [
       "MIT"
     ],
@@ -703,7 +703,7 @@ export const THIRD_PARTY_PACKAGES: NoticePackage[] = [
   },
   {
     "name": "expo-modules-core",
-    "version": "57.0.13",
+    "version": "57.0.21",
     "licenses": [
       "MIT"
     ],
@@ -713,7 +713,7 @@ export const THIRD_PARTY_PACKAGES: NoticePackage[] = [
   },
   {
     "name": "expo-modules-jsi",
-    "version": "57.0.5",
+    "version": "57.1.1",
     "licenses": [
       "MIT"
     ],
@@ -723,7 +723,7 @@ export const THIRD_PARTY_PACKAGES: NoticePackage[] = [
   },
   {
     "name": "expo-router",
-    "version": "57.0.16",
+    "version": "57.0.25",
     "licenses": [
       "MIT"
     ],
@@ -741,7 +741,7 @@ export const THIRD_PARTY_PACKAGES: NoticePackage[] = [
   },
   {
     "name": "expo-structured-headers",
-    "version": "57.0.0",
+    "version": "57.0.1",
     "licenses": [
       "MIT"
     ],
@@ -749,7 +749,7 @@ export const THIRD_PARTY_PACKAGES: NoticePackage[] = [
   },
   {
     "name": "expo-symbols",
-    "version": "57.0.2",
+    "version": "57.0.3",
     "licenses": [
       "MIT"
     ],
@@ -759,7 +759,7 @@ export const THIRD_PARTY_PACKAGES: NoticePackage[] = [
   },
   {
     "name": "expo-system-ui",
-    "version": "57.0.2",
+    "version": "57.0.4",
     "licenses": [
       "MIT"
     ],
@@ -769,7 +769,7 @@ export const THIRD_PARTY_PACKAGES: NoticePackage[] = [
   },
   {
     "name": "expo-updates",
-    "version": "57.0.17",
+    "version": "57.0.25",
     "licenses": [
       "MIT"
     ],
@@ -777,7 +777,7 @@ export const THIRD_PARTY_PACKAGES: NoticePackage[] = [
   },
   {
     "name": "expo-updates-interface",
-    "version": "57.0.1",
+    "version": "57.0.2",
     "licenses": [
       "MIT"
     ],
@@ -787,7 +787,7 @@ export const THIRD_PARTY_PACKAGES: NoticePackage[] = [
   },
   {
     "name": "expo-video",
-    "version": "57.0.4",
+    "version": "57.0.5",
     "licenses": [
       "MIT"
     ],
@@ -925,7 +925,7 @@ export const THIRD_PARTY_PACKAGES: NoticePackage[] = [
   },
   {
     "name": "nanoid",
-    "version": "3.3.12",
+    "version": "3.3.20",
     "licenses": [
       "MIT"
     ],
@@ -1045,7 +1045,7 @@ export const THIRD_PARTY_PACKAGES: NoticePackage[] = [
   },
   {
     "name": "react-native",
-    "version": "0.86.2",
+    "version": "0.86.3",
     "licenses": [
       "MIT"
     ],
