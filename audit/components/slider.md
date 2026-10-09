@@ -21,7 +21,7 @@ Audit checklist for `/components/slider`. The facts block and the variants table
 | Overlay recipe | none |
 | MeasureProps | adopted in `slider.shared.tsx` |
 | Touch target | no minTarget or useMinTargetSlop in the source directory |
-| Tests naming it | 10: `test/control-refs.test.tsx`, `test/feedback.test.tsx`, `test/fixtures/control-refs-consumer.tsx`, `test/glass-tint.test.tsx`, `test/keyboard-nav.test.tsx`, `test/native-focus-fixtures.test.tsx`, `test/sizing.test.tsx`, `test/skins-smoke.test.tsx`, `test/slider-glass.test.tsx`, `test/ws3-a11y-theming.test.tsx` |
+| Tests importing it | 8: `test/control-refs.test.tsx`, `test/feedback.test.tsx`, `test/fixtures/control-refs-consumer.tsx`, `test/keyboard-nav.test.tsx`, `test/native-focus-fixtures.test.tsx`, `test/sizing.test.tsx`, `test/slider-glass.test.tsx`, `test/ws3-a11y-theming.test.tsx` |
 | E2E naming it | 2: `e2e/behavior/keyboard.e2e.ts`, `e2e/journeys/control-refs.e2e.ts` |
 <!-- audit:facts:end -->
 

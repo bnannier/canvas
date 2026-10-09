@@ -21,7 +21,7 @@ Audit checklist for `/components/toast`. The facts block and the variants table 
 | Overlay recipe | yes (live region) |
 | MeasureProps | not adopted |
 | Touch target | no minTarget or useMinTargetSlop in the source directory |
-| Tests naming it | 10: `test/components-extra.test.tsx`, `test/dense-overlays.test.tsx`, `test/destructive-intent.test.tsx`, `test/dist-smoke.test.tsx`, `test/no-console-violations.test.tsx`, `test/skins-smoke.test.tsx`, `test/toast-look.test.tsx`, `test/touch-target-clips.test.tsx`, `test/touch-target-seams.test.tsx`, `test/ws3-a11y-theming.test.tsx` |
+| Tests importing it | 8: `test/components-extra.test.tsx`, `test/dense-overlays.test.tsx`, `test/destructive-intent.test.tsx`, `test/no-console-violations.test.tsx`, `test/text-contrast.test.tsx`, `test/toast-look.test.tsx`, `test/touch-target-seams.test.tsx`, `test/ws3-a11y-theming.test.tsx` |
 | E2E naming it | 2: `e2e/behavior/overlays.e2e.ts`, `e2e/support/overlay-recipes.ts` |
 <!-- audit:facts:end -->
 

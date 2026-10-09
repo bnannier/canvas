@@ -21,7 +21,7 @@ Audit checklist for `/components/row-menu`. The facts block and the variants tab
 | Overlay recipe | yes (menu) |
 | MeasureProps | not adopted |
 | Touch target | useMinTargetSlop in none; minTarget in `row-menu.shared.tsx`, `row-menu.styles.ts` |
-| Tests naming it | 13: `test/a11y-state.test.tsx`, `test/anchored-overlay-dismissal.test.tsx`, `test/dense-overlays.test.tsx`, `test/destructive-text-components.test.tsx`, `test/hosted-trigger-focus.test.tsx`, `test/menu-look.test.tsx`, `test/native-accessibility-escape-hosts.test.tsx`, `test/no-console-violations.test.tsx`, `test/overlay-escape.test.tsx`, `test/overlays.test.tsx`, `test/skins-smoke.test.tsx`, `test/touch-target-clips.test.tsx`, `test/touch-target-seed.test.tsx` |
+| Tests importing it | 12: `test/a11y-state.test.tsx`, `test/anchored-overlay-dismissal.test.tsx`, `test/dense-overlays.test.tsx`, `test/destructive-text-components.test.tsx`, `test/hosted-trigger-focus.test.tsx`, `test/menu-look.test.tsx`, `test/native-accessibility-escape-hosts.test.tsx`, `test/no-console-violations.test.tsx`, `test/overlay-escape.test.tsx`, `test/overlays.test.tsx`, `test/text-contrast.test.tsx`, `test/touch-target-seed.test.tsx` |
 | E2E naming it | 0: none |
 <!-- audit:facts:end -->
 

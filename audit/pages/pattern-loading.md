@@ -21,10 +21,10 @@ Web: 18 cells per variant (3 widths x 3 looks x 2 surfaces). iOS and Android: 6 
 | Variant | Label | Web (18) | iOS (6) | Android (6) | Notes |
 |---|---|---|---|---|---|
 | `page` | Whole page | [ ] | [ ] | [ ] |  |
-| `section-1` | Choose by intent | [ ] | [ ] | [ ] |  |
-| `section-2` | Spinner in button | [ ] | [ ] | [ ] |  |
-| `section-3` | Skeleton row | [ ] | [ ] | [ ] |  |
-| `section-4` | Inline progress bar | [ ] | [ ] | [ ] |  |
+| `choosebyintent` | Choose by intent | [ ] | [ ] | [ ] |  |
+| `spinnerinbutton` | Spinner in button | [ ] | [ ] | [ ] |  |
+| `skeletonrow` | Skeleton row | [ ] | [ ] | [ ] |  |
+| `inlineprogressbar` | Inline progress bar | [ ] | [ ] | [ ] |  |
 <!-- audit:variants:end -->
 
 ## Universal rubric

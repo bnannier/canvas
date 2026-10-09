@@ -21,13 +21,13 @@ Web: 18 cells per variant (3 widths x 3 looks x 2 surfaces). iOS and Android: 6 
 | Variant | Label | Web (18) | iOS (6) | Android (6) | Notes |
 |---|---|---|---|---|---|
 | `page` | Whole page | [ ] | [ ] | [ ] |  |
-| `section-1` | Breakpoints | [ ] | [ ] | [ ] |  |
-| `section-2` | The parent provides the bounds | [ ] | [ ] | [ ] |  |
-| `section-3` | Choosing a mechanism | [ ] | [ ] | [ ] |  |
-| `section-4` | Sidebar - drawer ↔ fixed | [ ] | [ ] | [ ] |  |
-| `section-5` | Layout primitives: Grid and Row stacks | [ ] | [ ] | [ ] |  |
-| `section-6` | What's behind the scenes | [ ] | [ ] | [ ] |  |
-| `section-7` | Try it yourself | [ ] | [ ] | [ ] |  |
+| `breakpoints` | Breakpoints | [ ] | [ ] | [ ] |  |
+| `theparentprovidesthebounds` | The parent provides the bounds | [ ] | [ ] | [ ] |  |
+| `choosingamechanism` | Choosing a mechanism | [ ] | [ ] | [ ] |  |
+| `sidebardrawerfixed` | Sidebar - drawer ↔ fixed | [ ] | [ ] | [ ] |  |
+| `layoutprimitivesgridandrowstacks` | Layout primitives: Grid and Row stacks | [ ] | [ ] | [ ] |  |
+| `whatsbehindthescenes` | What's behind the scenes | [ ] | [ ] | [ ] |  |
+| `tryityourself` | Try it yourself | [ ] | [ ] | [ ] |  |
 <!-- audit:variants:end -->
 
 ## Universal rubric

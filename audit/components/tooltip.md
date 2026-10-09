@@ -21,7 +21,7 @@ Audit checklist for `/components/tooltip`. The facts block and the variants tabl
 | Overlay recipe | none |
 | MeasureProps | not adopted |
 | Touch target | no minTarget or useMinTargetSlop in the source directory |
-| Tests naming it | 5: `test/dense-overlays.test.tsx`, `test/no-console-violations.test.tsx`, `test/overlays.test.tsx`, `test/skins-smoke.test.tsx`, `test/touch-target-seed.test.tsx` |
+| Tests importing it | 3: `test/dense-overlays.test.tsx`, `test/no-console-violations.test.tsx`, `test/overlays.test.tsx` |
 | E2E naming it | 0: none |
 <!-- audit:facts:end -->
 

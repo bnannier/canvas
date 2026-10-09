@@ -21,7 +21,7 @@ Audit checklist for `/components/tab-bar`. The facts block and the variants tabl
 | Overlay recipe | none |
 | MeasureProps | not adopted |
 | Touch target | no minTarget or useMinTargetSlop in the source directory |
-| Tests naming it | 6: `test/a11y-state.test.tsx`, `test/native-focus-fixtures.test.tsx`, `test/no-console-violations.test.tsx`, `test/primary-text.test.tsx`, `test/skins-smoke.test.tsx`, `test/tab-bar-floating.test.tsx` |
+| Tests importing it | 5: `test/a11y-state.test.tsx`, `test/native-focus-fixtures.test.tsx`, `test/no-console-violations.test.tsx`, `test/primary-text.test.tsx`, `test/tab-bar-floating.test.tsx` |
 | E2E naming it | 0: none |
 <!-- audit:facts:end -->
 

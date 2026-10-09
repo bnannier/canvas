@@ -21,7 +21,7 @@ Audit checklist for `/components/card`. The facts block and the variants table a
 | Overlay recipe | none |
 | MeasureProps | not adopted |
 | Touch target | no minTarget or useMinTargetSlop in the source directory |
-| Tests naming it | 12: `test/card.test.tsx`, `test/carousel-arrows.test.tsx`, `test/dist-smoke.test.tsx`, `test/entrance-readiness.test.tsx`, `test/floating-label-parity.test.tsx`, `test/hover-lift.test.tsx`, `test/layout-responsive.test.tsx`, `test/layout-spans.test.tsx`, `test/molecule-material-state.test.tsx`, `test/native-carousel-fixture.test.tsx`, `test/new-components.test.tsx`, `test/skins-smoke.test.tsx` |
+| Tests importing it | 6: `test/card.test.tsx`, `test/hover-lift.test.tsx`, `test/layout-responsive.test.tsx`, `test/molecule-material-state.test.tsx`, `test/native-carousel-fixture.test.tsx`, `test/new-components.test.tsx` |
 | E2E naming it | 0: none |
 <!-- audit:facts:end -->
 

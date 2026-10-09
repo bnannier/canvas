@@ -11,14 +11,18 @@
 // build from an alias of the web skin while AvatarMenu, in the same file, injects the
 // platform's own Dropdown. An export diverges from the web build when the value it is
 // built from reaches, through the identifiers of its initializer and the local consts
-// those name, EITHER a skin that is its own object (INCLUDING a spread of the web skin
-// with overrides) rather than the same object the web skin resolves to, OR a platform
-// part (an import of another component's `.ios.js` / `.android.js` build). An export
-// that re-exports the shared module, or builds from an alias of the web skin and injects
-// nothing, renders the web build by construction. Both files are parsed with the
-// TypeScript parser rather than matched by regex: a regex on `import { iosSkin ... }`
-// once took `iosSkin as dropdownIosSkin` for the component's own skin and reported the
-// whole Avatar file as divergent.
+// those name, EITHER a skin that is its own object rather than the same object the web
+// skin resolves to, OR a platform part (an import of another component's `.ios.js` /
+// `.android.js` build). A spread of the web skin with overrides is its own object
+// wherever it is written: in the styles module (`iosSkin = { ...webSkin, radius: 4 }`
+// does not resolve to `webSkin`), and in the entry itself (`createX({ ...iosSkin,
+// radius: 4 })` with `iosSkin` an alias of the web skin builds a skin of its own, so the
+// export is judged by the expression, not by the binding it imports). An export that
+// re-exports the shared module, or builds from an alias of the web skin (a bare
+// reference, or a spread that adds nothing) and injects nothing, renders the web build
+// by construction. Both files are parsed with the TypeScript parser rather than matched
+// by regex: a regex on `import { iosSkin ... }` once took `iosSkin as dropdownIosSkin`
+// for the component's own skin and reported the whole Avatar file as divergent.
 
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { basename, dirname, join } from "node:path";
@@ -229,12 +233,31 @@ export function isWebSkinAlias(stylesPath: string, skinName: string, seen = new 
   return false;
 }
 
+/** The object literals inside an expression, the expression itself included. */
+function objectLiterals(node: ts.Node): ts.ObjectLiteralExpression[] {
+  const out: ts.ObjectLiteralExpression[] = [];
+  const visit = (n: ts.Node): void => {
+    if (ts.isObjectLiteralExpression(n)) out.push(n);
+    ts.forEachChild(n, visit);
+  };
+  visit(node);
+  return out;
+}
+
+/** How a member of an object literal reads in a reason: its name, or the spread it is. */
+function memberLabel(sf: ts.SourceFile, member: ts.ObjectLiteralElementLike): string {
+  if (ts.isSpreadAssignment(member)) return `...${member.expression.getText(sf)}`;
+  return member.name ? member.name.getText(sf) : member.getText(sf);
+}
+
 /**
  * Why each built export of a platform entry diverges from the web build, or null for
  * one that renders the web build. Reasons are collected from everything the export's
  * initializer reaches: its imported skins (the component's own or another's, as the
- * AvatarMenu pill's Dropdown skin is), its platform parts, and the local consts that
- * carry either (`const MenuDropdown = createDropdown({ ...dropdownIosSkin })`).
+ * AvatarMenu pill's Dropdown skin is), an object literal that spreads an alias of a web
+ * skin and adds or overrides anything (`{ ...iosSkin, radius: 4 }` is a skin of its
+ * own even though `iosSkin` is the web skin), its platform parts, and the local consts
+ * that carry any of those (`const MenuDropdown = createDropdown({ ...dropdownIosSkin })`).
  */
 export function exportDivergences(compDir: string, source: string, platform: Platform): Record<string, string | null> {
   const { suffix } = ENTRY[platform];
@@ -243,8 +266,52 @@ export function exportDivergences(compDir: string, source: string, platform: Pla
   const decls = declarations(sf);
   const ownDir = basename(compDir);
 
-  const reasonsOf = (expr: ts.Expression, seen: Set<string>): string[] => {
+  /** The component directory owning a styles import, or null when it does not resolve. */
+  const ownerOf = (stylesPath: string | null): string | null => (stylesPath ? basename(dirname(stylesPath)) : null);
+
+  /**
+   * The web-skin alias an expression names, through local consts (`const base = iosSkin`),
+   * or null when it names anything else: an own skin, a call, a part, a value.
+   */
+  const webAliasOf = (expr: ts.Expression, seen: Set<string>): { binding: ImportBinding; stylesPath: string } | null => {
+    if (!ts.isIdentifier(expr)) return null;
+    const binding = imports.get(expr.text);
+    if (binding) {
+      if (!/\.styles\.js$/.test(binding.specifier)) return null;
+      const stylesPath = resolveStyles(compDir, binding.specifier);
+      return stylesPath && isWebSkinAlias(stylesPath, binding.imported) ? { binding, stylesPath } : null;
+    }
+    const local = decls.get(expr.text);
+    if (!local?.init || seen.has(expr.text)) return null;
+    return webAliasOf(local.init, new Set([...seen, expr.text]));
+  };
+
+  /**
+   * A skin the expression builds in place: an object literal that spreads an alias of a
+   * web skin and adds or overrides anything (a property, a method, another spread). A
+   * literal that only spreads the alias is the web skin's values, and reads as the alias.
+   */
+  const spreadOverrides = (expr: ts.Expression): string[] => {
     const reasons: string[] = [];
+    for (const literal of objectLiterals(expr)) {
+      const aliases = literal.properties.flatMap((member) => {
+        if (!ts.isSpreadAssignment(member)) return [];
+        const alias = webAliasOf(member.expression, new Set());
+        return alias ? [{ member, ...alias }] : [];
+      });
+      if (!aliases.length) continue;
+      const added = literal.properties.filter((member) => !aliases.some((a) => a.member === member));
+      if (!added.length) continue;
+      const { binding, stylesPath } = aliases[0];
+      const what = `a spread of ${binding.imported}, the web skin, with ${added.map((member) => memberLabel(sf, member)).join(", ")}`;
+      const owner = ownerOf(stylesPath);
+      reasons.push(owner === ownDir || owner === null ? `builds its own skin (${what})` : `builds a part from ${owner}'s own skin (${what}; ${binding.specifier})`);
+    }
+    return reasons;
+  };
+
+  const reasonsOf = (expr: ts.Expression, seen: Set<string>): string[] => {
+    const reasons: string[] = [...spreadOverrides(expr)];
     for (const id of referencedIdentifiers(expr)) {
       const binding = imports.get(id);
       if (binding) {
@@ -253,7 +320,7 @@ export function exportDivergences(compDir: string, source: string, platform: Pla
         } else if (/\.styles\.js$/.test(binding.specifier)) {
           const stylesPath = resolveStyles(compDir, binding.specifier);
           if (!stylesPath || !isWebSkinAlias(stylesPath, binding.imported)) {
-            const owner = stylesPath ? basename(dirname(stylesPath)) : null;
+            const owner = ownerOf(stylesPath);
             reasons.push(
               owner === ownDir || owner === null
                 ? `builds from its own ${binding.imported}`

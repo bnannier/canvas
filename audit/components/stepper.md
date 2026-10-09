@@ -21,7 +21,7 @@ Audit checklist for `/components/stepper`. The facts block and the variants tabl
 | Overlay recipe | none |
 | MeasureProps | not adopted |
 | Touch target | no minTarget or useMinTargetSlop in the source directory |
-| Tests naming it | 12: `test/a11y-state.test.tsx`, `test/atom-material-feedback.test.tsx`, `test/components-extra.test.tsx`, `test/design-rules-skins.test.ts`, `test/field-focus-layout.test.tsx`, `test/field-focus-states.test.tsx`, `test/skins-smoke.test.tsx`, `test/stepper-a11y.test.tsx`, `test/stepper-decimal.test.tsx`, `test/text-entry-material.test.tsx`, `test/touch-target-clips.test.tsx`, `test/touch-target-seams.test.tsx` |
+| Tests importing it | 9: `test/a11y-state.test.tsx`, `test/atom-material-feedback.test.tsx`, `test/components-extra.test.tsx`, `test/field-focus-layout.test.tsx`, `test/field-focus-states.test.tsx`, `test/stepper-a11y.test.tsx`, `test/stepper-decimal.test.tsx`, `test/text-entry-material.test.tsx`, `test/touch-target-seams.test.tsx` |
 | E2E naming it | 1: `e2e/journeys/keyboard.e2e.ts` |
 <!-- audit:facts:end -->
 

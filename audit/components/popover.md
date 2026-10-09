@@ -21,7 +21,7 @@ Audit checklist for `/components/popover`. The facts block and the variants tabl
 | Overlay recipe | yes (dialog) |
 | MeasureProps | not adopted |
 | Touch target | no minTarget or useMinTargetSlop in the source directory |
-| Tests naming it | 11: `test/anchored-overlay-dismissal.test.tsx`, `test/dense-overlays.test.tsx`, `test/entrance-readiness.test.tsx`, `test/escape-layers.test.tsx`, `test/hosted-focus.test.tsx`, `test/hosted-trigger-focus.test.tsx`, `test/menu-look.test.tsx`, `test/native-accessibility-escape-hosts.test.tsx`, `test/overlays.test.tsx`, `test/popover.test.tsx`, `test/skins-smoke.test.tsx` |
+| Tests importing it | 10: `test/anchored-overlay-dismissal.test.tsx`, `test/dense-overlays.test.tsx`, `test/entrance-readiness.test.tsx`, `test/escape-layers.test.tsx`, `test/hosted-focus.test.tsx`, `test/hosted-trigger-focus.test.tsx`, `test/native-accessibility-escape-hosts.test.tsx`, `test/overlay-placement.test.tsx`, `test/overlays.test.tsx`, `test/popover.test.tsx` |
 | E2E naming it | 0: none |
 <!-- audit:facts:end -->
 

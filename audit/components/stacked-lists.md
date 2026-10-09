@@ -21,7 +21,7 @@ Audit checklist for `/components/stacked-lists`. The facts block and the variant
 | Overlay recipe | none |
 | MeasureProps | not adopted |
 | Touch target | no minTarget or useMinTargetSlop in the source directory |
-| Tests naming it | 9: `test/behavior-smoke-c.test.tsx`, `test/list-semantics.test.tsx`, `test/no-console-violations.test.tsx`, `test/scroll-frame-ring.test.tsx`, `test/skins-smoke.test.tsx`, `test/stacked-list-reorder.test.tsx`, `test/stats-stackedlist-slots.test.tsx`, `test/touch-target-clips.test.tsx`, `test/virtualization.test.tsx` |
+| Tests importing it | 7: `test/behavior-smoke-c.test.tsx`, `test/list-semantics.test.tsx`, `test/no-console-violations.test.tsx`, `test/scroll-frame-ring.test.tsx`, `test/stacked-list-reorder.test.tsx`, `test/stats-stackedlist-slots.test.tsx`, `test/virtualization.test.tsx` |
 | E2E naming it | 2: `e2e/behavior/scroll-focus.e2e.ts`, `e2e/journeys/keyboard.e2e.ts` |
 <!-- audit:facts:end -->
 

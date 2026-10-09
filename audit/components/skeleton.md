@@ -21,7 +21,7 @@ Audit checklist for `/components/skeleton`. The facts block and the variants tab
 | Overlay recipe | none |
 | MeasureProps | not adopted |
 | Touch target | no minTarget or useMinTargetSlop in the source directory |
-| Tests naming it | 4: `test/behavior-smoke-c.test.tsx`, `test/data-table.test.tsx`, `test/skeleton-accessibility.test.tsx`, `test/skins-smoke.test.tsx` |
+| Tests importing it | 2: `test/behavior-smoke-c.test.tsx`, `test/skeleton-accessibility.test.tsx` |
 | E2E naming it | 0: none |
 <!-- audit:facts:end -->
 

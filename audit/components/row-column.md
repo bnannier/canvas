@@ -21,7 +21,7 @@ Audit checklist for `/components/row-column`. The facts block and the variants t
 | Overlay recipe | none |
 | MeasureProps | not adopted |
 | Touch target | no minTarget or useMinTargetSlop in the source directory |
-| Tests naming it | 19: `test/behavior-smoke-c.test.tsx`, `test/checkbox-idiom.test.tsx`, `test/control-refs.test.tsx`, `test/dist-smoke.test.tsx`, `test/docs-live-patterns.test.tsx`, `test/drag-drop.test.tsx`, `test/entrance-layout.ts`, `test/hosted-trigger-focus.test.tsx`, `test/hover-lift.test.tsx`, `test/layout-responsive.test.tsx`, `test/layout-spans.test.tsx`, `test/native-carousel-fixture.test.tsx`, `test/native-focus-fixtures.test.tsx`, `test/new-components.test.tsx`, `test/overlay-frame-ring.test.tsx`, `test/prop-table.test.tsx`, `test/sizing.test.tsx`, `test/skins-smoke.test.tsx`, `test/switch-label.test.tsx` |
+| Tests importing it | 9: `test/hover-lift.test.tsx`, `test/layout-responsive.test.tsx`, `test/layout-spans.test.tsx`, `test/native-carousel-fixture.test.tsx`, `test/native-focus-fixtures.test.tsx`, `test/new-components.test.tsx`, `test/prop-table.test.tsx`, `test/sizing.test.tsx`, `test/switch-label.test.tsx` |
 | E2E naming it | 1: `e2e/responsive/template-state.e2e.ts` |
 <!-- audit:facts:end -->
 

@@ -12,244 +12,32 @@
 // reason, in tools/handoff-parity/divergences.json. The build fails only on an UNCLASSIFIED
 // difference — a real gap, or a hand-off prop nobody has adjudicated yet.
 
-import { readdir, readFile, writeFile } from "node:fs/promises";
+import { readFile, writeFile } from "node:fs/promises";
 import { join } from "node:path";
+import { KIND_LABEL, MissingDistError, compareParity, distSources, isGap, readDivergences, readSnapshot, type Row } from "../tools/handoff-parity/compare.ts";
+
+// The comparison itself (reading the built prop surface, resolving `extends`, looking every
+// difference up in divergences.json, verifying redirects, finding dead records) lives in
+// tools/handoff-parity/compare.ts, shared with the audit's facts. This script turns it into the
+// report and the verdict.
 
 const ROOT = join(import.meta.dir, "..");
 const DIST = join(ROOT, "dist");
-const SNAPSHOT = join(ROOT, "tools", "handoff-parity", "handoff-props.json");
-const DIVERGENCES = join(ROOT, "tools", "handoff-parity", "divergences.json");
 const REPORT = join(ROOT, "HANDOFF-PARITY.md");
 
-type Kind = "renamed" | "boolean-axis" | "web-only" | "intentional-omission" | "open-gap";
-interface Divergence {
-  kind: Kind;
-  /** The canvas prop (or props) that carry the capability instead. */
-  to?: string | string[];
-  /** For an open gap: the phase that closes it, or "unscheduled". */
-  plannedIn?: string;
-  reason: string;
-}
-
-const KIND_LABEL: Record<Kind, string> = {
-  renamed: "Renamed",
-  "boolean-axis": "Boolean axis",
-  "web-only": "Web-only",
-  "intentional-omission": "Not offered",
-  "open-gap": "Open gap",
-};
-
-/** An open gap is acknowledged, not settled: it counts as classified but is reported separately. */
-const isGap = (d: Divergence): boolean => d.kind === "open-gap";
-
-// ---------- canvas side: read the built type surface, resolving `extends` ----------
-
-async function distSources(): Promise<string> {
-  let out = "";
-  const walk = async (dir: string): Promise<void> => {
-    for (const e of await readdir(dir, { withFileTypes: true })) {
-      const p = join(dir, e.name);
-      if (e.isDirectory()) await walk(p);
-      else if (e.name.endsWith(".d.ts")) out += `${await readFile(p, "utf-8")}\n`;
-    }
-  };
-  await walk(DIST);
-  return out;
-}
-
-function interfaceAt(src: string, name: string): { heritage: string; body: string } | null {
-  const open = new RegExp(`interface\\s+${name}\\b([^{]*)\\{`, "g").exec(src);
-  if (!open) return null;
-  let depth = 1;
-  let i = open.index + open[0].length;
-  const start = i;
-  for (; i < src.length && depth > 0; i++) {
-    if (src[i] === "{") depth++;
-    else if (src[i] === "}") depth--;
-  }
-  return { heritage: open[1] ?? "", body: src.slice(start, i - 1) };
-}
-
-function ownMembers(body: string): Set<string> {
-  const out = new Set<string>();
-  let depth = 0;
-  for (const raw of body.split("\n")) {
-    const line = raw.trim();
-    if (depth === 0 && !line.startsWith("*") && !line.startsWith("//")) {
-      const m = line.match(/^["']?([a-zA-Z_][\w-]*)["']?\??\s*:/);
-      if (m) out.add(m[1]);
-    }
-    depth += (line.match(/\{/g) ?? []).length - (line.match(/\}/g) ?? []).length;
-    if (depth < 0) depth = 0;
-  }
-  return out;
-}
-
-/**
- * A `type X = Pick<Y, "a" | "b">` alias, read as the set of names it picks. The picked names are
- * string literals, so the base type never has to be resolved. Needed because the field family
- * inherits its behavior slice this way (`TextEntryProps = Pick<RNTextInputProps, "defaultValue" |
- * …>`), and without it every prop in that slice reads as missing: `Input.defaultValue` and
- * `Textarea.defaultValue` both reported as divergences while being present all along.
- */
-function pickedMembers(src: string, name: string): Set<string> | null {
-  const m = new RegExp(`type\\s+${name}\\s*=\\s*Pick<[^,]+,([^>]+)>`).exec(src);
-  if (!m) return null;
-  const names = [...m[1].matchAll(/["']([^"']+)["']/g)].map((x) => x[1]);
-  return names.length ? new Set(names) : null;
-}
-
-/**
- * Every prop an interface exposes, including inherited ones. Resolving `extends` is essential and
- * not optional: `AreaChartProps extends CartesianSeriesProps`, so an own-members-only read reports
- * every inherited prop as missing and the whole report becomes noise.
- */
-function allMembers(src: string, name: string, seen = new Set<string>()): Set<string> | null {
-  if (seen.has(name)) return new Set();
-  seen.add(name);
-  const found = interfaceAt(src, name);
-  if (!found) return pickedMembers(src, name);
-  const props = ownMembers(found.body);
-  const ext = found.heritage.match(/extends\s+([^{]+)/);
-  if (ext) {
-    for (const raw of ext[1].split(",")) {
-      const base = raw.trim().replace(/<.*/, "").split(".").pop();
-      if (!base) continue;
-      const inherited = allMembers(src, base, seen);
-      if (inherited) for (const p of inherited) props.add(p);
-    }
-  }
-  return props;
-}
-
-// ---------- compare ----------
-
-const snapshot = JSON.parse(await readFile(SNAPSHOT, "utf-8")) as {
-  components: Record<string, { tier: string; props: Record<string, { type: string; doc?: string }> }>;
-};
-const divergences = JSON.parse(await readFile(DIVERGENCES, "utf-8")) as {
-  global: Record<string, Divergence>;
-  components: Record<string, Record<string, Divergence>>;
-  absentComponents: Record<string, Divergence>;
-  /**
-   * Differences in VALUE rather than in the prop surface: the same prop exists on both sides but
-   * resolves to different metrics. This check cannot detect them — comparing names says nothing
-   * about what a name resolves to — so they are recorded by hand from measurement and reported
-   * here to keep the blind spot visible rather than implied.
-   */
-  metricGaps: Record<string, { component: string; canvas: string; handoff: string; plannedIn?: string; reason: string }>;
-};
+const snapshot = readSnapshot(ROOT);
+const divergences = readDivergences(ROOT);
 
 let dist: string;
 try {
-  dist = await distSources();
-} catch {
+  dist = distSources(DIST);
+} catch (error) {
+  if (!(error instanceof MissingDistError)) throw error;
   console.error("dist/ not found. Run `bun run build` first (CI builds before this check).");
   process.exit(1);
 }
 
-interface Row {
-  component: string;
-  tier: string;
-  prop: string;
-  type: string;
-  doc?: string;
-  divergence?: Divergence;
-}
-
-/**
- * A `renamed` / `boolean-axis` record is a CLAIM: "the kit carries this capability, under this
- * name". Nothing used to test the claim, because the check only ever looks up the HAND-OFF's name
- * and, on missing it, believes whatever the record says. So a record could point at a prop that
- * does not exist and the difference still counted as settled: `Gauge.size` claimed `small`/`large`
- * on a component with no size axis at all, and writing docs against that claim produced three
- * "sizes" that rendered identically. Every redirect target is verified here instead.
- *
- * A target that names a COMPONENT rather than a prop is legitimate (`LineChart.area` redirects to
- * the AreaChart component, `StackedBar.grouped` to Chart), so a PascalCase target is accepted when
- * the kit really exports a props interface under that name.
- */
-function brokenRedirect(
-  canvas: Set<string>,
-  component: string,
-  prop: string,
-  d: Divergence,
-): string | null {
-  if (d.kind !== "renamed" && d.kind !== "boolean-axis") return null;
-  const targets = (Array.isArray(d.to) ? d.to : d.to ? [d.to] : []).filter((t) => t && t !== "—");
-  if (!targets.length) return null;
-  const resolves = (t: string) =>
-    canvas.has(t) || (/^[A-Z]/.test(t) && allMembers(dist, `${t}Props`) !== null);
-  if (targets.some(resolves)) return null;
-  return `${component}.${prop} (${d.kind}) redirects to ${targets.map((t) => `\`${t}\``).join(", ")}, which ${targets.length > 1 ? "do" : "does"} not exist on ${component}Props`;
-}
-
-const missingComponents: { name: string; tier: string; props: number; divergence?: Divergence }[] = [];
-const classified: Row[] = [];
-const unclassified: Row[] = [];
-const brokenRedirects: string[] = [];
-/**
- * Records this check can never read: the same guarantee as `brokenRedirect`, from the other end.
- * That one catches a settled record pointing at a prop the kit LACKS; this one catches a record
- * about a prop the kit HAS. A divergence is consulted only when the hand-off prop is absent, so
- * the day a component ships that prop under the hand-off's own name its record stops being
- * adjudication and becomes an unread claim nothing tests. Every one found so far was false by
- * then: `Tooltip.children` asserted Canvas's Tooltip "cannot attach to a caller's node" while the
- * element trigger shipped, `ActionPanel.children` sent the reader to `description` past the
- * component's own children slot, and `Navbar.actions` denied a ReactNode slot the bar takes.
- * Deleting them one sweep at a time is what this replaces.
- *
- * Scoped to claims about the KIT, deliberately. A `global` record is the fallback for any
- * component prop no component-level record claims, so it is legitimately unread whenever every
- * such prop happens to be adjudicated per component: unread is its resting state. A record under
- * a component the kit has not shipped is skipped as well (the component is reported absent as a
- * whole, and the record goes live the day it lands), and a record whose hand-off prop is gone is
- * a claim about the SNAPSHOT rather than the kit, which the extract tool owns.
- */
-const deadRecords: string[] = [];
-let satisfied = 0;
-let handoffProps = 0;
-
-for (const [name, comp] of Object.entries(snapshot.components)) {
-  const canvas = allMembers(dist, `${name}Props`);
-  if (!canvas) {
-    missingComponents.push({
-      name,
-      tier: comp.tier,
-      props: Object.keys(comp.props).length,
-      divergence: divergences.absentComponents[name],
-    });
-    continue;
-  }
-  for (const [prop, meta] of Object.entries(comp.props)) {
-    handoffProps++;
-    if (canvas.has(prop)) {
-      satisfied++;
-      const dead = divergences.components[name]?.[prop];
-      if (dead)
-        deadRecords.push(
-          `${name}.${prop} (${dead.kind}) is recorded in divergences.json, but ${name}Props declares \`${prop}\` itself, so the record is never read`,
-        );
-      continue;
-    }
-    const d = divergences.components[name]?.[prop] ?? divergences.global[prop];
-    const row: Row = { component: name, tier: comp.tier, prop, type: meta.type, doc: meta.doc, divergence: d };
-    if (d) {
-      classified.push(row);
-      const bad = brokenRedirect(canvas, name, prop, d);
-      if (bad) brokenRedirects.push(bad);
-    } else unclassified.push(row);
-  }
-}
-
-// An absent-component record outlives its purpose the same way: once the kit exports the
-// component, the record is no longer why it is missing, it is a claim that it still is.
-for (const name of Object.keys(divergences.absentComponents)) {
-  if (allMembers(dist, `${name}Props`))
-    deadRecords.push(
-      `absentComponents.${name} (${divergences.absentComponents[name]!.kind}) is recorded in divergences.json, but the kit exports ${name}Props, so the record is never read`,
-    );
-}
+const { missingComponents, classified, unclassified, brokenRedirects, deadRecords, satisfied, handoffProps } = compareParity(snapshot, divergences, dist);
 
 // ---------- report ----------
 

@@ -21,7 +21,7 @@ Audit checklist for `/components/candlestick-chart`. The facts block and the var
 | Overlay recipe | none |
 | MeasureProps | not adopted |
 | Touch target | no minTarget or useMinTargetSlop in the source directory |
-| Tests naming it | 4: `test/chart-materials.test.tsx`, `test/charts-cartesian.test.tsx`, `test/dist-smoke.test.tsx`, `test/skins-smoke.test.tsx` |
+| Tests importing it | 2: `test/chart-materials.test.tsx`, `test/charts-cartesian.test.tsx` |
 | E2E naming it | 0: none |
 <!-- audit:facts:end -->
 

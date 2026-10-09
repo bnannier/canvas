@@ -21,7 +21,7 @@ Audit checklist for `/components/video`. The facts block and the variants table 
 | Overlay recipe | none |
 | MeasureProps | not adopted |
 | Touch target | useMinTargetSlop in none; minTarget in `video.styles.ts` |
-| Tests naming it | 4: `test/dist-smoke.test.tsx`, `test/docs-photos.test.tsx`, `test/skins-smoke.test.tsx`, `test/video.test.tsx` |
+| Tests importing it | 1: `test/video.test.tsx` |
 | E2E naming it | 1: `e2e/journeys/keyboard.e2e.ts` |
 <!-- audit:facts:end -->
 

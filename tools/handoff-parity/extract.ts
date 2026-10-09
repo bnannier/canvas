@@ -11,7 +11,7 @@
 // The hand-off's .d.ts files are deliberately flat: one `export interface <Name>Props { … }` per
 // component with no `extends` chains, so a structural parse is enough and there is no need to pull
 // TypeScript in here. (The CANVAS side does have extends chains; that resolution lives in
-// scripts/check-handoff-parity.ts, which uses this snapshot as its expected surface.)
+// tools/handoff-parity/compare.ts, which uses this snapshot as its expected surface.)
 
 import { readdir, readFile, writeFile } from "node:fs/promises";
 import { join } from "node:path";

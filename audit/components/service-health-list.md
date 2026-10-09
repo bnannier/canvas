@@ -21,7 +21,7 @@ Audit checklist for `/components/service-health-list`. The facts block and the v
 | Overlay recipe | none |
 | MeasureProps | not adopted |
 | Touch target | no minTarget or useMinTargetSlop in the source directory |
-| Tests naming it | 7: `test/chart-materials.test.tsx`, `test/charts-buildout.test.tsx`, `test/dev-warn.test.tsx`, `test/dist-smoke.test.tsx`, `test/skins-smoke.test.tsx`, `test/stats-stackedlist-slots.test.tsx`, `test/touch-target-coverage.test.ts` |
+| Tests importing it | 3: `test/chart-materials.test.tsx`, `test/charts-buildout.test.tsx`, `test/dev-warn.test.tsx` |
 | E2E naming it | 0: none |
 <!-- audit:facts:end -->
 

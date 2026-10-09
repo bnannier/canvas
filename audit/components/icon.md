@@ -21,7 +21,7 @@ Audit checklist for `/components/icon`. The facts block and the variants table a
 | Overlay recipe | none |
 | MeasureProps | not adopted |
 | Touch target | no minTarget or useMinTargetSlop in the source directory |
-| Tests naming it | 7: `test/destructive-text.test.tsx`, `test/icon-glyphs.test.ts`, `test/native-focus-fixtures.test.tsx`, `test/new-components.test.tsx`, `test/pagination-look.test.tsx`, `test/skins-smoke.test.tsx`, `test/toast-look.test.tsx` |
+| Tests importing it | 6: `test/design-rules-source.test.ts`, `test/destructive-text.test.tsx`, `test/icon-glyphs.test.ts`, `test/native-focus-fixtures.test.tsx`, `test/pagination-look.test.tsx`, `test/toast-look.test.tsx` |
 | E2E naming it | 0: none |
 <!-- audit:facts:end -->
 

@@ -21,7 +21,7 @@ Audit checklist for `/components/text-input`. The facts block and the variants t
 | Overlay recipe | none |
 | MeasureProps | not adopted |
 | Touch target | no minTarget or useMinTargetSlop in the source directory |
-| Tests naming it | 16: `test/autocomplete-accessibility-return.test.tsx`, `test/autocomplete-keyboard.test.tsx`, `test/behavior.test.tsx`, `test/capture-target.test.tsx`, `test/carousel-keyboard.test.tsx`, `test/carousel-slide-identity.test.tsx`, `test/entrance.test.tsx`, `test/escape-layers.test.tsx`, `test/field-focus-layout.test.tsx`, `test/focus-ring.test.tsx`, `test/fonts.test.tsx`, `test/forms.test.tsx`, `test/material-portal-context.test.tsx`, `test/material-resolution.test.tsx`, `test/molecule-material-state.test.tsx`, `test/overlay-escape.test.tsx` |
+| Tests importing it | 1: `test/fonts.test.tsx` |
 | E2E naming it | 0: none |
 <!-- audit:facts:end -->
 

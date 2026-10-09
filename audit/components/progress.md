@@ -21,7 +21,7 @@ Audit checklist for `/components/progress`. The facts block and the variants tab
 | Overlay recipe | none |
 | MeasureProps | adopted in `progress.shared.tsx` |
 | Touch target | no minTarget or useMinTargetSlop in the source directory |
-| Tests naming it | 8: `test/atom-material-roles.test.tsx`, `test/behavior-smoke-d.test.tsx`, `test/feedback.test.tsx`, `test/new-components.test.tsx`, `test/progress.test.tsx`, `test/sizing.test.tsx`, `test/skeleton-accessibility.test.tsx`, `test/skins-smoke.test.tsx` |
+| Tests importing it | 4: `test/atom-material-roles.test.tsx`, `test/feedback.test.tsx`, `test/progress.test.tsx`, `test/sizing.test.tsx` |
 | E2E naming it | 0: none |
 <!-- audit:facts:end -->
 

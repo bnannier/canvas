@@ -21,7 +21,7 @@ Audit checklist for `/components/chart`. The facts block and the variants table 
 | Overlay recipe | none |
 | MeasureProps | not adopted |
 | Touch target | no minTarget or useMinTargetSlop in the source directory |
-| Tests naming it | 7: `test/chart-materials.test.tsx`, `test/charts-cartesian.test.tsx`, `test/design-rules-source.test.ts`, `test/dev-warn.test.tsx`, `test/dist-smoke.test.tsx`, `test/skins-smoke.test.tsx`, `test/ws3-a11y-theming.test.tsx` |
+| Tests importing it | 3: `test/chart-materials.test.tsx`, `test/charts-cartesian.test.tsx`, `test/dev-warn.test.tsx` |
 | E2E naming it | 0: none |
 <!-- audit:facts:end -->
 

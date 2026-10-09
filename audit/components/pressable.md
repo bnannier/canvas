@@ -21,7 +21,7 @@ Audit checklist for `/components/pressable`. The facts block and the variants ta
 | Overlay recipe | none |
 | MeasureProps | not adopted |
 | Touch target | no minTarget or useMinTargetSlop in the source directory |
-| Tests naming it | 21: `test/autocomplete-keyboard.test.tsx`, `test/avatar-menu.test.tsx`, `test/behavior-smoke-c.test.tsx`, `test/behavior.test.tsx`, `test/components-extra.test.tsx`, `test/data-table.test.tsx`, `test/dialog-focus.test.tsx`, `test/dist-smoke.test.tsx`, `test/escape-layers.test.tsx`, `test/fixtures/touch-records.tsx`, `test/focus-ring.test.tsx`, `test/heatmap-scroll-focus.test.tsx`, `test/keyboard-nav.test.tsx`, `test/layout-responsive.test.tsx`, `test/no-console-violations.test.tsx`, `test/pressable-tab-stop.test.tsx`, `test/setup.ts`, `test/toast-look.test.tsx`, `test/touch-target-clips.test.tsx`, `test/touch-target-coverage.test.ts`, `test/use-wheel.test.tsx` |
+| Tests importing it | 3: `test/data-table.test.tsx`, `test/focus-ring.test.tsx`, `test/pressable-tab-stop.test.tsx` |
 | E2E naming it | 2: `e2e/behavior/keyboard.e2e.ts`, `e2e/behavior/overlays.e2e.ts` |
 <!-- audit:facts:end -->
 

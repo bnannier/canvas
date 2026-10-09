@@ -21,7 +21,7 @@ Audit checklist for `/components/input-otp`. The facts block and the variants ta
 | Overlay recipe | none |
 | MeasureProps | not adopted |
 | Touch target | no minTarget or useMinTargetSlop in the source directory |
-| Tests naming it | 3: `test/components-extra.test.tsx`, `test/skins-smoke.test.tsx`, `test/text-entry-material.test.tsx` |
+| Tests importing it | 2: `test/components-extra.test.tsx`, `test/text-entry-material.test.tsx` |
 | E2E naming it | 0: none |
 <!-- audit:facts:end -->
 

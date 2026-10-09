@@ -21,7 +21,7 @@ Audit checklist for `/components/radial-bar-chart`. The facts block and the vari
 | Overlay recipe | none |
 | MeasureProps | not adopted |
 | Touch target | no minTarget or useMinTargetSlop in the source directory |
-| Tests naming it | 5: `test/chart-materials.test.tsx`, `test/charts-buildout.test.tsx`, `test/dev-warn.test.tsx`, `test/dist-smoke.test.tsx`, `test/skins-smoke.test.tsx` |
+| Tests importing it | 3: `test/chart-materials.test.tsx`, `test/charts-buildout.test.tsx`, `test/dev-warn.test.tsx` |
 | E2E naming it | 0: none |
 <!-- audit:facts:end -->
 

@@ -21,7 +21,7 @@ Audit checklist for `/components/grid`. The facts block and the variants table a
 | Overlay recipe | none |
 | MeasureProps | not adopted |
 | Touch target | no minTarget or useMinTargetSlop in the source directory |
-| Tests naming it | 5: `test/docs-live-patterns.test.tsx`, `test/hover-lift.test.tsx`, `test/layout-responsive.test.tsx`, `test/layout-spans.test.tsx`, `test/scroll-frame-ring.test.tsx` |
+| Tests importing it | 3: `test/hover-lift.test.tsx`, `test/layout-responsive.test.tsx`, `test/layout-spans.test.tsx` |
 | E2E naming it | 1: `e2e/responsive/template-state.e2e.ts` |
 <!-- audit:facts:end -->
 

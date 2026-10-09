@@ -21,7 +21,7 @@ Audit checklist for `/components/typography`. The facts block and the variants t
 | Overlay recipe | none |
 | MeasureProps | not adopted |
 | Touch target | no minTarget or useMinTargetSlop in the source directory |
-| Tests naming it | 13: `test/action-role.test.tsx`, `test/destructive-text.test.tsx`, `test/df-type-scale.test.ts`, `test/fonts.test.tsx`, `test/layout-responsive.test.tsx`, `test/native-carousel-fixture.test.tsx`, `test/native-focus-fixtures.test.tsx`, `test/new-components.test.tsx`, `test/primary-text.test.tsx`, `test/prop-table.test.tsx`, `test/skins-smoke.test.tsx`, `test/text-contrast.test.tsx`, `test/typography-leading.test.tsx` |
+| Tests importing it | 12: `test/action-role.test.tsx`, `test/destructive-text.test.tsx`, `test/df-type-scale.test.ts`, `test/fonts.test.tsx`, `test/layout-responsive.test.tsx`, `test/native-carousel-fixture.test.tsx`, `test/native-focus-fixtures.test.tsx`, `test/new-components.test.tsx`, `test/primary-text.test.tsx`, `test/prop-table.test.tsx`, `test/text-contrast.test.tsx`, `test/typography-leading.test.tsx` |
 | E2E naming it | 1: `e2e/a11y/structure.e2e.ts` |
 <!-- audit:facts:end -->
 

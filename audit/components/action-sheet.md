@@ -21,7 +21,7 @@ Audit checklist for `/components/action-sheet`. The facts block and the variants
 | Overlay recipe | yes (dialog) |
 | MeasureProps | not adopted |
 | Touch target | no minTarget or useMinTargetSlop in the source directory |
-| Tests naming it | 15: `test/anchored-overlay-dismissal.test.tsx`, `test/dense-overlays.test.tsx`, `test/destructive-text-components.test.tsx`, `test/disclosure.test.tsx`, `test/escape-layers.test.tsx`, `test/glass-surface.test.ts`, `test/hardware-back.test.tsx`, `test/native-accessibility-escape-hosts.test.tsx`, `test/native-focus-fixtures.test.tsx`, `test/no-console-violations.test.tsx`, `test/overlay-escape.test.tsx`, `test/overlays.test.tsx`, `test/prop-table.test.tsx`, `test/skins-smoke.test.tsx`, `test/text-contrast.test.tsx` |
+| Tests importing it | 10: `test/destructive-text-components.test.tsx`, `test/disclosure.test.tsx`, `test/escape-layers.test.tsx`, `test/hardware-back.test.tsx`, `test/native-accessibility-escape-hosts.test.tsx`, `test/native-focus-fixtures.test.tsx`, `test/no-console-violations.test.tsx`, `test/overlay-escape.test.tsx`, `test/overlays.test.tsx`, `test/text-contrast.test.tsx` |
 | E2E naming it | 2: `e2e/behavior/escape-layers.e2e.ts`, `e2e/visual/overlays.e2e.ts` |
 <!-- audit:facts:end -->
 

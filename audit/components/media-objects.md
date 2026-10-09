@@ -21,7 +21,7 @@ Audit checklist for `/components/media-objects`. The facts block and the variant
 | Overlay recipe | none |
 | MeasureProps | not adopted |
 | Touch target | useMinTargetSlop in none; minTarget in `media-objects.shared.tsx`, `media-objects.styles.ts` |
-| Tests naming it | 2: `test/behavior-smoke-b.test.tsx`, `test/skins-smoke.test.tsx` |
+| Tests importing it | 1: `test/behavior-smoke-b.test.tsx` |
 | E2E naming it | 0: none |
 <!-- audit:facts:end -->
 

@@ -21,7 +21,7 @@ Audit checklist for `/components/gauge`. The facts block and the variants table 
 | Overlay recipe | none |
 | MeasureProps | not adopted |
 | Touch target | no minTarget or useMinTargetSlop in the source directory |
-| Tests naming it | 6: `test/chart-materials.test.tsx`, `test/charts-buildout.test.tsx`, `test/dev-warn.test.tsx`, `test/dist-smoke.test.tsx`, `test/new-components.test.tsx`, `test/skins-smoke.test.tsx` |
+| Tests importing it | 3: `test/chart-materials.test.tsx`, `test/dev-warn.test.tsx`, `test/new-components.test.tsx` |
 | E2E naming it | 0: none |
 <!-- audit:facts:end -->
 

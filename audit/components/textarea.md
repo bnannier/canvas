@@ -21,7 +21,7 @@ Audit checklist for `/components/textarea`. The facts block and the variants tab
 | Overlay recipe | none |
 | MeasureProps | adopted in `textarea.shared.tsx` |
 | Touch target | no minTarget or useMinTargetSlop in the source directory |
-| Tests naming it | 14: `test/atom-material-roles.test.tsx`, `test/destructive-text-components.test.tsx`, `test/field-focus-layout.test.tsx`, `test/field-focus-states.test.tsx`, `test/field.test.tsx`, `test/floating-label-color.test.tsx`, `test/floating-label-parity.test.tsx`, `test/forms.test.tsx`, `test/input-overlay-escape.test.tsx`, `test/new-components.test.tsx`, `test/sizing.test.tsx`, `test/skins-smoke.test.tsx`, `test/text-contrast.test.tsx`, `test/text-entry-material.test.tsx` |
+| Tests importing it | 13: `test/atom-material-roles.test.tsx`, `test/destructive-text-components.test.tsx`, `test/field-focus-layout.test.tsx`, `test/field-focus-states.test.tsx`, `test/field.test.tsx`, `test/floating-label-color.test.tsx`, `test/floating-label-parity.test.tsx`, `test/forms.test.tsx`, `test/input-overlay-escape.test.tsx`, `test/new-components.test.tsx`, `test/sizing.test.tsx`, `test/text-contrast.test.tsx`, `test/text-entry-material.test.tsx` |
 | E2E naming it | 0: none |
 <!-- audit:facts:end -->
 

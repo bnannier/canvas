@@ -21,7 +21,7 @@ Audit checklist for `/components/navbars`. The facts block and the variants tabl
 | Overlay recipe | none |
 | MeasureProps | not adopted |
 | Touch target | no minTarget or useMinTargetSlop in the source directory |
-| Tests naming it | 4: `test/behavior-smoke-d.test.tsx`, `test/narrow-modes.test.tsx`, `test/skins-smoke.test.tsx`, `test/text-contrast.test.tsx` |
+| Tests importing it | 3: `test/behavior-smoke-d.test.tsx`, `test/narrow-modes.test.tsx`, `test/text-contrast.test.tsx` |
 | E2E naming it | 1: `e2e/responsive/component-widths.e2e.ts` |
 <!-- audit:facts:end -->
 

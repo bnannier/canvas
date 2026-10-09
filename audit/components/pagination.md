@@ -21,7 +21,7 @@ Audit checklist for `/components/pagination`. The facts block and the variants t
 | Overlay recipe | none |
 | MeasureProps | not adopted |
 | Touch target | useMinTargetSlop in none; minTarget in `pagination.shared.tsx`, `pagination.styles.ts` |
-| Tests naming it | 11: `test/behavior.test.tsx`, `test/fixtures/touch-records.tsx`, `test/focus-ring.test.tsx`, `test/glass-controls.test.tsx`, `test/native-focus-fixtures.test.tsx`, `test/no-console-violations.test.tsx`, `test/pagination-look.test.tsx`, `test/skins-smoke.test.tsx`, `test/text-contrast.test.tsx`, `test/touch-target-clips.test.tsx`, `test/touch-target-seed.test.tsx` |
+| Tests importing it | 8: `test/behavior.test.tsx`, `test/focus-ring.test.tsx`, `test/glass-controls.test.tsx`, `test/native-focus-fixtures.test.tsx`, `test/no-console-violations.test.tsx`, `test/pagination-look.test.tsx`, `test/text-contrast.test.tsx`, `test/touch-target-seed.test.tsx` |
 | E2E naming it | 0: none |
 <!-- audit:facts:end -->
 

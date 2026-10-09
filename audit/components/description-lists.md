@@ -21,7 +21,7 @@ Audit checklist for `/components/description-lists`. The facts block and the var
 | Overlay recipe | none |
 | MeasureProps | not adopted |
 | Touch target | useMinTargetSlop in none; minTarget in `description-lists.android.tsx`, `description-lists.ios.tsx`, `description-lists.shared.tsx` |
-| Tests naming it | 6: `test/behavior-smoke-b.test.tsx`, `test/dist-smoke.test.tsx`, `test/escape-layers.test.tsx`, `test/native-focus-fixtures.test.tsx`, `test/responsive-narrow-fixes.test.tsx`, `test/skins-smoke.test.tsx` |
+| Tests importing it | 4: `test/behavior-smoke-b.test.tsx`, `test/escape-layers.test.tsx`, `test/native-focus-fixtures.test.tsx`, `test/responsive-narrow-fixes.test.tsx` |
 | E2E naming it | 0: none |
 <!-- audit:facts:end -->
 
