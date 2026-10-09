@@ -248,6 +248,7 @@ describe("a form control's own text", () => {
   it("counts a scrolled field value in the summary without flagging the cell", () => {
     const row = deriveRow({
       platform: "web",
+      origin: { x: 0, y: 0 },
       box: { x: 0, y: 0, width: 400, height: 100 },
       scroll: { scrollWidth: 400, clientWidth: 400, scrollHeight: 100, clientHeight: 100 },
       groupOpacity: [],
@@ -263,6 +264,7 @@ describe("a form control's own text", () => {
 describe("a platform row", () => {
   const raw = (platform: RawRow["platform"], width: number, height: number): RawRow => ({
     platform,
+    origin: { x: 248, y: 316 },
     box: { x: 0, y: 0, width: 400, height: 100 },
     scroll: { scrollWidth: 412, clientWidth: 400, scrollHeight: 100, clientHeight: 100 },
     groupOpacity: [],
@@ -278,6 +280,8 @@ describe("a platform row", () => {
     expect(belowTarget("web", 24, 24)).toBe(false);
     const ios = deriveRow(raw("ios", 80, 36));
     expect(ios.interactive[0]).toMatchObject({ target: 44, unit: "pt", belowTarget: true });
+    // Where the boxes are measured from passes through, for the photograph that places them.
+    expect(ios.origin).toEqual({ x: 248, y: 316 });
     expect(ios.interactive[0]!.note).toContain("hitSlop unobservable");
     expect(deriveRow(raw("android", 80, 36)).interactive[0]).toMatchObject({ target: 48, belowTarget: true });
     expect(deriveRow(raw("web", 80, 36)).interactive[0]).toMatchObject({ target: 24, belowTarget: false });

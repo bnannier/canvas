@@ -304,6 +304,13 @@ export interface RawInteractive {
 
 export interface RawRow {
   platform: RowPlatform;
+  /**
+   * Where every box of the row is measured from, in the viewport's CSS px when it was read:
+   * the top-left of the preview card the row is in, or of the region itself when it is in no
+   * card (a page section, an overlay portaled out of the card). A photograph of the viewport
+   * or of a clip of it places the boxes by it.
+   */
+  origin: { x: number; y: number };
   box: Box;
   scroll: { scrollWidth: number; clientWidth: number; scrollHeight: number; clientHeight: number };
   /** Opacity by group id. */
@@ -371,6 +378,8 @@ export interface ProbeTarget extends RawInteractive {
 
 export interface ProbeRow {
   platform: RowPlatform;
+  /** RawRow `origin`: where the boxes are measured from, in the viewport. */
+  origin: { x: number; y: number };
   box: Box;
   overflowX: number;
   texts: ProbeText[];
@@ -450,6 +459,7 @@ export function deriveRow(raw: RawRow): ProbeRow {
   const floor = TARGET_FLOORS[raw.platform];
   return {
     platform: raw.platform,
+    origin: raw.origin,
     box: raw.box,
     overflowX: raw.scroll.scrollWidth - raw.scroll.clientWidth,
     texts: raw.texts.map((text) => deriveText(text, raw.groupOpacity)),
