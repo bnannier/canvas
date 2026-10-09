@@ -4,6 +4,7 @@ import ts from "typescript";
 import { checkMaterialCoverage } from "./check";
 import { renderableExports } from "./discover";
 import { materialComponentRoutes, materialCoverage } from "./manifest";
+import type { ApiEntry } from "../api/types";
 import type { MaterialCoverageEntry, PublicRenderable } from "./types";
 
 const api: PublicRenderable = { name: "Field", files: ["src/atoms/field/field.shared.tsx"] };
@@ -28,6 +29,23 @@ test("material coverage ties a component to its actual source and docs family", 
   expect(checkMaterialCoverage([api], catalog, [{ ...field, family: "wrong" }]).errors).toContain("Wrong source family for Field: expected src/atoms/wrong/");
   expect(checkMaterialCoverage([api], [{ ...catalog[0], dir: "other" }], [field]).errors).toContain("Docs family mismatch for Field: components/field");
   expect(checkMaterialCoverage([api], catalog, [{ ...field, docsRoute: null }]).errors).toContain("Product API has no docs route: Field");
+});
+
+test("a public foundation renderable names a docs route unless its API docs are pending", () => {
+  const provider: PublicRenderable = { name: "OverlayHost", files: ["src/style/portal.tsx"] };
+  const style: MaterialCoverageEntry = {
+    ...field, name: "OverlayHost", tier: "style", family: "foundation", docsRoute: null,
+    roles: ["inherited"], target: "Overlay host.", verification: ["inherited-composition", "semantic-state"],
+  };
+  const check = (entry: ApiEntry, pending: Record<string, string> = {}) =>
+    checkMaterialCoverage([api, provider], catalog, [field, style], ["integration"], { entries: { OverlayHost: entry }, pending }).errors;
+  expect(check({ kind: "component", docs: "integration" })).toEqual(["Public foundation renderable has no docs route: OverlayHost (the API manifest documents it at integration)"]);
+  expect(check({ kind: "part" })).toEqual(["Public foundation renderable has no docs route: OverlayHost"]);
+  // Staged in PENDING_DOCS, or a kit internal the owner retires as a deprecated alias.
+  expect(check({ kind: "component" }, { OverlayHost: "integration" })).toEqual([]);
+  expect(check({ kind: "internal-by-accident" }, { OverlayHost: "foundation" })).toEqual([]);
+  // A route, once named, is held to the docs it names by check:api.
+  expect(checkMaterialCoverage([api, provider], catalog, [field, { ...style, docsRoute: "integration" }], ["integration"], { entries: { OverlayHost: { kind: "component", docs: "integration" } }, pending: {} }).errors).toEqual([]);
 });
 
 test("surface decisions require complete solid, fallback and both-direction expectations", () => {

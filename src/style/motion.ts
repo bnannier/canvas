@@ -146,6 +146,10 @@ const serverReducedMotion = () => false;
 // consumer still reads the setting when it mounts (the read is a promise, not a
 // listener), so a consumer mounted after the setting changed never trusts a stale
 // value, and a test that stubs the read per render sees its own stub.
+/**
+ * Whether the OS Reduce Motion setting is on. False until the first read resolves, then
+ * follows live changes.
+ */
 export function useReducedMotion(): boolean {
   const reduced = useSyncExternalStore(subscribeReducedMotion, readReducedMotion, serverReducedMotion);
   useEffect(() => {

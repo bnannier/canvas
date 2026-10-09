@@ -1,7 +1,19 @@
+import type { ApiEntry, ApiKind } from "../api/types";
 import type { ComponentCatalogEntry, MaterialCoverageEntry, PublicRenderable } from "./types";
 
 const ROLES = new Set(["static", "liquid", "inherited"]);
 const TIERS = new Set(["atoms", "molecules", "organisms", "charts", "style"]);
+// The API manifest's kinds for a renderable a consumer is meant to use: it owes a docs
+// route, and the material inventory records the same one.
+const PUBLIC_RENDERABLE_KINDS = new Set<ApiKind>(["component", "part"]);
+
+/** What the public API manifest (tools/api/manifest.ts) says about each export. */
+export interface ApiDocs {
+  entries: Readonly<Record<string, ApiEntry>>;
+  /** Exports whose docs are staged in PENDING_DOCS, with the route planned for each. */
+  pending: Readonly<Record<string, string>>;
+}
+
 const RECIPE_IDS = new Set([
   "solid-appearance", "glass-appearance", "mode-switch", "accessibility-fallback",
   "runtime-capability", "semantic-state", "inherited-composition",
@@ -14,6 +26,7 @@ export function checkMaterialCoverage(
   catalog: readonly ComponentCatalogEntry[],
   entries: readonly MaterialCoverageEntry[],
   guideRoutes: readonly string[] = [],
+  apiDocs?: ApiDocs,
 ) {
   const errors: string[] = [];
   const discovered = new Map(exports.map((entry) => [entry.name, entry]));
@@ -35,6 +48,15 @@ export function checkMaterialCoverage(
       const directory = `src/${entry.tier}/${entry.family}/`;
       if (api && !api.files.some((file) => file.startsWith(directory))) errors.push(`Wrong source family for ${entry.name}: expected ${directory}`);
       if (!entry.docsRoute) errors.push(`Product API has no docs route: ${entry.name}`);
+    } else if (!entry.docsRoute && apiDocs) {
+      // A public foundation renderable is documented somewhere, or staged with a plan;
+      // only a pending one may still name no route (check:api holds the two manifests to
+      // the same route either way).
+      const declared = Object.hasOwn(apiDocs.entries, entry.name) ? apiDocs.entries[entry.name] : undefined;
+      const pending = Object.hasOwn(apiDocs.pending, entry.name);
+      if (declared && PUBLIC_RENDERABLE_KINDS.has(declared.kind) && !pending) {
+        errors.push(`Public foundation renderable has no docs route: ${entry.name}${declared.docs ? ` (the API manifest documents it at ${declared.docs})` : ""}`);
+      }
     }
     if (entry.docsRoute) {
       if (!knownRoutes.has(entry.docsRoute)) errors.push(`Unknown docs route for ${entry.name}: ${entry.docsRoute}`);

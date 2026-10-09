@@ -9,6 +9,11 @@ import type { DocsPage } from "./types";
 // names it: string literals (code snippets, prop tables, captions), template text and
 // JSX text. An import, a JSX tag that merely uses a component, and a comment do not
 // count, so a page cannot claim a name it only uses to lay itself out.
+//
+// A name that is also an ordinary word (`palette`, `spacing`, `Surface`) is named only
+// where the page shows it as code: in a snippet (a CodeBlock's `code`, an example's or
+// a Do & Don't's `code`), in inline code (InlineCode, mono Typography), in a generated
+// prop table's names and types, or between backticks. Anywhere else the word is prose.
 
 const APP_DIR = "docs/src/app";
 const DATA_DIR = "docs/src/core/data";
@@ -62,12 +67,8 @@ function fileText(source: ts.SourceFile): string {
   return out.join("\n");
 }
 
-/**
- * The rendered text of one entry in a file of many (a pattern), plus every top-level
- * declaration of the same file it reaches by name, transitively: a section that renders
- * `<FocusDemo />` or `{GLASS}` shows that demo's or snippet's text too.
- */
-function reachableText(source: ts.SourceFile, node: ts.Node): string {
+/** The file's top-level functions and variables by name: what an identifier in a page can reach. */
+function topLevelDeclarations(source: ts.SourceFile): Map<string, ts.Node> {
   const topLevel = new Map<string, ts.Node>();
   for (const statement of source.statements) {
     if (ts.isFunctionDeclaration(statement) && statement.name) topLevel.set(statement.name.text, statement);
@@ -77,23 +78,99 @@ function reachableText(source: ts.SourceFile, node: ts.Node): string {
       }
     }
   }
+  return topLevel;
+}
+
+/** Visit `node` and, transitively, every top-level declaration of its file it reaches by name. */
+function reaching(source: ts.SourceFile, node: ts.Node, visit: (current: ts.Node) => void) {
+  const topLevel = topLevelDeclarations(source);
   const seen = new Set<ts.Node>();
-  const out: string[] = [];
-  const visit = (current: ts.Node) => {
+  const enter = (current: ts.Node) => {
     if (seen.has(current)) return;
     seen.add(current);
-    literalText(current, out);
+    visit(current);
     const walk = (child: ts.Node) => {
       if (ts.isIdentifier(child)) {
         const target = topLevel.get(child.text);
-        if (target && target !== current) visit(target);
+        if (target && target !== current) enter(target);
       }
       ts.forEachChild(child, walk);
     };
     ts.forEachChild(current, walk);
   };
-  visit(node);
+  enter(node);
+}
+
+/**
+ * The rendered text of one entry in a file of many (a pattern), plus every top-level
+ * declaration of the same file it reaches by name, transitively: a section that renders
+ * `<FocusDemo />` or `{GLASS}` shows that demo's or snippet's text too.
+ */
+function reachableText(source: ts.SourceFile, node: ts.Node): string {
+  const out: string[] = [];
+  reaching(source, node, (current) => literalText(current, out));
   return out.join("\n");
+}
+
+function propertyName(node: ts.PropertyAssignment): string | undefined {
+  return ts.isIdentifier(node.name) || ts.isStringLiteral(node.name) ? node.name.text : undefined;
+}
+
+/**
+ * The code a subtree shows: every literal inside a code context (and inside the
+ * top-level declarations a code context names, so `<CodeBlock code={GLASS} />` shows
+ * GLASS). The contexts are a `code` attribute or property (CodeBlock, an example, a Do
+ * & Don't), InlineCode and mono Typography, and the names and types of a generated
+ * prop table.
+ */
+function codeIn(source: ts.SourceFile, node: ts.Node, out: string[]) {
+  const take = (code: ts.Node) => reaching(source, code, (current) => literalText(current, out));
+  const find = (current: ts.Node) => {
+    if (ts.isJsxElement(current)) {
+      const tag = jsxTagName(current.openingElement);
+      if (tag === "InlineCode" || (tag === "Typography" && attribute(current.openingElement, "mono"))) {
+        for (const child of current.children) take(child);
+        return;
+      }
+    }
+    if (ts.isJsxAttribute(current) && current.name.getText() === "code" && current.initializer) return take(current.initializer);
+    if (ts.isPropertyAssignment(current)) {
+      const name = propertyName(current);
+      if (name === "code") return take(current.initializer);
+      // A generated prop table: `props: [{ name: "ButtonProps", props: [{ name, type, … }] }]`.
+      if (name === "props" && ts.isArrayLiteralExpression(current.initializer)) {
+        const table = (row: ts.Node) => {
+          if (ts.isPropertyAssignment(row) && (propertyName(row) === "name" || propertyName(row) === "type")) literalText(row.initializer, out);
+          ts.forEachChild(row, table);
+        };
+        return table(current.initializer);
+      }
+    }
+    ts.forEachChild(current, find);
+  };
+  find(node);
+}
+
+/**
+ * Code without its comments: a snippet's `// Density is per component` uses the word,
+ * not the export. A `//` after a colon is a URL's, not a comment.
+ */
+function withoutComments(code: string): string {
+  return code.replace(/\/\*[\s\S]*?\*\//g, "").replace(/(^|[^:])\/\/.*$/gm, "$1");
+}
+
+/** Backtick spans in prose (Markdown inline code in an md-derived description, a caption). */
+function backtickSpans(text: string): string[] {
+  return [...text.matchAll(/`([^`\n]+)`/g)].map((match) => match[1]);
+}
+
+/** A page's text and its code: the code a subtree shows, plus every backtick span in its text. */
+function pageText(source: ts.SourceFile, node: ts.Node, reach: boolean): { text: string; code: string } {
+  const text = reach ? reachableText(source, node) : fileText(source);
+  const code: string[] = [];
+  if (reach) reaching(source, node, (current) => codeIn(source, current, code));
+  else codeIn(source, node, code);
+  return { text, code: [withoutComments(code.join("\n")), ...backtickSpans(text)].join("\n") };
 }
 
 function jsxTagName(node: ts.JsxOpeningLikeElement): string {
@@ -226,7 +303,7 @@ export function docsPages(root: string, components: readonly CatalogEntry[]): Ma
       continue;
     }
     const source = parse(root, file);
-    add({ route, sources: [file], text: fileText(source), headings: jsxHeadings(source) });
+    add({ route, sources: [file], ...pageText(source, source, false), headings: jsxHeadings(source) });
   }
 
   const known = ["components/[slug]", "components/[slug]/[variant]", "patterns/[slug]", "templates/[slug]"];
@@ -236,17 +313,21 @@ export function docsPages(root: string, components: readonly CatalogEntry[]): Ma
     for (const entry of components) {
       const file = componentModule(root, entry);
       const sources = [`${DATA_DIR}/components.ts`, ...(file ? [file] : [])];
-      let text = `${entry.name}\n${entry.description}`;
+      const catalogText = `${entry.name}\n${entry.description}`;
+      let text = catalogText;
+      let code = backtickSpans(catalogText).join("\n");
       let headings: string[] = [];
       let examples: string[] = [];
       if (file) {
         const source = parse(root, file);
         const docs = objectOf(source, "docs");
-        text += `\n${reachableText(source, docs)}`;
+        const module = pageText(source, docs, true);
+        text += `\n${module.text}`;
+        code += `\n${module.code}`;
         examples = titlesOf(docs, "examples", "label");
         headings = [...examples, ...titlesOf(docs, "donts", "title"), ...titlesOf(docs, "props", "name")];
       }
-      const page: DocsPage = { route: `components/${entry.slug}`, sources, text, headings };
+      const page: DocsPage = { route: `components/${entry.slug}`, sources, text, code, headings };
       add(page);
       // The deep link to each non-default example renders the same reference page.
       if (dynamic.has("components/[slug]/[variant]")) {
@@ -262,7 +343,7 @@ export function docsPages(root: string, components: readonly CatalogEntry[]): Ma
       if (!ts.isObjectLiteralExpression(element)) throw new Error(`${file}: a PATTERNS entry is not an object literal`);
       const slug = stringProperty(element, "slug");
       if (!slug) throw new Error(`${file}: a PATTERNS entry has no literal slug`);
-      add({ route: `patterns/${slug}`, sources: [file], text: reachableText(source, element), headings: titlesOf(element, "sections", "title") });
+      add({ route: `patterns/${slug}`, sources: [file], ...pageText(source, element, true), headings: titlesOf(element, "sections", "title") });
     }
   }
 
@@ -284,7 +365,7 @@ export function docsPages(root: string, components: readonly CatalogEntry[]): Ma
       const template = objectOf(source, element.text);
       const slug = stringProperty(template, "slug");
       if (!slug) throw new Error(`${templateFile}: ${element.text} has no literal slug`);
-      add({ route: `templates/${slug}`, sources: [templateFile], text: fileText(source), headings: titlesOf(template, "sections", "title") });
+      add({ route: `templates/${slug}`, sources: [templateFile], ...pageText(source, source, false), headings: titlesOf(template, "sections", "title") });
     }
   }
   return pages;
@@ -294,4 +375,18 @@ export function docsPages(root: string, components: readonly CatalogEntry[]): Ma
 export function mentions(text: string, name: string): boolean {
   const escaped = name.replace(/[$]/g, "\\$");
   return new RegExp(`(?<![\\w$])${escaped}(?![\\w$])`).test(text);
+}
+
+/**
+ * Whether a name is also an ordinary word: one lowercase word, one capitalized word or
+ * one all-capitals word (`palette`, `Surface`, `FILL`). Prose uses those words for their
+ * meaning, so only code can name the export.
+ */
+export function ordinaryWord(name: string): boolean {
+  return /^(?:[A-Z]?[a-z]+|[A-Z]+)$/.test(name);
+}
+
+/** Whether a page names an export: anywhere in its text, or in its code for an ordinary word. */
+export function names(page: Pick<DocsPage, "text" | "code">, name: string): boolean {
+  return mentions(ordinaryWord(name) ? page.code : page.text, name);
 }

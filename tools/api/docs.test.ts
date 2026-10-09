@@ -2,7 +2,7 @@ import { afterAll, expect, test } from "bun:test";
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
-import { docsPages, mentions } from "./docs";
+import { docsPages, mentions, names, ordinaryWord } from "./docs";
 
 const temporary: string[] = [];
 afterAll(() => { for (const directory of temporary) rmSync(directory, { recursive: true, force: true }); });
@@ -22,10 +22,12 @@ import { Column, ThemeProvider } from "@nannier/canvas";
 import { Section } from "../../ui/section";
 
 const SNIPPET = \`import { useWidth } from "@nannier/canvas";
-const width = useWidth();\`;
+// The palette and the spacing come from the theme.
+const width = useWidth(); // measured by the container
+const source = "https://example.com/widths";\`;
 
 function Demo() {
-  return <Column><InlineCode>alpha()</InlineCode> mixes a token.</Column>;
+  return <Column><InlineCode>alpha()</InlineCode> mixes a token. Pick a palette, a shape and a radius.</Column>;
 }
 
 export default function Guide() {
@@ -34,6 +36,7 @@ export default function Guide() {
       <Section title="Measuring">
         <CodeBlock code={SNIPPET} />
         <Demo />
+        <Typography mono>radius.md</Typography>
       </Section>
       <H3>Edge cases</H3>
       <Typography h2>Platform notes</Typography>
@@ -59,7 +62,7 @@ export const docs: ComponentDocs = {
 `;
 
 const PATTERNS = `
-function SpacingDemo() { return <Typography>Read spacing from useSpacing.</Typography>; }
+function SpacingDemo() { return <Typography>Read spacing from useSpacing, or <InlineCode>spacing.md</InlineCode> directly.</Typography>; }
 const PATTERNS: PatternDoc[] = [
   { slug: "spacing", name: "Spacing", description: "Rhythm.", sections: [{ title: "Scale", render: () => <SpacingDemo /> }] },
   { slug: "motion", name: "Motion", description: "Movement.", sections: [{ title: "Durations", render: () => null }] },
@@ -140,4 +143,37 @@ test("mentions match whole identifiers only", () => {
   expect(mentions("GridItem only", "Grid")).toBe(false);
   expect(mentions("useGrid()", "Grid")).toBe(false);
   expect(mentions("$scope.$value", "$value")).toBe(true);
+});
+
+test("a page's code is what it shows as code: snippets, inline code, prop tables and backticks, never prose or a snippet's comments", () => {
+  const pages = docsPages(fixture(BASE), CATALOG);
+  const guide = pages.get("guide")!;
+  // A CodeBlock's `code` names a top-level snippet; inline code and mono Typography are code.
+  for (const name of ["useWidth", "alpha", "radius"]) expect(mentions(guide.code, name)).toBe(true);
+  // Prose, and a word inside a snippet's comment, are not.
+  for (const name of ["palette", "shape", "spacing"]) {
+    expect(mentions(guide.text, name)).toBe(true);
+    expect(mentions(guide.code, name)).toBe(false);
+  }
+  // A `//` after a colon is a URL's, not a comment: the rest of the line stays code.
+  expect(guide.code).toContain("https://example.com/widths");
+  expect(guide.code).not.toContain("measured by the container");
+  // A component page: example and Do & Don't code, the prop table's names and types, and
+  // backtick spans in the catalog entry.
+  const widget = pages.get("components/widget")!;
+  for (const name of ["Widget", "WidgetProps", "IconName", "Label"]) expect(mentions(widget.code, name)).toBe(true);
+  expect(mentions(widget.code, "small")).toBe(false);
+  // A pattern's code includes the demos its sections render.
+  const spacing = pages.get("patterns/spacing")!;
+  expect(mentions(spacing.code, "spacing")).toBe(true);
+  expect(mentions(spacing.code, "useSpacing")).toBe(false);
+});
+
+test("an ordinary word is named only in code; any other identifier anywhere in the text", () => {
+  for (const word of ["palette", "spacing", "Surface", "Responsive", "FILL", "Button"]) expect(ordinaryWord(word)).toBe(true);
+  for (const name of ["useTheme", "colorsByScheme", "QRCode", "HUE_WASH", "GridItem", "h1"]) expect(ordinaryWord(name)).toBe(false);
+  const page = { text: "Pick a palette with useTheme.", code: "useTheme()" };
+  expect(names(page, "palette")).toBe(false);
+  expect(names(page, "useTheme")).toBe(true);
+  expect(names({ text: "palette.blue", code: "palette.blue" }, "palette")).toBe(true);
 });

@@ -61,6 +61,7 @@ export function gaugeArc(v: number): { d: string; dasharray: string } {
   };
 }
 
+/** A radial dial: a track, a tone-colored fill arc and the value inside. */
 export function Gauge(props: GaugeProps) {
   const { value, label, testID, style } = props;
   const { tokens } = useTheme();

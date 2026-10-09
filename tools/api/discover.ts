@@ -118,6 +118,8 @@ export function moduleExports(program: ts.Program, entryFile: string, root: stri
       renderable,
       callable: Boolean(type && !renderable && type.getCallSignatures().length),
       deprecated: deprecatedAlongChain(exported, checker),
+      // The resolved declaration's own comment, as hover shows it through the entry.
+      summary: ts.displayPartsToString(symbol.getDocumentationComment(checker)).trim() !== "",
       files: [...new Set(declarations.map((node) => relative(root, node.getSourceFile().fileName).replaceAll("\\", "/")))].sort(),
     });
   }

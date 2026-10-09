@@ -211,6 +211,12 @@ function defaultSurface(): Surface {
   return liquidGlassAvailable() ? "glass" : "solid";
 }
 
+/**
+ * Resolves the theme for everything below it: the scheme (`dark`, `light`, or the OS
+ * appearance), the palette (blush, or `mint`), the surface (`glass`, `solid`, or the
+ * platform default), token overrides and the app's registered fonts. Read it with
+ * useTheme.
+ */
 export function ThemeProvider({ dark, light, scheme, ssrScheme, mint, ssrPalette, ssrBreakpoint, glass, solid, surface, tokens, fonts, children }: ThemeProviderProps) {
   const system = useColorScheme();
   // Reading the accessibility preferences here (not deep in a leaf) is what makes
@@ -305,6 +311,11 @@ export function ThemeProvider({ dark, light, scheme, ssrScheme, mint, ssrPalette
   );
 }
 
+/**
+ * The theme from the nearest ThemeProvider: the resolved scheme, palette, surface, color
+ * tokens, glass tints, registered fonts and accessibility flags. The default light, solid
+ * theme when no provider is mounted.
+ */
 export function useTheme(): ThemeValue {
   return useContext(ThemeContext) ?? FALLBACK;
 }

@@ -45,7 +45,7 @@ import {
   type PageFacts,
 } from "./facts.ts";
 import { NATIVE_CELLS_PER_VARIANT, WEB_CELLS_PER_VARIANT, cellId, cellsFor, components, pageCellId, pages, sectionKeys } from "./inventory.ts";
-import { COMPONENT_PLANS, FAMILY_CHECKLISTS, UNIVERSAL_RUBRIC } from "./plan-specifics.ts";
+import { COMPONENT_PLANS, FAMILY_CHECKLISTS, STYLE_LAYER_RENDERABLES, UNIVERSAL_RUBRIC } from "./plan-specifics.ts";
 import { auditStatus, checklistStatus, formatStatus } from "./status.ts";
 import { splitRow } from "./table.ts";
 
@@ -860,6 +860,16 @@ describe("findings and sign-off tables", () => {
     // The prose every checklist was seeded with, above its findings table.
     const seeded = /Status: ([^.]*)\./.exec(readFileSync(join(ROOT, "audit/components/button.md"), "utf8"))?.[1] ?? "";
     expect(seeded.replace(/\([^)]*\)/g, "").split(",").map((w) => w.trim())).toEqual([...FINDING_STATUSES]);
+  });
+
+  it("lists exactly the style-layer renderables with no component page in audit/README.md", () => {
+    const readme = readFileSync(join(ROOT, "audit/README.md"), "utf8").replace(/\s+/g, " ");
+    const names = [...STYLE_LAYER_RENDERABLES];
+    const list = `${names.slice(0, -1).join(", ")} and ${names.at(-1)}`;
+    expect(readme).toContain(`The style-layer renderables with no component page have no checklist of their own: ${list}.`);
+    // Derived from the material inventory: the primitives with their own page are not in it.
+    expect(names).toContain("ThemeProvider");
+    expect(names).not.toContain("View");
   });
 
   it("splits a row with no free column strictly", () => {

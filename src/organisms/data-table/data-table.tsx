@@ -7,5 +7,6 @@ import { Skeleton } from "../../atoms/skeleton/skeleton.js";
 // Web DataTable (the base; Metro falls back to it on native, web bundlers resolve
 // it). The composed parts (selection Checkbox, footer Pagination, loading
 // Skeleton) are the web variants.
+/** A sortable, selectable, paginated table with loading and empty states. */
 export const DataTable = createDataTable(webSkin, { Checkbox, Pagination, Skeleton });
 export type { DataTableProps, DataTableColumn, DataTableSort } from "./data-table.shared.js";
