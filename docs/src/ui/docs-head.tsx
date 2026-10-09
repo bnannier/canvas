@@ -48,18 +48,18 @@ export function DocsHead({ title, path }: { title?: string; path?: string }) {
 }
 
 // The look the page shows, as the docs theme has committed it: `data-look="<scheme>
-// <surface>"` on the root element. A link's `?scheme=&surface=` choice lands in a
-// transition after hydration (docs/src/theme/docs-theme.tsx), later than
-// `data-hydrated`, so the hydration marker alone no longer says the page shows the
-// look it was opened in, and the dark scheme cannot be told from the server's dark
-// glass by its paint. The browser suite waits for this marker as well. Mounted once,
-// inside the theme provider; web only, like the head above.
+// <surface> <palette>"` on the root element. A link's `?scheme=&surface=&palette=`
+// choice lands in a transition after hydration (docs/src/theme/docs-theme.tsx),
+// later than `data-hydrated`, so the hydration marker alone no longer says the page
+// shows the look it was opened in, and the dark scheme cannot be told from the
+// server's dark glass by its paint. The browser suite waits for this marker as
+// well. Mounted once, inside the theme provider; web only, like the head above.
 export function DocsLookMarker() {
-  const { scheme, surface } = useDocsTheme();
+  const { scheme, surface, palette } = useDocsTheme();
   if (Platform.OS !== "web") return null;
   return (
     <Head>
-      <html data-look={`${scheme} ${surface}`} />
+      <html data-look={`${scheme} ${surface} ${palette}`} />
     </Head>
   );
 }
