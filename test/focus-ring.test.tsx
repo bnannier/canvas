@@ -8,6 +8,8 @@ import type { View } from "react-native";
 import { ThemeProvider } from "../src/style/theme.tsx";
 import { Pressable, FOCUS_RING_OFFSET, FOCUS_RING_WIDTH } from "../src/style/pressable.tsx";
 import { TextInput } from "../src/style/text.tsx";
+import { ScrollView } from "../src/style/scroll-view.tsx";
+import { ScrollView as RNScrollView } from "react-native";
 import { FOCUS_RESET } from "../src/style/focus-reset.ts";
 import { darkColors, lightColors } from "../src/style/tokens.ts";
 import { Button } from "../src/atoms/button/button.tsx";
@@ -23,6 +25,7 @@ import { Accordion as IOSAccordion } from "../src/molecules/accordion/accordion.
 import { Sidebar } from "../src/organisms/sidebar/sidebar.tsx";
 import { Tabs as IOSTabs } from "../src/organisms/tabs/tabs.ios.tsx";
 import { DragDropProvider, DropZone, Draggable, DragHandle } from "../src/organisms/drag-drop/drag-drop.tsx";
+import { CodeBlock } from "../src/molecules/code-block/code-block.tsx";
 import { LOOKS, lookProps } from "./fixtures/looks.ts";
 
 // The keyboard focus ring. The kit's Pressable hands the browser the palette's `ring`
@@ -158,6 +161,38 @@ describe("the themed focus ring", () => {
     });
   }
 
+  for (const look of LOOKS) {
+    it(`colours a raw ScrollView's ring with the ${look.name} palette's ring, as a Pressable's`, () => {
+      // Chromium and Firefox make a scroller with nothing focusable inside it a keyboard
+      // stop of its own, and the browser draws its ring there.
+      const ref = createRef<RNScrollView>();
+      render(
+        <ThemeProvider {...lookProps(look)} solid>
+          <ScrollView ref={ref} testID="scroller" style={{ height: 120 }}><TextInput accessibilityLabel="Inside" /></ScrollView>
+        </ThemeProvider>,
+      );
+      const scroller = screen.getByTestId("scroller");
+      expect(channels(outline(scroller, "color"))).toBe(channels(look.tokens.ring));
+      expect(outline(scroller, "offset")).toBe(AROUND);
+      // The browser draws it on keyboard focus only: no style or width is forced.
+      expect(outline(scroller, "style")).toBe("");
+      expect(outline(scroller, "width")).toBe("");
+      expect(scroller.style.height).toBe("120px");
+      // The ref is React Native's own scroller, with its scroll methods.
+      expect(typeof ref.current?.scrollTo).toBe("function");
+    });
+  }
+
+  it("lets a scroller that hands its ring to a frame keep its reset", () => {
+    // A terminal's scrollport sits flush inside its clipping card, so the card draws the
+    // ring (src/style/focus-frame.tsx) and the scrollport's own reset wins over the
+    // primitive's ring.
+    render(<ThemeProvider light solid><CodeBlock terminal code={"bun run build && bun run test --timeout 20000 ./test ./tools"} /></ThemeProvider>);
+    const ports = [...document.querySelectorAll<HTMLElement>("*")].filter((node) => node.style.getPropertyValue("outline-offset") === AROUND && node.style.getPropertyValue("outline-width") === "0px");
+    expect(ports.length).toBeGreaterThan(0);
+    for (const port of ports) expect(suppressed(port)).toBe(true);
+  });
+
   it("leaves every kit field on its reset, so the field's own border is the one focus cue", () => {
     render(
       <ThemeProvider light solid>
@@ -211,18 +246,37 @@ describe("the themed focus ring", () => {
     });
   }
 
-  it("rings a zoomable GeoMap's map, the focusable node, around it", () => {
-    render(
-      <ThemeProvider dark solid>
-        <GeoMap zoomable title="Installs" points={[{ label: "London", lat: 51.5072, lng: -0.1276, count: 5170 }]} />
-      </ThemeProvider>,
-    );
-    const map = screen.getByRole("img", { name: /Installs/ });
-    expect(map.getAttribute("tabindex")).toBe("0");
-    expect(channels(outline(map, "color"))).toBe(channels(darkColors.ring));
-    expect(outline(map, "offset")).toBe(AROUND);
-    expect(outline(map, "style")).toBe("");
-  });
+  for (const glass of [false, true]) {
+    it(`rings a zoomable GeoMap's whole chart on keyboard focus, zoom bar included${glass ? ", under glass" : ""}`, () => {
+      // The zoom bar sits over the map's bottom-right corner, so a ring around the map
+      // itself would run under its buttons: the chart's surface draws it instead.
+      const restore = backdropFilter(true);
+      try {
+        render(
+          <ThemeProvider dark glass={glass} solid={!glass}>
+            <GeoMap zoomable title="Installs" points={[{ label: "London", lat: 51.5072, lng: -0.1276, count: 5170 }]} />
+          </ThemeProvider>,
+        );
+        const chart = screen.getByRole("group", { name: "Installs chart" });
+        const map = screen.getByRole("img", { name: /Installs/ });
+        expect(map.getAttribute("tabindex")).toBe("0");
+        // The map drops the browser's own ring, so the two never stack.
+        expect(suppressed(map)).toBe(true);
+        expect(outline(chart, "width")).toBe("");
+        const zoomIn = screen.getByRole("button", { name: "Zoom in" });
+        expect(chart.contains(zoomIn)).toBe(true);
+        // Tab lands on the map and releases there: the chart wears the kit's ring.
+        act(() => { fireEvent.keyUp(map, { key: "Tab" }); });
+        expect(channels(outline(chart, "color"))).toBe(channels(darkColors.ring));
+        expect(outline(chart, "style")).toBe("solid");
+        expect(outline(chart, "width")).toBe(`${FOCUS_RING_WIDTH}px`);
+        expect(outline(chart, "offset")).toBe(AROUND);
+        // A pointer press on the map ends the keyboard mark, as :focus-visible does.
+        act(() => { fireEvent.pointerDown(map); });
+        expect(outline(chart, "width")).toBe("");
+      } finally { restore(); }
+    });
+  }
 
   it("draws a solid ring in --ring on :focus-visible wherever the CSS hand-off is loaded", () => {
     const base = readFileSync(new URL("../styles/tokens/base.css", import.meta.url), "utf8");

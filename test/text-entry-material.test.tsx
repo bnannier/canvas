@@ -69,12 +69,21 @@ describe("clear grouped field state borders", () => {
       field: (native: boolean) => native ? <PhoneInputIOS testID="field" /> : <PhoneInput testID="field" />,
       owner: (input: HTMLElement) => input.parentElement!.parentElement!,
     },
+    {
+      // The web box paints the value field's focus on its own border (`groupShowsFocus`);
+      // the native skins keep a bare field with the kit's ring, so no native case here.
+      name: "Stepper",
+      field: (native: boolean) => native ? null : <Stepper defaultValue={2} accessibilityLabel="Seats" testID="stepper" />,
+      input: () => screen.getByRole("spinbutton"),
+      owner: (input: HTMLElement) => input.parentElement!,
+    },
   ];
 
-  for (const { name, field, owner } of fields) {
+  for (const { name, field, owner, ...rest } of fields) {
+    const fieldInput = "input" in rest ? rest.input : () => screen.getByTestId("field");
     it(`${name} paints the active outline after the material and retains the original border space`, () => {
       render(mode(field(false)));
-      const input = screen.getByTestId("field");
+      const input = fieldInput();
       const box = owner(input);
       const borderWidth = box.style.borderWidth;
       expect(screen.queryByTestId("text-entry-state-border")).toBeNull();
@@ -94,14 +103,15 @@ describe("clear grouped field state borders", () => {
       expect(box.style.borderWidth).toBe(borderWidth);
       expect(box.style.borderColor).toContain("0.00");
       expect(materials(box)).toHaveLength(1);
-      expect(screen.getByTestId("field")).toBe(input);
+      expect(fieldInput()).toBe(input);
       expect(document.activeElement).toBe(input);
     });
 
     for (const appearance of ["solid", "native"] as const) {
+      if (field(appearance === "native") === null) continue;
       it(`${name} keeps the ${appearance} active border on its original owner`, () => {
         render(mode(field(appearance === "native"), appearance === "native"));
-        const input = screen.getByTestId("field");
+        const input = fieldInput();
         act(() => input.focus());
         expect(screen.queryByTestId("text-entry-state-border")).toBeNull();
         expect(owner(input).style.borderColor).not.toBe("");

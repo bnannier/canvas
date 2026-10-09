@@ -2,6 +2,8 @@ import { useTextEntryMaterial } from "../../style/text-entry-material.js";
 import { textEntryState } from "../../style/text-entry-state.js";
 import { useInputEscapeBridge } from "../../style/escape-layer.js";
 import { INSET_FOCUS_RING, useFocusRingStyle } from "../../style/pressable.js";
+import { frameHandlers, useFocusFrame } from "../../style/focus-frame.js";
+import { useComposedRefs } from "../../style/use-composed-refs.js";
 import { forwardRef, useId, useState } from "react";
 import { type TextInput as RNTextInput, type TextInputProps as RNTextInputProps } from "react-native";
 import { View, Text, TextInput, useFillStyle, FloatingLabel, LabelContent, FOCUS_RESET, type MeasureProps, type SizingKey, type StyleProp, type TextStyle, type ViewStyle, GlassPane, paneStyle, isGlass, alpha, PANE_SIBLING_INPUT } from "../../style/index.js";
@@ -123,6 +125,9 @@ export function createTextarea(skin: TextareaSkin) {
     const size = sizeOf(props);
     const [focused, setFocused] = useState(false);
     const focusRing = useFocusRingStyle();
+    // The ring an errored framed field wears on keyboard focus (see fieldStyle below).
+    const errorFrame = useFocusFrame();
+    const hostRef = useComposedRefs(ref, errorFrame.target.ref);
     const entryMaterial = useTextEntryMaterial(!!skin.liquid);
     const { theme } = entryMaterial;
     const { tokens } = theme;
@@ -218,14 +223,16 @@ export function createTextarea(skin: TextareaSkin) {
       onKeyPress,
       testID: props.testID,
       // Internal focus styling chains with (never replaces) the consumer's handlers.
-      onFocus: (e: Parameters<NonNullable<RNTextInputProps["onFocus"]>>[0]) => {
-        setFocused(true);
-        props.onFocus?.(e);
-      },
-      onBlur: (e: Parameters<NonNullable<RNTextInputProps["onBlur"]>>[0]) => {
-        setFocused(false);
-        props.onBlur?.(e);
-      },
+      ...frameHandlers(errorFrame.target, {
+        onFocus: (e: Parameters<NonNullable<RNTextInputProps["onFocus"]>>[0]) => {
+          setFocused(true);
+          props.onFocus?.(e);
+        },
+        onBlur: (e: Parameters<NonNullable<RNTextInputProps["onBlur"]>>[0]) => {
+          setFocused(false);
+          props.onBlur?.(e);
+        },
+      }),
       ...a11y,
     };
 
@@ -247,6 +254,9 @@ export function createTextarea(skin: TextareaSkin) {
       // browser ring is suppressed; a flush field has no frame to paint, so it keeps the
       // kit's themed ring, drawn inside it where the toolbar card's clip cannot cut it.
       flush ? [focusRing, INSET_FOCUS_RING] : FOCUS_RESET,
+      // An errored framed field's border shows the error, not its focus, so the kit's
+      // ring marks its keyboard focus around the red edge (src/style/focus-frame.tsx).
+      isError && !flush ? errorFrame.ring() : null,
     ];
     const disabledDim = disabled ? { opacity: 0.5 } : null;
 
@@ -271,7 +281,7 @@ export function createTextarea(skin: TextareaSkin) {
         <View style={[{ position: "relative" }, disabledDim, widthCap, style]}>
           {fieldPane}
           <TextInput
-            ref={ref}
+            ref={hostRef}
             multiline
             textAlignVertical="top"
             style={[...fieldStyle, skin.labelReserve!(size)]}
@@ -313,7 +323,7 @@ export function createTextarea(skin: TextareaSkin) {
           </Text>
           <View>
             {fieldPane}
-            <TextInput ref={ref} multiline textAlignVertical="top" placeholder={placeholder} style={fieldStyle} {...common} />
+            <TextInput ref={hostRef} multiline textAlignVertical="top" placeholder={placeholder} style={fieldStyle} {...common} />
           </View>
           {countNode}
         </View>
@@ -326,7 +336,7 @@ export function createTextarea(skin: TextareaSkin) {
       <View style={[disabledDim, widthCap, style]}>
         <View>
           {fieldPane}
-          <TextInput ref={ref} multiline textAlignVertical="top" placeholder={placeholder} style={fieldStyle} {...common} />
+          <TextInput ref={hostRef} multiline textAlignVertical="top" placeholder={placeholder} style={fieldStyle} {...common} />
         </View>
         {countNode}
       </View>

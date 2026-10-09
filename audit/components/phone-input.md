@@ -22,9 +22,9 @@ Audit checklist for `/components/phone-input`. The facts block and the variants 
 | Overlay recipe | yes (listbox) |
 | MeasureProps | adopted in `phone-input.shared.tsx` |
 | Touch target | no touch-target name (the exports of `src/style/touch-target.ts`, `src/style/touch-target-seed.ts`, `src/style/touch-seam.ts`, `src/style/clip-slop.ts`, the `TouchTargetSkin` fields, or `hitSlop`) in its implementation modules. `test/touch-target-coverage.test.ts` records it as covered another way: the country segment stretches to the 44/56 field box; its rows are Select's 44/48 by skin |
-| Tests importing it | 5: `test/a11y-state.test.tsx`, `test/design-rules-skins.test.ts`, `test/material-solid-fallback.test.tsx`, `test/phone-input.test.tsx`, `test/text-entry-material.test.tsx` |
-| E2E naming it | 1: `e2e/behavior/text-entry-clear.e2e.ts` |
-| E2E catalog sweeps | 6: `e2e/a11y/components.e2e.ts` (componentRoutes), `e2e/responsive/component-widths.e2e.ts` (contentRoutes, componentRoutes), `e2e/smoke/examples.e2e.ts` (componentExamples), `e2e/smoke/routes.e2e.ts` (allRoutes), `e2e/visual/components.e2e.ts` (componentRoutes), `e2e/visual/materials.e2e.ts` (MATERIAL_ROUTES) |
+| Tests importing it | 6: `test/a11y-state.test.tsx`, `test/design-rules-skins.test.ts`, `test/field-focus-states.test.tsx`, `test/material-solid-fallback.test.tsx`, `test/phone-input.test.tsx`, `test/text-entry-material.test.tsx` |
+| E2E naming it | 2: `e2e/a11y/components.e2e.ts`, `e2e/behavior/text-entry-clear.e2e.ts` |
+| E2E catalog sweeps | 7: `e2e/a11y/components.e2e.ts` (componentRoutes), `e2e/journeys/keyboard.e2e.ts` (componentRoutes), `e2e/responsive/component-widths.e2e.ts` (contentRoutes, componentRoutes), `e2e/smoke/examples.e2e.ts` (componentExamples), `e2e/smoke/routes.e2e.ts` (allRoutes), `e2e/visual/components.e2e.ts` (componentRoutes), `e2e/visual/materials.e2e.ts` (MATERIAL_ROUTES) |
 <!-- audit:facts:end -->
 
 ## Variants

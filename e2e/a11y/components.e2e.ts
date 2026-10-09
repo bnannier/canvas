@@ -49,3 +49,45 @@ for (const route of componentRoutes()) {
     ).toEqual([]);
   });
 }
+
+// A disabled text field and a read-only one reach the browser as different things
+// (src/style/text-entry-state.ts): disabled is the native disabled attribute with
+// aria-disabled, out of the tab order; read-only is the readonly attribute alone, still a
+// stop whose text can be selected. Each such variant's own page is scanned too, with what
+// its field says it is.
+const TEXT_ENTRY_STATES = [
+  { path: "/components/input/disabled", state: "disabled" },
+  { path: "/components/input/readonly", state: "read-only" },
+  { path: "/components/textarea/disabled", state: "disabled" },
+  { path: "/components/phone-input/disabled", state: "disabled" },
+  { path: "/components/autocomplete/disabled", state: "disabled" },
+  { path: "/components/input-otp/disabled", state: "disabled" },
+  { path: "/components/text-input/disabled", state: "disabled" },
+] as const;
+
+for (const { path, state } of TEXT_ENTRY_STATES) {
+  test(`${path} says its field is ${state} and has no serious accessibility violations`, async ({ page }, testInfo) => {
+    await gotoDocs(page, path, { scheme: "dark" });
+    const web = platformRow(page, "web").first();
+    await expect(web).toBeVisible();
+    const fields = web.locator("input, textarea");
+    expect(await fields.count()).toBeGreaterThan(0);
+    for (const field of await fields.all()) {
+      const says = await field.evaluate((node: HTMLInputElement | HTMLTextAreaElement) => ({
+        disabled: node.disabled, readOnly: node.readOnly, ariaDisabled: node.getAttribute("aria-disabled"), tabStop: node.tabIndex >= 0 && !node.disabled,
+      }));
+      expect(says, `a field on ${path}`).toEqual(state === "disabled"
+        ? { disabled: true, readOnly: says.readOnly, ariaDisabled: "true", tabStop: false }
+        : { disabled: false, readOnly: true, ariaDisabled: null, tabStop: true });
+    }
+
+    const findings = await scan(page, '[data-platform-row="web"]');
+    await attach(testInfo, path, findings);
+    const blocking = findings.filter((f) => BLOCKING_IMPACTS.has(f.impact));
+    if (REPORT_ONLY) {
+      if (blocking.length > 0) console.log(`${path}\n${describeViolations(blocking)}`);
+      return;
+    }
+    expect(blocking, `${path} has a serious or critical violation:\n${describeViolations(blocking)}`).toEqual([]);
+  });
+}

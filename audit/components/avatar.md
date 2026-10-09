@@ -24,7 +24,7 @@ Audit checklist for `/components/avatar`. The facts block and the variants table
 | Touch target | `avatar.shared.tsx`: hitSlop, minTarget; `avatar.styles.ts`: minTarget, platformMinTarget |
 | Tests importing it | 13: `test/a11y-state.test.tsx`, `test/atom-material-feedback.test.tsx`, `test/atom-material-roles.test.tsx`, `test/avatar-menu.test.tsx`, `test/dense-overlays.test.tsx`, `test/design-rules-skins.test.ts`, `test/dist-smoke.test.tsx`, `test/material-solid-fallback.test.tsx`, `test/new-components.test.tsx`, `test/no-console-violations.test.tsx`, `test/skins-smoke.test.tsx`, `test/text-contrast.test.tsx`, `test/touch-target-coverage.test.ts` |
 | E2E naming it | 1: `e2e/a11y/structure.e2e.ts` |
-| E2E catalog sweeps | 6: `e2e/a11y/components.e2e.ts` (componentRoutes), `e2e/responsive/component-widths.e2e.ts` (contentRoutes, componentRoutes), `e2e/smoke/examples.e2e.ts` (componentExamples), `e2e/smoke/routes.e2e.ts` (allRoutes), `e2e/visual/components.e2e.ts` (componentRoutes), `e2e/visual/materials.e2e.ts` (MATERIAL_ROUTES) |
+| E2E catalog sweeps | 7: `e2e/a11y/components.e2e.ts` (componentRoutes), `e2e/journeys/keyboard.e2e.ts` (componentRoutes), `e2e/responsive/component-widths.e2e.ts` (contentRoutes, componentRoutes), `e2e/smoke/examples.e2e.ts` (componentExamples), `e2e/smoke/routes.e2e.ts` (allRoutes), `e2e/visual/components.e2e.ts` (componentRoutes), `e2e/visual/materials.e2e.ts` (MATERIAL_ROUTES) |
 <!-- audit:facts:end -->
 
 ## Variants

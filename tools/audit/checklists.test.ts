@@ -353,15 +353,15 @@ describe.skipIf(!hasDist)("the audit checklists keep a reviewer's work", () => {
     expect(text.implementation).toEqual({ kind: "module", modules: ["src/style/text.tsx"], reactNative: "Text", platformBuilds: false });
     expect(componentFacts("text-input", sources.corpus).implementation).toMatchObject({ kind: "module", modules: ["src/style/text.tsx"], reactNative: "TextInput" });
     expect(componentFacts("pressable", sources.corpus).implementation).toMatchObject({ kind: "module", modules: ["src/style/pressable.tsx"], reactNative: "Pressable" });
-    for (const [slug, name] of [["view", "View"], ["scroll-view", "ScrollView"]]) {
-      const facts = componentFacts(slug, sources.corpus);
-      expect(facts.implementation).toEqual({ kind: "package", modules: [], specifier: "react-native", name, via: "src/style/primitives.ts" });
-      expect(facts.touchTarget).toEqual({ modules: [], coverage: null });
-      expect(facts.measureProps).toEqual([]);
-    }
-    const scrollView = renderComponentFacts(componentFacts("scroll-view", sources.corpus)).join("\n");
-    expect(scrollView).toContain("| Implementation | React Native's own `ScrollView`, re-exported from `src/style/primitives.ts`; the kit has no source of its own for it");
-    expect(scrollView).toContain("| Touch target | not applicable: the kit has no source of its own for it |");
+    // ScrollView is wrapped once, for its themed focus ring, as Pressable is.
+    expect(componentFacts("scroll-view", sources.corpus).implementation).toMatchObject({ kind: "module", modules: ["src/style/scroll-view.tsx"], reactNative: "ScrollView" });
+    const view = componentFacts("view", sources.corpus);
+    expect(view.implementation).toEqual({ kind: "package", modules: [], specifier: "react-native", name: "View", via: "src/style/primitives.ts" });
+    expect(view.touchTarget).toEqual({ modules: [], coverage: null });
+    expect(view.measureProps).toEqual([]);
+    const rendered = renderComponentFacts(view).join("\n");
+    expect(rendered).toContain("| Implementation | React Native's own `View`, re-exported from `src/style/primitives.ts`; the kit has no source of its own for it");
+    expect(rendered).toContain("| Touch target | not applicable: the kit has no source of its own for it |");
     expect(renderComponentFacts(text).join("\n")).toContain("| Implementation | declared in `src/style/text.tsx`, which imports React Native's own `Text`; `src/atoms/text/` holds only its markdown |");
   });
 
@@ -444,6 +444,7 @@ describe.skipIf(!hasDist)("the audit checklists keep a reviewer's work", () => {
     const sweeps = (slug: string) => Object.fromEntries(componentFacts(slug, sources.corpus).e2eSweeps.map((s) => [s.file, s.catalogs]));
     expect(sweeps("chip")).toEqual({
       "e2e/a11y/components.e2e.ts": ["componentRoutes"],
+      "e2e/journeys/keyboard.e2e.ts": ["componentRoutes"],
       "e2e/responsive/component-widths.e2e.ts": ["contentRoutes", "componentRoutes"],
       "e2e/smoke/examples.e2e.ts": ["componentExamples"],
       "e2e/smoke/routes.e2e.ts": ["allRoutes"],

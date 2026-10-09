@@ -1,10 +1,13 @@
 import { afterEach, describe, expect, it, spyOn } from "bun:test";
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { useEffect, useState } from "react";
 import { Text, TextInput, View } from "react-native";
 import { ThemeProvider, useTheme } from "../src/style/theme.tsx";
 import { GlassSurface } from "../src/style/glass-surface/glass-surface.tsx";
 import { GlassPane, paneStyle } from "../src/style/glass-surface/glass-pane.tsx";
+import { GlassBlurTargetContext } from "../src/style/glass-surface/glass-surface.shared.tsx";
+import { createCaptureTarget } from "../src/style/glass-surface/capture-target.ts";
+import * as runtime from "../src/style/glass-surface/material-runtime.ts";
 import { resolveMaterial, type MaterialCapabilities } from "../src/style/glass-surface/material-resolution.ts";
 import { useMaterialResolution, useMaterialTheme } from "../src/style/glass-surface/use-material-theme.ts";
 import { innerFill, withInnerFill } from "../src/style/glass-fill.ts";
@@ -132,6 +135,45 @@ describe("material mode changes", () => {
       expect(screen.getByTestId("pane")).toBeDefined();
       expect(materialsIn(host).length).toBe(1);
     } finally { restore(); }
+  });
+
+  // Android's frost samples a capture target, and only an overlay outlet or a modal
+  // publishes one (GlassBlurTargetContext), so an in-page surface resolves solid
+  // (missing-target). Its pane must then render nothing, or the Android chip, badge and
+  // kbd shapes (a border width with no colour) draw the platform's default black ring
+  // inside their host; once a target is attached and can be sampled, the same host
+  // mounts exactly one frost. The runtime is the web's under test, so the hook that reads
+  // the platform's capabilities is handed Android's.
+  it("renders no pane on Android until a capture target is ready, then mounts the frost", () => {
+    const capabilities = spyOn(runtime, "useMaterialCapabilities").mockReturnValue(android);
+    try {
+      render(<ThemeProvider glass><PaneHost /></ThemeProvider>);
+      let host = screen.getByTestId("host");
+      expect(screen.queryByTestId("pane")).toBeNull();
+      expect(host.style.borderColor).toMatch(/171, ?205, ?239/);
+      expect(host.children.length).toBe(1);
+      cleanup();
+
+      const target = createCaptureTarget();
+      render(<ThemeProvider glass><GlassBlurTargetContext.Provider value={target.ref}><PaneHost /></GlassBlurTargetContext.Provider></ThemeProvider>);
+      host = screen.getByTestId("host");
+      // A target that is published but not yet attached and available is no target.
+      expect(screen.queryByTestId("pane")).toBeNull();
+      expect(host.style.backgroundColor).toMatch(/18, ?52, ?86/);
+      act(() => {
+        const plane = {} as View;
+        target.attach(plane);
+        target.setAvailable(plane, true);
+      });
+      host = screen.getByTestId("host");
+      expect(screen.getByTestId("pane")).toBeDefined();
+      expect(materialsIn(host).length).toBe(1);
+      expect(host.style.backgroundColor).toMatch(/^rgba\(0, 0, 0, 0(\.0+)?\)$/);
+      // The plane going away takes the frost with it and restores the host's own skin.
+      act(() => { target.attach(null); });
+      expect(screen.queryByTestId("pane")).toBeNull();
+      expect(screen.getByTestId("host").style.borderColor).toMatch(/171, ?205, ?239/);
+    } finally { capabilities.mockRestore(); }
   });
 
   it("hands the host the same decision its pane and surface render from", () => {

@@ -4,7 +4,7 @@ import { textEntryState } from "../../style/text-entry-state.js";
 import { consumeEscapeKey, EscapeLayerProvider, useEscapeLayer } from "../../style/escape-layer.js";
 import { forwardRef, useEffect, useId, useRef, useState } from "react";
 import { Platform, type TextInput as RNTextInput } from "react-native";
-import { View, Pressable, Text, TextInput, useControllableState, useFillStyle, AnchoredOverlay, useOverlayHost, useMeasuredWidth, FloatingLabel, LabelContent, FOCUS_RESET, RippleClip, cornerRadii, type LayoutStyle, type MeasureProps, type StyleProp, type ViewStyle, type TextStyle, GlassPane, paneStyle, isGlass, PANE_SIBLING_INPUT, withInnerFill } from "../../style/index.js";
+import { View, Pressable, Text, TextInput, useControllableState, useFillStyle, AnchoredOverlay, useOverlayHost, useMeasuredWidth, FloatingLabel, LabelContent, FOCUS_RESET, RippleClip, cornerRadii, type LayoutStyle, type MeasureProps, type StyleProp, type ViewStyle, type TextStyle, GlassPane, isGlass, PANE_SIBLING_INPUT, withInnerFill } from "../../style/index.js";
 import { OverlayScrollView } from "../../style/overlay-scroll.js";
 import { useActiveOptionScroll } from "../../style/use-active-option-scroll.js";
 import { AccessibilityReturnBoundary, accessibilitySelectionProps, useAccessibilityReturn } from "../../style/use-accessibility-return.js";
@@ -253,9 +253,10 @@ export function createAutocomplete(skin: AutocompleteSkin) {
     const fieldHeight = asNum((fieldShape as { height?: unknown }).height, 56);
     // GlassPane paints behind the editor and toggle. Clear web fields paint the
     // active-state outline in the foreground, over the material. Native fields keep
-    // their original border or bottom indicator.
+    // their original border or bottom indicator. Either way it is drawn once
+    // (`stateSurface`).
     const glass = isGlass(theme);
-    const glassField: ViewStyle | null = glass ? { backgroundColor: "transparent", borderColor: active && !entryMaterial.foregroundStateBorder ? fieldShape.borderColor : "transparent" } : null;
+    const fieldSurface = entryMaterial.stateSurface(fieldShape, active);
 
     return (
       <View style={[wrapper, open && !host ? wrapperLifted : null, widthCap, style]}>
@@ -268,8 +269,7 @@ export function createAutocomplete(skin: AutocompleteSkin) {
           ref={fieldRef}
           onLayout={onTriggerLayout}
           style={[
-            paneStyle(theme, fieldShape, active),
-            glassField,
+            fieldSurface.style,
             disabled ? { opacity: skin.disabledOpacity } : null,
           ]}
         >
@@ -419,7 +419,7 @@ export function createAutocomplete(skin: AutocompleteSkin) {
               height={fieldHeight}
             />
           ) : null}
-          {entryMaterial.stateBorder(fieldShape, active)}
+          {fieldSurface.border}
         </View>
 
         <AnchoredOverlay

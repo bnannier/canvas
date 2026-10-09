@@ -1,7 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it, spyOn } from "bun:test";
 import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
-import { AccessibilityInfo } from "react-native";
+import { AccessibilityInfo, StyleSheet, type StyleProp, type ViewStyle } from "react-native";
 import { ThemeProvider } from "../src/style/theme.tsx";
+import { FOCUS_RING_OFFSET } from "../src/style/pressable.tsx";
+import { lightColors } from "../src/style/tokens.ts";
 import { Video } from "../src/atoms/video/video.tsx";
 import { Video as IOSVideo } from "../src/atoms/video/video.ios.tsx";
 import { Video as AndroidVideo } from "../src/atoms/video/video.android.tsx";
@@ -238,12 +240,20 @@ describe("Video controls on iOS and Android", () => {
       expect(screen.queryByRole("button", { name: "Play Harbour" })).toBeNull();
       // The platform's own controls live on the surface, so it is never made inert.
       expect(inert(surface())).toBe(false);
+      // On the web that surface is a <video controls>, a keyboard stop: it takes the kit's
+      // themed ring, inside it since the picture clips to its corners.
+      const ring = StyleSheet.flatten(current().viewProps.style as StyleProp<ViewStyle>) ?? {};
+      expect(ring.outlineColor).toBe(lightColors.ring);
+      expect(ring.outlineOffset).toBe(-FOCUS_RING_OFFSET);
+      expect(ring.outlineWidth).toBeUndefined();
     });
 
     it(`keeps the inline play control on ${platform} without controls`, () => {
       render(<ThemeProvider><PlatformVideo source={clip} accessibilityLabel="Harbour" /></ThemeProvider>);
       ready();
       expect(current().viewProps.nativeControls).toBe(false);
+      // The surface is an inert picture here, so it carries no ring of its own.
+      expect((StyleSheet.flatten(current().viewProps.style as StyleProp<ViewStyle>) ?? {}).outlineColor).toBeUndefined();
       fireEvent.click(screen.getByRole("button", { name: "Play Harbour" }));
       expect(current().playing).toBe(true);
     });
