@@ -9,6 +9,7 @@ Audit checklist for `/components/code-block`. The facts block and the variants t
 | Category | Molecules (`src/molecules/code-block/`) |
 | Markdown | `src/molecules/code-block/code-block.md` |
 | Source files | `code-block.android.tsx`, `code-block.ios.tsx`, `code-block.md`, `code-block.shared.tsx`, `code-block.styles.ts`, `code-block.tsx`, `tokenize.ts` |
+| Implementation | its own source directory, `src/molecules/code-block/` (6 TypeScript modules) |
 | Exports | CodeBlock, tokenize, syntaxColor |
 | Platform entries | iOS: web build: CodeBlock. Android: web build: CodeBlock |
 | Platform-skins registry | none (every export is the web build, so the docs three-up renders it as is) |
@@ -20,9 +21,10 @@ Audit checklist for `/components/code-block`. The facts block and the variants t
 | Interactions registry | in the inventory; evidence: code-copy (unit-web, test/behavior-smoke-b.test.tsx) |
 | Overlay recipe | none |
 | MeasureProps | not adopted |
-| Touch target | useMinTargetSlop in none; minTarget in `code-block.shared.tsx`, `code-block.styles.ts` |
-| Tests importing it | 5: `test/behavior-smoke-b.test.tsx`, `test/code-block.test.tsx`, `test/scroll-frame-ring.test.tsx`, `test/touch-target-clips.test.tsx`, `test/touch-target-seed.test.tsx` |
-| E2E importing or driving it | 2: `e2e/behavior/scroll-focus.e2e.ts`, `e2e/journeys/keyboard.e2e.ts` |
+| Touch target | `code-block.shared.tsx`: hitSlop, minTarget, styleBox, useSeededMinTargetSlop; `code-block.styles.ts`: minTarget, platformMinTarget |
+| Tests importing it | 6: `test/behavior-smoke-b.test.tsx`, `test/code-block.test.tsx`, `test/scroll-frame-ring.test.tsx`, `test/skins-smoke.test.tsx`, `test/touch-target-clips.test.tsx`, `test/touch-target-seed.test.tsx` |
+| E2E naming it | 2: `e2e/behavior/scroll-focus.e2e.ts`, `e2e/journeys/keyboard.e2e.ts` |
+| E2E catalog sweeps | 6: `e2e/a11y/components.e2e.ts` (componentRoutes), `e2e/responsive/component-widths.e2e.ts` (contentRoutes, componentRoutes), `e2e/smoke/examples.e2e.ts` (componentExamples), `e2e/smoke/routes.e2e.ts` (allRoutes), `e2e/visual/components.e2e.ts` (componentRoutes), `e2e/visual/materials.e2e.ts` (MATERIAL_ROUTES) |
 <!-- audit:facts:end -->
 
 ## Variants

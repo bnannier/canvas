@@ -14,17 +14,19 @@ import {
   findBlock,
   mergeChecklist,
   orphanChecklists,
+  FINDING_STATUSES,
   pageVariantRows,
   parseVariantsTable,
   readFindings,
   readSignOffs,
   readVariantsTable,
+  renderComponentFacts,
   renderVariantsTable,
   variantsHeader,
   writeChecklists,
   type ChecklistSources,
 } from "./checklists.ts";
-import { codeLiterals, componentFacts, drivesRoute, isSourceModule, kitImportsOf, importsComponent, testingRoutes, type PageFacts } from "./facts.ts";
+import { codeLiterals, componentFacts, drivesRoute, isSourceModule, kitImportsOf, importsComponent, pageFacts, testingRoutes, touchTargetVocabulary, type PageFacts } from "./facts.ts";
 import { NATIVE_CELLS_PER_VARIANT, WEB_CELLS_PER_VARIANT, cellId, cellsFor, components, pageCellId, pages, sectionKeys } from "./inventory.ts";
 import { COMPONENT_PLANS, FAMILY_CHECKLISTS, UNIVERSAL_RUBRIC } from "./plan-specifics.ts";
 import { auditStatus, checklistStatus, formatStatus } from "./status.ts";
@@ -307,8 +309,77 @@ describe.skipIf(!hasDist)("the audit checklists keep a reviewer's work", () => {
     expect(button.sourceFiles).toContain("button.md");
     expect(button.sourceModules).not.toContain("button.md");
     expect(button.sourceModules.every(isSourceModule)).toBe(true);
-    for (const file of [...button.measureProps, ...button.touchTarget.minTarget, ...button.touchTarget.useMinTargetSlop]) expect(button.sourceModules).toContain(file);
+    expect(button.implementation).toEqual({ kind: "directory", modules: button.sourceModules.map((m) => `src/atoms/button/${m}`) });
+    for (const file of [...button.measureProps, ...button.touchTarget.modules.map((t) => t.module)]) expect(button.sourceModules).toContain(file);
     expect(componentFacts("checkbox", sources.corpus).sourceModules).toContain("indicator/shared.tsx");
+  });
+
+  it("names the kit's whole touch-target vocabulary, not two words of it, and the coverage test's record (item 3)", () => {
+    // Chip builds its floor from the seeded slop, the seams and the clip slop, and its
+    // skin from platformMinTarget and TOUCH_TARGET; it never names minTarget or
+    // useMinTargetSlop, which is all the facts used to look for.
+    const chip = componentFacts("chip", sources.corpus).touchTarget;
+    expect(chip.modules).toEqual([
+      { module: "chip.shared.tsx", names: expect.arrayContaining(["hitSlop", "reachSlop", "rowSeam", "useSeededMinTargetSlop"]) },
+      { module: "chip.styles.ts", names: ["TOUCH_TARGET", "platformMinTarget"] },
+    ]);
+    expect(chip.coverage?.list).toBe("covered another way");
+    expect(componentFacts("checkbox", sources.corpus).touchTarget.modules).toEqual([{ module: "checkbox.shared.tsx", names: ["hitSlop"] }]);
+    // A control sized to the floor by its skin names none of it; the coverage test says how it meets it.
+    expect(componentFacts("accordion", sources.corpus).touchTarget).toEqual({ modules: [], coverage: { list: "covered another way", reason: "triggers are 44/56 tall by skin" } });
+    expect(componentFacts("tabs", sources.corpus).touchTarget.coverage?.list).toBe("known gap");
+  });
+
+  it("reads a raw primitive from the module that builds it, or says React Native builds it (item 4)", () => {
+    const text = componentFacts("text", sources.corpus);
+    expect(text.sourceModules).toEqual([]);
+    expect(text.implementation).toEqual({ kind: "module", modules: ["src/style/text.tsx"], reactNative: "Text", platformBuilds: false });
+    expect(componentFacts("text-input", sources.corpus).implementation).toMatchObject({ kind: "module", modules: ["src/style/text.tsx"], reactNative: "TextInput" });
+    expect(componentFacts("pressable", sources.corpus).implementation).toMatchObject({ kind: "module", modules: ["src/style/pressable.tsx"], reactNative: "Pressable" });
+    for (const [slug, name] of [["view", "View"], ["scroll-view", "ScrollView"]]) {
+      const facts = componentFacts(slug, sources.corpus);
+      expect(facts.implementation).toEqual({ kind: "package", modules: [], specifier: "react-native", name, via: "src/style/primitives.ts" });
+      expect(facts.touchTarget).toEqual({ modules: [], coverage: null });
+      expect(facts.measureProps).toEqual([]);
+    }
+    const scrollView = renderComponentFacts(componentFacts("scroll-view", sources.corpus)).join("\n");
+    expect(scrollView).toContain("| Implementation | React Native's own `ScrollView`, re-exported from `src/style/primitives.ts`; the kit has no source of its own for it");
+    expect(scrollView).toContain("| Touch target | not applicable: the kit has no source of its own for it |");
+    expect(renderComponentFacts(text).join("\n")).toContain("| Implementation | declared in `src/style/text.tsx`, which imports React Native's own `Text`; `src/atoms/text/` holds only its markdown |");
+  });
+
+  it("credits every component of the skins smoke test's CASES table, read statically (item 1)", () => {
+    // The smoke test mounts each row through one computed import and `mod[c.name]`.
+    for (const slug of ["accordion", "board", "chip", "drag-drop", "toast", "row-column", "geo-map"]) {
+      expect(componentFacts(slug, sources.corpus).tests).toContain("test/skins-smoke.test.tsx");
+    }
+    // A component with no CASES row is not credited by the table.
+    for (const slug of ["phone-input", "container", "text", "view"]) expect(componentFacts(slug, sources.corpus).tests).not.toContain("test/skins-smoke.test.tsx");
+  });
+
+  it("lists the catalog sweeps that drive a page apart from the specs that name it (item 2)", () => {
+    const sweeps = (slug: string) => Object.fromEntries(componentFacts(slug, sources.corpus).e2eSweeps.map((s) => [s.file, s.catalogs]));
+    expect(sweeps("chip")).toEqual({
+      "e2e/a11y/components.e2e.ts": ["componentRoutes"],
+      "e2e/responsive/component-widths.e2e.ts": ["contentRoutes", "componentRoutes"],
+      "e2e/smoke/examples.e2e.ts": ["componentExamples"],
+      "e2e/smoke/routes.e2e.ts": ["allRoutes"],
+      "e2e/visual/components.e2e.ts": ["componentRoutes"],
+      "e2e/visual/materials.e2e.ts": ["MATERIAL_ROUTES"],
+    });
+    // The overlay sweeps reach only the overlays, through each spec's own catalog.
+    expect(sweeps("dialog")).toMatchObject({ "e2e/behavior/overlays.e2e.ts": ["OVERLAYS"], "e2e/visual/overlays.e2e.ts": ["OVERLAYS"] });
+    expect(sweeps("chip")["e2e/behavior/overlays.e2e.ts"]).toBeUndefined();
+    // A data check over a catalog drives no page.
+    expect(sweeps("chip")["e2e/visual/material-coverage.e2e.ts"]).toBeUndefined();
+    // Pages: every template through hydration-ids' filtered spread, every content page through the widths sweep.
+    const page = (id: string) => pageFacts(sources.pages.find((p) => p.id === id) ?? all!.pages.find((p) => p.id === id)!, sources.corpus);
+    expect(page("template-activity").e2eSweeps.map((s) => s.file)).toEqual(["e2e/behavior/hydration-ids.e2e.ts", "e2e/responsive/component-widths.e2e.ts", "e2e/smoke/routes.e2e.ts"]);
+    expect(page("pattern-glass").e2eSweeps.map((s) => s.file)).toEqual(["e2e/responsive/component-widths.e2e.ts", "e2e/smoke/routes.e2e.ts"]);
+    // A route a spec builds from a literal list, or finds in a catalog by a literal, is named, not swept.
+    expect(componentFacts("row-menu", sources.corpus).e2e).toContain("e2e/behavior/material-overlay-host.e2e.ts");
+    expect(componentFacts("calendar", sources.corpus).e2e).toContain("e2e/responsive/overlay-state.e2e.ts");
+    expect(page("template-activity").e2e).toContain("e2e/a11y/shell.e2e.ts");
   });
 
   it("credits e2e by import, by the exact docs route, or by a harness route that renders it, never by a word", () => {
@@ -452,6 +523,71 @@ describe("tests naming a component", () => {
     expect(counts('// renders a Button inside a View\nconst path = "/components/view/conversions.h";', view)).toBe(false);
     expect(counts('import { Button } from "some-other-kit";', button)).toBe(false);
   });
+
+  it("reads a table-driven dynamic import row by row: each row's module and the name it reads (item 1)", () => {
+    const root = "/repo";
+    const read = (source: string) => kitImportsOf(root, "/repo/test/x.test.tsx", source);
+    // The skins smoke test's shape: a CASES table, a platform loop, a suffix const, and `mod[c.name]`.
+    const smoke = read(
+      [
+        'const CASES: { name: string; dir: string; file: string; label?: string }[] = [',
+        '  { name: "Avatar", dir: "atoms/avatar", file: "avatar" },',
+        '  { name: "Row", label: "Row", dir: "atoms/layout", file: "layout" },',
+        '  { name: "Board", dir: "organisms/board", file: "board" },',
+        '];',
+        'const PLATFORMS = ["web", "ios", "android"] as const;',
+        'for (const platform of PLATFORMS) {',
+        '  describe(platform, () => {',
+        '    for (const c of CASES) {',
+        '      it(c.label ?? c.name, async () => {',
+        '        const suffix = platform === "web" ? "" : `.${platform}`;',
+        '        const mod = (await import(`../src/${c.dir}/${c.file}${suffix}.tsx`)) as Record<string, unknown>;',
+        '        const Comp = mod[c.name];',
+        '      });',
+        '    }',
+        '  });',
+        '}',
+      ].join("\n"),
+    );
+    expect(smoke.modules.every((m) => !m.prefix)).toBe(true);
+    expect(smoke.modules.map((m) => m.path).sort()).toEqual(
+      ["src/atoms/avatar/avatar", "src/atoms/layout/layout", "src/organisms/board/board"].flatMap((stem) => [".android", ".ios", ""].map((suffix) => `${stem}${suffix}.tsx`)),
+    );
+    expect([...smoke.names].sort()).toEqual(["Avatar", "Board", "Row"]);
+    expect(importsComponent(smoke, ["Feed"], "src/molecules/feeds")).toBe(false);
+    expect(importsComponent(smoke, ["Board"], "src/organisms/board")).toBe(true);
+    // The control-refs shape: a table destructured inside the loop, and `module[name]`.
+    const refs = read(
+      [
+        'const cases = [{ name: "Switch", dir: "switch" }, { name: "Checkbox", dir: "checkbox" }] as const;',
+        'for (const platform of ["web", "ios"]) {',
+        '  for (const testCase of cases) {',
+        '    const { name, dir } = testCase;',
+        '    const suffix = platform === "web" ? "" : `.${platform}`;',
+        '    const module = await import(`../src/atoms/${dir}/${dir}${suffix}.tsx`);',
+        '    const Control = module[name];',
+        '  }',
+        '}',
+      ].join("\n"),
+    );
+    expect(refs.modules.map((m) => m.path).sort()).toEqual(["src/atoms/checkbox/checkbox.ios.tsx", "src/atoms/checkbox/checkbox.tsx", "src/atoms/switch/switch.ios.tsx", "src/atoms/switch/switch.tsx"]);
+    expect([...refs.names].sort()).toEqual(["Checkbox", "Switch"]);
+    // A `let` table is not followed: it may change before the loop reads it.
+    const mutable = read('let CASES = [{ dir: "atoms/chip" }];\nfor (const c of CASES) await import(`../src/${c.dir}/x.tsx`);');
+    expect(mutable.modules).toEqual([{ path: "src/", prefix: true }]);
+  });
+});
+
+describe("the touch-target vocabulary", () => {
+  it("is every value the kit's touch-target modules export, the skin's field, and hitSlop (item 3)", () => {
+    const vocabulary = touchTargetVocabulary(ROOT);
+    for (const name of ["TOUCH_TARGET", "platformMinTarget", "useMinTargetSlop", "minTargetSlop", "useSeededMinTargetSlop", "seedSlop", "rowSeam", "columnSeam", "useSeamLimit", "reachSlop", "clipSlop", "minTarget", "hitSlop"]) {
+      expect(vocabulary).toContain(name);
+    }
+    // Types are not vocabulary; a value is.
+    expect(vocabulary).not.toContain("MinTargetOptions");
+    expect(vocabulary).not.toContain("TouchTargetSkin");
+  });
 });
 
 describe("findings and sign-off tables", () => {
@@ -521,6 +657,47 @@ describe("findings and sign-off tables", () => {
     const renamed = content.replace("| ID | Severity | Cell | Summary | Status | Fix commit |", "| ID | Sev | Cell | Summary | Status | Fix |");
     expect(readFindings(renamed)).toMatchObject({ found: false, rows: [], malformed: [{ line: lineOf("| ID |") }] });
     expect(readFindings("# X\n").found).toBe(false);
+  });
+
+  it("holds the Status cell to the README's words and a fixed finding to its Fix commit, by line (item 6)", () => {
+    const table = [
+      "## Findings",
+      "",
+      "| ID | Severity | Cell | Summary | Status | Fix commit |",
+      "|---|---|---|---|---|---|",
+      "| G1 | high | source | closed | fixed | 1a2b3c4 |",
+      "| G2 | high | source | closed, back-ticked SHA | Fixed | `1a2b3c4d5e6f` |",
+      "| G3 | high | source | closed with no commit | fixed |  |",
+      "| G4 | low | source | closed by a word | fixed | soon |",
+      "| G5 | low | source | the owner's call | wontfix-owner |  |",
+      "| G6 | low | source | still open, fix pending | verified | abc1234 |",
+      "",
+    ].join("\n");
+    const lineOf = (id: string) => table.split("\n").findIndex((l) => l.startsWith(`| ${id} |`)) + 1;
+    const findings = readFindings(table);
+    expect(findings.rows.map((r) => [r.id, r.status, r.fix])).toEqual([
+      ["G1", "fixed", "1a2b3c4"],
+      ["G2", "fixed", "`1a2b3c4d5e6f`"],
+      ["G6", "verified", "abc1234"],
+    ]);
+    expect(findings.malformed).toEqual([
+      { line: lineOf("G3"), reason: "the Status cell reads fixed but the Fix commit cell is empty; record the SHA of the commit that closed it" },
+      { line: lineOf("G4"), reason: 'the Fix commit cell reads "soon", not a commit SHA (7 to 40 hex digits)' },
+      { line: lineOf("G5"), reason: 'the Status cell reads "wontfix-owner", not one of open, verified, fixed, wontfix, duplicate (a missing cell shifts the columns; write a pipe in a cell as `\\|`)' },
+    ]);
+    // audit:status counts only what it can read and names the rest under the counts.
+    const status = checklistStatus("components/x.md", table);
+    expect(status.findings).toEqual({ total: 3, open: 1, bySeverity: { low: 1 }, byStatus: { fixed: 2, verified: 1 } });
+    expect(status.unreadable.filter((p) => p.line !== null).map((p) => p.line)).toEqual([lineOf("G3"), lineOf("G4"), lineOf("G5")]);
+  });
+
+  it("spells the Status vocabulary exactly as audit/README.md and the seeded prose do", () => {
+    const readme = readFileSync(join(ROOT, "audit/README.md"), "utf8").replace(/\s+/g, " ");
+    const listed = /status \(([^)]*)\)/.exec(readme)?.[1] ?? "";
+    expect([...listed.matchAll(/`([a-z-]+)`/g)].map((m) => m[1])).toEqual([...FINDING_STATUSES]);
+    // The prose every checklist was seeded with, above its findings table.
+    const seeded = /Status: ([^.]*)\./.exec(readFileSync(join(ROOT, "audit/components/button.md"), "utf8"))?.[1] ?? "";
+    expect(seeded.replace(/\([^)]*\)/g, "").split(",").map((w) => w.trim())).toEqual([...FINDING_STATUSES]);
   });
 
   it("splits a row with no free column strictly", () => {

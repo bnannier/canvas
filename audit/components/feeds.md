@@ -9,6 +9,7 @@ Audit checklist for `/components/feeds`. The facts block and the variants table 
 | Category | Molecules (`src/molecules/feeds/`) |
 | Markdown | `src/molecules/feeds/feeds.md` |
 | Source files | `feeds.android.tsx`, `feeds.ios.tsx`, `feeds.md`, `feeds.shared.tsx`, `feeds.styles.ts`, `feeds.tsx` |
+| Implementation | its own source directory, `src/molecules/feeds/` (5 TypeScript modules) |
 | Exports | Feed |
 | Platform entries | iOS: own build: Feed (builds from its own iosSkin). Android: own build: Feed (builds from its own androidSkin) |
 | Platform-skins registry | iOS: Feed; Android: Feed |
@@ -20,9 +21,10 @@ Audit checklist for `/components/feeds`. The facts block and the variants table 
 | Interactions registry | in the inventory; evidence: none registered |
 | Overlay recipe | none |
 | MeasureProps | not adopted |
-| Touch target | useMinTargetSlop in none; minTarget in `feeds.shared.tsx`, `feeds.styles.ts` |
-| Tests importing it | 4: `test/behavior-smoke-c.test.tsx`, `test/list-semantics.test.tsx`, `test/scroll-frame-ring.test.tsx`, `test/virtualization.test.tsx` |
-| E2E importing or driving it | 2: `e2e/behavior/scroll-focus.e2e.ts`, `e2e/journeys/keyboard.e2e.ts` |
+| Touch target | `feeds.shared.tsx`: minTarget; `feeds.styles.ts`: minTarget |
+| Tests importing it | 5: `test/behavior-smoke-c.test.tsx`, `test/list-semantics.test.tsx`, `test/scroll-frame-ring.test.tsx`, `test/skins-smoke.test.tsx`, `test/virtualization.test.tsx` |
+| E2E naming it | 2: `e2e/behavior/scroll-focus.e2e.ts`, `e2e/journeys/keyboard.e2e.ts` |
+| E2E catalog sweeps | 6: `e2e/a11y/components.e2e.ts` (componentRoutes), `e2e/responsive/component-widths.e2e.ts` (contentRoutes, componentRoutes), `e2e/smoke/examples.e2e.ts` (componentExamples), `e2e/smoke/routes.e2e.ts` (allRoutes), `e2e/visual/components.e2e.ts` (componentRoutes), `e2e/visual/materials.e2e.ts` (MATERIAL_ROUTES) |
 <!-- audit:facts:end -->
 
 ## Variants

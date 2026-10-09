@@ -9,8 +9,9 @@ Audit checklist for `/components/pressable`. The facts block and the variants ta
 | Category | Atoms (`src/atoms/pressable/`) |
 | Markdown | `src/atoms/pressable/pressable.md` |
 | Source files | `pressable.md` |
+| Implementation | declared in `src/style/pressable.tsx`, which imports React Native's own `Pressable`; `src/atoms/pressable/` holds only its markdown |
 | Exports | Pressable |
-| Platform entries | none (one build on every platform) |
+| Platform entries | none (`src/style/pressable.tsx` is one build on every platform) |
 | Platform-skins registry | none (every export is the web build, so the docs three-up renders it as is) |
 | Reference row | none: `PLATFORM-REFERENCES.md` has no row for this component (K8) |
 | Materials manifest | Pressable: style, inherited; verification inherited-composition, semantic-state |
@@ -20,9 +21,10 @@ Audit checklist for `/components/pressable`. The facts block and the variants ta
 | Interactions registry | in the inventory; evidence: none registered |
 | Overlay recipe | none |
 | MeasureProps | not adopted |
-| Touch target | no minTarget or useMinTargetSlop in the source modules |
+| Touch target | no touch-target name (the exports of `src/style/touch-target.ts`, `src/style/touch-target-seed.ts`, `src/style/touch-seam.ts`, `src/style/clip-slop.ts`, the `TouchTargetSkin` fields, or `hitSlop`) in its implementation modules |
 | Tests importing it | 3: `test/data-table.test.tsx`, `test/focus-ring.test.tsx`, `test/pressable-tab-stop.test.tsx` |
-| E2E importing or driving it | 0: none |
+| E2E naming it | 0: none |
+| E2E catalog sweeps | 6: `e2e/a11y/components.e2e.ts` (componentRoutes), `e2e/responsive/component-widths.e2e.ts` (contentRoutes, componentRoutes), `e2e/smoke/examples.e2e.ts` (componentExamples), `e2e/smoke/routes.e2e.ts` (allRoutes), `e2e/visual/components.e2e.ts` (componentRoutes), `e2e/visual/materials.e2e.ts` (MATERIAL_ROUTES) |
 <!-- audit:facts:end -->
 
 ## Variants

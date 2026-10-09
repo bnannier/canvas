@@ -9,6 +9,7 @@ Audit checklist for `/components/dashboard-grid`. The facts block and the varian
 | Category | Organisms (`src/organisms/dashboard-grid/`) |
 | Markdown | `src/organisms/dashboard-grid/dashboard-grid.md` |
 | Source files | `dashboard-grid.android.tsx`, `dashboard-grid.ios.tsx`, `dashboard-grid.logic.ts`, `dashboard-grid.md`, `dashboard-grid.shared.tsx`, `dashboard-grid.styles.ts`, `dashboard-grid.tsx` |
+| Implementation | its own source directory, `src/organisms/dashboard-grid/` (6 TypeScript modules) |
 | Exports | DashboardGrid, clearStoredDashboardOrder, DASHBOARD_COLUMNS, effectiveSpan, moveWidget, orderedWidgets |
 | Platform entries | iOS: own build: DashboardGrid (injects platform parts (../drag-drop/drag-drop.ios.js)). Android: own build: DashboardGrid (injects platform parts (../drag-drop/drag-drop.android.js)) |
 | Platform-skins registry | iOS: DashboardGrid; Android: DashboardGrid |
@@ -20,9 +21,10 @@ Audit checklist for `/components/dashboard-grid`. The facts block and the varian
 | Interactions registry | in the inventory; evidence: none registered |
 | Overlay recipe | none |
 | MeasureProps | not adopted |
-| Touch target | no minTarget or useMinTargetSlop in the source modules |
-| Tests importing it | 5: `test/dashboard-grid-logic.test.ts`, `test/dashboard-grid-ssr.test.tsx`, `test/dashboard-grid.test.tsx`, `test/no-console-violations.test.tsx`, `test/organism-material-roles.test.tsx` |
-| E2E importing or driving it | 0: none |
+| Touch target | no touch-target name (the exports of `src/style/touch-target.ts`, `src/style/touch-target-seed.ts`, `src/style/touch-seam.ts`, `src/style/clip-slop.ts`, the `TouchTargetSkin` fields, or `hitSlop`) in its implementation modules |
+| Tests importing it | 6: `test/dashboard-grid-logic.test.ts`, `test/dashboard-grid-ssr.test.tsx`, `test/dashboard-grid.test.tsx`, `test/no-console-violations.test.tsx`, `test/organism-material-roles.test.tsx`, `test/skins-smoke.test.tsx` |
+| E2E naming it | 0: none |
+| E2E catalog sweeps | 6: `e2e/a11y/components.e2e.ts` (componentRoutes), `e2e/responsive/component-widths.e2e.ts` (contentRoutes, componentRoutes), `e2e/smoke/examples.e2e.ts` (componentExamples), `e2e/smoke/routes.e2e.ts` (allRoutes), `e2e/visual/components.e2e.ts` (componentRoutes), `e2e/visual/materials.e2e.ts` (MATERIAL_ROUTES) |
 <!-- audit:facts:end -->
 
 ## Variants

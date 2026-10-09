@@ -9,6 +9,7 @@ Audit checklist for `/components/autocomplete`. The facts block and the variants
 | Category | Atoms (`src/atoms/autocomplete/`) |
 | Markdown | `src/atoms/autocomplete/autocomplete.md` |
 | Source files | `autocomplete.android.tsx`, `autocomplete.ios.tsx`, `autocomplete.md`, `autocomplete.shared.tsx`, `autocomplete.styles.ts`, `autocomplete.tsx` |
+| Implementation | its own source directory, `src/atoms/autocomplete/` (5 TypeScript modules) |
 | Exports | Autocomplete |
 | Platform entries | iOS: own build: Autocomplete (builds from its own iosSkin). Android: own build: Autocomplete (builds from its own androidSkin) |
 | Platform-skins registry | iOS: Autocomplete; Android: Autocomplete |
@@ -20,9 +21,10 @@ Audit checklist for `/components/autocomplete`. The facts block and the variants
 | Interactions registry | in the inventory; evidence: autocomplete-form-keyboard (browser-keyboard, e2e/journeys/keyboard.e2e.ts), autocomplete-touch (browser-touch, e2e/journeys/touch.e2e.ts), drawer-nested-touch (browser-touch, e2e/journeys/touch.e2e.ts), autocomplete-query (unit-web, test/behavior.test.tsx) |
 | Overlay recipe | yes (listbox) |
 | MeasureProps | adopted in `autocomplete.shared.tsx` |
-| Touch target | no minTarget or useMinTargetSlop in the source modules |
-| Tests importing it | 22: `test/a11y-state.test.tsx`, `test/anchored-overlay-dismissal.test.tsx`, `test/autocomplete-accessibility-return.test.tsx`, `test/autocomplete-keyboard.test.tsx`, `test/behavior.test.tsx`, `test/dense-overlays.test.tsx`, `test/escape-layers.test.tsx`, `test/field-focus-layout.test.tsx`, `test/field-focus-states.test.tsx`, `test/floating-label-color.test.tsx`, `test/floating-label-parity.test.tsx`, `test/focus-runtime.test.tsx`, `test/hosted-trigger-focus.test.tsx`, `test/input-overlay-escape.test.tsx`, `test/native-accessibility-escape-hosts.test.tsx`, `test/native-focus-fixtures.test.tsx`, `test/no-console-violations.test.tsx`, `test/overlay-escape.test.tsx`, `test/overlay-frame-ring.test.tsx`, `test/overlay-list-scroll.test.tsx`, `test/sizing.test.tsx`, `test/text-entry-material.test.tsx` |
-| E2E importing or driving it | 6: `e2e/behavior/escape-layers.e2e.ts`, `e2e/behavior/form-autocomplete.e2e.ts`, `e2e/behavior/hydration-ids.e2e.ts`, `e2e/journeys/keyboard.e2e.ts`, `e2e/journeys/overlay-placement.e2e.ts`, `e2e/journeys/touch.e2e.ts` |
+| Touch target | no touch-target name (the exports of `src/style/touch-target.ts`, `src/style/touch-target-seed.ts`, `src/style/touch-seam.ts`, `src/style/clip-slop.ts`, the `TouchTargetSkin` fields, or `hitSlop`) in its implementation modules. `test/touch-target-coverage.test.ts` records it as known gap: the chevron renders 7pt wide, and slop would steal the field's own tap area |
+| Tests importing it | 23: `test/a11y-state.test.tsx`, `test/anchored-overlay-dismissal.test.tsx`, `test/autocomplete-accessibility-return.test.tsx`, `test/autocomplete-keyboard.test.tsx`, `test/behavior.test.tsx`, `test/dense-overlays.test.tsx`, `test/escape-layers.test.tsx`, `test/field-focus-layout.test.tsx`, `test/field-focus-states.test.tsx`, `test/floating-label-color.test.tsx`, `test/floating-label-parity.test.tsx`, `test/focus-runtime.test.tsx`, `test/hosted-trigger-focus.test.tsx`, `test/input-overlay-escape.test.tsx`, `test/native-accessibility-escape-hosts.test.tsx`, `test/native-focus-fixtures.test.tsx`, `test/no-console-violations.test.tsx`, `test/overlay-escape.test.tsx`, `test/overlay-frame-ring.test.tsx`, `test/overlay-list-scroll.test.tsx`, `test/sizing.test.tsx`, `test/skins-smoke.test.tsx`, `test/text-entry-material.test.tsx` |
+| E2E naming it | 6: `e2e/behavior/escape-layers.e2e.ts`, `e2e/behavior/form-autocomplete.e2e.ts`, `e2e/behavior/hydration-ids.e2e.ts`, `e2e/journeys/keyboard.e2e.ts`, `e2e/journeys/overlay-placement.e2e.ts`, `e2e/journeys/touch.e2e.ts` |
+| E2E catalog sweeps | 8: `e2e/a11y/components.e2e.ts` (componentRoutes), `e2e/behavior/overlays.e2e.ts` (OVERLAYS), `e2e/responsive/component-widths.e2e.ts` (contentRoutes, componentRoutes), `e2e/smoke/examples.e2e.ts` (componentExamples), `e2e/smoke/routes.e2e.ts` (allRoutes), `e2e/visual/components.e2e.ts` (componentRoutes), `e2e/visual/materials.e2e.ts` (MATERIAL_ROUTES), `e2e/visual/overlays.e2e.ts` (OVERLAYS) |
 <!-- audit:facts:end -->
 
 ## Variants

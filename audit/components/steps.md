@@ -9,6 +9,7 @@ Audit checklist for `/components/steps`. The facts block and the variants table 
 | Category | Organisms (`src/organisms/steps/`) |
 | Markdown | `src/organisms/steps/steps.md` |
 | Source files | `steps.android.tsx`, `steps.ios.tsx`, `steps.md`, `steps.shared.tsx`, `steps.styles.ts`, `steps.tsx` |
+| Implementation | its own source directory, `src/organisms/steps/` (5 TypeScript modules) |
 | Exports | Steps |
 | Platform entries | iOS: own build: Steps (builds from its own iosSkin). Android: own build: Steps (builds from its own androidSkin) |
 | Platform-skins registry | iOS: Steps; Android: Steps |
@@ -20,9 +21,10 @@ Audit checklist for `/components/steps`. The facts block and the variants table 
 | Interactions registry | in the inventory; evidence: none registered |
 | Overlay recipe | none |
 | MeasureProps | not adopted |
-| Touch target | useMinTargetSlop in none; minTarget in `steps.shared.tsx`, `steps.styles.ts` |
-| Tests importing it | 6: `test/behavior-smoke-d.test.tsx`, `test/narrow-modes.test.tsx`, `test/organism-material-roles.test.tsx`, `test/text-contrast.test.tsx`, `test/touch-target-seams.test.tsx`, `test/touch-target-seed.test.tsx` |
-| E2E importing or driving it | 0: none |
+| Touch target | `steps.shared.tsx`: hitSlop, inlineSide, leastLine, minTarget, slopSides, splitSeam, styleBox, useSeededMinTargetSlop; `steps.styles.ts`: TOUCH_TARGET, minTarget |
+| Tests importing it | 7: `test/behavior-smoke-d.test.tsx`, `test/narrow-modes.test.tsx`, `test/organism-material-roles.test.tsx`, `test/skins-smoke.test.tsx`, `test/text-contrast.test.tsx`, `test/touch-target-seams.test.tsx`, `test/touch-target-seed.test.tsx` |
+| E2E naming it | 0: none |
+| E2E catalog sweeps | 6: `e2e/a11y/components.e2e.ts` (componentRoutes), `e2e/responsive/component-widths.e2e.ts` (contentRoutes, componentRoutes), `e2e/smoke/examples.e2e.ts` (componentExamples), `e2e/smoke/routes.e2e.ts` (allRoutes), `e2e/visual/components.e2e.ts` (componentRoutes), `e2e/visual/materials.e2e.ts` (MATERIAL_ROUTES) |
 <!-- audit:facts:end -->
 
 ## Variants

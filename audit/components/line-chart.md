@@ -9,6 +9,7 @@ Audit checklist for `/components/line-chart`. The facts block and the variants t
 | Category | Charts (`src/charts/line-chart/`) |
 | Markdown | `src/charts/line-chart/line-chart.md` |
 | Source files | `line-chart.android.tsx`, `line-chart.ios.tsx`, `line-chart.md`, `line-chart.shared.tsx`, `line-chart.tsx` |
+| Implementation | its own source directory, `src/charts/line-chart/` (4 TypeScript modules) |
 | Exports | LineChart |
 | Platform entries | iOS: web build: LineChart. Android: web build: LineChart |
 | Platform-skins registry | none (every export is the web build, so the docs three-up renders it as is) |
@@ -20,9 +21,10 @@ Audit checklist for `/components/line-chart`. The facts block and the variants t
 | Interactions registry | in the inventory; evidence: none registered |
 | Overlay recipe | none |
 | MeasureProps | not adopted |
-| Touch target | no minTarget or useMinTargetSlop in the source modules |
-| Tests importing it | 2: `test/chart-materials.test.tsx`, `test/charts-cartesian.test.tsx` |
-| E2E importing or driving it | 0: none |
+| Touch target | no touch-target name (the exports of `src/style/touch-target.ts`, `src/style/touch-target-seed.ts`, `src/style/touch-seam.ts`, `src/style/clip-slop.ts`, the `TouchTargetSkin` fields, or `hitSlop`) in its implementation modules |
+| Tests importing it | 3: `test/chart-materials.test.tsx`, `test/charts-cartesian.test.tsx`, `test/skins-smoke.test.tsx` |
+| E2E naming it | 0: none |
+| E2E catalog sweeps | 6: `e2e/a11y/components.e2e.ts` (componentRoutes), `e2e/responsive/component-widths.e2e.ts` (contentRoutes, componentRoutes), `e2e/smoke/examples.e2e.ts` (componentExamples), `e2e/smoke/routes.e2e.ts` (allRoutes), `e2e/visual/components.e2e.ts` (componentRoutes), `e2e/visual/materials.e2e.ts` (MATERIAL_ROUTES) |
 <!-- audit:facts:end -->
 
 ## Variants

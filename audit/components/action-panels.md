@@ -9,6 +9,7 @@ Audit checklist for `/components/action-panels`. The facts block and the variant
 | Category | Molecules (`src/molecules/action-panels/`) |
 | Markdown | `src/molecules/action-panels/action-panels.md` |
 | Source files | `action-panels.android.tsx`, `action-panels.ios.tsx`, `action-panels.md`, `action-panels.shared.tsx`, `action-panels.styles.ts`, `action-panels.tsx` |
+| Implementation | its own source directory, `src/molecules/action-panels/` (5 TypeScript modules) |
 | Exports | ActionPanel |
 | Platform entries | iOS: own build: ActionPanel (builds from its own iosSkin; injects platform parts (../../atoms/button/button.ios.js); injects platform parts (../../atoms/switch/switch.ios.js); injects platform parts (../card/card.ios.js)). Android: own build: ActionPanel (builds from its own androidSkin; injects platform parts (../../atoms/button/button.android.js); injects platform parts (../../atoms/switch/switch.android.js); injects platform parts (../card/card.android.js)) |
 | Platform-skins registry | iOS: ActionPanel; Android: ActionPanel |
@@ -20,9 +21,10 @@ Audit checklist for `/components/action-panels`. The facts block and the variant
 | Interactions registry | in the inventory; evidence: action-panel-toggle (unit-web, test/behavior-smoke-b.test.tsx) |
 | Overlay recipe | none |
 | MeasureProps | not adopted |
-| Touch target | no minTarget or useMinTargetSlop in the source modules |
-| Tests importing it | 1: `test/behavior-smoke-b.test.tsx` |
-| E2E importing or driving it | 0: none |
+| Touch target | no touch-target name (the exports of `src/style/touch-target.ts`, `src/style/touch-target-seed.ts`, `src/style/touch-seam.ts`, `src/style/clip-slop.ts`, the `TouchTargetSkin` fields, or `hitSlop`) in its implementation modules |
+| Tests importing it | 2: `test/behavior-smoke-b.test.tsx`, `test/skins-smoke.test.tsx` |
+| E2E naming it | 0: none |
+| E2E catalog sweeps | 6: `e2e/a11y/components.e2e.ts` (componentRoutes), `e2e/responsive/component-widths.e2e.ts` (contentRoutes, componentRoutes), `e2e/smoke/examples.e2e.ts` (componentExamples), `e2e/smoke/routes.e2e.ts` (allRoutes), `e2e/visual/components.e2e.ts` (componentRoutes), `e2e/visual/materials.e2e.ts` (MATERIAL_ROUTES) |
 <!-- audit:facts:end -->
 
 ## Variants

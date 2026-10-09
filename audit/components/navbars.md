@@ -9,6 +9,7 @@ Audit checklist for `/components/navbars`. The facts block and the variants tabl
 | Category | Organisms (`src/organisms/navbars/`) |
 | Markdown | `src/organisms/navbars/navbars.md` |
 | Source files | `navbars.android.tsx`, `navbars.ios.tsx`, `navbars.md`, `navbars.shared.tsx`, `navbars.styles.ts`, `navbars.tsx` |
+| Implementation | its own source directory, `src/organisms/navbars/` (5 TypeScript modules) |
 | Exports | Navbar |
 | Platform entries | iOS: own build: Navbar (builds from its own iosSkin; injects platform parts (../../atoms/dropdown/dropdown.ios.js); injects platform parts (../../atoms/button/button.ios.js)). Android: own build: Navbar (builds from its own androidSkin; injects platform parts (../../atoms/dropdown/dropdown.android.js); injects platform parts (../../atoms/button/button.android.js)) |
 | Platform-skins registry | iOS: Navbar; Android: Navbar |
@@ -20,9 +21,10 @@ Audit checklist for `/components/navbars`. The facts block and the variants tabl
 | Interactions registry | in the inventory; evidence: none registered |
 | Overlay recipe | none |
 | MeasureProps | not adopted |
-| Touch target | no minTarget or useMinTargetSlop in the source modules |
-| Tests importing it | 3: `test/behavior-smoke-d.test.tsx`, `test/narrow-modes.test.tsx`, `test/text-contrast.test.tsx` |
-| E2E importing or driving it | 0: none |
+| Touch target | no touch-target name (the exports of `src/style/touch-target.ts`, `src/style/touch-target-seed.ts`, `src/style/touch-seam.ts`, `src/style/clip-slop.ts`, the `TouchTargetSkin` fields, or `hitSlop`) in its implementation modules. `test/touch-target-coverage.test.ts` records it as known gap: links render 50x28; they abut, so the fix is vertical slop |
+| Tests importing it | 4: `test/behavior-smoke-d.test.tsx`, `test/narrow-modes.test.tsx`, `test/skins-smoke.test.tsx`, `test/text-contrast.test.tsx` |
+| E2E naming it | 0: none |
+| E2E catalog sweeps | 6: `e2e/a11y/components.e2e.ts` (componentRoutes), `e2e/responsive/component-widths.e2e.ts` (contentRoutes, componentRoutes), `e2e/smoke/examples.e2e.ts` (componentExamples), `e2e/smoke/routes.e2e.ts` (allRoutes), `e2e/visual/components.e2e.ts` (componentRoutes), `e2e/visual/materials.e2e.ts` (MATERIAL_ROUTES) |
 <!-- audit:facts:end -->
 
 ## Variants

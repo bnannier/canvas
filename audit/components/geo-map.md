@@ -9,6 +9,7 @@ Audit checklist for `/components/geo-map`. The facts block and the variants tabl
 | Category | Charts (`src/charts/geo-map/`) |
 | Markdown | `src/charts/geo-map/geo-map.md` |
 | Source files | `geo-map.android.tsx`, `geo-map.bubbles.ts`, `geo-map.camera.ts`, `geo-map.cluster.ts`, `geo-map.ios.tsx`, `geo-map.md`, `geo-map.projection.ts`, `geo-map.shared.tsx`, `geo-map.tsx`, `geo-map.world.ts` |
+| Implementation | its own source directory, `src/charts/geo-map/` (9 TypeScript modules) |
 | Exports | GeoMap |
 | Platform entries | iOS: own build: GeoMap (injects platform parts (../../atoms/button/button.ios.js)). Android: own build: GeoMap (injects platform parts (../../atoms/button/button.android.js)) |
 | Platform-skins registry | iOS: GeoMap; Android: GeoMap |
@@ -20,9 +21,10 @@ Audit checklist for `/components/geo-map`. The facts block and the variants tabl
 | Interactions registry | in the inventory; evidence: none registered |
 | Overlay recipe | none |
 | MeasureProps | not adopted |
-| Touch target | no minTarget or useMinTargetSlop in the source modules |
-| Tests importing it | 5: `test/chart-materials.test.tsx`, `test/geo-map-camera.test.ts`, `test/geo-map-cluster.test.ts`, `test/geo-map-projection.test.ts`, `test/geo-map.test.tsx` |
-| E2E importing or driving it | 0: none |
+| Touch target | no touch-target name (the exports of `src/style/touch-target.ts`, `src/style/touch-target-seed.ts`, `src/style/touch-seam.ts`, `src/style/clip-slop.ts`, the `TouchTargetSkin` fields, or `hitSlop`) in its implementation modules. `test/touch-target-coverage.test.ts` records it as covered another way: the pressable is the bubble, sized by its value |
+| Tests importing it | 6: `test/chart-materials.test.tsx`, `test/geo-map-camera.test.ts`, `test/geo-map-cluster.test.ts`, `test/geo-map-projection.test.ts`, `test/geo-map.test.tsx`, `test/skins-smoke.test.tsx` |
+| E2E naming it | 0: none |
+| E2E catalog sweeps | 6: `e2e/a11y/components.e2e.ts` (componentRoutes), `e2e/responsive/component-widths.e2e.ts` (contentRoutes, componentRoutes), `e2e/smoke/examples.e2e.ts` (componentExamples), `e2e/smoke/routes.e2e.ts` (allRoutes), `e2e/visual/components.e2e.ts` (componentRoutes), `e2e/visual/materials.e2e.ts` (MATERIAL_ROUTES) |
 <!-- audit:facts:end -->
 
 ## Variants

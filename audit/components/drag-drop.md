@@ -9,6 +9,7 @@ Audit checklist for `/components/drag-drop`. The facts block and the variants ta
 | Category | Organisms (`src/organisms/drag-drop/`) |
 | Markdown | `src/organisms/drag-drop/drag-drop.md` |
 | Source files | `drag-drop.android.tsx`, `drag-drop.geometry.ts`, `drag-drop.ios.tsx`, `drag-drop.md`, `drag-drop.shared.tsx`, `drag-drop.styles.ts`, `drag-drop.tsx` |
+| Implementation | its own source directory, `src/organisms/drag-drop/` (6 TypeScript modules) |
 | Exports | DragDropProvider, DropZone, Draggable, DragHandle |
 | Platform entries | iOS: own build: DragDropProvider (builds from its own iosSkin); DropZone (builds from its own iosSkin); Draggable (builds from its own iosSkin); DragHandle (builds from its own iosSkin). Android: own build: DragDropProvider (builds from its own androidSkin); DropZone (builds from its own androidSkin); Draggable (builds from its own androidSkin); DragHandle (builds from its own androidSkin) |
 | Platform-skins registry | iOS: DragDropProvider, DropZone, Draggable, DragHandle; Android: DragDropProvider, DropZone, Draggable, DragHandle |
@@ -20,9 +21,10 @@ Audit checklist for `/components/drag-drop`. The facts block and the variants ta
 | Interactions registry | in the inventory; evidence: none registered |
 | Overlay recipe | none |
 | MeasureProps | not adopted |
-| Touch target | no minTarget or useMinTargetSlop in the source modules |
+| Touch target | `drag-drop.shared.tsx`: hitSlop, useSeamLimit |
 | Tests importing it | 4: `test/drag-drop-geometry.test.ts`, `test/drag-drop.test.tsx`, `test/focus-ring.test.tsx`, `test/skins-smoke.test.tsx` |
-| E2E importing or driving it | 0: none |
+| E2E naming it | 0: none |
+| E2E catalog sweeps | 6: `e2e/a11y/components.e2e.ts` (componentRoutes), `e2e/responsive/component-widths.e2e.ts` (contentRoutes, componentRoutes), `e2e/smoke/examples.e2e.ts` (componentExamples), `e2e/smoke/routes.e2e.ts` (allRoutes), `e2e/visual/components.e2e.ts` (componentRoutes), `e2e/visual/materials.e2e.ts` (MATERIAL_ROUTES) |
 <!-- audit:facts:end -->
 
 ## Variants

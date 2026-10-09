@@ -9,6 +9,7 @@ Audit checklist for `/components/tab-bar`. The facts block and the variants tabl
 | Category | Organisms (`src/organisms/tab-bar/`) |
 | Markdown | `src/organisms/tab-bar/tab-bar.md` |
 | Source files | `tab-bar.android.tsx`, `tab-bar.ios.tsx`, `tab-bar.md`, `tab-bar.shared.tsx`, `tab-bar.styles.ts`, `tab-bar.tsx` |
+| Implementation | its own source directory, `src/organisms/tab-bar/` (5 TypeScript modules) |
 | Exports | TabBar |
 | Platform entries | iOS: own build: TabBar (builds from its own iosSkin). Android: own build: TabBar (builds from its own androidSkin) |
 | Platform-skins registry | iOS: TabBar; Android: TabBar |
@@ -20,9 +21,10 @@ Audit checklist for `/components/tab-bar`. The facts block and the variants tabl
 | Interactions registry | in the inventory; evidence: none registered |
 | Overlay recipe | none |
 | MeasureProps | not adopted |
-| Touch target | no minTarget or useMinTargetSlop in the source modules |
-| Tests importing it | 5: `test/a11y-state.test.tsx`, `test/native-focus-fixtures.test.tsx`, `test/no-console-violations.test.tsx`, `test/primary-text.test.tsx`, `test/tab-bar-floating.test.tsx` |
-| E2E importing or driving it | 0: none |
+| Touch target | no touch-target name (the exports of `src/style/touch-target.ts`, `src/style/touch-target-seed.ts`, `src/style/touch-seam.ts`, `src/style/clip-slop.ts`, the `TouchTargetSkin` fields, or `hitSlop`) in its implementation modules. `test/touch-target-coverage.test.ts` records it as known gap: the bar owns its own platform heights and is measured with them |
+| Tests importing it | 6: `test/a11y-state.test.tsx`, `test/native-focus-fixtures.test.tsx`, `test/no-console-violations.test.tsx`, `test/primary-text.test.tsx`, `test/skins-smoke.test.tsx`, `test/tab-bar-floating.test.tsx` |
+| E2E naming it | 0: none |
+| E2E catalog sweeps | 6: `e2e/a11y/components.e2e.ts` (componentRoutes), `e2e/responsive/component-widths.e2e.ts` (contentRoutes, componentRoutes), `e2e/smoke/examples.e2e.ts` (componentExamples), `e2e/smoke/routes.e2e.ts` (allRoutes), `e2e/visual/components.e2e.ts` (componentRoutes), `e2e/visual/materials.e2e.ts` (MATERIAL_ROUTES) |
 <!-- audit:facts:end -->
 
 ## Variants

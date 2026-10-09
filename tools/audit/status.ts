@@ -6,9 +6,11 @@
 // Every table is read with the one escape-aware reader the checklists are written and
 // checked with (tools/audit/table.ts, through tools/audit/checklists.ts), so a "|" typed
 // in a summary does not shift the Status column and an empty cell typed `| |` does not
-// drop the row. A row it cannot read, or a table it cannot find, is not counted: it is
-// listed by file and line under the counts, and the command exits non-zero, because the
-// counts above it under-report by that much.
+// drop the row. A finding is counted only when its Status is one of audit/README.md's
+// words (open, verified, fixed, wontfix, duplicate), a `fixed` one names its Fix commit,
+// and a Fix commit is a commit SHA. A row it cannot read, or a table it cannot find, is
+// not counted: it is listed by file and line under the counts, and the command exits
+// non-zero, because the counts above it under-report by that much.
 //
 // `bun run audit:status` prints the summary; `--json` prints the per-checklist rows.
 

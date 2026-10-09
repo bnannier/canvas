@@ -1,8 +1,7 @@
 import { describe, expect, it } from "bun:test";
-import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
-import { dirname, join, relative } from "node:path";
-import ts from "typescript";
-import { componentSkins, GROUPS, platformDivergence } from "../tools/skins/divergence.ts";
+import { readdirSync, readFileSync, statSync } from "node:fs";
+import { join, relative } from "node:path";
+import { componentSkins, GROUPS, shellImportFindings } from "../tools/skins/divergence.ts";
 
 // The seams a platform difference goes through (CLAUDE.md, the design language's item 5,
 // "One job, different control"): a component's shared shell is one build for every
@@ -71,10 +70,6 @@ const divergentExports = skins.flatMap((c) => Object.keys(c.exportDivergence).ma
 /** The kit's component trees, where a module with platform builds is a component (or a piece of one, the Checkbox indicator). */
 const COMPONENT_TREE = new RegExp(`^src/(${GROUPS.join("|")})/`);
 
-/** Whether a module has a build of its own for iOS or Android beside its web build. */
-const hasPlatformBuilds = (webModule: string): boolean =>
-  [".ios.tsx", ".ios.ts", ".android.tsx", ".android.ts"].some((ext) => existsSync(webModule.replace(/\.js$/, ext)));
-
 describe("the shells that build each component", () => {
   it("never import a platform file", () => {
     const offenders = shellModules.flatMap(({ file, text }) =>
@@ -85,32 +80,15 @@ describe("the shells that build each component", () => {
   });
 
   it("take a component that looks different per platform only as a part, whose web build is the default", () => {
+    // Each name is judged at the module that builds it, so an import through a barrel
+    // (`import { Button } from "../../atoms/index.js"`) is followed to button.tsx and
+    // judged as a direct one is (tools/skins/divergence.ts, shellImportFindings).
     const offenders: string[] = [];
     let judged = 0;
     for (const { file, text } of shellModules) {
-      const sf = ts.createSourceFile(file, text, ts.ScriptTarget.Latest, true, file.endsWith("x") ? ts.ScriptKind.TSX : ts.ScriptKind.TS);
-      for (const statement of sf.statements) {
-        if (!ts.isImportDeclaration(statement) || !ts.isStringLiteral(statement.moduleSpecifier)) continue;
-        const clause = statement.importClause;
-        const specifier = statement.moduleSpecifier.text;
-        if (!clause || clause.isTypeOnly || !specifier.startsWith(".")) continue;
-        const target = join(ROOT, dirname(file), specifier);
-        if (!COMPONENT_TREE.test(relative(ROOT, target)) || !hasPlatformBuilds(target)) continue;
-        const bindings = clause.namedBindings;
-        if (clause.name || (bindings && ts.isNamespaceImport(bindings))) {
-          offenders.push(`${file} imports ${specifier} whole; import each part by name so its platform build can be injected`);
-          continue;
-        }
-        for (const element of bindings?.elements ?? []) {
-          if (element.isTypeOnly) continue;
-          judged++;
-          const name = (element.propertyName ?? element.name).text;
-          const byPlatform = platformDivergence(target, name);
-          if (!Object.keys(byPlatform).length) continue; // the web build on every platform
-          if (element.propertyName && /^Web\w+$/.test(element.name.text)) continue; // the part's web default
-          offenders.push(`${file} imports ${name} from ${specifier}, which looks different on ${Object.keys(byPlatform).join(" and ")}; take it as a part (import { ${name} as Web${name} }, parts.${name} ?? Web${name})`);
-        }
-      }
+      const found = shellImportFindings(join(ROOT, file), text, file, (path) => COMPONENT_TREE.test(relative(ROOT, path)));
+      judged += found.judged;
+      offenders.push(...found.offenders);
     }
     expect(divergentExports.length).toBeGreaterThan(60);
     expect(judged).toBeGreaterThan(40);

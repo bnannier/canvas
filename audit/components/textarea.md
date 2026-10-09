@@ -9,6 +9,7 @@ Audit checklist for `/components/textarea`. The facts block and the variants tab
 | Category | Atoms (`src/atoms/textarea/`) |
 | Markdown | `src/atoms/textarea/textarea.md` |
 | Source files | `textarea.android.tsx`, `textarea.ios.tsx`, `textarea.md`, `textarea.shared.tsx`, `textarea.styles.ts`, `textarea.tsx` |
+| Implementation | its own source directory, `src/atoms/textarea/` (5 TypeScript modules) |
 | Exports | Textarea |
 | Platform entries | iOS: own build: Textarea (builds from its own iosSkin). Android: own build: Textarea (builds from its own androidSkin) |
 | Platform-skins registry | iOS: Textarea; Android: Textarea |
@@ -20,9 +21,10 @@ Audit checklist for `/components/textarea`. The facts block and the variants tab
 | Interactions registry | in the inventory; evidence: none registered |
 | Overlay recipe | none |
 | MeasureProps | adopted in `textarea.shared.tsx` |
-| Touch target | no minTarget or useMinTargetSlop in the source modules |
-| Tests importing it | 13: `test/atom-material-roles.test.tsx`, `test/destructive-text-components.test.tsx`, `test/field-focus-layout.test.tsx`, `test/field-focus-states.test.tsx`, `test/field.test.tsx`, `test/floating-label-color.test.tsx`, `test/floating-label-parity.test.tsx`, `test/forms.test.tsx`, `test/input-overlay-escape.test.tsx`, `test/new-components.test.tsx`, `test/sizing.test.tsx`, `test/text-contrast.test.tsx`, `test/text-entry-material.test.tsx` |
-| E2E importing or driving it | 0: none |
+| Touch target | no touch-target name (the exports of `src/style/touch-target.ts`, `src/style/touch-target-seed.ts`, `src/style/touch-seam.ts`, `src/style/clip-slop.ts`, the `TouchTargetSkin` fields, or `hitSlop`) in its implementation modules |
+| Tests importing it | 14: `test/atom-material-roles.test.tsx`, `test/destructive-text-components.test.tsx`, `test/field-focus-layout.test.tsx`, `test/field-focus-states.test.tsx`, `test/field.test.tsx`, `test/floating-label-color.test.tsx`, `test/floating-label-parity.test.tsx`, `test/forms.test.tsx`, `test/input-overlay-escape.test.tsx`, `test/new-components.test.tsx`, `test/sizing.test.tsx`, `test/skins-smoke.test.tsx`, `test/text-contrast.test.tsx`, `test/text-entry-material.test.tsx` |
+| E2E naming it | 0: none |
+| E2E catalog sweeps | 6: `e2e/a11y/components.e2e.ts` (componentRoutes), `e2e/responsive/component-widths.e2e.ts` (contentRoutes, componentRoutes), `e2e/smoke/examples.e2e.ts` (componentExamples), `e2e/smoke/routes.e2e.ts` (allRoutes), `e2e/visual/components.e2e.ts` (componentRoutes), `e2e/visual/materials.e2e.ts` (MATERIAL_ROUTES) |
 <!-- audit:facts:end -->
 
 ## Variants

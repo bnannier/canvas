@@ -9,6 +9,7 @@ Audit checklist for `/components/row-menu`. The facts block and the variants tab
 | Category | Organisms (`src/organisms/row-menu/`) |
 | Markdown | `src/organisms/row-menu/row-menu.md` |
 | Source files | `row-menu.android.tsx`, `row-menu.ios.tsx`, `row-menu.md`, `row-menu.shared.tsx`, `row-menu.styles.ts`, `row-menu.tsx` |
+| Implementation | its own source directory, `src/organisms/row-menu/` (5 TypeScript modules) |
 | Exports | RowMenu |
 | Platform entries | iOS: own build: RowMenu (builds from its own iosSkin). Android: own build: RowMenu (builds from its own androidSkin) |
 | Platform-skins registry | iOS: RowMenu; Android: RowMenu |
@@ -20,9 +21,10 @@ Audit checklist for `/components/row-menu`. The facts block and the variants tab
 | Interactions registry | in the inventory; evidence: none registered |
 | Overlay recipe | yes (menu) |
 | MeasureProps | not adopted |
-| Touch target | useMinTargetSlop in none; minTarget in `row-menu.shared.tsx`, `row-menu.styles.ts` |
-| Tests importing it | 12: `test/a11y-state.test.tsx`, `test/anchored-overlay-dismissal.test.tsx`, `test/dense-overlays.test.tsx`, `test/destructive-text-components.test.tsx`, `test/hosted-trigger-focus.test.tsx`, `test/menu-look.test.tsx`, `test/native-accessibility-escape-hosts.test.tsx`, `test/no-console-violations.test.tsx`, `test/overlay-escape.test.tsx`, `test/overlays.test.tsx`, `test/text-contrast.test.tsx`, `test/touch-target-seed.test.tsx` |
-| E2E importing or driving it | 0: none |
+| Touch target | `row-menu.shared.tsx`: hitSlop, minTarget, styleBox, useSeamLimit, useSeededMinTargetSlop; `row-menu.styles.ts`: TOUCH_TARGET, minTarget |
+| Tests importing it | 13: `test/a11y-state.test.tsx`, `test/anchored-overlay-dismissal.test.tsx`, `test/dense-overlays.test.tsx`, `test/destructive-text-components.test.tsx`, `test/hosted-trigger-focus.test.tsx`, `test/menu-look.test.tsx`, `test/native-accessibility-escape-hosts.test.tsx`, `test/no-console-violations.test.tsx`, `test/overlay-escape.test.tsx`, `test/overlays.test.tsx`, `test/skins-smoke.test.tsx`, `test/text-contrast.test.tsx`, `test/touch-target-seed.test.tsx` |
+| E2E naming it | 1: `e2e/behavior/material-overlay-host.e2e.ts` |
+| E2E catalog sweeps | 8: `e2e/a11y/components.e2e.ts` (componentRoutes), `e2e/behavior/overlays.e2e.ts` (OVERLAYS), `e2e/responsive/component-widths.e2e.ts` (contentRoutes, componentRoutes), `e2e/smoke/examples.e2e.ts` (componentExamples), `e2e/smoke/routes.e2e.ts` (allRoutes), `e2e/visual/components.e2e.ts` (componentRoutes), `e2e/visual/materials.e2e.ts` (MATERIAL_ROUTES), `e2e/visual/overlays.e2e.ts` (OVERLAYS) |
 <!-- audit:facts:end -->
 
 ## Variants
