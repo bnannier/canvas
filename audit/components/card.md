@@ -96,7 +96,7 @@ One row per finding. Severity: critical, high, medium, low. Cell: a capture id f
 | K7-2 | medium | source | CardTitle is plain Text with no heading semantics. Owner decision pending: a heading role with a default level and a level prop, or plain text with the Card's `title` owning the heading. | open |  |
 | K7-3 | low | source | CardSeparator is a bare View: neither role=separator nor hidden from assistive tech. | open |  |
 | K7-4 | low | source | The parts' `style` props are `StyleProp<TextStyle>` (CardTitle, CardDescription) and `StyleProp<ViewStyle>` (CardSeparator) rather than `LayoutStyle`, a style escape hatch by rubric item 1. | open |  |
-| K7-5 | low | source | CardMedia let `alt` win over `accessibilityLabel` while Image lets `accessibilityLabel` win (React Native's order), two naming contracts for one picture. Both now resolve through one `imageLabel` (aria-label, accessibilityLabel, alt); CardMedia hands the result to Image as `alt`, so the cover stays its own accessibility element natively. test/card.test.tsx compares it with a bare Image. | open |  |
+| K7-5 | low | source | CardMedia let `alt` win over `accessibilityLabel` while Image lets `accessibilityLabel` win (React Native's order), two naming contracts for one picture. Both now resolve through one `imageLabel` (aria-label, accessibilityLabel, alt); CardMedia hands the result to Image as `alt`, so the cover stays its own accessibility element natively. test/card.test.tsx compares it with a bare Image. | fixed | 56a1b9a0 |
 
 ## Sign-off
 
