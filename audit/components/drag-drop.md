@@ -21,7 +21,7 @@ Audit checklist for `/components/drag-drop`. The facts block and the variants ta
 | Overlay recipe | none |
 | MeasureProps | not adopted |
 | Touch target | no minTarget or useMinTargetSlop in the source directory |
-| Tests naming it | 5: `test/board.test.tsx`, `test/drag-drop.test.tsx`, `test/focus-ring.test.tsx`, `test/list-semantics.test.tsx`, `test/skins-smoke.test.tsx` |
+| Tests importing it | 4: `test/drag-drop-geometry.test.ts`, `test/drag-drop.test.tsx`, `test/focus-ring.test.tsx`, `test/skins-smoke.test.tsx` |
 | E2E naming it | 0: none |
 <!-- audit:facts:end -->
 

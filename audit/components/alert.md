@@ -21,7 +21,7 @@ Audit checklist for `/components/alert`. The facts block and the variants table 
 | Overlay recipe | none |
 | MeasureProps | not adopted |
 | Touch target | no minTarget or useMinTargetSlop in the source directory |
-| Tests naming it | 9: `test/behavior-smoke-a.test.tsx`, `test/design-rules-skins.test.ts`, `test/destructive-intent.test.tsx`, `test/glass-controls.test.tsx`, `test/new-components.test.tsx`, `test/skins-smoke.test.tsx`, `test/text-contrast.test.tsx`, `test/tokens.test.ts`, `test/touch-target-seams.test.tsx` |
+| Tests importing it | 5: `test/behavior-smoke-a.test.tsx`, `test/destructive-intent.test.tsx`, `test/glass-controls.test.tsx`, `test/text-contrast.test.tsx`, `test/touch-target-seams.test.tsx` |
 | E2E naming it | 0: none |
 <!-- audit:facts:end -->
 

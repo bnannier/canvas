@@ -21,7 +21,7 @@ Audit checklist for `/components/grid-lists`. The facts block and the variants t
 | Overlay recipe | none |
 | MeasureProps | not adopted |
 | Touch target | no minTarget or useMinTargetSlop in the source directory |
-| Tests naming it | 6: `test/behavior-smoke-c.test.tsx`, `test/list-semantics.test.tsx`, `test/responsive-narrow-fixes.test.tsx`, `test/scroll-frame-ring.test.tsx`, `test/skins-smoke.test.tsx`, `test/virtualization.test.tsx` |
+| Tests importing it | 7: `test/behavior-smoke-c.test.tsx`, `test/destructive-text.test.tsx`, `test/list-semantics.test.tsx`, `test/primary-text.test.tsx`, `test/responsive-narrow-fixes.test.tsx`, `test/scroll-frame-ring.test.tsx`, `test/virtualization.test.tsx` |
 | E2E naming it | 2: `e2e/behavior/scroll-focus.e2e.ts`, `e2e/journeys/keyboard.e2e.ts` |
 <!-- audit:facts:end -->
 

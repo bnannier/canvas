@@ -21,7 +21,7 @@ Audit checklist for `/components/feeds`. The facts block and the variants table 
 | Overlay recipe | none |
 | MeasureProps | not adopted |
 | Touch target | useMinTargetSlop in none; minTarget in `feeds.shared.tsx`, `feeds.styles.ts` |
-| Tests naming it | 7: `test/autocomplete-keyboard.test.tsx`, `test/behavior-smoke-c.test.tsx`, `test/hover-lift.test.tsx`, `test/list-semantics.test.tsx`, `test/scroll-frame-ring.test.tsx`, `test/skins-smoke.test.tsx`, `test/virtualization.test.tsx` |
+| Tests importing it | 4: `test/behavior-smoke-c.test.tsx`, `test/list-semantics.test.tsx`, `test/scroll-frame-ring.test.tsx`, `test/virtualization.test.tsx` |
 | E2E naming it | 2: `e2e/behavior/scroll-focus.e2e.ts`, `e2e/journeys/keyboard.e2e.ts` |
 <!-- audit:facts:end -->
 

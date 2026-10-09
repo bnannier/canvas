@@ -52,7 +52,7 @@
   ],
   "scripts": {
     "prepare": "node -e \"if (require('node:fs').existsSync('.husky/install.mjs')) import('./.husky/install.mjs')\"",
-    "typecheck": "tsc --noEmit && bun run --cwd packages/canvas-blur typecheck",
+    "typecheck": "tsc --noEmit && tsc --noEmit -p tools/tsconfig.json && bun run --cwd packages/canvas-blur typecheck",
     "typecheck:e2e": "tsc --noEmit -p e2e/tsconfig.json",
     "lint": "eslint .",
     "build": "rm -rf dist && tsc -p tsconfig.build.json && bun scripts/build-native.ts && bun run build:blur",

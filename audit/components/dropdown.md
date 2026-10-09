@@ -21,7 +21,7 @@ Audit checklist for `/components/dropdown`. The facts block and the variants tab
 | Overlay recipe | yes (menu) |
 | MeasureProps | not adopted |
 | Touch target | no minTarget or useMinTargetSlop in the source directory |
-| Tests naming it | 19: `test/a11y-state.test.tsx`, `test/anchored-overlay-dismissal.test.tsx`, `test/atom-material-feedback.test.tsx`, `test/avatar-menu.test.tsx`, `test/dense-overlays.test.tsx`, `test/destructive-text-components.test.tsx`, `test/drawer-host.test.tsx`, `test/escape-layers.test.tsx`, `test/focus-runtime.test.tsx`, `test/hosted-trigger-focus.test.tsx`, `test/keyboard-nav.test.tsx`, `test/menu-look.test.tsx`, `test/native-accessibility-escape-hosts.test.tsx`, `test/native-focus-fixtures.test.tsx`, `test/no-console-violations.test.tsx`, `test/overlay-placement.test.tsx`, `test/overlays.test.tsx`, `test/skins-smoke.test.tsx`, `test/ws3-a11y-theming.test.tsx` |
+| Tests importing it | 19: `test/a11y-state.test.tsx`, `test/anchored-overlay-dismissal.test.tsx`, `test/atom-material-feedback.test.tsx`, `test/avatar-menu.test.tsx`, `test/dense-overlays.test.tsx`, `test/destructive-text-components.test.tsx`, `test/drawer-host.test.tsx`, `test/escape-layers.test.tsx`, `test/focus-runtime.test.tsx`, `test/hosted-trigger-focus.test.tsx`, `test/keyboard-nav.test.tsx`, `test/menu-look.test.tsx`, `test/native-accessibility-escape-hosts.test.tsx`, `test/native-focus-fixtures.test.tsx`, `test/no-console-violations.test.tsx`, `test/overlay-placement.test.tsx`, `test/overlays.test.tsx`, `test/text-contrast.test.tsx`, `test/ws3-a11y-theming.test.tsx` |
 | E2E naming it | 1: `e2e/behavior/keyboard.e2e.ts` |
 <!-- audit:facts:end -->
 

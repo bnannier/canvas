@@ -21,7 +21,7 @@ Audit checklist for `/components/dashboard-grid`. The facts block and the varian
 | Overlay recipe | none |
 | MeasureProps | not adopted |
 | Touch target | no minTarget or useMinTargetSlop in the source directory |
-| Tests naming it | 6: `test/dashboard-grid-logic.test.ts`, `test/dashboard-grid-ssr.test.tsx`, `test/dashboard-grid.test.tsx`, `test/no-console-violations.test.tsx`, `test/organism-material-roles.test.tsx`, `test/skins-smoke.test.tsx` |
+| Tests importing it | 5: `test/dashboard-grid-logic.test.ts`, `test/dashboard-grid-ssr.test.tsx`, `test/dashboard-grid.test.tsx`, `test/no-console-violations.test.tsx`, `test/organism-material-roles.test.tsx` |
 | E2E naming it | 1: `e2e/support/docs.ts` |
 <!-- audit:facts:end -->
 

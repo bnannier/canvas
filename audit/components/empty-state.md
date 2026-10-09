@@ -21,7 +21,7 @@ Audit checklist for `/components/empty-state`. The facts block and the variants 
 | Overlay recipe | none |
 | MeasureProps | not adopted |
 | Touch target | no minTarget or useMinTargetSlop in the source directory |
-| Tests naming it | 3: `test/behavior-smoke-a.test.tsx`, `test/design-rules-css.test.ts`, `test/skins-smoke.test.tsx` |
+| Tests importing it | 1: `test/behavior-smoke-a.test.tsx` |
 | E2E naming it | 0: none |
 <!-- audit:facts:end -->
 

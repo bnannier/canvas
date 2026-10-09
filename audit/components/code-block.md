@@ -21,7 +21,7 @@ Audit checklist for `/components/code-block`. The facts block and the variants t
 | Overlay recipe | none |
 | MeasureProps | not adopted |
 | Touch target | useMinTargetSlop in none; minTarget in `code-block.shared.tsx`, `code-block.styles.ts` |
-| Tests naming it | 8: `test/behavior-smoke-b.test.tsx`, `test/code-block.test.tsx`, `test/fixtures/touch-records.tsx`, `test/heatmap-scroll-focus.test.tsx`, `test/scroll-frame-ring.test.tsx`, `test/skins-smoke.test.tsx`, `test/touch-target-clips.test.tsx`, `test/touch-target-seed.test.tsx` |
+| Tests importing it | 5: `test/behavior-smoke-b.test.tsx`, `test/code-block.test.tsx`, `test/scroll-frame-ring.test.tsx`, `test/touch-target-clips.test.tsx`, `test/touch-target-seed.test.tsx` |
 | E2E naming it | 0: none |
 <!-- audit:facts:end -->
 

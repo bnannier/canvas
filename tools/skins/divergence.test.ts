@@ -97,6 +97,42 @@ describe("skin divergence, per built export", () => {
     }
   });
 
+  it("judges the expression, not the binding: a spread of a web-skin alias with overrides is its own skin (K4)", () => {
+    const root = kit({
+      "atoms/flat/flat.styles.ts": 'export const webSkin = { radius: 8 };\nexport const iosSkin = webSkin;\nexport const androidSkin = webSkin;',
+      "atoms/menu/menu.styles.ts": 'export const webSkin = { gap: 4 };\nexport const iosSkin = webSkin;',
+      "atoms/flat/flat.ios.tsx": [
+        'import { createFlat, createMenu } from "./flat.shared.js";',
+        // An aliased import of the alias: the binding is the web skin, the expression is not.
+        'import { iosSkin as webLook } from "./flat.styles.js";',
+        'import { iosSkin as menuLook } from "../menu/menu.styles.js";',
+        'const base = webLook;',
+        'const extra = { shadow: 1 };',
+        'export const Flat = createFlat({ ...webLook, radius: 4 });',
+        'export const Same = createFlat({ ...webLook });',
+        'export const Plain = createFlat(webLook);',
+        'export const Local = createFlat({ ...base, gap: 2 });',
+        'export const Merged = createFlat({ ...webLook, ...extra });',
+        'export const WithMenu = createFlat(webLook, { menu: createMenu({ ...menuLook, dense: true }) });',
+      ].join("\n"),
+      "atoms/flat/flat.android.tsx": 'import { createFlat } from "./flat.shared.js";\nimport { androidSkin } from "./flat.styles.js";\nexport const Flat = createFlat({ ...androidSkin });',
+    });
+    try {
+      const flat = skinsOf(root, "flat");
+      expect(flat.exports).toEqual(["Flat", "Same", "Plain", "Local", "Merged", "WithMenu"]);
+      expect(flat.exportDivergence).toEqual({
+        Flat: { iOS: "builds its own skin (a spread of iosSkin, the web skin, with radius)" },
+        Local: { iOS: "builds its own skin (a spread of iosSkin, the web skin, with gap)" },
+        Merged: { iOS: "builds its own skin (a spread of iosSkin, the web skin, with ...extra)" },
+        WithMenu: { iOS: "builds a part from menu's own skin (a spread of iosSkin, the web skin, with dense; ../menu/menu.styles.js)" },
+      });
+      // A spread that adds nothing, and the bare alias, are the web build on both platforms.
+      expect(flat.divergent.Android).toBeUndefined();
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
   it("treats a re-export-only entry and a skin it cannot resolve the right way round", () => {
     const root = kit({
       "atoms/plain/plain.ios.tsx": 'export { Plain } from "./plain.shared.js";',

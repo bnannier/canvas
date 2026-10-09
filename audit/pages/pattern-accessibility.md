@@ -21,11 +21,11 @@ Web: 18 cells per variant (3 widths x 3 looks x 2 surfaces). iOS and Android: 6 
 | Variant | Label | Web (18) | iOS (6) | Android (6) | Notes |
 |---|---|---|---|---|---|
 | `page` | Whole page | [ ] | [ ] | [ ] |  |
-| `section-1` | Focus ring | [ ] | [ ] | [ ] |  |
-| `section-2` | Keyboard shortcuts | [ ] | [ ] | [ ] |  |
-| `section-3` | ARIA essentials | [ ] | [ ] | [ ] |  |
-| `section-4` | Cross-platform support | [ ] | [ ] | [ ] |  |
-| `section-5` | Color contrast | [ ] | [ ] | [ ] |  |
+| `focusring` | Focus ring | [ ] | [ ] | [ ] |  |
+| `keyboardshortcuts` | Keyboard shortcuts | [ ] | [ ] | [ ] |  |
+| `ariaessentials` | ARIA essentials | [ ] | [ ] | [ ] |  |
+| `crossplatformsupport` | Cross-platform support | [ ] | [ ] | [ ] |  |
+| `colorcontrast` | Color contrast | [ ] | [ ] | [ ] |  |
 <!-- audit:variants:end -->
 
 ## Universal rubric

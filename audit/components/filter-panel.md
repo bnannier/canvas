@@ -21,7 +21,7 @@ Audit checklist for `/components/filter-panel`. The facts block and the variants
 | Overlay recipe | none |
 | MeasureProps | not adopted |
 | Touch target | no minTarget or useMinTargetSlop in the source directory |
-| Tests naming it | 7: `test/design-rules-shells.test.ts`, `test/design-rules-source.test.ts`, `test/filter-panel.test.tsx`, `test/narrow-modes.test.tsx`, `test/option-list-idiom.test.tsx`, `test/organism-material-roles.test.tsx`, `test/skins-smoke.test.tsx` |
+| Tests importing it | 4: `test/filter-panel.test.tsx`, `test/narrow-modes.test.tsx`, `test/option-list-idiom.test.tsx`, `test/organism-material-roles.test.tsx` |
 | E2E naming it | 0: none |
 <!-- audit:facts:end -->
 

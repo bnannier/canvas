@@ -21,7 +21,7 @@ Audit checklist for `/components/board`. The facts block and the variants table 
 | Overlay recipe | none |
 | MeasureProps | not adopted |
 | Touch target | no minTarget or useMinTargetSlop in the source directory |
-| Tests naming it | 7: `test/board-logic.test.ts`, `test/board.test.tsx`, `test/drag-drop.test.tsx`, `test/horizontal-scroller-drag.test.tsx`, `test/no-console-violations.test.tsx`, `test/skins-smoke.test.tsx`, `test/touch-target-seams.test.tsx` |
+| Tests importing it | 5: `test/board-logic.test.ts`, `test/board.test.tsx`, `test/horizontal-scroller-drag.test.tsx`, `test/no-console-violations.test.tsx`, `test/touch-target-seams.test.tsx` |
 | E2E naming it | 0: none |
 <!-- audit:facts:end -->
 

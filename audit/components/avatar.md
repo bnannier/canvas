@@ -21,7 +21,7 @@ Audit checklist for `/components/avatar`. The facts block and the variants table
 | Overlay recipe | none |
 | MeasureProps | not adopted |
 | Touch target | useMinTargetSlop in none; minTarget in `avatar.shared.tsx`, `avatar.styles.ts` |
-| Tests naming it | 16: `test/a11y-state.test.tsx`, `test/atom-material-feedback.test.tsx`, `test/atom-material-roles.test.tsx`, `test/avatar-menu.test.tsx`, `test/behavior-smoke-b.test.tsx`, `test/behavior-smoke-d.test.tsx`, `test/dense-overlays.test.tsx`, `test/dist-smoke.test.tsx`, `test/docs-photos.test.tsx`, `test/new-components.test.tsx`, `test/no-console-violations.test.tsx`, `test/overlays.test.tsx`, `test/prop-table.test.tsx`, `test/skins-smoke.test.tsx`, `test/text-contrast.test.tsx`, `test/touch-target-coverage.test.ts` |
+| Tests importing it | 9: `test/a11y-state.test.tsx`, `test/atom-material-feedback.test.tsx`, `test/atom-material-roles.test.tsx`, `test/avatar-menu.test.tsx`, `test/dense-overlays.test.tsx`, `test/new-components.test.tsx`, `test/no-console-violations.test.tsx`, `test/skins-smoke.test.tsx`, `test/text-contrast.test.tsx` |
 | E2E naming it | 2: `e2e/a11y/structure.e2e.ts`, `e2e/journeys/shell-search.e2e.ts` |
 <!-- audit:facts:end -->
 

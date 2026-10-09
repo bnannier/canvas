@@ -37,15 +37,29 @@ route. Each file is half generated and half hand-maintained:
   the docs' platform-skin registry; its row in `PLATFORM-REFERENCES.md` (treatment, build,
   and whether each platform cell is a real reference link or a `none` note); its
   `tools/materials/manifest.ts` entries; its hand-off parity records split into open gaps,
-  settled divergences and metric gaps (from `HANDOFF-PARITY.md`, the report generated from
-  `tools/handoff-parity/divergences.json`); its interaction evidence and overlay recipe;
-  the test and e2e files naming its exports or route; and its `MeasureProps`, `minTarget`
-  and `useMinTargetSlop` adoption. `bun tools/audit/facts.ts <slug>` prints the same as JSON.
+  settled divergences and metric gaps (read from `tools/handoff-parity/divergences.json`,
+  applied to the component through `tools/handoff-parity/compare.ts`, the same comparison
+  `HANDOFF-PARITY.md` is generated from: a `global` record covers every hand-off prop the
+  kit lacks under that name, which takes the hand-off snapshot and the kit's built prop
+  surface, so the facts read `dist/` and `bun run build` comes first); its interaction
+  evidence and overlay recipe; the test files importing it (one of its exports imported
+  from the kit, or any module in its source directory, so a `View` imported from
+  `react-native` or the word "Text" in a test does not count) and the e2e files naming its
+  exports or route; and its `MeasureProps`, `minTarget` and `useMinTargetSlop` adoption.
+  `bun tools/audit/facts.ts <slug>` prints the same as JSON.
 - **Variants** (generated, between `<!-- audit:variants:begin -->` and
   `<!-- audit:variants:end -->`): one row per variant with a tick cell per platform (Web 18,
   iOS 6, Android 6) and a notes cell. Rows are merged by variant key on regeneration, so
   ticks and notes survive an example being added, removed or relabelled. A page's rows are
-  the whole page and then one per section, keyed by position.
+  the whole page (`page`) and then one per section, keyed by the section title slugified
+  the way an example label is (`Live comparison` is `livecomparison`), so a section keeps
+  its ticks when another is inserted, removed or moved; retitling a section gives it a new
+  key. A row's cells are split on unescaped pipes only, and everything after the three tick
+  cells is the note, so a `|` typed in a note is kept (and escaped as `\|` on the next
+  write). `--write` never discards a reviewer's work: a row it cannot read (a tick cell
+  that is not `[ ]` or `[x]`, a key without back-ticks, a key twice), or a row carrying ticks or a
+  note whose key the inventory no longer has, leaves that file untouched and names the
+  line to fix by hand.
 - **Universal rubric** (seeded once): the 11 items applied to every component, each with its
   evidence source (S source or test read, A accessibility tree or DOM probe, P photograph,
   N native device check). Severity follows rn-library-audit: critical, high, medium, low.
@@ -95,8 +109,8 @@ as "by design".
 
 | Command | What it does |
 |---|---|
-| `bun run audit:checklists` | writes new checklists and regenerates the facts block and variants table of existing ones |
-| `bun run audit:checklists:check` | fails on a route with no checklist, an orphan checklist, a stale facts block, variant rows that drift from the inventory, or a missing sign-off section; runs in CI (`validate.yml`) and the pre-push hook |
+| `bun run audit:checklists` | writes new checklists and regenerates the facts block and variants table of existing ones; exits non-zero naming any file it left untouched to keep a reviewer's work |
+| `bun run audit:checklists:check` | fails on a route with no checklist, an orphan checklist (a `.md` file no route calls for), a stale facts block, a malformed variants row (by line number), variant rows that drift from the inventory, a variants table `--write` would rewrite, or a missing sign-off section; runs in CI (`validate.yml`) and the pre-push hook |
 | `bun run audit:status` | counts ticked variant cells per platform, ticked checklist items, open findings by severity and signed-off platforms across every checklist (`--json` for the rows) |
 | `bun tools/audit/facts.ts <slug>` | prints one component's facts as JSON |
 

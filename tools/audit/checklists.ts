@@ -3,9 +3,18 @@
 //
 // Generated, and rewritten on every `--write`: the facts block (tools/audit/facts.ts)
 // and the variants table (one row per example variant from tools/audit/inventory.ts,
-// with a tick cell per platform). Each sits between its own HTML-comment markers, and
-// the variants table is MERGED by variant key, so a reviewer's ticks and notes survive
-// a regeneration that adds, removes or relabels examples.
+// with a tick cell per platform; a page's rows are the whole page and one per section,
+// keyed by the section title's slug). Each sits between its own HTML-comment markers,
+// and the variants table is MERGED by variant key, so a reviewer's ticks and notes
+// survive a regeneration that adds, removes or relabels examples.
+//
+// A reviewer's ticks and notes are never discarded. A row is read with an escape-aware
+// split (`\|` stays in its cell), and everything after the three tick cells is the note,
+// so a "|" typed in a note is kept and escaped on the next write rather than taken for a
+// column. A row that cannot be read (a tick cell that is not `[ ]` or `[x]`, a key that
+// is not back-ticked, a key twice), or a row carrying ticks or a note whose key the
+// inventory no longer has, makes `--write` refuse that file and name the line; the
+// reviewer fixes it by hand and runs it again.
 //
 // Hand-maintained, and seeded ONCE on the file's first write from
 // tools/audit/plan-specifics.ts: the universal rubric, the family checklists, the
@@ -14,14 +23,16 @@
 // byte for byte, so running `--write` twice changes nothing.
 //
 // `--check` (wired as audit:checklists:check, in CI and the pre-push hook) fails on a
-// route with no checklist, an orphan checklist, a stale facts block, variant rows that
-// drift from the inventory, and a missing sign-off section.
+// route with no checklist, an orphan checklist (a `.md` file no route calls for), a
+// stale facts block, a malformed variants row (by line number), variant rows that drift
+// from the inventory, a variants table `--write` would rewrite, and a missing sign-off
+// section.
 
 import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { ROOT } from "../../e2e/support/routes.ts";
 import { componentFacts, loadCorpus, pageFacts, type ComponentFacts, type FactsCorpus, type PageFacts, type ReferenceCell } from "./facts.ts";
-import { NATIVE_CELLS_PER_VARIANT, WEB_CELLS_PER_VARIANT, components, pages, type InventoryComponent, type InventoryPage } from "./inventory.ts";
+import { NATIVE_CELLS_PER_VARIANT, PAGE_ROW_KEY, WEB_CELLS_PER_VARIANT, components, pages, sectionKeys, type InventoryComponent, type InventoryPage } from "./inventory.ts";
 import { COMPONENT_PLANS, FAMILY_CHECKLISTS, FAMILY_LABEL, PAGE_PLAN, UNIVERSAL_RUBRIC, type Family } from "./plan-specifics.ts";
 
 export const FACTS_BEGIN = "<!-- audit:facts:begin -->";
@@ -127,7 +138,7 @@ export function renderComponentFacts(facts: ComponentFacts): string[] {
         ? `useMinTargetSlop in ${list(facts.touchTarget.useMinTargetSlop)}; minTarget in ${list(facts.touchTarget.minTarget)}`
         : "no minTarget or useMinTargetSlop in the source directory",
     ],
-    ["Tests naming it", `${facts.tests.length}: ${list(facts.tests)}`],
+    ["Tests importing it", `${facts.tests.length}: ${list(facts.tests)}`],
     ["E2E naming it", `${facts.e2e.length}: ${list(facts.e2e)}`],
   ];
   return ["| Fact | Value |", "|---|---|", ...rows.map(([fact, value]) => `| ${fact} | ${cell(value)} |`)];
@@ -175,26 +186,110 @@ export function renderVariantsTable(rows: VariantRow[], existing: Map<string, Va
   ];
 }
 
-/** The rows of a variants table body, keyed by variant. */
-export function parseVariantsTable(lines: string[]): Map<string, VariantTicks> {
-  const out = new Map<string, VariantTicks>();
-  for (const line of lines) {
-    if (!line.startsWith("| `")) continue;
-    const cells = line.replace(/^\|\s?/, "").replace(/\s?\|$/, "").split(" | ").map((c) => c.trim());
-    if (cells.length !== 6) continue;
-    const [key, , web, ios, android, notes] = cells;
-    out.set(key.replace(/^`|`$/g, ""), { web, ios, android, notes });
-  }
+/** A variants row as a reviewer left it, with its 1-based line number in the file. */
+export interface VariantsTableRow {
+  key: string;
+  ticks: VariantTicks;
+  line: number;
+}
+
+/** A line inside the variants markers that is not a readable row, and why. */
+export interface MalformedRow {
+  line: number;
+  reason: string;
+}
+
+export interface VariantsTable {
+  rows: VariantsTableRow[];
+  malformed: MalformedRow[];
+}
+
+const KEY_CELL = /^`([^`]+)`$/;
+const TICK_CELL = /^\[[ xX]\]/;
+const HEADER_LINE = /^\|\s*Variant\s*\|/;
+const SEPARATOR_LINE = /^\|(\s*:?-+:?\s*\|)+$/;
+
+/** The offsets of a line's unescaped pipes: a pipe right after a backslash is cell text, as `cell` writes it. */
+function pipeOffsets(line: string): number[] {
+  const out: number[] = [];
+  for (let i = 0; i < line.length; i++) if (line[i] === "|" && line[i - 1] !== "\\") out.push(i);
   return out;
+}
+
+/**
+ * The rows of a variants table, read so that nothing a reviewer wrote is lost: the cells
+ * are split on unescaped pipes only, and the note is everything after the three tick
+ * cells (a "|" typed in a note stays in the note). The header and separator lines are
+ * recognized by their text, not their position, and blank lines carry nothing. Any
+ * other line that does not read as a row is returned as malformed, with its line
+ * number (`firstLine` is the file line of `lines[0]`).
+ */
+export function readVariantsTable(lines: string[], firstLine = 1): VariantsTable {
+  const table: VariantsTable = { rows: [], malformed: [] };
+  const seen = new Map<string, number>();
+  lines.forEach((raw, i) => {
+    const line = firstLine + i;
+    const text = raw.trim();
+    if (!text || HEADER_LINE.test(text) || SEPARATOR_LINE.test(text)) return;
+    const bad = (reason: string) => table.malformed.push({ line, reason });
+    const p = pipeOffsets(text);
+    if (p[0] !== 0) return bad("not a table row (a variants row starts with `|`)");
+    if (p.length < 6) return bad("too few cells (a variants row is `| variant | label | web | ios | android | notes |`)");
+    const between = (a: number, b: number) => text.slice(p[a] + 1, p[b]).trim();
+    const keyCell = between(0, 1);
+    const key = KEY_CELL.exec(keyCell)?.[1];
+    if (!key) return bad(`the variant cell reads "${keyCell}", not a back-ticked key`);
+    const ticks = { web: between(2, 3), ios: between(3, 4), android: between(4, 5) };
+    for (const column of TICK_COLUMNS) {
+      const value = ticks[column.key];
+      if (!TICK_CELL.test(value)) {
+        return bad(`the ${column.heading} cell reads "${value}", not \`[ ]\` or \`[x]\` (a "|" in the label, or a missing cell, shifts the columns; write a pipe in a cell as \`\\|\`)`);
+      }
+    }
+    // Everything after the tick cells is the note, less the row's closing pipe.
+    const last = p[p.length - 1];
+    const notes = text.slice(p[5] + 1, last > p[5] && last === text.length - 1 ? last : undefined).trim();
+    const first = seen.get(key);
+    if (first !== undefined) return bad(`a second row for \`${key}\` (the first is on line ${first})`);
+    seen.set(key, line);
+    table.rows.push({ key, ticks: { ...ticks, notes }, line });
+  });
+  return table;
+}
+
+/** The readable rows of a variants table body, keyed by variant. */
+export function parseVariantsTable(lines: string[]): Map<string, VariantTicks> {
+  return new Map(readVariantsTable(lines).rows.map((row) => [row.key, row.ticks]));
+}
+
+/** Whether a row carries a reviewer's work: a tick cell other than an empty box, or a note. */
+export function carriesWork(ticks: VariantTicks): boolean {
+  return [ticks.web, ticks.ios, ticks.android].some((value) => value !== EMPTY_TICKS.web) || ticks.notes !== "";
+}
+
+/** The rows a regeneration would drop although they carry a reviewer's work. */
+export function droppedWork(table: VariantsTable, rows: VariantRow[]): VariantsTableRow[] {
+  const wanted = new Set(rows.map((row) => row.key));
+  return table.rows.filter((row) => !wanted.has(row.key) && carriesWork(row.ticks));
+}
+
+/** The file line of a block's first inner line (the line after its begin marker). */
+export function blockFirstLine(content: string, block: Block): number {
+  return content.slice(0, block.start).split("\n").length + 1;
 }
 
 export function componentVariantRows(component: InventoryComponent): VariantRow[] {
   return component.variants.map((v) => ({ key: v.variant, label: v.label }));
 }
 
-/** A page's rows: the whole page, then one per section, keyed by position so a retitle keeps its ticks. */
-export function pageVariantRows(facts: PageFacts): VariantRow[] {
-  return [{ key: "page", label: "Whole page" }, ...facts.sections.map((title, i) => ({ key: `section-${i + 1}`, label: title }))];
+/**
+ * A page's rows: the whole page, then one per section, keyed by the section title's
+ * slug (`sectionKeys`), so inserting, removing or moving a section leaves every other
+ * row's ticks where they are.
+ */
+export function pageVariantRows(id: string, facts: PageFacts): VariantRow[] {
+  const keys = sectionKeys(id, facts.sections);
+  return [{ key: PAGE_ROW_KEY, label: "Whole page" }, ...facts.sections.map((title, i) => ({ key: keys[i], label: title }))];
 }
 
 const checkItem = (text: string): string => `- [ ] ${text}`;
@@ -304,7 +399,7 @@ export function seedPageChecklist(page: InventoryPage, facts: PageFacts): string
     "",
     ...variantsIntro(),
     VARIANTS_BEGIN,
-    ...renderVariantsTable(pageVariantRows(facts), new Map()),
+    ...renderVariantsTable(pageVariantRows(page.id, facts), new Map()),
     VARIANTS_END,
     "",
     ...rubricSection(),
@@ -338,14 +433,42 @@ function replaceBlock(content: string, block: Block, begin: string, lines: strin
   return `${content.slice(0, block.start)}${[begin, ...lines, end].join("\n")}${content.slice(block.end)}`;
 }
 
+/** A checklist `--write` will not regenerate, because doing so would guess or lose a reviewer's work. */
+export class ChecklistRefusal extends Error {
+  constructor(
+    readonly file: string,
+    readonly problems: string[],
+  ) {
+    super(`audit: refusing to rewrite audit/${file}:\n${problems.map((p) => `  ${p}`).join("\n")}`);
+    this.name = "ChecklistRefusal";
+  }
+}
+
+/** Why a variants table cannot be regenerated without losing a reviewer's work, as messages; empty when it can. */
+export function variantsRefusals(table: VariantsTable, rows: VariantRow[]): string[] {
+  return [
+    ...table.malformed.map((row) => `line ${row.line}: malformed variants row: ${row.reason}; fix the row by hand`),
+    ...droppedWork(table, rows).map(
+      (row) =>
+        `line ${row.line}: \`${row.key}\` is no longer a row of this route (its example or section was removed, or its title now slugifies differently) and carries ticks or a note; move them to the row that replaces it, or clear them`,
+    ),
+  ];
+}
+
 /** The existing file with its generated blocks regenerated and everything else untouched. */
 export function mergeChecklist(existing: string, factsLines: string[], rows: VariantRow[], file: string): string {
-  const facts = findBlock(existing, FACTS_BEGIN, FACTS_END);
-  if (!facts) throw new Error(`audit: ${file} has no facts block markers; restore them or delete the file to reseed it`);
-  const next = replaceBlock(existing, facts, FACTS_BEGIN, factsLines, FACTS_END);
-  const variants = findBlock(next, VARIANTS_BEGIN, VARIANTS_END);
-  if (!variants) throw new Error(`audit: ${file} has no variants table markers; restore them or delete the file to reseed it`);
-  return replaceBlock(next, variants, VARIANTS_BEGIN, renderVariantsTable(rows, parseVariantsTable(variants.lines)), VARIANTS_END);
+  if (!findBlock(existing, FACTS_BEGIN, FACTS_END)) {
+    throw new ChecklistRefusal(file, ["no facts block markers; restore them or delete the file to reseed it"]);
+  }
+  const variants = findBlock(existing, VARIANTS_BEGIN, VARIANTS_END);
+  if (!variants) throw new ChecklistRefusal(file, ["no variants table markers; restore them or delete the file to reseed it"]);
+  // Read the table from the file as it stands, so a refusal names the reviewer's own line numbers.
+  const table = readVariantsTable(variants.lines, blockFirstLine(existing, variants));
+  const refusals = variantsRefusals(table, rows);
+  if (refusals.length) throw new ChecklistRefusal(file, refusals);
+  const ticks = new Map(table.rows.map((row) => [row.key, row.ticks]));
+  const next = replaceBlock(existing, variants, VARIANTS_BEGIN, renderVariantsTable(rows, ticks), VARIANTS_END);
+  return replaceBlock(next, findBlock(next, FACTS_BEGIN, FACTS_END)!, FACTS_BEGIN, factsLines, FACTS_END);
 }
 
 // ---------- the files ----------
@@ -374,7 +497,7 @@ export function checklistEntries(sources: ChecklistSources): ChecklistEntry[] {
     entries.push({
       file: `${PAGES_DIR}/${page.id}.md`,
       factsLines: renderPageFacts(facts),
-      rows: pageVariantRows(facts),
+      rows: pageVariantRows(page.id, facts),
       seed: () => seedPageChecklist(page, facts),
     });
   }
@@ -385,11 +508,13 @@ export interface WriteResult {
   seeded: string[];
   updated: string[];
   unchanged: string[];
+  /** Files left exactly as they were, because regenerating them would guess or lose a reviewer's work. */
+  refused: ChecklistRefusal[];
 }
 
 /** Write or merge every checklist. Files already in place keep their hand-maintained sections. */
 export function writeChecklists(auditDir: string, sources: ChecklistSources): WriteResult {
-  const result: WriteResult = { seeded: [], updated: [], unchanged: [] };
+  const result: WriteResult = { seeded: [], updated: [], unchanged: [], refused: [] };
   for (const entry of checklistEntries(sources)) {
     const path = join(auditDir, entry.file);
     mkdirSync(join(auditDir, entry.file, ".."), { recursive: true });
@@ -399,7 +524,14 @@ export function writeChecklists(auditDir: string, sources: ChecklistSources): Wr
       continue;
     }
     const existing = readFileSync(path, "utf8");
-    const next = mergeChecklist(existing, entry.factsLines, entry.rows, entry.file);
+    let next: string;
+    try {
+      next = mergeChecklist(existing, entry.factsLines, entry.rows, entry.file);
+    } catch (error) {
+      if (!(error instanceof ChecklistRefusal)) throw error;
+      result.refused.push(error);
+      continue;
+    }
     if (next === existing) result.unchanged.push(entry.file);
     else {
       writeFileSync(path, next);
@@ -433,20 +565,49 @@ export function checkChecklists(auditDir: string, sources: ChecklistSources): st
     else if (facts.lines.join("\n") !== entry.factsLines.join("\n")) errors.push(`audit/${entry.file}: stale facts block (run \`bun run audit:checklists\`)`);
     const variants = findBlock(content, VARIANTS_BEGIN, VARIANTS_END);
     if (!variants) errors.push(`audit/${entry.file}: variants table markers missing`);
-    else {
-      const found = [...parseVariantsTable(variants.lines).keys()];
-      const wanted = entry.rows.map((row) => row.key);
-      const header = variants.lines.slice(0, 2).join("\n");
-      if (header !== variantsHeader().join("\n") || found.join(",") !== wanted.join(",")) {
-        errors.push(`audit/${entry.file}: variant rows drift from the inventory (expected ${wanted.join(", ")}; found ${found.join(", ") || "none"}; run \`bun run audit:checklists\`)`);
-      }
-    }
+    else errors.push(...variantsErrors(entry, content, variants));
     if (!hasSignOff(content)) errors.push(`audit/${entry.file}: sign-off section missing (a "## Sign-off" heading with a row per platform: web, ios, android)`);
   }
+  errors.push(...orphanChecklists(auditDir, expected));
+  return errors;
+}
+
+/**
+ * What is wrong with a checklist's variants table, as messages. A malformed row is
+ * reported by its line and nothing more: its key cannot be trusted, so calling the table
+ * drift would send the reviewer to `--write`, which refuses the file anyway.
+ */
+function variantsErrors(entry: ChecklistEntry, content: string, variants: Block): string[] {
+  const table = readVariantsTable(variants.lines, blockFirstLine(content, variants));
+  if (table.malformed.length) {
+    return table.malformed.map(
+      (row) => `audit/${entry.file}:${row.line}: malformed variants row: ${row.reason} (fix it by hand; \`bun run audit:checklists\` refuses a file with a malformed row rather than lose its ticks or note)`,
+    );
+  }
+  const found = table.rows.map((row) => row.key);
+  const wanted = entry.rows.map((row) => row.key);
+  if (found.join(",") !== wanted.join(",")) {
+    const stranded = droppedWork(table, entry.rows);
+    const advice = stranded.length
+      ? `; ${stranded.map((row) => `\`${row.key}\` (line ${row.line})`).join(", ")} carry ticks or notes the inventory has no row for: move them to the row that replaces them, or clear them, then run \`bun run audit:checklists\``
+      : "; run `bun run audit:checklists`";
+    return [`audit/${entry.file}: variant rows drift from the inventory (expected ${wanted.join(", ")}; found ${found.join(", ") || "none"}${advice})`];
+  }
+  const rendered = renderVariantsTable(entry.rows, new Map(table.rows.map((row) => [row.key, row.ticks])));
+  if (variants.lines.join("\n") !== rendered.join("\n")) {
+    return [`audit/${entry.file}: variants table out of date (a relabelled row, a changed header, or a "|" in a note to escape); run \`bun run audit:checklists\`, which keeps every tick and note`];
+  }
+  return [];
+}
+
+/** Every `.md` file under the checklist directories that no docs route calls for. Anything else there (a `.DS_Store`) is not a checklist. */
+export function orphanChecklists(auditDir: string, expected: Set<string>): string[] {
+  const errors: string[] = [];
   for (const dir of [COMPONENTS_DIR, PAGES_DIR]) {
     const absolute = join(auditDir, dir);
     if (!existsSync(absolute)) continue;
     for (const name of readdirSync(absolute).sort()) {
+      if (!name.endsWith(".md")) continue;
       const file = `${dir}/${name}`;
       if (!expected.has(file)) errors.push(`orphan checklist audit/${file}: no docs route calls for it (delete it, or restore the route)`);
     }
@@ -460,6 +621,10 @@ if (import.meta.main) {
   if (mode === "--write") {
     const result = writeChecklists(auditDir, defaultSources());
     console.log(`audit:checklists wrote ${result.seeded.length} new, updated ${result.updated.length}, left ${result.unchanged.length} unchanged under audit/`);
+    if (result.refused.length) {
+      console.error(`audit:checklists left ${result.refused.length} file(s) untouched:\n${result.refused.map((refusal) => refusal.message).join("\n")}`);
+      process.exit(1);
+    }
   } else if (mode === "--check") {
     const errors = checkChecklists(auditDir, defaultSources());
     if (errors.length) {

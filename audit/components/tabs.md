@@ -21,7 +21,7 @@ Audit checklist for `/components/tabs`. The facts block and the variants table a
 | Overlay recipe | none |
 | MeasureProps | not adopted |
 | Touch target | no minTarget or useMinTargetSlop in the source directory |
-| Tests naming it | 15: `test/a11y-state.test.tsx`, `test/button-touch-target.test.ts`, `test/focus-ring.test.tsx`, `test/focus-runtime.test.tsx`, `test/glass-controls.test.tsx`, `test/horizontal-scroller-drag.test.tsx`, `test/keyboard-nav.test.tsx`, `test/narrow-modes.test.tsx`, `test/native-focus-fixtures.test.tsx`, `test/no-console-violations.test.tsx`, `test/organism-material-roles.test.tsx`, `test/scroll-focus.test.tsx`, `test/skins-smoke.test.tsx`, `test/tabs-overflow.test.tsx`, `test/text-contrast.test.tsx` |
+| Tests importing it | 12: `test/a11y-state.test.tsx`, `test/focus-ring.test.tsx`, `test/focus-runtime.test.tsx`, `test/glass-controls.test.tsx`, `test/horizontal-scroller-drag.test.tsx`, `test/keyboard-nav.test.tsx`, `test/narrow-modes.test.tsx`, `test/native-focus-fixtures.test.tsx`, `test/no-console-violations.test.tsx`, `test/organism-material-roles.test.tsx`, `test/tabs-overflow.test.tsx`, `test/text-contrast.test.tsx` |
 | E2E naming it | 1: `e2e/behavior/keyboard.e2e.ts` |
 <!-- audit:facts:end -->
 

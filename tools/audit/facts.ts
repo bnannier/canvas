@@ -1,20 +1,29 @@
 // Per-component facts for the audit checklists, gathered from the repo's own records
 // with no React Native import, so it runs under plain bun: the docs catalog, the skin
 // divergence read from source text, the docs' platform-skin registry, the platform
-// reference catalog, the materials manifest, the hand-off parity report, the
+// reference catalog, the materials manifest, the hand-off parity records, the
 // interaction evidence registry, the overlay recipes, the test and e2e trees, and the
 // component's own source directory. Each fact names where it came from, so a reviewer
 // can go and look; none of them is a verdict.
 //
+// The hand-off parity records come from their source, `tools/handoff-parity/
+// divergences.json`, never from the HANDOFF-PARITY.md generated from it. Which records
+// apply to a component (a `global` record covers every hand-off prop the kit lacks
+// under that name) depends on the hand-off snapshot and the kit's built prop surface,
+// so those are read through tools/handoff-parity/compare.ts, the same comparison the
+// report is generated from; it reads dist/, so `bun run build` comes first (CI and the
+// pre-push hook build before the audit check).
+//
 // `bun tools/audit/facts.ts <slug>` prints one component's facts as JSON.
 
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
-import { join, relative } from "node:path";
+import { dirname, join, relative, resolve, sep } from "node:path";
 import ts from "typescript";
 import { COMPONENTS } from "../../docs/src/core/data/components.ts";
 import type { Category } from "../../docs/src/core/data/types.ts";
 import { ROOT, componentDocPath } from "../../e2e/support/routes.ts";
 import { MATERIAL_OVERLAY_RECIPES, TOAST_RECIPE } from "../../e2e/support/overlay-recipes.ts";
+import { KIND_LABEL, compareCheckout, isGap, redirectTargets } from "../handoff-parity/compare.ts";
 import { evidence as interactionEvidence, inventory as interactionInventory } from "../interactions/registry.ts";
 import { materialCoverage } from "../materials/manifest.ts";
 import { componentSkins, type ComponentSkins, type Platform as SkinPlatform } from "../skins/divergence.ts";
@@ -99,7 +108,7 @@ export interface ComponentFacts {
   interactions: { inInventory: boolean; evidence: { id: string; layer: string; file: string; test: string }[] };
   /** The e2e overlay recipe that opens it, when one exists. */
   overlayRecipe: { role: string } | null;
-  /** Files under test/ naming one of its exports or its route. */
+  /** Files under test/ importing it from the kit (see `importsComponent`). */
   tests: string[];
   /** Files under e2e/ naming one of its exports or its route. */
   e2e: string[];
@@ -199,51 +208,153 @@ export function referenceKeyFor(slug: string, category: Category, keys: Set<stri
   return category === "Charts" && keys.has("charts") ? "charts" : null;
 }
 
-/** A row of a markdown table whose first two cells are back-ticked names. */
-function tableRows(markdown: string, heading: string): string[][] {
-  const start = markdown.indexOf(`\n## ${heading}\n`);
-  if (start === -1) return [];
-  const section = markdown.slice(start + 1).split(/\n## /)[0];
-  return section
-    .split("\n")
-    .filter((line) => line.startsWith("| `"))
-    .map((line) => line.replace(/^\|\s?/, "").replace(/\s?\|$/, "").split(" | ").map((c) => c.trim()));
-}
-
-const unticked = (cell: string): string => cell.replace(/^`|`$/g, "");
-
-/** The open gaps the hand-off parity report lists, per hand-off component name. */
-export function handoffOpenGaps(report: string): HandoffGap[] {
-  return tableRows(report, "Open gaps").map(([component, prop, planned, what]) => ({ component: unticked(component), prop: unticked(prop), planned, what }));
-}
-
-/** The dashes the parity report writes for "no Canvas equivalent": em dash, en dash, hyphen. */
-const NO_EQUIVALENT = new Set([String.fromCharCode(0x2014), String.fromCharCode(0x2013), "-"]);
-
-/**
- * The settled divergences the hand-off parity report lists, per hand-off component
- * name. The report marks "no Canvas equivalent" (an intentional omission, a web-only
- * prop) with a dash in the equivalent column; it is read as the word `none`.
- */
-export function handoffSettled(report: string): HandoffSettled[] {
-  return tableRows(report, "Settled divergences").map(([component, prop, kind, equivalent]) => ({
-    component: unticked(component),
-    prop: unticked(prop),
-    kind,
-    equivalent: NO_EQUIVALENT.has(equivalent) ? "none" : equivalent,
-  }));
-}
-
-interface DivergencesFile {
-  metricGaps: Record<string, { component: string; canvas: string; handoff: string; plannedIn?: string }>;
-}
-
 function walk(dir: string): string[] {
   if (!existsSync(dir)) return [];
   return readdirSync(dir).flatMap((name) => {
     const path = join(dir, name);
     return statSync(path).isDirectory() ? walk(path) : [path];
   });
+}
+
+/** The hand-off parity records of a checkout, per hand-off component, in the report's order. */
+export function handoffRecords(root: string): { open: HandoffGap[]; settled: HandoffSettled[]; metricGaps: MetricGap[] } {
+  const { divergences, comparison } = compareCheckout(root);
+  const open: HandoffGap[] = [];
+  const settled: HandoffSettled[] = [];
+  for (const row of comparison.classified) {
+    const d = row.divergence!;
+    if (isGap(d)) open.push({ component: row.component, prop: row.prop, planned: d.plannedIn ?? "unscheduled", what: d.reason });
+    else {
+      // A record with no redirect target is "no Canvas equivalent" (an intentional omission, a
+      // web-only prop): the report draws a dash, the facts say none.
+      const targets = redirectTargets(d);
+      settled.push({ component: row.component, prop: row.prop, kind: KIND_LABEL[d.kind], equivalent: targets.length ? targets.map((t) => `\`${t}\``).join(", ") : "none" });
+    }
+  }
+  const metricGaps = Object.entries(divergences.metricGaps).map(([id, gap]) => ({
+    id,
+    component: gap.component,
+    canvas: gap.canvas,
+    handoff: gap.handoff,
+    plannedIn: gap.plannedIn ?? "unscheduled",
+  }));
+  return { open, settled, metricGaps };
+}
+
+/** What a test file imports from the kit. */
+export interface KitImports {
+  /**
+   * The repo-relative kit paths it imports, statically, through `import()` or through
+   * `require()`. A template literal specifier contributes its static head as a `prefix`
+   * (`../src/atoms/avatar/${file}.tsx` is somewhere under `src/atoms/avatar/`).
+   */
+  modules: { path: string; prefix: boolean }[];
+  /**
+   * The names it imports from a kit module: named imports, the names a dynamic import is
+   * destructured into or read by, and the members read off a namespace import.
+   */
+  names: Set<string>;
+}
+
+const KIT_PACKAGE = "@nannier/canvas";
+
+/** The repo-relative path a specifier reaches in the kit (`src/`, `dist/`, the package), or null outside it. */
+function kitPath(root: string, file: string, specifier: string): string | null {
+  if (specifier === KIT_PACKAGE || specifier.startsWith(`${KIT_PACKAGE}/`)) return "src";
+  if (!specifier.startsWith(".")) return null;
+  const path = relative(root, resolve(root, dirname(file), specifier)).split(sep).join("/");
+  return /^(src|dist)(\/|$)/.test(path) ? path : null;
+}
+
+/** The expression a dynamic import's value lands in, past `await`, parentheses and casts. */
+function importUse(call: ts.Node): ts.Node {
+  let node = call;
+  while (
+    ts.isAwaitExpression(node.parent) ||
+    ts.isParenthesizedExpression(node.parent) ||
+    ts.isAsExpression(node.parent) ||
+    ts.isSatisfiesExpression(node.parent) ||
+    ts.isNonNullExpression(node.parent) ||
+    ts.isTypeAssertionExpression(node.parent)
+  ) {
+    node = node.parent;
+  }
+  return node;
+}
+
+/** What one test file imports from the kit, read with the TypeScript parser. */
+export function kitImportsOf(root: string, file: string, source: string): KitImports {
+  const sf = parse(file, source);
+  const out: KitImports = { modules: [], names: new Set() };
+  const namespaces = new Set<string>();
+  const visit = (node: ts.Node): void => {
+    if ((ts.isImportDeclaration(node) || ts.isExportDeclaration(node)) && node.moduleSpecifier && ts.isStringLiteral(node.moduleSpecifier)) {
+      const path = kitPath(root, file, node.moduleSpecifier.text);
+      if (path) {
+        if (ts.isImportDeclaration(node)) {
+          const clause = node.importClause;
+          if (clause && !clause.isTypeOnly) {
+            out.modules.push({ path, prefix: false });
+            const bindings = clause.namedBindings;
+            if (bindings && ts.isNamespaceImport(bindings)) namespaces.add(bindings.name.text);
+            else if (bindings) for (const element of bindings.elements) if (!element.isTypeOnly) out.names.add((element.propertyName ?? element.name).text);
+          }
+        } else if (!node.isTypeOnly) {
+          out.modules.push({ path, prefix: false });
+          if (node.exportClause && ts.isNamedExports(node.exportClause)) {
+            for (const element of node.exportClause.elements) if (!element.isTypeOnly) out.names.add((element.propertyName ?? element.name).text);
+          }
+        }
+      }
+    } else if (
+      ts.isCallExpression(node) &&
+      node.arguments.length > 0 &&
+      (node.expression.kind === ts.SyntaxKind.ImportKeyword || (ts.isIdentifier(node.expression) && node.expression.text === "require"))
+    ) {
+      const arg = node.arguments[0];
+      const literal = ts.isStringLiteral(arg) || ts.isNoSubstitutionTemplateLiteral(arg) ? arg.text : null;
+      const head = ts.isTemplateExpression(arg) ? arg.head.text : null;
+      const path = literal !== null ? kitPath(root, file, literal) : head ? kitPath(root, file, head) : null;
+      if (path) {
+        // A head ending in a slash names a whole directory; resolving it drops the slash.
+        out.modules.push(literal !== null ? { path, prefix: false } : { path: head!.endsWith("/") ? `${path}/` : path, prefix: true });
+        const use = importUse(node);
+        const parent = use.parent;
+        if (ts.isPropertyAccessExpression(parent) && parent.expression === use) out.names.add(parent.name.text);
+        else if (ts.isElementAccessExpression(parent) && parent.expression === use && ts.isStringLiteral(parent.argumentExpression)) out.names.add(parent.argumentExpression.text);
+        else if (ts.isVariableDeclaration(parent) && parent.initializer === use) {
+          if (ts.isObjectBindingPattern(parent.name)) {
+            for (const element of parent.name.elements) {
+              const name = element.propertyName ?? element.name;
+              if (ts.isIdentifier(name)) out.names.add(name.text);
+            }
+          } else if (ts.isIdentifier(parent.name)) namespaces.add(parent.name.text);
+        }
+      }
+    }
+    ts.forEachChild(node, visit);
+  };
+  visit(sf);
+  if (namespaces.size) {
+    const members = (node: ts.Node): void => {
+      if (ts.isPropertyAccessExpression(node) && ts.isIdentifier(node.expression) && namespaces.has(node.expression.text)) out.names.add(node.name.text);
+      ts.forEachChild(node, members);
+    };
+    members(sf);
+  }
+  return out;
+}
+
+/**
+ * Whether a test file tests a component: it imports one of the component's exports from
+ * the kit, or any module inside the component's own source directory (its skins, its
+ * platform entries, its styles). A word match would count every test that renders a
+ * `<View>` or mentions "Text" as a test of the primitive; `View` imported from
+ * `react-native` rather than from the kit is not the kit's.
+ */
+export function importsComponent(imports: KitImports, exports: string[], sourceDir: string): boolean {
+  if (exports.some((name) => imports.names.has(name))) return true;
+  return imports.modules.some(({ path, prefix }) => path.startsWith(`${sourceDir}/`) || (!prefix && path === sourceDir));
 }
 
 /** The repo-wide records every component's facts read, loaded once. */
@@ -255,21 +366,15 @@ export interface FactsCorpus {
   openGaps: HandoffGap[];
   settled: HandoffSettled[];
   metricGaps: MetricGap[];
-  /** Repo-relative path and content of every file under test/ and e2e/. */
-  tests: { file: string; text: string }[];
+  /** Repo-relative path of every test file under test/, with what it imports from the kit. */
+  tests: { file: string; imports: KitImports }[];
+  /** Repo-relative path and content of every file under e2e/. */
   e2e: { file: string; text: string }[];
 }
 
 export function loadCorpus(root = ROOT): FactsCorpus {
   const read = (path: string) => readFileSync(join(root, path), "utf8");
-  const divergences = JSON.parse(read("tools/handoff-parity/divergences.json")) as DivergencesFile;
-  const metricGaps = Object.entries(divergences.metricGaps).map(([id, gap]) => ({
-    id,
-    component: gap.component,
-    canvas: gap.canvas,
-    handoff: gap.handoff,
-    plannedIn: gap.plannedIn ?? "unscheduled",
-  }));
+  const handoff = handoffRecords(root);
   const tree = (dir: string, pattern: RegExp) =>
     walk(join(root, dir))
       .filter((file) => pattern.test(file))
@@ -280,10 +385,10 @@ export function loadCorpus(root = ROOT): FactsCorpus {
     skins: componentSkins(join(root, "src")),
     registry: registeredSkins(read("docs/src/core/platform-skins.ts")),
     reference: referenceRows(read("PLATFORM-REFERENCES.md")),
-    openGaps: handoffOpenGaps(read("HANDOFF-PARITY.md")),
-    settled: handoffSettled(read("HANDOFF-PARITY.md")),
-    metricGaps,
-    tests: tree("test", /\.tsx?$/),
+    openGaps: handoff.open,
+    settled: handoff.settled,
+    metricGaps: handoff.metricGaps,
+    tests: tree("test", /\.tsx?$/).map(({ file, text }) => ({ file, imports: kitImportsOf(root, file, text) })),
     e2e: tree("e2e", /\.ts$/),
   };
 }
@@ -358,7 +463,7 @@ export function componentFacts(slug: string, corpus: FactsCorpus): ComponentFact
       : TOAST_RECIPE.slug === slug
         ? { role: "live region" }
         : null,
-    tests: mentions(corpus.tests, exports, [route]),
+    tests: corpus.tests.filter(({ imports }) => importsComponent(imports, exports, sourceDir)).map(({ file }) => file),
     e2e: mentions(corpus.e2e, exports, [route]),
     measureProps: sourcesNaming(corpus.root, sourceDir, sourceFiles, /\bMeasureProps\b/),
     touchTarget: {

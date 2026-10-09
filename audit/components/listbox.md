@@ -21,7 +21,7 @@ Audit checklist for `/components/listbox`. The facts block and the variants tabl
 | Overlay recipe | none |
 | MeasureProps | adopted in `listbox.shared.tsx` |
 | Touch target | no minTarget or useMinTargetSlop in the source directory |
-| Tests naming it | 12: `test/a11y-state.test.tsx`, `test/behavior.test.tsx`, `test/design-rules-skins.test.ts`, `test/focus-runtime.test.tsx`, `test/keyboard-nav.test.tsx`, `test/list-semantics.test.tsx`, `test/listbox-a11y.test.tsx`, `test/native-focus-fixtures.test.tsx`, `test/no-console-violations.test.tsx`, `test/option-list-idiom.test.tsx`, `test/sizing.test.tsx`, `test/skins-smoke.test.tsx` |
+| Tests importing it | 10: `test/a11y-state.test.tsx`, `test/behavior.test.tsx`, `test/focus-runtime.test.tsx`, `test/keyboard-nav.test.tsx`, `test/listbox-a11y.test.tsx`, `test/native-focus-fixtures.test.tsx`, `test/no-console-violations.test.tsx`, `test/option-list-idiom.test.tsx`, `test/sizing.test.tsx`, `test/skins-smoke.test.tsx` |
 | E2E naming it | 2: `e2e/behavior/keyboard.e2e.ts`, `e2e/behavior/listbox.e2e.ts` |
 <!-- audit:facts:end -->
 

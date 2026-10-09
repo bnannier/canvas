@@ -21,10 +21,10 @@ Web: 18 cells per variant (3 widths x 3 looks x 2 surfaces). iOS and Android: 6 
 | Variant | Label | Web (18) | iOS (6) | Android (6) | Notes |
 |---|---|---|---|---|---|
 | `page` | Whole page | [ ] | [ ] | [ ] |  |
-| `section-1` | Not found (404) | [ ] | [ ] | [ ] |  |
-| `section-2` | Something went wrong (500) | [ ] | [ ] | [ ] |  |
-| `section-3` | Maintenance | [ ] | [ ] | [ ] |  |
-| `section-4` | First run | [ ] | [ ] | [ ] |  |
+| `notfound404` | Not found (404) | [ ] | [ ] | [ ] |  |
+| `somethingwentwrong500` | Something went wrong (500) | [ ] | [ ] | [ ] |  |
+| `maintenance` | Maintenance | [ ] | [ ] | [ ] |  |
+| `firstrun` | First run | [ ] | [ ] | [ ] |  |
 <!-- audit:variants:end -->
 
 ## Universal rubric

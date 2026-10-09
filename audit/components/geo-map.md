@@ -21,7 +21,7 @@ Audit checklist for `/components/geo-map`. The facts block and the variants tabl
 | Overlay recipe | none |
 | MeasureProps | not adopted |
 | Touch target | no minTarget or useMinTargetSlop in the source directory |
-| Tests naming it | 4: `test/chart-materials.test.tsx`, `test/geo-map-projection.test.ts`, `test/geo-map.test.tsx`, `test/skins-smoke.test.tsx` |
+| Tests importing it | 5: `test/chart-materials.test.tsx`, `test/geo-map-camera.test.ts`, `test/geo-map-cluster.test.ts`, `test/geo-map-projection.test.ts`, `test/geo-map.test.tsx` |
 | E2E naming it | 0: none |
 <!-- audit:facts:end -->
 

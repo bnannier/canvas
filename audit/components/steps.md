@@ -21,7 +21,7 @@ Audit checklist for `/components/steps`. The facts block and the variants table 
 | Overlay recipe | none |
 | MeasureProps | not adopted |
 | Touch target | useMinTargetSlop in none; minTarget in `steps.shared.tsx`, `steps.styles.ts` |
-| Tests naming it | 8: `test/behavior-smoke-d.test.tsx`, `test/chart-math.test.ts`, `test/narrow-modes.test.tsx`, `test/organism-material-roles.test.tsx`, `test/skins-smoke.test.tsx`, `test/touch-target-clips.test.tsx`, `test/touch-target-seams.test.tsx`, `test/touch-target-seed.test.tsx` |
+| Tests importing it | 6: `test/behavior-smoke-d.test.tsx`, `test/narrow-modes.test.tsx`, `test/organism-material-roles.test.tsx`, `test/text-contrast.test.tsx`, `test/touch-target-seams.test.tsx`, `test/touch-target-seed.test.tsx` |
 | E2E naming it | 0: none |
 <!-- audit:facts:end -->
 

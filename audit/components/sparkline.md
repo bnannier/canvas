@@ -21,7 +21,7 @@ Audit checklist for `/components/sparkline`. The facts block and the variants ta
 | Overlay recipe | none |
 | MeasureProps | not adopted |
 | Touch target | no minTarget or useMinTargetSlop in the source directory |
-| Tests naming it | 9: `test/chart-materials.test.tsx`, `test/charts-buildout.test.tsx`, `test/charts-cartesian.test.tsx`, `test/dev-warn.test.tsx`, `test/dist-smoke.test.tsx`, `test/new-components.test.tsx`, `test/skins-smoke.test.tsx`, `test/sparkline.test.tsx`, `test/stats-stackedlist-slots.test.tsx` |
+| Tests importing it | 6: `test/chart-materials.test.tsx`, `test/charts-cartesian.test.tsx`, `test/dev-warn.test.tsx`, `test/new-components.test.tsx`, `test/sparkline.test.tsx`, `test/stats-stackedlist-slots.test.tsx` |
 | E2E naming it | 0: none |
 <!-- audit:facts:end -->
 

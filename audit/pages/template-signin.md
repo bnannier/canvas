@@ -21,9 +21,9 @@ Web: 18 cells per variant (3 widths x 3 looks x 2 surfaces). iOS and Android: 6 
 | Variant | Label | Web (18) | iOS (6) | Android (6) | Notes |
 |---|---|---|---|---|---|
 | `page` | Whole page | [ ] | [ ] | [ ] |  |
-| `section-1` | Centered card | [ ] | [ ] | [ ] |  |
-| `section-2` | Split-screen | [ ] | [ ] | [ ] |  |
-| `section-3` | Magic link | [ ] | [ ] | [ ] |  |
+| `centeredcard` | Centered card | [ ] | [ ] | [ ] |  |
+| `splitscreen` | Split-screen | [ ] | [ ] | [ ] |  |
+| `magiclink` | Magic link | [ ] | [ ] | [ ] |  |
 <!-- audit:variants:end -->
 
 ## Universal rubric

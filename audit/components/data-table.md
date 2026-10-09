@@ -21,7 +21,7 @@ Audit checklist for `/components/data-table`. The facts block and the variants t
 | Overlay recipe | none |
 | MeasureProps | not adopted |
 | Touch target | no minTarget or useMinTargetSlop in the source directory |
-| Tests naming it | 19: `test/a11y-state.test.tsx`, `test/behavior.test.tsx`, `test/checkbox-idiom.test.tsx`, `test/data-table-pan-identity.test.tsx`, `test/data-table-performance.test.tsx`, `test/data-table-stacks.test.tsx`, `test/data-table-text-entry-material.test.tsx`, `test/data-table.test.tsx`, `test/dist-smoke.test.tsx`, `test/escape-layers.test.tsx`, `test/heatmap-scroll-focus.test.tsx`, `test/native-focus-fixtures.test.tsx`, `test/no-console-violations.test.tsx`, `test/numerals.test.tsx`, `test/organism-material-roles.test.tsx`, `test/prop-table.test.tsx`, `test/scroll-frame-ring.test.tsx`, `test/skins-smoke.test.tsx`, `test/virtualization.test.tsx` |
+| Tests importing it | 16: `test/a11y-state.test.tsx`, `test/behavior.test.tsx`, `test/checkbox-idiom.test.tsx`, `test/data-table-pan-identity.test.tsx`, `test/data-table-performance.test.tsx`, `test/data-table-stacks.test.tsx`, `test/data-table-text-entry-material.test.tsx`, `test/data-table.test.tsx`, `test/escape-layers.test.tsx`, `test/native-focus-fixtures.test.tsx`, `test/no-console-violations.test.tsx`, `test/numerals.test.tsx`, `test/organism-material-roles.test.tsx`, `test/prop-table.test.tsx`, `test/scroll-frame-ring.test.tsx`, `test/virtualization.test.tsx` |
 | E2E naming it | 3: `e2e/behavior/keyboard.e2e.ts`, `e2e/journeys/keyboard.e2e.ts`, `e2e/responsive/component-widths.e2e.ts` |
 <!-- audit:facts:end -->
 

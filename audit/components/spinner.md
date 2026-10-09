@@ -21,7 +21,7 @@ Audit checklist for `/components/spinner`. The facts block and the variants tabl
 | Overlay recipe | none |
 | MeasureProps | not adopted |
 | Touch target | no minTarget or useMinTargetSlop in the source directory |
-| Tests naming it | 5: `test/docs-live-patterns.test.tsx`, `test/feedback.test.tsx`, `test/skeleton-accessibility.test.tsx`, `test/skins-smoke.test.tsx`, `test/spinner-accessibility.test.tsx` |
+| Tests importing it | 1: `test/spinner-accessibility.test.tsx` |
 | E2E naming it | 0: none |
 <!-- audit:facts:end -->
 

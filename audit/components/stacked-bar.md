@@ -21,7 +21,7 @@ Audit checklist for `/components/stacked-bar`. The facts block and the variants 
 | Overlay recipe | none |
 | MeasureProps | not adopted |
 | Touch target | no minTarget or useMinTargetSlop in the source directory |
-| Tests naming it | 6: `test/chart-materials.test.tsx`, `test/dev-warn.test.tsx`, `test/dist-smoke.test.tsx`, `test/skins-smoke.test.tsx`, `test/stats-stackedlist-slots.test.tsx`, `test/ws3-a11y-theming.test.tsx` |
+| Tests importing it | 4: `test/chart-materials.test.tsx`, `test/dev-warn.test.tsx`, `test/stats-stackedlist-slots.test.tsx`, `test/ws3-a11y-theming.test.tsx` |
 | E2E naming it | 0: none |
 <!-- audit:facts:end -->
 

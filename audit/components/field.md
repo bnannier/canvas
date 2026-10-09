@@ -21,7 +21,7 @@ Audit checklist for `/components/field`. The facts block and the variants table 
 | Overlay recipe | none |
 | MeasureProps | adopted in `field.shared.tsx` |
 | Touch target | no minTarget or useMinTargetSlop in the source directory |
-| Tests naming it | 9: `test/destructive-text-components.test.tsx`, `test/destructive-text.test.tsx`, `test/dist-smoke.test.tsx`, `test/field.test.tsx`, `test/phone-input.test.tsx`, `test/sizing.test.tsx`, `test/skins-smoke.test.tsx`, `test/text-entry-material.test.tsx`, `test/touch-target-clips.test.tsx` |
+| Tests importing it | 5: `test/destructive-text-components.test.tsx`, `test/destructive-text.test.tsx`, `test/field.test.tsx`, `test/phone-input.test.tsx`, `test/sizing.test.tsx` |
 | E2E naming it | 0: none |
 <!-- audit:facts:end -->
 

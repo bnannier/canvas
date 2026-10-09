@@ -21,7 +21,7 @@ Audit checklist for `/components/kbd`. The facts block and the variants table ar
 | Overlay recipe | none |
 | MeasureProps | not adopted |
 | Touch target | no minTarget or useMinTargetSlop in the source directory |
-| Tests naming it | 5: `test/atom-material-roles.test.tsx`, `test/glass-controls.test.tsx`, `test/kbd.test.tsx`, `test/organism-material-roles.test.tsx`, `test/skins-smoke.test.tsx` |
+| Tests importing it | 3: `test/atom-material-roles.test.tsx`, `test/glass-controls.test.tsx`, `test/kbd.test.tsx` |
 | E2E naming it | 0: none |
 <!-- audit:facts:end -->
 

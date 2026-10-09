@@ -21,9 +21,9 @@ Web: 18 cells per variant (3 widths x 3 looks x 2 surfaces). iOS and Android: 6 
 | Variant | Label | Web (18) | iOS (6) | Android (6) | Notes |
 |---|---|---|---|---|---|
 | `page` | Whole page | [ ] | [ ] | [ ] |  |
-| `section-1` | The shape of a list | [ ] | [ ] | [ ] |  |
-| `section-2` | Live preview | [ ] | [ ] | [ ] |  |
-| `section-3` | Bulk-action toolbar swap | [ ] | [ ] | [ ] |  |
+| `theshapeofalist` | The shape of a list | [ ] | [ ] | [ ] |  |
+| `livepreview` | Live preview | [ ] | [ ] | [ ] |  |
+| `bulkactiontoolbarswap` | Bulk-action toolbar swap | [ ] | [ ] | [ ] |  |
 <!-- audit:variants:end -->
 
 ## Universal rubric

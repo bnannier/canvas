@@ -21,7 +21,7 @@ Audit checklist for `/components/calendar`. The facts block and the variants tab
 | Overlay recipe | none |
 | MeasureProps | not adopted |
 | Touch target | no minTarget or useMinTargetSlop in the source directory |
-| Tests naming it | 10: `test/behavior.test.tsx`, `test/button-group-glass.test.tsx`, `test/calendar-accessibility.test.tsx`, `test/design-rules-source.test.ts`, `test/glass-controls.test.tsx`, `test/native-accessibility-escape-hosts.test.tsx`, `test/native-focus-fixtures.test.tsx`, `test/organism-material-roles.test.tsx`, `test/skins-smoke.test.tsx`, `test/text-contrast.test.tsx` |
+| Tests importing it | 7: `test/behavior.test.tsx`, `test/calendar-accessibility.test.tsx`, `test/native-accessibility-escape-hosts.test.tsx`, `test/native-focus-fixtures.test.tsx`, `test/organism-material-roles.test.tsx`, `test/responsive-narrow-fixes.test.tsx`, `test/text-contrast.test.tsx` |
 | E2E naming it | 0: none |
 <!-- audit:facts:end -->
 

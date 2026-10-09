@@ -21,7 +21,7 @@ Audit checklist for `/components/dialog`. The facts block and the variants table
 | Overlay recipe | yes (dialog) |
 | MeasureProps | not adopted |
 | Touch target | no minTarget or useMinTargetSlop in the source directory |
-| Tests naming it | 20: `test/anchored-overlay-dismissal.test.tsx`, `test/autocomplete-keyboard.test.tsx`, `test/command.test.tsx`, `test/control-refs.test.tsx`, `test/dense-overlays.test.tsx`, `test/destructive-text-components.test.tsx`, `test/dialog-focus.test.tsx`, `test/dialog-hardware-back.test.tsx`, `test/dialog-overlay.test.tsx`, `test/dist-smoke.test.tsx`, `test/escape-layers.test.tsx`, `test/hosted-focus.test.tsx`, `test/input-overlay-escape.test.tsx`, `test/native-accessibility-escape-hosts.test.tsx`, `test/native-focus-fixtures.test.tsx`, `test/no-console-violations.test.tsx`, `test/overlays.test.tsx`, `test/prop-table.test.tsx`, `test/skins-smoke.test.tsx`, `test/text-contrast.test.tsx` |
+| Tests importing it | 15: `test/anchored-overlay-dismissal.test.tsx`, `test/autocomplete-keyboard.test.tsx`, `test/command.test.tsx`, `test/control-refs.test.tsx`, `test/destructive-text-components.test.tsx`, `test/dialog-focus.test.tsx`, `test/dialog-hardware-back.test.tsx`, `test/dialog-overlay.test.tsx`, `test/escape-layers.test.tsx`, `test/hosted-focus.test.tsx`, `test/input-overlay-escape.test.tsx`, `test/native-accessibility-escape-hosts.test.tsx`, `test/native-focus-fixtures.test.tsx`, `test/no-console-violations.test.tsx`, `test/text-contrast.test.tsx` |
 | E2E naming it | 2: `e2e/behavior/overlays.e2e.ts`, `e2e/responsive/overlay-state.e2e.ts` |
 <!-- audit:facts:end -->
 

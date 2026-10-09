@@ -21,7 +21,7 @@ Audit checklist for `/components/heatmap`. The facts block and the variants tabl
 | Overlay recipe | none |
 | MeasureProps | not adopted |
 | Touch target | no minTarget or useMinTargetSlop in the source directory |
-| Tests naming it | 8: `test/chart-materials.test.tsx`, `test/dev-warn.test.tsx`, `test/dist-smoke.test.tsx`, `test/heatmap-scroll-focus.test.tsx`, `test/horizontal-scroller-drag.test.tsx`, `test/new-components.test.tsx`, `test/scroll-frame-ring.test.tsx`, `test/skins-smoke.test.tsx` |
+| Tests importing it | 5: `test/chart-materials.test.tsx`, `test/dev-warn.test.tsx`, `test/heatmap-scroll-focus.test.tsx`, `test/horizontal-scroller-drag.test.tsx`, `test/new-components.test.tsx` |
 | E2E naming it | 1: `e2e/behavior/scroll-focus.e2e.ts` |
 <!-- audit:facts:end -->
 

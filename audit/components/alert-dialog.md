@@ -21,7 +21,7 @@ Audit checklist for `/components/alert-dialog`. The facts block and the variants
 | Overlay recipe | yes (alertdialog) |
 | MeasureProps | not adopted |
 | Touch target | no minTarget or useMinTargetSlop in the source directory |
-| Tests naming it | 14: `test/anchored-overlay-dismissal.test.tsx`, `test/dense-overlays.test.tsx`, `test/design-rules-skins.test.ts`, `test/destructive-intent.test.tsx`, `test/destructive-text-components.test.tsx`, `test/dialog-focus.test.tsx`, `test/dialog-hardware-back.test.tsx`, `test/dialog-overlay.test.tsx`, `test/hosted-focus.test.tsx`, `test/input-overlay-escape.test.tsx`, `test/native-accessibility-escape-hosts.test.tsx`, `test/native-focus-fixtures.test.tsx`, `test/skins-smoke.test.tsx`, `test/text-contrast.test.tsx` |
+| Tests importing it | 10: `test/dense-overlays.test.tsx`, `test/destructive-text-components.test.tsx`, `test/dialog-focus.test.tsx`, `test/dialog-hardware-back.test.tsx`, `test/dialog-overlay.test.tsx`, `test/hosted-focus.test.tsx`, `test/input-overlay-escape.test.tsx`, `test/native-accessibility-escape-hosts.test.tsx`, `test/native-focus-fixtures.test.tsx`, `test/text-contrast.test.tsx` |
 | E2E naming it | 0: none |
 <!-- audit:facts:end -->
 
