@@ -48,6 +48,7 @@ export interface StackedBarProps {
   style?: LayoutStyle;
 }
 
+/** One proportional bar split into colored segments, with a legend of shares. */
 export function StackedBar({ segments, label, hideLegend, track, tall, subtle, testID, style }: StackedBarProps) {
   const { tokens } = useTheme();
   const rawTotal = segments.reduce((sum, seg) => sum + Math.max(0, Number.isFinite(seg.value) ? seg.value : 0), 0);

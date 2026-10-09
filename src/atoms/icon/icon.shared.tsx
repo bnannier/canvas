@@ -164,6 +164,7 @@ function Glyph({
   );
 }
 
+/** An outline glyph from the kit's icon set, sized and colored by props. */
 export function Icon(props: IconProps) {
   const { tokens } = useTheme();
 

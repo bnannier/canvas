@@ -5,6 +5,9 @@
 //
 //   import { View, Text, Pressable, useTheme, useResponsive, shadow, alpha,
 //            type ColorTokens } from "../../style/index.js";
+//
+// This hub is internal: the package publishes ./public.ts, name by name, so exporting
+// a helper here makes it available to the kit and to nobody else.
 
 export * from "./tokens.js";
 export * from "./status-hue.js";

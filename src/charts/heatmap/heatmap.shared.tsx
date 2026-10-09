@@ -86,6 +86,7 @@ function cellHeading(cell: HeatmapCell): string {
   return `${Math.round(clamp01(cell.value) * 100)}%`;
 }
 
+/** Cells whose fill encodes each value, or a calendar of daily contributions. */
 export function Heatmap(props: HeatmapProps) {
   // No values means no cells: warn so an empty grid is not mistaken for one that
   // failed to style. Both layouts share this guard.

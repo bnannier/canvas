@@ -47,10 +47,18 @@ function useFontStyle(style: StyleProp<TextStyle>): StyleProp<TextStyle> {
   return useMemo(() => fontStyle(style, fonts), [style, fonts]);
 }
 
+/**
+ * React Native's Text with the theme's registered typefaces applied, so every label paints
+ * in the brand face without a `fontFamily` at the call site.
+ */
 export const Text = forwardRef<RNText, TextProps>(function Text({ style, ...rest }, ref) {
   return <RNText ref={ref} {...rest} style={useFontStyle(style)} />;
 });
 
+/**
+ * React Native's TextInput with the theme's registered typefaces applied. Kit fields
+ * (Input, Textarea, Select) build on it; reach for them first.
+ */
 export const TextInput = forwardRef<RNTextInput, TextInputProps>(function TextInput({ style, ...rest }, ref) {
   return <RNTextInput ref={ref} {...rest} style={useFontStyle(style)} />;
 });

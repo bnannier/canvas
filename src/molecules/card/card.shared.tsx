@@ -334,36 +334,40 @@ export interface CardTextProps {
   style?: StyleProp<TextStyle>;
 }
 
-// Header: the labeled top of the card, holding the title and description.
+/** The labeled top of a Card, holding its title and description. */
 export function CardHeader({ children, style }: CardSectionProps) {
   return <View style={[s.header, style]}>{children}</View>;
 }
 
-// Title: the card's heading. Semibold, tight tracking, card foreground.
+/** A Card's heading: semibold, tight tracking, in the card foreground. */
 export function CardTitle({ children, style }: CardTextProps) {
   const { tokens } = useTheme();
   return <Text style={[s.title(tokens), style]}>{children}</Text>;
 }
 
-// Description: the muted supporting line beneath the title.
+/** The muted supporting line beneath a CardTitle. */
 export function CardDescription({ children, style }: CardTextProps) {
   const { tokens } = useTheme();
   return <Text style={[s.description(tokens), style]}>{children}</Text>;
 }
 
-// Content: the card body region. Carries the standard surface padding and the
-// card's flat-child rhythm (its children space themselves, no wrapper needed).
+/**
+ * The body region of a Card. It carries the standard surface padding and the card's
+ * flat-child rhythm, so its children space themselves with no wrapper.
+ */
 export function CardContent({ children, style }: CardSectionProps) {
   return <View style={[s.content, style]}>{children}</View>;
 }
 
-// Footer: the bottom region for actions or a summary line.
+/** The bottom region of a Card, for actions or a summary line. */
 export function CardFooter({ children, style }: CardSectionProps) {
   return <View style={[s.footer, style]}>{children}</View>;
 }
 
-// Separator: the hairline that anchors a header above a body. A card composing
-// a header and body keeps this divider between them.
+/**
+ * The hairline that anchors a Card's header above its body. A card composing a header and
+ * a body keeps this divider between them.
+ */
 export function CardSeparator({ style }: { style?: StyleProp<ViewStyle> }) {
   const { tokens } = useTheme();
   return <View style={[s.separator(tokens), style]} />;

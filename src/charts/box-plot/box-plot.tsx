@@ -4,5 +4,6 @@ import { webSkin } from "../shared/charts.styles.js";
 // BoxPlot is a "Shared" platform treatment: the implementation is platform-
 // neutral, so every platform entry builds from the same skin. The per-OS
 // files exist only so the architecture is uniform across the kit.
+/** Quartile boxes, whiskers and outliers per category, from raw samples. */
 export const BoxPlot = createBoxPlot(webSkin);
 export type { BoxPlotProps, BoxSample } from "./box-plot.shared.js";

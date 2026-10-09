@@ -66,6 +66,10 @@ function fitOf(p: ImageProps): ImageResizeMode {
   return "cover";
 }
 
+/**
+ * A local or remote image with a boolean fit prop (cover, contain, stretch, center,
+ * repeat, none).
+ */
 export function Image(props: ImageProps) {
   // Strip the atom's own props (fit booleans, dimensions, radius) so they never leak to the
   // native / DOM node. `box` carries the size and rounding into the RN Image style; `style`

@@ -43,7 +43,7 @@ test("export facts: values and types, named components, hooks and @deprecated ta
     /** @deprecated Use \`base\` through \`scale\`. */
     export { base as legacyBase };
   `);
-  const facts = Object.fromEntries(moduleExports(program, file, repo).map(({ name, files: _files, ...rest }) => [name, rest]));
+  const facts = Object.fromEntries(moduleExports(program, file, repo).map(({ name, files: _files, summary: _summary, ...rest }) => [name, rest]));
   expect(facts.Panel).toEqual({ value: true, renderable: true, callable: false, deprecated: false });
   // A lowercase function that returns a string is React output, but not a named component.
   expect(facts.alpha).toEqual({ value: true, renderable: false, callable: true, deprecated: false });
@@ -68,6 +68,31 @@ test("a @deprecated re-export part way down the chain still marks the public nam
   });
   const facts = Object.fromEntries(moduleExports(program, file, repo).map(({ name, deprecated }) => [name, deprecated]));
   expect(facts).toEqual({ current: false, legacy: true });
+});
+
+test("a JSDoc summary counts where hover shows it: on the declaration, never on a re-export or a tag alone", () => {
+  const { program, file } = virtualProgram(`
+    import * as React from "react";
+    export { documented, undocumented, tagOnly, viaSpecifier } from "./virtual-docs";
+    /** A panel. */
+    export const Panel = () => React.createElement("div");
+    export const Bare = () => React.createElement("div");
+  `, {
+    "virtual-docs.ts": `
+      /** Documented on its declaration. */
+      export const documented = 1;
+      export const undocumented = 1;
+      /** @remarks Only a tag. */
+      export const tagOnly = 1;
+      const hidden = 1;
+      export {
+        /** Written on the re-export, which hover through an entry never shows. */
+        hidden as viaSpecifier,
+      };
+    `,
+  });
+  const facts = Object.fromEntries(moduleExports(program, file, repo).map(({ name, summary }) => [name, summary]));
+  expect(facts).toEqual({ Bare: false, documented: true, Panel: true, tagOnly: false, undocumented: false, viaSpecifier: false });
 });
 
 test("the entry program resolves each platform's sibling files the way Metro does", () => {

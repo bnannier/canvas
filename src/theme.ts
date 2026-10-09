@@ -25,6 +25,10 @@ function load(key: string): string | null {
   try { return localStorage.getItem(key); } catch { return null; }
 }
 
+/**
+ * The web light or dark choice: the persisted one, else the document root's `.dark` class.
+ * Returns `"light"` off the web.
+ */
 export function getTheme(): Theme {
   const saved = load(STORAGE_KEY_THEME);
   if (saved === "light" || saved === "dark") return saved;
@@ -32,11 +36,17 @@ export function getTheme(): Theme {
   return document.documentElement.classList.contains("dark") ? "dark" : "light";
 }
 
+/**
+ * Persists the web light or dark choice and toggles the `.dark` class on the document root
+ * for the CSS hand-off. Pass the same choice to ThemeProvider so React Native components
+ * follow it.
+ */
 export function setTheme(theme: Theme): void {
   if (hasDocument()) document.documentElement.classList.toggle("dark", theme === "dark");
   store(STORAGE_KEY_THEME, theme);
 }
 
+/** Flips the web light or dark choice through setTheme and returns the new one. */
 export function toggleTheme(): Theme {
   const next = getTheme() === "dark" ? "light" : "dark";
   setTheme(next);
@@ -46,6 +56,10 @@ export function toggleTheme(): Theme {
 // The palette axis: `data-palette="mint"` on the root selects the mint block of
 // styles/tokens/colors.css, and blush (the default) is the attribute's absence. `.dark`
 // still wins in the stylesheet, as `dark` wins over `mint` on the ThemeProvider.
+/**
+ * The web palette, `"blush"` or `"mint"`: the persisted one, else the document root's
+ * `data-palette`. Returns `"blush"` off the web.
+ */
 export function getPalette(): Palette {
   const saved = load(STORAGE_KEY_PALETTE);
   if (saved === "blush" || saved === "mint") return saved;
@@ -53,6 +67,11 @@ export function getPalette(): Palette {
   return document.documentElement.dataset.palette === "mint" ? "mint" : "blush";
 }
 
+/**
+ * Persists the web palette and sets `data-palette` on the document root (blush, the
+ * default, removes it). Pass the same choice to ThemeProvider's `mint` so React Native
+ * components follow it.
+ */
 export function setPalette(palette: Palette): void {
   if (hasDocument()) {
     if (palette === "blush") {
@@ -64,6 +83,10 @@ export function setPalette(palette: Palette): void {
   store(STORAGE_KEY_PALETTE, palette);
 }
 
+/**
+ * The web surface, `"solid"` or `"glass"`: the persisted one, else the document root's
+ * `data-surface`. Returns `"solid"` off the web.
+ */
 export function getSurface(): Surface {
   const saved = load(STORAGE_KEY_SURFACE);
   if (saved === "solid" || saved === "glass") return saved;
@@ -71,6 +94,11 @@ export function getSurface(): Surface {
   return (document.documentElement.dataset.surface as Surface) ?? "solid";
 }
 
+/**
+ * Persists the web surface and sets `data-surface` on the document root, which gates the
+ * CSS hand-off's material mode (solid removes it). Pass the same choice to ThemeProvider
+ * so React Native components follow it.
+ */
 export function setSurface(surface: Surface): void {
   if (hasDocument()) {
     if (surface === "solid") {
@@ -82,6 +110,10 @@ export function setSurface(surface: Surface): void {
   store(STORAGE_KEY_SURFACE, surface);
 }
 
+/**
+ * The web density, `"compact"`, `"regular"` or `"comfy"`: the persisted one, else the
+ * document root's `data-density`. Returns `"regular"` off the web.
+ */
 export function getDensity(): Density {
   const saved = load(STORAGE_KEY_DENSITY);
   if (saved === "compact" || saved === "regular" || saved === "comfy") return saved;
@@ -89,6 +121,11 @@ export function getDensity(): Density {
   return (document.documentElement.dataset.density as Density) ?? "regular";
 }
 
+/**
+ * Persists the web density and sets `data-density` on the document root for the CSS
+ * hand-off's card and table spacing (regular removes it). Components take density from
+ * their own `compact` and `comfortable` props.
+ */
 export function setDensity(density: Density): void {
   if (hasDocument()) {
     if (density === "regular") {

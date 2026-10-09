@@ -1,6 +1,7 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { COMPONENTS } from "../docs/src/core/data/components";
+import { PENDING_DOCS, publicApi } from "../tools/api/manifest";
 import { checkMaterialCoverage } from "../tools/materials/check";
 import { discoverPublicRenderables } from "../tools/materials/discover";
 import { materialCoverage } from "../tools/materials/manifest";
@@ -8,7 +9,7 @@ import { materialCoverage } from "../tools/materials/manifest";
 const root = resolve(import.meta.dir, "..");
 const nav = JSON.parse(readFileSync(resolve(root, "docs/src/data/nav.config.json"), "utf8")) as { routes: Record<string, { href: string }> };
 const exports = discoverPublicRenderables(root);
-const result = checkMaterialCoverage(exports, COMPONENTS, materialCoverage, Object.values(nav.routes).map(({ href }) => href.replace(/^\//, "")));
+const result = checkMaterialCoverage(exports, COMPONENTS, materialCoverage, Object.values(nav.routes).map(({ href }) => href.replace(/^\//, "")), { entries: publicApi, pending: PENDING_DOCS });
 if (process.argv.includes("--json")) console.log(JSON.stringify({ ...result, exports }, null, 2));
 else {
   console.log(`Material inventory: ${result.families} families, ${result.docsEntries} component docs entries, ${result.publicAPIs} renderable public APIs.`);

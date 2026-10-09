@@ -64,6 +64,7 @@ export function ringDash(v: number, size: number = SIZE.default): { d: string; d
   };
 }
 
+/** A completion ring: a track, a tone-colored arc and the percent inside. */
 export function ProgressRing(props: ProgressRingProps) {
   const { value, label, testID, style } = props;
   const { tokens } = useTheme();

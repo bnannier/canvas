@@ -49,6 +49,7 @@ function circlePath(cx: number, cy: number, r: number): string {
   return `M ${cx} ${cy - r} A ${r} ${r} 0 0 1 ${cx} ${cy + r} A ${r} ${r} 0 0 1 ${cx} ${cy - r}`;
 }
 
+/** Concentric arc rings, one per category, over a muted track. */
 export function RadialBarChart(props: RadialBarChartProps) {
   const { data, testID, style } = props;
   const { tokens } = useTheme();

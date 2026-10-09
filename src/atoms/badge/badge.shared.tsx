@@ -228,6 +228,7 @@ function badgeGapOf(p: BadgeGroupProps): BadgeGap {
   return "snug";
 }
 
+/** A wrapping row of badges. */
 export function BadgeGroup(props: BadgeGroupProps) {
   const { children, accessibilityLabel, testID, style } = props;
   return (

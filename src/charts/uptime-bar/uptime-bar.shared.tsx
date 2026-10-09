@@ -35,6 +35,10 @@ export interface UptimeBarProps {
 
 const PILL_HEIGHT = { default: 24, compact: 14 } as const;
 
+/**
+ * A status strip: one pill per period (operational, degraded, down, unknown) with a
+ * summary caption.
+ */
 export function UptimeBar(props: UptimeBarProps) {
   const { periods, label, caption, startLabel, endLabel, testID, style } = props;
   const { tokens } = useTheme();

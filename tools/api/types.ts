@@ -13,9 +13,10 @@
  *   platform capability checks, context objects).
  * - `type`: a type-only export.
  * - `deprecated-alias`: a name carrying `@deprecated`, kept working until a major.
- * - `internal-by-accident`: a kit-internal helper that is public only because a
- *   barrel re-exports its module wholesale. Recording it is not a deprecation: that
- *   decision belongs to the owner.
+ * - `internal-by-accident`: a kit-internal helper that is public only because the
+ *   style hub's `export *` published it before src/style/public.ts listed the surface
+ *   name by name (or because a component entry re-exports its module's helpers).
+ *   Recording it is not a deprecation: the owner retires these as deprecated aliases.
  */
 export type ApiKind =
   | "component"
@@ -37,10 +38,11 @@ export type DocsRoute = string;
 export interface ApiEntry {
   kind: ApiKind;
   /**
-   * Where the docs site documents the name: a route whose rendered text names it, or
-   * `undocumented` when no page does. Never a page that only uses the name.
+   * Where the docs site documents the name: a route whose rendered text names it. Never
+   * a page that only uses the name. Absent while the docs are pending: the name is then
+   * in PENDING_DOCS with the route planned for it.
    */
-  docs: DocsRoute | "undocumented";
+  docs?: DocsRoute;
   /** A heading on that page (a `<Section>` title, an H2/H3, an example or Do & Don't title). */
   section?: string;
   /** For a deprecated alias: the public name to use instead, when one exists. */
@@ -60,6 +62,12 @@ export interface ApiExport {
   callable: boolean;
   /** Its declaration or its re-export carries `@deprecated`. */
   deprecated: boolean;
+  /**
+   * The declaration a consumer's editor shows carries a JSDoc summary (text before any
+   * tag). A summary written only on a re-export statement does not count: hover through
+   * the package entry never shows it.
+   */
+  summary: boolean;
   /** Repo-relative declaration files, including dependency-owned ones. */
   files: string[];
 }
@@ -80,5 +88,10 @@ export interface DocsPage {
   sources: string[];
   /** String literals, template text and JSX text: what a reader can see, never an import or a tag name. */
   text: string;
+  /**
+   * The part of the text a reader sees as code: snippets, inline code, generated prop
+   * tables' names and types, backtick spans. An ordinary-word name is named only here.
+   */
+  code: string;
   headings: string[];
 }

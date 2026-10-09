@@ -3,5 +3,6 @@ import { webSkin } from "./action-panels.styles.js";
 
 // Web ActionPanel (the base; Metro falls back to it on native, web bundlers
 // resolve it). The action uses the web Button/Switch by default.
+/** A section card with a headline, body text and one primary action or switch. */
 export const ActionPanel = createActionPanel(webSkin);
 export type { ActionPanelProps } from "./action-panels.shared.js";

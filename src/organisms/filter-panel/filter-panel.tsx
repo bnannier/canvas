@@ -3,5 +3,6 @@ import { webSkin } from "./filter-panel.styles.js";
 
 // Web FilterPanel (the base; Metro falls back to it on native, web bundlers resolve it).
 // Uses the default web Checkbox visuals and Badge from createFilterPanel.
+/** A filter rail of grouped checkbox options with count badges and a clear action. */
 export const FilterPanel = createFilterPanel(webSkin);
 export type { FilterPanelProps, FilterOption, FilterGroup } from "./filter-panel.shared.js";
