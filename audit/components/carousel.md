@@ -21,7 +21,7 @@ Audit checklist for `/components/carousel`. The facts block and the variants tab
 | Overlay recipe | none |
 | MeasureProps | not adopted |
 | Touch target | no minTarget or useMinTargetSlop in the source directory |
-| Tests naming it | 9: `test/carousel-arrows.test.tsx`, `test/carousel-keyboard.test.tsx`, `test/carousel-slide-identity.test.tsx`, `test/components-extra.test.tsx`, `test/heatmap-scroll-focus.test.tsx`, `test/native-carousel-fixture.test.tsx`, `test/organism-material-roles.test.tsx`, `test/scroll-frame-ring.test.tsx`, `test/skins-smoke.test.tsx` |
+| Tests importing it | 7: `test/carousel-arrows.test.tsx`, `test/carousel-keyboard.test.tsx`, `test/carousel-slide-identity.test.tsx`, `test/components-extra.test.tsx`, `test/native-carousel-fixture.test.tsx`, `test/organism-material-roles.test.tsx`, `test/scroll-frame-ring.test.tsx` |
 | E2E naming it | 5: `e2e/behavior/prerendered-location.e2e.ts`, `e2e/behavior/scroll-focus.e2e.ts`, `e2e/journeys/carousel.e2e.ts`, `e2e/journeys/fonts.e2e.ts`, `e2e/journeys/touch.e2e.ts` |
 <!-- audit:facts:end -->
 

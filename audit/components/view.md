@@ -21,7 +21,7 @@ Audit checklist for `/components/view`. The facts block and the variants table a
 | Overlay recipe | none |
 | MeasureProps | not adopted |
 | Touch target | no minTarget or useMinTargetSlop in the source directory |
-| Tests naming it | 41: `test/a11y-state.test.tsx`, `test/anchored-overlay-dismissal.test.tsx`, `test/behavior-smoke-c.test.tsx`, `test/capture-target.test.tsx`, `test/card.test.tsx`, `test/control-refs.test.tsx`, `test/dense-overlays.test.tsx`, `test/dist-smoke.test.tsx`, `test/drag-drop.test.tsx`, `test/drawer-host.test.tsx`, `test/entrance-readiness.test.tsx`, `test/fixtures/control-refs-consumer.tsx`, `test/fixtures/touch-records.tsx`, `test/focus-ring.test.tsx`, `test/glass-blur-target.test.tsx`, `test/hosted-focus.test.tsx`, `test/hosted-trigger-focus.test.tsx`, `test/inert.test.tsx`, `test/isomorphic-layout-effect.test.tsx`, `test/list-semantics.test.tsx`, `test/listbox-a11y.test.tsx`, `test/material-portal-context.test.tsx`, `test/material-resolution.test.tsx`, `test/menu-look.test.tsx`, `test/native-accessibility-escape-hosts.test.tsx`, `test/native-carousel-fixture.test.tsx`, `test/native-material-coordinate-hosts.test.tsx`, `test/native-roles.test.ts`, `test/no-console-violations.test.tsx`, `test/overlay-placement.test.tsx`, `test/overlays.test.tsx`, `test/pressable-tab-stop.test.tsx`, `test/responsive-narrow-fixes.test.tsx`, `test/reveal.test.tsx`, `test/sizing.test.tsx`, `test/skins-smoke.test.tsx`, `test/stepper-a11y.test.tsx`, `test/text-entry-material.test.tsx`, `test/touch-target-clips.test.tsx`, `test/use-wheel.test.tsx`, `test/video.test.tsx` |
+| Tests importing it | 0: none |
 | E2E naming it | 0: none |
 <!-- audit:facts:end -->
 

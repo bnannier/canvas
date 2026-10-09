@@ -21,7 +21,7 @@ Audit checklist for `/components/drawer`. The facts block and the variants table
 | Overlay recipe | yes (dialog) |
 | MeasureProps | not adopted |
 | Touch target | no minTarget or useMinTargetSlop in the source directory |
-| Tests naming it | 15: `test/anchored-overlay-dismissal.test.tsx`, `test/autocomplete-keyboard.test.tsx`, `test/command.test.tsx`, `test/dense-overlays.test.tsx`, `test/drawer-host.test.tsx`, `test/escape-layers.test.tsx`, `test/hardware-back.test.tsx`, `test/hosted-trigger-focus.test.tsx`, `test/input-overlay-escape.test.tsx`, `test/native-accessibility-escape-hosts.test.tsx`, `test/native-focus-fixtures.test.tsx`, `test/overlay-escape.test.tsx`, `test/overlays.test.tsx`, `test/prop-table.test.tsx`, `test/skins-smoke.test.tsx` |
+| Tests importing it | 11: `test/autocomplete-keyboard.test.tsx`, `test/command.test.tsx`, `test/drawer-host.test.tsx`, `test/escape-layers.test.tsx`, `test/hardware-back.test.tsx`, `test/hosted-trigger-focus.test.tsx`, `test/input-overlay-escape.test.tsx`, `test/native-accessibility-escape-hosts.test.tsx`, `test/native-focus-fixtures.test.tsx`, `test/overlay-escape.test.tsx`, `test/overlays.test.tsx` |
 | E2E naming it | 5: `e2e/behavior/escape-layers.e2e.ts`, `e2e/behavior/form-autocomplete.e2e.ts`, `e2e/journeys/touch.e2e.ts`, `e2e/starter/starter.spec.ts`, `e2e/visual/overlays.e2e.ts` |
 <!-- audit:facts:end -->
 

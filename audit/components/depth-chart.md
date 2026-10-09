@@ -21,7 +21,7 @@ Audit checklist for `/components/depth-chart`. The facts block and the variants 
 | Overlay recipe | none |
 | MeasureProps | not adopted |
 | Touch target | no minTarget or useMinTargetSlop in the source directory |
-| Tests naming it | 3: `test/chart-materials.test.tsx`, `test/dist-smoke.test.tsx`, `test/skins-smoke.test.tsx` |
+| Tests importing it | 1: `test/chart-materials.test.tsx` |
 | E2E naming it | 0: none |
 <!-- audit:facts:end -->
 

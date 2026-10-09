@@ -21,7 +21,7 @@ Audit checklist for `/components/phone-input`. The facts block and the variants 
 | Overlay recipe | yes (listbox) |
 | MeasureProps | adopted in `phone-input.shared.tsx` |
 | Touch target | no minTarget or useMinTargetSlop in the source directory |
-| Tests naming it | 2: `test/phone-input.test.tsx`, `test/text-entry-material.test.tsx` |
+| Tests importing it | 2: `test/phone-input.test.tsx`, `test/text-entry-material.test.tsx` |
 | E2E naming it | 1: `e2e/behavior/text-entry-clear.e2e.ts` |
 <!-- audit:facts:end -->
 

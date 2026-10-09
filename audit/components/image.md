@@ -21,7 +21,7 @@ Audit checklist for `/components/image`. The facts block and the variants table 
 | Overlay recipe | none |
 | MeasureProps | not adopted |
 | Touch target | no minTarget or useMinTargetSlop in the source directory |
-| Tests naming it | 0: none |
+| Tests importing it | 0: none |
 | E2E naming it | 1: `e2e/support/focus-ring.ts` |
 <!-- audit:facts:end -->
 

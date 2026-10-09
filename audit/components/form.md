@@ -21,7 +21,7 @@ Audit checklist for `/components/form`. The facts block and the variants table a
 | Overlay recipe | none |
 | MeasureProps | adopted in `form.shared.tsx` |
 | Touch target | no minTarget or useMinTargetSlop in the source directory |
-| Tests naming it | 10: `test/autocomplete-accessibility-return.test.tsx`, `test/autocomplete-keyboard.test.tsx`, `test/dist-smoke.test.tsx`, `test/focus-runtime.test.tsx`, `test/forms.test.tsx`, `test/native-accessibility-escape-hosts.test.tsx`, `test/radio-idiom.test.tsx`, `test/responsive-narrow-fixes.test.tsx`, `test/sizing.test.tsx`, `test/skins-smoke.test.tsx` |
+| Tests importing it | 7: `test/autocomplete-accessibility-return.test.tsx`, `test/autocomplete-keyboard.test.tsx`, `test/focus-runtime.test.tsx`, `test/forms.test.tsx`, `test/native-accessibility-escape-hosts.test.tsx`, `test/responsive-narrow-fixes.test.tsx`, `test/sizing.test.tsx` |
 | E2E naming it | 2: `e2e/behavior/form-autocomplete.e2e.ts`, `e2e/behavior/hydration-ids.e2e.ts` |
 <!-- audit:facts:end -->
 

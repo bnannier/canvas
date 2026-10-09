@@ -21,7 +21,7 @@ Audit checklist for `/components/action-panels`. The facts block and the variant
 | Overlay recipe | none |
 | MeasureProps | not adopted |
 | Touch target | no minTarget or useMinTargetSlop in the source directory |
-| Tests naming it | 2: `test/behavior-smoke-b.test.tsx`, `test/skins-smoke.test.tsx` |
+| Tests importing it | 1: `test/behavior-smoke-b.test.tsx` |
 | E2E naming it | 0: none |
 <!-- audit:facts:end -->
 

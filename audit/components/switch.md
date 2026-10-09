@@ -21,7 +21,7 @@ Audit checklist for `/components/switch`. The facts block and the variants table
 | Overlay recipe | none |
 | MeasureProps | not adopted |
 | Touch target | useMinTargetSlop in none; minTarget in `switch.shared.tsx`, `switch.styles.ts` |
-| Tests naming it | 14: `test/a11y-state.test.tsx`, `test/atom-material-roles.test.tsx`, `test/behavior-smoke-b.test.tsx`, `test/control-refs.test.tsx`, `test/control-space.test.tsx`, `test/field.test.tsx`, `test/fixtures/control-refs-consumer.tsx`, `test/forms.test.tsx`, `test/glass-controls.test.tsx`, `test/native-focus-fixtures.test.tsx`, `test/native-material-coordinate-hosts.test.tsx`, `test/skins-smoke.test.tsx`, `test/switch-label.test.tsx`, `test/touch-target-seed.test.tsx` |
+| Tests importing it | 11: `test/a11y-state.test.tsx`, `test/atom-material-roles.test.tsx`, `test/control-space.test.tsx`, `test/field.test.tsx`, `test/fixtures/control-refs-consumer.tsx`, `test/forms.test.tsx`, `test/glass-controls.test.tsx`, `test/native-focus-fixtures.test.tsx`, `test/native-material-coordinate-hosts.test.tsx`, `test/switch-label.test.tsx`, `test/touch-target-seed.test.tsx` |
 | E2E naming it | 2: `e2e/behavior/material-overlay-host.e2e.ts`, `e2e/journeys/control-refs.e2e.ts` |
 <!-- audit:facts:end -->
 

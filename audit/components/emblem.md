@@ -21,7 +21,7 @@ Audit checklist for `/components/emblem`. The facts block and the variants table
 | Overlay recipe | none |
 | MeasureProps | not adopted |
 | Touch target | no minTarget or useMinTargetSlop in the source directory |
-| Tests naming it | 6: `test/atom-material-roles.test.tsx`, `test/color-overrides.test.tsx`, `test/dist-smoke.test.tsx`, `test/new-components.test.tsx`, `test/primary-text.test.tsx`, `test/skins-smoke.test.tsx` |
+| Tests importing it | 4: `test/atom-material-roles.test.tsx`, `test/color-overrides.test.tsx`, `test/new-components.test.tsx`, `test/primary-text.test.tsx` |
 | E2E naming it | 0: none |
 <!-- audit:facts:end -->
 

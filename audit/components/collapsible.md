@@ -21,7 +21,7 @@ Audit checklist for `/components/collapsible`. The facts block and the variants 
 | Overlay recipe | none |
 | MeasureProps | not adopted |
 | Touch target | no minTarget or useMinTargetSlop in the source directory |
-| Tests naming it | 3: `test/components-extra.test.tsx`, `test/disclosure.test.tsx`, `test/skins-smoke.test.tsx` |
+| Tests importing it | 2: `test/components-extra.test.tsx`, `test/disclosure.test.tsx` |
 | E2E naming it | 0: none |
 <!-- audit:facts:end -->
 

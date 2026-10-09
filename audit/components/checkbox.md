@@ -21,7 +21,7 @@ Audit checklist for `/components/checkbox`. The facts block and the variants tab
 | Overlay recipe | none |
 | MeasureProps | not adopted |
 | Touch target | no minTarget or useMinTargetSlop in the source directory |
-| Tests naming it | 11: `test/a11y-state.test.tsx`, `test/atom-material-roles.test.tsx`, `test/checkbox-idiom.test.tsx`, `test/control-refs.test.tsx`, `test/control-space.test.tsx`, `test/fixtures/control-refs-consumer.tsx`, `test/forms.test.tsx`, `test/glass-controls.test.tsx`, `test/native-focus-fixtures.test.tsx`, `test/option-list-idiom.test.tsx`, `test/skins-smoke.test.tsx` |
+| Tests importing it | 9: `test/a11y-state.test.tsx`, `test/atom-material-roles.test.tsx`, `test/checkbox-idiom.test.tsx`, `test/control-space.test.tsx`, `test/fixtures/control-refs-consumer.tsx`, `test/forms.test.tsx`, `test/glass-controls.test.tsx`, `test/native-focus-fixtures.test.tsx`, `test/skins-smoke.test.tsx` |
 | E2E naming it | 2: `e2e/behavior/listbox.e2e.ts`, `e2e/journeys/control-refs.e2e.ts` |
 <!-- audit:facts:end -->
 

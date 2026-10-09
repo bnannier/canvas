@@ -21,7 +21,7 @@ Audit checklist for `/components/stats`. The facts block and the variants table 
 | Overlay recipe | none |
 | MeasureProps | not adopted |
 | Touch target | no minTarget or useMinTargetSlop in the source directory |
-| Tests naming it | 7: `test/behavior-smoke-a.test.tsx`, `test/design-rules-css.test.ts`, `test/dist-smoke.test.tsx`, `test/molecule-material-state.test.tsx`, `test/numerals.test.tsx`, `test/skins-smoke.test.tsx`, `test/stats-stackedlist-slots.test.tsx` |
+| Tests importing it | 4: `test/behavior-smoke-a.test.tsx`, `test/molecule-material-state.test.tsx`, `test/numerals.test.tsx`, `test/stats-stackedlist-slots.test.tsx` |
 | E2E naming it | 0: none |
 <!-- audit:facts:end -->
 

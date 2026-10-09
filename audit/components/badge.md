@@ -21,7 +21,7 @@ Audit checklist for `/components/badge`. The facts block and the variants table 
 | Overlay recipe | none |
 | MeasureProps | not adopted |
 | Touch target | no minTarget or useMinTargetSlop in the source directory |
-| Tests naming it | 18: `test/a11y-state.test.tsx`, `test/atom-material-roles.test.tsx`, `test/charts-cartesian.test.tsx`, `test/data-table-pan-identity.test.tsx`, `test/data-table-stacks.test.tsx`, `test/data-table.test.tsx`, `test/dist-smoke.test.tsx`, `test/glass-controls.test.tsx`, `test/layout-responsive.test.tsx`, `test/layout-spans.test.tsx`, `test/new-components.test.tsx`, `test/progress.test.tsx`, `test/prop-table.test.tsx`, `test/render.test.tsx`, `test/sidebar.test.tsx`, `test/skins-smoke.test.tsx`, `test/text-contrast.test.tsx`, `test/tokens.test.ts` |
+| Tests importing it | 12: `test/a11y-state.test.tsx`, `test/atom-material-roles.test.tsx`, `test/data-table-pan-identity.test.tsx`, `test/data-table-stacks.test.tsx`, `test/data-table.test.tsx`, `test/glass-controls.test.tsx`, `test/layout-responsive.test.tsx`, `test/layout-spans.test.tsx`, `test/prop-table.test.tsx`, `test/render.test.tsx`, `test/sidebar.test.tsx`, `test/text-contrast.test.tsx` |
 | E2E naming it | 1: `e2e/behavior/keyboard.e2e.ts` |
 <!-- audit:facts:end -->
 

@@ -21,7 +21,7 @@ Audit checklist for `/components/breadcrumb`. The facts block and the variants t
 | Overlay recipe | none |
 | MeasureProps | not adopted |
 | Touch target | useMinTargetSlop in none; minTarget in `breadcrumb.shared.tsx`, `breadcrumb.styles.ts` |
-| Tests naming it | 3: `test/new-components.test.tsx`, `test/skins-smoke.test.tsx`, `test/touch-target-coverage.test.ts` |
+| Tests importing it | 1: `test/new-components.test.tsx` |
 | E2E naming it | 0: none |
 <!-- audit:facts:end -->
 

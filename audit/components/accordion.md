@@ -21,7 +21,7 @@ Audit checklist for `/components/accordion`. The facts block and the variants ta
 | Overlay recipe | none |
 | MeasureProps | not adopted |
 | Touch target | no minTarget or useMinTargetSlop in the source directory |
-| Tests naming it | 4: `test/disclosure.test.tsx`, `test/focus-ring.test.tsx`, `test/new-components.test.tsx`, `test/skins-smoke.test.tsx` |
+| Tests importing it | 2: `test/disclosure.test.tsx`, `test/focus-ring.test.tsx` |
 | E2E naming it | 0: none |
 <!-- audit:facts:end -->
 

@@ -100,6 +100,27 @@ export function pages(): InventoryPage[] {
     .map((route) => ({ kind: route.kind, slug: route.name, id: `${route.kind}-${route.name}`, route: route.path }));
 }
 
+/** The key of a page's whole-page row, ahead of its section rows. */
+export const PAGE_ROW_KEY = "page";
+
+/**
+ * A page's section keys, one per section title in order: the title slugified the way a
+ * variant label is (`variantSlug`), so a section keeps its key when another section is
+ * inserted, removed or moved. Two titles that slugify alike, or one that slugifies to
+ * the whole page's key, are refused, as two example labels are.
+ */
+export function sectionKeys(pageId: string, titles: string[]): string[] {
+  const seen = new Map<string, string>([[PAGE_ROW_KEY, "the whole page"]]);
+  return titles.map((title) => {
+    const key = variantSlug(title);
+    if (!key) throw new Error(`inventory: ${pageId} has a section whose title "${title}" slugifies to nothing`);
+    const taken = seen.get(key);
+    if (taken) throw new Error(`inventory: ${pageId} has a section "${title}" whose key "${key}" is taken by ${taken}`);
+    seen.set(key, `the section "${title}"`);
+    return key;
+  });
+}
+
 export type Cell =
   | { platform: "web"; slug: string; variant: string; width: WidthKey; look: Look; surface: Surface }
   | { platform: "ios" | "android"; slug: string; variant: string; look: Look; surface: Surface };

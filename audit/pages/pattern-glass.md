@@ -21,12 +21,12 @@ Web: 18 cells per variant (3 widths x 3 looks x 2 surfaces). iOS and Android: 6 
 | Variant | Label | Web (18) | iOS (6) | Android (6) | Notes |
 |---|---|---|---|---|---|
 | `page` | Whole page | [ ] | [ ] | [ ] |  |
-| `section-1` | What 'glass' means in Canvas | [ ] | [ ] | [ ] |  |
-| `section-2` | The four ingredients | [ ] | [ ] | [ ] |  |
-| `section-3` | Surface inventory | [ ] | [ ] | [ ] |  |
-| `section-4` | Live comparison | [ ] | [ ] | [ ] |  |
-| `section-5` | When NOT to use glass | [ ] | [ ] | [ ] |  |
-| `section-6` | Implementation | [ ] | [ ] | [ ] |  |
+| `whatglassmeansincanvas` | What 'glass' means in Canvas | [ ] | [ ] | [ ] |  |
+| `thefouringredients` | The four ingredients | [ ] | [ ] | [ ] |  |
+| `surfaceinventory` | Surface inventory | [ ] | [ ] | [ ] |  |
+| `livecomparison` | Live comparison | [ ] | [ ] | [ ] |  |
+| `whennottouseglass` | When NOT to use glass | [ ] | [ ] | [ ] |  |
+| `implementation` | Implementation | [ ] | [ ] | [ ] |  |
 <!-- audit:variants:end -->
 
 ## Universal rubric

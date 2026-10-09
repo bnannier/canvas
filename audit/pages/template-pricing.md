@@ -21,9 +21,9 @@ Web: 18 cells per variant (3 widths x 3 looks x 2 surfaces). iOS and Android: 6 
 | Variant | Label | Web (18) | iOS (6) | Android (6) | Notes |
 |---|---|---|---|---|---|
 | `page` | Whole page | [ ] | [ ] | [ ] |  |
-| `section-1` | Plan tiers | [ ] | [ ] | [ ] |  |
-| `section-2` | Feature comparison | [ ] | [ ] | [ ] |  |
-| `section-3` | Billing FAQ | [ ] | [ ] | [ ] |  |
+| `plantiers` | Plan tiers | [ ] | [ ] | [ ] |  |
+| `featurecomparison` | Feature comparison | [ ] | [ ] | [ ] |  |
+| `billingfaq` | Billing FAQ | [ ] | [ ] | [ ] |  |
 <!-- audit:variants:end -->
 
 ## Universal rubric

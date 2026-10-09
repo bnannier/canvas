@@ -21,7 +21,7 @@ Audit checklist for `/components/container`. The facts block and the variants ta
 | Overlay recipe | none |
 | MeasureProps | adopted in `container.shared.tsx` |
 | Touch target | no minTarget or useMinTargetSlop in the source directory |
-| Tests naming it | 4: `test/behavior-smoke-a.test.tsx`, `test/layout-responsive.test.tsx`, `test/layout-spans.test.tsx`, `test/sizing.test.tsx` |
+| Tests importing it | 3: `test/layout-responsive.test.tsx`, `test/layout-spans.test.tsx`, `test/sizing.test.tsx` |
 | E2E naming it | 0: none |
 <!-- audit:facts:end -->
 

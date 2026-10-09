@@ -21,7 +21,7 @@ Audit checklist for `/components/sidebar`. The facts block and the variants tabl
 | Overlay recipe | none |
 | MeasureProps | not adopted |
 | Touch target | no minTarget or useMinTargetSlop in the source directory |
-| Tests naming it | 9: `test/anchored-overlay-dismissal.test.tsx`, `test/design-rules-shells.test.ts`, `test/design-rules-source.test.ts`, `test/focus-ring.test.tsx`, `test/hardware-back.test.tsx`, `test/hover-lift.test.tsx`, `test/sidebar.test.tsx`, `test/skins-smoke.test.tsx`, `test/text-contrast.test.tsx` |
+| Tests importing it | 4: `test/focus-ring.test.tsx`, `test/hover-lift.test.tsx`, `test/sidebar.test.tsx`, `test/text-contrast.test.tsx` |
 | E2E naming it | 1: `e2e/a11y/structure.e2e.ts` |
 <!-- audit:facts:end -->
 

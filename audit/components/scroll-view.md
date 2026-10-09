@@ -21,7 +21,7 @@ Audit checklist for `/components/scroll-view`. The facts block and the variants 
 | Overlay recipe | none |
 | MeasureProps | not adopted |
 | Touch target | no minTarget or useMinTargetSlop in the source directory |
-| Tests naming it | 4: `test/autocomplete-keyboard.test.tsx`, `test/list-semantics.test.tsx`, `test/overlay-placement.test.tsx`, `test/tabs-overflow.test.tsx` |
+| Tests importing it | 0: none |
 | E2E naming it | 1: `e2e/behavior/material-overlay-host.e2e.ts` |
 <!-- audit:facts:end -->
 
