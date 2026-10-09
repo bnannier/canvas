@@ -374,6 +374,10 @@ describe.skipIf(!hasDist)("the audit checklists keep a reviewer's work", () => {
     );
     // A capture that also shows another state says so.
     expect(row("tooltip")).toContain("open on On hover (web, iOS, Android rows; phone, tablet and desktop; also its hover)");
+    // A component that opens two overlays names the one each capture opens.
+    expect(row("calendar")).toBe(
+      "| Interaction states | captured: hover on Week (web row; desktop; also its open; opens the overlay in `hoverCard`), focus on Default (web row; desktop), pressed on Default (web row; desktop), open on Day peek (web, iOS, Android rows; phone, tablet and desktop; opens the overlay in `dayPeekOverlay`). |",
+    );
     expect(row("feeds")).toBe(
       "| Interaction states | static: An activity list whose rows are read-only in every rail example. focus exempt, verified: `onItemPress` makes each row a button, a tab stop, and `virtualized` scrolls the rows in a list that is one once they overflow; no rail example passes either. pressed exempt, verified: `onItemPress` makes each row a button; no rail example passes it. |",
     );

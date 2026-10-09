@@ -26,8 +26,11 @@
 //   overlay     an overlay primitive the component renders (React Native's Modal, the
 //               style layer's AnchoredOverlay or Portal), or another kit component whose own
 //               source renders one, given its `open` (or `visible`) by this component, so
-//               the component decides when it opens (FilterPanel's and Sidebar's drawers);
-//               an open state.
+//               the component decides when it opens (FilterPanel's and Sidebar's drawers,
+//               and AvatarMenu's Dropdown, a part its platform entries inject, known by its
+//               default or by the component its type names); an open state. Each overlay is
+//               named by the function that renders it (`overlay`), so a component that
+//               opens two (the Calendar's hover card and its day peek) owes each a recipe.
 //   look        a function of the component (a skin, a Pressable's style callback) taking
 //               `pressed`, `hovered` or `focused`: its look changes with that state.
 //
@@ -43,7 +46,7 @@
 // its directory holds only its markdown, and it is React Native's own component (or the
 // style layer's pass-through of it), whose states are whatever an example hands it. Its
 // signals are read from its rail examples instead (`exampleSignals`): the same props on its
-// own tag in each example's code.
+// own tag in each example's code, written on it or spread onto it.
 //
 // What is read: every module of the component's own directory (the shared shell, the
 // platform entries, the skins and the parts), and the shared family modules they import
@@ -88,6 +91,12 @@ export interface Signal {
   gates: string[];
   /** For a handler on a primitive: the element it is on, as the source writes it. */
   element?: ElementFacts;
+  /**
+   * For an overlay: the function that renders it, as the source names it (`hoverCard`,
+   * `dayPeekOverlay`, `Present`), so each overlay a component opens is told apart, and a
+   * recipe that opens one names it (e2e/support/state-recipes.ts `StateRecipe.opens`).
+   */
+  overlay?: string;
 }
 
 /** What the source says about the element a handler is on. */
@@ -527,12 +536,51 @@ export class SignalReader {
       const binding = module.reader.resolve(e);
       if (binding?.kind === "import") return this.resolveImport(module.path, binding.specifier);
       if (binding?.kind === "const" && !binding.path.length && binding.decl.initializer) return follow(binding.decl.initializer, depth + 1);
+      // A part a platform entry injects (`createAvatarMenu(skin, Dropdown)`): its default, or
+      // the kit component its type names (`Dropdown: (props: DropdownProps) => ReactElement`).
+      if (binding?.kind === "param") {
+        const param = binding.fn.parameters.find((p) => boundNames(p.name).some((b) => b.id === binding.id));
+        if (!param) return null;
+        if (param.initializer) return follow(param.initializer, depth + 1);
+        return param.type ? this.typeComponentFile(module, param.type) : null;
+      }
       return null;
     };
     const file = follow(tag, 0);
-    if (!file) return null;
+    return file && this.isComponentModule(file) ? file : null;
+  }
+
+  /**
+   * The kit component a type names: the first type it refers to that is imported (a type
+   * import included, which the value reader does not bind) from another component's module.
+   */
+  private typeComponentFile(module: Parsed, type: ts.TypeNode): string | null {
+    const importedFrom = (name: string): string | null => {
+      for (const statement of module.sf.statements) {
+        if (!ts.isImportDeclaration(statement) || !ts.isStringLiteral(statement.moduleSpecifier)) continue;
+        const named = statement.importClause?.namedBindings;
+        if (named && ts.isNamedImports(named) && named.elements.some((el) => el.name.text === name)) return statement.moduleSpecifier.text;
+      }
+      return null;
+    };
+    let found: string | null = null;
+    const visit = (node: ts.Node): void => {
+      if (found) return;
+      if (ts.isTypeReferenceNode(node) && ts.isIdentifier(node.typeName)) {
+        const specifier = importedFrom(node.typeName.text);
+        const file = specifier ? this.resolveImport(module.path, specifier) : null;
+        if (file && this.isComponentModule(file)) found = file;
+      }
+      ts.forEachChild(node, visit);
+    };
+    visit(type);
+    return found;
+  }
+
+  /** Whether a file is one of the kit components' own modules (not a family's shared module). */
+  private isComponentModule(file: string): boolean {
     const parts = relative(this.root, file).split("\\").join("/").split("/");
-    return parts[0] === "src" && this.groups.includes(parts[1]!) && parts.length > 3 && parts[2] !== "shared" ? file : null;
+    return parts[0] === "src" && this.groups.includes(parts[1]!) && parts.length > 3 && parts[2] !== "shared";
   }
 
   private readonly overlays = new Map<string, boolean>();
@@ -633,7 +681,7 @@ export class SignalReader {
             const opens = !opened || opened.value === null || (!isLiteralFalse(opened.value) && this.passedProps(opened.module, opened.value) !== null);
             if (opens) {
               const where = opened ? placed(opened, opened.value ? (this.passedProps(opened.module, opened.value) ?? []) : []) : { at: this.at(module, node), gates: this.gatesOf(module, node, scope) };
-              out.push({ kind: "overlay", state: "open", what: `a <${tag.name}>`, via: [], ...where });
+              out.push({ kind: "overlay", state: "open", what: `a <${tag.name}>`, via: [], ...where, overlay: renderedIn(module, node) });
             }
           }
           const stop = tabStop(tag.name, given);
@@ -680,6 +728,7 @@ export class SignalReader {
                 at: this.at(opened.module, opened.node),
                 via: [],
                 gates: [...new Set([...this.gatesOf(module, opened.site, scope), ...opened.gates, ...(opened.value ? (this.passedProps(opened.module, opened.value) ?? []) : [])])],
+                overlay: renderedIn(module, node),
               });
             }
           }
@@ -779,46 +828,59 @@ export class SignalReader {
       return true;
     });
   }
+
+  /**
+   * The signals a raw primitive's rail examples give it: the handler props, `href` and a
+   * pressed look on its own tag (`tag`, the component's name), and the tag itself when it is
+   * the TextInput. The props are read as a source's are, written on the tag or spread onto
+   * it from a value the example's own code lets the reader follow. `where` names the
+   * markdown, for `at`.
+   */
+  exampleSignals(tag: string, examples: readonly { label: string; code: string }[], where: string): Signal[] {
+    const signals: Signal[] = [];
+    for (const example of examples) {
+      const sf = ts.createSourceFile("example.tsx", `const example = (<>\n${example.code}\n</>);\n`, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
+      const at = `${where} (${example.label})`;
+      const module: Parsed = { path: join(this.root, where), sf, reader: new StaticReader(sf) };
+      const visit = (node: ts.Node): void => {
+        if ((ts.isJsxSelfClosingElement(node) || ts.isJsxOpeningElement(node)) && node.tagName.getText(sf) === tag) {
+          const add = (kind: SignalKind, state: SignalState, what: string) => signals.push({ kind, state, what, at, via: [], gates: [] });
+          if (tag === "TextInput") add("text-entry", "focus", "a TextInput");
+          const given = this.attributes(module, node.attributes.properties);
+          const stop = tabStop(tag, given);
+          if (stop) add("tab-stop", "focus", stop.what);
+          for (const attr of given) {
+            const prop = attr.name;
+            if (PRESS_PROPS.has(prop)) add("press", "pressed", `${prop} on <${tag}>`);
+            else if (HOVER_PROPS.has(prop)) add("hover-in", "hover", `${prop} on <${tag}>`);
+            else if (prop === "href") add("link", "focus", `href on <${tag}>`);
+            if (takesParameter(attr.value ?? attr.node, "pressed")) add("look", "pressed", `a function taking \`pressed\` on <${tag}>`);
+          }
+        }
+        ts.forEachChild(node, visit);
+      };
+      visit(sf);
+    }
+    return signals;
+  }
 }
 
 /**
- * The signals a raw primitive's rail examples give it: the handler props, `href` and a
- * pressed look on its own tag (`tag`, the component's name), and the tag itself when it is
- * the TextInput. `where` names the markdown, for `at`.
+ * The name of the function a node is rendered in: a declaration's or a named function
+ * expression's own name, or the constant, property or method an arrow is assigned to
+ * (through memo() and forwardRef()); the module's file name when no function names it.
  */
-export function exampleSignals(tag: string, examples: readonly { label: string; code: string }[], where: string): Signal[] {
-  const signals: Signal[] = [];
-  for (const example of examples) {
-    const sf = ts.createSourceFile("example.tsx", `const example = (<>\n${example.code}\n</>);\n`, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
-    const at = `${where} (${example.label})`;
-    const module: Parsed = { path: where, sf, reader: new StaticReader(sf) };
-    const visit = (node: ts.Node): void => {
-      if ((ts.isJsxSelfClosingElement(node) || ts.isJsxOpeningElement(node)) && node.tagName.getText(sf) === tag) {
-        const add = (kind: SignalKind, state: SignalState, what: string) => signals.push({ kind, state, what, at, via: [], gates: [] });
-        if (tag === "TextInput") add("text-entry", "focus", "a TextInput");
-        // The props written on the example's tag (an example spreads nothing onto a primitive).
-        const given: Attr[] = node.attributes.properties.filter(ts.isJsxAttribute).flatMap((attr) => {
-          if (!ts.isIdentifier(attr.name)) return [];
-          const init = attr.initializer;
-          const value = !init ? null : ts.isJsxExpression(init) ? (init.expression ?? null) : ts.isStringLiteral(init) ? init : null;
-          return [{ name: attr.name.text, value, module, node: attr, site: attr, gates: [] }];
-        });
-        const stop = tabStop(tag, given);
-        if (stop) add("tab-stop", "focus", stop.what);
-        for (const attr of node.attributes.properties) {
-          if (!ts.isJsxAttribute(attr) || !ts.isIdentifier(attr.name)) continue;
-          const prop = attr.name.text;
-          if (PRESS_PROPS.has(prop)) add("press", "pressed", `${prop} on <${tag}>`);
-          else if (HOVER_PROPS.has(prop)) add("hover-in", "hover", `${prop} on <${tag}>`);
-          else if (prop === "href") add("link", "focus", `href on <${tag}>`);
-          if (attr.initializer && takesParameter(attr.initializer, "pressed")) add("look", "pressed", `a function taking \`pressed\` on <${tag}>`);
-        }
-      }
-      ts.forEachChild(node, visit);
-    };
-    visit(sf);
+function renderedIn(module: Parsed, node: ts.Node): string {
+  for (let current = node.parent; current; current = current.parent) {
+    if ((ts.isFunctionDeclaration(current) || ts.isFunctionExpression(current)) && current.name) return current.name.text;
+    if (ts.isMethodDeclaration(current) && ts.isIdentifier(current.name)) return current.name.text;
+    if (ts.isArrowFunction(current) || ts.isFunctionExpression(current)) {
+      let holder: ts.Node = current.parent;
+      while (ts.isCallExpression(holder) || ts.isParenthesizedExpression(holder) || ts.isAsExpression(holder)) holder = holder.parent;
+      if ((ts.isVariableDeclaration(holder) || ts.isPropertyAssignment(holder)) && ts.isIdentifier(holder.name)) return holder.name.text;
+    }
   }
-  return signals;
+  return module.path.split(/[\\/]/).pop()!;
 }
 
 /** A function an initializer is: an arrow or a function expression, through memo(), forwardRef() and `as`. */
