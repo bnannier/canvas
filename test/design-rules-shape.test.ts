@@ -7,10 +7,12 @@ import { lightColors, shape } from "../src/style/tokens.ts";
 import { platformShape } from "../src/style/platform-shape.ts";
 import { platformBlocks, platformValue, type PlatformKey } from "../tools/tokens/css-tokens.ts";
 import { SKIN_FAMILIES, normalize, type SkinFamily } from "../tools/tokens/skin-families.ts";
-import { COMPONENT_ROLES, CONCENTRIC_CORNERS, HANDOFF_SHAPE_TOKENS, NESTED_CORNERS, SHAPE_ROLES, type CornerSource, type ShapeRole } from "../tools/tokens/shape-roles.ts";
-import { CornerSites, type CornerValue } from "../tools/tokens/corner-sites.ts";
-import { componentOf, cornerVerdict, siteOf } from "../tools/tokens/corner-rules.ts";
+import { COMPONENT_ROLES, CONCENTRIC_CORNERS, HANDOFF_SHAPE_TOKENS, NESTED_CORNERS, SHAPE_ROLES, SHARED_PARTS, type CornerSource, type ShapeRole } from "../tools/tokens/shape-roles.ts";
+import { CornerSites, platformOf, type CornerValue, type DrawnPlace } from "../tools/tokens/corner-sites.ts";
+import { componentOf, cornerVerdict, partOf, siteOf } from "../tools/tokens/corner-rules.ts";
 import { cornerClaims, handoffClaims } from "../tools/tokens/corner-comments.ts";
+import { referenceKeyFor, referenceRows, type ReferenceCell } from "../tools/audit/facts.ts";
+import { COMPONENTS } from "../docs/src/core/data/components.ts";
 
 // Design rules, shape side: every corner in the kit is a role of the row of the platform
 // its skin draws, for a role its component plays (the shape table's roles and the
@@ -18,6 +20,9 @@ import { cornerClaims, handoffClaims } from "../tools/tokens/corner-comments.ts"
 // with a declared container, computed from that container's own corner and inset. A bare
 // number that merely equals a role's value is refused, since it says nothing about the role
 // the corner plays, and so is half of a size (a capsule is the pill) and the radius ladder.
+// A native skin draws the web row only as the web skin's own part, where its component's
+// reference row says the platform ships no control for the job or SHARED_PARTS declares
+// the part (tools/tokens/corner-rules.ts).
 //
 // `shape` (src/style/tokens.ts) is the one source for a corner that plays a role, and each
 // skin reads its platform's row. Comparing the skins with the CSS hand-off
@@ -112,6 +117,25 @@ const { values: corners, unresolved } = sites.scan(files);
 const where = (v: CornerValue) => `${v.file}:${v.line} ${v.path} (${v.text})`;
 const concentricSites = new Set(CONCENTRIC_CORNERS.map((c) => c.site));
 
+// Whether a native skin may draw the web skin's own part: its component's reference row
+// (PLATFORM-REFERENCES.md, read the way the audit reads it) says the platform ships no
+// control for the job, or SHARED_PARTS declares the part.
+const references = referenceRows(readFileSync(join(ROOT, "PLATFORM-REFERENCES.md"), "utf8"));
+const referenceKeys = new Set(references.map((r) => r.key));
+/** A component's reference cell on a native platform, by its directory under src/, or null when it has no row. */
+function cellOf(component: string, platform: "ios" | "android"): ReferenceCell | null {
+  const slug = component.split("/").pop()!;
+  const entry = COMPONENTS.find((c) => c.slug === slug);
+  const key = entry ? referenceKeyFor(slug, entry.category, referenceKeys) : null;
+  return key ? references.find((r) => r.key === key)![platform] : null;
+}
+const nativeOf = (place: Pick<DrawnPlace, "platform">): "ios" | "android" | null => (place.platform === "ios" || place.platform === "android" ? place.platform : null);
+const sharedSites = new Set(SHARED_PARTS.map((p) => p.site));
+const sharesWebPart = (place: DrawnPlace): boolean => {
+  const native = nativeOf(place);
+  return native !== null && (cellOf(componentOf(place.file), native)?.kind === "none" || sharedSites.has(siteOf(place)));
+};
+
 describe("every corner in the kit", () => {
   it("is found", () => {
     // A scan that stopped finding corners would pass every rule below.
@@ -126,7 +150,7 @@ describe("every corner in the kit", () => {
 
   it("is a role of its own platform's row that its component plays, the pill, square or concentric", () => {
     const wrong = corners.flatMap((v) => {
-      const verdict = cornerVerdict(v, { concentric: concentricSites });
+      const verdict = cornerVerdict(v, { concentric: concentricSites, sharesWebPart });
       return verdict.ok ? [] : [`${v.file}:${v.line}: ${verdict.reason}`];
     });
     expect(wrong).toEqual([]);
@@ -184,6 +208,27 @@ describe("every corner in the kit", () => {
   it("is declared wherever it is written concentric, and only there", () => {
     const written = new Set(corners.filter((v) => v.concentric).map(siteOf));
     expect([...concentricSites].filter((site) => !written.has(site))).toEqual([]);
+  });
+
+  it("is shared with the web skin by a native skin only where SHARED_PARTS needs to say so", () => {
+    // Every declared part is a native place that draws the web skin's own part, on a
+    // platform whose reference row does not already say it ships no control for the job.
+    const webParts = new Set(
+      corners.flatMap((v) =>
+        v.read?.table !== "radius" && v.read?.platform === "web"
+          ? v.drawn.filter((d) => nativeOf(d) && v.drawn.some((w) => w.platform === "web" && partOf(w) === partOf(d))).map(siteOf)
+          : [],
+      ),
+    );
+    const stale = SHARED_PARTS.filter((p) => !webParts.has(p.site)).map((p) => `${p.site} shares no web part`);
+    const redundant = SHARED_PARTS.flatMap((p) => {
+      const [file, path] = p.site.split(" ");
+      const native = nativeOf({ platform: platformOf({ file, path }) });
+      if (!native) return [`${p.site} is no native skin's place`];
+      return cellOf(componentOf(file), native)?.kind === "none" ? [`${p.site}: ${componentOf(file)}'s ${native} row already says none`] : [];
+    });
+    const unexplained = SHARED_PARTS.filter((p) => p.why.trim().length === 0).map((p) => p.site);
+    expect([...stale, ...redundant, ...unexplained]).toEqual([]);
   });
 });
 

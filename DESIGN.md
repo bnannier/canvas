@@ -893,10 +893,13 @@ its shorter side), square, or concentric with what contains it: the container's 
 less the inset between them. Nothing else: not a number that happens to equal a role, not
 half of a height, not a step of the `radius` ladder (that ladder is the app's, which Image
 and Video take through their `radius` prop). A skin reads only its own platform's row,
-and only the roles its component draws, listed below; a part a native skin draws the
-web's way, where the platform ships no control for it, shares the web skin's part (the
-same part of the web skin draws it from the same place), and a constant no platform names
-is drawn by every skin that uses it.
+and only the roles its component draws, listed below. A native skin draws a part the
+web's way only by sharing the web skin's part (the same part of the web skin draws it from
+the same place), and only where its platform gives that part no shape: the component's
+row in PLATFORM-REFERENCES.md says the platform ships no control for the job, or the part
+is declared with the reason the platform's control does not shape it. A constant, helper
+or component no platform names, in any module, is drawn by every skin that uses it; a
+shell's own code is drawn by every platform.
 
 <!-- @generated:shape-roles -->
 | Role | Drawn by |

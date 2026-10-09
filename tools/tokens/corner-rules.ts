@@ -30,6 +30,18 @@
  * `IOS_RADIUS`, `M3_TRACK_R`, `androidBase`), and for a constant, helper or component no
  * platform names, in whatever module, every place that uses it. Code every platform shares
  * (a shell's own code, a part only shared code uses) draws the web look on every platform.
+ *
+ * A native skin draws a web-row corner only as the web skin's own part, and only where its
+ * platform's own control gives that part no shape. The part is the web skin's when the same
+ * part of the web skin (the path with the platform's name taken off, `webSkin.actionButton`
+ * for `iosSkin.actionButton`) draws the same number from the same place. Its platform gives
+ * it no shape when the component's PLATFORM-REFERENCES cell for that platform says the
+ * platform ships no control for the job (a none note: the native skin is Dark Factory's
+ * look, the design language's item 3), or when SHARED_PARTS (tools/tokens/shape-roles.ts)
+ * declares the part with the reason the platform's control does not shape it. A component
+ * whose row cites a real control, or that has no row, keeps that platform's row for every
+ * part nothing declares: a native text field does not take the web's field corner by
+ * sharing a part's name.
  */
 
 import { dirname, relative } from "node:path";
@@ -64,11 +76,17 @@ export interface CornerContext {
   concentric?: ReadonlySet<string>;
   /** The roles each component plays; COMPONENT_ROLES unless a test gives its own. */
   roles?: Readonly<Record<string, readonly string[]>>;
+  /**
+   * Whether a native place may draw the web skin's own part: its component's reference cell
+   * on that platform is a none note, or SHARED_PARTS declares the place. Without one, no
+   * native place shares a web part.
+   */
+  sharesWebPart?: (place: DrawnPlace) => boolean;
 }
 
 /** How a corner is right on every platform that draws it, or why it is not, naming the skin that draws it. */
 export function cornerVerdict(v: CornerValue, context: CornerContext = {}): { ok: true; form: string } | { ok: false; reason: string } {
-  const { concentric = new Set<string>(), roles = COMPONENT_ROLES } = context;
+  const { concentric = new Set<string>(), roles = COMPONENT_ROLES, sharesWebPart = () => false } = context;
   const written = `${v.file}:${v.line} ${v.path || "(top level)"} (${v.text})`;
   const skin = (place: DrawnPlace) => `${place.file}:${place.line} ${place.path || "(top level)"}`;
   const rowOf = (place: DrawnPlace) => (place.platform ? `${place.platform}'s row` : "the web row (shared code draws the web look)");
@@ -80,9 +98,13 @@ export function cornerVerdict(v: CornerValue, context: CornerContext = {}): { ok
     for (const place of v.drawn) {
       const draws: PlatformKey = place.platform ?? "web";
       if (read.platform === draws) continue;
-      const shared = read.platform === "web" && place.platform !== null && v.drawn.some((w) => w.platform === "web" && partOf(w) === partOf(place));
-      if (shared) continue;
-      const how = read.platform === "web" && place.platform ? ", or is the web skin's own part (the web skin's same part draws this number; none does)" : "";
+      const webPart = read.platform === "web" && place.platform !== null && v.drawn.some((w) => w.platform === "web" && partOf(w) === partOf(place));
+      if (webPart && sharesWebPart(place)) continue;
+      const how = webPart
+        ? `; it is the web skin's own part, but ${componentOf(place.file)} keeps ${draws}'s row: its reference row cites ${draws === "ios" ? "an iOS" : "an Android"} control for the job (or it has no row), and SHARED_PARTS does not declare ${siteOf(place)}`
+        : read.platform === "web" && place.platform
+          ? ", or is the web skin's own part (the web skin's same part draws this number; none does)"
+          : "";
       return {
         ok: false,
         reason: `${skin(place)} draws ${table} (${written}), another platform's row: it draws ${draws}, so it reads ${rowOf(place)}${how}`,
