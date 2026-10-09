@@ -7,38 +7,33 @@
 // Each component's co-located markdown (src/<level>/<slug>/<slug>.md) is split into
 // the Playground examples (the Usage fence as "Default", then each Variant) and the
 // parsed Do/Don't pairs. The leading "# Name" + description are dropped (the page
-// header shows them); the Usage section carries no prose. docStructureViolations
-// (below the parsers) holds every page to the shape these parsers expect.
+// header shows them); the Usage section carries no prose. The parsers and the gate on
+// a page's shape (docStructureViolations, below them) read the page through one model
+// (pageBlocks and readPage): what the gate calls a heading, a section or a caption is
+// exactly what the generator renders, so no spelling of a page can pass the one and
+// lose its sections to the other.
 
 export type Example = { label: string; code: string };
 export type DontSide = { caption: string; code: string };
 export type DontPair = { title?: string; do: DontSide; dont: DontSide };
 
 export function splitDoc(src: string): { examples: Example[]; donts: DontPair[] } {
-  const md = src.replace(/\r\n/g, "\n");
-  const dontsAt = md.indexOf("\n## Do & Don't");
-  const body = dontsAt === -1 ? md : md.slice(0, dontsAt);
-  // Do & Don't ends at the next "##": a section of its own after it (Button's
-  // "Real links (href)") is not part of the last pair.
-  const dontsEnd = dontsAt === -1 ? -1 : md.indexOf("\n## ", dontsAt + 1);
-  const section = dontsAt === -1 ? "" : md.slice(dontsAt, dontsEnd === -1 ? undefined : dontsEnd);
-  // Head begins at the first "## " (Usage), dropping the "# Name" + description.
-  const firstSection = body.indexOf("\n## ");
-  const head = firstSection === -1 ? "" : body.slice(firstSection + 1);
-  // Usage is everything up to "## Variants"; the rest is the variant list.
-  const variantsAt = head.indexOf("\n## Variants");
-  const usageMd = variantsAt === -1 ? head : head.slice(0, variantsAt);
-  const variantsMd = variantsAt === -1 ? "" : head.slice(variantsAt);
+  const { sections } = readPage(src);
+  // A section's blocks by name. The gate allows each section once; the parser stays
+  // lenient and reads every section of the name, in page order. Do & Don't ends at the
+  // next "##", so a section of the page's own after it (Button's "Real links (href)")
+  // is never read into the last pair.
+  const blocksOf = (name: RequiredSection) => sections.filter((s) => s.name === name).flatMap((s) => s.blocks);
 
-  const usageCode = firstFence(usageMd);
-  const variants = parseVariants(variantsMd);
+  const usageCode = firstFenceOf(blocksOf("Usage"));
+  const variants = variantsOf(blocksOf("Variants"));
   const examples: Example[] = [];
   if (usageCode) examples.push({ label: "Default", code: usageCode });
   // Skip a variant whose fence is identical to Usage (e.g. typography's first
   // "Style - display" duplicates the Usage example), so it shows once as Default.
   for (const v of variants) if (v.code !== usageCode) examples.push(v);
 
-  return { examples, donts: parseDonts(section) };
+  return { examples, donts: dontsOf(blocksOf("Do & Don't")) };
 }
 
 // A fence opens on a line of three backticks and an optional language tag
@@ -48,78 +43,44 @@ const FENCE_CLOSE = /^```\s*$/;
 
 // The body of the first ```tsx/jsx fence in a markdown slice (the Usage example).
 export function firstFence(md: string): string | null {
-  const lines = md.split("\n");
-  for (let i = 0; i < lines.length; i++) {
-    if (FENCE_OPEN.test(lines[i])) {
-      const code: string[] = [];
-      i++;
-      while (i < lines.length && !FENCE_CLOSE.test(lines[i])) code.push(lines[i++]);
-      return code.join("\n");
-    }
-  }
-  return null;
+  return firstFenceOf(pageBlocks(md));
 }
 
 // The Variants section is a flat list of "### <label>" headings, each followed by
 // exactly one ```tsx fence (no intervening prose). The label is the heading text
 // verbatim; the code is the fence body.
 export function parseVariants(section: string): Example[] {
-  const lines = section.split("\n");
-  const out: Example[] = [];
-  let label: string | null = null;
-  for (let i = 0; i < lines.length; i++) {
-    const h = /^###\s+(.*)$/.exec(lines[i]);
-    if (h) { label = h[1].trim(); continue; }
-    if (label && FENCE_OPEN.test(lines[i])) {
-      const code: string[] = [];
-      i++;
-      while (i < lines.length && !FENCE_CLOSE.test(lines[i])) code.push(lines[i++]);
-      out.push({ label, code: code.join("\n") });
-      label = null;
-    }
-  }
-  return out;
-}
-
-// A Do/Don't marker line: "**Do**" or "**Don't**" (a curly apostrophe too), then the
-// caption after a separator.
-const DONT_MARKER = /^\*\*(Do|Don['’]t)\*\*\s*(.*)$/;
-
-// The caption after a marker, with its leading separator (a colon, an en or em dash,
-// or a hyphen) and spaces stripped.
-function markerCaption(rest: string): string {
-  return rest.replace(/^[\s\p{P}]+/u, "").trim();
+  return variantsOf(pageBlocks(section));
 }
 
 // The Do/Don't markdown is regular: "### title" groups, each with "**Do**: caption"
 // + a ```tsx fence and "**Don't**: caption" + a ```tsx fence (Do emitted first).
 // Pair by marker name, not position, so order does not matter.
 export function parseDonts(section: string): DontPair[] {
-  const lines = section.split("\n");
-  const pairs: DontPair[] = [];
-  let title: string | undefined;
-  let cur: { do?: DontSide; dont?: DontSide } = {};
-  let side: "do" | "dont" | null = null;
-  let caption = "";
-  for (let i = 0; i < lines.length; i++) {
-    const h = /^###\s+(.*)$/.exec(lines[i]);
-    if (h) { title = h[1].trim(); cur = {}; side = null; continue; }
-    const m = DONT_MARKER.exec(lines[i]);
-    if (m) {
-      side = m[1] === "Do" ? "do" : "dont";
-      caption = markerCaption(m[2]);
-      continue;
-    }
-    if (FENCE_OPEN.test(lines[i]) && side) {
-      const code: string[] = [];
-      i++;
-      while (i < lines.length && !FENCE_CLOSE.test(lines[i])) code.push(lines[i++]);
-      cur[side] = { caption, code: code.join("\n") };
-      side = null;
-      if (cur.do && cur.dont) { pairs.push({ title, do: cur.do, dont: cur.dont }); cur = {}; }
-    }
-  }
-  return pairs;
+  return dontsOf(pageBlocks(section));
+}
+
+// A Do/Don't marker line: "**Do**" or "**Don't**" (a curly apostrophe too), then the
+// caption after a separator.
+const DONT_MARKER = /^\*\*(Do|Don['’]t)\*\*\s*(.*)$/;
+
+// The caption after a marker, with its one leading separator (a colon, an en or em
+// dash, or a hyphen) and the spaces around it stripped. Only the separator goes: a
+// caption that opens on a quote or a parenthesis keeps it.
+function markerCaption(rest: string): string {
+  return rest.replace(/^\s*(?:[:\u2013\u2014]|-{1,2})?\s*/u, "").trim();
+}
+
+// An ATX heading as Markdown reads one: up to three spaces of indent, a run of one to
+// six "#", then spaces or tabs (or the end of the line); an optional closing "#" run is
+// not part of the text. The grammar reads levels 1 to 3; a deeper heading is prose to
+// it. `raw` keeps the line as written, so the gate can hold its spelling.
+const ATX_HEADING = /^ {0,3}(#{1,6})(?:[ \t]+(.*?))?(?:[ \t]+#+)?[ \t]*$/;
+
+function headingOf(line: string): { level: number; text: string; raw: string } | null {
+  const h = ATX_HEADING.exec(line);
+  if (!h || h[1].length > 3) return null;
+  return { level: h[1].length, text: h[2] ?? "", raw: line };
 }
 
 // Page structure. The parsers above are lenient on purpose: a missing section yields
@@ -143,9 +104,19 @@ export function parseDonts(section: string): DontPair[] {
 //       sits in one; a group is exactly one **Do** and one **Don't**, each with a
 //       caption and exactly one non-empty fence of its own, and the Don't fence
 //       differs from the Do fence (a pair that shows the same code teaches nothing).
+//       A caption is its marker's paragraph, so it may wrap onto the lines below the
+//       marker; the page shows nothing else from this section, so any other prose in
+//       it (a second paragraph, a note after a fence) is rejected.
 //
-// Prose under a "###" or after a marker is allowed here; whether the page renders it
-// is the generator's business, not the page shape's.
+// Every heading is written one way: its "#" run at the start of the line, one space,
+// the text, and nothing after it. Markdown also reads "##  Variants", "##\tVariants",
+// an indented heading or a closing "#" run as a heading, and so does the parser, but
+// the gate rejects those spellings under the rule that owns the heading (S1 for "#",
+// S3 for "##", and for "###" the rule of the part of the page it sits in), so the
+// source always reads the way the page renders.
+//
+// Prose under a Variants "###" or in Usage is allowed here, and the page does not
+// render it.
 
 export type StructureRule = "S1" | "S2" | "S3" | "S4" | "S5" | "S6";
 export type StructureViolation = { line: number; rule: StructureRule; message: string };
@@ -157,38 +128,69 @@ type RequiredSection = (typeof REQUIRED_SECTIONS)[number];
 // The rule that owns the content of a section (an unclosed fence is reported under it).
 const SECTION_RULE: Record<RequiredSection, StructureRule> = { Usage: "S4", Variants: "S5", "Do & Don't": "S6" };
 
-// A page read as blocks, blank lines dropped. Headings are levels 1 to 3, the only
-// levels the grammar reads; anything else that is not a fence or a marker is prose.
+// A page read as Markdown blocks, blank lines dropped: headings (levels 1 to 3, the
+// only levels the grammar reads), fences, Do/Don't markers with their captions, and
+// paragraphs of anything else (prose).
 type Block =
-  | { kind: "heading"; level: number; text: string; line: number }
+  | { kind: "heading"; level: number; text: string; raw: string; line: number }
   | { kind: "fence"; code: string; closed: boolean; line: number }
   | { kind: "marker"; side: "do" | "dont"; caption: string; line: number }
   | { kind: "prose"; line: number };
+type HeadingBlock = Extract<Block, { kind: "heading" }>;
 type MarkerBlock = Extract<Block, { kind: "marker" }>;
 type FenceBlock = Extract<Block, { kind: "fence" }>;
-type Section = { name: string; line: number; blocks: Block[] };
+type Section = { name: string; heading: HeadingBlock; blocks: Block[] };
+
+// A line that carries on the paragraph above it: anything but a blank line, a fence,
+// a heading or a marker, each of which starts a block of its own.
+const continuesParagraph = (line: string) =>
+  line.trim() !== "" && !FENCE_OPEN.test(line) && headingOf(line) === null && !DONT_MARKER.test(line);
 
 function pageBlocks(md: string): Block[] {
-  const lines = md.split("\n");
+  const lines = md.replace(/\r\n/g, "\n").split("\n");
   const blocks: Block[] = [];
   for (let i = 0; i < lines.length; i++) {
     const text = lines[i];
+    const line = i + 1;
     if (text.trim() === "") continue;
     if (FENCE_OPEN.test(text)) {
-      const line = i + 1;
       const code: string[] = [];
       i++;
       while (i < lines.length && !FENCE_CLOSE.test(lines[i])) code.push(lines[i++]);
       blocks.push({ kind: "fence", code: code.join("\n"), closed: i < lines.length, line });
       continue;
     }
-    const h = /^(#{1,3})\s+(.*)$/.exec(text);
-    if (h) { blocks.push({ kind: "heading", level: h[1].length, text: h[2].trim(), line: i + 1 }); continue; }
+    const h = headingOf(text);
+    if (h) { blocks.push({ kind: "heading", ...h, line }); continue; }
+    // A paragraph runs on until a blank line or the next block, the way Markdown reads a
+    // wrapped one. A marker's paragraph is its caption, all of it.
+    const paragraph = [text];
+    while (i + 1 < lines.length && continuesParagraph(lines[i + 1])) paragraph.push(lines[++i]);
     const m = DONT_MARKER.exec(text);
-    if (m) { blocks.push({ kind: "marker", side: m[1] === "Do" ? "do" : "dont", caption: markerCaption(m[2]), line: i + 1 }); continue; }
-    blocks.push({ kind: "prose", line: i + 1 });
+    if (m) {
+      const caption = markerCaption([m[2], ...paragraph.slice(1)].map((l) => l.trim()).join(" "));
+      blocks.push({ kind: "marker", side: m[1] === "Do" ? "do" : "dont", caption, line });
+    } else blocks.push({ kind: "prose", line });
   }
   return blocks;
+}
+
+// A page in its parts: the "#" title when the page opens with one, the intro before the
+// first "##", and each "##" section with the blocks under it. A later "#" heading
+// belongs to no part; the gate reports it.
+function readPage(src: string): { blocks: Block[]; title?: HeadingBlock; strayTitles: HeadingBlock[]; intro: Block[]; sections: Section[] } {
+  const blocks = pageBlocks(src);
+  const first = blocks[0];
+  const title = first?.kind === "heading" && first.level === 1 ? first : undefined;
+  const strayTitles: HeadingBlock[] = [];
+  const intro: Block[] = [];
+  const sections: Section[] = [];
+  for (const b of title ? blocks.slice(1) : blocks) {
+    if (b.kind === "heading" && b.level === 1) strayTitles.push(b);
+    else if (b.kind === "heading" && b.level === 2) sections.push({ name: b.text, heading: b, blocks: [] });
+    else (sections.length ? sections[sections.length - 1].blocks : intro).push(b);
+  }
+  return { blocks, title, strayTitles, intro, sections };
 }
 
 // Split a section's blocks at its "###" headings: the blocks before the first one,
@@ -201,6 +203,43 @@ function subsections(blocks: Block[]): { lead: Block[]; groups: { title: string;
     else (groups.length ? groups[groups.length - 1].blocks : lead).push(b);
   }
   return { lead, groups };
+}
+
+// The body of the first fence among some blocks, or null when there is none.
+function firstFenceOf(blocks: Block[]): string | null {
+  const fence = blocks.find((b): b is FenceBlock => b.kind === "fence");
+  return fence ? fence.code : null;
+}
+
+// Each labelled "###" with the first fence under it. A heading with no fence or no
+// label yields nothing, and a fence before the first heading has no label to show.
+function variantsOf(blocks: Block[]): Example[] {
+  const out: Example[] = [];
+  for (const g of subsections(blocks).groups) {
+    const code = firstFenceOf(g.blocks);
+    if (code !== null && g.title !== "") out.push({ label: g.title, code });
+  }
+  return out;
+}
+
+// Each marker takes the first fence after it, and a group's Do and Don't pair by marker
+// name, not position; a pair before the first "###" has no title.
+function dontsOf(blocks: Block[]): DontPair[] {
+  const { lead, groups } = subsections(blocks);
+  const pairs: DontPair[] = [];
+  for (const g of [{ title: undefined, blocks: lead }, ...groups]) {
+    let cur: { do?: DontSide; dont?: DontSide } = {};
+    let marker: MarkerBlock | null = null;
+    for (const b of g.blocks) {
+      if (b.kind === "marker") marker = b;
+      else if (b.kind === "fence" && marker) {
+        cur[marker.side] = { caption: marker.caption, code: b.code };
+        marker = null;
+        if (cur.do && cur.dont) { pairs.push({ title: g.title, do: cur.do, dont: cur.dont }); cur = {}; }
+      }
+    }
+  }
+  return pairs;
 }
 
 const isBlank = (code: string) => code.trim() === "";
@@ -216,29 +255,19 @@ const markerName = (side: "do" | "dont") => (side === "do" ? "**Do**" : "**Don't
  */
 export function docStructureViolations(src: string, { name }: { name: string }): StructureViolation[] {
   const md = src.replace(/\r\n/g, "\n");
-  const blocks = pageBlocks(md);
+  const { blocks, title, strayTitles, intro, sections } = readPage(md);
   const lastLine = md.replace(/\n+$/, "").split("\n").length;
   const out: StructureViolation[] = [];
   const add = (line: number, rule: StructureRule, message: string) => out.push({ line, rule, message });
 
   // S1: the title.
-  const title = blocks[0];
-  const titled = title?.kind === "heading" && title.level === 1;
-  if (!titled) add(title?.line ?? 1, "S1", `the page must open with "# ${name}", the component's name in docs/src/core/data/components.ts`);
+  if (!title) add(blocks[0]?.line ?? 1, "S1", `the page must open with "# ${name}", the component's name in docs/src/core/data/components.ts`);
   else if (title.text !== name) add(title.line, "S1", `the title is "# ${title.text}"; the docs registry names this component "${name}" (docs/src/core/data/components.ts)`);
-
-  // The intro, then the "##" sections in page order.
-  const intro: Block[] = [];
-  const sections: Section[] = [];
-  for (const b of titled ? blocks.slice(1) : blocks) {
-    if (b.kind === "heading" && b.level === 1) { add(b.line, "S1", `a second "#" heading ("# ${b.text}"); a page has one title`); continue; }
-    if (b.kind === "heading" && b.level === 2) { sections.push({ name: b.text, line: b.line, blocks: [] }); continue; }
-    (sections.length ? sections[sections.length - 1].blocks : intro).push(b);
-  }
+  for (const b of strayTitles) add(b.line, "S1", `a second "#" heading ("# ${b.text}"); a page has one title`);
 
   // S2: the intro.
   if (!intro.some((b) => b.kind === "prose")) {
-    add(sections[0]?.line ?? lastLine, "S2", `no intro: describe the component in prose between "# ${name}" and "## Usage"`);
+    add(sections[0]?.heading.line ?? lastLine, "S2", `no intro: describe the component in prose between "# ${name}" and "## Usage"`);
   }
   for (const b of intro) {
     if (b.kind === "fence") add(b.line, "S2", "a fence in the intro; an example goes under Usage or a Variants heading");
@@ -254,34 +283,52 @@ export function docStructureViolations(src: string, { name }: { name: string }):
     if (hits.length === 0) {
       // Point at the section it belongs before, or at the end of the page.
       const next = sections.find((s) => required(s) && REQUIRED_SECTIONS.indexOf(s.name) > i);
-      add(next?.line ?? lastLine, "S3", `"## ${r}" is missing; a page has Usage, Variants and Do & Don't, in that order`);
+      add(next?.heading.line ?? lastLine, "S3", `"## ${r}" is missing; a page has Usage, Variants and Do & Don't, in that order`);
     }
-    for (const dup of hits.slice(1)) add(dup.line, "S3", `a second "## ${r}"; merge it into the first, at line ${hits[0].line}`);
+    for (const dup of hits.slice(1)) add(dup.heading.line, "S3", `a second "## ${r}"; merge it into the first, at line ${hits[0].heading.line}`);
   });
   for (let i = 1; i < REQUIRED_SECTIONS.length; i++) {
     const earlier = firstAt.slice(0, i).filter((at) => at !== -1);
     if (firstAt[i] !== -1 && earlier.some((at) => at > firstAt[i])) {
-      add(sections[firstAt[i]].line, "S3", `"## ${REQUIRED_SECTIONS[i]}" is out of order; the sections run Usage, Variants, Do & Don't`);
+      add(sections[firstAt[i]].heading.line, "S3", `"## ${REQUIRED_SECTIONS[i]}" is out of order; the sections run Usage, Variants, Do & Don't`);
     }
   }
   const dontsAt = firstAt[2] === -1 ? sections.length : firstAt[2];
   sections.forEach((s, i) => {
     if (!required(s) && i < dontsAt) {
-      add(s.line, "S3", `"## ${s.name}" sits before "## Do & Don't"; a section of the page's own goes after Do & Don't`);
+      add(s.heading.line, "S3", `"## ${s.name}" sits before "## Do & Don't"; a section of the page's own goes after Do & Don't`);
     }
   });
+  const sectionRule = (s: Section): StructureRule => (required(s) ? SECTION_RULE[s.name] : "S3");
+
+  // Every heading is spelled the one way, under the rule that owns it. A heading with no
+  // text is left to the rule that needs the text (a title, a section name, a label).
+  const spelled = (b: Block, rule: StructureRule) => {
+    if (b.kind !== "heading" || b.text === "") return;
+    const canonical = `${"#".repeat(b.level)} ${b.text}`;
+    if (b.raw !== canonical) {
+      add(b.line, rule, `the heading ${JSON.stringify(b.raw)} reads as "${canonical}"; write it exactly so: its "#" run, one space, the text`);
+    }
+  };
+  if (title) spelled(title, "S1");
+  strayTitles.forEach((b) => spelled(b, "S1"));
+  intro.forEach((b) => spelled(b, "S2"));
+  for (const s of sections) {
+    spelled(s.heading, "S3");
+    s.blocks.forEach((b) => spelled(b, sectionRule(s)));
+  }
 
   // An unclosed fence runs to the end of the page and swallows everything after it.
   const unclosed = (b: Block, rule: StructureRule) => {
     if (b.kind === "fence" && !b.closed) add(b.line, rule, "this fence never closes; it swallows the rest of the page");
   };
   intro.forEach((b) => unclosed(b, "S2"));
-  for (const s of sections) s.blocks.forEach((b) => unclosed(b, required(s) ? SECTION_RULE[s.name] : "S3"));
+  for (const s of sections) s.blocks.forEach((b) => unclosed(b, sectionRule(s)));
 
   // S4: Usage.
   for (const s of sections.filter((x) => x.name === "Usage")) {
     const fences = s.blocks.filter((b) => b.kind === "fence");
-    if (fences.length === 0) add(s.line, "S4", "Usage has no fence; it shows the component's default example");
+    if (fences.length === 0) add(s.heading.line, "S4", "Usage has no fence; it shows the component's default example");
     for (const extra of fences.slice(1)) add(extra.line, "S4", "a second fence in Usage; Usage is one example, and the others are Variants");
     for (const b of s.blocks) {
       if (b.kind === "fence" && isBlank(b.code)) add(b.line, "S4", "the Usage fence is empty");
@@ -292,7 +339,7 @@ export function docStructureViolations(src: string, { name }: { name: string }):
   // S5: Variants.
   for (const s of sections.filter((x) => x.name === "Variants")) {
     const { lead, groups } = subsections(s.blocks);
-    if (groups.length === 0) add(s.line, "S5", `Variants has no "### <label>" example`);
+    if (groups.length === 0) add(s.heading.line, "S5", `Variants has no "### <label>" example`);
     for (const b of lead) if (b.kind === "fence") add(b.line, "S5", `a fence before the first "###"; every variant sits under its own "### <label>"`);
     for (const g of groups) {
       if (g.title === "") add(g.line, "S5", "a variant heading with no label");
@@ -306,10 +353,15 @@ export function docStructureViolations(src: string, { name }: { name: string }):
   // S6: Do & Don't.
   for (const s of sections.filter((x) => x.name === "Do & Don't")) {
     const { lead, groups } = subsections(s.blocks);
+    // The page shows a pair's two captions over their fences and nothing else from this
+    // section, so prose here that is not a caption would never reach it.
+    for (const b of s.blocks) {
+      if (b.kind === "prose") add(b.line, "S6", `prose the page never shows: Do & Don't renders each marker's caption, which may wrap onto the lines below it until a blank line, and nothing else`);
+    }
     // An untitled pair is reported once, at its markers; a fence there is reported
     // only when no marker precedes it.
     const untitled = lead.filter((b): b is MarkerBlock => b.kind === "marker");
-    if (groups.length === 0 && untitled.length === 0) add(s.line, "S6", `Do & Don't has no "### <title>" group`);
+    if (groups.length === 0 && untitled.length === 0) add(s.heading.line, "S6", `Do & Don't has no "### <title>" group`);
     for (const b of untitled) add(b.line, "S6", `an untitled ${markerName(b.side)}: give every pair a "### <title>"`);
     const firstMarker = untitled[0]?.line ?? Infinity;
     for (const b of lead) if (b.kind === "fence" && b.line < firstMarker) add(b.line, "S6", `a fence before the first "###"; give every pair a "### <title>"`);

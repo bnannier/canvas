@@ -5,6 +5,7 @@ import { buildScopes } from "../core/build-scopes";
 import type { DocDontPair } from "../core/scope";
 import { CodeBlock } from "./code-block";
 import { ExampleErrorBoundary } from "./playground";
+import { CodeSpans } from "./prose";
 
 export interface DoDontCardProps {
   do?: boolean;
@@ -28,7 +29,7 @@ export function DoDontCard({ dont, caption, code, children }: DoDontCardProps) {
         </View>
       )}
       {code === undefined ? null : <CodeBlock code={code} wrap />}
-      <Typography small>{caption}</Typography>
+      <Typography small><CodeSpans text={caption} /></Typography>
     </Column>
   </Card>;
 }
@@ -40,7 +41,7 @@ export function Donts({ donts }: { donts: DocDontPair[] }) {
   return <Column relaxed>
     <Typography h2>Do & Don’t</Typography>
     {donts.map((d, i) => <Column key={i} snug>
-      {d.title ? <Typography h3>{d.title}</Typography> : null}
+      {d.title ? <Typography h3><CodeSpans text={d.title} /></Typography> : null}
       <Row stacks stackBreakpoint="xl" relaxed>
         <Column span={6}><DoDontCard dont caption={d.dont.caption}>{d.dont.render(scope)}</DoDontCard></Column>
         <Column span={6}><DoDontCard do caption={d.do.caption}>{d.do.render(scope)}</DoDontCard></Column>

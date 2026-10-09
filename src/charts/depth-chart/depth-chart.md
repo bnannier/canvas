@@ -80,7 +80,7 @@ The order-book view: cumulative bid and ask step areas mirrored around the sprea
 />
 ```
 
-**Don't**: Plot one side alone; with no asks there is no spread to read, and the empty half looks like a market with no sellers.
+**Don't**: Plot one side alone: with no asks the bids stretch across the whole price axis, nothing marks the spread, and the Asks legend entry labels nothing.
 
 ```tsx
 <DepthChart
