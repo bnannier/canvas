@@ -10,9 +10,10 @@
  *      Layout Shift from 0.006 to 0.16). So "loaded" is not "painted", and the wait
  *      has to be for paint.
  *   2. The scheme, surface and palette are seeded from the LAUNCH url only (?scheme,
- *      ?surface, ?palette, read once via a ref in docs/src/theme/docs-theme.tsx, since
- *      the docs store nothing by privacy declaration). A client-side navigation cannot
- *      change them, and the app defaults to dark + glass (+ blush once light).
+ *      ?surface, ?palette, read once by a lazy useState initializer in
+ *      docs/src/theme/docs-theme.tsx, since the docs store nothing by privacy
+ *      declaration). A client-side navigation cannot change them, and the app defaults
+ *      to dark + glass (+ blush once light).
  *
  * Reading the scheme and the palette back off the painted pixels covers both at once,
  * and it is what keeps a silent no-op from passing as a capture: the screenshot script
