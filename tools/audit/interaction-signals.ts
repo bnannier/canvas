@@ -85,7 +85,10 @@
 // panel and in the drawer it becomes) is a signal in each place. Another kit component given
 // its open state holds the content between its tags inside its overlay only when its own
 // source renders `children` there: a Drawer's content is in the drawer, a Dropdown's is its
-// trigger.
+// trigger. A component the component's own factory builds and renders as a tag (Sidebar's
+// `const SidebarDrillDown = createSidebarDrillDown(skin, Badge)`, the function the factory
+// returns) is read where it is used, as a local component is: the drill-down's rows are
+// inside the Drawer the Sidebar opens, not on its own surface.
 //
 // A signal also says which platform builds render it (`builds`): a component is built once
 // per platform by its entries (`dialog.tsx`, `dialog.ios.tsx`, `dialog.android.tsx`, each
@@ -736,6 +739,31 @@ export class SignalReader {
     return { fn: null, place: "primitive" };
   }
 
+  /**
+   * The function a JSX tag's name renders: the one `functionFor` finds, or, for a constant a
+   * factory of the component's own (or of a shared module) makes (`const SidebarDrillDown =
+   * createSidebarDrillDown(skin, Badge)`), the one function that factory returns. A factory an
+   * entry calls makes a component of its own (AvatarGroup renders the Avatar `createAvatar`
+   * makes), read whole as one, so its tag is left as it is.
+   */
+  private tagFunction(module: Parsed, id: ts.Identifier, own: string): { fn: Fn | null; place: Place } {
+    const found = this.functionFor(module, id, own);
+    if (found.fn) return found;
+    const binding = module.reader.resolve(id);
+    if (binding?.kind !== "const" || binding.path.length || !binding.decl.initializer) return found;
+    const call = unwrap(binding.decl.initializer);
+    const callee = ts.isCallExpression(call) ? unwrap(call.expression) : null;
+    if (!callee || !ts.isIdentifier(callee)) return found;
+    const factory = this.functionFor(module, callee, own);
+    if (!factory.fn || (factory.place !== "own" && factory.place !== "shared")) return found;
+    if (this.entriesIn(own).some((e) => e.calls.some((c) => c.fn.node === factory.fn!.node))) return found;
+    const results = bodyResults(factory.fn.node);
+    const built = results.length === 1 ? functionOf(results[0]!) : null;
+    if (!built) return found;
+    const name = (ts.isFunctionExpression(built) && built.name?.text) || id.text;
+    return { fn: { node: built, module: factory.fn.module, name }, place: factory.place };
+  }
+
   /** Where a JSX tag comes from: a primitive, one of the component's own or shared functions, or another component. */
   private tagOf(module: Parsed, tag: ts.JsxTagNameExpression, own: string): { name: string; fn: Fn | null; place: Place } {
     const name = tag.getText(module.sf);
@@ -751,7 +779,7 @@ export class SignalReader {
     }
     // An intrinsic (lower-case) tag is the DOM's own, which a React Native component never renders.
     if (/^[a-z]/.test(head.text)) return { name, fn: null, place: "primitive" };
-    return { name, ...this.functionFor(module, head, own) };
+    return { name, ...this.tagFunction(module, head, own) };
   }
 
   /** The prop of the enclosing component a name or a member read stands for, or null. */
@@ -1949,7 +1977,7 @@ export class SignalReader {
     for (const module of modules) {
       const visit = (node: ts.Node): void => {
         if ((ts.isJsxSelfClosingElement(node) || ts.isJsxOpeningElement(node)) && ts.isIdentifier(node.tagName)) {
-          const { fn } = this.functionFor(module, node.tagName, own);
+          const { fn } = this.tagFunction(module, node.tagName, own);
           if (fn && paths.has(fn.module.path)) used.add(fn.node);
         }
         ts.forEachChild(node, visit);

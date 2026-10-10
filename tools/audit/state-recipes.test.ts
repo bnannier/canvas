@@ -166,13 +166,16 @@ describe("the state recipe table", () => {
 
   it("captures hover, focus, pressed, invalid and disabled at the desktop in the row (in the viewport inside an overlay), and open at every width in the viewport, but where a state exists only at some widths", () => {
     // A state that exists only at some widths is captured there alone: the drawers FilterPanel
-    // and Sidebar become at and below their breakpoints (and FilterPanel's rows in its drawer),
-    // and the Heatmap's scroller, a tab stop only where the year overflows it, below `sm`.
+    // and Sidebar become at and below their breakpoints (and the rows in each drawer), and the
+    // Heatmap's scroller, a tab stop only where the year overflows it, below `sm`.
     const only: Record<string, readonly string[]> = {
       "filter-panel open": widthsAtOrBelow("sm"),
       "filter-panel focus-responsivedrawer": widthsAtOrBelow("sm"),
       "filter-panel pressed-responsivedrawer": widthsAtOrBelow("sm"),
       "sidebar open": widthsAtOrBelow("lg"),
+      "sidebar hover-default-inside": widthsAtOrBelow("lg"),
+      "sidebar focus-default-inside": widthsAtOrBelow("lg"),
+      "sidebar pressed-default-inside": widthsAtOrBelow("lg"),
       "heatmap focus": widthsAtOrBelow("sm"),
     };
     // A state is applied on the web row, but where the control it acts on is the component's
@@ -518,7 +521,7 @@ describe("the states each component's source gives it", () => {
     const check = (slug: string, entry: Record<string, unknown>) => bare(coverageOf(slug, entry as ComponentStates, signalsOf(slug), railExamples(component(slug)), rowsOf(slug)).errors);
     expect(check("calendar", calendar)).toEqual([]);
     // A hover recipe that does not open the card leaves the card to nothing, whatever the day peek's recipe opens.
-    expect(check("calendar", { ...calendar, hover: { ...recipeFor("sidebar", "hover"), variant: "week" } })).toEqual([
+    expect(check("calendar", { ...calendar, hover: { ...recipeFor("sidebar", "hover-default"), variant: "week" } })).toEqual([
       "calendar: its source opens the overlay in hoverCard, which no recipe opens, with no exemption",
     ]);
     // Two overlays, so an opening that does not say which one it opens is refused.
@@ -1082,7 +1085,7 @@ describe("the rows of the docs' three-up a state is answered on", () => {
     );
   });
 
-  it("reads a skin's branches through a ternary, &&, an early return, a constant and a factory a factory calls, and the skin a build spreads", () => {
+  it("reads a skin's branches through a ternary, &&, an early return, a constant and a component a factory builds, and the skin a build spreads", () => {
     const root = mkdtempSync(join(tmpdir(), "signals-"));
     const write = (path: string, text: string) => {
       mkdirSync(dirname(join(root, path)), { recursive: true });
@@ -1152,8 +1155,8 @@ export function createProbe(skin: ProbeSkin) {
         "checkbox: ios",
         // `skin.textButton != null`, after the capsules' branch: Android's alone.
         "link: android",
-        // A factory the shell's factory calls (`createInner(skin)`) takes each build's skin through it.
-        "radio: ios and android",
+        // `createInner(skin)` read where its component is used, through the shell's skin.
+        "radio: ios and android via Inner",
         "switch: every build",
         "textbox: ios",
       ]);
@@ -1165,6 +1168,41 @@ export function createProbe(skin: ProbeSkin) {
     } finally {
       rmSync(root, { recursive: true, force: true });
     }
+  });
+
+  it("places the Sidebar's drill-down rows inside the Drawer it opens, where the rail's recipes do not answer them and the drawer's do", () => {
+    // The drill-down is a component the Sidebar's factory builds (`createSidebarDrillDown(skin,
+    // Badge)`) and renders inside its Drawer: its rows are the drawer's, gated by `responsive`.
+    const places = (state: string) =>
+      [...new Set(ownControls(signalsOf("sidebar")).filter((c) => c.signals.some((s) => s.state === state)).map((c) => `${c.place || "surface"}: ${c.control.in} <${c.control.tag}> ${c.control.roles.join("/") || "no role"}`))].sort();
+    expect(places("focus")).toEqual([
+      "Sidebar: SidebarDrillDown <Pressable> button",
+      "Sidebar: renderDrillRow <Pressable> button",
+      "Sidebar: renderLeaf <Pressable> button",
+      "surface: Sidebar <Pressable> button",
+      "surface: renderRow <Pressable> button",
+      "surface: renderSection <Pressable> button",
+    ]);
+    expect(places("hover")).toEqual(["Sidebar: SidebarRowFrame <RippleClip> no role", "surface: SidebarRowFrame <RippleClip> no role"]);
+    expect([...new Set(signalsOf("sidebar").filter((s) => s.within === "Sidebar").map((s) => s.gates.join("&")))]).toEqual(["responsive"]);
+    // The rail's recipes, as the table had them at the desktop alone, leave the drawer unanswered.
+    const rail = { hover: recipeFor("sidebar", "hover-default"), focus: recipeFor("sidebar", "focus-default"), pressed: recipeFor("sidebar", "pressed-default"), open: recipeFor("sidebar", "open") };
+    expect(check("sidebar", rail)).toEqual([
+      "sidebar: its source gives it a hover state in the overlay in Sidebar (useHover() (src/style/hover.tsx) at src/organisms/sidebar/sidebar.item.tsx:98 via SidebarDrillDown > SidebarRowFrame, and 2 more), where no hover recipe acts on a control of its own, with no exemption",
+      "sidebar: its source gives it a focus state in the overlay in Sidebar (a tab stop: <Pressable> at src/organisms/sidebar/sidebar.drilldown.tsx:106 via SidebarDrillDown, and 2 more), where no focus recipe acts on a control of its own, with no exemption",
+      "sidebar: its source gives it a pressed state in the overlay in Sidebar (onPress on <Pressable> at src/organisms/sidebar/sidebar.drilldown.tsx:114 via SidebarDrillDown, and 5 more), where no pressed recipe acts on a control of its own, with no exemption",
+    ]);
+    // A recipe inside the drawer acts on a row of the drill-down's own there, and answers it.
+    for (const name of ["hover-default-inside", "focus-default-inside", "pressed-default-inside"]) {
+      const recipe = recipeFor("sidebar", name);
+      expect({ name, inOverlay: recipe.inOverlay, widths: [...recipe.widths], failure: controlFailure(recipe, recipe.state as "hover" | "focus" | "pressed", "Sidebar", signalsOf("sidebar"), railExamples(component("sidebar")), "web") }).toEqual({
+        name,
+        inOverlay: true,
+        widths: widthsAtOrBelow("lg"),
+        failure: null,
+      });
+    }
+    expect(check("sidebar", table.sidebar!)).toEqual([]);
   });
 
   it("records a control no row of its page renders as judged on devices, never as captured, and refuses a recipe on a row the page does not show", () => {
