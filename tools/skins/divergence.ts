@@ -6,7 +6,9 @@
 // (test/design-rules-shells.test.ts, through shellImportFindings), which lets a shell
 // import an export that looks the same everywhere and takes the rest as parts, following
 // a barrel's re-exports (traceExport) to the module that builds each name, and the audit
-// facts (tools/audit/facts.ts).
+// facts (tools/audit/facts.ts). Each reason also says what it is made of
+// (DivergenceKind), so a reader can tell a component's own look from a look its parts
+// bring.
 //
 // A platform entry (`<name>.ios.tsx`, `<name>.android.tsx`) is read one built export at
 // a time, because one file can hold builds that differ in kind: Avatar and AvatarGroup
@@ -70,6 +72,45 @@ import ts from "typescript";
 
 export type Platform = "iOS" | "Android";
 
+/**
+ * What a reason a platform build diverges is made of, so a reader can tell a look of the
+ * component's own from a look it takes from another component:
+ *
+ * - `own-skin`: builds from a skin of the component's own that is not its web skin as is
+ *   (its own object, or the web skin spread with overrides, handed to a helper, read in a
+ *   form the reader does not follow).
+ * - `own-data`: passes data of its own (a literal, a function, an object) where the web
+ *   entry has something else.
+ * - `part`: injects, or re-exports, another component's platform build that diverges.
+ * - `part-skin`: builds another component itself, from that component's own skin or with
+ *   data of its own handed to that component's factory (AvatarMenu's Dropdown, built from
+ *   the Dropdown's iOS skin with a 6 gap).
+ * - `unknown`: a form the reader cannot classify, counted as the platform's own.
+ */
+export type DivergenceKind = "own-skin" | "own-data" | "part" | "part-skin" | "unknown";
+
+export interface DivergenceReason {
+  kind: DivergenceKind;
+  /** The reason as the messages and the string reads spell it. */
+  text: string;
+  /** For a part or a part's skin: the component directory it belongs to (`dropdown`). */
+  owner?: string;
+}
+
+/** Whether a reason is a look the component draws itself rather than one a part brings. */
+export const isOwnLook = (reason: DivergenceReason): boolean => reason.kind === "own-skin" || reason.kind === "own-data" || reason.kind === "unknown";
+
+/** Reasons spelled the way the string reads have always spelled them: each once, in order, joined. */
+function spell(reasons: readonly DivergenceReason[]): string {
+  return [...new Set(reasons.map((r) => r.text))].join("; ");
+}
+
+/** Reasons with each text once, the first occurrence kept. */
+function distinct(reasons: readonly DivergenceReason[]): DivergenceReason[] {
+  const seen = new Set<string>();
+  return reasons.filter((r) => !seen.has(r.text) && seen.add(r.text));
+}
+
 export interface ComponentSkins {
   /** `atoms`, `molecules`, `organisms` or `charts`. */
   group: string;
@@ -84,6 +125,8 @@ export interface ComponentSkins {
   exports: string[];
   /** Per built export, the platforms whose build diverges from the web build, with the reason. */
   exportDivergence: Record<string, Partial<Record<Platform, string>>>;
+  /** The same reasons as `exportDivergence`, each with its kind (and, for a part, the component it belongs to). */
+  exportReasons: Record<string, Partial<Record<Platform, DivergenceReason[]>>>;
   /** The platforms on which any export diverges, with every reason found on that platform. */
   divergent: Partial<Record<Platform, string>>;
   /** Whether the component has platform entries at all. */
@@ -342,9 +385,9 @@ function parsedModule(path: string): ts.SourceFile {
 }
 
 /** The per-export read of a platform module on disk, once per path and platform. */
-const verdictCache = new Map<string, Record<string, string | null>>();
+const verdictCache = new Map<string, Record<string, DivergenceReason[] | null>>();
 
-function moduleDivergences(path: string, platform: Platform, visiting: Set<string>): Record<string, string | null> {
+function moduleDivergences(path: string, platform: Platform, visiting: Set<string>): Record<string, DivergenceReason[] | null> {
   const key = `${path}#${platform}`;
   let verdict = verdictCache.get(key);
   if (!verdict) {
@@ -426,7 +469,7 @@ interface WebSkinRef {
 }
 
 /** The read of one parsed platform module: per built export, why it diverges, or null for the web build. */
-function readEntry(compDir: string, sf: ts.SourceFile, platform: Platform, visiting: Set<string>): Record<string, string | null> {
+function readEntry(compDir: string, sf: ts.SourceFile, platform: Platform, visiting: Set<string>): Record<string, DivergenceReason[] | null> {
   const { suffix } = ENTRY[platform];
   const imports = importBindings(sf);
   const decls = declarations(sf);
@@ -438,9 +481,11 @@ function readEntry(compDir: string, sf: ts.SourceFile, platform: Platform, visit
   const ownerOf = (stylesPath: string | null): string | null => (stylesPath ? basename(dirname(stylesPath)) : null);
 
   /** A web-skin alias reached in a form that builds a skin of its own. */
-  const ownSkin = (ref: WebSkinRef, what: string): string => {
+  const ownSkin = (ref: WebSkinRef, what: string): DivergenceReason => {
     const owner = ownerOf(ref.stylesPath);
-    return owner === ownDir || owner === null ? `builds its own skin (${what})` : `builds a part from ${owner}'s own skin (${what}; ${ref.specifier})`;
+    return owner === ownDir || owner === null
+      ? { kind: "own-skin", text: `builds its own skin (${what})` }
+      : { kind: "part-skin", owner, text: `builds a part from ${owner}'s own skin (${what}; ${ref.specifier})` };
   };
 
   /** The web-skin reference a named import is, or null when it names anything else. */
@@ -492,7 +537,7 @@ function readEntry(compDir: string, sf: ts.SourceFile, platform: Platform, visit
    * Why a reference to the web skin builds a skin of its own, judged by where it lands;
    * empty where it is handed over as is. `judged` keeps one reason per object literal.
    */
-  const webSkinUse = (node: ts.Node, ref: WebSkinRef, judged: Set<ts.Node>): string[] => {
+  const webSkinUse = (node: ts.Node, ref: WebSkinRef, judged: Set<ts.Node>): DivergenceReason[] => {
     const at = outermost(node);
     const parent = at.parent;
     if (ts.isSpreadAssignment(parent) && ts.isObjectLiteralExpression(parent.parent)) {
@@ -512,17 +557,17 @@ function readEntry(compDir: string, sf: ts.SourceFile, platform: Platform, visit
   };
 
   /** Why a part diverges, or null when the export it names is the web build. */
-  const partReason = (binding: { imported: string; specifier: string }): string | null => {
+  const partReason = (binding: { imported: string; specifier: string }): DivergenceReason | null => {
     const path = resolveSource(compDir, binding.specifier);
-    if (!path) return `injects platform parts (${binding.specifier}, which does not resolve; counted as the platform's own)`;
+    if (!path) return { kind: "unknown", text: `injects platform parts (${binding.specifier}, which does not resolve; counted as the platform's own)` };
     const verdict = partExport(path, binding.imported, platform, visiting);
     if (verdict === "web") return null;
-    if (verdict === "diverges") return `injects platform parts (${binding.specifier})`;
-    return `injects platform parts (${binding.specifier}, whose ${binding.imported} the reader cannot resolve; counted as the platform's own)`;
+    if (verdict === "diverges") return { kind: "part", owner: componentDirOf(path), text: `injects platform parts (${binding.specifier})` };
+    return { kind: "unknown", text: `injects platform parts (${binding.specifier}, whose ${binding.imported} the reader cannot resolve; counted as the platform's own)` };
   };
 
   /** Why a named reference (an imported name, or a namespace member) diverges. */
-  const namedReasons = (node: ts.Node, binding: { imported: string; specifier: string }, judged: Set<ts.Node>): string[] => {
+  const namedReasons = (node: ts.Node, binding: { imported: string; specifier: string }, judged: Set<ts.Node>): DivergenceReason[] => {
     if (isPart(binding.specifier)) {
       const reason = partReason(binding);
       return reason ? [reason] : [];
@@ -533,20 +578,20 @@ function readEntry(compDir: string, sf: ts.SourceFile, platform: Platform, visit
     const owner = ownerOf(resolveSource(compDir, binding.specifier));
     return [
       owner === ownDir || owner === null
-        ? `builds from its own ${binding.imported}`
-        : `builds a part from ${owner}'s own ${binding.imported} (${binding.specifier})`,
+        ? { kind: "own-skin", text: `builds from its own ${binding.imported}` }
+        : { kind: "part-skin", owner, text: `builds a part from ${owner}'s own ${binding.imported} (${binding.specifier})` },
     ];
   };
 
   /** A styles module or part read in a form the reader cannot resolve: the platform's own. */
-  const unresolved = (binding: ImportBinding, what: string): string[] => {
-    if (isStylesModule(binding.specifier)) return [`builds from ${what} (${binding.specifier}), which the reader cannot resolve; counted as its own skin`];
-    if (isPart(binding.specifier)) return [`injects platform parts (${binding.specifier}, through ${what}, which the reader cannot resolve; counted as the platform's own)`];
+  const unresolved = (binding: ImportBinding, what: string): DivergenceReason[] => {
+    if (isStylesModule(binding.specifier)) return [{ kind: "unknown", text: `builds from ${what} (${binding.specifier}), which the reader cannot resolve; counted as its own skin` }];
+    if (isPart(binding.specifier)) return [{ kind: "unknown", text: `injects platform parts (${binding.specifier}, through ${what}, which the reader cannot resolve; counted as the platform's own)` }];
     return [];
   };
 
   /** Why one value reference diverges, following local consts and functions once each. */
-  const referenceReasons = (id: ts.Identifier, seen: Set<string>, judged: Set<ts.Node>): string[] => {
+  const referenceReasons = (id: ts.Identifier, seen: Set<string>, judged: Set<ts.Node>): DivergenceReason[] => {
     const binding = imports.get(id.text);
     if (binding) {
       if (binding.kind === "named") return namedReasons(id, binding, judged);
@@ -558,7 +603,7 @@ function readEntry(compDir: string, sf: ts.SourceFile, platform: Platform, visit
       return unresolved(binding, `the namespace ${id.text}, read whole`);
     }
     const local = decls.get(id.text);
-    if (local?.mutable) return [`reads ${id.text}, a \`let\` or \`var\` the reader does not follow; counted as the platform's own`];
+    if (local?.mutable) return [{ kind: "unknown", text: `reads ${id.text}, a \`let\` or \`var\` the reader does not follow; counted as the platform's own` }];
     if (local) {
       const alias = local.init && !local.destructured ? webSkinOf(local.init, new Set([id.text])) : null;
       if (alias) return webSkinUse(id, alias, judged);
@@ -575,8 +620,8 @@ function readEntry(compDir: string, sf: ts.SourceFile, platform: Platform, visit
   };
 
   /** Every reason the values under a node reach. Types carry no values. */
-  const reasonsOf = (root: ts.Node, seen: Set<string>, judged: Set<ts.Node>): string[] => {
-    const reasons: string[] = [];
+  const reasonsOf = (root: ts.Node, seen: Set<string>, judged: Set<ts.Node>): DivergenceReason[] => {
+    const reasons: DivergenceReason[] = [];
     const visit = (node: ts.Node): void => {
       if (ts.isTypeNode(node)) return;
       if (ts.isIdentifier(node) && isValueReference(node)) reasons.push(...referenceReasons(node, seen, judged));
@@ -587,13 +632,13 @@ function readEntry(compDir: string, sf: ts.SourceFile, platform: Platform, visit
   };
 
   /** Why a name re-exported from the platform's build of another module diverges, or null for the web build. */
-  const reexportReason = (imported: string, specifier: string): string | null => {
+  const reexportReason = (imported: string, specifier: string): DivergenceReason | null => {
     const path = resolveSource(compDir, specifier);
-    if (!path) return `re-exports ${imported} from ${specifier}, which does not resolve; counted as the platform's own`;
+    if (!path) return { kind: "unknown", text: `re-exports ${imported} from ${specifier}, which does not resolve; counted as the platform's own` };
     const verdict = partExport(path, imported, platform, visiting);
     if (verdict === "web") return null;
-    if (verdict === "diverges") return `re-exports the ${platform} build of ${imported} (${specifier})`;
-    return `re-exports ${imported} from ${specifier}, which the reader cannot resolve; counted as the platform's own`;
+    if (verdict === "diverges") return { kind: "part", owner: componentDirOf(path), text: `re-exports the ${platform} build of ${imported} (${specifier})` };
+    return { kind: "unknown", text: `re-exports ${imported} from ${specifier}, which the reader cannot resolve; counted as the platform's own` };
   };
 
   // ---------- data the entry writes itself ----------
@@ -614,13 +659,36 @@ function readEntry(compDir: string, sf: ts.SourceFile, platform: Platform, visit
   };
 
   /** Why a piece of data the entry writes is its own: the web entry has something else, or nothing, at that place. */
-  const ownData = (label: ts.Node, w: ts.Expression | null, exported: boolean): string => {
+  const ownData = (label: ts.Node, w: ts.Expression | null, exported: boolean, owner: string | null): DivergenceReason => {
     const there = !exported
       ? "and there is no web export of that name to match it against"
       : w
         ? `where the web entry has \`${snippet(web!.sf, w)}\``
         : "which the web entry does not";
-    return `passes \`${snippet(sf, label)}\` ${there}; counted as the platform's own`;
+    return dataOf(`passes \`${snippet(sf, label)}\` ${there}; counted as the platform's own`, owner);
+  };
+
+  /** Data of the entry's own, or, handed to another component's factory, data of that part's. */
+  const dataOf = (text: string, owner: string | null): DivergenceReason => (owner ? { kind: "part-skin", owner, text } : { kind: "own-data", text });
+
+  /**
+   * The component a call builds when its callee is another component's factory
+   * (`createDropdown` from `../dropdown/dropdown.shared.js`), else null: data handed to it
+   * sets that part's look, not this component's.
+   */
+  const factoryOwner = (call: ts.CallExpression): string | null => {
+    const callee = unwrap(call.expression);
+    let specifier: string | null = null;
+    if (ts.isIdentifier(callee)) {
+      const binding = imports.get(callee.text);
+      specifier = binding?.kind === "named" ? binding.specifier : null;
+    } else if (ts.isPropertyAccessExpression(callee) && ts.isIdentifier(callee.expression)) {
+      const binding = imports.get(callee.expression.text);
+      specifier = binding?.kind === "namespace" ? binding.specifier : null;
+    }
+    if (!specifier || !specifier.startsWith(".") || !isSharedModule(specifier)) return null;
+    const owner = ownerOf(resolveSource(compDir, specifier));
+    return owner === ownDir ? null : owner;
   };
 
   /** Whether an expression holds data of its own anywhere: a literal, a function, an object not already judged. */
@@ -646,38 +714,52 @@ function readEntry(compDir: string, sf: ts.SourceFile, platform: Platform, visit
    * 3 }; createChip(skin)`), only its references are judged as references are; a
    * function, a method, or data inside any other expression (a ternary, a template, a
    * helper's body) is the platform's own. A spread with overrides of the web skin is
-   * already judged by `webSkinUse`, so its literal is not judged twice.
+   * already judged by `webSkinUse`, so its literal is not judged twice. Data handed to
+   * another component's factory is that part's (`owner`), not the component's own.
    */
-  const dataReasons = (p: ts.Expression, w: ts.Expression | null, exported: boolean, judged: Set<ts.Node>, seen: Set<string>, label: ts.Node = p): string[] => {
+  const dataReasons = (
+    p: ts.Expression,
+    w: ts.Expression | null,
+    exported: boolean,
+    judged: Set<ts.Node>,
+    seen: Set<string>,
+    owner: string | null,
+    label: ts.Node = p,
+  ): DivergenceReason[] => {
     const pe = unwrap(p);
     const we = throughWeb(w);
-    if (isDatum(pe)) return we && isDatum(we) && datumValue(pe) === datumValue(we) ? [] : [ownData(label, we, exported)];
+    if (isDatum(pe)) return we && isDatum(we) && datumValue(pe) === datumValue(we) ? [] : [ownData(label, we, exported, owner)];
     if (ts.isObjectLiteralExpression(pe)) {
       if (judged.has(pe)) return [];
       const wObj = we && ts.isObjectLiteralExpression(we) ? we : null;
-      if (!pe.properties.length) return wObj && !wObj.properties.length ? [] : [ownData(label, we, exported)];
-      const out: string[] = [];
+      if (!pe.properties.length) return wObj && !wObj.properties.length ? [] : [ownData(label, we, exported, owner)];
+      const out: DivergenceReason[] = [];
       for (const member of pe.properties) {
         if (ts.isShorthandPropertyAssignment(member)) continue;
-        if (ts.isSpreadAssignment(member)) out.push(...dataReasons(member.expression, null, exported, judged, seen));
+        if (ts.isSpreadAssignment(member)) out.push(...dataReasons(member.expression, null, exported, judged, seen, owner));
         else if (ts.isPropertyAssignment(member)) {
           const key = propertyKey(member.name);
           const wMember = wObj && key !== null ? webProperty(wObj, key) : null;
           // Against a web expression that is not an object, the place is the whole object's.
-          out.push(...dataReasons(member.initializer, wObj ? wMember : we, exported, judged, seen, member));
-        } else out.push(ownData(member, null, exported));
+          out.push(...dataReasons(member.initializer, wObj ? wMember : we, exported, judged, seen, owner, member));
+        } else out.push(ownData(member, null, exported, owner));
       }
       return out;
     }
     if (ts.isArrayLiteralExpression(pe)) {
       const wArr = we && ts.isArrayLiteralExpression(we) ? we : null;
       return pe.elements.flatMap((el, i) =>
-        ts.isSpreadElement(el) ? dataReasons(el.expression, null, exported, judged, seen) : ts.isOmittedExpression(el) ? [] : dataReasons(el, wArr?.elements[i] ?? (wArr ? null : we), exported, judged, seen),
+        ts.isSpreadElement(el)
+          ? dataReasons(el.expression, null, exported, judged, seen, owner)
+          : ts.isOmittedExpression(el)
+            ? []
+            : dataReasons(el, wArr?.elements[i] ?? (wArr ? null : we), exported, judged, seen, owner),
       );
     }
     if (ts.isCallExpression(pe)) {
       const wCall = we && ts.isCallExpression(we) && unwrap(we.expression).getText(web!.sf) === unwrap(pe.expression).getText(sf) ? we : null;
-      const out = pe.arguments.flatMap((arg, i) => dataReasons(arg, wCall ? (wCall.arguments[i] ?? null) : null, exported, judged, seen));
+      const into = factoryOwner(pe) ?? owner;
+      const out = pe.arguments.flatMap((arg, i) => dataReasons(arg, wCall ? (wCall.arguments[i] ?? null) : null, exported, judged, seen, into));
       // A helper of the entry's own: whatever data its body holds is the entry's.
       const callee = unwrap(pe.expression);
       if (ts.isIdentifier(callee) && !seen.has(callee.text)) {
@@ -685,7 +767,7 @@ function readEntry(compDir: string, sf: ts.SourceFile, platform: Platform, visit
         const helper = functions.get(callee.text)?.body ?? (local?.init && !local.mutable ? unwrap(local.init) : undefined);
         if (helper && !imports.has(callee.text)) {
           const body = ts.isArrowFunction(helper) || ts.isFunctionExpression(helper) ? helper.body : ts.isBlock(helper) ? helper : undefined;
-          if (body && holdsData(body, judged)) out.push(`builds data of its own in ${callee.text}() (${snippet(sf, pe)}); counted as the platform's own`);
+          if (body && holdsData(body, judged)) out.push(dataOf(`builds data of its own in ${callee.text}() (${snippet(sf, pe)}); counted as the platform's own`, owner));
         }
       }
       return out;
@@ -695,31 +777,40 @@ function readEntry(compDir: string, sf: ts.SourceFile, platform: Platform, visit
       const local = decls.get(pe.text);
       if (local?.init && !local.mutable) {
         if (webSkinOf(local.init, new Set([pe.text]))) return [];
-        if (local.destructured) return holdsData(local.init, judged) ? [ownData(label, we, exported)] : [];
-        return dataReasons(local.init, we, exported, judged, new Set([...seen, pe.text]), label === p ? local.init : label);
+        if (local.destructured) return holdsData(local.init, judged) ? [ownData(label, we, exported, owner)] : [];
+        return dataReasons(local.init, we, exported, judged, new Set([...seen, pe.text]), owner, label === p ? local.init : label);
       }
       // A function of the entry's own, handed over as a value.
-      if (functions.has(pe.text)) return [ownData(label, we, exported)];
+      if (functions.has(pe.text)) return [ownData(label, we, exported, owner)];
       return [];
     }
-    if (ts.isArrowFunction(pe) || ts.isFunctionExpression(pe) || ts.isClassExpression(pe)) return [ownData(label, we, exported)];
+    if (ts.isArrowFunction(pe) || ts.isFunctionExpression(pe) || ts.isClassExpression(pe)) return [ownData(label, we, exported, owner)];
     if (ts.isPropertyAccessExpression(pe)) return [];
-    return holdsData(pe, judged) ? [ownData(label, we, exported)] : [];
+    return holdsData(pe, judged) ? [ownData(label, we, exported, owner)] : [];
   };
 
-  const out: Record<string, string | null> = {};
+  const out: Record<string, DivergenceReason[] | null> = {};
   for (const [name, form] of entryExports(compDir, sf, platform, visiting)) {
-    if (form.kind === "unknown") out[name] = `${form.what}, a form the reader cannot classify; counted as the platform's own`;
-    else if (form.kind === "part") out[name] = reexportReason(form.imported, form.specifier);
-    else {
+    if (form.kind === "unknown") out[name] = [{ kind: "unknown", text: `${form.what}, a form the reader cannot classify; counted as the platform's own` }];
+    else if (form.kind === "part") {
+      const reason = reexportReason(form.imported, form.specifier);
+      out[name] = reason ? [reason] : null;
+    } else {
       const judged = new Set<ts.Node>();
       const reasons = reasonsOf(form.expr, new Set([form.local]), judged);
       const webExpr = web ? webExport(web, name) : null;
-      reasons.push(...dataReasons(form.expr, webExpr, webExpr !== null, judged, new Set([form.local])));
-      out[name] = reasons.length ? [...new Set(reasons)].join("; ") : null;
+      reasons.push(...dataReasons(form.expr, webExpr, webExpr !== null, judged, new Set([form.local]), null));
+      out[name] = reasons.length ? distinct(reasons) : null;
     }
   }
   return out;
+}
+
+/** The component directory a module under the kit belongs to: the one under its group (`checkbox` for `atoms/checkbox/indicator/index.android.tsx`). */
+function componentDirOf(path: string): string {
+  const parts = path.split(/[\\/]/);
+  for (let i = parts.length - 3; i >= 0; i--) if ((GROUPS as readonly string[]).includes(parts[i])) return parts[i + 1];
+  return basename(dirname(path));
 }
 
 /** A literal datum: a string, a number, a boolean, null, a regular expression, a negated number. */
@@ -902,6 +993,12 @@ function entryExports(compDir: string, sf: ts.SourceFile, platform: Platform, vi
  * whatever it cannot prove counts as the platform's own).
  */
 export function exportDivergences(compDir: string, source: string, platform: Platform): Record<string, string | null> {
+  const reasons = exportReasons(compDir, source, platform);
+  return Object.fromEntries(Object.entries(reasons).map(([name, r]) => [name, r ? spell(r) : null]));
+}
+
+/** The reasons exportDivergences spells out, each with its kind. */
+export function exportReasons(compDir: string, source: string, platform: Platform): Record<string, DivergenceReason[] | null> {
   return readEntry(compDir, parse(`entry${ENTRY[platform].ext}`, source), platform, new Set());
 }
 
@@ -919,7 +1016,10 @@ export function platformDivergence(webModule: string, name: string): Partial<Rec
     const path = resolveSource(dirname(base), `./${basename(base)}${ENTRY[platform].suffix}`);
     if (!path) continue;
     const verdict = partExport(path, name, platform, new Set());
-    if (verdict === "diverges") out[platform] = moduleDivergences(path, platform, new Set())[name] ?? `re-exports a ${platform} build of ${name} that diverges`;
+    if (verdict === "diverges") {
+      const reasons = moduleDivergences(path, platform, new Set())[name];
+      out[platform] = reasons ? spell(reasons) : `re-exports a ${platform} build of ${name} that diverges`;
+    }
     else if (verdict === "unresolved") out[platform] = `its ${platform} build of ${name} cannot be resolved; counted as the platform's own`;
   }
   return out;
@@ -1075,16 +1175,18 @@ export function componentSkins(kitSrc: string): ComponentSkins[] {
       const compDir = join(groupDir, dir);
       if (!statSync(compDir).isDirectory()) continue;
       const files = readdirSync(compDir);
-      const entry: ComponentSkins = { group, dir, exports: [], exportDivergence: {}, divergent: {}, hasPlatformEntries: false };
+      const entry: ComponentSkins = { group, dir, exports: [], exportDivergence: {}, exportReasons: {}, divergent: {}, hasPlatformEntries: false };
       for (const platform of Object.keys(ENTRY) as Platform[]) {
         const file = files.find((f) => f === `${dir}${ENTRY[platform].ext}`);
         if (!file) continue;
         entry.hasPlatformEntries = true;
         const reasons: string[] = [];
-        for (const [name, reason] of Object.entries(moduleDivergences(join(compDir, file), platform, new Set()))) {
+        for (const [name, built] of Object.entries(moduleDivergences(join(compDir, file), platform, new Set()))) {
           if (!entry.exports.includes(name)) entry.exports.push(name);
-          if (!reason) continue;
+          if (!built) continue;
+          const reason = spell(built);
           (entry.exportDivergence[name] ??= {})[platform] = reason;
+          (entry.exportReasons[name] ??= {})[platform] = built;
           if (!reasons.includes(reason)) reasons.push(reason);
         }
         if (reasons.length) entry.divergent[platform] = reasons.join("; ");
