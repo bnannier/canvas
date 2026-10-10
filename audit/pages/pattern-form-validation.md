@@ -12,6 +12,7 @@ Audit checklist for `/patterns/form-validation`. The facts block and the variant
 | Kit names its entry uses | Alert, Button, Card, Column, Container, Field, Grid, Input, Typography |
 | E2E naming it | 0: none |
 | E2E catalog sweeps | 2: `e2e/responsive/component-widths.e2e.ts` (contentRoutes), `e2e/smoke/routes.e2e.ts` (allRoutes) |
+| Turn record | `audit/turns/pattern-form-validation.md`, written by `bun run audit:turn -- --slug=pattern-form-validation --phase=before\|after` (the before and after capture runs) |
 <!-- audit:facts:end -->
 
 ## Variants

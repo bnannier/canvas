@@ -12,6 +12,7 @@ Audit checklist for `/templates/onboarding`. The facts block and the variants ta
 | Kit names its entry uses | Button, Card, Column, Container, EmptyState, Icon, Input, InputOTP, Row, Select, Steps, Typography, useToast |
 | E2E naming it | 0: none |
 | E2E catalog sweeps | 3: `e2e/behavior/hydration-ids.e2e.ts` (contentRoutes), `e2e/responsive/component-widths.e2e.ts` (contentRoutes), `e2e/smoke/routes.e2e.ts` (allRoutes) |
+| Turn record | `audit/turns/template-onboarding.md`, written by `bun run audit:turn -- --slug=template-onboarding --phase=before\|after` (the before and after capture runs) |
 <!-- audit:facts:end -->
 
 ## Variants

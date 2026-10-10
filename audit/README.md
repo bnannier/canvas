@@ -37,7 +37,8 @@ with the same key on the web (`data-mockup-section`, `docs/src/ui/mockup-page.ts
 ## The checklists
 
 `audit/components/<slug>.md` (104) and `audit/pages/<kind>-<slug>.md` (24), one per docs
-route. Each file is half generated and half hand-maintained:
+route, and `audit/foundation/<id>.md` (15), one per foundation (see "Foundations" below).
+Each file is half generated and half hand-maintained:
 
 - **Facts** (generated, between `<!-- audit:facts:begin -->` and `<!-- audit:facts:end -->`):
   what the repo's own records say about the component, gathered by `tools/audit/facts.ts`
@@ -84,7 +85,9 @@ route. Each file is half generated and half hand-maintained:
   same as JSON. A page's facts name its data module, its sections, the kit names its own
   entry in that module uses (through the module's local functions and consts that entry
   reaches, so a pattern is never credited with a sibling pattern's components, and a type
-  is not a name), and the specs and sweeps that drive it.
+  is not a name), and the specs and sweeps that drive it. Every checklist's facts end with
+  its **Turn record**: `audit/turns/<id>.md`, where `bun run audit:turn` records the
+  before and after capture runs of its turn (see "One component's turn").
 
   A fact is exactly true, or the generator fails with the file and line of the code it
   cannot read; it never drops what it cannot read and never guesses. The test and e2e trees
@@ -152,27 +155,95 @@ replaces the two generated blocks and carries everything else over byte for byte
 it twice changes nothing. A file whose markers are gone is refused, not guessed at: restore
 the markers or delete the file to reseed it.
 
-The style-layer renderables with no component page have no checklist of their own:
+## Foundations
+
+The Foundations tier is the style-layer renderables with no component page of their own,
 AnchoredOverlay, BreakpointOverride, Entrance, FloatingLabel, GlassModalBlurTarget, GlassPane,
 GlassSurface, LabelContent, LayoutAxisProvider, LoopView, OverlayProvider, Portal, RippleClip
-and ThemeProvider. Each is audited for its contract on the page `tools/api/manifest.ts`
-documents it on, or, while that file's `PENDING_DOCS` stages its docs (K12), on the page
-planned for it. The list is the material inventory's style tier less the primitives with a
-component page (`STYLE_LAYER_RENDERABLES` in `tools/audit/plan-specifics.ts`), and the
-checklist tests hold this paragraph to it.
+and ThemeProvider, and the design tokens the docs' `tokens/*` pages document (Tokens). The
+renderables are the material inventory's style tier less the primitives with a component page
+(`STYLE_LAYER_RENDERABLES` in `tools/audit/plan-specifics.ts`), and the checklist tests hold
+this paragraph to it. Each has `audit/foundation/<id>.md`, its name in kebab case
+(`glass-modal-blur-target`, `tokens`), generated and checked by the same `audit:checklists`
+and `audit:checklists:check`, and counted by `audit:status`.
+
+A foundation has no examples of its own: it is a contract other components render through,
+audited for that contract on the page `tools/api/manifest.ts` documents it on (or, while that
+file's `PENDING_DOCS` stages its docs, K12, on the page planned for it) and photographed
+through its consumers. So its checklist has no variants table, and its facts block
+(`tools/audit/foundations.ts`) says:
+
+- **Foundation**, **Source files**, **Public exports**: a renderable is the module that
+  declares its name, on every platform (the declaring file of each platform build), and the
+  public names whose way out of `src/index.ts` passes through that module, so FloatingLabel
+  and LabelContent (one module) share their exports, and so do Portal and OverlayProvider. The
+  design tokens are the public names the API manifest documents on a `tokens/*` page, or plans
+  to. Each export carries its `tools/api/manifest.ts` kind.
+- **K12-2 status**: each export a deprecated alias to come (an `internal-by-accident` name,
+  K12-2, or one the owner's decisions retire: the shadow helpers, K12-2 OD4; React Native's
+  pass-throughs, OD5; the Riskora type ladder, K12-7 OD3), a deprecated alias already, or
+  public (ThemeProvider and its types stay public).
+- **Documented on**, **Docs planned**: the manifest's `docs` routes (with their sections) and
+  its `PENDING_DOCS` routes, a planned page not built yet said so (`foundation`, K12-10).
+- **Materials manifest**: its `tools/materials/manifest.ts` entry (Tokens has none).
+- **Tests importing it**: the test files importing one of its public exports by name (from the
+  kit's entry or any kit module), by the same reader the component facts use. A module's path
+  alone does not count: glass-surface.shared.tsx is GlassModalBlurTarget's home and also the
+  GlassSurface shell's.
+- **Consumers**: every kit component that renders through it, read from the source by the
+  consumer reader, `tools/audit/kit-graph.ts`, and listed one row each under the facts table
+  with how it gets there. The reader parses every module under `src/` (never runs one) and
+  links each top-level declaration to the names its code reads, resolved by the module's own
+  scopes (a parameter that shadows an import is not the import) and followed through every
+  re-export (the internal hub `src/style/index.ts` included) to the declarations they name, on
+  every platform at once (`./glass-surface.js` is glass-surface.tsx, .ios.tsx and .android.tsx).
+  A type is never an edge, a package ends the walk, and a module's top-level statements are a
+  node every declaration of the module reads. A component reaches a foundation **directly**
+  when its own modules read one of the foundation's public values (Card and Dialog read
+  GlassSurface; Popover, Dropdown and Select read AnchoredOverlay), **through shared modules**
+  when it reads a declaration of a module no component directory owns (the style layer,
+  `src/charts/shared`) that leads there through such modules alone (Button reaches
+  GlassSurface through GlassPane), and **through other kit components** when the only way
+  there is another component's directory (Avatar reaches AnchoredOverlay through Dropdown,
+  for AvatarMenu). A primitive built in a style module (Text, Pressable) is a component like
+  any other, and its module is shared for everyone else. What the reader cannot follow (a
+  relative `require()` or `import()`, a specifier that names no module, `export * as`) fails
+  with the file and line rather than drop an edge.
+- **Pages using it**: the pattern and template pages whose own entry names one of its exports
+  (`pattern-glass` names ThemeProvider and useTheme).
+- **Capture through**: what its captures are: the consumers in that order (direct, then
+  through shared modules, then through other kit components, each in the docs' order), then
+  the pages that use it or document it. `bun run audit:turn -- --slug=<foundation>` expands to
+  this list. A page that only composes consumer components shows the foundation through them,
+  and they are captured as themselves.
+- **Not captured**: the guide pages that document it or are planned to (`/theming`,
+  `/integration`, the `tokens/*` pages, `/foundation`), which the capture inventory, component,
+  pattern and template pages alone, does not hold: no runner photographs them yet, so a turn
+  reads them on the live docs.
+- **Turn record**: as every checklist's.
+
+Its hand-maintained sections are seeded from `tools/audit/plan-specifics.ts`: the universal
+rubric adapted for a style-layer contract (`FOUNDATION_RUBRIC`: API and contract, docs,
+platform truth, materials, the accessibility it provides or must not break, performance,
+tests), its specific checks (`FOUNDATION_PLANS`: the plan's row, the owner's decisions that
+concern it, its materials target, and the re-capture of its consumers), then the findings and
+sign-off tables in the components' format. A finding's Cell is a capture id of one of its
+Capture through slugs, or `source`; a platform is signed off on the after-phase runs that show
+every slug of its list.
 
 ## The process
 
-1. **Capture** the before run on every platform (pending, see below) and link its contact
-   sheets from each checklist.
+1. **Capture** the before run on every platform (`bun run audit:turn -- --slug=<slug>
+   --phase=before`, see "One component's turn"); the turn record lists its runs and the turn
+   prints the contact sheets to read.
 2. **Review**: one reviewer per component reads its checklist, its contact sheets and its
    probe output, ticks what passes, and writes a finding for everything that does not, with
    the cell id as evidence.
 3. **Verify**: every critical and high finding is checked by a second reader against the
    source and the photographs before anyone fixes it (`verified`).
 4. **Fix** in the kit, by family, with a changeset; record the fix commit on the finding.
-5. **Re-capture** the component (`--only=<slug>`), compare, and tick the cells the fix
-   closes.
+5. **Re-capture** the component (`bun run audit:turn -- --slug=<slug> --phase=after`),
+   compare, and tick the cells the fix closes.
 6. **Sign off** a platform when every variant cell for it is ticked, no critical or high
    finding is open, every medium or low is fixed or carries the owner's decision, and the
    run id names the after-capture run.
@@ -186,9 +257,10 @@ as "by design".
 | Command | What it does |
 |---|---|
 | `bun run audit:checklists` | writes new checklists and regenerates the facts block and variants table of existing ones; exits non-zero naming any file it left untouched to keep a reviewer's work |
-| `bun run audit:checklists:check` | fails on a route with no checklist, an orphan checklist (a `.md` file no route calls for), a stale facts block, a malformed variants, findings or sign-off row (by line number, a finding whose cell is not one of the checklist's capture ids or `source` included), variant rows that drift from the inventory, a variants table `--write` would rewrite, or a missing findings table or sign-off section; runs in CI (`validate.yml`) and the pre-push hook |
-| `bun run audit:status` | counts ticked variant cells per platform, ticked checklist items, open findings by severity and signed-off platforms across every checklist (`--json` for the rows); lists any row or table it cannot read by file and line under the counts, and exits non-zero when there is one, since the counts then under-report |
+| `bun run audit:checklists:check` | fails on a route or foundation with no checklist, an orphan checklist (a `.md` file no route or foundation calls for), a stale facts block, a malformed variants, findings or sign-off row (by line number, a finding whose cell is not one of the checklist's capture ids or `source` included), variant rows that drift from the inventory, a variants table `--write` would rewrite or a foundation's checklist should not have, a missing findings table or sign-off section, and a turn record under `audit/turns/` that names no checklist or has a row it cannot read; runs in CI (`validate.yml`) and the pre-push hook |
+| `bun run audit:status` | counts ticked variant cells per platform, ticked checklist items, open findings by severity and signed-off platforms across every checklist, the foundations' included (`--json` for the rows); lists any row or table it cannot read by file and line under the counts, and exits non-zero when there is one, since the counts then under-report |
 | `bun tools/audit/facts.ts <slug>` | prints one component's facts as JSON |
+| `bun run audit:turn -- --slug=<slug> --phase=before\|after` | one component's, page's or foundation's turn capture: every web and device capture of the slug (a foundation's Capture through list), the analysis, sheets and index scoped to it, the run ids recorded in `audit/turns/<id>.md`, and the sheets to read printed (see "One component's turn"); `--dry-run`, `--web-only`, `--native-only`, `--only-first=<n>`, `--no-build`, `--devices`, `--workers` |
 | `bun run audit:native:build -- --platform=ios,android` | builds the Canvas Audit app (the docs with the capture driver) in Release and installs it on the booted simulator and emulator, leaving the docs app's own `docs/ios` and `docs/android` as they were; `--incremental` reuses the parked native project while the native inputs are unchanged, `--dev` builds Debug for the fix loop |
 | `bun run audit:native -- --platform=ios,android` | photographs every component example and every pattern and template page on the devices in all six looks and surfaces; `--only`, `--looks`, `--surfaces`, `--a11y=none\|default\|all`, `--devices`, `--dev`, `--keep-motion` |
 | `bun run audit:web` | captures the web cells into a new run under `.audit/runs/` (see "Capturing on the web" below): the example variants, or with `--states` (every state, or `--states=hover,open`) the interaction states and with `--pages` the pattern and template pages instead (both flags for both); `--only` (component slugs, page ids or page slugs), `--variants` (the variant capture only), `--looks`, `--surfaces`, `--widths` narrow it, `--axe`, `--base`, `--workers` and `--allow-stale` tune it, `--help` lists them |
@@ -205,6 +277,91 @@ prefix naming exactly one).
 When a kit change alters a fact (a new test, a skin that stops aliasing the web skin, a
 reference row, a materials entry), run `bun run audit:checklists` and commit the result,
 the way `docs:gen` is run after a markdown change.
+
+## One component's turn
+
+The audit goes one component at a time (the plan's "Execution model"), and each turn takes a
+before and an after capture of its slug. One command takes either:
+
+```sh
+bun run audit:turn -- --slug=button --phase=before          # step 1, Before
+bun run audit:turn -- --slug=button --phase=after           # step 5, Verify
+bun run audit:turn -- --slug=button --phase=before --dry-run   # the plan, nothing run
+bun run audit:turn -- --slug=glass-pane --phase=before      # a foundation: its Capture through list
+bun run audit:turn -- --slug=template-signin --phase=after  # a page (or --slug=signin)
+```
+
+The plan's turn, with the commands that carry it out:
+
+1. **Before.** `bun run audit:turn -- --slug=<slug> --phase=before`. This is the plan's
+   `audit:web -- --only=<slug>`, `audit:web -- --states --only=<slug>`,
+   `audit:native -- --platform=ios,android --only=<slug>`, then `audit:analyze`,
+   `audit:sheets` and `audit:index` for the slug, run in that order by one command.
+2. **Review.** The reviewer reads the checklist, `.audit/current/<slug>/index.md` and the
+   sheets the turn printed, the source, the `.md`, and the probe JSON of the cells the index
+   flags.
+3. **Decide.** Owner questions, batched.
+4. **Fix**, with `bun run audit:checklists` when a fact changes.
+5. **Verify.** `bun run audit:turn -- --slug=<slug> --phase=after`, and the same for
+   everything else the change touched: for a shared change, the foundation's own turn
+   (`--slug=<foundation>`), which re-captures its whole Capture through list.
+6. **Sign off.** Each platform's Sign-off row names the after-phase run ids the turn record
+   lists for it.
+
+`--slug` takes a component slug, a page id or slug, or a foundation (its id, `glass-pane`, or
+its name, `GlassPane`); a name two of them share is refused. A foundation expands to its
+Capture through list (see "Foundations"). The steps, in order:
+
+| Step | What it does |
+|---|---|
+| web export | reuses `docs/dist` when the source fingerprint its entry bundle embeds (`extra.canvasBuild`, read off the bundle `docs/dist/index.html` loads) is this checkout's `sourceFingerprint()`; otherwise builds it (`cd docs && bun run build:web`) and reads it again, refusing it if it is still not this checkout's; `--no-build` refuses a missing or stale export instead |
+| server | serves that export itself, in the turn's own process: the suite's static server (`e2e/support/static-server.ts`) with the production headers, over HTTPS on a free loopback port, so it never takes the suite's 4173 (which another checkout may be serving); stopped after the last web capture |
+| web captures | `bun run audit:web -- --only=<components> --base=<the turn's server>` (the variants), `... --states --only=<the components the state table gives recipes>`, and `... --pages --only=<page ids>` for the pages among the slugs; audit:web's global setup checks the served fingerprint once more before its first cell |
+| native build check | reads the installed Canvas Audit app off the booted simulator and emulator (`tools/audit/native/installed.ts`: on iOS the `.app` `simctl get_app_container` names, its `EXConstants.bundle/app.config` and `main.jsbundle`; on Android the base APK `pm path` names, pulled and read with `unzip`, `assets/app.config` and `assets/index.android.bundle`) and reuses it when it is a Release build of this checkout's source and native fingerprints; otherwise runs `bun run audit:native:build -- --platform=<the platforms that need it> --incremental`, reads the installed builds again and stops if one is still not this checkout's. The devices are shared by every checkout on the Mac (another worktree's audit build has the same app id), so the installed app is read, never a record a build left behind; the capture host's hello check still holds |
+| native capture | `bun run audit:native -- --platform=ios,android --only=<every slug>` |
+| analysis | `bun run audit:analyze -- --only=<every slug>`, then `audit:sheets` and `audit:index` with the same `--only` (never `--run`, so `SUMMARY.md` and `current.json` stay whole) |
+| record | appends every run the steps made to `audit/turns/<id>.md` under the phase (below) |
+| sheets | prints, per slug, `.audit/current/<slug>/index.md` and each sheet directory with its files |
+
+| Flag | Effect |
+|---|---|
+| `--dry-run` | prints the whole plan (every command, the cells each capture plans, whether `docs/dist` is fresh now) and runs nothing: no build, no server, no capture, no record, and no device is read |
+| `--web-only` | the web steps and the analysis, for when the devices are busy |
+| `--native-only` | the native steps and the analysis |
+| `--only-first=<n>` | a foundation only: keeps the first n slugs of its Capture through list (direct consumers first, in the docs' order), for a quick look at a large expansion; the turn record marks each of those runs as capped (`the first n of N`), and a sign-off still needs the whole list |
+| `--no-build` | refuses a missing or stale export rather than build one |
+| `--devices=ios:<udid>,android:<serial>` | passed to the native build and capture |
+| `--workers=<n>` | passed to audit:web |
+
+The exit status is 0 when every step ran and every run captured all it planned (a state not
+reached is captured, as audit:web counts it: its reason is the record, and a finding), 1 when
+a step failed or a run left cells failed or missing (its runs are still recorded), and 2 for a
+usage error or a refusal (an unknown slug, a stale export).
+
+The **turn record**, `audit/turns/<id>.md` (`tools/audit/turn-record.ts`), is written by
+`audit:turn` alone and committed with the turn. It has a `## before` and a `## after` table,
+one row per run as it finished, appended and never rewritten, so a phase taken in two halves
+(the web while the devices are busy, the devices later) keeps both, in order: the run id, its
+kind (`variants`, `states`, `pages`, `native`), its platform, when it was recorded, its commit
+(and `dirty` when the tree was), its status and cell counts as its manifest gives them, and
+the slugs it captured. A run a later step's failure stopped the turn after is recorded all the
+same. The runs themselves stay under `.audit/runs/` (local and gitignored); every checklist's
+facts link the record, and `audit:checklists:check` holds every record to its shape (a row it
+cannot read, a missing phase table, a record whose id names no checklist). A sidecar rather
+than rows in the checklist: the checklists' hand-maintained sections are never written by a
+tool, and the record is the machine's account of the captures, while the Sign-off rows stay
+the reviewer's.
+
+Measured on 2026-10-10 on this Mac, `--web-only` (the devices were busy with the S1 sweep),
+6 workers: `--slug=button --phase=before` found no export, built it (about 2 minutes),
+served it on its own port and captured 270 of 270 variant cells (1 min 12 s) and 24 of 24
+state cells (11 s), then analyzed, drew 197 sheets and indexed, and recorded its two runs.
+`--slug=glass-pane --phase=before --only-first=3` reused that export (fresh) and captured the
+first 3 of GlassPane's 73 Capture through slugs (chip, emblem, autocomplete): 324 of 324
+variant cells (1 min 22 s) and 90 state cells of chip's and autocomplete's recipes (33 s; 84
+reached and 6 not, Autocomplete's press on its chevron, whose pressed look is its hover's),
+257 sheets, both runs recorded as capped. Those runs were a proof of the command, taken in a
+worktree, so their records were not kept; each component's own turn starts its record.
 
 ## Capturing on the web
 
@@ -1193,8 +1350,9 @@ still to come.
 A fixer re-captures one component with
 `bun run audit:web -- --only=<slug> --base=http://localhost:8081` against this checkout's
 Metro while iterating (the run is recorded as a `live dev server`; from a worktree, start
-that worktree's own docs dev server, since 8081 shows the main checkout's source), then the
-same against a rebuilt export for the final check,
+that worktree's own docs dev server, since 8081 shows the main checkout's source), and
 `bun run audit:native -- --platform=ios --only=<slug> --dev` (and `android`) on the booted
-devices, and `bun run audit:sheets -- --only=<slug>` and `bun run audit:index -- --only=<slug>`
-to refresh that component's contact sheets and index under `.audit/current/`.
+devices, with `bun run audit:sheets -- --only=<slug>` and `bun run audit:index -- --only=<slug>`
+to refresh that component's contact sheets and index under `.audit/current/`. The final
+check is the turn's after phase against a rebuilt export and Release builds,
+`bun run audit:turn -- --slug=<slug> --phase=after` (see "One component's turn").

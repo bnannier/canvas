@@ -12,6 +12,7 @@ Audit checklist for `/templates/detail-sidebar`. The facts block and the variant
 | Kit names its entry uses | Avatar, Badge, Breadcrumb, Button, Card, Column, DataTable, DescriptionList, Divider, Feed, Icon, Row, Typography, useToast |
 | E2E naming it | 0: none |
 | E2E catalog sweeps | 3: `e2e/behavior/hydration-ids.e2e.ts` (contentRoutes), `e2e/responsive/component-widths.e2e.ts` (contentRoutes), `e2e/smoke/routes.e2e.ts` (allRoutes) |
+| Turn record | `audit/turns/template-detail-sidebar.md`, written by `bun run audit:turn -- --slug=template-detail-sidebar --phase=before\|after` (the before and after capture runs) |
 <!-- audit:facts:end -->
 
 ## Variants

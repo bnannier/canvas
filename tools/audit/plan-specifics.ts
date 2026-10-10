@@ -322,6 +322,133 @@ export const STYLE_LAYER_RENDERABLES: readonly string[] = materialCoverage
   .map((entry) => entry.name)
   .sort((a, b) => a.localeCompare(b));
 
+/** The design tokens' foundation: the `tokens/*` docs pages, beside the style-layer renderables. */
+export const TOKENS_FOUNDATION = "Tokens";
+
+/**
+ * The universal rubric adapted for a style-layer contract (the Foundations tier): a
+ * foundation has no variants of its own, it is a contract other components render
+ * through, so each item asks what the contract promises and what it must never break for
+ * the components in its Capture through list.
+ */
+export const FOUNDATION_RUBRIC: RubricItem[] = [
+  {
+    title: "API and contract",
+    evidence: "S",
+    text: "the contract its consumers rely on is stated in its source and JSDoc (what it renders, what it never renders, its defaults); every export carries a JSDoc summary; no style escape hatch beyond a layout-only `style`; K12-2: each internal-by-accident export becomes a deprecated alias that keeps working and names the kit component to use, and a public one keeps working unchanged; nothing removed before a major.",
+  },
+  {
+    title: "Docs",
+    evidence: "S, P",
+    text: "the page the public API manifest (`tools/api/manifest.ts`) names for each export documents it, or its planned K12 page does once built (`theming`, `integration`, `tokens/*`, the generated `/foundation` reference of K12-10); every deprecated name is listed with its replacement; no page presents an internal helper as API; examples on those pages are kit-only.",
+  },
+  {
+    title: "Platform truth",
+    evidence: "S, N, P",
+    text: "one contract on iOS, Android and the web; the platform builds of its modules agree on the API; on iOS and Android it uses the platform's own machinery (Liquid Glass through `expo-glass-effect`, the frosted blur, hardware back, the ripple, the native driver), never a web emulation; the web hand-off CSS never feeds a native build.",
+  },
+  {
+    title: "Materials",
+    evidence: "S, P",
+    text: "its role in `tools/materials/manifest.ts` holds; solid mode is byte-identical to the pre-glass tree; Reduce Transparency and Increase Contrast fall back to the opaque token; no glass is hand-painted outside `GlassSurface` and `GlassPane`.",
+  },
+  {
+    title: "Accessibility it provides or must not break",
+    evidence: "A, S, N",
+    text: "what it adds to the accessibility tree (roles, hiding, live regions, focus trap and return, the escape layer) is right on every platform, and what its consumers put there survives it untouched; Reduce Motion, Reduce Transparency and Increase Contrast honoured; touch-target slop never clipped; RTL mirrored; VoiceOver and TalkBack read its consumers' names.",
+  },
+  {
+    title: "Performance",
+    evidence: "S",
+    text: "nothing commits through React per frame; subscriptions re-render at bucket granularity; context values are stable between renders; no layout read per frame; memoization only where a measured cost exists.",
+  },
+  {
+    title: "Tests",
+    evidence: "S",
+    text: "a test of its own contract, beside its consumers' tests; the solid-mode byte identity where it paints; its per-OS behaviour; the design-rule tests that hold it (`test/design-rules-*.test.ts`).",
+  },
+];
+
+/**
+ * Each foundation's specific checks: the plan's row, the owner's decisions in
+ * `audit/DECISIONS.md` that concern it, and the target its `tools/materials/manifest.ts`
+ * entry records. The checklist generator seeds a foundation's checklist from here once;
+ * every foundation also gets the consumers line below.
+ */
+export const FOUNDATION_PLANS: Readonly<Record<string, readonly string[]>> = {
+  AnchoredOverlay: [
+    "gains the placement option P3e needs (above and beside its anchor), shipped in the same minor as Popover's real `top` anchoring (P3e)",
+    "edge placement and flipping at every width, inside the window's safe area",
+    "the dense option lists through `dense`, and the public `opaque` prop's behaviour kept (materials target)",
+  ],
+  BreakpointOverride: [
+    "K12-6: documented on `tokens/layout` with the responsive hooks and the sizing and width vocabulary",
+    "keeps the responsive preview context the docs' three-up renders each platform row in (materials target)",
+  ],
+  Entrance: [
+    "a readiness hold for an overlay card: invisible and inert until its owner is ready, then shown in place with no transform (materials target)",
+    "no motion of its own, after the 2026-09-21 removal of the Entrance spring",
+  ],
+  FloatingLabel: [
+    "labels, the required marker, the focus and value transitions and the error contrast stay stable over glass wells; no material per label (materials target)",
+    "the floating transition within 100 to 700 ms, still under Reduce Motion",
+  ],
+  GlassModalBlurTarget: [
+    "K12-5: documented on `integration` as the Modal blur bridge for an app hosting its own React Native Modal",
+    "a safe target bridge that keeps separate-window ownership, exercised with ActionSheet and Drawer over native content (materials target)",
+  ],
+  GlassPane: [
+    "renders nothing where its host resolves solid (`useMaterialResolution`), so no default black border or second hairline: the Android re-capture of chip, badge, kbd, switch, input, card, alert, checkbox, radio and steps is still pending (audit/README.md, Native spike)",
+    "P3a: Android in-page glass resolves solid (`missing-target`), so the Android glass column equals solid outside overlays",
+    "decoration behind a semantic host: the missing-renderer fallback keeps the host's full surface contract, and the material choice agrees with the parent's fill suppression (materials target)",
+  ],
+  GlassSurface: [
+    "centralizes renderer, density, clipping, accessibility and platform capability resolution, with its public props kept compatible (materials target)",
+    "the web's plain frost judged against the `df-frost` card through the tuning harness (`/testing/materials`)",
+    "the layers' legibility floors and solid byte identity held by `test/glass-tint.test.tsx`, `test/glass-controls.test.tsx` and `test/dense-overlays.test.tsx`",
+  ],
+  LabelContent: [
+    "labels, the required marker and the error contrast stay stable over glass wells; no material per label (materials target)",
+    "the required marker announced once, not read as a stray asterisk",
+  ],
+  LayoutAxisProvider: [
+    "the layout-axis context HUG resolves against (`alignSelf: \"flex-start\"` inside a stretching Column and nothing anywhere else), stable across renders (CLAUDE.md, Sizing)",
+    "semantic layout context and sizing kept stable (materials target)",
+  ],
+  LoopView: [
+    "the loop primitive: the native driver natively and a compositor CSS animation on the web, nothing committed through React per frame (`test/design-rules-source.test.ts` keeps `Animated.loop(` inside `loop-native.ts`)",
+    "the Skeleton shimmer, the Spinner and the indeterminate Progress kept running under reduced motion where the motion carries information",
+  ],
+  OverlayProvider: [
+    "K12-5: documented on `integration` (overlay hosting); OD6: its `style` prop documented as app-frame only",
+    "owns placement, native ordering and safe backdrop contexts, with the unhosted fallback kept (materials target)",
+  ],
+  Portal: [
+    "owns placement, native ordering and safe backdrop contexts, with the unhosted fallback kept (materials target)",
+    "content portaled out of a Modal or a sheet keeps its focus order and its escape layer",
+  ],
+  RippleClip: [
+    "the native bounded ripple and the surface radii kept, with content never unclipped (materials target)",
+    "the hover read on the RippleClip wrapper, which never moves, so a lifted surface cannot slide out from under a resting pointer (`src/style/hover.tsx`)",
+  ],
+  ThemeProvider: [
+    "stays public (K12-2); K12-3 and K12-4: the ThemeProvider reference on `theming`: reading the theme, the palette axis and the accessibility preferences",
+    "the boolean grammar: `glass` wins over `solid`, `dark` over `light` and over `mint`; neither surface given resolves to glass on iOS 26+ and solid everywhere else",
+    "resolves the glass and solid mode, the preferences and the tokens without changing precedence or defaults (materials target)",
+  ],
+  [TOKENS_FOUNDATION]: [
+    "K12-7: the colors, spacing and shape, typography and layout references on the `tokens/*` pages name every token set and type they document",
+    "K12-7 OD3: `fontSize`, `fontWeight`, `lineHeight` and `letterSpacing` (the Riskora ladder nothing reads) deprecated, pointing to Typography's roles",
+    "Dark Factory's tokens on every platform: violet `primary` for selection, the green `action` role for calls to action, blush, mint and DF's one dark palette, Manrope at DF's dense sizes with the 12, 11 and 10 floors",
+    "K9: one source of truth for the iOS checkbox's check radius (`DESIGN.md`'s generated 11 against `shape.ios.checkbox` 5 in `src/style/tokens.ts`)",
+    "K10: no stale Riskora comments in `styles/tokens/platforms.css`; the web hand-off (`styles/tokens/*.css`) mirrors `src/style/tokens.ts`",
+  ],
+};
+
+/** The check every foundation carries: its consumers re-captured, as the plan's "no regressions left for later turns" asks. */
+export const FOUNDATION_CONSUMERS_CHECK =
+  "every component and page in its Capture through list is re-captured before and after a change (`bun run audit:turn -- --slug=<foundation> --phase=before|after`), and a consumer already signed off gets a re-sign-off row when its pictures change";
+
 /** The pages' plan: the patterns and templates family checklist plus their one specific. */
 export const PAGE_PLAN = {
   families: ["pages"] as Family[],

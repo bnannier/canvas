@@ -1181,6 +1181,18 @@ function componentSource(root: string, doc: (typeof COMPONENTS)[number]) {
   return { dir, group, sourceDir, sourceFiles, entry, exports };
 }
 
+/**
+ * A component's source directory, the value names it publishes and where it is built
+ * (the modules its source facts read), without the rest of its facts: what the audit's
+ * consumer reader (tools/audit/kit-graph.ts) takes a component to be.
+ */
+export function componentImplementation(root: string, slug: string): { sourceDir: string; exports: string[]; implementation: Implementation } {
+  const doc = COMPONENTS.find((c) => c.slug === slug);
+  if (!doc) throw new Error(`facts: no COMPONENTS entry for ${slug}`);
+  const { sourceDir, sourceFiles, entry, exports } = componentSource(root, doc);
+  return { sourceDir, exports, implementation: implementationOf(root, sourceDir, sourceFiles.filter(isSourceModule), entry !== undefined, exports[0]) };
+}
+
 export function componentFacts(slug: string, corpus: FactsCorpus): ComponentFacts {
   const doc = COMPONENTS.find((c) => c.slug === slug);
   if (!doc) throw new Error(`facts: no COMPONENTS entry for ${slug}`);

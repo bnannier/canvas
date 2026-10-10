@@ -86,6 +86,7 @@
     "audit:sheets": "bun tools/audit/sheets.ts",
     "audit:index": "bun tools/audit/index.ts",
     "audit:prune": "bun tools/audit/prune.ts",
+    "audit:turn": "bun tools/audit/turn.ts",
     "check:docs-components": "bun scripts/check-docs-components.ts",
     "check-parity": "bun scripts/check-handoff-parity.ts",
     "check-parity:check": "bun scripts/check-handoff-parity.ts --check",

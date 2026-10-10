@@ -12,6 +12,7 @@ Audit checklist for `/templates/profile`. The facts block and the variants table
 | Kit names its entry uses | Avatar, Badge, Breadcrumb, Button, Card, Column, DataTable, DescriptionList, Divider, Grid, Icon, Row, Stats, Switch, Tabs, Typography, useToast |
 | E2E naming it | 0: none |
 | E2E catalog sweeps | 3: `e2e/behavior/hydration-ids.e2e.ts` (contentRoutes), `e2e/responsive/component-widths.e2e.ts` (contentRoutes), `e2e/smoke/routes.e2e.ts` (allRoutes) |
+| Turn record | `audit/turns/template-profile.md`, written by `bun run audit:turn -- --slug=template-profile --phase=before\|after` (the before and after capture runs) |
 <!-- audit:facts:end -->
 
 ## Variants
