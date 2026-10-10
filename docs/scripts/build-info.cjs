@@ -29,11 +29,16 @@ function fingerprint(root, { directories, files, skip = new Set() }) {
   return hash.digest("hex");
 }
 
+// What a build of the docs is made from: the paths sourceFingerprint reads, and the paths
+// whose changes make the source dirty (sourceDirty), so the two never disagree about what
+// "the source" is.
+const SOURCE_INPUTS = {
+  directories: ["src", "styles", "docs/src", "examples/starter/smoke/fixtures"],
+  files: ["package.json", "bun.lock", "docs/package.json", "docs/bun.lock", "docs/app.json", "docs/app.config.js", "docs/metro.config.js"],
+};
+
 function sourceFingerprint(root) {
-  return fingerprint(root, {
-    directories: ["src", "styles", "docs/src", "examples/starter/smoke/fixtures"],
-    files: ["package.json", "bun.lock", "docs/package.json", "docs/bun.lock", "docs/app.json", "docs/app.config.js", "docs/metro.config.js"],
-  });
+  return fingerprint(root, SOURCE_INPUTS);
 }
 
 // What a native build of the docs app is made from beyond its bundle: the app config and
@@ -53,16 +58,28 @@ function nativeFingerprint(root) {
   });
 }
 
-function repositoryRevision(root, environment) {
+function localGit(root, environment) {
   // This is local inspection only. Hook selectors must never redirect it to
   // another checkout, and no Git transport/auth environment is needed.
   const env = Object.fromEntries(Object.entries(environment).filter(([name]) => !name.startsWith("GIT_")));
-  const git = (...args) => execFileSync("git", args, {
+  return (...args) => execFileSync("git", args, {
     cwd: root, encoding: "utf8", env: { ...env, GIT_CONFIG_GLOBAL: "/dev/null", GIT_CONFIG_NOSYSTEM: "1" },
     stdio: ["ignore", "pipe", "pipe"],
   }).trim();
+}
+
+// Whether the source a build is made from (SOURCE_INPUTS) differs from the checked-out
+// revision: a change, an addition or a deletion under those paths. A change anywhere else
+// (an audit checklist, a turn record, a tool) leaves the source clean, so a build or a
+// capture is not called dirty for a file it never reads. Null outside a git checkout.
+function sourceDirty(root, environment = process.env) {
+  if (!existsSync(join(root, ".git"))) return null;
+  return localGit(root, environment)("status", "--porcelain", "--untracked-files=normal", "--", ...SOURCE_INPUTS.directories, ...SOURCE_INPUTS.files) !== "";
+}
+
+function repositoryRevision(root, environment) {
   if (!existsSync(join(root, ".git"))) return { revision: null, dirty: null };
-  return { revision: git("rev-parse", "HEAD"), dirty: git("status", "--porcelain", "--untracked-files=normal") !== "" };
+  return { revision: localGit(root, environment)("rev-parse", "HEAD"), dirty: sourceDirty(root, environment) };
 }
 
 function readBuildInfo(root, environment = process.env, inspect = repositoryRevision) {
@@ -82,4 +99,4 @@ function readBuildInfo(root, environment = process.env, inspect = repositoryRevi
   };
 }
 
-module.exports = { readBuildInfo, sourceFingerprint, nativeFingerprint };
+module.exports = { readBuildInfo, sourceFingerprint, sourceDirty, nativeFingerprint, SOURCE_INPUTS };

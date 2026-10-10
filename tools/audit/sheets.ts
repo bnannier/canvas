@@ -25,7 +25,7 @@
 //                                              sections are linked from its index.md
 //
 // Every tile is labelled with its cell id (its path under its run) and the commit its
-// capture was taken at (its short sha, and "dirty" when the checkout had changes), and a
+// capture was taken at (its short sha, and "dirty" when its source had changes), and a
 // cell that failed, was not reached or was never captured is a labelled placeholder, never
 // a gap. A sheet's title names the runs its tiles come from; when they span more than one
 // commit, a tile whose commit is not the sheet's most common one has its commit drawn in
@@ -185,7 +185,7 @@ export function wrapLabel(text: string, max: number): string[] {
 
 const charsFor = (px: number, font: number = SHEET.labelFont) => px / (font * SHEET.charWidth);
 
-/** A capture's commit as a tile says it: the short sha, and "dirty" when the checkout had changes. */
+/** A capture's commit as a tile says it: the short sha, and "dirty" when the source it captured had changes (build-info.cjs `sourceDirty`). */
 export function commitOf(capture: Capture): string {
   return capture.sha ? `${capture.sha.slice(0, 7)}${capture.dirty ? " dirty" : ""}` : "unknown commit";
 }

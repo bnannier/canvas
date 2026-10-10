@@ -44,6 +44,7 @@
 // refusal or a usage error.
 
 import { spawn, execFileSync } from "node:child_process";
+import { createRequire } from "node:module";
 import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { join, relative } from "node:path";
 import { ROOT } from "../../e2e/support/routes.ts";
@@ -81,6 +82,9 @@ import {
   type StatePlan,
   type WebPlan,
 } from "./web-capture.ts";
+
+const require = createRequire(import.meta.url);
+const { sourceDirty } = require("../../docs/scripts/build-info.cjs") as { sourceDirty(root: string): boolean | null };
 
 const USAGE = `usage: bun run audit:web -- [--states[=<states>]] [--pages] [--only=<slugs or page ids>] [--variants=<keys>]
                               [--looks=blush,mint,dark] [--surfaces=solid,glass] [--widths=phone,tablet,desktop]
@@ -178,7 +182,9 @@ async function main(): Promise<number> {
   }
 
   const sha = git("rev-parse", "HEAD");
-  const dirty = git("status", "--porcelain", "--untracked-files=normal") !== "";
+  // Dirty when the source the run captures (the paths the source fingerprint reads) differs
+  // from that commit; an uncommitted checklist or turn record is not the captured source.
+  const dirty = sourceDirty(ROOT) === true;
   const packageVersion = (JSON.parse(readFileSync(join(ROOT, "package.json"), "utf8")) as { version: string }).version;
   const startedAt = new Date();
   const id = runDirName(startedAt, "web", sha);
