@@ -37,7 +37,7 @@
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { STATE_NAMES, stateSpecsOf, type StateName } from "../../e2e/support/state-recipes.ts";
-import { LOOKS, PLATFORMS, SURFACES, WIDTHS, components, pages, type Look, type Platform, type Surface, type WidthKey } from "./inventory.ts";
+import { LOOKS, PLATFORMS, SURFACES, WIDTHS, resolveNamesOrThrow, type InventoryComponent, type InventoryPage, type Look, type Platform, type Surface, type WidthKey } from "./inventory.ts";
 import { ROW_PLATFORMS, type RowPlatform } from "./probe-math.ts";
 import { CELLS_FILE, MANIFEST_FILE, PAGES_DIR, RUNS_DIR, STATES_DIR, type CellStatus } from "./web-capture.ts";
 
@@ -390,27 +390,29 @@ export function pickRuns(runs: AuditRun[], names: string[]): AuditRun[] {
   return runs.filter((run) => picked.has(run));
 }
 
-/** Whether a cell belongs to one of the `only` names: a component slug, a page id, or a page's slug. */
-export function cellMatches(cell: Pick<CellKey, "slug" | "family">, only: string[] | null): boolean {
-  if (!only) return true;
-  if (only.includes(cell.slug)) return true;
-  return cell.family === "page" && only.some((name) => cell.slug.endsWith(`-${name}`));
-}
-
 /**
- * The `only` names the inventory does not know: a component slug, a page id
- * (`template-signin`) or a page's slug (`signin`). A typo is refused, not read as nothing.
+ * What `--only` names, read by the inventory's one grammar (inventory.ts `resolveNames`):
+ * the component slugs, and the page ids its page names resolve to. A component's slug names
+ * the component alone (`calendar` is never `template-calendar`), and a page is matched by
+ * its id, never by a suffix of it (`sidebar` is not `template-detail-sidebar`).
  */
-export function unknownNames(only: string[], known: { components: string[]; pages: { id: string; slug: string }[] }): string[] {
-  const names = new Set([...known.components, ...known.pages.flatMap((page) => [page.id, page.slug])]);
-  return only.filter((name) => !names.has(name));
+export interface OnlyTargets {
+  components: ReadonlySet<string>;
+  /** Page ids. */
+  pages: ReadonlySet<string>;
 }
 
-/** Throw for `--only` names no component or page has, against the inventory. */
-export function checkOnly(only: string[] | null): void {
-  if (!only) return;
-  const unknown = unknownNames(only, { components: components().map((c) => c.slug), pages: pages() });
-  if (unknown.length) throw new Error(`--only: no component or page is called ${unknown.map((name) => `"${name}"`).join(", ")}`);
+/** `--only` against the inventory, or null for everything; throws for a name nothing has or a page slug two pages share. */
+export function resolveOnly(only: string[] | null, list?: readonly Pick<InventoryComponent, "slug">[], pageList?: readonly Pick<InventoryPage, "id" | "slug">[]): OnlyTargets | null {
+  if (!only) return null;
+  const named = resolveNamesOrThrow("--only", only, list, pageList);
+  return { components: new Set(named.components), pages: new Set(named.pages) };
+}
+
+/** Whether a cell belongs to what `--only` names: a component's cells by its slug, a page's by its id. */
+export function cellMatches(cell: Pick<CellKey, "slug" | "family">, only: OnlyTargets | null): boolean {
+  if (!only) return true;
+  return cell.family === "page" ? only.pages.has(cell.slug) : only.components.has(cell.slug);
 }
 
 /** The command-line flags the analysis, sheets, index and prune commands share. */
@@ -471,11 +473,11 @@ export function parseToolArgs(argv: string[], allowed: readonly string[] = ["onl
 
 /** The current cells a command works on: the newest capture of each cell in the chosen runs, narrowed to `only`. */
 export function currentCells(root: string, args: Pick<ToolArgs, "only" | "runs">): { runs: AuditRun[]; cells: CapturedCell[]; problems: string[] } {
-  checkOnly(args.only);
+  const only = resolveOnly(args.only);
   const listed = listRuns(root);
   const runs = args.runs ? pickRuns(listed.runs, args.runs) : listed.runs;
   const loaded = loadCells(runs);
-  const cells = selectCurrent(loaded.cells).filter((cell) => cellMatches(cell, args.only));
+  const cells = selectCurrent(loaded.cells).filter((cell) => cellMatches(cell, only));
   return { runs, cells, problems: [...listed.problems, ...loaded.problems] };
 }
 

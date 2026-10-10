@@ -48,7 +48,7 @@ import { AXE_IMPACTS, type CellAnalysis, type RegionAnalysis } from "./analyze.t
 import { COMPONENTS_DIR, PAGES_DIR } from "./checklists.ts";
 import { LOOKS, SURFACES, WIDTHS, components, pages, NATIVE_CELLS_PER_VARIANT, WEB_CELLS_PER_VARIANT, type Platform } from "./inventory.ts";
 import type { RowPlatform } from "./probe-math.ts";
-import { ANALYSIS_FILE, CURRENT_DIR, checkOnly, currentCells, notReached, parseToolArgs, readJsonFile, recipeRank, STATE_NOT_REACHED, type AuditRun, type CapturedCell } from "./runs.ts";
+import { ANALYSIS_FILE, CURRENT_DIR, currentCells, notReached, parseToolArgs, readJsonFile, recipeRank, resolveOnly, STATE_NOT_REACHED, type AuditRun, type CapturedCell } from "./runs.ts";
 import { CARD_FILE, PROBE_FILE, RUNS_DIR, STATE_FILE, VIEWPORT_FILE, parseWebFilters, planStateCapture, sectionFile } from "./web-capture.ts";
 
 export const INDEX_FILE = "index.md";
@@ -636,7 +636,7 @@ export interface CurrentSelection {
  * holds. Throws on an unknown `only` name or `--run`.
  */
 export function buildIndex(root: string, options: IndexOptions, builtAt = new Date().toISOString()): IndexResult {
-  checkOnly(options.only);
+  const only = resolveOnly(options.only);
   // SUMMARY.md and current.json always cover every cell; `only` narrows the index.md files written.
   const selection = currentCells(root, { runs: options.runs, only: null });
   const warnings = [...selection.problems];
@@ -685,7 +685,8 @@ export function buildIndex(root: string, options: IndexOptions, builtAt = new Da
     }
     const dir = join(CURRENT_DIR, target.slug);
     const indexPath = join(dir, INDEX_FILE);
-    const wanted = !options.only || options.only.includes(target.slug) || options.only.some((name) => target.kind === "page" && target.slug.endsWith(`-${name}`));
+    // A page target's slug is its id (`template-calendar`), which `only` holds for the page names it resolved.
+    const wanted = !only || (target.kind === "page" ? only.pages : only.components).has(target.slug);
     if (wanted) {
       mkdirSync(join(root, dir), { recursive: true });
       const runIds = new Set(rows.map((row) => row.run));

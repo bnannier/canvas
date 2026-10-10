@@ -12,7 +12,9 @@
 //
 // Options:
 //   --platform=ios,android   the platforms (default both, run at once)
-//   --only=button,switch     component slugs and page ids (pattern-glass) or slugs
+//   --only=button,switch     component slugs and page ids (pattern-glass), or a page's slug
+//                            no component has (inventory.ts `resolveNames`: `calendar` is
+//                            the component, `template-calendar` its page)
 //   --looks=blush,mint,dark  --surfaces=solid,glass   a subset of the six looks
 //   --a11y=none|default|all  accessibility dumps: none; every variant in blush solid and the
 //                            first example (and every page) in the other looks (default);
@@ -34,7 +36,7 @@ import { mkdir, writeFile } from "node:fs/promises";
 import { join, relative } from "node:path";
 import { createRequire } from "node:module";
 import { ROOT } from "../../../e2e/support/routes.ts";
-import { components, LOOKS, pages, SURFACES, cellId, pageCellId, type Look, type Surface } from "../inventory.ts";
+import { components, LOOKS, pages, SURFACES, cellId, pageCellId, resolveNamesOrThrow, type Look, type Surface } from "../inventory.ts";
 import type { AuditItem, AuditLook, AuditPlatform, HelloRequest } from "../../../docs/src/audit/protocol.ts";
 import { findMaestro, MAESTRO_DIR } from "./a11y.ts";
 import { AUDIT_APP_ID, parseDeviceOverrides, resolveDevice, type AuditDevice, type DeviceInfo } from "./devices.ts";
@@ -68,14 +70,11 @@ export function lookFor(look: Look, surface: Surface): AuditLook {
  * look the order is the docs' own (components, then patterns and templates).
  */
 export function buildQueue(platform: AuditPlatform, options: Pick<RunOptions, "only" | "looks" | "surfaces" | "a11y">): QueueItem[] {
-  const wanted = options.only ? new Set(options.only) : null;
-  const comps = components().filter((c) => !wanted || wanted.has(c.slug));
-  const pageList = pages().filter((p) => !wanted || wanted.has(p.id) || wanted.has(p.slug));
-  if (wanted) {
-    const known = new Set([...components().map((c) => c.slug), ...pages().flatMap((p) => [p.id, p.slug])]);
-    const unknown = [...wanted].filter((name) => !known.has(name));
-    if (unknown.length > 0) throw new Error(`--only names nothing in the inventory: ${unknown.join(", ")}`);
-  }
+  // The inventory's one name grammar (inventory.ts `resolveNames`): a component's slug names
+  // the component alone, and a page is named by its id or by a slug no component has.
+  const named = options.only ? resolveNamesOrThrow("--only", options.only) : null;
+  const comps = components().filter((c) => !named || named.components.includes(c.slug));
+  const pageList = pages().filter((p) => !named || named.pages.includes(p.id));
   const queue: QueueItem[] = [];
   const base = { settleMs: 0, scrollSettleMs: 0, deadlineMs: 0 };
   for (const look of options.looks) {
