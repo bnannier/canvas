@@ -102,20 +102,20 @@ function fill(theme: Parameters<typeof innerFill>[0]): ViewStyle {
 
 // Line height per size; the default line reads like a single row of text.
 // `h-4` -> 16, `h-3` -> 12, `h-3.5` -> 14.
-function lineHeight(p: { small?: boolean; large?: boolean }): ViewStyle {
+export function lineHeight(p: { small?: boolean; large?: boolean }): ViewStyle {
   if (p.large) return { height: 16 };
   if (p.small) return { height: 12 };
   return { height: 14 };
 }
 
 // Avatar diameter per size. `w-12 h-12` -> 48, `w-8 h-8` -> 32, `w-10 h-10` -> 40.
-function avatarDiameter(p: { small?: boolean; large?: boolean }): number {
+export function avatarDiameter(p: { small?: boolean; large?: boolean }): number {
   return p.large ? 48 : p.small ? 32 : 40;
 }
 
 // Button placeholder footprint per size; mirrors the real control's height.
 // `h-12 w-32` -> {48,128}, `h-8 w-20` -> {32,80}, `h-9 w-28` -> {36,112}.
-function buttonSize(p: { small?: boolean; large?: boolean }): { height: number; width: number } {
+export function buttonSize(p: { small?: boolean; large?: boolean }): { height: number; width: number } {
   if (p.large) return { height: 48, width: 128 };
   if (p.small) return { height: 32, width: 80 };
   return { height: 36, width: 112 };
@@ -183,7 +183,7 @@ function tableDivider(tokens: ColorTokens): ViewStyle {
 const w20: ViewStyle = { width: 80 };
 
 // Shape precedence when more than one is passed: first match wins.
-function shapeOf(p: SkeletonProps): Shape {
+export function shapeOf(p: SkeletonProps): Shape {
   if (p.text) return "text";
   if (p.avatar) return "avatar";
   if (p.button) return "button";
@@ -191,6 +191,14 @@ function shapeOf(p: SkeletonProps): Shape {
   if (p.list) return "list";
   if (p.table) return "table";
   return "text";
+}
+
+// A text line's length: `short` shortens it more than `long` and wins when both are
+// passed; the default spans the parent.
+export function lengthOf(p: Pick<SkeletonProps, "short" | "long">): "60%" | "80%" | "100%" {
+  if (p.short) return "60%";
+  if (p.long) return "80%";
+  return "100%";
 }
 
 // One shimmer for every Skeleton on the screen: 1 -> 0.5 -> 1 per 1.2s, shaped by a
@@ -312,7 +320,7 @@ export function createSkeleton(skin: SkeletonSkin) {
 
     // Default: a single text line spanning the parent; `long` / `short` shorten it
     // so a stack of lines reads like a wrapped paragraph.
-    const length = props.short ? "60%" : props.long ? "80%" : "100%";
+    const length = lengthOf(props);
     return <Pulse animate={animate} {...a11y} testID={testID} style={[fill(theme), lineHeight(props), { width: length, borderRadius: skin.lineRadius }, style]} />;
   };
 }

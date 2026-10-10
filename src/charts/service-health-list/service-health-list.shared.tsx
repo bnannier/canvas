@@ -55,7 +55,7 @@ export interface ServiceHealthListProps {
 }
 
 // Item status precedence, first match wins.
-function itemStatus(item: ServiceHealthItem): PeriodStatus {
+export function itemStatus(item: ServiceHealthItem): PeriodStatus {
   if (item.down) return "down";
   if (item.degraded) return "degraded";
   return "operational";

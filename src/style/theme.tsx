@@ -211,6 +211,19 @@ function defaultSurface(): Surface {
   return liquidGlassAvailable() ? "glass" : "solid";
 }
 
+// The scheme axis: first match (dark over light), then the legacy value form, then the
+// OS appearance. Mirrors the surface axis below: the prop name is the value.
+export function requestedSchemeOf(p: Pick<ThemeProviderProps, "dark" | "light" | "scheme">, system: ReturnType<typeof useColorScheme>): ColorScheme {
+  return p.dark ? "dark" : p.light ? "light" : (p.scheme ?? (system === "dark" ? "dark" : "light"));
+}
+
+// The surface axis: first match (glass over solid), then the legacy value form, then the
+// platform default, read only when neither is passed. Mirrors every component axis: the
+// prop name is the value.
+export function requestedSurfaceOf(p: Pick<ThemeProviderProps, "glass" | "solid" | "surface">, platformDefault: () => Surface): Surface {
+  return p.glass ? "glass" : p.solid ? "solid" : (p.surface ?? platformDefault());
+}
+
 /**
  * Resolves the theme for everything below it: the scheme (`dark`, `light`, or the OS
  * appearance), the palette (blush, or `mint`), the surface (`glass`, `solid`, or the
@@ -245,17 +258,13 @@ export function ThemeProvider({ dark, light, scheme, ssrScheme, mint, ssrPalette
   useEffect(() => {
     if (!hydrated) setHydrated(true);
   }, [hydrated]);
-  // Axis first-match (dark over light), then the legacy value form, then the OS
-  // appearance. Mirrors the surface axis below: the prop name is the value.
-  const requested: ColorScheme = dark ? "dark" : light ? "light" : (scheme ?? (system === "dark" ? "dark" : "light"));
+  const requested = requestedSchemeOf({ dark, light, scheme }, system);
   const active: ColorScheme = hydrated ? requested : (ssrScheme ?? requested);
   // The palette axis: `mint` or the default blush, with the server's palette held
   // through hydration like the scheme.
   const requestedPalette: Palette = mint ? "mint" : "blush";
   const palette: Palette = hydrated ? requestedPalette : (ssrPalette ?? requestedPalette);
-  // Axis first-match (glass over solid), then the legacy value form, then the
-  // platform default. Mirrors every component axis: the prop name is the value.
-  const resolved: Surface = glass ? "glass" : solid ? "solid" : (surface ?? defaultSurface());
+  const resolved = requestedSurfaceOf({ glass, solid, surface }, defaultSurface);
   const value = useMemo<ThemeValue>(() => {
     // Merge order: the palette's base for the scheme (blush or mint in light, the one
     // dark palette in dark), then brand overrides. That is the WHOLE token merge:

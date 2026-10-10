@@ -128,7 +128,7 @@ export interface NavbarProps {
 }
 
 // Surface precedence when more than one is passed: first match wins.
-function surfaceOf(p: NavbarProps): Surface {
+export function surfaceOf(p: NavbarProps): Surface {
   if (p.bordered) return "bordered";
   if (p.floating) return "floating";
   return "default";

@@ -77,7 +77,7 @@ export interface ImageProps extends Omit<RNImageProps, "resizeMode" | "width" | 
 
 // Fit precedence when more than one boolean is passed: first match wins. Defaults to
 // `cover` (React Native's own default) so a bare <Image /> keeps its current behavior.
-function fitOf(p: ImageProps): ImageResizeMode {
+export function fitOf(p: ImageProps): ImageResizeMode {
   if (p.contain) return "contain";
   if (p.cover) return "cover";
   if (p.stretch) return "stretch";

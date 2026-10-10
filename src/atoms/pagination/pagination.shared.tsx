@@ -79,7 +79,7 @@ export interface PaginationProps {
 }
 
 // Size precedence when more than one is passed: first match wins.
-function sizeOf(p: PaginationProps): Size {
+export function sizeOf(p: PaginationProps): Size {
   if (p.small) return "small";
   if (p.large) return "large";
   return "default";
@@ -88,7 +88,7 @@ function sizeOf(p: PaginationProps): Size {
 type Variant = "withSize" | "compact" | "numbered";
 
 // Variant precedence when more than one is passed: first match wins.
-function variantOf(p: PaginationProps): Variant {
+export function variantOf(p: PaginationProps): Variant {
   if (p.withSize) return "withSize";
   if (p.compact) return "compact";
   return "numbered";

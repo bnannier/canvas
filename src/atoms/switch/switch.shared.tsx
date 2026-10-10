@@ -45,7 +45,7 @@ export interface SwitchProps {
 
 export type Size = "small" | "base" | "large";
 
-function sizeOf(p: SwitchProps): Size {
+export function sizeOf(p: SwitchProps): Size {
   if (p.large) return "large";
   if (p.small) return "small";
   return "base";

@@ -64,7 +64,7 @@ export type Size = "small" | "base" | "large";
 export type Tone = "default" | "warning" | "danger";
 
 // Size precedence within the axis: large > small > default (first match wins).
-function sizeOf(p: ProgressProps): Size {
+export function sizeOf(p: ProgressProps): Size {
   if (p.large) return "large";
   if (p.small) return "small";
   return "base";

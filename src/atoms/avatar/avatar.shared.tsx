@@ -108,7 +108,7 @@ const CIRCLE_RADIUS = 9999;
 const RING_WIDTH = 1.5;
 
 // Size precedence when more than one is passed: first match wins, smallest first.
-function sizeOf(p: AvatarProps): Size {
+export function sizeOf(p: AvatarProps): Size {
   if (p.tiny) return "tiny";
   if (p.small) return "small";
   if (p.large) return "large";
@@ -116,7 +116,7 @@ function sizeOf(p: AvatarProps): Size {
 }
 
 // Shape precedence when more than one is passed: first match wins.
-function shapeOf(p: AvatarProps): Shape {
+export function shapeOf(p: AvatarProps): Shape {
   if (p.circle) return "circle";
   if (p.rounded) return "rounded";
   return "circle";
@@ -309,7 +309,7 @@ export interface AvatarGroupProps {
 }
 
 // Overlap precedence when more than one is passed: first match wins.
-function overlapOf(p: AvatarGroupProps): Overlap {
+export function overlapOf(p: AvatarGroupProps): Overlap {
   if (p.loose) return "loose";
   if (p.snug) return "snug";
   return "tight";

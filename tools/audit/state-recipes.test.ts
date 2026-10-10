@@ -368,7 +368,7 @@ describe("the states each component's source gives it", () => {
     const update = on("description-lists", "focus", "button");
     expect(check("description-lists", { focus: update, pressed: { ...update, state: "pressed" } })).toEqual([
       "description-lists: its focus recipe on the inlineedit example answers nothing on the web row: it acts on a button on its own surface, which is none of the component's own controls there (its example renders a textbox in rows); a control another kit component renders is that component's",
-      "description-lists: its source gives it a focus state on its own surface (a TextInput at src/molecules/description-lists/description-lists.shared.tsx:319), where no focus recipe acts on a control of its own, with no exemption",
+      "description-lists: its source gives it a focus state on its own surface (a TextInput at src/molecules/description-lists/description-lists.shared.tsx:330), where no focus recipe acts on a control of its own, with no exemption",
       "description-lists: its pressed recipe on the inlineedit example answers nothing on the web row: it acts on a button on its own surface, which is none of the component's own controls there (its example renders a textbox in rows); a control another kit component renders is that component's",
     ]);
     // GeoMap's focus on its Zoom in, a kit Button it disables at the end of the zoom: the map itself is the tab stop.
@@ -1177,9 +1177,9 @@ describe("the rows of the docs' three-up a state is answered on", () => {
     // DataTable's cell editor: the web build's under its glass pane (`skin.liquidTextEntry`), the
     // others' bare; its scroller only where the skin does not collapse to the primary column.
     expect(builds("data-table", "focus").filter((line) => !line.endsWith("every build"))).toEqual([
-      "data-table.shared.tsx:429 TextInput: ios and android",
-      "data-table.shared.tsx:433 TextInput: web",
-      "data-table.shared.tsx:838 ScrollView: web and android",
+      "data-table.shared.tsx:437 TextInput: ios and android",
+      "data-table.shared.tsx:441 TextInput: web",
+      "data-table.shared.tsx:846 ScrollView: web and android",
     ]);
     // The rows each page shows, and the build each renders: Toast's iOS row is the web build,
     // the docs registry injecting no iOS Toast; Sidebar's page shows one preview, the web build.
@@ -1212,7 +1212,7 @@ describe("the rows of the docs' three-up a state is answered on", () => {
     ]);
     // DataTable's native cell editor is on the iOS and Android rows alone.
     expect(check("data-table", { ...table["data-table"], focus: onWeb("data-table", "focus") })).toEqual([
-      "data-table: its source gives it a focus state on its own surface on the iOS and Android rows (a TextInput at src/organisms/data-table/data-table.shared.tsx:429 via CellEditor), where no focus recipe acts on a control of its own, with no exemption",
+      "data-table: its source gives it a focus state on its own surface on the iOS and Android rows (a TextInput at src/organisms/data-table/data-table.shared.tsx:437 via CellEditor), where no focus recipe acts on a control of its own, with no exemption",
     ]);
     // As the table has them, each on the rows its own controls are on: nothing is left, and the
     // answers say which rows they are.

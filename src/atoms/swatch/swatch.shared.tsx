@@ -60,10 +60,16 @@ export interface SwatchProps {
 }
 
 // Size precedence when more than one is passed: first match wins.
-function sizeOf(p: SwatchProps): SwatchSize {
+export function sizeOf(p: SwatchProps): SwatchSize {
   if (p.small) return "small";
   if (p.large) return "large";
   return "default";
+}
+
+// Whether `block` stretches the sample itself: `circle` and `inline` each keep its
+// square edge and widen only the root (the shell says why where it reads this).
+export function stretchesOf(p: Pick<SwatchProps, "block" | "circle" | "inline">): boolean {
+  return p.block === true && !p.circle && !p.inline;
 }
 
 // The label column's type scale, from the kit's type scale (small 14/20 for the name,
@@ -116,7 +122,7 @@ export function createSwatch(skin: SwatchSkin) {
     // of its own: `block` there collapsed the sample to a sliver. In both cases the
     // block keeps its square edge and only the ROOT widens, so the label column still
     // gets the full width.
-    const stretch = block === true && !circle && !inline;
+    const stretch = stretchesOf(props);
     const hasLabel = children != null || value != null || detail != null;
 
     return (

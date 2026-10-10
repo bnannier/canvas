@@ -65,7 +65,7 @@ export interface RangeAreaChartProps {
 }
 
 // Tone precedence within the axis, first match wins.
-function toneOf(p: RangeAreaChartProps): Tone {
+export function toneOf(p: RangeAreaChartProps): Tone {
   if (p.success) return "success";
   if (p.destructive) return "destructive";
   return "primary";

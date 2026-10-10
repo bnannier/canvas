@@ -112,14 +112,14 @@ export interface CardProps {
 }
 
 // Elevation precedence when more than one is passed: first match wins.
-function elevationOf(p: CardProps): Elevation {
+export function elevationOf(p: CardProps): Elevation {
   if (p.raised) return "raised";
   if (p.flat) return "flat";
   return "default";
 }
 
 // Density precedence when more than one is passed: first match wins.
-function densityOf(p: CardProps): Density {
+export function densityOf(p: CardProps): Density {
   if (p.compact) return "compact";
   if (p.comfortable) return "comfortable";
   return "default";

@@ -68,7 +68,7 @@ export interface BadgeProps {
 }
 
 // Tone precedence when more than one is passed: first match wins.
-function toneOf(p: BadgeProps): Tone {
+export function toneOf(p: BadgeProps): Tone {
   if (p.default) return "default";
   if (p.destructive) return "destructive";
   if (p.secondary) return "secondary";
@@ -76,7 +76,7 @@ function toneOf(p: BadgeProps): Tone {
   return "secondary";
 }
 
-function statusOf(p: BadgeProps): Status {
+export function statusOf(p: BadgeProps): Status {
   if (p.success) return "success";
   if (p.error) return "error";
   if (p.warning) return "warning";
@@ -221,7 +221,7 @@ export interface BadgeGroupProps {
 
 // Gap precedence when more than one is passed: first match wins, largest-first
 // (mirrors Row's gapOf ordering). Default `snug` when none is set.
-function badgeGapOf(p: BadgeGroupProps): BadgeGap {
+export function badgeGapOf(p: BadgeGroupProps): BadgeGap {
   if (p.cozy) return "cozy";
   if (p.snug) return "snug";
   if (p.tight) return "tight";

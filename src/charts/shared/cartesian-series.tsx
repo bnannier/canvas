@@ -52,7 +52,7 @@ export interface CartesianSeriesProps {
 }
 
 // Tone precedence matches Chart: success > destructive > primary.
-function toneOf(p: CartesianSeriesProps): Tone {
+export function toneOf(p: CartesianSeriesProps): Tone {
   if (p.success) return "success";
   if (p.destructive) return "destructive";
   return "primary";

@@ -38,7 +38,7 @@ export interface BreakdownRow {
 }
 
 // Slot precedence, first match wins (the StatItem accent scan).
-function slotOf(row: BreakdownRow): string | null {
+export function slotOf(row: BreakdownRow): string | null {
   if (row.chart1) return "chart-1";
   if (row.chart2) return "chart-2";
   if (row.chart3) return "chart-3";

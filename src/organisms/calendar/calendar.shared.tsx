@@ -148,13 +148,13 @@ export interface CalendarProps {
 }
 
 // Density precedence: `compact` wins, otherwise the default cell.
-function densityOf(p: CalendarProps): Density {
+export function densityOf(p: CalendarProps): Density {
   if (p.compact) return "compact";
   return "default";
 }
 
 // View precedence: `day` wins, then `week`, otherwise the month grid.
-function viewOf(p: CalendarProps): "month" | "week" | "day" {
+export function viewOf(p: CalendarProps): "month" | "week" | "day" {
   if (p.day) return "day";
   if (p.week) return "week";
   return "month";

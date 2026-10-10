@@ -105,7 +105,7 @@ export interface ButtonProps extends MeasureProps {
 }
 
 // Intent precedence when more than one is passed: first match wins.
-function intentOf(p: ButtonProps): Intent {
+export function intentOf(p: ButtonProps): Intent {
   if (p.primary) return "primary";
   if (p.destructive) return "destructive";
   if (p.secondary) return "secondary";
@@ -116,7 +116,7 @@ function intentOf(p: ButtonProps): Intent {
 }
 
 // Size precedence when more than one is passed: first match wins.
-function sizeOf(p: ButtonProps): Size {
+export function sizeOf(p: ButtonProps): Size {
   if (p.small) return "small";
   if (p.large) return "large";
   return "base";

@@ -59,7 +59,7 @@ export interface BulletChartProps {
 }
 
 // Tone precedence within the axis, first match wins.
-function toneOf(p: BulletChartProps): Tone {
+export function toneOf(p: BulletChartProps): Tone {
   if (p.success) return "success";
   if (p.destructive) return "destructive";
   return "primary";
