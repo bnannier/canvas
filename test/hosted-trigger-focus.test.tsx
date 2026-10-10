@@ -94,20 +94,31 @@ it("the unnamed backdrop is excluded from focus and accessibility while outside 
   expect(screen.getByRole("button", { name: "Actions" }).getAttribute("aria-expanded")).toBe("false");
 });
 
-it("Drawer interception wrappers stay out of the tab order without hiding their controls", async () => {
+it("Drawer's dismiss target stays out of the tab order and wraps none of the panel's controls", async () => {
   let presses = 0;
-  render(<ThemeProvider><Drawer trigger="Open drawer" open>
+  let closes = 0;
+  render(<ThemeProvider><Drawer trigger="Open drawer" open onOpenChange={(next) => { if (!next) closes += 1; }}>
     <Button onPress={() => presses += 1}>Inside drawer</Button>
   </Drawer></ThemeProvider>);
   const inside = await screen.findByRole("button", { name: "Inside drawer" });
   expect(inside.closest('[aria-hidden="true"]')).toBeNull();
+  // No press area wraps the panel: the dismiss target is an empty sibling beneath it, so
+  // no ancestor of the control is an interception wrapper (a tab-indexed node).
   const wrappers: HTMLElement[] = [];
   for (let node = inside.parentElement; node; node = node.parentElement) {
     if (node.hasAttribute("tabindex")) wrappers.push(node);
   }
-  expect(wrappers.length).toBeGreaterThanOrEqual(2);
-  for (const wrapper of wrappers) expect(wrapper.getAttribute("tabindex")).toBe("-1");
+  expect(wrappers).toEqual([]);
+  const dismiss = [...document.querySelectorAll('[tabindex="-1"]')].filter((node) => {
+    const style = getComputedStyle(node);
+    return style.position === "absolute" && style.top === "0px" && style.bottom === "0px" && style.left === "0px" && style.right === "0px";
+  }) as HTMLElement[];
+  expect(dismiss.length).toBe(1);
+  expect(dismiss[0].childElementCount).toBe(0);
   fireEvent.click(inside);
   expect(presses).toBe(1);
+  expect(closes).toBe(0);
   expect(screen.getByRole("button", { name: "Inside drawer" })).toBe(inside);
+  fireEvent.click(dismiss[0]);
+  expect(closes).toBe(1);
 });

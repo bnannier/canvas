@@ -170,9 +170,9 @@ export function createDrawer(skin: DrawerSkin, Button: ButtonComponent = WebButt
     const slideTransform = isVertical ? [{ translateY: slide }] : [{ translateX: slide }];
 
     // A sheet caps its width (Android M3 640dp) and centers on wide windows; the cap
-    // rides on the panel positioner so the no-op tap-catcher shrinks with the sheet
-    // (a tap on the exposed scrim beside a capped sheet still dismisses). Side drawers
-    // and iOS/web sheets pass no cap and span as before.
+    // rides on the panel positioner, and the layers around it are box-none, so a tap on
+    // the exposed scrim beside a capped sheet still reaches the dismiss target. Side
+    // drawers and iOS/web sheets pass no cap and span as before.
     const isSheet = edge === "bottom" || edge === "top";
     const sheetCap: ViewStyle | null =
       skin.sheetMaxWidth != null && isSheet ? { maxWidth: skin.sheetMaxWidth, alignSelf: "center" } : null;
@@ -186,17 +186,18 @@ export function createDrawer(skin: DrawerSkin, Button: ButtonComponent = WebButt
       <View accessible={false} importantForAccessibility="no-hide-descendants" style={handleStyle} />
     ) : null;
 
-    // A no-op press inside the panel keeps taps from falling through to the scrim; it is a pure
-    // event-capture wrapper, hidden from assistive tech. onLayout measures a sheet's height
-    // for its slide. The panel surface renders through GlassSurface (the functional layer's
-    // material under glass, the skin's own `card` panel in solid mode); inside it SafeAreaView
-    // pads the content clear of the device insets on iOS (a bottom sheet clears the home
-    // indicator, a side drawer the notch/status bar) while the surface itself still reaches
-    // the screen edge, and insets resolve to 0 elsewhere. The SafeAreaView fills a sized
-    // panel (a side drawer's full height) and wraps its content in a sheet, the same
-    // auto-basis recipe the surface's own clip box uses.
+    // The panel positioner is a plain View, never a Pressable (see the dismiss target
+    // below): a tap inside the panel stays in the panel's own subtree, because the dismiss
+    // target is a sibling beneath the panel layer, not an ancestor. onLayout measures a
+    // sheet's height for its slide. The panel surface renders through GlassSurface (the
+    // functional layer's material under glass, the skin's own `card` panel in solid mode);
+    // inside it SafeAreaView pads the content clear of the device insets on iOS (a bottom
+    // sheet clears the home indicator, a side drawer the notch/status bar) while the surface
+    // itself still reaches the screen edge, and insets resolve to 0 elsewhere. The
+    // SafeAreaView fills a sized panel (a side drawer's full height) and wraps its content in
+    // a sheet, the same auto-basis recipe the surface's own clip box uses.
     const panel = (
-      <Pressable accessible={false} focusable={false} tabIndex={-1} importantForAccessibility="no" style={[s.panelPos[edge], sheetCap]} onPress={() => {}} onLayout={isVertical ? (e) => setPanelH(e.nativeEvent.layout.height) : undefined}>
+      <View style={[s.panelPos[edge], sheetCap]} onLayout={isVertical ? (e) => setPanelH(e.nativeEvent.layout.height) : undefined}>
         <GlassSurface style={[skin.panelShape(edge, width, tokens), style]}>
           <SafeAreaView
             edges={isVertical ? [edge as "top" | "bottom", "left", "right"] : ["top", "bottom", physicalRight ? "right" : "left"]}
@@ -207,7 +208,7 @@ export function createDrawer(skin: DrawerSkin, Button: ButtonComponent = WebButt
             {edge === "top" ? handleNode : null}
           </SafeAreaView>
         </GlassSurface>
-      </Pressable>
+      </View>
     );
 
     return (
@@ -255,14 +256,25 @@ export function createDrawer(skin: DrawerSkin, Button: ButtonComponent = WebButt
                       visible while typing. "padding" shrinks the layout by the keyboard height on iOS;
                       off iOS no behavior is passed (Android's window resizes, web has no soft keyboard). */}
                   <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined} style={{ flex: 1 }}>
-                    {/* The dim is an Animated layer that fades in behind a TRANSPARENT tap-to-close
-                        layout; the panel rides in on translateX/translateY. The dim is a dismiss
-                        affordance, not a control, so it is unannounced; hardware back and accessibility escape dismiss. */}
+                    {/* The dim is an Animated layer that fades in; the tap-to-close target is an
+                        EMPTY full-bleed Pressable above it and BENEATH the panel layer, a sibling
+                        of the panel and never its wrapper, as ActionSheet's is. Wrapping the
+                        panel would make the press area the panel's ancestor, and on Android the
+                        ancestor of everything the panel says: React Native's Pressable always
+                        passes its View an accessibilityState, and Android's accessibility
+                        delegate names any unlabelled view that carries one after the text of its
+                        non-focusable descendants (a footer's label and its group's name became
+                        the window's "Palette, Palette"). Empty, the target names nothing. The
+                        dim is a dismiss affordance, not a control, so it is unannounced; hardware
+                        back and accessibility escape dismiss. The panel layer above lays the
+                        panel against its edge and rides it in on translateX/translateY; it is
+                        box-none, so only the panel itself takes a tap. */}
                     <View style={{ flex: 1 }} collapsable={false} onAccessibilityEscape={escapeScope.onAccessibilityEscape}>
                       <Animated.View style={[StyleSheet.absoluteFill, { backgroundColor: dimFill, opacity: dimOpacity }]} />
-                      <Pressable accessible={false} focusable={false} tabIndex={-1} importantForAccessibility="no" style={s.scrim(edge, 0)} onPress={() => setOpen(false)}>
-                        <Animated.View style={{ transform: slideTransform }}>{panel}</Animated.View>
-                      </Pressable>
+                      <Pressable accessible={false} focusable={false} tabIndex={-1} importantForAccessibility="no" style={StyleSheet.absoluteFill} onPress={() => setOpen(false)} />
+                      <View style={s.panelLayer[edge]}>
+                        <Animated.View style={[s.slideLayer, { transform: slideTransform }]}>{panel}</Animated.View>
+                      </View>
                     </View>
                   </KeyboardAvoidingView>
                 </OverlayProvider>
