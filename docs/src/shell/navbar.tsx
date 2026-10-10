@@ -8,6 +8,7 @@ import { Sidebar } from "./sidebar";
 import { Topbar, titleFor } from "./topbar";
 import { MobileNavBar } from "./mobile-nav-bar";
 import { SearchModal } from "./search-modal";
+import { ThemeToggles } from "./theme-toggles";
 import { WebScrollbarTheme, WebScrollPadding, SCROLLBAR_W } from "../ui/web-scrollbar";
 import { useDocsTheme } from "../theme/docs-theme";
 import { sans } from "../ui/fonts";
@@ -73,8 +74,10 @@ function sectionIcon(name: string, active: boolean) {
   return { [name]: true, [active ? "primary" : "muted"]: true } as unknown as Omit<IconProps, "key">;
 }
 
-// The scheme + surface toggles live in ./theme-toggles now, shared with the native Android
-// overflow sheet (iOS hosts the same controls as native UIMenu rows instead).
+// The appearance controls live in ./theme-toggles, shared with the native bars: the narrow
+// drawer's footer here carries their labeled form, and the native header (./native-header)
+// shows the compact form in the iOS and Android bars and the palette control in the iOS
+// header menu and the Android menu drawer.
 
 // Web (every width): desktop = sidebar + glass topbar; narrow = the mobile iOS shell (a
 // bottom kit TabBar for the sections + the glass topbar whose hamburger drills into the
@@ -189,7 +192,9 @@ function WebNav() {
         </View>
       ) : null}
       {!wide ? (
-        <Sidebar responsive open={menuOpen} onOpenChange={setMenuOpen} onNavigate={() => setMenuOpen(false)} />
+        // The drawer's footer hosts the labeled appearance toggles (their old bottom-sheet
+        // footer home); the desktop rail has no footer.
+        <Sidebar responsive open={menuOpen} onOpenChange={setMenuOpen} onNavigate={() => setMenuOpen(false)} footer={<ThemeToggles />} />
       ) : null}
       <SearchModal visible={searchOpen} onClose={() => setSearchOpen(false)} />
     </SafeAreaView>
