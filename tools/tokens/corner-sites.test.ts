@@ -177,6 +177,7 @@ export const iosSkin = {
   helper: shellHelper(),
   row: rowWith(iosBaseSkin),
 };
+export const androidSkin = { radius: shape.android.card };
 `,
   );
   write(
@@ -225,7 +226,90 @@ export function Extra() {
 }
 `,
   );
+  write("src/atoms/z/z.android.tsx", `import { createZ } from "./z.shared.js";\nimport { androidSkin } from "./z.styles.js";\nexport const Z = createZ(androidSkin);\n`);
+  // A helper that adjusts a skin, in a module no platform names, built with by the entries
+  // each table names; and the shell a table's iOS entry may build with instead.
+  for (const [dir, table] of Object.entries(TABLES)) writeTable(dir, table);
 });
+
+/** How a DataTable fixture's entries build it: each platform's expression, and whether the shell frames its own skin. */
+interface Table {
+  web: string;
+  ios: string;
+  android: string;
+  shellFrames?: boolean;
+}
+
+const plain = { web: "createDataTable(webSkin, parts)", ios: "createDataTable(iosSkin, parts)", android: "createDataTable(androidSkin, parts)" };
+const framed = (platform: "web" | "ios" | "android") => `createDataTable(withEditFrame(${platform}Skin), parts)`;
+const TABLES: Record<string, Table> = {
+  // The probe: only the iOS entry builds with the web field corner.
+  "src/organisms/data-table": { ...plain, ios: framed("ios") },
+  "src/organisms/table-every": { web: framed("web"), ios: framed("ios"), android: framed("android") },
+  "src/organisms/table-two": { ...plain, web: framed("web"), ios: framed("ios") },
+  "src/organisms/table-handed": { ...plain, ios: "createFramed(iosSkin, parts)" },
+  "src/organisms/table-shared": { ...plain, shellFrames: true },
+};
+
+function writeTable(dir: string, table: Table) {
+  write(
+    `${dir}/data-table.styles.ts`,
+    `
+import { shape } from "../../style/index.js";
+export interface DataTableSkin {
+  outline: number;
+  editInput: (t: unknown) => object;
+}
+export const webSkin: DataTableSkin = { outline: shape.web.card, editInput: () => ({ height: 32, borderRadius: shape.web.field }) };
+export const iosSkin: DataTableSkin = { outline: shape.ios.card, editInput: () => ({ height: 32, borderRadius: shape.ios.field }) };
+export const androidSkin: DataTableSkin = { outline: shape.android.card, editInput: () => ({ height: 32, borderRadius: shape.android.field }) };
+`,
+  );
+  write(
+    `${dir}/data-table.shared.tsx`,
+    `
+import { shape } from "../../style/index.js";
+import type { DataTableSkin } from "./data-table.styles.js";
+import { withEditFrame } from "./edit-skin.js";
+export function createDataTable(skin: DataTableSkin, parts: unknown) {
+  const edit = ${table.shellFrames ? "withEditFrame(skin)" : "skin"};
+  return function DataTable() {
+    return (
+      <View style={{ borderRadius: skin.outline }}>
+        <View style={{ borderRadius: shape.web.control }} />
+        <TextInput style={edit.editInput(tokens)} />
+      </View>
+    );
+  };
+}
+`,
+  );
+  const handed = Object.values(table).some((e) => typeof e === "string" && e.includes("createFramed"));
+  write(
+    `${dir}/edit-skin.ts`,
+    `
+import { shape } from "../../style/index.js";
+import { createDataTable } from "./data-table.shared.js";
+import type { DataTableSkin } from "./data-table.styles.js";
+export function withEditFrame(skin: DataTableSkin): DataTableSkin {
+  return { ...skin, editInput: (t: unknown) => ({ ...skin.editInput(t), borderRadius: shape.web.field }) };
+}
+${handed ? "export function createFramed(skin: DataTableSkin, parts: unknown) {\n  return createDataTable(withEditFrame(skin), parts);\n}\n" : ""}`,
+  );
+  for (const platform of ["web", "ios", "android"] as const) {
+    write(
+      `${dir}/data-table${platform === "web" ? "" : `.${platform}`}.tsx`,
+      `import { createDataTable } from "./data-table.shared.js";
+import { ${platform}Skin } from "./data-table.styles.js";
+import { withEditFrame${handed ? ", createFramed" : ""} } from "./edit-skin.js";
+const parts = {};
+export const DataTable = ${table[platform]};
+`,
+    );
+  }
+}
+
+const tableFiles = (dir: string) => ["data-table.styles.ts", "data-table.shared.tsx", "edit-skin.ts", "data-table.tsx", "data-table.ios.tsx", "data-table.android.tsx"].map((f) => `${dir}/${f}`);
 
 afterAll(() => rmSync(root, { recursive: true, force: true }));
 
@@ -345,7 +429,15 @@ describe("where a corner is drawn", () => {
   });
 
   const scanZ = () =>
-    new CornerSites(root).scan(["src/atoms/z/z-parts.ts", "src/atoms/z/z.styles.ts", "src/atoms/z/z.shared.tsx", "src/atoms/z/z-frame.tsx", "src/atoms/z/z.tsx", "src/atoms/z/z.ios.tsx"]).values;
+    new CornerSites(root).scan([
+      "src/atoms/z/z-parts.ts",
+      "src/atoms/z/z.styles.ts",
+      "src/atoms/z/z.shared.tsx",
+      "src/atoms/z/z-frame.tsx",
+      "src/atoms/z/z.tsx",
+      "src/atoms/z/z.ios.tsx",
+      "src/atoms/z/z.android.tsx",
+    ]).values;
   const rolesZ = { "atoms/z": ["control", "field", "menu", "tile", "sheet", "card"] };
 
   it("follows a constant or helper in any module, not only a style module, to the skins that use it", () => {
@@ -366,9 +458,9 @@ describe("where a corner is drawn", () => {
   it("follows a component to where it is rendered: a shell's code is shared, a platform entry's is its platform's", () => {
     const values = scanZ();
     // The shell's own corner, and a component only the shell renders, are drawn by code
-    // every platform runs (each entry builds the component by handing the shell its skin,
-    // a skin spread into an object included); a component only the iOS entry renders is
-    // drawn on iOS.
+    // every platform runs (every platform's entry builds the component by handing the shell
+    // its skin, a skin spread into an object included); a component only the iOS entry
+    // renders is drawn on iOS.
     expect(drawnBy(values, "createZ")).toEqual(["shared createZ"]);
     expect(drawnBy(values, "Frame")).toEqual(["shared createZ"]);
     expect(drawnBy(values, "EntryFrame")).toEqual(["ios Extra"]);
@@ -378,6 +470,50 @@ describe("where a corner is drawn", () => {
     expect(!entryOnly.ok && entryOnly.reason).toContain("src/atoms/z/z.ios.tsx:7 Extra draws shape.web.sheet");
     // A corner a shell is handed is the skin's, where the skin writes it.
     expect(drawnBy(values, "iosSkin.radius")).toEqual(["ios iosSkin.radius"]);
+  });
+
+  describe("a function the entries build with by handing it a skin", () => {
+    const scanTable = (dir: string) => new CornerSites(root).scan(tableFiles(dir)).values;
+    const rolesOf = (dir: string) => ({ [componentOf(`${dir}/x.ts`)]: ["field", "control", "card"] });
+    const FRAME = "withEditFrame.editInput";
+
+    it("is drawn on the platform of the only entry that builds with it, not shared", () => {
+      // The probe: `createDataTable(withEditFrame(iosSkin), parts)` in the iOS entry, where
+      // withEditFrame, in a module no platform names, sets the web field corner.
+      const dir = "src/organisms/data-table";
+      const values = scanTable(dir);
+      expect(drawnBy(values, FRAME)).toEqual(["ios DataTable"]);
+      const result = cornerVerdict(one(values, FRAME), { roles: rolesOf(dir) });
+      expect(result.ok).toBe(false);
+      expect(!result.ok && result.reason).toContain("src/organisms/data-table/data-table.ios.tsx:5 DataTable draws shape.web.field");
+      expect(!result.ok && result.reason).toContain("another platform's row: it draws ios");
+      // The shell is still shared: every platform's entry builds with it, the iOS one
+      // handing it a skin made from the iOS skin.
+      expect(drawnBy(values, "createDataTable")).toEqual(["shared createDataTable"]);
+    });
+
+    it("is shared code only when every platform's entry builds with it", () => {
+      const every = scanTable("src/organisms/table-every");
+      expect(drawnBy(every, FRAME)).toEqual(["shared withEditFrame.editInput"]);
+      expect(cornerVerdict(one(every, FRAME), { roles: rolesOf("src/organisms/table-every") }).ok).toBe(true);
+      // Built with by the web and iOS entries, not Android's: each entry's platform draws it,
+      // and iOS draws the web row only where it may share the web skin's part.
+      const dir = "src/organisms/table-two";
+      const two = scanTable(dir);
+      expect(drawnBy(two, FRAME)).toEqual(["ios DataTable", "web DataTable"]);
+      const refused = cornerVerdict(one(two, FRAME), { roles: rolesOf(dir) });
+      expect(!refused.ok && refused.reason).toContain("it is the web skin's own part, but organisms/table-two keeps ios's row");
+      expect(cornerVerdict(one(two, FRAME), { roles: rolesOf(dir), sharesWebPart: () => true }).ok).toBe(true);
+    });
+
+    it("follows a skin a shell hands on to the platforms that build the shell", () => {
+      // A shell only the iOS entry builds with hands its skin to withEditFrame: iOS draws it.
+      const handed = scanTable("src/organisms/table-handed");
+      expect(drawnBy(handed, FRAME)).toEqual(["ios DataTable"]);
+      expect(drawnBy(handed, "createDataTable")).toEqual(["shared createDataTable"]);
+      // The shell every platform builds with hands its own skin on: shared code.
+      expect(drawnBy(scanTable("src/organisms/table-shared"), FRAME)).toEqual(["shared withEditFrame.editInput"]);
+    });
   });
 
   it("refuses a web skin drawing a native row through a constant named for the platform", () => {

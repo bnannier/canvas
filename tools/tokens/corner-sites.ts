@@ -77,8 +77,10 @@ export interface CornerValue {
    * calls, a number constant a skin reads, a component an entry renders), in any module, is
    * drawn by every place that uses it, followed until a platform's name or shared code: so a
    * native skin cannot draw another platform's row by reading it through a neutral name,
-   * wherever that name is declared. Shared code is a shell's own code (a function the
-   * entries build a component with by handing it a skin) and what only shared code uses. A
+   * wherever that name is declared. Shared code is a shell's own code (a function every
+   * platform's entry, or other shared code, builds a component with by handing it a skin)
+   * and what only shared code uses; a function only some platforms build with (a helper
+   * that adjusts the iOS skin before the iOS entry hands it on) draws on those platforms. A
    * corner a shell or helper is handed (the skin field a shell reads, a prop) is drawn where
    * its number is written.
    */
@@ -120,7 +122,7 @@ export function platformOf(place: { file: string; path: string }): PlatformKey |
 /**
  * The style modules: a component's `.styles.ts(x)` (its skins and their parts) and
  * src/style/. A call written there builds a style, never a component, whatever it is
- * handed (see `buildsWithASkin`).
+ * handed (see `skinCall`).
  */
 const STYLE_MODULE = /\.styles\.tsx?$|^src\/style\//;
 
@@ -256,7 +258,8 @@ export class CornerSites extends SourceFolder {
         const handed = helper !== null && isFunction(helper.node) && written?.node !== helper.node;
         places = handed ? this.placesOf(o.node, o.sf, new Set()) : this.placesOf(s.node, s.sf, new Set());
       }
-      for (const place of places) out.set(`${place.file}:${place.at}`, place);
+      // One call can build for two platforms (a skin per platform handed to it).
+      for (const place of places) out.set(`${place.file}:${place.at}:${place.platform}`, place);
     }
     return [...out.values()];
   }
@@ -302,10 +305,12 @@ export class CornerSites extends SourceFolder {
   /**
    * Where a place in the source draws: its platform's name; else every place that uses the
    * module-level const or function it is written in, in whatever module, followed the same
-   * way. The places that end the walk as shared code are a shell's own code (a function a
-   * platform entry or another shell builds a component with by handing it a skin, which
-   * runs on every platform with the skin it is handed), code no module-level declaration
-   * holds, and a declaration nothing in the scan uses (a public export only the app uses).
+   * way. A function the code builds with by handing it a skin (`skinCall`) draws for each
+   * platform that builds with it (`builtFor`), and is a shell, whose own code is shared,
+   * only when every platform builds with it, or shared code does: a helper only the iOS
+   * entry builds with is the iOS skin's, wherever it is declared. The places that end the
+   * walk as shared code are such a shell's own code, code no module-level declaration holds,
+   * and a declaration nothing in the scan uses (a public export only the app uses).
    */
   private placesOf(node: ts.Node, sf: ts.SourceFile, chain: Set<ts.Node>): DrawnPlace[] {
     const here = this.place(node, sf);
@@ -316,34 +321,67 @@ export class CornerSites extends SourceFolder {
     const uses = this.referencesTo(decl);
     if (uses.length === 0) return [here];
     const next = new Set(chain).add(decl.node);
-    return uses.flatMap((use) => (this.buildsWithASkin(use.node, use.sf) ? [here] : this.placesOf(use.node, use.sf, next)));
+    const places: DrawnPlace[] = [];
+    const builds: DrawnPlace[] = [];
+    for (const use of uses) {
+      const call = this.skinCall(use.node, use.sf);
+      if (call) builds.push(...this.builtFor(call, use.node, use.sf, next));
+      else places.push(...this.placesOf(use.node, use.sf, next));
+    }
+    if (builds.length === 0) return places;
+    const on = new Set(builds.map((place) => place.platform));
+    const shared = on.has(null) || [...PLATFORMS].every((platform) => on.has(platform as PlatformKey));
+    return [...places, ...(shared ? [here] : builds)];
   }
 
   /**
-   * Whether a use of a function builds a component with it by handing it a skin: the
-   * function is called, outside the style modules, with a skin among its arguments (a skin
-   * module's exported `*Skin`, an object spreading one, or a shell's own `skin` handed on to
-   * a part it builds). That is how a platform entry makes its component from a shell
-   * (`createCheckbox(iosSkin, parts)`), so the function is a shell and its own code is
-   * shared by every platform. A call in a style module is a skin calling a helper, which
-   * draws for that skin.
+   * The call, when a use of a function builds with it by handing it a skin: the function is
+   * called, outside the style modules, with a skin among its arguments (`skinsIn`). That is
+   * how a platform entry makes its component from a shell (`createCheckbox(iosSkin, parts)`)
+   * or adjusts the skin it hands one (`withEditFrame(iosSkin)`). A call in a style module is
+   * a skin calling a helper, which draws for that skin.
    */
-  private buildsWithASkin(id: ts.Identifier, sf: ts.SourceFile): boolean {
-    if (STYLE_MODULE.test(sf.fileName)) return false;
+  private skinCall(id: ts.Identifier, sf: ts.SourceFile): ts.CallExpression | null {
+    if (STYLE_MODULE.test(sf.fileName)) return null;
     const callee = ts.isPropertyAccessExpression(id.parent) && id.parent.name === id ? id.parent : id;
     const call = callee.parent;
-    if (!ts.isCallExpression(call) || call.expression !== callee) return false;
-    return call.arguments.some((arg) => this.isSkin(arg, sf));
+    if (!ts.isCallExpression(call) || call.expression !== callee) return null;
+    return call.arguments.some((arg) => this.skinsIn(arg, sf).length > 0) ? call : null;
   }
 
-  /** Whether an expression is a platform's skin (see `buildsWithASkin`). */
-  private isSkin(expr: ts.Expression, sf: ts.SourceFile): boolean {
+  /**
+   * The places a call that builds with a skin builds for: the platform its own place names
+   * (the entry's file, `data-table.ios.tsx`, or a name enclosing the call), else the platform
+   * of each skin it is handed (`iosSkin` under any local name, an object spreading it, a
+   * skin made from it). A skin that names no platform (a shell's own `skin` handed on to a
+   * part it builds) builds for wherever the call's own code runs, followed as any use is: on
+   * every platform when every platform builds that shell.
+   */
+  private builtFor(call: ts.CallExpression, id: ts.Identifier, sf: ts.SourceFile, chain: Set<ts.Node>): DrawnPlace[] {
+    const place = this.place(id, sf);
+    if (place.platform) return [place];
+    const skins = new Set(call.arguments.flatMap((arg) => this.skinsIn(arg, sf)));
+    const named = [...skins].filter((platform): platform is PlatformKey => platform !== null).map((platform) => ({ ...place, platform }));
+    return skins.has(null) ? [...named, ...this.placesOf(id, sf, chain)] : named;
+  }
+
+  /**
+   * The platforms of the skins an expression is, or empty when it is no skin: a skin
+   * module's exported `*Skin` (its platform by its name, `iosSkin`, or null when the name
+   * gives none), an object spreading a skin, a call handed one (a skin made from it), either
+   * branch of a conditional, and a shell's own `skin` (null: the platform of whatever builds
+   * that shell).
+   */
+  private skinsIn(expr: ts.Expression, sf: ts.SourceFile): (PlatformKey | null)[] {
     const node = unwrap(expr);
-    if (ts.isObjectLiteralExpression(node)) return node.properties.some((p) => ts.isSpreadAssignment(p) && this.isSkin(p.expression, sf));
-    if (!ts.isIdentifier(node)) return false;
+    if (ts.isObjectLiteralExpression(node)) return node.properties.flatMap((p) => (ts.isSpreadAssignment(p) ? this.skinsIn(p.expression, sf) : []));
+    if (ts.isCallExpression(node)) return node.arguments.flatMap((arg) => this.skinsIn(arg, sf));
+    if (ts.isConditionalExpression(node)) return [...this.skinsIn(node.whenTrue, sf), ...this.skinsIn(node.whenFalse, sf)];
+    if (!ts.isIdentifier(node)) return [];
     const decl = this.resolve(node, sf);
-    if (decl?.kind === "param") return ts.isIdentifier(decl.node.name) && decl.node.name.text === "skin";
-    return decl?.kind === "var" && ts.isIdentifier(decl.node.name) && /Skin$/.test(decl.node.name.text) && SKIN_MODULE.test(decl.sf.fileName);
+    if (decl?.kind === "param") return ts.isIdentifier(decl.node.name) && decl.node.name.text === "skin" ? [null] : [];
+    if (decl?.kind !== "var" || !ts.isIdentifier(decl.node.name) || !/Skin$/.test(decl.node.name.text) || !SKIN_MODULE.test(decl.sf.fileName)) return [];
+    return [platformOf({ file: decl.sf.fileName, path: decl.node.name.text })];
   }
 
   protected sinkOf(node: ts.Node): ts.Expression | null {
