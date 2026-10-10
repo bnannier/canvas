@@ -105,3 +105,6 @@ Decided by the owner on 2026-10-10, each the recommendation offered.
 | AO-5 | RTL default | When a consumer does not say, a card follows the app's layout direction; output changes only in RTL locales; shipped as a patch under that stated assumption. |
 | AO-7 | Tracking an open card | Event-driven, with a frame poll kept only while the trigger sits in a scroller the kit cannot hear. |
 
+The coordinator's reading of AO-2 under the WAI-ARIA APG combobox pattern, reported to the owner on 2026-10-10: Autocomplete's suggestion list belongs to its combobox field, which keeps focus while the list is open, so it is not one of the cards AO-2 makes modal; a modal list would hide the field the user types in from VoiceOver and TalkBack (a trap, WCAG 2.1.2). It stays non-modal.
+
+AO-9 (no page documents AnchoredOverlay or its companions) is deferred, not open: the approved plan's Steps put K12-10, the generated `/foundation` reference page (the owner's K12-10 OD2 decision, which lists the K12-2 deprecated aliases with their replacements), in the FoundationReference turn, which carries it.
