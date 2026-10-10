@@ -42,6 +42,10 @@ export const sizedSkin = { box: (size: Size) => ({ borderRadius: size === "small
 export const wholeSkin = { outline: { borderRadius: shape.ios.card }, editor: { borderRadius: shape.ios.field }, dot: { borderRadius: 9999 } };
 // The menu skin at its 12px corner, its dots round.
 export const menuSkin = { card: { borderRadius: shape.web.menu }, dot: { borderRadius: 9999 } };
+// The iOS 12pt corner, on rows that draw 8.
+export const versionSkin = { row: { borderRadius: shape.web.control } };
+// The Material 3 continuous look, and the iOS 26 corner style: versions, not corners.
+export const plainSkin = { row: { borderRadius: shape.web.control } };
 `;
 
 const ENTRY = `import { iosSkin } from "./z.styles.js";
@@ -125,6 +129,12 @@ describe("a corner a comment states", () => {
     ]);
     // A dot drawn as the pill is a shape, not a corner of its own.
     expect(at(FILES[0], 27).map((c) => [c.value, c.drawn])).toEqual([[12, true]]);
+  });
+
+  it("reads a measure after a platform or version word, and leaves the version alone", () => {
+    // "iOS 12pt" states a corner; "Material 3" and "iOS 26" name a version.
+    expect(at(FILES[0], 29).map((c) => [c.value, c.drawn])).toEqual([[12, false]]);
+    expect(at(FILES[0], 31)).toEqual([]);
   });
 
   it("is held to some element: code that draws no corner holds no claim", () => {
