@@ -38,8 +38,9 @@
 //
 // Exit status: 0 when every step ran and every run captured all it planned (a state not
 // reached is captured, as audit:web counts it: its reason is the record, and a finding);
-// 1 when a step failed or a run left cells failed or missing (the runs are still
-// recorded); 2 for a usage error or a refusal (a stale export, an unknown slug).
+// 1 when a step failed, a capture took no cell, or a run left cells failed or missing (the
+// runs are still recorded); 2 for a usage error or a refusal (a stale export, an unknown
+// slug), read off the capture's run manifests as well as its exit status (`captureVerdict`).
 
 import { spawn } from "node:child_process";
 import { createRequire } from "node:module";
@@ -371,12 +372,51 @@ export function runCells(platform: string, manifest: Record<string, unknown> | n
   return { text, whole: !manifest.refused && !manifest.abandoned && num(summary.failed) === 0 && num(summary.cells) === queued };
 }
 
+/** What a capture step's runs say about it: what its manifests record, beside the command's exit status. */
+export interface MadeRun {
+  id: string;
+  status: string;
+  /** The cells it recorded (a state not reached counts: its reason is the record). */
+  cells: number;
+  /** Why it was refused, as its manifest says (a web run's `refusal` or its served `reason`, a native run's `refused`). */
+  refusal: string | null;
+}
+
+export type CaptureVerdict = { kind: "none" } | { kind: "refused"; reason: string } | { kind: "empty" } | { kind: "captured" };
+
+/**
+ * Whether a capture step may go on: a step that made no run was a usage error; one whose
+ * command exited 2 or one of whose runs its manifest records as refused (a stale export, a
+ * server whose source could not be told) is a refusal, whatever the exit status said; one
+ * whose runs took no cell at all captured nothing the next steps could use. Otherwise it
+ * captured, and failed or missing cells are counted, not stopped on.
+ */
+export function captureVerdict(code: number, runs: readonly MadeRun[]): CaptureVerdict {
+  if (!runs.length) return { kind: "none" };
+  const refused = runs.find((run) => run.status === "refused");
+  if (refused || code === 2) return { kind: "refused", reason: refused ? `${refused.id} is refused${refused.refusal ? `: ${refused.refusal}` : ""}` : `the command exited 2` };
+  if (runs.every((run) => run.cells === 0)) return { kind: "empty" };
+  return { kind: "captured" };
+}
+
+/** A run's recorded cells and refusal, read off its manifest. */
+export function madeRun(id: string, platform: string, status: string, manifest: Record<string, unknown> | null): MadeRun {
+  const obj = (v: unknown) => (v !== null && typeof v === "object" ? (v as Record<string, unknown>) : null);
+  const str = (v: unknown) => (typeof v === "string" && v !== "" ? v : null);
+  const cells = platform === "web" ? obj(manifest?.results)?.cells : obj(manifest?.summary)?.cells;
+  const refusal = platform === "web" ? (str(manifest?.refusal) ?? str(obj(manifest?.served)?.reason)) : str(manifest?.refused);
+  return { id, status, cells: typeof cells === "number" ? cells : 0, refusal: status === "refused" ? refusal : null };
+}
+
 /** The runs a step made: the runs under .audit/runs now that were not there before it, as turn record rows. */
-function newRuns(root: string, before: Set<string>, kind: RunKind, slugs: string[], recorded: string): { rows: TurnRun[]; whole: boolean } {
+function newRuns(root: string, before: Set<string>, kind: RunKind, slugs: string[], recorded: string): { rows: TurnRun[]; whole: boolean; runs: MadeRun[] } {
   const made = listRuns(root).runs.filter((run) => !before.has(run.id) && RUN_ID.test(run.id));
   let whole = made.length > 0;
+  const runs: MadeRun[] = [];
   const rows = made.map((run) => {
-    const cells = runCells(run.platform, readManifest(run));
+    const manifest = readManifest(run);
+    runs.push(madeRun(run.id, run.platform, run.status, manifest));
+    const cells = runCells(run.platform, manifest);
     if (!cells.whole) whole = false;
     return {
       runId: run.id,
@@ -389,7 +429,7 @@ function newRuns(root: string, before: Set<string>, kind: RunKind, slugs: string
       slugs: slugs.join(", "),
     } satisfies TurnRun;
   });
-  return { rows, whole };
+  return { rows, whole, runs };
 }
 
 /** The sheets and index a slug has under .audit/current, as lines to print: the index, then each sheet directory with its files. */
@@ -503,9 +543,14 @@ async function runSteps(plan: TurnPlan, args: Pick<TurnArgs, "devices">, recorde
         const code = await runCommand(argv);
         const made = newRuns(ROOT, before, step.run, step.slugs, new Date().toISOString());
         recorded.push(...made.rows);
-        if (code === 2 || !made.rows.length) {
-          console.error(`audit:turn: audit:web ${made.rows.length ? "refused the capture" : "made no run"} (exit ${code}); stopping`);
+        const verdict = captureVerdict(code, made.runs);
+        if (verdict.kind === "none" || verdict.kind === "refused") {
+          console.error(`audit:turn: audit:web ${verdict.kind === "none" ? "made no run" : `refused the capture (${verdict.reason})`} (exit ${code}); stopping`);
           return 2;
+        }
+        if (verdict.kind === "empty") {
+          console.error(`audit:turn: audit:web took no cell (exit ${code}); stopping before the steps that would read its captures`);
+          return 1;
         }
         if (code !== 0 || !made.whole) failed = true;
         if (index === lastCapture && server) {
@@ -526,8 +571,17 @@ async function runSteps(plan: TurnPlan, args: Pick<TurnArgs, "devices">, recorde
         const code = await runCommand(step.argv);
         const made = newRuns(ROOT, before, "native", step.slugs, new Date().toISOString());
         recorded.push(...made.rows);
-        if (!made.rows.length) {
+        const verdict = captureVerdict(code, made.runs);
+        if (verdict.kind === "none") {
           console.error(`audit:turn: audit:native made no run (exit ${code}); stopping`);
+          return 1;
+        }
+        if (verdict.kind === "refused") {
+          console.error(`audit:turn: audit:native refused the capture (${verdict.reason}) (exit ${code}); stopping`);
+          return 2;
+        }
+        if (verdict.kind === "empty") {
+          console.error(`audit:turn: audit:native took no cell (exit ${code}); stopping before the steps that would read its captures`);
           return 1;
         }
         if (code !== 0 || !made.whole) failed = true;
