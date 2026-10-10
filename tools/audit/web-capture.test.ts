@@ -33,6 +33,7 @@ import {
   stateCellId,
   summarizeCells,
   webCellId,
+  webRunOutcome,
   webPageCellId,
   workersFrom,
   type CellRecord,
@@ -239,6 +240,30 @@ describe("what a run captures", () => {
     expect(stateCellId({ slug: "dropdown", name: "disabled-disableditem", row: "web", width: { key: "desktop" }, look: "blush", surface: "solid" })).toBe("web-states/dropdown/disabled-disableditem.web/desktop.blush.solid");
     const signin = pageList.find((p) => p.id === "template-signin")!;
     expect(webPageCellId({ page: signin, width, look: "mint", surface: "solid" })).toBe("web-pages/template-signin/phone.mint.solid");
+  });
+});
+
+describe("how a web run ends", () => {
+  const run = (over: Partial<Parameters<typeof webRunOutcome>[0]>) => webRunOutcome({ served: { fresh: true, allowStale: false, reason: undefined }, started: true, interrupted: false, cells: 72, planned: 72, failed: 0, exitCode: 0, ...over });
+
+  it("refuses a stale export, or a server its global setup never recorded, with exit 2", () => {
+    const stale = { fresh: false, allowStale: false, reason: "serves an export built from source aaaa, but this checkout's source is bbbb" };
+    expect(run({ served: stale, cells: 0, exitCode: 1 })).toEqual({ status: "refused", refusal: stale.reason, exit: 2 });
+    // The global setup stopped before it recorded the server: whose source it shows is unknown.
+    const unrecorded = run({ served: null, cells: 0, exitCode: 1 });
+    expect(unrecorded).toMatchObject({ status: "refused", exit: 2 });
+    expect(unrecorded.refusal).toContain("recorded nothing about the server");
+    // --allow-stale captures it anyway.
+    expect(run({ served: { ...stale, allowStale: true } })).toEqual({ status: "complete", refusal: null, exit: 0 });
+  });
+
+  it("is complete only when every planned cell was taken, and exits 1 for a failure or a stop", () => {
+    expect(run({})).toEqual({ status: "complete", refusal: null, exit: 0 });
+    expect(run({ failed: 2, exitCode: 1 })).toEqual({ status: "complete", refusal: null, exit: 1 });
+    expect(run({ cells: 70, exitCode: 1 })).toEqual({ status: "incomplete", refusal: null, exit: 1 });
+    expect(run({ interrupted: true, cells: 10 })).toEqual({ status: "interrupted", refusal: null, exit: 1 });
+    // Playwright that never started is a stop, not a refusal: nothing was asked of a server.
+    expect(run({ served: null, started: false, cells: 0, exitCode: 1 })).toEqual({ status: "incomplete", refusal: null, exit: 1 });
   });
 });
 

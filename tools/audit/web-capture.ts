@@ -918,6 +918,37 @@ export interface ServedRecord extends ServedIdentity, Freshness {
   allowStale: boolean;
 }
 
+/** How a web run ended, for its manifest and its exit status. */
+export interface WebRunOutcome {
+  status: "refused" | "interrupted" | "complete" | "incomplete";
+  /** Why it captured nothing, when it was refused. */
+  refusal: string | null;
+  /** 0 when every planned cell was captured and none failed; 1 when one failed or the capture stopped early; 2 for a refusal. */
+  exit: 0 | 1 | 2;
+}
+
+/**
+ * A web run's outcome. Only this checkout's source is captured, so a run is refused when its
+ * global setup found the server showing another checkout's source (and `--allow-stale` was not
+ * given), and equally when Playwright ran but the global setup recorded nothing about the server
+ * and no cell was taken: it stopped before it could tell whose source the server shows (the
+ * server down, its diagnostics page not loading), so nothing could be captured as this
+ * checkout's. Either way the run is `refused` and the command exits 2, which the turn stops on.
+ */
+export function webRunOutcome(run: { served: Pick<ServedRecord, "fresh" | "allowStale" | "reason"> | null; started: boolean; interrupted: boolean; cells: number; planned: number; failed: number; exitCode: number }): WebRunOutcome {
+  if (run.served && !run.served.fresh && !run.served.allowStale) return { status: "refused", refusal: run.served.reason ?? "the server does not show this checkout's source", exit: 2 };
+  if (!run.served && run.started && !run.interrupted && run.cells === 0) {
+    return {
+      status: "refused",
+      refusal: "the capture's global setup recorded nothing about the server it was to capture (it stopped before it read /testing/diagnostics; Playwright's error is above), so whose source the server shows is unknown and no cell was taken",
+      exit: 2,
+    };
+  }
+  if (run.interrupted) return { status: "interrupted", refusal: null, exit: 1 };
+  const complete = run.cells === run.planned;
+  return { status: complete ? "complete" : "incomplete", refusal: null, exit: complete && run.failed === 0 && run.exitCode === 0 ? 0 : 1 };
+}
+
 /** One line on what was captured: the kind of server, whose source it shows, and the verdict. */
 export function describeServed(served: ServedRecord): string {
   const verdict = served.fresh ? "this checkout" : served.allowStale ? "NOT this checkout, captured with --allow-stale" : "NOT this checkout";

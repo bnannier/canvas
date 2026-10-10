@@ -31,7 +31,9 @@
 // checkout's `sourceFingerprint()`; a live dev server (Metro) builds from the source on
 // disk, so it is recorded as one, and the project root its /status names must be this
 // checkout's docs app. A refusal stops the run before its first cell and lands in the
-// manifest as `refused`.
+// manifest as `refused`, with its reason under `refusal`; so does a global setup that
+// stopped before it recorded the server at all (the server down, its diagnostics page not
+// loading), since whose source that server shows is unknown (web-capture.ts `webRunOutcome`).
 //
 // The manifest's capture settings (browser, device scale, reduced motion, the fixed clock,
 // the launch switches) are read off playwright.audit.config.ts and e2e/support/docs.ts
@@ -69,6 +71,7 @@ import {
   runDirName,
   splitOnly,
   summarizeCells,
+  webRunOutcome,
   workersFrom,
   type CaptureKinds,
   type CaptureSettings,
@@ -177,8 +180,8 @@ async function main(): Promise<number> {
   const sha = git("rev-parse", "HEAD");
   const dirty = git("status", "--porcelain", "--untracked-files=normal") !== "";
   const packageVersion = (JSON.parse(readFileSync(join(ROOT, "package.json"), "utf8")) as { version: string }).version;
-  const started = new Date();
-  const id = runDirName(started, "web", sha);
+  const startedAt = new Date();
+  const id = runDirName(startedAt, "web", sha);
   const runDir = join(ROOT, RUNS_DIR, id);
   if (existsSync(runDir)) {
     console.error(`audit:web: ${relative(ROOT, runDir)} already exists`);
@@ -192,7 +195,7 @@ async function main(): Promise<number> {
     id,
     platform: "web",
     status: "running",
-    startedAt: started.toISOString(),
+    startedAt: startedAt.toISOString(),
     finishedAt: null,
     command: ["bun", "run", "audit:web", "--", ...process.argv.slice(2)].join(" "),
     source: { sha, dirty, packageVersion },
@@ -255,9 +258,11 @@ async function main(): Promise<number> {
   };
   process.on("SIGINT", onInterrupt);
   process.on("SIGTERM", onTerminate);
+  let started = true;
   const exitCode = await new Promise<number>((resolve) => {
     child.on("exit", (code, signal) => resolve(code ?? (signal ? 130 : 1)));
     child.on("error", (error) => {
+      started = false;
       console.error(`audit:web: could not start Playwright: ${error.message}`);
       resolve(1);
     });
@@ -272,16 +277,16 @@ async function main(): Promise<number> {
   const cellsPath = join(runDir, CELLS_FILE);
   const { records, unreadable } = existsSync(cellsPath) ? readCellRecords(readFileSync(cellsPath, "utf8")) : { records: [], unreadable: 0 };
   const summary: CellSummary = summarizeCells(records);
-  const refused = served !== null && !served.fresh && !served.allowStale;
-  const complete = !refused && !interrupted && summary.cells === planned.cells;
-  const status = refused ? "refused" : interrupted ? "interrupted" : complete ? "complete" : "incomplete";
-  const wallMs = finished.getTime() - started.getTime();
+  const outcome = webRunOutcome({ served, started, interrupted, cells: summary.cells, planned: planned.cells, failed: summary.failed, exitCode });
+  const { status } = outcome;
+  const wallMs = finished.getTime() - startedAt.getTime();
   const bytes = diskBytes(runDir);
 
   Object.assign(manifest, {
     status,
     finishedAt: finished.toISOString(),
     served,
+    refusal: outcome.refusal,
     results: {
       playwrightExitCode: exitCode,
       cells: summary.cells,
@@ -304,10 +309,10 @@ async function main(): Promise<number> {
   console.log("");
   console.log(`audit:web ${id}: ${status}`);
   if (served) console.log(`  served   ${describeServed(served)}`);
-  if (refused) {
-    console.error(`  refused  ${served!.reason}`);
+  if (outcome.refusal !== null) {
+    console.error(`  refused  ${outcome.refusal}`);
     console.log(`  manifest ${relative(ROOT, manifestPath)}`);
-    return 2;
+    return outcome.exit;
   }
   console.log(
     `  captured ${summary.cells} of ${planned.cells} cells: ${summary.ok} ok, ${summary.failed} failed` +
@@ -324,7 +329,7 @@ async function main(): Promise<number> {
   if (summary.unreached.length > 20) console.log(`  unreached ... and ${summary.unreached.length - 20} more (manifest.json)`);
   if (unreadable) console.log(`  warning  ${unreadable} unreadable line(s) in ${CELLS_FILE}`);
   console.log(`  output   ${relative(ROOT, runDir)}`);
-  return complete && summary.failed === 0 && exitCode === 0 ? 0 : 1;
+  return outcome.exit;
 }
 
 process.exit(await main());
