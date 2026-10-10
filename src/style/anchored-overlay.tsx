@@ -31,8 +31,8 @@
 // and the keyboard, on all four edges, every edge kept 8px inside it. Leading and
 // trailing follow the app's layout direction, and the physical insets go out under
 // the style keys React Native resolves in a right-to-left layout. At the phone form
-// factor a card that offers a sheet (`sheetStyle`) and can close is a sheet along the
-// bottom of the window instead.
+// factor a card that offers a sheet (`sheetStyle`) and can close is a sheet on the
+// bottom edge of the window instead, over the app's declared chrome.
 //
 // Tracking: while the backdrop is up the page under it takes no touches or wheel, but
 // a keyboard or an app can still scroll it, and no layout event reports a scroll. An
@@ -254,13 +254,14 @@ export interface AnchoredOverlayProps {
    */
   returnFocusRef?: RefObject<View | null>;
   /**
-   * Present the card as a SHEET at the phone form factor: along the bottom of its
-   * window's visible band (above the home indicator and the keyboard), as wide as its
-   * frame allows up to 640, over a dimming scrim, wearing this style (the skin's sheet:
-   * its corners, padding and fill) in place of `cardStyle`, with no `decoration`. Only a
-   * card that can close becomes a sheet; a card pinned open stays anchored. Omit it to
-   * stay anchored at every form factor (menus and option lists do, as HIG and Material 3
-   * keep them).
+   * Present the card as a SHEET at the phone form factor: on the bottom edge of its
+   * window (the keyboard's top while it is up), over the app's declared chrome as a modal
+   * sheet covers a tab bar, across the window's safe width up to 640, over a dimming
+   * scrim, wearing this style (the skin's sheet: its corners, padding, fill and any float
+   * off the edges) in place of `cardStyle`, with no `decoration`; its content is padded
+   * clear of the home indicator. Only a card that can close becomes a sheet; a card
+   * pinned open stays anchored. Omit it to stay anchored at every form factor (menus and
+   * option lists do, as HIG and Material 3 keep them).
    */
   sheetStyle?: StyleProp<ViewStyle>;
 }
@@ -543,6 +544,8 @@ interface FrameOffset { left: number; top: number; right: number; bottom: number
 const IN_PLACE: FrameOffset = { left: 0, top: 0, right: 0, bottom: 0 };
 // A frame-relative edge distance moved to the layer's edge; an unset edge stays unset.
 const toLayer = (edge: number | undefined, offset: number) => (edge == null ? undefined : edge + offset);
+// A skin's style length in points: a number, or nothing for anything else.
+const lengthOf = (value: unknown) => (typeof value === "number" ? value : 0);
 
 /** What placeOverlay reads besides the trigger's box. */
 export interface PlaceOverlayOptions {
@@ -677,6 +680,10 @@ function HostedAnchoredOverlay({ host, frame, onDismiss, onAccessibilityEscape, 
   // horizontal edges are cut to the frame's box.
   const [outlet, setOutlet] = useState<{ height: number; visibleTop: number; visibleBottom: number; visibleLeft: number; visibleRight: number } | null>(null);
   const [layoutRevision, setLayoutRevision] = useState(0);
+  // A sheet's window: the layer's box cut at the keyboard, and its safe area, in the
+  // coordinates of the layer the sheet paints in (null for a host that cannot say, whose
+  // sheet stands in the band instead).
+  const [sheetWindow, setSheetWindow] = useState<{ window: Rect; safe: Rect } | null>(null);
   // `cap` is the height cap the card was wearing when it reported `card`; the
   // readiness gate below compares it with the cap the fit now applies.
   const [sizes, setSizes] = useState<{ content: number | null; viewport: number | null; card: number | null; width: number | null; cap: number | null }>({ content: null, viewport: null, card: null, width: null, cap: null });
@@ -743,8 +750,11 @@ function HostedAnchoredOverlay({ host, frame, onDismiss, onAccessibilityEscape, 
         let outletBox: Rect | null = null;
         let layerBox: Rect | null = null;
         let band: Rect | null = null;
+        // A sheet stands in its layer's window rather than its frame's band.
+        const wantsWindow = sheet && layer.measureWindowBounds != null;
+        let windowBounds: { window: Rect; safe: Rect } | null = null;
         const settle = () => {
-          if (cancelled || landed || !triggerBox || !outletBox || (!inPlace && !layerBox)) return;
+          if (cancelled || landed || !triggerBox || !outletBox || (!inPlace && !layerBox) || (wantsWindow && !windowBounds)) return;
           // A host without a visible band is bounded by its outlet.
           const visible = frame.measureVisibleBounds ? band : outletBox;
           if (!visible) return;
@@ -775,6 +785,9 @@ function HostedAnchoredOverlay({ host, frame, onDismiss, onAccessibilityEscape, 
             right: layerBox.x + layerBox.width - (outletBox.x + outletBox.width),
             bottom: layerBox.y + layerBox.height - (outletBox.y + outletBox.height),
           });
+          const paint = layerBox ?? outletBox;
+          const inPaint = (box: Rect): Rect => ({ x: box.x - paint.x, y: box.y - paint.y, width: box.width, height: box.height });
+          setSheetWindow(windowBounds ? { window: inPaint(windowBounds.window), safe: inPaint(windowBounds.safe) } : null);
           stopTracking = track(trigger, placed(triggerBox, outletBox, layerBox));
         };
         trigger.measureInWindow((x, y, w, h) => {
@@ -783,6 +796,10 @@ function HostedAnchoredOverlay({ host, frame, onDismiss, onAccessibilityEscape, 
         });
         frame.measureOutlet((x, y, w, h) => {
           outletBox = { x, y, width: w, height: h };
+          settle();
+        });
+        if (wantsWindow) layer.measureWindowBounds!((window, safe) => {
+          windowBounds = { window, safe };
           settle();
         });
         frame.measureVisibleBounds?.((bounds) => {
@@ -849,7 +866,7 @@ function HostedAnchoredOverlay({ host, frame, onDismiss, onAccessibilityEscape, 
       cancelAnimationFrame(raf);
       stopTracking?.();
     };
-  }, [frame, layer, inPlace, triggerRef, gap, layoutRevision, ancestry, unheard]);
+  }, [frame, layer, inPlace, triggerRef, gap, layoutRevision, ancestry, unheard, sheet]);
 
   // The visible band's width, and the room a card has inside it once its 8px insets
   // are kept on both sides.
@@ -895,8 +912,24 @@ function HostedAnchoredOverlay({ host, frame, onDismiss, onAccessibilityEscape, 
   const fit = rect && outlet ? fitOverlayHeight({ triggerTop: rect.y, triggerHeight: rect.height, outletHeight: outlet.height, visibleTop: outlet.visibleTop, visibleBottom: outlet.visibleBottom, desiredHeight, currentSide: lastSide.current, gap, beside: horizontal?.side }) : null;
   const fittedSide = fit?.side;
   const anchorGeometry = useMemo(() => ({ side: fittedSide ?? "below", centerX: anchorCenter, cardWidth: renderedCardWidth ?? undefined }), [fittedSide, anchorCenter, renderedCardWidth]);
-  // A sheet stands on the band's bottom and may rise to SHEET_TOP_GAP below its top.
-  const sheetCap = outlet ? Math.max(0, outlet.visibleBottom - outlet.visibleTop - SHEET_TOP_GAP) : null;
+  // A sheet stands in its layer's window, in the layer's coordinates: on the window's
+  // bottom edge (the keyboard's top while it is up) over the app's declared chrome, as a
+  // modal sheet covers a tab bar, across the window's safe width (centered, up to
+  // SHEET_MAX_WIDTH), rising at most to SHEET_TOP_GAP below the safe area's top. Its fill
+  // runs to that edge (less the skin's own bottom margin, a detached sheet's float), and
+  // the part of it below the safe area (the home indicator, the gesture bar) pads its
+  // content clear. A host that cannot measure its window stands it in the band.
+  const paintWidth = outletWidth != null ? frameOffset.left + outletWidth + frameOffset.right : null;
+  const paintHeight = outlet ? frameOffset.top + outlet.height + frameOffset.bottom : null;
+  const band: Rect | null = outlet ? { x: outlet.visibleLeft + frameOffset.left, y: outlet.visibleTop + frameOffset.top, width: Math.max(0, outlet.visibleRight - outlet.visibleLeft), height: Math.max(0, outlet.visibleBottom - outlet.visibleTop) } : null;
+  const stand = sheet ? sheetWindow ?? (band ? { window: band, safe: band } : null) : null;
+  const flatSheet = sheet ? StyleSheet.flatten(sheetStyle) : undefined;
+  const sheetMargin = lengthOf(flatSheet?.marginBottom ?? flatSheet?.marginVertical ?? flatSheet?.margin);
+  const sheetPadding = lengthOf(flatSheet?.paddingBottom ?? flatSheet?.paddingVertical ?? flatSheet?.padding);
+  const sheetEdge = stand ? stand.window.y + stand.window.height : null;
+  const sheetSide = stand ? Math.max(0, (stand.safe.width - SHEET_MAX_WIDTH) / 2) : 0;
+  const sheetCap = stand && sheetEdge != null ? Math.max(0, sheetEdge - sheetMargin - stand.safe.y - SHEET_TOP_GAP) : null;
+  const sheetInset = stand && sheetEdge != null ? Math.max(0, sheetEdge - sheetMargin - (stand.safe.y + stand.safe.height)) : 0;
   const cap = sheet ? sheetCap : fit ? Math.min(fit.maxHeight, skinMaxHeight) : null;
   // The card mounts under the cap of the side it is first fitted to, and its
   // reports can move the fit to the other side with a different cap (a list
@@ -923,7 +956,8 @@ function HostedAnchoredOverlay({ host, frame, onDismiss, onAccessibilityEscape, 
     // while a filter shortens it.
     if (measured && (fittedSide === "above" || fittedSide === "below")) lastSide.current = fittedSide;
   }, [measured, fittedSide]);
-  const cappedStyle = sheet ? [sheetStyle, { maxHeight: cap! }] : fit ? [fittedCardStyle, { maxHeight: cap! }] : fittedCardStyle;
+  const cappedStyle = sheet ? [sheetStyle, sheetInset > 0 ? { maxHeight: cap!, paddingBottom: sheetPadding + sheetInset } : { maxHeight: cap! }]
+    : fit ? [fittedCardStyle, { maxHeight: cap! }] : fittedCardStyle;
 
   // A card that can close is modal to VoiceOver and TalkBack while it is shown (the
   // owner's AO-2 decision, as HIG treats a popover): it holds its window layer's page
@@ -945,15 +979,14 @@ function HostedAnchoredOverlay({ host, frame, onDismiss, onAccessibilityEscape, 
   const frameRoom = !inPlace && anchorEdge != null && outletWidth != null && outletWidth > 0 ? outletWidth - anchorEdge : undefined;
   const maxWidth = frameRoom != null && room != null ? Math.min(frameRoom, room) : frameRoom ?? room ?? undefined;
   // The physical insets, moved to the layer, under the keys the renderer resolves. A
-  // sheet spans its frame's part of the band (centered, up to SHEET_MAX_WIDTH) and
-  // stands on the band's bottom edge; a card sits where placeOverlay and the fit put it.
-  const sheetSide = outlet && bandWidth != null ? Math.max(0, (bandWidth - SHEET_MAX_WIDTH) / 2) : 0;
-  const left = sheet ? (outlet ? toLayer(outlet.visibleLeft + sheetSide, frameOffset.left) : undefined)
+  // sheet stands where its window puts it (above); a card sits where placeOverlay and
+  // the fit put it.
+  const left = sheet ? (stand ? stand.safe.x + sheetSide : undefined)
     : horizontal ? toLayer(horizontal.left, frameOffset.left) : undefined;
-  const right = sheet ? (outlet && outletWidth != null ? toLayer(outletWidth - outlet.visibleRight + sheetSide, frameOffset.right) : undefined)
+  const right = sheet ? (stand && paintWidth != null ? paintWidth - (stand.safe.x + stand.safe.width) + sheetSide : undefined)
     : horizontal ? toLayer(horizontal.right, frameOffset.right) : undefined;
   const top = sheet ? undefined : fit ? toLayer(fit.top, frameOffset.top) : undefined;
-  const bottom = sheet ? (outlet ? toLayer(outlet.height - outlet.visibleBottom, frameOffset.bottom) : undefined)
+  const bottom = sheet ? (sheetEdge != null && paintHeight != null ? paintHeight - sheetEdge : undefined)
     : fit ? toLayer(fit.bottom, frameOffset.bottom) : undefined;
 
   return (
