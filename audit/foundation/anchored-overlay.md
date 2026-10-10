@@ -6,13 +6,14 @@ Audit checklist for the style-layer foundation `AnchoredOverlay`, audited for it
 | Fact | Value |
 |---|---|
 | Foundation | `AnchoredOverlay`, a style-layer renderable with no component page of its own (`tools/materials/manifest.ts`, the style tier), declared in `src/style/anchored-overlay.tsx` |
-| Source files | `src/style/anchored-overlay.tsx` |
+| Source files | `src/style/anchored-overlay.tsx`, `src/style/breakpoint-override.ts`, `src/style/glass-surface/glass-surface.shared.tsx`, `src/style/overlay-layer.tsx`, `src/style/overlay-layout.ts`, `src/style/overlay-scroll.tsx`, `src/style/theme-context.tsx` (its homes, its exports' declarations and its implementation, the private declarations they read) |
+| Seams | 12, the private declarations it alone reads (`tools/audit/foundations.ts` `foundationCode`), which its consumers are also found through: `BACKDROP` (src/style/anchored-overlay.tsx), `CLAMP_INSET` (src/style/anchored-overlay.tsx), `HostedAnchoredOverlay` (src/style/anchored-overlay.tsx), `IN_PLACE` (src/style/anchored-overlay.tsx), `OverlayCard` (src/style/anchored-overlay.tsx), `OverlaySideContext` (src/style/anchored-overlay.tsx), `toLayer` (src/style/anchored-overlay.tsx), `OverlayFrameContext` (src/style/overlay-layer.tsx), `PortalInto` (src/style/overlay-layer.tsx), `EPSILON` (src/style/overlay-layout.ts), `INSET` (src/style/overlay-layout.ts), `fitOverlayHeight` (src/style/overlay-layout.ts) |
 | Public exports | 5: `AnchoredOverlay` (internal-by-accident), `AnchoredOverlayProps` (internal-by-accident, a type), `placeOverlay` (internal-by-accident), `useOverlayAnchor` (internal-by-accident), `useOverlaySide` (internal-by-accident) |
 | K12-2 status | 5 deprecated alias to come (K12-2): AnchoredOverlay, AnchoredOverlayProps, placeOverlay, useOverlayAnchor, useOverlaySide |
 | Documented on | none yet: the public API manifest names no page for any of its exports |
 | Docs planned | `foundation` (not built yet): AnchoredOverlay, AnchoredOverlayProps, placeOverlay, useOverlayAnchor, useOverlaySide |
 | Materials manifest | AnchoredOverlay: style, static + liquid; docs route none (`docsRoute: null`); verification solid-appearance, glass-appearance, mode-switch, accessibility-fallback, runtime-capability, semantic-state |
-| Tests importing it | 3 (importing one of its public exports by name): `test/behavior.test.tsx`, `test/dense-overlays.test.tsx`, `test/entrance-readiness.test.tsx` |
+| Tests of it | 7 (importing one of its public exports or one of its implementation's declarations by name, or named for it, `test/anchored-overlay[-<what>].test.tsx`): `test/anchored-overlay-dismissal.test.tsx`, `test/behavior.test.tsx`, `test/dense-overlays.test.tsx`, `test/entrance-readiness.test.tsx`, `test/material-portal-context.test.tsx`, `test/native-accessibility-escape-hosts.test.tsx`, `test/overlay-placement.test.tsx` |
 | Consumers | 13 components: 9 directly, 4 through other kit components (one row each below, read from the source by `tools/audit/kit-graph.ts`) |
 | Pages using it | none: no pattern or template entry names one of its exports |
 | Capture through | 13, in this order: components `autocomplete`, `button-group`, `dropdown`, `popover`, `select`, `phone-input`, `calendar`, `command`, `row-menu`, `avatar`, `field`, `board`, `navbars`; pages none |

@@ -3,9 +3,9 @@ import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { ROOT } from "../../e2e/support/routes.ts";
-import { DECIDED_DEPRECATIONS, findFoundation, foundationFacts, foundationId, foundationSources, foundations, importsFoundation, k12Status, tokenPages } from "./foundations.ts";
+import { DECIDED_DEPRECATIONS, findFoundation, foundationCode, foundationFacts, foundationId, foundationSources, foundations, importsFoundation, importsImplementation, k12Status, namedFor, tokenPages } from "./foundations.ts";
 import { components, pages } from "./inventory.ts";
-import { KitGraph, MODULE_BODY, UnreadableKitModule, consumersOf, moduleFiles, moduleStem, type ConsumerCandidate } from "./kit-graph.ts";
+import { KitGraph, MODULE_BODY, UnreadableKitModule, consumersOf, moduleFiles, moduleStem, ownersByReaders, type ConsumerCandidate } from "./kit-graph.ts";
 import { FOUNDATION_PLANS, STYLE_LAYER_RENDERABLES, TOKENS_FOUNDATION } from "./plan-specifics.ts";
 
 /** A throwaway kit: files under a temporary root, read by the same graph the facts use. */
@@ -87,6 +87,51 @@ describe("the consumer reader (tools/audit/kit-graph.ts)", () => {
       ]);
       // The module body is a node of its own, read by every declaration of the module.
       expect(graph.edges().get("src/atoms/g/g.tsx#G")).toContain(`src/atoms/g/g.tsx#${MODULE_BODY}`);
+    } finally {
+      kit.done();
+    }
+  });
+
+  it("tells a foundation's own private declaration from a shared one by its readers, and lets a relay carry it", () => {
+    const kit = fixture({
+      // The seam: a context only its foundation provides and reads.
+      "src/style/seam.ts": `import { createContext } from "react";\nexport const SeamContext = createContext<string | null>(null);\n`,
+      "src/style/util.ts": `export const both = 1;\nexport const hidden = 2;\n`,
+      // The foundation: provides and reads the seam, and reads two helpers.
+      "src/style/thing.tsx": `import { useContext } from "react";\nimport { SeamContext } from "./seam.js";\nimport { both, hidden } from "./util.js";\nexport function Thing({ value }: { value: string }) { return <SeamContext.Provider value={value}>{both}{hidden}</SeamContext.Provider>; }\nexport function useThing() { return useContext(SeamContext); }\n`,
+      // A shared layer that relays the seam into what it publishes: it reads the context and provides it again.
+      "src/style/layer.tsx": `import { useContext } from "react";\nimport { SeamContext } from "./seam.js";\nexport function relay(children: unknown) { const value = useContext(SeamContext); return <SeamContext.Provider value={value}>{children}</SeamContext.Provider>; }\n`,
+      // Another foundation: publishes through the layer, and reads one of the helpers too.
+      "src/style/other.tsx": `import { relay } from "./layer.js";\nimport { both } from "./util.js";\nexport function Other() { return relay(both); }\n`,
+      // Shared vocabulary a component reads directly, which reads the other helper.
+      "src/style/vocab.ts": `import { hidden } from "./util.js";\nexport function useVocab() { return hidden; }\n`,
+      "src/atoms/a/a.tsx": `import { Other } from "../../style/other.js";\nexport const A = () => <Other />;\n`,
+      "src/atoms/b/b.tsx": `import { useVocab } from "../../style/vocab.js";\nexport const B = () => useVocab();\n`,
+    });
+    try {
+      const graph = new KitGraph(kit.root);
+      const id = (file: string, name: string) => `src/style/${file}#${name}`;
+      expect([...graph.relays(id("layer.tsx", "relay"))]).toEqual([id("seam.ts", "SeamContext")]);
+      // Providing a context without reading it is not relaying it.
+      expect([...graph.relays(id("thing.tsx", "Thing"))]).toEqual([]);
+      const seed = new Map([
+        [id("thing.tsx", "Thing"), new Set(["thing"])],
+        [id("thing.tsx", "useThing"), new Set(["thing"])],
+        [id("other.tsx", "Other"), new Set(["other"])],
+      ]);
+      const within = new Set([id("seam.ts", "SeamContext"), id("layer.tsx", "relay"), id("util.ts", "both"), id("util.ts", "hidden")]);
+      const owners = ownersByReaders(graph, seed, within);
+      // The seam is the foundation's: the layer only relays it.
+      expect([...owners.get(id("seam.ts", "SeamContext"))!]).toEqual(["thing"]);
+      expect([...owners.get(id("layer.tsx", "relay"))!]).toEqual(["other"]);
+      // Read by two foundations, or by vocabulary a component reads: nobody's.
+      expect([...owners.get(id("util.ts", "both"))!]).toEqual([]);
+      expect([...owners.get(id("util.ts", "hidden"))!]).toEqual([]);
+      // A component reaches the foundation through the relay once the seam is a target.
+      const targets = [{ file: "src/style/thing.tsx", name: "Thing" }, { file: "src/style/seam.ts", name: "SeamContext" }];
+      expect(consumersOf(graph, targets, [{ slug: "a", modules: ["src/atoms/a/a.tsx"], sourceDir: "src/atoms/a" }, { slug: "b", modules: ["src/atoms/b/b.tsx"], sourceDir: "src/atoms/b" }])).toEqual([
+        { slug: "a", tier: "shared", through: ["`Other` (src/style/other.tsx)"] },
+      ]);
     } finally {
       kit.done();
     }
@@ -189,5 +234,41 @@ describe("the Foundations tier (tools/audit/foundations.ts)", () => {
   it("credits a test with a foundation by the names it imports, not by its module path", () => {
     expect(importsFoundation({ names: new Set(["GlassModalBlurTarget"]) }, ["GlassModalBlurTarget"])).toBe(true);
     expect(importsFoundation({ names: new Set(["brandTint"]) }, ["GlassModalBlurTarget"])).toBe(false);
+  });
+
+  it("carries BreakpointOverride's seam: the portaled overlays that resolve its override are its consumers", () => {
+    const override = facts("BreakpointOverride");
+    expect(override.sourceFiles).toEqual(["src/style/breakpoint-override.ts", "src/style/responsive.tsx"]);
+    expect(override.seams).toContainEqual({ file: "src/style/breakpoint-override.ts", name: "BreakpointOverrideContext" });
+    // The overlay layer relays the context into every portal, so what AnchoredOverlay and
+    // Portal publish resolves the override too.
+    const overlays = ["autocomplete", "button-group", "dropdown", "popover", "select", "alert-dialog", "phone-input", "calendar", "command", "dialog", "row-menu", "toast"];
+    for (const slug of overlays) expect(consumer("BreakpointOverride", slug)?.tier).toBe("shared");
+    expect(consumer("BreakpointOverride", "dropdown")?.through).toEqual(["`AnchoredOverlay` (src/style/anchored-overlay.tsx)"]);
+    expect(consumer("BreakpointOverride", "dialog")?.through).toEqual(["`Portal` (src/style/portal.tsx)"]);
+    for (const slug of ["avatar", "field", "board"]) expect(consumer("BreakpointOverride", slug)?.tier).toBe("component");
+    expect(override.captureThrough.components).toHaveLength(29);
+    // The layer itself is Portal's and AnchoredOverlay's both, so it is a seam of neither,
+    // and a seam never leaks one foundation's consumers into another's.
+    const code = foundationCode(sources);
+    const seamNames = (id: string) => code.get(id)!.seams.map((s) => `${s.file}#${s.name}`);
+    for (const id of ["portal", "anchored-overlay"]) expect(seamNames(id)).not.toContain("src/style/overlay-layer.tsx#usePortalMount");
+    expect(consumer("Portal", "card")).toBeUndefined();
+    expect(facts("Portal").consumers).toHaveLength(19);
+  });
+
+  it("lists a foundation's implementation under its Source files, and credits the tests of it", () => {
+    const glass = facts("GlassSurface");
+    for (const file of ["src/style/glass-surface/glass-surface.shared.tsx", "src/style/glass-surface/material-runtime.ts", "src/style/glass-surface/material-runtime.ios.ts", "src/style/glass-surface/material-runtime.android.ts", "src/style/glass-surface/web-frost.ts"]) {
+      expect(glass.sourceFiles).toContain(file);
+    }
+    const code = foundationCode(sources).get("glass-surface")!;
+    // test/glass-surface.test.ts tests the shell's helpers, imported by name from its module.
+    expect(importsImplementation(sources.kit, { names: new Set(["specularRim", "splitSurfaceStyle"]), modules: ["src/style/glass-surface/glass-surface.shared.tsx"] }, code.implementation)).toBe(true);
+    expect(importsImplementation(sources.kit, { names: new Set(["specularRim"]), modules: ["src/style/tokens.ts"] }, code.implementation)).toBe(false);
+    // test/anchored-overlay-dismissal.test.tsx tests AnchoredOverlay through its consumers, and is named for it.
+    expect(namedFor("test/anchored-overlay-dismissal.test.tsx", { id: "anchored-overlay" })).toBe(true);
+    expect(namedFor("test/glass-surface.test.ts", { id: "glass-surface" })).toBe(true);
+    expect(namedFor("test/glass-surfaces.test.ts", { id: "glass-surface" })).toBe(false);
   });
 });

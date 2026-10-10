@@ -173,12 +173,29 @@ file's `PENDING_DOCS` stages its docs, K12, on the page planned for it) and phot
 through its consumers. So its checklist has no variants table, and its facts block
 (`tools/audit/foundations.ts`) says:
 
-- **Foundation**, **Source files**, **Public exports**: a renderable is the module that
-  declares its name, on every platform (the declaring file of each platform build), and the
-  public names whose way out of `src/index.ts` passes through that module, so FloatingLabel
-  and LabelContent (one module) share their exports, and so do Portal and OverlayProvider. The
-  design tokens are the public names the API manifest documents on a `tokens/*` page, or plans
-  to. Each export carries its `tools/api/manifest.ts` kind.
+- **Foundation**, **Public exports**: a renderable is the module that declares its name, on
+  every platform (the declaring file of each platform build), and the public names whose way
+  out of `src/index.ts` passes through that module, so FloatingLabel and LabelContent (one
+  module) share their exports, and so do Portal and OverlayProvider. The design tokens are the
+  public names the API manifest documents on a `tokens/*` page, or plans to. Each export
+  carries its `tools/api/manifest.ts` kind.
+- **Source files**: its homes, the files declaring its exports, and the files of its
+  implementation: the private declarations its exports read, through private declarations
+  alone (`foundationCode` in `tools/audit/foundations.ts`). A declaration is private when no
+  public export resolves to it, it is outside every component's own modules, and no
+  component's own module reads it (a hook every component calls is shared vocabulary, no one
+  foundation's code). So GlassSurface's list holds its shell (`glass-surface.shared.tsx`), its
+  material runtime and the web frost (`web-frost.ts`, a tuning-harness tunable), and
+  BreakpointOverride's holds `breakpoint-override.ts`, the context its hooks resolve.
+- **Seams**: the implementation it owns, by its readers (`ownersByReaders` in
+  `tools/audit/kit-graph.ts`): a private declaration is a foundation's when every reader of it,
+  among the foundations' exports and the private declarations they own, is that foundation's;
+  one reader that is shared (the overlay layer, which Portal and AnchoredOverlay both publish
+  through) or shared vocabulary leaves it nobody's. A relay does not count as a reader: a
+  declaration that reads a context and provides it again (`usePortalMount` carrying the
+  publisher's breakpoint, readiness and theme into a portal) carries the context's owner, so
+  BreakpointOverrideContext stays BreakpointOverride's and the overlays the layer publishes
+  are its consumers.
 - **K12-2 status**: each export a deprecated alias to come (an `internal-by-accident` name,
   K12-2, or one the owner's decisions retire: the shadow helpers, K12-2 OD4; React Native's
   pass-throughs, OD5; the Riskora type ladder, K12-7 OD3), a deprecated alias already, or
@@ -186,10 +203,14 @@ through its consumers. So its checklist has no variants table, and its facts blo
 - **Documented on**, **Docs planned**: the manifest's `docs` routes (with their sections) and
   its `PENDING_DOCS` routes, a planned page not built yet said so (`foundation`, K12-10).
 - **Materials manifest**: its `tools/materials/manifest.ts` entry (Tokens has none).
-- **Tests importing it**: the test files importing one of its public exports by name (from the
-  kit's entry or any kit module), by the same reader the component facts use. A module's path
-  alone does not count: glass-surface.shared.tsx is GlassModalBlurTarget's home and also the
-  GlassSurface shell's.
+- **Tests of it**: the test files importing one of its public exports by name (from the kit's
+  entry or any kit module, by the same reader the component facts use), or one of its
+  implementation's declarations by name from a module that resolves it there
+  (`test/glass-surface.test.ts` imports the shell's `specularRim`), and the test files named
+  for it, `test/<id>.test.tsx` or `test/<id>-<what>.test.tsx`
+  (`test/anchored-overlay-dismissal.test.tsx`, which tests AnchoredOverlay through the
+  consumers it renders). A module's path alone does not count: glass-surface.shared.tsx is
+  GlassModalBlurTarget's home and also the GlassSurface shell's.
 - **Consumers**: every kit component that renders through it, read from the source by the
   consumer reader, `tools/audit/kit-graph.ts`, and listed one row each under the facts table
   with how it gets there. The reader parses every module under `src/` (never runs one) and
@@ -198,12 +219,14 @@ through its consumers. So its checklist has no variants table, and its facts blo
   re-export (the internal hub `src/style/index.ts` included) to the declarations they name, on
   every platform at once (`./glass-surface.js` is glass-surface.tsx, .ios.tsx and .android.tsx).
   A type is never an edge, a package ends the walk, and a module's top-level statements are a
-  node every declaration of the module reads. A component reaches a foundation **directly**
-  when its own modules read one of the foundation's public values (Card and Dialog read
-  GlassSurface; Popover, Dropdown and Select read AnchoredOverlay), **through shared modules**
-  when it reads a declaration of a module no component directory owns (the style layer,
-  `src/charts/shared`) that leads there through such modules alone (Button reaches
-  GlassSurface through GlassPane), and **through other kit components** when the only way
+  node every declaration of the module reads. The foundation is reached at its public values
+  and its seams. A component reaches a foundation **directly** when its own modules read one
+  of the foundation's public values (Card and Dialog read GlassSurface; Popover, Dropdown and
+  Select read AnchoredOverlay), **through shared modules** when it reads a declaration of a
+  module no component directory owns (the style layer, `src/charts/shared`) that leads there
+  through such modules alone (Button reaches GlassSurface through GlassPane; Dropdown and
+  Dialog reach BreakpointOverride through AnchoredOverlay and Portal, whose overlay layer
+  relays its context), and **through other kit components** when the only way
   there is another component's directory (Avatar reaches AnchoredOverlay through Dropdown,
   for AvatarMenu). A primitive built in a style module (Text, Pressable) is a component like
   any other, and its module is shared for everyone else. What the reader cannot follow (a

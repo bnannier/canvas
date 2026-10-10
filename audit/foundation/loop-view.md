@@ -6,13 +6,14 @@ Audit checklist for the style-layer foundation `LoopView`, audited for its contr
 | Fact | Value |
 |---|---|
 | Foundation | `LoopView`, a style-layer renderable with no component page of its own (`tools/materials/manifest.ts`, the style tier), declared in `src/style/loop.tsx` |
-| Source files | `src/style/loop.tsx` |
+| Source files | `src/style/loop-native.ts`, `src/style/loop.tsx` (its homes, its exports' declarations and its implementation, the private declarations they read) |
+| Seams | 26, the private declarations it alone reads (`tools/audit/foundations.ts` `foundationCode`), which its consumers are also found through: `createNativeLoop` (src/style/loop-native.ts), `timing` (src/style/loop-native.ts), `DEFAULT_SAMPLES` (src/style/loop.tsx), `IDLE_STATE` (src/style/loop.tsx), `NO_CHANNEL` (src/style/loop.tsx), `NativeLoopView` (src/style/loop.tsx), `TRANSFORM_ORDER` (src/style/loop.tsx), `WEB` (src/style/loop.tsx), `WebLoopView` (src/style/loop.tsx), `channelValue` (src/style/loop.tsx), `compiled` (src/style/loop.tsx), `compiledAnimation` (src/style/loop.tsx), `isTrack` (src/style/loop.tsx), `nativeNode` (src/style/loop.tsx), `percent` (src/style/loop.tsx), `sampleShape` (src/style/loop.tsx), `sawtooth` (src/style/loop.tsx), `trackKey` (src/style/loop.tsx), `transformAt` (src/style/loop.tsx), `transformAtValue` (src/style/loop.tsx), `transformTrack` (src/style/loop.tsx), `unit` (src/style/loop.tsx), `useChannelState` (src/style/loop.tsx), `webAnimation` (src/style/loop.tsx), `webDelay` (src/style/loop.tsx), `wrap` (src/style/loop.tsx) |
 | Public exports | 10: `createLoopChannel` (internal-by-accident), `LoopChannel` (internal-by-accident, a type), `LoopChannelOptions` (internal-by-accident, a type), `LoopChannelState` (internal-by-accident, a type), `LoopTrack` (internal-by-accident, a type), `LoopView` (internal-by-accident), `LoopViewProps` (internal-by-accident, a type), `trackAt` (internal-by-accident), `trackSamples` (internal-by-accident), `trackValueAt` (internal-by-accident) |
 | K12-2 status | 10 deprecated alias to come (K12-2): createLoopChannel, LoopChannel, LoopChannelOptions, LoopChannelState, LoopTrack, LoopView, LoopViewProps, trackAt, trackSamples, trackValueAt |
 | Documented on | none yet: the public API manifest names no page for any of its exports |
 | Docs planned | `foundation` (not built yet): createLoopChannel, LoopChannel, LoopChannelOptions, LoopChannelState, LoopTrack, LoopView, LoopViewProps, trackAt, trackSamples, trackValueAt |
 | Materials manifest | LoopView: style, inherited; docs route none (`docsRoute: null`); verification inherited-composition, semantic-state |
-| Tests importing it | 1 (importing one of its public exports by name): `test/loop.test.tsx` |
+| Tests of it | 1 (importing one of its public exports or one of its implementation's declarations by name, or named for it, `test/loop-view[-<what>].test.tsx`): `test/loop.test.tsx` |
 | Consumers | 2 components: 1 directly, 1 through other kit components (one row each below, read from the source by `tools/audit/kit-graph.ts`) |
 | Pages using it | none: no pattern or template entry names one of its exports |
 | Capture through | 2, in this order: components `skeleton`, `data-table`; pages none |
