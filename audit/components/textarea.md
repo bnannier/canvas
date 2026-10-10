@@ -26,6 +26,7 @@ Audit checklist for `/components/textarea`. The facts block and the variants tab
 | Tests importing it | 19: `test/a11y-state.test.tsx`, `test/atom-material-roles.test.tsx`, `test/design-rules-shape.test.ts`, `test/design-rules-skins.test.ts`, `test/destructive-text-components.test.tsx`, `test/field-focus-layout.test.tsx`, `test/field-focus-states.test.tsx`, `test/field.test.tsx`, `test/floating-label-color.test.tsx`, `test/floating-label-parity.test.tsx`, `test/focus-ring.test.tsx`, `test/forms.test.tsx`, `test/input-overlay-escape.test.tsx`, `test/material-solid-fallback.test.tsx`, `test/new-components.test.tsx`, `test/sizing.test.tsx`, `test/skins-smoke.test.tsx`, `test/text-contrast.test.tsx`, `test/text-entry-material.test.tsx` |
 | E2E naming it | 2: `e2e/a11y/components.e2e.ts`, `e2e/behavior/text-entry-clear.e2e.ts` |
 | E2E catalog sweeps | 7: `e2e/a11y/components.e2e.ts` (componentRoutes), `e2e/journeys/keyboard.e2e.ts` (componentRoutes), `e2e/responsive/component-widths.e2e.ts` (contentRoutes, componentRoutes), `e2e/smoke/examples.e2e.ts` (componentExamples), `e2e/smoke/routes.e2e.ts` (allRoutes), `e2e/visual/components.e2e.ts` (componentRoutes), `e2e/visual/materials.e2e.ts` (MATERIAL_ROUTES) |
+| Turn record | `audit/turns/textarea.md`, written by `bun run audit:turn -- --slug=textarea --phase=before\|after` (the before and after capture runs) |
 <!-- audit:facts:end -->
 
 ## Variants

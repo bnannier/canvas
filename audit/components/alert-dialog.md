@@ -26,6 +26,7 @@ Audit checklist for `/components/alert-dialog`. The facts block and the variants
 | Tests importing it | 13: `test/dense-overlays.test.tsx`, `test/design-rules-shape.test.ts`, `test/design-rules-skins.test.ts`, `test/destructive-text-components.test.tsx`, `test/dialog-focus.test.tsx`, `test/dialog-hardware-back.test.tsx`, `test/dialog-overlay.test.tsx`, `test/hosted-focus.test.tsx`, `test/input-overlay-escape.test.tsx`, `test/native-accessibility-escape-hosts.test.tsx`, `test/native-focus-fixtures.test.tsx`, `test/skins-smoke.test.tsx`, `test/text-contrast.test.tsx` |
 | E2E naming it | 2: `e2e/behavior/escape-layers.e2e.ts`, `e2e/journeys/keyboard.e2e.ts` |
 | E2E catalog sweeps | 9: `e2e/a11y/components.e2e.ts` (componentRoutes), `e2e/behavior/overlays.e2e.ts` (OVERLAYS), `e2e/journeys/keyboard.e2e.ts` (componentRoutes), `e2e/responsive/component-widths.e2e.ts` (contentRoutes, componentRoutes), `e2e/smoke/examples.e2e.ts` (componentExamples), `e2e/smoke/routes.e2e.ts` (allRoutes), `e2e/visual/components.e2e.ts` (componentRoutes), `e2e/visual/materials.e2e.ts` (MATERIAL_ROUTES), `e2e/visual/overlays.e2e.ts` (OVERLAYS) |
+| Turn record | `audit/turns/alert-dialog.md`, written by `bun run audit:turn -- --slug=alert-dialog --phase=before\|after` (the before and after capture runs) |
 <!-- audit:facts:end -->
 
 ## Variants

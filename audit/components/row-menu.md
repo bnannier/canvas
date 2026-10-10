@@ -26,6 +26,7 @@ Audit checklist for `/components/row-menu`. The facts block and the variants tab
 | Tests importing it | 17: `test/a11y-state.test.tsx`, `test/anchored-overlay-dismissal.test.tsx`, `test/dense-overlays.test.tsx`, `test/design-rules-shape.test.ts`, `test/design-rules-skins.test.ts`, `test/destructive-text-components.test.tsx`, `test/hosted-trigger-focus.test.tsx`, `test/menu-look.test.tsx`, `test/native-accessibility-escape-hosts.test.tsx`, `test/no-console-violations.test.tsx`, `test/overlay-escape.test.tsx`, `test/overlays.test.tsx`, `test/skins-smoke.test.tsx`, `test/text-contrast.test.tsx`, `test/touch-target-clips.test.tsx`, `test/touch-target-coverage.test.ts`, `test/touch-target-seed.test.tsx` |
 | E2E naming it | 1: `e2e/behavior/material-overlay-host.e2e.ts` |
 | E2E catalog sweeps | 9: `e2e/a11y/components.e2e.ts` (componentRoutes), `e2e/behavior/overlays.e2e.ts` (OVERLAYS), `e2e/journeys/keyboard.e2e.ts` (componentRoutes), `e2e/responsive/component-widths.e2e.ts` (contentRoutes, componentRoutes), `e2e/smoke/examples.e2e.ts` (componentExamples), `e2e/smoke/routes.e2e.ts` (allRoutes), `e2e/visual/components.e2e.ts` (componentRoutes), `e2e/visual/materials.e2e.ts` (MATERIAL_ROUTES), `e2e/visual/overlays.e2e.ts` (OVERLAYS) |
+| Turn record | `audit/turns/row-menu.md`, written by `bun run audit:turn -- --slug=row-menu --phase=before\|after` (the before and after capture runs) |
 <!-- audit:facts:end -->
 
 ## Variants

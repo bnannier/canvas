@@ -26,6 +26,7 @@ Audit checklist for `/components/popover`. The facts block and the variants tabl
 | Tests importing it | 13: `test/anchored-overlay-dismissal.test.tsx`, `test/dense-overlays.test.tsx`, `test/design-rules-shape.test.ts`, `test/design-rules-skins.test.ts`, `test/entrance-readiness.test.tsx`, `test/escape-layers.test.tsx`, `test/hosted-focus.test.tsx`, `test/hosted-trigger-focus.test.tsx`, `test/native-accessibility-escape-hosts.test.tsx`, `test/overlay-placement.test.tsx`, `test/overlays.test.tsx`, `test/popover.test.tsx`, `test/skins-smoke.test.tsx` |
 | E2E naming it | 2: `e2e/journeys/overlay-placement.e2e.ts`, `e2e/journeys/touch.e2e.ts` |
 | E2E catalog sweeps | 9: `e2e/a11y/components.e2e.ts` (componentRoutes), `e2e/behavior/overlays.e2e.ts` (OVERLAYS), `e2e/journeys/keyboard.e2e.ts` (componentRoutes), `e2e/responsive/component-widths.e2e.ts` (contentRoutes, componentRoutes), `e2e/smoke/examples.e2e.ts` (componentExamples), `e2e/smoke/routes.e2e.ts` (allRoutes), `e2e/visual/components.e2e.ts` (componentRoutes), `e2e/visual/materials.e2e.ts` (MATERIAL_ROUTES), `e2e/visual/overlays.e2e.ts` (OVERLAYS) |
+| Turn record | `audit/turns/popover.md`, written by `bun run audit:turn -- --slug=popover --phase=before\|after` (the before and after capture runs) |
 <!-- audit:facts:end -->
 
 ## Variants

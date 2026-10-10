@@ -12,6 +12,7 @@ Audit checklist for `/patterns/responsive`. The facts block and the variants tab
 | Kit names its entry uses | Badge, Button, Card, Checkbox, Column, Container, DataTable, Grid, GridItem, Input, Row, Sidebar, Typography, useFormFactor |
 | E2E naming it | 0: none |
 | E2E catalog sweeps | 2: `e2e/responsive/component-widths.e2e.ts` (contentRoutes), `e2e/smoke/routes.e2e.ts` (allRoutes) |
+| Turn record | `audit/turns/pattern-responsive.md`, written by `bun run audit:turn -- --slug=pattern-responsive --phase=before\|after` (the before and after capture runs) |
 <!-- audit:facts:end -->
 
 ## Variants
