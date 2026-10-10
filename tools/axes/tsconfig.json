@@ -1,0 +1,15 @@
+{
+  // The axis tools typecheck as a project of their own. They import the kit's sources
+  // (the characterization's registry imports every component's shell), so they check
+  // against the kit's React Native types, which collide with the Node child-process types
+  // the audit tools in tools/tsconfig.json use. Run by `bun run typecheck`.
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "noEmit": true,
+    // The tools import the kit across trees with explicit .ts and .tsx specifiers, as the
+    // other tool projects do; nothing here is emitted.
+    "allowImportingTsExtensions": true
+  },
+  "include": ["./*.ts"],
+  "exclude": []
+}
