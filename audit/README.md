@@ -160,12 +160,21 @@ the markers or delete the file to reseed it.
 The Foundations tier is the style-layer renderables with no component page of their own,
 AnchoredOverlay, BreakpointOverride, Entrance, FloatingLabel, GlassModalBlurTarget, GlassPane,
 GlassSurface, LabelContent, LayoutAxisProvider, LoopView, OverlayProvider, Portal, RippleClip
-and ThemeProvider, and the design tokens the docs' `tokens/*` pages document (Tokens). The
+and ThemeProvider; the design tokens the docs' `tokens/*` pages document (Tokens); and the kit
+internals the generated `/foundation` reference page documents (FoundationReference). The
 renderables are the material inventory's style tier less the primitives with a component page
 (`STYLE_LAYER_RENDERABLES` in `tools/audit/plan-specifics.ts`), and the checklist tests hold
 this paragraph to it. Each has `audit/foundation/<id>.md`, its name in kebab case
-(`glass-modal-blur-target`, `tokens`), generated and checked by the same `audit:checklists`
-and `audit:checklists:check`, and counted by `audit:status`.
+(`glass-modal-blur-target`, `tokens`, `foundation-reference`), generated and checked by the
+same `audit:checklists` and `audit:checklists:check`, and counted by `audit:status`.
+
+The tier carries the K12 items (the plan's "Foundations"): the 111 deprecations the owner
+decided (K12-2, with OD4, OD5 and K12-7 OD3), their JSDoc, and the generated `/foundation`
+reference page. So every name those decisions retire, each `internal-by-accident` export, each
+name `DECIDED_DEPRECATIONS` adds and each deprecated alias already, is on one of its
+checklists, and `audit:checklists:check` fails on one that is not (`unplacedDeprecations`).
+The reference foundation is where a kit internal lands when no renderable's home and no token
+module holds it: the ripple helpers, the behaviour hooks, React Native's `StyleSheet`.
 
 A foundation has no examples of its own: it is a contract other components render through,
 audited for that contract on the page `tools/api/manifest.ts` documents it on (or, while that
@@ -176,9 +185,17 @@ through its consumers. So its checklist has no variants table, and its facts blo
 - **Foundation**, **Public exports**: a renderable is the module that declares its name, on
   every platform (the declaring file of each platform build), and the public names whose way
   out of `src/index.ts` passes through that module, so FloatingLabel and LabelContent (one
-  module) share their exports, and so do Portal and OverlayProvider. The design tokens are the
-  public names the API manifest documents on a `tokens/*` page, or plans to. Each export
-  carries its `tools/api/manifest.ts` kind.
+  module) share their exports, and so do Portal and OverlayProvider. The design tokens are
+  "whatever the docs have": the public names the API manifest documents on a `tokens/*` page
+  or plans to, the kit names those pages' own sources import that are neither a component nor
+  a renderable's and are not declared in a component's modules (`shadow`, which
+  `/tokens/spacing` renders in its Elevation section; the cards and tables around the examples
+  are the pages' frame), and every other public name of the modules those are declared in,
+  the renderables' homes left out (`customShadow` and `ShadowLevel` beside `shadow`, the
+  Riskora type ladder in `src/style/tokens.ts`). The reference is the public names the API
+  manifest documents or plans on `/foundation` that no renderable and not the tokens hold
+  (`memberships` in `tools/audit/foundations.ts`). Each export carries its
+  `tools/api/manifest.ts` kind.
 - **Source files**: its homes, the files declaring its exports, and the files of its
   implementation: the private declarations its exports read, through private declarations
   alone (`foundationCode` in `tools/audit/foundations.ts`). A declaration is private when no
@@ -202,7 +219,8 @@ through its consumers. So its checklist has no variants table, and its facts blo
   public (ThemeProvider and its types stay public).
 - **Documented on**, **Docs planned**: the manifest's `docs` routes (with their sections) and
   its `PENDING_DOCS` routes, a planned page not built yet said so (`foundation`, K12-10).
-- **Materials manifest**: its `tools/materials/manifest.ts` entry (Tokens has none).
+- **Materials manifest**: its `tools/materials/manifest.ts` entry (Tokens and the reference have
+  none).
 - **Tests of it**: the test files importing one of its public exports by name (from the kit's
   entry or any kit module, by the same reader the component facts use), or one of its
   implementation's declarations by name from a module that resolves it there
@@ -280,7 +298,7 @@ as "by design".
 | Command | What it does |
 |---|---|
 | `bun run audit:checklists` | writes new checklists and regenerates the facts block and variants table of existing ones; exits non-zero naming any file it left untouched to keep a reviewer's work |
-| `bun run audit:checklists:check` | fails on a route or foundation with no checklist, an orphan checklist (a `.md` file no route or foundation calls for), a stale facts block, a malformed variants, findings or sign-off row (by line number, a finding whose cell is not one of the checklist's capture ids or `source` included), variant rows that drift from the inventory, a variants table `--write` would rewrite or a foundation's checklist should not have, a missing findings table or sign-off section, and a turn record under `audit/turns/` that names no checklist or has a row it cannot read; runs in CI (`validate.yml`) and the pre-push hook |
+| `bun run audit:checklists:check` | fails on a deprecation the owner decided that no Foundations checklist holds, a route or foundation with no checklist, an orphan checklist (a `.md` file no route or foundation calls for), a stale facts block, a malformed variants, findings or sign-off row (by line number, a finding whose cell is not one of the checklist's capture ids or `source` included), variant rows that drift from the inventory, a variants table `--write` would rewrite or a foundation's checklist should not have, a missing findings table or sign-off section, and a turn record under `audit/turns/` that names no checklist or has a row it cannot read; runs in CI (`validate.yml`) and the pre-push hook |
 | `bun run audit:status` | counts ticked variant cells per platform, ticked checklist items, open findings by severity and signed-off platforms across every checklist, the foundations' included (`--json` for the rows); lists any row or table it cannot read by file and line under the counts, and exits non-zero when there is one, since the counts then under-report |
 | `bun tools/audit/facts.ts <slug>` | prints one component's facts as JSON |
 | `bun run audit:turn -- --slug=<slug> --phase=before\|after` | one component's, page's or foundation's turn capture: every web and device capture of the slug (a foundation's Capture through list), the analysis, sheets and index scoped to it, the run ids recorded in `audit/turns/<id>.md`, and the sheets to read printed (see "One component's turn"); `--dry-run`, `--web-only`, `--native-only`, `--only-first=<n>`, `--no-build`, `--devices`, `--workers` |

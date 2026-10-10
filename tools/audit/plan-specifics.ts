@@ -326,6 +326,14 @@ export const STYLE_LAYER_RENDERABLES: readonly string[] = materialCoverage
 export const TOKENS_FOUNDATION = "Tokens";
 
 /**
+ * The kit internals the generated `/foundation` reference page documents (K12-10 OD2): the
+ * public names the API manifest documents or plans there that no renderable and not the
+ * design tokens hold, each a deprecated alias to come (K12-2). The Foundations tier carries
+ * the 111 deprecations, so every one of them is on one of its checklists.
+ */
+export const REFERENCE_FOUNDATION = "FoundationReference";
+
+/**
  * The universal rubric adapted for a style-layer contract (the Foundations tier): a
  * foundation has no variants of its own, it is a contract other components render
  * through, so each item asks what the contract promises and what it must never break for
@@ -436,9 +444,17 @@ export const FOUNDATION_PLANS: Readonly<Record<string, readonly string[]>> = {
     "the boolean grammar: `glass` wins over `solid`, `dark` over `light` and over `mint`; neither surface given resolves to glass on iOS 26+ and solid everywhere else",
     "resolves the glass and solid mode, the preferences and the tokens without changing precedence or defaults (materials target)",
   ],
+  [REFERENCE_FOUNDATION]: [
+    "K12-2: every export here becomes a deprecated alias that keeps working and names the kit component or token to use (the owner's decision: all 111, nothing removed before a major)",
+    "K12-2 OD5: React Native's `StyleSheet` pass-through deprecated, since it invites raw styling (`useWindowDimensions`, the other pass-through, is BreakpointOverride's)",
+    "K12-2 tabular: Typography's `tabular` boolean ships (a minor) before `tabularNums` is deprecated, so apps keep tabular figures",
+    "K12-10 OD2: the generated `/foundation` reference page lists every deprecated name with its replacement, the foundations' internals included, and no page presents an internal helper as API",
+    "every export here carries a JSDoc summary and its `@deprecated` note naming the replacement",
+  ],
   [TOKENS_FOUNDATION]: [
     "K12-7: the colors, spacing and shape, typography and layout references on the `tokens/*` pages name every token set and type they document",
     "K12-7 OD3: `fontSize`, `fontWeight`, `lineHeight` and `letterSpacing` (the Riskora ladder nothing reads) deprecated, pointing to Typography's roles",
+    "K12-2 OD4: `shadow`, `customShadow` and `ShadowLevel` deprecated, elevation coming from Card's appearances; the Elevation section of `/tokens/spacing`, which renders `shadow`, moved to the replacement",
     "Dark Factory's tokens on every platform: violet `primary` for selection, the green `action` role for calls to action, blush, mint and DF's one dark palette, Manrope at DF's dense sizes with the 12, 11 and 10 floors",
     "K9: one source of truth for the iOS checkbox's check radius (`DESIGN.md`'s generated 11 against `shape.ios.checkbox` 5 in `src/style/tokens.ts`)",
     "K10: no stale Riskora comments in `styles/tokens/platforms.css`; the web hand-off (`styles/tokens/*.css`) mirrors `src/style/tokens.ts`",
