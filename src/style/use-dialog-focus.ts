@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type RefObject } from "react";
 import { type View } from "react-native";
+import { useIsomorphicLayoutEffect } from "./use-isomorphic-layout-effect.js";
 
 // Refs may attach after the hook's open effect: Portal publishes into a sibling
 // outlet, and anchored overlays also wait for a trigger measurement. An ordinary
@@ -199,8 +200,15 @@ export function usePopoverFocus(open: boolean): RefObject<View | null> {
 // an Android keyboard stop). While the card is open one capture listener steers every
 // Tab whose browser move differs from that logical order: from the trigger into the
 // card, from the card's ends back to the trigger or on to the control after it, and
-// past the card for the page's own moves. At the very end of the page there is no
-// later stop the document can focus, so that one move is left to the browser.
+// past the card for the page's own moves. A focused node in the card that is no stop
+// itself (the card's panel, a row the roving stop is not on) moves to the card's stops
+// on either side of it in document order.
+//
+// The order is the one the focus is held in: a modal around the trigger (a Dialog's
+// panel, a native Modal's content, anything `aria-modal`) keeps Tab inside itself, and
+// past either end of its order focus wraps to the other, as the modal's own trap does.
+// Without one the order is the page's, and at its very end there is no later stop the
+// document can focus, so that one move is left to the browser.
 
 const TABBABLE_SELECTOR = 'a[href], button, input, select, textarea, [tabindex]';
 
@@ -223,9 +231,36 @@ interface Bridge { card: HTMLElement; trigger: HTMLElement; onLeave?: () => void
 // placed within its parent's run, so the order is composed outermost first.
 const bridges: Bridge[] = [];
 
-/** The page's tab order with each open card's controls moved to just after its trigger. */
-function logicalOrder(): HTMLElement[] {
+// The open card that holds `node`: the innermost one, where cards nest in the document.
+function cardOf(node: Node): Bridge | undefined {
+  const holding = bridges.filter(({ card }) => card.contains(node));
+  return holding.find((bridge) => !holding.some((other) => other !== bridge && bridge.card.contains(other.card)));
+}
+
+// Where `node` stands in the page: itself, or for a node in an open card, the card's
+// trigger (through every card it sits in).
+function anchorOf(node: Node): Node {
+  let at = node;
+  for (let depth = 0; depth < bridges.length; depth += 1) {
+    const owner = cardOf(at);
+    if (!owner) break;
+    at = owner.trigger;
+  }
+  return at;
+}
+
+// The modal the focus at `node` is held in (the innermost `aria-modal` element around
+// where it stands in the page), or null for the page itself.
+function modalScope(node: Node): Element | null {
+  const anchor = anchorOf(node);
+  const element = anchor.nodeType === Node.ELEMENT_NODE ? (anchor as Element) : anchor.parentElement;
+  return element?.closest('[aria-modal="true"]') ?? null;
+}
+
+/** The tab order inside `scope` (the page when null), each open card's controls moved to just after its trigger. */
+function logicalOrder(scope: Element | null): HTMLElement[] {
   let order = tabbables(document);
+  if (scope) order = order.filter((element) => scope.contains(anchorOf(element)));
   for (const { card, trigger } of bridges) {
     if (!card.isConnected || !trigger.isConnected) continue;
     const inCard = order.filter((element) => card.contains(element));
@@ -240,15 +275,28 @@ function logicalOrder(): HTMLElement[] {
   return order;
 }
 
-/** Where a Tab (or Shift+Tab) from `active` goes in `order`, which need not hold `active`. */
+/** Where a Tab (or Shift+Tab) from `active` goes in `order` by document position, which need not hold `active`. */
 function step(order: HTMLElement[], active: HTMLElement, back: boolean): HTMLElement | undefined {
   const index = order.indexOf(active);
   if (index >= 0) return order[index + (back ? -1 : 1)];
-  // A focused node that is not a tab stop itself (a card panel with tabIndex -1, the
-  // body): the next stop after it, or the last one before it, in DOM order.
+  // A focused node that is not a tab stop itself (a Dialog's panel, the body): the next
+  // stop after it, or the last one before it, in DOM order.
   const after = order.findIndex((element) => follows(active, element));
   if (back) return order[(after < 0 ? order.length : after) - 1];
   return after < 0 ? undefined : order[after];
+}
+
+/** Where a Tab (or Shift+Tab) from `active` goes in the composed `order`. */
+function logicalStep(order: HTMLElement[], active: HTMLElement, back: boolean): HTMLElement | undefined {
+  const owner = order.includes(active) ? undefined : cardOf(active);
+  if (!owner) return step(order, active, back);
+  const run = order.filter((element) => owner.card.contains(element));
+  if (run.length === 0) return back ? triggerStop(order, owner) : afterTrigger(order, owner);
+  // A node in the card that is no stop: the card's stops on either side of it in document
+  // order, and before the first or after the last of them, the stops around the run.
+  const next = run.findIndex((element) => follows(active, element));
+  if (back) return next > 0 ? run[next - 1] : next < 0 ? run[run.length - 1] : order[order.indexOf(run[0]!) - 1];
+  return next >= 0 ? run[next] : order[order.indexOf(run[run.length - 1]!) + 1];
 }
 
 function onBridgedKeyDown(event: KeyboardEvent): void {
@@ -256,13 +304,10 @@ function onBridgedKeyDown(event: KeyboardEvent): void {
   const active = document.activeElement as HTMLElement | null;
   if (!active) return;
   const back = event.shiftKey;
-  // A focused card panel that is no tab stop sits at the head of its card's run.
-  const order = logicalOrder();
-  const owner = order.includes(active) ? null : bridges.find(({ card }) => card.contains(active));
-  const run = owner ? order.filter((element) => owner.card.contains(element)) : [];
-  const target = !owner ? step(order, active, back)
-    : run.length > 0 ? (back ? order[order.indexOf(run[0]!) - 1] : run[0])
-    : back ? triggerStop(order, owner) : afterTrigger(order, owner);
+  const scope = modalScope(active);
+  const order = logicalOrder(scope);
+  // Inside a modal, past either end of its order, focus wraps as its own trap wraps it.
+  const target = logicalStep(order, active, back) ?? (scope ? (back ? order[order.length - 1] : order[0]) : undefined);
   const browser = step(tabbables(document), active, back);
   if (target && target !== browser) {
     event.preventDefault();
@@ -290,15 +335,9 @@ function afterTrigger(order: HTMLElement[], bridge: Bridge): HTMLElement | undef
   return order.slice(before ? order.indexOf(before) + 1 : 0).find((element) => !bridge.card.contains(element));
 }
 
-/**
- * Keep an open card's controls in the tab order right after its trigger, until the
- * returned function is called. `onLeave` runs after a Tab has moved focus out of the
- * card, or off its trigger anywhere but into the card (a menu or option list closes
- * then: the WAI-ARIA menu and listbox patterns' Tab). DOM focus only; nothing is
- * rendered, and natively (no document) it does nothing.
- */
-export function bridgeTabOrder(card: HTMLElement, trigger: HTMLElement, onLeave?: () => void): () => void {
-  if (typeof document === "undefined") return () => {};
+// Keep an open card's controls in the tab order right after its trigger, until the
+// returned function is called.
+function bridgeTabOrder(card: HTMLElement, trigger: HTMLElement, onLeave?: () => void): () => void {
   const bridge: Bridge = { card, trigger, onLeave };
   if (bridges.length === 0) document.addEventListener("keydown", onBridgedKeyDown, true);
   bridges.push(bridge);
@@ -309,16 +348,11 @@ export function bridgeTabOrder(card: HTMLElement, trigger: HTMLElement, onLeave?
   };
 }
 
-/**
- * After an anchored card closes, give back the focus its closing orphaned: focus that
- * was inside the card, or fell to the body when the card left the document, goes back
- * to what opened the card (`opener`, the element focused when it opened, as
- * usePopoverFocus restores) and otherwise to the trigger (`target`, or the first tab
- * stop inside it). Focus the user already moved to another live control stays where
- * it is. DOM focus only; a no-op natively.
- */
-export function restoreOrphanedFocus(card: HTMLElement | null, target: HTMLElement | null, opener?: Element | null): void {
-  if (typeof document === "undefined") return;
+// After a card closes, give back the focus its closing orphaned: focus that was inside
+// the card, or fell to the body when the card left the document, goes back to what had
+// focus when the card opened (`opener`, as usePopoverFocus restores) and otherwise to the
+// first stop in `target`. Focus the user already moved to another live control stays.
+function restoreOrphanedFocus(card: HTMLElement | null, target: HTMLElement | null, opener: Element | null): void {
   const active = document.activeElement as HTMLElement | null;
   const orphaned = active == null || active === document.body || !active.isConnected || (card != null && card.contains(active));
   if (!orphaned) return;
@@ -329,4 +363,71 @@ export function restoreOrphanedFocus(card: HTMLElement | null, target: HTMLEleme
   if (!target?.isConnected) return;
   const stop = isTabbable(target) && target.matches(TABBABLE_SELECTOR) ? target : tabbables(target)[0];
   (stop ?? target).focus({ preventScroll: true });
+}
+
+/** What useAnchoredCardFocus reads. */
+export interface AnchoredCardFocusOptions {
+  /** The card is revealed and its controls can take focus. */
+  shown: boolean;
+  /** The card's root. */
+  cardRef: RefObject<View | null>;
+  /** The trigger the card is placed against: its stops come right before the card's. */
+  triggerRef: RefObject<View | null>;
+  /** Where focus goes back when the card closes, if what had focus at the opening is gone. */
+  returnRef: RefObject<View | null>;
+  /**
+   * Runs after a Tab takes focus out of the card, or off its trigger anywhere but into
+   * the card (a menu or option list closes then: the WAI-ARIA menu and listbox patterns).
+   */
+  onLeave?: () => void;
+  /** Give orphaned focus back on close (false for a combobox's popup, whose field kept it). */
+  restore: boolean;
+}
+
+/**
+ * An anchored card's keyboard focus on the web (AnchoredOverlay): while it is shown, its
+ * controls keep their place in the tab order right after its trigger, inside the modal
+ * the trigger sits in, if any; when it unmounts, the focus it held and its closing
+ * orphaned goes back to what had focus when it opened, or else to the first stop in
+ * `returnRef`. Focus the user already moved to another live control stays where it is.
+ * DOM focus only; natively and during SSR it does nothing.
+ */
+export function useAnchoredCardFocus({ shown, cardRef, triggerRef, returnRef, onLeave, restore }: AnchoredCardFocusOptions): void {
+  const leave = useRef(onLeave);
+  leave.current = onLeave;
+  const leaves = onLeave != null;
+  // Whether keyboard focus was ever inside the card: only focus the card held is its to
+  // give back (a card opened by pointer with focus left on the page took none).
+  const held = useRef(false);
+  useEffect(() => {
+    if (!shown || typeof document === "undefined") return;
+    const card = cardRef.current as unknown as HTMLElement | null;
+    const trigger = triggerRef.current as unknown as HTMLElement | null;
+    if (!card || !trigger || typeof card.contains !== "function") return;
+    const onFocusIn = () => { held.current = true; };
+    if (card.contains(document.activeElement)) held.current = true;
+    card.addEventListener("focusin", onFocusIn);
+    const unbridge = bridgeTabOrder(card, trigger, leaves ? () => leave.current?.() : undefined);
+    return () => {
+      card.removeEventListener("focusin", onFocusIn);
+      unbridge();
+    };
+  }, [shown, cardRef, triggerRef, leaves]);
+  // What had focus when the card opened (before the owner moves focus in at onCardMount,
+  // a passive effect this layout effect precedes), and the card's node, kept past the
+  // ref's detachment for the close below.
+  const opener = useRef<Element | null>(null);
+  const lastCard = useRef<HTMLElement | null>(null);
+  useIsomorphicLayoutEffect(() => {
+    opener.current = typeof document === "undefined" ? null : document.activeElement;
+  }, []);
+  useIsomorphicLayoutEffect(() => {
+    if (cardRef.current) lastCard.current = cardRef.current as unknown as HTMLElement;
+  });
+  const restoring = useRef(restore);
+  restoring.current = restore;
+  useEffect(() => () => {
+    if (typeof document === "undefined" || !held.current || !restoring.current) return;
+    restoreOrphanedFocus(lastCard.current, returnRef.current as unknown as HTMLElement | null, opener.current);
+  }, [returnRef]);
 }

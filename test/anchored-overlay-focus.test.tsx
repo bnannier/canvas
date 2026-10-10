@@ -17,6 +17,8 @@ import { Select } from "../src/atoms/select/select.tsx";
 import { Autocomplete } from "../src/atoms/autocomplete/autocomplete.tsx";
 import { PhoneInput } from "../src/molecules/phone-input/phone-input.tsx";
 import { RowMenu } from "../src/organisms/row-menu/row-menu.tsx";
+import { Dialog } from "../src/organisms/dialog/dialog.tsx";
+import { Input } from "../src/atoms/input/input.tsx";
 import { AnchoredOverlay } from "../src/style/anchored-overlay.tsx";
 import { GlassBlurTargetHost } from "../src/style/glass-surface/glass-blur-target.android.tsx";
 import { OverlayProvider, useOverlayHost, type OverlayHost } from "../src/style/portal.tsx";
@@ -186,6 +188,66 @@ describe("the tab order and Tab in an open card (AO-1)", () => {
       await openAndReveal(() => fireEvent.click(screen.getByRole("button", { name: /Country/ })));
       expect(focused().getAttribute("aria-selected")).toBe("true");
       expect(focused().getAttribute("aria-label")).toContain("United Kingdom");
+    });
+  });
+
+  it("moves from a focused node in the card that is no stop to the card's stops around it", async () => {
+    // A card's panel, or a row the roving stop is not on, is focused without being a stop:
+    // Tab and Shift+Tab go to the card's own stops on either side of it in document order
+    // (an overflowing list's scrollport before its rows), never back to the trigger past them.
+    function Card() {
+      const trigger = useRef<View>(null);
+      return (
+        <>
+          <View ref={trigger}><Button>Open</Button></View>
+          <AnchoredOverlay open dismissOnTab onDismiss={() => {}} triggerRef={trigger}>
+            <View role="dialog">
+              <Button>First</Button>
+              <View tabIndex={-1} testID="row"><Text>Row</Text></View>
+              <Button>Last</Button>
+            </View>
+          </AnchoredOverlay>
+        </>
+      );
+    }
+    await withLayout(async () => {
+      page(<Card />);
+      await reveal();
+      const row = screen.getByTestId("row");
+      act(() => row.focus());
+      tab(true);
+      expect(focused()).toBe(named("First"));
+      act(() => row.focus());
+      tab();
+      expect(focused()).toBe(named("Last"));
+      // And past the card's ends, on in the trigger's place as before.
+      tab();
+      expect(focused()).toBe(named("After"));
+    });
+  });
+
+  it("keeps Tab out of a list inside a modal Dialog within the dialog", async () => {
+    // The list's trigger is the dialog's last stop: Tab out of the list closes it and wraps
+    // to the dialog's first stop, as the dialog's own trap does, never to the page behind.
+    await withLayout(async () => {
+      page(
+        <Dialog open title="Order">
+          <Input accessibilityLabel="Name" />
+          <Select options={["Small", "Medium", "Large"]} defaultValue="Medium" />
+        </Dialog>,
+      );
+      const dialog = screen.getByRole("dialog");
+      const trigger = screen.getByRole("button", { expanded: false });
+      await openAndReveal(() => fireEvent.click(trigger));
+      expect(focused().textContent).toContain("Medium");
+      tab();
+      expect(dialog.contains(focused())).toBe(true);
+      expect(focused()).toBe(screen.getByRole("textbox", { name: "Name" }));
+      await settle();
+      expect(screen.queryByRole("listbox")).toBeNull();
+      // Shift+Tab from the dialog's first stop wraps to its last, the trigger, as before.
+      tab(true);
+      expect(focused()).toBe(trigger);
     });
   });
 
