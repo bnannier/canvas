@@ -25,16 +25,15 @@ import {
   FACTS_END,
   FINDING_SEVERITIES,
   PAGES_DIR,
-  SIGN_OFF_PLATFORMS,
   VARIANTS_BEGIN,
   VARIANTS_END,
   blockFirstLine,
   findBlock,
   handTableProblems,
   readFindings,
-  readSignOffs,
   readVariantsTable,
 } from "./checklists.ts";
+import { SIGN_OFF_PLATFORMS, signedOffPlatforms } from "./sign-off.ts";
 
 export const OPEN_FINDING_STATUSES = ["open", "verified"] as const;
 export const SEVERITIES = FINDING_SEVERITIES;
@@ -99,9 +98,7 @@ export function checklistStatus(file: string, content: string, cells?: ReadonlyS
       bySeverity,
       byStatus,
     },
-    signedOff: readSignOffs(content)
-      .rows.filter((row) => row.runId !== "")
-      .map((row) => row.platform),
+    signedOff: signedOffPlatforms(content),
     unreadable,
   };
 }

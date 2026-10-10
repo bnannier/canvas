@@ -144,6 +144,11 @@ rule:
   places it, and it opens no construct the page does not render. A line another
   rule already explains (in the same `##` section) is left to that rule, so a
   page with no finding has nothing dropped.
+- **S10** Once the component's audit checklist (`audit/components/<slug>.md`)
+  has a sign-off row with a run id, the page carries `## Accessibility`, a
+  guidance section with its roles, names and states, keyboard model and screen
+  reader notes, written from that audit.
+
 A heading spelled loosely fails under the rule that owns it: S1 for `#`, S3 for
 `##`, and for `###` the rule of its section.
 

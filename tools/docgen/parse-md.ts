@@ -476,6 +476,9 @@ export function parseDoc(src: string): ParsedDoc {
 //       emphasis, an ordered list, a table, a heading deeper than "###"). This is the
 //       mechanical proof that nothing on a page is dropped; a line another rule
 //       already names is not named again.
+// - S10 Once the component's audit checklist (audit/components/<slug>.md) signs a
+//       platform off, the page carries a "## Accessibility" guidance section: its
+//       accessibility and keyboard notes come from that audit.
 //
 // Every heading is written one way: its "#" run at the start of the line, one space,
 // the text, and nothing after it. Markdown also reads "##  Variants", "##\tVariants",
@@ -484,7 +487,7 @@ export function parseDoc(src: string): ParsedDoc {
 // S3 for "##", and for "###" the rule of the part of the page it sits in), so the
 // source always reads the way the page renders.
 
-export type StructureRule = "S1" | "S2" | "S3" | "S4" | "S5" | "S6" | "S7" | "S8";
+export type StructureRule = "S1" | "S2" | "S3" | "S4" | "S5" | "S6" | "S7" | "S8" | "S10";
 export type StructureViolation = { line: number; rule: StructureRule; message: string };
 
 /** The "##" sections every component page carries, in page order. */
@@ -493,6 +496,9 @@ type RequiredSection = (typeof REQUIRED_SECTIONS)[number];
 
 /** The sections a component page generates itself, which a guidance section may not be named. */
 export const GENERATED_SECTIONS = ["Props"] as const;
+
+/** The guidance section a component page carries once its audit signs it off (S10). */
+export const ACCESSIBILITY_SECTION = "Accessibility";
 
 // The rule that owns the content of a section (an unclosed fence is reported under it).
 const SECTION_RULE: Record<RequiredSection, StructureRule> = { Usage: "S4", Variants: "S5", "Do & Don't": "S6" };
@@ -507,14 +513,16 @@ const markerName = (side: "do" | "dont") => (side === "do" ? "**Do**" : "**Don't
 export interface PageContext {
   /** The component's name in the docs registry. */
   name: string;
+  /** The audit checklist's platform sign-offs, when it has any (S10). */
+  signedOff?: { checklist: string; platforms: readonly string[] };
 }
 
 /**
- * The structure violations of one component page (rules S1 to S8 above), in line
+ * The structure violations of one component page (rules S1 to S10 above), in line
  * order. An empty array means the page has the shape the generator and the docs pages
  * expect, and every line of it reaches the page.
  */
-export function docStructureViolations(src: string, { name }: PageContext): StructureViolation[] {
+export function docStructureViolations(src: string, { name, signedOff }: PageContext): StructureViolation[] {
   const md = src.replace(/\r\n/g, "\n");
   const { blocks, title, strayTitles, intro, sections } = readPage(md);
   const lastLine = md.replace(/\n+$/, "").split("\n").length;
@@ -681,6 +689,11 @@ export function docStructureViolations(src: string, { name }: PageContext): Stru
         add(dontFence.line, "S6", `the **Don't** fence under "### ${g.title}" repeats its **Do** fence; the Don't shows the wrong way`);
       }
     }
+  }
+
+  // S10: the Accessibility section, once the audit signs the component off.
+  if (signedOff && signedOff.platforms.length > 0 && !sections.some((s) => s.name === ACCESSIBILITY_SECTION)) {
+    add(lastLine, "S10", `${signedOff.checklist} signs this component off (${signedOff.platforms.join(", ")}), so its page carries a "## ${ACCESSIBILITY_SECTION}" section after Do & Don't: its roles, names and states, its keyboard model and its screen reader notes, from that audit`);
   }
 
   // S8: every line reaches the page as written. It names what no rule above explains: in

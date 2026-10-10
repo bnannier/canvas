@@ -1,8 +1,9 @@
-import { describe, it, expect } from "bun:test";
+import { afterAll, describe, it, expect } from "bun:test";
 import * as fs from "node:fs";
+import * as os from "node:os";
 import * as path from "node:path";
-import { componentPages, pageStructureViolations, registeredComponents, registrySlugLines, REGISTRY_SOURCE, type ComponentPage } from "./pages.ts";
-import { docStructureViolations, parseDoc, splitDoc } from "./parse-md.ts";
+import { checklistSignOffs, componentPages, pageStructureViolations, registeredComponents, registrySlugLines, REGISTRY_SOURCE, type ComponentPage } from "./pages.ts";
+import { ACCESSIBILITY_SECTION, docStructureViolations, parseDoc, splitDoc } from "./parse-md.ts";
 import { COMPONENTS } from "../../docs/src/core/data/components.ts";
 
 // The structure gate over the real pages. docs:gen and docs:gen:check run the same
@@ -59,13 +60,22 @@ describe("component pages", () => {
     expect(pages.map((p) => p.dir).sort()).toEqual(COMPONENTS.map((c) => c.dir ?? c.slug).sort());
   });
 
-  it("every page has the shape docgen expects (rules S1 to S8)", () => {
+  it("every page has the shape docgen expects (rules S1 to S10)", () => {
     expect(pageStructureViolations(pages, registry)).toEqual([]);
   });
 
   // S8 straight from the model: no page has a line the docs page never shows.
   it("every non-blank line of every page reaches the page as written", () => {
     for (const page of pages) expect({ page: page.source, unconsumed: parseDoc(page.content).unconsumed }).toEqual({ page: page.source, unconsumed: [] });
+  });
+
+  // S10 against the real checklists: a page whose component the audit has signed off
+  // carries its Accessibility section.
+  it("every signed-off component's page carries '## Accessibility'", () => {
+    for (const c of registry.filter((r) => r.signedOff.length > 0)) {
+      const page = pages.find((p) => p.dir === (c.dir ?? c.slug));
+      expect({ slug: c.slug, accessibility: parseDoc(page?.content ?? "").guidance.some((g) => g.title === ACCESSIBILITY_SECTION) }).toEqual({ slug: c.slug, accessibility: true });
+    }
   });
 
   // The gate and the generator read a page through one model; this holds them to each
@@ -159,11 +169,11 @@ describe("pageStructureViolations", () => {
     content: `# ${title}\n\n${text}`,
   });
 
-  const widget = { slug: "widget", name: "Widget", line: 8 };
+  const widget = { slug: "widget", name: "Widget", line: 8, signedOff: [] };
 
   it("passes pages that match the registry, by dir or by slug", () => {
     const pages = [pageOf("widget", "Widget"), pageOf("layout", "Row & Column")];
-    const registry = [widget, { slug: "row-column", dir: "layout", name: "Row & Column", line: 14 }];
+    const registry = [widget, { slug: "row-column", dir: "layout", name: "Row & Column", line: 14, signedOff: [] }];
     expect(pageStructureViolations(pages, registry)).toEqual([]);
   });
 
@@ -185,9 +195,49 @@ describe("pageStructureViolations", () => {
   });
 
   it("rejects a registered component with no page, at the entry's line in the registry", () => {
-    expect(pageStructureViolations([], [{ slug: "row-column", dir: "layout", name: "Row & Column", line: 47 }])).toEqual([
+    expect(pageStructureViolations([], [{ slug: "row-column", dir: "layout", name: "Row & Column", line: 47, signedOff: [] }])).toEqual([
       `docs/src/core/data/components.ts:47 S1: "Row & Column" has no page; add src/<category>/layout/layout.md`,
     ]);
+  });
+});
+
+// S10 from a checklist on disk: a copy of a real audit checklist (Button's, the format
+// tools/audit/checklists.ts writes) with a run id typed into one sign-off row, in a
+// fixture repo of its own, so the rule is proven on the file a reviewer would edit.
+describe("the Accessibility section follows the audit's sign-off", () => {
+  const fixture = fs.mkdtempSync(path.join(os.tmpdir(), "canvas-docgen-signoff-"));
+  afterAll(() => fs.rmSync(fixture, { recursive: true, force: true }));
+  const real = fs.readFileSync(path.join(REPO, "audit/components/button.md"), "utf8");
+  if (!/^\| web \|  \|  \|  \|  \|$/m.test(real)) throw new Error("audit/components/button.md has no blank web sign-off row; point this fixture at an unsigned checklist");
+  const signed = real.replace(/^\| web \|  \|  \|  \|  \|$/m, "| web | 2026-10-09T12-00-00 | reviewer | 2026-10-09 | pass |");
+  fs.mkdirSync(path.join(fixture, "audit/components"), { recursive: true });
+  fs.writeFileSync(path.join(fixture, "audit/components/widget.md"), signed);
+  fs.writeFileSync(path.join(fixture, "audit/components/gadget.md"), real);
+
+  const body =
+    `A widget.\n\n## Usage\n\n${F}tsx\n<Widget />\n${F}\n\n## Variants\n\n### Small\n\n${F}tsx\n<Widget small />\n${F}\n\n` +
+    `## Do & Don't\n\n### Labels\n\n**Do**: Name it.\n\n${F}tsx\n<Widget label="Name" />\n${F}\n\n` +
+    `**Don't**: Leave it unnamed.\n\n${F}tsx\n<Widget />\n${F}\n`;
+  const page = (text: string): ComponentPage => ({ category: "atoms", dir: "widget", source: "src/atoms/widget/widget.md", content: `# Widget\n\n${text}` });
+  const widget = (signedOff: readonly string[]) => [{ slug: "widget", name: "Widget", line: 8, signedOff }];
+
+  it("reads the platforms a checklist signs off, and none from an unsigned or missing one", () => {
+    expect(checklistSignOffs(fixture, "widget")).toEqual(["web"]);
+    expect(checklistSignOffs(fixture, "gadget")).toEqual([]);
+    expect(checklistSignOffs(fixture, "missing")).toEqual([]);
+    expect(checklistSignOffs(REPO, "button")).toEqual([]);
+  });
+
+  it("fails a signed-off component's page with no '## Accessibility' (S10), at its end", () => {
+    const findings = pageStructureViolations([page(body)], widget(checklistSignOffs(fixture, "widget")));
+    expect(findings).toHaveLength(1);
+    expect(findings[0]).toStartWith(`src/atoms/widget/widget.md:${body.split("\n").length + 1} S10: audit/components/widget.md signs this component off (web)`);
+  });
+
+  it("passes it once the page carries the section, and asks nothing of an unsigned component", () => {
+    const withSection = `${body}\n## Accessibility\n\nThe widget is a button named by its label.\n`;
+    expect(pageStructureViolations([page(withSection)], widget(checklistSignOffs(fixture, "widget")))).toEqual([]);
+    expect(pageStructureViolations([page(body)], widget(checklistSignOffs(fixture, "gadget")))).toEqual([]);
   });
 });
 
