@@ -73,7 +73,7 @@ Severity follows rn-library-audit: critical (broken for a class of users), high 
 
 ## Specific checks
 
-Native shape owed per `PLATFORM-REFERENCES.md` (iOS / Android): HIG / DF.
+Native shape owed per `PLATFORM-REFERENCES.md` (iOS / Android): HIG / M3 modal bottom sheet (one job, different control, K8c).
 
 - [ ] grabber
 - [ ] safe area

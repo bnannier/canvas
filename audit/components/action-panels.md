@@ -73,7 +73,7 @@ Severity follows rn-library-audit: critical (broken for a class of users), high 
 
 ## Specific checks
 
-Native shape owed per `PLATFORM-REFERENCES.md` (iOS / Android): DF / DF (own skin with parts).
+Native shape owed per `PLATFORM-REFERENCES.md` (iOS / Android): DF / DF (own skins until this turn aliases them, K8b; the platform Button, Switch and Card parts stay).
 
 - [ ] phone stacking
 - [ ] smoke-only tests (K7)

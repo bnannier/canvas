@@ -5,10 +5,12 @@
 // divergent build in the three-up registry, the shells gate
 // (test/design-rules-shells.test.ts, through shellImportFindings), which lets a shell
 // import an export that looks the same everywhere and takes the rest as parts, following
-// a barrel's re-exports (traceExport) to the module that builds each name, and the audit
-// facts (tools/audit/facts.ts). Each reason also says what it is made of
+// a barrel's re-exports (traceExport) to the module that builds each name, the audit
+// facts (tools/audit/facts.ts), and the reference catalog guard
+// (test/platform-references.test.ts). Each reason also says what it is made of
 // (DivergenceKind), so a reader can tell a component's own look from a look its parts
-// bring.
+// bring: the catalog guard holds the first to the component's reference row and leaves
+// a part to the part's row.
 //
 // A platform entry (`<name>.ios.tsx`, `<name>.android.tsx`) is read one built export at
 // a time, because one file can hold builds that differ in kind: Avatar and AvatarGroup

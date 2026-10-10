@@ -13,7 +13,7 @@ Audit checklist for `/components/qrcode`. The facts block and the variants table
 | Exports | QRCode |
 | Platform entries | iOS: web build: QRCode. Android: web build: QRCode |
 | Platform-skins registry | none (every export is the web build, so the docs three-up renders it as is) |
-| Reference row | none: `PLATFORM-REFERENCES.md` has no row for this component (K8) |
+| Reference row | `qrcode` (Shared, Built). iOS: none (iOS has no QR code control; Core Image's QR code generator makes an image, which apps show in an image view). Android: none (Material 3 has no QR code component; apps draw the code from a generated bitmap). Web: link [qrcode (Web)](https://ant.design/components/qr-code) (Ant Design QRCode) |
 | Materials manifest | QRCode: atoms, inherited; verification inherited-composition, semantic-state |
 | Hand-off open gaps | none |
 | Hand-off settled | QRCode.size (Boolean axis: `small`, `large`) |

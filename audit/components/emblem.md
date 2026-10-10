@@ -13,7 +13,7 @@ Audit checklist for `/components/emblem`. The facts block and the variants table
 | Exports | Emblem |
 | Platform entries | iOS: web build: Emblem. Android: web build: Emblem |
 | Platform-skins registry | none (every export is the web build, so the docs three-up renders it as is) |
-| Reference row | `icon-tile` (Light, Built). iOS: none (iOS has no icon tile control; rounded app-icon-style tiles are composed from an image or SF Symbol in a rounded container). Android: none (Material 3 has no icon tile component; M3 rounds icon containers more than iOS, so the Android skin only increases the corner radius). Web: none (no web reference; a Canvas composite, a rounded-square icon container) |
+| Reference row | `icon-tile` (Shared, Built). iOS: none (iOS has no icon tile control; rounded app-icon-style tiles are composed from an image or SF Symbol in a rounded container). Android: none (Material 3 has no icon tile component; icon containers appear only inside other components). Web: none (no web reference; a Canvas composite, a rounded-square icon container) |
 | Materials manifest | Emblem: atoms, static; verification solid-appearance, glass-appearance, mode-switch, accessibility-fallback, runtime-capability, semantic-state |
 | Hand-off open gaps | none |
 | Hand-off settled | none |

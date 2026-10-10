@@ -13,7 +13,7 @@ Audit checklist for `/components/alert`. The facts block and the variants table 
 | Exports | Alert |
 | Platform entries | iOS: web build: Alert. Android: web build: Alert |
 | Platform-skins registry | none (every export is the web build, so the docs three-up renders it as is) |
-| Reference row | `alert` (Light, Built). iOS: none (iOS has no inline alert banner; iOS alerts are modal interruptions (UIAlertController), covered by the alert-dialog row). Android: none (Material 3 has no inline alert banner; M2 banners were dropped in M3, leaving a snackbar or dialog as the nearest substitutes). Web: link [alert (Web)](https://ui.shadcn.com/docs/components/alert) (inline callout banner; Catalyst's Alert is a modal dialog, a different component) |
+| Reference row | `alert` (Shared, Built). iOS: none (iOS has no inline alert banner; iOS alerts are modal interruptions (UIAlertController), covered by the alert-dialog row). Android: none (Material 3 has no inline alert banner; M2 banners were dropped in M3, leaving a snackbar or dialog as the nearest substitutes). Web: link [alert (Web)](https://ui.shadcn.com/docs/components/alert) (inline callout banner; Catalyst's Alert is a modal dialog, a different component) |
 | Materials manifest | Alert: molecules, static; verification solid-appearance, glass-appearance, mode-switch, accessibility-fallback, runtime-capability, semantic-state |
 | Hand-off open gaps | none |
 | Hand-off settled | Alert.narrow (Renamed: `Container`), Alert.wide (Renamed: `Container`), Alert.block (Not offered: none) |

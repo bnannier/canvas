@@ -13,7 +13,7 @@ Audit checklist for `/components/dashboard-grid`. The facts block and the varian
 | Exports | DashboardGrid, clearStoredDashboardOrder, DASHBOARD_COLUMNS, effectiveSpan, moveWidget, orderedWidgets |
 | Platform entries | iOS: own build: DashboardGrid (injects platform parts (../drag-drop/drag-drop.ios.js)); re-exports the shared build: clearStoredDashboardOrder, DASHBOARD_COLUMNS, effectiveSpan, moveWidget, orderedWidgets. Android: own build: DashboardGrid (injects platform parts (../drag-drop/drag-drop.android.js)); re-exports the shared build: clearStoredDashboardOrder, DASHBOARD_COLUMNS, effectiveSpan, moveWidget, orderedWidgets |
 | Platform-skins registry | iOS: DashboardGrid; Android: DashboardGrid |
-| Reference row | none: `PLATFORM-REFERENCES.md` has no row for this component (K8) |
+| Reference row | `dashboard-grid` (Shared, Built). iOS: none (iOS has no dashboard grid control; widget boards such as the Home Screen's are system surfaces, and apps lay out their own from collection views). Android: none (Material 3 has no dashboard or widget grid component; its canonical layouts arrange panes, not rearrangeable widgets). Web: link [dashboard-grid (Web)](https://github.com/react-grid-layout/react-grid-layout) (react-grid-layout: a draggable widget grid on 12 columns) |
 | Materials manifest | DashboardGrid: organisms, inherited; verification inherited-composition, semantic-state |
 | Hand-off open gaps | none |
 | Hand-off settled | DashboardGrid.columns (Not offered: none), DashboardGrid.gap (Boolean axis: `compact`), DashboardGrid.rowHeight (Not offered: none), DashboardGrid.onReorder (Renamed: `onOrderChange`), DashboardGrid.locked (Renamed: `unlocked`) |
@@ -68,7 +68,7 @@ Severity follows rn-library-audit: critical (broken for a class of users), high 
 
 ## Specific checks
 
-Native shape owed per `PLATFORM-REFERENCES.md` (iOS / Android): n/a.
+Native shape owed per `PLATFORM-REFERENCES.md` (iOS / Android): DF / DF.
 
 - [ ] keyboard rearrange
 - [ ] spans

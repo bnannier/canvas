@@ -13,7 +13,7 @@ Audit checklist for `/components/board`. The facts block and the variants table 
 | Exports | Board, applyBoardMove |
 | Platform entries | iOS: own build: Board (builds from its own iosSkin; injects platform parts (../drag-drop/drag-drop.ios.js); injects platform parts (../../molecules/card/card.ios.js); injects platform parts (../row-menu/row-menu.ios.js)); re-exports the shared build: applyBoardMove. Android: own build: Board (builds from its own androidSkin; injects platform parts (../drag-drop/drag-drop.android.js); injects platform parts (../../molecules/card/card.android.js); injects platform parts (../row-menu/row-menu.android.js)); re-exports the shared build: applyBoardMove |
 | Platform-skins registry | iOS: Board; Android: Board |
-| Reference row | none: `PLATFORM-REFERENCES.md` has no row for this component (K8) |
+| Reference row | `board` (Light, Built). iOS: none (iOS has no board or kanban control; apps compose columns of cards from collection views and lists, with drag and drop as the system interaction). Android: none (Material 3 has no board or kanban component; columns are composed from cards and lists). Web: none (no established web component library ships a kanban board; boards are composed from sortable lists, as dnd-kit's multiple containers example does) |
 | Materials manifest | Board: organisms, static + liquid; verification solid-appearance, glass-appearance, mode-switch, accessibility-fallback, runtime-capability, semantic-state |
 | Hand-off open gaps | none |
 | Hand-off settled | none |
@@ -68,7 +68,7 @@ Severity follows rn-library-audit: critical (broken for a class of users), high 
 
 ## Specific checks
 
-Native shape owed per `PLATFORM-REFERENCES.md` (iOS / Android): n/a.
+Native shape owed per `PLATFORM-REFERENCES.md` (iOS / Android): DF / DF (own skins until this turn aliases them, K8c).
 
 - [ ] keyboard move between columns
 - [ ] announcements

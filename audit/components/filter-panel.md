@@ -67,7 +67,7 @@ Severity follows rn-library-audit: critical (broken for a class of users), high 
 
 ## Specific checks
 
-Native shape owed per `PLATFORM-REFERENCES.md` (iOS / Android): DF / M3.
+Native shape owed per `PLATFORM-REFERENCES.md` (iOS / Android): sheet with checkmark rows (one job, different control, K8c) / M3.
 
 - [ ] drawer mode at its breakpoint
 - [ ] counts

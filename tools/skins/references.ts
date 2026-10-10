@@ -1,9 +1,10 @@
 // The one reader of the platform reference catalog (PLATFORM-REFERENCES.md): its table's
 // rows, each native cell classified as a cited control, a `(none: ...)` note or plain text,
 // and the row a docs component maps to. Every reader of the catalog goes through it: the
-// audit facts (tools/audit/facts.ts), the shape gate (test/design-rules-shape.test.ts)
-// and the docs coverage report (scripts/check-docs-coverage.ts), so they cannot disagree
-// about which row a component has. Two readers once did: the coverage report stripped names its own way, with no
+// audit facts (tools/audit/facts.ts), the shape gate (test/design-rules-shape.test.ts),
+// the docs coverage report (scripts/check-docs-coverage.ts) and the catalog guard
+// (test/platform-references.test.ts), so they cannot disagree about which row a component
+// has. Two readers once did: the coverage report stripped names its own way, with no
 // aliases and no charts row, and counted 48 row-less components where the audit counted 18.
 
 import type { Category } from "../../docs/src/core/data/types.ts";

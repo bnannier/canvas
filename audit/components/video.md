@@ -13,7 +13,7 @@ Audit checklist for `/components/video`. The facts block and the variants table 
 | Exports | Video |
 | Platform entries | iOS: own build: Video (builds from its own iosSkin; injects platform parts (../spinner/spinner.ios.js); passes `nativeControls: true` which the web entry does not; counted as the platform's own). Android: own build: Video (builds from its own androidSkin; injects platform parts (../spinner/spinner.android.js); passes `nativeControls: true` which the web entry does not; counted as the platform's own) |
 | Platform-skins registry | iOS: Video; Android: Video |
-| Reference row | none: `PLATFORM-REFERENCES.md` has no row for this component (K8) |
+| Reference row | `video` (Light, Built). iOS: link [video (iOS)](https://developer.apple.com/design/human-interface-guidelines/playing-video) (HIG Playing video: with controls, the iOS build hands the frame to AVKit's own player controls; no iOS 27 kit group). Android: link [video (Android)](https://developer.android.com/media/media3/ui/playerview) (Media3 PlayerView's player controls, which the Android build hands the frame to; Material 3 has no video player component). Web: link [video (Web)](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/video) (the video element; the kit draws its own control bar under the picture) |
 | Materials manifest | Video: atoms, static + inherited; verification solid-appearance, glass-appearance, mode-switch, accessibility-fallback, runtime-capability, semantic-state |
 | Hand-off open gaps | none |
 | Hand-off settled | none |
@@ -67,7 +67,7 @@ Severity follows rn-library-audit: critical (broken for a class of users), high 
 
 ## Specific checks
 
-Native shape owed per `PLATFORM-REFERENCES.md` (iOS / Android): n/a.
+Native shape owed per `PLATFORM-REFERENCES.md` (iOS / Android): AVKit player controls / Media3 player controls.
 
 - [ ] keyboard transport
 - [ ] captions track (WCAG 1.2.2)
