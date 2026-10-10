@@ -48,6 +48,7 @@ import e_atoms_typography_dont_11_do from "./dont-11-do";
 import e_atoms_typography_dont_11_dont from "./dont-11-dont";
 import e_atoms_typography_dont_12_do from "./dont-12-do";
 import e_atoms_typography_dont_12_dont from "./dont-12-dont";
+import e_atoms_typography_guidance_0_1 from "./guidance-0-1";
 
 export const docs: ComponentDocs = {
   dir: "typography",
@@ -89,6 +90,15 @@ export const docs: ComponentDocs = {
     { title: "caption", do: { caption: "Use caption as a short eyebrow label above a section, then explain in body.", code: "<Column tight>\n  <Typography caption>Billing</Typography>\n  <Typography body>Your subscription renews automatically each month.</Typography>\n</Column>", render: e_atoms_typography_dont_10_do }, dont: { caption: "Uppercase, letter-spaced caption text is illegible for anything longer than a label.", code: "<Typography caption>Your subscription renews automatically each month unless you cancel from the billing page.</Typography>", render: e_atoms_typography_dont_10_dont } },
     { title: "code", do: { caption: "Use code for inline tokens inside a sentence; reach for the code block component for multi-line snippets.", code: "<Typography body>\n  Create a branch with \n  <Typography code>git checkout -b feature</Typography>\n   before committing.\n</Typography>", render: e_atoms_typography_dont_11_do }, dont: { caption: "The inline code utility has tight padding and no scroll; multi-line blocks overflow and clip.", code: "<Typography code>git checkout -b feature\ngit add .\ngit commit -m \"wip\"</Typography>", render: e_atoms_typography_dont_11_dont } },
     { title: "mono", do: { caption: "Use mono for identifiers, hashes, and tabular values where character alignment matters.", code: "<Row alignCenter between relaxed>\n  <Typography small>Request ID</Typography>\n  <Typography mono>req_8f2c10ab</Typography>\n</Row>", render: e_atoms_typography_dont_12_do }, dont: { caption: "Mono spacing makes prose sentences sparse and slow to read; it is meant for fixed-width data.", code: "<Typography mono>We could not process your request because the upstream service returned an unexpected response.</Typography>", render: e_atoms_typography_dont_12_dont } },
+  ],
+  guidance: [
+    {
+      title: "Inline links (href)",
+      blocks: [
+        "Inline text that NAVIGATES should be a real link, not pressable text that sets `location`: pass `href` and the web render becomes a genuine browser link (middle-click, new tab, crawlers, and assistive tech all treat it as one). Native platforms ignore `href`, so pair it with an `onPress` that runs the same navigation through your router; `underline` supplies the conventional link look, and `hrefAttrs` forwards `target` / `rel` / `download` on the web.",
+        { code: "<Typography small>\n  Read the <Typography small underline href=\"https://canvas.nannier.com\">Canvas docs</Typography> for the full component list.\n</Typography>", render: e_atoms_typography_guidance_0_1 },
+      ],
+    },
   ],
   // Extracted from the component's exported `*Props` interfaces by
   // tools/docgen/extract-props.ts (the TypeScript checker).

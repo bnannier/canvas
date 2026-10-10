@@ -31,6 +31,9 @@ import e_molecules_code_block_dont_5_dont from "./dont-5-dont";
 export const docs: ComponentDocs = {
   dir: "code-block",
   category: "molecules",
+  overview: [
+    "When a line is wider than the block, Tab reaches the scrollable code and the platform's arrow keys scroll it; while it has keyboard focus, the block's card draws the theme's focus ring. Short content, `wrap`, and `inline` do not add a scrolling tab stop. Native scrolling continues to use the native ScrollView.",
+  ],
   examples: [
     { label: "Default", code: "<CodeBlock\n  language=\"ts\"\n  code={`const theme = getTheme();\nsetTheme(theme === \"dark\" ? \"light\" : \"dark\");`}\n/>", render: e_molecules_code_block_example_0 },
     { label: "Syntax highlighting", code: "<CodeBlock\n  language=\"tsx\"\n  code={`export function Hello({ name }: { name: string }) {\n  // Greet the current user\n  return <Badge primary>Hi {name}</Badge>;\n}`}\n/>", render: e_molecules_code_block_example_1 },

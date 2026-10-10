@@ -1,10 +1,11 @@
 // Build-time docs codegen (run with `bun run docs:gen`).
 //
-// Reads every component's co-located markdown (src/<category>/<dir>/<dir>.md),
-// parses out the Playground examples and Do/Don't pairs with the shared grammar,
-// and emits, for each fence, a real statically-importable example module under
-// docs/src/core/examples/, one `<dir>-docs.tsx` module per component beside them that
-// wires its fences up with their source strings and labels and carries its prop tables,
+// Reads every component's co-located markdown (src/<category>/<dir>/<dir>.md) into
+// the shared document model (parseDoc: the overview, the Playground examples with their
+// notes, the Do/Don't pairs and the guidance sections after them, every line of the page
+// but its title and description), and emits, for each fence, a real statically-importable
+// example module under docs/src/core/examples/, one `<dir>-docs.tsx` module per component
+// beside them that carries that model with its fences wired up and its prop tables,
 // and docs/src/core/registry.ts, which reaches those modules through a
 // `require.context` whose mode follows expo-router's own route loading: synchronous
 // on native and for the static render, lazy (one chunk per component) in the web
@@ -18,7 +19,7 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
 import { fileURLToPath } from "node:url";
-import { splitDoc, scopeNamesFromLiveScope, bannedStyleViolations, widthShimViolations, bareWidthViolations, prosePhantomApiViolations, BARE_WIDTH_MIN, type Example, type DontPair } from "./parse-md.ts";
+import { parseDoc, scopeNamesFromLiveScope, bannedStyleViolations, widthShimViolations, bareWidthViolations, prosePhantomApiViolations, BARE_WIDTH_MIN, type ParsedDoc, type Prose } from "./parse-md.ts";
 import { componentPages, pageStructureViolations, registeredComponents, type Category } from "./pages.ts";
 import { extractProps, type PropGroup } from "./extract-props.ts";
 import { COMPONENTS } from "../../docs/src/core/data/components.ts";
@@ -196,13 +197,23 @@ ${code.trim()}
 `;
 }
 
-type ExampleRef = { label: string; code: string; importName: string; file: string };
+type ModuleRef = { code: string; importName: string; file: string };
+type ExampleRef = ModuleRef & { label: string; note: Prose[] };
 type DontRef = {
   title?: string;
-  do: { caption: string; code: string; importName: string; file: string };
-  dont: { caption: string; code: string; importName: string; file: string };
+  do: ModuleRef & { caption: string };
+  dont: ModuleRef & { caption: string };
 };
-type Entry = { dir: string; category: Category; examples: ExampleRef[]; donts: DontRef[] };
+type GuidanceRef = { title: string; blocks: (Prose | { kind: "heading"; text: string } | ({ kind: "example" } & ModuleRef))[] };
+type Entry = {
+  dir: string;
+  category: Category;
+  overview: Prose[];
+  examples: ExampleRef[];
+  variantsNote: Prose[];
+  donts: DontRef[];
+  guidance: GuidanceRef[];
+};
 
 function writeModule(category: Category, dir: string, name: string, code: string, source: string): {
   importName: string;
@@ -219,7 +230,8 @@ function writeModule(category: Category, dir: string, name: string, code: string
   };
 }
 
-function buildEntry(category: Category, dir: string, examples: Example[], donts: DontPair[]): Entry {
+function buildEntry(category: Category, dir: string, doc: ParsedDoc): Entry {
+  const { examples, donts, guidance } = doc;
   const source = `src/${category}/${dir}/${dir}.md`;
   for (const ex of examples) { recordFenceTags(ex.code, source); recordFenceStyle(ex.code, source, "example", dir); recordFenceBareWidth(ex.code, source, "example"); }
   for (const d of donts) {
@@ -233,9 +245,18 @@ function buildEntry(category: Category, dir: string, examples: Example[], donts:
     recordFenceBareWidth(d.do.code, source, "Do");
     recordFenceBareWidth(d.dont.code, source, "Don't");
   }
+  // A guidance section's fence is a live example like a variant's, held to the same rules.
+  for (const g of guidance) {
+    for (const b of g.blocks) {
+      if (b.kind !== "example") continue;
+      recordFenceTags(b.code, source);
+      recordFenceStyle(b.code, source, "example", dir);
+      recordFenceBareWidth(b.code, source, "example");
+    }
+  }
   const exampleRefs: ExampleRef[] = examples.map((ex, i) => {
     const m = writeModule(category, dir, `example-${i}`, ex.code, source);
-    return { label: ex.label, code: ex.code, importName: m.importName, file: m.file };
+    return { label: ex.label, code: ex.code, note: ex.note, importName: m.importName, file: m.file };
   });
   const dontRefs: DontRef[] = donts.map((d, i) => {
     const doMod = writeModule(category, dir, `dont-${i}-do`, d.do.code, source);
@@ -246,8 +267,22 @@ function buildEntry(category: Category, dir: string, examples: Example[], donts:
       dont: { caption: d.dont.caption, code: d.dont.code, importName: dontMod.importName, file: dontMod.file },
     };
   });
-  return { dir, category, examples: exampleRefs, donts: dontRefs };
+  const guidanceRefs: GuidanceRef[] = guidance.map((g, i) => ({
+    title: g.title,
+    blocks: g.blocks.map((b, j) => {
+      if (b.kind !== "example") return b;
+      const m = writeModule(category, dir, `guidance-${i}-${j}`, b.code, source);
+      return { kind: "example", code: b.code, importName: m.importName, file: m.file };
+    }),
+  }));
+  return { dir, category, overview: doc.overview, examples: exampleRefs, variantsNote: doc.variantsNote, donts: dontRefs, guidance: guidanceRefs };
 }
+
+// Prose as the docs module carries it (DocProse in docs/src/core/scope.ts): a paragraph
+// as its inline Markdown string, a list as `{ list: [...] }`. No kind tag, so the module's
+// literals are only what the page shows (tools/api/docs.ts reads them as the page's text).
+const proseLiteral = (p: Prose) => (p.kind === "paragraph" ? JSON.stringify(p.text) : `{ list: ${JSON.stringify(p.items)} }`);
+const proseArray = (blocks: Prose[]) => `[${blocks.map(proseLiteral).join(", ")}]`;
 
 // The module a component's docs live in, beside its example modules: the DocEntry
 // (its fences with their sources and labels) and its prop tables. Everything a
@@ -266,8 +301,12 @@ function renderDocsModule(e: Entry, props: PropGroup[]): string {
     imports.push(`import ${d.do.importName} from "${local(d.do.file)}";`);
     imports.push(`import ${d.dont.importName} from "${local(d.dont.file)}";`);
   }
+  for (const g of e.guidance) for (const b of g.blocks) if (b.kind === "example") imports.push(`import ${b.importName} from "${local(b.file)}";`);
   const examples = e.examples
-    .map((ex) => `    { label: ${JSON.stringify(ex.label)}, code: ${JSON.stringify(ex.code)}, render: ${ex.importName} },`)
+    .map((ex) => {
+      const note = ex.note.length ? `, note: ${proseArray(ex.note)}` : "";
+      return `    { label: ${JSON.stringify(ex.label)}, code: ${JSON.stringify(ex.code)}, render: ${ex.importName}${note} },`;
+    })
     .join("\n");
   const donts = e.donts
     .map((d) => {
@@ -277,6 +316,15 @@ function renderDocsModule(e: Entry, props: PropGroup[]): string {
       return `    { ${title}do: ${side(d.do)}, dont: ${side(d.dont)} },`;
     })
     .join("\n");
+  const guidanceBlock = (b: GuidanceRef["blocks"][number]) =>
+    b.kind === "heading" ? `{ heading: ${JSON.stringify(b.text)} }` : b.kind === "example" ? `{ code: ${JSON.stringify(b.code)}, render: ${b.importName} }` : proseLiteral(b);
+  const guidance = e.guidance
+    .map((g) => `    {\n      title: ${JSON.stringify(g.title)},\n      blocks: [\n${g.blocks.map((b) => `        ${guidanceBlock(b)},`).join("\n")}\n      ],\n    },`)
+    .join("\n");
+  // The parts a page leaves empty are left out of its module (each is optional in DocEntry).
+  const overview = e.overview.length ? `\n  overview: [\n${e.overview.map((p) => `    ${proseLiteral(p)},`).join("\n")}\n  ],` : "";
+  const variantsNote = e.variantsNote.length ? `\n  variantsNote: ${proseArray(e.variantsNote)},` : "";
+  const guidanceField = e.guidance.length ? `\n  guidance: [\n${guidance}\n  ],` : "";
   return `${GENERATED_HEADER}
 // Source: src/${e.category}/${e.dir}/${e.dir}.md
 import type { ComponentDocs } from "../../../scope";
@@ -284,13 +332,13 @@ ${imports.join("\n")}
 
 export const docs: ComponentDocs = {
   dir: ${JSON.stringify(e.dir)},
-  category: ${JSON.stringify(e.category)},
+  category: ${JSON.stringify(e.category)},${overview}
   examples: [
 ${examples}
-  ],
+  ],${variantsNote}
   donts: [
 ${donts}
-  ],
+  ],${guidanceField}
   // Extracted from the component's exported \`*Props\` interfaces by
   // tools/docgen/extract-props.ts (the TypeScript checker).
   props: ${JSON.stringify(props)},
@@ -358,19 +406,20 @@ export function loadComponentDocs(dir: string): ComponentDocsRequest | undefined
 }
 
 function main() {
-  // The shape of every page comes first (S1 to S6, docStructureViolations in
+  // The shape of every page comes first (S1 to S8, docStructureViolations in
   // parse-md.ts), before anything is written. Unlike the style and prose guardrails it
   // has no DOCGEN_STYLE_STRICT downgrade: a page without its Usage, Variants or
-  // Do & Don't is not a component page, so it always fails, the way an unbound fence
-  // tag does.
+  // Do & Don't is not a component page, and a line the page would drop is lost
+  // guidance, so it always fails, the way an unbound fence tag does.
   const pages = componentPages(REPO);
   const structure = pageStructureViolations(pages, registeredComponents(REPO));
   if (structure.length) {
     throw new Error(
       `docs:gen: ${structure.length} component page structure violation(s). A page is "# <Name>" and a prose intro, ` +
         `then "## Usage" (one fence), "## Variants" ("### <label>" over one fence each) and "## Do & Don't" ` +
-        `("### <title>" groups of one **Do** and one different **Don't**, each a caption over its own fence), and ` +
-        `nothing but a section of the page's own after that (.agents/skills/canvas-new-component/SKILL.md, section 3):\n` +
+        `("### <title>" groups of one **Do** and one different **Don't**, each a caption over its own fence), then ` +
+        `any guidance sections of the page's own, and every line of it something the page renders ` +
+        `(.agents/skills/canvas-new-component/SKILL.md, section 3):\n` +
         structure.map((v) => `    ${v}`).join("\n"),
     );
   }
@@ -381,11 +430,14 @@ function main() {
   const propSources: { dir: string; file: string }[] = [];
   let exampleCount = 0;
   let dontCount = 0;
+  let guidanceCount = 0;
+  let guidanceExampleCount = 0;
 
   for (const { category, dir, source, content } of pages) {
     recordProse(content, source);
-    const { examples, donts } = splitDoc(content);
-    entries.push(buildEntry(category, dir, examples, donts));
+    const doc = parseDoc(content);
+    const { examples, donts } = doc;
+    entries.push(buildEntry(category, dir, doc));
     // Collect this dir's Props-bearing source files for the prop tables.
     const srcDir = path.join(REPO, "src", category, dir);
     for (const f of fs.readdirSync(srcDir).sort()) {
@@ -393,6 +445,8 @@ function main() {
     }
     exampleCount += examples.length;
     dontCount += donts.length;
+    guidanceCount += doc.guidance.length;
+    guidanceExampleCount += doc.guidance.reduce((n, g) => n + g.blocks.filter((b) => b.kind === "example").length, 0);
   }
 
   if (tagViolations.length) {
@@ -503,8 +557,9 @@ function main() {
   }
 
   console.log(
-    `docs:gen — ${entries.length} components, ${exampleCount} examples, ${dontCount} Do/Don't pairs ` +
-      `(${exampleCount + dontCount * 2} modules); ${propGroupCount} prop tables, ${propRowCount} rows → docs/src/core/`,
+    `docs:gen: ${entries.length} components, ${exampleCount} examples, ${dontCount} Do/Don't pairs, ` +
+      `${guidanceCount} guidance sections with ${guidanceExampleCount} examples ` +
+      `(${exampleCount + dontCount * 2 + guidanceExampleCount} modules); ${propGroupCount} prop tables, ${propRowCount} rows → docs/src/core/`,
   );
 }
 

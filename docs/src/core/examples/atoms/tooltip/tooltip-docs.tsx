@@ -23,6 +23,12 @@ import e_atoms_tooltip_dont_4_dont from "./dont-4-dont";
 export const docs: ComponentDocs = {
   dir: "tooltip",
   category: "atoms",
+  overview: [
+    "The bubble inverts against the page (dark in the light scheme, light in the dark one) and sets its text in Dark Factory's label type; iOS, which has no tooltip, shows the same bubble, and Android keeps the Material 3 plain tooltip.",
+    "The trigger is a boolean axis of its own, resolved first match wins:",
+    { list: ["`children`, an element you already have (an icon `Button`, a `Chip`, any control that owns its own press and accessible name). The child renders as-is and the tip hangs off it through a wrapper that only LISTENS: no accessibility role, no tab stop, and no press of its own, so the child stays the single interactive, labelled element, keeps its `onPress`, and the tip never toggles on tap. Hover and focus on the child both raise it; the hover region is the whole tooltip, so moving onto the bubble keeps it up.","`iconTrigger`, a ghost icon button carrying a settings glyph.","`textTrigger`, the `trigger` string as a pressable inline word.","Otherwise the default: the `trigger` string as an outline Button."] },
+    "Hover and focus are pointer-and-keyboard affordances. Touch pointers are skipped, and iOS and Android never fire hover at all, so on native and on touch the controlled `open` prop is the way to show a tip: drive it from whatever the platform does offer (a long press, a selected row, an inline help toggle). The built-in triggers additionally toggle on tap; an element trigger deliberately does not, because that press belongs to the child.",
+  ],
   examples: [
     { label: "Default", code: "<Tooltip label=\"Open settings\" trigger=\"Settings\" open />", render: e_atoms_tooltip_example_0 },
     { label: "Right", code: "<Tooltip label=\"Open settings\" trigger=\"Settings\" open right />", render: e_atoms_tooltip_example_1 },

@@ -17,6 +17,11 @@ import e_atoms_switch_dont_2_dont from "./dont-2-dont";
 export const docs: ComponentDocs = {
   dir: "switch",
   category: "atoms",
+  overview: [
+    "In glass mode the track is a control-layer pane (brand-tinted while checked) and the knob a control-layer surface at whichever end the state puts it; the track, the label, the description and the hit target never move, and the checked state flips at once. A disabled switch is inert; solid mode keeps the skin's own knob.",
+    "Pass `ref` to access the interactive switch row, including its label. Use `useRef<ComponentRef<typeof Switch>>(null)` from React, or `useRef<View>(null)` with React Native's `View` type. Object and callback refs are supported and detach on unmount. Calling `ref.current?.focus()` or `.blur()` delegates to the host without activating the control. Browser focus is supported; native focus depends on the platform and React Native version, and is separate from accessibility focus.",
+    "On the web, Space activates the focused control on key release, and Enter also activates it. Holding Space does not repeat the change. Moving focus away, disabling the control, or composing text cancels a pending Space press.",
+  ],
   examples: [
     { label: "Default", code: "<Switch defaultChecked>Available to chat</Switch>", render: e_atoms_switch_example_0 },
     { label: "Off", code: "<Switch>Available to chat</Switch>", render: e_atoms_switch_example_1 },

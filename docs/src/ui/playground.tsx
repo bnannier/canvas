@@ -4,8 +4,9 @@ import { ScrollView, View, Typography, Card, Alert, Divider, Container, Row, Col
 import { buildScopes } from "../core/build-scopes";
 import { IconSearchContext } from "../core/live-state";
 import { useAuditProbe } from "../audit/probe-context";
-import type { DocExample, ExampleScope } from "../core/scope";
+import type { DocExample, DocProse, ExampleScope } from "../core/scope";
 import { CodeBlock } from "./code-block";
+import { Prose } from "./prose";
 
 // Docs-only: example helpers whose fence renders a searchable catalog. When the selected
 // example's code uses one, the Playground draws a SINGLE search field above the 3-up stage and
@@ -124,11 +125,15 @@ function PlatformRow({ label, scope, render, resetKey, first, showLabel, stageAl
 
 // The component playground: the stacked iOS/Android/Web stage (one device row on
 // native), a gap, then the source, with the example rail to the right on wide viewports.
+// Under the rail sit the notes the .md writes beside the selected example's fence, after
+// `variantsNote`, the note on every example (the owner's ruling, audit/DECISIONS.md K2
+// notes), so each deep-linked variant URL carries its own note.
 // Selection is optionally controlled: pass `selected` + `onSelect` to drive the active
 // example from the URL variant (see ComponentReference); omit them and the rail manages
 // its own state.
-export function Playground({ examples, stageAlign, singlePreview, selected: selectedProp, onSelect: onSelectProp }: {
+export function Playground({ examples, variantsNote, stageAlign, singlePreview, selected: selectedProp, onSelect: onSelectProp }: {
   examples: DocExample[];
+  variantsNote?: DocProse[];
   stageAlign?: "center" | "start";
   singlePreview?: boolean;
   selected?: number;
@@ -285,7 +290,12 @@ export function Playground({ examples, stageAlign, singlePreview, selected: sele
     </BreakpointOverride>
   );
 
-  if (examples.length <= 1) return stage;
+  // The selected example's notes, set small and muted beside the rail's labels.
+  const noteBlocks = [...(variantsNote ?? []), ...(ex.note ?? [])];
+  const notes = noteBlocks.length ? <Prose blocks={noteBlocks} small subtle /> : null;
+
+  // A lone example has no rail: its notes sit where the rail would on a phone, over the stage.
+  if (examples.length <= 1) return notes ? <Column cozy>{notes}{stage}</Column> : stage;
 
   // The example switcher is the kit Tabs component, so the docs dogfood a real
   // selectable control instead of a hand-rolled pill row (which read as loose,
@@ -293,17 +303,25 @@ export function Playground({ examples, stageAlign, singlePreview, selected: sele
   const labels = examples.map((e) => e.label);
 
   // Wide: Tabs' `vertical` rail (a settings-style side rail, active row filled)
-  // beside the stage, in a Container xxxs scroller so many examples still scroll.
+  // beside the stage, in a Container xxxs scroller so many examples still scroll, the
+  // notes under the labels in the same scroller.
   // Narrow: the horizontal `underline` tab bar above the stage, wrapping (the
-  // kit's `wrap`) so every example is on screen at once on a phone or tablet.
+  // kit's `wrap`) so every example is on screen at once on a phone or tablet, the
+  // notes between it and the stage.
   // The kit's overflow scroller, which this rode before, showed only the first
   // few labels and panned the rest with no scrollbar to say they were there.
   const rail = wide ? (
     <Container xxxs start><ScrollView showsVerticalScrollIndicator={false}>
-      <Tabs vertical block testID="playground-examples" tabs={labels} active={selected} onSelect={setSelected} />
+      <Column cozy>
+        <Tabs vertical block testID="playground-examples" tabs={labels} active={selected} onSelect={setSelected} />
+        {notes}
+      </Column>
     </ScrollView></Container>
   ) : (
-    <Tabs underline wrap testID="playground-examples" tabs={labels} active={selected} onSelect={setSelected} />
+    <Column cozy>
+      <Tabs underline wrap testID="playground-examples" tabs={labels} active={selected} onSelect={setSelected} />
+      {notes}
+    </Column>
   );
 
   return (

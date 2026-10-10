@@ -21,8 +21,12 @@ import e_atoms_slider_dont_3_dont from "./dont-3-dont";
 export const docs: ComponentDocs = {
   dir: "slider",
   category: "atoms",
+  overview: [
+    "Pass `ref` to access the interactive adjustable track, including when a header is shown. Use `useRef<ComponentRef<typeof Slider>>(null)` from React, or `useRef<View>(null)` with React Native's `View` type. Object and callback refs are supported and detach on unmount. Calling `ref.current?.focus()` or `.blur()` delegates to the host without activating the control. Browser focus is supported; native focus depends on the platform and React Native version, and is separate from accessibility focus.",
+    "Name the setting with string `children`, or pass `accessibilityLabel` when the visible title is omitted or contains rich content.",
+  ],
   examples: [
-    { label: "Default", code: "<Slider accessibilityLabel=\"Volume\" defaultValue={60} />", render: e_atoms_slider_example_0 },
+    { label: "Default", code: "<Slider accessibilityLabel=\"Volume\" defaultValue={60} />", render: e_atoms_slider_example_0, note: ["In glass mode the handle is a control-layer glass knob whose position is the authoritative value at every frame (a controlled value or a release can never lag behind the rail). Tapping the track puts the handle on the tapped value at once. The rail, the filled range, the value label and the hit target stay fixed. A disabled slider is inert; solid mode keeps the skin's own handle.", "On iOS 26 the handle is a real Apple Liquid Glass control, with the material's edge-lensing and specular showing on a physical device. This is automatic from the glass surface, the platform default there, so there is no prop to set; under a solid surface, Reduce Transparency, or Increase Contrast the handle falls back to a solid knob. The Android and web handles keep their own native look."] },
     { label: "With label", code: "<Slider defaultValue={65}>Volume</Slider>", render: e_atoms_slider_example_1 },
     { label: "With description", code: "<Slider defaultValue={40} description=\"Applies to alert sounds.\">Volume</Slider>", render: e_atoms_slider_example_2 },
     { label: "Small", code: "<Slider small accessibilityLabel=\"Volume\" defaultValue={40} />", render: e_atoms_slider_example_3 },

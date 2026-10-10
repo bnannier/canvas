@@ -21,6 +21,10 @@ import e_atoms_textarea_dont_3_dont from "./dont-3-dont";
 export const docs: ComponentDocs = {
   dir: "textarea",
   category: "atoms",
+  overview: [
+    "Android uses the same opaque muted surface as the other filled fields. Its label uses `primary-text` when focused and `destructive-text` on error. The over-limit character count also uses `destructive-text` on every platform.",
+    "Inside an overlay, Escape follows the overlay's cancellation policy. A supplied `onKeyPress` runs first and can call `preventDefault()` to handle Escape locally. Cancelling an IME candidate keeps the overlay open.",
+  ],
   examples: [
     { label: "Default", code: "<Textarea placeholder=\"A few words about this project\" />", render: e_atoms_textarea_example_0 },
     { label: "With label", code: "<Textarea label=\"Description\" placeholder=\"A few words about this project…\" />", render: e_atoms_textarea_example_1 },
