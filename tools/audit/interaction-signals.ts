@@ -87,6 +87,21 @@
 // source renders `children` there: a Drawer's content is in the drawer, a Dropdown's is its
 // trigger.
 //
+// A signal also says which platform builds render it (`builds`): a component is built once
+// per platform by its entries (`dialog.tsx`, `dialog.ios.tsx`, `dialog.android.tsx`, each
+// `createDialog(<skin>, <parts>)`), and a shell renders different controls per skin
+// (Dialog's iOS capsules under `skin.footerKind === "capsules"`, its Android text buttons
+// under `skin.textButton != null`, the web's kit Buttons otherwise). The conditions around
+// a signal that read a factory's parameters are evaluated with each entry's arguments (the
+// skin objects read from their modules with the static evaluator, tools/audit/static-eval.ts),
+// through a constant used where it is placed, an early return, and a factory a factory calls
+// (`createSidebarDrillDown(skin, Badge)` takes each entry's skin through `createSidebar`); a
+// build whose arguments make one of them go the other way does not render it. A condition
+// the evaluator cannot read keeps every build, as does a condition in a family's shared
+// module, whose skin is each caller's. The docs' three-up shows each build in a row of its
+// own (tools/audit/state-coverage.ts maps the rows to the builds), so a control a build
+// alone renders is on that row alone.
+//
 // A signal can be gated: rendered only when the component is given a prop (`onItemPress`
 // makes a Feeds row a button; `onStepPress` makes a step circle pressable). The gates are
 // read from the conditions around the signal (an if, a ternary, `&&`, an early return)
@@ -107,7 +122,15 @@ import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { dirname, join, relative, resolve } from "node:path";
 import propsToAriaRole from "react-native-web/dist/modules/AccessibilityUtil/propsToAriaRole.js";
 import ts from "typescript";
-import { StaticReader, boundNames, outermost, unwrap, type Binding } from "./static-eval.ts";
+import { StaticReader, UNKNOWN, boundNames, outermost, pick, unwrap, type Binding, type Env } from "./static-eval.ts";
+
+/**
+ * The platform builds a component is made in, one per entry: `<name>.tsx` (the web's, the
+ * base Metro falls back to), `<name>.ios.tsx` and `<name>.android.tsx`, each calling the
+ * shell's factory with its own skin and parts.
+ */
+export const BUILDS = ["web", "ios", "android"] as const;
+export type Build = (typeof BUILDS)[number];
 
 export type SignalKind = "press" | "responder" | "hover-in" | "hover" | "text-entry" | "link" | "tab-stop" | "overlay" | "look" | "disabled";
 
@@ -161,6 +184,21 @@ export interface Signal {
    * function taking `pressed`): it is the component's whole look.
    */
   in?: string;
+  /**
+   * The platform builds that render it, in `BUILDS` order, when not every build the
+   * component has does: Dialog's iOS capsules are the iOS build's alone, its Android text
+   * buttons the Android build's (`skin.footerKind`, `skin.textButton`). Absent when every
+   * build renders it, or the component has one build.
+   */
+  builds?: Build[];
+}
+
+/** A component's entry for one platform build: the build, its module, and the names it exports. */
+export interface BuildEntry {
+  build: Build;
+  /** The entry module, repo-relative. */
+  file: string;
+  exports: string[];
 }
 
 /**
@@ -376,11 +414,23 @@ interface Fn {
   name: string;
 }
 
+/** The arguments each build calls a factory with, bound to its parameters: one set per call (a factory an entry calls twice has two). */
+type BuildEnvs = Map<Build, Env[]>;
+
 export class SignalReader {
   private readonly parsed = new Map<string, Parsed>();
   private readonly summaries = new Map<ts.Node, Signal[]>();
   private readonly inProgress = new Set<ts.Node>();
   private readonly groups = ["atoms", "molecules", "organisms", "charts"];
+  /** Per module, a static evaluator that follows the kit's own imports (a skin read from its styles module). */
+  private readonly evaluators = new Map<string, StaticReader>();
+  private readonly exportedValues = new Map<ts.Node, unknown>();
+  /** Per component directory: its entries, each with the factory calls it makes. */
+  private readonly entries = new Map<string, { entry: BuildEntry; calls: { fn: Fn; env: Env }[] }[]>();
+  /** Per component directory: the calls its modules make, by the function called. */
+  private readonly callSites = new Map<string, Map<ts.Node, { call: ts.CallExpression; module: Parsed }[]>>();
+  /** Per component directory: the arguments each build gives a function, or null for a function no build is known to call. */
+  private readonly envs = new Map<string, Map<ts.Node, BuildEnvs | null>>();
 
   constructor(readonly root: string) {}
 
@@ -397,6 +447,227 @@ export class SignalReader {
 
   private at(module: Parsed, node: ts.Node): string {
     return `${relative(this.root, module.path)}:${module.sf.getLineAndCharacterOfPosition(node.getStart(module.sf)).line + 1}`;
+  }
+
+  /** A module's static evaluator: a name it imports from the kit's source reads as the constant that module exports (a skin object). */
+  private evaluator(path: string): StaticReader {
+    let found = this.evaluators.get(path);
+    if (!found) {
+      found = new StaticReader(this.parse(path).sf, { importValue: (specifier, imported) => this.importedValue(path, specifier, imported) });
+      this.evaluators.set(path, found);
+    }
+    return found;
+  }
+
+  /**
+   * The value of a name a module imports from the kit's source: the constant the module it
+   * names exports under it (a skin object, read by that module's own evaluator, which caches
+   * it and reads a cycle as unknown), through `export { a as b }` and a re-export. UNKNOWN for
+   * a function, a package, or anything else, so a component's factory is never run.
+   */
+  private importedValue(from: string, specifier: string, imported: string, depth = 0): unknown {
+    const file = this.resolveImport(from, specifier);
+    if (!file || !this.isSourceOfReader(file) || depth > 6) return UNKNOWN;
+    const module = this.parse(file);
+    const constant = (name: string): unknown => {
+      for (const statement of module.sf.statements) {
+        if (!ts.isVariableStatement(statement) || !(statement.declarationList.flags & ts.NodeFlags.Const)) continue;
+        const decl = statement.declarationList.declarations.find((d) => ts.isIdentifier(d.name) && d.name.text === name);
+        if (decl) return this.evaluator(file).evaluate(decl.name as ts.Identifier);
+      }
+      return UNKNOWN;
+    };
+    for (const statement of module.sf.statements) {
+      const exported = ts.isVariableStatement(statement) && statement.modifiers?.some((m) => m.kind === ts.SyntaxKind.ExportKeyword);
+      if (exported && statement.declarationList.declarations.some((d) => ts.isIdentifier(d.name) && d.name.text === imported)) return constant(imported);
+      if (ts.isExportDeclaration(statement) && !statement.isTypeOnly && statement.exportClause && ts.isNamedExports(statement.exportClause)) {
+        const element = statement.exportClause.elements.find((el) => el.name.text === imported && !el.isTypeOnly);
+        if (!element) continue;
+        const name = (element.propertyName ?? element.name).text;
+        if (statement.moduleSpecifier && ts.isStringLiteral(statement.moduleSpecifier)) return this.importedValue(file, statement.moduleSpecifier.text, name, depth + 1);
+        return constant(name);
+      }
+    }
+    return UNKNOWN;
+  }
+
+  /**
+   * A component's entries, one per platform build: `<name>.ios.tsx`, `<name>.android.tsx`, and
+   * `<name>.tsx` beside one of them, the web's. Each exported constant an entry makes by
+   * calling a factory of the component's own modules (`export const Dialog =
+   * createDialog(iosSkin, { Button, Input })`) binds that factory's parameters to the build's
+   * arguments.
+   */
+  private entriesIn(own: string): { entry: BuildEntry; calls: { fn: Fn; env: Env }[] }[] {
+    const known = this.entries.get(own);
+    if (known) return known;
+    const files = existsSync(own) ? readdirSync(own).sort() : [];
+    const out: { entry: BuildEntry; calls: { fn: Fn; env: Env }[] }[] = [];
+    for (const name of files) {
+      const native = /^(.+)\.(ios|android)\.tsx$/.exec(name);
+      const web = native ? null : /^([^.]+)\.tsx$/.exec(name);
+      const build: Build | null = native ? (native[2] as Build) : web && (files.includes(`${web[1]}.ios.tsx`) || files.includes(`${web[1]}.android.tsx`)) ? "web" : null;
+      if (!build) continue;
+      const module = this.parse(join(own, name));
+      const calls: { fn: Fn; env: Env }[] = [];
+      const exports: string[] = [];
+      for (const statement of module.sf.statements) {
+        if (!ts.isVariableStatement(statement) || !statement.modifiers?.some((m) => m.kind === ts.SyntaxKind.ExportKeyword)) continue;
+        for (const decl of statement.declarationList.declarations) {
+          exports.push(...boundNames(decl.name).map((b) => b.id.text));
+          const init = decl.initializer ? unwrap(decl.initializer) : null;
+          const callee = init && ts.isCallExpression(init) ? unwrap(init.expression) : null;
+          if (!init || !ts.isCallExpression(init) || !callee || !ts.isIdentifier(callee)) continue;
+          const { fn, place } = this.functionFor(module, callee, own);
+          if (fn && place === "own") calls.push({ fn, env: this.bindArguments(fn, init, module, new Map()) });
+        }
+      }
+      out.push({ entry: { build, file: relative(this.root, module.path), exports }, calls });
+    }
+    this.entries.set(own, out);
+    return out;
+  }
+
+  /** A factory's parameters bound to the arguments a call gives it, read under `env` (a parameter's default where the call gives none). */
+  private bindArguments(fn: Fn, call: ts.CallExpression, module: Parsed, env: Env): Env {
+    const bound = new Map(env);
+    fn.node.parameters.forEach((param, i) => {
+      const arg = call.arguments[i];
+      const value = arg ? (ts.isSpreadElement(arg) ? UNKNOWN : this.evaluator(module.path).evaluate(arg, env)) : param.initializer ? this.evaluator(fn.module.path).evaluate(param.initializer) : undefined;
+      for (const name of boundNames(param.name)) bound.set(name.id, pick(value, name.path));
+    });
+    return bound;
+  }
+
+  /** The calls a component's modules make to the functions of its own modules, by the function called. */
+  private callsIn(own: string): Map<ts.Node, { call: ts.CallExpression; module: Parsed }[]> {
+    const known = this.callSites.get(own);
+    if (known) return known;
+    const sites = new Map<ts.Node, { call: ts.CallExpression; module: Parsed }[]>();
+    this.callSites.set(own, sites);
+    for (const path of walkFiles(own).filter(isSourceModule).sort()) {
+      const module = this.parse(path);
+      const visit = (node: ts.Node): void => {
+        const callee = ts.isCallExpression(node) ? unwrap(node.expression) : null;
+        if (callee && ts.isIdentifier(callee)) {
+          const { fn } = this.functionFor(module, callee, own);
+          if (fn && fn.module.path.startsWith(`${own}/`)) sites.set(fn.node, [...(sites.get(fn.node) ?? []), { call: node as ts.CallExpression, module }]);
+        }
+        ts.forEachChild(node, visit);
+      };
+      visit(module.sf);
+    }
+    return sites;
+  }
+
+  /**
+   * The arguments each build gives a function of the component's own modules: an entry's call
+   * of a factory (`createDialog(iosSkin, ...)`), or, for a factory a factory calls
+   * (`createSidebarDrillDown(skin, Badge)` in `createSidebar`), that call's arguments read under
+   * each build's arguments to the function it is made in. Null for a function no build is
+   * known to call.
+   */
+  private envsOf(fn: Fn, own: string): BuildEnvs | null {
+    let byDir = this.envs.get(own);
+    if (!byDir) this.envs.set(own, (byDir = new Map()));
+    if (byDir.has(fn.node)) return byDir.get(fn.node)!;
+    // A function that reaches itself again reads as one no build is known to call.
+    byDir.set(fn.node, null);
+    const envs: BuildEnvs = new Map();
+    const add = (build: Build, env: Env) => envs.set(build, [...(envs.get(build) ?? []), env]);
+    for (const { entry, calls } of this.entriesIn(own)) for (const call of calls) if (call.fn.node === fn.node) add(entry.build, call.env);
+    if (!envs.size) {
+      for (const site of this.callsIn(own).get(fn.node) ?? []) {
+        const outer = this.envsAround(site.module, site.call, own);
+        if (!outer) continue;
+        for (const [build, list] of outer) for (const env of list) add(build, this.bindArguments(fn, site.call, site.module, env));
+      }
+    }
+    const found = envs.size ? envs : null;
+    byDir.set(fn.node, found);
+    return found;
+  }
+
+  /**
+   * The arguments each build gives the nearest function around a node that a build is known
+   * to call (its factory), or null. Only the component's own modules: a family's shared module
+   * takes its skin from each caller, so what it renders is not read per build.
+   */
+  private envsAround(module: Parsed, node: ts.Node, own: string): BuildEnvs | null {
+    if (!module.path.startsWith(`${own}/`)) return null;
+    for (let current = node.parent; current; current = current.parent) {
+      if (!(ts.isFunctionDeclaration(current) || ts.isFunctionExpression(current) || ts.isArrowFunction(current) || ts.isMethodDeclaration(current))) continue;
+      const envs = this.envsOf({ node: current, module, name: "" }, own);
+      if (envs) return envs;
+    }
+    return null;
+  }
+
+  /** The builds a component's directory has an entry for, in `BUILDS` order. */
+  private buildsIn(own: string): Build[] {
+    const found = new Set(this.entriesIn(own).map((e) => e.entry.build));
+    return BUILDS.filter((build) => found.has(build));
+  }
+
+  /**
+   * The builds that render a node, read up to `scope`: each condition around it (an if, a
+   * ternary, `&&` and `||`, an early return) that reads a factory's parameters is evaluated
+   * with each build's arguments, and a build in which it goes the other way, whatever call
+   * the build makes, does not render the node. A constant holding the node renders it
+   * wherever it is used (Dialog's `footer`). Undefined when every build renders it.
+   */
+  private buildsAt(module: Parsed, node: ts.Node, scope: ts.Node, own: string): Build[] | undefined {
+    const all = this.buildsIn(own);
+    if (all.length < 2) return undefined;
+    const found = this.routeBuilds(module, node, scope, own, all, new Set());
+    return found.length === all.length ? undefined : found;
+  }
+
+  private routeBuilds(module: Parsed, node: ts.Node, scope: ts.Node, own: string, from: readonly Build[], seen: ReadonlySet<ts.Node>): Build[] {
+    const builds = new Set(from);
+    const narrow = (condition: ts.Expression, truthy: boolean) => {
+      const envs = this.envsAround(module, condition, own);
+      if (!envs) return;
+      const evaluator = this.evaluator(module.path);
+      for (const build of [...builds]) {
+        const list = envs.get(build);
+        if (!list?.length) continue;
+        const goesOtherWay = list.every((env) => {
+          const value = evaluator.evaluate(condition, env);
+          return value !== UNKNOWN && !!value !== truthy;
+        });
+        if (goesOtherWay) builds.delete(build);
+      }
+    };
+    for (let current: ts.Node = node; current !== scope && current.parent; current = current.parent) {
+      const parent = current.parent;
+      if (ts.isIfStatement(parent) && parent.thenStatement === current) narrow(parent.expression, true);
+      else if (ts.isIfStatement(parent) && parent.elseStatement === current) narrow(parent.expression, false);
+      else if (ts.isConditionalExpression(parent) && parent.whenTrue === current) narrow(parent.condition, true);
+      else if (ts.isConditionalExpression(parent) && parent.whenFalse === current) narrow(parent.condition, false);
+      else if (ts.isBinaryExpression(parent) && parent.right === current && parent.operatorToken.kind === ts.SyntaxKind.AmpersandAmpersandToken) narrow(parent.left, true);
+      else if (ts.isBinaryExpression(parent) && parent.right === current && parent.operatorToken.kind === ts.SyntaxKind.BarBarToken) narrow(parent.left, false);
+      else if (ts.isBlock(parent) || ts.isSourceFile(parent)) {
+        for (const statement of parent.statements) {
+          if (statement === current) break;
+          if (ts.isIfStatement(statement) && !statement.elseStatement && returns(statement.thenStatement)) narrow(statement.expression, false);
+        }
+      } else if (ts.isVariableDeclaration(parent) && parent.initializer === current && ts.isIdentifier(parent.name) && !seen.has(parent)) {
+        const uses = usesOf(module, parent, scope);
+        if (uses.length) {
+          const along = new Set([...seen, parent]);
+          const union = new Set(uses.flatMap((use) => this.routeBuilds(module, use, scope, own, [...builds], along)));
+          return BUILDS.filter((build) => union.has(build));
+        }
+      }
+      if (!builds.size) break;
+    }
+    return BUILDS.filter((build) => builds.has(build));
+  }
+
+  /** A component's entries: the build each is, its module, and the names it exports. */
+  entriesOf(sourceDir: string): BuildEntry[] {
+    return this.entriesIn(join(this.root, sourceDir)).map((e) => e.entry);
   }
 
   /** The file a relative import names (`./x.js` is `./x.ts` or `./x.tsx`), or null for a package. */
@@ -1385,15 +1656,26 @@ export class SignalReader {
    */
   private collect(module: Parsed, scope: ts.Node, own: string, skip: ReadonlySet<ts.Node>): Signal[] {
     const out: Signal[] = [];
+    // The builds that render each node a signal is found at (`buildsAt`), read once.
+    const builtAt = new Map<ts.Node, Build[] | undefined>();
+    const buildsOf = (node: ts.Node): Pick<Signal, "builds"> => {
+      if (!builtAt.has(node)) builtAt.set(node, this.buildsAt(module, node, scope, own));
+      const builds = builtAt.get(node);
+      return builds ? { builds } : {};
+    };
     const add = (signal: Omit<Signal, "at" | "gates" | "via">, node: ts.Node) => {
       const written = writtenIn(node);
-      out.push({ ...signal, at: this.at(module, node), via: [], gates: this.gatesOf(module, node, scope), ...(written ? { in: written } : {}) });
+      out.push({ ...signal, at: this.at(module, node), via: [], gates: this.gatesOf(module, node, scope), ...(written ? { in: written } : {}), ...buildsOf(node) });
     };
-    /** A signal once per place it renders (where the calls it is reached through give what it needs), on its control. */
-    const placedAt = (places: readonly Placement[], control: Control | undefined, signal: Signal, needs?: Requirement[]) => {
+    /**
+     * A signal once per place it renders (where the calls it is reached through give what it
+     * needs), on its control, with the builds that render `node`, the element (or the look's
+     * parameter) it is found at.
+     */
+    const placedAt = (places: readonly Placement[], control: Control | undefined, signal: Signal, node: ts.Node, needs?: Requirement[]) => {
       for (const place of places) {
         if (!this.callsAllow(needs, place.calls, module)) continue;
-        out.push({ ...signal, ...(control ? { control } : {}), ...(place.around ? { within: place.around.name } : {}) });
+        out.push({ ...signal, ...(control ? { control } : {}), ...(place.around ? { within: place.around.name } : {}), ...buildsOf(node) });
       }
     };
 
@@ -1412,7 +1694,7 @@ export class SignalReader {
           const guards = this.useGuards(module, node, bound.id);
           const look: Signal = { kind: "look", state, what: `a function taking \`${name}\``, at: this.at(module, node), via: [], gates: [...new Set([...this.gatesOf(module, node, scope), ...guards])] };
           const written = element.control ? undefined : writtenIn(node.parent);
-          placedAt(element.places, element.control, written ? { ...look, in: written } : look);
+          placedAt(element.places, element.control, written ? { ...look, in: written } : look, node);
         }
       }
       if (ts.isCallExpression(node)) {
@@ -1439,7 +1721,7 @@ export class SignalReader {
           const control = this.controlOf(module, node, tag.name, given);
           let places: Placement[] | undefined;
           const placesOf = () => (places ??= this.placesAround(module, node, scope, own));
-          const push = (signal: Signal, needs?: Requirement[]) => placedAt(placesOf(), control, signal, needs);
+          const push = (signal: Signal, needs?: Requirement[]) => placedAt(placesOf(), control, signal, node, needs);
           // Where a prop is written, and the props it is rendered under: those around the
           // element, those the spread it came in on was given under, and those its value is
           // there only with.
@@ -1453,7 +1735,7 @@ export class SignalReader {
             if (opens) {
               const opened = opens === true ? null : opens;
               const where = opened ? placed(opened, opened.value ? (this.passedProps(opened.module, opened.value) ?? []) : []) : { at: this.at(module, node), gates: this.gatesOf(module, node, scope) };
-              out.push({ kind: "overlay", state: "open", what: `a <${tag.name}>`, via: [], ...where, overlay: renderedIn(module, node) });
+              out.push({ kind: "overlay", state: "open", what: `a <${tag.name}>`, via: [], ...where, overlay: renderedIn(module, node), ...buildsOf(node) });
             }
           }
           // The controls it disables: `disabled` and `aria-disabled` given a value that can be
@@ -1470,7 +1752,7 @@ export class SignalReader {
             const where = placed(attr);
             // Not where an overlay that is kept closed whenever it is disabled renders it.
             const open = placesOf().filter((place) => !(place.around && shutIn(place.around, where.gates, by)));
-            placedAt(open, control, { kind: "disabled", state: "disabled", what: `${attr.name} on <${tag.name}>`, via: [], ...where, disabledBy: by }, attr.requires);
+            placedAt(open, control, { kind: "disabled", state: "disabled", what: `${attr.name} on <${tag.name}>`, via: [], ...where, disabledBy: by }, node, attr.requires);
           }
           const stop = tabStop(tag.name, given);
           if (stop) {
@@ -1528,6 +1810,7 @@ export class SignalReader {
                 via: [],
                 ...handed(opened, opened.value ? (this.passedProps(opened.module, opened.value) ?? []) : []),
                 overlay: renderedIn(module, node),
+                ...buildsOf(node),
               });
             }
           }
@@ -1538,7 +1821,7 @@ export class SignalReader {
             const where = handed(disabled, []);
             const open = this.placesAround(module, node, scope, own).filter((place) => !(place.around && shutIn(place.around, where.gates, by)));
             const control: Control = { tag: tag.name, in: renderedIn(module, node), ...this.kitRoles(file), kit: true, at: this.at(module, node) };
-            placedAt(open, control, { kind: "disabled", state: "disabled", what: `disabled on <${tag.name}>`, via: [], ...where, disabledBy: by }, disabled.requires);
+            placedAt(open, control, { kind: "disabled", state: "disabled", what: `disabled on <${tag.name}>`, via: [], ...where, disabledBy: by }, node, disabled.requires);
           }
         }
       }
@@ -1548,11 +1831,16 @@ export class SignalReader {
     return out;
   }
 
-  /** The signals of a local or shared function used at `site`, with its gates mapped through what the site passes. */
+  /**
+   * The signals of a local or shared function used at `site`, with its gates mapped through
+   * what the site passes, rendered by the builds that render both the signal inside it and the
+   * use (a signal no build renders at the use is dropped).
+   */
   private inherit(out: Signal[], module: Parsed, site: ts.Node, scope: ts.Node, fn: Fn, own: string, attrs: ts.NodeArray<ts.JsxAttributeLike> | null, skip: ReadonlySet<ts.Node>): void {
     // A shared module's own tag components are its business; the component's are the caller's.
     const inner = this.summary(fn, own, fn.module.path.startsWith(`${own}/`) ? skip : this.tagComponents([fn.module], own));
     const around = this.gatesOf(module, site, scope);
+    const siteBuilds = this.buildsAt(module, site, scope, own);
     const valueAt = (attr: ts.JsxAttribute) => (attr.initializer && ts.isJsxExpression(attr.initializer) && attr.initializer.expression ? attr.initializer.expression : null);
     const attrNamed = (name: string) => attrs?.find((a): a is ts.JsxAttribute => ts.isJsxAttribute(a) && ts.isIdentifier(a.name) && a.name.text === name);
     // What the function renders sits wherever the use is: on the surface, inside an overlay, or both.
@@ -1581,7 +1869,10 @@ export class SignalReader {
         }
       }
       if (gates === null) continue;
-      const reached: Signal = { ...signal, via: [fn.name, ...signal.via], gates: [...new Set(gates)] };
+      const builds = !signal.builds ? siteBuilds : !siteBuilds ? signal.builds : signal.builds.filter((build) => siteBuilds.includes(build));
+      if (builds && !builds.length) continue;
+      const { builds: _inner, ...rest } = signal;
+      const reached: Signal = { ...rest, via: [fn.name, ...signal.via], gates: [...new Set(gates)], ...(builds ? { builds } : {}) };
       let by: DisabledBy | null = null;
       if (signal.disabledBy) {
         // What disables it, through the values the use gives the props it is true with
@@ -1689,7 +1980,7 @@ export class SignalReader {
     // One signal per place and route to it.
     const seen = new Set<string>();
     return signals.filter((s) => {
-      const key = `${s.kind}|${s.state}|${s.what}|${s.at}|${s.via.join(">")}|${[...s.gates].sort().join(",")}|${s.disabledBy ? JSON.stringify(s.disabledBy) : ""}|${s.within ?? ""}|${s.control?.at ?? ""}`;
+      const key = `${s.kind}|${s.state}|${s.what}|${s.at}|${s.via.join(">")}|${[...s.gates].sort().join(",")}|${s.disabledBy ? JSON.stringify(s.disabledBy) : ""}|${s.within ?? ""}|${s.control?.at ?? ""}|${s.builds?.join(",") ?? ""}`;
       if (seen.has(key)) return false;
       seen.add(key);
       return true;

@@ -203,8 +203,9 @@ function statesLine(facts: ComponentFacts): string {
   if (states.static !== null) parts.push(`static: ${states.static}`);
   for (const e of states.exempt) parts.push(`${e.state} exempt, ${e.failure === null ? "verified" : `NOT verified (${e.failure})`}: ${e.reason}`);
   if (states.unanswered.length) parts.push(`given by its source with neither a recipe nor an exemption: ${states.unanswered.join(", ")}`);
-  const placeText = (place: string) => (place === "its own surface" ? `on ${place}` : `in ${place.replace(/^the overlay in (.*)$/, "the overlay in `$1`")}`);
+  const placeText = (place: string) => (place.startsWith("its own surface") ? `on ${place}` : `in ${place.replace(/^the overlay in (\S+)/, "the overlay in `$1`")}`);
   if (states.unshown.length) parts.push(`disabled controls its source renders and no rail example asks for: ${andList(states.unshown.map(placeText))}`);
+  if (states.devices.length) parts.push(`not captured by the web runner, since no row of its docs page renders them (judged on devices): ${andList(states.devices)}`);
   // Each part is a sentence; the reasons bring their own full stops.
   return parts.map((part) => (/[.!?]$/.test(part) ? part : `${part}.`)).join(" ");
 }

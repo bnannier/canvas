@@ -369,9 +369,16 @@ describe.skipIf(!hasDist)("the audit checklists keep a reviewer's work", () => {
     const row = (slug: string) => renderComponentFacts(componentFacts(slug, sources.corpus)).find((line) => line.startsWith("| Interaction states |"));
     // A state that exists only at some widths names them (the Heatmap's scroller is a stop at a phone's).
     expect(row("heatmap")).toBe("| Interaction states | captured: hover on Calendar (web row; desktop), focus on Calendar (web row; phone), pressed on Calendar (web row; desktop). |");
-    // A state applied inside the overlay a recipe opens first says so.
+    // A state applied inside the overlay a recipe opens first says so, and the rows its own
+    // control is on: Dialog's Cancel is its own on the iOS and Android rows, a kit Button on the web's.
     expect(row("dialog")).toBe(
-      "| Interaction states | captured: focus on Default inside the overlay it opens (web row; desktop), pressed on Default inside the overlay it opens (web row; desktop), open on Default (web, iOS, Android rows; phone, tablet and desktop). |",
+      "| Interaction states | captured: focus on Default inside the overlay it opens (iOS, Android rows; desktop), pressed on Default inside the overlay it opens (iOS, Android rows; desktop), open on Default (web, iOS, Android rows; phone, tablet and desktop). |",
+    );
+    // A state its source gives only in a build no row of the page renders is the devices', never captured.
+    const sidebar = componentFacts("sidebar", sources.corpus);
+    const judged = { ...sidebar, states: { ...sidebar.states, devices: ["focus in the overlay in Sidebar (the iOS build)"] } };
+    expect(renderComponentFacts(judged).find((line) => line.startsWith("| Interaction states |"))).toContain(
+      "not captured by the web runner, since no row of its docs page renders them (judged on devices): focus in the overlay in Sidebar (the iOS build).",
     );
     // Dropdown is disabled in two places, its trigger and an item inside its menu.
     expect(row("dropdown")).toContain("disabled on Disabled trigger (web row; desktop), disabled on Disabled item inside the overlay it opens (web row; desktop).");
@@ -393,7 +400,7 @@ describe.skipIf(!hasDist)("the audit checklists keep a reviewer's work", () => {
     );
     expect(row("badge")).toBe("| Interaction states | static: A status label: it takes no input. |");
     const steps = componentFacts("steps", sources.corpus).states;
-    expect(steps).toMatchObject({ listed: true, recipes: [], unanswered: [], unshown: [], exempt: [{ state: "focus", failure: null }, { state: "pressed", failure: null }] });
+    expect(steps).toMatchObject({ listed: true, recipes: [], unanswered: [], unshown: [], devices: [], exempt: [{ state: "focus", failure: null }, { state: "pressed", failure: null }] });
   });
 
   it("credits every component of the skins smoke test's CASES table, read statically (item 1)", () => {

@@ -45,7 +45,7 @@ import { componentSkins, hasPlatformBuilds, resolveSource, traceExport, type Com
 import { registeredSkins } from "../skins/registry.ts";
 import { ModuleGraph, NOT_HANDLED, PathUnder, resolveModule, within, type Intercept } from "./hosts.ts";
 import { SignalReader } from "./interaction-signals.ts";
-import { componentSignals, coverageOf, railExamples } from "./state-coverage.ts";
+import { componentSignals, coverageOf, docsRowsOf, railExamples, type StateAnswer } from "./state-coverage.ts";
 import { pageModule, pageSections, type InventoryPage } from "./inventory.ts";
 import { StaticReader, isValueRead, outermost, unwrap, type Binding } from "./static-eval.ts";
 import { catalogIntercept, insideFunctionNamed, navigationRoute, readSweeps, type Sweep } from "./sweeps.ts";
@@ -163,10 +163,15 @@ export interface StatesFact {
   static: string | null;
   /** States its source gives that the table exempts, each with its reason and why the claim fails (null: it holds). */
   exempt: { state: string; reason: string; failure: string | null }[];
-  /** States its source gives with neither a recipe nor an exemption (a disabled one with the overlay it is in). */
+  /** States its source gives with neither a recipe nor an exemption (with the overlay it is in, and the rows it is on when not every row). */
   unanswered: string[];
-  /** Where its source disables a control no rail example asks for: `its own surface`, or `the overlay in <name>`. */
+  /** Where its source disables a control no rail example asks for: `its own surface`, or `the overlay in <name>` (and the rows, when not every row). */
   unshown: string[];
+  /**
+   * States its source gives only in builds no row of its docs page renders, which the web
+   * runner never has and the devices judge: the state, where it is, and the builds.
+   */
+  devices: string[];
 }
 
 export interface ComponentFacts {
@@ -1064,17 +1069,20 @@ export function loadCorpus(root = ROOT): FactsCorpus {
 /** What the state table says about a component, and whether its exemptions hold against its source and page. */
 export function statesFact(slug: string, doc: { category: Category; dir: string; name: string }, corpus: FactsCorpus): StatesFact {
   const entry = STATE_RECIPES[slug];
-  if (!entry) return { listed: false, recipes: [], static: null, exempt: [], unanswered: [], unshown: [] };
+  if (!entry) return { listed: false, recipes: [], static: null, exempt: [], unanswered: [], unshown: [], devices: [] };
   const rail = railExamples(doc);
   const labelOf = (variant: string) => rail.find((example) => variantSlug(example.label) === variant)?.label ?? variant;
-  const coverage = coverageOf(slug, entry, componentSignals(corpus.signals, doc), rail);
+  const coverage = coverageOf(slug, entry, componentSignals(corpus.signals, doc), rail, docsRowsOf(slug, doc, corpus.signals));
+  const ROW = { web: "web", ios: "iOS", android: "Android" } as const;
+  const onRows = (a: StateAnswer) => (a.rows ? ` on the ${a.rows.map((row) => ROW[row]).join(" and ")} ${a.rows.length === 1 ? "row" : "rows"}` : "");
   return {
     listed: true,
     recipes: recipesOf(slug).map((r) => ({ state: r.state, variant: r.variant, label: labelOf(r.variant), rows: [...r.rows], widths: [...r.widths], alsoAnswers: [...(r.alsoAnswers ?? [])], inOverlay: r.inOverlay === true, opens: r.opens ?? null })),
     static: entry.static ? entry.reason : null,
     exempt: coverage.answers.filter((a) => a.by === "exemption").map((a) => ({ state: a.state, reason: a.exemption!.reason, failure: a.failure ?? null })),
-    unanswered: coverage.answers.filter((a) => a.by === "nothing").map((a) => (a.within ? `${a.state} in the overlay in ${a.within}` : a.state)),
-    unshown: coverage.answers.filter((a) => a.by === "unshown").map((a) => (a.within ? `the overlay in ${a.within}` : "its own surface")),
+    unanswered: coverage.answers.filter((a) => a.by === "nothing").map((a) => `${a.within ? `${a.state} in the overlay in ${a.within}` : a.state}${onRows(a)}`),
+    unshown: coverage.answers.filter((a) => a.by === "unshown").map((a) => `${a.within ? `the overlay in ${a.within}` : "its own surface"}${onRows(a)}`),
+    devices: coverage.answers.filter((a) => a.by === "devices").map((a) => `${a.state}${a.within ? ` in the overlay in ${a.within}` : ""} (the ${(a.builds ?? []).map((build) => ROW[build]).join(" and ")} ${(a.builds ?? []).length === 1 ? "build" : "builds"})`),
   };
 }
 

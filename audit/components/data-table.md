@@ -20,7 +20,7 @@ Audit checklist for `/components/data-table`. The facts block and the variants t
 | Hand-off metric gaps | none |
 | Interactions registry | in the inventory; evidence: table-row-press (unit-web, test/behavior.test.tsx) |
 | Overlay recipe | none |
-| Interaction states | captured: focus on Sortable (web row; desktop), pressed on Sortable (web row; desktop). |
+| Interaction states | captured: focus on Sortable (web, iOS, Android rows; desktop), pressed on Sortable (web row; desktop). |
 | MeasureProps | not adopted |
 | Touch target | no touch-target name (the exports of `src/style/touch-target.ts`, `src/style/touch-target-seed.ts`, `src/style/touch-seam.ts`, `src/style/clip-slop.ts`, the `TouchTargetSkin` fields, or `hitSlop`) in its implementation modules. `test/touch-target-coverage.test.ts` records it as covered another way: rows and action buttons carry pressableMinHeight |
 | Tests importing it | 19: `test/a11y-state.test.tsx`, `test/behavior.test.tsx`, `test/checkbox-idiom.test.tsx`, `test/data-table-pan-identity.test.tsx`, `test/data-table-performance.test.tsx`, `test/data-table-stacks.test.tsx`, `test/data-table-text-entry-material.test.tsx`, `test/data-table.test.tsx`, `test/design-rules-skins.test.ts`, `test/dist-smoke.test.tsx`, `test/escape-layers.test.tsx`, `test/native-focus-fixtures.test.tsx`, `test/no-console-violations.test.tsx`, `test/numerals.test.tsx`, `test/organism-material-roles.test.tsx`, `test/prop-table.test.tsx`, `test/scroll-frame-ring.test.tsx`, `test/skins-smoke.test.tsx`, `test/virtualization.test.tsx` |

@@ -22,6 +22,17 @@
 // overlay is the component's own whatever element the pointer rests on (Tooltip hands the
 // same `disclosure` handlers to its own triggers and to the kit Button of its default one).
 //
+// A recipe is applied on rows of the docs' three-up (`StateRecipe.rows`), and each row shows
+// one platform build (`docsRowsOf`: the build the docs registry injects there, or the web
+// build where it injects none; Sidebar's page shows the web row alone). A control a build
+// alone renders (Dialog's iOS capsules, `Signal.builds`) is on that build's row alone, so a
+// place is answered row by row: a recipe answers its place on each row it is applied on,
+// through a control of the component's own on that row, and a signal is answered only where
+// a recipe answers its place on a row that renders it. A recipe whose target on a row is a
+// kit child (the web Dialog's Cancel, a kit Button) answers nothing there. A signal no row
+// the page shows renders (a build whose row the page leaves out) is never on the web
+// runner's page: it is recorded as judged on devices (`devices`), never as captured.
+//
 // The disabled state is the examples': a control is disabled where an example asks for it,
 // by passing what its source disables it with (a prop such as `disabled` or `withInput`, or
 // the key of the data it reads, `{ label: "Archive", disabled: true }`). It is answered
@@ -47,13 +58,16 @@
 // state, is an error too: it would outlive the code it excused.
 
 import { readFileSync } from "node:fs";
-import { relative } from "node:path";
+import { join, relative } from "node:path";
 import ts from "typescript";
+import { COMPONENTS } from "../../docs/src/core/data/components.ts";
 import { ROOT, componentDocPath, variantSlug } from "../../e2e/support/routes.ts";
 import { STATE_NAMES, recipesIn, type ComponentStates, type ControlSpec, type Exemption, type StateName, type StateRecipe } from "../../e2e/support/state-recipes.ts";
 import { splitDoc, type Example } from "../docgen/parse-md.ts";
+import { registeredSkins } from "../skins/registry.ts";
 import type { InventoryComponent } from "./inventory.ts";
-import { SignalReader, type Control, type Signal, type SignalState } from "./interaction-signals.ts";
+import { BUILDS, SignalReader, type Build, type Control, type Signal, type SignalState } from "./interaction-signals.ts";
+import type { RowPlatform } from "./probe-math.ts";
 
 /** The states a signal can give: the ones the source decides (invalid is the examples' alone). */
 export const SIGNAL_STATES: readonly SignalState[] = ["hover", "focus", "pressed", "open", "disabled"];
@@ -62,10 +76,18 @@ export interface StateAnswer {
   state: SignalState;
   /** The component's signals for the state. */
   signals: Signal[];
-  /** How the table answers it: `unshown` for a disabled control no example asks for. */
-  by: "recipe" | "exemption" | "nothing" | "unshown";
+  /**
+   * How the table answers it: `unshown` for a disabled control no example asks for,
+   * `devices` for one no row of the page renders (a build whose row the page leaves out),
+   * which the web runner never has and the devices judge.
+   */
+  by: "recipe" | "exemption" | "nothing" | "unshown" | "devices";
   /** For a hover, a focus, a press or a disabled control: the overlay it is in (`Signal.within`); absent on the component's own surface. */
   within?: string;
+  /** The rows of the page its signals render on, when that is not every row the page shows (Dialog's capsules: the iOS row). */
+  rows?: RowPlatform[];
+  /** For `devices`: the builds that render its signals. */
+  builds?: Build[];
   /** For a state answered by a recipe of another state (a tooltip's hover by its open recipe, which a resting pointer opens): that state. */
   recipe?: StateName;
   exemption?: Exemption;
@@ -81,6 +103,40 @@ export interface Coverage {
 
 /** The source directory of a component, repo-relative. */
 export const sourceDirOf = (component: Pick<InventoryComponent, "category" | "dir">): string => `src/${component.category.toLowerCase()}/${component.dir}`;
+
+/**
+ * The build each row of a component's docs page renders, for the rows the page shows: the
+ * web row the web build; the iOS and Android rows the build the docs registry injects there
+ * (docs/src/core/platform-skins.ts, when it registers one of the entry's exports), or the web
+ * build where it injects none (Toast's iOS row). A page that shows one preview
+ * (`singlePreview`, Sidebar's app frame) has the web row alone.
+ */
+export type RowBuilds = Partial<Record<RowPlatform, Build>>;
+
+/** The rows of the docs' three-up, in the order the table and the messages name them. */
+const ROWS: readonly RowPlatform[] = ["web", "ios", "android"];
+const ROW_NAMES: Record<RowPlatform, string> = { web: "web", ios: "iOS", android: "Android" };
+
+let registry: ReturnType<typeof registeredSkins> | null = null;
+
+/** The rows a component's docs page shows, and the build each renders (`RowBuilds`). */
+export function docsRowsOf(slug: string, component: Pick<InventoryComponent, "category" | "dir">, reader: SignalReader): RowBuilds {
+  if (COMPONENTS.find((c) => c.slug === slug)?.singlePreview) return { web: "web" };
+  registry ??= registeredSkins(readFileSync(join(ROOT, "docs/src/core/platform-skins.ts"), "utf8"));
+  const sourceDir = sourceDirOf(component);
+  const entries = reader.hasSource(sourceDir) ? reader.entriesOf(sourceDir) : [];
+  const injected = (platform: "ios" | "android"): Build => (entries.some((e) => e.build === platform && e.exports.some((name) => registry![platform].has(name))) ? platform : "web");
+  return { web: "web", ios: injected("ios"), android: injected("android") };
+}
+
+/** The rows of the page a signal renders on: those whose build renders it. */
+export function rowsOfSignal(signal: Pick<Signal, "builds">, rows: RowBuilds): RowPlatform[] {
+  return ROWS.filter((row) => rows[row] !== undefined && (!signal.builds || signal.builds.includes(rows[row]!)));
+}
+
+/** Rows as a message names them: "the iOS row", "the iOS and Android rows". */
+const rowsText = (rows: readonly RowPlatform[]) => `the ${andText(rows.map((row) => ROW_NAMES[row]))} ${rows.length === 1 ? "row" : "rows"}`;
+const andText = (items: readonly string[]) => (items.length <= 1 ? (items[0] ?? "") : `${items.slice(0, -1).join(", ")} and ${items[items.length - 1]}`);
 
 /** The component's rail examples: the Usage fence and each variant, as its page renders them. */
 export function railExamples(component: Pick<InventoryComponent, "category" | "dir">): Example[] {
@@ -108,14 +164,18 @@ function answeringRecipes(entry: ComponentStates, state: StateName): StateRecipe
   return [...recipesIn(entry, state), ...others];
 }
 
+/** The builds that render some of the signals, in `BUILDS` order (every build for a signal that names none). */
+const buildsOf = (signals: readonly Signal[]): Build[] => BUILDS.filter((build) => signals.some((s) => !s.builds || s.builds.includes(build)));
+
 /**
  * Which of the open state's signals the table's recipes answer, and which are left for an
- * exemption. Every recipe that opens something does, except where a component's source
- * renders more than one overlay: each is answered only by a recipe that names it (`opens`,
- * the function the source renders it in), so the Calendar's day peek cannot stand in for its
- * hover card. A recipe naming an overlay the source does not render is an error.
+ * exemption. Every recipe that opens something does, on the rows it is applied on, except
+ * where a component's source renders more than one overlay: each is answered only by a
+ * recipe that names it (`opens`, the function the source renders it in), so the Calendar's
+ * day peek cannot stand in for its hover card. A recipe naming an overlay the source does not
+ * render is an error. An overlay no row of the page renders is the devices' (`devices`).
  */
-function openAnswers(slug: string, entry: ComponentStates, own: Signal[]): { answered: Signal[]; rest: Signal[]; recipe?: StateName; errors: string[] } {
+function openAnswers(slug: string, entry: ComponentStates, own: Signal[], rows: RowBuilds): { answered: Signal[]; rest: Signal[]; devices: Signal[]; recipe?: StateName; errors: string[] } {
   const recipes = answeringRecipes(entry, "open");
   const errors: string[] = [];
   const sites = [...new Set(own.map((s) => s.overlay ?? ""))];
@@ -123,15 +183,19 @@ function openAnswers(slug: string, entry: ComponentStates, own: Signal[]): { ans
   for (const recipe of recipes) {
     if (recipe.opens && !sites.includes(recipe.opens)) errors.push(`${slug}: its ${recipe.state} recipe opens the overlay in ${recipe.opens}, which its source does not render (it renders ${named})`);
   }
-  if (!recipes.length) return { answered: [], rest: own, errors };
-  if (sites.length <= 1) return { answered: own, rest: [], recipe: recipes[0]!.state, errors };
-  for (const recipe of recipes) {
-    if (!recipe.opens) errors.push(`${slug}: its source renders ${sites.length} overlays (${named}), so its ${recipe.state} recipe must name the one it opens`);
+  if (sites.length > 1) {
+    for (const recipe of recipes) {
+      if (!recipe.opens) errors.push(`${slug}: its source renders ${sites.length} overlays (${named}), so its ${recipe.state} recipe must name the one it opens`);
+    }
   }
-  const opened = new Set(recipes.flatMap((r) => (r.opens ? [r.opens] : [])));
-  const answered = own.filter((s) => opened.has(s.overlay ?? ""));
-  const by = recipes.find((r) => r.opens && opened.has(r.opens));
-  return { answered, rest: own.filter((s) => !opened.has(s.overlay ?? "")), ...(by ? { recipe: by.state } : {}), errors };
+  const devices = own.filter((s) => !rowsOfSignal(s, rows).length);
+  const shown = own.filter((s) => rowsOfSignal(s, rows).length);
+  // A recipe answers an overlay it opens (the only one, or the one it names) on a row that renders it.
+  const answers = (recipe: StateRecipe, signal: Signal) =>
+    (sites.length <= 1 || (recipe.opens !== undefined && recipe.opens === (signal.overlay ?? ""))) && recipe.rows.some((row) => rowsOfSignal(signal, rows).includes(row));
+  const answered = shown.filter((s) => recipes.some((r) => answers(r, s)));
+  const by = recipes.find((r) => answered.some((s) => answers(r, s)));
+  return { answered, rest: shown.filter((s) => !answered.includes(s)), devices, ...(by ? { recipe: by.state } : {}), errors };
 }
 
 /** Where a signal renders: the overlay it is in, or "" for the component's own surface. */
@@ -222,13 +286,16 @@ export function renders(signal: Signal, example: Pick<Example, "code">): boolean
  * take the state: a disabled control is disabled itself, while a hover or a press can be read
  * on what wraps or holds the control (the hover primitive's wrapper, `SidebarRowFrame` around
  * a nav row, a slider's responder), so there the function that renders it, or one it is
- * rendered inside, must take it.
+ * rendered inside, must take it. `build` is the build of the row the recipe is applied on
+ * (`RowBuilds`): only what that build renders is there (Dialog's capsules on the iOS row, kit
+ * Buttons alone on the web's); without one, every build's.
  */
-export function controlFailure(recipe: StateRecipe, state: SignalState, place: string, signals: readonly Signal[], rail: readonly Example[]): string | null {
+export function controlFailure(recipe: StateRecipe, state: SignalState, place: string, signals: readonly Signal[], rail: readonly Example[], build?: Build): string | null {
   const spec = recipe.control;
   if (!spec) return "it names no control (`StateRecipe.control`)";
   const example = rail.find((e) => variantSlug(e.label) === recipe.variant);
-  const shown = ownControls(signals).filter((c) => c.place === place && (state === "disabled" || !c.control.kit) && (!example || c.signals.some((s) => renders(s, example))));
+  const built = (s: Signal) => build === undefined || !s.builds || s.builds.includes(build);
+  const shown = ownControls(signals.filter(built)).filter((c) => c.place === place && (state === "disabled" || !c.control.kit) && (!example || c.signals.some((s) => renders(s, example))));
   const named = shown.filter((c) => isNamed(spec, c.control));
   const where = placeOf(place);
   if (!named.length) {
@@ -239,54 +306,83 @@ export function controlFailure(recipe: StateRecipe, state: SignalState, place: s
   const takes =
     state === "disabled"
       ? named.some((c) => c.signals.some((s) => s.state === state))
-      : signals.some((s) => s.state === state && (placeOfSignal(s) === place || unplaced(s)) && fns.has(siteOf(s)));
+      : signals.some((s) => s.state === state && built(s) && (placeOfSignal(s) === place || unplaced(s)) && fns.has(siteOf(s)));
   if (takes) return null;
   return state === "disabled"
     ? `it acts on ${describeControl(named[0]!.control)} ${where}, which its source never disables`
     : `it acts on ${describeControl(named[0]!.control)} ${where}, and nothing ${[...fns].join(" or ")} renders there takes ${article(state)} ${state} state`;
 }
 
+/** The rows of the page a recipe is applied on that the page shows (one it does not show is `coverageOf`'s error). */
+const shownRows = (recipe: Pick<StateRecipe, "rows">, rows: RowBuilds): RowPlatform[] => ROWS.filter((row) => recipe.rows.includes(row) && rows[row] !== undefined);
+
+/** Where a place and a row meet, as the answers are keyed. */
+const at = (place: string, row: RowPlatform) => `${row}|${place}`;
+
+/** The rows signals render on, when that is not every row the page shows. */
+function partialRows(signals: readonly Signal[], rows: RowBuilds): Pick<StateAnswer, "rows"> {
+  const on = ROWS.filter((row) => signals.some((s) => rowsOfSignal(s, rows).includes(row)));
+  return on.length < ROWS.filter((row) => rows[row] !== undefined).length ? { rows: on } : {};
+}
+
 /**
- * How the table answers a hover, a focus or a press, place by place: the component's own
- * surface and each overlay its source renders the state's signals in. A place is answered by
- * a recipe of the state applied there through a control of the component's own
- * (`controlFailure`), or by an opening a resting pointer makes there (`alsoAnswers`); the
- * signals of the places left are the exemption's to answer.
+ * How the table answers a hover, a focus or a press, place by place and row by row: the
+ * component's own surface and each overlay its source renders the state's signals in, on each
+ * row of the page. A place is answered on a row by a recipe of the state applied there on that
+ * row through a control of the component's own on it (`controlFailure`), or by an opening a
+ * resting pointer makes there (`alsoAnswers`); a signal is answered where its place is, on a
+ * row that renders it. The signals no row renders are the devices'; those left are the
+ * exemption's to answer.
  */
-function placeAnswers(slug: string, entry: ComponentStates, state: SignalState, own: Signal[], signals: Signal[], rail: readonly Example[], sites: readonly string[]): { answers: StateAnswer[]; rest: Signal[]; errors: string[] } {
+function placeAnswers(slug: string, entry: ComponentStates, state: SignalState, own: Signal[], signals: Signal[], rail: readonly Example[], sites: readonly string[], rows: RowBuilds): { answers: StateAnswer[]; rest: Signal[]; errors: string[] } {
   const errors: string[] = [];
-  // The state of the recipe that answers each place: the state's own, before an opening's.
+  // The state of the recipe that answers each place on each row: the state's own, before an opening's.
   const answered = new Map<string, StateName>();
   for (const recipe of answeringRecipes(entry, state)) {
     const place = placeOfRecipe(slug, recipe, sites, errors);
     if (place === null) continue;
-    if (recipe.state !== state) {
-      if (!answered.has(place)) answered.set(place, recipe.state);
-      continue;
+    for (const row of shownRows(recipe, rows)) {
+      if (recipe.state !== state) {
+        if (!answered.has(at(place, row))) answered.set(at(place, row), recipe.state);
+        continue;
+      }
+      const failure = controlFailure(recipe, state, place, signals, rail, rows[row]);
+      if (failure) {
+        errors.push(`${slug}: ${recipeLabel(recipe)} answers nothing on the ${ROW_NAMES[row]} row: ${failure}`);
+        continue;
+      }
+      answered.set(at(place, row), state);
     }
-    const failure = controlFailure(recipe, state, place, signals, rail);
-    if (failure) {
-      errors.push(`${slug}: ${recipeLabel(recipe)} answers nothing: ${failure}`);
-      continue;
-    }
-    answered.set(place, state);
   }
+  // The state that answers a signal in one of `places`, on a row that renders it: its own first.
+  const answeredBy = (signal: Signal, places: readonly string[]): StateName | undefined => {
+    const found = rowsOfSignal(signal, rows).flatMap((row) => places.flatMap((place) => answered.get(at(place, row)) ?? []));
+    return found.includes(state) ? state : found[0];
+  };
   const answers: StateAnswer[] = [];
   const rest: Signal[] = [];
+  const answer = (signals: Signal[], places: readonly string[], within: Pick<StateAnswer, "within">) => {
+    const devices = signals.filter((s) => !rowsOfSignal(s, rows).length);
+    if (devices.length) answers.push({ state, signals: devices, by: "devices", ...within, builds: buildsOf(devices) });
+    const shown = signals.filter((s) => rowsOfSignal(s, rows).length);
+    const by = shown.filter((s) => answeredBy(s, places));
+    if (by.length) {
+      const recipe = by.some((s) => answeredBy(s, places) === state) ? state : answeredBy(by[0]!, places)!;
+      answers.push({ state, signals: by, by: "recipe", ...within, ...partialRows(by, rows), ...(recipe !== state ? { recipe } : {}) });
+    }
+    rest.push(...shown.filter((s) => !by.includes(s)));
+  };
   const placed = own.filter((s) => !unplaced(s));
   for (const place of [...new Set(placed.map(placeOfSignal))]) {
-    const here = placed.filter((s) => placeOfSignal(s) === place);
-    const by = answered.get(place);
-    if (by) answers.push({ state, signals: here, by: "recipe", ...(place ? { within: place } : {}), ...(by !== state ? { recipe: by } : {}) });
-    else rest.push(...here);
+    answer(
+      placed.filter((s) => placeOfSignal(s) === place),
+      [place],
+      place ? { within: place } : {},
+    );
   }
-  // The component's whole look: answered with any place, and left with none.
+  // The component's whole look: answered with any place, on a row that renders it, and left with none.
   const whole = own.filter(unplaced);
-  if (whole.length) {
-    const by = answered.get("") ?? answered.values().next().value;
-    if (by) answers.push({ state, signals: whole, by: "recipe", ...(by !== state ? { recipe: by } : {}) });
-    else rest.push(...whole);
-  }
+  if (whole.length) answer(whole, ["", ...sites], {});
   return { answers, rest, errors };
 }
 
@@ -371,57 +467,74 @@ export function asksFor(signal: Signal, example: Pick<Example, "code">): boolean
 const placeOf = (within: string) => (within ? `in the overlay in ${within}` : "on its own surface");
 
 /**
- * How the table answers the disabled controls a component's source renders, place by place:
- * its own surface, and each overlay it opens (`Signal.within`). A place is answered by a
- * disabled recipe applied there (inside an overlay: `inOverlay`, the overlay it opens named
- * by `opens` when the source renders more than one) on a control of the component's own
- * (`controlFailure`); a place no rail example asks for a disabled control in needs nothing
- * (`unshown`).
+ * How the table answers the disabled controls a component's source renders, place by place
+ * and row by row: its own surface, and each overlay it opens (`Signal.within`), on each row of
+ * the page. A place is answered on a row by a disabled recipe applied there on that row
+ * (inside an overlay: `inOverlay`, the overlay it opens named by `opens` when the source
+ * renders more than one) on a control of the component's own on it (`controlFailure`); a
+ * control is answered where its place is, on a row that renders it. Of those left, a place no
+ * rail example asks for a disabled control in needs nothing (`unshown`); one no row renders is
+ * the devices'.
  */
-function disabledCoverage(slug: string, entry: ComponentStates, own: Signal[], signals: Signal[], rail: readonly Example[], sites: readonly string[]): { answers: StateAnswer[]; errors: string[] } {
+function disabledCoverage(slug: string, entry: ComponentStates, own: Signal[], signals: Signal[], rail: readonly Example[], sites: readonly string[], rows: RowBuilds): { answers: StateAnswer[]; errors: string[] } {
   const answers: StateAnswer[] = [];
   const errors: string[] = [];
-  // Where each disabled recipe is applied: the component's own surface (""), or the overlay it opens first.
+  // Where each disabled recipe is applied, on each row: the component's own surface (""), or the overlay it opens first.
   const placed = new Set<string>();
   for (const recipe of recipesIn(entry, "disabled")) {
     const place = placeOfRecipe(slug, recipe, sites, errors);
     if (place === null) continue;
-    const failure = controlFailure(recipe, "disabled", place, signals, rail);
-    if (failure) errors.push(`${slug}: ${recipeLabel(recipe)} answers nothing: ${failure}`);
-    else placed.add(place);
+    for (const row of shownRows(recipe, rows)) {
+      const failure = controlFailure(recipe, "disabled", place, signals, rail, rows[row]);
+      if (failure) errors.push(`${slug}: ${recipeLabel(recipe)} answers nothing on the ${ROW_NAMES[row]} row: ${failure}`);
+      else placed.add(at(place, row));
+    }
   }
   for (const place of [...new Set(own.map((s) => s.within ?? ""))]) {
     const here = own.filter((s) => (s.within ?? "") === place);
     const within = place ? { within: place } : {};
-    if (placed.has(place)) {
-      answers.push({ state: "disabled", signals: here, by: "recipe", ...within });
-      continue;
-    }
-    const asked = rail.flatMap((example) => here.filter((signal) => asksFor(signal, example)).slice(0, 1).map((signal) => ({ example, signal })));
+    const devices = here.filter((s) => !rowsOfSignal(s, rows).length);
+    if (devices.length) answers.push({ state: "disabled", signals: devices, by: "devices", ...within, builds: buildsOf(devices) });
+    const shown = here.filter((s) => rowsOfSignal(s, rows).length);
+    const answered = shown.filter((s) => rowsOfSignal(s, rows).some((row) => placed.has(at(place, row))));
+    if (answered.length) answers.push({ state: "disabled", signals: answered, by: "recipe", ...within, ...partialRows(answered, rows) });
+    const left = shown.filter((s) => !answered.includes(s));
+    if (!left.length) continue;
+    const onRows = partialRows(left, rows);
+    const asked = rail.flatMap((example) => left.filter((signal) => asksFor(signal, example)).slice(0, 1).map((signal) => ({ example, signal })));
     if (!asked.length) {
-      answers.push({ state: "disabled", signals: here, by: "unshown", ...within });
+      answers.push({ state: "disabled", signals: left, by: "unshown", ...within, ...onRows });
       continue;
     }
     const { example, signal } = asked[0]!;
     const where = `${signal.what} at ${signal.at}${signal.via.length ? ` via ${signal.via.join(" > ")}` : ""}`;
-    errors.push(`${slug}: its ${example.label} example asks for a disabled control ${placeOf(place)} (${where}), with no disabled recipe there`);
-    answers.push({ state: "disabled", signals: here, by: "nothing", ...within });
+    errors.push(`${slug}: its ${example.label} example asks for a disabled control ${placeOf(place)}${onRows.rows ? ` on ${rowsText(onRows.rows)}` : ""} (${where}), with no disabled recipe there`);
+    answers.push({ state: "disabled", signals: left, by: "nothing", ...within, ...onRows });
   }
   if (entry.exempt?.disabled) errors.push(`${slug}: exempts disabled, which a recipe answers where an example asks for it and nothing needs where none does`);
   return { answers, errors };
 }
 
-/** How the table answers each state a component's source gives it, and what is wrong. */
-export function coverageOf(slug: string, entry: ComponentStates, signals: Signal[], rail: readonly Example[]): Coverage {
+/**
+ * How the table answers each state a component's source gives it, and what is wrong. `rows`
+ * are the rows the component's page shows and the build each renders (`docsRowsOf`).
+ */
+export function coverageOf(slug: string, entry: ComponentStates, signals: Signal[], rail: readonly Example[], rows: RowBuilds): Coverage {
   const answers: StateAnswer[] = [];
   const errors: string[] = [];
   const exempt = entry.exempt ?? {};
+  // A recipe applied on a row the page does not show captures nothing.
+  for (const state of STATE_NAMES) {
+    for (const recipe of recipesIn(entry, state)) {
+      for (const row of recipe.rows) if (rows[row] === undefined) errors.push(`${slug}: ${recipeLabel(recipe)} is applied on the ${ROW_NAMES[row]} row, which its page does not show`);
+    }
+  }
   // The overlays the source renders, by the names a recipe applied inside one gives them.
   const sites = [...new Set(signals.filter((s) => s.kind === "overlay").map((s) => s.overlay ?? ""))];
   for (const state of SIGNAL_STATES) {
     const own = signals.filter((s) => s.state === state);
     if (state === "disabled") {
-      const found = disabledCoverage(slug, entry, own, signals, rail, sites);
+      const found = disabledCoverage(slug, entry, own, signals, rail, sites, rows);
       answers.push(...found.answers);
       errors.push(...found.errors);
       continue;
@@ -434,14 +547,15 @@ export function coverageOf(slug: string, entry: ComponentStates, signals: Signal
         if (exemption) errors.push(`${slug}: exempts ${state}, which its source does not give it`);
         continue;
       }
-      const opened = openAnswers(slug, entry, own);
+      const opened = openAnswers(slug, entry, own, rows);
       errors.push(...opened.errors);
-      if (opened.answered.length) answers.push({ state, signals: opened.answered, by: "recipe", ...(opened.recipe && opened.recipe !== state ? { recipe: opened.recipe } : {}) });
+      if (opened.devices.length) answers.push({ state, signals: opened.devices, by: "devices", builds: buildsOf(opened.devices) });
+      if (opened.answered.length) answers.push({ state, signals: opened.answered, by: "recipe", ...partialRows(opened.answered, rows), ...(opened.recipe && opened.recipe !== state ? { recipe: opened.recipe } : {}) });
       rest = opened.rest;
       answeredAny = opened.answered.length > 0;
     } else {
       // Every recipe of the state is held to the component's own controls, whether or not its source gives it the state.
-      const placed = placeAnswers(slug, entry, state, own, signals, rail, sites);
+      const placed = placeAnswers(slug, entry, state, own, signals, rail, sites, rows);
       errors.push(...placed.errors);
       if (!own.length) {
         if (exemption) errors.push(`${slug}: exempts ${state}, which its source does not give it`);
@@ -449,7 +563,7 @@ export function coverageOf(slug: string, entry: ComponentStates, signals: Signal
       }
       answers.push(...placed.answers);
       rest = placed.rest;
-      answeredAny = placed.answers.length > 0;
+      answeredAny = placed.answers.some((a) => a.by === "recipe");
     }
     if (!rest.length) {
       if (exemption) errors.push(`${slug}: has a ${state} recipe and a ${state} exemption`);
@@ -465,19 +579,22 @@ export function coverageOf(slug: string, entry: ComponentStates, signals: Signal
     if (state === "open" && answeredAny) {
       // An overlay no recipe names, beside ones a recipe opens.
       errors.push(`${slug}: its source opens the overlay in ${rest[0]!.overlay} (${where(rest[0]!)}), which no recipe opens, with no exemption`);
-      answers.push({ state, signals: rest, by: "nothing" });
+      answers.push({ state, signals: rest, by: "nothing", ...partialRows(rest, rows) });
       continue;
     }
     if (state === "open" || (!recipesIn(entry, state).length && !answeredAny)) {
       errors.push(`${slug}: its source gives it ${article(state)} ${state} state (${where(rest[0]!)}${rest.length > 1 ? `, and ${rest.length - 1} more` : ""}), with neither ${article(state)} ${state} recipe nor an exemption`);
-      answers.push({ state, signals: rest, by: "nothing" });
+      answers.push({ state, signals: rest, by: "nothing", ...partialRows(rest, rows) });
       continue;
     }
-    // A place no recipe of the state is applied in, beside the places one is.
+    // A place (or a row) no recipe of the state is applied in, beside the ones one is.
     for (const place of [...new Set(rest.map(placeOfSignal))]) {
       const here = rest.filter((s) => placeOfSignal(s) === place);
-      errors.push(`${slug}: its source gives it ${article(state)} ${state} state ${placeOf(place)} (${where(here[0]!)}${here.length > 1 ? `, and ${here.length - 1} more` : ""}), where no ${state} recipe acts on a control of its own, with no exemption`);
-      answers.push({ state, signals: here, by: "nothing", ...(place ? { within: place } : {}) });
+      const onRows = partialRows(here, rows);
+      errors.push(
+        `${slug}: its source gives it ${article(state)} ${state} state ${placeOf(place)}${onRows.rows ? ` on ${rowsText(onRows.rows)}` : ""} (${where(here[0]!)}${here.length > 1 ? `, and ${here.length - 1} more` : ""}), where no ${state} recipe acts on a control of its own, with no exemption`,
+      );
+      answers.push({ state, signals: here, by: "nothing", ...(place ? { within: place } : {}), ...onRows });
     }
   }
   // An exemption for the state no signal can give (invalid) is never checked, so never allowed.
@@ -490,6 +607,6 @@ export function tableCoverage(components: readonly InventoryComponent[], table: 
   return components.flatMap((component) => {
     const entry = table[component.slug];
     if (!entry) return [];
-    return [coverageOf(component.slug, entry, componentSignals(reader, component), railExamples(component))];
+    return [coverageOf(component.slug, entry, componentSignals(reader, component), railExamples(component), docsRowsOf(component.slug, component, reader))];
   });
 }
