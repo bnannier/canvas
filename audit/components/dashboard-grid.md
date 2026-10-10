@@ -20,7 +20,7 @@ Audit checklist for `/components/dashboard-grid`. The facts block and the varian
 | Hand-off metric gaps | none |
 | Interactions registry | in the inventory; evidence: none registered |
 | Overlay recipe | none |
-| Interaction states | captured: focus on Customize mode (web row; desktop). |
+| Interaction states | static: A layout of tiles: in customize mode its reorder grips are a kit DragDrop's, whose own recipes capture them. |
 | MeasureProps | not adopted |
 | Touch target | no touch-target name (the exports of `src/style/touch-target.ts`, `src/style/touch-target-seed.ts`, `src/style/touch-seam.ts`, `src/style/clip-slop.ts`, the `TouchTargetSkin` fields, or `hitSlop`) in its implementation modules |
 | Tests importing it | 7: `test/dashboard-grid-logic.test.ts`, `test/dashboard-grid-ssr.test.tsx`, `test/dashboard-grid.test.tsx`, `test/design-rules-skins.test.ts`, `test/no-console-violations.test.tsx`, `test/organism-material-roles.test.tsx`, `test/skins-smoke.test.tsx` |

@@ -25,7 +25,9 @@ platform (3 looks x 2 surfaces). A cell's id is its path under a capture run:
 `web/<slug>/<variant>/<width>.<look>.<surface>`, `ios/<slug>/<variant>/<look>.<surface>`,
 `android/...`; pages use `web-pages/<kind>-<slug>/...` and `<platform>-pages/...`, and the
 web's interaction states `web-states/<slug>/<name>.<row>/<width>.<look>.<surface>`, the
-name being the state's (`<state>-<variant>` for a state a component has several recipes of).
+name being the state's (`<state>-<variant>` for a state a component has several recipes of,
+`<state>-<variant>-inside` for one applied inside the overlay its example opens, beside one on
+that example's own surface).
 
 A page's sections come from its data module (`docs/src/core/data/patterns.tsx` or
 `templates/<slug>.tsx`), read from the source (`pageSections` in the inventory), each keyed
@@ -313,19 +315,55 @@ a value the reader can follow (an object literal through constants, conditionals
 `??`, member reads, a local or shared helper's return, `useMemo`, or a style-layer hook's
 own return, as the Calendar's `{...hoverProps}`, Tooltip's `{...disclosure}`, the hover
 primitive's `{...target}` and the scroll regions' `{...scrollport}`); a spread it cannot
-follow (a parameter, another component's export) gives nothing. A press handed to another
-kit component (Divider's Button) is that component's.
+follow (a parameter, another component's export) gives nothing. A press, a focus or a hover
+handed to another kit component (Divider's Button, FilterPanel's Clear, Dropdown's default
+trigger, DescriptionList's Update link) is that component's; `disabled` handed to one is the
+component's disabled control, for that state alone.
+
+Each signal on an element names it (`Control`): its tag, the function it is rendered in, the
+component's own functions whose tag it is the content of (Sidebar's rows sit in
+`SidebarRowFrame`, the hover target that washes them), and the ARIA roles the page gives it,
+as react-native-web maps them (`adjustable` is `slider`, a TextInput is a `textbox` unless
+given another role, a role given only under a condition may be none). It is placed where it
+renders (`within`): on the component's own surface, inside an overlay it opens, or both (a
+constant used in both, FilterPanel's `panel`, on the panel and in the drawer it becomes at a
+phone's width). Another kit component given its open state holds the content between its
+tags inside its overlay only when its own source renders `children` there (a Drawer's
+content is in the drawer; a Dropdown's is its trigger, so AvatarMenu's pill is on the
+surface). The reader also reads what decides whether a control is there and what it takes:
+a local constant's value (`const onPress = onPressItem ? ... : undefined` gates a GridList
+gallery tile on `onPressItem`), `children` given between the tags, the props every read of a
+look's input is guarded by (`onEventPress && pressed ? dim : null`), a render helper's
+argument at each call written as a literal (the Calendar's `eventLayer(..., false)` gives
+the blocks in its day peek no hover), a prop given on one side of a condition only, which
+does not take an element out of the tab order (Video's play overlay), a `Platform.select`
+tab index read for the web (Autocomplete's rows, `-1` there, are no tab stops), and a
+TextInput's `editable`, which is how React Native's text field is disabled.
 A signal can be gated: it renders only when the component is given a prop (`onItemPress`
 makes a Feeds row a button), read from the if, ternary, `&&` or early return around it and
 followed through the local and shared components it is reached through (a Steps circle is
 pressable when it is given `onPress`, which Steps gives it only with `onStepPress`).
 `tools/audit/state-coverage.ts` then holds the table to the source: every state a
 component's source gives it has a recipe, or an exemption whose claim holds, checked against
-the source and the page:
+the source and the page. A hover, a focus and a press are answered place by place, as the
+disabled state is (below): on the component's own surface and inside each overlay its source
+renders them in, since a menu's rows are on the page only once the menu opens and no variant
+cell photographs them. A recipe answers the place it is applied in, and only through a
+control of the component's own there: it names its control (`StateRecipe.control`, the ARIA
+role its target is found by, and the function that renders it where the role does not single
+it out; a menu row is a `menuitem`, a chart's scrub surface has none), and that control must
+be one the source renders in that place, in the recipe's example (which passes every prop
+that renders it), with that role, and the function that renders it, or one it sits in, must
+take the state there. A recipe on a control another kit component renders for the component
+answers nothing and is an error, with the component's own controls in that place listed, and
+the place it left is unanswered. The capture holds the element the state lands on to the
+same role (`controlMismatch` in `e2e/support/state-recipes.ts`): the element under the
+hovering pointer, the one the Tab key focused, the one held down, the one the example
+disables; a different one is a state not reached.
 
 | Claim | Holds when |
 |---|---|
-| `unpassed` (props) | every signal of the state is gated by one of the props, and no rail example's code names any of them (Feeds' `onItemPress`, Steps' `onStepPress`, Typography's `href` and `onPress`) |
+| `unpassed` (props) | every signal of the state is gated by one of the props, and no rail example renders one, none passing every prop it is gated by (Feeds' `onItemPress`, Steps' `onStepPress`, Typography's `href` and `onPress`, Avatar's `onPress`, the Calendar's `onEventPress`, GridList's `onPressItem`: its gallery tiles need `gallery` too, and its Gallery and Tappable examples pass one each) |
 | `dismissLayers` | every signal of the state is a press on an element the source keeps from assistive technology, with no pressed look, whose handler is empty or closes, and the component has an open recipe (Drawer's scrim and panel) |
 
 A state is answered by a recipe of its own, or by another state's recipe whose capture
@@ -336,7 +374,10 @@ component whose source renders more than one overlay owes each its own recipe: e
 that opens one names it (`opens`, the function the source renders it in, the Calendar's
 `hoverCard` and `dayPeekOverlay`), an overlay no recipe names is unanswered, and a name the
 source no longer renders fails. An exemption for a state the source does not give, or beside
-a recipe for the same state, fails too.
+a recipe for the same state, fails too. A state a component shows on its own surface and
+inside the overlay the same example opens has a recipe in each place, the second named
+`<state>-<variant>-inside` (Command's focus on its Search trigger, and on a row of the
+palette the trigger opens).
 
 The disabled state is the examples': a control is disabled where an example asks for it, by
 passing what its source disables it with (a prop written on a tag, or a key written in an
@@ -356,9 +397,14 @@ show an error, and Textarea's typing past its soft cap (below).
 it stood before the charts got their recipes: Chart, AreaChart and Histogram scrub, the
 Heatmap's days take a resting pointer and a press; on the Calendar marked static, for its
 hover, focus, pressed and open states; on Dialog, AlertDialog, ActionSheet and Toast
-without the focus recipes their own tab stops need; and on ActionSheet's Disabled action,
+without the focus recipes their own tab stops need; on ActionSheet's Disabled action,
 RowMenu's and Dropdown's Disabled item and AlertDialog's Body field, whose disabled
-controls are inside the overlay each opens, without the disabled recipes that open it),
+controls are inside the overlay each opens, without the disabled recipes that open it; on
+FilterPanel's focus on its header's Clear, Dropdown's focus and press on its default trigger,
+DescriptionList's focus and press on its Update link and GeoMap's focus on Zoom in, each a
+kit Button, so the option rows, the custom trigger, the menu rows, the inline-edit field and
+the map that are theirs were never captured; and on Dropdown's and FilterPanel's focus on one
+place alone, the menu and the drawer left unanswered),
 checks the reader on the kit and on
 fixtures of every gate form and every spread form, tab stop and overlay, and also fails on a
 registry entry with neither recipes nor a reason, a recipe on an example its page does not
@@ -377,13 +423,13 @@ structure, and releases it:
 
 | State | Applied | Reached when | Photograph |
 |---|---|---|---|
-| hover | the pointer moves onto the control and rests (Dropdown and Command: on a row, with the menu or palette open; the Heatmap: on a calendar day; the Calendar: on the Week example's Design review block, which floats its detail card) | the control, its contents or its wrappers up to the row changed transform, box shadow or background (the lift and the wash `src/style/hover.tsx` applies; a Command row's active highlight); for the Heatmap, the readout it shows; for the Calendar, the card the resting pointer opened, found as an opening is; every watched property that changed is the evidence | the web row, desktop (the viewport inside an overlay, or for a card the pointer floats over the window) |
-| focus | Tab, from the tab stop before the control (Dialog, AlertDialog and ActionSheet: inside the opened overlay; Toast: the With an action example's Undo; the Heatmap: its calendar's scroller, at a phone's width, the only width the year overflows it) | focus is on or inside the control and it matches `:focus-visible`; the node whose edges the arriving focus changed is the ring, and `ringShows` (`e2e/support/focus-ring.ts`) looks for it in the pixels on every side, in the colour it paints at | the web row, desktop (the viewport inside an overlay) |
-| pressed | the pointer goes down on the hovered control and stays down (a Slider on its thumb; Dialog, AlertDialog, ActionSheet and Autocomplete on a control inside the opened overlay) | holding it changed a watched style against the hovered control (a press that looks like the hover is not reached, and says so) | the web row, desktop (the viewport inside an overlay) |
+| hover | the pointer moves onto the control and rests (Dropdown, RowMenu and Command: on a row, with the menu or palette open; Command: also on a row of its Inline example; AvatarMenu: on its pill, inside the Dropdown trigger it is handed as content; the Heatmap: on a calendar day; the Calendar: on the Week example's Design review block, which floats its detail card) | the control, its contents or its wrappers up to the row changed transform, box shadow or background (the lift and the wash `src/style/hover.tsx` applies; a Command row's active highlight); for the Heatmap, the readout it shows; for the Calendar, the card the resting pointer opened, found as an opening is; every watched property that changed is the evidence | the web row, desktop (the viewport inside an overlay, or for a card the pointer floats over the window) |
+| focus | Tab, from the tab stop before the control (Dialog, AlertDialog and ActionSheet: inside the opened overlay; Select, PhoneInput, RowMenu, ButtonGroup's split menu, Command's palette, the Calendar's day peek and the provider's toast: on a row or a button inside the opened overlay; Dropdown: ArrowDown from the first row its menu focuses as it opens, and its Custom trigger example's button; FilterPanel: an option row, on the panel and inside its drawer at a phone's width; DescriptionList: its inline-edit field, once its Update link swaps it in; Radio, Listbox, ButtonGroup, TabBar and Tabs: the stop inside the group; Toast: the With an action example's Undo; the Heatmap: its calendar's scroller, at a phone's width, the only width the year overflows it) | focus is on or inside the control, the focused element has the control's role, and it matches `:focus-visible`; the node whose edges the arriving focus changed is the ring, and `ringShows` (`e2e/support/focus-ring.ts`) looks for it in the pixels on every side, in the colour it paints at | the web row, desktop (the viewport inside an overlay) |
+| pressed | the pointer goes down on the hovered control and stays down (a Slider on its thumb; Dialog, AlertDialog, ActionSheet, Autocomplete, Select, PhoneInput, Dropdown, RowMenu, ButtonGroup's split menu, Command's palette and the provider's toast on a control inside the opened overlay; FilterPanel on an option row inside its drawer as well) | the element held down has the control's role, and holding it changed a watched style against the hovered control (a press that looks like the hover is not reached, and says so) | the web row, desktop (the viewport inside an overlay) |
 | pressed, to inspect | a chart that inspects under a press is pressed on one datum, found from what it draws (above an axis label, a tile's or a stage's label, a mark): held down on a scrub surface, a click on a Pressable hit layer | the chart shows text it did not show with the pointer away (the value flag, a readout) or repaints its marks (the others dim); with the recipe's expected texts, those (`Q2`, `Revenue`, `70`) | the web row, desktop |
 | open | the overlay recipes' own clicks (`OVERLAY_RECIPES`, `PHONE_INPUT_RECIPE`, `TOAST_RECIPE`), a hover on Tooltip's On hover example, a click on the AvatarMenu pill, ButtonGroup's split chevron, the Calendar's Day peek 24th, FilterPanel's Filters (n) trigger and the Sidebar example's hamburger, from the web row and from every row whose platform build the docs registry injects (`docs/src/core/platform-skins.ts`; Toast's iOS row is the web build; Sidebar's page shows the web row alone) | the opening added exactly the recipe's node (a dialog, a menu, a listbox, a speaking live region, the tooltip's bubble), or for a card with no role (the Calendar's day peek and hover card) exactly one new subtree holding the text it shows, where the Playground's overlays paint; the evidence says where it painted, whether it runs edge to edge on its frame's bottom (a sheet), whether it is in view and whether the trigger reports `aria-expanded="true"` | the viewport at the cell's own size, all three widths (a drawer a component becomes at and below a breakpoint: those widths, FilterPanel's at a phone's, Sidebar's at a phone's and a tablet's) |
 | invalid | the example that shows the error; Textarea typed past its soft cap | the field carries `aria-invalid="true"`; the error text it is described by is the evidence | the web row, desktop |
-| disabled | the example that disables the control (ActionSheet's Disabled action, RowMenu's and Dropdown's Disabled item and AlertDialog's Body field: inside the overlay the example's trigger opens) | `aria-disabled="true"` or a native `disabled`; one still a tab stop is flagged `disabled-tab-stop` | the web row, desktop (the viewport inside an overlay) |
+| disabled | the example that disables the control (ActionSheet's Disabled action, RowMenu's and Dropdown's Disabled item and AlertDialog's Body field: inside the overlay the example's trigger opens) | the control has its role and carries `aria-disabled="true"` or a native `disabled`; one still a tab stop is flagged `disabled-tab-stop` | the web row, desktop (the viewport inside an overlay) |
 
 The release ends the state the way a person would and is measured, not assumed. A press ends
 by moving off before the button comes up, which cancels a press on every platform, or, on a
@@ -443,9 +489,11 @@ drawn inside its row (Dialog, AlertDialog, Toast, the Tooltip bubble) is read wi
 so its texts and targets count once; its own entry (`inRow: true`) keeps where it is, its
 tree and its material. The example a state is applied to is on its record (`variant`,
 `label`); it is in the path only for a state the component has several recipes of
-(`disabled-disabledtrigger`, `disabled-disableditem`). A cell of a recipe the table no longer
-has (one named for its state before the state gained a second recipe) is left out of the
-index and the sheets, with a warning.
+(`disabled-disabledtrigger`, `disabled-disableditem`; `focus-default-inside` for Command's
+palette row beside `focus-default`, its Search trigger). A cell of a recipe the table no
+longer has (one named for its state before the state gained a second recipe, as Dropdown's
+`focus` and `pressed` were before their Custom trigger and menu row recipes) is left out of
+the index and the sheets, with a warning.
 
 Two decisions differ from the plan's 1d:
 
@@ -778,7 +826,7 @@ other:
 |---|---|---|
 | a variant on the web | `web/<slug>/<variant>/<width>.<look>.<surface>` | `card.png`, `probe.json` |
 | a variant on a device | `ios/<slug>/<variant>/<look>.<surface>` (and `android/`) | `screen.png`, `card.png`, `probe.json`, `a11y.json` |
-| an interaction state | `web-states/<slug>/<name>.<row>/<width>.<look>.<surface>` (the name: the state, or `<state>-<variant>`) | `state.png` (a reached state), `probe.json` |
+| an interaction state | `web-states/<slug>/<name>.<row>/<width>.<look>.<surface>` (the name: the state, or `<state>-<variant>`, `<state>-<variant>-inside` for one inside its example's overlay) | `state.png` (a reached state), `probe.json` |
 | a pattern or template page | `web-pages/<kind>-<slug>/<width>.<look>.<surface>` | `viewport.png`, `section.<key>.png` per section, `probe.json` |
 | a page on a device | `ios-pages/<kind>-<slug>/<look>.<surface>` (and `android-pages/`) | as a device variant's |
 

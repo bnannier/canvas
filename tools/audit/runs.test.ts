@@ -41,6 +41,8 @@ describe("cell ids", () => {
     expect(parseCellId("web-states/button/pressed.web/desktop.dark.glass")).toMatchObject({ family: "state", state: "pressed", recipe: "pressed", row: "web", width: "desktop" });
     // A state a component has several recipes of names each for its example.
     expect(parseCellId("web-states/dropdown/disabled-disableditem.web/desktop.blush.solid")).toMatchObject({ family: "state", state: "disabled", recipe: "disabled-disableditem", row: "web", width: "desktop" });
+    // One applied inside the overlay its example opens, beside one on that example's surface (Command's palette row).
+    expect(parseCellId("web-states/command/focus-default-inside.web/desktop.blush.solid")).toMatchObject({ family: "state", state: "focus", recipe: "focus-default-inside", row: "web" });
     expect(parseCellId("web-pages/template-signin/phone.blush.glass")).toEqual({
       id: "web-pages/template-signin/phone.blush.glass", family: "page", platform: "web", slug: "template-signin", variant: null, state: null, recipe: null, row: null, width: "phone", look: "blush", surface: "glass",
     });
@@ -62,6 +64,8 @@ describe("cell ids", () => {
       "web-states/dropdown/dragged-disableditem.web/desktop.blush.solid",
       "web-states/dropdown/disabled-.web/desktop.blush.solid",
       "web-states/dropdown/disabled-Disabled-Item.web/desktop.blush.solid",
+      // Inside is the only place word a name ends in.
+      "web-states/command/focus-default-outside.web/desktop.blush.solid",
       "web-states/button/outline/hover.web/desktop.dark.glass",
       "ios-states/button/hover.web/dark.glass",
       // A page's sections are files of its cell, never a level of its path.
@@ -74,10 +78,15 @@ describe("cell ids", () => {
 
   it("ranks a state cell's recipe in the state table's order, and a recipe the table no longer has at -1", () => {
     const rank = (id: string) => recipeRank(parseCellId(id)!);
-    // Dropdown's states in capture order: hover, focus, pressed, open, then its two disabled recipes.
-    expect(["hover", "focus", "pressed", "open", "disabled-disabledtrigger", "disabled-disableditem"].map((name) => rank(`web-states/dropdown/${name}.web/desktop.blush.solid`))).toEqual([0, 1, 2, 3, 4, 5]);
-    // The name its one disabled recipe had before the second, and a state it has no recipe of.
+    // Dropdown's states in capture order: hover, its focus and its press on the custom trigger
+    // and on a menu row, open, then its two disabled recipes.
+    const dropdown = ["hover", "focus-customtrigger", "focus-default", "pressed-customtrigger", "pressed-default", "open", "disabled-disabledtrigger", "disabled-disableditem"];
+    expect(dropdown.map((name) => rank(`web-states/dropdown/${name}.web/desktop.blush.solid`))).toEqual([0, 1, 2, 3, 4, 5, 6, 7]);
+    // The names its single focus and disabled recipes had before the second, and a state it has no recipe of.
+    expect(rank("web-states/dropdown/focus.web/desktop.blush.solid")).toBe(-1);
     expect(rank("web-states/dropdown/disabled.web/desktop.blush.solid")).toBe(-1);
+    // Command's focus on its Search trigger, and inside the palette the same example opens.
+    expect(rank("web-states/command/focus-default-inside.web/desktop.blush.solid")).toBe(rank("web-states/command/focus-default.web/desktop.blush.solid") + 1);
     expect(rank("web-states/dropdown/invalid.web/desktop.blush.solid")).toBe(-1);
     expect(rank("web-states/button/disabled.web/desktop.blush.solid")).toBe(3);
   });
