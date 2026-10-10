@@ -85,6 +85,7 @@ One row per finding. Severity: critical, high, medium, low. Cell: a capture id f
 
 | ID | Severity | Cell | Summary | Status | Fix commit |
 |---|---|---|---|---|---|
+| drawer-trigger-android-1 | high | android/drawer/default/blush.solid | On Android the Drawer's own trigger draws a broken outline: the pill's top edge is a straight line that stops short of the rounded ends, and the top corners are missing (S1 capture `.audit/runs/20261010T034438Z-android-36ca2ce/android/drawer/{default,bottomsheet}/blush.solid/card.png` at 36ca2ce2, and the dev app on the canvas_audit emulator at b5b483f0, 2026-10-10). The standalone outline Button and the ActionSheet, Popover, Dialog and AlertDialog triggers draw a whole pill on the same device, so the cause is in how Drawer renders its trigger, not in Button. | open | |
 
 ## Sign-off
 
