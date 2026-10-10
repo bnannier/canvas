@@ -744,9 +744,10 @@ describe("Dropdown", () => {
       );
       fireEvent.click(screen.getByText("Account"));
       await settle();
-      // Hosted, the leading edge is the trigger's own offset inside the outlet...
-      expect(anchorStyle(leading.container)).toContain("left: 0px");
-      expect(anchorStyle(leading.container)).not.toContain("right: 0px");
+      // Hosted, the leading edge is the trigger's own offset inside the outlet, kept
+      // 8px inside the outlet's edge (the fixture's trigger fills the outlet)...
+      expect(anchorStyle(leading.container)).toContain("left: 8px");
+      expect(anchorStyle(leading.container)).not.toContain("right:");
       cleanup();
 
       const trailing = ui(
@@ -758,8 +759,8 @@ describe("Dropdown", () => {
       await settle();
       // ...and the trailing edge a `right` inset from the outlet's edge, which is
       // what lets the card be pinned without ever being measured.
-      expect(anchorStyle(trailing.container)).toContain("right: 0px");
-      expect(anchorStyle(trailing.container)).not.toContain("left: 0px");
+      expect(anchorStyle(trailing.container)).toContain("right: 8px");
+      expect(anchorStyle(trailing.container)).not.toMatch(/(^|; )left:/);
     });
   });
 

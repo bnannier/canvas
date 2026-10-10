@@ -352,13 +352,15 @@ describe("an outside tap anywhere in the window closes the card", () => {
       expect(positioned(found.window)!.style.maxWidth).toBe(`${FRAME.width - (TRIGGER.x - FRAME.x)}px`);
       cleanup();
 
-      // A card in its frame's own outlet already has exactly that room: no cap.
+      // A card in its frame's own outlet already has the room to the frame's edge; it
+      // is capped only to the band less its 8px insets on both sides, so a card wider
+      // than its room never reaches the near edge.
       const single = render(<ThemeProvider light solid><OverlayProvider><RowMenu testID="trigger" items={[{ label: "Edit" }]} /></OverlayProvider></ThemeProvider>);
       const outlet = [...single.container.querySelectorAll("div")].find((d) => getComputedStyle(d).zIndex === "1000")!;
       refs = { window: outlet, trigger: single.container.querySelector('[data-testid="trigger"]')! };
       fireEvent.click(screen.getByRole("button", { name: "More options" }));
       await settle();
-      expect(positioned(outlet)!.style.maxWidth).toBe("");
+      expect(positioned(outlet)!.style.maxWidth).toBe(`${WINDOW.width - 16}px`);
     });
   });
 
@@ -395,7 +397,7 @@ describe("an outside tap anywhere in the window closes the card", () => {
     });
   });
 
-  it("follows its trigger when the content scrolls under it with no layout event", async () => {
+  it("follows its trigger when the content scrolls under it, on the scroll event alone", async () => {
     let refs: { window?: Element; frame?: Element; trigger?: Element } = {};
     let frame = { ...FRAME };
     let trigger = { x: 210, y: 150, width: 32, height: 32 };
@@ -412,7 +414,12 @@ describe("an outside tap anywhere in the window closes the card", () => {
       // no touch on the backdrop made and no layout event reports.
       frame = { ...frame, y: frame.y - 120 };
       trigger = { ...trigger, y: trigger.y - 120 };
-      // The loop notices on its next frame and re-measures, a few frames in all.
+      // Nothing re-reads layout while nothing happens: the card stays where it was...
+      await settle();
+      expect(card().style.top).toBe(`${150 + 32 + rowMenuSkin.menuGap - WINDOW.y}px`);
+      // ...until the scroll is heard (on the web every scroll reaches the document),
+      // which re-reads once on the next frame and re-places the card.
+      act(() => { document.dispatchEvent(new Event("scroll")); });
       await waitFor(() => expect(card().style.top).toBe(below(trigger)));
     });
   });

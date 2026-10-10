@@ -1,8 +1,9 @@
 import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
 import { EscapeLayerProvider, useEscapeLayer } from "../../style/escape-layer.js";
 import { useHover } from "../../style/hover.js";
-import { useEffect, useRef, useState, type ReactNode } from "react";
-import { View, Pressable, Text, useHugStyle, AnchoredOverlay, useOverlayHost, useMeasuredWidth, useRovingFocus, isRTL, RippleClip, cornerRadii, type StyleProp, type ViewStyle, withInnerFill } from "../../style/index.js";
+import { useRef, useState, type ReactNode } from "react";
+import { View, Pressable, Text, useHugStyle, AnchoredOverlay, useOverlayHost, useMeasuredWidth, RippleClip, cornerRadii, type StyleProp, type ViewStyle, withInnerFill } from "../../style/index.js";
+import { useRowFocus, type RowFocusProps } from "../../style/use-row-focus.js";
 import { Button as WebButton } from "../button/button.js";
 import { Icon, type IconName } from "../icon/icon.js";
 import { wrapper, wrapperLifted, customTrigger, type DropdownSkin } from "./dropdown.styles.js";
@@ -96,24 +97,6 @@ export interface DropdownProps {
 // stays at least this wide; a wider trigger (an account chip) sets the width.
 const MENU_MIN_WIDTH = 200;
 
-// The trigger's own focusable node, inside the wrapper, for the return-focus half
-// of the WAI-ARIA menu pattern. Both trigger shapes (the default Button and a
-// custom `children` Pressable) carry `aria-haspopup="menu"` and nothing else in
-// the wrapper does, so this names the trigger exactly, with no reliance on child
-// order. Web-only by construction: it is used behind a `document` guard, and
-// natively VoiceOver/TalkBack return focus to the trigger themselves.
-const TRIGGER_NODE = '[aria-haspopup="menu"]';
-// An open menu card, wherever it is rendered (inline under the trigger, or
-// portaled into an overlay outlet). Used to tell focus that a close ORPHANED
-// from focus the user has deliberately moved elsewhere.
-const MENU_NODE = '[role="menu"]';
-
-// A menu row's host node, as the open-focus needs it. `preventScroll` is a DOM
-// focus option: react-native-web renders the row as a real element that takes it,
-// while a native View has no focus() at all, so the call is a no-op there exactly
-// like the rest of the roving-focus layer.
-type FocusableRow = { focus?: (options?: { preventScroll?: boolean }) => void } | null;
-
 // The inline-fallback anchor: with no OverlayProvider mounted the menu renders in
 // place, absolutely positioned below the trigger (the kit's pre-portal behavior).
 // With a provider, AnchoredOverlay positions the card over the page and adds the
@@ -145,8 +128,7 @@ export function createDropdown(skin: DropdownSkin, parts: DropdownParts = {}) {
 
   interface MenuRowProps {
     item: DropdownItem;
-    rowRef: (node: FocusableRow) => void;
-    rovingProps: object;
+    focusProps: RowFocusProps;
     onSelect: () => void;
     ripple: { color: string; borderless: boolean } | undefined;
   }
@@ -154,7 +136,7 @@ export function createDropdown(skin: DropdownSkin, parts: DropdownParts = {}) {
   // One menu row, its own component so the web's hover wash has a hook per row. A
   // disabled row is inert and takes the skin's disabled look: the web's muted ink, or
   // the platform's dim.
-  function MenuRow({ item, rowRef, rovingProps, onSelect, ripple }: MenuRowProps) {
+  function MenuRow({ item, focusProps, onSelect, ripple }: MenuRowProps) {
     const theme = useMaterialTheme({ layer: "dense" });
     const { tokens, dark } = theme;
     const disabled = !!item.disabled;
@@ -162,8 +144,7 @@ export function createDropdown(skin: DropdownSkin, parts: DropdownParts = {}) {
     const { hovered, target } = useHover(skin.itemHover != null && !disabled);
     return (
       <Pressable
-        ref={rowRef}
-        {...rovingProps}
+        {...(focusProps as object)}
         {...target}
         style={({ pressed }) => [
           skin.itemRow,
@@ -228,71 +209,19 @@ export function createDropdown(skin: DropdownSkin, parts: DropdownParts = {}) {
     // Escape dismisses the open menu via browser Escape or native accessibility escape.
     const escapeScope = useEscapeLayer(open, () => setOpen(false));
 
-    // Roving-focus keyboard navigation for the open menu (the WAI-ARIA menu pattern):
-    // on open, focus moves to the first enabled row; the arrows move focus among the
-    // rows and Enter/Space activates the focused one. Web-only in effect (natively
-    // there is no onKeyDown and a View has no focus()).
-    const [focusedIndex, setFocusedIndex] = useState(0);
-    // The rows' host nodes, captured alongside the roving hook's own refs. The
-    // open-focus needs the node itself so it can pass `preventScroll`, the way
-    // every programmatic focus move in the kit is qualified (see use-dialog-focus):
-    // a menu the user just opened is already in view, and a menu that renders open
-    // from its first commit (a docs demo pinned open) must not yank the page to
-    // itself. The arrow keys keep the hook's own move, which scrolls the row it
-    // lands on into view.
-    const rowNodes = useRef<FocusableRow[]>([]);
-    const { getItemProps } = useRovingFocus({
-      count: items.length,
-      active: focusedIndex,
-      onActivate: setFocusedIndex,
-      orientation: "vertical",
-      rtl: isRTL(),
-    });
-    // Focus moves in when the CARD MOUNTS, not when `open` flips. On the hosted
-    // (portaled) path (every real app and every docs stage) AnchoredOverlay holds
-    // the card back until it has measured the trigger, so at the instant `open`
-    // becomes true there is no row to focus and the arrows would be dead. The
-    // overlay's mount callback fires on BOTH paths at the one moment the rows exist
-    // (their refs are attached before it runs), so nothing polls and nothing guesses
-    // a timeout.
+    // The WAI-ARIA menu pattern (src/style/use-row-focus.ts): the rows are one tab stop
+    // the arrows, Home and End move among, Enter and Space activate the focused row,
+    // and focus enters at the first enabled row when the CARD MOUNTS, not when `open`
+    // flips: on the hosted (portaled) path AnchoredOverlay holds the card back until it
+    // has measured the trigger, and the overlay's mount callback fires on both paths at
+    // the one moment the rows exist. Natively the screen reader moves in instead. Tab
+    // out of the menu closes it (`dismissOnTab`), and the overlay gives focus back to
+    // the trigger control on every close path when the close orphaned it.
+    const rows = useRowFocus(items.length);
     const focusFirstItem = () => {
       const first = items.findIndex((it) => !it.disabled);
-      const start = first >= 0 ? first : 0;
-      setFocusedIndex(start);
-      rowNodes.current[start]?.focus?.({ preventScroll: true });
+      rows.enter(first >= 0 ? first : 0);
     };
-
-    // ...and back out to the trigger on close (WAI-ARIA: closing a menu returns
-    // focus to the button that opened it). Without this, Escape or a row press
-    // drops focus on document.body and the keyboard user restarts at the top of
-    // the page. Web-only: `document` is undefined natively and during SSR, where
-    // VoiceOver/TalkBack restore the cursor themselves.
-    const restoreFocusToTrigger = () => {
-      if (typeof document === "undefined") return;
-      const wrapper = triggerRef.current as unknown as HTMLElement | null;
-      // The whole Dropdown went with its page: there is no trigger to focus.
-      if (wrapper == null || !document.body.contains(wrapper)) return;
-      const active = document.activeElement as HTMLElement | null;
-      // Reclaim only the focus THIS close orphaned: still on a menu row, or already
-      // dropped on <body> because the card unmounted under it. A close that was not
-      // user-driven (an app flipping `open` after the user has tabbed on) finds
-      // focus on a live element elsewhere and leaves it exactly where it is.
-      const orphaned =
-        active == null ||
-        active === document.body ||
-        !document.body.contains(active) ||
-        active.closest(MENU_NODE) != null;
-      if (!orphaned) return;
-      // preventScroll: returning focus must never yank the page, the way every
-      // programmatic focus move in the kit is qualified (see use-dialog-focus).
-      wrapper.querySelector<HTMLElement>(TRIGGER_NODE)?.focus({ preventScroll: true });
-    };
-    useEffect(() => {
-      if (!open) return;
-      // One cleanup covers every close path: Escape, a row select, an outside tap,
-      // a controlled `open` going false, and the Dropdown unmounting mid-open.
-      return restoreFocusToTrigger;
-    }, [open]);
 
     // Match the menu width to the trigger (and let longer rows grow past it), so a
     // wide trigger like a topbar account chip gets a menu of the same width.
@@ -302,6 +231,8 @@ export function createDropdown(skin: DropdownSkin, parts: DropdownParts = {}) {
     // The wrapper tightly wraps the trigger (the menu portals out when hosted), so
     // measuring it gives the trigger's box for anchoring the floating card.
     const triggerRef = useRef<View>(null);
+    // The trigger control itself, where focus returns on close.
+    const controlRef = useRef<View>(null);
     const host = useOverlayHost();
 
     const ripple = skin.ripple ? skin.ripple(tokens) : undefined;
@@ -317,6 +248,7 @@ export function createDropdown(skin: DropdownSkin, parts: DropdownParts = {}) {
       >
         {children != null ? (
           <Pressable
+            ref={controlRef}
             // Custom content can contain its own native material. Its owner
             // handles disabled ink in glass mode; never fade that whole subtree.
             style={[customTrigger, disabled && theme.surface !== "glass" ? { opacity: skin.disabledOpacity } : null]}
@@ -337,7 +269,7 @@ export function createDropdown(skin: DropdownSkin, parts: DropdownParts = {}) {
             {children}
           </Pressable>
         ) : (
-          <Button outline small expanded={open} haspopup="menu" disabled={disabled} onPress={() => setOpen(!open)}>
+          <Button ref={controlRef} outline small expanded={open} haspopup="menu" disabled={disabled} onPress={() => setOpen(!open)}>
             {trigger}
           </Button>
         )}
@@ -358,9 +290,8 @@ export function createDropdown(skin: DropdownSkin, parts: DropdownParts = {}) {
           dense
           // Same logical alignment on the hosted path: the portal places the card
           // by the trigger's trailing edge instead of its leading one, mirrored
-          // in a right-to-left locale.
+          // in a right-to-left layout (the overlay follows the app's direction).
           alignEnd={alignEnd}
-          rtl={isRTL()}
           // A controlled `open` with no onOpenChange can never actually close, so
           // the hosted dismiss backdrop is skipped (it would only block the page).
           dismissable={openProp === undefined || onOpenChange !== undefined}
@@ -368,6 +299,8 @@ export function createDropdown(skin: DropdownSkin, parts: DropdownParts = {}) {
           // into them: on the portaled path that is a measurement later than the
           // open itself.
           onCardMount={focusFirstItem}
+          dismissOnTab
+          returnFocusRef={controlRef}
         >
           <EscapeLayerProvider scope={escapeScope}>
             {/* role="menu" gives the menuitem rows a valid ARIA parent; without it
@@ -397,32 +330,13 @@ export function createDropdown(skin: DropdownSkin, parts: DropdownParts = {}) {
               </Text>
             ) : null}
             {items.map((item, index) => {
-              // Roving props for this row; Enter/Space activates the focused row
-              // before delegating the arrows to the roving handler. `onKeyDown` is
-              // web-only, so it rides through a cast (RN's Pressable types omit it).
-              const roving = getItemProps(index);
               const selectItem = () => { onSelect?.(item, index); setOpen(false); };
-              const onItemKeyDown = (e: { key: string; preventDefault: () => void }) => {
-                if (e.key === "Enter" || e.key === " ") {
-                  e.preventDefault();
-                  if (!item.disabled) selectItem();
-                  return;
-                }
-                roving.onKeyDown(e);
-              };
-              const rovingProps = { focusable: roving.focusable, tabIndex: roving.tabIndex, onKeyDown: onItemKeyDown };
-              // One ref feeding two readers: the roving hook (arrow moves) and the
-              // row-node table the open-focus reads.
-              const rowRef = (node: FocusableRow) => {
-                roving.ref(node);
-                rowNodes.current[index] = node;
-              };
               return (
               <View key={`${item.label}-${index}`}>
                 {item.separatorBefore && skin.separator ? (
                   <View style={skin.separator(tokens)} />
                 ) : null}
-                <MenuRow item={item} rowRef={rowRef} rovingProps={rovingProps} onSelect={selectItem} ripple={ripple} />
+                <MenuRow item={item} focusProps={rows.rowProps(index, () => { if (!item.disabled) selectItem(); })} onSelect={selectItem} ripple={ripple} />
               </View>
               );
             })}

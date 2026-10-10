@@ -3,22 +3,8 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Stateful, Popover, Typography, Column } = scope;
+  const { Popover } = scope;
   return (
-<Stateful initial={false}>
-  {(open, setOpen) => (
-    <Column snug>
-      <Typography small muted>{open ? "The share popover is open." : "The share popover is closed."}</Typography>
-      <Popover
-        trigger="Share"
-        open={open}
-        onOpenChange={setOpen}
-        title="Share this project"
-        description="Anyone with the link can view it."
-        actionLabel="Copy link"
-      />
-    </Column>
-  )}
-</Stateful>
+<Popover trigger="What is a workspace?" description="A workspace groups your projects, members, and billing under one plan." />
   );
 }

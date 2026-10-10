@@ -1,12 +1,26 @@
-export type OverlaySide = "above" | "below";
+/** The edge of its trigger an anchored card sits against: above or below it, or beside
+ *  it at the trigger's leading (`start`) or trailing (`end`) side in the layout direction. */
+export type OverlaySide = "above" | "below" | "start" | "end";
+/** The two vertical sides a card can be fitted to. */
+export type OverlayVerticalSide = "above" | "below";
+/** The two sides a card can sit beside its trigger, logical in the layout direction. */
+export type OverlayBesideSide = "start" | "end";
 
 const INSET = 8;
 const EPSILON = 0.5;
 
-/** Fit an anchored card inside its host's visible vertical band. */
+/**
+ * Fit an anchored card inside its host's visible vertical band.
+ *
+ * Above or below: the card goes on `currentSide` (the preferred side when it first
+ * opens) while it fits there, flips to the opposite side when that one has more room,
+ * and is capped to the larger band. It never falls back to beside. Beside (`beside`
+ * names the side placeOverlay resolved): the card is top-aligned with its trigger and
+ * slid inside the band, and the side reported is that beside side.
+ */
 export function fitOverlayHeight({
   triggerTop, triggerHeight, outletHeight, visibleTop = 0, visibleBottom = outletHeight,
-  desiredHeight, currentSide = "below", gap, beside = false,
+  desiredHeight, currentSide = "below", gap, beside,
 }: {
   triggerTop: number;
   triggerHeight: number;
@@ -14,9 +28,9 @@ export function fitOverlayHeight({
   visibleTop?: number;
   visibleBottom?: number;
   desiredHeight: number | null;
-  currentSide?: OverlaySide;
+  currentSide?: OverlayVerticalSide;
   gap: number;
-  beside?: boolean;
+  beside?: OverlayBesideSide | null;
 }): { side: OverlaySide; top?: number; bottom?: number; maxHeight: number } {
   // A content-sized outlet can lie inside the visible viewport without filling
   // it, so its card may extend beyond its own bottom. Only the visible band caps.
@@ -27,7 +41,10 @@ export function fitOverlayHeight({
   // Keep cards attached to wholly offscreen anchors. Pulling them into the
   // visible band would cover unrelated controls, including pinned-open demos.
   if (triggerTop >= lower || triggerTop + triggerHeight <= visibleTop) {
-    return { side: "below", top: triggerTop + triggerHeight + gap, maxHeight: floor - ceiling };
+    if (beside) return { side: beside, top: triggerTop, maxHeight: floor - ceiling };
+    return currentSide === "above"
+      ? { side: "above", bottom: outletHeight - (triggerTop - gap), maxHeight: floor - ceiling }
+      : { side: "below", top: triggerTop + triggerHeight + gap, maxHeight: floor - ceiling };
   }
   const belowTop = Math.max(ceiling, Math.min(floor, triggerTop + triggerHeight + gap));
   const aboveBottom = Math.max(ceiling, Math.min(floor, triggerTop - gap));
@@ -37,7 +54,7 @@ export function fitOverlayHeight({
 
   if (beside) {
     const height = Math.min(desired, floor - ceiling);
-    return { side: "below", top: Math.max(ceiling, Math.min(triggerTop, floor - height)), maxHeight: floor - ceiling };
+    return { side: beside, top: Math.max(ceiling, Math.min(triggerTop, floor - height)), maxHeight: floor - ceiling };
   }
 
   let side = currentSide;

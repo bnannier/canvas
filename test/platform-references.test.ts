@@ -51,6 +51,7 @@ const ONE_JOB: Record<string, Partial<Record<Platform, string>>> = {
   carousel: { iOS: "iOS has no carousel: paged cards with the page control's dots, as in the App Store (K8c, kept)" },
   "filter-panel": { iOS: "iOS has no filter panel: a sheet of grouped rows that mark a chosen filter with the trailing checkmark (K8c, kept)" },
   "action-sheet": { Android: "Material 3 has no action sheet: the actions sit in a modal bottom sheet with its drag handle (K8c, kept)" },
+  popover: { Android: "Material 3 has no popover: at the phone form factor the card is a modal bottom sheet, and wider it keeps Dark Factory's card (item 5; the owner's AO-6 decision)" },
 };
 
 /**

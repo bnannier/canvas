@@ -9,16 +9,29 @@
 // Firefox and Safari keep their own unless the CSS hand-off's `:focus-visible` rule is
 // loaded. Natively the outline keys draw nothing without a width.
 
+//
+// It is also a scroller the kit hears: an anchored card whose trigger sits inside it
+// follows the trigger on its scroll events instead of re-reading layout every frame
+// (src/style/scroll-ancestry.tsx).
+
 import { forwardRef, useMemo } from "react";
 import { ScrollView as RNScrollView, type ScrollViewProps } from "react-native";
 import { useFocusRingStyle } from "./pressable.js";
+import { useScrollAncestor } from "./scroll-ancestry.js";
 
 /** The instance a ScrollView ref receives: React Native's own, with its scroll methods. */
 export type ScrollView = RNScrollView;
 
-export const ScrollView = forwardRef<RNScrollView, ScrollViewProps>(function ScrollView({ style, ...rest }, ref) {
+export const ScrollView = forwardRef<RNScrollView, ScrollViewProps>(function ScrollView({ style, children, onScroll, scrollEventThrottle, ...rest }, ref) {
   const ring = useFocusRingStyle();
   // The ring goes first in the list so a scroller's own outline style wins.
   const themed = useMemo(() => [ring, style], [ring, style]);
-  return <RNScrollView ref={ref} {...rest} style={themed} />;
+  // Sticky headers are found by child index, so their children reach React Native
+  // unwrapped (and read as an unheard scroller's).
+  const ancestor = useScrollAncestor({ horizontal: rest.horizontal, onScroll, scrollEventThrottle, wrap: rest.stickyHeaderIndices == null });
+  return (
+    <RNScrollView ref={ref} {...rest} style={themed} onScroll={ancestor.onScroll} scrollEventThrottle={ancestor.scrollEventThrottle}>
+      {ancestor.children(children)}
+    </RNScrollView>
+  );
 });

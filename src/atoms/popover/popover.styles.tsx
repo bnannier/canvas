@@ -1,7 +1,7 @@
 import { type ReactNode } from "react";
 import { type ViewStyle, type TextStyle } from "react-native";
 import Svg, { Path } from "react-native-svg";
-import { type ColorTokens, shadow, shape } from "../../style/index.js";
+import { type ColorTokens, customShadow, shadow, shape } from "../../style/index.js";
 import { typeScale } from "../../style/type-scale.js";
 
 // Co-located Popover skins, one per platform, all driven by the theme tokens (passed
@@ -18,7 +18,13 @@ import { typeScale } from "../../style/type-scale.js";
 //   Web: Dark Factory's panel (its Popover): a fixed 260px card at the menu corner
 //     with the `border` hairline, the `popover` fill, 16 padding and the popover
 //     shadow; no arrow.
-//   Android: Material 3 has no popover, so the web skin.
+//   Android: Material 3 has no popover, so the web skin's card.
+// At the phone form factor the card is presented as a sheet (`sheet`), and every
+// platform ships a real control for that job, so each draws its own: Dark Factory's
+// sheet on the web (its sheet corner on top, its hairline), the iOS 27 sheet (its
+// continuous sheet corner, lineless, floating off the edges and the home indicator, as
+// the detached sheet reads) and the Material 3 modal bottom sheet on Android (its sheet
+// corner on top, lineless, flat over its scrim). The same geometry as Drawer's sheets.
 
 export type Placement = "top" | "bottom";
 
@@ -44,6 +50,8 @@ export interface PopoverSkin {
   arrow: ((t: ColorTokens, placement: Placement, anchor?: { centerX: number; cardWidth: number }) => ReactNode) | null;
   /** Standoff reserved for the solid arrow's protrusion. */
   arrowGap?: number;
+  /** The card presented as a sheet at the phone form factor: corners, padding, fill, elevation. */
+  sheet: (t: ColorTokens) => ViewStyle;
 }
 
 // --- shared layout fragments (identical across platforms) -------------------
@@ -87,10 +95,11 @@ const TITLE_TYPE: TextStyle = typeScale.heading;
 const DESC_TYPE: TextStyle = { marginTop: 4, ...typeScale.body };
 
 // ---------- Web: Dark Factory's panel ----------
-// A fixed 260px card at the menu corner (12), the `border` hairline, the `popover`
-// fill (translucent under glass), 16 padding, the popover shadow; no arrow.
+// A fixed 260px card, the `border` hairline, the `popover` fill (translucent under
+// glass), 16 padding, the popover shadow; no arrow.
 export const webSkin: PopoverSkin = {
   cardWidth: 260,
+  // The card at the menu corner (12).
   card: (t) => ({
     width: 260,
     maxWidth: "100%",
@@ -104,6 +113,18 @@ export const webSkin: PopoverSkin = {
   title: (t) => ({ ...TITLE_TYPE, color: t["popover-foreground"] }),
   description: (t) => ({ ...DESC_TYPE, color: t["muted-foreground"] }),
   arrow: null,
+  // Dark Factory's sheet: the sheet corner on the top edge, the hairline on the three
+  // edges the page meets, the `popover` fill and its shadow.
+  sheet: (t) => ({
+    borderTopLeftRadius: shape.web.sheet,
+    borderTopRightRadius: shape.web.sheet,
+    borderWidth: 1,
+    borderBottomWidth: 0,
+    borderColor: t.border,
+    backgroundColor: t.popover,
+    padding: 20,
+    ...shadow("lg", t),
+  }),
 };
 
 // ---------- iOS 27 (Liquid Glass popover): rounded material card, no border, beak ----------
@@ -151,6 +172,9 @@ const beakUpPath = [
   "Z",
 ].join(" ");
 
+// The iOS 27 kit Sheets container shadow, as Drawer's iOS sheet wears it.
+const iosSheetShadow = customShadow({ offsetY: 15, radius: 50, opacity: 0.18 });
+
 export const iosSkin: PopoverSkin = {
   cardWidth: 260,
   card: (t) => ({
@@ -172,6 +196,18 @@ export const iosSkin: PopoverSkin = {
   // sits under the trigger. The viewBox is flipped vertically for the `top`
   // placement so the apex points down toward an anchor above the card.
   arrowGap: IOS_BEAK_H - 1,
+  // The iOS sheet: the 38 continuous sheet corner all round, lineless, floating 8 off
+  // the sides and the home indicator (the detached sheet), the `popover` fill, its soft
+  // shadow.
+  sheet: (t) => ({
+    marginHorizontal: 8,
+    marginBottom: 8,
+    borderRadius: shape.ios.sheet,
+    borderCurve: "continuous",
+    backgroundColor: t.popover,
+    padding: 20,
+    ...iosSheetShadow,
+  }),
   arrow: (t, placement, anchor) => {
     const pointUp = placement === "bottom"; // card below the trigger -> beak points up
     return (
@@ -196,5 +232,16 @@ export const iosSkin: PopoverSkin = {
   },
 };
 
-// ---------- Android: Material 3 has no popover, so the web skin ----------
-export const androidSkin: PopoverSkin = webSkin;
+// ---------- Android: Material 3 has no popover, so the web skin's card ----------
+// Its phone sheet is the Material 3 modal bottom sheet: the sheet corner on the top
+// edge, lineless and flat (its scrim sets it off the page), the `popover` fill.
+export const androidSkin: PopoverSkin = {
+  ...webSkin,
+  sheet: (t) => ({
+    borderTopLeftRadius: shape.android.sheet,
+    borderTopRightRadius: shape.android.sheet,
+    backgroundColor: t.popover,
+    paddingHorizontal: 24,
+    paddingVertical: 20,
+  }),
+};

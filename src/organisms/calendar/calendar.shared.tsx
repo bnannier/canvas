@@ -1,7 +1,8 @@
 import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
 import { EscapeLayerProvider, useEscapeLayer } from "../../style/escape-layer.js";
 import { useEffect, useRef, useState, type ReactNode } from "react";
-import { type GestureResponderEvent, type View as RNView, type ScrollView as RNScrollView } from "react-native";
+import { type GestureResponderEvent, type View as RNView, type ScrollView as RNScrollView, type Text as RNText } from "react-native";
+import { moveAccessibilityFocus } from "../../style/accessibility-focus.js";
 import { View, Pressable, Text, ScrollView, RippleClip, cornerRadii, useControllableState, AnchoredOverlay, useMeasuredWidth, FILL, type StyleProp, type ViewStyle, type LayoutStyle, GlassSurface, GlassPane, paneStyle, isGlass } from "../../style/index.js";
 import { ButtonGroup as WebButtonGroup } from "../../atoms/button-group/button-group.js";
 import { type CalendarSkin, type DayState, type Density } from "./calendar.styles.js";
@@ -107,7 +108,7 @@ export interface CalendarProps {
   /** Single-day hour timeline; chevrons page by day. */
   day?: boolean;
 
-  /** Month view: pressing a day that has events also opens that day's hour timeline in an anchored overlay (a tooltip-style day peek) beside the cell — to its right, to its left when the right lacks room, and below it when neither side fits — dismissed by an outside tap or Escape. */
+  /** Month view: pressing a day that has events also opens that day's hour timeline in an anchored overlay (a tooltip-style day peek) beside the cell, at its trailing side (the right in a left-to-right layout), at its leading side when that lacks room, and above or below it when neither side fits; dismissed by an outside tap or Escape. */
   dayPeek?: boolean;
 
   // Range selection (month view): a travel-site check-in/check-out picker.
@@ -264,6 +265,8 @@ export function createCalendar(skin: CalendarSkin, parts: CalendarParts = {}) {
     const cellRefs = useRef(new Map<number, RNView>());
     const blockRefs = useRef(new Map<string, RNView>());
     const peekAnchorRef = useRef<RNView | null>(null);
+    // The day peek's heading, where the screen reader enters the peek.
+    const peekTitleRef = useRef<RNText | null>(null);
     const hoverAnchorRef = useRef<RNView | null>(null);
     const hoverEventRef = useRef<CalendarEvent | null>(null);
     const scrollRef = useRef<RNScrollView | null>(null);
@@ -616,7 +619,7 @@ export function createCalendar(skin: CalendarSkin, parts: CalendarParts = {}) {
           triggerRef={hoverAnchorRef}
           gap={6}
           cardWidth={tm.peekWidth}
-          preferSide
+          besideEnd
           dismissable={false}
           cardStyle={[skin.peekCard(tokens), { width: tm.peekWidth }]}
           inlineStyle={{ position: "absolute", top: "100%", left: 0 }}
@@ -656,12 +659,15 @@ export function createCalendar(skin: CalendarSkin, parts: CalendarParts = {}) {
           triggerRef={peekAnchorRef}
           gap={6}
           cardWidth={tm.peekWidth}
-          preferSide
+          besideEnd
           cardStyle={[skin.peekCard(tokens), { width: tm.peekWidth }]}
           inlineStyle={{ position: "absolute", top: "100%", left: 0 }}
+          // The peek is modal to VoiceOver and TalkBack while open: they move to its
+          // heading, and back to the day when it closes.
+          onCardMount={() => moveAccessibilityFocus(peekTitleRef.current)}
         >
           <EscapeLayerProvider scope={escapeScope}>
-          <Text style={skin.peekTitle(tokens)}>{`${WEEKDAYS_FULL[weekdayOf(peekDay)]}, ${monthName} ${peekDay}`}</Text>
+          <Text ref={peekTitleRef} style={skin.peekTitle(tokens)}>{`${WEEKDAYS_FULL[weekdayOf(peekDay)]}, ${monthName} ${peekDay}`}</Text>
           {untimed.map((e, i) => (
             <View key={`untimed-${i}`} style={{ marginTop: 6 }}>
               <Text numberOfLines={1} style={skin.eventTitle(tokens)}>{e.title ?? "Event"}</Text>

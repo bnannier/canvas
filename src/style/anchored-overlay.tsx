@@ -21,55 +21,92 @@
 // docs stage caught taps inside itself and let a tap beside it through). The card's
 // frame placement is carried over by the frame's offset inside the layer, so it
 // lands exactly where the frame would have put it, as wide as the frame lets it grow.
-// While the backdrop is up the page under it takes no touches or wheel, but a
-// keyboard or an app can still scroll it, and no layout event reports that, so an
-// open card re-reads where its trigger and outlets sit each frame and re-places when
-// one of them moved (what an Android PopupWindow does for its anchor). A card opened
-// inside such a card keeps the same frame (OverlayFrameContext), not the layer it now
-// renders in. A card that cannot close stays in its frame's own outlet and scrolls
-// with the content.
+// A card opened inside such a card keeps the same frame (OverlayFrameContext), not
+// the layer it now renders in. A card that cannot close stays in its frame's own
+// outlet and scrolls with the content.
+//
+// Placement: the card prefers below its trigger, above it (`above`), or beside it at
+// the leading or trailing side (`besideStart`, `besideEnd`), and resolves collisions
+// against the visible band: the window's safe area less the app's declared chrome
+// and the keyboard, on all four edges, every edge kept 8px inside it. Leading and
+// trailing follow the app's layout direction, and the physical insets go out under
+// the style keys React Native resolves in a right-to-left layout. At the phone form
+// factor a card that offers a sheet (`sheetStyle`) and can close is a sheet along the
+// bottom of the window instead.
+//
+// Tracking: while the backdrop is up the page under it takes no touches or wheel, but
+// a keyboard or an app can still scroll it, and no layout event reports a scroll. An
+// open card re-places on the layout events of its frame and window and on every
+// scroll the kit hears (src/style/scroll-ancestry.tsx), reading where its trigger
+// sits only then; under a scroller the kit cannot hear (React Native's own, used
+// directly) it reads that each frame, the way an Android PopupWindow follows its
+// anchor. A closed overlay holds no state and hears nothing.
+//
+// Focus: on the web an open card's controls keep their place in the tab order right
+// after the trigger, a menu or option list closes on a Tab out of it (`dismissOnTab`),
+// and focus the card held goes back to what opened it when it closes. On iOS and
+// Android a card that can close (and is no combobox's popup) is modal to VoiceOver and
+// TalkBack while open: its window's page is hidden from them, a card opened from it
+// covers it in turn, the owner moves them into it at onCardMount, and they go back to
+// the trigger on close.
 //
 // With no provider it degrades to the kit's pre-portal inline anchor (the
 // caller's own absolute top:100% style, passed as `inlineStyle`), so an unhosted
-// consumer still renders — just without the over-the-page escape or the backdrop,
-// exactly as the kit behaved before the portal layer.
+// consumer still renders, just without the over-the-page escape, the backdrop or
+// the screen-reader modality, exactly as the kit behaved before the portal layer.
 //
 // Width is the caller's concern: it already measures its trigger (onLayout) and
 // passes the card's width/min-width via `cardStyle`. This helper owns only the
 // placement, available height, the backdrop, and the card's surface material.
 //
 // Surface: an anchored card is a functional-layer overlay, so by default it
-// renders through GlassSurface and takes the active material (real Liquid Glass
-// on iOS 26+, the lens on Chromium web, a frost elsewhere) whenever the theme's
-// surface mode is glass. The OPTION-LIST MENUS ask for the DENSE layer with
-// `dense`: a dropdown / select / autocomplete / row menu / split-button overflow
-// menu is a card of content rows the user reads and picks from, and the
-// functional layer's sheer tint let the page's own rows and rules read straight
-// between them. The dense layer is the same material under the model's densest
-// tint (glass-tint-dense), so the rows stay legible and the card still refracts
-// the page at its rim. Popovers, the command palette, and the calendar peek keep
-// the functional layer. `opaque` remains for a consumer that wants the plain
-// surface outright: the skin's own `popover` fill on a plain box, in glass mode
-// exactly as in solid mode.
+// renders through GlassSurface and takes the active material (Dark Factory's plain
+// frost on the web, real Liquid Glass on iOS 26+, the frosted blur on Android and
+// earlier iOS) whenever the theme's surface mode is glass. The OPTION-LIST MENUS ask
+// for the DENSE layer with `dense`: a dropdown / select / autocomplete / row menu /
+// split-button overflow menu is a card of content rows the user reads and picks
+// from, and the functional layer's sheer tint let the page's own rows and rules read
+// straight between them. The dense layer is the same material under the model's
+// densest tint (glass-tint-dense), so the rows stay legible and the card still takes
+// the material. Popovers, the command palette, and the calendar peek keep the
+// functional layer. `opaque` remains for a consumer that wants the plain surface
+// outright: the skin's own `popover` fill on a plain box, in glass mode exactly as in
+// solid mode.
 
-import { createContext, type ReactNode, type RefObject, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
-import { View, Pressable, StyleSheet, useWindowDimensions, type LayoutChangeEvent, type StyleProp, type ViewStyle, type ViewProps } from "react-native";
+import { createContext, type ReactNode, type RefObject, useCallback, useContext, useEffect, useId, useMemo, useRef, useState, useSyncExternalStore } from "react";
+import { I18nManager, View, Pressable, StyleSheet, type LayoutChangeEvent, type StyleProp, type ViewStyle, type ViewProps } from "react-native";
 import { useOverlayHost, type OverlayHost } from "./portal.js";
 import { overlayLayerOf, OverlayFrameContext, PortalInto } from "./overlay-layer.js";
 import { GlassSurface } from "./glass-surface/glass-surface.js";
 import { PlainSurface } from "./glass-surface/glass-surface.shared.js";
 import { Entrance } from "./entrance.js";
 import { EntranceReadinessContext } from "./entrance-readiness.js";
-import { fitOverlayHeight, type OverlaySide } from "./overlay-layout.js";
+import { fitOverlayHeight, type OverlayBesideSide, type OverlaySide, type OverlayVerticalSide } from "./overlay-layout.js";
+import { isRTL } from "./rtl.js";
+import { useFormFactor } from "./responsive.js";
+import { useTheme } from "./theme.js";
+import { scrimFill } from "./scrim.js";
 import { OverlayScrollContext, OverlayScrollView } from "./overlay-scroll.js";
 import { useIsomorphicLayoutEffect } from "./use-isomorphic-layout-effect.js";
 import { useHardwareBack } from "./use-hardware-back.js";
 import { FocusFrameContext, useFocusFrame } from "./focus-frame.js";
+import { ScrollAncestryContext, subscribeDocumentScroll, useUnheardScroller } from "./scroll-ancestry.js";
+import { bridgeTabOrder, restoreOrphanedFocus } from "./use-dialog-focus.js";
+import { returnAccessibilityFocus } from "./accessibility-focus.js";
 
 const OverlaySideContext = createContext<{ side: OverlaySide; centerX?: number; cardWidth?: number }>({ side: "below" });
-/** The actual collision-resolved edge for a card's directional decoration. */
+/**
+ * The side of its trigger an anchored card actually took once collisions were
+ * resolved (`above`, `below`, or beside at the `start` or `end`), for a decoration
+ * that points at the trigger. Read inside the card.
+ */
 export const useOverlaySide = () => useContext(OverlaySideContext).side;
-/** Trigger center in card-local coordinates for collision-aware decorations. */
+/**
+ * The resolved side plus where the trigger's center sits along the card (`centerX`,
+ * measured from the card edge a decoration's `left` inset is measured from: the
+ * physical left, or the start edge where React Native swaps `left` and `right` in a
+ * right-to-left layout) and the card's width, for a decoration that aims at the trigger.
+ */
 export const useOverlayAnchor = () => useContext(OverlaySideContext);
 
 // A transparent layer filling the outlet (the window's layer, for a card that can
@@ -77,6 +114,11 @@ export const useOverlayAnchor = () => useContext(OverlaySideContext);
 // fill): anchored menus do not dim the page.
 const BACKDROP: ViewStyle = { position: "absolute", top: 0, right: 0, bottom: 0, left: 0 };
 
+/**
+ * The props of AnchoredOverlay. The defaults: below the trigger, by its leading edge,
+ * 4 apart, in the app's layout direction, closable by an outside tap and Android's
+ * back, the functional layer under glass, anchored at every form factor.
+ */
 export interface AnchoredOverlayProps {
   /** Whether the card is shown. */
   open: boolean;
@@ -84,9 +126,9 @@ export interface AnchoredOverlayProps {
   onDismiss: () => void;
   /** Native accessibility escape for the owning overlay scope. */
   onAccessibilityEscape?: ViewProps["onAccessibilityEscape"];
-  /** Ref to the trigger view the card anchors below. */
+  /** Ref to the trigger view the card is placed against. */
   triggerRef: RefObject<View | null>;
-  /** Gap between the trigger's bottom edge and the card's top (default 4). */
+  /** Gap between the trigger and the card, on whichever side the card resolves to (default 4). */
   gap?: number;
   /** The floating card's contents. */
   children: ReactNode;
@@ -125,18 +167,34 @@ export interface AnchoredOverlayProps {
    */
   alignEnd?: boolean;
   /**
-   * The active layout direction, for callers that want logical (leading/trailing)
-   * horizontal alignment. Leading is physical-left in a left-to-right locale and
-   * physical-right in a right-to-left one. Omit to anchor by the physical left.
+   * The layout direction the card's logical alignment follows: leading is the
+   * physical left in a left-to-right layout and the physical right in a right-to-left
+   * one, and `besideStart` / `besideEnd` mirror the same way. Defaults to the app's
+   * layout direction (`I18nManager`); pass it only to override that.
    */
   rtl?: boolean;
   /**
-   * With `cardWidth`: prefer placing the card BESIDE the trigger, top-aligned —
-   * to its right when the outlet has room there, else to its left, and only
-   * when neither side fits, below it (the `centered` treatment). For popovers
-   * anchored to small cells (a calendar day peek) where below-the-trigger would
-   * cover the grid.
+   * Prefer placing the card ABOVE the trigger. It flips below when the band above
+   * is too short and the band below has more room, and is otherwise capped to the
+   * larger band; it never falls back to beside. Placement axis: `besideStart` >
+   * `besideEnd` > `above` > below (the default).
    */
+  above?: boolean;
+  /**
+   * Prefer placing the card BESIDE the trigger at its LEADING side (the left in a
+   * left-to-right layout), top-aligned with it; then at its trailing side; and when
+   * neither side has room, above or below it, centered on it. Needs the card's width:
+   * `cardWidth`, or the width a content-sized card reports before it is revealed.
+   */
+  besideStart?: boolean;
+  /**
+   * Prefer placing the card BESIDE the trigger at its TRAILING side (the right in a
+   * left-to-right layout), then its leading side, then above or below it as
+   * `besideStart` does. For popovers anchored to small cells (a calendar day peek)
+   * where below the trigger would cover the grid.
+   */
+  besideEnd?: boolean;
+  /** @deprecated The old name of `besideEnd`, which it now means (trailing side first); it keeps working. */
   preferSide?: boolean;
   /**
    * Paint the card as an OPAQUE surface: the skin's own `popover` fill on a
@@ -170,10 +228,56 @@ export interface AnchoredOverlayProps {
    * page toward an uncapped, still-invisible card.
    */
   onCardMount?: () => void;
-  /** Internal scroll ownership: children always mount one OverlayScrollView. */
+  /**
+   * The children own the card's scrolling: they mount exactly one OverlayScrollView
+   * themselves (an option list with its own scroll handling), and the card does not
+   * wrap them in one. The contract of the kit's option lists.
+   */
   ownsScroll?: boolean;
+  /**
+   * The card is a menu or an option list: a Tab that takes keyboard focus out of the
+   * card (or off its trigger anywhere but into the card) closes it, and focus goes on
+   * in the page's order (the WAI-ARIA menu and listbox patterns). Without it the card
+   * stays open and Tab moves through and past it in that order.
+   */
+  dismissOnTab?: boolean;
+  /**
+   * The card is a combobox's popup: its field keeps editing focus and must stay
+   * reachable, so the card is not modal to VoiceOver and TalkBack. Every other card
+   * that can close is modal to them while open (see the header).
+   */
+  combobox?: boolean;
+  /**
+   * The trigger control focus returns to when the card closes, where `triggerRef` is a
+   * wrapper around it (TalkBack moves only to an accessibility element). Defaults to
+   * `triggerRef`.
+   */
+  returnFocusRef?: RefObject<View | null>;
+  /**
+   * Present the card as a SHEET at the phone form factor: along the bottom of its
+   * window's visible band (above the home indicator and the keyboard), as wide as its
+   * frame allows up to 640, over a dimming scrim, wearing this style (the skin's sheet:
+   * its corners, padding and fill) in place of `cardStyle`, with no `decoration`. Only a
+   * card that can close becomes a sheet; a card pinned open stays anchored. Omit it to
+   * stay anchored at every form factor (menus and option lists do, as HIG and Material 3
+   * keep them).
+   */
+  sheetStyle?: StyleProp<ViewStyle>;
 }
 
+/**
+ * The kit's anchored card: a floating card placed against a trigger (below it by
+ * default, above it or beside it on request), fitted inside the window's visible band
+ * and safe area, over a transparent backdrop that closes it on an outside tap, on the
+ * window layer of the nearest OverlayProvider. It renders the card's surface (the
+ * functional or dense glass layer, or a plain surface) and one scrollport for the
+ * children, holds the card hidden until its placement is measured, and at the phone
+ * form factor presents a card that offers a sheet as one. It never renders a trigger,
+ * never dims the page (except behind a sheet), never sizes the card's width (the
+ * caller's `cardStyle` does), and never moves focus into the card itself: the caller
+ * does that at `onCardMount`. With no OverlayProvider it renders the card inline under
+ * the trigger.
+ */
 export function AnchoredOverlay({
   open,
   onDismiss,
@@ -187,13 +291,20 @@ export function AnchoredOverlay({
   dismissable = true,
   cardWidth,
   centered = false,
+  above = false,
+  besideStart = false,
+  besideEnd = false,
   preferSide = false,
   alignEnd = false,
-  rtl = false,
+  rtl,
   opaque = false,
   dense = false,
   onCardMount,
   ownsScroll = false,
+  dismissOnTab = false,
+  combobox = false,
+  returnFocusRef,
+  sheetStyle,
 }: AnchoredOverlayProps) {
   const host = useOverlayHost();
   // The frame the card is placed in: the nearest provider, or, inside a card that paints
@@ -211,17 +322,20 @@ export function AnchoredOverlay({
   // owns the absolute anchor position and holds the card until it is laid out.
   if (!host) {
     return open ? (
-      <Entrance style={inlineStyle}>
-        <OverlayCard onAccessibilityEscape={onAccessibilityEscape} cardStyle={cardStyle} opaque={opaque} dense={dense} onMount={onCardMount} ownsScroll={ownsScroll} decoration={decoration}>{children}</OverlayCard>
-      </Entrance>
+      <InlineAnchoredOverlay onAccessibilityEscape={onAccessibilityEscape} onDismiss={onDismiss} triggerRef={triggerRef} returnFocusRef={returnFocusRef} dismissable={dismissable} dismissOnTab={dismissOnTab} combobox={combobox} inlineStyle={inlineStyle} cardStyle={cardStyle} opaque={opaque} dense={dense} onCardMount={onCardMount} ownsScroll={ownsScroll} decoration={decoration}>
+        {children}
+      </InlineAnchoredOverlay>
     ) : null;
   }
 
+  // The hosted card's state, measurements and subscriptions exist only while it is
+  // open: a closed overlay (a Board renders one per card) holds nothing and hears
+  // nothing, and every opening starts from a clean placement.
+  if (!open) return null;
   return (
     <HostedAnchoredOverlay
       host={host}
       frame={frame ?? host}
-      open={open}
       onDismiss={onDismiss}
       onAccessibilityEscape={onAccessibilityEscape}
       triggerRef={triggerRef}
@@ -230,17 +344,118 @@ export function AnchoredOverlay({
       dismissable={dismissable}
       cardWidth={cardWidth}
       centered={centered}
-      preferSide={preferSide}
+      above={above}
+      besideStart={besideStart}
+      besideEnd={besideEnd || preferSide}
       alignEnd={alignEnd}
-      rtl={rtl}
+      rtl={rtl ?? isRTL()}
       opaque={opaque}
       dense={dense}
       onCardMount={onCardMount}
       ownsScroll={ownsScroll}
+      dismissOnTab={dismissOnTab}
+      modal={dismissable && !combobox}
+      combobox={combobox}
+      returnFocusRef={returnFocusRef}
+      sheetStyle={sheetStyle}
       decoration={decoration}
     >
       {children}
     </HostedAnchoredOverlay>
+  );
+}
+
+/**
+ * Keyboard and screen-reader focus around an open card, on both paths. On the web: the
+ * card's controls keep their place in the tab order right after the trigger, a menu or
+ * list closes on a Tab out of it, and when the card closes the focus its closing
+ * orphaned returns to the trigger (src/style/use-dialog-focus.ts). Natively, a modal
+ * card sends VoiceOver and TalkBack back to the trigger when it closes. `shown` is the
+ * instant the card is revealed and focusable.
+ */
+function useCardFocus({ shown, cardRef, triggerRef, returnFocusRef, dismissOnTab, onDismiss, modal, combobox }: {
+  shown: boolean;
+  cardRef: RefObject<View | null>;
+  triggerRef: RefObject<View | null>;
+  returnFocusRef?: RefObject<View | null>;
+  dismissOnTab: boolean;
+  onDismiss: () => void;
+  modal: boolean;
+  /** A combobox's field owns focus (refocusing it would reopen the list): no restore. */
+  combobox: boolean;
+}) {
+  const dismiss = useRef(onDismiss);
+  dismiss.current = onDismiss;
+  // Whether keyboard focus was ever inside the card: only focus the card held is its to
+  // give back (a combobox's field keeps focus throughout, and a card opened by pointer
+  // with focus left on the page took none).
+  const held = useRef(false);
+  useEffect(() => {
+    if (!shown || typeof document === "undefined") return;
+    const card = cardRef.current as unknown as HTMLElement | null;
+    const trigger = triggerRef.current as unknown as HTMLElement | null;
+    if (!card || !trigger || typeof card.contains !== "function") return;
+    const onFocusIn = () => { held.current = true; };
+    if (card.contains(document.activeElement)) held.current = true;
+    card.addEventListener("focusin", onFocusIn);
+    const unbridge = bridgeTabOrder(card, trigger, dismissOnTab ? () => dismiss.current() : undefined);
+    return () => {
+      card.removeEventListener("focusin", onFocusIn);
+      unbridge();
+    };
+  }, [shown, cardRef, triggerRef, dismissOnTab]);
+  // The card's node and whether it was ever shown, kept past the ref's detachment for
+  // the close below, and what held focus when the card opened (before the owner moves
+  // it in at onCardMount, a passive effect this layout effect precedes).
+  const lastCard = useRef<View | null>(null);
+  const wasShown = useRef(false);
+  const opener = useRef<Element | null>(null);
+  useIsomorphicLayoutEffect(() => {
+    opener.current = typeof document === "undefined" ? null : document.activeElement;
+  }, []);
+  useIsomorphicLayoutEffect(() => {
+    if (cardRef.current) lastCard.current = cardRef.current;
+    if (shown) wasShown.current = true;
+  });
+  const returnTo = returnFocusRef ?? triggerRef;
+  const modalRef = useRef(modal);
+  modalRef.current = modal;
+  const comboboxRef = useRef(combobox);
+  comboboxRef.current = combobox;
+  useEffect(() => () => {
+    if (!wasShown.current) return;
+    if (held.current && !comboboxRef.current) restoreOrphanedFocus(lastCard.current as unknown as HTMLElement | null, returnTo.current as unknown as HTMLElement | null, opener.current);
+    if (modalRef.current) returnAccessibilityFocus(returnTo.current);
+  }, [returnTo]);
+}
+
+// The no-provider path: the card renders inline in place, exactly as the kit did before
+// the portal layer (absolute anchor under the trigger, no backdrop), so it is already
+// in the tab order after its trigger. Entrance owns the absolute anchor position.
+function InlineAnchoredOverlay({ onAccessibilityEscape, onDismiss, triggerRef, returnFocusRef, dismissable, dismissOnTab, combobox, inlineStyle, cardStyle, opaque, dense, onCardMount, ownsScroll, decoration, children }: {
+  onAccessibilityEscape?: ViewProps["onAccessibilityEscape"];
+  onDismiss: () => void;
+  triggerRef: RefObject<View | null>;
+  returnFocusRef?: RefObject<View | null>;
+  dismissable: boolean;
+  dismissOnTab: boolean;
+  combobox: boolean;
+  inlineStyle?: StyleProp<ViewStyle>;
+  cardStyle?: StyleProp<ViewStyle>;
+  opaque: boolean;
+  dense: boolean;
+  onCardMount?: () => void;
+  ownsScroll: boolean;
+  decoration?: ReactNode;
+  children: ReactNode;
+}) {
+  const cardRef = useRef<View>(null);
+  // No layer to hide a page in: an unhosted card is never modal.
+  useCardFocus({ shown: true, cardRef, triggerRef, returnFocusRef, dismissOnTab: dismissOnTab && dismissable, onDismiss, modal: false, combobox });
+  return (
+    <Entrance ref={cardRef} style={inlineStyle}>
+      <OverlayCard onAccessibilityEscape={onAccessibilityEscape} cardStyle={cardStyle} opaque={opaque} dense={dense} onMount={onCardMount} ownsScroll={ownsScroll} decoration={decoration}>{children}</OverlayCard>
+    </Entrance>
   );
 }
 
@@ -311,7 +526,6 @@ interface HostedProps {
   host: OverlayHost;
   /** The provider whose outlet the card is placed in (see AnchoredOverlay's header). */
   frame: OverlayHost;
-  open: boolean;
   onDismiss: () => void;
   triggerRef: RefObject<View | null>;
   gap: number;
@@ -319,13 +533,21 @@ interface HostedProps {
   dismissable: boolean;
   cardWidth?: number;
   centered?: boolean;
-  preferSide?: boolean;
+  above: boolean;
+  besideStart: boolean;
+  besideEnd: boolean;
   alignEnd?: boolean;
-  rtl?: boolean;
+  rtl: boolean;
   opaque?: boolean;
   dense?: boolean;
   onCardMount?: () => void;
   ownsScroll?: boolean;
+  dismissOnTab: boolean;
+  /** Modal to VoiceOver and TalkBack while open: it can close and is no combobox's popup. */
+  modal: boolean;
+  combobox: boolean;
+  returnFocusRef?: RefObject<View | null>;
+  sheetStyle?: StyleProp<ViewStyle>;
   children: ReactNode;
   decoration?: ReactNode;
 }
@@ -337,8 +559,14 @@ interface Rect {
   height: number;
 }
 
-// Horizontal inset kept between a width-aware card and the outlet's edges.
+// The inset every card keeps from the edges of the visible band it is placed in.
 const CLAMP_INSET = 8;
+// A sheet's widest (Material 3's bottom-sheet cap, the kit's other sheets' too), and the
+// band it leaves the page above it, so a tall sheet still reads as one over the page.
+const SHEET_MAX_WIDTH = 640;
+const SHEET_TOP_GAP = 48;
+// The legacy scrim alpha for a theme without a `scrim` role (src/style/scrim.ts).
+const SHEET_SCRIM_ALPHA = 0.32;
 
 // Where a frame's edges sit inside the layer's outlet, each measured inward from the
 // layer's own edge. All zero when the card paints in its frame's own outlet.
@@ -347,77 +575,124 @@ const IN_PLACE: FrameOffset = { left: 0, top: 0, right: 0, bottom: 0 };
 // A frame-relative edge distance moved to the layer's edge; an unset edge stays unset.
 const toLayer = (edge: number | undefined, offset: number) => (edge == null ? undefined : edge + offset);
 
+/** What placeOverlay reads besides the trigger's box. */
+export interface PlaceOverlayOptions {
+  /** The card's caller-fixed width, when it has one. */
+  cardWidth?: number;
+  /** The width a card without a fixed one rendered at, once its layout reports it. */
+  measuredWidth?: number | null;
+  /** With `cardWidth`: center the card on the trigger instead of aligning an edge. */
+  centered?: boolean;
+  /** Prefer beside the trigger at its leading side, then its trailing side. */
+  besideStart?: boolean;
+  /** Prefer beside the trigger at its trailing side, then its leading side. */
+  besideEnd?: boolean;
+  /** @deprecated The old name of `besideEnd`; it keeps working. */
+  preferSide?: boolean;
+  /** Align the card's trailing edge with the trigger's instead of its leading edge. */
+  alignEnd?: boolean;
+  /** The layout direction is right to left: leading is the physical right. */
+  rtl?: boolean;
+  /** The trigger-to-card gap. */
+  gap: number;
+  /** The outlet's width, once measured. */
+  outletWidth: number | null;
+  /** The visible band's left edge in the outlet (the window's safe area); default 0. */
+  visibleLeft?: number;
+  /** The visible band's right edge in the outlet; default the outlet's width. */
+  visibleRight?: number;
+}
+
 /**
- * The card's outlet-relative position (pure, so the branch logic is testable).
+ * The card's outlet-relative position (pure, so the branch logic is testable). The
+ * result is PHYSICAL: `left` and `right` are insets from the outlet's left and right
+ * edges, and the hosted overlay hands them to the renderer under the keys it resolves
+ * them by (React Native swaps `left` and `right` in a right-to-left layout). `rtl`
+ * only selects the logical preferences: which physical side is leading.
  *
- * Without a known `cardWidth`: the legacy anchoring, left-aligned below the
- * trigger. With one: the below placement can center on the trigger and is
- * clamped inside the outlet; `preferSide` instead tries beside the trigger,
- * top-aligned — right first, left when the right lacks room, and below (the
- * centered treatment) when neither side fits.
+ * Every edge keeps 8px inside the visible band (`visibleLeft` to `visibleRight`, the
+ * outlet less the window's unsafe edges).
  *
- * `alignEnd`/`rtl` opt into LOGICAL horizontal alignment for the below
- * placement: the card is pinned by its leading edge (default) or its trailing
- * edge (`alignEnd`), and which physical side that is flips with `rtl`. Pinning
- * the trailing edge is expressed as a `right` inset from the outlet. Callers
- * that pass neither keep the physical-left anchoring.
+ * Beside (`besideStart`, `besideEnd`, or the old `preferSide`): the card is placed
+ * beside the trigger, top-aligned, at the preferred side when it fits there, then at
+ * the other side; `side` names the side it took. When neither fits, or before a card
+ * of no fixed width has reported its width, it falls back to the vertical placement,
+ * centered on the trigger.
  *
- * A card without a caller-fixed width is kept inside the outlet by the width it
- * rendered at (`measuredWidth`, which the hosted overlay reads from the card's own
- * layout before it reveals it). When anchoring it by the trigger would cross the far
- * edge, it is pinned by that far edge instead, 8px inside the outlet, and stays
- * exactly where it was anchored whenever it fits. It is PINNED, not shifted by its
+ * Above or below (the vertical side is fitOverlayHeight's): `top` is the below
+ * placement's top edge, and the horizontal alignment is the card's leading edge on
+ * the trigger's leading edge (default), its trailing edge on the trigger's (`alignEnd`),
+ * or its center on the trigger's (`centered`).
+ *
+ * A card of known width (`cardWidth`) is clamped inside the band. A card without one is
+ * kept inside the band by the width it rendered at (`measuredWidth`, which the hosted
+ * overlay reads from the card's own layout before it reveals it): when anchoring it by
+ * the trigger would cross the far edge, it is pinned by that far edge instead, and it
+ * stays exactly where it was anchored whenever it fits. It is PINNED, not shifted by its
  * width: a content-sized card is as wide as the room its anchor leaves, so moving it
- * over by its measured width would give it more room, let it grow and move it again,
- * a frame at a time. Pinned by the far edge, it takes the width it wants in one layout,
+ * over by its measured width would give it more room, let it grow and move it again, a
+ * frame at a time. Pinned by the far edge, it takes the width it wants in one layout,
  * and a wider card only confirms the pin. Without a measurement yet, it is placed as
  * anchored.
  */
 export function placeOverlay(
   rect: Rect,
-  opts: { cardWidth?: number; measuredWidth?: number | null; centered?: boolean; preferSide?: boolean; alignEnd?: boolean; rtl?: boolean; gap: number; outletWidth: number | null },
-): { left?: number; right?: number; top: number } {
-  const { cardWidth, measuredWidth, centered, preferSide, alignEnd, rtl = false, gap, outletWidth } = opts;
-  const below = { left: rect.x, top: rect.y + rect.height + gap };
-  // Whether a measured card, placed `offset` in from one outlet edge, would cross the
-  // other edge's 8px inset.
-  const crosses = (offset: number) =>
-    measuredWidth != null && measuredWidth > 0 && outletWidth != null && outletWidth > 0 && offset + measuredWidth + CLAMP_INSET > outletWidth;
+  opts: PlaceOverlayOptions,
+): { left?: number; right?: number; top: number; side?: OverlayBesideSide } {
+  const { cardWidth, measuredWidth, centered, preferSide, besideStart, besideEnd, alignEnd, rtl = false, gap, outletWidth } = opts;
+  const outlet = outletWidth != null && outletWidth > 0 ? outletWidth : null;
+  // The leftmost and rightmost a card's edges may sit, 8px inside the visible band.
+  const lo = (opts.visibleLeft ?? 0) + CLAMP_INSET;
+  const hi = (opts.visibleRight ?? outlet ?? Infinity) - CLAMP_INSET;
+  const measured = measuredWidth != null && measuredWidth > 0 ? measuredWidth : null;
+  const width = cardWidth ?? measured;
+  const below = rect.y + rect.height + gap;
 
-  if (alignEnd || rtl) {
-    // XOR: the trailing edge is on the right in a left-to-right locale and on
-    // the left in a right-to-left one, so leading alignment under RTL pins the
-    // right edge for exactly the same reason `alignEnd` does under LTR.
-    const pinRight = !!alignEnd !== rtl;
-    if (!pinRight) {
-      const left = Math.max(0, rect.x);
-      return crosses(left) ? { right: CLAMP_INSET, top: below.top } : { left, top: below.top };
+  const beside: OverlayBesideSide | null = besideStart ? "start" : besideEnd || preferSide ? "end" : null;
+  if (beside && outlet != null && width != null) {
+    for (const side of beside === "start" ? (["start", "end"] as const) : (["end", "start"] as const)) {
+      // The trailing side is the physical right in a left-to-right layout.
+      const right = (side === "end") !== rtl;
+      const left = right ? rect.x + rect.width + gap : rect.x - gap - width;
+      if (left >= lo && left + width <= hi) return { left, top: rect.y, side };
     }
-    if (outletWidth != null && outletWidth > 0) {
-      const right = Math.max(0, outletWidth - (rect.x + rect.width));
-      return crosses(right) ? { left: CLAMP_INSET, top: below.top } : { right, top: below.top };
-    }
-    // Outlet width not measured yet: fall through to the leading-edge anchor
-    // rather than guess an inset the card would then jump out of.
   }
 
-  if (cardWidth == null) return crosses(below.left) ? { right: CLAMP_INSET, top: below.top } : below;
+  // The card's trailing edge goes on the trigger's when `alignEnd`, its leading edge
+  // otherwise; which physical edge that is flips with `rtl`.
+  const pinRight = !!alignEnd !== rtl;
 
-  if (preferSide && outletWidth != null && outletWidth > 0) {
-    const right = rect.x + rect.width + gap;
-    if (right + cardWidth + CLAMP_INSET <= outletWidth) return { left: right, top: rect.y };
-    const left = rect.x - gap - cardWidth;
-    if (left >= CLAMP_INSET) return { left, top: rect.y };
+  if (cardWidth != null) {
+    let x = centered || beside ? rect.x + rect.width / 2 - cardWidth / 2 : pinRight ? rect.x + rect.width - cardWidth : rect.x;
+    x = Math.min(x, hi - cardWidth);
+    return { left: Math.max(lo, x), top: below };
   }
 
-  let x = centered || preferSide ? rect.x + rect.width / 2 - cardWidth / 2 : rect.x;
-  if (outletWidth != null && outletWidth > 0) x = Math.min(x, outletWidth - cardWidth - CLAMP_INSET);
-  return { left: Math.max(CLAMP_INSET, x), top: below.top };
+  if (pinRight && outlet != null) {
+    // Pinned by its right edge, expressed as an inset from the outlet's right edge.
+    const right = Math.max(outlet - hi, outlet - (rect.x + rect.width));
+    return measured != null && outlet - right - measured < lo ? { left: lo, top: below } : { right, top: below };
+  }
+  // Pinned by its left edge (or, with the outlet not measured yet, the leading anchor
+  // rather than a guessed inset the card would then jump out of).
+  const left = Math.max(lo, rect.x);
+  return measured != null && left + measured > hi && outlet != null ? { right: outlet - hi, top: below } : { left, top: below };
 }
 
-function HostedAnchoredOverlay({ host, frame, open, onDismiss, onAccessibilityEscape, triggerRef, gap, cardStyle, dismissable, cardWidth, centered, preferSide, alignEnd, rtl, opaque, dense, onCardMount, ownsScroll, children, decoration }: HostedProps) {
-  const isOpen = useRef(open);
-  isOpen.current = open;
+// Whether the renderer swaps the `left` and `right` style keys in a right-to-left
+// layout: React Native does by default (they then mean start and end), React Native
+// Web does not (its I18nManager reports no such constant). placeOverlay's insets are
+// physical, so where the renderer swaps, a physical left inset goes out under `right`.
+function swapsLeftAndRight(): boolean {
+  const constants = I18nManager.getConstants() as { isRTL: boolean; doLeftAndRightSwapInRTL?: boolean };
+  return !!constants.doLeftAndRightSwapInRTL && constants.isRTL;
+}
+
+function HostedAnchoredOverlay({ host, frame, onDismiss, onAccessibilityEscape, triggerRef, gap, cardStyle, dismissable, cardWidth, centered, above, besideStart, besideEnd, alignEnd, rtl, opaque, dense, onCardMount, ownsScroll, dismissOnTab, modal, combobox, returnFocusRef, sheetStyle, children, decoration }: HostedProps) {
+  // A card that offers a sheet and can close is one at the phone form factor (the
+  // owner's AO-6 decision; the window read is bucket-granular, and only while open).
+  const sheet = useFormFactor() === "phone" && sheetStyle != null && dismissable;
+  const { tokens } = useTheme();
   // The outlet the card paints in: its window's layer when an outside tap can close
   // it, so the backdrop spans the window; otherwise its nearest provider's (see the
   // header). `inPlace` when that is the frame's own outlet.
@@ -426,43 +701,39 @@ function HostedAnchoredOverlay({ host, frame, open, onDismiss, onAccessibilityEs
   const [rect, setRect] = useState<Rect | null>(null);
   // Where the frame sits in the layer, measured with the trigger.
   const [frameOffset, setFrameOffset] = useState<FrameOffset>(IN_PLACE);
-  // The outlet's width, captured alongside the trigger measure; only needed for
-  // width-aware (clamped) placement.
+  // The outlet's width, captured alongside the trigger measure.
   const [outletWidth, setOutletWidth] = useState<number | null>(null);
-  const [outlet, setOutlet] = useState<{ height: number; visibleTop: number; visibleBottom: number } | null>(null);
+  // The outlet's height and the visible band (the window's safe area less declared
+  // chrome and the keyboard) on all four edges, in the outlet's coordinates; its
+  // horizontal edges are cut to the frame's box.
+  const [outlet, setOutlet] = useState<{ height: number; visibleTop: number; visibleBottom: number; visibleLeft: number; visibleRight: number } | null>(null);
   const [layoutRevision, setLayoutRevision] = useState(0);
   // `cap` is the height cap the card was wearing when it reported `card`; the
   // readiness gate below compares it with the cap the fit now applies.
   const [sizes, setSizes] = useState<{ content: number | null; viewport: number | null; card: number | null; width: number | null; cap: number | null }>({ content: null, viewport: null, card: null, width: null, cap: null });
-  const lastSide = useRef<OverlaySide>("below");
+  // The vertical side the card is fitted to first: the preferred one.
+  const lastSide = useRef<OverlayVerticalSide>(above ? "above" : "below");
   const appliedCap = useRef<number | null>(null);
   const revealed = useRef(false);
   const report = useMemo(() => ({
-    contentHeight: (content: number) => { if (isOpen.current) setSizes((previous) => previous.content === content ? previous : { ...previous, content }); },
-    viewportHeight: (viewport: number) => { if (isOpen.current) setSizes((previous) => previous.viewport === viewport ? previous : { ...previous, viewport }); },
+    contentHeight: (content: number) => setSizes((previous) => previous.content === content ? previous : { ...previous, content }),
+    viewportHeight: (viewport: number) => setSizes((previous) => previous.viewport === viewport ? previous : { ...previous, viewport }),
   }), []);
   const onCardLayout = useCallback((event: LayoutChangeEvent) => {
-    if (!isOpen.current) return;
     const { height: card, width: cardWidth } = event.nativeEvent.layout;
     const cap = appliedCap.current;
     setSizes((previous) => previous.card === card && previous.width === cardWidth && previous.cap === cap ? previous : { ...previous, card, width: cardWidth, cap });
   }, []);
-  // Re-measure on viewport changes (rotation / resize). Width/height feed the
-  // effect deps; the values themselves aren't read.
-  const { width, height } = useWindowDimensions();
 
+  // A layout event of the frame or anything around it (a resize or rotation, a changed
+  // header or safe area, the keyboard) re-measures the placement. The window layer's
+  // outlet fills the window, so its layout event is the window resizing.
   useEffect(() => frame.subscribeLayout?.(() => setLayoutRevision((revision) => revision + 1)), [frame]);
+  // The scrolls that can move the trigger under the card (src/style/scroll-ancestry.tsx).
+  const ancestry = useContext(ScrollAncestryContext);
+  const unheard = useUnheardScroller();
 
   useIsomorphicLayoutEffect(() => {
-    if (!open) {
-      setRect(null);
-      setOutlet(null);
-      setFrameOffset(IN_PLACE);
-      setSizes({ content: null, viewport: null, card: null, width: null, cap: null });
-      lastSide.current = "below";
-      revealed.current = false;
-      return;
-    }
     let cancelled = false;
     let landed = false;
     let raf = 0;
@@ -492,6 +763,7 @@ function HostedAnchoredOverlay({ host, frame, open, onDismiss, onAccessibilityEs
     let unusable = false;
     const MAX_FRAMES = 60;
     const PATIENCE = 3;
+    let stopTracking: (() => void) | undefined;
     const attempt = () => {
       if (cancelled || landed) return;
       issuedAt = frames;
@@ -501,11 +773,11 @@ function HostedAnchoredOverlay({ host, frame, open, onDismiss, onAccessibilityEs
         let triggerBox: Rect | null = null;
         let outletBox: Rect | null = null;
         let layerBox: Rect | null = null;
-        let band: { y: number; height: number } | null = null;
+        let band: Rect | null = null;
         const settle = () => {
           if (cancelled || landed || !triggerBox || !outletBox || (!inPlace && !layerBox)) return;
           // A host without a visible band is bounded by its outlet.
-          const visible = frame.measureVisibleBounds ? band : { y: outletBox.y, height: outletBox.height };
+          const visible = frame.measureVisibleBounds ? band : outletBox;
           if (!visible) return;
           // A zero box is a trigger that has not been laid out yet: try again next frame.
           if (triggerBox.width === 0 && triggerBox.height === 0) { unusable = true; return; }
@@ -515,7 +787,16 @@ function HostedAnchoredOverlay({ host, frame, open, onDismiss, onAccessibilityEs
           // host and a stage-scoped one alike, with scroll offsets cancelling out.
           setRect({ x: triggerBox.x - outletBox.x, y: triggerBox.y - outletBox.y, width: triggerBox.width, height: triggerBox.height });
           setOutletWidth(outletBox.width);
-          setOutlet({ height: outletBox.height, visibleTop: visible.y - outletBox.y, visibleBottom: visible.y + visible.height - outletBox.y });
+          // Vertically the band alone caps the card (a content-sized frame's card may
+          // run past the frame's own bottom); horizontally the frame's edges clamp it
+          // too, so the band is cut to the frame's box there.
+          setOutlet({
+            height: outletBox.height,
+            visibleTop: visible.y - outletBox.y,
+            visibleBottom: visible.y + visible.height - outletBox.y,
+            visibleLeft: Math.max(0, visible.x - outletBox.x),
+            visibleRight: Math.min(outletBox.width, visible.x + visible.width - outletBox.x),
+          });
           // Everything above is in the frame's coordinates, as if the card painted in
           // the frame; the offset moves the result to the layer the card paints in
           // (only measured when that is another outlet).
@@ -525,7 +806,7 @@ function HostedAnchoredOverlay({ host, frame, open, onDismiss, onAccessibilityEs
             right: layerBox.x + layerBox.width - (outletBox.x + outletBox.width),
             bottom: layerBox.y + layerBox.height - (outletBox.y + outletBox.height),
           });
-          follow(trigger, placed(triggerBox, outletBox, layerBox));
+          stopTracking = track(trigger, placed(triggerBox, outletBox, layerBox));
         };
         trigger.measureInWindow((x, y, w, h) => {
           triggerBox = { x, y, width: w, height: h };
@@ -559,71 +840,95 @@ function HostedAnchoredOverlay({ host, frame, open, onDismiss, onAccessibilityEs
       const paint = layerBox ?? outletBox;
       return [triggerBox.x - paint.x, triggerBox.y - paint.y, triggerBox.width, triggerBox.height, outletBox.x - paint.x, outletBox.y - paint.y];
     };
-    // After the card lands, keep reading those each frame and re-place (a new layout
-    // revision re-runs this effect) as soon as one moved: nothing else reports a keyboard
-    // or programmatic scroll of the content between the trigger and the card's outlet.
-    // Reading costs a window measure or three a frame while a card is open; React only
-    // commits when something moved.
-    const follow = (trigger: View, at: number[]) => {
-      const watch = () => {
-        if (cancelled) return;
-        let triggerBox: Rect | null = null;
-        let outletBox: Rect | null = null;
-        let layerBox: Rect | null = null;
-        const compare = () => {
-          if (cancelled || !triggerBox || !outletBox || (!inPlace && !layerBox)) return;
-          const now = placed(triggerBox, outletBox, layerBox);
-          if (now.some((value, index) => Math.abs(value - at[index]!) > 0.5)) setLayoutRevision((revision) => revision + 1);
-          else raf = requestAnimationFrame(watch);
-        };
-        trigger.measureInWindow((x, y, w, h) => { triggerBox = { x, y, width: w, height: h }; compare(); });
-        frame.measureOutlet((x, y, w, h) => { outletBox = { x, y, width: w, height: h }; compare(); });
-        if (!inPlace) layer.measureOutlet((x, y, w, h) => { layerBox = { x, y, width: w, height: h }; compare(); });
+    // After the card lands it follows its trigger on the events that can move it: a
+    // scroll the kit hears (any scroll on the web, a kit scroller's natively) is read
+    // once, on the next frame, and re-places the card (a new layout revision re-runs
+    // this effect) only if the trigger or the frame moved. Layout events re-run it
+    // directly (above). Nothing reads layout while nothing happens, except under a
+    // scroller the kit cannot hear (React Native's own, used directly), where the card
+    // reads where its trigger sits each frame, the way an Android PopupWindow follows
+    // its anchor. React only commits when something moved.
+    const track = (trigger: View, at: number[]) => {
+      let scheduled = false;
+      const check = () => {
+        if (cancelled || scheduled) return;
+        scheduled = true;
+        raf = requestAnimationFrame(() => {
+          scheduled = false;
+          if (cancelled) return;
+          let triggerBox: Rect | null = null;
+          let outletBox: Rect | null = null;
+          let layerBox: Rect | null = null;
+          const compare = () => {
+            if (cancelled || !triggerBox || !outletBox || (!inPlace && !layerBox)) return;
+            const now = placed(triggerBox, outletBox, layerBox);
+            if (now.some((value, index) => Math.abs(value - at[index]!) > 0.5)) setLayoutRevision((revision) => revision + 1);
+            else if (unheard) check();
+          };
+          trigger.measureInWindow((x, y, w, h) => { triggerBox = { x, y, width: w, height: h }; compare(); });
+          frame.measureOutlet((x, y, w, h) => { outletBox = { x, y, width: w, height: h }; compare(); });
+          if (!inPlace) layer.measureOutlet((x, y, w, h) => { layerBox = { x, y, width: w, height: h }; compare(); });
+        });
       };
-      raf = requestAnimationFrame(watch);
+      const stops = [subscribeDocumentScroll(check), ancestry?.subscribe(check)];
+      if (unheard) check();
+      return () => stops.forEach((stop) => stop?.());
     };
     attempt();
     return () => {
       cancelled = true;
       cancelAnimationFrame(raf);
+      stopTracking?.();
     };
-  }, [open, width, height, frame, layer, inPlace, triggerRef, gap, layoutRevision]);
+  }, [frame, layer, inPlace, triggerRef, gap, layoutRevision, ancestry, unheard]);
 
-  // A width-aware card never renders wider than its outlet: when the outlet is
-  // narrower than the card plus its edge insets (a phone-width screen or docs
-  // stage), the card is clamped to the outlet minus the insets and placeOverlay
-  // pins it at the inset. The minWidth in the override also retires any
-  // trigger-derived minWidth in cardStyle, which would be unsatisfiable there.
+  // The visible band's width, and the room a card has inside it once its 8px insets
+  // are kept on both sides.
+  const bandWidth = outlet ? Math.max(0, outlet.visibleRight - outlet.visibleLeft) : null;
+  const room = bandWidth != null ? Math.max(0, bandWidth - 2 * CLAMP_INSET) : null;
+  // A width-aware card never renders wider than that room: on a phone-width screen or
+  // docs stage, the card is clamped to it and placeOverlay pins it at the inset. The
+  // minWidth in the override also retires any trigger-derived minWidth in cardStyle,
+  // which would be unsatisfiable there. A content-sized card is capped to the same
+  // room (the wrapper's maxWidth below) and so is its trigger-derived minWidth, which
+  // would otherwise beat that cap when the trigger nearly spans the band.
   const flatCardStyle = StyleSheet.flatten(cardStyle);
-  const requestedWidth = cardWidth == null ? undefined : Math.max(cardWidth, typeof flatCardStyle?.minWidth === "number" ? flatCardStyle.minWidth : 0);
-  const fittedCardWidth =
-    requestedWidth != null && outletWidth != null && outletWidth > 0
-      ? Math.min(requestedWidth, Math.max(0, outletWidth - 2 * CLAMP_INSET))
-      : requestedWidth;
+  const styleMinWidth = typeof flatCardStyle?.minWidth === "number" ? flatCardStyle.minWidth : 0;
+  const requestedWidth = cardWidth == null ? undefined : Math.max(cardWidth, styleMinWidth);
+  const fittedCardWidth = requestedWidth != null && room != null ? Math.min(requestedWidth, room) : requestedWidth;
   const fittedCardStyle =
-    fittedCardWidth != null && fittedCardWidth !== cardWidth
-      ? [cardStyle, { width: fittedCardWidth, minWidth: fittedCardWidth }]
-      : cardStyle;
+    fittedCardWidth != null
+      ? fittedCardWidth !== cardWidth ? [cardStyle, { width: fittedCardWidth, minWidth: fittedCardWidth }] : cardStyle
+      : room != null && styleMinWidth > room ? [cardStyle, { minWidth: room }] : cardStyle;
 
   const chrome = sizes.card !== null && sizes.viewport !== null ? Math.max(0, sizes.card - sizes.viewport) : null;
   const reported = sizes.content !== null && chrome !== null;
   const skinMaxHeight = typeof flatCardStyle?.maxHeight === "number" ? flatCardStyle.maxHeight : Infinity;
   const desiredHeight = reported ? Math.min(sizes.content! + chrome!, skinMaxHeight) : null;
-  // A card with no caller-fixed width is kept inside the outlet by the width it
+  // A card with no caller-fixed width is kept inside the band by the width it
   // rendered at. The reveal below already waits for the card's own layout, which
   // reports that width together with its height, so the card is never shown at a
   // placement it is about to leave.
   const measuredWidth = fittedCardWidth == null ? sizes.width : null;
-  const horizontal = rect ? placeOverlay(rect, { cardWidth: fittedCardWidth, measuredWidth, centered, preferSide, alignEnd, rtl, gap, outletWidth }) : null;
+  const horizontal = rect && outlet
+    ? placeOverlay(rect, { cardWidth: fittedCardWidth, measuredWidth, centered, besideStart, besideEnd, alignEnd, rtl, gap, outletWidth, visibleLeft: outlet.visibleLeft, visibleRight: outlet.visibleRight })
+    : null;
   const renderedCardWidth = sizes.width ?? fittedCardWidth;
   const cardLeft = horizontal?.left ?? (horizontal?.right != null && outletWidth != null && renderedCardWidth != null ? outletWidth - horizontal.right - renderedCardWidth : undefined);
-  const anchorCenter = rect && cardLeft != null ? rect.x + rect.width / 2 - cardLeft : undefined;
+  // Where the renderer swaps left and right, a decoration's `left` inset is measured
+  // from the card's right edge, so the trigger's center is handed over from that edge.
+  const swap = swapsLeftAndRight();
+  const triggerCenter = rect ? rect.x + rect.width / 2 : undefined;
+  const anchorCenter = triggerCenter == null || cardLeft == null ? undefined
+    : swap ? (renderedCardWidth == null ? undefined : cardLeft + renderedCardWidth - triggerCenter) : triggerCenter - cardLeft;
   // Host bounds are measured in one native window and inherited through
   // content-sized providers; the card does not guess keyboard/screen offsets.
-  const fit = rect && outlet ? fitOverlayHeight({ triggerTop: rect.y, triggerHeight: rect.height, outletHeight: outlet.height, visibleTop: outlet.visibleTop, visibleBottom: outlet.visibleBottom, desiredHeight, currentSide: lastSide.current, gap, beside: preferSide && horizontal?.top === rect.y }) : null;
+  const fit = rect && outlet ? fitOverlayHeight({ triggerTop: rect.y, triggerHeight: rect.height, outletHeight: outlet.height, visibleTop: outlet.visibleTop, visibleBottom: outlet.visibleBottom, desiredHeight, currentSide: lastSide.current, gap, beside: horizontal?.side }) : null;
   const fittedSide = fit?.side;
-  const anchorGeometry = useMemo(() => ({ side: fittedSide ?? "below", centerX: anchorCenter, cardWidth: renderedCardWidth }), [fittedSide, anchorCenter, renderedCardWidth]);
-  const cap = fit ? Math.min(fit.maxHeight, skinMaxHeight) : null;
+  const anchorGeometry = useMemo(() => ({ side: fittedSide ?? "below", centerX: anchorCenter, cardWidth: renderedCardWidth ?? undefined }), [fittedSide, anchorCenter, renderedCardWidth]);
+  // A sheet stands on the band's bottom and may rise to SHEET_TOP_GAP below its top.
+  const sheetCap = outlet ? Math.max(0, outlet.visibleBottom - outlet.visibleTop - SHEET_TOP_GAP) : null;
+  const cap = sheet ? sheetCap : fit ? Math.min(fit.maxHeight, skinMaxHeight) : null;
   // The card mounts under the cap of the side it is first fitted to, and its
   // reports can move the fit to the other side with a different cap (a list
   // opened near the bottom of the screen flips above), after which the card
@@ -642,18 +947,45 @@ function HostedAnchoredOverlay({ host, frame, open, onDismiss, onAccessibilityEs
   const measured = reported && (revealed.current || settled);
   useIsomorphicLayoutEffect(() => {
     appliedCap.current = cap;
-    if (open && measured) revealed.current = true;
+    if (measured) revealed.current = true;
   });
   useEffect(() => {
-    if (open && measured && fittedSide) lastSide.current = fittedSide;
-  }, [open, measured, fittedSide]);
-  const cappedStyle = fit ? [fittedCardStyle, { maxHeight: cap! }] : fittedCardStyle;
+    // Only a vertical side is remembered: it keeps a list that still fits on its side
+    // while a filter shortens it.
+    if (measured && (fittedSide === "above" || fittedSide === "below")) lastSide.current = fittedSide;
+  }, [measured, fittedSide]);
+  const cappedStyle = sheet ? [sheetStyle, { maxHeight: cap! }] : fit ? [fittedCardStyle, { maxHeight: cap! }] : fittedCardStyle;
+
+  // A card that can close is modal to VoiceOver and TalkBack while it is shown (the
+  // owner's AO-2 decision, as HIG treats a popover): it holds its window layer's page
+  // hidden, a card opened from it covers it in turn, and the topmost one is the view
+  // VoiceOver keeps to. The consumer moves the screen reader into it at onCardMount;
+  // the trigger takes it back on close (useCardFocus). The web keeps the page.
+  const cardRef = useRef<View>(null);
+  const modalId = useId();
+  const shown = rect != null && horizontal != null && fit != null && measured;
+  const holdsModal = modal && shown;
+  useEffect(() => (holdsModal ? layer.holdModal?.(modalId) : undefined), [holdsModal, layer, modalId]);
+  const subscribeModal = useCallback((listener: () => void) => layer.subscribeModal?.(listener) ?? (() => {}), [layer]);
+  const topModal = useSyncExternalStore(subscribeModal, () => layer.topModal?.() ?? null, () => null);
+  useCardFocus({ shown, cardRef, triggerRef, returnFocusRef, dismissOnTab: dismissOnTab && dismissable, onDismiss, modal, combobox });
   // In the frame's own outlet a card anchored by one edge may grow to the frame's far
   // edge; in the layer's outlet that room is the layer's, so it is handed the frame's.
+  // Either way it never grows past the band's room.
   const anchorEdge = horizontal?.left ?? horizontal?.right;
   const frameRoom = !inPlace && anchorEdge != null && outletWidth != null && outletWidth > 0 ? outletWidth - anchorEdge : undefined;
-
-  if (!open) return null;
+  const maxWidth = frameRoom != null && room != null ? Math.min(frameRoom, room) : frameRoom ?? room ?? undefined;
+  // The physical insets, moved to the layer, under the keys the renderer resolves. A
+  // sheet spans its frame's part of the band (centered, up to SHEET_MAX_WIDTH) and
+  // stands on the band's bottom edge; a card sits where placeOverlay and the fit put it.
+  const sheetSide = outlet && bandWidth != null ? Math.max(0, (bandWidth - SHEET_MAX_WIDTH) / 2) : 0;
+  const left = sheet ? (outlet ? toLayer(outlet.visibleLeft + sheetSide, frameOffset.left) : undefined)
+    : horizontal ? toLayer(horizontal.left, frameOffset.left) : undefined;
+  const right = sheet ? (outlet && outletWidth != null ? toLayer(outletWidth - outlet.visibleRight + sheetSide, frameOffset.right) : undefined)
+    : horizontal ? toLayer(horizontal.right, frameOffset.right) : undefined;
+  const top = sheet ? undefined : fit ? toLayer(fit.top, frameOffset.top) : undefined;
+  const bottom = sheet ? (outlet ? toLayer(outlet.height - outlet.visibleBottom, frameOffset.bottom) : undefined)
+    : fit ? toLayer(fit.bottom, frameOffset.bottom) : undefined;
 
   return (
     <PortalInto host={layer}>
@@ -664,15 +996,21 @@ function HostedAnchoredOverlay({ host, frame, open, onDismiss, onAccessibilityEs
         {/* The dismiss backdrop only earns its keep when a tap on it can close the
             card; a non-dismissable overlay renders without it so the page under an
             always-open card stays interactive. */}
-        {dismissable ? <Pressable accessible={false} focusable={false} tabIndex={-1} importantForAccessibility="no-hide-descendants" accessibilityElementsHidden aria-hidden style={BACKDROP} onPress={onDismiss} /> : null}
+        {dismissable ? <Pressable accessible={false} focusable={false} tabIndex={-1} importantForAccessibility="no-hide-descendants" accessibilityElementsHidden aria-hidden style={sheet ? [BACKDROP, { backgroundColor: scrimFill(tokens, SHEET_SCRIM_ALPHA) }] : BACKDROP} onPress={onDismiss} /> : null}
         {/* Hold the card until the first measurement lands, so it never flashes at
             (0,0). The backdrop above is transparent, so a frame before the card
             shows nothing. */}
         {rect && horizontal && fit ? (
           <OverlaySideContext.Provider value={anchorGeometry}>
             <OverlayScrollContext.Provider value={report}>
-              <Entrance ready={measured} style={{ position: "absolute", left: toLayer(horizontal.left, frameOffset.left), right: toLayer(horizontal.right, frameOffset.right), top: toLayer(fit.top, frameOffset.top), bottom: toLayer(fit.bottom, frameOffset.bottom), maxWidth: frameRoom }}>
-                <OverlayCard onAccessibilityEscape={onAccessibilityEscape} cardStyle={cappedStyle} opaque={opaque} dense={dense} onMount={onCardMount} ownsScroll={ownsScroll} onLayout={onCardLayout} ready={measured} decoration={decoration}>{children}</OverlayCard>
+              <Entrance
+                ref={cardRef}
+                ready={measured}
+                accessibilityViewIsModal={holdsModal && topModal === modalId}
+                obscured={holdsModal && topModal != null && topModal !== modalId}
+                style={{ position: "absolute", left: swap ? right : left, right: swap ? left : right, top, bottom, maxWidth: sheet ? undefined : maxWidth }}
+              >
+                <OverlayCard onAccessibilityEscape={onAccessibilityEscape} cardStyle={cappedStyle} opaque={opaque} dense={dense} onMount={onCardMount} ownsScroll={ownsScroll} onLayout={onCardLayout} ready={measured} decoration={sheet ? null : decoration}>{children}</OverlayCard>
               </Entrance>
             </OverlayScrollContext.Provider>
           </OverlaySideContext.Provider>

@@ -41,9 +41,10 @@ describe("anchored card reachability", () => {
     expect(fitOverlayHeight({ ...base, outletHeight: 1000, visibleTop: 200, visibleBottom: 700, triggerTop: 620 })).toEqual({ side: "above", bottom: 384, maxHeight: 408 });
   });
 
-  it("keeps beside cards inside the visible band", () => {
-    const beside = fitOverlayHeight({ ...base, triggerTop: 560, beside: true });
-    expect(beside).toEqual({ side: "below", top: 392, maxHeight: 584 });
+  it("keeps beside cards inside the visible band and reports the side they took", () => {
+    const beside = fitOverlayHeight({ ...base, triggerTop: 560, beside: "end" });
+    expect(beside).toEqual({ side: "end", top: 392, maxHeight: 584 });
+    expect(fitOverlayHeight({ ...base, triggerTop: 560, beside: "start" }).side).toBe("start");
     const outside = fitOverlayHeight({ ...base, triggerTop: 800, visibleBottom: 300 });
     expect(outside).toEqual({ side: "below", top: 844, maxHeight: 284 });
     expect(fitOverlayHeight({ ...base, outletHeight: 0 })).toEqual({ side: "below", top: 144, maxHeight: 0 });
