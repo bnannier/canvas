@@ -220,9 +220,11 @@ component not being a layout container: inside a Row only the cap applies
    and desktop web ARE the desktop form factor), `useResponsive`
    (`src/style/responsive.tsx`, one shared subscription, bucket-granular
    re-renders; width <= 0 resolves to `base`; SSR apps pass ThemeProvider's
-   `ssrBreakpoint`). Only the Sidebar/FilterPanel drawer modes and app shells
-   qualify. Pointer capability comes from `usePointerCoarse` /
-   `useHoverCapable` (`src/style/pointer.ts`).
+   `ssrBreakpoint`). Only the Sidebar/FilterPanel drawer modes, AnchoredOverlay's
+   phone-sheet presentation (design-language item 5, overlays become sheets on
+   phones, and the owner's AO-6 decision) and app shells qualify. Pointer
+   capability comes from `usePointerCoarse` / `useHoverCapable`
+   (`src/style/pointer.ts`).
 
 Layout at call sites: a measure is a `Container` step (never a `maxWidth` on a
 component or a raw `View`); a two-up split is a Row of `span` children; equal-width
