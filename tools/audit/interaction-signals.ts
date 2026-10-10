@@ -54,7 +54,15 @@
 // member read, a local or shared helper's return, `useMemo`, or a hook of the style layer
 // whose return it builds there (the hover primitive's `target`, the scroll regions'
 // `useScrollFocus`, which makes a region a tab stop once its content overflows). A spread
-// the reader cannot follow (a parameter, another kit component's export) gives nothing.
+// the reader cannot follow (a component's or a callback's parameter, another kit component's
+// export) gives nothing. A helper's return is read under the call it was followed through
+// (`Frame`): each of the helper's parameters, object-destructured ones included, is the
+// argument the call gives it, so a field that spreads `...textEntryState({ disabled,
+// readOnly })` is disabled with `disabled` (and read-only with `readOnly`) exactly as one
+// written `editable: !disabled && !readOnly` on its tag is. A parameter of a helper whose call
+// the reader does not follow (a render helper read where it is written, a call that spreads
+// its arguments) is never read as nothing in particular: a disabled value that reaches one is
+// an unread way (`DisabledWay.unread`), on which tools/audit/state-coverage.ts fails.
 //
 // A raw primitive (View, Text, Pressable, TextInput, ScrollView) has no source of its own:
 // its directory holds only its markdown, and it is React Native's own component (or the
@@ -130,7 +138,7 @@ import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { dirname, join, relative, resolve } from "node:path";
 import propsToAriaRole from "react-native-web/dist/modules/AccessibilityUtil/propsToAriaRole.js";
 import ts from "typescript";
-import { StaticReader, UNKNOWN, boundNames, outermost, pick, unwrap, type Binding, type Env } from "./static-eval.ts";
+import { StaticReader, UNKNOWN, boundNames, isFunctionNode, outermost, pick, unwrap, type Binding, type Env } from "./static-eval.ts";
 
 /**
  * The platform builds a component is made in, one per entry: `<name>.tsx` (the web's, the
@@ -174,7 +182,8 @@ export interface Signal {
    * and the keys of the data it reads (`item.disabled`), which an example writes in the items
    * it passes (`{ label: "Archive", disabled: true }`); `disabled || loading` has two. A way
    * with neither is the component disabling it by itself (a stepper's minus at its minimum, a
-   * carousel's previous arrow on its first slide).
+   * carousel's previous arrow on its first slide), unless it is unread (`DisabledWay.unread`):
+   * it reads a helper's parameter the reader cannot bind, so what it needs is unknown.
    */
   disabledBy?: DisabledBy;
   /**
@@ -324,6 +333,16 @@ export const DEVICE_FEEDBACK: readonly DeviceFeedback[] = [
 export interface DisabledWay {
   props: string[];
   keys: string[];
+  /**
+   * The parameters of a helper it reads that the reader cannot bind to what the helper's
+   * caller hands it (a render helper read where it is written, a call that spreads its
+   * arguments, a spread the reader cannot open that may hold a destructured name), as
+   * `` `disabled`, a parameter of textEntryState (src/style/text-entry-state.ts:26) ``. What
+   * such a way needs is unknown, which is not the same as needing nothing in particular (a
+   * control the component disables by itself): tools/audit/state-coverage.ts fails on it
+   * rather than guess whether an example asks for the control. Absent when the way reads none.
+   */
+  unread?: string[];
 }
 
 /** The ways a disabled value is true (`disabled || loading` has two); it is when any one of them holds. */
@@ -349,18 +368,27 @@ const shutIn = (around: Around, gates: readonly string[], ways: DisabledBy): boo
 
 /** True with nothing in particular: the component disables the control by itself. */
 const BY_ITSELF: DisabledBy = [{ props: [], keys: [] }];
+/** True with something the reader cannot read: a helper's parameter it cannot bind (`DisabledWay.unread`). */
+const unreadWay = (what: string): DisabledBy => [{ props: [], keys: [], unread: [what] }];
 const uniqueWays = (ways: DisabledBy): DisabledBy => {
   const seen = new Map<string, DisabledWay>();
   for (const way of ways) {
-    const tidy = { props: [...new Set(way.props)].sort(), keys: [...new Set(way.keys)].sort() };
+    const unread = [...new Set(way.unread ?? [])].sort();
+    const tidy: DisabledWay = { props: [...new Set(way.props)].sort(), keys: [...new Set(way.keys)].sort(), ...(unread.length ? { unread } : {}) };
     seen.set(JSON.stringify(tidy), tidy);
   }
   return [...seen.values()];
 };
 /** True when both are: every way of one beside every way of the other. */
-const allOf = (a: DisabledBy, b: DisabledBy): DisabledBy => uniqueWays(a.flatMap((x) => b.map((y) => ({ props: [...x.props, ...y.props], keys: [...x.keys, ...y.keys] }))));
+const allOf = (a: DisabledBy, b: DisabledBy): DisabledBy =>
+  uniqueWays(a.flatMap((x) => b.map((y) => ({ props: [...x.props, ...y.props], keys: [...x.keys, ...y.keys], unread: [...(x.unread ?? []), ...(y.unread ?? [])] }))));
 /** True when either is. */
 const anyOf = (a: DisabledBy, b: DisabledBy): DisabledBy => uniqueWays([...a, ...b]);
+/** True when any of them is; null when none ever is. */
+const anyOfAll = (list: readonly (DisabledBy | null)[]): DisabledBy | null => {
+  const found = list.filter((ways): ways is DisabledBy => ways !== null);
+  return found.length ? uniqueWays(found.flat()) : null;
+};
 
 /**
  * A prop an element is given, written on its tag or spread onto it. `value` is null for a
@@ -380,7 +408,39 @@ interface Attr {
   conditional?: true;
   /** What it needs of a render helper's arguments to be given (`Requirement`). */
   requires?: Requirement[];
+  /** For a value a helper's return brings: the call it was followed through, which binds the helper's parameters (`Frame`). */
+  frame?: Frame;
 }
+
+/**
+ * A call the reader followed into a helper whose return brings a control its props (`{...
+ * textEntryState({ disabled, readOnly })}`, or `{...accessibility.field}` of `const
+ * accessibility = stepperAccessibility({ ..., disabled: !!disabled })`): what the helper writes
+ * reads each of its parameters as the argument this call gives it (`argumentOf`), read where
+ * the call is written, under the frame that call was itself read under (a helper a helper
+ * calls), so `disabledBy` names the component's prop exactly as it would for the same value
+ * written on the tag.
+ */
+interface Frame {
+  fn: Fn;
+  call: ts.CallExpression;
+  /** The module the call is written in. */
+  module: Parsed;
+  outer?: Frame;
+}
+
+/**
+ * What a name the reader follows reaches: an expression (`value`); a member of a value that is
+ * no object literal the reader can open (`member`: the `disabled` of the `props` a helper is
+ * handed, or of an item); nothing (`absent`: a parameter its call gives no argument and no
+ * default); or something the reader cannot read (`unread`: a parameter of a helper whose call
+ * it did not follow, or whose call spreads its arguments).
+ */
+type Reached =
+  | { kind: "value"; at: Located }
+  | { kind: "member"; of: Located; path: (string | number)[] }
+  | { kind: "absent" }
+  | { kind: "unread"; what: string };
 
 /**
  * What a value needs of an argument: it is given only when a parameter of the component's
@@ -411,6 +471,8 @@ interface ObjectValue {
   /** Reached through one side of a condition, so only sometimes what the value is. */
   conditional?: true;
   requires?: Requirement[];
+  /** Written in a helper the reader followed a call into: that call (`Frame`). */
+  frame?: Frame;
 }
 
 /** An expression in the module it is written in, with the props its conditions say were passed. */
@@ -420,7 +482,12 @@ interface Located {
   gates: string[];
   conditional?: true;
   requires?: Requirement[];
+  /** Written in a helper the reader followed a call into: that call (`Frame`). */
+  frame?: Frame;
 }
+
+/** The frame a value is read under, spread into a record (none when it is read where it is written). */
+const framed = (frame: Frame | undefined): { frame?: Frame } => (frame ? { frame } : {});
 
 const isLiteralFalse = (value: ts.Expression | null): boolean => !!value && unwrap(value).kind === ts.SyntaxKind.FalseKeyword;
 const isLiteralTrue = (value: ts.Expression | null): boolean => value === null || unwrap(value).kind === ts.SyntaxKind.TrueKeyword;
@@ -841,13 +908,20 @@ export class SignalReader {
     return { name, ...this.tagFunction(module, head, own) };
   }
 
-  /** The prop of the enclosing component a name or a member read stands for, or null. */
-  private propOf(module: Parsed, expr: ts.Expression): string | null {
+  /**
+   * The prop of the enclosing component a name or a member read stands for, or null. A
+   * parameter of a helper the reader followed a call into stands for what the call gives it
+   * (`frame`, `paramOf`): the `disabled` of `textEntryState({ disabled, readOnly })` is the
+   * component's own `disabled`, and so is `p.disabled` in a helper handed `props`.
+   */
+  private propOf(module: Parsed, expr: ts.Expression, frame?: Frame): string | null {
     const e = unwrap(expr);
     if (ts.isPropertyAccessExpression(e) && ts.isIdentifier(e.expression)) {
       const binding = module.reader.resolve(e.expression);
       // `props.onPressItem`, props being the component's own (undestructured) parameter.
       const first = binding?.kind === "param" ? binding.fn.parameters[0] : undefined;
+      const bound = binding?.kind === "param" ? this.paramOf(module, e.expression, frame) : null;
+      if (bound) return this.propReached(this.deeper(bound, [e.name.text]));
       if (binding?.kind === "param" && isComponentFunction(binding.fn) && first && ts.isIdentifier(first.name) && first.name === binding.id) return e.name.text;
       return null;
     }
@@ -855,17 +929,22 @@ export class SignalReader {
     const binding: Binding | null = module.reader.resolve(e);
     if (!binding) return null;
     if (binding.kind === "param") {
+      const bound = this.paramOf(module, e, frame);
+      if (bound) return this.propReached(bound);
       if (!isComponentFunction(binding.fn)) return null;
       const param = binding.fn.parameters[0];
       if (!param) return null;
-      const bound = boundNames(param.name).find((b) => b.id === binding.id);
-      return bound && typeof bound.path[0] === "string" ? bound.path[0] : null;
+      const name = boundNames(param.name).find((b) => b.id === binding.id);
+      return name && typeof name.path[0] === "string" ? name.path[0] : null;
     }
     if (binding.kind === "const") {
       const init = binding.decl.initializer ? unwrap(binding.decl.initializer) : null;
       if (!init) return null;
-      // `const { onItemPress } = props`, props being the component's own parameter.
       if (binding.path.length && typeof binding.path[0] === "string" && ts.isIdentifier(init)) {
+        // `const { disabled } = state`, state a helper's parameter: that member of what the call gives it.
+        const bound = this.paramOf(module, init, frame);
+        if (bound) return this.propReached(this.deeper(bound, binding.path));
+        // `const { onItemPress } = props`, props being the component's own parameter.
         const source = module.reader.resolve(init);
         if (source?.kind === "param" && isComponentFunction(source.fn)) return binding.path[0];
       }
@@ -873,43 +952,238 @@ export class SignalReader {
     return null;
   }
 
+  /** The prop of the enclosing component what a name reaches stands for: one value, read by `propOf`, or one member of the component's props. */
+  private propReached(reached: readonly Reached[]): string | null {
+    if (reached.length !== 1) return null;
+    const only = reached[0]!;
+    if (only.kind === "value") return this.propOf(only.at.module, only.at.expr, only.at.frame);
+    if (only.kind === "member" && only.path.length === 1 && this.isPropsObject(only.of)) return String(only.path[0]);
+    return null;
+  }
+
+  /** Whether a value is the enclosing component's own props object (its undestructured first parameter), through local constants. */
+  private isPropsObject(of: Located, depth = 0): boolean {
+    const e = unwrap(of.expr);
+    if (!ts.isIdentifier(e) || depth > 6) return false;
+    const binding = of.module.reader.resolve(e);
+    if (binding?.kind === "param") {
+      const first = binding.fn.parameters[0];
+      return isComponentFunction(binding.fn) && !!first && ts.isIdentifier(first.name) && first.name === binding.id;
+    }
+    if (binding?.kind === "const" && !binding.path.length && binding.decl.initializer) return this.isPropsObject({ ...of, expr: binding.decl.initializer }, depth + 1);
+    return false;
+  }
+
+  /**
+   * What a parameter of a function that is not a component stands for. One of a helper the
+   * reader followed a call into (`frame`, made where `returnsOf` follows the call) is what that
+   * call gives it (`argumentOf`). One no followed call binds is `unread`: a helper read where it
+   * is written, whose callers the reader does not follow, so what it is handed is unknown. Null
+   * for any other name: a component's prop, a closure's view of an enclosing factory's
+   * parameter (a skin, read inside the component the factory makes), and a parameter of a
+   * callback handed to a call or a tag (`items.map((item) => ...)`), which is the data the
+   * callee hands it (`item.disabled`, a key an example writes in an item).
+   */
+  private paramOf(module: Parsed, id: ts.Identifier, frame: Frame | undefined): Reached[] | null {
+    const binding = module.reader.resolve(id);
+    if (binding?.kind !== "param") return null;
+    for (let f = frame; f; f = f.outer) if (f.fn.node === binding.fn) return this.argumentOf(f, binding.id);
+    if (isComponentFunction(binding.fn) || isHandedOn(binding.fn) || insideComponent(id, binding.fn)) return null;
+    return [{ kind: "unread", what: this.paramText(module, binding.fn, binding.id) }];
+  }
+
+  /** A parameter as an unread way names it: `` `disabled`, a parameter of textEntryState (src/style/text-entry-state.ts:26) ``. */
+  private paramText(module: Parsed, fn: ts.SignatureDeclaration, id: ts.Identifier): string {
+    return `\`${id.text}\`, a parameter of ${functionName(fn)} (${this.at(module, fn)})`;
+  }
+
+  /**
+   * What a frame's call gives one of its helper's parameters: the argument at the parameter's
+   * place, at the path its destructuring takes (`{ disabled }` of `textEntryState({ disabled,
+   * readOnly })` is the caller's `disabled`; `readOnly` of `textEntryState({ disabled })` is
+   * absent), read where the call is written; the parameter's default where the call gives no
+   * argument, and a destructuring's default where what it is given holds no such member. An
+   * argument list with a spread at or before its place leaves it unread.
+   */
+  private argumentOf(frame: Frame, id: ts.Identifier): Reached[] {
+    const params = frame.fn.node.parameters;
+    const index = params.findIndex((p) => boundNames(p.name).some((b) => b.id === id));
+    const param = params[index];
+    const what = this.paramText(frame.fn.module, frame.fn.node, id);
+    if (!param) return [{ kind: "unread", what }];
+    const path = boundNames(param.name).find((b) => b.id === id)!.path;
+    const spread = frame.call.arguments.findIndex((arg) => ts.isSpreadElement(arg));
+    if (spread >= 0 && spread <= index) return [{ kind: "unread", what: `${what}, handed through a spread` }];
+    // A default is written in the helper, where the frame binds the parameters before it.
+    const inHelper = (expr: ts.Expression): Located => ({ expr, module: frame.fn.module, gates: [], frame });
+    const arg = frame.call.arguments[index];
+    const given: Located | null = arg && !isUndefined(arg) ? { expr: arg, module: frame.module, gates: [], ...framed(frame.outer) } : param.initializer ? inHelper(param.initializer) : null;
+    const reached: Reached[] = given ? this.atPath(given, path) : [{ kind: "absent" }];
+    const element = ts.isBindingElement(id.parent) && id.parent.name === id ? id.parent : null;
+    if (!element?.initializer) return reached;
+    const fallback: Reached = { kind: "value", at: inHelper(element.initializer) };
+    return reached.map((r) => (r.kind === "absent" || (r.kind === "value" && isUndefined(r.at.expr)) ? fallback : r));
+  }
+
+  /**
+   * What the member at `path` of a value is: a helper's parameter followed first (`paramOf`);
+   * the value itself for no path; the member each object literal it can be holds (`keyOf`); and
+   * `member` for a value that is no object literal the reader can open (the component's props,
+   * an item, a state).
+   */
+  private atPath(located: Located, path: readonly (string | number)[]): Reached[] {
+    const e = unwrap(located.expr);
+    const bound = ts.isIdentifier(e) ? this.paramOf(located.module, e, located.frame) : null;
+    if (bound) return this.deeper(bound, path);
+    if (!path.length) return [{ kind: "value", at: located }];
+    const objects = this.objectsOf({ expr: located.expr, module: located.module, gates: [], ...framed(located.frame) }, new Set());
+    if (!objects.length) return [{ kind: "member", of: located, path: [...path] }];
+    const [key, ...rest] = path;
+    return objects.flatMap((found) => this.deeper(this.keyOf(found, String(key)), rest));
+  }
+
+  /** What each reached value holds at `path` (`atPath`); a member's path grows, and nothing holds nothing. */
+  private deeper(reached: readonly Reached[], path: readonly (string | number)[]): Reached[] {
+    if (!path.length) return [...reached];
+    return reached.flatMap((r): Reached[] => (r.kind === "value" ? this.atPath(r.at, path) : r.kind === "member" ? [{ ...r, path: [...r.path, ...path] }] : [r]));
+  }
+
+  /**
+   * What an object literal holds under `key`: the last property written under it, or what a
+   * spread written after that holds (`atPath`), a spread that holds none leaving it to what is
+   * written before; `absent` when nothing does.
+   */
+  private keyOf(found: ObjectValue, key: string, before = found.literal.properties.length): Reached[] {
+    const at = (expr: ts.Expression): Located => ({ expr, module: found.module, gates: [], ...framed(found.frame) });
+    for (let i = before - 1; i >= 0; i--) {
+      const property = found.literal.properties[i]!;
+      if (ts.isSpreadAssignment(property)) {
+        const reached = this.atPath(at(property.expression), [key]);
+        if (!reached.some((r) => r.kind === "absent")) return reached;
+        return [...reached.filter((r) => r.kind !== "absent"), ...this.keyOf(found, key, i)];
+      }
+      const name = property.name && (ts.isIdentifier(property.name) || ts.isStringLiteral(property.name)) ? property.name.text : null;
+      if (name !== key) continue;
+      if (ts.isPropertyAssignment(property)) return [{ kind: "value", at: at(property.initializer) }];
+      if (ts.isShorthandPropertyAssignment(property)) return [{ kind: "value", at: at(property.name) }];
+      // A method or an accessor: a value the reader does not read.
+      return [{ kind: "unread", what: `\`${key}\`, a method or an accessor (${this.at(found.module, property)})` }];
+    }
+    return [{ kind: "absent" }];
+  }
+
+  /**
+   * What a name stands for beyond a local constant's own value, which each reader follows
+   * itself: a helper's parameter (`paramOf`), or the member a destructuring takes of a value the
+   * reader can open (`const { editable } = entry`, entry a helper's return). Null for any other
+   * name, and for a destructuring of a value it cannot open (`const { disabled } = item`).
+   */
+  private reachedBy(module: Parsed, id: ts.Identifier, frame: Frame | undefined): Reached[] | null {
+    const bound = this.paramOf(module, id, frame);
+    if (bound) return bound;
+    const binding = module.reader.resolve(id);
+    if (binding?.kind !== "const" || !binding.path.length || !binding.decl.initializer) return null;
+    const reached = this.atPath({ expr: binding.decl.initializer, module, gates: [], ...framed(frame) }, binding.path);
+    return reached.every((r) => r.kind === "member") ? null : reached;
+  }
+
+  /**
+   * What a member read reaches when its object is a name the reader follows (`p.disabled`, p a
+   * helper's parameter; `entry.editable`, entry a constant holding a helper's return). Null when
+   * its object is no such name, or one that is no object literal the reader can open.
+   */
+  private memberRead(module: Parsed, v: ts.PropertyAccessExpression, frame: Frame | undefined): Reached[] | null {
+    const path: string[] = [];
+    let base: ts.Expression = v;
+    while (ts.isPropertyAccessExpression(base)) {
+      path.unshift(base.name.text);
+      base = unwrap(base.expression);
+    }
+    if (!ts.isIdentifier(base)) return null;
+    const bound = this.paramOf(module, base, frame);
+    if (bound) return this.deeper(bound, path);
+    const binding = module.reader.resolve(base);
+    if (binding?.kind !== "const" || !binding.decl.initializer) return null;
+    const reached = this.atPath({ expr: base, module, gates: [], ...framed(frame) }, path);
+    return reached.every((r) => r.kind === "member") ? null : reached;
+  }
+
+  /** A local constant's own value, as a reached value; null for any other name. */
+  private constValue(module: Parsed, id: ts.Identifier, frame: Frame | undefined): Reached[] | null {
+    const binding = module.reader.resolve(id);
+    if (binding?.kind !== "const" || binding.path.length || !binding.decl.initializer) return null;
+    return [{ kind: "value", at: { expr: binding.decl.initializer, module, gates: [], ...framed(frame) } }];
+  }
+
+  /**
+   * The ways what a name reaches is true, any one of them: each value read by `read`, a member
+   * of a value the reader cannot open by `member`, nothing never, and what the reader cannot
+   * read an unread way (`DisabledWay.unread`).
+   */
+  private waysReached(reached: readonly Reached[], read: (at: Located) => DisabledBy | null, member: (of: Located, path: readonly (string | number)[]) => DisabledBy | null): DisabledBy | null {
+    return anyOfAll(reached.map((r) => (r.kind === "value" ? read(r.at) : r.kind === "member" ? member(r.of, r.path) : r.kind === "unread" ? unreadWay(r.what) : null)));
+  }
+
+  /**
+   * The ways a member of a value the reader cannot open is true, as the same member read where
+   * it is written is (`disabledBy`): the prop it is of the component's props a helper is handed,
+   * else the key of the data it reads, beside the prop that data is.
+   */
+  private memberWays(of: Located, path: readonly (string | number)[]): DisabledBy {
+    const last = String(path[path.length - 1]);
+    if (this.isPropsObject(of)) return [{ props: [String(path[0])], keys: path.length > 1 ? [last] : [] }];
+    const owner = path.length === 1 ? this.propOf(of.module, of.expr, of.frame) : null;
+    return [{ props: owner ? [owner] : [], keys: [last] }];
+  }
+
+  /** The props every reached value says were passed (`read`), a member of the component's props the prop it is; none for anything else. */
+  private propsReached(reached: readonly Reached[], read: (at: Located) => string[] | null): string[] | null {
+    const lists = reached.map((r) => (r.kind === "value" ? read(r.at) : r.kind === "member" && r.path.length === 1 && this.isPropsObject(r.of) ? [String(r.path[0])] : r.kind === "absent" ? null : []));
+    const open = lists.filter((list): list is string[] => list !== null);
+    if (!open.length) return null;
+    return [...new Set(open.reduce((a, b) => a.filter((prop) => b.includes(prop))))];
+  }
+
   /** The props an expression being truthy says were passed. */
-  private truthyProps(module: Parsed, expr: ts.Expression): string[] {
+  private truthyProps(module: Parsed, expr: ts.Expression, frame?: Frame): string[] {
     const e = unwrap(expr);
     // `!!props.responsive`: truthy when `!props.responsive` is falsy.
-    if (ts.isPrefixUnaryExpression(e) && e.operator === ts.SyntaxKind.ExclamationToken) return this.falsyProps(module, e.operand);
+    if (ts.isPrefixUnaryExpression(e) && e.operator === ts.SyntaxKind.ExclamationToken) return this.falsyProps(module, e.operand, frame);
     if (ts.isBinaryExpression(e)) {
       const op = e.operatorToken.kind;
-      if (op === ts.SyntaxKind.AmpersandAmpersandToken) return [...this.truthyProps(module, e.left), ...this.truthyProps(module, e.right)];
+      if (op === ts.SyntaxKind.AmpersandAmpersandToken) return [...this.truthyProps(module, e.left, frame), ...this.truthyProps(module, e.right, frame)];
       const nullish = (side: ts.Expression) => {
         const s = unwrap(side);
         return s.kind === ts.SyntaxKind.NullKeyword || (ts.isIdentifier(s) && s.text === "undefined");
       };
       if (op === ts.SyntaxKind.ExclamationEqualsToken || op === ts.SyntaxKind.ExclamationEqualsEqualsToken) {
-        if (nullish(e.right)) return this.truthyProps(module, e.left);
-        if (nullish(e.left)) return this.truthyProps(module, e.right);
+        if (nullish(e.right)) return this.truthyProps(module, e.left, frame);
+        if (nullish(e.left)) return this.truthyProps(module, e.right, frame);
       }
       if ((op === ts.SyntaxKind.EqualsEqualsEqualsToken || op === ts.SyntaxKind.EqualsEqualsToken) && ts.isTypeOfExpression(unwrap(e.left))) {
-        return this.truthyProps(module, (unwrap(e.left) as ts.TypeOfExpression).expression);
+        return this.truthyProps(module, (unwrap(e.left) as ts.TypeOfExpression).expression, frame);
       }
       // A kind picked from the props (`kind === "split"`, `const kind = kindOf(props)`): the props that pick it.
       if (op === ts.SyntaxKind.EqualsEqualsEqualsToken || op === ts.SyntaxKind.EqualsEqualsToken) {
         const left = unwrap(e.left);
         const right = unwrap(e.right);
         const literal = ts.isStringLiteral(right) ? right : ts.isStringLiteral(left) ? left : null;
-        if (literal) return this.pickedBy(module, literal === right ? e.left : e.right, literal.text) ?? [];
+        if (literal) return this.pickedBy(module, literal === right ? e.left : e.right, literal.text, frame) ?? [];
       }
       return [];
     }
-    const prop = this.propOf(module, e);
+    const prop = this.propOf(module, e, frame);
     if (prop) return [prop];
-    // A local alias: a value (`const pressStep = onStepPress ? (i) => ... : undefined`) or a
-    // condition (`const isElementTrigger = children != null`).
     if (ts.isIdentifier(e)) {
+      // A helper's parameter: what the call gives it says it.
+      const bound = this.paramOf(module, e, frame);
+      if (bound) return this.propsReached(bound, (at) => this.truthyProps(at.module, at.expr, at.frame)) ?? [];
+      // A local alias: a value (`const pressStep = onStepPress ? (i) => ... : undefined`) or a
+      // condition (`const isElementTrigger = children != null`).
       const binding = module.reader.resolve(e);
       if (binding?.kind === "const" && binding.path.length === 0 && binding.decl.initializer) {
         const init = binding.decl.initializer;
-        return [...new Set([...(this.passedProps(module, init) ?? []), ...this.truthyProps(module, init)])];
+        return [...new Set([...(this.passedProps(module, init, frame) ?? []), ...this.truthyProps(module, init, frame)])];
       }
     }
     return [];
@@ -922,7 +1196,7 @@ export class SignalReader {
    * object it is handed (`kindOf(props)`, whose `if (p.split) return "split"` says `split`);
    * where several paths give it, only the props every one needs.
    */
-  private pickedBy(module: Parsed, expr: ts.Expression, text: string, depth = 0): string[] | null {
+  private pickedBy(module: Parsed, expr: ts.Expression, text: string, frame?: Frame, depth = 0): string[] | null {
     const e = unwrap(expr);
     if (depth > 6) return [];
     if (ts.isStringLiteral(e) || ts.isNoSubstitutionTemplateLiteral(e)) return e.text === text ? [] : null;
@@ -932,13 +1206,16 @@ export class SignalReader {
       return open.reduce((a, b) => a.filter((prop) => b.includes(prop)));
     };
     if (ts.isConditionalExpression(e)) {
-      const yes = this.pickedBy(module, e.whenTrue, text, depth + 1);
-      const no = this.pickedBy(module, e.whenFalse, text, depth + 1);
-      return common([yes && [...yes, ...this.truthyProps(module, e.condition)], no && [...no, ...this.falsyProps(module, e.condition)]]);
+      const yes = this.pickedBy(module, e.whenTrue, text, frame, depth + 1);
+      const no = this.pickedBy(module, e.whenFalse, text, frame, depth + 1);
+      return common([yes && [...yes, ...this.truthyProps(module, e.condition, frame)], no && [...no, ...this.falsyProps(module, e.condition, frame)]]);
     }
-    if (ts.isIdentifier(e) && !this.propOf(module, e)) {
+    if (ts.isIdentifier(e) && !this.propOf(module, e, frame)) {
+      // A helper's parameter: what the call gives it.
+      const bound = this.paramOf(module, e, frame);
+      if (bound) return common(bound.map((r) => (r.kind === "value" ? this.pickedBy(r.at.module, r.at.expr, text, r.at.frame, depth + 1) : r.kind === "absent" ? null : [])));
       const binding = module.reader.resolve(e);
-      if (binding?.kind === "const" && !binding.path.length && binding.decl.initializer) return this.pickedBy(module, binding.decl.initializer, text, depth + 1);
+      if (binding?.kind === "const" && !binding.path.length && binding.decl.initializer) return this.pickedBy(module, binding.decl.initializer, text, frame, depth + 1);
       return [];
     }
     if (ts.isCallExpression(e) && ts.isIdentifier(unwrap(e.expression))) {
@@ -971,7 +1248,7 @@ export class SignalReader {
       };
       const paths: (string[] | null)[] = [];
       for (const result of bodyResults(fn)) {
-        if (this.pickedBy(module, result, text, depth + 1) === null) continue;
+        if (this.pickedBy(module, result, text, undefined, depth + 1) === null) continue;
         // The ifs around the return statement that gives it.
         const props: string[] = [];
         for (let current: ts.Node = result; current !== fn.body && current.parent; current = current.parent) {
@@ -986,14 +1263,17 @@ export class SignalReader {
   }
 
   /** The props an expression being falsy says were passed (`!onPress` falsy means onPress was). */
-  private falsyProps(module: Parsed, expr: ts.Expression): string[] {
+  private falsyProps(module: Parsed, expr: ts.Expression, frame?: Frame): string[] {
     const e = unwrap(expr);
-    if (ts.isPrefixUnaryExpression(e) && e.operator === ts.SyntaxKind.ExclamationToken) return this.truthyProps(module, e.operand);
+    if (ts.isPrefixUnaryExpression(e) && e.operator === ts.SyntaxKind.ExclamationToken) return this.truthyProps(module, e.operand, frame);
     if (ts.isBinaryExpression(e) && (e.operatorToken.kind === ts.SyntaxKind.EqualsEqualsToken || e.operatorToken.kind === ts.SyntaxKind.EqualsEqualsEqualsToken)) {
       const s = unwrap(e.right);
-      if (s.kind === ts.SyntaxKind.NullKeyword || (ts.isIdentifier(s) && s.text === "undefined")) return this.truthyProps(module, e.left);
+      if (s.kind === ts.SyntaxKind.NullKeyword || (ts.isIdentifier(s) && s.text === "undefined")) return this.truthyProps(module, e.left, frame);
     }
-    if (ts.isBinaryExpression(e) && e.operatorToken.kind === ts.SyntaxKind.BarBarToken) return [...this.falsyProps(module, e.left), ...this.falsyProps(module, e.right)];
+    if (ts.isBinaryExpression(e) && e.operatorToken.kind === ts.SyntaxKind.BarBarToken) return [...this.falsyProps(module, e.left, frame), ...this.falsyProps(module, e.right, frame)];
+    // A helper's parameter: what the call gives it says it.
+    const bound = ts.isIdentifier(e) ? this.paramOf(module, e, frame) : null;
+    if (bound) return this.propsReached(bound, (at) => this.falsyProps(at.module, at.expr, at.frame)) ?? [];
     return [];
   }
 
@@ -1002,21 +1282,24 @@ export class SignalReader {
    * (`undefined`), the props it is there only with (`onStepPress ? f : undefined`,
    * `props.onPressItem`), or none when it is always there.
    */
-  private passedProps(module: Parsed, value: ts.Expression, depth = 0): string[] | null {
+  private passedProps(module: Parsed, value: ts.Expression, frame?: Frame, depth = 0): string[] | null {
     const v = unwrap(value);
     if (v.kind === ts.SyntaxKind.NullKeyword || (ts.isIdentifier(v) && v.text === "undefined") || v.kind === ts.SyntaxKind.FalseKeyword) return null;
     if (ts.isConditionalExpression(v)) {
       const no = unwrap(v.whenFalse);
-      if (no.kind === ts.SyntaxKind.NullKeyword || (ts.isIdentifier(no) && no.text === "undefined")) return this.truthyProps(module, v.condition);
+      if (no.kind === ts.SyntaxKind.NullKeyword || (ts.isIdentifier(no) && no.text === "undefined")) return this.truthyProps(module, v.condition, frame);
       return [];
     }
-    if (ts.isBinaryExpression(v) && v.operatorToken.kind === ts.SyntaxKind.AmpersandAmpersandToken) return this.truthyProps(module, v.left);
-    const prop = this.propOf(module, v);
+    if (ts.isBinaryExpression(v) && v.operatorToken.kind === ts.SyntaxKind.AmpersandAmpersandToken) return this.truthyProps(module, v.left, frame);
+    const prop = this.propOf(module, v, frame);
     if (prop) return [prop];
-    // A local constant: what its value is there only with (`const onPress = onPressItem ? () => ... : undefined`).
-    if (ts.isIdentifier(v)) {
+    if (ts.isIdentifier(v) && depth < 6) {
+      // A helper's parameter: what passing the argument the call gives it depends on.
+      const bound = this.paramOf(module, v, frame);
+      if (bound) return this.propsReached(bound, (at) => this.passedProps(at.module, at.expr, at.frame, depth + 1));
+      // A local constant: what its value is there only with (`const onPress = onPressItem ? () => ... : undefined`).
       const binding = module.reader.resolve(v);
-      if (binding?.kind === "const" && !binding.path.length && binding.decl.initializer && depth < 6) return this.passedProps(module, binding.decl.initializer, depth + 1);
+      if (binding?.kind === "const" && !binding.path.length && binding.decl.initializer) return this.passedProps(module, binding.decl.initializer, frame, depth + 1);
     }
     // `onPressRow={props.onPressItem}` through an optional call is still the prop.
     return [];
@@ -1027,49 +1310,65 @@ export class SignalReader {
    * way with the props it is true only with (`disabled`, `!!disabled`, `disabled ? true :
    * undefined`, a local constant's condition such as `confirmGated = !!withInput && ...`) and
    * the keys of the data it reads (`item.disabled`, `!!action.disabled`, `item.disabled ||
-   * undefined`); `disabled || loading` is true either way. A value the reader cannot follow
-   * (`page <= 1`, a state) is true with nothing in particular: the component disables the
-   * control by itself. `null` (a bare attribute) is true.
+   * undefined`); `disabled || loading` is true either way. A value a helper's return brings is
+   * read through the call the reader followed (`frame`): the helper's parameters are what the
+   * call gives them, so `aria-disabled: off || undefined` of `textEntryState({ disabled })` is
+   * true with `disabled`, as the same value written on the tag is. A value the reader cannot
+   * follow (`page <= 1`, a state) is true with nothing in particular: the component disables
+   * the control by itself; a parameter of a helper it cannot bind is an unread way
+   * (`DisabledWay.unread`), never that. `null` (a bare attribute) is true.
    */
-  private disabledBy(module: Parsed, value: ts.Expression | null, depth = 0): DisabledBy | null {
+  private disabledBy(module: Parsed, value: ts.Expression | null, frame?: Frame, depth = 0): DisabledBy | null {
     if (value === null) return BY_ITSELF;
     const v = unwrap(value);
     if (isNullish(v) || v.kind === ts.SyntaxKind.FalseKeyword) return null;
     if (v.kind === ts.SyntaxKind.TrueKeyword || depth > 6) return BY_ITSELF;
+    const read = (at: Located) => this.disabledBy(at.module, at.expr, at.frame, depth + 1);
+    const member = (of: Located, path: readonly (string | number)[]) => this.memberWays(of, path);
     if (ts.isPrefixUnaryExpression(v) && v.operator === ts.SyntaxKind.ExclamationToken) {
       const inner = unwrap(v.operand);
       // `!!x` is true when x is.
-      if (ts.isPrefixUnaryExpression(inner) && inner.operator === ts.SyntaxKind.ExclamationToken) return this.disabledBy(module, inner.operand, depth + 1);
-      return [{ props: this.falsyProps(module, v.operand), keys: [] }];
+      if (ts.isPrefixUnaryExpression(inner) && inner.operator === ts.SyntaxKind.ExclamationToken) return this.disabledBy(module, inner.operand, frame, depth + 1);
+      // `!editable`, editable a name the reader follows to a value (a local constant, a member
+      // of a helper's return, a helper's parameter): true where that value is false.
+      const reached = ts.isIdentifier(inner) && !this.propOf(module, inner, frame) ? (this.reachedBy(module, inner, frame) ?? this.constValue(module, inner, frame)) : ts.isPropertyAccessExpression(inner) && !this.propOf(module, inner, frame) ? this.memberRead(module, inner, frame) : null;
+      if (reached) return this.waysReached(reached, (at) => this.offBy(at.module, at.expr, at.frame, depth + 1), () => BY_ITSELF);
+      return [{ props: this.falsyProps(module, v.operand, frame), keys: [] }];
     }
-    if (ts.isConditionalExpression(v)) return this.eitherSide(module, v, (side) => this.disabledBy(module, side, depth + 1), depth);
+    if (ts.isConditionalExpression(v)) return this.eitherSide(module, v, (side) => this.disabledBy(module, side, frame, depth + 1), frame, depth);
     if (ts.isBinaryExpression(v)) {
       const op = v.operatorToken.kind;
       if (op === ts.SyntaxKind.AmpersandAmpersandToken) {
-        const l = this.disabledBy(module, v.left, depth + 1);
-        const r = this.disabledBy(module, v.right, depth + 1);
+        const l = this.disabledBy(module, v.left, frame, depth + 1);
+        const r = this.disabledBy(module, v.right, frame, depth + 1);
         return l && r ? allOf(l, r) : null;
       }
       if (op === ts.SyntaxKind.BarBarToken || op === ts.SyntaxKind.QuestionQuestionToken) {
-        const l = this.disabledBy(module, v.left, depth + 1);
-        const r = this.disabledBy(module, v.right, depth + 1);
+        const l = this.disabledBy(module, v.left, frame, depth + 1);
+        const r = this.disabledBy(module, v.right, frame, depth + 1);
         return l && r ? anyOf(l, r) : (l ?? r);
       }
       return BY_ITSELF;
     }
     if (ts.isPropertyAccessExpression(v)) {
-      const prop = this.propOf(module, v);
+      const prop = this.propOf(module, v, frame);
       if (prop) return [{ props: [prop], keys: [] }];
+      // `p.disabled`, `entry.disabled`: a member of a helper's parameter, or of a value the reader can open.
+      const reached = this.memberRead(module, v, frame);
+      if (reached) return this.waysReached(reached, read, member);
       // A member of the data the component is handed: the key an example writes in an item.
-      const owner = this.propOf(module, v.expression);
+      const owner = this.propOf(module, v.expression, frame);
       return [{ props: owner ? [owner] : [], keys: [v.name.text] }];
     }
     if (ts.isIdentifier(v)) {
-      const prop = this.propOf(module, v);
+      const prop = this.propOf(module, v, frame);
       if (prop) return [{ props: [prop], keys: [] }];
+      // A helper's parameter, or a member a destructuring takes of a value the reader can open.
+      const reached = this.reachedBy(module, v, frame);
+      if (reached) return this.waysReached(reached, read, member);
       const binding = module.reader.resolve(v);
       if (binding?.kind === "const" && binding.decl.initializer) {
-        if (!binding.path.length) return this.disabledBy(module, binding.decl.initializer, depth + 1);
+        if (!binding.path.length) return this.disabledBy(module, binding.decl.initializer, frame, depth + 1);
         // `const { disabled } = item`: the key, when it is not the component's own props.
         const key = binding.path[binding.path.length - 1];
         const init = unwrap(binding.decl.initializer);
@@ -1086,27 +1385,35 @@ export class SignalReader {
    * The ways a value is false: a TextInput's `editable`, which React Native's text field is
    * disabled with (it has no `disabled`). Null when it never is (`true`, a bare attribute,
    * `undefined`, the default); `!disabled` is false with `disabled`, `!disabled && !readOnly`
-   * either way, `a || b` only when both are. A value the reader cannot follow is false with
-   * nothing in particular.
+   * either way, `a || b` only when both are. A helper's parameters are read through the call
+   * the reader followed (`frame`), as `disabledBy` reads them. A value the reader cannot follow
+   * is false with nothing in particular.
    */
-  private offBy(module: Parsed, value: ts.Expression | null, depth = 0): DisabledBy | null {
+  private offBy(module: Parsed, value: ts.Expression | null, frame?: Frame, depth = 0): DisabledBy | null {
     if (value === null) return null;
     const v = unwrap(value);
     if (isNullish(v) || v.kind === ts.SyntaxKind.TrueKeyword) return null;
     if (v.kind === ts.SyntaxKind.FalseKeyword || depth > 6) return BY_ITSELF;
-    if (ts.isPrefixUnaryExpression(v) && v.operator === ts.SyntaxKind.ExclamationToken) return this.disabledBy(module, v.operand, depth + 1);
-    if (ts.isConditionalExpression(v)) return this.eitherSide(module, v, (side) => this.offBy(module, side, depth + 1), depth);
+    const read = (at: Located) => this.offBy(at.module, at.expr, at.frame, depth + 1);
+    if (ts.isPrefixUnaryExpression(v) && v.operator === ts.SyntaxKind.ExclamationToken) return this.disabledBy(module, v.operand, frame, depth + 1);
+    if (ts.isConditionalExpression(v)) return this.eitherSide(module, v, (side) => this.offBy(module, side, frame, depth + 1), frame, depth);
     if (ts.isBinaryExpression(v)) {
       const op = v.operatorToken.kind;
-      const l = this.offBy(module, v.left, depth + 1);
-      const r = this.offBy(module, v.right, depth + 1);
+      const l = this.offBy(module, v.left, frame, depth + 1);
+      const r = this.offBy(module, v.right, frame, depth + 1);
       if (op === ts.SyntaxKind.AmpersandAmpersandToken) return l && r ? anyOf(l, r) : (l ?? r);
       if (op === ts.SyntaxKind.BarBarToken) return l && r ? allOf(l, r) : null;
       return BY_ITSELF;
     }
-    if (ts.isIdentifier(v) && !this.propOf(module, v)) {
+    if (ts.isPropertyAccessExpression(v) && !this.propOf(module, v, frame)) {
+      const reached = this.memberRead(module, v, frame);
+      if (reached) return this.waysReached(reached, read, () => BY_ITSELF);
+    }
+    if (ts.isIdentifier(v) && !this.propOf(module, v, frame)) {
+      const reached = this.reachedBy(module, v, frame);
+      if (reached) return this.waysReached(reached, read, () => BY_ITSELF);
       const binding = module.reader.resolve(v);
-      if (binding?.kind === "const" && !binding.path.length && binding.decl.initializer) return this.offBy(module, binding.decl.initializer, depth + 1);
+      if (binding?.kind === "const" && !binding.path.length && binding.decl.initializer) return this.offBy(module, binding.decl.initializer, frame, depth + 1);
     }
     return BY_ITSELF;
   }
@@ -1116,47 +1423,46 @@ export class SignalReader {
    * with what makes the condition true, the false side's with what makes it false. Null
    * when neither side ever is.
    */
-  private eitherSide(module: Parsed, v: ts.ConditionalExpression, read: (side: ts.Expression) => DisabledBy | null, depth: number): DisabledBy | null {
+  private eitherSide(module: Parsed, v: ts.ConditionalExpression, read: (side: ts.Expression) => DisabledBy | null, frame: Frame | undefined, depth: number): DisabledBy | null {
     const yes = read(v.whenTrue);
     const no = read(v.whenFalse);
-    const condition = yes ? this.disabledBy(module, v.condition, depth + 1) : null;
-    const ways = [...(yes && condition ? allOf(condition, yes) : []), ...(no ? allOf([{ props: this.falsyProps(module, v.condition), keys: [] }], no) : [])];
+    const condition = yes ? this.disabledBy(module, v.condition, frame, depth + 1) : null;
+    const ways = [...(yes && condition ? allOf(condition, yes) : []), ...(no ? allOf([{ props: this.falsyProps(module, v.condition, frame), keys: [] }], no) : [])];
     return ways.length ? uniqueWays(ways) : null;
   }
 
-  /** The ways an `accessibilityState`'s `disabled` is true, or null when it has none the reader can read. */
-  private stateDisabled(module: Parsed, value: ts.Expression | null, depth = 0): DisabledBy | null {
+  /**
+   * The ways an `accessibilityState`'s `disabled` is true, or null when it has none the reader
+   * can read: the `disabled` each object literal it can be holds (`keyOf`: the last one written,
+   * or a spread's, `{ ...entry.accessibilityState, expanded: open }`), through local constants,
+   * a helper's return and its parameters.
+   */
+  private stateDisabled(module: Parsed, value: ts.Expression | null, frame?: Frame, depth = 0): DisabledBy | null {
     if (!value || depth > 6) return null;
     const v = unwrap(value);
-    if (ts.isObjectLiteralExpression(v)) {
-      for (const property of v.properties) {
-        const name = property.name && (ts.isIdentifier(property.name) || ts.isStringLiteral(property.name)) ? property.name.text : null;
-        if (name !== "disabled") continue;
-        if (ts.isPropertyAssignment(property)) return this.disabledBy(module, property.initializer, depth + 1);
-        if (ts.isShorthandPropertyAssignment(property)) return this.disabledBy(module, property.name, depth + 1);
-      }
-      return null;
-    }
-    if (ts.isConditionalExpression(v)) return this.eitherSide(module, v, (side) => this.stateDisabled(module, side, depth + 1), depth);
-    if (ts.isIdentifier(v)) {
-      const binding = module.reader.resolve(v);
-      if (binding?.kind === "const" && !binding.path.length && binding.decl.initializer) return this.stateDisabled(module, binding.decl.initializer, depth + 1);
-    }
-    return null;
+    if (ts.isConditionalExpression(v)) return this.eitherSide(module, v, (side) => this.stateDisabled(module, side, frame, depth + 1), frame, depth);
+    const reached = ts.isIdentifier(v) ? this.paramOf(module, v, frame) : null;
+    if (reached) return this.waysReached(reached, (at) => this.stateDisabled(at.module, at.expr, at.frame, depth + 1), () => null);
+    const disabled = (at: Located) => this.disabledBy(at.module, at.expr, at.frame, depth + 1);
+    const objects = this.objectsOf({ expr: v, module, gates: [], ...framed(frame) }, new Set());
+    return anyOfAll(objects.map((found) => this.waysReached(this.keyOf(found, "disabled"), disabled, (of, path) => this.memberWays(of, path))));
   }
 
   /**
    * The component's props that, passed, make an overlay's open value false: `!disabled`, and
    * either side of `&&` (`const open = !disabled && (openProp ?? internalOpen)`).
    */
-  private closedBy(module: Parsed, expr: ts.Expression, depth = 0): string[] {
+  private closedBy(module: Parsed, expr: ts.Expression, frame?: Frame, depth = 0): string[] {
     const e = unwrap(expr);
     if (depth > 6) return [];
-    if (ts.isPrefixUnaryExpression(e) && e.operator === ts.SyntaxKind.ExclamationToken) return this.truthyProps(module, e.operand);
-    if (ts.isBinaryExpression(e) && e.operatorToken.kind === ts.SyntaxKind.AmpersandAmpersandToken) return [...new Set([...this.closedBy(module, e.left, depth + 1), ...this.closedBy(module, e.right, depth + 1)])];
-    if (ts.isIdentifier(e) && !this.propOf(module, e)) {
+    if (ts.isPrefixUnaryExpression(e) && e.operator === ts.SyntaxKind.ExclamationToken) return this.truthyProps(module, e.operand, frame);
+    if (ts.isBinaryExpression(e) && e.operatorToken.kind === ts.SyntaxKind.AmpersandAmpersandToken) return [...new Set([...this.closedBy(module, e.left, frame, depth + 1), ...this.closedBy(module, e.right, frame, depth + 1)])];
+    if (ts.isIdentifier(e) && !this.propOf(module, e, frame)) {
+      // A helper's parameter: what the call gives it.
+      const bound = this.paramOf(module, e, frame);
+      if (bound) return this.propsReached(bound, (at) => this.closedBy(at.module, at.expr, at.frame, depth + 1)) ?? [];
       const binding = module.reader.resolve(e);
-      if (binding?.kind === "const" && !binding.path.length && binding.decl.initializer) return this.closedBy(module, binding.decl.initializer, depth + 1);
+      if (binding?.kind === "const" && !binding.path.length && binding.decl.initializer) return this.closedBy(module, binding.decl.initializer, frame, depth + 1);
     }
     return [];
   }
@@ -1166,7 +1472,7 @@ export class SignalReader {
     const opened = given.find((a) => OPEN_PROPS.includes(a.name));
     if (!opened) return true;
     // A bare `open` is true; `open={false}` or `open={undefined}` never opens it.
-    return opened.value === null || (!isLiteralFalse(opened.value) && this.passedProps(opened.module, opened.value) !== null) ? opened : null;
+    return opened.value === null || (!isLiteralFalse(opened.value) && this.passedProps(opened.module, opened.value, opened.frame) !== null) ? opened : null;
   }
 
   /**
@@ -1249,7 +1555,7 @@ export class SignalReader {
   /** The overlay a JSX element opens around its children (`Around`), or null. */
   private overlayOf(module: Parsed, opening: ts.JsxOpeningElement, own: string, seen: Set<ts.Node>): Around | null {
     const tag = this.tagOf(module, opening.tagName, own);
-    const around = (opened: Attr | true): Around => ({ name: renderedIn(module, opening), closedBy: opened !== true && opened.value ? this.closedBy(opened.module, opened.value) : [] });
+    const around = (opened: Attr | true): Around => ({ name: renderedIn(module, opening), closedBy: opened !== true && opened.value ? this.closedBy(opened.module, opened.value, opened.frame) : [] });
     if (tag.place === "primitive") {
       const opens = OVERLAY_TAGS.has(tag.name) ? this.opensWith(this.attributes(module, opening.attributes.properties)) : null;
       return opens ? around(opens) : null;
@@ -1340,7 +1646,8 @@ export class SignalReader {
   /** The props an object literal holds, its own spreads followed. */
   private propertiesOf(found: ObjectValue, site: ts.Node, seen: Set<ts.Node> = new Set()): Attr[] {
     const out: Attr[] = [];
-    const sometimes = { ...(found.conditional ? { conditional: true as const } : {}), ...(found.requires?.length ? { requires: found.requires } : {}) };
+    // A prop a helper's return brings is read through the call that brought it (`Frame`).
+    const sometimes = { ...(found.conditional ? { conditional: true as const } : {}), ...(found.requires?.length ? { requires: found.requires } : {}), ...framed(found.frame) };
     for (const property of found.literal.properties) {
       const key = property.name && (ts.isIdentifier(property.name) || ts.isStringLiteral(property.name)) ? property.name.text : null;
       if (ts.isPropertyAssignment(property) && key !== null) out.push({ name: key, value: property.initializer, module: found.module, node: property, site, gates: found.gates, ...sometimes });
@@ -1357,51 +1664,60 @@ export class SignalReader {
    * The object literals a value can be: the literal itself, either side of a conditional
    * (gated by its condition), the right of `&&`, both sides of `??` and `||`, a constant's
    * initializer (or the member a destructuring takes of it), a member read of an object the
-   * reader can follow, and what a local, shared or style-layer function (a hook) returns,
-   * through `useMemo`. Anything else is none.
+   * reader can follow, what a local, shared or style-layer function (a hook) returns, through
+   * `useMemo`, and a parameter of such a function as the argument its call gives it (`Frame`).
+   * Anything else is none.
    */
   private objectsOf(located: Located, seen: Set<ts.Node>): ObjectValue[] {
-    const { module, gates } = located;
+    const { module, gates, frame } = located;
     const needs = located.requires ?? [];
     const kept = { ...(located.conditional ? { conditional: true as const } : {}), ...(needs.length ? { requires: needs } : {}) };
+    const here = { ...kept, ...framed(frame) };
     const e = unwrap(located.expr);
     if (seen.has(e)) return [];
     seen.add(e);
-    if (ts.isObjectLiteralExpression(e)) return [{ literal: e, module, gates, ...kept }];
+    if (ts.isObjectLiteralExpression(e)) return [{ literal: e, module, gates, ...here }];
     if (ts.isConditionalExpression(e)) {
       return [
-        ...this.objectsOf({ expr: e.whenTrue, module, gates: [...gates, ...this.truthyProps(module, e.condition)], conditional: true, requires: [...needs, ...this.paramNeeds(module, e.condition, true)] }, seen),
-        ...this.objectsOf({ expr: e.whenFalse, module, gates: [...gates, ...this.falsyProps(module, e.condition)], conditional: true, requires: [...needs, ...this.paramNeeds(module, e.condition, false)] }, seen),
+        ...this.objectsOf({ expr: e.whenTrue, module, gates: [...gates, ...this.truthyProps(module, e.condition, frame)], conditional: true, requires: [...needs, ...this.paramNeeds(module, e.condition, true)], ...framed(frame) }, seen),
+        ...this.objectsOf({ expr: e.whenFalse, module, gates: [...gates, ...this.falsyProps(module, e.condition, frame)], conditional: true, requires: [...needs, ...this.paramNeeds(module, e.condition, false)], ...framed(frame) }, seen),
       ];
     }
     if (ts.isBinaryExpression(e)) {
       const op = e.operatorToken.kind;
       if (op === ts.SyntaxKind.AmpersandAmpersandToken) {
-        return this.objectsOf({ expr: e.right, module, gates: [...gates, ...this.truthyProps(module, e.left)], conditional: true, requires: [...needs, ...this.paramNeeds(module, e.left, true)] }, seen);
+        return this.objectsOf({ expr: e.right, module, gates: [...gates, ...this.truthyProps(module, e.left, frame)], conditional: true, requires: [...needs, ...this.paramNeeds(module, e.left, true)], ...framed(frame) }, seen);
       }
       if (op === ts.SyntaxKind.QuestionQuestionToken || op === ts.SyntaxKind.BarBarToken) {
-        return [...this.objectsOf({ expr: e.left, module, gates, ...kept, conditional: true }, seen), ...this.objectsOf({ expr: e.right, module, gates, ...kept, conditional: true }, seen)];
+        return [...this.objectsOf({ expr: e.left, module, gates, ...here, conditional: true }, seen), ...this.objectsOf({ expr: e.right, module, gates, ...here, conditional: true }, seen)];
       }
       return [];
     }
     if (ts.isIdentifier(e)) {
+      // A helper's parameter: the objects the argument its call gives it can be.
+      const bound = this.paramOf(module, e, frame);
+      if (bound) {
+        return bound.flatMap((r) =>
+          r.kind === "value" ? this.objectsOf({ ...r.at, gates, ...kept }, seen) : r.kind === "member" ? this.membersOf({ ...r.of, gates, ...kept }, r.path, seen) : [],
+        );
+      }
       const binding = module.reader.resolve(e);
       if (binding?.kind !== "const" || !binding.decl.initializer) return [];
-      const init: Located = { expr: binding.decl.initializer, module, gates, ...kept };
+      const init: Located = { expr: binding.decl.initializer, module, gates, ...here };
       if (!binding.path.length) return this.objectsOf(init, seen);
       // `const { target: hoverTarget } = useHover(...)`: the member the destructuring takes.
       return this.membersOf(init, binding.path, seen);
     }
-    if (ts.isPropertyAccessExpression(e)) return this.membersOf({ expr: e.expression, module, gates, ...kept }, [e.name.text], seen);
+    if (ts.isPropertyAccessExpression(e)) return this.membersOf({ expr: e.expression, module, gates, ...here }, [e.name.text], seen);
     if (ts.isCallExpression(e)) {
       // `Platform.select({ web: a, default: b })`: each platform's object, one of which the element is given.
       const callee = unwrap(e.expression);
       if (ts.isPropertyAccessExpression(callee) && callee.name.text === "select" && ts.isIdentifier(callee.expression) && callee.expression.text === "Platform" && e.arguments[0]) {
         const table = unwrap(e.arguments[0]);
         if (!ts.isObjectLiteralExpression(table)) return [];
-        return table.properties.flatMap((property) => (ts.isPropertyAssignment(property) ? this.objectsOf({ expr: property.initializer, module, gates, ...kept, conditional: true }, seen) : []));
+        return table.properties.flatMap((property) => (ts.isPropertyAssignment(property) ? this.objectsOf({ expr: property.initializer, module, gates, ...here, conditional: true }, seen) : []));
       }
-      return this.returnsOf({ expr: e, module, gates, ...kept }, seen).flatMap((r) => this.objectsOf(r, seen));
+      return this.returnsOf({ expr: e, module, gates, ...here }, seen).flatMap((r) => this.objectsOf(r, seen));
     }
     return [];
   }
@@ -1416,7 +1732,7 @@ export class SignalReader {
         const name = property.name && (ts.isIdentifier(property.name) || ts.isStringLiteral(property.name)) ? property.name.text : null;
         if (name !== key) continue;
         const value = ts.isPropertyAssignment(property) ? property.initializer : ts.isShorthandPropertyAssignment(property) ? property.name : null;
-        if (value) out.push(...this.membersOf({ expr: value, module: found.module, gates: found.gates, ...(found.conditional ? { conditional: true as const } : {}), ...(found.requires?.length ? { requires: found.requires } : {}) }, rest, seen));
+        if (value) out.push(...this.membersOf({ expr: value, module: found.module, gates: found.gates, ...(found.conditional ? { conditional: true as const } : {}), ...(found.requires?.length ? { requires: found.requires } : {}), ...framed(found.frame) }, rest, seen));
       }
     }
     return out;
@@ -1425,7 +1741,9 @@ export class SignalReader {
   /**
    * What a call returns, as expressions in the module the function is written in: React's
    * `useMemo` (its factory's result), or a function the component's own modules, a shared
-   * family module or the style layer declares (its return statements, or an arrow's body).
+   * family module or the style layer declares (its return statements, or an arrow's body),
+   * read under a frame of this call (`Frame`), which binds the function's parameters to the
+   * arguments it gives them.
    */
   private returnsOf(located: Located, seen: Set<ts.Node>): Located[] {
     const call = unwrap(located.expr) as ts.CallExpression;
@@ -1438,7 +1756,8 @@ export class SignalReader {
       const factory = unwrap(call.arguments[0]);
       if (!ts.isArrowFunction(factory) && !ts.isFunctionExpression(factory)) return [];
       const results = bodyResults(factory);
-      return results.map((expr) => ({ expr, module: located.module, gates: located.gates, ...(located.requires?.length ? { requires: located.requires } : {}), ...(located.conditional || results.length > 1 ? { conditional: true as const } : {}) }));
+      // The factory is written where the call is, so it reads what the call is read under.
+      return results.map((expr) => ({ expr, module: located.module, gates: located.gates, ...(located.requires?.length ? { requires: located.requires } : {}), ...(located.conditional || results.length > 1 ? { conditional: true as const } : {}), ...framed(located.frame) }));
     }
     if (binding?.kind === "import") {
       const file = this.resolveImport(located.module.path, binding.specifier);
@@ -1450,9 +1769,10 @@ export class SignalReader {
     }
     if (!fn || seen.has(fn.node)) return [];
     seen.add(fn.node);
+    const frame: Frame = { fn, call, module: located.module, ...(located.frame ? { outer: located.frame } : {}) };
     // A function with several returns gives one of them.
     const results = bodyResults(fn.node);
-    return results.map((expr) => ({ expr, module: fn!.module, gates: located.gates, ...(located.requires?.length ? { requires: located.requires } : {}), ...(located.conditional || results.length > 1 ? { conditional: true as const } : {}) }));
+    return results.map((expr) => ({ expr, module: fn!.module, gates: located.gates, ...(located.requires?.length ? { requires: located.requires } : {}), ...(located.conditional || results.length > 1 ? { conditional: true as const } : {}), frame }));
   }
 
   /** Whether the reader follows a call into this file: the kit's source (a component's modules, a shared family module, the style layer). */
@@ -1584,7 +1904,7 @@ export class SignalReader {
     // A role given on one side of a condition only (`{...(flag ? a : { role })}`) leaves it none on the other.
     if (written.some((a) => !a.conditional)) bare = false;
     for (const attr of written) {
-      const found = this.stringsOf(attr.module, attr.value!);
+      const found = this.stringsOf(attr.module, attr.value!, attr.frame);
       if (found === null) {
         unread = true;
         continue;
@@ -1632,7 +1952,7 @@ export class SignalReader {
     for (const feedback of DEVICE_FEEDBACK) {
       const prop = given.find((a) => a.name === feedback.prop && a.value);
       if (!prop?.value) continue;
-      if (given.some((a) => feedback.handlers.includes(a.name) && (!a.value || this.passedProps(a.module, a.value) !== null))) continue;
+      if (given.some((a) => feedback.handlers.includes(a.name) && (!a.value || this.passedProps(a.module, a.value, a.frame) !== null))) continue;
       // The builds that give the prop a value known not to be empty.
       const envs = own ? this.envsAround(prop.module, prop.node, own) : null;
       // A rail example's code is a module of its own, read by its own reader.
@@ -1679,17 +1999,17 @@ export class SignalReader {
   /**
    * The strings a value can be: a literal, either side of a conditional, `&&`'s right, both
    * sides of `||` and `??`, a constant's initializer; the empty string for `undefined`, `null`
-   * or `false`, a value that gives none. Null when it can be something the reader cannot
-   * read (a prop, a parameter, a call).
+   * or `false`, a value that gives none; a helper's parameter, what its call gives it. Null
+   * when it can be something the reader cannot read (a prop, an unbound parameter, a call).
    */
-  private stringsOf(module: Parsed, expr: ts.Expression, depth = 0): string[] | null {
+  private stringsOf(module: Parsed, expr: ts.Expression, frame?: Frame, depth = 0): string[] | null {
     const e = unwrap(expr);
     if (depth > 6) return null;
     if (ts.isStringLiteral(e) || ts.isNoSubstitutionTemplateLiteral(e)) return [e.text];
     if (isNullish(e) || e.kind === ts.SyntaxKind.FalseKeyword) return [""];
     const both = (a: ts.Expression, b: ts.Expression) => {
-      const x = this.stringsOf(module, a, depth + 1);
-      const y = this.stringsOf(module, b, depth + 1);
+      const x = this.stringsOf(module, a, frame, depth + 1);
+      const y = this.stringsOf(module, b, frame, depth + 1);
       return x && y ? [...x, ...y] : null;
     };
     if (ts.isConditionalExpression(e)) return both(e.whenTrue, e.whenFalse);
@@ -1697,15 +2017,20 @@ export class SignalReader {
       const op = e.operatorToken.kind;
       // `a && "x"` is `a` when falsy: a role, given none.
       if (op === ts.SyntaxKind.AmpersandAmpersandToken) {
-        const right = this.stringsOf(module, e.right, depth + 1);
+        const right = this.stringsOf(module, e.right, frame, depth + 1);
         return right && [...right, ""];
       }
       if (op === ts.SyntaxKind.BarBarToken || op === ts.SyntaxKind.QuestionQuestionToken) return both(e.left, e.right);
       return null;
     }
     if (ts.isIdentifier(e)) {
+      const bound = this.paramOf(module, e, frame);
+      if (bound) {
+        const each = bound.map((r) => (r.kind === "value" ? this.stringsOf(r.at.module, r.at.expr, r.at.frame, depth + 1) : r.kind === "absent" ? [""] : null));
+        return each.every((strings): strings is string[] => strings !== null) ? each.flat() : null;
+      }
       const binding = module.reader.resolve(e);
-      if (binding?.kind === "const" && !binding.path.length && binding.decl.initializer) return this.stringsOf(module, binding.decl.initializer, depth + 1);
+      if (binding?.kind === "const" && !binding.path.length && binding.decl.initializer) return this.stringsOf(module, binding.decl.initializer, frame, depth + 1);
     }
     return null;
   }
@@ -1872,19 +2197,20 @@ export class SignalReader {
             const opens = this.opensWith(given);
             if (opens) {
               const opened = opens === true ? null : opens;
-              const where = opened ? placed(opened, opened.value ? (this.passedProps(opened.module, opened.value) ?? []) : []) : { at: this.at(module, node), gates: this.gatesOf(module, node, scope) };
+              const where = opened ? placed(opened, opened.value ? (this.passedProps(opened.module, opened.value, opened.frame) ?? []) : []) : { at: this.at(module, node), gates: this.gatesOf(module, node, scope) };
               out.push({ kind: "overlay", state: "open", what: `a <${tag.name}>`, via: [], ...where, overlay: renderedIn(module, node), ...buildsOf(node) });
             }
           }
           // The controls it disables: `disabled` and `aria-disabled` given a value that can be
-          // true, and an `accessibilityState` whose `disabled` can be.
+          // true, and an `accessibilityState` whose `disabled` can be; one a helper's return
+          // brings is read through the call that brought it (`Attr.frame`).
           for (const attr of given) {
             const by = DISABLED_PROPS.has(attr.name)
-              ? this.disabledBy(attr.module, attr.value)
+              ? this.disabledBy(attr.module, attr.value, attr.frame)
               : attr.name === "accessibilityState"
-                ? this.stateDisabled(attr.module, attr.value)
+                ? this.stateDisabled(attr.module, attr.value, attr.frame)
                 : attr.name === "editable" && tag.name === "TextInput"
-                  ? this.offBy(attr.module, attr.value)
+                  ? this.offBy(attr.module, attr.value, attr.frame)
                   : null;
             if (!by) continue;
             const where = placed(attr);
@@ -1903,8 +2229,8 @@ export class SignalReader {
             const prop = attr.name;
             const value = attr.value;
             // `onPress={undefined}` is no handler.
-            if (value && this.passedProps(attr.module, value) === null) continue;
-            const extra = value ? (this.passedProps(attr.module, value) ?? []) : [];
+            if (value && this.passedProps(attr.module, value, attr.frame) === null) continue;
+            const extra = value ? (this.passedProps(attr.module, value, attr.frame) ?? []) : [];
             const signal = (kind: SignalKind, state: SignalState, element?: ElementFacts) => {
               push({ kind, state, what: `${prop} on <${tag.name}>`, via: [], ...placed(attr, extra), ...(element ? { element } : {}) }, attr.requires);
             };
@@ -1947,7 +2273,7 @@ export class SignalReader {
                 state: "open",
                 what: `a <${tag.name}> (an overlay) given \`${opened.name}\``,
                 via: [],
-                ...handed(opened, opened.value ? (this.passedProps(opened.module, opened.value) ?? []) : []),
+                ...handed(opened, opened.value ? (this.passedProps(opened.module, opened.value, opened.frame) ?? []) : []),
                 overlay: renderedIn(module, node),
                 ...buildsOf(node),
               });
@@ -1955,7 +2281,7 @@ export class SignalReader {
           }
           // Another kit component disabled by this one (AlertDialog's confirm Button, until its token is typed).
           const disabled = given.find((a) => a.name === "disabled");
-          const by = disabled ? this.disabledBy(disabled.module, disabled.value) : null;
+          const by = disabled ? this.disabledBy(disabled.module, disabled.value, disabled.frame) : null;
           if (file && disabled && by) {
             const where = handed(disabled, []);
             const open = this.placesAround(module, node, scope, own).filter((place) => !(place.around && shutIn(place.around, where.gates, by)));
@@ -2049,7 +2375,7 @@ export class SignalReader {
   ): DisabledBy | null {
     const ways: DisabledWay[] = [];
     for (const way of inner) {
-      let here: DisabledBy | null = [{ props: [], keys: way.keys }];
+      let here: DisabledBy | null = [{ props: [], keys: way.keys, ...(way.unread ? { unread: way.unread } : {}) }];
       for (const prop of way.props) {
         const attr = attrNamed(prop);
         if (!attr) {
@@ -2250,6 +2576,43 @@ function isComponentFunction(fn: ts.Node): boolean {
   // `forwardRef(function X(props, ref))`, `memo((props) => ...)`.
   if (!name && ts.isCallExpression(fn.parent) && ts.isVariableDeclaration(fn.parent.parent) && ts.isIdentifier(fn.parent.parent.name)) name = fn.parent.parent.name.text;
   return !!name && /^[A-Z]/.test(name);
+}
+
+/** `undefined`, as written: an argument that leaves a parameter to its default. */
+const isUndefined = (expr: ts.Expression): boolean => {
+  const e = unwrap(expr);
+  return ts.isIdentifier(e) && e.text === "undefined";
+};
+
+/**
+ * Whether a function is a callback: one written where it is handed to a call or a tag
+ * (`items.map((item) => ...)`, `renderItem={(item) => ...}`), whose parameters are what the
+ * callee hands it, never a helper the component calls by name.
+ */
+function isHandedOn(fn: ts.Node): boolean {
+  if (!ts.isArrowFunction(fn) && !ts.isFunctionExpression(fn)) return false;
+  const value = outermost(fn);
+  const holder = value.parent;
+  return ((ts.isCallExpression(holder) || ts.isNewExpression(holder)) && (holder.arguments ?? []).some((arg) => arg === value)) || ts.isJsxExpression(holder);
+}
+
+/**
+ * Whether a name is read inside a component nested in the function whose parameter it is: a
+ * factory's parameter (a skin) read by the component the factory makes, which is that build's
+ * argument, never something a call hands a helper.
+ */
+function insideComponent(id: ts.Node, fn: ts.Node): boolean {
+  for (let current = id.parent; current && current !== fn; current = current.parent) if (isFunctionNode(current) && isComponentFunction(current)) return true;
+  return false;
+}
+
+/** A function's name, as a message names it: its own, or the constant or property it is assigned to (through memo() and forwardRef()). */
+function functionName(fn: ts.Node): string {
+  if ((ts.isFunctionDeclaration(fn) || ts.isFunctionExpression(fn) || ts.isMethodDeclaration(fn)) && fn.name && ts.isIdentifier(fn.name)) return fn.name.text;
+  let holder: ts.Node = fn.parent;
+  while (ts.isCallExpression(holder) || ts.isParenthesizedExpression(holder) || ts.isAsExpression(holder)) holder = holder.parent;
+  if ((ts.isVariableDeclaration(holder) || ts.isPropertyAssignment(holder)) && ts.isIdentifier(holder.name)) return holder.name.text;
+  return "a function";
 }
 
 /** The string literal `text` inside an expression, or null. */
