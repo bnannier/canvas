@@ -253,6 +253,25 @@ describe("the Foundations tier (tools/audit/foundations.ts)", () => {
     expect(placed.get("useWindowDimensions")).toEqual(["BreakpointOverride"]);
   });
 
+  it("asks in its specific checks only for components its own turn captures, or says the check is the source's", () => {
+    // A check that names a kit component is answered from that component's pictures, which
+    // the foundation's turn takes only for its Capture through list; one about a component
+    // the turn does not capture is read from the source and says so (`source:`).
+    const named = components().map((c) => ({ slug: c.slug, word: new RegExp(`\\b${c.name}\\b`) }));
+    const strays: string[] = [];
+    for (const f of foundations()) {
+      const through = new Set(facts(f.name).captureThrough.components);
+      for (const line of FOUNDATION_PLANS[f.name]!) {
+        if (line.startsWith("source:")) continue;
+        for (const { slug, word } of named) if (word.test(line) && !through.has(slug)) strays.push(`${f.name}: ${slug}`);
+      }
+    }
+    expect(strays).toEqual([]);
+    // LoopView renders the Skeleton shimmer alone; the Spinner, the Progress and the caret loop on their own.
+    expect(facts("LoopView").captureThrough.components).toEqual(["skeleton", "data-table"]);
+    expect(FOUNDATION_PLANS.LoopView!.find((line) => /Spinner/.test(line))).toStartWith("source:");
+  });
+
   it("states the K12-2 status from the manifest and the owner's decisions", () => {
     expect(k12Status("GlassPane", { kind: "internal-by-accident" })).toBe("deprecated alias to come (K12-2)");
     expect(k12Status("shadow", { kind: "utility" })).toBe("deprecated alias to come (K12-2 OD4)");
