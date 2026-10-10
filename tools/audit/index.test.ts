@@ -1,9 +1,10 @@
 import { afterEach, describe, expect, it } from "bun:test";
-import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { analyzeCells, type CellAnalysis } from "./analyze.ts";
 import { RUNS, checkoutWithRealRuns } from "./fixtures/real-runs.ts";
+import { components } from "./inventory.ts";
 import { brokenLinks, buildIndex, cellFlags, cellRow, flagCounts, mdCell, rankEntries, renderComponentIndex, renderSummary, sortRows, type CellRow, type ComponentIndex } from "./index.ts";
 import { currentCells, readRunCells, type AuditRun } from "./runs.ts";
 
@@ -193,6 +194,24 @@ describe("state cells of recipes the table no longer has", () => {
     expect(md.indexOf(ids[2]!)).toBeLessThan(md.indexOf(ids[1]!));
     const built = JSON.parse(readFileSync(join(root, ".audit", "current", "current.json"), "utf8")) as { cells: { id: string; recipe?: string }[] };
     expect(built.cells.map((cell) => `${cell.id} ${cell.recipe}`)).toEqual([`${ids[1]} disabled-disableditem`, `${ids[2]} disabled-disabledtrigger`]);
+  });
+
+  it("indexes and selects the Calendar component alone for --only=calendar, and its page by its id", () => {
+    root = mkdtempSync(join(tmpdir(), "audit-index-"));
+    const name = "20261009-100000-web-aaaaaaa";
+    const dir = join(root, ".audit", "runs", name);
+    mkdirSync(dir, { recursive: true });
+    writeFileSync(join(dir, "manifest.json"), JSON.stringify({ platform: "web", status: "complete", startedAt: "2026-10-09T10:00:00.000Z", source: { sha: "a".repeat(40), dirty: false }, served: { mode: "static export", sourceFingerprint: "a".repeat(64), fresh: true } }));
+    const variant = components().find((c) => c.slug === "calendar")!.variants[0]!.variant;
+    const component = { kind: "variant", id: `web/calendar/${variant}/phone.blush.solid`, slug: "calendar", variant, status: "ok", flags: [], at: "2026-10-09T10:00:01.000Z" };
+    const page = { kind: "page", id: "web-pages/template-calendar/phone.blush.solid", page: "template-calendar", status: "ok", flags: [], at: "2026-10-09T10:00:02.000Z" };
+    writeFileSync(join(dir, "cells.jsonl"), [component, page].map((cell) => JSON.stringify(cell)).join("\n"));
+    // The analysis and the sheets take the component's cell alone.
+    expect(currentCells(root, { only: ["calendar"], runs: null }).cells.map((cell) => cell.id)).toEqual([component.id]);
+    expect(currentCells(root, { only: ["template-calendar"], runs: null }).cells.map((cell) => cell.id)).toEqual([page.id]);
+    buildIndex(root, { runs: null, only: ["calendar"] }, "2026-10-09T12:00:00.000Z");
+    expect(existsSync(join(root, ".audit", "current", "calendar", "index.md"))).toBe(true);
+    expect(existsSync(join(root, ".audit", "current", "template-calendar", "index.md"))).toBe(false);
   });
 });
 
