@@ -26,17 +26,17 @@
 // OverlayProvider. The design tokens are the public names the API manifest documents on a
 // `tokens/*` page, or plans to.
 
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { guideRoutes } from "../../e2e/support/routes.ts";
 import { PENDING_DOCS, publicApi } from "../api/manifest.ts";
 import type { ApiEntry, ApiKind } from "../api/types.ts";
 import { materialCoverage } from "../materials/manifest.ts";
 import type { MaterialCoverageEntry } from "../materials/types.ts";
-import { componentImplementation, pageKitNames, type FactsCorpus, type KitImports } from "./facts.ts";
+import { componentImplementation, kitImportsOf, pageKitNames, type FactsCorpus, type KitImports } from "./facts.ts";
 import { components as inventoryComponents, pageModule, pages as inventoryPages, type InventoryComponent, type InventoryPage } from "./inventory.ts";
 import { KitGraph, MODULE_BODY, consumersOf, moduleFiles, ownersByReaders, symbolId, symbolOf, type Consumer, type ConsumerCandidate, type KitSymbol } from "./kit-graph.ts";
-import { STYLE_LAYER_RENDERABLES, TOKENS_FOUNDATION } from "./plan-specifics.ts";
+import { REFERENCE_FOUNDATION, STYLE_LAYER_RENDERABLES, TOKENS_FOUNDATION } from "./plan-specifics.ts";
 import { turnRecordFile } from "./turn-record.ts";
 
 /** The kit's public entry, where every public name's way out starts. */
@@ -46,12 +46,16 @@ export const KIT_ENTRY = "src/index.ts";
 export const FOUNDATION_DIR = "foundation";
 
 export interface Foundation {
-  /** The renderable's export name, or `Tokens`. */
+  /** The renderable's export name, `Tokens`, or `FoundationReference`. */
   name: string;
   /** Its checklist and turn id: the name in kebab case (`glass-modal-blur-target`). */
   id: string;
-  kind: "renderable" | "tokens";
+  /** A style-layer renderable, the design tokens, or the kit internals of the `/foundation` reference page. */
+  kind: "renderable" | "tokens" | "reference";
 }
+
+/** The docs route of the generated foundation API reference (K12-10 OD2), which the reference foundation is. */
+export const REFERENCE_ROUTE = "foundation";
 
 /** A name in kebab case: `GlassModalBlurTarget` is `glass-modal-blur-target`. */
 export function foundationId(name: string): string {
@@ -61,12 +65,37 @@ export function foundationId(name: string): string {
     .toLowerCase();
 }
 
-/** Every foundation, alphabetical: the style-layer renderables and the design tokens. */
+/** Every foundation, alphabetical: the style-layer renderables, the design tokens and the `/foundation` reference's internals. */
 export function foundations(): Foundation[] {
   return [
     ...STYLE_LAYER_RENDERABLES.map((name) => ({ name, id: foundationId(name), kind: "renderable" as const })),
     { name: TOKENS_FOUNDATION, id: foundationId(TOKENS_FOUNDATION), kind: "tokens" as const },
+    { name: REFERENCE_FOUNDATION, id: foundationId(REFERENCE_FOUNDATION), kind: "reference" as const },
   ].sort((a, b) => a.name.localeCompare(b.name));
+}
+
+/**
+ * The page module an expo-router route renders: `docs/src/app/<route>.tsx` or
+ * `<route>/index.tsx`, under any route group (`(utilities)`). Exactly one, or it throws, so a
+ * renamed page fails the facts rather than leave its names out.
+ */
+export function routeModule(root: string, route: string): string {
+  const app = "docs/src/app";
+  const dirs = [app, ...readdirSync(join(root, app)).filter((d) => /^\(.+\)$/.test(d) && statSync(join(root, app, d)).isDirectory()).map((d) => `${app}/${d}`)];
+  const trimmed = route.replace(/^\//, "");
+  const found = dirs.flatMap((dir) => [`${dir}/${trimmed}.tsx`, `${dir}/${trimmed}/index.tsx`]).filter((file) => existsSync(join(root, file)));
+  if (found.length !== 1) throw new Error(`foundations: the route ${route} is rendered by ${found.length === 0 ? "no module" : `${found.length} modules (${found.join(", ")})`} under ${app}`);
+  return found[0]!;
+}
+
+/** The kit names each `tokens/*` page imports (its own source, not the docs' frame around it), by route. */
+export function tokenPageNames(root: string): Map<string, string[]> {
+  return new Map(
+    tokenPages().map((route) => {
+      const file = routeModule(root, route);
+      return [route, [...kitImportsOf(root, file, readFileSync(join(root, file), "utf8")).names].sort()] as const;
+    }),
+  );
 }
 
 /** The docs' token reference pages (`/tokens/colors` and the rest), from the docs' own nav. */
@@ -150,31 +179,89 @@ export interface FoundationFacts {
   turnRecord: string;
 }
 
-/** The public names a foundation is made of, each with the kit files that declare it. */
-function foundationNames(graph: KitGraph, foundation: Foundation, homes: Set<string>): { name: string; value: boolean; declared: string[] }[] {
-  const out: { name: string; value: boolean; declared: string[] }[] = [];
-  const tokenRoutes = new Set(tokenPages().map((path) => path.slice(1)));
-  for (const name of Object.keys(publicApi).sort((a, b) => a.localeCompare(b))) {
-    const values = graph.exportOrigins(KIT_ENTRY, name, "value");
-    const value = values.length > 0;
-    const origins = value ? values : graph.exportOrigins(KIT_ENTRY, name, "type");
-    const declared = origins.map((o) => ("file" in o ? o.file : o.package)).filter((v, i, all) => all.indexOf(v) === i).sort();
-    let ours: boolean;
-    if (foundation.kind === "tokens") {
-      const entry = publicApi[name]!;
-      const route = entry.docs ?? PENDING_DOCS[name] ?? null;
-      ours = route !== null && tokenRoutes.has(route);
-    } else {
-      ours = graph.exportChain(KIT_ENTRY, name, value ? "value" : "type").some((file) => homes.has(file));
-    }
-    if (ours) out.push({ name, value, declared });
+/** A public name as the foundations read it: a value or a type, the kit files that declare it, and the modules its way out passes through. */
+interface PublicName {
+  name: string;
+  value: boolean;
+  declared: string[];
+  chain: string[];
+}
+
+/**
+ * Which public names each foundation is made of, by foundation id:
+ *
+ *   - a renderable: the names whose way out of the kit's entry passes through its home;
+ *   - the design tokens: the names the API manifest documents or plans on a `tokens/*` page,
+ *     the kit names those pages show that are neither a component nor a renderable's
+ *     (`shadow` on `/tokens/spacing`), and every other public name of the modules those are
+ *     declared in, the renderables' homes left out (the type ladder in `src/style/tokens.ts`,
+ *     `customShadow` beside `shadow`);
+ *   - the reference: the names the API manifest documents or plans on `/foundation` that no
+ *     renderable and not the tokens hold.
+ */
+function memberships(sources: FoundationSources): Map<string, PublicName[]> {
+  const cached = membershipCache.get(sources);
+  if (cached) return cached;
+  const { kit } = sources;
+  const info: PublicName[] = Object.keys(publicApi)
+    .sort((a, b) => a.localeCompare(b))
+    .map((name) => {
+      const values = kit.exportOrigins(KIT_ENTRY, name, "value");
+      const value = values.length > 0;
+      const origins = value ? values : kit.exportOrigins(KIT_ENTRY, name, "type");
+      const declared = origins.map((o) => ("file" in o ? o.file : o.package)).filter((v, i, all) => all.indexOf(v) === i).sort();
+      return { name, value, declared, chain: kit.exportChain(KIT_ENTRY, name, value ? "value" : "type") };
+    });
+  const out = new Map<string, PublicName[]>();
+  const all = foundations();
+  const renderableHomes = new Set<string>();
+  const held = new Set<string>();
+  for (const f of all.filter((x) => x.kind === "renderable")) {
+    const homes = new Set(foundationHomes(kit, f));
+    for (const home of homes) renderableHomes.add(home);
+    const names = info.filter((n) => n.chain.some((file) => homes.has(file)));
+    for (const n of names) held.add(n.name);
+    out.set(f.id, names);
   }
+  const routeOf = (name: string) => publicApi[name]!.docs ?? PENDING_DOCS[name] ?? null;
+  const tokenRoutes = new Set(tokenPages().map((path) => path.slice(1)));
+  // A token page's frame (its cards, tables and the toasts an example raises) is made of
+  // components, whose names and modules are theirs, not the tokens'.
+  const componentModules = new Set(sources.candidates.flatMap((c) => c.modules));
+  const shown = new Set([...sources.tokenNames.values()].flat());
+  const documented = info.filter((n) => tokenRoutes.has(routeOf(n.name) ?? ""));
+  const onPages = info.filter((n) => shown.has(n.name) && !held.has(n.name) && !["component", "part"].includes(publicApi[n.name]!.kind) && !n.declared.some((file) => componentModules.has(file)));
+  const tokenHomes = new Set([...documented, ...onPages].flatMap((n) => n.declared.filter((file) => file.startsWith("src/") && !renderableHomes.has(file) && !componentModules.has(file))));
+  const fromHomes = info.filter((n) => !held.has(n.name) && n.chain.some((file) => tokenHomes.has(file)));
+  const tokenNames = new Set([...documented, ...onPages, ...fromHomes].map((n) => n.name));
+  const tokens = all.find((f) => f.kind === "tokens")!;
+  out.set(tokens.id, info.filter((n) => tokenNames.has(n.name)));
+  const reference = all.find((f) => f.kind === "reference")!;
+  out.set(reference.id, info.filter((n) => !held.has(n.name) && !tokenNames.has(n.name) && routeOf(n.name) === REFERENCE_ROUTE));
+  membershipCache.set(sources, out);
   return out;
+}
+
+const membershipCache = new WeakMap<FoundationSources, Map<string, PublicName[]>>();
+
+/**
+ * The names the owner's decisions retire that no foundation's checklist holds: every
+ * `internal-by-accident` export (K12-2), every name `DECIDED_DEPRECATIONS` adds, and every
+ * deprecated alias already. The Foundations tier carries the 111 deprecations (the plan's
+ * "Foundations"), so this is empty, and audit:checklists:check fails when it is not.
+ */
+export function unplacedDeprecations(sources: FoundationSources, api: Readonly<Record<string, ApiEntry>> = publicApi): string[] {
+  const placed = new Set([...memberships(sources).values()].flat().map((n) => n.name));
+  return Object.entries(api)
+    .filter(([name, entry]) => entry.kind === "internal-by-accident" || entry.kind === "deprecated-alias" || name in DECIDED_DEPRECATIONS)
+    .map(([name]) => name)
+    .filter((name) => !placed.has(name))
+    .sort((a, b) => a.localeCompare(b));
 }
 
 /** The files that declare a renderable foundation's name, on every platform. */
 export function foundationHomes(graph: KitGraph, foundation: Foundation): string[] {
-  if (foundation.kind === "tokens") return [];
+  if (foundation.kind !== "renderable") return [];
   const origins = graph.exportOrigins(KIT_ENTRY, foundation.name, "value").filter((o): o is KitSymbol => "file" in o);
   if (!origins.length) throw new Error(`foundations: ${KIT_ENTRY} exports no value named ${foundation.name} that the kit declares`);
   return [...new Set(origins.map((o) => o.file))].sort();
@@ -206,6 +293,8 @@ export interface FoundationSources {
   pages: InventoryPage[];
   /** Each page's own entry's kit names (`pageKitNames`), by page id. */
   pageNames: Map<string, string[]>;
+  /** The kit names each `tokens/*` page imports, by route (`tokenPageNames`). */
+  tokenNames: Map<string, string[]>;
 }
 
 /**
@@ -236,18 +325,11 @@ export interface FoundationCode {
 }
 
 const codeCache = new WeakMap<FoundationSources, Map<string, FoundationCode>>();
-const namesCache = new WeakMap<FoundationSources, Map<string, { name: string; value: boolean; declared: string[] }[]>>();
 
-/** A foundation's public names, each with the kit files that declare it (memoized per sources). */
-function exportNamesOf(sources: FoundationSources, foundation: Foundation): { name: string; value: boolean; declared: string[] }[] {
-  let cache = namesCache.get(sources);
-  if (!cache) namesCache.set(sources, (cache = new Map()));
-  let names = cache.get(foundation.id);
-  if (!names) {
-    names = foundationNames(sources.kit, foundation, new Set(foundationHomes(sources.kit, foundation)));
-    if (!names.length) throw new Error(`foundations: no public export of the kit belongs to ${foundation.name}`);
-    cache.set(foundation.id, names);
-  }
+/** A foundation's public names, each with the kit files that declare it (`memberships`). */
+function exportNamesOf(sources: FoundationSources, foundation: Foundation): PublicName[] {
+  const names = memberships(sources).get(foundation.id);
+  if (!names?.length) throw new Error(`foundations: no public export of the kit belongs to ${foundation.name}`);
   return names;
 }
 
@@ -351,7 +433,7 @@ export function foundationSources(root: string, kit = new KitGraph(root), pageLi
       return [page.id, pageKitNames(module, readFileSync(join(root, module), "utf8"), page.slug)] as const;
     }),
   );
-  return { kit, candidates: consumerCandidates(root), pages: pageList, pageNames };
+  return { kit, candidates: consumerCandidates(root), pages: pageList, pageNames, tokenNames: tokenPageNames(root) };
 }
 
 /** The docs routes a foundation's exports are documented on or planned for, and whether the capture inventory holds each. */
@@ -394,8 +476,9 @@ export function foundationFacts(foundation: Foundation, corpus: Pick<FactsCorpus
   });
   const sourceFiles = [...new Set([...homes, ...exports.flatMap((e) => e.declared.filter((d) => d.startsWith("src/"))), ...code.implementation.map((s) => s.file)])].sort();
   const materials = materialCoverage.find((m) => m.tier === "style" && m.name === foundation.name) ?? null;
-  const tokenRoutes = foundation.kind === "tokens" ? tokenPages().map((p) => p.slice(1)) : [];
-  const docs = docsPages(exports, sources.pages, [...tokenRoutes, ...(materials?.docsRoute ? [materials.docsRoute] : [])]);
+  // Its own guide pages: the token pages for the tokens, the generated reference for the internals.
+  const ownRoutes = foundation.kind === "tokens" ? tokenPages().map((p) => p.slice(1)) : foundation.kind === "reference" ? [REFERENCE_ROUTE] : [];
+  const docs = docsPages(exports, sources.pages, [...ownRoutes, ...(materials?.docsRoute ? [materials.docsRoute] : [])]);
   const exportNames = exports.map((e) => e.name);
   // The consumer edges are the values among its public exports, at their declarations, and its seams.
   const consumers = consumersOf(kit, [...code.exports, ...code.seams], sources.candidates);
@@ -408,7 +491,7 @@ export function foundationFacts(foundation: Foundation, corpus: Pick<FactsCorpus
   const capturePages = sources.pages.map((p) => p.id).filter((id) => pages.some((p) => p.id === id) || documentingPages.includes(id));
   return {
     foundation,
-    homes: foundation.kind === "tokens" ? tokenRoutes.map((r) => `/${r}`) : homes,
+    homes: foundation.kind === "renderable" ? homes : ownRoutes.map((r) => `/${r}`),
     sourceFiles,
     exports,
     docs,

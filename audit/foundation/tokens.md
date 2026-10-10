@@ -5,88 +5,91 @@ Audit checklist for the design tokens the `tokens/*` docs pages document, audite
 <!-- audit:facts:begin -->
 | Fact | Value |
 |---|---|
-| Foundation | the design tokens the docs' `tokens/*` pages document (`/tokens/colors`, `/tokens/layout`, `/tokens/spacing`, `/tokens/typography`): the public names `tools/api/manifest.ts` documents on one of them, or plans to |
-| Source files | `src/style/breakpoint-override.ts`, `src/style/color.ts`, `src/style/container.ts`, `src/style/fonts.ts`, `src/style/responsive.tsx`, `src/style/sizing.ts`, `src/style/soft-roles.ts`, `src/style/status-hue.ts`, `src/style/status.ts`, `src/style/tokens.ts` (its exports' declarations and its implementation, the private declarations they read) |
-| Seams | 6, the private declarations it alone reads (`tools/audit/foundations.ts` `foundationCode`), which its consumers are also found through: `hexChannels` (src/style/color.ts), `oklabOf` (src/style/color.ts), `srgbOf` (src/style/color.ts), `toLinear` (src/style/color.ts), `toSrgb` (src/style/color.ts), `WASH` (src/style/status.ts) |
-| Public exports | 52: `alpha` (utility), `baseColors` (token), `BreakpointKey` (type), `BreakpointOverride` (component), `breakpoints` (token), `channelsOf` (utility), `colorsByScheme` (token), `ColorScheme` (type), `ColorTokens` (type), `composite` (utility), `ContainerBreakpoint` (type), `ContainerBreakpointOptions` (type), `contrastRatio` (utility), `darkColors` (token), `darkGlass` (token), `FontFaces` (type), `FontWeightKey` (type), `formFactor` (utility), `FormFactor` (type), `glassByScheme` (token), `GlassTokens` (type), `Hue` (type), `inkOn` (utility), `LayoutStyle` (type), `lightColors` (token), `lightGlass` (token), `MeasuredWidth` (type), `MeasureProps` (type), `mintColors` (token), `mixOklab` (utility), `palette` (token), `PlatformKey` (type), `radius` (token), `relativeLuminance` (utility), `responsive` (utility), `Responsive` (type), `shape` (token), `ShapeTokens` (type), `SizingKey` (type), `spacing` (token), `statusColors` (utility), `StatusColors` (type), `StatusColorTone` (type), `statusHues` (token), `StatusTone` (type), `ThemeFonts` (type), `typeface` (token), `useContainerBreakpoint` (hook), `useContainerWidth` (hook), `useMeasuredWidth` (hook), `WidthKey` (type), `widths` (token) |
-| K12-2 status | 52 public: alpha, baseColors, BreakpointKey, BreakpointOverride, breakpoints, channelsOf, colorsByScheme, ColorScheme, ColorTokens, composite, ContainerBreakpoint, ContainerBreakpointOptions, contrastRatio, darkColors, darkGlass, FontFaces, FontWeightKey, formFactor, FormFactor, glassByScheme, GlassTokens, Hue, inkOn, LayoutStyle, lightColors, lightGlass, MeasuredWidth, MeasureProps, mintColors, mixOklab, palette, PlatformKey, radius, relativeLuminance, responsive, Responsive, shape, ShapeTokens, SizingKey, spacing, statusColors, StatusColors, StatusColorTone, statusHues, StatusTone, ThemeFonts, typeface, useContainerBreakpoint, useContainerWidth, useMeasuredWidth, WidthKey, widths |
-| Documented on | `tokens/colors`: darkColors, glassByScheme, lightColors, mintColors, statusHues ("Glass", "Status surfaces") |
-| Docs planned | `tokens/colors`: alpha, baseColors, channelsOf, colorsByScheme, ColorScheme, ColorTokens, composite, contrastRatio, darkGlass, GlassTokens, Hue, inkOn, lightGlass, mixOklab, palette, relativeLuminance, statusColors, StatusColors, StatusColorTone, StatusTone; `tokens/layout`: BreakpointKey, BreakpointOverride, breakpoints, ContainerBreakpoint, ContainerBreakpointOptions, formFactor, FormFactor, LayoutStyle, MeasuredWidth, MeasureProps, responsive, Responsive, SizingKey, useContainerBreakpoint, useContainerWidth, useMeasuredWidth, WidthKey, widths; `tokens/spacing`: PlatformKey, radius, shape, ShapeTokens, spacing; `tokens/typography`: FontFaces, FontWeightKey, ThemeFonts, typeface |
+| Foundation | the design tokens the docs' `tokens/*` pages document (`/tokens/colors`, `/tokens/layout`, `/tokens/spacing`, `/tokens/typography`): the public names `tools/api/manifest.ts` documents on one of them or plans to, the kit names they show that are neither a component nor a renderable's (`shadow` on `/tokens/spacing`), and every other public name of the modules those are declared in |
+| Source files | `src/style/breakpoint-override.ts`, `src/style/color.ts`, `src/style/container.ts`, `src/style/fonts.ts`, `src/style/responsive.tsx`, `src/style/shadow.ts`, `src/style/sizing.ts`, `src/style/soft-roles.ts`, `src/style/status-hue.ts`, `src/style/status.ts`, `src/style/tokens.ts` (its exports' declarations and its implementation, the private declarations they read) |
+| Seams | 12, the private declarations it alone reads (`tools/audit/foundations.ts` `foundationCode`), which its consumers are also found through: `hexChannels` (src/style/color.ts), `oklabOf` (src/style/color.ts), `srgbOf` (src/style/color.ts), `toLinear` (src/style/color.ts), `toSrgb` (src/style/color.ts), `LADDER` (src/style/shadow.ts), `NATIVE_SHADOWS` (src/style/shadow.ts), `TOP_LAYER` (src/style/shadow.ts), `hexToRgba` (src/style/shadow.ts), `opaque` (src/style/shadow.ts), `shadeOf` (src/style/shadow.ts), `WASH` (src/style/status.ts) |
+| Public exports | 68: `alpha` (utility), `baseColors` (token), `brandColors` (deprecated-alias), `BrandColors` (type), `BreakpointKey` (type), `BreakpointOverride` (component), `breakpoints` (token), `channelsOf` (utility), `colorsByScheme` (token), `ColorScheme` (type), `colorsFor` (utility), `ColorTokens` (type), `composite` (utility), `ContainerBreakpoint` (type), `ContainerBreakpointOptions` (type), `containerProbe` (internal-by-accident), `contrastRatio` (utility), `customShadow` (internal-by-accident), `darkColors` (token), `darkGlass` (token), `FontFaces` (type), `fontSize` (token), `fontWeight` (token), `FontWeightKey` (type), `formFactor` (utility), `FormFactor` (type), `glassByScheme` (token), `GlassTokens` (type), `Hue` (type), `HUE_WASH` (deprecated-alias), `inkOn` (utility), `LayoutStyle` (type), `letterSpacing` (token), `lightColors` (token), `lightGlass` (token), `lineHeight` (token), `MeasuredWidth` (type), `MeasureProps` (type), `mintColors` (token), `mixOklab` (utility), `palette` (token), `Palette` (type), `PlatformKey` (type), `radius` (token), `relativeLuminance` (utility), `ResolvedFace` (internal-by-accident, a type), `resolveFontFace` (internal-by-accident), `responsive` (utility), `Responsive` (type), `shadow` (utility), `ShadowLevel` (type), `shape` (token), `ShapeTokens` (type), `SizingKey` (type), `spacing` (token), `statusColors` (utility), `StatusColors` (type), `StatusColorTone` (type), `statusHues` (token), `StatusTone` (type), `ThemeFonts` (type), `typeface` (token), `useContainerBreakpoint` (hook), `useContainerWidth` (hook), `useMeasuredWidth` (hook), `weightKey` (internal-by-accident), `WidthKey` (type), `widths` (token) |
+| K12-2 status | 55 public: alpha, baseColors, BrandColors, BreakpointKey, BreakpointOverride, breakpoints, channelsOf, colorsByScheme, ColorScheme, colorsFor, ColorTokens, composite, ContainerBreakpoint, ContainerBreakpointOptions, contrastRatio, darkColors, darkGlass, FontFaces, FontWeightKey, formFactor, FormFactor, glassByScheme, GlassTokens, Hue, inkOn, LayoutStyle, lightColors, lightGlass, MeasuredWidth, MeasureProps, mintColors, mixOklab, palette, Palette, PlatformKey, radius, relativeLuminance, responsive, Responsive, shape, ShapeTokens, SizingKey, spacing, statusColors, StatusColors, StatusColorTone, statusHues, StatusTone, ThemeFonts, typeface, useContainerBreakpoint, useContainerWidth, useMeasuredWidth, WidthKey, widths; 1 deprecated alias already: brandColors; 5 deprecated alias to come (K12-2): containerProbe, customShadow, ResolvedFace, resolveFontFace, weightKey; 4 deprecated alias to come (K12-7 OD3): fontSize, fontWeight, letterSpacing, lineHeight; 1 deprecated alias already (use `statusColors`): HUE_WASH; 2 deprecated alias to come (K12-2 OD4): shadow, ShadowLevel |
+| Documented on | `theming`: colorsFor ("Palettes"); `tokens/colors`: darkColors, glassByScheme, lightColors, mintColors, statusHues ("Glass", "Status surfaces") |
+| Docs planned | `foundation` (not built yet): brandColors, BrandColors, containerProbe, customShadow, fontSize, fontWeight, HUE_WASH, letterSpacing, lineHeight, ResolvedFace, resolveFontFace, shadow, ShadowLevel, weightKey; `theming`: Palette; `tokens/colors`: alpha, baseColors, channelsOf, colorsByScheme, ColorScheme, ColorTokens, composite, contrastRatio, darkGlass, GlassTokens, Hue, inkOn, lightGlass, mixOklab, palette, relativeLuminance, statusColors, StatusColors, StatusColorTone, StatusTone; `tokens/layout`: BreakpointKey, BreakpointOverride, breakpoints, ContainerBreakpoint, ContainerBreakpointOptions, formFactor, FormFactor, LayoutStyle, MeasuredWidth, MeasureProps, responsive, Responsive, SizingKey, useContainerBreakpoint, useContainerWidth, useMeasuredWidth, WidthKey, widths; `tokens/spacing`: PlatformKey, radius, shape, ShapeTokens, spacing; `tokens/typography`: FontFaces, FontWeightKey, ThemeFonts, typeface |
 | Materials manifest | none: the design tokens are not a renderable, so the material inventory has no entry for them |
 | Tests of it | 70 (importing one of its public exports or one of its implementation's declarations by name, or named for it, `test/tokens[-<what>].test.tsx`): `test/action-role.test.tsx`, `test/anchored-overlay-dismissal.test.tsx`, `test/atom-material-feedback.test.tsx`, `test/atom-material-roles.test.tsx`, `test/avatar-menu.test.tsx`, `test/behavior-smoke-a.test.tsx`, `test/brand-ink.test.ts`, `test/button-group-look.test.tsx`, `test/button-look.test.tsx`, `test/card.test.tsx`, `test/carousel-arrows.test.tsx`, `test/charts-buildout.test.tsx`, `test/charts-cartesian.test.tsx`, `test/color.test.ts`, `test/container.test.tsx`, `test/dense-overlays.test.tsx`, `test/design-rules-css.test.ts`, `test/design-rules-shape.test.ts`, `test/design-rules-skins.test.ts`, `test/design-rules-tokens.test.ts`, `test/destructive-text-components.test.tsx`, `test/destructive-text.test.tsx`, `test/disclosure.test.tsx`, `test/field-colors.test.ts`, `test/field-focus-layout.test.tsx`, `test/field-focus-states.test.tsx`, `test/floating-label-color.test.tsx`, `test/focus-ring.test.tsx`, `test/fonts.test.tsx`, `test/glass-blur-target.test.tsx`, `test/glass-controls.test.tsx`, `test/glass-surface-ladder.test.tsx`, `test/glass-surface.test.ts`, `test/glass-tint.test.tsx`, `test/heatmap-scroll-focus.test.tsx`, `test/hover-lift.test.tsx`, `test/image.test.tsx`, `test/input-actions.test.tsx`, `test/layout-spans.test.tsx`, `test/material-resolution.test.tsx`, `test/material-solid-fallback.test.tsx`, `test/menu-look.test.tsx`, `test/native-accessibility-escape-hosts.test.tsx`, `test/native-focus-fixtures.test.tsx`, `test/new-components.test.tsx`, `test/option-list-idiom.test.tsx`, `test/overlay-frame-ring.test.tsx`, `test/overlays.test.tsx`, `test/pagination-look.test.tsx`, `test/phone-input.test.tsx`, `test/primary-text.test.tsx`, `test/progress.test.tsx`, `test/qrcode.test.tsx`, `test/responsive.test.tsx`, `test/ripple-clip.test.ts`, `test/ripple.test.ts`, `test/scroll-frame-ring.test.tsx`, `test/shadow.test.ts`, `test/sizing.test.tsx`, `test/slider-glass.test.tsx`, `test/status-colors.test.ts`, `test/text-contrast.test.tsx`, `test/text-entry-material.test.tsx`, `test/theme-palette-axis.test.tsx`, `test/toast-look.test.tsx`, `test/tokens.test.ts`, `test/touch-target-clips.test.tsx`, `test/touch-target-seams.test.tsx`, `test/touch-target-seed.test.tsx`, `test/video.test.tsx` |
-| Consumers | 102 components: 80 directly, 22 through shared modules (one row each below, read from the source by `tools/audit/kit-graph.ts`) |
+| Consumers | 102 components: 83 directly, 19 through shared modules (one row each below, read from the source by `tools/audit/kit-graph.ts`) |
 | Pages using it | `pattern-accessibility` (contrastRatio) |
-| Capture through | 103, in this order: components `image`, `row-column`, `grid`, `container`, `chip`, `emblem`, `autocomplete`, `avatar`, `badge`, `breadcrumb`, `button-group`, `button`, `checkbox`, `dropdown`, `input`, `input-otp`, `listbox`, `stepper`, `pagination`, `popover`, `progress`, `qrcode`, `radio`, `select`, `skeleton`, `slider`, `textarea`, `swatch`, `tooltip`, `typography`, `video`, `accordion`, `action-panels`, `alert`, `alert-dialog`, `card`, `code-block`, `collapsible`, `description-lists`, `empty-state`, `feeds`, `form`, `grid-lists`, `media-objects`, `phone-input`, `stacked-lists`, `stats`, `action-sheet`, `board`, `calendar`, `carousel`, `command`, `dashboard-grid`, `data-table`, `dialog`, `drag-drop`, `drawer`, `filter-panel`, `navbars`, `sidebar`, `row-menu`, `steps`, `tab-bar`, `tabs`, `toast`, `area-chart`, `candlestick-chart`, `depth-chart`, `sparkline`, `stacked-bar`, `gauge`, `heatmap`, `metric-breakdown`, `bullet-chart`, `progress-ring`, `range-area-chart`, `box-plot`, `waterfall-chart`, `radar-chart`, `geo-map`, `text`, `pressable`, `text-input`, `scroll-view`, `divider`, `icon`, `kbd`, `spinner`, `switch`, `field`, `chart`, `line-chart`, `pie-chart`, `scatter-plot`, `bar-list`, `uptime-bar`, `service-health-list`, `composed-chart`, `histogram`, `radial-bar-chart`, `funnel-chart`, `treemap`; pages `pattern-accessibility` |
-| Not captured | guide pages, which the capture inventory (component, pattern and template pages) does not hold: `/tokens/colors` (documents darkColors, glassByScheme, lightColors, mintColors, statusHues; planned for alpha, baseColors, channelsOf, colorsByScheme, ColorScheme, ColorTokens, composite, contrastRatio, darkGlass, GlassTokens, Hue, inkOn, lightGlass, mixOklab, palette, relativeLuminance, statusColors, StatusColors, StatusColorTone, StatusTone), `/tokens/layout` (planned for BreakpointKey, BreakpointOverride, breakpoints, ContainerBreakpoint, ContainerBreakpointOptions, formFactor, FormFactor, LayoutStyle, MeasuredWidth, MeasureProps, responsive, Responsive, SizingKey, useContainerBreakpoint, useContainerWidth, useMeasuredWidth, WidthKey, widths), `/tokens/spacing` (planned for PlatformKey, radius, shape, ShapeTokens, spacing), `/tokens/typography` (planned for FontFaces, FontWeightKey, ThemeFonts, typeface) |
+| Capture through | 103, in this order: components `text`, `image`, `text-input`, `row-column`, `grid`, `container`, `chip`, `emblem`, `autocomplete`, `avatar`, `badge`, `breadcrumb`, `button-group`, `button`, `checkbox`, `dropdown`, `input`, `input-otp`, `listbox`, `stepper`, `pagination`, `popover`, `progress`, `qrcode`, `radio`, `select`, `skeleton`, `slider`, `textarea`, `swatch`, `switch`, `tooltip`, `typography`, `video`, `accordion`, `action-panels`, `alert`, `alert-dialog`, `card`, `code-block`, `collapsible`, `description-lists`, `empty-state`, `feeds`, `form`, `grid-lists`, `media-objects`, `phone-input`, `stacked-lists`, `stats`, `action-sheet`, `board`, `calendar`, `carousel`, `command`, `dashboard-grid`, `data-table`, `dialog`, `drag-drop`, `drawer`, `filter-panel`, `navbars`, `sidebar`, `row-menu`, `steps`, `tab-bar`, `tabs`, `toast`, `area-chart`, `candlestick-chart`, `depth-chart`, `sparkline`, `stacked-bar`, `gauge`, `heatmap`, `metric-breakdown`, `bullet-chart`, `progress-ring`, `range-area-chart`, `box-plot`, `waterfall-chart`, `radar-chart`, `geo-map`, `pressable`, `scroll-view`, `divider`, `icon`, `kbd`, `spinner`, `field`, `chart`, `line-chart`, `pie-chart`, `scatter-plot`, `bar-list`, `uptime-bar`, `service-health-list`, `composed-chart`, `histogram`, `radial-bar-chart`, `funnel-chart`, `treemap`; pages `pattern-accessibility` |
+| Not captured | guide pages, which the capture inventory (component, pattern and template pages) does not hold: `/foundation` (planned for brandColors, BrandColors, containerProbe, customShadow, fontSize, fontWeight, HUE_WASH, letterSpacing, lineHeight, ResolvedFace, resolveFontFace, shadow, ShadowLevel, weightKey; not built yet), `/theming` (documents colorsFor; planned for Palette), `/tokens/colors` (documents darkColors, glassByScheme, lightColors, mintColors, statusHues; planned for alpha, baseColors, channelsOf, colorsByScheme, ColorScheme, ColorTokens, composite, contrastRatio, darkGlass, GlassTokens, Hue, inkOn, lightGlass, mixOklab, palette, relativeLuminance, statusColors, StatusColors, StatusColorTone, StatusTone), `/tokens/layout` (planned for BreakpointKey, BreakpointOverride, breakpoints, ContainerBreakpoint, ContainerBreakpointOptions, formFactor, FormFactor, LayoutStyle, MeasuredWidth, MeasureProps, responsive, Responsive, SizingKey, useContainerBreakpoint, useContainerWidth, useMeasuredWidth, WidthKey, widths), `/tokens/spacing` (planned for PlatformKey, radius, shape, ShapeTokens, spacing), `/tokens/typography` (planned for FontFaces, FontWeightKey, ThemeFonts, typeface) |
 | Turn record | `audit/turns/tokens.md`, written by `bun run audit:turn -- --slug=tokens --phase=before\|after` (the before and after capture runs) |
 
 | Consumer | Reaches it | Through |
 |---|---|---|
+| `text` | directly | `resolveFontFace` |
 | `image` | directly | `radius` |
+| `text-input` | directly | `resolveFontFace` |
 | `row-column` | directly | `breakpoints`, `spacing`, `useContainerWidth` |
 | `grid` | directly | `useContainerWidth` |
 | `container` | directly | `widths` |
 | `chip` | directly | `alpha`, `palette`, `shape`, `statusColors` |
 | `emblem` | directly | `shape`, `statusColors` |
-| `autocomplete` | directly | `shape`, `useMeasuredWidth` |
+| `autocomplete` | directly | `shadow`, `shape`, `useMeasuredWidth` |
 | `avatar` | directly | `shape` |
 | `badge` | directly | `shape`, `statusColors` |
 | `breadcrumb` | directly | `alpha` |
-| `button-group` | directly | `alpha`, `shape`, `useMeasuredWidth` |
+| `button-group` | directly | `alpha`, `customShadow`, `shadow`, `shape`, `useMeasuredWidth` |
 | `button` | directly | `shape` |
 | `checkbox` | directly | `shape` |
-| `dropdown` | directly | `alpha`, `shape`, `useMeasuredWidth` |
+| `dropdown` | directly | `alpha`, `shadow`, `shape`, `useMeasuredWidth` |
 | `input` | directly | `alpha`, `shape` |
 | `input-otp` | directly | `alpha`, `shape` |
 | `listbox` | directly | `shape` |
 | `stepper` | directly | `alpha`, `shape` |
 | `pagination` | directly | `alpha`, `shape` |
-| `popover` | directly | `shape`, `useMeasuredWidth` |
+| `popover` | directly | `shadow`, `shape`, `useMeasuredWidth` |
 | `progress` | directly | `alpha`, `statusColors` |
 | `qrcode` | directly | `shape` |
 | `radio` | directly | `alpha` |
-| `select` | directly | `alpha`, `shape`, `useMeasuredWidth` |
+| `select` | directly | `alpha`, `shadow`, `shape`, `useMeasuredWidth` |
 | `skeleton` | directly | `shape` |
-| `slider` | directly | `alpha` |
+| `slider` | directly | `alpha`, `customShadow` |
 | `textarea` | directly | `alpha`, `shape` |
 | `swatch` | directly | `shape` |
-| `tooltip` | directly | `shape` |
+| `switch` | directly | `customShadow` |
+| `tooltip` | directly | `shadow`, `shape` |
 | `typography` | directly | `alpha` |
 | `video` | directly | `radius` |
 | `accordion` | directly | `shape` |
 | `action-panels` | directly | `statusColors` |
 | `alert` | directly | `shape`, `statusColors` |
-| `alert-dialog` | directly | `alpha`, `shape`, `widths` |
-| `card` | directly | `alpha`, `shape` |
-| `code-block` | directly | `alpha`, `palette`, `shape` |
+| `alert-dialog` | directly | `alpha`, `shadow`, `shape`, `widths` |
+| `card` | directly | `alpha`, `customShadow`, `shadow`, `shape` |
+| `code-block` | directly | `alpha`, `palette`, `shadow`, `shape` |
 | `collapsible` | directly | `shape` |
-| `description-lists` | directly | `shape`, `useContainerBreakpoint` |
+| `description-lists` | directly | `containerProbe`, `shadow`, `shape`, `useContainerBreakpoint` |
 | `empty-state` | directly | `alpha`, `shape` |
 | `feeds` | directly | `shape` |
 | `form` | directly | `useContainerWidth`, `widths` |
 | `grid-lists` | directly | `alpha`, `palette`, `shape`, `useContainerBreakpoint` |
-| `media-objects` | directly | `alpha`, `shape` |
+| `media-objects` | directly | `alpha`, `shadow`, `shape` |
 | `phone-input` | directly | `alpha`, `useMeasuredWidth` |
-| `stacked-lists` | directly | `shape` |
-| `stats` | directly | `alpha`, `shape`, `statusColors` |
-| `action-sheet` | directly | `alpha`, `shape` |
+| `stacked-lists` | directly | `shadow`, `shape` |
+| `stats` | directly | `alpha`, `shadow`, `shape`, `statusColors` |
+| `action-sheet` | directly | `alpha`, `shadow`, `shape` |
 | `board` | directly | `shape`, `useMeasuredWidth` |
-| `calendar` | directly | `alpha`, `shape`, `useMeasuredWidth` |
-| `carousel` | directly | `alpha`, `shape` |
-| `command` | directly | `shape` |
+| `calendar` | directly | `alpha`, `shadow`, `shape`, `useMeasuredWidth` |
+| `carousel` | directly | `alpha`, `shadow`, `shape` |
+| `command` | directly | `shadow`, `shape` |
 | `dashboard-grid` | directly | `shape`, `spacing`, `useContainerBreakpoint` |
 | `data-table` | directly | `alpha`, `breakpoints`, `shape`, `useContainerWidth` |
-| `dialog` | directly | `alpha`, `shape`, `widths` |
-| `drag-drop` | directly | `alpha`, `shape` |
-| `drawer` | directly | `alpha`, `shape` |
+| `dialog` | directly | `alpha`, `shadow`, `shape`, `widths` |
+| `drag-drop` | directly | `alpha`, `shadow`, `shape` |
+| `drawer` | directly | `alpha`, `customShadow`, `shadow`, `shape` |
 | `filter-panel` | directly | `breakpoints`, `shape` |
-| `navbars` | directly | `alpha`, `shape`, `useContainerBreakpoint` |
+| `navbars` | directly | `alpha`, `shadow`, `shape`, `useContainerBreakpoint` |
 | `sidebar` | directly | `alpha`, `breakpoints`, `shape` |
-| `row-menu` | directly | `alpha`, `shape`, `useMeasuredWidth` |
-| `steps` | directly | `alpha`, `useContainerBreakpoint` |
-| `tab-bar` | directly | `alpha` |
-| `tabs` | directly | `alpha`, `shape`, `useContainerBreakpoint` |
-| `toast` | directly | `alpha`, `shape` |
+| `row-menu` | directly | `alpha`, `shadow`, `shape`, `useMeasuredWidth` |
+| `steps` | directly | `alpha`, `containerProbe`, `useContainerBreakpoint` |
+| `tab-bar` | directly | `alpha`, `customShadow`, `shadow` |
+| `tabs` | directly | `alpha`, `containerProbe`, `customShadow`, `shadow`, `shape`, `useContainerBreakpoint` |
+| `toast` | directly | `alpha`, `shadow`, `shape` |
 | `area-chart` | directly | `alpha` |
 | `candlestick-chart` | directly | `alpha` |
 | `depth-chart` | directly | `alpha` |
@@ -102,15 +105,12 @@ Audit checklist for the design tokens the `tokens/*` docs pages document, audite
 | `waterfall-chart` | directly | `statusColors` |
 | `radar-chart` | directly | `alpha` |
 | `geo-map` | directly | `useMeasuredWidth` |
-| `text` | through shared modules | `useFocusRingStyle` (src/style/pressable.tsx), `useTheme` (src/style/theme.tsx) |
 | `pressable` | through shared modules | `useTheme` (src/style/theme.tsx) |
-| `text-input` | through shared modules | `useFocusRingStyle` (src/style/pressable.tsx), `useTheme` (src/style/theme.tsx) |
 | `scroll-view` | through shared modules | `useFocusRingStyle` (src/style/pressable.tsx) |
 | `divider` | through shared modules | `Text` (src/style/text.tsx), `useTheme` (src/style/theme.tsx) |
 | `icon` | through shared modules | `useTheme` (src/style/theme.tsx) |
 | `kbd` | through shared modules | `GlassPane` (src/style/glass-surface/glass-pane.tsx), `Text` (src/style/text.tsx), `useMaterialTheme` (src/style/glass-surface/use-material-theme.ts) |
 | `spinner` | through shared modules | `Text` (src/style/text.tsx), `useTheme` (src/style/theme.tsx) |
-| `switch` | through shared modules | `GlassPane` (src/style/glass-surface/glass-pane.tsx), `GlassSurface` (src/style/glass-surface/glass-surface.android.tsx), `GlassSurface` (src/style/glass-surface/glass-surface.ios.tsx) and 4 more |
 | `field` | through shared modules | `LabelContent` (src/style/floating-label.tsx), `Text` (src/style/text.tsx), `useFillStyle` (src/style/sizing.ts) and 1 more |
 | `chart` | through shared modules | `ChartLegend` (src/charts/shared/chart-legend.tsx), `ChartValueFlag` (src/charts/shared/chart-inspect.tsx), `GlassPane` (src/style/glass-surface/glass-pane.tsx) and 8 more |
 | `line-chart` | through shared modules | `androidSkin` (src/charts/shared/charts.styles.ts), `chartShell` (src/charts/shared/cartesian-series.tsx), `iosSkin` (src/charts/shared/charts.styles.ts) and 2 more |
@@ -142,6 +142,7 @@ Severity follows rn-library-audit: critical (broken for a class of users), high 
 
 - [ ] K12-7: the colors, spacing and shape, typography and layout references on the `tokens/*` pages name every token set and type they document
 - [ ] K12-7 OD3: `fontSize`, `fontWeight`, `lineHeight` and `letterSpacing` (the Riskora ladder nothing reads) deprecated, pointing to Typography's roles
+- [ ] K12-2 OD4: `shadow`, `customShadow` and `ShadowLevel` deprecated, elevation coming from Card's appearances; the Elevation section of `/tokens/spacing`, which renders `shadow`, moved to the replacement
 - [ ] Dark Factory's tokens on every platform: violet `primary` for selection, the green `action` role for calls to action, blush, mint and DF's one dark palette, Manrope at DF's dense sizes with the 12, 11 and 10 floors
 - [ ] K9: one source of truth for the iOS checkbox's check radius (`DESIGN.md`'s generated 11 against `shape.ios.checkbox` 5 in `src/style/tokens.ts`)
 - [ ] K10: no stale Riskora comments in `styles/tokens/platforms.css`; the web hand-off (`styles/tokens/*.css`) mirrors `src/style/tokens.ts`

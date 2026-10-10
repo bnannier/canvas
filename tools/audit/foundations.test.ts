@@ -3,10 +3,11 @@ import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { ROOT } from "../../e2e/support/routes.ts";
-import { DECIDED_DEPRECATIONS, findFoundation, foundationCode, foundationFacts, foundationId, foundationSources, foundations, importsFoundation, importsImplementation, k12Status, namedFor, tokenPages } from "./foundations.ts";
+import { DECIDED_DEPRECATIONS, findFoundation, foundationCode, foundationFacts, foundationId, foundationSources, foundations, importsFoundation, importsImplementation, k12Status, namedFor, routeModule, tokenPages, unplacedDeprecations } from "./foundations.ts";
 import { components, pages } from "./inventory.ts";
 import { KitGraph, MODULE_BODY, UnreadableKitModule, consumersOf, moduleFiles, moduleStem, ownersByReaders, type ConsumerCandidate } from "./kit-graph.ts";
-import { FOUNDATION_PLANS, STYLE_LAYER_RENDERABLES, TOKENS_FOUNDATION } from "./plan-specifics.ts";
+import { FOUNDATION_PLANS, REFERENCE_FOUNDATION, STYLE_LAYER_RENDERABLES, TOKENS_FOUNDATION } from "./plan-specifics.ts";
+import { publicApi } from "../api/manifest.ts";
 
 /** A throwaway kit: files under a temporary root, read by the same graph the facts use. */
 function fixture(files: Record<string, string>): { root: string; done: () => void } {
@@ -166,10 +167,11 @@ describe("the Foundations tier (tools/audit/foundations.ts)", () => {
   const facts = (name: string) => foundationFacts(findFoundation(name)!, { tests: [] }, sources);
   const consumer = (name: string, slug: string) => facts(name).consumers.find((c) => c.slug === slug);
 
-  it("is the style-layer renderables and the design tokens, each with a kebab id no component or page takes, and a plan row", () => {
+  it("is the style-layer renderables, the design tokens and the reference's internals, each with a kebab id no component or page takes, and a plan row", () => {
     const list = foundations();
-    expect(list.map((f) => f.name)).toEqual([...STYLE_LAYER_RENDERABLES, TOKENS_FOUNDATION].sort((a, b) => a.localeCompare(b)));
-    expect(list).toHaveLength(15);
+    expect(list.map((f) => f.name)).toEqual([...STYLE_LAYER_RENDERABLES, TOKENS_FOUNDATION, REFERENCE_FOUNDATION].sort((a, b) => a.localeCompare(b)));
+    expect(list).toHaveLength(16);
+    expect(findFoundation("foundation-reference")).toEqual({ name: "FoundationReference", id: "foundation-reference", kind: "reference" });
     expect(foundationId("GlassModalBlurTarget")).toBe("glass-modal-blur-target");
     expect(foundationId("ThemeProvider")).toBe("theme-provider");
     expect(foundationId("Tokens")).toBe("tokens");
@@ -213,13 +215,42 @@ describe("the Foundations tier (tools/audit/foundations.ts)", () => {
     expect(facts("LabelContent").consumers).toEqual(facts("FloatingLabel").consumers);
   });
 
-  it("reads the design tokens from the tokens/* pages the manifest routes them to", () => {
+  it("reads the design tokens from the tokens/* pages: what the manifest routes there, what they show, and their modules' other names", () => {
     const tokens = facts("Tokens");
     expect(tokens.homes).toEqual(tokenPages());
-    expect(tokens.exports.map((e) => e.name)).toEqual(expect.arrayContaining(["spacing", "radius", "lightColors", "breakpoints", "typeface"]));
-    expect(tokens.notCaptured.map((d) => d.route)).toEqual(["tokens/colors", "tokens/layout", "tokens/spacing", "tokens/typography"]);
+    const names = tokens.exports.map((e) => e.name);
+    expect(names).toEqual(expect.arrayContaining(["spacing", "radius", "lightColors", "breakpoints", "typeface"]));
+    // /tokens/spacing renders `shadow` in its Elevation section, and its module's other names come with it (K12-2 OD4).
+    expect(routeModule(ROOT, "/tokens/spacing")).toBe("docs/src/app/(utilities)/tokens/spacing.tsx");
+    expect(sources.tokenNames.get("/tokens/spacing")).toContain("shadow");
+    expect(names).toEqual(expect.arrayContaining(["shadow", "customShadow", "ShadowLevel"]));
+    // src/style/tokens.ts declares the Riskora type ladder (K12-7 OD3), and the deprecated aliases beside the tokens.
+    expect(names).toEqual(expect.arrayContaining(["fontSize", "fontWeight", "lineHeight", "letterSpacing", "HUE_WASH", "brandColors"]));
+    expect(tokens.sourceFiles).toEqual(expect.arrayContaining(["src/style/shadow.ts", "src/style/tokens.ts"]));
+    // A page's frame is components: Card, DataTable and the toast an example raises are not tokens.
+    for (const frame of ["Card", "DataTable", "useToast", "Toast", "useTheme"]) expect(names).not.toContain(frame);
+    expect(tokens.notCaptured.map((d) => d.route)).toEqual(["foundation", "theming", "tokens/colors", "tokens/layout", "tokens/spacing", "tokens/typography"]);
     expect(tokens.materials).toBeNull();
     expect(consumer("Tokens", "card")?.tier).toBe("direct");
+  });
+
+  it("puts every deprecation the owner decided on a Foundations checklist, the kit internals on the /foundation reference's", () => {
+    expect(unplacedDeprecations(sources)).toEqual([]);
+    // A retired name no foundation holds is caught (audit:checklists:check fails on it).
+    expect(unplacedDeprecations(sources, { ...publicApi, strayHelper: { kind: "internal-by-accident" } })).toEqual(["strayHelper"]);
+    const placed = new Map<string, string[]>();
+    for (const f of foundations()) for (const e of facts(f.name).exports) placed.set(e.name, [...(placed.get(e.name) ?? []), f.name]);
+    for (const name of Object.keys(DECIDED_DEPRECATIONS)) expect(placed.has(name)).toBe(true);
+    for (const [name, entry] of Object.entries(publicApi)) if (entry.kind === "internal-by-accident") expect([name, placed.has(name)]).toEqual([name, true]);
+    const reference = facts("FoundationReference");
+    expect(reference.homes).toEqual(["/foundation"]);
+    expect(reference.exports.map((e) => e.name)).toEqual(expect.arrayContaining(["StyleSheet", "controlRipple", "surfaceRipple", "rippleClip", "pressDim", "tabularNums", "useControllableState"]));
+    expect(reference.exports.every((e) => e.k12.startsWith("deprecated alias"))).toBe(true);
+    expect(reference.notCaptured.map((d) => d.route)).toEqual(["foundation"]);
+    // A name a renderable or the tokens hold stays theirs, though /foundation plans it too.
+    expect(placed.get("SsrBreakpointContext")).toEqual(["BreakpointOverride"]);
+    expect(placed.get("StyleSheet")).toEqual(["FoundationReference"]);
+    expect(placed.get("useWindowDimensions")).toEqual(["BreakpointOverride"]);
   });
 
   it("states the K12-2 status from the manifest and the owner's decisions", () => {

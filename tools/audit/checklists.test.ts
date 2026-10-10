@@ -1014,7 +1014,9 @@ describe("findings and sign-off tables", () => {
     const readme = readFileSync(join(ROOT, "audit/README.md"), "utf8").replace(/\s+/g, " ");
     const names = [...STYLE_LAYER_RENDERABLES];
     const list = `${names.slice(0, -1).join(", ")} and ${names.at(-1)}`;
-    expect(readme).toContain(`The Foundations tier is the style-layer renderables with no component page of their own, ${list}, and the design tokens the docs' \`tokens/*\` pages document (Tokens).`);
+    expect(readme).toContain(
+      `The Foundations tier is the style-layer renderables with no component page of their own, ${list}; the design tokens the docs' \`tokens/*\` pages document (Tokens); and the kit internals the generated \`/foundation\` reference page documents (FoundationReference).`,
+    );
     // Derived from the material inventory: the primitives with their own page are not in it.
     expect(names).toContain("ThemeProvider");
     expect(names).not.toContain("View");
