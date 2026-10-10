@@ -165,7 +165,8 @@ function member(value: unknown, key: unknown): unknown {
   return UNKNOWN;
 }
 
-function pick(value: unknown, path: (string | number)[]): unknown {
+/** The member at `path` of a value (`[]` is the value itself), as a destructuring takes it. */
+export function pick(value: unknown, path: (string | number)[]): unknown {
   return path.reduce<unknown>((v, key) => member(v, key), value);
 }
 

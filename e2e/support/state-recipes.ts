@@ -146,7 +146,10 @@ export type Verdict = Reached | NotReached;
  * renders it in, given where its role does not single it out. A control another kit
  * component renders for the component (FilterPanel's Clear, a kit Button) is that
  * component's, so tools/audit/state-coverage.ts refuses a recipe whose control is none of
- * the component's own where the recipe is applied.
+ * the component's own where the recipe is applied, on each row it is applied on: a row shows
+ * one platform build, and a build renders only its own skin's controls (the web Dialog's
+ * Cancel is a kit Button, its iOS build's a capsule of its own), so the same role and name
+ * can be the component's own control on one row and a kit child on another.
  */
 export interface ControlSpec {
   role?: string;
@@ -157,7 +160,12 @@ export interface StateRecipe {
   state: StateName;
   /** The example it is applied to: a variant key of the component's page (`default` for the Usage fence). */
   variant: string;
-  /** The platform rows it is applied from. */
+  /**
+   * The platform rows of the docs' three-up it is applied from: the web row, unless the
+   * control it acts on is the component's own only where another build renders it (Dialog's
+   * and AlertDialog's iOS capsules and Android text buttons, `NATIVE_ROWS`), and every row an
+   * overlay opens from.
+   */
   rows: readonly RowPlatform[];
   /**
    * The widths it is captured at: the desktop (`DESKTOP`) for a state the pointer or the
@@ -473,6 +481,8 @@ const NEUTRAL_POINT = { x: 1, y: 1 };
 
 /** The desktop alone: where the pointer and the keyboard states are captured. */
 export const DESKTOP: readonly WidthKey[] = ["desktop"];
+/** The web row alone: where a state is applied, unless its control is the component's own only on another build's row. */
+const WEB_ROW: readonly RowPlatform[] = ["web"];
 /** Every audit width: an opening is captured at each, since an overlay becomes a sheet on a phone. */
 export const EVERY_WIDTH: readonly WidthKey[] = WIDTHS.map((w) => w.key);
 
@@ -501,12 +511,12 @@ type Hovered = { control: Locator; rest: StyleSnapshot; opened?: Opened; panel?:
  * wrappers changed one of the properties the kit's hover feedback changes; the evidence
  * lists every watched property that changed.
  */
-function hover(variant: string, target: Target, options: { within?: OpenSpec; how?: string } = {}): StateRecipe {
+function hover(variant: string, target: Target, options: { within?: OpenSpec; how?: string; rows?: readonly RowPlatform[] } = {}): StateRecipe {
   const within = options.within;
   return recipe<Hovered>({
     state: "hover",
     variant,
-    rows: ["web"],
+    rows: options.rows ?? WEB_ROW,
     widths: DESKTOP,
     frame: within ? "viewport" : "row",
     ...insideOf(within),
@@ -727,6 +737,8 @@ interface FocusOptions {
    * swaps the row's value for its field.
    */
   reveal?: Target;
+  /** The rows it is applied from, when not the web row alone (`StateRecipe.rows`). */
+  rows?: readonly RowPlatform[];
 }
 
 /**
@@ -741,7 +753,7 @@ function focus(variant: string, target: Target, options: FocusOptions = {}): Sta
   return recipe<Focused>({
     state: "focus",
     variant,
-    rows: ["web"],
+    rows: options.rows ?? WEB_ROW,
     widths: options.widths ?? DESKTOP,
     frame: within ? "viewport" : "row",
     ...insideOf(within),
@@ -1006,6 +1018,8 @@ interface PressOptions {
   within?: OpenSpec;
   /** The widths the control is there at, when not the desktop: inside a drawer a panel becomes only at a phone's width. */
   widths?: readonly WidthKey[];
+  /** The rows it is applied from, when not the web row alone (`StateRecipe.rows`). */
+  rows?: readonly RowPlatform[];
 }
 
 /**
@@ -1030,7 +1044,7 @@ function pressed(variant: string, target: Target, options: PressOptions = {}): S
   return recipe<Pressed>({
     state: "pressed",
     variant,
-    rows: ["web"],
+    rows: options.rows ?? WEB_ROW,
     widths: options.widths ?? DESKTOP,
     frame: within ? "viewport" : "row",
     ...insideOf(within),
@@ -1281,7 +1295,7 @@ function inspect(variant: string, where: PlotPoint, options: InspectOptions): St
   return recipe<Inspected>({
     state: "pressed",
     variant,
-    rows: ["web"],
+    rows: WEB_ROW,
     widths: DESKTOP,
     frame: "row",
     control: options.control ?? {},
@@ -1329,7 +1343,7 @@ function hoverInspect(variant: string, where: PlotPoint, options: { expect?: rea
   return recipe<Inspected>({
     state: "hover",
     variant,
-    rows: ["web"],
+    rows: WEB_ROW,
     widths: DESKTOP,
     frame: "row",
     control: options.control ?? {},
@@ -1643,7 +1657,7 @@ function hoverOpen(variant: string, spec: OpenSpec & { control: ControlSpec }, h
   return recipe<Opened>({
     state: "hover",
     variant,
-    rows: ["web"],
+    rows: WEB_ROW,
     widths: DESKTOP,
     frame: spec.where === "row" ? "row" : "viewport",
     how,
@@ -1692,7 +1706,7 @@ function invalid(variant: string, target: Target, options: { type?: string; how?
   return recipe<Invalidated>({
     state: "invalid",
     variant,
-    rows: ["web"],
+    rows: WEB_ROW,
     widths: DESKTOP,
     frame: "row",
     how: options.how ?? "the example that shows the control's error",
@@ -1743,12 +1757,12 @@ type Disabled = { control: Locator; opened?: Opened; panel?: Locator } | { missi
  * or a native `disabled`; one the Tab key still stops on is flagged `disabled-tab-stop`. The
  * overlay is probed beside the row, and the release closes it.
  */
-function disabled(variant: string, target: Target, options: { within?: OpenSpec; how?: string } = {}): StateRecipe {
+function disabled(variant: string, target: Target, options: { within?: OpenSpec; how?: string; rows?: readonly RowPlatform[] } = {}): StateRecipe {
   const within = options.within;
   return recipe<Disabled>({
     state: "disabled",
     variant,
-    rows: ["web"],
+    rows: options.rows ?? WEB_ROW,
     widths: DESKTOP,
     frame: within ? "viewport" : "row",
     ...insideOf(within),
@@ -1811,6 +1825,11 @@ const openedFrom = (spec: OverlayRecipe, name: string | RegExp): OpenSpec => {
 
 /** The rows an overlay opens from: the web row, and each platform whose docs registry injects the component's own build. */
 const ALL_ROWS: readonly RowPlatform[] = ["web", "ios", "android"];
+/**
+ * The iOS and Android rows: where a control the component's own iOS and Android builds render
+ * is (Dialog's and AlertDialog's footer buttons), whose web build renders a kit Button there.
+ */
+const NATIVE_ROWS: readonly RowPlatform[] = ["ios", "android"];
 
 /** Where each page's pointer rests, for an opening the pointer holds. */
 const restingPointer = new WeakMap<Page, { x: number; y: number }>();
@@ -2209,11 +2228,15 @@ export const STATE_RECIPES: Record<string, ComponentStates> = {
     pressed: pressed("dismissible", byRole("button", "Dismiss")),
   },
   "alert-dialog": {
-    focus: focus("default", byRole("button", "Cancel"), { within: overlay("alert-dialog") }),
-    pressed: pressed("default", byRole("button", "Cancel"), { within: overlay("alert-dialog") }),
+    // Its own action buttons are the iOS build's capsules and the Android build's text buttons
+    // (`skin.actionLayout`, `skin.textButton`); the web build's are kit Buttons, whose own
+    // recipes capture their focus and press. So these are applied on the iOS and Android rows.
+    focus: focus("default", byRole("button", "Cancel"), { within: overlay("alert-dialog"), rows: NATIVE_ROWS }),
+    pressed: pressed("default", byRole("button", "Cancel"), { within: overlay("alert-dialog"), rows: NATIVE_ROWS }),
     open: open("default", overlay("alert-dialog"), ALL_ROWS, viaRecipe("alert-dialog")),
-    // `withInput` keeps the confirm disabled until its token is typed in the dialog's field.
-    disabled: disabled("bodyfield", byRole("button", "Delete"), { within: overlay("alert-dialog"), how: "the dialog opens, then its Delete button, disabled until DELETE is typed in its field" }),
+    // `withInput` keeps the confirm disabled until its token is typed in the dialog's field: the
+    // kit Button it hands `disabled` on the web row, its own capsule and text button on the others.
+    disabled: disabled("bodyfield", byRole("button", "Delete"), { within: overlay("alert-dialog"), rows: ALL_ROWS, how: "the dialog opens, then its Delete button, disabled until DELETE is typed in its field" }),
   },
   card: {
     hover: hover("pressable", byRole("button", /^Scout/)),
@@ -2346,12 +2369,18 @@ export const STATE_RECIPES: Record<string, ComponentStates> = {
     reason: "A layout of tiles: in customize mode its reorder grips are a kit DragDrop's, whose own recipes capture them.",
   },
   "data-table": {
-    focus: focus("sortable", byRole("columnheader", /^Email/)),
+    // On every row: the iOS and Android builds render their own cell editor's field
+    // (`skin.liquidTextEntry`), so the native rows' surfaces take focus where the web's does not.
+    focus: focus("sortable", byRole("columnheader", /^Email/), { rows: ALL_ROWS }),
     pressed: pressed("sortable", byRole("columnheader", /^Email/)),
   },
   dialog: {
-    focus: focus("default", byRole("button", "Cancel"), { within: overlay("dialog") }),
-    pressed: pressed("default", byRole("button", "Cancel"), { within: overlay("dialog") }),
+    // Its own footer controls are the iOS build's capsules and the Android build's text buttons
+    // (`skin.footerKind`, `skin.textButton`); the web build's Cancel and Confirm are kit Buttons,
+    // whose own recipes capture their focus and press. So these are applied on the iOS and
+    // Android rows of the three-up.
+    focus: focus("default", byRole("button", "Cancel"), { within: overlay("dialog"), rows: NATIVE_ROWS }),
+    pressed: pressed("default", byRole("button", "Cancel"), { within: overlay("dialog"), rows: NATIVE_ROWS }),
     open: open("default", overlay("dialog"), ALL_ROWS, viaRecipe("dialog")),
   },
   "drag-drop": {
