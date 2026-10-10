@@ -234,6 +234,27 @@ function titlesOf(node: ts.ObjectLiteralExpression, list: string, key: string): 
   });
 }
 
+/**
+ * A component page's guidance sections (the `guidance` of its generated docs module): each
+ * section's title, an h2, then the `{ heading }` blocks under it, its h3s.
+ */
+function guidanceHeadings(node: ts.ObjectLiteralExpression): string[] {
+  const value = property(node, "guidance");
+  if (!value || !ts.isArrayLiteralExpression(value)) return [];
+  return value.elements.flatMap((section) => {
+    if (!ts.isObjectLiteralExpression(section)) return [];
+    const title = stringProperty(section, "title");
+    const blocks = property(section, "blocks");
+    const headings = blocks && ts.isArrayLiteralExpression(blocks)
+      ? blocks.elements.flatMap((block) => {
+        const heading = ts.isObjectLiteralExpression(block) ? stringProperty(block, "heading") : undefined;
+        return heading ? [heading] : [];
+      })
+      : [];
+    return [...(title ? [title] : []), ...headings];
+  });
+}
+
 function arrayOf(source: ts.SourceFile, name: string): ts.ArrayLiteralExpression {
   for (const statement of source.statements) {
     if (!ts.isVariableStatement(statement)) continue;
@@ -325,7 +346,7 @@ export function docsPages(root: string, components: readonly CatalogEntry[]): Ma
         text += `\n${module.text}`;
         code += `\n${module.code}`;
         examples = titlesOf(docs, "examples", "label");
-        headings = [...examples, ...titlesOf(docs, "donts", "title"), ...titlesOf(docs, "props", "name")];
+        headings = [...examples, ...titlesOf(docs, "donts", "title"), ...titlesOf(docs, "props", "name"), ...guidanceHeadings(docs)];
       }
       const page: DocsPage = { route: `components/${entry.slug}`, sources, text, code, headings };
       add(page);

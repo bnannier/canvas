@@ -14,8 +14,11 @@ import e_organisms_toast_dont_0_dont from "./dont-0-dont";
 export const docs: ComponentDocs = {
   dir: "toast",
   category: "organisms",
+  overview: [
+    "On the web and iOS the toast is Dark Factory's pill: the same deep fill in every palette and scheme, a bold white message, a pill with no description (a long message wraps inside the capsule) and a rounder card once a description sits under the message, with the intent glyph, the action and the dismiss in inks that read on the dark fill. Android keeps the Material 3 snackbar on the same fill.",
+  ],
   examples: [
-    { label: "Default", code: "<AppScreen>\n  <ToastProvider>\n    <WithToast hook={useToast}>\n      {({ toast }) => <Button onPress={() => toast({ message: \"Profile updated\" })}>Show toast</Button>}\n    </WithToast>\n  </ToastProvider>\n</AppScreen>", render: e_organisms_toast_example_0 },
+    { label: "Default", code: "<AppScreen>\n  <ToastProvider>\n    <WithToast hook={useToast}>\n      {({ toast }) => <Button onPress={() => toast({ message: \"Profile updated\" })}>Show toast</Button>}\n    </WithToast>\n  </ToastProvider>\n</AppScreen>", render: e_organisms_toast_example_0, note: ["Toast is usually driven imperatively: mount a `<ToastProvider>` near your app root, then call the `toast(...)` handle from `useToast()` to enqueue an auto-dismissing capsule that floats over the app. Press the button to fire one. (`AppScreen` is just this demo's stand-in for your app root, so the toast has a screen to float over.)"] },
     { label: "Rendered directly", code: "<Toast message=\"Your changes were saved\" description=\"They are live for everyone.\" />", render: e_organisms_toast_example_1 },
     { label: "Success", code: "<Toast success message=\"Profile updated\" />", render: e_organisms_toast_example_2 },
     { label: "Destructive", code: "<Toast destructive message=\"Upload failed\" />", render: e_organisms_toast_example_3 },

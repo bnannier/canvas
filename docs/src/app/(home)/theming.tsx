@@ -1,7 +1,7 @@
 import { Row, Column, ButtonGroup, Button, Card, Checkbox, Switch, ThemeProvider, Typography } from "@nannier/canvas";
 import { Page, PageHeader } from "../../ui/page";
 import { Section } from "../../ui/section";
-import { H3, P, Rule, InlineCode } from "../../ui/prose";
+import { BulletList, H3, P, Rule, InlineCode } from "../../ui/prose";
 import { PageNav } from "../../ui/page-nav";
 import { CodeBlock } from "../../ui/code-block";
 import { Callout } from "../../ui/tokens-kit";
@@ -153,10 +153,6 @@ function PalettePreview({ mint, label }: { mint?: boolean; label: string }) {
   );
 }
 
-function Bullet({ children }: { children: React.ReactNode }) {
-  return <Row snug><Typography subtle>•</Typography><Column fill><Typography subtle>{children}</Typography></Column></Row>;
-}
-
 export default function ThemingScreen() {
   const { scheme, surface, setScheme, setSurface } = useDocsTheme();
 
@@ -304,14 +300,17 @@ export default function ThemingScreen() {
             />
           </Row>
           <H3>What changes</H3>
-          <Column tight>
-            <Bullet>Shared GlassSurface and GlassPane rendering owns material selection and clipping. Native Liquid Glass, native frost and the browser's frost are different capabilities; a browser preview of an iOS skin does not prove native rendering</Bullet>
-            <Bullet>No semantic token changes: popover and card keep the same opaque values they carry in solid mode. Glass adds its own fills, glass-tint, glass-tint-content, glass-tint-control and glass-tint-dense, painted under the material by the surfaces of each layer</Bullet>
-            <Bullet>Brand and status meanings remain readable in every material. Check contrast against actual backgrounds, including scrolling content; a tint token or a decorative rim alone does not establish it</Bullet>
-            <Bullet>Solid surfaces retain their full opaque treatment without glass capture. Reduce Transparency and Increase Contrast require readable opaque treatment; Reduce Motion removes nonessential movement without requiring opacity by itself</Bullet>
-            <Bullet>Android blur needs a safe live backdrop target. The optional @nannier/canvas-blur integration on Android 12+ with Expo SDK 57 enables capture only while glass needs it. OverlayProvider supplies safe overlay targets. Missing or unsafe material uses the complete solid skin</Bullet>
-            <Bullet>The CSS handoff always carries the web material&apos;s tints, blur and hairline; data-surface marks glass mode and gates the accessibility and print fallbacks that turn the material opaque. It paints no page backdrop of its own and supplies no native material</Bullet>
-          </Column>
+          <BulletList
+            subtle
+            items={[
+              "Shared GlassSurface and GlassPane rendering owns material selection and clipping. Native Liquid Glass, native frost and the browser's frost are different capabilities; a browser preview of an iOS skin does not prove native rendering",
+              "No semantic token changes: popover and card keep the same opaque values they carry in solid mode. Glass adds its own fills, glass-tint, glass-tint-content, glass-tint-control and glass-tint-dense, painted under the material by the surfaces of each layer",
+              "Brand and status meanings remain readable in every material. Check contrast against actual backgrounds, including scrolling content; a tint token or a decorative rim alone does not establish it",
+              "Solid surfaces retain their full opaque treatment without glass capture. Reduce Transparency and Increase Contrast require readable opaque treatment; Reduce Motion removes nonessential movement without requiring opacity by itself",
+              "Android blur needs a safe live backdrop target. The optional @nannier/canvas-blur integration on Android 12+ with Expo SDK 57 enables capture only while glass needs it. OverlayProvider supplies safe overlay targets. Missing or unsafe material uses the complete solid skin",
+              "The CSS handoff always carries the web material's tints, blur and hairline; data-surface marks glass mode and gates the accessibility and print fallbacks that turn the material opaque. It paints no page backdrop of its own and supplies no native material",
+            ]}
+          />
           <H3>Web helpers</H3>
           <P muted>The helpers persist the choice and update the CSS handoff attributes. Feed the same choice to ThemeProvider so React Native components follow it.</P>
           <CodeBlock code={JS_SURFACE} />

@@ -28,6 +28,9 @@ import e_atoms_input_dont_2_dont from "./dont-2-dont";
 export const docs: ComponentDocs = {
   dir: "input",
   category: "atoms",
+  overview: [
+    "Inside an overlay, Escape follows the overlay's cancellation policy. A supplied `onKeyPress` runs first and can call `preventDefault()` to handle Escape locally. Cancelling an IME candidate keeps the overlay open.",
+  ],
   examples: [
     { label: "Default", code: "<Input placeholder=\"rachel.chen@example.com\" />", render: e_atoms_input_example_0 },
     { label: "Label", code: "<Input label=\"Email\" placeholder=\"rachel.chen@example.com\" />", render: e_atoms_input_example_1 },

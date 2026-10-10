@@ -21,6 +21,10 @@ import e_atoms_button_group_dont_2_dont from "./dont-2-dont";
 export const docs: ComponentDocs = {
   dir: "button-group",
   category: "atoms",
+  overview: [
+    "On the web the segmented control is Dark Factory's: the options sit in a pill track and the selected one rides a white thumb, with the rest in the muted ink. The split button is the green call-to-action pill with its chevron half, and the stepper and the spaced peers are hairline pills the height of a Button beside them. On iOS and Android the groups keep their platform shapes (the iOS segmented control, the Material 3 segmented button) in the theme's colours.",
+    "All four kinds follow the theme's surface mode. Toggle Liquid Glass in the docs, or use `<ThemeProvider glass>` in an app: segmented groups paint a glass selection pill on the selected segment, a split group is its call to action's brand-tinted glass (the action colour under the material, as a primary Button), a stepper shares a glass capsule, and spaced peers get individual glass surfaces. Solid mode keeps each platform's existing skin. The material uses native Liquid Glass on supported iOS versions, the native blur or tint fallback on Android and older iOS, and Dark Factory's frost in the browser. Reduce Transparency and Increase Contrast use the shared material's opaque fallbacks.",
+  ],
   examples: [
     { label: "Default", code: "<ButtonGroup items={[\"Day\", \"Week\", \"Month\"]} />", render: e_atoms_button_group_example_0 },
     { label: "Small", code: "<ButtonGroup items={[\"Day\", \"Week\", \"Month\"]} small />", render: e_atoms_button_group_example_1 },
@@ -30,8 +34,8 @@ export const docs: ComponentDocs = {
     { label: "Block spaced", code: "<ButtonGroup spaced items={[\"Edit\", \"Duplicate\", \"Archive\"]} block />", render: e_atoms_button_group_example_5 },
     { label: "Measure", code: "<Container>\n  <Column>\n    <ButtonGroup items={[\"Day\", \"Week\", \"Month\"]} xs start />\n    <ButtonGroup spaced items={[\"Edit\", \"Duplicate\", \"Archive\"]} md />\n  </Column>\n</Container>", render: e_atoms_button_group_example_6 },
     { label: "Stepper", code: "<ButtonGroup stepper items={[\"Yesterday\", \"Today\", \"Tomorrow\"]} />", render: e_atoms_button_group_example_7 },
-    { label: "Split", code: "<ButtonGroup split items={[\"Save\"]} menu={[\"Save as draft\", \"Save and close\", \"Save a copy\"]} />", render: e_atoms_button_group_example_8 },
-    { label: "Icon segments", code: "<ButtonGroup\n  iconsOnly\n  items={[\n    { label: \"Phone width\", icon: \"smartphone\" },\n    { label: \"Tablet width\", icon: \"tablet\" },\n    { label: \"Desktop width\", icon: \"monitor\" }\n  ]}\n/>", render: e_atoms_button_group_example_9 },
+    { label: "Split", code: "<ButtonGroup split items={[\"Save\"]} menu={[\"Save as draft\", \"Save and close\", \"Save a copy\"]} />", render: e_atoms_button_group_example_8, note: ["In glass mode the split menu is a dense-layer glass card under the group, whose shared glass, primary label, divider and chevron stay in place. The primary action and the chevron stay two fixed targets throughout, and a group disabled while its menu is open closes it. Solid mode paints the skin's own menu."] },
+    { label: "Icon segments", code: "<ButtonGroup\n  iconsOnly\n  items={[\n    { label: \"Phone width\", icon: \"smartphone\" },\n    { label: \"Tablet width\", icon: \"tablet\" },\n    { label: \"Desktop width\", icon: \"monitor\" }\n  ]}\n/>", render: e_atoms_button_group_example_9, note: ["An item may pair its label with a kit glyph (`{ label, icon }`); `iconsOnly` renders each segment as the glyph alone, with the label as the segment's accessible name. An icon-only segmented control: a view switcher, a form-factor switcher."] },
   ],
   donts: [
     { title: "Segmented", do: { caption: "Keep a segmented control to a few mutually-exclusive views.", code: "<ButtonGroup segmented defaultActive={0} items={[\"Day\", \"Week\", \"Month\"]} />", render: e_atoms_button_group_dont_0_do }, dont: { caption: "Past ~4 options a segmented control gets cramped and hard to scan; reach for a select.", code: "<ButtonGroup segmented defaultActive={0} items={[\"Day\", \"Week\", \"Month\", \"Quarter\", \"Year\", \"5Y\", \"All\"]} />", render: e_atoms_button_group_dont_0_dont } },

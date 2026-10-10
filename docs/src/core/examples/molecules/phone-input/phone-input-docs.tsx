@@ -18,6 +18,9 @@ import e_molecules_phone_input_dont_1_dont from "./dont-1-dont";
 export const docs: ComponentDocs = {
   dir: "phone-input",
   category: "molecules",
+  overview: [
+    "In glass mode the country list is a dense-layer glass card under the box; the box, its segment and its number stay in place. A pick commits the country and returns focus to the number at once, and a field that becomes disabled or read-only while the list is open closes it. Solid mode paints the skin's own list.",
+  ],
   examples: [
     { label: "Default", code: "<PhoneInput label=\"Phone number\" placeholder=\"Add your phone number\" />", render: e_molecules_phone_input_example_0 },
     { label: "Pre-filled", code: "<PhoneInput label=\"Phone number\" defaultCountry=\"US\" defaultValue=\"(415) 728-3046\" />", render: e_molecules_phone_input_example_1 },

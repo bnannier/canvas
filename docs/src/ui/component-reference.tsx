@@ -1,15 +1,16 @@
 import { Suspense, useState } from "react";
 import { Platform } from "react-native";
 import { Redirect, useLocalSearchParams } from "expo-router";
-import { Column, Typography, Alert, Skeleton } from "@nannier/canvas";
+import { Column, Container, Typography, Alert, Skeleton } from "@nannier/canvas";
 import { getComponent } from "../core/data/components";
 import type { ComponentDoc } from "../core/data/types";
 import { useComponentDocs } from "../core/use-component-docs";
 import { Page } from "./page";
-import { Lead } from "./prose";
+import { Lead, Prose } from "./prose";
 import { Playground } from "./playground";
 import { PropTables } from "./prop-table";
 import { Donts } from "./dont";
+import { Guidance } from "./guidance";
 import { PageNav } from "./page-nav";
 import { stripHtml } from "../lib/html";
 import { variantSlug } from "../lib/variant";
@@ -17,7 +18,10 @@ import { DocsHead } from "./docs-head";
 
 // The generic component reference page, shared by the default route
 // (components/[slug]/index) and the deep-linked variant route
-// (components/[slug]/[variant]). The optional `variant` path segment names one Playground
+// (components/[slug]/[variant]). It shows every line of the component's .md
+// (tools/docgen/parse-md.ts, parseDoc), in this order: the title and the lead, the rest of
+// the intro as its overview, the Playground with the selected example's notes under its
+// rail, the props, Do & Don't, then the page's own guidance sections. The optional `variant` path segment names one Playground
 // example by its slugified label (see variantSlug): /components/checkbox/nestedgroup opens
 // the "Nested group" example. An absent segment shows the first (default) example; a
 // segment that names the default, or names nothing valid, redirects to the bare component
@@ -96,13 +100,15 @@ function ComponentBody({ comp, variant }: { comp: ComponentDoc; variant?: string
           Suspense boundary resolves, so the canonical tag tracks `selected` through
           every in-page switch instead of only being correct on a cold load. */}
       <DocsHead title={comp.name} path={hrefFor(selected)} />
+      {entry?.overview ? <Container xxl start><Prose blocks={entry.overview} /></Container> : null}
       {examples.length > 0 ? (
-        <Playground examples={examples} stageAlign={comp.stageAlign} singlePreview={comp.singlePreview} selected={selected} onSelect={onSelect} />
+        <Playground examples={examples} variantsNote={entry?.variantsNote} stageAlign={comp.stageAlign} singlePreview={comp.singlePreview} selected={selected} onSelect={onSelect} />
       ) : (
         <Alert title="No live examples for this component yet." />
       )}
       {propGroups && propGroups.length > 0 ? <PropTables groups={propGroups} /> : null}
       {entry && entry.donts.length > 0 ? <Donts donts={entry.donts} /> : null}
+      {entry?.guidance ? <Guidance sections={entry.guidance} /> : null}
     </>
   );
 }

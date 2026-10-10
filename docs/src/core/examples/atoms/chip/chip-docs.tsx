@@ -14,17 +14,29 @@ import e_atoms_chip_dont_0_dont from "./dont-0-dont";
 export const docs: ComponentDocs = {
   dir: "chip",
   category: "atoms",
+  overview: [
+    "Two orthogonal axes drive the look:",
+    { list: ["**Color** (pick one; default the neutral tag). A semantic status (`success`, `warning`, `destructive`, `info`, `neutral`) or a free-form palette hue (`red`, `orange`, `amber`, `yellow`, `lime`, `green`, `emerald`, `teal`, `cyan`, `sky`, `blue`, `indigo`, `violet`, `fuchsia`, `purple`, `pink`, `rose`, `gray`). Status names read the theme's status colors (`statusColors`), so a success chip matches a success Badge and Alert; `info` is the primary color. Precedence when more than one is set: status names first, then hues in the order above.","**Emphasis**. `outline` drops the fill for a border-only chip in the same color; `primary` is the primary color's soft pill. These compose with any color, e.g. `<Chip blue outline>`."] },
+  ],
   examples: [
     { label: "Default", code: "<Chip>Design</Chip>", render: e_atoms_chip_example_0 },
     { label: "Colors", code: "<Row wrap>\n  <Chip red>Bug</Chip>\n  <Chip orange>Chore</Chip>\n  <Chip amber>Docs</Chip>\n  <Chip green>Feature</Chip>\n  <Chip teal>Design</Chip>\n  <Chip blue>Backend</Chip>\n  <Chip indigo>Frontend</Chip>\n  <Chip violet>Research</Chip>\n  <Chip purple>Infra</Chip>\n  <Chip pink>Growth</Chip>\n  <Chip gray>Archived</Chip>\n</Row>", render: e_atoms_chip_example_1 },
     { label: "Status", code: "<Row wrap>\n  <Chip success>Passing</Chip>\n  <Chip warning>Flaky</Chip>\n  <Chip destructive>Failing</Chip>\n  <Chip info>Queued</Chip>\n  <Chip neutral>Skipped</Chip>\n</Row>", render: e_atoms_chip_example_2 },
     { label: "Emphasis", code: "<Row>\n  <Chip>Neutral</Chip>\n  <Chip primary>Accent</Chip>\n  <Chip outline>Outline</Chip>\n</Row>", render: e_atoms_chip_example_3 },
-    { label: "With leading icon", code: "<Chip success icon={<Icon check size={14} />}>Verified</Chip>", render: e_atoms_chip_example_4 },
-    { label: "Removable filters", code: "<Chip onRemove={() => {}}>Role: Admin</Chip>", render: e_atoms_chip_example_5 },
-    { label: "Selectable", code: "<Row>\n  <Chip selectable defaultSelected>Design</Chip>\n  <Chip selectable>Engineering</Chip>\n</Row>", render: e_atoms_chip_example_6 },
+    { label: "With leading icon", code: "<Chip success icon={<Icon check size={14} />}>Verified</Chip>", render: e_atoms_chip_example_4, note: ["A leading `<Icon />` is auto-tinted to the chip's color, so a bare `<Icon check />` matches without threading the color through."] },
+    { label: "Removable filters", code: "<Chip onRemove={() => {}}>Role: Admin</Chip>", render: e_atoms_chip_example_5, note: ["`onRemove` grows the trailing \"×\"; wire it to your own state to drop the filter."] },
+    { label: "Selectable", code: "<Row>\n  <Chip selectable defaultSelected>Design</Chip>\n  <Chip selectable>Engineering</Chip>\n</Row>", render: e_atoms_chip_example_6, note: ["A selectable chip is Dark Factory's filter chip: the quiet pill at rest and the solid primary once selected."] },
   ],
   donts: [
     { title: "Removable filter", do: { caption: "Use a Chip with `onRemove` so the pill and its \"×\" stay consistent and accessible.", code: "<Chip blue onRemove={() => {}}>Status: Active</Chip>", render: e_atoms_chip_dont_0_do }, dont: { caption: "Hand-build the pill from a raw Pressable with border-radius, padding, and a text \"×\".", code: "<Pressable style={{ flexDirection: \"row\", alignItems: \"center\", gap: 4, alignSelf: \"flex-start\", borderRadius: 9999, backgroundColor: \"#4f46e5\", paddingHorizontal: 10, paddingVertical: 4 }}>\n  <Text style={{ color: \"#ffffff\", fontSize: 13 }}>Status: Active</Text>\n  <Text style={{ color: \"#ffffff\", fontSize: 13 }}>×</Text>\n</Pressable>", render: e_atoms_chip_dont_0_dont } },
+  ],
+  guidance: [
+    {
+      title: "Touch area",
+      blocks: [
+        "On Android a tappable Chip's touch area grows to the 48dp minimum without the chip changing size: 7dp above and below the 34dp chip, and nothing sideways once it is 48dp wide. On iOS it keeps 11pt of extra touch area on every side, which clears the 44pt minimum around the 25pt chip. The remove \"×\" pads out to the minimum on both, biased away from the label. Inside one chip the two never overlap: the chip splits the gap between its label and its \"×\", so a tap on the label never removes it. Between chips, React Native's own rule applies: where two touch areas overlap, the later chip takes the tap. Android chips that meet the minimum's width reach nothing sideways, so a Row of them never overlaps; on iOS two tappable chips closer than 22pt do, and a tap on the edge of one toggles the next. Leave room between chips on iOS where a mistaken toggle matters.",
+      ],
+    },
   ],
   // Extracted from the component's exported `*Props` interfaces by
   // tools/docgen/extract-props.ts (the TypeScript checker).

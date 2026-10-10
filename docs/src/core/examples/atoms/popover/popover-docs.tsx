@@ -15,6 +15,10 @@ import e_atoms_popover_dont_2_dont from "./dont-2-dont";
 export const docs: ComponentDocs = {
   dir: "popover",
   category: "atoms",
+  overview: [
+    "On the web and Android the panel is Dark Factory's: a 12px card with a hairline and its soft popover shadow, Dark Factory's heading over its body in the muted ink. iOS keeps the iPad popover, a rounder borderless card with a beak toward its trigger, in the same type.",
+    "In glass mode the triggered card is a functional-layer glass panel beside its button; focus enters once the card's placement has committed, and the `inline` card is a static in-flow panel. Solid mode paints the skin's own panel.",
+  ],
   examples: [
     { label: "Default", code: "<Popover\n  trigger=\"Open popover\"\n  title=\"Rename project\"\n  description=\"Choose a name your team will recognize.\"\n  actionLabel=\"Rename\"\n>\n  <Input label=\"Project name\" defaultValue=\"Identity Platform\" />\n</Popover>", render: e_atoms_popover_example_0 },
     { label: "Inline", code: "<Popover inline title=\"Draft saved\" description=\"Your changes are kept as a draft until you publish them.\" actionLabel=\"Publish\" />", render: e_atoms_popover_example_1 },

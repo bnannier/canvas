@@ -25,6 +25,11 @@ import e_organisms_dialog_dont_5_dont from "./dont-5-dont";
 export const docs: ComponentDocs = {
   dir: "dialog",
   category: "organisms",
+  overview: [
+    "On light glass, the description and currency prefix use the stronger foreground color. For custom body content, use the default `Typography` foreground for message copy over the dimmed background.",
+    "Browser Escape and iOS accessibility escape cancel the foremost open child overlay before the dialog. Cancelling the dialog calls `onCancel` and requests `open=false`, including destructive dialogs and dialogs with custom children. A controlled owner may keep it open; that request never confirms an action.",
+    "Pass `dismissible` to let a backdrop press follow the same cancel policy. It is off by default, so existing dialogs and destructive confirmations keep their current outside-press behavior. The scrim is excluded from keyboard navigation.",
+  ],
   examples: [
     { label: "Default", code: "<Dialog\n  trigger=\"Open dialog\"\n  title=\"Refund payment\"\n  description=\"The refund posts to the original card in 2 to 3 business days.\"\n  withBody\n/>", render: e_organisms_dialog_example_0 },
     { label: "Dismissible", code: "<Dialog trigger=\"Open details\" title=\"Workspace details\" dismissible />", render: e_organisms_dialog_example_1 },

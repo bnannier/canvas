@@ -20,15 +20,18 @@ import e_atoms_progress_dont_2_dont from "./dont-2-dont";
 export const docs: ComponentDocs = {
   dir: "progress",
   category: "atoms",
+  overview: [
+    "Name the task with string `children`, or pass `accessibilityLabel` when the visible title is omitted or contains rich content.",
+  ],
   examples: [
     { label: "Default", code: "<Progress accessibilityLabel=\"Uploading files\" value={0.6} />", render: e_atoms_progress_example_0 },
     { label: "Labeled", code: "<Progress showValue description=\"3 of 5 files\" value={0.6}>Uploading files</Progress>", render: e_atoms_progress_example_1 },
     { label: "Indeterminate", code: "<Progress accessibilityLabel=\"Connecting\" indeterminate />", render: e_atoms_progress_example_2 },
     { label: "Small", code: "<Progress small accessibilityLabel=\"Uploading files\" value={0.6} />", render: e_atoms_progress_example_3 },
     { label: "Large", code: "<Progress large accessibilityLabel=\"Uploading files\" value={0.6} />", render: e_atoms_progress_example_4 },
-    { label: "Warning", code: "<Progress warning value={0.85}>Storage used</Progress>", render: e_atoms_progress_example_5 },
-    { label: "Danger", code: "<Progress danger value={1}>Over the WIP limit</Progress>", render: e_atoms_progress_example_6 },
-    { label: "Live", code: "<Ticker values={[0, 0.15, 0.4, 0.65, 0.85, 1]}>\n  {(value) => (\n    <Progress showValue value={value}>Uploading…</Progress>\n  )}\n</Ticker>", render: e_atoms_progress_example_7 },
+    { label: "Warning", code: "<Progress warning value={0.85}>Storage used</Progress>", render: e_atoms_progress_example_5, note: ["The tone axis recolors the fill when a metric crosses a soft threshold. Pass `warning` for an amber bar; the track stays neutral."] },
+    { label: "Danger", code: "<Progress danger value={1}>Over the WIP limit</Progress>", render: e_atoms_progress_example_6, note: ["Pass `danger` for a red bar when a hard limit is exceeded, e.g. a work-in-progress cap. Reinforce the state with copy, since the tone carries no new accessible value on its own."] },
+    { label: "Live", code: "<Ticker values={[0, 0.15, 0.4, 0.65, 0.85, 1]}>\n  {(value) => (\n    <Progress showValue value={value}>Uploading…</Progress>\n  )}\n</Ticker>", render: e_atoms_progress_example_7, note: ["The determinate fill eases to each new `value` instead of jumping, so a bar wired to real progress fills smoothly. (Reduce Motion snaps instead.)"] },
     { label: "Measure", code: "<Column snug>\n  <Progress xs start value={0.6}>xs step, pinned to the start (320)</Progress>\n  <Progress lg start value={0.6}>lg step, pinned to the start (512)</Progress>\n  <Container lg start><Progress value={0.6}>Bare, in an lg Container: fills it (512)</Progress></Container>\n</Column>", render: e_atoms_progress_example_8 },
   ],
   donts: [

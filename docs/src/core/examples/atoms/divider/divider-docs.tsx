@@ -18,7 +18,7 @@ export const docs: ComponentDocs = {
   dir: "divider",
   category: "atoms",
   examples: [
-    { label: "Default", code: "<Column>\n  <Typography>Profile</Typography>\n  <Divider />\n  <Typography>Account</Typography>\n</Column>", render: e_atoms_divider_example_0 },
+    { label: "Default", code: "<Column>\n  <Typography>Profile</Typography>\n  <Divider />\n  <Typography>Account</Typography>\n</Column>", render: e_atoms_divider_example_0, note: ["A divider spans the width of its parent, so give it a bounded container."] },
     { label: "Vertical", code: "<Row>\n  <Typography>Edit</Typography>\n  <Divider vertical />\n  <Typography>Delete</Typography>\n</Row>", render: e_atoms_divider_example_1 },
     { label: "Label", code: "<Divider>Or continue with</Divider>", render: e_atoms_divider_example_2 },
     { label: "Action", code: "<Divider>\n  <Button ghost small>Show more</Button>\n</Divider>", render: e_atoms_divider_example_3 },

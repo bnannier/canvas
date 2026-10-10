@@ -28,12 +28,16 @@ import e_atoms_button_dont_4_do from "./dont-4-do";
 import e_atoms_button_dont_4_dont from "./dont-4-dont";
 import e_atoms_button_dont_5_do from "./dont-5-do";
 import e_atoms_button_dont_5_dont from "./dont-5-dont";
+import e_atoms_button_guidance_0_1 from "./guidance-0-1";
 
 export const docs: ComponentDocs = {
   dir: "button",
   category: "atoms",
+  overview: [
+    "Pass `ref` to access the interactive Pressable, including link buttons. Use `useRef<ComponentRef<typeof Button>>(null)` from React, or `useRef<View>(null)` with React Native's `View` type. Object and callback refs are supported and detach on unmount. Calling `ref.current?.focus()` or `.blur()` delegates to the host without activating the control. Browser focus is supported; native focus depends on the platform and React Native version, and is separate from accessibility focus.",
+  ],
   examples: [
-    { label: "Default", code: "<Button>Save changes</Button>", render: e_atoms_button_example_0 },
+    { label: "Default", code: "<Button>Save changes</Button>", render: e_atoms_button_example_0, note: ["A button's whole job is to fire `onPress`. Wire it to your own handler and every press runs it."] },
     { label: "Outline", code: "<Button outline>Save changes</Button>", render: e_atoms_button_example_1 },
     { label: "Secondary", code: "<Button secondary>Save changes</Button>", render: e_atoms_button_example_2 },
     { label: "Ghost", code: "<Button ghost>Save changes</Button>", render: e_atoms_button_example_3 },
@@ -42,13 +46,14 @@ export const docs: ComponentDocs = {
     { label: "Small", code: "<Button small>Save changes</Button>", render: e_atoms_button_example_6 },
     { label: "Large", code: "<Button large>Save changes</Button>", render: e_atoms_button_example_7 },
     { label: "Icon only", code: "<Button icon accessibilityLabel=\"Add item\" iconLeft={<Icon plus primaryForeground size={16} />} />", render: e_atoms_button_example_8 },
-    { label: "Disabled", code: "<Button disabled>Save changes</Button>", render: e_atoms_button_example_9 },
+    { label: "Disabled", code: "<Button disabled>Save changes</Button>", render: e_atoms_button_example_9, note: ["A disabled button ignores presses: `onPress` never runs."] },
     { label: "Loading", code: "<Button loading>Saving</Button>", render: e_atoms_button_example_10 },
-    { label: "Raised", code: "<Button raised>Mint agent</Button>", render: e_atoms_button_example_11 },
+    { label: "Raised", code: "<Button raised>Mint agent</Button>", render: e_atoms_button_example_11, note: ["`raised` rests the page's main call to action on a soft glow in its own colour. Only a primary button takes it, and never while disabled."] },
     { label: "Block", code: "<Button block>Create account</Button>", render: e_atoms_button_example_12 },
     { label: "Measure", code: "<Container>\n  <Column>\n    <Button xs start>xs step, pinned to the start (320)</Button>\n    <Button md>md step, centered (448)</Button>\n    <Button block>Block: fills the parent</Button>\n  </Column>\n</Container>", render: e_atoms_button_example_13 },
     { label: "With icon", code: "<Button iconLeft={<Icon plus primaryForeground size={16} />}>Save changes</Button>", render: e_atoms_button_example_14 },
   ],
+  variantsNote: ["The variant only changes how a button looks; every one of them fires `onPress` the same way."],
   donts: [
     { title: "Default (primary)", do: { caption: "One clear primary action; everything else is supporting.", code: "<Row alignCenter snug>\n  <Button primary>Save</Button>\n  <Button outline>Cancel</Button>\n</Row>", render: e_atoms_button_dont_0_do }, dont: { caption: "Multiple primaries compete; nothing stands out.", code: "<View style={{ flexDirection: \"row\", alignItems: \"center\", gap: 8 }}>\n  <Button primary>Save</Button>\n  <Button primary>Apply</Button>\n  <Button primary>Continue</Button>\n</View>", render: e_atoms_button_dont_0_dont } },
     { title: "Outline", do: { caption: "Promote the main action to default; keep the rest outline.", code: "<Row alignCenter snug>\n  <Button primary>Publish</Button>\n  <Button outline>Save draft</Button>\n  <Button outline>Schedule</Button>\n</Row>", render: e_atoms_button_dont_1_do }, dont: { caption: "All-outline leaves no signal which action is primary.", code: "<View style={{ flexDirection: \"row\", alignItems: \"center\", gap: 8 }}>\n  <Button outline>Save</Button>\n  <Button outline>Publish</Button>\n  <Button outline>Schedule</Button>\n</View>", render: e_atoms_button_dont_1_dont } },
@@ -56,6 +61,21 @@ export const docs: ComponentDocs = {
     { title: "Ghost", do: { caption: "Use ghost for tertiary and toolbar actions; keep the CTA filled.", code: "<Row alignCenter snug>\n  <Button ghost>Cancel</Button>\n  <Button primary>Save changes</Button>\n</Row>", render: e_atoms_button_dont_3_do }, dont: { caption: "A ghost button is too quiet to carry the primary action.", code: "<Button ghost>Save changes</Button>", render: e_atoms_button_dont_3_dont } },
     { title: "Destructive", do: { caption: "Reserve the destructive variant for irreversible actions like delete.", code: "<Row alignCenter snug>\n  <Button primary>Save changes</Button>\n  <Button destructive>Delete account</Button>\n</Row>", render: e_atoms_button_dont_4_do }, dont: { caption: "Red on a safe action cries wolf; users learn to ignore it.", code: "<Button destructive>Save changes</Button>", render: e_atoms_button_dont_4_dont } },
     { title: "Link", do: { caption: "Link variant for inline navigation; a filled button for the submit.", code: "<Row alignCenter cozy>\n  <Button primary>Submit</Button>\n  <Button link>Learn more</Button>\n</Row>", render: e_atoms_button_dont_5_do }, dont: { caption: "A link-styled submit doesn't look pressable and gets lost.", code: "<Button link>Submit form</Button>", render: e_atoms_button_dont_5_dont } },
+  ],
+  guidance: [
+    {
+      title: "Real links (href)",
+      blocks: [
+        "A button that NAVIGATES should be a real link, not a press handler that sets `location`. Pass `href` and the web render becomes a genuine browser link: middle-click, cmd-click, and open-in-new-tab all work, crawlers see the destination, and assistive tech hears a link. Native platforms have no anchors, so pair `href` with an `onPress` that runs the same navigation through your router; while `disabled` or `loading` the anchor is suppressed exactly like `onPress`. `hrefAttrs` carries the anchor attributes react-native-web forwards (`target`, `rel`, `download`).",
+        { code: "<Row alignCenter cozy>\n  <Button link href=\"https://canvas.nannier.com\">Read the docs</Button>\n  <Button outline href=\"https://www.npmjs.com/package/@nannier/canvas\" hrefAttrs={{ target: \"_blank\", rel: \"noreferrer\" }}>\n    npm package\n  </Button>\n</Row>", render: e_atoms_button_guidance_0_1 },
+      ],
+    },
+    {
+      title: "Touch area",
+      blocks: [
+        "On iOS and Android a Button smaller than the platform's minimum touch target (44pt, 48dp) keeps its size and extends only its touch area to the minimum, from its first frame, so nothing moves. React Native bounds that area by two rules of its own. It never reaches past a native container that does not contain it: a container of yours that clips (overflow hidden, a scroll view's edge) stops it at that edge. A container that paints, carries a `testID` or handles pointer events admits it, because such a container records the touch area at its layout and the Button has it from its first one (a control you build with `useMinTargetSlop` gets it only after its first layout; see DESIGN.md, Shapes). And where two touch areas overlap, the later sibling takes the tap: on Android two small icon Buttons 8 apart in a Row both reach across the gap between them, so a tap anywhere in it presses the second. Leave at least twice the extra touch area between small Buttons you place side by side (16 between two small icon Buttons on Android, 8 on iOS).",
+      ],
+    },
   ],
   // Extracted from the component's exported `*Props` interfaces by
   // tools/docgen/extract-props.ts (the TypeScript checker).

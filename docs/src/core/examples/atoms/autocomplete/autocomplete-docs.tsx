@@ -23,6 +23,12 @@ import e_atoms_autocomplete_dont_5_dont from "./dont-5-dont";
 export const docs: ComponentDocs = {
   dir: "autocomplete",
   category: "atoms",
+  overview: [
+    "In glass mode the suggestion list is a dense-layer glass card under the field (or above it when it fits there); the field, its caret and its toggle stay in place, and picking a suggestion commits the value at once. Solid mode paints the skin's own list.",
+    "Arrow Down and Arrow Up open the list and highlight an option while focus stays in the text field. Navigation stops at the first and last matches. Home and End jump to those limits once an option is highlighted; otherwise they retain their text-editing behavior. Enter chooses the highlighted option, Escape closes the list without changing the query, and Tab closes it while moving focus. Typing resets the highlight. Confirming an input-method candidate does not select an option or submit a surrounding Form.",
+    "Use `value` with `onValueChange` to control the selection, and use `\"\"` for a controlled empty value. The callback reports selections and clearing the field. `onSelect` remains a selection-only notification. The independent `query`/`onQueryChange` pair controls filtering; choosing an option resets the query to `\"\"`.",
+    "The disclosure button has a real target of at least 24px on web, 44pt on iOS, and 48dp on Android. The small iOS field keeps a 44pt height so its touch target fits inside the field; its typography remains compact.",
+  ],
   examples: [
     { label: "Default", code: "<Autocomplete label=\"Assigned to\" placeholder=\"Search a person…\" options={[\"Ada Lovelace\", \"Grace Hopper\", \"Kira Tanaka\", \"Liang Bao\", \"Noor Park\"]} />", render: e_atoms_autocomplete_example_0 },
     { label: "Required field", code: "<Autocomplete label=\"Assigned to\" required placeholder=\"Search a person…\" options={[\"Ada Lovelace\", \"Grace Hopper\", \"Kira Tanaka\"]} />", render: e_atoms_autocomplete_example_1 },
