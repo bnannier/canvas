@@ -143,7 +143,7 @@ card is a static in-flow panel. Solid mode paints the skin's own panel.
 
 ## Accessibility
 
-The trigger is a button that announces its popup as a dialog and whether it is expanded. Opening the card moves keyboard focus into the panel, once its placement has settled: a dialog named by its title (by the trigger's label when it has none) and described by its supporting line.
+The trigger is a button that announces its popup as a dialog and whether it is expanded. Opening the card moves keyboard focus into the panel, once its placement has settled: a dialog named by its title (by the trigger's label when it has none) and described by its supporting line. A card pinned open (a controlled `open` with no change handler) is part of the page and takes no focus as it appears.
 
 With a keyboard, Tab moves through the panel's controls as if the card sat right after its trigger, then on to the control after the trigger, and the card stays open: the popover is non-modal on the web. Shift+Tab from the panel returns to the trigger, and Tab from the trigger re-enters the card. Escape closes it, and focus goes back to whatever opened it.
 
