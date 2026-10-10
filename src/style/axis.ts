@@ -15,7 +15,7 @@
 // The precedence IS the declaration order. That is the measure axis's rule, and the
 // measure axis is the first table here: `widths` in tokens.ts is declared narrowest
 // first and `MEASURE` takes its members from it, so a step added to the scale joins
-// the axis with no second list.
+// the axis with no second list (`stepOf` in sizing.ts resolves through it).
 //
 // An axis is declared in one of two forms:
 //
