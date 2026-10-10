@@ -11,7 +11,7 @@ Audit checklist for `/components/popover`. The facts block and the variants tabl
 | Source files | `popover.android.tsx`, `popover.ios.tsx`, `popover.md`, `popover.shared.tsx`, `popover.styles.tsx`, `popover.tsx` |
 | Implementation | its own source directory, `src/atoms/popover/` (5 TypeScript modules) |
 | Exports | Popover |
-| Platform entries | iOS: own build: Popover (builds from its own iosSkin; injects platform parts (../button/button.ios.js)). Android: own build: Popover (injects platform parts (../button/button.android.js)) |
+| Platform entries | iOS: own build: Popover (builds from its own iosSkin; injects platform parts (../button/button.ios.js)). Android: own build: Popover (builds from its own androidSkin; injects platform parts (../button/button.android.js)) |
 | Platform-skins registry | iOS: Popover; Android: Popover |
 | Reference row | `popover` (Full, Built). iOS: link [popover (iOS 27)](https://www.sketch.com/s/04c24d8b-38fb-4afb-8836-36617e022f02/symbols?g=Popovers%2520(iPad%2520Only)). Android: none (Material 3 has no popover component; the closest M3 patterns are the rich tooltip and menus). Web: link [popover (Web)](https://ui.shadcn.com/docs/components/popover) |
 | Materials manifest | Popover: atoms, liquid; verification solid-appearance, glass-appearance, mode-switch, accessibility-fallback, runtime-capability, semantic-state, open-surface |
@@ -23,7 +23,7 @@ Audit checklist for `/components/popover`. The facts block and the variants tabl
 | Interaction states | recipes: open on Default (web, iOS, Android rows; phone, tablet and desktop). |
 | MeasureProps | not adopted |
 | Touch target | no touch-target name (the exports of `src/style/touch-target.ts`, `src/style/touch-target-seed.ts`, `src/style/touch-seam.ts`, `src/style/clip-slop.ts`, the `TouchTargetSkin` fields, or `hitSlop`) in its implementation modules |
-| Tests importing it | 13: `test/anchored-overlay-dismissal.test.tsx`, `test/dense-overlays.test.tsx`, `test/design-rules-shape.test.ts`, `test/design-rules-skins.test.ts`, `test/entrance-readiness.test.tsx`, `test/escape-layers.test.tsx`, `test/hosted-focus.test.tsx`, `test/hosted-trigger-focus.test.tsx`, `test/native-accessibility-escape-hosts.test.tsx`, `test/overlay-placement.test.tsx`, `test/overlays.test.tsx`, `test/popover.test.tsx`, `test/skins-smoke.test.tsx` |
+| Tests importing it | 15: `test/anchored-overlay-dismissal.test.tsx`, `test/anchored-overlay-focus.test.tsx`, `test/anchored-overlay-sheet.test.tsx`, `test/dense-overlays.test.tsx`, `test/design-rules-shape.test.ts`, `test/design-rules-skins.test.ts`, `test/entrance-readiness.test.tsx`, `test/escape-layers.test.tsx`, `test/hosted-focus.test.tsx`, `test/hosted-trigger-focus.test.tsx`, `test/native-accessibility-escape-hosts.test.tsx`, `test/overlay-placement.test.tsx`, `test/overlays.test.tsx`, `test/popover.test.tsx`, `test/skins-smoke.test.tsx` |
 | E2E naming it | 2: `e2e/journeys/overlay-placement.e2e.ts`, `e2e/journeys/touch.e2e.ts` |
 | E2E catalog sweeps | 9: `e2e/a11y/components.e2e.ts` (componentRoutes), `e2e/behavior/overlays.e2e.ts` (OVERLAYS), `e2e/journeys/keyboard.e2e.ts` (componentRoutes), `e2e/responsive/component-widths.e2e.ts` (contentRoutes, componentRoutes), `e2e/smoke/examples.e2e.ts` (componentExamples), `e2e/smoke/routes.e2e.ts` (allRoutes), `e2e/visual/components.e2e.ts` (componentRoutes), `e2e/visual/materials.e2e.ts` (MATERIAL_ROUTES), `e2e/visual/overlays.e2e.ts` (OVERLAYS) |
 | Turn record | `audit/turns/popover.md`, written by `bun run audit:turn -- --slug=popover --phase=before\|after` (the before and after capture runs) |
@@ -38,6 +38,7 @@ Web: 18 cells per variant (3 widths x 3 looks x 2 surfaces). iOS and Android: 6 
 |---|---|---|---|---|---|
 | `default` | Default | [ ] | [ ] | [ ] |  |
 | `inline` | Inline | [ ] | [ ] | [ ] |  |
+| `above` | Above | [ ] | [ ] | [ ] |  |
 | `descriptiononly` | Description only | [ ] | [ ] | [ ] |  |
 | `controlled` | Controlled | [ ] | [ ] | [ ] |  |
 <!-- audit:variants:end -->
@@ -86,6 +87,9 @@ One row per finding. Severity: critical, high, medium, low. Cell: a capture id f
 
 | ID | Severity | Cell | Summary | Status | Fix commit |
 |---|---|---|---|---|---|
+| popover-ao-top | high | source | `top` only moved the iOS beak; the card still anchored below its trigger. Since the AnchoredOverlay turn (AO-3, the P3e minor) `top` anchors the card above its trigger, either placement flips when its side lacks room, and the beak follows the side taken. The page documents it under Variants, Above. | fixed | 5d8dc836 |
+| popover-ao-sheet | medium | source | At the phone form factor the card stayed a floating card. Since the AnchoredOverlay turn (AO-6, the owner's decision) a Popover that can close is a sheet there: Dark Factory's on the web, the iOS sheet, the Material 3 bottom sheet on Android (recorded as a one-job substitute in test/platform-references.test.ts). | fixed | 5d8dc836 |
+| popover-ao-focus | high | source | Tab past the panel's last control went to the end of the document, and natively the card was not modal to VoiceOver and TalkBack. Since the AnchoredOverlay turn (AO-1, AO-2) the panel's controls keep their place after the trigger (the card stays open, non-modal on the web), focus returns to its opener on close, and natively the open card is modal, the screen reader entering at its first line. The page carries its Accessibility notes. | fixed | 5d8dc836 |
 
 ## Sign-off
 

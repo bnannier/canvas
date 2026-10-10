@@ -86,6 +86,8 @@ One row per finding. Severity: critical, high, medium, low. Cell: a capture id f
 | ID | Severity | Cell | Summary | Status | Fix commit |
 |---|---|---|---|---|---|
 | command-corner-1 | low | source | The search trigger drew 6 (now the field corner, 10, on every platform), and the palette card 16 on iOS and 8 on Android, on neither row; with no native command palette both now share the web's card corner, 12. The shape gate (test/design-rules-shape.test.ts) now takes a corner only as a role of its own platform's row that its component plays, the pill, square or a declared concentric corner. | fixed | 278270a8 |
+| command-ao-sheet | medium | source | At the phone form factor the palette stays a floating card under its trigger. The owner decided (audit/DECISIONS.md AO-6) that Command is presented as a sheet there; AnchoredOverlay offers it as `sheetStyle` since the AnchoredOverlay turn, and Command adopts it in its own turn with a sheet in each platform's skin. | open |  |
+| command-ao-focus | high | source | Tab past the palette's last result went to the end of the document with the card still open, and natively the palette was not modal to VoiceOver and TalkBack. Since the AnchoredOverlay turn (AO-1, AO-2) its results keep their place in the tab order after the trigger and the open palette is modal natively, its search field taking focus and the Search control taking it back on close. | fixed | 5d8dc836 |
 
 ## Sign-off
 
