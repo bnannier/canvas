@@ -5,7 +5,7 @@ import * as Linking from "expo-linking";
 import { StatusBar } from "expo-status-bar";
 import { ThemeProvider, type Surface } from "@nannier/canvas";
 import { CANVAS_FONTS } from "../ui/fonts";
-import { subscribeThemeLinks, themeFromParams, themeFromURL } from "./theme-links";
+import { firstLook, launchRequest, subscribeThemeLinks } from "./theme-links";
 
 // The docs' theme controls. Canvas's ThemeProvider is driven by the dark/light,
 // glass/solid and mint boolean axes; this holds that state and exposes setters to the
@@ -33,18 +33,11 @@ interface DocsThemeContext {
 
 const Ctx = createContext<DocsThemeContext | null>(null);
 
-// The appearance every pre-rendered page ships with (app.json `web.output: "static"`):
-// the docs default to dark on every platform (the spectral currents and hero use
-// the charcoal brand stage), to glass everywhere, not just iOS 26, and to blush, the
-// kit's own light default, for when the scheme turns light.
-const SERVER_SCHEME: Scheme = "dark";
-const SERVER_SURFACE: Surface = "glass";
-const SERVER_PALETTE: Palette = "blush";
-
 // A link's `?scheme=light&surface=solid&palette=mint` is a fact only the browser knows,
-// so the hydration render must reproduce the server's dark glass. Apply the browser's
-// launch choice in a transition so a lazy component page can finish hydrating its
-// Suspense boundary before the theme changes its material markup.
+// so the hydration render must reproduce the exported look (EXPORTED_LOOK in
+// ./theme-links, dark glass in blush). Apply the browser's launch choice in a transition
+// so a lazy component page can finish hydrating its Suspense boundary before the theme
+// changes its material markup.
 
 export function useDocsTheme(): DocsThemeContext {
   const c = useContext(Ctx);
@@ -55,49 +48,44 @@ export function useDocsTheme(): DocsThemeContext {
 export function DocsThemeProvider({ children }: { children: ReactNode }) {
   const system = useColorScheme();
   const systemScheme: Scheme = system === "dark" ? "dark" : "light";
-  // Capture the launch parameters once. On native, Expo's synchronous launch URL
+  // Capture the launch request once. On native, Expo's synchronous launch URL
   // also covers the interval before the router publishes its first params.
   // Later in-app navigation keeps the user's manual appearance choices.
   const params = useGlobalSearchParams<{ scheme?: string; surface?: string; palette?: string }>();
-  const [seed] = useState(() => {
+  const [launch] = useState(() => {
     const url = Platform.OS === "web" ? null : Linking.getLinkingURL();
-    return { ...themeFromParams(params), ...themeFromURL(url), url };
+    const request = launchRequest(params, url);
+    return { url, request, first: firstLook(Platform.OS, request) };
   });
-  // The web topbar sun/moon and the native Appearance controls (the iOS header menu
-  // rows, the Android overflow-sheet footer) change the scheme; choosing System
-  // restores live OS tracking. The Solid/Glass toggle (shown where glass is not the
-  // OS material) flips the surface, and the Blush/Mint control (the labelled form,
-  // shown in the light scheme) picks the palette. Web always starts with the exported
-  // appearance; native has no server markup to hydrate and uses the launch choice
-  // immediately.
-  const [override, setOverride] = useState<Scheme | null>(() =>
-    Platform.OS === "web" ? SERVER_SCHEME : seed.scheme ?? SERVER_SCHEME,
-  );
+  // The sun/moon button (the web Topbar, the narrow web drawer, the compact toggles in
+  // the iOS and Android bars) changes the scheme, and the Solid/Glass control flips
+  // the surface. The Blush/Mint control in the narrow web drawer's labelled toggles
+  // picks the palette, in the light scheme only. Web always starts in the exported
+  // look; native has no server markup to hydrate and starts in the launch choice
+  // (firstLook).
+  const [override, setOverride] = useState<Scheme | null>(launch.first.scheme);
   const scheme: Scheme = override ?? systemScheme;
-  const [surface, setSurface] = useState<Surface>(() =>
-    Platform.OS === "web" ? SERVER_SURFACE : seed.surface ?? SERVER_SURFACE,
-  );
+  const [surface, setSurface] = useState<Surface>(launch.first.surface);
   // Held here, never through the kit's web `setPalette` helper: that one persists the
   // choice to localStorage, which the docs' privacy page rules out.
-  const [palette, setPalette] = useState<Palette>(() =>
-    Platform.OS === "web" ? SERVER_PALETTE : seed.palette ?? SERVER_PALETTE,
-  );
+  const [palette, setPalette] = useState<Palette>(launch.first.palette);
 
   useEffect(() => {
     if (Platform.OS !== "web") return;
+    const { request } = launch;
     startTransition(() => {
-      if (seed.scheme) setOverride(seed.scheme);
-      if (seed.surface) setSurface(seed.surface);
-      if (seed.palette) setPalette(seed.palette);
+      if (request.scheme) setOverride(request.scheme);
+      if (request.surface) setSurface(request.surface);
+      if (request.palette) setPalette(request.palette);
     });
-  }, [seed]);
+  }, [launch]);
 
   // Sync the native system chrome (the iOS Liquid Glass bars, Android's Material
   // bars) to the initial scheme once at startup, since the initial override is
   // set without going through setScheme.
   useEffect(() => {
-    if (Platform.OS !== "web") Appearance.setColorScheme(seed.scheme ?? SERVER_SCHEME);
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- launch-time seed, runs once
+    if (Platform.OS !== "web") Appearance.setColorScheme(launch.first.scheme);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- launch-time look, runs once
   }, []);
 
   // On native the override also drives the SYSTEM appearance for this app via
@@ -114,12 +102,12 @@ export function DocsThemeProvider({ children }: { children: ReactNode }) {
   // their current choice. No router-param effect can reset ordinary navigation.
   useEffect(() => {
     if (Platform.OS === "web") return;
-    return subscribeThemeLinks(Linking, seed.url, (next) => {
+    return subscribeThemeLinks(Linking, launch.url, (next) => {
       if (next.scheme) setScheme(next.scheme);
       if (next.surface) setSurface(next.surface);
       if (next.palette) setPalette(next.palette);
     });
-  }, [seed, setScheme]);
+  }, [launch, setScheme]);
 
   const value = useMemo<DocsThemeContext>(
     () => ({

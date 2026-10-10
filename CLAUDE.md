@@ -593,6 +593,18 @@ it is clickable:
 - **iOS**: `http://localhost:8790/ios?route=<route>` (opener runs it on the booted iOS simulator)
 - **Android**: `http://localhost:8790/android?route=<route>` (opener runs it on the booted Android emulator)
 
+The links are route-only by default. When the work is judged in one look (the mint
+palette, the dark scheme, solid or glass), each link may also carry an optional look
+query naming any of `scheme` (`light` | `dark`), `surface` (`solid` | `glass`) and
+`palette` (`blush` | `mint`): `?scheme=light&palette=mint` after the route on the Web
+link, and `&scheme=light&palette=mint` after the route on the iOS and Android links
+(`http://localhost:8790/ios?route=components/button&scheme=light&palette=mint`). An
+axis left out keeps the app's current choice. The opener refuses a value outside an
+axis's set instead of dropping it, and the app takes the look both on a cold launch
+and from a link opened while it runs (`docs/src/theme/docs-theme.tsx`). The palette
+is a light-scheme choice: with `scheme=dark` the kit paints its one dark palette
+whatever `palette` names.
+
 These assume `bun run dev` is running in `docs/` (it starts Metro on 8081 and the
 opener on 8790) and, for the native two, a simulator/emulator booted with the Canvas
 docs dev app installed. If the opener cannot reach a device it returns the exact
