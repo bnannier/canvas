@@ -959,7 +959,7 @@ describe("findings and sign-off tables", () => {
     expect(findings.malformed).toEqual([
       { line: lineOf("G3"), reason: "the Status cell reads fixed but the Fix commit cell is empty; record the SHA of the commit that closed it" },
       { line: lineOf("G4"), reason: 'the Fix commit cell reads "soon", not a commit SHA (7 to 40 hex digits)' },
-      { line: lineOf("G5"), reason: 'the Status cell reads "wontfix-owner", not one of open, verified, fixed, wontfix, duplicate (a missing cell shifts the columns; write a pipe in a cell as `\\|`)' },
+      { line: lineOf("G5"), reason: 'the Status cell reads "wontfix-owner", not one of open, verified, fixed, wontfix, deferred, duplicate (a missing cell shifts the columns; write a pipe in a cell as `\\|`)' },
     ]);
     // audit:status counts only what it can read and names the rest under the counts.
     const status = checklistStatus("components/x.md", table);
