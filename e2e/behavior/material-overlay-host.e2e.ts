@@ -96,11 +96,18 @@ for (const slug of ["dropdown", "row-menu"]) for (const width of [1280, 390]) {
     const card = (await menu.boundingBox())!;
     expect(card.x).toBeGreaterThanOrEqual(frame.x - 0.5);
     expect(card.x + card.width).toBeLessThanOrEqual(frame.x + frame.width + 0.5);
-    // The page's own heading, above the stage.
-    const heading = page.getByRole("heading", { level: 1 }).first();
-    const box = (await heading.boundingBox())!;
-    expect(box.y + box.height).toBeLessThan(frame.y);
-    await page.mouse.click(box.x + 8, box.y + box.height / 2);
+    // The page beside the stage: the gutter left of it, level with the trigger, which the
+    // click that opened the menu brought into the window. (The page's heading was the
+    // point once, but at 390 the overview a component page carries under its lead puts
+    // the trigger below the fold, and the click that opens the menu scrolls the heading
+    // out of the window, so the click landed nowhere.)
+    const scrollport = (await page.locator("[data-page-scroll]").first().boundingBox())!;
+    expect(frame.x - scrollport.x, "the page leaves a gutter beside the stage").toBeGreaterThanOrEqual(8);
+    const anchor = (await trigger.boundingBox())!;
+    const beside = { x: (scrollport.x + frame.x) / 2, y: anchor.y + anchor.height / 2 };
+    expect(beside.y).toBeGreaterThan(scrollport.y);
+    expect(beside.y).toBeLessThan(scrollport.y + scrollport.height);
+    await page.mouse.click(beside.x, beside.y);
     await expect(panel).toHaveCount(initial);
     await expect(trigger).toHaveAttribute("aria-expanded", "false");
   });
