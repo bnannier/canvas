@@ -255,17 +255,26 @@ describe("Drawer (full-screen Modal overlay)", () => {
         <Text>Drawer body</Text>
       </Drawer>,
     );
-    // A side (default left) drawer slides in over an animated dim, behind a TRANSPARENT
-    // tap-to-close scrim (accessible={false} — a backdrop, not a labelled control). Reach the
-    // scrim structurally from the panel content — Text -> SafeAreaView -> the panel surface
-    // (GlassSurface, one plain box in solid mode) -> panelPos -> slide wrapper -> scrim — and
-    // confirm the theme's scrim dim backdrop is its sibling, so a structural drift fails
-    // loudly here instead of silently.
+    // A side (default left) drawer slides in over an animated dim. The tap-to-close target is
+    // an EMPTY full-bleed Pressable (accessible={false}: a backdrop, not a labelled control)
+    // between the dim and the panel layer, a sibling of the panel and never its wrapper.
+    // Reach the panel layer structurally from the panel content (Text -> SafeAreaView -> the
+    // panel surface (GlassSurface, one plain box in solid mode) -> panelPos -> slide layer ->
+    // panel layer) and confirm the dismiss target and the theme's scrim dim are its earlier
+    // siblings, so a structural drift fails loudly here instead of silently.
     const panel = screen.getByText("Drawer body");
-    const scrim = panel.parentElement!.parentElement!.parentElement!.parentElement!.parentElement!;
-    const dim = scrim.parentElement!.firstElementChild as HTMLElement;
+    const layer = panel.parentElement!.parentElement!.parentElement!.parentElement!.parentElement!;
+    const dismiss = layer.previousElementSibling as HTMLElement;
+    const dim = dismiss.previousElementSibling as HTMLElement;
     expect(dim.style.backgroundColor).toContain(/rgba?\((\d+, \d+, \d+)/.exec(lightColors.scrim!)![1]!);
-    fireEvent.click(scrim);
+    // The dismiss target wraps nothing, so it can never name itself after the panel.
+    expect(dismiss.childElementCount).toBe(0);
+    expect(dismiss.contains(panel)).toBe(false);
+    // A press inside the panel stays in the panel; one on the scrim closes the drawer.
+    fireEvent.click(panel);
+    fireEvent.click(panel.parentElement!);
+    expect(openState).toBeNull();
+    fireEvent.click(dismiss);
     expect(openState).toBe(false);
   });
 });

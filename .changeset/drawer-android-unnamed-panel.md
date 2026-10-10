@@ -1,0 +1,5 @@
+---
+"@nannier/canvas": patch
+---
+
+On Android, an open Drawer (and so the Sidebar's drawer and the FilterPanel's drawer) no longer names its panel and its whole window after the text inside it. The Drawer wrapped its panel in two press areas, a scrim that closed it and a no-op that swallowed stray taps, and React Native's Pressable always hands its view an accessibility state, which Android's accessibility delegate answers by building a content description from the view's non-focusable text: a footer with a "Palette" label over a segmented group named "Palette" made the drawer and the window announce "Palette, Palette". The tap-to-close target is now an empty full-bleed Pressable beneath the panel, a sibling and never its wrapper (as ActionSheet's is), and the panel sits in plain box-none layers, so a tap off the panel, beside a side drawer or a capped sheet, still closes it and a tap on the panel stays in it. A model of the Android naming rule pins every drawer, sheet and dialog in the kit: none names a view that cannot take focus after a footer's text.
