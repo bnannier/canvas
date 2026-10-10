@@ -146,6 +146,7 @@ One row per finding. Severity: critical, high, medium, low. Cell: a capture id o
 
 | ID | Severity | Cell | Summary | Status | Fix commit |
 |---|---|---|---|---|---|
+| theme-provider-1 | medium | source | A forced scheme never reaches the platform's own UI: `<ThemeProvider dark>` paints the kit dark, but nothing calls React Native's `Appearance.setColorScheme`, so on iOS the native menus (the docs header's UIMenu), alerts, the keyboard and the status bar keep the system's light appearance over a dark app (seen 2026-10-10 on the Canvas Audit simulator, docs header menu on /components/badge with scheme=dark; HIG: system controls follow the app's interface style). Decide in this turn whether ThemeProvider sets the native appearance when a scheme is forced (and restores the system's on release), or documents that the app must. | open | |
 
 ## Sign-off
 
