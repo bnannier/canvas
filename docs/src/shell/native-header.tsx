@@ -7,10 +7,11 @@ import { titleFor } from "./topbar";
 import { nativeMenuFor, sectionFor, getActiveGroup, getActiveSlug, type MenuNode } from "../data/nav";
 import { GLYPH_RASTERS } from "../core/glyph-rasters";
 import { Sidebar } from "./sidebar";
-import { ThemeToggles } from "./theme-toggles";
+import { PaletteRow, ThemeToggles, paletteMenuSection } from "./theme-toggles";
+import { useDocsTheme } from "../theme/docs-theme";
 
 // Wraps a screen's scroller so the native header (which drives the per-screen Stack title +
-// menu, and hosts the Android overflow sheet) can sit as a sibling of the content. On web
+// menu, and hosts the Android menu drawer) can sit as a sibling of the content. On web
 // this is a no-op passthrough: it renders the scroller exactly as before, with NO wrapping
 // View, so the web build stays byte-identical (an extra flex wrapper there collapses
 // onLayout-measured tile grids).
@@ -44,6 +45,7 @@ export function NativeHeader() {
   const isFocused = useIsFocused();
   const insets = useSafeAreaInsets();
   const [menuOpen, setMenuOpen] = useState(false);
+  const { scheme, palette, setPalette } = useDocsTheme();
   if (Platform.OS === "web" || !isFocused) return null;
 
   const title = titleFor(pathname).title;
@@ -58,7 +60,9 @@ export function NativeHeader() {
   // so iOS slides over to the category's items natively. The current page is check-marked
   // (state "on"), and on a component page its category is surfaced FIRST as an inline section
   // (the native menu can't reopen pre-drilled into a submenu, so this reflects where you are);
-  // the remaining categories stay as drill-in submenus. The trailing items are ALWAYS declared
+  // the remaining categories stay as drill-in submenus. In the light scheme the menu ends
+  // with the Palette section (Blush and Mint as check-marked rows); the dark scheme has one
+  // palette, so the section goes. The trailing items are ALWAYS declared
   // (returning [] when this section has no menu): the native bar merges options across the
   // sibling tab stacks, so a bare omission would leave a previous section's menu showing here,
   // and an explicit [] clears it.
@@ -102,7 +106,7 @@ export function NativeHeader() {
           ? { type: "action", label: n.label, icon: glyphIcon(n.icon), onPress: () => router.push(n.href as never), ...(n.slug === activeSlug ? { state: "on" as const } : {}) }
           : { type: "submenu", label: n.label, icon: glyphIcon(n.icon), ...(n.inline ? { inline: true as const } : {}), items: toItems(n.items) },
       );
-    const items = toItems(nodes);
+    const items: NativeMenuItem[] = [...toItems(nodes), ...paletteMenuSection(scheme, palette, setPalette)];
     return (
       <Stack.Screen
         options={{
@@ -131,7 +135,9 @@ export function NativeHeader() {
   // always-visible in the trailing slot, matching the web's top-right controls, followed by the
   // section-menu hamburger. The hamburger opens the responsive Sidebar as an M3 start-edge
   // navigation drawer (the same kit Sidebar the desktop web shows as a rail, drilled down for the
-  // phone). Appearance lives in the bar, not the drawer. (iOS hosts the menu + appearance in the
+  // phone). The surface and scheme live in the bar; the drawer's footer adds the Blush/Mint
+  // palette row in the light scheme, and no footer at all in the dark one, where the drawer
+  // would otherwise draw an empty footer band. (iOS hosts the menu and the palette in the
   // native header UIMenu; see the branch above.)
   return (
     <>
@@ -154,6 +160,7 @@ export function NativeHeader() {
         // Lift the drawer's last rows above the native Material tab bar (M3 80dp, which paints on
         // top of the drawer's Modal). Guarded by the gesture inset for taller nav bars.
         drawerContentInsetBottom={Math.max(96, insets.bottom + 72)}
+        footer={scheme === "light" ? <PaletteRow /> : undefined}
       />
     </>
   );
