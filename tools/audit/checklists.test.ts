@@ -374,6 +374,10 @@ describe.skipIf(!hasDist)("the audit checklists keep a reviewer's work", () => {
     expect(row("dialog")).toBe(
       "| Interaction states | captured: focus on Default inside the overlay it opens (iOS, Android rows; desktop), pressed on Default inside the overlay it opens (iOS, Android rows; desktop), open on Default (web, iOS, Android rows; phone, tablet and desktop). |",
     );
+    // Sidebar's rail at the desktop, and its drill-down's rows inside the drawer it becomes at a phone's and a tablet's width.
+    expect(row("sidebar")).toContain(
+      "hover on Default (web row; desktop), hover on Default inside the overlay it opens (web row; phone and tablet), focus on Default (web row; desktop), focus on Default inside the overlay it opens (web row; phone and tablet), pressed on Default (web row; desktop), pressed on Default inside the overlay it opens (web row; phone and tablet)",
+    );
     // A state its source gives only in a build no row of the page renders is the devices', never captured.
     const sidebar = componentFacts("sidebar", sources.corpus);
     const judged = { ...sidebar, states: { ...sidebar.states, devices: ["focus in the overlay in Sidebar (the iOS build)"] } };
