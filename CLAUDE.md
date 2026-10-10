@@ -599,7 +599,8 @@ query naming any of `scheme` (`light` | `dark`), `surface` (`solid` | `glass`) a
 `palette` (`blush` | `mint`): `?scheme=light&palette=mint` after the route on the Web
 link, and `&scheme=light&palette=mint` after the route on the iOS and Android links
 (`http://localhost:8790/ios?route=components/button&scheme=light&palette=mint`). An
-axis left out keeps the app's current choice. The opener refuses a value outside an
+axis left out takes the exported look (dark, glass, blush) on a cold launch or a fresh web
+load, and keeps the running app's choice on a link opened while it runs. The opener refuses a value outside an
 axis's set instead of dropping it, and the app takes the look both on a cold launch
 and from a link opened while it runs (`docs/src/theme/docs-theme.tsx`). The palette
 is a light-scheme choice: with `scheme=dark` the kit paints its one dark palette

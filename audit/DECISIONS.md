@@ -51,7 +51,7 @@ decision.
 | P3b | React Native maps a read-only field to a disabled native field, so VoiceOver and TalkBack announce `<Input readOnly>` as disabled | (1) accept and document; (2) native work outside TextInput | (1). |
 | P3c | Firefox and Safari keep the browser's focus-ring colour unless the CSS hand-off is loaded (true of every Pressable) | (1) keep the documented status quo; (2) the docs load the hand-off's :focus-visible rule (needs your authorization: docs-only CSS); (3) JS focus tracking | (1). |
 | K13 links | Preview links carry an optional `&scheme=&surface=&palette=` | add it for look-specific reviews; route only | Add it as optional. |
-| K13 native | An in-app palette control on native and the desktop Topbar | Palette row in the iOS header menu and the Android overflow sheet (and Topbar if 768 allows); link-only | Native rows yes; Topbar only if it fits at 768. |
+| K13 native | An in-app palette control on native and the desktop Topbar | Palette row in the iOS header menu and the Android overflow sheet (and Topbar if 768 allows); link-only | Native rows yes; Topbar only if it fits at 768. Outcome (F0, 2026-10-09): the iOS header menu and the Android menu drawer gained the Palette rows; the desktop Topbar did not, because at its narrowest the longest page title leaves 116 px against the control's 124 in solid (121.9 against 118.4 in glass), so it stays link-only there. |
 | Backlog | ScrollView as a keyboard stop by default | make every ScrollView focusable; only when it holds no focusable child; leave it | Only when it holds no focusable child (WCAG 2.1.1 scrollable regions). |
 | Backlog | The phone drawer wraps the theme toggles in its own order | keep; match the desktop order | Match desktop. |
 
