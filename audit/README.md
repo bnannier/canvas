@@ -263,16 +263,22 @@ as "by design".
 | `bun run audit:turn -- --slug=<slug> --phase=before\|after` | one component's, page's or foundation's turn capture: every web and device capture of the slug (a foundation's Capture through list), the analysis, sheets and index scoped to it, the run ids recorded in `audit/turns/<id>.md`, and the sheets to read printed (see "One component's turn"); `--dry-run`, `--web-only`, `--native-only`, `--only-first=<n>`, `--no-build`, `--devices`, `--workers` |
 | `bun run audit:native:build -- --platform=ios,android` | builds the Canvas Audit app (the docs with the capture driver) in Release and installs it on the booted simulator and emulator, leaving the docs app's own `docs/ios` and `docs/android` as they were; `--incremental` reuses the parked native project while the native inputs are unchanged, `--dev` builds Debug for the fix loop |
 | `bun run audit:native -- --platform=ios,android` | photographs every component example and every pattern and template page on the devices in all six looks and surfaces; `--only`, `--looks`, `--surfaces`, `--a11y=none\|default\|all`, `--devices`, `--dev`, `--keep-motion` |
-| `bun run audit:web` | captures the web cells into a new run under `.audit/runs/` (see "Capturing on the web" below): the example variants, or with `--states` (every state, or `--states=hover,open`) the interaction states and with `--pages` the pattern and template pages instead (both flags for both); `--only` (component slugs, page ids or page slugs), `--variants` (the variant capture only), `--looks`, `--surfaces`, `--widths` narrow it, `--axe`, `--base`, `--workers` and `--allow-stale` tune it, `--help` lists them |
+| `bun run audit:web` | captures the web cells into a new run under `.audit/runs/` (see "Capturing on the web" below): the example variants, or with `--states` (every state, or `--states=hover,open`) the interaction states and with `--pages` the pattern and template pages instead (both flags for both); `--only` (component slugs, page ids or page slugs, read as below), `--variants` (the variant capture only), `--looks`, `--surfaces`, `--widths` narrow it, `--axe`, `--base`, `--workers` and `--allow-stale` tune it, `--help` lists them |
 | `bun run audit:analyze` | writes `analysis.json` beside the newest capture of every cell, variant, interaction state, page or device cell (see "Analysis, contact sheets and the index" below) |
 | `bun run audit:calibrate` | measures the analysis' contrast read from the photographs (cards, state shots, page sections) against the DOM's, on the newest captures; writes nothing |
 | `bun run audit:sheets` | writes the contact sheets under `.audit/current/<slug>/sheets/`: per variant, per component's states, per page |
 | `bun run audit:index` | writes `.audit/current/<slug>/index.md` (a component's cells and states, a page's cells and sections), `SUMMARY.md` and `current.json` |
 | `bun run audit:prune` | deletes old runs, keeping the newest two captures of every cell, and rebuilds the index over what remains (`--keep`, `--dry-run`) |
 
-The last five take `--only=<slugs>` (component slugs, page ids such as `template-signin`, or a
-page's slug; an unknown name is refused) and `--run=<run ids>` (a run's directory name, or a
-prefix naming exactly one).
+The last five take `--only=<slugs>` and `--run=<run ids>` (a run's directory name, or a prefix
+naming exactly one). Every command that takes a name (`--only` here, on `audit:web` and on
+`audit:native`, and `audit:turn`'s `--slug`) reads it the same way (`resolveNames` in
+`tools/audit/inventory.ts`): a component slug names that component and nothing else, since a
+component has no other name; a page id (`template-signin`) names that page; and a page's slug
+(`signin`) names the page only when no component has that slug and no other page shares it.
+So `calendar` is the Calendar component, and its template page is `template-calendar`; a page
+is matched by its id, never by a suffix of it (`sidebar` is not `template-detail-sidebar`). An
+unknown name, and a page slug two pages share, is refused.
 
 When a kit change alters a fact (a new test, a skin that stops aliasing the web skin, a
 reference row, a materials entry), run `bun run audit:checklists` and commit the result,
@@ -309,8 +315,12 @@ The plan's turn, with the commands that carry it out:
    lists for it.
 
 `--slug` takes a component slug, a page id or slug, or a foundation (its id, `glass-pane`, or
-its name, `GlassPane`); a name two of them share is refused. A foundation expands to its
-Capture through list (see "Foundations"). The steps, in order:
+its name, `GlassPane`), read as `--only` is (above) with the foundations beside the canonical
+names: a component's slug, a page's id, a foundation's id or name, then a page's slug where
+nothing else has it. `--slug=calendar` is the Calendar component's turn and
+`--slug=template-calendar` its page's; a foundation whose id a component or page also had
+would go by its name, which nothing else can have. A foundation expands to its Capture
+through list (see "Foundations"). The steps, in order:
 
 | Step | What it does |
 |---|---|

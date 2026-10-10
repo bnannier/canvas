@@ -28,6 +28,8 @@ import {
   WIDTHS,
   cellId,
   pageCellId,
+  pageSharingSlug,
+  resolveNamesOrThrow,
   type ComponentVariant,
   type InventoryComponent,
   type InventoryPage,
@@ -265,11 +267,13 @@ export function describeKinds(kinds: CaptureKinds): string {
 }
 
 /**
- * `--only` split between the kinds a run captures: component slugs to the variants and
- * states, page ids (`template-signin`) or page slugs (`signin`) to the pages; a slug that
- * is both (`calendar`) goes to each kind that takes it. A name nothing has, or one only a
- * kind the run does not capture has, throws, so a typo is not an empty run. Null for a
- * kind means everything; an empty list means none.
+ * `--only` split between the kinds a run captures, by the inventory's one name grammar
+ * (inventory.ts `resolveNames`): component slugs to the variants and states, pages (by id,
+ * `template-signin`, or by a slug no component has, `signin`) to the pages. A component's
+ * slug names the component alone, so `calendar` is the Calendar component and its template
+ * page is `template-calendar`. A name nothing has, a page slug two pages share, or a name
+ * only a kind the run does not capture has throws, so a typo is not an empty run. Null for
+ * a kind means everything; an empty list means none.
  */
 export function splitOnly(
   only: string[] | null,
@@ -279,33 +283,15 @@ export function splitOnly(
 ): { components: string[] | null; pages: string[] | null } {
   const takesComponents = kinds.variants || kinds.states !== null;
   if (!only) return { components: takesComponents ? null : [], pages: kinds.pages ? null : [] };
-  const slugs = new Set(inventory.map((c) => c.slug));
-  const pageIds = new Map<string, string>();
-  for (const p of pageList) {
-    pageIds.set(p.id, p.id);
-    pageIds.set(p.slug, p.id);
-  }
-  const components: string[] = [];
-  const pages: string[] = [];
-  const unknown: string[] = [];
-  const pageOnly: string[] = [];
-  const componentOnly: string[] = [];
-  for (const name of only) {
-    const isComponent = slugs.has(name);
-    const page = pageIds.get(name);
-    if (!isComponent && !page) unknown.push(name);
-    else if (isComponent && takesComponents) {
-      components.push(name);
-      if (page && kinds.pages) pages.push(page);
-    } else if (page && kinds.pages) pages.push(page);
-    else if (page) pageOnly.push(name);
-    else componentOnly.push(name);
-  }
+  const named = resolveNamesOrThrow(AUDIT_ENV.only, only, inventory, pageList);
   const quoted = (names: string[]) => names.map((n) => `"${n}"`).join(", ");
-  if (unknown.length) throw new Error(`${AUDIT_ENV.only}: no component or page is called ${quoted(unknown)}`);
-  if (pageOnly.length) throw new Error(`${AUDIT_ENV.only}: ${quoted(pageOnly)} names a page, and this run captures no pages (pass --pages)`);
-  if (componentOnly.length) throw new Error(`${AUDIT_ENV.only}: ${quoted(componentOnly)} names a component, and this run captures only pages (pass --states, or drop --pages for the variants)`);
-  return { components: takesComponents ? components : [], pages: kinds.pages ? [...new Set(pages)] : [] };
+  if (named.pages.length && !kinds.pages) throw new Error(`${AUDIT_ENV.only}: ${quoted(named.pages)} names a page, and this run captures no pages (pass --pages)`);
+  if (named.components.length && !takesComponents) {
+    const shared = named.components.map((slug) => [slug, pageSharingSlug(slug, pageList)] as const).filter(([, id]) => id !== null);
+    const hint = shared.length ? ` (a component slug names the component alone: the page${shared.length === 1 ? "" : "s"} sharing it ${shared.length === 1 ? "is" : "are"} ${shared.map(([, id]) => `"${id}"`).join(", ")})` : "";
+    throw new Error(`${AUDIT_ENV.only}: ${quoted(named.components)} names a component, and this run captures only pages (pass --states, or drop --pages for the variants)${hint}`);
+  }
+  return { components: takesComponents ? named.components : [], pages: kinds.pages ? named.pages : [] };
 }
 
 // --- Interaction states (plan 1d) -------------------------------------------------------

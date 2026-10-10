@@ -27,7 +27,7 @@ import { rmSync } from "node:fs";
 import { join, relative } from "node:path";
 import { ROOT } from "../../e2e/support/routes.ts";
 import { brokenLinks, buildIndex, builtSelection, CURRENT_FILE, type IndexResult } from "./index.ts";
-import { capturesById, cellMatches, checkOnly, CURRENT_DIR, listRuns, loadCells, parseToolArgs, pickRuns, readJsonFile, type AuditRun, type CapturedCell } from "./runs.ts";
+import { capturesById, cellMatches, CURRENT_DIR, listRuns, loadCells, parseToolArgs, pickRuns, readJsonFile, resolveOnly, type AuditRun, type CapturedCell, type OnlyTargets } from "./runs.ts";
 import { PLATFORMS } from "./inventory.ts";
 
 export const DEFAULT_KEEP = 2;
@@ -42,8 +42,8 @@ export interface PruneOptions {
   keep: number;
   /** Only these runs may be removed (the rest are left as they are). */
   candidates: Set<string> | null;
-  /** Only runs that captured nothing but these components or pages may be removed. */
-  only: string[] | null;
+  /** Only runs that captured nothing but these components or pages may be removed (`resolveOnly`). */
+  only: OnlyTargets | null;
 }
 
 /** What to do with every run: remove it, or keep it and why. */
@@ -116,14 +116,14 @@ function viewLinksInto(root: string, runs: AuditRun[]): number {
  * anything went and a view is built, rebuild the view from what remains and check its links.
  * Throws on a usage error (an unknown --only name or --run).
  */
-export function pruneRuns(root: string, options: Omit<PruneOptions, "candidates"> & { runs: string[] | null; dryRun: boolean }): PruneOutcome {
-  checkOnly(options.only);
+export function pruneRuns(root: string, options: Omit<PruneOptions, "candidates" | "only"> & { only: string[] | null; runs: string[] | null; dryRun: boolean }): PruneOutcome {
+  const only = resolveOnly(options.only);
   const listed = listRuns(root);
   const warnings = [...listed.problems];
   const candidates = options.runs ? new Set(pickRuns(listed.runs, options.runs).map((run) => run.id)) : null;
   const loaded = loadCells(listed.runs);
   warnings.push(...loaded.problems);
-  const decisions = planPrune(listed.runs, loaded.cells, { keep: options.keep, candidates, only: options.only });
+  const decisions = planPrune(listed.runs, loaded.cells, { keep: options.keep, candidates, only });
   const going = decisions.filter((decision) => decision.remove).map((decision) => decision.run);
   const pointing = viewLinksInto(root, going);
   const built = builtSelection(root);

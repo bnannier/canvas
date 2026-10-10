@@ -199,12 +199,15 @@ describe("what a run captures", () => {
     expect(describeKinds(parseKinds({ [AUDIT_ENV.states]: "focus", [AUDIT_ENV.pages]: "1" }))).toBe("states (focus), pages");
   });
 
-  it("splits --only between components and pages, a page by id or slug, a slug that is both to each kind", () => {
+  it("splits --only between components and pages, a page by id or by a slug no component has", () => {
     const both = parseKinds({ [AUDIT_ENV.states]: "all", [AUDIT_ENV.pages]: "1" });
+    // `calendar` is the Calendar component's slug, so it names the component alone; its
+    // template page goes by its id.
     expect(splitOnly(["button", "template-signin", "glass", "calendar"], both, inventory, pageList)).toEqual({
       components: ["button", "calendar"],
-      pages: ["template-signin", "pattern-glass", "template-calendar"],
+      pages: ["template-signin", "pattern-glass"],
     });
+    expect(splitOnly(["calendar", "template-calendar"], both, inventory, pageList)).toEqual({ components: ["calendar"], pages: ["template-calendar"] });
     expect(splitOnly(null, parseKinds({ [AUDIT_ENV.pages]: "1" }), inventory, pageList)).toEqual({ components: [], pages: null });
     expect(splitOnly(null, parseKinds({}), inventory, pageList)).toEqual({ components: null, pages: [] });
   });
@@ -213,6 +216,9 @@ describe("what a run captures", () => {
     expect(() => splitOnly(["buton"], parseKinds({}), inventory, pageList)).toThrow(/no component or page is called "buton"/);
     expect(() => splitOnly(["template-signin"], parseKinds({ [AUDIT_ENV.states]: "all" }), inventory, pageList)).toThrow(/names a page, and this run captures no pages/);
     expect(() => splitOnly(["button"], parseKinds({ [AUDIT_ENV.pages]: "1" }), inventory, pageList)).toThrow(/names a component, and this run captures only pages/);
+    expect(() => splitOnly(["calendar"], parseKinds({ [AUDIT_ENV.pages]: "1" }), inventory, pageList)).toThrow(
+      'AUDIT_ONLY: "calendar" names a component, and this run captures only pages (pass --states, or drop --pages for the variants) (a component slug names the component alone: the page sharing it is "template-calendar")',
+    );
   });
 
   it("plans 18 cells per page, its sections from the inventory, narrowed by id", () => {

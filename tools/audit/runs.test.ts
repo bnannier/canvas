@@ -4,7 +4,6 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import {
   capturesById,
-  checkOnly,
   cellMatches,
   currentCells,
   describeRun,
@@ -17,8 +16,8 @@ import {
   pickRuns,
   readRunCells,
   recipeRank,
+  resolveOnly,
   selectCurrent,
-  unknownNames,
   type AuditRun,
 } from "./runs.ts";
 import { RUNS, checkoutWithRealRuns } from "./fixtures/real-runs.ts";
@@ -178,18 +177,35 @@ describe("cells and the newest capture of each", () => {
     expect(selectCurrent([...fromLate, ...fromEarly])[0]!.run.id).toBe(early.id);
   });
 
-  it("refuses an --only name no component or page has", () => {
-    const known = { components: ["button", "switch"], pages: [{ id: "template-signin", slug: "signin" }] };
-    expect(unknownNames(["button", "signin", "template-signin", "buton"], known)).toEqual(["buton"]);
-    expect(() => checkOnly(["button", "no-such-thing"])).toThrow('--only: no component or page is called "no-such-thing"');
-    expect(() => checkOnly(["button", "template-signin"])).not.toThrow();
+  it("refuses an --only name no component or page has, and a page slug two pages share", () => {
+    const list = [{ slug: "button" }, { slug: "switch" }, { slug: "calendar" }];
+    const pageList = [
+      { id: "template-signin", slug: "signin" },
+      { id: "template-calendar", slug: "calendar" },
+      { id: "pattern-glass", slug: "glass" },
+      { id: "template-glass", slug: "glass" },
+    ];
+    expect(() => resolveOnly(["button", "no-such-thing"], list, pageList)).toThrow('--only: no component or page is called "no-such-thing"');
+    expect(() => resolveOnly(["glass"], list, pageList)).toThrow('--only: "glass" is the slug of 2 pages; name one by its id (pattern-glass, template-glass)');
+    expect(resolveOnly(["button", "signin", "template-signin", "pattern-glass"], list, pageList)).toEqual({ components: new Set(["button"]), pages: new Set(["template-signin", "pattern-glass"]) });
+    expect(resolveOnly(null, list, pageList)).toBeNull();
+    // Against the real inventory too: a name nothing has is refused.
+    expect(() => resolveOnly(["buton"])).toThrow('--only: no component or page is called "buton"');
   });
 
-  it("narrows to components, and to pages by id or by slug", () => {
-    expect(cellMatches({ slug: "button", family: "variant" }, ["button"])).toBe(true);
-    expect(cellMatches({ slug: "button-group", family: "variant" }, ["button"])).toBe(false);
-    expect(cellMatches({ slug: "template-signin", family: "page" }, ["signin"])).toBe(true);
-    expect(cellMatches({ slug: "template-signin", family: "page" }, ["template-signin"])).toBe(true);
+  it("narrows to components by slug and to pages by id, never to a page whose id merely ends in the name", () => {
+    const real = (names: string[]) => resolveOnly(names);
+    expect(cellMatches({ slug: "button", family: "variant" }, real(["button"]))).toBe(true);
+    expect(cellMatches({ slug: "button-group", family: "variant" }, real(["button"]))).toBe(false);
+    expect(cellMatches({ slug: "template-signin", family: "page" }, real(["signin"]))).toBe(true);
+    expect(cellMatches({ slug: "template-signin", family: "page" }, real(["template-signin"]))).toBe(true);
+    // A component's slug names the component alone: Calendar is not template-calendar, and
+    // Sidebar is not template-detail-sidebar.
+    expect(cellMatches({ slug: "calendar", family: "variant" }, real(["calendar"]))).toBe(true);
+    expect(cellMatches({ slug: "calendar", family: "state" }, real(["calendar"]))).toBe(true);
+    expect(cellMatches({ slug: "template-calendar", family: "page" }, real(["calendar"]))).toBe(false);
+    expect(cellMatches({ slug: "template-calendar", family: "page" }, real(["template-calendar"]))).toBe(true);
+    expect(cellMatches({ slug: "template-detail-sidebar", family: "page" }, real(["sidebar"]))).toBe(false);
     expect(cellMatches({ slug: "x", family: "variant" }, null)).toBe(true);
   });
 });

@@ -36,15 +36,33 @@ describe("audit:turn arguments", () => {
 });
 
 describe("what a turn captures", () => {
-  it("resolves a component, a page by id or slug, and a foundation by id or name, and refuses a name two of them share", () => {
+  it("resolves a component, a page by id or slug, and a foundation by id or name, canonical names first", () => {
     expect(resolveTarget("button")).toMatchObject({ kind: "component", id: "button", checklist: "audit/components/button.md" });
     expect(resolveTarget("template-signin")).toMatchObject({ kind: "page", id: "template-signin", checklist: "audit/pages/template-signin.md" });
     expect(resolveTarget("signin")).toMatchObject({ kind: "page", id: "template-signin" });
     expect(resolveTarget("glass-pane")).toMatchObject({ kind: "foundation", id: "glass-pane", title: "GlassPane", checklist: "audit/foundation/glass-pane.md" });
     expect(resolveTarget("GlassPane")).toMatchObject({ kind: "foundation", id: "glass-pane" });
     expect(() => resolveTarget("nothing-here")).toThrow(/names no component, page or foundation/);
+    // A component has no name but its slug, so the slug it shares with a page names the
+    // component, and the page goes by its id: Calendar and template-calendar.
+    expect(resolveTarget("calendar")).toMatchObject({ kind: "component", id: "calendar", checklist: "audit/components/calendar.md" });
+    expect(resolveTarget("template-calendar")).toMatchObject({ kind: "page", id: "template-calendar" });
+    // A component whose slug a foundation's id also were keeps it; the foundation goes by its name.
     const clash = [...components(), { ...components()[0]!, slug: "glass-pane", name: "Impostor" }];
-    expect(() => resolveTarget("glass-pane", clash, pages())).toThrow(/names a component and a foundation/);
+    expect(resolveTarget("glass-pane", clash, pages())).toMatchObject({ kind: "component", id: "glass-pane" });
+    expect(resolveTarget("GlassPane", clash, pages())).toMatchObject({ kind: "foundation", id: "glass-pane" });
+    // A page slug two pages share names neither: each goes by its id.
+    const twin = [...pages(), { ...pages().find((p) => p.id === "template-signin")!, kind: "pattern" as const, id: "pattern-signin" }];
+    expect(() => resolveTarget("signin", components(), twin)).toThrow("--slug=signin is the slug of 2 pages; name one by its id (template-signin, pattern-signin)");
+  });
+
+  it("plans the Calendar component's turn without its template page, on every device and in the analysis", () => {
+    const calendar = resolveTarget("calendar");
+    const plan = planTurn({ webOnly: false, nativeOnly: false, noBuild: false, devices: null, workers: null }, calendar, "before", turnScope(calendar, null));
+    expect(plan.slugs).toEqual(["calendar"]);
+    const native = plan.steps.find((s) => s.kind === "native")!;
+    expect(native.kind === "native" && native.cellsPerPlatform).toBe(components().find((c) => c.slug === "calendar")!.variants.length * 6);
+    expect(plan.steps.some((s) => s.kind === "capture" && s.run === "pages")).toBe(false);
   });
 
   it("expands a foundation to its Capture through list, capped by --only-first, and refuses a cap on anything else", () => {

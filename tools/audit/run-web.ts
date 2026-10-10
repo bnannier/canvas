@@ -19,7 +19,9 @@
 //   bun run audit:web -- --allow-stale                capture another checkout's source anyway
 //
 // `--only` names components for the variants and the states and pages for the pages (by id,
-// `template-signin`, or slug, `signin`); `--variants` narrows the variants only.
+// `template-signin`, or by a slug no component has, `signin`: inventory.ts `resolveNames`,
+// so `calendar` is the component and `template-calendar` its page); `--variants` narrows the
+// variants only.
 //
 // Only this checkout's source is captured. The capture's global setup
 // (e2e/audit/global-setup.ts) opens /testing/diagnostics on the server the cells really hit

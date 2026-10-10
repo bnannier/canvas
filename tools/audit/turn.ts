@@ -22,8 +22,9 @@
 //   7. the index and the contact sheets to read, printed per slug.
 //
 // The slug is a component slug (`button`), a page id or slug (`template-signin`, `signin`),
-// or a foundation (`glass-pane`, `GlassPane`), which expands to its Capture through list
-// (tools/audit/foundations.ts): the components that render through it, direct consumers
+// or a foundation (`glass-pane`, `GlassPane`); a component's slug names the component
+// alone (`calendar`; its template page is `template-calendar`). A foundation expands to its
+// Capture through list (tools/audit/foundations.ts): the components that render through it, direct consumers
 // first, then those through shared modules, then those through other kit components, then
 // the pages. `--only-first=<n>` keeps the first n of that list, for a quick look; the turn
 // record says the run was capped, and a sign-off still needs the whole list.
@@ -131,16 +132,25 @@ export type TurnTarget =
   | { kind: "page"; id: string; title: string; checklist: string; page: InventoryPage }
   | { kind: "foundation"; id: string; title: string; checklist: string; foundation: Foundation };
 
-/** What `--slug` names: a component slug, a page id or slug, or a foundation id or name; never two of them. */
+/**
+ * What `--slug` names, by the inventory's name grammar (inventory.ts `resolveNames`) with
+ * the foundations beside it, canonical names first: a component's slug (its only name), a
+ * page's id, a foundation's id or name; then a page's slug, when no component, page or
+ * foundation has it as a name and no other page shares it. So `calendar` is the Calendar
+ * component and `template-calendar` its page; a foundation whose id a component or a page
+ * also had would be named by its name (`GlassPane`), which nothing else can have.
+ */
 export function resolveTarget(name: string, list: readonly InventoryComponent[] = components(), pageList: readonly InventoryPage[] = pages()): TurnTarget {
   const component = list.find((c) => c.slug === name);
-  const page = pageList.find((p) => p.id === name || p.slug === name);
-  const foundation = findFoundation(name);
-  const found = [component && "a component", page && "a page", foundation && "a foundation"].filter(Boolean);
-  if (found.length > 1) throw new Error(`--slug=${name} names ${found.join(" and ")}; name one (a page by its id, \`${page?.id}\`; a foundation by its name, \`${foundation?.name}\`)`);
   if (component) return { kind: "component", id: component.slug, title: component.name, checklist: `audit/${COMPONENTS_DIR}/${component.slug}.md`, component };
-  if (page) return { kind: "page", id: page.id, title: `${page.kind} ${page.slug}`, checklist: `audit/${PAGES_DIR}/${page.id}.md`, page };
+  const page = pageList.find((p) => p.id === name) ?? null;
+  const foundation = findFoundation(name);
+  const asPage = (p: InventoryPage): TurnTarget => ({ kind: "page", id: p.id, title: `${p.kind} ${p.slug}`, checklist: `audit/${PAGES_DIR}/${p.id}.md`, page: p });
+  if (page) return asPage(page);
   if (foundation) return { kind: "foundation", id: foundation.id, title: foundation.name, checklist: `audit/${FOUNDATION_DIR}/${foundation.id}.md`, foundation };
+  const bySlug = pageList.filter((p) => p.slug === name);
+  if (bySlug.length === 1) return asPage(bySlug[0]!);
+  if (bySlug.length > 1) throw new Error(`--slug=${name} is the slug of ${bySlug.length} pages; name one by its id (${bySlug.map((p) => p.id).join(", ")})`);
   throw new Error(`--slug=${name} names no component, page or foundation (a component slug such as button, a page id such as template-signin, or a foundation such as glass-pane)`);
 }
 

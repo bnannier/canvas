@@ -131,6 +131,70 @@ export function pages(): InventoryPage[] {
     });
 }
 
+/**
+ * What a capture name (`--only`, `--slug`) names, against the inventory: every audit
+ * command reads its names through this, so a name means the same thing to each of them.
+ *
+ *   - a component slug names that component, and only it: a component has no other name,
+ *     so where a page shares its slug (the Calendar component and `template-calendar`),
+ *     the slug is the component's and the page is named by its id;
+ *   - a page id (`template-signin`) names that page;
+ *   - a page's slug (`signin`) names that page, when no component has the slug and no
+ *     other page shares it (a pattern and a template of one slug are each named by id).
+ *
+ * The components and pages come back in the order the names were given, each once.
+ */
+export interface ResolvedNames {
+  components: string[];
+  /** Page ids. */
+  pages: string[];
+  /** Names nothing in the inventory has. */
+  unknown: string[];
+  /** Page slugs several pages share, each with the ids that name them apart. */
+  ambiguous: { name: string; ids: string[] }[];
+}
+
+export function resolveNames(names: readonly string[], list: readonly Pick<InventoryComponent, "slug">[] = components(), pageList: readonly Pick<InventoryPage, "id" | "slug">[] = pages()): ResolvedNames {
+  const slugs = new Set(list.map((c) => c.slug));
+  const ids = new Set(pageList.map((p) => p.id));
+  const out: ResolvedNames = { components: [], pages: [], unknown: [], ambiguous: [] };
+  const add = (into: string[], value: string) => {
+    if (!into.includes(value)) into.push(value);
+  };
+  for (const name of names) {
+    if (slugs.has(name)) add(out.components, name);
+    else if (ids.has(name)) add(out.pages, name);
+    else {
+      const bySlug = pageList.filter((p) => p.slug === name).map((p) => p.id);
+      if (bySlug.length === 1) add(out.pages, bySlug[0]!);
+      else if (bySlug.length > 1) {
+        if (!out.ambiguous.some((a) => a.name === name)) out.ambiguous.push({ name, ids: bySlug });
+      } else if (!out.unknown.includes(name)) out.unknown.push(name);
+    }
+  }
+  return out;
+}
+
+/** The page that shares a component's slug (`template-calendar` for `calendar`), which the slug never names: its id does. */
+export function pageSharingSlug(name: string, pageList: readonly Pick<InventoryPage, "id" | "slug">[] = pages()): string | null {
+  return pageList.find((p) => p.slug === name)?.id ?? null;
+}
+
+/**
+ * The names as `resolveNames` reads them, or an error naming every name it could not read:
+ * an unknown name (so a typo is refused, not read as nothing) and a page slug several pages
+ * share. `what` prefixes the message (`--only`).
+ */
+export function resolveNamesOrThrow(what: string, names: readonly string[], list: readonly Pick<InventoryComponent, "slug">[] = components(), pageList: readonly Pick<InventoryPage, "id" | "slug">[] = pages()): Pick<ResolvedNames, "components" | "pages"> {
+  const resolved = resolveNames(names, list, pageList);
+  const problems = [
+    ...(resolved.unknown.length ? [`no component or page is called ${resolved.unknown.map((n) => `"${n}"`).join(", ")}`] : []),
+    ...resolved.ambiguous.map((a) => `"${a.name}" is the slug of ${a.ids.length} pages; name one by its id (${a.ids.join(", ")})`),
+  ];
+  if (problems.length) throw new Error(`${what}: ${problems.join("; ")}`);
+  return { components: resolved.components, pages: resolved.pages };
+}
+
 /** The docs data module a pattern or template page renders from, repo-relative. */
 export function pageModule(kind: PageKind, slug: string): string {
   return kind === "pattern" ? "docs/src/core/data/patterns.tsx" : `docs/src/core/data/templates/${slug}.tsx`;
