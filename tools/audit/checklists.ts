@@ -38,6 +38,7 @@
 import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { ROOT } from "../../e2e/support/routes.ts";
+import type { ReferenceCell } from "../skins/references.ts";
 import {
   TOUCH_TARGET_COVERAGE,
   TOUCH_TARGET_MODULES,
@@ -48,7 +49,6 @@ import {
   type ComponentFacts,
   type FactsCorpus,
   type PageFacts,
-  type ReferenceCell,
   type SweepFact,
 } from "./facts.ts";
 import {
