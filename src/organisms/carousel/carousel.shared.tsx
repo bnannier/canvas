@@ -279,9 +279,12 @@ export function createCarousel(skin: CarouselSkin) {
     const focusFrame = useFocusFrame();
     const scrollRef = useComposedRefs<ScrollView>(listRef, focusFrame.target.ref);
     const [contentWidth, setContentWidth] = useState(0);
+    // The same width for the layout effect below, which reads it without re-running on it.
+    const contentWidthRef = useRef(0);
     const commanded = useRef<{ index: number; width: number; count: number } | null>(null);
     const onContentSizeChange = useCallback((content: number, height: number) => {
       reportContentSize(content, height);
+      contentWidthRef.current = content;
       setContentWidth(content);
     }, [reportContentSize]);
 
@@ -305,8 +308,8 @@ export function createCarousel(skin: CarouselSkin) {
 
     // A new slide width (the first measurement, a resize, a hidden viewport shown
     // again) moves every slide, so put the current one back in view before the frame
-    // paints. The list has just been laid out at this width, so the offset is valid
-    // without waiting for the content size to report.
+    // paints. The list has just been laid out at this width, so on the web and iOS the
+    // offset is valid without waiting for the content size to report.
     //
     // Leaving the unmeasured layout takes a real move. Unmeasured, every slide's snap
     // cell sits at offset 0, so each counts as snapped there, and a browser that
@@ -316,6 +319,12 @@ export function createCarousel(skin: CarouselSkin) {
     // nothing: when the current slide sits at 0, a 1px step first makes landing on
     // it a move. The step stays inside the current slide's page because iOS reports
     // every non-animated scroll as a momentum end, which reads the page back.
+    //
+    // The command counts as done only once the content is as wide as the slides. Android's
+    // horizontal scroll view caps an offset at the width its content has on the native
+    // side, and on the first measurement that is still the unmeasured column, one
+    // viewport wide, so a slide past the first lands at 0. Left undone, the command is
+    // issued again by the effect below once the content size reports every slide's width.
     const measuredBefore = useRef(false);
     useIsomorphicLayoutEffect(() => {
       if (width <= 0 || count === 0) {
@@ -323,7 +332,7 @@ export function createCarousel(skin: CarouselSkin) {
         return;
       }
       const x = currentRef.current * width;
-      commanded.current = { index: currentRef.current, width, count };
+      commanded.current = Math.abs(contentWidthRef.current - count * width) <= 1 ? { index: currentRef.current, width, count } : null;
       if (!measuredBefore.current && x === 0 && count > 1) {
         listRef.current?.scrollTo({ x: 1, y: 0, animated: false });
       }
