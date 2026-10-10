@@ -11,7 +11,7 @@ Audit checklist for `/components/code-block`. The facts block and the variants t
 | Source files | `code-block.android.tsx`, `code-block.ios.tsx`, `code-block.md`, `code-block.shared.tsx`, `code-block.styles.ts`, `code-block.tsx`, `tokenize.ts` |
 | Implementation | its own source directory, `src/molecules/code-block/` (6 TypeScript modules) |
 | Exports | CodeBlock, tokenize, syntaxColor |
-| Platform entries | iOS: web build: CodeBlock. Android: web build: CodeBlock |
+| Platform entries | iOS: web build: CodeBlock; re-exports the shared build: tokenize, syntaxColor. Android: web build: CodeBlock; re-exports the shared build: tokenize, syntaxColor |
 | Platform-skins registry | none (every export is the web build, so the docs three-up renders it as is) |
 | Reference row | `code-block` (Shared, Built). iOS: none (iOS has no code display control; UIKit and SwiftUI ship no code view, apps build custom views with monospaced text styles). Android: none (Material 3 has no code block component; nothing in the M3 catalog covers code display). Web: link [code-block (Web)](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/code) (standard HTML pattern: pre wrapping code for multi-line blocks) |
 | Materials manifest | CodeBlock: molecules, static + liquid; verification solid-appearance, glass-appearance, mode-switch, accessibility-fallback, runtime-capability, semantic-state |
@@ -20,11 +20,12 @@ Audit checklist for `/components/code-block`. The facts block and the variants t
 | Hand-off metric gaps | none |
 | Interactions registry | in the inventory; evidence: code-copy (unit-web, test/behavior-smoke-b.test.tsx) |
 | Overlay recipe | none |
+| Interaction states | captured: focus on Copy button (web row; desktop), pressed on Copy button (web row; desktop). |
 | MeasureProps | not adopted |
 | Touch target | `code-block.shared.tsx`: hitSlop, minTarget, styleBox, useSeededMinTargetSlop; `code-block.styles.ts`: minTarget, platformMinTarget |
-| Tests importing it | 9: `test/behavior-smoke-b.test.tsx`, `test/code-block.test.tsx`, `test/design-rules-shape.test.ts`, `test/design-rules-skins.test.ts`, `test/scroll-frame-ring.test.tsx`, `test/skins-smoke.test.tsx`, `test/touch-target-clips.test.tsx`, `test/touch-target-coverage.test.ts`, `test/touch-target-seed.test.tsx` |
+| Tests importing it | 10: `test/behavior-smoke-b.test.tsx`, `test/code-block.test.tsx`, `test/design-rules-shape.test.ts`, `test/design-rules-skins.test.ts`, `test/focus-ring.test.tsx`, `test/scroll-frame-ring.test.tsx`, `test/skins-smoke.test.tsx`, `test/touch-target-clips.test.tsx`, `test/touch-target-coverage.test.ts`, `test/touch-target-seed.test.tsx` |
 | E2E naming it | 2: `e2e/behavior/scroll-focus.e2e.ts`, `e2e/journeys/keyboard.e2e.ts` |
-| E2E catalog sweeps | 6: `e2e/a11y/components.e2e.ts` (componentRoutes), `e2e/responsive/component-widths.e2e.ts` (contentRoutes, componentRoutes), `e2e/smoke/examples.e2e.ts` (componentExamples), `e2e/smoke/routes.e2e.ts` (allRoutes), `e2e/visual/components.e2e.ts` (componentRoutes), `e2e/visual/materials.e2e.ts` (MATERIAL_ROUTES) |
+| E2E catalog sweeps | 7: `e2e/a11y/components.e2e.ts` (componentRoutes), `e2e/journeys/keyboard.e2e.ts` (componentRoutes), `e2e/responsive/component-widths.e2e.ts` (contentRoutes, componentRoutes), `e2e/smoke/examples.e2e.ts` (componentExamples), `e2e/smoke/routes.e2e.ts` (allRoutes), `e2e/visual/components.e2e.ts` (componentRoutes), `e2e/visual/materials.e2e.ts` (MATERIAL_ROUTES) |
 <!-- audit:facts:end -->
 
 ## Variants
@@ -92,7 +93,7 @@ One row per finding. Severity: critical, high, medium, low. Cell: a capture id f
 
 | ID | Severity | Cell | Summary | Status | Fix commit |
 |---|---|---|---|---|---|
-| code-block-corner-1 | low | source | The inline variant's box drew 4 where Typography's inline `code` draws Dark Factory's key step, 6; one inline code chip now has one corner, 6. The shape gate (test/design-rules-shape.test.ts) now takes a corner only as a role of its own platform's row that its component plays, the pill, square or a declared concentric corner. | fixed | d1339a2c |
+| code-block-corner-1 | low | source | The inline variant's box drew 4 where Typography's inline `code` draws Dark Factory's key step, 6; one inline code chip now has one corner, 6. The shape gate (test/design-rules-shape.test.ts) now takes a corner only as a role of its own platform's row that its component plays, the pill, square or a declared concentric corner. | fixed | 278270a8 |
 | code-block-role-1 | low | source | Role question for the Phase 4 audit: the code surface reads the `control` corner (8) though a code block is a content well, not a control. Options: keep 8 under a web role of its own; the `tile` corner (12, Dark Factory's inset well); the `card` corner (14). Each but the first changes every code block's look, so it is the owner's call. | open |  |
 
 ## Sign-off

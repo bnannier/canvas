@@ -20,11 +20,12 @@ Audit checklist for `/components/carousel`. The facts block and the variants tab
 | Hand-off metric gaps | none |
 | Interactions registry | in the inventory; evidence: none registered |
 | Overlay recipe | none |
+| Interaction states | captured: focus on Default (web row; desktop), pressed on Default (web row; desktop). disabled controls its source renders and no rail example asks for: on its own surface. |
 | MeasureProps | not adopted |
 | Touch target | `carousel.shared.tsx`: hitSlop. `test/touch-target-coverage.test.ts` records it as covered another way: hitSlop on the dots and the arrows |
-| Tests importing it | 10: `test/carousel-arrows.test.tsx`, `test/carousel-keyboard.test.tsx`, `test/carousel-slide-identity.test.tsx`, `test/components-extra.test.tsx`, `test/design-rules-shape.test.ts`, `test/design-rules-skins.test.ts`, `test/native-carousel-fixture.test.tsx`, `test/organism-material-roles.test.tsx`, `test/scroll-frame-ring.test.tsx`, `test/skins-smoke.test.tsx` |
+| Tests importing it | 11: `test/carousel-arrows.test.tsx`, `test/carousel-keyboard.test.tsx`, `test/carousel-slide-identity.test.tsx`, `test/components-extra.test.tsx`, `test/design-rules-shape.test.ts`, `test/design-rules-skins.test.ts`, `test/material-solid-fallback.test.tsx`, `test/native-carousel-fixture.test.tsx`, `test/organism-material-roles.test.tsx`, `test/scroll-frame-ring.test.tsx`, `test/skins-smoke.test.tsx` |
 | E2E naming it | 6: `e2e/behavior/prerendered-location.e2e.ts`, `e2e/behavior/scroll-focus.e2e.ts`, `e2e/journeys/carousel.e2e.ts`, `e2e/journeys/fonts.e2e.ts`, `e2e/journeys/keyboard.e2e.ts`, `e2e/journeys/touch.e2e.ts` |
-| E2E catalog sweeps | 6: `e2e/a11y/components.e2e.ts` (componentRoutes), `e2e/responsive/component-widths.e2e.ts` (contentRoutes, componentRoutes), `e2e/smoke/examples.e2e.ts` (componentExamples), `e2e/smoke/routes.e2e.ts` (allRoutes), `e2e/visual/components.e2e.ts` (componentRoutes), `e2e/visual/materials.e2e.ts` (MATERIAL_ROUTES) |
+| E2E catalog sweeps | 7: `e2e/a11y/components.e2e.ts` (componentRoutes), `e2e/journeys/keyboard.e2e.ts` (componentRoutes), `e2e/responsive/component-widths.e2e.ts` (contentRoutes, componentRoutes), `e2e/smoke/examples.e2e.ts` (componentExamples), `e2e/smoke/routes.e2e.ts` (allRoutes), `e2e/visual/components.e2e.ts` (componentRoutes), `e2e/visual/materials.e2e.ts` (MATERIAL_ROUTES) |
 <!-- audit:facts:end -->
 
 ## Variants

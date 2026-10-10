@@ -84,7 +84,7 @@ One row per finding. Severity: critical, high, medium, low. Cell: a capture id f
 
 | ID | Severity | Cell | Summary | Status | Fix commit |
 |---|---|---|---|---|---|
-| toast-corner-1 | low | source | The Android snackbar action drew 10 and the dismiss button 12, off the Android row; both are Material 3 buttons, the full round (the 24dp dismiss button was already a circle). The shape gate (test/design-rules-shape.test.ts) now takes a corner only as a role of its own platform's row that its component plays, the pill, square or a declared concentric corner. | fixed | d1339a2c |
+| toast-corner-1 | low | source | The Android snackbar action drew 10 and the dismiss button 12, off the Android row; both are Material 3 buttons, the full round (the 24dp dismiss button was already a circle). The shape gate (test/design-rules-shape.test.ts) now takes a corner only as a role of its own platform's row that its component plays, the pill, square or a declared concentric corner. | fixed | 278270a8 |
 | toast-role-1 | low | source | Role question for the Phase 4 audit: the web toast with a description reads the `sheet` corner (22) though a toast is not a sheet; Dark Factory's toast is a single-line pill. Options: keep 22 under a web role of its own; the `dialog` corner (18). | open |  |
 
 ## Sign-off

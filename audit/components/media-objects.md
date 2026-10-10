@@ -20,11 +20,12 @@ Audit checklist for `/components/media-objects`. The facts block and the variant
 | Hand-off metric gaps | none |
 | Interactions registry | in the inventory; evidence: media-press (unit-web, test/behavior-smoke-b.test.tsx) |
 | Overlay recipe | none |
+| Interaction states | captured: focus on Tappable (web row; desktop), pressed on Tappable (web row; desktop). |
 | MeasureProps | not adopted |
 | Touch target | `media-objects.shared.tsx`: minTarget; `media-objects.styles.ts`: minTarget |
-| Tests importing it | 5: `test/behavior-smoke-b.test.tsx`, `test/design-rules-shape.test.ts`, `test/design-rules-skins.test.ts`, `test/skins-smoke.test.tsx`, `test/touch-target-coverage.test.ts` |
+| Tests importing it | 8: `test/behavior-smoke-b.test.tsx`, `test/design-rules-shape.test.ts`, `test/design-rules-skins.test.ts`, `test/image.test.tsx`, `test/material-solid-fallback.test.tsx`, `test/media-object.test.tsx`, `test/skins-smoke.test.tsx`, `test/touch-target-coverage.test.ts` |
 | E2E naming it | 0: none |
-| E2E catalog sweeps | 6: `e2e/a11y/components.e2e.ts` (componentRoutes), `e2e/responsive/component-widths.e2e.ts` (contentRoutes, componentRoutes), `e2e/smoke/examples.e2e.ts` (componentExamples), `e2e/smoke/routes.e2e.ts` (allRoutes), `e2e/visual/components.e2e.ts` (componentRoutes), `e2e/visual/materials.e2e.ts` (MATERIAL_ROUTES) |
+| E2E catalog sweeps | 7: `e2e/a11y/components.e2e.ts` (componentRoutes), `e2e/journeys/keyboard.e2e.ts` (componentRoutes), `e2e/responsive/component-widths.e2e.ts` (contentRoutes, componentRoutes), `e2e/smoke/examples.e2e.ts` (componentExamples), `e2e/smoke/routes.e2e.ts` (allRoutes), `e2e/visual/components.e2e.ts` (componentRoutes), `e2e/visual/materials.e2e.ts` (MATERIAL_ROUTES) |
 <!-- audit:facts:end -->
 
 ## Variants
@@ -83,7 +84,10 @@ One row per finding. Severity: critical, high, medium, low. Cell: a capture id f
 
 | ID | Severity | Cell | Summary | Status | Fix commit |
 |---|---|---|---|---|---|
-| media-objects-corner-1 | low | source | The iOS bordered surface drew 10 (now the iOS card corner, 12, as the web and Android surfaces play the card role) and the iOS compact icon box 7 (now the web's 6, shared, since iOS ships no media object). The shape gate (test/design-rules-shape.test.ts) now takes a corner only as a role of its own platform's row that its component plays, the pill, square or a declared concentric corner. | fixed | d1339a2c |
+| media-objects-corner-1 | low | source | The iOS bordered surface drew 10 (now the iOS card corner, 12, as the web and Android surfaces play the card role) and the iOS compact icon box 7 (now the web's 6, shared, since iOS ships no media object). The shape gate (test/design-rules-shape.test.ts) now takes a corner only as a role of its own platform's row that its component plays, the pill, square or a declared concentric corner. | fixed | 278270a8 |
+| K7-1 | high | source | With `onPress` and an `action`, the action renders inside the row's button: invalid nesting (a React DOM error) and one ambiguous control. Phase 4 (the owner's 2026-10-09 scope, recommendation A): the fix moves the action beside the row, is judged by photograph on web, iOS and Android, and adds the combined case to test/no-console-violations.test.tsx. 230879c8 tried a frame holding the row and the action as siblings and was reverted for that scope. | open |  |
+| K7-2 | medium | source | A tappable row is named by its title alone (the first text prop when it has none), so its description and meta are never announced; a `body` that is a node rather than text cannot be read into a label at all. Phase 4, with K7-1. | open |  |
+| K7-3 | low | source | A photo row names its Avatar after the title, so the web reads the title twice (the image, then the text); see image K7-2 for the native side. | open |  |
 
 ## Sign-off
 

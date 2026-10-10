@@ -20,11 +20,12 @@ Audit checklist for `/components/emblem`. The facts block and the variants table
 | Hand-off metric gaps | none |
 | Interactions registry | in the inventory; evidence: none registered |
 | Overlay recipe | none |
+| Interaction states | static: A decorative identity mark: it takes no input. |
 | MeasureProps | not adopted |
 | Touch target | no touch-target name (the exports of `src/style/touch-target.ts`, `src/style/touch-target-seed.ts`, `src/style/touch-seam.ts`, `src/style/clip-slop.ts`, the `TouchTargetSkin` fields, or `hitSlop`) in its implementation modules |
-| Tests importing it | 8: `test/atom-material-roles.test.tsx`, `test/color-overrides.test.tsx`, `test/design-rules-shape.test.ts`, `test/design-rules-skins.test.ts`, `test/dist-smoke.test.tsx`, `test/new-components.test.tsx`, `test/primary-text.test.tsx`, `test/skins-smoke.test.tsx` |
+| Tests importing it | 9: `test/atom-material-roles.test.tsx`, `test/color-overrides.test.tsx`, `test/design-rules-shape.test.ts`, `test/design-rules-skins.test.ts`, `test/dist-smoke.test.tsx`, `test/material-solid-fallback.test.tsx`, `test/new-components.test.tsx`, `test/primary-text.test.tsx`, `test/skins-smoke.test.tsx` |
 | E2E naming it | 0: none |
-| E2E catalog sweeps | 6: `e2e/a11y/components.e2e.ts` (componentRoutes), `e2e/responsive/component-widths.e2e.ts` (contentRoutes, componentRoutes), `e2e/smoke/examples.e2e.ts` (componentExamples), `e2e/smoke/routes.e2e.ts` (allRoutes), `e2e/visual/components.e2e.ts` (componentRoutes), `e2e/visual/materials.e2e.ts` (MATERIAL_ROUTES) |
+| E2E catalog sweeps | 7: `e2e/a11y/components.e2e.ts` (componentRoutes), `e2e/journeys/keyboard.e2e.ts` (componentRoutes), `e2e/responsive/component-widths.e2e.ts` (contentRoutes, componentRoutes), `e2e/smoke/examples.e2e.ts` (componentExamples), `e2e/smoke/routes.e2e.ts` (allRoutes), `e2e/visual/components.e2e.ts` (componentRoutes), `e2e/visual/materials.e2e.ts` (MATERIAL_ROUTES) |
 <!-- audit:facts:end -->
 
 ## Variants
@@ -79,7 +80,7 @@ One row per finding. Severity: critical, high, medium, low. Cell: a capture id f
 
 | ID | Severity | Cell | Summary | Status | Fix commit |
 |---|---|---|---|---|---|
-| emblem-corner-1 | low | source | The small and large tiles drew 10 and 14, off the web row; an Emblem is an icon tile, the `tile` corner, so every size now draws 12 (the default was already 12). The shape gate (test/design-rules-shape.test.ts) now takes a corner only as a role of its own platform's row that its component plays, the pill, square or a declared concentric corner. | fixed | d1339a2c |
+| emblem-corner-1 | low | source | The small and large tiles drew 10 and 14, off the web row; an Emblem is an icon tile, the `tile` corner, so every size now draws 12 (the default was already 12). The shape gate (test/design-rules-shape.test.ts) now takes a corner only as a role of its own platform's row that its component plays, the pill, square or a declared concentric corner. | fixed | 278270a8 |
 
 ## Sign-off
 
