@@ -66,7 +66,8 @@ import {
   type InventoryPage,
 } from "./inventory.ts";
 import { COMPONENT_PLANS, FAMILY_CHECKLISTS, FAMILY_LABEL, PAGE_PLAN, UNIVERSAL_RUBRIC, type Family } from "./plan-specifics.ts";
-import { SEPARATOR_LINE, headerRow, readSectionTable, separatorRow, splitRow, type MalformedRow, type TableShape } from "./table.ts";
+import { SIGN_OFF_PLATFORMS, SIGN_OFF_SHAPE, readSignOffs } from "./sign-off.ts";
+import { SEPARATOR_LINE, headerRow, oneOf, readSectionTable, separatorRow, splitRow, type MalformedRow, type TableShape } from "./table.ts";
 
 export type { MalformedRow } from "./table.ts";
 
@@ -85,16 +86,11 @@ export const TICK_COLUMNS = [
   { key: "android", heading: `Android (${NATIVE_CELLS_PER_VARIANT})` },
 ] as const;
 
-export const SIGN_OFF_PLATFORMS = ["web", "ios", "android"] as const;
-
 /** A variants row as the reader splits it; the label and the note are free text, and a "|" typed in the note stays in it. */
 export const VARIANTS_SHAPE: TableShape = { name: "variants", columns: ["variant", "label", "web", "ios", "android", "notes"], minCells: 5, free: 5 };
 
 /** The findings table: a "|" typed in a summary stays in it, and a finding with no fix commit yet may leave that cell off. */
 export const FINDINGS_SHAPE: TableShape = { name: "findings", columns: ["ID", "Severity", "Cell", "Summary", "Status", "Fix commit"], minCells: 5, free: 3 };
-
-/** The sign-off table: a "|" typed in a result stays in it, and the result may be left off. */
-export const SIGN_OFF_SHAPE: TableShape = { name: "sign-off", columns: ["Platform", "Run id", "Reviewer", "Date", "Result"], minCells: 4, free: 4 };
 
 export const FINDING_SEVERITIES = ["critical", "high", "medium", "low"] as const;
 /** The Status vocabulary, exactly as audit/README.md spells it (tools/audit/checklists.test.ts holds the two together). */
@@ -537,8 +533,6 @@ export interface FindingsTable {
   malformed: MalformedRow[];
 }
 
-const oneOf = <T extends string>(values: readonly T[], value: string): T | null => (values as readonly string[]).includes(value) ? (value as T) : null;
-
 /** The word a finding's Cell takes when it was found by reading the source rather than in a capture. */
 export const SOURCE_CELL = "source";
 
@@ -591,42 +585,6 @@ export function readFindings(content: string, cells?: ReadonlySet<string>): Find
     else {
       seen.set(id, line);
       out.rows.push({ id, severity, cell, summary, status, fix, line });
-    }
-  }
-  out.malformed.sort((a, b) => a.line - b.line);
-  return out;
-}
-
-/** A sign-off row as a reviewer left it. */
-export interface SignOff {
-  platform: (typeof SIGN_OFF_PLATFORMS)[number];
-  runId: string;
-  reviewer: string;
-  date: string;
-  result: string;
-  line: number;
-}
-
-/** The sign-off table: whether it is there, its readable rows, and every line it could not read. */
-export interface SignOffTable {
-  found: boolean;
-  rows: SignOff[];
-  malformed: MalformedRow[];
-}
-
-/** The sign-off rows under `## Sign-off`, one per platform, read with the one table reader. */
-export function readSignOffs(content: string): SignOffTable {
-  const table = readSectionTable(content, "Sign-off", SIGN_OFF_SHAPE);
-  const out: SignOffTable = { found: table.found, rows: [], malformed: [...table.malformed] };
-  const seen = new Map<string, number>();
-  for (const { cells, line } of table.rows) {
-    const [platformCell, runId, reviewer, date, result] = cells;
-    const platform = oneOf(SIGN_OFF_PLATFORMS, platformCell.toLowerCase());
-    if (!platform) out.malformed.push({ line, reason: `the Platform cell reads "${platformCell}", not one of ${SIGN_OFF_PLATFORMS.join(", ")}` });
-    else if (seen.has(platform)) out.malformed.push({ line, reason: `a second sign-off row for ${platform} (the first is on line ${seen.get(platform)})` });
-    else {
-      seen.set(platform, line);
-      out.rows.push({ platform, runId, reviewer, date, result, line });
     }
   }
   out.malformed.sort((a, b) => a.line - b.line);

@@ -131,7 +131,11 @@ route. Each file is half generated and half hand-maintained:
   owner's reason, `duplicate`) and the fix commit, a commit SHA (7 to 40 hex digits), which
   may be left off until there is one and is required once the status is `fixed`.
 - **Sign-off** (hand-maintained): one row per platform with the run id of the after-capture
-  run that shows the component passing, the reviewer, the date and the result.
+  run that shows the component passing, the reviewer, the date and the result. A row with a
+  run id signs that platform off (`tools/audit/sign-off.ts`, the one reader audit:status and
+  the docs gate share), and from the first one on the component's docs page must carry a
+  `## Accessibility` section after Do & Don't, written from the audit's findings:
+  `docs:gen` refuses the page otherwise (rule S10 in `tools/docgen/parse-md.ts`).
 
 Every table is read with one reader (`tools/audit/table.ts`): cells split on unescaped
 pipes only, an empty cell typed `| |` is an empty cell, and a `|` typed in a free-text

@@ -19,7 +19,6 @@ import {
   pageVariantRows,
   parseVariantsTable,
   readFindings,
-  readSignOffs,
   readVariantsTable,
   renderComponentFacts,
   renderPageFacts,
@@ -28,6 +27,7 @@ import {
   writeChecklists,
   type ChecklistSources,
 } from "./checklists.ts";
+import { readSignOffs } from "./sign-off.ts";
 import {
   UnreadableImport,
   codeLiterals,

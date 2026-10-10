@@ -444,7 +444,7 @@ export function loadComponentDocs(dir: string): ComponentDocsRequest | undefined
 }
 
 function main() {
-  // The shape of every page comes first (S1 to S8, docStructureViolations in
+  // The shape of every page comes first (S1 to S10, docStructureViolations in
   // parse-md.ts), before anything is written. Unlike the style and prose guardrails it
   // has no DOCGEN_STYLE_STRICT downgrade: a page without its Usage, Variants or
   // Do & Don't is not a component page, and a line the page would drop is lost
