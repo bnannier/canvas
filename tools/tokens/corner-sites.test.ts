@@ -230,6 +230,51 @@ export function Extra() {
   // A helper that adjusts a skin, in a module no platform names, built with by the entries
   // each table names; and the shell a table's iOS entry may build with instead.
   for (const [dir, table] of Object.entries(TABLES)) writeTable(dir, table);
+  // Neutral constants reached under another name: an aliased export and re-export, a
+  // namespace re-export, and default exports of a const, an object and a function; and
+  // corner keys written as computed keys or assigned through an element access.
+  write(
+    "src/atoms/w/w-parts.ts",
+    `
+import { shape } from "../../style/index.js";
+const EDIT = { borderRadius: shape.web.field };
+const ACTION = { borderRadius: shape.web.control };
+export { EDIT as EDIT_FRAME };
+export default ACTION;
+`,
+  );
+  write("src/atoms/w/w-menu.ts", `import { shape } from "../../style/index.js";\nexport default { borderRadius: shape.web.menu };\n`);
+  write("src/atoms/w/w-tile.ts", `import { shape } from "../../style/index.js";\nexport default function () {\n  return { borderRadius: shape.web.tile };\n}\n`);
+  write("src/atoms/w/index.ts", `export { EDIT_FRAME as FRAME } from "./w-parts.js";\nexport * as parts from "./w-parts.js";\n`);
+  write(
+    "src/atoms/w/w.styles.ts",
+    `
+import { shape } from "../../style/index.js";
+import { EDIT_FRAME } from "./w-parts.js";
+import { FRAME, parts } from "./index.js";
+import Action from "./w-parts.js";
+import Menu from "./w-menu.js";
+import tile from "./w-tile.js";
+const RADIUS_KEY = "borderRadius";
+export const webSkin = {};
+export const iosSkin = {
+  edit: { ...EDIT_FRAME },
+  frame: { ...FRAME },
+  nsEdit: { ...parts.EDIT_FRAME },
+  action: { ...Action },
+  menu: { ...Menu },
+  tile: tile(),
+  computed: { ["borderRadius"]: shape.web.card },
+  template: { [\`borderTopLeftRadius\`]: shape.web.card },
+  keyed: { [RADIUS_KEY]: shape.web.card },
+};
+export function iosAssigned() {
+  const style: Record<string, number> = {};
+  style["borderRadius"] = shape.web.sheet;
+  return style;
+}
+`,
+  );
 });
 
 /** How a DataTable fixture's entries build it: each platform's expression, and whether the shell frames its own skin. */
@@ -513,6 +558,47 @@ describe("where a corner is drawn", () => {
       expect(drawnBy(handed, "createDataTable")).toEqual(["shared createDataTable"]);
       // The shell every platform builds with hands its own skin on: shared code.
       expect(drawnBy(scanTable("src/organisms/table-shared"), FRAME)).toEqual(["shared withEditFrame.editInput"]);
+    });
+  });
+
+  describe("a neutral constant reached under another name", () => {
+    const W = ["src/atoms/w/w-parts.ts", "src/atoms/w/w-menu.ts", "src/atoms/w/w-tile.ts", "src/atoms/w/index.ts", "src/atoms/w/w.styles.ts"];
+    const scanW = () => new CornerSites(root).scan(W);
+    const inFile = (values: CornerValue[], file: string) => {
+      const found = values.filter((v) => v.file === file);
+      expect(found.length, file).toBe(1);
+      return found[0];
+    };
+    const rolesW = { "atoms/w": ["field", "control", "menu", "tile", "card", "sheet"] };
+    const refusedOnIos = (v: CornerValue) => {
+      const result = cornerVerdict(v, { roles: rolesW });
+      expect(result.ok, v.path).toBe(false);
+      expect(!result.ok && result.reason, v.path).toContain("another platform's row: it draws ios");
+    };
+
+    it("follows an aliased export, an aliased re-export and a namespace re-export to the skins", () => {
+      const { values } = scanW();
+      expect(drawnBy(values, "EDIT")).toEqual(["ios iosSkin.edit", "ios iosSkin.frame", "ios iosSkin.nsEdit"]);
+      refusedOnIos(one(values, "EDIT"));
+    });
+
+    it("follows a default export, of a const, an object or a function, to the skins that import it", () => {
+      const { values } = scanW();
+      expect(drawnBy(values, "ACTION")).toEqual(["ios iosSkin.action"]);
+      const menu = inFile(values, "src/atoms/w/w-menu.ts");
+      const tile = inFile(values, "src/atoms/w/w-tile.ts");
+      expect(menu.drawn.map((d) => `${d.platform} ${d.path}`)).toEqual(["ios iosSkin.menu"]);
+      expect(tile.drawn.map((d) => `${d.platform} ${d.path}`)).toEqual(["ios iosSkin.tile"]);
+      for (const v of [one(values, "ACTION"), menu, tile]) refusedOnIos(v);
+    });
+
+    it("reads a corner key written as a computed key or assigned through an element access", () => {
+      const { values, unresolved } = scanW();
+      expect(unresolved).toEqual([]);
+      for (const path of ["iosSkin.computed", "iosSkin.template", "iosSkin.keyed", "iosAssigned"]) {
+        expect(drawnBy(values, path), path).toEqual([`ios ${path}`]);
+        refusedOnIos(one(values, path));
+      }
     });
   });
 

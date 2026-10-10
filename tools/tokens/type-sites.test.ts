@@ -19,6 +19,7 @@ beforeAll(() => {
   write(
     "src/atoms/x/x.styles.ts",
     `
+const SIZE_KEY = "fontSize";
 const LABEL = { small: { fontSize: 11, lineHeight: 15 }, base: { fontSize: 14 } };
 const GLYPH: Record<string, number> = { small: 10.5, base: 13 };
 const DIGIT: Record<string, [number, number]> = { small: [12, 16], base: [16, 24] };
@@ -33,6 +34,8 @@ export const webSkin = {
   eyebrow: { ...typeScale.eyebrow, color: "red" },
   caption: typeScale.caption,
   hint: { fontSize: typeScale.small.fontSize, lineHeight: typeScale.small.lineHeight },
+  computed: { ["fontSize"]: 9 },
+  keyed: { [SIZE_KEY]: 8.5 },
 };
 export const iosSkin = webSkin;
 `,
@@ -107,6 +110,12 @@ describe("TypeSites", () => {
     const { values } = scan();
     expect(at(values, "AXIS")).toEqual([8]);
     expect(at(values, "Axis")).toEqual([9.5]);
+  });
+
+  it("reads a size written under a computed key, a literal or a const holding one", () => {
+    const { values } = scan();
+    expect(at(values, "webSkin.computed")).toEqual([9]);
+    expect(at(values, "webSkin.keyed")).toEqual([8.5]);
   });
 
   it("reports what it cannot trace instead of guessing", () => {
