@@ -46,10 +46,11 @@ export interface HandoffClaim extends CornerClaim {
   tokens: number[];
 }
 
-// A number that stands on its own: not the 3 of "M3" or "Material 3", the 26 of "iOS 26", the
-// 12 of "py-12", nor a digit inside a longer word.
-const NUMBER = String.raw`(?<![\w.-])(?<!\b(?:Material|iOS|Android|API|level)\s{1,3})(\d+(?:\.\d+)?)`;
 const UNIT = String.raw`(?:px|pt|dp)?`;
+// A number that stands on its own: not the 3 of "M3" or "Material 3", the 26 of "iOS 26", the
+// 12 of "py-12", nor a digit inside a longer word. A number with a unit is a measure even
+// after a platform's name ("the iOS 12pt corner"): no version carries one.
+const NUMBER = String.raw`(?<![\w.-])(?:(?<!\b(?:Material|iOS|Android|API|level)\s{1,3})|(?=\d+(?:\.\d+)?\s?(?:px|pt|dp)\b))(\d+(?:\.\d+)?)`;
 // Up to two words between the number and the noun ("the 12px field corner", "8px card corner").
 const BETWEEN = String.raw`(?:[a-z]+(?:-|\s+)){0,2}`;
 
