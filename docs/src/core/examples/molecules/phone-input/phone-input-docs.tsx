@@ -19,6 +19,7 @@ export const docs: ComponentDocs = {
   dir: "phone-input",
   category: "molecules",
   overview: [
+    "The number and the country are each controlled (`value` / `country`) or self-managed (`defaultValue` / `defaultCountry`), the segment defaults to the kit's curated `PHONE_COUNTRIES` list (pass `countries` for a full or localized one), and the number field asks for the phone keypad. Pass `label` (and `required`) to name it; `error` paints the whole box, segment included, and Field delegates its label, required mark and error into it. On iOS the field is drawn to the iOS input-field reference: the white box, the flag and gray caret segment with its state-coloured divider, the dial code in the placeholder gray.",
     "In glass mode the country list is a dense-layer glass card under the box; the box, its segment and its number stay in place. A pick commits the country and returns focus to the number at once, and a field that becomes disabled or read-only while the list is open closes it. Solid mode paints the skin's own list.",
   ],
   examples: [

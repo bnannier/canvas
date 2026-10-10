@@ -1,6 +1,6 @@
 # Form
 
-Stitch your own fields; Form adds the rhythm, the sections, the actions row, and submit.
+Stitch your own fields inside it; Form adds the stacked or two-column rhythm, titled sections, the submit and cancel actions row, and Enter to submit.
 
 ## Usage
 

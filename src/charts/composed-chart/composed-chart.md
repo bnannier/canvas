@@ -1,6 +1,8 @@
 # ComposedChart
 
-Bars, lines, and gradient-washed areas sharing one categorical axis: each series picks its mark with a `line` or `area` boolean (bars by default; precedence line > area > bars). The classic "revenue bars with a margin line" chart, on one shared zero-based y axis, with the same scrub-to-inspect, legend, and accessible-name contract as the other cartesian charts. For bar-only grouped data, reach for the bar `Chart`'s grouped mode instead; composed earns its keep when the marks mix.
+Bars, lines, and gradient-washed areas sharing one categorical axis: each series picks its mark with a `line` or `area` boolean (bars by default; precedence line > area > bars).
+
+The classic "revenue bars with a margin line" chart, on one shared zero-based y axis, with the same scrub-to-inspect, legend, and accessible-name contract as the other cartesian charts. For bar-only grouped data, reach for the bar `Chart`'s grouped mode instead; composed earns its keep when the marks mix.
 
 ## Usage
 

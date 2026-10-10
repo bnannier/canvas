@@ -3,7 +3,8 @@ import { type ReactNode } from "react";
 export interface ComponentDoc {
   slug: string;
   name: string;
-  description: string;
+  // No description here: a component's description is the first paragraph of its .md
+  // intro, generated into docs/src/core/descriptions.ts (componentDescription).
   category: Category;
   // Source directory under src/<level>/, when it differs from the URL slug.
   // Used when one docs page covers multiple exports (e.g. the Row & Column

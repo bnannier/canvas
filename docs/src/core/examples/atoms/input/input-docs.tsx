@@ -29,6 +29,7 @@ export const docs: ComponentDocs = {
   dir: "input",
   category: "atoms",
   overview: [
+    "Pass `label` (and `required`) to name the field: iOS and web render the label above the control, while Android floats the Material 3 in-container label. A field fills the parent it is given; a step of its own (`xs`, `lg`, …, with `start` to pin it to the leading edge) or a Container step sets its measure. Select and the search field share its look, and Field and Form compose that label with helper and error text. On iOS the field is drawn to the iOS input-field reference: a white box with a hairline, a muted title above, a glyph that tints with focus and error, and an error wash.",
     "Inside an overlay, Escape follows the overlay's cancellation policy. A supplied `onKeyPress` runs first and can call `preventDefault()` to handle Escape locally. Cancelling an IME candidate keeps the overlay open.",
   ],
   examples: [

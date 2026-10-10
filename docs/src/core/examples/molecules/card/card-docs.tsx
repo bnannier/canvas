@@ -24,6 +24,11 @@ import e_molecules_card_dont_2_dont from "./dont-2-dont";
 export const docs: ComponentDocs = {
   dir: "card",
   category: "molecules",
+  overview: [
+    "A card with content is padded by default, and a padded surface also spaces its flat children (the card owns the vertical rhythm, so a stack of Typography lines needs no layout wrapper); pass `flush` to opt out of both, the inset and the spacing, for edge-to-edge content (a table, a nav bar) or when you compose the self-padding `CardHeader`/`CardContent`.",
+    "The section props (`title` / `description` / `icon` / `actions` / `footer`) render self-padding sections, so a sectioned card needs no `padded`. They compose with a string `body` OR with raw children, so a panel can carry a titled header above a table or a form; children win when both are passed. For a cover image, `CardMedia` is the full-bleed top slot: it spans the card edge to edge, its top corners follow the card's corner, and its bottom edge stays flat; compose it with `flush` and let `CardContent` pad the text below.",
+    "Density: pass `compact` or `comfortable` to tighten or relax the card's own padding and the gap between flat children (`compact` takes precedence, and a density prop pads the surface on its own). `grow` fills the height a parent Row or Column hands the card (the body takes the slack, so a footer stays on its floor); inside a `Grid` cell it is implied, so the tiles of one row are equal-height without being asked.",
+  ],
   examples: [
     { label: "Default", code: "<Card>\n  <Typography caption medium>Active identities</Typography>\n  <Typography h3 bold>12,348</Typography>\n  <Typography tiny muted>+142 today</Typography>\n</Card>", render: e_molecules_card_example_0 },
     { label: "Generic", code: "<Card>\n  <Typography lead semibold>Anything goes here</Typography>\n</Card>", render: e_molecules_card_example_1 },

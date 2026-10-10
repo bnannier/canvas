@@ -1,6 +1,8 @@
 # WaterfallChart
 
-The running-total bridge: each step floats from the running total by its signed `value`, and a `total` step snapshots the running total as an absolute bar from zero. The coloring is fixed semantics rather than a prop: rises green, falls red, totals the brand primary, so every bridge reads the same way. Hairline connectors link each bar's end to the next bar's start, and scrubbing a step flags its change and running total.
+The running-total bridge: each step floats from the running total by its signed `value`, and a `total` step snapshots the running total as an absolute bar from zero.
+
+The coloring is fixed semantics rather than a prop: rises green, falls red, totals the brand primary, so every bridge reads the same way. Hairline connectors link each bar's end to the next bar's start, and scrubbing a step flags its change and running total.
 
 ## Usage
 

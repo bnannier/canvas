@@ -12,6 +12,9 @@ import e_organisms_board_dont_0_dont from "./dont-0-dont";
 export const docs: ComponentDocs = {
   dir: "board",
   category: "organisms",
+  overview: [
+    "Dragging is the kit's own drag-and-drop family, so it runs on iOS, Android, and the web from one code path and stays keyboard- and screen-reader-operable: press Space on a grip to grab, the arrow keys to move between positions and columns, Space to drop, Escape to cancel. The list stays controlled: a drop reports a `BoardMove` (source, target, insertion index, and the new neighbor ids) through `onMove`, and `applyBoardMove` is the standard reducer to apply it. Pass `defaultItems` instead of `items` for uncontrolled use, where the board applies each move itself.",
+  ],
   examples: [
     { label: "Default", code: "<Board\n  columns={[\n    { id: \"todo\", label: \"To do\" },\n    { id: \"doing\", label: \"Doing\" },\n    { id: \"done\", label: \"Done\" },\n  ]}\n  defaultItems={[\n    { id: \"t1\", columnId: \"todo\", title: \"Rotate webhook secrets\" },\n    { id: \"t2\", columnId: \"todo\", title: \"Draft the design review\" },\n    { id: \"t3\", columnId: \"doing\", title: \"SSO rollout\" },\n    { id: \"t4\", columnId: \"done\", title: \"Upgrade the CI runners\" },\n  ]}\n/>", render: e_organisms_board_example_0 },
     { label: "Compact", code: "<Board\n  compact\n  columns={[\n    { id: \"todo\", label: \"To do\" },\n    { id: \"doing\", label: \"Doing\" },\n  ]}\n  defaultItems={[\n    { id: \"t1\", columnId: \"todo\", title: \"Rotate webhook secrets\" },\n    { id: \"t2\", columnId: \"todo\", title: \"Draft the design review\" },\n    { id: \"t3\", columnId: \"doing\", title: \"SSO rollout\" },\n  ]}\n/>", render: e_organisms_board_example_1, note: ["The density axis tightens the lane padding, the card gaps, and the card insets for a board that has to show more at once."] },

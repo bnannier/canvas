@@ -1,10 +1,11 @@
 # Carousel
 
 A horizontally paged slide viewer: swipe (or use the prev/next arrows and the
-dot indicators) to move one slide at a time. Paging snaps to the viewport width,
-the current slide drives the dots, and the arrows step the index (clamped, or
-wrapped when `loop`). Slides hold any content; pass an `items` array of
-`{ key, content }`.
+dot indicators) to move one slide at a time.
+
+Paging snaps to the viewport width, the current slide drives the dots, and the
+arrows step the index (clamped, or wrapped when `loop`). Slides hold any
+content; pass an `items` array of `{ key, content }`.
 
 Each slide is itself the card: it paints the surface, rounds the corners and
 clips its content to them. So pass the slide's content, not a Card. A plain

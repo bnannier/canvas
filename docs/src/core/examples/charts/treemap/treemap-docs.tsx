@@ -10,6 +10,9 @@ import e_charts_treemap_dont_0_dont from "./dont-0-dont";
 export const docs: ComponentDocs = {
   dir: "treemap",
   category: "charts",
+  overview: [
+    "Flat one-level data; nesting and drill-down are deferred scope. Press a tile to flag its value and share (the others dim); the accessible name carries every tile with its share regardless of which labels fit.",
+  ],
   examples: [
     { label: "Default", code: "<Treemap\n  title=\"Storage by service\"\n  data={[\n    { label: \"Media\", value: 620 },\n    { label: \"Backups\", value: 340 },\n    { label: \"Logs\", value: 180 },\n    { label: \"Search index\", value: 120 },\n    { label: \"Thumbnails\", value: 90 },\n    { label: \"Exports\", value: 45 },\n    { label: \"Other\", value: 25 }\n  ]}\n/>", render: e_charts_treemap_example_0 },
     { label: "Compact", code: "<Treemap\n  compact\n  data={[\n    { label: \"Chrome\", value: 61 },\n    { label: \"Safari\", value: 24 },\n    { label: \"Edge\", value: 8 },\n    { label: \"Firefox\", value: 5 },\n    { label: \"Other\", value: 2 }\n  ]}\n/>", render: e_charts_treemap_example_1 },

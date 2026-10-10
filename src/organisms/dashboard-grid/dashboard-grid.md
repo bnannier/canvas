@@ -1,6 +1,12 @@
 # DashboardGrid
 
-A 12-column widget board for overview screens. Each widget declares a span in twelfths, and the grid measures its OWN width (never the window) to pick a tier: a wide container honors every span, a narrower one reflows widgets to their `narrowSpan`, and a phone-sized one stacks them full width. Cells render bare, because a widget arrives with its own surface (a Card, a Chart, a Stats row) and a second frame around it would only double up. A widget's `title` is its accessible name rather than a header the grid paints: customize mode uses it to name the widget's drag grip and its drop zone. Locked, it is a plain static grid and no drag machinery is mounted at all; `unlocked` turns on customize mode, where every cell gains a grip and the board reorders by pointer, keyboard, or screen reader through the kit's own drag-and-drop. The order is a plain array of ids, controlled through `order` and `onOrderChange` so the app can persist it, or left to the grid with `defaultOrder`. The board takes its widgets through `items`, the collection prop every other collection-taking component in the kit uses; the original `widgets` spelling still works as a deprecated alias and warns in development.
+A 12-column widget board for overview screens. Each widget declares a span in twelfths, and the grid measures its OWN width (never the window) to pick a tier: a wide container honors every span, a narrower one reflows widgets to their `narrowSpan`, and a phone-sized one stacks them full width.
+
+Cells render bare, because a widget arrives with its own surface (a Card, a Chart, a Stats row) and a second frame around it would only double up. A widget's `title` is its accessible name rather than a header the grid paints: customize mode uses it to name the widget's drag grip and its drop zone.
+
+Locked, it is a plain static grid and no drag machinery is mounted at all; `unlocked` turns on customize mode, where every cell gains a grip and the board reorders by pointer, keyboard, or screen reader through the kit's own drag-and-drop. The order is a plain array of ids, controlled through `order` and `onOrderChange` so the app can persist it, or left to the grid with `defaultOrder`.
+
+The board takes its widgets through `items`, the collection prop every other collection-taking component in the kit uses; the original `widgets` spelling still works as a deprecated alias and warns in development.
 
 ## Usage
 

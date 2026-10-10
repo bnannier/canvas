@@ -3,16 +3,16 @@ import { Platform } from "react-native";
 import { Redirect, useLocalSearchParams } from "expo-router";
 import { Column, Container, Typography, Alert, Skeleton } from "@nannier/canvas";
 import { getComponent } from "../core/data/components";
+import { componentDescription } from "../core/descriptions";
 import type { ComponentDoc } from "../core/data/types";
 import { useComponentDocs } from "../core/use-component-docs";
 import { Page } from "./page";
-import { Lead, Prose } from "./prose";
+import { InlineMarkdown, Lead, Prose } from "./prose";
 import { Playground } from "./playground";
 import { PropTables } from "./prop-table";
 import { Donts } from "./dont";
 import { Guidance } from "./guidance";
 import { PageNav } from "./page-nav";
-import { stripHtml } from "../lib/html";
 import { variantSlug } from "../lib/variant";
 import { DocsHead } from "./docs-head";
 
@@ -37,7 +37,7 @@ export function ComponentReference() {
       <DocsHead title={comp.name} />
       <Column snug>
         <Typography h1>{comp.name}</Typography>
-        <Lead>{stripHtml(comp.description)}</Lead>
+        <Lead><InlineMarkdown text={componentDescription(comp)} lead subtle /></Lead>
       </Column>
       {/* The docs module is the page's own chunk in the web export. It is on the page
           before the bundle runs, so this never suspends on a page load; a client-side

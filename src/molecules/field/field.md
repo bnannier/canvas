@@ -1,12 +1,15 @@
 # Field
 
-A form row: a label, the control, and one message line under it. Field exists for the part no
-control owns on its own. Every field family already owns its label, but nothing else in the kit
-renders helper or error text, so that message is what Field adds. When the row wraps a single
-field-family control that has no label of its own, Field hands the label down to it rather than
-drawing one alongside, so each platform still places it its own way: a static title above on web
-and iOS, the floating in-container label on Android. Set `error` and it replaces `helper` in the
-same slot, so the row never changes height and nothing below it jumps.
+A form row: a label, the control, and one message line under it. Field exists
+for the part no control owns on its own: every field family already owns its
+label, but nothing else in the kit renders helper or error text, so that message
+is what Field adds.
+
+When the row wraps a single field-family control that has no label of its own,
+Field hands the label down to it rather than drawing one alongside, so each
+platform still places it its own way: a static title above on web and iOS, the
+floating in-container label on Android. Set `error` and it replaces `helper` in
+the same slot, so the row never changes height and nothing below it jumps.
 
 ## Usage
 

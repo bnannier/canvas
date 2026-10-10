@@ -10,6 +10,9 @@ import e_charts_bullet_chart_dont_0_dont from "./dont-0-dont";
 export const docs: ComponentDocs = {
   dir: "bullet-chart",
   category: "charts",
+  overview: [
+    "Following the classic bullet-graph anatomy each row carries its own scale, since goals rarely share units; pass `max` to force one shared scale when they do. The compact alternative to a dashboard of gauges: five goals read in five rows.",
+  ],
   examples: [
     { label: "Default", code: "<BulletChart\n  title=\"Q3 targets\"\n  data={[\n    { label: \"Revenue\", value: 275, target: 300, ranges: [200, 350, 500] },\n    { label: \"Profit\", value: 42, target: 35, ranges: [30, 50, 70] },\n    { label: \"NPS\", value: 61, target: 70, ranges: [40, 60, 80] },\n  ]}\n/>", render: e_charts_bullet_chart_example_0 },
     { label: "Success tone", code: "<BulletChart\n  success\n  data={[\n    { label: \"Web\", value: 34, target: 30 },\n    { label: \"iOS\", value: 18, target: 24 },\n    { label: \"Android\", value: 21, target: 24 },\n  ]}\n/>", render: e_charts_bullet_chart_example_1 },

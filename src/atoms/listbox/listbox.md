@@ -1,6 +1,8 @@
 # Listbox
 
-A custom (non-native) select: single or multi-select, an optional detail line under each option, and a checkmark on the chosen items. Reach for it when a native select can't show rich options; prefer a native select for simple short lists. The list fills the parent it is given; a step of its own (`xs`, `lg`, …, with `start` to pin it to the leading edge) or a Container step sets its measure.
+A custom select whose options stay on screen: single or multi-select, an optional detail line under each option, and a checkmark on the chosen items. Reach for it when the options need rich rows; prefer `Select` for a simple short list.
+
+The list fills the parent it is given; a step of its own (`xs`, `lg`, …, with `start` to pin it to the leading edge) or a Container step sets its measure.
 
 One job, a platform's own control: iOS marks a choice in a list with a trailing check, so there every chosen row carries a check at its end (in single and multi select alike) and no row is filled for being chosen. The web and Android lead the row with the mark: a violet checkmark with the chosen label in the same violet in single-select, the platform's selection checkbox in multi-select (the Material 3 box on Android).
 

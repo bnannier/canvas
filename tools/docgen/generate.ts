@@ -6,6 +6,8 @@
 // but its title and description), and emits, for each fence, a real statically-importable
 // example module under docs/src/core/examples/, one `<dir>-docs.tsx` module per component
 // beside them that carries that model with its fences wired up and its prop tables,
+// docs/src/core/descriptions.ts, every component's description (its intro's first
+// paragraph, the one place a description is written),
 // and docs/src/core/registry.ts, which reaches those modules through a
 // `require.context` whose mode follows expo-router's own route loading: synchronous
 // on native and for the static render, lazy (one chunk per component) in the web
@@ -31,6 +33,7 @@ const EXAMPLES_DIR = path.join(REPO, "docs", "src", "core", "examples");
 const REGISTRY_FILE = path.join(REPO, "docs", "src", "core", "registry.ts");
 const CHUNKS_FILE = path.join(REPO, "docs", "src", "core", "docs-chunks.json");
 const PREVIEWS_FILE = path.join(REPO, "docs", "src", "core", "previews.ts");
+const DESCRIPTIONS_FILE = path.join(REPO, "docs", "src", "core", "descriptions.ts");
 
 // `--check` (the pre-push gate) answers "is the generated output in sync with the
 // component markdown?" without touching the working tree: every would-be write and
@@ -208,6 +211,7 @@ type GuidanceRef = { title: string; blocks: (Prose | { kind: "heading"; text: st
 type Entry = {
   dir: string;
   category: Category;
+  description: string;
   overview: Prose[];
   examples: ExampleRef[];
   variantsNote: Prose[];
@@ -275,7 +279,10 @@ function buildEntry(category: Category, dir: string, doc: ParsedDoc): Entry {
       return { kind: "example", code: b.code, importName: m.importName, file: m.file };
     }),
   }));
-  return { dir, category, overview: doc.overview, examples: exampleRefs, variantsNote: doc.variantsNote, donts: dontRefs, guidance: guidanceRefs };
+  // S2 holds every page to an intro that opens with a paragraph, so a page that reaches
+  // here has its description.
+  if (doc.description === null) throw new Error(`${source}: no description; its intro must open with a paragraph (S2)`);
+  return { dir, category, description: doc.description, overview: doc.overview, examples: exampleRefs, variantsNote: doc.variantsNote, donts: dontRefs, guidance: guidanceRefs };
 }
 
 // Prose as the docs module carries it (DocProse in docs/src/core/scope.ts): a paragraph
@@ -362,6 +369,37 @@ function renderPreviews(entries: Entry[]): string {
 export const FIRST_EXAMPLE_CODE: Record<string, string> = {
 ${rows}
 };
+`;
+}
+
+// Every component's description, by its source directory: the first paragraph of its
+// .md intro, as inline Markdown. A few kilobytes, read synchronously by the page's lead
+// and the search index, so neither waits on a component's docs chunk; the registry entry
+// (docs/src/core/data/components.ts) carries no description of its own, so the .md is the
+// one place it is written.
+function renderDescriptions(entries: Entry[]): string {
+  const rows = entries.map((e) => `  ${JSON.stringify(e.dir)}: ${JSON.stringify(e.description)},`).join("\n");
+  return `${GENERATED_HEADER}
+import type { ComponentDoc } from "./data/types";
+
+// The description of every documented component, by its source directory (the \`.md\`
+// stem): the first paragraph of the intro in src/<category>/<dir>/<dir>.md, as inline
+// Markdown, its code spans and strong runs intact (docs/src/lib/inline-markdown.ts reads
+// it). The component page's lead, the search index and the public API docs check
+// (tools/api/docs.ts) read it here.
+export const COMPONENT_DESCRIPTIONS: Record<string, string> = {
+${rows}
+};
+
+/** A registered component's description, from the first paragraph of its page's intro. */
+export function componentDescription(component: Pick<ComponentDoc, "slug" | "dir">): string {
+  const dir = component.dir ?? component.slug;
+  const description = COMPONENT_DESCRIPTIONS[dir];
+  // docs:gen fails on a registered component with no page (S1) or a page with no
+  // description (S2), so this is unreachable while the generated output is in sync.
+  if (description === undefined) throw new Error(\`No description for the component in \${dir}: run bun run docs:gen\`);
+  return description;
+}
 `;
 }
 
@@ -528,6 +566,7 @@ function main() {
 
   writeFileIfChanged(REGISTRY_FILE, renderRegistry(entries));
   writeFileIfChanged(PREVIEWS_FILE, renderPreviews(entries));
+  writeFileIfChanged(DESCRIPTIONS_FILE, renderDescriptions(entries));
   // Which chunk carries each page's docs, for the export's post-processing: a page's
   // URL slug maps to a docs module basename, which Metro names the chunk after.
   const chunks: Record<string, string> = {};

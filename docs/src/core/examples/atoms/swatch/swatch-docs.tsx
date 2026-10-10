@@ -15,6 +15,9 @@ import e_atoms_swatch_dont_1_dont from "./dont-1-dont";
 export const docs: ComponentDocs = {
   dir: "swatch",
   category: "atoms",
+  overview: [
+    "Pass a live theme token as `color` and the sample follows the active scheme; a hairline edge keeps a white or near-black sample visible on the surface behind it. The value lines are set in mono, and the lockup comes in two more sizes (`small`, `large`), as a `circle`, `inline` (the label beside the block), or as a `block` (a full-width ramp bar).",
+  ],
   examples: [
     { label: "Default", code: "<Swatch color={tokens.primary} value=\"--primary\">\n  primary\n</Swatch>", render: e_atoms_swatch_example_0 },
     { label: "Sizes", code: "<Row>\n  <Swatch small color={tokens.primary}>primary</Swatch>\n  <Swatch color={tokens.success}>success</Swatch>\n  <Swatch large color={tokens.destructive}>destructive</Swatch>\n</Row>", render: e_atoms_swatch_example_1 },

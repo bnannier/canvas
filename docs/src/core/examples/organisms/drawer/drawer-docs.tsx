@@ -12,9 +12,9 @@ export const docs: ComponentDocs = {
   dir: "drawer",
   category: "organisms",
   overview: [
-    "A full-screen panel that slides in from an edge: a navigation drawer, a mobile menu, or a bottom action sheet. Built on React Native's Modal, so it floats over the whole app on iOS, Android, and the web. For a small contextual menu, reach for Dropdown or RowMenu instead.",
     "Drawer provides an overlay host inside its own window. Dropdown, Select, and other anchored children render above the panel without being clipped by its corners; no additional OverlayProvider is needed inside the drawer. A tap outside an open child menu dismisses that menu, and Escape dismisses the child before the drawer. Nested drawers each keep their overlays in their own window.",
     "On iOS, VoiceOver's accessibility escape gesture requests dismissal of the foremost open child before the drawer. Android system back uses the same child ownership. A controlled child that stays open continues to own later requests; one request never falls through to its parent. The scrim remains a pointer target, and the built-in trigger opens the drawer. Sidebar drill-down navigation has its own back behavior; accessibility escape dismisses the overlay rather than navigating a sidebar level. Focus restoration remains platform-dependent.",
+    "Give a controlled drawer an `accessibilityLabel` when it has no built-in `trigger`. A drawer with a trigger uses the trigger label as its modal name.",
   ],
   examples: [
     { label: "Default", code: "<Drawer trigger=\"Open menu\">\n  <Column padLoose cozy>\n    <Typography lead semibold>Menu</Typography>\n    <Button ghost block>Home</Button>\n    <Button ghost block>Components</Button>\n    <Button ghost block>Settings</Button>\n  </Column>\n</Drawer>", render: e_organisms_drawer_example_0 },

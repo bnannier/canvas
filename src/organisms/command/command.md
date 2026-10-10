@@ -1,8 +1,9 @@
 # Command
 
-Cmd+K search: navigation, actions, recent items. The search row is a real
-input: typing filters the grouped rows to the matching labels, and a query
-that matches nothing shows a muted "No results" row.
+Cmd+K search: navigation, actions, recent items.
+
+The search row is a real input: typing filters the grouped rows to the matching
+labels, and a query that matches nothing shows a muted "No results" row.
 
 In glass mode the triggered palette is a functional-layer glass card under the
 search bar, with its own search field; the search editor keeps focus while typing

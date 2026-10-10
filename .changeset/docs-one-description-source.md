@@ -1,0 +1,5 @@
+---
+"@nannier/canvas": patch
+---
+
+A component's description is now written in one place: the first paragraph of its `.md` intro. `docs:gen` generates every description into `docs/src/core/descriptions.ts`, the component page's lead and the search index read it there (the lead with its code spans in the mono face, a search result as plain text), and the docs registry entries carry no description of their own. The two texts matched on only 24 of the 104 pages; an editorial pass over the other 80 kept the truer wording, rewriting 53 intros so the first paragraph is a short summary and the detail moves into the overview, with no line of an intro lost: Select is no longer described as a native select (it draws its own trigger and panel), Card names the stat, section and generic uses rather than `StatCard` and `SectionCard` exports that do not exist, BulletChart drops the claim that every row shares one scale, Icon drops "inherits currentColor", Drawer's intro opens with its description, and the Field description loses its em-dash. Repository tooling and docs only; nothing in the package changes.

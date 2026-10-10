@@ -12,6 +12,9 @@ import e_atoms_grid_dont_0_dont from "./dont-0-dont";
 export const docs: ComponentDocs = {
   dir: "grid",
   category: "atoms",
+  overview: [
+    "`columns` caps the count at the desktop number, the gap scale is Row and Column's own (`flush` / `tight` / `snug` / `cozy` / `relaxed` / `loose`), and a `GridItem` child with `wide` spans two cells. The grid spans its parent's full width (it is a FILL component, so it needs no wrapper to reach the edges), and its tiles are equal-height as well as equal-width: every cell stretches to the height of the row it wrapped onto, and a `Card` in a cell grows to fill it, so a row of cards shares a flush bottom edge however unevenly their content runs (CSS Grid's `align-items: stretch`). A field or a hug component keeps its own height. Equal-width tiles belong here; content-sized rows that should stack at narrow widths belong to `Row stacks`.",
+  ],
   examples: [
     { label: "Default", code: "<Grid minTileWidth={220}>\n  <Card title=\"Overview\" />\n  <Card title=\"Deploys\" />\n  <Card title=\"Alerts\" />\n</Grid>", render: e_atoms_grid_example_0 },
     { label: "Capped columns", code: "<Grid minTileWidth={200} columns={2}>\n  <Card title=\"Production\" />\n  <Card title=\"Staging\" />\n  <Card title=\"Preview\" />\n</Grid>", render: e_atoms_grid_example_1 },

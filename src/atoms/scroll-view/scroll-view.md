@@ -1,6 +1,8 @@
 # ScrollView
 
-A scrollable container for content larger than its bounds. Unlike a plain View (which clips overflow), a ScrollView lets its children exceed its size and scroll. Vertical by default; pass `horizontal` for a row. Style the frame with `style` and the inner content with `contentContainerStyle`. In Chromium and Firefox a scroller with nothing focusable inside it is a keyboard stop of its own, so arrow keys can scroll it; the browser draws its focus ring in the theme's `ring` colour, 2 px off the frame, like every kit control.
+A scrollable container for content larger than its bounds: vertical by default, `horizontal` for a row.
+
+Unlike a plain View, a ScrollView lets its children exceed its size and scroll. Style the frame with `style` and the inner content with `contentContainerStyle`. In Chromium and Firefox a scroller with nothing focusable inside it is a keyboard stop of its own, so arrow keys can scroll it; the browser draws its focus ring in the theme's `ring` colour, 2 px off the frame, like every kit control.
 
 ## Usage
 

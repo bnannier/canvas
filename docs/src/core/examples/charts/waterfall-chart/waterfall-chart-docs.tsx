@@ -10,6 +10,9 @@ import e_charts_waterfall_chart_dont_0_dont from "./dont-0-dont";
 export const docs: ComponentDocs = {
   dir: "waterfall-chart",
   category: "charts",
+  overview: [
+    "The coloring is fixed semantics rather than a prop: rises green, falls red, totals the brand primary, so every bridge reads the same way. Hairline connectors link each bar's end to the next bar's start, and scrubbing a step flags its change and running total.",
+  ],
   examples: [
     { label: "Default", code: "<WaterfallChart\n  title=\"Q3 revenue bridge\"\n  steps={[\n    { label: \"Q2\", value: 4200, total: true },\n    { label: \"New\", value: 980 },\n    { label: \"Expansion\", value: 460 },\n    { label: \"Churn\", value: -540 },\n    { label: \"FX\", value: -120 },\n    { label: \"Q3\", total: true },\n  ]}\n/>", render: e_charts_waterfall_chart_example_0 },
     { label: "Signed steps only", code: "<WaterfallChart\n  steps={[\n    { label: \"Hired\", value: 24 },\n    { label: \"Backfill\", value: 8 },\n    { label: \"Attrition\", value: -11 },\n    { label: \"Transfers\", value: -3 },\n    { label: \"Net\", total: true },\n  ]}\n/>", render: e_charts_waterfall_chart_example_1 },

@@ -1,6 +1,11 @@
 # Calendar
 
-Month grid, week timeline, and day timeline in one component. Events mark their days with a dot in the month grid and week strip, and timed events render as blocks on the week/day hour timelines. The view is a semantic boolean axis: pass `week` or `day`, or neither for the month grid (`day` wins over `week` when both are set).
+Month grid, week timeline, and day timeline in one component. Events mark their
+days with a dot in the month grid and week strip, and timed events render as
+blocks on the week/day hour timelines.
+
+The view is a semantic boolean axis: pass `week` or `day`, or neither for the
+month grid (`day` wins over `week` when both are set).
 
 In glass mode the selected day is a brand-tinted control-layer puck behind its
 number and event dot, in the month grid and along the week strip; in `range`

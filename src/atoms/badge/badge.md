@@ -1,6 +1,8 @@
 # Badge
 
-Two families on one Badge component, picked by boolean props, both Dark Factory's pill. The metadata badge labels a schema, role, or tag (tones: `secondary`, the quiet surface pill and the default; `default`, the solid call-to-action pill; `outline`, a hairline pill; `destructive`, the soft red pill; add `mono` for token names). The status badge (`status`) is Dark Factory's live-state pill for state like active, pending, or failed: a quiet pill whose leading dot carries the tone (success, warning, error, info, neutral) beside a label in the foreground. The tone colors come from `statusColors`, the helper every toned surface in the kit reads, so a warning badge and a warning alert are the same state.
+Two families on one Badge component, picked by boolean props, both Dark Factory's pill. The metadata badge labels a schema, role, or tag (tones: `secondary`, the quiet surface pill and the default; `default`, the solid call-to-action pill; `outline`, a hairline pill; `destructive`, the soft red pill; add `mono` for token names). The status badge (`status`) is Dark Factory's live-state pill for state like active, pending, or failed: a quiet pill whose leading dot carries the tone (success, warning, error, info, neutral) beside a label in the foreground.
+
+The tone colors come from `statusColors`, the helper every toned surface in the kit reads, so a warning badge and a warning alert are the same state.
 
 If more than one tone is passed, Badge resolves the highest-precedence one: `default` > `destructive` > `secondary` > `outline` for metadata (`secondary` when none is passed), and `success` > `error` > `warning` > `info` > `neutral` for status (`neutral` when none is passed).
 

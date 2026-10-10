@@ -10,6 +10,9 @@ import e_charts_metric_breakdown_dont_0_dont from "./dont-0-dont";
 export const docs: ComponentDocs = {
   dir: "metric-breakdown",
   category: "charts",
+  overview: [
+    "It holds a preformatted headline `value` with its caption, an optional secondary `rate` readout top right (toned by `rateSuccess`, `rateWarning`, or `rateDestructive`), an optional trend strip drawn by the kit Sparkline with a latest-value caption above the plot, per-category `breakdown` rows with proportional share bars and Stats-style deltas, and a `chips` footer for recent notable codes. Every section is independently optional, so one layout backs OAuth token issuance, API request volume, sign-up sources, and any metric that needs decomposition plus trend in one card.",
+  ],
   examples: [
     { label: "Default", code: "<MetricBreakdown\n  value=\"3,771\"\n  label=\"Tokens issued\"\n  breakdown={[\n    { label: \"authorization_code\", value: 1842, delta: \"+12%\" },\n    { label: \"refresh_token\", value: 1264, delta: \"+4%\" },\n    { label: \"client_credentials\", value: 618, delta: \"-3%\", down: true },\n  ]}\n/>", render: e_charts_metric_breakdown_example_0 },
     { label: "Rate and trend", code: "<MetricBreakdown\n  value=\"25,874\"\n  label=\"Requests\"\n  rate=\"0.74%\"\n  rateLabel=\"4xx + 5xx rate\"\n  rateSuccess\n  spark={[180, 196, 188, 204, 210, 202, 214, 220]}\n  sparkUnit=\"req/s\"\n/>", render: e_charts_metric_breakdown_example_1 },

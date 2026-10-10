@@ -75,6 +75,15 @@ export const docs: ComponentDocs = {
 };
 `;
 
+// The generated descriptions (docs/src/core/descriptions.ts): each component's .md intro's
+// first paragraph, by its source directory.
+const DESCRIPTIONS = `
+export const COMPONENT_DESCRIPTIONS: Record<string, string> = {
+  "widget": "A small control. Pair it with \`Label\`.",
+  "gadget": "Documented, but with no examples yet.",
+};
+`;
+
 const PATTERNS = `
 function SpacingDemo() { return <Typography>Read spacing from useSpacing, or <InlineCode>spacing.md</InlineCode> directly.</Typography>; }
 const PATTERNS: PatternDoc[] = [
@@ -104,13 +113,14 @@ const BASE = {
   "docs/src/app/(components)/patterns/[slug].tsx": "export default function Pattern() { return null; }",
   "docs/src/app/(components)/templates/[slug].tsx": "export default function Template() { return null; }",
   "docs/src/core/examples/atoms/widget/widget-docs.tsx": COMPONENT_DOCS,
+  "docs/src/core/descriptions.ts": DESCRIPTIONS,
   "docs/src/core/data/patterns.tsx": PATTERNS,
   "docs/src/core/data/templates.tsx": TEMPLATES,
   "docs/src/core/data/templates/inbox.tsx": INBOX,
 };
 const CATALOG = [
-  { slug: "widget", name: "Widget", description: "A small control. Pair it with `Label`.", category: "Atoms" },
-  { slug: "gadget", name: "Gadget", description: "Documented, but with no examples yet.", category: "Atoms" },
+  { slug: "widget", name: "Widget", category: "Atoms" },
+  { slug: "gadget", name: "Gadget", category: "Atoms" },
 ];
 
 test("routes: static screens, component pages and their variants, patterns and templates; never the harness or layouts", () => {
@@ -118,7 +128,7 @@ test("routes: static screens, component pages and their variants, patterns and t
   expect([...pages.keys()].sort()).toEqual([
     "", "components/gadget", "components/widget", "components/widget/withicon", "guide", "patterns/motion", "patterns/spacing", "templates/inbox",
   ]);
-  expect(pages.get("components/gadget")!.sources).toEqual(["docs/src/core/data/components.ts"]);
+  expect(pages.get("components/gadget")!.sources).toEqual(["docs/src/core/data/components.ts", "docs/src/core/descriptions.ts"]);
 });
 
 test("a page's text is what a reader sees: literals, snippets and JSX text, not imports or tag names", () => {

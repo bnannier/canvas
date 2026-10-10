@@ -1,6 +1,8 @@
 # BulletChart
 
-Goal-attainment rows: each datum is a leading label, a track holding qualitative background bands (`ranges`, ascending bounds in fading washes), the tone-colored measure bar, an optional vertical target tick, and the trailing formatted value. Following the classic bullet-graph anatomy each row carries its own scale, since goals rarely share units; pass `max` to force one shared scale when they do. The compact alternative to a dashboard of gauges: five goals read in five rows.
+Goal-attainment rows: each datum is a leading label, a track holding qualitative background bands (`ranges`, ascending bounds in fading washes), the tone-colored measure bar, an optional vertical target tick, and the trailing formatted value.
+
+Following the classic bullet-graph anatomy each row carries its own scale, since goals rarely share units; pass `max` to force one shared scale when they do. The compact alternative to a dashboard of gauges: five goals read in five rows.
 
 ## Usage
 

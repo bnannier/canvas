@@ -22,6 +22,11 @@ import e_atoms_reveal_dont_3_dont from "./dont-3-dont";
 export const docs: ComponentDocs = {
   dir: "reveal",
   category: "atoms",
+  overview: [
+    "Direction chooses the axis it travels from, with `fromBelow` the default and `fromAbove`, `fromLeft`, `fromRight` the alternatives (that is also the precedence order if more than one is passed). `pronounced` travels further, `brisk` arrives faster, and `deepInView` holds the entrance until the element is properly inside the viewport instead of firing as it enters.",
+    "Stagger is structural rather than numeric: wrap a set in `RevealGroup` and each child arrives after the one before it, so no call site ever computes a delay. `RevealGroup` renders no box of its own, so it can sit between a grid and the items the grid lays out.",
+    "The trigger is measured against the window rather than the nearest scrolling parent, so content sitting inside a short inner scroller can arrive before that scroller has been scrolled to it; reveal on the page scroll, which is what this is for. Under Reduce Motion the content renders its final frame immediately, with no measuring and no timers, and the stagger is skipped along with the motion.",
+  ],
   examples: [
     { label: "Default", code: "<Reveal>\n  <Card>\n    <Typography>Rises into place</Typography>\n  </Card>\n</Reveal>", render: e_atoms_reveal_example_0 },
     { label: "From above", code: "<Reveal fromAbove>\n  <Card>\n    <Typography>Descends into place</Typography>\n  </Card>\n</Reveal>", render: e_atoms_reveal_example_1 },

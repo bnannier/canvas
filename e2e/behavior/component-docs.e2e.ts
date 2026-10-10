@@ -6,8 +6,9 @@
  * touch area, a variant's note, a long intro) never reached a reader. The generator now
  * holds every page to a model that places every line (rule S8 in
  * tools/docgen/parse-md.ts); this asserts the page really renders that model, in the
- * browser, on the bytes that ship: the intro after its first paragraph shows under the
- * lead, the selected example's note sits under the Playground rail, captions read whole in the mono face for their code, a list has list semantics,
+ * browser, on the bytes that ship: the lead is the .md intro's first paragraph, the rest
+ * of the intro shows under it, the selected example's note sits under the Playground
+ * rail, captions read whole in the mono face for their code, a list has list semantics,
  * and the guidance sections after Do & Don't render with their live examples.
  */
 import { gotoDocs } from "../support/docs";
@@ -24,6 +25,17 @@ test("Button's guidance sections render after Do & Don't, with a real link in th
   await expect(main.getByText("keeps its size and extends only its touch area to the minimum", { exact: false })).toBeVisible();
   // The href example is live: its Button is a genuine browser link to the destination.
   await expect(main.getByRole("link", { name: "Read the docs" })).toHaveAttribute("href", "https://canvas.nannier.com");
+});
+
+// Each text below holds a code span in the .md, so finding it whole also proves the page
+// set the span in the mono face rather than printing its backticks.
+test("the lead is the .md intro's first paragraph, and the overview follows it", async ({ page }) => {
+  await gotoDocs(page, "/components/button");
+  const main = page.getByRole("main");
+  await expect(main.getByText("Six intents × three sizes (plus the icon square)", { exact: false })).toBeVisible();
+  // The second intro paragraph (the overview) and the third (the ref guidance).
+  await expect(main.getByText("the call to action is the green action pill", { exact: false })).toBeVisible();
+  await expect(main.getByText("Pass ref to access the interactive Pressable", { exact: false })).toBeVisible();
 });
 
 test("the selected example's note sits under the rail and follows the selection", async ({ page }) => {
@@ -54,8 +66,6 @@ test("an intro's bullet list is a list of items, with no bullet read aloud", asy
   expect(await list.getByRole("listitem").first().evaluate((item) => item.querySelector("[aria-hidden='true']")?.textContent)).toBe("•");
 });
 
-// Each text below holds a code span in the .md, so finding it whole also proves the page
-// set the span in the mono face rather than printing its backticks.
 test("a wrapped Do & Don't caption reads whole, and its code is set in the mono face", async ({ page }) => {
   await gotoDocs(page, "/components/field");
   await expect(page.getByRole("main").getByText("it drifts from the caption scale, misses the destructive tone, and is never announced as an error.", { exact: false })).toBeVisible();
