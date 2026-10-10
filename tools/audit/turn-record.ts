@@ -38,7 +38,7 @@ export interface TurnRun {
   platform: RunPlatform;
   /** When the turn recorded it (ISO). */
   recorded: string;
-  /** The commit the run captured (7 hex digits), and ` dirty` when the tree was. */
+  /** The commit the run captured (7 hex digits), and ` dirty` when the source it captured differed from it (build-info.cjs `sourceDirty`). */
   commit: string;
   /** The run's own status: a web run's complete, incomplete, interrupted or refused; a device run's complete, refused or abandoned. */
   status: string;

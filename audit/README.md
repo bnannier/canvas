@@ -399,8 +399,12 @@ The **turn record**, `audit/turns/<id>.md` (`tools/audit/turn-record.ts`), is wr
 one row per run as it finished, appended and never rewritten, so a phase taken in two halves
 (the web while the devices are busy, the devices later) keeps both, in order: the run id, its
 kind (`variants`, `states`, `pages`, `native`), its platform, when it was recorded, its commit
-(and `dirty` when the tree was), its status and cell counts as its manifest gives them, and
-the slugs it captured. A run a later step's failure stopped the turn after is recorded all the
+(and `dirty` when the source it captured differed from that commit: a change under the paths
+the source fingerprint reads, `SOURCE_INPUTS` and `sourceDirty` in
+`docs/scripts/build-info.cjs`; the turn's own uncommitted record, a checklist or a tool is not
+the captured source, so the second half of a phase or the next slug's turn taken before the
+record is committed is not called dirty), its status and cell counts as its manifest gives
+them, and the slugs it captured. A run a later step's failure stopped the turn after is recorded all the
 same. The runs themselves stay under `.audit/runs/` (local and gitignored); every checklist's
 facts link the record, and `audit:checklists:check` holds every record to its shape (a row it
 cannot read, a missing phase table, a record whose id names no checklist). A sidecar rather
@@ -454,7 +458,8 @@ one can still be taken); the run moves on.
 
 A run is `.audit/runs/<stamp>-web-<sha7>/`:
 
-- `manifest.json`: the command, the checkout (sha, dirty, version), the capture settings
+- `manifest.json`: the command, the checkout (sha, whether the captured source is dirty against
+  it, version), the capture settings
   (browser, device scale, reduced motion, the fixed clock, the launch switches), what was
   served (`static export` or `live dev server`, its bundle, its project root, the identity
   `/testing/diagnostics` reports, and the verdict with what it compared), the filters, the
