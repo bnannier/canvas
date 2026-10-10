@@ -1,6 +1,6 @@
 import { describe, it, expect } from "bun:test";
-import { readFileSync } from "node:fs";
-import { join, relative as relativePath } from "node:path";
+import { existsSync, readFileSync } from "node:fs";
+import { dirname, join, relative as relativePath } from "node:path";
 import { Glob } from "bun";
 import ts from "typescript";
 import { ICON_STROKE_WIDTH } from "../src/atoms/icon/icon.stroke.ts";
@@ -483,5 +483,69 @@ describe("a pane and its host read one material", () => {
     expect(paneDensityMismatches("host.tsx", host(`<GlassPane static layer="control" shape={shape} />`))).toHaveLength(1);
     expect(paneDensityMismatches("host.tsx", host(`<GlassPane layer="content" shape={shape} />`))).toHaveLength(1);
     expect(paneDensityMismatches("host.tsx", host(`<GlassPane {...other} shape={shape} />`))).toHaveLength(1);
+  });
+});
+
+describe("axis tables load without React Native", () => {
+  // The docs generator reads the axis tables to write each component's Precedence
+  // section, and it runs under plain Bun with no React Native resolution. So a table, and
+  // src/style/axis.ts under it, may load values only from the axis primitive and the
+  // tokens (which import nothing); a component's props type comes in with `import type`,
+  // which the transpiler erases.
+  const LOADABLE = new Set(["src/style/axis.ts", "src/style/tokens.ts"]);
+  const tables = sources.filter(({ file }) => file.endsWith(".axes.ts")).map(({ file }) => file);
+
+  // The modules a file loads at runtime: every import or re-export that is not type-only.
+  function valueImports(file: string, text: string): string[] {
+    const source = ts.createSourceFile(file, text, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
+    const specifiers: string[] = [];
+    for (const statement of source.statements) {
+      if (ts.isImportDeclaration(statement)) {
+        const clause = statement.importClause;
+        const named = clause?.namedBindings;
+        const typeOnly =
+          clause != null && (clause.isTypeOnly || (clause.name == null && named != null && ts.isNamedImports(named) && named.elements.every((e) => e.isTypeOnly)));
+        if (!typeOnly) specifiers.push((statement.moduleSpecifier as ts.StringLiteral).text);
+      } else if (ts.isExportDeclaration(statement) && statement.moduleSpecifier && !statement.isTypeOnly) {
+        specifiers.push((statement.moduleSpecifier as ts.StringLiteral).text);
+      }
+    }
+    return specifiers.map((specifier) => {
+      if (!specifier.startsWith(".")) return specifier;
+      const path = relativePath(ROOT, join(ROOT, dirname(file), specifier)).replace(/\.js$/, "");
+      return [`${path}.ts`, `${path}.tsx`].find((candidate) => existsSync(join(ROOT, candidate))) ?? path;
+    });
+  }
+
+  // Everything `file` loads, followed through the kit's own modules.
+  function loads(file: string): string[] {
+    const seen = new Set<string>();
+    const walk = (at: string) => {
+      for (const next of valueImports(at, readFileSync(join(ROOT, at), "utf8"))) {
+        if (seen.has(next)) continue;
+        seen.add(next);
+        if (next.startsWith("src/") && existsSync(join(ROOT, next))) walk(next);
+      }
+    };
+    walk(file);
+    return [...seen];
+  }
+
+  it("the axis primitive loads only the tokens", () => {
+    expect(loads("src/style/axis.ts").filter((file) => !LOADABLE.has(file))).toEqual([]);
+  });
+
+  it("every table loads only the axis primitive and the tokens", () => {
+    expect(tables.flatMap((file) => loads(file).filter((loaded) => !LOADABLE.has(loaded)).map((loaded) => `${file} loads ${loaded}`))).toEqual([]);
+  });
+
+  it("the check tells a type import from a value import", () => {
+    const at = "src/atoms/button/button.axes.ts";
+    const imports = (...lines: string[]) => valueImports(at, lines.join("\n"));
+    expect(imports(`import type { ButtonProps } from "./button.shared.js";`, `import { axis } from "../../style/axis.js";`)).toEqual(["src/style/axis.ts"]);
+    expect(imports(`import { type ButtonProps } from "./button.shared.js";`)).toEqual([]);
+    expect(imports(`import { sizeOf, type ButtonProps } from "./button.shared.js";`)).toEqual(["src/atoms/button/button.shared.tsx"]);
+    expect(imports(`import { View } from "react-native";`)).toEqual(["react-native"]);
+    expect(imports(`export { axis } from "../../style/axis.js";`, `export type { Axis } from "../../style/axis.js";`)).toEqual(["src/style/axis.ts"]);
   });
 });
