@@ -174,7 +174,9 @@ the same place), and only where its platform gives that part no shape: the compo
 row in PLATFORM-REFERENCES.md says the platform ships no control for the job, or the part
 is declared with the reason the platform's control does not shape it. A constant, helper
 or component no platform names, in any module, is drawn by every skin that uses it; a
-shell's own code is drawn by every platform.
+shell's own code is drawn by every platform when every platform's entry builds with it,
+and a function only some entries build with (a helper that adjusts one platform's skin) is
+drawn by those entries' platforms.
 
 <!-- @generated:shape-roles -->
 <!-- @/generated -->
