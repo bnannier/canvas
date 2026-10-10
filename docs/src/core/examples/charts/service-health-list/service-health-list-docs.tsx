@@ -11,6 +11,9 @@ import e_charts_service_health_list_dont_0_dont from "./dont-0-dont";
 export const docs: ComponentDocs = {
   dir: "service-health-list",
   category: "charts",
+  overview: [
+    "It shares its strip renderer with UptimeBar, so the two never drift. `onPressItem` turns rows into drill-in buttons; `compact` hides the strips and tightens the rows; `plain` strips the card surface for nesting.",
+  ],
   examples: [
     { label: "Default", code: "<ServiceHealthList\n  title=\"System status\"\n  items={[\n    { label: \"API\", detail: \"99.98%\", periods: Array.from({ length: 45 }, () => ({})) },\n    { label: \"Dashboard\", detail: \"99.92%\", periods: Array.from({ length: 45 }, (_, i) => (i === 30 ? { degraded: true } : {})), degraded: true },\n    { label: \"Webhooks\", detail: \"97.10%\", periods: Array.from({ length: 45 }, (_, i) => (i > 40 ? { down: true } : {})), down: true }\n  ]}\n/>", render: e_charts_service_health_list_example_0 },
     { label: "Compact", code: "<ServiceHealthList\n  compact\n  items={[\n    { label: \"API\", detail: \"99.98%\" },\n    { label: \"Dashboard\", detail: \"99.92%\", degraded: true },\n    { label: \"Webhooks\", detail: \"97.10%\", down: true }\n  ]}\n/>", render: e_charts_service_health_list_example_1 },

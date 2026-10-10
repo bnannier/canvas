@@ -1,8 +1,9 @@
 # CodeBlock
 
 Syntax-highlighted code display with clipboard copy, horizontal scrolling, line
-emphasis, diff rendering, collapsible folding, and tabbed alternatives. The
-variant axis picks the surface (`terminal` > `numbered` > `inline` > plain,
+emphasis, diff rendering, collapsible folding, and tabbed alternatives.
+
+The variant axis picks the surface (`terminal` > `numbered` > `inline` > plain,
 first match wins); `compact` tightens the density; `copy`, `wrap`, `diff`,
 `collapsible`, and `attached` stack orthogonally. `language` drives the in-kit
 highlighter (ts/tsx/js/jsx, json, bash, css, html, python; anything else renders

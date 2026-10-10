@@ -10,6 +10,9 @@ import e_charts_uptime_bar_dont_0_dont from "./dont-0-dont";
 export const docs: ComponentDocs = {
   dir: "uptime-bar",
   category: "charts",
+  overview: [
+    "The pills run in a single row, oldest on the left, colored operational green, degraded amber, down red, or unknown muted (precedence down > degraded > unknown; an unmarked period is operational). An optional `caption` summarizes the strip above it, and `startLabel`/`endLabel` caption the physical edges below. The strip is a time axis, so it keeps left-to-right ordering in every locale, and its accessible name tallies every status.",
+  ],
   examples: [
     { label: "Default", code: "<UptimeBar\n  label=\"API uptime\"\n  caption=\"99.98% uptime\"\n  startLabel=\"90 days ago\"\n  endLabel=\"Today\"\n  periods={Array.from({ length: 90 }, (_, i) => (i === 61 ? { down: true } : i === 78 ? { degraded: true } : {}))}\n/>", render: e_charts_uptime_bar_example_0 },
     { label: "Compact", code: "<UptimeBar\nlabel=\"CDN uptime\"\ncompact\nperiods={Array.from({ length: 60 }, (_, i) => (i === 40 ? { degraded: true } : {}))}\n/>", render: e_charts_uptime_bar_example_1 },

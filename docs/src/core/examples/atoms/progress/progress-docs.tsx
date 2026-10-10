@@ -21,6 +21,7 @@ export const docs: ComponentDocs = {
   dir: "progress",
   category: "atoms",
   overview: [
+    "The bar fills the parent it is given; a step of its own (`xs`, `lg`, …, with `start` to pin it to the leading edge) or a Container step sets its measure.",
     "Name the task with string `children`, or pass `accessibilityLabel` when the visible title is omitted or contains rich content.",
   ],
   examples: [

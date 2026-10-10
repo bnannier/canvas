@@ -1,6 +1,8 @@
 # MetricBreakdown
 
-The decomposed-metric dashboard card: a preformatted headline `value` with its caption, an optional secondary `rate` readout top right (toned by `rateSuccess`, `rateWarning`, or `rateDestructive`), an optional trend strip drawn by the kit Sparkline with a latest-value caption above the plot, per-category `breakdown` rows with proportional share bars and Stats-style deltas, and a `chips` footer for recent notable codes. Every section is independently optional, so one layout backs OAuth token issuance, API request volume, sign-up sources, and any metric that needs decomposition plus trend in one card.
+The decomposed-metric dashboard card: headline value, tone-aware rate, Sparkline trend, per-category share rows, and a chip footer.
+
+It holds a preformatted headline `value` with its caption, an optional secondary `rate` readout top right (toned by `rateSuccess`, `rateWarning`, or `rateDestructive`), an optional trend strip drawn by the kit Sparkline with a latest-value caption above the plot, per-category `breakdown` rows with proportional share bars and Stats-style deltas, and a `chips` footer for recent notable codes. Every section is independently optional, so one layout backs OAuth token issuance, API request volume, sign-up sources, and any metric that needs decomposition plus trend in one card.
 
 ## Usage
 

@@ -15,6 +15,7 @@ export const docs: ComponentDocs = {
   dir: "chip",
   category: "atoms",
   overview: [
+    "A Chip is a LOW-emphasis tag, not a call to action: the neutral chip is Dark Factory's quiet pill (the soft surface color under the foreground), and a coloured chip is its soft pill (the color's wash under the color's ink, the recipe Alert and the other toned surfaces share). A selected filter chip is Dark Factory's selected chip, the solid primary (the tonal primary on Android, where Material 3 draws its selected filter chip). The chip owns that whole look, so no call site hand-composes a `borderRadius` + `backgroundColor` + padding Pressable.",
     "Two orthogonal axes drive the look:",
     { list: ["**Color** (pick one; default the neutral tag). A semantic status (`success`, `warning`, `destructive`, `info`, `neutral`) or a free-form palette hue (`red`, `orange`, `amber`, `yellow`, `lime`, `green`, `emerald`, `teal`, `cyan`, `sky`, `blue`, `indigo`, `violet`, `fuchsia`, `purple`, `pink`, `rose`, `gray`). Status names read the theme's status colors (`statusColors`), so a success chip matches a success Badge and Alert; `info` is the primary color. Precedence when more than one is set: status names first, then hues in the order above.","**Emphasis**. `outline` drops the fill for a border-only chip in the same color; `primary` is the primary color's soft pill. These compose with any color, e.g. `<Chip blue outline>`."] },
   ],

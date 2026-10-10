@@ -10,6 +10,9 @@ import e_atoms_image_dont_0_dont from "./dont-0-dont";
 export const docs: ComponentDocs = {
   dir: "image",
   category: "atoms",
+  overview: [
+    "`stretch`, `center`, `repeat`, and `none` cover the rarer fits. Remote images load over the network; bundle local assets with `require`. Name an image that carries content with `alt`, and it is announced as an image with that name on every platform; an image with no name is decorative, and assistive tech skips it. For a circular identity photo with an initials fallback, reach for `<Avatar src=\"…\" name=\"…\" />` rather than rounding a bare Image.",
+  ],
   examples: [
     { label: "Default", code: "<Image source={{ uri: \"/kira-tanaka.jpg\" }} alt=\"Portrait of Kira Tanaka\" width={120} height={120} />", render: e_atoms_image_example_0 },
     { label: "Contain", code: "<Image source={{ uri: \"/liang-bao.jpg\" }} alt=\"Portrait of Liang Bao\" contain width={160} height={120} />", render: e_atoms_image_example_1 },

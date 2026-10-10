@@ -1,6 +1,12 @@
 # Textarea
 
-Multi-line input, with character count, with toolbar. Pass `label` (and `required`) to name the field: iOS and web render the label above the control, while Android floats the Material 3 in-container label at the top of the multiline box. The box fills the parent it is given; a step of its own (`xs`, `lg`, …, with `start` to pin it to the leading edge) or a Container step sets its measure.
+Multi-line input, with character count, with toolbar.
+
+Pass `label` (and `required`) to name the field: iOS and web render the label
+above the control, while Android floats the Material 3 in-container label at the
+top of the multiline box. The box fills the parent it is given; a step of its
+own (`xs`, `lg`, …, with `start` to pin it to the leading edge) or a Container
+step sets its measure.
 
 Android uses the same opaque muted surface as the other filled fields. Its label
 uses `primary-text` when focused and `destructive-text` on error. The over-limit

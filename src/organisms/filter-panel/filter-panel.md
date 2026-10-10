@@ -1,10 +1,12 @@
 # FilterPanel
 
-Sidebar filter rail of grouped checkbox options with counts. Add `responsive`
-and at and below `drawerBreakpoint` (default `sm` = 640) the docked panel
-collapses to a "Filters (n)" outline button that opens the same panel inside a
-start-edge drawer, so a phone keeps its width for the results; `open` /
-`defaultOpen` / `onOpenChange` drive the drawer for controlled use.
+Sidebar filter rail: grouped checkbox options with count badges and a Clear
+header.
+
+Add `responsive` and at and below `drawerBreakpoint` (default `sm` = 640) the
+docked panel collapses to a "Filters (n)" outline button that opens the same
+panel inside a start-edge drawer, so a phone keeps its width for the results;
+`open` / `defaultOpen` / `onOpenChange` drive the drawer for controlled use.
 
 On iOS an option row marks a chosen filter the way an iOS list does: the label
 leads, the count follows, and a trailing check closes the row. The web and

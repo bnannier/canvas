@@ -1,6 +1,8 @@
 # Avatar
 
-A photo when the account has one, falling back to one or two initials on an identity disc: the name resolves to one of ten hues, and the disc is that hue's diagonal blend from a pale tint to a deeper, warmer neighbour, so one person keeps one colour on every platform and stays distinct in a stack or list. The initials are bold, about a third of the disc, in near-black, which holds 4.5:1 on both ends of every blend. Like a photo, the disc is identity content: it keeps its colours under glass, where only the neutral tile of an avatar with no name or initials takes the control material. `AvatarMenu` builds the signed-in account control on the same circle: one capsule trigger carrying the avatar, the name, and the email, opening the account menu under that same identity.
+A photo when the account has one, falling back to one or two initials on an identity disc: the name resolves to one of ten hues, and the disc is that hue's diagonal blend from a pale tint to a deeper, warmer neighbour, so one person keeps one colour on every platform and stays distinct in a stack or list. The initials are bold, about a third of the disc, in near-black, which holds 4.5:1 on both ends of every blend.
+
+Like a photo, the disc is identity content: it keeps its colours under glass, where only the neutral tile of an avatar with no name or initials takes the control material. `AvatarMenu` builds the signed-in account control on the same circle: one capsule trigger carrying the avatar, the name, and the email, opening the account menu under that same identity.
 
 ## Usage
 

@@ -23,6 +23,7 @@ export const docs: ComponentDocs = {
   dir: "calendar",
   category: "organisms",
   overview: [
+    "The view is a semantic boolean axis: pass `week` or `day`, or neither for the month grid (`day` wins over `week` when both are set).",
     "In glass mode the selected day is a brand-tinted control-layer puck behind its number and event dot, in the month grid and along the week strip; in `range` mode both endpoints carry the puck over the range band. The day peek and the hover card are functional-layer glass cards beside their day. Solid mode keeps the skin's own filled day.",
   ],
   examples: [

@@ -13,6 +13,9 @@ import e_atoms_view_dont_1_dont from "./dont-1-dont";
 export const docs: ComponentDocs = {
   dir: "view",
   category: "atoms",
+  overview: [
+    "Reach for it directly only when no semantic primitive covers what you need: arrangement (direction, gap, alignment, padding) belongs to `Row` and `Column`, which are Views with that axis exposed as boolean props, and a bordered filled surface belongs to `Card`. Numbers are density-independent pixels.",
+  ],
   examples: [
     { label: "Default", code: "<View style={{ width: 40, height: 40, borderRadius: 8, backgroundColor: tokens.primary }} />", render: e_atoms_view_example_0 },
     { label: "Column", code: "<Container xs>\n  <Column snug>\n    <View style={{ height: 28, borderRadius: 6, backgroundColor: alpha(tokens.primary, 0.15) }} />\n    <View style={{ height: 28, borderRadius: 6, backgroundColor: alpha(tokens.primary, 0.15) }} />\n    <View style={{ height: 28, borderRadius: 6, backgroundColor: alpha(tokens.primary, 0.15) }} />\n  </Column>\n</Container>", render: e_atoms_view_example_1 },

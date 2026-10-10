@@ -22,6 +22,7 @@ export const docs: ComponentDocs = {
   dir: "textarea",
   category: "atoms",
   overview: [
+    "Pass `label` (and `required`) to name the field: iOS and web render the label above the control, while Android floats the Material 3 in-container label at the top of the multiline box. The box fills the parent it is given; a step of its own (`xs`, `lg`, …, with `start` to pin it to the leading edge) or a Container step sets its measure.",
     "Android uses the same opaque muted surface as the other filled fields. Its label uses `primary-text` when focused and `destructive-text` on error. The over-limit character count also uses `destructive-text` on every platform.",
     "Inside an overlay, Escape follows the overlay's cancellation policy. A supplied `onKeyPress` runs first and can call `preventDefault()` to handle Escape locally. Cancelling an IME candidate keeps the overlay open.",
   ],

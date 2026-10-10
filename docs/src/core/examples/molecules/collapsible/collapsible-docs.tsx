@@ -13,6 +13,9 @@ import e_molecules_collapsible_dont_0_dont from "./dont-0-dont";
 export const docs: ComponentDocs = {
   dir: "collapsible",
   category: "molecules",
+  overview: [
+    "Closed by default; pass `defaultOpen` to start open. Open state is controlled (`open` + `onOpenChange`) or uncontrolled (`defaultOpen`). A `description` adds a muted secondary line under the title; `card` wraps the disclosure in an outlined card surface on web and Android (on iOS the default look already is the inset-grouped card, so `card` is a no-op there). For a set of related, peer sections, reach for an Accordion (a group of these); Collapsible is the standalone primitive.",
+  ],
   examples: [
     { label: "Default", code: "<Collapsible title=\"Shipping details\">\n  Free 2-day shipping on orders over $50. Delivery in 3 to 5 business days otherwise.\n</Collapsible>", render: e_molecules_collapsible_example_0 },
     { label: "Open by default", code: "<Collapsible title=\"What is Canvas?\" defaultOpen>\n  A universal React Native UI kit that renders natively on iOS and Android and on the web through React Native Web.\n</Collapsible>", render: e_molecules_collapsible_example_1 },

@@ -10,6 +10,9 @@ import e_charts_composed_chart_dont_0_dont from "./dont-0-dont";
 export const docs: ComponentDocs = {
   dir: "composed-chart",
   category: "charts",
+  overview: [
+    "The classic \"revenue bars with a margin line\" chart, on one shared zero-based y axis, with the same scrub-to-inspect, legend, and accessible-name contract as the other cartesian charts. For bar-only grouped data, reach for the bar `Chart`'s grouped mode instead; composed earns its keep when the marks mix.",
+  ],
   examples: [
     { label: "Default", code: "<ComposedChart\n  title=\"Revenue and margin\"\n  labels={[\"Q1\", \"Q2\", \"Q3\", \"Q4\"]}\n  series={[\n    { label: \"Revenue\", values: [420, 510, 480, 620] },\n    { label: \"Margin\", values: [110, 170, 150, 240], line: true }\n  ]}\n/>", render: e_charts_composed_chart_example_0 },
     { label: "Area backdrop", code: "<ComposedChart\n  title=\"Traffic and conversions\"\n  labels={[\"Mon\", \"Tue\", \"Wed\", \"Thu\", \"Fri\"]}\n  series={[\n    { label: \"Sessions\", values: [1200, 1420, 1310, 1680, 1540], area: true },\n    { label: \"Sign-ups\", values: [240, 310, 280, 420, 380] }\n  ]}\n/>", render: e_charts_composed_chart_example_1 },

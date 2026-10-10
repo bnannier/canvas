@@ -14,6 +14,11 @@ import e_charts_geo_map_dont_1_dont from "./dont-1-dont";
 export const docs: ComponentDocs = {
   dir: "geo-map",
   category: "charts",
+  overview: [
+    "The land silhouette and the shared country borders are two paths precomputed from Natural Earth 1:50m (no runtime fetch, no map dependency, no tiles), and each point is a circle at its projected coordinate whose AREA is proportional to its count, so doubling the count doubles the disc rather than its width.",
+    "Add `zoomable` and the wheel zooms about the pointer, two fingers pinch, a drag pans, and places too close together to draw separately merge into one bubble carrying their summed count, splitting into their members as you zoom in.",
+    "Single-identity encoding, so there is no tone axis and no legend. Press a bubble to flag its label and count (the others dim); the accessible name carries the biggest places with their values, because a screen reader user cannot see bubbles.",
+  ],
   examples: [
     { label: "Default", code: "<GeoMap\n  title=\"Active installs\"\n  points={[\n    { label: \"New York\", lat: 40.7128, lng: -74.006, count: 6310 },\n    { label: \"London\", lat: 51.5072, lng: -0.1276, count: 5170 },\n    { label: \"Bengaluru\", lat: 12.9716, lng: 77.5946, count: 3890 },\n    { label: \"Sydney\", lat: -33.8688, lng: 151.2093, count: 1260 }\n  ]}\n/>", render: e_charts_geo_map_example_0 },
     { label: "Compact", code: "<GeoMap\n  compact\n  title=\"Edge nodes\"\n  points={[\n    { label: \"Ashburn\", lat: 39.0438, lng: -77.4874, count: 42 },\n    { label: \"Frankfurt\", lat: 50.1109, lng: 8.6821, count: 36 },\n    { label: \"Mumbai\", lat: 19.076, lng: 72.8777, count: 18 },\n    { label: \"Sydney\", lat: -33.8688, lng: 151.2093, count: 9 },\n  ]}\n/>", render: e_charts_geo_map_example_1 },

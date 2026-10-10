@@ -13,6 +13,9 @@ import e_molecules_accordion_dont_0_dont from "./dont-0-dont";
 export const docs: ComponentDocs = {
   dir: "accordion",
   category: "molecules",
+  overview: [
+    "Single-open by default (opening one row closes the others); pass `multiple` to let any number stay open. Open state is controlled (`value` + `onValueChange`) or uncontrolled (`defaultValue`). An item's `description` adds a muted secondary line under its title; `card` wraps the whole group in an outlined card surface on web and Android (on iOS the default look already is the inset-grouped card, so `card` is a no-op there).",
+  ],
   examples: [
     { label: "Default", code: "<Accordion\n  items={[\n    { key: \"what\", title: \"What is Canvas?\", content: \"A universal React Native UI kit for iOS, Android, and the web.\" },\n    { key: \"access\", title: \"Is it accessible?\", content: \"Yes. Each header is a button that exposes its expanded state.\" },\n    { key: \"theme\", title: \"Is it themed?\", content: \"Yes. Every color comes from the active theme tokens.\" }\n  ]}\n  defaultValue=\"what\"\n/>", render: e_molecules_accordion_example_0 },
     { label: "Multiple open", code: "<Accordion\n  multiple\n  items={[\n    { key: \"billing\", title: \"Billing\", content: \"Manage your plan, payment method, and invoices.\" },\n    { key: \"team\", title: \"Team\", content: \"Invite teammates and set their roles.\" },\n    { key: \"security\", title: \"Security\", content: \"Two-factor authentication and active sessions.\" }\n  ]}\n  defaultValue={[\"billing\", \"security\"]}\n/>", render: e_molecules_accordion_example_1 },

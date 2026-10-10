@@ -35,6 +35,9 @@ import e_atoms_avatar_dont_8_dont from "./dont-8-dont";
 export const docs: ComponentDocs = {
   dir: "avatar",
   category: "atoms",
+  overview: [
+    "Like a photo, the disc is identity content: it keeps its colours under glass, where only the neutral tile of an avatar with no name or initials takes the control material. `AvatarMenu` builds the signed-in account control on the same circle: one capsule trigger carrying the avatar, the name, and the email, opening the account menu under that same identity.",
+  ],
   examples: [
     { label: "Default", code: "<Avatar name=\"AO\" />", render: e_atoms_avatar_example_0 },
     { label: "Photo", code: "<Avatar src=\"/rachel-chen.jpg\" name=\"RC\" />", render: e_atoms_avatar_example_1 },

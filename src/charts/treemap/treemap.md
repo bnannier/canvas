@@ -1,6 +1,8 @@
 # Treemap
 
-Squarified value tiles: each datum becomes a ramp-colored rectangle whose area is proportional to its value, packed largest-first with near-square aspect ratios, with the label and formatted value rendered inside only when the tile fits them. Flat one-level data; nesting and drill-down are deferred scope. Press a tile to flag its value and share (the others dim); the accessible name carries every tile with its share regardless of which labels fit.
+Squarified value tiles: each datum becomes a ramp-colored rectangle whose area is proportional to its value, packed largest-first with near-square aspect ratios, with the label and formatted value rendered inside only when the tile fits them.
+
+Flat one-level data; nesting and drill-down are deferred scope. Press a tile to flag its value and share (the others dim); the accessible name carries every tile with its share regardless of which labels fit.
 
 ## Usage
 

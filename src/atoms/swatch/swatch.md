@@ -1,11 +1,15 @@
 # Swatch
 
-A color sample: a filled rounded block with the token's name and value beneath it,
-the anatomy a design-system color sheet repeats down a page. Swatch owns the whole
-lockup, so a sheet never sets a bare block next to a hand-built text column and drifts
-row to row. Pass a live theme token as `color` and the sample follows the active
-scheme; a hairline edge keeps a white or near-black sample visible on the surface
-behind it.
+A color sample: a filled rounded block with the token's name and value beneath
+it, the anatomy a design-system color sheet repeats down a page. Swatch owns the
+whole lockup, so a sheet never sets a bare block next to a hand-built text
+column and drifts row to row.
+
+Pass a live theme token as `color` and the sample follows the active scheme; a
+hairline edge keeps a white or near-black sample visible on the surface behind
+it. The value lines are set in mono, and the lockup comes in two more sizes
+(`small`, `large`), as a `circle`, `inline` (the label beside the block), or as
+a `block` (a full-width ramp bar).
 
 ## Usage
 

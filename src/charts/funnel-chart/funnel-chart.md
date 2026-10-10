@@ -1,6 +1,8 @@
 # FunnelChart
 
-Stage-by-stage conversion: a column of centered trapezoids, each stage's top width proportional to its value and tapering to the next stage's width (the last stage is rectangular), ramp-colored, with the stage's label, value, and conversion percent as text on the stage. The percent reads against the previous stage by default; `share` reads every stage against the first. Press a stage to select it (the others dim).
+Stage-by-stage conversion trapezoids with on-stage labels, values, and conversion percents.
+
+The stages stack as a column of centered trapezoids, each stage's top width proportional to its value and tapering to the next stage's width (the last stage is rectangular), ramp-colored, with the stage's label, value, and conversion percent as text on the stage. The percent reads against the previous stage by default; `share` reads every stage against the first. Press a stage to select it (the others dim).
 
 ## Usage
 

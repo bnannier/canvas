@@ -1,6 +1,12 @@
 # Autocomplete
 
-Text input + dropdown: searchable single-select. Pass `label` (and `required`) to name the field: iOS and web render the label above the field, while Android floats the Material 3 in-container label once the list opens or a value fills the field. The field fills the parent it is given; a step of its own (`xs`, `lg`, …, with `start` to pin it to the leading edge) or a Container step sets its measure.
+Text input + dropdown: searchable single-select.
+
+Pass `label` (and `required`) to name the field: iOS and web render the label
+above the field, while Android floats the Material 3 in-container label once the
+list opens or a value fills the field. The field fills the parent it is given; a
+step of its own (`xs`, `lg`, …, with `start` to pin it to the leading edge) or a
+Container step sets its measure.
 
 In glass mode the suggestion list is a dense-layer glass card under the field (or
 above it when it fits there); the field, its caret and its toggle stay in place,

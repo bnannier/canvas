@@ -1,6 +1,8 @@
 # LineChart
 
-Categorical-x series lines with nice y ticks, gridlines, and a legend for multiple series. `curved` draws a monotone cubic that never overshoots the data, `dots` marks each datum, and `baseline` + `fade` give the trading-app price idiom (dashed previous close, gain/loss auto tone, gradient fill). A series that means success or failure carries its own `success` / `destructive` tone instead of a ramp color. Press or scrub the plot to inspect a category.
+Categorical-x series lines with nice y ticks, gridlines, and a legend for multiple series.
+
+`curved` draws a monotone cubic that never overshoots the data, `dots` marks each datum, and `baseline` + `fade` give the trading-app price idiom (dashed previous close, gain/loss auto tone, gradient fill). A series that means success or failure carries its own `success` / `destructive` tone instead of a ramp color. Press or scrub the plot to inspect a category.
 
 ## Usage
 

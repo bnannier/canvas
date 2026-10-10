@@ -1,6 +1,12 @@
 # Reveal
 
-An entrance for page content: what it wraps starts slightly offset and transparent, then travels into place and fades in when it reaches the viewport. It fires once and stays, so content that has arrived never leaves again. Direction chooses the axis it travels from, with `fromBelow` the default and `fromAbove`, `fromLeft`, `fromRight` the alternatives (that is also the precedence order if more than one is passed). `pronounced` travels further, `brisk` arrives faster, and `deepInView` holds the entrance until the element is properly inside the viewport instead of firing as it enters. Stagger is structural rather than numeric: wrap a set in `RevealGroup` and each child arrives after the one before it, so no call site ever computes a delay. `RevealGroup` renders no box of its own, so it can sit between a grid and the items the grid lays out. The trigger is measured against the window rather than the nearest scrolling parent, so content sitting inside a short inner scroller can arrive before that scroller has been scrolled to it; reveal on the page scroll, which is what this is for. Under Reduce Motion the content renders its final frame immediately, with no measuring and no timers, and the stagger is skipped along with the motion.
+An entrance for page content: what it wraps starts slightly offset and transparent, then travels into place and fades in when it reaches the viewport. It fires once and stays, so content that has arrived never leaves again.
+
+Direction chooses the axis it travels from, with `fromBelow` the default and `fromAbove`, `fromLeft`, `fromRight` the alternatives (that is also the precedence order if more than one is passed). `pronounced` travels further, `brisk` arrives faster, and `deepInView` holds the entrance until the element is properly inside the viewport instead of firing as it enters.
+
+Stagger is structural rather than numeric: wrap a set in `RevealGroup` and each child arrives after the one before it, so no call site ever computes a delay. `RevealGroup` renders no box of its own, so it can sit between a grid and the items the grid lays out.
+
+The trigger is measured against the window rather than the nearest scrolling parent, so content sitting inside a short inner scroller can arrive before that scroller has been scrolled to it; reveal on the page scroll, which is what this is for. Under Reduce Motion the content renders its final frame immediately, with no measuring and no timers, and the stagger is skipped along with the motion.
 
 ## Usage
 

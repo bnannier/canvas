@@ -1,6 +1,8 @@
 # Collapsible
 
-A single disclosure: one header (its `title`, or a custom `trigger`, plus a chevron that rotates when open) over one collapsible content panel. Closed by default; pass `defaultOpen` to start open. Open state is controlled (`open` + `onOpenChange`) or uncontrolled (`defaultOpen`). A `description` adds a muted secondary line under the title; `card` wraps the disclosure in an outlined card surface on web and Android (on iOS the default look already is the inset-grouped card, so `card` is a no-op there). For a set of related, peer sections, reach for an Accordion (a group of these); Collapsible is the standalone primitive.
+A single disclosure: one header (its `title`, or a custom `trigger`, plus a chevron that rotates when open) over one collapsible content panel.
+
+Closed by default; pass `defaultOpen` to start open. Open state is controlled (`open` + `onOpenChange`) or uncontrolled (`defaultOpen`). A `description` adds a muted secondary line under the title; `card` wraps the disclosure in an outlined card surface on web and Android (on iOS the default look already is the inset-grouped card, so `card` is a no-op there). For a set of related, peer sections, reach for an Accordion (a group of these); Collapsible is the standalone primitive.
 
 ## Usage
 
