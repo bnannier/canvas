@@ -20,7 +20,7 @@ Audit checklist for `/components/stats`. The facts block and the variants table 
 | Hand-off metric gaps | none |
 | Interactions registry | in the inventory; evidence: none registered |
 | Overlay recipe | none |
-| Interaction states | captured: focus on Tappable (web row; desktop), pressed on Tappable (web row; desktop). |
+| Interaction states | recipes: focus on Tappable (web row; desktop), pressed on Tappable (web row; desktop). |
 | MeasureProps | not adopted |
 | Touch target | no touch-target name (the exports of `src/style/touch-target.ts`, `src/style/touch-target-seed.ts`, `src/style/touch-seam.ts`, `src/style/clip-slop.ts`, the `TouchTargetSkin` fields, or `hitSlop`) in its implementation modules. `test/touch-target-coverage.test.ts` records it as known gap: a pressable stat tile is sized by its content |
 | Tests importing it | 9: `test/behavior-smoke-a.test.tsx`, `test/design-rules-shape.test.ts`, `test/design-rules-skins.test.ts`, `test/dist-smoke.test.tsx`, `test/material-solid-fallback.test.tsx`, `test/molecule-material-state.test.tsx`, `test/numerals.test.tsx`, `test/skins-smoke.test.tsx`, `test/stats-stackedlist-slots.test.tsx` |

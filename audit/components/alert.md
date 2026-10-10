@@ -20,7 +20,7 @@ Audit checklist for `/components/alert`. The facts block and the variants table 
 | Hand-off metric gaps | none |
 | Interactions registry | in the inventory; evidence: alert-dismiss (unit-web, test/behavior-smoke-a.test.tsx) |
 | Overlay recipe | none |
-| Interaction states | captured: focus on Dismissible (web row; desktop), pressed on Dismissible (web row; desktop). |
+| Interaction states | recipes: focus on Dismissible (web row; desktop), pressed on Dismissible (web row; desktop). |
 | MeasureProps | not adopted |
 | Touch target | `alert.shared.tsx`: hitSlop; `alert.styles.ts`: platformMinTarget. `test/touch-target-coverage.test.ts` records it as covered another way: hitSlop on the dismiss glyph (24 + 2 * 12 = 48 on Android) |
 | Tests importing it | 9: `test/behavior-smoke-a.test.tsx`, `test/design-rules-shape.test.ts`, `test/design-rules-skins.test.ts`, `test/destructive-intent.test.tsx`, `test/glass-controls.test.tsx`, `test/material-solid-fallback.test.tsx`, `test/skins-smoke.test.tsx`, `test/text-contrast.test.tsx`, `test/touch-target-seams.test.tsx` |

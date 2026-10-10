@@ -20,7 +20,7 @@ Audit checklist for `/components/popover`. The facts block and the variants tabl
 | Hand-off metric gaps | none |
 | Interactions registry | in the inventory; evidence: none registered |
 | Overlay recipe | yes (dialog) |
-| Interaction states | captured: open on Default (web, iOS, Android rows; phone, tablet and desktop). |
+| Interaction states | recipes: open on Default (web, iOS, Android rows; phone, tablet and desktop). |
 | MeasureProps | not adopted |
 | Touch target | no touch-target name (the exports of `src/style/touch-target.ts`, `src/style/touch-target-seed.ts`, `src/style/touch-seam.ts`, `src/style/clip-slop.ts`, the `TouchTargetSkin` fields, or `hitSlop`) in its implementation modules |
 | Tests importing it | 13: `test/anchored-overlay-dismissal.test.tsx`, `test/dense-overlays.test.tsx`, `test/design-rules-shape.test.ts`, `test/design-rules-skins.test.ts`, `test/entrance-readiness.test.tsx`, `test/escape-layers.test.tsx`, `test/hosted-focus.test.tsx`, `test/hosted-trigger-focus.test.tsx`, `test/native-accessibility-escape-hosts.test.tsx`, `test/overlay-placement.test.tsx`, `test/overlays.test.tsx`, `test/popover.test.tsx`, `test/skins-smoke.test.tsx` |

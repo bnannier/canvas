@@ -20,7 +20,7 @@ Audit checklist for `/components/drag-drop`. The facts block and the variants ta
 | Hand-off metric gaps | none |
 | Interactions registry | in the inventory; evidence: none registered |
 | Overlay recipe | none |
-| Interaction states | captured: focus on Default (web row; desktop), pressed on Default (web row; desktop), disabled on Locked item (web row; desktop). |
+| Interaction states | recipes: focus on Default (web row; desktop), pressed on Default (web row; desktop), disabled on Locked item (web row; desktop). |
 | MeasureProps | not adopted |
 | Touch target | `drag-drop.shared.tsx`: hitSlop, useSeamLimit |
 | Tests importing it | 5: `test/design-rules-skins.test.ts`, `test/drag-drop-geometry.test.ts`, `test/drag-drop.test.tsx`, `test/focus-ring.test.tsx`, `test/skins-smoke.test.tsx` |

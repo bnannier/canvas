@@ -20,7 +20,7 @@ Audit checklist for `/components/filter-panel`. The facts block and the variants
 | Hand-off metric gaps | none |
 | Interactions registry | in the inventory; evidence: none registered |
 | Overlay recipe | none |
-| Interaction states | captured: focus on Default (web row; desktop), focus on Responsive drawer inside the overlay it opens (web row; phone), pressed on Default (web row; desktop), pressed on Responsive drawer inside the overlay it opens (web row; phone), open on Responsive drawer (web, iOS, Android rows; phone). |
+| Interaction states | recipes: focus on Default (web row; desktop), focus on Responsive drawer inside the overlay it opens (web row; phone), pressed on Default (web row; desktop), pressed on Responsive drawer inside the overlay it opens (web row; phone), open on Responsive drawer (web, iOS, Android rows; phone). |
 | MeasureProps | not adopted |
 | Touch target | no touch-target name (the exports of `src/style/touch-target.ts`, `src/style/touch-target-seed.ts`, `src/style/touch-seam.ts`, `src/style/clip-slop.ts`, the `TouchTargetSkin` fields, or `hitSlop`) in its implementation modules. `test/touch-target-coverage.test.ts` records it as covered another way: option rows are 44/48 tall by skin |
 | Tests importing it | 7: `test/design-rules-skins.test.ts`, `test/filter-panel.test.tsx`, `test/material-solid-fallback.test.tsx`, `test/narrow-modes.test.tsx`, `test/option-list-idiom.test.tsx`, `test/organism-material-roles.test.tsx`, `test/skins-smoke.test.tsx` |

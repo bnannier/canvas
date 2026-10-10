@@ -20,7 +20,7 @@ Audit checklist for `/components/breadcrumb`. The facts block and the variants t
 | Hand-off metric gaps | none |
 | Interactions registry | in the inventory; evidence: breadcrumb-press (unit-web, test/breadcrumb.test.tsx), breadcrumb-enter (unit-web, test/breadcrumb.test.tsx) |
 | Overlay recipe | none |
-| Interaction states | captured: focus on Default (web row; desktop), pressed on Default (web row; desktop). |
+| Interaction states | recipes: focus on Default (web row; desktop), pressed on Default (web row; desktop). |
 | MeasureProps | not adopted |
 | Touch target | `breadcrumb.shared.tsx`: hitSlop, minTarget; `breadcrumb.styles.ts`: minTarget |
 | Tests importing it | 5: `test/breadcrumb.test.tsx`, `test/design-rules-skins.test.ts`, `test/new-components.test.tsx`, `test/skins-smoke.test.tsx`, `test/touch-target-coverage.test.ts` |

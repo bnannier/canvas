@@ -20,7 +20,7 @@ Audit checklist for `/components/textarea`. The facts block and the variants tab
 | Hand-off metric gaps | textarea-wide-step: wide 896 (the `wide` step of the shared width scale, a maxWidth cap) vs hand-off wide 480px field width (unscheduled) |
 | Interactions registry | in the inventory; evidence: none registered |
 | Overlay recipe | none |
-| Interaction states | captured: focus on Default (web row; desktop), invalid on Character counter (web row; desktop), disabled on Disabled (web row; desktop). |
+| Interaction states | recipes: focus on Default (web row; desktop), invalid on Character counter (web row; desktop), disabled on Disabled (web row; desktop). |
 | MeasureProps | adopted in `textarea.shared.tsx` |
 | Touch target | no touch-target name (the exports of `src/style/touch-target.ts`, `src/style/touch-target-seed.ts`, `src/style/touch-seam.ts`, `src/style/clip-slop.ts`, the `TouchTargetSkin` fields, or `hitSlop`) in its implementation modules |
 | Tests importing it | 19: `test/a11y-state.test.tsx`, `test/atom-material-roles.test.tsx`, `test/design-rules-shape.test.ts`, `test/design-rules-skins.test.ts`, `test/destructive-text-components.test.tsx`, `test/field-focus-layout.test.tsx`, `test/field-focus-states.test.tsx`, `test/field.test.tsx`, `test/floating-label-color.test.tsx`, `test/floating-label-parity.test.tsx`, `test/focus-ring.test.tsx`, `test/forms.test.tsx`, `test/input-overlay-escape.test.tsx`, `test/material-solid-fallback.test.tsx`, `test/new-components.test.tsx`, `test/sizing.test.tsx`, `test/skins-smoke.test.tsx`, `test/text-contrast.test.tsx`, `test/text-entry-material.test.tsx` |

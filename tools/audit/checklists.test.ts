@@ -365,24 +365,46 @@ describe.skipIf(!hasDist)("the audit checklists keep a reviewer's work", () => {
     expect(renderComponentFacts(text).join("\n")).toContain("| Implementation | declared in `src/style/text.tsx`, which imports React Native's own `Text`; `src/atoms/text/` holds only its markdown |");
   });
 
-  it("states the interaction states captured, and each static or exempt state with its checked reason", () => {
+  it("states the recipes the web runner applies, each static or exempt state with its checked reason, and the states the web can never show, with why", () => {
     const row = (slug: string) => renderComponentFacts(componentFacts(slug, sources.corpus)).find((line) => line.startsWith("| Interaction states |"));
+    // The facts are the source's alone, generated with no capture, so the row says what the
+    // runner sets up ("recipes"), never what a capture reached.
+    for (const slug of ["button", "dialog", "input", "heatmap"]) expect(row(slug)).not.toContain("captured");
     // A state that exists only at some widths names them (the Heatmap's scroller is a stop at a phone's).
-    expect(row("heatmap")).toBe("| Interaction states | captured: hover on Calendar (web row; desktop), focus on Calendar (web row; phone), pressed on Calendar (web row; desktop). |");
+    expect(row("heatmap")).toBe("| Interaction states | recipes: hover on Calendar (web row; desktop), focus on Calendar (web row; phone), pressed on Calendar (web row; desktop). |");
     // A state applied inside the overlay a recipe opens first says so, and the rows its own
-    // control is on: Dialog's Cancel is its own on the iOS and Android rows, a kit Button on the web's.
+    // control is on: Dialog's Cancel is its own on the iOS and Android rows, a kit Button on the
+    // web's. Its press is the iOS row's: the Android row's text buttons press with
+    // `android_ripple` alone, which react-native-web does not draw, so that press is not
+    // reachable on the web and the devices judge it.
     expect(row("dialog")).toBe(
-      "| Interaction states | captured: focus on Default inside the overlay it opens (iOS, Android rows; desktop), pressed on Default inside the overlay it opens (iOS, Android rows; desktop), open on Default (web, iOS, Android rows; phone, tablet and desktop). |",
+      "| Interaction states | recipes: focus on Default inside the overlay it opens (iOS, Android rows; desktop), pressed on Default inside the overlay it opens (iOS row; desktop), open on Default (web, iOS, Android rows; phone, tablet and desktop). not reachable on the web: pressed in the overlay in `Present` on the Android row, where its controls' only pressed feedback is `android_ripple`, which react-native-web does not draw (judged on devices). |",
     );
+    expect(row("alert-dialog")).toBe(
+      "| Interaction states | recipes: focus on Default inside the overlay it opens (iOS, Android rows; desktop), pressed on Default inside the overlay it opens (iOS row; desktop), open on Default (web, iOS, Android rows; phone, tablet and desktop), disabled on Body field inside the overlay it opens (web, iOS, Android rows; desktop). not reachable on the web: pressed in the overlay in `Present` on the Android row, where its controls' only pressed feedback is `android_ripple`, which react-native-web does not draw (judged on devices). |",
+    );
+    // A recipe whose state the source never announces on the web stays (its cell records the
+    // finding), and the row says why it cannot be reached: Input's and Textarea's Disabled fields.
+    const readOnly =
+      "not reachable on the web: disabled on Disabled on the web row: its source disables the field only through `editable`, which react-native-web renders read-only, never `aria-disabled` or a native `disabled`, so the page never announces it disabled and the recipe cannot confirm it. |";
+    expect(row("input")).toBe(`| Interaction states | recipes: focus on Default (web row; desktop), pressed on Password (web row; desktop), invalid on Error (web row; desktop), disabled on Disabled (web row; desktop). ${readOnly}`);
+    expect(row("textarea")).toBe(`| Interaction states | recipes: focus on Default (web row; desktop), invalid on Character counter (web row; desktop), disabled on Disabled (web row; desktop). ${readOnly}`);
     // Sidebar's rail at the desktop, and its drill-down's rows inside the drawer it becomes at a phone's and a tablet's width.
     expect(row("sidebar")).toContain(
       "hover on Default (web row; desktop), hover on Default inside the overlay it opens (web row; phone and tablet), focus on Default (web row; desktop), focus on Default inside the overlay it opens (web row; phone and tablet), pressed on Default (web row; desktop), pressed on Default inside the overlay it opens (web row; phone and tablet)",
     );
-    // A state its source gives only in a build no row of the page renders is the devices', never captured.
+    // A state its source gives only in a build no row of the page renders is the devices', never
+    // a recipe's; several are each given with their reason.
     const sidebar = componentFacts("sidebar", sources.corpus);
-    const judged = { ...sidebar, states: { ...sidebar.states, devices: ["focus in the overlay in Sidebar (the iOS build)"] } };
+    const judged = {
+      ...sidebar,
+      states: {
+        ...sidebar.states,
+        unreachable: ["focus in the overlay in `Sidebar` (the iOS build), which no row of its docs page renders (judged on devices)", "pressed in the overlay in `Sidebar` (the iOS build), which no row of its docs page renders (judged on devices)"],
+      },
+    };
     expect(renderComponentFacts(judged).find((line) => line.startsWith("| Interaction states |"))).toContain(
-      "not captured by the web runner, since no row of its docs page renders them (judged on devices): focus in the overlay in Sidebar (the iOS build).",
+      "not reachable on the web: focus in the overlay in `Sidebar` (the iOS build), which no row of its docs page renders (judged on devices); pressed in the overlay in `Sidebar` (the iOS build), which no row of its docs page renders (judged on devices).",
     );
     // Dropdown is disabled in two places, its trigger and an item inside its menu.
     expect(row("dropdown")).toContain("disabled on Disabled trigger (web row; desktop), disabled on Disabled item inside the overlay it opens (web row; desktop).");
@@ -393,7 +415,7 @@ describe.skipIf(!hasDist)("the audit checklists keep a reviewer's work", () => {
     expect(row("tooltip")).toContain("open on On hover (web, iOS, Android rows; phone, tablet and desktop; also its hover)");
     // A component that opens two overlays names the one each capture opens.
     expect(row("calendar")).toBe(
-      "| Interaction states | captured: hover on Week (web row; desktop; also its open; opens the overlay in `hoverCard`), focus on Default (web row; desktop), focus on Day peek inside the overlay it opens (web row; desktop; opens the overlay in `dayPeekOverlay`), pressed on Default (web row; desktop), open on Day peek (web, iOS, Android rows; phone, tablet and desktop; opens the overlay in `dayPeekOverlay`). pressed exempt, verified: An event block takes a press only with `onEventPress`, the day peek's included; no rail example passes it. |",
+      "| Interaction states | recipes: hover on Week (web row; desktop; also its open; opens the overlay in `hoverCard`), focus on Default (web row; desktop), focus on Day peek inside the overlay it opens (web row; desktop; opens the overlay in `dayPeekOverlay`), pressed on Default (web row; desktop), open on Day peek (web, iOS, Android rows; phone, tablet and desktop; opens the overlay in `dayPeekOverlay`). pressed exempt, verified: An event block takes a press only with `onEventPress`, the day peek's included; no rail example passes it. |",
     );
     // A hover, a focus or a press on the component's own controls in each place it renders them:
     // FilterPanel's option rows on the panel and in the drawer it becomes at a phone's width.
@@ -404,7 +426,7 @@ describe.skipIf(!hasDist)("the audit checklists keep a reviewer's work", () => {
     );
     expect(row("badge")).toBe("| Interaction states | static: A status label: it takes no input. |");
     const steps = componentFacts("steps", sources.corpus).states;
-    expect(steps).toMatchObject({ listed: true, recipes: [], unanswered: [], unshown: [], devices: [], exempt: [{ state: "focus", failure: null }, { state: "pressed", failure: null }] });
+    expect(steps).toMatchObject({ listed: true, recipes: [], unanswered: [], unshown: [], unreachable: [], exempt: [{ state: "focus", failure: null }, { state: "pressed", failure: null }] });
   });
 
   it("reads a component's exports from every module its group barrel publishes from its directory", () => {

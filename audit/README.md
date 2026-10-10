@@ -388,12 +388,32 @@ injects none, as on Toast's iOS row; Sidebar's page shows the web row alone). A 
 answers its place on each row it is applied on, through a control of the component's own on
 that row: the same role and name can be the component's own control on one row and a kit
 child on another, so Dialog's and AlertDialog's Cancel, a kit Button on the web row, answers
-nothing there, and their focus and press are captured on the iOS and Android rows, where the
-Cancel is the component's own capsule or text button. A signal is answered only where a
-recipe answers its place on a row that renders it. A signal no row of the page renders (a
-build whose row the page leaves out) is never on the web runner's page: the checklist records
-it as judged on devices, never as captured, and a recipe applied on a row the page does not
-show is an error.
+nothing there, and their focus is captured on the iOS and Android rows, where the Cancel is
+the component's own capsule or text button, and their press on the iOS row. A signal is
+answered only where a recipe answers its place on a row that renders it. A signal no row of
+the page renders (a build whose row the page leaves out) is never on the web runner's page:
+the checklist records it as judged on devices, never as a recipe's, and a recipe applied on a
+row the page does not show is an error.
+
+Nor is a state whose only feedback on a row is one only a device draws. The web runner renders
+every row through react-native-web, which drops `android_ripple`, so a control that shows a
+held press with the ripple alone shows the runner nothing. The reader names that feedback on
+the control (`Control.deviceOnly`, from `DEVICE_FEEDBACK` in
+`tools/audit/interaction-signals.ts`), per build: the ripple's value is evaluated with each
+entry's skin and must be known not to be empty, and nothing else the control is given may
+repaint a held press on the web (a style function reading `pressed`, or `focused`, which a
+pointer press sets there, where that build reaches the read; `onPressIn`, `onLongPress` or a
+raw responder), nor may a look or responder of the component's on no element. Dialog's and
+AlertDialog's Android text buttons are such controls; their iOS capsules are given no ripple
+and dim under a style function reading `pressed` behind the skin's pressed opacity
+(`skin.capsulePressedOpacity`, `skin.pressedOpacity`), which only the iOS skin sets.
+`tools/audit/state-coverage.ts` answers such a signal by the devices (`devices`, with the
+`feedback`) when every row that renders it is one where that is all its control shows, and
+refuses a recipe applied on such a row on such a control (it would set up a state the web
+cannot show), so their press recipes are applied on the iOS row alone. The ripple counts only
+on the Android row, the row that stands for the devices that draw it: on the web and iOS rows a
+press with a ripple and nothing else shows nothing on those platforms either, and like a press
+with no feedback at all it is the runner's to capture, its cell, not reached, the finding.
 
 | Claim | Holds when |
 |---|---|
@@ -441,8 +461,10 @@ the map that are theirs were never captured; on Dropdown's and FilterPanel's foc
 place alone, the menu and the drawer left unanswered; on Dialog's and AlertDialog's focus
 and press on the web row's Cancel, a kit Button, with their own capsules and text buttons on
 the iOS and Android rows never captured, and AlertDialog's Body field confirm on those rows
-too; on DataTable's focus on the web row alone, its native cell editor left; and on
-Sidebar's rail recipes alone, its drill-down's rows inside the drawer left unanswered),
+too; on Dialog's and AlertDialog's press on the Android row, whose text buttons press with
+`android_ripple` alone; on DataTable's focus on the web row alone, its native cell editor
+left; and on Sidebar's rail recipes alone, its drill-down's rows inside the drawer left
+unanswered),
 checks the reader on the kit and on
 fixtures of every gate form and every spread form, tab stop and overlay, and also fails on a
 registry entry with neither recipes nor a reason, a recipe on an example its page does not
@@ -451,12 +473,19 @@ have, a hover recipe where the source gives no hover, an overlay its source open
 an open recipe, and open
 rows that differ from the docs' platform-skin registry (Sidebar's page shows one preview,
 the web build, so it opens from the web row alone). Each checklist's facts block carries the
-result as its "Interaction states" row: the states captured (example, whether it is applied
-inside the overlay it opens, rows, widths, the states a capture also shows and the overlay it
-opens when there are several), any static or exempt state with its reason and whether its
-claim holds, where the source disables controls no rail example asks for, and any state its
-source gives only in a build no row of the page renders, as not captured by the web runner
-(judged on devices).
+result as its "Interaction states" row. The facts are generated from the source alone (in CI,
+with no capture), so the row says what the web runner sets up, never what a capture reached;
+a run's cells and the reviewer's index say that. It gives the recipes (`recipes:`: the
+example, whether it is applied inside the overlay it opens, the rows, the widths, the states a
+capture also shows and the overlay it opens when there are several), any static or exempt
+state with its reason and whether its claim holds, where the source disables controls no rail
+example asks for, and, under `not reachable on the web:`, each state the source says the web
+runner can never show, with why: one its source gives only in a build no row of the page
+renders, and one whose only feedback on a row is `android_ripple` (Dialog's and AlertDialog's
+press on the Android row), both judged on devices; and a recipe whose state its source never
+announces on the web, a field disabled only through a TextInput's `editable`, which
+react-native-web renders read-only (Input's and Textarea's Disabled, below). That recipe
+stays: its cell records the finding.
 
 Each recipe applies the state through the input a person uses, verifies it from the page's
 structure, and releases it:
@@ -465,7 +494,7 @@ structure, and releases it:
 |---|---|---|---|
 | hover | the pointer moves onto the control and rests (Dropdown, RowMenu and Command: on a row, with the menu or palette open; Command: also on a row of its Inline example; AvatarMenu: on its pill, inside the Dropdown trigger it is handed as content; the Heatmap: on a calendar day; the Calendar: on the Week example's Design review block, which floats its detail card; Sidebar: on a rail row, and on a drill-down row inside the drawer its hamburger opens) | the control, its contents or its wrappers up to the row changed transform, box shadow or background (the lift and the wash `src/style/hover.tsx` applies; a Command row's active highlight); for the Heatmap, the readout it shows; for the Calendar, the card the resting pointer opened, found as an opening is; every watched property that changed is the evidence | the web row, desktop (the viewport inside an overlay, or for a card the pointer floats over the window; Sidebar's drawer at a phone's and a tablet's width, where it is one) |
 | focus | Tab, from the tab stop before the control (Dialog and AlertDialog: their own Cancel inside the opened overlay, a capsule on the iOS row and a text button on the Android row, the web row's being a kit Button; ActionSheet: inside the opened overlay; Select, PhoneInput, RowMenu, ButtonGroup's split menu, Command's palette, the Calendar's day peek and the provider's toast: on a row or a button inside the opened overlay; Dropdown: ArrowDown from the first row its menu focuses as it opens, and its Custom trigger example's button; FilterPanel: an option row, on the panel and inside its drawer at a phone's width; Sidebar: a rail row, and a drill-down row inside its drawer at a phone's and a tablet's width; DataTable: its sortable header, on every row, its native cell editor being on the iOS and Android rows'; DescriptionList: its inline-edit field, once its Update link swaps it in; Radio, Listbox, ButtonGroup, TabBar and Tabs: the stop inside the group; Toast: the With an action example's Undo; the Heatmap: its calendar's scroller, at a phone's width, the only width the year overflows it) | focus is on or inside the control, the focused element has the control's role, and it matches `:focus-visible`; the node whose edges the arriving focus changed is the ring, and `ringShows` (`e2e/support/focus-ring.ts`) looks for it in the pixels on every side, in the colour it paints at | the web row, desktop (the viewport inside an overlay); Dialog and AlertDialog on the iOS and Android rows, DataTable on every row; a drawer's rows at the widths it is one |
-| pressed | the pointer goes down on the hovered control and stays down (a Slider on its thumb; Dialog and AlertDialog on their own Cancel inside the opened overlay, on the iOS and Android rows; ActionSheet, Autocomplete, Select, PhoneInput, Dropdown, RowMenu, ButtonGroup's split menu, Command's palette and the provider's toast on a control inside the opened overlay; FilterPanel on an option row inside its drawer as well; Sidebar on a rail row, and on a drill-down row inside its drawer) | the element held down has the control's role, and holding it changed a watched style against the hovered control (a press that looks like the hover is not reached, and says so: the Android rows' text buttons press with `android_ripple`, which only a device draws) | the web row, desktop (the viewport inside an overlay); Dialog and AlertDialog on the iOS and Android rows; a drawer's rows at the widths it is one |
+| pressed | the pointer goes down on the hovered control and stays down (a Slider on its thumb; Dialog and AlertDialog on their own Cancel inside the opened overlay, on the iOS row, the Android row's text button pressing with `android_ripple` alone, which react-native-web does not draw (judged on devices); ActionSheet, Autocomplete, Select, PhoneInput, Dropdown, RowMenu, ButtonGroup's split menu, Command's palette and the provider's toast on a control inside the opened overlay; FilterPanel on an option row inside its drawer as well; Sidebar on a rail row, and on a drill-down row inside its drawer) | the element held down has the control's role, and holding it changed a watched style against the hovered control (a press that looks like the hover is not reached, and says so) | the web row, desktop (the viewport inside an overlay); Dialog and AlertDialog on the iOS row; a drawer's rows at the widths it is one |
 | pressed, to inspect | a chart that inspects under a press is pressed on one datum, found from what it draws (above an axis label, a tile's or a stage's label, a mark): held down on a scrub surface, a click on a Pressable hit layer | the chart shows text it did not show with the pointer away (the value flag, a readout) or repaints its marks (the others dim); with the recipe's expected texts, those (`Q2`, `Revenue`, `70`) | the web row, desktop |
 | open | the overlay recipes' own clicks (`OVERLAY_RECIPES`, `PHONE_INPUT_RECIPE`, `TOAST_RECIPE`), a hover on Tooltip's On hover example, a click on the AvatarMenu pill, ButtonGroup's split chevron, the Calendar's Day peek 24th, FilterPanel's Filters (n) trigger and the Sidebar example's hamburger, from the web row and from every row whose platform build the docs registry injects (`docs/src/core/platform-skins.ts`; Toast's iOS row is the web build; Sidebar's page shows the web row alone) | the opening added exactly the recipe's node (a dialog, a menu, a listbox, a speaking live region, the tooltip's bubble), or for a card with no role (the Calendar's day peek and hover card) exactly one new subtree holding the text it shows, where the Playground's overlays paint; the evidence says where it painted, whether it runs edge to edge on its frame's bottom (a sheet), whether it is in view and whether the trigger reports `aria-expanded="true"` | the viewport at the cell's own size, all three widths (a drawer a component becomes at and below a breakpoint: those widths, FilterPanel's at a phone's, Sidebar's at a phone's and a tablet's) |
 | invalid | the example that shows the error; Textarea typed past its soft cap | the field carries `aria-invalid="true"`; the error text it is described by is the evidence | the web row, desktop |
@@ -599,7 +628,11 @@ recipes, reader and capture code it ran unchanged) is 264 cells in 1 min 18 s an
 rows' Cancel press on Dialog and AlertDialog in every look, a text button whose press is
 `android_ripple`, which react-native-web does not draw (the iOS rows' capsules dim to their
 skin's pressed opacity). The iOS and Android rows' Cancel takes the look's ring on every side,
-and the drawer's Inbox row its ring, its pressed fill and its hover wash at both widths.
+and the drawer's Inbox row its ring, its pressed fill and its hover wash at both widths. Those
+12 cells are no longer planned: the coverage now reads that a ripple is all those text buttons
+show of a press, records their press as judged on devices, and refuses a recipe for it on the
+Android row, so Dialog's and AlertDialog's press is applied on the iOS row alone (Dialog plans
+72 cells, not 78).
 
 Input's and Textarea's Disabled examples are an accessibility finding, not a state the kit
 leaves out: a disabled field is dimmed and made read-only (`src/atoms/input/input.shared.tsx`
@@ -608,7 +641,11 @@ sets `editable: !disabled && !readOnly` at line 318 and the disabled opacity at 
 carries neither `aria-disabled` nor a native `disabled`, so assistive technology meets a
 read-only field, not a disabled one. Their disabled cells stay `state-not-reached` (the
 recipe checks the announced state), and each cell's evidence records that the field is
-read-only.
+read-only. The coverage reads the same from the source (the reader marks a disabled signal
+given by a TextInput's `editable` as `readOnly`, and a disabled recipe whose controls carry
+nothing else that disables them is `unreachable`), so each checklist lists that recipe under
+`not reachable on the web:` with the reason. A field also handed `aria-disabled` (Stepper's,
+through its accessibility helper) is announced, and not listed.
 
 ### Pages
 
