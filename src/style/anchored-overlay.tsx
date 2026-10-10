@@ -91,7 +91,7 @@ import { useIsomorphicLayoutEffect } from "./use-isomorphic-layout-effect.js";
 import { useHardwareBack } from "./use-hardware-back.js";
 import { FocusFrameContext, useFocusFrame } from "./focus-frame.js";
 import { ScrollAncestryContext, subscribeDocumentScroll, useUnheardScroller } from "./scroll-ancestry.js";
-import { bridgeTabOrder, restoreOrphanedFocus } from "./use-dialog-focus.js";
+import { useAnchoredCardFocus } from "./use-dialog-focus.js";
 import { returnAccessibilityFocus } from "./accessibility-focus.js";
 
 const OverlaySideContext = createContext<{ side: OverlaySide; centerX?: number; cardWidth?: number }>({ side: "below" });
@@ -369,9 +369,9 @@ export function AnchoredOverlay({
  * Keyboard and screen-reader focus around an open card, on both paths. On the web: the
  * card's controls keep their place in the tab order right after the trigger, a menu or
  * list closes on a Tab out of it, and when the card closes the focus its closing
- * orphaned returns to the trigger (src/style/use-dialog-focus.ts). Natively, a modal
- * card sends VoiceOver and TalkBack back to the trigger when it closes. `shown` is the
- * instant the card is revealed and focusable.
+ * orphaned returns to the trigger (useAnchoredCardFocus, src/style/use-dialog-focus.ts).
+ * Natively, a modal card sends VoiceOver and TalkBack back to the trigger when it
+ * closes. `shown` is the instant the card is revealed and focusable.
  */
 function useCardFocus({ shown, cardRef, triggerRef, returnFocusRef, dismissOnTab, onDismiss, modal, combobox }: {
   shown: boolean;
@@ -384,48 +384,17 @@ function useCardFocus({ shown, cardRef, triggerRef, returnFocusRef, dismissOnTab
   /** A combobox's field owns focus (refocusing it would reopen the list): no restore. */
   combobox: boolean;
 }) {
-  const dismiss = useRef(onDismiss);
-  dismiss.current = onDismiss;
-  // Whether keyboard focus was ever inside the card: only focus the card held is its to
-  // give back (a combobox's field keeps focus throughout, and a card opened by pointer
-  // with focus left on the page took none).
-  const held = useRef(false);
-  useEffect(() => {
-    if (!shown || typeof document === "undefined") return;
-    const card = cardRef.current as unknown as HTMLElement | null;
-    const trigger = triggerRef.current as unknown as HTMLElement | null;
-    if (!card || !trigger || typeof card.contains !== "function") return;
-    const onFocusIn = () => { held.current = true; };
-    if (card.contains(document.activeElement)) held.current = true;
-    card.addEventListener("focusin", onFocusIn);
-    const unbridge = bridgeTabOrder(card, trigger, dismissOnTab ? () => dismiss.current() : undefined);
-    return () => {
-      card.removeEventListener("focusin", onFocusIn);
-      unbridge();
-    };
-  }, [shown, cardRef, triggerRef, dismissOnTab]);
-  // The card's node and whether it was ever shown, kept past the ref's detachment for
-  // the close below, and what held focus when the card opened (before the owner moves
-  // it in at onCardMount, a passive effect this layout effect precedes).
-  const lastCard = useRef<View | null>(null);
-  const wasShown = useRef(false);
-  const opener = useRef<Element | null>(null);
-  useIsomorphicLayoutEffect(() => {
-    opener.current = typeof document === "undefined" ? null : document.activeElement;
-  }, []);
-  useIsomorphicLayoutEffect(() => {
-    if (cardRef.current) lastCard.current = cardRef.current;
-    if (shown) wasShown.current = true;
-  });
   const returnTo = returnFocusRef ?? triggerRef;
+  useAnchoredCardFocus({ shown, cardRef, triggerRef, returnRef: returnTo, onLeave: dismissOnTab ? onDismiss : undefined, restore: !combobox });
+  // Whether the card was ever shown, and whether it was modal then, for the close below.
+  const wasShown = useRef(false);
   const modalRef = useRef(modal);
   modalRef.current = modal;
-  const comboboxRef = useRef(combobox);
-  comboboxRef.current = combobox;
+  useIsomorphicLayoutEffect(() => {
+    if (shown) wasShown.current = true;
+  });
   useEffect(() => () => {
-    if (!wasShown.current) return;
-    if (held.current && !comboboxRef.current) restoreOrphanedFocus(lastCard.current as unknown as HTMLElement | null, returnTo.current as unknown as HTMLElement | null, opener.current);
-    if (modalRef.current) returnAccessibilityFocus(returnTo.current);
+    if (wasShown.current && modalRef.current) returnAccessibilityFocus(returnTo.current);
   }, [returnTo]);
 }
 
