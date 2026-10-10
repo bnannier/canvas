@@ -312,7 +312,7 @@ export function splitOnly(
 
 /** What the planner needs of a state recipe (e2e/support/state-recipes.ts `stateSpecsOf`). */
 export interface StateSpec {
-  /** The recipe's name among its component's (e2e/support/state-recipes.ts `recipeName`): its state, or `<state>-<variant>` for a state with several. */
+  /** The recipe's name among its component's (e2e/support/state-recipes.ts `recipeName`): its state, or `<state>-<variant>` (`-inside` for one in its example's overlay) for a state with several. */
   name: string;
   state: StateName;
   variant: string;

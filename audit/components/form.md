@@ -20,7 +20,7 @@ Audit checklist for `/components/form`. The facts block and the variants table a
 | Hand-off metric gaps | none |
 | Interactions registry | in the inventory; evidence: autocomplete-form-keyboard (browser-keyboard, e2e/journeys/keyboard.e2e.ts) |
 | Overlay recipe | none |
-| Interaction states | captured: focus on Default (web row; desktop), invalid on Credit card with errors (web row; desktop). disabled controls its source renders and no rail example asks for: on its own surface. |
+| Interaction states | captured: invalid on Credit card with errors (web row; desktop). disabled controls its source renders and no rail example asks for: on its own surface. |
 | MeasureProps | adopted in `form.shared.tsx` |
 | Touch target | no touch-target name (the exports of `src/style/touch-target.ts`, `src/style/touch-target-seed.ts`, `src/style/touch-seam.ts`, `src/style/clip-slop.ts`, the `TouchTargetSkin` fields, or `hitSlop`) in its implementation modules |
 | Tests importing it | 10: `test/autocomplete-accessibility-return.test.tsx`, `test/autocomplete-keyboard.test.tsx`, `test/design-rules-skins.test.ts`, `test/dist-smoke.test.tsx`, `test/focus-runtime.test.tsx`, `test/forms.test.tsx`, `test/native-accessibility-escape-hosts.test.tsx`, `test/responsive-narrow-fixes.test.tsx`, `test/sizing.test.tsx`, `test/skins-smoke.test.tsx` |

@@ -20,7 +20,7 @@ Audit checklist for `/components/description-lists`. The facts block and the var
 | Hand-off metric gaps | none |
 | Interactions registry | in the inventory; evidence: description-edit (unit-web, test/behavior-smoke-b.test.tsx) |
 | Overlay recipe | none |
-| Interaction states | captured: focus on Inline-edit (web row; desktop), pressed on Inline-edit (web row; desktop). |
+| Interaction states | captured: focus on Inline-edit (web row; desktop). |
 | MeasureProps | not adopted |
 | Touch target | no touch-target name (the exports of `src/style/touch-target.ts`, `src/style/touch-target-seed.ts`, `src/style/touch-seam.ts`, `src/style/clip-slop.ts`, the `TouchTargetSkin` fields, or `hitSlop`) in its implementation modules |
 | Tests importing it | 7: `test/behavior-smoke-b.test.tsx`, `test/design-rules-skins.test.ts`, `test/dist-smoke.test.tsx`, `test/escape-layers.test.tsx`, `test/native-focus-fixtures.test.tsx`, `test/responsive-narrow-fixes.test.tsx`, `test/skins-smoke.test.tsx` |
