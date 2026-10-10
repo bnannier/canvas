@@ -3,6 +3,7 @@ import { EscapeLayerProvider, useEscapeLayer } from "../../style/escape-layer.js
 import { forwardRef, useId, useRef } from "react";
 import { useComposedRefs } from "../../style/use-composed-refs.js";
 import { View, Pressable, Text, useControllableState, useFillStyle, AnchoredOverlay, useOverlayHost, useMeasuredWidth, FloatingLabel, LabelContent, RippleClip, cornerRadii, type LayoutStyle, type MeasureProps, type StyleProp, type ViewStyle, GlassPane, paneStyle, isGlass, withInnerFill } from "../../style/index.js";
+import { useRowFocus } from "../../style/use-row-focus.js";
 import { OverlayScrollView } from "../../style/overlay-scroll.js";
 import { LISTBOX } from "../../style/listbox-role.js";
 
@@ -194,6 +195,13 @@ export function createSelect(skin: SelectSkin) {
 
     const hasValue = value !== "";
     const ripple = skin.ripple ? skin.ripple(tokens) : undefined;
+    // The option rows: the WAI-ARIA listbox keyboard model (src/style/use-row-focus.ts).
+    // Focus enters at the selected option (the first when nothing is selected) when the
+    // card is revealed, the screen reader's natively; the arrows, Home and End move
+    // among the options, Enter and Space choose one, Tab out of the list closes it, and
+    // focus returns to the trigger.
+    const rows = useRowFocus(items.length);
+    const enterList = () => rows.enter(Math.max(0, items.findIndex((option) => option.value === value)));
 
     // Label placement: iOS/web render it ABOVE the trigger; the Android skin FLOATS
     // it inside the container (M3). The float signal is the menu being open (the
@@ -330,6 +338,8 @@ export function createSelect(skin: SelectSkin) {
           // A controlled `open` with no onOpenChange can never actually close, so
           // the hosted dismiss backdrop is skipped (it would only block the page).
           dismissable={props.open === undefined || onOpenChange !== undefined}
+          onCardMount={enterList}
+          dismissOnTab
         >
           <EscapeLayerProvider scope={escapeScope}>
             {/* The Android option rows have no radius of their own and sit inside the
@@ -344,6 +354,7 @@ export function createSelect(skin: SelectSkin) {
               return (
                 <Pressable
                   key={option.value}
+                  {...(rows.rowProps(i, () => selectOption(option.value)) as object)}
                   style={({ pressed }) => [
                     withInnerFill(theme, skin.optionRow(tokens, selected), "firm"),
                     // iOS draws a hairline group separator between rows (not above the

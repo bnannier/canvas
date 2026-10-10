@@ -60,16 +60,31 @@ export function splitHostStyle(style: StyleProp<ViewStyle>): { box: ViewStyle; c
   return { box: box as ViewStyle, content: content as ViewStyle };
 }
 
-export function GlassBlurTargetHost({ style, targetRef, outlet, children }: GlassBlurTargetHostProps) {
+// While a modal anchored card is open, TalkBack must not reach the page behind it.
+// Android has no counterpart to iOS's sibling-hiding `accessibilityViewIsModal`, so a
+// window layer's page is a node of its own, the one `importantForAccessibility` hides:
+// the capture host where there is one, and otherwise a content View split off the
+// wrapper exactly as the capture path splits it (splitHostStyle), so layout is the same.
+const pageAccessibility = (hidden: boolean) => ({ importantForAccessibility: hidden ? "no-hide-descendants" as const : "auto" as const });
+
+export function GlassBlurTargetHost({ style, targetRef, outlet, children, pageHidden }: GlassBlurTargetHostProps) {
   const enabled = useCaptureEnabled(targetRef);
   const onAvailabilityChange = useCaptureAvailability(targetRef);
+  const layer = pageHidden !== undefined;
   if (!NativePaintHost || !NativeCaptureHost || !blurTargetMountable(style)) {
-    return <View style={style}>{children}{outlet}</View>;
+    if (!layer) return <View style={style}>{children}{outlet}</View>;
+    const { box, content } = splitHostStyle(style);
+    return (
+      <View style={box}>
+        <View style={content} {...pageAccessibility(pageHidden)}>{children}</View>
+        {outlet}
+      </View>
+    );
   }
   const { box, content } = splitHostStyle(style);
   return (
     <NativePaintHost style={box}>
-      <NativeCaptureHost ref={captureTargetOwner(targetRef)?.attach ?? targetRef} onAvailabilityChange={onAvailabilityChange} captureEnabled={enabled} style={content}>
+      <NativeCaptureHost ref={captureTargetOwner(targetRef)?.attach ?? targetRef} onAvailabilityChange={onAvailabilityChange} captureEnabled={enabled} style={content} {...(layer ? pageAccessibility(pageHidden) : null)}>
         {children}
       </NativeCaptureHost>
       {outlet}

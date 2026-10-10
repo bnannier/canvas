@@ -342,11 +342,12 @@ describe("AvatarMenu open state", () => {
         </OverlayProvider>,
       ).container;
       // Hosted, the trailing edge is a `right` inset measured from the outlet's
-      // own edge. Observe the mounted menu and its placement instead of assuming
-      // a fixed number of milliseconds completes the measurement chain.
+      // own edge, kept 8px inside it (the fixture's trigger fills the outlet).
+      // Observe the mounted menu and its placement instead of assuming a fixed
+      // number of milliseconds completes the measurement chain.
       await waitFor(() => {
         expect(byDefault.querySelector('[role="menu"]')).not.toBeNull();
-        expect(anchorOf(byDefault).right).toBe("0px");
+        expect(anchorOf(byDefault).right).toBe("8px");
         expect(anchorOf(byDefault).left).toBe("");
       });
       cleanup();
@@ -358,7 +359,7 @@ describe("AvatarMenu open state", () => {
       ).container;
       await waitFor(() => {
         expect(start.querySelector('[role="menu"]')).not.toBeNull();
-        expect(anchorOf(start).left).toBe("0px");
+        expect(anchorOf(start).left).toBe("8px");
         expect(anchorOf(start).right).toBe("");
       });
       cleanup();
@@ -371,7 +372,7 @@ describe("AvatarMenu open state", () => {
       ).container;
       await waitFor(() => {
         expect(both.querySelector('[role="menu"]')).not.toBeNull();
-        expect(anchorOf(both).right).toBe("0px");
+        expect(anchorOf(both).right).toBe("8px");
         expect(anchorOf(both).left).toBe("");
       });
     });

@@ -3,11 +3,11 @@ import { type ColorTokens, shadow, alpha, activeIndicator, shape, type FloatingL
 import { fieldBorder } from "../../style/field-colors.js";
 
 // Co-located Select skins, one per platform, all driven by the brand tokens
-// (passed in from useTheme so they follow light/dark). The option-list panel
-// paints the `popover` fill on an OPAQUE surface in every theming mode: the shell
-// asks AnchoredOverlay for its plain surface (`opaque`), so the panel never takes
-// the glass material and its options never have the page reading through them.
-// The BRAND survives
+// (passed in from useTheme so they follow light/dark). The option-list panel is
+// an option list, so the shell asks AnchoredOverlay for the DENSE layer (`dense`):
+// in solid mode the panel paints the skin's `popover` fill, and under glass it takes
+// the material under the model's densest tint, so its options stay legible and the
+// page never reads through between them. The BRAND survives
 // on every platform (the open/focus accent and the selected-row indicator are the
 // brand tokens, never a platform default); only the native SHAPE, sizing,
 // fill, border/underline treatment, and press feedback change per OS:
@@ -72,10 +72,10 @@ export interface SelectSkin extends FloatingLabelStyles<Size> {
   /** The chevron character (▾ on web, ⌄ on Android, chevron-up-down on iOS). */
   chevronGlyph: string;
   /** The open option list surface: card visuals only (fill, border, shadow,
-   *  radius, padding, maxHeight). AnchoredOverlay paints it on its OPAQUE plain
-   *  surface (no glass material, in glass mode as in solid) and supplies the
-   *  on-page position; the inline no-host fallback adds PANEL_ANCHOR for the
-   *  absolute anchoring. */
+   *  radius, padding, maxHeight). AnchoredOverlay paints it on the DENSE layer (the
+   *  skin's fill in solid mode, the material under the densest tint under glass) and
+   *  supplies the on-page position; the inline no-host fallback adds PANEL_ANCHOR
+   *  for the absolute anchoring. */
   panel: (t: ColorTokens) => ViewStyle;
   /** An option row. `selected` carries the active tint. */
   optionRow: (t: ColorTokens, selected: boolean) => ViewStyle;

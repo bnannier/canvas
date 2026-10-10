@@ -325,7 +325,7 @@ export const COMPONENT_ROLES: Record<string, readonly string[]> = {
   "atoms/kbd": ["key"],
   "atoms/listbox": ["control", "menu"],
   "atoms/pagination": ["pill"],
-  "atoms/popover": ["menu"],
+  "atoms/popover": ["menu", "sheet"],
   "atoms/qrcode": ["tile"],
   "atoms/radio": ["groupedList"],
   "atoms/select": ["control", "field", "menu"],

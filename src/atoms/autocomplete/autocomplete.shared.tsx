@@ -439,6 +439,11 @@ export function createAutocomplete(skin: AutocompleteSkin) {
           // a user reads and picks from never have the page showing through between
           // them while the card still takes the material.
           dense
+          // The field keeps editing focus while the list is open (the WAI-ARIA
+          // combobox), so the list is not modal to VoiceOver and TalkBack and focus is
+          // never handed back to the field, which would reopen it. Tab already closes
+          // the list from the field (its key handler).
+          combobox
           // A controlled `open` with no onOpenChange can never actually close, so
           // the hosted dismiss backdrop is skipped (it would only block the page).
           dismissable={openProp === undefined || onOpenChange !== undefined}

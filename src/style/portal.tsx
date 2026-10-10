@@ -43,6 +43,7 @@ import {
 import { createCaptureTarget } from "./glass-surface/capture-target.js";
 import { GlassBlurTargetHost, blurTargetMountable } from "./glass-surface/glass-blur-target.js";
 import { registerOverlayLayer, usePortalMount } from "./overlay-layer.js";
+import { useSafeAreaWindowRect } from "./safe-area.js";
 
 // What a <Portal> (and an anchored overlay) needs from its host. `measureOutlet`
 // is exposed so an anchored overlay can measure a trigger RELATIVE TO the outlet
@@ -57,7 +58,21 @@ export interface OverlayHost {
   measureOutlet(cb: (x: number, y: number, width: number, height: number) => void): void;
   /** Observe host layout changes, including native keyboard resizing. */
   subscribeLayout?(listener: () => void): () => void;
-  /** Measure the visible band inherited from this native window's viewport. */
+  /**
+   * Hold this window's page hidden from VoiceOver and TalkBack while a modal card
+   * (an anchored card that can close) is open in this host's outlet; call the returned
+   * function when it closes. Cards held later are above earlier ones.
+   */
+  holdModal?(id: string): () => void;
+  /** Observe the modal cards held in this host. */
+  subscribeModal?(listener: () => void): () => void;
+  /** The id of the topmost modal card held in this host, or null. */
+  topModal?(): string | null;
+  /**
+   * Measure the visible band inherited from this native window's viewport: the
+   * window's safe area less the app's declared chrome and the keyboard, on all four
+   * edges, in window coordinates.
+   */
   measureVisibleBounds?(cb: (bounds: OverlayBounds) => void): void;
 }
 
@@ -146,7 +161,26 @@ export function OverlayProvider({ children, style, separateWindow = false, viewp
     // portal host, which would unmount open content and discard its focus.
     layoutListeners.current.forEach((listener) => listener());
   }, [topInset, bottomInset]);
+  // A window layer (an app root, or a separate window's root) bounds its band by the
+  // window's safe area on all four edges, so no card sits under the status bar, the
+  // Dynamic Island, the home indicator or a landscape sensor housing. The band is
+  // INTERSECTED with the safe rect rather than the host's box inset by the insets, so
+  // a host that already sits inside a SafeAreaView is not inset twice. Nested hosts
+  // inherit their window's band, so only a layer reads it. A rotation changes the
+  // rect, which re-places open cards the way a changed header does.
+  const safeRect = useSafeAreaWindowRect();
+  const safe = useRef(safeRect);
+  useIsomorphicLayoutEffect(() => {
+    const previous = safe.current;
+    safe.current = safeRect;
+    if (parent || previous === safeRect) return;
+    if (previous && safeRect && previous.x === safeRect.x && previous.y === safeRect.y && previous.width === safeRect.width && previous.height === safeRect.height) return;
+    layoutListeners.current.forEach((listener) => listener());
+  }, [parent, safeRect]);
   const outletRef = useRef<View>(null);
+  // The modal cards open in this host's outlet, oldest first (src/style/anchored-overlay.tsx).
+  const modals = useRef<readonly string[]>([]);
+  const modalListeners = useRef<Set<() => void>>(new Set());
   const keyboard = useRef(Platform.OS !== "web" ? Keyboard.metrics?.() : undefined);
   useEffect(() => {
     if (parent || Platform.OS === "web") return;
@@ -186,6 +220,7 @@ export function OverlayProvider({ children, style, separateWindow = false, viewp
 
   const host = useMemo<OverlayHost>(() => {
     const emit = () => listeners.current.forEach((l) => l());
+    const emitModal = () => modalListeners.current.forEach((l) => l());
     const created: OverlayHost = {
       mount(id, node) {
         const next = new Map(snapshot.current);
@@ -208,6 +243,22 @@ export function OverlayProvider({ children, style, separateWindow = false, viewp
         const unsubscribe = parent?.subscribeLayout?.(listener);
         return () => { layoutListeners.current.delete(listener); unsubscribe?.(); };
       },
+      holdModal(id) {
+        modals.current = [...modals.current.filter((held) => held !== id), id];
+        emitModal();
+        return () => {
+          if (!modals.current.includes(id)) return;
+          modals.current = modals.current.filter((held) => held !== id);
+          emitModal();
+        };
+      },
+      subscribeModal(listener) {
+        modalListeners.current.add(listener);
+        return () => { modalListeners.current.delete(listener); };
+      },
+      topModal() {
+        return modals.current[modals.current.length - 1] ?? null;
+      },
       measureVisibleBounds(cb) {
         const measureOwn = (done: (bounds: OverlayBounds) => void) => {
           outletRef.current?.measureInWindow((x, y, width, height) => {
@@ -218,7 +269,8 @@ export function OverlayProvider({ children, style, separateWindow = false, viewp
             // full-screen window coordinates match the event. Legacy Android
             // adjustResize already reduces the outlet: min keeps that smaller
             // bound without subtracting the keyboard or status bar twice.
-            const own = insetOverlayBounds({ x, y, width, height }, insets.current);
+            const declared = insetOverlayBounds({ x, y, width, height }, insets.current);
+            const own = !parent && safe.current ? intersectOverlayBounds(declared, safe.current) : declared;
             const bottom = !parent && keyboard.current ? Math.min(own.y + own.height, keyboard.current.screenY) : own.y + own.height;
             done({ ...own, height: Math.max(0, bottom - own.y) });
           });
@@ -250,6 +302,16 @@ export function OverlayProvider({ children, style, separateWindow = false, viewp
   }, []);
   const getSnapshot = useCallback(() => snapshot.current, []);
   const onOutletLayout = useCallback(() => layoutListeners.current.forEach((listener) => listener()), []);
+  // While a modal card is open in a window layer, its page is hidden from VoiceOver and
+  // TalkBack (the owner's AO-2 decision: an open anchored card is modal to them). Only
+  // this subscription re-renders here; the page's own element is unchanged, so it does
+  // not re-render.
+  const subscribeModal = useCallback((listener: () => void) => {
+    modalListeners.current.add(listener);
+    return () => { modalListeners.current.delete(listener); };
+  }, []);
+  const modalOpen = useSyncExternalStore(subscribeModal, () => modals.current.length > 0, () => false);
+  const layer = !parent;
 
   return (
     <OverlayContext.Provider value={host}>
@@ -257,9 +319,10 @@ export function OverlayProvider({ children, style, separateWindow = false, viewp
         <GlassBlurTargetHost
           style={hostStyle}
           targetRef={blurTargetRef}
+          pageHidden={layer ? modalOpen : undefined}
           outlet={
             <GlassBlurTargetContext.Provider value={outletBlurTarget}>
-              <Outlet outletRef={outletRef} subscribe={subscribe} getSnapshot={getSnapshot} onLayout={onOutletLayout} />
+              <Outlet outletRef={outletRef} subscribe={subscribe} getSnapshot={getSnapshot} onLayout={onOutletLayout} modal={layer && modalOpen} />
             </GlassBlurTargetContext.Provider>
           }
         >
@@ -275,14 +338,19 @@ interface OutletProps {
   subscribe: (listener: () => void) => () => void;
   getSnapshot: () => ReadonlyMap<string, ReactNode>;
   onLayout: () => void;
+  /** A modal card is open here: VoiceOver ignores the outlet's siblings (the page). */
+  modal: boolean;
 }
 
 // The sole reader of the registry. Re-renders on registry changes only; being a
-// sibling of the provider's `children`, its updates never re-render them.
-function Outlet({ outletRef, subscribe, getSnapshot, onLayout }: OutletProps) {
+// sibling of the provider's `children`, its updates never re-render them. While a modal
+// card is open in a window layer, `accessibilityViewIsModal` makes iOS VoiceOver ignore
+// the outlet's siblings, the page; React Native Web and Android drop the prop (Android
+// hides the page node instead, src/style/glass-surface/glass-blur-target.android.tsx).
+function Outlet({ outletRef, subscribe, getSnapshot, onLayout, modal }: OutletProps) {
   const nodes = useSyncExternalStore(subscribe, getSnapshot, getSnapshot);
   return (
-    <View ref={outletRef} style={outletStyles.outlet} onLayout={onLayout}>
+    <View ref={outletRef} style={outletStyles.outlet} onLayout={onLayout} accessibilityViewIsModal={modal}>
       {[...nodes].map(([id, node]) => (
         <Fragment key={id}>{node}</Fragment>
       ))}

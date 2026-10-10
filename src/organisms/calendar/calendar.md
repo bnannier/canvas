@@ -50,7 +50,7 @@ Each event carries the `day` it falls on, plus an optional `title` and `start`/`
 
 ### Day peek
 
-With `dayPeek`, pressing a marked day opens that day's hour timeline (the same timeline the day view renders) beside the cell: to its right, to its left when the right lacks room, and below it when neither side fits. A tap anywhere else or Escape dismisses it.
+With `dayPeek`, pressing a marked day opens that day's hour timeline (the same timeline the day view renders) beside the cell: at its trailing side (the right in a left-to-right layout), at its leading side when that lacks room, and above or below it when neither side fits. A tap anywhere else or Escape dismisses it.
 
 ```tsx
 <Calendar

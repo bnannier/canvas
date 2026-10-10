@@ -179,7 +179,35 @@ export {
   type PortalProps,
   useOverlayHost,
 } from "./portal.js";
-export { AnchoredOverlay, type AnchoredOverlayProps, placeOverlay, useOverlayAnchor, useOverlaySide } from "./anchored-overlay.js";
+// AnchoredOverlay and its companions are the kit's own overlay machinery, published by
+// accident before this list existed; each is a deprecated alias that keeps working until a
+// major (audit K12-2). The tags sit on these specifiers only: the internal hub re-exports
+// the declarations untagged for the kit's own components.
+export {
+  /**
+   * @deprecated Kit internals: use `Popover` for a floating card of content, and
+   * `Dropdown`, `Select` or `Autocomplete` for a menu or an option list. It keeps working
+   * until a major.
+   */
+  AnchoredOverlay,
+  /** @deprecated Kit internals: use `PopoverProps` with `Popover`. It keeps working until a major. */
+  type AnchoredOverlayProps,
+  /**
+   * @deprecated Kit internals: the placement `Popover`, `Dropdown` and `Select` apply for
+   * you. It keeps working until a major.
+   */
+  placeOverlay,
+  /**
+   * @deprecated Kit internals: the anchor a kit card's own decoration reads (Popover's
+   * beak). It keeps working until a major.
+   */
+  useOverlayAnchor,
+  /**
+   * @deprecated Kit internals: the side a kit card's own decoration reads (Popover's
+   * beak). It keeps working until a major.
+   */
+  useOverlaySide,
+} from "./anchored-overlay.js";
 export { Entrance, type EntranceProps } from "./entrance.js";
 export { GlassSurface } from "./glass-surface/glass-surface.js";
 export { liquidGlassAvailable } from "./glass-surface/liquid-glass.js";

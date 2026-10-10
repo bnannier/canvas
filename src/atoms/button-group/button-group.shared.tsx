@@ -3,6 +3,7 @@ import { EscapeLayerProvider, useEscapeLayer } from "../../style/escape-layer.js
 import { useEffect, useMemo, useRef, useState } from "react";
 import { type GestureResponderEvent, type LayoutChangeEvent, type LayoutRectangle } from "react-native";
 import { View, Pressable, Text, RippleClip, cornerRadii, useHugStyle, useSizing, useControllableState, AnchoredOverlay, useOverlayHost, useMeasuredWidth, devWarn, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle, type LayoutStyle, type MeasureProps, stepOf } from "../../style/index.js";
+import { useRowFocus } from "../../style/use-row-focus.js";
 import { Icon, type IconName } from "../icon/icon.js";
 import { primaryText } from "../../style/primary-text.js";
 import { actionFill, actionInk } from "../../style/action.js";
@@ -353,7 +354,14 @@ export function createButtonGroup(skin: ButtonGroupSkin) {
     // render narrower than the button it drops from.
     const { width: triggerWidth, onLayout: onTriggerLayout } = useMeasuredWidth();
     const triggerRef = useRef<View>(null);
+    // The chevron control itself, where focus returns on close.
+    const chevronRef = useRef<View>(null);
     const host = useOverlayHost();
+    // The overflow menu's rows: the WAI-ARIA menu pattern, as Dropdown's
+    // (src/style/use-row-focus.ts). Focus enters at the first row when the card is
+    // revealed (the screen reader's natively), the arrows, Home and End move among the
+    // rows, Enter and Space activate one, and Tab out of the menu closes it.
+    const rows = useRowFocus(menu.length);
     // The skin's splitMenu merges the card visuals (fill/border/shadow/radius)
     // with the inline anchor (position/top/end/marginTop/zIndex). Split them so
     // AnchoredOverlay can style the portaled card via cardStyle and fall back to
@@ -388,6 +396,7 @@ export function createButtonGroup(skin: ButtonGroupSkin) {
         <View style={skin.splitDivider(tokens, triggerHeight)} />
         <RippleClip shape={glass ? s.glassEndCorners : cornerRadii(skin.splitTrigger(tokens, triggerHeight))}>
           <Pressable
+            ref={chevronRef}
             style={({ pressed }) => [paneStyle(theme, [skin.splitTrigger(tokens, triggerHeight), glass ? s.glassCell : null]), skin.pressedOpacity != null && pressed && !glass ? { opacity: skin.pressedOpacity } : null]}
             onPress={() => setOpen((o) => !o)}
             disabled={disabled}
@@ -416,6 +425,9 @@ export function createButtonGroup(skin: ButtonGroupSkin) {
           // RowMenu: the material under the model's densest tint, so the items stay
           // legible over the page.
           dense
+          onCardMount={() => rows.enter(0)}
+          dismissOnTab
+          returnFocusRef={chevronRef}
         >
           <EscapeLayerProvider scope={escapeScope}>
           {/* role="menu" gives the menuitem rows a valid ARIA parent; without it
@@ -424,6 +436,12 @@ export function createButtonGroup(skin: ButtonGroupSkin) {
             {menu.map((item, i) => (
               <Pressable
                 key={`${item}-${i}`}
+                {...(rows.rowProps(i, (event) => {
+                  if (disabled) return;
+                  // The key event, as react-native-web hands a keyboard press to onPress.
+                  onSelect?.(i + 1, item, event as unknown as GestureResponderEvent);
+                  setOpen(false);
+                }) as object)}
                 style={({ pressed }) => [s.splitMenuItem, pressed ? skin.splitMenuItemPressed(tokens) : null]}
                 // A row of a group disabled while its menu is open is inert: it never selects.
                 disabled={disabled}

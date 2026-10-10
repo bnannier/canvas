@@ -148,6 +148,14 @@ export interface GlassBlurTargetHostProps {
   /** The overlay outlet subtree; rendered after (and never inside) the target. */
   outlet: ReactNode;
   children?: ReactNode;
+  /**
+   * On a window layer, whether its page (the provider's children) is hidden from
+   * VoiceOver and TalkBack while a modal anchored card is open; undefined on a host
+   * that is not a window layer. iOS hides the page through the outlet itself
+   * (`accessibilityViewIsModal` hides a view's siblings), so only Android needs the
+   * page as a node of its own to hide.
+   */
+  pageHidden?: boolean;
 }
 
 // The Android blur-method props for the frost BlurView, chosen by which expo-blur API

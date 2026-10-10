@@ -5,6 +5,7 @@ import { FocusFrameContext } from "./focus-frame.js";
 import { FOCUS_RESET } from "./focus-reset.js";
 import { useFocusRingStyle } from "./pressable.js";
 import { useComposedRefs } from "./use-composed-refs.js";
+import { useScrollAncestor } from "./scroll-ancestry.js";
 
 export const OverlayScrollContext = createContext<{
   contentHeight(height: number): void;
@@ -38,9 +39,11 @@ type Handlers = Partial<Record<FrameHandler, (event: unknown) => void>>;
 
 /** One measured scrollport, shared by anchored cards and option-list owners. */
 export const OverlayScrollView = forwardRef<ScrollView, ScrollViewProps>(function OverlayScrollView({
-  style, onLayout, onContentSizeChange, tabIndex, ...props
+  style, onLayout, onContentSizeChange, tabIndex, children, onScroll, scrollEventThrottle, ...props
 }, ref) {
   const report = useContext(OverlayScrollContext);
+  // A card opened from a row inside this port follows the row's scroll (src/style/scroll-ancestry.tsx).
+  const ancestor = useScrollAncestor({ horizontal: props.horizontal, onScroll, scrollEventThrottle, wrap: props.stickyHeaderIndices == null });
   const frame = useContext(FocusFrameContext);
   const ownRing = useFocusRingStyle();
   const focus = useScrollFocus("vertical");
@@ -75,6 +78,10 @@ export const OverlayScrollView = forwardRef<ScrollView, ScrollViewProps>(functio
         report?.contentHeight(height);
         onContentSizeChange?.(width, height);
       }}
-    />
+      onScroll={ancestor.onScroll}
+      scrollEventThrottle={ancestor.scrollEventThrottle}
+    >
+      {ancestor.children(children)}
+    </ScrollView>
   );
 });

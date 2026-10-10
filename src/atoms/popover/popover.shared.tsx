@@ -1,6 +1,7 @@
 import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
 import { EscapeLayerProvider, useEscapeLayer } from "../../style/escape-layer.js";
 import { useCallback, useContext, useEffect, useRef, useState, type ReactNode, type RefObject } from "react";
+import { type Text as RNText } from "react-native";
 import { View, Text, GlassSurface, AnchoredOverlay, useOverlayHost, useMeasuredWidth, usePopoverFocus, type StyleProp, type ViewStyle } from "../../style/index.js";
 import { Button as WebButton } from "../button/button.js";
 import { type PopoverSkin, type Placement } from "./popover.styles.js";
@@ -8,6 +9,7 @@ import * as s from "./popover.styles.js";
 import { useOverlayAnchor } from "../../style/anchored-overlay.js";
 import type { ColorTokens } from "../../style/tokens.js";
 import { EntranceReadinessContext } from "../../style/entrance-readiness.js";
+import { moveAccessibilityFocus } from "../../style/accessibility-focus.js";
 
 function PopoverFocusPanel({ focusRef, children }: { focusRef: RefObject<View | null>; children: ReactNode }) {
   const ready = useContext(EntranceReadinessContext);
@@ -30,9 +32,12 @@ function PopoverFocusPanel({ focusRef, children }: { focusRef: RefObject<View | 
   return <View ref={attach} tabIndex={-1} role="dialog">{children}</View>;
 }
 
-function PopoverArrow({ skin, tokens, placement }: { skin: PopoverSkin; tokens: ColorTokens; placement: Placement }) {
+// The beak rides the edge facing the trigger on the side the card actually took: `top`
+// prefers above and flips below without room, and the default flips above the same way.
+function PopoverArrow({ skin, tokens }: { skin: PopoverSkin; tokens: ColorTokens }) {
   const { side, centerX, cardWidth } = useOverlayAnchor();
-  return skin.arrow?.(tokens, side === "above" ? "top" : placement, centerX != null && cardWidth != null ? { centerX, cardWidth } : undefined) ?? null;
+  const placement: Placement = side === "above" ? "top" : "bottom";
+  return skin.arrow?.(tokens, placement, centerX != null && cardWidth != null ? { centerX, cardWidth } : undefined) ?? null;
 }
 
 // Shared Popover shell. The structure (a trigger paired with a floating card of
@@ -45,18 +50,19 @@ function PopoverArrow({ skin, tokens, placement }: { skin: PopoverSkin; tokens: 
 //
 // The floating card is an overlay surface: the open (triggered) card routes
 // through AnchoredOverlay, so with an OverlayProvider mounted (an app root, or a
-// docs example stage) it portals over the page anchored below the trigger with
+// docs example stage) it portals over the page anchored to the trigger with
 // outside-tap dismissal, and with no provider it falls back to an inline card
-// positioned absolutely below the trigger (the kit's pre-portal behavior). The
-// static `inline` mode is a plain in-flow panel and never portals.
+// positioned absolutely below the trigger (the kit's pre-portal behavior). At the
+// phone form factor a card that can close is presented as a sheet along the bottom
+// of the window instead (the skin's `sheet`), as UIKit adapts a popover in compact
+// width. The static `inline` mode is a plain in-flow panel and never portals.
 //
 // Axes:
 //
-// - Placement (pick one; default is `bottom`): `top` > `bottom`. The card always
-//   anchors BELOW the trigger (AnchoredOverlay's below-anchoring); placement drives
-//   which edge the iOS arrow rides (up toward the trigger for `bottom`). Genuine
-//   above-the-trigger `top` anchoring is not yet supported (see the note by the
-//   AnchoredOverlay call).
+// - Placement (pick one; default is `bottom`): `top` > `bottom`. `bottom` anchors the
+//   card below the trigger and `top` above it; either flips to the other side when its
+//   own lacks room and the other has more. The iOS beak rides the edge facing the
+//   trigger on the side the card took.
 //
 // Content props:
 //
@@ -71,7 +77,7 @@ function PopoverArrow({ skin, tokens, placement }: { skin: PopoverSkin; tokens: 
 // State:
 //
 // - `open` (default false, uncontrolled via the trigger): when true, the floating
-//   card is shown below the trigger; when false, only the trigger renders.
+//   card is shown at the trigger; when false, only the trigger renders.
 
 export interface PopoverProps {
   /** Label for the trigger button. */
@@ -84,9 +90,9 @@ export interface PopoverProps {
   children?: ReactNode;
   /** When set, renders a primary action button at the bottom of the card. */
   actionLabel?: string;
-  // Placement (pick one; default is `bottom`). The card anchors below the trigger
-  // either way; this picks which edge the iOS arrow rides.
+  /** Anchor the card ABOVE the trigger (it flips below when the room above is short). Placement axis: `top` > `bottom`. */
   top?: boolean;
+  /** Anchor the card BELOW the trigger, the default (it flips above when the room below is short). */
   bottom?: boolean;
   /**
    * Static mode: render the card on its own with no trigger button (an
@@ -141,8 +147,7 @@ export function createPopover(skin: PopoverSkin, parts: PopoverParts = {}) {
     // trigger on close (non-modal: no focus trap, unlike Dialog). Inline panels are
     // always-visible content, so they never take focus.
     const panelRef = usePopoverFocus(open && !inline);
-    // Resolve the placement axis (drives which edge the iOS beak rides; the card
-    // itself always anchors below the trigger).
+    // Resolve the placement axis: the side of the trigger the card prefers.
     const placement = placementOf(props);
 
     // Match the floating card's min width to the trigger, measured off the wrapper
@@ -150,14 +155,19 @@ export function createPopover(skin: PopoverSkin, parts: PopoverParts = {}) {
     // hugs the trigger, so its laid-out width is the trigger's box.
     const { width: triggerWidth, onLayout: onTriggerLayout } = useMeasuredWidth();
     const triggerRef = useRef<View>(null);
+    // The trigger Button itself, where focus returns when the card closes.
+    const buttonRef = useRef<View>(null);
+    // Natively the card is modal to VoiceOver and TalkBack while open, and they enter
+    // it at its first line (the web's focus enters the panel itself, usePopoverFocus).
+    const firstLineRef = useRef<RNText | null>(null);
     const host = useOverlayHost();
 
     // The card body (heading, supporting line, custom content, optional action),
     // shared by the static inline panel and the floating overlay card.
     const panelBody = (
       <>
-        {title != null ? <Text style={skin.title(tokens)}>{title}</Text> : null}
-        {description != null ? <Text style={skin.description(tokens)}>{description}</Text> : null}
+        {title != null ? <Text ref={firstLineRef} style={skin.title(tokens)}>{title}</Text> : null}
+        {description != null ? <Text ref={title == null ? firstLineRef : undefined} style={skin.description(tokens)}>{description}</Text> : null}
         {children != null ? (
           // The custom-content slot, spaced from the title/description block above
           // it; when children are the panel's first content the margin is omitted.
@@ -189,7 +199,7 @@ export function createPopover(skin: PopoverSkin, parts: PopoverParts = {}) {
 
     // Triggered mode: a trigger button plus a floating card. The open card routes
     // through AnchoredOverlay (mirroring Dropdown): with an OverlayProvider it
-    // portals over the page anchored below the trigger, with outside-tap dismissal;
+    // portals over the page anchored to the trigger, with outside-tap dismissal;
     // with no provider it falls back to the kit's pre-portal inline anchor
     // (`s.cardFloating`, absolute top:"100%" under the `relative` wrapper).
     // `self-start` keeps the trigger from stretching; `wrapperLifted` lifts the
@@ -203,27 +213,31 @@ export function createPopover(skin: PopoverSkin, parts: PopoverParts = {}) {
         onLayout={onTriggerLayout}
       >
         <View style={s.triggerWrap}>
-          <Button outline small expanded={open} haspopup="dialog" onPress={() => setOpen(!open)}>
+          <Button ref={buttonRef} outline small expanded={open} haspopup="dialog" onPress={() => setOpen(!open)}>
             {trigger ?? "Open popover"}
           </Button>
         </View>
 
-        {/* Hosted cards may flip above when space below is insufficient. The
-            beak then follows the actual upper placement. Otherwise `top`
-            retains its documented decoration-only behavior. */}
+        {/* The card prefers the placement's side and flips when it lacks room; the
+            beak follows the side it took. */}
         <AnchoredOverlay
           onAccessibilityEscape={escapeScope.onAccessibilityEscape}
           open={open}
           onDismiss={() => setOpen(false)}
           triggerRef={triggerRef}
           cardWidth={skin.cardWidth}
+          above={placement === "top"}
+          // At the phone form factor the card is a sheet (a card that can close).
+          sheetStyle={skin.sheet(tokens)}
           gap={skin.arrow != null && surface !== "glass" ? skin.arrowGap ?? 4 : 4}
           cardStyle={[skin.card(tokens), { minWidth: triggerWidth }]}
           inlineStyle={s.cardFloating}
-          decoration={skin.arrow != null && surface !== "glass" ? <PopoverArrow skin={skin} tokens={tokens} placement={placement} /> : null}
+          decoration={skin.arrow != null && surface !== "glass" ? <PopoverArrow skin={skin} tokens={tokens} /> : null}
           // A controlled `open` with no onOpenChange can never actually close, so
           // the hosted dismiss backdrop is skipped (it would only block the page).
           dismissable={props.open === undefined || onOpenChange !== undefined}
+          onCardMount={() => moveAccessibilityFocus(firstLineRef.current)}
+          returnFocusRef={buttonRef}
         >
           <EscapeLayerProvider scope={escapeScope}>
           {/* The anchor beak, drawn only when the skin supplies one (iOS) and only in
