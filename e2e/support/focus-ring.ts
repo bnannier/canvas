@@ -77,6 +77,9 @@ export interface DoubledStop {
 // The cue reader the sweep installs in the page, by the name it is called by.
 const CUE = "__canvasFocusCue";
 
+/** What the cue reader says of the stop Tab landed on: out of the page, passed over, or read. */
+type Reading = { out?: true; id?: number; skipped?: true; shown?: boolean; doubled?: [string, string] | null; stop?: string; outline?: string };
+
 /**
  * Walk every keyboard stop in the docs page's content with Tab, and return the stops whose
  * focus shows no cue in `color` (the look's `ring`, as `rgb()`), with the number walked,
@@ -113,61 +116,73 @@ export async function ringlessStops(page: Page, color: string): Promise<{ stops:
     // Each stop's number, so the walk knows when focus has come back round.
     const ids = new WeakMap<Element, number>();
     let next = 0;
-    Object.assign(window, {
-      [name]: () => {
-        const stop = document.activeElement;
-        if (!stop || stop === scroller || !scroller.contains(stop)) return { out: true };
-        if (!ids.has(stop)) ids.set(stop, ++next);
-        const describe = () => {
-          const row = stop.closest("[data-platform-row]")?.getAttribute("data-platform-row");
-          const label = stop.getAttribute("aria-label") ?? (stop.textContent ?? "").trim().slice(0, 40);
-          return `${stop.tagName.toLowerCase()}${stop.getAttribute("role") ? ` role=${stop.getAttribute("role")}` : ""} "${label}"${row ? ` in the ${row} row` : ""}`;
-        };
-        if (stop.closest("[data-dont-specimen]")) return { id: ids.get(stop), skipped: true, stop: describe() };
-        const box = stop.getBoundingClientRect();
-        const touches = (node: Element) => {
-          const r = node.getBoundingClientRect();
-          return r.right >= box.left - 4 && r.left <= box.right + 4 && r.bottom >= box.top - 4 && r.top <= box.bottom + 4;
-        };
-        // The stop is in the scroller too: each node once, so no node pairs with itself.
-        const brought = [...new Set([stop, ...scroller.querySelectorAll("*")])].map((node) => ({ node, cue: cue(node) & ~(rest.get(node) ?? 0) }))
-          .filter(({ cue, node }) => cue !== 0 && touches(node));
-        const shown = brought.length > 0;
-        // Two ring borders on one box: nodes whose edges all lie within 3 px of each other.
-        const bordered = brought.filter(({ cue }) => (cue & 2) !== 0).map(({ node }) => ({ node, r: node.getBoundingClientRect() }));
-        let doubled: [string, string] | null = null;
-        const where = ({ node, r }: { node: Element; r: DOMRect }) =>
-          `${node.tagName.toLowerCase()} ${Math.round(r.width)}x${Math.round(r.height)} at ${Math.round(r.left)},${Math.round(r.top)}`;
-        for (let i = 0; i < bordered.length && !doubled; i++) {
-          for (let j = i + 1; j < bordered.length && !doubled; j++) {
-            const a = bordered[i]!.r;
-            const b = bordered[j]!.r;
-            if (Math.abs(a.left - b.left) <= 3 && Math.abs(a.top - b.top) <= 3 && Math.abs(a.right - b.right) <= 3 && Math.abs(a.bottom - b.bottom) <= 3) {
-              doubled = [where(bordered[i]!), where(bordered[j]!)];
-            }
+    const read = (): Reading => {
+      const stop = document.activeElement;
+      if (!stop || stop === scroller || !scroller.contains(stop)) return { out: true };
+      if (!ids.has(stop)) ids.set(stop, ++next);
+      const describe = () => {
+        const row = stop.closest("[data-platform-row]")?.getAttribute("data-platform-row");
+        const label = stop.getAttribute("aria-label") ?? (stop.textContent ?? "").trim().slice(0, 40);
+        return `${stop.tagName.toLowerCase()}${stop.getAttribute("role") ? ` role=${stop.getAttribute("role")}` : ""} "${label}"${row ? ` in the ${row} row` : ""}`;
+      };
+      if (stop.closest("[data-dont-specimen]")) return { id: ids.get(stop), skipped: true, stop: describe() };
+      const box = stop.getBoundingClientRect();
+      const touches = (node: Element) => {
+        const r = node.getBoundingClientRect();
+        return r.right >= box.left - 4 && r.left <= box.right + 4 && r.bottom >= box.top - 4 && r.top <= box.bottom + 4;
+      };
+      // The stop is in the scroller too: each node once, so no node pairs with itself. Only a
+      // node that touches the stop can show its cue, so the box is read before the style.
+      const brought = [...new Set([stop, ...scroller.querySelectorAll("*")])].filter(touches)
+        .map((node) => ({ node, cue: cue(node) & ~(rest.get(node) ?? 0) }))
+        .filter(({ cue }) => cue !== 0);
+      const shown = brought.length > 0;
+      // Two ring borders on one box: nodes whose edges all lie within 3 px of each other.
+      const bordered = brought.filter(({ cue }) => (cue & 2) !== 0).map(({ node }) => ({ node, r: node.getBoundingClientRect() }));
+      let doubled: [string, string] | null = null;
+      const where = ({ node, r }: { node: Element; r: DOMRect }) =>
+        `${node.tagName.toLowerCase()} ${Math.round(r.width)}x${Math.round(r.height)} at ${Math.round(r.left)},${Math.round(r.top)}`;
+      for (let i = 0; i < bordered.length && !doubled; i++) {
+        for (let j = i + 1; j < bordered.length && !doubled; j++) {
+          const a = bordered[i]!.r;
+          const b = bordered[j]!.r;
+          if (Math.abs(a.left - b.left) <= 3 && Math.abs(a.top - b.top) <= 3 && Math.abs(a.right - b.right) <= 3 && Math.abs(a.bottom - b.bottom) <= 3) {
+            doubled = [where(bordered[i]!), where(bordered[j]!)];
           }
         }
-        const style = getComputedStyle(stop);
-        return { id: ids.get(stop), shown, doubled, stop: describe(), outline: `${style.outlineStyle} ${style.outlineWidth} ${style.outlineColor}` };
-      },
+      }
+      const style = getComputedStyle(stop);
+      return { id: ids.get(stop), shown, doubled, stop: describe(), outline: `${style.outlineStyle} ${style.outlineWidth} ${style.outlineColor}` };
+    };
+    // A focus state lands in a React commit after the focus moves, so a stop that shows no
+    // cue yet is read again every 16 ms until it shows one or a second has passed. The wait
+    // runs in the page and answers once, so a stop costs the walk one round trip besides its
+    // Tab: polling from the test (waitForFunction, then reading its value) cost four, and on
+    // the CI runner they took the Calendar page's 354 stops a look past the test's minute.
+    // It polls on a timer, not on frames, so a renderer that stops drawing cannot stall it.
+    Object.assign(window, {
+      [name]: () => new Promise<Reading>((resolve) => {
+        const deadline = performance.now() + 1_000;
+        const poll = () => {
+          const reading = read();
+          if (reading.out || reading.skipped || reading.shown || performance.now() >= deadline) resolve(reading);
+          else setTimeout(poll, 16);
+        };
+        poll();
+      }),
     });
     scroller.setAttribute("tabindex", "-1");
     scroller.focus({ preventScroll: true });
   }, { color, name: CUE });
 
-  type Reading = { out?: true; id?: number; skipped?: true; shown?: boolean; doubled?: [string, string] | null; stop?: string; outline?: string };
-  const read = () => page.evaluate((name) => (window as unknown as Record<string, () => Reading>)[name]!(), CUE);
+  // The stop's reading once its cue has landed, or a second after Tab when it never does.
+  const settled = () => page.evaluate((name) => (window as unknown as Record<string, () => Promise<Reading>>)[name]!(), CUE);
   const seen = new Set<number>();
   const ringless: RinglessStop[] = [];
   const doubled: DoubledStop[] = [];
   for (;;) {
     await page.keyboard.press("Tab");
-    // Wait for the stop's cue to land; a stop that never shows one is read once more.
-    const settled = await page.waitForFunction((name) => {
-      const reading = (window as unknown as Record<string, () => Reading>)[name]!();
-      return reading.out || reading.skipped || reading.shown ? reading : false;
-    }, CUE, { timeout: 1_000 }).then((handle) => handle.jsonValue() as Promise<Reading>).catch(() => null);
-    const reading = settled ?? await read();
+    const reading = await settled();
     if (reading.out || seen.has(reading.id!)) break;
     seen.add(reading.id!);
     if (seen.size > 1_000) throw new Error("the walk passed 1,000 stops without leaving the page: a keyboard trap");

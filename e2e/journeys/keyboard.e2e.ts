@@ -384,19 +384,24 @@ test("a zoomable GeoMap's ring goes round the whole chart, clear of its zoom bar
 // border has to stay over the material, and in two palettes whose `primary` sits apart
 // from `ring` by different amounts. It shows it once: a box that keeps its state border
 // while an overlay draws it again just inside reads as a doubled, 2 px ring.
+//
+// Each look is a test of its own. The walk takes two round trips a stop (the Tab and the
+// reading), and the Calendar page, whose every day is a stop, has 354 of them a look: on
+// the CI runner one look of it takes about half a minute, so the two looks together ran
+// past the test's minute in every engine.
 const SWEEP_LOOKS = [
   { scheme: "light", surface: "solid", palette: "blush" },
   { scheme: "light", surface: "glass", palette: "mint" },
 ] as const;
 for (const route of componentRoutes()) {
-  test(`every keyboard stop on ${route.path} shows the kit's ring`, async ({ page }) => {
-    for (const look of SWEEP_LOOKS) {
+  for (const look of SWEEP_LOOKS) {
+    const where = `${look.scheme} ${look.surface} ${look.palette}`;
+    test(`every keyboard stop on ${route.path} shows the kit's ring in ${where}`, async ({ page }) => {
       await gotoDocs(page, route.path, look);
       const { stops, ringless, doubled } = await ringlessStops(page, rgb(colorsFor(look.palette, look.scheme).ring));
-      const where = `${look.scheme} ${look.surface} ${look.palette}`;
       expect(stops, `${route.path} (${where}) has a keyboard stop`).toBeGreaterThan(0);
       expect(ringless, `stops on ${route.path} (${where}) whose focus shows no ring:\n${ringless.map((s) => `  ${s.stop}: outline ${s.outline}`).join("\n")}`).toEqual([]);
       expect(doubled, `stops on ${route.path} (${where}) whose focus draws its ring twice:\n${doubled.map((s) => `  ${s.stop}: ${s.borders.join(" and ")}`).join("\n")}`).toEqual([]);
-    }
-  });
+    });
+  }
 }
