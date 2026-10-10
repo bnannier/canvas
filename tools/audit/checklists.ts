@@ -70,7 +70,7 @@ import {
   type InventoryComponent,
   type InventoryPage,
 } from "./inventory.ts";
-import { FOUNDATION_DIR, foundationFacts, foundationSources, foundations, type Foundation, type FoundationFacts, type FoundationSources } from "./foundations.ts";
+import { FOUNDATION_DIR, foundationFacts, foundationSources, foundations, unplacedDeprecations, type Foundation, type FoundationFacts, type FoundationSources } from "./foundations.ts";
 import type { Consumer, ConsumerTier } from "./kit-graph.ts";
 import {
   COMPONENT_PLANS,
@@ -356,19 +356,24 @@ function k12Line(facts: FoundationFacts): string {
   return [...groups].map(([status, names]) => `${names.length} ${status}: ${names.join(", ")}`).join("; ");
 }
 
+/** What a foundation is, as its facts block's first row says it. */
+function foundationLine(facts: FoundationFacts): string {
+  const f = facts.foundation;
+  if (f.kind === "renderable") return `${code(f.name)}, a style-layer renderable with no component page of its own (\`tools/materials/manifest.ts\`, the style tier), declared in ${list(facts.homes)}`;
+  if (f.kind === "tokens") {
+    return `the design tokens the docs' \`tokens/*\` pages document (${list(facts.homes)}): the public names \`tools/api/manifest.ts\` documents on one of them or plans to, the kit names they show that are neither a component nor a renderable's (\`shadow\` on \`/tokens/spacing\`), and every other public name of the modules those are declared in`;
+  }
+  return `the kit internals the generated \`/foundation\` reference page documents (K12-10 OD2, ${list(facts.homes)}): the public names \`tools/api/manifest.ts\` documents or plans there that no style-layer renderable and not the design tokens hold, so that every deprecation the owner decided (K12-2, OD4, OD5, K12-7 OD3) is on one of the Foundations tier's checklists`;
+}
+
 /** The lines of a foundation's facts block, between the markers: the facts table, then its consumers, one row each. */
 export function renderFoundationFacts(facts: FoundationFacts): string[] {
   const f = facts.foundation;
   const counts = (["direct", "shared", "component"] as const).map((tier) => [tier, facts.consumers.filter((c) => c.tier === tier).length] as const);
   const through = facts.captureThrough;
   const rows: [string, string][] = [
-    [
-      "Foundation",
-      f.kind === "tokens"
-        ? `the design tokens the docs' \`tokens/*\` pages document (${list(facts.homes)}): the public names \`tools/api/manifest.ts\` documents on one of them, or plans to`
-        : `${code(f.name)}, a style-layer renderable with no component page of its own (\`tools/materials/manifest.ts\`, the style tier), declared in ${list(facts.homes)}`,
-    ],
-    ["Source files", `${list(facts.sourceFiles)} (its ${f.kind === "tokens" ? "" : "homes, its "}exports' declarations and its implementation, the private declarations they read)`],
+    ["Foundation", foundationLine(facts)],
+    ["Source files", `${list(facts.sourceFiles)} (its ${f.kind === "renderable" ? "homes, its " : ""}exports' declarations and its implementation, the private declarations they read)`],
     ["Seams", facts.seams.length ? `${facts.seams.length}, the private declarations it alone reads (\`tools/audit/foundations.ts\` \`foundationCode\`), which its consumers are also found through: ${facts.seams.map((s) => `${code(s.name)} (${s.file})`).join(", ")}` : "none: no private declaration is its alone"],
     ["Public exports", `${facts.exports.length}: ${facts.exports.map((e) => `${code(e.name)} (${e.kind}${e.value || e.kind === "type" ? "" : ", a type"})`).join(", ")}`],
     ["K12-2 status", k12Line(facts)],
@@ -378,7 +383,7 @@ export function renderFoundationFacts(facts: FoundationFacts): string[] {
       "Materials manifest",
       facts.materials
         ? `${facts.materials.name}: ${facts.materials.tier}, ${facts.materials.roles.join(" + ")}; docs route ${facts.materials.docsRoute ? code(facts.materials.docsRoute) : "none (`docsRoute: null`)"}; verification ${facts.materials.verification.join(", ")}`
-        : "none: the design tokens are not a renderable, so the material inventory has no entry for them",
+        : `none: ${f.kind === "tokens" ? "the design tokens are" : "the kit internals are"} not a renderable, so the material inventory has no entry for them`,
     ],
     ["Tests of it", `${facts.tests.length} (importing one of its public exports or one of its implementation's declarations by name, or named for it, \`test/${f.id}[-<what>].test.tsx\`): ${list(facts.tests)}`],
     [
@@ -665,7 +670,7 @@ export function seedFoundationChecklist(facts: FoundationFacts): string {
   return [
     `# ${f.name} (foundation)`,
     "",
-    `Audit checklist for the ${f.kind === "tokens" ? "design tokens the `tokens/*` docs pages document" : `style-layer foundation ${code(f.name)}`}, audited for its contract and photographed through the components and pages that render through it (its Capture through list). The facts block is generated by \`bun run audit:checklists\` (between the markers); everything else is maintained by hand and survives regeneration. See \`audit/README.md\`, "Foundations".`,
+    `Audit checklist for the ${f.kind === "tokens" ? "design tokens the `tokens/*` docs pages document" : f.kind === "reference" ? "kit internals the generated `/foundation` reference page documents" : `style-layer foundation ${code(f.name)}`}, audited for its contract and photographed through the components and pages that render through it (its Capture through list). The facts block is generated by \`bun run audit:checklists\` (between the markers); everything else is maintained by hand and survives regeneration. See \`audit/README.md\`, "Foundations".`,
     "",
     FACTS_BEGIN,
     ...renderFoundationFacts(facts),
@@ -972,6 +977,12 @@ export function checkChecklists(auditDir: string, sources: ChecklistSources): st
   }
   errors.push(...orphanChecklists(auditDir, expected));
   errors.push(...turnProblems(auditDir, checklistIds()));
+  // The Foundations tier carries every deprecation the owner decided; one on no checklist would be lost.
+  for (const name of unplacedDeprecations(sources.foundationSources)) {
+    errors.push(
+      `${code(name)}, which the owner's decisions retire as a deprecated alias (K12-2), is on no Foundations checklist: plan its docs on \`foundation\` or a \`tokens/*\` page (tools/api/manifest.ts PENDING_DOCS), or export it through a foundation's home`,
+    );
+  }
   return errors;
 }
 
