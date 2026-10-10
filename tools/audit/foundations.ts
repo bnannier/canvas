@@ -1,7 +1,9 @@
 // The audit's Foundations tier (the plan's "Foundations"): the style-layer renderables with
 // no component page of their own (AnchoredOverlay, GlassSurface, ThemeProvider and the
-// rest, `STYLE_LAYER_RENDERABLES`) and the design tokens the `tokens/*` docs pages
-// document. Each gets a checklist under audit/foundation/, whose facts this module
+// rest, `STYLE_LAYER_RENDERABLES`), the design tokens the `tokens/*` docs pages document,
+// and the kit internals the generated `/foundation` reference page documents
+// (FoundationReference), so that every deprecation the owner decided is on one of the tier's
+// checklists. Each gets a checklist under audit/foundation/, whose facts this module
 // gathers from the kit's source and its own manifests, with no React Native import:
 //
 //   - its source files (its homes, its exports' declarations and its implementation: the
@@ -23,8 +25,8 @@
 // A renderable foundation is the module that declares its name (on every platform) and
 // the public exports whose way out of the kit's entry passes through that module, so
 // FloatingLabel and LabelContent (one module) share their exports, and so do Portal and
-// OverlayProvider. The design tokens are the public names the API manifest documents on a
-// `tokens/*` page, or plans to.
+// OverlayProvider. The design tokens and the reference's internals are read in
+// `memberships`.
 
 import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
