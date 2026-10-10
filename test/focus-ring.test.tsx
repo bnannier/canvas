@@ -7,7 +7,8 @@ import { act, cleanup, fireEvent, render, screen } from "@testing-library/react"
 import type { View } from "react-native";
 import { ThemeProvider } from "../src/style/theme.tsx";
 import { Pressable, FOCUS_RING_OFFSET, FOCUS_RING_WIDTH } from "../src/style/pressable.tsx";
-import { TextInput } from "../src/style/text.tsx";
+import { Text, TextInput } from "../src/style/text.tsx";
+import { Typography } from "../src/atoms/typography/typography.tsx";
 import { ScrollView } from "../src/style/scroll-view.tsx";
 import { ScrollView as RNScrollView } from "react-native";
 import { FOCUS_RESET } from "../src/style/focus-reset.ts";
@@ -182,6 +183,44 @@ describe("the themed focus ring", () => {
       expect(typeof ref.current?.scrollTo).toBe("function");
     });
   }
+
+  for (const look of LOOKS) {
+    it(`colours a Typography link's ring with the ${look.name} palette's ring, as a Pressable's`, () => {
+      // react-native-web renders a Text with an `href` as an <a>, a keyboard stop the
+      // browser rings; before the Text primitive carried the kit's ring, this one took
+      // the browser's own colour (the docs' Inline links (href) example).
+      render(
+        <ThemeProvider {...lookProps(look)} solid>
+          <Typography small>
+            Read the <Typography small underline href="https://canvas.nannier.com">Canvas docs</Typography> for the full list.
+          </Typography>
+        </ThemeProvider>,
+      );
+      const link = screen.getByRole("link", { name: "Canvas docs" });
+      expect(link.tagName).toBe("A");
+      expect(channels(outline(link, "color"))).toBe(channels(look.tokens.ring));
+      expect(outline(link, "offset")).toBe(AROUND);
+      // The browser draws it on keyboard focus only: no style or width is forced.
+      expect(outline(link, "style")).toBe("");
+      expect(outline(link, "width")).toBe("");
+    });
+  }
+
+  it("rings a Text in the link role, and leaves plain text without a ring", () => {
+    render(
+      <ThemeProvider light solid>
+        <Text accessibilityRole="link" testID="role-link">Open</Text>
+        <Text testID="plain">Read me</Text>
+        <Typography testID="heading" h2>Title</Typography>
+      </ThemeProvider>,
+    );
+    expect(channels(outline(screen.getByTestId("role-link"), "color"))).toBe(channels(lightColors.ring));
+    expect(outline(screen.getByTestId("role-link"), "offset")).toBe(AROUND);
+    for (const id of ["plain", "heading"]) {
+      expect(outline(screen.getByTestId(id), "color"), id).toBe("");
+      expect(outline(screen.getByTestId(id), "offset"), id).toBe("");
+    }
+  });
 
   it("lets a scroller that hands its ring to a frame keep its reset", () => {
     // A terminal's scrollport sits flush inside its clipping card, so the card draws the
