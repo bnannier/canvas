@@ -20,7 +20,7 @@ Audit checklist for `/components/input-otp`. The facts block and the variants ta
 | Hand-off metric gaps | none |
 | Interactions registry | in the inventory; evidence: none registered |
 | Overlay recipe | none |
-| Interaction states | captured: focus on Default (web row; desktop), disabled on Disabled (web row; desktop). |
+| Interaction states | recipes: focus on Default (web row; desktop), disabled on Disabled (web row; desktop). |
 | MeasureProps | not adopted |
 | Touch target | no touch-target name (the exports of `src/style/touch-target.ts`, `src/style/touch-target-seed.ts`, `src/style/touch-seam.ts`, `src/style/clip-slop.ts`, the `TouchTargetSkin` fields, or `hitSlop`) in its implementation modules |
 | Tests importing it | 8: `test/a11y-state.test.tsx`, `test/components-extra.test.tsx`, `test/design-rules-shape.test.ts`, `test/design-rules-skins.test.ts`, `test/field-focus-states.test.tsx`, `test/material-solid-fallback.test.tsx`, `test/skins-smoke.test.tsx`, `test/text-entry-material.test.tsx` |

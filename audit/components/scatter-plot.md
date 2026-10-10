@@ -20,7 +20,7 @@ Audit checklist for `/components/scatter-plot`. The facts block and the variants
 | Hand-off metric gaps | none |
 | Interactions registry | in the inventory; evidence: none registered |
 | Overlay recipe | none |
-| Interaction states | captured: focus on Default (web row; desktop), pressed on Default (web row; desktop). |
+| Interaction states | recipes: focus on Default (web row; desktop), pressed on Default (web row; desktop). |
 | MeasureProps | not adopted |
 | Touch target | no touch-target name (the exports of `src/style/touch-target.ts`, `src/style/touch-target-seed.ts`, `src/style/touch-seam.ts`, `src/style/clip-slop.ts`, the `TouchTargetSkin` fields, or `hitSlop`) in its implementation modules. `test/touch-target-coverage.test.ts` records it as covered another way: the pressable is the point, sized by the series |
 | Tests importing it | 6: `test/chart-materials.test.tsx`, `test/charts-cartesian.test.tsx`, `test/dev-warn.test.tsx`, `test/dist-smoke.test.tsx`, `test/material-solid-fallback.test.tsx`, `test/skins-smoke.test.tsx` |

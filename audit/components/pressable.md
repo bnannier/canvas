@@ -20,7 +20,7 @@ Audit checklist for `/components/pressable`. The facts block and the variants ta
 | Hand-off metric gaps | none |
 | Interactions registry | in the inventory; evidence: link-enter (unit-web, test/pressable-link-enter.test.tsx) |
 | Overlay recipe | none |
-| Interaction states | captured: focus on Default (web row; desktop), pressed on Opacity (web row; desktop), disabled on Disabled (web row; desktop). |
+| Interaction states | recipes: focus on Default (web row; desktop), pressed on Opacity (web row; desktop), disabled on Disabled (web row; desktop). |
 | MeasureProps | not adopted |
 | Touch target | no touch-target name (the exports of `src/style/touch-target.ts`, `src/style/touch-target-seed.ts`, `src/style/touch-seam.ts`, `src/style/clip-slop.ts`, the `TouchTargetSkin` fields, or `hitSlop`) in its implementation modules |
 | Tests importing it | 8: `test/data-table.test.tsx`, `test/dist-smoke.test.tsx`, `test/focus-ring.test.tsx`, `test/pressable-link-enter.test.tsx`, `test/pressable-tab-stop.test.tsx`, `test/touch-target-clips.test.tsx`, `test/touch-target-seams.test.tsx`, `test/touch-target-seed.test.tsx` |

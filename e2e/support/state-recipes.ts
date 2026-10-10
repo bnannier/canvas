@@ -164,7 +164,9 @@ export interface StateRecipe {
    * The platform rows of the docs' three-up it is applied from: the web row, unless the
    * control it acts on is the component's own only where another build renders it (Dialog's
    * and AlertDialog's iOS capsules and Android text buttons, `NATIVE_ROWS`), and every row an
-   * overlay opens from.
+   * overlay opens from; never a row where the control shows the state only through feedback
+   * react-native-web does not draw (the text buttons' `android_ripple`, so their press is
+   * applied on the iOS row alone, `IOS_ROW`).
    */
   rows: readonly RowPlatform[];
   /**
@@ -1830,6 +1832,14 @@ const ALL_ROWS: readonly RowPlatform[] = ["web", "ios", "android"];
  * is (Dialog's and AlertDialog's footer buttons), whose web build renders a kit Button there.
  */
 const NATIVE_ROWS: readonly RowPlatform[] = ["ios", "android"];
+/**
+ * The iOS row alone: where Dialog's and AlertDialog's own footer buttons show a press the web
+ * runner can see (the iOS capsules dim to their skin's pressed opacity). The Android build's
+ * text buttons press with `android_ripple` alone, which react-native-web never draws, so
+ * tools/audit/state-coverage.ts records that press as judged on devices and refuses a recipe
+ * for it on the Android row.
+ */
+const IOS_ROW: readonly RowPlatform[] = ["ios"];
 
 /** Where each page's pointer rests, for an opening the pointer holds. */
 const restingPointer = new WeakMap<Page, { x: number; y: number }>();
@@ -2231,9 +2241,11 @@ export const STATE_RECIPES: Record<string, ComponentStates> = {
   "alert-dialog": {
     // Its own action buttons are the iOS build's capsules and the Android build's text buttons
     // (`skin.actionLayout`, `skin.textButton`); the web build's are kit Buttons, whose own
-    // recipes capture their focus and press. So these are applied on the iOS and Android rows.
+    // recipes capture their focus and press. So the focus is applied on the iOS and Android
+    // rows, and the press on the iOS row alone: the text buttons press with `android_ripple`
+    // alone, which react-native-web never draws (judged on devices).
     focus: focus("default", byRole("button", "Cancel"), { within: overlay("alert-dialog"), rows: NATIVE_ROWS }),
-    pressed: pressed("default", byRole("button", "Cancel"), { within: overlay("alert-dialog"), rows: NATIVE_ROWS }),
+    pressed: pressed("default", byRole("button", "Cancel"), { within: overlay("alert-dialog"), rows: IOS_ROW }),
     open: open("default", overlay("alert-dialog"), ALL_ROWS, viaRecipe("alert-dialog")),
     // `withInput` keeps the confirm disabled until its token is typed in the dialog's field: the
     // kit Button it hands `disabled` on the web row, its own capsule and text button on the others.
@@ -2378,10 +2390,11 @@ export const STATE_RECIPES: Record<string, ComponentStates> = {
   dialog: {
     // Its own footer controls are the iOS build's capsules and the Android build's text buttons
     // (`skin.footerKind`, `skin.textButton`); the web build's Cancel and Confirm are kit Buttons,
-    // whose own recipes capture their focus and press. So these are applied on the iOS and
-    // Android rows of the three-up.
+    // whose own recipes capture their focus and press. So the focus is applied on the iOS and
+    // Android rows of the three-up, and the press on the iOS row alone: the text buttons press
+    // with `android_ripple` alone, which react-native-web never draws (judged on devices).
     focus: focus("default", byRole("button", "Cancel"), { within: overlay("dialog"), rows: NATIVE_ROWS }),
-    pressed: pressed("default", byRole("button", "Cancel"), { within: overlay("dialog"), rows: NATIVE_ROWS }),
+    pressed: pressed("default", byRole("button", "Cancel"), { within: overlay("dialog"), rows: IOS_ROW }),
     open: open("default", overlay("dialog"), ALL_ROWS, viaRecipe("dialog")),
   },
   "drag-drop": {

@@ -20,7 +20,7 @@ Audit checklist for `/components/toast`. The facts block and the variants table 
 | Hand-off metric gaps | none |
 | Interactions registry | in the inventory; evidence: none registered |
 | Overlay recipe | yes (live region) |
-| Interaction states | captured: focus on With an action (web row; desktop), focus on Default inside the overlay it opens (web row; desktop), pressed on With an action (web row; desktop), pressed on Default inside the overlay it opens (web row; desktop), open on Default (web, Android rows; phone, tablet and desktop). |
+| Interaction states | recipes: focus on With an action (web row; desktop), focus on Default inside the overlay it opens (web row; desktop), pressed on With an action (web row; desktop), pressed on Default inside the overlay it opens (web row; desktop), open on Default (web, Android rows; phone, tablet and desktop). |
 | MeasureProps | not adopted |
 | Touch target | `toast.shared.tsx`: hitSlop, rowSeam; `toast.styles.ts`: platformMinTarget. `test/touch-target-coverage.test.ts` records it as covered another way: hitSlop on the dismiss and the action, split where they face each other, which their RippleClips carry on Android |
 | Tests importing it | 13: `test/components-extra.test.tsx`, `test/dense-overlays.test.tsx`, `test/design-rules-shape.test.ts`, `test/design-rules-skins.test.ts`, `test/destructive-intent.test.tsx`, `test/dist-smoke.test.tsx`, `test/no-console-violations.test.tsx`, `test/skins-smoke.test.tsx`, `test/text-contrast.test.tsx`, `test/toast-look.test.tsx`, `test/touch-target-clips.test.tsx`, `test/touch-target-seams.test.tsx`, `test/ws3-a11y-theming.test.tsx` |

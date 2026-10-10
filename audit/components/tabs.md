@@ -20,7 +20,7 @@ Audit checklist for `/components/tabs`. The facts block and the variants table a
 | Hand-off metric gaps | none |
 | Interactions registry | in the inventory; evidence: none registered |
 | Overlay recipe | none |
-| Interaction states | captured: focus on Default (web row; desktop), pressed on Default (web row; desktop), disabled on Disabled tab (web row; desktop). |
+| Interaction states | recipes: focus on Default (web row; desktop), pressed on Default (web row; desktop), disabled on Disabled tab (web row; desktop). |
 | MeasureProps | not adopted |
 | Touch target | no touch-target name (the exports of `src/style/touch-target.ts`, `src/style/touch-target-seed.ts`, `src/style/touch-seam.ts`, `src/style/clip-slop.ts`, the `TouchTargetSkin` fields, or `hitSlop`) in its implementation modules. `test/touch-target-coverage.test.ts` records it as known gap: items render 77x32; they abut, so the fix is vertical slop |
 | Tests importing it | 16: `test/a11y-state.test.tsx`, `test/design-rules-shape.test.ts`, `test/design-rules-skins.test.ts`, `test/focus-ring.test.tsx`, `test/focus-runtime.test.tsx`, `test/glass-controls.test.tsx`, `test/horizontal-scroller-drag.test.tsx`, `test/keyboard-nav.test.tsx`, `test/material-solid-fallback.test.tsx`, `test/narrow-modes.test.tsx`, `test/native-focus-fixtures.test.tsx`, `test/no-console-violations.test.tsx`, `test/organism-material-roles.test.tsx`, `test/skins-smoke.test.tsx`, `test/tabs-overflow.test.tsx`, `test/text-contrast.test.tsx` |

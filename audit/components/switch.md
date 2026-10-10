@@ -20,7 +20,7 @@ Audit checklist for `/components/switch`. The facts block and the variants table
 | Hand-off metric gaps | none |
 | Interactions registry | in the inventory; evidence: switch-press (unit-web, test/behavior.test.tsx) |
 | Overlay recipe | none |
-| Interaction states | captured: focus on Default (web row; desktop), pressed on Default (web row; desktop), disabled on Disabled (web row; desktop). |
+| Interaction states | recipes: focus on Default (web row; desktop), pressed on Default (web row; desktop), disabled on Disabled (web row; desktop). |
 | MeasureProps | not adopted |
 | Touch target | `switch.shared.tsx`: minTarget, styleBox, useSeededMinTargetSlop; `switch.styles.ts`: TOUCH_TARGET, minTarget |
 | Tests importing it | 17: `test/a11y-state.test.tsx`, `test/action-panel.test.tsx`, `test/atom-material-roles.test.tsx`, `test/control-refs-types.test.ts`, `test/control-refs.test.tsx`, `test/control-space.test.tsx`, `test/design-rules-skins.test.ts`, `test/field.test.tsx`, `test/forms.test.tsx`, `test/glass-controls.test.tsx`, `test/material-solid-fallback.test.tsx`, `test/native-focus-fixtures.test.tsx`, `test/native-material-coordinate-hosts.test.tsx`, `test/skins-smoke.test.tsx`, `test/switch-label.test.tsx`, `test/touch-target-coverage.test.ts`, `test/touch-target-seed.test.tsx` |

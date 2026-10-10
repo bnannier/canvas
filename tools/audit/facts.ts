@@ -45,8 +45,9 @@ import { ENTRY, componentSkins, hasPlatformBuilds, resolveSource, traceExport, t
 import { registeredSkins } from "../skins/registry.ts";
 import { ModuleGraph, NOT_HANDLED, PathUnder, resolveModule, within, type Intercept } from "./hosts.ts";
 import { SignalReader } from "./interaction-signals.ts";
-import { componentSignals, coverageOf, docsRowsOf, railExamples, type StateAnswer } from "./state-coverage.ts";
+import { componentSignals, coverageOf, docsRowsOf, railExamples, type StateAnswer, type Unreachable } from "./state-coverage.ts";
 import { pageModule, pageSections, type InventoryPage } from "./inventory.ts";
+import type { RowPlatform } from "./probe-math.ts";
 import { StaticReader, isValueRead, outermost, unwrap, type Binding } from "./static-eval.ts";
 import { catalogIntercept, insideFunctionNamed, navigationRoute, readSweeps, type Sweep } from "./sweeps.ts";
 import { splitRow, type TableShape } from "./table.ts";
@@ -160,9 +161,11 @@ export interface StatesFact {
   /** Whether the table has an entry (it lists exactly the interaction registry's components). */
   listed: boolean;
   /**
-   * The states captured: the example (variant key and rail label), the rows, the widths, the
-   * other states its capture shows, whether it is applied inside an overlay it opens first,
-   * and the overlay it opens when its source renders more than one.
+   * The recipes the web runner applies (what it sets up, read from the table and never from a
+   * capture, since the facts are the source's alone): the example (variant key and rail
+   * label), the rows, the widths, the other states its capture shows, whether it is applied
+   * inside an overlay it opens first, and the overlay it opens when its source renders more
+   * than one.
    */
   recipes: { state: string; variant: string; label: string; rows: string[]; widths: string[]; alsoAnswers: string[]; inOverlay: boolean; opens: string | null }[];
   /** Why it has no state of its own, when the table says so. */
@@ -174,10 +177,13 @@ export interface StatesFact {
   /** Where its source disables a control no rail example asks for: `its own surface`, or `the overlay in <name>` (and the rows, when not every row). */
   unshown: string[];
   /**
-   * States its source gives only in builds no row of its docs page renders, which the web
-   * runner never has and the devices judge: the state, where it is, and the builds.
+   * The states its source says the web runner can never show, each with where it is and why:
+   * one its source gives only in builds no row of its docs page renders, and one whose only
+   * feedback on a row is one react-native-web does not draw (`android_ripple`), both judged on
+   * devices; and a recipe's state the source never announces on the web (a field disabled
+   * only through `editable`, read-only there), whose cell records that finding.
    */
-  devices: string[];
+  unreachable: string[];
 }
 
 export interface ComponentFacts {
@@ -1072,15 +1078,27 @@ export function loadCorpus(root = ROOT): FactsCorpus {
   };
 }
 
+/** Why a recipe's state is not reachable on the web, as the checklist says it (`Unreachable.why`). */
+const UNREACHABLE_BECAUSE: Record<Unreachable["why"], string> = {
+  "read-only":
+    "its source disables the field only through `editable`, which react-native-web renders read-only, never `aria-disabled` or a native `disabled`, so the page never announces it disabled and the recipe cannot confirm it",
+};
+
 /** What the state table says about a component, and whether its exemptions hold against its source and page. */
 export function statesFact(slug: string, doc: { category: Category; dir: string; name: string }, corpus: FactsCorpus): StatesFact {
   const entry = STATE_RECIPES[slug];
-  if (!entry) return { listed: false, recipes: [], static: null, exempt: [], unanswered: [], unshown: [], devices: [] };
+  if (!entry) return { listed: false, recipes: [], static: null, exempt: [], unanswered: [], unshown: [], unreachable: [] };
   const rail = railExamples(doc);
   const labelOf = (variant: string) => rail.find((example) => variantSlug(example.label) === variant)?.label ?? variant;
   const coverage = coverageOf(slug, entry, componentSignals(corpus.signals, doc), rail, docsRowsOf(slug, doc, corpus.signals));
   const ROW = { web: "web", ios: "iOS", android: "Android" } as const;
-  const onRows = (a: StateAnswer) => (a.rows ? ` on the ${a.rows.map((row) => ROW[row]).join(" and ")} ${a.rows.length === 1 ? "row" : "rows"}` : "");
+  const rowsText = (rows: readonly RowPlatform[]) => ` on the ${rows.map((row) => ROW[row]).join(" and ")} ${rows.length === 1 ? "row" : "rows"}`;
+  const onRows = (a: StateAnswer) => (a.rows ? rowsText(a.rows) : "");
+  const inOverlay = (a: StateAnswer) => (a.within ? ` in the overlay in \`${a.within}\`` : "");
+  const devices = (a: StateAnswer) =>
+    a.feedback
+      ? `${a.state}${inOverlay(a)}${onRows(a)}, where its controls' only ${a.state} feedback is \`${a.feedback}\`, which react-native-web does not draw (judged on devices)`
+      : `${a.state}${inOverlay(a)} (the ${(a.builds ?? []).map((build) => ROW[build]).join(" and ")} ${(a.builds ?? []).length === 1 ? "build" : "builds"}), which no row of its docs page renders (judged on devices)`;
   return {
     listed: true,
     recipes: recipesOf(slug).map((r) => ({ state: r.state, variant: r.variant, label: labelOf(r.variant), rows: [...r.rows], widths: [...r.widths], alsoAnswers: [...(r.alsoAnswers ?? [])], inOverlay: r.inOverlay === true, opens: r.opens ?? null })),
@@ -1088,7 +1106,10 @@ export function statesFact(slug: string, doc: { category: Category; dir: string;
     exempt: coverage.answers.filter((a) => a.by === "exemption").map((a) => ({ state: a.state, reason: a.exemption!.reason, failure: a.failure ?? null })),
     unanswered: coverage.answers.filter((a) => a.by === "nothing").map((a) => `${a.within ? `${a.state} in the overlay in ${a.within}` : a.state}${onRows(a)}`),
     unshown: coverage.answers.filter((a) => a.by === "unshown").map((a) => `${a.within ? `the overlay in ${a.within}` : "its own surface"}${onRows(a)}`),
-    devices: coverage.answers.filter((a) => a.by === "devices").map((a) => `${a.state}${a.within ? ` in the overlay in ${a.within}` : ""} (the ${(a.builds ?? []).map((build) => ROW[build]).join(" and ")} ${(a.builds ?? []).length === 1 ? "build" : "builds"})`),
+    unreachable: [
+      ...coverage.answers.filter((a) => a.by === "devices").map(devices),
+      ...coverage.unreachable.map((u) => `${u.recipe.state} on ${labelOf(u.recipe.variant)}${u.recipe.inOverlay ? " inside the overlay it opens" : ""}${rowsText(u.rows)}: ${UNREACHABLE_BECAUSE[u.why]}`),
+    ],
   };
 }
 
