@@ -938,7 +938,7 @@ drawn by those entries' platforms.
 | `card` | `atoms/skeleton`, `charts/shared`, `molecules/accordion`, `molecules/card`, `molecules/collapsible`, `molecules/description-lists`, `molecules/empty-state`, `molecules/feeds`, `molecules/media-objects`, `molecules/stacked-lists`, `molecules/stats`, `organisms/board`, `organisms/calendar`, `organisms/carousel`, `organisms/data-table`, `organisms/drag-drop`, `organisms/filter-panel`, `organisms/navbars`, `organisms/sidebar` |
 | `dialog` | `molecules/alert-dialog`, `organisms/action-sheet`, `organisms/dialog` |
 | `menu` | `atoms/autocomplete`, `atoms/button-group`, `atoms/dropdown`, `atoms/listbox`, `atoms/popover`, `atoms/select`, `charts/shared`, `organisms/calendar`, `organisms/command`, `organisms/row-menu`, `style` |
-| `sheet` | `organisms/action-sheet`, `organisms/drawer`, `organisms/toast` |
+| `sheet` | `atoms/popover`, `organisms/action-sheet`, `organisms/drawer`, `organisms/toast` |
 | `checkbox` | `atoms/checkbox` |
 | `pill` | `atoms/badge`, `atoms/button`, `atoms/button-group`, `atoms/chip`, `atoms/pagination`, `atoms/skeleton`, `organisms/tabs`, `organisms/toast` |
 | `tile` | `atoms/emblem`, `atoms/qrcode`, `atoms/swatch`, `molecules/alert`, `molecules/grid-lists`, `organisms/dashboard-grid` |

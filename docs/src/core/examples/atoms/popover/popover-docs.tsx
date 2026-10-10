@@ -18,7 +18,7 @@ export const docs: ComponentDocs = {
   category: "atoms",
   overview: [
     "On the web and Android the panel is Dark Factory's: a 12px card with a hairline and its soft popover shadow, Dark Factory's heading over its body in the muted ink. iOS keeps the iPad popover, a rounder borderless card with a beak toward its trigger, in the same type.",
-    "The triggered card opens below its button by default and above it with `top`; either way it flips to the other side when its own lacks room, and the iOS beak follows the side it took. At phone width a triggered card that can close is presented as a sheet along the bottom of the window, over a dimming scrim: Dark Factory's sheet on the web, the iOS sheet on iPhone and the Material 3 bottom sheet on Android.",
+    "The triggered card opens below its button by default and above it with `top`; either way it flips to the other side when its own lacks room, and the iOS beak follows the side it took. At phone width a triggered card that can close is presented as a sheet on the bottom edge of the window, over the tab bar and a dimming scrim, its content kept clear of the home indicator: Dark Factory's sheet on the web, the iOS sheet on iPhone and the Material 3 bottom sheet on Android.",
     "In glass mode the triggered card is a functional-layer glass panel beside its button; focus enters once the card's placement has committed, and the `inline` card is a static in-flow panel. Solid mode paints the skin's own panel.",
   ],
   examples: [
@@ -37,7 +37,7 @@ export const docs: ComponentDocs = {
     {
       title: "Accessibility",
       blocks: [
-        "The trigger is a button that announces its popup as a dialog and whether it is expanded. Opening the card moves keyboard focus into the panel, named a dialog, once its placement has settled.",
+        "The trigger is a button that announces its popup as a dialog and whether it is expanded. Opening the card moves keyboard focus into the panel, once its placement has settled: a dialog named by its title (by the trigger's label when it has none) and described by its supporting line.",
         "With a keyboard, Tab moves through the panel's controls as if the card sat right after its trigger, then on to the control after the trigger, and the card stays open: the popover is non-modal on the web. Shift+Tab from the panel returns to the trigger, and Tab from the trigger re-enters the card. Escape closes it, and focus goes back to whatever opened it.",
         "On iOS and Android the open card is modal to VoiceOver and TalkBack: the page behind it is hidden from them, their focus moves to the card's first line, and when the card closes it returns to the trigger. The escape gesture and the Android back button close the card. Touch closes it with a tap anywhere outside it, and on phones a tap on the scrim above the sheet.",
       ],
