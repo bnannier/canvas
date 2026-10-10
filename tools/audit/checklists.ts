@@ -237,7 +237,7 @@ export function renderComponentFacts(facts: ComponentFacts): string[] {
       "Reference row",
       facts.reference
         ? `${code(facts.reference.key)} (${facts.reference.treatment}, ${facts.reference.build}). ${referenceCell("iOS", facts.reference.ios)}. ${referenceCell("Android", facts.reference.android)}. ${referenceCell("Web", facts.reference.web)}`
-        : "none: `PLATFORM-REFERENCES.md` has no row for this component (K8)",
+        : "none: `PLATFORM-REFERENCES.md` has no row for this component, which `test/platform-references.test.ts` fails",
     ],
     [
       "Materials manifest",

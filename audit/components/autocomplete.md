@@ -71,7 +71,7 @@ Severity follows rn-library-audit: critical (broken for a class of users), high 
 
 ## Specific checks
 
-Native shape owed per `PLATFORM-REFERENCES.md` (iOS / Android): DF / M3.
+Native shape owed per `PLATFORM-REFERENCES.md` (iOS / Android): text field and menu (one job, different control, K8c) / M3.
 
 - [ ] APG combobox (`aria-activedescendant`, Escape clears then closes)
 - [ ] M3 exposed dropdown on Android

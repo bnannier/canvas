@@ -13,7 +13,7 @@ Audit checklist for `/components/drag-drop`. The facts block and the variants ta
 | Exports | DragDropProvider, DropZone, Draggable, DragHandle |
 | Platform entries | iOS: own build: DragDropProvider (builds from its own iosSkin); DropZone (builds from its own iosSkin); Draggable (builds from its own iosSkin); DragHandle (builds from its own iosSkin). Android: own build: DragDropProvider (builds from its own androidSkin); DropZone (builds from its own androidSkin); Draggable (builds from its own androidSkin); DragHandle (builds from its own androidSkin) |
 | Platform-skins registry | iOS: DragDropProvider, DropZone, Draggable, DragHandle; Android: DragDropProvider, DropZone, Draggable, DragHandle |
-| Reference row | none: `PLATFORM-REFERENCES.md` has no row for this component (K8) |
+| Reference row | `drag-drop` (Light, Built). iOS: none (iOS has no drag-and-drop control; the HIG covers drag and drop as a pattern, a system interaction (UIDragInteraction lifts, previews and drops content) that apps attach to their own views). Android: none (Material 3 has no drag-and-drop component; Android's drag and drop is a framework interaction (View.startDragAndDrop) with no design spec of its own). Web: link [drag-drop (Web)](https://dndkit.com/) (dnd-kit: sortable lists and drop zones with keyboard and screen reader support) |
 | Materials manifest | DragDropProvider: organisms, inherited; verification inherited-composition, semantic-state. DropZone: organisms, inherited; verification inherited-composition, semantic-state. Draggable: organisms, inherited; verification inherited-composition, semantic-state. DragHandle: organisms, liquid + inherited; verification solid-appearance, glass-appearance, mode-switch, accessibility-fallback, runtime-capability, semantic-state |
 | Hand-off open gaps | none |
 | Hand-off settled | none |
@@ -66,7 +66,7 @@ Severity follows rn-library-audit: critical (broken for a class of users), high 
 
 ## Specific checks
 
-Native shape owed per `PLATFORM-REFERENCES.md` (iOS / Android): n/a.
+Native shape owed per `PLATFORM-REFERENCES.md` (iOS / Android): DF / DF (own skins until this turn aliases them, K8c; the grip keeps the platform touch target).
 
 - [ ] keyboard drag
 - [ ] live announcements

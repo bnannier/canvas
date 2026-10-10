@@ -13,7 +13,7 @@ Audit checklist for `/components/pressable`. The facts block and the variants ta
 | Exports | Pressable |
 | Platform entries | none (`src/style/pressable.tsx` is one build on every platform) |
 | Platform-skins registry | none (every export is the web build, so the docs three-up renders it as is) |
-| Reference row | none: `PLATFORM-REFERENCES.md` has no row for this component (K8) |
+| Reference row | `pressable` (Shared, Built). iOS: none (iOS has no generic pressable control; a tappable surface is a button or a list row, and press feedback belongs to that control). Android: none (Material 3 has no generic pressable component; its state layers and ripple belong to each interactive component). Web: link [pressable (Web)](https://react-spectrum.adobe.com/react-aria/usePress.html) (React Aria's usePress: press events normalized across mouse, touch and keyboard, the job React Native's Pressable does) |
 | Materials manifest | Pressable: style, inherited; verification inherited-composition, semantic-state |
 | Hand-off open gaps | none |
 | Hand-off settled | none |

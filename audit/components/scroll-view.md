@@ -13,7 +13,7 @@ Audit checklist for `/components/scroll-view`. The facts block and the variants 
 | Exports | ScrollView |
 | Platform entries | none (`src/style/scroll-view.tsx` is one build on every platform) |
 | Platform-skins registry | none (every export is the web build, so the docs three-up renders it as is) |
-| Reference row | none: `PLATFORM-REFERENCES.md` has no row for this component (K8) |
+| Reference row | `scroll-view` (Shared, Built). iOS: link [scroll-view (iOS)](https://developer.apple.com/design/human-interface-guidelines/scroll-views) (HIG Scroll views: the primitive is UIScrollView itself, with the system's own transient indicators; no iOS 27 kit group). Android: none (Material 3 has no scroll view component; scrolling is intrinsic to lists and surfaces, with OS-drawn transient scrollbars). Web: link [scroll-view (Web)](https://developer.mozilla.org/en-US/docs/Web/CSS/overflow) (react-native-web renders a div that scrolls with the browser's own scrollbars) |
 | Materials manifest | ScrollView: style, inherited; verification inherited-composition, semantic-state |
 | Hand-off open gaps | none |
 | Hand-off settled | none |

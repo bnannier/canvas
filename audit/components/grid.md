@@ -13,7 +13,7 @@ Audit checklist for `/components/grid`. The facts block and the variants table a
 | Exports | Grid, GridItem, gridColumns, gridCellWidth |
 | Platform entries | iOS: web build: Grid; re-exports the shared build: GridItem, gridColumns, gridCellWidth. Android: web build: Grid; re-exports the shared build: GridItem, gridColumns, gridCellWidth |
 | Platform-skins registry | none (every export is the web build, so the docs three-up renders it as is) |
-| Reference row | none: `PLATFORM-REFERENCES.md` has no row for this component (K8) |
+| Reference row | `grid` (Shared, Built). iOS: none (iOS has no grid control; SwiftUI's Grid and LazyVGrid arrange views and draw nothing, and the designed tile collection is the grid-lists row). Android: none (Material 3 has no grid component; Compose's LazyVerticalGrid arranges content and draws nothing). Web: link [grid (Web)](https://www.radix-ui.com/themes/docs/components/grid) (Radix Themes Grid) |
 | Materials manifest | Grid: atoms, inherited; verification inherited-composition, semantic-state. GridItem: atoms, inherited; verification inherited-composition, semantic-state |
 | Hand-off open gaps | none |
 | Hand-off settled | none |
@@ -74,7 +74,6 @@ Native shape owed per `PLATFORM-REFERENCES.md` (iOS / Android): n/a.
 - [ ] `minTileWidth` + `columns`
 - [ ] container measured
 - [ ] SSR first frame
-- [ ] no reference row
 
 ## Findings
 

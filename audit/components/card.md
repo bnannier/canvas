@@ -79,7 +79,7 @@ Severity follows rn-library-audit: critical (broken for a class of users), high 
 
 ## Specific checks
 
-Native shape owed per `PLATFORM-REFERENCES.md` (iOS / Android): DF / M3.
+Native shape owed per `PLATFORM-REFERENCES.md` (iOS / Android): DF (own iOS skin until this turn aliases it, K8c) / M3.
 
 - [ ] M3 card 12
 - [ ] web 14 with 2 px hover lift

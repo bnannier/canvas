@@ -13,7 +13,7 @@ Audit checklist for `/components/listbox`. The facts block and the variants tabl
 | Exports | Listbox |
 | Platform entries | iOS: own build: Listbox (builds from its own iosSkin). Android: own build: Listbox (injects platform parts (../checkbox/indicator/index.android.js)) |
 | Platform-skins registry | iOS: Listbox; Android: Listbox |
-| Reference row | `listbox` (Shared, Built). iOS: none (iOS has no listbox control; selecting one option from a list uses a pop-up button or picker menu, and HIG lists are content rows, not a selection control). Android: link [listbox (Android)](https://m3.material.io/components/menus/overview) (no M3 listbox; exposed dropdown menu is the select idiom). Web: link [listbox (Web)](https://catalyst.tailwindui.com/docs/listbox) |
+| Reference row | `listbox` (Light, Built). iOS: none (iOS has no listbox control; selecting one option from a list uses a pop-up button or picker menu, HIG lists are content rows, not a selection control, and a chosen row in an iOS list takes a trailing checkmark). Android: none (Material 3 has no listbox component; choosing from a list is the exposed dropdown menu, the select row, and an inline option list is composed from list items with checkboxes). Web: link [listbox (Web)](https://catalyst.tailwindui.com/docs/listbox) |
 | Materials manifest | Listbox: atoms, static + liquid; verification solid-appearance, glass-appearance, mode-switch, accessibility-fallback, runtime-capability, semantic-state |
 | Hand-off open gaps | none |
 | Hand-off settled | Listbox.options (Renamed: `items`), Listbox.value (Renamed: `selected`), Listbox.multiple (Renamed: `multi`) |

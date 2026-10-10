@@ -11,9 +11,10 @@ import { type EmblemSkin } from "./emblem.styles.js";
 // the square from a semantic tone and clones its Icon child to paint the matching
 // color, so the caller only picks the glyph.
 //
-// Emblem is a "Light" platform treatment: one structure and semantic colors (here),
-// with per-OS touches limited to the corner radius (Material rounds more), the iOS
-// continuous corner curve (the app-icon tile idiom), and the monogram label type.
+// Emblem is a "Shared" platform treatment: one structure and semantic colors (here), and
+// no platform ships an icon tile, so the iOS and Android skins are the web skin
+// (emblem.styles.ts). The continuous corner curve is drawn only where the platform draws
+// one (iOS).
 
 export type Tone = "primary" | "destructive" | "success" | "warning" | "muted";
 export type EmblemSize = "small" | "default" | "large";

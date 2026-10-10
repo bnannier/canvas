@@ -74,7 +74,7 @@ Severity follows rn-library-audit: critical (broken for a class of users), high 
 
 ## Specific checks
 
-Native shape owed per `PLATFORM-REFERENCES.md` (iOS / Android): capsule (K8 contradiction) / M3.
+Native shape owed per `PLATFORM-REFERENCES.md` (iOS / Android): DF / M3 (the iOS build is the web capsule skin).
 
 - [ ] APG tabs (automatic vs manual activation)
 - [ ] M3 underline

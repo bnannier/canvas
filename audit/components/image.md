@@ -13,7 +13,7 @@ Audit checklist for `/components/image`. The facts block and the variants table 
 | Exports | Image |
 | Platform entries | none (one build on every platform) |
 | Platform-skins registry | none (every export is the web build, so the docs three-up renders it as is) |
-| Reference row | none: `PLATFORM-REFERENCES.md` has no row for this component (K8) |
+| Reference row | `image` (Shared, Built). iOS: link [image (iOS)](https://developer.apple.com/design/human-interface-guidelines/image-views) (HIG Image views: UIImageView and SwiftUI Image show an image with no frame or chrome of their own; no iOS 27 kit group). Android: none (Material 3 has no image component; images appear as content inside cards, lists and carousels). Web: link [image (Web)](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/img) (the img element) |
 | Materials manifest | Image: atoms, inherited; verification inherited-composition, semantic-state |
 | Hand-off open gaps | none |
 | Hand-off settled | none |

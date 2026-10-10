@@ -13,7 +13,7 @@ Audit checklist for `/components/phone-input`. The facts block and the variants 
 | Exports | PhoneInput, PHONE_COUNTRIES, flagOf |
 | Platform entries | iOS: own build: PhoneInput (builds from its own iosSkin); re-exports the shared build: PHONE_COUNTRIES, flagOf. Android: own build: PhoneInput (builds from its own androidSkin); re-exports the shared build: PHONE_COUNTRIES, flagOf |
 | Platform-skins registry | iOS: PhoneInput; Android: PhoneInput |
-| Reference row | none: `PLATFORM-REFERENCES.md` has no row for this component (K8) |
+| Reference row | `phone-input` (Full, Built). iOS: link [phone-input (iOS 27)](https://www.sketch.com/s/04c24d8b-38fb-4afb-8836-36617e022f02/symbols?g=Text%2520Fields) (iOS ships no phone field: the job is the text field with the phone pad, a country segment at its start). Android: link [phone-input (Android)](https://m3.material.io/components/text-fields/overview) (Material 3 has no phone field: the job is the text field with the country segment drawn inline as its prefix). Web: none (no established web library ships a phone field; it is composed from a country select and a tel input, as react-phone-number-input does) |
 | Materials manifest | PhoneInput: molecules, static + liquid; verification solid-appearance, glass-appearance, mode-switch, accessibility-fallback, runtime-capability, semantic-state, open-surface |
 | Hand-off open gaps | none |
 | Hand-off settled | none |
@@ -74,7 +74,7 @@ Severity follows rn-library-audit: critical (broken for a class of users), high 
 
 ## Specific checks
 
-Native shape owed per `PLATFORM-REFERENCES.md` (iOS / Android): n/a.
+Native shape owed per `PLATFORM-REFERENCES.md` (iOS / Android): HIG / M3.
 
 - [ ] E.164
 - [ ] `tel` autofill

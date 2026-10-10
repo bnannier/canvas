@@ -13,7 +13,7 @@ Audit checklist for `/components/badge`. The facts block and the variants table 
 | Exports | Badge, BadgeGroup |
 | Platform entries | iOS: web build: Badge; re-exports the shared build: BadgeGroup. Android: web build: Badge; re-exports the shared build: BadgeGroup |
 | Platform-skins registry | none (every export is the web build, so the docs three-up renders it as is) |
-| Reference row | `badge` (Light, Built). iOS: link [badge (iOS)](https://developer.apple.com/design/human-interface-guidelines/notifications#Badging) (Badging section; no kit symbol; iOS badges are notification counts on app icons and tab items, not text label pills). Android: link [badge (Android)](https://m3.material.io/components/badges/overview). Web: link [badge (Web)](https://catalyst.tailwindui.com/docs/badge) |
+| Reference row | `badge` (Shared, Built). iOS: none (iOS has no label pill; the HIG's badges are notification counts on app icons and tab bar items, a count dot rather than a text label). Android: none (Material 3 has no label pill; its badges are small count or dot indicators on navigation icons, a different job). Web: link [badge (Web)](https://catalyst.tailwindui.com/docs/badge) |
 | Materials manifest | Badge: atoms, static; verification solid-appearance, glass-appearance, mode-switch, accessibility-fallback, runtime-capability, semantic-state. BadgeGroup: atoms, inherited; verification inherited-composition, semantic-state |
 | Hand-off open gaps | none |
 | Hand-off settled | none |
@@ -74,7 +74,7 @@ Severity follows rn-library-audit: critical (broken for a class of users), high 
 
 ## Specific checks
 
-Native shape owed per `PLATFORM-REFERENCES.md` (iOS / Android): HIG / M3 cited, aliases web (K8 decision).
+Native shape owed per `PLATFORM-REFERENCES.md` (iOS / Android): DF / DF (neither platform ships a label pill; the iOS and M3 badges are count dots).
 
 - [ ] named badge role (`img` vs `group`)
 - [ ] soft-wash contrast in all looks and glass

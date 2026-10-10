@@ -13,7 +13,7 @@ Audit checklist for `/components/text`. The facts block and the variants table a
 | Exports | Text |
 | Platform entries | none (`src/style/text.tsx` is one build on every platform) |
 | Platform-skins registry | none (every export is the web build, so the docs three-up renders it as is) |
-| Reference row | none: `PLATFORM-REFERENCES.md` has no row for this component (K8) |
+| Reference row | `text` (Shared, Built). iOS: link [text (iOS)](https://developer.apple.com/design/human-interface-guidelines/labels) (HIG Labels: static text, UILabel and SwiftUI Text, whose look is its type style, the typography row's). Android: none (Material 3 has no text component; text takes the M3 type roles, covered by the typography row). Web: link [text (Web)](https://www.radix-ui.com/themes/docs/components/text) (Radix Themes Text; react-native-web renders Text as a div, a span inside another Text) |
 | Materials manifest | Text: style, inherited; verification inherited-composition, semantic-state |
 | Hand-off open gaps | none |
 | Hand-off settled | none |

@@ -13,7 +13,7 @@ Audit checklist for `/components/skeleton`. The facts block and the variants tab
 | Exports | Skeleton |
 | Platform entries | iOS: web build: Skeleton. Android: web build: Skeleton |
 | Platform-skins registry | none (every export is the web build, so the docs three-up renders it as is) |
-| Reference row | `skeleton` (Shared, Built). iOS: none (iOS has no skeleton component; the HIG Loading pattern only advises showing placeholder content while loading, and SwiftUI's redacted(reason: .placeholder) modifier is the API-level equivalent). Android: link [skeleton (Android)](https://m3.material.io/styles/motion/transitions/transition-patterns) (M3 documents skeleton loaders as a motion transition pattern; there is no skeleton component in the M3 catalog). Web: link [skeleton (Web)](https://ui.shadcn.com/docs/components/skeleton) |
+| Reference row | `skeleton` (Shared, Built). iOS: none (iOS has no skeleton component; the HIG Loading pattern only advises showing placeholder content while loading, and SwiftUI's redacted(reason: .placeholder) modifier is the API-level equivalent). Android: none (Material 3 has no skeleton component; it documents skeleton loaders only as a motion transition pattern, with no shape of their own). Web: link [skeleton (Web)](https://ui.shadcn.com/docs/components/skeleton) |
 | Materials manifest | Skeleton: atoms, static + inherited; verification solid-appearance, glass-appearance, mode-switch, accessibility-fallback, runtime-capability, semantic-state |
 | Hand-off open gaps | none |
 | Hand-off settled | Skeleton.circle (Renamed: `avatar`), Skeleton.width (Not offered: none), Skeleton.height (Not offered: none) |
@@ -69,7 +69,7 @@ Severity follows rn-library-audit: critical (broken for a class of users), high 
 
 ## Specific checks
 
-Native shape owed per `PLATFORM-REFERENCES.md` (iOS / Android): DF / M3.
+Native shape owed per `PLATFORM-REFERENCES.md` (iOS / Android): DF / DF.
 
 - [ ] shimmer on the loop primitive
 - [ ] static under reduced motion
