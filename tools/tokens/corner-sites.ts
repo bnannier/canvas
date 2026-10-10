@@ -2,8 +2,9 @@
  * Every corner radius the kit's source sets, traced back to where the number is written.
  *
  * A corner reaches a view through a `borderRadius` property or one of its per-corner
- * longhands (`borderTopStartRadius`, `borderBottomRightRadius`), through an assignment to
- * one, or through an SVG shape's `rx` / `ry`; and the number reaches that property from a
+ * longhands (`borderTopStartRadius`, `borderBottomRightRadius`), under a plain or computed
+ * key (`["borderRadius"]`, `[RADIUS_KEY]`), through an assignment to one, or through an SVG
+ * shape's `rx` / `ry`; and the number reaches that property from a
  * read of the shape table (`shape.ios.card`), a skin field (`skin.cardRadius`), a table
  * row, or a literal. The shape rules are a decision made where the number is written, so
  * that is the place this module reports, with what the number is: a read of one of the
@@ -23,7 +24,7 @@
 import ts from "typescript";
 import { radius, shape, type PlatformKey, type ShapeTokens } from "../../src/style/tokens.ts";
 import { platformShape } from "../../src/style/platform-shape.ts";
-import { SourceFolder, lineOf, nameOf, namesADeclaration, unwrap, type Origin, type Sink, type Unresolved } from "./source-folder.ts";
+import { SourceFolder, lineOf, namesADeclaration, unwrap, type Origin, type Sink, type TopDeclaration, type Unresolved } from "./source-folder.ts";
 
 /** A corner property: `borderRadius` and its per-corner longhands, physical and logical. */
 export const CORNER_PROPERTY = /^border(?:Top|Bottom|Start|End)?(?:Left|Right|Start|End)?Radius$/;
@@ -159,10 +160,11 @@ function platformRead(expr: ts.Expression, sf: ts.SourceFile, table: "shape" | "
   return { platform: platform as PlatformKey, key: node.name.text };
 }
 
-/** Whether a module-level declaration is a function: a function declaration, or a const holding an arrow or function expression. */
-function isFunction(node: ts.VariableDeclaration | ts.FunctionDeclaration): boolean {
+/** Whether a module-level declaration is a function: a function declaration, or a const or default export holding an arrow or function expression. */
+function isFunction(node: TopDeclaration["node"]): boolean {
   if (ts.isFunctionDeclaration(node)) return true;
-  const init = node.initializer && unwrap(node.initializer);
+  const value = ts.isExportAssignment(node) ? node.expression : node.initializer;
+  const init = value && unwrap(value);
   return init !== undefined && (ts.isArrowFunction(init) || ts.isFunctionExpression(init));
 }
 
@@ -287,7 +289,7 @@ export class CornerSites extends SourceFolder {
     const visit = (node: ts.Node) => {
       if (ts.isIdentifier(node) && node.getStart(sf) >= start && namesADeclaration(node)) {
         const decl = this.resolve(node, sf);
-        if (decl?.kind === "var" && !seen.has(decl.node) && this.topDeclarationOf(decl.node, decl.sf)?.node === decl.node && !isFunction(decl.node)) {
+        if ((decl?.kind === "var" || decl?.kind === "default") && !seen.has(decl.node) && this.topDeclarationOf(decl.node, decl.sf)?.node === decl.node && !isFunction(decl.node)) {
           seen.add(decl.node);
           for (const [element, set] of this.cornersInSpan(values, decl.sf, decl.node.getStart(decl.sf), decl.node.getEnd(), seen)) {
             for (const value of set) add(elements, element, value);
@@ -384,17 +386,14 @@ export class CornerSites extends SourceFolder {
     return [platformOf({ file: decl.sf.fileName, path: decl.node.name.text })];
   }
 
-  protected sinkOf(node: ts.Node): ts.Expression | null {
+  protected sinkOf(node: ts.Node, sf: ts.SourceFile): ts.Expression | null {
     let sink: ts.Expression | null = null;
-    if (ts.isPropertyAssignment(node) && CORNER_PROPERTY.test(nameOf(node.name) ?? "")) sink = node.initializer;
+    // A key written plainly, as a string, or computed from a literal or a const holding one
+    // (`["borderRadius"]`, `[RADIUS_KEY]`).
+    if (ts.isPropertyAssignment(node) && CORNER_PROPERTY.test(this.propertyKey(node.name, sf) ?? "")) sink = node.initializer;
     else if (ts.isShorthandPropertyAssignment(node) && CORNER_PROPERTY.test(node.name.text)) sink = node.name;
-    // `style.borderRadius = ...` on a style object built up in a shell.
-    else if (
-      ts.isBinaryExpression(node) &&
-      node.operatorToken.kind === ts.SyntaxKind.EqualsToken &&
-      ts.isPropertyAccessExpression(node.left) &&
-      CORNER_PROPERTY.test(node.left.name.text)
-    ) {
+    // `style.borderRadius = ...` (or `style["borderRadius"] = ...`) on a style object built up in a shell.
+    else if (ts.isBinaryExpression(node) && node.operatorToken.kind === ts.SyntaxKind.EqualsToken && CORNER_PROPERTY.test(this.memberKey(node.left, sf) ?? "")) {
       sink = node.right;
     } else if (ts.isJsxAttribute(node) && ts.isIdentifier(node.name) && SVG_CORNER.has(node.name.text)) {
       // `rx={4}` or `rx="4"`; an empty expression is reported as untraced.
@@ -403,11 +402,15 @@ export class CornerSites extends SourceFolder {
     }
     // A corner copied off another style (`borderRadius: flat.borderRadius`, a pane taking its
     // surface's corners) is not a corner of its own: the one it copies is traced where it is set.
-    if (sink) {
-      const read = unwrap(sink);
-      if (ts.isPropertyAccessExpression(read) && CORNER_PROPERTY.test(read.name.text)) return null;
-    }
+    if (sink && CORNER_PROPERTY.test(this.memberKey(unwrap(sink), sf) ?? "")) return null;
     return sink;
+  }
+
+  /** The key a member read or write names: `style.borderRadius`, `style["borderRadius"]`, `style[RADIUS_KEY]`; else null. */
+  private memberKey(expr: ts.Expression, sf: ts.SourceFile): string | null {
+    if (ts.isPropertyAccessExpression(expr)) return expr.name.text;
+    if (ts.isElementAccessExpression(expr)) return this.stringOf(expr.argumentExpression, sf, new Set());
+    return null;
   }
 
   /**

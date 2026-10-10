@@ -19,10 +19,11 @@
  * read by a key or by any key, a function's return values at a call, a parameter through
  * every call of its function among the scanned files (a component's destructured prop
  * through its default and every JSX use), a component shell's `skin` through the skins its
- * sibling styles module exports, names imported from another module of the scan, and a
- * number written as a string (an SVG attribute's, `fontSize="11"`). Anything
- * else is reported as unresolved rather than guessed, so a number the folder cannot see
- * fails its gate instead of passing it.
+ * sibling styles module exports, names imported from another module of the scan (under an
+ * alias, through a re-export or a namespace, or as its default export), a key computed from
+ * a literal or a const string (`["fontSize"]`), and a number written as a string (an SVG
+ * attribute's, `fontSize="11"`). Anything else is reported as unresolved rather than
+ * guessed, so a number the folder cannot see fails its gate instead of passing it.
  */
 
 import { existsSync, readFileSync } from "node:fs";
@@ -65,8 +66,8 @@ export interface Unresolved {
 
 type Table = { node: ts.ObjectLiteralExpression | ts.ArrayLiteralExpression; sf: ts.SourceFile };
 
-/** A module-level const or function, in its module. */
-export type TopDeclaration = { node: ts.VariableDeclaration | ts.FunctionDeclaration; sf: ts.SourceFile };
+/** A module-level const or function, or a module's default export of an expression (`export default { ... }`), in its module. */
+export type TopDeclaration = { node: ts.VariableDeclaration | ts.FunctionDeclaration | ts.ExportAssignment; sf: ts.SourceFile };
 type Expr = { expr: ts.Expression; sf: ts.SourceFile };
 type FunctionNode = ts.FunctionDeclaration | ts.ArrowFunction | ts.FunctionExpression;
 
@@ -76,6 +77,8 @@ export type Decl =
   | { kind: "binding"; node: ts.BindingElement; sf: ts.SourceFile }
   | { kind: "param"; node: ts.ParameterDeclaration; sf: ts.SourceFile }
   | { kind: "function"; node: ts.FunctionDeclaration; sf: ts.SourceFile }
+  /** A module's default export of an expression no other name holds (`export default { ... }`). */
+  | { kind: "default"; node: ts.ExportAssignment; sf: ts.SourceFile }
   | { kind: "module"; sf: ts.SourceFile };
 
 /** A place a function is called: a call's arguments, or a JSX element's attributes. */
@@ -95,14 +98,25 @@ export function unwrap(expr: ts.Expression): ts.Expression {
   return node;
 }
 
+/** A key's text: a name, a string or a number, and a computed key written as one (`["borderRadius"]`). */
 export function nameOf(name: ts.PropertyName | ts.BindingName | ts.JsxAttributeName | undefined): string | null {
   if (!name) return null;
   if (ts.isIdentifier(name) || ts.isStringLiteral(name) || ts.isNumericLiteral(name) || ts.isPrivateIdentifier(name)) return name.text;
+  if (ts.isComputedPropertyName(name)) return literalText(name.expression);
   return null;
 }
 
-const isExported = (node: ts.Node): boolean =>
-  ts.canHaveModifiers(node) && (ts.getModifiers(node) ?? []).some((m) => m.kind === ts.SyntaxKind.ExportKeyword);
+/** The text of a string or number literal, or null. */
+function literalText(expr: ts.Expression): string | null {
+  const node = unwrap(expr);
+  return ts.isStringLiteral(node) || ts.isNoSubstitutionTemplateLiteral(node) || ts.isNumericLiteral(node) ? node.text : null;
+}
+
+const hasModifier = (node: ts.Node, kind: ts.SyntaxKind): boolean => ts.canHaveModifiers(node) && (ts.getModifiers(node) ?? []).some((m) => m.kind === kind);
+const isExported = (node: ts.Node): boolean => hasModifier(node, ts.SyntaxKind.ExportKeyword);
+/** `export default function ...`, named or not. */
+const isDefaultFunction = (node: ts.Node): node is ts.FunctionDeclaration =>
+  ts.isFunctionDeclaration(node) && isExported(node) && hasModifier(node, ts.SyntaxKind.DefaultKeyword);
 
 export abstract class SourceFolder {
   private readonly files = new Map<string, ts.SourceFile>();
@@ -127,6 +141,22 @@ export abstract class SourceFolder {
 
   /** The property names a path leaves off its end: the path names the thing styled, not the property. */
   protected abstract isSinkName(name: string): boolean;
+
+  /** A property's key: its name (`nameOf`), or the string a computed key's const holds (`[RADIUS_KEY]`). */
+  protected propertyKey(name: ts.PropertyName, sf: ts.SourceFile): string | null {
+    return nameOf(name) ?? (ts.isComputedPropertyName(name) ? this.stringOf(name.expression, sf, new Set()) : null);
+  }
+
+  /** The string an expression is: a literal, or a const holding one (in this module or one it imports), or null. */
+  protected stringOf(expr: ts.Expression, sf: ts.SourceFile, seen: Set<ts.Node>): string | null {
+    const node = unwrap(expr);
+    const text = literalText(node);
+    if (text !== null) return text;
+    if (!ts.isIdentifier(node) || seen.has(node)) return null;
+    const decl = this.resolve(node, sf);
+    if (decl?.kind !== "var" || !decl.node.initializer || !(decl.node.parent.flags & ts.NodeFlags.Const)) return null;
+    return this.stringOf(decl.node.initializer, decl.sf, new Set(seen).add(node));
+  }
 
   protected load(relative: string): ts.SourceFile {
     let sf = this.files.get(relative);
@@ -250,6 +280,7 @@ export abstract class SourceFolder {
       const ns = this.resolve(node.expression, sf);
       if (ns?.kind === "module") {
         const decl = this.exported(ns.sf, node.name.text, new Set());
+        if (decl?.kind === "default") return [{ expr: decl.node.expression, sf: decl.sf }];
         return decl?.kind === "var" && decl.node.initializer ? [{ expr: decl.node.initializer, sf: decl.sf }] : null;
       }
     }
@@ -327,6 +358,7 @@ export abstract class SourceFolder {
       const decl = this.resolve(node, sf);
       if (!decl) return null;
       if (decl.kind === "var" && ts.isIdentifier(decl.node.name)) return decl.node.initializer ? this.tables(decl.node.initializer, decl.sf, next) : null;
+      if (decl.kind === "default") return this.tables(decl.node.expression, decl.sf, next);
       if (decl.kind === "param") {
         // A shell's `skin` is whichever skin its platform entry hands it: every skin its
         // sibling styles module exports, when it has one.
@@ -395,6 +427,7 @@ export abstract class SourceFolder {
     const decl = this.resolve(node, sf);
     if (!decl) return null;
     if (decl.kind === "var") return decl.node.initializer ? this.values(decl.node.initializer, decl.sf, seen) : null;
+    if (decl.kind === "default") return this.values(decl.node.expression, decl.sf, seen);
     if (decl.kind === "binding") return this.bindingValues(decl.node, decl.sf, seen);
     if (decl.kind === "param") {
       const args = this.arguments(decl.node);
@@ -511,8 +544,9 @@ export abstract class SourceFolder {
     }
     if (!decl) return null;
     if (decl.kind === "function") return { node: decl.node, sf: decl.sf };
-    if (decl.kind === "var" && decl.node.initializer) {
-      const init = unwrap(decl.node.initializer);
+    const value = decl.kind === "var" ? decl.node.initializer : decl.kind === "default" ? decl.node.expression : undefined;
+    if (value) {
+      const init = unwrap(value);
       if (ts.isArrowFunction(init) || ts.isFunctionExpression(init)) return { node: init, sf: decl.sf };
     }
     return null;
@@ -570,13 +604,21 @@ export abstract class SourceFolder {
       if (ts.isVariableStatement(statement) && isExported(statement)) {
         const found = declaredIn([statement], name, sf);
         if (found) return found;
-      } else if (ts.isFunctionDeclaration(statement) && isExported(statement) && statement.name?.text === name) {
+      } else if (ts.isFunctionDeclaration(statement) && isExported(statement) && (name === "default" ? isDefaultFunction(statement) : statement.name?.text === name && !isDefaultFunction(statement))) {
         return { kind: "function", node: statement, sf };
+      } else if (ts.isExportAssignment(statement) && !statement.isExportEquals && name === "default") {
+        // `export default EDIT` is the declaration it names; `export default { ... }` is its own.
+        const value = unwrap(statement.expression);
+        if (ts.isIdentifier(value)) return declaredIn(sf.statements, value.text, sf) ?? this.imported(sf, value.text);
+        return { kind: "default", node: statement, sf };
       } else if (ts.isExportDeclaration(statement) && !statement.isTypeOnly) {
         const from = statement.moduleSpecifier && ts.isStringLiteral(statement.moduleSpecifier) ? this.module(sf, statement.moduleSpecifier.text) : null;
         const clause = statement.exportClause;
         if (!clause) {
           if (from) stars.push(from);
+        } else if (ts.isNamespaceExport(clause)) {
+          // `export * as parts from "./parts.js"`.
+          if (clause.name.text === name) return from ? { kind: "module", sf: from } : null;
         } else if (ts.isNamedExports(clause)) {
           for (const element of clause.elements) {
             if (element.name.text !== name || element.isTypeOnly) continue;
@@ -587,7 +629,8 @@ export abstract class SourceFolder {
         }
       }
     }
-    for (const star of stars) {
+    // `export * from` passes on every name but the default.
+    for (const star of name === "default" ? [] : stars) {
       const found = this.exported(star, name, visited);
       if (found) return found;
     }
@@ -606,17 +649,29 @@ export abstract class SourceFolder {
   /**
    * Every place among the scanned files that names a module-level declaration, outside the
    * declaration itself: a read of a const, a spread of a style object, a call of a function,
-   * by its own name, an import alias or a namespace member. Each place is the identifier
-   * that names it, so `pathOf` says what uses it (`iosSkin.editInput` for a constant spread
-   * into the iOS skin's edit field).
+   * by its own name or any name an import or export gives it (`import { a as b }`, `export
+   * { a as b }`, a default export and import), or as a namespace member. Each place is the
+   * identifier that names it, so `pathOf` says what uses it (`iosSkin.editInput` for a
+   * constant spread into the iOS skin's edit field). An export is no use of its own.
    */
   protected referencesTo(decl: TopDeclaration): { node: ts.Identifier; sf: ts.SourceFile }[] {
     const target = decl.node;
-    const name = target.name && ts.isIdentifier(target.name) ? target.name.text : null;
-    if (!name) return [];
+    const own: string[] = [];
+    if (ts.isExportAssignment(target) || isDefaultFunction(target)) own.push("default");
+    if (!ts.isExportAssignment(target) && target.name && ts.isIdentifier(target.name)) own.push(target.name.text);
     const { names, aliases } = this.indexNames();
+    // Every name the declaration may go by: the aliases of its names, and theirs.
+    const known = new Set(own);
+    const queue = [...own];
+    while (queue.length > 0) {
+      for (const alias of aliases.get(queue.pop()!) ?? []) {
+        if (known.has(alias)) continue;
+        known.add(alias);
+        queue.push(alias);
+      }
+    }
     const out: { node: ts.Identifier; sf: ts.SourceFile }[] = [];
-    for (const local of [name, ...(aliases.get(name) ?? [])]) {
+    for (const local of known) {
       for (const { id, sf } of names.get(local) ?? []) {
         if (sf === decl.sf && id.pos >= target.pos && id.end <= target.end) continue;
         const parent = id.parent;
@@ -632,10 +687,11 @@ export abstract class SourceFolder {
     return out;
   }
 
-  /** The module-level const or function a node is written in, or null at the top level itself. */
+  /** The module-level const, function or default export a node is written in, or null at the top level itself. */
   protected topDeclarationOf(node: ts.Node, sf: ts.SourceFile): TopDeclaration | null {
     for (let at: ts.Node | undefined = node; at; at = at.parent) {
       if (ts.isFunctionDeclaration(at) && at.parent === sf) return { node: at, sf };
+      if (ts.isExportAssignment(at) && at.parent === sf && !at.isExportEquals) return { node: at, sf };
       if (ts.isVariableDeclaration(at) && ts.isVariableDeclarationList(at.parent) && ts.isVariableStatement(at.parent.parent) && at.parent.parent.parent === sf) {
         return { node: at, sf };
       }
@@ -643,26 +699,46 @@ export abstract class SourceFolder {
     return null;
   }
 
-  /** The identifiers of the scan that can name a declaration, and the import aliases. */
+  /**
+   * The identifiers of the scan that can name a declaration, and the aliases: for a name, the
+   * other names an import or export gives what it names (`import { a as b }` and `export
+   * { a as b }` give `a` the name `b`, `export default a` gives `a` the name `default`, and
+   * `import b from` gives `default` the name `b`). `referencesTo` resolves every candidate,
+   * so an alias another module gives some other `a` costs a lookup, never a wrong use.
+   */
   private indexNames(): { names: Map<string, { id: ts.Identifier; sf: ts.SourceFile }[]>; aliases: Map<string, Set<string>> } {
     if (!this.nameIndex || !this.aliasIndex) {
       const names = new Map<string, { id: ts.Identifier; sf: ts.SourceFile }[]>();
       const aliases = new Map<string, Set<string>>();
+      const alias = (from: string, to: string) => {
+        if (from !== to) aliases.set(from, (aliases.get(from) ?? new Set()).add(to));
+      };
       for (const relative of this.scope) {
         const sf = this.load(relative);
         const visit = (node: ts.Node) => {
           if (ts.isImportDeclaration(node)) {
-            const bindings = node.importClause?.namedBindings;
+            const clause = node.importClause;
+            if (clause?.name) alias("default", clause.name.text);
+            const bindings = clause?.namedBindings;
             if (bindings && ts.isNamedImports(bindings)) {
-              for (const element of bindings.elements) {
-                if (!element.propertyName) continue;
-                const exported = element.propertyName.text;
-                aliases.set(exported, (aliases.get(exported) ?? new Set()).add(element.name.text));
-              }
+              for (const element of bindings.elements) if (element.propertyName) alias(element.propertyName.text, element.name.text);
             }
             return;
           }
-          if (ts.isTypeNode(node) || ts.isInterfaceDeclaration(node) || ts.isTypeAliasDeclaration(node) || ts.isExportDeclaration(node)) return;
+          if (ts.isExportDeclaration(node)) {
+            const clause = node.exportClause;
+            if (clause && ts.isNamedExports(clause)) {
+              for (const element of clause.elements) if (element.propertyName) alias(element.propertyName.text, element.name.text);
+            }
+            return;
+          }
+          // `export default EDIT` names EDIT; it is not a use of it.
+          if (ts.isExportAssignment(node) && !node.isExportEquals && ts.isIdentifier(unwrap(node.expression))) {
+            alias((unwrap(node.expression) as ts.Identifier).text, "default");
+            return;
+          }
+          if (isDefaultFunction(node) && node.name) alias(node.name.text, "default");
+          if (ts.isTypeNode(node) || ts.isInterfaceDeclaration(node) || ts.isTypeAliasDeclaration(node)) return;
           if (ts.isIdentifier(node) && namesADeclaration(node)) {
             const list = names.get(node.text) ?? [];
             list.push({ id: node, sf });
