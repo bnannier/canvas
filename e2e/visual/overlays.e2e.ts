@@ -9,7 +9,8 @@
  * an outside tap paints in the app root's outlet, over the stage), so the stage is the
  * frame: its screenshot takes whatever is painted over it. Drawer and ActionSheet go
  * through react-native-web's Modal, which renders at the document root, so those two
- * are full-page.
+ * are full-page. Every overlay opens with the stage at the top of the page's scrollport,
+ * so the prose a page carries above its stage moves none of these pictures.
  */
 import { OVERLAYS } from "../support/overlays";
 import { FIXED_TIME, fitElementForScreenshot, gotoDocs, settledBox, stage } from "../support/docs";
@@ -21,6 +22,13 @@ for (const scheme of ["dark", "light"] as const) {
       await page.clock.setFixedTime(FIXED_TIME);
       await gotoDocs(page, `/components/${recipe.slug}`, { scheme, surface: "solid" });
       await expect(stage(page)).toBeVisible();
+      // Open it from the same place on every page: the stage at the top of the page's
+      // scrollport, under the banner. Where the page left the stage is set by the prose
+      // above it, and an anchored card keeps the side it opened on while that side still
+      // fits, so a Select opened from the bottom of the window stays above its field after
+      // the shot scrolls it into view. When the component pages gained their overview
+      // (48fde0fa) the Select and Autocomplete shots flipped above their fields that way.
+      await fitElementForScreenshot(page, stage(page));
 
       await recipe.open(page);
       await expect(recipe.panel(page).last()).toBeVisible();
