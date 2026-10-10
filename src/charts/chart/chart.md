@@ -1,6 +1,8 @@
 # Chart
 
-A single- or multi-series bar chart: vertical columns (or horizontal rows) sized against the axis max, with per-category values and labels. Pass `labels` + `series` for grouped clusters colored by the `chart-1`..`chart-8` tokens, add `stacked` to accumulate those series within one column per category, or give a series its own `success` / `destructive` tone when it means success or failure; press or scrub a category to inspect it.
+A single- or multi-series bar chart: vertical columns (or horizontal rows) sized against the axis max, with per-category values and labels.
+
+Pass `labels` + `series` for grouped clusters colored by the `chart-1`..`chart-8` tokens, add `stacked` to accumulate those series within one column per category, or give a series its own `success` / `destructive` tone when it means success or failure; press or scrub a category to inspect it.
 
 ## Usage
 

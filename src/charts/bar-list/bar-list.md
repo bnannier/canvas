@@ -1,6 +1,8 @@
 # BarList
 
-Ranked label and value rows, each with a color swatch, a truncating label, a right-aligned value, an optional delta, and a proportional track bar. Bars size against the largest row by default (the ranking idiom); `share` sizes them against the sum of the rows and appends percent readouts (the composition idiom). Rows become drill-in buttons with `onPressItem`. For comparing magnitudes on a shared axis without deltas or shares, reach for the bar `Chart` and its `horizontal` mode instead.
+Ranked label and value rows, each with a color swatch, a truncating label, a right-aligned value, an optional delta, and a proportional track bar.
+
+Bars size against the largest row by default (the ranking idiom); `share` sizes them against the sum of the rows and appends percent readouts (the composition idiom). Rows become drill-in buttons with `onPressItem`. For comparing magnitudes on a shared axis without deltas or shares, reach for the bar `Chart` and its `horizontal` mode instead.
 
 ## Usage
 

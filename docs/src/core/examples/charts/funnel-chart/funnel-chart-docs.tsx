@@ -10,6 +10,9 @@ import e_charts_funnel_chart_dont_0_dont from "./dont-0-dont";
 export const docs: ComponentDocs = {
   dir: "funnel-chart",
   category: "charts",
+  overview: [
+    "The stages stack as a column of centered trapezoids, each stage's top width proportional to its value and tapering to the next stage's width (the last stage is rectangular), ramp-colored, with the stage's label, value, and conversion percent as text on the stage. The percent reads against the previous stage by default; `share` reads every stage against the first. Press a stage to select it (the others dim).",
+  ],
   examples: [
     { label: "Default", code: "<FunnelChart\n  stages={[\n    { label: \"Visits\", value: 12400 },\n    { label: \"Signups\", value: 4200 },\n    { label: \"Activated\", value: 1850 },\n    { label: \"Paid\", value: 480 },\n  ]}\n/>", render: e_charts_funnel_chart_example_0 },
     { label: "Share of the first stage", code: "<FunnelChart\n  share\n  stages={[\n    { label: \"Cart\", value: 8600 },\n    { label: \"Address\", value: 5200 },\n    { label: \"Payment\", value: 3900 },\n    { label: \"Placed\", value: 3400 },\n  ]}\n/>", render: e_charts_funnel_chart_example_1 },

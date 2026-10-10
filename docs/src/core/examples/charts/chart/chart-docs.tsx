@@ -13,6 +13,9 @@ import e_charts_chart_dont_0_dont from "./dont-0-dont";
 export const docs: ComponentDocs = {
   dir: "chart",
   category: "charts",
+  overview: [
+    "Pass `labels` + `series` for grouped clusters colored by the `chart-1`..`chart-8` tokens, add `stacked` to accumulate those series within one column per category, or give a series its own `success` / `destructive` tone when it means success or failure; press or scrub a category to inspect it.",
+  ],
   examples: [
     { label: "Default", code: "<Chart\n  title=\"Signups\"\n  data={[\n    { label: \"Mon\", value: 45 },\n    { label: \"Tue\", value: 60 },\n    { label: \"Wed\", value: 35 },\n    { label: \"Thu\", value: 70 },\n    { label: \"Fri\", value: 55 },\n    { label: \"Sat\", value: 80 },\n    { label: \"Sun\", value: 95 }\n  ]}\n  max={100}\n/>", render: e_charts_chart_example_0 },
     { label: "Grouped bars", code: "<Chart\n  labels={[\"Q1\", \"Q2\", \"Q3\", \"Q4\"]}\n  series={[\n    { label: \"Revenue\", values: [62, 70, 84, 89] },\n    { label: \"Costs\", values: [41, 48, 55, 59] },\n    { label: \"Profit\", values: [21, 22, 29, 30] }\n  ]}\n/>", render: e_charts_chart_example_1 },

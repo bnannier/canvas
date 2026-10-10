@@ -1,6 +1,13 @@
 # Select
 
-Native select restyled to match Canvas inputs. Pass `label` (and `required`) to name the field: iOS and web render the label above the trigger, while Android floats the Material 3 in-container label once the menu opens or a value is selected. The trigger fills the parent it is given; a step of its own (`xs`, `lg`, …, with `start` to pin it to the leading edge) or a Container step sets its measure.
+A single-choice dropdown field: a trigger showing the chosen value that opens a
+panel of options, styled to match Canvas inputs.
+
+Pass `label` (and `required`) to name the field: iOS and web render the label
+above the trigger, while Android floats the Material 3 in-container label once
+the menu opens or a value is selected. The trigger fills the parent it is given;
+a step of its own (`xs`, `lg`, …, with `start` to pin it to the leading edge) or
+a Container step sets its measure.
 
 In glass mode the option panel is a dense-layer glass card under the trigger (or
 above it when it fits there); the trigger stays in place with its value and

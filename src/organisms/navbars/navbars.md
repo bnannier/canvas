@@ -1,20 +1,24 @@
 # Navbar
 
 Topbars with a brand, navigation links, and an action button. Used as the
-primary app-level navigation. The bar measures its own width: at and below the
-`sm` breakpoint (640) the links row automatically collapses into a menu button
-opening a dropdown of the same links (the active one checkmarked), so links
-never clip off a phone screen; `active` and `onSelect` keep their contract in
-both renderings. In glass mode the active link paints a control-layer pane (iOS
-keeps its inactive capsules and carries the brand fill as glass, web and Android
-carry their tinted tile), and the
-collapsed menu is Dropdown's dense-layer glass card under the hamburger. Solid
-mode keeps the skin's own active tile. Either cluster takes a caller-supplied element beside its
-built-in parts: `brandContent` leads the left one with a logo mark (beside or
-instead of the `brand` wordmark) and `actions` leads the right one with
-free-form trailing controls, ahead of `actionLabel` and `avatar`. `links` is
-optional, so a console topbar with no middle nav renders neither the links row
-nor the menu button that stands in for it.
+primary app-level navigation.
+
+The bar measures its own width: at and below the `sm` breakpoint (640) the links
+row automatically collapses into a menu button opening a dropdown of the same
+links (the active one checkmarked), so links never clip off a phone screen;
+`active` and `onSelect` keep their contract in both renderings.
+
+In glass mode the active link paints a control-layer pane (iOS keeps its
+inactive capsules and carries the brand fill as glass, web and Android carry
+their tinted tile), and the collapsed menu is Dropdown's dense-layer glass card
+under the hamburger. Solid mode keeps the skin's own active tile.
+
+Either cluster takes a caller-supplied element beside its built-in parts:
+`brandContent` leads the left one with a logo mark (beside or instead of the
+`brand` wordmark) and `actions` leads the right one with free-form trailing
+controls (a search button, icon buttons), ahead of `actionLabel` and `avatar`.
+`links` is optional, so a console topbar with no middle nav renders neither the
+links row nor the menu button that stands in for it.
 
 ## Usage
 

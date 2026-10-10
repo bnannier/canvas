@@ -1,4 +1,6 @@
 import { COMPONENTS } from "./components";
+import { componentDescription } from "../descriptions";
+import { inlineText } from "../../lib/inline-markdown";
 import { getAllPatterns } from "./patterns";
 import { getAllTemplates } from "./templates";
 import type { SearchEntry } from "./types";
@@ -29,7 +31,9 @@ const ALL_ENTRIES: SearchEntry[] = [
   ...GUIDE_ENTRIES,
   ...COMPONENTS.map((c) => ({
     title: c.name,
-    description: c.description,
+    // The description is inline Markdown (its .md intro's first paragraph); a result
+    // shows it, and a query matches it, as the text a reader sees.
+    description: inlineText(componentDescription(c)),
     path: `/components/${c.slug}`,
     category: c.category,
     // Keep the source-dir name searchable too, so "sidebar"/"switch" still find the

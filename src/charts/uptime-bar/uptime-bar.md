@@ -1,6 +1,8 @@
 # UptimeBar
 
-The statuspage strip: a single row of per-period status pills, oldest on the left, colored operational green, degraded amber, down red, or unknown muted (precedence down > degraded > unknown; an unmarked period is operational). An optional `caption` summarizes the strip above it, and `startLabel`/`endLabel` caption the physical edges below. The strip is a time axis, so it keeps left-to-right ordering in every locale, and its accessible name tallies every status.
+The statuspage strip: per-period status pills (operational, degraded, down, unknown) with a summary caption and edge labels.
+
+The pills run in a single row, oldest on the left, colored operational green, degraded amber, down red, or unknown muted (precedence down > degraded > unknown; an unmarked period is operational). An optional `caption` summarizes the strip above it, and `startLabel`/`endLabel` caption the physical edges below. The strip is a time axis, so it keeps left-to-right ordering in every locale, and its accessible name tallies every status.
 
 ## Usage
 

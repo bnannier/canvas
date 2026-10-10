@@ -22,6 +22,7 @@ export const docs: ComponentDocs = {
   dir: "slider",
   category: "atoms",
   overview: [
+    "Like the other input-like controls, a slider fills the parent it is given; a step of its own (`xs`, `lg`, …, with `start` to pin it to the leading edge) or a Container step sets its measure.",
     "Pass `ref` to access the interactive adjustable track, including when a header is shown. Use `useRef<ComponentRef<typeof Slider>>(null)` from React, or `useRef<View>(null)` with React Native's `View` type. Object and callback refs are supported and detach on unmount. Calling `ref.current?.focus()` or `.blur()` delegates to the host without activating the control. Browser focus is supported; native focus depends on the platform and React Native version, and is separate from accessibility focus.",
     "Name the setting with string `children`, or pass `accessibilityLabel` when the visible title is omitted or contains rich content.",
   ],

@@ -21,6 +21,9 @@ import e_molecules_field_dont_1_dont from "./dont-1-dont";
 export const docs: ComponentDocs = {
   dir: "field",
   category: "molecules",
+  overview: [
+    "When the row wraps a single field-family control that has no label of its own, Field hands the label down to it rather than drawing one alongside, so each platform still places it its own way: a static title above on web and iOS, the floating in-container label on Android. Set `error` and it replaces `helper` in the same slot, so the row never changes height and nothing below it jumps.",
+  ],
   examples: [
     { label: "Default", code: "<Field label=\"Email\" helper=\"We'll never share your email.\">\n  <Input placeholder=\"you@example.com\" />\n</Field>", render: e_molecules_field_example_0 },
     { label: "Error", code: "<Field label=\"Email\" error=\"Enter a valid email address.\">\n  <Input defaultValue=\"rachel.chen\" />\n</Field>", render: e_molecules_field_example_1 },

@@ -1,6 +1,12 @@
 # GeoMap
 
-A world map with a bubble per place: the land silhouette and the shared country borders are two paths precomputed at build time from Natural Earth 1:50m (no runtime fetch, no map dependency, no tiles), and each point is a circle at its projected coordinate whose AREA is proportional to its count, so doubling the count doubles the disc rather than its width. Add `zoomable` and the wheel zooms about the pointer, two fingers pinch, a drag pans, and places too close together to draw separately merge into one bubble carrying their summed count, splitting into their members as you zoom in. Single-identity encoding, so there is no tone axis and no legend. Press a bubble to flag its label and count (the others dim); the accessible name carries the biggest places with their values, because a screen reader user cannot see bubbles.
+A world map with a bubble per place, its area proportional to its count, over coastlines and country borders precomputed at build time. Optionally zoomable, merging crowded places into one bubble that splits as you zoom in.
+
+The land silhouette and the shared country borders are two paths precomputed from Natural Earth 1:50m (no runtime fetch, no map dependency, no tiles), and each point is a circle at its projected coordinate whose AREA is proportional to its count, so doubling the count doubles the disc rather than its width.
+
+Add `zoomable` and the wheel zooms about the pointer, two fingers pinch, a drag pans, and places too close together to draw separately merge into one bubble carrying their summed count, splitting into their members as you zoom in.
+
+Single-identity encoding, so there is no tone axis and no legend. Press a bubble to flag its label and count (the others dim); the accessible name carries the biggest places with their values, because a screen reader user cannot see bubbles.
 
 ## Usage
 

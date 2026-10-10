@@ -16,6 +16,9 @@ import e_charts_line_chart_dont_0_dont from "./dont-0-dont";
 export const docs: ComponentDocs = {
   dir: "line-chart",
   category: "charts",
+  overview: [
+    "`curved` draws a monotone cubic that never overshoots the data, `dots` marks each datum, and `baseline` + `fade` give the trading-app price idiom (dashed previous close, gain/loss auto tone, gradient fill). A series that means success or failure carries its own `success` / `destructive` tone instead of a ramp color. Press or scrub the plot to inspect a category.",
+  ],
   examples: [
     { label: "Default", code: "<LineChart\n  title=\"Active users\"\n  labels={[\"Jan\", \"Feb\", \"Mar\", \"Apr\", \"May\", \"Jun\", \"Jul\"]}\n  series={[\n    { label: \"Web\", values: [119, 122, 131, 147, 157, 176, 182] },\n    { label: \"Mobile\", values: [63, 93, 101, 121, 162, 207, 251] }\n  ]}\n/>", render: e_charts_line_chart_example_0 },
     { label: "Curved", code: "<LineChart\n  title=\"Signups\"\n  labels={[\"Mon\", \"Tue\", \"Wed\", \"Thu\", \"Fri\", \"Sat\", \"Sun\"]}\n  series={[{ label: \"Signups\", values: [24, 31, 28, 42, 39, 47, 51] }]}\n  curved\n/>", render: e_charts_line_chart_example_1 },

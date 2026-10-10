@@ -17,6 +17,11 @@ import e_organisms_navbars_dont_3_dont from "./dont-3-dont";
 export const docs: ComponentDocs = {
   dir: "navbars",
   category: "organisms",
+  overview: [
+    "The bar measures its own width: at and below the `sm` breakpoint (640) the links row automatically collapses into a menu button opening a dropdown of the same links (the active one checkmarked), so links never clip off a phone screen; `active` and `onSelect` keep their contract in both renderings.",
+    "In glass mode the active link paints a control-layer pane (iOS keeps its inactive capsules and carries the brand fill as glass, web and Android carry their tinted tile), and the collapsed menu is Dropdown's dense-layer glass card under the hamburger. Solid mode keeps the skin's own active tile.",
+    "Either cluster takes a caller-supplied element beside its built-in parts: `brandContent` leads the left one with a logo mark (beside or instead of the `brand` wordmark) and `actions` leads the right one with free-form trailing controls (a search button, icon buttons), ahead of `actionLabel` and `avatar`. `links` is optional, so a console topbar with no middle nav renders neither the links row nor the menu button that stands in for it.",
+  ],
   examples: [
     { label: "Default", code: "<Navbar\n  brand=\"Canvas\"\n  links={[\"Dashboard\", \"Users\", \"Settings\"]}\n  actionLabel=\"New\"\n  avatar=\"RC\"\n/>", render: e_organisms_navbars_example_0 },
     { label: "Bordered", code: "<Navbar bordered brand=\"Canvas\" links={[\"Dashboard\", \"Users\", \"Settings\"]} />", render: e_organisms_navbars_example_1 },

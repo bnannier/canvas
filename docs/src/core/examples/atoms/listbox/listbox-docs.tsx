@@ -19,6 +19,7 @@ export const docs: ComponentDocs = {
   dir: "listbox",
   category: "atoms",
   overview: [
+    "The list fills the parent it is given; a step of its own (`xs`, `lg`, …, with `start` to pin it to the leading edge) or a Container step sets its measure.",
     "One job, a platform's own control: iOS marks a choice in a list with a trailing check, so there every chosen row carries a check at its end (in single and multi select alike) and no row is filled for being chosen. The web and Android lead the row with the mark: a violet checkmark with the chosen label in the same violet in single-select, the platform's selection checkbox in multi-select (the Material 3 box on Android).",
     "The rows are Dark Factory's menu rows on every platform: bold labels at an 8px corner that take the hover wash at once on the web, a muted second line, and a bordered list in Dark Factory's panel.",
     "Single-select exposes a list of selectable options. With `multi`, it exposes a checkbox group: each row owns its label, checked state, and tap target. Give either mode a meaningful `accessibilityLabel`; the fallback is \"Options\". Arrow keys and Home/End move focus within one tab stop. Single-select follows focus, while multi-select keeps the current selection until Enter or Space toggles the focused row.",

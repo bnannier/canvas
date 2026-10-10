@@ -15,6 +15,7 @@ export const docs: ComponentDocs = {
   dir: "action-sheet",
   category: "organisms",
   overview: [
+    "It poses an optional title and message, lists a set of actions (any of which can be destructive), and offers a Cancel. Selecting an action runs it and closes the sheet; tapping the scrim or Cancel closes it without acting. Pass a `trigger` label for a self-contained button that opens the sheet, or drive `open` / `onOpenChange` yourself. For a small contextual menu anchored to a control, reach for Dropdown or RowMenu instead.",
     "On light glass, muted header text uses the stronger surface foreground to remain readable over the dimmed background.",
     "iOS accessibility escape and Android system back request cancellation without running an action. An open child overlay handles the request first. Disabled actions do not disable cancellation, and a controlled owner can keep the sheet open. The visible Cancel row remains available to assistive technology.",
   ],

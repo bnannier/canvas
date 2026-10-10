@@ -12,6 +12,10 @@ import e_atoms_pressable_dont_1_dont from "./dont-1-dont";
 export const docs: ComponentDocs = {
   dir: "pressable",
   category: "atoms",
+  overview: [
+    "The kit's interactive components (Button, plus the tappable Card, Stats, GridList, MediaObject, and StackedList rows) cover the common cases and keep branding consistent, so prefer them; Pressable stays for full flexibility when you need a custom interaction the kit doesn't provide. Its style prop accepts a function of the press state, `({ pressed }) => style`, so you can show press feedback with no extra wrapper; style it with tokens to stay on-brand.",
+    "Pass `focusable={false}` for a surface only a pointer should reach, such as a row whose keyboard path is a button inside it: it still presses, and it leaves the tab order on the web too, where react-native-web's own Pressable would keep it a tab stop. A Pressable with the `link` role presses on Enter (and not on Space), as a link does, on the web too: react-native-web's own Pressable leaves that key to the browser, which activates only a link that has an `href`.",
+  ],
   examples: [
     { label: "Default", code: "<Pressable style={({ pressed }) => ({ padding: 12, borderRadius: 8, backgroundColor: pressed ? alpha(tokens.primary, 0.8) : tokens.primary })}>\n  <Text style={{ color: tokens[\"primary-foreground\"] }}>Press and hold</Text>\n</Pressable>", render: e_atoms_pressable_example_0, note: ["Wire `onPress` to your own handler. The background dims while the button is held, straight from the `({ pressed }) => style` function."] },
     { label: "Opacity", code: "<Pressable style={({ pressed }) => ({ opacity: pressed ? 0.5 : 1 })}>\n  <Text style={{ color: tokens.foreground }}>Press and hold</Text>\n</Pressable>", render: e_atoms_pressable_example_1, note: ["The style function dims the whole surface to 50% opacity while pressed."] },

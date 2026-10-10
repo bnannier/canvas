@@ -13,6 +13,7 @@ export const docs: ComponentDocs = {
   dir: "carousel",
   category: "organisms",
   overview: [
+    "Paging snaps to the viewport width, the current slide drives the dots, and the arrows step the index (clamped, or wrapped when `loop`). Slides hold any content; pass an `items` array of `{ key, content }`.",
     "Each slide is itself the card: it paints the surface, rounds the corners and clips its content to them. So pass the slide's content, not a Card. A plain string renders in the slide's own type, inset from its edge; any other node fills the slide inside its 1px edge, so a picture is masked to the slide's shape. A Card nested inside frames the slide twice, and on Android the Material 3 item's 28dp corners cut the Card's own 12dp edge.",
     "The prev and next arrows sit beside the slides, never over them, so nothing near a slide's edge is hidden behind an arrow; the slides narrow by the two arrow gutters instead.",
     "Every slide is mounted from the first frame and stays mounted, so a slide's own state (a field's text, a playing video) survives the carousel measuring its viewport, on the first layout and whenever a hidden carousel is shown again. Until it has measured, the current slide fills the viewport on its own. A carousel does not window its slides, so a long gallery loads every slide's content up front.",

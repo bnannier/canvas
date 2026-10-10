@@ -1,6 +1,12 @@
 # StackedList
 
-Vertical lists with avatar, two-line items, and trailing metadata. Used for contacts, activity feeds, and data previews. Rows can carry a per-item `trailing` slot for an inline control, and `reorderable` adds a leading drag grip per row (keyboard- and screen-reader-operable) that reports each drop through `onReorder` while the order stays controlled by your `items` array.
+Vertical lists with avatar, two-line items, and trailing metadata. Used for
+contacts, activity feeds, and data previews.
+
+Rows can carry a per-item `trailing` slot for an inline control, and
+`reorderable` adds a leading drag grip per row (keyboard- and
+screen-reader-operable) that reports each drop through `onReorder` while the
+order stays controlled by your `items` array.
 
 The rows are a list, as in Tailwind UI, and each row is one of its items: a
 screen reader announces the list with its number of rows and moves through it

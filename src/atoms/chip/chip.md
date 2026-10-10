@@ -1,14 +1,17 @@
 # Chip
 
-An interactive pill for filter chips, tags, and selectable tokens. A Chip is a
-LOW-emphasis tag, not a call to action: the neutral chip is Dark Factory's quiet pill
-(the soft surface color under the foreground), and a coloured chip is its soft pill
-(the color's wash under the color's ink, the recipe Alert and the other toned surfaces
-share). A selected filter chip is Dark Factory's selected chip, the solid primary
-(the tonal primary on Android, where Material 3 draws its selected filter chip). It
-carries an optional leading icon and a label, becomes tappable with `onPress`, and
-grows a trailing "×" remove button with `onRemove`, so no call site hand-composes a
-`borderRadius` + `backgroundColor` + padding Pressable.
+An interactive pill for filter chips, tags, and selectable tokens. It carries an
+optional leading icon and a label, becomes tappable with `onPress`, and grows a
+trailing "×" remove button with `onRemove`.
+
+A Chip is a LOW-emphasis tag, not a call to action: the neutral chip is Dark
+Factory's quiet pill (the soft surface color under the foreground), and a
+coloured chip is its soft pill (the color's wash under the color's ink, the
+recipe Alert and the other toned surfaces share). A selected filter chip is Dark
+Factory's selected chip, the solid primary (the tonal primary on Android, where
+Material 3 draws its selected filter chip). The chip owns that whole look, so no
+call site hand-composes a `borderRadius` + `backgroundColor` + padding
+Pressable.
 
 Two orthogonal axes drive the look:
 

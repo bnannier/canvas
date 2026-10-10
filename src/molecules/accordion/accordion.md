@@ -1,6 +1,8 @@
 # Accordion
 
-A vertically stacked group of disclosure rows: each `items` entry is a header (its `title` plus a chevron that rotates when the row opens) over a collapsible content panel. Single-open by default (opening one row closes the others); pass `multiple` to let any number stay open. Open state is controlled (`value` + `onValueChange`) or uncontrolled (`defaultValue`). An item's `description` adds a muted secondary line under its title; `card` wraps the whole group in an outlined card surface on web and Android (on iOS the default look already is the inset-grouped card, so `card` is a no-op there).
+A vertically stacked group of disclosure rows: each `items` entry is a header (its `title` plus a chevron that rotates when the row opens) over a collapsible content panel.
+
+Single-open by default (opening one row closes the others); pass `multiple` to let any number stay open. Open state is controlled (`value` + `onValueChange`) or uncontrolled (`defaultValue`). An item's `description` adds a muted secondary line under its title; `card` wraps the whole group in an outlined card surface on web and Android (on iOS the default look already is the inset-grouped card, so `card` is a no-op there).
 
 ## Usage
 

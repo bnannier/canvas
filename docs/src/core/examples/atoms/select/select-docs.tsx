@@ -25,6 +25,7 @@ export const docs: ComponentDocs = {
   dir: "select",
   category: "atoms",
   overview: [
+    "Pass `label` (and `required`) to name the field: iOS and web render the label above the trigger, while Android floats the Material 3 in-container label once the menu opens or a value is selected. The trigger fills the parent it is given; a step of its own (`xs`, `lg`, …, with `start` to pin it to the leading edge) or a Container step sets its measure.",
     "In glass mode the option panel is a dense-layer glass card under the trigger (or above it when it fits there); the trigger stays in place with its value and chevron, and the chosen value and expanded state commit immediately. Solid mode paints the skin's own panel.",
     "The label also names the option list. Use `accessibilityLabel` to provide an explicit purpose when the visible label or placeholder is insufficient; it overrides both accessible names. A required field announces \"required\" with the button name and marks the option list as required. The selected value never replaces the field's purpose.",
     "Pass `ref` to access the interactive trigger, preserving overlay measurement. Use `useRef<ComponentRef<typeof Select>>(null)` from React, or `useRef<View>(null)` with React Native's `View` type. Object and callback refs are supported and detach on unmount. Calling `ref.current?.focus()` or `.blur()` delegates to the host without activating the control. Browser focus is supported; native focus depends on the platform and React Native version, and is separate from accessibility focus.",

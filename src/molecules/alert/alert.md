@@ -1,6 +1,8 @@
 # Alert
 
-Inline notification banners: info, success, warning, and destructive, plus a full-width announcement bar. A banner fills the parent it is given, so a column of alerts is the same measure top to bottom and a banner over a form lines up with the fields; a Container step sets the measure when the layout calls for one. For a blocking confirmation prompt, see Alert Dialog.
+Inline notification banners: info, success, warning, and destructive, plus a full-width announcement bar. For a blocking confirmation prompt, see Alert Dialog.
+
+A banner fills the parent it is given, so a column of alerts is the same measure top to bottom and a banner over a form lines up with the fields; a Container step sets the measure when the layout calls for one.
 
 A toned banner is Dark Factory's soft panel: the tone's wash with no border, the title in the tone's color, the body in the foreground, and the icon in the tone's solid color, from `statusColors` (the helper Badge and every toned surface read). The neutral banner is the card with a hairline.
 

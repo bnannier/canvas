@@ -56,9 +56,10 @@ Conventions inside the shell:
    `export * from "./<name>/<name>.js";` (alphabetical).
 2. Docs example scope: `docs/src/core/live-scope.ts` — add to BOTH the import
    list and the `LIVE_SCOPE` object. Missing ⇒ `docs:gen` throws tagViolations.
-3. Docs catalog: `docs/src/core/data/components.ts` — `{ slug, name,
-   description, category }`; use `dir:` when the slug differs from the source
-   directory (e.g. slug `row-column`, dir `layout`).
+3. Docs catalog: `docs/src/core/data/components.ts`: `{ slug, name,
+   category }`; use `dir:` when the slug differs from the source directory
+   (e.g. slug `row-column`, dir `layout`). The description is the `.md`
+   intro's first paragraph (see §3), never a field here.
 4. Nav: `docs/src/data/nav.config.json` — add the slug to its category group.
    `cd docs && bun run check:nav` must pass (it cross-checks 3↔4).
 
@@ -66,7 +67,7 @@ Conventions inside the shell:
 
 ```
 # <Name>           (the component's name in docs/src/core/data/components.ts)
-Description.       (the intro's first paragraph)
+Description.       (the intro's first paragraph: the page's lead and its search entry)
 More intro.        (optional paragraphs and bullet lists: the overview under the lead)
 ## Usage
 one ```tsx fence   (prose beside it is the Default example's note)
@@ -84,8 +85,13 @@ fence
 ```
 
 Every line reaches the page (`parseDoc` in parse-md.ts reads it into one document
-model and the generator emits all of it): the paragraphs and lists after the
-intro's first paragraph render as the overview under the page's lead. A note shows under the Playground rail while its example is selected. A guidance
+model and the generator emits all of it): the intro's first paragraph is the
+component's description, generated into `docs/src/core/descriptions.ts`, which the
+page's lead and the search index read, so the registry entry in
+`docs/src/core/data/components.ts` carries no description of its own and the `.md`
+is the one place it is written. Keep that paragraph a short, true summary; the
+detail goes in the paragraphs after it, which render as the overview under the lead.
+A note shows under the Playground rail while its example is selected. A guidance
 section renders after Do & Don't, its fences as live examples over their source
 under the same guardrails as the Variants. Prose is a paragraph or a `-` bullet
 list (one paragraph per item) of inline Markdown: a code span (`` `cover` ``) renders
@@ -110,8 +116,8 @@ rule:
   registered component (its `dir`, or its `slug` when they match) has a page; a
   missing one is reported at its entry's `slug` line in the registry.
 - **S2** A prose intro sits between the title and `## Usage`, with no fence,
-  `###` heading or Do/Don't marker in it, and it opens with a paragraph, not a
-  list.
+  `###` heading or Do/Don't marker in it, and it opens with a paragraph (the
+  description), not a list.
 - **S3** `## Usage`, `## Variants` and `## Do & Don't` each appear exactly once,
   in that order. Every page carries all three, the primitives and the charts
   included, and every `##` names its section.

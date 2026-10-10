@@ -1,6 +1,8 @@
 # ServiceHealthList
 
-Per-service status rows: a status dot (down > degraded > operational), the service name, an optional right-aligned `detail` such as an uptime percentage, and, when the item carries `periods`, an embedded mini uptime strip on a second line. It shares its strip renderer with UptimeBar, so the two never drift. `onPressItem` turns rows into drill-in buttons; `compact` hides the strips and tightens the rows; `plain` strips the card surface for nesting.
+Per-service status rows: a status dot (down > degraded > operational), the service name, an optional right-aligned `detail` such as an uptime percentage, and, when the item carries `periods`, an embedded mini uptime strip on a second line.
+
+It shares its strip renderer with UptimeBar, so the two never drift. `onPressItem` turns rows into drill-in buttons; `compact` hides the strips and tightens the rows; `plain` strips the card surface for nesting.
 
 ## Usage
 

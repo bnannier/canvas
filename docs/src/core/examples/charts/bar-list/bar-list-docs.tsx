@@ -11,6 +11,9 @@ import e_charts_bar_list_dont_0_dont from "./dont-0-dont";
 export const docs: ComponentDocs = {
   dir: "bar-list",
   category: "charts",
+  overview: [
+    "Bars size against the largest row by default (the ranking idiom); `share` sizes them against the sum of the rows and appends percent readouts (the composition idiom). Rows become drill-in buttons with `onPressItem`. For comparing magnitudes on a shared axis without deltas or shares, reach for the bar `Chart` and its `horizontal` mode instead.",
+  ],
   examples: [
     { label: "Default", code: "<BarList\n  title=\"Top pages\"\n  items={[\n    { label: \"/pricing\", value: 18400, delta: \"+12%\" },\n    { label: \"/docs\", value: 12100, delta: \"+4%\" },\n    { label: \"/blog/launch\", value: 8700, delta: \"-2%\", down: true },\n  ]}\n/>", render: e_charts_bar_list_example_0 },
     { label: "Share of total", code: "<BarList\n  share\n  items={[\n    { label: \"google\", value: 412 },\n    { label: \"email\", value: 318 },\n    { label: \"github\", value: 142 },\n  ]}\n/>", render: e_charts_bar_list_example_1 },
