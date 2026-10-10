@@ -40,8 +40,9 @@ Severity follows rn-library-audit: critical (broken for a class of users), high 
 
 ## Specific checks
 
-- [ ] the loop primitive: the native driver natively and a compositor CSS animation on the web, nothing committed through React per frame (`test/design-rules-source.test.ts` keeps `Animated.loop(` inside `loop-native.ts`)
-- [ ] the Skeleton shimmer, the Spinner and the indeterminate Progress kept running under reduced motion where the motion carries information
+- [ ] the loop primitive: the native driver natively and a compositor CSS animation on the web, nothing committed through React per frame (`loop-native.ts` holds the primitive's one `Animated.loop`; `test/design-rules-source.test.ts` holds every file that loops to `supportsNativeDriver` and one timing per loop)
+- [ ] the Skeleton shimmer, the one effect that renders through it (Skeleton, and DataTable's loading rows through it: its Capture through list), still under Reduce Motion, where the shimmer is decoration and an animated Skeleton mounts no loop
+- [ ] source: the Spinner, the indeterminate Progress sweep and the InputOTP caret drive their own `Animated.loop` (`src/atoms/spinner/spinner.shared.tsx`, `src/atoms/progress/progress.shared.tsx`, `src/atoms/input-otp/input-otp.shared.tsx`), not LoopView, though CLAUDE.md's Motion section puts them on the loop primitive and the materials target names the Spinner and the Progress: whether they move onto it or the doc and the target are corrected is the owner's question; their pictures are their own turns'
 - [ ] every component and page in its Capture through list is re-captured before and after a change (`bun run audit:turn -- --slug=<foundation> --phase=before|after`), and a consumer already signed off gets a re-sign-off row when its pictures change
 
 ## Findings
