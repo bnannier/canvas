@@ -36,4 +36,19 @@ describe("Popover", () => {
     expect(panel).not.toBeNull();
     expect(document.activeElement).toBe(panel);
   });
+
+  it("names the panel's dialog by its title and describes it by its supporting line", () => {
+    ui(<Popover trigger="Open" title="Rename project" description="Pick a new name." />);
+    fireEvent.click(screen.getByText("Open"));
+    layoutEntrance(screen.getByRole("dialog", { hidden: true }), { width: 260, height: 120 });
+    const panel = screen.getByRole("dialog", { name: "Rename project" });
+    expect(panel.getAttribute("aria-describedby")).toBe(screen.getByText("Pick a new name.").id);
+  });
+
+  it("names an untitled panel's dialog by its trigger", () => {
+    ui(<Popover trigger="Share" description="Anyone with the link can view." />);
+    fireEvent.click(screen.getByText("Share"));
+    layoutEntrance(screen.getByRole("dialog", { hidden: true }), { width: 260, height: 120 });
+    expect(screen.getByRole("dialog", { name: "Share" })).toBeTruthy();
+  });
 });

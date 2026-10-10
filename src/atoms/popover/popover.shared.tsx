@@ -1,6 +1,6 @@
 import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
 import { EscapeLayerProvider, useEscapeLayer } from "../../style/escape-layer.js";
-import { useCallback, useContext, useEffect, useRef, useState, type ReactNode, type RefObject } from "react";
+import { useCallback, useContext, useEffect, useId, useRef, useState, type ReactNode, type RefObject } from "react";
 import { type Text as RNText } from "react-native";
 import { View, Text, GlassSurface, AnchoredOverlay, useOverlayHost, useMeasuredWidth, usePopoverFocus, type StyleProp, type ViewStyle } from "../../style/index.js";
 import { Button as WebButton } from "../button/button.js";
@@ -11,7 +11,15 @@ import type { ColorTokens } from "../../style/tokens.js";
 import { EntranceReadinessContext } from "../../style/entrance-readiness.js";
 import { moveAccessibilityFocus } from "../../style/accessibility-focus.js";
 
-function PopoverFocusPanel({ focusRef, children }: { focusRef: RefObject<View | null>; children: ReactNode }) {
+// The floating card's panel: the node focus enters (usePopoverFocus), named a dialog by
+// its title (or, with none, by its trigger's label) and described by its supporting line.
+function PopoverFocusPanel({ focusRef, label, labelledBy, describedBy, children }: {
+  focusRef: RefObject<View | null>;
+  label?: string;
+  labelledBy?: string;
+  describedBy?: string;
+  children: ReactNode;
+}) {
   const ready = useContext(EntranceReadinessContext);
   const node = useRef<View | null>(null);
   const [attachment, setAttachment] = useState(0);
@@ -29,7 +37,7 @@ function PopoverFocusPanel({ focusRef, children }: { focusRef: RefObject<View | 
     if (ready && node.current) focusRef.current = node.current;
   }, [ready, attachment, focusRef]);
 
-  return <View ref={attach} tabIndex={-1} role="dialog">{children}</View>;
+  return <View ref={attach} tabIndex={-1} role="dialog" aria-label={label} aria-labelledby={labelledBy} aria-describedby={describedBy}>{children}</View>;
 }
 
 // The beak rides the edge facing the trigger on the side the card actually took: `top`
@@ -161,13 +169,17 @@ export function createPopover(skin: PopoverSkin, parts: PopoverParts = {}) {
     // it at its first line (the web's focus enters the panel itself, usePopoverFocus).
     const firstLineRef = useRef<RNText | null>(null);
     const host = useOverlayHost();
+    // The panel's name and description: its title and supporting line, by id.
+    const baseId = useId();
+    const titleId = `${baseId}-title`;
+    const descriptionId = `${baseId}-description`;
 
     // The card body (heading, supporting line, custom content, optional action),
     // shared by the static inline panel and the floating overlay card.
     const panelBody = (
       <>
-        {title != null ? <Text ref={firstLineRef} style={skin.title(tokens)}>{title}</Text> : null}
-        {description != null ? <Text ref={title == null ? firstLineRef : undefined} style={skin.description(tokens)}>{description}</Text> : null}
+        {title != null ? <Text ref={firstLineRef} nativeID={titleId} style={skin.title(tokens)}>{title}</Text> : null}
+        {description != null ? <Text ref={title == null ? firstLineRef : undefined} nativeID={descriptionId} style={skin.description(tokens)}>{description}</Text> : null}
         {children != null ? (
           // The custom-content slot, spaced from the title/description block above
           // it; when children are the panel's first content the margin is omitted.
@@ -249,7 +261,12 @@ export function createPopover(skin: PopoverSkin, parts: PopoverParts = {}) {
           {/* A focusable (tabIndex -1) container so opening the popover moves focus
               here and closing restores it to the trigger (usePopoverFocus). role
               "dialog" pairs with the trigger's aria-haspopup="dialog". */}
-          <PopoverFocusPanel focusRef={panelRef}>
+          <PopoverFocusPanel
+            focusRef={panelRef}
+            label={title == null ? trigger ?? "Open popover" : undefined}
+            labelledBy={title != null ? titleId : undefined}
+            describedBy={description != null ? descriptionId : undefined}
+          >
             {panelBody}
           </PopoverFocusPanel>
         </EscapeLayerProvider>
