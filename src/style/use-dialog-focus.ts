@@ -386,7 +386,7 @@ export interface AnchoredCardFocusOptions {
   shown: boolean;
   /** The card's root. */
   cardRef: RefObject<View | null>;
-  /** The trigger the card is placed against: its stops come right before the card's. */
+  /** The control the card opened from: its stops come right before the card's. */
   triggerRef: RefObject<View | null>;
   /** Where focus goes back when the card closes, if what had focus at the opening is gone. */
   returnRef: RefObject<View | null>;
