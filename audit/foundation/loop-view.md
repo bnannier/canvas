@@ -51,6 +51,7 @@ One row per finding. Severity: critical, high, medium, low. Cell: a capture id o
 
 | ID | Severity | Cell | Summary | Status | Fix commit |
 |---|---|---|---|---|---|
+| loop-view-1 | medium | source | CLAUDE.md's Motion section and the LoopView materials target say the Spinner, the Skeleton shimmer, the indeterminate Progress sweep and the InputOTP caret all run on the loop primitive (`src/style/loop.tsx`, the native driver natively, a compositor CSS animation on the web), but the kit graph finds only Skeleton (and DataTable through it) rendering through `LoopView`. Settle in this turn whether the others use another export of the loop module or run their own animation, then make the code, CLAUDE.md and the materials manifest agree (an owner question if the instructions are the ones to change). | open |  |
 
 ## Sign-off
 
