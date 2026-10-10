@@ -29,7 +29,9 @@
  * `CornerValue.drawn`): its file (`.ios.tsx`) or the names it is set under (`iosSkin`,
  * `IOS_RADIUS`, `M3_TRACK_R`, `androidBase`), and for a constant, helper or component no
  * platform names, in whatever module, every place that uses it. Code every platform shares
- * (a shell's own code, a part only shared code uses) draws the web look on every platform.
+ * (the own code of a shell every platform's entry builds with, a part only shared code
+ * uses) draws the web look on every platform; a function only some entries build with is
+ * drawn on those entries' platforms.
  *
  * A native skin draws a web-row corner only as the web skin's own part, and only where its
  * platform's own control gives that part no shape. The part is the web skin's when the same
