@@ -1,8 +1,7 @@
-import { Platform } from "react-native";
-import { Sidebar as KitSidebar, Button, Row, Column, Typography, useFormFactor, type IconName, type SidebarSection } from "@nannier/canvas";
+import type { ReactNode } from "react";
+import { Sidebar as KitSidebar, Button, type IconName, type SidebarSection } from "@nannier/canvas";
 import { usePathname, useRouter } from "expo-router";
 import { CanvasMark } from "../brand/canvas-mark";
-import { ThemeToggles } from "./theme-toggles";
 import { NAV_GROUPS, getActiveSlug, type NavItem } from "../data/nav";
 
 // The docs sidebar is a THIN ADAPTER over the kit `Sidebar` organism: it maps the docs nav
@@ -29,6 +28,7 @@ export function Sidebar({
   drawerRight,
   drawerTop,
   drawerBottom,
+  footer,
 }: {
   onNavigate?: () => void;
   collapsed?: boolean;
@@ -44,15 +44,16 @@ export function Sidebar({
   drawerRight?: boolean;
   drawerTop?: boolean;
   drawerBottom?: boolean;
+  /**
+   * The drawer's pinned footer, from the shell that opens it: the appearance toggles in
+   * the narrow web drawer, the palette row in the Android menu drawer. The desktop rail
+   * has none.
+   */
+  footer?: ReactNode;
 }) {
   const pathname = usePathname();
   const router = useRouter();
   const activeSlug = getActiveSlug(pathname);
-  // At and below lg the sidebar is the drill-down drawer; the drawer footer hosts the appearance
-  // toggles on mobile-web (the old bottom-sheet footer's home), matching the Android header bar.
-  // Phone and tablet form factors are exactly the old `width > 0 && width <= 1024` band
-  // (an unknown 0 viewport resolves desktop-first, i.e. not narrow, as before).
-  const narrow = useFormFactor() !== "desktop";
 
   // Overview is pinned (no header); Tokens is pinned with its heading; the category groups
   // are collapsible accordion sections (the kit auto-opens the one holding the active page).
@@ -96,12 +97,7 @@ export function Sidebar({
           {isCollapsed ? null : "Canvas design system"}
         </Button>;
       }}
-      footer={
-        // Only the mobile-web drawer carries a footer: the appearance toggles (their old
-        // bottom-sheet-footer home). Native puts appearance in the header bar; the desktop
-        // rail has no footer.
-        Platform.OS === "web" && narrow ? <ThemeToggles /> : undefined
-      }
+      footer={footer}
       sections={sections}
     />
   );

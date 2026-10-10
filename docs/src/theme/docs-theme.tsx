@@ -59,10 +59,11 @@ export function DocsThemeProvider({ children }: { children: ReactNode }) {
   });
   // The sun/moon button (the web Topbar, the narrow web drawer, the compact toggles in
   // the iOS and Android bars) changes the scheme, and the Solid/Glass control flips
-  // the surface. The Blush/Mint control in the narrow web drawer's labelled toggles
-  // picks the palette, in the light scheme only. Web always starts in the exported
-  // look; native has no server markup to hydrate and starts in the launch choice
-  // (firstLook).
+  // the surface. The Blush/Mint control picks the palette, in the light scheme only:
+  // the narrow web drawer's labelled toggles, the Android menu drawer's footer and the
+  // Palette section of the iOS header menu (docs/src/shell/theme-toggles.tsx). Web
+  // always starts in the exported look; native has no server markup to hydrate and
+  // starts in the launch choice (firstLook).
   const [override, setOverride] = useState<Scheme | null>(launch.first.scheme);
   const scheme: Scheme = override ?? systemScheme;
   const [surface, setSurface] = useState<Surface>(launch.first.surface);

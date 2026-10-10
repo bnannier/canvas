@@ -57,8 +57,8 @@ test("scheme=dark&palette=mint paints dark: the kit lets dark win over mint", as
 });
 
 test("the drawer's Palette control repaints the backdrop, and is absent while dark", async ({ page }) => {
-  // The labelled appearance form, the only one carrying the Blush/Mint control, is the
-  // phone web drawer's footer (docs/src/shell/sidebar.tsx), so the page opens at phone
+  // On the web the Blush/Mint control is carried only by the labelled appearance form,
+  // the phone web drawer's footer (docs/src/shell/navbar.tsx), so the page opens at phone
   // width. It opens dark, where the control has nothing to paint and is not rendered.
   await gotoDocs(page, "/components/button", { scheme: "dark", viewport: { width: 390, height: 900 } });
   await page.getByRole("button", { name: "Menu", exact: true }).click();
