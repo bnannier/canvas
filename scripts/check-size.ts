@@ -87,7 +87,23 @@ const CORE_FILE_GZIP_OVERRIDES: Record<string, number> = {
 // spring and the Backdrop organism were removed: measured after at 204,074 /
 // 204,399 / 206,693B (web / iOS / Android), under even the 208KB cap the foundation
 // had displaced. 216KB keeps the same ~7% headroom over the measured figure.
-export const JS_MAX_GZIP = 221_184; // 216 KB
+//
+// Raised again from 216KB for the AnchoredOverlay audit turn (the owner's P3e and AO-1
+// to AO-7 decisions), which gave every anchored card the behaviour it lacked: the
+// placement preference (above, beside at the start or end) composed with the layout
+// direction and the window's safe area in one resolver, the phone sheet on its window's
+// bottom edge, event-driven tracking in place of the per-frame poll (the scroll ancestry
+// the kit's scrollers publish, src/style/scroll-ancestry.tsx), the keyboard order bridge
+// and the focus a closing card gives back (src/style/use-dialog-focus.ts), the shared
+// roving rows of the menus and option lists (src/style/use-row-focus.ts) and the native
+// screen-reader modality (the window layer's modal cards in portal.tsx). The turn's own
+// duplication went first: the dialog trap and the bridge read one set of tab stops, a card
+// is placed and tracked from one joined measurement, one native focus move serves entry
+// and return, and Dropdown's rows moved into the shared roving rows. Measured before at
+// 219,195 / 220,235 / 220,363B (web / iOS / Android) and after at 223,502 / 224,741 /
+// 224,931B, ~4.3KB on every platform, 3.7KB over the old cap on Android. 235KB restores
+// ~7% headroom over the measured figure, the slack the 216KB cap started with.
+export const JS_MAX_GZIP = 240_640; // 235 KB
 
 export interface JavaScriptBudget {
   label: string;
@@ -188,6 +204,13 @@ export interface JavaScriptBudget {
 // nothing but still ships. The seeds left 4B of the web ceiling and the line helper the
 // Steps seams share with them took it. The Button ceiling moved from 9,472 to 10,240B
 // (8% headroom over the web figure).
+// StackedList was 54,447 / 54,013 / 54,230B (web / iOS / Android) before the
+// AnchoredOverlay audit turn: its row menu opens through AnchoredOverlay, so it carries
+// what the turn gave an anchored card (the placement resolver and the sheet's form-factor
+// read, the scroll ancestry, the keyboard order bridge and focus return, the roving rows,
+// the native modality; see JS_MAX_GZIP above). Measured after at 57,584 / 57,202 /
+// 57,411B, ~3.1KB gzip, 1.8KB over the 55,808B ceiling, which moved to 61,440B for that
+// deliberate growth (6.7% headroom over the web figure).
 // Fixed ceilings leave room for deliberate growth while catching a heavy import.
 // These are independent budgets, not a combined total: shared modules legitimately
 // occur in more than one consumer. Changes require a fresh measurement and rationale.
@@ -195,7 +218,7 @@ export const NAMED_IMPORT_BUDGETS: readonly JavaScriptBudget[] = [
   { label: "Button + ThemeProvider", entry: "scripts/size-fixtures/button.ts", maxGzip: 10_240, requiredExports: ["Button", "ThemeProvider"] },
   { label: "Input + ThemeProvider", entry: "scripts/size-fixtures/input.ts", maxGzip: 39_936, requiredExports: ["Input", "ThemeProvider"] },
   { label: "DataTable + ThemeProvider", entry: "scripts/size-fixtures/data-table.ts", maxGzip: 49_664, requiredExports: ["DataTable", "ThemeProvider"] },
-  { label: "StackedList + ThemeProvider", entry: "scripts/size-fixtures/stacked-list.ts", maxGzip: 55_808, requiredExports: ["StackedList", "ThemeProvider"] },
+  { label: "StackedList + ThemeProvider", entry: "scripts/size-fixtures/stacked-list.ts", maxGzip: 61_440, requiredExports: ["StackedList", "ThemeProvider"] },
 ];
 
 export interface JavaScriptSize extends JavaScriptBudget {
