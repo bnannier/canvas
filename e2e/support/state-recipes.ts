@@ -609,6 +609,9 @@ function readFocus(target: Element): { inside: boolean; visible: boolean; active
   };
 }
 
+/** How many Tabs a focus recipe presses at most to reach its control (see the focus recipe). */
+const MAX_TABS_TO_CONTROL = 12;
+
 /** Where the page keeps how the row drew its edges before the Tab key, between two evaluations. */
 const EDGES_KEY = "__canvasAuditEdges";
 
@@ -798,7 +801,17 @@ function focus(variant: string, target: Target, options: FocusOptions = {}): Sta
       // which node the arriving focus changed.
       await scope.evaluate(rememberEdges, EDGES_KEY);
       await scene.page.keyboard.press("Tab");
-      return { control, scope, ...before, opened };
+      // The kit keeps an open card's controls right after its trigger in the tab order
+      // (AnchoredOverlay's bridge, src/style/use-dialog-focus.ts), so the stop before the
+      // control in the DOM may lead into a card pinned open first. A keyboard user tabs
+      // on through it to the control, and so does the recipe, a bounded number of times.
+      const inside = () => control.evaluate((node) => node === document.activeElement || node.contains(document.activeElement));
+      let tabs = 1;
+      while (tabs < MAX_TABS_TO_CONTROL && !(await inside())) {
+        await scene.page.keyboard.press("Tab");
+        tabs += 1;
+      }
+      return { control, scope, ...before, ...(tabs > 1 ? { from: `${before.from ?? "the start of the page"}, then on through ${tabs - 1} more tab stop(s)` } : {}), opened };
     },
     async verify(scene, applied) {
       if ("missing" in applied) return notReached(applied.missing);
@@ -2081,7 +2094,8 @@ export const STATE_RECIPES: Record<string, ComponentStates> = {
   "button-group": {
     focus: [
       focus("default", stopIn(byRole("tablist"), "tab")),
-      focus("split", byRole("menuitem", "Save and close"), { within: SPLIT_MENU_OPEN, how: "the split menu opens from its chevron, then Tab from the tab stop before its second item" }),
+      // The menu puts focus on its first item when it opens (the WAI-ARIA menu pattern).
+      focus("split", byRole("menuitem", "Save and close"), { within: SPLIT_MENU_OPEN, keys: ["ArrowDown"], how: "the split menu opens from its chevron with focus on its first item, then ArrowDown moves it to the second" }),
     ],
     pressed: [
       pressed("default", byRole("tab", "Week")),
@@ -2165,7 +2179,8 @@ export const STATE_RECIPES: Record<string, ComponentStates> = {
   select: {
     focus: [
       focus("default", byRole("button", "Country")),
-      focus("requiredfield", byRole("option", "Canada"), { within: overlay("select") }),
+      // Focus enters the list at the selected option (United States), the arrows move it.
+      focus("requiredfield", byRole("option", "Canada"), { within: overlay("select"), keys: ["ArrowDown"] }),
     ],
     pressed: [
       pressed("default", byRole("button", "Country")),
@@ -2309,7 +2324,9 @@ export const STATE_RECIPES: Record<string, ComponentStates> = {
   "phone-input": {
     focus: [
       focus("default", byRole("textbox", "Phone number")),
-      focus("prefilled", byRole("option", /^Canada/), { within: PHONE_INPUT_RECIPE }),
+      // Focus enters the list at the selected country (United States); Home goes to the
+      // first row and Canada is the eighth in the kit's PHONE_COUNTRIES.
+      focus("prefilled", byRole("option", /^Canada/), { within: PHONE_INPUT_RECIPE, keys: ["Home", ...Array<string>(7).fill("ArrowDown")] }),
     ],
     pressed: [
       pressed("default", byRole("button", /^Country,/)),
@@ -2457,7 +2474,8 @@ export const STATE_RECIPES: Record<string, ComponentStates> = {
     ],
     focus: [
       focus("default", byRole("button", "More options")),
-      focus("sectionlabel", byRole("menuitem", "Duplicate"), { within: overlay("row-menu") }),
+      // The menu puts focus on its first row (Edit) when it opens; ArrowDown moves it on.
+      focus("sectionlabel", byRole("menuitem", "Duplicate"), { within: overlay("row-menu"), keys: ["ArrowDown"] }),
     ],
     pressed: [
       pressed("default", byRole("button", "More options")),
