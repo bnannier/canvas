@@ -4,10 +4,11 @@ import { Stack, usePathname, useRouter, useIsFocused } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { View, Row, Button, Icon } from "@nannier/canvas";
 import { titleFor } from "./topbar";
-import { nativeMenuFor, sectionFor, getActiveGroup, getActiveSlug, type MenuNode } from "../data/nav";
+import { nativeMenuFor, sectionFor, getActiveGroup, getActiveSlug } from "../data/nav";
 import { GLYPH_RASTERS } from "../core/glyph-rasters";
 import { Sidebar } from "./sidebar";
-import { PaletteRow, ThemeToggles, paletteMenuSection } from "./theme-toggles";
+import { PaletteRow, ThemeToggles } from "./theme-toggles";
+import { nativeHeaderMenu, type MenuIcon } from "./native-menu";
 import { useDocsTheme } from "../theme/docs-theme";
 
 // Wraps a screen's scroller so the native header (which drives the per-screen Stack title +
@@ -62,14 +63,13 @@ export function NativeHeader() {
   // (the native menu can't reopen pre-drilled into a submenu, so this reflects where you are);
   // the remaining categories stay as drill-in submenus. In the light scheme the menu ends
   // with the Palette section (Blush and Mint as check-marked rows); the dark scheme has one
-  // palette, so the section goes. The trailing items are ALWAYS declared
-  // (returning [] when this section has no menu): the native bar merges options across the
-  // sibling tab stacks, so a bare omission would leave a previous section's menu showing here,
-  // and an explicit [] clears it.
+  // palette, so the section goes. The page and the palette are two independent check marks,
+  // so the menu's root is multiselectable (see native-menu.ts). The trailing items are ALWAYS
+  // declared (returning [] when this section has no menu): the native bar merges options
+  // across the sibling tab stacks, so a bare omission would leave a previous section's menu
+  // showing here, and an explicit [] clears it.
   if (Platform.OS === "ios") {
-    // Recursively map the menu tree to native UIMenu items: a leaf becomes an action
-    // (check-marked when it is the current page), a submenu becomes a native submenu that
-    // slides over natively (nested arbitrarily deep, e.g. Home -> Components -> Atoms -> page).
+    // The menu tree maps to native UIMenu items in nativeHeaderMenu (native-menu.ts).
     // The lucide glyph as a native menu-item image: a bundled template PNG (its Metro
     // module id) that iOS tints to the menu label color, so the row shows the SAME icon
     // the web sidebar / Android drawer render. Every menu glyph is baked by
@@ -91,22 +91,20 @@ export function NativeHeader() {
     // invasive workaround. Flip this flag back on once a fixed release lands and
     // a dev build boots with it.
     const NATIVE_MENU_IMAGE_ICONS = false;
-    type MenuIcon = { type: "image"; source: number; tinted: true };
     const glyphIcon = (name: string): MenuIcon | undefined => {
       if (!NATIVE_MENU_IMAGE_ICONS) return undefined;
       const source = GLYPH_RASTERS[name];
       return source != null ? { type: "image", source, tinted: true } : undefined;
     };
-    type NativeMenuItem =
-      | { type: "action"; label: string; icon?: MenuIcon; onPress: () => void; state?: "on" }
-      | { type: "submenu"; label: string; icon?: MenuIcon; inline?: boolean; items: NativeMenuItem[] };
-    const toItems = (ns: MenuNode[]): NativeMenuItem[] =>
-      ns.map((n): NativeMenuItem =>
-        n.kind === "leaf"
-          ? { type: "action", label: n.label, icon: glyphIcon(n.icon), onPress: () => router.push(n.href as never), ...(n.slug === activeSlug ? { state: "on" as const } : {}) }
-          : { type: "submenu", label: n.label, icon: glyphIcon(n.icon), ...(n.inline ? { inline: true as const } : {}), items: toItems(n.items) },
-      );
-    const items: NativeMenuItem[] = [...toItems(nodes), ...paletteMenuSection(scheme, palette, setPalette)];
+    const menu = nativeHeaderMenu({
+      nodes,
+      activeSlug,
+      scheme,
+      palette,
+      setPalette,
+      navigate: (href) => router.push(href as never),
+      icon: glyphIcon,
+    });
     return (
       <Stack.Screen
         options={{
@@ -123,7 +121,7 @@ export function NativeHeader() {
               type: "menu" as const,
               label: "Menu",
               icon: { type: "sfSymbol", name: "line.3.horizontal" } as const,
-              menu: { items },
+              menu,
             },
           ],
         }}
