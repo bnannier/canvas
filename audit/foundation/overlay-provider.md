@@ -63,7 +63,7 @@ Severity follows rn-library-audit: critical (broken for a class of users), high 
 
 ## Findings
 
-One row per finding. Severity: critical, high, medium, low. Cell: a capture id of one of its Capture through slugs (`web/<slug>/<variant>/<width>.<look>.<surface>`, `ios/<slug>/<variant>/<look>.<surface>`, `web-pages/<kind>-<slug>/<width>.<look>.<surface>`) or `source`. Status: open, verified, fixed, wontfix (the owner's decision, with the reason in the summary), duplicate. Fix commit: the short SHA that closed it.
+One row per finding. Severity: critical, high, medium, low. Cell: a capture id of one of its Capture through slugs (`web/<slug>/<variant>/<width>.<look>.<surface>`, `ios/<slug>/<variant>/<look>.<surface>`, `web-pages/<kind>-<slug>/<width>.<look>.<surface>`) or `source`. Status: open, verified, fixed, wontfix (the owner's decision, with the reason in the summary), deferred (to the later turn the approved plan names, cited in the summary), duplicate. Fix commit: the short SHA that closed it.
 
 | ID | Severity | Cell | Summary | Status | Fix commit |
 |---|---|---|---|---|---|

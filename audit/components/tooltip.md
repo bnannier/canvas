@@ -87,7 +87,7 @@ Native shape owed per `PLATFORM-REFERENCES.md` (iOS / Android): DF / M3.
 
 ## Findings
 
-One row per finding. Severity: critical, high, medium, low. Cell: a capture id from the inventory (`web/<slug>/<variant>/<width>.<look>.<surface>`, `ios/<slug>/<variant>/<look>.<surface>`) or `source`. Status: open, verified, fixed, wontfix (the owner's decision, with the reason in the summary), duplicate. Fix commit: the short SHA that closed it.
+One row per finding. Severity: critical, high, medium, low. Cell: a capture id from the inventory (`web/<slug>/<variant>/<width>.<look>.<surface>`, `ios/<slug>/<variant>/<look>.<surface>`) or `source`. Status: open, verified, fixed, wontfix (the owner's decision, with the reason in the summary), deferred (to the later turn the approved plan names, cited in the summary), duplicate. Fix commit: the short SHA that closed it.
 
 | ID | Severity | Cell | Summary | Status | Fix commit |
 |---|---|---|---|---|---|

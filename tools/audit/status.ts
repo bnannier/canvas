@@ -7,7 +7,7 @@
 // checked with (tools/audit/table.ts, through tools/audit/checklists.ts), so a "|" typed
 // in a summary does not shift the Status column and an empty cell typed `| |` does not
 // drop the row. A finding is counted only when its Status is one of audit/README.md's
-// words (open, verified, fixed, wontfix, duplicate), a `fixed` one names its Fix commit,
+// words (open, verified, fixed, wontfix, deferred, duplicate), a `fixed` one names its Fix commit,
 // a Fix commit is a commit SHA, and its Cell is one of the checklist's capture ids in the
 // inventory or `source`. A row it cannot read, or a table it cannot find, is
 // not counted: it is listed by file and line under the counts, and the command exits
