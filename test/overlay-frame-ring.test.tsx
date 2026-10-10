@@ -12,13 +12,15 @@ import { webSkin as selectWeb, iosSkin as selectIos, androidSkin as selectAndroi
 import { Command } from "../src/organisms/command/command.tsx";
 import { LOOKS, lookProps, type Look } from "./fixtures/looks.ts";
 
-// An option list's scrollport is a keyboard stop while its rows overflow the capped
-// card, and it sits flush inside the card's clip: the card cuts a ring drawn around the
-// port, and the rows cover one drawn inside it. So the card that frames the port draws
-// the theme's ring while a key lands on the port, and the port draws none
-// (src/style/focus-frame.tsx). That holds for every anchored card (AnchoredOverlay's
-// OverlayCard, whichever owner fills it) and for the bare Command palette's own card. A
-// port that nothing frames wears the kit's own ring.
+// A scrollport whose rows take no focus (Autocomplete's list, Command's results: the
+// field keeps it) is a keyboard stop while its rows overflow the capped card, and it sits
+// flush inside the card's clip: the card cuts a ring drawn around the port, and the rows
+// cover one drawn inside it. So the card that frames the port draws the theme's ring
+// while a key lands on the port, and the port draws none (src/style/focus-frame.tsx).
+// That holds for every anchored card (AnchoredOverlay's OverlayCard, whichever owner
+// fills it) and for the bare Command palette's own card. A port that nothing frames
+// wears the kit's own ring. A menu's or an option list's rows rove and are its one stop,
+// so its port takes none.
 
 afterEach(cleanup);
 
@@ -68,9 +70,6 @@ interface Case {
 }
 
 const CASES: Case[] = [
-  { name: "Select (web)", node: <SelectWeb open options={OPTIONS} />, frameOf: cappedCard },
-  { name: "Select (ios)", node: <SelectIos open options={OPTIONS} />, frameOf: cappedCard },
-  { name: "Select (android)", node: <SelectAndroid open options={OPTIONS} />, frameOf: cappedCard },
   { name: "Autocomplete (web)", node: <AutocompleteWeb open options={OPTIONS} />, frameOf: cappedCard },
   { name: "bare Command", node: <Command testID="palette" groups={GROUPS} />, frameOf: () => screen.getByTestId("palette") },
 ];
@@ -118,6 +117,27 @@ for (const subject of CASES) {
     }
   });
 }
+
+// The WAI-ARIA listbox has one tab stop, the roving option, and a scroller is a stop only
+// while it holds no focusable child, so the port of a list whose rows rove stays out of
+// the tab order however far its rows overflow (OverlayRowsContext).
+describe("an option list whose rows rove", () => {
+  const ROVING: [string, ReactNode][] = [
+    ["Select (web)", <SelectWeb open options={OPTIONS} />],
+    ["Select (ios)", <SelectIos open options={OPTIONS} />],
+    ["Select (android)", <SelectAndroid open options={OPTIONS} />],
+  ];
+  for (const [name, node] of ROVING) {
+    it(`keeps ${name}'s overflowing port out of the tab order, its roving option the one stop`, () => {
+      ui(node, LOOKS[0]!);
+      const port = portOf(screen.getByRole("listbox"));
+      layOut(port, 280, 200);
+      layOut(port.firstElementChild as HTMLElement, 280, 600);
+      expect(port.tabIndex).toBe(-1);
+      expect(screen.getAllByRole("option").filter((option) => option.tabIndex === 0)).toHaveLength(1);
+    });
+  }
+});
 
 describe("an option-list port with nothing framing it", () => {
   for (const look of LOOKS) {
