@@ -1,5 +1,16 @@
 import { describe, expect, it } from "bun:test";
-import { subscribeThemeLinks, themeFromParams, themeFromURL, type ThemeLinkOverrides, type ThemeLinkSource } from "../../docs/src/theme/theme-links";
+import {
+  EXPORTED_LOOK,
+  firstLook,
+  launchRequest,
+  subscribeThemeLinks,
+  themeFromParams,
+  themeFromURL,
+  withOverrides,
+  type DocsLook,
+  type ThemeLinkOverrides,
+  type ThemeLinkSource,
+} from "../../docs/src/theme/theme-links";
 
 function nativeLinks(initialURL: string | null) {
   let currentURL = initialURL;
@@ -125,5 +136,77 @@ describe("docs external appearance links", () => {
     unsubscribe();
     links.open("canvas:///components/button?scheme=light&surface=solid");
     expect(received).toEqual([]);
+  });
+});
+
+// The Preview links' optional look query (`&scheme=&surface=&palette=`) reaches the
+// docs as the deep link `canvas:///<route>?<query>` (docs/scripts/preview-links.mjs).
+// DocsThemeProvider builds its launch request with launchRequest, paints firstLook on
+// the first render, and applies each later external link over the current look, axis
+// by axis, the way withOverrides does.
+describe("the look a Preview deep link lands in", () => {
+  const MINT = "canvas:///components/button?scheme=light&palette=mint";
+  const FULL = "canvas:///components/button?scheme=light&surface=solid&palette=mint";
+
+  it("starts every platform's export from dark glass in blush", () => {
+    expect(EXPORTED_LOOK).toEqual({ scheme: "dark", surface: "glass", palette: "blush" });
+  });
+
+  for (const os of ["ios", "android"]) {
+    it(`paints a cold ${os} launch in the link's look on its first render`, () => {
+      expect(firstLook(os, launchRequest({}, MINT))).toEqual({ scheme: "light", surface: "glass", palette: "mint" });
+      expect(firstLook(os, launchRequest({}, FULL))).toEqual({ scheme: "light", surface: "solid", palette: "mint" });
+      expect(firstLook(os, launchRequest({}, "canvas:///components/button?palette=mint"))).toEqual({ ...EXPORTED_LOOK, palette: "mint" });
+    });
+
+    it(`starts a cold ${os} launch with no link, or none it can read, in the exported look`, () => {
+      for (const url of [null, "canvas:///components/button", "canvas:///components/button?scheme=system&palette=teal"]) {
+        expect(firstLook(os, launchRequest({}, url))).toEqual(EXPORTED_LOOK);
+      }
+    });
+  }
+
+  it("lets the native launch URL win an axis the router params also name, and keeps the params' other axes", () => {
+    expect(launchRequest({ scheme: "dark", surface: "solid", palette: "blush" }, MINT)).toEqual({ scheme: "light", surface: "solid", palette: "mint" });
+    expect(launchRequest({ palette: ["mint", "blush"] }, null)).toEqual({ palette: "mint" });
+    expect(launchRequest({ surface: "invalid" }, "canvas:///components/button?surface=solid")).toEqual({ surface: "solid" });
+  });
+
+  it("hydrates the web in the exported look, then lands in the link's look", () => {
+    const request = launchRequest({ scheme: "light", surface: "solid", palette: "mint" }, null);
+    expect(firstLook("web", request)).toEqual(EXPORTED_LOOK);
+    expect(withOverrides(firstLook("web", request), request)).toEqual({ scheme: "light", surface: "solid", palette: "mint" });
+  });
+
+  it("keeps mint through dark, so the kit paints dark now and mint once the scheme turns light", () => {
+    const dark = firstLook("ios", launchRequest({}, "canvas:///components/button?scheme=dark&palette=mint"));
+    expect(dark).toEqual({ scheme: "dark", surface: "glass", palette: "mint" });
+    expect(withOverrides(dark, { scheme: "light" })).toEqual({ scheme: "light", surface: "glass", palette: "mint" });
+  });
+
+  for (const os of ["ios", "android"]) {
+    it(`moves a running ${os} app by warm links, axis by axis, and never by ordinary navigation`, () => {
+      const links = nativeLinks(MINT);
+      let look: DocsLook = firstLook(os, launchRequest({}, MINT));
+      const unsubscribe = subscribeThemeLinks(links.source, MINT, (next) => { look = withOverrides(look, next); });
+      expect(look).toEqual({ scheme: "light", surface: "glass", palette: "mint" });
+
+      links.open("canvas:///components/card?palette=blush");
+      expect(look).toEqual({ scheme: "light", surface: "glass", palette: "blush" });
+      links.open("canvas:///components/card?scheme=dark&surface=solid");
+      expect(look).toEqual({ scheme: "dark", surface: "solid", palette: "blush" });
+      links.navigate("canvas:///components/badge?scheme=light&palette=mint");
+      expect(look).toEqual({ scheme: "dark", surface: "solid", palette: "blush" });
+      links.open(MINT);
+      expect(look).toEqual({ scheme: "light", surface: "solid", palette: "mint" });
+      unsubscribe();
+    });
+  }
+
+  it("applies an override without changing the look it was given", () => {
+    const look: DocsLook = { ...EXPORTED_LOOK };
+    expect(withOverrides(look, { palette: "mint" })).toEqual({ ...EXPORTED_LOOK, palette: "mint" });
+    expect(look).toEqual(EXPORTED_LOOK);
+    expect(withOverrides(look, {})).toEqual(look);
   });
 });
