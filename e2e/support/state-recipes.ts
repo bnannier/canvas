@@ -2409,7 +2409,7 @@ export const STATE_RECIPES: Record<string, ComponentStates> = {
     exempt: {
       pressed: {
         claim: { dismissLayers: true },
-        reason: "Its own presses are the dim scrim, which closes the drawer, and the panel, which swallows a stray press: neither is a control, and the open recipe captures the drawer itself.",
+        reason: "Its own press is the dim scrim's empty dismiss target, which closes the drawer: it is not a control, and the open recipe captures the drawer itself.",
       },
     },
   },

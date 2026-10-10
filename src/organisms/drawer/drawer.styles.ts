@@ -1,4 +1,4 @@
-import { type ViewStyle } from "react-native";
+import { StyleSheet, type ViewStyle } from "react-native";
 import { type ColorScheme, type ColorTokens, alpha, customShadow, shadow, shape } from "../../style/index.js";
 import { platformShape } from "../../style/platform-shape.js";
 
@@ -50,7 +50,7 @@ export interface DrawerSkin {
   /** The panel surface shape per edge: fill, edge geometry, border, radius, elevation. */
   panelShape: (edge: Edge, width: number, t: ColorTokens) => ViewStyle;
   /**
-   * Max width for a bottom/top SHEET, capping + centering it (and its tap-catcher)
+   * Max width for a bottom/top SHEET, capping + centering it (and its positioner)
    * on wide windows; null = full width. Android caps at the M3 640dp bottom-sheet
    * token; iOS/web sheets span the full width.
    */
@@ -69,21 +69,29 @@ export interface DrawerSkin {
   triggerMinHeight: number | null;
 }
 
-// --- scrim + positioner (identical across platforms) ------------------------
+// --- panel layers + positioner (identical across platforms) ------------------
 
-// The full-screen scrim that fills the Modal and lays the panel against its edge.
-// A tap on it (wired in the shell) dismisses the drawer. The dimming alpha is the
-// only per-OS value, supplied by the skin.
-export function scrim(edge: Edge, opacity: number): ViewStyle {
-  const base: ViewStyle = { flex: 1, backgroundColor: `rgba(0,0,0,${opacity})` };
-  if (edge === "bottom") return { ...base, flexDirection: "column", justifyContent: "flex-end" };
-  if (edge === "top") return { ...base, flexDirection: "column", justifyContent: "flex-start" };
-  return { ...base, flexDirection: "row", justifyContent: edge === "right" ? "flex-end" : "flex-start" };
-}
+// The layer that fills the Modal above the scrim and lays the panel against its edge.
+// The tap-to-close target is NOT this layer: it is an empty full-bleed Pressable the
+// shell puts beneath it, a sibling of the panel, never its wrapper. This layer and the
+// slide layer inside it are box-none, so a tap anywhere off the panel (beside a side
+// drawer, or beside a sheet capped narrower than the window) reaches that target, and a
+// tap on the panel stays in the panel's own subtree. box-none lives in StyleSheet.create:
+// react-native-web compiles its box-none rule (the `> *` selector that hands pointer
+// events back to the children) only for created styles, never for an inline object
+// (see src/style/portal.tsx).
+export const panelLayer: Record<Edge, ViewStyle> = StyleSheet.create({
+  left: { flex: 1, flexDirection: "row", justifyContent: "flex-start", pointerEvents: "box-none" },
+  right: { flex: 1, flexDirection: "row", justifyContent: "flex-end", pointerEvents: "box-none" },
+  bottom: { flex: 1, flexDirection: "column", justifyContent: "flex-end", pointerEvents: "box-none" },
+  top: { flex: 1, flexDirection: "column", justifyContent: "flex-start", pointerEvents: "box-none" },
+});
 
-// The panel positioner: a Pressable that catches taps so a press inside the panel
-// does not fall through to the scrim. Side drawers fill the height; the sheet
-// fills the width. Identical across platforms.
+/** The layer that carries the panel's slide transform; box-none, as the panel layer is. */
+export const slideLayer: ViewStyle = StyleSheet.create({ slide: { pointerEvents: "box-none" } }).slide;
+
+// The panel positioner: a plain box around the panel surface. Side drawers fill the
+// height; the sheet fills the width. Identical across platforms.
 export const panelPos: Record<Edge, ViewStyle> = {
   left: { height: "100%" },
   right: { height: "100%" },

@@ -664,8 +664,9 @@ describe("the states each component's source gives it", () => {
   it("checks a dismiss-layer exemption against each element, and the open recipe", () => {
     const drawer = STATE_RECIPES.drawer!;
     const layers = signalsOf("drawer").filter((s) => s.state === "pressed");
+    // The scrim's empty dismiss target is the drawer's one press layer: the panel is a
+    // plain box beside it, not a press area that swallows a stray tap.
     expect(layers.map((s) => s.element)).toEqual([
-      { hidden: true, look: false, handler: "() => {}" },
       { hidden: true, look: false, handler: "() => setOpen(false)" },
     ]);
     expect(exemptionFailure("pressed", drawer.exempt!.pressed!, layers, [], drawer)).toBeNull();
