@@ -47,7 +47,8 @@
 //
 // A recipe's state can also be one the source never shows the web where the recipe is
 // applied while the recipe still answers it (`unreachable`): a field disabled only through a
-// TextInput's `editable` (Input's and Textarea's Disabled examples) is rendered read-only by
+// TextInput's `editable` (one handed neither `aria-disabled` nor an accessibilityState, as
+// src/style/text-entry-state.ts hands the kit's fields) is rendered read-only by
 // react-native-web, never `aria-disabled` or a native `disabled`, so the recipe's check of the
 // announced state cannot pass. The recipe stays, since its cell records that finding, and the
 // checklists list the state as not reachable on the web, with that reason.
@@ -61,7 +62,10 @@
 // disabled recipe there (one applied inside an overlay, `inOverlay`, opens that overlay
 // first); a place no example asks for needs nothing, and nor does a control the component
 // disables by itself (a stepper's minus at its minimum), which every capture of its place
-// already shows. There is no exemption for it: a recipe answers what an example shows.
+// already shows. There is no exemption for it: a recipe answers what an example shows. A
+// control disabled through something the reader cannot follow to what an example passes (a
+// helper's parameter it cannot bind, `DisabledWay.unread`) is an error, never a control no
+// example asks for.
 //
 // The claims are checked, not taken on trust:
 //
@@ -570,12 +574,32 @@ function passedBy(code: string): Passed {
  * Whether an example asks for a disabled control: its code passes every prop that renders the
  * control (`gates`) and everything one of the ways its source disables it needs
  * (`disabledBy`: props written on a tag, keys written in an item), a way that needs
- * something. A control the component disables by itself is asked for by no example.
+ * something. A control the component disables by itself is asked for by no example, and a
+ * way that reads what the reader cannot (`DisabledWay.unread`) is never taken to be met: the
+ * coverage fails on it instead (`unreadFailures`).
  */
 export function asksFor(signal: Signal, example: Pick<Example, "code">): boolean {
   const passed = passedBy(example.code);
   if (!signal.gates.every((prop) => passed.props.has(prop))) return false;
-  return (signal.disabledBy ?? []).some((way) => (way.props.length > 0 || way.keys.length > 0) && way.props.every((prop) => passed.props.has(prop)) && way.keys.every((key) => passed.keys.has(key)));
+  return (signal.disabledBy ?? []).some(
+    (way) => !way.unread?.length && (way.props.length > 0 || way.keys.length > 0) && way.props.every((prop) => passed.props.has(prop)) && way.keys.every((key) => passed.keys.has(key)),
+  );
+}
+
+/**
+ * The disabled controls whose source disables them through something the reader cannot follow
+ * to what an example passes (`DisabledWay.unread`: a parameter of a helper it cannot bind to
+ * its caller's arguments), one error each: whether an example asks for such a control is
+ * unknown, so the coverage fails rather than read it as one no example asks for.
+ */
+function unreadFailures(slug: string, own: readonly Signal[]): string[] {
+  const errors = own.flatMap((signal) => {
+    const unread = [...new Set((signal.disabledBy ?? []).flatMap((way) => way.unread ?? []))];
+    if (!unread.length) return [];
+    const where = `${signal.what} at ${signal.at}${signal.via.length ? ` via ${signal.via.join(" > ")}` : ""}`;
+    return [`${slug}: its source disables ${where} through ${andText(unread)}, which the reader cannot follow to the props or keys an example passes, so it cannot tell whether an example asks for that control`];
+  });
+  return [...new Set(errors)];
 }
 
 const placeOf = (within: string) => (within ? `in the overlay in ${within}` : "on its own surface");
@@ -594,7 +618,7 @@ const placeOf = (within: string) => (within ? `in the overlay in ${within}` : "o
 function disabledCoverage(slug: string, entry: ComponentStates, own: Signal[], signals: Signal[], rail: readonly Example[], sites: readonly string[], rows: RowBuilds): { answers: StateAnswer[]; unreachable: Unreachable[]; errors: string[] } {
   const answers: StateAnswer[] = [];
   const unreachable: Unreachable[] = [];
-  const errors: string[] = [];
+  const errors: string[] = unreadFailures(slug, own);
   // Where each disabled recipe is applied, on each row: the component's own surface (""), or the overlay it opens first.
   const placed = new Set<string>();
   for (const recipe of recipesIn(entry, "disabled")) {

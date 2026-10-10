@@ -337,10 +337,10 @@ describe("the states each component's source gives it", () => {
     // AlertDialog's Android text buttons, which press with `android_ripple` alone.
     const devices = coverage.flatMap((c) => c.answers.filter((a) => a.by === "devices").map((a) => `${c.slug} ${a.state}${a.within ? ` in ${a.within}` : ""}${a.rows ? ` on ${a.rows.join(" and ")}` : ""}: ${a.feedback ?? `no row renders the ${a.builds!.join(" and ")} build`}`));
     expect(devices.sort()).toEqual(["alert-dialog pressed in Present on android: android_ripple", "dialog pressed in Present on android: android_ripple"]);
-    // The recipes whose state the source never shows the web: Input's and Textarea's Disabled
-    // fields, disabled only through `editable` (read-only on the web).
+    // No recipe sets up a state the source never shows the web: every kit field disabled
+    // through `editable` also carries `aria-disabled` and an accessibilityState.
     const unreachable = coverage.flatMap((c) => c.unreachable.map((u) => `${c.slug} ${u.recipe.state} on ${u.recipe.variant} (${u.rows.join(" and ")}): ${u.why}`));
-    expect(unreachable.sort()).toEqual(["input disabled on disabled (web): read-only", "textarea disabled on disabled (web): read-only"]);
+    expect(unreachable.sort()).toEqual([]);
   });
 
   it("holds each recipe to a control of the component's own, so one on a control another kit component renders answers nothing", () => {
@@ -909,6 +909,135 @@ export function Probe(props: { items: { label: string; disabled?: boolean }[]; d
       rmSync(root, { recursive: true, force: true });
     }
   });
+
+  it("reads a disabled value a helper's return brings with the helper's parameters bound to the call's arguments, and fails on one it cannot bind", () => {
+    const root = mkdtempSync(join(tmpdir(), "signals-"));
+    const write = (path: string, text: string) => {
+      mkdirSync(dirname(join(root, path)), { recursive: true });
+      writeFileSync(join(root, path), text);
+    };
+    try {
+      write("src/style.ts", "export const Pressable = null; export const TextInput = null; export const View = null;\n");
+      // A field's availability on every channel, from an object-destructured parameter, as
+      // src/style/text-entry-state.ts writes it, in a module of the style layer.
+      write(
+        "src/style/field-state.ts",
+        `export function fieldState({ disabled, readOnly }: { disabled?: boolean; readOnly?: boolean }) {
+  const off = !!disabled;
+  return { editable: !off && !readOnly, accessibilityState: { disabled: off }, "aria-disabled": off || undefined };
+}
+`,
+      );
+      // Helpers in a module of the component's own: positional parameters with defaults, a
+      // parameter handed the component's props object, and a helper that calls another.
+      write(
+        "src/atoms/probe/probe.helpers.ts",
+        `export function knobState(min: number, value: number, { disabled = false }: { disabled?: boolean } = {}) {
+  return { disabled: disabled || value <= min };
+}
+export function fromProps(p: { locked?: boolean }) {
+  return { "aria-disabled": p.locked };
+}
+function announced(off?: boolean) {
+  return { "aria-disabled": off || undefined };
+}
+export function wrapped({ disabled }: { disabled?: boolean }) {
+  return { ...announced(disabled) };
+}
+`,
+      );
+      write(
+        "src/atoms/probe/probe.shared.tsx",
+        `import { Pressable, TextInput, View } from "../../style.js";
+import { fieldState } from "../../style/field-state.js";
+import { fromProps, knobState, wrapped } from "./probe.helpers.js";
+function rowState(off: boolean) {
+  return { disabled: off };
+}
+function renderRow(off: boolean) {
+  return <Pressable disabled={off} />;
+}
+export function Probe(props: { disabled?: boolean; readOnly?: boolean; locked?: boolean; value: number; flags: [boolean] }) {
+  const { disabled, readOnly, value } = props;
+  const entry = fieldState({ disabled, readOnly });
+  const { editable } = entry;
+  return (
+    <View>
+      <TextInput {...entry} />
+      <TextInput {...fieldState({ disabled })} accessibilityState={{ ...entry.accessibilityState, expanded: true }} />
+      <Pressable disabled={!editable} />
+      <Pressable {...knobState(0, value, { disabled: !!disabled })} />
+      <Pressable {...fromProps(props)} />
+      <Pressable {...wrapped({ disabled: readOnly })} />
+      <Pressable {...rowState(...props.flags)} />
+      {renderRow(!!disabled)}
+    </View>
+  );
+}
+`,
+      );
+      const signals = new SignalReader(root).signalsOf("src/atoms/probe");
+      const ways = (s: Signal) => s.disabledBy!.map((w) => `${w.props.join("&") || "-"}/${w.keys.join("&") || "-"}${w.unread ? ` unread ${w.unread.join(", ")}` : ""}`).join(" | ");
+      const disabled = signals.filter((s) => s.state === "disabled");
+      const line = (at: string) => at.split(":").pop();
+      expect(disabled.map((s) => `${s.what} on line ${line(s.control!.at)}, from ${s.at.replace(/^.*?src\//, "src/")}, by ${ways(s)}`).sort()).toEqual([
+        // The helper's keys, read through each call: `{ disabled, readOnly }` (line 16) and `{ disabled }` (line 17).
+        "accessibilityState on <TextInput> on line 16, from src/style/field-state.ts:3, by disabled/-",
+        "accessibilityState on <TextInput> on line 17, from src/atoms/probe/probe.shared.tsx:17, by disabled/-",
+        "accessibilityState on <TextInput> on line 17, from src/style/field-state.ts:3, by disabled/-",
+        // `fromProps(props)`: the parameter's `locked` is the component's.
+        "aria-disabled on <Pressable> on line 20, from src/atoms/probe/probe.helpers.ts:5, by locked/-",
+        // `wrapped({ disabled: readOnly })` calls `announced(disabled)`: two calls deep, still `readOnly`.
+        "aria-disabled on <Pressable> on line 21, from src/atoms/probe/probe.helpers.ts:8, by readOnly/-",
+        "aria-disabled on <TextInput> on line 16, from src/style/field-state.ts:3, by disabled/-",
+        "aria-disabled on <TextInput> on line 17, from src/style/field-state.ts:3, by disabled/-",
+        // `const { editable } = entry`, read through its negation: false with either prop.
+        "disabled on <Pressable> on line 18, from src/atoms/probe/probe.shared.tsx:18, by disabled/- | readOnly/-",
+        // A positional third argument, destructured with a default; `value <= min` is the component's own.
+        "disabled on <Pressable> on line 19, from src/atoms/probe/probe.helpers.ts:2, by disabled/- | -/-",
+        // A call that spreads its arguments, and a render helper read where it is written: unread.
+        "disabled on <Pressable> on line 22, from src/atoms/probe/probe.shared.tsx:5, by -/- unread `off`, a parameter of rowState (src/atoms/probe/probe.shared.tsx:4), handed through a spread",
+        "disabled on <Pressable> on line 8, from src/atoms/probe/probe.shared.tsx:8, by -/- unread `off`, a parameter of renderRow (src/atoms/probe/probe.shared.tsx:7)",
+        // `{ disabled }` gives no `readOnly`: the second field is not editable only with `disabled`.
+        "editable on <TextInput> on line 16, from src/style/field-state.ts:3, by disabled/- | readOnly/-",
+        "editable on <TextInput> on line 17, from src/style/field-state.ts:3, by disabled/-",
+      ]);
+      // An example asks for the field by passing the prop the helper is handed it through.
+      const field = disabled.find((s) => s.what === "editable on <TextInput>" && s.disabledBy!.length === 2)!;
+      expect(asksFor(field, { code: "<Probe disabled value={1} flags={[false]} />" })).toBe(true);
+      expect(asksFor(field, { code: "<Probe readOnly value={1} flags={[false]} />" })).toBe(true);
+      expect(asksFor(field, { code: "<Probe value={1} flags={[false]} />" })).toBe(false);
+      // An unread way is never taken to be met, and the coverage fails on it instead of reading
+      // the control as one no example asks for.
+      const unread = disabled.filter((s) => s.disabledBy!.some((w) => w.unread));
+      for (const signal of unread) expect(asksFor(signal, { code: "<Probe disabled value={1} flags={[true]} />" })).toBe(false);
+      const errors = coverageOf("probe", {} as ComponentStates, signals, [], { web: "web" }).errors.filter((e) => e.includes("cannot follow"));
+      expect(errors.sort()).toEqual([
+        "probe: its source disables disabled on <Pressable> at src/atoms/probe/probe.shared.tsx:5 through `off`, a parameter of rowState (src/atoms/probe/probe.shared.tsx:4), handed through a spread, which the reader cannot follow to the props or keys an example passes, so it cannot tell whether an example asks for that control",
+        "probe: its source disables disabled on <Pressable> at src/atoms/probe/probe.shared.tsx:8 through `off`, a parameter of renderRow (src/atoms/probe/probe.shared.tsx:7), which the reader cannot follow to the props or keys an example passes, so it cannot tell whether an example asks for that control",
+      ]);
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("reads the kit's fields as disabled with their `disabled` prop through the text-entry helper, as the same value written on the tag is", () => {
+    // Input, Textarea and the Stepper's field are handed `editable`, `aria-disabled` and an
+    // accessibilityState by a helper (src/style/text-entry-state.ts, Stepper's own
+    // stepper.accessibility.ts) from the props they spread its call's arguments from.
+    const ways = (s: Signal) => s.disabledBy!.map((w) => `${w.props.join("&") || "-"}/${w.keys.join("&") || "-"}${w.unread ? " unread" : ""}`).join(" | ");
+    const field = (slug: string) => signalsOf(slug).filter((s) => s.state === "disabled" && s.control?.tag === "TextInput");
+    const read = (slug: string) => [...new Set(field(slug).map((s) => `${s.what} by ${ways(s)}`))].sort();
+    expect(read("input")).toEqual(["accessibilityState on <TextInput> by disabled/-", "aria-disabled on <TextInput> by disabled/-", "editable on <TextInput> by disabled/- | readOnly/-"]);
+    expect(read("textarea")).toEqual(["accessibilityState on <TextInput> by disabled/-", "aria-disabled on <TextInput> by disabled/-", "editable on <TextInput> by disabled/-"]);
+    expect(read("stepper")).toEqual(["accessibilityState on <TextInput> by disabled/-", "aria-disabled on <TextInput> by disabled/-", "editable on <TextInput> by disabled/-"]);
+    // So each field's Disabled example asks for its field on every channel.
+    for (const slug of ["input", "textarea", "stepper"]) {
+      const example = railExamples(component(slug)).find((e) => e.label === "Disabled")!;
+      const asked = [...new Set(field(slug).filter((s) => asksFor(s, example)).map((s) => s.what))].sort();
+      expect({ slug, asked }).toEqual({ slug, asked: ["accessibilityState on <TextInput>", "aria-disabled on <TextInput>", "editable on <TextInput>"] });
+    }
+  });
 });
 
 describe("the controls a component's source gives its states", () => {
@@ -1356,20 +1485,18 @@ export function createProbe(skin: ProbeSkin) {
 
   it("reads a field disabled only through `editable` as one the web never announces, and lists its recipe as unreachable there", () => {
     // React Native's text field is disabled with `editable`, which react-native-web renders
-    // `readonly`: Input's and Textarea's fields carry nothing else, so their Disabled examples
-    // are never announced disabled. A Stepper's field is also handed `aria-disabled` and an
-    // accessibilityState by its accessibility helper: announced.
+    // `readonly`. The kit's fields also hand the field `aria-disabled` and an
+    // accessibilityState, so their Disabled examples are announced disabled.
     const fieldDisabled = (slug: string) => [...new Set(signalsOf(slug).filter((s) => s.state === "disabled" && s.control?.tag === "TextInput").map((s) => `${s.what}${s.readOnly ? " (read-only)" : ""}`))].sort();
-    expect(fieldDisabled("input")).toEqual(["editable on <TextInput> (read-only)"]);
-    expect(fieldDisabled("textarea")).toEqual(["editable on <TextInput> (read-only)"]);
-    expect(fieldDisabled("stepper")).toEqual(["accessibilityState on <TextInput>", "aria-disabled on <TextInput>", "editable on <TextInput> (read-only)"]);
-    const coverage = (slug: string) => coverageOf(slug, STATE_RECIPES[slug]!, signalsOf(slug), railExamples(component(slug)), rowsOf(slug));
-    const unreachable = (slug: string) => coverage(slug).unreachable.map((u) => `${u.recipe.state} on ${u.recipe.variant}, ${u.rows.join(" and ")}: ${u.why}`);
-    expect(unreachable("input")).toEqual(["disabled on disabled, web: read-only"]);
-    expect(unreachable("textarea")).toEqual(["disabled on disabled, web: read-only"]);
-    expect(unreachable("stepper")).toEqual([]);
-    // The recipe still answers the state: its cell records the finding.
-    for (const slug of ["input", "textarea"]) expect({ slug, by: coverage(slug).answers.filter((a) => a.state === "disabled").map((a) => a.by) }).toEqual({ slug, by: ["recipe"] });
+    for (const slug of ["input", "textarea", "stepper"]) expect({ slug, signals: fieldDisabled(slug) }).toEqual({ slug, signals: ["accessibilityState on <TextInput>", "aria-disabled on <TextInput>", "editable on <TextInput> (read-only)"] });
+    const coverage = (slug: string, signals = signalsOf(slug)) => coverageOf(slug, STATE_RECIPES[slug]!, signals, railExamples(component(slug)), rowsOf(slug));
+    const unreachable = (slug: string, signals?: ReturnType<typeof signalsOf>) => coverage(slug, signals).unreachable.map((u) => `${u.recipe.state} on ${u.recipe.variant}, ${u.rows.join(" and ")}: ${u.why}`);
+    for (const slug of ["input", "textarea", "stepper"]) expect({ slug, unreachable: unreachable(slug) }).toEqual({ slug, unreachable: [] });
+    // The same field disabled through `editable` alone is one the web never announces: its
+    // recipe is unreachable there, and it still answers the state (its cell records the finding).
+    const editableOnly = signalsOf("input").filter((s) => !(s.state === "disabled" && s.control?.tag === "TextInput" && !s.readOnly));
+    expect(unreachable("input", editableOnly)).toEqual(["disabled on disabled, web: read-only"]);
+    expect(coverage("input", editableOnly).answers.filter((a) => a.state === "disabled").map((a) => a.by)).toEqual(["recipe"]);
   });
 });
 
