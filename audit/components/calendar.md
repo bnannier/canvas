@@ -88,6 +88,7 @@ One row per finding. Severity: critical, high, medium, low. Cell: a capture id f
 | ID | Severity | Cell | Summary | Status | Fix commit |
 |---|---|---|---|---|---|
 | calendar-corner-1 | low | source | The iOS peek card drew 20, on neither row; the peek plays the menu role on the web, so iOS takes its menu corner, 26. The shape gate (test/design-rules-shape.test.ts) now takes a corner only as a role of its own platform's row that its component plays, the pill, square or a declared concentric corner. | fixed | 278270a8 |
+| calendar-emdash-1 | low | source | The `range` prop's JSDoc in src/organisms/calendar/calendar.shared.tsx (line 115, "two-tap range selection" then an em-dash) uses an em-dash against the kit's writing rule, and so do four lines of the shell's header comment (21, 26, 29 and 32). Found in the AnchoredOverlay turn, which left the source alone; Calendar's turn fixes it. | open |  |
 
 ## Sign-off
 
