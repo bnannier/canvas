@@ -92,3 +92,16 @@ decision.
 | Width | Desktop capture width | 1440 (Dark Factory's reference strips; the 1280 page cap shows inside it); 1280 | 1440 (the runner's default). |
 | Motion | iOS Reduce Motion during native runs | on (stable frames); off (what most users see) | Off for captures, on only for the motion checks that need it. |
 | Commits | Fix-commit format | one commit per component family with its changeset; one per component | One per family. |
+
+## AnchoredOverlay turn (Foundations, 2026-10-10)
+
+Decided by the owner on 2026-10-10, each the recommendation offered.
+
+| ID | Question | Decision |
+|---|---|---|
+| AO-1 | Tab inside an open menu or option list | Close and move on (WAI-ARIA APG): Tab closes the menu or list and focus continues to the next control in the page's order; focus is never left on the document body with a card open. |
+| AO-2 | Screen readers and an open anchored card | On iOS and Android every anchored card (menus, option lists and Popover) is modal to VoiceOver and TalkBack while open: it takes their focus, hides the page behind it, and returns focus to its trigger on close, as HIG treats popovers. On the web, menus and option lists move focus in (APG) and Popover stays non-modal. |
+| AO-6 | Phone presentation | AnchoredOverlay offers a sheet presentation at the phone form factor. Popover, Command and long option lists (PhoneInput's country list) use it; menus, Select and Autocomplete stay anchored, as HIG and Material 3 keep them. Popover adopts it in the AnchoredOverlay turn; Command and PhoneInput in their own turns. |
+| AO-5 | RTL default | When a consumer does not say, a card follows the app's layout direction; output changes only in RTL locales; shipped as a patch under that stated assumption. |
+| AO-7 | Tracking an open card | Event-driven, with a frame poll kept only while the trigger sits in a scroller the kit cannot hear. |
+
