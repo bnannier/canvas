@@ -9,6 +9,9 @@ import e_organisms_tab_bar_dont_0_dont from "./dont-0-dont";
 export const docs: ComponentDocs = {
   dir: "tab-bar",
   category: "organisms",
+  overview: [
+    "iOS and web share the iOS 26 anatomy: a capsule that floats above the content (which scrolls beneath it), inset from the sides, with the safe-area inset kept under the capsule, and the selected destination raised as a capsule covering its whole cell. Android docks the Material 3 bar full-bleed with its 56 by 32 icon pill. In glass mode the selection is a control-layer pane on the active destination: the cell capsule on iOS and web, the icon pill on Android. Solid mode retains the ordinary platform surface.",
+  ],
   examples: [
     { label: "Default", code: "<TabBar\n  items={[\n    { key: \"home\", label: \"Home\", icon: (active) => <Icon home size={22} primary={active} muted={!active} /> },\n    { key: \"search\", label: \"Search\", icon: (active) => <Icon search size={22} primary={active} muted={!active} /> },\n    { key: \"profile\", label: \"Profile\", icon: (active) => <Icon user size={22} primary={active} muted={!active} /> }\n  ]}\n/>", render: e_organisms_tab_bar_example_0 },
     { label: "Controlled", code: "<Stateful initial=\"home\">\n  {(active, setActive) => (\n    <TabBar\n      active={active}\n      onSelect={setActive}\n      items={[\n        { key: \"home\", label: \"Home\", icon: (active) => <Icon home size={22} primary={active} muted={!active} /> },\n        { key: \"search\", label: \"Search\", icon: (active) => <Icon search size={22} primary={active} muted={!active} /> },\n        { key: \"profile\", label: \"Profile\", icon: (active) => <Icon user size={22} primary={active} muted={!active} /> }\n      ]}\n    />\n  )}\n</Stateful>", render: e_organisms_tab_bar_example_1 },

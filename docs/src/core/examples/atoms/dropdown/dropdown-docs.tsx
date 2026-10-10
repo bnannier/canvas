@@ -26,6 +26,10 @@ import e_atoms_dropdown_dont_5_dont from "./dont-5-dont";
 export const docs: ComponentDocs = {
   dir: "dropdown",
   category: "atoms",
+  overview: [
+    "On the web the menu is Dark Factory's: a card of bold rows that take the hover wash at once, an uppercase eyebrow over a section, muted shortcuts in their own column, and a disabled row in the muted ink rather than faded. iOS and Android keep their platform menus (the iOS pull-down menu, the Material 3 menu) in the theme's colours.",
+    "In glass mode the menu is a dense-layer glass card under its trigger (or above it when it fits there); the trigger keeps its place, its press and its accessible name and state, and a selection commits and closes the menu the moment a row is pressed. AvatarMenu and the collapsed Navbar menu are built on Dropdown. Solid mode paints the skin's own menu.",
+  ],
   examples: [
     { label: "Default", code: "<Dropdown\n  trigger=\"Actions\"\n  items={[\n    { label: \"Edit profile\" },\n    { label: \"Duplicate\" },\n    { label: \"Settings\" }\n  ]}\n/>", render: e_atoms_dropdown_example_0 },
     { label: "Disabled trigger", code: "<Dropdown\n  trigger=\"Actions\"\n  disabled\n  items={[\n    { label: \"Edit profile\" },\n    { label: \"Duplicate\" },\n    { label: \"Settings\" }\n  ]}\n/>", render: e_atoms_dropdown_example_1 },

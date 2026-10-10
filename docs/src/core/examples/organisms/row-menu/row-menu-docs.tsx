@@ -16,12 +16,16 @@ import e_organisms_row_menu_dont_2_dont from "./dont-2-dont";
 export const docs: ComponentDocs = {
   dir: "row-menu",
   category: "organisms",
+  overview: [
+    "On the web the ··· trigger is Dark Factory's plain icon button, a small square with a muted glyph that takes the hover wash, and it opens Dark Factory's menu, the same one Dropdown opens. iOS and Android keep their platform context menus in the theme's colours.",
+    "In glass mode the menu is a dense-layer glass card beside its glyph; a row's callback fires the moment it is pressed. Solid mode paints the skin's own menu. Board's card menus are RowMenus and behave the same.",
+  ],
   examples: [
     { label: "Default", code: "<RowMenu\n  items={[\n    { label: \"Edit\" },\n    { label: \"Duplicate\" },\n    { label: \"Delete\", destructive: true, separatorBefore: true }\n  ]}\n/>", render: e_organisms_row_menu_example_0 },
     { label: "Links", code: "<RowMenu links items={[{ label: \"Profile\" }, { label: \"Billing\" }, { label: \"Members\" }]} />", render: e_organisms_row_menu_example_1 },
     { label: "Section label", code: "<RowMenu sectionLabel=\"Actions\" items={[{ label: \"Edit\" }, { label: \"Duplicate\" }, { label: \"Rename\" }]} />", render: e_organisms_row_menu_example_2 },
     { label: "Leading icons", code: "<RowMenu\n  items={[\n    { label: \"Edit\", icon: \"pencil\" },\n    { label: \"Duplicate\", icon: \"copy\" },\n    { label: \"Settings\", icon: \"settings\" }\n  ]}\n/>", render: e_organisms_row_menu_example_3 },
-    { label: "Disabled item", code: "<RowMenu items={[{ label: \"Edit\" }, { label: \"Duplicate\" }, { label: \"Clear column\", disabled: true }]} />", render: e_organisms_row_menu_example_4 },
+    { label: "Disabled item", code: "<RowMenu items={[{ label: \"Edit\" }, { label: \"Duplicate\" }, { label: \"Clear column\", disabled: true }]} />", render: e_organisms_row_menu_example_4, note: ["Mark an item `disabled` when its action is unavailable in the current context; the row dims, does not fire `onSelect`, keeps the menu open, and is announced as disabled."] },
   ],
   donts: [
     { title: "When to use", do: { caption: "Collapse per-row actions behind a ··· trigger; keep Delete separated and danger-colored.", code: "<RowMenu open sectionLabel=\"Actions\" items={[\n    { label: \"Edit\", icon: \"pencil\" },\n    { label: \"Duplicate\", icon: \"copy\" },\n    { label: \"Delete\", icon: \"trash\", destructive: true, separatorBefore: true }\n  ]} />", render: e_organisms_row_menu_dont_0_do }, dont: { caption: "Splaying every row action inline multiplies visual noise across every table row.", code: "<View style={{ flexDirection: \"row\", flexWrap: \"wrap\", gap: 8 }}>\n  <Button ghost small>Edit</Button>\n  <Button ghost small>Duplicate</Button>\n  <Button destructive small>Delete</Button>\n</View>", render: e_organisms_row_menu_dont_0_dont } },

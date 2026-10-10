@@ -10,6 +10,7 @@ import {
   bareWidthViolations,
   prosePhantomApiViolations,
   docStructureViolations,
+  parseDoc,
 } from "./parse-md.ts";
 
 // Unit tests for the docgen markdown parser (tools/docgen/parse-md.ts). These are
@@ -97,7 +98,7 @@ describe("splitDoc", () => {
     expect(donts).toEqual([]);
   });
 
-  it("drops the '# Name' + description header (only sections become examples)", () => {
+  it("keeps the intro out of the examples (only sections become examples)", () => {
     const md = `# Button\n\nProse that must NOT leak into an example.\n\n## Usage\n\n${F}tsx\n<Button />\n${F}`;
     const { examples } = splitDoc(md);
     expect(examples).toHaveLength(1);
@@ -215,6 +216,132 @@ describe("splitDoc", () => {
     expect(examples).toEqual([{ label: "Default", code: "<X />" }]);
     // The normalized body must not carry stray carriage returns.
     expect(examples[0].code).not.toContain("\r");
+  });
+});
+
+describe("parseDoc", () => {
+  // A page with prose everywhere the grammar takes it: a two-paragraph intro with a
+  // list, a Usage note, a Variants lead, a variant note before and after its fence, a
+  // caption that wraps with inline code, and a guidance section with a live example.
+  const DOC = [
+    "# Widget",
+    "",
+    "A small control with `onPress`.",
+    "",
+    "It has **two** families:",
+    "",
+    "- The plain one, written",
+    "  over two lines.",
+    "- The `outline` one.",
+    "",
+    "## Usage",
+    "",
+    "Use it for one action.",
+    "",
+    `${F}tsx`, "<Widget />", F,
+    "",
+    "## Variants",
+    "",
+    "Every variant presses the same way.",
+    "",
+    "### Small",
+    "",
+    "Smaller.",
+    "",
+    `${F}tsx`, "<Widget small />", F,
+    "",
+    "Still a widget.",
+    "",
+    "## Do & Don't",
+    "",
+    "### Labels",
+    "",
+    "**Do**: Name it with",
+    "`label`.",
+    "",
+    `${F}tsx`, `<Widget label="Name" />`, F,
+    "",
+    "**Don't**: Leave it unnamed.",
+    "",
+    `${F}tsx`, "<Widget />", F,
+    "",
+    "## Touch area",
+    "",
+    "The touch area grows.",
+    "",
+    "### On Android",
+    "",
+    `${F}tsx`, "<Widget compact />", F,
+    "",
+  ].join("\n");
+
+  it("reads every part of the page, prose and all", () => {
+    const doc = parseDoc(DOC);
+    expect(doc.title).toBe("Widget");
+    expect(doc.description).toBe("A small control with `onPress`.");
+    expect(doc.overview).toEqual([
+      { kind: "paragraph", text: "It has **two** families:" },
+      { kind: "list", items: ["The plain one, written over two lines.", "The `outline` one."] },
+    ]);
+    expect(doc.examples).toEqual([
+      { label: "Default", code: "<Widget />", note: [{ kind: "paragraph", text: "Use it for one action." }] },
+      { label: "Small", code: "<Widget small />", note: [{ kind: "paragraph", text: "Smaller." }, { kind: "paragraph", text: "Still a widget." }] },
+    ]);
+    expect(doc.variantsNote).toEqual([{ kind: "paragraph", text: "Every variant presses the same way." }]);
+    expect(doc.donts).toEqual([
+      { title: "Labels", do: { caption: "Name it with `label`.", code: `<Widget label="Name" />` }, dont: { caption: "Leave it unnamed.", code: "<Widget />" } },
+    ]);
+    expect(doc.guidance).toEqual([
+      {
+        title: "Touch area",
+        blocks: [
+          { kind: "paragraph", text: "The touch area grows." },
+          { kind: "heading", text: "On Android" },
+          { kind: "example", code: "<Widget compact />" },
+        ],
+      },
+    ]);
+    expect(doc.unconsumed).toEqual([]);
+  });
+
+  it("is what splitDoc projects: the examples' labels and fences and the pairs", () => {
+    const doc = parseDoc(DOC);
+    expect(splitDoc(DOC)).toEqual({ examples: doc.examples.map(({ label, code }) => ({ label, code })), donts: doc.donts });
+  });
+
+  it("hands a variant that repeats Usage, and its note, to the Default example", () => {
+    const md = `# T\n\nd\n\n## Usage\n\n${F}tsx\n<T display />\n${F}\n\n## Variants\n\n### Display\n\nThe largest.\n\n${F}tsx\n<T display />\n${F}\n`;
+    const doc = parseDoc(md);
+    expect(doc.examples).toEqual([{ label: "Default", code: "<T display />", note: [{ kind: "paragraph", text: "The largest." }] }]);
+    expect(doc.unconsumed).toEqual([]);
+  });
+
+  it("names each line it does not place, with why, and the first line of its block", () => {
+    const md = `# X\n\nd\n\n## Usage\n\n${F}tsx\n<X />\n${F}\n\n${F}tsx\n<Y />\n${F}\n\n## Do & Don't\n\nA note the page never shows.\n`;
+    expect(parseDoc(md).unconsumed).toEqual([
+      { line: 11, text: `${F}tsx`, reason: "Usage shows one fence and the prose beside it", block: 11 },
+      { line: 12, text: "<Y />", reason: "Usage shows one fence and the prose beside it", block: 11 },
+      { line: 13, text: F, reason: "Usage shows one fence and the prose beside it", block: 11 },
+      { line: 17, text: "A note the page never shows.", reason: `Do & Don't shows each "### <title>" group's **Do** and **Don't**, a caption over a fence each, and nothing else`, block: 17 },
+    ]);
+  });
+
+  it("names a line it places but cannot render as written", () => {
+    const md = `# X\n\nSee [the guide](https://example.com).\n\n## Usage\n\n${F}tsx\n<X />\n${F}\n`;
+    expect(parseDoc(md).description).toBe("See [the guide](https://example.com).");
+    expect(parseDoc(md).unconsumed).toEqual([{ line: 3, text: "See [the guide](https://example.com).", reason: "a link, which the page does not render", block: 3 }]);
+  });
+
+  it("reads a list over a blank line into the next item of the same mark, and ends it at another mark", () => {
+    const md = `# X\n\nd\n\n- one\n\n- two\n\n* three\n\n## Usage\n\n${F}tsx\n<X />\n${F}\n`;
+    expect(parseDoc(md).overview).toEqual([{ kind: "list", items: ["one", "two"] }, { kind: "list", items: ["three"] }]);
+  });
+
+  it("ends a paragraph at a list item, the way Markdown reads one", () => {
+    const md = `# X\n\nd\nmore\n- item\n\n## Usage\n\n${F}tsx\n<X />\n${F}\n`;
+    const doc = parseDoc(md);
+    expect(doc.description).toBe("d more");
+    expect(doc.overview).toEqual([{ kind: "list", items: ["item"] }]);
   });
 });
 
@@ -686,6 +813,11 @@ describe("docStructureViolations", () => {
       expect(found(page((l) => [...l.slice(0, 4), "### Early", ...l.slice(4)]))).toEqual(["5 S2"]);
       expect(found(page((l) => [...l.slice(0, 4), "**Do**: early", ...l.slice(4)]))).toEqual(["5 S2"]);
     });
+
+    it("rejects an intro that opens with a list: its first paragraph is the description", () => {
+      expect(found(page((l) => [l[0], "", "- A widget.", "- And more.", ...l.slice(3)]))).toEqual(["3 S2"]);
+      expect(found(page((l) => [...l.slice(0, 4), "- A list after the description.", "", ...l.slice(4)]))).toEqual([]);
+    });
   });
 
   describe("S3: the sections", () => {
@@ -713,14 +845,31 @@ describe("docStructureViolations", () => {
       expect(found(md)).toEqual(["5 S3"]);
     });
 
-    it("rejects a section of the page's own before Do & Don't", () => {
-      expect(found(page((l) => [...l.slice(0, 18), "## Touch area", "", "Prose.", "", ...l.slice(18)]))).toEqual(["19 S3"]);
-    });
-
     it("rejects a '##' with no name, once, before Do & Don't or after it", () => {
       expect(found(page((l) => [...l.slice(0, 18), "##", "", ...l.slice(18)]))).toEqual(["19 S3"]);
       expect(found(page((l) => [...l, "##", "", "Prose.", ""]))).toEqual(["35 S3"]);
       expect(found(page((l) => [...l, "##  ", ""]))).toEqual(["35 S3"]);
+    });
+
+    // A misspelled required section is missing (S3) and, as a section of the page's own,
+    // sits before the Do & Don't it should have been (S7).
+    it("reads a section name exactly: '## Do & Don'ts' is not Do & Don't", () => {
+      expect(found(page((l) => l.map((x) => (x === "## Do & Don't" ? "## Do & Don'ts" : x))))).toEqual(["19 S7", "33 S3"]);
+    });
+
+    it("rejects a fence that never closes, under the rule of its section", () => {
+      expect(found(page((l) => l.slice(0, 32)))).toEqual(["31 S6"]);
+    });
+  });
+
+  describe("S7: the guidance sections", () => {
+    it("passes prose, a list, a '###' heading and a fence after Do & Don't", () => {
+      const md = page((l) => [...l, "## Touch area", "", "The touch area grows.", "", "- Up to 44pt.", "- Up to 48dp.", "", "### Spacing", "", `${F}tsx`, "<Widget compact />", F, ""]);
+      expect(found(md)).toEqual([]);
+    });
+
+    it("rejects a section of the page's own before Do & Don't", () => {
+      expect(found(page((l) => [...l.slice(0, 18), "## Touch area", "", "Prose.", "", ...l.slice(18)]))).toEqual(["19 S7"]);
     });
 
     // A second pair whose "### Hints" title starts at line 35.
@@ -729,21 +878,64 @@ describe("docStructureViolations", () => {
     it("rejects a pair's '###' title typed as '##', which ends Do & Don't and drops the pair", () => {
       const md = page((l) => [...l, "## Hints", ...HINTS.slice(1)]);
       expect(splitDoc(md).donts.map((d) => d.title)).toEqual(["Labels"]);
-      expect(found(md)).toEqual(["35 S3"]);
+      expect(found(md)).toEqual(["35 S7"]);
       expect(messages(md)[0]).toContain("(line 37, 43)");
       expect(found(page((l) => [...l, ...HINTS]))).toEqual([]);
     });
 
     it("rejects a Do/Don't marker in a section of the page's own", () => {
-      expect(found(page((l) => [...l, "## Touch area", "", "**Don't**: shrink it.", ""]))).toEqual(["35 S3"]);
+      expect(found(page((l) => [...l, "## Touch area", "", "**Don't**: shrink it.", ""]))).toEqual(["35 S7"]);
     });
 
-    it("reads a section name exactly: '## Do & Don'ts' is not Do & Don't", () => {
-      expect(found(page((l) => l.map((x) => (x === "## Do & Don't" ? "## Do & Don'ts" : x))))).toEqual(["19 S3", "33 S3"]);
+    it("rejects a section that holds nothing, and a '###' over nothing", () => {
+      expect(found(page((l) => [...l, "## Touch area", ""]))).toEqual(["35 S7"]);
+      expect(found(page((l) => [...l, "## Touch area", "", "Prose.", "", "### Spacing", ""]))).toEqual(["39 S7"]);
     });
 
-    it("rejects a fence that never closes, under the rule of its section", () => {
-      expect(found(page((l) => l.slice(0, 32)))).toEqual(["31 S6"]);
+    it("rejects an empty fence, which would render an empty example", () => {
+      expect(found(page((l) => [...l, "## Touch area", "", "Prose.", "", `${F}tsx`, F, ""]))).toEqual(["39 S7"]);
+    });
+
+    it("rejects the name of a section the page generates, and a name used twice", () => {
+      expect(found(page((l) => [...l, "## Props", "", "Prose.", ""]))).toEqual(["35 S7"]);
+      const twice = page((l) => [...l, "## Touch area", "", "One.", "", "## Touch area", "", "Two.", ""]);
+      expect(found(twice)).toEqual(["39 S7"]);
+      expect(messages(twice)[0]).toContain("at line 35");
+    });
+  });
+
+  describe("S8: every line reaches the page as written", () => {
+    it("names prose that opens a construct the page does not render, at its line", () => {
+      for (const [line, construct] of [
+        ["See [the guide](https://example.com).", "a link"],
+        ["An *emphasised* word.", "emphasis"],
+        ["1. First", "an ordered list"],
+        ["> Quoted.", "a block quote"],
+        ["#### Deep", "a heading deeper than ###"],
+        ["Some <b>bold</b> text.", "raw HTML"],
+        ["    indented code", "an indented code block"],
+      ]) {
+        const md = page((l) => [...l.slice(0, 4), line, "", ...l.slice(4)]);
+        expect(found(md)).toEqual(["5 S8"]);
+        expect(messages(md)[0]).toContain(construct);
+      }
+    });
+
+    it("names an unsupported construct in a note, a caption and a guidance section too", () => {
+      expect(found(page((l) => [...l.slice(0, 13), "A [link](x) note.", ...l.slice(13)]))).toEqual(["14 S8"]);
+      expect(found(page((l) => l.map((x) => (x === "**Do**: Name it." ? "**Do**: Name it, *always*." : x))))).toEqual(["23 S8"]);
+      expect(found(page((l) => [...l, "## Touch area", "", "| a | b |", "|---|---|", ""]))).toEqual(["38 S8"]);
+    });
+
+    it("names a nested list and a second paragraph in a list item", () => {
+      expect(found(page((l) => [...l.slice(0, 4), "- One", "  - Nested", "", ...l.slice(4)]))).toEqual(["6 S8"]);
+      expect(found(page((l) => [...l.slice(0, 4), "- One", "", "  More of one.", "", ...l.slice(4)]))).toEqual(["7 S8"]);
+    });
+
+    it("leaves to another rule the lines that rule's fault drops, so a fault is named once", () => {
+      // A Do with no Don't: S6 names the group, and the Do it leaves unplaced waits.
+      expect(found(page((l) => l.slice(0, 28)))).toEqual(["21 S6"]);
+      expect(parseDoc(page((l) => l.slice(0, 28))).unconsumed.map((u) => u.line)).toEqual([21, 23, 25, 26, 27]);
     });
   });
 

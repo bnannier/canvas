@@ -66,26 +66,38 @@ Conventions inside the shell:
 
 ```
 # <Name>           (the component's name in docs/src/core/data/components.ts)
-One-paragraph description.
+Description.       (the intro's first paragraph)
+More intro.        (optional paragraphs and bullet lists: the overview under the lead)
 ## Usage
-one ```tsx fence
+one ```tsx fence   (prose beside it is the Default example's note)
 ## Variants
-### <label>        (each heading followed by exactly ONE fence; prose there is not rendered)
+Prose.             (optional: a note on every example)
+### <label>        (exactly ONE fence; prose beside it is this example's note)
 ## Do & Don't
 ### <title>
 **Do**: caption    (one paragraph: it may wrap, and a blank line ends it)
 fence
 **Don't**: caption
 fence
-## <section>       (optional, the page's own, only after Do & Don't)
+## <section>       (optional guidance of the page's own, only after Do & Don't:
+                    prose, lists, "###" headings and live-example fences)
 ```
+
+Every line reaches the page (`parseDoc` in parse-md.ts reads it into one document
+model and the generator emits all of it): the paragraphs and lists after the
+intro's first paragraph render as the overview under the page's lead. A note shows under the Playground rail while its example is selected. A guidance
+section renders after Do & Don't, its fences as live examples over their source
+under the same guardrails as the Variants. Prose is a paragraph or a `-` bullet
+list (one paragraph per item) of inline Markdown: a code span (`` `cover` ``) renders
+in the mono face, `**strong**` at semibold, and `\*` escapes a literal star. Nothing
+else Markdown has (a link, emphasis, an image, raw HTML, an ordered or nested list,
+a block quote, a table, a heading below `###`) renders, so the gate refuses it (S8).
 
 Write every heading the one way: the `#` run at the start of the line, one
 space, the text, nothing after it. Markdown and the parser also read
 `##  Variants`, `##\tVariants`, an indented heading or a closing `#` run as the
 section, but the gate rejects those spellings so the source reads the way the
-page renders. A code span in a caption or a Do & Don't title (`` `cover` ``)
-renders in the mono face.
+page renders.
 
 `docs:gen` and `docs:gen:check` (the pre-push hook and CI) refuse to generate
 unless every page has this shape, and `tools/docgen/doc-structure.test.ts` runs
@@ -98,13 +110,11 @@ rule:
   registered component (its `dir`, or its `slug` when they match) has a page; a
   missing one is reported at its entry's `slug` line in the registry.
 - **S2** A prose intro sits between the title and `## Usage`, with no fence,
-  `###` heading or Do/Don't marker in it.
+  `###` heading or Do/Don't marker in it, and it opens with a paragraph, not a
+  list.
 - **S3** `## Usage`, `## Variants` and `## Do & Don't` each appear exactly once,
   in that order. Every page carries all three, the primitives and the charts
-  included, and every `##` names its section. Do & Don't ends at the next `##`:
-  a section of the page's own (Button's `## Touch area`) goes after it, never
-  before, and holds no Do/Don't marker, so a pair's `###` title typed as `##`
-  (which would take that pair and every one after it off the page) fails here.
+  included, and every `##` names its section.
 - **S4** Usage holds exactly one non-empty fence and no `###` heading or
   Do/Don't marker.
 - **S5** Variants holds at least one `### <label>`; each has exactly one
@@ -118,7 +128,16 @@ rule:
   any other prose in the section (a second paragraph under a marker, a note
   after a fence) fails. Every pair teaches the page's own component, and its
   captions describe what the fences really render.
-
+- **S7** Any other `##` is a guidance section (Button's `## Touch area`): it goes
+  after Do & Don't, never before, holds something (prose, lists, `###` headings
+  over something, non-empty fences), and holds no Do/Don't marker, so a pair's
+  `###` title typed as `##` (which would take that pair and every one after it
+  off the page) fails here. Its name is its own: not `Props`, which the page
+  generates, and not one used twice.
+- **S8** Every non-blank line reaches the page as written: the document model
+  places it, and it opens no construct the page does not render. A line another
+  rule already explains (in the same `##` section) is left to that rule, so a
+  page with no finding has nothing dropped.
 A heading spelled loosely fails under the rule that owns it: S1 for `#`, S3 for
 `##`, and for `###` the rule of its section.
 

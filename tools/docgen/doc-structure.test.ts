@@ -2,7 +2,7 @@ import { describe, it, expect } from "bun:test";
 import * as fs from "node:fs";
 import * as path from "node:path";
 import { componentPages, pageStructureViolations, registeredComponents, registrySlugLines, REGISTRY_SOURCE, type ComponentPage } from "./pages.ts";
-import { docStructureViolations, splitDoc } from "./parse-md.ts";
+import { docStructureViolations, parseDoc, splitDoc } from "./parse-md.ts";
 import { COMPONENTS } from "../../docs/src/core/data/components.ts";
 
 // The structure gate over the real pages. docs:gen and docs:gen:check run the same
@@ -59,8 +59,13 @@ describe("component pages", () => {
     expect(pages.map((p) => p.dir).sort()).toEqual(COMPONENTS.map((c) => c.dir ?? c.slug).sort());
   });
 
-  it("every page has the shape docgen expects (rules S1 to S6)", () => {
+  it("every page has the shape docgen expects (rules S1 to S8)", () => {
     expect(pageStructureViolations(pages, registry)).toEqual([]);
+  });
+
+  // S8 straight from the model: no page has a line the docs page never shows.
+  it("every non-blank line of every page reaches the page as written", () => {
+    for (const page of pages) expect({ page: page.source, unconsumed: parseDoc(page.content).unconsumed }).toEqual({ page: page.source, unconsumed: [] });
   });
 
   // The gate and the generator read a page through one model; this holds them to each
@@ -129,10 +134,10 @@ describe("a stray '##' inside Do & Don't on a real page", () => {
   const second = titles[1];
   if (second === undefined) throw new Error("src/atoms/badge/badge.md has fewer than two Do & Don't pairs; point this probe at another page");
 
-  it(`"## ${lines[second].slice(4)}" for its "###" title fails S3 at its line`, () => {
+  it(`"## ${lines[second].slice(4)}" for its "###" title fails S7 at its line`, () => {
     const md = lines.map((l, i) => (i === second ? `## ${l.slice(4)}` : l)).join("\n");
     expect(splitDoc(md).donts).toEqual(pristine.slice(0, 1));
-    expect(docStructureViolations(md, { name: "Badge" }).map((v) => `${v.line} ${v.rule}`)).toEqual([`${second + 1} S3`]);
+    expect(docStructureViolations(md, { name: "Badge" }).map((v) => `${v.line} ${v.rule}`)).toEqual([`${second + 1} S7`]);
   });
 
   it(`a "##" with no name before "${lines[second]}" fails S3 at its line`, () => {

@@ -2213,7 +2213,7 @@ export const STATE_RECIPES: Record<string, ComponentStates> = {
     reason: "Text styles: no rail example makes the text a link or gives it a press, so none takes input.",
     exempt: {
       focus: unpassed(
-        "`href` makes the text a link (a tab stop); no rail example passes it: typography.md's Inline links (href) fence follows Do & Don't, which the docs page does not render, so the link example is not on the page at all.",
+        "`href` makes the text a link (a tab stop); no rail example passes it: typography.md's Inline links (href) example is the live example of a guidance section after Do & Don't, not a rail example, so no state capture reaches it.",
         "href",
       ),
       pressed: unpassed("`onPress` makes the text pressable; no rail example passes it.", "onPress"),

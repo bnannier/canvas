@@ -17,7 +17,7 @@ export const docs: ComponentDocs = {
   dir: "action-panels",
   category: "molecules",
   examples: [
-    { label: "Default", code: "<ActionPanel\n  title=\"Export your data\"\n  description=\"Download everything in this workspace as a ZIP archive.\"\n  actionLabel=\"Export\"\n/>", render: e_molecules_action_panels_example_0 },
+    { label: "Default", code: "<ActionPanel\n  title=\"Export your data\"\n  description=\"Download everything in this workspace as a ZIP archive.\"\n  actionLabel=\"Export\"\n/>", render: e_molecules_action_panels_example_0, note: ["The panel's single action fires `onAction`; wire it to your own handler and every press runs it."] },
     { label: "Destructive", code: "<ActionPanel\n  title=\"Delete this project\"\n  description=\"Once you delete a project, there is no going back.\"\n  actionLabel=\"Delete project\"\n  destructive\n/>", render: e_molecules_action_panels_example_1 },
     { label: "Inline", code: "<ActionPanel\n  title=\"Weekly digest\"\n  description=\"A summary of workspace activity, sent every Monday.\"\n  actionLabel=\"Subscribe\"\n  inline\n/>", render: e_molecules_action_panels_example_2 },
     { label: "Toggle", code: "<ActionPanel\n  title=\"Two-factor authentication\"\n  description=\"Require a verification code on every login.\"\n  toggle\n/>", render: e_molecules_action_panels_example_3 },

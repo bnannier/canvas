@@ -16,6 +16,10 @@ import e_atoms_pagination_dont_2_dont from "./dont-2-dont";
 export const docs: ComponentDocs = {
   dir: "pagination",
   category: "atoms",
+  overview: [
+    "Neither iOS nor Android has a numbered pagination control, and Dark Factory has no pager, so every platform shows one look built from Dark Factory's parts: the page numbers are bare pills, the current page is the violet pill, Previous and Next are hairline circles around chevrons, and the rows-per-page trigger is a hairline pill. A resting page or arrow takes the hover wash at once; a disabled pager keeps its outlines and mutes its numbers rather than fading. The cells are the Button's heights, so a pager lines up with a Button beside it.",
+    "In glass mode the current page is a brand-tinted control-layer puck behind its number; the other pages and the hairline arrows paint no surface, so they stay bare. Beyond seven pages a page change also shifts the window (an ellipsis moves, a number appears or drops out). Solid mode keeps the violet pill.",
+  ],
   examples: [
     { label: "Default", code: "<Pagination defaultPage={2} total={12} />", render: e_atoms_pagination_example_0 },
     { label: "With item range", code: "<Pagination compact defaultPage={2} total={12} itemCount={118} />", render: e_atoms_pagination_example_1 },

@@ -52,11 +52,25 @@ import e_atoms_widget_example_0 from "./example-0";
 export const docs: ComponentDocs = {
   dir: "widget",
   category: "atoms",
+  overview: [
+    "Measure it with \`useWidgetWidth\`.",
+    { list: ["A **plain** widget.", "A \`compact\` one."] },
+  ],
   examples: [
-    { label: "Default", code: "<Widget />", render: e_atoms_widget_example_0 },
+    { label: "Default", code: "<Widget />", render: e_atoms_widget_example_0, note: ["Pass \`onWidgetPress\` to act on it."] },
     { label: "With icon", code: "<Widget icon=\\"plus\\" />", render: e_atoms_widget_example_0 },
   ],
   donts: [{ title: "Labels", do: { caption: "Name it.", code: "<Widget />", render: e_atoms_widget_example_0 }, dont: { caption: "Leave it.", code: "<Widget />", render: e_atoms_widget_example_0 } }],
+  guidance: [
+    {
+      title: "Touch area",
+      blocks: [
+        "The touch area grows to the minimum.",
+        { heading: "On Android" },
+        { code: "<Widget compact />", render: e_atoms_widget_example_0 },
+      ],
+    },
+  ],
   props: [{"name":"WidgetProps","props":[{"name":"icon","type":"IconName","required":false,"description":""}]}],
 };
 `;
@@ -121,7 +135,13 @@ test("a component page reads its catalog entry and its generated docs module", (
   const pages = docsPages(fixture(BASE), CATALOG);
   const widget = pages.get("components/widget")!;
   for (const name of ["Widget", "Label", "WidgetProps", "IconName"]) expect(mentions(widget.text, name)).toBe(true);
-  expect(widget.headings).toEqual(["Default", "With icon", "Labels", "WidgetProps"]);
+  // The prose the page renders from its .md (the overview, a note, a guidance section)
+  // is its text, and a code span in it is code.
+  for (const name of ["useWidgetWidth", "onWidgetPress", "compact"]) {
+    expect(mentions(widget.text, name)).toBe(true);
+    expect(mentions(widget.code, name)).toBe(true);
+  }
+  expect(widget.headings).toEqual(["Default", "With icon", "Labels", "WidgetProps", "Touch area", "On Android"]);
   expect(pages.get("components/widget/withicon")!.text).toBe(widget.text);
 });
 

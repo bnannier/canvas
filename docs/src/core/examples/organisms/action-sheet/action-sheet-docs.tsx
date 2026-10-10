@@ -14,6 +14,10 @@ import e_organisms_action_sheet_dont_1_dont from "./dont-1-dont";
 export const docs: ComponentDocs = {
   dir: "action-sheet",
   category: "organisms",
+  overview: [
+    "On light glass, muted header text uses the stronger surface foreground to remain readable over the dimmed background.",
+    "iOS accessibility escape and Android system back request cancellation without running an action. An open child overlay handles the request first. Disabled actions do not disable cancellation, and a controlled owner can keep the sheet open. The visible Cancel row remains available to assistive technology.",
+  ],
   examples: [
     { label: "Default", code: "<ActionSheet\n  trigger=\"Add photo\"\n  actions={[\n    { label: \"Take Photo\", onPress: () => {} },\n    { label: \"Choose from Library\", onPress: () => {} }\n  ]}\n/>", render: e_organisms_action_sheet_example_0 },
     { label: "With a title and message", code: "<ActionSheet\n  trigger=\"Discard draft…\"\n  title=\"Discard draft?\"\n  message=\"Your unsaved changes will be lost.\"\n  actions={[\n    { label: \"Discard Changes\", onPress: () => {} },\n    { label: \"Keep Editing\", onPress: () => {} }\n  ]}\n/>", render: e_organisms_action_sheet_example_1 },

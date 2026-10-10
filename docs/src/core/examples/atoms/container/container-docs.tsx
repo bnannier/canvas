@@ -11,6 +11,9 @@ import e_atoms_container_dont_0_dont from "./dont-0-dont";
 export const docs: ComponentDocs = {
   dir: "container",
   category: "atoms",
+  overview: [
+    "The step booleans and `start` are the kit's measure axis, and the fields, Field, Form, Button, and ButtonGroup carry it too: `<Input sm start>` says exactly what `<Container sm start>` around it says, a cap at the step and fluid below it. Reach for Container when the measure belongs to a group (a form, an article, a card stack) rather than to one component.",
+  ],
   examples: [
     { label: "Default", code: "<Container sm>\n  <Card>\n    <Typography medium>Sign in</Typography>\n  </Card>\n</Container>", render: e_atoms_container_example_0 },
     { label: "Steps", code: "<Column>\n  <Container xs><Card><Typography small>xs, 320</Typography></Card></Container>\n  <Container md><Card><Typography small>md, 448</Typography></Card></Container>\n  <Container xl><Card><Typography small>xl, 576</Typography></Card></Container>\n</Column>", render: e_atoms_container_example_1 },

@@ -95,11 +95,35 @@ export interface PreviewScope {
   scope: ExampleScope;
 }
 
+// A paragraph of a component's .md prose as inline Markdown (its code spans and strong
+// runs intact, its lines joined), or a bullet list of such paragraphs. The page renders
+// it through docs/src/lib/inline-markdown.ts, the grammar the generator holds every
+// page to.
+export type DocProse = string | { list: string[] };
+
 export interface DocExample {
   label: string;
   // The verbatim fence source, for the CodeBlock display beneath the preview.
   code: string;
   render: ExampleRender;
+  // The prose written beside the fence (under its "### <label>", or in Usage for the
+  // Default example), shown under the Playground rail while the example is selected.
+  note?: DocProse[];
+}
+
+// A live example in a guidance section: its fence rendered, over its source.
+export interface DocGuidanceExample {
+  code: string;
+  render: ExampleRender;
+}
+
+// What a guidance section holds, in page order: prose, a "###" heading, a live example.
+export type DocGuidanceBlock = DocProse | { heading: string } | DocGuidanceExample;
+
+// A section of the component's own after Do & Don't ("## Touch area").
+export interface DocGuidance {
+  title: string;
+  blocks: DocGuidanceBlock[];
 }
 
 export interface DocDontSide {
@@ -114,13 +138,21 @@ export interface DocDontPair {
   dont: DocDontSide;
 }
 
+// Every line of a component's .md but its title and description, in the parts the page
+// shows (tools/docgen/parse-md.ts, parseDoc). A part the .md leaves empty is left out.
 export interface DocEntry {
   // The source directory / `.md` stem (src/<category>/<dir>/<dir>.md). The URL slug
   // can differ (see the components data); the consuming page maps slug -> dir.
   dir: string;
   category: "atoms" | "molecules" | "organisms" | "charts";
+  // The intro after its first paragraph, shown under the lead.
+  overview?: DocProse[];
   examples: DocExample[];
+  // The prose before the first variant: a note on every example, under the rail.
+  variantsNote?: DocProse[];
   donts: DocDontPair[];
+  // The sections after Do & Don't, shown after the page's own Do & Don't.
+  guidance?: DocGuidance[];
 }
 
 // One row of a generated prop table, extracted from the component's exported `*Props`

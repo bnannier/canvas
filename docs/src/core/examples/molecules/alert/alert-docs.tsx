@@ -22,8 +22,11 @@ import e_molecules_alert_dont_3_dont from "./dont-3-dont";
 export const docs: ComponentDocs = {
   dir: "alert",
   category: "molecules",
+  overview: [
+    "A toned banner is Dark Factory's soft panel: the tone's wash with no border, the title in the tone's color, the body in the foreground, and the icon in the tone's solid color, from `statusColors` (the helper Badge and every toned surface read). The neutral banner is the card with a hairline.",
+  ],
   examples: [
-    { label: "Default", code: "<Alert\n  info\n  icon={<Icon info size={16} />}\n  title=\"Heads up\"\n  description=\"Maintenance window scheduled for Sunday 2:00 UTC.\"\n/>", render: e_molecules_alert_example_0 },
+    { label: "Default", code: "<Alert\n  info\n  icon={<Icon info size={16} />}\n  title=\"Heads up\"\n  description=\"Maintenance window scheduled for Sunday 2:00 UTC.\"\n/>", render: e_molecules_alert_example_0, note: ["Pressing the trailing \"×\" (`dismissible`) hides the banner out of the box; `onDismiss` reports it, and a controlled `dismissed` prop hands that state to the parent instead. Action buttons are real Buttons: wire each one's `onPress`."] },
     { label: "Success", code: "<Alert\n  success\n  icon=\"✓\"\n  title=\"All set\"\n  description=\"Your changes have been saved successfully.\"\n/>", render: e_molecules_alert_example_1 },
     { label: "Warning", code: "<Alert\n  warning\n  icon={<Icon alertTriangle size={16} />}\n  title=\"Action required\"\n  description=\"Your trial expires in 3 days.\"\n/>", render: e_molecules_alert_example_2 },
     { label: "Destructive", code: "<Alert\n  destructive\n  icon=\"✕\"\n  title=\"Something went wrong\"\n  description=\"Could not save your changes. Please try again.\"\n/>", render: e_molecules_alert_example_3 },
