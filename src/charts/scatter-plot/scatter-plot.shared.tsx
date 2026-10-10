@@ -64,7 +64,7 @@ export interface ScatterPlotProps {
   style?: LayoutStyle;
 }
 
-function toneOf(p: ScatterPlotProps): Tone {
+export function toneOf(p: ScatterPlotProps): Tone {
   if (p.success) return "success";
   if (p.destructive) return "destructive";
   return "primary";

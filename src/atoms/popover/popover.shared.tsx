@@ -105,7 +105,7 @@ export interface PopoverProps {
 }
 
 // Placement precedence when more than one is passed: first match wins.
-function placementOf(p: PopoverProps): Placement {
+export function placementOf(p: PopoverProps): Placement {
   if (p.top) return "top";
   return "bottom";
 }

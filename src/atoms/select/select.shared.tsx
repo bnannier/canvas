@@ -114,7 +114,7 @@ export interface SelectProps extends MeasureProps {
 }
 
 // Size precedence when more than one is passed: first match wins.
-function sizeOf(p: SelectProps): Size {
+export function sizeOf(p: SelectProps): Size {
   if (p.small) return "small";
   if (p.large) return "large";
   return "default";

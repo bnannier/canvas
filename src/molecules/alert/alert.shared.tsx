@@ -113,7 +113,7 @@ export interface AlertProps {
 
 // Tone precedence when more than one is passed: first match wins. `destructive` and
 // `error` are the same tone under two names, so they share one branch.
-function toneOf(p: AlertProps): Tone {
+export function toneOf(p: AlertProps): Tone {
   if (p.destructive || p.error) return "error";
   if (p.warning) return "warning";
   if (p.success) return "success";

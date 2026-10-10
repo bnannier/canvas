@@ -41,7 +41,7 @@ export interface EmblemProps {
 }
 
 // Tone precedence when more than one is passed: first match wins.
-function toneOf(p: EmblemProps): Tone {
+export function toneOf(p: EmblemProps): Tone {
   if (p.primary) return "primary";
   if (p.destructive) return "destructive";
   if (p.success) return "success";
@@ -49,7 +49,7 @@ function toneOf(p: EmblemProps): Tone {
   return "muted";
 }
 
-function sizeOf(p: EmblemProps): EmblemSize {
+export function sizeOf(p: EmblemProps): EmblemSize {
   if (p.small) return "small";
   if (p.large) return "large";
   return "default";

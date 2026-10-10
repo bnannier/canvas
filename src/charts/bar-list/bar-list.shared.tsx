@@ -58,7 +58,7 @@ export interface BarListProps {
 }
 
 // Tone precedence within the axis, first match wins; no tone means the ramp.
-function toneOf(p: BarListProps): Tone | null {
+export function toneOf(p: BarListProps): Tone | null {
   if (p.success) return "success";
   if (p.destructive) return "destructive";
   return null;

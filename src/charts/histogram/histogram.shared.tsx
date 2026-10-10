@@ -56,7 +56,7 @@ export interface HistogramProps {
 }
 
 // Tone precedence within the axis, first match wins.
-function toneOf(p: HistogramProps): Tone {
+export function toneOf(p: HistogramProps): Tone {
   if (p.success) return "success";
   if (p.destructive) return "destructive";
   return "primary";

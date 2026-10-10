@@ -1,0 +1,3863 @@
+{
+  "Measure.step": {
+    "kind": "axis",
+    "components": [
+      "Autocomplete",
+      "Button",
+      "ButtonGroup",
+      "Field",
+      "Form",
+      "Input",
+      "Listbox",
+      "PhoneInput",
+      "Progress",
+      "Select",
+      "Slider",
+      "Textarea"
+    ],
+    "pages": [
+      "autocomplete",
+      "button",
+      "button-group",
+      "field",
+      "form",
+      "input",
+      "listbox",
+      "phone-input",
+      "progress",
+      "select",
+      "slider",
+      "textarea"
+    ],
+    "resolver": "src/style/sizing.ts#stepOf",
+    "order": [
+      "xxxs",
+      "xxs",
+      "xs",
+      "sm",
+      "md",
+      "lg",
+      "xl",
+      "xxl",
+      "xxxl",
+      "wide",
+      "wider",
+      "widest",
+      "page"
+    ],
+    "none": null,
+    "single": {
+      "xxxs": "xxxs",
+      "xxs": "xxs",
+      "xs": "xs",
+      "sm": "sm",
+      "md": "md",
+      "lg": "lg",
+      "xl": "xl",
+      "xxl": "xxl",
+      "xxxl": "xxxl",
+      "wide": "wide",
+      "wider": "wider",
+      "widest": "widest",
+      "page": "page"
+    },
+    "pairs": {
+      "lg + md": "md",
+      "lg + page": "lg",
+      "lg + sm": "sm",
+      "lg + wide": "lg",
+      "lg + wider": "lg",
+      "lg + widest": "lg",
+      "lg + xl": "lg",
+      "lg + xs": "xs",
+      "lg + xxl": "lg",
+      "lg + xxs": "xxs",
+      "lg + xxxl": "lg",
+      "lg + xxxs": "xxxs",
+      "md + page": "md",
+      "md + sm": "sm",
+      "md + wide": "md",
+      "md + wider": "md",
+      "md + widest": "md",
+      "md + xl": "md",
+      "md + xs": "xs",
+      "md + xxl": "md",
+      "md + xxs": "xxs",
+      "md + xxxl": "md",
+      "md + xxxs": "xxxs",
+      "page + sm": "sm",
+      "page + wide": "wide",
+      "page + wider": "wider",
+      "page + widest": "widest",
+      "page + xl": "xl",
+      "page + xs": "xs",
+      "page + xxl": "xxl",
+      "page + xxs": "xxs",
+      "page + xxxl": "xxxl",
+      "page + xxxs": "xxxs",
+      "sm + wide": "sm",
+      "sm + wider": "sm",
+      "sm + widest": "sm",
+      "sm + xl": "sm",
+      "sm + xs": "xs",
+      "sm + xxl": "sm",
+      "sm + xxs": "xxs",
+      "sm + xxxl": "sm",
+      "sm + xxxs": "xxxs",
+      "wide + wider": "wide",
+      "wide + widest": "wide",
+      "wide + xl": "xl",
+      "wide + xs": "xs",
+      "wide + xxl": "xxl",
+      "wide + xxs": "xxs",
+      "wide + xxxl": "xxxl",
+      "wide + xxxs": "xxxs",
+      "wider + widest": "wider",
+      "wider + xl": "xl",
+      "wider + xs": "xs",
+      "wider + xxl": "xxl",
+      "wider + xxs": "xxs",
+      "wider + xxxl": "xxxl",
+      "wider + xxxs": "xxxs",
+      "widest + xl": "xl",
+      "widest + xs": "xs",
+      "widest + xxl": "xxl",
+      "widest + xxs": "xxs",
+      "widest + xxxl": "xxxl",
+      "widest + xxxs": "xxxs",
+      "xl + xs": "xs",
+      "xl + xxl": "xl",
+      "xl + xxs": "xxs",
+      "xl + xxxl": "xl",
+      "xl + xxxs": "xxxs",
+      "xs + xxl": "xs",
+      "xs + xxs": "xxs",
+      "xs + xxxl": "xs",
+      "xs + xxxs": "xxxs",
+      "xxl + xxs": "xxs",
+      "xxl + xxxl": "xxl",
+      "xxl + xxxs": "xxxs",
+      "xxs + xxxl": "xxs",
+      "xxs + xxxs": "xxxs",
+      "xxxl + xxxs": "xxxs"
+    }
+  },
+  "ThemeProvider.scheme": {
+    "kind": "axis",
+    "components": [
+      "ThemeProvider"
+    ],
+    "pages": [],
+    "resolver": "src/style/theme.tsx#requestedSchemeOf",
+    "order": [
+      "dark",
+      "light"
+    ],
+    "none": "light",
+    "single": {
+      "dark": "dark",
+      "light": "light"
+    },
+    "pairs": {
+      "dark + light": "dark"
+    }
+  },
+  "ThemeProvider.surface": {
+    "kind": "axis",
+    "components": [
+      "ThemeProvider"
+    ],
+    "pages": [],
+    "resolver": "src/style/theme.tsx#requestedSurfaceOf",
+    "order": [
+      "glass",
+      "solid"
+    ],
+    "none": "solid",
+    "single": {
+      "glass": "glass",
+      "solid": "solid"
+    },
+    "pairs": {
+      "glass + solid": "glass"
+    }
+  },
+  "Autocomplete.size": {
+    "kind": "axis",
+    "components": [
+      "Autocomplete"
+    ],
+    "pages": [
+      "autocomplete"
+    ],
+    "resolver": "src/atoms/autocomplete/autocomplete.shared.tsx#sizeOf",
+    "order": [
+      "small",
+      "large"
+    ],
+    "none": "default",
+    "single": {
+      "small": "small",
+      "large": "large"
+    },
+    "pairs": {
+      "large + small": "small"
+    }
+  },
+  "Avatar.size": {
+    "kind": "axis",
+    "components": [
+      "Avatar",
+      "AvatarGroup"
+    ],
+    "pages": [
+      "avatar"
+    ],
+    "resolver": "src/atoms/avatar/avatar.shared.tsx#sizeOf",
+    "order": [
+      "tiny",
+      "small",
+      "large"
+    ],
+    "none": "default",
+    "single": {
+      "tiny": "tiny",
+      "small": "small",
+      "large": "large"
+    },
+    "pairs": {
+      "large + small": "small",
+      "large + tiny": "tiny",
+      "small + tiny": "tiny"
+    }
+  },
+  "Avatar.shape": {
+    "kind": "axis",
+    "components": [
+      "Avatar"
+    ],
+    "pages": [
+      "avatar"
+    ],
+    "resolver": "src/atoms/avatar/avatar.shared.tsx#shapeOf",
+    "order": [
+      "circle",
+      "rounded"
+    ],
+    "none": "circle",
+    "single": {
+      "circle": "circle",
+      "rounded": "rounded"
+    },
+    "pairs": {
+      "circle + rounded": "circle"
+    }
+  },
+  "AvatarGroup.overlap": {
+    "kind": "axis",
+    "components": [
+      "AvatarGroup"
+    ],
+    "pages": [
+      "avatar"
+    ],
+    "resolver": "src/atoms/avatar/avatar.shared.tsx#overlapOf",
+    "order": [
+      "loose",
+      "snug",
+      "tight"
+    ],
+    "none": "tight",
+    "single": {
+      "loose": "loose",
+      "snug": "snug",
+      "tight": "tight"
+    },
+    "pairs": {
+      "loose + snug": "loose",
+      "loose + tight": "loose",
+      "snug + tight": "snug"
+    }
+  },
+  "AvatarMenu.edge": {
+    "kind": "axis",
+    "components": [
+      "AvatarMenu"
+    ],
+    "pages": [
+      "avatar"
+    ],
+    "resolver": "src/atoms/avatar/avatar-menu.shared.tsx#alignEndOf",
+    "order": [
+      "alignEnd",
+      "alignStart"
+    ],
+    "none": true,
+    "single": {
+      "alignEnd": true,
+      "alignStart": false
+    },
+    "pairs": {
+      "alignEnd + alignStart": "alignEnd"
+    }
+  },
+  "Badge.tone": {
+    "kind": "axis",
+    "components": [
+      "Badge"
+    ],
+    "pages": [
+      "badge"
+    ],
+    "resolver": "src/atoms/badge/badge.shared.tsx#toneOf",
+    "order": [
+      "default",
+      "destructive",
+      "secondary",
+      "outline"
+    ],
+    "none": "secondary",
+    "single": {
+      "default": "default",
+      "destructive": "destructive",
+      "secondary": "secondary",
+      "outline": "outline"
+    },
+    "pairs": {
+      "default + destructive": "default",
+      "default + outline": "default",
+      "default + secondary": "default",
+      "destructive + outline": "destructive",
+      "destructive + secondary": "destructive",
+      "outline + secondary": "secondary"
+    }
+  },
+  "Badge.status": {
+    "kind": "axis",
+    "components": [
+      "Badge"
+    ],
+    "pages": [
+      "badge"
+    ],
+    "resolver": "src/atoms/badge/badge.shared.tsx#statusOf",
+    "order": [
+      "success",
+      "error",
+      "warning",
+      "info",
+      "neutral"
+    ],
+    "none": "neutral",
+    "single": {
+      "success": "success",
+      "error": "error",
+      "warning": "warning",
+      "info": "info",
+      "neutral": "neutral"
+    },
+    "pairs": {
+      "error + info": "error",
+      "error + neutral": "error",
+      "error + success": "success",
+      "error + warning": "error",
+      "info + neutral": "info",
+      "info + success": "success",
+      "info + warning": "warning",
+      "neutral + success": "success",
+      "neutral + warning": "warning",
+      "success + warning": "success"
+    }
+  },
+  "BadgeGroup.gap": {
+    "kind": "axis",
+    "components": [
+      "BadgeGroup"
+    ],
+    "pages": [
+      "badge"
+    ],
+    "resolver": "src/atoms/badge/badge.shared.tsx#badgeGapOf",
+    "order": [
+      "cozy",
+      "snug",
+      "tight"
+    ],
+    "none": "snug",
+    "single": {
+      "cozy": "cozy",
+      "snug": "snug",
+      "tight": "tight"
+    },
+    "pairs": {
+      "cozy + snug": "cozy",
+      "cozy + tight": "cozy",
+      "snug + tight": "snug"
+    }
+  },
+  "Breadcrumb.separator": {
+    "kind": "axis",
+    "components": [
+      "Breadcrumb"
+    ],
+    "pages": [
+      "breadcrumb"
+    ],
+    "resolver": "src/atoms/breadcrumb/breadcrumb.shared.tsx#separatorOf",
+    "order": [
+      "chevron",
+      "slash",
+      "dot"
+    ],
+    "none": "chevron",
+    "single": {
+      "chevron": "chevron",
+      "slash": "slash",
+      "dot": "dot"
+    },
+    "pairs": {
+      "chevron + dot": "chevron",
+      "chevron + slash": "chevron",
+      "dot + slash": "slash"
+    }
+  },
+  "Button.intent": {
+    "kind": "axis",
+    "components": [
+      "Button"
+    ],
+    "pages": [
+      "button"
+    ],
+    "resolver": "src/atoms/button/button.shared.tsx#intentOf",
+    "order": [
+      "primary",
+      "destructive",
+      "secondary",
+      "outline",
+      "ghost",
+      "link"
+    ],
+    "none": "primary",
+    "single": {
+      "primary": "primary",
+      "destructive": "destructive",
+      "secondary": "secondary",
+      "outline": "outline",
+      "ghost": "ghost",
+      "link": "link"
+    },
+    "pairs": {
+      "destructive + ghost": "destructive",
+      "destructive + link": "destructive",
+      "destructive + outline": "destructive",
+      "destructive + primary": "primary",
+      "destructive + secondary": "destructive",
+      "ghost + link": "ghost",
+      "ghost + outline": "outline",
+      "ghost + primary": "primary",
+      "ghost + secondary": "secondary",
+      "link + outline": "outline",
+      "link + primary": "primary",
+      "link + secondary": "secondary",
+      "outline + primary": "primary",
+      "outline + secondary": "secondary",
+      "primary + secondary": "primary"
+    }
+  },
+  "Button.size": {
+    "kind": "axis",
+    "components": [
+      "Button"
+    ],
+    "pages": [
+      "button"
+    ],
+    "resolver": "src/atoms/button/button.shared.tsx#sizeOf",
+    "order": [
+      "small",
+      "large"
+    ],
+    "none": "base",
+    "single": {
+      "small": "small",
+      "large": "large"
+    },
+    "pairs": {
+      "large + small": "small"
+    }
+  },
+  "ButtonGroup.kind": {
+    "kind": "axis",
+    "components": [
+      "ButtonGroup"
+    ],
+    "pages": [
+      "button-group"
+    ],
+    "resolver": "src/atoms/button-group/button-group.shared.tsx#kindOf",
+    "order": [
+      "segmented",
+      "split",
+      "stepper",
+      "spaced"
+    ],
+    "none": "segmented",
+    "single": {
+      "segmented": "segmented",
+      "split": "split",
+      "stepper": "stepper",
+      "spaced": "spaced"
+    },
+    "pairs": {
+      "segmented + spaced": "segmented",
+      "segmented + split": "segmented",
+      "segmented + stepper": "segmented",
+      "spaced + split": "split",
+      "spaced + stepper": "stepper",
+      "split + stepper": "split"
+    }
+  },
+  "ButtonGroup.size": {
+    "kind": "axis",
+    "components": [
+      "ButtonGroup"
+    ],
+    "pages": [
+      "button-group"
+    ],
+    "resolver": "src/atoms/button-group/button-group.shared.tsx#sizeOf",
+    "order": [
+      "small",
+      "large"
+    ],
+    "none": "default",
+    "single": {
+      "small": "small",
+      "large": "large"
+    },
+    "pairs": {
+      "large + small": "small"
+    }
+  },
+  "Checkbox.size": {
+    "kind": "axis",
+    "components": [
+      "Checkbox"
+    ],
+    "pages": [
+      "checkbox"
+    ],
+    "resolver": "src/atoms/checkbox/checkbox.shared.tsx#sizeOf",
+    "order": [
+      "large",
+      "small"
+    ],
+    "none": "base",
+    "single": {
+      "large": "large",
+      "small": "small"
+    },
+    "pairs": {
+      "large + small": "large"
+    }
+  },
+  "Chip.color": {
+    "kind": "axis",
+    "components": [
+      "Chip"
+    ],
+    "pages": [
+      "chip"
+    ],
+    "resolver": "src/atoms/chip/chip.shared.tsx#colorOf",
+    "order": [
+      "success",
+      "warning",
+      "destructive|error",
+      "info",
+      "neutral",
+      "red",
+      "orange",
+      "amber",
+      "yellow",
+      "lime",
+      "green",
+      "emerald",
+      "teal",
+      "cyan",
+      "sky",
+      "blue",
+      "indigo",
+      "violet",
+      "fuchsia",
+      "purple",
+      "pink",
+      "rose",
+      "gray"
+    ],
+    "none": {
+      "hue": null,
+      "mutedGray": false,
+      "tone": null
+    },
+    "single": {
+      "success": {
+        "hue": null,
+        "mutedGray": false,
+        "tone": "success"
+      },
+      "warning": {
+        "hue": null,
+        "mutedGray": false,
+        "tone": "warning"
+      },
+      "destructive": {
+        "hue": null,
+        "mutedGray": false,
+        "tone": "error"
+      },
+      "error": {
+        "hue": null,
+        "mutedGray": false,
+        "tone": "error"
+      },
+      "info": {
+        "hue": null,
+        "mutedGray": false,
+        "tone": "info"
+      },
+      "neutral": {
+        "hue": null,
+        "mutedGray": true,
+        "tone": null
+      },
+      "red": {
+        "hue": "red",
+        "mutedGray": false,
+        "tone": null
+      },
+      "orange": {
+        "hue": "orange",
+        "mutedGray": false,
+        "tone": null
+      },
+      "amber": {
+        "hue": "amber",
+        "mutedGray": false,
+        "tone": null
+      },
+      "yellow": {
+        "hue": "yellow",
+        "mutedGray": false,
+        "tone": null
+      },
+      "lime": {
+        "hue": "lime",
+        "mutedGray": false,
+        "tone": null
+      },
+      "green": {
+        "hue": "green",
+        "mutedGray": false,
+        "tone": null
+      },
+      "emerald": {
+        "hue": "emerald",
+        "mutedGray": false,
+        "tone": null
+      },
+      "teal": {
+        "hue": "teal",
+        "mutedGray": false,
+        "tone": null
+      },
+      "cyan": {
+        "hue": "cyan",
+        "mutedGray": false,
+        "tone": null
+      },
+      "sky": {
+        "hue": "sky",
+        "mutedGray": false,
+        "tone": null
+      },
+      "blue": {
+        "hue": "blue",
+        "mutedGray": false,
+        "tone": null
+      },
+      "indigo": {
+        "hue": "indigo",
+        "mutedGray": false,
+        "tone": null
+      },
+      "violet": {
+        "hue": "violet",
+        "mutedGray": false,
+        "tone": null
+      },
+      "fuchsia": {
+        "hue": "fuchsia",
+        "mutedGray": false,
+        "tone": null
+      },
+      "purple": {
+        "hue": "purple",
+        "mutedGray": false,
+        "tone": null
+      },
+      "pink": {
+        "hue": "pink",
+        "mutedGray": false,
+        "tone": null
+      },
+      "rose": {
+        "hue": "rose",
+        "mutedGray": false,
+        "tone": null
+      },
+      "gray": {
+        "hue": null,
+        "mutedGray": true,
+        "tone": null
+      }
+    },
+    "pairs": {
+      "amber + blue": "amber",
+      "amber + cyan": "amber",
+      "amber + destructive": "destructive",
+      "amber + emerald": "amber",
+      "amber + error": "error",
+      "amber + fuchsia": "amber",
+      "amber + gray": "amber",
+      "amber + green": "amber",
+      "amber + indigo": "amber",
+      "amber + info": "info",
+      "amber + lime": "amber",
+      "amber + neutral": "neutral",
+      "amber + orange": "orange",
+      "amber + pink": "amber",
+      "amber + purple": "amber",
+      "amber + red": "red",
+      "amber + rose": "amber",
+      "amber + sky": "amber",
+      "amber + success": "success",
+      "amber + teal": "amber",
+      "amber + violet": "amber",
+      "amber + warning": "warning",
+      "amber + yellow": "amber",
+      "blue + cyan": "cyan",
+      "blue + destructive": "destructive",
+      "blue + emerald": "emerald",
+      "blue + error": "error",
+      "blue + fuchsia": "blue",
+      "blue + gray": "blue",
+      "blue + green": "green",
+      "blue + indigo": "blue",
+      "blue + info": "info",
+      "blue + lime": "lime",
+      "blue + neutral": "neutral",
+      "blue + orange": "orange",
+      "blue + pink": "blue",
+      "blue + purple": "blue",
+      "blue + red": "red",
+      "blue + rose": "blue",
+      "blue + sky": "sky",
+      "blue + success": "success",
+      "blue + teal": "teal",
+      "blue + violet": "blue",
+      "blue + warning": "warning",
+      "blue + yellow": "yellow",
+      "cyan + destructive": "destructive",
+      "cyan + emerald": "emerald",
+      "cyan + error": "error",
+      "cyan + fuchsia": "cyan",
+      "cyan + gray": "cyan",
+      "cyan + green": "green",
+      "cyan + indigo": "cyan",
+      "cyan + info": "info",
+      "cyan + lime": "lime",
+      "cyan + neutral": "neutral",
+      "cyan + orange": "orange",
+      "cyan + pink": "cyan",
+      "cyan + purple": "cyan",
+      "cyan + red": "red",
+      "cyan + rose": "cyan",
+      "cyan + sky": "cyan",
+      "cyan + success": "success",
+      "cyan + teal": "teal",
+      "cyan + violet": "cyan",
+      "cyan + warning": "warning",
+      "cyan + yellow": "yellow",
+      "destructive + emerald": "destructive",
+      "destructive + error": "destructive|error",
+      "destructive + fuchsia": "destructive",
+      "destructive + gray": "destructive",
+      "destructive + green": "destructive",
+      "destructive + indigo": "destructive",
+      "destructive + info": "destructive",
+      "destructive + lime": "destructive",
+      "destructive + neutral": "destructive",
+      "destructive + orange": "destructive",
+      "destructive + pink": "destructive",
+      "destructive + purple": "destructive",
+      "destructive + red": "destructive",
+      "destructive + rose": "destructive",
+      "destructive + sky": "destructive",
+      "destructive + success": "success",
+      "destructive + teal": "destructive",
+      "destructive + violet": "destructive",
+      "destructive + warning": "warning",
+      "destructive + yellow": "destructive",
+      "emerald + error": "error",
+      "emerald + fuchsia": "emerald",
+      "emerald + gray": "emerald",
+      "emerald + green": "green",
+      "emerald + indigo": "emerald",
+      "emerald + info": "info",
+      "emerald + lime": "lime",
+      "emerald + neutral": "neutral",
+      "emerald + orange": "orange",
+      "emerald + pink": "emerald",
+      "emerald + purple": "emerald",
+      "emerald + red": "red",
+      "emerald + rose": "emerald",
+      "emerald + sky": "emerald",
+      "emerald + success": "success",
+      "emerald + teal": "emerald",
+      "emerald + violet": "emerald",
+      "emerald + warning": "warning",
+      "emerald + yellow": "yellow",
+      "error + fuchsia": "error",
+      "error + gray": "error",
+      "error + green": "error",
+      "error + indigo": "error",
+      "error + info": "error",
+      "error + lime": "error",
+      "error + neutral": "error",
+      "error + orange": "error",
+      "error + pink": "error",
+      "error + purple": "error",
+      "error + red": "error",
+      "error + rose": "error",
+      "error + sky": "error",
+      "error + success": "success",
+      "error + teal": "error",
+      "error + violet": "error",
+      "error + warning": "warning",
+      "error + yellow": "error",
+      "fuchsia + gray": "fuchsia",
+      "fuchsia + green": "green",
+      "fuchsia + indigo": "indigo",
+      "fuchsia + info": "info",
+      "fuchsia + lime": "lime",
+      "fuchsia + neutral": "neutral",
+      "fuchsia + orange": "orange",
+      "fuchsia + pink": "fuchsia",
+      "fuchsia + purple": "fuchsia",
+      "fuchsia + red": "red",
+      "fuchsia + rose": "fuchsia",
+      "fuchsia + sky": "sky",
+      "fuchsia + success": "success",
+      "fuchsia + teal": "teal",
+      "fuchsia + violet": "violet",
+      "fuchsia + warning": "warning",
+      "fuchsia + yellow": "yellow",
+      "gray + green": "green",
+      "gray + indigo": "indigo",
+      "gray + info": "info",
+      "gray + lime": "lime",
+      "gray + neutral": "gray|neutral",
+      "gray + orange": "orange",
+      "gray + pink": "pink",
+      "gray + purple": "purple",
+      "gray + red": "red",
+      "gray + rose": "rose",
+      "gray + sky": "sky",
+      "gray + success": "success",
+      "gray + teal": "teal",
+      "gray + violet": "violet",
+      "gray + warning": "warning",
+      "gray + yellow": "yellow",
+      "green + indigo": "green",
+      "green + info": "info",
+      "green + lime": "lime",
+      "green + neutral": "neutral",
+      "green + orange": "orange",
+      "green + pink": "green",
+      "green + purple": "green",
+      "green + red": "red",
+      "green + rose": "green",
+      "green + sky": "green",
+      "green + success": "success",
+      "green + teal": "green",
+      "green + violet": "green",
+      "green + warning": "warning",
+      "green + yellow": "yellow",
+      "indigo + info": "info",
+      "indigo + lime": "lime",
+      "indigo + neutral": "neutral",
+      "indigo + orange": "orange",
+      "indigo + pink": "indigo",
+      "indigo + purple": "indigo",
+      "indigo + red": "red",
+      "indigo + rose": "indigo",
+      "indigo + sky": "sky",
+      "indigo + success": "success",
+      "indigo + teal": "teal",
+      "indigo + violet": "indigo",
+      "indigo + warning": "warning",
+      "indigo + yellow": "yellow",
+      "info + lime": "info",
+      "info + neutral": "info",
+      "info + orange": "info",
+      "info + pink": "info",
+      "info + purple": "info",
+      "info + red": "info",
+      "info + rose": "info",
+      "info + sky": "info",
+      "info + success": "success",
+      "info + teal": "info",
+      "info + violet": "info",
+      "info + warning": "warning",
+      "info + yellow": "info",
+      "lime + neutral": "neutral",
+      "lime + orange": "orange",
+      "lime + pink": "lime",
+      "lime + purple": "lime",
+      "lime + red": "red",
+      "lime + rose": "lime",
+      "lime + sky": "lime",
+      "lime + success": "success",
+      "lime + teal": "lime",
+      "lime + violet": "lime",
+      "lime + warning": "warning",
+      "lime + yellow": "yellow",
+      "neutral + orange": "neutral",
+      "neutral + pink": "neutral",
+      "neutral + purple": "neutral",
+      "neutral + red": "neutral",
+      "neutral + rose": "neutral",
+      "neutral + sky": "neutral",
+      "neutral + success": "success",
+      "neutral + teal": "neutral",
+      "neutral + violet": "neutral",
+      "neutral + warning": "warning",
+      "neutral + yellow": "neutral",
+      "orange + pink": "orange",
+      "orange + purple": "orange",
+      "orange + red": "red",
+      "orange + rose": "orange",
+      "orange + sky": "orange",
+      "orange + success": "success",
+      "orange + teal": "orange",
+      "orange + violet": "orange",
+      "orange + warning": "warning",
+      "orange + yellow": "orange",
+      "pink + purple": "purple",
+      "pink + red": "red",
+      "pink + rose": "pink",
+      "pink + sky": "sky",
+      "pink + success": "success",
+      "pink + teal": "teal",
+      "pink + violet": "violet",
+      "pink + warning": "warning",
+      "pink + yellow": "yellow",
+      "purple + red": "red",
+      "purple + rose": "purple",
+      "purple + sky": "sky",
+      "purple + success": "success",
+      "purple + teal": "teal",
+      "purple + violet": "violet",
+      "purple + warning": "warning",
+      "purple + yellow": "yellow",
+      "red + rose": "red",
+      "red + sky": "red",
+      "red + success": "success",
+      "red + teal": "red",
+      "red + violet": "red",
+      "red + warning": "warning",
+      "red + yellow": "red",
+      "rose + sky": "sky",
+      "rose + success": "success",
+      "rose + teal": "teal",
+      "rose + violet": "violet",
+      "rose + warning": "warning",
+      "rose + yellow": "yellow",
+      "sky + success": "success",
+      "sky + teal": "teal",
+      "sky + violet": "sky",
+      "sky + warning": "warning",
+      "sky + yellow": "yellow",
+      "success + teal": "success",
+      "success + violet": "success",
+      "success + warning": "success",
+      "success + yellow": "success",
+      "teal + violet": "teal",
+      "teal + warning": "warning",
+      "teal + yellow": "yellow",
+      "violet + warning": "warning",
+      "violet + yellow": "yellow",
+      "warning + yellow": "warning"
+    }
+  },
+  "Container.measure": {
+    "kind": "axis",
+    "components": [
+      "Container"
+    ],
+    "pages": [
+      "container"
+    ],
+    "resolver": "src/atoms/container/container.shared.tsx#measureOf",
+    "order": [
+      "fluid",
+      "xxxs",
+      "xxs",
+      "xs",
+      "sm",
+      "md",
+      "lg",
+      "xl",
+      "xxl",
+      "xxxl",
+      "wide",
+      "wider",
+      "widest",
+      "page"
+    ],
+    "none": "fluid",
+    "single": {
+      "fluid": "fluid",
+      "xxxs": "xxxs",
+      "xxs": "xxs",
+      "xs": "xs",
+      "sm": "sm",
+      "md": "md",
+      "lg": "lg",
+      "xl": "xl",
+      "xxl": "xxl",
+      "xxxl": "xxxl",
+      "wide": "wide",
+      "wider": "wider",
+      "widest": "widest",
+      "page": "page"
+    },
+    "pairs": {
+      "fluid + lg": "fluid",
+      "fluid + md": "fluid",
+      "fluid + page": "fluid",
+      "fluid + sm": "fluid",
+      "fluid + wide": "fluid",
+      "fluid + wider": "fluid",
+      "fluid + widest": "fluid",
+      "fluid + xl": "fluid",
+      "fluid + xs": "fluid",
+      "fluid + xxl": "fluid",
+      "fluid + xxs": "fluid",
+      "fluid + xxxl": "fluid",
+      "fluid + xxxs": "fluid",
+      "lg + md": "md",
+      "lg + page": "lg",
+      "lg + sm": "sm",
+      "lg + wide": "lg",
+      "lg + wider": "lg",
+      "lg + widest": "lg",
+      "lg + xl": "lg",
+      "lg + xs": "xs",
+      "lg + xxl": "lg",
+      "lg + xxs": "xxs",
+      "lg + xxxl": "lg",
+      "lg + xxxs": "xxxs",
+      "md + page": "md",
+      "md + sm": "sm",
+      "md + wide": "md",
+      "md + wider": "md",
+      "md + widest": "md",
+      "md + xl": "md",
+      "md + xs": "xs",
+      "md + xxl": "md",
+      "md + xxs": "xxs",
+      "md + xxxl": "md",
+      "md + xxxs": "xxxs",
+      "page + sm": "sm",
+      "page + wide": "wide",
+      "page + wider": "wider",
+      "page + widest": "widest",
+      "page + xl": "xl",
+      "page + xs": "xs",
+      "page + xxl": "xxl",
+      "page + xxs": "xxs",
+      "page + xxxl": "xxxl",
+      "page + xxxs": "xxxs",
+      "sm + wide": "sm",
+      "sm + wider": "sm",
+      "sm + widest": "sm",
+      "sm + xl": "sm",
+      "sm + xs": "xs",
+      "sm + xxl": "sm",
+      "sm + xxs": "xxs",
+      "sm + xxxl": "sm",
+      "sm + xxxs": "xxxs",
+      "wide + wider": "wide",
+      "wide + widest": "wide",
+      "wide + xl": "xl",
+      "wide + xs": "xs",
+      "wide + xxl": "xxl",
+      "wide + xxs": "xxs",
+      "wide + xxxl": "xxxl",
+      "wide + xxxs": "xxxs",
+      "wider + widest": "wider",
+      "wider + xl": "xl",
+      "wider + xs": "xs",
+      "wider + xxl": "xxl",
+      "wider + xxs": "xxs",
+      "wider + xxxl": "xxxl",
+      "wider + xxxs": "xxxs",
+      "widest + xl": "xl",
+      "widest + xs": "xs",
+      "widest + xxl": "xxl",
+      "widest + xxs": "xxs",
+      "widest + xxxl": "xxxl",
+      "widest + xxxs": "xxxs",
+      "xl + xs": "xs",
+      "xl + xxl": "xl",
+      "xl + xxs": "xxs",
+      "xl + xxxl": "xl",
+      "xl + xxxs": "xxxs",
+      "xs + xxl": "xs",
+      "xs + xxs": "xxs",
+      "xs + xxxl": "xs",
+      "xs + xxxs": "xxxs",
+      "xxl + xxs": "xxs",
+      "xxl + xxxl": "xxl",
+      "xxl + xxxs": "xxxs",
+      "xxs + xxxl": "xxs",
+      "xxs + xxxs": "xxxs",
+      "xxxl + xxxs": "xxxs"
+    }
+  },
+  "Container.pad": {
+    "kind": "axis",
+    "components": [
+      "Container"
+    ],
+    "pages": [
+      "container"
+    ],
+    "resolver": "src/atoms/container/container.shared.tsx#padOf",
+    "order": [
+      "padLoose",
+      "pad",
+      "padTight"
+    ],
+    "none": null,
+    "single": {
+      "padLoose": "padLoose",
+      "pad": "pad",
+      "padTight": "padTight"
+    },
+    "pairs": {
+      "pad + padLoose": "padLoose",
+      "pad + padTight": "pad",
+      "padLoose + padTight": "padLoose"
+    }
+  },
+  "Divider.orientation": {
+    "kind": "axis",
+    "components": [
+      "Divider"
+    ],
+    "pages": [
+      "divider"
+    ],
+    "resolver": "src/atoms/divider/divider.shared.tsx#orientationOf",
+    "order": [
+      "vertical",
+      "horizontal"
+    ],
+    "none": "horizontal",
+    "single": {
+      "vertical": "vertical",
+      "horizontal": "horizontal"
+    },
+    "pairs": {
+      "horizontal + vertical": "vertical"
+    }
+  },
+  "Divider.emphasis": {
+    "kind": "axis",
+    "components": [
+      "Divider"
+    ],
+    "pages": [
+      "divider"
+    ],
+    "resolver": "src/atoms/divider/divider.shared.tsx#emphasisOf",
+    "order": [
+      "soft",
+      "strong"
+    ],
+    "none": "strong",
+    "single": {
+      "soft": "soft",
+      "strong": "strong"
+    },
+    "pairs": {
+      "soft + strong": "soft"
+    }
+  },
+  "Emblem.tone": {
+    "kind": "axis",
+    "components": [
+      "Emblem"
+    ],
+    "pages": [
+      "emblem"
+    ],
+    "resolver": "src/atoms/emblem/emblem.shared.tsx#toneOf",
+    "order": [
+      "primary",
+      "destructive",
+      "success",
+      "warning",
+      "muted"
+    ],
+    "none": "muted",
+    "single": {
+      "primary": "primary",
+      "destructive": "destructive",
+      "success": "success",
+      "warning": "warning",
+      "muted": "muted"
+    },
+    "pairs": {
+      "destructive + muted": "destructive",
+      "destructive + primary": "primary",
+      "destructive + success": "destructive",
+      "destructive + warning": "destructive",
+      "muted + primary": "primary",
+      "muted + success": "success",
+      "muted + warning": "warning",
+      "primary + success": "primary",
+      "primary + warning": "primary",
+      "success + warning": "success"
+    }
+  },
+  "Emblem.size": {
+    "kind": "axis",
+    "components": [
+      "Emblem"
+    ],
+    "pages": [
+      "emblem"
+    ],
+    "resolver": "src/atoms/emblem/emblem.shared.tsx#sizeOf",
+    "order": [
+      "small",
+      "large"
+    ],
+    "none": "default",
+    "single": {
+      "small": "small",
+      "large": "large"
+    },
+    "pairs": {
+      "large + small": "small"
+    }
+  },
+  "Icon.color": {
+    "kind": "axis",
+    "components": [
+      "Icon"
+    ],
+    "pages": [
+      "icon"
+    ],
+    "resolver": "src/atoms/icon/icon.shared.tsx#strokeOf",
+    "order": [
+      "primary",
+      "primaryForeground",
+      "destructive",
+      "success",
+      "warning",
+      "muted"
+    ],
+    "none": "foreground",
+    "single": {
+      "primary": "primary",
+      "primaryForeground": "primary-foreground",
+      "destructive": "destructive",
+      "success": "success",
+      "warning": "warning",
+      "muted": "muted-foreground"
+    },
+    "pairs": {
+      "destructive + muted": "destructive",
+      "destructive + primary": "primary",
+      "destructive + primaryForeground": "primaryForeground",
+      "destructive + success": "destructive",
+      "destructive + warning": "destructive",
+      "muted + primary": "primary",
+      "muted + primaryForeground": "primaryForeground",
+      "muted + success": "success",
+      "muted + warning": "warning",
+      "primary + primaryForeground": "primary",
+      "primary + success": "primary",
+      "primary + warning": "primary",
+      "primaryForeground + success": "primaryForeground",
+      "primaryForeground + warning": "primaryForeground",
+      "success + warning": "success"
+    }
+  },
+  "Icon.glyph": {
+    "kind": "catalog",
+    "components": [
+      "Icon"
+    ],
+    "pages": [
+      "icon"
+    ],
+    "resolver": "src/atoms/icon/icon.shared.tsx#nameOf",
+    "order": "first in catalog order",
+    "none": "shield",
+    "violations": []
+  },
+  "Image.fit": {
+    "kind": "axis",
+    "components": [
+      "Image"
+    ],
+    "pages": [
+      "image"
+    ],
+    "resolver": "src/atoms/image/image.shared.tsx#fitOf",
+    "order": [
+      "contain",
+      "cover",
+      "stretch",
+      "center",
+      "repeat",
+      "none"
+    ],
+    "none": "cover",
+    "single": {
+      "contain": "contain",
+      "cover": "cover",
+      "stretch": "stretch",
+      "center": "center",
+      "repeat": "repeat",
+      "none": "none"
+    },
+    "pairs": {
+      "center + contain": "contain",
+      "center + cover": "cover",
+      "center + none": "center",
+      "center + repeat": "center",
+      "center + stretch": "stretch",
+      "contain + cover": "contain",
+      "contain + none": "contain",
+      "contain + repeat": "contain",
+      "contain + stretch": "contain",
+      "cover + none": "cover",
+      "cover + repeat": "cover",
+      "cover + stretch": "cover",
+      "none + repeat": "repeat",
+      "none + stretch": "stretch",
+      "repeat + stretch": "stretch"
+    }
+  },
+  "Input.size": {
+    "kind": "axis",
+    "components": [
+      "Input"
+    ],
+    "pages": [
+      "input"
+    ],
+    "resolver": "src/atoms/input/input.shared.tsx#sizeOf",
+    "order": [
+      "large",
+      "small"
+    ],
+    "none": "base",
+    "single": {
+      "large": "large",
+      "small": "small"
+    },
+    "pairs": {
+      "large + small": "large"
+    }
+  },
+  "InputOTP.size": {
+    "kind": "axis",
+    "components": [
+      "InputOTP"
+    ],
+    "pages": [
+      "input-otp"
+    ],
+    "resolver": "src/atoms/input-otp/input-otp.shared.tsx#sizeOf",
+    "order": [
+      "large",
+      "small"
+    ],
+    "none": "base",
+    "single": {
+      "large": "large",
+      "small": "small"
+    },
+    "pairs": {
+      "large + small": "large"
+    }
+  },
+  "Layout.gap": {
+    "kind": "axis",
+    "components": [
+      "Row",
+      "Column",
+      "Grid"
+    ],
+    "pages": [
+      "row-column",
+      "grid"
+    ],
+    "resolver": "src/atoms/layout/layout.shared.tsx#gapOf",
+    "order": [
+      "loose",
+      "relaxed",
+      "cozy",
+      "snug",
+      "tight",
+      "flush"
+    ],
+    "none": "snug",
+    "single": {
+      "loose": "loose",
+      "relaxed": "relaxed",
+      "cozy": "cozy",
+      "snug": "snug",
+      "tight": "tight",
+      "flush": "flush"
+    },
+    "pairs": {
+      "cozy + flush": "cozy",
+      "cozy + loose": "loose",
+      "cozy + relaxed": "relaxed",
+      "cozy + snug": "cozy",
+      "cozy + tight": "cozy",
+      "flush + loose": "loose",
+      "flush + relaxed": "relaxed",
+      "flush + snug": "snug",
+      "flush + tight": "tight",
+      "loose + relaxed": "loose",
+      "loose + snug": "loose",
+      "loose + tight": "loose",
+      "relaxed + snug": "relaxed",
+      "relaxed + tight": "relaxed",
+      "snug + tight": "snug"
+    }
+  },
+  "Layout.justify": {
+    "kind": "axis",
+    "components": [
+      "Row",
+      "Column"
+    ],
+    "pages": [
+      "row-column"
+    ],
+    "resolver": "src/atoms/layout/layout.shared.tsx#justifyOf",
+    "order": [
+      "between",
+      "around",
+      "evenly",
+      "center",
+      "end",
+      "start"
+    ],
+    "none": "start",
+    "single": {
+      "between": "between",
+      "around": "around",
+      "evenly": "evenly",
+      "center": "center",
+      "end": "end",
+      "start": "start"
+    },
+    "pairs": {
+      "around + between": "between",
+      "around + center": "around",
+      "around + end": "around",
+      "around + evenly": "around",
+      "around + start": "around",
+      "between + center": "between",
+      "between + end": "between",
+      "between + evenly": "between",
+      "between + start": "between",
+      "center + end": "center",
+      "center + evenly": "evenly",
+      "center + start": "center",
+      "end + evenly": "evenly",
+      "end + start": "end",
+      "evenly + start": "evenly"
+    }
+  },
+  "Layout.align": {
+    "kind": "axis",
+    "components": [
+      "Row",
+      "Column"
+    ],
+    "pages": [
+      "row-column"
+    ],
+    "resolver": "src/atoms/layout/layout.shared.tsx#alignOf",
+    "order": [
+      "stretch",
+      "baseline",
+      "alignCenter",
+      "alignEnd",
+      "alignStart"
+    ],
+    "none": "stretch",
+    "single": {
+      "stretch": "stretch",
+      "baseline": "baseline",
+      "alignCenter": "alignCenter",
+      "alignEnd": "alignEnd",
+      "alignStart": "alignStart"
+    },
+    "pairs": {
+      "alignCenter + alignEnd": "alignCenter",
+      "alignCenter + alignStart": "alignCenter",
+      "alignCenter + baseline": "baseline",
+      "alignCenter + stretch": "stretch",
+      "alignEnd + alignStart": "alignEnd",
+      "alignEnd + baseline": "baseline",
+      "alignEnd + stretch": "stretch",
+      "alignStart + baseline": "baseline",
+      "alignStart + stretch": "stretch",
+      "baseline + stretch": "stretch"
+    }
+  },
+  "Layout.pad": {
+    "kind": "axis",
+    "components": [
+      "Row",
+      "Column"
+    ],
+    "pages": [
+      "row-column"
+    ],
+    "resolver": "src/atoms/layout/layout.shared.tsx#padOf",
+    "order": [
+      "padLoose",
+      "pad",
+      "padTight"
+    ],
+    "none": null,
+    "single": {
+      "padLoose": "padLoose",
+      "pad": "pad",
+      "padTight": "padTight"
+    },
+    "pairs": {
+      "pad + padLoose": "padLoose",
+      "pad + padTight": "pad",
+      "padLoose + padTight": "padLoose"
+    }
+  },
+  "Listbox.mode": {
+    "kind": "toggle",
+    "components": [
+      "Listbox"
+    ],
+    "pages": [
+      "listbox"
+    ],
+    "resolver": "src/atoms/listbox/listbox.shared.tsx#modeOf",
+    "order": [
+      "multi"
+    ],
+    "none": "single",
+    "single": {
+      "multi": "multi"
+    },
+    "pairs": {}
+  },
+  "Listbox.size": {
+    "kind": "axis",
+    "components": [
+      "Listbox"
+    ],
+    "pages": [
+      "listbox"
+    ],
+    "resolver": "src/atoms/listbox/listbox.shared.tsx#sizeOf",
+    "order": [
+      "small",
+      "large"
+    ],
+    "none": "medium",
+    "single": {
+      "small": "small",
+      "large": "large"
+    },
+    "pairs": {
+      "large + small": "small"
+    }
+  },
+  "Pagination.size": {
+    "kind": "axis",
+    "components": [
+      "Pagination"
+    ],
+    "pages": [
+      "pagination"
+    ],
+    "resolver": "src/atoms/pagination/pagination.shared.tsx#sizeOf",
+    "order": [
+      "small",
+      "large"
+    ],
+    "none": "default",
+    "single": {
+      "small": "small",
+      "large": "large"
+    },
+    "pairs": {
+      "large + small": "small"
+    }
+  },
+  "Pagination.variant": {
+    "kind": "axis",
+    "components": [
+      "Pagination"
+    ],
+    "pages": [
+      "pagination"
+    ],
+    "resolver": "src/atoms/pagination/pagination.shared.tsx#variantOf",
+    "order": [
+      "withSize",
+      "compact"
+    ],
+    "none": "numbered",
+    "single": {
+      "withSize": "withSize",
+      "compact": "compact"
+    },
+    "pairs": {
+      "compact + withSize": "withSize"
+    }
+  },
+  "Popover.placement": {
+    "kind": "axis",
+    "components": [
+      "Popover"
+    ],
+    "pages": [
+      "popover"
+    ],
+    "resolver": "src/atoms/popover/popover.shared.tsx#placementOf",
+    "order": [
+      "top",
+      "bottom"
+    ],
+    "none": "bottom",
+    "single": {
+      "top": "top",
+      "bottom": "bottom"
+    },
+    "pairs": {
+      "bottom + top": "top"
+    }
+  },
+  "Progress.size": {
+    "kind": "axis",
+    "components": [
+      "Progress"
+    ],
+    "pages": [
+      "progress"
+    ],
+    "resolver": "src/atoms/progress/progress.shared.tsx#sizeOf",
+    "order": [
+      "large",
+      "small"
+    ],
+    "none": "base",
+    "single": {
+      "large": "large",
+      "small": "small"
+    },
+    "pairs": {
+      "large + small": "large"
+    }
+  },
+  "Progress.tone": {
+    "kind": "axis",
+    "components": [
+      "Progress"
+    ],
+    "pages": [
+      "progress"
+    ],
+    "resolver": "src/atoms/progress/progress.shared.tsx#toneOf",
+    "order": [
+      "danger",
+      "warning"
+    ],
+    "none": "default",
+    "single": {
+      "danger": "danger",
+      "warning": "warning"
+    },
+    "pairs": {
+      "danger + warning": "danger"
+    }
+  },
+  "QRCode.size": {
+    "kind": "axis",
+    "components": [
+      "QRCode"
+    ],
+    "pages": [
+      "qrcode"
+    ],
+    "resolver": "src/atoms/qrcode/qrcode.shared.tsx#sizeOf",
+    "order": [
+      "small",
+      "large"
+    ],
+    "none": 140,
+    "single": {
+      "small": 96,
+      "large": 200
+    },
+    "pairs": {
+      "large + small": "small"
+    }
+  },
+  "Radio.size": {
+    "kind": "axis",
+    "components": [
+      "Radio"
+    ],
+    "pages": [
+      "radio"
+    ],
+    "resolver": "src/atoms/radio/radio.shared.tsx#sizeOf",
+    "order": [
+      "small",
+      "large"
+    ],
+    "none": "default",
+    "single": {
+      "small": "small",
+      "large": "large"
+    },
+    "pairs": {
+      "large + small": "small"
+    }
+  },
+  "Reveal.direction": {
+    "kind": "axis",
+    "components": [
+      "Reveal"
+    ],
+    "pages": [
+      "reveal"
+    ],
+    "resolver": "src/atoms/reveal/reveal.shared.tsx#revealTravel",
+    "order": [
+      "fromBelow",
+      "fromAbove",
+      "fromLeft",
+      "fromRight"
+    ],
+    "none": {
+      "axis": "y",
+      "from": 12
+    },
+    "single": {
+      "fromBelow": {
+        "axis": "y",
+        "from": 12
+      },
+      "fromAbove": {
+        "axis": "y",
+        "from": -12
+      },
+      "fromLeft": {
+        "axis": "x",
+        "from": -12
+      },
+      "fromRight": {
+        "axis": "x",
+        "from": 12
+      }
+    },
+    "pairs": {
+      "fromAbove + fromBelow": "fromBelow",
+      "fromAbove + fromLeft": "fromAbove",
+      "fromAbove + fromRight": "fromAbove",
+      "fromBelow + fromLeft": "fromBelow",
+      "fromBelow + fromRight": "fromBelow",
+      "fromLeft + fromRight": "fromLeft"
+    }
+  },
+  "Select.size": {
+    "kind": "axis",
+    "components": [
+      "Select"
+    ],
+    "pages": [
+      "select"
+    ],
+    "resolver": "src/atoms/select/select.shared.tsx#sizeOf",
+    "order": [
+      "small",
+      "large"
+    ],
+    "none": "default",
+    "single": {
+      "small": "small",
+      "large": "large"
+    },
+    "pairs": {
+      "large + small": "small"
+    }
+  },
+  "Skeleton.shape": {
+    "kind": "axis",
+    "components": [
+      "Skeleton"
+    ],
+    "pages": [
+      "skeleton"
+    ],
+    "resolver": "src/atoms/skeleton/skeleton.shared.tsx#shapeOf",
+    "order": [
+      "text",
+      "avatar",
+      "button",
+      "card",
+      "list",
+      "table"
+    ],
+    "none": "text",
+    "single": {
+      "text": "text",
+      "avatar": "avatar",
+      "button": "button",
+      "card": "card",
+      "list": "list",
+      "table": "table"
+    },
+    "pairs": {
+      "avatar + button": "avatar",
+      "avatar + card": "avatar",
+      "avatar + list": "avatar",
+      "avatar + table": "avatar",
+      "avatar + text": "text",
+      "button + card": "button",
+      "button + list": "button",
+      "button + table": "button",
+      "button + text": "text",
+      "card + list": "card",
+      "card + table": "card",
+      "card + text": "text",
+      "list + table": "list",
+      "list + text": "text",
+      "table + text": "text"
+    }
+  },
+  "Skeleton.size (line)": {
+    "kind": "axis",
+    "components": [
+      "Skeleton"
+    ],
+    "pages": [
+      "skeleton"
+    ],
+    "resolver": "src/atoms/skeleton/skeleton.shared.tsx#lineHeight",
+    "order": [
+      "large",
+      "small"
+    ],
+    "none": {
+      "height": 14
+    },
+    "single": {
+      "large": {
+        "height": 16
+      },
+      "small": {
+        "height": 12
+      }
+    },
+    "pairs": {
+      "large + small": "large"
+    }
+  },
+  "Skeleton.size (avatar)": {
+    "kind": "axis",
+    "components": [
+      "Skeleton"
+    ],
+    "pages": [
+      "skeleton"
+    ],
+    "resolver": "src/atoms/skeleton/skeleton.shared.tsx#avatarDiameter",
+    "order": [
+      "large",
+      "small"
+    ],
+    "none": 40,
+    "single": {
+      "large": 48,
+      "small": 32
+    },
+    "pairs": {
+      "large + small": "large"
+    }
+  },
+  "Skeleton.size (button)": {
+    "kind": "axis",
+    "components": [
+      "Skeleton"
+    ],
+    "pages": [
+      "skeleton"
+    ],
+    "resolver": "src/atoms/skeleton/skeleton.shared.tsx#buttonSize",
+    "order": [
+      "large",
+      "small"
+    ],
+    "none": {
+      "height": 36,
+      "width": 112
+    },
+    "single": {
+      "large": {
+        "height": 48,
+        "width": 128
+      },
+      "small": {
+        "height": 32,
+        "width": 80
+      }
+    },
+    "pairs": {
+      "large + small": "large"
+    }
+  },
+  "Skeleton.length": {
+    "kind": "axis",
+    "components": [
+      "Skeleton"
+    ],
+    "pages": [
+      "skeleton"
+    ],
+    "resolver": "src/atoms/skeleton/skeleton.shared.tsx#lengthOf",
+    "order": [
+      "short",
+      "long"
+    ],
+    "none": "100%",
+    "single": {
+      "short": "60%",
+      "long": "80%"
+    },
+    "pairs": {
+      "long + short": "short"
+    }
+  },
+  "Slider.size": {
+    "kind": "axis",
+    "components": [
+      "Slider"
+    ],
+    "pages": [
+      "slider"
+    ],
+    "resolver": "src/atoms/slider/slider.shared.tsx#sizeOf",
+    "order": [
+      "large",
+      "small"
+    ],
+    "none": "base",
+    "single": {
+      "large": "large",
+      "small": "small"
+    },
+    "pairs": {
+      "large + small": "large"
+    }
+  },
+  "Spinner.tone": {
+    "kind": "axis",
+    "components": [
+      "Spinner"
+    ],
+    "pages": [
+      "spinner"
+    ],
+    "resolver": "src/atoms/spinner/spinner.shared.tsx#toneOf",
+    "order": [
+      "primary",
+      "muted",
+      "foreground"
+    ],
+    "none": "foreground",
+    "single": {
+      "primary": "primary",
+      "muted": "muted",
+      "foreground": "foreground"
+    },
+    "pairs": {
+      "foreground + muted": "muted",
+      "foreground + primary": "primary",
+      "muted + primary": "primary"
+    }
+  },
+  "Spinner.size": {
+    "kind": "axis",
+    "components": [
+      "Spinner"
+    ],
+    "pages": [
+      "spinner"
+    ],
+    "resolver": "src/atoms/spinner/spinner.shared.tsx#sizeOf",
+    "order": [
+      "large",
+      "small"
+    ],
+    "none": 20,
+    "single": {
+      "large": 32,
+      "small": 16
+    },
+    "pairs": {
+      "large + small": "large"
+    }
+  },
+  "Stepper.size": {
+    "kind": "axis",
+    "components": [
+      "Stepper"
+    ],
+    "pages": [
+      "stepper"
+    ],
+    "resolver": "src/atoms/stepper/stepper.shared.tsx#sizeOf",
+    "order": [
+      "large",
+      "small"
+    ],
+    "none": "base",
+    "single": {
+      "large": "large",
+      "small": "small"
+    },
+    "pairs": {
+      "large + small": "large"
+    }
+  },
+  "Swatch.size": {
+    "kind": "axis",
+    "components": [
+      "Swatch"
+    ],
+    "pages": [
+      "swatch"
+    ],
+    "resolver": "src/atoms/swatch/swatch.shared.tsx#sizeOf",
+    "order": [
+      "small",
+      "large"
+    ],
+    "none": "default",
+    "single": {
+      "small": "small",
+      "large": "large"
+    },
+    "pairs": {
+      "large + small": "small"
+    }
+  },
+  "Swatch.stretch": {
+    "kind": "rule",
+    "components": [
+      "Swatch"
+    ],
+    "pages": [
+      "swatch"
+    ],
+    "resolver": "src/atoms/swatch/swatch.shared.tsx#stretchesOf",
+    "order": [
+      "circle|inline",
+      "block"
+    ],
+    "none": false,
+    "single": {
+      "circle": false,
+      "inline": false,
+      "block": true
+    },
+    "pairs": {
+      "block + circle": "circle",
+      "block + inline": "inline",
+      "circle + inline": "circle|inline"
+    }
+  },
+  "Switch.size": {
+    "kind": "axis",
+    "components": [
+      "Switch"
+    ],
+    "pages": [
+      "switch"
+    ],
+    "resolver": "src/atoms/switch/switch.shared.tsx#sizeOf",
+    "order": [
+      "large",
+      "small"
+    ],
+    "none": "base",
+    "single": {
+      "large": "large",
+      "small": "small"
+    },
+    "pairs": {
+      "large + small": "large"
+    }
+  },
+  "Textarea.size": {
+    "kind": "axis",
+    "components": [
+      "Textarea"
+    ],
+    "pages": [
+      "textarea"
+    ],
+    "resolver": "src/atoms/textarea/textarea.shared.tsx#sizeOf",
+    "order": [
+      "large",
+      "small"
+    ],
+    "none": "base",
+    "single": {
+      "large": "large",
+      "small": "small"
+    },
+    "pairs": {
+      "large + small": "large"
+    }
+  },
+  "Tooltip.placement": {
+    "kind": "axis",
+    "components": [
+      "Tooltip"
+    ],
+    "pages": [
+      "tooltip"
+    ],
+    "resolver": "src/atoms/tooltip/tooltip.shared.tsx#placementOf",
+    "order": [
+      "top",
+      "bottom",
+      "left",
+      "right"
+    ],
+    "none": "top",
+    "single": {
+      "top": "top",
+      "bottom": "bottom",
+      "left": "left",
+      "right": "right"
+    },
+    "pairs": {
+      "bottom + left": "bottom",
+      "bottom + right": "bottom",
+      "bottom + top": "top",
+      "left + right": "left",
+      "left + top": "top",
+      "right + top": "top"
+    }
+  },
+  "Tooltip.trigger": {
+    "kind": "axis",
+    "components": [
+      "Tooltip"
+    ],
+    "pages": [
+      "tooltip"
+    ],
+    "resolver": "src/atoms/tooltip/tooltip.shared.tsx#triggerOf",
+    "order": [
+      "iconTrigger",
+      "textTrigger"
+    ],
+    "none": "button",
+    "single": {
+      "iconTrigger": "icon",
+      "textTrigger": "text"
+    },
+    "pairs": {
+      "iconTrigger + textTrigger": "iconTrigger"
+    }
+  },
+  "Typography.role": {
+    "kind": "axis",
+    "components": [
+      "Typography"
+    ],
+    "pages": [
+      "typography"
+    ],
+    "resolver": "src/atoms/typography/typography.shared.tsx#roleOf",
+    "order": [
+      "display",
+      "h1",
+      "h2",
+      "h3",
+      "h4",
+      "h5",
+      "lead",
+      "code",
+      "mono",
+      "caption",
+      "muted",
+      "small",
+      "tiny",
+      "body"
+    ],
+    "none": "body",
+    "single": {
+      "display": "display",
+      "h1": "h1",
+      "h2": "h2",
+      "h3": "h3",
+      "h4": "h4",
+      "h5": "h5",
+      "lead": "lead",
+      "code": "code",
+      "mono": "mono",
+      "caption": "caption",
+      "muted": "muted",
+      "small": "small",
+      "tiny": "tiny",
+      "body": "body"
+    },
+    "pairs": {
+      "body + caption": "caption",
+      "body + code": "code",
+      "body + display": "display",
+      "body + h1": "h1",
+      "body + h2": "h2",
+      "body + h3": "h3",
+      "body + h4": "h4",
+      "body + h5": "h5",
+      "body + lead": "lead",
+      "body + mono": "mono",
+      "body + muted": "muted",
+      "body + small": "small",
+      "body + tiny": "tiny",
+      "caption + code": "code",
+      "caption + display": "display",
+      "caption + h1": "h1",
+      "caption + h2": "h2",
+      "caption + h3": "h3",
+      "caption + h4": "h4",
+      "caption + h5": "h5",
+      "caption + lead": "lead",
+      "caption + mono": "mono",
+      "caption + muted": "caption",
+      "caption + small": "caption",
+      "caption + tiny": "caption",
+      "code + display": "display",
+      "code + h1": "h1",
+      "code + h2": "h2",
+      "code + h3": "h3",
+      "code + h4": "h4",
+      "code + h5": "h5",
+      "code + lead": "lead",
+      "code + mono": "code",
+      "code + muted": "code",
+      "code + small": "code",
+      "code + tiny": "code",
+      "display + h1": "display",
+      "display + h2": "display",
+      "display + h3": "display",
+      "display + h4": "display",
+      "display + h5": "display",
+      "display + lead": "display",
+      "display + mono": "display",
+      "display + muted": "display",
+      "display + small": "display",
+      "display + tiny": "display",
+      "h1 + h2": "h1",
+      "h1 + h3": "h1",
+      "h1 + h4": "h1",
+      "h1 + h5": "h1",
+      "h1 + lead": "h1",
+      "h1 + mono": "h1",
+      "h1 + muted": "h1",
+      "h1 + small": "h1",
+      "h1 + tiny": "h1",
+      "h2 + h3": "h2",
+      "h2 + h4": "h2",
+      "h2 + h5": "h2",
+      "h2 + lead": "h2",
+      "h2 + mono": "h2",
+      "h2 + muted": "h2",
+      "h2 + small": "h2",
+      "h2 + tiny": "h2",
+      "h3 + h4": "h3",
+      "h3 + h5": "h3",
+      "h3 + lead": "h3",
+      "h3 + mono": "h3",
+      "h3 + muted": "h3",
+      "h3 + small": "h3",
+      "h3 + tiny": "h3",
+      "h4 + h5": "h4",
+      "h4 + lead": "h4",
+      "h4 + mono": "h4",
+      "h4 + muted": "h4",
+      "h4 + small": "h4",
+      "h4 + tiny": "h4",
+      "h5 + lead": "h5",
+      "h5 + mono": "h5",
+      "h5 + muted": "h5",
+      "h5 + small": "h5",
+      "h5 + tiny": "h5",
+      "lead + mono": "lead",
+      "lead + muted": "lead",
+      "lead + small": "lead",
+      "lead + tiny": "lead",
+      "mono + muted": "mono",
+      "mono + small": "mono",
+      "mono + tiny": "mono",
+      "muted + small": "muted",
+      "muted + tiny": "muted",
+      "small + tiny": "small"
+    }
+  },
+  "Typography.tone": {
+    "kind": "axis",
+    "components": [
+      "Typography"
+    ],
+    "pages": [
+      "typography"
+    ],
+    "resolver": "src/atoms/typography/typography.shared.tsx#toneOf",
+    "order": [
+      "destructive",
+      "warning",
+      "success",
+      "primary",
+      "subtle",
+      "muted"
+    ],
+    "none": null,
+    "single": {
+      "destructive": "destructive",
+      "warning": "warning",
+      "success": "success",
+      "primary": "primary",
+      "subtle": "subtle",
+      "muted": "muted"
+    },
+    "pairs": {
+      "destructive + muted": "destructive",
+      "destructive + primary": "destructive",
+      "destructive + subtle": "destructive",
+      "destructive + success": "destructive",
+      "destructive + warning": "destructive",
+      "muted + primary": "primary",
+      "muted + subtle": "subtle",
+      "muted + success": "success",
+      "muted + warning": "warning",
+      "primary + subtle": "primary",
+      "primary + success": "success",
+      "primary + warning": "warning",
+      "subtle + success": "success",
+      "subtle + warning": "warning",
+      "success + warning": "warning"
+    }
+  },
+  "Typography.weight": {
+    "kind": "axis",
+    "components": [
+      "Typography"
+    ],
+    "pages": [
+      "typography"
+    ],
+    "resolver": "src/atoms/typography/typography.shared.tsx#weightOf",
+    "order": [
+      "bold",
+      "semibold",
+      "medium",
+      "regular"
+    ],
+    "none": null,
+    "single": {
+      "bold": "bold",
+      "semibold": "semibold",
+      "medium": "medium",
+      "regular": "regular"
+    },
+    "pairs": {
+      "bold + medium": "bold",
+      "bold + regular": "bold",
+      "bold + semibold": "bold",
+      "medium + regular": "medium",
+      "medium + semibold": "semibold",
+      "regular + semibold": "semibold"
+    }
+  },
+  "Typography.leading": {
+    "kind": "toggle",
+    "components": [
+      "Typography"
+    ],
+    "pages": [
+      "typography"
+    ],
+    "resolver": "src/atoms/typography/typography.shared.tsx#leadingOf",
+    "order": [
+      "tightLeading"
+    ],
+    "none": null,
+    "single": {
+      "tightLeading": "tight"
+    },
+    "pairs": {}
+  },
+  "Typography.decoration": {
+    "kind": "toggle",
+    "components": [
+      "Typography"
+    ],
+    "pages": [
+      "typography"
+    ],
+    "resolver": "src/atoms/typography/typography.shared.tsx#decorationOf",
+    "order": [
+      "underline"
+    ],
+    "none": null,
+    "single": {
+      "underline": "underline"
+    },
+    "pairs": {}
+  },
+  "Video.fit": {
+    "kind": "axis",
+    "components": [
+      "Video"
+    ],
+    "pages": [
+      "video"
+    ],
+    "resolver": "src/atoms/video/video.shared.tsx#fitOf",
+    "order": [
+      "contain",
+      "cover",
+      "stretch"
+    ],
+    "none": "contain",
+    "single": {
+      "contain": "contain",
+      "cover": "cover",
+      "stretch": "fill"
+    },
+    "pairs": {
+      "contain + cover": "contain",
+      "contain + stretch": "contain",
+      "cover + stretch": "cover"
+    }
+  },
+  "ActionPanel.tone": {
+    "kind": "toggle",
+    "components": [
+      "ActionPanel"
+    ],
+    "pages": [
+      "action-panels"
+    ],
+    "resolver": "src/molecules/action-panels/action-panels.shared.tsx#toneOf",
+    "order": [
+      "destructive"
+    ],
+    "none": "neutral",
+    "single": {
+      "destructive": "destructive"
+    },
+    "pairs": {}
+  },
+  "ActionPanel.layout": {
+    "kind": "toggle",
+    "components": [
+      "ActionPanel"
+    ],
+    "pages": [
+      "action-panels"
+    ],
+    "resolver": "src/molecules/action-panels/action-panels.shared.tsx#layoutOf",
+    "order": [
+      "inline"
+    ],
+    "none": "stacked",
+    "single": {
+      "inline": "inline"
+    },
+    "pairs": {}
+  },
+  "Alert.tone": {
+    "kind": "axis",
+    "components": [
+      "Alert"
+    ],
+    "pages": [
+      "alert"
+    ],
+    "resolver": "src/molecules/alert/alert.shared.tsx#toneOf",
+    "order": [
+      "destructive|error",
+      "warning",
+      "success",
+      "info"
+    ],
+    "none": "neutral",
+    "single": {
+      "destructive": "error",
+      "error": "error",
+      "warning": "warning",
+      "success": "success",
+      "info": "info"
+    },
+    "pairs": {
+      "destructive + error": "destructive|error",
+      "destructive + info": "destructive",
+      "destructive + success": "destructive",
+      "destructive + warning": "destructive",
+      "error + info": "error",
+      "error + success": "error",
+      "error + warning": "error",
+      "info + success": "success",
+      "info + warning": "warning",
+      "success + warning": "warning"
+    }
+  },
+  "AlertDialog.width": {
+    "kind": "axis",
+    "components": [
+      "AlertDialog"
+    ],
+    "pages": [
+      "alert-dialog"
+    ],
+    "resolver": "src/molecules/alert-dialog/alert-dialog.shared.tsx#widthOf",
+    "order": [
+      "narrow",
+      "small",
+      "large"
+    ],
+    "none": "medium",
+    "single": {
+      "narrow": "narrow",
+      "small": "small",
+      "large": "large"
+    },
+    "pairs": {
+      "large + narrow": "narrow",
+      "large + small": "small",
+      "narrow + small": "narrow"
+    }
+  },
+  "Card.elevation": {
+    "kind": "axis",
+    "components": [
+      "Card"
+    ],
+    "pages": [
+      "card"
+    ],
+    "resolver": "src/molecules/card/card.shared.tsx#elevationOf",
+    "order": [
+      "raised",
+      "flat"
+    ],
+    "none": "default",
+    "single": {
+      "raised": "raised",
+      "flat": "flat"
+    },
+    "pairs": {
+      "flat + raised": "raised"
+    }
+  },
+  "Card.density": {
+    "kind": "axis",
+    "components": [
+      "Card"
+    ],
+    "pages": [
+      "card"
+    ],
+    "resolver": "src/molecules/card/card.shared.tsx#densityOf",
+    "order": [
+      "compact",
+      "comfortable"
+    ],
+    "none": "default",
+    "single": {
+      "compact": "compact",
+      "comfortable": "comfortable"
+    },
+    "pairs": {
+      "comfortable + compact": "compact"
+    }
+  },
+  "CodeBlock.variant": {
+    "kind": "axis",
+    "components": [
+      "CodeBlock"
+    ],
+    "pages": [
+      "code-block"
+    ],
+    "resolver": "src/molecules/code-block/code-block.shared.tsx#variantOf",
+    "order": [
+      "terminal",
+      "numbered",
+      "inline"
+    ],
+    "none": "plain",
+    "single": {
+      "terminal": "terminal",
+      "numbered": "numbered",
+      "inline": "inline"
+    },
+    "pairs": {
+      "inline + numbered": "numbered",
+      "inline + terminal": "terminal",
+      "numbered + terminal": "terminal"
+    }
+  },
+  "DescriptionList.layout": {
+    "kind": "axis",
+    "components": [
+      "DescriptionList"
+    ],
+    "pages": [
+      "description-lists"
+    ],
+    "resolver": "src/molecules/description-lists/description-lists.shared.tsx#layoutOf",
+    "order": [
+      "inline",
+      "twoColumn",
+      "stacked"
+    ],
+    "none": "stacked",
+    "single": {
+      "inline": "inline",
+      "twoColumn": "twoColumn",
+      "stacked": "stacked"
+    },
+    "pairs": {
+      "inline + stacked": "inline",
+      "inline + twoColumn": "inline",
+      "stacked + twoColumn": "twoColumn"
+    }
+  },
+  "DescriptionList.item value": {
+    "kind": "axis",
+    "components": [
+      "DescriptionList"
+    ],
+    "pages": [
+      "description-lists"
+    ],
+    "resolver": "src/molecules/description-lists/description-lists.shared.tsx#valueFormOf",
+    "order": [
+      "status",
+      "badge",
+      "mono"
+    ],
+    "none": "plain",
+    "single": {
+      "status": "status",
+      "badge": "badge",
+      "mono": "mono"
+    },
+    "pairs": {
+      "badge + mono": "badge",
+      "badge + status": "status",
+      "mono + status": "status"
+    }
+  },
+  "Feed.lead": {
+    "kind": "axis",
+    "components": [
+      "Feed"
+    ],
+    "pages": [
+      "feeds"
+    ],
+    "resolver": "src/molecules/feeds/feeds.shared.tsx#leadOf",
+    "order": [
+      "connector",
+      "avatar"
+    ],
+    "none": "connector",
+    "single": {
+      "connector": "connector",
+      "avatar": "avatar"
+    },
+    "pairs": {
+      "avatar + connector": "connector"
+    }
+  },
+  "GridList.columns": {
+    "kind": "axis",
+    "components": [
+      "GridList"
+    ],
+    "pages": [
+      "grid-lists"
+    ],
+    "resolver": "src/molecules/grid-lists/grid-lists.shared.tsx#columnsOf",
+    "order": [
+      "cols3",
+      "cols2"
+    ],
+    "none": "cols2",
+    "single": {
+      "cols3": "cols3",
+      "cols2": "cols2"
+    },
+    "pairs": {
+      "cols2 + cols3": "cols3"
+    }
+  },
+  "MediaObject.align": {
+    "kind": "axis",
+    "components": [
+      "MediaObject"
+    ],
+    "pages": [
+      "media-objects"
+    ],
+    "resolver": "src/molecules/media-objects/media-objects.shared.tsx#alignOf",
+    "order": [
+      "center",
+      "start"
+    ],
+    "none": "start",
+    "single": {
+      "center": "center",
+      "start": "start"
+    },
+    "pairs": {
+      "center + start": "center"
+    }
+  },
+  "MediaObject.direction": {
+    "kind": "axis",
+    "components": [
+      "MediaObject"
+    ],
+    "pages": [
+      "media-objects"
+    ],
+    "resolver": "src/molecules/media-objects/media-objects.shared.tsx#directionOf",
+    "order": [
+      "reversed",
+      "leading"
+    ],
+    "none": "leading",
+    "single": {
+      "reversed": "reversed",
+      "leading": "leading"
+    },
+    "pairs": {
+      "leading + reversed": "reversed"
+    }
+  },
+  "PhoneInput.size": {
+    "kind": "axis",
+    "components": [
+      "PhoneInput"
+    ],
+    "pages": [
+      "phone-input"
+    ],
+    "resolver": "src/molecules/phone-input/phone-input.shared.tsx#sizeOf",
+    "order": [
+      "large",
+      "small"
+    ],
+    "none": "base",
+    "single": {
+      "large": "large",
+      "small": "small"
+    },
+    "pairs": {
+      "large + small": "large"
+    }
+  },
+  "StackedList.variant": {
+    "kind": "axis",
+    "components": [
+      "StackedList"
+    ],
+    "pages": [
+      "stacked-lists"
+    ],
+    "resolver": "src/molecules/stacked-lists/stacked-lists.shared.tsx#variantOf",
+    "order": [
+      "clickable",
+      "card"
+    ],
+    "none": "two-line",
+    "single": {
+      "clickable": "clickable",
+      "card": "card"
+    },
+    "pairs": {
+      "card + clickable": "clickable"
+    }
+  },
+  "StackedList.item badge": {
+    "kind": "axis",
+    "components": [
+      "StackedList"
+    ],
+    "pages": [
+      "stacked-lists"
+    ],
+    "resolver": "src/molecules/stacked-lists/stacked-lists.shared.tsx#badgeToneOf",
+    "order": [
+      "success",
+      "error",
+      "warning",
+      "info",
+      "neutral"
+    ],
+    "none": {
+      "secondary": true
+    },
+    "single": {
+      "success": {
+        "status": true,
+        "success": true
+      },
+      "error": {
+        "error": true,
+        "status": true
+      },
+      "warning": {
+        "status": true,
+        "warning": true
+      },
+      "info": {
+        "info": true,
+        "status": true
+      },
+      "neutral": {
+        "neutral": true,
+        "status": true
+      }
+    },
+    "pairs": {
+      "error + info": "error",
+      "error + neutral": "error",
+      "error + success": "success",
+      "error + warning": "error",
+      "info + neutral": "info",
+      "info + success": "success",
+      "info + warning": "warning",
+      "neutral + success": "success",
+      "neutral + warning": "warning",
+      "success + warning": "success"
+    }
+  },
+  "Stats.surface": {
+    "kind": "toggle",
+    "components": [
+      "Stats"
+    ],
+    "pages": [
+      "stats"
+    ],
+    "resolver": "src/molecules/stats/stats.shared.tsx#surfaceOf",
+    "order": [
+      "plain"
+    ],
+    "none": "card",
+    "single": {
+      "plain": "plain"
+    },
+    "pairs": {}
+  },
+  "Stats.item accent": {
+    "kind": "axis",
+    "components": [
+      "Stats"
+    ],
+    "pages": [
+      "stats"
+    ],
+    "resolver": "src/molecules/stats/stats.shared.tsx#accentOf",
+    "order": [
+      "chart1",
+      "chart2",
+      "chart3",
+      "chart4",
+      "chart5",
+      "chart6",
+      "chart7",
+      "chart8"
+    ],
+    "none": null,
+    "single": {
+      "chart1": "chart-1",
+      "chart2": "chart-2",
+      "chart3": "chart-3",
+      "chart4": "chart-4",
+      "chart5": "chart-5",
+      "chart6": "chart-6",
+      "chart7": "chart-7",
+      "chart8": "chart-8"
+    },
+    "pairs": {
+      "chart1 + chart2": "chart1",
+      "chart1 + chart3": "chart1",
+      "chart1 + chart4": "chart1",
+      "chart1 + chart5": "chart1",
+      "chart1 + chart6": "chart1",
+      "chart1 + chart7": "chart1",
+      "chart1 + chart8": "chart1",
+      "chart2 + chart3": "chart2",
+      "chart2 + chart4": "chart2",
+      "chart2 + chart5": "chart2",
+      "chart2 + chart6": "chart2",
+      "chart2 + chart7": "chart2",
+      "chart2 + chart8": "chart2",
+      "chart3 + chart4": "chart3",
+      "chart3 + chart5": "chart3",
+      "chart3 + chart6": "chart3",
+      "chart3 + chart7": "chart3",
+      "chart3 + chart8": "chart3",
+      "chart4 + chart5": "chart4",
+      "chart4 + chart6": "chart4",
+      "chart4 + chart7": "chart4",
+      "chart4 + chart8": "chart4",
+      "chart5 + chart6": "chart5",
+      "chart5 + chart7": "chart5",
+      "chart5 + chart8": "chart5",
+      "chart6 + chart7": "chart6",
+      "chart6 + chart8": "chart6",
+      "chart7 + chart8": "chart7"
+    }
+  },
+  "Stats.item delta": {
+    "kind": "axis",
+    "components": [
+      "Stats"
+    ],
+    "pages": [
+      "stats"
+    ],
+    "resolver": "src/molecules/stats/stats.shared.tsx#deltaOf",
+    "order": [
+      "steady",
+      "down"
+    ],
+    "none": "up",
+    "single": {
+      "steady": "steady",
+      "down": "down"
+    },
+    "pairs": {
+      "down + steady": "steady"
+    }
+  },
+  "Calendar.density": {
+    "kind": "toggle",
+    "components": [
+      "Calendar"
+    ],
+    "pages": [
+      "calendar"
+    ],
+    "resolver": "src/organisms/calendar/calendar.shared.tsx#densityOf",
+    "order": [
+      "compact"
+    ],
+    "none": "default",
+    "single": {
+      "compact": "compact"
+    },
+    "pairs": {}
+  },
+  "Calendar.view": {
+    "kind": "axis",
+    "components": [
+      "Calendar"
+    ],
+    "pages": [
+      "calendar"
+    ],
+    "resolver": "src/organisms/calendar/calendar.shared.tsx#viewOf",
+    "order": [
+      "day",
+      "week"
+    ],
+    "none": "month",
+    "single": {
+      "day": "day",
+      "week": "week"
+    },
+    "pairs": {
+      "day + week": "day"
+    }
+  },
+  "DataTable.density": {
+    "kind": "axis",
+    "components": [
+      "DataTable"
+    ],
+    "pages": [
+      "data-table"
+    ],
+    "resolver": "src/organisms/data-table/data-table.shared.tsx#densityOf",
+    "order": [
+      "compact",
+      "comfortable"
+    ],
+    "none": "regular",
+    "single": {
+      "compact": "compact",
+      "comfortable": "comfortable"
+    },
+    "pairs": {
+      "comfortable + compact": "compact"
+    }
+  },
+  "DataTable.column align": {
+    "kind": "axis",
+    "components": [
+      "DataTable"
+    ],
+    "pages": [
+      "data-table"
+    ],
+    "resolver": "src/organisms/data-table/data-table.shared.tsx#columnAlignOf",
+    "order": [
+      "numeric",
+      "centered"
+    ],
+    "none": "start",
+    "single": {
+      "numeric": "end",
+      "centered": "center"
+    },
+    "pairs": {
+      "centered + numeric": "numeric"
+    }
+  },
+  "Dialog.size": {
+    "kind": "axis",
+    "components": [
+      "Dialog"
+    ],
+    "pages": [
+      "dialog"
+    ],
+    "resolver": "src/organisms/dialog/dialog.shared.tsx#sizeOf",
+    "order": [
+      "xs",
+      "small",
+      "medium",
+      "large",
+      "wide"
+    ],
+    "none": "default",
+    "single": {
+      "xs": "xs",
+      "small": "small",
+      "medium": "medium",
+      "large": "large",
+      "wide": "wide"
+    },
+    "pairs": {
+      "large + medium": "medium",
+      "large + small": "small",
+      "large + wide": "large",
+      "large + xs": "xs",
+      "medium + small": "small",
+      "medium + wide": "medium",
+      "medium + xs": "xs",
+      "small + wide": "small",
+      "small + xs": "xs",
+      "wide + xs": "xs"
+    }
+  },
+  "Drawer.edge": {
+    "kind": "axis",
+    "components": [
+      "Drawer"
+    ],
+    "pages": [
+      "drawer"
+    ],
+    "resolver": "src/organisms/drawer/drawer.shared.tsx#edgeOf",
+    "order": [
+      "right",
+      "bottom",
+      "top",
+      "left"
+    ],
+    "none": "left",
+    "single": {
+      "right": "right",
+      "bottom": "bottom",
+      "top": "top",
+      "left": "left"
+    },
+    "pairs": {
+      "bottom + left": "bottom",
+      "bottom + right": "right",
+      "bottom + top": "bottom",
+      "left + right": "right",
+      "left + top": "top",
+      "right + top": "right"
+    }
+  },
+  "FilterPanel.density": {
+    "kind": "toggle",
+    "components": [
+      "FilterPanel"
+    ],
+    "pages": [
+      "filter-panel"
+    ],
+    "resolver": "src/organisms/filter-panel/filter-panel.shared.tsx#densityOf",
+    "order": [
+      "compact"
+    ],
+    "none": "base",
+    "single": {
+      "compact": "compact"
+    },
+    "pairs": {}
+  },
+  "Navbar.surface": {
+    "kind": "axis",
+    "components": [
+      "Navbar"
+    ],
+    "pages": [
+      "navbars"
+    ],
+    "resolver": "src/organisms/navbars/navbars.shared.tsx#surfaceOf",
+    "order": [
+      "bordered",
+      "floating"
+    ],
+    "none": "default",
+    "single": {
+      "bordered": "bordered",
+      "floating": "floating"
+    },
+    "pairs": {
+      "bordered + floating": "bordered"
+    }
+  },
+  "Sidebar.density": {
+    "kind": "toggle",
+    "components": [
+      "Sidebar"
+    ],
+    "pages": [
+      "sidebar"
+    ],
+    "resolver": "src/organisms/sidebar/sidebar.shared.tsx#densityOf",
+    "order": [
+      "compact"
+    ],
+    "none": "default",
+    "single": {
+      "compact": "compact"
+    },
+    "pairs": {}
+  },
+  "Sidebar.frame": {
+    "kind": "axis",
+    "components": [
+      "Sidebar"
+    ],
+    "pages": [
+      "sidebar"
+    ],
+    "resolver": "src/organisms/sidebar/sidebar.shared.tsx#frameOf",
+    "order": [
+      "bordered|floating"
+    ],
+    "none": "flush",
+    "single": {
+      "bordered": "bordered",
+      "floating": "bordered"
+    },
+    "pairs": {
+      "bordered + floating": "bordered|floating"
+    }
+  },
+  "Sidebar.drawer edge": {
+    "kind": "axis",
+    "components": [
+      "Sidebar"
+    ],
+    "pages": [
+      "sidebar"
+    ],
+    "resolver": "src/organisms/sidebar/sidebar.shared.tsx#drawerEdgeOf",
+    "order": [
+      "drawerRight",
+      "drawerTop",
+      "drawerBottom"
+    ],
+    "none": "left",
+    "single": {
+      "drawerRight": "right",
+      "drawerTop": "top",
+      "drawerBottom": "bottom"
+    },
+    "pairs": {
+      "drawerBottom + drawerRight": "drawerRight",
+      "drawerBottom + drawerTop": "drawerTop",
+      "drawerRight + drawerTop": "drawerRight"
+    }
+  },
+  "Steps.layout": {
+    "kind": "axis",
+    "components": [
+      "Steps"
+    ],
+    "pages": [
+      "steps"
+    ],
+    "resolver": "src/organisms/steps/steps.shared.tsx#layoutOf",
+    "order": [
+      "progress",
+      "vertical"
+    ],
+    "none": "horizontal",
+    "single": {
+      "progress": "progress",
+      "vertical": "vertical"
+    },
+    "pairs": {
+      "progress + vertical": "progress"
+    }
+  },
+  "Tabs.variant": {
+    "kind": "axis",
+    "components": [
+      "Tabs"
+    ],
+    "pages": [
+      "tabs"
+    ],
+    "resolver": "src/organisms/tabs/tabs.shared.tsx#variantOf",
+    "order": [
+      "pills",
+      "vertical",
+      "underline"
+    ],
+    "none": "underline",
+    "single": {
+      "pills": "pills",
+      "vertical": "vertical",
+      "underline": "underline"
+    },
+    "pairs": {
+      "pills + underline": "pills",
+      "pills + vertical": "pills",
+      "underline + vertical": "vertical"
+    }
+  },
+  "Tabs.wrap": {
+    "kind": "rule",
+    "components": [
+      "Tabs"
+    ],
+    "pages": [
+      "tabs"
+    ],
+    "resolver": "src/organisms/tabs/tabs.shared.tsx#wrapsOf",
+    "order": [
+      "block|vertical",
+      "wrap"
+    ],
+    "none": false,
+    "single": {
+      "block": false,
+      "vertical": false,
+      "wrap": true
+    },
+    "pairs": {
+      "block + vertical": "block|vertical",
+      "block + wrap": "block",
+      "vertical + wrap": "vertical"
+    }
+  },
+  "Toast.intent": {
+    "kind": "axis",
+    "components": [
+      "Toast"
+    ],
+    "pages": [
+      "toast"
+    ],
+    "resolver": "src/organisms/toast/toast.shared.tsx#intentOf",
+    "order": [
+      "destructive|error",
+      "warning",
+      "success",
+      "info"
+    ],
+    "none": "neutral",
+    "single": {
+      "destructive": "error",
+      "error": "error",
+      "warning": "warning",
+      "success": "success",
+      "info": "info"
+    },
+    "pairs": {
+      "destructive + error": "destructive|error",
+      "destructive + info": "destructive",
+      "destructive + success": "destructive",
+      "destructive + warning": "destructive",
+      "error + info": "error",
+      "error + success": "error",
+      "error + warning": "error",
+      "info + success": "success",
+      "info + warning": "warning",
+      "success + warning": "warning"
+    }
+  },
+  "Cartesian.tone": {
+    "kind": "axis",
+    "components": [
+      "AreaChart",
+      "ComposedChart",
+      "LineChart"
+    ],
+    "pages": [
+      "area-chart",
+      "composed-chart",
+      "line-chart"
+    ],
+    "resolver": "src/charts/shared/cartesian-series.tsx#toneOf",
+    "order": [
+      "success",
+      "destructive"
+    ],
+    "none": "primary",
+    "single": {
+      "success": "success",
+      "destructive": "destructive"
+    },
+    "pairs": {
+      "destructive + success": "success"
+    }
+  },
+  "Chart series.tone": {
+    "kind": "axis",
+    "components": [
+      "AreaChart",
+      "CandlestickChart",
+      "Chart",
+      "ComposedChart",
+      "LineChart",
+      "RadarChart"
+    ],
+    "pages": [
+      "area-chart",
+      "candlestick-chart",
+      "chart",
+      "composed-chart",
+      "line-chart",
+      "radar-chart"
+    ],
+    "resolver": "src/charts/shared/charts.styles.ts#seriesTone",
+    "order": [
+      "success",
+      "destructive"
+    ],
+    "none": null,
+    "single": {
+      "success": "success",
+      "destructive": "destructive"
+    },
+    "pairs": {
+      "destructive + success": "success"
+    }
+  },
+  "ComposedChart.series mark": {
+    "kind": "axis",
+    "components": [
+      "ComposedChart"
+    ],
+    "pages": [
+      "composed-chart"
+    ],
+    "resolver": "src/charts/composed-chart/composed-chart.shared.tsx#markOf",
+    "order": [
+      "line",
+      "area"
+    ],
+    "none": "bars",
+    "single": {
+      "line": "line",
+      "area": "area"
+    },
+    "pairs": {
+      "area + line": "line"
+    }
+  },
+  "BarList.tone": {
+    "kind": "axis",
+    "components": [
+      "BarList"
+    ],
+    "pages": [
+      "bar-list"
+    ],
+    "resolver": "src/charts/bar-list/bar-list.shared.tsx#toneOf",
+    "order": [
+      "success",
+      "destructive"
+    ],
+    "none": null,
+    "single": {
+      "success": "success",
+      "destructive": "destructive"
+    },
+    "pairs": {
+      "destructive + success": "success"
+    }
+  },
+  "Breakdown row.slot": {
+    "kind": "axis",
+    "components": [
+      "BarList",
+      "MetricBreakdown"
+    ],
+    "pages": [
+      "bar-list",
+      "metric-breakdown"
+    ],
+    "resolver": "src/charts/shared/breakdown-rows.tsx#slotOf",
+    "order": [
+      "chart1",
+      "chart2",
+      "chart3",
+      "chart4",
+      "chart5",
+      "chart6",
+      "chart7",
+      "chart8"
+    ],
+    "none": null,
+    "single": {
+      "chart1": "chart-1",
+      "chart2": "chart-2",
+      "chart3": "chart-3",
+      "chart4": "chart-4",
+      "chart5": "chart-5",
+      "chart6": "chart-6",
+      "chart7": "chart-7",
+      "chart8": "chart-8"
+    },
+    "pairs": {
+      "chart1 + chart2": "chart1",
+      "chart1 + chart3": "chart1",
+      "chart1 + chart4": "chart1",
+      "chart1 + chart5": "chart1",
+      "chart1 + chart6": "chart1",
+      "chart1 + chart7": "chart1",
+      "chart1 + chart8": "chart1",
+      "chart2 + chart3": "chart2",
+      "chart2 + chart4": "chart2",
+      "chart2 + chart5": "chart2",
+      "chart2 + chart6": "chart2",
+      "chart2 + chart7": "chart2",
+      "chart2 + chart8": "chart2",
+      "chart3 + chart4": "chart3",
+      "chart3 + chart5": "chart3",
+      "chart3 + chart6": "chart3",
+      "chart3 + chart7": "chart3",
+      "chart3 + chart8": "chart3",
+      "chart4 + chart5": "chart4",
+      "chart4 + chart6": "chart4",
+      "chart4 + chart7": "chart4",
+      "chart4 + chart8": "chart4",
+      "chart5 + chart6": "chart5",
+      "chart5 + chart7": "chart5",
+      "chart5 + chart8": "chart5",
+      "chart6 + chart7": "chart6",
+      "chart6 + chart8": "chart6",
+      "chart7 + chart8": "chart7"
+    }
+  },
+  "BoxPlot.tone": {
+    "kind": "axis",
+    "components": [
+      "BoxPlot"
+    ],
+    "pages": [
+      "box-plot"
+    ],
+    "resolver": "src/charts/box-plot/box-plot.shared.tsx#toneOf",
+    "order": [
+      "success",
+      "destructive"
+    ],
+    "none": "primary",
+    "single": {
+      "success": "success",
+      "destructive": "destructive"
+    },
+    "pairs": {
+      "destructive + success": "success"
+    }
+  },
+  "BulletChart.tone": {
+    "kind": "axis",
+    "components": [
+      "BulletChart"
+    ],
+    "pages": [
+      "bullet-chart"
+    ],
+    "resolver": "src/charts/bullet-chart/bullet-chart.shared.tsx#toneOf",
+    "order": [
+      "success",
+      "destructive"
+    ],
+    "none": "primary",
+    "single": {
+      "success": "success",
+      "destructive": "destructive"
+    },
+    "pairs": {
+      "destructive + success": "success"
+    }
+  },
+  "Chart.tone": {
+    "kind": "axis",
+    "components": [
+      "Chart"
+    ],
+    "pages": [
+      "chart"
+    ],
+    "resolver": "src/charts/chart/chart.shared.tsx#toneOf",
+    "order": [
+      "success",
+      "destructive"
+    ],
+    "none": "primary",
+    "single": {
+      "success": "success",
+      "destructive": "destructive"
+    },
+    "pairs": {
+      "destructive + success": "success"
+    }
+  },
+  "Gauge.tone": {
+    "kind": "axis",
+    "components": [
+      "Gauge"
+    ],
+    "pages": [
+      "gauge"
+    ],
+    "resolver": "src/charts/gauge/gauge.shared.tsx#gaugeFill",
+    "order": [
+      "success",
+      "warning",
+      "destructive"
+    ],
+    "none": "primary",
+    "single": {
+      "success": "success",
+      "warning": "warning",
+      "destructive": "destructive"
+    },
+    "pairs": {
+      "destructive + success": "success",
+      "destructive + warning": "warning",
+      "success + warning": "success"
+    }
+  },
+  "Histogram.tone": {
+    "kind": "axis",
+    "components": [
+      "Histogram"
+    ],
+    "pages": [
+      "histogram"
+    ],
+    "resolver": "src/charts/histogram/histogram.shared.tsx#toneOf",
+    "order": [
+      "success",
+      "destructive"
+    ],
+    "none": "primary",
+    "single": {
+      "success": "success",
+      "destructive": "destructive"
+    },
+    "pairs": {
+      "destructive + success": "success"
+    }
+  },
+  "MetricBreakdown.rate": {
+    "kind": "axis",
+    "components": [
+      "MetricBreakdown"
+    ],
+    "pages": [
+      "metric-breakdown"
+    ],
+    "resolver": "src/charts/metric-breakdown/metric-breakdown.shared.tsx#rateColor",
+    "order": [
+      "rateSuccess",
+      "rateWarning",
+      "rateDestructive"
+    ],
+    "none": "muted-foreground",
+    "single": {
+      "rateSuccess": "success",
+      "rateWarning": "warning",
+      "rateDestructive": "destructive-text"
+    },
+    "pairs": {
+      "rateDestructive + rateSuccess": "rateSuccess",
+      "rateDestructive + rateWarning": "rateWarning",
+      "rateSuccess + rateWarning": "rateSuccess"
+    }
+  },
+  "ProgressRing.tone": {
+    "kind": "axis",
+    "components": [
+      "ProgressRing"
+    ],
+    "pages": [
+      "progress-ring"
+    ],
+    "resolver": "src/charts/progress-ring/progress-ring.shared.tsx#ringFill",
+    "order": [
+      "success",
+      "warning",
+      "destructive"
+    ],
+    "none": "primary",
+    "single": {
+      "success": "success",
+      "warning": "warning",
+      "destructive": "destructive"
+    },
+    "pairs": {
+      "destructive + success": "success",
+      "destructive + warning": "warning",
+      "success + warning": "success"
+    }
+  },
+  "RadarChart.tone": {
+    "kind": "axis",
+    "components": [
+      "RadarChart"
+    ],
+    "pages": [
+      "radar-chart"
+    ],
+    "resolver": "src/charts/radar-chart/radar-chart.shared.tsx#toneOf",
+    "order": [
+      "success",
+      "destructive"
+    ],
+    "none": "primary",
+    "single": {
+      "success": "success",
+      "destructive": "destructive"
+    },
+    "pairs": {
+      "destructive + success": "success"
+    }
+  },
+  "RangeAreaChart.tone": {
+    "kind": "axis",
+    "components": [
+      "RangeAreaChart"
+    ],
+    "pages": [
+      "range-area-chart"
+    ],
+    "resolver": "src/charts/range-area-chart/range-area-chart.shared.tsx#toneOf",
+    "order": [
+      "success",
+      "destructive"
+    ],
+    "none": "primary",
+    "single": {
+      "success": "success",
+      "destructive": "destructive"
+    },
+    "pairs": {
+      "destructive + success": "success"
+    }
+  },
+  "ScatterPlot.tone": {
+    "kind": "axis",
+    "components": [
+      "ScatterPlot"
+    ],
+    "pages": [
+      "scatter-plot"
+    ],
+    "resolver": "src/charts/scatter-plot/scatter-plot.shared.tsx#toneOf",
+    "order": [
+      "success",
+      "destructive"
+    ],
+    "none": "primary",
+    "single": {
+      "success": "success",
+      "destructive": "destructive"
+    },
+    "pairs": {
+      "destructive + success": "success"
+    }
+  },
+  "ServiceHealthList.item status": {
+    "kind": "axis",
+    "components": [
+      "ServiceHealthList"
+    ],
+    "pages": [
+      "service-health-list"
+    ],
+    "resolver": "src/charts/service-health-list/service-health-list.shared.tsx#itemStatus",
+    "order": [
+      "down",
+      "degraded"
+    ],
+    "none": "operational",
+    "single": {
+      "down": "down",
+      "degraded": "degraded"
+    },
+    "pairs": {
+      "degraded + down": "down"
+    }
+  },
+  "Status strip.period": {
+    "kind": "axis",
+    "components": [
+      "ServiceHealthList",
+      "UptimeBar"
+    ],
+    "pages": [
+      "service-health-list",
+      "uptime-bar"
+    ],
+    "resolver": "src/charts/shared/status-strip.tsx#periodStatus",
+    "order": [
+      "down",
+      "degraded",
+      "unknown"
+    ],
+    "none": "operational",
+    "single": {
+      "down": "down",
+      "degraded": "degraded",
+      "unknown": "unknown"
+    },
+    "pairs": {
+      "degraded + down": "down",
+      "degraded + unknown": "degraded",
+      "down + unknown": "down"
+    }
+  },
+  "Sparkline.tone": {
+    "kind": "axis",
+    "components": [
+      "Sparkline"
+    ],
+    "pages": [
+      "sparkline"
+    ],
+    "resolver": "src/charts/sparkline/sparkline.shared.tsx#toneOf",
+    "order": [
+      "success",
+      "destructive",
+      "muted",
+      "primary"
+    ],
+    "none": "primary",
+    "single": {
+      "success": "success",
+      "destructive": "destructive",
+      "muted": "muted",
+      "primary": "primary"
+    },
+    "pairs": {
+      "destructive + muted": "destructive",
+      "destructive + primary": "destructive",
+      "destructive + success": "success",
+      "muted + primary": "muted",
+      "muted + success": "success",
+      "primary + success": "success"
+    }
+  },
+  "Sparkline.size": {
+    "kind": "axis",
+    "components": [
+      "Sparkline"
+    ],
+    "pages": [
+      "sparkline"
+    ],
+    "resolver": "src/charts/sparkline/sparkline.shared.tsx#sizeOf",
+    "order": [
+      "compact",
+      "tall"
+    ],
+    "none": "default",
+    "single": {
+      "compact": "compact",
+      "tall": "tall"
+    },
+    "pairs": {
+      "compact + tall": "compact"
+    }
+  }
+}

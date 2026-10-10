@@ -236,7 +236,7 @@ export interface CodeBlockProps {
 }
 
 // Variant precedence when more than one is passed: first match wins.
-function variantOf(p: CodeBlockProps): Variant {
+export function variantOf(p: CodeBlockProps): Variant {
   if (p.terminal) return "terminal";
   if (p.numbered) return "numbered";
   if (p.inline) return "inline";

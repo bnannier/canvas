@@ -207,7 +207,7 @@ export interface InputProps extends TextEntryProps, MeasureProps {
 }
 
 // Size precedence when more than one is passed: first match wins.
-function sizeOf(p: InputProps): Size {
+export function sizeOf(p: InputProps): Size {
   if (p.large) return "large";
   if (p.small) return "small";
   return "base";

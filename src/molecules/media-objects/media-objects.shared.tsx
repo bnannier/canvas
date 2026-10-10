@@ -144,14 +144,14 @@ export interface MediaObjectProps {
 
 // Alignment precedence when more than one is passed: first match wins. Default is
 // start (items-start) so the media anchors to the first line of a multi-line body.
-function alignOf(p: MediaObjectProps): Align {
+export function alignOf(p: MediaObjectProps): Align {
   if (p.center) return "center";
   if (p.start) return "start";
   return "start";
 }
 
 // Direction precedence when more than one is passed: first match wins.
-function directionOf(p: MediaObjectProps): Direction {
+export function directionOf(p: MediaObjectProps): Direction {
   if (p.reversed) return "reversed";
   if (p.leading) return "leading";
   return "leading";

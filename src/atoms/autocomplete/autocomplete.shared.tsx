@@ -99,7 +99,7 @@ export interface AutocompleteProps extends MeasureProps {
 }
 
 // First match wins when more than one size flag is passed.
-function sizeOf(p: AutocompleteProps): Size {
+export function sizeOf(p: AutocompleteProps): Size {
   if (p.small) return "small";
   if (p.large) return "large";
   return "default";

@@ -183,7 +183,7 @@ export interface ButtonGroupProps extends MeasureProps {
 }
 
 // Kind precedence when more than one is passed: first match wins.
-function kindOf(p: ButtonGroupProps): Kind {
+export function kindOf(p: ButtonGroupProps): Kind {
   if (p.segmented) return "segmented";
   if (p.split) return "split";
   if (p.stepper) return "stepper";
@@ -192,7 +192,7 @@ function kindOf(p: ButtonGroupProps): Kind {
 }
 
 // Size precedence when more than one is passed: first match wins.
-function sizeOf(p: ButtonGroupProps): Size {
+export function sizeOf(p: ButtonGroupProps): Size {
   if (p.small) return "small";
   if (p.large) return "large";
   return "default";

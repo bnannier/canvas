@@ -96,7 +96,7 @@ export interface PhoneInputProps extends PhoneEntryProps, MeasureProps {
 }
 
 // Size precedence when more than one is passed: first match wins.
-function sizeOf(p: PhoneInputProps): Size {
+export function sizeOf(p: PhoneInputProps): Size {
   if (p.large) return "large";
   if (p.small) return "small";
   return "base";

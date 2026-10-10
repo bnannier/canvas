@@ -93,13 +93,13 @@ export type ButtonComponent = ComponentType<ButtonProps>;
 export type SwitchComponent = ComponentType<SwitchProps>;
 
 // Tone precedence when more than one flag is passed: first match wins.
-function toneOf(p: ActionPanelProps): Tone {
+export function toneOf(p: ActionPanelProps): Tone {
   if (p.destructive) return "destructive";
   return "neutral";
 }
 
 // Layout precedence when more than one flag is passed: first match wins.
-function layoutOf(p: ActionPanelProps): Layout {
+export function layoutOf(p: ActionPanelProps): Layout {
   if (p.inline) return "inline";
   return "stacked";
 }

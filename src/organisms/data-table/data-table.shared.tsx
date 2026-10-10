@@ -283,10 +283,18 @@ export interface DataTableProps {
 }
 
 // Density precedence when more than one is passed: first match wins.
-function densityOf(p: DataTableProps): Density {
+export function densityOf(p: DataTableProps): Density {
   if (p.compact) return "compact";
   if (p.comfortable) return "comfortable";
   return "regular";
+}
+
+// Column alignment precedence when both are passed: first match wins, `numeric` (the
+// end edge) over `centered`; the default is the start edge.
+export function columnAlignOf(col: Pick<DataTableColumn, "numeric" | "centered">): "end" | "center" | "start" {
+  if (col.numeric) return "end";
+  if (col.centered) return "center";
+  return "start";
 }
 
 // A normalized column: the object form with the key resolved.
@@ -885,10 +893,11 @@ export function createDataTable(skin: DataTableSkin, parts: DataTableParts) {
     function renderHeaderCell(col: NormalColumn) {
       // Stacked, a header cell hugs its label in the wrapping band; side by side
       // it takes its column's share (or fixed width) and alignment.
+      const align = columnAlignOf(col);
       const layout: StyleProp<ViewStyle> = stacked
         ? STACKED_HEADER_CELL
         : [
-            col.numeric ? { justifyContent: "flex-end" } : col.centered ? { justifyContent: "center" } : null,
+            align === "end" ? { justifyContent: "flex-end" } : align === "center" ? { justifyContent: "center" } : null,
             widthStyle(col),
           ];
       const label = (
@@ -896,7 +905,7 @@ export function createDataTable(skin: DataTableSkin, parts: DataTableParts) {
           style={[
             skin.headerCell(tokens),
             { flexShrink: 1 },
-            stacked ? null : col.numeric ? { textAlign: "right" } : col.centered ? { textAlign: "center" } : null,
+            stacked ? null : align === "end" ? { textAlign: "right" } : align === "center" ? { textAlign: "center" } : null,
           ]}
         >
           {col.label}
@@ -1132,11 +1141,12 @@ export function createDataTable(skin: DataTableSkin, parts: DataTableParts) {
         (rowEditing || (cellEdit != null && cellEdit.row === r && cellEdit.col === c));
       // A stacked cell reads from the start edge under its label, whatever its
       // column's alignment side by side.
+      const align = columnAlignOf(col);
       const alignCell: ViewStyle | null = stacked
         ? null
-        : col.numeric
+        : align === "end"
           ? { alignItems: "flex-end" }
-          : col.centered
+          : align === "center"
             ? { alignItems: "center" }
             : null;
       // A numeric column reads DOWN, not across, and proportional digits are
@@ -1145,9 +1155,9 @@ export function createDataTable(skin: DataTableSkin, parts: DataTableParts) {
       // place visibly jitters as its digits change. Tabular figures give every
       // digit the same advance. The editor gets them too, so opening a cell for
       // editing does not reflow the number under the caret.
-      const alignText: TextStyle | null = col.numeric
+      const alignText: TextStyle | null = align === "end"
         ? { ...(stacked ? null : { textAlign: "right" as const }), ...tabularNums() }
-        : col.centered && !stacked
+        : align === "center" && !stacked
           ? { textAlign: "center" }
           : null;
 

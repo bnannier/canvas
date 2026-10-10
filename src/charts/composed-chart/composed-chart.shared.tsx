@@ -36,7 +36,7 @@ export interface ComposedChartProps extends Omit<CartesianSeriesProps, "series">
 type MarkKind = "bars" | "line" | "area";
 
 // Mark precedence per series, first match wins.
-function markOf(sr: ComposedSeries): MarkKind {
+export function markOf(sr: ComposedSeries): MarkKind {
   if (sr.line) return "line";
   if (sr.area) return "area";
   return "bars";

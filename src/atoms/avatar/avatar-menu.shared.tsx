@@ -111,6 +111,12 @@ function accountLabel(name?: string, email?: string): string {
   return name ?? email ?? "Account menu";
 }
 
+// Menu edge: trailing by default, so `alignStart` is the only way to the leading
+// edge, and an explicit `alignEnd` outranks it.
+export function alignEndOf(p: Pick<AvatarMenuProps, "alignStart" | "alignEnd">): boolean {
+  return p.alignEnd || !p.alignStart;
+}
+
 /** Build an AvatarMenu from the same platform skin family as Avatar and AvatarGroup. */
 export function createAvatarMenu(skin: AvatarMenuSkin, Dropdown: (props: DropdownProps) => ReactElement) {
   // The pill's avatar comes from the same skin, built once per platform module. It
@@ -119,7 +125,7 @@ export function createAvatarMenu(skin: AvatarMenuSkin, Dropdown: (props: Dropdow
   const Avatar = createAvatar(skin);
 
   return function AvatarMenu(props: AvatarMenuProps) {
-    const { name, email, src, initials, items, compact, alignStart, alignEnd, disabled, onSelect, testID, style } = props;
+    const { name, email, src, initials, items, compact, disabled, onSelect, testID, style } = props;
     const theme = useMaterialTheme({ layer: "control" });
     const { tokens } = theme;
     // Uncontrolled by default (a bare <AvatarMenu /> opens and closes on its own);
@@ -130,9 +136,7 @@ export function createAvatarMenu(skin: AvatarMenuSkin, Dropdown: (props: Dropdow
     // fill, the chevron, and the announced state all stay collapsed.
     const expanded = open && !disabled;
     const label = accountLabel(name, email);
-    // Trailing-edge by default; `alignStart` is the only way to the leading edge,
-    // and an explicit `alignEnd` outranks it.
-    const menuAlignEnd = alignEnd || !alignStart;
+    const menuAlignEnd = alignEndOf(props);
     // The pill fills under the pointer and while its menu is open; under glass the fill
     // is an ink tint over whatever the pill sits on, never an opaque patch.
     const { hovered, target } = useHover(skin.menuHover && !disabled);

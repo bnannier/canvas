@@ -135,14 +135,14 @@ export interface ListboxSkin {
 
 // Selection mode precedence when more than one axis prop is passed: first match
 // wins. Only `multi` competes here; the default is single-select.
-function modeOf(p: ListboxProps): Mode {
+export function modeOf(p: ListboxProps): Mode {
   if (p.multi) return "multi";
   return "single";
 }
 
 // Size precedence when more than one is passed: first match wins (small over
 // large). The default is medium.
-function sizeOf(p: ListboxProps): Size {
+export function sizeOf(p: ListboxProps): Size {
   if (p.small) return "small";
   if (p.large) return "large";
   return "medium";

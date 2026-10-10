@@ -116,7 +116,7 @@ export interface InputOTPSkin {
 
 // Size precedence within the axis: large > small > default (first match wins),
 // matching the other atoms.
-function sizeOf(p: InputOTPProps): Size {
+export function sizeOf(p: InputOTPProps): Size {
   if (p.large) return "large";
   if (p.small) return "small";
   return "base";

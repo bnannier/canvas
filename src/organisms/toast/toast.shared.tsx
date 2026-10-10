@@ -147,7 +147,7 @@ export interface ToastSkin {
 
 // Intent precedence when more than one boolean is passed: first match wins.
 // Mirrors Alert's tone precedence (error, warning, success, info).
-function intentOf(p: {
+export function intentOf(p: {
   success?: boolean;
   destructive?: boolean;
   error?: boolean;

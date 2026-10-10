@@ -175,10 +175,23 @@ export interface StackedListProps {
 type Variant = "two-line" | "clickable" | "card";
 
 // Variant precedence when more than one is passed: first match wins.
-function variantOf(p: StackedListProps): Variant {
+export function variantOf(p: StackedListProps): Variant {
   if (p.clickable) return "clickable";
   if (p.card) return "card";
   return "two-line";
+}
+
+// A toned row renders the status pill, so a health list can say healthy / degraded /
+// down in colour rather than three identical grey badges; the tone precedence is first
+// match. Untoned rows keep the original `secondary` badge, so every existing call site
+// is unchanged.
+export function badgeToneOf(item: StackedListItem): Partial<BadgeProps> {
+  if (item.success) return { status: true, success: true };
+  if (item.error) return { status: true, error: true };
+  if (item.warning) return { status: true, warning: true };
+  if (item.info) return { status: true, info: true };
+  if (item.neutral) return { status: true, neutral: true };
+  return { secondary: true };
 }
 
 // The composed-atom component types, so each platform can pass its own resolved
@@ -274,19 +287,6 @@ export function createStackedList(
         </Text>
       </View>
     );
-
-    // A toned row renders the status pill, so a health list can say healthy /
-    // degraded / down in colour rather than three identical grey badges. Untoned
-    // rows keep the original `secondary` badge, so every existing call site is
-    // unchanged.
-    const badgeToneOf = (item: StackedListItem): Partial<BadgeProps> => {
-      if (item.success) return { status: true, success: true };
-      if (item.error) return { status: true, error: true };
-      if (item.warning) return { status: true, warning: true };
-      if (item.info) return { status: true, info: true };
-      if (item.neutral) return { status: true, neutral: true };
-      return { secondary: true };
-    };
 
     const renderTrailing = (item: StackedListItem) => {
       if (item.badge != null) return <Badge {...badgeToneOf(item)}>{item.badge}</Badge>;

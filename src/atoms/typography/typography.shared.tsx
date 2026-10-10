@@ -140,7 +140,7 @@ const HEADING_LEVEL: Partial<Record<Role, number>> = {
 // Role precedence when more than one is passed: first match wins. Order runs
 // largest-to-smallest, headings before helper styles, so a conflicting pair
 // resolves to the more prominent role.
-function roleOf(p: TypographyProps): Role {
+export function roleOf(p: TypographyProps): Role {
   if (p.display) return "display";
   if (p.h1) return "h1";
   if (p.h2) return "h2";
@@ -160,7 +160,7 @@ function roleOf(p: TypographyProps): Role {
 
 // Tone precedence when more than one is passed: first match wins. Returns null
 // when no tone prop is set, so the role's own color stands.
-function toneOf(p: TypographyProps): Tone | null {
+export function toneOf(p: TypographyProps): Tone | null {
   if (p.destructive) return "destructive";
   if (p.warning) return "warning";
   if (p.success) return "success";
@@ -175,7 +175,7 @@ function toneOf(p: TypographyProps): Tone | null {
 
 // Weight precedence when more than one is passed: first match wins. Returns null
 // when no weight prop is set, so the role's own weight stands.
-function weightOf(p: TypographyProps): Weight | null {
+export function weightOf(p: TypographyProps): Weight | null {
   if (p.bold) return "bold";
   if (p.semibold) return "semibold";
   if (p.medium) return "medium";
@@ -185,14 +185,14 @@ function weightOf(p: TypographyProps): Weight | null {
 
 // Leading: a single-value axis today, so there is no precedence to resolve. Returns
 // null when the prop is absent, so the role's own line height stands.
-function leadingOf(p: TypographyProps): Leading | null {
+export function leadingOf(p: TypographyProps): Leading | null {
   if (p.tightLeading) return "tight";
   return null;
 }
 
 // Decoration: a single-value axis today, so there is no precedence to resolve. Returns
 // null when the prop is absent, so the text keeps the role's own undecorated look.
-function decorationOf(p: TypographyProps): Decoration | null {
+export function decorationOf(p: TypographyProps): Decoration | null {
   if (p.underline) return "underline";
   return null;
 }

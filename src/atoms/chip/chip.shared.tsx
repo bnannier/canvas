@@ -159,7 +159,7 @@ interface Appearance {
 
 // The chosen color from the color axis: a status tone, a palette hue, or the muted-gray
 // flag. Status names are scanned first so a semantic intent wins.
-function colorOf(p: ChipProps): { tone: StatusColorTone | null; hue: Hue | null; mutedGray: boolean } {
+export function colorOf(p: ChipProps): { tone: StatusColorTone | null; hue: Hue | null; mutedGray: boolean } {
   if (p.success) return { tone: "success", hue: null, mutedGray: false };
   if (p.warning) return { tone: "warning", hue: null, mutedGray: false };
   if (p.destructive || p.error) return { tone: "error", hue: null, mutedGray: false };

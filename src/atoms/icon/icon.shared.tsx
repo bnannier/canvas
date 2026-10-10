@@ -91,7 +91,7 @@ export interface IconProps extends IconGlyphProps, IconInternalProps {
 export type { IconName } from "./icon.glyphs.js";
 
 // First-match name precedence; defaults to shield (the demo glyph).
-function nameOf(p: IconProps): string {
+export function nameOf(p: IconProps): string {
   for (const { key } of NAMES) {
     if ((p as Record<string, unknown>)[key]) return key;
   }
@@ -100,7 +100,7 @@ function nameOf(p: IconProps): string {
 
 // First-match color precedence; defaults to foreground. Every tone reads the theme's
 // roles: `success` is the success role, the solid color a success Alert gives its icon.
-function strokeOf(p: IconProps, tokens: ColorTokens): string {
+export function strokeOf(p: IconProps, tokens: ColorTokens): string {
   if (p.primary) return tokens.primary;
   if (p.primaryForeground) return tokens["primary-foreground"];
   if (p.destructive) return tokens.destructive;

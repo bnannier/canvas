@@ -1,10 +1,12 @@
 import { describe, it, expect } from "bun:test";
 import { existsSync, readFileSync } from "node:fs";
-import { dirname, join, relative as relativePath } from "node:path";
+import { basename, dirname, join, relative as relativePath } from "node:path";
 import { Glob } from "bun";
 import ts from "typescript";
 import { ICON_STROKE_WIDTH } from "../src/atoms/icon/icon.stroke.ts";
 import { TypeSites } from "../tools/tokens/type-sites.ts";
+import { NOT_AXES } from "../tools/axes/not-axes.ts";
+import { resolverSites, siteKey } from "../tools/axes/resolver-sites.ts";
 
 // Design rules, source side: the handful that are properties of the code itself
 // rather than of a token or a skin object.
@@ -483,6 +485,43 @@ describe("a pane and its host read one material", () => {
     expect(paneDensityMismatches("host.tsx", host(`<GlassPane static layer="control" shape={shape} />`))).toHaveLength(1);
     expect(paneDensityMismatches("host.tsx", host(`<GlassPane layer="content" shape={shape} />`))).toHaveLength(1);
     expect(paneDensityMismatches("host.tsx", host(`<GlassPane {...other} shape={shape} />`))).toHaveLength(1);
+  });
+});
+
+describe("axes are declared, not hand-rolled", () => {
+  // An axis of semantic booleans is declared once, as data, in the component's
+  // `<dir>.axes.ts` table (src/style/axis.ts), and the shell resolves it with `pick`, so
+  // its precedence lives where the docs read it. A component listed here has moved its
+  // axes to a table (K1.2 to K1.5 add each one as it migrates, proven against
+  // test/axes.test.ts); none of its files may grow a first-match chain
+  // (`if (p.small) return "small";`) or a ternary chain on its props again. A chain that
+  // picks between states rather than props (tools/axes/not-axes.ts) may stand.
+  const MIGRATED: string[] = [];
+
+  it("a migrated component keeps its table", () => {
+    const missing = MIGRATED.filter((dir) => !existsSync(join(ROOT, dir, `${basename(dir)}.axes.ts`)));
+    expect(missing).toEqual([]);
+  });
+
+  it("a migrated component resolves its axes with pick, never a chain of its own", () => {
+    const offenders = sources
+      .filter(({ file }) => MIGRATED.some((dir) => file.startsWith(`${dir}/`)))
+      .flatMap(({ file, text }) => resolverSites(file, text))
+      .filter((site) => !(siteKey(site) in NOT_AXES))
+      .map((site) => `${siteKey(site)}:${site.line} ${site.form} [${site.members.join(", ")}]`);
+    expect(offenders).toEqual([]);
+  });
+
+  it("the check catches a hand-rolled resolver and lets everything else through", () => {
+    const found = (text: string) => resolverSites("fixture.tsx", text).map((site) => `${site.name} ${site.form} ${site.members.join(",")}`);
+    expect(found(`function sizeOf(p: Props) { if (p.small) return "small"; if (p.large) return "large"; return "base"; }`)).toEqual(["sizeOf if-chain small,large"]);
+    expect(found(`const toneOf = (p: Props) => { if (p.destructive || p.error) return "error"; return "neutral"; };`)).toEqual(["toneOf if-chain destructive,error"]);
+    expect(found(`function Skeleton(props: Props) { const length = props.short ? "60%" : props.long ? "80%" : "100%"; return length; }`)).toEqual(["Skeleton ternary short,long"]);
+    expect(found(`const sizeOf = (p: Props) => pick(SIZE, p);`)).toEqual([]);
+    expect(found(`function onPress(e: Event) { if (ref.current) return; go(); }`)).toEqual([]);
+    expect(found(`function Icon(props: Props) { if (props.decorative) { return <View>{glyph}</View>; } return glyph; }`)).toEqual([]);
+    expect(found(`function Tabs(props: Props) { if (props.block) return wrap(<View />); return row; }`)).toEqual([]);
+    expect(found(`function tag(p: Props) { return p.a || p.b ? strong : quiet; }`)).toEqual([]);
   });
 });
 

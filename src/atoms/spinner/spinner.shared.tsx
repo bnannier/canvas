@@ -51,7 +51,7 @@ export interface SpinnerProps {
 }
 
 // Tone precedence when more than one is passed: first match wins.
-function toneOf(p: SpinnerProps): Tone {
+export function toneOf(p: SpinnerProps): Tone {
   if (p.primary) return "primary";
   if (p.muted) return "muted";
   if (p.foreground) return "foreground";
@@ -61,7 +61,7 @@ function toneOf(p: SpinnerProps): Tone {
 // Three distinct diameters (px) so each size axis value renders a different
 // spinner. Precedence within the size axis: large > small > default (first
 // match wins). Kept identical to the original component.
-function sizeOf(p: SpinnerProps): number {
+export function sizeOf(p: SpinnerProps): number {
   if (p.large) return 32;
   if (p.small) return 16;
   return 20;
