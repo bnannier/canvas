@@ -44,6 +44,16 @@ describe("the native run's queue", () => {
     expect(() => buildQueue("ios", { only: ["buton"], looks: ["blush"], surfaces: ["solid"], a11y: "none" })).toThrow("buton");
   });
 
+  test("takes a component's slug as the component alone, never the page that shares it", () => {
+    const calendar = components().find((c) => c.slug === "calendar")!;
+    const queue = buildQueue("android", { only: ["calendar"], looks: ["blush"], surfaces: ["solid"], a11y: "none" });
+    expect(queue.map(({ item }) => item.kind)).toEqual(calendar.variants.map(() => "component"));
+    const page = buildQueue("android", { only: ["template-calendar"], looks: ["blush"], surfaces: ["solid"], a11y: "none" });
+    expect(page.map(({ item }) => item.id)).toEqual(["android-pages/template-calendar/blush.solid"]);
+    // Nor a page whose id merely ends in a component's slug.
+    expect(buildQueue("ios", { only: ["sidebar"], looks: ["blush"], surfaces: ["solid"], a11y: "none" }).every(({ item }) => item.kind === "component")).toBe(true);
+  });
+
   test("reads its options and rejects values outside the axes", () => {
     const options = parseRunArgs(["--platform=ios", "--only=button,switch", "--looks=dark", "--surfaces=glass", "--a11y=all", "--devices=ios:ABC", "--keep-motion"]);
     expect(options).toEqual({ platforms: ["ios"], only: ["button", "switch"], looks: ["dark"], surfaces: ["glass"], a11y: "all", devices: { ios: "ABC" }, dev: false, reduceMotion: false });

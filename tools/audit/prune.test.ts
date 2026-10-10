@@ -6,7 +6,7 @@ import { analyzeCells } from "./analyze.ts";
 import { EARLIER, RUNS, checkoutWithRealRuns } from "./fixtures/real-runs.ts";
 import { brokenLinks, buildIndex, builtSelection } from "./index.ts";
 import { planPrune, pruneRuns, survivingSelection } from "./prune.ts";
-import { currentCells, readRunCells, type AuditRun, type CapturedCell } from "./runs.ts";
+import { currentCells, readRunCells, resolveOnly, type AuditRun, type CapturedCell } from "./runs.ts";
 
 const run = (id: string, startedAt: string, platform: AuditRun["platform"] = "web", finished = true): AuditRun => ({
   id, dir: `/r/${id}`, platform, startedAt, status: finished ? "complete" : "running", finished, sha: null, dirty: null, fingerprint: null, fresh: true, served: null,
@@ -56,7 +56,7 @@ describe("pruning", () => {
     expect(all.get("empty")).toMatchObject({ remove: true, reason: "holds no cell" });
     const named = planPrune(runs, cells, { keep: 2, candidates: new Set(["empty"]), only: null }).filter((d) => d.remove).map((d) => d.run.id);
     expect(named).toEqual(["empty"]);
-    const only = new Map(planPrune(runs, cells, { keep: 2, candidates: null, only: ["button"] }).map((d) => [d.run.id, d]));
+    const only = new Map(planPrune(runs, cells, { keep: 2, candidates: null, only: resolveOnly(["button"]) }).map((d) => [d.run.id, d]));
     expect(only.get("button-only")!.remove).toBe(true);
     expect(only.get("b")!.reason).toBe("captured components or pages --only does not name");
     expect(only.get("empty")!.reason).toBe("holds no cell, and --only names components");
