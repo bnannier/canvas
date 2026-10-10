@@ -28,7 +28,14 @@ export const OverlayScrollContext = createContext<{
 // declares that it does not.
 const SCROLLPORT: ViewStyle = { flexGrow: 0, flexShrink: 1 };
 
-// The port is a keyboard stop while its rows overflow, and it sits flush inside its
+// Whether the card's rows are its one keyboard stop: a menu or an option list, whose rows
+// rove (src/style/use-row-focus.ts, the WAI-ARIA menu and listbox patterns). Its port
+// then takes no stop of its own, overflowing or not: a scroller is a stop only while it
+// holds no focusable child (WCAG 2.1.1, the owner's decision on scroll regions), and the
+// focused row scrolls the port as the arrow keys move it.
+export const OverlayRowsContext = createContext(false);
+
+// Otherwise the port is a keyboard stop while its rows overflow, and it sits flush inside its
 // card's clip, which would cut a ring drawn around it while the rows would cover one
 // drawn inside it. So the card that frames it draws the ring (src/style/focus-frame.tsx)
 // and the port wears none; a port with nothing framing it wears the kit's own ring.
@@ -47,6 +54,7 @@ export const OverlayScrollView = forwardRef<ScrollView, ScrollViewProps>(functio
   const frame = useContext(FocusFrameContext);
   const ownRing = useFocusRingStyle();
   const focus = useScrollFocus("vertical");
+  const rows = useContext(OverlayRowsContext);
   const portRef = useComposedRefs<ScrollView>(ref, frame?.ref);
   let framed: Handlers | null = null;
   if (frame) {
@@ -67,7 +75,7 @@ export const OverlayScrollView = forwardRef<ScrollView, ScrollViewProps>(functio
       ref={portRef}
       style={[SCROLLPORT, frame ? FOCUS_RESET : ownRing, style]}
       keyboardShouldPersistTaps={props.keyboardShouldPersistTaps ?? "handled"}
-      tabIndex={tabIndex ?? focus.tabIndex}
+      tabIndex={tabIndex ?? (rows ? -1 : focus.tabIndex)}
       onLayout={(event) => {
         focus.onLayout(event);
         report?.viewportHeight(event.nativeEvent.layout.height);

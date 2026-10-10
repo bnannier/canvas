@@ -86,7 +86,7 @@ import { isRTL } from "./rtl.js";
 import { useFormFactor } from "./responsive.js";
 import { useTheme } from "./theme.js";
 import { scrimFill } from "./scrim.js";
-import { OverlayScrollContext, OverlayScrollView } from "./overlay-scroll.js";
+import { OverlayRowsContext, OverlayScrollContext, OverlayScrollView } from "./overlay-scroll.js";
 import { useIsomorphicLayoutEffect } from "./use-isomorphic-layout-effect.js";
 import { useHardwareBack } from "./use-hardware-back.js";
 import { FocusFrameContext, useFocusFrame } from "./focus-frame.js";
@@ -237,8 +237,9 @@ export interface AnchoredOverlayProps {
   /**
    * The card is a menu or an option list: a Tab that takes keyboard focus out of the
    * card (or off its trigger anywhere but into the card) closes it, and focus goes on
-   * in the page's order (the WAI-ARIA menu and listbox patterns). Without it the card
-   * stays open and Tab moves through and past it in that order.
+   * in the page's order (the WAI-ARIA menu and listbox patterns). Its rows are its one
+   * tab stop, so its scrollport takes none. Without it the card stays open, Tab moves
+   * through and past it in that order, and an overflowing scrollport is a stop.
    */
   dismissOnTab?: boolean;
   /**
@@ -424,7 +425,7 @@ function InlineAnchoredOverlay({ onAccessibilityEscape, onDismiss, triggerRef, r
   useCardFocus({ shown: true, cardRef, triggerRef, returnFocusRef, dismissOnTab: dismissOnTab && dismissable, onDismiss, modal: false, combobox });
   return (
     <Entrance ref={cardRef} style={inlineStyle}>
-      <OverlayCard onAccessibilityEscape={onAccessibilityEscape} cardStyle={cardStyle} opaque={opaque} dense={dense} onMount={onCardMount} ownsScroll={ownsScroll} decoration={decoration}>{children}</OverlayCard>
+      <OverlayCard onAccessibilityEscape={onAccessibilityEscape} cardStyle={cardStyle} opaque={opaque} dense={dense} onMount={onCardMount} ownsScroll={ownsScroll} rows={dismissOnTab} decoration={decoration}>{children}</OverlayCard>
     </Entrance>
   );
 }
@@ -444,6 +445,7 @@ function OverlayCard({
   onLayout,
   onAccessibilityEscape,
   ready = true,
+  rows = false,
 }: {
   cardStyle?: StyleProp<ViewStyle>;
   opaque?: boolean;
@@ -455,6 +457,8 @@ function OverlayCard({
   onLayout?: (event: LayoutChangeEvent) => void;
   onAccessibilityEscape?: ViewProps["onAccessibilityEscape"];
   ready?: boolean;
+  /** The card's rows are its one tab stop (a menu or an option list): its port takes none. */
+  rows?: boolean;
 }) {
   // Latch the callback so the usual fresh-closure-per-render caller cannot re-arm
   // the effect; it must fire once per opening, not once per render.
@@ -478,11 +482,14 @@ function OverlayCard({
   //
   // The card frames the scrollport's keyboard focus: the port sits flush inside the
   // card's clip, so the card draws the ring for it (src/style/focus-frame.tsx), for the
-  // one it wraps here and for an owner's own (Select, Autocomplete, PhoneInput, Command).
+  // one it wraps here and for an owner's own (Autocomplete's, Command's). A menu's or an
+  // option list's port takes no stop: its rows are the card's one (`rows`).
   const focusFrame = useFocusFrame();
   const content = (
     <FocusFrameContext.Provider value={focusFrame.target}>
-      {ownsScroll ? children : <OverlayScrollView>{children}</OverlayScrollView>}
+      <OverlayRowsContext.Provider value={rows}>
+        {ownsScroll ? children : <OverlayScrollView>{children}</OverlayScrollView>}
+      </OverlayRowsContext.Provider>
     </FocusFrameContext.Provider>
   );
   const style = [cardStyle, focusFrame.ring()];
@@ -1012,7 +1019,7 @@ function HostedAnchoredOverlay({ host, frame, onDismiss, onAccessibilityEscape, 
                 obscured={holdsModal && topModal != null && topModal !== modalId}
                 style={{ position: "absolute", left: swap ? right : left, right: swap ? left : right, top, bottom, maxWidth: sheet ? undefined : maxWidth }}
               >
-                <OverlayCard onAccessibilityEscape={onAccessibilityEscape} cardStyle={cappedStyle} opaque={opaque} dense={dense} onMount={onCardMount} ownsScroll={ownsScroll} onLayout={onCardLayout} ready={measured} decoration={sheet ? null : decoration}>{children}</OverlayCard>
+                <OverlayCard onAccessibilityEscape={onAccessibilityEscape} cardStyle={cappedStyle} opaque={opaque} dense={dense} onMount={onCardMount} ownsScroll={ownsScroll} rows={dismissOnTab} onLayout={onCardLayout} ready={measured} decoration={sheet ? null : decoration}>{children}</OverlayCard>
               </Entrance>
             </OverlayScrollContext.Provider>
           </OverlaySideContext.Provider>

@@ -246,18 +246,42 @@ test("a click into a scrollport draws no ring until a key is pressed", async ({ 
   }
 });
 
-// An option list's port is a stop while its rows overflow the capped card, and it sits
-// flush inside the card's clip, so the card draws its ring. Shift+Tab from the first
-// row lands on the port.
+// An option list's rows rove and are its one tab stop (the WAI-ARIA listbox), so its port
+// takes none even while the rows overflow the capped card: a scroller is a stop only while
+// it holds no focusable child. Shift+Tab from the selected option leaves the list for its
+// trigger, closing it.
+for (const width of [1280, 390]) {
+  test(`an overflowing option list keeps one tab stop, its selected option (${width})`, async ({ page }) => {
+    await gotoDocs(page, "/testing/scroll-focus", { viewport: { width, height: 900 } });
+    // The Select's testID names its trigger.
+    const trigger = page.getByTestId("scroll-options");
+    await trigger.click();
+    const list = page.getByRole("listbox");
+    await expect(list.getByRole("option", { name: "Toronto" })).toBeFocused();
+    await expect(page.locator('[tabindex="0"]:has([role="listbox"])')).toHaveCount(0);
+    await expect(list.locator('[tabindex="0"]')).toHaveCount(1);
+    await page.keyboard.press("Shift+Tab");
+    await expect(list).toHaveCount(0);
+    await expect(trigger).toBeFocused();
+    await expect(trigger).toHaveAttribute("aria-expanded", "false");
+  });
+}
+
+// A list whose rows take no focus (a command palette's results: its field keeps focus and
+// points at the active row) has its port as a stop while its rows overflow the capped card,
+// and the port sits flush inside the card's clip, so the card draws its ring. Tab from the
+// field lands on the port. (An option list's port took this test until its rows became its
+// one stop, above; the palette's port is the overflowing list port that is still a stop.)
 for (const width of [1280, 390]) {
   for (const scheme of ["light", "dark"] as const) {
-    test(`an overflowing option list's card draws the ring for its port (${width}, ${scheme})`, async ({ page }, testInfo) => {
+    test(`an overflowing list's card draws the ring for its port (${width}, ${scheme})`, async ({ page }, testInfo) => {
       await gotoDocs(page, "/testing/scroll-focus", { scheme, viewport: { width, height: 900 } });
-      await page.getByTestId("scroll-options").click();
+      await page.getByTestId("scroll-command").getByRole("button").click();
+      const field = page.getByRole("textbox", { name: "Search cities", exact: true });
+      await expect(field).toBeFocused();
       const port = page.locator('[tabindex="0"]:has([role="listbox"])');
       await expect(port).toHaveCount(1);
-      await port.getByRole("option").first().focus();
-      await page.keyboard.press("Shift+Tab");
+      await page.keyboard.press("Tab");
       await expect(port).toBeFocused();
       const frame = () => port.evaluate((node) => {
         for (let at = node.parentElement; at; at = at.parentElement) {
@@ -269,14 +293,27 @@ for (const width of [1280, 390]) {
       const ring = rgb(colorsFor("blush", scheme).ring);
       await expect.poll(frame).toEqual({ style: "solid", color: ring, clips: true });
       expect(await drawsOutline(port)).toBe(false);
-      // The card is the port's parent, and its ring is on screen on every side.
-      expect(await outlineOf(port.locator(".."))).toEqual({ style: "solid", color: ring });
-      expect(await ringShows(page, port.locator(".."), ring)).toEqual(ALL_SIDES);
-      const screenshot = testInfo.outputPath("option-list-focused.png");
+      // The card that draws it is the palette's card (the port sits in its results pane, a
+      // level below), and its ring is on screen on every side.
+      const levels = await port.evaluate((node) => {
+        let depth = 0;
+        for (let at = node.parentElement; at; at = at.parentElement) {
+          depth += 1;
+          const style = getComputedStyle(at);
+          if (style.outlineStyle !== "none" && parseFloat(style.outlineWidth) > 0) return depth;
+        }
+        return 0;
+      });
+      const card = port.locator(`xpath=${Array<string>(levels).fill("..").join("/")}`);
+      expect(await card.evaluate((node, input) => node.contains(input), await field.elementHandle())).toBe(true);
+      expect(await outlineOf(card)).toEqual({ style: "solid", color: ring });
+      expect(await ringShows(page, card, ring)).toEqual(ALL_SIDES);
+      const screenshot = testInfo.outputPath("list-port-focused.png");
       await page.screenshot({ path: screenshot });
-      await testInfo.attach("option-list-focused", { path: screenshot, contentType: "image/png" });
-      // Back onto a row: the port lost focus, so the card's ring goes.
-      await page.keyboard.press("Tab");
+      await testInfo.attach("list-port-focused", { path: screenshot, contentType: "image/png" });
+      // Back onto the field: the port lost focus, so the card's ring goes.
+      await page.keyboard.press("Shift+Tab");
+      await expect(field).toBeFocused();
       await expect.poll(frame).toBeNull();
     });
   }

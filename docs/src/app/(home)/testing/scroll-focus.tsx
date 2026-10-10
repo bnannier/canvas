@@ -1,11 +1,12 @@
 import { useState } from "react";
-import { Button, Card, Carousel, CodeBlock, Column, DataTable, Feed, GridList, Heatmap, Select, StackedList, Typography } from "@nannier/canvas";
+import { Button, Card, Carousel, CodeBlock, Column, Command, DataTable, Feed, GridList, Heatmap, Select, StackedList, Typography } from "@nannier/canvas";
 import { Page } from "../../../ui/page";
 
 const LONG = 'const destinations = ["Montréal", "Toronto", "Vancouver", "Halifax", "Victoria", "Québec", "Winnipeg", "Calgary", "Ottawa", "Edmonton"];';
 const SHORT = "const ready = true;";
 const columns = ["Name", "Location", "Status", "Joined", "Team"];
-// More cities than the option card's cap holds, so its list scrolls.
+// More cities than the option card's cap holds, so its list scrolls (and the command
+// palette's results, which list them too).
 const cities = ["Calgary", "Charlottetown", "Edmonton", "Fredericton", "Halifax", "Iqaluit", "Montréal", "Ottawa", "Québec", "Regina", "Saskatoon", "St. John's", "Toronto", "Vancouver", "Victoria", "Whitehorse", "Winnipeg", "Yellowknife"];
 const slides = [{ key: "one", content: "Slide 1" }, { key: "two", content: "Slide 2" }, { key: "three", content: "Slide 3" }];
 const rows = [["Ada", "Montréal", "Active", "2026-01-02", "Design"], ["Sam", "Toronto", "Active", "2026-03-04", "Engineering"]];
@@ -146,6 +147,10 @@ export default function ScrollFocusFixture() {
         <Column snug>
           <Typography h2>Option list</Typography>
           <Select testID="scroll-options" label="City" defaultValue="Toronto" options={cities} />
+        </Column>
+        <Column snug>
+          <Typography h2>Command results</Typography>
+          <Command trigger testID="scroll-command" placeholder="Search cities" groups={[{ heading: "Cities", items: cities.map((label) => ({ label })) }]} />
         </Column>
       </Column>
     </Page>
