@@ -58,7 +58,8 @@ export class TypeSites extends SourceFolder {
   }
 
   protected sinkOf(node: ts.Node, sf: ts.SourceFile): ts.Expression | null {
-    if (ts.isPropertyAssignment(node) && nameOf(node.name) === "fontSize") return node.initializer;
+    // A key written plainly, as a string, or computed from a literal or a const holding one.
+    if (ts.isPropertyAssignment(node) && this.propertyKey(node.name, sf) === "fontSize") return node.initializer;
     if (ts.isShorthandPropertyAssignment(node) && node.name.text === "fontSize") return node.name;
     // An SVG text sizes itself through its attribute: `fontSize={11}` or `fontSize="11"`. An
     // empty expression is reported as untraced; a bare `fontSize` is `true`, which no text
