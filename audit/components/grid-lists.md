@@ -82,6 +82,7 @@ One row per finding. Severity: critical, high, medium, low. Cell: a capture id f
 |---|---|---|---|---|---|
 | grid-lists-corner-1 | low | source | The iOS gallery thumbnail drew 10, off the iOS row; it plays the tile role, as on Android, so it draws the iOS tile corner, 12. The shape gate (test/design-rules-shape.test.ts) now takes a corner only as a role of its own platform's row that its component plays, the pill, square or a declared concentric corner. | fixed | 278270a8 |
 | grid-lists-role-1 | low | source | Role question for the Phase 4 audit: the web gallery thumbnail reads the `control` corner (8) while the iOS and Android thumbnails read `tile` (12). Options: the web thumbnail takes `tile` (8 to 12 on the web); keep the web's 8 under a web role of its own. | open |  |
+| grid-lists-nested-1 | high | source | A pressable people tile (`onPressItem`) is a button that holds the tile's own action Buttons, so the web renders a `<button>` inside a `<button>`: invalid HTML (React warns it will cause a hydration error) and one ambiguous control for assistive tech, the same class as media-objects K7-1. Seen in test/list-semantics.test.tsx ("In HTML, <button> cannot be a descendant of <button>", GridList with `onPressItem`, PeopleTile inside `Card onPress`); present at the baseline commit 36ca2ce2. | open |  |
 
 ## Sign-off
 
