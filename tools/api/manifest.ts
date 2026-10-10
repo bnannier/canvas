@@ -350,12 +350,13 @@ export const publicApi: Readonly<Record<string, ApiEntry>> = {
   activeIndicator: { kind: "internal-by-accident" },
   ActiveIndicatorOptions: { kind: "internal-by-accident" },
 
-  // src/style/anchored-overlay.tsx
-  AnchoredOverlay: { kind: "internal-by-accident" },
-  AnchoredOverlayProps: { kind: "internal-by-accident" },
-  placeOverlay: { kind: "internal-by-accident" },
-  useOverlayAnchor: { kind: "internal-by-accident" },
-  useOverlaySide: { kind: "internal-by-accident" },
+  // src/style/anchored-overlay.tsx (deprecated aliases since the AnchoredOverlay audit
+  // turn, K12-2)
+  AnchoredOverlay: { kind: "deprecated-alias", replacement: "Popover" },
+  AnchoredOverlayProps: { kind: "deprecated-alias", replacement: "PopoverProps" },
+  placeOverlay: { kind: "deprecated-alias" },
+  useOverlayAnchor: { kind: "deprecated-alias" },
+  useOverlaySide: { kind: "deprecated-alias" },
 
   // src/style/color.ts
   alpha: { kind: "utility" },

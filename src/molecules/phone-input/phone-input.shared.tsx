@@ -28,6 +28,7 @@ import { OverlayScrollView } from "../../style/overlay-scroll.js";
 import { useComposedRefs } from "../../style/use-composed-refs.js";
 import { frameHandlers, useFocusFrame } from "../../style/focus-frame.js";
 import { LISTBOX } from "../../style/listbox-role.js";
+import { useRowFocus } from "../../style/use-row-focus.js";
 import { root, rootLifted, PANEL_ANCHOR } from "../../atoms/select/select.styles.js";
 import { type TextEntryProps } from "../../atoms/input/input.shared.js";
 import { PHONE_COUNTRIES, flagOf, type PhoneCountry } from "./countries.js";
@@ -177,6 +178,8 @@ export function createPhoneInput(skin: PhoneInputSkin) {
     const hostRef = useComposedRefs(numberRef, ref, errorFrame.target.ref);
     // The whole box anchors the list (the trigger's measured width is its minimum).
     const boxRef = useRef<View>(null);
+    // The country segment, where focus returns when the list closes without a pick.
+    const countryRef = useRef<View>(null);
     const { width: boxWidth, onLayout: onBoxLayout } = useMeasuredWidth();
 
     const close = () => setOpen(false);
@@ -192,6 +195,13 @@ export function createPhoneInput(skin: PhoneInputSkin) {
       numberRef.current?.focus();
     };
 
+    // The country rows: the WAI-ARIA listbox keyboard model (src/style/use-row-focus.ts).
+    // Focus enters at the selected country when the list is revealed (the screen
+    // reader's natively), the arrows, Home and End move among the rows, Enter and Space
+    // pick one (focus then goes on to the number), and Tab out of the list closes it.
+    const rows = useRowFocus(countries.length);
+    const enterList = () => rows.enter(Math.max(0, countries.findIndex((c) => c.code === selected?.code)));
+
     const accessibleName = props.accessibilityLabel ?? label;
     const segmentName = selected ? `Country, ${selected.name} ${selected.dialCode}` : "Country";
     const ripple = field.ripple ? field.ripple(tokens) : undefined;
@@ -206,6 +216,7 @@ export function createPhoneInput(skin: PhoneInputSkin) {
       >
         <GlassPane {...entryMaterial.paneProps} shape={boxShape} tint={isError ? alpha(tokens.destructive, 0.18) : undefined} />
         <Pressable
+          ref={countryRef}
           onPress={() => setOpen(!open)}
           disabled={!editable}
           style={({ pressed }) => [withInnerFill(theme, skin.country(tokens, state), "soft"), field.pressedOpacity != null && pressed ? { opacity: field.pressedOpacity } : null]}
@@ -290,6 +301,9 @@ export function createPhoneInput(skin: PhoneInputSkin) {
         inlineStyle={PANEL_ANCHOR}
         // The country list is an option list: the DENSE layer under glass, like Select's.
         dense
+        onCardMount={enterList}
+        dismissOnTab
+        returnFocusRef={countryRef}
       >
         <EscapeLayerProvider scope={escapeScope}>
           <OverlayScrollView style={optionScroll} bounces={false}>
@@ -300,6 +314,7 @@ export function createPhoneInput(skin: PhoneInputSkin) {
                   return (
                     <Pressable
                       key={c.code}
+                      {...(rows.rowProps(i, () => pick(c)) as object)}
                       style={({ pressed }) => [
                         skin.menu.optionRow(tokens, isSelected),
                         i > 0 && skin.menu.rowSeparator ? skin.menu.rowSeparator(tokens) : null,

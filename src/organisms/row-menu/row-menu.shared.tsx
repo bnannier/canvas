@@ -6,6 +6,8 @@ import { View, Pressable, Text, AnchoredOverlay, useOverlayHost, useMeasuredWidt
 import { Icon } from "../../atoms/icon/icon.js";
 import { useSeededMinTargetSlop, styleBox } from "../../style/touch-target-seed.js";
 import { useSeamLimit } from "../../style/touch-seam.js";
+import { useRowFocus, type RowFocusProps } from "../../style/use-row-focus.js";
+import { focusInto } from "../../style/accessibility-focus.js";
 import { anchorLifted, type RowMenuItem, type RowMenuSkin } from "./row-menu.styles.js";
 
 // Shared RowMenu shell. The structure (the self-start anchor, the ⋯ icon-button
@@ -24,6 +26,13 @@ import { anchorLifted, type RowMenuItem, type RowMenuSkin } from "./row-menu.sty
 // and no position:fixed, so it escapes the stage's clip. With no provider it falls
 // back to an inline card positioned absolutely below the trigger (the kit's
 // pre-portal behavior). The `open` boolean keeps it shown across platforms.
+//
+// Keyboard and screen readers: the WAI-ARIA menu pattern, as Dropdown's. Focus
+// enters at the first enabled row when the card is revealed (VoiceOver's and
+// TalkBack's natively), the arrows, Home and End move among the rows, Enter and
+// Space activate one, Tab out of the menu closes it, and focus returns to the ⋯
+// trigger. With `links` the rows are links, each its own tab stop, and focus enters
+// at the first.
 
 export type { RowMenuItem };
 
@@ -62,12 +71,14 @@ export function createRowMenu(skin: RowMenuSkin) {
     links: boolean;
     onPress: () => void;
     ripple: { color: string; borderless: boolean } | undefined;
+    /** The menu's roving focus, or, for a link, the ref focus enters by. */
+    focusProps: RowFocusProps | { ref: (node: View | null) => void };
   }
 
   // One menu row, its own component so the web's hover wash has a hook per row. A
   // disabled row is inert and takes the skin's disabled look: the web's muted ink, or
   // the platform's dim.
-  function MenuRow({ item, links, onPress, ripple }: MenuRowProps) {
+  function MenuRow({ item, links, onPress, ripple, focusProps }: MenuRowProps) {
     const theme = useMaterialTheme({ layer: "dense" });
     const { tokens, dark } = theme;
     const disabled = !!item.disabled;
@@ -75,6 +86,7 @@ export function createRowMenu(skin: RowMenuSkin) {
     const { hovered, target } = useHover(skin.itemHover != null && !disabled);
     return (
       <Pressable
+        {...(focusProps as object)}
         {...target}
         disabled={item.disabled}
         style={({ pressed }) => [
@@ -138,8 +150,15 @@ export function createRowMenu(skin: RowMenuSkin) {
     // width floor is the TRIGGER's own measured width, not the anchor's, so a RowMenu in a
     // stretched table cell still opens at the skin's minimum rather than the cell's width.
     const triggerRef = useRef<View>(null);
+    // The ⋯ control itself, where focus returns on close.
+    const controlRef = useRef<View>(null);
     const host = useOverlayHost();
     const { width: triggerWidth, onLayout: onTriggerLayout } = useMeasuredWidth();
+    // The menu's rows (src/style/use-row-focus.ts), or, as links, plain tab stops.
+    const rows = useRowFocus(items.length);
+    const linkNodes = useRef<(View | null)[]>([]);
+    const firstEnabled = Math.max(0, items.findIndex((item) => !item.disabled));
+    const enterMenu = () => (links ? focusInto(linkNodes.current[firstEnabled]) : rows.enter(firstEnabled));
 
     const ripple = skin.ripple ? skin.ripple(tokens) : undefined;
 
@@ -155,6 +174,7 @@ export function createRowMenu(skin: RowMenuSkin) {
             measured for the menu's width floor and what the pointer hovers. */}
         <RippleClip shape={cornerRadii(skin.trigger)} hitSlop={hitSlop} onLayout={onTriggerLayout} {...triggerHoverTarget}>
         <Pressable
+          ref={controlRef}
           onLayout={target.onLayout}
           hitSlop={hitSlop}
           style={({ pressed }) => [
@@ -195,6 +215,9 @@ export function createRowMenu(skin: RowMenuSkin) {
           // A controlled `open` with no onOpenChange can never actually close, so
           // the hosted dismiss backdrop is skipped (it would only block the page).
           dismissable={props.open === undefined || onOpenChange !== undefined}
+          onCardMount={enterMenu}
+          dismissOnTab
+          returnFocusRef={controlRef}
         >
           <EscapeLayerProvider scope={escapeScope}>
           {/* RippleClip clips the Android bounded-ripple rows to the menu card's
@@ -227,6 +250,13 @@ export function createRowMenu(skin: RowMenuSkin) {
                   setOpen(false);
                 }}
                 ripple={ripple}
+                focusProps={links
+                  ? { ref: (node: View | null) => { linkNodes.current[index] = node; } }
+                  : rows.rowProps(index, () => {
+                    if (item.disabled) return;
+                    onSelect?.(item, index);
+                    setOpen(false);
+                  })}
               />
             </View>
           ))}

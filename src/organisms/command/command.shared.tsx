@@ -167,6 +167,8 @@ export function createCommand(skin: CommandSkin) {
 
     // The trigger view AnchoredOverlay measures to anchor (and portal) the card.
     const triggerRef = useRef<View>(null);
+    // The Search control itself, where focus returns when the palette closes.
+    const controlRef = useRef<View>(null);
     const host = useOverlayHost();
     // The bare card frames its result list's keyboard focus, as an anchored card does in
     // trigger mode: the list sits flush inside the card's clip (src/style/focus-frame.tsx).
@@ -415,6 +417,7 @@ export function createCommand(skin: CommandSkin) {
     return (
       <View ref={triggerRef} testID={testID} style={[s.triggerWrapper, open && !host ? s.triggerWrapperLifted : null, style]}>
         <Pressable
+          ref={controlRef}
           accessibilityRole="button"
           accessibilityState={{ expanded: open }}
           aria-expanded={open}
@@ -429,6 +432,7 @@ export function createCommand(skin: CommandSkin) {
           onAccessibilityEscape={escapeScope.onAccessibilityEscape}
           ownsScroll
           onCardMount={() => searchRef.current?.focus?.()}
+          returnFocusRef={controlRef}
           open={open}
           onDismiss={() => setOpen(false)}
           triggerRef={triggerRef}
