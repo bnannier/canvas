@@ -12,21 +12,26 @@
  * page. tools/audit/state-recipes.test.ts holds the table to the registry, the pages, and
  * each component's own source (tools/audit/interaction-signals.ts reads the states a
  * source gives: a press, a scrub surface, a hover or field handler, a pressed, hovered or
- * focused look, an overlay, a disabled control and the overlay it is in;
- * tools/audit/state-coverage.ts checks that each has a recipe or an exemption whose claim
- * holds, and that every place an example asks for a disabled control in, the component's
- * own surface or an overlay it opens, has a disabled recipe there).
+ * focused look, an overlay, a disabled control, the control each is on and the overlay it is
+ * in; tools/audit/state-coverage.ts checks that each has a recipe or an exemption whose claim
+ * holds, that a hover, a focus and a press are answered in every place the source renders
+ * them, the component's own surface and each overlay it opens, and every place an example
+ * asks for a disabled control in, and that each recipe acts on a control of the component's
+ * own there, `StateRecipe.control`: a control another kit component renders for it is that
+ * component's, whose own recipes capture it).
  *
  * A recipe has three steps, each through the input a person uses:
  *
  *   apply    hover: the pointer moves onto the control. focus: the Tab key, from the tab
- *            stop before the control. pressed: the pointer goes down on the control and
+ *            stop before the control (in a menu that puts focus on its first row as it
+ *            opens, the arrow key that moves it on). pressed: the pointer goes down on the control and
  *            stays down (a chart is pressed on one datum to inspect it). open: the
  *            overlay recipes' own click (or a hover, for a tooltip), from the platform
  *            row the cell names. invalid: the example that shows an error, or typing
  *            past a limit. disabled: the example that disables the control.
  *   verify   reads the page and says whether the state was reached, with the structural
- *            evidence: for hover, what changed in the computed style of the control, its
+ *            evidence, on the element the state landed on, which must be the recipe's own
+ *            control (its role, `controlMismatch`): for hover, what changed in the computed style of the control, its
  *            contents and its wrappers up to the row (the lift's transform and shade and
  *            the wash's background that src/style/hover.tsx applies are the hover; a
  *            control whose web skin declares none has no hover recipe); for focus, the
@@ -134,6 +139,20 @@ export interface NotReached {
 
 export type Verdict = Reached | NotReached;
 
+/**
+ * The control a recipe acts on, as the component's own source gives it
+ * (tools/audit/interaction-signals.ts `Control`): the ARIA role the page gives it, absent for
+ * one with none (a chart's scrub surface, a bare tab stop), and the function the source
+ * renders it in, given where its role does not single it out. A control another kit
+ * component renders for the component (FilterPanel's Clear, a kit Button) is that
+ * component's, so tools/audit/state-coverage.ts refuses a recipe whose control is none of
+ * the component's own where the recipe is applied.
+ */
+export interface ControlSpec {
+  role?: string;
+  in?: string;
+}
+
 export interface StateRecipe {
   state: StateName;
   /** The example it is applied to: a variant key of the component's page (`default` for the Usage fence). */
@@ -169,6 +188,13 @@ export interface StateRecipe {
    */
   inOverlay?: true;
   /**
+   * The control the state is applied to (`ControlSpec`), on a hover, focus, pressed or
+   * disabled recipe; an opening names its overlay instead (`opens`). The coverage holds it to
+   * the component's own controls where the recipe is applied, and the capture holds the
+   * element the state lands on to its role.
+   */
+  control?: ControlSpec;
+  /**
    * What the photograph frames: the row the state is in (the card is fitted into a viewport
    * grown to hold it, as a variant cell's is), or the viewport at the cell's own size,
    * since an open overlay can paint anywhere in it and a sheet is placed against it.
@@ -194,7 +220,7 @@ export interface Released {
  *
  *   unpassed       every signal of the state is rendered only when one of these props is
  *                  passed (`onItemPress` makes a Feeds row a button), and no rail example
- *                  passes any of them, so no example shows the state.
+ *                  renders one (none passes every prop it needs), so no example shows the state.
  *   dismissLayers  every signal of the state is a press on a node kept from assistive
  *                  technology, with no pressed look, whose handler closes the overlay or
  *                  does nothing (a scrim, a panel that swallows a stray press); the overlay
@@ -360,21 +386,80 @@ function readToggles(el: Element): Record<string, string | null> {
   return toggles;
 }
 
-/** A locator inside a scope: the control a recipe acts on. */
-type Target = (scope: Locator) => Locator;
+/** The control a recipe acts on: how the page finds it inside a scope, and what the source says it is. */
+interface Target {
+  locate: (scope: Locator) => Locator;
+  control: ControlSpec;
+}
 type Role = Parameters<Locator["getByRole"]>[0];
 
-/** The first node of a role inside the scope, by its exact accessible name when a string names it. */
-const byRole =
-  (role: Role, name?: string | RegExp): Target =>
-  (scope) =>
-    scope.getByRole(role, name === undefined ? {} : { name, exact: typeof name === "string" }).first();
+/**
+ * The first node of a role inside the scope, by its exact accessible name when a string names
+ * it; `in` names the function of the component's source that renders it, where its role does
+ * not single it out.
+ */
+const byRole = (role: Role, name?: string | RegExp, options: { in?: string } = {}): Target => ({
+  locate: (scope) => scope.getByRole(role, name === undefined ? {} : { name, exact: typeof name === "string" }).first(),
+  control: { role, ...(options.in ? { in: options.in } : {}) },
+});
 
 /** The scope's first keyboard stop that names no role (a chart's inspection stop, a bare Pressable). */
-const firstTabStop: Target = (scope) => scope.locator('[tabindex="0"]').first();
+const firstTabStop: Target = { locate: (scope) => scope.locator('[tabindex="0"]').first(), control: {} };
+
+/** The first node a selector finds inside the scope, a control with no role (a bare Pressable the example disables). */
+const bySelector = (selector: string): Target => ({ locate: (scope) => scope.locator(selector).first(), control: {} });
+
+/** The first node labelled `name` inside the scope, a control with no role (a calendar's event block without `onEventPress`). */
+const byLabel = (name: string | RegExp, options: { in?: string } = {}): Target => ({
+  locate: (scope) => scope.getByLabel(name, { exact: typeof name === "string" }).first(),
+  control: options.in ? { in: options.in } : {},
+});
+
+/**
+ * A node with no role inside another control, by a selector from it: AvatarMenu's pill, the
+ * hover target inside the Dropdown trigger it is handed as children.
+ */
+const inside = (outer: Target, selector: string, options: { in?: string } = {}): Target => ({
+  locate: (scope) => outer.locate(scope).locator(selector).first(),
+  control: options.in ? { in: options.in } : {},
+});
+
+/**
+ * A group's tab stop: the group is found by `group`, and the Tab key lands on the stop inside
+ * it (a radio group's roving radio, a tab list's selected tab), a control of `role`.
+ */
+const stopIn = (group: Target, role: Role, options: { in?: string } = {}): Target => ({ locate: group.locate, control: { role, ...(options.in ? { in: options.in } : {}) } });
 
 async function describeTarget(control: Locator): Promise<string> {
   return control.evaluate(describeElement);
+}
+
+/**
+ * Runs in the page: the ARIA role an element carries, as react-native-web renders the kit's
+ * controls: its `role`, or the one its tag implies (a text field's input or textarea, a link's
+ * anchor, a button); null for none.
+ */
+function roleOf(el: Element): string | null {
+  const explicit = el.getAttribute("role");
+  if (explicit) return explicit.trim().split(/\s+/)[0]!;
+  if (el.localName === "textarea") return "textbox";
+  if (el.localName === "input") return ["password", "hidden", "checkbox", "radio", "range", "button", "submit"].includes((el as HTMLInputElement).type) ? null : "textbox";
+  if (el.localName === "a" && el.hasAttribute("href")) return "link";
+  if (el.localName === "button") return "button";
+  return null;
+}
+
+/**
+ * Why the element a state landed on is not the recipe's control, or null when it is: its role
+ * must be the control's (`ControlSpec.role`), and none for a control with none.
+ */
+async function controlMismatch(node: Locator | ElementHandle<Element>, control: ControlSpec | undefined): Promise<string | null> {
+  if (!control) return null;
+  const role = await (node as Locator).evaluate(roleOf);
+  const expected = control.role ?? null;
+  if (role === expected) return null;
+  const what = await (node as Locator).evaluate(describeElement);
+  return `${what} ${role ? `is a ${role}` : "has no role"}, not the component's own control${expected ? ` (a ${expected})` : " (an element with no role)"}${control.in ? ` in ${control.in}` : ""}`;
 }
 
 /** The node is there and has a box, or the reason it does not. */
@@ -425,6 +510,7 @@ function hover(variant: string, target: Target, options: { within?: OpenSpec; ho
     widths: DESKTOP,
     frame: within ? "viewport" : "row",
     ...insideOf(within),
+    control: target.control,
     how: options.how ?? "the pointer moves onto the control and rests there",
     async apply(scene) {
       let scope = scene.row;
@@ -435,7 +521,7 @@ function hover(variant: string, target: Target, options: { within?: OpenSpec; ho
         if (!verdict.reached) return { missing: `the overlay the hover is read in did not open: ${verdict.reason}`, opened };
         scope = verdict.panel!;
       }
-      const control = target(scope);
+      const control = target.locate(scope);
       const missing = await presence(control, "control to hover");
       if (missing) return { missing, opened };
       await scene.page.mouse.move(NEUTRAL_POINT.x, NEUTRAL_POINT.y);
@@ -448,6 +534,8 @@ function hover(variant: string, target: Target, options: { within?: OpenSpec; ho
       const now = await settledStyles(applied.control);
       const { changes, structure } = diffStyles(applied.rest, now);
       const evidence = { control: await describeTarget(applied.control), changes: changes.slice(0, 40), structure };
+      const other = await controlMismatch(applied.control, target.control);
+      if (other) return notReached(`the pointer rests on ${other}`, evidence);
       if (!changes.some((change) => HOVER_PROPERTIES.has(change.property))) {
         return notReached(
           `the pointer on ${evidence.control} changed none of ${[...HOVER_PROPERTIES].join(", ")} on the control, its contents or its wrappers up to the row` +
@@ -623,15 +711,30 @@ interface FocusOptions {
   within?: OpenSpec;
   /**
    * The widths the control is a tab stop at, when not the desktop: a scroll region is one
-   * only where its content overflows (the calendar Heatmap's, below `sm`).
+   * only where its content overflows (the calendar Heatmap's, below `sm`), and a control
+   * inside a drawer is there only where the drawer is (FilterPanel's, at a phone's width).
    */
   widths?: readonly WidthKey[];
+  /**
+   * The keys that move focus onto the control from where the overlay put it, in place of the
+   * Tab key: a menu or a list moves focus among its rows with the arrow keys (the WAI-ARIA
+   * menu and listbox patterns), and puts it on a row as it opens, so ArrowDown lands on the
+   * next.
+   */
+  keys?: readonly string[];
+  /**
+   * A control pressed first, whose press shows the control: DescriptionList's Update link
+   * swaps the row's value for its field.
+   */
+  reveal?: Target;
 }
 
 /**
  * The Tab key lands on the control from the tab stop before it, as a keyboard user
- * reaches it. Reached when focus is on (or inside) the control and matches
- * :focus-visible; the ring is then found and checked in the pixels on every side.
+ * reaches it (or, inside a menu or a list, the arrow keys, `FocusOptions.keys`). Reached
+ * when focus is on (or inside) the control, is the control the recipe names
+ * (`StateRecipe.control`), and matches :focus-visible; the ring is then found and checked in
+ * the pixels on every side.
  */
 function focus(variant: string, target: Target, options: FocusOptions = {}): StateRecipe {
   const { within } = options;
@@ -642,7 +745,14 @@ function focus(variant: string, target: Target, options: FocusOptions = {}): Sta
     widths: options.widths ?? DESKTOP,
     frame: within ? "viewport" : "row",
     ...insideOf(within),
-    how: options.how ?? (within ? "the overlay opens, then Tab from the tab stop before the control in it" : "Tab from the tab stop before the control"),
+    control: target.control,
+    how:
+      options.how ??
+      (within
+        ? options.keys
+          ? `the overlay opens, then ${options.keys.join(", ")} moves focus onto the control in it`
+          : "the overlay opens, then Tab from the tab stop before the control in it"
+        : "Tab from the tab stop before the control"),
     async apply(scene) {
       let scope = scene.row;
       let opened: Opened | undefined;
@@ -652,9 +762,22 @@ function focus(variant: string, target: Target, options: FocusOptions = {}): Sta
         if (!verdict.reached) return { missing: `the overlay the focus is read in did not open: ${verdict.reason}`, opened };
         scope = verdict.panel!;
       }
-      const control = target(scope);
+      if (options.reveal) {
+        const reveal = options.reveal.locate(scope);
+        const hidden = await presence(reveal, "control that shows the control to focus");
+        if (hidden) return { missing: hidden, opened };
+        await reveal.click();
+      }
+      const control = target.locate(scope);
       const missing = await presence(control, "control to focus");
       if (missing) return { missing, opened };
+      if (options.keys) {
+        // The overlay has put focus on its first row; the keys move it, and the edges are
+        // remembered before they do, so verify can tell which node the move changed.
+        await scope.evaluate(rememberEdges, EDGES_KEY);
+        for (const key of options.keys) await scene.page.keyboard.press(key);
+        return { control, scope, from: `${options.keys.join(", ")} from where the overlay put focus`, expected: await describeTarget(control), opened };
+      }
       const before = await control.evaluate(focusTabStopBefore);
       if ("missing" in before) return { ...before, opened };
       // How the scope draws its edges with focus on the stop before, so verify can tell
@@ -669,6 +792,11 @@ function focus(variant: string, target: Target, options: FocusOptions = {}): Sta
       const evidence: Record<string, unknown> = { from: applied.from ?? "the start of the page", expected: applied.expected, active: state.active, focusVisible: state.visible };
       if (!state.inside) return notReached(`Tab from ${applied.from ?? "the start of the page"} moved focus to ${state.active}, not into the control (${applied.expected})`, evidence);
       if (!state.visible) return notReached(`${state.active} took focus from the Tab key but does not match :focus-visible`, evidence);
+      const active = await scene.page.evaluateHandle(() => document.activeElement);
+      const focused = active.asElement();
+      const other = focused ? await controlMismatch(focused, target.control) : "nothing";
+      await active.dispose();
+      if (other) return notReached(`the Tab key focused ${other}`, evidence);
       // The ring is checked where the control is on screen. The card is fitted and centred
       // before the Tab, so the control is in view unless the Tab scrolled it; only then is it
       // brought back, since scrolling the page under something the focus opened in the
@@ -872,10 +1000,12 @@ interface PressOptions {
    * drag; a press that does not move changes nothing there.
    */
   release?: "move-off" | "in-place";
-  /** Where the pointer goes down, when not on the control itself (a slider's thumb inside the slider). */
+  /** Where the pointer goes down, when not on the control itself (a slider's thumb inside the slider); the control is still the one the state is read on. */
   at?: Target;
   /** An overlay opened first: the control is found and pressed inside it, and it is closed after. */
   within?: OpenSpec;
+  /** The widths the control is there at, when not the desktop: inside a drawer a panel becomes only at a phone's width. */
+  widths?: readonly WidthKey[];
 }
 
 /**
@@ -901,9 +1031,10 @@ function pressed(variant: string, target: Target, options: PressOptions = {}): S
     state: "pressed",
     variant,
     rows: ["web"],
-    widths: DESKTOP,
+    widths: options.widths ?? DESKTOP,
     frame: within ? "viewport" : "row",
     ...insideOf(within),
+    control: target.control,
     how: options.how ?? (within ? "the overlay opens, then the pointer goes down on the control in it and is held" : "the pointer goes down on the control and is held"),
     async apply(scene) {
       const { page } = scene;
@@ -915,7 +1046,7 @@ function pressed(variant: string, target: Target, options: PressOptions = {}): S
         if (!verdict.reached) return { missing: `the overlay the press is made in did not open: ${verdict.reason}`, opened };
         scope = verdict.panel!;
       }
-      const control = target(scope);
+      const control = target.locate(scope);
       const missing = await presence(control, "control to press");
       if (missing) return { missing, opened };
       // The element pressed, pinned: the release measures this node, even when the press
@@ -923,7 +1054,7 @@ function pressed(variant: string, target: Target, options: PressOptions = {}): S
       const pinned = (await control.elementHandle())!;
       await page.mouse.move(NEUTRAL_POINT.x, NEUTRAL_POINT.y);
       const before = await pressRecord(page, scope, pinned);
-      const point = await middleOf(options.at ? options.at(scope) : control);
+      const point = await middleOf(options.at ? options.at.locate(scope) : control);
       if (!point) return { missing: "the place to press has no box", opened };
       await page.mouse.move(point.x, point.y);
       const hovered = await settledStyles(pinned);
@@ -937,6 +1068,8 @@ function pressed(variant: string, target: Target, options: PressOptions = {}): S
       const { changes, structure } = diffStyles(applied.hovered, now);
       const hover = [...new Set(diffStyles(applied.rest, applied.hovered).changes.map((c) => c.property))];
       const evidence = { control: await describeTarget(applied.control), changes: changes.slice(0, 40), structure, hoverChanged: hover };
+      const other = await controlMismatch(applied.pinned, target.control);
+      if (other) return notReached(`the pointer is held down on ${other}`, evidence);
       if (!changes.length && !structure) {
         return notReached(
           `holding the pointer down on ${evidence.control} changed no watched style against the hovered control` +
@@ -1095,6 +1228,11 @@ interface InspectOptions {
   /** Texts the inspection must add (a flag's title and value); without them any added text or repainted mark is enough. */
   expect?: readonly string[];
   how: string;
+  /**
+   * The control under the point (`StateRecipe.control`): a chart's own scrub surface or hit
+   * layer, which carries no role. The point is on the plot, so the capture does not read it back.
+   */
+  control?: ControlSpec;
 }
 
 /** Reached when the chart, against how it looked with the pointer away, shows text it did not (a value flag, a readout) or repaints its marks (the others dimmed). */
@@ -1146,6 +1284,7 @@ function inspect(variant: string, where: PlotPoint, options: InspectOptions): St
     rows: ["web"],
     widths: DESKTOP,
     frame: "row",
+    control: options.control ?? {},
     how: options.how,
     async apply(scene) {
       const { page } = scene;
@@ -1186,13 +1325,14 @@ function inspect(variant: string, where: PlotPoint, options: InspectOptions): St
  * resting pointer (a heatmap's day). Reached as `inspect` is; released by moving off,
  * which must leave the row as it was (`inspection-not-cleared` otherwise).
  */
-function hoverInspect(variant: string, where: PlotPoint, options: { expect?: readonly string[]; how: string }): StateRecipe {
+function hoverInspect(variant: string, where: PlotPoint, options: { expect?: readonly string[]; how: string; control?: ControlSpec }): StateRecipe {
   return recipe<Inspected>({
     state: "hover",
     variant,
     rows: ["web"],
     widths: DESKTOP,
     frame: "row",
+    control: options.control ?? {},
     how: options.how,
     async apply(scene) {
       const { page } = scene;
@@ -1251,6 +1391,11 @@ export interface OpenSpec {
   close?: (page: Page, scope: Locator) => Promise<void>;
   /** The overlay it opens, as the source names the function that renders it (`StateRecipe.opens`), for a component that renders more than one. */
   opens?: string;
+  /**
+   * For an opening a resting pointer makes, captured as the hover of the control it rests on
+   * (`hoverOpen`, the Calendar's event block): that control (`StateRecipe.control`).
+   */
+  control?: ControlSpec;
 }
 
 type Opened = { before: number; said: string[]; expanded: string | null } | { missing: string };
@@ -1494,7 +1639,7 @@ function open(variant: string, spec: OpenSpec, rows: readonly RowPlatform[], how
  * the card draws in it, against the viewport when it is placed against the window. Its
  * capture is the card open, so it also answers the opening of that overlay.
  */
-function hoverOpen(variant: string, spec: OpenSpec, how: string): StateRecipe {
+function hoverOpen(variant: string, spec: OpenSpec & { control: ControlSpec }, how: string): StateRecipe {
   return recipe<Opened>({
     state: "hover",
     variant,
@@ -1504,8 +1649,14 @@ function hoverOpen(variant: string, spec: OpenSpec, how: string): StateRecipe {
     how,
     alsoAnswers: ["open"],
     ...(spec.opens ? { opens: spec.opens } : {}),
+    control: spec.control,
     apply: (scene) => openApply(spec, scene),
-    verify: (scene, opened) => openVerify(spec, scene, opened),
+    async verify(scene, opened) {
+      const verdict = await openVerify(spec, scene, opened);
+      if (!verdict.reached) return verdict;
+      const other = await controlMismatch(spec.trigger(scene.page, scene.row), spec.control);
+      return other ? notReached(`the pointer rests on ${other}`, verdict.evidence) : verdict;
+    },
     release: (scene, opened) => openClose(spec, scene, opened),
   });
 }
@@ -1546,7 +1697,7 @@ function invalid(variant: string, target: Target, options: { type?: string; how?
     frame: "row",
     how: options.how ?? "the example that shows the control's error",
     async apply(scene) {
-      const control = target(scene.row);
+      const control = target.locate(scene.row);
       const missing = await presence(control, "field");
       if (missing) return { missing };
       if (options.type === undefined) return { control, typed: null };
@@ -1601,6 +1752,7 @@ function disabled(variant: string, target: Target, options: { within?: OpenSpec;
     widths: DESKTOP,
     frame: within ? "viewport" : "row",
     ...insideOf(within),
+    control: target.control,
     how: options.how ?? (within ? "the overlay opens, then the control the example disables in it" : "the example that disables the control"),
     async apply(scene) {
       let scope = scene.row;
@@ -1611,7 +1763,7 @@ function disabled(variant: string, target: Target, options: { within?: OpenSpec;
         if (!verdict.reached) return { missing: `the overlay the disabled control is in did not open: ${verdict.reason}`, opened };
         scope = verdict.panel!;
       }
-      const control = target(scope);
+      const control = target.locate(scope);
       const missing = await presence(control, `control the example disables${within ? " in the overlay" : ""}`);
       return missing ? { missing, opened } : { control, opened, ...(within ? { panel: scope } : {}) };
     },
@@ -1619,6 +1771,8 @@ function disabled(variant: string, target: Target, options: { within?: OpenSpec;
       if ("missing" in applied) return notReached(applied.missing);
       const read = await applied.control.evaluate(readDisabled);
       const evidence = { control: await describeTarget(applied.control), ...read };
+      const other = await controlMismatch(applied.control, target.control);
+      if (other) return notReached(`the control the example disables is ${other}`, evidence);
       if (read.ariaDisabled !== "true" && !read.nativeDisabled) {
         return notReached(`${evidence.control} carries neither aria-disabled="true" nor a native disabled${read.readOnly ? " (it is read-only)" : ""}`, evidence);
       }
@@ -1779,7 +1933,7 @@ const SPLIT_MENU_OPEN: OpenSpec = {
  * the hours, which nothing else on the page shows), and the page is never scrolled under the
  * resting pointer.
  */
-const CALENDAR_HOVER_CARD: OpenSpec = {
+const CALENDAR_HOVER_CARD: OpenSpec & { control: ControlSpec } = {
   open: async (page, scope) => {
     await restOn(page, scope.getByLabel(/^Design review,/).last());
   },
@@ -1791,6 +1945,8 @@ const CALENDAR_HOVER_CARD: OpenSpec = {
     await page.mouse.move(NEUTRAL_POINT.x, NEUTRAL_POINT.y);
   },
   opens: "hoverCard",
+  // The event block: a button only with `onEventPress`, which the Week example does not pass.
+  control: { in: "eventLayer" },
 };
 
 /** The Calendar's day peek: a press on a day with events opens its timeline beside it, a card with no role, found by its title. */
@@ -1851,7 +2007,7 @@ export const STATE_RECIPES: Record<string, ComponentStates> = {
   pressable: {
     focus: focus("default", firstTabStop),
     pressed: pressed("opacity", firstTabStop),
-    disabled: disabled("disabled", (row) => row.locator("[aria-disabled]").first()),
+    disabled: disabled("disabled", bySelector("[aria-disabled]")),
   },
   image: { static: true, reason: "An image: it takes no input." },
   "text-input": {
@@ -1868,16 +2024,24 @@ export const STATE_RECIPES: Record<string, ComponentStates> = {
   emblem: { static: true, reason: "A decorative identity mark: it takes no input." },
   autocomplete: {
     focus: focus("default", byRole("combobox")),
-    pressed: pressed("default", byRole("option", "Ada Lovelace"), { within: overlay("autocomplete"), how: "the list opens (a click and a typed letter), then the pointer goes down on its first option and is held" }),
+    // Pressed on its own surface (the chevron that toggles the list) and inside the list it opens.
+    pressed: [
+      pressed("default", byRole("button", "Toggle options")),
+      pressed("requiredfield", byRole("option", "Ada Lovelace"), { within: overlay("autocomplete"), how: "the list opens (a click and a typed letter), then the pointer goes down on its first option and is held" }),
+    ],
     open: open("default", overlay("autocomplete"), ALL_ROWS, `${viaRecipe("autocomplete")}: the field takes a click and a typed letter`),
     disabled: disabled("disabled", byRole("combobox")),
   },
   avatar: {
-    hover: hover("accountmenu", byRole("button", /^Rachel Chen,/), { how: "the pointer rests on the AvatarMenu pill" }),
-    focus: focus("accountmenu", byRole("button", /^Rachel Chen,/)),
-    pressed: pressed("accountmenu", byRole("button", /^Rachel Chen,/)),
+    // The pill is AvatarMenu's own hover target; the button around it is the Dropdown's custom
+    // trigger, whose focus and press are Dropdown's (its Custom trigger recipes).
+    hover: hover("accountmenu", inside(byRole("button", /^Rachel Chen,/), ":scope > div", { in: "AvatarMenu" }), { how: "the pointer rests on the AvatarMenu pill" }),
     open: open("accountmenu", AVATAR_MENU_OPEN, ALL_ROWS, "a click on the AvatarMenu pill, from the row"),
     disabled: disabled("disabledmenu", byRole("button", /^Ada Lovelace,/)),
+    exempt: {
+      focus: unpassed("`onPress` makes the Avatar a button, a tab stop; no rail example passes it (the AvatarMenu pill's button is the Dropdown's custom trigger).", "onPress"),
+      pressed: unpassed("`onPress` makes the Avatar a button; no rail example passes it (the AvatarMenu pill's button is the Dropdown's custom trigger).", "onPress"),
+    },
   },
   badge: { static: true, reason: "A status label: it takes no input." },
   breadcrumb: {
@@ -1885,8 +2049,14 @@ export const STATE_RECIPES: Record<string, ComponentStates> = {
     pressed: pressed("default", byRole("link", "Projects")),
   },
   "button-group": {
-    focus: focus("default", byRole("tablist")),
-    pressed: pressed("default", byRole("tab", "Week")),
+    focus: [
+      focus("default", stopIn(byRole("tablist"), "tab")),
+      focus("split", byRole("menuitem", "Save and close"), { within: SPLIT_MENU_OPEN, how: "the split menu opens from its chevron, then Tab from the tab stop before its second item" }),
+    ],
+    pressed: [
+      pressed("default", byRole("tab", "Week")),
+      pressed("split", byRole("menuitem", "Save as draft"), { within: SPLIT_MENU_OPEN, how: "the split menu opens from its chevron, then the pointer goes down on its first item and is held" }),
+    ],
     // The split button's chevron opens its overflow menu (an AnchoredOverlay).
     open: open("split", SPLIT_MENU_OPEN, ALL_ROWS, "a click on the Split example's chevron (More actions), from the row"),
     disabled: disabled("disabled", byRole("tab", "Day")),
@@ -1905,8 +2075,16 @@ export const STATE_RECIPES: Record<string, ComponentStates> = {
   divider: { static: true, reason: "A separator: it takes no input (the Action example's control is a Button, whose states the button recipes capture)." },
   dropdown: {
     hover: hover("default", byRole("menuitem"), { within: overlay("dropdown"), how: "the menu opens, then the pointer rests on its first item" }),
-    focus: focus("default", byRole("button", "Actions")),
-    pressed: pressed("default", byRole("button", "Actions")),
+    // The default trigger is a kit Button (its focus and press are Button's); Dropdown's own
+    // are the Custom trigger example's button, and the rows of the menu it opens.
+    focus: [
+      focus("customtrigger", byRole("button")),
+      focus("default", byRole("menuitem", "Duplicate"), { within: overlay("dropdown"), keys: ["ArrowDown"] }),
+    ],
+    pressed: [
+      pressed("customtrigger", byRole("button")),
+      pressed("default", byRole("menuitem", "Duplicate"), { within: overlay("dropdown") }),
+    ],
     open: open("default", overlay("dropdown"), ALL_ROWS, viaRecipe("dropdown")),
     // Disabled in two places: the trigger, and an item inside the menu it opens.
     disabled: [
@@ -1928,7 +2106,7 @@ export const STATE_RECIPES: Record<string, ComponentStates> = {
   kbd: { static: true, reason: "A keycap: it takes no input (the In a button example's control is a Button, whose states the button recipes capture)." },
   listbox: {
     hover: hover("default", byRole("option", "Frontend")),
-    focus: focus("default", byRole("listbox")),
+    focus: focus("default", stopIn(byRole("listbox"), "option")),
     pressed: pressed("default", byRole("option", "Frontend")),
     disabled: disabled("disabled", byRole("option", "Backend")),
   },
@@ -1950,13 +2128,19 @@ export const STATE_RECIPES: Record<string, ComponentStates> = {
   progress: { static: true, reason: "A meter: it shows a value and takes no input." },
   qrcode: { static: true, reason: "A code image: it takes no input." },
   radio: {
-    focus: focus("default", byRole("radiogroup")),
+    focus: focus("default", stopIn(byRole("radiogroup"), "radio")),
     pressed: pressed("default", byRole("radio", "Hobby")),
   },
   reveal: { static: true, reason: "An entrance transition around its content: it takes no input." },
   select: {
-    focus: focus("default", byRole("button", "Country")),
-    pressed: pressed("default", byRole("button", "Country")),
+    focus: [
+      focus("default", byRole("button", "Country")),
+      focus("requiredfield", byRole("option", "Canada"), { within: overlay("select") }),
+    ],
+    pressed: [
+      pressed("default", byRole("button", "Country")),
+      pressed("requiredfield", byRole("option", "Canada"), { within: overlay("select") }),
+    ],
     open: open("default", overlay("select"), ALL_ROWS, viaRecipe("select")),
     disabled: disabled("disabled", byRole("button", "Country")),
   },
@@ -1967,7 +2151,7 @@ export const STATE_RECIPES: Record<string, ComponentStates> = {
     // PanResponder). The pointer goes down on the thumb itself, so the value stays, and comes
     // up there: moving off while held would drag it.
     pressed: pressed("default", byRole("slider"), {
-      at: (scope) => scope.getByRole("slider").first().locator(":scope > *").last(),
+      at: inside(byRole("slider"), ":scope > *:last-child"),
       release: "in-place",
       how: "the pointer goes down on the slider's thumb and is held",
     }),
@@ -1988,7 +2172,8 @@ export const STATE_RECIPES: Record<string, ComponentStates> = {
   tooltip: {
     // Its hover is its open recipe's: the pointer resting on the trigger opens the bubble
     // (the examples whose trigger is its own pin the bubble open, so a hover changes nothing there).
-    focus: focus("onhover", byRole("button", "Hover me")),
+    // The On hover example's trigger is a kit Button; Tooltip's own are the icon and text triggers.
+    focus: focus("icon", byRole("button", "Open settings")),
     // The icon trigger is the tooltip's own pressable (`iconTrigger`), pinned open in its example.
     pressed: pressed("icon", byRole("button", "Open settings")),
     open: open("onhover", TOOLTIP_OPEN, ALL_ROWS, "the pointer rests on the On hover example's trigger, in the row"),
@@ -2016,8 +2201,8 @@ export const STATE_RECIPES: Record<string, ComponentStates> = {
     disabled: disabled("disabledrow", byRole("button", /^Advanced/)),
   },
   "action-panels": {
-    focus: focus("default", byRole("button", "Export")),
-    pressed: pressed("default", byRole("button", "Export")),
+    static: true,
+    reason: "A panel of text beside its actions: its controls are kit Buttons, Switches and fields, whose own recipes capture them.",
   },
   alert: {
     focus: focus("dismissible", byRole("button", "Dismiss")),
@@ -2045,11 +2230,11 @@ export const STATE_RECIPES: Record<string, ComponentStates> = {
     disabled: disabled("disabled", byRole("button", /^Advanced settings/)),
   },
   "description-lists": {
-    focus: focus("inlineedit", byRole("button", "Update Name")),
-    pressed: pressed("inlineedit", byRole("button", "Update Name")),
+    // Its own control is the inline-edit field its Update link (a kit Button) swaps in.
+    focus: focus("inlineedit", byRole("textbox", "Name value"), { reveal: byRole("button", "Update Name"), how: "the Update link swaps the Name row's value for its field, then Tab from the tab stop before the field" }),
   },
   field: {
-    focus: focus("default", byRole("textbox", "Email")),
+    // Its field is a kit Input, whose focus the input recipes capture; the error is Field's.
     invalid: invalid("error", byRole("textbox", "Email")),
   },
   "empty-state": { static: true, reason: "A message block: it takes no input (the Action example's control is a Button, whose states the button recipes capture)." },
@@ -2066,20 +2251,34 @@ export const STATE_RECIPES: Record<string, ComponentStates> = {
     },
   },
   form: {
-    focus: focus("default", byRole("textbox", "Email")),
+    // Its fields are kit Inputs, whose focus the input recipes capture; the errors are Form's.
     invalid: invalid("creditcardwitherrors", byRole("textbox", "Card Number")),
   },
   "grid-lists": {
-    focus: focus("tappable", byRole("button", /^RC/)),
-    pressed: pressed("tappable", byRole("button", /^RC/)),
+    static: true,
+    reason: "A grid of tiles: the Tappable example's tiles are kit Cards, whose own recipes capture them.",
+    exempt: {
+      focus: unpassed(
+        "A gallery tile is a button only with `onPressItem`, and the list a tab stop only when `virtualized` scrolls; the Gallery example passes neither, and the Tappable example's tiles are kit Cards.",
+        "onPressItem",
+        "virtualized",
+      ),
+      pressed: unpassed("A gallery tile is a button only with `onPressItem`; the Gallery example does not pass it, and the Tappable example's tiles are kit Cards.", "onPressItem"),
+    },
   },
   "media-objects": {
     focus: focus("tappable", byRole("button", "Rachel Chen")),
     pressed: pressed("tappable", byRole("button", "Rachel Chen")),
   },
   "phone-input": {
-    focus: focus("default", byRole("textbox", "Phone number")),
-    pressed: pressed("default", byRole("button", /^Country,/)),
+    focus: [
+      focus("default", byRole("textbox", "Phone number")),
+      focus("prefilled", byRole("option", /^Canada/), { within: PHONE_INPUT_RECIPE }),
+    ],
+    pressed: [
+      pressed("default", byRole("button", /^Country,/)),
+      pressed("prefilled", byRole("option", /^Canada/), { within: PHONE_INPUT_RECIPE }),
+    ],
     open: open("default", PHONE_INPUT_RECIPE, ALL_ROWS, "overlay-recipes.ts' PHONE_INPUT_RECIPE (the country segment), from the row"),
     invalid: invalid("error", byRole("textbox", "Phone number")),
     disabled: disabled("disabled", byRole("button", /^Country,/)),
@@ -2110,23 +2309,41 @@ export const STATE_RECIPES: Record<string, ComponentStates> = {
   calendar: {
     // A pointer resting on a timed event floats its detail card (the Week example's Design review).
     hover: hoverOpen("week", CALENDAR_HOVER_CARD, "the pointer rests on the Week example's Design review block, which floats its detail card"),
-    focus: focus("default", byRole("button", /^1(?:,|$)/)),
+    focus: [
+      focus("default", byRole("button", /^1(?:,|$)/)),
+      // The day peek's own timeline: its event blocks are tab stops (no hover, `eventLayer(..., false)`).
+      focus("daypeek", byLabel(/^Sprint planning,/, { in: "eventLayer" }), { within: CALENDAR_DAY_PEEK, how: "the day peek opens on the 24th, then Tab from the tab stop before its Sprint planning block" }),
+    ],
     pressed: pressed("default", byRole("button", /^2(?:,|$)/)),
     open: open("daypeek", CALENDAR_DAY_PEEK, ALL_ROWS, "a click on the Day peek example's 24th, which opens the day's timeline beside it, from the row"),
+    exempt: {
+      pressed: unpassed("An event block takes a press only with `onEventPress`, the day peek's included; no rail example passes it.", "onEventPress"),
+    },
   },
   carousel: {
     focus: focus("default", byRole("button", "Next slide")),
     pressed: pressed("default", byRole("button", "Next slide")),
   },
   command: {
-    // Its rows take the active highlight under a resting pointer (onHoverIn); the first is active already.
-    hover: hover("default", byRole("option", /^Open File/), { within: overlay("command"), how: "the palette opens, then the pointer rests on its second row" }),
-    focus: focus("default", byRole("button", /^Search/)),
-    pressed: pressed("default", byRole("button", /^Search/)),
+    // Its rows take the active highlight under a resting pointer (onHoverIn); the first is active
+    // already. They do inline and in the palette its Search trigger opens.
+    hover: [
+      hover("default", byRole("option", /^Open File/), { within: overlay("command"), how: "the palette opens, then the pointer rests on its second row" }),
+      hover("inline", byRole("option", /^Open File/), { how: "the pointer rests on the Inline example's second row" }),
+    ],
+    focus: [
+      focus("default", byRole("button", /^Search/)),
+      focus("default", byRole("option", /^Open File/), { within: overlay("command"), how: "the palette opens, then Tab from the tab stop before its second row" }),
+    ],
+    pressed: [
+      pressed("default", byRole("button", /^Search/)),
+      pressed("default", byRole("option", /^Open File/), { within: overlay("command"), how: "the palette opens, then the pointer goes down on its second row and is held" }),
+    ],
     open: open("default", overlay("command"), ALL_ROWS, viaRecipe("command")),
   },
   "dashboard-grid": {
-    focus: focus("customizemode", byRole("button", /^Reorder /)),
+    static: true,
+    reason: "A layout of tiles: in customize mode its reorder grips are a kit DragDrop's, whose own recipes capture them.",
   },
   "data-table": {
     focus: focus("sortable", byRole("columnheader", /^Email/)),
@@ -2154,8 +2371,16 @@ export const STATE_RECIPES: Record<string, ComponentStates> = {
     },
   },
   "filter-panel": {
-    focus: focus("default", byRole("button", "Clear")),
-    pressed: pressed("default", byRole("checkbox", /^Active/)),
+    // Its own controls are the option rows, on the panel and inside the drawer it becomes at a
+    // phone's width; the header's Clear is a kit Button.
+    focus: [
+      focus("default", byRole("checkbox", /^Pending/)),
+      focus("responsivedrawer", byRole("checkbox", /^Archived/), { within: FILTER_DRAWER_OPEN, widths: widthsAtOrBelow("sm"), how: "the Filters (1) trigger opens the drawer, then Tab from the tab stop before its Archived row" }),
+    ],
+    pressed: [
+      pressed("default", byRole("checkbox", /^Active/)),
+      pressed("responsivedrawer", byRole("checkbox", /^Active/), { within: FILTER_DRAWER_OPEN, widths: widthsAtOrBelow("sm"), how: "the Filters (1) trigger opens the drawer, then the pointer goes down on its Active row and is held" }),
+    ],
     // `responsive` collapses the panel to its Filters (n) trigger and a drawer at and below `drawerBreakpoint` (sm by default).
     open: open("responsivedrawer", FILTER_DRAWER_OPEN, ALL_ROWS, "a click on the Responsive drawer example's Filters (1) trigger, from the row", widthsAtOrBelow("sm")),
   },
@@ -2173,9 +2398,19 @@ export const STATE_RECIPES: Record<string, ComponentStates> = {
     open: open("default", SIDEBAR_DRAWER_OPEN, ["web"], "a click on the Usage example's Open menu hamburger, from the row", widthsAtOrBelow("lg")),
   },
   "row-menu": {
-    hover: hover("default", byRole("button", "More options")),
-    focus: focus("default", byRole("button", "More options")),
-    pressed: pressed("default", byRole("button", "More options")),
+    // Its trigger, and the rows of the menu it opens.
+    hover: [
+      hover("default", byRole("button", "More options")),
+      hover("sectionlabel", byRole("menuitem", "Duplicate"), { within: overlay("row-menu"), how: "the menu opens, then the pointer rests on its Duplicate row" }),
+    ],
+    focus: [
+      focus("default", byRole("button", "More options")),
+      focus("sectionlabel", byRole("menuitem", "Duplicate"), { within: overlay("row-menu") }),
+    ],
+    pressed: [
+      pressed("default", byRole("button", "More options")),
+      pressed("sectionlabel", byRole("menuitem", "Duplicate"), { within: overlay("row-menu") }),
+    ],
     open: open("default", overlay("row-menu"), ALL_ROWS, viaRecipe("row-menu")),
     disabled: disabled("disableditem", byRole("menuitem", "Clear column"), { within: overlay("row-menu"), how: "the menu opens, then its Clear column item, which the example disables" }),
   },
@@ -2188,18 +2423,25 @@ export const STATE_RECIPES: Record<string, ComponentStates> = {
     },
   },
   "tab-bar": {
-    focus: focus("default", byRole("tablist")),
+    focus: focus("default", stopIn(byRole("tablist"), "tab")),
     pressed: pressed("default", byRole("tab", "Search")),
   },
   tabs: {
-    focus: focus("default", byRole("tablist")),
+    focus: focus("default", stopIn(byRole("tablist"), "tab")),
     pressed: pressed("default", byRole("tab", "Security")),
     disabled: disabled("disabledtab", byRole("tab", "Billing")),
   },
   toast: {
-    // The With an action example renders its toast in the row, with its action button.
-    focus: focus("withanaction", byRole("button", "Undo")),
-    pressed: pressed("withanaction", byRole("button", "Undo")),
+    // The With an action example renders its toast in the row, with its action button; the
+    // provider's toast (the Usage example's Show toast) carries a Dismiss.
+    focus: [
+      focus("withanaction", byRole("button", "Undo")),
+      focus("default", byRole("button", "Dismiss"), { within: TOAST_OPEN, how: "Show toast raises a toast, then Tab from the tab stop before its Dismiss" }),
+    ],
+    pressed: [
+      pressed("withanaction", byRole("button", "Undo")),
+      pressed("default", byRole("button", "Dismiss"), { within: TOAST_OPEN, how: "Show toast raises a toast, then the pointer goes down on its Dismiss and is held" }),
+    ],
     // The iOS build is the web one (the docs registry injects no iOS Toast).
     open: open("default", TOAST_OPEN, ["web", "android"], "overlay-recipes.ts' TOAST_RECIPE (Show toast), from the row"),
   },
@@ -2283,8 +2525,9 @@ export const STATE_RECIPES: Record<string, ComponentStates> = {
     pressed: inspect("default", { text: "Media" }, { mode: "click", expect: ["Media", "620"], how: "press-to-inspect: a press on the Media tile" }),
   },
   "geo-map": {
-    focus: focus("zoomable", byRole("button", "Zoom in")),
-    pressed: pressed("zoomable", byRole("button", "Zoom in")),
+    // The zoomable map itself takes focus; its zoom buttons are kit Buttons it disables at the ends.
+    focus: focus("zoomable", byRole("img", /^Sessions by city/)),
+    pressed: inspect("default", { mark: "svg circle", index: 0 }, { mode: "click", how: "press-to-inspect: a press on the first bubble (the hit layer finds the bubble under the point); the others dim" }),
     disabled: disabled("zoomable", byRole("button", "Zoom out")),
   },
 };
@@ -2300,17 +2543,22 @@ export function recipesOf(slug: string): StateRecipe[] {
  * A recipe's name among its component's, which names its cells (tools/audit/web-capture.ts
  * `stateCellId`): its state, or, for a state the component has more than one recipe of (a
  * Dropdown disabled on its trigger and on an item inside its menu), `<state>-<variant>`,
- * named for the example each is applied to.
+ * named for the example each is applied to; and `<state>-<variant>-inside` for the one
+ * applied inside the overlay its example opens, beside one on that example's own surface
+ * (Command's focus on its Search trigger, and on a row of the palette the trigger opens).
+ * `siblings` are the component's recipes of the same state, the recipe among them.
  */
-export function recipeName(recipe: Pick<StateRecipe, "state" | "variant">, several: boolean): string {
-  return several ? `${recipe.state}-${recipe.variant}` : recipe.state;
+export function recipeName(recipe: Pick<StateRecipe, "state" | "variant" | "inOverlay">, siblings: readonly Pick<StateRecipe, "variant" | "inOverlay">[]): string {
+  if (siblings.length <= 1) return recipe.state;
+  const beside = siblings.some((other) => other !== recipe && other.variant === recipe.variant && !other.inOverlay);
+  return `${recipe.state}-${recipe.variant}${recipe.inOverlay && beside ? "-inside" : ""}`;
 }
 
 /** An entry's recipes in capture order, each with its name (`recipeName`). */
 export function namedRecipes(entry: ComponentStates): { name: string; recipe: StateRecipe }[] {
   return STATE_NAMES.flatMap((state) => {
     const recipes = recipesIn(entry, state);
-    return recipes.map((recipe) => ({ name: recipeName(recipe, recipes.length > 1), recipe }));
+    return recipes.map((recipe) => ({ name: recipeName(recipe, recipes), recipe }));
   });
 }
 
@@ -2331,8 +2579,9 @@ export function stateSpecsOf(slug: string): { name: string; state: StateName; va
  * registry does not list, a static entry with no reason or with recipes beside it, an entry
  * with neither recipes nor `static`, a recipe filed under another state's key, a recipe
  * naming an example its page does not have (`examplesOf` gives a page's variant keys, null
- * for a slug with no page), or two recipes of one state on the same example, whose cells
- * would share a name. Empty when the table is whole.
+ * for a slug with no page), or two recipes of one state on the same example and in the same
+ * place (its surface, or inside the overlay it opens), whose cells would share a name. Empty
+ * when the table is whole.
  */
 export function checkStateTable(
   registry: readonly string[],
@@ -2360,8 +2609,9 @@ export function checkStateTable(
         if (examples === null) errors.push(`${slug}: has a ${state} recipe but no component page`);
         else if (!examples.includes(found.variant)) errors.push(`${slug}: the ${state} recipe names the example "${found.variant}", which its page does not have`);
         if (!found.rows.length) errors.push(`${slug}: the ${state} recipe is applied from no row`);
-        if (seen.has(found.variant)) errors.push(`${slug}: two ${state} recipes name the example "${found.variant}", so their cells would share a name`);
-        seen.add(found.variant);
+        const place = `${found.variant}${found.inOverlay ? " inside" : ""}`;
+        if (seen.has(place)) errors.push(`${slug}: two ${state} recipes name the example "${found.variant}", so their cells would share a name`);
+        seen.add(place);
       }
     }
   }
@@ -2370,8 +2620,8 @@ export function checkStateTable(
 
 /**
  * A component's recipe by its name (`recipeName`: the state, or `<state>-<variant>` for a
- * state it has several recipes of); throws when it has none, since the planner only plans
- * the ones it has.
+ * state it has several recipes of, `-inside` for one inside the overlay its example opens);
+ * throws when it has none, since the planner only plans the ones it has.
  */
 export function recipeFor(slug: string, name: string): StateRecipe {
   const found = namedRecipesOf(slug).find((r) => r.name === name);

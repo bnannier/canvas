@@ -20,7 +20,7 @@ Audit checklist for `/components/avatar`. The facts block and the variants table
 | Hand-off metric gaps | avatar-size-scale: tiny 24 / small 28 / default 40 / large 48 vs hand-off small 24 / default 32 / large 40 (unscheduled) |
 | Interactions registry | in the inventory; evidence: none registered |
 | Overlay recipe | none |
-| Interaction states | captured: hover on Account menu (web row; desktop), focus on Account menu (web row; desktop), pressed on Account menu (web row; desktop), open on Account menu (web, iOS, Android rows; phone, tablet and desktop), disabled on Disabled menu (web row; desktop). |
+| Interaction states | captured: hover on Account menu (web row; desktop), open on Account menu (web, iOS, Android rows; phone, tablet and desktop), disabled on Disabled menu (web row; desktop). focus exempt, verified: `onPress` makes the Avatar a button, a tab stop; no rail example passes it (the AvatarMenu pill's button is the Dropdown's custom trigger). pressed exempt, verified: `onPress` makes the Avatar a button; no rail example passes it (the AvatarMenu pill's button is the Dropdown's custom trigger). |
 | MeasureProps | not adopted |
 | Touch target | `avatar.shared.tsx`: hitSlop, minTarget; `avatar.styles.ts`: minTarget, platformMinTarget |
 | Tests importing it | 12: `test/a11y-state.test.tsx`, `test/atom-material-feedback.test.tsx`, `test/atom-material-roles.test.tsx`, `test/avatar-menu.test.tsx`, `test/dense-overlays.test.tsx`, `test/design-rules-skins.test.ts`, `test/dist-smoke.test.tsx`, `test/new-components.test.tsx`, `test/no-console-violations.test.tsx`, `test/skins-smoke.test.tsx`, `test/text-contrast.test.tsx`, `test/touch-target-coverage.test.ts` |

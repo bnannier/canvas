@@ -20,7 +20,9 @@
 //   ios-pages|android-pages/<kind>-<slug>/<look>.<surface>     as a native variant's
 // A state cell's id names its recipe and the platform row it was reached from: the recipe's
 // name is its state, or `<state>-<variant>` for a state a component has several recipes of
-// (a Dropdown disabled on its trigger and on an item in its menu); the example a recipe
+// (a Dropdown disabled on its trigger and on an item in its menu), and
+// `<state>-<variant>-inside` for one applied inside the overlay its example opens beside one
+// on that example's own surface (Command's focus on a palette row); the example a recipe
 // applies the state to is on its record too (`variant`, `label`). A page cell holds every
 // section of the page, each photographed beside the first
 // screen. A state the recipe could not reach is recorded with the status
@@ -62,7 +64,9 @@ export interface CellKey {
   state: StateName | null;
   /**
    * A state cell's recipe, by its name: the state, or `<state>-<variant>` for a state the
-   * component has several recipes of (e2e/support/state-recipes.ts `recipeName`).
+   * component has several recipes of, `<state>-<variant>-inside` for one applied inside the
+   * overlay its example opens beside one on that example's surface
+   * (e2e/support/state-recipes.ts `recipeName`).
    */
   recipe: string | null;
   /** The platform row of the browser card a state cell was reached from. */
@@ -117,10 +121,10 @@ export function parseCellId(id: string): CellKey | null {
     if (middle.length !== 1) return null;
     variant = middle[0]!;
   } else if (family === "state") {
-    // `<name>.<row>`: the recipe's name (`<state>` or `<state>-<variant>`), and the row of the browser card it was reached from.
+    // `<name>.<row>`: the recipe's name (`<state>`, `<state>-<variant>` or `<state>-<variant>-inside`), and the row of the browser card it was reached from.
     const named = middle.length === 1 ? middle[0]!.split(".") : [];
     if (named.length !== 2 || !isRow(named[1]!)) return null;
-    const recipeName = /^([a-z]+)(?:-([a-z0-9]+))?$/.exec(named[0]!);
+    const recipeName = /^([a-z]+)(?:-([a-z0-9]+)(?:-inside)?)?$/.exec(named[0]!);
     if (!recipeName || !isState(recipeName[1]!)) return null;
     recipe = named[0]!;
     state = recipeName[1];

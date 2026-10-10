@@ -73,7 +73,7 @@ export interface CellRow {
   /** A state cell's example label. */
   label: string | null;
   state: string | null;
-  /** A state cell's recipe, by its name (the state, or `<state>-<variant>` for a state with several recipes). */
+  /** A state cell's recipe, by its name (the state, or `<state>-<variant>` for a state with several recipes, `-inside` for one inside its example's overlay). */
   recipe: string | null;
   /** The platform row of the browser card a state was reached from. */
   row: RowPlatform | null;

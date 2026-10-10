@@ -24,6 +24,7 @@ import {
   STATE_RECIPES,
   checkStateTable,
   inspectionDiff,
+  namedRecipesOf,
   pressFired,
   pressTrace,
   recipeFor,
@@ -38,7 +39,7 @@ import { inventory as registry } from "../interactions/registry.ts";
 import { registeredSkins } from "../skins/registry.ts";
 import { SignalReader, type Signal } from "./interaction-signals.ts";
 import { WIDTHS, components, widthsAtOrBelow } from "./inventory.ts";
-import { asksFor, componentSignals, coverageOf, exemptionFailure, railExamples, sourceDirOf, tableCoverage } from "./state-coverage.ts";
+import { asksFor, componentSignals, controlFailure, coverageOf, exemptionFailure, ownControls, railExamples, sourceDirOf, tableCoverage } from "./state-coverage.ts";
 import { parseWebFilters, planStateCapture } from "./web-capture.ts";
 
 const pages = components();
@@ -163,16 +164,18 @@ describe("the state recipe table", () => {
 
   it("captures hover, focus, pressed, invalid and disabled at the desktop in the row (in the viewport inside an overlay), and open at every width in the viewport, but where a state exists only at some widths", () => {
     // A state that exists only at some widths is captured there alone: the drawers FilterPanel
-    // and Sidebar become at and below their breakpoints, and the Heatmap's scroller, a tab
-    // stop only where the year overflows it, below `sm`.
+    // and Sidebar become at and below their breakpoints (and FilterPanel's rows in its drawer),
+    // and the Heatmap's scroller, a tab stop only where the year overflows it, below `sm`.
     const only: Record<string, readonly string[]> = {
       "filter-panel open": widthsAtOrBelow("sm"),
+      "filter-panel focus-responsivedrawer": widthsAtOrBelow("sm"),
+      "filter-panel pressed-responsivedrawer": widthsAtOrBelow("sm"),
       "sidebar open": widthsAtOrBelow("lg"),
       "heatmap focus": widthsAtOrBelow("sm"),
     };
     for (const slug of Object.keys(STATE_RECIPES)) {
-      for (const recipe of recipesOf(slug)) {
-        const key = `${slug} ${recipe.state}`;
+      for (const { name, recipe } of namedRecipesOf(slug)) {
+        const key = `${slug} ${name}`;
         const widths = only[key] ?? (recipe.state === "open" ? EVERY_WIDTH : DESKTOP);
         expect({ key, widths: [...recipe.widths] }).toEqual({ key, widths: [...widths] });
         if (recipe.state === "open") expect({ key, frame: recipe.frame }).toEqual({ key, frame: "viewport" });
@@ -231,7 +234,17 @@ describe("the state recipe table", () => {
       { variant: "disabledtrigger", inOverlay: false, frame: "row" },
       { variant: "disableditem", inOverlay: true, frame: "viewport" },
     ]);
-    expect(stateSpecsOf("dropdown").map((spec) => spec.name)).toEqual(["hover", "focus", "pressed", "open", "disabled-disabledtrigger", "disabled-disableditem"]);
+    // Its focus and its press are on the Custom trigger example's button and on a row of the menu.
+    expect(stateSpecsOf("dropdown").map((spec) => spec.name)).toEqual([
+      "hover",
+      "focus-customtrigger",
+      "focus-default",
+      "pressed-customtrigger",
+      "pressed-default",
+      "open",
+      "disabled-disabledtrigger",
+      "disabled-disableditem",
+    ]);
     // A state with one recipe keeps the state's name, so every other cell keeps its id.
     expect(stateSpecsOf("button").map((spec) => spec.name)).toEqual(["hover", "focus", "pressed", "disabled"]);
     expect(recipeFor("dropdown", "disabled-disableditem").variant).toBe("disableditem");
@@ -241,13 +254,25 @@ describe("the state recipe table", () => {
     expect(plan.groups[0]!.cells.map((c) => `${c.name} ${c.row}.${c.width.key}`)).toEqual(["disabled-disabledtrigger web.desktop", "disabled-disableditem web.desktop"]);
   });
 
-  it("fails two recipes of one state on one example, whose cells would share a name, and a list holding another state's recipe", () => {
+  it("fails two recipes of one state on one example in one place, whose cells would share a name, and a list holding another state's recipe", () => {
     const [trigger, item] = recipesOf("dropdown").filter((r) => r.state === "disabled");
-    const focus = recipeFor("dropdown", "focus");
-    const table: Record<string, ComponentStates> = { dropdown: { disabled: [trigger!, { ...item!, variant: "disabledtrigger" }, focus] } };
+    const focus = recipeFor("dropdown", "focus-default");
+    const table: Record<string, ComponentStates> = { dropdown: { disabled: [trigger!, { ...trigger!, how: "again" }, focus] } };
     expect(checkStateTable(["dropdown"], table, examplesOf)).toEqual([
       'dropdown: two disabled recipes name the example "disabledtrigger", so their cells would share a name',
       "dropdown: the disabled entry holds a focus recipe",
+    ]);
+    // One on the example's surface and one inside the overlay it opens are two places: the
+    // second is named `-inside` (Command's focus on its Search trigger and on a palette row).
+    const inside: Record<string, ComponentStates> = { dropdown: { disabled: [trigger!, { ...item!, variant: "disabledtrigger" }] } };
+    expect(checkStateTable(["dropdown"], inside, examplesOf)).toEqual([]);
+    expect(stateSpecsOf("command").filter((spec) => spec.state !== "open").map((spec) => spec.name)).toEqual([
+      "hover-default",
+      "hover-inline",
+      "focus-default",
+      "focus-default-inside",
+      "pressed-default",
+      "pressed-default-inside",
     ]);
   });
 });
@@ -259,9 +284,14 @@ describe("the states each component's source gives it", () => {
     // Every exemption in the table, and that it holds.
     const exempt = coverage.flatMap((c) => c.answers.filter((a) => a.by === "exemption").map((a) => `${c.slug} ${a.state}: ${a.failure ?? "holds"}`));
     expect(exempt.sort()).toEqual([
+      "avatar focus: holds",
+      "avatar pressed: holds",
+      "calendar pressed: holds",
       "drawer pressed: holds",
       "feeds focus: holds",
       "feeds pressed: holds",
+      "grid-lists focus: holds",
+      "grid-lists pressed: holds",
       "steps focus: holds",
       "steps pressed: holds",
       "typography focus: holds",
@@ -282,6 +312,85 @@ describe("the states each component's source gives it", () => {
     // Where a source disables a control no example asks for: nothing to capture.
     const unshown = coverage.flatMap((c) => c.answers.filter((a) => a.by === "unshown").map((a) => `${c.slug}${a.within ? ` in ${a.within}` : ""}`));
     expect(unshown.sort()).toEqual(["button-group in SplitButton", "carousel", "chip", "form", "radio", "sidebar", "video"]);
+  });
+
+  it("holds each recipe to a control of the component's own, so one on a control another kit component renders answers nothing", () => {
+    const check = (slug: string, entry: Record<string, unknown>) => coverageOf(slug, entry as ComponentStates, signalsOf(slug), railExamples(component(slug))).errors;
+    const table = STATE_RECIPES as Record<string, Record<string, unknown>>;
+    // The recipes as the table had them, each found by the role its target is found by.
+    const on = (slug: string, name: string, role: string, variant?: string): StateRecipe => ({ ...recipeFor(slug, name), ...(variant ? { variant } : {}), control: { role } });
+    // FilterPanel's focus on the header's Clear, a kit Button: its own option rows were never focused.
+    expect(check("filter-panel", { ...table["filter-panel"], focus: [on("filter-panel", "focus-default", "button"), recipeFor("filter-panel", "focus-responsivedrawer")] })).toEqual([
+      "filter-panel: its focus recipe on the default example answers nothing: it acts on a button on its own surface, which is none of the component's own controls there (its example renders a checkbox in OptionRow); a control another kit component renders is that component's",
+      "filter-panel: its source gives it a focus state on its own surface (a tab stop: <Pressable> at src/organisms/filter-panel/filter-panel.shared.tsx:153 via OptionRow), where no focus recipe acts on a control of its own, with no exemption",
+    ]);
+    // Dropdown's focus and press on its default trigger, a kit Button (which Dropdown disables, so
+    // it is Dropdown's disabled control and no more): neither its custom trigger nor its menu rows.
+    expect(check("dropdown", { ...table.dropdown, focus: on("dropdown", "focus-customtrigger", "button", "default"), pressed: on("dropdown", "pressed-customtrigger", "button", "default") })).toEqual([
+      "dropdown: its focus recipe on the default example answers nothing: it acts on a button on its own surface, which is none of the component's own controls there (its example renders none); a control another kit component renders is that component's",
+      "dropdown: its source gives it a focus state on its own surface (a tab stop: <Pressable> at src/atoms/dropdown/dropdown.shared.tsx:319), where no focus recipe acts on a control of its own, with no exemption",
+      "dropdown: its source gives it a focus state in the overlay in Dropdown (a tab stop: <Pressable> at src/atoms/dropdown/dropdown.shared.tsx:164 via MenuRow), where no focus recipe acts on a control of its own, with no exemption",
+      "dropdown: its pressed recipe on the default example answers nothing: it acts on a button on its own surface, which is none of the component's own controls there (its example renders none); a control another kit component renders is that component's",
+      "dropdown: its source gives it a pressed state on its own surface (onPress on <Pressable> at src/atoms/dropdown/dropdown.shared.tsx:323), where no pressed recipe acts on a control of its own, with no exemption",
+      "dropdown: its source gives it a pressed state in the overlay in Dropdown (onPress on <Pressable> at src/atoms/dropdown/dropdown.shared.tsx:176 via MenuRow, and 1 more), where no pressed recipe acts on a control of its own, with no exemption",
+    ]);
+    // DescriptionList's focus and press on its Update link, a kit Button: its own inline-edit
+    // field was never focused, and its source gives it no press at all.
+    const update = on("description-lists", "focus", "button");
+    expect(check("description-lists", { focus: update, pressed: { ...update, state: "pressed" } })).toEqual([
+      "description-lists: its focus recipe on the inlineedit example answers nothing: it acts on a button on its own surface, which is none of the component's own controls there (its example renders a textbox in rows); a control another kit component renders is that component's",
+      "description-lists: its source gives it a focus state on its own surface (a TextInput at src/molecules/description-lists/description-lists.shared.tsx:319), where no focus recipe acts on a control of its own, with no exemption",
+      "description-lists: its pressed recipe on the inlineedit example answers nothing: it acts on a button on its own surface, which is none of the component's own controls there (its example renders a textbox in rows); a control another kit component renders is that component's",
+    ]);
+    // GeoMap's focus on its Zoom in, a kit Button it disables at the end of the zoom: the map itself is the tab stop.
+    expect(check("geo-map", { ...table["geo-map"], focus: on("geo-map", "focus", "button") })).toEqual([
+      "geo-map: its focus recipe on the zoomable example answers nothing: it acts on a button on its own surface, which is none of the component's own controls there (its example renders an img in GeoMap, a <Pressable> with no role in GeoMap); a control another kit component renders is that component's",
+      "geo-map: its source gives it a focus state on its own surface (focusable on <View> at src/charts/geo-map/geo-map.shared.tsx:518), where no focus recipe acts on a control of its own, with no exemption",
+    ]);
+    // A recipe that names no control is refused, and one whose own control takes no such state.
+    const { control: _control, ...unnamed } = recipeFor("button", "focus");
+    expect(controlFailure(unnamed as StateRecipe, "focus", "", signalsOf("button"), railExamples(component("button")))).toBe("it names no control (`StateRecipe.control`)");
+    const field = { ...recipeFor("description-lists", "focus"), state: "pressed" as const };
+    expect(controlFailure(field, "pressed", "", signalsOf("description-lists"), railExamples(component("description-lists")))).toBe(
+      "it acts on a textbox in rows on its own surface, and nothing rows renders there takes a pressed state",
+    );
+  });
+
+  it("answers a hover, a focus and a press place by place: the component's own surface and each overlay it renders them in", () => {
+    const check = (slug: string, entry: Record<string, unknown>) => coverageOf(slug, entry as ComponentStates, signalsOf(slug), railExamples(component(slug))).errors;
+    const table = STATE_RECIPES as Record<string, Record<string, unknown>>;
+    // Dropdown's custom trigger answers its own surface, not the rows of the menu it opens.
+    expect(check("dropdown", { ...table.dropdown, focus: recipeFor("dropdown", "focus-customtrigger") })).toEqual([
+      "dropdown: its source gives it a focus state in the overlay in Dropdown (a tab stop: <Pressable> at src/atoms/dropdown/dropdown.shared.tsx:164 via MenuRow), where no focus recipe acts on a control of its own, with no exemption",
+    ]);
+    // FilterPanel's rows are on the panel and inside the drawer it becomes at a phone's width.
+    expect(check("filter-panel", { ...table["filter-panel"], focus: recipeFor("filter-panel", "focus-default") })).toEqual([
+      "filter-panel: its source gives it a focus state in the overlay in FilterPanel (a tab stop: <Pressable> at src/organisms/filter-panel/filter-panel.shared.tsx:153 via OptionRow), where no focus recipe acts on a control of its own, with no exemption",
+    ]);
+    // A recipe inside the overlay answers it alone.
+    expect(check("dropdown", { ...table.dropdown, pressed: recipeFor("dropdown", "pressed-default") })).toEqual([
+      "dropdown: its source gives it a pressed state on its own surface (onPress on <Pressable> at src/atoms/dropdown/dropdown.shared.tsx:323), where no pressed recipe acts on a control of its own, with no exemption",
+    ]);
+    // Where each place's own controls are, with the roles the page gives them.
+    const places = (slug: string, state: string) =>
+      [...new Set(ownControls(signalsOf(slug)).filter((c) => c.signals.some((s) => s.state === state)).map((c) => `${c.place || "surface"}: ${c.control.in} <${c.control.tag}> ${c.control.roles.join("/") || "no role"}`))].sort();
+    expect(places("dropdown", "focus")).toEqual(["Dropdown: MenuRow <Pressable> menuitem", "surface: Dropdown <Pressable> button"]);
+    expect(places("filter-panel", "focus")).toEqual(["FilterPanel: OptionRow <Pressable> checkbox", "surface: OptionRow <Pressable> checkbox"]);
+    expect(places("description-lists", "focus")).toEqual(["surface: rows <TextInput> textbox"]);
+    // A kit component the component disables is its control for the disabled state alone.
+    expect(places("geo-map", "disabled")).toEqual(["surface: GeoMap <Button> button/link"]);
+    expect(ownControls(signalsOf("geo-map")).find((c) => c.control.tag === "Button")!.control.kit).toBe(true);
+  });
+
+  it("checks an unpassed claim against the examples that render a signal, each passing every prop it needs", () => {
+    const grid = component("grid-lists");
+    const entry = STATE_RECIPES["grid-lists"]!;
+    const own = signalsOf("grid-lists").filter((s) => s.state === "pressed");
+    // A gallery tile is a button only with both `gallery` and `onPressItem`: the Gallery example passes one, the Tappable example the other.
+    expect(own.map((s) => [...s.gates].sort().join("&"))).toEqual(["gallery&onPressItem", "gallery&onPressItem"]);
+    expect(exemptionFailure("pressed", entry.exempt!.pressed!, own, railExamples(grid), entry)).toBeNull();
+    const both = [...railExamples(grid), { label: "Tappable gallery", code: "<GridList gallery onPressItem={() => {}} items={[]} />" }];
+    expect(exemptionFailure("pressed", entry.exempt!.pressed!, own, both, entry)).toBe("the Tappable gallery example passes onPressItem");
   });
 
   it("fails a disabled control an example asks for inside an overlay with no recipe that opens it, and one on the component's own surface with none there", () => {
@@ -767,6 +876,113 @@ export function Probe(props: { items: { label: string; disabled?: boolean }[]; d
       expect(asksFor(item, { code: '<Probe items={[{ label: "A", disabled: true }]} />' })).toBe(true);
       expect(asksFor(item, { code: '<Probe items={[{ label: "A", disabled: false }]} />' })).toBe(false);
       expect(asksFor(item, { code: "<Probe disabled items={[]} />" })).toBe(false);
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+});
+
+describe("the controls a component's source gives its states", () => {
+  it("names each control, the place it renders in, the roles the page gives it and what decides whether it is there", () => {
+    const root = mkdtempSync(join(tmpdir(), "signals-"));
+    const write = (path: string, text: string) => {
+      mkdirSync(dirname(join(root, path)), { recursive: true });
+      writeFileSync(join(root, path), text);
+    };
+    try {
+      write("src/style.ts", "export const Pressable = null; export const View = null; export const TextInput = null; export const AnchoredOverlay = null;\n");
+      // A drawer that renders its content inside its overlay, a menu whose content is its trigger, and a plain button.
+      write("src/atoms/sheet/sheet.tsx", `import { Modal } from "react-native";\nexport function Sheet(props: { open?: boolean; children?: unknown }) {\n  return <Modal visible={props.open}>{(props.children) as never}</Modal>;\n}\n`);
+      write(
+        "src/atoms/menu/menu.tsx",
+        `import { Pressable, AnchoredOverlay } from "../../style.js";\nexport function Menu(props: { open?: boolean; children?: unknown }) {\n  return <Pressable accessibilityRole="button">{props.children as never}<AnchoredOverlay open={props.open} /></Pressable>;\n}\n`,
+      );
+      write("src/atoms/knob/knob.tsx", `import { Pressable } from "../../style.js";\nexport function Knob(props: { disabled?: boolean }) {\n  return <Pressable accessibilityRole="button" disabled={props.disabled} />;\n}\n`);
+      write(
+        "src/atoms/probe/probe.shared.tsx",
+        `import { Platform } from "react-native";
+import { Pressable, View, TextInput, AnchoredOverlay } from "../../style.js";
+import { Sheet } from "../sheet/sheet.js";
+import { Menu } from "../menu/menu.js";
+import { Knob } from "../knob/knob.js";
+function Frame({ children }: { children: unknown }) {
+  return <View onPointerEnter={() => {}}>{children as never}</View>;
+}
+function Item({ children, onPress }: { children?: unknown; onPress?: () => void }) {
+  if (children == null) return null;
+  return <Pressable accessibilityRole="link" onPress={onPress}>{children as never}</Pressable>;
+}
+export function Probe(props: { onTap?: () => void; onItem?: () => void; open?: boolean; editing?: boolean; disabled?: boolean; flag?: boolean }) {
+  const { onTap, onItem, open, disabled } = props;
+  const onPress = onItem ? () => onItem() : undefined;
+  const layer = (hoverable = true) => <Pressable accessibilityRole={onTap ? "button" : undefined} {...(hoverable ? { onHoverIn: () => {} } : {})} />;
+  const rows = <Pressable accessibilityRole="checkbox" onPress={() => {}} />;
+  return (
+    <View>
+      <Frame><Pressable accessibilityRole="button" style={({ pressed }) => [onTap && pressed ? { opacity: 0.8 } : null]} /></Frame>
+      <View accessibilityRole="adjustable" focusable />
+      <TextInput editable={!disabled} />
+      <Pressable tabIndex={Platform.select({ web: -1, default: undefined })} onPress={() => {}} />
+      <Pressable {...(props.flag ? { focusable: false } : { accessibilityRole: "button" as const })} />
+      <Item onPress={onPress}>Home</Item>
+      <Knob disabled={disabled} />
+      {layer()}
+      <AnchoredOverlay open={open}>{layer(false)}</AnchoredOverlay>
+      {rows}
+      <Sheet open={open}>{rows}</Sheet>
+      <Menu open={open}><View onPointerEnter={() => {}} /></Menu>
+    </View>
+  );
+}
+`,
+      );
+      const signals = new SignalReader(root).signalsOf("src/atoms/probe");
+      const at = (s: (typeof signals)[number]) => s.control?.at.replace("src/atoms/probe/probe.shared.tsx:", "") ?? "-";
+      const lines = [
+        ...new Set(
+          signals
+            .filter((s) => s.state !== "open")
+            .map((s) => {
+              const c = s.control;
+              const what = c ? `${c.in} <${c.tag}> ${c.roles.join("/") || "no role"}${c.noRole ? " or none" : ""}${c.kit ? " kit" : ""}${c.inside ? ` inside ${c.inside.join(">")}` : ""}` : `no element, in ${s.in ?? "-"}`;
+              return `${s.state} ${s.kind} @${at(s)} ${what}${s.gates.length ? ` [${[...s.gates].sort().join("&")}]` : ""}${s.within ? ` in ${s.within}` : ""}`;
+            }),
+        ),
+      ].sort();
+      expect(lines).toEqual([
+        // A TextInput is disabled through `editable`, React Native's text field having no
+        // `disabled`; a kit component the component disables has its own disabled control's roles.
+        "disabled disabled @22 Probe <TextInput> textbox",
+        "disabled disabled @26 Probe <Knob> button kit",
+        // `children` given between the tags renders the item, a link.
+        "focus link @11 Item <Pressable> link",
+        "focus tab-stop @11 Item <Pressable> link",
+        // A role reached only under a condition: a button, or no role at all; on the surface and in the menu.
+        "focus tab-stop @16 layer <Pressable> button or none",
+        "focus tab-stop @16 layer <Pressable> button or none in Probe",
+        // The checkbox row a constant holds is on the surface and inside the drawer that renders its content.
+        "focus tab-stop @17 Probe <Pressable> checkbox",
+        "focus tab-stop @17 Probe <Pressable> checkbox in Probe",
+        // Inside the frame whose hover target it is; react-native-web maps `adjustable` to `slider`.
+        "focus tab-stop @20 Probe <Pressable> button inside Frame",
+        "focus tab-stop @21 Probe <View> slider",
+        // A tab stop taken out on one side of a condition is still one on the other, with no role there.
+        "focus tab-stop @24 Probe <Pressable> button or none",
+        "focus text-entry @22 Probe <TextInput> textbox",
+        // The render helper's hover is given only where its call passes `hoverable`: not in the menu.
+        "hover hover-in @16 layer <Pressable> button or none",
+        // A Menu's children are its trigger, on the surface; the frame's hover is its own.
+        "hover hover-in @31 Probe <View> no role",
+        "hover hover-in @7 Frame <View> no role",
+        // A look read only under `onTap` changes only with it.
+        "pressed look @20 Probe <Pressable> button inside Frame [onTap]",
+        // The press a local constant gives only with `onItem`.
+        "pressed press @11 Item <Pressable> link [onItem]",
+        "pressed press @17 Probe <Pressable> checkbox",
+        "pressed press @17 Probe <Pressable> checkbox in Probe",
+        // On the web its tab index is -1: a press, and no tab stop.
+        "pressed press @23 Probe <Pressable> no role",
+      ]);
     } finally {
       rmSync(root, { recursive: true, force: true });
     }

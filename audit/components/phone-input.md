@@ -20,7 +20,7 @@ Audit checklist for `/components/phone-input`. The facts block and the variants 
 | Hand-off metric gaps | none |
 | Interactions registry | in the inventory; evidence: phone-input-country-pick (unit-web, test/phone-input.test.tsx) |
 | Overlay recipe | yes (listbox) |
-| Interaction states | captured: focus on Default (web row; desktop), pressed on Default (web row; desktop), open on Default (web, iOS, Android rows; phone, tablet and desktop), invalid on Error (web row; desktop), disabled on Disabled (web row; desktop). |
+| Interaction states | captured: focus on Default (web row; desktop), focus on Pre-filled inside the overlay it opens (web row; desktop), pressed on Default (web row; desktop), pressed on Pre-filled inside the overlay it opens (web row; desktop), open on Default (web, iOS, Android rows; phone, tablet and desktop), invalid on Error (web row; desktop), disabled on Disabled (web row; desktop). |
 | MeasureProps | adopted in `phone-input.shared.tsx` |
 | Touch target | no touch-target name (the exports of `src/style/touch-target.ts`, `src/style/touch-target-seed.ts`, `src/style/touch-seam.ts`, `src/style/clip-slop.ts`, the `TouchTargetSkin` fields, or `hitSlop`) in its implementation modules. `test/touch-target-coverage.test.ts` records it as covered another way: the country segment stretches to the 44/56 field box; its rows are Select's 44/48 by skin |
 | Tests importing it | 3: `test/design-rules-skins.test.ts`, `test/phone-input.test.tsx`, `test/text-entry-material.test.tsx` |

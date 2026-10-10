@@ -20,7 +20,7 @@ Audit checklist for `/components/geo-map`. The facts block and the variants tabl
 | Hand-off metric gaps | none |
 | Interactions registry | in the inventory; evidence: none registered |
 | Overlay recipe | none |
-| Interaction states | captured: focus on Zoomable (web row; desktop), pressed on Zoomable (web row; desktop), disabled on Zoomable (web row; desktop). |
+| Interaction states | captured: focus on Zoomable (web row; desktop), pressed on Default (web row; desktop), disabled on Zoomable (web row; desktop). |
 | MeasureProps | not adopted |
 | Touch target | no touch-target name (the exports of `src/style/touch-target.ts`, `src/style/touch-target-seed.ts`, `src/style/touch-seam.ts`, `src/style/clip-slop.ts`, the `TouchTargetSkin` fields, or `hitSlop`) in its implementation modules. `test/touch-target-coverage.test.ts` records it as covered another way: the pressable is the bubble, sized by its value |
 | Tests importing it | 6: `test/chart-materials.test.tsx`, `test/geo-map-camera.test.ts`, `test/geo-map-cluster.test.ts`, `test/geo-map-projection.test.ts`, `test/geo-map.test.tsx`, `test/skins-smoke.test.tsx` |
