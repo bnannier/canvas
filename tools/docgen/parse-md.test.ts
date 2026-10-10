@@ -939,6 +939,24 @@ describe("docStructureViolations", () => {
     });
   });
 
+  describe("S10: the Accessibility section once the audit signs the component off", () => {
+    const signedOff = { checklist: "audit/components/widget.md", platforms: ["web"] };
+    const withAccessibility = (lines: string[]) => [...lines, "## Accessibility", "", "Named by its label; Space and Enter press it.", ""];
+
+    it("asks nothing of a page whose checklist signs nothing off", () => {
+      expect(found(page())).toEqual([]);
+      expect(found(page(withAccessibility))).toEqual([]);
+      expect(docStructureViolations(page(), { name: "Widget", signedOff: { ...signedOff, platforms: [] } })).toEqual([]);
+    });
+
+    it("rejects a signed-off component's page without '## Accessibility', at its end", () => {
+      const findings = docStructureViolations(page(), { name: "Widget", signedOff });
+      expect(findings.map((v) => `${v.line} ${v.rule}`)).toEqual(["33 S10"]);
+      expect(findings[0].message).toContain("audit/components/widget.md signs this component off (web)");
+      expect(docStructureViolations(page(withAccessibility), { name: "Widget", signedOff })).toEqual([]);
+    });
+  });
+
   describe("S4: Usage", () => {
     it("rejects Usage with no fence, at its heading", () => {
       expect(found(page((l) => [...l.slice(0, 6), ...l.slice(9)]))).toEqual(["5 S4"]);

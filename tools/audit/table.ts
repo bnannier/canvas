@@ -16,6 +16,10 @@ export interface TableShape {
   free?: number;
 }
 
+/** The value when it is one of `values` (a cell's word read against the table's vocabulary), or null. */
+export const oneOf = <T extends string>(values: readonly T[], value: string): T | null =>
+  (values as readonly string[]).includes(value) ? (value as T) : null;
+
 /** A line that is not a readable row, and why. */
 export interface MalformedRow {
   line: number;
