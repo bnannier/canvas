@@ -544,6 +544,9 @@ interface Rect {
   width: number;
   height: number;
 }
+// The trigger's box, the frame's outlet and the layer's outlet (null when the card paints
+// in its frame's own), in window coordinates.
+type Boxes = [trigger: Rect, outlet: Rect, layer: Rect | null];
 
 // The inset every card keeps from the edges of the visible band it is placed in.
 const CLAMP_INSET = 8;
@@ -762,15 +765,14 @@ function HostedAnchoredOverlay({ host, frame, onDismiss, onAccessibilityEscape, 
       unusable = false;
       const trigger = triggerRef.current;
       if (trigger) {
-        let triggerBox: Rect | null = null;
-        let outletBox: Rect | null = null;
-        let layerBox: Rect | null = null;
+        let boxes: Boxes | null = null;
         let band: Rect | null = null;
         // A sheet stands in its layer's window rather than its frame's band.
         const wantsWindow = sheet && layer.measureWindowBounds != null;
         let windowBounds: { window: Rect; safe: Rect } | null = null;
         const settle = () => {
-          if (cancelled || landed || !triggerBox || !outletBox || (!inPlace && !layerBox) || (wantsWindow && !windowBounds)) return;
+          if (cancelled || landed || !boxes || (wantsWindow && !windowBounds)) return;
+          const [triggerBox, outletBox, layerBox] = boxes;
           // A host without a visible band is bounded by its outlet.
           const visible = frame.measureVisibleBounds ? band : outletBox;
           if (!visible) return;
@@ -804,14 +806,10 @@ function HostedAnchoredOverlay({ host, frame, onDismiss, onAccessibilityEscape, 
           const paint = layerBox ?? outletBox;
           const inPaint = (box: Rect): Rect => ({ x: box.x - paint.x, y: box.y - paint.y, width: box.width, height: box.height });
           setSheetWindow(windowBounds ? { window: inPaint(windowBounds.window), safe: inPaint(windowBounds.safe) } : null);
-          stopTracking = track(trigger, placed(triggerBox, outletBox, layerBox));
+          stopTracking = track(trigger, placed(boxes));
         };
-        trigger.measureInWindow((x, y, w, h) => {
-          triggerBox = { x, y, width: w, height: h };
-          settle();
-        });
-        frame.measureOutlet((x, y, w, h) => {
-          outletBox = { x, y, width: w, height: h };
+        measureBoxes(trigger, (measured) => {
+          boxes = measured;
           settle();
         });
         if (wantsWindow) layer.measureWindowBounds!((window, safe) => {
@@ -820,10 +818,6 @@ function HostedAnchoredOverlay({ host, frame, onDismiss, onAccessibilityEscape, 
         });
         frame.measureVisibleBounds?.((bounds) => {
           band = bounds;
-          settle();
-        });
-        if (!inPlace) layer.measureOutlet((x, y, w, h) => {
-          layerBox = { x, y, width: w, height: h };
           settle();
         });
       } else unusable = true;
@@ -836,9 +830,22 @@ function HostedAnchoredOverlay({ host, frame, onDismiss, onAccessibilityEscape, 
       if (unusable || frames - issuedAt >= PATIENCE) attempt();
       else raf = requestAnimationFrame(tick);
     };
+    // The trigger's box, the frame's outlet and (when the card paints in another outlet)
+    // the layer's, all in window coordinates: issued together, handed over once all landed.
+    const measureBoxes = (trigger: View, done: (boxes: Boxes) => void) => {
+      let triggerBox: Rect | null = null;
+      let outletBox: Rect | null = null;
+      let layerBox: Rect | null = null;
+      const join = () => {
+        if (!cancelled && triggerBox && outletBox && (inPlace || layerBox)) done([triggerBox, outletBox, layerBox]);
+      };
+      trigger.measureInWindow((x, y, width, height) => { triggerBox = { x, y, width, height }; join(); });
+      frame.measureOutlet((x, y, width, height) => { outletBox = { x, y, width, height }; join(); });
+      if (!inPlace) layer.measureOutlet((x, y, width, height) => { layerBox = { x, y, width, height }; join(); });
+    };
     // Where the trigger and the frame sit relative to the outlet the card paints in, and
     // the trigger's size: what the placement above was computed from.
-    const placed = (triggerBox: Rect, outletBox: Rect, layerBox: Rect | null) => {
+    const placed = ([triggerBox, outletBox, layerBox]: Boxes) => {
       const paint = layerBox ?? outletBox;
       return [triggerBox.x - paint.x, triggerBox.y - paint.y, triggerBox.width, triggerBox.height, outletBox.x - paint.x, outletBox.y - paint.y];
     };
@@ -858,18 +865,10 @@ function HostedAnchoredOverlay({ host, frame, onDismiss, onAccessibilityEscape, 
         raf = requestAnimationFrame(() => {
           scheduled = false;
           if (cancelled) return;
-          let triggerBox: Rect | null = null;
-          let outletBox: Rect | null = null;
-          let layerBox: Rect | null = null;
-          const compare = () => {
-            if (cancelled || !triggerBox || !outletBox || (!inPlace && !layerBox)) return;
-            const now = placed(triggerBox, outletBox, layerBox);
-            if (now.some((value, index) => Math.abs(value - at[index]!) > 0.5)) setLayoutRevision((revision) => revision + 1);
+          measureBoxes(trigger, (boxes) => {
+            if (placed(boxes).some((value, index) => Math.abs(value - at[index]!) > 0.5)) setLayoutRevision((revision) => revision + 1);
             else if (unheard) check();
-          };
-          trigger.measureInWindow((x, y, w, h) => { triggerBox = { x, y, width: w, height: h }; compare(); });
-          frame.measureOutlet((x, y, w, h) => { outletBox = { x, y, width: w, height: h }; compare(); });
-          if (!inPlace) layer.measureOutlet((x, y, w, h) => { layerBox = { x, y, width: w, height: h }; compare(); });
+          });
         });
       };
       const stops = [subscribeDocumentScroll(check), ancestry?.subscribe(check)];
