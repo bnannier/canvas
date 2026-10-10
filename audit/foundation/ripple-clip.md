@@ -6,13 +6,14 @@ Audit checklist for the style-layer foundation `RippleClip`, audited for its con
 | Fact | Value |
 |---|---|
 | Foundation | `RippleClip`, a style-layer renderable with no component page of its own (`tools/materials/manifest.ts`, the style tier), declared in `src/style/ripple-clip.tsx` |
-| Source files | `src/style/ripple-clip.tsx` |
+| Source files | `src/style/ripple-clip.tsx` (its homes, its exports' declarations and its implementation, the private declarations they read) |
+| Seams | 2, the private declarations it alone reads (`tools/audit/foundations.ts` `foundationCode`), which its consumers are also found through: `RADIUS_KEYS` (src/style/ripple-clip.tsx), `RIPPLE_CLIP` (src/style/ripple-clip.tsx) |
 | Public exports | 5: `cornerRadii` (internal-by-accident), `RippleClip` (internal-by-accident), `RippleClipProps` (internal-by-accident, a type), `rippleClipWrapperStyle` (internal-by-accident), `splitElevation` (internal-by-accident) |
 | K12-2 status | 5 deprecated alias to come (K12-2): cornerRadii, RippleClip, RippleClipProps, rippleClipWrapperStyle, splitElevation |
 | Documented on | none yet: the public API manifest names no page for any of its exports |
 | Docs planned | `foundation` (not built yet): cornerRadii, RippleClip, RippleClipProps, rippleClipWrapperStyle, splitElevation |
 | Materials manifest | RippleClip: style, inherited; docs route none (`docsRoute: null`); verification inherited-composition, semantic-state |
-| Tests importing it | 4 (importing one of its public exports by name): `test/ripple-clip.test.ts`, `test/touch-target-clips.test.tsx`, `test/touch-target-seams.test.tsx`, `test/touch-target-seed.test.tsx` |
+| Tests of it | 4 (importing one of its public exports or one of its implementation's declarations by name, or named for it, `test/ripple-clip[-<what>].test.tsx`): `test/ripple-clip.test.ts`, `test/touch-target-clips.test.tsx`, `test/touch-target-seams.test.tsx`, `test/touch-target-seed.test.tsx` |
 | Consumers | 47 components: 27 directly, 10 through shared modules, 10 through other kit components (one row each below, read from the source by `tools/audit/kit-graph.ts`) |
 | Pages using it | none: no pattern or template entry names one of its exports |
 | Capture through | 47, in this order: components `chip`, `autocomplete`, `button-group`, `button`, `dropdown`, `stepper`, `pagination`, `radio`, `select`, `alert-dialog`, `card`, `code-block`, `media-objects`, `phone-input`, `stacked-lists`, `stats`, `action-sheet`, `board`, `calendar`, `dialog`, `filter-panel`, `navbars`, `sidebar`, `row-menu`, `steps`, `tabs`, `toast`, `input`, `popover`, `slider`, `textarea`, `feeds`, `grid-lists`, `carousel`, `command`, `data-table`, `geo-map`, `avatar`, `tooltip`, `video`, `action-panels`, `description-lists`, `field`, `empty-state`, `form`, `drawer`, `metric-breakdown`; pages none |

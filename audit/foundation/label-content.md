@@ -6,13 +6,14 @@ Audit checklist for the style-layer foundation `LabelContent`, audited for its c
 | Fact | Value |
 |---|---|
 | Foundation | `LabelContent`, a style-layer renderable with no component page of its own (`tools/materials/manifest.ts`, the style tier), declared in `src/style/floating-label.tsx` |
-| Source files | `src/style/floating-label.tsx` |
+| Source files | `src/style/floating-label.tsx` (its homes, its exports' declarations and its implementation, the private declarations they read) |
+| Seams | 1, the private declarations it alone reads (`tools/audit/foundations.ts` `foundationCode`), which its consumers are also found through: `asNum` (src/style/floating-label.tsx) |
 | Public exports | 4: `FloatingLabel` (internal-by-accident), `FloatingLabelStyles` (internal-by-accident, a type), `HIDDEN_FROM_A11Y` (internal-by-accident), `LabelContent` (internal-by-accident) |
 | K12-2 status | 4 deprecated alias to come (K12-2): FloatingLabel, FloatingLabelStyles, HIDDEN_FROM_A11Y, LabelContent |
 | Documented on | none yet: the public API manifest names no page for any of its exports |
 | Docs planned | `foundation` (not built yet): FloatingLabel, FloatingLabelStyles, HIDDEN_FROM_A11Y, LabelContent |
 | Materials manifest | LabelContent: style, inherited; docs route none (`docsRoute: null`); verification inherited-composition, semantic-state |
-| Tests importing it | 0 (importing one of its public exports by name): none |
+| Tests of it | 0 (importing one of its public exports or one of its implementation's declarations by name, or named for it, `test/label-content[-<what>].test.tsx`): none |
 | Consumers | 9 components: 7 directly, 2 through other kit components (one row each below, read from the source by `tools/audit/kit-graph.ts`) |
 | Pages using it | none: no pattern or template entry names one of its exports |
 | Capture through | 9, in this order: components `autocomplete`, `input`, `stepper`, `select`, `textarea`, `field`, `phone-input`, `alert-dialog`, `dialog`; pages none |
