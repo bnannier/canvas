@@ -511,13 +511,13 @@ type Hovered = { control: Locator; rest: StyleSnapshot; opened?: Opened; panel?:
  * wrappers changed one of the properties the kit's hover feedback changes; the evidence
  * lists every watched property that changed.
  */
-function hover(variant: string, target: Target, options: { within?: OpenSpec; how?: string; rows?: readonly RowPlatform[] } = {}): StateRecipe {
+function hover(variant: string, target: Target, options: { within?: OpenSpec; how?: string; widths?: readonly WidthKey[]; rows?: readonly RowPlatform[] } = {}): StateRecipe {
   const within = options.within;
   return recipe<Hovered>({
     state: "hover",
     variant,
     rows: options.rows ?? WEB_ROW,
-    widths: DESKTOP,
+    widths: options.widths ?? DESKTOP,
     frame: within ? "viewport" : "row",
     ...insideOf(within),
     control: target.control,
@@ -2418,12 +2418,21 @@ export const STATE_RECIPES: Record<string, ComponentStates> = {
     pressed: pressed("default", byRole("link", "Users")),
   },
   sidebar: {
-    hover: hover("default", byRole("button", "Dashboard")),
-    focus: focus("default", byRole("button", "Dashboard")),
-    pressed: pressed("default", byRole("button", /^Inbox/)),
-    // `responsive` makes it a drill-down drawer at and below `drawerBreakpoint` (lg by default),
-    // which the Usage example's app frame opens from its hamburger. The page shows one preview
-    // (the web build), so it opens from the web row alone.
+    // The rail's rows at the desktop, and the drill-down's rows inside the drawer it becomes at
+    // and below `drawerBreakpoint` (lg by default), which the Usage example's app frame opens
+    // from its hamburger. The page shows one preview (the web build), so the web row alone.
+    hover: [
+      hover("default", byRole("button", "Dashboard")),
+      hover("default", byRole("button", /^Inbox/), { within: SIDEBAR_DRAWER_OPEN, widths: widthsAtOrBelow("lg"), how: "the hamburger opens the drawer, then the pointer rests on its Inbox row" }),
+    ],
+    focus: [
+      focus("default", byRole("button", "Dashboard")),
+      focus("default", byRole("button", /^Inbox/), { within: SIDEBAR_DRAWER_OPEN, widths: widthsAtOrBelow("lg"), how: "the hamburger opens the drawer, then Tab from the tab stop before its Inbox row" }),
+    ],
+    pressed: [
+      pressed("default", byRole("button", /^Inbox/)),
+      pressed("default", byRole("button", /^Inbox/), { within: SIDEBAR_DRAWER_OPEN, widths: widthsAtOrBelow("lg"), how: "the hamburger opens the drawer, then the pointer goes down on its Inbox row and is held" }),
+    ],
     open: open("default", SIDEBAR_DRAWER_OPEN, ["web"], "a click on the Usage example's Open menu hamburger, from the row", widthsAtOrBelow("lg")),
   },
   "row-menu": {
