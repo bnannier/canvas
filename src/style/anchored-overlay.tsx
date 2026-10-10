@@ -92,7 +92,7 @@ import { useHardwareBack } from "./use-hardware-back.js";
 import { FocusFrameContext, useFocusFrame } from "./focus-frame.js";
 import { ScrollAncestryContext, subscribeDocumentScroll, useUnheardScroller } from "./scroll-ancestry.js";
 import { useAnchoredCardFocus } from "./use-dialog-focus.js";
-import { returnAccessibilityFocus } from "./accessibility-focus.js";
+import { moveAccessibilityFocus } from "./accessibility-focus.js";
 
 const OverlaySideContext = createContext<{ side: OverlaySide; centerX?: number; cardWidth?: number }>({ side: "below" });
 /**
@@ -225,7 +225,9 @@ export interface AnchoredOverlayProps {
    * the first row on open) would otherwise focus a card that does not exist yet.
    * This fires on both paths, from an effect inside the card's own subtree.
    * Hosted cards also wait for fitting, so focusing a child cannot scroll the
-   * page toward an uncapped, still-invisible card.
+   * page toward an uncapped, still-invisible card. A card that cannot close
+   * (`dismissable` false: pinned open, a docs example) is content on the page that
+   * nobody opened, so it never fires: nothing moves focus into it as the page loads.
    */
   onCardMount?: () => void;
   /**
@@ -318,13 +320,15 @@ export function AnchoredOverlay({
   // open inside another overlay closes before its parent; without one, back does what
   // an outside tap does.
   useHardwareBack(open && dismissable, onAccessibilityEscape ?? onDismiss);
+  // Focus moves in only for an opening: a card pinned open is page content (see onCardMount).
+  const opening = dismissable ? onCardMount : undefined;
 
   // No provider: render the card inline in place, exactly as the kit did before
   // the portal layer (absolute anchor under the trigger, no backdrop). Entrance
   // owns the absolute anchor position and holds the card until it is laid out.
   if (!host) {
     return open ? (
-      <InlineAnchoredOverlay onAccessibilityEscape={onAccessibilityEscape} onDismiss={onDismiss} triggerRef={triggerRef} returnFocusRef={returnFocusRef} dismissable={dismissable} dismissOnTab={dismissOnTab} combobox={combobox} inlineStyle={inlineStyle} cardStyle={cardStyle} opaque={opaque} dense={dense} onCardMount={onCardMount} ownsScroll={ownsScroll} decoration={decoration}>
+      <InlineAnchoredOverlay onAccessibilityEscape={onAccessibilityEscape} onDismiss={onDismiss} triggerRef={triggerRef} returnFocusRef={returnFocusRef} dismissable={dismissable} dismissOnTab={dismissOnTab} combobox={combobox} inlineStyle={inlineStyle} cardStyle={cardStyle} opaque={opaque} dense={dense} onCardMount={opening} ownsScroll={ownsScroll} decoration={decoration}>
         {children}
       </InlineAnchoredOverlay>
     ) : null;
@@ -353,7 +357,7 @@ export function AnchoredOverlay({
       rtl={rtl ?? isRTL()}
       opaque={opaque}
       dense={dense}
-      onCardMount={onCardMount}
+      onCardMount={opening}
       ownsScroll={ownsScroll}
       dismissOnTab={dismissOnTab}
       modal={dismissable && !combobox}
@@ -396,7 +400,7 @@ function useCardFocus({ shown, cardRef, triggerRef, returnFocusRef, dismissOnTab
     if (shown) wasShown.current = true;
   });
   useEffect(() => () => {
-    if (wasShown.current && modalRef.current) returnAccessibilityFocus(returnTo.current);
+    if (wasShown.current && modalRef.current) moveAccessibilityFocus(returnTo.current);
   }, [returnTo]);
 }
 

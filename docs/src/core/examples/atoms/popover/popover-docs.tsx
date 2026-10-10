@@ -37,7 +37,7 @@ export const docs: ComponentDocs = {
     {
       title: "Accessibility",
       blocks: [
-        "The trigger is a button that announces its popup as a dialog and whether it is expanded. Opening the card moves keyboard focus into the panel, once its placement has settled: a dialog named by its title (by the trigger's label when it has none) and described by its supporting line.",
+        "The trigger is a button that announces its popup as a dialog and whether it is expanded. Opening the card moves keyboard focus into the panel, once its placement has settled: a dialog named by its title (by the trigger's label when it has none) and described by its supporting line. A card pinned open (a controlled `open` with no change handler) is part of the page and takes no focus as it appears.",
         "With a keyboard, Tab moves through the panel's controls as if the card sat right after its trigger, then on to the control after the trigger, and the card stays open: the popover is non-modal on the web. Shift+Tab from the panel returns to the trigger, and Tab from the trigger re-enters the card. Escape closes it, and focus goes back to whatever opened it.",
         "On iOS and Android the open card is modal to VoiceOver and TalkBack: the page behind it is hidden from them, their focus moves to the card's first line, and when the card closes it returns to the trigger. The escape gesture and the Android back button close the card. Touch closes it with a tap anywhere outside it, and on phones a tap on the scrim above the sheet.",
       ],

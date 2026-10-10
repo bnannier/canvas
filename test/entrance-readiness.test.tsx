@@ -159,7 +159,7 @@ for (const hosted of [false, true]) {
 it("a nested Popover waits for its ancestor, retains focus through refits, and restores on close", () => {
   const page = (ready: boolean, open: boolean) => themed(<>
     <Button>Opener</Button>
-    <Entrance ready={ready}><Popover open={open} title="Nested" actionLabel="Done" /></Entrance>
+    <Entrance ready={ready}><Popover open={open} onOpenChange={() => {}} title="Nested" actionLabel="Done" /></Entrance>
   </>);
   const view = render(page(false, false));
   const opener = screen.getByRole("button", { name: "Opener" });
@@ -195,7 +195,7 @@ it("preserves ancestor readiness when a Popover moves into the provider's siblin
   } as DOMRect);
   const page = (ready: boolean, open: boolean) => themed(<OverlayProvider>
     <Button>Opener</Button>
-    <Entrance ready={ready}><Popover open={open} title="Portaled child" /></Entrance>
+    <Entrance ready={ready}><Popover open={open} onOpenChange={() => {}} title="Portaled child" /></Entrance>
   </OverlayProvider>);
   try {
     const view = render(page(false, false));
