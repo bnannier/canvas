@@ -86,7 +86,7 @@ One row per finding. Severity: critical, high, medium, low. Cell: a capture id f
 
 | ID | Severity | Cell | Summary | Status | Fix commit |
 |---|---|---|---|---|---|
-| stacked-lists-corner-1 | low | source | The row menu button drew 10 on the web and 6 on iOS, off both rows; it is an icon button, the `control` corner: 8 on the web, the iOS capsule (a circle on the 28pt box, visible in its pressed fill). The shape gate (test/design-rules-shape.test.ts) now takes a corner only as a role of its own platform's row that its component plays, the pill, square or a declared concentric corner. | fixed | d1339a2c |
+| stacked-lists-corner-1 | low | source | The row menu button drew 10 on the web and 6 on iOS, off both rows; it is an icon button, the `control` corner: 8 on the web, the iOS capsule (a circle on the 28pt box, visible in its pressed fill). The shape gate (test/design-rules-shape.test.ts) now takes a corner only as a role of its own platform's row that its component plays, the pill, square or a declared concentric corner. | fixed | 278270a8 |
 
 ## Sign-off
 

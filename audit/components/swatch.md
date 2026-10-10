@@ -80,7 +80,7 @@ One row per finding. Severity: critical, high, medium, low. Cell: a capture id f
 
 | ID | Severity | Cell | Summary | Status | Fix commit |
 |---|---|---|---|---|---|
-| swatch-corner-1 | low | source | The small and large blocks drew 10 and 14, off the web row; a Swatch takes the `tile` corner, 12, at every size. The shape gate (test/design-rules-shape.test.ts) now takes a corner only as a role of its own platform's row that its component plays, the pill, square or a declared concentric corner. | fixed | d1339a2c |
+| swatch-corner-1 | low | source | The small and large blocks drew 10 and 14, off the web row; a Swatch takes the `tile` corner, 12, at every size. The shape gate (test/design-rules-shape.test.ts) now takes a corner only as a role of its own platform's row that its component plays, the pill, square or a declared concentric corner. | fixed | 278270a8 |
 
 ## Sign-off
 

@@ -20,11 +20,12 @@ Audit checklist for `/components/checkbox`. The facts block and the variants tab
 | Hand-off metric gaps | none |
 | Interactions registry | in the inventory; evidence: none registered |
 | Overlay recipe | none |
+| Interaction states | captured: focus on Default (web row; desktop), pressed on Default (web row; desktop), disabled on Disabled (web row; desktop). |
 | MeasureProps | not adopted |
 | Touch target | `checkbox.shared.tsx`: hitSlop. `test/touch-target-coverage.test.ts` records it as covered another way: hitSlop around the box when there is no label to press |
-| Tests importing it | 12: `test/a11y-state.test.tsx`, `test/atom-material-roles.test.tsx`, `test/checkbox-idiom.test.tsx`, `test/control-refs-types.test.ts`, `test/control-refs.test.tsx`, `test/control-space.test.tsx`, `test/design-rules-shape.test.ts`, `test/design-rules-skins.test.ts`, `test/forms.test.tsx`, `test/glass-controls.test.tsx`, `test/native-focus-fixtures.test.tsx`, `test/skins-smoke.test.tsx` |
+| Tests importing it | 13: `test/a11y-state.test.tsx`, `test/atom-material-roles.test.tsx`, `test/checkbox-idiom.test.tsx`, `test/control-refs-types.test.ts`, `test/control-refs.test.tsx`, `test/control-space.test.tsx`, `test/design-rules-shape.test.ts`, `test/design-rules-skins.test.ts`, `test/forms.test.tsx`, `test/glass-controls.test.tsx`, `test/material-solid-fallback.test.tsx`, `test/native-focus-fixtures.test.tsx`, `test/skins-smoke.test.tsx` |
 | E2E naming it | 4: `e2e/behavior/listbox.e2e.ts`, `e2e/journeys/control-refs.e2e.ts`, `e2e/journeys/keyboard.e2e.ts`, `e2e/journeys/touch.e2e.ts` |
-| E2E catalog sweeps | 6: `e2e/a11y/components.e2e.ts` (componentRoutes), `e2e/responsive/component-widths.e2e.ts` (contentRoutes, componentRoutes), `e2e/smoke/examples.e2e.ts` (componentExamples), `e2e/smoke/routes.e2e.ts` (allRoutes), `e2e/visual/components.e2e.ts` (componentRoutes), `e2e/visual/materials.e2e.ts` (MATERIAL_ROUTES) |
+| E2E catalog sweeps | 7: `e2e/a11y/components.e2e.ts` (componentRoutes), `e2e/journeys/keyboard.e2e.ts` (componentRoutes), `e2e/responsive/component-widths.e2e.ts` (contentRoutes, componentRoutes), `e2e/smoke/examples.e2e.ts` (componentExamples), `e2e/smoke/routes.e2e.ts` (allRoutes), `e2e/visual/components.e2e.ts` (componentRoutes), `e2e/visual/materials.e2e.ts` (MATERIAL_ROUTES) |
 <!-- audit:facts:end -->
 
 ## Variants
@@ -82,7 +83,7 @@ One row per finding. Severity: critical, high, medium, low. Cell: a capture id f
 
 | ID | Severity | Cell | Summary | Status | Fix commit |
 |---|---|---|---|---|---|
-| checkbox-k9 | low | source | K9: `shape.ios.checkbox` said 5 while the iOS skin drew the selection circle (`IOS_BOX / 2`, 11 at the base size) and the hand-off said 11px; no surface drew 5. The row is 9999 now, the iOS and Android skins read `shape.<platform>.checkbox`, the hand-off says 9999px, and test/design-rules-shape.test.ts holds every role corner to the shape table. | fixed | 65c2060d |
+| checkbox-k9 | low | source | K9: `shape.ios.checkbox` said 5 while the iOS skin drew the selection circle (`IOS_BOX / 2`, 11 at the base size) and the hand-off said 11px; no surface drew 5. The row is 9999 now, the iOS and Android skins read `shape.<platform>.checkbox`, the hand-off says 9999px, and test/design-rules-shape.test.ts holds every role corner to the shape table. | fixed | 7cce601c |
 
 ## Sign-off
 

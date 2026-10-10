@@ -2031,6 +2031,7 @@ export const STATE_RECIPES: Record<string, ComponentStates> = {
   image: { static: true, reason: "An image: it takes no input." },
   "text-input": {
     focus: focus("default", byRole("textbox")),
+    disabled: disabled("disabled", byRole("textbox", "Plan")),
   },
   "scroll-view": { static: true, reason: "A scroll container whose examples render no tab stop; its keyboard stop and ring, where content overflows, are e2e/behavior/scroll-focus.e2e.ts's." },
   "row-column": { static: true, reason: LAYOUT },
