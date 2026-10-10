@@ -104,13 +104,13 @@ export const HANDOFF_SHAPE_TOKENS: Record<string, ShapeRole> = {
 
 /**
  * A part a native skin shares with the web skin (the same part, drawn from the same place)
- * although its component's reference row does not say the platform ships no control for
- * the component's job: the row cites a real control, or the component has no row yet.
- * Where the row says none, the native skin is Dark Factory's look and shares any part
- * without a declaration (tools/tokens/corner-rules.ts); where it cites a control, every
- * part keeps that platform's row unless it is declared here, with the reason that control
- * gives the part no shape of its own. test/design-rules-shape.test.ts fails an entry that
- * no corner needs, and one whose row already says none.
+ * although its component's reference row cites a real control for the component's job
+ * (every docs component has a row, test/platform-references.test.ts). Where the row says
+ * none, the native skin is Dark Factory's look and shares any part without a declaration
+ * (tools/tokens/corner-rules.ts); where it cites a control, every part keeps that
+ * platform's row unless it is declared here, with the reason that control gives the part
+ * no shape of its own. test/design-rules-shape.test.ts fails an entry that no corner
+ * needs, and one whose row already says none.
  */
 export interface SharedPart {
   /** Where the native skin draws the part: its repo-relative file and the path corner-sites reports. */
@@ -123,34 +123,6 @@ export const SHARED_PARTS: SharedPart[] = [
   {
     site: "src/organisms/data-table/data-table.styles.ts iosSkin.actionButton",
     why: "SwiftUI Table, the control DataTable's iOS row cites, draws no icon button in a row: a row action's button is the kit's own, at Dark Factory's control corner",
-  },
-  {
-    site: "src/organisms/board/board.styles.ts iosSkin.pressableBody",
-    why: "Board has no reference row: iOS ships no board (kanban) control, so the press layer under a card's body is Dark Factory's",
-  },
-  {
-    site: "src/organisms/board/board.styles.ts androidSkin.pressableBody",
-    why: "Board has no reference row: Material 3 has no board (kanban) component, so the press layer under a card's body is Dark Factory's",
-  },
-  {
-    site: "src/organisms/drag-drop/drag-drop.styles.ts iosSkin.handle",
-    why: "DragDrop has no reference row: iOS ships no drag handle control (its reorder control exists only in a table's edit mode), so the grip is Dark Factory's",
-  },
-  {
-    site: "src/organisms/drag-drop/drag-drop.styles.ts iosSkin.zoneActive",
-    why: "DragDrop has no reference row: iOS drag and drop is a gesture with a system lift preview and ships no drop zone control, so the drop ring is the kit's own surface",
-  },
-  {
-    site: "src/organisms/drag-drop/drag-drop.styles.ts androidSkin.zoneActive",
-    why: "DragDrop has no reference row: Material 3 has no drag and drop component, so the drop ring is the kit's own surface",
-  },
-  {
-    site: "src/organisms/drag-drop/drag-drop.styles.ts iosSkin.ghost",
-    why: "DragDrop has no reference row: the ghost is the kit's own lifted copy of the row, not the system drag preview, so it keeps Dark Factory's ghost corner",
-  },
-  {
-    site: "src/organisms/drag-drop/drag-drop.styles.ts androidSkin.ghost",
-    why: "DragDrop has no reference row: Material 3 has no drag and drop component, so the ghost keeps Dark Factory's ghost corner",
   },
 ];
 

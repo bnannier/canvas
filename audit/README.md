@@ -50,7 +50,8 @@ route. Each file is half generated and half hand-maintained:
   itself counts as the platform's own unless the web entry has the same literal at the same
   place, so `createChip({ radius: 3 })` is never read as the web skin) and which are in
   the docs' platform-skin registry; its row in `PLATFORM-REFERENCES.md` (treatment, build,
-  and whether each platform cell is a real reference link or a `none` note); its
+  and whether each platform cell is a real reference link or a `none` note; every docs
+  component has one, held to the skins by `test/platform-references.test.ts`); its
   `tools/materials/manifest.ts` entries; its hand-off parity records split into open gaps,
   settled divergences and metric gaps (read from `tools/handoff-parity/divergences.json`,
   applied to the component through `tools/handoff-parity/compare.ts`, the same comparison

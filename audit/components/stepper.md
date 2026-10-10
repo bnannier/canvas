@@ -70,7 +70,7 @@ Severity follows rn-library-audit: critical (broken for a class of users), high 
 
 ## Specific checks
 
-Native shape owed per `PLATFORM-REFERENCES.md` (iOS / Android): HIG / DF (own Android skin, K8).
+Native shape owed per `PLATFORM-REFERENCES.md` (iOS / Android): HIG / DF (own Android skin until this turn aliases it, K8c).
 
 - [ ] APG spinbutton
 - [ ] decimal

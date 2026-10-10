@@ -13,7 +13,7 @@ Audit checklist for `/components/reveal`. The facts block and the variants table
 | Exports | Reveal, RevealGroup |
 | Platform entries | iOS: web build: Reveal. Android: web build: Reveal |
 | Platform-skins registry | none (every export is the web build, so the docs three-up renders it as is) |
-| Reference row | none: `PLATFORM-REFERENCES.md` has no row for this component (K8) |
+| Reference row | `reveal` (Shared, Built). iOS: none (iOS has no reveal control; the HIG specifies no scroll-into-view entrance for content, and its motion guidance is a foundation, not a component). Android: none (Material 3 has no reveal component; it describes entering elements only in its motion guidance). Web: none (no established web component library ships a scroll reveal; it is an animation library's job, such as Motion's whileInView) |
 | Materials manifest | Reveal: atoms, inherited; verification inherited-composition, semantic-state. RevealGroup: atoms, inherited; verification inherited-composition, semantic-state |
 | Hand-off open gaps | none |
 | Hand-off settled | Reveal.index (Not offered: none), Reveal.from (Boolean axis: `fromAbove`, `fromBelow`, `fromLeft`, `fromRight`), Reveal.deep (Renamed: `deepInView`) |

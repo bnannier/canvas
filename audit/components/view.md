@@ -13,7 +13,7 @@ Audit checklist for `/components/view`. The facts block and the variants table a
 | Exports | View |
 | Platform entries | none in the kit: React Native's own `View`, imported the same way on every platform |
 | Platform-skins registry | none (every export is the web build, so the docs three-up renders it as is) |
-| Reference row | none: `PLATFORM-REFERENCES.md` has no row for this component (K8) |
+| Reference row | `view` (Shared, Built). iOS: none (iOS has no view control; a view (UIView) is the host every control draws in, with no look of its own). Android: none (Material 3 has no view component; a view is the host every component draws in, with no look of its own). Web: link [view (Web)](https://www.radix-ui.com/themes/docs/components/box) (Radix Themes Box; react-native-web renders a View as a div) |
 | Materials manifest | View: style, inherited; verification inherited-composition, semantic-state |
 | Hand-off open gaps | none |
 | Hand-off settled | none |

@@ -13,7 +13,7 @@ Audit checklist for `/components/row-column`. The facts block and the variants t
 | Exports | Row, Column |
 | Platform entries | iOS: web build: Row, Column. Android: web build: Row, Column |
 | Platform-skins registry | none (every export is the web build, so the docs three-up renders it as is) |
-| Reference row | none: `PLATFORM-REFERENCES.md` has no row for this component (K8) |
+| Reference row | `row-column` (Shared, Built). iOS: none (iOS has no layout control; stacks (UIStackView, SwiftUI HStack and VStack) arrange views and draw nothing). Android: none (Material 3 has no layout component; Compose's Row and Column arrange content and draw nothing). Web: link [row-column (Web)](https://www.radix-ui.com/themes/docs/components/flex) (Radix Themes Flex) |
 | Materials manifest | Row: atoms, inherited; verification inherited-composition, semantic-state. Column: atoms, inherited; verification inherited-composition, semantic-state |
 | Hand-off open gaps | none |
 | Hand-off settled | none |

@@ -13,7 +13,7 @@ Audit checklist for `/components/pagination`. The facts block and the variants t
 | Exports | Pagination |
 | Platform entries | iOS: web build: Pagination. Android: web build: Pagination |
 | Platform-skins registry | none (every export is the web build, so the docs three-up renders it as is) |
-| Reference row | `pagination` (Full, Built). iOS: none (iOS has no numbered pagination control; long lists scroll or load incrementally, and the dot-based page control is a swipe indicator for a handful of peer views, not page navigation for tables). Android: none (Material 3 has no pagination component; pagination existed only in the retired M2 data-tables spec, and M3 lists scroll continuously or load incrementally instead). Web: link [pagination (Web)](https://catalyst.tailwindui.com/docs/pagination) |
+| Reference row | `pagination` (Shared, Built). iOS: none (iOS has no numbered pagination control; long lists scroll or load incrementally, and the dot-based page control is a swipe indicator for a handful of peer views, not page navigation for tables). Android: none (Material 3 has no pagination component; pagination existed only in the retired M2 data-tables spec, and M3 lists scroll continuously or load incrementally instead). Web: link [pagination (Web)](https://catalyst.tailwindui.com/docs/pagination) |
 | Materials manifest | Pagination: atoms, static + inherited; verification solid-appearance, glass-appearance, mode-switch, accessibility-fallback, runtime-capability, semantic-state |
 | Hand-off open gaps | none |
 | Hand-off settled | Pagination.pages (Renamed: `total`, `itemCount`, `pageSize`) |

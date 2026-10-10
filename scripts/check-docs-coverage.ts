@@ -11,7 +11,8 @@
  *   3. the platform-skin registry guard (docs/scripts/check-platform-skins.ts)
  *
  * Informational by default (gaps are work items, not failures); --strict
- * exits 1 when any class reports anything, since those are real holes.
+ * exits 1 when any class reports anything, since those are real holes. The
+ * catalog rows are also held by test/platform-references.test.ts.
  *
  * Usage: bun scripts/check-docs-coverage.ts [--strict]
  */

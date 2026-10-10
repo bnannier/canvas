@@ -72,7 +72,7 @@ Severity follows rn-library-audit: critical (broken for a class of users), high 
 
 ## Specific checks
 
-Native shape owed per `PLATFORM-REFERENCES.md` (iOS / Android): DF / DF (own skins, K8).
+Native shape owed per `PLATFORM-REFERENCES.md` (iOS / Android): DF / DF (own skins until this turn aliases them, K8b).
 
 - [ ] paste whole code
 - [ ] one-time-code autofill (iOS `oneTimeCode`, Android SMS)

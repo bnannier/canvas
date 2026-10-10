@@ -71,7 +71,7 @@ Severity follows rn-library-audit: critical (broken for a class of users), high 
 
 ## Specific checks
 
-Native shape owed per `PLATFORM-REFERENCES.md` (iOS / Android): DF / M3.
+Native shape owed per `PLATFORM-REFERENCES.md` (iOS / Android): page control (one job, different control, K8c) / M3.
 
 - [ ] APG carousel ("n of m", pause)
 - [ ] arrows beside slides

@@ -13,7 +13,7 @@ Audit checklist for `/components/text-input`. The facts block and the variants t
 | Exports | TextInput |
 | Platform entries | none (`src/style/text.tsx` is one build on every platform) |
 | Platform-skins registry | none (every export is the web build, so the docs three-up renders it as is) |
-| Reference row | none: `PLATFORM-REFERENCES.md` has no row for this component (K8) |
+| Reference row | `text-input` (Shared, Built). iOS: link [text-input (iOS 27)](https://www.sketch.com/s/04c24d8b-38fb-4afb-8836-36617e022f02/symbols?g=Text%2520Fields) (the primitive is UITextField, or UITextView when multiline, with no kit skin; the designed field is the input row). Android: link [text-input (Android)](https://m3.material.io/components/text-fields/overview) (the primitive is EditText with no kit skin; the designed field is the input row). Web: link [text-input (Web)](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/input/text) (react-native-web renders an input, or a textarea when multiline) |
 | Materials manifest | TextInput: style, inherited; verification inherited-composition, semantic-state |
 | Hand-off open gaps | none |
 | Hand-off settled | none |

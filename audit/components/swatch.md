@@ -13,7 +13,7 @@ Audit checklist for `/components/swatch`. The facts block and the variants table
 | Exports | Swatch |
 | Platform entries | iOS: web build: Swatch. Android: web build: Swatch |
 | Platform-skins registry | none (every export is the web build, so the docs three-up renders it as is) |
-| Reference row | none: `PLATFORM-REFERENCES.md` has no row for this component (K8) |
+| Reference row | `swatch` (Shared, Built). iOS: none (iOS has no color sample control; a color well (UIColorWell) is an input that opens the color picker, a different job). Android: none (Material 3 has no color swatch component; its color pages document roles, not a sample control). Web: none (no established web component library ships a color swatch; design-system color pages compose one from a filled block and its token's name and value) |
 | Materials manifest | Swatch: atoms, inherited; verification inherited-composition, semantic-state |
 | Hand-off open gaps | none |
 | Hand-off settled | none |

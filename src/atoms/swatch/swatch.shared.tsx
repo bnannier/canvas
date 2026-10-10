@@ -23,9 +23,10 @@ import { type SwatchSkin } from "./swatch.styles.js";
 // action wraps the row in a real interactive kit component rather than making the
 // sample itself pressable.
 //
-// Swatch is a "Light" platform treatment: one structure and one set of token colors
-// (here), with the per-OS touches limited to the corner radius, the iOS continuous
-// corner curve, and the label type (see swatch.styles.ts).
+// Swatch is a "Shared" platform treatment: one structure and one set of token colors
+// (here), and no platform ships a color sample, so the iOS and Android skins are the web
+// skin (swatch.styles.ts). The continuous corner curve is drawn only where the platform
+// draws one (iOS).
 
 export type SwatchSize = "small" | "default" | "large";
 

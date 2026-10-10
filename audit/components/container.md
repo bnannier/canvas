@@ -13,7 +13,7 @@ Audit checklist for `/components/container`. The facts block and the variants ta
 | Exports | Container, containerStyle, measureOf, FLUID |
 | Platform entries | iOS: web build: Container; re-exports the shared build: containerStyle, measureOf, FLUID. Android: web build: Container; re-exports the shared build: containerStyle, measureOf, FLUID |
 | Platform-skins registry | none (every export is the web build, so the docs three-up renders it as is) |
-| Reference row | none: `PLATFORM-REFERENCES.md` has no row for this component (K8) |
+| Reference row | `container` (Shared, Built). iOS: none (iOS has no container control; a readable content width is a layout guide (readableContentGuide), not a view with a look). Android: none (Material 3 has no container component; window size classes and pane widths are layout guidance, not a component). Web: link [container (Web)](https://www.radix-ui.com/themes/docs/components/container) (Radix Themes Container: a centered max-width column) |
 | Materials manifest | Container: atoms, inherited; verification inherited-composition, semantic-state |
 | Hand-off open gaps | none |
 | Hand-off settled | none |
@@ -71,7 +71,6 @@ Severity follows rn-library-audit: critical (broken for a class of users), high 
 Native shape owed per `PLATFORM-REFERENCES.md` (iOS / Android): n/a.
 
 - [ ] measure steps and `start`
-- [ ] no reference row (K8)
 
 ## Findings
 

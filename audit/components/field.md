@@ -13,7 +13,7 @@ Audit checklist for `/components/field`. The facts block and the variants table 
 | Exports | Field |
 | Platform entries | iOS: own build: Field (builds from its own iosSkin; injects platform parts (../../atoms/input/input.ios.js); injects platform parts (../../atoms/textarea/textarea.ios.js); injects platform parts (../../atoms/select/select.ios.js); injects platform parts (../../atoms/autocomplete/autocomplete.ios.js); injects platform parts (../phone-input/phone-input.ios.js)). Android: own build: Field (builds from its own androidSkin; injects platform parts (../../atoms/input/input.android.js); injects platform parts (../../atoms/textarea/textarea.android.js); injects platform parts (../../atoms/select/select.android.js); injects platform parts (../../atoms/autocomplete/autocomplete.android.js); injects platform parts (../phone-input/phone-input.android.js)) |
 | Platform-skins registry | iOS: Field; Android: Field |
-| Reference row | none: `PLATFORM-REFERENCES.md` has no row for this component (K8) |
+| Reference row | `field` (Light, Built). iOS: link [field (iOS 27)](https://www.sketch.com/s/04c24d8b-38fb-4afb-8836-36617e022f02/symbols?g=Text%2520Fields) (a text field with its title above the box and one message line below it). Android: link [field (Android)](https://m3.material.io/components/text-fields/overview) (the label floats inside the text field's container, and the supporting text sits under it). Web: link [field (Web)](https://catalyst.tailwindui.com/docs/fieldset) (Catalyst's Field: a label, the control, a description and an error message) |
 | Materials manifest | Field: molecules, inherited; verification inherited-composition, semantic-state |
 | Hand-off open gaps | none |
 | Hand-off settled | none |
@@ -77,7 +77,7 @@ Severity follows rn-library-audit: critical (broken for a class of users), high 
 
 ## Specific checks
 
-Native shape owed per `PLATFORM-REFERENCES.md` (iOS / Android): delegates.
+Native shape owed per `PLATFORM-REFERENCES.md` (iOS / Android): HIG / M3 (the control is the wrapped field's).
 
 - [ ] label, description, error, required wired for every control it wraps
 
