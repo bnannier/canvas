@@ -131,8 +131,10 @@ Each file is half generated and half hand-maintained:
 - **Findings** (hand-maintained): one row per finding with id, severity, cell (one of that
   checklist's capture ids in the inventory, back-ticked or not, or `source` for a finding
   read in the code), summary, status (`open`, `verified`, `fixed`, `wontfix` with the
-  owner's reason, `duplicate`) and the fix commit, a commit SHA (7 to 40 hex digits), which
-  may be left off until there is one and is required once the status is `fixed`.
+  owner's reason, `deferred` to the later turn the approved plan names, which the summary
+  cites, `duplicate`) and the fix commit, a commit SHA (7 to 40 hex digits), which may be
+  left off until there is one and is required once the status is `fixed`. A `deferred`
+  finding is not open: its fix is scheduled, and the turn the plan names carries it.
 - **Sign-off** (hand-maintained): one row per platform with the run id of the after-capture
   run that shows the component passing, the reviewer, the date and the result. A row with a
   run id signs that platform off (`tools/audit/sign-off.ts`, the one reader audit:status and

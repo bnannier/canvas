@@ -121,7 +121,7 @@ export const FINDINGS_SHAPE: TableShape = { name: "findings", columns: ["ID", "S
 
 export const FINDING_SEVERITIES = ["critical", "high", "medium", "low"] as const;
 /** The Status vocabulary, exactly as audit/README.md spells it (tools/audit/checklists.test.ts holds the two together). */
-export const FINDING_STATUSES = ["open", "verified", "fixed", "wontfix", "duplicate"] as const;
+export const FINDING_STATUSES = ["open", "verified", "fixed", "wontfix", "deferred", "duplicate"] as const;
 
 /** A Fix commit cell: a commit SHA, 7 to 40 hex digits, back-ticked or not. */
 export const FIX_COMMIT = /^`?[0-9a-f]{7,40}`?$/i;
@@ -572,7 +572,7 @@ function findingsSection(cellText = "a capture id from the inventory (`web/<slug
   return [
     "## Findings",
     "",
-    `One row per finding. Severity: critical, high, medium, low. Cell: ${cellText}. Status: open, verified, fixed, wontfix (the owner's decision, with the reason in the summary), duplicate. Fix commit: the short SHA that closed it.`,
+    `One row per finding. Severity: critical, high, medium, low. Cell: ${cellText}. Status: open, verified, fixed, wontfix (the owner's decision, with the reason in the summary), deferred (to the later turn the approved plan names, cited in the summary), duplicate. Fix commit: the short SHA that closed it.`,
     "",
     headerRow(FINDINGS_SHAPE),
     separatorRow(FINDINGS_SHAPE),
