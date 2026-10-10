@@ -43,12 +43,13 @@
 // anchor. A closed overlay holds no state and hears nothing.
 //
 // Focus: on the web an open card's controls keep their place in the tab order right
-// after the trigger, a menu or option list closes on a Tab out of it (`dismissOnTab`),
-// and focus the card held goes back to what opened it when it closes. On iOS and
-// Android a card that can close (and is no combobox's popup) is modal to VoiceOver and
-// TalkBack while open: its window's page is hidden from them, a card opened from it
-// covers it in turn, the owner moves them into it at onCardMount, and they go back to
-// the trigger on close.
+// after the control that opened it, a menu or option list closes on a Tab out of it
+// (`dismissOnTab`), and focus the card held goes back to what opened it when it closes.
+// A card pinned open (it cannot close) is page content: nothing moves focus into it.
+// On iOS and Android a card that can close (and is no combobox's popup) is modal to
+// VoiceOver and TalkBack while open: its window's page is hidden from them, a card
+// opened from it covers it in turn, the owner moves them into it at onCardMount, and
+// they go back to the trigger on close.
 //
 // With no provider it degrades to the kit's pre-portal inline anchor (the
 // caller's own absolute top:100% style, passed as `inlineStyle`), so an unhosted
@@ -251,9 +252,10 @@ export interface AnchoredOverlayProps {
    */
   combobox?: boolean;
   /**
-   * The trigger control focus returns to when the card closes, where `triggerRef` is a
-   * wrapper around it (TalkBack moves only to an accessibility element). Defaults to
-   * `triggerRef`.
+   * The control that opened the card, where `triggerRef` is a wrapper around it (an anchor
+   * box that also holds other controls): the card's controls follow it in the tab order, and
+   * focus returns to it when the card closes (TalkBack moves only to an accessibility
+   * element). Defaults to `triggerRef`.
    */
   returnFocusRef?: RefObject<View | null>;
   /**
@@ -390,8 +392,11 @@ function useCardFocus({ shown, cardRef, triggerRef, returnFocusRef, dismissOnTab
   /** A combobox's field owns focus (refocusing it would reopen the list): no restore. */
   combobox: boolean;
 }) {
+  // The control the card opened from: its run follows that control's stops (a PhoneInput's
+  // country list follows the country segment, not the number field its anchor box also
+  // holds), and focus goes back to it.
   const returnTo = returnFocusRef ?? triggerRef;
-  useAnchoredCardFocus({ shown, cardRef, triggerRef, returnRef: returnTo, onLeave: dismissOnTab ? onDismiss : undefined, restore: !combobox });
+  useAnchoredCardFocus({ shown, cardRef, triggerRef: returnTo, returnRef: returnTo, onLeave: dismissOnTab ? onDismiss : undefined, restore: !combobox });
   // Whether the card was ever shown, and whether it was modal then, for the close below.
   const wasShown = useRef(false);
   const modalRef = useRef(modal);

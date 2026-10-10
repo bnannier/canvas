@@ -182,12 +182,27 @@ describe("the tab order and Tab in an open card (AO-1)", () => {
     });
   });
 
-  it("enters the PhoneInput country list at the selected country", async () => {
+  it("enters the PhoneInput country list at the selected country, its one stop, right after the country segment", async () => {
     await withLayout(async () => {
       page(<PhoneInput label="Phone" defaultCountry="GB" />);
-      await openAndReveal(() => fireEvent.click(screen.getByRole("button", { name: /Country/ })));
+      const segment = screen.getByRole("button", { name: /Country/ });
+      await openAndReveal(() => fireEvent.click(segment));
       expect(focused().getAttribute("aria-selected")).toBe("true");
       expect(focused().getAttribute("aria-label")).toContain("United Kingdom");
+      // The rows are the list's one stop (the WAI-ARIA listbox): its overflowing port takes none.
+      const list = screen.getByRole("listbox");
+      expect([...stops()].filter((stop) => list.contains(stop) || stop.contains(list))).toEqual([focused()]);
+      // The list opened from the country segment, so it sits right after it, before the
+      // number field the anchoring box also holds: Shift+Tab closes it on the segment.
+      tab(true);
+      expect(focused()).toBe(segment);
+      await settle();
+      expect(screen.queryByRole("listbox")).toBeNull();
+      await openAndReveal(() => fireEvent.click(segment));
+      tab();
+      expect(focused()).toBe(screen.getByRole("textbox", { name: "Phone" }));
+      await settle();
+      expect(screen.queryByRole("listbox")).toBeNull();
     });
   });
 
