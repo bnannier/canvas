@@ -13,3 +13,5 @@ The capture runs `bun run audit:turn -- --slug=anchored-overlay` took for this t
 
 | Run id | Kind | Platform | Recorded | Commit | Status | Cells | Slugs |
 |---|---|---|---|---|---|---|---|
+| `20261010-071857-web-be0fd78` | variants | web | 2026-10-10T07:29:30.384Z | `be0fd78` | complete | 2358 of 2358: 2358 ok, 0 failed | autocomplete, button-group, dropdown, popover, select, phone-input, calendar, command, row-menu, scroll-view, code-block, action-sheet, board, sidebar, tabs, avatar, field, navbars |
+| `20261010-072930-web-be0fd78` | states | web | 2026-10-10T07:34:42.290Z | `be0fd78` | complete | 1014 of 1014: 962 ok, 0 failed, 52 not reached | autocomplete, button-group, dropdown, popover, select, phone-input, calendar, command, row-menu, code-block, action-sheet, board, sidebar, tabs, avatar, field, navbars |
