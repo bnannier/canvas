@@ -12,6 +12,7 @@ Audit checklist for `/templates/activity`. The facts block and the variants tabl
 | Kit names its entry uses | Button, Card, Chip, Column, EmptyState, Feed, Icon, Input, Row, Select, Typography, useToast |
 | E2E naming it | 2: `e2e/a11y/shell.e2e.ts`, `e2e/a11y/structure.e2e.ts` |
 | E2E catalog sweeps | 3: `e2e/behavior/hydration-ids.e2e.ts` (contentRoutes), `e2e/responsive/component-widths.e2e.ts` (contentRoutes), `e2e/smoke/routes.e2e.ts` (allRoutes) |
+| Turn record | `audit/turns/template-activity.md`, written by `bun run audit:turn -- --slug=template-activity --phase=before\|after` (the before and after capture runs) |
 <!-- audit:facts:end -->
 
 ## Variants

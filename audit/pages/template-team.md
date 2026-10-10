@@ -12,6 +12,7 @@ Audit checklist for `/templates/team`. The facts block and the variants table ar
 | Kit names its entry uses | Avatar, Badge, Button, Card, Column, DataTable, EmptyState, Icon, Input, Row, Select, StackedList, Typography, useToast |
 | E2E naming it | 1: `e2e/behavior/hydration-ids.e2e.ts` |
 | E2E catalog sweeps | 3: `e2e/behavior/hydration-ids.e2e.ts` (contentRoutes), `e2e/responsive/component-widths.e2e.ts` (contentRoutes), `e2e/smoke/routes.e2e.ts` (allRoutes) |
+| Turn record | `audit/turns/template-team.md`, written by `bun run audit:turn -- --slug=template-team --phase=before\|after` (the before and after capture runs) |
 <!-- audit:facts:end -->
 
 ## Variants

@@ -26,6 +26,7 @@ Audit checklist for `/components/command`. The facts block and the variants tabl
 | Tests importing it | 16: `test/a11y-state.test.tsx`, `test/anchored-overlay-dismissal.test.tsx`, `test/command.test.tsx`, `test/dense-overlays.test.tsx`, `test/design-rules-skins.test.ts`, `test/escape-layers.test.tsx`, `test/field-focus-states.test.tsx`, `test/focus-ring.test.tsx`, `test/hosted-trigger-focus.test.tsx`, `test/keyboard-nav.test.tsx`, `test/native-accessibility-escape-hosts.test.tsx`, `test/native-focus-fixtures.test.tsx`, `test/no-console-violations.test.tsx`, `test/organism-material-roles.test.tsx`, `test/overlay-frame-ring.test.tsx`, `test/skins-smoke.test.tsx` |
 | E2E naming it | 5: `e2e/behavior/escape-layers.e2e.ts`, `e2e/behavior/form-autocomplete.e2e.ts`, `e2e/journeys/keyboard.e2e.ts`, `e2e/journeys/overlay-placement.e2e.ts`, `e2e/journeys/touch.e2e.ts` |
 | E2E catalog sweeps | 9: `e2e/a11y/components.e2e.ts` (componentRoutes), `e2e/behavior/overlays.e2e.ts` (OVERLAYS), `e2e/journeys/keyboard.e2e.ts` (componentRoutes), `e2e/responsive/component-widths.e2e.ts` (contentRoutes, componentRoutes), `e2e/smoke/examples.e2e.ts` (componentExamples), `e2e/smoke/routes.e2e.ts` (allRoutes), `e2e/visual/components.e2e.ts` (componentRoutes), `e2e/visual/materials.e2e.ts` (MATERIAL_ROUTES), `e2e/visual/overlays.e2e.ts` (OVERLAYS) |
+| Turn record | `audit/turns/command.md`, written by `bun run audit:turn -- --slug=command --phase=before\|after` (the before and after capture runs) |
 <!-- audit:facts:end -->
 
 ## Variants

@@ -26,6 +26,7 @@ Audit checklist for `/components/geo-map`. The facts block and the variants tabl
 | Tests importing it | 9: `test/chart-materials.test.tsx`, `test/dev-warn.test.tsx`, `test/focus-ring.test.tsx`, `test/geo-map-camera.test.ts`, `test/geo-map-cluster.test.ts`, `test/geo-map-projection.test.ts`, `test/geo-map.test.tsx`, `test/material-solid-fallback.test.tsx`, `test/skins-smoke.test.tsx` |
 | E2E naming it | 1: `e2e/journeys/keyboard.e2e.ts` |
 | E2E catalog sweeps | 7: `e2e/a11y/components.e2e.ts` (componentRoutes), `e2e/journeys/keyboard.e2e.ts` (componentRoutes), `e2e/responsive/component-widths.e2e.ts` (contentRoutes, componentRoutes), `e2e/smoke/examples.e2e.ts` (componentExamples), `e2e/smoke/routes.e2e.ts` (allRoutes), `e2e/visual/components.e2e.ts` (componentRoutes), `e2e/visual/materials.e2e.ts` (MATERIAL_ROUTES) |
+| Turn record | `audit/turns/geo-map.md`, written by `bun run audit:turn -- --slug=geo-map --phase=before\|after` (the before and after capture runs) |
 <!-- audit:facts:end -->
 
 ## Variants

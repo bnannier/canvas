@@ -12,6 +12,7 @@ Audit checklist for `/templates/api-keys`. The facts block and the variants tabl
 | Kit names its entry uses | Alert, AlertDialog, Badge, Button, Card, Column, DataTable, Divider, EmptyState, Icon, Input, Row, Typography, useToast |
 | E2E naming it | 0: none |
 | E2E catalog sweeps | 3: `e2e/behavior/hydration-ids.e2e.ts` (contentRoutes), `e2e/responsive/component-widths.e2e.ts` (contentRoutes), `e2e/smoke/routes.e2e.ts` (allRoutes) |
+| Turn record | `audit/turns/template-api-keys.md`, written by `bun run audit:turn -- --slug=template-api-keys --phase=before\|after` (the before and after capture runs) |
 <!-- audit:facts:end -->
 
 ## Variants

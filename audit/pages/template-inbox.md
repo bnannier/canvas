@@ -12,6 +12,7 @@ Audit checklist for `/templates/inbox`. The facts block and the variants table a
 | Kit names its entry uses | Avatar, Badge, Button, Card, Column, Divider, Icon, Input, Row, StackedList, Typography, useToast |
 | E2E naming it | 1: `e2e/responsive/template-state.e2e.ts` |
 | E2E catalog sweeps | 3: `e2e/behavior/hydration-ids.e2e.ts` (contentRoutes), `e2e/responsive/component-widths.e2e.ts` (contentRoutes), `e2e/smoke/routes.e2e.ts` (allRoutes) |
+| Turn record | `audit/turns/template-inbox.md`, written by `bun run audit:turn -- --slug=template-inbox --phase=before\|after` (the before and after capture runs) |
 <!-- audit:facts:end -->
 
 ## Variants

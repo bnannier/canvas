@@ -12,6 +12,7 @@ Audit checklist for `/templates/errors`. The facts block and the variants table 
 | Kit names its entry uses | Alert, Badge, Button, Card, Column, Container, Emblem, EmptyState, Icon, Row, Typography, useToast |
 | E2E naming it | 0: none |
 | E2E catalog sweeps | 3: `e2e/behavior/hydration-ids.e2e.ts` (contentRoutes), `e2e/responsive/component-widths.e2e.ts` (contentRoutes), `e2e/smoke/routes.e2e.ts` (allRoutes) |
+| Turn record | `audit/turns/template-errors.md`, written by `bun run audit:turn -- --slug=template-errors --phase=before\|after` (the before and after capture runs) |
 <!-- audit:facts:end -->
 
 ## Variants

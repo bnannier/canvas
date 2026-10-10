@@ -62,7 +62,9 @@ const sources: ChecklistSources = all
   ? {
       components: all.components.filter((c) => ["avatar", "button", "view", "line-chart"].includes(c.slug)),
       pages: all.pages.filter((p) => ["pattern-glass", "template-activity"].includes(p.id)),
+      foundations: all.foundations.filter((f) => ["glass-modal-blur-target", "theme-provider"].includes(f.id)),
       corpus: all.corpus,
+      foundationSources: all.foundationSources,
     }
   : (null as never);
 
@@ -120,6 +122,8 @@ describe.skipIf(!hasDist)("the audit checklists", () => {
         "components/button.md",
         "components/line-chart.md",
         "components/view.md",
+        "foundation/glass-modal-blur-target.md",
+        "foundation/theme-provider.md",
         "pages/pattern-glass.md",
         "pages/template-activity.md",
       ]);
@@ -143,6 +147,56 @@ describe.skipIf(!hasDist)("the audit checklists", () => {
       expect(glass).toContain("| `page` | Whole page | [ ] | [ ] | [ ] |  |");
       expect(glass).toContain("| `livecomparison` | Live comparison | [ ] | [ ] | [ ] |  |");
       expect(glass).not.toContain("`section-");
+      // Every checklist links the turn record audit:turn writes for it.
+      expect(read(dir, "components/button.md")).toContain("| Turn record | `audit/turns/button.md`, written by `bun run audit:turn -- --slug=button --phase=before\\|after`");
+      expect(glass).toContain("| Turn record | `audit/turns/pattern-glass.md`");
+      // A foundation's checklist: its facts and consumers, the contract rubric, no variants table.
+      const bridge = read(dir, "foundation/glass-modal-blur-target.md");
+      expect(bridge).toContain("# GlassModalBlurTarget (foundation)");
+      expect(bridge).toContain("| Public exports | 1: `GlassModalBlurTarget` (component) |");
+      expect(bridge).toContain("| K12-2 status | 1 public: GlassModalBlurTarget |");
+      expect(bridge).toContain("| Docs planned | `integration`: GlassModalBlurTarget |");
+      expect(bridge).toContain("| `drawer` | directly | `GlassModalBlurTarget` |");
+      expect(bridge).toContain("| `sidebar` | through other kit components | `drawer` |");
+      expect(bridge).toMatch(/\| Capture through \| \d+, in this order: components `action-sheet`, `drawer`, /);
+      expect(bridge).toContain("## Contract rubric");
+      expect(bridge).toContain("- [ ] 5. **Accessibility it provides or must not break** (A, S, N)");
+      expect(bridge).toContain("- [ ] K12-5: documented on `integration`");
+      expect(bridge).not.toContain(VARIANTS_BEGIN);
+      expect(bridge).toContain("| android |  |  |  |  |");
+      expect(bridge).not.toContain(String.fromCharCode(0x2014));
+      const theme = read(dir, "foundation/theme-provider.md");
+      expect(theme).toContain("| K12-2 status | 6 public: Surface, ThemeProvider, ThemeProviderProps, ThemeTokenOverrides, ThemeValue, useTheme |");
+      expect(theme).toContain('| Documented on | `theming`: ThemeProvider, useTheme ("Native (ThemeProvider)") |');
+      expect(theme).toContain("| Pages using it | `pattern-accessibility` (useTheme), `pattern-glass` (ThemeProvider, useTheme) |");
+      expect(theme).toContain("| Not captured | guide pages, which the capture inventory (component, pattern and template pages) does not hold: `/theming`");
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
+  it("refuses a variants table in a foundation's checklist, and keeps its hand-maintained sections", () => {
+    const dir = temp();
+    try {
+      writeChecklists(dir, sources);
+      const file = "foundation/theme-provider.md";
+      const edited = read(dir, file)
+        .replace("- [ ] 6. **Performance**", "- [x] 6. **Performance**")
+        .replace("|---|---|---|---|---|---|\n\n## Sign-off", "|---|---|---|---|---|---|\n| TP-1 | medium | web/card/default/phone.dark.glass | a finding seen through a consumer | open |  |\n| TP-2 | low | source | read in theme.tsx | open |  |\n\n## Sign-off");
+      writeFileSync(join(dir, file), edited);
+      expect(writeChecklists(dir, sources).unchanged).toContain(file);
+      expect(read(dir, file)).toBe(edited);
+      expect(checkChecklists(dir, sources)).toEqual([]);
+      const status = auditStatus(dir).find((s) => s.file === file)!;
+      expect(status).toMatchObject({ variants: { total: 0, web: 0, ios: 0, android: 0 }, items: { ticked: 1 }, findings: { total: 2, open: 2 }, unreadable: [] });
+      // A cell of a component that does not render through it is not one of its capture ids.
+      const outside = edited.replace("web/card/default/phone.dark.glass", "web/view/default/phone.dark.glass");
+      writeFileSync(join(dir, file), outside);
+      expect(checkChecklists(dir, sources)).toEqual([expect.stringContaining(`audit/${file}:`) as unknown as string]);
+      // A variants block is refused, not guessed at.
+      writeFileSync(join(dir, file), `${edited}\n${VARIANTS_BEGIN}\n${VARIANTS_END}\n`);
+      expect(checkChecklists(dir, sources)).toEqual([`audit/${file}: a variants table, which a foundation's checklist does not have (it is captured through its consumers); remove the variants block`]);
+      expect(writeChecklists(dir, sources).refused.map((r) => r.file)).toEqual([file]);
     } finally {
       rmSync(dir, { recursive: true, force: true });
     }
@@ -175,7 +229,7 @@ describe.skipIf(!hasDist)("the audit checklists", () => {
       expect(status.items.ticked).toBe(1);
       expect(status.findings).toEqual({ total: 1, open: 1, bySeverity: { high: 1 }, byStatus: { open: 1 } });
       expect(status.signedOff).toEqual(["web"]);
-      expect(auditStatus(dir).length).toBe(6);
+      expect(auditStatus(dir).length).toBe(8);
     } finally {
       rmSync(dir, { recursive: true, force: true });
     }
@@ -201,7 +255,7 @@ describe.skipIf(!hasDist)("the audit checklists", () => {
         `audit/components/button.md: variant rows drift from the inventory (expected ${keys.join(", ")}; found ${["usage", ...keys.slice(1)].join(", ")}; run \`bun run audit:checklists\`)`,
         "audit/components/line-chart.md: sign-off section missing (a \"## Sign-off\" heading with a row per platform: web, ios, android)",
         "no checklist at audit/components/view.md (run `bun run audit:checklists`)",
-        "orphan checklist audit/pages/template-gone.md: no docs route calls for it (delete it, or restore the route)",
+        "orphan checklist audit/pages/template-gone.md: no docs route or foundation calls for it (delete it, or restore the route)",
       ]);
       // A write repairs the generated blocks and the missing file, and leaves the rest to hand.
       const repaired = writeChecklists(dir, sources);
@@ -209,7 +263,7 @@ describe.skipIf(!hasDist)("the audit checklists", () => {
       expect(repaired.updated.sort()).toEqual(["components/avatar.md", "components/button.md"]);
       expect(checkChecklists(dir, sources)).toEqual([
         "audit/components/line-chart.md: sign-off section missing (a \"## Sign-off\" heading with a row per platform: web, ios, android)",
-        "orphan checklist audit/pages/template-gone.md: no docs route calls for it (delete it, or restore the route)",
+        "orphan checklist audit/pages/template-gone.md: no docs route or foundation calls for it (delete it, or restore the route)",
       ]);
     } finally {
       rmSync(dir, { recursive: true, force: true });
@@ -635,7 +689,7 @@ describe("variants rows, orphans and section keys", () => {
       writeFileSync(join(dir, "components/button.md"), "# Button\n");
       writeFileSync(join(dir, "components/gone.md"), "# gone\n");
       expect(orphanChecklists(dir, new Set(["components/button.md"]))).toEqual([
-        "orphan checklist audit/components/gone.md: no docs route calls for it (delete it, or restore the route)",
+        "orphan checklist audit/components/gone.md: no docs route or foundation calls for it (delete it, or restore the route)",
       ]);
       expect(auditStatus(dir).map((row) => row.file)).toEqual(["components/button.md", "components/gone.md"]);
     } finally {
@@ -956,11 +1010,11 @@ describe("findings and sign-off tables", () => {
     expect(seeded.replace(/\([^)]*\)/g, "").split(",").map((w) => w.trim())).toEqual([...FINDING_STATUSES]);
   });
 
-  it("lists exactly the style-layer renderables with no component page in audit/README.md", () => {
+  it("lists exactly the style-layer renderables with no component page in audit/README.md, as the Foundations tier", () => {
     const readme = readFileSync(join(ROOT, "audit/README.md"), "utf8").replace(/\s+/g, " ");
     const names = [...STYLE_LAYER_RENDERABLES];
     const list = `${names.slice(0, -1).join(", ")} and ${names.at(-1)}`;
-    expect(readme).toContain(`The style-layer renderables with no component page have no checklist of their own: ${list}.`);
+    expect(readme).toContain(`The Foundations tier is the style-layer renderables with no component page of their own, ${list}, and the design tokens the docs' \`tokens/*\` pages document (Tokens).`);
     // Derived from the material inventory: the primitives with their own page are not in it.
     expect(names).toContain("ThemeProvider");
     expect(names).not.toContain("View");

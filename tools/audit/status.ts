@@ -19,12 +19,11 @@ import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { ROOT } from "../../e2e/support/routes.ts";
 import {
-  COMPONENTS_DIR,
+  CHECKLIST_DIRS,
   captureCells,
   FACTS_BEGIN,
   FACTS_END,
   FINDING_SEVERITIES,
-  PAGES_DIR,
   VARIANTS_BEGIN,
   VARIANTS_END,
   blockFirstLine,
@@ -62,8 +61,8 @@ const ticked = (cellText: string): boolean => /^\[x\]/i.test(cellText.trim());
  * whose Cell is neither one of them nor `source` is unreadable, by line, as
  * audit:checklists:check reports it.
  */
-export function checklistStatus(file: string, content: string, cells?: ReadonlySet<string>): ChecklistStatus {
-  const variants = findBlock(content, VARIANTS_BEGIN, VARIANTS_END);
+export function checklistStatus(file: string, content: string, cells?: ReadonlySet<string>, hasVariants = true): ChecklistStatus {
+  const variants = hasVariants ? findBlock(content, VARIANTS_BEGIN, VARIANTS_END) : null;
   const table = variants ? readVariantsTable(variants.lines, blockFirstLine(content, variants)) : { rows: [], malformed: [] };
   const rows = table.rows.map((row) => row.ticks);
   // Hand-maintained items: the task boxes outside the generated blocks.
@@ -79,7 +78,7 @@ export function checklistStatus(file: string, content: string, cells?: ReadonlyS
     if (isOpen(finding.status)) bySeverity[finding.severity] = (bySeverity[finding.severity] ?? 0) + 1;
   }
   const unreadable: StatusProblem[] = [
-    ...(variants ? [] : [{ line: null, message: "variants table markers missing" }]),
+    ...(variants || !hasVariants ? [] : [{ line: null, message: "variants table markers missing" }]),
     ...table.malformed.map((row) => ({ line: row.line, message: `malformed variants row: ${row.reason}` })),
     ...handTableProblems(content, cells),
   ];
@@ -106,13 +105,13 @@ export function checklistStatus(file: string, content: string, cells?: ReadonlyS
 /** Every checklist's counts; `cells` maps each checklist to its capture ids (the inventory's, by default). */
 export function auditStatus(auditDir: string, cells: ReadonlyMap<string, ReadonlySet<string>> = captureCells()): ChecklistStatus[] {
   const out: ChecklistStatus[] = [];
-  for (const dir of [COMPONENTS_DIR, PAGES_DIR]) {
+  for (const { dir, variants } of CHECKLIST_DIRS) {
     const absolute = join(auditDir, dir);
     if (!existsSync(absolute)) continue;
     for (const name of readdirSync(absolute).sort()) {
       if (!name.endsWith(".md")) continue;
       const file = `${dir}/${name}`;
-      out.push(checklistStatus(file, readFileSync(join(absolute, name), "utf8"), cells.get(file)));
+      out.push(checklistStatus(file, readFileSync(join(absolute, name), "utf8"), cells.get(file), variants));
     }
   }
   return out;

@@ -26,6 +26,7 @@ Audit checklist for `/components/checkbox`. The facts block and the variants tab
 | Tests importing it | 13: `test/a11y-state.test.tsx`, `test/atom-material-roles.test.tsx`, `test/checkbox-idiom.test.tsx`, `test/control-refs-types.test.ts`, `test/control-refs.test.tsx`, `test/control-space.test.tsx`, `test/design-rules-shape.test.ts`, `test/design-rules-skins.test.ts`, `test/forms.test.tsx`, `test/glass-controls.test.tsx`, `test/material-solid-fallback.test.tsx`, `test/native-focus-fixtures.test.tsx`, `test/skins-smoke.test.tsx` |
 | E2E naming it | 4: `e2e/behavior/listbox.e2e.ts`, `e2e/journeys/control-refs.e2e.ts`, `e2e/journeys/keyboard.e2e.ts`, `e2e/journeys/touch.e2e.ts` |
 | E2E catalog sweeps | 7: `e2e/a11y/components.e2e.ts` (componentRoutes), `e2e/journeys/keyboard.e2e.ts` (componentRoutes), `e2e/responsive/component-widths.e2e.ts` (contentRoutes, componentRoutes), `e2e/smoke/examples.e2e.ts` (componentExamples), `e2e/smoke/routes.e2e.ts` (allRoutes), `e2e/visual/components.e2e.ts` (componentRoutes), `e2e/visual/materials.e2e.ts` (MATERIAL_ROUTES) |
+| Turn record | `audit/turns/checkbox.md`, written by `bun run audit:turn -- --slug=checkbox --phase=before\|after` (the before and after capture runs) |
 <!-- audit:facts:end -->
 
 ## Variants

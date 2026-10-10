@@ -1,5 +1,7 @@
 // The per-component and per-page audit checklists under audit/: one markdown file per
-// docs route, half generated and half hand-maintained.
+// docs route, and one per foundation of the Foundations tier (audit/foundation/, from
+// tools/audit/foundations.ts: a facts block and the hand-maintained sections, no variants
+// table), half generated and half hand-maintained.
 //
 // Generated, and rewritten on every `--write`: the facts block (tools/audit/facts.ts)
 // and the variants table (one row per example variant from tools/audit/inventory.ts,
@@ -28,12 +30,15 @@
 // same in all three, and a row that cannot be read is named by line, never dropped.
 //
 // `--check` (wired as audit:checklists:check, in CI and the pre-push hook) fails on a
-// route with no checklist, an orphan checklist (a `.md` file no route calls for), a
-// stale facts block, a malformed variants, findings or sign-off row (by line number;
-// audit:status could not count it), a finding whose Cell is neither one of that
-// checklist's capture ids in tools/audit/inventory.ts nor `source` (by line), variant
-// rows that drift from the inventory, a variants table `--write` would rewrite, and a
-// missing findings table or sign-off section.
+// route or foundation with no checklist, an orphan checklist (a `.md` file no route or
+// foundation calls for), a stale facts block, a malformed variants, findings or sign-off
+// row (by line number; audit:status could not count it), a finding whose Cell is neither
+// one of that checklist's capture ids in tools/audit/inventory.ts (a foundation's: those
+// of its Capture through slugs) nor `source` (by line), variant rows that drift from the
+// inventory, a variants table `--write` would rewrite or a foundation's checklist should
+// not have, a missing findings table or sign-off section, and a turn record under
+// audit/turns/ (tools/audit/turn-record.ts) that names no checklist or has a row it
+// cannot read.
 
 import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
@@ -65,9 +70,23 @@ import {
   type InventoryComponent,
   type InventoryPage,
 } from "./inventory.ts";
-import { COMPONENT_PLANS, FAMILY_CHECKLISTS, FAMILY_LABEL, PAGE_PLAN, UNIVERSAL_RUBRIC, type Family } from "./plan-specifics.ts";
+import { FOUNDATION_DIR, foundationFacts, foundationSources, foundations, type Foundation, type FoundationFacts, type FoundationSources } from "./foundations.ts";
+import type { Consumer, ConsumerTier } from "./kit-graph.ts";
+import {
+  COMPONENT_PLANS,
+  FAMILY_CHECKLISTS,
+  FAMILY_LABEL,
+  FOUNDATION_CONSUMERS_CHECK,
+  FOUNDATION_PLANS,
+  FOUNDATION_RUBRIC,
+  PAGE_PLAN,
+  UNIVERSAL_RUBRIC,
+  type Family,
+  type RubricItem,
+} from "./plan-specifics.ts";
 import { SIGN_OFF_PLATFORMS, SIGN_OFF_SHAPE, readSignOffs } from "./sign-off.ts";
 import { SEPARATOR_LINE, headerRow, oneOf, readSectionTable, separatorRow, splitRow, type MalformedRow, type TableShape } from "./table.ts";
+import { turnProblems, turnRecordFile } from "./turn-record.ts";
 
 export type { MalformedRow } from "./table.ts";
 
@@ -78,6 +97,14 @@ export const VARIANTS_END = "<!-- audit:variants:end -->";
 
 export const COMPONENTS_DIR = "components";
 export const PAGES_DIR = "pages";
+export { FOUNDATION_DIR };
+
+/** The checklist directories under audit/, and whether a checklist there carries a variants table (a foundation has none: it is captured through its consumers). */
+export const CHECKLIST_DIRS: readonly { dir: string; variants: boolean }[] = [
+  { dir: COMPONENTS_DIR, variants: true },
+  { dir: PAGES_DIR, variants: true },
+  { dir: FOUNDATION_DIR, variants: false },
+];
 
 /** The platforms a variant row carries a tick cell for, with the cells each tick stands for. */
 export const TICK_COLUMNS = [
@@ -102,12 +129,17 @@ export const FIX_COMMIT = /^`?[0-9a-f]{7,40}`?$/i;
 export interface ChecklistSources {
   components: InventoryComponent[];
   pages: InventoryPage[];
+  /** The Foundations tier's checklists to write (tools/audit/foundations.ts). */
+  foundations: Foundation[];
   corpus: FactsCorpus;
+  /** What a foundation's facts read besides the corpus: the kit graph, every component and every page. */
+  foundationSources: FoundationSources;
 }
 
 /** The real inventory and facts of this checkout. */
 export function defaultSources(root = ROOT): ChecklistSources {
-  return { components: components(), pages: pages(), corpus: loadCorpus(root) };
+  const pageList = pages();
+  return { components: components(), pages: pageList, foundations: foundations(), corpus: loadCorpus(root), foundationSources: foundationSources(root, undefined, pageList) };
 }
 
 // ---------- rendering ----------
@@ -260,8 +292,14 @@ export function renderComponentFacts(facts: ComponentFacts): string[] {
     ["Tests importing it", `${facts.tests.length}: ${list(facts.tests)}`],
     ["E2E naming it", `${facts.e2e.length}: ${list(facts.e2e)}`],
     ["E2E catalog sweeps", sweepsLine(facts.e2eSweeps)],
+    ["Turn record", turnRecordLine(facts.slug)],
   ];
   return ["| Fact | Value |", "|---|---|", ...rows.map(([fact, value]) => `| ${fact} | ${cell(value)} |`)];
+}
+
+/** Where a turn records its capture runs for a checklist's id (tools/audit/turn-record.ts), and the command that writes it. */
+function turnRecordLine(id: string): string {
+  return `${code(`audit/${turnRecordFile(id)}`)}, written by \`bun run audit:turn -- --slug=${id} --phase=before|after\` (the before and after capture runs)`;
 }
 
 /** The lines of a page's facts block, between the markers. */
@@ -274,8 +312,106 @@ export function renderPageFacts(facts: PageFacts): string[] {
     ["Kit names its entry uses", facts.kitNames.join(", ") || "none"],
     ["E2E naming it", `${facts.e2e.length}: ${list(facts.e2e)}`],
     ["E2E catalog sweeps", sweepsLine(facts.e2eSweeps)],
+    ["Turn record", turnRecordLine(`${facts.kind}-${facts.slug}`)],
   ];
   return ["| Fact | Value |", "|---|---|", ...rows.map(([fact, value]) => `| ${fact} | ${cell(value)} |`)];
+}
+
+const TIER_TEXT: Record<ConsumerTier, string> = {
+  direct: "directly",
+  shared: "through shared modules",
+  component: "through other kit components",
+};
+
+/** At most `limit` values, then how many more there are, so a long list stays exact and short. */
+const capped = (values: string[], limit = 3): string => (values.length <= limit ? values.join(", ") : `${values.slice(0, limit).join(", ")} and ${values.length - limit} more`);
+
+function consumerThrough(consumer: Consumer): string {
+  if (consumer.tier === "direct") return capped(consumer.through.map(code), 6);
+  if (consumer.tier === "component") return consumer.through.map(code).join(", ");
+  return capped(consumer.through);
+}
+
+/** The docs routes a foundation's exports are documented on, by route, with the names (and sections) each documents. */
+function documentedLine(facts: FoundationFacts): string {
+  const routes = facts.docs.filter((d) => d.documents.length);
+  if (!routes.length) return "none yet: the public API manifest names no page for any of its exports";
+  return routes
+    .map((d) => {
+      const sections = [...new Set(facts.exports.filter((e) => e.documented?.route === d.route && e.documented.section).map((e) => e.documented!.section!))];
+      return `${code(d.route)}: ${d.documents.join(", ")}${sections.length ? ` (${sections.map((s) => `"${s}"`).join(", ")})` : ""}`;
+    })
+    .join("; ");
+}
+
+function plannedLine(facts: FoundationFacts): string {
+  const routes = facts.docs.filter((d) => d.planned.length);
+  if (!routes.length) return "none: every export has its page";
+  return routes.map((d) => `${code(d.route)}${d.exists ? "" : " (not built yet)"}: ${d.planned.join(", ")}`).join("; ");
+}
+
+function k12Line(facts: FoundationFacts): string {
+  const groups = new Map<string, string[]>();
+  for (const e of facts.exports) groups.set(e.k12, [...(groups.get(e.k12) ?? []), e.name]);
+  return [...groups].map(([status, names]) => `${names.length} ${status}: ${names.join(", ")}`).join("; ");
+}
+
+/** The lines of a foundation's facts block, between the markers: the facts table, then its consumers, one row each. */
+export function renderFoundationFacts(facts: FoundationFacts): string[] {
+  const f = facts.foundation;
+  const counts = (["direct", "shared", "component"] as const).map((tier) => [tier, facts.consumers.filter((c) => c.tier === tier).length] as const);
+  const through = facts.captureThrough;
+  const rows: [string, string][] = [
+    [
+      "Foundation",
+      f.kind === "tokens"
+        ? `the design tokens the docs' \`tokens/*\` pages document (${list(facts.homes)}): the public names \`tools/api/manifest.ts\` documents on one of them, or plans to`
+        : `${code(f.name)}, a style-layer renderable with no component page of its own (\`tools/materials/manifest.ts\`, the style tier), declared in ${list(facts.homes)}`,
+    ],
+    ["Source files", list(facts.sourceFiles)],
+    ["Public exports", `${facts.exports.length}: ${facts.exports.map((e) => `${code(e.name)} (${e.kind}${e.value || e.kind === "type" ? "" : ", a type"})`).join(", ")}`],
+    ["K12-2 status", k12Line(facts)],
+    ["Documented on", documentedLine(facts)],
+    ["Docs planned", plannedLine(facts)],
+    [
+      "Materials manifest",
+      facts.materials
+        ? `${facts.materials.name}: ${facts.materials.tier}, ${facts.materials.roles.join(" + ")}; docs route ${facts.materials.docsRoute ? code(facts.materials.docsRoute) : "none (`docsRoute: null`)"}; verification ${facts.materials.verification.join(", ")}`
+        : "none: the design tokens are not a renderable, so the material inventory has no entry for them",
+    ],
+    ["Tests importing it", `${facts.tests.length} (importing one of its public exports by name): ${list(facts.tests)}`],
+    [
+      "Consumers",
+      facts.consumers.length
+        ? `${facts.consumers.length} components: ${counts.filter(([, n]) => n > 0).map(([tier, n]) => `${n} ${TIER_TEXT[tier]}`).join(", ")} (one row each below, read from the source by \`tools/audit/kit-graph.ts\`)`
+        : "none: no kit component's code reads one of its exports",
+    ],
+    ["Pages using it", facts.pages.length ? facts.pages.map((p) => `${code(p.id)} (${p.names.join(", ")})`).join(", ") : "none: no pattern or template entry names one of its exports"],
+    [
+      "Capture through",
+      through.components.length + through.pages.length
+        ? `${through.components.length + through.pages.length}, in this order: components ${list(through.components)}; pages ${list(through.pages)}`
+        : "nothing: no component or page shows it",
+    ],
+    [
+      "Not captured",
+      facts.notCaptured.length
+        ? `guide pages, which the capture inventory (component, pattern and template pages) does not hold: ${facts.notCaptured
+            .map((d) => `${code(`/${d.route}`)} (${[d.documents.length ? `documents ${d.documents.join(", ")}` : "", d.planned.length ? `planned for ${d.planned.join(", ")}` : "", d.exists ? "" : "not built yet"].filter(Boolean).join("; ") || "its home page"})`)
+            .join(", ")}`
+        : "none",
+    ],
+    ["Turn record", turnRecordLine(f.id)],
+  ];
+  return [
+    "| Fact | Value |",
+    "|---|---|",
+    ...rows.map(([fact, value]) => `| ${fact} | ${cell(value)} |`),
+    "",
+    "| Consumer | Reaches it | Through |",
+    "|---|---|---|",
+    ...facts.consumers.map((c) => `| ${code(c.slug)} | ${TIER_TEXT[c.tier]} | ${cell(consumerThrough(c))} |`),
+  ];
 }
 
 export interface VariantRow {
@@ -397,13 +533,13 @@ export function pageVariantRows(id: string, facts: PageFacts): VariantRow[] {
 
 const checkItem = (text: string): string => `- [ ] ${text}`;
 
-function rubricSection(): string[] {
+function rubricSection(heading = "Universal rubric", items: RubricItem[] = UNIVERSAL_RUBRIC): string[] {
   return [
-    "## Universal rubric",
+    `## ${heading}`,
     "",
     "Severity follows rn-library-audit: critical (broken for a class of users), high (clear violation), medium, low. Evidence: S = source or test read, A = accessibility tree or DOM probe, P = photograph, N = native device check.",
     "",
-    ...UNIVERSAL_RUBRIC.map((item, i) => checkItem(`${i + 1}. **${item.title}** (${item.evidence}): ${item.text}`)),
+    ...items.map((item, i) => checkItem(`${i + 1}. **${item.title}** (${item.evidence}): ${item.text}`)),
     "",
   ];
 }
@@ -426,11 +562,11 @@ function specificsSection(native: string | null, specifics: string[]): string[] 
   ];
 }
 
-function findingsSection(): string[] {
+function findingsSection(cellText = "a capture id from the inventory (`web/<slug>/<variant>/<width>.<look>.<surface>`, `ios/<slug>/<variant>/<look>.<surface>`) or `source`"): string[] {
   return [
     "## Findings",
     "",
-    "One row per finding. Severity: critical, high, medium, low. Cell: a capture id from the inventory (`web/<slug>/<variant>/<width>.<look>.<surface>`, `ios/<slug>/<variant>/<look>.<surface>`) or `source`. Status: open, verified, fixed, wontfix (the owner's decision, with the reason in the summary), duplicate. Fix commit: the short SHA that closed it.",
+    `One row per finding. Severity: critical, high, medium, low. Cell: ${cellText}. Status: open, verified, fixed, wontfix (the owner's decision, with the reason in the summary), duplicate. Fix commit: the short SHA that closed it.`,
     "",
     headerRow(FINDINGS_SHAPE),
     separatorRow(FINDINGS_SHAPE),
@@ -438,11 +574,13 @@ function findingsSection(): string[] {
   ];
 }
 
-function signOffSection(): string[] {
+function signOffSection(
+  rule = "A platform is signed off when every variant cell for it is ticked, no critical or high finding is open, every medium or low is fixed or carries the owner's decision, and the run id names the after-capture run under `.audit/runs/` that shows it.",
+): string[] {
   return [
     "## Sign-off",
     "",
-    "A platform is signed off when every variant cell for it is ticked, no critical or high finding is open, every medium or low is fixed or carries the owner's decision, and the run id names the after-capture run under `.audit/runs/` that shows it.",
+    rule,
     "",
     headerRow(SIGN_OFF_SHAPE),
     separatorRow(SIGN_OFF_SHAPE),
@@ -513,6 +651,34 @@ export function seedPageChecklist(page: InventoryPage, facts: PageFacts): string
   ].join("\n");
 }
 
+/**
+ * A foundation's checklist from scratch: the generated facts block (no variants table: a
+ * foundation has no examples of its own and is photographed through its consumers), then
+ * the seeded sections: the rubric adapted for a style-layer contract, its specific checks,
+ * the findings table and the sign-off table, in the components' format.
+ */
+export function seedFoundationChecklist(facts: FoundationFacts): string {
+  const f = facts.foundation;
+  const specifics = FOUNDATION_PLANS[f.name];
+  if (!specifics) throw new Error(`audit: tools/audit/plan-specifics.ts FOUNDATION_PLANS has no row for ${f.name}`);
+  return [
+    `# ${f.name} (foundation)`,
+    "",
+    `Audit checklist for the ${f.kind === "tokens" ? "design tokens the `tokens/*` docs pages document" : `style-layer foundation ${code(f.name)}`}, audited for its contract and photographed through the components and pages that render through it (its Capture through list). The facts block is generated by \`bun run audit:checklists\` (between the markers); everything else is maintained by hand and survives regeneration. See \`audit/README.md\`, "Foundations".`,
+    "",
+    FACTS_BEGIN,
+    ...renderFoundationFacts(facts),
+    FACTS_END,
+    "",
+    ...rubricSection("Contract rubric", FOUNDATION_RUBRIC),
+    ...specificsSection(null, [...specifics, FOUNDATION_CONSUMERS_CHECK]),
+    ...findingsSection("a capture id of one of its Capture through slugs (`web/<slug>/<variant>/<width>.<look>.<surface>`, `ios/<slug>/<variant>/<look>.<surface>`, `web-pages/<kind>-<slug>/<width>.<look>.<surface>`) or `source`"),
+    ...signOffSection(
+      "A platform is signed off when no critical or high finding is open, every medium or low is fixed or carries the owner's decision, and the run ids name the after-capture runs under `.audit/runs/` (the turn record's after phase) that show every component and page in its Capture through list on that platform.",
+    ),
+  ].join("\n");
+}
+
 // ---------- the hand-maintained tables ----------
 
 /** A finding as a reviewer wrote it, with its 1-based line number in the file. */
@@ -546,11 +712,24 @@ export function pageCells(page: InventoryPage): Set<string> {
   return new Set(pageCellsFor(page.id).map(pageCellId));
 }
 
+/** The capture ids a foundation's checklist may name in its Findings Cell column: every cell of each component and page in its Capture through list. */
+export function foundationCells(facts: FoundationFacts, list: readonly InventoryComponent[], pageList: readonly InventoryPage[]): Set<string> {
+  const cells = new Set<string>();
+  for (const slug of facts.captureThrough.components) for (const id of componentCells(list.find((c) => c.slug === slug)!)) cells.add(id);
+  for (const page of facts.captureThrough.pages) for (const id of pageCells(pageList.find((p) => p.id === page)!)) cells.add(id);
+  return cells;
+}
+
 /** Every checklist the inventory calls for (its path under audit/), with the capture ids its findings may name. */
-export function captureCells(): Map<string, Set<string>> {
+export function captureCells(root = ROOT): Map<string, Set<string>> {
+  const list = components();
+  const pageList = pages();
+  const sources = foundationSources(root, undefined, pageList);
   return new Map([
-    ...components().map((c) => [`${COMPONENTS_DIR}/${c.slug}.md`, componentCells(c)] as const),
-    ...pages().map((p) => [`${PAGES_DIR}/${p.id}.md`, pageCells(p)] as const),
+    ...list.map((c) => [`${COMPONENTS_DIR}/${c.slug}.md`, componentCells(c)] as const),
+    ...pageList.map((p) => [`${PAGES_DIR}/${p.id}.md`, pageCells(p)] as const),
+    // A foundation's cells depend on its consumers, not on its tests, so its facts are read without the test corpus.
+    ...foundations().map((f) => [`${FOUNDATION_DIR}/${f.id}.md`, foundationCells(foundationFacts(f, { tests: [] }, sources), list, pageList)] as const),
   ]);
 }
 
@@ -655,10 +834,18 @@ export function variantsRefusals(table: VariantsTable, rows: VariantRow[]): stri
   ];
 }
 
-/** The existing file with its generated blocks regenerated and everything else untouched. */
-export function mergeChecklist(existing: string, factsLines: string[], rows: VariantRow[], file: string): string {
+/**
+ * The existing file with its generated blocks regenerated and everything else untouched.
+ * `rows` null: a checklist with no variants table (a foundation's), whose facts block alone
+ * is generated; variants markers in one are refused rather than guessed at.
+ */
+export function mergeChecklist(existing: string, factsLines: string[], rows: VariantRow[] | null, file: string): string {
   if (!findBlock(existing, FACTS_BEGIN, FACTS_END)) {
     throw new ChecklistRefusal(file, ["no facts block markers; restore them or delete the file to reseed it"]);
+  }
+  if (rows === null) {
+    if (findBlock(existing, VARIANTS_BEGIN, VARIANTS_END)) throw new ChecklistRefusal(file, ["a variants table, which a foundation's checklist does not have (it is captured through its consumers); remove the variants block"]);
+    return replaceBlock(existing, findBlock(existing, FACTS_BEGIN, FACTS_END)!, FACTS_BEGIN, factsLines, FACTS_END);
   }
   const variants = findBlock(existing, VARIANTS_BEGIN, VARIANTS_END);
   if (!variants) throw new ChecklistRefusal(file, ["no variants table markers; restore them or delete the file to reseed it"]);
@@ -677,7 +864,8 @@ export interface ChecklistEntry {
   /** The path under the audit directory. */
   file: string;
   factsLines: string[];
-  rows: VariantRow[];
+  /** Its variants rows, or null for a checklist with no variants table (a foundation's). */
+  rows: VariantRow[] | null;
   /** The capture ids its findings may name in their Cell (besides `source`). */
   cells: Set<string>;
   seed: () => string;
@@ -685,6 +873,8 @@ export interface ChecklistEntry {
 
 /** Every checklist the inventory calls for, with what its generated blocks must hold. */
 export function checklistEntries(sources: ChecklistSources): ChecklistEntry[] {
+  const allComponents = components();
+  const allPages = sources.foundationSources.pages;
   const entries: ChecklistEntry[] = sources.components.map((component) => {
     const facts = componentFacts(component.slug, sources.corpus);
     return {
@@ -703,6 +893,16 @@ export function checklistEntries(sources: ChecklistSources): ChecklistEntry[] {
       rows: pageVariantRows(page.id, facts),
       cells: pageCells(page),
       seed: () => seedPageChecklist(page, facts),
+    });
+  }
+  for (const foundation of sources.foundations) {
+    const facts = foundationFacts(foundation, sources.corpus, sources.foundationSources);
+    entries.push({
+      file: `${FOUNDATION_DIR}/${foundation.id}.md`,
+      factsLines: renderFoundationFacts(facts),
+      rows: null,
+      cells: foundationCells(facts, allComponents, allPages),
+      seed: () => seedFoundationChecklist(facts),
     });
   }
   return entries;
@@ -761,14 +961,22 @@ export function checkChecklists(auditDir: string, sources: ChecklistSources): st
     if (!facts) errors.push(`audit/${entry.file}: facts block markers missing`);
     else if (facts.lines.join("\n") !== entry.factsLines.join("\n")) errors.push(`audit/${entry.file}: stale facts block (run \`bun run audit:checklists\`)`);
     const variants = findBlock(content, VARIANTS_BEGIN, VARIANTS_END);
-    if (!variants) errors.push(`audit/${entry.file}: variants table markers missing`);
-    else errors.push(...variantsErrors(entry, content, variants));
+    if (entry.rows === null) {
+      if (variants) errors.push(`audit/${entry.file}: a variants table, which a foundation's checklist does not have (it is captured through its consumers); remove the variants block`);
+    } else if (!variants) errors.push(`audit/${entry.file}: variants table markers missing`);
+    else errors.push(...variantsErrors({ ...entry, rows: entry.rows }, content, variants));
     for (const problem of handTableProblems(content, entry.cells)) {
       errors.push(problem.line === null ? `audit/${entry.file}: ${problem.message}` : `audit/${entry.file}:${problem.line}: ${problem.message} (fix it by hand)`);
     }
   }
   errors.push(...orphanChecklists(auditDir, expected));
+  errors.push(...turnProblems(auditDir, checklistIds()));
   return errors;
+}
+
+/** Every id a checklist and a turn record may carry: the component slugs, the page ids and the foundation ids. */
+export function checklistIds(): Set<string> {
+  return new Set([...components().map((c) => c.slug), ...pages().map((p) => p.id), ...foundations().map((f) => f.id)]);
 }
 
 /**
@@ -776,7 +984,7 @@ export function checkChecklists(auditDir: string, sources: ChecklistSources): st
  * reported by its line and nothing more: its key cannot be trusted, so calling the table
  * drift would send the reviewer to `--write`, which refuses the file anyway.
  */
-function variantsErrors(entry: ChecklistEntry, content: string, variants: Block): string[] {
+function variantsErrors(entry: ChecklistEntry & { rows: VariantRow[] }, content: string, variants: Block): string[] {
   const table = readVariantsTable(variants.lines, blockFirstLine(content, variants));
   if (table.malformed.length) {
     return table.malformed.map(
@@ -802,13 +1010,13 @@ function variantsErrors(entry: ChecklistEntry, content: string, variants: Block)
 /** Every `.md` file under the checklist directories that no docs route calls for. Anything else there (a `.DS_Store`) is not a checklist. */
 export function orphanChecklists(auditDir: string, expected: Set<string>): string[] {
   const errors: string[] = [];
-  for (const dir of [COMPONENTS_DIR, PAGES_DIR]) {
+  for (const { dir } of CHECKLIST_DIRS) {
     const absolute = join(auditDir, dir);
     if (!existsSync(absolute)) continue;
     for (const name of readdirSync(absolute).sort()) {
       if (!name.endsWith(".md")) continue;
       const file = `${dir}/${name}`;
-      if (!expected.has(file)) errors.push(`orphan checklist audit/${file}: no docs route calls for it (delete it, or restore the route)`);
+      if (!expected.has(file)) errors.push(`orphan checklist audit/${file}: no docs route or foundation calls for it (delete it, or restore the route)`);
     }
   }
   return errors;

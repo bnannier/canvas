@@ -12,6 +12,7 @@ Audit checklist for `/patterns/density`. The facts block and the variants table 
 | Kit names its entry uses | Card, Checkbox, CodeBlock, Column, Grid, Input, Row, Typography |
 | E2E naming it | 0: none |
 | E2E catalog sweeps | 2: `e2e/responsive/component-widths.e2e.ts` (contentRoutes), `e2e/smoke/routes.e2e.ts` (allRoutes) |
+| Turn record | `audit/turns/pattern-density.md`, written by `bun run audit:turn -- --slug=pattern-density --phase=before\|after` (the before and after capture runs) |
 <!-- audit:facts:end -->
 
 ## Variants
