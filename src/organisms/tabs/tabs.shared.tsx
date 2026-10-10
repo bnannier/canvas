@@ -150,11 +150,18 @@ export interface TabsProps {
 }
 
 // Variant precedence when more than one is passed: first match wins.
-function variantOf(p: TabsProps): Variant {
+export function variantOf(p: TabsProps): Variant {
   if (p.pills) return "pills";
   if (p.vertical) return "vertical";
   if (p.underline) return "underline";
   return "underline";
+}
+
+// Whether a row of the rendered variant wraps: `wrap` applies to the horizontal rows
+// only, and `block` wins (equal shares never overflow); a flattened responsive rail
+// is a horizontal row, so it wraps.
+export function wrapsOf(p: Pick<TabsProps, "wrap" | "block">, variant: Variant): boolean {
+  return variant !== "vertical" && !!p.wrap && !p.block;
 }
 
 const DEFAULT_TABS: TabItem[] = ["General", "Security", "Notifications", "Billing"];
@@ -402,9 +409,7 @@ export function createTabs(skin: TabsSkin) {
     );
     const requested = variantOf(props);
     const variant = requested === "vertical" && props.responsive && narrow ? "underline" : requested;
-    // `wrap` applies to the horizontal rows only, and `block` wins (equal shares
-    // never overflow); a flattened responsive rail is a horizontal row, so it wraps.
-    const wrapping = variant !== "vertical" && !!props.wrap && !props.block;
+    const wrapping = wrapsOf(props, variant);
     const measureResponsive = props.responsive && requested === "vertical" ? onResponsiveLayout : undefined;
     const withResponsiveProbe = (root: ReactNode) =>
       measureResponsive ? (

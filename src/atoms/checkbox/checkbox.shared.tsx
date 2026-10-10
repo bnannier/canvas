@@ -73,7 +73,7 @@ export interface CheckboxProps {
 export type Size = "small" | "base" | "large";
 
 // Size precedence when more than one is passed: first match wins.
-function sizeOf(p: CheckboxProps): Size {
+export function sizeOf(p: CheckboxProps): Size {
   if (p.large) return "large";
   if (p.small) return "small";
   return "base";

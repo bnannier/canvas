@@ -83,7 +83,7 @@ export interface QRCodeProps {
 }
 
 // First-match size precedence; defaults to the medium code.
-function sizeOf(p: QRCodeProps): number {
+export function sizeOf(p: QRCodeProps): number {
   if (p.small) return 96;
   if (p.large) return 200;
   return 140;

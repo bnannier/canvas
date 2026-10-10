@@ -109,7 +109,7 @@ export interface FilterPanelProps {
 
 // Density precedence when more than one is passed: first match wins. There is a
 // single density flag today, so this collapses to compact vs. the default.
-function densityOf(p: FilterPanelProps): Density {
+export function densityOf(p: FilterPanelProps): Density {
   if (p.compact) return "compact";
   return "base";
 }

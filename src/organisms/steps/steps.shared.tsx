@@ -60,7 +60,7 @@ export interface StepsProps {
 type Layout = "horizontal" | "vertical" | "progress";
 
 // First match wins when more than one layout flag is passed.
-function layoutOf(p: StepsProps): Layout {
+export function layoutOf(p: StepsProps): Layout {
   if (p.progress) return "progress";
   if (p.vertical) return "vertical";
   return "horizontal";

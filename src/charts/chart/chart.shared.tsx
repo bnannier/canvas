@@ -90,7 +90,7 @@ export interface ChartProps {
 }
 
 // Tone precedence when more than one is passed: first match wins.
-function toneOf(p: ChartProps): Tone {
+export function toneOf(p: ChartProps): Tone {
   if (p.success) return "success";
   if (p.destructive) return "destructive";
   return "primary";

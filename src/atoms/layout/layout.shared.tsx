@@ -184,7 +184,7 @@ export function gapOf(p: Pick<FlexProps, Gap>): Gap {
 }
 
 // Main-axis precedence; default `start`.
-function justifyOf(p: FlexProps): Justify {
+export function justifyOf(p: FlexProps): Justify {
   if (p.between) return "between";
   if (p.around) return "around";
   if (p.evenly) return "evenly";
@@ -194,7 +194,7 @@ function justifyOf(p: FlexProps): Justify {
 }
 
 // Cross-axis precedence; default `stretch` (RN's native alignItems default).
-function alignOf(p: FlexProps): Align {
+export function alignOf(p: FlexProps): Align {
   if (p.stretch) return "stretch";
   if (p.baseline) return "baseline";
   if (p.alignCenter) return "alignCenter";
@@ -204,7 +204,7 @@ function alignOf(p: FlexProps): Align {
 }
 
 // Padding precedence; default none (null).
-function padOf(p: FlexProps): Pad | null {
+export function padOf(p: FlexProps): Pad | null {
   if (p.padLoose) return "padLoose";
   if (p.pad) return "pad";
   if (p.padTight) return "padTight";

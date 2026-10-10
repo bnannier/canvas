@@ -112,7 +112,7 @@ export interface TextareaProps extends TextEntryProps, MeasureProps {
 }
 
 // Size precedence when more than one is passed: first match wins.
-function sizeOf(p: TextareaProps): Size {
+export function sizeOf(p: TextareaProps): Size {
   if (p.large) return "large";
   if (p.small) return "small";
   return "base";

@@ -52,7 +52,7 @@ export interface RadarChartProps {
 }
 
 // Tone precedence within the axis, first match wins.
-function toneOf(p: RadarChartProps): Tone {
+export function toneOf(p: RadarChartProps): Tone {
   if (p.success) return "success";
   if (p.destructive) return "destructive";
   return "primary";

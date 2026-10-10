@@ -64,7 +64,7 @@ export function measureOf(p: ContainerProps): Measure {
 }
 
 // Gutter precedence, loosest first (Row and Column's own); default none.
-function padOf(p: ContainerProps): Pad | null {
+export function padOf(p: ContainerProps): Pad | null {
   if (p.padLoose) return "padLoose";
   if (p.pad) return "pad";
   if (p.padTight) return "padTight";

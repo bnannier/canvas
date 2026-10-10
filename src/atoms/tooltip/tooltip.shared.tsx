@@ -88,12 +88,24 @@ export interface TooltipProps {
 }
 
 // Placement precedence when more than one is passed: first match wins.
-function placementOf(p: TooltipProps): Placement {
+export function placementOf(p: TooltipProps): Placement {
   if (p.top) return "top";
   if (p.bottom) return "bottom";
   if (p.left) return "left";
   if (p.right) return "right";
   return "top";
+}
+
+/** The trigger a Tooltip renders: the caller's element, the icon button, the inline word, or the default text Button. */
+export type TriggerKind = "element" | "icon" | "text" | "button";
+
+// Trigger precedence, first match wins: `children`, `iconTrigger`, `textTrigger`,
+// then the default text Button.
+export function triggerOf(p: Pick<TooltipProps, "children" | "iconTrigger" | "textTrigger">): TriggerKind {
+  if (p.children != null) return "element";
+  if (p.iconTrigger) return "icon";
+  if (p.textTrigger) return "text";
+  return "button";
 }
 
 // Whether the bubble renders before the trigger in source order. top and left
@@ -118,8 +130,9 @@ export interface TooltipParts {
 export function createTooltip(skin: TooltipSkin, parts: TooltipParts = {}) {
   const Button = parts.Button ?? WebButton;
   return function Tooltip(props: TooltipProps) {
-    const { children, label, trigger, iconTrigger: isIconTrigger, textTrigger: isTextTrigger, onOpenChange, testID, style } = props;
+    const { children, label, trigger, onOpenChange, testID, style } = props;
     const placement = placementOf(props);
+    const triggerKind = triggerOf(props);
     const theme = useMaterialTheme({ static: true, layer: "dense" });
     const { tokens } = theme;
     // HUG: the trigger + bubble wrapper shrinks to its content inside a stretching Column.
@@ -174,7 +187,7 @@ export function createTooltip(skin: TooltipSkin, parts: TooltipParts = {}) {
     // pointerleave, and the tip would close again the moment it appeared. The
     // root grows to cover the bubble instead, so the pointer stays inside it and
     // hovering the bubble itself keeps the tip up, as a tooltip should.
-    const isElementTrigger = children != null;
+    const isElementTrigger = triggerKind === "element";
 
     // The open bubble is a polite live region so the tip text is announced when
     // it appears (rather than appearing silently beside the trigger). Mirrors the
@@ -197,8 +210,7 @@ export function createTooltip(skin: TooltipSkin, parts: TooltipParts = {}) {
       </View>
     ) : null;
 
-    // Trigger precedence, first match wins: children, iconTrigger, textTrigger,
-    // then the default text Button.
+    // The trigger `triggerOf` resolved.
     //
     // Element trigger: whatever the caller passed, rendered as-is. The only node
     // Tooltip adds around it is the root View below, which takes NO accessibility
@@ -211,9 +223,9 @@ export function createTooltip(skin: TooltipSkin, parts: TooltipParts = {}) {
     // Icon trigger: a ghost icon button (40px square) holding the settings glyph,
     // matching a ghost icon Button. The glyph renders directly inside the
     // Pressable (not via Button's <Text> children, which can't host an SVG).
-    const triggerEl = isElementTrigger ? (
+    const triggerEl = triggerKind === "element" ? (
       children
-    ) : isIconTrigger ? (
+    ) : triggerKind === "icon" ? (
       <Pressable
         android_ripple={controlRipple(tokens)}
         style={({ pressed }) => [iconTrigger, pressDim(pressed)]}
@@ -232,7 +244,7 @@ export function createTooltip(skin: TooltipSkin, parts: TooltipParts = {}) {
       >
         <Icon settings size={16} />
       </Pressable>
-    ) : isTextTrigger ? (
+    ) : triggerKind === "text" ? (
       // Text trigger: the `trigger` string as a pressable inline word (a
       // hover-text affordance) rather than a Button. Mirrors the icon trigger's
       // wiring: a Pressable toggles the bubble, dims on press (iOS/web) or

@@ -58,7 +58,7 @@ export interface BoxPlotProps {
 }
 
 // Tone precedence within the axis, first match wins.
-function toneOf(p: BoxPlotProps): Tone {
+export function toneOf(p: BoxPlotProps): Tone {
   if (p.success) return "success";
   if (p.destructive) return "destructive";
   return "primary";

@@ -146,14 +146,14 @@ export interface StatsSkin {
 }
 
 // Surface precedence when more than one is passed: first match wins.
-function surfaceOf(p: StatsProps): Surface {
+export function surfaceOf(p: StatsProps): Surface {
   if (p.plain) return "plain";
   return "card";
 }
 
 // Accent precedence, first match wins. Returns the chart token name, or null for
 // the default foreground so an untoned metric's style is unchanged.
-function accentOf(item: StatItem): string | null {
+export function accentOf(item: StatItem): string | null {
   if (item.chart1) return "chart-1";
   if (item.chart2) return "chart-2";
   if (item.chart3) return "chart-3";
@@ -163,6 +163,14 @@ function accentOf(item: StatItem): string | null {
   if (item.chart7) return "chart-7";
   if (item.chart8) return "chart-8";
   return null;
+}
+
+// Delta precedence, first match wins: `steady` (muted, neither a rise nor a decline)
+// over `down` (a decline); otherwise a rise.
+export function deltaOf(item: Pick<StatItem, "steady" | "down">): "steady" | "down" | "up" {
+  if (item.steady) return "steady";
+  if (item.down) return "down";
+  return "up";
 }
 
 export function createStats(skin: StatsSkin) {
@@ -181,6 +189,7 @@ export function createStats(skin: StatsSkin) {
     // overwrite.
     const accent = accentOf(item);
     const accentStyle = accent ? { color: tokens[accent as keyof typeof tokens] } : null;
+    const deltaKind = deltaOf(item);
     // The header row exists only when the metric has an icon or a control, so a
     // plain metric's tree is unchanged.
     const hasHeader = item.icon != null || item.actions != null;
@@ -199,7 +208,7 @@ export function createStats(skin: StatsSkin) {
         )}
         <Text style={[skin.valueText(tokens), accentStyle]}>{item.value}</Text>
         {item.delta != null && item.delta !== "" ? (
-          <Text style={[skin.deltaBase, item.steady ? { color: tokens["muted-foreground"] } : deltaTone(tokens, !!item.down)]}>{item.delta}</Text>
+          <Text style={[skin.deltaBase, deltaKind === "steady" ? { color: tokens["muted-foreground"] } : deltaTone(tokens, deltaKind === "down")]}>{item.delta}</Text>
         ) : null}
         {item.spark != null && item.spark.length > 0 ? (
           <Sparkline values={item.spark} track={framed} accessibilityLabel={item.sparkLabel ?? `${item.label} trend`} style={sparkStrip} />

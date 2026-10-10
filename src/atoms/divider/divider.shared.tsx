@@ -54,13 +54,13 @@ export interface DividerProps {
 }
 
 // First match wins when more than one orientation flag is passed.
-function orientationOf(p: DividerProps): Orientation {
+export function orientationOf(p: DividerProps): Orientation {
   if (p.vertical) return "vertical";
   return "horizontal";
 }
 
 // First match wins when more than one emphasis flag is passed.
-function emphasisOf(p: DividerProps): Emphasis {
+export function emphasisOf(p: DividerProps): Emphasis {
   if (p.soft) return "soft";
   return "strong";
 }

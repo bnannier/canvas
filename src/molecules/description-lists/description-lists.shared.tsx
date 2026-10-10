@@ -167,11 +167,21 @@ export interface DescriptionListSkin {
 // `stacked` is the lowest-precedence opt-in and the default when no layout
 // boolean is set, so reading it here makes the public prop a real, intentional
 // choice rather than relying on it only as the unconditional fallback.
-function layoutOf(p: DescriptionListProps): Layout {
+export function layoutOf(p: DescriptionListProps): Layout {
   if (p.inline) return "inline";
   if (p.twoColumn) return "twoColumn";
   if (p.stacked) return "stacked";
   return "stacked";
+}
+
+// A text value's form, first match wins: the status pill, the metadata badge, the
+// monospace face, then plain text. Avatars and a copy button are content, not forms,
+// and take the value before any of these.
+export function valueFormOf(item: Pick<DescriptionListItem, "status" | "badge" | "mono">): "status" | "badge" | "mono" | "plain" {
+  if (item.status) return "status";
+  if (item.badge) return "badge";
+  if (item.mono) return "mono";
+  return "plain";
 }
 
 /**
@@ -232,9 +242,10 @@ export function createDescriptionList(
         </View>
       );
     }
-    if (item.status) return <Badge status success>{value}</Badge>;
-    if (item.badge) return <Badge secondary>{value}</Badge>;
-    if (item.mono) {
+    const form = valueFormOf(item);
+    if (form === "status") return <Badge status success>{value}</Badge>;
+    if (form === "badge") return <Badge secondary>{value}</Badge>;
+    if (form === "mono") {
       return <Text style={[valueStyle, s.valueMono, s.valueWrap]}>{value}</Text>;
     }
     return <Text style={[valueStyle, align ? s.valueAlignRight : null, s.valueWrap]}>{value}</Text>;

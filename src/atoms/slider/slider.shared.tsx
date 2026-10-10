@@ -71,7 +71,7 @@ export type Size = "small" | "base" | "large";
 
 // Size precedence within the axis: large > small > default (first match wins),
 // matching the other atoms.
-function sizeOf(p: SliderProps): Size {
+export function sizeOf(p: SliderProps): Size {
   if (p.large) return "large";
   if (p.small) return "small";
   return "base";

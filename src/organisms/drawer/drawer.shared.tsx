@@ -79,7 +79,7 @@ export interface DrawerProps {
 }
 
 // First-match edge precedence; defaults to the left side drawer.
-function edgeOf(p: DrawerProps): Edge {
+export function edgeOf(p: DrawerProps): Edge {
   if (p.right) return "right";
   if (p.bottom) return "bottom";
   if (p.top) return "top";

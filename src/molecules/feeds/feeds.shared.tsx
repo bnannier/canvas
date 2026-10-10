@@ -174,7 +174,7 @@ export interface FeedSkin {
 const NODE_ICON_SIZE = 16;
 
 // Lead precedence when more than one is passed: first match wins.
-function leadOf(p: FeedProps): Lead {
+export function leadOf(p: FeedProps): Lead {
   if (p.connector) return "connector";
   if (p.avatar) return "avatar";
   return "connector";

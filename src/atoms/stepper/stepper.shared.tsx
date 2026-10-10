@@ -168,7 +168,7 @@ function glyphColorProps(token: keyof ColorTokens, disabled: boolean): Record<st
 }
 
 // Size precedence when more than one is passed: first match wins (large > small).
-function sizeOf(p: StepperProps): Size {
+export function sizeOf(p: StepperProps): Size {
   if (p.large) return "large";
   if (p.small) return "small";
   return "base";

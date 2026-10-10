@@ -158,7 +158,7 @@ export interface GridListProps {
 }
 
 // Column precedence when more than one is passed: first match wins.
-function columnsOf(p: GridListProps): Columns {
+export function columnsOf(p: GridListProps): Columns {
   if (p.cols3) return "cols3";
   if (p.cols2) return "cols2";
   return "cols2";

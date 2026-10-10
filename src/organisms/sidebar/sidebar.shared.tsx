@@ -239,16 +239,25 @@ export interface SidebarProps {
 }
 
 // Density precedence when more than one is passed: first match wins.
-function densityOf(p: SidebarProps): Density {
+export function densityOf(p: SidebarProps): Density {
   if (p.compact) return "compact";
   return "default";
 }
 
 // Frame precedence when more than one is passed: first match wins.
-function frameOf(p: SidebarProps): Frame {
+export function frameOf(p: SidebarProps): Frame {
   if (p.bordered) return "bordered";
   if (p.floating) return "bordered";
   return "flush";
+}
+
+// Drawer edge precedence when more than one is passed: first match wins; the default
+// is the start (left) edge.
+export function drawerEdgeOf(p: Pick<SidebarProps, "drawerRight" | "drawerTop" | "drawerBottom">): "left" | "right" | "top" | "bottom" {
+  if (p.drawerRight) return "right";
+  if (p.drawerTop) return "top";
+  if (p.drawerBottom) return "bottom";
+  return "left";
 }
 
 // A section's accordion key / React key: its id, else its title, else its position.
@@ -448,7 +457,7 @@ export function createSidebar(skin: SidebarSkin, parts: SidebarParts = {}) {
       const drawerFooter = typeof footer === "function" ? footer(false) : footer;
       // Edge axis, default the start/left edge. left/right are full-height (the drill-down fills
       // the panel); top/bottom are content-sized sheets (the drill-down shrinks within maxHeight).
-      const drawerEdge = props.drawerRight ? "right" : props.drawerTop ? "top" : props.drawerBottom ? "bottom" : "left";
+      const drawerEdge = drawerEdgeOf(props);
       const fullHeight = drawerEdge === "left" || drawerEdge === "right";
       return (
         <Drawer

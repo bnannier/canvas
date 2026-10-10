@@ -74,6 +74,7 @@
     "check:interactions": "bun scripts/check-interaction-coverage.ts",
     "check:materials": "bun scripts/check-material-coverage.ts",
     "check:api": "bun scripts/check-public-api.ts",
+    "axes:record": "bun --preload ./tools/rnw-preload.ts tools/axes/record.ts",
     "audit:checklists": "bun tools/audit/checklists.ts --write",
     "audit:checklists:check": "bun tools/audit/checklists.ts --check",
     "audit:status": "bun tools/audit/status.ts",

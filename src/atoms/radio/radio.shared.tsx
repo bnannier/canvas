@@ -69,7 +69,7 @@ export interface RadioProps {
 export type Size = "small" | "default" | "large";
 
 // Size precedence when more than one is passed: first match wins.
-function sizeOf(p: RadioProps): Size {
+export function sizeOf(p: RadioProps): Size {
   if (p.small) return "small";
   if (p.large) return "large";
   return "default";

@@ -110,7 +110,7 @@ type Status = "idle" | "loading" | "readyToPlay" | "error";
 
 // Fit precedence when more than one boolean is passed: first match wins. Defaults to
 // `contain`, the convention of every player: a clip is shown whole unless asked otherwise.
-function fitOf(p: VideoProps): Fit {
+export function fitOf(p: VideoProps): Fit {
   if (p.contain) return "contain";
   if (p.cover) return "cover";
   if (p.stretch) return "fill";

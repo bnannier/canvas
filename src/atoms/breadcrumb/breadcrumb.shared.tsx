@@ -112,7 +112,7 @@ export interface BreadcrumbProps {
 type Separator = "chevron" | "slash" | "dot";
 
 // Separator precedence when more than one flag is passed: first match wins.
-function separatorOf(p: BreadcrumbProps): Separator {
+export function separatorOf(p: BreadcrumbProps): Separator {
   if (p.chevron) return "chevron";
   if (p.slash) return "slash";
   if (p.dot) return "dot";

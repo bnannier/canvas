@@ -95,7 +95,7 @@ export interface DialogProps {
 }
 
 // Size precedence when more than one is passed: first match wins.
-function sizeOf(p: DialogProps): Size {
+export function sizeOf(p: DialogProps): Size {
   if (p.xs) return "xs";
   if (p.small) return "small";
   if (p.medium) return "medium";

@@ -51,14 +51,14 @@ export interface SparklineProps {
   style?: LayoutStyle;
 }
 
-function toneOf(p: SparklineProps): Tone {
+export function toneOf(p: SparklineProps): Tone {
   if (p.success) return "success";
   if (p.destructive) return "destructive";
   if (p.muted) return "muted";
   return "primary";
 }
 
-function sizeOf(p: SparklineProps): Size {
+export function sizeOf(p: SparklineProps): Size {
   if (p.compact) return "compact";
   if (p.tall) return "tall";
   return "default";

@@ -83,7 +83,7 @@ export interface AlertDialogProps {
 }
 
 // Width precedence when more than one is passed: first match wins.
-function widthOf(p: AlertDialogProps): Width {
+export function widthOf(p: AlertDialogProps): Width {
   if (p.narrow) return "narrow";
   if (p.small) return "small";
   if (p.large) return "large";
