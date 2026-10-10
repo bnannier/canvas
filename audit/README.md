@@ -386,8 +386,13 @@ through list (see "Foundations"). The steps, in order:
 
 The exit status is 0 when every step ran and every run captured all it planned (a state not
 reached is captured, as audit:web counts it: its reason is the record, and a finding), 1 when
-a step failed or a run left cells failed or missing (its runs are still recorded), and 2 for a
-usage error or a refusal (an unknown slug, a stale export).
+a step failed, a capture took no cell at all, or a run left cells failed or missing (its runs
+are still recorded), and 2 for a usage error or a refusal (an unknown slug, a stale export).
+A refusal is read off the capture's run manifests as well as its command's exit status
+(`captureVerdict` in `tools/audit/turn.ts`): a run its manifest records as `refused` stops the
+turn with 2 however the command exited, so an export the tree outgrew between the turn's own
+check and audit:web's (a file saved mid-turn) stops the turn before the states and the
+analysis rather than recording empty runs and going on.
 
 The **turn record**, `audit/turns/<id>.md` (`tools/audit/turn-record.ts`), is written by
 `audit:turn` alone and committed with the turn. It has a `## before` and a `## after` table,
@@ -433,7 +438,11 @@ bundle from the source on disk when it is asked for it, so its fingerprint says 
 is not compared; the run is recorded as a `live dev server`, and the project root Metro's
 `/status` names must be this checkout's `docs/`, since another checkout's Metro (the main
 checkout's, seen from a worktree) shows that checkout's source. Either mismatch refuses the
-run unless `--allow-stale`.
+run unless `--allow-stale`. So does a global setup that stopped before it recorded the server at
+all (nothing answering at `--base`, a diagnostics page that never loads): whose source that
+server shows is unknown, so no cell can be taken as this checkout's. A refused run is `refused`
+in its manifest, with the reason under `refusal`, and `audit:web` exits 2
+(`webRunOutcome` in `tools/audit/web-capture.ts`).
 
 One Playwright test covers a component in one look and surface and loops its variants by
 widths. Every cell is a fresh load in its look (`gotoDocs`), then, structure first: the page

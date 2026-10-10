@@ -4,7 +4,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { components, pages } from "./inventory.ts";
 import { buildIdentity, findAppConfig, readInstalledAndroid, readInstalledIos, whyRebuild, type Exec, type InstalledBuild } from "./native/installed.ts";
-import { BASE_PLACEHOLDER, exportState, formatPlan, parseTurnArgs, planTurn, readExportFingerprint, resolveTarget, runCells, sheetLines, turnScope, type TurnPlan } from "./turn.ts";
+import { BASE_PLACEHOLDER, captureVerdict, exportState, formatPlan, madeRun, parseTurnArgs, planTurn, readExportFingerprint, resolveTarget, runCells, sheetLines, turnScope, type TurnPlan } from "./turn.ts";
 import { appendTurnRuns, readTurnRecord, renderTurnRecord, turnProblems, type TurnRun } from "./turn-record.ts";
 
 const FP = (c: string) => c.repeat(64);
@@ -202,6 +202,26 @@ describe("what the turn records", () => {
     expect(runCells("ios", { queued: 90, summary: { cells: 90, ok: 89, unstable: 1, failed: 0 } })).toEqual({ text: "90 of 90: 89 ok, 1 unstable, 0 failed", whole: true });
     expect(runCells("android", { queued: 90, refused: "stale", summary: { cells: 0, ok: 0, unstable: 0, failed: 0 } }).whole).toBe(false);
     expect(runCells("web", null)).toEqual({ text: "no manifest", whole: false });
+  });
+
+  it("stops on a refused capture whatever its exit status, and on one that took no cell", () => {
+    const web = (status: string, manifest: Record<string, unknown>) => madeRun("20261010-043141-web-e215b71", "web", status, manifest);
+    // audit:web exited 1 with a run its manifest records as refused: the turn still stops with 2.
+    const stale = web("refused", { results: { cells: 0 }, served: { reason: "serves an export built from source aaaa" }, refusal: "serves an export built from source aaaa" });
+    expect(stale).toEqual({ id: "20261010-043141-web-e215b71", status: "refused", cells: 0, refusal: "serves an export built from source aaaa" });
+    expect(captureVerdict(1, [stale])).toEqual({ kind: "refused", reason: "20261010-043141-web-e215b71 is refused: serves an export built from source aaaa" });
+    // A manifest from before the refusal field: the served reason stands in.
+    expect(web("refused", { results: { cells: 0 }, served: { reason: "stale" } }).refusal).toBe("stale");
+    expect(captureVerdict(2, [web("incomplete", { results: { cells: 0 } })])).toEqual({ kind: "refused", reason: "the command exited 2" });
+    // A run that took no cell at all, refused or not, leaves the next steps nothing to read.
+    expect(captureVerdict(1, [web("incomplete", { results: { cells: 0 } })])).toEqual({ kind: "empty" });
+    expect(captureVerdict(1, [])).toEqual({ kind: "none" });
+    // Failed or missing cells are counted, not stopped on.
+    expect(captureVerdict(1, [web("incomplete", { results: { cells: 70 } })])).toEqual({ kind: "captured" });
+    expect(captureVerdict(0, [web("complete", { results: { cells: 72 } })])).toEqual({ kind: "captured" });
+    // A native run refused by its capture host.
+    const native = madeRun("20261010T050000Z-ios-b70acdf", "ios", "refused", { refused: "the installed build is not this checkout's", summary: { cells: 0 } });
+    expect(captureVerdict(1, [native])).toEqual({ kind: "refused", reason: "20261010T050000Z-ios-b70acdf is refused: the installed build is not this checkout's" });
   });
 
   it("appends runs under their phase, keeps the earlier ones, and reads them back", () => {
