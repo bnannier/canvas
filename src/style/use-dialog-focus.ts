@@ -8,8 +8,29 @@ import { useIsomorphicLayoutEffect } from "./use-isomorphic-layout-effect.js";
 // object-ref API, but reconcile focus from its current setter as well as open.
 // These are DOM event/focus operations only, never a platform rendering fork.
 
-const FOCUSABLE_SELECTOR =
-  'a[href], button, input, select, textarea, [tabindex]';
+// The tab stops a panel or the page holds, as sequential focus reaches them (short of the
+// browser's visibility checks): no disabled control, no negative tabindex, and nothing
+// inside a held card, a covered page or an inert subtree.
+const TABBABLE_SELECTOR = 'a[href], button, input, select, textarea, [tabindex]';
+
+function isTabbable(element: HTMLElement): boolean {
+  if (element.hasAttribute("disabled")) return false;
+  const tabindex = element.getAttribute("tabindex");
+  if (tabindex != null && Number(tabindex) < 0) return false;
+  return element.closest('[aria-hidden="true"], [inert]') == null;
+}
+
+function tabbables(root: ParentNode): HTMLElement[] {
+  return Array.from(root.querySelectorAll<HTMLElement>(TABBABLE_SELECTOR)).filter(isTabbable);
+}
+
+// Whether a closing panel orphaned the focus: it is on nothing, on the body, on a node
+// that left the document, or still inside one of the closing panels. Focus the user
+// already moved to another live control is not orphaned, and a close never pulls it back.
+function focusOrphaned(panels: readonly (HTMLElement | null)[]): boolean {
+  const active = document.activeElement;
+  return active == null || active === document.body || !active.isConnected || panels.some((panel) => panel?.contains(active));
+}
 
 interface FocusSession {
   panel: HTMLElement;
@@ -25,11 +46,7 @@ function trapFocus(panel: HTMLElement): () => void {
   const onKeyDown = (event: KeyboardEvent) => {
     // A nested modal may already have wrapped this Tab. Leave that move intact.
     if (event.key !== "Tab" || event.defaultPrevented) return;
-    const focusables = Array.from(
-      panel.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR),
-    ).filter(
-      (el) => !el.hasAttribute("disabled") && el.getAttribute("tabindex") !== "-1",
-    );
+    const focusables = tabbables(panel);
     if (focusables.length === 0) {
       event.preventDefault();
       panel.focus({ preventScroll: true });
@@ -87,10 +104,7 @@ function createFocusRef(modal: boolean, onAttach: () => void) {
     // Restore only focus owned by this panel. In particular, a nonmodal popover
     // may close after the user has tabbed to another live control. Its close must
     // not pull that deliberate focus move back to the trigger.
-    const active = document.activeElement;
-    const orphaned = active == null || active === document.body ||
-      !active.isConnected || [...owned].some((owner) => owner.panel.contains(active));
-    if (orphaned && previous.restoreTarget?.isConnected) {
+    if (focusOrphaned([...owned].map((owner) => owner.panel)) && previous.restoreTarget?.isConnected) {
       previous.restoreTarget.focus({ preventScroll: true });
     }
   };
@@ -200,9 +214,11 @@ export function usePopoverFocus(open: boolean): RefObject<View | null> {
 // an Android keyboard stop). While the card is open one capture listener steers every
 // Tab whose browser move differs from that logical order: from the trigger into the
 // card, from the card's ends back to the trigger or on to the control after it, and
-// past the card for the page's own moves. A focused node in the card that is no stop
-// itself (the card's panel, a row the roving stop is not on) moves to the card's stops
-// on either side of it in document order.
+// past the card for the page's own moves. A card opened from inside another sits in its
+// parent's run, right after its own trigger there. A focused node that is no stop itself
+// moves by where it stands: in a card (the card's panel, a row the roving stop is not
+// on) to the card's stops on either side of it, and in the page to the stops around its
+// place, a card's run standing at its trigger's.
 //
 // The order is the one the focus is held in: a modal around the trigger (a Dialog's
 // panel, a native Modal's content, anything `aria-modal`) keeps Tab inside itself, and
@@ -210,25 +226,10 @@ export function usePopoverFocus(open: boolean): RefObject<View | null> {
 // Without one the order is the page's, and at its very end there is no later stop the
 // document can focus, so that one move is left to the browser.
 
-const TABBABLE_SELECTOR = 'a[href], button, input, select, textarea, [tabindex]';
-
-function isTabbable(element: HTMLElement): boolean {
-  if (element.hasAttribute("disabled")) return false;
-  const tabindex = element.getAttribute("tabindex");
-  if (tabindex != null && Number(tabindex) < 0) return false;
-  // A held card, a covered page and an inert subtree take no focus.
-  return element.closest('[aria-hidden="true"], [inert]') == null;
-}
-
-function tabbables(root: ParentNode): HTMLElement[] {
-  return Array.from(root.querySelectorAll<HTMLElement>(TABBABLE_SELECTOR)).filter(isTabbable);
-}
-
 const follows = (a: Node, b: Node) => (a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING) !== 0;
 
 interface Bridge { card: HTMLElement; trigger: HTMLElement; onLeave?: () => void }
-// Every open card, in the order they opened: a card opened from inside another is
-// placed within its parent's run, so the order is composed outermost first.
+// Every open card, in the order they opened.
 const bridges: Bridge[] = [];
 
 // The open card that holds `node`: the innermost one, where cards nest in the document.
@@ -249,6 +250,14 @@ function anchorOf(node: Node): Node {
   return at;
 }
 
+// How many open cards a card's trigger sits in, so a parent card is composed before the
+// cards opened from inside it.
+function depthOf({ trigger }: Bridge): number {
+  let depth = 0;
+  for (let owner = cardOf(trigger); owner && depth < bridges.length; owner = cardOf(owner.trigger)) depth += 1;
+  return depth;
+}
+
 // The modal the focus at `node` is held in (the innermost `aria-modal` element around
 // where it stands in the page), or null for the page itself.
 function modalScope(node: Node): Element | null {
@@ -257,31 +266,45 @@ function modalScope(node: Node): Element | null {
   return element?.closest('[aria-modal="true"]') ?? null;
 }
 
+// Where a run placed right after `node` goes in `order`: after the node's own stops; or
+// else after the last stop before it among those that share its place (its own card's,
+// or the page's, never another card's run); or else where its card's run starts.
+function slotAfter(order: readonly HTMLElement[], node: Node): number {
+  let at = -1;
+  order.forEach((element, index) => { if (node.contains(element)) at = index; });
+  if (at >= 0) return at + 1;
+  const owner = cardOf(node);
+  order.forEach((element, index) => { if (cardOf(element) === owner && follows(element, node)) at = index; });
+  if (at >= 0) return at + 1;
+  return owner ? slotAfter(order, owner.trigger) : 0;
+}
+
 /** The tab order inside `scope` (the page when null), each open card's controls moved to just after its trigger. */
 function logicalOrder(scope: Element | null): HTMLElement[] {
   let order = tabbables(document);
   if (scope) order = order.filter((element) => scope.contains(anchorOf(element)));
-  for (const { card, trigger } of bridges) {
-    if (!card.isConnected || !trigger.isConnected) continue;
+  const open = bridges.filter(({ card, trigger }) => card.isConnected && trigger.isConnected);
+  const depth = new Map(open.map((bridge) => [bridge, depthOf(bridge)]));
+  for (const { card, trigger } of open.sort((a, b) => depth.get(a)! - depth.get(b)!)) {
     const inCard = order.filter((element) => card.contains(element));
     const rest = order.filter((element) => !card.contains(element));
-    // After the trigger's own controls, or after the last stop before it.
-    let at = 0;
-    rest.forEach((element, index) => {
-      if (trigger.contains(element) || follows(element, trigger)) at = index + 1;
-    });
+    const at = slotAfter(rest, trigger);
     order = [...rest.slice(0, at), ...inCard, ...rest.slice(at)];
   }
   return order;
 }
 
-/** Where a Tab (or Shift+Tab) from `active` goes in `order` by document position, which need not hold `active`. */
-function step(order: HTMLElement[], active: HTMLElement, back: boolean): HTMLElement | undefined {
+/**
+ * Where a Tab (or Shift+Tab) from `active` goes in `order`, which need not hold it: from
+ * a node that is no stop, the first stop placed after where it stands, or the last placed
+ * before it. `place` is where a node stands: itself in document order (the browser's own
+ * move), or its card's trigger in the composed order.
+ */
+function step(order: HTMLElement[], active: HTMLElement, back: boolean, place: (node: Node) => Node = (node) => node): HTMLElement | undefined {
   const index = order.indexOf(active);
   if (index >= 0) return order[index + (back ? -1 : 1)];
-  // A focused node that is not a tab stop itself (a Dialog's panel, the body): the next
-  // stop after it, or the last one before it, in DOM order.
-  const after = order.findIndex((element) => follows(active, element));
+  const from = place(active);
+  const after = order.findIndex((element) => follows(from, place(element)));
   if (back) return order[(after < 0 ? order.length : after) - 1];
   return after < 0 ? undefined : order[after];
 }
@@ -289,9 +312,13 @@ function step(order: HTMLElement[], active: HTMLElement, back: boolean): HTMLEle
 /** Where a Tab (or Shift+Tab) from `active` goes in the composed `order`. */
 function logicalStep(order: HTMLElement[], active: HTMLElement, back: boolean): HTMLElement | undefined {
   const owner = order.includes(active) ? undefined : cardOf(active);
-  if (!owner) return step(order, active, back);
+  if (!owner) return step(order, active, back, anchorOf);
   const run = order.filter((element) => owner.card.contains(element));
-  if (run.length === 0) return back ? triggerStop(order, owner) : afterTrigger(order, owner);
+  // A card with no stops of its own stands right after its trigger's.
+  if (run.length === 0) {
+    const at = slotAfter(order, owner.trigger);
+    return order[back ? at - 1 : at];
+  }
   // A node in the card that is no stop: the card's stops on either side of it in document
   // order, and before the first or after the last of them, the stops around the run.
   const next = run.findIndex((element) => follows(active, element));
@@ -325,16 +352,6 @@ function onBridgedKeyDown(event: KeyboardEvent): void {
   }
 }
 
-// The trigger's last stop (or the last one before it) in the composed order, and the
-// first stop after it: where Shift+Tab and Tab from a card with no stops of its own go.
-function triggerStop(order: HTMLElement[], { card, trigger }: Bridge): HTMLElement | undefined {
-  return order.filter((element) => !card.contains(element) && (trigger.contains(element) || follows(element, trigger))).pop();
-}
-function afterTrigger(order: HTMLElement[], bridge: Bridge): HTMLElement | undefined {
-  const before = triggerStop(order, bridge);
-  return order.slice(before ? order.indexOf(before) + 1 : 0).find((element) => !bridge.card.contains(element));
-}
-
 // Keep an open card's controls in the tab order right after its trigger, until the
 // returned function is called.
 function bridgeTabOrder(card: HTMLElement, trigger: HTMLElement, onLeave?: () => void): () => void {
@@ -353,9 +370,7 @@ function bridgeTabOrder(card: HTMLElement, trigger: HTMLElement, onLeave?: () =>
 // focus when the card opened (`opener`, as usePopoverFocus restores) and otherwise to the
 // first stop in `target`. Focus the user already moved to another live control stays.
 function restoreOrphanedFocus(card: HTMLElement | null, target: HTMLElement | null, opener: Element | null): void {
-  const active = document.activeElement as HTMLElement | null;
-  const orphaned = active == null || active === document.body || !active.isConnected || (card != null && card.contains(active));
-  if (!orphaned) return;
+  if (!focusOrphaned([card])) return;
   if (opener instanceof HTMLElement && opener.isConnected && opener !== document.body && !card?.contains(opener)) {
     opener.focus({ preventScroll: true });
     return;

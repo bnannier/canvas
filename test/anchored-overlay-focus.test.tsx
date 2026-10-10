@@ -251,6 +251,116 @@ describe("the tab order and Tab in an open card (AO-1)", () => {
     });
   });
 
+  it("places a list opened inside a popover right after its own trigger in the popover's run", async () => {
+    // The list's trigger sits in the popover's card, so the list's run goes inside the
+    // popover's, right after the trigger there: Shift+Tab from the list lands on its trigger,
+    // and Tab closes it and goes on to the popover's next stop, never to the page past it.
+    await withLayout(async () => {
+      page(
+        <Popover trigger="Rename" title="Rename project" actionLabel="Save">
+          <Select options={["Small", "Medium", "Large"]} defaultValue="Medium" />
+        </Popover>,
+      );
+      act(() => named("Rename").focus());
+      await openAndReveal(() => fireEvent.click(named("Rename")));
+      tab();
+      const select = screen.getByRole("button", { expanded: false });
+      expect(focused()).toBe(select);
+      await openAndReveal(() => fireEvent.click(select));
+      expect(focused().textContent).toContain("Medium");
+      tab(true);
+      expect(focused()).toBe(select);
+      await settle();
+      expect(screen.queryByRole("listbox")).toBeNull();
+      await openAndReveal(() => fireEvent.click(select));
+      expect(focused().textContent).toContain("Medium");
+      tab();
+      expect(focused()).toBe(named("Save"));
+      await settle();
+      expect(screen.queryByRole("listbox")).toBeNull();
+      expect(screen.getByRole("dialog")).toBeTruthy();
+    });
+  });
+
+  it("moves a focused page node that is no stop to the page's next stop, not into a card placed before it", async () => {
+    // The card's run stands at its trigger, which comes before the heading: Tab from the
+    // heading goes on to the control after it, though the card's controls follow it in the
+    // document, and Shift+Tab goes back into the card's run, the last stop placed before it.
+    function Card() {
+      const trigger = useRef<View>(null);
+      return (
+        <>
+          <View ref={trigger}><Button>Open</Button></View>
+          <View tabIndex={-1} testID="heading"><Text>Heading</Text></View>
+          <Button>Next</Button>
+          <AnchoredOverlay open onDismiss={() => {}} triggerRef={trigger}>
+            <View role="dialog"><Button>Inside</Button></View>
+          </AnchoredOverlay>
+        </>
+      );
+    }
+    await withLayout(async () => {
+      page(<Card />);
+      await reveal();
+      const heading = screen.getByTestId("heading");
+      act(() => heading.focus());
+      tab();
+      expect(focused()).toBe(named("Next"));
+      act(() => heading.focus());
+      tab(true);
+      expect(focused()).toBe(named("Inside"));
+    });
+  });
+
+  it("takes no focus into a card pinned open: the page keeps it as the cards are revealed", async () => {
+    // A card that cannot close (a controlled `open` with no change handler, a docs example)
+    // is content on the page that nobody opened. Its reveal moves no focus, so a page whose
+    // examples render menus, lists and a popover pinned open keeps the focus it had.
+    await withLayout(async () => {
+      page(
+        <>
+          <RowMenu open items={[{ label: "Edit" }, { label: "Delete" }]} />
+          <Dropdown open trigger="Actions" items={[{ label: "Edit profile" }]} />
+          <Select open options={["Small", "Medium"]} defaultValue="Small" />
+          <Popover open trigger="Rename" title="Rename project" actionLabel="Save" />
+        </>,
+      );
+      act(() => named("Before").focus());
+      await reveal();
+      expect(screen.getAllByRole("menu")).toHaveLength(2);
+      expect(screen.getByRole("listbox")).toBeTruthy();
+      expect(screen.getByRole("dialog")).toBeTruthy();
+      expect(focused()).toBe(named("Before"));
+    });
+  });
+
+  it("steers a Tab from one trigger into its own card only, never into a card pinned open further down", async () => {
+    // The audit's RowMenu focus cell: the control before a RowMenu trigger is another RowMenu's
+    // trigger, and menus pinned open sit further down the page. Tab from the first trigger
+    // reaches the next, Tab from a pinned menu's trigger enters that menu, and Tab from its
+    // rows goes on to the control after its trigger.
+    await withLayout(async () => {
+      page(
+        <>
+          <RowMenu triggerLabel="First options" items={[{ label: "Edit" }]} />
+          <RowMenu triggerLabel="Second options" items={[{ label: "Edit" }]} />
+          <RowMenu triggerLabel="Pinned options" open items={[{ label: "Rename" }, { label: "Archive" }]} />
+        </>,
+      );
+      await reveal();
+      act(() => named("First options").focus());
+      tab();
+      expect(focused()).toBe(named("Second options"));
+      tab();
+      expect(focused()).toBe(named("Pinned options"));
+      tab();
+      expect(focused().textContent).toBe("Rename");
+      tab();
+      expect(focused()).toBe(named("After"));
+      expect(screen.getByRole("menu")).toBeTruthy();
+    });
+  });
+
   it("gives back to the trigger the focus a closing menu held, and leaves a combobox's field alone", async () => {
     await withLayout(async () => {
       page(<Dropdown trigger="Actions" items={[{ label: "Edit profile" }]} />);

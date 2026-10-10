@@ -32,19 +32,12 @@ export function focusInto(node: FocusNode): void {
 }
 
 /**
- * Natively, move the screen reader to `node` inside a card that has just been revealed,
- * leaving DOM focus alone: for a card whose web focus another mechanism owns (Popover's
- * panel, usePopoverFocus). A no-op on the web.
+ * Natively, move the screen reader to `node`, leaving DOM focus alone: into a card that
+ * has just been revealed whose web focus another mechanism owns (Popover's panel,
+ * usePopoverFocus), or back to the trigger after a modal card closed, where on the web
+ * the DOM focus a closing card orphaned is restored instead (src/style/use-dialog-focus.ts).
+ * A no-op on the web.
  */
 export function moveAccessibilityFocus(node: FocusNode): void {
-  if (node && native()) sendNativeFocus(node);
-}
-
-/**
- * Natively, send the screen reader back to `node` (the trigger) after a modal card
- * closed. A no-op on the web, where the DOM focus a closing card orphaned is restored
- * instead (src/style/use-dialog-focus.ts).
- */
-export function returnAccessibilityFocus(node: FocusNode): void {
   if (node && native()) sendNativeFocus(node);
 }

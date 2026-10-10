@@ -151,10 +151,13 @@ export function createPopover(skin: PopoverSkin, parts: PopoverParts = {}) {
     // panel is an always-visible surface, not a dismissable overlay, so it
     // never subscribes.
     const escapeScope = useEscapeLayer(open && !inline, () => setOpen(false));
+    // A controlled `open` with no onOpenChange can never actually close: the card is
+    // pinned open, content on the page rather than something the user opened.
+    const dismissable = props.open === undefined || onOpenChange !== undefined;
     // Move focus into the panel when the floating card opens and restore it to the
-    // trigger on close (non-modal: no focus trap, unlike Dialog). Inline panels are
-    // always-visible content, so they never take focus.
-    const panelRef = usePopoverFocus(open && !inline);
+    // trigger on close (non-modal: no focus trap, unlike Dialog). Inline panels and
+    // cards pinned open are always-visible content, so they never take focus.
+    const panelRef = usePopoverFocus(open && !inline && dismissable);
     // Resolve the placement axis: the side of the trigger the card prefers.
     const placement = placementOf(props);
 
@@ -245,9 +248,8 @@ export function createPopover(skin: PopoverSkin, parts: PopoverParts = {}) {
           cardStyle={[skin.card(tokens), { minWidth: triggerWidth }]}
           inlineStyle={s.cardFloating}
           decoration={skin.arrow != null && surface !== "glass" ? <PopoverArrow skin={skin} tokens={tokens} /> : null}
-          // A controlled `open` with no onOpenChange can never actually close, so
-          // the hosted dismiss backdrop is skipped (it would only block the page).
-          dismissable={props.open === undefined || onOpenChange !== undefined}
+          // A card pinned open skips the hosted dismiss backdrop (it would only block the page).
+          dismissable={dismissable}
           onCardMount={() => moveAccessibilityFocus(firstLineRef.current)}
           returnFocusRef={buttonRef}
         >
