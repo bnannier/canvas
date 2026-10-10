@@ -11,7 +11,7 @@ import { COMPONENT_ROLES, CONCENTRIC_CORNERS, HANDOFF_SHAPE_TOKENS, NESTED_CORNE
 import { CornerSites, platformOf, type CornerValue, type DrawnPlace } from "../tools/tokens/corner-sites.ts";
 import { componentOf, cornerVerdict, partOf, siteOf } from "../tools/tokens/corner-rules.ts";
 import { claimHolds, cornerClaims, handoffClaims } from "../tools/tokens/corner-comments.ts";
-import { referenceKeyFor, referenceRows, type ReferenceCell } from "../tools/audit/facts.ts";
+import { referenceKeyFor, referenceRows, type ReferenceCell } from "../tools/skins/references.ts";
 import { COMPONENTS } from "../docs/src/core/data/components.ts";
 
 // Design rules, shape side: every corner in the kit is a role of the row of the platform

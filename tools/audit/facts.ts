@@ -42,6 +42,7 @@ import { KIND_LABEL, compareCheckout, isGap, redirectTargets } from "../handoff-
 import { evidence as interactionEvidence, inventory as interactionInventory } from "../interactions/registry.ts";
 import { materialCoverage } from "../materials/manifest.ts";
 import { ENTRY, componentSkins, hasPlatformBuilds, resolveSource, traceExport, type ComponentSkins, type Platform as SkinPlatform } from "../skins/divergence.ts";
+import { referenceKeyFor, referenceRows, type ReferenceRow } from "../skins/references.ts";
 import { registeredSkins } from "../skins/registry.ts";
 import { ModuleGraph, NOT_HANDLED, PathUnder, resolveModule, within, type Intercept } from "./hosts.ts";
 import { SignalReader } from "./interaction-signals.ts";
@@ -50,7 +51,6 @@ import { pageModule, pageSections, type InventoryPage } from "./inventory.ts";
 import type { RowPlatform } from "./probe-math.ts";
 import { StaticReader, isValueRead, outermost, unwrap, type Binding } from "./static-eval.ts";
 import { catalogIntercept, insideFunctionNamed, navigationRoute, readSweeps, type Sweep } from "./sweeps.ts";
-import { splitRow, type TableShape } from "./table.ts";
 
 export interface SkinFact {
   /** Whether the platform entry diverges from the web build on this platform, for any export. */
@@ -63,26 +63,6 @@ export interface SkinFact {
    * every platform, so `exports` (the builds) does not list them.
    */
   shared: string[];
-}
-
-export interface ReferenceCell {
-  /** A real reference link, a `(none: ...)` note stating the platform has no such control, or plain text. */
-  kind: "link" | "none" | "text";
-  text: string;
-  url?: string;
-  /** The trailing parenthetical after a link, when the row carries one. */
-  note?: string;
-}
-
-export interface ReferenceRow {
-  /** The first word of the Component cell: the key a slug is matched against. */
-  key: string;
-  component: string;
-  treatment: string;
-  build: string;
-  ios: ReferenceCell;
-  android: ReferenceCell;
-  web: ReferenceCell;
 }
 
 export interface MaterialFact {
@@ -259,14 +239,6 @@ export interface PageFacts {
 
 const GROUP_OF: Record<Category, string> = { Atoms: "atoms", Molecules: "molecules", Organisms: "organisms", Charts: "charts" };
 
-/**
- * Slugs whose reference row is keyed under another name: the kit's `Stepper` is the
- * catalog's `stepper-control` (the +/- control, not the wizard), `Emblem` is the
- * `icon-tile` composite, and `Drawer` is the `overlays` row (sheets and side sheets).
- * Every chart shares the one `charts` row.
- */
-export const REFERENCE_ROW_ALIASES: Record<string, string> = { stepper: "stepper-control", emblem: "icon-tile", drawer: "overlays" };
-
 function parse(file: string, source: string): ts.SourceFile {
   const kind = file.endsWith("x") ? ts.ScriptKind.TSX : ts.ScriptKind.TS;
   return ts.createSourceFile(file, source, ts.ScriptTarget.Latest, true, kind);
@@ -297,43 +269,6 @@ export function valueExports(file: string, source: string): string[] {
     }
   }
   return names;
-}
-
-function classifyCell(cell: string): ReferenceCell {
-  const text = cell.trim();
-  const none = /^\(none:\s*([\s\S]*)\)$/.exec(text);
-  if (none) return { kind: "none", text: none[1].trim() };
-  const link = /^\[([^\]]+)\]\((<[^>]+>|[^)]+)\)\s*([\s\S]*)$/.exec(text);
-  if (link) {
-    const url = link[2].replace(/^<|>$/g, "");
-    const note = link[3].trim().replace(/^\(|\)$/g, "");
-    return note ? { kind: "link", text: link[1], url, note } : { kind: "link", text: link[1], url };
-  }
-  return { kind: "text", text };
-}
-
-/** The catalog's table, read with the one table reader every audit table goes through. */
-const REFERENCE_SHAPE: TableShape = { name: "PLATFORM-REFERENCES.md", columns: ["Component", "Treatment", "Build", "iOS", "Android", "Web"], minCells: 6 };
-
-/** Every row of the catalog's table in `PLATFORM-REFERENCES.md`. */
-export function referenceRows(markdown: string): ReferenceRow[] {
-  const rows: ReferenceRow[] = [];
-  markdown.split("\n").forEach((line, i) => {
-    if (!line.startsWith("| ") || /^\|\s*Component\s*\|/.test(line) || /^\|-+\|/.test(line.replace(/\s/g, ""))) return;
-    const split = splitRow(line, REFERENCE_SHAPE);
-    if ("reason" in split) throw new Error(`PLATFORM-REFERENCES.md:${i + 1}: ${split.reason}: ${line}`);
-    const [component, treatment, build, ios, android, web] = split.cells;
-    rows.push({ key: component.split(" ")[0], component, treatment, build, ios: classifyCell(ios), android: classifyCell(android), web: classifyCell(web) });
-  });
-  return rows;
-}
-
-/** The catalog key a component slug maps to, or null when the catalog has no row for it. */
-export function referenceKeyFor(slug: string, category: Category, keys: Set<string>): string | null {
-  const alias = REFERENCE_ROW_ALIASES[slug];
-  if (alias) return keys.has(alias) ? alias : null;
-  if (keys.has(slug)) return slug;
-  return category === "Charts" && keys.has("charts") ? "charts" : null;
 }
 
 function walk(dir: string): string[] {
