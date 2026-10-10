@@ -84,9 +84,9 @@ One row per finding. Severity: critical, high, medium, low. Cell: a capture id f
 
 | ID | Severity | Cell | Summary | Status | Fix commit |
 |---|---|---|---|---|---|
-| K7-1 | medium | source | The toggle is a bare Switch named by the title beside sibling copy, the hand-composed label anatomy CLAUDE.md bans (a split tap target, its own type). Phase 4 (the owner's 2026-10-09 scope, recommendation A), judged by photograph on three platforms. 42eb980d tried the Switch's own anatomy and was reverted for that scope: it lost `destructive`'s red title (a Switch label carries no tone, so a destructive setting row's tone is an owner decision) and gave toggle panels the Switch's 14 px medium over 12 px type beside the Button panels' 14 px semibold over 14 px. | open |  |
+| K7-1 | medium | source | The toggle is a bare Switch named by the title beside sibling copy, the hand-composed label anatomy CLAUDE.md bans (a split tap target, its own type). Phase 4 (the owner's 2026-10-09 scope, recommendation A), judged by photograph on three platforms. 230879c8 tried the Switch's own anatomy and was reverted for that scope: it lost `destructive`'s red title (a Switch label carries no tone, so a destructive setting row's tone is an owner decision) and gave toggle panels the Switch's 14 px medium over 12 px type beside the Button panels' 14 px semibold over 14 px. | open |  |
 | K7-2 | medium | source | `inline` never stacks at phone width: the shell has no container measurement. Phase 4, judged by photograph on three platforms. | open |  |
-| K7-3 | medium | source | The props table showed fragments for `toggle` (and rows of 13 more components): docgen read only the last line of a wrapped `//` comment. It reads the whole run now, for every component. | fixed | 741fd4e6 |
+| K7-3 | medium | source | The props table showed fragments for `toggle` (and rows of 13 more components): docgen read only the last line of a wrapped `//` comment. It reads the whole run now, for every component. | fixed | 0810edb4 |
 | K7-4 | low | source | The skins' copy is a 14 px title over a 14 px description, which predates Dark Factory's dense type (design language item 4: body 12.5, labels 11 to 12). Converging it is a type change judged by photograph on three platforms. | open |  |
 
 ## Sign-off

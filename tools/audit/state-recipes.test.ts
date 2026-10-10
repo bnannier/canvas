@@ -362,7 +362,7 @@ describe("the states each component's source gives it", () => {
     // GeoMap's focus on its Zoom in, a kit Button it disables at the end of the zoom: the map itself is the tab stop.
     expect(check("geo-map", { ...table["geo-map"], focus: on("geo-map", "focus", "button") })).toEqual([
       "geo-map: its focus recipe on the zoomable example answers nothing on the web row: it acts on a button on its own surface, which is none of the component's own controls there (its example renders an img in GeoMap, a <Pressable> with no role in GeoMap); a control another kit component renders is that component's",
-      "geo-map: its source gives it a focus state on its own surface (focusable on <View> at src/charts/geo-map/geo-map.shared.tsx:518), where no focus recipe acts on a control of its own, with no exemption",
+      "geo-map: its source gives it a focus state on its own surface (focusable on <View> at src/charts/geo-map/geo-map.shared.tsx:530), where no focus recipe acts on a control of its own, with no exemption",
     ]);
     // A recipe that names no control is refused, and one whose own control takes no such state.
     const { control: _control, ...unnamed } = recipeFor("button", "focus");
@@ -626,7 +626,7 @@ describe("the states each component's source gives it", () => {
     // React Native's own View, Text and ScrollView: no example hands them a handler.
     for (const slug of ["view", "text", "scroll-view"]) expect({ slug, states: states(slug) }).toEqual({ slug, states: [] });
     expect(states("pressable")).toEqual(["disabled disabled on <Pressable>", "focus a tab stop: <Pressable>", "pressed a function taking `pressed` on <Pressable>"]);
-    expect(states("text-input")).toEqual(["focus a TextInput"]);
+    expect(states("text-input")).toEqual(["disabled aria-disabled on <TextInput>", "focus a TextInput"]);
     // An example's props are read as a source's are, spread onto the tag included.
     const spread = reader.exampleSignals("View", [{ label: "Spread", code: "<View {...{ onHoverIn: () => {}, focusable: true }} />" }], "src/atoms/view/view.md");
     expect(spread.map((s) => `${s.state} ${s.what}`)).toEqual(["focus focusable on <View>", "hover onHoverIn on <View>"]);

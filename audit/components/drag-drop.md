@@ -78,7 +78,7 @@ One row per finding. Severity: critical, high, medium, low. Cell: a capture id f
 
 | ID | Severity | Cell | Summary | Status | Fix commit |
 |---|---|---|---|---|---|
-| drag-drop-corner-1 | low | source | The drop ring drew 10, off the web row; it lies over a zone, a card or lane surface, so it takes the `card` corner, 14. The ghost keeps its 12 as the web row's own `dragGhost` role, and the iOS grip shares the web's. The shape gate (test/design-rules-shape.test.ts) now takes a corner only as a role of its own platform's row that its component plays, the pill, square or a declared concentric corner. | fixed | d1339a2c |
+| drag-drop-corner-1 | low | source | The drop ring drew 10, off the web row; it lies over a zone, a card or lane surface, so it takes the `card` corner, 14. The ghost keeps its 12 as the web row's own `dragGhost` role, and the iOS grip shares the web's. The shape gate (test/design-rules-shape.test.ts) now takes a corner only as a role of its own platform's row that its component plays, the pill, square or a declared concentric corner. | fixed | 278270a8 |
 | drag-drop-role-1 | low | source | Role question for the Phase 4 audit: the ghost a drag lifts draws 12 while the Board card it usually carries draws 8 (`--p-board-card-radius`). Options: the dragged item's own corner (passed with the preview); keep 12. | open |  |
 
 ## Sign-off

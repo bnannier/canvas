@@ -80,7 +80,7 @@ One row per finding. Severity: critical, high, medium, low. Cell: a capture id f
 | ID | Severity | Cell | Summary | Status | Fix commit |
 |---|---|---|---|---|---|
 | K7-1 | medium | source | The quiet zone is the frame's fixed 12 px padding, about 2 modules for a version-2 code at 140 px, where ISO/IEC 18004 asks for 4 (about 22 px). A fix (the renderer's quietZone, or padding from the module count) is a visual change judged by photograph. | open |  |
-| K7-2 | low | source | The test preload's react-native-svg stub lacked `Image`, which react-native-qrcode-svg imports, so the renderer never loaded under bun and every QRCode test and smoke row rendered the missing-peer frame. The stub now carries it. | fixed | 376e96d6 |
+| K7-2 | low | source | The test preload's react-native-svg stub lacked `Image`, which react-native-qrcode-svg imports, so the renderer never loaded under bun and every QRCode test and smoke row rendered the missing-peer frame. The stub now carries it. | fixed | bf73fb53 |
 | K7-3 | low | source | An empty `value` draws a code for a single space (the renderer throws on an empty string) and is named "QR code encoding " with nothing after it; it does not warn in development. | open |  |
 
 ## Sign-off

@@ -84,11 +84,11 @@ One row per finding. Severity: critical, high, medium, low. Cell: a capture id f
 
 | ID | Severity | Cell | Summary | Status | Fix commit |
 |---|---|---|---|---|---|
-| K7-1 | low | source | The `maxItems` JSDoc said the last `maxItems - 2` crumbs are kept; the code keeps `maxItems - 1`, as the docs intend. The JSDoc and the comment now say so. | fixed | 42eb980d |
-| K7-2 | medium | source | The home icon reports onItemPress("Home", 0), the same index as the trail's first crumb, and a trail that starts at Home then has two links named Home. Owner decision pending: an `onHomePress`, index -1, or keep 0 and document it. | open |  |
+| K7-1 | low | source | The `maxItems` JSDoc said the last `maxItems - 2` crumbs are kept; the code keeps `maxItems - 1`, as the docs intend. The JSDoc and the comment now say so. | fixed | 230879c8 |
+| K7-2 | medium | source | The home icon reports onItemPress("Home", 0), the same index as the trail's first crumb, and a trail that starts at Home then has two links named Home. The owner decided (audit/DECISIONS.md, K7 Breadcrumb): a new optional `onHomePress` (a minor), so `onItemPress` indices align with `items`; built in Breadcrumb's turn. | open |  |
 | K7-3 | low | source | The chevron direction is read once at module load (SEPARATOR_GLYPH), so it cannot follow a runtime direction change on the web. | open |  |
 | K7-4 | medium | source | Crumbs are role=link Pressables with no href, so on the web they are not real links (no URL, no open in a new tab). | open |  |
-| K7-5 | high | source | On the web a crumb and the home link did not activate on Enter: they are role=link Pressables with no href, and react-native-web leaves a link's Enter to the browser, which clicks only a link with an href (WCAG 2.1.1). The kit Pressable now presses a link without an href on the Enter keyup; Space still does nothing, as the APG link pattern has it. | fixed | 741fd4e6 |
+| K7-5 | high | source | On the web a crumb and the home link did not activate on Enter: they are role=link Pressables with no href, and react-native-web leaves a link's Enter to the browser, which clicks only a link with an href (WCAG 2.1.1). The kit Pressable now presses a link without an href on the Enter keyup; Space still does nothing, as the APG link pattern has it. | fixed | 0810edb4 |
 
 ## Sign-off
 

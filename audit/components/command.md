@@ -84,7 +84,7 @@ One row per finding. Severity: critical, high, medium, low. Cell: a capture id f
 
 | ID | Severity | Cell | Summary | Status | Fix commit |
 |---|---|---|---|---|---|
-| command-corner-1 | low | source | The search trigger drew 6 (now the field corner, 10, on every platform), and the palette card 16 on iOS and 8 on Android, on neither row; with no native command palette both now share the web's card corner, 12. The shape gate (test/design-rules-shape.test.ts) now takes a corner only as a role of its own platform's row that its component plays, the pill, square or a declared concentric corner. | fixed | d1339a2c |
+| command-corner-1 | low | source | The search trigger drew 6 (now the field corner, 10, on every platform), and the palette card 16 on iOS and 8 on Android, on neither row; with no native command palette both now share the web's card corner, 12. The shape gate (test/design-rules-shape.test.ts) now takes a corner only as a role of its own platform's row that its component plays, the pill, square or a declared concentric corner. | fixed | 278270a8 |
 
 ## Sign-off
 
