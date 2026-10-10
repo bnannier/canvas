@@ -2,7 +2,9 @@ import { expect, test } from "../support/fixtures";
 import { gotoDocs } from "../support/docs";
 import { scanStructure } from "../support/axe";
 
-for (const width of [1280, 390]) for (const scheme of ["light", "dark"] as const) {
+// Above the phone form factor the popover is anchored, its pointer aimed at the trigger.
+for (const scheme of ["light", "dark"] as const) {
+  const width = 1280;
   test(`wide-trigger popover measures its pointer at width ${width} in ${scheme}`, async ({ page }, info) => {
     await gotoDocs(page, "/testing/overlay-placement", { scheme, viewport: { width, height: 600 } });
     const trigger = page.getByRole("button", { name: "Review this project's settings and sharing permissions", exact: true });
@@ -37,6 +39,43 @@ for (const width of [1280, 390]) for (const scheme of ["light", "dark"] as const
     const shot = info.outputPath(`wide-popover-${width}-${scheme}.png`);
     await page.screenshot({ path: shot });
     await info.attach("wide popover", { path: shot, contentType: "image/png" });
+  });
+}
+
+// At phone width the same popover is a sheet (AnchoredOverlay's sheet presentation): on
+// the window's bottom edge over the docs' tab bar, across the window less the iOS sheet's
+// 8 px float, with no pointer, over a scrim that covers the window.
+for (const scheme of ["light", "dark"] as const) {
+  test(`wide-trigger popover is a sheet on the window's bottom edge at width 390 in ${scheme}`, async ({ page }, info) => {
+    await gotoDocs(page, "/testing/overlay-placement", { scheme, viewport: { width: 390, height: 600 } });
+    const trigger = page.getByRole("button", { name: "Review this project's settings and sharing permissions", exact: true });
+    await trigger.click();
+    const panel = page.getByRole("dialog").filter({ hasText: "Wide-trigger details" });
+    await expect(panel).toBeVisible();
+    const sheet = () => panel.evaluate((node) => {
+      for (let card = node.parentElement; card; card = card.parentElement) {
+        if (!card.style.maxHeight) continue;
+        const pointer = Array.from(card.querySelectorAll("svg")).some((element) => getComputedStyle(element).position === "absolute");
+        const style = getComputedStyle(card);
+        return { box: card.getBoundingClientRect().toJSON(), margin: parseFloat(style.marginBottom), pointer };
+      }
+      return null;
+    });
+    await expect.poll(async () => (await sheet())?.box.bottom).toBeCloseTo(600 - 8, 0);
+    const actual = (await sheet())!;
+    expect(actual.pointer).toBe(false);
+    expect(actual.margin).toBe(8);
+    expect(actual.box.x).toBeCloseTo(8, 0);
+    expect(actual.box.right).toBeCloseTo(390 - 8, 0);
+    // The tab bar is under the scrim, which takes a tap anywhere off the sheet.
+    const tabBar = (await page.getByRole("navigation", { name: "Primary" }).boundingBox())!;
+    expect(tabBar.y + tabBar.height).toBeGreaterThan(actual.box.top);
+    const covered = await page.evaluate(({ x, y }) => document.elementFromPoint(x, y)?.closest('[role="navigation"]') == null, { x: 195, y: tabBar.y + tabBar.height / 2 });
+    expect(covered).toBe(true);
+    await expect(panel.getByRole("button", { name: "Close details", exact: true })).toBeInViewport({ ratio: 1 });
+    const shot = info.outputPath(`wide-popover-sheet-${scheme}.png`);
+    await page.screenshot({ path: shot });
+    await info.attach("wide popover sheet", { path: shot, contentType: "image/png" });
   });
 }
 
