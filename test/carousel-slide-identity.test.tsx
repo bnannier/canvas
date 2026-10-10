@@ -120,5 +120,38 @@ for (const [platform, Component] of [["web", Carousel], ["ios", IOSCarousel], ["
       expect(mounts).toBe(firstFrameMounts);
       expect(scrollport().scrollLeft).toBe(600);
     });
+
+    it("lands on the starting slide when the scroller caps an offset at its content's width", () => {
+      // Android's horizontal scroll view caps an offset at the width its content has on
+      // the native side, which on the first measurement is still the unmeasured column,
+      // one viewport wide: the first scroll to slide 3 lands at 0. The command is issued
+      // again once the content size reports every slide's width, as Android does.
+      let nativeContent = 300;
+      const scroll = HTMLElement.prototype.scroll;
+      HTMLElement.prototype.scroll = function (this: HTMLElement, options?: ScrollToOptions | number) {
+        if (typeof options !== "object" || options.left == null) return scroll.call(this, options as ScrollToOptions);
+        return scroll.call(this, { ...options, left: Math.min(options.left, Math.max(0, nativeContent - 300)) });
+      };
+      try {
+        const changes: number[] = [];
+        render(<ThemeProvider><Component testID="carousel" items={items} defaultIndex={2} onIndexChange={(i) => changes.push(i)} /></ThemeProvider>);
+        // The unmeasured column reports its size first, then the viewport its width.
+        contentLayout(300);
+        layout(viewport(), 300);
+        expect(scrollport().scrollLeft).toBe(0);
+        // The measured slides widen the content, and its size reports.
+        nativeContent = 900;
+        contentLayout(900);
+        expect(scrollport().scrollLeft).toBe(600);
+        expect(changes).toEqual([]);
+      } finally {
+        HTMLElement.prototype.scroll = scroll;
+      }
+    });
   });
+}
+
+// The scrollport's content container, whose layout RNW reports as onContentSizeChange.
+function contentLayout(width: number) {
+  layout(scrollport().firstElementChild as HTMLElement, width);
 }
