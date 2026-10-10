@@ -35,7 +35,8 @@
 //               `pressed`, `hovered` or `focused`: its look changes with that state.
 //   disabled    `disabled`, `aria-disabled` or the `disabled` of an `accessibilityState`,
 //               given a value that can be true, or a TextInput's `editable` given one that
-//               can be false, on a primitive, or `disabled` handed to
+//               can be false (`readOnly`: react-native-web renders that `readonly`, never
+//               `aria-disabled` or a native `disabled`), on a primitive, or `disabled` handed to
 //               another kit component (AlertDialog's confirm Button): a control the
 //               component disables; a disabled state. What makes it disabled is read from
 //               its value (`disabledBy`): the props it is true with (`disabled`, or
@@ -77,18 +78,22 @@
 // tools/audit/state-coverage.ts holds each recipe's control to the component's own controls
 // where it is applied (FilterPanel's focus is its option rows, not the Clear it hands to a
 // kit Button). Another kit component the component disables is its control for the disabled
-// state alone (`kit`). A signal on no element written in a component or a hook (the hover
-// primitive's call, a PanResponder) names that function (`in`); one written in neither (a
-// skin's function taking `pressed`) is the component's whole look. Every signal rendered
-// inside an overlay the component opens is placed there (`within`), as a disabled control
-// is, and one rendered both on the surface and inside an overlay (FilterPanel's rows, on the
-// panel and in the drawer it becomes) is a signal in each place. Another kit component given
-// its open state holds the content between its tags inside its overlay only when its own
-// source renders `children` there: a Drawer's content is in the drawer, a Dropdown's is its
-// trigger. A component the component's own factory builds and renders as a tag (Sidebar's
-// `const SidebarDrillDown = createSidebarDrillDown(skin, Badge)`, the function the factory
-// returns) is read where it is used, as a local component is: the drill-down's rows are
-// inside the Drawer the Sidebar opens, not on its own surface.
+// state alone (`kit`). A control also names the feedback it is given that only a device
+// draws, where that is all it shows of a state, and the builds in which it is (`deviceOnly`,
+// `DEVICE_FEEDBACK`): Dialog's Android text buttons press with `android_ripple` and nothing
+// else, which react-native-web never draws, while its iOS capsules, given no ripple, dim
+// under a style function reading `pressed`. A signal on no element written in a component
+// or a hook (the hover primitive's call, a PanResponder) names that function (`in`); one
+// written in neither (a skin's function taking `pressed`) is the component's whole look.
+// Every signal rendered inside an overlay the component opens is placed there (`within`), as
+// a disabled control is, and one rendered both on the surface and inside an overlay
+// (FilterPanel's rows, on the panel and in the drawer it becomes) is a signal in each place.
+// Another kit component given its open state holds the content between its tags inside its
+// overlay only when its own source renders `children` there: a Drawer's content is in the
+// drawer, a Dropdown's is its trigger. A component the component's own factory builds and
+// renders as a tag (Sidebar's `const SidebarDrillDown = createSidebarDrillDown(skin, Badge)`,
+// the function the factory returns) is read where it is used, as a local component is: the
+// drill-down's rows are inside the Drawer the Sidebar opens, not on its own surface.
 //
 // A signal also says which platform builds render it (`builds`): a component is built once
 // per platform by its entries (`dialog.tsx`, `dialog.ios.tsx`, `dialog.android.tsx`, each
@@ -178,6 +183,12 @@ export interface Signal {
    * Absent for one on the component's own surface.
    */
   within?: string;
+  /**
+   * For a disabled control: disabled only as React Native's text field is, through a
+   * TextInput's `editable`, which react-native-web renders `readonly` and never
+   * `aria-disabled` or a native `disabled`, so the page never says the field is disabled.
+   */
+  readOnly?: true;
   /** For a signal on an element: that element, the control a recipe acts on. */
   control?: Control;
   /**
@@ -234,8 +245,28 @@ export interface Control {
   inside?: string[];
   /** Another kit component the component disables (AlertDialog's confirm Button): its hover, focus and press are its own. */
   kit?: true;
+  /**
+   * The feedback it is given that only a device draws (`DEVICE_FEEDBACK`), where that is all
+   * it shows of a state: Dialog's Android text buttons press with `android_ripple` alone.
+   */
+  deviceOnly?: DeviceOnly[];
   /** Where its tag is, `path:line`, repo-relative. */
   at: string;
+}
+
+/**
+ * A control's feedback for a state that only a device draws, and the builds in which it is
+ * all the control shows of that state: the prop is given a value the reader knows is not
+ * empty there, and nothing else the control is given can change what the web draws while the
+ * state holds (`DeviceFeedback.looks`, `DeviceFeedback.handlers`).
+ */
+export interface DeviceOnly {
+  prop: string;
+  state: SignalState;
+  /** The platform whose devices draw it (`DeviceFeedback.platform`). */
+  platform: DeviceFeedback["platform"];
+  /** The builds in which it is all the control shows of the state, in `BUILDS` order; absent when it is in every build the component has (always, for a component with one build). */
+  builds?: Build[];
 }
 
 /** What the source says about the element a handler is on. */
@@ -260,6 +291,34 @@ const OVERLAY_TAGS = new Set(["Modal", "AnchoredOverlay", "Portal"]);
 const OPEN_PROPS = ["open", "visible"];
 /** The props that disable a primitive outright; an `accessibilityState` disables it through its `disabled`. */
 const DISABLED_PROPS = new Set(["disabled", "aria-disabled"]);
+
+/**
+ * Feedback a prop gives a control that only a device draws: the prop, the state it is the
+ * feedback of, the platform whose devices draw it (the row of the docs' three-up that stands
+ * for them), and what else on the control could change what the web draws while that state
+ * holds, so the prop's feedback would not be all it shows: a function of the control reading
+ * one of `looks`, or one of `handlers` given to it.
+ */
+export interface DeviceFeedback {
+  prop: string;
+  state: "hover" | "focus" | "pressed";
+  platform: "ios" | "android";
+  looks: readonly string[];
+  handlers: readonly string[];
+}
+
+/**
+ * The feedback the web runner can never see. It renders every row of the docs' three-up
+ * through react-native-web, which drops `android_ripple` (its Pressable hands the prop to no
+ * element), so the ripple an Android device draws under a held press is never on its page.
+ * While a press is held on the web, a style function reading `pressed` repaints the control,
+ * and so does one reading `focused` (a pointer press focuses a Pressable there), as can a
+ * handler that runs as the press goes down or while it is held (`onPressIn`, `onLongPress`, a
+ * raw responder); `onPress` runs once the press comes up, and `onPressOut` as it ends.
+ */
+export const DEVICE_FEEDBACK: readonly DeviceFeedback[] = [
+  { prop: "android_ripple", state: "pressed", platform: "android", looks: ["pressed", "focused"], handlers: ["onPressIn", "onLongPress", ...RESPONDER_PROPS] },
+];
 
 /** One way a disabled value is true: the props it is true only with, and the keys of the data it reads. */
 export interface DisabledWay {
@@ -1510,8 +1569,13 @@ export class SignalReader {
     return [...new Set(gates)];
   }
 
-  /** The element a primitive's tag is, as a control: its tag, the function it is rendered in, and the roles the source can give it. */
-  private controlOf(module: Parsed, opening: ts.JsxOpeningElement | ts.JsxSelfClosingElement, tag: string, given: readonly Attr[]): Control {
+  /**
+   * The element a primitive's tag is, as a control: its tag, the function it is rendered in,
+   * the roles the source can give it, and the feedback it is given that only a device draws
+   * (`deviceOnlyOf`), read with the builds of the component whose directory is `own` (null for
+   * a rail example's tag, which is one build).
+   */
+  private controlOf(module: Parsed, opening: ts.JsxOpeningElement | ts.JsxSelfClosingElement, tag: string, given: readonly Attr[], own: string | null): Control {
     const roles = new Set<string>();
     let unread = false;
     // Whether the element can be given no role the page renders, so the tag's own applies.
@@ -1535,6 +1599,7 @@ export class SignalReader {
     if (bare && tag === "TextInput") roles.add("textbox");
     if (given.some((a) => a.name === "href")) roles.add("link");
     const inside = this.framesOf(module, opening);
+    const deviceOnly = this.deviceOnlyOf(given, own);
     return {
       tag,
       in: renderedIn(module, opening),
@@ -1542,8 +1607,53 @@ export class SignalReader {
       ...(unread ? { roleUnread: true as const } : {}),
       ...(bare && written.length && roles.size && tag !== "TextInput" ? { noRole: true as const } : {}),
       ...(inside.length ? { inside } : {}),
+      ...(deviceOnly.length ? { deviceOnly } : {}),
       at: this.at(module, opening),
     };
+  }
+
+  /**
+   * The feedback an element is given that only a device draws (`DEVICE_FEEDBACK`), where it
+   * is all the element shows of its state, and the builds in which it is: the element is given
+   * the prop a value the evaluator knows is not empty there (under every call the build makes
+   * of the factory it is rendered in), none of the entry's handlers (in any build, whatever
+   * its value, unless `undefined`), and no function of it reads one of the entry's look inputs
+   * where that build renders the read (a Checkbox dims under `skin.pressedOpacity != null &&
+   * pressed`, which the Android skin, giving a ripple instead, never reaches). A value or a
+   * condition the evaluator cannot read keeps the feedback from being all the element shows,
+   * so the web runner is never spared a state it might see. A component with one build (`own`
+   * null for a rail example's tag) reads its values once, for every build.
+   */
+  private deviceOnlyOf(given: readonly Attr[], own: string | null): DeviceOnly[] {
+    const all = own ? this.buildsIn(own) : [];
+    const single = all.length < 2;
+    const candidates: readonly Build[] = single ? BUILDS : all;
+    const out: DeviceOnly[] = [];
+    for (const feedback of DEVICE_FEEDBACK) {
+      const prop = given.find((a) => a.name === feedback.prop && a.value);
+      if (!prop?.value) continue;
+      if (given.some((a) => feedback.handlers.includes(a.name) && (!a.value || this.passedProps(a.module, a.value) !== null))) continue;
+      // The builds that give the prop a value known not to be empty.
+      const envs = own ? this.envsAround(prop.module, prop.node, own) : null;
+      // A rail example's code is a module of its own, read by its own reader.
+      const evaluator = own ? this.evaluator(prop.module.path) : prop.module.reader;
+      const gives = (env: Env) => {
+        const value = evaluator.evaluate(prop.value!, env);
+        return value !== UNKNOWN && !!value;
+      };
+      let builds = envs ? candidates.filter((build) => (envs.get(build) ?? []).length > 0 && envs.get(build)!.every(gives)) : gives(new Map()) ? [...candidates] : [];
+      // Less the builds in which a function the element is given reads one of the look inputs.
+      for (const attr of given) {
+        if (!attr.value || !builds.length) continue;
+        for (const read of inputReads(attr.module, attr.value, feedback.looks)) {
+          const reading = single || !own ? candidates : this.routeBuilds(attr.module, read.node, read.fn, own, all, new Set());
+          builds = builds.filter((build) => !reading.includes(build));
+        }
+      }
+      if (!builds.length) continue;
+      out.push({ prop: feedback.prop, state: feedback.state, platform: feedback.platform, ...(builds.length === candidates.length ? {} : { builds }) });
+    }
+    return out;
   }
 
   /** The component's own (and shared) functions whose tag an element is the content of, nearest first (through a `.map` callback or a render prop). */
@@ -1651,7 +1761,7 @@ export class SignalReader {
     if (!owner) return { places: [{ around: null, calls: [] }] };
     const tag = this.tagOf(module, owner.tagName, own);
     if (tag.place !== "primitive") return { places: [{ around: null, calls: [] }] };
-    const control = this.controlOf(module, owner, tag.name, this.attributes(module, owner.attributes.properties));
+    const control = this.controlOf(module, owner, tag.name, this.attributes(module, owner.attributes.properties), own);
     return { control, places: this.placesAround(module, owner, scope, own) };
   }
 
@@ -1746,7 +1856,7 @@ export class SignalReader {
         if (tag.place === "primitive") {
           const given = this.attributes(module, attrs);
           // The element every signal below is on, and the places it renders.
-          const control = this.controlOf(module, node, tag.name, given);
+          const control = this.controlOf(module, node, tag.name, given, own);
           let places: Placement[] | undefined;
           const placesOf = () => (places ??= this.placesAround(module, node, scope, own));
           const push = (signal: Signal, needs?: Requirement[]) => placedAt(placesOf(), control, signal, node, needs);
@@ -1780,7 +1890,8 @@ export class SignalReader {
             const where = placed(attr);
             // Not where an overlay that is kept closed whenever it is disabled renders it.
             const open = placesOf().filter((place) => !(place.around && shutIn(place.around, where.gates, by)));
-            placedAt(open, control, { kind: "disabled", state: "disabled", what: `${attr.name} on <${tag.name}>`, via: [], ...where, disabledBy: by }, node, attr.requires);
+            const readOnly = attr.name === "editable" ? { readOnly: true as const } : {};
+            placedAt(open, control, { kind: "disabled", state: "disabled", what: `${attr.name} on <${tag.name}>`, via: [], ...where, disabledBy: by, ...readOnly }, node, attr.requires);
           }
           const stop = tabStop(tag.name, given);
           if (stop) {
@@ -2033,7 +2144,7 @@ export class SignalReader {
         if ((ts.isJsxSelfClosingElement(node) || ts.isJsxOpeningElement(node)) && node.tagName.getText(sf) === tag) {
           const given = this.attributes(module, node.attributes.properties);
           // The primitive's own tag is the control; it is rendered in no function of the kit's, so it is named for the tag.
-          const control: Control = { ...this.controlOf(module, node, tag, given), in: tag, at };
+          const control: Control = { ...this.controlOf(module, node, tag, given, null), in: tag, at };
           const add = (kind: SignalKind, state: SignalState, what: string) => signals.push({ kind, state, what, at, via: [], gates: [], control });
           if (tag === "TextInput") add("text-entry", "focus", "a TextInput");
           const stop = tabStop(tag, given);
@@ -2159,6 +2270,32 @@ function takesParameter(node: ts.Node, name: string): boolean {
     found ||= takesParameter(child, name);
   });
   return found;
+}
+
+/**
+ * The reads of a look input in the functions a value holds (a Pressable's style callback): each
+ * read, in its function's body, of a parameter bound to one of `inputs` (`pressed`, or
+ * `{ pressed }` destructured), with the function it is the parameter of.
+ */
+function inputReads(module: Parsed, value: ts.Node, inputs: readonly string[]): { node: ts.Identifier; fn: ts.FunctionLikeDeclaration }[] {
+  const reads: { node: ts.Identifier; fn: ts.FunctionLikeDeclaration }[] = [];
+  const visit = (node: ts.Node): void => {
+    if ((ts.isArrowFunction(node) || ts.isFunctionExpression(node)) && node.body) {
+      const fn = node;
+      const ids = node.parameters.flatMap((param) => boundNames(param.name).filter((b) => inputs.includes(b.path.length ? String(b.path[b.path.length - 1]) : b.id.text)).map((b) => b.id));
+      const find = (inner: ts.Node): void => {
+        if (ts.isIdentifier(inner) && !ids.includes(inner)) {
+          const binding = module.reader.resolve(inner);
+          if (binding?.kind === "param" && ids.includes(binding.id)) reads.push({ node: inner, fn });
+        }
+        ts.forEachChild(inner, find);
+      };
+      if (ids.length) find(node.body);
+    }
+    ts.forEachChild(node, visit);
+  };
+  visit(value);
+  return reads;
 }
 
 /** What the props of the element a handler is on say about it. */

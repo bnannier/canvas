@@ -33,6 +33,25 @@
 // the page shows renders (a build whose row the page leaves out) is never on the web
 // runner's page: it is recorded as judged on devices (`devices`), never as captured.
 //
+// Nor is a state whose only feedback on a row is one only a device draws (`deviceFeedback`,
+// tools/audit/interaction-signals.ts `DEVICE_FEEDBACK`): the web runner renders every row
+// through react-native-web, which never draws `android_ripple`, so Dialog's and AlertDialog's
+// Android text buttons, which press with the ripple alone, show the runner nothing while held
+// on the Android row. A signal every row that renders it shows only such feedback for is
+// recorded as judged on devices too (`devices`, with the `feedback`), and a recipe applied on
+// such a row, on such a control, answers nothing and is an error: it would set up a state the
+// web cannot show. The ripple counts only on the Android row, which stands for the devices
+// that draw it: on the web and iOS rows a press with a ripple and nothing else shows nothing on
+// those platforms either, and like a press with no feedback at all it is the web runner's to
+// capture, its cell, not reached, the finding.
+//
+// A recipe's state can also be one the source never shows the web where the recipe is
+// applied while the recipe still answers it (`unreachable`): a field disabled only through a
+// TextInput's `editable` (Input's and Textarea's Disabled examples) is rendered read-only by
+// react-native-web, never `aria-disabled` or a native `disabled`, so the recipe's check of the
+// announced state cannot pass. The recipe stays, since its cell records that finding, and the
+// checklists list the state as not reachable on the web, with that reason.
+//
 // The disabled state is the examples': a control is disabled where an example asks for it,
 // by passing what its source disables it with (a prop such as `disabled` or `withInput`, or
 // the key of the data it reads, `{ label: "Archive", disabled: true }`). It is answered
@@ -78,16 +97,23 @@ export interface StateAnswer {
   signals: Signal[];
   /**
    * How the table answers it: `unshown` for a disabled control no example asks for,
-   * `devices` for one no row of the page renders (a build whose row the page leaves out),
-   * which the web runner never has and the devices judge.
+   * `devices` for one no row of the page renders (a build whose row the page leaves out), or
+   * one whose only feedback on every row that renders it is one only a device draws
+   * (`feedback`), which the web runner never has and the devices judge.
    */
   by: "recipe" | "exemption" | "nothing" | "unshown" | "devices";
   /** For a hover, a focus, a press or a disabled control: the overlay it is in (`Signal.within`); absent on the component's own surface. */
   within?: string;
-  /** The rows of the page its signals render on, when that is not every row the page shows (Dialog's capsules: the iOS row). */
+  /**
+   * The rows of the page its signals render on, when that is not every row the page shows
+   * (Dialog's capsules: the iOS row); for `devices` by `feedback`, always: the rows the
+   * feedback is all its controls show of the state on.
+   */
   rows?: RowPlatform[];
-  /** For `devices`: the builds that render its signals. */
+  /** For `devices` that no row renders: the builds that render its signals. */
   builds?: Build[];
+  /** For `devices` on rows the page shows: the prop whose feedback, all its controls show of the state there, only a device draws (`android_ripple`). */
+  feedback?: string;
   /** For a state answered by a recipe of another state (a tooltip's hover by its open recipe, which a resting pointer opens): that state. */
   recipe?: StateName;
   exemption?: Exemption;
@@ -95,9 +121,24 @@ export interface StateAnswer {
   failure?: string;
 }
 
+/**
+ * A recipe that answers its state where it is applied, on rows where the source never shows
+ * the web runner that state: the rows, and why. `read-only`: the controls it acts on are
+ * disabled only through a TextInput's `editable` (`Signal.readOnly`), which react-native-web
+ * renders `readonly`, never `aria-disabled` or a native `disabled`, so the recipe's check of
+ * the announced state cannot pass.
+ */
+export interface Unreachable {
+  recipe: StateRecipe;
+  rows: RowPlatform[];
+  why: "read-only";
+}
+
 export interface Coverage {
   slug: string;
   answers: StateAnswer[];
+  /** The recipes whose state the web runner cannot reach where they are applied. */
+  unreachable: Unreachable[];
   errors: string[];
 }
 
@@ -278,6 +319,64 @@ export function renders(signal: Signal, example: Pick<Example, "code">): boolean
 }
 
 /**
+ * The component's own controls a recipe applied at `place` finds, on a row of `build` (every
+ * build's, without one): `shown`, those its source renders there in the recipe's example (one
+ * another kit component renders, `Control.kit`, only for the disabled state), and `named`,
+ * those of them with the recipe's role and, where it names one, in its function.
+ */
+export function actedOn(recipe: StateRecipe, state: SignalState, place: string, signals: readonly Signal[], rail: readonly Example[], build?: Build): { shown: OwnControl[]; named: OwnControl[] } {
+  const spec = recipe.control;
+  const example = rail.find((e) => variantSlug(e.label) === recipe.variant);
+  const built = (s: Signal) => build === undefined || !s.builds || s.builds.includes(build);
+  const shown = ownControls(signals.filter(built)).filter((c) => c.place === place && (state === "disabled" || !c.control.kit) && (!example || c.signals.some((s) => renders(s, example))));
+  return { shown, named: spec ? shown.filter((c) => isNamed(spec, c.control)) : [] };
+}
+
+/**
+ * The feedback only a device draws that is all a control shows of a state on a row (its
+ * prop, `android_ripple`), or null when the web runner can see the state there. The control
+ * must be given it in the build the row renders (`Control.deviceOnly`), on the row of the
+ * platform that draws it, and nothing of the component's on no element may draw the state on
+ * it in that build: a look, a responder or a hover written in the function it is rendered in,
+ * in one it is rendered inside, or in none (a skin's function, the component's whole look).
+ */
+export function deviceFeedback(control: Control, state: SignalState, row: RowPlatform, rows: RowBuilds, signals: readonly Signal[]): string | null {
+  const build = rows[row];
+  if (build === undefined) return null;
+  const found = control.deviceOnly?.find((d) => d.state === state && d.platform === row && (!d.builds || d.builds.includes(build)));
+  if (!found) return null;
+  const fns = new Set([control.in, ...(control.inside ?? [])]);
+  const drawn = signals.some((s) => s.state === state && unplaced(s) && (!s.builds || s.builds.includes(build)) && (s.in === undefined || fns.has(s.in)));
+  return drawn ? null : found.prop;
+}
+
+/**
+ * Why a recipe applied at `place` on `row` sets up a state the web runner cannot show there,
+ * or null: every control of the component's own it can act on there shows only feedback a
+ * device draws (`deviceFeedback`), so its cell could only ever be not reached.
+ */
+export function unseenFailure(recipe: StateRecipe, state: SignalState, place: string, signals: readonly Signal[], rail: readonly Example[], row: RowPlatform, rows: RowBuilds): string | null {
+  const { named } = actedOn(recipe, state, place, signals, rail, rows[row]);
+  const props = named.map((c) => deviceFeedback(c.control, state, row, rows, signals));
+  if (!named.length || props.some((prop) => prop === null)) return null;
+  const controls = [...new Set(named.map((c) => describeControl(c.control)))];
+  return `the only ${state} feedback of ${andText(controls)} ${placeOf(place)} there is ${andText([...new Set(props)].map((prop) => `\`${prop}\``))}, which react-native-web does not draw: the devices judge it`;
+}
+
+/**
+ * Whether the controls a disabled recipe applied at `place` acts on (on a row of `build`) are
+ * disabled only through a TextInput's `editable` (`Signal.readOnly`), which react-native-web
+ * renders read-only and never announces disabled: its example asks for one of those, and
+ * nothing else of theirs can disable them in that build, so nothing announces it either (a
+ * Stepper's field, also handed `aria-disabled` by a helper, is announced).
+ */
+export function readOnlyOn(recipe: StateRecipe, place: string, signals: readonly Signal[], rail: readonly Example[], build?: Build): boolean {
+  const example = rail.find((e) => variantSlug(e.label) === recipe.variant);
+  const disabled = actedOn(recipe, "disabled", place, signals, rail, build).named.flatMap((c) => c.signals.filter((s) => s.state === "disabled"));
+  return disabled.some((s) => !example || asksFor(s, example)) && disabled.every((s) => s.readOnly === true);
+}
+
+/**
  * Why a recipe applied at `place` does not act on a control of the component's own, or null
  * when it does. Its control (`StateRecipe.control`) must be one the component's source
  * renders there, in the recipe's example (which passes every prop that renders it), with the
@@ -293,10 +392,8 @@ export function renders(signal: Signal, example: Pick<Example, "code">): boolean
 export function controlFailure(recipe: StateRecipe, state: SignalState, place: string, signals: readonly Signal[], rail: readonly Example[], build?: Build): string | null {
   const spec = recipe.control;
   if (!spec) return "it names no control (`StateRecipe.control`)";
-  const example = rail.find((e) => variantSlug(e.label) === recipe.variant);
   const built = (s: Signal) => build === undefined || !s.builds || s.builds.includes(build);
-  const shown = ownControls(signals.filter(built)).filter((c) => c.place === place && (state === "disabled" || !c.control.kit) && (!example || c.signals.some((s) => renders(s, example))));
-  const named = shown.filter((c) => isNamed(spec, c.control));
+  const { shown, named } = actedOn(recipe, state, place, signals, rail, build);
   const where = placeOf(place);
   if (!named.length) {
     const own = [...new Set(shown.map((c) => describeControl(c.control)))];
@@ -329,12 +426,15 @@ function partialRows(signals: readonly Signal[], rows: RowBuilds): Pick<StateAns
  * How the table answers a hover, a focus or a press, place by place and row by row: the
  * component's own surface and each overlay its source renders the state's signals in, on each
  * row of the page. A place is answered on a row by a recipe of the state applied there on that
- * row through a control of the component's own on it (`controlFailure`), or by an opening a
- * resting pointer makes there (`alsoAnswers`); a signal is answered where its place is, on a
- * row that renders it. The signals no row renders are the devices'; those left are the
- * exemption's to answer.
+ * row through a control of the component's own on it (`controlFailure`) that the web runner can
+ * see the state on (`unseenFailure`), or by an opening a resting pointer makes there
+ * (`alsoAnswers`); a signal is answered where its place is, on a row that renders it. The
+ * signals no row renders are the devices', and so are those left whose controls show only a
+ * device's feedback of the state on every row that renders them (`deviceFeedback`); the rest
+ * are the exemption's to answer.
  */
 function placeAnswers(slug: string, entry: ComponentStates, state: SignalState, own: Signal[], signals: Signal[], rail: readonly Example[], sites: readonly string[], rows: RowBuilds): { answers: StateAnswer[]; rest: Signal[]; errors: string[] } {
+  const all = signals;
   const errors: string[] = [];
   // The state of the recipe that answers each place on each row: the state's own, before an opening's.
   const answered = new Map<string, StateName>();
@@ -346,7 +446,7 @@ function placeAnswers(slug: string, entry: ComponentStates, state: SignalState, 
         if (!answered.has(at(place, row))) answered.set(at(place, row), recipe.state);
         continue;
       }
-      const failure = controlFailure(recipe, state, place, signals, rail, rows[row]);
+      const failure = controlFailure(recipe, state, place, signals, rail, rows[row]) ?? unseenFailure(recipe, state, place, signals, rail, row, rows);
       if (failure) {
         errors.push(`${slug}: ${recipeLabel(recipe)} answers nothing on the ${ROW_NAMES[row]} row: ${failure}`);
         continue;
@@ -370,7 +470,21 @@ function placeAnswers(slug: string, entry: ComponentStates, state: SignalState, 
       const recipe = by.some((s) => answeredBy(s, places) === state) ? state : answeredBy(by[0]!, places)!;
       answers.push({ state, signals: by, by: "recipe", ...within, ...partialRows(by, rows), ...(recipe !== state ? { recipe } : {}) });
     }
-    rest.push(...shown.filter((s) => !by.includes(s)));
+    // Of those left, a signal whose control shows only a device's feedback of the state on
+    // every row that renders it is the devices': the web runner can show it on none.
+    const unseen = new Map<string, Signal[]>();
+    for (const signal of shown.filter((s) => !by.includes(s))) {
+      const props = signal.control ? rowsOfSignal(signal, rows).map((row) => deviceFeedback(signal.control!, state, row, rows, all)) : [null];
+      if (props.some((prop) => prop === null)) {
+        rest.push(signal);
+        continue;
+      }
+      const feedback = [...new Set(props)].join(", ");
+      unseen.set(feedback, [...(unseen.get(feedback) ?? []), signal]);
+    }
+    for (const [feedback, group] of unseen) {
+      answers.push({ state, signals: group, by: "devices", ...within, rows: ROWS.filter((row) => group.some((s) => rowsOfSignal(s, rows).includes(row))), feedback });
+    }
   };
   const placed = own.filter((s) => !unplaced(s));
   for (const place of [...new Set(placed.map(placeOfSignal))]) {
@@ -474,21 +588,29 @@ const placeOf = (within: string) => (within ? `in the overlay in ${within}` : "o
  * renders more than one) on a control of the component's own on it (`controlFailure`); a
  * control is answered where its place is, on a row that renders it. Of those left, a place no
  * rail example asks for a disabled control in needs nothing (`unshown`); one no row renders is
- * the devices'.
+ * the devices'. A recipe that answers its place on a row where every control it acts on is
+ * disabled only through `editable` (`readOnlyOn`) still answers it, and is `unreachable` there.
  */
-function disabledCoverage(slug: string, entry: ComponentStates, own: Signal[], signals: Signal[], rail: readonly Example[], sites: readonly string[], rows: RowBuilds): { answers: StateAnswer[]; errors: string[] } {
+function disabledCoverage(slug: string, entry: ComponentStates, own: Signal[], signals: Signal[], rail: readonly Example[], sites: readonly string[], rows: RowBuilds): { answers: StateAnswer[]; unreachable: Unreachable[]; errors: string[] } {
   const answers: StateAnswer[] = [];
+  const unreachable: Unreachable[] = [];
   const errors: string[] = [];
   // Where each disabled recipe is applied, on each row: the component's own surface (""), or the overlay it opens first.
   const placed = new Set<string>();
   for (const recipe of recipesIn(entry, "disabled")) {
     const place = placeOfRecipe(slug, recipe, sites, errors);
     if (place === null) continue;
+    const readOnly: RowPlatform[] = [];
     for (const row of shownRows(recipe, rows)) {
       const failure = controlFailure(recipe, "disabled", place, signals, rail, rows[row]);
-      if (failure) errors.push(`${slug}: ${recipeLabel(recipe)} answers nothing on the ${ROW_NAMES[row]} row: ${failure}`);
-      else placed.add(at(place, row));
+      if (failure) {
+        errors.push(`${slug}: ${recipeLabel(recipe)} answers nothing on the ${ROW_NAMES[row]} row: ${failure}`);
+        continue;
+      }
+      placed.add(at(place, row));
+      if (readOnlyOn(recipe, place, signals, rail, rows[row])) readOnly.push(row);
     }
+    if (readOnly.length) unreachable.push({ recipe, rows: readOnly, why: "read-only" });
   }
   for (const place of [...new Set(own.map((s) => s.within ?? ""))]) {
     const here = own.filter((s) => (s.within ?? "") === place);
@@ -512,7 +634,7 @@ function disabledCoverage(slug: string, entry: ComponentStates, own: Signal[], s
     answers.push({ state: "disabled", signals: left, by: "nothing", ...within, ...onRows });
   }
   if (entry.exempt?.disabled) errors.push(`${slug}: exempts disabled, which a recipe answers where an example asks for it and nothing needs where none does`);
-  return { answers, errors };
+  return { answers, unreachable, errors };
 }
 
 /**
@@ -521,6 +643,7 @@ function disabledCoverage(slug: string, entry: ComponentStates, own: Signal[], s
  */
 export function coverageOf(slug: string, entry: ComponentStates, signals: Signal[], rail: readonly Example[], rows: RowBuilds): Coverage {
   const answers: StateAnswer[] = [];
+  const unreachable: Unreachable[] = [];
   const errors: string[] = [];
   const exempt = entry.exempt ?? {};
   // A recipe applied on a row the page does not show captures nothing.
@@ -536,6 +659,7 @@ export function coverageOf(slug: string, entry: ComponentStates, signals: Signal
     if (state === "disabled") {
       const found = disabledCoverage(slug, entry, own, signals, rail, sites, rows);
       answers.push(...found.answers);
+      unreachable.push(...found.unreachable);
       errors.push(...found.errors);
       continue;
     }
@@ -599,7 +723,7 @@ export function coverageOf(slug: string, entry: ComponentStates, signals: Signal
   }
   // An exemption for the state no signal can give (invalid) is never checked, so never allowed.
   for (const state of STATE_NAMES) if (!SIGNAL_STATES.includes(state as SignalState) && exempt[state]) errors.push(`${slug}: exempts ${state}, which no source signal gives`);
-  return { slug, answers, errors };
+  return { slug, answers, unreachable, errors };
 }
 
 /** Every component's coverage against the table. */

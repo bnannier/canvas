@@ -190,14 +190,19 @@ function skinLine(platform: "iOS" | "Android", facts: ComponentFacts): string {
 
 const ROW_NAMES: Record<string, string> = { web: "web", ios: "iOS", android: "Android" };
 
-/** The interaction states the audit captures for a component, and the ones it exempts or calls static, with their reasons. */
+/**
+ * The recipes the web runner applies to a component, the states it exempts or calls static
+ * with their reasons, and the states its source says the web can never show, with why. The
+ * facts are generated from the source alone (in CI, with no capture), so the row says what
+ * the runner sets up, never what a capture reached: a run's cells say that.
+ */
 function statesLine(facts: ComponentFacts): string {
   const states = facts.states;
   if (!states.listed) return "not in the state table (`e2e/support/state-recipes.ts` lists the interaction registry's components)";
   const parts: string[] = [];
   if (states.recipes.length) {
     parts.push(
-      `captured: ${states.recipes
+      `recipes: ${states.recipes
         .map((r) => `${r.state} on ${r.label}${r.inOverlay ? " inside the overlay it opens" : ""} (${r.rows.map((row) => ROW_NAMES[row] ?? row).join(", ")} ${r.rows.length > 1 ? "rows" : "row"}; ${andList([...r.widths])}${r.alsoAnswers.length ? `; also its ${andList([...r.alsoAnswers])}` : ""}${r.opens ? `; opens the overlay in \`${r.opens}\`` : ""})`)
         .join(", ")}`,
     );
@@ -207,7 +212,7 @@ function statesLine(facts: ComponentFacts): string {
   if (states.unanswered.length) parts.push(`given by its source with neither a recipe nor an exemption: ${states.unanswered.join(", ")}`);
   const placeText = (place: string) => (place.startsWith("its own surface") ? `on ${place}` : `in ${place.replace(/^the overlay in (\S+)/, "the overlay in `$1`")}`);
   if (states.unshown.length) parts.push(`disabled controls its source renders and no rail example asks for: ${andList(states.unshown.map(placeText))}`);
-  if (states.devices.length) parts.push(`not captured by the web runner, since no row of its docs page renders them (judged on devices): ${andList(states.devices)}`);
+  if (states.unreachable.length) parts.push(`not reachable on the web: ${states.unreachable.join("; ")}`);
   // Each part is a sentence; the reasons bring their own full stops.
   return parts.map((part) => (/[.!?]$/.test(part) ? part : `${part}.`)).join(" ");
 }

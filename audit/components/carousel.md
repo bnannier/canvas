@@ -20,7 +20,7 @@ Audit checklist for `/components/carousel`. The facts block and the variants tab
 | Hand-off metric gaps | none |
 | Interactions registry | in the inventory; evidence: none registered |
 | Overlay recipe | none |
-| Interaction states | captured: focus on Default (web row; desktop), pressed on Default (web row; desktop). disabled controls its source renders and no rail example asks for: on its own surface. |
+| Interaction states | recipes: focus on Default (web row; desktop), pressed on Default (web row; desktop). disabled controls its source renders and no rail example asks for: on its own surface. |
 | MeasureProps | not adopted |
 | Touch target | `carousel.shared.tsx`: hitSlop. `test/touch-target-coverage.test.ts` records it as covered another way: hitSlop on the dots and the arrows |
 | Tests importing it | 11: `test/carousel-arrows.test.tsx`, `test/carousel-keyboard.test.tsx`, `test/carousel-slide-identity.test.tsx`, `test/components-extra.test.tsx`, `test/design-rules-shape.test.ts`, `test/design-rules-skins.test.ts`, `test/material-solid-fallback.test.tsx`, `test/native-carousel-fixture.test.tsx`, `test/organism-material-roles.test.tsx`, `test/scroll-frame-ring.test.tsx`, `test/skins-smoke.test.tsx` |

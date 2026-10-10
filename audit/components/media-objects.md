@@ -20,7 +20,7 @@ Audit checklist for `/components/media-objects`. The facts block and the variant
 | Hand-off metric gaps | none |
 | Interactions registry | in the inventory; evidence: media-press (unit-web, test/behavior-smoke-b.test.tsx) |
 | Overlay recipe | none |
-| Interaction states | captured: focus on Tappable (web row; desktop), pressed on Tappable (web row; desktop). |
+| Interaction states | recipes: focus on Tappable (web row; desktop), pressed on Tappable (web row; desktop). |
 | MeasureProps | not adopted |
 | Touch target | `media-objects.shared.tsx`: minTarget; `media-objects.styles.ts`: minTarget |
 | Tests importing it | 8: `test/behavior-smoke-b.test.tsx`, `test/design-rules-shape.test.ts`, `test/design-rules-skins.test.ts`, `test/image.test.tsx`, `test/material-solid-fallback.test.tsx`, `test/media-object.test.tsx`, `test/skins-smoke.test.tsx`, `test/touch-target-coverage.test.ts` |

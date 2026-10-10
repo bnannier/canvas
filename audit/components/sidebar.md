@@ -20,7 +20,7 @@ Audit checklist for `/components/sidebar`. The facts block and the variants tabl
 | Hand-off metric gaps | none |
 | Interactions registry | in the inventory; evidence: none registered |
 | Overlay recipe | none |
-| Interaction states | captured: hover on Default (web row; desktop), hover on Default inside the overlay it opens (web row; phone and tablet), focus on Default (web row; desktop), focus on Default inside the overlay it opens (web row; phone and tablet), pressed on Default (web row; desktop), pressed on Default inside the overlay it opens (web row; phone and tablet), open on Default (web row; phone and tablet). disabled controls its source renders and no rail example asks for: on its own surface. |
+| Interaction states | recipes: hover on Default (web row; desktop), hover on Default inside the overlay it opens (web row; phone and tablet), focus on Default (web row; desktop), focus on Default inside the overlay it opens (web row; phone and tablet), pressed on Default (web row; desktop), pressed on Default inside the overlay it opens (web row; phone and tablet), open on Default (web row; phone and tablet). disabled controls its source renders and no rail example asks for: on its own surface. |
 | MeasureProps | not adopted |
 | Touch target | `sidebar.shared.tsx`: hitSlop. `test/touch-target-coverage.test.ts` records it as known gap: iOS rows render 36 tall against a 44 minimum |
 | Tests importing it | 8: `test/design-rules-shape.test.ts`, `test/design-rules-skins.test.ts`, `test/focus-ring.test.tsx`, `test/hover-lift.test.tsx`, `test/material-solid-fallback.test.tsx`, `test/sidebar.test.tsx`, `test/skins-smoke.test.tsx`, `test/text-contrast.test.tsx` |
