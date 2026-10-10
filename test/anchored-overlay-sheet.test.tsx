@@ -12,6 +12,7 @@ import { Dropdown } from "../src/atoms/dropdown/dropdown.tsx";
 import { iosSkin, webSkin } from "../src/atoms/popover/popover.styles.tsx";
 import { AnchoredOverlay } from "../src/style/anchored-overlay.tsx";
 import { OverlayProvider } from "../src/style/portal.tsx";
+import { SafeAreaFrameContext, SafeAreaInsetsContext } from "../src/style/safe-area.tsx";
 import { ThemeProvider } from "../src/style/theme.tsx";
 import { lightColors } from "../src/style/tokens.ts";
 import { hostedEntranceParts, layoutHostedEntrance } from "./entrance-layout.ts";
@@ -102,7 +103,7 @@ describe("the phone sheet (AO-6)", () => {
       fireEvent.click(screen.getByRole("button", { name: "Rename" }));
       const parts = await held("dialog");
       const wrapper = parts.entrance as HTMLElement;
-      // As wide as the band (8px nowhere: a sheet spans it), standing on its bottom edge.
+      // As wide as the window (8px nowhere: a sheet spans it), standing on its bottom edge.
       expect(wrapper.style.left).toBe("0px");
       expect(wrapper.style.right).toBe("0px");
       expect(wrapper.style.bottom).toBe("0px");
@@ -119,6 +120,54 @@ describe("the phone sheet (AO-6)", () => {
       fireEvent.click(backdrop);
       await settle();
       expect(screen.queryByRole("dialog", { hidden: true })).toBeNull();
+    });
+  });
+
+  it("stands on the window's bottom edge over the declared chrome, across the window, its content clear of the home indicator", async () => {
+    act(() => resizeViewport(390, 844));
+    // A 390x844 window with a 47 status bar and a 34 home indicator; the page's provider
+    // declares a 60 header and an 83 tab bar, and a docs stage frames the trigger 24 in
+    // from each side.
+    const insets = { top: 47, right: 0, bottom: 34, left: 0 };
+    const STAGE: Box = { x: 24, y: 160, width: 342, height: 420 };
+    const boxOf = (node: Element) => node.getAttribute("data-testid") === "trigger" ? { x: 40, y: 300, width: 120, height: 32 }
+      : node.closest('[data-testid="stage"]') ? STAGE : WINDOW;
+    const app = (popover: ReactNode) => render(
+      <ThemeProvider light solid>
+        <SafeAreaInsetsContext.Provider value={insets}>
+          <SafeAreaFrameContext.Provider value={WINDOW}>
+            <OverlayProvider>
+              <OverlayProvider viewport viewportInsets={{ top: 60, bottom: 83 }}>
+                <View testID="stage"><OverlayProvider>{popover}</OverlayProvider></View>
+              </OverlayProvider>
+            </OverlayProvider>
+          </SafeAreaFrameContext.Provider>
+        </SafeAreaInsetsContext.Provider>
+      </ThemeProvider>,
+    );
+    await withBoxes(boxOf, async () => {
+      app(<Popover testID="trigger" trigger="Rename" title="Rename project" actionLabel="Save" />);
+      fireEvent.click(screen.getByRole("button", { name: "Rename" }));
+      const parts = await held("dialog");
+      const wrapper = parts.entrance as HTMLElement;
+      // Over the tab bar on the window's bottom edge, and across the window, not the stage.
+      expect([wrapper.style.left, wrapper.style.right, wrapper.style.bottom]).toEqual(["0px", "0px", "0px"]);
+      const card = (parts.card as HTMLElement).getAttribute("style") ?? "";
+      // Its content padded clear of the home indicator, rising to the gap below the status bar.
+      expect((parts.card as HTMLElement).style.paddingBottom).toBe(`${20 + 34}px`);
+      expect(card).toContain(`max-height: ${844 - 47 - 48}px`);
+    });
+    cleanup();
+    await withBoxes(boxOf, async () => {
+      // The iOS sheet floats 8 off the edges, so only the rest of the indicator pads it.
+      app(<IOSPopover testID="trigger" trigger="Rename" title="Rename project" actionLabel="Save" />);
+      fireEvent.click(screen.getByRole("button", { name: "Rename" }));
+      const parts = await held("dialog");
+      expect((parts.entrance as HTMLElement).style.bottom).toBe("0px");
+      const card = (parts.card as HTMLElement).getAttribute("style") ?? "";
+      expect((parts.card as HTMLElement).style.marginBottom).toBe("8px");
+      expect((parts.card as HTMLElement).style.paddingBottom).toBe(`${20 + 34 - 8}px`);
+      expect(card).toContain(`max-height: ${844 - 8 - 47 - 48}px`);
     });
   });
 

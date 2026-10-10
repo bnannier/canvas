@@ -74,6 +74,13 @@ export interface OverlayHost {
    * edges, in window coordinates.
    */
   measureVisibleBounds?(cb: (bounds: OverlayBounds) => void): void;
+  /**
+   * Measure the window this host's layer covers, where a modal sheet stands: `window` is
+   * the layer's own box cut at the keyboard's top (the app's declared chrome is not cut:
+   * a sheet covers its tab bar), and `safe` is the window's safe area within it, which the
+   * sheet's content keeps clear of; both in window coordinates.
+   */
+  measureWindowBounds?(cb: (window: OverlayBounds, safe: OverlayBounds) => void): void;
 }
 
 export interface OverlayBounds { x: number; y: number; width: number; height: number }
@@ -286,6 +293,20 @@ export function OverlayProvider({ children, style, separateWindow = false, viewp
         const settle = () => { if (band && own) cb(intersectOverlayBounds(own, band)); };
         measureParent((bounds) => { band = bounds; settle(); });
         measureOwn((bounds) => { own = bounds; settle(); });
+      },
+      measureWindowBounds(cb) {
+        // A frame stands in its layer's window; a parent that cannot say gives its band.
+        if (parent) {
+          if (parent.measureWindowBounds) parent.measureWindowBounds(cb);
+          else if (parent.measureVisibleBounds) parent.measureVisibleBounds((bounds) => cb(bounds, bounds));
+          else parent.measureOutlet((x, y, width, height) => cb({ x, y, width, height }, { x, y, width, height }));
+          return;
+        }
+        outletRef.current?.measureInWindow((x, y, width, height) => {
+          const bottom = keyboard.current ? Math.min(y + height, keyboard.current.screenY) : y + height;
+          const window = { x, y, width, height: Math.max(0, bottom - y) };
+          cb(window, safe.current ? intersectOverlayBounds(window, safe.current) : window);
+        });
       },
     };
     // Inside a parent's window this host is a frame in the parent's layer; at an app
