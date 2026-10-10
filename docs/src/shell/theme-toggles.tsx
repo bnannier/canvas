@@ -18,7 +18,7 @@ import { useDocsTheme } from "../theme/docs-theme";
 // 124 (its 112 px group plus the cluster's 12 px gap). A tablet-width window, 768 px,
 // shows the narrow shell instead, whose drawer carries the labeled form.
 
-type Palette = "blush" | "mint";
+export type Palette = "blush" | "mint";
 
 /** The light palettes in the order every palette control lists them. */
 const PALETTES: readonly { value: Palette; label: string }[] = [
