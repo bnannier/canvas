@@ -46,7 +46,8 @@ export interface KitSymbol {
 export type ExportOrigin = KitSymbol | { package: string; name: string };
 
 export const symbolId = (s: KitSymbol): string => `${s.file}#${s.name}`;
-const symbolOf = (id: string): KitSymbol => {
+/** A node id back to its symbol. */
+export const symbolOf = (id: string): KitSymbol => {
   const at = id.lastIndexOf("#");
   return { file: id.slice(0, at), name: id.slice(at + 1) };
 };
@@ -232,6 +233,7 @@ export class KitGraph {
   private readonly resolved = new Map<string, { origins: ExportOrigin[]; through: string[] }>();
   private edgesById: Map<string, Set<string>> | null = null;
   private reverse: Map<string, Set<string>> | null = null;
+  private readonly relayed = new Map<string, ReadonlySet<string>>();
 
   constructor(
     readonly root: string,
@@ -338,6 +340,25 @@ export class KitGraph {
     return targets.flatMap((t) => this.exportNames(t).flatMap((n) => kit(this.exportOrigins(t, n))));
   }
 
+  /** The kit declarations a value-read identifier names: a top-level name of its own module, or what an import of it names. */
+  private symbolsOf(info: ModuleInfo, n: ts.Identifier): KitSymbol[] {
+    const binding = info.reader.resolve(n);
+    if (binding?.kind === "import") {
+      const imported = info.imports.get(n.text);
+      if (!imported || imported.typeOnly) return [];
+      let member: string | null = null;
+      const parent = n.parent;
+      if (ts.isPropertyAccessExpression(parent) && parent.expression === n) member = parent.name.text;
+      else if (ts.isElementAccessExpression(parent) && parent.expression === n && ts.isStringLiteralLike(parent.argumentExpression)) member = parent.argumentExpression.text;
+      return this.importedValues(info.file, imported, member, n);
+    }
+    if (binding?.kind === "const" && binding.topLevel) return [{ file: info.file, name: binding.id.text }];
+    if (binding?.kind === "let" && topLevel(binding.decl.parent.parent)) return [{ file: info.file, name: binding.id.text }];
+    if (binding?.kind === "function" && topLevel(binding.decl)) return [{ file: info.file, name: n.text }];
+    if (binding?.kind === "opaque" && info.values.has(n.text) && !shadowedBelowTop(n)) return [{ file: info.file, name: n.text }];
+    return [];
+  }
+
   /** The symbols a top-level statement's code reads: the module's own top-level names and what its imports name. */
   private readsOf(info: ModuleInfo, node: ts.Node): KitSymbol[] {
     const out: KitSymbol[] = [];
@@ -348,26 +369,45 @@ export class KitGraph {
         const text = ts.isStringLiteral(arg) || ts.isNoSubstitutionTemplateLiteral(arg) ? arg.text : null;
         if (text === null || text.startsWith(".")) throw new UnreadableKitModule(info.file, lineOf(info.sf, n), `a dynamic ${text === null ? "import of a computed specifier" : `import of "${text}"`}`);
       }
-      if (ts.isIdentifier(n) && isValueRead(n)) {
-        const binding = info.reader.resolve(n);
-        if (binding?.kind === "import") {
-          const imported = info.imports.get(n.text);
-          if (imported && !imported.typeOnly) {
-            let member: string | null = null;
-            const parent = n.parent;
-            if (ts.isPropertyAccessExpression(parent) && parent.expression === n) member = parent.name.text;
-            else if (ts.isElementAccessExpression(parent) && parent.expression === n && ts.isStringLiteralLike(parent.argumentExpression)) member = parent.argumentExpression.text;
-            out.push(...this.importedValues(info.file, imported, member, n));
-          }
-        } else if (binding?.kind === "const" && binding.topLevel) out.push({ file: info.file, name: binding.id.text });
-        else if (binding?.kind === "let" && topLevel(binding.decl.parent.parent)) out.push({ file: info.file, name: binding.id.text });
-        else if (binding?.kind === "function" && topLevel(binding.decl)) out.push({ file: info.file, name: n.text });
-        else if (binding?.kind === "opaque" && info.values.has(n.text) && !shadowedBelowTop(n)) out.push({ file: info.file, name: n.text });
-      }
+      if (ts.isIdentifier(n) && isValueRead(n)) out.push(...this.symbolsOf(info, n));
       ts.forEachChild(n, visit);
     };
     visit(node);
     return out;
+  }
+
+  /**
+   * The contexts a top-level declaration relays, as node ids: each one it reads with
+   * `useContext(X)` and provides again (`<X.Provider>`, or `X.Provider` read any other way),
+   * so a subtree it renders elsewhere sees the value its own place had (the overlay layer's
+   * `usePortalMount` carrying the publisher's breakpoint and readiness into a portal).
+   */
+  relays(id: string): ReadonlySet<string> {
+    const cached = this.relayed.get(id);
+    if (cached) return cached;
+    const found = new Set<string>();
+    const { file, name } = symbolOf(id);
+    const info = this.files.includes(file) ? this.module(file) : null;
+    const statement = info && name !== MODULE_BODY ? info.values.get(name) : undefined;
+    if (info && statement) {
+      const consumed = new Set<string>();
+      const provided = new Set<string>();
+      const visit = (n: ts.Node): void => {
+        if (ts.isCallExpression(n) && n.arguments[0] && ts.isIdentifier(n.arguments[0])) {
+          const callee = n.expression;
+          const isUseContext = (ts.isIdentifier(callee) && callee.text === "useContext") || (ts.isPropertyAccessExpression(callee) && callee.name.text === "useContext");
+          if (isUseContext) for (const s of this.symbolsOf(info, n.arguments[0])) consumed.add(symbolId(s));
+        }
+        if (ts.isPropertyAccessExpression(n) && n.name.text === "Provider" && ts.isIdentifier(n.expression)) {
+          for (const s of this.symbolsOf(info, n.expression)) provided.add(symbolId(s));
+        }
+        ts.forEachChild(n, visit);
+      };
+      visit(statement);
+      for (const context of consumed) if (provided.has(context)) found.add(context);
+    }
+    this.relayed.set(id, found);
+    return found;
   }
 
   /** Every node's edges: the symbols its code reads. Built once, over every module the graph covers. */
@@ -442,6 +482,87 @@ export class KitGraph {
     }
     return next;
   }
+}
+
+/**
+ * The owners of each node of `within`, read from the nodes that read it: a node is owned by
+ * the owners all of its readers agree on (the intersection of their owner sets), so one
+ * reader that owns nothing (shared vocabulary a component calls, a declaration several
+ * foundations share) leaves it owned by nobody. `seed` gives the owner sets known up front
+ * (each foundation's public declarations); a reader in neither `seed` nor `within` owns
+ * nothing. Readers are decided before what they read (a set of nodes that read each other
+ * in a cycle is decided as one, from the readers outside it).
+ *
+ * One reader does not count: a relay (`KitGraph.relays`), which reads a context and
+ * provides it again. It carries the context's owner into a subtree rather than using the
+ * context itself: the overlay layer relays BreakpointOverrideContext into every portal, and
+ * the context stays BreakpointOverride's, whose consumers then include what the layer
+ * publishes.
+ */
+export function ownersByReaders(graph: KitGraph, seed: ReadonlyMap<string, ReadonlySet<string>>, within: ReadonlySet<string>): Map<string, Set<string>> {
+  const edges = graph.edges();
+  const readers = graph.readers();
+  // Tarjan's strongly connected components over `within`, reader -> what it reads,
+  // iteratively. Components come out readees first, so the reverse is readers first.
+  const index = new Map<string, number>();
+  const low = new Map<string, number>();
+  const onStack = new Set<string>();
+  const stack: string[] = [];
+  const components: string[][] = [];
+  let counter = 0;
+  for (const start of within) {
+    if (index.has(start)) continue;
+    const work: { id: string; next: Iterator<string> }[] = [];
+    const open = (id: string) => {
+      index.set(id, counter);
+      low.set(id, counter);
+      counter += 1;
+      stack.push(id);
+      onStack.add(id);
+      work.push({ id, next: [...(edges.get(id) ?? [])].filter((to) => within.has(to))[Symbol.iterator]() });
+    };
+    open(start);
+    while (work.length) {
+      const frame = work[work.length - 1]!;
+      const step = frame.next.next();
+      if (!step.done) {
+        const to = step.value;
+        if (!index.has(to)) open(to);
+        else if (onStack.has(to)) low.set(frame.id, Math.min(low.get(frame.id)!, index.get(to)!));
+        continue;
+      }
+      work.pop();
+      if (work.length) {
+        const parent = work[work.length - 1]!;
+        low.set(parent.id, Math.min(low.get(parent.id)!, low.get(frame.id)!));
+      }
+      if (low.get(frame.id) === index.get(frame.id)) {
+        const component: string[] = [];
+        let id: string;
+        do {
+          id = stack.pop()!;
+          onStack.delete(id);
+          component.push(id);
+        } while (id !== frame.id);
+        components.push(component);
+      }
+    }
+  }
+  const owners = new Map<string, Set<string>>();
+  const none: ReadonlySet<string> = new Set<string>();
+  for (const component of components.reverse()) {
+    const members = new Set(component);
+    let agreed = null as Set<string> | null;
+    for (const id of component) {
+      for (const reader of readers.get(id) ?? []) {
+        if (members.has(reader) || graph.relays(reader).has(id)) continue;
+        const theirs: ReadonlySet<string> = seed.get(reader) ?? owners.get(reader) ?? none;
+        agreed = agreed === null ? new Set(theirs) : new Set([...agreed].filter((owner: string) => theirs.has(owner)));
+      }
+    }
+    for (const id of component) owners.set(id, new Set(agreed ?? []));
+  }
+  return owners;
 }
 
 /** How a consumer reaches a foundation. */

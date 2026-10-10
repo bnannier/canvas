@@ -4,15 +4,18 @@
 // document. Each gets a checklist under audit/foundation/, whose facts this module
 // gathers from the kit's source and its own manifests, with no React Native import:
 //
-//   - its source files and public exports, each with its classification in the public API
-//     manifest (tools/api/manifest.ts) and its K12-2 status (a deprecated alias to come, or
-//     public, by the owner's decisions in audit/DECISIONS.md);
+//   - its source files (its homes, its exports' declarations and its implementation: the
+//     private declarations they read, `foundationCode`) and its public exports, each with its
+//     classification in the public API manifest (tools/api/manifest.ts) and its K12-2 status
+//     (a deprecated alias to come, or public, by the owner's decisions in audit/DECISIONS.md);
 //   - the docs routes that document it or are planned to (the API manifest's `docs` and
 //     PENDING_DOCS), and its materials manifest entry;
-//   - the tests that import it (the same import rule the component facts use);
-//   - its consumers: every kit component that renders through it, read from the source by
-//     the kit graph (tools/audit/kit-graph.ts), directly, through shared modules, or
-//     through other kit components;
+//   - the tests of it: those that import one of its exports or one of its implementation's
+//     declarations by name, and those named for it (`test/<id>-<what>.test.tsx`);
+//   - its consumers: every kit component that renders through it (reads one of its public
+//     values or one of its seams, the private declarations it alone reads), read from the
+//     source by the kit graph (tools/audit/kit-graph.ts), directly, through shared modules,
+//     or through other kit components;
 //   - the pattern and template pages whose own entry names one of its exports;
 //   - its Capture through list: the component slugs and page ids whose captures show it,
 //     in the consumers' order, which `bun run audit:turn -- --slug=<foundation>` expands to.
@@ -32,7 +35,7 @@ import { materialCoverage } from "../materials/manifest.ts";
 import type { MaterialCoverageEntry } from "../materials/types.ts";
 import { componentImplementation, pageKitNames, type FactsCorpus, type KitImports } from "./facts.ts";
 import { components as inventoryComponents, pageModule, pages as inventoryPages, type InventoryComponent, type InventoryPage } from "./inventory.ts";
-import { KitGraph, consumersOf, type Consumer, type ConsumerCandidate, type KitSymbol } from "./kit-graph.ts";
+import { KitGraph, MODULE_BODY, consumersOf, moduleFiles, ownersByReaders, symbolId, symbolOf, type Consumer, type ConsumerCandidate, type KitSymbol } from "./kit-graph.ts";
 import { STYLE_LAYER_RENDERABLES, TOKENS_FOUNDATION } from "./plan-specifics.ts";
 import { turnRecordFile } from "./turn-record.ts";
 
@@ -128,6 +131,7 @@ export interface FoundationFacts {
   foundation: Foundation;
   /** The files that declare its name (a renderable) or the token pages (Tokens). */
   homes: string[];
+  /** Its homes, the files declaring its exports, and its implementation's files (`FoundationCode`). */
   sourceFiles: string[];
   exports: FoundationExport[];
   docs: FoundationDocsPage[];
@@ -140,6 +144,8 @@ export interface FoundationFacts {
   captureThrough: { components: string[]; pages: string[] };
   /** The routes that document it (or are planned to) that the capture inventory does not hold. */
   notCaptured: FoundationDocsPage[];
+  /** The private declarations it alone reads (`FoundationCode.seams`). */
+  seams: KitSymbol[];
   /** Where its turn records its capture runs, repo-relative. */
   turnRecord: string;
 }
@@ -202,6 +208,142 @@ export interface FoundationSources {
   pageNames: Map<string, string[]>;
 }
 
+/**
+ * A foundation's code, read from the kit graph: what its turn reviews and what its
+ * consumers are found from.
+ *
+ *   - `exports`: the declarations of its public value exports;
+ *   - `implementation`: the private declarations those read, through private declarations
+ *     alone. A declaration is private when no public export of the kit resolves to it, it
+ *     is outside every component's own modules, and no component's own module reads it:
+ *     the kit's shared vocabulary (a hook every component calls) is not one foundation's
+ *     code. GlassSurface's shell, material runtime and web frost; the overlay layer
+ *     AnchoredOverlay publishes through;
+ *   - `seams`: the implementation it owns (kit-graph.ts `ownersByReaders`): every reader
+ *     among the foundations' exports and the private declarations they own is its own.
+ *     The overlay layer is Portal's and AnchoredOverlay's both, so it is a seam of
+ *     neither; BreakpointOverrideContext is read by BreakpointOverride's hooks and by that
+ *     shared layer, which relays it into every portal, so it is BreakpointOverride's.
+ *
+ * Its consumers are the components that read its exports or its seams; its Source files
+ * are its homes, its exports' files and its implementation's; a test that imports one of
+ * its implementation's declarations tests it.
+ */
+export interface FoundationCode {
+  exports: KitSymbol[];
+  implementation: KitSymbol[];
+  seams: KitSymbol[];
+}
+
+const codeCache = new WeakMap<FoundationSources, Map<string, FoundationCode>>();
+const namesCache = new WeakMap<FoundationSources, Map<string, { name: string; value: boolean; declared: string[] }[]>>();
+
+/** A foundation's public names, each with the kit files that declare it (memoized per sources). */
+function exportNamesOf(sources: FoundationSources, foundation: Foundation): { name: string; value: boolean; declared: string[] }[] {
+  let cache = namesCache.get(sources);
+  if (!cache) namesCache.set(sources, (cache = new Map()));
+  let names = cache.get(foundation.id);
+  if (!names) {
+    names = foundationNames(sources.kit, foundation, new Set(foundationHomes(sources.kit, foundation)));
+    if (!names.length) throw new Error(`foundations: no public export of the kit belongs to ${foundation.name}`);
+    cache.set(foundation.id, names);
+  }
+  return names;
+}
+
+/** Every foundation's code (`FoundationCode`), by foundation id, read once per sources. */
+export function foundationCode(sources: FoundationSources): ReadonlyMap<string, FoundationCode> {
+  const cached = codeCache.get(sources);
+  if (cached) return cached;
+  const { kit } = sources;
+  const edges = kit.edges();
+  const readers = kit.readers();
+  const publicDecls = new Set<string>();
+  for (const name of Object.keys(publicApi)) for (const o of kit.exportOrigins(KIT_ENTRY, name, "value")) if ("file" in o) publicDecls.add(symbolId(o));
+  const componentNodes = new Set(sources.candidates.flatMap((c) => c.modules.flatMap((m) => kit.nodesOf(m))));
+  const isPrivate = (id: string): boolean =>
+    edges.has(id) &&
+    symbolOf(id).name !== MODULE_BODY &&
+    !publicDecls.has(id) &&
+    !componentNodes.has(id) &&
+    ![...(readers.get(id) ?? [])].some((reader) => componentNodes.has(reader));
+  const all = foundations();
+  const exportsOf = new Map<string, string[]>();
+  const seed = new Map<string, Set<string>>();
+  for (const f of all) {
+    const ids = exportNamesOf(sources, f)
+      .filter((e) => e.value)
+      .flatMap((e) => kit.exportOrigins(KIT_ENTRY, e.name, "value").filter((o): o is KitSymbol => "file" in o).map(symbolId));
+    const unique = [...new Set(ids)];
+    exportsOf.set(f.id, unique);
+    for (const id of unique) seed.set(id, new Set([...(seed.get(id) ?? []), f.id]));
+  }
+  const implementationOf = new Map<string, string[]>();
+  for (const f of all) {
+    const seen = new Set(exportsOf.get(f.id));
+    const queue = [...seen];
+    const found: string[] = [];
+    for (let i = 0; i < queue.length; i++) {
+      for (const to of edges.get(queue[i]!) ?? []) {
+        if (seen.has(to)) continue;
+        seen.add(to);
+        if (!isPrivate(to)) continue;
+        found.push(to);
+        queue.push(to);
+      }
+    }
+    implementationOf.set(f.id, found.sort());
+  }
+  // Ownership is read over the implementations and the module bodies outside the components
+  // (a module's top-level statements, which every declaration of the module reads).
+  const bodies = kit.files.map((file) => symbolId({ file, name: MODULE_BODY })).filter((id) => !componentNodes.has(id));
+  const within = new Set([...[...implementationOf.values()].flat(), ...bodies]);
+  const owners = ownersByReaders(kit, seed, within);
+  const code = new Map<string, FoundationCode>();
+  for (const f of all) {
+    const implementation = implementationOf.get(f.id)!;
+    code.set(f.id, {
+      exports: exportsOf.get(f.id)!.map(symbolOf),
+      implementation: implementation.map(symbolOf),
+      seams: implementation.filter((id) => owners.get(id)?.has(f.id)).map(symbolOf),
+    });
+  }
+  codeCache.set(sources, code);
+  return code;
+}
+
+/**
+ * The kit modules a test imports, as the graph's files (a `src/...` path with or without its
+ * extension, `src` for the package entry); `dist/...` is the build, which the graph does not
+ * cover.
+ */
+function graphModules(root: string, kitPaths: readonly string[]): string[] {
+  return [...new Set(kitPaths.flatMap((path) => moduleFiles(root, "index.ts", `./${path}`)))];
+}
+
+/**
+ * Whether a test imports one of a foundation's implementation declarations by name: a name
+ * it imports that one of the kit modules it imports resolves to one of them (test/glass-
+ * surface.test.ts imports the GlassSurface shell's `specularRim` from glass-surface.shared.tsx).
+ */
+export function importsImplementation(kit: KitGraph, imports: Pick<KitImports, "names" | "modules">, implementation: readonly KitSymbol[]): boolean {
+  if (!implementation.length || !imports.names.size) return false;
+  const ids = new Set(implementation.map(symbolId));
+  for (const file of graphModules(kit.root, imports.modules)) {
+    if (!kit.files.includes(file)) continue;
+    for (const name of imports.names) {
+      if (kit.exportOrigins(file, name, "value").some((o) => "file" in o && ids.has(symbolId(o)))) return true;
+    }
+  }
+  return false;
+}
+
+/** Whether a test file is named for a foundation: `test/<id>.test.tsx` or `test/<id>-<what>.test.tsx` (test/anchored-overlay-dismissal.test.tsx). */
+export function namedFor(file: string, foundation: Pick<Foundation, "id">): boolean {
+  const base = file.split("/").pop() ?? file;
+  return base.startsWith(`${foundation.id}.`) || base.startsWith(`${foundation.id}-`);
+}
+
 export function foundationSources(root: string, kit = new KitGraph(root), pageList: InventoryPage[] = inventoryPages()): FoundationSources {
   const pageNames = new Map(
     pageList.map((page) => {
@@ -236,8 +378,8 @@ function docsPages(exports: FoundationExport[], pageList: InventoryPage[], extra
 export function foundationFacts(foundation: Foundation, corpus: Pick<FactsCorpus, "tests">, sources: FoundationSources): FoundationFacts {
   const { kit } = sources;
   const homes = foundationHomes(kit, foundation);
-  const names = foundationNames(kit, foundation, new Set(homes));
-  if (!names.length) throw new Error(`foundations: no public export of the kit belongs to ${foundation.name}`);
+  const names = exportNamesOf(sources, foundation);
+  const code = foundationCode(sources).get(foundation.id)!;
   const exports: FoundationExport[] = names.map(({ name, value, declared }) => {
     const entry = publicApi[name]!;
     return {
@@ -250,14 +392,13 @@ export function foundationFacts(foundation: Foundation, corpus: Pick<FactsCorpus
       k12: k12Status(name, entry),
     };
   });
-  const sourceFiles = [...new Set([...homes, ...exports.flatMap((e) => e.declared.filter((d) => d.startsWith("src/")))])].sort();
+  const sourceFiles = [...new Set([...homes, ...exports.flatMap((e) => e.declared.filter((d) => d.startsWith("src/"))), ...code.implementation.map((s) => s.file)])].sort();
   const materials = materialCoverage.find((m) => m.tier === "style" && m.name === foundation.name) ?? null;
   const tokenRoutes = foundation.kind === "tokens" ? tokenPages().map((p) => p.slice(1)) : [];
   const docs = docsPages(exports, sources.pages, [...tokenRoutes, ...(materials?.docsRoute ? [materials.docsRoute] : [])]);
   const exportNames = exports.map((e) => e.name);
-  // The consumer edges are the values among its public exports, at their declarations.
-  const targets: KitSymbol[] = exports.filter((e) => e.value).flatMap((e) => kit.exportOrigins(KIT_ENTRY, e.name, "value").filter((o): o is KitSymbol => "file" in o));
-  const consumers = consumersOf(kit, targets, sources.candidates);
+  // The consumer edges are the values among its public exports, at their declarations, and its seams.
+  const consumers = consumersOf(kit, [...code.exports, ...code.seams], sources.candidates);
   const valueNames = new Set(exports.filter((e) => e.value).map((e) => e.name));
   const pages = sources.pages.flatMap((p) => {
     const used = (sources.pageNames.get(p.id) ?? []).filter((n) => valueNames.has(n));
@@ -272,11 +413,14 @@ export function foundationFacts(foundation: Foundation, corpus: Pick<FactsCorpus
     exports,
     docs,
     materials,
-    tests: corpus.tests.filter(({ imports }) => importsFoundation(imports, exportNames)).map(({ file }) => file),
+    tests: corpus.tests
+      .filter(({ file, imports }) => importsFoundation(imports, exportNames) || importsImplementation(kit, imports, code.implementation) || namedFor(file, foundation))
+      .map(({ file }) => file),
     consumers,
     pages,
     captureThrough: { components: consumers.map((c) => c.slug), pages: capturePages },
     notCaptured: docs.filter((d) => d.page === null),
+    seams: code.seams,
     turnRecord: `audit/${turnRecordFile(foundation.id)}`,
   };
 }

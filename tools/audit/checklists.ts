@@ -368,7 +368,8 @@ export function renderFoundationFacts(facts: FoundationFacts): string[] {
         ? `the design tokens the docs' \`tokens/*\` pages document (${list(facts.homes)}): the public names \`tools/api/manifest.ts\` documents on one of them, or plans to`
         : `${code(f.name)}, a style-layer renderable with no component page of its own (\`tools/materials/manifest.ts\`, the style tier), declared in ${list(facts.homes)}`,
     ],
-    ["Source files", list(facts.sourceFiles)],
+    ["Source files", `${list(facts.sourceFiles)} (its ${f.kind === "tokens" ? "" : "homes, its "}exports' declarations and its implementation, the private declarations they read)`],
+    ["Seams", facts.seams.length ? `${facts.seams.length}, the private declarations it alone reads (\`tools/audit/foundations.ts\` \`foundationCode\`), which its consumers are also found through: ${facts.seams.map((s) => `${code(s.name)} (${s.file})`).join(", ")}` : "none: no private declaration is its alone"],
     ["Public exports", `${facts.exports.length}: ${facts.exports.map((e) => `${code(e.name)} (${e.kind}${e.value || e.kind === "type" ? "" : ", a type"})`).join(", ")}`],
     ["K12-2 status", k12Line(facts)],
     ["Documented on", documentedLine(facts)],
@@ -379,7 +380,7 @@ export function renderFoundationFacts(facts: FoundationFacts): string[] {
         ? `${facts.materials.name}: ${facts.materials.tier}, ${facts.materials.roles.join(" + ")}; docs route ${facts.materials.docsRoute ? code(facts.materials.docsRoute) : "none (`docsRoute: null`)"}; verification ${facts.materials.verification.join(", ")}`
         : "none: the design tokens are not a renderable, so the material inventory has no entry for them",
     ],
-    ["Tests importing it", `${facts.tests.length} (importing one of its public exports by name): ${list(facts.tests)}`],
+    ["Tests of it", `${facts.tests.length} (importing one of its public exports or one of its implementation's declarations by name, or named for it, \`test/${f.id}[-<what>].test.tsx\`): ${list(facts.tests)}`],
     [
       "Consumers",
       facts.consumers.length

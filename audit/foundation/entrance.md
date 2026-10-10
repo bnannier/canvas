@@ -6,13 +6,14 @@ Audit checklist for the style-layer foundation `Entrance`, audited for its contr
 | Fact | Value |
 |---|---|
 | Foundation | `Entrance`, a style-layer renderable with no component page of its own (`tools/materials/manifest.ts`, the style tier), declared in `src/style/entrance.tsx` |
-| Source files | `src/style/entrance.tsx` |
+| Source files | `src/style/entrance.tsx` (its homes, its exports' declarations and its implementation, the private declarations they read) |
+| Seams | 1, the private declarations it alone reads (`tools/audit/foundations.ts` `foundationCode`), which its consumers are also found through: `HELD` (src/style/entrance.tsx) |
 | Public exports | 2: `Entrance` (internal-by-accident), `EntranceProps` (internal-by-accident, a type) |
 | K12-2 status | 2 deprecated alias to come (K12-2): Entrance, EntranceProps |
 | Documented on | none yet: the public API manifest names no page for any of its exports |
 | Docs planned | `foundation` (not built yet): Entrance, EntranceProps |
 | Materials manifest | Entrance: style, inherited; docs route none (`docsRoute: null`); verification inherited-composition, semantic-state |
-| Tests importing it | 2 (importing one of its public exports by name): `test/entrance-readiness.test.tsx`, `test/entrance.test.tsx` |
+| Tests of it | 2 (importing one of its public exports or one of its implementation's declarations by name, or named for it, `test/entrance[-<what>].test.tsx`): `test/entrance-readiness.test.tsx`, `test/entrance.test.tsx` |
 | Consumers | 15 components: 2 directly, 9 through shared modules, 4 through other kit components (one row each below, read from the source by `tools/audit/kit-graph.ts`) |
 | Pages using it | none: no pattern or template entry names one of its exports |
 | Capture through | 15, in this order: components `alert-dialog`, `dialog`, `autocomplete`, `button-group`, `dropdown`, `popover`, `select`, `phone-input`, `calendar`, `command`, `row-menu`, `avatar`, `field`, `board`, `navbars`; pages none |
