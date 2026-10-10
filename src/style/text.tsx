@@ -19,6 +19,12 @@
 // As for Pressable, Chromium paints its automatic ring in that colour, and Firefox and
 // Safari keep their own unless the CSS hand-off's `:focus-visible` rule is loaded.
 // Natively the outline keys draw nothing without a width.
+//
+// Text carries the same ring when it is a link (an `href`, which react-native-web renders
+// as an `<a>`, or the `link` role), the one case where a run of text is a keyboard stop:
+// Typography's `href` link took the browser's own ring colour before, as a raw scroller
+// did before the ScrollView primitive carried it. A link's ring shows on keyboard focus
+// only, as a control's does.
 
 import { forwardRef, useMemo } from "react";
 import {
@@ -58,12 +64,28 @@ function useFontStyle(style: StyleProp<TextStyle>): StyleProp<TextStyle> {
   return useMemo(() => fontStyle(style, fonts), [style, fonts]);
 }
 
+// The props a link Text carries beside React Native's own: react-native-web renders a
+// Text with an `href` as an `<a>`, and gives the `link` role a tab stop of its own.
+type LinkTextProps = { href?: unknown; role?: unknown; accessibilityRole?: unknown };
+
+/** Whether a Text is a link, a keyboard stop the browser rings on the web. */
+function isLink(props: LinkTextProps): boolean {
+  return props.href != null || props.role === "link" || props.accessibilityRole === "link";
+}
+
 /**
  * React Native's Text with the theme's registered typefaces applied, so every label paints
- * in the brand face without a `fontFamily` at the call site.
+ * in the brand face without a `fontFamily` at the call site. A link Text (an `href`, or
+ * the `link` role) also carries the kit's themed focus ring, as Pressable does.
  */
 export const Text = forwardRef<RNText, TextProps>(function Text({ style, ...rest }, ref) {
-  return <RNText ref={ref} {...rest} style={useFontStyle(style)} />;
+  const ring = useFocusRingStyle();
+  const font = useFontStyle(style);
+  const link = isLink(rest as LinkTextProps);
+  // The ring goes first in the list so a link's own outline style wins. Plain text keeps
+  // its style as it came, with nothing allocated.
+  const themed = useMemo(() => (link ? [ring, font] : font), [link, ring, font]);
+  return <RNText ref={ref} {...rest} style={themed} />;
 });
 
 /**
