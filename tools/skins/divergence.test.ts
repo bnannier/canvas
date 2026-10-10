@@ -2,7 +2,7 @@ import { describe, expect, it } from "bun:test";
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
-import { builtExports, componentSkins, exportDivergences, isWebSkinAlias, platformModuleOf, shellImportFindings, traceExport } from "./divergence.ts";
+import { builtExports, componentSkins, exportDivergences, isOwnLook, isWebSkinAlias, platformModuleOf, shellImportFindings, traceExport, type ComponentSkins } from "./divergence.ts";
 import { registeredSkins } from "./registry.ts";
 
 const KIT = resolve(import.meta.dir, "../../src");
@@ -395,6 +395,66 @@ describe("skin divergence, per built export", () => {
       // A default export of a local const is that const's build.
       expect(thing.exportDivergence.E).toEqual({ Android: "builds from its own androidOwnSkin" });
       expect(thing.exportDivergence.default).toEqual({ iOS: "builds from its own iosOwnSkin" });
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("names what each reason is made of: a skin or data of its own, a part, a part's skin, a form it cannot read (K8a)", () => {
+    // A component's own look answers to its own reference row and a part's to the part's,
+    // so each reason carries what it is made of.
+    const kinds = (c: ComponentSkins, name: string, platform: "iOS" | "Android") => c.exportReasons[name]?.[platform]?.map((r) => (r.owner ? `${r.kind} ${r.owner}` : r.kind));
+    // AvatarMenu builds the Dropdown from the Dropdown's own skin and hands its factory a 6
+    // gap: both set the part's look, so Avatar's own skin is still the web skin.
+    expect(kinds(skinsOf(KIT, "avatar"), "AvatarMenu", "iOS")).toEqual(["part-skin dropdown", "part-skin dropdown"]);
+    // A part under a nested directory belongs to the component it sits in.
+    expect(kinds(skinsOf(KIT, "listbox"), "Listbox", "Android")).toEqual(["part checkbox"]);
+    expect(kinds(skinsOf(KIT, "video"), "Video", "Android")).toEqual(["own-skin", "part spinner", "own-data"]);
+    expect(kinds(skinsOf(KIT, "feeds"), "Feed", "iOS")).toEqual(["own-skin"]);
+
+    const root = kit({
+      "atoms/thing/thing.styles.ts": "export const webSkin = { radius: 8 };\nexport const iosSkin = webSkin;\nexport const iosOwnSkin = { radius: 4 };",
+      "atoms/other/other.styles.ts": "export const webSkin = { a: 1 };\nexport const iosSkin = webSkin;",
+      "atoms/button/button.styles.ts": "export const webSkin = { h: 36 };\nexport const iosSkin = { h: 44 };",
+      "atoms/button/button.ios.tsx": 'import { createButton } from "./button.shared.js";\nimport { iosSkin } from "./button.styles.js";\nexport const Button = createButton(iosSkin);',
+      "atoms/thing/thing.tsx": [
+        'import { createThing } from "./thing.shared.js";',
+        'import { createOther } from "../other/other.shared.js";',
+        'import { webSkin } from "./thing.styles.js";',
+        'import { webSkin as otherWeb } from "../other/other.styles.js";',
+        "export const Own = createThing(webSkin);",
+        "export const Data = createThing(webSkin);",
+        "export const WithPart = createThing(webSkin);",
+        "export const PartLook = createThing(webSkin, createOther(otherWeb));",
+      ].join("\n"),
+      "atoms/thing/thing.ios.tsx": [
+        'import { createThing } from "./thing.shared.js";',
+        'import { createOther } from "../other/other.shared.js";',
+        'import { iosSkin, iosOwnSkin } from "./thing.styles.js";',
+        'import { iosSkin as otherIos } from "../other/other.styles.js";',
+        'import { Button } from "../button/button.ios.js";',
+        "export const Own = createThing(iosOwnSkin);",
+        "export const Data = createThing(iosSkin, { dense: true });",
+        "export const WithPart = createThing(iosSkin, { Button });",
+        // The web skin of another component, spread with an override and handed to that
+        // component's own factory: the part's look, never this component's.
+        "export const PartLook = createThing(iosSkin, createOther({ ...otherIos, gap: 6 }));",
+        "export function Unread() { return null; }",
+      ].join("\n"),
+    });
+    try {
+      const thing = skinsOf(root, "thing");
+      expect(Object.fromEntries(thing.exports.map((name) => [name, kinds(thing, name, "iOS")]))).toEqual({
+        Own: ["own-skin"],
+        Data: ["own-data"],
+        WithPart: ["part button"],
+        PartLook: ["part-skin other"],
+        Unread: ["unknown"],
+      });
+      // The kinds sit beside the reasons the string reads have always spelled.
+      expect(thing.exportReasons.PartLook?.iOS?.map((r) => r.text).join("; ")).toBe(thing.exportDivergence.PartLook?.iOS);
+      expect(thing.exportReasons.PartLook?.iOS?.every((r) => !isOwnLook(r))).toBe(true);
+      expect(["Own", "Data", "Unread"].every((name) => thing.exportReasons[name]?.iOS?.every(isOwnLook))).toBe(true);
     } finally {
       rmSync(root, { recursive: true, force: true });
     }
