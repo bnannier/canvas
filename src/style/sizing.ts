@@ -38,6 +38,7 @@
 
 import { createContext, createElement, useContext, type ReactNode } from "react";
 import type { StyleProp, ViewStyle } from "react-native";
+import { MEASURE, pick } from "./axis.js";
 import { devWarn } from "./dev-warn.js";
 import { widths, type WidthKey } from "./tokens.js";
 
@@ -174,12 +175,12 @@ export interface MeasureProps {
  * The step a component's measure props name, or null when none is passed.
  * Narrowest first when several are, so a stray wider step never silently widens
  * a deliberate narrow one: the precedence IS the scale's declaration order in
- * `widths` (ascending, which `test/sizing.test.tsx` pins), so a step added to
- * the scale needs no second list here.
+ * `widths` (ascending, which `test/sizing.test.tsx` pins), read through the
+ * measure axis (`MEASURE` in axis.ts), so a step added to the scale needs no
+ * second list here.
  */
 export function stepOf(p: MeasureProps): WidthKey | null {
-  for (const step of Object.keys(widths) as WidthKey[]) if (p[step]) return step;
-  return null;
+  return pick(MEASURE, p);
 }
 
 /**

@@ -3,7 +3,6 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { Glob } from "bun";
 import { axis, MEASURE, pick } from "../src/style/axis.ts";
-import { stepOf } from "../src/style/sizing.ts";
 import { widths } from "../src/style/tokens.ts";
 import { characterizeAll, FIXTURE, type Characterization } from "../tools/axes/characterize.ts";
 import { SUBJECTS } from "../tools/axes/registry.ts";
@@ -66,20 +65,14 @@ describe("the axis primitive", () => {
   });
 });
 
+// The first resolver on a table: `stepOf` resolves through MEASURE, and the record's
+// "Measure.step" holds it to the loop it replaced.
 describe("the measure axis", () => {
   it("is the width scale's steps in their declaration order, narrowest first", () => {
     expect(MEASURE.members).toEqual(Object.keys(widths));
     const caps = MEASURE.members.map((step) => widths[step]);
     expect(caps).toEqual([...caps].sort((a, b) => a - b));
     expect(MEASURE.fallback).toBeNull();
-  });
-
-  it("picks the step stepOf picks, for every step and every pair", () => {
-    for (const a of MEASURE.members) {
-      expect(stepOf({ [a]: true })).toBe(pick(MEASURE, { [a]: true }));
-      for (const b of MEASURE.members) expect(stepOf({ [a]: true, [b]: true })).toBe(pick(MEASURE, { [a]: true, [b]: true }));
-    }
-    expect(stepOf({ start: true })).toBeNull();
   });
 });
 
