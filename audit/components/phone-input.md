@@ -23,7 +23,7 @@ Audit checklist for `/components/phone-input`. The facts block and the variants 
 | Interaction states | recipes: focus on Default (web row; desktop), focus on Pre-filled inside the overlay it opens (web row; desktop), pressed on Default (web row; desktop), pressed on Pre-filled inside the overlay it opens (web row; desktop), open on Default (web, iOS, Android rows; phone, tablet and desktop), invalid on Error (web row; desktop), disabled on Disabled (web row; desktop). |
 | MeasureProps | adopted in `phone-input.shared.tsx` |
 | Touch target | no touch-target name (the exports of `src/style/touch-target.ts`, `src/style/touch-target-seed.ts`, `src/style/touch-seam.ts`, `src/style/clip-slop.ts`, the `TouchTargetSkin` fields, or `hitSlop`) in its implementation modules. `test/touch-target-coverage.test.ts` records it as covered another way: the country segment stretches to the 44/56 field box; its rows are Select's 44/48 by skin |
-| Tests importing it | 7: `test/a11y-state.test.tsx`, `test/design-rules-skins.test.ts`, `test/field-focus-states.test.tsx`, `test/material-solid-fallback.test.tsx`, `test/phone-input.test.tsx`, `test/skins-smoke.test.tsx`, `test/text-entry-material.test.tsx` |
+| Tests importing it | 8: `test/a11y-state.test.tsx`, `test/anchored-overlay-focus.test.tsx`, `test/design-rules-skins.test.ts`, `test/field-focus-states.test.tsx`, `test/material-solid-fallback.test.tsx`, `test/phone-input.test.tsx`, `test/skins-smoke.test.tsx`, `test/text-entry-material.test.tsx` |
 | E2E naming it | 2: `e2e/a11y/components.e2e.ts`, `e2e/behavior/text-entry-clear.e2e.ts` |
 | E2E catalog sweeps | 7: `e2e/a11y/components.e2e.ts` (componentRoutes), `e2e/journeys/keyboard.e2e.ts` (componentRoutes), `e2e/responsive/component-widths.e2e.ts` (contentRoutes, componentRoutes), `e2e/smoke/examples.e2e.ts` (componentExamples), `e2e/smoke/routes.e2e.ts` (allRoutes), `e2e/visual/components.e2e.ts` (componentRoutes), `e2e/visual/materials.e2e.ts` (MATERIAL_ROUTES) |
 | Turn record | `audit/turns/phone-input.md`, written by `bun run audit:turn -- --slug=phone-input --phase=before\|after` (the before and after capture runs) |
@@ -89,6 +89,8 @@ One row per finding. Severity: critical, high, medium, low. Cell: a capture id f
 | ID | Severity | Cell | Summary | Status | Fix commit |
 |---|---|---|---|---|---|
 | phone-input-corner-1 | low | source | The web country list's rows are Select's (`menu: selectWeb`), so they drew Select's off-row 10; an option row is a menu row, the `control` corner, 8, inside the 12 panel, and they now draw it with Select's (select-corner-1). | fixed | 278270a8 |
+| phone-input-ao-sheet | medium | source | At the phone form factor the country list stays a floating card under the field. The owner decided (audit/DECISIONS.md AO-6) that this long list is presented as a sheet there; AnchoredOverlay offers it as `sheetStyle` since the AnchoredOverlay turn, and PhoneInput adopts it in its own turn with a sheet in each platform's skin. | open |  |
+| phone-input-ao-focus | high | source | Opening the country list left focus on the country control and Tab walked on to the number with the list still open. Since the AnchoredOverlay turn (AO-1, AO-2) focus enters at the selected country, the arrows, Home and End move among the rows, Enter and Space pick one, Tab out closes the list, and natively the list is modal to VoiceOver and TalkBack. | fixed | 5d8dc836 |
 
 ## Sign-off
 

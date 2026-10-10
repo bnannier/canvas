@@ -92,6 +92,7 @@ One row per finding. Severity: critical, high, medium, low. Cell: a capture id f
 | ID | Severity | Cell | Summary | Status | Fix commit |
 |---|---|---|---|---|---|
 | tooltip-corner-1 | low | source | The icon trigger drew 6 and the text trigger's press layer 4, off the web row; an icon button takes the `control` corner, 8, and an inline box Dark Factory's key step, 6. The shape gate (test/design-rules-shape.test.ts) now takes a corner only as a role of its own platform's row that its component plays, the pill, square or a declared concentric corner. | fixed | 278270a8 |
+| tooltip-ao-placement | medium | source | Tooltip opens in flow beside its trigger, so showing it pushes the trigger out from under the pointer (P3e, WCAG 1.4.13). AnchoredOverlay now offers the placement Tooltip needs (`above`, `besideStart`, `besideEnd`, flipping inside the visible band and the safe area; audit/foundation/anchored-overlay.md AO-3). Tooltip's own turn moves its bubble onto AnchoredOverlay with that placement, its `top`, `bottom`, `left` and `right` mapped through the layout direction, and settles K6's semantics with it. | open |  |
 
 ## Sign-off
 

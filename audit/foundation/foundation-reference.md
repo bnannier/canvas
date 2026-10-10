@@ -36,7 +36,7 @@ Audit checklist for the kit internals the generated `/foundation` reference page
 | `button-group` | directly | `devWarn`, `useControllableState` |
 | `button` | directly | `isGlass` |
 | `checkbox` | directly | `useControllableState` |
-| `dropdown` | directly | `isRTL`, `useRovingFocus`, `withInnerFill` |
+| `dropdown` | directly | `withInnerFill` |
 | `input` | directly | `FOCUS_RESET`, `activeIndicator`, `isGlass`, `withInnerFill` |
 | `input-otp` | directly | `FOCUS_RESET`, `isGlass`, `keyframes`, `supportsNativeDriver`, `useControllableState` |
 | `listbox` | directly | `isRTL`, `surfaceRipple`, `useControllableState`, `useRovingFocus`, `withInnerFill` |
