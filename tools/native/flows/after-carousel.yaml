@@ -142,11 +142,18 @@ name: Sealed Canvas native candidate after measured drag
           id: space
 # Native hierarchy visibility does not account for clipping by the results pane.
 # Require the last row above the actual footer before selecting it.
+# The focused field's caret never lets the screen settle on CI's slow screen checks:
+# each swipe waited about 8.5 s there against about 4 s locally, so the four swipes
+# to the last row overran the 20 s limit. The owner bounded the settle wait on
+# 2026-10-11; every check below still runs. In Maestro 2.10 the bound applies to the
+# hierarchy comparison after a swipe; the iOS driver's 3 s static-screen wait before
+# it is fixed.
 - scrollUntilVisible:
     element:
       text: Work item 40
       above: to navigate
     direction: DOWN
+    waitToSettleTimeoutMs: 1000
 - runFlow:
     when:
       platform: Android
@@ -177,11 +184,15 @@ name: Sealed Canvas native candidate after measured drag
     commands:
       - assertVisible:
           id: space
+# The same bounded settle wait as the first scroll to the last row (the owner's
+# decision, 2026-10-11): the focused field's caret never lets the screen settle on
+# CI's slow screen checks, about 8.5 s per swipe there against about 4 s locally.
 - scrollUntilVisible:
     element:
       text: Work item 40
       above: to navigate
     direction: DOWN
+    waitToSettleTimeoutMs: 1000
 # Maestro's "above" compares top edges only, and its visibility ignores the results
 # pane's clipping, so it can stop with the last row's top just above the footer and
 # the rest of the row under it, where a tap lands on the footer. One more scroll
