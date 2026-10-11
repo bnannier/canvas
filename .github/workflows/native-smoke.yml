@@ -122,13 +122,29 @@ jobs:
           node scripts/native-smoke.mjs build --output "$RUNNER_TEMP/native-smoke" --platform ios --device "$DEVICE"
           node scripts/native-smoke.mjs test --output "$RUNNER_TEMP/native-smoke" --platform ios --device "$DEVICE" --maestro "$RUNNER_TEMP/native-tools/maestro/bin/maestro"
 
+      # The passive host evidence starts before the release build, so its samples
+      # (load, memory, free disk) cover the build as well as the emulator's life.
+      - name: Start passive Android host evidence
+        if: inputs.platform == 'android'
+        run: node scripts/android-host-diagnostics.mjs start --output "$RUNNER_TEMP/native-smoke/android-host-diagnostics"
+
+      # The release build needs no device (--device names the emulator the binary is
+      # for). Built while the emulator ran, it held the 4-vCPU runner at load 7 to 14
+      # for 24 minutes while the booted emulator idled on its home screen, and the
+      # Pixel Launcher stopped responding (run 38114269400: its system dialog covered
+      # the app at the journey's first step). The owner authorized building it before
+      # the emulator boots on 2026-10-11.
+      - name: Build the Android candidate before the emulator boots
+        if: inputs.platform == 'android'
+        run: node scripts/android-host-diagnostics.mjs run --output "$RUNNER_TEMP/native-smoke/android-host-diagnostics" -- node scripts/native-smoke.mjs build --output "$RUNNER_TEMP/native-smoke" --platform android --device emulator-5554
+
       - name: Enable hardware acceleration for the task emulator
         if: inputs.platform == 'android'
         run: |
           test -e /dev/kvm
           sudo chmod a+rw /dev/kvm
 
-      - name: Build and exercise the Android candidate
+      - name: Instrument and exercise the Android candidate
         if: inputs.platform == 'android'
         uses: reactivecircus/android-emulator-runner@v2
         with:
@@ -139,9 +155,7 @@ jobs:
           avd-name: canvas_candidate
           emulator-port: 5554
           disable-animations: true
-          pre-emulator-launch-script: node scripts/android-host-diagnostics.mjs start --output "$RUNNER_TEMP/native-smoke/android-host-diagnostics"
           script: |
-            node scripts/android-host-diagnostics.mjs run --output "$RUNNER_TEMP/native-smoke/android-host-diagnostics" -- node scripts/native-smoke.mjs build --output "$RUNNER_TEMP/native-smoke" --platform android --device emulator-5554
             node scripts/android-host-diagnostics.mjs run --output "$RUNNER_TEMP/native-smoke/android-host-diagnostics" -- node scripts/native-smoke.mjs instrument --output "$RUNNER_TEMP/native-smoke" --platform android --device emulator-5554
             node scripts/android-host-diagnostics.mjs run --output "$RUNNER_TEMP/native-smoke/android-host-diagnostics" -- node scripts/native-smoke.mjs test --output "$RUNNER_TEMP/native-smoke" --platform android --device emulator-5554 --maestro "$RUNNER_TEMP/native-tools/maestro/bin/maestro"
 
