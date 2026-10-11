@@ -38,7 +38,10 @@ is not already configured. The runner does not alter shell profiles or SDK
 installations. The journey installs `com.nannier.canvas.starter.smoke`, preserving
 the ordinary starter and docs apps. Maestro installs its native automation driver.
 
-Android CI also runs the capture module's device instrumentation before Maestro:
+Android CI also runs the capture module's device instrumentation before Maestro.
+It builds the release before the emulator boots (the build needs no device; run
+concurrently, it starved the idling emulator until its launcher stopped responding),
+then boots the emulator for instrumentation and the journey:
 
 ```sh
 node scripts/native-smoke.mjs build --output /tmp/native-candidate --platform android --device emulator-5554
@@ -58,7 +61,8 @@ after either operation. No installed source is replaced or excluded from that
 comparison, and the app's release APK digest must remain unchanged.
 
 Instrumentation installs the module's test APK and runs its debug native variant
-on the same explicit emulator serial. It checks the sealed production source;
+on the same explicit emulator serial. Gradle runs it with `--stacktrace`, so a
+failed build names its exception in the preserved `gradle.log`. It checks the sealed production source;
 Maestro separately checks the app's release binary. These are distinct proofs.
 The gate requires nonempty JUnit cases with no failures, errors, skips, or duplicate
 identities. A failed command cannot pass because a report exists, and previous
@@ -155,16 +159,17 @@ Maestro is installed from an official release archive using the SHA256 in
 ## Passive Android CI host evidence
 
 The Android workflow records `android-host-diagnostics/` alongside the native
-result. Its pre-emulator hook inventories executable ADB paths, hashes and local
-`adb version` output. It leaves server ownership, trace settings, SDK versions,
+result. It starts before the release build and inventories executable ADB paths,
+hashes and local `adb version` output. It leaves server ownership, trace settings, SDK versions,
 build order and device commands unchanged. It does not open an ADB connection,
 start a server, reconnect a transport or replay a failed command.
 
 A task-owned collector samples the actual TCP 5037 listener inode and owning
 PID/file descriptor, verifies the descriptor still references that socket, and
 records process start ticks/executable. It also records the `canvas_candidate`
-emulator process, host memory/load/pressure and the observer's cgroup memory
-fields. Existing daemon logs are read through bounded tails, using verified
+emulator process, host memory/load/pressure, the observer's cgroup memory
+fields, and free bytes and inodes on the filesystems the build writes to
+(`RUNNER_TEMP`, `HOME` and the root). Existing daemon logs are read through bounded tails, using verified
 listener stdout/stderr files and the documented ADB log path. The server may have
 a different environment, so log discovery and trace coverage remain explicit
 limitations. Missing tools, permissions or files are recorded as unavailable.

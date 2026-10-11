@@ -3,7 +3,7 @@ import * as fs from "node:fs";
 import * as path from "node:path";
 import { tmpdir } from "node:os";
 import { spawnSync } from "node:child_process";
-import { appendBounded, boundedCommand, captureDiagnostics, collectSamples, executeObservedChild, hostSnapshot, LIMITS, parseListeners,
+import { appendBounded, boundedCommand, captureDiagnostics, collectSamples, diskSpace, executeObservedChild, hostSnapshot, LIMITS, parseListeners,
   parseProcStat, processIdentity, readBounded, readLogTail, safeCapture, stopCollector, validateOutput } from "./android-host-diagnostics.mjs";
 import { main, parseArguments } from "../../scripts/android-host-diagnostics.mjs";
 
@@ -107,6 +107,29 @@ test("passive snapshot accepts an existing listener and samples only the task em
   const changed = hostSnapshot({ proc, environment: { TMPDIR: temporary() }, command: () => ({ status: "available", stdout: snapshot.sockets.stdout }) });
   expect(changed.sockets.listeners[0]).toMatchObject({ ownership: "unavailable-or-changed", processes: [{ socketVerified: false }] });
   expect(changed.logs.some((item: { path: string }) => item.path === log)).toBe(false);
+});
+
+test("every snapshot records free disk space and inodes where the build writes, and an unreadable mount is explicit", () => {
+  const runnerTemp = temporary();
+  const home = temporary();
+  const calls: unknown[] = [];
+  const statfs = (target: string, options: unknown) => {
+    calls.push([target, options]);
+    if (target === home) throw Object.assign(new Error("denied"), { code: "EACCES" });
+    return { bsize: 4096n, blocks: 1000n, bfree: 300n, bavail: 250n, files: 5000n, ffree: 4000n };
+  };
+  expect(diskSpace({ RUNNER_TEMP: runnerTemp, HOME: home }, statfs)).toEqual([
+    { path: runnerTemp, status: "available", blockSize: "4096", totalBytes: "4096000", freeBytes: "1228800", availableBytes: "1024000", totalInodes: "5000", freeInodes: "4000" },
+    { path: home, status: "unavailable", reason: "EACCES" },
+    { path: "/", status: "available", blockSize: "4096", totalBytes: "4096000", freeBytes: "1228800", availableBytes: "1024000", totalInodes: "5000", freeInodes: "4000" },
+  ]);
+  expect(calls).toEqual([[runnerTemp, { bigint: true }], [home, { bigint: true }], ["/", { bigint: true }]]);
+  // A relative or missing location is never resolved against the observer's cwd.
+  expect(diskSpace({ RUNNER_TEMP: "relative/temp" }, statfs).map((entry: { path: string }) => entry.path)).toEqual(["/"]);
+  const snapshot = hostSnapshot({ proc: temporary(), environment: { RUNNER_TEMP: runnerTemp }, statfs, command: () => ({ status: "unavailable" }) });
+  expect(snapshot.disk).toEqual(diskSpace({ RUNNER_TEMP: runnerTemp }, statfs));
+  // The real filesystem reads through the same shape on this host.
+  expect(diskSpace({}).at(0)).toMatchObject({ path: "/", status: "available" });
 });
 
 test("failed socket and kernel observations are explicit and do not erase the host snapshot", () => {

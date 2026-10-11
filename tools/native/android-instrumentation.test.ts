@@ -61,6 +61,7 @@ test("release and instrumentation share the sealed module and external build dir
     expect(args).toContain(paths.init);
     expect(paths.build.startsWith(app + path.sep)).toBe(false);
     expect(args.includes(`-Dcanvas.blur.tests=${paths.tests}`)).toBe(instrument);
+    expect(args.includes("--stacktrace")).toBe(instrument);
     expect(args[0]).toBe(instrument ? "canvasBlurConnectedDebugAndroidTest" : ":app:assembleRelease");
   }
 });
@@ -150,13 +151,29 @@ for (const mode of ["empty", "skip", "fail", "mutate", "wrong-target"]) test(`na
   else expect(evidence.sealedProductionUnchanged).toBe(true);
 });
 
-test("CI gates the same Android emulator on instrumentation before Maestro and archives its inputs", () => {
-  const workflow = Bun.YAML.parse(fs.readFileSync(path.join(root, ".github/workflows/native-smoke.yml"), "utf8")) as { jobs: { smoke: { steps: { name?: string; with?: { script?: string; path?: string } }[] } } };
+test("CI builds the Android release before the emulator boots, then gates the emulator on instrumentation before Maestro and archives its inputs", () => {
+  const workflow = Bun.YAML.parse(fs.readFileSync(path.join(root, ".github/workflows/native-smoke.yml"), "utf8")) as { jobs: { smoke: { steps: { name?: string; uses?: string; run?: string; with?: { script?: string; path?: string; "pre-emulator-launch-script"?: string } }[] } } };
   const steps = workflow.jobs.smoke.steps;
-  const commands = steps.find(step => step.name === "Build and exercise the Android candidate")!.with!.script!.trim().split("\n");
-  expect(commands).toHaveLength(3);
-  for (const [index, command] of ["build", "instrument", "test"].entries()) expect(commands[index]).toContain(`native-smoke.mjs ${command} --output`);
-  expect(commands.every(command => command.includes("--device emulator-5554"))).toBe(true);
+  const index = (name: string) => steps.findIndex(step => step.name === name);
+  const diagnostics = index("Start passive Android host evidence");
+  const build = index("Build the Android candidate before the emulator boots");
+  const emulator = index("Instrument and exercise the Android candidate");
+  // Host evidence covers the release build, the build needs no device, and only then
+  // does the emulator boot: the build no longer starves an idling emulator.
+  expect(diagnostics).toBeGreaterThanOrEqual(0);
+  expect(build).toBeGreaterThan(diagnostics);
+  expect(emulator).toBeGreaterThan(build);
+  expect(steps[diagnostics].run).toContain("android-host-diagnostics.mjs start --output");
+  expect(steps[build].run).toContain("android-host-diagnostics.mjs run --output");
+  expect(steps[build].run).toContain("native-smoke.mjs build --output");
+  expect(steps[build].uses).toBeUndefined();
+  expect(steps[emulator].uses).toStartWith("reactivecircus/android-emulator-runner@");
+  expect(steps[emulator].with!["pre-emulator-launch-script"]).toBeUndefined();
+  expect(steps.filter(step => [step.run, step.with?.script].some(text => text?.includes("native-smoke.mjs build")))).toHaveLength(2);
+  const commands = steps[emulator].with!.script!.trim().split("\n");
+  expect(commands).toHaveLength(2);
+  for (const [position, command] of ["instrument", "test"].entries()) expect(commands[position]).toContain(`native-smoke.mjs ${command} --output`);
+  expect([steps[build].run!, ...commands].every(command => command.includes("--device emulator-5554"))).toBe(true);
   const artifacts = steps.find(step => step.name === "Preserve candidate identity, build observations and native interaction evidence")!.with!.path!;
   expect(artifacts).toContain("android-instrumentation-inputs/");
   expect(artifacts).toContain("*-evidence/");

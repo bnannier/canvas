@@ -88,6 +88,20 @@ function resources(proc) {
     : { status: "unavailable", reason: "cgroup-v2-path-unavailable" };
   return result;
 }
+// Free space on the filesystems the native build writes to: the task output under
+// RUNNER_TEMP, the Gradle caches and emulator data under HOME, and the root. A
+// packaging failure otherwise leaves no record of whether a disk or its inodes ran out.
+export function diskSpace(environment = process.env, statfs = fs.statfsSync) {
+  const targets = [...new Set([environment.RUNNER_TEMP, environment.HOME, "/"].filter((value) => typeof value === "string" && path.isAbsolute(value)))];
+  return targets.map((target) => {
+    try {
+      const stats = statfs(target, { bigint: true });
+      return { path: target, status: "available", blockSize: String(stats.bsize), totalBytes: String(stats.blocks * stats.bsize),
+        freeBytes: String(stats.bfree * stats.bsize), availableBytes: String(stats.bavail * stats.bsize),
+        totalInodes: String(stats.files), freeInodes: String(stats.ffree) };
+    } catch (error) { return { path: target, ...errorValue(error) }; }
+  });
+}
 function emulatorProcesses(proc, avd) {
   try {
     const pids = fs.readdirSync(proc).filter((name) => /^\d+$/.test(name));
@@ -123,7 +137,7 @@ function logCandidates(listeners, proc, environment) {
   candidates.add(path.join(environment.TMPDIR || "/tmp", `adb.${process.getuid?.()}.log`));
   return [...candidates].slice(0, LIMITS.logs);
 }
-export function hostSnapshot({ proc = "/proc", environment = process.env, command = boundedCommand } = {}) {
+export function hostSnapshot({ proc = "/proc", environment = process.env, command = boundedCommand, statfs = fs.statfsSync } = {}) {
   const sockets = command("ss", ["-H", "-ltnpe", "sport = :5037"], 1000, 32768);
   const listeners = sockets.status === "available" ? parseListeners(sockets.stdout).map((listener) => {
     const processes = listener.owners.map(({ pid, fd }) => {
@@ -137,7 +151,7 @@ export function hostSnapshot({ proc = "/proc", environment = process.env, comman
     });
     return { ...listener, processes, ownership: processes.length && processes.every((item) => item.socketVerified) ? "verified-at-sample" : "unavailable-or-changed" };
   }) : [];
-  return { ...timestamp(), sockets: { ...sockets, listeners }, emulator: emulatorProcesses(proc, "canvas_candidate"), resources: resources(proc),
+  return { ...timestamp(), sockets: { ...sockets, listeners }, emulator: emulatorProcesses(proc, "canvas_candidate"), resources: resources(proc), disk: diskSpace(environment, statfs),
     observer: processIdentity(process.pid, proc), logs: logCandidates(listeners, proc, environment).map((file) => readLogTail(file)),
     coverage: { intervalMs: 5000, transientEventsBetweenSamples: "unknown", traceConfiguredByObserver: false,
       logDiscovery: "listener stdout/stderr plus current-environment ADB log path; server environment may differ" } };
