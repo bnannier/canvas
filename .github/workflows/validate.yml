@@ -84,6 +84,15 @@ jobs:
       - name: Install zsh for the opener's paste-shell quoting tests
         run: sudo apt-get update -qq && sudo apt-get install -y -qq zsh
 
+      # The docs resolve the kit from src through their postinstall link and Metro resolver.
+      # They install before the unit tests, as in every local checkout: a unit test may
+      # hold docs code to the real library it runs on (test/docs-native-menu.test.ts runs
+      # the header menu through expo-router's and react-native-screens' own code), and
+      # the postinstall needs only the build above.
+      - name: Install docs deps
+        working-directory: docs
+        run: bun install --frozen-lockfile
+
       - name: Unit tests
         run: bun run test
 
@@ -155,10 +164,7 @@ jobs:
 
       # --- Docs app (the universal RN app the Pages deploy ships) ---
 
-      # The docs resolve the kit from src through their postinstall link and Metro resolver.
-      - name: Install docs deps
-        working-directory: docs
-        run: bun install --frozen-lockfile
+      # The docs deps are installed above, before the unit tests.
 
       # The docs patch Expo (docs/patches, patchedDependencies in docs/package.json), and
       # bun skips a patch without a word once a version bump leaves its key behind. This
