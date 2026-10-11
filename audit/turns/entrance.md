@@ -8,6 +8,8 @@ The capture runs `bun run audit:turn -- --slug=entrance` took for this turn, by 
 |---|---|---|---|---|---|---|---|
 | `20261011-223109-web-333c774` | variants | web | 2026-10-11T22:39:51.867Z | `333c774` | complete | 2016 of 2016: 2016 ok, 0 failed | alert-dialog, dialog, autocomplete, button-group, dropdown, popover, select, phone-input, calendar, command, row-menu, avatar, field, board, navbars |
 | `20261011-223952-web-333c774` | states | web | 2026-10-11T22:44:44.157Z | `333c774` | complete | 1008 of 1008: 981 ok, 0 failed, 27 not reached | alert-dialog, dialog, autocomplete, button-group, dropdown, popover, select, phone-input, calendar, command, row-menu, avatar, field, board, navbars |
+| `20261011T225302Z-ios-30e87a7` | native | ios | 2026-10-11T23:39:25.948Z | `30e87a7` | complete | 672 of 672: 672 ok, 0 unstable, 0 failed | alert-dialog, dialog, autocomplete, button-group, dropdown, popover, select, phone-input, calendar, command, row-menu, avatar, field, board, navbars |
+| `20261011T225302Z-android-30e87a7` | native | android | 2026-10-11T23:39:25.948Z | `30e87a7` | complete | 672 of 672: 672 ok, 0 unstable, 0 failed | alert-dialog, dialog, autocomplete, button-group, dropdown, popover, select, phone-input, calendar, command, row-menu, avatar, field, board, navbars |
 
 ## after
 
