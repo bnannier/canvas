@@ -105,9 +105,10 @@ export function createGrid(skin: FlexSkin) {
   return function Grid(props: GridProps) {
     const { children, minTileWidth = 240, columns, testID, style } = props;
     const gapPx = skin.gap[gapOf(props as Pick<GridProps, Gap>)];
-    // Container-measured auto-fit, with the window as the pre-measurement
-    // guess (the docs-catalog precedent: onLayout alone hides everything on
-    // the first web paint).
+    // Container-measured auto-fit, with useContainerWidth's seed (the window
+    // clamped into the viewport bucket) as the pre-measurement guess (the
+    // docs-catalog precedent: onLayout alone hides everything on the first web
+    // paint).
     const { width, onLayout } = useContainerWidth();
     const cols = gridColumns(width, minTileWidth, gapPx, columns);
     const cellWidth = width > 0 ? gridCellWidth(width, cols, gapPx) : undefined;

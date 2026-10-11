@@ -273,8 +273,10 @@ export function createFlex(skin: FlexSkin, direction: Direction) {
 
   // The measuring variant, mounted only when a Row passes `stacks` or a child
   // carries a `span`: a bare Row/Column mounts no measurement and keeps a
-  // byte-identical DOM. Width falls back to the window until the first layout
-  // (the Grid and Form precedent), so a phone's first frame already stacks.
+  // byte-identical DOM. Width falls back to useContainerWidth's seed (the window
+  // clamped into the viewport bucket, so it follows a BreakpointOverride) until
+  // the first layout (the Grid and Form precedent), so a phone's first frame
+  // already stacks.
   function MeasuredRow(props: FlexProps & { parent: LayoutAxis | null; spanning: boolean }) {
     const { parent, spanning, children, style, testID } = props;
     const bp = props.stackBreakpoint ?? "sm";
