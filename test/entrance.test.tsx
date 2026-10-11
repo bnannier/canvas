@@ -70,12 +70,20 @@ describe("Entrance", () => {
     expect(screen.getByLabelText("Draft")).toBe(input);
   });
 
-  it("aggregates inherited focus readiness without hiding its own host", () => {
+  it("holds its own host while an ancestor holds, and releases with it", () => {
+    // In one tree the ancestor's hold already hides this card; the same rule keeps a hosted
+    // card, which renders outside its logical ancestor, hidden (test/entrance-readiness).
     const view = render(ui({}, false));
     expect(readiness()).toBe("held");
-    expect(held().ariaHidden).toBe(false);
+    expect(held()).toEqual({ ariaHidden: true, opacity: "0", pointerEvents: "none" });
     view.rerender(ui());
     expect(readiness()).toBe("ready");
+    expect(held()).toEqual({ ariaHidden: false, opacity: "", pointerEvents: "auto" });
+    view.rerender(ui({ ready: false }, true));
+    expect(readiness()).toBe("held");
+    view.rerender(ui({ ready: true }, false));
+    expect(readiness()).toBe("held");
+    expect(held().ariaHidden).toBe(true);
   });
 
   it("holds touches through its style, never the deprecated pointerEvents prop", () => {

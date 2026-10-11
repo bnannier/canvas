@@ -1,12 +1,12 @@
 import { afterEach, describe, expect, it, spyOn } from "bun:test";
 import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
-import { useRef, type ReactNode } from "react";
+import { useEffect, useRef, type ReactNode } from "react";
 import { View } from "react-native";
 import { Button } from "../src/atoms/button/button.tsx";
 import { Popover } from "../src/atoms/popover/popover.tsx";
 import { AnchoredOverlay } from "../src/style/anchored-overlay.tsx";
 import { Entrance } from "../src/style/entrance.tsx";
-import { OverlayProvider } from "../src/style/portal.tsx";
+import { OverlayProvider, useOverlayHost, type OverlayHost } from "../src/style/portal.tsx";
 import { ThemeProvider } from "../src/style/theme.tsx";
 import { hostedEntranceParts, layoutElement, layoutEntrance, layoutHostedEntrance, pointerEventsOf } from "./entrance-layout.ts";
 
@@ -215,6 +215,54 @@ it("preserves ancestor readiness when a Popover moves into the provider's siblin
     expect(document.activeElement).toBe(opener);
     view.rerender(page(true, true));
     await waitFor(() => expect(document.activeElement).toBe(panel));
+    view.rerender(page(true, false));
+    expect(document.activeElement).toBe(opener);
+  } finally { cleanup(); measure.mockRestore(); }
+});
+
+it("keeps a portaled card hidden, untouchable and out of the screen reader's reach until its logical ancestor releases it", async () => {
+  const measure = spyOn(Element.prototype, "getBoundingClientRect").mockReturnValue({
+    x: 0, y: 0, width: 640, height: 800,
+    top: 0, left: 0, right: 640, bottom: 800, toJSON: () => ({}),
+  } as DOMRect);
+  let host: OverlayHost | null = null;
+  function Capture() {
+    const value = useOverlayHost();
+    useEffect(() => { host = value; }, [value]);
+    return null;
+  }
+  const page = (ready: boolean, open: boolean) => themed(<OverlayProvider>
+    <Capture />
+    <Button>Opener</Button>
+    <Entrance ready={ready}><Popover open={open} onOpenChange={() => {}} title="Portaled child" /></Entrance>
+  </OverlayProvider>);
+  try {
+    const view = render(page(false, false));
+    const opener = screen.getByRole("button", { name: "Opener" });
+    focus(opener);
+    view.rerender(page(false, true));
+    const panel = await waitFor(() => {
+      const node = document.querySelector<HTMLElement>('[role="dialog"]');
+      expect(node).not.toBeNull();
+      return node!;
+    });
+    // The card's own fit is done; it renders in the outlet, outside its held ancestor's view.
+    layoutHostedEntrance(panel, SIZE);
+    const hold = panel.closest<HTMLElement>('[aria-hidden="true"]');
+    expect(hold).not.toBeNull();
+    expect(hold!.style.opacity).toBe("0");
+    expect(pointerEventsOf(panel)).toBe("none");
+    expect(screen.queryByRole("dialog")).toBeNull();
+    expect(screen.queryByRole("button", { name: "Opener" })).toBe(opener);
+    // Not shown, so it takes no modal hold on the page behind it and focus waits.
+    expect(host!.topModal!()).toBeNull();
+    expect(document.activeElement).toBe(opener);
+    view.rerender(page(true, true));
+    await waitFor(() => expect(document.activeElement).toBe(panel));
+    expect(screen.getByRole("dialog")).toBe(panel);
+    expect(panel.closest('[aria-hidden="true"]')).toBeNull();
+    expect(pointerEventsOf(panel)).toBe("auto");
+    expect(host!.topModal!()).not.toBeNull();
     view.rerender(page(true, false));
     expect(document.activeElement).toBe(opener);
   } finally { cleanup(); measure.mockRestore(); }
