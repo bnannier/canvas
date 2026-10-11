@@ -44,7 +44,9 @@ export const Entrance = forwardRef<View, EntranceProps>(function Entrance({ read
         accessibilityViewIsModal={accessibilityViewIsModal}
         accessibilityElementsHidden={hidden}
         importantForAccessibility={hidden ? "no-hide-descendants" : "auto"}
-        aria-hidden={held}
+        // Only while held: React Native lets a defined aria-hidden overwrite
+        // accessibilityElementsHidden, so a false one would undo `obscured` on iOS.
+        aria-hidden={held || undefined}
         style={[style, held ? HELD : null]}
       >
         {children}
