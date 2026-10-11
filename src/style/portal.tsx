@@ -43,7 +43,7 @@ import {
 import { createCaptureTarget } from "./glass-surface/capture-target.js";
 import { GlassBlurTargetHost, blurTargetMountable } from "./glass-surface/glass-blur-target.js";
 import { registerOverlayLayer, usePortalMount } from "./overlay-layer.js";
-import { useSafeAreaWindowRect } from "./safe-area.js";
+import { useSafeAreaInsetsOrNull, type SafeAreaInsets } from "./safe-area.js";
 
 // What a <Portal> (and an anchored overlay) needs from its host. `measureOutlet`
 // is exposed so an anchored overlay can measure a trigger RELATIVE TO the outlet
@@ -99,6 +99,13 @@ export function intersectOverlayBounds(a: OverlayBounds, b: OverlayBounds): Over
   const x = Math.max(a.x, b.x);
   const y = Math.max(a.y, b.y);
   return { x, y, width: Math.max(0, Math.min(a.x + a.width, b.x + b.width) - x), height: Math.max(0, Math.min(a.y + a.height, b.y + b.height) - y) };
+}
+
+// A window's box less its safe-area insets on all four edges.
+function safeWithin(window: OverlayBounds, insets: SafeAreaInsets): OverlayBounds {
+  const width = Math.max(0, window.width - insets.left - insets.right);
+  const height = Math.max(0, window.height - insets.top - insets.bottom);
+  return { x: window.x + Math.min(insets.left, window.width), y: window.y + Math.min(insets.top, window.height), width, height };
 }
 
 const OverlayContext = createContext<OverlayHost | null>(null);
@@ -170,20 +177,22 @@ export function OverlayProvider({ children, style, separateWindow = false, viewp
   }, [topInset, bottomInset]);
   // A window layer (an app root, or a separate window's root) bounds its band by the
   // window's safe area on all four edges, so no card sits under the status bar, the
-  // Dynamic Island, the home indicator or a landscape sensor housing. The band is
-  // INTERSECTED with the safe rect rather than the host's box inset by the insets, so
-  // a host that already sits inside a SafeAreaView is not inset twice. Nested hosts
-  // inherit their window's band, so only a layer reads it. A rotation changes the
-  // rect, which re-places open cards the way a changed header does.
-  const safeRect = useSafeAreaWindowRect();
-  const safe = useRef(safeRect);
+  // Dynamic Island, the home indicator or a landscape sensor housing. A layer fills its
+  // window (the outlet's layout event is the window resizing), so the safe area is the
+  // box it measures, fresh at every placement, less the insets; the peer's frame is not
+  // read, since on the web it is the document's size from when the provider mounted
+  // (src/style/safe-area.tsx). Nested hosts inherit their window's band, so only a layer
+  // reads the insets. A rotation changes them, which re-places open cards the way a
+  // changed header does.
+  const safeInsets = useSafeAreaInsetsOrNull();
+  const safe = useRef(safeInsets);
   useIsomorphicLayoutEffect(() => {
     const previous = safe.current;
-    safe.current = safeRect;
-    if (parent || previous === safeRect) return;
-    if (previous && safeRect && previous.x === safeRect.x && previous.y === safeRect.y && previous.width === safeRect.width && previous.height === safeRect.height) return;
+    safe.current = safeInsets;
+    if (parent || previous === safeInsets) return;
+    if (previous && safeInsets && previous.top === safeInsets.top && previous.right === safeInsets.right && previous.bottom === safeInsets.bottom && previous.left === safeInsets.left) return;
     layoutListeners.current.forEach((listener) => listener());
-  }, [parent, safeRect]);
+  }, [parent, safeInsets]);
   const outletRef = useRef<View>(null);
   // The modal cards open in this host's outlet, oldest first (src/style/anchored-overlay.tsx).
   const modals = useRef<readonly string[]>([]);
@@ -276,8 +285,9 @@ export function OverlayProvider({ children, style, separateWindow = false, viewp
             // full-screen window coordinates match the event. Legacy Android
             // adjustResize already reduces the outlet: min keeps that smaller
             // bound without subtracting the keyboard or status bar twice.
-            const declared = insetOverlayBounds({ x, y, width, height }, insets.current);
-            const own = !parent && safe.current ? intersectOverlayBounds(declared, safe.current) : declared;
+            const box = { x, y, width, height };
+            const declared = insetOverlayBounds(box, insets.current);
+            const own = !parent && safe.current ? intersectOverlayBounds(declared, safeWithin(box, safe.current)) : declared;
             const bottom = !parent && keyboard.current ? Math.min(own.y + own.height, keyboard.current.screenY) : own.y + own.height;
             done({ ...own, height: Math.max(0, bottom - own.y) });
           });
@@ -305,7 +315,7 @@ export function OverlayProvider({ children, style, separateWindow = false, viewp
         outletRef.current?.measureInWindow((x, y, width, height) => {
           const bottom = keyboard.current ? Math.min(y + height, keyboard.current.screenY) : y + height;
           const window = { x, y, width, height: Math.max(0, bottom - y) };
-          cb(window, safe.current ? intersectOverlayBounds(window, safe.current) : window);
+          cb(window, safe.current ? intersectOverlayBounds(window, safeWithin({ x, y, width, height }, safe.current)) : window);
         });
       },
     };

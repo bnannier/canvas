@@ -10,7 +10,7 @@ import { I18nManager, Text, View } from "react-native";
 import { AnchoredOverlay, placeOverlay, useOverlayAnchor, useOverlaySide } from "../src/style/anchored-overlay.tsx";
 import { fitOverlayHeight } from "../src/style/overlay-layout.ts";
 import { OverlayProvider, useOverlayHost, type OverlayBounds, type OverlayHost } from "../src/style/portal.tsx";
-import { SafeAreaFrameContext, SafeAreaInsetsContext } from "../src/style/safe-area.tsx";
+import { SafeAreaInsetsContext } from "../src/style/safe-area.tsx";
 import { NativeScrollContext, ScrollAncestryContext, useUnheardScroller } from "../src/style/scroll-ancestry.tsx";
 import { ScrollView } from "../src/style/scroll-view.tsx";
 import { ThemeProvider } from "../src/style/theme.tsx";
@@ -172,13 +172,12 @@ describe("every edge keeps 8px inside the band (AO-10)", () => {
 });
 
 describe("the window's safe area (AO-4)", () => {
+  // A landscape window, which the app root's layer fills.
   const SAFE_FRAME = { x: 0, y: 0, width: 874, height: 402 };
   // Landscape: the sensor housing on the left, the home indicator at the bottom.
   const SAFE_INSETS = { top: 0, right: 0, bottom: 21, left: 62 };
   const inSafeArea = (node: ReactNode, insets = SAFE_INSETS) => (
-    <SafeAreaFrameContext.Provider value={SAFE_FRAME}>
-      <SafeAreaInsetsContext.Provider value={insets}>{node}</SafeAreaInsetsContext.Provider>
-    </SafeAreaFrameContext.Provider>
+    <SafeAreaInsetsContext.Provider value={insets}>{node}</SafeAreaInsetsContext.Provider>
   );
   function Capture({ onHost }: { onHost: (host: OverlayHost) => void }) {
     const host = useOverlayHost();
@@ -197,6 +196,22 @@ describe("the window's safe area (AO-4)", () => {
       const band = (host: OverlayHost) => new Promise<OverlayBounds>((resolve) => host.measureVisibleBounds!(resolve));
       expect(await band(root!)).toEqual({ x: 62, y: 0, width: 812, height: 381 });
       expect(await band(nested!)).toEqual({ x: 62, y: 0, width: 812, height: 381 });
+    });
+  });
+
+  it("bounds the band by the window as it measures it now, not by a size measured once", async () => {
+    // The window grows after the provider mounted (a browser window resized): the band is
+    // the layer's box at the time of the placement, less the insets.
+    let window = SAFE_FRAME;
+    await withBoxes(() => window, async () => {
+      let root: OverlayHost | null = null;
+      render(inSafeArea(<ThemeProvider><OverlayProvider><Capture onHost={(host) => { root = host; }} /></OverlayProvider></ThemeProvider>));
+      const band = () => new Promise<OverlayBounds>((resolve) => root!.measureVisibleBounds!(resolve));
+      const sheetWindow = () => new Promise<[OverlayBounds, OverlayBounds]>((resolve) => root!.measureWindowBounds!((all, safe) => resolve([all, safe])));
+      expect(await band()).toEqual({ x: 62, y: 0, width: 812, height: 381 });
+      window = { x: 0, y: 0, width: 1400, height: 900 };
+      expect(await band()).toEqual({ x: 62, y: 0, width: 1338, height: 879 });
+      expect(await sheetWindow()).toEqual([window, { x: 62, y: 0, width: 1338, height: 879 }]);
     });
   });
 
