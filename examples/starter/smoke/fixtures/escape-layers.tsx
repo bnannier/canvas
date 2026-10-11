@@ -1,8 +1,16 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
+import { Dimensions, I18nManager, PixelRatio, Platform, View } from "react-native";
 import {
-  ActionSheet, AlertDialog, Autocomplete, Column, Command, DataTable, DescriptionList,
-  Dialog, Drawer, Dropdown, ThemeProvider, Typography, useTheme,
+  ActionSheet, AlertDialog, Autocomplete, Button, Column, Command, DataTable, DescriptionList,
+  Dialog, Drawer, Dropdown, Row, ThemeProvider, Typography, useTheme,
 } from "@nannier-com/canvas";
+
+// The menu trigger's window frame, in React Native units, with what a native flow needs
+// to turn it into a device point (Maestro takes iOS points and Android physical pixels).
+type TriggerFrame = { status: "idle" } | {
+  status: "ready"; x: number; y: number; width: number; height: number;
+  screenWidth: number; screenHeight: number; pixelRatio: number; platform: string; rtl: boolean;
+};
 
 function GatedAlertBody() {
   const [open, setOpen] = useState(false);
@@ -59,6 +67,21 @@ export function EscapeLayersBody({ scenario }: { scenario?: string }) {
   const [commits, setCommits] = useState(0);
   const [menuSelected, setMenuSelected] = useState("None");
   const [menuSelections, setMenuSelections] = useState(0);
+  const triggerHost = useRef<View>(null);
+  const [triggerFrame, setTriggerFrame] = useState<TriggerFrame>({ status: "idle" });
+  // An open menu is modal to VoiceOver (the owner's AO-2 decision), so iOS takes the page
+  // under it, the trigger included, out of the accessibility tree a native flow reads. The
+  // flow measures the trigger while the menu is closed and taps the frame's center twice:
+  // the first tap opens the menu, which proves the point is on the trigger, and the second,
+  // with the menu open, must land on the outside backdrop. An explicit press reads the
+  // frame after the Drawer has slid in; a layout callback can fire before the slide ends.
+  const measureTrigger = () => {
+    triggerHost.current?.measureInWindow((x, y, width, height) => {
+      const screen = Dimensions.get("screen");
+      setTriggerFrame({ status: "ready", x, y, width, height, screenWidth: screen.width, screenHeight: screen.height,
+        pixelRatio: PixelRatio.get(), platform: Platform.OS, rtl: I18nManager.getConstants().isRTL });
+    });
+  };
   if (scenario === "glass-messages") return <GlassMessagesBody />;
   if (scenario === "alert-gated") return <GatedAlertBody />;
   const menu = (
@@ -86,7 +109,11 @@ export function EscapeLayersBody({ scenario }: { scenario?: string }) {
           }}>
             <Column relaxed>
               <Typography>Drawer content</Typography>
-              {menu}
+              {/* A bare cell in a Row hugs its content, so this host's frame is exactly the
+                  trigger's (the menu card portals out of it). */}
+              <Row>
+                <View collapsable={false} ref={triggerHost}>{menu}</View>
+              </Row>
               <DataTable inlineEdit columns={[{ label: "Name" }]} rows={[["Alice"]]}
                 onCellCommit={() => setCommits((count) => count + 1)} />
               <DescriptionList items={[{ term: "Email", value: "alice@example.com", update: true }]}
@@ -95,6 +122,8 @@ export function EscapeLayersBody({ scenario }: { scenario?: string }) {
                 onOpenChange={(next) => { if (!next) setChildCloses((count) => count + 1); }} />
               <Typography small muted testID="menu-selected">Selected: {menuSelected}</Typography>
               <Typography small muted testID="menu-select-count">Selections: {menuSelections}</Typography>
+              <Button onPress={measureTrigger}>Measure menu trigger</Button>
+              <Typography small muted testID="menu-trigger-frame">{JSON.stringify(triggerFrame)}</Typography>
             </Column>
           </Drawer>
         ) : (

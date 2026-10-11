@@ -4,6 +4,7 @@ import { resolve } from "node:path";
 import { act, cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import * as React from "react";
 import * as JSX from "react/jsx-runtime";
+import * as Native from "react-native";
 import ts from "typescript";
 import { Autocomplete } from "../src/atoms/autocomplete/autocomplete.tsx";
 import { Button } from "../src/atoms/button/button.tsx";
@@ -44,6 +45,7 @@ function fixture<Props extends object>(name: string, exported: string) {
   const modules: Record<string, unknown> = {
     react: React,
     "react/jsx-runtime": JSX,
+    "react-native": Native,
     "@nannier-com/canvas": {
       ActionSheet, AlertDialog, Autocomplete, Button, Calendar, Checkbox, Column, Command, DataTable,
       DescriptionList, Dialog, Drawer, Dropdown, Icon, Listbox, Pagination, Radio, RadioGroup,
@@ -173,6 +175,13 @@ for (const disabled of [false, true]) {
     try {
       render(<ThemeProvider><EscapeLayersBody scenario={disabled ? "drawer-disabled" : "drawer"} /></ThemeProvider>);
       fireEvent.click(screen.getByRole("button", { name: "Open drawer" }));
+      // The native flow taps the trigger's measured center while the open menu hides
+      // the page from VoiceOver: the host around the trigger reports its window frame.
+      expect(JSON.parse(text("menu-trigger-frame")!)).toEqual({ status: "idle" });
+      fireEvent.click(screen.getByRole("button", { name: "Measure menu trigger" }));
+      await waitFor(() => expect(JSON.parse(text("menu-trigger-frame")!)).toMatchObject({
+        status: "ready", x: 10, y: 20, width: 288, height: 44, platform: "web", rtl: false,
+      }));
       fireEvent.click(screen.getByRole("button", { name: "Open menu" }));
       let menu: Element | null = null;
       await waitFor(() => {
