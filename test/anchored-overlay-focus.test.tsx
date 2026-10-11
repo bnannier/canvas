@@ -24,6 +24,7 @@ import { GlassBlurTargetHost } from "../src/style/glass-surface/glass-blur-targe
 import { OverlayProvider, useOverlayHost, type OverlayHost } from "../src/style/portal.tsx";
 import { ThemeProvider } from "../src/style/theme.tsx";
 import { layoutHostedEntrance } from "./entrance-layout.ts";
+import { resizeViewport } from "./viewport.ts";
 
 afterEach(cleanup);
 
@@ -117,6 +118,8 @@ describe("the tab order and Tab in an open card (AO-1)", () => {
       await openAndReveal(() => fireEvent.click(named("Rename")));
       // The panel took focus; Tab enters its controls, then goes on after the trigger.
       expect(focused().getAttribute("role")).toBe("dialog");
+      // Anchored, it is a non-modal dialog (the owner's AO-2 decision for the web).
+      expect(focused().getAttribute("aria-modal")).toBeNull();
       tab();
       expect(focused()).toBe(named("Save"));
       tab();
@@ -441,6 +444,72 @@ async function withNativeProps(run: (props: (node: Element) => ViewProps | undef
   } finally { spy.mockRestore(); }
 }
 const outletOf = () => [...document.querySelectorAll("div")].find((node) => getComputedStyle(node).zIndex === "1000")!;
+
+describe("the phone sheet is modal on the web too (AO-6)", () => {
+  // A sheet dims the page and takes every press off it; the keyboard and screen readers
+  // keep to it as well, as HIG and Material 3 modal sheets and Dark Factory's sheets over
+  // a dimmed page do, so focus never lands on a control the sheet covers (WCAG 2.4.11).
+  it("keeps Tab inside an open sheet, wrapping at its ends, and its dialog is aria-modal", async () => {
+    act(() => resizeViewport(390, 844));
+    await withLayout(async () => {
+      page(<Popover trigger="Rename" title="Rename project" actionLabel="Save"><Input placeholder="Project name" /></Popover>);
+      act(() => named("Rename").focus());
+      await openAndReveal(() => fireEvent.click(named("Rename")));
+      const dialog = screen.getByRole("dialog");
+      expect(focused()).toBe(dialog);
+      expect(dialog.getAttribute("aria-modal")).toBe("true");
+      const field = screen.getByRole("textbox");
+      tab();
+      expect(focused()).toBe(field);
+      tab();
+      expect(focused()).toBe(named("Save"));
+      // Past its last control focus wraps to its first, never on to the page it covers.
+      tab();
+      expect(focused()).toBe(field);
+      tab(true);
+      expect(focused()).toBe(named("Save"));
+      // A Tab from the page behind it (focus put there by a script) enters the sheet.
+      act(() => named("After").focus());
+      tab();
+      expect(focused()).toBe(field);
+      act(() => named("Before").focus());
+      tab(true);
+      expect(focused()).toBe(named("Save"));
+      expect(screen.getByRole("dialog")).toBeTruthy();
+      // Escape closes it, and the focus it held goes back to its trigger.
+      press("Escape");
+      await settle();
+      expect(screen.queryByRole("dialog")).toBeNull();
+      expect(focused()).toBe(named("Rename"));
+    });
+  });
+
+  it("keeps a list opened inside the sheet in the sheet's run", async () => {
+    act(() => resizeViewport(390, 844));
+    await withLayout(async () => {
+      page(
+        <Popover trigger="Rename" title="Rename project" actionLabel="Save">
+          <Select options={["Small", "Medium", "Large"]} defaultValue="Medium" />
+        </Popover>,
+      );
+      act(() => named("Rename").focus());
+      await openAndReveal(() => fireEvent.click(named("Rename")));
+      tab();
+      const select = screen.getByRole("button", { expanded: false });
+      expect(focused()).toBe(select);
+      await openAndReveal(() => fireEvent.click(select));
+      expect(focused().textContent).toContain("Medium");
+      // Tab closes the list and goes on to the sheet's next stop, then wraps in the sheet.
+      tab();
+      expect(focused()).toBe(named("Save"));
+      await settle();
+      expect(screen.queryByRole("listbox")).toBeNull();
+      tab();
+      expect(focused()).toBe(select);
+      expect(screen.getByRole("dialog")).toBeTruthy();
+    });
+  });
+});
 
 describe("an open card is modal to VoiceOver and TalkBack (AO-2)", () => {
   it("hides the window's page behind a card that can close, and only while it is open", async () => {
