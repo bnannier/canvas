@@ -340,7 +340,8 @@ export function AnchoredOverlay({
 
   // No provider: render the card inline in place, exactly as the kit did before
   // the portal layer (absolute anchor under the trigger, no backdrop). Entrance
-  // owns the absolute anchor position and holds the card until it is laid out.
+  // carries the absolute anchor position and never holds the card: there is no fit
+  // to wait for, so it shows at once (unless an enclosing Entrance still holds).
   if (!host) {
     return open ? (
       <InlineAnchoredOverlay onAccessibilityEscape={onAccessibilityEscape} onDismiss={onDismiss} triggerRef={triggerRef} returnFocusRef={returnFocusRef} dismissable={dismissable} dismissOnTab={dismissOnTab} combobox={combobox} inlineStyle={inlineStyle} cardStyle={cardStyle} opaque={opaque} dense={dense} onCardMount={opening} ownsScroll={ownsScroll} decoration={decoration}>
@@ -440,7 +441,8 @@ function useCardFocus({ shown, cardRef, triggerRef, returnFocusRef, dismissOnTab
 
 // The no-provider path: the card renders inline in place, exactly as the kit did before
 // the portal layer (absolute anchor under the trigger, no backdrop), so it is already
-// in the tab order after its trigger. Entrance owns the absolute anchor position.
+// in the tab order after its trigger. Entrance carries the absolute anchor position and
+// is never held here.
 function InlineAnchoredOverlay({ onAccessibilityEscape, onDismiss, triggerRef, returnFocusRef, dismissable, dismissOnTab, combobox, inlineStyle, cardStyle, opaque, dense, onCardMount, ownsScroll, decoration, children }: {
   onAccessibilityEscape?: ViewProps["onAccessibilityEscape"];
   onDismiss: () => void;
