@@ -14,7 +14,7 @@
 // so a context that is set and is not the nearest kit scroller's token is such a
 // scroller. Only a card whose trigger sits in one keeps the frame poll.
 
-import { type Context, createContext, type ReactNode, useCallback, useContext, useMemo, useRef, useState } from "react";
+import { Children, type Context, createContext, type ReactNode, useCallback, useContext, useMemo, useRef, useState } from "react";
 import { ScrollView as RNScrollView, type NativeScrollEvent, type NativeSyntheticEvent } from "react-native";
 
 export interface ScrollAncestry {
@@ -57,15 +57,18 @@ type ScrollHandler = ((event: NativeSyntheticEvent<NativeScrollEvent>) => void) 
  * A kit scroller's half: wraps its children in the contexts above and composes its
  * scroll handler, which it attaches only while a card listens (or its owner passed one).
  * While a card listens, the scroller asks for a scroll event every frame
- * (`scrollEventThrottle` 16); a scroller that sets its own throttle keeps it. Pass `wrap: false` where the
- * children must reach React Native's ScrollView unwrapped (sticky headers are found
- * by child index); its children then read as sitting in an unheard scroller.
+ * (`scrollEventThrottle` 16); a scroller that sets its own throttle keeps it.
+ *
+ * Each child gets its own pair of providers, which render no node: React Native's
+ * ScrollView finds sticky headers by child index, and a paging one on the web gives each
+ * child its own snap cell, so the scroller's children must reach it as they were passed,
+ * one for one. An empty slot stays empty (`false`, which React Native skips exactly as it
+ * skips the null it stands for), so no index moves and no empty cell appears.
  */
-export function useScrollAncestor({ horizontal, onScroll, scrollEventThrottle, wrap = true }: {
+export function useScrollAncestor({ horizontal, onScroll, scrollEventThrottle }: {
   horizontal?: boolean | null;
   onScroll?: ScrollHandler;
   scrollEventThrottle?: number;
-  wrap?: boolean;
 }) {
   const parent = useContext(ScrollAncestryContext);
   const listeners = useRef(new Set<() => void>());
@@ -88,11 +91,11 @@ export function useScrollAncestor({ horizontal, onScroll, scrollEventThrottle, w
     listeners.current.forEach((listener) => listener());
     onScroll?.(event);
   }, [onScroll]);
-  const children = useCallback((content: ReactNode) => !wrap ? content : (
+  const children = useCallback((content: ReactNode) => Children.map(content, (child) => child == null || typeof child === "boolean" ? false : (
     <ScrollAncestryContext.Provider value={value}>
-      <NativeScrollContext.Provider value={value.token}>{content}</NativeScrollContext.Provider>
+      <NativeScrollContext.Provider value={value.token}>{child}</NativeScrollContext.Provider>
     </ScrollAncestryContext.Provider>
-  ), [value, wrap]);
+  )), [value]);
   return {
     // Only while a card listens (or the owner listens itself): a scroll handler makes the
     // platform deliver every scroll event to JavaScript.
