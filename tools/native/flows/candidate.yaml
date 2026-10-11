@@ -362,7 +362,35 @@ name: Sealed Canvas native candidate measurement
 - takeScreenshot: drawer-archive-selected-once
 - openLink: canvas-smoke:///testing/escape-layers?scenario=drawer-disabled
 - tapOn: Open drawer
-- tapOn: Open menu
+# An open menu is modal to VoiceOver (the owner's AO-2 decision), so iOS takes the
+# page, its trigger included, out of the hierarchy this flow reads. Measure the
+# trigger while the menu is closed and tap the center of that frame: the tap opens
+# the menu, which proves the point is on the trigger, and the same tap with the menu
+# open must land on the outside backdrop.
+- tapOn: Measure menu trigger
+- assertVisible:
+    id: menu-trigger-frame
+    text: '.*"status":"ready".*'
+- copyTextFrom:
+    id: menu-trigger-frame
+- evalScript: |-
+    ${(function () {
+      var m = JSON.parse(maestro.copiedText);
+      var numbers = [m.x, m.y, m.width, m.height, m.screenWidth, m.screenHeight, m.pixelRatio];
+      if (m.status !== 'ready' || ['ios', 'android'].indexOf(m.platform) < 0 || m.rtl !== false
+        || !numbers.every(function (value) { return typeof value === 'number' && isFinite(value); })
+        || m.width <= 0 || m.height <= 0 || m.pixelRatio <= 0 || m.x < 0 || m.y < 0
+        || m.x + m.width > m.screenWidth || m.y + m.height > m.screenHeight) {
+        throw new Error('Expected the menu trigger inside the screen: ' + maestro.copiedText);
+      }
+      // The app's native windows are full screen and edge to edge, so window units
+      // are screen units. Maestro takes iOS points and Android physical pixels.
+      var scale = m.platform === 'android' ? m.pixelRatio : 1;
+      output.menuTrigger = Math.round((m.x + m.width / 2) * scale) + ',' + Math.round((m.y + m.height / 2) * scale);
+    })()}
+- tapOn:
+    point: ${output.menuTrigger}
+    retryTapIfNoChange: false
 - assertVisible: Archive
 - tapOn:
     text: Archive
@@ -371,7 +399,7 @@ name: Sealed Canvas native candidate measurement
 - assertVisible: Archive
 # The outside backdrop at the trigger closes the child without selecting.
 - tapOn:
-    text: Open menu
+    point: ${output.menuTrigger}
     retryTapIfNoChange: false
 - assertNotVisible: Rename
 - assertVisible: Drawer content

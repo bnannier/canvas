@@ -164,11 +164,13 @@ name: Sealed Canvas native candidate after measured drag
 - assertVisible: to select
 - assertVisible: to close
 - takeScreenshot: command-final-result-with-keyboard
-# Typing after a real results drag proves that input focus was preserved.
+# Typing after a real results drag proves that input focus was preserved: the
+# search field shows the whole query (rows are named "Work item NN", so only the
+# field matches). The page's own query record is checked once the palette closes:
+# an open palette is modal to VoiceOver (the owner's AO-2 decision), so iOS takes
+# the page out of the hierarchy this flow reads.
 - inputText: ' item'
-- assertVisible:
-    id: command-query
-    text: 'Query: Work item'
+- assertVisible: Work item
 - runFlow:
     when:
       platform: iOS
