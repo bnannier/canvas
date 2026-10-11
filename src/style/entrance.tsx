@@ -27,9 +27,11 @@ export interface EntranceProps {
   children: ReactNode;
 }
 
-// Invisible while held. Opacity, not display: the card must lay out (and report
-// its size to the owner's fit) while it is hidden.
-const HELD: ViewStyle = { opacity: 0 };
+// Invisible and untouchable while held. Opacity, not display: the card must lay out
+// (and report its size to the owner's fit) while it is hidden. pointerEvents rides in
+// the style, which React Native reads natively and react-native-web without its
+// deprecation warning for the prop.
+const HELD: ViewStyle = { opacity: 0, pointerEvents: "none" };
 
 export const Entrance = forwardRef<View, EntranceProps>(function Entrance({ ready = true, style, accessibilityViewIsModal, obscured = false, children }, ref) {
   const inheritedReadiness = useContext(EntranceReadinessContext);
@@ -39,7 +41,6 @@ export const Entrance = forwardRef<View, EntranceProps>(function Entrance({ read
     <EntranceReadinessContext.Provider value={inheritedReadiness && !held}>
       <View
         ref={ref}
-        pointerEvents={held ? "none" : "auto"}
         accessibilityViewIsModal={accessibilityViewIsModal}
         accessibilityElementsHidden={hidden}
         importantForAccessibility={hidden ? "no-hide-descendants" : "auto"}

@@ -4,6 +4,18 @@ import type { LayoutChangeEvent } from "react-native";
 type LayoutHost = Element & { __reactLayoutHandler?: (event: LayoutChangeEvent) => void };
 export interface FixtureSize { width: number; height: number }
 
+/**
+ * The pointer-events a node takes in a browser. CSS inherits the property and starts it at
+ * `auto`, and happy-dom computes neither, so the nearest node that sets it decides.
+ */
+export function pointerEventsOf(node: Element | null): string {
+  for (let current = node; current; current = current.parentElement) {
+    const value = getComputedStyle(current).pointerEvents;
+    if (value) return value;
+  }
+  return "auto";
+}
+
 /** Deliver a declared fixture layout through RNW's native onLayout boundary. */
 export function layoutElement(node: Element, size: FixtureSize): void {
   const handler = (node as LayoutHost).__reactLayoutHandler;
