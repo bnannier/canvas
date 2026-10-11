@@ -18,25 +18,16 @@ import { useRevealOrdinal } from "./reveal-context.js";
 // never withholds it, so a screen reader user is never waiting on a scroll position
 // for content to exist.
 //
-// WHY THIS IS NOT src/style/entrance.tsx, and why merging them would be a regression.
-// A future maintainer will notice that both fade something in and want one component.
-// They are different animations with different dependencies:
-//   - Entrance is a corner-pinned spring MORPH for overlays. It scales about a pinned
-//     corner so a menu appears to grow out of the control that opened it, which
-//     requires it to MEASURE ITS OWN SIZE before it can start (the pin is a function
-//     of width and height), and it is spring-driven for the elastic Liquid Glass feel.
-//     Its trigger is mount: an overlay that exists is an overlay that is opening.
-//   - Reveal is a timed ONE-AXIS translation for page content. It needs no size at
-//     all, it is timing-driven with an explicit duration and delay because a staggered
-//     set must have a predictable rhythm (springs do not stagger cleanly), and its
-//     trigger is a SCROLL POSITION, which means an ongoing measurement against the
-//     window for as long as it stays pending.
-// Merging them would force one component to carry both a measure-before-start
-// dependency and a scroll dependency, and to be both spring and timing. The overlays
-// (menu, popover, dialog, alert dialog) would then be paying for scroll observation to
-// perform an animation that has nothing to do with scrolling, and their corner pin,
-// which is exact only because the spring's overshoot stays linear in progress, would
-// have to survive a refactor it cannot express. Leave them separate.
+// THE KIT'S ONE ENTRANCE FOR PAGE CONTENT. A timed ONE-AXIS translation, triggered by
+// a SCROLL POSITION, timing-driven with an explicit duration and delay because a
+// staggered set must have a predictable rhythm. The anchored cards and the dialogs have
+// no entrance motion to share it with: since the owner removed the liquid popup motion
+// on 2026-09-21, a menu, popover, dialog or alert dialog appears in place, and
+// src/style/entrance.tsx, despite its name, is only the readiness hold that keeps an
+// anchored card invisible until its placement is measured. So there is nothing to
+// merge Reveal with, and wrapping one of those overlays in Reveal (or giving one a
+// motion of its own) would bring back motion the owner removed, which takes a new
+// decision first.
 //
 // RTL: the horizontal props are PHYSICAL (fromLeft / fromRight), not logical
 // (fromStart / fromEnd), and they do not mirror under a right-to-left layout. This is
@@ -102,9 +93,8 @@ export interface RevealProps {
    * of 0 so a grid child may shrink below its content, a `height` of 100% so cards in
    * a row stay even, a flex share). It is NOT a restyle hook: the entrance itself is
    * chosen entirely with the boolean props above, and the revealed content styles
-   * itself. Documented exactly as Entrance documents its own, and for the same reason:
-   * a wrapper that cannot be told how to sit in its parent forces callers to add a
-   * second wrapper around it, which is worse.
+   * itself. A wrapper that cannot be told how to sit in its parent forces callers to
+   * add a second wrapper around it, which is worse.
    */
   style?: LayoutStyle;
   /** E2E hook forwarded to the wrapper. */
@@ -125,8 +115,7 @@ export interface RevealTravel {
  * The signs are "where the content comes FROM": a positive y starts below its resting
  * place and rises, a negative x starts to the left and slides right. Exactly one axis
  * moves, which is what keeps the entrance readable as a single gesture rather than a
- * diagonal drift. Exported for unit tests, following the `entranceTranslation`
- * precedent in src/style/entrance.tsx.
+ * diagonal drift. Exported for unit tests: the maths is testable with no renderer.
  */
 export function revealTravel(
   p: Pick<RevealProps, "fromBelow" | "fromAbove" | "fromLeft" | "fromRight">,
