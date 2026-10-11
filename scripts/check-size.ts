@@ -95,16 +95,19 @@ const CORE_FILE_GZIP_OVERRIDES: Record<string, number> = {
 // bottom edge, event-driven tracking in place of the per-frame poll (the scroll ancestry
 // the kit's scrollers publish, src/style/scroll-ancestry.tsx), the keyboard order bridge
 // and the focus a closing card gives back (src/style/use-dialog-focus.ts), the shared
-// roving rows of the menus and option lists (src/style/use-row-focus.ts) and the native
-// screen-reader modality (the window layer's modal cards in portal.tsx). The turn's own
+// roving rows of the menus and option lists (src/style/use-row-focus.ts), the native
+// screen-reader modality (the window layer's modal cards in portal.tsx) and the focus moves
+// that land VoiceOver and TalkBack in a card and back (src/style/accessibility-focus.ts:
+// the reveal of the entry row in the card's port, the deferred field focus, the release and
+// hand-off on close, from the device check of AO-2). The turn's own
 // duplication went first: the dialog trap and the bridge read one set of tab stops, a card
 // is placed and tracked from one joined measurement, one native focus move serves entry
 // and return, and Dropdown's rows moved into the shared roving rows; Button, Input and
 // DataTable, which open no card, measure byte for byte as before. Measured before (at the
 // turn's base, a2d90222) at 219,195 / 220,235 / 220,363B (web / iOS / Android) and after
-// at 223,605 / 224,864 / 225,016B, ~4.4KB on every platform, 3.7KB over the old cap on
-// Android. 235KB restores ~7% headroom over the measured figure (6.9% over Android's),
-// the slack the 216KB cap started with.
+// at 224,031 / 225,509 / 225,630B, 4.7 to 5.2KB on every platform, 4.3KB over the old cap
+// on Android. 235KB keeps 6.7% headroom over Android's figure, about the slack the 216KB
+// cap started with.
 export const JS_MAX_GZIP = 240_640; // 235 KB
 
 export interface JavaScriptBudget {
@@ -210,9 +213,9 @@ export interface JavaScriptBudget {
 // AnchoredOverlay audit turn: its row menu opens through AnchoredOverlay, so it carries
 // what the turn gave an anchored card (the placement resolver and the sheet's form-factor
 // read, the scroll ancestry, the keyboard order bridge and focus return, the roving rows,
-// the native modality; see JS_MAX_GZIP above). Measured after at 57,671 / 57,300 /
-// 57,491B, ~3.2KB gzip, 1.8KB over the 55,808B ceiling, which moved to 61,440B for that
-// deliberate growth (6.5% headroom over the web figure).
+// the native modality and its focus moves; see JS_MAX_GZIP above). Measured after at
+// 58,100 / 57,699 / 57,925B, ~3.6KB gzip, 2.2KB over the 55,808B ceiling, which moved to
+// 61,440B for that deliberate growth (5.7% headroom over the web figure).
 // Fixed ceilings leave room for deliberate growth while catching a heavy import.
 // These are independent budgets, not a combined total: shared modules legitimately
 // occur in more than one consumer. Changes require a fresh measurement and rationale.
