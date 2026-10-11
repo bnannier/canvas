@@ -1,10 +1,11 @@
 import { describe, it, expect, afterEach, spyOn } from "bun:test";
-import { type ReactNode, StrictMode, useContext } from "react";
+import { type ForwardedRef, type ReactNode, StrictMode, useContext } from "react";
 import { render, cleanup, screen } from "@testing-library/react";
-import { Animated, Text, TextInput } from "react-native";
+import { Animated, StyleSheet, Text, TextInput, View, type ViewProps } from "react-native";
 import { Entrance, type EntranceProps } from "../src/style/entrance.tsx";
 import { EntranceReadinessContext } from "../src/style/entrance-readiness.ts";
 import { ThemeProvider } from "../src/style/theme.tsx";
+import { pointerEventsOf } from "./entrance-layout.ts";
 
 // Entrance is a hold, not a motion: the card is in the tree and measurable while
 // its owner is not ready, invisible and inert until it is, and it appears in place
@@ -25,8 +26,25 @@ const readiness = () => screen.getByTestId("readiness").textContent;
 const held = () => ({
   ariaHidden: wrapper().getAttribute("aria-hidden") === "true",
   opacity: wrapper().style.opacity,
-  pointerEvents: getComputedStyle(wrapper()).pointerEvents,
+  pointerEvents: pointerEventsOf(wrapper()),
 });
+
+// The props Entrance hands React Native's View, as a native build receives them: the web
+// test renders through react-native-web, which drops the native-only ones.
+function withViewProps(run: (props: () => ViewProps) => void) {
+  const component = View as unknown as { render: (props: ViewProps, ref: ForwardedRef<unknown>) => ReactNode };
+  const original = component.render;
+  let last: ViewProps | undefined;
+  const spy = spyOn(component, "render").mockImplementation((props, ref) => {
+    if ("accessibilityElementsHidden" in props) last = props;
+    return original(props, ref);
+  });
+  try {
+    run(() => last!);
+  } finally {
+    spy.mockRestore();
+  }
+}
 
 describe("Entrance", () => {
   it("shows a default-ready card at once, visible and interactive", () => {
@@ -58,6 +76,17 @@ describe("Entrance", () => {
     expect(held().ariaHidden).toBe(false);
     view.rerender(ui());
     expect(readiness()).toBe("ready");
+  });
+
+  it("holds touches through its style, never the deprecated pointerEvents prop", () => {
+    withViewProps((props) => {
+      const view = render(ui({ ready: false }));
+      expect("pointerEvents" in props()).toBe(false);
+      expect(StyleSheet.flatten(props().style).pointerEvents).toBe("none");
+      view.rerender(ui({ ready: true }));
+      expect("pointerEvents" in props()).toBe(false);
+      expect(StyleSheet.flatten(props().style).pointerEvents).toBeUndefined();
+    });
   });
 
   it("never starts an animation", () => {

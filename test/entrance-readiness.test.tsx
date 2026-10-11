@@ -8,7 +8,7 @@ import { AnchoredOverlay } from "../src/style/anchored-overlay.tsx";
 import { Entrance } from "../src/style/entrance.tsx";
 import { OverlayProvider } from "../src/style/portal.tsx";
 import { ThemeProvider } from "../src/style/theme.tsx";
-import { hostedEntranceParts, layoutElement, layoutEntrance, layoutHostedEntrance } from "./entrance-layout.ts";
+import { hostedEntranceParts, layoutElement, layoutEntrance, layoutHostedEntrance, pointerEventsOf } from "./entrance-layout.ts";
 
 afterEach(cleanup);
 const SIZE = { width: 240, height: 160 };
@@ -80,12 +80,16 @@ describe("anchored focus readiness", () => {
       const nodes = hostedEntranceParts(content);
       expect(mounts).toBe(0);
       expect(screen.queryByRole("button", { name: "Card action" })).toBeNull();
+      expect(pointerEventsOf(nodes.entrance)).toBe("none");
       layoutElement(nodes.viewport, SIZE);
       layoutElement(nodes.content, SIZE);
       expect(mounts).toBe(0);
       layoutElement(nodes.card, SIZE);
       expect(mounts).toBe(1);
       expect(screen.getByRole("button", { name: "Card action" })).toBeTruthy();
+      // Released, the card takes touches again from the outlet, whose box-none passes
+      // pointer events to the cards in it.
+      expect(pointerEventsOf(nodes.entrance)).toBe("auto");
     } finally { cleanup(); measure.mockRestore(); }
   });
 });
