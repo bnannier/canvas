@@ -131,7 +131,7 @@ describe("viewport reads", () => {
   // switches layout measures its own container (src/style/container.ts).
   const WINDOW_READERS: Record<string, string> = {
     "src/style/responsive.tsx": "the one shared window subscription behind useBreakpoint, useResponsive and useFormFactor",
-    "src/style/container.ts": "the seed a container reading uses until its first layout lands",
+    "src/style/container.ts": "the seed a container reading uses until its first layout lands: the viewport bucket (a BreakpointOverride's included), and for useContainerWidth's px fallback the window width clamped into it, withheld until hydration (CLAUDE.md, mechanism 2)",
     "src/style/anchored-overlay.tsx": "an open anchored card that offers a sheet becomes one at the phone form factor (design-language item 5, overlays become sheets on phones; the owner's AO-6 decision, 2026-10-10)",
     "src/style/in-view.ts": "whether an element has scrolled into the window",
     "src/organisms/sidebar/sidebar.shared.tsx": "the Sidebar becomes a drawer over the WINDOW at its drawer breakpoint",
