@@ -159,8 +159,10 @@ export function createPopover(skin: PopoverSkin, parts: PopoverParts = {}) {
     // pinned open, content on the page rather than something the user opened.
     const dismissable = props.open === undefined || onOpenChange !== undefined;
     // Move focus into the panel when the floating card opens and restore it to the
-    // trigger on close (non-modal: no focus trap, unlike Dialog). Inline panels and
-    // cards pinned open are always-visible content, so they never take focus.
+    // trigger on close. The panel sets no trap of its own, unlike Dialog: the anchored
+    // card is non-modal, and the phone sheet's hold on the focus is AnchoredOverlay's.
+    // Inline panels and cards pinned open are always-visible content, so they never
+    // take focus.
     const panelRef = usePopoverFocus(open && !inline && dismissable);
     // Resolve the placement axis: the side of the trigger the card prefers.
     const placement = placementOf(props);
