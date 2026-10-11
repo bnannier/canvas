@@ -1,5 +1,19 @@
 # @nannier/canvas
 
+## 3.6.1
+
+### Patch Changes
+
+- d16973d: The Android native smoke builds its release before the emulator boots, so the build no longer starves the idling emulator, and a failed instrumentation build now leaves evidence: Gradle runs it with `--stacktrace`, and the passive host diagnostics record free disk space and inodes on the filesystems the build writes to.
+- ca20083: The native avatar smoke scrolls to the pressable identity discs, which sit below a phone's fold, before tapping them.
+- aa09d0d: The native materials fixture loads the optional Android capture module under its published name, `@nannier/canvas-blur`, so the smoke exercises native capture again.
+- f054bbc: The native Command smoke bounds Maestro's settle wait on its two scrolls to the last result (1000 ms, authorized by the owner on 2026-10-11): the focused search field's caret never lets the screen settle on CI's slow screen checks. Both steps also take a 40 s limit (the owner's decision of the same day), since the iOS driver's fixed 3 s still-screen wait before each comparison leaves about 6.5 s per swipe on CI.
+- ec4d2c8: The native materials smoke reads the focused editor above the software keyboard: with the keyboard up, the material switch's records and the editor do not fit on one phone screen, and Android's visible hierarchy leaves out what the keyboard covers, so the flow scrolls between them instead of expecting both at once.
+- e846a25: The native Command smoke settles the results list at its end before selecting the last row: Maestro's "above" compares top edges and its visibility ignores the results pane's clipping, so it could stop with the last row mostly under the footer, where the selecting tap landed on the footer.
+- bcdf6bd: The native materials smoke checks Android capture where it runs: in-page glass has no safe capture target and keeps its solid skin (the owner's P3a decision), so the flow expects idle capture on the page and reads the counters from an open menu, whose frost captures the page, in a glass parent and in a glass descendant of a solid parent.
+- 2ee7fcb: The native candidate smoke reads only what an open anchored card leaves in the iOS accessibility tree: an open menu or palette is modal to VoiceOver, so iOS hides the page under it. The flow reaches the Drawer menu's trigger by its measured place (its tap there failed with "Element not found: Open menu"), and checks the palette's typed query in its own search field rather than in the page's record. No kit change.
+- 4f050bb: The standalone starter moves to Expo 57.0.27 (React Native 0.86.3) and adopts the UIScene lifecycle through `expo-build-properties`, so a build linked against the iOS 27 SDK no longer traps at launch. Its Expo Modules JSI compiler patch is carried onto 57.1.1.
+
 ## 3.6.0
 
 ### Minor Changes
