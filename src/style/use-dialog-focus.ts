@@ -223,12 +223,15 @@ export function usePopoverFocus(open: boolean): RefObject<View | null> {
 // The order is the one the focus is held in: a modal around the trigger (a Dialog's
 // panel, a native Modal's content, anything `aria-modal`) keeps Tab inside itself, and
 // past either end of its order focus wraps to the other, as the modal's own trap does.
-// Without one the order is the page's, and at its very end there is no later stop the
-// document can focus, so that one move is left to the browser.
+// A card that holds the focus itself (a modal sheet, `trap`) is such a modal while it is
+// open, the topmost one wherever focus stands: a Tab from the page behind it enters it,
+// and its own controls, with the runs of cards opened from inside it, are the whole
+// order. Without one the order is the page's, and at its very end there is no later
+// stop the document can focus, so that one move is left to the browser.
 
 const follows = (a: Node, b: Node) => (a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING) !== 0;
 
-interface Bridge { card: HTMLElement; trigger: HTMLElement; onLeave?: () => void }
+interface Bridge { card: HTMLElement; trigger: HTMLElement; onLeave?: () => void; trap?: boolean }
 // Every open card, in the order they opened.
 const bridges: Bridge[] = [];
 
@@ -239,12 +242,13 @@ function cardOf(node: Node): Bridge | undefined {
 }
 
 // Where `node` stands in the page: itself, or for a node in an open card, the card's
-// trigger (through every card it sits in).
+// trigger (through every card it sits in, up to a card that holds the focus, which is
+// a place of its own).
 function anchorOf(node: Node): Node {
   let at = node;
   for (let depth = 0; depth < bridges.length; depth += 1) {
     const owner = cardOf(at);
-    if (!owner) break;
+    if (!owner || owner.trap) break;
     at = owner.trigger;
   }
   return at;
@@ -258,9 +262,12 @@ function depthOf({ trigger }: Bridge): number {
   return depth;
 }
 
-// The modal the focus at `node` is held in (the innermost `aria-modal` element around
-// where it stands in the page), or null for the page itself.
+// The modal the focus at `node` is held in: the topmost open card that holds the focus,
+// or else the innermost `aria-modal` element around where it stands in the page, or null
+// for the page itself.
 function modalScope(node: Node): Element | null {
+  const held = bridges.filter(({ card, trap }) => trap && card.isConnected);
+  if (held.length > 0) return held[held.length - 1]!.card;
   const anchor = anchorOf(node);
   const element = anchor.nodeType === Node.ELEMENT_NODE ? (anchor as Element) : anchor.parentElement;
   return element?.closest('[aria-modal="true"]') ?? null;
@@ -286,6 +293,8 @@ function logicalOrder(scope: Element | null): HTMLElement[] {
   const open = bridges.filter(({ card, trigger }) => card.isConnected && trigger.isConnected);
   const depth = new Map(open.map((bridge) => [bridge, depthOf(bridge)]));
   for (const { card, trigger } of open.sort((a, b) => depth.get(a)! - depth.get(b)!)) {
+    // The card that holds the focus is the scope itself, not a run placed in it.
+    if (card === scope) continue;
     const inCard = order.filter((element) => card.contains(element));
     const rest = order.filter((element) => !card.contains(element));
     const at = slotAfter(rest, trigger);
@@ -352,10 +361,10 @@ function onBridgedKeyDown(event: KeyboardEvent): void {
   }
 }
 
-// Keep an open card's controls in the tab order right after its trigger, until the
-// returned function is called.
-function bridgeTabOrder(card: HTMLElement, trigger: HTMLElement, onLeave?: () => void): () => void {
-  const bridge: Bridge = { card, trigger, onLeave };
+// Keep an open card's controls in the tab order right after its trigger (or, with
+// `trap`, keep the focus inside the card), until the returned function is called.
+function bridgeTabOrder(card: HTMLElement, trigger: HTMLElement, onLeave?: () => void, trap = false): () => void {
+  const bridge: Bridge = { card, trigger, onLeave, trap };
   if (bridges.length === 0) document.addEventListener("keydown", onBridgedKeyDown, true);
   bridges.push(bridge);
   return () => {
@@ -397,17 +406,23 @@ export interface AnchoredCardFocusOptions {
   onLeave?: () => void;
   /** Give orphaned focus back on close (false for a combobox's popup, whose field kept it). */
   restore: boolean;
+  /**
+   * Keep keyboard focus inside the card while it is shown (a modal sheet): Tab and
+   * Shift+Tab wrap at the ends of its controls (and of the cards opened from inside it),
+   * and a Tab from the page behind it enters it.
+   */
+  trap?: boolean;
 }
 
 /**
  * An anchored card's keyboard focus on the web (AnchoredOverlay): while it is shown, its
  * controls keep their place in the tab order right after its trigger, inside the modal
- * the trigger sits in, if any; when it unmounts, the focus it held and its closing
- * orphaned goes back to what had focus when it opened, or else to the first stop in
- * `returnRef`. Focus the user already moved to another live control stays where it is.
- * DOM focus only; natively and during SSR it does nothing.
+ * the trigger sits in, if any, or with `trap` they are the whole order; when it unmounts,
+ * the focus it held and its closing orphaned goes back to what had focus when it opened,
+ * or else to the first stop in `returnRef`. Focus the user already moved to another live
+ * control stays where it is. DOM focus only; natively and during SSR it does nothing.
  */
-export function useAnchoredCardFocus({ shown, cardRef, triggerRef, returnRef, onLeave, restore }: AnchoredCardFocusOptions): void {
+export function useAnchoredCardFocus({ shown, cardRef, triggerRef, returnRef, onLeave, restore, trap = false }: AnchoredCardFocusOptions): void {
   const leave = useRef(onLeave);
   leave.current = onLeave;
   const leaves = onLeave != null;
@@ -422,12 +437,12 @@ export function useAnchoredCardFocus({ shown, cardRef, triggerRef, returnRef, on
     const onFocusIn = () => { held.current = true; };
     if (card.contains(document.activeElement)) held.current = true;
     card.addEventListener("focusin", onFocusIn);
-    const unbridge = bridgeTabOrder(card, trigger, leaves ? () => leave.current?.() : undefined);
+    const unbridge = bridgeTabOrder(card, trigger, leaves ? () => leave.current?.() : undefined, trap);
     return () => {
       card.removeEventListener("focusin", onFocusIn);
       unbridge();
     };
-  }, [shown, cardRef, triggerRef, leaves]);
+  }, [shown, cardRef, triggerRef, leaves, trap]);
   // What had focus when the card opened (before the owner moves focus in at onCardMount,
   // a passive effect this layout effect precedes), and the card's node, kept past the
   // ref's detachment for the close below.
