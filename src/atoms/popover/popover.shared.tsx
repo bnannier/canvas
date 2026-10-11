@@ -6,13 +6,16 @@ import { View, Text, GlassSurface, AnchoredOverlay, useOverlayHost, useMeasuredW
 import { Button as WebButton } from "../button/button.js";
 import { type PopoverSkin, type Placement } from "./popover.styles.js";
 import * as s from "./popover.styles.js";
-import { useOverlayAnchor } from "../../style/anchored-overlay.js";
+import { useOverlayAnchor, useOverlaySheet } from "../../style/anchored-overlay.js";
 import type { ColorTokens } from "../../style/tokens.js";
 import { EntranceReadinessContext } from "../../style/entrance-readiness.js";
 import { moveAccessibilityFocus } from "../../style/accessibility-focus.js";
 
 // The floating card's panel: the node focus enters (usePopoverFocus), named a dialog by
 // its title (or, with none, by its trigger's label) and described by its supporting line.
+// Presented as a phone sheet it is a modal dialog: the sheet holds the focus and dims the
+// page (src/style/anchored-overlay.tsx), so screen readers keep to it too (`aria-modal`).
+// Anchored, it is a non-modal dialog, as the owner decided for the web (AO-2).
 function PopoverFocusPanel({ focusRef, label, labelledBy, describedBy, children }: {
   focusRef: RefObject<View | null>;
   label?: string;
@@ -21,6 +24,7 @@ function PopoverFocusPanel({ focusRef, label, labelledBy, describedBy, children 
   children: ReactNode;
 }) {
   const ready = useContext(EntranceReadinessContext);
+  const sheet = useOverlaySheet();
   const node = useRef<View | null>(null);
   const [attachment, setAttachment] = useState(0);
   const attach = useCallback((next: View | null) => {
@@ -37,7 +41,7 @@ function PopoverFocusPanel({ focusRef, label, labelledBy, describedBy, children 
     if (ready && node.current) focusRef.current = node.current;
   }, [ready, attachment, focusRef]);
 
-  return <View ref={attach} tabIndex={-1} role="dialog" aria-label={label} aria-labelledby={labelledBy} aria-describedby={describedBy}>{children}</View>;
+  return <View ref={attach} tabIndex={-1} role="dialog" aria-modal={sheet || undefined} aria-label={label} aria-labelledby={labelledBy} aria-describedby={describedBy}>{children}</View>;
 }
 
 // The beak rides the edge facing the trigger on the side the card actually took: `top`

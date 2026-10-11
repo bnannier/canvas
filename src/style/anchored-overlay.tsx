@@ -45,6 +45,9 @@
 // Focus: on the web an open card's controls keep their place in the tab order right
 // after the control that opened it, a menu or option list closes on a Tab out of it
 // (`dismissOnTab`), and focus the card held goes back to what opened it when it closes.
+// A sheet is modal on the web too, as HIG and Material 3 modal sheets and Dark Factory's
+// sheets over a dimmed page are: keyboard focus stays in it while it is open (the page
+// behind already takes no pointer), and its content's dialog says so (useOverlaySheet).
 // A card pinned open (it cannot close) is page content: nothing moves focus into it.
 // On iOS and Android a card that can close (and is no combobox's popup) is modal to
 // VoiceOver and TalkBack while open: its window's page is hidden from them, a card
@@ -113,6 +116,11 @@ export const useOverlaySide = () => useContext(OverlaySideContext).side;
  * right-to-left layout) and the card's width, for a decoration that aims at the trigger.
  */
 export const useOverlayAnchor = () => useContext(OverlaySideContext);
+// Whether the card is presented as a phone sheet, for its content: a dialog in a sheet is
+// modal (`aria-modal`), as the sheet holds the focus and dims the page. Internal.
+const OverlaySheetContext = createContext(false);
+/** Whether the anchored card around this node is presented as a phone sheet. Read inside the card. */
+export const useOverlaySheet = () => useContext(OverlaySheetContext);
 
 // A transparent layer filling the outlet (the window's layer, for a card that can
 // close): it catches a tap anywhere off the card and dismisses. Transparent (no
@@ -379,13 +387,16 @@ export function AnchoredOverlay({
 
 /**
  * Keyboard and screen-reader focus around an open card, on both paths. On the web: the
- * card's controls keep their place in the tab order right after the trigger, a menu or
- * list closes on a Tab out of it, and when the card closes the focus its closing
- * orphaned returns to the trigger (useAnchoredCardFocus, src/style/use-dialog-focus.ts).
- * Natively, a modal card sends VoiceOver and TalkBack back to the trigger when it
- * closes. `shown` is the instant the card is revealed and focusable.
+ * card's controls keep their place in the tab order right after the trigger (a sheet
+ * keeps the focus inside itself instead), a menu or list closes on a Tab out of it, and
+ * when the card closes the focus its closing orphaned returns to the trigger
+ * (useAnchoredCardFocus, src/style/use-dialog-focus.ts). Natively, a modal card sends
+ * VoiceOver and TalkBack back to the trigger when it closes. `shown` is the instant the
+ * card is revealed and focusable.
  */
-function useCardFocus({ shown, cardRef, triggerRef, returnFocusRef, dismissOnTab, onDismiss, modal, combobox }: {
+function useCardFocus({ shown, cardRef, triggerRef, returnFocusRef, dismissOnTab, onDismiss, modal, combobox, sheet = false }: {
+  /** The card is presented as a sheet: keyboard focus stays inside it while it is shown. */
+  sheet?: boolean;
   shown: boolean;
   cardRef: RefObject<View | null>;
   triggerRef: RefObject<View | null>;
@@ -400,7 +411,7 @@ function useCardFocus({ shown, cardRef, triggerRef, returnFocusRef, dismissOnTab
   // country list follows the country segment, not the number field its anchor box also
   // holds), and focus goes back to it.
   const returnTo = returnFocusRef ?? triggerRef;
-  useAnchoredCardFocus({ shown, cardRef, triggerRef: returnTo, returnRef: returnTo, onLeave: dismissOnTab ? onDismiss : undefined, restore: !combobox });
+  useAnchoredCardFocus({ shown, cardRef, triggerRef: returnTo, returnRef: returnTo, onLeave: dismissOnTab ? onDismiss : undefined, restore: !combobox, trap: sheet });
   // Whether the card was ever shown, and whether it was modal then, for the close below.
   const wasShown = useRef(false);
   const modalRef = useRef(modal);
@@ -990,7 +1001,7 @@ function HostedAnchoredOverlay({ host, frame, onDismiss, onAccessibilityEscape, 
   useEffect(() => (holdsModal ? layer.holdModal?.(modalId) : undefined), [holdsModal, layer, modalId]);
   const subscribeModal = useCallback((listener: () => void) => layer.subscribeModal?.(listener) ?? (() => {}), [layer]);
   const topModal = useSyncExternalStore(subscribeModal, () => layer.topModal?.() ?? null, () => null);
-  useCardFocus({ shown, cardRef, triggerRef, returnFocusRef, dismissOnTab: dismissOnTab && dismissable, onDismiss, modal, combobox });
+  useCardFocus({ shown, cardRef, triggerRef, returnFocusRef, dismissOnTab: dismissOnTab && dismissable, onDismiss, modal, combobox, sheet });
   // In the frame's own outlet a card anchored by one edge may grow to the frame's far
   // edge; in the layer's outlet that room is the layer's, so it is handed the frame's.
   // Either way it never grows past the band's room.
@@ -1023,17 +1034,19 @@ function HostedAnchoredOverlay({ host, frame, onDismiss, onAccessibilityEscape, 
             shows nothing. */}
         {rect && horizontal && fit ? (
           <OverlaySideContext.Provider value={anchorGeometry}>
-            <OverlayScrollContext.Provider value={report}>
-              <Entrance
-                ref={cardRef}
-                ready={measured}
-                accessibilityViewIsModal={holdsModal && topModal === modalId}
-                obscured={holdsModal && topModal != null && topModal !== modalId}
-                style={{ position: "absolute", left: swap ? right : left, right: swap ? left : right, top, bottom, maxWidth: sheet ? undefined : maxWidth }}
-              >
-                <OverlayCard onAccessibilityEscape={onAccessibilityEscape} cardStyle={cappedStyle} opaque={opaque} dense={dense || sheet} onMount={onCardMount} ownsScroll={ownsScroll} rows={dismissOnTab} onLayout={onCardLayout} ready={measured} decoration={sheet ? null : decoration}>{children}</OverlayCard>
-              </Entrance>
-            </OverlayScrollContext.Provider>
+            <OverlaySheetContext.Provider value={sheet}>
+              <OverlayScrollContext.Provider value={report}>
+                <Entrance
+                  ref={cardRef}
+                  ready={measured}
+                  accessibilityViewIsModal={holdsModal && topModal === modalId}
+                  obscured={holdsModal && topModal != null && topModal !== modalId}
+                  style={{ position: "absolute", left: swap ? right : left, right: swap ? left : right, top, bottom, maxWidth: sheet ? undefined : maxWidth }}
+                >
+                  <OverlayCard onAccessibilityEscape={onAccessibilityEscape} cardStyle={cappedStyle} opaque={opaque} dense={dense || sheet} onMount={onCardMount} ownsScroll={ownsScroll} rows={dismissOnTab} onLayout={onCardLayout} ready={measured} decoration={sheet ? null : decoration}>{children}</OverlayCard>
+                </Entrance>
+              </OverlayScrollContext.Provider>
+            </OverlaySheetContext.Provider>
           </OverlaySideContext.Provider>
         ) : null}
       </OverlayFrameContext.Provider>
