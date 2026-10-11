@@ -50,7 +50,7 @@ export const OverlayScrollView = forwardRef<ScrollView, ScrollViewProps>(functio
 }, ref) {
   const report = useContext(OverlayScrollContext);
   // A card opened from a row inside this port follows the row's scroll (src/style/scroll-ancestry.tsx).
-  const ancestor = useScrollAncestor({ horizontal: props.horizontal, onScroll, scrollEventThrottle, wrap: props.stickyHeaderIndices == null });
+  const ancestor = useScrollAncestor({ horizontal: props.horizontal, onScroll, scrollEventThrottle });
   const frame = useContext(FocusFrameContext);
   const ownRing = useFocusRingStyle();
   const focus = useScrollFocus("vertical");
