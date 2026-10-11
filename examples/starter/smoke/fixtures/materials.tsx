@@ -5,7 +5,7 @@ type Stats = { hosts: number; activeHosts: number; recordings: number; frostView
 declare const require: (name: string) => unknown;
 let capture: { available?: boolean; getCaptureStats?: () => Stats } | undefined;
 try {
-  capture = require("@ionizeio/canvas-blur") as typeof capture;
+  capture = require("@nannier/canvas-blur") as typeof capture;
 } catch { /* Omitted in the optional-peer consumer matrix. */ }
 
 let nextEditor = 0;
