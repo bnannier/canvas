@@ -105,9 +105,10 @@ const CORE_FILE_GZIP_OVERRIDES: Record<string, number> = {
 // and return, and Dropdown's rows moved into the shared roving rows; Button, Input and
 // DataTable, which open no card, measure byte for byte as before. Measured before (at the
 // turn's base, a2d90222) at 219,195 / 220,235 / 220,363B (web / iOS / Android) and after
-// at 224,031 / 225,509 / 225,630B, 4.7 to 5.2KB on every platform, 4.3KB over the old cap
-// on Android. 235KB keeps 6.7% headroom over Android's figure, about the slack the 216KB
-// cap started with.
+// at 224,125 / 225,644 / 225,756B on main once the turn landed (with main's own link-Text
+// ring beside it), 4.9 to 5.4KB on every platform, 4.5KB over the old cap on Android.
+// 235KB keeps 6.6% headroom over Android's figure, about the slack the 216KB cap started
+// with.
 export const JS_MAX_GZIP = 240_640; // 235 KB
 
 export interface JavaScriptBudget {
@@ -214,8 +215,9 @@ export interface JavaScriptBudget {
 // what the turn gave an anchored card (the placement resolver and the sheet's form-factor
 // read, the scroll ancestry, the keyboard order bridge and focus return, the roving rows,
 // the native modality and its focus moves; see JS_MAX_GZIP above). Measured after at
-// 58,100 / 57,699 / 57,925B, ~3.6KB gzip, 2.2KB over the 55,808B ceiling, which moved to
-// 61,440B for that deliberate growth (5.7% headroom over the web figure).
+// 58,130 / 57,727 / 57,956B on main once the turn landed, ~3.7KB gzip, 2.3KB over the
+// 55,808B ceiling, which moved to 61,440B for that deliberate growth (5.7% headroom over
+// the web figure).
 // Fixed ceilings leave room for deliberate growth while catching a heavy import.
 // These are independent budgets, not a combined total: shared modules legitimately
 // occur in more than one consumer. Changes require a fresh measurement and rationale.
