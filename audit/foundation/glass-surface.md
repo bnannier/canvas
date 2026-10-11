@@ -127,6 +127,7 @@ One row per finding. Severity: critical, high, medium, low. Cell: a capture id o
 
 | ID | Severity | Cell | Summary | Status | Fix commit |
 |---|---|---|---|---|---|
+| glass-surface-ios-grey-1 | medium | source | On the iPhone simulator (iOS 27) a docs Props card's content pane draws as a flat dark grey block (pixel 68,68,69) over most of the card, its first row painted on top, and the block shrinks with the card as the page scrolls. Reproduced on main 13fc43a5 and on the AnchoredOverlay turn's code alike: relaunch the docs dev app (`xcrun simctl launch --console-pty`), open /components/popover, /components/dropdown and /components/select in turn by deep link, then scroll Select's page so its Country field sits mid-screen; the Props card under it shows the block (coordinator, 2026-10-11). Find which surface fails to composite (likely an expo-glass-effect GlassView) and whether a Release build shows it too. | open | |
 | glass-surface-dense-ios-1 | medium | source | From the coordinator's device checks (2026-10-11): on iOS 26 Liquid Glass the dense layer of an anchored option list reads sheer over busy content (the Dropdown and Select lists show the code block's Copy button and border through the card on the iPhone simulator, light glass); the dense tint should keep the rows legible over any backdrop. | open |  |
 
 ## Sign-off
