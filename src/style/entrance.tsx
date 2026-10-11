@@ -34,11 +34,14 @@ export interface EntranceProps {
 const HELD: ViewStyle = { opacity: 0, pointerEvents: "none" };
 
 export const Entrance = forwardRef<View, EntranceProps>(function Entrance({ ready = true, style, accessibilityViewIsModal, obscured = false, children }, ref) {
+  // An unready ancestor holds this card too. Within one tree its own hold already hides
+  // the card, but a hosted card renders in the outlet, outside its logical ancestor's
+  // view, and must not show (or reach assistive technology) before that ancestor does.
   const inheritedReadiness = useContext(EntranceReadinessContext);
-  const held = !ready;
+  const held = !ready || !inheritedReadiness;
   const hidden = held || obscured;
   return (
-    <EntranceReadinessContext.Provider value={inheritedReadiness && !held}>
+    <EntranceReadinessContext.Provider value={!held}>
       <View
         ref={ref}
         accessibilityViewIsModal={accessibilityViewIsModal}
