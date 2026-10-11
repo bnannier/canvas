@@ -127,6 +127,7 @@ One row per finding. Severity: critical, high, medium, low. Cell: a capture id o
 
 | ID | Severity | Cell | Summary | Status | Fix commit |
 |---|---|---|---|---|---|
+| glass-surface-dense-ios-1 | medium | source | From the coordinator's device checks (2026-10-11): on iOS 26 Liquid Glass the dense layer of an anchored option list reads sheer over busy content (the Dropdown and Select lists show the code block's Copy button and border through the card on the iPhone simulator, light glass); the dense tint should keep the rows legible over any backdrop. | open |  |
 
 ## Sign-off
 

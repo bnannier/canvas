@@ -92,6 +92,7 @@ One row per finding. Severity: critical, high, medium, low. Cell: a capture id f
 |---|---|---|---|---|---|
 | select-corner-1 | low | source | The web option row drew 10, off the web row; an option row is a menu row, the `control` corner, 8, inside the 12 panel. The shape gate (test/design-rules-shape.test.ts) now takes a corner only as a role of its own platform's row that its component plays, the pill, square or a declared concentric corner. | fixed | 278270a8 |
 | select-ao-focus | high | source | Opening the list left focus on the trigger and the options were reachable only at the end of the document. Since the AnchoredOverlay turn (AO-1, AO-2) focus enters at the selected option, the arrows, Home and End move among the options, Enter and Space choose one, Tab out closes the list, focus returns to the trigger, and natively the open list is modal to VoiceOver and TalkBack. | fixed | 5d8dc836 |
+| select-option-glyph-name-1 | medium | source | From the coordinator's device checks (2026-10-11): every option's accessible name starts with the checkmark glyph or a blank ('✓, United States', ' , Canada' on iOS and Android), because the indicator Text in select.shared.tsx (the `selected ? "✓" : " "` cells) is not hidden from assistive technology, so VoiceOver and TalkBack read the glyph beside the selected state; check Listbox, Autocomplete and PhoneInput rows for the same. | open |  |
 
 ## Sign-off
 
