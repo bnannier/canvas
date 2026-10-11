@@ -46,7 +46,9 @@ export function androidGradleArguments(output, app, instrument = false) {
   const args = [instrument ? "canvasBlurConnectedDebugAndroidTest" : ":app:assembleRelease", "--no-daemon", "--console=plain",
     "--init-script", files.init, `-Dcanvas.blur.consumer=${path.join(app, "android")}`,
     `-Dcanvas.blur.module=${files.module}`, `-Dcanvas.blur.build=${files.build}`];
-  if (instrument) args.push(`-Dcanvas.blur.tests=${files.tests}`, `-Dcanvas.blur.metadata=${path.join(files.evidence, "configuration.json")}`);
+  // A failed instrumentation build (CI once failed packaging the test APK with no cause
+  // in the log) must name its exception in the preserved gradle.log.
+  if (instrument) args.push(`-Dcanvas.blur.tests=${files.tests}`, `-Dcanvas.blur.metadata=${path.join(files.evidence, "configuration.json")}`, "--stacktrace");
   return args;
 }
 
