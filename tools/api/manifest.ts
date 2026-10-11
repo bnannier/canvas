@@ -473,19 +473,22 @@ export const publicApi: Readonly<Record<string, ApiEntry>> = {
   // src/style/pressable.tsx
   Pressable: { kind: "component", docs: "components/pressable" },
 
-  // src/style/responsive.tsx
+  // src/style/responsive.tsx (SsrBreakpointContext and the useWindowDimensions
+  // pass-through are deprecated aliases since the BreakpointOverride audit turn, K12-2
+  // and its OD5)
   BreakpointOverride: { kind: "component" },
   FormFactor: { kind: "type" },
   formFactor: { kind: "utility" },
   Responsive: { kind: "type" },
   responsive: { kind: "utility" },
-  SsrBreakpointContext: { kind: "internal-by-accident" },
+  SsrBreakpointContext: { kind: "deprecated-alias", replacement: "ThemeProvider" },
   useBreakpoint: { kind: "hook", docs: "patterns/responsive" },
   useFormFactor: { kind: "hook", docs: "patterns/responsive" },
   useResponsive: { kind: "hook", docs: "patterns/responsive" },
-  // React Native's own hook, re-exported on purpose: "Reading raw pixels stays available
-  // via the `useWindowDimensions` re-export" (responsive.tsx).
-  useWindowDimensions: { kind: "hook" },
+  // React Native's own hook, passed through. No single kit export replaces it (the viewport
+  // tier for window-level chrome, a container hook inside a component, React Native's own
+  // hook for raw pixels), so its `@deprecated` text names the three.
+  useWindowDimensions: { kind: "deprecated-alias" },
 
   // src/style/ripple-clip.tsx
   cornerRadii: { kind: "internal-by-accident" },
