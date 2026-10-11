@@ -119,9 +119,11 @@ export function resolveFromBucket<T>(bucket: BreakpointKey | "base", map: Respon
 // range, (the previous breakpoint, breakpoints[bucket]] for a breakpoint bucket
 // and above breakpoints["2xl"] for base. The bucket is useBreakpoint's, so a
 // BreakpointOverride moves the seed into the simulated tier; without one the
-// window already sits in its own bucket and comes back unchanged (an unknown 0
-// included, which stays the unmeasured "base").
+// window already sits in its own bucket and comes back unchanged. An unknown
+// window (0, as a hidden iframe reports) stays 0 under any bucket: a container
+// with nothing to size against renders its unmeasured "base", never 1px cells.
 export function seedWidth(bucket: BreakpointKey | "base", windowWidth: number): number {
+  if (windowWidth <= 0) return 0;
   if (bucketOf(windowWidth) === bucket) return windowWidth;
   if (bucket === "base") return Math.max(windowWidth, breakpoints["2xl"] + 1);
   const index = ASCENDING.indexOf(bucket);

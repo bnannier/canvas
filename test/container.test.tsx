@@ -160,8 +160,12 @@ const bucketAt = (width: number): BreakpointKey | "base" =>
   width <= 0 ? "base" : (ORDER.find((bp) => width <= breakpoints[bp]) ?? "base");
 
 describe("seedWidth", () => {
+  it("keeps an unknown window (0) at 0 under every bucket, so nothing is sized against a guess", () => {
+    for (const bucket of [...ORDER, "base"] as const) expect(seedWidth(bucket, 0)).toBe(0);
+  });
+
   it("returns the window unchanged when it already sits in the bucket, and a width of the bucket otherwise", () => {
-    for (let window = 0; window <= 1700; window += 1) {
+    for (let window = 1; window <= 1700; window += 1) {
       expect(seedWidth(bucketAt(window), window)).toBe(window);
       for (const bucket of [...ORDER, "base"] as const) {
         const seeded = seedWidth(bucket, window);
