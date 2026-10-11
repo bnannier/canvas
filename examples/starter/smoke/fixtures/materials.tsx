@@ -73,12 +73,17 @@ export function MaterialsBody() {
       <Typography testID="material-native">Native capture: {capture?.available ? "available" : "unavailable"}</Typography>
       <Typography testID="material-capture-stats">{stats ? `Hosts: ${stats.hosts}; active: ${stats.activeHosts}; recordings: ${stats.recordings}; frost: ${stats.frostViews}; listeners: ${stats.frameListeners}` : "Capture not inspected"}</Typography>
       <LiveEditor onFocus={focusEditor} />
-      <Dropdown trigger="Material menu" items={[{ label: "Keep editor" }, { label: "Review settings" }]} />
+      {/* Android in-page glass has no safe capture target (the owner's P3a decision), so an
+          open overlay is where capture runs: an inspecting row reads the counters while
+          its menu's frost still captures the page. */}
+      <Dropdown trigger="Material menu" items={[{ label: "Keep editor" }, { label: "Review settings" }, { label: "Inspect capture from menu" }]}
+        onSelect={(item) => { if (item.label === "Inspect capture from menu") inspect(); }} />
       <Dialog trigger="Material dialog" title="Live dialog" withBody overlay />
       <Drawer trigger="Material drawer" right><Column relaxed><Typography h3>Native window</Typography><Input label="Drawer editor" defaultValue="Retain me" onFocus={focusEditor} /><Dropdown trigger="Drawer menu" items={[{ label: "Nested choice" }]} /><Button onPress={schedule}>Switch after focusing editor</Button></Column></Drawer>
       <Switch checked={nested} onChange={setNested} testID="material-nested">Nested glass</Switch>
       <ThemeProvider glass={nested} solid={!nested}>
         <Card><Typography>Nested glass remains active while its parent is solid.</Typography></Card>
+        <Dropdown trigger="Nested menu" items={[{ label: "Inspect nested capture" }]} onSelect={() => inspect()} />
       </ThemeProvider>
     </Column>
   </ThemeProvider>;

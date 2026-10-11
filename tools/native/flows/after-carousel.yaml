@@ -281,12 +281,28 @@ name: Sealed Canvas native candidate after measured drag
 - assertVisible:
     id: material-mode
     text: 'Mode: glass; scheme: ${SCHEME}'
+# On Android, in-page glass has no safe capture target, so the page's surfaces take
+# their solid skin and capture stays idle (the owner's P3a decision). An open overlay
+# is the safe consumer: its frost captures the page, and the menu row reads the
+# counters while the menu is still open.
 - runFlow:
     when:
       platform: Android
     commands:
       - tapOn:
           id: material-inspect
+      - assertVisible:
+          id: material-capture-stats
+          text: 'Hosts: [0-9]+; active: 0; recordings: [0-9]+; frost: 0; listeners: 0'
+      - scrollUntilVisible:
+          element: Material menu
+          direction: DOWN
+      - tapOn: Material menu
+      - tapOn: Inspect capture from menu
+      - scrollUntilVisible:
+          element:
+            id: material-capture-stats
+          direction: UP
       - assertVisible:
           id: material-capture-stats
           text: 'Hosts: [1-9][0-9]*; active: [1-9][0-9]*; recordings: [1-9][0-9]*; frost: [1-9][0-9]*; listeners: [1-9][0-9]*'
@@ -340,13 +356,23 @@ name: Sealed Canvas native candidate after measured drag
     id: material-editor
     text: Retained material text
 - takeScreenshot: material-solid-editor-preserved
-# An explicitly glass descendant must resume capture within a solid parent.
+# An explicitly glass descendant must resume capture within a solid parent. Its
+# in-page card is solid on Android (P3a), so the overlay it opens is the consumer.
 - scrollUntilVisible:
     element:
       id: material-nested
     direction: DOWN
 - tapOn:
     id: material-nested
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - scrollUntilVisible:
+          element: Nested menu
+          direction: DOWN
+      - tapOn: Nested menu
+      - tapOn: Inspect nested capture
 - scrollUntilVisible:
     element:
       id: material-inspect
@@ -355,8 +381,6 @@ name: Sealed Canvas native candidate after measured drag
     when:
       platform: Android
     commands:
-      - tapOn:
-          id: material-inspect
       - assertVisible:
           id: material-capture-stats
           text: 'Hosts: [1-9][0-9]*; active: [1-9][0-9]*; recordings: [1-9][0-9]*; frost: [1-9][0-9]*; listeners: [1-9][0-9]*'
