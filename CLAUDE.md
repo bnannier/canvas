@@ -221,8 +221,8 @@ component not being a layout container: inside a Row only the cap applies
 3. **Viewport breakpoints** (window-level chrome only): `useBreakpoint`,
    `useFormFactor` (phone <= sm 640 / tablet <= lg 1024 / desktop above; the
    tier is the window width on every platform, so a narrow desktop window is the
-   phone tier and a landscape phone the tablet tier, with no separate desktop-OS
-   tier), `useResponsive`
+   phone tier and a landscape phone usually the tablet tier (a 568 pt landscape
+   iPhone SE stays phone), with no separate desktop-OS tier), `useResponsive`
    (`src/style/responsive.tsx`, one shared subscription, bucket-granular
    re-renders; width <= 0 resolves to `base`; SSR apps pass ThemeProvider's
    `ssrBreakpoint`). Only the Sidebar/FilterPanel drawer modes, AnchoredOverlay's

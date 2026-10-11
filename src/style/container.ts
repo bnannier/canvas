@@ -73,7 +73,7 @@ export function useMeasuredWidth(): MeasuredWidth {
   return { width, measured: width > 0, onLayout };
 }
 
-/** Like useMeasuredWidth, but `width` falls back to the WINDOW width until the
+/** Like useMeasuredWidth, but `width` falls back to a viewport seed until the
  *  first layout: the best available guess for the unmeasured first frame. For
  *  components whose threshold is a raw px value rather than a breakpoint
  *  (Form's two-column stack). Subscribes at bucket granularity so the fallback
