@@ -95,7 +95,7 @@ decision.
 
 ## AnchoredOverlay turn (Foundations, 2026-10-10)
 
-Decided by the owner on 2026-10-10, each the recommendation offered.
+Decided by the owner on 2026-10-10 (AO-6a and AO-6b on 2026-10-11), each the recommendation offered.
 
 | ID | Question | Decision |
 |---|---|---|
@@ -104,6 +104,8 @@ Decided by the owner on 2026-10-10, each the recommendation offered.
 | AO-6 | Phone presentation | AnchoredOverlay offers a sheet presentation at the phone form factor. Popover, Command and long option lists (PhoneInput's country list) use it; menus, Select and Autocomplete stay anchored, as HIG and Material 3 keep them. Popover adopts it in the AnchoredOverlay turn; Command and PhoneInput in their own turns. |
 | AO-5 | RTL default | When a consumer does not say, a card follows the app's layout direction; output changes only in RTL locales; shipped as a patch under that stated assumption. |
 | AO-7 | Tracking an open card | Event-driven, with a frame poll kept only while the trigger sits in a scroller the kit cannot hear. |
+| AO-6a | The phone sheet's modality on the web (decided 2026-10-11) | The phone sheet is a modal sheet on the web as on iOS and Android: `aria-modal`, Tab and Shift+Tab held inside it, Escape or a tap on the scrim closes it and focus returns to the trigger, as HIG and Material 3 modal sheets and Dark Factory's sheets over a dimmed page. AO-2's non-modal Popover on the web is the anchored card at tablet and desktop widths. |
+| AO-6b | The design law's window readers (decided 2026-10-11) | The owner approved the CLAUDE.md and AGENTS.md sentence (af98132f) naming AnchoredOverlay's phone-sheet presentation beside the Sidebar and FilterPanel drawer modes and app shells as a reader of the viewport. |
 
 The coordinator's reading of AO-2 under the WAI-ARIA APG combobox pattern, reported to the owner on 2026-10-10: Autocomplete's suggestion list belongs to its combobox field, which keeps focus while the list is open, so it is not one of the cards AO-2 makes modal; a modal list would hide the field the user types in from VoiceOver and TalkBack (a trap, WCAG 2.1.2). It stays non-modal.
 
