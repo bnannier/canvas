@@ -16,3 +16,6 @@ The capture runs `bun run audit:turn -- --slug=breakpoint-override` took for thi
 
 | Run id | Kind | Platform | Recorded | Commit | Status | Cells | Slugs |
 |---|---|---|---|---|---|---|---|
+| `20261011-184349-web-0923e6e` | variants | web | 2026-10-11T18:59:31.188Z | `0923e6e` | complete | 3618 of 3618: 3618 ok, 0 failed | filter-panel, sidebar, row-column, grid, autocomplete, button-group, dropdown, popover, select, alert-dialog, description-lists, form, grid-lists, phone-input, calendar, command, dashboard-grid, data-table, dialog, navbars, row-menu, steps, tabs, toast, avatar, video, field, board, geo-map |
+| `20261011-185931-web-0923e6e` | states | web | 2026-10-11T19:07:14.423Z | `0923e6e` | complete | 1260 of 1260: 1215 ok, 0 failed, 45 not reached | filter-panel, sidebar, autocomplete, button-group, dropdown, popover, select, alert-dialog, description-lists, form, phone-input, calendar, command, data-table, dialog, navbars, row-menu, tabs, toast, avatar, video, field, board, geo-map |
+| `20261011-190714-web-0923e6e` | pages | web | 2026-10-11T19:07:45.302Z | `0923e6e` | complete | 18 of 18: 18 ok, 0 failed | pattern-responsive |
