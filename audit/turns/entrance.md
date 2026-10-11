@@ -15,3 +15,5 @@ The capture runs `bun run audit:turn -- --slug=entrance` took for this turn, by 
 
 | Run id | Kind | Platform | Recorded | Commit | Status | Cells | Slugs |
 |---|---|---|---|---|---|---|---|
+| `20261011-232717-web-2459a1f` | variants | web | 2026-10-11T23:35:05.566Z | `2459a1f` | complete | 1764 of 1764: 1764 ok, 0 failed | autocomplete, button-group, dropdown, popover, select, phone-input, calendar, command, row-menu, avatar, field, board, navbars |
+| `20261011-233505-web-4989d60` | states | web | 2026-10-11T23:39:27.566Z | `4989d60` | complete | 846 of 846: 819 ok, 0 failed, 27 not reached | autocomplete, button-group, dropdown, popover, select, phone-input, calendar, command, row-menu, avatar, field, board, navbars |
