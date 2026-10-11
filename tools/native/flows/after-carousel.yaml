@@ -147,13 +147,15 @@ name: Sealed Canvas native candidate after measured drag
 # to the last row overran the 20 s limit. The owner bounded the settle wait on
 # 2026-10-11; every check below still runs. In Maestro 2.10 the bound applies to the
 # hierarchy comparison after a swipe; the iOS driver's 3 s static-screen wait before
-# it is fixed.
+# it is fixed, so about 6.5 s per swipe remains on CI and the four swipes need about
+# 26 s: the owner also raised this scroll's limit to 40 s on 2026-10-11.
 - scrollUntilVisible:
     element:
       text: Work item 40
       above: to navigate
     direction: DOWN
     waitToSettleTimeoutMs: 1000
+    timeout: 40000
 - runFlow:
     when:
       platform: Android
@@ -184,15 +186,17 @@ name: Sealed Canvas native candidate after measured drag
     commands:
       - assertVisible:
           id: space
-# The same bounded settle wait as the first scroll to the last row (the owner's
-# decision, 2026-10-11): the focused field's caret never lets the screen settle on
-# CI's slow screen checks, about 8.5 s per swipe there against about 4 s locally.
+# The same bounded settle wait and 40 s limit as the first scroll to the last row
+# (the owner's decisions, 2026-10-11): the focused field's caret never lets the screen
+# settle on CI's slow screen checks, about 8.5 s per swipe there against about 4 s
+# locally.
 - scrollUntilVisible:
     element:
       text: Work item 40
       above: to navigate
     direction: DOWN
     waitToSettleTimeoutMs: 1000
+    timeout: 40000
 # Maestro's "above" compares top edges only, and its visibility ignores the results
 # pane's clipping, so it can stop with the last row's top just above the footer and
 # the rest of the row under it, where a tap lands on the footer. One more scroll
