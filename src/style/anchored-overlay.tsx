@@ -70,9 +70,13 @@
 // straight between them. The dense layer is the same material under the model's
 // densest tint (glass-tint-dense), so the rows stay legible and the card still takes
 // the material. Popovers, the command palette, and the calendar peek keep the
-// functional layer. `opaque` remains for a consumer that wants the plain surface
-// outright: the skin's own `popover` fill on a plain box, in glass mode exactly as in
-// solid mode.
+// functional layer while anchored. A card presented as a phone sheet takes the dense
+// layer too: it stands over a dimming scrim the frost samples, and under the sheer tint
+// that dimmed page greyed the sheet (a Popover's supporting line fell below 4.5:1 in
+// the light palettes) and the tab bar it covers read through it; like AlertDialog over
+// its scrim, it is what the user reads and acts on while the page is dimmed. `opaque`
+// remains for a consumer that wants the plain surface outright: the skin's own
+// `popover` fill on a plain box, in glass mode exactly as in solid mode.
 
 import { createContext, type ReactNode, type RefObject, useCallback, useContext, useEffect, useId, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { I18nManager, View, Pressable, StyleSheet, type LayoutChangeEvent, type StyleProp, type ViewStyle, type ViewProps } from "react-native";
@@ -263,8 +267,8 @@ export interface AnchoredOverlayProps {
    * window (the keyboard's top while it is up), over the app's declared chrome as a modal
    * sheet covers a tab bar, across the window's safe width up to 640, over a dimming
    * scrim, wearing this style (the skin's sheet: its corners, padding, fill and any float
-   * off the edges) in place of `cardStyle`, with no `decoration`; its content is padded
-   * clear of the home indicator. Only a card that can close becomes a sheet; a card
+   * off the edges) in place of `cardStyle`, with no `decoration`, on the dense layer under
+   * glass; its content is padded clear of the home indicator. Only a card that can close becomes a sheet; a card
    * pinned open stays anchored. Omit it to stay anchored at every form factor (menus and
    * option lists do, as HIG and Material 3 keep them).
    */
@@ -1027,7 +1031,7 @@ function HostedAnchoredOverlay({ host, frame, onDismiss, onAccessibilityEscape, 
                 obscured={holdsModal && topModal != null && topModal !== modalId}
                 style={{ position: "absolute", left: swap ? right : left, right: swap ? left : right, top, bottom, maxWidth: sheet ? undefined : maxWidth }}
               >
-                <OverlayCard onAccessibilityEscape={onAccessibilityEscape} cardStyle={cappedStyle} opaque={opaque} dense={dense} onMount={onCardMount} ownsScroll={ownsScroll} rows={dismissOnTab} onLayout={onCardLayout} ready={measured} decoration={sheet ? null : decoration}>{children}</OverlayCard>
+                <OverlayCard onAccessibilityEscape={onAccessibilityEscape} cardStyle={cappedStyle} opaque={opaque} dense={dense || sheet} onMount={onCardMount} ownsScroll={ownsScroll} rows={dismissOnTab} onLayout={onCardLayout} ready={measured} decoration={sheet ? null : decoration}>{children}</OverlayCard>
               </Entrance>
             </OverlayScrollContext.Provider>
           </OverlaySideContext.Provider>

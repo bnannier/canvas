@@ -41,8 +41,9 @@ import { channelsOf } from "../src/style/color.ts";
 // the toast pill (`inverse`) with its own light ink. Their dense tint is that fill at
 // the dense alpha (`inverseDenseTint`), so the text keeps its contrast.
 //
-// The functional-layer overlays (Popover, Command, Dialog, ActionSheet, Drawer, the
-// bars) keep the sheer tint. These cases render the web frost, which the test DOM
+// The functional-layer overlays (Popover while it is anchored, Command, Dialog,
+// ActionSheet, Drawer, the bars) keep the sheer tint; a card AnchoredOverlay presents as
+// a phone sheet over its scrim is dense (test/anchored-overlay-sheet.test.tsx). These cases render the web frost, which the test DOM
 // supports (its CSS.supports reports backdrop-filter): GlassBox's material clip box
 // holding the layer's under-fill, the frost (a `backdrop-filter` layer) and the
 // hairline rim (an inset box-shadow).
