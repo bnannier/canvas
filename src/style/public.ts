@@ -223,7 +223,24 @@ export {
    */
   useOverlaySide,
 } from "./anchored-overlay.js";
-export { Entrance, type EntranceProps } from "./entrance.js";
+// Entrance, the readiness hold an anchored card's owner applies, was published by
+// accident the same way; both names are deprecated aliases that keep working until a
+// major (audit K12-2). As above, the tags sit on these specifiers only and the internal
+// hub re-exports the declarations untagged.
+export {
+  /**
+   * @deprecated Kit internals: the readiness hold every anchored card (Popover,
+   * Dropdown, Select, Autocomplete and the rest) applies to its own card until its
+   * placement is measured, so use those components. It keeps working until a major.
+   */
+  Entrance,
+  /**
+   * @deprecated Kit internals: the props of the readiness hold every anchored card
+   * (Popover, Dropdown, Select, Autocomplete and the rest) applies to its own card, so
+   * use those components. It keeps working until a major.
+   */
+  type EntranceProps,
+} from "./entrance.js";
 export { GlassSurface } from "./glass-surface/glass-surface.js";
 export { liquidGlassAvailable } from "./glass-surface/liquid-glass.js";
 export { innerFill, type InnerFillRole, type InnerFillStrength, inverseDenseTint, isGlass, withInnerFill } from "./glass-fill.js";
