@@ -49,16 +49,31 @@ export {
   type ThemeValue,
   useTheme,
 } from "./theme.js";
+// The viewport tier. SsrBreakpointContext (the context behind ThemeProvider's
+// `ssrBreakpoint`) and React Native's `useWindowDimensions` were published by accident
+// beside it; each is a deprecated alias that keeps working until a major (audit K12-2 and
+// its OD5). The tags sit on these specifiers only: the kit's own modules import the
+// declarations untagged.
 export {
   BreakpointOverride,
   formFactor,
   type FormFactor,
   responsive,
   type Responsive,
+  /**
+   * @deprecated Kit internals: pass ThemeProvider's `ssrBreakpoint` prop to set the
+   * bucket a server render assumes. It keeps working until a major.
+   */
   SsrBreakpointContext,
   useBreakpoint,
   useFormFactor,
   useResponsive,
+  /**
+   * @deprecated React Native's own hook, passed through: use `useBreakpoint` or
+   * `useFormFactor` for window-level chrome, `useContainerWidth` or `useMeasuredWidth`
+   * inside a component, or React Native's own `useWindowDimensions` for raw pixels. It
+   * keeps working until a major.
+   */
   useWindowDimensions,
 } from "./responsive.js";
 export {
