@@ -8,8 +8,8 @@ Audit checklist for the style-layer foundation `Entrance`, audited for its contr
 | Foundation | `Entrance`, a style-layer renderable with no component page of its own (`tools/materials/manifest.ts`, the style tier), declared in `src/style/entrance.tsx` |
 | Source files | `src/style/entrance.tsx` (its homes, its exports' declarations and its implementation, the private declarations they read) |
 | Seams | 1, the private declarations it alone reads (`tools/audit/foundations.ts` `foundationCode`), which its consumers are also found through: `HELD` (src/style/entrance.tsx) |
-| Public exports | 2: `Entrance` (internal-by-accident), `EntranceProps` (internal-by-accident, a type) |
-| K12-2 status | 2 deprecated alias to come (K12-2): Entrance, EntranceProps |
+| Public exports | 2: `Entrance` (deprecated-alias), `EntranceProps` (deprecated-alias, a type) |
+| K12-2 status | 2 deprecated alias already: Entrance, EntranceProps |
 | Documented on | none yet: the public API manifest names no page for any of its exports |
 | Docs planned | `foundation` (not built yet): Entrance, EntranceProps |
 | Materials manifest | Entrance: style, inherited; docs route none (`docsRoute: null`); verification inherited-composition, semantic-state |

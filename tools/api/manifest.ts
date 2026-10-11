@@ -380,9 +380,11 @@ export const publicApi: Readonly<Record<string, ApiEntry>> = {
   devWarn: { kind: "internal-by-accident" },
   resetDevWarnings: { kind: "internal-by-accident" },
 
-  // src/style/entrance.tsx
-  Entrance: { kind: "internal-by-accident" },
-  EntranceProps: { kind: "internal-by-accident" },
+  // src/style/entrance.tsx (deprecated aliases since the Entrance audit turn, K12-2). No
+  // single public name replaces either one: every anchored card applies the hold to its
+  // own card, so their `@deprecated` text names those components.
+  Entrance: { kind: "deprecated-alias" },
+  EntranceProps: { kind: "deprecated-alias" },
 
   // src/style/floating-label.tsx
   FloatingLabel: { kind: "internal-by-accident" },
