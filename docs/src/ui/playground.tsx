@@ -19,13 +19,17 @@ const SEARCHABLE_EXAMPLES: Record<string, string> = { IconGallery: "Search icons
 // renders it). Selecting a tier does two things at once, so the container- and
 // viewport-driven halves of the kit's responsive system tell the same story:
 //   - constrains the preview card to the tier's width, which the
-//     container-measured components (DataTable, Grid, Row stacks, Navbar)
-//     re-fit to, and
+//     container-measured components (DataTable, Grid, Row stacks, Navbar,
+//     DescriptionList) re-fit to, and
 //   - pins the kit's viewport bucket via BreakpointOverride, which the
 //     useBreakpoint / useResponsive / useFormFactor consumers (the Sidebar and
-//     FilterPanel drawers, DescriptionList) resolve as the simulated tier. The
-//     override wraps the stage's OverlayProvider, so portaled overlay content
-//     (menus, dialogs, the calendar peek) simulates too.
+//     FilterPanel drawers, AnchoredOverlay's phone sheet) resolve as the
+//     simulated tier, and which the container-measured components' first,
+//     unmeasured frame follows. The override wraps the stage's OverlayProvider,
+//     so portaled overlay content (menus, dialogs, the calendar peek) resolves
+//     the simulated tier too; a sheet or drawer still lays out against the real
+//     window, which BreakpointOverride does not simulate (it pins the tier, not
+//     the geometry).
 // The tiers walk the kit's own breakpoint scale (src/style/tokens.ts
 // `breakpoints`: sm 640, md 768, lg 1024, xl 1280), one preview per bucket a
 // component can switch on, plus a phone that sits well inside `sm`. Full width

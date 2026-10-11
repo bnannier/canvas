@@ -476,11 +476,11 @@ export const publicApi: Readonly<Record<string, ApiEntry>> = {
   // src/style/responsive.tsx (SsrBreakpointContext and the useWindowDimensions
   // pass-through are deprecated aliases since the BreakpointOverride audit turn, K12-2
   // and its OD5)
-  BreakpointOverride: { kind: "component" },
-  FormFactor: { kind: "type" },
-  formFactor: { kind: "utility" },
-  Responsive: { kind: "type" },
-  responsive: { kind: "utility" },
+  BreakpointOverride: { kind: "component", docs: "tokens/layout" },
+  FormFactor: { kind: "type", docs: "tokens/layout" },
+  formFactor: { kind: "utility", docs: "tokens/layout" },
+  Responsive: { kind: "type", docs: "tokens/layout" },
+  responsive: { kind: "utility", docs: "tokens/layout" },
   SsrBreakpointContext: { kind: "deprecated-alias", replacement: "ThemeProvider" },
   useBreakpoint: { kind: "hook", docs: "patterns/responsive" },
   useFormFactor: { kind: "hook", docs: "patterns/responsive" },
@@ -719,19 +719,15 @@ export const PENDING_DOCS: Readonly<Record<string, DocsRoute>> = {
   "styles/tokens/surface.css": "integration",
   "styles/tokens/typography.css": "integration",
 
-  // K12-6: the responsive hooks, BreakpointOverride, and the sizing and width vocabulary.
+  // K12-6: the container hooks and the sizing and width vocabulary (the viewport tier and
+  // BreakpointOverride are documented there since the BreakpointOverride audit turn).
   BreakpointKey: "tokens/layout",
-  BreakpointOverride: "tokens/layout",
   breakpoints: "tokens/layout",
   ContainerBreakpoint: "tokens/layout",
   ContainerBreakpointOptions: "tokens/layout",
-  FormFactor: "tokens/layout",
-  formFactor: "tokens/layout",
   LayoutStyle: "tokens/layout",
   MeasuredWidth: "tokens/layout",
   MeasureProps: "tokens/layout",
-  Responsive: "tokens/layout",
-  responsive: "tokens/layout",
   SizingKey: "tokens/layout",
   useContainerBreakpoint: "tokens/layout",
   useContainerWidth: "tokens/layout",
