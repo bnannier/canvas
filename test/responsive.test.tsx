@@ -1,4 +1,4 @@
-// The viewport half of the responsiveness system (src/style/responsive.ts):
+// The viewport half of the responsiveness system (src/style/responsive.tsx):
 // the pure desktop-first picker, the shared breakpoint store behind
 // useBreakpoint/useResponsive/useFormFactor, the width<=0-means-desktop rule
 // (SSR and the pre-layout first frame), and the bucket-granular re-render
@@ -7,15 +7,19 @@
 // exact signal a real browser resize produces.
 import { describe, it, expect, afterEach } from "bun:test";
 import { render, cleanup, screen } from "@testing-library/react";
+import { Dimensions } from "react-native";
 import { ThemeProvider } from "../src/style/theme.tsx";
 import {
   responsive,
+  resolveFromBucket,
   useResponsive,
   useBreakpoint,
   formFactor,
   useFormFactor,
   BreakpointOverride,
+  type Responsive,
 } from "../src/style/responsive.tsx";
+import { breakpoints, type BreakpointKey } from "../src/style/tokens.ts";
 import { resizeViewport } from "./viewport.ts";
 
 afterEach(cleanup);
@@ -175,5 +179,93 @@ describe("useResponsive / useFormFactor through the store", () => {
     resizeViewport(0);
     expect(screen.getByTestId("value").textContent).toBe("desktop");
     expect(screen.getByTestId("factor").textContent).toBe("desktop");
+  });
+});
+
+// Every map the five breakpoint keys can make, each key holding its own name and base
+// holding "base": 32 maps, the empty one (base alone) included.
+const KEYS: BreakpointKey[] = ["sm", "md", "lg", "xl", "2xl"];
+const EVERY_MAP: Responsive<string>[] = Array.from({ length: 1 << KEYS.length }, (_, mask) => {
+  const map: Responsive<string> = { base: "base" };
+  KEYS.forEach((key, i) => {
+    if (mask & (1 << i)) map[key] = key;
+  });
+  return map;
+});
+// The bucket each width sits in, read straight off the token scale (the oracle).
+const bucketAt = (width: number): BreakpointKey | "base" =>
+  width <= 0 ? "base" : (KEYS.find((bp) => width <= breakpoints[bp]) ?? "base");
+
+describe("resolveFromBucket", () => {
+  it("equals responsive(width) at every width up to 1600, for every map the five keys make", () => {
+    for (let width = 0; width <= 1600; width += 1) {
+      const bucket = bucketAt(width);
+      for (const map of EVERY_MAP) expect(resolveFromBucket(bucket, map)).toBe(responsive(width, map));
+    }
+  });
+
+  it("is what useResponsive resolves through the store across a whole resize sweep", () => {
+    function Sweep() {
+      const values = EVERY_MAP.map((map) => useResponsive(map));
+      return <div data-testid="sweep">{values.join(",")}</div>;
+    }
+    render(
+      <ThemeProvider>
+        <Sweep />
+      </ThemeProvider>,
+    );
+    for (let width = 1600; width >= 0; width -= 7) {
+      resizeViewport(width);
+      expect(screen.getByTestId("sweep").textContent).toBe(EVERY_MAP.map((map) => responsive(width, map)).join(","));
+    }
+  });
+});
+
+describe("the shared viewport subscription", () => {
+  // Counts the Dimensions listeners the store holds: attached when the first consumer
+  // subscribes, shared by every other, detached when the last one leaves.
+  function countDimensionsListeners() {
+    const original = Dimensions.addEventListener;
+    const counts = { attached: 0, live: 0 };
+    Dimensions.addEventListener = ((type: "change", handler: Parameters<typeof original>[1]) => {
+      const subscription = original.call(Dimensions, type, handler);
+      counts.attached += 1;
+      counts.live += 1;
+      return {
+        remove() {
+          counts.live -= 1;
+          subscription.remove();
+        },
+      };
+    }) as typeof original;
+    return { counts, restore: () => { Dimensions.addEventListener = original; } };
+  }
+
+  it("adds one Dimensions listener for any number of consumers, and removes it with the last", () => {
+    const { counts, restore } = countDimensionsListeners();
+    try {
+      const first = render(<BucketProbe />);
+      const second = render(<BucketProbe />);
+      const third = render(<ValueProbe />);
+      expect(counts.attached).toBe(1);
+      expect(counts.live).toBe(1);
+      // Every consumer still hears the one listener.
+      resizeViewport(375);
+      expect(first.container.textContent).toBe("sm");
+      expect(second.container.textContent).toBe("sm");
+      expect(third.container.textContent).toBe("phonephone");
+      first.unmount();
+      second.unmount();
+      expect(counts.live).toBe(1);
+      third.unmount();
+      expect(counts.live).toBe(0);
+      // A later consumer attaches a fresh one.
+      render(<BucketProbe />);
+      expect(counts.attached).toBe(2);
+      expect(counts.live).toBe(1);
+    } finally {
+      cleanup();
+      restore();
+    }
   });
 });
