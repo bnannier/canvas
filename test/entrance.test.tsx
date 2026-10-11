@@ -89,6 +89,38 @@ describe("Entrance", () => {
     });
   });
 
+  it("keeps a covered card hidden from VoiceOver and TalkBack once React Native resolves aria-hidden", () => {
+    // React Native 0.86's View (Libraries/Components/View/View.js) resolves aria-hidden over
+    // the native props: a defined value overwrites accessibilityElementsHidden, and true
+    // also sets importantForAccessibility. A false aria-hidden would undo `obscured` on iOS.
+    const resolved = (props: ViewProps) => {
+      const ariaHidden = props["aria-hidden"];
+      return {
+        accessibilityElementsHidden: ariaHidden !== undefined ? ariaHidden : props.accessibilityElementsHidden,
+        importantForAccessibility: ariaHidden === true ? "no-hide-descendants" : props.importantForAccessibility,
+      };
+    };
+    const hiddenNatively = { accessibilityElementsHidden: true, importantForAccessibility: "no-hide-descendants" };
+    const exposed = { accessibilityElementsHidden: false, importantForAccessibility: "auto" };
+    withViewProps((props) => {
+      const view = render(ui({ obscured: true }));
+      expect(props()["aria-hidden"]).toBeUndefined();
+      expect(resolved(props())).toEqual(hiddenNatively);
+      // Obscured is natively hidden only: the web keeps the card, so it stays out of aria-hidden.
+      expect(held()).toEqual({ ariaHidden: false, opacity: "", pointerEvents: "auto" });
+      view.rerender(ui({ obscured: true, ready: false }));
+      expect(resolved(props())).toEqual(hiddenNatively);
+      view.rerender(ui({ ready: false }));
+      expect(resolved(props())).toEqual(hiddenNatively);
+      view.rerender(ui());
+      expect(props()["aria-hidden"]).toBeUndefined();
+      expect(resolved(props())).toEqual(exposed);
+      view.rerender(ui({ accessibilityViewIsModal: true }));
+      expect(props().accessibilityViewIsModal).toBe(true);
+      expect(resolved(props())).toEqual(exposed);
+    });
+  });
+
   it("never starts an animation", () => {
     const spring = spyOn(Animated, "spring");
     const timing = spyOn(Animated, "timing");
