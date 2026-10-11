@@ -1,18 +1,36 @@
 // Entrance holds an overlay's card until its owner is ready to show it (a hosted
-// card's fitted placement, see AnchoredOverlay). While held the card is in the
-// tree, laid out and measurable, but invisible and inert, so a menu never flashes
-// at the wrong place and focus never lands on a card whose geometry has not
-// committed. Overlays unmount on close, so there is nothing to hold on the way
-// out. There is no motion: the card appears in place the moment it is ready.
+// card's fitted placement, see AnchoredOverlay), so a menu never flashes at the wrong
+// place and focus never enters a card whose geometry has not committed. While held the
+// card is in the tree, laid out and measurable, and its controls stay mounted, but it is
+// invisible, takes no touch or click, and is hidden from VoiceOver, TalkBack and the
+// web's accessibility tree; its readiness context tells the cards and focus entries
+// inside it to wait. It does not take the card's controls out of the web's Tab order:
+// no keyboard path reaches them while held, because the owner installs its Tab bridge
+// and moves focus in only once the card is shown, a hosted card sits after the page in
+// its outlet, and the hold ends as soon as the placement is measured (one or two frames). Overlays unmount on close, so there is nothing to hold on the way out.
+// There is no motion, and so nothing for Reduce Motion to remove: the card appears in
+// place the moment it is ready.
 
 import { type ReactNode, forwardRef, useContext } from "react";
 import { View, type StyleProp, type ViewStyle } from "react-native";
 import { EntranceReadinessContext } from "./entrance-readiness.js";
 
+/** The props of Entrance, the readiness hold an anchored card's owner applies to it. */
 export interface EntranceProps {
-  /** Hold visibility until the owner has measured its final placement. */
+  /**
+   * Whether the owner is ready to show the card (AnchoredOverlay: its placement is
+   * measured). Defaults to true, a pass-through. While false, or while an enclosing
+   * Entrance holds, the card is held: invisible, untouchable, hidden from VoiceOver,
+   * TalkBack and the web's accessibility tree, and its descendants read their readiness
+   * as false, so focus waits. It stays held for as long as this stays false, so the
+   * owner must release it. True shows it in place, with no motion.
+   */
   ready?: boolean;
-  /** Layout/position for the wrapper (a menu's absolute left/top; a dialog's width caps). */
+  /**
+   * The wrapper's layout and position only (an anchored card's absolute left, top and
+   * cap): never a restyle, since the card inside paints itself. Typed as a full ViewStyle
+   * until a major, as the kit's owners pass position keys LayoutStyle omits.
+   */
   style?: StyleProp<ViewStyle>;
   /**
    * Natively, VoiceOver ignores the views beside this one while it is set: the topmost
@@ -24,6 +42,7 @@ export interface EntranceProps {
    * touchable: a card covered by a modal card opened from it. Dropped on the web.
    */
   obscured?: boolean;
+  /** The card the hold shows or hides. */
   children: ReactNode;
 }
 
@@ -33,6 +52,14 @@ export interface EntranceProps {
 // deprecation warning for the prop.
 const HELD: ViewStyle = { opacity: 0, pointerEvents: "none" };
 
+/**
+ * The readiness hold for an anchored card: renders `children` in one View that is
+ * invisible, untouchable and hidden from assistive technology until `ready` (and every
+ * enclosing Entrance's readiness, across a portal too) is true, then shows it in place
+ * with no motion. While held the card still lays out and reports its size, and its
+ * controls stay mounted; its owner moves focus in only at release. Kit internals, behind
+ * every anchored card (Popover, Dropdown, Select, Autocomplete and the rest).
+ */
 export const Entrance = forwardRef<View, EntranceProps>(function Entrance({ ready = true, style, accessibilityViewIsModal, obscured = false, children }, ref) {
   // An unready ancestor holds this card too. Within one tree its own hold already hides
   // the card, but a hosted card renders in the outlet, outside its logical ancestor's
