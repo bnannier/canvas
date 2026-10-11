@@ -161,6 +161,44 @@ describe("BreakpointOverride (the simulation seam)", () => {
   });
 });
 
+describe("BreakpointOverride and the viewport subscription", () => {
+  it("holds no subscription under an override: real bucket crossings never re-render it", () => {
+    let renders = 0;
+    render(
+      <ThemeProvider>
+        <BreakpointOverride value="sm">
+          <BucketProbe onRender={() => { renders += 1; }} />
+        </BreakpointOverride>
+      </ThemeProvider>,
+    );
+    const after = renders;
+    // Three real crossings (xl -> lg -> sm -> base); the simulated answer cannot change.
+    resizeViewport(1000);
+    resizeViewport(375);
+    resizeViewport(1600);
+    expect(renders).toBe(after);
+    expect(screen.getByTestId("bucket").textContent).toBe("sm");
+  });
+
+  it("subscribes again when the override clears, and follows the real window from there", () => {
+    function Switch({ bucket }: { bucket: BreakpointKey | "base" | null }) {
+      return (
+        <ThemeProvider>
+          <BreakpointOverride value={bucket}>
+            <BucketProbe />
+          </BreakpointOverride>
+        </ThemeProvider>
+      );
+    }
+    const { rerender } = render(<Switch bucket="md" />);
+    expect(screen.getByTestId("bucket").textContent).toBe("md");
+    rerender(<Switch bucket={null} />);
+    expect(screen.getByTestId("bucket").textContent).toBe("xl");
+    resizeViewport(375);
+    expect(screen.getByTestId("bucket").textContent).toBe("sm");
+  });
+});
+
 describe("useResponsive / useFormFactor through the store", () => {
   it("resolves the same values the pure picker resolves at each width", () => {
     render(
@@ -261,9 +299,18 @@ describe("the shared viewport subscription", () => {
       third.unmount();
       expect(counts.live).toBe(0);
       // A later consumer attaches a fresh one.
-      render(<BucketProbe />);
+      const fourth = render(<BucketProbe />);
       expect(counts.attached).toBe(2);
       expect(counts.live).toBe(1);
+      fourth.unmount();
+      // Consumers under an override hold none.
+      render(
+        <BreakpointOverride value="sm">
+          <BucketProbe />
+          <ValueProbe />
+        </BreakpointOverride>,
+      );
+      expect(counts.live).toBe(0);
     } finally {
       cleanup();
       restore();
