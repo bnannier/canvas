@@ -459,9 +459,10 @@ export function createDataTable(skin: DataTableSkin, parts: DataTableParts) {
     // table narrower than a desktop window would report, so useWindowDimensions
     // cannot see the narrow column.
     // Panning and the iOS collapse read the MEASURED width only (the base layout
-    // on the unmeasured first frame); `stacks` reads it with the window as the
-    // first frame's seed, like Row `stacks`, so a phone's first frame already
-    // stacks instead of flashing the side-by-side rows.
+    // on the unmeasured first frame); `stacks` reads it with useContainerWidth's
+    // seed (the window clamped into the viewport bucket) on the first frame, like
+    // Row `stacks`, so a phone's first frame already stacks instead of flashing
+    // the side-by-side rows.
     const { width: containerWidth, measured, onLayout: onMeasureLayout } = useContainerWidth();
     const measuredWidth = measured ? containerWidth : 0;
     const stacked =
