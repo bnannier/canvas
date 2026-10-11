@@ -67,6 +67,8 @@ One row per finding. Severity: critical, high, medium, low. Cell: a capture id f
 
 | ID | Severity | Cell | Summary | Status | Fix commit |
 |---|---|---|---|---|---|
+| pattern-responsive-backticks-1 | low | source | The "Sidebar - drawer ↔ fixed" section's description (docs/src/core/data/patterns.tsx) wraps `responsive` in Markdown backticks, but a section description is plain text, so the backticks render literally on the web export and on iOS. Found in passing by the BreakpointOverride turn's review (2026-10-11), recorded for this page's turn. | open |  |
+| pattern-responsive-arrow-emoji-1 | low | source | The same section's title spells its double arrow as the character ↔, which iOS renders as an emoji in the S1 capture (ios-pages/pattern-responsive, blush solid, screen 4) while the web shows a text glyph. Found in passing by the BreakpointOverride turn's review (2026-10-11), recorded for this page's turn. | open |  |
 
 ## Sign-off
 
