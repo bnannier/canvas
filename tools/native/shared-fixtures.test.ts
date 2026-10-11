@@ -16,7 +16,9 @@ test("docs and native routes consume one maintained public-API fixture body", ()
       if (ts.isImportDeclaration(statement) && ts.isStringLiteral(statement.moduleSpecifier)) {
         if (fixture === "form-autocomplete" && statement.moduleSpecifier.text === "react-native") {
           const bindings = statement.importClause?.namedBindings;
-          expect(bindings && ts.isNamedImports(bindings) ? bindings.elements.map((entry) => entry.name.text) : []).toEqual(["Keyboard"]);
+          // React Native's own useWindowDimensions: the kit's pass-through is a deprecated
+          // alias (audit K12-2 OD5), and raw window pixels are React Native's.
+          expect(bindings && ts.isNamedImports(bindings) ? bindings.elements.map((entry) => entry.name.text) : []).toEqual(["Keyboard", "useWindowDimensions"]);
         } else if ((fixture === "carousel" || fixture === "escape-layers") && statement.moduleSpecifier.text === "react-native") {
           const bindings = statement.importClause?.namedBindings;
           expect(bindings && ts.isNamedImports(bindings) ? bindings.elements.map((entry) => entry.name.text) : [])
