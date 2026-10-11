@@ -1,8 +1,3 @@
-//
-// The same peer gives the overlay layer the window's safe area: its SafeAreaInsetsContext
-// and SafeAreaFrameContext, read with useContext, which is null when no SafeAreaProvider
-// is mounted (its useSafeAreaInsets hook throws there instead). Without the peer a
-// null-valued context stands in for each, so a reader sees no safe area either way.
 import { type ComponentType, type Context, createContext, useContext, useMemo } from "react";
 import { View, type ViewProps } from "react-native";
 
@@ -15,6 +10,14 @@ import { View, type ViewProps } from "react-native";
 // This keeps the kit installable and buildable for consumers who skip the peer, and
 // removes the core-`SafeAreaView` deprecation warning. See glass-surface for the same
 // guarded literal-require pattern.
+//
+// The same peer gives the overlay layer the window's safe-area insets: its
+// SafeAreaInsetsContext, read with useContext, which is null when no SafeAreaProvider is
+// mounted (its useSafeAreaInsets hook throws there instead). Without the peer a
+// null-valued context stands in, so a reader sees no safe area either way. The peer's
+// frame is not read: on the web it is the document's size, measured once when the
+// provider mounts and never again on a resize, so a box measured from it goes stale
+// (src/style/portal.tsx insets the window it measures itself instead).
 declare const require: (id: string) => unknown;
 
 type SafeAreaEdges = readonly ("top" | "right" | "bottom" | "left")[];
@@ -23,13 +26,10 @@ type SafeAreaProviderComponent = ComponentType<ViewProps>;
 
 /** The safe-area insets the peer reports for its provider's frame. */
 export interface SafeAreaInsets { top: number; right: number; bottom: number; left: number }
-/** The peer's provider frame, in window coordinates. */
-export interface SafeAreaFrame { x: number; y: number; width: number; height: number }
 
 let SafeAreaView: SafeAreaViewComponent = View;
 let SafeAreaProvider: SafeAreaProviderComponent = View;
 let SafeAreaInsetsContext: Context<SafeAreaInsets | null> = createContext<SafeAreaInsets | null>(null);
-let SafeAreaFrameContext: Context<SafeAreaFrame | null> = createContext<SafeAreaFrame | null>(null);
 try {
   // Directly in the try block: an intervening `if` makes Metro treat this as
   // a REQUIRED dependency. See src/style/glass-surface/material-runtime.ts.
@@ -37,37 +37,27 @@ try {
     SafeAreaView?: SafeAreaViewComponent;
     SafeAreaProvider?: SafeAreaProviderComponent;
     SafeAreaInsetsContext?: Context<SafeAreaInsets | null>;
-    SafeAreaFrameContext?: Context<SafeAreaFrame | null>;
   };
   if (mod?.SafeAreaView) SafeAreaView = mod.SafeAreaView;
   if (mod?.SafeAreaProvider) SafeAreaProvider = mod.SafeAreaProvider;
   if (mod?.SafeAreaInsetsContext) SafeAreaInsetsContext = mod.SafeAreaInsetsContext;
-  if (mod?.SafeAreaFrameContext) SafeAreaFrameContext = mod.SafeAreaFrameContext;
 } catch {
   SafeAreaView = View;
   SafeAreaProvider = View;
 }
 
 /**
- * The window's safe rect, in window coordinates: the nearest SafeAreaProvider's frame
- * inset by its four insets (the status bar, the Dynamic Island, the home indicator and
- * a landscape sensor housing). Null when no provider is mounted or the peer is absent.
+ * The window's safe-area insets (the status bar, the Dynamic Island, the home indicator
+ * and a landscape sensor housing), each a finite length of 0 or more. Null when no
+ * SafeAreaProvider is mounted or the peer is absent. Stable while the insets are.
  */
-export function useSafeAreaWindowRect(): SafeAreaFrame | null {
+export function useSafeAreaInsetsOrNull(): SafeAreaInsets | null {
   const insets = useContext(SafeAreaInsetsContext);
-  const frame = useContext(SafeAreaFrameContext);
   return useMemo(() => {
-    if (!insets || !frame) return null;
+    if (!insets) return null;
     const side = (value: number) => (Number.isFinite(value) ? Math.max(0, value) : 0);
-    const left = side(insets.left);
-    const top = side(insets.top);
-    return {
-      x: frame.x + left,
-      y: frame.y + top,
-      width: Math.max(0, frame.width - left - side(insets.right)),
-      height: Math.max(0, frame.height - top - side(insets.bottom)),
-    };
-  }, [insets, frame]);
+    return { top: side(insets.top), right: side(insets.right), bottom: side(insets.bottom), left: side(insets.left) };
+  }, [insets]);
 }
 
-export { SafeAreaView, SafeAreaProvider, SafeAreaInsetsContext, SafeAreaFrameContext };
+export { SafeAreaView, SafeAreaProvider, SafeAreaInsetsContext };

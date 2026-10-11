@@ -12,7 +12,7 @@ import { Dropdown } from "../src/atoms/dropdown/dropdown.tsx";
 import { iosSkin, webSkin } from "../src/atoms/popover/popover.styles.tsx";
 import { AnchoredOverlay } from "../src/style/anchored-overlay.tsx";
 import { OverlayProvider } from "../src/style/portal.tsx";
-import { SafeAreaFrameContext, SafeAreaInsetsContext } from "../src/style/safe-area.tsx";
+import { SafeAreaInsetsContext } from "../src/style/safe-area.tsx";
 import { ThemeProvider } from "../src/style/theme.tsx";
 import { lightColors } from "../src/style/tokens.ts";
 import { hostedEntranceParts, layoutHostedEntrance } from "./entrance-layout.ts";
@@ -135,13 +135,11 @@ describe("the phone sheet (AO-6)", () => {
     const app = (popover: ReactNode) => render(
       <ThemeProvider light solid>
         <SafeAreaInsetsContext.Provider value={insets}>
-          <SafeAreaFrameContext.Provider value={WINDOW}>
-            <OverlayProvider>
-              <OverlayProvider viewport viewportInsets={{ top: 60, bottom: 83 }}>
-                <View testID="stage"><OverlayProvider>{popover}</OverlayProvider></View>
-              </OverlayProvider>
+          <OverlayProvider>
+            <OverlayProvider viewport viewportInsets={{ top: 60, bottom: 83 }}>
+              <View testID="stage"><OverlayProvider>{popover}</OverlayProvider></View>
             </OverlayProvider>
-          </SafeAreaFrameContext.Provider>
+          </OverlayProvider>
         </SafeAreaInsetsContext.Provider>
       </ThemeProvider>,
     );
