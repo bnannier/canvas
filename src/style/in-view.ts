@@ -95,9 +95,8 @@ export interface InViewMeasurable {
  * The inset is clamped into the window, so even a nonsense inset only ever moves the
  * line to the top of the window rather than off it.
  *
- * Fail-open cases (see the file header) all return true. Exported for unit tests,
- * following the `entranceTranslation` precedent in ./entrance.tsx: the maths is the
- * load-bearing part and is testable with no renderer.
+ * Fail-open cases (see the file header) all return true. Exported for unit tests: the
+ * maths is the load-bearing part and is testable with no renderer.
  */
 export function isRectInView(rect: InViewRect | null | undefined, windowHeight: number, insetDp: number): boolean {
   if (rect == null) return true;
