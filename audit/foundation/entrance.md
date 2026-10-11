@@ -51,7 +51,7 @@ Severity follows rn-library-audit: critical (broken for a class of users), high 
 
 ## Specific checks
 
-- [ ] a readiness hold for an overlay card: invisible and inert until its owner is ready, then shown in place with no transform (materials target)
+- [ ] a readiness hold for an overlay card: invisible, untouchable and hidden from assistive technology until its owner and every enclosing hold are ready (its controls stay mounted; focus enters only at release), then shown in place with no transform (materials target)
 - [ ] no motion of its own, after the 2026-09-21 removal of the Entrance spring
 - [ ] every component and page in its Capture through list is re-captured before and after a change (`bun run audit:turn -- --slug=<foundation> --phase=before|after`), and a consumer already signed off gets a re-sign-off row when its pictures change
 

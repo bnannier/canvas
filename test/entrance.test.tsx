@@ -8,8 +8,8 @@ import { ThemeProvider } from "../src/style/theme.tsx";
 import { pointerEventsOf } from "./entrance-layout.ts";
 
 // Entrance is a hold, not a motion: the card is in the tree and measurable while
-// its owner is not ready, invisible and inert until it is, and it appears in place
-// with no animation.
+// its owner is not ready, invisible, untouchable and hidden from assistive technology
+// until it is, and it appears in place with no animation.
 afterEach(cleanup);
 
 function Probe() {
