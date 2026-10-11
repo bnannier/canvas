@@ -54,7 +54,9 @@ module.exports = {
       package: smoke ? "com.nannier.canvas.starter.smoke" : "com.nannier.canvas.starter",
     },
     web: { bundler: "metro", output: "single" },
-    plugins: ["expo-router", "expo-font"],
+    // Apps linked against the iOS 27 SDK must adopt the UIScene lifecycle or UIKit
+    // traps at launch; Expo ships its scene delegate behind this build property.
+    plugins: ["expo-router", "expo-font", ["expo-build-properties", { ios: { enableSceneSupport: true } }]],
     experiments: { typedRoutes: false },
     extra: identity ? { canvasBuild: identity } : {},
   },
