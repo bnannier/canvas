@@ -102,6 +102,7 @@ One row per finding. Severity: critical, high, medium, low. Cell: a capture id f
 | ID | Severity | Cell | Summary | Status | Fix commit |
 |---|---|---|---|---|---|
 | data-table-corner-1 | low | source | Corners off their rows: the web inline edit field 8 (now the field corner, 10), the iOS outline 10 and edit field 6 (now the iOS card 12 and field 8), the Android outline 8 (now the card corner, 12). The web header band keeps its 10 as the web row's own `tableHeader` role. The shape gate (test/design-rules-shape.test.ts) now takes a corner only as a role of its own platform's row that its component plays, the pill, square or a declared concentric corner. | fixed | 278270a8 |
+| data-table-ios-first-column | medium | source | At iPhone width on iOS a table that does not stack shows only its first column (the documented SwiftUI Table behaviour), and nothing in the table says that columns are missing or offers a way to reach them, so a reference table loses the values it exists to give: /tokens/layout's four tables read as bare name lists on iOS while Android and the web show every column (seen during the BreakpointOverride turn, 2026-10-11). For DataTable's turn: whether the collapsed row keeps a path to the hidden cells (a disclosure, the stacked layout by default at that width, or what VoiceOver reads for the row), and which docs tables should pass `stacks`. | open |  |
 
 ## Sign-off
 

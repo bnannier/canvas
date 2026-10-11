@@ -154,6 +154,7 @@ One row per finding. Severity: critical, high, medium, low. Cell: a capture id o
 
 | ID | Severity | Cell | Summary | Status | Fix commit |
 |---|---|---|---|---|---|
+| tokens-layout-ios-tables | medium | source | On iOS at iPhone width, /tokens/layout's Container step, Breakpoint and Composition reference tables show only their first column (DataTable's iOS first-column collapse), so the page reads step names, bucket names and jobs with no widths and no Canvas API. Seen on the iOS docs app during the BreakpointOverride turn (2026-10-11), whose own Viewport tier table on the same page was fixed with `stacks` (BO-12). Android and the web show every column. | open |  |
 
 ## Sign-off
 
