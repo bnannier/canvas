@@ -205,18 +205,19 @@ describe("resolveFromBucket", () => {
   });
 
   it("is what useResponsive resolves through the store across a whole resize sweep", () => {
-    function Sweep() {
-      const values = EVERY_MAP.map((map) => useResponsive(map));
-      return <div data-testid="sweep">{values.join(",")}</div>;
+    function Reading({ map }: { map: Responsive<string> }) {
+      return <span>{`${useResponsive(map)};`}</span>;
     }
     render(
       <ThemeProvider>
-        <Sweep />
+        <div data-testid="sweep">
+          {EVERY_MAP.map((map, i) => <Reading key={i} map={map} />)}
+        </div>
       </ThemeProvider>,
     );
     for (let width = 1600; width >= 0; width -= 7) {
       resizeViewport(width);
-      expect(screen.getByTestId("sweep").textContent).toBe(EVERY_MAP.map((map) => responsive(width, map)).join(","));
+      expect(screen.getByTestId("sweep").textContent).toBe(EVERY_MAP.map((map) => `${responsive(width, map)};`).join(""));
     }
   });
 });
