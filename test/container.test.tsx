@@ -3,9 +3,12 @@
 // with synthetic layout events: the established seam for measured behavior.
 import { describe, it, expect, afterEach } from "bun:test";
 import { render, cleanup, screen, act } from "@testing-library/react";
+import { renderToString } from "react-dom/server";
 import type { LayoutChangeEvent } from "react-native";
 import { ThemeProvider } from "../src/style/theme.tsx";
-import { useContainerBreakpoint } from "../src/style/container.ts";
+import { useContainerBreakpoint, useContainerWidth } from "../src/style/container.ts";
+import { BreakpointOverride, seedWidth } from "../src/style/responsive.tsx";
+import { breakpoints, type BreakpointKey } from "../src/style/tokens.ts";
 import { resizeViewport } from "./viewport.ts";
 
 afterEach(cleanup);
@@ -66,5 +69,111 @@ describe("useContainerBreakpoint", () => {
     act(() => fire!(layoutEvent(800)));
     // A real measurement wins over the seed.
     expect(screen.getByTestId("probe").textContent).toBe("desktop:800:true");
+  });
+});
+
+// The pre-measurement seed follows the viewport BUCKET, so a BreakpointOverride (the
+// docs playground's simulated phone, a test pinning a tier) moves it into the
+// simulated tier; without an override nothing changes. Before the bucket fed it, the
+// seed read the real window and a simulated phone in a 1280 window painted its first
+// frame wide ("desktop" and 1280 below).
+let fireWidth: ((e: LayoutChangeEvent) => void) | null = null;
+
+function WidthProbe() {
+  const { width, measured, onLayout } = useContainerWidth();
+  fireWidth = onLayout;
+  return <div data-testid="width">{`${width}:${measured}`}</div>;
+}
+
+const underOverride = (bucket: BreakpointKey | "base" | null, seed = true) =>
+  render(
+    <ThemeProvider>
+      <BreakpointOverride value={bucket}>
+        <Probe seed={seed} />
+        <WidthProbe />
+      </BreakpointOverride>
+    </ThemeProvider>,
+  );
+
+describe("the pre-measurement seed under a BreakpointOverride", () => {
+  it("seeds the simulated phone tier inside the 1280 desktop window", () => {
+    underOverride("sm");
+    expect(screen.getByTestId("probe").textContent).toBe("phone:0:false");
+    // The window width clamped into sm: the widest width the phone tier has.
+    expect(screen.getByTestId("width").textContent).toBe(`${breakpoints.sm}:false`);
+  });
+
+  it("seeds the tablet tier from a phone window, and base above 2xl", () => {
+    resizeViewport(375);
+    cleanup();
+    underOverride("md");
+    expect(screen.getByTestId("probe").textContent).toBe("mid:0:false");
+    expect(screen.getByTestId("width").textContent).toBe(`${breakpoints.sm + 1}:false`);
+    cleanup();
+    underOverride("base");
+    expect(screen.getByTestId("probe").textContent).toBe("desktop:0:false");
+    expect(screen.getByTestId("width").textContent).toBe(`${breakpoints["2xl"] + 1}:false`);
+  });
+
+  it("leaves an unseeded reading at base: only `seedViewport` opts into the seed", () => {
+    underOverride("sm", false);
+    expect(screen.getByTestId("probe").textContent).toBe("desktop:0:false");
+  });
+
+  it("gives way to the measured width once it lands", () => {
+    underOverride("sm");
+    act(() => fire!(layoutEvent(900)));
+    act(() => fireWidth!(layoutEvent(900)));
+    expect(screen.getByTestId("probe").textContent).toBe("desktop:900:true");
+    expect(screen.getByTestId("width").textContent).toBe("900:true");
+  });
+
+  it("is the window itself when no override is set (null clears one)", () => {
+    underOverride(null);
+    expect(screen.getByTestId("probe").textContent).toBe("desktop:0:false");
+    expect(screen.getByTestId("width").textContent).toBe("1280:false");
+    cleanup();
+    resizeViewport(700);
+    underOverride(null);
+    expect(screen.getByTestId("probe").textContent).toBe("mid:0:false");
+    expect(screen.getByTestId("width").textContent).toBe("700:false");
+  });
+
+  it("stays out of the server render, override or ssrBreakpoint alike: no window there", () => {
+    const html = renderToString(
+      <ThemeProvider ssrBreakpoint="sm">
+        <BreakpointOverride value="sm">
+          <Probe seed />
+          <WidthProbe />
+        </BreakpointOverride>
+      </ThemeProvider>,
+    );
+    expect(html).toContain('data-testid="probe">desktop:0:false<');
+    expect(html).toContain('data-testid="width">0:false<');
+  });
+});
+
+// The breakpoint each width sits in, read straight off the token scale: the oracle
+// seedWidth is checked against.
+const ORDER: BreakpointKey[] = ["sm", "md", "lg", "xl", "2xl"];
+const bucketAt = (width: number): BreakpointKey | "base" =>
+  width <= 0 ? "base" : (ORDER.find((bp) => width <= breakpoints[bp]) ?? "base");
+
+describe("seedWidth", () => {
+  it("returns the window unchanged when it already sits in the bucket, and a width of the bucket otherwise", () => {
+    for (let window = 0; window <= 1700; window += 1) {
+      expect(seedWidth(bucketAt(window), window)).toBe(window);
+      for (const bucket of [...ORDER, "base"] as const) {
+        const seeded = seedWidth(bucket, window);
+        expect(bucketAt(seeded)).toBe(bucket);
+      }
+    }
+  });
+
+  it("clamps to the nearest edge of the bucket", () => {
+    expect(seedWidth("sm", 1280)).toBe(breakpoints.sm);
+    expect(seedWidth("lg", 375)).toBe(breakpoints.md + 1);
+    expect(seedWidth("lg", 1600)).toBe(breakpoints.lg);
+    expect(seedWidth("base", 375)).toBe(breakpoints["2xl"] + 1);
   });
 });
