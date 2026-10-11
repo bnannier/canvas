@@ -194,7 +194,7 @@ export default function LayoutScreen() {
         </TokenSection>
 
         <TokenSection title="Viewport tier" description="Window-level chrome reads the viewport tier: the window's width placed in a breakpoint bucket. A bucket applies at its width and below, and a width wider than every breakpoint, or one not known yet (a server render, the frame before layout), is base, the desktop variant. Consumers re-render only when the bucket changes, never per resize pixel. useFormFactor collapses the buckets into three tiers.">
-          <DataTable columns={["Form factor", "Window width", "Buckets"]} rows={tierRows} />
+          <DataTable stacks columns={["Form factor", "Window width", "Buckets"]} rows={tierRows} />
           <Callout label="The tier is the window width.">It is the same on every platform: a narrow or zoomed desktop browser window is the phone or tablet tier, and a landscape phone is usually the tablet tier. There is no separate desktop-OS tier; a macOS or desktop web window is placed by its width like any other.</Callout>
           <CodeBlock code={VIEWPORT_TIER} />
           <Typography small muted>A server cannot measure a window, so it renders base. An app that knows it is serving a narrow client passes ThemeProvider&apos;s ssrBreakpoint (sm for a phone): the server and the hydration render use that bucket, and the real window&apos;s bucket applies right after.</Typography>
