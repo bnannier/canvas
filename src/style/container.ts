@@ -1,5 +1,5 @@
 // Container measurement: the middle tier of the responsiveness system (see the
-// decision tree in responsive.ts). A component that needs a discrete layout
+// decision tree in responsive.tsx). A component that needs a discrete layout
 // switch measures its OWN width, never the window: it cannot know whether it
 // is on a phone or in a 320px desktop panel, and only its container width is
 // truthful (the DataTable precedent). These hooks are the shared primitives
@@ -16,11 +16,14 @@
 // base variant is worse than rendering nothing (chart geometry needs real px);
 // pass `seedViewport` where a grid must show a plausible arrangement on frame
 // one (the docs catalog precedent: relying on onLayout alone hid every tile
-// when the web ResizeObserver did not fire).
+// when the web ResizeObserver did not fire). The seed, and useContainerWidth's
+// px fallback, come from the viewport BUCKET useBreakpoint resolves, so a
+// BreakpointOverride moves them into the simulated tier; both are withheld
+// until hydration, and the measured width wins once it lands.
 
 import { useCallback, useState } from "react";
 import { Dimensions, type LayoutChangeEvent, type ViewStyle } from "react-native";
-import { responsive, useBreakpoint, type Responsive } from "./responsive.js";
+import { resolveFromBucket, responsive, seedWidth, useBreakpoint, type Responsive } from "./responsive.js";
 // False for the server render and the hydration render, true from the first commit
 // onward. The window-width fallback below is a client-only fact: on the server there
 // is no window, so a cell renders with no width, and reading it during the hydration
@@ -76,26 +79,31 @@ export function useMeasuredWidth(): MeasuredWidth {
  *  (Form's two-column stack). Subscribes at bucket granularity so the fallback
  *  stays fresh across breakpoint-sized resizes without per-pixel re-renders.
  *
- *  The fallback is withheld until after hydration (see `useHydrated`), so a
- *  server-rendered app hydrates against the same markup it shipped. */
+ *  The fallback is the window width clamped into the active viewport bucket, so
+ *  under a `BreakpointOverride` it is a width of the simulated tier (at most 640
+ *  under `"sm"` in a desktop window); with no override the window already sits
+ *  in its bucket and is used as it is. It is withheld until after hydration (see
+ *  `useHydrated`), so a server-rendered app hydrates against the same markup it
+ *  shipped. */
 export function useContainerWidth(): MeasuredWidth {
   const { width, measured, onLayout } = useMeasuredWidth();
   const hydrated = useHydrated();
-  useBreakpoint();
+  const bucket = useBreakpoint();
   if (measured) return { width, measured, onLayout };
-  return { width: hydrated ? Dimensions.get("window").width : 0, measured, onLayout };
+  return { width: hydrated ? seedWidth(bucket, Dimensions.get("window").width) : 0, measured, onLayout };
 }
 
 export interface ContainerBreakpointOptions {
-  /** Resolve against the WINDOW width until the element has measured, instead
-   *  of rendering `base`. For above-the-fold grids whose desktop arrangement
-   *  would visibly flash on a phone's first frame. */
+  /** Resolve against the viewport bucket (the window's, or a `BreakpointOverride`
+   *  ancestor's) until the element has measured, instead of rendering `base`.
+   *  For above-the-fold grids whose desktop arrangement would visibly flash on a
+   *  phone's first frame. Withheld until after hydration. */
   seedViewport?: boolean;
 }
 
 export interface ContainerBreakpoint<T> extends MeasuredWidth {
   /** The map value for the element's own width (base until measured, or the
-   *  window-seeded value with `seedViewport`). */
+   *  bucket-seeded value with `seedViewport`). */
   value: T;
 }
 
@@ -107,12 +115,17 @@ export function useContainerBreakpoint<T>(
   const { width, measured, onLayout } = useMeasuredWidth();
   // Bucket-granular viewport subscription: keeps the pre-measurement seed fresh
   // across breakpoint-sized resizes; once measured it costs at most one
-  // re-render per bucket crossing.
-  useBreakpoint();
+  // re-render per bucket crossing. The seed resolves the bucket itself, which
+  // equals resolving the window width when no BreakpointOverride is set.
+  const bucket = useBreakpoint();
   // The seed is withheld until after hydration for the same reason the window
   // fallback is in useContainerWidth: reading the window during the hydration
   // render resolves a different branch than the one the server shipped.
   const hydrated = useHydrated();
-  const effective = !measured && options?.seedViewport && hydrated ? Dimensions.get("window").width : width;
-  return { value: responsive(effective, map), width, measured, onLayout };
+  const value = measured
+    ? responsive(width, map)
+    : options?.seedViewport && hydrated
+      ? resolveFromBucket(bucket, map)
+      : map.base;
+  return { value, width, measured, onLayout };
 }

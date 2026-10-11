@@ -213,11 +213,16 @@ component not being a layout container: inside a Row only the cap applies
    component's OWN width via `useContainerBreakpoint` / `useMeasuredWidth` /
    `useContainerWidth` (`src/style/container.ts`), never the window; a component
    cannot know whether it is on a phone or in a 320px desktop panel. Render the
-   `base` (desktop) variant on the unmeasured frame; gate on `measured` only
-   where the base variant is unrenderable (chart geometry).
+   `base` (desktop) variant on the unmeasured frame, unless the component seeds
+   that frame from the viewport bucket (`seedViewport`, or `useContainerWidth`'s
+   px fallback): the seed is withheld until hydration and follows a
+   `BreakpointOverride`, and the measured width wins once it lands. Gate on
+   `measured` only where the base variant is unrenderable (chart geometry).
 3. **Viewport breakpoints** (window-level chrome only): `useBreakpoint`,
-   `useFormFactor` (phone <= sm 640 / tablet <= lg 1024 / desktop above; macOS
-   and desktop web ARE the desktop form factor), `useResponsive`
+   `useFormFactor` (phone <= sm 640 / tablet <= lg 1024 / desktop above; the
+   tier is the window width on every platform, so a narrow desktop window is the
+   phone tier and a landscape phone the tablet tier, with no separate desktop-OS
+   tier), `useResponsive`
    (`src/style/responsive.tsx`, one shared subscription, bucket-granular
    re-renders; width <= 0 resolves to `base`; SSR apps pass ThemeProvider's
    `ssrBreakpoint`). Only the Sidebar/FilterPanel drawer modes, AnchoredOverlay's
