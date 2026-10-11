@@ -416,6 +416,12 @@ name: Sealed Canvas native candidate after measured drag
     point: "95%,50%"
 - eraseText
 - inputText: Focus remains
+# The software keyboard covers the lower screen. Android's visible hierarchy leaves
+# out what it covers, so bring the editor above it before reading it.
+- scrollUntilVisible:
+    element:
+      id: material-editor
+    direction: DOWN
 - assertVisible:
     id: material-editor
     text: Focus remains
@@ -433,6 +439,13 @@ name: Sealed Canvas native candidate after measured drag
 - tapOn:
     id: material-editor
     point: "95%,50%"
+# With the keyboard up, the switch's records above the editor and the focused editor
+# do not fit on one phone screen together: read the records, then bring the editor
+# above the keyboard before reading its focus and typing into it.
+- scrollUntilVisible:
+    element:
+      id: material-timer
+    direction: UP
 - extendedWaitUntil:
     visible:
       id: material-timer
@@ -444,6 +457,10 @@ name: Sealed Canvas native candidate after measured drag
 - assertVisible:
     id: material-mode
     text: 'Mode: glass; scheme: ${SCHEME}'
+- scrollUntilVisible:
+    element:
+      id: material-editor
+    direction: DOWN
 - runFlow:
     when:
       platform: Android
@@ -473,6 +490,12 @@ name: Sealed Canvas native candidate after measured drag
     point: "95%,50%"
 - eraseText
 - inputText: Focus remains
+# The software keyboard covers the lower screen. Android's visible hierarchy leaves
+# out what it covers, so bring the editor above it before reading it.
+- scrollUntilVisible:
+    element:
+      id: material-editor
+    direction: DOWN
 - assertVisible:
     id: material-editor
     text: Focus remains
@@ -490,6 +513,13 @@ name: Sealed Canvas native candidate after measured drag
 - tapOn:
     id: material-editor
     point: "95%,50%"
+# With the keyboard up, the switch's records above the editor and the focused editor
+# do not fit on one phone screen together: read the records, then bring the editor
+# above the keyboard before reading its focus and typing into it.
+- scrollUntilVisible:
+    element:
+      id: material-timer
+    direction: UP
 - extendedWaitUntil:
     visible:
       id: material-timer
@@ -501,6 +531,10 @@ name: Sealed Canvas native candidate after measured drag
 - assertVisible:
     id: material-mode
     text: 'Mode: solid; scheme: ${SCHEME}'
+- scrollUntilVisible:
+    element:
+      id: material-editor
+    direction: DOWN
 - runFlow:
     when:
       platform: Android
