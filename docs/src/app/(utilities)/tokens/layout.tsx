@@ -1,8 +1,10 @@
-import { Column, DataTable, Typography, widths, breakpoints } from "@nannier/canvas";
+import { Column, DataTable, Typography, widths, breakpoints, formFactor, type BreakpointKey } from "@nannier/canvas";
 import type { DocExample } from "../../../core/scope";
+import { CodeBlock } from "../../../ui/code-block";
 import { Page } from "../../../ui/page";
 import { PageNav } from "../../../ui/page-nav";
 import { Playground } from "../../../ui/playground";
+import { BulletList } from "../../../ui/prose";
 import { TokenH1, TokenLede, TokenSection, Callout } from "../../../ui/tokens-kit";
 
 const directionExamples: DocExample[] = [
@@ -102,6 +104,62 @@ const responsiveExamples: DocExample[] = [
   },
 ];
 
+// The form-factor tiers, read off the breakpoint scale through the kit's own picker so
+// the table can never drift from what useFormFactor resolves.
+const TIER_LABEL = { phone: "Phone", tablet: "Tablet", desktop: "Desktop" } as const;
+const tierRows = (() => {
+  const keys = Object.keys(breakpoints) as BreakpointKey[];
+  const tiers: { tier: keyof typeof TIER_LABEL; buckets: string[]; widest: number }[] = [];
+  for (const key of keys) {
+    const tier = formFactor(breakpoints[key]);
+    const last = tiers[tiers.length - 1];
+    if (last?.tier === tier) {
+      last.buckets.push(key);
+      last.widest = breakpoints[key];
+    } else tiers.push({ tier, buckets: [key], widest: breakpoints[key] });
+  }
+  // `base` is wider than every breakpoint, and the unknown width (a server, the frame
+  // before layout) resolves to it too.
+  tiers[tiers.length - 1].buckets.push("base");
+  return tiers.map(({ tier, buckets }, i) => {
+    const floor = i === 0 ? null : tiers[i - 1].widest;
+    const range = floor === null ? `${tiers[i].widest}px and below` : i === tiers.length - 1 ? `Above ${floor}px` : `${floor + 1} to ${tiers[i].widest}px`;
+    return [TIER_LABEL[tier], range, buckets.join(", ")];
+  });
+})();
+
+const VIEWPORT_TIER = `import { formFactor, responsive, useFormFactor, useResponsive, type FormFactor, type Responsive } from "@nannier/canvas";
+
+// A value per bucket, composed in app code: base is the desktop case, and a
+// breakpoint entry applies at that width and below.
+const columns: Responsive<number> = { base: 3, lg: 2, sm: 1 };
+
+// Pure pickers, for a width you already have.
+responsive(390, columns); // 1
+formFactor(390); // "phone"
+
+// The hooks read the window and re-render only when its bucket changes.
+function AppShell() {
+  const tier: FormFactor = useFormFactor(); // "phone" | "tablet" | "desktop"
+  const count = useResponsive(columns);
+  // ...
+}`;
+
+const OVERRIDE = `import { BreakpointOverride, Container } from "@nannier/canvas";
+
+// A preview stage or a test: everything under it resolves the phone tier.
+// Constrain the width to match, so container-measured components agree.
+<BreakpointOverride value="sm">
+  <Container sm>
+    <Screen />
+  </Container>
+</BreakpointOverride>
+
+// null clears the override, and the real window applies again.
+<BreakpointOverride value={null}>
+  <Screen />
+</BreakpointOverride>`;
+
 export default function LayoutScreen() {
   return (
     <Page>
@@ -131,8 +189,26 @@ export default function LayoutScreen() {
 
         <TokenSection title="Responsive layout" description="Start with the desktop composition. Grid measures its own container to choose how many tiles fit. Row stacks changes direction at its own container breakpoint, preserving mounted controls, field values and focus.">
           <Playground examples={responsiveExamples} stageAlign="start" />
-          <Callout label="Choose the smallest mechanism that works.">Intrinsic fill, hug and wrap need no layout state. Container measurement handles component reflow. Viewport hooks are reserved for window-level chrome such as a responsive Sidebar or FilterPanel drawer.</Callout>
+          <Callout label="Choose the smallest mechanism that works.">Intrinsic fill, hug and wrap need no layout state. Container measurement handles component reflow. Viewport hooks are reserved for window-level chrome: a responsive Sidebar or FilterPanel drawer, Popover's sheet on a phone, and app shells.</Callout>
           <DataTable columns={["Breakpoint", "At this width and below"]} rows={Object.entries(breakpoints).map(([name, value]) => [name, `${value}px`])} />
+        </TokenSection>
+
+        <TokenSection title="Viewport tier" description="Window-level chrome reads the viewport tier: the window's width placed in a breakpoint bucket. A bucket applies at its width and below, and a width wider than every breakpoint, or one not known yet (a server render, the frame before layout), is base, the desktop variant. Consumers re-render only when the bucket changes, never per resize pixel. useFormFactor collapses the buckets into three tiers.">
+          <DataTable columns={["Form factor", "Window width", "Buckets"]} rows={tierRows} />
+          <Callout label="The tier is the window width.">It is the same on every platform: a narrow or zoomed desktop browser window is the phone or tablet tier, and a landscape phone is usually the tablet tier. There is no separate desktop-OS tier; a macOS or desktop web window is placed by its width like any other.</Callout>
+          <CodeBlock code={VIEWPORT_TIER} />
+          <Typography small muted>A server cannot measure a window, so it renders base. An app that knows it is serving a narrow client passes ThemeProvider&apos;s ssrBreakpoint (sm for a phone): the server and the hydration render use that bucket, and the real window&apos;s bucket applies right after.</Typography>
+        </TokenSection>
+
+        <TokenSection title="Simulating a tier" description="BreakpointOverride pins the viewport bucket for a subtree, so a preview stage or a test can show the phone or tablet branch inside a desktop window. The form-factor switcher in each example's stage header on the web uses it. It renders nothing of its own.">
+          <CodeBlock code={OVERRIDE} />
+          <BulletList small items={[
+            "It pins the bucket for every useBreakpoint, useResponsive and useFormFactor reading under it, the Sidebar and FilterPanel drawer modes and Popover's phone sheet included. Menus, dialogs and toasts opened from inside it resolve it too, wherever their overlay layer sits.",
+            "Components that measure their own container (DataTable, Grid, Row stacks, Tabs, Navbar) follow their real width. Constrain the subtree to the tier's width beside the override; their first frame, before they measure, already takes the simulated tier.",
+            "It pins the tier, not the geometry. A drawer or a phone sheet opened under it takes its phone presentation but lays out against the real window, so a simulated phone in a desktop window opens its sheet across the desktop window.",
+            "It is for previews and tests: a real app takes the tier from its window, never from an override.",
+          ]} />
+          <Callout label="Accessibility">BreakpointOverride adds nothing to the accessibility tree, and the names, roles and states its consumers put there survive it. Keyboard, screen reader and touch behavior is each consumer&apos;s, the same under a simulated tier as under a real one. The tier follows the window&apos;s width in CSS pixels, so zooming a desktop browser in reflows the page into the tablet or phone tier.</Callout>
         </TokenSection>
 
         <TokenSection title="Composition reference">

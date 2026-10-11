@@ -187,7 +187,10 @@ export default function ThemingScreen() {
             <InlineCode>ssrPalette</InlineCode> likewise for a stored palette. The provider repeats them for the hydration render
             so the HTML matches, then applies the requested scheme and palette after mount.
             Without it React keeps the server&apos;s inline colors on elements that never re-render, leaving components stuck in
-            the server&apos;s scheme.
+            the server&apos;s scheme. A server cannot measure a window either, so the viewport tier renders base, the desktop
+            variant, there; an app that knows it is serving a narrow client passes <InlineCode>ssrBreakpoint</InlineCode> with
+            the bucket to assume (<InlineCode>sm</InlineCode> for a phone), and the real window&apos;s bucket applies right after
+            hydration.
           </Callout>
           <H3>Typefaces and nested providers</H3>
           <P>

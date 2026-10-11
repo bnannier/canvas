@@ -418,7 +418,7 @@ const density = getDensity();
     sections: [
       {
         title: "Breakpoints",
-        description: "Canvas is desktop-first. The base value is the desktop case; a breakpoint entry (sm, md, lg, xl, 2xl) applies at that width and below. useResponsive resolves a value map, useBreakpoint returns the active bucket, and useFormFactor collapses it to phone / tablet / desktop (phone at or below sm, tablet at or below lg, desktop above; macOS and desktop web are the desktop form factor). An unknown viewport (SSR, the pre-layout first frame) resolves to base, the desktop variant; SSR apps that know better pass ThemeProvider's ssrBreakpoint.",
+        description: "Canvas is desktop-first. The base value is the desktop case; a breakpoint entry (sm, md, lg, xl, 2xl) applies at that width and below. useResponsive resolves a value map, useBreakpoint returns the active bucket, and useFormFactor collapses it to phone / tablet / desktop (phone at or below sm, tablet at or below lg, desktop above). The tier is the window width on every platform: a narrow or zoomed desktop window is the phone or tablet tier, and a landscape phone is usually the tablet tier; there is no separate desktop-OS tier. An unknown viewport (SSR, the pre-layout first frame) resolves to base, the desktop variant; SSR apps that know better pass ThemeProvider's ssrBreakpoint.",
         render: () => (<DataTable bordered compact stacks columns={["Bucket", "Applies at", "Typical use"]} rows={[["base", "Default", "Desktop base and unknown width"], ["2xl", "≤ 1536px", "Large monitors"], ["xl", "≤ 1280px", "Desktops"], ["lg", "≤ 1024px", "Tablet or narrow app chrome"], ["md", "≤ 768px", "Tablet containers"], ["sm", "≤ 640px", "Phone containers"]]} />),
       },
       {
@@ -429,7 +429,7 @@ const density = getDensity();
       {
         title: "Choosing a mechanism",
         description: "Three official layers, in order of preference. Rule of thumb: viewport for the shell, container for the components, intrinsic wherever possible.",
-        render: () => (<Notes items={[["1. Intrinsic sizing", "Use FILL or HUG with bounds from a Container step, Row span, or Grid cell. This works on the first frame and server."], ["2. Container measurement", "Grid and Row stacks react to their own width; a component may live in a narrow desktop panel."], ["3. Viewport breakpoints", "Reserve viewport hooks for window-level Sidebar or FilterPanel drawer modes and app shells."], ["Pointer capability", "usePointerCoarse and useHoverCapable express input capability separately from viewport size."]]} />),
+        render: () => (<Notes items={[["1. Intrinsic sizing", "Use FILL or HUG with bounds from a Container step, Row span, or Grid cell. This works on the first frame and server."], ["2. Container measurement", "Grid and Row stacks react to their own width; a component may live in a narrow desktop panel."], ["3. Viewport breakpoints", "Reserve viewport hooks for window-level chrome: the Sidebar or FilterPanel drawer modes, Popover's sheet at the phone tier, and app shells."], ["Pointer capability", "usePointerCoarse and useHoverCapable express input capability separately from viewport size."]]} />),
       },
       {
         title: "Sidebar - drawer ↔ fixed",
@@ -444,7 +444,7 @@ const density = getDensity();
       {
         title: "What's behind the scenes",
         description: "Specific responsive treatments worth noting beyond just stacking grids.",
-        render: () => (<Notes items={[["DataTable", "Measures its own container. Narrow tables pan or use the chosen stacked treatment."], ["Navbar", "Its links collapse into the platform menu when its own container narrows."], ["Overlays", "Anchored cards clamp their position and width inside their overlay outlet."], ["Calendar", "Month cells respond to available space without a window breakpoint."], ["Density", "compact and comfortable are independent of viewport size."], ["Narrow modes", "Sidebar and FilterPanel can become drawers; Steps stacks and responsive vertical Tabs use their own narrow treatments."]]} />),
+        render: () => (<Notes items={[["DataTable", "Measures its own container. Narrow tables pan or use the chosen stacked treatment."], ["Navbar", "Its links collapse into the platform menu when its own container narrows."], ["Overlays", "Anchored cards clamp their position and width inside their overlay outlet. At the phone tier Popover presents a sheet on the window's bottom edge instead."], ["Calendar", "Month cells respond to available space without a window breakpoint."], ["Density", "compact and comfortable are independent of viewport size."], ["Narrow modes", "Sidebar and FilterPanel can become drawers; Steps stacks and responsive vertical Tabs use their own narrow treatments."]]} />),
       },
       {
         title: "Try it yourself",
