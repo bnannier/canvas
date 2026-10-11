@@ -159,6 +159,12 @@ function getBucketSnapshot(): BreakpointKey | "base" {
   return bucketOf(Dimensions.get("window").width);
 }
 
+// A reading under a BreakpointOverride cannot use the live bucket, so it holds no
+// subscription: it subscribes to nothing and reads a constant, and a real bucket
+// crossing never re-renders it.
+const subscribeNever = () => () => {};
+const getIdleSnapshot = (): BreakpointKey | "base" => "base";
+
 /** The server-render breakpoint assumption. ThemeProvider's `ssrBreakpoint`
  *  prop feeds this; components never read it directly (useBreakpoint does). */
 export const SsrBreakpointContext = createContext<BreakpointKey | "base">("base");
@@ -204,12 +210,18 @@ export function BreakpointOverride({ value, children }: {
 /** The active viewport bucket: the smallest breakpoint covering the current
  *  window width ("sm" on phones), or "base" on a desktop wider than 2xl.
  *  Re-renders only when the bucket changes, never per resize pixel. A
- *  `BreakpointOverride` ancestor wins over the real window. */
+ *  `BreakpointOverride` ancestor wins over the real window, and under one the
+ *  reading holds no window subscription at all. */
 export function useBreakpoint(): BreakpointKey | "base" {
   const ssrBucket = useContext(SsrBreakpointContext);
   const override = useContext(BreakpointOverrideContext);
-  const live = useSyncExternalStore(subscribeViewport, getBucketSnapshot, () => ssrBucket);
-  return override ?? live;
+  const live = override == null;
+  const bucket = useSyncExternalStore(
+    live ? subscribeViewport : subscribeNever,
+    live ? getBucketSnapshot : getIdleSnapshot,
+    () => ssrBucket,
+  );
+  return override ?? bucket;
 }
 
 /** Hook form: resolve a Responsive map against the current viewport width. */
