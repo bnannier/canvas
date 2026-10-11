@@ -110,3 +110,13 @@ Decided by the owner on 2026-10-10 (AO-6a and AO-6b on 2026-10-11), each the rec
 The coordinator's reading of AO-2 under the WAI-ARIA APG combobox pattern, reported to the owner on 2026-10-10: Autocomplete's suggestion list belongs to its combobox field, which keeps focus while the list is open, so it is not one of the cards AO-2 makes modal; a modal list would hide the field the user types in from VoiceOver and TalkBack (a trap, WCAG 2.1.2). It stays non-modal.
 
 AO-9 (no page documents AnchoredOverlay or its companions) is deferred, not open: the approved plan's Steps put K12-10, the generated `/foundation` reference page (the owner's K12-10 OD2 decision, which lists the K12-2 deprecated aliases with their replacements), in the FoundationReference turn, which carries it.
+
+## BreakpointOverride turn (Foundations, 2026-10-11)
+
+Decided by the owner on 2026-10-11, each the recommendation offered.
+
+| ID | Question | Decision |
+|---|---|---|
+| BO-3 | The form factor of a landscape phone and a narrow desktop window | Keep width tiers on every platform: the tier is the window width (phone <= 640 < tablet <= 1024 < desktop), so a landscape phone is the tablet tier and a narrow desktop browser window the phone tier; no iOS size-class seam. Documented in the JSDoc and the responsive pattern page. |
+| BO-4 | The law's sentences on the unmeasured frame and the desktop form factor | Approved: CLAUDE.md and AGENTS.md say, identically, that a container may seed its unmeasured frame from the viewport bucket (`seedViewport`, `useContainerWidth`'s fallback), withheld until hydration and following a BreakpointOverride, and that the tier is the window width, with no separate desktop-OS tier. |
+| BO-8 | The docs' simulated form factor and window-level chrome | Tier-only, documented: BreakpointOverride pins the tier, not the geometry; sheets and drawers lay out against the real window. No new kit API. |
