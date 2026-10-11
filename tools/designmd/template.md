@@ -237,17 +237,34 @@ one ships loading and empty states as well.
 ## Responsive behavior
 
 Canvas is authored desktop-first: size a component for the desktop case, then add the
-variants that scale it down. There are three mechanisms, in order of preference.
+variants that scale it down. A component never dictates its own width: it fills
+(fields, cards, tables, charts) or hugs its content (buttons, badges, chips), and the
+nearest layout container provides the bounds, a `Container` step, a Row child's `span`
+or a `Grid` tile. There are three mechanisms, in order of preference.
 
-1. **Intrinsic sizing**, which costs no JavaScript: a fixed width plus
-   `maxWidth: "100%"`, or a `minWidth` floor plus wrapping. Never swap a fixed width for
-   `width: "100%"` below a threshold; in a content-sized parent the element then tracks
-   its own content.
+1. **Intrinsic sizing**, which costs no JavaScript: fill or hug inside the bounds the
+   parent provides, a `minWidth` floor plus wrapping. Correct on the first frame and on
+   the server. Never give a component a fixed width, and never make a parent
+   content-sized where a fill child must resolve: the child then tracks its own content.
 2. **Container measurement**, for a component that changes layout: measure the
-   component's OWN width with `useContainerBreakpoint` or `useMeasuredWidth`. A component
-   cannot know whether it is on a phone or in a 320px panel on a desktop.
+   component's OWN width with `useContainerBreakpoint`, `useMeasuredWidth` or
+   `useContainerWidth`. A component cannot know whether it is on a phone or in a 320px
+   panel on a desktop. The unmeasured first frame renders the `base` (desktop) variant,
+   unless the component seeds it from the viewport bucket (`seedViewport`, or
+   `useContainerWidth`'s px fallback); the seed waits for hydration, follows a
+   `BreakpointOverride`, and the measured width wins once it lands.
 3. **Viewport breakpoints**, for window-level chrome only: `useBreakpoint`,
-   `useFormFactor`, `useResponsive`. Only app shells and drawer modes qualify.
+   `useFormFactor`, `useResponsive`. Only the Sidebar and FilterPanel drawer modes, an
+   overlay's phone sheet (Popover's) and app shells qualify.
+
+The viewport tier is the window's width alone, on every platform. A breakpoint applies
+at its width and below (`sm` 640, `md` 768, `lg` 1024, `xl` 1280, `2xl` 1536); the
+form factor is phone at or below 640, tablet at or below 1024 and desktop above, so a
+narrow desktop window is the phone tier and a landscape phone usually the tablet tier.
+An unknown width (a server render, the frame before layout) is `base`, the desktop
+variant; a server-rendered app that knows it is serving a phone passes ThemeProvider's
+`ssrBreakpoint`. `BreakpointOverride` pins the tier for a preview or a test, not the
+geometry: a drawer or sheet under it still lays out against the real window.
 
 Viewport for the shell, container for the components, intrinsic wherever possible.
 
