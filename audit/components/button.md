@@ -95,6 +95,7 @@ One row per finding. Severity: critical, high, medium, low. Cell: a capture id f
 
 | ID | Severity | Cell | Summary | Status | Fix commit |
 |---|---|---|---|---|---|
+| button-brand-over-scrim-1 | low | source | A brand (primary or action) Button's label is held to 4.5:1 by `brandTint` against a reference backdrop, but over a dimming scrim and a dense sheet it samples a shade darker: the Popover phone sheet's Rename label reads 4.49:1 on the Android skin in dark glass (4.54:1 on the web and iOS skins), a pixel-sampled 'review' in the AnchoredOverlay turn's after run 20261011-024751-web-8d40e0c (cell web-states/popover/open.android/phone.dark.glass) (4.72:1 and 4.77:1 before the sheet took the dense layer over its scrim). Check whether `brandTint` should hold its 4.5:1 against the darkest backdrop the kit puts a brand control over, and confirm on the devices. | open | |
 
 ## Sign-off
 
