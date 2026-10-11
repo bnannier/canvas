@@ -1,11 +1,13 @@
-import { createContext, forwardRef, useContext } from "react";
-import { ScrollView, type ScrollViewProps, type ViewStyle } from "react-native";
+import { createContext, forwardRef, useContext, useRef } from "react";
+import { ScrollView, type ScrollViewProps, type View, type ViewStyle } from "react-native";
 import { useScrollFocus } from "./use-scroll-focus.js";
 import { FocusFrameContext } from "./focus-frame.js";
 import { FOCUS_RESET } from "./focus-reset.js";
 import { useFocusRingStyle } from "./pressable.js";
 import { useComposedRefs } from "./use-composed-refs.js";
 import { useScrollAncestor } from "./scroll-ancestry.js";
+import { useIsomorphicLayoutEffect } from "./use-isomorphic-layout-effect.js";
+import type { RevealInCard } from "./accessibility-focus.js";
 
 export const OverlayScrollContext = createContext<{
   contentHeight(height: number): void;
@@ -35,6 +37,17 @@ const SCROLLPORT: ViewStyle = { flexGrow: 0, flexShrink: 1 };
 // focused row scrolls the port as the arrow keys move it.
 export const OverlayRowsContext = createContext(false);
 
+/** A card's scrollport, as the card that frames it reaches it. */
+export interface OverlayPort {
+  /** Scroll `node`, a node of the port's content, into the port's view, then call `done`. */
+  reveal: RevealInCard;
+}
+
+// The card's hold on its one scrollport: the port registers itself here, and the card
+// reveals the node focus enters at in it (AnchoredOverlay's entry, enterCard in
+// src/style/accessibility-focus.ts).
+export const OverlayPortContext = createContext<{ current: OverlayPort | null } | null>(null);
+
 // Otherwise the port is a keyboard stop while its rows overflow, and it sits flush inside its
 // card's clip, which would cut a ring drawn around it while the rows would cover one
 // drawn inside it. So the card that frames it draws the ring (src/style/focus-frame.tsx)
@@ -55,7 +68,42 @@ export const OverlayScrollView = forwardRef<ScrollView, ScrollViewProps>(functio
   const ownRing = useFocusRingStyle();
   const focus = useScrollFocus("vertical");
   const rows = useContext(OverlayRowsContext);
-  const portRef = useComposedRefs<ScrollView>(ref, frame?.ref);
+  const scroll = useRef<ScrollView | null>(null);
+  const portRef = useComposedRefs<ScrollView>(ref, frame?.ref, scroll);
+  // The port's height and its content's, for the reveal below.
+  const extent = useRef({ viewport: 0, content: 0 });
+  const card = useContext(OverlayPortContext);
+  useIsomorphicLayoutEffect(() => {
+    if (!card) return;
+    const port: OverlayPort = {
+      // The node a card's entry moves focus to, brought into view the least distance (as the
+      // arrow keys keep the focused row in view). The entry runs as the card is revealed,
+      // before anyone could scroll the port, so the port stands at its top: the node is out
+      // of view when its bottom passes the port's. A node outside the port's content (a
+      // field above it) is left alone.
+      reveal(node, done) {
+        // The content view (React Native and React Native Web both have it; RN's types
+        // name only the older handle getter).
+        const inner = (scroll.current as unknown as { getInnerViewRef?: () => View | null } | null)?.getInnerViewRef?.();
+        const target = node as unknown as View | null;
+        const { viewport, content } = extent.current;
+        if (!inner || !target || typeof target.measureLayout !== "function" || viewport <= 0) {
+          done();
+          return;
+        }
+        target.measureLayout(inner, (_x, y, _width, height) => {
+          if (y >= 0 && y + height <= content + 0.5 && y + height > viewport + 0.5) {
+            scroll.current?.scrollTo({ y: y + height - viewport, animated: false });
+          }
+          done();
+        }, done);
+      },
+    };
+    card.current = port;
+    return () => {
+      if (card.current === port) card.current = null;
+    };
+  }, [card]);
   let framed: Handlers | null = null;
   if (frame) {
     const fromFrame = frame as unknown as Handlers;
@@ -77,11 +125,13 @@ export const OverlayScrollView = forwardRef<ScrollView, ScrollViewProps>(functio
       keyboardShouldPersistTaps={props.keyboardShouldPersistTaps ?? "handled"}
       tabIndex={tabIndex ?? (rows ? -1 : focus.tabIndex)}
       onLayout={(event) => {
+        extent.current.viewport = event.nativeEvent.layout.height;
         focus.onLayout(event);
         report?.viewportHeight(event.nativeEvent.layout.height);
         onLayout?.(event);
       }}
       onContentSizeChange={(width, height) => {
+        extent.current.content = height;
         focus.onContentSizeChange(width, height);
         report?.contentHeight(height);
         onContentSizeChange?.(width, height);

@@ -51,8 +51,9 @@
 // A card pinned open (it cannot close) is page content: nothing moves focus into it.
 // On iOS and Android a card that can close (and is no combobox's popup) is modal to
 // VoiceOver and TalkBack while open: its window's page is hidden from them, a card
-// opened from it covers it in turn, the owner moves them into it at onCardMount, and
-// they go back to the trigger on close.
+// opened from it covers it in turn, the owner moves them into it at onCardMount (its
+// target scrolled into the card's view first, src/style/accessibility-focus.ts), and
+// they go back to the trigger on close, or on to a field the close handed the focus to.
 //
 // With no provider it degrades to the kit's pre-portal inline anchor (the
 // caller's own absolute top:100% style, passed as `inlineStyle`), so an unhosted
@@ -94,13 +95,13 @@ import { isRTL } from "./rtl.js";
 import { useFormFactor } from "./responsive.js";
 import { useTheme } from "./theme.js";
 import { scrimFill } from "./scrim.js";
-import { OverlayRowsContext, OverlayScrollContext, OverlayScrollView } from "./overlay-scroll.js";
+import { OverlayPortContext, OverlayRowsContext, OverlayScrollContext, OverlayScrollView, type OverlayPort } from "./overlay-scroll.js";
 import { useIsomorphicLayoutEffect } from "./use-isomorphic-layout-effect.js";
 import { useHardwareBack } from "./use-hardware-back.js";
 import { FocusFrameContext, useFocusFrame } from "./focus-frame.js";
 import { ScrollAncestryContext, subscribeDocumentScroll, useUnheardScroller } from "./scroll-ancestry.js";
 import { useAnchoredCardFocus } from "./use-dialog-focus.js";
-import { moveAccessibilityFocus } from "./accessibility-focus.js";
+import { enterCard, focusedField, moveAccessibilityFocus, releaseFieldIn, type FocusNode } from "./accessibility-focus.js";
 
 const OverlaySideContext = createContext<{ side: OverlaySide; centerX?: number; cardWidth?: number }>({ side: "below" });
 /**
@@ -390,9 +391,10 @@ export function AnchoredOverlay({
  * card's controls keep their place in the tab order right after the trigger (a sheet
  * keeps the focus inside itself instead), a menu or list closes on a Tab out of it, and
  * when the card closes the focus its closing orphaned returns to the trigger
- * (useAnchoredCardFocus, src/style/use-dialog-focus.ts). Natively, a modal card sends
- * VoiceOver and TalkBack back to the trigger when it closes. `shown` is the instant the
- * card is revealed and focusable.
+ * (useAnchoredCardFocus, src/style/use-dialog-focus.ts). Natively, a field inside the card
+ * gives the input focus up as the card closes, and a modal card sends VoiceOver and
+ * TalkBack back to the trigger (or on to a field the close handed the input focus to).
+ * `shown` is the instant the card is revealed and focusable.
  */
 function useCardFocus({ shown, cardRef, triggerRef, returnFocusRef, dismissOnTab, onDismiss, modal, combobox, sheet = false }: {
   /** The card is presented as a sheet: keyboard focus stays inside it while it is shown. */
@@ -412,15 +414,27 @@ function useCardFocus({ shown, cardRef, triggerRef, returnFocusRef, dismissOnTab
   // holds), and focus goes back to it.
   const returnTo = returnFocusRef ?? triggerRef;
   useAnchoredCardFocus({ shown, cardRef, triggerRef: returnTo, returnRef: returnTo, onLeave: dismissOnTab ? onDismiss : undefined, restore: !combobox, trap: sheet });
-  // Whether the card was ever shown, and whether it was modal then, for the close below.
+  // Whether the card was ever shown, and whether it was modal then, for the close below,
+  // and the text field that held the input focus when it was revealed.
   const wasShown = useRef(false);
+  const fieldAtReveal = useRef<FocusNode>(null);
   const modalRef = useRef(modal);
   modalRef.current = modal;
   useIsomorphicLayoutEffect(() => {
+    if (shown && !wasShown.current) fieldAtReveal.current = focusedField();
     if (shown) wasShown.current = true;
   });
+  // As the card closes, before its views leave the window (they leave in the outlet's own
+  // commit, after this one), a field of its own gives the input focus up natively.
+  useIsomorphicLayoutEffect(() => () => releaseFieldIn(cardRef.current), [cardRef]);
   useEffect(() => () => {
-    if (wasShown.current && modalRef.current) moveAccessibilityFocus(returnTo.current);
+    if (!wasShown.current || !modalRef.current) return;
+    // A field the close handed the input focus to (PhoneInput's pick hands it to the number,
+    // an app's selection may focus a field of its own) is where typing goes, and the screen
+    // reader follows it there, as the web's focus does; otherwise it goes back to the control
+    // that opened the card. A field of the card's own gave the focus up above.
+    const field = focusedField();
+    moveAccessibilityFocus(field != null && field !== fieldAtReveal.current ? field : returnTo.current);
   }, [returnTo]);
 }
 
@@ -490,13 +504,18 @@ function OverlayCard({
   mount.current = onMount;
   const notified = useRef(false);
   const entranceReady = useContext(EntranceReadinessContext);
+  // The card's one scrollport registers here (OverlayScrollView), so the entry can scroll
+  // the node focus enters at into view.
+  const port = useRef<OverlayPort | null>(null);
   useEffect(() => {
     // The owner's fitted placement and Entrance's own layout must both be
     // committed before focus enters the card. Ancestor readiness propagates
-    // through nested entrances without replaying a notified opening.
+    // through nested entrances without replaying a notified opening. The owner's
+    // focus move runs as the card's entry: its target is scrolled into the port first.
     if (ready && entranceReady && !notified.current) {
       notified.current = true;
-      mount.current?.();
+      const entry = mount.current;
+      if (entry) enterCard((node, done) => (port.current ? port.current.reveal(node, done) : done()), entry);
     }
   }, [ready, entranceReady]);
   // An opaque card takes the kit's plain surface: one View wearing the skin's
@@ -512,7 +531,9 @@ function OverlayCard({
   const content = (
     <FocusFrameContext.Provider value={focusFrame.target}>
       <OverlayRowsContext.Provider value={rows}>
-        {ownsScroll ? children : <OverlayScrollView>{children}</OverlayScrollView>}
+        <OverlayPortContext.Provider value={port}>
+          {ownsScroll ? children : <OverlayScrollView>{children}</OverlayScrollView>}
+        </OverlayPortContext.Provider>
       </OverlayRowsContext.Provider>
     </FocusFrameContext.Provider>
   );

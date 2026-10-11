@@ -6,6 +6,7 @@ import { OverlayScrollView } from "../../style/overlay-scroll.js";
 import { FocusFrameContext, useFocusFrame } from "../../style/focus-frame.js";
 import { useActiveOptionScroll } from "../../style/use-active-option-scroll.js";
 import { LISTBOX } from "../../style/listbox-role.js";
+import { focusFieldInto } from "../../style/accessibility-focus.js";
 import { Icon, type IconName } from "../../atoms/icon/icon.js";
 import { Kbd } from "../../atoms/kbd/kbd.js";
 import { type CommandSkin } from "./command.styles.js";
@@ -431,7 +432,9 @@ export function createCommand(skin: CommandSkin) {
         <AnchoredOverlay
           onAccessibilityEscape={escapeScope.onAccessibilityEscape}
           ownsScroll
-          onCardMount={() => searchRef.current?.focus?.()}
+          // The search field takes the focus once the palette is revealed (a frame later
+          // natively, with the screen reader moved to it: src/style/accessibility-focus.ts).
+          onCardMount={() => focusFieldInto(searchRef.current)}
           returnFocusRef={controlRef}
           open={open}
           onDismiss={() => setOpen(false)}
