@@ -150,9 +150,10 @@ export const backdropLayout: ViewStyle = {
 // from the skin; this owns the box-model that every platform shares.
 export const cardLayout: ViewStyle = { width: "100%", padding: 24, flexShrink: 1, minHeight: 0 };
 
-// The sizing box for the animated Entrance wrapper: it fills the centered backdrop
-// (up to cardWidth's cap) so the card keeps its width while the wrapper owns the
-// scale-fade. The card's own padding stays on cardLayout, inside the wrapper.
+// The sizing box around the card: it fills the centered backdrop (up to cardWidth's
+// cap) and may shrink to the backdrop's height, so the card and its content region
+// shrink with it when the overlay bounds the content. The card appears in place with
+// no motion; its own padding stays on cardLayout, inside this box.
 export const cardSizing: ViewStyle = { width: "100%", maxHeight: "100%", flexShrink: 1, minHeight: 0 };
 export const contentSizing: ViewStyle = { flexShrink: 1, minHeight: 0 };
 export const dismissBackdrop: ViewStyle = { position: "absolute", top: 0, right: 0, bottom: 0, left: 0 };

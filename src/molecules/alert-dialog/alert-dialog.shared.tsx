@@ -2,7 +2,7 @@ import { EscapeLayerProvider, useEscapeLayer } from "../../style/escape-layer.js
 import { useHardwareBack } from "../../style/use-hardware-back.js";
 import { type ReactNode, useId, useState } from "react";
 import { KeyboardAvoidingView, Platform } from "react-native";
-import { Entrance, GlassSurface, Portal, Pressable, RippleClip, Text, View, cornerRadii, type StyleProp, type ViewStyle, useDialogFocus, useTheme } from "../../style/index.js";
+import { GlassSurface, Portal, Pressable, RippleClip, Text, View, cornerRadii, type StyleProp, type ViewStyle, useDialogFocus, useTheme } from "../../style/index.js";
 import { Button as WebButton } from "../../atoms/button/button.js";
 import { Input as WebInput } from "../../atoms/input/input.js";
 import * as s from "./alert-dialog.styles.js";
@@ -308,7 +308,7 @@ export function createAlertDialog(skin: AlertDialogSkin, parts: AlertDialogParts
               overlay ? s.backdropOverlay : { minHeight: 200, minWidth: 0 },
             ]}
           >
-            <Entrance style={[s.cardBase, s.panelWidth[width], style]}>
+            <View style={[s.cardBase, s.panelWidth[width], style]}>
             {/* An alert dialog takes the DENSE layer of the glass model: the same
                 material as a Dialog, under the model's densest tint. It is the prompt
                 that stops the user to confirm a destructive action, and under the
@@ -361,7 +361,7 @@ export function createAlertDialog(skin: AlertDialogSkin, parts: AlertDialogParts
                 </KeyboardAvoidingView>
               </View>
             </GlassSurface>
-            </Entrance>
+            </View>
           </View>
           </EscapeLayerProvider>
           </Present>
