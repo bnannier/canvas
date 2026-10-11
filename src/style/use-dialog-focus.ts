@@ -224,9 +224,9 @@ export function usePopoverFocus(open: boolean): RefObject<View | null> {
 // panel, a native Modal's content, anything `aria-modal`) keeps Tab inside itself, and
 // past either end of its order focus wraps to the other, as the modal's own trap does.
 // A card that holds the focus itself (a modal sheet, `trap`) is such a modal while it is
-// open, the topmost one wherever focus stands: a Tab from the page behind it enters it,
-// and its own controls, with the runs of cards opened from inside it, are the whole
-// order. Without one the order is the page's, and at its very end there is no later
+// open, the topmost one wherever focus stands short of a modal opened over it: a Tab from
+// the page behind it (or from a sheet under it) enters it, and its own controls, with the
+// runs of cards opened from inside it, are the whole order. Without one the order is the page's, and at its very end there is no later
 // stop the document can focus, so that one move is left to the browser.
 
 const follows = (a: Node, b: Node) => (a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING) !== 0;
@@ -262,15 +262,20 @@ function depthOf({ trigger }: Bridge): number {
   return depth;
 }
 
-// The modal the focus at `node` is held in: the topmost open card that holds the focus,
-// or else the innermost `aria-modal` element around where it stands in the page, or null
-// for the page itself.
+// The modal the focus at `node` is held in: the innermost `aria-modal` element around
+// where it stands in the page, or null for the page itself; but while a card that holds the
+// focus is open, the topmost such card, wherever the focus stands, unless it stands in a
+// modal opened over that card (a Dialog opened from it: one that is neither around the card
+// nor inside an open card that holds the focus).
 function modalScope(node: Node): Element | null {
-  const held = bridges.filter(({ card, trap }) => trap && card.isConnected);
-  if (held.length > 0) return held[held.length - 1]!.card;
   const anchor = anchorOf(node);
   const element = anchor.nodeType === Node.ELEMENT_NODE ? (anchor as Element) : anchor.parentElement;
-  return element?.closest('[aria-modal="true"]') ?? null;
+  const modal = element?.closest('[aria-modal="true"]') ?? null;
+  const held = bridges.filter(({ card, trap }) => trap && card.isConnected);
+  const top = held[held.length - 1]?.card;
+  if (!top) return modal;
+  const over = modal != null && !modal.contains(top) && !held.some(({ card }) => card.contains(modal));
+  return over ? modal : top;
 }
 
 // Where a run placed right after `node` goes in `order`: after the node's own stops; or

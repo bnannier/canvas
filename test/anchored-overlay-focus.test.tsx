@@ -7,7 +7,7 @@
 // from it covers it, the screen reader moves in, and it goes back to the trigger on close.
 import { afterEach, describe, expect, it, spyOn } from "bun:test";
 import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
-import { type ForwardedRef, type ReactNode, useEffect, useRef } from "react";
+import { type ForwardedRef, type ReactNode, useEffect, useRef, useState } from "react";
 import { AccessibilityInfo, Platform, Text, View, type ViewProps } from "react-native";
 import { Button } from "../src/atoms/button/button.tsx";
 import { ButtonGroup } from "../src/atoms/button-group/button-group.tsx";
@@ -481,6 +481,53 @@ describe("the phone sheet is modal on the web too (AO-6)", () => {
       await settle();
       expect(screen.queryByRole("dialog")).toBeNull();
       expect(focused()).toBe(named("Rename"));
+    });
+  });
+
+  it("leaves a Dialog opened from the sheet its own order, and a sheet over another holds the focus", async () => {
+    act(() => resizeViewport(390, 844));
+    function SheetWithDialog() {
+      const [confirming, setConfirming] = useState(false);
+      return <>
+        <Popover trigger="Rename" title="Rename project">
+          <Button onPress={() => setConfirming(true)}>Delete</Button>
+          <Popover trigger="Details" title="Project details" actionLabel="Done" />
+        </Popover>
+        <Dialog open={confirming} onOpenChange={setConfirming} title="Delete project?">
+          <Input accessibilityLabel="Project to delete" />
+        </Dialog>
+      </>;
+    }
+    await withLayout(async () => {
+      page(<SheetWithDialog />);
+      act(() => named("Rename").focus());
+      await openAndReveal(() => fireEvent.click(named("Rename")));
+      tab();
+      expect(focused()).toBe(named("Delete"));
+      // A Dialog opened from the sheet: Tab stays in the Dialog, never back in the sheet.
+      fireEvent.click(named("Delete"));
+      await settle();
+      const field = screen.getByRole("textbox", { name: "Project to delete" });
+      const confirm = screen.getAllByRole("dialog").find((dialog) => dialog.contains(field))!;
+      act(() => field.focus());
+      for (let step = 0; step < 4; step += 1) {
+        tab();
+        expect(confirm.contains(focused())).toBe(true);
+      }
+      press("Escape");
+      await settle();
+      expect(screen.queryByRole("textbox", { name: "Project to delete" })).toBeNull();
+      // A sheet opened from the sheet holds the focus over it: a Tab from the sheet under
+      // it (focus put there by a script) goes into the top one.
+      act(() => named("Details").focus());
+      await openAndReveal(() => fireEvent.click(named("Details")));
+      const details = screen.getAllByRole("dialog").find((dialog) => dialog.getAttribute("aria-label") == null && dialog.textContent?.includes("Project details"))!;
+      expect(details.getAttribute("aria-modal")).toBe("true");
+      act(() => named("Delete").focus());
+      tab();
+      expect(focused()).toBe(named("Done"));
+      tab();
+      expect(focused()).toBe(named("Done"));
     });
   });
 
