@@ -15,6 +15,7 @@ import { OverlayProvider } from "../src/style/portal.tsx";
 import { SafeAreaInsetsContext } from "../src/style/safe-area.tsx";
 import { ThemeProvider } from "../src/style/theme.tsx";
 import { lightColors } from "../src/style/tokens.ts";
+import { WEB_TINTS } from "../src/style/glass-surface/web-frost.ts";
 import { hostedEntranceParts, layoutHostedEntrance } from "./entrance-layout.ts";
 import { resizeViewport } from "./viewport.ts";
 
@@ -167,6 +168,32 @@ describe("the phone sheet (AO-6)", () => {
       expect((parts.card as HTMLElement).style.paddingBottom).toBe(`${20 + 34 - 8}px`);
       expect(card).toContain(`max-height: ${844 - 8 - 47 - 48}px`);
     });
+  });
+
+  it("takes the dense layer under glass over its scrim, where the anchored card keeps the functional one", async () => {
+    // The frost samples the dimmed page under a sheet: under the functional layer's sheer
+    // tint its supporting line fell below 4.5:1 in the light palettes and the covered tab
+    // bar read through it, so it takes the dense layer, as AlertDialog does over its scrim.
+    // react-native-web prints an alpha with two decimals, so compare as it quantizes.
+    const rgba = (value: string) => {
+      const m = /rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?\)/.exec(value)!;
+      return [Number(m[1]), Number(m[2]), Number(m[3]), Number((Math.round(Number(m[4] ?? 1) * 255) / 255).toFixed(2))];
+    };
+    const underFill = async (width: number) => {
+      act(() => resizeViewport(width, 844));
+      let fill = "";
+      await withBoxes(triggerAt({ x: 40, y: 200, width: 120, height: 32 }), async () => {
+        render(<ThemeProvider light glass><OverlayProvider><Popover testID="trigger" trigger="Rename" title="Rename project" description="Choose a name your team will recognize." /></OverlayProvider></ThemeProvider>);
+        fireEvent.click(screen.getByRole("button", { name: "Rename" }));
+        const { entrance } = await held("dialog");
+        // The card's material comes before its content, so the first one is the card's.
+        fill = (entrance.querySelector('[data-testid="glass-material"]')!.firstElementChild as HTMLElement).style.backgroundColor;
+      });
+      cleanup();
+      return rgba(fill);
+    };
+    expect(await underFill(390)).toEqual(rgba(WEB_TINTS.light["glass-tint-dense"]));
+    expect(await underFill(1280)).toEqual(rgba(WEB_TINTS.light["glass-tint"]));
   });
 
   it("caps a sheet at 640 and centers it on a wider band", async () => {
