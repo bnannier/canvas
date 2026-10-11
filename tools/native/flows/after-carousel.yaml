@@ -182,6 +182,11 @@ name: Sealed Canvas native candidate after measured drag
       text: Work item 40
       above: to navigate
     direction: DOWN
+# Maestro's "above" compares top edges only, and its visibility ignores the results
+# pane's clipping, so it can stop with the last row's top just above the footer and
+# the rest of the row under it, where a tap lands on the footer. One more scroll
+# settles the list at its end, which is what reveals the whole last row.
+- scroll
 - runFlow:
     when:
       platform: Android
