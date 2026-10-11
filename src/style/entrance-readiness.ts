@@ -1,5 +1,9 @@
 import { createContext } from "react";
 
-// Focus readiness only. A held ancestor must not announce ready descendants;
-// each Entrance still decides its own hold from its owner's `ready`.
+/**
+ * Whether every enclosing Entrance has released its card. A held ancestor must not
+ * announce ready descendants: a card's focus entry waits while it is false, and an
+ * Entrance holds its own card too, so a card hosted in the outlet waits for its logical
+ * ancestor (usePortalMount relays this context across the portal).
+ */
 export const EntranceReadinessContext = createContext(true);

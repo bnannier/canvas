@@ -394,7 +394,7 @@ export const FOUNDATION_PLANS: Readonly<Record<string, readonly string[]>> = {
     "keeps the responsive preview context the docs' three-up renders each platform row in (materials target)",
   ],
   Entrance: [
-    "a readiness hold for an overlay card: invisible and inert until its owner is ready, then shown in place with no transform (materials target)",
+    "a readiness hold for an overlay card: invisible, untouchable and hidden from assistive technology until its owner and every enclosing hold are ready (its controls stay mounted; focus enters only at release), then shown in place with no transform (materials target)",
     "no motion of its own, after the 2026-09-21 removal of the Entrance spring",
   ],
   FloatingLabel: [
