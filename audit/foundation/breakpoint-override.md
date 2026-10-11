@@ -13,7 +13,7 @@ Audit checklist for the style-layer foundation `BreakpointOverride`, audited for
 | Documented on | `patterns/responsive`: useBreakpoint, useFormFactor, useResponsive |
 | Docs planned | `foundation` (not built yet): SsrBreakpointContext, useWindowDimensions; `tokens/layout`: BreakpointOverride, formFactor, FormFactor, responsive, Responsive |
 | Materials manifest | BreakpointOverride: style, inherited; docs route none (`docsRoute: null`); verification inherited-composition, semantic-state |
-| Tests of it | 3 (importing one of its public exports or one of its implementation's declarations by name, or named for it, `test/breakpoint-override[-<what>].test.tsx`): `test/anchored-overlay-dismissal.test.tsx`, `test/container.test.tsx`, `test/responsive.test.tsx` |
+| Tests of it | 4 (importing one of its public exports or one of its implementation's declarations by name, or named for it, `test/breakpoint-override[-<what>].test.tsx`): `test/anchored-overlay-dismissal.test.tsx`, `test/container.test.tsx`, `test/responsive-ssr.test.tsx`, `test/responsive.test.tsx` |
 | Consumers | 29 components: 2 directly, 22 through shared modules, 5 through other kit components (one row each below, read from the source by `tools/audit/kit-graph.ts`) |
 | Pages using it | `pattern-responsive` (useFormFactor) |
 | Capture through | 30, in this order: components `filter-panel`, `sidebar`, `row-column`, `grid`, `autocomplete`, `button-group`, `dropdown`, `popover`, `select`, `alert-dialog`, `description-lists`, `form`, `grid-lists`, `phone-input`, `calendar`, `command`, `dashboard-grid`, `data-table`, `dialog`, `navbars`, `row-menu`, `steps`, `tabs`, `toast`, `avatar`, `video`, `field`, `board`, `geo-map`; pages `pattern-responsive` |
