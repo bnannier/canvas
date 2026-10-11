@@ -1180,7 +1180,7 @@ describe("the rows of the docs' three-up a state is answered on", () => {
     expect(builds("data-table", "focus").filter((line) => !line.endsWith("every build"))).toEqual([
       "data-table.shared.tsx:437 TextInput: ios and android",
       "data-table.shared.tsx:441 TextInput: web",
-      "data-table.shared.tsx:846 ScrollView: web and android",
+      "data-table.shared.tsx:847 ScrollView: web and android",
     ]);
     // The rows each page shows, and the build each renders: Toast's iOS row is the web build,
     // the docs registry injecting no iOS Toast; Sidebar's page shows one preview, the web build.
