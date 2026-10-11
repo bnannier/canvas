@@ -630,13 +630,30 @@ name: Sealed Canvas native candidate after measured drag
     text: 'Mode: solid; scheme: light; palette: blush'
 - assertVisible:
     id: avatar-stage-20
+# The pressable discs sit below the identity stages, under a phone's fold.
+- scrollUntilVisible:
+    element:
+      id: avatar-pressable
+    direction: DOWN
 - tapOn:
     id: avatar-pressable
+- scrollUntilVisible:
+    element:
+      id: avatar-presses
+    direction: UP
 - assertVisible:
     id: avatar-presses
     text: 'Presses: 1'
+- scrollUntilVisible:
+    element:
+      id: avatar-neutral
+    direction: DOWN
 - tapOn:
     id: avatar-neutral
+- scrollUntilVisible:
+    element:
+      id: avatar-presses
+    direction: UP
 - assertVisible:
     id: avatar-presses
     text: 'Presses: 2'
