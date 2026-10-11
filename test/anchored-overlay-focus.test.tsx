@@ -8,7 +8,7 @@
 import { afterEach, describe, expect, it, spyOn } from "bun:test";
 import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { type ForwardedRef, type ReactNode, useEffect, useRef, useState } from "react";
-import { AccessibilityInfo, Platform, Text, View, type ViewProps } from "react-native";
+import { AccessibilityInfo, Platform, Text, TextInput, View, type ViewProps } from "react-native";
 import { Button } from "../src/atoms/button/button.tsx";
 import { ButtonGroup } from "../src/atoms/button-group/button-group.tsx";
 import { Dropdown } from "../src/atoms/dropdown/dropdown.tsx";
@@ -17,6 +17,7 @@ import { Select } from "../src/atoms/select/select.tsx";
 import { Autocomplete } from "../src/atoms/autocomplete/autocomplete.tsx";
 import { PhoneInput } from "../src/molecules/phone-input/phone-input.tsx";
 import { RowMenu } from "../src/organisms/row-menu/row-menu.tsx";
+import { Command } from "../src/organisms/command/command.tsx";
 import { Dialog } from "../src/organisms/dialog/dialog.tsx";
 import { Input } from "../src/atoms/input/input.tsx";
 import { AnchoredOverlay } from "../src/style/anchored-overlay.tsx";
@@ -636,34 +637,206 @@ describe("an open card is modal to VoiceOver and TalkBack (AO-2)", () => {
     });
   });
 
-  it("moves the screen reader into the card on open and back to the trigger on close", async () => {
-    const platform = Object.getOwnPropertyDescriptor(Platform, "OS")!;
-    const sent: [unknown, string][] = [];
-    // React Native Web has no sendAccessibilityEvent; stand one in to observe the call.
-    const info = AccessibilityInfo as unknown as { sendAccessibilityEvent?: (node: unknown, event: string) => void };
-    const had = Object.prototype.hasOwnProperty.call(info, "sendAccessibilityEvent");
-    info.sendAccessibilityEvent ??= () => {};
-    const send = spyOn(info as Required<typeof info>, "sendAccessibilityEvent").mockImplementation((node, event) => { sent.push([node, event]); });
-    Object.defineProperty(Platform, "OS", { configurable: true, value: "ios" });
-    try {
-      await withLayout(async () => {
+  it("moves the screen reader into the card on open and back to the trigger on close, by the event each one moves on", async () => {
+    // VoiceOver moves on `focus` (UIKit's layout-changed notification); TalkBack does not
+    // move on Android's `focus` (an input-focus report it follows only from a view holding
+    // input focus) and moves on `viewHoverEnter`, the event its explore by touch moves on.
+    for (const [os, event] of [["ios", "focus"], ["android", "viewHoverEnter"]] as const) {
+      await withNative(os, async ({ sent }) => withLayout(async () => {
         page(<Dropdown trigger="Actions" items={[{ label: "Edit profile" }, { label: "Sign out" }]} />);
         await openAndReveal(() => fireEvent.click(named("Actions")));
         await waitFor(() => expect(sent.length).toBe(1));
         expect((sent[0]![0] as HTMLElement).textContent).toBe("Edit profile");
-        expect(sent[0]![1]).toBe("focus");
+        expect(sent[0]![1]).toBe(event);
         fireEvent.click(named("Actions"));
         await waitFor(() => expect(sent.length).toBe(2));
         // The trigger control itself, not the wrapper it is anchored by.
-        expect(sent[1]![0]).toBe(named("Actions"));
-      });
-    } finally {
-      send.mockRestore();
-      if (!had) delete info.sendAccessibilityEvent;
-      Object.defineProperty(Platform, "OS", platform);
+        expect(sent[1]![0] === named("Actions")).toBe(true);
+        expect(sent[1]![1]).toBe(event);
+      }));
+      cleanup();
     }
   });
+
+  it("enters a menu at its first action, past a section label above it", async () => {
+    await withNative("android", async ({ sent }) => withLayout(async () => {
+      page(<Dropdown trigger="Actions" label="Create" items={[{ label: "New file" }, { label: "New folder" }]} />);
+      await openAndReveal(() => fireEvent.click(named("Actions")));
+      await waitFor(() => expect(sent.length).toBe(1));
+      expect((sent[0]![0] as HTMLElement).getAttribute("role")).toBe("menuitem");
+      expect((sent[0]![0] as HTMLElement).textContent).toBe("New file");
+      expect(sent[0]![1]).toBe("viewHoverEnter");
+    }));
+  });
+
+  it("scrolls an option list to the selected option focus enters at", async () => {
+    // An option list opened at a selected option far down its scrollport held the focus out
+    // of view (WCAG 2.4.11), and TalkBack, which cannot move to a node off the screen, fell
+    // back to the whole list. The entry now scrolls the option into the port first.
+    const options = Array.from({ length: 40 }, (_, index) => `Option ${index}`);
+    for (const os of ["web", "android"] as const) {
+      await withNative(os, async ({ sent }) => withLayout(() => withRowGeometry(async () => {
+        page(<Select options={options} defaultValue="Option 30" />);
+        const trigger = screen.getByRole("button", { expanded: false });
+        act(() => trigger.focus());
+        const scrolls: { top: number; focusedThen: string | null; sentThen: number }[] = [];
+        const scroll = spyOn(Element.prototype, "scroll").mockImplementation(function (this: Element, options?: unknown) {
+          scrolls.push({ top: (options as ScrollToOptions).top ?? 0, focusedThen: focused().getAttribute("role"), sentThen: sent.length });
+        });
+        try {
+          fireEvent.click(trigger);
+          await settle();
+          // The port 160 tall over 40 rows 40 tall: the selected row's bottom (1240) at its bottom edge.
+          const content = document.querySelector('[role="listbox"]')!;
+          layoutHostedEntrance(content, { width: 220, height: 160 }, { width: 220, height: 160 }, { width: 220, height: 1600 });
+          await settle();
+          expect(scrolls.map(({ top }) => top)).toEqual([1080]);
+          if (os === "web") {
+            // The DOM focus moved at once, without scrolling the page, and the port followed it.
+            expect(scrolls[0]!.focusedThen).toBe("option");
+            expect(focused().getAttribute("role")).toBe("option");
+            expect(focused().textContent).toContain("Option 30");
+          } else {
+            // TalkBack moved only once the option was on the screen.
+            await waitFor(() => expect(sent.length).toBe(1));
+            expect(scrolls[0]!.sentThen).toBe(0);
+            expect((sent[0]![0] as HTMLElement).textContent).toContain("Option 30");
+          }
+        } finally { scroll.mockRestore(); }
+      })));
+      cleanup();
+    }
+  });
+
+  it("gives a palette's search field the input focus a frame after it is revealed, with the screen reader", async () => {
+    // React Native runs a view command such as focus ahead of the mount of the batch it
+    // arrives in: a field focused in the commit that reveals it was focused before it was
+    // in the window, and the focus was lost (CI's Android smoke: the search field was not
+    // focused after "Search..." opened the palette).
+    await withNative("android", async ({ sent, frames }) => withLayout(async () => {
+      page(<Command trigger groups={[{ heading: "Actions", items: [{ label: "Open file" }] }]} />);
+      fireEvent.click(screen.getByText("Search...").closest("button")!);
+      await reveal();
+      const field = screen.getByPlaceholderText("Search commands...");
+      expect(focused() === field).toBe(false);
+      frames.flush();
+      expect(focused() === field).toBe(true);
+      expect(sent.length).toBe(1);
+      expect(sent[0]![0] === field).toBe(true);
+      expect(sent[0]![1]).toBe("viewHoverEnter");
+    }), { frames: true });
+  });
+
+  it("takes the input focus off a field inside the card as it closes, and returns the screen reader to the trigger", async () => {
+    // Android hands the focus of a view removed while it holds it to the first view of the
+    // window that takes focus by touch (a selectable code line on the docs page), and
+    // TalkBack followed it there instead of to the trigger.
+    await withNative("android", async ({ sent, frames, blurred }) => withLayout(async () => {
+      page(<Command trigger groups={[{ heading: "Actions", items: [{ label: "Open file" }] }]} />);
+      const trigger = screen.getByText("Search...").closest("button")!;
+      fireEvent.click(trigger);
+      await reveal();
+      frames.flush();
+      const field = screen.getByPlaceholderText("Search commands...");
+      expect(focused() === field).toBe(true);
+      press("Escape");
+      await settle();
+      expect(screen.queryByPlaceholderText("Search commands...")).toBeNull();
+      expect(blurred.length).toBe(1);
+      expect(blurred[0] === field).toBe(true);
+      frames.flush();
+      expect(sent.at(-1)![0] === trigger).toBe(true);
+      expect(sent.at(-1)![1]).toBe("viewHoverEnter");
+    }), { frames: true });
+  });
+
+  it("sends the screen reader on to the field a close hands the input focus to, and back to the trigger otherwise", async () => {
+    // PhoneInput's pick commits the country and gives the number field the focus, as on the
+    // web; the screen reader follows it there rather than to the country segment.
+    await withNative("android", async ({ sent, frames }) => withLayout(async () => {
+      page(<PhoneInput label="Phone" defaultCountry="GB" />);
+      const segment = screen.getByRole("button", { name: /Country/ });
+      fireEvent.click(segment);
+      await reveal();
+      fireEvent.click(screen.getByRole("option", { name: /Canada/ }));
+      await settle();
+      frames.flush();
+      const number = screen.getByRole("textbox", { name: "Phone" });
+      expect(focused() === number).toBe(true);
+      expect(sent.at(-1)![0] === number).toBe(true);
+      expect(sent.at(-1)![1]).toBe("viewHoverEnter");
+      // Closed with nothing handed on (the back gesture), it goes back to the segment.
+      act(() => number.blur());
+      fireEvent.click(segment);
+      await reveal();
+      press("Escape");
+      await settle();
+      frames.flush();
+      expect(sent.at(-1)![0] === segment).toBe(true);
+      expect(sent.at(-1)![1]).toBe("viewHoverEnter");
+    }), { frames: true });
+  });
 });
+
+// Run a case as React Native would on `os` ("ios" or "android"; "web" leaves the platform
+// alone). The cases compare the nodes it records by identity (a failed deep comparison would
+// print whole DOM nodes). React Native Web has no sendAccessibilityEvent, so a stand-in records each event
+// as [node, event] in `sent`, and TextInput.State reads the DOM's focused field as React
+// Native's own reads the focused native field, recording each field blurred through it.
+// With `frames`, requestAnimationFrame callbacks wait for `frames.flush()`.
+async function withNative(
+  os: "ios" | "android" | "web",
+  run: (native: { sent: [unknown, string][]; blurred: unknown[]; frames: { flush: () => void } }) => Promise<void>,
+  { frames: holdFrames = false }: { frames?: boolean } = {},
+) {
+  const platform = Object.getOwnPropertyDescriptor(Platform, "OS")!;
+  const sent: [unknown, string][] = [];
+  const blurred: unknown[] = [];
+  const info = AccessibilityInfo as unknown as { sendAccessibilityEvent?: (node: unknown, event: string) => void };
+  const hadSend = Object.prototype.hasOwnProperty.call(info, "sendAccessibilityEvent");
+  info.sendAccessibilityEvent ??= () => {};
+  const send = spyOn(info as Required<typeof info>, "sendAccessibilityEvent").mockImplementation((node, event) => { sent.push([node, event]); });
+  const state = TextInput.State as unknown as { currentlyFocusedInput?: () => unknown; currentlyFocusedField: () => unknown; blurTextInput: (node: unknown) => void };
+  const hadCurrent = Object.prototype.hasOwnProperty.call(state, "currentlyFocusedInput");
+  state.currentlyFocusedInput ??= () => state.currentlyFocusedField();
+  const blurText = state.blurTextInput;
+  state.blurTextInput = (node) => { blurred.push(node); blurText.call(state, node); };
+  const queued: FrameRequestCallback[] = [];
+  const raf = holdFrames ? spyOn(window, "requestAnimationFrame").mockImplementation((callback) => queued.push(callback)) : null;
+  const flush = () => act(() => { for (const callback of queued.splice(0)) callback(performance.now()); });
+  if (os !== "web") Object.defineProperty(Platform, "OS", { configurable: true, value: os });
+  try {
+    await run({ sent, blurred, frames: { flush } });
+  } finally {
+    raf?.mockRestore();
+    state.blurTextInput = blurText;
+    if (!hadCurrent) delete state.currentlyFocusedInput;
+    send.mockRestore();
+    if (!hadSend) delete info.sendAccessibilityEvent;
+    Object.defineProperty(Platform, "OS", platform);
+  }
+}
+
+// Give an option list's rows a geometry for React Native Web's measureLayout (offsetTop and
+// offsetHeight, which happy-dom leaves at 0): each option 40 tall, stacked in order.
+async function withRowGeometry(run: () => Promise<void>) {
+  const row = (element: HTMLElement) => (element.getAttribute("role") === "option" ? [...element.parentElement!.children].indexOf(element) : -1);
+  // Each getter is laid over HTMLElement.prototype and taken off again after the case.
+  const override = (key: "offsetTop" | "offsetHeight" | "offsetParent", get: (this: HTMLElement) => unknown) => {
+    const own = Object.getOwnPropertyDescriptor(HTMLElement.prototype, key);
+    Object.defineProperty(HTMLElement.prototype, key, { configurable: true, get });
+    return () => {
+      if (own) Object.defineProperty(HTMLElement.prototype, key, own);
+      else delete (HTMLElement.prototype as unknown as Record<string, unknown>)[key];
+    };
+  };
+  const restore = [
+    override("offsetTop", function () { const index = row(this); return index < 0 ? 0 : index * 40; }),
+    override("offsetHeight", function () { return row(this) < 0 ? 0 : 40; }),
+    override("offsetParent", () => null),
+  ];
+  try { await run(); } finally { restore.forEach((undo) => undo()); }
+}
 
 describe("the inline (unhosted) card", () => {
   it("is already in flow after its trigger, and a menu still closes on a Tab out of it", () => {
