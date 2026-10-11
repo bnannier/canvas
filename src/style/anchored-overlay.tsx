@@ -459,8 +459,10 @@ function InlineAnchoredOverlay({ onAccessibilityEscape, onDismiss, triggerRef, r
   children: ReactNode;
 }) {
   const cardRef = useRef<View>(null);
-  // No layer to hide a page in: an unhosted card is never modal.
-  useCardFocus({ shown: true, cardRef, triggerRef, returnFocusRef, dismissOnTab: dismissOnTab && dismissable, onDismiss, modal: false, combobox });
+  // Shown at once unless an enclosing Entrance still holds it. No layer to hide a page
+  // in: an unhosted card is never modal.
+  const shown = useContext(EntranceReadinessContext);
+  useCardFocus({ shown, cardRef, triggerRef, returnFocusRef, dismissOnTab: dismissOnTab && dismissable, onDismiss, modal: false, combobox });
   return (
     <Entrance ref={cardRef} style={inlineStyle}>
       <OverlayCard onAccessibilityEscape={onAccessibilityEscape} cardStyle={cardStyle} opaque={opaque} dense={dense} onMount={onCardMount} ownsScroll={ownsScroll} rows={dismissOnTab} decoration={decoration}>{children}</OverlayCard>
@@ -1014,10 +1016,13 @@ function HostedAnchoredOverlay({ host, frame, onDismiss, onAccessibilityEscape, 
   // owner's AO-2 decision, as HIG treats a popover): it holds its window layer's page
   // hidden, a card opened from it covers it in turn, and the topmost one is the view
   // VoiceOver keeps to. The consumer moves the screen reader into it at onCardMount;
-  // the trigger takes it back on close (useCardFocus). The web keeps the page.
+  // the trigger takes it back on close (useCardFocus). The web keeps the page. Shown
+  // means its Entrance shows it: placed and measured, and no logical ancestor holding it
+  // (a card opened from inside a card that is itself still held).
   const cardRef = useRef<View>(null);
   const modalId = useId();
-  const shown = rect != null && horizontal != null && fit != null && measured;
+  const ancestorsReady = useContext(EntranceReadinessContext);
+  const shown = rect != null && horizontal != null && fit != null && measured && ancestorsReady;
   const holdsModal = modal && shown;
   useEffect(() => (holdsModal ? layer.holdModal?.(modalId) : undefined), [holdsModal, layer, modalId]);
   const subscribeModal = useCallback((listener: () => void) => layer.subscribeModal?.(listener) ?? (() => {}), [layer]);
