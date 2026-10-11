@@ -244,12 +244,14 @@ export function ThemeProvider({ dark, light, scheme, ssrScheme, mint, ssrPalette
   // parent provider's (or the value a Portal re-provides in its outlet). Of the theme
   // axes only the faces inherit: tokens, scheme, palette and surface resolve from this
   // provider's own props (see the `tokens` prop). (`ssrBreakpoint` also passes through
-  // a provider that omits it, since only a provider that sets it re-provides the
-  // breakpoint context.) The memo below keys on the resolved map, not
+  // a provider that omits it: the breakpoint context below re-provides the nearest
+  // parent's assumption.) The memo below keys on the resolved map, not
   // on the parent's whole value, so a parent scheme or surface change does not
   // re-create this provider's value.
   const inheritedFonts = useContext(ThemeContext)?.fonts;
   const resolvedFonts = fonts ?? inheritedFonts ?? NO_FONTS;
+  const inheritedSsrBucket = useContext(SsrBreakpointContext);
+  const ssrBucket = ssrBreakpoint ?? inheritedSsrBucket;
   // Until the post-mount effect runs, honor `ssrScheme` and `ssrPalette` so the server
   // output is deterministic and the hydration render reproduces it exactly (see the
   // prop docs). When both props are absent this stays on the single-pass path: no state
@@ -309,14 +311,16 @@ export function ThemeProvider({ dark, light, scheme, ssrScheme, mint, ssrPalette
       increasedContrast,
     };
   }, [active, palette, resolved, tokens, resolvedFonts, reducedTransparency, increasedContrast]);
-  const themed = <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
   // The viewport axis' server assumption rides the theme provider (the only
   // provider Canvas apps already mount); useBreakpoint reads it as its server
-  // snapshot only, so omitting the prop costs nothing at runtime.
-  return ssrBreakpoint != null ? (
-    <SsrBreakpointContext.Provider value={ssrBreakpoint}>{themed}</SsrBreakpointContext.Provider>
-  ) : (
-    themed
+  // snapshot only. The provider is always rendered, carrying the prop or the
+  // inherited assumption, so setting or clearing `ssrBreakpoint` (an app dropping it
+  // after hydration) never changes the element type above the app and never
+  // remounts the tree under it.
+  return (
+    <SsrBreakpointContext.Provider value={ssrBucket}>
+      <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>
+    </SsrBreakpointContext.Provider>
   );
 }
 
