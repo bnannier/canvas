@@ -26,9 +26,7 @@ export const ScrollView = forwardRef<RNScrollView, ScrollViewProps>(function Scr
   const ring = useFocusRingStyle();
   // The ring goes first in the list so a scroller's own outline style wins.
   const themed = useMemo(() => [ring, style], [ring, style]);
-  // Sticky headers are found by child index, so their children reach React Native
-  // unwrapped (and read as an unheard scroller's).
-  const ancestor = useScrollAncestor({ horizontal: rest.horizontal, onScroll, scrollEventThrottle, wrap: rest.stickyHeaderIndices == null });
+  const ancestor = useScrollAncestor({ horizontal: rest.horizontal, onScroll, scrollEventThrottle });
   return (
     <RNScrollView ref={ref} {...rest} style={themed} onScroll={ancestor.onScroll} scrollEventThrottle={ancestor.scrollEventThrottle}>
       {ancestor.children(children)}
