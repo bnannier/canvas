@@ -3,7 +3,7 @@ import { EscapeLayerProvider, useEscapeLayer } from "../../style/escape-layer.js
 import { useHardwareBack } from "../../style/use-hardware-back.js";
 import { useId, useState, type ReactNode } from "react";
 import { KeyboardAvoidingView, Platform } from "react-native";
-import { View, Text, Pressable, RippleClip, cornerRadii, GlassSurface, Entrance, Portal, useDialogFocus, type StyleProp, type ViewStyle } from "../../style/index.js";
+import { View, Text, Pressable, RippleClip, cornerRadii, GlassSurface, Portal, useDialogFocus, type StyleProp, type ViewStyle } from "../../style/index.js";
 import { Button as WebButton } from "../../atoms/button/button.js";
 import { Input as WebInput } from "../../atoms/input/input.js";
 import * as s from "./dialog.styles.js";
@@ -315,7 +315,7 @@ export function createDialog(skin: DialogSkin, parts: DialogParts = {}) {
               <Pressable accessible={false} focusable={false} tabIndex={-1}
                 importantForAccessibility="no" style={s.dismissBackdrop} onPress={cancel} />
             ) : null}
-            <Entrance style={[s.cardSizing, s.cardWidth(size), style]}>
+            <View style={[s.cardSizing, s.cardWidth(size), style]}>
             <GlassSurface style={[s.cardLayout, skin.card(tokens)]}>
               {/* The panel content region wraps the content in a
                   KeyboardAvoidingView so the iOS keyboard never
@@ -354,7 +354,7 @@ export function createDialog(skin: DialogSkin, parts: DialogParts = {}) {
                 </KeyboardAvoidingView>
               </View>
             </GlassSurface>
-            </Entrance>
+            </View>
           </View>
           </EscapeLayerProvider>
           </Present>
