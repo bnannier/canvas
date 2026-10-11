@@ -43,8 +43,10 @@
 // `ssrBreakpoint` to shift that assumption (the `ssrScheme` contract).
 //
 // Height and orientation are deliberately not modeled: no kit component keys
-// layout off viewport height today. Reading raw pixels stays available via the
-// `useWindowDimensions` re-export.
+// layout off viewport height today. Raw pixels are React Native's own
+// `useWindowDimensions`; the kit's pass-through of it (the re-export at the end of
+// this file, which the public surface publishes) is a deprecated alias (audit K12-2
+// OD5) kept until a major.
 
 import { createContext, useContext, useSyncExternalStore, type ReactNode } from "react";
 import { Dimensions, useWindowDimensions } from "react-native";
@@ -202,4 +204,6 @@ export function useFormFactor(): FormFactor {
   return FORM_FACTOR_BY_BUCKET[useBreakpoint()];
 }
 
+// React Native's own hook, passed through for the public surface, where it is a
+// deprecated alias (src/style/public.ts carries the tag and names what to use).
 export { useWindowDimensions };
