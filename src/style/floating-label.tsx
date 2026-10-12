@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { Animated, Platform, type LayoutChangeEvent } from "react-native";
 import { Text, View, type TextStyle, type ViewStyle } from "./primitives.js";
 import { fontStyle } from "./text.js";
@@ -289,10 +289,17 @@ export function FloatingLabel<S extends string>({
   const [pos] = useState(() => new Animated.Value(posTarget));
   const [tint] = useState(() => new Animated.Value(tintTarget));
 
+  // The target each value was last sent to. It starts where the value was seeded, so a
+  // field that mounts has nothing to animate and starts no timing; a later Reduce Motion
+  // reading alone sends nothing either.
+  const sent = useRef({ pos: posTarget, tint: tintTarget });
+
   // pos drives the TRANSFORM (translateY + scale): native driver where available
   // (one-shot, so the loop-freeze caveat does not apply), JS on web. Reduced
   // motion snaps to the final frame; the label still moves.
   useEffect(() => {
+    if (sent.current.pos === posTarget) return;
+    sent.current.pos = posTarget;
     if (reduced) {
       pos.setValue(posTarget);
       return;
@@ -303,6 +310,8 @@ export function FloatingLabel<S extends string>({
   // tint drives ONLY the COLOR, always on the JS driver (color can't be native-
   // driven; never interpolate it off `pos`).
   useEffect(() => {
+    if (sent.current.tint === tintTarget) return;
+    sent.current.tint = tintTarget;
     if (reduced) {
       tint.setValue(tintTarget);
       return;
@@ -357,12 +366,15 @@ export function FloatingLabel<S extends string>({
   const restCenterY = multiline ? reserve + line / 2 : box / 2;
   const translateYTo = floatedCenterY - restCenterY;
 
-  const translateY = pos.interpolate({ inputRange: [0, 1], outputRange: [0, translateYTo] });
-  const scale = pos.interpolate({ inputRange: [0, 1], outputRange: [1, scaleTo] });
-  const color = tint.interpolate({
-    inputRange: [0, 1],
-    outputRange: [tokens["muted-foreground"], isError ? destructiveText(tokens) : primaryText(tokens)],
-  });
+  // The interpolation nodes live as long as their ends do. A field re-renders on every
+  // keystroke, and React Native keys a view's animated props on the identity of these nodes,
+  // so new ones each render built and attached a new animated graph per keystroke (three
+  // nodes a keystroke, measured in test/floating-label-contract.test.tsx).
+  const translateY = useMemo(() => pos.interpolate({ inputRange: [0, 1], outputRange: [0, translateYTo] }), [pos, translateYTo]);
+  const scale = useMemo(() => pos.interpolate({ inputRange: [0, 1], outputRange: [1, scaleTo] }), [pos, scaleTo]);
+  const restInk = tokens["muted-foreground"];
+  const activeInk = isError ? destructiveText(tokens) : primaryText(tokens);
+  const color = useMemo(() => tint.interpolate({ inputRange: [0, 1], outputRange: [restInk, activeInk] }), [tint, restInk, activeInk]);
 
   // Transform origins are physical (React Native, Fabric and CSS alike) while the label is
   // pinned to the logical start edge, so the origin names the side `start` lands on: the
