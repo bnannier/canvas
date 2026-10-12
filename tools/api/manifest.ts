@@ -430,7 +430,7 @@ export const publicApi: Readonly<Record<string, ApiEntry>> = {
   paneStyle: { kind: "internal-by-accident" },
 
   // src/style/glass-surface/glass-surface.shared.tsx
-  GlassModalBlurTarget: { kind: "component" },
+  GlassModalBlurTarget: { kind: "component", docs: "integration", section: "Native modals" },
 
   // src/style/glass-surface/glass-surface.tsx
   GlassSurface: { kind: "internal-by-accident" },
@@ -474,7 +474,7 @@ export const publicApi: Readonly<Record<string, ApiEntry>> = {
   intersectOverlayBounds: { kind: "internal-by-accident" },
   OverlayBounds: { kind: "internal-by-accident" },
   OverlayHost: { kind: "internal-by-accident" },
-  OverlayProvider: { kind: "component" },
+  OverlayProvider: { kind: "component", docs: "integration", section: "Overlay hosting" },
   OverlayProviderProps: { kind: "type" },
   OverlayViewportInsets: { kind: "type" },
   Portal: { kind: "internal-by-accident" },
@@ -719,10 +719,9 @@ export const PENDING_DOCS: Readonly<Record<string, DocsRoute>> = {
   useReducedMotion: "theming",
   useReducedTransparency: "theming",
 
-  // K12-5 and K12-7: overlay hosting (OverlayProvider, the Modal blur bridge), and the
-  // token files canvas.css imports.
-  GlassModalBlurTarget: "integration",
-  OverlayProvider: "integration",
+  // K12-5 and K12-7: the rest of overlay hosting (OverlayProvider's props: the Overlay
+  // hosting section names the provider and the Modal blur bridge since
+  // GlassModalBlurTarget's turn), and the token files canvas.css imports.
   OverlayProviderProps: "integration",
   OverlayViewportInsets: "integration",
   "styles/tokens/base.css": "integration",
@@ -893,8 +892,9 @@ export const PENDING_DOCS: Readonly<Record<string, DocsRoute>> = {
 export const PLANNED_ROUTES: Readonly<Record<DocsRoute, PlannedRoute>> = {
   // K12-3 and K12-4: the ThemeProvider reference.
   theming: { turn: "foundation/theme-provider" },
-  // K12-5 and K12-7: GlassModalBlurTarget's and OverlayProvider's turns land the overlay
-  // hosting names, then the Tokens turn lands the token files and closes the route.
+  // K12-5 and K12-7: GlassModalBlurTarget's turn landed the Overlay hosting section and the
+  // bridge, OverlayProvider's turn lands the provider's props, then the Tokens turn lands
+  // the token files and closes the route.
   integration: { turn: "foundation/tokens" },
   // K12-6 and K12-7: the token pages.
   "tokens/colors": { turn: "foundation/tokens" },

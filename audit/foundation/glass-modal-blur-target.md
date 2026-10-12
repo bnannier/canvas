@@ -10,14 +10,14 @@ Audit checklist for the style-layer foundation `GlassModalBlurTarget`, audited f
 | Seams | 1, the private declarations it alone reads (`tools/audit/foundations.ts` `foundationCode`), which its consumers are also found through: `GlassWindowBlurTargetContext` (src/style/glass-surface/glass-surface.shared.tsx) |
 | Public exports | 1: `GlassModalBlurTarget` (component) |
 | K12-2 status | 1 public: GlassModalBlurTarget |
-| Documented on | none yet: the public API manifest names no page for any of its exports |
-| Docs planned | `integration`: GlassModalBlurTarget |
-| Materials manifest | GlassModalBlurTarget: style, inherited; docs route none (`docsRoute: null`); verification inherited-composition, semantic-state |
-| Tests of it | 4 (importing one of its public exports or one of its implementation's declarations by name, or named for it, `test/glass-modal-blur-target[-<what>].test.tsx`): `test/drawer-host.test.tsx`, `test/glass-blur-target.test.tsx`, `test/material-portal-context.test.tsx`, `test/material-resolution.test.tsx` |
+| Documented on | `integration`: GlassModalBlurTarget ("Native modals") |
+| Docs planned | none: every export has its page |
+| Materials manifest | GlassModalBlurTarget: style, inherited; docs route `integration`; verification inherited-composition, semantic-state |
+| Tests of it | 5 (importing one of its public exports or one of its implementation's declarations by name, or named for it, `test/glass-modal-blur-target[-<what>].test.tsx`): `test/drawer-host.test.tsx`, `test/glass-blur-target.test.tsx`, `test/glass-modal-blur-target.test.tsx`, `test/material-portal-context.test.tsx`, `test/material-resolution.test.tsx` |
 | Consumers | 4 components: 2 directly, 2 through other kit components (one row each below, read from the source by `tools/audit/kit-graph.ts`) |
 | Pages using it | none: no pattern or template entry names one of its exports |
 | Capture through | 4, in this order: components `action-sheet`, `drawer`, `filter-panel`, `sidebar`; pages none |
-| Not captured | guide pages, which the capture inventory (component, pattern and template pages) does not hold: `/integration` (planned for GlassModalBlurTarget) |
+| Not captured | guide pages, which the capture inventory (component, pattern and template pages) does not hold: `/integration` (documents GlassModalBlurTarget) |
 | Turn record | `audit/turns/glass-modal-blur-target.md`, written by `bun run audit:turn -- --slug=glass-modal-blur-target --phase=before\|after` (the before and after capture runs) |
 
 | Consumer | Reaches it | Through |
