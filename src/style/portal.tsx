@@ -227,10 +227,11 @@ export function OverlayProvider({ children, style, separateWindow = false, viewp
   // safe for this outlet. Never substitute the inherited window-level target.
   const inheritedSafeTarget = useContext(GlassBlurTargetContext);
   const outletBlurTarget = ownBlurTarget ?? inheritedSafeTarget;
-  // Separate-native-window surfaces (RN Modal — Drawer, ActionSheet) instead take
-  // the window-level target, where OUTERMOST wins so a Modal opened from a nested
-  // host (a docs stage) blurs the page, not just its stage. Safe at any depth: a
-  // Modal's window is never a descendant of the main window's target.
+  // Separate-native-window surfaces (a React Native Modal: Drawer, ActionSheet, an
+  // app's own, through GlassModalBlurTarget) instead take the window-level plane,
+  // where OUTERMOST wins so a Modal opened from a nested host (a docs stage) blurs
+  // the page, not just its stage. Safe at any depth: a Modal's window is never a
+  // descendant of the main window's plane.
   const inheritedWindowTarget = useContext(GlassWindowBlurTargetContext);
   const windowBlurTarget = inheritedWindowTarget ?? ownBlurTarget;
 

@@ -13,14 +13,16 @@ import { resolveCaptureComponents } from "../src/style/glass-surface/capture-run
 import { composite } from "../src/style/color.ts";
 import { OverlayProvider, Portal } from "../src/style/portal.tsx";
 
-// The Android sibling blur-target wiring (expo-blur 57+). What must hold, per
+// The Android capture-plane wiring (@nannier/canvas-blur). What must hold, per
 // GlassBlurTargetContext in glass-surface.shared: a surface may only receive a
-// target it is NOT a native descendant of (an ancestor target segfaults Android's
-// RenderThread), so OverlayProvider gives its outlet its OWN sibling target only,
-// GlassModalBlurTarget bridges the window-level target into a separate-window
-// Modal, and the base (non-Android) fork never reports a target at all. The
-// Android fork's BlurTargetView mounting itself is device-verified (the module
-// needs a native runtime); here we lock the pure style split it uses.
+// plane it is NOT a native descendant of (sampling an ancestor would record the
+// frost itself, a render-node cycle the module refuses), so OverlayProvider gives
+// its outlet its OWN sibling plane only, GlassModalBlurTarget bridges the
+// window-level plane into a separate-window Modal (its verdict on a refused plane
+// is test/glass-modal-blur-target.test.tsx's), and the base (non-Android) fork
+// never reports a plane at all. The Android fork's capture host mounting itself is
+// device-verified (the module needs a native runtime); here we lock the pure style
+// split it uses.
 
 afterEach(cleanup);
 
@@ -149,7 +151,7 @@ describe("OverlayProvider target publishing", () => {
     expect(seen).toBe(outer);
   });
 
-  it("gives portaled outlet content its OWN target only — here null (base fork), even with a window target above", () => {
+  it("gives portaled outlet content its OWN target only, here null (base fork), even with a window target above", () => {
     const outer = ref();
     let seen: unknown = "unset";
     function Probe() {
