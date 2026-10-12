@@ -24,7 +24,7 @@ import {
   type ViewStyle,
   GlassPane,
   withInnerFill,
-  alpha,
+  legibleWash,
 } from "../../style/index.js";
 import { OverlayScrollView } from "../../style/overlay-scroll.js";
 import { useComposedRefs } from "../../style/use-composed-refs.js";
@@ -222,7 +222,7 @@ export function createPhoneInput(skin: PhoneInputSkin) {
         onLayout={onBoxLayout}
         style={[boxSurface.style, { minHeight: field.groupedHeight(size) }, isError ? errorFrame.ring() : null]}
       >
-        <GlassPane {...entryMaterial.paneProps} stateBorder={boxSurface.keepsBorder} shape={boxShape} tint={isError ? alpha(tokens.destructive, 0.18) : undefined} />
+        <GlassPane {...entryMaterial.paneProps} stateBorder={boxSurface.keepsBorder} shape={boxShape} tint={isError ? legibleWash(theme, "error", entryMaterial.paneProps) : undefined} />
         <Pressable
           ref={countryRef}
           onPress={() => setOpen(!open)}

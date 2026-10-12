@@ -1,6 +1,6 @@
 import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
 import { type ReactNode } from "react";
-import { View, Pressable, Text, StyleSheet, useFillStyle, useTheme, useLayoutAxis, useReducedMotion, surfaceRipple, pressDim, RippleClip, cornerRadii, splitElevation, alpha, devWarn, GlassSurface, GlassPane, paneStyle, type StyleProp, type ViewStyle, type TextStyle, type LayoutStyle } from "../../style/index.js";
+import { View, Pressable, Text, StyleSheet, useFillStyle, useTheme, useLayoutAxis, useReducedMotion, surfaceRipple, pressDim, RippleClip, cornerRadii, splitElevation, alpha, devWarn, GlassSurface, GlassPane, paneStyle, legibleWash, type StyleProp, type ViewStyle, type TextStyle, type LayoutStyle } from "../../style/index.js";
 import { RAISED, liftStyle, useHover, useRaiseCell, useSettling } from "../../style/hover.js";
 import { Image } from "../../atoms/image/image.shared.js";
 import { imageLabel } from "../../atoms/image/image.accessibility.js";
@@ -208,6 +208,9 @@ export function createCard(skin: CardSkin) {
       // paints it in).
       selected ? { borderColor: tokens.primary, backgroundColor: alpha(tokens.primary, 0.05) } : null,
     ];
+    // Under glass the selection is the primary border, kept over the material as a state
+    // border, over the selection wash, capped where the card's ink would lose 4.5:1.
+    const selectionWash = selected ? legibleWash(theme, "selection", { layer: "content" }) : undefined;
     // A card told to GROW fills the box its parent hands it, at every level of its own
     // anatomy: the outermost node grows into the parent's box, a pressable card's Pressable
     // (the node that draws the surface) fills the RippleClip wrapper around it, and the
@@ -307,16 +310,16 @@ export function createCard(skin: CardSkin) {
             onPress={onPress}
             testID={testID}
             android_ripple={surfaceRipple(tokens)}
-            style={({ pressed }) => [paneStyle(theme, surface), elevChild, fill, pressDim(pressed), lift]}
+            style={({ pressed }) => [paneStyle(theme, surface, !!selected), elevChild, fill, pressDim(pressed), lift]}
           >
-            <GlassPane layer="content" shape={surface} tint={selected ? alpha(tokens.primary, 0.22) : undefined} />
+            <GlassPane layer="content" shape={surface} stateBorder={!!selected} tint={selectionWash} />
             {inner}
           </Pressable>
         </RippleClip>
       );
     }
     return (
-      <GlassSurface layer="content" testID={testID} tint={selected ? alpha(tokens.primary, 0.22) : undefined} style={[surface, skin.elevation(elev, tokens), outer]}>
+      <GlassSurface layer="content" testID={testID} stateBorder={!!selected} tint={selectionWash} style={[surface, skin.elevation(elev, tokens), outer]}>
         {inner}
       </GlassSurface>
     );

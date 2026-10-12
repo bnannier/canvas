@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { ActionSheet, Button, ButtonGroup, Card, Column, Dialog, Drawer, Dropdown, GlassModalBlurTarget, Input, Row, Slider, Switch, ThemeProvider, Typography } from "@nannier-com/canvas";
+import { ActionSheet, Button, ButtonGroup, Card, Column, Dialog, Drawer, Dropdown, GlassModalBlurTarget, Input, PhoneInput, Radio, RadioGroup, Row, Slider, Switch, ThemeProvider, Typography } from "@nannier-com/canvas";
 
 type Stats = { hosts: number; activeHosts: number; recordings: number; frostViews: number; frameListeners: number };
 declare const require: (name: string) => unknown;
@@ -101,6 +101,18 @@ export function MaterialsBody() {
       <GlassModalBlurTarget>
         <Card><Typography testID="material-misplaced">On Android, a bridge in the page keeps the solid skin.</Typography></Card>
       </GlassModalBlurTarget>
+      {/* The state washes (the owner's GP-2 decision): an errored field and a selected card
+          keep the solid recipe's ink at 4.5:1, on the page and on a content pane, so in the
+          light palettes their wash is almost none and the border carries the state. */}
+      <Typography h3>State washes</Typography>
+      <Column snug testID="material-washes">
+        <Input label="Amount" prefix="$" placeholder="0.00" error testID="material-wash-field" />
+        <PhoneInput label="Phone" error testID="material-wash-phone" />
+        <RadioGroup defaultValue="pro" label="Plan">
+          <Radio value="pro" card description="For growing teams.">Pro</Radio>
+        </RadioGroup>
+        <Card selected><Typography>Selected card</Typography><Typography muted>The selection wash under its text.</Typography></Card>
+      </Column>
       <Switch checked={nested} onChange={setNested} testID="material-nested">Nested glass</Switch>
       <ThemeProvider glass={nested} solid={!nested}>
         <Card><Typography>Nested glass remains active while its parent is solid.</Typography></Card>

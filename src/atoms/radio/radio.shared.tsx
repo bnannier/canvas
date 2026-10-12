@@ -3,7 +3,7 @@ import { forwardRef, type ReactNode } from "react";
 import { useComposedRefs } from "../../style/use-composed-refs.js";
 import { useSpaceActivation } from "../../style/use-space-activation.js";
 import { type GestureResponderEvent } from "react-native";
-import { View, Pressable, Text, surfaceRipple, RippleClip, cornerRadii, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle, type LayoutStyle, GlassPane, paneStyle, isGlass, alpha, withInnerFill } from "../../style/index.js";
+import { View, Pressable, Text, surfaceRipple, RippleClip, cornerRadii, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle, type LayoutStyle, GlassPane, paneStyle, isGlass, legibleWash, withInnerFill } from "../../style/index.js";
 import { useRadioGroup } from "./radio-context.js";
 
 // Shared Radio shell. Uses React Native's primitives DIRECTLY and reads the active
@@ -230,8 +230,9 @@ export function createRadio(skin: RadioSkin) {
         android_ripple={ripple}
         style={({ pressed }) => [
           // Card mode: the pressable IS the card surface (border, radius, fill, padding),
-          // its whole box handed to paneStyle so a resting border becomes padding under glass.
-          cardChrome ? paneStyle(theme, [rowBox, cardChrome]) : rowBox,
+          // its whole box handed to paneStyle so a resting border becomes padding under glass
+          // and a checked card's primary border stays, a state border over its pane.
+          cardChrome ? paneStyle(theme, [rowBox, cardChrome], isChecked) : rowBox,
           disabled ? { opacity: skin.disabledOpacity } : null,
           // A list row highlights while pressed (the iOS cell highlight, an ink tint over
           // glass); anywhere else the skin's own dim.
@@ -242,7 +243,7 @@ export function createRadio(skin: RadioSkin) {
           card ? null : style,
         ]}
       >
-        {cardChrome ? <GlassPane layer="content" shape={cardChrome} tint={isChecked ? alpha(tokens.primary, 0.22) : undefined} /> : null}
+        {cardChrome ? <GlassPane layer="content" shape={cardChrome} stateBorder={isChecked} tint={isChecked ? legibleWash(theme, "selection", { layer: "content" }) : undefined} /> : null}
         {mark.kind === "ring" ? (
           <View style={paneStyle(theme, mark.ring(tokens, size, isChecked, hasText))}>
             <GlassPane static layer="control" shape={mark.ring(tokens, size, isChecked, hasText)} brand={isChecked ? tokens.primary : undefined} />

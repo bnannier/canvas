@@ -4,7 +4,8 @@
   "sources": [
     "src/style/motion.ts",
     "src/style/glass-surface/web-frost.ts",
-    "src/style/identity-hue.ts"
+    "src/style/identity-hue.ts",
+    "src/style/glass-surface/glass-wash.ts"
   ],
   "references": [
     {
@@ -62,6 +63,18 @@
         "tools/native/reference/df-avatar/avatars-ui.png"
       ],
       "card": "tools/native/liquid-motion.md#df-avatar"
+    },
+    {
+      "name": "solid-state-washes",
+      "what": "the Canvas solid recipe for a field's error state and a selected card, the reference the glass state washes are judged against under the owner's GP-2 decision (Dark Factory has no error field or selected card: its fields.tsx paints no error fill and its Card has no selected state): the error field's destructive border over the white field, the checked Radio card's primary border over its 5 percent primary tint, the muted and foreground inks at 4.5:1 or better, on the web in blush, mint and dark solid",
+      "run": "recorded 2026-10-12 with Playwright from the turn worktree's docs export (1440 wide, DPR 2): /components/input/error, /components/phone-input/error and /components/radio/card in solid",
+      "strips": [
+        "tools/native/reference/solid-state-washes/input-error-blush.png",
+        "tools/native/reference/solid-state-washes/phone-input-error-blush.png",
+        "tools/native/reference/solid-state-washes/radio-card-blush.png",
+        "tools/native/reference/solid-state-washes/radio-card-dark.png"
+      ],
+      "card": "tools/native/liquid-motion.md#solid-state-washes"
     }
   ],
   "harness": {
