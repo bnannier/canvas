@@ -242,13 +242,15 @@ export function LabelContent({ label, required, starColor }: { label: string; re
  *    cannot move.
  *  - `tint` (0 to 1, its target focused or in error) drives only the colour, from
  *    `muted-foreground` to `primary-text` (or `destructive-text`), so a filled, valid,
- *    unfocused field floats yet stays muted. It runs on the JS driver on every platform:
- *    Android's text view takes its colour only through the paragraph's attributed string,
- *    so React Native 0.86's default native animated backend cannot animate a Text's colour,
- *    a stated exception to the native-driver gate in motion.ts. Natively each of its frames
- *    is a setNativeProps Fabric commit, with a single React render after the last frame; on
- *    the web both values run on the JS driver, and each frame updates the label through
- *    react-native-web's Animated for the length of the float.
+ *    unfocused field floats yet stays muted. It runs on the JS driver on every platform,
+ *    the one exception motion.ts states to its native-driver gate: React Native 0.86's
+ *    native driver, with its default feature flags, writes a frame onto the native view's
+ *    props, and Android's text view takes its colour only through the paragraph's
+ *    attributed text, so read from React Native's source (not yet confirmed on a device) it
+ *    would not repaint the label. Natively each of its frames is a setNativeProps Fabric
+ *    commit, with a single React render after the last frame; on the web both values run
+ *    on the JS driver, and each frame updates the label through react-native-web's Animated
+ *    for the length of the float.
  * Under Reduce Motion both values jump to their target in one write: the label still floats.
  * Each value is seeded at its target, so a field that mounts filled (or in error) is floated
  * (or tinted) from its first frame, the server's included, and a mount starts no timing.
@@ -346,9 +348,10 @@ export function FloatingLabel<S extends string>({
     Animated.timing(pos, { toValue: posTarget, duration: FLOAT.position.duration, easing: FLOAT_EASING, useNativeDriver: supportsNativeDriver }).start();
   }, [pos, posTarget, reduced]);
 
-  // tint drives ONLY the COLOR, always on the JS driver: React Native 0.86's native
-  // animated backend cannot animate a Text's colour on Android (see the JSDoc above). Never
-  // interpolate it off `pos`, which runs on the native driver.
+  // tint drives ONLY the COLOR, always on the JS driver, motion.ts's one stated exception:
+  // read from React Native 0.86's source, its native driver would not repaint a Text's
+  // colour on Android (see the JSDoc above). Never interpolate it off `pos`, which runs on
+  // the native driver.
   useEffect(() => {
     if (sent.current.tint === tintTarget) return;
     sent.current.tint = tintTarget;
