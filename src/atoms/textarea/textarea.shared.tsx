@@ -73,7 +73,7 @@ export interface TextareaProps extends TextEntryProps, MeasureProps {
    * Marks the field as required: appends a destructive "*" to the label (decorative,
    * never in the accessible name) and announces the field as required, through
    * aria-required on the web and with the word in its name ("Bio, required") on iOS
-   * and Android. Takes effect only alongside `label`.
+   * and Android. The star and the spoken word take effect only alongside `label`.
    */
   required?: boolean;
   /**
