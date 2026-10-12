@@ -77,7 +77,7 @@ export interface RadioGroupProps {
   style?: StyleProp<ViewStyle>;
 }
 
-type OptionProps = { value?: string | number; card?: boolean };
+type OptionProps = { value?: string | number; card?: boolean; disabled?: boolean };
 
 /** Build a RadioGroup from the platform's Radio skin (its `list` decides whether the options form a list section). */
 export function createRadioGroup(skin: RadioSkin) {
@@ -104,14 +104,18 @@ export function createRadioGroup(skin: RadioSkin) {
     // option, the WAI-ARIA radiogroup pattern). When nothing is selected yet, the
     // FIRST radio is the group's single tab stop (APG), so activeIndex floors at 0.
     const options = Children.toArray(props.children).filter(isValidElement) as ReactElement<OptionProps>[];
-    const values = options
-      .map((child) => child.props.value)
-      .filter((v): v is string | number => v !== undefined);
+    // The options that take part in the arrow keys, one per value, so an index means the
+    // same option in `values` and in `optionDisabled`.
+    const valued = options.filter((child) => child.props.value !== undefined);
+    const values = valued.map((child) => child.props.value as string | number);
+    const optionDisabled = valued.map((child) => child.props.disabled === true);
     const activeIndex = value === undefined ? 0 : Math.max(0, values.indexOf(value));
 
     // The list section holds plain options only: selectable cards are tiles of their own.
     const list = skin.list != null && options.length > 0 && !options.some((child) => child.props.card) ? skin.list : null;
 
+    // A disabled option is the hook's to skip (APG radio group): the arrows, Home and End
+    // never select it, and it is never the group's tab stop.
     const { getItemProps } = useRovingFocus({
       count: values.length,
       active: activeIndex,
@@ -120,11 +124,12 @@ export function createRadioGroup(skin: RadioSkin) {
       },
       orientation: "both",
       rtl: I18nManager.isRTL,
+      isDisabled: (i) => optionDisabled[i] === true,
     });
 
-    // Key the item-props callback on the value order so it only changes when the
-    // options or the active index change (not on every parent render).
-    const valuesKey = values.join(" ");
+    // Key the item-props callback on the value order and the disabled options so it only
+    // changes when the options or the active index change (not on every parent render).
+    const valuesKey = `${values.join(" ")}|${optionDisabled.join(" ")}`;
     const itemProps = useCallback(
       (v: string | number) => {
         const i = values.indexOf(v);

@@ -7,6 +7,13 @@ import { Platform } from "react-native";
 // activate the one focus lands on. This lives here once so Tabs, RadioGroup,
 // Listbox, and the Dropdown menu share a single implementation.
 //
+// A disabled item is the hook's to skip, so no owner can forget it: the arrows walk past
+// it in their direction of travel (wrapping with `loop`, stopping at the end without),
+// Home and End take the first and last enabled items, and it is never the tab stop. When
+// the active item is itself disabled (a controlled value naming a disabled option), the
+// first enabled item is the tab stop and the moves start from it, as a browser's own
+// radio group does; with every item disabled a key does nothing.
+//
 // Roving tab stops apply to the browser runtime. On Android, focusable=false
 // also removes Pressable's native click handler, so inactive rows would lose
 // TalkBack activation and let hover reach controls behind them. Native rows keep
@@ -28,13 +35,19 @@ export interface RovingFocusOptions {
   rtl?: boolean;
   /** Wrap past the ends (default true). */
   loop?: boolean;
+  /**
+   * Whether the item at `index` is disabled: never the tab stop, and the arrows, Home and
+   * End skip it. Omit when no item can be disabled.
+   */
+  isDisabled?: (index: number) => boolean;
 }
 
 export interface RovingItemProps {
-  /** Only the active row is focusable on web; native rows retain click support. */
+  /** Only the tab stop is focusable on web; native rows retain click support. */
   focusable: boolean;
-  /** Web tab order: 0 for the active item, -1 for the rest. Native uses 0 for
-   * every row so tabIndex does not disable Pressable's native click handler. */
+  /** Web tab order: 0 for the tab stop (the active item, or the first enabled one when
+   * the active item is disabled), -1 for the rest. Native uses 0 for every row so
+   * tabIndex does not disable Pressable's native click handler. */
   tabIndex: number;
   /** Ref that captures the item's host node so arrows can move focus to it. */
   ref: (node: Focusable) => void;
@@ -47,13 +60,13 @@ export function useRovingFocus(options: RovingFocusOptions): {
   /** Move DOM focus to an item by index (e.g. focus the first item when a menu opens). */
   focusItem: (index: number) => void;
 } {
-  const { count, active, onActivate, orientation = "horizontal", rtl = false, loop = true } = options;
+  const { count, active, onActivate, orientation = "horizontal", rtl = false, loop = true, isDisabled } = options;
 
   const refs = useRef<Focusable[]>([]);
   const refSetters = useRef<RovingItemProps["ref"][]>([]);
   // Latch live values so the memoized handlers never go stale without re-subscribing.
-  const state = useRef({ count, active, onActivate, orientation, rtl, loop });
-  state.current = { count, active, onActivate, orientation, rtl, loop };
+  const state = useRef({ count, active, onActivate, orientation, rtl, loop, isDisabled });
+  state.current = { count, active, onActivate, orientation, rtl, loop, isDisabled };
 
   const focusIndex = useCallback((index: number) => {
     refs.current[index]?.focus?.();
@@ -69,16 +82,31 @@ export function useRovingFocus(options: RovingFocusOptions): {
     [focusIndex],
   );
 
+  // The first enabled index met walking from `from` by `step` (1 or -1), wrapping past
+  // the ends when `wrap` is set; -1 when the walk meets none.
+  const enabledFrom = useCallback((from: number, step: 1 | -1, wrap: boolean) => {
+    const { count: n, isDisabled: disabledAt } = state.current;
+    for (let taken = 0; taken < n; taken++) {
+      let i = from + step * taken;
+      if (wrap) i = ((i % n) + n) % n;
+      else if (i < 0 || i >= n) return -1;
+      if (!disabledAt?.(i)) return i;
+    }
+    return -1;
+  }, []);
+
   const move = useCallback(
-    (delta: number) => {
+    (delta: 1 | -1) => {
       const { count: n, active: a, loop: wrap } = state.current;
       if (n === 0) return;
-      let next = a + delta;
-      if (wrap) next = (next + n) % n;
-      else next = Math.max(0, Math.min(n - 1, next));
-      activate(next);
+      // A disabled (or out-of-range) active item hands the tab stop, and the walk's
+      // start, to the first enabled item.
+      const from = a >= 0 && a < n && !state.current.isDisabled?.(a) ? a : enabledFrom(0, 1, false);
+      if (from === -1) return;
+      const next = enabledFrom(from + delta, delta, wrap);
+      if (next !== -1) activate(next);
     },
-    [activate],
+    [activate, enabledFrom],
   );
 
   const onKeyDown = useCallback(
@@ -107,20 +135,30 @@ export function useRovingFocus(options: RovingFocusOptions): {
           event.preventDefault();
           move(-1);
           break;
-        case "Home":
+        case "Home": {
           event.preventDefault();
-          activate(0);
+          const first = enabledFrom(0, 1, false);
+          if (first !== -1) activate(first);
           break;
-        case "End":
+        }
+        case "End": {
           event.preventDefault();
-          activate(n - 1);
+          const last = enabledFrom(n - 1, -1, false);
+          if (last !== -1) activate(last);
           break;
+        }
         default:
           return;
       }
     },
-    [move, activate],
+    [move, activate, enabledFrom],
   );
+
+  // The group's single tab stop: the active item, or the first enabled one when the
+  // active item is disabled; none when every item is.
+  const stop = active >= 0 && active < count && !isDisabled?.(active)
+    ? active
+    : Array.from({ length: count }, (_, i) => i).find((i) => !isDisabled?.(i)) ?? -1;
 
   const getItemProps = useCallback(
     (index: number): RovingItemProps => {
@@ -131,14 +169,14 @@ export function useRovingFocus(options: RovingFocusOptions): {
       };
       return {
         ...Platform.select({
-          web: { focusable: index === active, tabIndex: index === active ? 0 : -1 },
+          web: { focusable: index === stop, tabIndex: index === stop ? 0 : -1 },
           default: { focusable: true, tabIndex: 0 },
         }),
         ref: refSetters.current[index],
         onKeyDown,
       };
     },
-    [active, onKeyDown],
+    [stop, onKeyDown],
   );
 
   return { getItemProps, focusItem: focusIndex };
