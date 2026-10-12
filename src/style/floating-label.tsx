@@ -2,7 +2,7 @@ import { useEffect, useState, type ReactNode } from "react";
 import { Animated } from "react-native";
 import { Text, type TextStyle } from "./primitives.js";
 import { type ColorTokens } from "./tokens.js";
-import { useReducedMotion, supportsNativeDriver } from "./motion.js";
+import { useReducedMotion, supportsNativeDriver, FLOAT, FLOAT_EASING } from "./motion.js";
 import { primaryText } from "./primary-text.js";
 import { destructiveText } from "./destructive-text.js";
 
@@ -150,7 +150,7 @@ export function FloatingLabel<S extends string>({
       pos.setValue(posTarget);
       return;
     }
-    Animated.timing(pos, { toValue: posTarget, duration: 150, useNativeDriver: supportsNativeDriver }).start();
+    Animated.timing(pos, { toValue: posTarget, duration: FLOAT.position.duration, easing: FLOAT_EASING, useNativeDriver: supportsNativeDriver }).start();
   }, [pos, posTarget, reduced]);
 
   // tint drives ONLY the COLOR, always on the JS driver (color can't be native-
@@ -160,7 +160,7 @@ export function FloatingLabel<S extends string>({
       tint.setValue(tintTarget);
       return;
     }
-    Animated.timing(tint, { toValue: tintTarget, duration: 150, useNativeDriver: false }).start();
+    Animated.timing(tint, { toValue: tintTarget, duration: FLOAT.tint.duration, easing: FLOAT_EASING, useNativeDriver: false }).start();
   }, [tint, tintTarget, reduced]);
 
   const rest = styles.labelRest!(tokens, size) as TextStyle;

@@ -174,8 +174,8 @@ export { GESTURE_SURFACE } from "./gesture-surface.js";
 export { useHardwareBack } from "./use-hardware-back.js";
 export { useDialogFocus, usePopoverFocus } from "./use-dialog-focus.js";
 export { type RovingFocusOptions, type RovingItemProps, useRovingFocus } from "./use-roving-focus.js";
-// motion.ts also holds the hover tunables (HOVER, HOVER_EASING), which stay internal so
-// a tuned value never becomes API.
+// motion.ts also holds the hover and float tunables (HOVER, HOVER_EASING, FLOAT,
+// FLOAT_EASING), which stay internal so a tuned value never becomes API.
 export { enableAndroidLayoutAnimations, holdThen, keyframes, supportsNativeDriver, thereAndBack, useReducedMotion } from "./motion.js";
 export {
   createLoopChannel,
