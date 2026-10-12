@@ -106,8 +106,8 @@ provider, behind the `Modal`. `GlassModalBlurTarget` hands the Modal's glass the
 root provider's page on Android, so it frosts the page behind the Modal (see
 Theming below); it renders no view and does nothing on iOS and the web. It belongs
 only inside a `Modal`: in the main window, a react-native-screens or expo-router
-modal screen included, its surfaces keep their solid skin. Canvas `Drawer` and
-`ActionSheet` supply both automatically.
+modal screen included, its surfaces keep their solid skin. Canvas `Drawer` supplies
+both automatically, and `ActionSheet` its bridge.
 
 When page content scrolls under a header, declare the header's measured height as
 `viewportInsets={{ top: headerHeight }}` on the root or a nested `viewport` host.
