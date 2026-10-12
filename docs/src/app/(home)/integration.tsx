@@ -1,7 +1,7 @@
 import { Column } from "@nannier/canvas";
 import { Page, PageHeader } from "../../ui/page";
 import { Section } from "../../ui/section";
-import { P, H3, InlineCode, Rule } from "../../ui/prose";
+import { P, H3, InlineCode, Rule, BulletList } from "../../ui/prose";
 import { CodeBlock } from "../../ui/code-block";
 import { PageNav } from "../../ui/page-nav";
 
@@ -23,6 +23,50 @@ export function App() {
     <ThemeProvider>
       <Button primary large>Save</Button>
     </ThemeProvider>
+  );
+}`;
+
+const OVERLAY_HOST = `import { OverlayProvider, ThemeProvider } from "@nannier/canvas";
+
+// One overlay host at the app's root: inside ThemeProvider, outside any scroller.
+// It fills the window by default, so menus, popovers and sheets render above the
+// whole page in its outlet.
+export function App() {
+  return (
+    <ThemeProvider>
+      <OverlayProvider>
+        <Screens />
+      </OverlayProvider>
+    </ThemeProvider>
+  );
+}`;
+
+const NATIVE_MODAL = `import { Modal } from "react-native";
+import {
+  Button, Card, CardContent, CardHeader, CardTitle, Column,
+  GlassModalBlurTarget, OverlayProvider,
+} from "@nannier/canvas";
+
+// Your own React Native Modal, in Drawer's order: the bridge directly inside the
+// Modal's content, then an overlay host for the Modal's own window, then the content.
+export function ReceiptSent({ open, onClose }) {
+  return (
+    <Modal visible={open} transparent animationType="fade" onRequestClose={onClose}>
+      <GlassModalBlurTarget>
+        <OverlayProvider separateWindow>
+          <Column fill center pad>
+            <Card>
+              <CardHeader>
+                <CardTitle>Receipt sent</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <Button primary onPress={onClose}>Done</Button>
+              </CardContent>
+            </Card>
+          </Column>
+        </OverlayProvider>
+      </GlassModalBlurTarget>
+    </Modal>
   );
 }`;
 
@@ -177,8 +221,9 @@ export default function IntegrationScreen() {
           </P>
           <P muted>
             <InlineCode>@nannier/canvas-blur</InlineCode>: optional Android 12+ capture and frost for Expo SDK 57 native
-            builds, using a safe live backdrop target. Install it in the native app and rebuild so Expo autolinks the module.
-            Capture runs only while needed. Missing or unsafe material restores the complete opaque solid skin.
+            builds, sampling a safe live backdrop: the page behind an overlay or a native Modal (see Overlay hosting).
+            Install it in the native app and rebuild so Expo autolinks the module. Capture runs only while needed.
+            Missing or unsafe material restores the complete opaque solid skin.
           </P>
           <P muted>
             <InlineCode>react-native-safe-area-context</InlineCode>: safe-area insets for the overlays that use them
@@ -202,6 +247,47 @@ export default function IntegrationScreen() {
             below.
           </P>
           <CodeBlock code={QUICK_START} />
+        </Section>
+
+        <Rule />
+
+        <Section title="Overlay hosting">
+          <P muted>
+            Mount one <InlineCode>OverlayProvider</InlineCode> inside <InlineCode>ThemeProvider</InlineCode> at the
+            app's root, outside any scroller. It fills the window by default, and menus, selects, popovers and other
+            floating content render above the whole page in its outlet, placed against the window. Without one, they
+            render inline where they are declared. On Android with <InlineCode>@nannier/canvas-blur</InlineCode>, the
+            root provider's page content is also the capture plane its glass overlays sample for their frost; a
+            provider that does not fill its window has none, and glass there keeps its solid skin.
+          </P>
+          <CodeBlock code={OVERLAY_HOST} />
+          <H3>Native modals</H3>
+          <P muted>
+            A React Native <InlineCode>Modal</InlineCode> is a native window of its own on Android, outside the root
+            provider's page. <InlineCode>GlassModalBlurTarget</InlineCode> is the bridge that hands that page to the
+            Modal, so the glass inside it frosts the page behind the Modal. Canvas <InlineCode>Drawer</InlineCode> and{" "}
+            <InlineCode>ActionSheet</InlineCode> use it already. An app hosting its own Modal wraps the Modal's
+            content in it; it renders no view of its own.
+          </P>
+          <CodeBlock code={NATIVE_MODAL} />
+          <BulletList
+            subtle
+            items={[
+              "Put it directly inside the Modal's content, outside the Modal's own OverlayProvider separateWindow, which gives the menus and popovers inside the Modal a host in its window",
+              "It frosts on Android 12 or newer with @nannier/canvas-blur in an Expo SDK 57 native build, under an app-root OverlayProvider that fills the window. iOS (Liquid Glass and its frost) and the web (a backdrop filter) need no plane, so there it provides nothing, as it does on Android with no root provider: the Modal's surfaces render as they would without it",
+              "It belongs only in a Modal. Placed in the main window, around page content or in a react-native-screens or expo-router modal screen (which shares the main window on Android), it hands its surfaces the plane they sit inside, which can never be sampled: @nannier/canvas-blur 0.2 or newer reports that, and every surface under the bridge keeps its complete solid skin (an older module shows a tint with no blur)",
+              "On Android a Modal's frost samples the outermost OverlayProvider's page content only. It leaves out what is stacked above the page: the root outlet's toasts and pinned cards, any Modal beneath (a drawer opened from a drawer frosts the page, not the first drawer) and the Modal's own scrim and surfaces. iOS and the web blur the whole stack behind the Modal",
+            ]}
+          />
+          <H3>Accessibility</H3>
+          <P muted>
+            The bridge adds nothing to the accessibility tree: the Modal's content reaches VoiceOver, TalkBack and
+            the keyboard exactly as without it. The Modal's own semantics stay yours to give: its{" "}
+            <InlineCode>onRequestClose</InlineCode> for Android's Back and the Escape key, and{" "}
+            <InlineCode>accessibilityViewIsModal</InlineCode> so VoiceOver ignores the page behind it, as Drawer and
+            ActionSheet set them. Reduce Transparency and Increase Contrast give every surface inside the Modal its
+            opaque skin, as they do in the page.
+          </P>
         </Section>
 
         <Rule />

@@ -160,11 +160,11 @@ export function useBlurTargetRejection(): BlurTargetRejection | null {
  *   Android) the plane contains its surfaces: canvas-blur 0.2 or newer refuses it and
  *   says so, and every surface under the bridge then resolves its complete solid skin
  *   (an older module refuses it silently, leaving a tint with no blur).
- * - Read the material inside it: a component that resolves its material around the
- *   Modal sees the page's context, which offers no plane, and resolves solid while
- *   its own surfaces inside the Modal frost.
  */
 export function GlassModalBlurTarget({ children }: { children?: ReactNode }) {
+  // A kit component resolves its material (useMaterialTheme) inside the bridge, never
+  // around the Modal: the page's context offers no plane on Android, so a material read
+  // there resolves solid while the component's own surfaces inside the Modal frost.
   const target = useContext(GlassWindowBlurTargetContext);
   // The verdict is per bridge and per plane: trusted until its frost refuses it, which
   // it does at once when the bridge is misplaced, so a legitimate Modal never flashes
