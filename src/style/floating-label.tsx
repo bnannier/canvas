@@ -1,6 +1,8 @@
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { Animated } from "react-native";
 import { Text, type TextStyle } from "./primitives.js";
+import { fontStyle } from "./text.js";
+import { useTheme } from "./theme.js";
 import { type ColorTokens } from "./tokens.js";
 import { useReducedMotion, supportsNativeDriver, FLOAT, FLOAT_EASING } from "./motion.js";
 import { primaryText } from "./primary-text.js";
@@ -163,7 +165,12 @@ export function FloatingLabel<S extends string>({
     Animated.timing(tint, { toValue: tintTarget, duration: FLOAT.tint.duration, easing: FLOAT_EASING, useNativeDriver: false }).start();
   }, [tint, tintTarget, reduced]);
 
-  const rest = styles.labelRest!(tokens, size) as TextStyle;
+  // The label paints through Animated.Text, not the kit Text, so it takes the theme's
+  // face here (src/style/text.tsx `fontStyle`), on its static type only: the animated
+  // colour rides beside it, outside the flatten.
+  const { fonts } = useTheme();
+  const rest = useMemo(() => styles.labelRest!(tokens, size) as TextStyle, [styles, tokens, size]);
+  const themedRest = useMemo(() => fontStyle(rest, fonts), [rest, fonts]);
   const floated = styles.labelFloated!(tokens, size) as TextStyle;
   const restLine = asNum(rest.lineHeight, 24);
   const restSize = asNum(rest.fontSize, 16);
@@ -213,7 +220,7 @@ export function FloatingLabel<S extends string>({
             }
       }
     >
-      <Animated.Text nativeID={labelId} numberOfLines={1} style={[rest, { color }]}>
+      <Animated.Text nativeID={labelId} numberOfLines={1} style={[themedRest, { color }]}>
         <LabelContent label={label} required={required} starColor={tokens.destructive} />
       </Animated.Text>
     </Animated.View>

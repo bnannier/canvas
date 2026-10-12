@@ -8,6 +8,8 @@ The capture runs `bun run audit:turn -- --slug=floating-label` took for this tur
 |---|---|---|---|---|---|---|---|
 | `20261012-010852-web-64f7914` | variants | web | 2026-10-12T01:14:34.141Z | `64f7914` | complete | 1476 of 1476: 1476 ok, 0 failed | autocomplete, input, stepper, select, textarea, field, phone-input, alert-dialog, dialog |
 | `20261012-011434-web-64f7914` | states | web | 2026-10-12T01:16:49.735Z | `64f7914` | complete | 480 of 480: 474 ok, 0 failed, 6 not reached | autocomplete, input, stepper, select, textarea, field, phone-input, alert-dialog, dialog |
+| `20261012T012423Z-ios-3779ca6` | native | ios | 2026-10-12T01:56:26.950Z | `3779ca6` | complete | 492 of 492: 492 ok, 0 unstable, 0 failed | autocomplete, input, stepper, select, textarea, field, phone-input, alert-dialog, dialog |
+| `20261012T012423Z-android-3779ca6` | native | android | 2026-10-12T01:56:26.950Z | `3779ca6` | complete | 492 of 492: 492 ok, 0 unstable, 0 failed | autocomplete, input, stepper, select, textarea, field, phone-input, alert-dialog, dialog |
 
 ## after
 
