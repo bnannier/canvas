@@ -80,6 +80,7 @@ One row per finding. Severity: critical, high, medium, low. Cell: a capture id f
 
 | ID | Severity | Cell | Summary | Status | Fix commit |
 |---|---|---|---|---|---|
+| filter-panel-drawer-chrome-1 | low | source | In drawer mode on Android with `@nannier/canvas-blur` in glass, a `bordered` panel keeps its opaque card chrome inside the frosted Drawer: `useMaterialTheme` (filter-panel.shared.tsx) runs around the Drawer, in the page, whose context offers no capture plane, so `paneStyle` returns the solid chrome while the Drawer's panel inside its `GlassModalBlurTarget` frosts; on the web and iOS the chrome drops there, as the component's comment intends. Reproduced under bun with Android capabilities, a ready window plane and a 390 px viewport: the panel paints rgba(255, 255, 255, 1) with its hairline inside the glass drawer. Resolve the panel's material where it renders (inside the Drawer in drawer mode), as the bridge's contract says. Found in the GlassModalBlurTarget turn (GMBT-7). | open |  |
 
 ## Sign-off
 

@@ -87,6 +87,7 @@ One row per finding. Severity: critical, high, medium, low. Cell: a capture id f
 
 | ID | Severity | Cell | Summary | Status | Fix commit |
 |---|---|---|---|---|---|
+| action-sheet-material-outside-bridge-1 | medium | source | On Android with `@nannier/canvas-blur` in glass, the sheet's header reads its material outside its Modal: `useMaterialTheme({ layer: "functional" })` runs at the top of the component (action-sheet.shared.tsx), in the page, whose context offers no capture plane, so it resolves solid while the actions and Cancel cards inside the `GlassModalBlurTarget` frost the page. `glassMessageStyle` then keeps the solid recipe's muted message ink (#696b8d in light) on a light frost where the glass rule asks for `popover-foreground` (#3b3c5c), the contrast loss that rule exists to prevent. Reproduced under bun with Android capabilities and a ready window plane: 2 materials, message colour rgba(105, 107, 141). Resolve the header's material inside the bridge (a component rendered inside the Modal), as the bridge's contract says. Found in the GlassModalBlurTarget turn (GMBT-7). | open |  |
 
 ## Sign-off
 
