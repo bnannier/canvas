@@ -7,6 +7,7 @@ import { type ColorTokens } from "./tokens.js";
 import { useReducedMotion, supportsNativeDriver, FLOAT, FLOAT_EASING } from "./motion.js";
 import { primaryText } from "./primary-text.js";
 import { destructiveText } from "./destructive-text.js";
+import { isRTL } from "./rtl.js";
 
 // The Material 3 in-container FLOATING label, shared by every filled field family
 // (Input, Autocomplete, Select, Textarea). It is the SINGLE source of truth for the
@@ -95,8 +96,10 @@ export function LabelContent({ label, required, starColor }: { label: string; re
  *  - `tint` (0->1) drives ONLY the color, on the JS driver ALWAYS (color can't be
  *    native-driven). Target = focused || error, so a filled-but-unfocused valid
  *    field floats yet stays muted.
- * transformOrigin "0% 50%" pins the leading edge while it scales (no measurement,
- * no translateX); RTL uses the logical `start` inset.
+ * The label is pinned to the logical `start` edge, and its transform origin pins that
+ * edge while it scales (no measurement, no translateX): the origin follows the layout
+ * direction from `isRTL()`, "0% 50%" or "100% 50%", because transform origins are
+ * physical while `start` is the right edge in a right-to-left layout.
  *
  * Geometry: the label's resting and floated vertical CENTERS are computed, and
  * translateY carries the resting center to the floated one:
@@ -192,12 +195,17 @@ export function FloatingLabel<S extends string>({
     outputRange: [tokens["muted-foreground"], isError ? destructiveText(tokens) : primaryText(tokens)],
   });
 
+  // Transform origins are physical (React Native, Fabric and CSS alike) while the label is
+  // pinned to the logical start edge, so the origin names the side `start` lands on: the
+  // left, or the right in a right-to-left layout (as touch-seam.ts's inlineSide does).
+  const transformOrigin = isRTL() ? "100% 50%" : "0% 50%";
+
   return (
     <Animated.View
       // pointerEvents:none so taps fall through to the field beneath. Single-line
       // fills the field vertically and centers the label (rest center = height/2);
       // multiline pins the label at the top text line (top = reserve). The transform
-      // then floats it, scaling around the box center (transformOrigin 0% 50%).
+      // then floats it, scaling around its leading edge (transformOrigin above).
       style={
         multiline
           ? {
@@ -205,7 +213,7 @@ export function FloatingLabel<S extends string>({
               top: reserve,
               start: inset,
               pointerEvents: "none",
-              transformOrigin: "0% 50%",
+              transformOrigin,
               transform: [{ translateY }, { scale }],
             }
           : {
@@ -215,7 +223,7 @@ export function FloatingLabel<S extends string>({
               start: inset,
               justifyContent: "center",
               pointerEvents: "none",
-              transformOrigin: "0% 50%",
+              transformOrigin,
               transform: [{ translateY }, { scale }],
             }
       }
