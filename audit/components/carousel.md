@@ -84,6 +84,7 @@ One row per finding. Severity: critical, high, medium, low. Cell: a capture id f
 
 | ID | Severity | Cell | Summary | Status | Fix commit |
 |---|---|---|---|---|---|
+| carousel-android-default-index-smoke | medium | source | On CI's Android emulator, after the native smoke switched the device to the dark scheme (`cmd uimode night yes`), the Carousel fixture opened with its state on its default index (Current page: 2, the second dot active) while the card on screen was Page 1, so the visible slide disagreed with the indicator and the smoke's `carousel-page-2` assertion failed (run 38190591476, android-evidence/dark/measurement step 214). The light pass of the same run, and local runs, open on page 2. The default index's initial scroll is not applied in some mount after a configuration change; for Carousel's turn. | open |  |
 
 ## Sign-off
 
