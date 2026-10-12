@@ -96,6 +96,7 @@ One row per finding. Severity: critical, high, medium, low. Cell: a capture id f
 | ID | Severity | Cell | Summary | Status | Fix commit |
 |---|---|---|---|---|---|
 | button-brand-over-scrim-1 | low | source | A brand (primary or action) Button's label is held to 4.5:1 by `brandTint` against a reference backdrop, but over a dimming scrim and a dense sheet it samples a shade darker: the Popover phone sheet's Rename label reads 4.49:1 on the Android skin in dark glass (4.54:1 on the web and iOS skins), a pixel-sampled 'review' in the AnchoredOverlay turn's after run 20261011-024751-web-8d40e0c (cell web-states/popover/open.android/phone.dark.glass) (4.72:1 and 4.77:1 before the sheet took the dense layer over its scrim). Check whether `brandTint` should hold its 4.5:1 against the darkest backdrop the kit puts a brand control over, and confirm on the devices. | open | |
+| button-link-inset-1 | low | source | A `link` Button keeps a control's horizontal padding, so set in a column of text its label starts about 12 dp right of the text above it: the "See Popover" links in /foundation's stacked rows, on iOS (dark glass) and Android (blush solid), seen in the FoundationReference turn (2026-10-12). Check whether a link Button should drop its inline padding (keeping its touch area through hitSlop) on every platform, against Dark Factory's text links. | open |  |
 
 ## Sign-off
 
