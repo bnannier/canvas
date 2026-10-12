@@ -634,3 +634,87 @@ describe("text paints in the theme's face", () => {
     expect(painters(`import { Text } from "../../style/index.js";`)).toEqual([]);
   });
 });
+
+describe("the Android capture plane stays out of its own window", () => {
+  // The window plane (GlassWindowBlurTargetContext) is the outermost OverlayProvider's
+  // page content, and everything in the main window is inside it: a surface there that
+  // sampled it would sample itself, which @nannier/canvas-blur refuses. So it has two
+  // readers only, OverlayProvider (which publishes it and keeps it from its own outlet)
+  // and GlassModalBlurTarget (which hands it to a separate native window), and every
+  // React Native Modal in the kit puts its content under the bridge, or its glass
+  // surfaces keep their solid skin on Android where they could frost the page.
+  const WINDOW_PLANE = "GlassWindowBlurTargetContext";
+  const READERS = new Set(["src/style/portal.tsx OverlayProvider", "src/style/glass-surface/glass-surface.shared.tsx GlassModalBlurTarget"]);
+  const BRIDGE = "GlassModalBlurTarget";
+
+  /** Each use of the window plane outside an import, export or its declaration, by enclosing function. */
+  function planeReaders(file: string, text: string): string[] {
+    const source = ts.createSourceFile(file, text, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
+    const found: string[] = [];
+    const visit = (node: ts.Node, owner: string) => {
+      let name = owner;
+      if (ts.isFunctionDeclaration(node) && node.name) name = node.name.text;
+      else if (ts.isVariableDeclaration(node) && ts.isIdentifier(node.name) && node.initializer && (ts.isArrowFunction(node.initializer) || ts.isFunctionExpression(node.initializer))) name = node.name.text;
+      if (ts.isIdentifier(node) && node.text === WINDOW_PLANE) {
+        const parent = node.parent;
+        const declaring = (ts.isVariableDeclaration(parent) && parent.name === node) || ts.isImportSpecifier(parent) || ts.isExportSpecifier(parent);
+        if (!declaring) found.push(`${file} ${owner || "(module)"}`);
+      }
+      ts.forEachChild(node, (child) => visit(child, name));
+    };
+    visit(source, "");
+    return found;
+  }
+
+  /** The line of each React Native Modal element whose content has no GlassModalBlurTarget in it. */
+  function unbridgedModals(file: string, text: string): number[] {
+    const source = ts.createSourceFile(file, text, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
+    const modals = new Set<string>();
+    for (const statement of source.statements) {
+      if (!ts.isImportDeclaration(statement) || (statement.moduleSpecifier as ts.StringLiteral).text !== "react-native") continue;
+      const named = statement.importClause?.namedBindings;
+      if (statement.importClause?.isTypeOnly || named == null || !ts.isNamedImports(named)) continue;
+      for (const element of named.elements) {
+        if (!element.isTypeOnly && (element.propertyName ?? element.name).text === "Modal") modals.add(element.name.text);
+      }
+    }
+    const tagOf = (node: ts.JsxElement | ts.JsxSelfClosingElement) => (ts.isJsxElement(node) ? node.openingElement.tagName : node.tagName).getText(source);
+    const bridged = (node: ts.Node): boolean => {
+      if ((ts.isJsxElement(node) || ts.isJsxSelfClosingElement(node)) && tagOf(node) === BRIDGE) return true;
+      return ts.forEachChild(node, bridged) ?? false;
+    };
+    const lines: number[] = [];
+    const visit = (node: ts.Node) => {
+      if ((ts.isJsxElement(node) || ts.isJsxSelfClosingElement(node)) && modals.has(tagOf(node))) {
+        const content = ts.isJsxElement(node) ? node.children : [];
+        if (!content.some(bridged)) lines.push(source.getLineAndCharacterOfPosition(node.getStart(source)).line + 1);
+      }
+      ts.forEachChild(node, visit);
+    };
+    visit(source);
+    return lines;
+  }
+
+  it("is read only by OverlayProvider and the Modal bridge", () => {
+    const readers = sources.flatMap(({ file, text }) => planeReaders(file, text));
+    expect(readers.length).toBeGreaterThan(0);
+    expect(readers.filter((reader) => !READERS.has(reader))).toEqual([]);
+  });
+
+  it("every React Native Modal in the kit puts its content under the bridge", () => {
+    const offenders = sources.flatMap(({ file, text }) => unbridgedModals(file, text).map((line) => `${file}:${line} renders a React Native Modal with no ${BRIDGE} around its content`));
+    expect(offenders).toEqual([]);
+  });
+
+  it("the checks find a reader elsewhere and a Modal without the bridge", () => {
+    expect(planeReaders("src/organisms/x/x.tsx", `import { GlassWindowBlurTargetContext } from "../../style/glass-surface/glass-surface.shared.js";
+function Sheet() { const plane = useContext(GlassWindowBlurTargetContext); return plane; }`)).toEqual(["src/organisms/x/x.tsx Sheet"]);
+    expect(planeReaders("src/style/x.tsx", `export const GlassWindowBlurTargetContext = createContext(null);`)).toEqual([]);
+    const modal = (body: string) => unbridgedModals("x.tsx", `import { Modal as NativeModal, View } from "react-native";
+function Sheet() { return <NativeModal visible transparent>${body}</NativeModal>; }`);
+    expect(modal("<View><Card /></View>")).toEqual([2]);
+    expect(modal("<SafeAreaProvider><GlassModalBlurTarget><Card /></GlassModalBlurTarget></SafeAreaProvider>")).toEqual([]);
+    expect(unbridgedModals("x.tsx", `import { type Modal } from "react-native";
+function Sheet() { return <Modal />; }`)).toEqual([]);
+  });
+});
