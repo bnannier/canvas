@@ -100,6 +100,15 @@ describe("Tabs roving keyboard navigation", () => {
     fireEvent.keyDown(tabs()[2], { key: "Home" });
     expect(selected()).toBe(1);
   });
+
+  it("hands the tab stop to the first enabled tab when the active one is disabled", () => {
+    const { container } = ui(
+      <Tabs tabs={["One", { label: "Two", disabled: true }, "Three"]} active={1} />,
+    );
+    const tabs = () => [...container.querySelectorAll('[role="tab"]')];
+    // Before, no trigger was a tab stop and the row could not be reached by Tab at all.
+    expect(tabs().map((t) => t.getAttribute("tabindex"))).toEqual(["0", "-1", "-1"]);
+  });
 });
 
 describe("RadioGroup roving keyboard navigation", () => {
@@ -127,6 +136,49 @@ describe("RadioGroup roving keyboard navigation", () => {
     expect(checked()).toBe(0);
     fireEvent.keyDown(radios()[0], { key: "ArrowUp" });
     expect(checked()).toBe(2);
+  });
+
+  it("never selects or stops on a disabled option: the arrows, Home and End skip it", () => {
+    const changes: (string | number)[] = [];
+    const { container } = ui(
+      <RadioGroup defaultValue="a" onChange={(value) => changes.push(value)}>
+        <Radio value="a">Alpha</Radio>
+        <Radio value="b" disabled>Beta</Radio>
+        <Radio value="c">Gamma</Radio>
+        <Radio value="d" disabled>Delta</Radio>
+      </RadioGroup>,
+    );
+    const radios = () => [...container.querySelectorAll('[role="radio"]')];
+    const checked = () => radios().findIndex((r) => r.getAttribute("aria-checked") === "true");
+    expect(radios().map((r) => r.getAttribute("tabindex"))).toEqual(["0", "-1", "-1", "-1"]);
+    // ArrowDown walks past Beta to Gamma, and focus goes with it.
+    fireEvent.keyDown(radios()[0], { key: "ArrowDown" });
+    expect(checked()).toBe(2);
+    expect(document.activeElement).toBe(radios()[2]);
+    // ArrowDown again walks past Delta and wraps to Alpha; ArrowUp wraps back past Delta.
+    fireEvent.keyDown(radios()[2], { key: "ArrowDown" });
+    expect(checked()).toBe(0);
+    fireEvent.keyDown(radios()[0], { key: "ArrowUp" });
+    expect(checked()).toBe(2);
+    // End lands on the last enabled option, Home on the first.
+    fireEvent.keyDown(radios()[2], { key: "Home" });
+    expect(checked()).toBe(0);
+    fireEvent.keyDown(radios()[0], { key: "End" });
+    expect(checked()).toBe(2);
+    expect(changes).not.toContain("b");
+    expect(changes).not.toContain("d");
+  });
+
+  it("makes the first enabled option the tab stop when the selected one is disabled", () => {
+    const { container } = ui(
+      <RadioGroup value="a">
+        <Radio value="a" disabled>Alpha</Radio>
+        <Radio value="b">Beta</Radio>
+        <Radio value="c">Gamma</Radio>
+      </RadioGroup>,
+    );
+    const radios = () => [...container.querySelectorAll('[role="radio"]')];
+    expect(radios().map((r) => r.getAttribute("tabindex"))).toEqual(["-1", "0", "-1"]);
   });
 });
 
