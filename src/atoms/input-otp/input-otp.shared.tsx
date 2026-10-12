@@ -339,7 +339,7 @@ export function createInputOTP(skin: InputOTPSkin) {
                         accessibilityElementsHidden
                         importantForAccessibility="no-hide-descendants"
                       >
-                        {skin.connected ? null : <GlassPane {...entryMaterial.paneProps} shape={cellShape} />}
+                        {skin.connected ? null : <GlassPane {...entryMaterial.paneProps} shape={cellShape} stateBorder={active} />}
                         {filled ? (
                           // U+25CF BLACK CIRCLE, not the U+2022 text bullet: at the digit font
                           // size the text bullet paints as a tiny dot, while BLACK CIRCLE reads

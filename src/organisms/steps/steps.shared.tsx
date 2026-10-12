@@ -1,7 +1,7 @@
 import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
 import { type ReactNode } from "react";
 import { type DimensionValue, type Insets } from "react-native";
-import { View, Pressable, Text, RippleClip, cornerRadii, useControllableState, useContainerBreakpoint, containerProbe, type BreakpointKey, type Responsive, type StyleProp, type ViewStyle, type LayoutStyle, GlassPane, paneStyle, isGlass } from "../../style/index.js";
+import { View, Pressable, Text, RippleClip, cornerRadii, useControllableState, useContainerBreakpoint, containerProbe, type BreakpointKey, type Responsive, type StyleProp, type ViewStyle, type LayoutStyle, GlassPane, paneStyle } from "../../style/index.js";
 import { leastLine, useSeededMinTargetSlop, styleBox } from "../../style/touch-target-seed.js";
 import { inlineSide, slopSides, splitSeam } from "../../style/touch-seam.js";
 import * as s from "./steps.styles.js";
@@ -131,13 +131,15 @@ export function createSteps(skin: StepsSkin) {
     const theme = useMaterialTheme({ static: true, layer: "control" });
     const { tokens } = theme;
     // Completed and upcoming discs use stable frost. An intentionally unfilled
-    // current-step ring retains its skin outline without acquiring a material.
+    // current-step ring retains its skin outline without acquiring a material; a filled
+    // one (Android's) keeps its ring as a state border, over its pane under glass and in
+    // its own colour under Increase Contrast.
     const circle = skin.circleState(tokens, state);
     const surfaced = circle.backgroundColor != null && circle.backgroundColor !== "transparent";
+    const current = state === "current";
     const shape = [s.circleBase, circle];
-    const circleStyle = [surfaced ? paneStyle(theme, shape) : shape,
-      surfaced && state === "current" && isGlass(theme) ? { borderColor: circle.borderColor } : null];
-    const pane = surfaced ? <GlassPane static layer="control" shape={shape} brand={state === "completed" ? tokens.primary : undefined} /> : null;
+    const circleStyle = surfaced ? paneStyle(theme, shape, current) : shape;
+    const pane = surfaced ? <GlassPane static layer="control" shape={shape} stateBorder={current} brand={state === "completed" ? tokens.primary : undefined} /> : null;
     const glyph = (
       <Text style={[s.glyphBase, skin.glyphState(tokens, state)]}>
         {state === "completed" ? "✓" : String(index + 1)}

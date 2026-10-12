@@ -156,8 +156,7 @@ export function createMetricBreakdown(skin: ChartSkin, parts: MetricBreakdownPar
         aria-label={label}
         testID={testID}
         style={[
-          props.plain ? null : paneStyle(theme, surfaceShape),
-          props.plain ? null : compact ? s.surfacePadCompact : s.surfacePadDefault,
+          props.plain ? null : paneStyle(theme, [surfaceShape, compact ? s.surfacePadCompact : s.surfacePadDefault]),
           CHART_ROOT,
           { gap: sectionGap },
           style,

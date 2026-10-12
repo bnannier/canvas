@@ -222,7 +222,7 @@ export function createPhoneInput(skin: PhoneInputSkin) {
         onLayout={onBoxLayout}
         style={[boxSurface.style, { minHeight: field.groupedHeight(size) }, isError ? errorFrame.ring() : null]}
       >
-        <GlassPane {...entryMaterial.paneProps} shape={boxShape} tint={isError ? alpha(tokens.destructive, 0.18) : undefined} />
+        <GlassPane {...entryMaterial.paneProps} stateBorder={boxSurface.keepsBorder} shape={boxShape} tint={isError ? alpha(tokens.destructive, 0.18) : undefined} />
         <Pressable
           ref={countryRef}
           onPress={() => setOpen(!open)}

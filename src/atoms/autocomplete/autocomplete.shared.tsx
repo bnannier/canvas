@@ -284,7 +284,7 @@ export function createAutocomplete(skin: AutocompleteSkin) {
             disabled ? { opacity: skin.disabledOpacity } : null,
           ]}
         >
-          <GlassPane {...entryMaterial.paneProps} shape={fieldShape} />
+          <GlassPane {...entryMaterial.paneProps} stateBorder={fieldSurface.keepsBorder} shape={fieldShape} />
           <TextInput
             ref={accessibilityReturn.inputRef}
             // The field paints its own focus state (the skin's active border), so
@@ -430,6 +430,7 @@ export function createAutocomplete(skin: AutocompleteSkin) {
               isError={false}
               height={fieldHeight}
               end={labelEnd}
+              edges={fieldSurface.edges}
               onLine={room.onLine}
             />
           ) : null}

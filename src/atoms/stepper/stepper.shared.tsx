@@ -219,7 +219,7 @@ export function createStepper(skin: StepperSkin) {
     // text-entry material (the box's own border, or the clear well's overlay).
     const groupSurface = groupSurfaced ? entryMaterial.stateSurface(groupShape, focused && !!skin.groupShowsFocus) : null;
     const groupStyle = groupSurface ? groupSurface.style : groupShape;
-    const groupPane = groupSurfaced ? <GlassPane {...entryMaterial.paneProps} shape={groupShape} /> : null;
+    const groupPane = groupSurface ? <GlassPane {...entryMaterial.paneProps} stateBorder={groupSurface.keepsBorder} shape={groupShape} /> : null;
     const buttonPane = (shape: ViewStyle, inactive: boolean) => (groupSurfaced ? null : <GlassPane layer="control" shape={shape} interactive={!inactive} />);
 
     // Collision-free ids so the group can name itself from the visible label and be

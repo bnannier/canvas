@@ -241,8 +241,7 @@ export function createChart(skin: ChartSkin) {
         aria-label={chartName}
         testID={testID}
         style={[
-          paneStyle(theme, surfaceShape),
-          compact ? s.surfacePadCompact : s.surfacePadDefault,
+          paneStyle(theme, [surfaceShape, compact ? s.surfacePadCompact : s.surfacePadDefault]),
           CHART_ROOT,
           style,
         ]}

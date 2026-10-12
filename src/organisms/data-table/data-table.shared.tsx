@@ -438,7 +438,7 @@ export function createDataTable(skin: DataTableSkin, parts: DataTableParts) {
     return (
       <View style={{ alignSelf: "stretch" }}>
         <GlassPane {...material.paneProps} shape={shape} />
-        <TextInput {...props} style={[paneStyle(material.theme, shape), props.style, PANE_SIBLING_INPUT]} />
+        <TextInput {...props} style={[paneStyle(material.theme, [shape, props.style]), PANE_SIBLING_INPUT]} />
       </View>
     );
   }

@@ -299,14 +299,19 @@ export function createChip(skin: ChipSkin) {
       },
     ];
     const liquid = surfaced && !staticMaterial;
-    const container: StyleProp<ViewStyle> = [
-      surfaced || theme.increasedContrast ? paneStyle(theme, chrome) : chrome,
+    // The pill's whole box, its per-side insets included, so that under glass paneStyle
+    // turns the resting border into padding on top of them.
+    const box: StyleProp<ViewStyle> = [
+      chrome,
       skin.sidePadding
         ? {
             paddingStart: hasLeading ? skin.sidePadding.icon : skin.sidePadding.text,
             paddingEnd: hasTrailing ? skin.sidePadding.icon : skin.sidePadding.text,
           }
         : null,
+    ];
+    const container: StyleProp<ViewStyle> = [
+      surfaced || theme.increasedContrast ? paneStyle(theme, box) : box,
       disabled && !liquid ? { opacity: 0.5 } : null,
       hug,
       style,
