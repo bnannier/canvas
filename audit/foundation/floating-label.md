@@ -8,8 +8,8 @@ Audit checklist for the style-layer foundation `FloatingLabel`, audited for its 
 | Foundation | `FloatingLabel`, a style-layer renderable with no component page of its own (`tools/materials/manifest.ts`, the style tier), declared in `src/style/floating-label.tsx` |
 | Source files | `src/style/floating-label.tsx` (its homes, its exports' declarations and its implementation, the private declarations they read) |
 | Seams | 1, the private declarations it alone reads (`tools/audit/foundations.ts` `foundationCode`), which its consumers are also found through: `asNum` (src/style/floating-label.tsx) |
-| Public exports | 4: `FloatingLabel` (internal-by-accident), `FloatingLabelStyles` (internal-by-accident, a type), `HIDDEN_FROM_A11Y` (internal-by-accident), `LabelContent` (internal-by-accident) |
-| K12-2 status | 4 deprecated alias to come (K12-2): FloatingLabel, FloatingLabelStyles, HIDDEN_FROM_A11Y, LabelContent |
+| Public exports | 4: `FloatingLabel` (deprecated-alias), `FloatingLabelStyles` (deprecated-alias, a type), `HIDDEN_FROM_A11Y` (deprecated-alias), `LabelContent` (deprecated-alias) |
+| K12-2 status | 4 deprecated alias already: FloatingLabel, FloatingLabelStyles, HIDDEN_FROM_A11Y, LabelContent |
 | Documented on | none yet: the public API manifest names no page for any of its exports |
 | Docs planned | `foundation` (not built yet): FloatingLabel, FloatingLabelStyles, HIDDEN_FROM_A11Y, LabelContent |
 | Materials manifest | FloatingLabel: style, inherited; docs route none (`docsRoute: null`); verification inherited-composition, semantic-state |

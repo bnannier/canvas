@@ -136,7 +136,35 @@ export {
 } from "./sizing.js";
 export { FOCUS_RESET } from "./focus-reset.js";
 export { activeIndicator, type ActiveIndicatorOptions } from "./active-indicator.js";
-export { FloatingLabel, type FloatingLabelStyles, HIDDEN_FROM_A11Y, LabelContent } from "./floating-label.js";
+// The field label's machinery (the Android floating label, the label text with its
+// required marker, and the slice of a field skin that places it) was published by
+// accident the same way as the overlay machinery below; each name is a deprecated alias
+// that keeps working until a major (audit K12-2). As there, the tags sit on these
+// specifiers only and the internal hub re-exports the declarations untagged.
+export {
+  /**
+   * @deprecated Kit internals: the label that Input, Textarea, Select and Autocomplete
+   * float for you; pass their `label` and `required` props. It keeps working until a
+   * major.
+   */
+  FloatingLabel,
+  /**
+   * @deprecated Kit skin internals: the label-placement slice of a field skin, with no
+   * replacement. It keeps working until a major.
+   */
+  type FloatingLabelStyles,
+  /**
+   * @deprecated Kit internals: kit components hide their own decorative content, for
+   * example Icon `decorative`. It keeps working until a major.
+   */
+  HIDDEN_FROM_A11Y,
+  /**
+   * @deprecated Kit internals: the label text and required marker that Input, Textarea,
+   * Select, Autocomplete, Field, Stepper and PhoneInput render from their `label` and
+   * `required` props. It keeps working until a major.
+   */
+  LabelContent,
+} from "./floating-label.js";
 export { controlRipple, platformDisabledDim, pressDim, rippleClip, surfaceRipple } from "./ripple.js";
 export { cornerRadii, RippleClip, type RippleClipProps, rippleClipWrapperStyle, splitElevation } from "./ripple-clip.js";
 export { useControllableState } from "./use-controllable-state.js";
