@@ -33,17 +33,29 @@ for (const scheme of ["light", "dark"] as const) {
   test(`a long floating label stays inside its field at phone width (${scheme})`, async ({ page }) => {
     await gotoDocs(page, "/testing/floating-label", { scheme, viewport: { width: 390, height: 900 } });
 
-    // Input: clear of the field's 16 dp end padding, at rest and once focus floats it.
-    for (const name of [`Input: ${LONG}`, `Filled input: ${LONG}`]) {
+    // Input: clear of the field's 16 dp end padding, at rest and once focus floats it (the
+    // empty field floats on focus; the filled one rests floated).
+    {
+      const name = `Input: ${LONG}`;
       const field = page.getByRole("textbox", { name, exact: true });
-      const { truncated, box } = await labelOf(page, name);
-      expect(truncated, name).toBe(true);
-      expect(right(box), name).toBeLessThanOrEqual(right(await boxOf(field)) - 16 + EPSILON);
+      const rest = await labelOf(page, name);
+      expect(rest.truncated, name).toBe(true);
+      expect(right(rest.box), name).toBeLessThanOrEqual(right(await boxOf(field)) - 16 + EPSILON);
       await field.focus();
+      // Floated, the label paints smaller, at the top of the field, still inside it.
+      await expect.poll(async () => (await labelOf(page, name)).box.height, { message: `${name}, floated` }).toBeLessThan(rest.box.height);
       const floated = await labelOf(page, name);
       expect(right(floated.box), `${name}, floated`).toBeLessThanOrEqual(right(await boxOf(field)) - 16 + EPSILON);
       expect(floated.box.y, `${name}, floated`).toBeGreaterThanOrEqual((await boxOf(field)).y - EPSILON);
       await field.blur();
+    }
+    {
+      const name = `Filled input: ${LONG}`;
+      const field = page.getByRole("textbox", { name, exact: true });
+      const { truncated, box } = await labelOf(page, name);
+      expect(truncated, name).toBe(true);
+      expect(right(box), name).toBeLessThanOrEqual(right(await boxOf(field)) - 16 + EPSILON);
+      expect(box.y, name).toBeGreaterThanOrEqual((await boxOf(field)).y - EPSILON);
     }
 
     // Select: clear of the chevron and the trigger's 8 dp gap to it.
