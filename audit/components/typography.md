@@ -99,6 +99,7 @@ One row per finding. Severity: critical, high, medium, low. Cell: a capture id f
 
 | ID | Severity | Cell | Summary | Status | Fix commit |
 |---|---|---|---|---|---|
+| typography-ellipsis-scale-1 | low | source | From the FloatingLabel turn (FL-24): at Android font scale 2.0 a truncated single-line Text can end in a clipped ellipsis ("..") where font scale 1.0 draws a whole one, seen on /testing/floating-label's long labels (resting and floated). Check whether the kit's single-line truncation (numberOfLines 1) measures and draws the ellipsis at the nonlinear text scales Android 14 and later apply, on Typography and the components that truncate. | open |  |
 
 ## Sign-off
 
