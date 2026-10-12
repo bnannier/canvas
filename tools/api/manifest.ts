@@ -507,12 +507,16 @@ export const publicApi: Readonly<Record<string, ApiEntry>> = {
   rippleClipWrapperStyle: { kind: "internal-by-accident" },
   splitElevation: { kind: "internal-by-accident" },
 
-  // src/style/ripple.ts
-  controlRipple: { kind: "internal-by-accident" },
-  platformDisabledDim: { kind: "internal-by-accident" },
-  pressDim: { kind: "internal-by-accident" },
-  rippleClip: { kind: "internal-by-accident" },
-  surfaceRipple: { kind: "internal-by-accident" },
+  // src/style/ripple.ts and src/style/touch-target.ts (deprecated aliases since the
+  // FoundationReference audit turn, K12-2). No public name replaces any of them: the kit's
+  // controls show their own press feedback and meet the platform minimum touch target
+  // themselves, and a control the kit lacks belongs in the kit, so their `@deprecated`
+  // text names those controls.
+  controlRipple: { kind: "deprecated-alias" },
+  platformDisabledDim: { kind: "deprecated-alias" },
+  pressDim: { kind: "deprecated-alias" },
+  rippleClip: { kind: "deprecated-alias" },
+  surfaceRipple: { kind: "deprecated-alias" },
 
   // src/style/rtl.ts
   isRTL: { kind: "deprecated-alias" },
@@ -603,14 +607,14 @@ export const publicApi: Readonly<Record<string, ApiEntry>> = {
   widths: { kind: "token" },
 
   // src/style/touch-target-seed.ts
-  MinTargetOptions: { kind: "internal-by-accident" },
-  minTargetSlop: { kind: "internal-by-accident" },
+  MinTargetOptions: { kind: "deprecated-alias" },
+  minTargetSlop: { kind: "deprecated-alias" },
 
   // src/style/touch-target.ts
-  platformMinTarget: { kind: "internal-by-accident" },
-  TOUCH_TARGET: { kind: "internal-by-accident" },
-  TouchTargetSkin: { kind: "internal-by-accident" },
-  useMinTargetSlop: { kind: "internal-by-accident" },
+  platformMinTarget: { kind: "deprecated-alias" },
+  TOUCH_TARGET: { kind: "deprecated-alias" },
+  TouchTargetSkin: { kind: "deprecated-alias" },
+  useMinTargetSlop: { kind: "deprecated-alias" },
 
   // src/style/use-controllable-state.ts
   useControllableState: { kind: "deprecated-alias" },

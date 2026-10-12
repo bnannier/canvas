@@ -1,8 +1,10 @@
 // Material press feedback. On Android, a tappable surface shows a native ripple
 // "state layer"; iOS and web have no ripple and dim opacity on press instead.
-// These helpers keep that platform split in one place so any Pressable can adopt
-// the Android ripple while keeping the iOS/web opacity dim, the same way the
-// platform-skinned controls (Button, Checkbox, ...) already do it in their skins.
+// These helpers keep that platform split in one place so every kit control that
+// presses (Card, the list rows, Chip, an icon Button) takes the Android ripple while
+// keeping the iOS/web opacity dim, the same way the platform-skinned controls (Button,
+// Checkbox, ...) already do it in their skins. They are kit internals: the names were
+// public by accident and are deprecated aliases now (audit K12-2, src/style/public.ts).
 import { Platform } from "react-native";
 import { alpha } from "./color.js";
 import { type ColorTokens } from "./tokens.js";

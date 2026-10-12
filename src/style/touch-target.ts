@@ -15,8 +15,10 @@ import { useSeededMinTargetSlop, type MinTargetOptions } from "./touch-target-se
  * declare no minimum at all, because a pointer target is visual-sized and a mouse does
  * not have a fingertip.
  *
- * The pattern started on Button and lives here so every pressable can use it, and so
- * the coverage test has one thing to look for rather than a family of near-copies.
+ * The pattern started on Button and lives here so every kit control shares it, and so
+ * the coverage test has one thing to look for rather than a family of near-copies. These
+ * are kit internals: the names were public by accident and are deprecated aliases now
+ * (audit K12-2, src/style/public.ts), since a control the kit lacks belongs in the kit.
  *
  * Where the touch area reaches on iOS and Android is React Native's own contract, and two
  * of its rules bound it.
@@ -49,7 +51,7 @@ import { useSeededMinTargetSlop, type MinTargetOptions } from "./touch-target-se
  * inside the other (src/style/touch-seam.ts; test/touch-target-seams.test.tsx holds it).
  * Between controls a caller places, it does not: this hook reaches the minimum whatever
  * sits beside the control. So in a caller's layout, leave at least twice the slop between
- * two small controls, or split the seam in a control of your own.
+ * two small controls.
  */
 
 /** The platform minimums, from the two platforms' own guidance. */
@@ -74,7 +76,8 @@ export interface TouchTargetSkin {
 }
 
 // The maths and the measurement live in touch-target-seed.ts, beside the seed the kit's
-// own controls take from their declared box (not public API); these are the public names.
+// own controls take from their declared box. The internal hub re-exports these two with
+// the rest of this file; the package lists them only as deprecated aliases.
 export { minTargetSlop, type MinTargetOptions } from "./touch-target-seed.js";
 
 /**
