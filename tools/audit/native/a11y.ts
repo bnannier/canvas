@@ -1,7 +1,7 @@
 // The accessibility tree of the item on screen, as the platform's own assistive layer
-// exposes it: Android through UI Automator's dump of the accessibility node tree, iOS
-// through Maestro's `hierarchy`, which reads XCUITest's element tree (what VoiceOver
-// reads). Both are cut down to the nodes that fall inside the captured card and that a
+// exposes it: Android through UI Automator's dumps of the accessibility node tree (the
+// full one, and the compressed one TalkBack reads), iOS through Maestro's `hierarchy`,
+// which reads XCUITest's element tree (what VoiceOver reads). Both are cut down to the nodes that fall inside the captured card and that a
 // screen reader announces or a user can act on: a name, a value, or an interactive
 // trait. This is the native half of the audit's structure-first check; the web half is
 // the DOM probe.
@@ -37,6 +37,14 @@ export interface A11ySnapshot {
   nodes: A11yNode[];
   /** Nodes in the whole dump, before the cut to the region. */
   total: number;
+  /**
+   * Android only: the nodes of `uiautomator dump --compressed`, cut to the region the
+   * same way. The compressed dump keeps the views important for accessibility, the tree
+   * TalkBack reads; `nodes` is the full dump, which also lists views a screen reader
+   * never reaches (a field's visible label hidden with importantForAccessibility
+   * no-hide-descendants, because the field carries its name).
+   */
+  screenReader?: A11yNode[];
 }
 
 const intersects = (a: Rect, b: Rect) => a.x < b.x + b.width && b.x < a.x + a.width && a.y < b.y + b.height && b.y < a.y + a.height;
@@ -154,13 +162,18 @@ export function cut(nodes: A11yNode[], region: Rect): A11yNode[] {
 
 const DUMP = "/sdcard/canvas-audit-a11y.xml";
 
-/** The Android accessibility tree of the screen, cut to `region` (dp). */
-export async function androidSnapshot(serial: string, dpr: number, region: Rect): Promise<A11ySnapshot> {
-  await run(ADB, ["-s", serial, "shell", "uiautomator", "dump", DUMP], { timeoutMs: 60_000 });
+async function uiAutomatorDump(serial: string, compressed: boolean): Promise<string> {
+  await run(ADB, ["-s", serial, "shell", "uiautomator", "dump", ...(compressed ? ["--compressed"] : []), DUMP], { timeoutMs: 60_000 });
   const xml = (await run(ADB, ["-s", serial, "exec-out", "cat", DUMP])).stdout.toString("utf8");
   await run(ADB, ["-s", serial, "shell", "rm", "-f", DUMP]);
-  const nodes = parseUiAutomator(xml, dpr);
-  return { source: "uiautomator", region, nodes: cut(nodes, region), total: nodes.length };
+  return xml;
+}
+
+/** The Android accessibility tree of the screen, cut to `region` (dp): the full dump, and the compressed one TalkBack reads. */
+export async function androidSnapshot(serial: string, dpr: number, region: Rect): Promise<A11ySnapshot> {
+  const nodes = parseUiAutomator(await uiAutomatorDump(serial, false), dpr);
+  const screenReader = parseUiAutomator(await uiAutomatorDump(serial, true), dpr);
+  return { source: "uiautomator", region, nodes: cut(nodes, region), total: nodes.length, screenReader: cut(screenReader, region) };
 }
 
 const MAESTRO_VERSION = (JSON.parse(readFileSync(join(ROOT, "tools", "native", "maestro.json"), "utf8")) as { version: string }).version;
