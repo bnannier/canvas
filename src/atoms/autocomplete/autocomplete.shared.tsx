@@ -251,6 +251,11 @@ export function createAutocomplete(skin: AutocompleteSkin) {
     const populated = fieldValue !== "";
     const fieldShape = skin.field(tokens, size, active);
     const fieldHeight = asNum((fieldShape as { height?: unknown }).height, 56);
+    // The floating label stays clear of the trailing toggle, which runs to the field's end
+    // edge: its width, less the end margin it reaches into the field's end padding by.
+    const toggleTarget = skin.chevronTarget(size);
+    const labelEnd =
+      asNum(toggleTarget.width, 48) + asNum(toggleTarget.marginEnd, 0) + asNum(fieldShape.paddingEnd ?? fieldShape.paddingHorizontal, 16);
     // GlassPane paints behind the editor and toggle. Clear web fields paint the
     // active-state outline in the foreground, over the material. Native fields keep
     // their original border or bottom indicator. Either way it is drawn once
@@ -417,6 +422,7 @@ export function createAutocomplete(skin: AutocompleteSkin) {
               populated={populated}
               isError={false}
               height={fieldHeight}
+              end={labelEnd}
             />
           ) : null}
           {fieldSurface.border}
