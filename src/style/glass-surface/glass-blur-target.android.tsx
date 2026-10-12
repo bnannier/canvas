@@ -1,6 +1,8 @@
-// A stable native content plane, sampled only by sibling outlet surfaces.
-// The optional integration owns capture demand. Modern Expo targets cannot stop
-// recording while preserving their children, so absent integration is solid.
+// A stable native content plane, sampled only from outside it: by the surfaces in
+// its sibling outlet and, for the outermost provider, by the surfaces of a separate
+// Modal window through GlassModalBlurTarget. The optional integration owns capture
+// demand. Modern Expo targets cannot stop recording while preserving their
+// children, so absent integration is solid.
 import { StyleSheet, View, type StyleProp, type ViewStyle } from "react-native";
 import type { GlassBlurTargetHostProps } from "./glass-surface.shared.js";
 import { NativePaintHost, NativeCaptureHost, nativeCaptureAvailable, useCaptureAvailability } from "./capture-runtime.js";
