@@ -68,6 +68,33 @@ describe("anchored focus readiness", () => {
     expect(mounts).toBe(0);
   });
 
+  it("installs an inline card's Tab bridge only once its enclosing entrance releases it", () => {
+    let leaves = 0;
+    function TabCard() {
+      const trigger = useRef<View>(null);
+      return <>
+        <View ref={trigger}><Button>Inline trigger</Button></View>
+        <AnchoredOverlay open dismissOnTab onDismiss={() => { leaves++; }} triggerRef={trigger}>
+          <Button>Inline action</Button>
+        </AnchoredOverlay>
+        <Button>After the card</Button>
+      </>;
+    }
+    const page = (ready: boolean) => themed(<Entrance ready={ready}><TabCard /></Entrance>);
+    // A Tab out of the card closes it only through the bridge the card installs when shown.
+    const tabOut = () => act(() => {
+      document.activeElement?.dispatchEvent(new KeyboardEvent("keydown", { key: "Tab", bubbles: true, cancelable: true }));
+    });
+    const view = render(page(false));
+    focus(screen.getByRole("button", { name: "Inline action", hidden: true }));
+    tabOut();
+    expect(leaves).toBe(0);
+    view.rerender(page(true));
+    focus(screen.getByRole("button", { name: "Inline action" }));
+    tabOut();
+    expect(leaves).toBe(1);
+  });
+
   it("a hosted card waits for its owner's fitting before it notifies", async () => {
     const measure = spyOn(Element.prototype, "getBoundingClientRect").mockReturnValue({
       x: 0, y: 0, width: 640, height: 800,

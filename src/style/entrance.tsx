@@ -7,7 +7,8 @@
 // inside it to wait. It does not take the card's controls out of the web's Tab order:
 // no keyboard path reaches them while held, because the owner installs its Tab bridge
 // and moves focus in only once the card is shown, a hosted card sits after the page in
-// its outlet, and the hold ends as soon as the placement is measured (one or two frames). Overlays unmount on close, so there is nothing to hold on the way out.
+// its outlet, and the hold ends as soon as the placement is measured (one or two
+// frames). Overlays unmount on close, so there is nothing to hold on the way out.
 // There is no motion, and so nothing for Reduce Motion to remove: the card appears in
 // place the moment it is ready.
 
@@ -22,8 +23,10 @@ export interface EntranceProps {
    * measured). Defaults to true, a pass-through. While false, or while an enclosing
    * Entrance holds, the card is held: invisible, untouchable, hidden from VoiceOver,
    * TalkBack and the web's accessibility tree, and its descendants read their readiness
-   * as false, so focus waits. It stays held for as long as this stays false, so the
-   * owner must release it. True shows it in place, with no motion.
+   * as false, so focus waits. Its controls stay mounted, and on the web in the Tab
+   * order, so keep a hold to the frame or two a placement takes. It stays held for as
+   * long as this stays false, so the owner must release it. True shows it in place,
+   * with no motion.
    */
   ready?: boolean;
   /**
