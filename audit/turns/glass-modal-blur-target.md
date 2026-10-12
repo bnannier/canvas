@@ -8,6 +8,8 @@ The capture runs `bun run audit:turn -- --slug=glass-modal-blur-target` took for
 |---|---|---|---|---|---|---|---|
 | `20261012-145840-web-468c75f` | variants | web | 2026-10-12T14:59:37.674Z | `468c75f` | complete | 252 of 252: 252 ok, 0 failed | action-sheet, drawer, filter-panel, sidebar |
 | `20261012-145937-web-468c75f` | states | web | 2026-10-12T15:00:44.028Z | `468c75f` | complete | 234 of 234: 222 ok, 0 failed, 12 not reached | action-sheet, drawer, filter-panel, sidebar |
+| `20261012T150815Z-ios-dde66d5` | native | ios | 2026-10-12T15:15:35.266Z | `dde66d5` | complete | 84 of 84: 84 ok, 0 unstable, 0 failed | action-sheet, drawer, filter-panel, sidebar |
+| `20261012T150815Z-android-dde66d5` | native | android | 2026-10-12T15:15:35.266Z | `dde66d5` | complete | 84 of 84: 84 ok, 0 unstable, 0 failed | action-sheet, drawer, filter-panel, sidebar |
 
 ## after
 
