@@ -6,6 +6,15 @@ import { AccessibilityInfo, Easing, Platform, UIManager, type EasingFunction } f
 // web (react-native-web ships no native animated module). Gate EVERY driver flag on it:
 // a one-shot fade or move and a looping clock alike.
 //
+// One exception, the floating label's colour tint (src/style/floating-label.tsx), runs on
+// the JS driver on every platform. React Native 0.86 allowlists `color` for the native
+// driver (Libraries/Animated/NativeAnimatedAllowlist.js), but with its default feature flags
+// the native driver writes a frame straight onto the native view (Android's
+// PropsAnimatedNode, through synchronouslyUpdateViewOnUIThread, to the view manager's
+// props), and Android's text view manager declares no `color` prop, since a Text's colour
+// is part of its paragraph's attributed text. That is read from React Native's source; no
+// device has run the tint on the native driver to confirm it.
+//
 // Loops in particular MUST take the native driver wherever it exists. Under the New
 // Architecture a JS-driven frame is not a cheap prop write: every Animated.View updated
 // from the JS thread is its own Fabric shadow-tree commit (`setNativeProps` clones the
