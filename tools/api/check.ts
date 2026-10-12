@@ -1,4 +1,4 @@
-import { names } from "./docs";
+import { mentions, names } from "./docs";
 import { API_KINDS, type ApiEntry, type ApiExport, type ApiKind, type DocsPage, type DocsRoute, type EntryPointShape, type PlannedRoute, type Resolution } from "./types";
 
 /**
@@ -140,11 +140,15 @@ export function checkPublicApi(inventory: ApiInventory, manifest: ApiManifest) {
     if (entry.kind === "token" && (api.callable || api.renderable)) errors.push(`${name} is classified as token but is a function`);
     if (api.deprecated && entry.kind !== "deprecated-alias") errors.push(`${name} carries @deprecated but is classified as ${entry.kind}`);
     if (entry.kind === "deprecated-alias" && !api.deprecated) errors.push(`${name} is classified as deprecated-alias but carries no @deprecated tag`);
+    // The tag's text is what the foundation reference shows under "Use instead", so it
+    // says what to use, or that nothing replaces the name, and names the replacement.
+    if (entry.kind === "deprecated-alias" && api.deprecated && api.deprecatedText === "") errors.push(`${name}'s @deprecated tag says nothing: name what to use instead, or say that nothing replaces it`);
     if (entry.replacement !== undefined) {
       const replacement = own(manifest.publicApi, entry.replacement);
       if (entry.kind !== "deprecated-alias") errors.push(`${name} names a replacement but is not a deprecated alias`);
       else if (!replacement || !web.has(entry.replacement)) errors.push(`${name}'s replacement is not a public export: ${entry.replacement}`);
       else if (replacement.kind === "deprecated-alias" || replacement.kind === "internal-by-accident") errors.push(`${name}'s replacement ${entry.replacement} is itself ${replacement.kind}`);
+      else if (api.deprecatedText !== "" && !mentions(api.deprecatedText, entry.replacement)) errors.push(`${name}'s @deprecated text never names its replacement, ${entry.replacement}`);
     }
     // What hover shows a consumer. The published declarations are the web build's
     // (package.json `types`), so the web resolution is the one that counts.

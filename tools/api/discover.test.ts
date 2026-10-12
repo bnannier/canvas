@@ -43,7 +43,7 @@ test("export facts: values and types, named components, hooks and @deprecated ta
     /** @deprecated Use \`base\` through \`scale\`. */
     export { base as legacyBase };
   `);
-  const facts = Object.fromEntries(moduleExports(program, file, repo).map(({ name, files: _files, summary: _summary, ...rest }) => [name, rest]));
+  const facts = Object.fromEntries(moduleExports(program, file, repo).map(({ name, files: _files, summary: _summary, summaryText: _text, deprecatedText: _deprecation, ...rest }) => [name, rest]));
   expect(facts.Panel).toEqual({ value: true, renderable: true, callable: false, deprecated: false });
   // A lowercase function that returns a string is React output, but not a named component.
   expect(facts.alpha).toEqual({ value: true, renderable: false, callable: true, deprecated: false });
@@ -70,6 +70,38 @@ test("a @deprecated re-export part way down the chain still marks the public nam
   expect(facts).toEqual({ current: false, legacy: true });
 });
 
+test("a @deprecated tag's text is read wherever the tag sits, on one line, nearest the entry first", () => {
+  const { program, file } = virtualProgram(`
+    export { onSpecifier, onDeclaration, bare, plain } from "./virtual-texts";
+    /**
+     * @deprecated Use \`plain\` instead,
+     *   wrapped over two lines.
+     */
+    export const onEntry = 1;
+  `, {
+    "virtual-texts.ts": `
+      const plain = 1;
+      /** The old name. @deprecated Use \`plain\`. */
+      export const onDeclaration = 1;
+      /** @deprecated */
+      export const bare = 1;
+      export {
+        /** @deprecated Kit internals: use \`plain\`. It keeps working until a major. */
+        plain as onSpecifier,
+        plain,
+      };
+    `,
+  });
+  const facts = Object.fromEntries(moduleExports(program, file, repo).map(({ name, deprecated, deprecatedText }) => [name, [deprecated, deprecatedText]]));
+  expect(facts).toEqual({
+    bare: [true, ""],
+    onDeclaration: [true, "Use `plain`."],
+    onEntry: [true, "Use `plain` instead, wrapped over two lines."],
+    onSpecifier: [true, "Kit internals: use `plain`. It keeps working until a major."],
+    plain: [false, ""],
+  });
+});
+
 test("a JSDoc summary counts where hover shows it: on the declaration, never on a re-export or a tag alone", () => {
   const { program, file } = virtualProgram(`
     import * as React from "react";
@@ -93,6 +125,8 @@ test("a JSDoc summary counts where hover shows it: on the declaration, never on 
   });
   const facts = Object.fromEntries(moduleExports(program, file, repo).map(({ name, summary }) => [name, summary]));
   expect(facts).toEqual({ Bare: false, documented: true, Panel: true, tagOnly: false, undocumented: false, viaSpecifier: false });
+  const texts = Object.fromEntries(moduleExports(program, file, repo).map(({ name, summaryText }) => [name, summaryText]));
+  expect(texts).toEqual({ Bare: "", documented: "Documented on its declaration.", Panel: "A panel.", tagOnly: "", undocumented: "", viaSpecifier: "" });
 });
 
 test("the entry program resolves each platform's sibling files the way Metro does", () => {

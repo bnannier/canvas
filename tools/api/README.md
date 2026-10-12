@@ -51,6 +51,10 @@ commit as its manifest entry.
   `deprecated-alias` is exactly the exports that carry `@deprecated` (on the
   declaration or on any re-export on the way), and its `replacement`, when given, is
   a live public export.
+- **A deprecated alias says what to use instead.** Its `@deprecated` text is not empty
+  and names its `replacement` when it has one: the generated foundation reference shows
+  that text as the row's "Use instead" (docs:gen writes the rows from this manifest and
+  the source, tools/docgen/foundation.ts, and the gate reads them with the page).
 - **A public value has a JSDoc summary.** Every `component`, `part`, `hook`, `token` and
   `utility` value carries a summary on the declaration a consumer's editor shows through
   the published types (the web build's). A summary written on a re-export, or on the
@@ -80,7 +84,8 @@ commit as its manifest entry.
 
 "Rendered text" is what a reader can see: string literals, code snippets, template
 text and JSX text, plus a component page's catalog entry and its generated examples,
-Do & Don't pairs and prop tables. An import or a JSX tag that only uses a component
+Do & Don't pairs and prop tables, and the foundation reference's generated rows (each
+row's name and replacement as code, each section as a heading). An import or a JSX tag that only uses a component
 does not count, and neither does a comment. A name that is also an ordinary word (one
 lowercase word, one capitalized word, one all-capitals word: `palette`, `Surface`,
 `FILL`) counts only where the page shows it as code: a snippet (comments stripped),

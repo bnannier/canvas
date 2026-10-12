@@ -74,11 +74,18 @@ export interface ApiExport {
   /** Its declaration or its re-export carries `@deprecated`. */
   deprecated: boolean;
   /**
+   * What that `@deprecated` tag says, on one line: the tag nearest the entry, a re-export's
+   * or the declaration's. Empty when there is no tag, or the tag says nothing.
+   */
+  deprecatedText: string;
+  /**
    * The declaration a consumer's editor shows carries a JSDoc summary (text before any
    * tag). A summary written only on a re-export statement does not count: hover through
    * the package entry never shows it.
    */
   summary: boolean;
+  /** That summary as written (its paragraphs and line breaks kept), or empty. */
+  summaryText: string;
   /** Repo-relative declaration files, including dependency-owned ones. */
   files: string[];
 }
