@@ -1,10 +1,10 @@
 import { type ReactNode } from "react";
-import { Button, Column, DataTable, Typography } from "@nannier/canvas";
+import { Button, Column, DataTable, Row, Typography } from "@nannier/canvas";
 import { useRouter } from "expo-router";
 import { Page, PageHeader } from "../../ui/page";
 import { Section } from "../../ui/section";
 import { BulletList, InlineCode, P, Paragraph } from "../../ui/prose";
-import { CodeBlock } from "../../ui/code-block";
+import { DoDontCard } from "../../ui/dont";
 import { Callout } from "../../ui/tokens-kit";
 import { PageNav } from "../../ui/page-nav";
 import { DEPRECATED_SECTIONS, type DeprecatedName, type DeprecatedSectionTitle } from "../../core/foundation-reference";
@@ -16,11 +16,19 @@ import { DEPRECATED_SECTIONS, type DeprecatedName, type DeprecatedSectionTitle }
 // deprecated alias is missing here. What is written by hand is the frame around them: the
 // intro, the contract notes some sections carry, and the Accessibility section.
 
-const MIGRATION = `// Before: the helper the kit used for its own figures
-<Text style={tabularNums()}>1,204,118</Text>
-
-// After: the component's own prop
-<Typography tabular>1,204,118</Typography>`;
+// The migration, shown as the Don't and Do pair the colour tokens page uses, so the old call
+// (a deprecated helper spread through a raw style) reads as the anti-pattern it is, beside
+// the component prop that replaces it.
+const MIGRATION = {
+  dont: {
+    code: `<Text style={tabularNums()}>1,204,118</Text>`,
+    caption: "A deprecated helper passed as a raw style at the call site. It keeps working until a major release, but it is the kit's own machinery, and the kit's styling rules bar restyling a primitive by hand.",
+  },
+  do: {
+    code: `<Typography tabular>1,204,118</Typography>`,
+    caption: "The component's own prop. Typography's tabular boolean gives every figure the same width on iOS, Android and the web, so a column of numbers lines up.",
+  },
+};
 
 // The contracts the deprecated machinery carried, which the components that replace it
 // keep (the AnchoredOverlay, Entrance, FloatingLabel and BreakpointOverride turns' notes).
@@ -81,7 +89,10 @@ export default function FoundationScreen() {
       <Section title="How deprecation works">
         <P>Canvas once published some of its own machinery: the helpers its components build themselves from. Each of those names is now a deprecated alias. It keeps working, unchanged, until a major release, and nothing is removed before one. Your editor strikes it through, and its hover says what to use instead.</P>
         <P muted>Where one component, prop or token replaces a name, the row links to its page. A name with no replacement is work the kit&apos;s components already do for you; a control the kit lacks belongs in the kit, never in a hand-built look-alike.</P>
-        <CodeBlock code={MIGRATION} />
+        <Row stacks stackBreakpoint="xl" relaxed>
+          <Column span={6}><DoDontCard dont caption={MIGRATION.dont.caption} code={MIGRATION.dont.code} /></Column>
+          <Column span={6}><DoDontCard do caption={MIGRATION.do.caption} code={MIGRATION.do.code} /></Column>
+        </Row>
       </Section>
       {DEPRECATED_SECTIONS.map((section) => (
         <Section key={section.title} title={section.title}>
