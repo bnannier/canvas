@@ -438,53 +438,24 @@ export function createTabs(skin: TabsSkin) {
     const itemDisabled = tabs.map((item) => disabledOf(item));
     const count = tabs.length;
 
-    // Own node refs beside the hook's: when an arrow lands on a disabled trigger
-    // the activation is redirected below, and the hook only knows how to focus
-    // the index the key targeted, so the redirect moves DOM focus itself.
-    const itemNodes = useRef<Array<{ focus?: () => void } | null>>([]);
-
-    // Activation with disabled-skipping: when a key lands on a disabled trigger,
-    // keep walking in the direction of travel (wrapping, like the hook) until an
-    // enabled trigger takes the activation; with every tab disabled the key is a
-    // no-op. Direction: a distance-1 hop is an arrow (its sign wins even at the
-    // ends); otherwise Home (index 0) walks forward and End walks backward.
-    const activateSkippingDisabled = (index: number) => {
-      const delta = (index - active + count) % count;
-      const dir: 1 | -1 = delta === 1 ? 1 : delta === count - 1 ? -1 : index === 0 ? 1 : -1;
-      for (let step = 0; step < count; step++) {
-        const i = (((index + dir * step) % count) + count) % count;
-        if (itemDisabled[i]) continue;
-        setActive(i);
-        if (i !== index) itemNodes.current[i]?.focus?.();
-        return;
-      }
-    };
-
     // Roving-focus keyboard navigation (the WAI-ARIA tablist pattern): the row is one
     // tab stop and the arrows move + activate. Horizontal for the underline/pills
-    // rows, vertical for the rail; RTL flips the horizontal arrows on the web.
+    // rows, vertical for the rail; RTL flips the horizontal arrows on the web. A
+    // disabled trigger is the hook's to skip: the arrows walk past it in their direction
+    // of travel, Home and End take the first and last enabled triggers, and it is never
+    // the tab stop, so a disabled `defaultActive` hands the stop to the first enabled one.
     const { getItemProps } = useRovingFocus({
       count,
       active,
-      onActivate: disabled ? () => {} : activateSkippingDisabled,
+      onActivate: disabled ? () => {} : setActive,
       orientation: variant === "vertical" ? "vertical" : "horizontal",
       rtl: isRTL(),
+      isDisabled: (i) => itemDisabled[i] === true,
     });
 
     // Roving wiring per trigger: none for a disabled one (the Trigger then pins
-    // itself out of the tab order); enabled ones get the hook's props with the
-    // ref teed into itemNodes so the redirect above can focus them.
-    const rovingFor = (i: number): RovingItemProps | undefined => {
-      if (disabled || itemDisabled[i]) return undefined;
-      const base = getItemProps(i);
-      return {
-        ...base,
-        ref: (node) => {
-          base.ref(node);
-          itemNodes.current[i] = node;
-        },
-      };
-    };
+    // itself out of the tab order); enabled ones get the hook's props.
+    const rovingFor = (i: number): RovingItemProps | undefined => (disabled || itemDisabled[i] ? undefined : getItemProps(i));
 
     // --- horizontal overflow scrolling (non-block underline/pills rows) -------
     // The row rides in a horizontal ScrollView that hugs it and caps at the
