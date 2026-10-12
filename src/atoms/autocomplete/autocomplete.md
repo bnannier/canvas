@@ -4,9 +4,9 @@ Text input + dropdown: searchable single-select.
 
 Pass `label` (and `required`) to name the field: iOS and web render the label
 above the field, while Android floats the Material 3 in-container label once the
-list opens or a value fills the field; a label longer than the field truncates on
-one line clear of the toggle, and the field's accessible name stays the whole
-label. The field fills the parent it is given; a
+list opens or a value fills the field. On Android the field grows with the
+user's text size, and a label longer than the field truncates on one line clear
+of the toggle while the field's accessible name stays the whole label. The field fills the parent it is given; a
 step of its own (`xs`, `lg`, …, with `start` to pin it to the leading edge) or a
 Container step sets its measure.
 

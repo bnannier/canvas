@@ -6,7 +6,7 @@ import { frameHandlers, useFocusFrame } from "../../style/focus-frame.js";
 import { useComposedRefs } from "../../style/use-composed-refs.js";
 import { forwardRef, useId, useState } from "react";
 import { type TextInput as RNTextInput, type TextInputProps as RNTextInputProps } from "react-native";
-import { View, Text, TextInput, useFillStyle, FloatingLabel, LabelContent, labelA11y, FOCUS_RESET, type MeasureProps, type SizingKey, type StyleProp, type TextStyle, type ViewStyle, GlassPane, paneStyle, isGlass, alpha, PANE_SIBLING_INPUT } from "../../style/index.js";
+import { View, Text, TextInput, useFillStyle, FloatingLabel, LabelContent, labelA11y, useFloatingLabelRoom, FOCUS_RESET, type MeasureProps, type SizingKey, type StyleProp, type TextStyle, type ViewStyle, GlassPane, paneStyle, isGlass, alpha, PANE_SIBLING_INPUT } from "../../style/index.js";
 import { type TextEntryProps } from "../input/input.shared.js";
 import { type TextareaSkin, type Size, sizeText, minHeight } from "./textarea.styles.js";
 
@@ -131,6 +131,8 @@ export function createTextarea(skin: TextareaSkin) {
     const entryMaterial = useTextEntryMaterial(!!skin.liquid);
     const { theme } = entryMaterial;
     const { tokens } = theme;
+    // The room the Android floating label takes, which follows the user's text size.
+    const room = useFloatingLabelRoom(skin, tokens, size);
     // The platform skin selects the text-entry material. The editor keeps its
     // state border and foreground above the decorative material.
     const glass = isGlass(theme);
@@ -284,7 +286,7 @@ export function createTextarea(skin: TextareaSkin) {
             ref={hostRef}
             multiline
             textAlignVertical="top"
-            style={[...fieldStyle, skin.labelReserve!(size)]}
+            style={[...fieldStyle, room.reserve]}
             placeholder={focused ? placeholder : undefined}
             {...common}
           />
@@ -301,6 +303,7 @@ export function createTextarea(skin: TextareaSkin) {
             height={asNum(minHeight(rows).minHeight, 80)}
             inset={ANDROID_TEXTAREA_INSET}
             multiline
+            onLine={room.onLine}
           />
           {countNode}
         </View>

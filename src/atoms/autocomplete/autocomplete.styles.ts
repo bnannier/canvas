@@ -313,7 +313,9 @@ export const androidSkin: AutocompleteSkin = {
     ...activeIndicator({ active, restColor: t["muted-foreground"], activeColor: t.ring }),
     backgroundColor: t.muted,
     paddingHorizontal: 16,
-    height: ANDROID_FIELD_BOX[size],
+    // A floor, not a height: the field grows when a larger text size makes its value
+    // line and the floating label's reserve taller than the M3 container.
+    minHeight: ANDROID_FIELD_BOX[size],
     // The disclosure includes the indicator's border band in its hit target.
     // Clipping here would remove that band from native and browser hit testing.
     // Its Pressable owns the rounded ripple clip instead.

@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState, type ReactNode } from "react";
-import { Animated, Platform } from "react-native";
+import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
+import { Animated, Platform, type LayoutChangeEvent } from "react-native";
 import { Text, View, type TextStyle, type ViewStyle } from "./primitives.js";
 import { fontStyle } from "./text.js";
 import { useTheme } from "./theme.js";
@@ -8,6 +8,7 @@ import { useReducedMotion, supportsNativeDriver, FLOAT, FLOAT_EASING } from "./m
 import { primaryText } from "./primary-text.js";
 import { destructiveText } from "./destructive-text.js";
 import { isRTL } from "./rtl.js";
+import { useIsomorphicLayoutEffect } from "./use-isomorphic-layout-effect.js";
 
 // The Material 3 in-container FLOATING label, shared by every filled field family
 // (Input, Autocomplete, Select, Textarea). It is the SINGLE source of truth for the
@@ -52,6 +53,82 @@ export interface FloatingLabelStyles<S extends string = string> {
 
 // Read a numeric style value (height / paddingTop / fontSize), falling back when absent.
 const asNum = (v: unknown, fallback: number): number => (typeof v === "number" ? v : fallback);
+
+// The float's geometry is the skin's own numbers at the skin's own text size, and the
+// rendered text's once the user's text size changes it: React Native scales a label's
+// fontSize and lineHeight with the system font scale (nonlinearly on Android 14 and up), so
+// the label is measured, never multiplied. A measurement within half a point of the skin's
+// number is the pixel grid's rounding, not a different text size, and keeps the number, so
+// the default look and the first frame (and the server's) are the skin's exactly.
+const LAYOUT_EPSILON = 0.5;
+
+/** A rendered length, or the skin's number when the two differ only by layout rounding. */
+const rendered = (seed: number, measured: number | null | undefined): number =>
+  measured != null && Math.abs(measured - seed) >= LAYOUT_EPSILON ? measured : seed;
+
+/** A length measured against one skin number, valid while that number holds. */
+type Measured = { seed: number; value: number };
+
+/** The float's numbers from a skin: its resting line, the floated scale, the reserve and the floated label's top inset. */
+interface FloatSeeds {
+  line: number;
+  scale: number;
+  reserve: number;
+  top: number;
+}
+
+function floatSeeds<S extends string>(styles: FloatingLabelStyles<S>, tokens: ColorTokens, size: S): FloatSeeds {
+  const rest = (styles.labelRest?.(tokens, size) ?? {}) as TextStyle;
+  const floated = (styles.labelFloated?.(tokens, size) ?? {}) as TextStyle;
+  const line = asNum(rest.lineHeight, 24);
+  const scale = asNum(floated.fontSize, 12) / asNum(rest.fontSize, 16);
+  const reserve = asNum((styles.labelReserve?.(size) ?? {}).paddingTop, 24);
+  return { line, scale, reserve, top: reserve - line * scale };
+}
+
+/**
+ * The top padding a field's value takes for a rendered resting line: the skin's reserve,
+ * or more once a larger text size makes the floated label taller, keeping the floated
+ * label's top inset and landing its bottom edge where the value begins.
+ */
+const reserveFor = (seeds: FloatSeeds, line: number): number => Math.max(seeds.reserve, seeds.top + line * seeds.scale);
+
+/** The room a floating-label field gives its label (`useFloatingLabelRoom`). */
+export interface FloatingLabelRoom {
+  /** The value's top padding, clearing the floated label: spread where the skin's `labelReserve` went. */
+  reserve: TextStyle;
+  /** How much taller the rendered label makes a fixed-height field than the skin's numbers: 0 at the skin's text size or smaller. */
+  growth: number;
+  /** Hand to FloatingLabel's `onLine`: the label reports its rendered resting line through it. */
+  onLine: (line: number) => void;
+}
+
+/**
+ * The room a field gives its floating label, which follows the user's text size: the
+ * value's top padding (the skin's `labelReserve` until the label has measured its rendered
+ * line, and more once a larger text size needs it) and, for a field of fixed height, how
+ * much taller it grows. A field that floats its label calls it unconditionally, spreads
+ * `reserve` on its value and hands `onLine` to its FloatingLabel. One commit when the label
+ * first measures a line that differs from the skin's, and on a text-size change; none at
+ * the skin's own text size.
+ */
+export function useFloatingLabelRoom<S extends string>(styles: FloatingLabelStyles<S>, tokens: ColorTokens, size: S): FloatingLabelRoom {
+  const seeds = floatSeeds(styles, tokens, size);
+  const [measured, setMeasured] = useState<Measured | null>(null);
+  const onLine = useCallback(
+    (value: number) =>
+      setMeasured((prev) => {
+        const next = rendered(seeds.line, value) === seeds.line ? null : { seed: seeds.line, value };
+        return prev?.seed === next?.seed && prev?.value === next?.value ? prev : next;
+      }),
+    [seeds.line],
+  );
+  const line = rendered(seeds.line, measured?.seed === seeds.line ? measured.value : null);
+  const reserve = reserveFor(seeds, line);
+  // Never shorter than the skin's field: a smaller text size leaves it at the skin's height.
+  const growth = Math.max(0, reserve - seeds.reserve + (line - seeds.line));
+  return useMemo(() => ({ reserve: { paddingTop: reserve }, growth, onLine }), [reserve, growth, onLine]);
+}
 
 /**
  * The props that take a node out of the accessibility tree, spread together:
@@ -168,6 +245,7 @@ export function FloatingLabel<S extends string>({
   end = inset,
   multiline = false,
   names = true,
+  onLine,
 }: {
   styles: FloatingLabelStyles<S>;
   size: S;
@@ -178,7 +256,11 @@ export function FloatingLabel<S extends string>({
   focused: boolean;
   populated: boolean;
   isError: boolean;
-  /** The single-line field's height (used to center the resting label). Ignored in `multiline` mode. */
+  /**
+   * The single-line field's height, from its skin, which centers the resting label at the
+   * skin's text size; once a different text size changes the rendered line, the field's
+   * measured height takes over. Ignored in `multiline` mode.
+   */
   height: number;
   /** Leading inset that matches the field's horizontal content padding (default 16dp). */
   inset?: number;
@@ -196,6 +278,8 @@ export function FloatingLabel<S extends string>({
    * TalkBack skip the label and stop on the field alone (`labelA11y`).
    */
   names?: boolean;
+  /** Told the label's rendered resting line height whenever it changes: a field's `useFloatingLabelRoom` `onLine`. */
+  onLine?: (line: number) => void;
 }) {
   const reduced = useReducedMotion();
   const posTarget = focused || populated ? 1 : 0;
@@ -232,18 +316,45 @@ export function FloatingLabel<S extends string>({
   const { fonts } = useTheme();
   const rest = useMemo(() => styles.labelRest!(tokens, size) as TextStyle, [styles, tokens, size]);
   const themedRest = useMemo(() => fontStyle(rest, fonts), [rest, fonts]);
-  const floated = styles.labelFloated!(tokens, size) as TextStyle;
-  const restLine = asNum(rest.lineHeight, 24);
-  const restSize = asNum(rest.fontSize, 16);
-  const scaleTo = asNum(floated.fontSize, 12) / restSize;
-  const reserve = asNum((styles.labelReserve!(size) as TextStyle).paddingTop, 24);
-  const scaledLine = restLine * scaleTo;
+
+  // The rendered resting line (the label Text's height, one line) and the single-line
+  // field's height (the bounds' height), each read once at mount and again when the text
+  // size changes, never per frame; a reading the skin's numbers already give is dropped.
+  // The field's height is the skin's while the line is: the label's bounds sit inside the
+  // field's border, which the skin's height includes, and the float is drawn to that.
+  const seeds = floatSeeds(styles, tokens, size);
+  const [measured, setMeasured] = useState<{ line: Measured | null; box: Measured | null }>({ line: null, box: null });
+  const lineOf = (m: { line: Measured | null }) => rendered(seeds.line, m.line?.seed === seeds.line ? m.line.value : null);
+  const onTextLayout = (e: LayoutChangeEvent) => {
+    const value = e.nativeEvent.layout.height;
+    if (!(value > 0)) return;
+    setMeasured((prev) => {
+      const line = rendered(seeds.line, value) === seeds.line ? null : { seed: seeds.line, value };
+      return prev.line?.seed === line?.seed && prev.line?.value === line?.value ? prev : { ...prev, line };
+    });
+  };
+  const onBoundsLayout = (e: LayoutChangeEvent) => {
+    const value = e.nativeEvent.layout.height;
+    if (!(value > 0)) return;
+    setMeasured((prev) => {
+      const box = lineOf(prev) === seeds.line ? null : { seed: height, value };
+      return prev.box?.seed === box?.seed && prev.box?.value === box?.value ? prev : { ...prev, box };
+    });
+  };
+  const line = lineOf(measured);
+  const box = line === seeds.line ? height : rendered(height, measured.box?.seed === height ? measured.box.value : null);
+  const reserve = reserveFor(seeds, line);
+  const scaleTo = seeds.scale;
+  useIsomorphicLayoutEffect(() => {
+    onLine?.(line);
+  }, [onLine, line]);
+
   // The floated label's bottom edge lands at `reserve` (where the value begins),
   // so the value clears it; its center is that minus half the scaled line box.
-  const floatedCenterY = reserve - scaledLine / 2;
+  const floatedCenterY = reserve - (line * scaleTo) / 2;
   // The resting center: the field's vertical middle for a single-line field, or the
   // first value line for a multiline one (its value is top-aligned below `reserve`).
-  const restCenterY = multiline ? reserve + restLine / 2 : height / 2;
+  const restCenterY = multiline ? reserve + line / 2 : box / 2;
   const translateYTo = floatedCenterY - restCenterY;
 
   const translateY = pos.interpolate({ inputRange: [0, 1], outputRange: [0, translateYTo] });
@@ -269,9 +380,9 @@ export function FloatingLabel<S extends string>({
     : { position: "absolute", top: 0, bottom: 0, start: inset, end, alignItems: "flex-start", justifyContent: "center", pointerEvents: "none" };
 
   return (
-    <View style={bounds}>
+    <View style={bounds} onLayout={multiline ? undefined : onBoundsLayout}>
       <Animated.View style={{ maxWidth: "100%", transformOrigin, transform: [{ translateY }, { scale }] }}>
-        <Animated.Text nativeID={labelId} numberOfLines={1} style={[themedRest, { color }]} {...labelA11y(label, names)}>
+        <Animated.Text nativeID={labelId} numberOfLines={1} style={[themedRest, { color }]} onLayout={onTextLayout} {...labelA11y(label, names)}>
           <LabelContent label={label} required={required} starColor={tokens.destructive} />
         </Animated.Text>
       </Animated.View>
