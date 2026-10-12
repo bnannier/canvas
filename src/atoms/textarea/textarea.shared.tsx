@@ -6,7 +6,7 @@ import { frameHandlers, useFocusFrame } from "../../style/focus-frame.js";
 import { useComposedRefs } from "../../style/use-composed-refs.js";
 import { forwardRef, useId, useState } from "react";
 import { type TextInput as RNTextInput, type TextInputProps as RNTextInputProps } from "react-native";
-import { View, Text, TextInput, useFillStyle, FloatingLabel, LabelContent, labelA11y, requiredName, useFloatingLabelRoom, FOCUS_RESET, type MeasureProps, type SizingKey, type StyleProp, type TextStyle, type ViewStyle, GlassPane, paneStyle, isGlass, alpha, PANE_SIBLING_INPUT } from "../../style/index.js";
+import { View, Text, TextInput, useFillStyle, FloatingLabel, LabelContent, labelA11y, requiredName, useFloatingLabelRoom, FOCUS_RESET, type MeasureProps, type SizingKey, type StyleProp, type TextStyle, type ViewStyle, GlassPane, paneStyle, isGlass, legibleWash, PANE_SIBLING_INPUT } from "../../style/index.js";
 import { type TextEntryProps } from "../input/input.shared.js";
 import { type TextareaSkin, type Size, sizeText, minHeight } from "./textarea.styles.js";
 
@@ -249,7 +249,7 @@ export function createTextarea(skin: TextareaSkin) {
       // Flush material shares the editor's square, borderless shape.
       ...(flush ? FLUSH_SHAPE : null),
     };
-    const fieldPane = <GlassPane {...entryMaterial.paneProps} shape={fieldShape} tint={isError ? alpha(tokens.destructive, 0.18) : undefined} />;
+    const fieldPane = <GlassPane {...entryMaterial.paneProps} shape={fieldShape} tint={isError ? legibleWash(theme, "error", entryMaterial.paneProps) : undefined} />;
     // The field's whole box goes through paneStyle (its shape and any label reserve), so
     // under glass its resting border becomes padding of the same width.
     const fieldStyleWith = (reserve: StyleProp<ViewStyle>): StyleProp<TextStyle>[] => [

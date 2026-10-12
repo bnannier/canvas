@@ -315,8 +315,9 @@ describe("GlassSurface layers", () => {
             expect(contrast(over(tint, base), rgb(t.foreground)), `${platform} ${look.name} foreground on ${tint} over ${base}`).toBeGreaterThanOrEqual(4.5);
           }
         }
-        // The muted label role keeps the large-text floor on a content pane over the page.
-        expect(contrast(over(g["glass-tint-content"], t.background), rgb(t["muted-foreground"])), `${platform} ${look.name} muted`).toBeGreaterThanOrEqual(3);
+        // The muted role is normal-size text (12 to 16 px descriptions, placeholders,
+        // prefixes), so it keeps the normal-text floor on a content pane over the page.
+        expect(contrast(over(g["glass-tint-content"], t.background), rgb(t["muted-foreground"])), `${platform} ${look.name} muted`).toBeGreaterThanOrEqual(4.5);
       }
     }
   });

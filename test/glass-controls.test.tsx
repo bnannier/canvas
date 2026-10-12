@@ -14,6 +14,17 @@ import { Tabs } from "../src/organisms/tabs/tabs.tsx";
 import { selectionTint } from "../src/organisms/tabs/tabs.styles.ts";
 import { Pagination } from "../src/atoms/pagination/pagination.tsx";
 import { brandInk, brandTint, surfaceUnderFill, BRAND_TINT_ALPHA, BRAND_INK_CONTRAST } from "../src/style/glass-surface/glass-surface.shared.tsx";
+import { GLASS_WASH, legibleWash } from "../src/style/glass-surface/glass-wash.ts";
+import { Card } from "../src/molecules/card/card.tsx";
+import { Radio, RadioGroup } from "../src/atoms/radio/radio.tsx";
+import { Text } from "react-native";
+import { Icon } from "../src/atoms/icon/icon.tsx";
+import { Tabs as IosTabs } from "../src/organisms/tabs/tabs.ios.tsx";
+import { Sidebar } from "../src/organisms/sidebar/sidebar.tsx";
+import { Sidebar as IosSidebar } from "../src/organisms/sidebar/sidebar.ios.tsx";
+import { Navbar } from "../src/organisms/navbars/navbars.tsx";
+import { TabBar } from "../src/organisms/tab-bar/tab-bar.tsx";
+import { TabBar as IosTabBar } from "../src/organisms/tab-bar/tab-bar.ios.tsx";
 import { alpha, composite, contrastRatio } from "../src/style/color.ts";
 import { actionFill, actionInk } from "../src/style/action.ts";
 import { lightColors, palette, brandColors } from "../src/style/tokens.ts";
@@ -291,7 +302,7 @@ describe("hue washes", () => {
 });
 
 describe("field boxes", () => {
-  it("an Input box drops its fill and resting hairline for the pane, and an errored box keeps its destructive border over a destructive wash", async () => {
+  it("an Input box drops its fill and resting hairline for the pane, and an errored box keeps its destructive border over a legible destructive wash", async () => {
     const { container } = await renderGlass(
       <>
         <Input label="Name" testID="name" />
@@ -304,7 +315,115 @@ describe("field boxes", () => {
     expect(rgbaOf(underFillOf(name.parentElement as HTMLElement))).toEqual(rgbaOf(alpha(lightColors.card, 0.22)));
     const email = container.querySelector('[data-testid="email"]') as HTMLElement;
     expect(rgbaOf(email.style.borderColor)).toEqual(rgbaOf(alpha(lightColors.destructive, 1)));
-    expect(rgbaOf(underFillOf(email.parentElement as HTMLElement))).toEqual(rgbaOf(alpha(lightColors.destructive, 0.18)));
+    // The web field is a clear well: the wash lies over its veil, capped for its ink.
+    const wash = legibleWash({ tokens: lightColors, glass: LIGHT, dark: false }, "error", { clear: true, layer: "control" });
+    expect(rgbaOf(underFillOf(email.parentElement as HTMLElement))).toEqual(rgbaOf(wash));
+    expect(contrastRatio(composite(wash, lightColors.background), lightColors["muted-foreground"])).toBeGreaterThanOrEqual(4.5);
+  });
+});
+
+describe("state washes", () => {
+  // A field's error wash and a selected card's wash carry the solid recipe's own inks, the
+  // muted placeholder, prefix and description and the foreground value or title. Each is
+  // capped where those inks would fall under 4.5:1 (legibleWash, the owner's GP-2 decision),
+  // over the page and over a content pane, in every look and on the web's and the native
+  // tints, for every pane a wash lies in: the web's clear field, a control puck, a card.
+  const panes = [
+    { name: "clear field", pane: { clear: true, layer: "control" as const }, web: true },
+    { name: "control puck", pane: { layer: "control" as const }, web: false },
+    { name: "content pane", pane: { layer: "content" as const }, web: false },
+  ];
+  it("holds the muted and foreground inks at 4.5:1 on the error and selection washes", () => {
+    for (const look of LOOKS) {
+      const t = look.tokens;
+      const dark = look.scheme === "dark";
+      for (const [platform, g] of [["web", look.webGlass], ["native", look.nativeGlass]] as const) {
+        const bases = [t.background, composite(g["glass-tint-content"], t.background)];
+        for (const { name, pane, web } of panes) {
+          if (web && platform !== "web") continue;
+          const body = pane.clear ? alpha(t.card, dark ? 0.28 : 0.22) : surfaceUnderFill(g, pane.layer);
+          const bodyHolds = bases.every((base) => [t["muted-foreground"], t.foreground].every((ink) => contrastRatio(composite(body, base), ink) >= 4.5));
+          for (const wash of ["error", "selection"] as const) {
+            const fill = legibleWash({ tokens: t, glass: g, dark }, wash, pane);
+            const where = `${platform} ${look.name} ${name} ${wash}`;
+            if (!bodyHolds) {
+              // The dark native control puck misses the muted floor on its own (GP-11, the
+              // layer's legibility, GlassSurface's turn): a wash would only darken the miss,
+              // so the pane keeps its body.
+              expect(`${platform} ${look.name} ${name}`).toBe("native dark control puck");
+              expect(fill, where).toBe(body);
+              continue;
+            }
+            for (const base of bases) {
+              expect(contrastRatio(composite(fill, base), t["muted-foreground"]), `${where} muted over ${base}`).toBeGreaterThanOrEqual(4.5);
+              expect(contrastRatio(composite(fill, base), t.foreground), `${where} foreground over ${base}`).toBeGreaterThanOrEqual(4.5);
+            }
+          }
+        }
+      }
+    }
+  });
+
+  it("keeps a visible wash in the dark palette and almost none in the light ones", () => {
+    const share = (fill: string, body: string) => rgbaOf(fill)[3] as number - (rgbaOf(body)[3] as number);
+    for (const look of LOOKS) {
+      const t = look.tokens;
+      const g = look.webGlass;
+      const fill = legibleWash({ tokens: t, glass: g, dark: look.scheme === "dark" }, "selection", { layer: "content" });
+      const added = share(fill, surfaceUnderFill(g, "content"));
+      if (look.scheme === "dark") expect(added, look.name).toBeGreaterThan(0.02);
+      else expect(added, look.name).toBeLessThan(0.03);
+      // Never denser than the wash's own ceiling.
+      expect(added, look.name).toBeLessThanOrEqual(GLASS_WASH.selection.ceiling);
+    }
+  });
+
+  it("the selection tints (a tab, a sidebar row, a navbar link, a tab-bar cell) keep their label at 4.5:1 over the page", async () => {
+    // Not a capped wash: each keeps its skin's hue at selectionTint's translucent ceiling,
+    // and its label clears the floor in every look (measured as rendered).
+    const items = [{ key: "home", label: "Home", icon: () => <Icon home size={22} /> }, { key: "search", label: "Search", icon: () => <Icon search size={22} /> }];
+    const hosts = [
+      <Tabs pills tabs={["General", "Security"]} />,
+      <IosTabs tabs={["General", "Security"]} />,
+      <Sidebar defaultActive="Dashboard" items={[{ label: "Dashboard" }, { label: "Inbox" }]} />,
+      <IosSidebar defaultActive="Dashboard" items={[{ label: "Dashboard" }, { label: "Inbox" }]} />,
+      <Navbar brand="Canvas" links={["Dashboard", "Users"]} />,
+      <TabBar items={items} />,
+      <IosTabBar items={items} />,
+    ];
+    for (const look of LOOKS) {
+      for (const node of hosts) {
+        const { container, unmount } = render(<ThemeProvider scheme={look.scheme} mint={look.palette === "mint"} glass>{node}</ThemeProvider>);
+        await waitFor(() => expect(materialLayers(container)).toBeGreaterThan(0));
+        const panes = Array.from(container.querySelectorAll("*")).filter((n) => (n as HTMLElement).style.zIndex === "-1" && n.querySelector(':scope > [data-testid="glass-material"]')) as HTMLElement[];
+        for (const pane of panes) {
+          const fill = fillOfMaterial(pane.querySelector(':scope > [data-testid="glass-material"]')).fill?.style.backgroundColor;
+          if (!fill) continue;
+          const labels = Array.from(pane.parentElement!.querySelectorAll("*")).filter((n) => (n as HTMLElement).style.color && n.children.length === 0 && n.textContent) as HTMLElement[];
+          for (const label of labels) {
+            expect(contrastRatio(composite(fill, look.tokens.background), label.style.color), `${look.name} ${label.textContent}`).toBeGreaterThanOrEqual(4.5);
+          }
+        }
+        unmount();
+      }
+    }
+  });
+
+  it("a selected Card and a checked Radio card keep their primary border over the capped selection wash", async () => {
+    const { container } = await renderGlass(
+      <>
+        <Card selected onPress={() => {}} testID="card"><Text>Pro</Text></Card>
+        <RadioGroup defaultValue="pro" label="Plan"><Radio value="pro" card description="For growing teams.">Pro</Radio></RadioGroup>
+      </>,
+    );
+    const wash = legibleWash({ tokens: lightColors, glass: LIGHT, dark: false }, "selection", { layer: "content" });
+    const card = container.querySelector('[data-testid="card"]') as HTMLElement;
+    const radio = container.querySelector('[role="radio"]') as HTMLElement;
+    for (const host of [card, radio]) {
+      expect(rgbaOf(host.style.borderColor || host.style.borderTopColor)).toEqual(rgbaOf(alpha(lightColors.primary, 1)));
+      expect(host.style.backgroundColor).toBe("rgba(0, 0, 0, 0.00)");
+      expect(rgbaOf(underFillOf(host))).toEqual(rgbaOf(wash));
+    }
   });
 });
 

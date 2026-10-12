@@ -53,7 +53,7 @@ export interface GlassPaneProps {
    * whole footprint with the shape's own radii.
    */
   stateBorder?: boolean;
-  /** The under-fill in place of the layer's tint: a toned wash. */
+  /** The under-fill in place of the layer's tint: a toned wash, held legible by `legibleWash`. */
   tint?: string;
   /** A brand colour for a brand-tinted puck (a primary Button, a checked Switch), its under-fill solved for the ink painted on it. */
   brand?: string;
