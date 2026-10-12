@@ -1,0 +1,15 @@
+# Turn record: FoundationReference (foundation)
+
+The capture runs `bun run audit:turn -- --slug=foundation-reference` took for this turn, by phase, one row per run as it finished. Written by `audit:turn` alone and appended, never rewritten; do not edit by hand. The runs are under `.audit/runs/<run id>/` (local and gitignored, as every capture is); `audit/foundation/foundation-reference.md` names the after-phase runs in its Sign-off rows. See `audit/README.md`, "One component's turn".
+
+## before
+
+| Run id | Kind | Platform | Recorded | Commit | Status | Cells | Slugs |
+|---|---|---|---|---|---|---|---|
+| `20261012-042951-web-3caa6a2` | variants | web | 2026-10-12T05:32:55.858Z | `3caa6a2` | complete | 10692 of 10692: 10692 ok, 0 failed | text, text-input, row-column, grid, container, chip, emblem, autocomplete, avatar, badge, breadcrumb, button-group, button, checkbox, dropdown, input, input-otp, listbox, stepper, pagination, popover, progress, radio, reveal, select, skeleton, slider, spinner, textarea, swatch, switch, tooltip, typography, video, accordion, alert, alert-dialog, card, code-block, collapsible, description-lists, empty-state, feeds, grid-lists, media-objects, phone-input, stacked-lists, stats, action-sheet, board, calendar, carousel, command, dashboard-grid, data-table, dialog, drag-drop, drawer, filter-panel, navbars, sidebar, row-menu, steps, tab-bar, tabs, toast, chart, pie-chart, scatter-plot, candlestick-chart, depth-chart, sparkline, stacked-bar, gauge, heatmap, bar-list, metric-breakdown, uptime-bar, service-health-list, bullet-chart, progress-ring, range-area-chart, histogram, box-plot, waterfall-chart, radial-bar-chart, funnel-chart, radar-chart, treemap, geo-map, divider, kbd, action-panels, field, form, line-chart, area-chart, composed-chart |
+| `20261012-053256-web-3caa6a2` | states | web | 2026-10-12T05:47:42.529Z | `3caa6a2` | complete | 2010 of 2010: 1956 ok, 0 failed, 54 not reached | text-input, chip, autocomplete, avatar, breadcrumb, button-group, button, checkbox, dropdown, input, input-otp, listbox, stepper, pagination, popover, radio, select, slider, textarea, switch, tooltip, video, accordion, alert, alert-dialog, card, code-block, collapsible, description-lists, media-objects, phone-input, stacked-lists, stats, action-sheet, board, calendar, carousel, command, data-table, dialog, drag-drop, drawer, filter-panel, navbars, sidebar, row-menu, tab-bar, tabs, toast, chart, pie-chart, scatter-plot, candlestick-chart, heatmap, bar-list, service-health-list, range-area-chart, histogram, box-plot, waterfall-chart, radial-bar-chart, funnel-chart, treemap, geo-map, field, form, line-chart, area-chart, composed-chart |
+
+## after
+
+| Run id | Kind | Platform | Recorded | Commit | Status | Cells | Slugs |
+|---|---|---|---|---|---|---|---|
