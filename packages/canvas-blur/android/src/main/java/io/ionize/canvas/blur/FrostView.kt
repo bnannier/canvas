@@ -12,10 +12,16 @@ import android.os.Build
 import android.view.View
 import android.view.ViewTreeObserver
 import expo.modules.kotlin.AppContext
+import expo.modules.kotlin.viewevent.EventDispatcher
 import expo.modules.kotlin.views.ExpoView
 
-/** Samples a sibling or another window. An ancestor is always rejected. */
+/**
+ * Samples a sibling or another window. An ancestor is always rejected, and the rejection
+ * is reported once through `onTargetRejected` so the app can fall back to its solid look.
+ */
 class FrostView(context: Context, appContext: AppContext) : ExpoView(context, appContext) {
+  private val onTargetRejected by EventDispatcher()
+  private val rejections = TargetRejections { id, reason -> onTargetRejected(mapOf("targetId" to id, "reason" to reason)) }
   private var targetId: Int? = null
   private var target: CaptureHost? = null
   private var effectNode: RenderNode? = null
@@ -69,6 +75,7 @@ class FrostView(context: Context, appContext: AppContext) : ExpoView(context, ap
     if (targetId == value) return
     disconnectTarget()
     targetId = value
+    rejections.reset()
     connectTarget()
   }
 
@@ -83,25 +90,25 @@ class FrostView(context: Context, appContext: AppContext) : ExpoView(context, ap
     invalidate()
   }
 
-  private fun safe(candidate: CaptureHost): Boolean {
-    var ancestor = parent
-    while (ancestor != null) {
-      if (ancestor === candidate) return false
-      ancestor = ancestor.parent
-    }
-    return candidate.isAttachedToWindow
-  }
-
   private fun connectTarget() {
     if (!isAttachedToWindow || Build.VERSION.SDK_INT < 31 || !isHardwareAccelerated) return
-    if (target != null) {
-      if (!safe(target!!)) disconnectTarget()
-      else updateObservers()
+    val connected = target
+    if (connected != null) {
+      val verdict = targetVerdict(this, connected)
+      if (verdict == TargetVerdict.SAFE) updateObservers()
+      else {
+        disconnectTarget()
+        rejections.record(targetId ?: connected.id, verdict)
+      }
       return
     }
     val id = targetId ?: return
     val candidate = appContext.findView<CaptureHost>(id) ?: return
-    if (!safe(candidate)) return
+    val verdict = targetVerdict(this, candidate)
+    if (verdict != TargetVerdict.SAFE) {
+      rejections.record(id, verdict)
+      return
+    }
     target = candidate
     updateObservers()
     candidate.retain(this)

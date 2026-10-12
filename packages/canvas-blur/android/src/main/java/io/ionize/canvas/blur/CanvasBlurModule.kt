@@ -31,6 +31,7 @@ class CanvasBlurModule : Module() {
     }
     View(FrostView::class) {
       Name("FrostView")
+      Events("onTargetRejected")
       Prop("targetId") { view: FrostView, targetId: Int? -> view.setTargetId(targetId) }
       Prop("intensity") { view: FrostView, intensity: Float -> view.setIntensity(intensity) }
       Prop("tint") { view: FrostView, tint: String -> view.setTint(tint) }
