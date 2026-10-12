@@ -20,6 +20,7 @@ import { PixelRatio, type Insets, type LayoutChangeEvent, type ViewStyle } from 
 // A kit mechanism, not public API: src/style/index.ts does not re-export this file, and
 // touch-target.ts re-exports only minTargetSlop and MinTargetOptions from it.
 
+/** The options of the touch area a control extends to the platform minimum: which axes. */
 export interface MinTargetOptions {
   /**
    * Which axes to extend. "both" is the default and is right for a control with space

@@ -34,7 +34,7 @@ export const DEPRECATED_NAMES: DeprecatedName[] = [
   {
     "name": "ActiveIndicatorOptions",
     "type": true,
-    "summary": "",
+    "summary": "The options of `activeIndicator`: whether the field is active, the indicator's colour and thickness at rest and when active, and the padding kept between the content and the indicator.",
     "instead": "Kit internals, with no replacement: the options of the bottom indicator `Input`, `Select` and `Autocomplete` draw for themselves. It keeps working until a major.",
     "replacement": null,
     "replacementRoute": null,
@@ -61,7 +61,7 @@ export const DEPRECATED_NAMES: DeprecatedName[] = [
   {
     "name": "brandColors",
     "type": false,
-    "summary": "",
+    "summary": "The brand orb colours of the removed Backdrop organism, keyed by their historical hue names; nothing in the kit reads them.",
     "instead": "The brand orbs painted the removed Backdrop organism, and the kit's colors are Dark Factory's now; nothing in the kit reads these. Kept, with their former values, until an owner-authorized major removes them (the `--orb-*` custom properties too).",
     "replacement": null,
     "replacementRoute": null,
@@ -70,7 +70,7 @@ export const DEPRECATED_NAMES: DeprecatedName[] = [
   {
     "name": "CodeToken",
     "type": true,
-    "summary": "",
+    "summary": "One span of a highlighted line: its text and its kind.",
     "instead": "Kit internals: one span of `CodeBlock`'s own highlighter; pass `code` and `language` to `CodeBlock`. It keeps working until a major.",
     "replacement": "CodeBlock",
     "replacementRoute": "components/code-block",
@@ -88,7 +88,7 @@ export const DEPRECATED_NAMES: DeprecatedName[] = [
   {
     "name": "controlRipple",
     "type": false,
-    "summary": "",
+    "summary": "The Android ripple of a round or icon-sized control (an avatar, an icon button): the same neutral ink, borderless, so it radiates from the touch point rather than filling a rectangle.",
     "instead": "Kit internals, with no replacement: the borderless Android ripple the kit's round and icon-sized controls show for themselves (an icon `Button`, `Avatar` given `onPress`). It keeps working until a major.",
     "replacement": null,
     "replacementRoute": null,
@@ -133,7 +133,7 @@ export const DEPRECATED_NAMES: DeprecatedName[] = [
   {
     "name": "enableAndroidLayoutAnimations",
     "type": false,
-    "summary": "",
+    "summary": "Turn on React Native's LayoutAnimation where it needs turning on, the old architecture on Android, and do nothing elsewhere (the New Architecture enables it, and its flag only logs a warning there).",
     "instead": "Kit internals, with no replacement: `Accordion` and `Collapsible` enable React Native's layout animations on Android for themselves. It keeps working until a major.",
     "replacement": null,
     "replacementRoute": null,
@@ -169,7 +169,7 @@ export const DEPRECATED_NAMES: DeprecatedName[] = [
   {
     "name": "FloatingLabelStyles",
     "type": true,
-    "summary": "The label-placement slice a filled-field skin fulfills. iOS + web render the label ABOVE the field (`floatingLabel: false`), Android floats the M3 in-container label (`floatingLabel: true`, supplying the rest/floated/reserve types).",
+    "summary": "The label-placement slice a filled-field skin fulfills.",
     "instead": "Kit skin internals: the label-placement slice of a field skin, with no replacement. It keeps working until a major.",
     "replacement": null,
     "replacementRoute": null,
@@ -187,7 +187,7 @@ export const DEPRECATED_NAMES: DeprecatedName[] = [
   {
     "name": "FOCUS_RESET",
     "type": false,
-    "summary": "",
+    "summary": "The style that removes the keyboard focus ring (a solid outline of width 0), for a control that paints a visible focus state of its own.",
     "instead": "Kit internals, with no replacement: the kit's fields paint their own focus state, and `Pressable`, `TextInput` and `ScrollView` carry the themed focus ring, which an app never removes (WCAG 2.4.7). It keeps working until a major.",
     "replacement": null,
     "replacementRoute": null,
@@ -205,7 +205,7 @@ export const DEPRECATED_NAMES: DeprecatedName[] = [
   {
     "name": "GESTURE_SURFACE",
     "type": false,
-    "summary": "",
+    "summary": "The style that keeps the browser from claiming a touch gesture (`touchAction: \"none\"`), so a pinch on a kit component that owns one reaches it instead of zooming the page; a no-op natively.",
     "instead": "Kit internals, with no replacement: the touch surface `GeoMap` claims from the browser for its pinch zoom. It keeps working until a major.",
     "replacement": null,
     "replacementRoute": null,
@@ -250,7 +250,7 @@ export const DEPRECATED_NAMES: DeprecatedName[] = [
   {
     "name": "HUE_WASH",
     "type": false,
-    "summary": "",
+    "summary": "The alpha of a hue's 500 step painted as a wash under the glass material, per scheme: the tinted pane of an Alert, a status Badge, a coloured Chip, before Dark Factory's soft washes replaced it.",
     "instead": "The kit no longer paints with it: Dark Factory's soft washes replaced it (`statusColors` for the status tones, and a Chip's free hue at Dark Factory's soft alpha). Kept, unchanged, for code that reads it, until a major release removes it.",
     "replacement": "statusColors",
     "replacementRoute": null,
@@ -268,7 +268,7 @@ export const DEPRECATED_NAMES: DeprecatedName[] = [
   {
     "name": "InnerFillRole",
     "type": true,
-    "summary": "",
+    "summary": "The opaque role a fill inside a glass surface stands for: `muted`, `secondary` or `accent`.",
     "instead": "Kit internals, with no replacement: the roles of the fills a kit component paints inside a glass surface for itself. It keeps working until a major.",
     "replacement": null,
     "replacementRoute": null,
@@ -277,7 +277,7 @@ export const DEPRECATED_NAMES: DeprecatedName[] = [
   {
     "name": "InnerFillStrength",
     "type": true,
-    "summary": "",
+    "summary": "How strong a fill inside a glass surface is: `faint` (a hover, an alternating row), `soft` (a selected row, a resting chip) or `firm` (a pressed or active fill).",
     "instead": "Kit internals, with no replacement: the strengths of the fills a kit component paints inside a glass surface for itself. It keeps working until a major.",
     "replacement": null,
     "replacementRoute": null,
@@ -304,7 +304,7 @@ export const DEPRECATED_NAMES: DeprecatedName[] = [
   {
     "name": "isRTL",
     "type": false,
-    "summary": "",
+    "summary": "Whether the layout runs right to left, read through the one accessor React Native and react-native-web both implement (`I18nManager.getConstants().isRTL`).",
     "instead": "Kit internals, with no replacement: the kit's components mirror themselves in a right-to-left layout, and an app reads React Native's `I18nManager.getConstants().isRTL`. It keeps working until a major.",
     "replacement": null,
     "replacementRoute": null,
@@ -331,7 +331,7 @@ export const DEPRECATED_NAMES: DeprecatedName[] = [
   {
     "name": "Measure",
     "type": true,
-    "summary": "",
+    "summary": "The measure a Container resolves: a step of the width scale, or `fluid` for none.",
     "instead": "Kit internals: the width-scale step a `Container` resolves, which its step booleans name (`MeasureProps`). It keeps working until a major.",
     "replacement": "MeasureProps",
     "replacementRoute": null,
@@ -340,7 +340,7 @@ export const DEPRECATED_NAMES: DeprecatedName[] = [
   {
     "name": "measureOf",
     "type": false,
-    "summary": "",
+    "summary": "The measure a Container's props resolve to: `fluid`, else the narrowest step passed, else `fluid`.",
     "instead": "Kit internals: the step `Container` resolves from its step booleans, so use `Container`. It keeps working until a major.",
     "replacement": "Container",
     "replacementRoute": "components/container",
@@ -349,7 +349,7 @@ export const DEPRECATED_NAMES: DeprecatedName[] = [
   {
     "name": "MinTargetOptions",
     "type": true,
-    "summary": "",
+    "summary": "The options of the touch area a control extends to the platform minimum: which axes.",
     "instead": "Kit internals, with no replacement: the options of the touch area the kit's controls extend for themselves. It keeps working until a major.",
     "replacement": null,
     "replacementRoute": null,
@@ -367,7 +367,7 @@ export const DEPRECATED_NAMES: DeprecatedName[] = [
   {
     "name": "MONO_FONT",
     "type": false,
-    "summary": "",
+    "summary": "The kit's monospace face per platform: Menlo on iOS, and the `monospace` alias on Android and on the web, where react-native-web maps it onto the browser's stack.",
     "instead": "Kit internals: the monospace face the `mono` and `code` roles of `Typography` set, so use `Typography` `mono`, or `code` for an inline code pill. It keeps working until a major.",
     "replacement": "Typography",
     "replacementRoute": "components/typography",
@@ -412,7 +412,7 @@ export const DEPRECATED_NAMES: DeprecatedName[] = [
   {
     "name": "platformDisabledDim",
     "type": false,
-    "summary": "",
+    "summary": "The opacity each platform's own disabled controls take (the hand-off's `--p-disabled`): 0.4 on iOS, Material 3's 0.38 on Android and 0.5 on the web, for a skin one component shares across every platform.",
     "instead": "Kit internals, with no replacement: the platform's disabled dim the kit's controls take for themselves when `disabled`. It keeps working until a major.",
     "replacement": null,
     "replacementRoute": null,
@@ -430,7 +430,7 @@ export const DEPRECATED_NAMES: DeprecatedName[] = [
   {
     "name": "pressDim",
     "type": false,
-    "summary": "",
+    "summary": "The press dim of iOS and the web: the given opacity while pressed (0.9 by default), and null on Android, where the ripple carries the press and a dim would signal it twice.",
     "instead": "Kit internals, with no replacement: the iOS and web press dim the kit's controls show for themselves (`Button`, `Chip`, and `Card` and the list rows given `onPress`). It keeps working until a major.",
     "replacement": null,
     "replacementRoute": null,
@@ -448,7 +448,7 @@ export const DEPRECATED_NAMES: DeprecatedName[] = [
   {
     "name": "rippleClip",
     "type": false,
-    "summary": "",
+    "summary": "`overflow: \"hidden\"` on Android and nothing elsewhere, for a rounded PARENT whose children carry a bounded ripple, so the ripple keeps to the parent's corners while an iOS shadow on the parent survives.",
     "instead": "Kit internals, with no replacement: the Android clip the kit's rounded surfaces put around their own ripple. It keeps working until a major.",
     "replacement": null,
     "replacementRoute": null,
@@ -457,7 +457,7 @@ export const DEPRECATED_NAMES: DeprecatedName[] = [
   {
     "name": "RovingFocusOptions",
     "type": true,
-    "summary": "",
+    "summary": "The options of `useRovingFocus`: the number of items, the active one, what activating an item does, which arrows move, the layout direction, whether the ends wrap, and which items are disabled.",
     "instead": "Kit internals, with no replacement: the options of the arrow-key focus `Tabs`, `RadioGroup` and `Listbox` move for themselves. It keeps working until a major.",
     "replacement": null,
     "replacementRoute": null,
@@ -466,7 +466,7 @@ export const DEPRECATED_NAMES: DeprecatedName[] = [
   {
     "name": "RovingItemProps",
     "type": true,
-    "summary": "",
+    "summary": "The props one item of a roving group spreads onto its pressable: its tab stop, its ref and its key handler.",
     "instead": "Kit internals, with no replacement: the props of one item in the arrow-key focus `Tabs`, `RadioGroup` and `Listbox` move for themselves. It keeps working until a major.",
     "replacement": null,
     "replacementRoute": null,
@@ -484,7 +484,7 @@ export const DEPRECATED_NAMES: DeprecatedName[] = [
   {
     "name": "StyleSheet",
     "type": false,
-    "summary": "The .bun package's own StyleSheet, re-exported unchanged.",
+    "summary": "React Native's own StyleSheet, re-exported unchanged.",
     "instead": "React Native's own StyleSheet, passed through, with no replacement in the kit: Canvas components take semantic props, never styles, so an app built from them needs none, and app-frame scaffolding the kit does not cover imports it from react-native. It keeps working until a major (audit K12-2 OD5).",
     "replacement": null,
     "replacementRoute": null,
@@ -493,7 +493,7 @@ export const DEPRECATED_NAMES: DeprecatedName[] = [
   {
     "name": "supportsNativeDriver",
     "type": false,
-    "summary": "",
+    "summary": "Whether React Native's native animated driver exists, so `useNativeDriver: true` runs an animation off the JS thread: true on iOS and Android, false on the web, where a true flag freezes a loop after one pass.",
     "instead": "Kit internals, with no replacement: whether React Native's native animated driver exists, false on the web; an app's own `Animated` code reads `Platform.OS`. It keeps working until a major.",
     "replacement": null,
     "replacementRoute": null,
@@ -502,7 +502,7 @@ export const DEPRECATED_NAMES: DeprecatedName[] = [
   {
     "name": "surfaceRipple",
     "type": false,
-    "summary": "",
+    "summary": "The Android ripple of a content surface (a card, a list row, a tile): a neutral ink, the foreground at low alpha so it reads in both schemes, bounded to the surface.",
     "instead": "Kit internals, with no replacement: the bounded Android ripple the kit's surfaces show for themselves (`Card` and the list rows given `onPress`). It keeps working until a major.",
     "replacement": null,
     "replacementRoute": null,
@@ -547,7 +547,7 @@ export const DEPRECATED_NAMES: DeprecatedName[] = [
   {
     "name": "TokenKind",
     "type": true,
-    "summary": "",
+    "summary": "What one span of highlighted code is: plain text, a comment, a string, a keyword, a number, a tag, an attribute, a function name or a variable.",
     "instead": "Kit internals: the token kinds `CodeBlock`'s highlighter tells apart; pass `code` and `language` to `CodeBlock`. It keeps working until a major.",
     "replacement": "CodeBlock",
     "replacementRoute": "components/code-block",
@@ -574,7 +574,7 @@ export const DEPRECATED_NAMES: DeprecatedName[] = [
   {
     "name": "useControllableState",
     "type": false,
-    "summary": "",
+    "summary": "One component's value, controlled by its parent or held by the component itself: the mode is latched at mount (a `controlled` value then means controlled), the change callback fires in both modes, and a controlled value cleared to undefined keeps the last one the parent gave.",
     "instead": "Kit internals, with no replacement: every kit control takes a controlled value with its change callback (`value`, `checked`, `open` and the like) or a default for uncontrolled use, and an app holds its own state with React's `useState`. It keeps working until a major.",
     "replacement": null,
     "replacementRoute": null,
@@ -601,7 +601,7 @@ export const DEPRECATED_NAMES: DeprecatedName[] = [
   {
     "name": "useHardwareBack",
     "type": false,
-    "summary": "",
+    "summary": "Close an open overlay on Android's hardware or gesture back: while `active`, back calls `onBack` and is consumed, so the app neither navigates nor exits under the overlay.",
     "instead": "Kit internals, with no replacement: `Dialog`, `AlertDialog`, `Drawer`, `ActionSheet`, `Sidebar` and every anchored card close on Android's back themselves. It keeps working until a major.",
     "replacement": null,
     "replacementRoute": null,
@@ -646,7 +646,7 @@ export const DEPRECATED_NAMES: DeprecatedName[] = [
   {
     "name": "useRovingFocus",
     "type": false,
-    "summary": "",
+    "summary": "Roving keyboard focus for a composite widget (the WAI-ARIA pattern Tabs, RadioGroup and Listbox share): the group is one tab stop, the arrows, Home and End move focus and activate the item it lands on, a disabled item is skipped and never the tab stop, and native rows keep their own focus and click support.",
     "instead": "Kit internals, with no replacement: the arrow keys, Home and End of `Tabs`, `RadioGroup` and `Listbox`, which move focus and selection for themselves. It keeps working until a major.",
     "replacement": null,
     "replacementRoute": null,
@@ -655,7 +655,7 @@ export const DEPRECATED_NAMES: DeprecatedName[] = [
   {
     "name": "useWheel",
     "type": false,
-    "summary": "",
+    "summary": "Wheel and trackpad-pinch zoom on the web: while `active`, a non-passive wheel listener on the returned ref's node reports each gesture in pixels with the pointer's position, and suppresses the page's scroll only when `onWheel` claims it.",
     "instead": "Kit internals, with no replacement: `GeoMap`'s wheel and trackpad pinch zoom. It keeps working until a major.",
     "replacement": null,
     "replacementRoute": null,
@@ -664,7 +664,7 @@ export const DEPRECATED_NAMES: DeprecatedName[] = [
   {
     "name": "useWindowDimensions",
     "type": false,
-    "summary": "The .bun package's own useWindowDimensions, re-exported unchanged.",
+    "summary": "React Native's own useWindowDimensions, re-exported unchanged.",
     "instead": "React Native's own hook, passed through: use `useBreakpoint` or `useFormFactor` for window-level chrome, `useContainerWidth` or `useMeasuredWidth` inside a component, or React Native's own `useWindowDimensions` for raw pixels. It keeps working until a major.",
     "replacement": null,
     "replacementRoute": null,

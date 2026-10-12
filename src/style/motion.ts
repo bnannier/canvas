@@ -46,6 +46,11 @@ import { AccessibilityInfo, Easing, Platform, UIManager, type EasingFunction } f
 // (the Skeleton shimmer, the Spinner and the indeterminate Progress all run on it).
 //
 // Platform.OS is fixed per bundle, so this is evaluated once.
+/**
+ * Whether React Native's native animated driver exists, so `useNativeDriver: true` runs an
+ * animation off the JS thread: true on iOS and Android, false on the web, where a true
+ * flag freezes a loop after one pass. Gate every driver flag on it.
+ */
 export const supportsNativeDriver: boolean = Platform.OS !== "web";
 
 /** Shape one loop iteration as an out-and-back: `easing` carries the value from 0 to 1
@@ -199,6 +204,11 @@ export function useReducedMotion(): boolean {
 // drives LayoutAnimation (Accordion, Collapsible). Evaluated per bundle; Fabric is known by then.
 const IS_FABRIC = (globalThis as { nativeFabricUIManager?: unknown }).nativeFabricUIManager != null;
 
+/**
+ * Turn on React Native's LayoutAnimation where it needs turning on, the old architecture
+ * on Android, and do nothing elsewhere (the New Architecture enables it, and its flag only
+ * logs a warning there). Called once at module scope by Accordion and Collapsible.
+ */
 export function enableAndroidLayoutAnimations(): void {
   if (Platform.OS === "android" && !IS_FABRIC && UIManager.setLayoutAnimationEnabledExperimental) {
     UIManager.setLayoutAnimationEnabledExperimental(true);
