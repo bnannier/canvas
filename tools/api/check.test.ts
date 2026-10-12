@@ -3,7 +3,7 @@ import { checkPublicApi, FOUNDATION_ROUTE, type ApiInventory, type ApiManifest }
 import type { ApiEntry, ApiExport, DocsPage, PlannedRoute } from "./types";
 
 const exported = (name: string, facts: Partial<ApiExport> = {}): ApiExport => ({
-  name, value: true, renderable: false, callable: false, deprecated: false, summary: true, files: ["src/field.ts"], ...facts,
+  name, value: true, renderable: false, callable: false, deprecated: false, deprecatedText: "", summary: true, summaryText: `${name}'s summary.`, files: ["src/field.ts"], ...facts,
 });
 
 const EXPORTS: ApiExport[] = [
@@ -12,7 +12,7 @@ const EXPORTS: ApiExport[] = [
   exported("useField", { callable: true }),
   exported("fieldWidths"),
   exported("measureField", { callable: true, summary: false }),
-  exported("FIELD_WASH", { deprecated: true, summary: false }),
+  exported("FIELD_WASH", { deprecated: true, deprecatedText: "Use `fieldWidths`. It keeps working until a major.", summary: false, summaryText: "" }),
 ];
 
 // A page's code is the part of its text a reader sees as code; the fixtures give each page
@@ -136,6 +136,22 @@ test("deprecated aliases match their @deprecated tag and name a live replacement
     .toContain("fieldWidths names a replacement but is not a deprecated alias");
   // A deprecated alias with nothing to replace it (brandColors) is allowed.
   expect(errorsOf(inventory(), manifest({ ...API, FIELD_WASH: { kind: "deprecated-alias" } }))).toEqual([]);
+});
+
+test("a deprecated alias's tag says what to use instead, and names its replacement", () => {
+  const tagged = (deprecatedText: string) => EXPORTS.map((entry) => (entry.name === "FIELD_WASH" ? { ...entry, deprecatedText } : entry));
+  const silent = tagged("");
+  expect(errorsOf(inventory({ exports: { web: silent, ios: silent, android: silent } }), manifest()))
+    .toEqual(["FIELD_WASH's @deprecated tag says nothing: name what to use instead, or say that nothing replaces it"]);
+  // The replacement is named as a whole identifier: `fieldWidth` is not `fieldWidths`.
+  const elsewhere = tagged("Use the field's own width prop. It keeps working until a major.");
+  expect(errorsOf(inventory({ exports: { web: elsewhere, ios: elsewhere, android: elsewhere } }), manifest()))
+    .toEqual(["FIELD_WASH's @deprecated text never names its replacement, fieldWidths"]);
+  const near = tagged("Use fieldWidthsScale.");
+  expect(errorsOf(inventory({ exports: { web: near, ios: near, android: near } }), manifest()))
+    .toEqual(["FIELD_WASH's @deprecated text never names its replacement, fieldWidths"]);
+  // With no single replacement, any text that says what to do passes.
+  expect(errorsOf(inventory({ exports: { web: elsewhere, ios: elsewhere, android: elsewhere } }), manifest({ ...API, FIELD_WASH: { kind: "deprecated-alias" } }))).toEqual([]);
 });
 
 test("a public value owes its consumers a JSDoc summary on the declaration they hover", () => {

@@ -75,24 +75,44 @@ export function entryProgram(root: string, resolution: Resolution = "web"): ts.P
   });
 }
 
-function deprecatedTag(symbol: ts.Symbol, checker: ts.TypeChecker): boolean {
-  if (symbol.getJsDocTags(checker).some((tag) => tag.name === "deprecated")) return true;
-  // The checker does not carry a tag written on a re-export statement
-  // (`/** @deprecated */ export { a as b }`) to the alias, so read the statement.
-  return (symbol.declarations ?? []).some((node) => ts.isExportSpecifier(node) &&
-    [node, node.parent.parent].some((owner) => ts.getJSDocDeprecatedTag(owner) !== undefined));
+/** Prose as one line: a JSDoc comment's line breaks are the source's wrapping, not the text's. */
+function oneLine(text: string): string {
+  return text.replace(/\s+/g, " ").trim();
 }
 
-/** A tag on any re-export between the entry and the declaration, or on the declaration, marks the public name. */
-function deprecatedAlongChain(exported: ts.Symbol, checker: ts.TypeChecker): boolean {
+/**
+ * The `@deprecated` text on a symbol: on its declaration, or on a re-export statement that
+ * names it (`/** @deprecated … *\/ export { a as b }`), which the checker does not carry
+ * to the alias, so the statement is read. Null when neither carries the tag; the empty
+ * string for a bare tag.
+ */
+function deprecatedTag(symbol: ts.Symbol, checker: ts.TypeChecker): string | null {
+  const tag = symbol.getJsDocTags(checker).find((info) => info.name === "deprecated");
+  if (tag) return oneLine(ts.displayPartsToString(tag.text));
+  for (const node of symbol.declarations ?? []) {
+    if (!ts.isExportSpecifier(node)) continue;
+    for (const owner of [node, node.parent.parent]) {
+      const written = ts.getJSDocDeprecatedTag(owner);
+      if (written) return oneLine(ts.getTextOfJSDocComment(written.comment) ?? "");
+    }
+  }
+  return null;
+}
+
+/**
+ * A tag on any re-export between the entry and the declaration, or on the declaration,
+ * marks the public name; the nearest one to the entry is its text.
+ */
+function deprecatedAlongChain(exported: ts.Symbol, checker: ts.TypeChecker): string | null {
   let current: ts.Symbol | undefined = exported;
   const seen = new Set<ts.Symbol>();
   while (current && !seen.has(current)) {
     seen.add(current);
-    if (deprecatedTag(current, checker)) return true;
+    const text = deprecatedTag(current, checker);
+    if (text !== null) return text;
     current = current.flags & ts.SymbolFlags.Alias ? checker.getImmediateAliasedSymbol(current) : undefined;
   }
-  return false;
+  return null;
 }
 
 /** Every named export of a module, values and types, with the facts the API gate checks. */
@@ -112,14 +132,18 @@ export function moduleExports(program: ts.Program, entryFile: string, root: stri
     // A named component, as the material inventory counts them: React output alone
     // includes a string, so `alpha()` would otherwise pass for one.
     const renderable = Boolean(type && /^[A-Z]/.test(name) && componentType(type, checker));
+    const deprecation = deprecatedAlongChain(exported, checker);
+    // The resolved declaration's own comment, as hover shows it through the entry.
+    const summaryText = ts.displayPartsToString(symbol.getDocumentationComment(checker)).trim();
     result.push({
       name,
       value,
       renderable,
       callable: Boolean(type && !renderable && type.getCallSignatures().length),
-      deprecated: deprecatedAlongChain(exported, checker),
-      // The resolved declaration's own comment, as hover shows it through the entry.
-      summary: ts.displayPartsToString(symbol.getDocumentationComment(checker)).trim() !== "",
+      deprecated: deprecation !== null,
+      deprecatedText: deprecation ?? "",
+      summary: summaryText !== "",
+      summaryText,
       files: [...new Set(declarations.map((node) => relative(root, node.getSourceFile().fileName).replaceAll("\\", "/")))].sort(),
     });
   }

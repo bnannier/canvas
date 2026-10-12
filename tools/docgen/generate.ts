@@ -8,6 +8,8 @@
 // beside them that carries that model with its fences wired up and its prop tables,
 // docs/src/core/descriptions.ts, every component's description (its intro's first
 // paragraph, the one place a description is written),
+// docs/src/core/foundation-reference.ts, every deprecated name with what replaces it for
+// the /foundation reference (tools/docgen/foundation.ts),
 // and docs/src/core/registry.ts, which reaches those modules through a
 // `require.context` whose mode follows expo-router's own route loading: synchronous
 // on native and for the static render, lazy (one chunk per component) in the web
@@ -25,6 +27,7 @@ import { parseDoc, scopeNamesFromLiveScope, bannedStyleViolations, widthShimViol
 import { componentPages, pageStructureViolations, registeredComponents, type Category } from "./pages.ts";
 import { extractProps, type PropGroup } from "./extract-props.ts";
 import { COMPONENTS } from "../../docs/src/core/data/components.ts";
+import { FOUNDATION_MODULE, readDeprecatedRows, renderFoundationModule } from "./foundation.ts";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const REPO = path.resolve(HERE, "..", "..");
@@ -34,6 +37,9 @@ const REGISTRY_FILE = path.join(REPO, "docs", "src", "core", "registry.ts");
 const CHUNKS_FILE = path.join(REPO, "docs", "src", "core", "docs-chunks.json");
 const PREVIEWS_FILE = path.join(REPO, "docs", "src", "core", "previews.ts");
 const DESCRIPTIONS_FILE = path.join(REPO, "docs", "src", "core", "descriptions.ts");
+// The /foundation reference's rows (tools/docgen/foundation.ts): every deprecated name, read
+// from tools/api/manifest.ts and the source.
+const FOUNDATION_FILE = path.join(REPO, FOUNDATION_MODULE);
 
 // `--check` (the pre-push gate) answers "is the generated output in sync with the
 // component markdown?" without touching the working tree: every would-be write and
@@ -575,6 +581,8 @@ function main() {
     if (entries.some((e) => e.dir === dir)) chunks[c.slug] = `${dir}-docs`;
   }
   writeFileIfChanged(CHUNKS_FILE, `${JSON.stringify(chunks, null, 2)}\n`);
+  const deprecated = readDeprecatedRows(REPO);
+  writeFileIfChanged(FOUNDATION_FILE, renderFoundationModule(deprecated, GENERATED_HEADER));
   const propGroupCount = Object.values(props).reduce((n, groups) => n + groups.length, 0);
   const propRowCount = Object.values(props).reduce(
     (n, groups) => n + groups.reduce((m, g) => m + g.props.length, 0),
@@ -591,14 +599,15 @@ function main() {
             .join("\n")}`,
       );
     }
-    console.log(`docs:gen --check verified ${entries.length} components; the generated output is in sync.`);
+    console.log(`docs:gen --check verified ${entries.length} components and ${deprecated.length} deprecated names; the generated output is in sync.`);
     return;
   }
 
   console.log(
     `docs:gen: ${entries.length} components, ${exampleCount} examples, ${dontCount} Do/Don't pairs, ` +
       `${guidanceCount} guidance sections with ${guidanceExampleCount} examples ` +
-      `(${exampleCount + dontCount * 2 + guidanceExampleCount} modules); ${propGroupCount} prop tables, ${propRowCount} rows → docs/src/core/`,
+      `(${exampleCount + dontCount * 2 + guidanceExampleCount} modules); ${propGroupCount} prop tables, ${propRowCount} rows; ` +
+      `${deprecated.length} deprecated names for the foundation reference → docs/src/core/`,
   );
 }
 
