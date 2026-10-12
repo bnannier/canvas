@@ -1,5 +1,5 @@
 import { useEffect, useSyncExternalStore } from "react";
-import { AccessibilityInfo, Platform, UIManager, type EasingFunction } from "react-native";
+import { AccessibilityInfo, Easing, Platform, UIManager, type EasingFunction } from "react-native";
 
 // Whether the platform has React Native's native animated module, and therefore whether
 // `useNativeDriver: true` engages an off-thread animation. True on iOS/Android, false on
@@ -97,6 +97,24 @@ export const HOVER = {
 
 /** CSS `ease`, the curve of every hover transition, spelled out as the reference's own. */
 export const HOVER_EASING = "cubic-bezier(0.25, 0.1, 0.25, 1)";
+
+// The Android floating label's float (src/style/floating-label.tsx), the one table of its
+// tunables: the label's move between its resting and floated places (translateY and
+// scale) and its tint between the resting ink and the focus or error ink, both 150 ms on
+// Animated.timing's own default curve, spelled out here (`Easing.inOut(Easing.ease)`)
+// so the values sit beside the other tunables and a change reaches the push gate. No
+// reference card judges them yet: when the float's motion is next changed, record
+// Material 3's own text-field label first (tools/native/liquid-motion.md). Internal,
+// like HOVER.
+export const FLOAT = {
+  /** The label's move between its resting and floated places. */
+  position: { duration: 150 },
+  /** The label's tint between the resting ink and the focus or error ink. */
+  tint: { duration: 150 },
+} as const;
+
+/** The curve of both float timings: Animated.timing's default, spelled out. */
+export const FLOAT_EASING: EasingFunction = Easing.inOut(Easing.ease);
 
 // Whether the user has asked the OS to reduce motion (iOS "Reduce Motion", Android
 // "Remove animations", and the web `prefers-reduced-motion` media query, which

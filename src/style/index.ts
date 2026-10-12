@@ -37,8 +37,9 @@ export * from "./gesture-surface.js";
 export * from "./use-hardware-back.js";
 export * from "./use-dialog-focus.js";
 export * from "./use-roving-focus.js";
-// Named rather than `export *`: motion.ts also holds the hover tunables (HOVER,
-// HOVER_EASING), which stay internal so a tuned value never becomes API.
+// Named rather than `export *`: motion.ts also holds the hover and float tunables
+// (HOVER, HOVER_EASING, FLOAT, FLOAT_EASING), which stay internal so a tuned value never
+// becomes API.
 export { supportsNativeDriver, thereAndBack, holdThen, keyframes, useReducedMotion, enableAndroidLayoutAnimations } from "./motion.js";
 export * from "./loop.js";
 export * from "./a11y-preferences.js";
