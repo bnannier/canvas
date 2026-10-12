@@ -20,6 +20,7 @@ import {
   FOCUS_RESET,
   LabelContent,
   labelA11y,
+  requiredName,
   type ColorTokens,
   type StyleProp,
   type ViewStyle,
@@ -87,9 +88,10 @@ export interface StepperProps {
   /** Optional muted secondary line rendered under the label (parity with Input). Takes effect only alongside `label`. */
   description?: ReactNode;
   /**
-   * Marks the control required: appends a destructive "*" to the label (hidden from
-   * the accessible name) and sets aria-required on the numeric control. Takes effect only
-   * alongside `label`.
+   * Marks the control required: appends a destructive "*" to the label (decorative,
+   * never in the accessible name) and announces the control as required, through
+   * aria-required on the web's numeric field and with the word in its name ("Quantity,
+   * required") on iOS and Android. The star takes effect only alongside `label`.
    */
   required?: boolean;
   // Size (pick one; default is the medium control). Precedence: large > small.
@@ -225,10 +227,11 @@ export function createStepper(skin: StepperSkin) {
     // available). The label (when present) is the group's programmatic name on BOTH
     // channels: accessibilityLabel (native) and aria-labelledby -> the label Text's
     // nativeID (web, which RNW forwards). Without a visible label, the group and
-    // editable field both use the invisible "Number" name.
+    // editable field both use the invisible "Number" name. Natively a required
+    // control's name says so (requiredName), since aria-required is web-only.
     const labelId = useId();
     const descId = useId();
-    const accessibleName = label ?? "Number";
+    const accessibleName = requiredName(label ?? "Number", required);
     const ariaLabelledby = label != null ? labelId : undefined;
     const ariaDescribedby = label != null && description != null ? descId : undefined;
 
@@ -278,7 +281,7 @@ export function createStepper(skin: StepperSkin) {
     };
 
     const accessibility = stepperAccessibility({
-      min, max, current, disabled: !!disabled, required, onAccessibilityAction,
+      min, max, current, disabled: !!disabled, onAccessibilityAction,
     });
 
     // RNW TextInput owns onKeyDown and forwards it through onKeyPress. Use that
@@ -430,8 +433,9 @@ export function createStepper(skin: StepperSkin) {
         aria-label={accessibleName}
         aria-labelledby={ariaLabelledby}
         aria-describedby={ariaDescribedby}
-        // Required is surfaced programmatically (aria-required), matching Input;
-        // omitted entirely when optional so no aria-required="false" is emitted.
+        // Required is surfaced programmatically, matching Input: aria-required on the
+        // web (omitted entirely when optional, so no aria-required="false" is emitted)
+        // and the name natively (accessibleName).
         aria-required={required || undefined}
         style={[skin.field(tokens, size, !!disabled), skin.groupShowsFocus ? FOCUS_RESET : focusRing, glass ? PANE_SIBLING_INPUT : null, disabledInk]}
       />

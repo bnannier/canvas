@@ -156,14 +156,19 @@ describe("Stepper runtime accessibility metadata", () => {
         if (candidate?.group?.accessibilityRole === "adjustable") metadata = candidate;
         return selected;
       });
+      // The name resolves for the running platform too (requiredName reads Platform.OS).
+      const os = Object.getOwnPropertyDescriptor(Platform, "OS")!;
+      Object.defineProperty(Platform, "OS", { configurable: true, value: platform });
       try {
         const values: number[] = [];
         const view = (disabled = false) => <ThemeProvider><Stepper defaultValue={0.2}
           min={0} max={0.3} step={0.1} disabled={disabled} required
           onChange={(next) => values.push(next)} /></ThemeProvider>;
         const { getByRole, queryByRole, rerender } = render(view());
-        const field = getByRole("textbox", { name: "Number" }) as HTMLInputElement;
-        const group = getByRole("slider", { name: "Number" });
+        // React Native has no native required state, so the group and the field say it in
+        // their name, and the group carries no aria-required that native would drop.
+        const field = getByRole("textbox", { name: "Number, required" }) as HTMLInputElement;
+        const group = getByRole("slider", { name: "Number, required" });
         expect(group.contains(field)).toBe(true);
         expect(queryByRole("spinbutton")).toBeNull();
         expect(metadata?.group.role).toBeUndefined();
@@ -172,7 +177,7 @@ describe("Stepper runtime accessibility metadata", () => {
         expect(metadata?.group["aria-valuemin"]).toBe(0);
         expect(metadata?.group["aria-valuemax"]).toBe(0.3);
         expect(metadata?.group["aria-valuenow"]).toBe(0.2);
-        expect(metadata?.group["aria-required"]).toBe(true);
+        expect(metadata?.group).not.toHaveProperty("aria-required");
         expect(metadata?.field.accessibilityRole).toBeUndefined();
         expect(metadata?.field.onAccessibilityAction).toBeUndefined();
         const adjust = (actionName: string) => act(() => metadata!.group.onAccessibilityAction!({
@@ -194,6 +199,7 @@ describe("Stepper runtime accessibility metadata", () => {
       } finally {
         cleanup();
         select.mockRestore();
+        Object.defineProperty(Platform, "OS", os);
       }
     });
   }

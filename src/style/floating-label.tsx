@@ -161,12 +161,14 @@ export interface LabelA11y {
  * The accessibility props of a field's visible label: the Text that holds LabelContent,
  * above a field or floating in it.
  *
- * On iOS and Android the label Text takes the bare label as its accessible name, so the
- * required star is never spoken: React Native renders the star, a Text nested in the label,
- * as a span of the label's paragraph, which its own hiding props cannot reach. The web
- * keeps its markup as it is: the star's `aria-hidden` already keeps it out of the field's
- * name through `aria-labelledby`, and an `aria-label` on the label's generic element is one
- * ARIA prohibits.
+ * On iOS and Android the label Text takes `name` as its accessible name, so the required
+ * star is never spoken: React Native renders the star, a Text nested in the label, as a
+ * span of the label's paragraph, which its own hiding props cannot reach. `name` is the
+ * bare label, or `requiredName(label, required)` for a label that is the required field's
+ * only cue (Field's heading over a control that names itself). The web keeps its markup as
+ * it is: the star's `aria-hidden` already keeps it out of the field's name through
+ * `aria-labelledby`, and an `aria-label` on the label's generic element is one ARIA
+ * prohibits.
  *
  * With `names` (the control takes its accessible name from this label) the label is also
  * hidden from VoiceOver and TalkBack, which would otherwise stop on it and then on the
@@ -177,12 +179,29 @@ export interface LabelA11y {
  *
  * `os` is the platform to resolve for; it defaults to the running one.
  */
-export function labelA11y(label: string, names: boolean, os: string = Platform.OS): LabelA11y {
+export function labelA11y(name: string, names: boolean, os: string = Platform.OS): LabelA11y {
   const native = os === "ios" || os === "android";
   return {
-    ...(native ? { accessibilityLabel: label } : null),
+    ...(native ? { accessibilityLabel: name } : null),
     ...(names ? { accessibilityElementsHidden: true, importantForAccessibility: "no-hide-descendants" as const } : null),
   };
+}
+
+/**
+ * A required field's accessible name: `"<name>, required"` on iOS and Android, and the name
+ * itself on the web and wherever `required` is off. React Native has no native required
+ * state (its `aria-required` reaches the web alone) and the label's star is never spoken
+ * (`labelA11y`), so natively the word in the name is the only required cue VoiceOver and
+ * TalkBack hear, as they hear it in Select's trigger name. The web keeps the bare name,
+ * since the field's `aria-required` announces it there and the word would say it twice.
+ * Give it to the field's `accessibilityLabel` and `aria-label` both: React Native takes
+ * `aria-label` over `accessibilityLabel`. An absent name stays absent.
+ *
+ * `os` is the platform to resolve for; it defaults to the running one.
+ */
+export function requiredName<N extends string | undefined>(name: N, required: boolean | undefined, os: string = Platform.OS): N {
+  const native = os === "ios" || os === "android";
+  return (name != null && required && native ? `${name}, required` : name) as N;
 }
 
 /**

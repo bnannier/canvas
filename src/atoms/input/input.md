@@ -10,7 +10,9 @@ Pass `label` (and `required`) to name the field: iOS and web render the label
 above the control, while Android floats the Material 3 in-container label. On
 Android the field grows with the user's text size so the floated label never
 meets the value, and a label longer than the field truncates on one line inside
-it while the field's accessible name stays the whole label. A field fills the parent it is given; a step of its own (`xs`, `lg`, …, with
+it while the field's accessible name stays the whole label. The required star is
+decorative: a screen reader hears the field as required, from `aria-required` on
+the web and from its name ("Full name, required") on iOS and Android. A field fills the parent it is given; a step of its own (`xs`, `lg`, …, with
 `start` to pin it to the leading edge) or a Container step sets its measure.
 Select and the search field share its look, and Field and Form compose that
 label with helper and error text. On iOS the field is drawn to the iOS

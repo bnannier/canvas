@@ -1,7 +1,7 @@
 import { Platform, type AccessibilityProps } from "react-native";
 
 type StepperAccessibility = {
-  group: AccessibilityProps & { "aria-required"?: boolean };
+  group: AccessibilityProps;
   field: AccessibilityProps;
 };
 
@@ -9,13 +9,15 @@ type StepperAccessibility = {
  * The RN tree stays identical. Native keeps its adjustable View and action
  * handlers; the browser's editable number is a spinbutton inside a plain group.
  * A universal role="spinbutton" would override iOS's adjustable trait, and
- * moving its actions to TextInput would change their native recipient. */
-export function stepperAccessibility({ min, max, current, disabled, required, onAccessibilityAction }: {
+ * moving its actions to TextInput would change their native recipient. The
+ * required state is not here: React Native has no native required state, so
+ * natively the group's and the field's name carry it (`requiredName`), and the
+ * web's numeric field takes `aria-required` from the shell. */
+export function stepperAccessibility({ min, max, current, disabled, onAccessibilityAction }: {
   min: number;
   max: number;
   current: number;
   disabled: boolean;
-  required: boolean | undefined;
   onAccessibilityAction: NonNullable<AccessibilityProps["onAccessibilityAction"]>;
 }): StepperAccessibility {
   const numeric: AccessibilityProps = {
@@ -35,7 +37,6 @@ export function stepperAccessibility({ min, max, current, disabled, required, on
       group: {
         ...numeric,
         accessibilityRole: "adjustable",
-        "aria-required": required || undefined,
         accessibilityActions: [{ name: "increment" }, { name: "decrement" }],
         onAccessibilityAction,
       },

@@ -6,7 +6,9 @@ Pass `label` (and `required`) to name the field: iOS and web render the label
 above the control, while Android floats the Material 3 in-container label at the
 top of the multiline box, making room for itself at the user's text size and
 truncating on one line when it is longer than the box while the field's
-accessible name stays the whole label. The box fills the parent it is given; a step of its
+accessible name stays the whole label. The required star is decorative: a screen
+reader hears the field as required, from `aria-required` on the web and from its
+name ("Bio, required") on iOS and Android. The box fills the parent it is given; a step of its
 own (`xs`, `lg`, …, with `start` to pin it to the leading edge) or a Container
 step sets its measure.
 

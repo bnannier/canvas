@@ -4,7 +4,7 @@ import { textEntryState } from "../../style/text-entry-state.js";
 import { consumeEscapeKey, EscapeLayerProvider, useEscapeLayer } from "../../style/escape-layer.js";
 import { forwardRef, useEffect, useId, useRef, useState } from "react";
 import { Platform, type TextInput as RNTextInput } from "react-native";
-import { View, Pressable, Text, TextInput, useControllableState, useFillStyle, AnchoredOverlay, useOverlayHost, useMeasuredWidth, FloatingLabel, LabelContent, labelA11y, useFloatingLabelRoom, FOCUS_RESET, RippleClip, cornerRadii, type LayoutStyle, type MeasureProps, type StyleProp, type ViewStyle, type TextStyle, GlassPane, isGlass, PANE_SIBLING_INPUT, withInnerFill } from "../../style/index.js";
+import { View, Pressable, Text, TextInput, useControllableState, useFillStyle, AnchoredOverlay, useOverlayHost, useMeasuredWidth, FloatingLabel, LabelContent, labelA11y, requiredName, useFloatingLabelRoom, FOCUS_RESET, RippleClip, cornerRadii, type LayoutStyle, type MeasureProps, type StyleProp, type ViewStyle, type TextStyle, GlassPane, isGlass, PANE_SIBLING_INPUT, withInnerFill } from "../../style/index.js";
 import { OverlayScrollView } from "../../style/overlay-scroll.js";
 import { useActiveOptionScroll } from "../../style/use-active-option-scroll.js";
 import { AccessibilityReturnBoundary, accessibilitySelectionProps, useAccessibilityReturn } from "../../style/use-accessibility-return.js";
@@ -78,9 +78,10 @@ export interface AutocompleteProps extends MeasureProps {
    */
   label?: string;
   /**
-   * Marks the field as required: appends a destructive "*" to the label (hidden
-   * from the accessible name) and sets aria-required on the field. Takes effect
-   * only alongside `label`.
+   * Marks the field as required: appends a destructive "*" to the label (decorative,
+   * never in the accessible name) and announces the field as required, through
+   * aria-required on the web and with the word in its name ("Assigned to, required")
+   * on iOS and Android. Takes effect only alongside `label`.
    */
   required?: boolean;
   /** Optional muted helper line rendered below the option list. */
@@ -246,6 +247,8 @@ export function createAutocomplete(skin: AutocompleteSkin) {
     // combobox's focus equivalent) OR the field holding a query/value; the native
     // placeholder is gated so the resting label is the sole placeholder there.
     const hasLabel = label != null && label !== "";
+    // The field's accessible name: the label, which natively says when the field is required.
+    const fieldName = requiredName(hasLabel ? label : undefined, required);
     const floating = hasLabel && skin.floatingLabel;
     const above = hasLabel && !floating;
     const populated = fieldValue !== "";
@@ -386,12 +389,13 @@ export function createAutocomplete(skin: AutocompleteSkin) {
             // and each row's selected trait retain native accessibility semantics.
             {...{ "aria-controls": listboxId, "aria-activedescendant": activeId,
               "aria-autocomplete": "list" as const, "aria-haspopup": "listbox" as const }}
-            // Required is surfaced programmatically (aria-required), omitted when optional.
+            // Required is surfaced programmatically: aria-required on the web (omitted
+            // when optional), and natively the field's name says so (requiredName).
             aria-required={required || undefined}
             // Tie the visible label to the field so a screen reader announces the
             // field's name (not just the inner value/placeholder) on both channels.
-            accessibilityLabel={hasLabel ? label : undefined}
-            aria-label={hasLabel ? label : undefined}
+            accessibilityLabel={fieldName}
+            aria-label={fieldName}
           />
           <Pressable
             style={({ pressed }) => [

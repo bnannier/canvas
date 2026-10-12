@@ -2,12 +2,12 @@ import { afterEach, describe, expect, it, spyOn } from "bun:test";
 import { act, cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { renderToString } from "react-dom/server";
 import { isValidElement, useState, type ReactElement, type ReactNode } from "react";
-import { AccessibilityInfo, Animated, I18nManager, Text as RNText, type TextStyle } from "react-native";
+import { AccessibilityInfo, Animated, I18nManager, Platform, Text as RNText, type TextStyle } from "react-native";
 import { ThemeProvider } from "../src/style/theme.tsx";
 import { colorsByScheme } from "../src/style/tokens.ts";
 import type { ThemeFonts } from "../src/style/fonts.ts";
 import { FLOAT, FLOAT_EASING } from "../src/style/motion.ts";
-import { LabelContent, labelA11y, type FloatingLabelStyles } from "../src/style/floating-label.tsx";
+import { LabelContent, labelA11y, requiredName, type FloatingLabelStyles } from "../src/style/floating-label.tsx";
 import { Input } from "../src/atoms/input/input.android.tsx";
 import { Textarea } from "../src/atoms/textarea/textarea.android.tsx";
 import { Select } from "../src/atoms/select/select.android.tsx";
@@ -227,8 +227,10 @@ describe("the float scales around the label's leading edge", () => {
 // names itself with the bare label, since React Native makes the required star a span of the
 // label's paragraph, out of reach of the star's own hiding props; where the control takes its
 // name from the label, the label is also hidden there, so VoiceOver and TalkBack stop once, on
-// the field. The web keeps the label in the DOM unchanged: the field's aria-labelledby target,
-// its star aria-hidden.
+// the field. React Native has no native required state, so natively a required field says it
+// in its name, and Field's heading over a control that names itself says it in its own. The
+// web keeps the label in the DOM unchanged: the field's aria-labelledby target, its star
+// aria-hidden, the field's aria-required announcing what the name leaves out.
 describe("the visible label's accessibility", () => {
   it("resolves per platform: the bare name natively, and hidden natively where the control names itself", () => {
     const hidden = { accessibilityElementsHidden: true, importantForAccessibility: "no-hide-descendants" };
@@ -241,14 +243,25 @@ describe("the visible label's accessibility", () => {
     expect(labelA11y("Country", false, "web")).toEqual({});
   });
 
+  it("names a required field as required natively, and leaves the web's name bare", () => {
+    for (const os of ["ios", "android"]) {
+      expect(requiredName("Country", true, os)).toBe("Country, required");
+      expect(requiredName("Country", false, os)).toBe("Country");
+      expect(requiredName(undefined, true, os)).toBeUndefined();
+    }
+    // The web field's aria-required announces it; the word would say it twice.
+    expect(requiredName("Country", true, "web")).toBe("Country");
+  });
+
   const A11Y_KEYS = ["accessibilityLabel", "accessibilityElementsHidden", "importantForAccessibility", "aria-label", "aria-hidden"] as const;
   type A11yProps = Partial<Record<(typeof A11Y_KEYS)[number], unknown>>;
   /**
    * The accessibility props each label Text (the Text holding LabelContent) was handed, by
-   * label, before react-native-web drops the native-only ones. Picked, so a failure prints them
-   * rather than the React tree the props hold.
+   * label, before react-native-web drops the native-only ones, rendered with Platform.OS set to
+   * `os` so every per-platform name resolves as it does on that platform. Picked, so a failure
+   * prints them rather than the React tree the props hold.
    */
-  function labelProps(ui: ReactElement): Map<string, A11yProps> {
+  function labelProps(os: string, ui: ReactElement): Map<string, A11yProps> {
     const component = RNText as unknown as { render: (props: Record<string, unknown>, ref: unknown) => ReactNode };
     const original = component.render;
     const seen = new Map<string, A11yProps>();
@@ -259,13 +272,25 @@ describe("the visible label's accessibility", () => {
       }
       return original(props, ref);
     });
+    const platform = Object.getOwnPropertyDescriptor(Platform, "OS")!;
+    Object.defineProperty(Platform, "OS", { configurable: true, value: os });
     try {
-      render(<ThemeProvider light>{ui}</ThemeProvider>);
+      render(<ThemeProvider light solid>{ui}</ThemeProvider>);
     } finally {
+      Object.defineProperty(Platform, "OS", platform);
       spy.mockRestore();
     }
     return seen;
   }
+  /**
+   * The names the rendered controls (a field, a role) whose name starts with `label` carry, from
+   * react-native-web's aria-label, where both `accessibilityLabel` and `aria-label` land. The
+   * label Texts, which carry a name natively too, have neither.
+   */
+  const namesOf = (label: string) =>
+    [...document.querySelectorAll("input[aria-label], textarea[aria-label], [role][aria-label]")]
+      .map((node) => node.getAttribute("aria-label"))
+      .filter((name) => name?.startsWith(label));
 
   const SKINS = [
     ["web", WebInput, WebTextarea, WebSelect, WebAutocomplete, WebPhoneInput, WebStepper, WebField],
@@ -273,8 +298,9 @@ describe("the visible label's accessibility", () => {
     ["android", { Input }, { Textarea }, { Select }, { Autocomplete }, AndroidPhoneInput, AndroidStepper, AndroidField],
   ] as const;
   for (const [skin, I, T, S, A, P, St, F] of SKINS) {
-    it(`${skin}: every field family's label is hidden natively beside the field it names, and Field's heading is not`, () => {
-      const seen = labelProps(<>
+    const native = skin !== "web";
+    it(`${skin}: every field family's label is hidden natively beside the field it names, named bare, and the field says it is required`, () => {
+      const seen = labelProps(skin, <>
         <I.Input label="Input label" required />
         <T.Textarea label="Textarea label" required />
         <S.Select label="Select label" required options={["EU"]} />
@@ -282,14 +308,28 @@ describe("the visible label's accessibility", () => {
         <P.PhoneInput label="Phone label" required />
         <St.Stepper label="Stepper label" required />
         <F.Field label="Field label" required><Switch accessibilityLabel="Notify me" /></F.Field>
-        <I.Input label="Overridden label" accessibilityLabel="Named by the caller" />
+        <I.Input label="Overridden label" accessibilityLabel="Named by the caller" required />
       </>);
+      const hidden = { accessibilityElementsHidden: true, importantForAccessibility: "no-hide-descendants" };
       for (const label of ["Input label", "Textarea label", "Select label", "Autocomplete label", "Phone label", "Stepper label"]) {
-        expect(seen.get(label), label).toEqual({ accessibilityElementsHidden: true, importantForAccessibility: "no-hide-descendants" });
+        // Natively the label names itself with the bare label: no star, and no "required",
+        // which the field it names says.
+        expect(seen.get(label), label).toEqual(native ? { accessibilityLabel: label, ...hidden } : hidden);
       }
-      // A heading for a self-named control, and a label the caller's name replaces, stay stops.
-      // Under test the platform is the web, so no label carries a name of its own.
-      for (const label of ["Field label", "Overridden label"]) expect(seen.get(label), label).toEqual({});
+      // A label the caller's name replaces stays a stop, named bare; a heading over a control
+      // that names itself stays a stop and, since that control is never told, says the field
+      // is required natively. The web gives neither a name of its own.
+      expect(seen.get("Overridden label")).toEqual(native ? { accessibilityLabel: "Overridden label" } : {});
+      expect(seen.get("Field label")).toEqual(native ? { accessibilityLabel: "Field label, required" } : {});
+
+      // Each field's own name: natively "<name>, required", on the web the bare name beside
+      // its aria-required. Select's trigger is a button, which cannot carry aria-required,
+      // so its name says it on every platform; Stepper names its group and its field.
+      const required = (name: string) => (native ? `${name}, required` : name);
+      for (const label of ["Input label", "Textarea label", "Autocomplete label", "Phone label"]) expect(namesOf(label), label).toEqual([required(label)]);
+      expect(namesOf("Stepper label")).toEqual([required("Stepper label"), required("Stepper label")]);
+      expect(namesOf("Select label")).toContain("Select label, required");
+      expect(namesOf("Named by the caller")).toEqual([required("Named by the caller")]);
     });
   }
 

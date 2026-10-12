@@ -8,7 +8,9 @@ is what Field adds.
 When the row wraps a single field-family control that has no label of its own,
 Field hands the label down to it rather than drawing one alongside, so each
 platform still places it its own way: a static title above on web and iOS, the
-floating in-container label on Android. Set `error` and it replaces `helper` in
+floating in-container label on Android, and `required` goes down with it. Over
+any other control (a Switch, a group) Field draws the label above with its star,
+and on iOS and Android the label says "required" in its own name. Set `error` and it replaces `helper` in
 the same slot, so the row never changes height and nothing below it jumps.
 
 ## Usage
