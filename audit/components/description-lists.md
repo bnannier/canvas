@@ -84,6 +84,7 @@ One row per finding. Severity: critical, high, medium, low. Cell: a capture id f
 
 | ID | Severity | Cell | Summary | Status | Fix commit |
 |---|---|---|---|---|---|
+| description-lists-edit-focus-1 | low | source | From the FoundationReference turn (FR-13): the inline-edit field spreads FOCUS_RESET but paints no focus state of its own, which breaks FOCUS_RESET's contract (only a control that paints its own focus state may remove the ring) and this checklist's states item. Its underline (description-lists.styles.ts `editInput`: a 1 px bottom border in `ring`) is the same at rest and focused, and description-lists.shared.tsx renders the field with autoFocus and selectTextOnFocus and no onFocus or onBlur, so WCAG 2.4.7 passes only through the browser's caret and selection. Fix direction: make the underline the field's own focus state (onFocus and onBlur, activeIndicator: a 1 px neutral hairline at rest and `ring` at 2 px focused), keep FOCUS_RESET, and pin it with a unit test and the focus state cell. | open |  |
 
 ## Sign-off
 
