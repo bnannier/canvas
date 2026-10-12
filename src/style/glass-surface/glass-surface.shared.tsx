@@ -7,7 +7,7 @@
 // The content host keeps its layout in every mode. A separate absolute material
 // clip contains only decoration, preserving shadow, focus and child identity.
 
-import { createContext, useContext, type ReactNode, type RefObject } from "react";
+import { createContext, useCallback, useContext, useState, type ReactNode, type RefObject } from "react";
 import { View, StyleSheet, type StyleProp, type ViewStyle, type ViewProps } from "react-native";
 import { type ColorTokens, type GlassTokens } from "../tokens.js";
 import { alpha, composite, contrastRatio, inkOn } from "../color.js";
@@ -111,34 +111,82 @@ export interface GlassSurfaceProps {
 // readiness and resource release without changing the content host.
 export const GlassBlurTargetContext = createContext<RefObject<View | null> | null>(null);
 
-// The window-level Android blur target: the OUTERMOST <OverlayProvider>'s content
-// wrapper, published to its whole subtree (unlike GlassBlurTargetContext, which
-// only ever wraps an outlet or a Modal). Consumers that render in a SEPARATE native
-// window (RN Modal — Drawer, ActionSheet) bridge it into GlassBlurTargetContext via
-// <GlassModalBlurTarget>; nothing in the main window may consume it directly, since
-// everything under the provider is a descendant of that target. Outermost wins so a
-// Modal blurs the largest safe region (the page, not just the docs stage its
-// trigger happens to sit in).
+// The window-level Android capture plane: the OUTERMOST <OverlayProvider>'s page
+// content (the @nannier/canvas-blur CaptureHost it mounts when it fills its window),
+// published to its whole subtree, unlike GlassBlurTargetContext, which only ever wraps
+// an outlet or a Modal's content. Surfaces in a SEPARATE native window (a React Native
+// Modal: Drawer, ActionSheet, an app's own) take it through <GlassModalBlurTarget>.
+// Nothing in the main window may consume it directly, since everything under the
+// provider is a descendant of that plane; OverlayProvider and the bridge are its only
+// readers (test/design-rules-source.test.ts). Outermost wins, so a Modal blurs the
+// largest safe region: the page, not just the docs stage its trigger sits in.
 export const GlassWindowBlurTargetContext = createContext<RefObject<View | null> | null>(null);
 
+/** What a surface's frost reports when it refuses the plane it was handed. */
+export type BlurTargetRejection = (refused: RefObject<View | null>) => void;
+
+// Provided by a GlassModalBlurTarget for its own plane, and by nothing else. The Android
+// host forwards canvas-blur's onTargetRejected here: the frost refuses only a plane that
+// contains it, so a refusal means the bridge sits in the plane's own window, and the
+// bridge stops publishing the plane to everything under it.
+const GlassBlurTargetRejectionContext = createContext<BlurTargetRejection | null>(null);
+
+/** The nearest bridge's rejection report, or null outside a bridge (and once it has none to offer). */
+export function useBlurTargetRejection(): BlurTargetRejection | null {
+  return useContext(GlassBlurTargetRejectionContext);
+}
+
 /**
- * Re-publish the window-level Android blur target inside an RN Modal, so the
- * Modal's frost surfaces (a sheet, a drawer panel) blur the main window's content.
- * A Modal renders in its own native window, which is never a descendant of the
- * main-window target — the one arrangement expo-blur 57's Android API can blur
- * without the ancestor-target render-node cycle. A no-op (provides null) on every
- * other platform and when no <OverlayProvider> published a target.
+ * The Modal blur bridge: carries the page's Android capture plane into a React Native
+ * `Modal`, so the glass surfaces inside it (a sheet, a drawer panel, your own Modal's
+ * cards) frost the page behind the Modal. It renders no view, only context. Wrap the
+ * Modal's content in it, outside any `<OverlayProvider separateWindow>`, as Drawer and
+ * ActionSheet do:
+ *
+ * `<Modal transparent><GlassModalBlurTarget><OverlayProvider separateWindow>{content}</OverlayProvider></GlassModalBlurTarget></Modal>`
+ *
+ * - Android: with `@nannier/canvas-blur` in an Expo SDK 57 build on Android 12 or newer,
+ *   and an app-root `OverlayProvider` that fills the window (its default `flex: 1`,
+ *   outside any scroller), whose page content is the plane. The outermost provider
+ *   wins, so a Modal opened from a nested host frosts the whole page, and so does a
+ *   Modal opened over another Modal. The frost samples that page only: not the root
+ *   outlet's toasts, a Modal beneath, or the Modal's own scrim and surfaces.
+ * - iOS and the web provide nothing (their Liquid Glass and frost need no plane), and
+ *   so does Android when no `OverlayProvider` published a plane: the surfaces render
+ *   exactly as they would without the bridge, frost or their solid skin.
+ * - Only directly inside a Modal's content, a separate native window that never
+ *   contains the plane. Placed in the main window (around page content, or in a
+ *   react-native-screens or expo-router modal screen, which shares the main window on
+ *   Android) the plane contains its surfaces: canvas-blur 0.2 or newer refuses it and
+ *   says so, and every surface under the bridge then resolves its complete solid skin
+ *   (an older module refuses it silently, leaving a tint with no blur).
+ * - Read the material inside it: a component that resolves its material around the
+ *   Modal sees the page's context, which offers no plane, and resolves solid while
+ *   its own surfaces inside the Modal frost.
  */
 export function GlassModalBlurTarget({ children }: { children?: ReactNode }) {
   const target = useContext(GlassWindowBlurTargetContext);
-  return <GlassBlurTargetContext.Provider value={target}>{children}</GlassBlurTargetContext.Provider>;
+  // The verdict is per bridge and per plane: trusted until its frost refuses it, which
+  // it does at once when the bridge is misplaced, so a legitimate Modal never flashes
+  // solid first. A Modal is never inside the plane, so its bridge is never refused.
+  const [refused, setRefused] = useState<RefObject<View | null> | null>(null);
+  const plane = target !== refused ? target : null;
+  const reject = useCallback<BlurTargetRejection>((rejected) => {
+    // A plane this bridge did not publish (a nested provider's own) is not its verdict.
+    if (rejected === target) setRefused(target);
+  }, [target]);
+  return (
+    <GlassBlurTargetRejectionContext.Provider value={plane ? reject : null}>
+      <GlassBlurTargetContext.Provider value={plane}>{children}</GlassBlurTargetContext.Provider>
+    </GlassBlurTargetRejectionContext.Provider>
+  );
 }
 
 // The contract between OverlayProvider and the per-platform GlassBlurTargetHost
 // (glass-blur-target.tsx / .android.tsx): the provider hands over its wrapper
-// style, the ref the Android fork attaches to its BlurTargetView, and the outlet
-// subtree, which every fork must keep OUTSIDE the target so outlet overlays can
-// blur the content as a sibling.
+// style, the ref the Android fork attaches to its canvas-blur CaptureHost, and the
+// outlet subtree, which every fork must keep OUTSIDE the target so outlet overlays
+// can blur the content as a sibling.
 export interface GlassBlurTargetHostProps {
   /** The provider wrapper's style (OverlayProvider's [FILL, style]). */
   style?: StyleProp<ViewStyle>;

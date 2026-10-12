@@ -13,6 +13,8 @@ interface CaptureFrostProps extends ViewProps {
   targetRef: RefObject<View | null>;
   intensity: number;
   tint: "light" | "dark";
+  /** Once per refused target (canvas-blur 0.2+; an older module refuses silently). */
+  onTargetRejected?: (event: { nativeEvent: { targetId: number; reason: string } }) => void;
 }
 interface CaptureModule {
   available?: boolean;
