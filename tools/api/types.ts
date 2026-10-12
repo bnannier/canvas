@@ -49,6 +49,17 @@ export interface ApiEntry {
   replacement?: string;
 }
 
+/**
+ * One route the staged docs migration (PENDING_DOCS) plans names for, and who ends it: the
+ * audit turn that lands the route's K12 docs (its checklist, `components/<slug>` or
+ * `foundation/<id>` under audit/). That turn closes the route once nothing is staged for it,
+ * and nothing may be staged for a closed route again.
+ */
+export interface PlannedRoute {
+  turn: string;
+  closed?: true;
+}
+
 /** The three resolutions of the package entry `.`: dist/index.js, and dist/native under Metro on each OS. */
 export type Resolution = "web" | "ios" | "android";
 
