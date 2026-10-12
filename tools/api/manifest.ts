@@ -13,7 +13,11 @@ import type { ApiEntry, DocsRoute, EntryPointShape, PlannedRoute } from "./types
 // no `docs` and waits in PENDING_DOCS (below) with the route planned for it.
 // `internal-by-accident` records what the source says about a helper the style hub
 // published before src/style/public.ts listed the surface; it deprecates nothing, and
-// the owner retires those names as deprecated aliases (audit K12-2).
+// the owner retires those names as deprecated aliases (audit K12-2), each Foundations
+// turn its own. A `deprecated-alias` carries `@deprecated` on its re-export (the
+// specifier in src/style/public.ts, or a tier barrel's for a component's helpers), with
+// a `replacement` where one public name replaces it; otherwise its tag names the kit
+// components or props to use, or says that nothing replaces it.
 
 /** Each subpath of package.json `exports`, by how the gate enumerates it. */
 export const entryPoints: Readonly<Record<string, EntryPointShape>> = {
@@ -52,10 +56,10 @@ export const publicApi: Readonly<Record<string, ApiEntry>> = {
   ChipProps: { kind: "type", docs: "components/chip" },
   Container: { kind: "component", docs: "components/container" },
   ContainerProps: { kind: "type", docs: "components/container" },
-  containerStyle: { kind: "internal-by-accident" },
-  FLUID: { kind: "internal-by-accident" },
-  Measure: { kind: "internal-by-accident" },
-  measureOf: { kind: "internal-by-accident" },
+  containerStyle: { kind: "deprecated-alias", replacement: "Container" },
+  FLUID: { kind: "deprecated-alias", replacement: "Container" },
+  Measure: { kind: "deprecated-alias", replacement: "MeasureProps" },
+  measureOf: { kind: "deprecated-alias", replacement: "Container" },
   Divider: { kind: "component", docs: "components/divider" },
   DividerProps: { kind: "type", docs: "components/divider" },
   Dropdown: { kind: "component", docs: "components/dropdown" },
@@ -64,8 +68,8 @@ export const publicApi: Readonly<Record<string, ApiEntry>> = {
   Emblem: { kind: "component", docs: "components/emblem" },
   EmblemProps: { kind: "type", docs: "components/emblem" },
   Grid: { kind: "component", docs: "components/grid" },
-  gridCellWidth: { kind: "internal-by-accident" },
-  gridColumns: { kind: "internal-by-accident" },
+  gridCellWidth: { kind: "deprecated-alias", replacement: "Grid" },
+  gridColumns: { kind: "deprecated-alias", replacement: "Grid" },
   GridItem: { kind: "part", docs: "components/grid" },
   GridItemProps: { kind: "type", docs: "components/grid" },
   GridProps: { kind: "type", docs: "components/grid" },
@@ -227,10 +231,10 @@ export const publicApi: Readonly<Record<string, ApiEntry>> = {
   CodeBlock: { kind: "component", docs: "components/code-block" },
   CodeBlockProps: { kind: "type", docs: "components/code-block" },
   CodeBlockTab: { kind: "type", docs: "components/code-block" },
-  CodeToken: { kind: "internal-by-accident" },
-  syntaxColor: { kind: "internal-by-accident" },
-  tokenize: { kind: "internal-by-accident" },
-  TokenKind: { kind: "internal-by-accident" },
+  CodeToken: { kind: "deprecated-alias", replacement: "CodeBlock" },
+  syntaxColor: { kind: "deprecated-alias", replacement: "CodeBlock" },
+  tokenize: { kind: "deprecated-alias", replacement: "CodeBlock" },
+  TokenKind: { kind: "deprecated-alias", replacement: "CodeBlock" },
   Collapsible: { kind: "component", docs: "components/collapsible" },
   CollapsibleProps: { kind: "type", docs: "components/collapsible" },
   DescriptionList: { kind: "component", docs: "components/description-lists" },
@@ -287,14 +291,14 @@ export const publicApi: Readonly<Record<string, ApiEntry>> = {
   CommandItem: { kind: "type", docs: "components/command" },
   CommandProps: { kind: "type", docs: "components/command" },
   clearStoredDashboardOrder: { kind: "utility", docs: "components/dashboard-grid" },
-  DASHBOARD_COLUMNS: { kind: "internal-by-accident" },
+  DASHBOARD_COLUMNS: { kind: "deprecated-alias", replacement: "DashboardGrid" },
   DashboardGrid: { kind: "component", docs: "components/dashboard-grid" },
   DashboardGridProps: { kind: "type", docs: "components/dashboard-grid" },
-  DashboardTier: { kind: "internal-by-accident" },
+  DashboardTier: { kind: "deprecated-alias", replacement: "DashboardGrid" },
   DashboardWidget: { kind: "type", docs: "components/dashboard-grid" },
-  effectiveSpan: { kind: "internal-by-accident" },
-  moveWidget: { kind: "internal-by-accident" },
-  orderedWidgets: { kind: "internal-by-accident" },
+  effectiveSpan: { kind: "deprecated-alias", replacement: "DashboardGrid" },
+  moveWidget: { kind: "deprecated-alias", replacement: "DashboardGrid" },
+  orderedWidgets: { kind: "deprecated-alias", replacement: "DashboardGrid" },
   DataTable: { kind: "component", docs: "components/data-table" },
   DataTableColumn: { kind: "type", docs: "components/data-table" },
   DataTableProps: { kind: "type", docs: "components/data-table" },
@@ -347,8 +351,8 @@ export const publicApi: Readonly<Record<string, ApiEntry>> = {
   useReducedTransparency: { kind: "hook" },
 
   // src/style/active-indicator.ts
-  activeIndicator: { kind: "internal-by-accident" },
-  ActiveIndicatorOptions: { kind: "internal-by-accident" },
+  activeIndicator: { kind: "deprecated-alias" },
+  ActiveIndicatorOptions: { kind: "deprecated-alias" },
 
   // src/style/anchored-overlay.tsx (deprecated aliases since the AnchoredOverlay audit
   // turn, K12-2)
@@ -377,8 +381,8 @@ export const publicApi: Readonly<Record<string, ApiEntry>> = {
   useMeasuredWidth: { kind: "hook" },
 
   // src/style/dev-warn.ts
-  devWarn: { kind: "internal-by-accident" },
-  resetDevWarnings: { kind: "internal-by-accident" },
+  devWarn: { kind: "deprecated-alias" },
+  resetDevWarnings: { kind: "deprecated-alias" },
 
   // src/style/entrance.tsx (deprecated aliases since the Entrance audit turn, K12-2). No
   // single public name replaces either one: every anchored card applies the hold to its
@@ -397,7 +401,7 @@ export const publicApi: Readonly<Record<string, ApiEntry>> = {
   LabelContent: { kind: "deprecated-alias" },
 
   // src/style/focus-reset.ts
-  FOCUS_RESET: { kind: "internal-by-accident" },
+  FOCUS_RESET: { kind: "deprecated-alias" },
 
   // src/style/fonts.ts
   FontFaces: { kind: "type" },
@@ -409,15 +413,15 @@ export const publicApi: Readonly<Record<string, ApiEntry>> = {
   weightKey: { kind: "internal-by-accident" },
 
   // src/style/gesture-surface.ts
-  GESTURE_SURFACE: { kind: "internal-by-accident" },
+  GESTURE_SURFACE: { kind: "deprecated-alias" },
 
   // src/style/glass-fill.ts
-  innerFill: { kind: "internal-by-accident" },
-  InnerFillRole: { kind: "internal-by-accident" },
-  InnerFillStrength: { kind: "internal-by-accident" },
-  inverseDenseTint: { kind: "internal-by-accident" },
-  isGlass: { kind: "internal-by-accident" },
-  withInnerFill: { kind: "internal-by-accident" },
+  innerFill: { kind: "deprecated-alias" },
+  InnerFillRole: { kind: "deprecated-alias" },
+  InnerFillStrength: { kind: "deprecated-alias" },
+  inverseDenseTint: { kind: "deprecated-alias" },
+  isGlass: { kind: "deprecated-alias", replacement: "useTheme" },
+  withInnerFill: { kind: "deprecated-alias" },
 
   // src/style/glass-surface/glass-pane.tsx
   GlassPane: { kind: "internal-by-accident" },
@@ -447,14 +451,14 @@ export const publicApi: Readonly<Record<string, ApiEntry>> = {
   trackValueAt: { kind: "internal-by-accident" },
 
   // src/style/mono.ts
-  MONO_FONT: { kind: "internal-by-accident" },
+  MONO_FONT: { kind: "deprecated-alias", replacement: "Typography" },
 
   // src/style/motion.ts
-  enableAndroidLayoutAnimations: { kind: "internal-by-accident" },
-  holdThen: { kind: "internal-by-accident" },
-  keyframes: { kind: "internal-by-accident" },
-  supportsNativeDriver: { kind: "internal-by-accident" },
-  thereAndBack: { kind: "internal-by-accident" },
+  enableAndroidLayoutAnimations: { kind: "deprecated-alias" },
+  holdThen: { kind: "deprecated-alias" },
+  keyframes: { kind: "deprecated-alias" },
+  supportsNativeDriver: { kind: "deprecated-alias" },
+  thereAndBack: { kind: "deprecated-alias" },
   useReducedMotion: { kind: "hook" },
 
   // src/style/numerals.ts
@@ -511,7 +515,7 @@ export const publicApi: Readonly<Record<string, ApiEntry>> = {
   surfaceRipple: { kind: "internal-by-accident" },
 
   // src/style/rtl.ts
-  isRTL: { kind: "internal-by-accident" },
+  isRTL: { kind: "deprecated-alias" },
 
   // src/style/shadow.ts
   customShadow: { kind: "internal-by-accident" },
@@ -555,7 +559,7 @@ export const publicApi: Readonly<Record<string, ApiEntry>> = {
   StatusColorTone: { kind: "type" },
 
   // src/style/text.tsx
-  fontStyle: { kind: "internal-by-accident" },
+  fontStyle: { kind: "deprecated-alias", replacement: "Text" },
   Text: { kind: "component", docs: "components/text" },
   TextInput: { kind: "component", docs: "components/text-input" },
 
@@ -609,27 +613,27 @@ export const publicApi: Readonly<Record<string, ApiEntry>> = {
   useMinTargetSlop: { kind: "internal-by-accident" },
 
   // src/style/use-controllable-state.ts
-  useControllableState: { kind: "internal-by-accident" },
+  useControllableState: { kind: "deprecated-alias" },
 
   // src/style/use-dialog-focus.ts
-  useDialogFocus: { kind: "internal-by-accident" },
-  usePopoverFocus: { kind: "internal-by-accident" },
+  useDialogFocus: { kind: "deprecated-alias", replacement: "Dialog" },
+  usePopoverFocus: { kind: "deprecated-alias", replacement: "Popover" },
 
   // src/style/use-escape-key.ts
-  useEscapeKey: { kind: "internal-by-accident" },
+  useEscapeKey: { kind: "deprecated-alias" },
 
   // src/style/use-hardware-back.ts
-  useHardwareBack: { kind: "internal-by-accident" },
+  useHardwareBack: { kind: "deprecated-alias" },
 
   // src/style/use-roving-focus.ts
-  RovingFocusOptions: { kind: "internal-by-accident" },
-  RovingItemProps: { kind: "internal-by-accident" },
-  useRovingFocus: { kind: "internal-by-accident" },
+  RovingFocusOptions: { kind: "deprecated-alias" },
+  RovingItemProps: { kind: "deprecated-alias" },
+  useRovingFocus: { kind: "deprecated-alias" },
 
   // src/style/use-wheel.ts
-  normalizeWheelDelta: { kind: "internal-by-accident" },
-  useWheel: { kind: "internal-by-accident" },
-  WheelGesture: { kind: "internal-by-accident" },
+  normalizeWheelDelta: { kind: "deprecated-alias" },
+  useWheel: { kind: "deprecated-alias" },
+  WheelGesture: { kind: "deprecated-alias" },
 
   // src/theme.ts
   Density: { kind: "type" },
@@ -648,7 +652,9 @@ export const publicApi: Readonly<Record<string, ApiEntry>> = {
   hsl: { kind: "utility", docs: "integration", section: "Reading tokens (web)" },
   token: { kind: "utility", docs: "integration", section: "Reading tokens (web)" },
 
-  // react-native, re-exported by src/style/primitives.ts
+  // react-native, re-exported by src/style/primitives.ts. The StyleSheet pass-through is a
+  // deprecated alias since the FoundationReference audit turn (K12-2 OD5): it invites raw
+  // styling, and nothing in the kit replaces it.
   ImageStyle: { kind: "type" },
   LayoutChangeEvent: { kind: "type" },
   NativeScrollEvent: { kind: "type" },
@@ -658,7 +664,7 @@ export const publicApi: Readonly<Record<string, ApiEntry>> = {
   ScrollView: { kind: "component", docs: "components/scroll-view" },
   ScrollViewProps: { kind: "type" },
   StyleProp: { kind: "type" },
-  StyleSheet: { kind: "internal-by-accident" },
+  StyleSheet: { kind: "deprecated-alias" },
   TextInputProps: { kind: "type" },
   TextProps: { kind: "type" },
   TextStyle: { kind: "type" },

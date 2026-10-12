@@ -10,8 +10,8 @@ Audit checklist for `/components/grid`. The facts block and the variants table a
 | Markdown | `src/atoms/grid/grid.md` |
 | Source files | `grid.android.tsx`, `grid.ios.tsx`, `grid.md`, `grid.shared.tsx`, `grid.styles.ts`, `grid.tsx` |
 | Implementation | its own source directory, `src/atoms/grid/` (5 TypeScript modules) |
-| Exports | Grid, GridItem, gridColumns, gridCellWidth |
-| Platform entries | iOS: web build: Grid; re-exports the shared build: GridItem, gridColumns, gridCellWidth. Android: web build: Grid; re-exports the shared build: GridItem, gridColumns, gridCellWidth |
+| Exports | Grid, GridItem, gridCellWidth, gridColumns |
+| Platform entries | iOS: web build: Grid; re-exports the shared build: GridItem. Android: web build: Grid; re-exports the shared build: GridItem |
 | Platform-skins registry | none (every export is the web build, so the docs three-up renders it as is) |
 | Reference row | `grid` (Shared, Built). iOS: none (iOS has no grid control; SwiftUI's Grid and LazyVGrid arrange views and draw nothing, and the designed tile collection is the grid-lists row). Android: none (Material 3 has no grid component; Compose's LazyVerticalGrid arranges content and draws nothing). Web: link [grid (Web)](https://www.radix-ui.com/themes/docs/components/grid) (Radix Themes Grid) |
 | Materials manifest | Grid: atoms, inherited; verification inherited-composition, semantic-state. GridItem: atoms, inherited; verification inherited-composition, semantic-state |

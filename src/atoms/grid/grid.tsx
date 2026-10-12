@@ -9,5 +9,5 @@ import { webSkin } from "./grid.styles.js";
  * capped by `columns`, re-fitting as its own width changes.
  */
 export const Grid = createGrid(webSkin);
-export { GridItem, gridColumns, gridCellWidth } from "./grid.shared.js";
+export { GridItem } from "./grid.shared.js";
 export type { GridProps, GridItemProps } from "./grid.shared.js";

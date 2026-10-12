@@ -2,7 +2,8 @@ import { describe, it, expect, afterEach } from "bun:test";
 import { type ReactNode } from "react";
 import { render, screen, cleanup, fireEvent } from "@testing-library/react";
 import { ThemeProvider } from "../src/style/theme.tsx";
-import { CodeBlock, tokenize } from "../src/molecules/code-block/code-block.tsx";
+import { CodeBlock } from "../src/molecules/code-block/code-block.tsx";
+import { tokenize } from "../src/molecules/code-block/tokenize.ts";
 
 // CodeBlock: the in-kit tokenizer (pure string-in/spans-out), and the feature
 // set added in the 2026-07 build-out — clipboard copy with feedback, diff mode,
