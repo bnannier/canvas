@@ -44,7 +44,7 @@ Severity follows rn-library-audit: critical (broken for a class of users), high 
 
 - [x] K12-5: documented on `integration` as the Modal blur bridge for an app hosting its own React Native Modal
 - [x] a safe target bridge that keeps separate-window ownership, exercised with ActionSheet and Drawer over native content (materials target)
-- [ ] every component and page in its Capture through list is re-captured before and after a change (`bun run audit:turn -- --slug=<foundation> --phase=before|after`), and a consumer already signed off gets a re-sign-off row when its pictures change
+- [x] every component and page in its Capture through list is re-captured before and after a change (`bun run audit:turn -- --slug=<foundation> --phase=before|after`), and a consumer already signed off gets a re-sign-off row when its pictures change
 
 ## Findings
 
@@ -66,6 +66,6 @@ A platform is signed off when no critical or high finding is open, every medium 
 
 | Platform | Run id | Reviewer | Date | Result |
 |---|---|---|---|---|
-| web |  |  |  |  |
-| ios |  |  |  |  |
-| android |  |  |  |  |
+| web | `20261012-204548-web-e048e22`, `20261012-204645-web-e048e22` | coordinator | 2026-10-12 | signed off: 252 of 252 variant cells and 234 state cells (the same 12 press states not reached) across ActionSheet, Drawer, FilterPanel and Sidebar, every picture and probe byte-identical to the before capture; /integration's Overlay hosting and Native modals sections checked on the docs at 1440 in dark glass and 375 in light solid (no horizontal overflow, the example's `accessibilityViewIsModal`, code names set as code); the fix verifier passed with six lows, all fixed in 4a4e2484 |
+| ios | `20261012T211720Z-ios-59bdba8` | coordinator | 2026-10-12 | signed off: 84 of 84 cells, every card pixel-identical to `20261012T150815Z-ios-dde66d5` and every recorded accessibility node identical (one tree's whole-screen node total read 178 against 183); the bridge is a no-op on iOS by contract; /integration checked in the docs app in light glass |
+| android | `20261012T211720Z-android-59bdba8` | coordinator | 2026-10-12 | signed off: 84 of 84 cells, every card pixel-identical to `20261012T150815Z-android-dde66d5` and every accessibility tree identical; the Drawer and ActionSheet frost over the page and the misplaced bridge's solid fallback proven on the emulator by the materials smoke (light and dark) and canvas-blur's instrumentation (15 of 15); Drawer's broken trigger outline in these cards is the known drawer-trigger-android-1, open for Drawer's turn; /integration checked in the docs app in dark glass |
