@@ -43,6 +43,8 @@ export interface ApiInventory {
   materialRoutes: ReadonlyMap<string, string | null>;
   /** Every audit checklist by id (`components/view`, `foundation/tokens`): the turns that can end a planned route. */
   auditTurns: ReadonlySet<string>;
+  /** The names each Markdown document the package ships (DESIGN.md, README.md) presents as API, by file. */
+  packageDocs: ReadonlyMap<string, readonly string[]>;
 }
 
 export interface ApiManifest {
@@ -214,6 +216,28 @@ export function checkPublicApi(inventory: ApiInventory, manifest: ApiManifest) {
     else if (planned !== undefined && planned !== FOUNDATION_ROUTE) errors.push(`${name} is a deprecated alias staged for ${planned}: its home is the foundation reference (${FOUNDATION_ROUTE})`);
     else if (planned !== undefined && foundation && !names(foundation, name)) errors.push(`${name} is a deprecated alias, and the foundation reference (${FOUNDATION_ROUTE}) does not list it: every deprecated name is listed there with its replacement`);
   }
+
+  // No page but the foundation reference, and no document the package ships, presents a
+  // kit internal as API (K12-10 OD2): a deprecated alias, or a helper a later turn retires
+  // as one, imported, called, rendered or typed in a snippet, or set alone as inline code.
+  // The foundation reference lists every deprecated name with what to use instead; any
+  // other page shows that instead.
+  const retired = (name: string) => {
+    const kind = own(manifest.publicApi, name)?.kind;
+    return kind === "deprecated-alias" || kind === "internal-by-accident" ? kind : undefined;
+  };
+  const presented = new Set<string>();
+  const present = (where: string, uses: readonly string[]) => {
+    for (const name of uses) {
+      const kind = retired(name);
+      const key = `${where} ${name}`;
+      if (!kind || presented.has(key)) continue;
+      presented.add(key);
+      errors.push(`${where} presents ${name}, ${kind === "deprecated-alias" ? "a deprecated alias" : "a kit internal"}, as API: show what the kit offers instead (only the foundation reference lists it)`);
+    }
+  };
+  for (const [route, page] of inventory.pages) if (route !== FOUNDATION_ROUTE) present(page.sources.join(", "), page.uses);
+  for (const [file, uses] of inventory.packageDocs) present(file, uses);
 
   // The material inventory names a docs route for every renderable too, and the two
   // manifests must agree on it: the documenting route, or while the docs are pending,

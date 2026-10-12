@@ -111,5 +111,10 @@ export interface DocsPage {
    * tables' names and types, backtick spans. An ordinary-word name is named only here.
    */
   code: string;
+  /**
+   * The names the page presents as API: imported, called, rendered or typed in a snippet,
+   * or an inline code span of one identifier (tools/api/docs.ts `apiUses`).
+   */
+  uses: string[];
   headings: string[];
 }

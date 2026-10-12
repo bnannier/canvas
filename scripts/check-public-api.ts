@@ -3,7 +3,7 @@ import { resolve } from "node:path";
 import { COMPONENTS } from "../docs/src/core/data/components";
 import { checkPublicApi } from "../tools/api/check";
 import { discoverPublicApi } from "../tools/api/discover";
-import { docsPages } from "../tools/api/docs";
+import { docsPages, markdownUses } from "../tools/api/docs";
 import { entryPoints, files, PENDING_DOCS, PLANNED_ROUTES, publicApi } from "../tools/api/manifest";
 import { packedFiles } from "../tools/api/packed";
 import { SNAPSHOT_FILE, surfaceOf } from "../tools/api/snapshot";
@@ -42,6 +42,9 @@ const result = checkPublicApi(
     pages: docsPages(root, COMPONENTS),
     materialRoutes: new Map(materialCoverage.map((entry) => [entry.name, entry.docsRoute])),
     auditTurns,
+    // The Markdown the package ships beside its code (CHANGELOG.md is history, and names
+    // what each release changed by design).
+    packageDocs: new Map(["DESIGN.md", "README.md"].map((file) => [file, markdownUses(readFileSync(resolve(root, file), "utf8"))])),
   },
   { entryPoints, publicApi, files, pendingDocs: PENDING_DOCS, plannedRoutes: PLANNED_ROUTES },
 );

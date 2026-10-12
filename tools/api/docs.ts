@@ -130,20 +130,27 @@ function propertyName(node: ts.PropertyAssignment): string | undefined {
  * & Don't), InlineCode and mono Typography, and the names and types of a generated
  * prop table.
  */
-function codeIn(source: ts.SourceFile, node: ts.Node, out: string[]) {
-  const take = (code: ts.Node) => reaching(source, code, (current) => literalText(current, out));
+function codeIn(source: ts.SourceFile, node: ts.Node, out: string[], shown?: CodeShown) {
+  // Each code context's literals, appended to `out` and, when asked, kept whole as one
+  // snippet (a CodeBlock's or an example's code) or one inline span (InlineCode, mono).
+  const take = (code: ts.Node, into?: string[]) => {
+    const own: string[] = [];
+    reaching(source, code, (current) => literalText(current, own));
+    out.push(...own);
+    into?.push(own.join(""));
+  };
   const find = (current: ts.Node) => {
     if (ts.isJsxElement(current)) {
       const tag = jsxTagName(current.openingElement);
       if (tag === "InlineCode" || (tag === "Typography" && attribute(current.openingElement, "mono"))) {
-        for (const child of current.children) take(child);
+        for (const child of current.children) take(child, shown?.inline);
         return;
       }
     }
-    if (ts.isJsxAttribute(current) && current.name.getText() === "code" && current.initializer) return take(current.initializer);
+    if (ts.isJsxAttribute(current) && current.name.getText() === "code" && current.initializer) return take(current.initializer, shown?.snippets);
     if (ts.isPropertyAssignment(current)) {
       const name = propertyName(current);
-      if (name === "code") return take(current.initializer);
+      if (name === "code") return take(current.initializer, shown?.snippets);
       // A generated prop table: `props: [{ name: "ButtonProps", props: [{ name, type, … }] }]`.
       if (name === "props" && ts.isArrayLiteralExpression(current.initializer)) {
         const table = (row: ts.Node) => {
@@ -171,13 +178,67 @@ function backtickSpans(text: string): string[] {
   return [...text.matchAll(/`([^`\n]+)`/g)].map((match) => match[1]);
 }
 
+/** What a page shows as code, kept whole: its snippets and its inline code spans. */
+interface CodeShown {
+  snippets: string[];
+  inline: string[];
+}
+
+/**
+ * The names a page presents as API: an identifier a snippet imports, calls (a function or
+ * a method off it, `StyleSheet.create`), renders as a JSX tag or names as a type, and an
+ * inline code span that is one identifier (`useMinTargetSlop`, `tabularNums()`). Never
+ * prose, JSX text, a style key or another object key, or a JSX attribute: `fontStyle:`
+ * in a style object is React Native's key, not the kit's helper.
+ */
+export function apiUses(shown: CodeShown): string[] {
+  const used = new Set<string>();
+  const base = (node: ts.Node): string | undefined => {
+    if (ts.isIdentifier(node)) return node.text;
+    if (ts.isPropertyAccessExpression(node)) return base(node.expression);
+    if (ts.isQualifiedName(node)) return base(node.left);
+    return undefined;
+  };
+  const add = (name: string | undefined) => {
+    if (name) used.add(name);
+  };
+  for (const snippet of shown.snippets) {
+    const source = ts.createSourceFile("snippet.tsx", snippet, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
+    const visit = (node: ts.Node) => {
+      if (ts.isImportSpecifier(node)) add((node.propertyName ?? node.name).text);
+      else if (ts.isCallExpression(node) || ts.isNewExpression(node)) add(base(node.expression));
+      else if (ts.isJsxOpeningElement(node) || ts.isJsxSelfClosingElement(node)) add(base(node.tagName));
+      else if (ts.isTypeReferenceNode(node)) add(base(node.typeName));
+      ts.forEachChild(node, visit);
+    };
+    visit(source);
+  }
+  for (const span of shown.inline) add(/^([A-Za-z_$][\w$]*)(?:\(\))?$/.exec(span.trim())?.[1]);
+  return [...used].sort();
+}
+
+/**
+ * The names a Markdown document presents as API (DESIGN.md, README.md, which the package
+ * ships): its fenced snippets and its inline code spans, read as `apiUses` reads a page.
+ */
+export function markdownUses(markdown: string): string[] {
+  const snippets: string[] = [];
+  const prose = markdown.replace(/^(```|~~~)[^\n]*\n([\s\S]*?)^\1[ \t]*$/gm, (_fence, _marker: string, body: string) => {
+    snippets.push(body);
+    return "";
+  });
+  return apiUses({ snippets, inline: backtickSpans(prose) });
+}
+
 /** A page's text and its code: the code a subtree shows, plus every backtick span in its text. */
-function pageText(source: ts.SourceFile, node: ts.Node, reach: boolean): { text: string; code: string } {
+function pageText(source: ts.SourceFile, node: ts.Node, reach: boolean): { text: string; code: string; uses: string[] } {
   const text = reach ? reachableText(source, node) : fileText(source);
   const code: string[] = [];
-  if (reach) reaching(source, node, (current) => codeIn(source, current, code));
-  else codeIn(source, node, code);
-  return { text, code: [withoutComments(code.join("\n")), ...backtickSpans(text)].join("\n") };
+  const shown: CodeShown = { snippets: [], inline: [] };
+  if (reach) reaching(source, node, (current) => codeIn(source, current, code, shown));
+  else codeIn(source, node, code, shown);
+  const spans = backtickSpans(text);
+  return { text, code: [withoutComments(code.join("\n")), ...spans].join("\n"), uses: apiUses({ snippets: shown.snippets, inline: [...shown.inline, ...spans] }) };
 }
 
 function jsxTagName(node: ts.JsxOpeningLikeElement): string {
@@ -373,7 +434,9 @@ export function docsPages(root: string, components: readonly CatalogEntry[]): Ma
     }
     if (!existsSync(resolve(root, rows))) throw new Error(`${rows} is missing: run bun run docs:gen`);
     const data = generatedRows(parse(root, rows));
-    add({ route, sources: [file, rows], text: `${own.text}\n${data.text}`, code: `${own.code}\n${data.code}`, headings: [...own.headings, ...data.headings] });
+    // The rows name every deprecated alias by design; what the page itself presents as API
+    // is its own snippets'.
+    add({ route, sources: [file, rows], text: `${own.text}\n${data.text}`, code: `${own.code}\n${data.code}`, uses: own.uses, headings: [...own.headings, ...data.headings] });
   }
 
   const known = ["components/[slug]", "components/[slug]/[variant]", "patterns/[slug]", "templates/[slug]"];
@@ -389,6 +452,7 @@ export function docsPages(root: string, components: readonly CatalogEntry[]): Ma
       const catalogText = `${entry.name}\n${description}`;
       let text = catalogText;
       let code = backtickSpans(catalogText).join("\n");
+      let uses = apiUses({ snippets: [], inline: backtickSpans(catalogText) });
       let headings: string[] = [];
       let examples: string[] = [];
       if (file) {
@@ -397,10 +461,11 @@ export function docsPages(root: string, components: readonly CatalogEntry[]): Ma
         const module = pageText(source, docs, true);
         text += `\n${module.text}`;
         code += `\n${module.code}`;
+        uses = [...new Set([...uses, ...module.uses])].sort();
         examples = titlesOf(docs, "examples", "label");
         headings = [...examples, ...titlesOf(docs, "donts", "title"), ...titlesOf(docs, "props", "name"), ...guidanceHeadings(docs)];
       }
-      const page: DocsPage = { route: `components/${entry.slug}`, sources, text, code, headings };
+      const page: DocsPage = { route: `components/${entry.slug}`, sources, text, code, uses, headings };
       add(page);
       // The deep link to each non-default example renders the same reference page.
       if (dynamic.has("components/[slug]/[variant]")) {

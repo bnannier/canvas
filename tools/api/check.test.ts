@@ -17,7 +17,7 @@ const EXPORTS: ApiExport[] = [
 
 // A page's code is the part of its text a reader sees as code; the fixtures give each page
 // the same text for both unless a test is about the difference.
-const page = (route: string, text: string, headings: string[] = [], code = text): DocsPage => ({ route, sources: [`${route}.tsx`], text, code, headings });
+const page = (route: string, text: string, headings: string[] = [], code = text, uses: string[] = []): DocsPage => ({ route, sources: [`${route}.tsx`], text, code, uses, headings });
 const PAGES = new Map([
   ["components/field", page("components/field", "Field\nA labelled input.\n<Field label=\"Email\" />\nFieldProps\nlabel string", ["Default", "With error"])],
   ["guides/fields", page("guides/fields", "const { width } = useField();\nimport \"@nannier/canvas/styles/field.css\";", ["Hooks"])],
@@ -33,6 +33,7 @@ function inventory(overrides: Partial<ApiInventory> = {}): ApiInventory {
     pages: PAGES,
     materialRoutes: new Map([["Field", "components/field"]]),
     auditTurns: new Set(["components/field", "foundation/reference"]),
+    packageDocs: new Map([["DESIGN.md", ["Field"]]]),
     ...overrides,
   };
 }
@@ -307,3 +308,22 @@ test("every file a file entry point reaches is classified, with its specifier on
   expect(wrong).toContain("styles/field.css is a file but classified as hook");
   expect(wrong).toContain("Docs route components/field never names styles/field.css in what it renders (components/field.tsx): document it there, or stage it in PENDING_DOCS");
 });
+
+test("no page but the foundation reference, and no shipped document, presents a kit internal as API", () => {
+  // A guide whose snippet calls the deprecated FIELD_WASH and imports the internal measureField.
+  const teaching = new Map([...PAGES, ["guides/layout", page("guides/layout", "Layout widths.", ["Widths"], "", ["FIELD_WASH", "measureField", "Field"])]]);
+  expect(errorsOf(inventory({ pages: teaching }), manifest())).toEqual([
+    "guides/layout.tsx presents FIELD_WASH, a deprecated alias, as API: show what the kit offers instead (only the foundation reference lists it)",
+    "guides/layout.tsx presents measureField, a kit internal, as API: show what the kit offers instead (only the foundation reference lists it)",
+  ]);
+  // A component page's example deep links render the same page: one error, not one per link.
+  const linked = new Map([...PAGES, ["components/field", page("components/field", PAGES.get("components/field")!.text, ["Default", "With error"], undefined, ["FIELD_WASH"])], ["components/field/witherror", page("components/field", PAGES.get("components/field")!.text, [], undefined, ["FIELD_WASH"])]]);
+  expect(errorsOf(inventory({ pages: linked }), manifest()).filter((error) => error.includes("presents"))).toHaveLength(1);
+  // The foundation reference lists every one of them, so it may.
+  const reference = new Map([...PAGES, [FOUNDATION_ROUTE, page(FOUNDATION_ROUTE, "Deprecated names.", [], "", ["FIELD_WASH", "measureField"])]]);
+  expect(errorsOf(inventory({ pages: reference }), manifest()).filter((error) => error.includes("presents"))).toEqual([]);
+  // DESIGN.md ships in the package, so it is held to the same rule.
+  expect(errorsOf(inventory({ packageDocs: new Map([["DESIGN.md", ["Field", "FIELD_WASH"]]]) }), manifest()))
+    .toEqual(["DESIGN.md presents FIELD_WASH, a deprecated alias, as API: show what the kit offers instead (only the foundation reference lists it)"]);
+});
+
