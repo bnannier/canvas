@@ -2,7 +2,7 @@ import { afterAll, expect, test } from "bun:test";
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
-import { docsPages, mentions, names, ordinaryWord } from "./docs";
+import { apiUses, docsPages, markdownUses, mentions, names, ordinaryWord } from "./docs";
 
 const temporary: string[] = [];
 afterAll(() => { for (const directory of temporary) rmSync(directory, { recursive: true, force: true }); });
@@ -235,3 +235,24 @@ export const DEPRECATED_NAMES: DeprecatedName[] = [
   const missing = fixture({ ...BASE, "docs/src/app/(home)/foundation.tsx": FOUNDATION });
   expect(() => docsPages(missing, CATALOG)).toThrow("docs/src/core/foundation-reference.ts is missing: run bun run docs:gen");
 });
+
+test("a page presents as API what its snippets import, call, render or type, and a lone inline identifier", () => {
+  const snippet = `import { Card, tabularNums } from "@nannier/canvas";
+const styles = StyleSheet.create({ label: { fontStyle: "italic", fontVariant: ["tabular-nums"] } });
+const width: Measure = "sm";
+export function Total() {
+  return <Card padded label="FOCUS_RESET"><Text style={{ ...tabularNums() }}>pressDim and useWheel</Text></Card>;
+}`;
+  expect(apiUses({ snippets: [snippet], inline: ["useMinTargetSlop", "isRTL()", "a sentence with MONO_FONT", "fontStyle: italic"] }))
+    .toEqual(["Card", "Measure", "StyleSheet", "Text", "isRTL", "tabularNums", "useMinTargetSlop"]);
+  // Never a style key (React Native's fontStyle), a JSX attribute or its value, JSX text or a
+  // name inside a longer inline span.
+  const uses = apiUses({ snippets: [snippet], inline: ["a sentence with MONO_FONT"] });
+  for (const name of ["fontStyle", "fontVariant", "label", "FOCUS_RESET", "pressDim", "useWheel", "MONO_FONT"]) expect(uses).not.toContain(name);
+});
+
+test("a shipped Markdown document presents its fences' names and its inline identifiers", () => {
+  const markdown = "Use `Button` for an action, or `useMinTargetSlop` for your own.\n\n```tsx\n<Pressable {...useMinTargetSlop(TOUCH_TARGET.ios)} />\n```\n\nProse about MONO_FONT.\n";
+  expect(markdownUses(markdown)).toEqual(["Button", "Pressable", "useMinTargetSlop"]);
+});
+
