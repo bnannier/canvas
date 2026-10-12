@@ -133,6 +133,21 @@ Type scale classes for headings, body text, and helper styles.
 </Column>
 ```
 
+### Tabular
+
+```tsx
+<Column tight>
+  <Row alignCenter between relaxed>
+    <Typography small>Requests</Typography>
+    <Typography tabular>1,204,118</Typography>
+  </Row>
+  <Row alignCenter between relaxed>
+    <Typography small>Errors</Typography>
+    <Typography tabular>11,407</Typography>
+  </Row>
+</Column>
+```
+
 ## Do & Don't
 
 ### display
@@ -365,7 +380,7 @@ git commit -m "wip"</Typography>
 
 ### mono
 
-**Do** — Use mono for identifiers, hashes, and tabular values where character alignment matters.
+**Do** — Use mono for identifiers and hashes, where every character must line up; set figures in a column or a changing value in `tabular` instead.
 
 ```tsx
 <Row alignCenter between relaxed>
@@ -378,6 +393,29 @@ git commit -m "wip"</Typography>
 
 ```tsx
 <Typography mono>We could not process your request because the upstream service returned an unexpected response.</Typography>
+```
+
+### tabular
+
+**Do** — Set figures read down a column or updated in place in `tabular`, so every digit takes the same width and the column lines up.
+
+```tsx
+<Column tight>
+  <Row alignCenter between relaxed>
+    <Typography small>Uptime</Typography>
+    <Typography tabular>99.982%</Typography>
+  </Row>
+  <Row alignCenter between relaxed>
+    <Typography small>Latency</Typography>
+    <Typography tabular>118 ms</Typography>
+  </Row>
+</Column>
+```
+
+**Don't** — Tabular figures in running prose space the digits out of the sentence's rhythm; prose keeps the face's own figures.
+
+```tsx
+<Typography tabular>Your 14 invoices from 2024 total $1,180.</Typography>
 ```
 
 ## Inline links (href)
