@@ -1,17 +1,35 @@
 import { afterEach, describe, expect, it, spyOn } from "bun:test";
 import { act, cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { renderToString } from "react-dom/server";
-import type { ReactElement } from "react";
-import { AccessibilityInfo, Animated, I18nManager, type TextStyle } from "react-native";
+import { isValidElement, type ReactElement, type ReactNode } from "react";
+import { AccessibilityInfo, Animated, I18nManager, Text as RNText, type TextStyle } from "react-native";
 import { ThemeProvider } from "../src/style/theme.tsx";
 import { colorsByScheme } from "../src/style/tokens.ts";
 import type { ThemeFonts } from "../src/style/fonts.ts";
 import { FLOAT, FLOAT_EASING } from "../src/style/motion.ts";
-import type { FloatingLabelStyles } from "../src/style/floating-label.tsx";
+import { LabelContent, labelA11y, type FloatingLabelStyles } from "../src/style/floating-label.tsx";
 import { Input } from "../src/atoms/input/input.android.tsx";
 import { Textarea } from "../src/atoms/textarea/textarea.android.tsx";
 import { Select } from "../src/atoms/select/select.android.tsx";
 import { Autocomplete } from "../src/atoms/autocomplete/autocomplete.android.tsx";
+import * as WebInput from "../src/atoms/input/input.tsx";
+import * as IosInput from "../src/atoms/input/input.ios.tsx";
+import * as WebTextarea from "../src/atoms/textarea/textarea.tsx";
+import * as IosTextarea from "../src/atoms/textarea/textarea.ios.tsx";
+import * as WebSelect from "../src/atoms/select/select.tsx";
+import * as IosSelect from "../src/atoms/select/select.ios.tsx";
+import * as WebAutocomplete from "../src/atoms/autocomplete/autocomplete.tsx";
+import * as IosAutocomplete from "../src/atoms/autocomplete/autocomplete.ios.tsx";
+import * as WebPhoneInput from "../src/molecules/phone-input/phone-input.tsx";
+import * as IosPhoneInput from "../src/molecules/phone-input/phone-input.ios.tsx";
+import * as AndroidPhoneInput from "../src/molecules/phone-input/phone-input.android.tsx";
+import * as WebStepper from "../src/atoms/stepper/stepper.tsx";
+import * as IosStepper from "../src/atoms/stepper/stepper.ios.tsx";
+import * as AndroidStepper from "../src/atoms/stepper/stepper.android.tsx";
+import * as WebField from "../src/molecules/field/field.tsx";
+import * as IosField from "../src/molecules/field/field.ios.tsx";
+import * as AndroidField from "../src/molecules/field/field.android.tsx";
+import { Switch } from "../src/atoms/switch/switch.tsx";
 import { androidSkin as inputSkin } from "../src/atoms/input/input.styles.ts";
 import { androidSkin as textareaSkin } from "../src/atoms/textarea/textarea.styles.ts";
 import { androidSkin as selectSkin } from "../src/atoms/select/select.styles.ts";
@@ -203,4 +221,87 @@ describe("the float scales around the label's leading edge", () => {
       });
     });
   }
+});
+
+// What a field's visible label is to assistive technology. On iOS and Android the label Text
+// names itself with the bare label, since React Native makes the required star a span of the
+// label's paragraph, out of reach of the star's own hiding props; where the control takes its
+// name from the label, the label is also hidden there, so VoiceOver and TalkBack stop once, on
+// the field. The web keeps the label in the DOM unchanged: the field's aria-labelledby target,
+// its star aria-hidden.
+describe("the visible label's accessibility", () => {
+  it("resolves per platform: the bare name natively, and hidden natively where the control names itself", () => {
+    const hidden = { accessibilityElementsHidden: true, importantForAccessibility: "no-hide-descendants" };
+    for (const os of ["ios", "android"]) {
+      expect(labelA11y("Country", true, os)).toEqual({ accessibilityLabel: "Country", ...hidden });
+      expect(labelA11y("Country", false, os)).toEqual({ accessibilityLabel: "Country" });
+    }
+    // react-native-web drops both hiding props, so the web label keeps its markup.
+    expect(labelA11y("Country", true, "web")).toEqual(hidden);
+    expect(labelA11y("Country", false, "web")).toEqual({});
+  });
+
+  const A11Y_KEYS = ["accessibilityLabel", "accessibilityElementsHidden", "importantForAccessibility", "aria-label", "aria-hidden"] as const;
+  type A11yProps = Partial<Record<(typeof A11Y_KEYS)[number], unknown>>;
+  /**
+   * The accessibility props each label Text (the Text holding LabelContent) was handed, by
+   * label, before react-native-web drops the native-only ones. Picked, so a failure prints them
+   * rather than the React tree the props hold.
+   */
+  function labelProps(ui: ReactElement): Map<string, A11yProps> {
+    const component = RNText as unknown as { render: (props: Record<string, unknown>, ref: unknown) => ReactNode };
+    const original = component.render;
+    const seen = new Map<string, A11yProps>();
+    const spy = spyOn(component, "render").mockImplementation((props, ref) => {
+      const child = props.children;
+      if (isValidElement<{ label: string }>(child) && child.type === LabelContent) {
+        seen.set(child.props.label, Object.fromEntries(A11Y_KEYS.filter((key) => props[key] !== undefined).map((key) => [key, props[key]])));
+      }
+      return original(props, ref);
+    });
+    try {
+      render(<ThemeProvider light>{ui}</ThemeProvider>);
+    } finally {
+      spy.mockRestore();
+    }
+    return seen;
+  }
+
+  const SKINS = [
+    ["web", WebInput, WebTextarea, WebSelect, WebAutocomplete, WebPhoneInput, WebStepper, WebField],
+    ["ios", IosInput, IosTextarea, IosSelect, IosAutocomplete, IosPhoneInput, IosStepper, IosField],
+    ["android", { Input }, { Textarea }, { Select }, { Autocomplete }, AndroidPhoneInput, AndroidStepper, AndroidField],
+  ] as const;
+  for (const [skin, I, T, S, A, P, St, F] of SKINS) {
+    it(`${skin}: every field family's label is hidden natively beside the field it names, and Field's heading is not`, () => {
+      const seen = labelProps(<>
+        <I.Input label="Input label" required />
+        <T.Textarea label="Textarea label" required />
+        <S.Select label="Select label" required options={["EU"]} />
+        <A.Autocomplete label="Autocomplete label" required options={["Ada"]} />
+        <P.PhoneInput label="Phone label" required />
+        <St.Stepper label="Stepper label" required />
+        <F.Field label="Field label" required><Switch accessibilityLabel="Notify me" /></F.Field>
+        <I.Input label="Overridden label" accessibilityLabel="Named by the caller" />
+      </>);
+      for (const label of ["Input label", "Textarea label", "Select label", "Autocomplete label", "Phone label", "Stepper label"]) {
+        expect(seen.get(label), label).toEqual({ accessibilityElementsHidden: true, importantForAccessibility: "no-hide-descendants" });
+      }
+      // A heading for a self-named control, and a label the caller's name replaces, stay stops.
+      // Under test the platform is the web, so no label carries a name of its own.
+      for (const label of ["Field label", "Overridden label"]) expect(seen.get(label), label).toEqual({});
+    });
+  }
+
+  it("keeps the web markup: the label in the DOM unnamed and unhidden, the star hidden, the field named without it", () => {
+    render(<ThemeProvider light><Input label="Email" required /><WebInput.Input label="Web email" required /></ThemeProvider>);
+    for (const label of ["Email", "Web email"]) {
+      const node = screen.getByText(label);
+      expect(node.getAttribute("aria-label")).toBeNull();
+      expect(node.getAttribute("aria-hidden")).toBeNull();
+      expect(node.querySelector("[aria-hidden='true']")?.textContent).toBe(" *");
+      // getByLabelText is exact: the field resolves only by the bare label.
+      expect(screen.getByLabelText(label).getAttribute("aria-labelledby")).toBe(node.id);
+    }
+  });
 });

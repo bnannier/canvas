@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState, type ReactNode } from "react";
-import { Animated } from "react-native";
+import { Animated, Platform } from "react-native";
 import { Text, type TextStyle } from "./primitives.js";
 import { fontStyle } from "./text.js";
 import { useTheme } from "./theme.js";
@@ -51,29 +51,71 @@ export interface FloatingLabelStyles<S extends string = string> {
 // Read a numeric style value (height / paddingTop / fontSize), falling back when absent.
 const asNum = (v: unknown, fallback: number): number => (typeof v === "number" ? v : fallback);
 
-// Marks a decorative node out of the accessibility tree on every platform: the
-// required "*" must NOT pollute the field's accessible name (that comes from the
-// label text alone), so it is hidden natively (accessibilityElementsHidden /
-// importantForAccessibility) and on web (aria-hidden, which excludes it from the
-// aria-labelledby name computation).
+/**
+ * The props that take a node out of the accessibility tree, spread together:
+ * `accessibilityElementsHidden` (VoiceOver), `importantForAccessibility:
+ * "no-hide-descendants"` (TalkBack) and `aria-hidden` (the web, where an `aria-labelledby`
+ * name computation also skips it). They hide a View, or a Text that is not inside another
+ * Text, on every platform. A Text nested in another Text is a span of its parent's
+ * paragraph on iOS and Android, not a view of its own, so there only `aria-hidden` on the
+ * web takes effect: the kit keeps LabelContent's required star out of the native name
+ * through the label Text's own accessible name instead (`labelA11y`).
+ */
 export const HIDDEN_FROM_A11Y = {
   accessibilityElementsHidden: true,
   importantForAccessibility: "no-hide-descendants" as const,
   "aria-hidden": true,
 } as const;
 
+/** The accessibility props `labelA11y` gives a field's visible label Text. */
+export interface LabelA11y {
+  accessibilityLabel?: string;
+  accessibilityElementsHidden?: boolean;
+  importantForAccessibility?: "no-hide-descendants";
+}
+
 /**
- * The label text plus, when required, a trailing destructive "*". The star is
- * hidden from assistive tech so the accessible name stays the bare label. Used
- * for BOTH the above-field label and the floated label so every field family
- * renders the required affordance identically.
+ * The accessibility props of a field's visible label: the Text that holds LabelContent,
+ * above a field or floating in it.
+ *
+ * On iOS and Android the label Text takes the bare label as its accessible name, so the
+ * required star is never spoken: React Native renders the star, a Text nested in the label,
+ * as a span of the label's paragraph, which its own hiding props cannot reach. The web
+ * keeps its markup as it is: the star's `aria-hidden` already keeps it out of the field's
+ * name through `aria-labelledby`, and an `aria-label` on the label's generic element is one
+ * ARIA prohibits.
+ *
+ * With `names` (the control takes its accessible name from this label) the label is also
+ * hidden from VoiceOver and TalkBack, which would otherwise stop on it and then on the
+ * field with the same name. Both props are native only (react-native-web drops them), so
+ * the label stays in the web DOM, where it is the node the field's `aria-labelledby`
+ * names. Leave `names` off where the label heads a control that names itself (Field around
+ * a Switch): there the label is a stop of its own.
+ *
+ * `os` is the platform to resolve for; it defaults to the running one.
+ */
+export function labelA11y(label: string, names: boolean, os: string = Platform.OS): LabelA11y {
+  const native = os === "ios" || os === "android";
+  return {
+    ...(native ? { accessibilityLabel: label } : null),
+    ...(names ? { accessibilityElementsHidden: true, importantForAccessibility: "no-hide-descendants" as const } : null),
+  };
+}
+
+/**
+ * The label text plus, when required, a trailing destructive "*". Used for BOTH the
+ * above-field label and the floated label so every field family renders the required
+ * affordance identically. The star is decorative: `aria-hidden` keeps it out of the
+ * field's name on the web, and on iOS and Android the label Text that holds this content
+ * names itself with the bare label (`labelA11y`), since the star is part of its paragraph
+ * there.
  */
 export function LabelContent({ label, required, starColor }: { label: string; required?: boolean; starColor: string }): ReactNode {
   return (
     <>
       {label}
       {required ? (
-        <Text {...HIDDEN_FROM_A11Y} style={{ color: starColor }}>
+        <Text aria-hidden style={{ color: starColor }}>
           {" *"}
         </Text>
       ) : null}
@@ -122,6 +164,7 @@ export function FloatingLabel<S extends string>({
   height,
   inset = 16,
   multiline = false,
+  names = true,
 }: {
   styles: FloatingLabelStyles<S>;
   size: S;
@@ -138,6 +181,11 @@ export function FloatingLabel<S extends string>({
   inset?: number;
   /** Multiline field (Textarea): rest the label at the top text line, not the box middle. */
   multiline?: boolean;
+  /**
+   * The field takes its accessible name from this label (default true), so VoiceOver and
+   * TalkBack skip the label and stop on the field alone (`labelA11y`).
+   */
+  names?: boolean;
 }) {
   const reduced = useReducedMotion();
   const posTarget = focused || populated ? 1 : 0;
@@ -228,7 +276,7 @@ export function FloatingLabel<S extends string>({
             }
       }
     >
-      <Animated.Text nativeID={labelId} numberOfLines={1} style={[themedRest, { color }]}>
+      <Animated.Text nativeID={labelId} numberOfLines={1} style={[themedRest, { color }]} {...labelA11y(label, names)}>
         <LabelContent label={label} required={required} starColor={tokens.destructive} />
       </Animated.Text>
     </Animated.View>
