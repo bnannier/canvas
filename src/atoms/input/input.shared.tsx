@@ -381,12 +381,9 @@ export function createInput(skin: InputSkin) {
     // Field/Form composers never pass addons, so this is only an edge case.
     const floating = label != null && skin.floatingLabel && !hasAddons;
     const above = label != null && !floating;
-    // The above-field label type: the skin's `labelAbove` on iOS/web; on the
-    // Android skin (which has none) fall back to its resting label type as a
-    // foreground title so the grouped fallback still reads.
-    const aboveLabelStyle: TextStyle = skin.labelAbove
-      ? skin.labelAbove(tokens, size)
-      : { ...(skin.labelRest ? skin.labelRest(tokens, size) : text), fontWeight: "500", color: tokens.foreground };
+    // The above-field label's type and ink, from the skin on every platform (on
+    // Android, for the grouped field whose addons keep the label from floating).
+    const aboveLabelStyle: TextStyle = skin.labelAbove(tokens, size);
     // The field names itself from the label unless the caller named it, so natively the
     // label is then hidden beside it (labelA11y).
     const labelNames = props.accessibilityLabel == null;
