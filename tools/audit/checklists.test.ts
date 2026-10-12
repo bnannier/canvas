@@ -499,11 +499,12 @@ describe.skipIf(!hasDist)("the audit checklists keep a reviewer's work", () => {
 
   it("names what a platform entry passes on unbuilt beside what it builds", () => {
     // badge.ios.tsx builds Badge from its skin and re-exports the shared BadgeGroup;
-    // grid.ios.tsx builds Grid and re-exports GridItem and two helpers.
+    // grid.ios.tsx builds Grid and re-exports GridItem (its two helpers leave through the
+    // tier barrel, as deprecated aliases).
     const badge = componentFacts("badge", sources.corpus).skins;
     expect(badge.iOS).toMatchObject({ exports: { Badge: null }, shared: ["BadgeGroup"] });
     expect(badge.Android.shared).toEqual(["BadgeGroup"]);
-    expect(componentFacts("grid", sources.corpus).skins.iOS.shared).toEqual(["GridItem", "gridColumns", "gridCellWidth"]);
+    expect(componentFacts("grid", sources.corpus).skins.iOS.shared).toEqual(["GridItem"]);
     // Avatar's entries build all three, so nothing is passed on unbuilt.
     expect(componentFacts("avatar", sources.corpus).skins.iOS.shared).toEqual([]);
     const lines = (slug: string) => renderComponentFacts(componentFacts(slug, sources.corpus)).join("\n");

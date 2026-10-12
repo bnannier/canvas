@@ -5,8 +5,11 @@
 // page. Components keep importing their primitives and helpers from ./index.ts.
 //
 // The list is exactly what the hub's `export *` published before it was split out
-// (test/public-api.test.ts holds the snapshot), so it still carries the helpers the
-// manifest records as internal by accident, until they move out as deprecated aliases.
+// (test/public-api.test.ts holds the snapshot), so it still carries the kit's own
+// helpers. Each keeps working: the owner retires them as deprecated aliases (audit K12-2),
+// tagged `@deprecated` on their specifiers below, and the generated /foundation reference
+// lists every one with what to use instead. Those the manifest still records as internal
+// by accident are the later Foundations turns' to retire.
 
 export {
   baseColors,
@@ -96,8 +99,28 @@ export {
   useMinTargetSlop,
 } from "./touch-target.js";
 export { alpha, channelsOf, composite, contrastRatio, inkOn, mixOklab, relativeLuminance } from "./color.js";
-export { isRTL } from "./rtl.js";
-export { MONO_FONT } from "./mono.js";
+// From here on, every name tagged `@deprecated` is one of the kit's own helpers, published
+// by accident through the style hub's `export *` before this list existed. Each is a
+// deprecated alias that keeps working until a major (audit K12-2), and its tag names the
+// kit component, prop or token to use, or says that nothing replaces it. As for the
+// overlay and label machinery further down, the tags sit on these specifiers only: the
+// internal hub re-exports the declarations untagged for the kit's own components.
+export {
+  /**
+   * @deprecated Kit internals, with no replacement: the kit's components mirror themselves
+   * in a right-to-left layout, and an app reads React Native's
+   * `I18nManager.getConstants().isRTL`. It keeps working until a major.
+   */
+  isRTL,
+} from "./rtl.js";
+export {
+  /**
+   * @deprecated Kit internals: the monospace face the `mono` and `code` roles of
+   * `Typography` set, so use `Typography` `mono`, or `code` for an inline code pill. It
+   * keeps working until a major.
+   */
+  MONO_FONT,
+} from "./mono.js";
 export {
   type FontFaces,
   type FontWeightKey,
@@ -107,8 +130,28 @@ export {
   typeface,
   weightKey,
 } from "./fonts.js";
-export { fontStyle, Text, TextInput } from "./text.js";
-export { devWarn, resetDevWarnings } from "./dev-warn.js";
+export {
+  /**
+   * @deprecated Kit internals: the kit's `Text` and `TextInput` apply the theme's
+   * typefaces (ThemeProvider `fonts`) themselves, so use `Text`, or `Typography` for a
+   * role of the type scale. It keeps working until a major.
+   */
+  fontStyle,
+  Text,
+  TextInput,
+} from "./text.js";
+export {
+  /**
+   * @deprecated Kit internals, with no replacement: the kit's own development warnings
+   * for data it resolves silently. It keeps working until a major.
+   */
+  devWarn,
+  /**
+   * @deprecated Kit test internals, with no replacement: clears the kit's own development
+   * warnings between tests. It keeps working until a major.
+   */
+  resetDevWarnings,
+} from "./dev-warn.js";
 export {
   CELL_AXIS,
   clampSpan,
@@ -134,8 +177,28 @@ export {
   useMeasureStyle,
   useSizing,
 } from "./sizing.js";
-export { FOCUS_RESET } from "./focus-reset.js";
-export { activeIndicator, type ActiveIndicatorOptions } from "./active-indicator.js";
+export {
+  /**
+   * @deprecated Kit internals, with no replacement: the kit's fields paint their own focus
+   * state, and `Pressable`, `TextInput` and `ScrollView` carry the themed focus ring, which
+   * an app never removes (WCAG 2.4.7). It keeps working until a major.
+   */
+  FOCUS_RESET,
+} from "./focus-reset.js";
+export {
+  /**
+   * @deprecated Kit internals, with no replacement: the bottom indicator `Input`, `Select`
+   * and `Autocomplete` draw for their own focus and open states. It keeps working until a
+   * major.
+   */
+  activeIndicator,
+  /**
+   * @deprecated Kit internals, with no replacement: the options of the bottom indicator
+   * `Input`, `Select` and `Autocomplete` draw for themselves. It keeps working until a
+   * major.
+   */
+  type ActiveIndicatorOptions,
+} from "./active-indicator.js";
 // The field label's machinery (the Android floating label, the label text with its
 // required marker, and the slice of a field skin that places it) was published by
 // accident the same way as the overlay machinery below; each name is a deprecated alias
@@ -167,16 +230,121 @@ export {
 } from "./floating-label.js";
 export { controlRipple, platformDisabledDim, pressDim, rippleClip, surfaceRipple } from "./ripple.js";
 export { cornerRadii, RippleClip, type RippleClipProps, rippleClipWrapperStyle, splitElevation } from "./ripple-clip.js";
-export { useControllableState } from "./use-controllable-state.js";
-export { useEscapeKey } from "./use-escape-key.js";
-export { normalizeWheelDelta, useWheel, type WheelGesture } from "./use-wheel.js";
-export { GESTURE_SURFACE } from "./gesture-surface.js";
-export { useHardwareBack } from "./use-hardware-back.js";
-export { useDialogFocus, usePopoverFocus } from "./use-dialog-focus.js";
-export { type RovingFocusOptions, type RovingItemProps, useRovingFocus } from "./use-roving-focus.js";
+export {
+  /**
+   * @deprecated Kit internals, with no replacement: every kit control takes a controlled
+   * value with its change callback (`value`, `checked`, `open` and the like) or a default
+   * for uncontrolled use, and an app holds its own state with React's `useState`. It keeps
+   * working until a major.
+   */
+  useControllableState,
+} from "./use-controllable-state.js";
+export {
+  /**
+   * @deprecated Kit internals, with no replacement: `Dialog`, `AlertDialog`, `Drawer`,
+   * `ActionSheet`, `Popover` and the menus close on Escape themselves. It keeps working
+   * until a major.
+   */
+  useEscapeKey,
+} from "./use-escape-key.js";
+export {
+  /**
+   * @deprecated Kit internals, with no replacement: the wheel travel `GeoMap` reads for
+   * its zoom. It keeps working until a major.
+   */
+  normalizeWheelDelta,
+  /**
+   * @deprecated Kit internals, with no replacement: `GeoMap`'s wheel and trackpad pinch
+   * zoom. It keeps working until a major.
+   */
+  useWheel,
+  /**
+   * @deprecated Kit internals, with no replacement: one wheel gesture as `GeoMap`'s zoom
+   * reads it. It keeps working until a major.
+   */
+  type WheelGesture,
+} from "./use-wheel.js";
+export {
+  /**
+   * @deprecated Kit internals, with no replacement: the touch surface `GeoMap` claims from
+   * the browser for its pinch zoom. It keeps working until a major.
+   */
+  GESTURE_SURFACE,
+} from "./gesture-surface.js";
+export {
+  /**
+   * @deprecated Kit internals, with no replacement: `Dialog`, `AlertDialog`, `Drawer`,
+   * `ActionSheet`, `Sidebar` and every anchored card close on Android's back themselves.
+   * It keeps working until a major.
+   */
+  useHardwareBack,
+} from "./use-hardware-back.js";
+export {
+  /**
+   * @deprecated Kit internals: the focus trap and return `Dialog` and `AlertDialog` apply
+   * for you, so use `Dialog`. It keeps working until a major.
+   */
+  useDialogFocus,
+  /**
+   * @deprecated Kit internals: the focus move and return `Popover` applies for you, so use
+   * `Popover`. It keeps working until a major.
+   */
+  usePopoverFocus,
+} from "./use-dialog-focus.js";
+export {
+  /**
+   * @deprecated Kit internals, with no replacement: the options of the arrow-key focus
+   * `Tabs`, `RadioGroup` and `Listbox` move for themselves. It keeps working until a major.
+   */
+  type RovingFocusOptions,
+  /**
+   * @deprecated Kit internals, with no replacement: the props of one item in the arrow-key
+   * focus `Tabs`, `RadioGroup` and `Listbox` move for themselves. It keeps working until a
+   * major.
+   */
+  type RovingItemProps,
+  /**
+   * @deprecated Kit internals, with no replacement: the arrow keys, Home and End of `Tabs`,
+   * `RadioGroup` and `Listbox`, which move focus and selection for themselves. It keeps
+   * working until a major.
+   */
+  useRovingFocus,
+} from "./use-roving-focus.js";
 // motion.ts also holds the hover and float tunables (HOVER, HOVER_EASING, FLOAT,
 // FLOAT_EASING), which stay internal so a tuned value never becomes API.
-export { enableAndroidLayoutAnimations, holdThen, keyframes, supportsNativeDriver, thereAndBack, useReducedMotion } from "./motion.js";
+export {
+  /**
+   * @deprecated Kit internals, with no replacement: `Accordion` and `Collapsible` enable
+   * React Native's layout animations on Android for themselves. It keeps working until a
+   * major.
+   */
+  enableAndroidLayoutAnimations,
+  /**
+   * @deprecated Kit internals, with no replacement: a loop easing behind the kit's own
+   * functional motion; shape an app's own easing with React Native's `Easing`. It keeps
+   * working until a major.
+   */
+  holdThen,
+  /**
+   * @deprecated Kit internals, with no replacement: a loop easing behind the kit's own
+   * functional motion (the `InputOTP` caret); shape an app's own easing with React
+   * Native's `Easing`. It keeps working until a major.
+   */
+  keyframes,
+  /**
+   * @deprecated Kit internals, with no replacement: whether React Native's native
+   * animated driver exists, false on the web; an app's own `Animated` code reads
+   * `Platform.OS`. It keeps working until a major.
+   */
+  supportsNativeDriver,
+  /**
+   * @deprecated Kit internals, with no replacement: a loop easing behind the kit's own
+   * functional motion (the `Skeleton` shimmer); shape an app's own easing with React
+   * Native's `Easing`. It keeps working until a major.
+   */
+  thereAndBack,
+  useReducedMotion,
+} from "./motion.js";
 export {
   createLoopChannel,
   type LoopChannel,
@@ -202,6 +370,12 @@ export {
   ScrollView,
   type ScrollViewProps,
   type StyleProp,
+  /**
+   * @deprecated React Native's own StyleSheet, passed through, with no replacement in the
+   * kit: Canvas components take semantic props, never styles, so an app built from them
+   * needs none, and app-frame scaffolding the kit does not cover imports it from
+   * react-native. It keeps working until a major (audit K12-2 OD5).
+   */
   StyleSheet,
   type TextInputProps,
   type TextProps,
@@ -271,7 +445,41 @@ export {
 } from "./entrance.js";
 export { GlassSurface } from "./glass-surface/glass-surface.js";
 export { liquidGlassAvailable } from "./glass-surface/liquid-glass.js";
-export { innerFill, type InnerFillRole, type InnerFillStrength, inverseDenseTint, isGlass, withInnerFill } from "./glass-fill.js";
+export {
+  /**
+   * @deprecated Kit internals, with no replacement: the fill a kit component paints inside
+   * a glass surface (a hovered or selected row, a header band), which every component
+   * paints for itself under ThemeProvider `glass`. It keeps working until a major.
+   */
+  innerFill,
+  /**
+   * @deprecated Kit internals, with no replacement: the roles of the fills a kit component
+   * paints inside a glass surface for itself. It keeps working until a major.
+   */
+  type InnerFillRole,
+  /**
+   * @deprecated Kit internals, with no replacement: the strengths of the fills a kit
+   * component paints inside a glass surface for itself. It keeps working until a major.
+   */
+  type InnerFillStrength,
+  /**
+   * @deprecated Kit internals, with no replacement: the glass under-fill of the kit's
+   * inverse surfaces, `Tooltip`'s bubble and `Toast`. It keeps working until a major.
+   */
+  inverseDenseTint,
+  /**
+   * @deprecated Kit internals: whether the glass material paints right now; read
+   * `surface`, `reducedTransparency` and `increasedContrast` from `useTheme`. It keeps
+   * working until a major.
+   */
+  isGlass,
+  /**
+   * @deprecated Kit internals, with no replacement: a skin fill turned translucent inside
+   * a glass surface, which every kit component does for itself under ThemeProvider
+   * `glass`. It keeps working until a major.
+   */
+  withInnerFill,
+} from "./glass-fill.js";
 export { GlassPane, type GlassPaneProps, PANE_SIBLING_INPUT, paneStyle } from "./glass-surface/glass-pane.js";
 // The Modal-side bridge for the Android sibling blur target (the contexts and the
 // per-platform host stay internal; the bridge is public so an app hosting its own RN

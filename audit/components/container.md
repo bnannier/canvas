@@ -10,8 +10,8 @@ Audit checklist for `/components/container`. The facts block and the variants ta
 | Markdown | `src/atoms/container/container.md` |
 | Source files | `container.android.tsx`, `container.ios.tsx`, `container.md`, `container.shared.tsx`, `container.styles.ts`, `container.tsx` |
 | Implementation | its own source directory, `src/atoms/container/` (5 TypeScript modules) |
-| Exports | Container, containerStyle, measureOf, FLUID |
-| Platform entries | iOS: web build: Container; re-exports the shared build: containerStyle, measureOf, FLUID. Android: web build: Container; re-exports the shared build: containerStyle, measureOf, FLUID |
+| Exports | Container, containerStyle, FLUID, measureOf |
+| Platform entries | iOS: web build: Container. Android: web build: Container |
 | Platform-skins registry | none (every export is the web build, so the docs three-up renders it as is) |
 | Reference row | `container` (Shared, Built). iOS: none (iOS has no container control; a readable content width is a layout guide (readableContentGuide), not a view with a look). Android: none (Material 3 has no container component; window size classes and pane widths are layout guidance, not a component). Web: link [container (Web)](https://www.radix-ui.com/themes/docs/components/container) (Radix Themes Container: a centered max-width column) |
 | Materials manifest | Container: atoms, inherited; verification inherited-composition, semantic-state |

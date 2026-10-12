@@ -9,5 +9,4 @@ import { webSkin } from "./container.styles.js";
  * width scale (`xxxs` 192 through `page` 1280).
  */
 export const Container = createContainer(webSkin);
-export { containerStyle, measureOf, FLUID } from "./container.shared.js";
-export type { ContainerProps, Measure } from "./container.shared.js";
+export type { ContainerProps } from "./container.shared.js";
