@@ -406,7 +406,10 @@ export function createInput(skin: InputSkin) {
       // top of the indicator. No-op on native; matches the grouped path and the
       // Autocomplete/Textarea/Stepper shells.
       const bareShape = skin.bareField(tokens, borderColor, focused, isError);
-      const bareStyle = [paneStyle(theme, bareShape, focused || isError), skin.bareBox(size), text, FOCUS_RESET, glass ? glassBox : null, isError ? errorFrame.ring() : null];
+      // The field's whole box goes through paneStyle (its shape, height and any label
+      // reserve), so under glass its resting border becomes padding of the same width.
+      const bareStyleWith = (reserve: StyleProp<ViewStyle>) => [paneStyle(theme, [bareShape, skin.bareBox(size), reserve], focused || isError), text, FOCUS_RESET, glass ? glassBox : null, isError ? errorFrame.ring() : null];
+      const bareStyle = bareStyleWith(null);
       const disabledDim = disabled ? { opacity: skin.disabledOpacity } : null;
       // The puck behind a bare field (nothing in solid mode).
       const barePane = <GlassPane {...paneProps} shape={bareShape} tint={paneTint} />;
@@ -425,7 +428,7 @@ export function createInput(skin: InputSkin) {
             {barePane}
             <TextInput
               ref={hostRef}
-              style={[...bareStyle, room.reserve, room.growth !== 0 ? { height: fieldHeight } : null]}
+              style={[...bareStyleWith(room.reserve), room.growth !== 0 ? { height: fieldHeight } : null]}
               textAlignVertical="center"
               {...common}
               placeholder={focused ? placeholder : undefined}
@@ -514,7 +517,7 @@ export function createInput(skin: InputSkin) {
           isError ? errorFrame.ring() : null,
         ]}
       >
-        <GlassPane {...paneProps} shape={groupShape} tint={paneTint} />
+        <GlassPane {...paneProps} stateBorder={groupSurface.keepsBorder} shape={groupShape} tint={paneTint} />
         {prefix != null ? (
           <View style={withInnerFill(theme, skin.addonBox(tokens, "left", state), "soft")}>
             <Text style={[skin.addonText(tokens), text]}>{prefix}</Text>

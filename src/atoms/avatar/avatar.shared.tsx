@@ -220,8 +220,10 @@ export function createAvatar(skin: AvatarSkin) {
     const foreground = disc ? disc.ink : tokens["muted-foreground"];
     const shapeStyle = containerStyle(tokens, skin, size, shape, !!ring, background);
     const separator = ring ? { borderWidth: RING_WIDTH, borderColor: theme.increasedContrast ? tokens.foreground : tokens.background } : null;
-    const container: StyleProp<ViewStyle> = [showPhoto || disc ? shapeStyle : paneStyle(theme, shapeStyle), separator, style];
-    const pane = showPhoto || disc ? null : <GlassPane static layer="control" shape={shapeStyle} />;
+    // The separator ring is a border a tile keeps under glass, over its pane, which sits
+    // flush inside it (paneStyle's and GlassPane's `stateBorder`).
+    const container: StyleProp<ViewStyle> = [showPhoto || disc ? shapeStyle : paneStyle(theme, shapeStyle, !!ring), separator, style];
+    const pane = showPhoto || disc ? null : <GlassPane static layer="control" shape={shapeStyle} stateBorder={!!ring} />;
     const fill = !showPhoto && disc ? <DiscGradient disc={disc} id={gradientId} /> : null;
 
     // Pad the visual box out to the skin's minimum touch target (44pt HIG / 48dp
@@ -365,9 +367,9 @@ export function createAvatarGroup(skin: AvatarSkin) {
         )}
         {hidden > 0 ? (
           <View
-            style={[paneStyle(theme, overflowShape), { borderWidth: RING_WIDTH, borderColor: theme.increasedContrast ? tokens.foreground : tokens.background, marginStart: visible.length > 0 ? overlap : 0 }]}
+            style={[paneStyle(theme, overflowShape, true), { borderWidth: RING_WIDTH, borderColor: theme.increasedContrast ? tokens.foreground : tokens.background, marginStart: visible.length > 0 ? overlap : 0 }]}
           >
-            <GlassPane static layer="control" shape={overflowShape} />
+            <GlassPane static layer="control" shape={overflowShape} stateBorder />
             <Text style={{ color: tokens["muted-foreground"], ...skin.labelType[size] }}>+{hidden}</Text>
           </View>
         ) : null}

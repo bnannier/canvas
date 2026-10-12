@@ -245,8 +245,7 @@ export function createFilterPanel(skin: FilterPanelSkin, parts: FilterPanelParts
           // the bare panel keeps the same width but drops the chrome. The radius
           // comes from the skin (per-OS); the border/fill follow the tokens so it
           // tracks light/dark.
-          chrome ? paneStyle(theme, chrome) : null,
-          skin.panelPad[density],
+          chrome ? paneStyle(theme, [chrome, skin.panelPad[density]]) : skin.panelPad[density],
           skin.panelStack[density],
           style,
         ]}

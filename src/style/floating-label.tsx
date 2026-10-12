@@ -225,6 +225,9 @@ export function LabelContent({ label, required, starColor }: { label: string; re
   );
 }
 
+// A label whose field's padding box ends at its border, as solid draws every field.
+const NO_EDGES = { top: 0, bottom: 0, start: 0, end: 0 };
+
 /**
  * The Material 3 in-container floating label, which the Android skins of Input, Textarea,
  * Select and Autocomplete render inside their field (the iOS and web skins title the field
@@ -286,6 +289,7 @@ export function FloatingLabel<S extends string>({
   end = inset,
   multiline = false,
   names = true,
+  edges,
   onLine,
 }: {
   styles: FloatingLabelStyles<S>;
@@ -321,6 +325,12 @@ export function FloatingLabel<S extends string>({
   names?: boolean;
   /** Told the label's rendered resting line height whenever it changes: a field's `useFloatingLabelRoom` `onLine`. */
   onLine?: (line: number) => void;
+  /**
+   * How far the field's padding box reaches over its border on each side, which the label's
+   * bounds step back from to keep their place: a field box that turns its resting border
+   * into padding under glass (the text-entry material's `edges`). None by default.
+   */
+  edges?: { top: number; bottom: number; start: number; end: number };
 }) {
   const reduced = useReducedMotion();
   const posTarget = focused || populated ? 1 : 0;
@@ -436,9 +446,10 @@ export function FloatingLabel<S extends string>({
   // and centers the label (rest center = the field's middle); multiline pins it at the top
   // text line (top = reserve). Inside, the floating view hugs the text against the start edge, so
   // the transform floats it, scaling around its leading edge (transformOrigin above).
+  const edge = edges ?? NO_EDGES;
   const bounds: ViewStyle = multiline
-    ? { position: "absolute", top: reserve, start: inset, end, alignItems: "flex-start", pointerEvents: "none" }
-    : { position: "absolute", top: 0, bottom: 0, start: inset, end, alignItems: "flex-start", justifyContent: "center", pointerEvents: "none" };
+    ? { position: "absolute", top: reserve + edge.top, start: inset + edge.start, end: end + edge.end, alignItems: "flex-start", pointerEvents: "none" }
+    : { position: "absolute", top: edge.top, bottom: edge.bottom, start: inset + edge.start, end: end + edge.end, alignItems: "flex-start", justifyContent: "center", pointerEvents: "none" };
 
   return (
     <View style={bounds} onLayout={multiline ? undefined : onBoundsLayout}>

@@ -342,18 +342,64 @@ export function contrastBorder(tokens: ColorTokens): ViewStyle {
   return { borderWidth: CONTRAST_BORDER_WIDTH, borderColor: tokens.foreground };
 }
 
+/** A style's border width on each side. */
+export interface BorderSides {
+  top: number;
+  bottom: number;
+  start: number;
+  end: number;
+}
+
+/**
+ * A style's border width on each side, resolved as React Native resolves it: a side's own
+ * key over `borderWidth`, the logical start and end keys over the physical left and right
+ * ones, and a physical left or right key read as the start or end side (React Native swaps
+ * left and right in a right-to-left layout by default).
+ */
+export function borderSides(style: StyleProp<ViewStyle>): BorderSides {
+  const flat = (StyleSheet.flatten(style) ?? {}) as ViewStyle;
+  const all = flat.borderWidth ?? 0;
+  return {
+    top: flat.borderTopWidth ?? all,
+    bottom: flat.borderBottomWidth ?? all,
+    start: flat.borderStartWidth ?? flat.borderLeftWidth ?? all,
+    end: flat.borderEndWidth ?? flat.borderRightWidth ?? all,
+  };
+}
+
 /**
  * The Increase Contrast border for one surface. A resting surface takes the contrasting
- * hairline. A surface whose border shows a STATE (a focused or errored field, an open
- * trigger, a focused slider knob) keeps that colour, since it is the state's only
- * indicator (overwriting a field's `ring` focus border would leave a keyboard user no
- * focus cue at all), and only gains the contrast width where its own is thinner. A style
- * that names no border colour has no state border to keep, so it takes the hairline.
+ * border in `foreground` on every side, at least the hairline and never thinner than its
+ * own width there, so Increase Contrast only ever adds weight (a 2 px radio ring or switch
+ * track stays 2 px). A surface whose border shows a STATE (a focused or errored field, an
+ * open trigger, a focused slider knob, the current step) keeps that colour, since it is the
+ * state's only indicator (overwriting a field's `ring` focus border would leave a keyboard
+ * user no focus cue at all), and only gains the contrast width where its own is thinner. A
+ * style that names no border colour has no state border to keep, so it takes the
+ * contrasting border.
  */
 export function contrastBorderFor(tokens: ColorTokens, style: StyleProp<ViewStyle>, stateBorder = false): ViewStyle {
-  const flat = (StyleSheet.flatten(style) ?? {}) as ViewStyle;
-  if (!stateBorder || flat.borderColor == null) return contrastBorder(tokens);
-  return { borderWidth: Math.max(CONTRAST_BORDER_WIDTH, flat.borderWidth ?? 0) };
+  const flat = (StyleSheet.flatten(style) ?? {}) as Record<string, unknown>;
+  if (stateBorder && flat.borderColor != null) return { borderWidth: Math.max(CONTRAST_BORDER_WIDTH, (flat.borderWidth as number | undefined) ?? 0) };
+  const at = (width: number) => Math.max(CONTRAST_BORDER_WIDTH, width);
+  const sides = borderSides(flat as ViewStyle);
+  const out: Record<string, unknown> = { ...contrastBorder(tokens) };
+  if (sides.top === sides.bottom && sides.top === sides.start && sides.top === sides.end) {
+    out.borderWidth = at(sides.top);
+  } else {
+    Object.assign(out, { borderTopWidth: at(sides.top), borderBottomWidth: at(sides.bottom), borderStartWidth: at(sides.start), borderEndWidth: at(sides.end) });
+  }
+  // A side's own key outranks the shorthand, so every one the style names is restated: its
+  // width (a physical key as the side React Native reads it) and its colour in `foreground`.
+  for (const key of Object.keys(flat)) {
+    if (!key.startsWith("border")) continue;
+    if (key.endsWith("Color")) out[key] = tokens.foreground;
+    else if (key === "borderTopWidth") out[key] = at(sides.top);
+    else if (key === "borderBottomWidth") out[key] = at(sides.bottom);
+    else if (key === "borderStartWidth" || key === "borderLeftWidth") out[key] = at(sides.start);
+    else if (key === "borderEndWidth" || key === "borderRightWidth") out[key] = at(sides.end);
+  }
+  return out as ViewStyle;
 }
 
 // Keys that must live on the OUTER box: shadow (overflow:hidden would clip it),

@@ -96,8 +96,7 @@ export function createTreemap(skin: ChartSkin) {
         {...(title != null && title !== "" ? { role: "group" as const, accessibilityLabel: `${title} chart`, "aria-label": `${title} chart` } : {})}
         testID={testID}
         style={[
-          paneStyle(theme, surfaceShape),
-          compact ? s.surfacePadCompact : s.surfacePadDefault,
+          paneStyle(theme, [surfaceShape, compact ? s.surfacePadCompact : s.surfacePadDefault]),
           CHART_ROOT,
           style,
         ]}
