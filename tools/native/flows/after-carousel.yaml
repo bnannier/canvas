@@ -647,6 +647,10 @@ name: Sealed Canvas native candidate after measured drag
       - assertVisible:
           id: material-capture-stats
           text: 'Hosts: [1-9][0-9]*; active: [1-9][0-9]*; recordings: [1-9][0-9]*; frost: [1-9][0-9]*; listeners: [1-9][0-9]*'
+      - scrollUntilVisible:
+          element:
+            id: material-inspect
+          direction: UP
       - tapOn:
           id: material-inspect
       - assertVisible:
