@@ -4,7 +4,7 @@ import { textEntryState } from "../../style/text-entry-state.js";
 import { consumeEscapeKey, EscapeLayerProvider, useEscapeLayer } from "../../style/escape-layer.js";
 import { forwardRef, useEffect, useId, useRef, useState } from "react";
 import { Platform, type TextInput as RNTextInput } from "react-native";
-import { View, Pressable, Text, TextInput, useControllableState, useFillStyle, AnchoredOverlay, useOverlayHost, useMeasuredWidth, FloatingLabel, LabelContent, FOCUS_RESET, RippleClip, cornerRadii, type LayoutStyle, type MeasureProps, type StyleProp, type ViewStyle, type TextStyle, GlassPane, isGlass, PANE_SIBLING_INPUT, withInnerFill } from "../../style/index.js";
+import { View, Pressable, Text, TextInput, useControllableState, useFillStyle, AnchoredOverlay, useOverlayHost, useMeasuredWidth, FloatingLabel, LabelContent, labelA11y, FOCUS_RESET, RippleClip, cornerRadii, type LayoutStyle, type MeasureProps, type StyleProp, type ViewStyle, type TextStyle, GlassPane, isGlass, PANE_SIBLING_INPUT, withInnerFill } from "../../style/index.js";
 import { OverlayScrollView } from "../../style/overlay-scroll.js";
 import { useActiveOptionScroll } from "../../style/use-active-option-scroll.js";
 import { AccessibilityReturnBoundary, accessibilitySelectionProps, useAccessibilityReturn } from "../../style/use-accessibility-return.js";
@@ -261,7 +261,7 @@ export function createAutocomplete(skin: AutocompleteSkin) {
     return (
       <View style={[wrapper, open && !host ? wrapperLifted : null, widthCap, style]}>
         {above ? (
-          <Text nativeID={labelId} style={skin.label(tokens, size)}>
+          <Text nativeID={labelId} style={skin.label(tokens, size)} {...labelA11y(label!, true)}>
             <LabelContent label={label!} required={required} starColor={tokens.destructive} />
           </Text>
         ) : null}

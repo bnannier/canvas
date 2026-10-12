@@ -9,7 +9,7 @@ import {
   type TextInput as RNTextInput,
   type TextInputProps as RNTextInputProps,
 } from "react-native";
-import { View, Pressable, Text, TextInput, useFillStyle, FloatingLabel, LabelContent, FOCUS_RESET, type ColorTokens, type LayoutStyle, type MeasureProps, type StyleProp, type ViewStyle, type TextStyle, GlassPane, paneStyle, isGlass, withInnerFill, alpha, PANE_SIBLING_INPUT } from "../../style/index.js";
+import { View, Pressable, Text, TextInput, useFillStyle, FloatingLabel, LabelContent, labelA11y, FOCUS_RESET, type ColorTokens, type LayoutStyle, type MeasureProps, type StyleProp, type ViewStyle, type TextStyle, GlassPane, paneStyle, isGlass, withInnerFill, alpha, PANE_SIBLING_INPUT } from "../../style/index.js";
 import { useComposedRefs } from "../../style/use-composed-refs.js";
 import { frameHandlers, useFocusFrame } from "../../style/focus-frame.js";
 import { rowSeam } from "../../style/touch-seam.js";
@@ -387,8 +387,11 @@ export function createInput(skin: InputSkin) {
     const aboveLabelStyle: TextStyle = skin.labelAbove
       ? skin.labelAbove(tokens, size)
       : { ...(skin.labelRest ? skin.labelRest(tokens, size) : text), fontWeight: "500", color: tokens.foreground };
+    // The field names itself from the label unless the caller named it, so natively the
+    // label is then hidden beside it (labelA11y).
+    const labelNames = props.accessibilityLabel == null;
     const aboveLabel = above ? (
-      <Text nativeID={labelId} style={aboveLabelStyle}>
+      <Text nativeID={labelId} style={aboveLabelStyle} {...labelA11y(label!, labelNames)}>
         <LabelContent label={label!} required={required} starColor={tokens.destructive} />
       </Text>
     ) : null;
@@ -434,6 +437,7 @@ export function createInput(skin: InputSkin) {
               populated={populated}
               isError={isError}
               height={asNum(skin.bareBox(size).height, 56)}
+              names={labelNames}
             />
           </View>
         );

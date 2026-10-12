@@ -18,6 +18,7 @@ import {
   useControllableState,
   FOCUS_RESET,
   LabelContent,
+  labelA11y,
   type ColorTokens,
   type StyleProp,
   type ViewStyle,
@@ -498,7 +499,7 @@ export function createStepper(skin: StepperSkin) {
     // style escape hatch and the disabled dim so the label dims with the control.
     return (
       <View style={[{ gap: 6 }, hug, disabled && !liquidActions ? { opacity: 0.5 } : null, style]}>
-        <Text nativeID={labelId} style={[skin.labelAbove(tokens, size), disabledInk]}>
+        <Text nativeID={labelId} style={[skin.labelAbove(tokens, size), disabledInk]} {...labelA11y(label, true)}>
           <LabelContent label={label} required={required} starColor={tokens.destructive} />
         </Text>
         {description != null ? (

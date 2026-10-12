@@ -8,7 +8,7 @@ import {
   type ReactNode,
 } from "react";
 import { type StyleProp, type ViewStyle } from "react-native";
-import { View, Text, useTheme, LabelContent, type LayoutStyle, type MeasureProps, useFillStyle } from "../../style/index.js";
+import { View, Text, useTheme, LabelContent, labelA11y, type LayoutStyle, type MeasureProps, useFillStyle } from "../../style/index.js";
 import { type FieldSkin } from "./field.styles.js";
 
 // Shared Field shell. A form row: a label, the control, and one message line under it.
@@ -99,7 +99,9 @@ export function createField(skin: FieldSkin, labelOwners: ComponentType<never>[]
     return (
       <View testID={testID} style={[skin.stack, fill, style]}>
         {label != null && !delegate ? (
-          <Text style={skin.label(tokens)}>
+          // The label heads a control that names itself, so it stays a stop of its own
+          // natively, named without its star (labelA11y).
+          <Text style={skin.label(tokens)} {...labelA11y(label, false)}>
             <LabelContent label={label} required={required} starColor={tokens.destructive} />
           </Text>
         ) : null}

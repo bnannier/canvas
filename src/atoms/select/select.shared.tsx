@@ -2,7 +2,7 @@ import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.j
 import { EscapeLayerProvider, useEscapeLayer } from "../../style/escape-layer.js";
 import { forwardRef, useId, useRef } from "react";
 import { useComposedRefs } from "../../style/use-composed-refs.js";
-import { View, Pressable, Text, useControllableState, useFillStyle, AnchoredOverlay, useOverlayHost, useMeasuredWidth, FloatingLabel, LabelContent, RippleClip, cornerRadii, type LayoutStyle, type MeasureProps, type StyleProp, type ViewStyle, GlassPane, paneStyle, isGlass, withInnerFill } from "../../style/index.js";
+import { View, Pressable, Text, useControllableState, useFillStyle, AnchoredOverlay, useOverlayHost, useMeasuredWidth, FloatingLabel, LabelContent, labelA11y, RippleClip, cornerRadii, type LayoutStyle, type MeasureProps, type StyleProp, type ViewStyle, GlassPane, paneStyle, isGlass, withInnerFill } from "../../style/index.js";
 import { useRowFocus } from "../../style/use-row-focus.js";
 import { OverlayScrollView } from "../../style/overlay-scroll.js";
 import { LISTBOX } from "../../style/listbox-role.js";
@@ -210,6 +210,9 @@ export function createSelect(skin: SelectSkin) {
     const hasLabel = label != null && label !== "";
     const fieldName = props.accessibilityLabel?.trim() || label?.trim() || placeholder.trim() || "Select an option";
     const triggerName = required ? `${fieldName}, required` : fieldName;
+    // The trigger names itself from the label unless the caller named it, so natively the
+    // label is then hidden beside it (labelA11y).
+    const labelNames = !props.accessibilityLabel?.trim();
     // `inline` routes the label into the trigger row as a leading cluster; it
     // overrides both the above (iOS/web) and floating (Android) placements, so a
     // toolbar-style labeled select owns its label instead of a hand-composed row.
@@ -236,7 +239,7 @@ export function createSelect(skin: SelectSkin) {
     return (
       <View style={[root, open && !host ? rootLifted : null, widthCap, style]}>
         {above ? (
-          <Text nativeID={labelId} style={skin.label(tokens, size)}>
+          <Text nativeID={labelId} style={skin.label(tokens, size)} {...labelA11y(label!, labelNames)}>
             <LabelContent label={label!} required={required} starColor={tokens.destructive} />
           </Text>
         ) : null}
@@ -291,7 +294,7 @@ export function createSelect(skin: SelectSkin) {
                 ]}
               >
                 {inline ? (
-                  <Text nativeID={labelId} style={skin.inlineLabel(tokens, size)}>
+                  <Text nativeID={labelId} style={skin.inlineLabel(tokens, size)} {...labelA11y(label!, labelNames)}>
                     <LabelContent label={label!} required={required} starColor={tokens.destructive} />
                   </Text>
                 ) : null}
@@ -313,6 +316,7 @@ export function createSelect(skin: SelectSkin) {
                     populated={hasValue}
                     isError={false}
                     height={triggerHeight}
+                    names={labelNames}
                   />
                 </View>
               ) : null}

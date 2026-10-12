@@ -6,7 +6,7 @@ import { frameHandlers, useFocusFrame } from "../../style/focus-frame.js";
 import { useComposedRefs } from "../../style/use-composed-refs.js";
 import { forwardRef, useId, useState } from "react";
 import { type TextInput as RNTextInput, type TextInputProps as RNTextInputProps } from "react-native";
-import { View, Text, TextInput, useFillStyle, FloatingLabel, LabelContent, FOCUS_RESET, type MeasureProps, type SizingKey, type StyleProp, type TextStyle, type ViewStyle, GlassPane, paneStyle, isGlass, alpha, PANE_SIBLING_INPUT } from "../../style/index.js";
+import { View, Text, TextInput, useFillStyle, FloatingLabel, LabelContent, labelA11y, FOCUS_RESET, type MeasureProps, type SizingKey, type StyleProp, type TextStyle, type ViewStyle, GlassPane, paneStyle, isGlass, alpha, PANE_SIBLING_INPUT } from "../../style/index.js";
 import { type TextEntryProps } from "../input/input.shared.js";
 import { type TextareaSkin, type Size, sizeText, minHeight } from "./textarea.styles.js";
 
@@ -318,7 +318,7 @@ export function createTextarea(skin: TextareaSkin) {
         : { ...(skin.labelRest ? skin.labelRest(tokens, size) : sizeText(size)), fontWeight: "500", color: tokens.foreground };
       return (
         <View style={[LABEL_GAP, disabledDim, widthCap, style]}>
-          <Text nativeID={labelId} style={aboveLabelStyle}>
+          <Text nativeID={labelId} style={aboveLabelStyle} {...labelA11y(label!, true)}>
             <LabelContent label={label!} required={required} starColor={tokens.destructive} />
           </Text>
           <View>
