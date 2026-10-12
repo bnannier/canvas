@@ -9,7 +9,10 @@ self-managed (`defaultValue` / `defaultCountry`), the segment defaults to the
 kit's curated `PHONE_COUNTRIES` list (pass `countries` for a full or localized
 one), and the number field asks for the phone keypad. Pass `label` (and
 `required`) to name it; `error` paints the whole box, segment included, and
-Field delegates its label, required mark and error into it. On iOS the field is
+Field delegates its label, required mark and error into it. The required star is
+decorative: a screen reader hears the number field as required, from
+`aria-required` on the web and from its name ("Phone number, required") on iOS and
+Android. On iOS the field is
 drawn to the iOS input-field reference: the white box, the flag and gray caret
 segment with its state-coloured divider, the dial code in the placeholder gray.
 

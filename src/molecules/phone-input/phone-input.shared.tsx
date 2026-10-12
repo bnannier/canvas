@@ -14,6 +14,7 @@ import {
   useMeasuredWidth,
   LabelContent,
   labelA11y,
+  requiredName,
   RippleClip,
   cornerRadii,
   FOCUS_RESET,
@@ -78,7 +79,12 @@ export interface PhoneInputProps extends PhoneEntryProps, MeasureProps {
    * name, and Field delegates its label into it.
    */
   label?: string;
-  /** Marks the field as required: a destructive "*" after the label and aria-required. */
+  /**
+   * Marks the field as required: a destructive "*" after the label (decorative, never in
+   * the accessible name), and the number field announced as required, through
+   * aria-required on the web and with the word in its name ("Phone number, required") on
+   * iOS and Android.
+   */
   required?: boolean;
   // State (orthogonal). `error` (alias `invalid`) flags a validation problem.
   error?: boolean;
@@ -203,7 +209,8 @@ export function createPhoneInput(skin: PhoneInputSkin) {
     const rows = useRowFocus(countries.length);
     const enterList = () => rows.enter(Math.max(0, countries.findIndex((c) => c.code === selected?.code)));
 
-    const accessibleName = props.accessibilityLabel ?? label;
+    // The number field's name, which natively says when the field is required (requiredName).
+    const accessibleName = requiredName(props.accessibilityLabel ?? label, required);
     const segmentName = selected ? `Country, ${selected.name} ${selected.dialCode}` : "Country";
     const ripple = field.ripple ? field.ripple(tokens) : undefined;
 

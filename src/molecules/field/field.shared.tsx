@@ -8,7 +8,7 @@ import {
   type ReactNode,
 } from "react";
 import { type StyleProp, type ViewStyle } from "react-native";
-import { View, Text, useTheme, LabelContent, labelA11y, type LayoutStyle, type MeasureProps, useFillStyle } from "../../style/index.js";
+import { View, Text, useTheme, LabelContent, labelA11y, requiredName, type LayoutStyle, type MeasureProps, useFillStyle } from "../../style/index.js";
 import { type FieldSkin } from "./field.styles.js";
 
 // Shared Field shell. A form row: a label, the control, and one message line under it.
@@ -40,7 +40,11 @@ export interface FieldProps extends MeasureProps {
    * replaces `helper` in place, so the row never changes height and nothing below it jumps.
    */
   error?: string;
-  /** Marks the label with a destructive asterisk, and sets `aria-required` on a delegated control. */
+  /**
+   * Marks the label with a destructive asterisk (decorative, never in an accessible name). A
+   * delegated control takes `required` and announces itself as required; over any other
+   * control, the label says it in its own name on iOS and Android ("Notifications, required").
+   */
   required?: boolean;
   /** The control. */
   children?: ReactNode;
@@ -100,8 +104,9 @@ export function createField(skin: FieldSkin, labelOwners: ComponentType<never>[]
       <View testID={testID} style={[skin.stack, fill, style]}>
         {label != null && !delegate ? (
           // The label heads a control that names itself, so it stays a stop of its own
-          // natively, named without its star (labelA11y).
-          <Text style={skin.label(tokens)} {...labelA11y(label, false)}>
+          // natively, named without its star (labelA11y). Field hands that control no
+          // `required`, so natively the heading's name says it (requiredName).
+          <Text style={skin.label(tokens)} {...labelA11y(requiredName(label, required), false)}>
             <LabelContent label={label} required={required} starColor={tokens.destructive} />
           </Text>
         ) : null}

@@ -6,7 +6,7 @@ import { frameHandlers, useFocusFrame } from "../../style/focus-frame.js";
 import { useComposedRefs } from "../../style/use-composed-refs.js";
 import { forwardRef, useId, useState } from "react";
 import { type TextInput as RNTextInput, type TextInputProps as RNTextInputProps } from "react-native";
-import { View, Text, TextInput, useFillStyle, FloatingLabel, LabelContent, labelA11y, useFloatingLabelRoom, FOCUS_RESET, type MeasureProps, type SizingKey, type StyleProp, type TextStyle, type ViewStyle, GlassPane, paneStyle, isGlass, alpha, PANE_SIBLING_INPUT } from "../../style/index.js";
+import { View, Text, TextInput, useFillStyle, FloatingLabel, LabelContent, labelA11y, requiredName, useFloatingLabelRoom, FOCUS_RESET, type MeasureProps, type SizingKey, type StyleProp, type TextStyle, type ViewStyle, GlassPane, paneStyle, isGlass, alpha, PANE_SIBLING_INPUT } from "../../style/index.js";
 import { type TextEntryProps } from "../input/input.shared.js";
 import { type TextareaSkin, type Size, sizeText, minHeight } from "./textarea.styles.js";
 
@@ -70,9 +70,10 @@ export interface TextareaProps extends TextEntryProps, MeasureProps {
    */
   label?: string;
   /**
-   * Marks the field as required: appends a destructive "*" to the label (hidden
-   * from the accessible name) and sets aria-required on the field. Takes effect
-   * only alongside `label`.
+   * Marks the field as required: appends a destructive "*" to the label (decorative,
+   * never in the accessible name) and announces the field as required, through
+   * aria-required on the web and with the word in its name ("Bio, required") on iOS
+   * and Android. Takes effect only alongside `label`.
    */
   required?: boolean;
   /**
@@ -179,7 +180,9 @@ export function createTextarea(skin: TextareaSkin) {
     // Accessible name + label link, mirroring the single-line Input: the label
     // names the field on BOTH channels (accessibilityLabel/aria-label and
     // aria-labelledby -> the label Text's nativeID). A caller override still wins.
-    const accessibleName = hasLabel ? label : undefined;
+    // Natively a required field's name says so (requiredName), since aria-required
+    // is web-only.
+    const accessibleName = requiredName(hasLabel ? label : undefined, required);
     const ariaLabelledby = hasLabel ? labelId : undefined;
 
     // Surface the validation problem programmatically, not just as a red border
