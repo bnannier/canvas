@@ -90,12 +90,49 @@ export {
 } from "./container.js";
 export { customShadow, shadow, type ShadowLevel } from "./shadow.js";
 export { tabularNums } from "./numerals.js";
+// The touch-target helpers the kit's controls measure themselves with, published by
+// accident through the style hub and once announced for an app's own pressable (2.59.0).
+// Every kit control meets the platform minimum itself (44 pt on iOS, 48 dp on Android), a
+// control the kit lacks belongs in the kit rather than in a hand-built Pressable (the
+// "Dogfood the kit" law), so each is a deprecated alias with no replacement that keeps
+// working until a major (audit K12-2). As below, the tags sit on these specifiers only.
 export {
+  /**
+   * @deprecated Kit internals, with no replacement: the options of the touch area the
+   * kit's controls extend for themselves. It keeps working until a major.
+   */
   type MinTargetOptions,
+  /**
+   * @deprecated Kit internals, with no replacement: the kit's controls meet the platform
+   * minimum touch target themselves (`Button`, an icon `Button` included, `Chip`, and
+   * `Avatar`, `Card` and the list rows given `onPress`), and a control the kit lacks
+   * belongs in the kit. It keeps working until a major.
+   */
   minTargetSlop,
+  /**
+   * @deprecated Kit internals, with no replacement: the platform minimum the kit's
+   * controls meet for themselves (`Button`, `Chip`, and `Avatar`, `Card` and the list rows
+   * given `onPress`). It keeps working until a major.
+   */
   platformMinTarget,
+  /**
+   * @deprecated Kit internals, with no replacement: the platform minimums (44 pt on iOS,
+   * 48 dp on Android) the kit's controls meet for themselves (`Button`, `Chip`, and
+   * `Avatar`, `Card` and the list rows given `onPress`). It keeps working until a major.
+   */
   TOUCH_TARGET,
+  /**
+   * @deprecated Kit skin internals, with no replacement: the minimum a kit skin declares
+   * for its own control. It keeps working until a major.
+   */
   type TouchTargetSkin,
+  /**
+   * @deprecated Kit internals, with no replacement: the kit's controls extend their own
+   * touch area to the platform minimum from their first frame (`Button`, an icon `Button`
+   * included, `Chip`, and `Avatar`, `Card` and the list rows given `onPress`), and a
+   * control the kit lacks belongs in the kit, not in a hand-built Pressable. It keeps
+   * working until a major.
+   */
   useMinTargetSlop,
 } from "./touch-target.js";
 export { alpha, channelsOf, composite, contrastRatio, inkOn, mixOklab, relativeLuminance } from "./color.js";
@@ -228,7 +265,40 @@ export {
    */
   LabelContent,
 } from "./floating-label.js";
-export { controlRipple, platformDisabledDim, pressDim, rippleClip, surfaceRipple } from "./ripple.js";
+// The press feedback the kit's controls show for themselves (the Android ripple, the iOS
+// and web dim), published by accident the same way. A control the kit lacks belongs in
+// the kit, so each is a deprecated alias with no replacement that keeps working until a
+// major (audit K12-2); the tags sit on these specifiers only.
+export {
+  /**
+   * @deprecated Kit internals, with no replacement: the borderless Android ripple the
+   * kit's round and icon-sized controls show for themselves (an icon `Button`, `Avatar`
+   * given `onPress`). It keeps working until a major.
+   */
+  controlRipple,
+  /**
+   * @deprecated Kit internals, with no replacement: the platform's disabled dim the kit's
+   * controls take for themselves when `disabled`. It keeps working until a major.
+   */
+  platformDisabledDim,
+  /**
+   * @deprecated Kit internals, with no replacement: the iOS and web press dim the kit's
+   * controls show for themselves (`Button`, `Chip`, and `Card` and the list rows given
+   * `onPress`). It keeps working until a major.
+   */
+  pressDim,
+  /**
+   * @deprecated Kit internals, with no replacement: the Android clip the kit's rounded
+   * surfaces put around their own ripple. It keeps working until a major.
+   */
+  rippleClip,
+  /**
+   * @deprecated Kit internals, with no replacement: the bounded Android ripple the kit's
+   * surfaces show for themselves (`Card` and the list rows given `onPress`). It keeps
+   * working until a major.
+   */
+  surfaceRipple,
+} from "./ripple.js";
 export { cornerRadii, RippleClip, type RippleClipProps, rippleClipWrapperStyle, splitElevation } from "./ripple-clip.js";
 export {
   /**

@@ -86,6 +86,15 @@ export const DEPRECATED_NAMES: DeprecatedName[] = [
     "section": null
   },
   {
+    "name": "controlRipple",
+    "type": false,
+    "summary": "",
+    "instead": "Kit internals, with no replacement: the borderless Android ripple the kit's round and icon-sized controls show for themselves (an icon `Button`, `Avatar` given `onPress`). It keeps working until a major.",
+    "replacement": null,
+    "replacementRoute": null,
+    "section": null
+  },
+  {
     "name": "DASHBOARD_COLUMNS",
     "type": false,
     "summary": "The board's column count: every span is a number of these 12 columns.",
@@ -338,6 +347,24 @@ export const DEPRECATED_NAMES: DeprecatedName[] = [
     "section": null
   },
   {
+    "name": "MinTargetOptions",
+    "type": true,
+    "summary": "",
+    "instead": "Kit internals, with no replacement: the options of the touch area the kit's controls extend for themselves. It keeps working until a major.",
+    "replacement": null,
+    "replacementRoute": null,
+    "section": null
+  },
+  {
+    "name": "minTargetSlop",
+    "type": false,
+    "summary": "The insets that bring a `width` x `height` control up to `minTarget`, or undefined when it already meets it.",
+    "instead": "Kit internals, with no replacement: the kit's controls meet the platform minimum touch target themselves (`Button`, an icon `Button` included, `Chip`, and `Avatar`, `Card` and the list rows given `onPress`), and a control the kit lacks belongs in the kit. It keeps working until a major.",
+    "replacement": null,
+    "replacementRoute": null,
+    "section": null
+  },
+  {
     "name": "MONO_FONT",
     "type": false,
     "summary": "",
@@ -383,10 +410,46 @@ export const DEPRECATED_NAMES: DeprecatedName[] = [
     "section": null
   },
   {
+    "name": "platformDisabledDim",
+    "type": false,
+    "summary": "",
+    "instead": "Kit internals, with no replacement: the platform's disabled dim the kit's controls take for themselves when `disabled`. It keeps working until a major.",
+    "replacement": null,
+    "replacementRoute": null,
+    "section": null
+  },
+  {
+    "name": "platformMinTarget",
+    "type": false,
+    "summary": "The running platform's minimum, for a component that ships ONE shared skin across all three platforms (its look is genuinely platform-neutral, so there is nothing per-OS to declare).",
+    "instead": "Kit internals, with no replacement: the platform minimum the kit's controls meet for themselves (`Button`, `Chip`, and `Avatar`, `Card` and the list rows given `onPress`). It keeps working until a major.",
+    "replacement": null,
+    "replacementRoute": null,
+    "section": null
+  },
+  {
+    "name": "pressDim",
+    "type": false,
+    "summary": "",
+    "instead": "Kit internals, with no replacement: the iOS and web press dim the kit's controls show for themselves (`Button`, `Chip`, and `Card` and the list rows given `onPress`). It keeps working until a major.",
+    "replacement": null,
+    "replacementRoute": null,
+    "section": null
+  },
+  {
     "name": "resetDevWarnings",
     "type": false,
     "summary": "Clear the once-per-message cache.",
     "instead": "Kit test internals, with no replacement: clears the kit's own development warnings between tests. It keeps working until a major.",
+    "replacement": null,
+    "replacementRoute": null,
+    "section": null
+  },
+  {
+    "name": "rippleClip",
+    "type": false,
+    "summary": "",
+    "instead": "Kit internals, with no replacement: the Android clip the kit's rounded surfaces put around their own ripple. It keeps working until a major.",
     "replacement": null,
     "replacementRoute": null,
     "section": null
@@ -437,6 +500,15 @@ export const DEPRECATED_NAMES: DeprecatedName[] = [
     "section": null
   },
   {
+    "name": "surfaceRipple",
+    "type": false,
+    "summary": "",
+    "instead": "Kit internals, with no replacement: the bounded Android ripple the kit's surfaces show for themselves (`Card` and the list rows given `onPress`). It keeps working until a major.",
+    "replacement": null,
+    "replacementRoute": null,
+    "section": null
+  },
+  {
     "name": "syntaxColor",
     "type": false,
     "summary": "The theme-aware color for a token kind.",
@@ -473,6 +545,24 @@ export const DEPRECATED_NAMES: DeprecatedName[] = [
     "section": null
   },
   {
+    "name": "TOUCH_TARGET",
+    "type": false,
+    "summary": "The platform minimums, from the two platforms' own guidance.",
+    "instead": "Kit internals, with no replacement: the platform minimums (44 pt on iOS, 48 dp on Android) the kit's controls meet for themselves (`Button`, `Chip`, and `Avatar`, `Card` and the list rows given `onPress`). It keeps working until a major.",
+    "replacement": null,
+    "replacementRoute": null,
+    "section": null
+  },
+  {
+    "name": "TouchTargetSkin",
+    "type": true,
+    "summary": "Skins that own a pressable declare this: the minimum, or null for none.",
+    "instead": "Kit skin internals, with no replacement: the minimum a kit skin declares for its own control. It keeps working until a major.",
+    "replacement": null,
+    "replacementRoute": null,
+    "section": null
+  },
+  {
     "name": "useControllableState",
     "type": false,
     "summary": "",
@@ -504,6 +594,15 @@ export const DEPRECATED_NAMES: DeprecatedName[] = [
     "type": false,
     "summary": "",
     "instead": "Kit internals, with no replacement: `Dialog`, `AlertDialog`, `Drawer`, `ActionSheet`, `Sidebar` and every anchored card close on Android's back themselves. It keeps working until a major.",
+    "replacement": null,
+    "replacementRoute": null,
+    "section": null
+  },
+  {
+    "name": "useMinTargetSlop",
+    "type": false,
+    "summary": "Measure a pressable and extend its touch area to the platform minimum.",
+    "instead": "Kit internals, with no replacement: the kit's controls extend their own touch area to the platform minimum from their first frame (`Button`, an icon `Button` included, `Chip`, and `Avatar`, `Card` and the list rows given `onPress`), and a control the kit lacks belongs in the kit, not in a hand-built Pressable. It keeps working until a major.",
     "replacement": null,
     "replacementRoute": null,
     "section": null
