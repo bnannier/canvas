@@ -257,8 +257,8 @@ export default function IntegrationScreen() {
             app's root, outside any scroller. It fills the window by default, and menus, selects, popovers and other
             floating content render above the whole page in its outlet, placed against the window. Without one, they
             render inline where they are declared. On Android with <InlineCode>@nannier/canvas-blur</InlineCode>, the
-            root provider's page content is also the capture plane its glass overlays sample for their frost; a
-            provider that does not fill its window has none, and glass there keeps its solid skin.
+            root provider's page content is also the capture plane that glass overlays and native modals sample for
+            their frost; a provider that does not fill its window has none, and glass there keeps its solid skin.
           </P>
           <CodeBlock code={OVERLAY_HOST} />
           <H3>Native modals</H3>
