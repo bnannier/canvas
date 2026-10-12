@@ -17,3 +17,5 @@ The capture runs `bun run audit:turn -- --slug=floating-label` took for this tur
 |---|---|---|---|---|---|---|---|
 | `20261012-022337-web-a0a8174` | variants | web | 2026-10-12T02:29:29.393Z | `a0a8174` | complete | 1476 of 1476: 1476 ok, 0 failed | autocomplete, input, stepper, select, textarea, field, phone-input, alert-dialog, dialog |
 | `20261012-022929-web-0e5f114` | states | web | 2026-10-12T02:31:47.451Z | `0e5f114` | complete | 480 of 480: 474 ok, 0 failed, 6 not reached | autocomplete, input, stepper, select, textarea, field, phone-input, alert-dialog, dialog |
+| `20261012-031236-web-dc06ed2` | variants | web | 2026-10-12T03:18:19.244Z | `dc06ed2` | complete | 1476 of 1476: 1476 ok, 0 failed | autocomplete, input, stepper, select, textarea, field, phone-input, alert-dialog, dialog |
+| `20261012-031819-web-dc06ed2` | states | web | 2026-10-12T03:20:34.316Z | `dc06ed2` | complete | 480 of 480: 474 ok, 0 failed, 6 not reached | autocomplete, input, stepper, select, textarea, field, phone-input, alert-dialog, dialog |
