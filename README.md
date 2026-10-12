@@ -92,7 +92,7 @@ Inside a custom React Native `Modal`, wrap the content in `GlassModalBlurTarget`
 then `<OverlayProvider separateWindow>`, in that order:
 
 ```jsx
-<Modal visible={open} transparent onRequestClose={onClose}>
+<Modal visible={open} transparent onRequestClose={onClose} accessibilityViewIsModal>
   <GlassModalBlurTarget>
     <OverlayProvider separateWindow>{content}</OverlayProvider>
   </GlassModalBlurTarget>

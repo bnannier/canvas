@@ -1,6 +1,7 @@
 import { type ComponentType, type Ref, type RefObject, useLayoutEffect, useState } from "react";
 import { findNodeHandle, Platform, type View, type ViewProps } from "react-native";
 import { requireNativeModule, requireNativeViewManager } from "expo-modules-core";
+import { forCurrentTarget } from "./target-rejection";
 
 export interface CaptureStats {
   hosts: number;
@@ -70,12 +71,15 @@ export const FrostView: ComponentType<FrostViewProps> | undefined = NativeFrost 
   useLayoutEffect(() => {
     setTargetId(currentHost ? findNodeHandle(currentHost) : null);
   }, [currentHost]);
-  // A refusal of a host this view no longer names (the ref moved on before the event
-  // arrived) is not news about the current one.
-  const rejected = onTargetRejected
-    ? (event: TargetRejectedEvent) => { if (event.nativeEvent.targetId === targetId) onTargetRejected(event); }
-    : undefined;
-  return <NativeFrost {...props} targetId={targetId} intensity={intensity} tint={tint} onTargetRejected={rejected} />;
+  return (
+    <NativeFrost
+      {...props}
+      targetId={targetId}
+      intensity={intensity}
+      tint={tint}
+      onTargetRejected={forCurrentTarget(targetId, onTargetRejected)}
+    />
+  );
 } : undefined;
 
 /** Read-only lifecycle counters for device verification and diagnostics. */

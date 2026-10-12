@@ -158,17 +158,20 @@ export function useBlurTargetRejection(): BlurTargetRejection | null {
  *   contains the plane. Placed in the main window (around page content, or in a
  *   react-native-screens or expo-router modal screen, which shares the main window on
  *   Android) the plane contains its surfaces: canvas-blur 0.2 or newer refuses it and
- *   says so, and every surface under the bridge then resolves its complete solid skin
- *   (an older module refuses it silently, leaving a tint with no blur).
+ *   says so, and every surface under the bridge then resolves its complete solid skin.
+ *   The refusal comes from the native frost once it has mounted, so the surfaces show
+ *   a tint with no blur until it arrives; an older module refuses silently and leaves
+ *   that tint in place.
  */
 export function GlassModalBlurTarget({ children }: { children?: ReactNode }) {
   // A kit component resolves its material (useMaterialTheme) inside the bridge, never
   // around the Modal: the page's context offers no plane on Android, so a material read
   // there resolves solid while the component's own surfaces inside the Modal frost.
   const target = useContext(GlassWindowBlurTargetContext);
-  // The verdict is per bridge and per plane: trusted until its frost refuses it, which
-  // it does at once when the bridge is misplaced, so a legitimate Modal never flashes
-  // solid first. A Modal is never inside the plane, so its bridge is never refused.
+  // The verdict is per bridge and per plane: trusted until its frost refuses it, so a
+  // legitimate Modal never flashes solid first. Only the native frost can tell that the
+  // plane contains it, so a misplaced bridge shows its tint until that report lands. A
+  // Modal is never inside the plane, so its bridge is never refused.
   const [refused, setRefused] = useState<RefObject<View | null> | null>(null);
   const plane = target !== refused ? target : null;
   const reject = useCallback<BlurTargetRejection>((rejected) => {
