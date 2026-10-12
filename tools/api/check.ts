@@ -15,9 +15,8 @@ const RENDERABLE_KINDS = new Set<ApiKind>(["component", "part", "deprecated-alia
 const TYPE_ONLY_KINDS = new Set<ApiKind>(["type", "deprecated-alias", "internal-by-accident"]);
 const HOOK_NAMED_KINDS = new Set<ApiKind>(["hook", "deprecated-alias", "internal-by-accident"]);
 const STYLESHEET_KINDS = new Set<ApiKind>(["token", "part", "utility", "internal-by-accident"]);
-// The values a consumer is meant to use, each of which owes them a JSDoc summary. A
-// deprecated alias speaks through its `@deprecated` text; an internal helper leaves the
-// API as one.
+// The values a consumer is meant to use, each of which owes them a JSDoc summary. An
+// internal helper leaves the API as one, once a later turn retires it.
 const PUBLIC_VALUE_KINDS = new Set<ApiKind>(["component", "part", "hook", "token", "utility"]);
 
 // Facts that must not differ between the web build and a native resolution: a platform
@@ -154,6 +153,11 @@ export function checkPublicApi(inventory: ApiInventory, manifest: ApiManifest) {
     // (package.json `types`), so the web resolution is the one that counts.
     if (PUBLIC_VALUE_KINDS.has(entry.kind) && api.value && !api.summary && !dependencyOwned(api)) {
       errors.push(`${name} is a public ${entry.kind} with no JSDoc summary on its declaration (${api.files.join(", ")})`);
+    }
+    // A deprecated alias, value or type, says what it was on its declaration: the
+    // foundation reference shows that summary beside its @deprecated text.
+    if (entry.kind === "deprecated-alias" && !api.summary && !dependencyOwned(api)) {
+      errors.push(`${name} is a deprecated alias with no JSDoc summary on its declaration (${api.files.join(", ")}): say what it was`);
     }
     checkDocs(name, entry, (page) => names(page, name), inventory, manifest, errors);
   }

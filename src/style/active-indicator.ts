@@ -1,5 +1,10 @@
 import { type ViewStyle } from "react-native";
 
+/**
+ * The options of `activeIndicator`: whether the field is active, the indicator's colour
+ * and thickness at rest and when active, and the padding kept between the content and the
+ * indicator.
+ */
 export interface ActiveIndicatorOptions {
   /** Whether the field is in its active state (open / focused). */
   active: boolean;

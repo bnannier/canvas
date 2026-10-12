@@ -16,7 +16,12 @@ import { alpha, channelsOf } from "./color.js";
 // Every shell reads the theme value it already holds, so no skin has to know the
 // surface mode: `innerFill(theme, "muted")` where it used to paint `tokens.muted`.
 
+/** The opaque role a fill inside a glass surface stands for: `muted`, `secondary` or `accent`. */
 export type InnerFillRole = "muted" | "secondary" | "accent";
+/**
+ * How strong a fill inside a glass surface is: `faint` (a hover, an alternating row),
+ * `soft` (a selected row, a resting chip) or `firm` (a pressed or active fill).
+ */
 export type InnerFillStrength = "faint" | "soft" | "firm";
 
 const STRENGTH: Record<InnerFillStrength, { light: number; dark: number }> = {

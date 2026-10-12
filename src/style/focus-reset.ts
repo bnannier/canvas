@@ -20,4 +20,9 @@ import { type ViewStyle, type TextStyle } from "react-native";
 // moves the ring inside with INSET_FOCUS_RING instead of hiding it. A scrollport flush
 // inside a clipping card can do neither (its content covers an inset ring), so its frame
 // draws the ring and the scrollport spreads this (src/style/focus-frame.tsx).
+/**
+ * The style that removes the keyboard focus ring (a solid outline of width 0), for a
+ * control that paints a visible focus state of its own. Never for any other control,
+ * which keeps the themed ring (WCAG 2.4.7).
+ */
 export const FOCUS_RESET: ViewStyle & TextStyle = { outlineStyle: "solid", outlineWidth: 0 };

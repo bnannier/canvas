@@ -9,36 +9,49 @@ import { Platform } from "react-native";
 import { alpha } from "./color.js";
 import { type ColorTokens } from "./tokens.js";
 
-// A neutral ink ripple bounded to a content surface (card, list row, tile). The
-// ink is the foreground token at low alpha, so it reads on both themes: dark ink
-// on light surfaces, light ink on dark.
+/**
+ * The Android ripple of a content surface (a card, a list row, a tile): a neutral ink,
+ * the foreground at low alpha so it reads in both schemes, bounded to the surface. iOS
+ * and the web ignore it and dim instead (`pressDim`).
+ */
 export function surfaceRipple(tokens: ColorTokens) {
   return { color: alpha(tokens.foreground, 0.1), borderless: false };
 }
 
-// A borderless ripple for a circular or icon-sized control (avatar, icon button),
-// where the ripple should radiate from the touch point rather than fill a rect.
+/**
+ * The Android ripple of a round or icon-sized control (an avatar, an icon button): the
+ * same neutral ink, borderless, so it radiates from the touch point rather than filling
+ * a rectangle.
+ */
 export function controlRipple(tokens: ColorTokens) {
   return { color: alpha(tokens.foreground, 0.12), borderless: true };
 }
 
-// The press opacity dim for iOS and web. On Android the ripple carries the press
-// feedback, so this returns null there to avoid double-signaling. Pass the
-// component's own dim value; it stays the iOS/web look unchanged.
+/**
+ * The press dim of iOS and the web: the given opacity while pressed (0.9 by default), and
+ * null on Android, where the ripple carries the press and a dim would signal it twice.
+ */
 export function pressDim(pressed: boolean, opacity = 0.9) {
   return pressed && Platform.OS !== "android" ? { opacity } : null;
 }
 
-// The dim each platform's own disabled controls take (the hand-off's --p-disabled): iOS's
-// 0.4, Material 3's 0.38, and 0.5 on the web. For a skin that one component shares across
-// every platform, evaluated once in the platform's own bundle like platformMinTarget.
-// Platform-parameterized for tests.
+/**
+ * The opacity each platform's own disabled controls take (the hand-off's
+ * `--p-disabled`): 0.4 on iOS, Material 3's 0.38 on Android and 0.5 on the web, for a skin
+ * one component shares across every platform. Evaluated once in the platform's own bundle;
+ * `os` is for tests.
+ */
 export function platformDisabledDim(os: string = Platform.OS): number {
   if (os === "ios") return 0.4;
   if (os === "android") return 0.38;
   return 0.5;
 }
 
+/**
+ * `overflow: "hidden"` on Android and nothing elsewhere, for a rounded PARENT whose
+ * children carry a bounded ripple, so the ripple keeps to the parent's corners while an
+ * iOS shadow on the parent survives. It never clips a node's own ripple (see below).
+ */
 // Android-only `overflow:"hidden"`. Add it to a rounded PARENT so it clips a bounded-ripple
 // CHILD (a menu/list card whose rows carry the ripple) to the parent's rounded corners. The
 // clip is Android-only so an iOS shadow on the parent (which `overflow:"hidden"` would mask)

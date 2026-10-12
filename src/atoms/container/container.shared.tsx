@@ -32,6 +32,7 @@ import { type Pad } from "../layout/layout.shared.js";
 // identical on iOS, Android, and react-native-web, so the three skins reference
 // the same padding scale.
 
+/** The measure a Container resolves: a step of the width scale, or `fluid` for none. */
 export type Measure = WidthKey | "fluid";
 
 /** The default measure: no cap, the container conforms to its parent. */
@@ -58,6 +59,7 @@ export interface ContainerProps extends MeasureProps {
 }
 
 // Measure precedence: fluid, then the shared step order (narrowest first); default full width (fluid).
+/** The measure a Container's props resolve to: `fluid`, else the narrowest step passed, else `fluid`. */
 export function measureOf(p: ContainerProps): Measure {
   if (p.fluid) return "fluid";
   return stepOf(p) ?? FLUID;

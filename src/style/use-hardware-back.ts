@@ -13,6 +13,11 @@ import { BackHandler, Platform } from "react-native";
 // this is a behavioral guard around a platform-specific event API, not a
 // web-only rendering branch, so it stays inside the kit's cross-platform rules.
 
+/**
+ * Close an open overlay on Android's hardware or gesture back: while `active`, back calls
+ * `onBack` and is consumed, so the app neither navigates nor exits under the overlay. A
+ * no-op on iOS, and never subscribed on the web.
+ */
 export function useHardwareBack(
   /** Subscribe only while true (pass the overlay's open state). */
   active: boolean,

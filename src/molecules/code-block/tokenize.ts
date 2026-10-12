@@ -10,6 +10,11 @@ import { type ColorTokens, palette } from "../../style/index.js";
 // alternatives with a small amount of carried context (inside-a-JSX-tag, shell
 // command position), which is the same trade every lightweight highlighter makes.
 
+/**
+ * What one span of highlighted code is: plain text, a comment, a string, a keyword, a
+ * number, a tag, an attribute, a function name or a variable. CodeBlock paints each kind
+ * in its own ink (`syntaxColor`).
+ */
 export type TokenKind =
   | "text"
   | "comment"
@@ -21,6 +26,7 @@ export type TokenKind =
   | "fn"
   | "var";
 
+/** One span of a highlighted line: its text and its kind. */
 export interface CodeToken {
   text: string;
   kind: TokenKind;

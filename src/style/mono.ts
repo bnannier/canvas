@@ -10,6 +10,10 @@ import { Platform } from "react-native";
 // "monospace" alias on Android, and "monospace" as the web/other default (RNW
 // maps it onto the browser's monospace stack). Every site that wants a monospace
 // face reads this instead of hardcoding "monospace".
+/**
+ * The kit's monospace face per platform: Menlo on iOS, and the `monospace` alias on
+ * Android and on the web, where react-native-web maps it onto the browser's stack.
+ */
 export const MONO_FONT = Platform.select({
   ios: "Menlo",
   android: "monospace",
