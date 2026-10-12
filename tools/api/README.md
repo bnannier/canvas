@@ -12,7 +12,7 @@ src/style/public.ts, which lists the style foundation's public names one by one;
 src/style/index.ts is the kit's internal hub and never reaches the package. A helper the
 kit adds for its own skins stays internal until someone lists it in public.ts.
 
-`manifest.ts` is authored by hand. It has four parts:
+`manifest.ts` is authored by hand. It has five parts:
 
 - `entryPoints`: every subpath of package.json `exports` and how the gate enumerates
   it. `.` is a `module` (src/index.ts), `./styles/*` is `files`, `./package.json` is
@@ -23,6 +23,8 @@ kit adds for its own skins stays internal until someone lists it in public.ts.
 - `files`: every file `./styles/*` publishes, the same way.
 - `PENDING_DOCS`: the staged docs migration (audit K12). Every export or file with no
   `docs` route is listed here with the route planned for it, and nothing else is.
+- `PLANNED_ROUTES`: each planned route with the audit turn that ends it, and whether
+  that turn has closed it.
 
 `test/fixtures/public-api.json` is the machine-written record of the same surface (each
 export of `.`, a value or type-only). `bun run check:api --write-snapshot` rewrites it;
@@ -62,7 +64,16 @@ commit as its manifest entry.
 - **PENDING_DOCS is staged, not waived.** A name with no `docs` must be listed, and a
   listed name must have no `docs`. Its planned route must exist (or be `foundation`, the
   generated reference K12-10 adds), and the day that page names it the gate asks for the
-  move to `docs`. Once the `foundation` route exists the list must be empty.
+  move to `docs`.
+- **The migration ends route by route.** `PLANNED_ROUTES` gives every planned route the
+  audit turn that lands its docs (a checklist under `audit/`). That turn closes the route
+  once it has moved the last of its names, a name staged for a closed route fails, and so
+  does a route nothing is staged for that is still open. A page existing ends nothing,
+  since every planned page but the reference exists already and later turns write its
+  sections.
+- **The foundation reference is every deprecated alias's home.** A `deprecated-alias` is
+  staged for `foundation` or documented there, never anywhere else, and once the page
+  exists it lists every one (the owner's K12-10 OD2 decision).
 - **The two manifests agree.** The material inventory (tools/materials/manifest.ts)
   records a docs route for every renderable. It must be the API manifest's `docs`, or,
   while the docs are pending, none or the planned route.

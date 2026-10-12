@@ -1,10 +1,10 @@
-import { readFileSync, writeFileSync } from "node:fs";
+import { readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { COMPONENTS } from "../docs/src/core/data/components";
 import { checkPublicApi } from "../tools/api/check";
 import { discoverPublicApi } from "../tools/api/discover";
 import { docsPages } from "../tools/api/docs";
-import { entryPoints, files, PENDING_DOCS, publicApi } from "../tools/api/manifest";
+import { entryPoints, files, PENDING_DOCS, PLANNED_ROUTES, publicApi } from "../tools/api/manifest";
 import { packedFiles } from "../tools/api/packed";
 import { SNAPSHOT_FILE, surfaceOf } from "../tools/api/snapshot";
 import { materialCoverage } from "../tools/materials/manifest";
@@ -23,6 +23,10 @@ for (const [point, shape] of Object.entries(entryPoints)) {
   entryPointFiles[point] = packedFiles(root, directory);
 }
 
+// The audit turns that can end a planned route: every checklist under audit/, by id.
+const auditTurns = new Set(["components", "foundation", "pages"].flatMap((dir) =>
+  readdirSync(resolve(root, "audit", dir)).filter((file) => file.endsWith(".md")).map((file) => `${dir}/${file.slice(0, -3)}`)));
+
 const exports = discoverPublicApi(root);
 if (process.argv.includes("--write-snapshot")) {
   writeFileSync(resolve(root, SNAPSHOT_FILE), `${JSON.stringify(surfaceOf(exports.web), null, 2)}\n`);
@@ -37,14 +41,15 @@ const result = checkPublicApi(
     entryPointFiles,
     pages: docsPages(root, COMPONENTS),
     materialRoutes: new Map(materialCoverage.map((entry) => [entry.name, entry.docsRoute])),
+    auditTurns,
   },
-  { entryPoints, publicApi, files, pendingDocs: PENDING_DOCS },
+  { entryPoints, publicApi, files, pendingDocs: PENDING_DOCS, plannedRoutes: PLANNED_ROUTES },
 );
 if (process.argv.includes("--json")) console.log(JSON.stringify(result, null, 2));
 else {
   const kinds = Object.entries(result.kinds).map(([kind, count]) => `${count} ${kind}`).join(", ");
   console.log(`Public API: ${result.entryPoints} entry points, ${result.exports} exports of "." (${kinds}), ${result.files} files under the file entry points.`);
-  console.log(`Docs: ${result.documented} exports named on their docs page; ${result.pending} exports and files staged in PENDING_DOCS until the foundation reference lands.`);
+  console.log(`Docs: ${result.documented} exports named on their docs page; ${result.pending} exports and files staged in PENDING_DOCS for ${result.openRoutes} open routes, each until its audit turn lands its docs.`);
   for (const error of result.errors) console.error(error);
 }
 if (result.errors.length) process.exitCode = 1;
