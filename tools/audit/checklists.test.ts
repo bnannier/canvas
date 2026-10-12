@@ -155,7 +155,8 @@ describe.skipIf(!hasDist)("the audit checklists", () => {
       expect(bridge).toContain("# GlassModalBlurTarget (foundation)");
       expect(bridge).toContain("| Public exports | 1: `GlassModalBlurTarget` (component) |");
       expect(bridge).toContain("| K12-2 status | 1 public: GlassModalBlurTarget |");
-      expect(bridge).toContain("| Docs planned | `integration`: GlassModalBlurTarget |");
+      expect(bridge).toContain('| Documented on | `integration`: GlassModalBlurTarget ("Native modals") |');
+      expect(bridge).toContain("| Docs planned | none: every export has its page |");
       expect(bridge).toContain("| `drawer` | directly | `GlassModalBlurTarget` |");
       expect(bridge).toContain("| `sidebar` | through other kit components | `drawer` |");
       expect(bridge).toMatch(/\| Capture through \| \d+, in this order: components `action-sheet`, `drawer`, /);
