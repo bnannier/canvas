@@ -86,11 +86,28 @@ on an outside tap still paints in the window's outermost provider, at the place
 its nearest provider gives it, so a tap anywhere off it closes it, and the page
 under it takes no touches until it closes. Use
 `<OverlayProvider viewport>` for a deliberately bounded nested panel, whose size
-must come from its viewport rather than its content. Use
-`<OverlayProvider separateWindow>` inside a custom React Native `Modal`; its
+must come from its viewport rather than its content.
+
+Inside a custom React Native `Modal`, wrap the content in `GlassModalBlurTarget`,
+then `<OverlayProvider separateWindow>`, in that order:
+
+```jsx
+<Modal visible={open} transparent onRequestClose={onClose}>
+  <GlassModalBlurTarget>
+    <OverlayProvider separateWindow>{content}</OverlayProvider>
+  </GlassModalBlurTarget>
+</Modal>
+```
+
+The `separateWindow` provider gives the Modal's own cards a host in its window: its
 measurements must not inherit bounds from a different native window, and without
 it a card that closes on an outside tap paints in the main window's outermost
-provider, behind the `Modal`. Canvas `Drawer` supplies this boundary automatically.
+provider, behind the `Modal`. `GlassModalBlurTarget` hands the Modal's glass the
+root provider's page on Android, so it frosts the page behind the Modal (see
+Theming below); it renders no view and does nothing on iOS and the web. It belongs
+only inside a `Modal`: in the main window, a react-native-screens or expo-router
+modal screen included, its surfaces keep their solid skin. Canvas `Drawer` and
+`ActionSheet` supply both automatically.
 
 When page content scrolls under a header, declare the header's measured height as
 `viewportInsets={{ top: headerHeight }}` on the root or a nested `viewport` host.
@@ -197,11 +214,15 @@ safe live backdrop target; a tint-only path does not establish native blur suppo
 
 On Android 12+ with Expo SDK 57, the optional `@nannier/canvas-blur` integration
 keeps a stable native content host and records only while a glass surface uses it.
-`OverlayProvider` supplies a sibling target to its overlays and a separate-window
-target to native modals. Without a safe target, supported
-module or hardware material, the complete solid skin remains visible. Modern Expo
-blur targets are not kept recording in solid mode. The Android module requires a
-native rebuild; Expo Go does not contain it.
+`OverlayProvider` supplies its overlays a sibling target, its own page, and
+`GlassModalBlurTarget` hands a native `Modal` the root provider's page (the root
+provider must fill the window). A Modal's frost samples that page only, not the
+toasts above it, a Modal beneath or its own scrim; iOS and the web blur the whole
+stack. Without a safe target, supported module or hardware material, the complete
+solid skin remains visible, including a bridge placed outside a Modal, which
+`@nannier/canvas-blur` 0.2+ reports. Modern Expo blur targets are not kept
+recording in solid mode. The Android module requires a native rebuild; Expo Go
+does not contain it.
 
 The maintained [material inventory](tools/materials/README.md) records intended
 coverage and verification obligations, not completed runtime evidence.
