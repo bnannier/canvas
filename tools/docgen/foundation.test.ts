@@ -1,6 +1,6 @@
 import { expect, test } from "bun:test";
 import type { ApiEntry, ApiExport } from "../api/types";
-import { deprecatedRows, firstSentence, renderFoundationModule } from "./foundation";
+import { deprecatedRows, deprecatedSections, firstSentence, renderFoundationModule } from "./foundation";
 
 const exported = (name: string, facts: Partial<ApiExport> = {}): ApiExport => ({
   name, value: true, renderable: false, callable: false, deprecated: false, deprecatedText: "", summary: false, summaryText: "", files: ["src/field.ts"], ...facts,
@@ -49,9 +49,32 @@ test("what a name was is its summary's first sentence, never cut inside parenthe
   expect(firstSentence("The web skin. iOS draws its own.")).toBe("The web skin.");
 });
 
-test("the module is typed rows under the generated header", () => {
-  const text = renderFoundationModule(deprecatedRows(EXPORTS, API), "/* header */");
+const SECTIONED: Record<string, ApiEntry> = {
+  ...API,
+  FieldShape: { kind: "deprecated-alias", docs: "foundation", section: "Field helpers" },
+  StyleKit: { kind: "deprecated-alias", replacement: "Field", docs: "foundation", section: "Pass-throughs" },
+};
+const SECTIONS = [{ title: "Field helpers", about: "The field's own helpers." }, { title: "Pass-throughs", about: "A dependency's names." }];
+
+test("the rows are grouped by their manifest section, in the sections' order", () => {
+  const sections = deprecatedSections(deprecatedRows(EXPORTS, SECTIONED), SECTIONS);
+  expect(sections.map((section) => [section.title, section.names.map((row) => row.name)])).toEqual([
+    ["Field helpers", ["FIELD_WASH", "FieldShape"]],
+    ["Pass-throughs", ["StyleKit"]],
+  ]);
+  expect(sections[0]!.about).toBe("The field's own helpers.");
+  // A deprecated alias outside every section, a section the list lacks and an empty
+  // section each fail rather than drop a name or render an empty table.
+  expect(() => deprecatedSections(deprecatedRows(EXPORTS, API), SECTIONS)).toThrow("FieldShape names no section");
+  expect(() => deprecatedSections(deprecatedRows(EXPORTS, { ...SECTIONED, StyleKit: { ...SECTIONED.StyleKit, section: "Elsewhere" } }), SECTIONS)).toThrow('names the section "Elsewhere"');
+  expect(() => deprecatedSections(deprecatedRows(EXPORTS, SECTIONED), [...SECTIONS, { title: "Empty", about: "Nothing." }])).toThrow('section "Empty" lists no deprecated name');
+});
+
+test("the module is typed sections of rows under the generated header", () => {
+  const text = renderFoundationModule(deprecatedSections(deprecatedRows(EXPORTS, SECTIONED), SECTIONS), "/* header */");
   expect(text.startsWith("/* header */\n")).toBe(true);
-  expect(text).toContain("export const DEPRECATED_NAMES: DeprecatedName[] = [");
+  expect(text).toContain('export type DeprecatedSectionTitle = "Field helpers" | "Pass-throughs";');
+  expect(text).toContain("export const DEPRECATED_SECTIONS: DeprecatedSection[] = [");
   expect(text).toContain('"name": "FIELD_WASH"');
+  expect(text).not.toContain('"section":');
 });

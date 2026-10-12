@@ -453,7 +453,7 @@ export {
    * @deprecated React Native's own StyleSheet, passed through, with no replacement in the
    * kit: Canvas components take semantic props, never styles, so an app built from them
    * needs none, and app-frame scaffolding the kit does not cover imports it from
-   * react-native. It keeps working until a major (audit K12-2 OD5).
+   * react-native. It keeps working until a major.
    */
   StyleSheet,
   type TextInputProps,

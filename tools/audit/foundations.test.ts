@@ -200,7 +200,8 @@ describe("the Foundations tier (tools/audit/foundations.ts)", () => {
     expect(consumer("AnchoredOverlay", "tooltip")).toBeUndefined();
     const overlay = facts("AnchoredOverlay");
     expect(overlay.exports.map((e) => e.name)).toEqual(["AnchoredOverlay", "AnchoredOverlayProps", "placeOverlay", "useOverlayAnchor", "useOverlaySide"]);
-    expect(overlay.docs).toEqual([{ route: "foundation", documents: [], planned: ["AnchoredOverlay", "AnchoredOverlayProps", "placeOverlay", "useOverlayAnchor", "useOverlaySide"], page: null, exists: false }]);
+    // Documented on the generated foundation reference since the FoundationReference turn.
+    expect(overlay.docs).toEqual([{ route: "foundation", documents: ["AnchoredOverlay", "AnchoredOverlayProps", "placeOverlay", "useOverlayAnchor", "useOverlaySide"], planned: [], page: null, exists: true }]);
   });
 
   it("orders a Capture through list by tier and adds the pages whose entry names an export", () => {
