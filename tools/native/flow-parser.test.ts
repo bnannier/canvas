@@ -37,6 +37,9 @@ test("the verifier CLI rejects duplicate flags before invoking external tooling"
 // supplies the verified distribution and runs this file without the UI preload.
 const maestro = process.env.CANVAS_MAESTRO_BIN;
 const integration = maestro ? test : test.skip;
+// Every parse below starts the pinned Maestro's JVM, which takes 4 to 9 s on a CI runner
+// before the parser answers, so each test carries this budget rather than bun's 5 s default.
+const PARSER_TIMEOUT = 30_000;
 
 integration("the installed full parser accepts every canonical flow command", () => {
   const expectedVersion = JSON.parse(readFileSync(new URL("./maestro.json", import.meta.url), "utf8")).version;
@@ -47,7 +50,7 @@ integration("the installed full parser accepts every canonical flow command", ()
     expect(result.commandCount).toBeGreaterThan(1);
     expect(result.flowSha256).toBe(createHash("sha256").update(readFileSync(result.flow)).digest("hex"));
   }
-}, 30_000);
+}, PARSER_TIMEOUT);
 
 for (const platform of ["ios", "android"] as const) {
   integration(`the full parser converts generated ${platform} measurement and continuation commands`, () => {
@@ -67,19 +70,19 @@ for (const platform of ["ios", "android"] as const) {
     const parsed = verifyNativeFlow({ maestro, flow: continuation });
     expect(parsed.commandCount).toBeGreaterThan(1);
     expect(parsed.flowSha256).toBe(generated.sha256);
-  }, 30_000);
+  }, PARSER_TIMEOUT);
 }
 
 integration("the installed full parser accepts literal absolute coordinates", () => {
   const file = flow('- swipe:\n    start: "307, 289"\n    end: "95, 289"\n    duration: 400');
   expect(verifyNativeFlow({ maestro, flow: file }).commandCount).toBe(2);
-});
+}, PARSER_TIMEOUT);
 
 integration("nested flows convert eagerly even when their condition is false", () => {
   const child = flow('- swipe:\n    start: "${output.start}"\n    end: "${output.end}"');
   const parent = flow('- runFlow:\n    when:\n      true: "${false}"\n    file: ' + JSON.stringify(child));
   expect(() => verifyNativeFlow({ maestro, flow: parent })).toThrow("For input string:");
-});
+}, PARSER_TIMEOUT);
 
 const invalidPoints = [
   ["whole absolute expression", "${output.carouselDrag.start}", "${output.carouselDrag.end}"],
@@ -90,5 +93,5 @@ for (const [name, start, end] of invalidPoints) {
   integration(`the installed full parser rejects ${name} before a device session`, () => {
     const file = flow(`- swipe:\n    start: "${start}"\n    end: "${end}"\n    duration: 400`);
     expect(() => verifyNativeFlow({ maestro, flow: file })).toThrow("For input string:");
-  });
+  }, PARSER_TIMEOUT);
 }
