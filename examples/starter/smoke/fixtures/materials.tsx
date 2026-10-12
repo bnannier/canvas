@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Button, ButtonGroup, Card, Column, Dialog, Drawer, Dropdown, Input, Row, Slider, Switch, ThemeProvider, Typography } from "@nannier-com/canvas";
+import { ActionSheet, Button, ButtonGroup, Card, Column, Dialog, Drawer, Dropdown, GlassModalBlurTarget, Input, Row, Slider, Switch, ThemeProvider, Typography } from "@nannier-com/canvas";
 
 type Stats = { hosts: number; activeHosts: number; recordings: number; frostViews: number; frameListeners: number };
 declare const require: (name: string) => unknown;
@@ -9,6 +9,10 @@ try {
 } catch { /* Omitted in the optional-peer consumer matrix. */ }
 
 let nextEditor = 0;
+
+const statsLine = (stats: Stats | null) => stats
+  ? `Hosts: ${stats.hosts}; active: ${stats.activeHosts}; recordings: ${stats.recordings}; frost: ${stats.frostViews}; listeners: ${stats.frameListeners}`
+  : "Capture not inspected";
 
 function LiveEditor({ onFocus }: { onFocus: () => void }) {
   const [identity] = useState(() => ++nextEditor);
@@ -71,7 +75,7 @@ export function MaterialsBody() {
       <Typography testID="material-timer">{message}</Typography>
       <Typography testID="material-focus-mode">{scheduledFrom ? `Focus began in ${scheduledFrom}` : "No focused switch yet"}</Typography>
       <Typography testID="material-native">Native capture: {capture?.available ? "available" : "unavailable"}</Typography>
-      <Typography testID="material-capture-stats">{stats ? `Hosts: ${stats.hosts}; active: ${stats.activeHosts}; recordings: ${stats.recordings}; frost: ${stats.frostViews}; listeners: ${stats.frameListeners}` : "Capture not inspected"}</Typography>
+      <Typography testID="material-capture-stats">{statsLine(stats)}</Typography>
       <LiveEditor onFocus={focusEditor} />
       {/* Android in-page glass has no safe capture target (the owner's P3a decision), so an
           open overlay is where capture runs: an inspecting row reads the counters while
@@ -79,7 +83,23 @@ export function MaterialsBody() {
       <Dropdown trigger="Material menu" items={[{ label: "Keep editor" }, { label: "Review settings" }, { label: "Inspect capture from menu" }]}
         onSelect={(item) => { if (item.label === "Inspect capture from menu") inspect(); }} />
       <Dialog trigger="Material dialog" title="Live dialog" withBody overlay />
-      <Drawer trigger="Material drawer" right><Column relaxed><Typography h3>Native window</Typography><Input label="Drawer editor" defaultValue="Retain me" onFocus={focusEditor} /><Dropdown trigger="Drawer menu" items={[{ label: "Nested choice" }]} /><Button onPress={schedule}>Switch after focusing editor</Button></Column></Drawer>
+      {/* A Modal is a window of its own, so on Android its glass samples the page through
+          GlassModalBlurTarget: the drawer and the sheet read the counters while open. */}
+      <Drawer trigger="Material drawer" right><Column relaxed>
+        <Typography h3>Native window</Typography>
+        <Input label="Drawer editor" defaultValue="Retain me" onFocus={focusEditor} />
+        <Dropdown trigger="Drawer menu" items={[{ label: "Nested choice" }]} />
+        <Button onPress={schedule}>Switch after focusing editor</Button>
+        <Button onPress={inspect} testID="material-drawer-inspect">Inspect capture from drawer</Button>
+        <Typography testID="material-drawer-capture-stats">{statsLine(stats)}</Typography>
+      </Column></Drawer>
+      <ActionSheet trigger="Material sheet" title="Live sheet" message="The sheet's frost samples the page behind it."
+        actions={[{ label: "Keep editing", onPress: () => {} }, { label: "Inspect capture from sheet", onPress: inspect }]} />
+      {/* The bridge belongs only inside a Modal. Here, in the page, Android refuses the plane
+          it hands this card, and the card keeps its solid skin with no frost mounted. */}
+      <GlassModalBlurTarget>
+        <Card><Typography testID="material-misplaced">A bridge in the page keeps the solid skin.</Typography></Card>
+      </GlassModalBlurTarget>
       <Switch checked={nested} onChange={setNested} testID="material-nested">Nested glass</Switch>
       <ThemeProvider glass={nested} solid={!nested}>
         <Card><Typography>Nested glass remains active while its parent is solid.</Typography></Card>
