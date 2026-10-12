@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, spyOn } from "bun:test";
 import { act, cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { renderToString } from "react-dom/server";
-import { isValidElement, type ReactElement, type ReactNode } from "react";
+import { isValidElement, useState, type ReactElement, type ReactNode } from "react";
 import { AccessibilityInfo, Animated, I18nManager, Text as RNText, type TextStyle } from "react-native";
 import { ThemeProvider } from "../src/style/theme.tsx";
 import { colorsByScheme } from "../src/style/tokens.ts";
@@ -481,5 +481,54 @@ describe("the float follows the user's text size", () => {
     expect(parseFloat((screen.getByLabelText("Notes") as HTMLElement).style.paddingTop)).toBeCloseTo(reserve, 3);
     expect(parseFloat(boundsOf("Notes").style.top)).toBeCloseTo(reserve, 3);
     close(floatOf("Notes"), { translateY: floatedCenter - (reserve + line / 2), scale: seeds.scale });
+  });
+});
+
+// The float's cost while a user types and as fields mount. A field shell re-renders on every
+// keystroke (Input when controlled, Autocomplete always); if the label built new interpolation
+// nodes each render, React Native 0.86's animated-props memo (which keys on node identity)
+// would build new animated props and attach a new animated graph per keystroke, natively a
+// round of native node creation and connection each time. And a field that mounts at rest has
+// nothing to animate.
+describe("the float's cost", () => {
+  function ControlledInput() {
+    const [value, setValue] = useState("");
+    return <Input label="Email" value={value} onChangeText={setValue} />;
+  }
+
+  for (const [name, ui, field] of [
+    ["a controlled Input", <ControlledInput />, () => screen.getByLabelText("Email")],
+    ["an Autocomplete", <Autocomplete label="Fruit" options={["Apple", "Apricot"]} />, () => screen.getByRole("combobox", { name: "Fruit" })],
+  ] as const) {
+    it(`${name} builds and attaches no animated node per keystroke`, () => {
+      render(<ThemeProvider light>{ui}</ThemeProvider>);
+      act(() => fireEvent.focus(field()));
+      // The interpolation node class the label's Animated builds, read off one of its nodes.
+      const interpolation = Object.getPrototypeOf(new Animated.Value(0).interpolate({ inputRange: [0, 1], outputRange: [0, 1] })) as { __attach: () => void };
+      const built = spyOn(Animated.Value.prototype, "interpolate");
+      const attached = spyOn(interpolation, "__attach");
+      try {
+        let typed = "";
+        for (const key of "Apric") {
+          typed += key;
+          act(() => fireEvent.change(field(), { target: { value: typed } }));
+        }
+        expect((field() as HTMLInputElement).value).toBe("Apric");
+        expect({ built: built.mock.calls.length, attached: attached.mock.calls.length }).toEqual({ built: 0, attached: 0 });
+      } finally {
+        attached.mockRestore();
+        built.mockRestore();
+      }
+    });
+  }
+
+  it("starts no animation when a field mounts, at rest or filled", () => {
+    const timing = spyOn(Animated, "timing");
+    try {
+      render(<ThemeProvider light><Input label="Empty" /><Input label="Filled" defaultValue="Ada" /><Textarea label="Notes" error /></ThemeProvider>);
+      expect(timing).not.toHaveBeenCalled();
+    } finally {
+      timing.mockRestore();
+    }
   });
 });
