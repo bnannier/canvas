@@ -7,8 +7,9 @@ import { Platform, type TextStyle } from "react-native";
  * wide), which is right for prose and wrong everywhere numbers are compared. A column
  * of figures fails to line up on the decimal, and a value that updates in place, a
  * progress readout, a live metric, a slider label, visibly jitters as its digits
- * change. Reach for this wherever digits are read down a column or watched as they
- * move; leave prose alone.
+ * change. The kit reaches for this wherever digits are read down a column or watched as
+ * they move (Typography's `tabular` prop, a DataTable numeric cell, a Stats value, a
+ * Progress or Slider readout); prose is left alone.
  *
  * The two platforms spell it differently, and until this existed the kit only said it
  * one way. `fontVariant` is the React Native API and works on iOS and Android;
@@ -17,7 +18,8 @@ import { Platform, type TextStyle } from "react-native";
  * branch emits `font-variant-numeric`, which is the CSS property that actually does
  * this, so the same call now produces the same result on all three platforms.
  *
- * Spread it into a text style: `{ ...tabularNums(), fontSize: 14 }`.
+ * A kit skin spreads it into a text style: `{ ...tabularNums(), fontSize: 14 }`. An app
+ * sets tabular figures with `<Typography tabular>`; the public name is a deprecated alias.
  */
 export function tabularNums(): TextStyle {
   if (Platform.OS === "web") {

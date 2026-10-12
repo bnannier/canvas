@@ -56,7 +56,7 @@ import { sizeOf as swatchSize, stretchesOf } from "../../src/atoms/swatch/swatch
 import { sizeOf as switchSize } from "../../src/atoms/switch/switch.shared.tsx";
 import { sizeOf as textareaSize } from "../../src/atoms/textarea/textarea.shared.tsx";
 import { placementOf as tooltipPlacement, triggerOf } from "../../src/atoms/tooltip/tooltip.shared.tsx";
-import { roleOf, toneOf as typographyTone, weightOf, leadingOf, decorationOf } from "../../src/atoms/typography/typography.shared.tsx";
+import { roleOf, toneOf as typographyTone, weightOf, leadingOf, decorationOf, numeralsOf } from "../../src/atoms/typography/typography.shared.tsx";
 import { fitOf as videoFit } from "../../src/atoms/video/video.shared.tsx";
 import { toneOf as actionPanelTone, layoutOf as actionPanelLayout } from "../../src/molecules/action-panels/action-panels.shared.tsx";
 import { toneOf as alertTone } from "../../src/molecules/alert/alert.shared.tsx";
@@ -360,6 +360,7 @@ export const SUBJECTS: readonly AnySubject[] = [
   subject({ id: "Typography.weight", components: ["Typography"], pages: ["typography"], resolver: "src/atoms/typography/typography.shared.tsx#weightOf", members: ["bold", "semibold", "medium", "regular"], resolve: weightOf }),
   subject({ id: "Typography.leading", components: ["Typography"], pages: ["typography"], resolver: "src/atoms/typography/typography.shared.tsx#leadingOf", members: ["tightLeading"], resolve: leadingOf }),
   subject({ id: "Typography.decoration", components: ["Typography"], pages: ["typography"], resolver: "src/atoms/typography/typography.shared.tsx#decorationOf", members: ["underline"], resolve: decorationOf }),
+  subject({ id: "Typography.numerals", components: ["Typography"], pages: ["typography"], resolver: "src/atoms/typography/typography.shared.tsx#numeralsOf", members: ["tabular"], resolve: numeralsOf }),
   subject({ id: "Video.fit", components: ["Video"], pages: ["video"], resolver: "src/atoms/video/video.shared.tsx#fitOf", members: ["contain", "cover", "stretch"], resolve: videoFit }),
 
   // Molecules.

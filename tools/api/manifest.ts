@@ -461,8 +461,9 @@ export const publicApi: Readonly<Record<string, ApiEntry>> = {
   thereAndBack: { kind: "deprecated-alias" },
   useReducedMotion: { kind: "hook" },
 
-  // src/style/numerals.ts
-  tabularNums: { kind: "internal-by-accident" },
+  // src/style/numerals.ts (a deprecated alias since Typography took `tabular`, the
+  // FoundationReference audit turn's K12-2 tabular)
+  tabularNums: { kind: "deprecated-alias", replacement: "Typography" },
 
   // src/style/pointer.ts
   useHoverCapable: { kind: "hook", docs: "patterns/responsive" },

@@ -2461,6 +2461,24 @@
     },
     "pairs": {}
   },
+  "Typography.numerals": {
+    "kind": "toggle",
+    "components": [
+      "Typography"
+    ],
+    "pages": [
+      "typography"
+    ],
+    "resolver": "src/atoms/typography/typography.shared.tsx#numeralsOf",
+    "order": [
+      "tabular"
+    ],
+    "none": null,
+    "single": {
+      "tabular": "tabular"
+    },
+    "pairs": {}
+  },
   "Video.fit": {
     "kind": "axis",
     "components": [

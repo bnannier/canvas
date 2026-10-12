@@ -196,3 +196,15 @@ export type Decoration = "underline";
 export function decorationStyle(decoration: Decoration): TextStyle {
   return { textDecorationLine: decoration };
 }
+
+// Numerals axis: an orthogonal figure-width layer over the role. A single value today
+// (tabular), so there is no precedence to resolve. Tabular figures give every digit the
+// same width, so a column of numbers lines up and a value that updates in place (a live
+// metric, a counter, a countdown) holds still as its digits change; Dark Factory sets
+// its figures that way. When the prop is absent the face's own proportional figures,
+// right for prose, stand. The style itself is the kit's one spelling of tabular figures
+// per platform (src/style/numerals.ts: React Native's font variant natively, the CSS
+// property on the web, where react-native-web drops the native spelling), so this shell
+// carries no platform branch.
+export type Numerals = "tabular";
+

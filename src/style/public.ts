@@ -89,7 +89,16 @@ export {
   useMeasuredWidth,
 } from "./container.js";
 export { customShadow, shadow, type ShadowLevel } from "./shadow.js";
-export { tabularNums } from "./numerals.js";
+// The kit's tabular figures, published by accident through the style hub; a deprecated
+// alias since Typography took the `tabular` prop that sets them (audit K12-2 tabular),
+// which keeps working until a major. The tag sits on this specifier only.
+export {
+  /**
+   * @deprecated Kit internals: set figures read down a column or updated in place with
+   * `Typography`'s `tabular` prop. It keeps working until a major.
+   */
+  tabularNums,
+} from "./numerals.js";
 // The touch-target helpers the kit's controls measure themselves with, published by
 // accident through the style hub and once announced for an app's own pressable (2.59.0).
 // Every kit control meets the platform minimum itself (44 pt on iOS, 48 dp on Android), a

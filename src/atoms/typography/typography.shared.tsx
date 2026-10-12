@@ -1,12 +1,13 @@
 import { type ReactNode } from "react";
 import { type GestureResponderEvent } from "react-native";
-import { Text, useHugStyle, useTheme, MONO_FONT, type StyleProp, type TextStyle, innerFill } from "../../style/index.js";
+import { Text, useHugStyle, useTheme, MONO_FONT, type StyleProp, type TextStyle, innerFill, tabularNums } from "../../style/index.js";
 import {
   type Role,
   type Tone,
   type Weight,
   type Leading,
   type Decoration,
+  type Numerals,
   roleColor,
   toneColor,
   weightStyle,
@@ -38,10 +39,12 @@ import {
 // precedence (mirrors Button's intentOf / Badge's toneOf). Roles are mutually
 // exclusive; pass at most one. Orthogonal axes layer on top: an optional tone
 // (subtle / primary / destructive / success / warning) sets the color, a weight
-// (regular / medium / semibold / bold) sets the fontWeight, and a decoration
-// (underline) sets textDecorationLine; each is mutually exclusive within itself
-// and null by default, so the role's own color, weight, and undecorated look
-// stand when the axis is untouched. The text content comes from children.
+// (regular / medium / semibold / bold) sets the fontWeight, a leading (tightLeading)
+// tightens the line box, a decoration (underline) sets textDecorationLine, and the
+// numerals (tabular) give every digit the same width; each is mutually exclusive
+// within itself and null by default, so the role's own color, weight, line box,
+// undecorated look and proportional figures stand when the axis is untouched. The
+// text content comes from children.
 //
 // Two roles want a monospace face (code, mono). There is no font-family
 // utility, so each requests RN's cross-platform monospace alias via inline
@@ -91,6 +94,13 @@ export interface TypographyProps {
    * shim. Combines freely with every role, tone, and weight; omit for undecorated text.
    */
   underline?: boolean;
+  /**
+   * Numerals (orthogonal to role / tone / weight). Tabular figures: every digit the same
+   * width, for numbers read down a column or updated in place (a table's figures, a live
+   * metric, a counter), so the column lines up and a changing value holds still. Never
+   * for prose, which keeps the face's own proportional figures.
+   */
+  tabular?: boolean;
   /**
    * Renders this text as a REAL inline link on the web: react-native-web
    * gives the root element a browser link with this destination, so
@@ -197,6 +207,13 @@ export function decorationOf(p: TypographyProps): Decoration | null {
   return null;
 }
 
+// Numerals: a single-value axis today, so there is no precedence to resolve. Returns
+// null when the prop is absent, so the face's own proportional figures stand.
+export function numeralsOf(p: TypographyProps): Numerals | null {
+  if (p.tabular) return "tabular";
+  return null;
+}
+
 /** Build a Typography component from a platform skin. */
 export function createTypography(skin: TypographySkin) {
   return function Typography(props: TypographyProps) {
@@ -208,6 +225,7 @@ export function createTypography(skin: TypographySkin) {
     const weight = weightOf(props);
     const leading = leadingOf(props);
     const decoration = decorationOf(props);
+    const numerals = numeralsOf(props);
 
     // The mono/code roles ask for a monospace face; there is no font-family
     // utility, so request the cross-platform monospace alias via inline style.
@@ -250,6 +268,9 @@ export function createTypography(skin: TypographySkin) {
           // Decoration is orthogonal to color/weight/leading (it sets textDecorationLine),
           // so its placement in the cascade is free; it layers on before the escape hatch.
           decoration ? decorationStyle(decoration) : null,
+          // Figure width only (no size, colour or weight), so its place in the cascade is
+          // free too; the kit's one spelling of tabular figures per platform.
+          numerals === "tabular" ? tabularNums() : null,
           monoStyle,
           codeHug,
           style,

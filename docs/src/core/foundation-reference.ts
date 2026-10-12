@@ -518,6 +518,15 @@ export const DEPRECATED_NAMES: DeprecatedName[] = [
     "section": null
   },
   {
+    "name": "tabularNums",
+    "type": false,
+    "summary": "Tabular figures: every digit the same width.",
+    "instead": "Kit internals: set figures read down a column or updated in place with `Typography`'s `tabular` prop. It keeps working until a major.",
+    "replacement": "Typography",
+    "replacementRoute": "components/typography",
+    "section": null
+  },
+  {
     "name": "thereAndBack",
     "type": false,
     "summary": "Shape one loop iteration as an out-and-back: `easing` carries the value from 0 to 1 over the first half of the cycle and back down over the second, so a pulse, a breath or a shimmer is a single `Animated.timing` from 0 to 1 that ends where it began.",
