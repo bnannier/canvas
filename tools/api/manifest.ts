@@ -386,11 +386,15 @@ export const publicApi: Readonly<Record<string, ApiEntry>> = {
   Entrance: { kind: "deprecated-alias" },
   EntranceProps: { kind: "deprecated-alias" },
 
-  // src/style/floating-label.tsx
-  FloatingLabel: { kind: "internal-by-accident" },
-  FloatingLabelStyles: { kind: "internal-by-accident" },
-  HIDDEN_FROM_A11Y: { kind: "internal-by-accident" },
-  LabelContent: { kind: "internal-by-accident" },
+  // src/style/floating-label.tsx (deprecated aliases since the FloatingLabel audit turn,
+  // K12-2). No single public name replaces any of them: Input, Textarea, Select and
+  // Autocomplete float the label, and every field family renders its label and required
+  // marker, from their own `label` and `required` props, so the `@deprecated` text names
+  // those components.
+  FloatingLabel: { kind: "deprecated-alias" },
+  FloatingLabelStyles: { kind: "deprecated-alias" },
+  HIDDEN_FROM_A11Y: { kind: "deprecated-alias" },
+  LabelContent: { kind: "deprecated-alias" },
 
   // src/style/focus-reset.ts
   FOCUS_RESET: { kind: "internal-by-accident" },
