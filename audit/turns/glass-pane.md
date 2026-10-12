@@ -1,0 +1,15 @@
+# Turn record: GlassPane (foundation)
+
+The capture runs `bun run audit:turn -- --slug=glass-pane` took for this turn, by phase, one row per run as it finished. Written by `audit:turn` alone and appended, never rewritten; do not edit by hand. The runs are under `.audit/runs/<run id>/` (local and gitignored, as every capture is); `audit/foundation/glass-pane.md` names the after-phase runs in its Sign-off rows. See `audit/README.md`, "One component's turn".
+
+## before
+
+| Run id | Kind | Platform | Recorded | Commit | Status | Cells | Slugs |
+|---|---|---|---|---|---|---|---|
+| `20261012-214638-web-49b9f71` | variants | web | 2026-10-12T22:17:56.744Z | `49b9f71` | complete | 8064 of 8064: 8064 ok, 0 failed | chip, emblem, autocomplete, avatar, badge, button-group, button, checkbox, input, input-otp, kbd, listbox, stepper, pagination, progress, radio, select, skeleton, slider, textarea, switch, tooltip, video, alert, card, media-objects, phone-input, stats, calendar, carousel, data-table, filter-panel, navbars, sidebar, steps, tab-bar, tabs, chart, scatter-plot, candlestick-chart, depth-chart, bar-list, metric-breakdown, service-health-list, bullet-chart, range-area-chart, histogram, box-plot, waterfall-chart, funnel-chart, radar-chart, treemap, geo-map, line-chart, area-chart, heatmap, composed-chart, dropdown, popover, action-panels, alert-dialog, description-lists, field, empty-state, feeds, form, grid-lists, stacked-lists, action-sheet, board, command, dialog, drawer |
+| `20261012-221757-web-49b9f71` | states | web | 2026-10-12T22:26:26.983Z | `49b9f71` | complete | 1740 of 1740: 1686 ok, 0 failed, 54 not reached | chip, autocomplete, avatar, button-group, button, checkbox, input, input-otp, listbox, stepper, pagination, radio, select, slider, textarea, switch, tooltip, video, alert, card, media-objects, phone-input, stats, calendar, carousel, data-table, filter-panel, navbars, sidebar, tab-bar, tabs, chart, scatter-plot, candlestick-chart, bar-list, service-health-list, range-area-chart, histogram, box-plot, waterfall-chart, funnel-chart, treemap, geo-map, line-chart, area-chart, heatmap, composed-chart, dropdown, popover, alert-dialog, description-lists, field, form, stacked-lists, action-sheet, board, command, dialog, drawer |
+
+## after
+
+| Run id | Kind | Platform | Recorded | Commit | Status | Cells | Slugs |
+|---|---|---|---|---|---|---|---|
