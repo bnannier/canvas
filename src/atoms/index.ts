@@ -18,6 +18,46 @@ export * from "./kbd/kbd.js";
 export * from "./layout/layout.js";
 export * from "./grid/grid.js";
 export * from "./container/container.js";
+// Container's and Grid's own layout math, published by accident through their platform
+// entries before the public surface was listed name by name. Each is a deprecated alias
+// that keeps working until a major (audit K12-2), re-exported here once, from the module
+// every platform shares, so its tag is written once for the web, iOS and Android; the
+// components import the declarations untagged.
+export {
+  /**
+   * @deprecated Kit internals: the root style `Container` resolves from its step booleans
+   * (`sm`, `lg`, `page` and the rest) and `start`, so use `Container`. It keeps working
+   * until a major.
+   */
+  containerStyle,
+  /**
+   * @deprecated Kit internals: the measure a `Container` with no step resolves to, the
+   * full width of its parent, so use `Container`. It keeps working until a major.
+   */
+  FLUID,
+  /**
+   * @deprecated Kit internals: the width-scale step a `Container` resolves, which its step
+   * booleans name (`MeasureProps`). It keeps working until a major.
+   */
+  type Measure,
+  /**
+   * @deprecated Kit internals: the step `Container` resolves from its step booleans, so
+   * use `Container`. It keeps working until a major.
+   */
+  measureOf,
+} from "./container/container.shared.js";
+export {
+  /**
+   * @deprecated Kit internals: the width `Grid` gives each cell from its own measured
+   * width, so use `Grid`. It keeps working until a major.
+   */
+  gridCellWidth,
+  /**
+   * @deprecated Kit internals: how many columns `Grid` fits from its `minTileWidth` and
+   * `columns`, so use `Grid`. It keeps working until a major.
+   */
+  gridColumns,
+} from "./grid/grid.shared.js";
 export * from "./listbox/listbox.js";
 export * from "./pagination/pagination.js";
 export * from "./popover/popover.js";

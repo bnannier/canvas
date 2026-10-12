@@ -6,4 +6,3 @@ import { androidSkin } from "./code-block.styles.js";
 // so the Android skin is identical to the web look.
 export const CodeBlock = createCodeBlock(androidSkin);
 export type { CodeBlockProps, CodeBlockTab } from "./code-block.shared.js";
-export { tokenize, syntaxColor, type CodeToken, type TokenKind } from "./tokenize.js";
