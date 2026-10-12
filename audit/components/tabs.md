@@ -87,6 +87,7 @@ One row per finding. Severity: critical, high, medium, low. Cell: a capture id f
 
 | ID | Severity | Cell | Summary | Status | Fix commit |
 |---|---|---|---|---|---|
+| tabs-roving-disabled-1 | medium | source | From the FoundationReference turn (FR-1): Tabs skipped a disabled tab only through its own loop (activateSkippingDisabled and a focus redirect), and a disabled active tab left the row with no tab stop. The shared useRovingFocus now owns the rule and Tabs passes its items' disabled flags, its own loop gone; a disabled active tab hands the stop to the first enabled one. test/keyboard-nav.test.tsx fails before. | fixed | 3b5fd299 |
 
 ## Sign-off
 
