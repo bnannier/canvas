@@ -2,6 +2,8 @@
 
 Increment, decrement, or type a number in a bounded range. A − button, an editable numeric center field, and a + button, controlled by `value` and clamped to `min` / `max` by `step`. This is the ± numeric control (the iOS UIStepper idiom); for a multi-step progress indicator see Steps.
 
+Pass `label` to title the control from above, and `required` to mark it: the label takes a decorative destructive star, and a screen reader hears the control as required, from `aria-required` on the web's numeric field and from its name ("Quantity, required") on iOS and Android.
+
 ## Usage
 
 ```tsx

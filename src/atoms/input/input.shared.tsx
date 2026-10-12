@@ -9,7 +9,7 @@ import {
   type TextInput as RNTextInput,
   type TextInputProps as RNTextInputProps,
 } from "react-native";
-import { View, Pressable, Text, TextInput, useFillStyle, FloatingLabel, LabelContent, labelA11y, useFloatingLabelRoom, FOCUS_RESET, type ColorTokens, type LayoutStyle, type MeasureProps, type StyleProp, type ViewStyle, type TextStyle, GlassPane, paneStyle, isGlass, withInnerFill, alpha, PANE_SIBLING_INPUT } from "../../style/index.js";
+import { View, Pressable, Text, TextInput, useFillStyle, FloatingLabel, LabelContent, labelA11y, requiredName, useFloatingLabelRoom, FOCUS_RESET, type ColorTokens, type LayoutStyle, type MeasureProps, type StyleProp, type ViewStyle, type TextStyle, GlassPane, paneStyle, isGlass, withInnerFill, alpha, PANE_SIBLING_INPUT } from "../../style/index.js";
 import { useComposedRefs } from "../../style/use-composed-refs.js";
 import { frameHandlers, useFocusFrame } from "../../style/focus-frame.js";
 import { rowSeam } from "../../style/touch-seam.js";
@@ -127,9 +127,10 @@ export interface InputProps extends TextEntryProps, MeasureProps {
    */
   label?: string;
   /**
-   * Marks the field as required: appends a destructive "*" to the label (hidden
-   * from the accessible name) and sets aria-required on the control. Takes effect
-   * only alongside `label`.
+   * Marks the field as required: appends a destructive "*" to the label (decorative,
+   * never in the accessible name) and announces the field as required, through
+   * aria-required on the web and with the word in its name ("Full name, required")
+   * on iOS and Android. The star takes effect only alongside `label`.
    */
   required?: boolean;
   // State (orthogonal). `error` (alias `invalid`) flags a validation problem.
@@ -297,8 +298,9 @@ export function createInput(skin: InputSkin) {
     // Accessible name + label link. The label (when present) is the field's
     // programmatic name on BOTH channels: accessibilityLabel/aria-label (RN + the
     // web alias) and aria-labelledby -> the label Text's nativeID. An explicit
-    // accessibilityLabel / aria-labelledby from the caller still wins.
-    const accessibleName = props.accessibilityLabel ?? label;
+    // accessibilityLabel / aria-labelledby from the caller still wins. Natively a
+    // required field's name says so (requiredName), since aria-required is web-only.
+    const accessibleName = requiredName(props.accessibilityLabel ?? label, required);
     const ariaLabelledby = props["aria-labelledby"] ?? (label != null ? labelId : undefined);
 
     // Border-color precedence: error > focus > default input border. Shared by
@@ -363,8 +365,8 @@ export function createInput(skin: InputSkin) {
       // announce the field as invalid. Undefined when valid so the attribute is
       // omitted entirely rather than emitting aria-invalid="false".
       "aria-invalid": isError || undefined,
-      // Required is surfaced programmatically (aria-required), not just via the "*"
-      // glyph, and omitted entirely when the field is optional.
+      // Required is surfaced programmatically, not just via the "*" glyph: aria-required
+      // on the web (omitted entirely when the field is optional) and the name natively.
       "aria-required": required || undefined,
       // Accessible name + descriptions, forwarded to the TextInput so a Form/Field
       // control is announced with its label and helper/error text. aria-label is
