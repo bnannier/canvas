@@ -9,7 +9,7 @@ import {
   type TextInput as RNTextInput,
   type TextInputProps as RNTextInputProps,
 } from "react-native";
-import { View, Pressable, Text, TextInput, useFillStyle, FloatingLabel, LabelContent, labelA11y, FOCUS_RESET, type ColorTokens, type LayoutStyle, type MeasureProps, type StyleProp, type ViewStyle, type TextStyle, GlassPane, paneStyle, isGlass, withInnerFill, alpha, PANE_SIBLING_INPUT } from "../../style/index.js";
+import { View, Pressable, Text, TextInput, useFillStyle, FloatingLabel, LabelContent, labelA11y, useFloatingLabelRoom, FOCUS_RESET, type ColorTokens, type LayoutStyle, type MeasureProps, type StyleProp, type ViewStyle, type TextStyle, GlassPane, paneStyle, isGlass, withInnerFill, alpha, PANE_SIBLING_INPUT } from "../../style/index.js";
 import { useComposedRefs } from "../../style/use-composed-refs.js";
 import { frameHandlers, useFocusFrame } from "../../style/focus-frame.js";
 import { rowSeam } from "../../style/touch-seam.js";
@@ -264,6 +264,8 @@ export function createInput(skin: InputSkin) {
     const [revealed, setRevealed] = useState(false);
     const { theme, paneProps, stateSurface } = useTextEntryMaterial(!!skin.liquid);
     const { tokens } = theme;
+    // The room the Android floating label takes, which follows the user's text size.
+    const room = useFloatingLabelRoom(skin, tokens, size);
     // GlassPane paints behind the editor. A grouped clear web field moves its
     // focus/error outline above the material so the lens cannot sample it
     // (`stateSurface`, which clears the box's own border there, so it draws once).
@@ -413,12 +415,15 @@ export function createInput(skin: InputSkin) {
       // (not the field) carries the width cap, the style escape hatch, and the
       // disabled dim so the label dims with the field.
       if (floating) {
+        // The field keeps the skin's height at the skin's text size and grows by what a
+        // larger text size adds to the label's reserve and the value's line.
+        const fieldHeight = asNum(skin.bareBox(size).height, 56) + room.growth;
         return (
           <View style={[{ position: "relative" }, disabledDim, widthCap, style]}>
             {barePane}
             <TextInput
               ref={hostRef}
-              style={[...bareStyle, skin.labelReserve!(size)]}
+              style={[...bareStyle, room.reserve, room.growth !== 0 ? { height: fieldHeight } : null]}
               textAlignVertical="center"
               {...common}
               placeholder={focused ? placeholder : undefined}
@@ -433,8 +438,9 @@ export function createInput(skin: InputSkin) {
               focused={focused}
               populated={populated}
               isError={isError}
-              height={asNum(skin.bareBox(size).height, 56)}
+              height={fieldHeight}
               names={labelNames}
+              onLine={room.onLine}
             />
           </View>
         );

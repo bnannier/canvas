@@ -5,9 +5,9 @@ panel of options, styled to match Canvas inputs.
 
 Pass `label` (and `required`) to name the field: iOS and web render the label
 above the trigger, while Android floats the Material 3 in-container label once
-the menu opens or a value is selected; a label longer than the trigger truncates
-on one line clear of the chevron, and the trigger's accessible name stays the
-whole label. The trigger fills the parent it is given;
+the menu opens or a value is selected. On Android the trigger grows with the
+user's text size, and a label longer than the trigger truncates on one line clear
+of the chevron while the trigger's accessible name stays the whole label. The trigger fills the parent it is given;
 a step of its own (`xs`, `lg`, …, with `start` to pin it to the leading edge) or
 a Container step sets its measure.
 
