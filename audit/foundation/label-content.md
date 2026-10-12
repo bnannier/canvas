@@ -57,6 +57,7 @@ One row per finding. Severity: critical, high, medium, low. Cell: a capture id o
 
 | ID | Severity | Cell | Summary | Status | Fix commit |
 |---|---|---|---|---|---|
+| label-content-df-1 | medium | source | Dark Factory fidelity, from the FloatingLabel turn (FL-16): on the web every field family's label above the field is a 14/20, weight 500, foreground, sentence-case title (input.styles.ts labelAbove, textarea.styles.ts labelAbove, stepper.styles.ts labelAbove, select.styles.ts and autocomplete.styles.ts `label`, field.styles.ts `label`, PhoneInput through Input's skin), where Dark Factory titles a field with its eyebrow role (Argus Ui/Components src/components/fields.tsx:22 and :86 render `<Text variant="eyebrow" tone="muted">`; src/theme/tokens.ts:58, 9.5 px, weight 700, uppercase, 0.16 tracking). Fix direction: one shared web above-label role in src/style at the eyebrow (the kit caption floor, 10, weight 700, uppercase, tracked, muted, the required star kept) that every field family's web label reads; the native skins keep their HIG and Material 3 label type. A look change on every web field. | open |  |
 
 ## Sign-off
 

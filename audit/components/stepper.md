@@ -86,6 +86,7 @@ One row per finding. Severity: critical, high, medium, low. Cell: a capture id f
 | ID | Severity | Cell | Summary | Status | Fix commit |
 |---|---|---|---|---|---|
 | stepper-corner-1 | low | source | The web group drew 6, off the web row; a Stepper is a field box, the `field` corner, 10. The shape gate (test/design-rules-shape.test.ts) now takes a corner only as a role of its own platform's row that its component plays, the pill, square or a declared concentric corner. | fixed | 278270a8 |
+| stepper-face-1 | high | source | The value field rendered React Native's own TextInput, so the number painted in the platform default face on every row and platform, not the theme's (Manrope). Fixed in the FloatingLabel turn (FL-15): Stepper renders the kit's TextInput (the ref typed with React Native's), test/fonts.test.tsx checks the number's face on each skin, and test/design-rules-source.test.ts holds every component to the kit's Text and TextInput. Its turn should read the fixed field widths (WEB_FIELD_W, IOS_FIELD_W, M3_FIELD_W) against the widest values in Manrope on the devices. | fixed | 8bc9fd56 |
 
 ## Sign-off
 
