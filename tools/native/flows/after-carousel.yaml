@@ -302,8 +302,10 @@ name: Sealed Canvas native candidate after measured drag
     id: material-mode
     text: 'Mode: glass; scheme: ${SCHEME}'
 # On Android, in-page glass has no safe capture target, so the page's surfaces take
-# their solid skin and capture stays idle (the owner's P3a decision). An open overlay
-# is the safe consumer: its frost captures the page, and the menu row reads the
+# their solid skin and capture stays idle (the owner's P3a decision). That includes the
+# card under the misplaced GlassModalBlurTarget: canvas-blur refuses the plane it is
+# handed and the bridge withdraws it, so no frost stays mounted (GMBT-2). An open
+# overlay is the safe consumer: its frost captures the page, and the menu row reads the
 # counters while the menu is still open.
 - runFlow:
     when:
@@ -602,6 +604,14 @@ name: Sealed Canvas native candidate after measured drag
       - assertVisible: Material dialog
       - tapOn: Material drawer
       - assertVisible: Native window
+      # The drawer is a Modal, a window of its own: through GlassModalBlurTarget its
+      # glass frosts the page, so capture is live while it is open.
+      - tapOn:
+          id: material-drawer-inspect
+      - assertVisible:
+          id: material-drawer-capture-stats
+          text: 'Hosts: [1-9][0-9]*; active: [1-9][0-9]*; recordings: [1-9][0-9]*; frost: [1-9][0-9]*; listeners: [1-9][0-9]*'
+      - takeScreenshot: material-drawer-frost
       - tapOn: Drawer menu
       - assertVisible: Nested choice
       - pressKey: Back
@@ -610,6 +620,46 @@ name: Sealed Canvas native candidate after measured drag
       - pressKey: Back
       - assertNotVisible: Native window
       - assertVisible: Material drawer
+      # Closed, the drawer lets its frost and the plane's recording go, still in glass.
+      - scrollUntilVisible:
+          element:
+            id: material-inspect
+          direction: UP
+      - tapOn:
+          id: material-inspect
+      - assertVisible:
+          id: material-capture-stats
+          text: 'Hosts: [0-9]+; active: 0; recordings: [0-9]+; frost: 0; listeners: 0'
+      # The sheet is a Modal too: its row reads the counters while the sheet is still
+      # open, and once it has closed they are idle again.
+      - scrollUntilVisible:
+          element: Material sheet
+          direction: DOWN
+      - tapOn: Material sheet
+      - assertVisible: Live sheet
+      - takeScreenshot: material-sheet-frost
+      - tapOn: Inspect capture from sheet
+      - assertNotVisible: Live sheet
+      - scrollUntilVisible:
+          element:
+            id: material-capture-stats
+          direction: UP
+      - assertVisible:
+          id: material-capture-stats
+          text: 'Hosts: [1-9][0-9]*; active: [1-9][0-9]*; recordings: [1-9][0-9]*; frost: [1-9][0-9]*; listeners: [1-9][0-9]*'
+      - tapOn:
+          id: material-inspect
+      - assertVisible:
+          id: material-capture-stats
+          text: 'Hosts: [0-9]+; active: 0; recordings: [0-9]+; frost: 0; listeners: 0'
+      - scrollUntilVisible:
+          element: Material sheet
+          direction: DOWN
+      - tapOn: Material sheet
+      - assertVisible: Live sheet
+      - pressKey: Back
+      - assertNotVisible: Live sheet
+      - assertVisible: Material sheet
       - scrollUntilVisible:
           element:
             id: material-toggle
