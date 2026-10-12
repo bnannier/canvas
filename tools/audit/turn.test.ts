@@ -4,7 +4,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { components, pages } from "./inventory.ts";
 import { buildIdentity, findAppConfig, readInstalledAndroid, readInstalledIos, whyRebuild, type Exec, type InstalledBuild } from "./native/installed.ts";
-import { BASE_PLACEHOLDER, captureVerdict, exportState, formatPlan, madeRun, parseTurnArgs, planTurn, readExportFingerprint, resolveTarget, runCells, sheetLines, turnScope, type TurnPlan } from "./turn.ts";
+import { BASE_PLACEHOLDER, captureVerdict, exportState, formatPlan, madeRun, ownRun, parseTurnArgs, planTurn, readExportFingerprint, resolveTarget, runCells, sheetLines, turnScope, type TurnPlan } from "./turn.ts";
 import { appendTurnRuns, readTurnRecord, renderTurnRecord, turnProblems, type TurnRun } from "./turn-record.ts";
 
 const FP = (c: string) => c.repeat(64);
@@ -346,5 +346,20 @@ describe("the installed audit build (tools/audit/native/installed.ts)", () => {
     expect((await readInstalledAndroid("emulator-5554", exec(false))).embeddedBundle).toBe(false);
     const none: Exec = async () => Buffer.from("");
     expect(await readInstalledAndroid("emulator-5554", none)).toMatchObject({ installed: false });
+  });
+});
+
+describe("ownRun", () => {
+  const served = { base: "https://127.0.0.1:50479" };
+  it("keeps a web capture's runs by the export the turn served, so another turn's concurrent runs stay out", () => {
+    expect(ownRun("web", { base: "https://127.0.0.1:50479" }, served)).toBe(true);
+    expect(ownRun("web", { base: "https://127.0.0.1:61022" }, served)).toBe(false);
+    expect(ownRun("web", null, served)).toBe(false);
+    expect(ownRun("ios", { base: "https://127.0.0.1:50479" }, served)).toBe(false);
+  });
+  it("keeps a native capture's runs by the devices' platforms", () => {
+    expect(ownRun("ios", null, { native: true })).toBe(true);
+    expect(ownRun("android", {}, { native: true })).toBe(true);
+    expect(ownRun("web", { base: "https://127.0.0.1:50479" }, { native: true })).toBe(false);
   });
 });

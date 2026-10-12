@@ -408,13 +408,27 @@ export function madeRun(id: string, platform: string, status: string, manifest: 
   return { id, status, cells: typeof cells === "number" ? cells : 0, refusal: status === "refused" ? refusal : null };
 }
 
-/** The runs a step made: the runs under .audit/runs now that were not there before it, as turn record rows. */
-function newRuns(root: string, before: Set<string>, kind: RunKind, slugs: string[], recorded: string): { rows: TurnRun[]; whole: boolean; runs: MadeRun[] } {
-  const made = listRuns(root).runs.filter((run) => !before.has(run.id) && RUN_ID.test(run.id));
+/**
+ * Whether a run that appeared while a step ran is that step's own. Another audit:turn in
+ * the same checkout (a turn's web after capture while its native before capture runs)
+ * makes runs of its own meanwhile, so a step keeps only its own: a web capture the runs
+ * captured from the export this turn served (each turn serves on a port of its own), a
+ * native capture the devices' runs.
+ */
+export function ownRun(platform: string, manifest: Record<string, unknown> | null, step: { base: string } | { native: true }): boolean {
+  if ("native" in step) return platform === "ios" || platform === "android";
+  return platform === "web" && manifest?.base === step.base;
+}
+
+/** The runs a step made: the runs under .audit/runs now that were not there before it and are its own (ownRun), as turn record rows. */
+function newRuns(root: string, before: Set<string>, kind: RunKind, slugs: string[], recorded: string, step: { base: string } | { native: true }): { rows: TurnRun[]; whole: boolean; runs: MadeRun[] } {
+  const made = listRuns(root).runs
+    .filter((run) => !before.has(run.id) && RUN_ID.test(run.id))
+    .map((run) => ({ run, manifest: readManifest(run) }))
+    .filter(({ run, manifest }) => ownRun(run.platform, manifest, step));
   let whole = made.length > 0;
   const runs: MadeRun[] = [];
-  const rows = made.map((run) => {
-    const manifest = readManifest(run);
+  const rows = made.map(({ run, manifest }) => {
     runs.push(madeRun(run.id, run.platform, run.status, manifest));
     const cells = runCells(run.platform, manifest);
     if (!cells.whole) whole = false;
@@ -541,7 +555,7 @@ async function runSteps(plan: TurnPlan, args: Pick<TurnArgs, "devices">, recorde
         const before = runIds(ROOT);
         note(`$ ${shell(argv)}`);
         const code = await runCommand(argv);
-        const made = newRuns(ROOT, before, step.run, step.slugs, new Date().toISOString());
+        const made = newRuns(ROOT, before, step.run, step.slugs, new Date().toISOString(), { base });
         recorded.push(...made.rows);
         const verdict = captureVerdict(code, made.runs);
         if (verdict.kind === "none" || verdict.kind === "refused") {
@@ -569,7 +583,7 @@ async function runSteps(plan: TurnPlan, args: Pick<TurnArgs, "devices">, recorde
         const before = runIds(ROOT);
         note(`$ ${shell(step.argv)}`);
         const code = await runCommand(step.argv);
-        const made = newRuns(ROOT, before, "native", step.slugs, new Date().toISOString());
+        const made = newRuns(ROOT, before, "native", step.slugs, new Date().toISOString(), { native: true });
         recorded.push(...made.rows);
         const verdict = captureVerdict(code, made.runs);
         if (verdict.kind === "none") {
