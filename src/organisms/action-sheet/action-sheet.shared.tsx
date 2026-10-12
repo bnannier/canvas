@@ -250,9 +250,9 @@ export function createActionSheet(skin: ActionSheetSkin, parts: ActionSheetParts
           // sheet is open (iOS VoiceOver honors this; a no-op elsewhere).
           accessibilityViewIsModal={true}
         >
-          {/* The Modal renders in its own native window, so the app's Android blur
-              target is a sibling render tree here — re-publish it and the sheet's
-              frost blurs the page behind it (a no-op off Android). */}
+          {/* The Modal renders in its own native window, outside the app's Android
+              capture plane, so the bridge hands that plane to the sheet and its frost
+              blurs the page behind it (a no-op off Android). */}
           {/* Measure the Modal window outside the moving sheet and keyboard
               avoidance, so its inset provider stays attached to the window. */}
           <SafeAreaProvider style={{ flex: 1 }}>
