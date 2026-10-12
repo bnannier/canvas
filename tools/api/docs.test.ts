@@ -207,3 +207,31 @@ test("an ordinary word is named only in code; any other identifier anywhere in t
   expect(names(page, "useTheme")).toBe(true);
   expect(names({ text: "palette.blue", code: "palette.blue" }, "palette")).toBe(true);
 });
+
+test("the foundation reference reads the rows docs:gen writes for it as part of the page", () => {
+  const ROWS = `
+export const DEPRECATED_NAMES: DeprecatedName[] = [
+  {
+    "name": "FIELD_WASH",
+    "type": false,
+    "summary": "The old field wash.",
+    "instead": "Use \`fieldWidths\`. It keeps working until a major.",
+    "replacement": "fieldWidths",
+    "replacementRoute": "guides/layout",
+    "section": "Field helpers"
+  }
+];
+`;
+  const FOUNDATION = `export default function Foundation() { return <Section title="Accessibility"><Typography>Every deprecated name keeps working.</Typography></Section>; }`;
+  const root = fixture({ ...BASE, "docs/src/app/(home)/foundation.tsx": FOUNDATION, "docs/src/core/foundation-reference.ts": ROWS });
+  const page = docsPages(root, CATALOG).get("foundation")!;
+  expect(page.sources).toEqual(["docs/src/app/(home)/foundation.tsx", "docs/src/core/foundation-reference.ts"]);
+  // The rows are what the page shows: each name and replacement as code, each section as a heading.
+  expect(mentions(page.code, "FIELD_WASH")).toBe(true);
+  expect(mentions(page.code, "fieldWidths")).toBe(true);
+  expect(mentions(page.text, "The old field wash.")).toBe(true);
+  expect(page.headings).toEqual(["Accessibility", "Field helpers"]);
+  // A page whose rows module was never generated fails rather than reading as empty.
+  const missing = fixture({ ...BASE, "docs/src/app/(home)/foundation.tsx": FOUNDATION });
+  expect(() => docsPages(missing, CATALOG)).toThrow("docs/src/core/foundation-reference.ts is missing: run bun run docs:gen");
+});
