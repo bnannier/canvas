@@ -171,7 +171,11 @@ function collectPageOverflow(card: Element): RawPageOverflow {
   };
 }
 
-function collectRow(row: Element): Omit<RawRow, "platform"> {
+/**
+ * Runs in the page (through `probeRow`), and in tools/audit/row-probe.test.ts over a DOM built
+ * there: one platform row's texts with their paint and state, and its interactive elements.
+ */
+export function collectRow(row: Element): Omit<RawRow, "platform"> {
   const card = row.closest("[data-preview-card]") ?? row;
   const cardBox = card.getBoundingClientRect();
   const round = (n: number) => Math.round(n * 10) / 10;
@@ -440,9 +444,30 @@ function collectRow(row: Element): Omit<RawRow, "platform"> {
   };
 
   const edgesToBox = (union: Edges) => boxOf({ left: union.left, top: union.top, width: union.right - union.left, height: union.bottom - union.top });
+  // A text is disabled when it is part of an inactive control, WCAG 1.4.3's exception: it
+  // sits inside a disabled control, or it labels one. A field's label is the control's
+  // sibling, not its content (Autocomplete's floating label lies beside its input, and an
+  // Input's label above it), so a text labels a disabled control when the control's
+  // aria-labelledby names the text's element, or when the control's own name
+  // (aria-label, which react-native-web writes from accessibilityLabel) is the text and the
+  // two share the control's field host, the control's parent.
+  const DISABLED = '[aria-disabled="true"], [disabled]';
+  const disabledControls = Array.from(row.querySelectorAll(DISABLED));
+  const ownTextOf = (el: Element) =>
+    Array.from(el.childNodes).filter((n) => n.nodeType === Node.TEXT_NODE).map((n) => n.textContent ?? "").join("").replace(/\s+/g, " ").trim();
+  const labelsDisabled = (el: Element) => {
+    const text = ownTextOf(el);
+    return disabledControls.some((control) => {
+      if (control.contains(el)) return false;
+      const ids = (control.getAttribute("aria-labelledby") ?? "").split(/\s+/).filter(Boolean);
+      if (ids.some((id) => document.getElementById(id)?.contains(el))) return true;
+      const name = (control.getAttribute("aria-label") ?? "").replace(/\s+/g, " ").trim();
+      return text !== "" && name === text && control.parentElement?.contains(el) === true;
+    });
+  };
   const flags = (el: Element) => ({
     ariaHidden: el.closest('[aria-hidden="true"]') !== null,
-    disabled: el.closest('[aria-disabled="true"], [disabled]') !== null,
+    disabled: el.closest(DISABLED) !== null || labelsDisabled(el),
   });
 
   // Pass one: every text leaf's styles, boxes and clipping, read before the stack style
