@@ -588,3 +588,49 @@ describe("axis tables load without React Native", () => {
     expect(imports(`export { axis } from "../../style/axis.js";`, `export type { Axis } from "../../style/axis.js";`)).toEqual(["src/style/axis.ts"]);
   });
 });
+
+describe("text paints in the theme's face", () => {
+  // The kit's Text and TextInput (src/style/text.tsx, re-exported by the primitives) apply
+  // the faces the app registers on its ThemeProvider; React Native's own skip them, so a
+  // component that renders those paints in the platform's default face beside its Manrope
+  // neighbours (Stepper's value field did, on every platform). A component takes Text and
+  // TextInput from the kit; a type-only import of React Native's (a ref's instance type) is
+  // fine, since it renders nothing. Text painted some other way (an animated label, an SVG
+  // label) applies the faces itself through `fontStyle` and is held by its own test.
+  const COMPONENT_TREES = /^src\/(atoms|molecules|organisms)\//;
+  const PAINTERS = new Set(["Text", "TextInput"]);
+
+  /** The Text or TextInput a module imports from react-native as a value, spelled as written. */
+  function reactNativePainters(file: string, text: string): string[] {
+    const source = ts.createSourceFile(file, text, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
+    const found: string[] = [];
+    for (const statement of source.statements) {
+      if (!ts.isImportDeclaration(statement) || (statement.moduleSpecifier as ts.StringLiteral).text !== "react-native") continue;
+      const clause = statement.importClause;
+      const named = clause?.namedBindings;
+      if (clause == null || clause.isTypeOnly || named == null || !ts.isNamedImports(named)) continue;
+      for (const element of named.elements) {
+        const imported = (element.propertyName ?? element.name).text;
+        if (!element.isTypeOnly && PAINTERS.has(imported)) found.push(element.getText(source));
+      }
+    }
+    return found;
+  }
+
+  it("components render the kit's Text and TextInput, never React Native's", () => {
+    const offenders = sources
+      .filter(({ file }) => COMPONENT_TREES.test(file))
+      .flatMap(({ file, text }) => reactNativePainters(file, text).map((name) => `${file} imports { ${name} } from "react-native": render the kit's from "../../style/index.js" (the theme's face), keeping React Native's only as \`type\``));
+    expect(offenders).toEqual([]);
+  });
+
+  it("the check tells a type import from a value import", () => {
+    const at = "src/atoms/stepper/stepper.shared.tsx";
+    const painters = (line: string) => reactNativePainters(at, line);
+    expect(painters(`import { TextInput, type TextStyle } from "react-native";`)).toEqual(["TextInput"]);
+    expect(painters(`import { Text as RNText } from "react-native";`)).toEqual(["Text as RNText"]);
+    expect(painters(`import { type TextInput as RNTextInput, StyleSheet } from "react-native";`)).toEqual([]);
+    expect(painters(`import type { Text } from "react-native";`)).toEqual([]);
+    expect(painters(`import { Text } from "../../style/index.js";`)).toEqual([]);
+  });
+});
