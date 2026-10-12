@@ -380,7 +380,7 @@ git commit -m "wip"</Typography>
 
 ### mono
 
-**Do** — Use mono for identifiers and hashes, where every character must line up; set figures in a column or a changing value in `tabular` instead.
+**Do**: Use mono for identifiers and hashes, where every character must line up; set figures in a column or a changing value in `tabular` instead.
 
 ```tsx
 <Row alignCenter between relaxed>
@@ -397,7 +397,7 @@ git commit -m "wip"</Typography>
 
 ### tabular
 
-**Do** — Set figures read down a column or updated in place in `tabular`, so every digit takes the same width and the column lines up.
+**Do**: Set figures read down a column or updated in place in `tabular`, so every digit takes the same width and the column lines up.
 
 ```tsx
 <Column tight>
@@ -412,7 +412,7 @@ git commit -m "wip"</Typography>
 </Column>
 ```
 
-**Don't** — Tabular figures in running prose space the digits out of the sentence's rhythm; prose keeps the face's own figures.
+**Don't**: Tabular figures in running prose space the digits out of the sentence's rhythm; prose keeps the face's own figures.
 
 ```tsx
 <Typography tabular>Your 14 invoices from 2024 total $1,180.</Typography>
