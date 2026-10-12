@@ -9,7 +9,7 @@ import {
   type TextInput as RNTextInput,
   type TextInputProps as RNTextInputProps,
 } from "react-native";
-import { View, Pressable, Text, TextInput, useFillStyle, FloatingLabel, LabelContent, labelA11y, requiredName, useFloatingLabelRoom, FOCUS_RESET, type ColorTokens, type LayoutStyle, type MeasureProps, type StyleProp, type ViewStyle, type TextStyle, GlassPane, paneStyle, isGlass, withInnerFill, alpha, PANE_SIBLING_INPUT } from "../../style/index.js";
+import { View, Pressable, Text, TextInput, useFillStyle, FloatingLabel, LabelContent, labelA11y, requiredName, useFloatingLabelRoom, FOCUS_RESET, type ColorTokens, type LayoutStyle, type MeasureProps, type StyleProp, type ViewStyle, type TextStyle, GlassPane, paneStyle, isGlass, withInnerFill, legibleWash, PANE_SIBLING_INPUT } from "../../style/index.js";
 import { useComposedRefs } from "../../style/use-composed-refs.js";
 import { frameHandlers, useFocusFrame } from "../../style/focus-frame.js";
 import { rowSeam } from "../../style/touch-seam.js";
@@ -321,7 +321,8 @@ export function createInput(skin: InputSkin) {
     // Under glass the bare field drops its fill and its resting hairline (the pane's
     // material and rim carry them) and keeps the focus ring / error border as its state.
     const glassBox: ViewStyle = { ...PANE_SIBLING_INPUT, backgroundColor: "transparent", borderColor: focused || isError ? (tokens[borderColor] ?? tokens.input) : "transparent" };
-    const paneTint = isError ? alpha(tokens.destructive, 0.18) : undefined;
+    // The error wash, capped where the field's ink would lose 4.5:1 (legibleWash).
+    const paneTint = isError ? legibleWash(theme, "error", paneProps) : undefined;
 
     const common = {
       value,

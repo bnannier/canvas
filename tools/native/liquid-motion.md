@@ -1048,6 +1048,26 @@ judge before any completion claim.
   lightness for 4.5:1; that difference goes to the owner at the avatar phase unless
   accepted before.
 
+### solid-state-washes
+
+- **What:** the reference the glass state washes are judged against under the owner's
+  GP-2 decision (audit/DECISIONS.md): Canvas's own solid recipe for a field's error state
+  and a selected card, on the web in blush, mint and dark. Dark Factory has no counterpart
+  to record: its `fields.tsx` paints no error fill and its `Card` has no selected state
+  (read from `~/Workspaces/Argus/Ui/Components/src/components`), so the state carried by
+  a border over a plain body is the reference.
+- **Strips:** `tools/native/reference/solid-state-washes/input-error-blush.png`,
+  `phone-input-error-blush.png`, `radio-card-blush.png` and `radio-card-dark.png`, the web
+  rows of `/components/input/error`, `/components/phone-input/error` and
+  `/components/radio/card` in solid, recorded 2026-10-12 with Playwright (1440 wide, DPR 2)
+  from the GlassPane turn worktree's docs export.
+- **Items:** (1) the error field keeps its destructive border; the web field is white
+  under it (no wash). (2) The checked Radio card keeps its primary border over a 5 percent
+  primary tint. (3) The inks are the solid recipe's: muted `+1` 5.14:1 (blush), 5.08
+  (mint), 6.06 (dark) on the field; the checked card's muted description 4.83, 4.77 and
+  5.54; the foreground value and title 9.9 to 12.3. (4) The state reads from the border
+  and the control's own indicator, never from a wash alone.
+
 ## Runs under the version 2 contract, from 2026-09-20
 
 Every row from here on names its Surface (a harness route, or the shipped route
@@ -1152,3 +1172,19 @@ face. That kit bug is fixed (a nested provider that omits `fonts` now keeps the 
 faces): a computed-style probe of `/testing/avatar` reads the stage initials in
 Manrope 800 (`Manrope_800ExtraBold`) and no text in a system face. The disc colours and
 the row's verdict are unchanged; this is not a new run.
+
+## GlassPane's turn: the state washes, from 2026-10-12
+
+The owner's GP-2 decision (audit/DECISIONS.md): each glass state wash that carries ink takes
+the densest alpha at which the solid recipe's muted and foreground inks keep 4.5:1, over the
+page and over a content pane, in blush, mint and dark. The table is
+`src/style/glass-surface/glass-wash.ts` (`GLASS_WASH`, read by `legibleWash`), judged against
+the `solid-state-washes` card. The rows measure contrast from the photographs (the
+background is the most common pixel in the text's box, the ink the pixel of greatest contrast
+with it, at DPR 2).
+
+| Date | Effect and profile | Runtime and device | Revision (dirty?) | Surface | Values tried | rAF p50 / p95 / max (ms) | What the comparison showed | Versus reference | Artifacts |
+|---|---|---|---|---|---|---|---|---|---|
+| 2026-10-12 | REFERENCE: the solid recipe for the error field and the checked Radio card | Playwright 1.64 Chromium headed, DPR 2, 1440 x 1000, macOS host | Canvas, the GlassPane turn's export (source fingerprint baf2b5707270, built from the turn's committed tree) | reference page: shipped docs `/components/input/error`, `/components/phone-input/error`, `/components/radio/card`, web row, blush / mint / dark solid | none (recording the reference) | n/a (static) | The card's items, measured: muted `+1` 5.14 / 5.08 / 6.06 on the white or dark field, the checked card's muted description 4.83 / 4.77 / 5.54 on its 5 percent tint, foreground 9.9 to 12.3; the error and selected borders carry the state. | no reference (this is the reference) | `tools/native/reference/solid-state-washes/`; the full set in the turn's scratchpad `gp2/shipped-run1/*-solid*.png` |
+| 2026-10-12 | GP-2 state washes, harness run (error field with a prefix, PhoneInput error, checked Radio card, selected Card) | Playwright 1.64 Chromium headed, DPR 2, 1440 x 1000, macOS host | Canvas, the same export (source fingerprint baf2b5707270) | harness `/testing/materials` State washes block, web, glass, the fixture's palette and scheme matched by the page's (`?scheme=light&palette=blush`, `?scheme=light&palette=mint`, `?scheme=dark`) | `GLASS_WASH`: error destructive and selection primary over the pane's own body (the clear field's veil, the content pane's tint), ceilings 0.18 and 0.22, capped where muted and foreground keep 4.5:1 over the page and a content pane, step 0.01: blush error 0.03 over the veil, selection 0.08 over the content tint; dark 0.16 and 0.16 | n/a (static) | Blush: placeholder 5.09, `+1` 4.55, card descriptions 4.53; mint 5.11, 4.51, 4.52; dark 4.86, 4.54, 4.57. A first run with the fixture's palette and scheme over a page in another look (blush page under the mint and dark fixture) measured 4.44 (mint `+1`) and 2.17 (dark card text), a harness setup error, not the cap: the cap is solved against the look's own page. The error and selected borders stay over the material. | differs: a harness surface, never the verdict; every card item is present here, and the shipped rows below carry the comparison | scratchpad `gp2/harness-run2/` (strips `washes-<look>-glass.png`, `contrast.json`); `gp2/harness-run1/` the mismatched first run |
+| 2026-10-12 | GP-2 state washes on the shipped pages, judged against `solid-state-washes` | Playwright 1.64 Chromium headed, DPR 2, 1440 x 1000, macOS host | Canvas, the same export (source fingerprint baf2b5707270) | shipped docs pages `/components/input/error`, `/components/phone-input/error`, `/components/radio/card`, web row, blush / mint / dark glass (`?scheme=light&palette=blush&surface=glass`, `?scheme=light&palette=mint&surface=glass`, `?scheme=dark&surface=glass`) | as the harness row | n/a (static) | Before (run 20261012-214638-web-49b9f71): `+1` 3.81 and the checked card's description 3.79 in blush glass. After: `+1` 4.81 / 4.73 / 4.51 (blush, mint, dark), the card's description 4.60 / 4.59 / 4.57, the error placeholder 5.38 / 5.35 / 4.82, foreground 9.1 to 10.3. Side by side with the reference: the error border and the checked card's primary border are present in every look; in blush and mint the field and the card read as their resting bodies with a faint tint, as solid's white field and 5 percent tint do; dark keeps a visible wash under the same inks. | differs: not judged blind yet (the fix agent has no subagent to run the blind judge; the coordinator's step); the author's reading finds every card item present | scratchpad `gp2/shipped-run1/` (web rows `<slug>-<variant>-<look>-<surface>.png`, `contrast.json`), comparison strips `gp2/cmp-radio.png`, `gp2/cmp-phone.png` |
