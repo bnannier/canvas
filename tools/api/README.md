@@ -51,8 +51,10 @@ commit as its manifest entry.
   `deprecated-alias` is exactly the exports that carry `@deprecated` (on the
   declaration or on any re-export on the way), and its `replacement`, when given, is
   a live public export.
-- **A deprecated alias says what to use instead.** Its `@deprecated` text is not empty
-  and names its `replacement` when it has one: the generated foundation reference shows
+- **A deprecated alias says what it was and what to use instead.** Its declaration
+  carries a JSDoc summary (value or type; a dependency's name is its owner's to
+  document), and its `@deprecated` text is not empty and names its `replacement` when
+  it has one: the generated foundation reference shows
   that text as the row's "Use instead" (docs:gen writes the rows from this manifest and
   the source, tools/docgen/foundation.ts, and the gate reads them with the page).
 - **A public value has a JSDoc summary.** Every `component`, `part`, `hook`, `token` and

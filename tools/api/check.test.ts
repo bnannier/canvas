@@ -12,7 +12,7 @@ const EXPORTS: ApiExport[] = [
   exported("useField", { callable: true }),
   exported("fieldWidths"),
   exported("measureField", { callable: true, summary: false }),
-  exported("FIELD_WASH", { deprecated: true, deprecatedText: "Use `fieldWidths`. It keeps working until a major.", summary: false, summaryText: "" }),
+  exported("FIELD_WASH", { deprecated: true, deprecatedText: "Use `fieldWidths`. It keeps working until a major.", summary: true, summaryText: "The old field wash." }),
 ];
 
 // A page's code is the part of its text a reader sees as code; the fixtures give each page
@@ -164,10 +164,23 @@ test("a public value owes its consumers a JSDoc summary on the declaration they 
   // React Native's own View is documented by its owner: the kit cannot write on its declaration.
   const owned = bare("Field", { files: ["node_modules/react-native/Libraries/Components/View/View.d.ts"] });
   expect(errorsOf(inventory({ exports: { web: owned, ios: owned, android: owned } }), manifest())).toEqual([]);
-  // Types carry none, and an internal helper or a deprecated alias leaves the API as one
-  // (measureField and FIELD_WASH have no summary in the fixture).
+  // Types carry none, and an internal helper leaves the API as one (measureField has no
+  // summary in the fixture).
   const typeOnly = bare("FieldProps");
   expect(errorsOf(inventory({ exports: { web: typeOnly, ios: typeOnly, android: typeOnly } }), manifest())).toEqual([]);
+});
+
+test("a deprecated alias says what it was on its declaration, value or type", () => {
+  const without = (facts: Partial<ApiExport> = {}) => EXPORTS.map((entry) => (entry.name === "FIELD_WASH" ? { ...entry, summary: false, summaryText: "", ...facts } : entry));
+  const bare = without();
+  expect(errorsOf(inventory({ exports: { web: bare, ios: bare, android: bare } }), manifest()))
+    .toEqual(["FIELD_WASH is a deprecated alias with no JSDoc summary on its declaration (src/field.ts): say what it was"]);
+  const typeOnly = without({ value: false });
+  expect(errorsOf(inventory({ exports: { web: typeOnly, ios: typeOnly, android: typeOnly } }), manifest()))
+    .toEqual(["FIELD_WASH is a deprecated alias with no JSDoc summary on its declaration (src/field.ts): say what it was"]);
+  // React Native's own StyleSheet is its owner's to document.
+  const owned = without({ files: ["node_modules/react-native/Libraries/StyleSheet/StyleSheet.d.ts"] });
+  expect(errorsOf(inventory({ exports: { web: owned, ios: owned, android: owned } }), manifest())).toEqual([]);
 });
 
 test("a docs claim names a real route that names the export, and a real section", () => {

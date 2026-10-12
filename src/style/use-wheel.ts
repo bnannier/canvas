@@ -44,6 +44,11 @@ export function normalizeWheelDelta(delta: number, deltaMode: number): number {
   return delta;
 }
 
+/**
+ * Wheel and trackpad-pinch zoom on the web: while `active`, a non-passive wheel listener
+ * on the returned ref's node reports each gesture in pixels with the pointer's position,
+ * and suppresses the page's scroll only when `onWheel` claims it. A no-op natively.
+ */
 export function useWheel(
   /** Subscribe only while true (pass the chart's own `zoomable`). */
   active: boolean,

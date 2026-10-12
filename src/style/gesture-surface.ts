@@ -9,4 +9,9 @@ import { type ViewStyle } from "react-native";
 // One shared source of truth, spread by whichever component owns a gesture,
 // exactly as FOCUS_RESET is for the browser's focus ring. Never a call-site
 // override: a consumer cannot pass this, only a kit component can apply it.
+/**
+ * The style that keeps the browser from claiming a touch gesture (`touchAction: "none"`),
+ * so a pinch on a kit component that owns one reaches it instead of zooming the page; a
+ * no-op natively.
+ */
 export const GESTURE_SURFACE = { touchAction: "none" } as unknown as ViewStyle;

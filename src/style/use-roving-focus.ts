@@ -22,6 +22,11 @@ import { Platform } from "react-native";
 
 type Focusable = { focus?: () => void } | null;
 
+/**
+ * The options of `useRovingFocus`: the number of items, the active one, what activating
+ * an item does, which arrows move, the layout direction, whether the ends wrap, and which
+ * items are disabled.
+ */
 export interface RovingFocusOptions {
   /** Number of items in the group. */
   count: number;
@@ -42,6 +47,7 @@ export interface RovingFocusOptions {
   isDisabled?: (index: number) => boolean;
 }
 
+/** The props one item of a roving group spreads onto its pressable: its tab stop, its ref and its key handler. */
 export interface RovingItemProps {
   /** Only the tab stop is focusable on web; native rows retain click support. */
   focusable: boolean;
@@ -55,6 +61,12 @@ export interface RovingItemProps {
   onKeyDown: (event: { key: string; preventDefault: () => void }) => void;
 }
 
+/**
+ * Roving keyboard focus for a composite widget (the WAI-ARIA pattern Tabs, RadioGroup and
+ * Listbox share): the group is one tab stop, the arrows, Home and End move focus and
+ * activate the item it lands on, a disabled item is skipped and never the tab stop, and
+ * native rows keep their own focus and click support.
+ */
 export function useRovingFocus(options: RovingFocusOptions): {
   getItemProps: (index: number) => RovingItemProps;
   /** Move DOM focus to an item by index (e.g. focus the first item when a menu opens). */

@@ -11,6 +11,10 @@ import { I18nManager } from "react-native";
 // flipped backward. `getConstants().isRTL` is the one accessor implemented on
 // BOTH native and web, so every component routes its RTL check through here
 // instead of touching `I18nManager.isRTL` directly.
+/**
+ * Whether the layout runs right to left, read through the one accessor React Native and
+ * react-native-web both implement (`I18nManager.getConstants().isRTL`).
+ */
 export function isRTL(): boolean {
   return I18nManager.getConstants().isRTL;
 }

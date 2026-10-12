@@ -418,6 +418,9 @@ export interface BrandColors {
 // break consumers reading `brandColors["orb-indigo"]`); the values are the sky family
 // the kit used before Dark Factory, kept as they were.
 /**
+ * The brand orb colours of the removed Backdrop organism, keyed by their historical
+ * hue names; nothing in the kit reads them.
+ *
  * @deprecated The brand orbs painted the removed Backdrop organism, and the kit's colors
  * are Dark Factory's now; nothing in the kit reads these. Kept, with their former values,
  * until an owner-authorized major removes them (the `--orb-*` custom properties too).
