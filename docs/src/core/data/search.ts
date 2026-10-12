@@ -4,6 +4,7 @@ import { inlineText } from "../../lib/inline-markdown";
 import { getAllPatterns } from "./patterns";
 import { getAllTemplates } from "./templates";
 import type { SearchEntry } from "./types";
+import { DEPRECATED_SECTIONS } from "../foundation-reference";
 
 // Static guide + foundation + token entries. These mirror the routes the docs app
 // actually exposes (the RN app has richer token pages than the original web docs:
@@ -19,6 +20,9 @@ const GUIDE_ENTRIES: SearchEntry[] = [
   { title: "Theming", description: "Light/dark mode, glass surface, density controls", path: "/theming", category: "Guides", keywords: ["dark mode", "light mode", "glass", "compact", "comfy", "theme", "density", "fonts", "typefaces", "nested providers", "ThemeProvider"] },
   { title: "Integration", description: "Install and consume Canvas, the universal React Native kit, on native and the web", path: "/integration", category: "Guides", keywords: ["react", "react native", "react-native-web", "install", "setup", "native", "web"] },
   { title: "React Native", description: "Engine-styled primitives (View, Text, Pressable, Image, TextInput, ScrollView) and the react-native boundary", path: "/rn-primitives", category: "Guides", keywords: ["react native", "react-native-web", "rnw", "primitives", "scroll", "image", "textinput", "view", "native", "peer dependency"] },
+  // Every deprecated name is a keyword, read from the page's own generated rows, so a search
+  // for an old name lands on what replaces it.
+  { title: "Foundation reference", description: "Every deprecated name in Canvas, what it was and what to use instead", path: "/foundation", category: "Guides", keywords: ["deprecated", "deprecation", "migration", "internals", "replacement", ...DEPRECATED_SECTIONS.flatMap((section) => section.names.map((row) => row.name))] },
   { title: "Browser Support", description: "Supported platforms (iOS, Android, web) and the web browser baseline", path: "/browser-support", category: "Guides", keywords: ["platforms", "ios", "android", "web", "react-native-web", "browsers", "compatibility"] },
   { title: "Privacy Policy", description: "What the app collects (nothing), and the App Privacy and Data Safety declarations", path: "/privacy", category: "Guides", keywords: ["privacy", "policy", "data", "tracking", "analytics", "gdpr", "app privacy", "data safety"] },
   { title: "Open Source Licenses", description: "Every third-party package the app ships, with its licence and copyright notice", path: "/licenses", category: "Guides", keywords: ["license", "licence", "licenses", "open source", "oss", "mit", "ofl", "attribution", "copyright", "notices", "acknowledgements", "third party"] },

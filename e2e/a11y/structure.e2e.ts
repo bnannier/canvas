@@ -7,6 +7,7 @@ const PAGES = [
   { path: "/components", title: "Components" },
   { path: "/tokens/colors", title: "Colors & Theme" },
   { path: "/integration", title: "Integration" },
+  { path: "/foundation", title: "Foundation reference" },
   { path: "/components/button", title: "Button" },
   { path: "/components/avatar", title: "Avatar" },
   { path: "/components/typography", title: "Typography" },
