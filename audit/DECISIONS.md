@@ -130,3 +130,13 @@ Decided by the owner on 2026-10-12, each the recommendation offered.
 |---|---|---|
 | GMBT-2 | GlassModalBlurTarget placed in the main window hands its descendants the plane they sit in, which @nannier/canvas-blur rejects, so Android painted a tint with no blur | Fall back to solid: @nannier/canvas-blur's frost view reports when it rejects a target (an optional event, a minor of that companion package naming the event), and the bridge then resolves the complete solid skin, as the materials law requires of an unsafe material. |
 | GMBT-3 | What an Android Modal's frost shows when the Modal opens over another Modal or a visible Toast | Page only, documented: the frost samples the outermost OverlayProvider's page content, as today, and /integration says so as an Android limit; full-stack sampling may come later as its own phase. |
+
+## GlassPane turn (Foundations, 2026-10-12)
+
+Decided by the owner on 2026-10-12, each the recommendation offered.
+
+| ID | Question | Decision |
+|---|---|---|
+| GP-1 | Under glass, which footprint a bordered control's material covers, once GlassPane's doubled inset (the host's border plus a copied border of its own) is removed | Full footprint, as Dark Factory's glass does: the material covers the control's whole solid size, so a control is the same size in glass and solid. A resting border's width becomes padding under glass so layout does not move, and a kept state border (focus, open, current step) sits flush over the material. GlassSurface's own hosts (the Tabs track, ButtonGroup) are aligned the same way in GlassSurface's turn. |
+| GP-2 | A tinted wash under glass (the error wash on fields, the checked radio card's selection wash) drops the muted text on it below 4.5:1 | Cap for legibility: each wash takes the densest alpha at which the ink painted on it keeps 4.5:1, with solid's ink unchanged, tuned and recorded through the tuning harness. In light glass that leaves almost no wash, so the state is carried by the error border, the message and the control's own indicator, as in solid and Dark Factory; dark keeps a visible wash. Tests pin the ink floors. |
+| CI | Five Maestro parser tests in tools/native/flow-parser.test.ts ran under bun's 5 s default on CI and one timed out | Give them the 30 s their two siblings already carried, one shared budget for every test that starts the parser's JVM (70222ae3 on main). |
