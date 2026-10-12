@@ -329,7 +329,9 @@ export const androidSkin: SelectSkin = {
     ...activeIndicator({ active: open, restColor: t["muted-foreground"], activeColor: t.primary }),
     backgroundColor: t.muted,
     paddingHorizontal: 16,
-    height: ANDROID_TRIGGER_BOX[size],
+    // A floor, not a height: the trigger grows when a larger text size makes its value
+    // line and the floating label's reserve taller than the M3 container.
+    minHeight: ANDROID_TRIGGER_BOX[size],
   }),
   triggerValue: { flexDirection: "row", alignItems: "center", gap: 8 },
   valueText: (t, size, hasValue) => ({ color: hasValue ? t.foreground : t["muted-foreground"], ...ANDROID_TEXT[size] }),

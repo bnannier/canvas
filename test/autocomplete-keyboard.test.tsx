@@ -51,8 +51,10 @@ for (const [platform, Component] of [["web", Autocomplete], ["ios", Autocomplete
         const number = (value: string) => parseFloat(value) || 0;
         expect(number(target.width)).toBeGreaterThanOrEqual(minimum);
         expect(number(target.minHeight)).toBeGreaterThanOrEqual(minimum);
-        expect(number(box.height)).toBeGreaterThanOrEqual(minimum);
-        const contentHeight = number(box.height) - number(box.borderTopWidth) - number(box.borderBottomWidth)
+        // The field's height, or its floor where it grows with the text size (Android).
+        const height = number(box.height) || number(box.minHeight);
+        expect(height).toBeGreaterThanOrEqual(minimum);
+        const contentHeight = height - number(box.borderTopWidth) - number(box.borderBottomWidth)
           - number(box.paddingTop) - number(box.paddingBottom);
         // The target's actual layout includes the field's border/indicator band,
         // rather than relying on hitSlop clipped by the smaller native parent.

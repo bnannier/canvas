@@ -7,9 +7,10 @@ icons (`leadingIcon` / `trailingIcon` with any Canvas glyph as `icon`), a
 button. Input is single-line; for multi-line entry use the dedicated Textarea.
 
 Pass `label` (and `required`) to name the field: iOS and web render the label
-above the control, while Android floats the Material 3 in-container label, which
-truncates on one line inside the field when it is longer than the field, while
-the field's accessible name stays the whole label. A field fills the parent it is given; a step of its own (`xs`, `lg`, …, with
+above the control, while Android floats the Material 3 in-container label. On
+Android the field grows with the user's text size so the floated label never
+meets the value, and a label longer than the field truncates on one line inside
+it while the field's accessible name stays the whole label. A field fills the parent it is given; a step of its own (`xs`, `lg`, …, with
 `start` to pin it to the leading edge) or a Container step sets its measure.
 Select and the search field share its look, and Field and Form compose that
 label with helper and error text. On iOS the field is drawn to the iOS

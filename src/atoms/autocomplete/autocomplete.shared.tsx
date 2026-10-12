@@ -4,7 +4,7 @@ import { textEntryState } from "../../style/text-entry-state.js";
 import { consumeEscapeKey, EscapeLayerProvider, useEscapeLayer } from "../../style/escape-layer.js";
 import { forwardRef, useEffect, useId, useRef, useState } from "react";
 import { Platform, type TextInput as RNTextInput } from "react-native";
-import { View, Pressable, Text, TextInput, useControllableState, useFillStyle, AnchoredOverlay, useOverlayHost, useMeasuredWidth, FloatingLabel, LabelContent, labelA11y, FOCUS_RESET, RippleClip, cornerRadii, type LayoutStyle, type MeasureProps, type StyleProp, type ViewStyle, type TextStyle, GlassPane, isGlass, PANE_SIBLING_INPUT, withInnerFill } from "../../style/index.js";
+import { View, Pressable, Text, TextInput, useControllableState, useFillStyle, AnchoredOverlay, useOverlayHost, useMeasuredWidth, FloatingLabel, LabelContent, labelA11y, useFloatingLabelRoom, FOCUS_RESET, RippleClip, cornerRadii, type LayoutStyle, type MeasureProps, type StyleProp, type ViewStyle, type TextStyle, GlassPane, isGlass, PANE_SIBLING_INPUT, withInnerFill } from "../../style/index.js";
 import { OverlayScrollView } from "../../style/overlay-scroll.js";
 import { useActiveOptionScroll } from "../../style/use-active-option-scroll.js";
 import { AccessibilityReturnBoundary, accessibilitySelectionProps, useAccessibilityReturn } from "../../style/use-accessibility-return.js";
@@ -250,7 +250,10 @@ export function createAutocomplete(skin: AutocompleteSkin) {
     const above = hasLabel && !floating;
     const populated = fieldValue !== "";
     const fieldShape = skin.field(tokens, size, active);
-    const fieldHeight = asNum((fieldShape as { height?: unknown }).height, 56);
+    // The field's height: its floor where it grows with the text size (Android), else its height.
+    const fieldHeight = asNum(fieldShape.minHeight ?? fieldShape.height, 56);
+    // The room the Android floating label takes, which follows the user's text size.
+    const room = useFloatingLabelRoom(skin, tokens, size);
     // The floating label stays clear of the trailing toggle, which runs to the field's end
     // edge: its width, less the end margin it reaches into the field's end padding by.
     const toggleTarget = skin.chevronTarget(size);
@@ -294,7 +297,7 @@ export function createAutocomplete(skin: AutocompleteSkin) {
               // centers its text below the reserve, while the trailing chevron toggle
               // stays vertically centered in the full field (M3 centers a trailing
               // dropdown icon in the container, unaffected by the label).
-              floating ? [{ alignSelf: "stretch" as const }, skin.labelReserve!(size)] : null,
+              floating ? [{ alignSelf: "stretch" as const }, room.reserve] : null,
               FOCUS_RESET,
             ]}
             value={fieldValue}
@@ -423,6 +426,7 @@ export function createAutocomplete(skin: AutocompleteSkin) {
               isError={false}
               height={fieldHeight}
               end={labelEnd}
+              onLine={room.onLine}
             />
           ) : null}
           {fieldSurface.border}

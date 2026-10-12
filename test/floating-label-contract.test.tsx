@@ -393,3 +393,93 @@ describe("a long label stays inside its field", () => {
     expect(screen.getByRole("button", { name: LONG })).toBeDefined();
   });
 });
+
+// React Native scales a label's fontSize and lineHeight with the user's text size (nonlinearly
+// on Android 14 and up), and the Android fields are as tall as their text needs. So the float
+// is drawn from the label's rendered line, which a test reports through onLayout as a device
+// would; the skin's numbers hold at the skin's own text size.
+describe("the float follows the user's text size", () => {
+  const seedsOf = <S extends string>(skin: FloatingLabelStyles<S>, size: S) => {
+    const rest = skin.labelRest!(t, size) as TextStyle;
+    const scale = num((skin.labelFloated!(t, size) as TextStyle).fontSize, 0) / num(rest.fontSize, 0);
+    const line = num(rest.lineHeight, 0);
+    const reserve = num((skin.labelReserve!(size) as TextStyle).paddingTop, 0);
+    return { line, scale, reserve, top: reserve - line * scale };
+  };
+  /** The reserve a rendered line needs, and where the floated label then lands from a resting center. */
+  const grown = (seeds: ReturnType<typeof seedsOf>, line: number) => {
+    const reserve = Math.max(seeds.reserve, seeds.top + line * seeds.scale);
+    return { reserve, floatedCenter: reserve - (line * seeds.scale) / 2 };
+  };
+
+  it("changes nothing at the skin's own text size, where the measured line is the skin's", () => {
+    render(<ThemeProvider light><Input label="Input" defaultValue="Ada" /><Select label="Select" options={["EU"]} value="EU" /></ThemeProvider>);
+    const before = [floatOf("Input"), floatOf("Select")];
+    const fieldBefore = (screen.getByLabelText("Input") as HTMLElement).getAttribute("style");
+    for (const label of ["Input", "Select"]) layout(screen.getByText(label), { height: 24.2 });
+    // The Select's label sits inside the trigger's border: its bounds are a point short of the skin's 56.
+    layout(boundsOf("Select"), { height: 55 });
+    layout(boundsOf("Input"), { height: 56 });
+    expect([floatOf("Input"), floatOf("Select")]).toEqual(before);
+    expect((screen.getByLabelText("Input") as HTMLElement).getAttribute("style")).toBe(fieldBefore);
+  });
+
+  it("Input: twice the text size raises the reserve, grows the field and lands the float on the new reserve", () => {
+    render(<ThemeProvider light><Input label="Email" defaultValue="ada@example.com" /></ThemeProvider>);
+    const seeds = seedsOf(inputSkin, "base");
+    const line = seeds.line * 2;
+    layout(screen.getByText("Email"), { height: line });
+    const { reserve, floatedCenter } = grown(seeds, line);
+    const height = heightOf(inputSkin.bareBox("base")) + (reserve - seeds.reserve) + (line - seeds.line);
+    const field = screen.getByLabelText("Email") as HTMLElement;
+    expect(parseFloat(field.style.paddingTop)).toBeCloseTo(reserve, 3);
+    expect(parseFloat(field.style.height)).toBeCloseTo(height, 3);
+    close(floatOf("Email"), { translateY: floatedCenter - height / 2, scale: seeds.scale });
+  });
+
+  it("Input: a smaller text size keeps the skin's reserve and height", () => {
+    render(<ThemeProvider light><Input label="Email" defaultValue="ada@example.com" /></ThemeProvider>);
+    const seeds = seedsOf(inputSkin, "base");
+    layout(screen.getByText("Email"), { height: seeds.line * 0.85 });
+    const field = screen.getByLabelText("Email") as HTMLElement;
+    expect(parseFloat(field.style.paddingTop)).toBe(seeds.reserve);
+    expect(parseFloat(field.style.height)).toBe(heightOf(inputSkin.bareBox("base")));
+  });
+
+  it("Select: the trigger has a floor rather than a height, takes the new reserve, and the float reads its measured height", () => {
+    render(<ThemeProvider light><Select label="Region" options={["EU", "US"]} value="EU" /></ThemeProvider>);
+    const seeds = seedsOf(selectSkin, "default");
+    const trigger = screen.getByRole("button", { name: "Region" });
+    expect(trigger.style.height).toBe("");
+    expect(trigger.style.minHeight).toBe(`${heightOf(selectSkin.trigger(t, "default", false))}px`);
+    const line = seeds.line * 2;
+    layout(screen.getByText("Region"), { height: line });
+    const { reserve, floatedCenter } = grown(seeds, line);
+    expect(parseFloat(screen.getByText("EU").parentElement!.style.paddingTop)).toBeCloseTo(reserve, 3);
+    // The grown trigger, as its layout reports it: the label's bounds inside its border.
+    const box = 89;
+    layout(boundsOf("Region"), { height: box });
+    close(floatOf("Region"), { translateY: floatedCenter - box / 2, scale: seeds.scale });
+  });
+
+  it("Autocomplete: the field has a floor rather than a height and its value takes the new reserve", () => {
+    render(<ThemeProvider light><Autocomplete label="Fruit" options={["Apple"]} defaultValue="Apple" /></ThemeProvider>);
+    const seeds = seedsOf(autocompleteSkin, "default");
+    const field = screen.getByRole("combobox", { name: "Fruit" });
+    expect(field.parentElement!.style.height).toBe("");
+    expect(field.parentElement!.style.minHeight).toBe(`${heightOf(autocompleteSkin.field(t, "default", false))}px`);
+    layout(screen.getByText("Fruit"), { height: seeds.line * 2 });
+    expect(parseFloat(field.style.paddingTop)).toBeCloseTo(grown(seeds, seeds.line * 2).reserve, 3);
+  });
+
+  it("Textarea: the multiline label rests on the grown first line and floats onto the new reserve", () => {
+    render(<ThemeProvider light><Textarea label="Notes" defaultValue="Seeded" rows={3} /></ThemeProvider>);
+    const seeds = seedsOf(textareaSkin, "default");
+    const line = seeds.line * 2;
+    layout(screen.getByText("Notes"), { height: line });
+    const { reserve, floatedCenter } = grown(seeds, line);
+    expect(parseFloat((screen.getByLabelText("Notes") as HTMLElement).style.paddingTop)).toBeCloseTo(reserve, 3);
+    expect(parseFloat(boundsOf("Notes").style.top)).toBeCloseTo(reserve, 3);
+    close(floatOf("Notes"), { translateY: floatedCenter - (reserve + line / 2), scale: seeds.scale });
+  });
+});
