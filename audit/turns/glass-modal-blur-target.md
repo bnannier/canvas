@@ -15,3 +15,5 @@ The capture runs `bun run audit:turn -- --slug=glass-modal-blur-target` took for
 
 | Run id | Kind | Platform | Recorded | Commit | Status | Cells | Slugs |
 |---|---|---|---|---|---|---|---|
+| `20261012-204548-web-e048e22` | variants | web | 2026-10-12T20:46:44.901Z | `e048e22` | complete | 252 of 252: 252 ok, 0 failed | action-sheet, drawer, filter-panel, sidebar |
+| `20261012-204645-web-e048e22` | states | web | 2026-10-12T20:47:51.065Z | `e048e22` | complete | 234 of 234: 222 ok, 0 failed, 12 not reached | action-sheet, drawer, filter-panel, sidebar |
