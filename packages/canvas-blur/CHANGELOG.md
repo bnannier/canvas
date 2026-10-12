@@ -1,5 +1,15 @@
 # @nannier/canvas-blur
 
+## 0.2.0
+
+### Minor Changes
+
+- b0dd2b6: `FrostView` reports a refused capture target. A frost handed a host that contains it (an ancestor, which it can never sample without recording itself) still draws no blur, and now also calls its new optional `onTargetRejected` event once for that target, with `{ targetId, reason: "ancestor" }`, so the app can show its complete solid appearance instead of a tint with no blur. A minor: the event is a new capability of the package's public `FrostView`. It is optional and backward compatible; a detached host still reports through `CaptureHost`'s `onAvailabilityChange`, and nothing else changes. The device instrumentation gains `TargetSafetyTest` for the ancestor, sibling, other-window and detached verdicts and the once-per-target report.
+
+### Patch Changes
+
+- 4a4e248: `FrostView`'s filter that drops a refusal of a host it no longer names moves into its own module, `forCurrentTarget`, with a unit test for the current host, a stale host, no host and no handler. Behaviour is unchanged; the filter is now covered, where before only the native side was.
+
 ## 0.1.2
 
 ### Patch Changes
