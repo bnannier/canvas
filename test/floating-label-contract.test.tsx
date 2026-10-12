@@ -305,3 +305,40 @@ describe("the visible label's accessibility", () => {
     }
   });
 });
+
+// Every field family's label, above the field or floating in it, on every skin, takes its
+// ink from the theme. A label whose skin gave it no colour inherited none and painted the
+// platform's default black, about 1.45:1 on the dark page (PhoneInput's on Android).
+describe("every field family's label takes a theme ink", () => {
+  const dark = colorsByScheme.dark;
+  const inks = new Set(Object.values(dark).map((value) => String(value).toLowerCase()));
+  const toHex = (color: string) => {
+    const channels = color.match(/[\d.]+/g)?.slice(0, 3).map(Number);
+    return channels ? `#${channels.map((c) => c.toString(16).padStart(2, "0")).join("")}` : color;
+  };
+  const SKINS = [
+    ["web", WebInput, WebTextarea, WebSelect, WebAutocomplete, WebPhoneInput, WebStepper, WebField],
+    ["ios", IosInput, IosTextarea, IosSelect, IosAutocomplete, IosPhoneInput, IosStepper, IosField],
+    ["android", { Input }, { Textarea }, { Select }, { Autocomplete }, AndroidPhoneInput, AndroidStepper, AndroidField],
+  ] as const;
+  for (const [skin, I, T, S, A, P, St, F] of SKINS) {
+    it(`${skin}, dark: Input (bare and grouped), Textarea (framed and flush), Select, Autocomplete, PhoneInput, Stepper and Field`, () => {
+      render(<ThemeProvider dark>
+        <I.Input label="Input" />
+        <I.Input label="Grouped input" prefix="$" />
+        <T.Textarea label="Textarea" />
+        <T.Textarea label="Flush textarea" flush />
+        <S.Select label="Select" options={["EU"]} />
+        <A.Autocomplete label="Autocomplete" options={["Ada"]} />
+        <P.PhoneInput label="Phone" />
+        <St.Stepper label="Stepper" />
+        <F.Field label="Field"><Switch accessibilityLabel="Notify me" /></F.Field>
+      </ThemeProvider>);
+      for (const label of ["Input", "Grouped input", "Textarea", "Flush textarea", "Select", "Autocomplete", "Phone", "Stepper", "Field"]) {
+        const color = screen.getByText(label).style.color;
+        expect(color, label).not.toBe("");
+        expect(inks.has(toHex(color)), `${label}: ${color}`).toBe(true);
+      }
+    });
+  }
+});

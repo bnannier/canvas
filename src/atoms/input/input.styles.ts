@@ -83,10 +83,14 @@ export interface InputSkin extends FloatingLabelStyles<Size> {
   ripple: ((t: ColorTokens) => { color: string; borderless: boolean }) | null;
 
   // Label placement (the `label` prop) is contributed by FloatingLabelStyles<Size>:
-  // `floatingLabel` (Android true / iOS+web false), `labelAbove` (iOS/web static
-  // title), and `labelRest`/`labelFloated`/`labelReserve` (the Android M3 floating
-  // label geometry). Shared verbatim with Autocomplete, Select, and Textarea so the
-  // four filled-field controls float their label identically.
+  // `floatingLabel` (Android true / iOS+web false), `labelAbove` (below), and
+  // `labelRest`/`labelFloated`/`labelReserve` (the Android M3 floating label geometry).
+  // Shared verbatim with Autocomplete, Select, and Textarea so the four filled-field
+  // controls float their label identically.
+
+  /** The above-field label's whole type and ink: every skin supplies it, Android's too,
+   *  for the fields that cannot float their label there (a grouped Input, PhoneInput). */
+  labelAbove: NonNullable<FloatingLabelStyles<Size>["labelAbove"]>;
 }
 
 // --- shared type scale (identical across platforms; brand type, not a face) --
@@ -318,6 +322,13 @@ const ANDROID_TOP_RADIUS = shape.android.field;
 function androidUnderline(t: ColorTokens, borderColor: keyof ColorTokens, focused: boolean, error: boolean, gap: number): ViewStyle {
   return activeIndicator({ active: focused || error, restColor: t["muted-foreground"], activeColor: t[borderColor] ?? t.ring, gap });
 }
+// The M3 body type the Android label rests at in the field (body-large per size), and
+// so the type of its foreground title above a field that cannot float it.
+function androidLabelRest(size: Size): TextStyle {
+  if (size === "large") return { fontSize: 18, lineHeight: 26, letterSpacing: 0.5 };
+  if (size === "small") return { fontSize: 14, lineHeight: 20, letterSpacing: 0.25 };
+  return { fontSize: 16, lineHeight: 24, letterSpacing: 0.5 };
+}
 export const androidSkin: InputSkin = {
   // M3 body input is 16sp; nudge the base/large up, keep small readable.
   text: (_t, size) => {
@@ -399,11 +410,11 @@ export const androidSkin: InputSkin = {
   // clears the value. M3 body tracking: body-large 0.5, body-medium 0.25,
   // body-small 0.4.
   floatingLabel: true,
-  labelRest: (_t, size) => {
-    if (size === "large") return { fontSize: 18, lineHeight: 26, letterSpacing: 0.5 };
-    if (size === "small") return { fontSize: 14, lineHeight: 20, letterSpacing: 0.25 };
-    return { fontSize: 16, lineHeight: 24, letterSpacing: 0.5 };
-  },
+  labelRest: (_t, size) => androidLabelRest(size),
   labelFloated: (_t, _size) => ({ fontSize: 12, lineHeight: 16, letterSpacing: 0.4 }),
   labelReserve: (size) => ({ paddingTop: size === "large" ? 26 : size === "small" ? 20 : 24 }),
+  // Where the label cannot float (a grouped Input, whose addons share the box, and
+  // PhoneInput, which reads this skin), it is a foreground title above the field at
+  // the resting type, medium weight.
+  labelAbove: (t, size) => ({ ...androidLabelRest(size), fontWeight: "500", color: t.foreground }),
 };

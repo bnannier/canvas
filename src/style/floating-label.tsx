@@ -33,7 +33,9 @@ import { isRTL } from "./rtl.js";
 export interface FloatingLabelStyles<S extends string = string> {
   /** true on the Android skin (floating label); false on iOS/web (label above). */
   floatingLabel: boolean;
-  /** iOS/web: the static above-field label type (color is applied by the shell). */
+  /** The static above-field label's whole type and ink, colour included: the skin
+   *  supplies all of it and the shell adds none. iOS and web always place the label
+   *  here; an Android skin supplies it for a field that cannot float its label. */
   labelAbove?: (t: ColorTokens, size: S) => TextStyle;
   /** Android: the resting (unfocused, empty) label type — body-large, centered like a placeholder. */
   labelRest?: (t: ColorTokens, size: S) => TextStyle;

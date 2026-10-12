@@ -352,7 +352,7 @@ export function createPhoneInput(skin: PhoneInputSkin) {
     return (
       <View style={[root, open ? rootLifted : null, label != null ? { gap: field.labelGap } : null, dim, widthCap, style]}>
         {label != null ? (
-          <Text nativeID={labelId} style={field.labelAbove ? field.labelAbove(tokens, size) : text} {...labelA11y(label, props.accessibilityLabel == null)}>
+          <Text nativeID={labelId} style={field.labelAbove(tokens, size)} {...labelA11y(label, props.accessibilityLabel == null)}>
             <LabelContent label={label} required={required} starColor={tokens.destructive} />
           </Text>
         ) : null}

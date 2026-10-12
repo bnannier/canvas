@@ -309,13 +309,10 @@ export function createTextarea(skin: TextareaSkin) {
 
     // iOS / web: the label sits above the field. The wrapper carries width/style
     // and the disabled dim; the field fills it (its skin sets width:100%). The
-    // above-label type is the skin's `labelAbove` on iOS/web; the Android skin
-    // (no `labelAbove`, since it normally floats) falls back to its resting label
-    // type as a foreground title, so the flush+label edge case still reads.
+    // above-label type and ink are the skin's `labelAbove` on every platform (on
+    // Android, for the flush field, which never floats its label).
     if (above) {
-      const aboveLabelStyle: TextStyle = skin.labelAbove
-        ? skin.labelAbove(tokens, size)
-        : { ...(skin.labelRest ? skin.labelRest(tokens, size) : sizeText(size)), fontWeight: "500", color: tokens.foreground };
+      const aboveLabelStyle: TextStyle = skin.labelAbove(tokens, size);
       return (
         <View style={[LABEL_GAP, disabledDim, widthCap, style]}>
           <Text nativeID={labelId} style={aboveLabelStyle} {...labelA11y(label!, true)}>
