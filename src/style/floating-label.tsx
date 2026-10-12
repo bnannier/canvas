@@ -10,18 +10,21 @@ import { destructiveText } from "./destructive-text.js";
 import { isRTL } from "./rtl.js";
 import { useIsomorphicLayoutEffect } from "./use-isomorphic-layout-effect.js";
 
-// The Material 3 in-container FLOATING label, shared by every filled field family
-// (Input, Autocomplete, Select, Textarea). It is the SINGLE source of truth for the
-// label placement contract and its animation, so the four controls float their
-// label identically and a fix lands once. The BRAND survives (the floated tint is
-// `primary-text`, the error tint `destructive-text`, never a platform default); only
-// the shape the per-OS skin describes changes.
+// A field's label, shared by every field family. FloatingLabel is the Material 3
+// in-container FLOATING label the Android skins of Input, Textarea, Select and Autocomplete
+// render inside their field; it is the single source of truth for the label placement
+// contract and its float, so the four controls float their label identically and a fix
+// lands once. LabelContent is the label text with its required marker, which every field
+// family (those four, Field, Stepper and PhoneInput) renders, above the field or floating
+// in it; labelA11y gives the Text holding it its accessibility props. The BRAND survives
+// (the floated tint is `primary-text`, the error tint `destructive-text`, never a platform
+// default); only the shape the per-OS skin describes changes.
 //
-// Placement per platform lives in each skin as a `FloatingLabelStyles` slice:
-// Android sets `floatingLabel: true` and supplies the rest/floated/reserve types;
-// iOS + web set `floatingLabel: false` and render the label ABOVE the field (the
-// static title the Field/Form composers produce today). Only the geometry members
-// vary here; the label COLOR is animated in this component from the active tokens.
+// Placement per platform lives in each skin as a `FloatingLabelStyles` slice: Android sets
+// `floatingLabel: true` and supplies the rest/floated/reserve types; iOS and web set
+// `floatingLabel: false` and render the label ABOVE the field (the static title the
+// Field/Form composers produce). Only the geometry members vary here; the label COLOR is
+// animated in this component from the active tokens.
 
 /**
  * The label-placement slice a filled-field skin fulfills. iOS + web render the
@@ -38,15 +41,16 @@ export interface FloatingLabelStyles<S extends string = string> {
    *  supplies all of it and the shell adds none. iOS and web always place the label
    *  here; an Android skin supplies it for a field that cannot float its label. */
   labelAbove?: (t: ColorTokens, size: S) => TextStyle;
-  /** Android: the resting (unfocused, empty) label type — body-large, centered like a placeholder. */
+  /** Android: the resting (unfocused, empty) label type, body-large, centered like a placeholder. */
   labelRest?: (t: ColorTokens, size: S) => TextStyle;
-  /** Android: the floated label type — body-small at the top. Only its `fontSize`
-   *  is used (to derive the transform scale = floated/rest); the label is RENDERED
-   *  at `labelRest` and scaled, never re-sized, so the animation stays on the
-   *  transform driver (Fabric/RNW-safe). */
+  /** Android: the floated label type, body-small at the top. Only its `fontSize` is
+   *  used, for the transform's scale (floated over rest): the label is rendered at
+   *  `labelRest` and scaled, never re-sized, so the float stays on the transform, which
+   *  the native driver and react-native-web both move. */
   labelFloated?: (t: ColorTokens, size: S) => TextStyle;
-  /** Android: the state-independent top padding the field reserves for the floated
-   *  label, spread by the shell so the skin's field/trigger signature (and the
+  /** Android: the state-independent top padding the field's value takes to clear the
+   *  floated label at the skin's text size (`useFloatingLabelRoom` grows it with a larger
+   *  one), spread by the shell so the skin's field/trigger signature (and the
    *  active-indicator invariant it is tested against) stays intact. */
   labelReserve?: (size: S) => TextStyle;
 }
@@ -203,32 +207,48 @@ export function LabelContent({ label, required, starColor }: { label: string; re
 }
 
 /**
- * The Material 3 in-container floating label (Android skin only). It overlays the
- * field, pinned to the leading edge, and animates between the resting (centered
- * placeholder-like, or top-aligned on a multiline field) and floated (top, small)
- * positions.
+ * The Material 3 in-container floating label, which the Android skins of Input, Textarea,
+ * Select and Autocomplete render inside their field (the iOS and web skins title the field
+ * from above). It overlays the field, pinned to the leading edge and bounded on both sides,
+ * and moves between its resting place (centered like a placeholder, or on the first line of
+ * a multiline field) and its floated one (small, at the top, its bottom edge where the value
+ * begins). It never takes a tap (taps reach the field beneath), never paints a material of
+ * its own, and never wraps: a label longer than the field truncates on one line while the
+ * field's accessible name stays the whole label.
  *
- * Split-driver animation (the crux — must run on iOS, Android New-Arch/Fabric,
- * AND react-native-web):
- *  - `pos` (0->1) drives ONLY the transform (translateY + scale 1->floated/rest),
- *    on the native driver where available (a one-shot, so the loop-freeze caveat
- *    does not apply) and the JS driver on web. It NEVER animates fontSize/top/width
- *    (those are Fabric-stuck). Target = focused || populated.
- *  - `tint` (0->1) drives ONLY the color, on the JS driver ALWAYS (color can't be
- *    native-driven). Target = focused || error, so a filled-but-unfocused valid
- *    field floats yet stays muted.
- * The label is pinned to the logical `start` edge, and its transform origin pins that
- * edge while it scales (no measurement, no translateX): the origin follows the layout
- * direction from `isRTL()`, "0% 50%" or "100% 50%", because transform origins are
- * physical while `start` is the right edge in a right-to-left layout.
+ * Two values drive it, each a one-shot timing from the motion tunables (`FLOAT`):
+ *  - `pos` (0 to 1, its target focused or populated) drives only the transform, translateY
+ *    and a scale from 1 to floated/rest, on the native driver where there is one and the JS
+ *    driver on the web. It never animates fontSize, top or width, which the native driver
+ *    cannot move.
+ *  - `tint` (0 to 1, its target focused or in error) drives only the colour, from
+ *    `muted-foreground` to `primary-text` (or `destructive-text`), so a filled, valid,
+ *    unfocused field floats yet stays muted. It runs on the JS driver on every platform:
+ *    Android's text view takes its colour only through the paragraph's attributed string,
+ *    so React Native 0.86's default native animated backend cannot animate a Text's colour,
+ *    a stated exception to the native-driver gate in motion.ts. Natively each of its frames
+ *    is a setNativeProps Fabric commit, with a single React render after the last frame; on
+ *    the web both values run on the JS driver, and each frame updates the label through
+ *    react-native-web's Animated for the length of the float.
+ * Under Reduce Motion both values jump to their target in one write: the label still floats.
+ * Each value is seeded at its target, so a field that mounts filled (or in error) is floated
+ * (or tinted) from its first frame, the server's included, and a mount starts no timing.
  *
- * Geometry: the label's resting and floated vertical CENTERS are computed, and
- * translateY carries the resting center to the floated one:
- *  - single-line: rest center = the field's vertical middle (`height / 2`);
- *  - multiline: rest center aligns with the first value line (`reserve + line/2`),
- *    since a multiline field's value is top-aligned below the reserved band.
- * The floated center lands the scaled label's bottom edge at `reserve` (where the
- * value begins), so the value always clears it.
+ * The label is pinned to the logical `start` edge, and its transform origin pins that edge
+ * while it scales (no measurement, no translateX): the origin follows the layout direction
+ * from `isRTL()`, "0% 50%" or "100% 50%", because transform origins are physical while
+ * `start` is the right edge in a right-to-left layout.
+ *
+ * Geometry: translateY carries the label's resting vertical center to its floated one. The
+ * floated center lands the scaled label's bottom edge on the reserve, where the value
+ * begins, so the value always clears it; the resting center is the field's middle, or the
+ * first value line of a multiline field (the reserve plus half a line). The numbers are the
+ * skin's at the skin's own text size and the rendered label's at any other, the reserve
+ * handed back to the field through `onLine` (`useFloatingLabelRoom`).
+ *
+ * To assistive technology the label is the field's name, never a second stop beside it:
+ * natively it names itself with the bare label and, while `names`, is hidden (`labelA11y`);
+ * on the web it stays in the DOM, the node the field's `aria-labelledby` names.
  */
 export function FloatingLabel<S extends string>({
   styles,
@@ -307,8 +327,9 @@ export function FloatingLabel<S extends string>({
     Animated.timing(pos, { toValue: posTarget, duration: FLOAT.position.duration, easing: FLOAT_EASING, useNativeDriver: supportsNativeDriver }).start();
   }, [pos, posTarget, reduced]);
 
-  // tint drives ONLY the COLOR, always on the JS driver (color can't be native-
-  // driven; never interpolate it off `pos`).
+  // tint drives ONLY the COLOR, always on the JS driver: React Native 0.86's native
+  // animated backend cannot animate a Text's colour on Android (see the JSDoc above). Never
+  // interpolate it off `pos`, which runs on the native driver.
   useEffect(() => {
     if (sent.current.tint === tintTarget) return;
     sent.current.tint = tintTarget;
@@ -333,24 +354,30 @@ export function FloatingLabel<S extends string>({
   // field's border, which the skin's height includes, and the float is drawn to that.
   const seeds = floatSeeds(styles, tokens, size);
   const [measured, setMeasured] = useState<{ line: Measured | null; box: Measured | null }>({ line: null, box: null });
-  const lineOf = (m: { line: Measured | null }) => rendered(seeds.line, m.line?.seed === seeds.line ? m.line.value : null);
-  const onTextLayout = (e: LayoutChangeEvent) => {
-    const value = e.nativeEvent.layout.height;
-    if (!(value > 0)) return;
-    setMeasured((prev) => {
-      const line = rendered(seeds.line, value) === seeds.line ? null : { seed: seeds.line, value };
-      return prev.line?.seed === line?.seed && prev.line?.value === line?.value ? prev : { ...prev, line };
-    });
-  };
-  const onBoundsLayout = (e: LayoutChangeEvent) => {
-    const value = e.nativeEvent.layout.height;
-    if (!(value > 0)) return;
-    setMeasured((prev) => {
-      const box = lineOf(prev) === seeds.line ? null : { seed: height, value };
-      return prev.box?.seed === box?.seed && prev.box?.value === box?.value ? prev : { ...prev, box };
-    });
-  };
-  const line = lineOf(measured);
+  const onTextLayout = useCallback(
+    (e: LayoutChangeEvent) => {
+      const value = e.nativeEvent.layout.height;
+      if (!(value > 0)) return;
+      setMeasured((prev) => {
+        const line = rendered(seeds.line, value) === seeds.line ? null : { seed: seeds.line, value };
+        return prev.line?.seed === line?.seed && prev.line?.value === line?.value ? prev : { ...prev, line };
+      });
+    },
+    [seeds.line],
+  );
+  const onBoundsLayout = useCallback(
+    (e: LayoutChangeEvent) => {
+      const value = e.nativeEvent.layout.height;
+      if (!(value > 0)) return;
+      setMeasured((prev) => {
+        const line = rendered(seeds.line, prev.line?.seed === seeds.line ? prev.line.value : null);
+        const box = line === seeds.line ? null : { seed: height, value };
+        return prev.box?.seed === box?.seed && prev.box?.value === box?.value ? prev : { ...prev, box };
+      });
+    },
+    [seeds.line, height],
+  );
+  const line = rendered(seeds.line, measured.line?.seed === seeds.line ? measured.line.value : null);
   const box = line === seeds.line ? height : rendered(height, measured.box?.seed === height ? measured.box.value : null);
   const reserve = reserveFor(seeds, line);
   const scaleTo = seeds.scale;
@@ -384,8 +411,8 @@ export function FloatingLabel<S extends string>({
   // The label's bounds: pinned between the field's two ends, so a long label truncates
   // before the end padding or a trailing chevron or toggle instead of running out of the
   // field; taps fall through to the field beneath. Single-line fills the field vertically
-  // and centers the label (rest center = height/2); multiline pins it at the top text line
-  // (top = reserve). Inside, the floating view hugs the text against the start edge, so
+  // and centers the label (rest center = the field's middle); multiline pins it at the top
+  // text line (top = reserve). Inside, the floating view hugs the text against the start edge, so
   // the transform floats it, scaling around its leading edge (transformOrigin above).
   const bounds: ViewStyle = multiline
     ? { position: "absolute", top: reserve, start: inset, end, alignItems: "flex-start", pointerEvents: "none" }
