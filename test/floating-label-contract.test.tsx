@@ -5,6 +5,7 @@ import type { ReactElement } from "react";
 import { AccessibilityInfo, Animated, type TextStyle } from "react-native";
 import { ThemeProvider } from "../src/style/theme.tsx";
 import { colorsByScheme } from "../src/style/tokens.ts";
+import type { ThemeFonts } from "../src/style/fonts.ts";
 import { FLOAT, FLOAT_EASING } from "../src/style/motion.ts";
 import type { FloatingLabelStyles } from "../src/style/floating-label.tsx";
 import { Input } from "../src/atoms/input/input.android.tsx";
@@ -148,5 +149,32 @@ describe("the float's motion", () => {
       timing.mockRestore();
       reduced.mockRestore();
     }
+  });
+});
+
+// The faces an app registers per weight (the expo-google-fonts shape), a module constant as
+// the docs tell apps to pass it. Family names carry no spaces: a computed style quotes one.
+const FACES: ThemeFonts = { sans: { "400": "Manrope_400Regular", "500": "Manrope_500Medium", "700": "Manrope_700Bold" } };
+const FAMILIES = [
+  ["Input", <Input label="Face" required />],
+  ["Textarea", <Textarea label="Face" required rows={3} />],
+  ["Select", <Select label="Face" required options={["EU"]} />],
+  ["Autocomplete", <Autocomplete label="Face" required options={["Ada"]} />],
+] as const;
+
+describe("the floating label paints in the theme's face", () => {
+  for (const [name, field] of FAMILIES) {
+    it(`${name}: the label takes the registered sans face, as its required star does`, () => {
+      render(<ThemeProvider light fonts={FACES}>{field}</ThemeProvider>);
+      const label = screen.getByText("Face");
+      // The label names no weight, so a weight map resolves it to the 400 face.
+      expect(getComputedStyle(label).fontFamily).toBe("Manrope_400Regular");
+      expect(getComputedStyle(screen.getByText("*")).fontFamily).toBe("Manrope_400Regular");
+    });
+  }
+
+  it("leaves the label's style untouched when the theme registers no face", () => {
+    render(<ThemeProvider light><Input label="Face" /></ThemeProvider>);
+    expect(screen.getByText("Face").style.fontFamily).toBe("");
   });
 });
