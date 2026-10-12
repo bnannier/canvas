@@ -51,7 +51,13 @@ import {
 // Modal's content, then an overlay host for the Modal's own window, then the content.
 export function ReceiptSent({ open, onClose }) {
   return (
-    <Modal visible={open} transparent animationType="fade" onRequestClose={onClose}>
+    <Modal
+      visible={open}
+      transparent
+      animationType="fade"
+      onRequestClose={onClose}
+      accessibilityViewIsModal
+    >
       <GlassModalBlurTarget>
         <OverlayProvider separateWindow>
           <Column fill center pad>
@@ -273,10 +279,10 @@ export default function IntegrationScreen() {
           <BulletList
             subtle
             items={[
-              "Put it directly inside the Modal's content, outside the Modal's own OverlayProvider separateWindow, which gives the menus and popovers inside the Modal a host in its window",
-              "It frosts on Android 12 or newer with @nannier/canvas-blur in an Expo SDK 57 native build, under an app-root OverlayProvider that fills the window. iOS (Liquid Glass and its frost) and the web (a backdrop filter) need no plane, so there it provides nothing, as it does on Android with no root provider: the Modal's surfaces render as they would without it",
-              "It belongs only in a Modal. Placed in the main window, around page content or in a react-native-screens or expo-router modal screen (which shares the main window on Android), it hands its surfaces the plane they sit inside, which can never be sampled: @nannier/canvas-blur 0.2 or newer reports that, and every surface under the bridge keeps its complete solid skin (an older module shows a tint with no blur)",
-              "On Android a Modal's frost samples the outermost OverlayProvider's page content only. It leaves out what is stacked above the page: the root outlet's toasts and pinned cards, any Modal beneath (a drawer opened from a drawer frosts the page, not the first drawer) and the Modal's own scrim and surfaces. iOS and the web blur the whole stack behind the Modal",
+              "Put it directly inside the Modal's content, outside the Modal's own `OverlayProvider separateWindow`, which gives the menus and popovers inside the Modal a host in its window",
+              "It frosts on Android 12 or newer with `@nannier/canvas-blur` in an Expo SDK 57 native build, under an app-root `OverlayProvider` that fills the window. iOS (Liquid Glass and its frost) and the web (a backdrop filter) need no plane, so there it provides nothing, as it does on Android with no root provider: the Modal's surfaces render as they would without it",
+              "It belongs only in a Modal. Placed in the main window, around page content or in a react-native-screens or expo-router modal screen (which shares the main window on Android), it hands its surfaces the plane they sit inside, which can never be sampled: `@nannier/canvas-blur` 0.2 or newer reports that once the frost has mounted, and every surface under the bridge then takes its complete solid skin (until the report, and for good with an older module, they show a tint with no blur)",
+              "On Android a Modal's frost samples the outermost `OverlayProvider`'s page content only. It leaves out what is stacked above the page: the root outlet's toasts and pinned cards, any Modal beneath (a drawer opened from a drawer frosts the page, not the first drawer) and the Modal's own scrim and surfaces. iOS and the web blur the whole stack behind the Modal",
             ]}
           />
           <H3>Accessibility</H3>

@@ -36,9 +36,9 @@ const CHILD_KEYS = new Set<string>([
 // app root's flex: 1), size by content when the wrapper is content-sized (a docs
 // page or stage). The content layer MIRRORS the consumer's flex longhands rather
 // than forcing a fill: a hardcoded flexShrink 1 let Fabric's ScrollView content
-// measurement shrink the BlurTargetView to the viewport, capping every docs
-// page's scroll range at ~one screen on Android. Longhands with an explicit
-// "auto" basis , react-native-web rewrites the `flex` shorthand's basis to 0%,
+// measurement shrink the capture host to the viewport, capping every docs
+// page's scroll range at about one screen on Android. Longhands with an explicit
+// "auto" basis: react-native-web rewrites the `flex` shorthand's basis to 0%,
 // which collapses content-sized hosts, and native keeps the longhand form for
 // parity.
 const TARGET_FILL: ViewStyle = { flexGrow: 1, flexShrink: 1, flexBasis: "auto" };

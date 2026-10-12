@@ -96,9 +96,10 @@ export function MaterialsBody() {
       <ActionSheet trigger="Material sheet" title="Live sheet" message="The sheet's frost samples the page behind it."
         actions={[{ label: "Keep editing", onPress: () => {} }, { label: "Inspect capture from sheet", onPress: inspect }]} />
       {/* The bridge belongs only inside a Modal. Here, in the page, Android refuses the plane
-          it hands this card, and the card keeps its solid skin with no frost mounted. */}
+          it hands this card, and the card keeps its solid skin with no frost mounted; iOS
+          and the web ignore the bridge, so the card takes the page's material there. */}
       <GlassModalBlurTarget>
-        <Card><Typography testID="material-misplaced">A bridge in the page keeps the solid skin.</Typography></Card>
+        <Card><Typography testID="material-misplaced">On Android, a bridge in the page keeps the solid skin.</Typography></Card>
       </GlassModalBlurTarget>
       <Switch checked={nested} onChange={setNested} testID="material-nested">Nested glass</Switch>
       <ThemeProvider glass={nested} solid={!nested}>
