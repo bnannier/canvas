@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it, spyOn } from "bun:test";
 import { act, cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { renderToString } from "react-dom/server";
 import type { ReactElement } from "react";
-import { AccessibilityInfo, Animated, type TextStyle } from "react-native";
+import { AccessibilityInfo, Animated, I18nManager, type TextStyle } from "react-native";
 import { ThemeProvider } from "../src/style/theme.tsx";
 import { colorsByScheme } from "../src/style/tokens.ts";
 import type { ThemeFonts } from "../src/style/fonts.ts";
@@ -177,4 +177,30 @@ describe("the floating label paints in the theme's face", () => {
     render(<ThemeProvider light><Input label="Face" /></ThemeProvider>);
     expect(screen.getByText("Face").style.fontFamily).toBe("");
   });
+});
+
+// Transform origins are physical on React Native, Fabric and CSS, while the label is pinned to
+// the logical start edge, the right in a right-to-left layout. So the origin follows the
+// layout direction, or the scaled label's leading edge drifts inward by a quarter of its width.
+function inDirection(isRTL: boolean, run: () => void) {
+  const original = I18nManager.getConstants;
+  I18nManager.getConstants = () => ({ ...original.call(I18nManager), isRTL });
+  try {
+    run();
+  } finally {
+    I18nManager.getConstants = original;
+  }
+}
+const originOf = (label: string) => screen.getByText(label).parentElement!.style.transformOrigin;
+
+describe("the float scales around the label's leading edge", () => {
+  for (const [direction, isRTL, origin] of [["left-to-right", false, "0% 50%"], ["right-to-left", true, "100% 50%"]] as const) {
+    it(`${direction}: single-line and multiline labels scale around ${origin}`, () => {
+      inDirection(isRTL, () => {
+        render(<ThemeProvider light><Input label="Single" defaultValue="Ada" /><Textarea label="Multi" rows={3} /></ThemeProvider>);
+        expect(originOf("Single")).toBe(origin);
+        expect(originOf("Multi")).toBe(origin);
+      });
+    });
+  }
 });
