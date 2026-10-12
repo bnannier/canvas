@@ -19,9 +19,15 @@ A direct decorative `CaptureHost` records its own paint without a parent underla
 
 `FrostView` references that host through `targetRef` and accepts `intensity` and
 `tint`. Sampling uses native matrices for ancestor transforms, scrolling and
-separate-window offsets. Ancestor capture targets are rejected. Idle and detached
-hosts release their capture recordings, while their foreground children remain
-mounted. `getCaptureStats()` supplies lifecycle diagnostics for native verification.
+separate-window offsets. Ancestor capture targets are rejected: a host that contains
+the frost would record the frost that samples it. The frost then draws no blur and
+calls its optional `onTargetRejected` once for that target, with
+`{ targetId, reason: "ancestor" }`, so the app can show its complete solid appearance
+instead (0.2.0 and newer; an older module refuses the same target silently). A host
+that is merely detached reports through `onAvailabilityChange` instead. Idle and
+detached hosts release their capture recordings, while their foreground children
+remain mounted. `getCaptureStats()` supplies lifecycle diagnostics for native
+verification.
 
 Canvas requires the complete `PaintHost`, `CaptureHost` and `FrostView` integration
 before activating this renderer. A missing or partial integration selects the
