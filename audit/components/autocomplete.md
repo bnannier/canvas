@@ -87,6 +87,7 @@ One row per finding. Severity: critical, high, medium, low. Cell: a capture id f
 | ID | Severity | Cell | Summary | Status | Fix commit |
 |---|---|---|---|---|---|
 | autocomplete-corner-1 | low | source | The web option row drew 10, off the web row; an option row is a menu row, the `control` corner, 8 (Dropdown's and Dark Factory's popover row), inside the 12 menu. The shape gate (test/design-rules-shape.test.ts) now takes a corner only as a role of its own platform's row that its component plays, the pill, square or a declared concentric corner. | fixed | 278270a8 |
+| autocomplete-float-center-1 | low | source | From the FloatingLabel turn (FL-20): as select-float-center-1, Autocomplete's Android floated label sits 0.5 to 1 dp above its designed centre at the default text size, centred in the padding box inside the indicator border. Fixed with Select's. | open |  |
 
 ## Sign-off
 
