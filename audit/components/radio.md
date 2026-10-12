@@ -80,6 +80,7 @@ One row per finding. Severity: critical, high, medium, low. Cell: a capture id f
 
 | ID | Severity | Cell | Summary | Status | Fix commit |
 |---|---|---|---|---|---|
+| radio-empty-1 | medium | source | From the FoundationReference turn (FR-2): a controlled value cleared to undefined now keeps the last value the parent gave, and the switch warns in development (src/style/use-controllable-state.ts), so undefined still means uncontrolled and a controlled RadioGroup has no way to be empty: an app cannot start it controlled with nothing chosen, or clear it, without remounting it. The question for this turn and the owner: give RadioGroup's `value` an explicit controlled empty value, `null` (the kit's own precedent: the charts' `selected: number | null`, DataTable's `sort: DataTableSort | null`), documented in the page with a clear test, a minor naming the capability (controlled empty selection), with the decision recorded in audit/DECISIONS.md; or keep undefined-only and document a remount (a new key) as the way to clear it. New public API, so the owner decides; nothing changed here. | open |  |
 
 ## Sign-off
 
