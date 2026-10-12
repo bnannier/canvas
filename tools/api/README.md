@@ -77,6 +77,12 @@ commit as its manifest entry.
   does a route nothing is staged for that is still open. A page existing ends nothing,
   since every planned page but the reference exists already and later turns write its
   sections.
+- **No other page presents a kit internal as API.** A deprecated alias or an
+  `internal-by-accident` helper that a snippet imports, calls, renders or names as a type,
+  or that an inline code span sets alone (`useMinTargetSlop`), fails on any page but the
+  foundation reference, and so it does in DESIGN.md and README.md, which the package
+  ships. Prose, JSX text, a style key (React Native's `fontStyle`) and a JSX attribute
+  never count.
 - **The foundation reference is every deprecated alias's home.** A `deprecated-alias` is
   staged for `foundation` or documented there, never anywhere else, and once the page
   exists it lists every one (the owner's K12-10 OD2 decision).
