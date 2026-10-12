@@ -8,6 +8,7 @@ export const GLYPH_RASTERS: Record<string, number> = {
   alertTriangle: require("../../assets/images/menu-glyphs/alertTriangle.png"),
   alignLeft: require("../../assets/images/menu-glyphs/alignLeft.png"),
   appWindow: require("../../assets/images/menu-glyphs/appWindow.png"),
+  archive: require("../../assets/images/menu-glyphs/archive.png"),
   award: require("../../assets/images/menu-glyphs/award.png"),
   barChart2: require("../../assets/images/menu-glyphs/barChart2.png"),
   bell: require("../../assets/images/menu-glyphs/bell.png"),
