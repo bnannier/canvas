@@ -121,3 +121,12 @@ Decided by the owner on 2026-10-11, each the recommendation offered.
 | BO-4 | The law's sentences on the unmeasured frame and the desktop form factor | Approved: CLAUDE.md and AGENTS.md say, identically, that a container may seed its unmeasured frame from the viewport bucket (`seedViewport`, `useContainerWidth`'s fallback), withheld until hydration and following a BreakpointOverride, and that the tier is the window width, with no separate desktop-OS tier. |
 | BO-8 | The docs' simulated form factor and window-level chrome | Tier-only, documented: BreakpointOverride pins the tier, not the geometry; sheets and drawers lay out against the real window. No new kit API. |
 | BO-10 | Measured container components that keep their window subscription after their first measurement | Accept the cost: about 8 ms of script once per breakpoint crossing on the DataTable page (29 ms against 21 ms unsubscribed, median of 20 runs on the docs export), invisible to a user; no tooling rule and no opt-out on useBreakpoint. The useBreakpoint half under a BreakpointOverride is fixed (0e53fce1). |
+
+## GlassModalBlurTarget turn (Foundations, 2026-10-12)
+
+Decided by the owner on 2026-10-12, each the recommendation offered.
+
+| ID | Question | Decision |
+|---|---|---|
+| GMBT-2 | GlassModalBlurTarget placed in the main window hands its descendants the plane they sit in, which @nannier/canvas-blur rejects, so Android painted a tint with no blur | Fall back to solid: @nannier/canvas-blur's frost view reports when it rejects a target (an optional event, a minor of that companion package naming the event), and the bridge then resolves the complete solid skin, as the materials law requires of an unsafe material. |
+| GMBT-3 | What an Android Modal's frost shows when the Modal opens over another Modal or a visible Toast | Page only, documented: the frost samples the outermost OverlayProvider's page content, as today, and /integration says so as an Android limit; full-stack sampling may come later as its own phase. |
