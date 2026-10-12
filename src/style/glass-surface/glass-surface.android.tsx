@@ -10,7 +10,8 @@ import { useCaptureDemand } from "./capture-target.js";
 import { useMaterialResolution } from "./use-material-theme.js";
 import {
   GlassBox, CLEAR_INTENSITY, brandOverMaterial, clearSurfaceTint, contrastBorderFor, frostMethodProps,
-  SHEER_FILL_OPACITY, materialFill, specularRim, surfaceUnderFill, surfaceIntensity, type GlassSurfaceProps,
+  SHEER_FILL_OPACITY, materialFill, specularRim, surfaceUnderFill, surfaceIntensity, useBlurTargetRejection,
+  type GlassSurfaceProps,
 } from "./glass-surface.shared.js";
 
 const EMPTY_TARGET = { current: null };
@@ -20,6 +21,9 @@ export function GlassSurface(props: GlassSurfaceProps) {
   const { layer = "functional", sheer, tint, brand, style, clear } = props;
   const solid = resolved.renderer === "solid";
   useCaptureDemand(requestedTarget ?? EMPTY_TARGET, !solid && NativeCaptureFrost !== undefined);
+  // A frost refuses only a plane that contains it: under a GlassModalBlurTarget that sits
+  // in the plane's own window. The bridge then withdraws the plane and this resolves solid.
+  const reject = useBlurTargetRejection();
   // Sheer is a content-only treatment. It must never thin a menu or error verdict.
   const translucent = sheer && layer === "content";
   const intensity = clear ? CLEAR_INTENSITY : surfaceIntensity(layer, translucent);
@@ -32,7 +36,7 @@ export function GlassSurface(props: GlassSurfaceProps) {
   const over = nativeCapture || brandOverMaterial(brand, tint);
   const material = solid ? null : <>
     {over ? null : tintLayer}
-    {NativeCaptureFrost && target ? <NativeCaptureFrost targetRef={target} intensity={intensity} tint={theme.dark ? "dark" : "light"} style={fill} />
+    {NativeCaptureFrost && target ? <NativeCaptureFrost targetRef={target} intensity={intensity} tint={theme.dark ? "dark" : "light"} style={fill} onTargetRejected={reject ? () => reject(target) : undefined} />
       : FrostView ? <FrostView intensity={intensity} tint={theme.dark ? "dark" : "light"} {...frostMethodProps(requiresBlurTarget, target)} style={fill} /> : null}
     {over ? tintLayer : null}
     <View style={rim} />
