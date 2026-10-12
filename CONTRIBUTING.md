@@ -74,19 +74,24 @@ macOS.
 ### Adding, removing or documenting an export
 
 The style foundation's public names are listed one by one in `src/style/public.ts`;
-`src/style/index.ts` is the kit's internal hub and never reaches the package, so a helper
-added there stays internal. Every export of `@nannier/canvas` and every file npm packs
-under `@nannier/canvas/styles/*` has an entry in `tools/api/manifest.ts`: its kind
-(component, part, hook, token, utility, type, deprecated alias, or internal by
-accident) and the docs route that names it, or, until a page does, a `PENDING_DOCS`
-entry with the route planned for it. A public value carries a JSDoc summary on its
-declaration. `bun run check:api` fails when an export or a file appears or disappears
-without its entry, when a kind disagrees with the source, when a public value has no
-summary, when a named route does not exist or never names the export, when a staged
-name's planned page already names it, and when the materials manifest records a
-different docs route. An intended change to the surface also refreshes its snapshot
-with `bun run check:api --write-snapshot`. Read the source and the page before writing
-an entry; `tools/api/README.md` has the rules.
+`src/style/index.ts` is the kit's internal hub and never reaches the package, so a
+helper added there stays internal. Every export of `@nannier/canvas` and every file npm
+packs under `@nannier/canvas/styles/*` has an entry in `tools/api/manifest.ts`: its kind
+(component, part, hook, token, utility, type, deprecated alias, or internal by accident)
+and the docs route that names it, or, until a page does, a `PENDING_DOCS` entry with the
+route planned for it. A public value carries a JSDoc summary on its declaration. `bun
+run check:api` fails when an export or a file appears or disappears without its entry,
+when a kind disagrees with the source, when a public value has no summary, when a named
+route does not exist or never names the export, when a staged name's planned page
+already names it, and when the materials manifest records a different docs route. A
+deprecated alias lives on the generated foundation reference (`/foundation`), which
+lists it with what to use instead: it needs a summary and `@deprecated` text naming its
+replacement, and no other page, and no document the package ships, may present it or a
+kit internal as API. A planned route closes at the audit turn that owns it
+(`PLANNED_ROUTES` in the manifest), so nothing stays staged for a closed route. An
+intended change to the surface also refreshes its snapshot with `bun run check:api
+--write-snapshot`. Read the source and the page before writing an entry;
+`tools/api/README.md` has the rules.
 
 ## Changesets and releases
 
