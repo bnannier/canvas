@@ -11,13 +11,13 @@ Audit checklist for the style-layer foundation `LoopView`, audited for its contr
 | Public exports | 10: `createLoopChannel` (internal-by-accident), `LoopChannel` (internal-by-accident, a type), `LoopChannelOptions` (internal-by-accident, a type), `LoopChannelState` (internal-by-accident, a type), `LoopTrack` (internal-by-accident, a type), `LoopView` (internal-by-accident), `LoopViewProps` (internal-by-accident, a type), `trackAt` (internal-by-accident), `trackSamples` (internal-by-accident), `trackValueAt` (internal-by-accident) |
 | K12-2 status | 10 deprecated alias to come (K12-2): createLoopChannel, LoopChannel, LoopChannelOptions, LoopChannelState, LoopTrack, LoopView, LoopViewProps, trackAt, trackSamples, trackValueAt |
 | Documented on | none yet: the public API manifest names no page for any of its exports |
-| Docs planned | `foundation` (not built yet): createLoopChannel, LoopChannel, LoopChannelOptions, LoopChannelState, LoopTrack, LoopView, LoopViewProps, trackAt, trackSamples, trackValueAt |
+| Docs planned | `foundation`: createLoopChannel, LoopChannel, LoopChannelOptions, LoopChannelState, LoopTrack, LoopView, LoopViewProps, trackAt, trackSamples, trackValueAt |
 | Materials manifest | LoopView: style, inherited; docs route none (`docsRoute: null`); verification inherited-composition, semantic-state |
 | Tests of it | 1 (importing one of its public exports or one of its implementation's declarations by name, or named for it, `test/loop-view[-<what>].test.tsx`): `test/loop.test.tsx` |
 | Consumers | 2 components: 1 directly, 1 through other kit components (one row each below, read from the source by `tools/audit/kit-graph.ts`) |
 | Pages using it | none: no pattern or template entry names one of its exports |
 | Capture through | 2, in this order: components `skeleton`, `data-table`; pages none |
-| Not captured | guide pages, which the capture inventory (component, pattern and template pages) does not hold: `/foundation` (planned for createLoopChannel, LoopChannel, LoopChannelOptions, LoopChannelState, LoopTrack, LoopView, LoopViewProps, trackAt, trackSamples, trackValueAt; not built yet) |
+| Not captured | guide pages, which the capture inventory (component, pattern and template pages) does not hold: `/foundation` (planned for createLoopChannel, LoopChannel, LoopChannelOptions, LoopChannelState, LoopTrack, LoopView, LoopViewProps, trackAt, trackSamples, trackValueAt) |
 | Turn record | `audit/turns/loop-view.md`, written by `bun run audit:turn -- --slug=loop-view --phase=before\|after` (the before and after capture runs) |
 
 | Consumer | Reaches it | Through |

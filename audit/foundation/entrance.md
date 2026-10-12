@@ -10,14 +10,14 @@ Audit checklist for the style-layer foundation `Entrance`, audited for its contr
 | Seams | 1, the private declarations it alone reads (`tools/audit/foundations.ts` `foundationCode`), which its consumers are also found through: `HELD` (src/style/entrance.tsx) |
 | Public exports | 2: `Entrance` (deprecated-alias), `EntranceProps` (deprecated-alias, a type) |
 | K12-2 status | 2 deprecated alias already: Entrance, EntranceProps |
-| Documented on | none yet: the public API manifest names no page for any of its exports |
-| Docs planned | `foundation` (not built yet): Entrance, EntranceProps |
-| Materials manifest | Entrance: style, inherited; docs route none (`docsRoute: null`); verification inherited-composition, semantic-state |
+| Documented on | `foundation`: Entrance, EntranceProps ("Entrance") |
+| Docs planned | none: every export has its page |
+| Materials manifest | Entrance: style, inherited; docs route `foundation`; verification inherited-composition, semantic-state |
 | Tests of it | 2 (importing one of its public exports or one of its implementation's declarations by name, or named for it, `test/entrance[-<what>].test.tsx`): `test/entrance-readiness.test.tsx`, `test/entrance.test.tsx` |
 | Consumers | 13 components: 9 through shared modules, 4 through other kit components (one row each below, read from the source by `tools/audit/kit-graph.ts`) |
 | Pages using it | none: no pattern or template entry names one of its exports |
 | Capture through | 13, in this order: components `autocomplete`, `button-group`, `dropdown`, `popover`, `select`, `phone-input`, `calendar`, `command`, `row-menu`, `avatar`, `field`, `board`, `navbars`; pages none |
-| Not captured | guide pages, which the capture inventory (component, pattern and template pages) does not hold: `/foundation` (planned for Entrance, EntranceProps; not built yet) |
+| Not captured | guide pages, which the capture inventory (component, pattern and template pages) does not hold: `/foundation` (documents Entrance, EntranceProps) |
 | Turn record | `audit/turns/entrance.md`, written by `bun run audit:turn -- --slug=entrance --phase=before\|after` (the before and after capture runs) |
 
 | Consumer | Reaches it | Through |

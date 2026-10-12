@@ -17,675 +17,707 @@ export interface DeprecatedName {
   replacement: string | null;
   /** That name's docs route, when a page documents it. */
   replacementRoute: string | null;
-  /** The page section it is listed under, or null before it has one. */
-  section: string | null;
 }
 
-export const DEPRECATED_NAMES: DeprecatedName[] = [
-  {
-    "name": "activeIndicator",
-    "type": false,
-    "summary": "The Material / iOS bottom \"active indicator\" as a bottom border that thickens when the field becomes active, WITHOUT reflowing the field's content.",
-    "instead": "Kit internals, with no replacement: the bottom indicator `Input`, `Select` and `Autocomplete` draw for their own focus and open states. It keeps working until a major.",
-    "replacement": null,
-    "replacementRoute": null,
-    "section": null
-  },
-  {
-    "name": "ActiveIndicatorOptions",
-    "type": true,
-    "summary": "The options of `activeIndicator`: whether the field is active, the indicator's colour and thickness at rest and when active, and the padding kept between the content and the indicator.",
-    "instead": "Kit internals, with no replacement: the options of the bottom indicator `Input`, `Select` and `Autocomplete` draw for themselves. It keeps working until a major.",
-    "replacement": null,
-    "replacementRoute": null,
-    "section": null
-  },
-  {
-    "name": "AnchoredOverlay",
-    "type": false,
-    "summary": "The kit's anchored card: a floating card placed against a trigger (below it by default, above it or beside it on request), fitted inside the window's visible band and safe area, over a transparent backdrop that closes it on an outside tap, on the window layer of the nearest OverlayProvider.",
-    "instead": "Kit internals: use `Popover` for a floating card of content, and `Dropdown`, `Select` or `Autocomplete` for a menu or an option list. It keeps working until a major.",
-    "replacement": "Popover",
-    "replacementRoute": "components/popover",
-    "section": null
-  },
-  {
-    "name": "AnchoredOverlayProps",
-    "type": true,
-    "summary": "The props of AnchoredOverlay.",
-    "instead": "Kit internals: use `PopoverProps` with `Popover`. It keeps working until a major.",
-    "replacement": "PopoverProps",
-    "replacementRoute": "components/popover",
-    "section": null
-  },
-  {
-    "name": "brandColors",
-    "type": false,
-    "summary": "The brand orb colours of the removed Backdrop organism, keyed by their historical hue names; nothing in the kit reads them.",
-    "instead": "The brand orbs painted the removed Backdrop organism, and the kit's colors are Dark Factory's now; nothing in the kit reads these. Kept, with their former values, until an owner-authorized major removes them (the `--orb-*` custom properties too).",
-    "replacement": null,
-    "replacementRoute": null,
-    "section": null
-  },
-  {
-    "name": "CodeToken",
-    "type": true,
-    "summary": "One span of a highlighted line: its text and its kind.",
-    "instead": "Kit internals: one span of `CodeBlock`'s own highlighter; pass `code` and `language` to `CodeBlock`. It keeps working until a major.",
-    "replacement": "CodeBlock",
-    "replacementRoute": "components/code-block",
-    "section": null
-  },
-  {
-    "name": "containerStyle",
-    "type": false,
-    "summary": "The root style for a measure: full width, capped at the step, centered or pinned to the start.",
-    "instead": "Kit internals: the root style `Container` resolves from its step booleans (`sm`, `lg`, `page` and the rest) and `start`, so use `Container`. It keeps working until a major.",
-    "replacement": "Container",
-    "replacementRoute": "components/container",
-    "section": null
-  },
-  {
-    "name": "controlRipple",
-    "type": false,
-    "summary": "The Android ripple of a round or icon-sized control (an avatar, an icon button): the same neutral ink, borderless, so it radiates from the touch point rather than filling a rectangle.",
-    "instead": "Kit internals, with no replacement: the borderless Android ripple the kit's round and icon-sized controls show for themselves (an icon `Button`, `Avatar` given `onPress`). It keeps working until a major.",
-    "replacement": null,
-    "replacementRoute": null,
-    "section": null
-  },
-  {
-    "name": "DASHBOARD_COLUMNS",
-    "type": false,
-    "summary": "The board's column count: every span is a number of these 12 columns.",
-    "instead": "Kit internals: the 12 columns `DashboardGrid` lays every widget's `span` on, so use `DashboardGrid`. It keeps working until a major.",
-    "replacement": "DashboardGrid",
-    "replacementRoute": "components/dashboard-grid",
-    "section": null
-  },
-  {
-    "name": "DashboardTier",
-    "type": true,
-    "summary": "The layout tier the grid renders at, resolved from the grid's OWN measured width (never the window).",
-    "instead": "Kit internals: the tier `DashboardGrid` resolves from its own measured width, so use `DashboardGrid`. It keeps working until a major.",
-    "replacement": "DashboardGrid",
-    "replacementRoute": "components/dashboard-grid",
-    "section": null
-  },
-  {
-    "name": "devWarn",
-    "type": false,
-    "summary": "Warn once per unique message, in development only.",
-    "instead": "Kit internals, with no replacement: the kit's own development warnings for data it resolves silently. It keeps working until a major.",
-    "replacement": null,
-    "replacementRoute": null,
-    "section": null
-  },
-  {
-    "name": "effectiveSpan",
-    "type": false,
-    "summary": "The width in columns `widget` occupies on `tier`, always within 1..12.",
-    "instead": "Kit internals: the span `DashboardGrid` gives a widget at its tier, from the widget's `span` and `narrowSpan`, so use `DashboardGrid`. It keeps working until a major.",
-    "replacement": "DashboardGrid",
-    "replacementRoute": "components/dashboard-grid",
-    "section": null
-  },
-  {
-    "name": "enableAndroidLayoutAnimations",
-    "type": false,
-    "summary": "Turn on React Native's LayoutAnimation where it needs turning on, the old architecture on Android, and do nothing elsewhere (the New Architecture enables it, and its flag only logs a warning there).",
-    "instead": "Kit internals, with no replacement: `Accordion` and `Collapsible` enable React Native's layout animations on Android for themselves. It keeps working until a major.",
-    "replacement": null,
-    "replacementRoute": null,
-    "section": null
-  },
-  {
-    "name": "Entrance",
-    "type": false,
-    "summary": "The readiness hold for an anchored card: renders `children` in one View that is invisible, untouchable and hidden from assistive technology until `ready` (and every enclosing Entrance's readiness, across a portal too) is true, then shows it in place with no motion.",
-    "instead": "Kit internals: the readiness hold every anchored card (Popover, Dropdown, Select, Autocomplete and the rest) applies to its own card until its placement is measured, so use those components. It keeps working until a major.",
-    "replacement": null,
-    "replacementRoute": null,
-    "section": null
-  },
-  {
-    "name": "EntranceProps",
-    "type": true,
-    "summary": "The props of Entrance, the readiness hold an anchored card's owner applies to it.",
-    "instead": "Kit internals: the props of the readiness hold every anchored card (Popover, Dropdown, Select, Autocomplete and the rest) applies to its own card, so use those components. It keeps working until a major.",
-    "replacement": null,
-    "replacementRoute": null,
-    "section": null
-  },
-  {
-    "name": "FloatingLabel",
-    "type": false,
-    "summary": "The Material 3 in-container floating label, which the Android skins of Input, Textarea, Select and Autocomplete render inside their field (the iOS and web skins title the field from above).",
-    "instead": "Kit internals: the label that Input, Textarea, Select and Autocomplete float for you; pass their `label` and `required` props. It keeps working until a major.",
-    "replacement": null,
-    "replacementRoute": null,
-    "section": null
-  },
-  {
-    "name": "FloatingLabelStyles",
-    "type": true,
-    "summary": "The label-placement slice a filled-field skin fulfills.",
-    "instead": "Kit skin internals: the label-placement slice of a field skin, with no replacement. It keeps working until a major.",
-    "replacement": null,
-    "replacementRoute": null,
-    "section": null
-  },
-  {
-    "name": "FLUID",
-    "type": false,
-    "summary": "The default measure: no cap, the container conforms to its parent.",
-    "instead": "Kit internals: the measure a `Container` with no step resolves to, the full width of its parent, so use `Container`. It keeps working until a major.",
-    "replacement": "Container",
-    "replacementRoute": "components/container",
-    "section": null
-  },
-  {
-    "name": "FOCUS_RESET",
-    "type": false,
-    "summary": "The style that removes the keyboard focus ring (a solid outline of width 0), for a control that paints a visible focus state of its own.",
-    "instead": "Kit internals, with no replacement: the kit's fields paint their own focus state, and `Pressable`, `TextInput` and `ScrollView` carry the themed focus ring, which an app never removes (WCAG 2.4.7). It keeps working until a major.",
-    "replacement": null,
-    "replacementRoute": null,
-    "section": null
-  },
-  {
-    "name": "fontStyle",
-    "type": false,
-    "summary": "Apply the theme's faces to a text style.",
-    "instead": "Kit internals: the kit's `Text` and `TextInput` apply the theme's typefaces (ThemeProvider `fonts`) themselves, so use `Text`, or `Typography` for a role of the type scale. It keeps working until a major.",
-    "replacement": "Text",
-    "replacementRoute": "components/text",
-    "section": null
-  },
-  {
-    "name": "GESTURE_SURFACE",
-    "type": false,
-    "summary": "The style that keeps the browser from claiming a touch gesture (`touchAction: \"none\"`), so a pinch on a kit component that owns one reaches it instead of zooming the page; a no-op natively.",
-    "instead": "Kit internals, with no replacement: the touch surface `GeoMap` claims from the browser for its pinch zoom. It keeps working until a major.",
-    "replacement": null,
-    "replacementRoute": null,
-    "section": null
-  },
-  {
-    "name": "gridCellWidth",
-    "type": false,
-    "summary": "The px width of one cell when `cols` cells and their gaps split `width`.",
-    "instead": "Kit internals: the width `Grid` gives each cell from its own measured width, so use `Grid`. It keeps working until a major.",
-    "replacement": "Grid",
-    "replacementRoute": "components/grid",
-    "section": null
-  },
-  {
-    "name": "gridColumns",
-    "type": false,
-    "summary": "How many tiles of at least `minTileWidth` fit `width` with `gap` between them: at least 1, capped at `columns` when given.",
-    "instead": "Kit internals: how many columns `Grid` fits from its `minTileWidth` and `columns`, so use `Grid`. It keeps working until a major.",
-    "replacement": "Grid",
-    "replacementRoute": "components/grid",
-    "section": null
-  },
-  {
-    "name": "HIDDEN_FROM_A11Y",
-    "type": false,
-    "summary": "The props that take a node out of the accessibility tree, spread together: `accessibilityElementsHidden` (VoiceOver), `importantForAccessibility: \"no-hide-descendants\"` (TalkBack) and `aria-hidden` (the web, where an `aria-labelledby` name computation also skips it).",
-    "instead": "Kit internals: kit components hide their own decorative content, for example Icon `decorative`. It keeps working until a major.",
-    "replacement": null,
-    "replacementRoute": null,
-    "section": null
-  },
-  {
-    "name": "holdThen",
-    "type": false,
-    "summary": "Shape one loop iteration as a hold followed by a sweep: the value stays parked at 0 for the first `hold` fraction of the cycle (0..1), then `easing` carries it 0 to 1 over the remainder.",
-    "instead": "Kit internals, with no replacement: a loop easing behind the kit's own functional motion; shape an app's own easing with React Native's `Easing`. It keeps working until a major.",
-    "replacement": null,
-    "replacementRoute": null,
-    "section": null
-  },
-  {
-    "name": "HUE_WASH",
-    "type": false,
-    "summary": "The alpha of a hue's 500 step painted as a wash under the glass material, per scheme: the tinted pane of an Alert, a status Badge, a coloured Chip, before Dark Factory's soft washes replaced it.",
-    "instead": "The kit no longer paints with it: Dark Factory's soft washes replaced it (`statusColors` for the status tones, and a Chip's free hue at Dark Factory's soft alpha). Kept, unchanged, for code that reads it, until a major release removes it.",
-    "replacement": "statusColors",
-    "replacementRoute": null,
-    "section": null
-  },
-  {
-    "name": "innerFill",
-    "type": false,
-    "summary": "The fill a role paints inside a surface: the opaque token in solid mode, an ink tint under glass.",
-    "instead": "Kit internals, with no replacement: the fill a kit component paints inside a glass surface (a hovered or selected row, a header band), which every component paints for itself under ThemeProvider `glass`. It keeps working until a major.",
-    "replacement": null,
-    "replacementRoute": null,
-    "section": null
-  },
-  {
-    "name": "InnerFillRole",
-    "type": true,
-    "summary": "The opaque role a fill inside a glass surface stands for: `muted`, `secondary` or `accent`.",
-    "instead": "Kit internals, with no replacement: the roles of the fills a kit component paints inside a glass surface for itself. It keeps working until a major.",
-    "replacement": null,
-    "replacementRoute": null,
-    "section": null
-  },
-  {
-    "name": "InnerFillStrength",
-    "type": true,
-    "summary": "How strong a fill inside a glass surface is: `faint` (a hover, an alternating row), `soft` (a selected row, a resting chip) or `firm` (a pressed or active fill).",
-    "instead": "Kit internals, with no replacement: the strengths of the fills a kit component paints inside a glass surface for itself. It keeps working until a major.",
-    "replacement": null,
-    "replacementRoute": null,
-    "section": null
-  },
-  {
-    "name": "inverseDenseTint",
-    "type": false,
-    "summary": "The dense-layer tint for an INVERSE surface: a tooltip bubble, which paints the scheme's ink as its fill and the page colour as its text, or the M3 snackbar, which paints the toast pill (`inverse`) with its own light ink.",
-    "instead": "Kit internals, with no replacement: the glass under-fill of the kit's inverse surfaces, `Tooltip`'s bubble and `Toast`. It keeps working until a major.",
-    "replacement": null,
-    "replacementRoute": null,
-    "section": null
-  },
-  {
-    "name": "isGlass",
-    "type": false,
-    "summary": "Whether the theme is painting the glass material right now (the layered model).",
-    "instead": "Kit internals: whether the glass material paints right now; read `surface`, `reducedTransparency` and `increasedContrast` from `useTheme`. It keeps working until a major.",
-    "replacement": "useTheme",
-    "replacementRoute": "theming",
-    "section": null
-  },
-  {
-    "name": "isRTL",
-    "type": false,
-    "summary": "Whether the layout runs right to left, read through the one accessor React Native and react-native-web both implement (`I18nManager.getConstants().isRTL`).",
-    "instead": "Kit internals, with no replacement: the kit's components mirror themselves in a right-to-left layout, and an app reads React Native's `I18nManager.getConstants().isRTL`. It keeps working until a major.",
-    "replacement": null,
-    "replacementRoute": null,
-    "section": null
-  },
-  {
-    "name": "keyframes",
-    "type": false,
-    "summary": "Shape one loop iteration from keyframes: `points` are `[t, value]` pairs with t rising from 0 to 1, joined by straight lines, so a blink (visible, a quick fade out, hidden, a quick fade in) is a single `Animated.timing` whose easing IS the schedule.",
-    "instead": "Kit internals, with no replacement: a loop easing behind the kit's own functional motion (the `InputOTP` caret); shape an app's own easing with React Native's `Easing`. It keeps working until a major.",
-    "replacement": null,
-    "replacementRoute": null,
-    "section": null
-  },
-  {
-    "name": "LabelContent",
-    "type": false,
-    "summary": "The label text plus, when required, a trailing destructive \"*\".",
-    "instead": "Kit internals: the label text and required marker that Input, Textarea, Select, Autocomplete, Field, Stepper and PhoneInput render from their `label` and `required` props. It keeps working until a major.",
-    "replacement": null,
-    "replacementRoute": null,
-    "section": null
-  },
-  {
-    "name": "Measure",
-    "type": true,
-    "summary": "The measure a Container resolves: a step of the width scale, or `fluid` for none.",
-    "instead": "Kit internals: the width-scale step a `Container` resolves, which its step booleans name (`MeasureProps`). It keeps working until a major.",
-    "replacement": "MeasureProps",
-    "replacementRoute": null,
-    "section": null
-  },
-  {
-    "name": "measureOf",
-    "type": false,
-    "summary": "The measure a Container's props resolve to: `fluid`, else the narrowest step passed, else `fluid`.",
-    "instead": "Kit internals: the step `Container` resolves from its step booleans, so use `Container`. It keeps working until a major.",
-    "replacement": "Container",
-    "replacementRoute": "components/container",
-    "section": null
-  },
-  {
-    "name": "MinTargetOptions",
-    "type": true,
-    "summary": "The options of the touch area a control extends to the platform minimum: which axes.",
-    "instead": "Kit internals, with no replacement: the options of the touch area the kit's controls extend for themselves. It keeps working until a major.",
-    "replacement": null,
-    "replacementRoute": null,
-    "section": null
-  },
-  {
-    "name": "minTargetSlop",
-    "type": false,
-    "summary": "The insets that bring a `width` x `height` control up to `minTarget`, or undefined when it already meets it.",
-    "instead": "Kit internals, with no replacement: the kit's controls meet the platform minimum touch target themselves (`Button`, an icon `Button` included, `Chip`, and `Avatar`, `Card` and the list rows given `onPress`), and a control the kit lacks belongs in the kit. It keeps working until a major.",
-    "replacement": null,
-    "replacementRoute": null,
-    "section": null
-  },
-  {
-    "name": "MONO_FONT",
-    "type": false,
-    "summary": "The kit's monospace face per platform: Menlo on iOS, and the `monospace` alias on Android and on the web, where react-native-web maps it onto the browser's stack.",
-    "instead": "Kit internals: the monospace face the `mono` and `code` roles of `Typography` set, so use `Typography` `mono`, or `code` for an inline code pill. It keeps working until a major.",
-    "replacement": "Typography",
-    "replacementRoute": "components/typography",
-    "section": null
-  },
-  {
-    "name": "moveWidget",
-    "type": false,
-    "summary": "Move `dragId` immediately before or after `targetId` within the id `order`, returning a NEW array (input untouched).",
-    "instead": "Kit internals: the reorder `DashboardGrid` applies on a drop; use `DashboardGrid`'s `order`, `defaultOrder` and `onOrderChange`. It keeps working until a major.",
-    "replacement": "DashboardGrid",
-    "replacementRoute": "components/dashboard-grid",
-    "section": null
-  },
-  {
-    "name": "normalizeWheelDelta",
-    "type": false,
-    "summary": "Scroll travel in pixels, whatever unit `deltaMode` says the browser used.",
-    "instead": "Kit internals, with no replacement: the wheel travel `GeoMap` reads for its zoom. It keeps working until a major.",
-    "replacement": null,
-    "replacementRoute": null,
-    "section": null
-  },
-  {
-    "name": "orderedWidgets",
-    "type": false,
-    "summary": "Arrange `widgets` by the id `order`, returning a NEW array (inputs untouched).",
-    "instead": "Kit internals: how `DashboardGrid` reconciles an order with its widgets; pass `order` or `defaultOrder` to `DashboardGrid`. It keeps working until a major.",
-    "replacement": "DashboardGrid",
-    "replacementRoute": "components/dashboard-grid",
-    "section": null
-  },
-  {
-    "name": "placeOverlay",
-    "type": false,
-    "summary": "The card's outlet-relative position (pure, so the branch logic is testable).",
-    "instead": "Kit internals: the placement `Popover`, `Dropdown` and `Select` apply for you. It keeps working until a major.",
-    "replacement": null,
-    "replacementRoute": null,
-    "section": null
-  },
-  {
-    "name": "platformDisabledDim",
-    "type": false,
-    "summary": "The opacity each platform's own disabled controls take (the hand-off's `--p-disabled`): 0.4 on iOS, Material 3's 0.38 on Android and 0.5 on the web, for a skin one component shares across every platform.",
-    "instead": "Kit internals, with no replacement: the platform's disabled dim the kit's controls take for themselves when `disabled`. It keeps working until a major.",
-    "replacement": null,
-    "replacementRoute": null,
-    "section": null
-  },
-  {
-    "name": "platformMinTarget",
-    "type": false,
-    "summary": "The running platform's minimum, for a component that ships ONE shared skin across all three platforms (its look is genuinely platform-neutral, so there is nothing per-OS to declare).",
-    "instead": "Kit internals, with no replacement: the platform minimum the kit's controls meet for themselves (`Button`, `Chip`, and `Avatar`, `Card` and the list rows given `onPress`). It keeps working until a major.",
-    "replacement": null,
-    "replacementRoute": null,
-    "section": null
-  },
-  {
-    "name": "pressDim",
-    "type": false,
-    "summary": "The press dim of iOS and the web: the given opacity while pressed (0.9 by default), and null on Android, where the ripple carries the press and a dim would signal it twice.",
-    "instead": "Kit internals, with no replacement: the iOS and web press dim the kit's controls show for themselves (`Button`, `Chip`, and `Card` and the list rows given `onPress`). It keeps working until a major.",
-    "replacement": null,
-    "replacementRoute": null,
-    "section": null
-  },
-  {
-    "name": "resetDevWarnings",
-    "type": false,
-    "summary": "Clear the once-per-message cache.",
-    "instead": "Kit test internals, with no replacement: clears the kit's own development warnings between tests. It keeps working until a major.",
-    "replacement": null,
-    "replacementRoute": null,
-    "section": null
-  },
-  {
-    "name": "rippleClip",
-    "type": false,
-    "summary": "`overflow: \"hidden\"` on Android and nothing elsewhere, for a rounded PARENT whose children carry a bounded ripple, so the ripple keeps to the parent's corners while an iOS shadow on the parent survives.",
-    "instead": "Kit internals, with no replacement: the Android clip the kit's rounded surfaces put around their own ripple. It keeps working until a major.",
-    "replacement": null,
-    "replacementRoute": null,
-    "section": null
-  },
-  {
-    "name": "RovingFocusOptions",
-    "type": true,
-    "summary": "The options of `useRovingFocus`: the number of items, the active one, what activating an item does, which arrows move, the layout direction, whether the ends wrap, and which items are disabled.",
-    "instead": "Kit internals, with no replacement: the options of the arrow-key focus `Tabs`, `RadioGroup` and `Listbox` move for themselves. It keeps working until a major.",
-    "replacement": null,
-    "replacementRoute": null,
-    "section": null
-  },
-  {
-    "name": "RovingItemProps",
-    "type": true,
-    "summary": "The props one item of a roving group spreads onto its pressable: its tab stop, its ref and its key handler.",
-    "instead": "Kit internals, with no replacement: the props of one item in the arrow-key focus `Tabs`, `RadioGroup` and `Listbox` move for themselves. It keeps working until a major.",
-    "replacement": null,
-    "replacementRoute": null,
-    "section": null
-  },
-  {
-    "name": "SsrBreakpointContext",
-    "type": false,
-    "summary": "The server-render breakpoint assumption.",
-    "instead": "Kit internals: pass ThemeProvider's `ssrBreakpoint` prop to set the bucket a server render assumes. It keeps working until a major.",
-    "replacement": "ThemeProvider",
-    "replacementRoute": "theming",
-    "section": null
-  },
-  {
-    "name": "StyleSheet",
-    "type": false,
-    "summary": "React Native's own StyleSheet, re-exported unchanged.",
-    "instead": "React Native's own StyleSheet, passed through, with no replacement in the kit: Canvas components take semantic props, never styles, so an app built from them needs none, and app-frame scaffolding the kit does not cover imports it from react-native. It keeps working until a major (audit K12-2 OD5).",
-    "replacement": null,
-    "replacementRoute": null,
-    "section": null
-  },
-  {
-    "name": "supportsNativeDriver",
-    "type": false,
-    "summary": "Whether React Native's native animated driver exists, so `useNativeDriver: true` runs an animation off the JS thread: true on iOS and Android, false on the web, where a true flag freezes a loop after one pass.",
-    "instead": "Kit internals, with no replacement: whether React Native's native animated driver exists, false on the web; an app's own `Animated` code reads `Platform.OS`. It keeps working until a major.",
-    "replacement": null,
-    "replacementRoute": null,
-    "section": null
-  },
-  {
-    "name": "surfaceRipple",
-    "type": false,
-    "summary": "The Android ripple of a content surface (a card, a list row, a tile): a neutral ink, the foreground at low alpha so it reads in both schemes, bounded to the surface.",
-    "instead": "Kit internals, with no replacement: the bounded Android ripple the kit's surfaces show for themselves (`Card` and the list rows given `onPress`). It keeps working until a major.",
-    "replacement": null,
-    "replacementRoute": null,
-    "section": null
-  },
-  {
-    "name": "syntaxColor",
-    "type": false,
-    "summary": "The theme-aware color for a token kind.",
-    "instead": "Kit internals: the ink `CodeBlock` paints a token kind in for the scheme; pass `code` and `language` to `CodeBlock`. It keeps working until a major.",
-    "replacement": "CodeBlock",
-    "replacementRoute": "components/code-block",
-    "section": null
-  },
-  {
-    "name": "tabularNums",
-    "type": false,
-    "summary": "Tabular figures: every digit the same width.",
-    "instead": "Kit internals: set figures read down a column or updated in place with `Typography`'s `tabular` prop. It keeps working until a major.",
-    "replacement": "Typography",
-    "replacementRoute": "components/typography",
-    "section": null
-  },
-  {
-    "name": "thereAndBack",
-    "type": false,
-    "summary": "Shape one loop iteration as an out-and-back: `easing` carries the value from 0 to 1 over the first half of the cycle and back down over the second, so a pulse, a breath or a shimmer is a single `Animated.timing` from 0 to 1 that ends where it began.",
-    "instead": "Kit internals, with no replacement: a loop easing behind the kit's own functional motion (the `Skeleton` shimmer); shape an app's own easing with React Native's `Easing`. It keeps working until a major.",
-    "replacement": null,
-    "replacementRoute": null,
-    "section": null
-  },
-  {
-    "name": "tokenize",
-    "type": false,
-    "summary": "Tokenize `code` into per-line spans for the given language.",
-    "instead": "Kit internals: `CodeBlock`'s own highlighter; pass `code` and `language` to `CodeBlock`. It keeps working until a major.",
-    "replacement": "CodeBlock",
-    "replacementRoute": "components/code-block",
-    "section": null
-  },
-  {
-    "name": "TokenKind",
-    "type": true,
-    "summary": "What one span of highlighted code is: plain text, a comment, a string, a keyword, a number, a tag, an attribute, a function name or a variable.",
-    "instead": "Kit internals: the token kinds `CodeBlock`'s highlighter tells apart; pass `code` and `language` to `CodeBlock`. It keeps working until a major.",
-    "replacement": "CodeBlock",
-    "replacementRoute": "components/code-block",
-    "section": null
-  },
-  {
-    "name": "TOUCH_TARGET",
-    "type": false,
-    "summary": "The platform minimums, from the two platforms' own guidance.",
-    "instead": "Kit internals, with no replacement: the platform minimums (44 pt on iOS, 48 dp on Android) the kit's controls meet for themselves (`Button`, `Chip`, and `Avatar`, `Card` and the list rows given `onPress`). It keeps working until a major.",
-    "replacement": null,
-    "replacementRoute": null,
-    "section": null
-  },
-  {
-    "name": "TouchTargetSkin",
-    "type": true,
-    "summary": "Skins that own a pressable declare this: the minimum, or null for none.",
-    "instead": "Kit skin internals, with no replacement: the minimum a kit skin declares for its own control. It keeps working until a major.",
-    "replacement": null,
-    "replacementRoute": null,
-    "section": null
-  },
-  {
-    "name": "useControllableState",
-    "type": false,
-    "summary": "One component's value, controlled by its parent or held by the component itself: the mode is latched at mount (a `controlled` value then means controlled), the change callback fires in both modes, and a controlled value cleared to undefined keeps the last one the parent gave.",
-    "instead": "Kit internals, with no replacement: every kit control takes a controlled value with its change callback (`value`, `checked`, `open` and the like) or a default for uncontrolled use, and an app holds its own state with React's `useState`. It keeps working until a major.",
-    "replacement": null,
-    "replacementRoute": null,
-    "section": null
-  },
-  {
-    "name": "useDialogFocus",
-    "type": false,
-    "summary": "Move focus into an attached modal panel, trap Tab, and restore on close.",
-    "instead": "Kit internals: the focus trap and return `Dialog` and `AlertDialog` apply for you, so use `Dialog`. It keeps working until a major.",
-    "replacement": "Dialog",
-    "replacementRoute": "components/dialog",
-    "section": null
-  },
-  {
-    "name": "useEscapeKey",
-    "type": false,
-    "summary": "Dismiss the foremost active overlay on web Escape; no document listener on native.",
-    "instead": "Kit internals, with no replacement: `Dialog`, `AlertDialog`, `Drawer`, `ActionSheet`, `Popover` and the menus close on Escape themselves. It keeps working until a major.",
-    "replacement": null,
-    "replacementRoute": null,
-    "section": null
-  },
-  {
-    "name": "useHardwareBack",
-    "type": false,
-    "summary": "Close an open overlay on Android's hardware or gesture back: while `active`, back calls `onBack` and is consumed, so the app neither navigates nor exits under the overlay.",
-    "instead": "Kit internals, with no replacement: `Dialog`, `AlertDialog`, `Drawer`, `ActionSheet`, `Sidebar` and every anchored card close on Android's back themselves. It keeps working until a major.",
-    "replacement": null,
-    "replacementRoute": null,
-    "section": null
-  },
-  {
-    "name": "useMinTargetSlop",
-    "type": false,
-    "summary": "Measure a pressable and extend its touch area to the platform minimum.",
-    "instead": "Kit internals, with no replacement: the kit's controls extend their own touch area to the platform minimum from their first frame (`Button`, an icon `Button` included, `Chip`, and `Avatar`, `Card` and the list rows given `onPress`), and a control the kit lacks belongs in the kit, not in a hand-built Pressable. It keeps working until a major.",
-    "replacement": null,
-    "replacementRoute": null,
-    "section": null
-  },
-  {
-    "name": "useOverlayAnchor",
-    "type": false,
-    "summary": "The resolved side plus where the trigger's center sits along the card (`centerX`, measured from the card edge a decoration's `left` inset is measured from: the physical left, or the start edge where React Native swaps `left` and `right` in a right-to-left layout) and the card's width, for a decoration that aims at the trigger.",
-    "instead": "Kit internals: the anchor a kit card's own decoration reads (Popover's beak). It keeps working until a major.",
-    "replacement": null,
-    "replacementRoute": null,
-    "section": null
-  },
-  {
-    "name": "useOverlaySide",
-    "type": false,
-    "summary": "The side of its trigger an anchored card actually took once collisions were resolved (`above`, `below`, or beside at the `start` or `end`), for a decoration that points at the trigger.",
-    "instead": "Kit internals: the side a kit card's own decoration reads (Popover's beak). It keeps working until a major.",
-    "replacement": null,
-    "replacementRoute": null,
-    "section": null
-  },
-  {
-    "name": "usePopoverFocus",
-    "type": false,
-    "summary": "Move focus into an attached nonmodal panel and restore on close.",
-    "instead": "Kit internals: the focus move and return `Popover` applies for you, so use `Popover`. It keeps working until a major.",
-    "replacement": "Popover",
-    "replacementRoute": "components/popover",
-    "section": null
-  },
-  {
-    "name": "useRovingFocus",
-    "type": false,
-    "summary": "Roving keyboard focus for a composite widget (the WAI-ARIA pattern Tabs, RadioGroup and Listbox share): the group is one tab stop, the arrows, Home and End move focus and activate the item it lands on, a disabled item is skipped and never the tab stop, and native rows keep their own focus and click support.",
-    "instead": "Kit internals, with no replacement: the arrow keys, Home and End of `Tabs`, `RadioGroup` and `Listbox`, which move focus and selection for themselves. It keeps working until a major.",
-    "replacement": null,
-    "replacementRoute": null,
-    "section": null
-  },
-  {
-    "name": "useWheel",
-    "type": false,
-    "summary": "Wheel and trackpad-pinch zoom on the web: while `active`, a non-passive wheel listener on the returned ref's node reports each gesture in pixels with the pointer's position, and suppresses the page's scroll only when `onWheel` claims it.",
-    "instead": "Kit internals, with no replacement: `GeoMap`'s wheel and trackpad pinch zoom. It keeps working until a major.",
-    "replacement": null,
-    "replacementRoute": null,
-    "section": null
-  },
-  {
-    "name": "useWindowDimensions",
-    "type": false,
-    "summary": "React Native's own useWindowDimensions, re-exported unchanged.",
-    "instead": "React Native's own hook, passed through: use `useBreakpoint` or `useFormFactor` for window-level chrome, `useContainerWidth` or `useMeasuredWidth` inside a component, or React Native's own `useWindowDimensions` for raw pixels. It keeps working until a major.",
-    "replacement": null,
-    "replacementRoute": null,
-    "section": null
-  },
-  {
-    "name": "WheelGesture",
-    "type": true,
-    "summary": "One notch or trackpad swipe, normalized.",
-    "instead": "Kit internals, with no replacement: one wheel gesture as `GeoMap`'s zoom reads it. It keeps working until a major.",
-    "replacement": null,
-    "replacementRoute": null,
-    "section": null
-  },
-  {
-    "name": "withInnerFill",
-    "type": false,
-    "summary": "A skin fill INSIDE a glass pane: under glass its opaque `backgroundColor` is replaced by the ink tint of the given strength (so a header band, a stripe or a pressed row stays translucent over the material); in solid mode the style is returned as is.",
-    "instead": "Kit internals, with no replacement: a skin fill turned translucent inside a glass surface, which every kit component does for itself under ThemeProvider `glass`. It keeps working until a major.",
-    "replacement": null,
-    "replacementRoute": null,
-    "section": null
+/** The title of one of the page's sections. */
+export type DeprecatedSectionTitle = "Overlay machinery" | "Entrance" | "Field label" | "Viewport tier" | "Focus and keyboard" | "Touch target" | "Press feedback" | "Glass fills" | "Motion" | "Gestures" | "Type and colour" | "Layout" | "State and warnings" | "CodeBlock internals" | "DashboardGrid internals" | "React Native pass-throughs";
+
+export interface DeprecatedSection {
+  /** The section's heading. */
+  title: DeprecatedSectionTitle;
+  /** The line under the heading. */
+  about: string;
+  /** Its deprecated names, in name order. */
+  names: DeprecatedName[];
+}
+
+export const DEPRECATED_SECTIONS: DeprecatedSection[] = [
+  {
+    "title": "Overlay machinery",
+    "about": "The anchored card behind Popover, Dropdown, Select, Autocomplete and the other menus and option lists, and the placement and side its decorations read.",
+    "names": [
+      {
+        "name": "AnchoredOverlay",
+        "type": false,
+        "summary": "The kit's anchored card: a floating card placed against a trigger (below it by default, above it or beside it on request), fitted inside the window's visible band and safe area, over a transparent backdrop that closes it on an outside tap, on the window layer of the nearest OverlayProvider.",
+        "instead": "Kit internals: use `Popover` for a floating card of content, and `Dropdown`, `Select` or `Autocomplete` for a menu or an option list. It keeps working until a major.",
+        "replacement": "Popover",
+        "replacementRoute": "components/popover"
+      },
+      {
+        "name": "AnchoredOverlayProps",
+        "type": true,
+        "summary": "The props of AnchoredOverlay.",
+        "instead": "Kit internals: use `PopoverProps` with `Popover`. It keeps working until a major.",
+        "replacement": "PopoverProps",
+        "replacementRoute": "components/popover"
+      },
+      {
+        "name": "placeOverlay",
+        "type": false,
+        "summary": "The card's outlet-relative position (pure, so the branch logic is testable).",
+        "instead": "Kit internals: the placement `Popover`, `Dropdown` and `Select` apply for you. It keeps working until a major.",
+        "replacement": null,
+        "replacementRoute": null
+      },
+      {
+        "name": "useOverlayAnchor",
+        "type": false,
+        "summary": "The resolved side plus where the trigger's center sits along the card (`centerX`, measured from the card edge a decoration's `left` inset is measured from: the physical left, or the start edge where React Native swaps `left` and `right` in a right-to-left layout) and the card's width, for a decoration that aims at the trigger.",
+        "instead": "Kit internals: the anchor a kit card's own decoration reads (Popover's beak). It keeps working until a major.",
+        "replacement": null,
+        "replacementRoute": null
+      },
+      {
+        "name": "useOverlaySide",
+        "type": false,
+        "summary": "The side of its trigger an anchored card actually took once collisions were resolved (`above`, `below`, or beside at the `start` or `end`), for a decoration that points at the trigger.",
+        "instead": "Kit internals: the side a kit card's own decoration reads (Popover's beak). It keeps working until a major.",
+        "replacement": null,
+        "replacementRoute": null
+      }
+    ]
+  },
+  {
+    "title": "Entrance",
+    "about": "The readiness hold an anchored card applies to itself until its placement is measured.",
+    "names": [
+      {
+        "name": "Entrance",
+        "type": false,
+        "summary": "The readiness hold for an anchored card: renders `children` in one View that is invisible, untouchable and hidden from assistive technology until `ready` (and every enclosing Entrance's readiness, across a portal too) is true, then shows it in place with no motion.",
+        "instead": "Kit internals: the readiness hold every anchored card (Popover, Dropdown, Select, Autocomplete and the rest) applies to its own card until its placement is measured, so use those components. It keeps working until a major.",
+        "replacement": null,
+        "replacementRoute": null
+      },
+      {
+        "name": "EntranceProps",
+        "type": true,
+        "summary": "The props of Entrance, the readiness hold an anchored card's owner applies to it.",
+        "instead": "Kit internals: the props of the readiness hold every anchored card (Popover, Dropdown, Select, Autocomplete and the rest) applies to its own card, so use those components. It keeps working until a major.",
+        "replacement": null,
+        "replacementRoute": null
+      }
+    ]
+  },
+  {
+    "title": "Field label",
+    "about": "The label of the field family: Android's floating label, the label text with its required marker, the slice of a field skin that places it, and the props that hide decorative content.",
+    "names": [
+      {
+        "name": "FloatingLabel",
+        "type": false,
+        "summary": "The Material 3 in-container floating label, which the Android skins of Input, Textarea, Select and Autocomplete render inside their field (the iOS and web skins title the field from above).",
+        "instead": "Kit internals: the label that Input, Textarea, Select and Autocomplete float for you; pass their `label` and `required` props. It keeps working until a major.",
+        "replacement": null,
+        "replacementRoute": null
+      },
+      {
+        "name": "FloatingLabelStyles",
+        "type": true,
+        "summary": "The label-placement slice a filled-field skin fulfills.",
+        "instead": "Kit skin internals: the label-placement slice of a field skin, with no replacement. It keeps working until a major.",
+        "replacement": null,
+        "replacementRoute": null
+      },
+      {
+        "name": "HIDDEN_FROM_A11Y",
+        "type": false,
+        "summary": "The props that take a node out of the accessibility tree, spread together: `accessibilityElementsHidden` (VoiceOver), `importantForAccessibility: \"no-hide-descendants\"` (TalkBack) and `aria-hidden` (the web, where an `aria-labelledby` name computation also skips it).",
+        "instead": "Kit internals: kit components hide their own decorative content, for example Icon `decorative`. It keeps working until a major.",
+        "replacement": null,
+        "replacementRoute": null
+      },
+      {
+        "name": "LabelContent",
+        "type": false,
+        "summary": "The label text plus, when required, a trailing destructive \"*\".",
+        "instead": "Kit internals: the label text and required marker that Input, Textarea, Select, Autocomplete, Field, Stepper and PhoneInput render from their `label` and `required` props. It keeps working until a major.",
+        "replacement": null,
+        "replacementRoute": null
+      }
+    ]
+  },
+  {
+    "title": "Viewport tier",
+    "about": "The bucket a server render assumes, and React Native's own window hook.",
+    "names": [
+      {
+        "name": "SsrBreakpointContext",
+        "type": false,
+        "summary": "The server-render breakpoint assumption.",
+        "instead": "Kit internals: pass ThemeProvider's `ssrBreakpoint` prop to set the bucket a server render assumes. It keeps working until a major.",
+        "replacement": "ThemeProvider",
+        "replacementRoute": "theming"
+      },
+      {
+        "name": "useWindowDimensions",
+        "type": false,
+        "summary": "React Native's own useWindowDimensions, re-exported unchanged.",
+        "instead": "React Native's own hook, passed through: use `useBreakpoint` or `useFormFactor` for window-level chrome, `useContainerWidth` or `useMeasuredWidth` inside a component, or React Native's own `useWindowDimensions` for raw pixels. It keeps working until a major.",
+        "replacement": null,
+        "replacementRoute": null
+      }
+    ]
+  },
+  {
+    "title": "Focus and keyboard",
+    "about": "The focus-ring reset, the field indicator, the roving arrow keys, dialog and popover focus, and the Escape and Android back that close overlays.",
+    "names": [
+      {
+        "name": "activeIndicator",
+        "type": false,
+        "summary": "The Material / iOS bottom \"active indicator\" as a bottom border that thickens when the field becomes active, WITHOUT reflowing the field's content.",
+        "instead": "Kit internals, with no replacement: the bottom indicator `Input`, `Select` and `Autocomplete` draw for their own focus and open states. It keeps working until a major.",
+        "replacement": null,
+        "replacementRoute": null
+      },
+      {
+        "name": "ActiveIndicatorOptions",
+        "type": true,
+        "summary": "The options of `activeIndicator`: whether the field is active, the indicator's colour and thickness at rest and when active, and the padding kept between the content and the indicator.",
+        "instead": "Kit internals, with no replacement: the options of the bottom indicator `Input`, `Select` and `Autocomplete` draw for themselves. It keeps working until a major.",
+        "replacement": null,
+        "replacementRoute": null
+      },
+      {
+        "name": "FOCUS_RESET",
+        "type": false,
+        "summary": "The style that removes the keyboard focus ring (a solid outline of width 0), for a control that paints a visible focus state of its own.",
+        "instead": "Kit internals, with no replacement: the kit's fields paint their own focus state, and `Pressable`, `TextInput` and `ScrollView` carry the themed focus ring, which an app never removes (WCAG 2.4.7). It keeps working until a major.",
+        "replacement": null,
+        "replacementRoute": null
+      },
+      {
+        "name": "RovingFocusOptions",
+        "type": true,
+        "summary": "The options of `useRovingFocus`: the number of items, the active one, what activating an item does, which arrows move, the layout direction, whether the ends wrap, and which items are disabled.",
+        "instead": "Kit internals, with no replacement: the options of the arrow-key focus `Tabs`, `RadioGroup` and `Listbox` move for themselves. It keeps working until a major.",
+        "replacement": null,
+        "replacementRoute": null
+      },
+      {
+        "name": "RovingItemProps",
+        "type": true,
+        "summary": "The props one item of a roving group spreads onto its pressable: its tab stop, its ref and its key handler.",
+        "instead": "Kit internals, with no replacement: the props of one item in the arrow-key focus `Tabs`, `RadioGroup` and `Listbox` move for themselves. It keeps working until a major.",
+        "replacement": null,
+        "replacementRoute": null
+      },
+      {
+        "name": "useDialogFocus",
+        "type": false,
+        "summary": "Move focus into an attached modal panel, trap Tab, and restore on close.",
+        "instead": "Kit internals: the focus trap and return `Dialog` and `AlertDialog` apply for you, so use `Dialog`. It keeps working until a major.",
+        "replacement": "Dialog",
+        "replacementRoute": "components/dialog"
+      },
+      {
+        "name": "useEscapeKey",
+        "type": false,
+        "summary": "Dismiss the foremost active overlay on web Escape; no document listener on native.",
+        "instead": "Kit internals, with no replacement: `Dialog`, `AlertDialog`, `Drawer`, `ActionSheet`, `Popover` and the menus close on Escape themselves. It keeps working until a major.",
+        "replacement": null,
+        "replacementRoute": null
+      },
+      {
+        "name": "useHardwareBack",
+        "type": false,
+        "summary": "Close an open overlay on Android's hardware or gesture back: while `active`, back calls `onBack` and is consumed, so the app neither navigates nor exits under the overlay.",
+        "instead": "Kit internals, with no replacement: `Dialog`, `AlertDialog`, `Drawer`, `ActionSheet`, `Sidebar` and every anchored card close on Android's back themselves. It keeps working until a major.",
+        "replacement": null,
+        "replacementRoute": null
+      },
+      {
+        "name": "usePopoverFocus",
+        "type": false,
+        "summary": "Move focus into an attached nonmodal panel and restore on close.",
+        "instead": "Kit internals: the focus move and return `Popover` applies for you, so use `Popover`. It keeps working until a major.",
+        "replacement": "Popover",
+        "replacementRoute": "components/popover"
+      },
+      {
+        "name": "useRovingFocus",
+        "type": false,
+        "summary": "Roving keyboard focus for a composite widget (the WAI-ARIA pattern Tabs, RadioGroup and Listbox share): the group is one tab stop, the arrows, Home and End move focus and activate the item it lands on, a disabled item is skipped and never the tab stop, and native rows keep their own focus and click support.",
+        "instead": "Kit internals, with no replacement: the arrow keys, Home and End of `Tabs`, `RadioGroup` and `Listbox`, which move focus and selection for themselves. It keeps working until a major.",
+        "replacement": null,
+        "replacementRoute": null
+      }
+    ]
+  },
+  {
+    "title": "Touch target",
+    "about": "The platform minimum touch target (44 pt on iOS, 48 dp on Android) the kit's controls extend their touch area to.",
+    "names": [
+      {
+        "name": "MinTargetOptions",
+        "type": true,
+        "summary": "The options of the touch area a control extends to the platform minimum: which axes.",
+        "instead": "Kit internals, with no replacement: the options of the touch area the kit's controls extend for themselves. It keeps working until a major.",
+        "replacement": null,
+        "replacementRoute": null
+      },
+      {
+        "name": "minTargetSlop",
+        "type": false,
+        "summary": "The insets that bring a `width` x `height` control up to `minTarget`, or undefined when it already meets it.",
+        "instead": "Kit internals, with no replacement: the kit's controls meet the platform minimum touch target themselves (`Button`, an icon `Button` included, `Chip`, and `Avatar`, `Card` and the list rows given `onPress`), and a control the kit lacks belongs in the kit. It keeps working until a major.",
+        "replacement": null,
+        "replacementRoute": null
+      },
+      {
+        "name": "platformMinTarget",
+        "type": false,
+        "summary": "The running platform's minimum, for a component that ships ONE shared skin across all three platforms (its look is genuinely platform-neutral, so there is nothing per-OS to declare).",
+        "instead": "Kit internals, with no replacement: the platform minimum the kit's controls meet for themselves (`Button`, `Chip`, and `Avatar`, `Card` and the list rows given `onPress`). It keeps working until a major.",
+        "replacement": null,
+        "replacementRoute": null
+      },
+      {
+        "name": "TOUCH_TARGET",
+        "type": false,
+        "summary": "The platform minimums, from the two platforms' own guidance.",
+        "instead": "Kit internals, with no replacement: the platform minimums (44 pt on iOS, 48 dp on Android) the kit's controls meet for themselves (`Button`, `Chip`, and `Avatar`, `Card` and the list rows given `onPress`). It keeps working until a major.",
+        "replacement": null,
+        "replacementRoute": null
+      },
+      {
+        "name": "TouchTargetSkin",
+        "type": true,
+        "summary": "Skins that own a pressable declare this: the minimum, or null for none.",
+        "instead": "Kit skin internals, with no replacement: the minimum a kit skin declares for its own control. It keeps working until a major.",
+        "replacement": null,
+        "replacementRoute": null
+      },
+      {
+        "name": "useMinTargetSlop",
+        "type": false,
+        "summary": "Measure a pressable and extend its touch area to the platform minimum.",
+        "instead": "Kit internals, with no replacement: the kit's controls extend their own touch area to the platform minimum from their first frame (`Button`, an icon `Button` included, `Chip`, and `Avatar`, `Card` and the list rows given `onPress`), and a control the kit lacks belongs in the kit, not in a hand-built Pressable. It keeps working until a major.",
+        "replacement": null,
+        "replacementRoute": null
+      }
+    ]
+  },
+  {
+    "title": "Press feedback",
+    "about": "The Android ripple and the iOS and web press and disabled dims the kit's controls show.",
+    "names": [
+      {
+        "name": "controlRipple",
+        "type": false,
+        "summary": "The Android ripple of a round or icon-sized control (an avatar, an icon button): the same neutral ink, borderless, so it radiates from the touch point rather than filling a rectangle.",
+        "instead": "Kit internals, with no replacement: the borderless Android ripple the kit's round and icon-sized controls show for themselves (an icon `Button`, `Avatar` given `onPress`). It keeps working until a major.",
+        "replacement": null,
+        "replacementRoute": null
+      },
+      {
+        "name": "platformDisabledDim",
+        "type": false,
+        "summary": "The opacity each platform's own disabled controls take (the hand-off's `--p-disabled`): 0.4 on iOS, Material 3's 0.38 on Android and 0.5 on the web, for a skin one component shares across every platform.",
+        "instead": "Kit internals, with no replacement: the platform's disabled dim the kit's controls take for themselves when `disabled`. It keeps working until a major.",
+        "replacement": null,
+        "replacementRoute": null
+      },
+      {
+        "name": "pressDim",
+        "type": false,
+        "summary": "The press dim of iOS and the web: the given opacity while pressed (0.9 by default), and null on Android, where the ripple carries the press and a dim would signal it twice.",
+        "instead": "Kit internals, with no replacement: the iOS and web press dim the kit's controls show for themselves (`Button`, `Chip`, and `Card` and the list rows given `onPress`). It keeps working until a major.",
+        "replacement": null,
+        "replacementRoute": null
+      },
+      {
+        "name": "rippleClip",
+        "type": false,
+        "summary": "`overflow: \"hidden\"` on Android and nothing elsewhere, for a rounded PARENT whose children carry a bounded ripple, so the ripple keeps to the parent's corners while an iOS shadow on the parent survives.",
+        "instead": "Kit internals, with no replacement: the Android clip the kit's rounded surfaces put around their own ripple. It keeps working until a major.",
+        "replacement": null,
+        "replacementRoute": null
+      },
+      {
+        "name": "surfaceRipple",
+        "type": false,
+        "summary": "The Android ripple of a content surface (a card, a list row, a tile): a neutral ink, the foreground at low alpha so it reads in both schemes, bounded to the surface.",
+        "instead": "Kit internals, with no replacement: the bounded Android ripple the kit's surfaces show for themselves (`Card` and the list rows given `onPress`). It keeps working until a major.",
+        "replacement": null,
+        "replacementRoute": null
+      }
+    ]
+  },
+  {
+    "title": "Glass fills",
+    "about": "The fills the kit's components paint inside a glass surface, and whether glass paints at all.",
+    "names": [
+      {
+        "name": "innerFill",
+        "type": false,
+        "summary": "The fill a role paints inside a surface: the opaque token in solid mode, an ink tint under glass.",
+        "instead": "Kit internals, with no replacement: the fill a kit component paints inside a glass surface (a hovered or selected row, a header band), which every component paints for itself under ThemeProvider `glass`. It keeps working until a major.",
+        "replacement": null,
+        "replacementRoute": null
+      },
+      {
+        "name": "InnerFillRole",
+        "type": true,
+        "summary": "The opaque role a fill inside a glass surface stands for: `muted`, `secondary` or `accent`.",
+        "instead": "Kit internals, with no replacement: the roles of the fills a kit component paints inside a glass surface for itself. It keeps working until a major.",
+        "replacement": null,
+        "replacementRoute": null
+      },
+      {
+        "name": "InnerFillStrength",
+        "type": true,
+        "summary": "How strong a fill inside a glass surface is: `faint` (a hover, an alternating row), `soft` (a selected row, a resting chip) or `firm` (a pressed or active fill).",
+        "instead": "Kit internals, with no replacement: the strengths of the fills a kit component paints inside a glass surface for itself. It keeps working until a major.",
+        "replacement": null,
+        "replacementRoute": null
+      },
+      {
+        "name": "inverseDenseTint",
+        "type": false,
+        "summary": "The dense-layer tint for an INVERSE surface: a tooltip bubble, which paints the scheme's ink as its fill and the page colour as its text, or the M3 snackbar, which paints the toast pill (`inverse`) with its own light ink.",
+        "instead": "Kit internals, with no replacement: the glass under-fill of the kit's inverse surfaces, `Tooltip`'s bubble and `Toast`. It keeps working until a major.",
+        "replacement": null,
+        "replacementRoute": null
+      },
+      {
+        "name": "isGlass",
+        "type": false,
+        "summary": "Whether the theme is painting the glass material right now (the layered model).",
+        "instead": "Kit internals: whether the glass material paints right now; read `surface`, `reducedTransparency` and `increasedContrast` from `useTheme`. It keeps working until a major.",
+        "replacement": "useTheme",
+        "replacementRoute": "theming"
+      },
+      {
+        "name": "withInnerFill",
+        "type": false,
+        "summary": "A skin fill INSIDE a glass pane: under glass its opaque `backgroundColor` is replaced by the ink tint of the given strength (so a header band, a stripe or a pressed row stays translucent over the material); in solid mode the style is returned as is.",
+        "instead": "Kit internals, with no replacement: a skin fill turned translucent inside a glass surface, which every kit component does for itself under ThemeProvider `glass`. It keeps working until a major.",
+        "replacement": null,
+        "replacementRoute": null
+      }
+    ]
+  },
+  {
+    "title": "Motion",
+    "about": "The native-driver gate and the loop easings behind the kit's functional motion.",
+    "names": [
+      {
+        "name": "enableAndroidLayoutAnimations",
+        "type": false,
+        "summary": "Turn on React Native's LayoutAnimation where it needs turning on, the old architecture on Android, and do nothing elsewhere (the New Architecture enables it, and its flag only logs a warning there).",
+        "instead": "Kit internals, with no replacement: `Accordion` and `Collapsible` enable React Native's layout animations on Android for themselves. It keeps working until a major.",
+        "replacement": null,
+        "replacementRoute": null
+      },
+      {
+        "name": "holdThen",
+        "type": false,
+        "summary": "Shape one loop iteration as a hold followed by a sweep: the value stays parked at 0 for the first `hold` fraction of the cycle (0..1), then `easing` carries it 0 to 1 over the remainder.",
+        "instead": "Kit internals, with no replacement: a loop easing behind the kit's own functional motion; shape an app's own easing with React Native's `Easing`. It keeps working until a major.",
+        "replacement": null,
+        "replacementRoute": null
+      },
+      {
+        "name": "keyframes",
+        "type": false,
+        "summary": "Shape one loop iteration from keyframes: `points` are `[t, value]` pairs with t rising from 0 to 1, joined by straight lines, so a blink (visible, a quick fade out, hidden, a quick fade in) is a single `Animated.timing` whose easing IS the schedule.",
+        "instead": "Kit internals, with no replacement: a loop easing behind the kit's own functional motion (the `InputOTP` caret); shape an app's own easing with React Native's `Easing`. It keeps working until a major.",
+        "replacement": null,
+        "replacementRoute": null
+      },
+      {
+        "name": "supportsNativeDriver",
+        "type": false,
+        "summary": "Whether React Native's native animated driver exists, so `useNativeDriver: true` runs an animation off the JS thread: true on iOS and Android, false on the web, where a true flag freezes a loop after one pass.",
+        "instead": "Kit internals, with no replacement: whether React Native's native animated driver exists, false on the web; an app's own `Animated` code reads `Platform.OS`. It keeps working until a major.",
+        "replacement": null,
+        "replacementRoute": null
+      },
+      {
+        "name": "thereAndBack",
+        "type": false,
+        "summary": "Shape one loop iteration as an out-and-back: `easing` carries the value from 0 to 1 over the first half of the cycle and back down over the second, so a pulse, a breath or a shimmer is a single `Animated.timing` from 0 to 1 that ends where it began.",
+        "instead": "Kit internals, with no replacement: a loop easing behind the kit's own functional motion (the `Skeleton` shimmer); shape an app's own easing with React Native's `Easing`. It keeps working until a major.",
+        "replacement": null,
+        "replacementRoute": null
+      }
+    ]
+  },
+  {
+    "title": "Gestures",
+    "about": "GeoMap's wheel and pinch zoom.",
+    "names": [
+      {
+        "name": "GESTURE_SURFACE",
+        "type": false,
+        "summary": "The style that keeps the browser from claiming a touch gesture (`touchAction: \"none\"`), so a pinch on a kit component that owns one reaches it instead of zooming the page; a no-op natively.",
+        "instead": "Kit internals, with no replacement: the touch surface `GeoMap` claims from the browser for its pinch zoom. It keeps working until a major.",
+        "replacement": null,
+        "replacementRoute": null
+      },
+      {
+        "name": "normalizeWheelDelta",
+        "type": false,
+        "summary": "Scroll travel in pixels, whatever unit `deltaMode` says the browser used.",
+        "instead": "Kit internals, with no replacement: the wheel travel `GeoMap` reads for its zoom. It keeps working until a major.",
+        "replacement": null,
+        "replacementRoute": null
+      },
+      {
+        "name": "useWheel",
+        "type": false,
+        "summary": "Wheel and trackpad-pinch zoom on the web: while `active`, a non-passive wheel listener on the returned ref's node reports each gesture in pixels with the pointer's position, and suppresses the page's scroll only when `onWheel` claims it.",
+        "instead": "Kit internals, with no replacement: `GeoMap`'s wheel and trackpad pinch zoom. It keeps working until a major.",
+        "replacement": null,
+        "replacementRoute": null
+      },
+      {
+        "name": "WheelGesture",
+        "type": true,
+        "summary": "One notch or trackpad swipe, normalized.",
+        "instead": "Kit internals, with no replacement: one wheel gesture as `GeoMap`'s zoom reads it. It keeps working until a major.",
+        "replacement": null,
+        "replacementRoute": null
+      }
+    ]
+  },
+  {
+    "title": "Type and colour",
+    "about": "Tabular figures, the theme's typefaces, the monospace face, and colour values the kit no longer paints with.",
+    "names": [
+      {
+        "name": "brandColors",
+        "type": false,
+        "summary": "The brand orb colours of the removed Backdrop organism, keyed by their historical hue names; nothing in the kit reads them.",
+        "instead": "The brand orbs painted the removed Backdrop organism, and the kit's colors are Dark Factory's now; nothing in the kit reads these. Kept, with their former values, until an owner-authorized major removes them (the `--orb-*` custom properties too).",
+        "replacement": null,
+        "replacementRoute": null
+      },
+      {
+        "name": "fontStyle",
+        "type": false,
+        "summary": "Apply the theme's faces to a text style.",
+        "instead": "Kit internals: the kit's `Text` and `TextInput` apply the theme's typefaces (ThemeProvider `fonts`) themselves, so use `Text`, or `Typography` for a role of the type scale. It keeps working until a major.",
+        "replacement": "Text",
+        "replacementRoute": "components/text"
+      },
+      {
+        "name": "HUE_WASH",
+        "type": false,
+        "summary": "The alpha of a hue's 500 step painted as a wash under the glass material, per scheme: the tinted pane of an Alert, a status Badge, a coloured Chip, before Dark Factory's soft washes replaced it.",
+        "instead": "The kit no longer paints with it: Dark Factory's soft washes replaced it (`statusColors` for the status tones, and a Chip's free hue at Dark Factory's soft alpha). Kept, unchanged, for code that reads it, until a major release removes it.",
+        "replacement": "statusColors",
+        "replacementRoute": null
+      },
+      {
+        "name": "MONO_FONT",
+        "type": false,
+        "summary": "The kit's monospace face per platform: Menlo on iOS, and the `monospace` alias on Android and on the web, where react-native-web maps it onto the browser's stack.",
+        "instead": "Kit internals: the monospace face the `mono` and `code` roles of `Typography` set, so use `Typography` `mono`, or `code` for an inline code pill. It keeps working until a major.",
+        "replacement": "Typography",
+        "replacementRoute": "components/typography"
+      },
+      {
+        "name": "tabularNums",
+        "type": false,
+        "summary": "Tabular figures: every digit the same width.",
+        "instead": "Kit internals: set figures read down a column or updated in place with `Typography`'s `tabular` prop. It keeps working until a major.",
+        "replacement": "Typography",
+        "replacementRoute": "components/typography"
+      }
+    ]
+  },
+  {
+    "title": "Layout",
+    "about": "Container's and Grid's own layout math, and the layout direction.",
+    "names": [
+      {
+        "name": "containerStyle",
+        "type": false,
+        "summary": "The root style for a measure: full width, capped at the step, centered or pinned to the start.",
+        "instead": "Kit internals: the root style `Container` resolves from its step booleans (`sm`, `lg`, `page` and the rest) and `start`, so use `Container`. It keeps working until a major.",
+        "replacement": "Container",
+        "replacementRoute": "components/container"
+      },
+      {
+        "name": "FLUID",
+        "type": false,
+        "summary": "The default measure: no cap, the container conforms to its parent.",
+        "instead": "Kit internals: the measure a `Container` with no step resolves to, the full width of its parent, so use `Container`. It keeps working until a major.",
+        "replacement": "Container",
+        "replacementRoute": "components/container"
+      },
+      {
+        "name": "gridCellWidth",
+        "type": false,
+        "summary": "The px width of one cell when `cols` cells and their gaps split `width`.",
+        "instead": "Kit internals: the width `Grid` gives each cell from its own measured width, so use `Grid`. It keeps working until a major.",
+        "replacement": "Grid",
+        "replacementRoute": "components/grid"
+      },
+      {
+        "name": "gridColumns",
+        "type": false,
+        "summary": "How many tiles of at least `minTileWidth` fit `width` with `gap` between them: at least 1, capped at `columns` when given.",
+        "instead": "Kit internals: how many columns `Grid` fits from its `minTileWidth` and `columns`, so use `Grid`. It keeps working until a major.",
+        "replacement": "Grid",
+        "replacementRoute": "components/grid"
+      },
+      {
+        "name": "isRTL",
+        "type": false,
+        "summary": "Whether the layout runs right to left, read through the one accessor React Native and react-native-web both implement (`I18nManager.getConstants().isRTL`).",
+        "instead": "Kit internals, with no replacement: the kit's components mirror themselves in a right-to-left layout, and an app reads React Native's `I18nManager.getConstants().isRTL`. It keeps working until a major.",
+        "replacement": null,
+        "replacementRoute": null
+      },
+      {
+        "name": "Measure",
+        "type": true,
+        "summary": "The measure a Container resolves: a step of the width scale, or `fluid` for none.",
+        "instead": "Kit internals: the width-scale step a `Container` resolves, which its step booleans name (`MeasureProps`). It keeps working until a major.",
+        "replacement": "MeasureProps",
+        "replacementRoute": null
+      },
+      {
+        "name": "measureOf",
+        "type": false,
+        "summary": "The measure a Container's props resolve to: `fluid`, else the narrowest step passed, else `fluid`.",
+        "instead": "Kit internals: the step `Container` resolves from its step booleans, so use `Container`. It keeps working until a major.",
+        "replacement": "Container",
+        "replacementRoute": "components/container"
+      }
+    ]
+  },
+  {
+    "title": "State and warnings",
+    "about": "The controlled and uncontrolled state every kit control shares, and the kit's development warnings.",
+    "names": [
+      {
+        "name": "devWarn",
+        "type": false,
+        "summary": "Warn once per unique message, in development only.",
+        "instead": "Kit internals, with no replacement: the kit's own development warnings for data it resolves silently. It keeps working until a major.",
+        "replacement": null,
+        "replacementRoute": null
+      },
+      {
+        "name": "resetDevWarnings",
+        "type": false,
+        "summary": "Clear the once-per-message cache.",
+        "instead": "Kit test internals, with no replacement: clears the kit's own development warnings between tests. It keeps working until a major.",
+        "replacement": null,
+        "replacementRoute": null
+      },
+      {
+        "name": "useControllableState",
+        "type": false,
+        "summary": "One component's value, controlled by its parent or held by the component itself: the mode is latched at mount (a `controlled` value then means controlled), the change callback fires in both modes, and a controlled value cleared to undefined keeps the last one the parent gave.",
+        "instead": "Kit internals, with no replacement: every kit control takes a controlled value with its change callback (`value`, `checked`, `open` and the like) or a default for uncontrolled use, and an app holds its own state with React's `useState`. It keeps working until a major.",
+        "replacement": null,
+        "replacementRoute": null
+      }
+    ]
+  },
+  {
+    "title": "CodeBlock internals",
+    "about": "CodeBlock's own syntax highlighter.",
+    "names": [
+      {
+        "name": "CodeToken",
+        "type": true,
+        "summary": "One span of a highlighted line: its text and its kind.",
+        "instead": "Kit internals: one span of `CodeBlock`'s own highlighter; pass `code` and `language` to `CodeBlock`. It keeps working until a major.",
+        "replacement": "CodeBlock",
+        "replacementRoute": "components/code-block"
+      },
+      {
+        "name": "syntaxColor",
+        "type": false,
+        "summary": "The theme-aware color for a token kind.",
+        "instead": "Kit internals: the ink `CodeBlock` paints a token kind in for the scheme; pass `code` and `language` to `CodeBlock`. It keeps working until a major.",
+        "replacement": "CodeBlock",
+        "replacementRoute": "components/code-block"
+      },
+      {
+        "name": "tokenize",
+        "type": false,
+        "summary": "Tokenize `code` into per-line spans for the given language.",
+        "instead": "Kit internals: `CodeBlock`'s own highlighter; pass `code` and `language` to `CodeBlock`. It keeps working until a major.",
+        "replacement": "CodeBlock",
+        "replacementRoute": "components/code-block"
+      },
+      {
+        "name": "TokenKind",
+        "type": true,
+        "summary": "What one span of highlighted code is: plain text, a comment, a string, a keyword, a number, a tag, an attribute, a function name or a variable.",
+        "instead": "Kit internals: the token kinds `CodeBlock`'s highlighter tells apart; pass `code` and `language` to `CodeBlock`. It keeps working until a major.",
+        "replacement": "CodeBlock",
+        "replacementRoute": "components/code-block"
+      }
+    ]
+  },
+  {
+    "title": "DashboardGrid internals",
+    "about": "DashboardGrid's tiers, spans and reorder logic.",
+    "names": [
+      {
+        "name": "DASHBOARD_COLUMNS",
+        "type": false,
+        "summary": "The board's column count: every span is a number of these 12 columns.",
+        "instead": "Kit internals: the 12 columns `DashboardGrid` lays every widget's `span` on, so use `DashboardGrid`. It keeps working until a major.",
+        "replacement": "DashboardGrid",
+        "replacementRoute": "components/dashboard-grid"
+      },
+      {
+        "name": "DashboardTier",
+        "type": true,
+        "summary": "The layout tier the grid renders at, resolved from the grid's OWN measured width (never the window).",
+        "instead": "Kit internals: the tier `DashboardGrid` resolves from its own measured width, so use `DashboardGrid`. It keeps working until a major.",
+        "replacement": "DashboardGrid",
+        "replacementRoute": "components/dashboard-grid"
+      },
+      {
+        "name": "effectiveSpan",
+        "type": false,
+        "summary": "The width in columns `widget` occupies on `tier`, always within 1..12.",
+        "instead": "Kit internals: the span `DashboardGrid` gives a widget at its tier, from the widget's `span` and `narrowSpan`, so use `DashboardGrid`. It keeps working until a major.",
+        "replacement": "DashboardGrid",
+        "replacementRoute": "components/dashboard-grid"
+      },
+      {
+        "name": "moveWidget",
+        "type": false,
+        "summary": "Move `dragId` immediately before or after `targetId` within the id `order`, returning a NEW array (input untouched).",
+        "instead": "Kit internals: the reorder `DashboardGrid` applies on a drop; use `DashboardGrid`'s `order`, `defaultOrder` and `onOrderChange`. It keeps working until a major.",
+        "replacement": "DashboardGrid",
+        "replacementRoute": "components/dashboard-grid"
+      },
+      {
+        "name": "orderedWidgets",
+        "type": false,
+        "summary": "Arrange `widgets` by the id `order`, returning a NEW array (inputs untouched).",
+        "instead": "Kit internals: how `DashboardGrid` reconciles an order with its widgets; pass `order` or `defaultOrder` to `DashboardGrid`. It keeps working until a major.",
+        "replacement": "DashboardGrid",
+        "replacementRoute": "components/dashboard-grid"
+      }
+    ]
+  },
+  {
+    "title": "React Native pass-throughs",
+    "about": "React Native's own names, re-exported unchanged.",
+    "names": [
+      {
+        "name": "StyleSheet",
+        "type": false,
+        "summary": "React Native's own StyleSheet, re-exported unchanged.",
+        "instead": "React Native's own StyleSheet, passed through, with no replacement in the kit: Canvas components take semantic props, never styles, so an app built from them needs none, and app-frame scaffolding the kit does not cover imports it from react-native. It keeps working until a major.",
+        "replacement": null,
+        "replacementRoute": null
+      }
+    ]
   }
 ];

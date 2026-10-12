@@ -27,7 +27,7 @@ import { parseDoc, scopeNamesFromLiveScope, bannedStyleViolations, widthShimViol
 import { componentPages, pageStructureViolations, registeredComponents, type Category } from "./pages.ts";
 import { extractProps, type PropGroup } from "./extract-props.ts";
 import { COMPONENTS } from "../../docs/src/core/data/components.ts";
-import { FOUNDATION_MODULE, readDeprecatedRows, renderFoundationModule } from "./foundation.ts";
+import { deprecatedSections, FOUNDATION_MODULE, readDeprecatedRows, renderFoundationModule } from "./foundation.ts";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const REPO = path.resolve(HERE, "..", "..");
@@ -582,7 +582,7 @@ function main() {
   }
   writeFileIfChanged(CHUNKS_FILE, `${JSON.stringify(chunks, null, 2)}\n`);
   const deprecated = readDeprecatedRows(REPO);
-  writeFileIfChanged(FOUNDATION_FILE, renderFoundationModule(deprecated, GENERATED_HEADER));
+  writeFileIfChanged(FOUNDATION_FILE, renderFoundationModule(deprecatedSections(deprecated), GENERATED_HEADER));
   const propGroupCount = Object.values(props).reduce((n, groups) => n + groups.length, 0);
   const propRowCount = Object.values(props).reduce(
     (n, groups) => n + groups.reduce((m, g) => m + g.props.length, 0),

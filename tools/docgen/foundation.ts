@@ -10,6 +10,12 @@
 // page cannot drift from the manifest or the source: `docs:gen --check` fails when the
 // module is stale, and `check:api` reads the module as part of the page (tools/api/docs.ts),
 // so the page lists every deprecated alias it claims to.
+//
+// The page lists them in sections, one per family of internals. A name's section is its
+// manifest `section` (which check:api holds to a heading of the page); FOUNDATION_SECTIONS
+// below gives the sections' order and the line under each title, and the generator fails
+// on a deprecated alias whose section is missing or unlisted, and on a listed section
+// that lists nothing.
 
 import { resolve } from "node:path";
 import { ENTRY_FILE, entryProgram, moduleExports } from "../api/discover.ts";
@@ -18,6 +24,32 @@ import type { ApiEntry, ApiExport } from "../api/types.ts";
 
 /** The module docs:gen writes, repo-relative. */
 export const FOUNDATION_MODULE = "docs/src/core/foundation-reference.ts";
+
+/** One section of the page: its title (a deprecated alias's manifest `section`) and the line under it. */
+export interface FoundationSection {
+  title: string;
+  about: string;
+}
+
+/** The page's sections, in page order. */
+export const FOUNDATION_SECTIONS: readonly FoundationSection[] = [
+  { title: "Overlay machinery", about: "The anchored card behind Popover, Dropdown, Select, Autocomplete and the other menus and option lists, and the placement and side its decorations read." },
+  { title: "Entrance", about: "The readiness hold an anchored card applies to itself until its placement is measured." },
+  { title: "Field label", about: "The label of the field family: Android's floating label, the label text with its required marker, the slice of a field skin that places it, and the props that hide decorative content." },
+  { title: "Viewport tier", about: "The bucket a server render assumes, and React Native's own window hook." },
+  { title: "Focus and keyboard", about: "The focus-ring reset, the field indicator, the roving arrow keys, dialog and popover focus, and the Escape and Android back that close overlays." },
+  { title: "Touch target", about: "The platform minimum touch target (44 pt on iOS, 48 dp on Android) the kit's controls extend their touch area to." },
+  { title: "Press feedback", about: "The Android ripple and the iOS and web press and disabled dims the kit's controls show." },
+  { title: "Glass fills", about: "The fills the kit's components paint inside a glass surface, and whether glass paints at all." },
+  { title: "Motion", about: "The native-driver gate and the loop easings behind the kit's functional motion." },
+  { title: "Gestures", about: "GeoMap's wheel and pinch zoom." },
+  { title: "Type and colour", about: "Tabular figures, the theme's typefaces, the monospace face, and colour values the kit no longer paints with." },
+  { title: "Layout", about: "Container's and Grid's own layout math, and the layout direction." },
+  { title: "State and warnings", about: "The controlled and uncontrolled state every kit control shares, and the kit's development warnings." },
+  { title: "CodeBlock internals", about: "CodeBlock's own syntax highlighter." },
+  { title: "DashboardGrid internals", about: "DashboardGrid's tiers, spans and reorder logic." },
+  { title: "React Native pass-throughs", about: "React Native's own names, re-exported unchanged." },
+];
 
 /** One deprecated name as the page shows it. */
 export interface DeprecatedRow {
@@ -34,6 +66,28 @@ export interface DeprecatedRow {
   replacementRoute: string | null;
   /** The page section it is listed under (its manifest `section`), or null before it has one. */
   section: string | null;
+}
+
+/** A section of the page with its rows. */
+export interface DeprecatedSection extends FoundationSection {
+  names: Omit<DeprecatedRow, "section">[];
+}
+
+/**
+ * The rows by section, in the sections' order: every row in the section its manifest entry
+ * names, and every section listing at least one.
+ */
+export function deprecatedSections(rows: readonly DeprecatedRow[], sections: readonly FoundationSection[] = FOUNDATION_SECTIONS): DeprecatedSection[] {
+  const titles = new Set(sections.map((section) => section.title));
+  for (const row of rows) {
+    if (row.section === null) throw new Error(`docs:gen: the deprecated alias ${row.name} names no section in tools/api/manifest.ts: give it docs "foundation" and the section it belongs to`);
+    if (!titles.has(row.section)) throw new Error(`docs:gen: the deprecated alias ${row.name} names the section "${row.section}", which tools/docgen/foundation.ts FOUNDATION_SECTIONS does not list`);
+  }
+  return sections.map((section) => {
+    const names = rows.filter((row) => row.section === section.title).map(({ section: _section, ...row }) => row);
+    if (!names.length) throw new Error(`docs:gen: the foundation reference's section "${section.title}" lists no deprecated name: drop it from FOUNDATION_SECTIONS`);
+    return { ...section, names };
+  });
 }
 
 /**
@@ -106,7 +160,7 @@ export function readDeprecatedRows(root: string): DeprecatedRow[] {
 }
 
 /** The generated module's text. */
-export function renderFoundationModule(rows: readonly DeprecatedRow[], header: string): string {
+export function renderFoundationModule(sections: readonly DeprecatedSection[], header: string): string {
   return `${header}
 // The deprecated names of @nannier/canvas, for the /foundation reference (audit K12-10):
 // written by tools/docgen/foundation.ts from tools/api/manifest.ts (which names are
@@ -126,10 +180,20 @@ export interface DeprecatedName {
   replacement: string | null;
   /** That name's docs route, when a page documents it. */
   replacementRoute: string | null;
-  /** The page section it is listed under, or null before it has one. */
-  section: string | null;
 }
 
-export const DEPRECATED_NAMES: DeprecatedName[] = ${JSON.stringify(rows, null, 2)};
+/** The title of one of the page's sections. */
+export type DeprecatedSectionTitle = ${sections.map((section) => JSON.stringify(section.title)).join(" | ")};
+
+export interface DeprecatedSection {
+  /** The section's heading. */
+  title: DeprecatedSectionTitle;
+  /** The line under the heading. */
+  about: string;
+  /** Its deprecated names, in name order. */
+  names: DeprecatedName[];
+}
+
+export const DEPRECATED_SECTIONS: DeprecatedSection[] = ${JSON.stringify(sections, null, 2)};
 `;
 }
