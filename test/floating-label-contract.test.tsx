@@ -342,3 +342,54 @@ describe("every field family's label takes a theme ink", () => {
     });
   }
 });
+
+/** Report a layout to a react-native-web node's onLayout, as its ResizeObserver would. */
+function layout(node: Element, box: { width?: number; height?: number }) {
+  const handler = (node as unknown as { __reactLayoutHandler?: (event: unknown) => void }).__reactLayoutHandler;
+  if (handler == null) throw new Error("the node has no onLayout");
+  act(() => handler({ nativeEvent: { layout: { x: 0, y: 0, width: 0, height: 0, ...box } } }));
+}
+/** The view that bounds a floating label: the parent of the view that floats it. */
+const boundsOf = (label: string) => screen.getByText(label).parentElement!.parentElement!;
+
+const LONG = "The name of the project as it appears on every invoice";
+
+describe("a long label stays inside its field", () => {
+  it("is bounded by the field's end padding, or by a trailing chevron or toggle", () => {
+    render(<ThemeProvider light>
+      <Input label="Input" />
+      <Textarea label="Textarea" rows={3} />
+      <Autocomplete label="Autocomplete" options={["Ada"]} />
+      <Select label="Select" options={["EU"]} />
+    </ThemeProvider>);
+    const sides = (label: string) => ({ left: boundsOf(label).style.left, right: boundsOf(label).style.right });
+    expect(sides("Input")).toEqual({ left: "16px", right: "16px" });
+    expect(sides("Textarea")).toEqual({ left: "12px", right: "12px" });
+    // Autocomplete's toggle runs to the field's end edge: its 48 dp target.
+    const target = autocompleteSkin.chevronTarget("default");
+    const field = autocompleteSkin.field(t, "default", false);
+    expect(sides("Autocomplete")).toEqual({ left: "16px", right: `${num(target.width, 0) + num(target.marginEnd, 0) + num(field.paddingHorizontal, 0)}px` });
+    // Select's chevron is a glyph: its font size seeds the room it takes until its width is measured.
+    const trigger = selectSkin.trigger(t, "default", false);
+    const chevron = selectSkin.chevron(t, "default", false);
+    const select = (glyph: number) => `${num(trigger.paddingHorizontal, 0) + glyph + num(trigger.gap, 0)}px`;
+    expect(sides("Select")).toEqual({ left: "16px", right: select(num(chevron.fontSize, 0)) });
+    layout(screen.getByText(selectSkin.chevronGlyph), { width: 9.5, height: 24 });
+    expect(sides("Select").right).toBe(select(9.5));
+    // At twice the text size the glyph is wider, and the label gives it the room.
+    layout(screen.getByText(selectSkin.chevronGlyph), { width: 19, height: 48 });
+    expect(sides("Select").right).toBe(select(19));
+  });
+
+  it("truncates on one line, the floating view hugging the text at the start edge, while the field's name is the whole label", () => {
+    render(<ThemeProvider light><Input label={LONG} /><Select label={LONG} options={["EU"]} /></ThemeProvider>);
+    for (const node of screen.getAllByText(LONG)) {
+      expect(node.parentElement!.style.maxWidth).toBe("100%");
+      expect(node.parentElement!.parentElement!.style.alignItems).toBe("flex-start");
+      const text = getComputedStyle(node);
+      expect([text.whiteSpace, text.textOverflow]).toEqual(["nowrap", "ellipsis"]);
+    }
+    expect(screen.getByRole("textbox", { name: LONG })).toBeDefined();
+    expect(screen.getByRole("button", { name: LONG })).toBeDefined();
+  });
+});

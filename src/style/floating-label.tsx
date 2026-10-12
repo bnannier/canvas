@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { Animated, Platform } from "react-native";
-import { Text, type TextStyle } from "./primitives.js";
+import { Text, View, type TextStyle, type ViewStyle } from "./primitives.js";
 import { fontStyle } from "./text.js";
 import { useTheme } from "./theme.js";
 import { type ColorTokens } from "./tokens.js";
@@ -165,6 +165,7 @@ export function FloatingLabel<S extends string>({
   isError,
   height,
   inset = 16,
+  end = inset,
   multiline = false,
   names = true,
 }: {
@@ -181,6 +182,13 @@ export function FloatingLabel<S extends string>({
   height: number;
   /** Leading inset that matches the field's horizontal content padding (default 16dp). */
   inset?: number;
+  /**
+   * How far from the field's end edge the label stays: the field's end padding, `inset`
+   * by default, or the width of the trailing chevron or toggle where one sits there. A
+   * label longer than the room between the two ends truncates with an ellipsis, and the
+   * field's accessible name stays the whole label.
+   */
+  end?: number;
   /** Multiline field (Textarea): rest the label at the top text line, not the box middle. */
   multiline?: boolean;
   /**
@@ -250,37 +258,23 @@ export function FloatingLabel<S extends string>({
   // left, or the right in a right-to-left layout (as touch-seam.ts's inlineSide does).
   const transformOrigin = isRTL() ? "100% 50%" : "0% 50%";
 
+  // The label's bounds: pinned between the field's two ends, so a long label truncates
+  // before the end padding or a trailing chevron or toggle instead of running out of the
+  // field; taps fall through to the field beneath. Single-line fills the field vertically
+  // and centers the label (rest center = height/2); multiline pins it at the top text line
+  // (top = reserve). Inside, the floating view hugs the text against the start edge, so
+  // the transform floats it, scaling around its leading edge (transformOrigin above).
+  const bounds: ViewStyle = multiline
+    ? { position: "absolute", top: reserve, start: inset, end, alignItems: "flex-start", pointerEvents: "none" }
+    : { position: "absolute", top: 0, bottom: 0, start: inset, end, alignItems: "flex-start", justifyContent: "center", pointerEvents: "none" };
+
   return (
-    <Animated.View
-      // pointerEvents:none so taps fall through to the field beneath. Single-line
-      // fills the field vertically and centers the label (rest center = height/2);
-      // multiline pins the label at the top text line (top = reserve). The transform
-      // then floats it, scaling around its leading edge (transformOrigin above).
-      style={
-        multiline
-          ? {
-              position: "absolute",
-              top: reserve,
-              start: inset,
-              pointerEvents: "none",
-              transformOrigin,
-              transform: [{ translateY }, { scale }],
-            }
-          : {
-              position: "absolute",
-              top: 0,
-              bottom: 0,
-              start: inset,
-              justifyContent: "center",
-              pointerEvents: "none",
-              transformOrigin,
-              transform: [{ translateY }, { scale }],
-            }
-      }
-    >
-      <Animated.Text nativeID={labelId} numberOfLines={1} style={[themedRest, { color }]} {...labelA11y(label, names)}>
-        <LabelContent label={label} required={required} starColor={tokens.destructive} />
-      </Animated.Text>
-    </Animated.View>
+    <View style={bounds}>
+      <Animated.View style={{ maxWidth: "100%", transformOrigin, transform: [{ translateY }, { scale }] }}>
+        <Animated.Text nativeID={labelId} numberOfLines={1} style={[themedRest, { color }]} {...labelA11y(label, names)}>
+          <LabelContent label={label} required={required} starColor={tokens.destructive} />
+        </Animated.Text>
+      </Animated.View>
+    </View>
   );
 }
