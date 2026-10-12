@@ -1,6 +1,6 @@
 import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
 import { EscapeLayerProvider, useEscapeLayer } from "../../style/escape-layer.js";
-import { forwardRef, useId, useRef } from "react";
+import { forwardRef, useId, useRef, useState } from "react";
 import { useComposedRefs } from "../../style/use-composed-refs.js";
 import { View, Pressable, Text, useControllableState, useFillStyle, AnchoredOverlay, useOverlayHost, useMeasuredWidth, FloatingLabel, LabelContent, labelA11y, RippleClip, cornerRadii, type LayoutStyle, type MeasureProps, type StyleProp, type ViewStyle, GlassPane, paneStyle, isGlass, withInnerFill } from "../../style/index.js";
 import { useRowFocus } from "../../style/use-row-focus.js";
@@ -221,6 +221,16 @@ export function createSelect(skin: SelectSkin) {
     const above = hasLabel && !inline && !floating;
     const triggerShape = skin.trigger(tokens, size, open);
     const triggerHeight = asNum((triggerShape as { height?: unknown }).height, 56);
+    // The floating label stays clear of the trailing chevron: the trigger's end padding,
+    // the chevron and the row's gap to it. The chevron is a glyph that grows with the
+    // text size, so its width is measured (one commit at mount and on a text-size change),
+    // with its font size as the seed until it is.
+    const chevronStyle = skin.chevron(tokens, size, open);
+    const [chevronWidth, setChevronWidth] = useState<number | null>(null);
+    const labelEnd =
+      asNum(triggerShape.paddingEnd ?? triggerShape.paddingHorizontal, 16) +
+      (chevronWidth ?? asNum(chevronStyle.fontSize, 16)) +
+      asNum(triggerShape.columnGap ?? triggerShape.gap, 0);
     // Under glass the trigger is a CONTROL-layer puck: a GlassPane paints the material
     // behind the row (the Pressable keeps its tap, ripple and dim), the box drops its
     // fill and resting hairline, and keeps only its OPEN border (the iOS/web `ring`)
@@ -302,7 +312,15 @@ export function createSelect(skin: SelectSkin) {
                 {selectedLeading != null ? <Text style={skin.valueText(tokens, size, true)}>{selectedLeading}</Text> : null}
                 <Text style={skin.valueText(tokens, size, hasValue)}>{displayText}</Text>
               </View>
-              <Text style={[skin.chevron(tokens, size, open), ink]}>{skin.chevronGlyph}</Text>
+              <Text
+                style={[chevronStyle, ink]}
+                onLayout={floating ? (e) => {
+                  const { width } = e.nativeEvent.layout;
+                  if (width > 0) setChevronWidth(width);
+                } : undefined}
+              >
+                {skin.chevronGlyph}
+              </Text>
               {floating ? (
                 <View style={[floatingLabelLayer, ink]}>
                   <FloatingLabel
@@ -316,6 +334,7 @@ export function createSelect(skin: SelectSkin) {
                     populated={hasValue}
                     isError={false}
                     height={triggerHeight}
+                    end={labelEnd}
                     names={labelNames}
                   />
                 </View>

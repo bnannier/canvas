@@ -4,7 +4,8 @@ Multi-line input, with character count, with toolbar.
 
 Pass `label` (and `required`) to name the field: iOS and web render the label
 above the control, while Android floats the Material 3 in-container label at the
-top of the multiline box. The box fills the parent it is given; a step of its
+top of the multiline box, truncating on one line when it is longer than the box
+while the field's accessible name stays the whole label. The box fills the parent it is given; a step of its
 own (`xs`, `lg`, …, with `start` to pin it to the leading edge) or a Container
 step sets its measure.
 
