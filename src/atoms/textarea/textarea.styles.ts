@@ -40,6 +40,9 @@ export interface TextareaFieldState {
 export interface TextareaSkin extends FloatingLabelStyles<Size> {
   /** Clear Liquid Glass text entry on the web appearance. */
   liquid?: boolean;
+  /** The above-field label's whole type and ink: every skin supplies it, Android's too,
+   *  for the flush field, which never floats its label. */
+  labelAbove: NonNullable<FloatingLabelStyles<Size>["labelAbove"]>;
   field: (tokens: ColorTokens, state: TextareaFieldState) => TextStyle;
   /** The value's type scale per size; a skin that omits it reads the shared `sizeText`. */
   text?: (size: Size) => TextStyle;
@@ -181,6 +184,9 @@ export const androidSkin: TextareaSkin = {
   labelRest: (_t, size) => labelRestType(size),
   labelFloated: (_t, _size) => ({ fontSize: 12, lineHeight: 16, letterSpacing: 0.4 }),
   labelReserve: (size) => ({ paddingTop: size === "large" ? 26 : size === "small" ? 20 : 24 }),
+  // A flush field drops its frame inside a toolbar Card, so its label never floats: it
+  // is a foreground title above the field at the resting type, medium weight.
+  labelAbove: (t, size) => ({ ...labelRestType(size), fontWeight: "500", color: t.foreground }),
   // The count line: M3 supporting text (body-small 12/16, 0.4 tracking), the
   // on-surface-variant gray, turning destructive (M3 error) once the count
   // passes the soft cap.
