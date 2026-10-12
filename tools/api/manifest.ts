@@ -1,4 +1,4 @@
-import type { ApiEntry, DocsRoute, EntryPointShape } from "./types";
+import type { ApiEntry, DocsRoute, EntryPointShape, PlannedRoute } from "./types";
 
 // The public API of @nannier/canvas: every export of every package entry point, each
 // with what it is and where the docs site documents it. Authored by hand, from the
@@ -690,8 +690,9 @@ export const files: Readonly<Record<string, ApiEntry>> = {
  * The staged docs migration (audit K12): every export and file with no docs route yet,
  * each with the route planned for it. It is not a waiver. check:api fails when a
  * listed name is also given a docs route, when its planned page already names it (move
- * it to `docs` then), and when anything is still listed once the foundation reference
- * (K12-10) exists, whose last step is deleting this list.
+ * it to `docs` then), when its route is closed (PLANNED_ROUTES, below), and when a
+ * deprecated alias waits here once the foundation reference (K12-10) exists. The list
+ * empties route by route, as each route's turn lands its docs.
  */
 export const PENDING_DOCS: Readonly<Record<string, DocsRoute>> = {
   // K12-3 and K12-4: the ThemeProvider reference, reading the theme, the palette axis and
@@ -940,4 +941,43 @@ export const PENDING_DOCS: Readonly<Record<string, DocsRoute>> = {
   weightKey: "foundation",
   WheelGesture: "foundation",
   withInnerFill: "foundation",
+};
+
+/**
+ * Where the staged migration ends, route by route: every route PENDING_DOCS plans names
+ * for, with the audit turn that lands its docs (the checklist under audit/ that carries
+ * them). That turn closes the route (`closed: true`) once it has moved the last of its
+ * names to `docs`; check:api fails when a name is staged for a closed route, when a
+ * planned route has no entry here, and when a route nothing is staged for is still open.
+ * A route shared by several turns names the last of them, which closes it.
+ */
+export const PLANNED_ROUTES: Readonly<Record<DocsRoute, PlannedRoute>> = {
+  // K12-3 and K12-4: the ThemeProvider reference.
+  theming: { turn: "foundation/theme-provider" },
+  // K12-5 and K12-7: GlassModalBlurTarget's and OverlayProvider's turns land the overlay
+  // hosting names, then the Tokens turn lands the token files and closes the route.
+  integration: { turn: "foundation/tokens" },
+  // K12-6 and K12-7: the token pages.
+  "tokens/colors": { turn: "foundation/tokens" },
+  "tokens/layout": { turn: "foundation/tokens" },
+  "tokens/spacing": { turn: "foundation/tokens" },
+  "tokens/typography": { turn: "foundation/tokens" },
+  // K12-7: React Native's types, re-exported beside the five primitives. View's turn, the
+  // last of the primitive atoms (Pressable, ScrollView, Text, TextInput, View), lands them.
+  "rn-primitives": { turn: "components/view" },
+  // K12-8: each component's own parts, helpers and types, on its own page in its own turn.
+  "components/breadcrumb": { turn: "components/breadcrumb" },
+  "components/card": { turn: "components/card" },
+  "components/description-lists": { turn: "components/description-lists" },
+  "components/filter-panel": { turn: "components/filter-panel" },
+  "components/grid-lists": { turn: "components/grid-lists" },
+  "components/icon": { turn: "components/icon" },
+  "components/phone-input": { turn: "components/phone-input" },
+  "components/scatter-plot": { turn: "components/scatter-plot" },
+  "components/toast": { turn: "components/toast" },
+  // K12-10: the generated foundation reference. Each Foundations turn moves its names there
+  // as it deprecates them (GlassPane, GlassSurface, LayoutAxisProvider, LoopView,
+  // OverlayProvider, Portal, RippleClip, the Riskora type ladder and the shadow helpers);
+  // Tokens, the last, closes it.
+  foundation: { turn: "foundation/tokens" },
 };

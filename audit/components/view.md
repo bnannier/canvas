@@ -81,6 +81,7 @@ One row per finding. Severity: critical, high, medium, low. Cell: a capture id f
 
 | ID | Severity | Cell | Summary | Status | Fix commit |
 |---|---|---|---|---|---|
+| view-rn-types-1 | medium | source | From the FoundationReference turn (FR-3): the 13 React Native types `src/style/primitives.ts` re-exports beside the primitives (ImageStyle, LayoutChangeEvent, NativeScrollEvent, NativeSyntheticEvent, PressableProps, PressableStateCallbackType, ScrollViewProps, StyleProp, TextInputProps, TextProps, TextStyle, ViewProps, ViewStyle) are staged in `tools/api/manifest.ts` PENDING_DOCS for `/rn-primitives`, which names none of them yet. PLANNED_ROUTES gives that route to this turn, the last of the primitive atoms (Pressable, ScrollView, Text, TextInput, View): document them there (linked to React Native's own docs), move them to `docs`, and close the route (`closed: true`), or check:api keeps failing on nothing staged for an open route. | open |  |
 
 ## Sign-off
 

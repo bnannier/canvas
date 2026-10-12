@@ -1,10 +1,11 @@
 import { names } from "./docs";
-import { API_KINDS, type ApiEntry, type ApiExport, type ApiKind, type DocsPage, type DocsRoute, type EntryPointShape, type Resolution } from "./types";
+import { API_KINDS, type ApiEntry, type ApiExport, type ApiKind, type DocsPage, type DocsRoute, type EntryPointShape, type PlannedRoute, type Resolution } from "./types";
 
 /**
- * The generated foundation reference (audit K12-10): the planned home of every pending
- * name that no narrative page takes, and the end of the staged docs migration. Once the
- * route exists, PENDING_DOCS must be empty.
+ * The generated foundation reference (audit K12-10, the owner's OD2 decision): the home of
+ * every deprecated alias, and the planned home of the kit internals a later turn retires
+ * as one. Once the route exists, every deprecated alias is documented there and none is
+ * staged.
  */
 export const FOUNDATION_ROUTE = "foundation";
 
@@ -41,6 +42,8 @@ export interface ApiInventory {
   pages: ReadonlyMap<string, DocsPage>;
   /** The docs route the material inventory (tools/materials/manifest.ts) records for each renderable. */
   materialRoutes: ReadonlyMap<string, string | null>;
+  /** Every audit checklist by id (`components/view`, `foundation/tokens`): the turns that can end a planned route. */
+  auditTurns: ReadonlySet<string>;
 }
 
 export interface ApiManifest {
@@ -50,6 +53,8 @@ export interface ApiManifest {
   files: Readonly<Record<string, ApiEntry>>;
   /** Exports and files whose docs are pending, each with the route planned for it. */
   pendingDocs: Readonly<Record<string, DocsRoute>>;
+  /** Every route the pending names are planned for, with the audit turn that ends it. */
+  plannedRoutes: Readonly<Record<DocsRoute, PlannedRoute>>;
 }
 
 function own<T>(record: Readonly<Record<string, T>>, key: string): T | undefined {
@@ -168,8 +173,38 @@ export function checkPublicApi(inventory: ApiInventory, manifest: ApiManifest) {
   for (const subject of pending) {
     if (!Object.hasOwn(manifest.publicApi, subject) && !Object.hasOwn(manifest.files, subject)) errors.push(`PENDING_DOCS names ${subject}, which the manifest does not classify`);
   }
-  if (inventory.pages.has(FOUNDATION_ROUTE) && pending.length) {
-    errors.push(`The foundation reference (${FOUNDATION_ROUTE}) exists, so the staged migration is over: PENDING_DOCS still holds ${pending.length} (${pending.slice(0, 5).join(", ")}${pending.length > 5 ? ", ..." : ""})`);
+
+  // The staged migration ends route by route, each at the audit turn that lands the route's
+  // docs: a page that exists does not end it, since every planned page but the foundation
+  // reference exists already and later turns still write its sections. Every planned route
+  // names its turn, that turn closes the route, and nothing may be staged for a closed
+  // route; a route nothing is staged for any more must be closed. So staging never
+  // outlives the turn that owns it.
+  const stagedFor = new Map<DocsRoute, string[]>();
+  for (const [subject, route] of Object.entries(manifest.pendingDocs)) stagedFor.set(route, [...(stagedFor.get(route) ?? []), subject]);
+  const some = (subjects: readonly string[]) => `${subjects.length} (${subjects.slice(0, 5).join(", ")}${subjects.length > 5 ? ", ..." : ""})`;
+  for (const [route, subjects] of stagedFor) {
+    const plan = own(manifest.plannedRoutes, route);
+    if (!plan) errors.push(`PENDING_DOCS stages ${some(subjects)} for ${route}, but PLANNED_ROUTES names no audit turn that lands its docs: give the route the turn that ends it`);
+    else if (plan.closed) errors.push(`${route} is closed (its turn, ${plan.turn}, landed its docs), but PENDING_DOCS still stages ${some(subjects)} for it: document them there`);
+  }
+  for (const [route, plan] of Object.entries(manifest.plannedRoutes)) {
+    if (!inventory.auditTurns.has(plan.turn)) errors.push(`PLANNED_ROUTES gives ${route} to ${plan.turn}, which is no checklist under audit/`);
+    if (plan.closed && !inventory.pages.has(route)) errors.push(`PLANNED_ROUTES closes ${route}, which the docs do not serve`);
+    if (!plan.closed && !stagedFor.has(route)) errors.push(`Nothing is staged for ${route} any more: its turn (${plan.turn}) closes it in PLANNED_ROUTES (closed: true)`);
+  }
+
+  // The foundation reference is every deprecated alias's home (K12-10 OD2): it lists each
+  // deprecated name with what replaces it, so no alias is documented anywhere else, and
+  // once the page exists none waits in PENDING_DOCS. A staged alias the page already names
+  // gets checkDocs' move request above; this catches one the page leaves out.
+  const foundation = inventory.pages.get(FOUNDATION_ROUTE);
+  for (const [name, entry] of Object.entries(manifest.publicApi)) {
+    if (entry.kind !== "deprecated-alias") continue;
+    const planned = own(manifest.pendingDocs, name);
+    if (entry.docs !== undefined && entry.docs !== FOUNDATION_ROUTE) errors.push(`${name} is a deprecated alias documented on ${entry.docs}: its home is the foundation reference (${FOUNDATION_ROUTE})`);
+    else if (planned !== undefined && planned !== FOUNDATION_ROUTE) errors.push(`${name} is a deprecated alias staged for ${planned}: its home is the foundation reference (${FOUNDATION_ROUTE})`);
+    else if (planned !== undefined && foundation && !names(foundation, name)) errors.push(`${name} is a deprecated alias, and the foundation reference (${FOUNDATION_ROUTE}) does not list it: every deprecated name is listed there with its replacement`);
   }
 
   // The material inventory names a docs route for every renderable too, and the two
@@ -195,6 +230,7 @@ export function checkPublicApi(inventory: ApiInventory, manifest: ApiManifest) {
     kinds,
     documented,
     pending: pending.length,
+    openRoutes: [...stagedFor.keys()].filter((route) => !own(manifest.plannedRoutes, route)?.closed).length,
     files: reached.size,
     entryPoints: declaredPoints.length,
   };
