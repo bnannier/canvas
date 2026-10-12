@@ -1,7 +1,7 @@
 import { forwardRef, useId, useState, type ReactNode } from "react";
 import {
   StyleSheet,
-  TextInput,
+  type TextInput as RNTextInput,
   type AccessibilityActionEvent,
   type Insets,
   type NativeSyntheticEvent,
@@ -11,6 +11,7 @@ import {
 import {
   View,
   Text,
+  TextInput,
   Pressable,
   RippleClip,
   cornerRadii,
@@ -177,7 +178,7 @@ export function sizeOf(p: StepperProps): Size {
 
 /** Build a Stepper component from a platform skin. */
 export function createStepper(skin: StepperSkin) {
-  const Stepper = forwardRef<TextInput, StepperProps>(function Stepper(props, ref) {
+  const Stepper = forwardRef<RNTextInput, StepperProps>(function Stepper(props, ref) {
     const {
       onChange,
       min = 0,

@@ -8,6 +8,9 @@ import { MONO_FONT } from "../src/style/mono.ts";
 import { colorsFor } from "../src/style/tokens.ts";
 import { Button } from "../src/atoms/button/button.tsx";
 import { Typography } from "../src/atoms/typography/typography.tsx";
+import { Stepper } from "../src/atoms/stepper/stepper.tsx";
+import { Stepper as IosStepper } from "../src/atoms/stepper/stepper.ios.tsx";
+import { Stepper as AndroidStepper } from "../src/atoms/stepper/stepper.android.tsx";
 
 afterEach(cleanup);
 
@@ -111,6 +114,14 @@ describe("the themed primitives", () => {
     // The code role asks for MONO_FONT and gets the registered mono face.
     expect(getComputedStyle(screen.getByText("--primary")).fontFamily).toBe("GeistMono_400Regular");
     expect(getComputedStyle(screen.getByDisplayValue("typed")).fontFamily).toBe("Manrope_400Regular");
+  });
+
+  it("paint a field's own value in the registered face: Stepper's number on every skin", () => {
+    for (const [skin, Component] of [["web", Stepper], ["ios", IosStepper], ["android", AndroidStepper]] as const) {
+      render(<ThemeProvider fonts={FACES}><Component label={`${skin} quantity`} defaultValue={30} /></ThemeProvider>);
+      expect(getComputedStyle(screen.getByDisplayValue("30")).fontFamily, skin).toBe("Manrope_400Regular");
+      cleanup();
+    }
   });
 
   it("render in the system face when no fonts are passed, as before", () => {
