@@ -2,7 +2,7 @@ import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.j
 import { EscapeLayerProvider, useEscapeLayer } from "../../style/escape-layer.js";
 import { forwardRef, useId, useRef, useState } from "react";
 import { useComposedRefs } from "../../style/use-composed-refs.js";
-import { View, Pressable, Text, useControllableState, useFillStyle, AnchoredOverlay, useOverlayHost, useMeasuredWidth, FloatingLabel, LabelContent, labelA11y, useFloatingLabelRoom, RippleClip, cornerRadii, type LayoutStyle, type MeasureProps, type StyleProp, type ViewStyle, GlassPane, paneStyle, isGlass, withInnerFill } from "../../style/index.js";
+import { View, Pressable, Text, useControllableState, useFillStyle, AnchoredOverlay, useOverlayHost, useMeasuredWidth, FloatingLabel, LabelContent, labelA11y, useFloatingLabelRoom, RippleClip, cornerRadii, type LayoutStyle, type MeasureProps, type StyleProp, type ViewStyle, GlassPane, paneStyle, panePlaced, isGlass, withInnerFill } from "../../style/index.js";
 import { useRowFocus } from "../../style/use-row-focus.js";
 import { OverlayScrollView } from "../../style/overlay-scroll.js";
 import { LISTBOX } from "../../style/listbox-role.js";
@@ -292,7 +292,7 @@ export function createSelect(skin: SelectSkin) {
           {({ pressed }) => {
             const ink = glass ? { opacity: disabled ? skin.disabledOpacity : pressed && skin.pressedOpacity != null ? skin.pressedOpacity : 1 } : null;
             return <>
-              <GlassPane layer="control" shape={triggerShape} interactive={!disabled} />
+              <GlassPane layer="control" shape={triggerShape} stateBorder={open} interactive={!disabled} />
               <View
                 style={[
                   skin.triggerValue,
@@ -325,7 +325,7 @@ export function createSelect(skin: SelectSkin) {
                 {skin.chevronGlyph}
               </Text>
               {floating ? (
-                <View style={[floatingLabelLayer, ink]}>
+                <View style={[panePlaced(theme, triggerShape, floatingLabelLayer, open), ink]}>
                   <FloatingLabel
                     styles={skin}
                     size={size}

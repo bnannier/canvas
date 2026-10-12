@@ -78,8 +78,7 @@ export function createServiceHealthList(skin: ChartSkin) {
         {...(title != null && title !== "" ? { role: "group" as const, accessibilityLabel: `${title} chart`, "aria-label": `${title} chart` } : {})}
         testID={testID}
         style={[
-          props.plain ? null : paneStyle(theme, surfaceShape),
-          props.plain ? null : compact ? s.surfacePadCompact : s.surfacePadDefault,
+          props.plain ? null : paneStyle(theme, [surfaceShape, compact ? s.surfacePadCompact : s.surfacePadDefault]),
           CHART_ROOT,
           style,
         ]}

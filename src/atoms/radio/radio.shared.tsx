@@ -206,6 +206,7 @@ export function createRadio(skin: RadioSkin) {
       ? { focusable: roving.focusable, tabIndex: roving.tabIndex }
       : {};
 
+    const rowBox = [mark.kind === "check" ? CHECK_ROW : ROW, cell ? cell.cell : null];
     const control = (
       <Pressable
         ref={hostRef}
@@ -228,10 +229,9 @@ export function createRadio(skin: RadioSkin) {
         aria-checked={isChecked}
         android_ripple={ripple}
         style={({ pressed }) => [
-          mark.kind === "check" ? CHECK_ROW : ROW,
-          cell ? cell.cell : null,
-          // Card mode: the pressable IS the card surface (border, radius, fill, padding).
-          cardChrome ? paneStyle(theme, cardChrome) : null,
+          // Card mode: the pressable IS the card surface (border, radius, fill, padding),
+          // its whole box handed to paneStyle so a resting border becomes padding under glass.
+          cardChrome ? paneStyle(theme, [rowBox, cardChrome]) : rowBox,
           disabled ? { opacity: skin.disabledOpacity } : null,
           // A list row highlights while pressed (the iOS cell highlight, an ink tint over
           // glass); anywhere else the skin's own dim.

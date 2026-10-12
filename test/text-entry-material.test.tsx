@@ -81,11 +81,21 @@ describe("clear grouped field state borders", () => {
 
   for (const { name, field, owner, ...rest } of fields) {
     const fieldInput = "input" in rest ? rest.input : () => screen.getByTestId("field");
-    it(`${name} paints the active outline after the material and retains the original border space`, () => {
+    it(`${name} paints the active outline after the material, where solid's border lies, and keeps the border's room as padding`, () => {
+      render(mode(field(false), false));
+      const solidBox = owner(fieldInput());
+      // The solid box's border width, and its border plus padding on each side.
+      const borderWidth = solidBox.style.borderWidth;
+      const room = (node: HTMLElement) => ["top", "right", "bottom", "left"].map((side) => {
+        const style = getComputedStyle(node);
+        return Number.parseFloat(style.getPropertyValue(`border-${side}-width`) || "0") + Number.parseFloat(style.getPropertyValue(`padding-${side}`) || "0");
+      });
+      const solidRoom = room(solidBox);
+      expect(Number.parseFloat(borderWidth)).toBeGreaterThan(0);
+      cleanup();
       render(mode(field(false)));
       const input = fieldInput();
       const box = owner(input);
-      const borderWidth = box.style.borderWidth;
       expect(screen.queryByTestId("text-entry-state-border")).toBeNull();
       act(() => input.focus());
       const outline = screen.getByTestId("text-entry-state-border");
@@ -99,9 +109,11 @@ describe("clear grouped field state borders", () => {
       expect(outline.getAttribute("aria-hidden")).toBe("true");
       expect(outline.style.borderColor).not.toBe("");
       expect(outline.style.borderColor).not.toContain("0.00");
+      // The stroke has solid's width at the box's outer edge; the box drew its resting
+      // border as padding (GP-1), so its content keeps solid's room.
       expect(outline.style.borderWidth).toBe(borderWidth);
-      expect(box.style.borderWidth).toBe(borderWidth);
-      expect(box.style.borderColor).toContain("0.00");
+      expect(box.style.borderWidth).toBe("0px");
+      expect(room(box)).toEqual(solidRoom);
       expect(materials(box)).toHaveLength(1);
       expect(fieldInput()).toBe(input);
       expect(document.activeElement).toBe(input);

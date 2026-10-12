@@ -210,8 +210,7 @@ export function createPagination(skin: PaginationSkin) {
       <RippleClip shape={cornerRadii(box)} hitSlop={target.hitSlop} {...hoverTarget}>
         <Pressable
           style={({ pressed }) => [
-            filled(box) ? paneStyle(theme, box) : box,
-            s.itemSize[size],
+            filled(box) ? paneStyle(theme, [box, s.itemSize[size]]) : [box, s.itemSize[size]],
             hovered && !disabled && hoverLook ? hoverLook(tokens) : null,
             pressDim(pressed, skin.pressedOpacity),
           ]}

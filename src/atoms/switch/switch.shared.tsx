@@ -4,7 +4,7 @@ import { useComposedRefs } from "../../style/use-composed-refs.js";
 import { useSpaceActivation } from "../../style/use-space-activation.js";
 import { type GestureResponderEvent } from "react-native";
 import { useSeededMinTargetSlop, styleBox } from "../../style/touch-target-seed.js";
-import { Pressable, View, Text, useControllableState, type ColorTokens, type StyleProp, type ViewStyle, type TouchTargetSkin, type LayoutStyle, GlassPane, GlassSurface, paneStyle } from "../../style/index.js";
+import { Pressable, View, Text, useControllableState, type ColorTokens, type StyleProp, type ViewStyle, type TouchTargetSkin, type LayoutStyle, GlassPane, GlassSurface, paneStyle, panePlaced } from "../../style/index.js";
 
 // Shared Switch shell. Uses React Native's primitives DIRECTLY (no engine className
 // layer) and reads the active brand tokens via so colors follow light/dark.
@@ -152,7 +152,8 @@ export function createSwitch(skin: SwitchSkin) {
             interactive
             pointerEvents="none"
             tint={disabled ? tokens["muted-foreground"] : String(thumbShape.backgroundColor)}
-            style={[thumbShape, disabled && glassThumb ? { backgroundColor: tokens["muted-foreground"] } : null]}
+            // The thumb keeps its solid place inside the track's border (panePlaced).
+            style={[panePlaced(theme, trackShape, thumbShape), disabled && glassThumb ? { backgroundColor: tokens["muted-foreground"] } : null]}
           />
         </View>
       </Pressable>

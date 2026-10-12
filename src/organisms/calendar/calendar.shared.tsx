@@ -455,8 +455,7 @@ export function createCalendar(skin: CalendarSkin, parts: CalendarParts = {}) {
                 else cellRefs.current.delete(dayNum);
               }}
               style={({ pressed }) => [
-                isSelected ? paneStyle(dayTheme, daySurface) : daySurface,
-                m.cell,
+                isSelected ? paneStyle(dayTheme, [daySurface, m.cell]) : [daySurface, m.cell],
                 skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null,
               ]}
               android_ripple={ripple}

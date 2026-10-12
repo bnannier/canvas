@@ -161,6 +161,8 @@ export function createAlert(skin: AlertSkin) {
     const { tokens } = theme;
     const glass = isGlass(theme);
     const tone = toneOf(props);
+    // Only the neutral alert draws an edge (containerColor): under glass it keeps it.
+    const edged = tone === "neutral";
     const fill = useFillStyle("Alert");
 
     // Dismissal obeys the kit's controlled + uncontrolled contract: pressing the
@@ -198,12 +200,14 @@ export function createAlert(skin: AlertSkin) {
         accessibilityRole="alert"
         accessibilityLiveRegion={live}
         aria-live={live}
-        style={[paneStyle(theme, [skin.container, containerColor(tokens, tone)]), glass ? { borderColor: containerColor(tokens, tone).borderColor } : null, fill, style]}
+        style={[paneStyle(theme, [skin.container, containerColor(tokens, tone)], glass && edged), fill, style]}
       >
         {/* Under glass the alert is a CONTENT-layer pane (a toned alert tints it with its
-            wash) painted behind the live-region root, which keeps its semantics and its
-            edge. Renders nothing in solid mode. */}
-        <GlassPane layer="content" shape={[skin.container, containerColor(tokens, tone)]} tint={paneTint(tokens, tone)} />
+            wash) painted behind the live-region root, which keeps its semantics. The
+            neutral alert keeps its hairline edge over the pane, which sits flush inside
+            it; a toned alert's edge is transparent, so its pane covers the whole alert.
+            Renders nothing in solid mode. */}
+        <GlassPane layer="content" shape={[skin.container, containerColor(tokens, tone)]} stateBorder={edged} tint={paneTint(tokens, tone)} />
         {icon != null ? (
           tintedIcon != null ? (
             <View style={iconSlot}>{tintedIcon}</View>

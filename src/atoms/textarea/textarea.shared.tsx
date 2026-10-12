@@ -250,8 +250,10 @@ export function createTextarea(skin: TextareaSkin) {
       ...(flush ? FLUSH_SHAPE : null),
     };
     const fieldPane = <GlassPane {...entryMaterial.paneProps} shape={fieldShape} tint={isError ? alpha(tokens.destructive, 0.18) : undefined} />;
-    const fieldStyle: StyleProp<TextStyle>[] = [
-      paneStyle(theme, fieldShape, focused || isError),
+    // The field's whole box goes through paneStyle (its shape and any label reserve), so
+    // under glass its resting border becomes padding of the same width.
+    const fieldStyleWith = (reserve: StyleProp<ViewStyle>): StyleProp<TextStyle>[] => [
+      paneStyle(theme, [fieldShape, reserve], focused || isError),
       glass ? { ...PANE_SIBLING_INPUT, backgroundColor: "transparent", borderColor: focused || isError ? (fieldShape.borderColor as string) : "transparent" } : null,
       skin.text ? skin.text(size) : sizeText(size),
       minHeight(rows),
@@ -263,6 +265,7 @@ export function createTextarea(skin: TextareaSkin) {
       // ring marks its keyboard focus around the red edge (src/style/focus-frame.tsx).
       isError && !flush ? errorFrame.ring() : null,
     ];
+    const fieldStyle = fieldStyleWith(null);
     const disabledDim = disabled ? { opacity: 0.5 } : null;
 
     // The live count line, owned by the component. End-aligned, muted, turning
@@ -289,7 +292,7 @@ export function createTextarea(skin: TextareaSkin) {
             ref={hostRef}
             multiline
             textAlignVertical="top"
-            style={[...fieldStyle, room.reserve]}
+            style={fieldStyleWith(room.reserve)}
             placeholder={focused ? placeholder : undefined}
             {...common}
           />
