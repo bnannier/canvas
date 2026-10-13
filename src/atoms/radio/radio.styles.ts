@@ -1,6 +1,7 @@
 import { StyleSheet, type ViewStyle, type TextStyle } from "react-native";
-import { type ColorTokens, alpha } from "../../style/index.js";
+import { type ColorTokens } from "../../style/index.js";
 import { platformShape } from "../../style/platform-shape.js";
+import { selectedCard } from "../../style/selected-card.js";
 import { type RadioSkin, type Size } from "./radio.shared.js";
 import {
   type CardSkin,
@@ -109,11 +110,9 @@ function cardChrome(card: CardSkin, tokens: ColorTokens, checked: boolean): View
     ...(card.curve ? { borderCurve: card.curve } : null), // iOS continuous corner curve
     ...card.surface(tokens, "flat"), // the M3 OUTLINED / Light bordered surface: tokens.border on tokens.card
     ...card.padded, // per-OS padded inset (24 web/iOS, 16 Android)
-    ...(checked
-      ? // Card's own `selected` recolor: primary border + soft primary tint. The border
-        // WIDTH is unchanged, so selecting never shifts content. Identical to Card.
-        { borderColor: tokens.primary, backgroundColor: alpha(tokens.primary, 0.05) }
-      : null),
+    // Card's own `selected` recolor (primary border + soft primary tint), the one recipe
+    // both read, so selecting never shifts content and the two never drift.
+    ...(checked ? selectedCard(tokens) : null),
   };
 }
 

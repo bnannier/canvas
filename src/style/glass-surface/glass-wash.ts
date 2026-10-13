@@ -4,18 +4,21 @@
 // alpha at which the ink the skin paints on it, the same `muted-foreground` and `foreground`
 // as in solid mode, keeps WCAG 4.5:1 over the page and over a content pane (the owner's GP-2
 // decision, audit/DECISIONS.md), on the wash itself and on the inner fill a field's addon or
-// country segment paints over it. That leaves almost no error wash in any palette and almost
-// no selection wash in the light ones, so the state is carried by the error border, the
-// message and the selected border, as in solid and in Dark Factory; the dark palette keeps a
-// visible selection wash.
+// country segment paints over it. That leaves almost no error wash in any palette, as solid's
+// web field has none. The selection wash's ceiling is the solid recipe's own tint, so a
+// selected card under glass paints the soft tint it paints in solid, in every palette, the
+// dark one included (the owner's GP-2b decision). The state is carried by the error border,
+// the message and the selected border, as in solid and in Dark Factory.
 //
-// This table is the only place the washes' numbers live: a tuning-harness tunable
-// (.tuning-harness.json), judged on /testing/materials and the shipped pages, its runs
-// logged in tools/native/liquid-motion.md. test/glass-controls.test.tsx holds the floors.
+// This table is the only place the washes' numbers live, apart from the selection ceiling it
+// reads from the solid recipe (src/style/selected-card.ts): a tuning-harness tunable
+// (.tuning-harness.json, both files), judged on /testing/materials and the shipped pages, its
+// runs logged in tools/native/liquid-motion.md. test/glass-controls.test.tsx holds the floors.
 
 import type { ThemeValue } from "../theme.js";
 import { alpha, channelsOf, composite, contrastRatio } from "../color.js";
 import { innerFill } from "../glass-fill.js";
+import { SELECTED_CARD_TINT } from "../selected-card.js";
 import { clearSurfaceTint, surfaceUnderFill, type GlassLayer } from "./glass-surface.shared.js";
 
 export const GLASS_WASH = {
@@ -25,8 +28,12 @@ export const GLASS_WASH = {
    * fill over the wash, under the same muted ink, so the ink is held on that fill too.
    */
   error: { token: "destructive", ceiling: 0.18, inner: "soft" },
-  /** A selected card (a selected Card, a checked Radio card): the primary colour, under no inner fill. */
-  selection: { token: "primary", ceiling: 0.22, inner: null },
+  /**
+   * A selected card (a selected Card, a checked Radio card): the primary colour, under no
+   * inner fill, never denser than the solid recipe's own selected tint (`SELECTED_CARD_TINT`,
+   * read from it rather than copied), so the glass card paints what the solid one does.
+   */
+  selection: { token: "primary", ceiling: SELECTED_CARD_TINT, inner: null },
   /** The contrast the muted and foreground inks keep on a wash: WCAG AA for normal-size text. */
   inkContrast: 4.5,
   /**
