@@ -1,26 +1,31 @@
 import { describe, it, expect } from "bun:test";
 import { frostMethodProps } from "../src/style/glass-surface/glass-surface.shared.tsx";
+import { resolveMaterial, type MaterialCapabilities } from "../src/style/glass-surface/material-resolution.ts";
 
-// frostMethodProps picks the frost BlurView's Android blur-method props by expo-blur
-// API generation (57+ exports BlurTargetView and wants blurMethod + blurTarget; older
-// releases take the legacy experimentalBlurMethod). A target reaches a surface only
-// where blurring it is sibling-safe — an OverlayProvider's outlet or a Modal bridged
-// by GlassModalBlurTarget (an ancestor target render-node-cycles libhwui into a
-// segfault, see GlassBlurTargetContext; that wiring is covered in
-// glass-blur-target.test.tsx) — so the no-target case still covers every in-content
-// surface.
+// frostMethodProps picks expo-blur's Android blur-method prop by its API generation. Before
+// expo-blur 57 (no BlurTargetView export) the frost blurs the content behind it through the
+// legacy `experimentalBlurMethod`. From 57 the Android blur samples only a blur target, and
+// the kit hands it none: a capture plane exists only where @nannier/canvas-blur mounted its
+// capture host, where the Android host renders canvas-blur's own frost, and without one a
+// surface that needs a target resolves solid before any BlurView mounts (pinned below), so
+// from 57 it passes no method prop at all.
 
 describe("frostMethodProps", () => {
   it("keeps the legacy prop on expo-blur < 57 (no BlurTargetView export)", () => {
-    expect(frostMethodProps(false, null)).toEqual({ experimentalBlurMethod: "dimezisBlurView" });
+    expect(frostMethodProps(false)).toEqual({ experimentalBlurMethod: "dimezisBlurView" });
   });
 
-  it("asks for no blur on expo-blur 57+ while no target exists (every platform today)", () => {
-    expect(frostMethodProps(true, null)).toEqual({ blurMethod: "none" });
+  it("passes no method prop on expo-blur 57+, which the kit never hands a blur target", () => {
+    expect(frostMethodProps(true)).toEqual({});
   });
+});
 
-  it("names the dimezis method with the target on expo-blur 57+ once a sibling target is published", () => {
-    const target = { current: null };
-    expect(frostMethodProps(true, target)).toEqual({ blurMethod: "dimezisBlurView", blurTarget: target });
+describe("expo-blur 57 on Android without a capture plane", () => {
+  const glass = { surface: "glass" as const, increasedContrast: false, reducedTransparency: false };
+  const expoBlur57: MaterialCapabilities = { platform: "android", frost: true, liquid: false, requiresTarget: true };
+
+  it("resolves the complete solid skin, so its BlurView never mounts without a target", () => {
+    expect(resolveMaterial(glass, { layer: "functional" }, expoBlur57, false)).toEqual({ renderer: "solid", static: false, fallback: "missing-target" });
+    expect(resolveMaterial(glass, { layer: "content" }, expoBlur57, false)).toEqual({ renderer: "solid", static: true, fallback: "missing-target" });
   });
 });
