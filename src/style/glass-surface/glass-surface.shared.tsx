@@ -74,14 +74,14 @@ export interface GlassSurfaceProps {
    */
   role?: ViewProps["role"];
   /**
-   * Render the material as an INTERACTIVE control surface: on iOS 26 the native
-   * Liquid Glass responds to touch with its fluid press animation (Apple's
-   * `isInteractive`). Use for glass that is itself a tappable control (e.g. an
-   * account-trigger avatar), not for passive shells like navbars. It takes effect only
-   * on a surface that itself receives the touch, never under `pointerEvents="none"`,
-   * where React Native disables user interaction on the view and the glass never sees
-   * the press. Ignored on the frost/solid fallbacks, which have no interactive
-   * material. Defaults to false.
+   * Ask iOS 26's Liquid Glass to answer touch with its own press response (Apple's
+   * `isInteractive`, forwarded to the native glass view). The glass answers only a touch
+   * delivered to the glass view itself, and it never is one: the material layer passes
+   * every touch through to the surface's content, and a surface under
+   * `pointerEvents="none"` takes none at all, where React Native disables user interaction
+   * on the view. So no kit surface asks for it; a pressed control shows its own press
+   * feedback (its dim, its Android ripple). Ignored on the frost and solid paths, which
+   * have no interactive material. Defaults to false.
    */
   interactive?: boolean;
   /**

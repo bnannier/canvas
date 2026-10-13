@@ -493,6 +493,29 @@ describe("a pane and its host read one material", () => {
     expect(offenders).toEqual([]);
   });
 
+  // The same holds for GlassSurface itself (glass-surface-interactive-under-pointer-none-1):
+  // its material layer is pointer-transparent (MATERIAL_FILL), so the glass never receives
+  // the touch interactive Liquid Glass answers, and the four kit surfaces that asked (the
+  // Switch thumb, the Slider knob, ButtonGroup's GroupGlass, TabBar's icon pill) also passed
+  // their own taps through. Asking only made expo-glass-effect reinstall the effect on each
+  // toggle, so no kit surface asks.
+  it("no GlassSurface in the kit asks for interactive glass", () => {
+    const offenders: string[] = [];
+    for (const { file, text } of sources) {
+      if (!text.includes("<GlassSurface")) continue;
+      const source = ts.createSourceFile(file, text, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
+      const visit = (node: ts.Node) => {
+        if ((ts.isJsxSelfClosingElement(node) || ts.isJsxOpeningElement(node)) && node.tagName.getText() === "GlassSurface"
+          && node.attributes.properties.some((attribute) => ts.isJsxAttribute(attribute) && attribute.name.getText() === "interactive")) {
+          offenders.push(`${file}:${source.getLineAndCharacterOfPosition(node.getStart()).line + 1}`);
+        }
+        ts.forEachChild(node, visit);
+      };
+      visit(source);
+    }
+    expect(offenders).toEqual([]);
+  });
+
   it("the density check catches a host and a pane that ask for different materials", () => {
     const host = (pane: string) => `
       function Host() {
