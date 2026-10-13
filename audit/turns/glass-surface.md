@@ -1,0 +1,15 @@
+# Turn record: GlassSurface (foundation)
+
+The capture runs `bun run audit:turn -- --slug=glass-surface` took for this turn, by phase, one row per run as it finished. Written by `audit:turn` alone and appended, never rewritten; do not edit by hand. The runs are under `.audit/runs/<run id>/` (local and gitignored, as every capture is); `audit/foundation/glass-surface.md` names the after-phase runs in its Sign-off rows. See `audit/README.md`, "One component's turn".
+
+## before
+
+| Run id | Kind | Platform | Recorded | Commit | Status | Cells | Slugs |
+|---|---|---|---|---|---|---|---|
+| `20261013-131814-web-0fb577d` | variants | web | 2026-10-13T13:52:04.565Z | `0fb577d` | complete | 8748 of 8748: 8748 ok, 0 failed | button-group, popover, radio, slider, switch, accordion, alert-dialog, card, code-block, collapsible, description-lists, empty-state, feeds, grid-lists, media-objects, stacked-lists, stats, action-sheet, board, calendar, carousel, command, data-table, dialog, drawer, navbars, sidebar, tab-bar, toast, chip, emblem, autocomplete, avatar, badge, button, checkbox, dropdown, input, input-otp, kbd, listbox, stepper, pagination, progress, select, skeleton, textarea, tooltip, video, alert, phone-input, filter-panel, row-menu, steps, tabs, chart, line-chart, area-chart, scatter-plot, candlestick-chart, depth-chart, heatmap, bar-list, metric-breakdown, service-health-list, bullet-chart, composed-chart, range-area-chart, histogram, box-plot, waterfall-chart, funnel-chart, radar-chart, treemap, geo-map, action-panels, field, form |
+| `20261013-135204-web-0fb577d` | states | web | 2026-10-13T14:01:39.579Z | `0fb577d` | complete | 1944 of 1944: 1890 ok, 0 failed, 54 not reached | button-group, popover, radio, slider, switch, accordion, alert-dialog, card, code-block, collapsible, description-lists, media-objects, stacked-lists, stats, action-sheet, board, calendar, carousel, command, data-table, dialog, drawer, navbars, sidebar, tab-bar, toast, chip, autocomplete, avatar, button, checkbox, dropdown, input, input-otp, listbox, stepper, pagination, select, textarea, tooltip, video, alert, phone-input, filter-panel, row-menu, tabs, chart, line-chart, area-chart, scatter-plot, candlestick-chart, heatmap, bar-list, service-health-list, composed-chart, range-area-chart, histogram, box-plot, waterfall-chart, funnel-chart, treemap, geo-map, field, form |
+
+## after
+
+| Run id | Kind | Platform | Recorded | Commit | Status | Cells | Slugs |
+|---|---|---|---|---|---|---|---|
