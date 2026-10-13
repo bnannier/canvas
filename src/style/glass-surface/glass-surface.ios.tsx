@@ -15,18 +15,19 @@ import {
  * blur with no saturation shift and a 1 px inset hairline). On iOS 26 and later it is
  * Apple's Liquid Glass through expo-glass-effect for the functional, control and dense
  * layers, and expo-blur's frost with a specular rim for content and static surfaces and
- * before iOS 26. On Android it is the capture frost of `@nannier/canvas-blur` where a capture
- * plane is ready (an overlay outlet, a bridged Modal) and expo-blur's frost on its releases
- * before 57, while a surface in the page resolves its solid skin. A `brand` paints
- * brand-tinted glass, a `tint` a wash, and a `boundaryFill` a control's boundary over the
- * material.
+ * before iOS 26. On Android, with `@nannier/canvas-blur` installed, it is that package's
+ * capture frost where a capture plane is ready (an overlay outlet, a bridged Modal), and a
+ * surface in the page, which has none, resolves its solid skin; without it, it is expo-blur's
+ * frost on expo-blur's releases before 57, in the page as in an overlay, and from 57 the
+ * surface resolves solid. A `brand` paints brand-tinted glass, a `tint` a wash, and a
+ * `boundaryFill` a control's boundary over the material.
  *
  * Where its material resolves solid (in solid mode, under Reduce Transparency or Increase
  * Contrast, where an optional peer is missing, a browser lacks a backdrop filter or an
- * Android surface has no plane) it renders the plain box: the skin's `style` untouched,
- * with the contrasting `foreground` border under Increase Contrast. Under glass the fill
- * gives way to the material and a resting border becomes padding, so the material covers
- * the surface's whole solid footprint; a `stateBorder` stays over it.
+ * Android surface that needs a capture plane has none) it renders the plain box: the skin's
+ * `style` untouched, with the contrasting `foreground` border under Increase Contrast. Under
+ * glass the fill gives way to the material and a resting border becomes padding, so the
+ * material covers the surface's whole solid footprint; a `stateBorder` stays over it.
  *
  * Accessibility: its root is the one node it adds, carrying only the `role`, `testID` and
  * accessibility-escape handler it is given, the same in solid, glass and every rung of the
