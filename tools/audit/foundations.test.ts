@@ -190,7 +190,8 @@ describe("the Foundations tier (tools/audit/foundations.ts)", () => {
     expect(consumer("GlassSurface", "view")).toBeUndefined();
     const glass = facts("GlassSurface");
     expect(glass.homes).toEqual(["src/style/glass-surface/glass-surface.android.tsx", "src/style/glass-surface/glass-surface.ios.tsx", "src/style/glass-surface/glass-surface.tsx"]);
-    expect(glass.exports.map((e) => [e.name, e.k12])).toEqual([["GlassSurface", "deprecated alias to come (K12-2)"]]);
+    // A deprecated alias since GlassSurface's turn (K12-2), with no single replacement.
+    expect(glass.exports.map((e) => [e.name, e.k12])).toEqual([["GlassSurface", "deprecated alias already"]]);
   });
 
   it("finds AnchoredOverlay's consumers: Popover, Dropdown and Select directly, AvatarMenu's Avatar through Dropdown", () => {
