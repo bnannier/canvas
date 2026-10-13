@@ -91,7 +91,7 @@ One row per finding. Severity: critical, high, medium, low. Cell: a capture id f
 | ID | Severity | Cell | Summary | Status | Fix commit |
 |---|---|---|---|---|---|
 | button-group-corner-1 | low | source | Corners off their roles: the SplitButton menu rows drew a shared 2 (now the web menu row's `control` 8, and square in the iOS and Android menus, whose rows run full bleed); the iOS SplitButton menu drew 12, the iOS card value, where the iOS menu corner is 26; the iOS spaced peers and the stepper kind's outer ends drew 8 where every iOS control is a capsule. The shape gate (test/design-rules-shape.test.ts) now takes a corner only as a role of its own platform's row that its component plays, the pill, square or a declared concentric corner. | fixed | 278270a8 |
-| button-group-ao-focus | high | source | Opening the split button's overflow menu left focus on the chevron, and Tab walked on with the menu still open. Since the AnchoredOverlay turn (AO-1, AO-2) focus enters at the first row, the arrows, Home and End move among the rows, Enter and Space activate one, Tab out closes the menu, focus returns to the chevron, and natively the open menu is modal to VoiceOver and TalkBack. | fixed | 5d8dc836 |
+| button-group-ao-focus | high | source | Opening the split button's overflow menu left focus on the chevron, and Tab walked on with the menu still open. Since the AnchoredOverlay turn (AO-1, AO-2) focus enters at the first row, the arrows, Home and End move among the rows, Enter and Space activate one, Tab out closes the menu, focus returns to the chevron, and natively the open menu is modal to VoiceOver and TalkBack. | fixed | 2bad6173 |
 
 ## Sign-off
 

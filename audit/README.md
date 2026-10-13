@@ -290,6 +290,12 @@ every slug of its list.
 6. **Sign off** a platform when every variant cell for it is ticked, no critical or high
    finding is open, every medium or low is fixed or carries the owner's decision, and the
    run id names the after-capture run.
+7. **Merge** the turn branch by rebasing it onto main and fast-forwarding main, never by
+   cherry-pick: a cherry-pick gives every commit a new SHA, so the fix commits the records
+   cite would name commits main never contains. `audit:checklists:check` fails on a
+   commit an audit record cites that HEAD's history does not hold
+   (`tools/audit/commit-refs.ts`); a turn record's Commit column, which names where a
+   capture ran, is exempt.
 
 A decision the rubric cannot settle (a card item that cannot be matched, a DF-versus-HIG
 conflict, a breaking API change) goes to the owner as a question, never into a checklist
@@ -1153,7 +1159,7 @@ development app installed.
 
   **Settled by the Android re-capture (GlassPane's turn, 2026-10-12).** The expectation
   above rested on source and unit tests until the FoundationReference turn's native after
-  run `20261012T102808Z-android-df0c42f` (commit df0c42f, after the pane fixes) photographed
+  run `20261012T102808Z-android-df0c42f` (commit 4a75857, after the pane fixes) photographed
   chip, badge, kbd, switch, input, card, alert, checkbox, radio and steps again: 234 of their
   237 glass and solid card pairs are byte-identical, with no black ring and no doubled
   hairline. The three that differ are alert/richbody in blush, mint and dark, inside its
@@ -1336,7 +1342,7 @@ photograph. A page's sections are files of its one cell, never a level of its pa
      photograph is linked from the page's `index.md`.
 
    Every tile is labelled with its cell id and the commit it was captured at
-   (`commit b87e514 dirty`); every sheet's title names the runs its tiles come from and how
+   (`commit a8d852b dirty`); every sheet's title names the runs its tiles come from and how
    many commits they span, and where they span more than one, a tile whose commit is not
    the sheet's most common one has its commit in bold blue, so a sheet that mixes a fresh
    capture with an older one says so on its face. A cell that failed, was not reached or was
