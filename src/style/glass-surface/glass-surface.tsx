@@ -8,11 +8,10 @@
 import { Platform, View, type ViewStyle } from "react-native";
 import { FrostView, requiresBlurTarget } from "./material-runtime.js";
 import { useMaterialResolution } from "./use-material-theme.js";
-import { frameBedsFor } from "../tokens.js";
 import { WEB_FROST, webRimColor } from "./web-frost.js";
 import {
-  GlassBox, CLEAR_INTENSITY, brandOverMaterial, clearSurfaceTint, contrastStyle, frostMethodProps,
-  materialFill, surfaceUnderFill, surfaceIntensity, type GlassSurfaceProps,
+  GlassBox, CLEAR_INTENSITY, contrastStyle, frostFill, frostMethodProps, materialFill, surfaceIntensity,
+  type GlassSurfaceProps,
 } from "./glass-surface.shared.js";
 
 /**
@@ -52,7 +51,7 @@ export function GlassSurface(props: GlassSurfaceProps) {
   // only Android's frost needs a target (glass-surface.android.tsx), so the shared
   // resolution never finds one to require.
   const { theme, material: resolved } = useMaterialResolution(props);
-  const { layer = "functional", sheer, tint, brand, style, clear } = props;
+  const { layer = "functional", sheer, style, clear } = props;
   const solid = resolved.renderer === "solid";
   // Sheer is a content-only treatment. It must never thin a menu or error verdict.
   const translucent = sheer && layer === "content";
@@ -61,9 +60,10 @@ export function GlassSurface(props: GlassSurfaceProps) {
   const frost = blur > 0 ? `blur(${blur}px)` : undefined;
   const scheme = theme.dark ? "dark" : "light";
   const rim: ViewStyle = { ...fill, boxShadow: `inset 0 0 0 ${WEB_FROST.rimWidth}px ${webRimColor(layer, scheme, theme.tokens.border)}` };
-  const tintLayer = <View style={[fill, { backgroundColor: surfaceUnderFill(theme.glass, layer, brand, tint ?? (clear && brand == null ? clearSurfaceTint(theme.tokens, theme.dark) : undefined), theme.tokens, frameBedsFor(theme.palette, theme.scheme)), opacity: translucent ? WEB_FROST.sheerFillOpacity : 1 }]} />;
-  // The fill paints beneath the material, except for a brand colour (see brandOverMaterial).
-  const over = brandOverMaterial(brand, tint);
+  // The fill paints beneath the material, except a brand colour and a boundary fill, which
+  // paint over it so their solved colour is the rendered one (`frostFill`).
+  const { color, over } = frostFill(theme, props);
+  const tintLayer = <View style={[fill, { backgroundColor: color, opacity: translucent ? WEB_FROST.sheerFillOpacity : 1 }]} />;
   // A platform without its own host and without a browser's backdrop filter frosts
   // through expo-blur when it is installed; the web never reaches that branch.
   const intensity = clear ? CLEAR_INTENSITY : surfaceIntensity(layer, translucent);

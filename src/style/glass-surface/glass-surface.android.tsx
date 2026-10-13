@@ -9,11 +9,9 @@ import { FrostView, requiresBlurTarget } from "./material-runtime.android.js";
 import { NativeCaptureFrost } from "./capture-runtime.js";
 import { useCaptureDemand } from "./capture-target.js";
 import { useMaterialResolution } from "./use-material-theme.js";
-import { frameBedsFor } from "../tokens.js";
 import {
-  GlassBox, CLEAR_INTENSITY, brandOverMaterial, clearSurfaceTint, contrastStyle, frostMethodProps,
-  SHEER_FILL_OPACITY, materialFill, specularRim, surfaceUnderFill, surfaceIntensity, useBlurTargetRejection,
-  type GlassSurfaceProps,
+  GlassBox, CLEAR_INTENSITY, contrastStyle, frostFill, frostMethodProps, SHEER_FILL_OPACITY, materialFill,
+  specularRim, surfaceIntensity, useBlurTargetRejection, type GlassSurfaceProps,
 } from "./glass-surface.shared.js";
 
 const EMPTY_TARGET = { current: null };
@@ -52,7 +50,7 @@ const EMPTY_TARGET = { current: null };
  */
 export function GlassSurface(props: GlassSurfaceProps) {
   const { theme, material: resolved, requestedTarget, target } = useMaterialResolution(props);
-  const { layer = "functional", sheer, tint, brand, style, clear } = props;
+  const { layer = "functional", sheer, style, clear } = props;
   const solid = resolved.renderer === "solid";
   useCaptureDemand(requestedTarget ?? EMPTY_TARGET, !solid && NativeCaptureFrost !== undefined);
   // A frost refuses only a plane that contains it: under a GlassModalBlurTarget that sits
@@ -64,10 +62,12 @@ export function GlassSurface(props: GlassSurfaceProps) {
   const fill = materialFill(style, props.stateBorder);
   const rim = specularRim(style, theme.dark, props.stateBorder);
   const nativeCapture = NativeCaptureFrost !== undefined && target !== null && !solid;
-  const tintLayer = <View style={[fill, { backgroundColor: surfaceUnderFill(theme.glass, layer, brand, tint ?? (clear && brand == null ? clearSurfaceTint(theme.tokens, theme.dark) : undefined), theme.tokens, frameBedsFor(theme.palette, theme.scheme)), opacity: translucent ? SHEER_FILL_OPACITY : 1 }]} />;
   // The fill paints beneath the material, except over the capture frost (which samples
-  // a separate plane) and for a brand colour (see brandOverMaterial).
-  const over = nativeCapture || brandOverMaterial(brand, tint);
+  // a separate plane), and a brand colour or a boundary fill, which paint over it so their
+  // solved colour is the rendered one (`frostFill`).
+  const fillOf = frostFill(theme, props);
+  const tintLayer = <View style={[fill, { backgroundColor: fillOf.color, opacity: translucent ? SHEER_FILL_OPACITY : 1 }]} />;
+  const over = nativeCapture || fillOf.over;
   const material = solid ? null : <>
     {over ? null : tintLayer}
     {NativeCaptureFrost && target ? <NativeCaptureFrost targetRef={target} intensity={intensity} tint={theme.dark ? "dark" : "light"} style={fill} onTargetRejected={reject ? () => reject(target) : undefined} />

@@ -2,10 +2,9 @@
 import { View } from "react-native";
 import { FrostView, LiquidView } from "./material-runtime.ios.js";
 import { useMaterialResolution } from "./use-material-theme.js";
-import { frameBedsFor } from "../tokens.js";
 import {
-  GlassBox, CLEAR_INTENSITY, brandOverMaterial, clearSurfaceTint, contrastStyle, SHEER_FILL_OPACITY, materialFill,
-  specularRim, surfaceUnderFill, surfaceIntensity, type GlassSurfaceProps,
+  GlassBox, CLEAR_INTENSITY, contrastStyle, frostFill, SHEER_FILL_OPACITY, materialFill,
+  specularRim, surfaceIntensity, type GlassSurfaceProps,
 } from "./glass-surface.shared.js";
 
 /**
@@ -42,17 +41,19 @@ import {
  */
 export function GlassSurface(props: GlassSurfaceProps) {
   const { theme, material: resolved } = useMaterialResolution(props);
-  const { style, layer = "functional", brand, tint, clear, interactive = false } = props;
+  const { style, layer = "functional", brand, clear, interactive = false } = props;
   const solid = resolved.renderer === "solid";
   const translucent = props.sheer && layer === "content";
   const fill = materialFill(style, props.stateBorder);
   const rim = specularRim(style, theme.dark, props.stateBorder);
   const native = resolved.renderer === "liquid";
-  // Liquid Glass takes a brand as its own tintColor and paints no fill for it; the
-  // frost paints the fill, a brand one OVER the blur (see brandOverMaterial).
-  const fillLayer = <View style={[fill, { backgroundColor: surfaceUnderFill(theme.glass, layer, brand, tint ?? (clear && brand == null ? clearSurfaceTint(theme.tokens, theme.dark) : undefined), theme.tokens, frameBedsFor(theme.palette, theme.scheme)), opacity: translucent ? SHEER_FILL_OPACITY : 1 }]} />;
-  const paintsFill = !native || brand == null || tint != null;
-  const over = !native && brandOverMaterial(brand, tint);
+  // Liquid Glass takes a brand as its own tintColor and paints no fill for it, and a
+  // boundary fill beneath the glass; the frost paints the fill, a brand one or a boundary
+  // fill OVER the blur (`frostFill`).
+  const fillOf = frostFill(theme, props);
+  const fillLayer = <View style={[fill, { backgroundColor: fillOf.color, opacity: translucent ? SHEER_FILL_OPACITY : 1 }]} />;
+  const paintsFill = !native || brand == null || props.tint != null || props.boundaryFill != null;
+  const over = !native && fillOf.over;
   const material = solid ? null : <>
     {paintsFill && !over ? fillLayer : null}
     {native && LiquidView ? <LiquidView glassEffectStyle={clear ? "clear" : "regular"} isInteractive={interactive} tintColor={brand} colorScheme={theme.dark ? "dark" : "light"} style={fill} />
