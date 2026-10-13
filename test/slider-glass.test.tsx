@@ -98,7 +98,9 @@ describe("Slider press feedback over the glass knob", () => {
     expect(knob.style.borderWidth).toBe("4px");
     expect(knob.style.borderColor).not.toMatch(transparent);
     release(root);
-    expect(knob.style.borderWidth).toBe("1px");
+    // At rest the 1 px border is padding (GP-1): the material covers the knob's whole footprint.
+    expect(knob.style.borderWidth).toBe("0px");
+    expect(knob.style.padding).toBe("1px");
     expect(knob.style.borderColor).toMatch(transparent);
   });
 

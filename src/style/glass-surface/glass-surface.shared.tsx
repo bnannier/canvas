@@ -491,10 +491,146 @@ export function clearedPaint(style: StyleProp<ViewStyle>, stateBorder: boolean):
   return clear as ViewStyle;
 }
 
+/** No border width on any side. */
+export const NO_SIDES: Readonly<BorderSides> = { top: 0, bottom: 0, start: 0, end: 0 };
+
+/**
+ * Each side's border width and padding keys, the logical ones first, then for start and end
+ * the physical left and right ones a style may name instead.
+ */
+const SIDE_KEYS: Readonly<Record<keyof BorderSides, readonly [border: string, padding: string, physicalBorder?: string, physicalPadding?: string]>> = {
+  top: ["borderTopWidth", "paddingTop"],
+  bottom: ["borderBottomWidth", "paddingBottom"],
+  start: ["borderStartWidth", "paddingStart", "borderLeftWidth", "paddingLeft"],
+  end: ["borderEndWidth", "paddingEnd", "borderRightWidth", "paddingRight"],
+};
+const SIDES = Object.keys(SIDE_KEYS) as (keyof BorderSides)[];
+const PHYSICAL_KEYS = ["borderLeftWidth", "borderRightWidth", "paddingLeft", "paddingRight"];
+
+/** A style's padding on each side, resolved as `borderSides` resolves the border. */
+function paddingSides(flat: Readonly<Record<string, unknown>>): Record<keyof BorderSides, unknown> {
+  const all = flat.padding ?? 0;
+  const vertical = flat.paddingVertical ?? all;
+  const horizontal = flat.paddingHorizontal ?? all;
+  return {
+    top: flat.paddingTop ?? vertical,
+    bottom: flat.paddingBottom ?? vertical,
+    start: flat.paddingStart ?? flat.paddingLeft ?? horizontal,
+    end: flat.paddingEnd ?? flat.paddingRight ?? horizontal,
+  };
+}
+
+/**
+ * The border widths a resting host trades for padding under glass, per side: each side's
+ * own border, resolved as React Native resolves it (`borderSides`), except where that side's
+ * padding is not a number (a percentage), which cannot take the border's width and keeps it.
+ */
+export function tradedSides(style: StyleProp<ViewStyle>): BorderSides {
+  const flat = (StyleSheet.flatten(style) ?? {}) as Record<string, unknown>;
+  const sides = borderSides(flat as ViewStyle);
+  const pads = paddingSides(flat);
+  const out = { ...NO_SIDES };
+  for (const side of SIDES) if (typeof pads[side] === "number") out[side] = sides[side];
+  return out;
+}
+
+/**
+ * A resting border traded for padding: every border width the style names becomes 0 and
+ * each side's padding grows by that side's border width, with the fill and border colours
+ * cleared (`clearedPaint`). A side whose padding is not a number keeps its border,
+ * transparent. Where the style names a physical left or right width or padding, the
+ * physical keys are restated beside the logical ones with the same values, so whichever of
+ * the two a renderer ranks first gives the same box. The node keeps its size and its
+ * content stays where it was, while its padding box grows to its whole footprint: under
+ * GlassBox and under a GlassPane's host (`paneStyle`) the material fills that box, so it
+ * covers the control's whole solid size (the owner's GP-1 decision).
+ */
+export function borderAsPadding(style: StyleProp<ViewStyle>): ViewStyle {
+  const flat = (StyleSheet.flatten(style) ?? {}) as Record<string, unknown>;
+  const out = clearedPaint(flat, false) as Record<string, unknown>;
+  const traded = tradedSides(flat);
+  if (!SIDES.some((side) => traded[side] > 0)) return out as ViewStyle;
+  const sides = borderSides(flat as ViewStyle);
+  const pads = paddingSides(flat);
+  const physical = PHYSICAL_KEYS.some((key) => flat[key] != null);
+  out.borderWidth = 0;
+  for (const side of SIDES) {
+    const [border, padding, physicalBorder, physicalPadding] = SIDE_KEYS[side];
+    out[border] = sides[side] - traded[side];
+    if (physical && physicalBorder) out[physicalBorder] = out[border];
+    if (traded[side] === 0) continue;
+    out[padding] = (pads[side] as number) + traded[side];
+    if (physical && physicalPadding) out[physicalPadding] = out[padding];
+  }
+  return out as ViewStyle;
+}
+
+/**
+ * An absolutely placed child of a host whose resting border became padding, kept where solid
+ * places it: absolute offsets count from the padding box, which grew over the border, so each
+ * side the child is pinned to by a number gains the border width traded there (`edges`, a
+ * physical left or right read as start or end). Returned unchanged where nothing was traded.
+ */
+export function placedInside(edges: BorderSides, child: StyleProp<ViewStyle>): StyleProp<ViewStyle> {
+  if (!SIDES.some((side) => edges[side] > 0)) return child;
+  const flat = (StyleSheet.flatten(child) ?? {}) as Record<string, unknown>;
+  const sideOf: Record<string, keyof BorderSides> = { top: "top", bottom: "bottom", start: "start", left: "start", end: "end", right: "end" };
+  const moved: Record<string, number> = {};
+  for (const [key, side] of Object.entries(sideOf)) {
+    const offset = flat[key];
+    if (typeof offset === "number" && edges[side] > 0) moved[key] = offset + edges[side];
+  }
+  return Object.keys(moved).length ? [child, moved as ViewStyle] : child;
+}
+
+const CORNER_KEYS = [
+  "borderRadius",
+  "borderTopLeftRadius", "borderTopRightRadius", "borderBottomLeftRadius", "borderBottomRightRadius",
+  "borderTopStartRadius", "borderTopEndRadius", "borderBottomStartRadius", "borderBottomEndRadius",
+] as const;
+type CornerKey = (typeof CORNER_KEYS)[number];
+
+/** The sides a corner meets (a physical left or right corner read as start or end, as `borderSides` reads a side). */
+function cornerSides(key: CornerKey): readonly (keyof BorderSides)[] {
+  if (key === "borderRadius") return ["top", "bottom", "start", "end"];
+  return [key.startsWith("borderTop") ? "top" : "bottom", /Left|Start/.test(key) ? "start" : "end"];
+}
+
+/**
+ * The material's corners: the host's corner radii, and where the material sits inside a kept
+ * border (`inside`) each radius less the narrower border it meets, the inner curve of that
+ * border, so the material's corner never leaves a gap and never pokes over the border.
+ */
+export function materialCorners(shape: StyleProp<ViewStyle>, inside = false): ViewStyle {
+  const flat = (StyleSheet.flatten(shape) ?? {}) as ViewStyle;
+  const sides = inside ? borderSides(flat) : null;
+  const out: Record<string, unknown> = {};
+  for (const key of CORNER_KEYS) {
+    const radius = flat[key];
+    if (radius == null) continue;
+    out[key] = sides && typeof radius === "number" ? Math.max(0, radius - Math.min(...cornerSides(key).map((side) => sides[side]))) : radius;
+  }
+  return out as ViewStyle;
+}
+
+/**
+ * The host every glass surface renders: one View wearing the skin's style, whose children
+ * never move between modes. Its material, when it has one, is its first child, an
+ * absolutely filled, pointer-transparent layer hidden from assistive technology.
+ *
+ * Geometry under glass (the owner's GP-1 decision, the same as GlassPane's): the host drops
+ * its opaque fill and trades its resting border for padding of the same width
+ * (`borderAsPadding`), so it keeps its size, its content stays where it was, and the material,
+ * which fills its padding box, covers its whole solid footprint with the shape's own radii,
+ * the material's rim its edge. A border that shows a state (`stateBorder`) stays a border in
+ * its own colour, and the material sits flush inside it on concentric corners
+ * (`materialCorners`). In solid mode (`solid`) the host is the skin's style untouched.
+ */
 export function GlassBox({
   style, children, pointerEvents, testID, role, onLayout, onAccessibilityEscape, stateBorder = false,
   material, solid = false,
 }: GlassSurfaceProps & { material: ReactNode; solid?: boolean }) {
+  const host = solid ? null : stateBorder ? clearedPaint(style, true) : borderAsPadding(style);
   // A box that paints a material keeps its native view (collapsable false). The material
   // sits at zIndex -1 inside it, and Fabric hoists a flattened view's children into the
   // nearest view it keeps, where a negative zIndex sorts them beneath everything earlier in
@@ -502,9 +638,9 @@ export function GlassBox({
   // a stacking context of its own holds the material inside the box. React Native Web drops
   // the prop before the DOM.
   return (
-    <View style={[style, solid ? null : clearedPaint(style, stateBorder), pointerEvents ? POINTER[pointerEvents] : null]} testID={testID} role={role} onLayout={onLayout} onAccessibilityEscape={onAccessibilityEscape} collapsable={material || onAccessibilityEscape ? false : undefined}>
+    <View style={[style, host, pointerEvents ? POINTER[pointerEvents] : null]} testID={testID} role={role} onLayout={onLayout} onAccessibilityEscape={onAccessibilityEscape} collapsable={material || onAccessibilityEscape ? false : undefined}>
       {material ? (
-        <View testID="glass-material" accessible={false} accessibilityElementsHidden importantForAccessibility="no-hide-descendants" style={[materialFill(style), { overflow: "hidden", zIndex: -1 }]}>
+        <View testID="glass-material" accessible={false} accessibilityElementsHidden importantForAccessibility="no-hide-descendants" style={[materialFill(style, stateBorder), { overflow: "hidden", zIndex: -1 }]}>
           {material}
         </View>
       ) : null}
@@ -572,28 +708,12 @@ export const SPECULAR_RIM = {
     "inset 0 1px 1px rgba(255,255,255,0.16), inset 0 0 0 0.5px rgba(255,255,255,0.10), inset 0 -1px 1.5px rgba(0,0,0,0.22)",
 } as const;
 
-// The corner radii from the skin's style, so the rim hugs the surface's rounded shape.
-function radiusOf(style: StyleProp<ViewStyle>): ViewStyle {
-  const f = (StyleSheet.flatten(style) ?? {}) as ViewStyle;
-  return {
-    borderRadius: f.borderRadius,
-    borderTopLeftRadius: f.borderTopLeftRadius,
-    borderTopRightRadius: f.borderTopRightRadius,
-    borderBottomLeftRadius: f.borderBottomLeftRadius,
-    borderBottomRightRadius: f.borderBottomRightRadius,
-    borderTopStartRadius: f.borderTopStartRadius,
-    borderTopEndRadius: f.borderTopEndRadius,
-    borderBottomStartRadius: f.borderBottomStartRadius,
-    borderBottomEndRadius: f.borderBottomEndRadius,
-  };
-}
-
 // The absolute-fill specular-rim overlay style for a frost surface: the skin's radii
 // (so the rim follows the rounded corners) plus the scheme's inset boxShadow. Render as
 // `<View style={specularRim(style, dark)} pointerEvents="none" />` on top of the blur,
 // below the content.
-export function specularRim(style: StyleProp<ViewStyle>, dark: boolean): ViewStyle {
-  return { ...MATERIAL_FILL, ...radiusOf(style), boxShadow: dark ? SPECULAR_RIM.dark : SPECULAR_RIM.light };
+export function specularRim(style: StyleProp<ViewStyle>, dark: boolean, inside = false): ViewStyle {
+  return { ...materialFill(style, inside), boxShadow: dark ? SPECULAR_RIM.dark : SPECULAR_RIM.light };
 }
 
 // The absolute-fill style for the fill / blur / glass material layers, carrying the
@@ -603,6 +723,6 @@ export function specularRim(style: StyleProp<ViewStyle>, dark: boolean): ViewSty
 // halo outside a rounded surface (glaring on a circle, e.g. the Avatar glass
 // fallback). On native the parent clip already shapes these layers; the radii just
 // keep the material's own shape (and iOS 26's Liquid Glass corner) in agreement.
-export function materialFill(style: StyleProp<ViewStyle>): ViewStyle {
-  return { ...MATERIAL_FILL, ...radiusOf(style) };
+export function materialFill(style: StyleProp<ViewStyle>, inside = false): ViewStyle {
+  return { ...MATERIAL_FILL, ...materialCorners(style, inside) };
 }

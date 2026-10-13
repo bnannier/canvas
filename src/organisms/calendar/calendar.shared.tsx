@@ -3,7 +3,7 @@ import { EscapeLayerProvider, useEscapeLayer } from "../../style/escape-layer.js
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { type GestureResponderEvent, type View as RNView, type ScrollView as RNScrollView, type Text as RNText } from "react-native";
 import { moveAccessibilityFocus } from "../../style/accessibility-focus.js";
-import { View, Pressable, Text, ScrollView, RippleClip, cornerRadii, useControllableState, AnchoredOverlay, useMeasuredWidth, FILL, type StyleProp, type ViewStyle, type LayoutStyle, GlassSurface, GlassPane, paneStyle, paneRipple, isGlass } from "../../style/index.js";
+import { View, Pressable, Text, ScrollView, RippleClip, cornerRadii, useControllableState, AnchoredOverlay, useMeasuredWidth, FILL, type StyleProp, type ViewStyle, type LayoutStyle, GlassSurface, GlassPane, paneStyle, paneRipple, panePlaced, isGlass } from "../../style/index.js";
 import { ButtonGroup as WebButtonGroup } from "../../atoms/button-group/button-group.js";
 import { type CalendarSkin, type DayState, type Density } from "./calendar.styles.js";
 import { calendarDayAccessibility } from "./calendar.accessibility.js";
@@ -46,6 +46,8 @@ import { calendarDayAccessibility } from "./calendar.accessibility.js";
 // Every calendar container is FILL (src/style/sizing.ts): it spans the parent it is
 // given and the fluid cell math below does the shrinking.
 const ROOT: ViewStyle = FILL;
+// The overlays' inline anchor, used only where no OverlayProvider hosts them.
+const INLINE_ANCHOR: ViewStyle = { position: "absolute", top: "100%", left: 0 };
 
 // The container's horizontal chrome (padding + border on both sides) between its
 // measured outer width and the width the seven-cell grid can actually use.
@@ -607,6 +609,12 @@ export function createCalendar(skin: CalendarSkin, parts: CalendarParts = {}) {
 
     // The floating detail card for the hovered timeline block (pointer platforms;
     // no backdrop, so the page stays interactive and hover-out hides it).
+    const rootStyle = [skin.containerBase, skin.containerSurface(tokens), ROOT, style];
+    // The overlays' no-provider fallback hangs under the root. Under glass the root's resting
+    // border is padding (its material covers the whole footprint), so the card keeps its solid
+    // place from the grown padding box.
+    const inlineAnchor = panePlaced(theme, rootStyle, INLINE_ANCHOR);
+
     const hoverCard = () => {
       if (hoverKey == null || hoverEventRef.current == null) return null;
       const e = hoverEventRef.current;
@@ -623,7 +631,7 @@ export function createCalendar(skin: CalendarSkin, parts: CalendarParts = {}) {
           besideEnd
           dismissable={false}
           cardStyle={[skin.peekCard(tokens), { width: tm.peekWidth }]}
-          inlineStyle={{ position: "absolute", top: "100%", left: 0 }}
+          inlineStyle={inlineAnchor}
         >
           <EscapeLayerProvider scope={hoverEscapeScope}>
           <Text style={skin.peekTitle(tokens)}>{e.title ?? "Event"}</Text>
@@ -662,7 +670,7 @@ export function createCalendar(skin: CalendarSkin, parts: CalendarParts = {}) {
           cardWidth={tm.peekWidth}
           besideEnd
           cardStyle={[skin.peekCard(tokens), { width: tm.peekWidth }]}
-          inlineStyle={{ position: "absolute", top: "100%", left: 0 }}
+          inlineStyle={inlineAnchor}
           // The peek is modal to VoiceOver and TalkBack while open: they move to its
           // heading, and back to the day when it closes.
           onCardMount={() => moveAccessibilityFocus(peekTitleRef.current)}
@@ -691,7 +699,7 @@ export function createCalendar(skin: CalendarSkin, parts: CalendarParts = {}) {
     if (view === "day") {
       const label = `${WEEKDAYS_FULL[weekdayOf(anchor)]}, ${monthName} ${anchor}`;
       return (
-        <GlassSurface layer="content" testID={testID} style={[skin.containerBase, skin.containerSurface(tokens), ROOT, style]}>
+        <GlassSurface layer="content" testID={testID} style={rootStyle}>
           {header(label)}
           {formatToggle}
           {timeScroller(
@@ -711,7 +719,7 @@ export function createCalendar(skin: CalendarSkin, parts: CalendarParts = {}) {
     if (view === "week") {
       const weekDays = Array.from({ length: 7 }, (_, i) => weekStart + i);
       return (
-        <GlassSurface layer="content" testID={testID} style={[skin.containerBase, skin.containerSurface(tokens), ROOT, style]}>
+        <GlassSurface layer="content" testID={testID} style={rootStyle}>
           {header(month)}
           {formatToggle}
           {/* Week strip: weekday label over the selectable day cell, aligned to the timeline columns below. */}
@@ -751,7 +759,7 @@ export function createCalendar(skin: CalendarSkin, parts: CalendarParts = {}) {
 
     const days = Array.from({ length: daysInMonth }, (_, i) => i + 1);
     return (
-      <GlassSurface layer="content" testID={testID} onLayout={onMonthLayout} style={[skin.containerBase, skin.containerSurface(tokens), ROOT, style]}>
+      <GlassSurface layer="content" testID={testID} onLayout={onMonthLayout} style={rootStyle}>
         {header(month)}
 
         {/* Weekday label row. */}

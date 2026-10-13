@@ -248,7 +248,7 @@ describe("GlassSurface reduce-transparency rung", () => {
 // never reaches it — rendering GlassBox directly covers the two-box structure that the
 // pure splitSurfaceStyle unit cannot).
 describe("GlassBox structure (real material path)", () => {
-  it("preserves border geometry and clips only decoration, keeping content and padding on the host", () => {
+  it("trades a resting border for padding and clips only decoration, keeping content on the host", () => {
     render(
       <GlassBox
         testID="gbox"
@@ -261,18 +261,19 @@ describe("GlassBox structure (real material path)", () => {
     const outer = screen.getByTestId("gbox") as HTMLElement;
     const clip = screen.getByText("material-layer").parentElement as HTMLElement;
     expect(clip).toBe(outer.firstElementChild);
-    // Keep layout geometry while the material supplies the visible edge.
-    expect(outer.style.borderWidth).toBe("1px");
-    expect(outer.style.borderColor).toMatch(/rgba\(0, ?0, ?0, ?0/);
+    // The resting border is padding of the same width (the owner's GP-1 decision): the host
+    // keeps its size and its content's place, and the material, filling the padding box,
+    // covers the whole footprint (test/glass-surface-footprint.test.tsx pins the boxes).
+    expect(outer.style.borderWidth).toBe("0px");
+    expect(outer.style.padding).toBe("9px");
     expect(clip.getAttribute("style") ?? "").not.toContain("border-width");
     // Radius lands on both boxes (rounded shadow on the outer, rounded clip inside).
     expect(outer.style.borderRadius).toBe("16px");
     expect(clip.style.borderRadius).toBe("16px");
-    // The clip box clips the material and keeps the skin padding; the outer box owns
-    // sizing. (react-native-web expands `overflow` to the two axis longhands.)
+    // The clip box clips the material; the outer box owns sizing and the padding.
+    // (react-native-web expands `overflow` to the two axis longhands.)
     expect(clip.style.overflowX).toBe("hidden");
     expect(clip.style.overflowY).toBe("hidden");
-    expect(outer.style.padding).toBe("8px");
     expect(clip.style.padding).toBe("");
     expect(screen.getByText("surface content").parentElement).toBe(outer);
     expect(outer.style.width).toBe("200px");

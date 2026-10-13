@@ -159,9 +159,12 @@ describe("option-list menus are dense glass under glass", () => {
     const solid = await readCard(false);
     expect(solid).toContain("border-width: 1px");
     expect(await readCard(false)).toBe(solid);
-    // Glass keeps border geometry so live layout does not shift on mode changes.
+    // Glass trades the hairline for padding of the same width, so live layout does not
+    // shift on mode changes and the material covers the card's whole footprint (GP-1).
     const glass = await readCard(true);
-    expect(glass).toContain("border-width: 1px");
+    expect(glass).toContain("border-width: 0px");
+    expect(glass).toContain("padding: 9px");
+    expect(solid).toContain("padding: 8px");
     expect(glass).toMatch(/border-color: rgba\(0, 0, 0, 0(?:\.0+)?\)/);
   });
 
