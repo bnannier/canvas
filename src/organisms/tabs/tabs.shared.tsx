@@ -1,7 +1,7 @@
 import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
 import { useEffect, useRef, type ReactNode } from "react";
 import { StyleSheet } from "react-native";
-import { View, Pressable, Text, ScrollView, RippleClip, cornerRadii, useTheme, useControllableState, useRovingFocus, useContainerBreakpoint, containerProbe, useReducedMotion, isRTL, type RovingItemProps, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle, type LayoutChangeEvent, type NativeSyntheticEvent, type NativeScrollEvent, GlassPane, paneStyle, isGlass } from "../../style/index.js";
+import { View, Pressable, Text, ScrollView, RippleClip, cornerRadii, useTheme, useControllableState, useRovingFocus, useContainerBreakpoint, containerProbe, useReducedMotion, isRTL, type RovingItemProps, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle, type LayoutChangeEvent, type NativeSyntheticEvent, type NativeScrollEvent, GlassPane, paneStyle, paneRipple, isGlass } from "../../style/index.js";
 import { useHorizontalScrollFocus } from "../../style/use-scroll-focus.js";
 import * as s from "./tabs.styles.js";
 import { type Variant } from "./tabs.styles.js";
@@ -269,6 +269,9 @@ export function createTabs(skin: TabsSkin) {
       glass && surfaced(container) ? <GlassPane layer="control" shape={container} tint={s.selectionTint(container, dark)} interactive /> : null;
     const triggerStyle = (container: StyleProp<ViewStyle>) => surfaced(container) ? [paneStyle(theme, container), glass ? s.clearSelectionShadow : null] : container;
     const inkOf = (container: StyleProp<ViewStyle>): TextStyle | null => glass && surfaced(container) ? { color: tokens.foreground } : null;
+    // The selected trigger's puck is a child of its Pressable: where it renders, the ripple
+    // draws in the foreground, over it (`paneRipple`).
+    const rippleOf = (container: StyleProp<ViewStyle>) => paneRipple(glass && surfaced(container), ripple ? ripple(tokens) : undefined);
     // The roving tab stop + web arrow-key handler ride onto the Pressable. `ref` is
     // passed explicitly (React never spreads it); `onKeyDown` is web-only, so the
     // pair goes through a cast (RN's Pressable types omit onKeyDown), the same idiom
@@ -301,7 +304,7 @@ export function createTabs(skin: TabsSkin) {
             {...(rovingProps as object)}
             onPress={onPress}
             disabled={disabled}
-            android_ripple={ripple ? ripple(tokens) : undefined}
+            android_ripple={rippleOf(container)}
             accessibilityRole="tab"
             accessibilityState={{ selected, disabled: !!disabled }}
             aria-selected={selected}
@@ -338,7 +341,7 @@ export function createTabs(skin: TabsSkin) {
             {...(rovingProps as object)}
             onPress={onPress}
             disabled={disabled}
-            android_ripple={ripple ? ripple(tokens) : undefined}
+            android_ripple={rippleOf(container)}
             accessibilityRole="tab"
             accessibilityState={{ selected, disabled: !!disabled }}
             aria-selected={selected}
@@ -376,7 +379,7 @@ export function createTabs(skin: TabsSkin) {
           {...(rovingProps as object)}
           onPress={onPress}
           disabled={disabled}
-          android_ripple={ripple ? ripple(tokens) : undefined}
+          android_ripple={rippleOf(container)}
           accessibilityRole="tab"
           accessibilityState={{ selected, disabled: !!disabled }}
           aria-selected={selected}

@@ -28,6 +28,7 @@ import {
   type LayoutStyle,
   GlassPane,
   paneStyle,
+  paneRipple,
   isGlass,
   PANE_SIBLING_INPUT,
 } from "../../style/index.js";
@@ -332,7 +333,9 @@ export function createStepper(skin: StepperSkin) {
     };
 
     const glyph = skin.glyph(tokens, size, !!disabled);
-    const ripple = skin.ripple ? skin.ripple(tokens) : undefined;
+    // A ± button's own puck (`buttonPane`) is a child of its Pressable: where it renders, the
+    // ripple draws in the foreground, over it (`paneRipple`).
+    const ripple = paneRipple(liquidActions, skin.ripple ? skin.ripple(tokens) : undefined);
     // Each ± button reaches the platform minimum through the skin's slop. Where a button
     // faces the value field or the other button, the gap between them is split (rowSeam,
     // src/style/touch-seam.ts): React Native gives a point two touch areas admit to the later

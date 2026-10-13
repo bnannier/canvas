@@ -9,7 +9,7 @@ import { primaryText } from "../../style/primary-text.js";
 import { actionFill, actionInk } from "../../style/action.js";
 import * as s from "./button-group.styles.js";
 import { GroupGlass, GlassSelection } from "./button-group-glass.js";
-import { paneStyle } from "../../style/glass-surface/glass-pane.js";
+import { paneRipple, paneStyle } from "../../style/glass-surface/glass-pane.js";
 
 // Shared ButtonGroup shell. The structure (the four kinds, their layout, the
 // uncontrolled stepper position, the split dropdown), the accessibility, the
@@ -279,7 +279,9 @@ export function createButtonGroup(skin: ButtonGroupSkin) {
         onPressOut={onPressOut}
         disabled={disabled}
         aria-disabled={!!disabled}
-        android_ripple={ripple ? ripple(tokens) : undefined}
+        // A spaced peer's own material (GroupGlass) is a child of this Pressable: where it
+        // renders, the ripple draws in the foreground, over it (`paneRipple`).
+        android_ripple={paneRipple(glass && !!standalone, ripple ? ripple(tokens) : undefined)}
         // An icon-only segment has no text to read; the item label is its name
         // (both aliases, per the kit a11y contract: RNW drops one or the other
         // depending on the prop it receives).

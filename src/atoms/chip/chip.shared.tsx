@@ -1,5 +1,5 @@
 import { cloneElement, isValidElement, type ReactElement, type ReactNode } from "react";
-import { View, Text, Pressable, RippleClip, StyleSheet, cornerRadii, useHugStyle, useControllableState, surfaceRipple, pressDim, palette, statusColors, type StatusColorTone, type Hue, type ColorTokens, type LayoutStyle, type StyleProp, type ViewStyle, type TextStyle, GlassPane, paneStyle, alpha } from "../../style/index.js";
+import { View, Text, Pressable, RippleClip, StyleSheet, cornerRadii, useHugStyle, useControllableState, surfaceRipple, pressDim, palette, statusColors, type StatusColorTone, type Hue, type ColorTokens, type LayoutStyle, type StyleProp, type ViewStyle, type TextStyle, GlassPane, paneStyle, paneRipple, alpha } from "../../style/index.js";
 import { reachSlop, useClipSlop } from "../../style/clip-slop.js";
 import { inlineSide, rowSeam, slopSides } from "../../style/touch-seam.js";
 import { leastLine, styleBox, styleInsets, useSeededMinTargetSlop } from "../../style/touch-target-seed.js";
@@ -477,8 +477,9 @@ export function createChip(skin: ChipSkin) {
             hitSlop={bodySlop}
             // Android shows a BOUNDED ripple state layer on press (the M3 chip state layer
             // fills the container), clipped to the rounded outline by the RippleClip parent;
-            // iOS/web keep the opacity dim.
-            android_ripple={surfaceRipple(tokens)}
+            // iOS/web keep the opacity dim. The pill's pane is a child of this Pressable, so
+            // where it renders the ripple draws in the foreground, over it (`paneRipple`).
+            android_ripple={paneRipple(surfaced ? theme : false, surfaceRipple(tokens))}
             style={({ pressed }) => [container, !liquid ? pressDim(pressed, 0.85) : null]}
           >
             {({ pressed }) => <>

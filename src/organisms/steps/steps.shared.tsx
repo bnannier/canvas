@@ -1,7 +1,7 @@
 import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
 import { type ReactNode } from "react";
 import { type DimensionValue, type Insets } from "react-native";
-import { View, Pressable, Text, RippleClip, cornerRadii, useControllableState, useContainerBreakpoint, containerProbe, type BreakpointKey, type Responsive, type StyleProp, type ViewStyle, type LayoutStyle, GlassPane, paneStyle } from "../../style/index.js";
+import { View, Pressable, Text, RippleClip, cornerRadii, useControllableState, useContainerBreakpoint, containerProbe, type BreakpointKey, type Responsive, type StyleProp, type ViewStyle, type LayoutStyle, GlassPane, paneStyle, paneRipple } from "../../style/index.js";
 import { leastLine, useSeededMinTargetSlop, styleBox } from "../../style/touch-target-seed.js";
 import { inlineSide, slopSides, splitSeam } from "../../style/touch-seam.js";
 import * as s from "./steps.styles.js";
@@ -146,7 +146,9 @@ export function createSteps(skin: StepsSkin) {
       </Text>
     );
     if (onPress) {
-      const ripple = skin.ripple ? skin.ripple(tokens, state) : undefined;
+      // The disc's pane is a child of this Pressable: where it renders, the ripple draws in
+      // the foreground, over it (`paneRipple`).
+      const ripple = paneRipple(surfaced ? theme : false, skin.ripple ? skin.ripple(tokens, state) : undefined);
       // The bounded ripple is clipped to the round circle by this RippleClip parent
       // (a node can never clip its own ripple on Android); no outer layout to move.
       return (
