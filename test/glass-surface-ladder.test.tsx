@@ -9,10 +9,9 @@ import { GlassSurface as IOSGlassSurface } from "../src/style/glass-surface/glas
 import { GlassBox } from "../src/style/glass-surface/glass-surface.shared.tsx";
 
 // The glass accessibility ladder: under Reduce Transparency / Increase Contrast a glass
-// surface renders opaque (its skin fill, which is a SEMANTIC token glass never rewrites),
-// and Increase Contrast additionally paints a contrasting foreground border on it.
-// expo-blur is stubbed in the test setup, so GlassSurface renders its PlainSurface path,
-// which is exactly where these rungs apply.
+// surface's material resolves solid, so it renders opaque (its skin fill, which is a
+// SEMANTIC token glass never rewrites), and Increase Contrast additionally paints a
+// contrasting foreground border on it (`contrastStyle`).
 //
 // Also pinned here: what the ThemeProvider actually resolves. The surface mode changes no
 // semantic token at all now (`popover` is opaque in every mode); it selects the mode and
@@ -243,10 +242,9 @@ describe("GlassSurface reduce-transparency rung", () => {
   });
 });
 
-// The real material path: GlassBox is what every glass surface renders when a material
-// module is present (the expo peers are stubbed under test, so GlassSurface itself
-// never reaches it — rendering GlassBox directly covers the two-box structure that the
-// pure splitSurfaceStyle unit cannot).
+// The real material path: GlassBox is what every glass surface renders, its material
+// passed in by the platform host (the web host's frost renders under test; the iOS host's
+// material paths are pinned in test/glass-surface-ios.test.tsx).
 describe("GlassBox structure (real material path)", () => {
   it("trades a resting border for padding and clips only decoration, keeping content on the host", () => {
     render(
@@ -325,7 +323,7 @@ describe("GlassBox structure (real material path)", () => {
 });
 
 describe("iOS glass-surface platform file", () => {
-  it("imports and renders without throwing (falls back to PlainSurface under the stubbed peers)", async () => {
+  it("imports and renders its solid skin without the optional peers (its material paths: test/glass-surface-ios.test.tsx)", async () => {
     const mod = await import("../src/style/glass-surface/glass-surface.ios.tsx");
     render(
       <ThemeProvider glass>
