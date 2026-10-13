@@ -3,9 +3,11 @@
 // field's veil, a control puck's or a content pane's layer tint) and capped at the densest
 // alpha at which the ink the skin paints on it, the same `muted-foreground` and `foreground`
 // as in solid mode, keeps WCAG 4.5:1 over the page and over a content pane (the owner's GP-2
-// decision, audit/DECISIONS.md). In the light palettes that leaves almost no wash, so the
-// state is carried by the error border, the message and the control's own indicator, as in
-// solid and in Dark Factory; the dark palette keeps a visible wash.
+// decision, audit/DECISIONS.md), on the wash itself and on the inner fill a field's addon or
+// country segment paints over it. That leaves almost no error wash in any palette and almost
+// no selection wash in the light ones, so the state is carried by the error border, the
+// message and the selected border, as in solid and in Dark Factory; the dark palette keeps a
+// visible selection wash.
 //
 // This table is the only place the washes' numbers live: a tuning-harness tunable
 // (.tuning-harness.json), judged on /testing/materials and the shipped pages, its runs
@@ -13,15 +15,27 @@
 
 import type { ThemeValue } from "../theme.js";
 import { alpha, channelsOf, composite, contrastRatio } from "../color.js";
+import { innerFill } from "../glass-fill.js";
 import { clearSurfaceTint, surfaceUnderFill, type GlassLayer } from "./glass-surface.shared.js";
 
 export const GLASS_WASH = {
-  /** A field in its error state (Input, Textarea, PhoneInput): the destructive colour. */
-  error: { token: "destructive", ceiling: 0.18 },
-  /** A selected card (a selected Card, a checked Radio card): the primary colour. */
-  selection: { token: "primary", ceiling: 0.22 },
-  /** The contrast the muted and foreground inks keep on a wash. */
+  /**
+   * A field in its error state (Input, Textarea, PhoneInput): the destructive colour. A
+   * field's prefix or suffix addon and PhoneInput's country segment paint a `soft` inner
+   * fill over the wash, under the same muted ink, so the ink is held on that fill too.
+   */
+  error: { token: "destructive", ceiling: 0.18, inner: "soft" },
+  /** A selected card (a selected Card, a checked Radio card): the primary colour, under no inner fill. */
+  selection: { token: "primary", ceiling: 0.22, inner: null },
+  /** The contrast the muted and foreground inks keep on a wash: WCAG AA for normal-size text. */
   inkContrast: 4.5,
+  /**
+   * The headroom the cap is solved with above `inkContrast`. The material samples the real
+   * backdrop, which runs a little lighter or darker than the page token the cap is solved
+   * on: on the shipped pages a wash solved to exactly 4.5:1 measured 4.47:1 (the errored
+   * field's prefix on its addon, dark glass), so the cap is solved at 4.5 plus this.
+   */
+  headroom: 0.1,
   /** The step the cap is searched in, from the ceiling down. */
   step: 0.01,
 } as const;
@@ -49,18 +63,24 @@ function over(top: string, under: string): string {
 /**
  * The under-fill of a pane showing a state wash, legible by construction: the wash's colour
  * over the pane's own body, at the densest alpha up to its ceiling at which the muted and
- * foreground inks keep 4.5:1 composited on the page and on a content pane. Where even the
- * body alone misses that floor (the layer's own legibility, not the wash's), it is the body.
+ * foreground inks keep 4.5:1 composited on the page and on a content pane, and on the wash's
+ * inner fill where one is painted over it. Where even the body alone misses that floor (the
+ * layer's own legibility, not the wash's), it is the body.
  */
 export function legibleWash(theme: Pick<ThemeValue, "tokens" | "glass" | "dark">, wash: GlassWash, pane: WashPane = {}): string {
   const { tokens, glass, dark } = theme;
-  const { token, ceiling } = GLASS_WASH[wash];
+  const { token, ceiling, inner } = GLASS_WASH[wash];
   const body = pane.clear ? clearSurfaceTint(tokens, dark) : surfaceUnderFill(glass, pane.layer ?? "control");
   const bases = [tokens.background, composite(glass["glass-tint-content"], tokens.background)];
   const inks = [tokens["muted-foreground"], tokens.foreground];
+  const fillOver = inner ? innerFill({ tokens, dark, surface: "glass" }, "muted", inner) : null;
+  const beds = (fill: string) => bases.flatMap((base) => {
+    const bed = composite(fill, base);
+    return fillOver ? [bed, composite(fillOver, bed)] : [bed];
+  });
   for (let steps = Math.round(ceiling / GLASS_WASH.step); steps > 0; steps--) {
     const fill = over(alpha(tokens[token], Math.round(steps * GLASS_WASH.step * 100) / 100), body);
-    if (bases.every((base) => inks.every((ink) => contrastRatio(composite(fill, base), ink) >= GLASS_WASH.inkContrast))) return fill;
+    if (beds(fill).every((bed) => inks.every((ink) => contrastRatio(bed, ink) >= GLASS_WASH.inkContrast + GLASS_WASH.headroom))) return fill;
   }
   return body;
 }
