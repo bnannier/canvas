@@ -13,7 +13,7 @@
 
 import { createContext, useCallback, useContext, useState, type ReactNode, type RefObject } from "react";
 import { View, StyleSheet, type StyleProp, type ViewStyle, type ViewProps } from "react-native";
-import { type ColorTokens, type GlassTokens } from "../tokens.js";
+import { frameBedsFor, type ColorScheme, type ColorTokens, type GlassTokens, type Palette } from "../tokens.js";
 import { alpha, composite, contrastRatio, inkOn } from "../color.js";
 import { actionFill, actionInk } from "../action.js";
 import { MaterialBehind } from "./material-behind.js";
@@ -119,6 +119,15 @@ export interface GlassSurfaceProps {
    * where the skin's own opaque fill shows.
    */
   tint?: string;
+  /**
+   * A control's boundary drawn as its fill (an off Switch track, its thumb): the colour
+   * solved for the 3:1 WCAG 1.4.11 asks of it (`legibleTrack`), painted OVER the frost as a
+   * `brand` is, so the colour solved is the colour that renders (beneath a frost, the blur
+   * pulls the surroundings into a small surface: an off web track read 2.8:1 against the page
+   * where its fill solves to 3.35). On Liquid Glass it is the fill beneath the glass. It wins
+   * over `tint` and `brand`.
+   */
+  boundaryFill?: string;
 }
 
 // Android materials sample an explicitly safe native plane. An ancestor target
@@ -283,6 +292,17 @@ export const BRAND_INK_CONTRAST = 4.5;
  */
 export function brandOverMaterial(brand: string | undefined, tint: string | undefined): boolean {
   return brand != null && tint == null;
+}
+
+/**
+ * The fill a frost surface paints and whether it paints OVER the material: a `boundaryFill`
+ * over it, else `surfaceUnderFill`'s colour, over it only for a brand (`brandOverMaterial`).
+ */
+export function frostFill(theme: { glass: GlassTokens; tokens: ColorTokens; dark: boolean; palette: Palette; scheme: ColorScheme }, props: Pick<GlassSurfaceProps, "layer" | "brand" | "tint" | "clear" | "boundaryFill">): { color: string; over: boolean } {
+  const { layer = "functional", brand, tint, clear, boundaryFill } = props;
+  if (boundaryFill != null) return { color: boundaryFill, over: true };
+  const color = surfaceUnderFill(theme.glass, layer, brand, tint ?? (clear && brand == null ? clearSurfaceTint(theme.tokens, theme.dark) : undefined), theme.tokens, frameBedsFor(theme.palette, theme.scheme));
+  return { color, over: brandOverMaterial(brand, tint) };
 }
 
 /**

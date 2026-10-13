@@ -92,6 +92,13 @@ describe("the iOS host on iOS 26 (Liquid Glass available)", () => {
     expect(channels(layersOf(container)[0]!.style.backgroundColor)).toBe("255,0,0");
   });
 
+  it("paints a boundary fill beneath the glass, as the glass's own fill", () => {
+    stubs(ios26);
+    const { container } = render(<ThemeProvider light glass><GlassSurface layer="control" boundaryFill="#c7c7cc" style={SHAPE} /></ThemeProvider>);
+    expect(layersOf(container).map(kind)).toEqual(["fill", "liquid-glass"]);
+    expect(channels(layersOf(container)[0]!.style.backgroundColor)).toBe("199,199,204");
+  });
+
   it("maps clear to Apple's clear glass", () => {
     stubs(ios26);
     render(<ThemeProvider light glass><GlassSurface layer="control" clear style={SHAPE} /></ThemeProvider>);
@@ -114,6 +121,13 @@ describe("the iOS host before iOS 26 (frost)", () => {
     const solved = brandTint(lightColors.primary, lightColors.background, brandInk(lightColors, lightColors.primary));
     expect(channels(layersOf(container)[1]!.style.backgroundColor)).toBe(channels(solved));
     expect(layersOf(container)[2]!.style.boxShadow).toBe(SPECULAR_RIM.light);
+  });
+
+  it("paints a boundary fill over the blur, so the off Switch's systemGray3 renders as solved", () => {
+    stubs(ios18);
+    const { container } = render(<ThemeProvider light glass><GlassSurface static layer="control" boundaryFill="#c7c7cc" style={SHAPE} /></ThemeProvider>);
+    expect(layersOf(container).map(kind)).toEqual(["frost", "fill", "rim"]);
+    expect(channels(layersOf(container)[1]!.style.backgroundColor)).toBe("199,199,204");
   });
 
   it("maps clear to the clear intensity", () => {
