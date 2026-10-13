@@ -16,7 +16,8 @@ export type ButtonComponent = ComponentType<ButtonProps>;
 
 // The safe-area content box inside the panel surface: grows and shrinks with an AUTO
 // basis so it fills a sized side drawer and wraps a sheet's content (a basis of 0 would
-// collapse a content-sized sheet on native, see splitSurfaceStyle).
+// collapse a content-sized sheet on native: Yoga has no min-content floor, so a basis-0
+// child contributes nothing to a content-sized parent).
 const PANEL_CONTENT: ViewStyle = { flexGrow: 1, flexShrink: 1, flexBasis: "auto" };
 
 // Shared Drawer shell. The structure (a full-screen Modal whose scrim lays an

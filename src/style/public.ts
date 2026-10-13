@@ -522,7 +522,17 @@ export {
    */
   type EntranceProps,
 } from "./entrance.js";
-export { GlassSurface } from "./glass-surface/glass-surface.js";
+// GlassSurface, the host every kit glass surface renders through, was published by accident
+// too; it is a deprecated alias that keeps working until a major (audit K12-2), tagged on
+// this specifier only as above.
+export {
+  /**
+   * @deprecated Kit internals: every kit surface renders its own material on its layer
+   * under ThemeProvider `glass`, so use that component (`Card` for a content pane, `Dialog`,
+   * `Popover` or `Drawer` for a floating one). It keeps working until a major.
+   */
+  GlassSurface,
+} from "./glass-surface/glass-surface.js";
 export { liquidGlassAvailable } from "./glass-surface/liquid-glass.js";
 export {
   /**

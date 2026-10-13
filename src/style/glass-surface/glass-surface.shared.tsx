@@ -1,11 +1,15 @@
-// Shared internals for the GlassSurface primitive (the glass theming surface
-// mode's renderer). The platform files (glass-surface.tsx for web+Android,
-// glass-surface.ios.tsx for iOS) pick the material — Apple Liquid Glass on iOS
-// 26+, an expo-blur frost on web/Android/older iOS, the skin's own flat surface
-// otherwise — and hand it to GlassBox, which lays the material behind the content.
+// Shared internals of GlassSurface, the host every kit glass surface renders through. Each
+// platform has its own host file, which resolves the surface's material
+// (`useMaterialResolution`) and builds its layers: glass-surface.tsx is the web's (Dark
+// Factory's plain frost, its numbers in web-frost.ts) and the fallback for a platform with
+// no host of its own, glass-surface.ios.tsx iOS's (Apple's Liquid Glass through
+// expo-glass-effect, or expo-blur's frost), glass-surface.android.tsx Android's
+// (@nannier/canvas-blur's capture frost, or expo-blur's on releases before expo-blur 57).
+// Each hands its layers to GlassBox, which lays them behind the content, or renders the
+// skin's own surface where the material resolves solid.
 //
-// The content host keeps its layout in every mode. A separate absolute material
-// clip contains only decoration, preserving shadow, focus and child identity.
+// The content host keeps its children in every mode. A separate absolute material clip
+// contains only decoration, preserving shadow, focus and child identity.
 
 import { createContext, useCallback, useContext, useState, type ReactNode, type RefObject } from "react";
 import { View, StyleSheet, type StyleProp, type ViewStyle, type ViewProps } from "react-native";
@@ -36,25 +40,39 @@ export interface GlassSurfaceProps {
   clear?: boolean;
   /**
    * Tint the material with a colour: the brand-tinted glass of a primary control (a
-   * sky-tinted puck). On iOS 26 it is passed to the native Liquid Glass as its
-   * tintColor; on the lens and frost paths it is the fill (the colour at a legible
-   * alpha, see `brandTint`), painted OVER the material so the solved colour is the
-   * rendered one (see `brandOverMaterial`), and it wins over the layer tint. `tint`
-   * still wins over both.
+   * checked switch's track, a split button's call to action). On iOS 26's Liquid Glass it
+   * is passed to the native glass as its tintColor and no fill is painted for it; on the
+   * frost paths (the web, Android, iOS's frost) it is the fill, the colour at the sheerest
+   * alpha at which the ink painted on it keeps 4.5:1 (`brandTint`), painted OVER the
+   * material so the solved colour is the rendered one (`brandOverMaterial`). It wins over
+   * the layer's tint, and `tint` wins over it.
    */
   brand?: string;
-  /** The skin's shape + fill style (radius, padding, border, shadow, and the skin's
-   *  own opaque fill). The fill is stripped under glass; the material supplies its own
-   *  (the `glass-tint` token, or `tint` below). */
+  /**
+   * The skin's own surface style: shape, padding, border, shadow and its opaque fill, the
+   * whole box solid mode renders. Under glass the fill gives way to the material and a
+   * resting border becomes padding of the same width, so the host keeps its size and its
+   * content's place while the material covers its whole solid footprint, the material's
+   * rim its edge (the owner's GP-1 decision). It is the kit's skin style, not a styling
+   * prop for an app: every kit surface hands it its own.
+   */
   style?: StyleProp<ViewStyle>;
   /**
-   * The style's border currently shows a state (a pressed knob's halo, an open trigger):
-   * under glass it stays over the material, where a resting border gives way to the
-   * material's rim, and under Increase Contrast it keeps its colour instead of taking the
-   * contrasting hairline (see `contrastBorderFor`). Defaults to false.
+   * The style's border currently shows a state (a selected card's primary border, a
+   * pressed knob's halo): under glass it stays a border in its own colour over the
+   * material, which sits flush inside it on concentric corners, where a resting border
+   * becomes padding and gives way to the material's rim; and under Increase Contrast it
+   * keeps its colour instead of taking the contrasting border (`contrastBorderFor`).
+   * Defaults to false.
    */
   stateBorder?: boolean;
   children?: ReactNode;
+  /**
+   * Whether the surface and its children take touches, as React Native's `pointerEvents`
+   * means it on every platform: `none` passes every tap through (a decorative puck),
+   * `box-none` passes the surface's own taps through to what lies behind while its
+   * children take theirs. Defaults to `auto`.
+   */
   pointerEvents?: ViewProps["pointerEvents"];
   /** Layout callback forwarded to the ROOT element of every material branch, so
    *  a shell built on GlassSurface (a navbar measuring itself for its narrow
@@ -86,23 +104,19 @@ export interface GlassSurfaceProps {
    */
   interactive?: boolean;
   /**
-   * Render a SHEER (more see-through) frost: a lighter blur and a thinner tint so
-   * whatever animates behind the surface reads clearly through it. For CONTENT-layer
-   * surfaces that float over a live backdrop and do NOT need to occlude what is behind
-   * them (the docs' example stages, tables, and cards over the Canvas Universe). Do NOT
-   * use it on functional overlays (menus, dropdowns, dialogs), which must stay opaque
-   * enough to occlude the content they open over. Defaults to false (the full frost).
+   * A sheer content pane: its layer's tint drawn thinner and, on the native frost, a
+   * lighter blur, so what lies behind reads through it. It acts on the `content` layer
+   * only and never thins a menu, dialog or other floating surface, which must occlude what
+   * it opens over; no kit surface asks for it. Defaults to false (the full frost).
    */
   sheer?: boolean;
   /**
-   * Override the translucent UNDER-FILL painted behind the material (the fill that gives
-   * a bare glass panel a body). Defaults to the active scheme's `glass-tint` token, the
-   * material's own fill, which suits every panel and bar. Pass a brighter value for a
-   * small glass CONTROL that must read as a bright puck rather than a tinted blob: the
-   * Slider's Liquid Glass handle passes an opaque white here so the knob looks like glass
-   * on both schemes.
-   * Ignored on the solid + module-absent fallbacks (PlainSurface keeps the skin's own
-   * opaque fill).
+   * The translucent under-fill painted behind the material in place of the layer's own
+   * tint (`glass-tint`, `glass-tint-content`, `glass-tint-control` or `glass-tint-dense`
+   * for the surface's `layer`): a toned or selected pane's wash, or a control's own fill
+   * (the Switch thumb and the Slider knob pass their knob colour, so the knob reads as a
+   * bright puck). It wins over `brand`. Not painted where the material resolves solid,
+   * where the skin's own opaque fill shows.
    */
   tint?: string;
 }
@@ -227,15 +241,15 @@ export function frostMethodProps(supportsBlurTarget: boolean): { experimentalBlu
   return supportsBlurTarget ? {} : { experimentalBlurMethod: "dimezisBlurView" };
 }
 
-// Blur strength for the frost. expo-blur maps intensity to a blur radius (~0.2px
-// per point on web), so ~80 lands near the docs' established blur(16px) frost.
-// expo-blur supplies its own light/dark tint at this intensity, so no extra tint
-// overlay is layered on top (that would double-darken the material).
+// The native frost's strength, expo-blur's and canvas-blur's `intensity` (0 to 100), on
+// iOS and Android; the web blurs at WEB_FROST.blur through a CSS backdrop filter and reads
+// none of these. The frost brings its own light or dark tint at this intensity, under the
+// layer's tint.
 export const GLASS_INTENSITY = 80;
 
-// A content pane blurs a touch less than the functional layer: its tint is denser,
-// so the same blur would flatten the backdrop to a wash; the lighter blur lets the
-// aurora keep some shape through the pane.
+// A content pane blurs a touch less than the functional layer: its tint is denser, so the
+// same blur would flatten what lies behind it to a wash, and the lighter blur keeps some of
+// its shape through the pane.
 export const CONTENT_INTENSITY = 64;
 export const CLEAR_INTENSITY = 4;
 
@@ -245,7 +259,7 @@ export function clearSurfaceTint(tokens: ColorTokens, dark: boolean): string {
 }
 
 // The alpha at which a `brand` colour becomes the under-fill of a brand-tinted puck on
-// the lens and frost paths: as sheer as legibility allows. The puck carries the ink the
+// the frost paths: as sheer as legibility allows. The puck carries the ink the
 // skin paints on that brand (`brandInk`: the token pair the fill belongs to), and that
 // ink must keep WCAG 4.5:1 over the puck as it composites on the PAGE, so `brandTint`
 // starts at this floor and densifies the colour in small steps until the ink clears the
@@ -258,7 +272,7 @@ export const BRAND_INK_CONTRAST = 4.5;
 /**
  * Whether a surface's fill is a brand colour that must render OVER its material.
  * `brandTint` solves the ink's contrast for the brand composited on the page, and
- * the frost and lens are not colour-neutral over a fill painted beneath them: the
+ * a frost is not colour-neutral over a fill painted beneath it: the
  * frost's scheme tint dyes it (expo-blur's dark BlurView halved the brand's
  * brightness on iOS, 2:1 for the ink where the solver promised 4.5:1) and a blur
  * pulls the surroundings into a small puck. Painted over the material, the brand
@@ -328,11 +342,12 @@ export const SHEER_INTENSITY = 50;
 export const SHEER_FILL_OPACITY = 0.75;
 
 // Under the OS "Increase Contrast" setting, Apple makes Liquid Glass "predominantly
-// black or white and highlights them with a contrasting border". The kit renders the
-// opaque surface (via PlainSurface) plus this border, in `foreground` (near-black on
-// light, near-white on dark) — a true contrasting edge, unlike the subtle `border`
-// hairline token. Applied as a style-array override so it wins over (or adds to) a
-// skin's own border. Border-box in RN, so it adds no external layout shift.
+// black or white and highlights them with a contrasting border". The kit's material
+// resolves solid there (`resolveMaterial`), so the surface renders its skin's opaque fill,
+// plus this border in `foreground` (near-black on light, near-white on dark): a true
+// contrasting edge, unlike the subtle `border` hairline token. Applied as a style-array
+// override so it wins over (or adds to) a skin's own border (`contrastStyle`). Border-box
+// in React Native, so it adds no external layout shift.
 export const CONTRAST_BORDER_WIDTH = 1;
 
 export function contrastBorder(tokens: ColorTokens): ViewStyle {
@@ -403,63 +418,6 @@ export function contrastBorderFor(tokens: ColorTokens, style: StyleProp<ViewStyl
   return out as ViewStyle;
 }
 
-// Keys that must live on the OUTER box: shadow (overflow:hidden would clip it),
-// absolute positioning, outer-margin/self-alignment, and SIZING (flex/width/
-// height) so the surface fills or sizes within its parent exactly as the single-
-// View version did. The inner clip box then fills the outer (flex: 1). Radius keys
-// are duplicated onto the outer box so its shadow is rounded. Both the physical
-// (left/right, marginLeft/Right) and the logical (start/end, marginStart/End) edge
-// keys are listed so a surface anchored either way routes to the outer box the same.
-const OUTER_KEYS = new Set<string>([
-  "shadowColor", "shadowOffset", "shadowOpacity", "shadowRadius", "elevation", "boxShadow",
-  "position", "top", "right", "bottom", "left", "start", "end", "zIndex",
-  "margin", "marginTop", "marginBottom", "marginLeft", "marginRight", "marginStart", "marginEnd", "marginHorizontal", "marginVertical",
-  "alignSelf", "flex", "flexGrow", "flexShrink", "flexBasis",
-  "width", "height", "minWidth", "maxWidth", "minHeight", "maxHeight",
-]);
-const RADIUS_KEYS = new Set<string>([
-  "borderRadius",
-  "borderTopLeftRadius", "borderTopRightRadius", "borderBottomLeftRadius", "borderBottomRightRadius",
-  "borderTopStartRadius", "borderTopEndRadius", "borderBottomStartRadius", "borderBottomEndRadius",
-]);
-// Border width/color/style keys stripped under glass: the material supplies the edge
-// (Apple's Liquid Glass carries its own on iOS 26; the SPECULAR_RIM does on the frost),
-// so a skin's hairline would double it and fight the material (Apple: remove custom
-// backgrounds/borders from navigation surfaces). Radius keys are NOT here — they shape
-// the clip and must survive. Logical (start/end) variants are listed alongside physical.
-const BORDER_KEYS = new Set<string>([
-  "borderWidth", "borderTopWidth", "borderBottomWidth", "borderLeftWidth", "borderRightWidth",
-  "borderStartWidth", "borderEndWidth",
-  "borderColor", "borderTopColor", "borderBottomColor", "borderLeftColor", "borderRightColor",
-  "borderStartColor", "borderEndColor", "borderBlockColor", "borderBlockStartColor", "borderBlockEndColor",
-  "borderStyle",
-]);
-
-interface Split {
-  outer: ViewStyle;
-  clip: ViewStyle;
-}
-
-export function splitSurfaceStyle(style: StyleProp<ViewStyle>): Split {
-  const flat = (StyleSheet.flatten(style) ?? {}) as Record<string, unknown>;
-  const outer: Record<string, unknown> = {};
-  // grow+shrink with an AUTO basis makes the clip box fill the outer box whenever
-  // the outer is sized (explicit height, flex, minHeight bar, absolute-pinned
-  // drawer), and fall back to wrapping its children when it is not. flexBasis must
-  // NOT be 0 (the `flex: 1` shorthand): Yoga has no min-content floor, so a basis-0
-  // clip contributes nothing to an auto-sized outer and a content-sized surface
-  // (a dialog card, a menu, an action sheet) collapses to its padding on native.
-  const clip: Record<string, unknown> = { overflow: "hidden", flexGrow: 1, flexShrink: 1, flexBasis: "auto" };
-  for (const [key, value] of Object.entries(flat)) {
-    if (value == null) continue;
-    if (key === "backgroundColor" || BORDER_KEYS.has(key)) continue; // the material supplies the fill + edge
-    if (OUTER_KEYS.has(key)) outer[key] = value;
-    else clip[key] = value;
-    if (RADIUS_KEYS.has(key)) outer[key] = value; // round the shadow too
-  }
-  return { outer: outer as ViewStyle, clip: clip as ViewStyle };
-}
-
 // A surface's `pointerEvents`, as registered styles. React Native Web compiles its box-none
 // and box-only polyfill (the box itself `pointer-events: none` or its children so) only for
 // a StyleSheet.create style and passes an inline value straight to CSS, which has no such
@@ -471,10 +429,6 @@ const POINTER = StyleSheet.create({
   "box-none": { pointerEvents: "box-none" },
   "box-only": { pointerEvents: "box-only" },
 });
-
-// A stable content host for every appearance. Only the decorative material is
-// clipped; content, focus rings, hit targets and the exterior shadow keep the
-// skin's own layout and overflow policy. Switching modes never reparents children.
 
 /**
  * The fill and border colours of a style turned transparent: what the material supplies
@@ -653,8 +607,9 @@ export function GlassBox({
   );
 }
 
-// The no-glass / no-module fallback: one plain View identical to the pre-portal
-// surface (keeps the skin's own opaque fill from `style`).
+// One plain View wearing the skin's style untouched, which is what GlassBox renders where the
+// material resolves solid: AnchoredOverlay's opaque card (`opaque`, a card that never takes
+// glass) renders it, so an option list looks and lays out the same under either surface.
 export function PlainSurface({ style, children, pointerEvents, testID, role, onLayout, onAccessibilityEscape }: GlassSurfaceProps) {
   return (
     <View style={[style, pointerEvents ? POINTER[pointerEvents] : null]} testID={testID} role={role} onLayout={onLayout} onAccessibilityEscape={onAccessibilityEscape} collapsable={onAccessibilityEscape ? false : undefined}>
@@ -663,31 +618,22 @@ export function PlainSurface({ style, children, pointerEvents, testID, role, onL
   );
 }
 
-// The accessibility degradation rungs, shared by both platform files so the ladder
-// is defined ONCE (Apple: these modifiers must apply to every glass element). When
-// either setting is on the surface renders opaque via PlainSurface: the skin paints a
-// SEMANTIC surface token, which glass mode never rewrites, so its fill is already opaque
-// here with no extra work. Increase Contrast additionally
-// adds a contrasting `foreground` border. Returns null when neither setting is on, so
-// the caller proceeds to its normal material path. Precedence: Increase Contrast wins
-// over Reduce Transparency (its rung is a superset — opaque plus the border).
-export function degradedGlassSurface(
-  flags: { increasedContrast: boolean; reducedTransparency: boolean; tokens: ColorTokens },
-  props: GlassSurfaceProps,
-): ReactNode | null {
-  if (!flags.increasedContrast && !flags.reducedTransparency) return null;
-  const style = flags.increasedContrast ? [props.style, contrastBorderFor(flags.tokens, props.style, props.stateBorder)] : props.style;
-  return (
-    <PlainSurface style={style} pointerEvents={props.pointerEvents} testID={props.testID} role={props.role} onLayout={props.onLayout} onAccessibilityEscape={props.onAccessibilityEscape}>
-      {props.children}
-    </PlainSurface>
-  );
+/**
+ * The style a host hands GlassBox: the skin's style, with the contrasting border
+ * (`contrastBorderFor`) under Increase Contrast. Every platform host reads it, so the
+ * accessibility ladder is one: under Reduce Transparency or Increase Contrast the material
+ * resolves solid (`resolveMaterial`, Increase Contrast first) and GlassBox renders the
+ * skin's own opaque fill, a semantic surface token glass never rewrites, and Increase
+ * Contrast adds this border, keeping a state border's colour.
+ */
+export function contrastStyle(theme: { increasedContrast: boolean; tokens: ColorTokens }, style: StyleProp<ViewStyle>, stateBorder = false): StyleProp<ViewStyle> {
+  return theme.increasedContrast ? [style, contrastBorderFor(theme.tokens, style, stateBorder)] : style;
 }
 
 // The absolute-fill style for material layers, with taps passing through (the
 // content sits on top; the dismiss backdrop, when present, is a portal sibling).
 // A full-bleed cover layer (all four edges pinned), so it is direction-agnostic
-// and stays physical left/right — the RTL sweep converts reading-direction edges,
+// and stays physical left and right: the RTL sweep converts reading-direction edges,
 // not symmetric full covers.
 export const MATERIAL_FILL: ViewStyle = {
   position: "absolute",
@@ -698,13 +644,12 @@ export const MATERIAL_FILL: ViewStyle = {
   pointerEvents: "none",
 };
 
-// The specular edge that lifts the flat frost toward a liquid-glass look: light
-// catches the TOP edge, a faint hairline defines the whole rim, and the bottom edge
-// takes a soft shade. Painted with the cross-platform `boxShadow` style prop (RN 0.85:
-// web + Android + iOS), so it is one code path, not a web-only effect. Scheme-adaptive
-// so it reads on light and dark. Applied on the FROST paths only (web, Android, iOS < 26)
-// — iOS 26's native GlassView material is never decorated. Once skin borders are stripped
-// under glass, this rim is the surface's edge.
+// The native frost's specular edge, on iOS's and Android's frost: light catches the TOP
+// edge, a faint hairline defines the whole rim, and the bottom edge takes a soft shade.
+// Painted with React Native's `boxShadow` style prop. iOS 26's Liquid Glass carries its own
+// edge and is never decorated, and the web draws Dark Factory's plain 1 px hairline instead
+// (`WEB_FROST`, `webRimColor`). Once a resting border becomes padding under glass, this rim
+// is the surface's edge.
 export const SPECULAR_RIM = {
   light:
     "inset 0 1px 1px rgba(255,255,255,0.55), inset 0 0 0 0.5px rgba(255,255,255,0.40), inset 0 -1px 1.5px rgba(0,0,0,0.06)",

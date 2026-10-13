@@ -1,0 +1,5 @@
+---
+"@nannier/canvas": patch
+---
+
+`GlassSurface` is a deprecated alias (audit K12-2): a kit internal that was published by accident. Nothing is removed and nothing changes at run time: it keeps working until a major, its `@deprecated` text says to use the kit component that renders its own material (a Card for a content pane, a Dialog, Popover or Drawer for a floating one), and the generated /foundation reference lists it in its Glass material section. It carries a JSDoc summary that says what it paints on the web, iOS and Android, that it renders the plain skin where its material resolves solid (with the contrasting border under Increase Contrast), how its material covers the surface's footprint, and what it adds to the accessibility tree: one root node carrying the role, test id and escape handler it is given, its material hidden from screen readers. Its props' documentation now matches the code: `brand` and `tint` say what they paint on each path and what wins, `sheer` that it acts on the content layer alone, `stateBorder` that the material sits flush inside the border, and `style` that it is the kit skin's own box.

@@ -23,7 +23,7 @@ Audit checklist for `/components/media-objects`. The facts block and the variant
 | Interaction states | recipes: focus on Tappable (web row; desktop), pressed on Tappable (web row; desktop). |
 | MeasureProps | not adopted |
 | Touch target | `media-objects.shared.tsx`: minTarget; `media-objects.styles.ts`: minTarget |
-| Tests importing it | 10: `test/behavior-smoke-b.test.tsx`, `test/design-rules-shape.test.ts`, `test/design-rules-skins.test.ts`, `test/glass-pane-ripple.test.tsx`, `test/glass-pane.test.tsx`, `test/image.test.tsx`, `test/material-solid-fallback.test.tsx`, `test/media-object.test.tsx`, `test/skins-smoke.test.tsx`, `test/touch-target-coverage.test.ts` |
+| Tests importing it | 11: `test/behavior-smoke-b.test.tsx`, `test/design-rules-shape.test.ts`, `test/design-rules-skins.test.ts`, `test/glass-pane-ripple.test.tsx`, `test/glass-pane.test.tsx`, `test/glass-surface-footprint.test.tsx`, `test/image.test.tsx`, `test/material-solid-fallback.test.tsx`, `test/media-object.test.tsx`, `test/skins-smoke.test.tsx`, `test/touch-target-coverage.test.ts` |
 | E2E naming it | 0: none |
 | E2E catalog sweeps | 7: `e2e/a11y/components.e2e.ts` (componentRoutes), `e2e/journeys/keyboard.e2e.ts` (componentRoutes), `e2e/responsive/component-widths.e2e.ts` (contentRoutes, componentRoutes), `e2e/smoke/examples.e2e.ts` (componentExamples), `e2e/smoke/routes.e2e.ts` (allRoutes), `e2e/visual/components.e2e.ts` (componentRoutes), `e2e/visual/materials.e2e.ts` (MATERIAL_ROUTES) |
 | Turn record | `audit/turns/media-objects.md`, written by `bun run audit:turn -- --slug=media-objects --phase=before\|after` (the before and after capture runs) |

@@ -59,14 +59,14 @@ Audit checklist for the kit internals the generated `/foundation` reference page
 | `accordion` | directly | `enableAndroidLayoutAnimations`, `supportsNativeDriver`, `surfaceRipple` |
 | `alert` | directly | `controlRipple`, `isGlass`, `platformMinTarget`, `pressDim`, `useControllableState` |
 | `alert-dialog` | directly | `useDialogFocus`, `useHardwareBack` |
-| `card` | directly | `devWarn`, `pressDim`, `surfaceRipple` |
+| `card` | directly | `devWarn`, `isGlass`, `pressDim`, `surfaceRipple` |
 | `code-block` | directly | `FOCUS_RESET`, `MONO_FONT`, `devWarn`, `isGlass`, `platformMinTarget`, `pressDim` and 5 more |
 | `collapsible` | directly | `enableAndroidLayoutAnimations`, `supportsNativeDriver`, `surfaceRipple` |
 | `description-lists` | directly | `FOCUS_RESET`, `MONO_FONT` |
 | `empty-state` | directly | `withInnerFill` |
 | `feeds` | directly | `FOCUS_RESET`, `devWarn`, `surfaceRipple` |
 | `grid-lists` | directly | `FOCUS_RESET`, `devWarn`, `surfaceRipple` |
-| `media-objects` | directly | `pressDim`, `surfaceRipple` |
+| `media-objects` | directly | `isGlass`, `pressDim`, `surfaceRipple` |
 | `phone-input` | directly | `FOCUS_RESET`, `useControllableState`, `withInnerFill` |
 | `stacked-lists` | directly | `FOCUS_RESET`, `devWarn`, `surfaceRipple`, `withInnerFill` |
 | `stats` | directly | `surfaceRipple`, `tabularNums` |
