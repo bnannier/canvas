@@ -367,10 +367,13 @@ selected row, a header band, a stripe, a code pill, a placeholder) go through
 `innerFill` / `withInnerFill`, which turn the opaque `muted` / `secondary` / `accent`
 roles into ink tints under glass so they never sit as opaque patches on the material.
 A state border (a focus ring, an error edge, an open trigger, the current step) stays
-over the pane; a resting hairline drops, the material's rim is the edge. In solid mode
-every one of these renders nothing extra: `GlassSurface` is the plain box, `GlassPane`
-renders null, `paneStyle` and the inner fills return the skin's own style, so the
-solid tree is byte-identical to the pre-glass one. Under Reduce Transparency or
+over the pane; a resting hairline drops, the material's rim is the edge. A resting
+boundary drawn in the `input` token, the one that identifies a selection control (an
+unchecked Radio ring, an unchecked Checkbox box, an off Switch track), stays too, in
+its solid colour at 3:1. In solid mode every one of these renders nothing extra:
+`GlassSurface` is the plain box, `GlassPane` renders null, `paneStyle` and the inner
+fills return the skin's own style, so the solid tree is byte-identical to the
+pre-glass one. Under Reduce Transparency or
 Increase Contrast every layer degrades to its opaque token
 (`styles/tokens/surface.css` and the accessibility ladder in
 `glass-surface.shared.tsx`).
