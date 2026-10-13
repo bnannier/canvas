@@ -84,7 +84,7 @@ Audit checklist for the kit internals the generated `/foundation` reference page
 | `navbars` | directly | `useControllableState` |
 | `sidebar` | directly | `devWarn`, `isGlass`, `supportsNativeDriver`, `useControllableState`, `useHardwareBack` |
 | `row-menu` | directly | `TOUCH_TARGET`, `withInnerFill` |
-| `steps` | directly | `TOUCH_TARGET`, `isGlass`, `useControllableState` |
+| `steps` | directly | `TOUCH_TARGET`, `useControllableState` |
 | `tab-bar` | directly | `useControllableState` |
 | `tabs` | directly | `isGlass`, `isRTL`, `useControllableState`, `useRovingFocus` |
 | `toast` | directly | `inverseDenseTint`, `platformMinTarget` |

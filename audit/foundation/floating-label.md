@@ -7,7 +7,7 @@ Audit checklist for the style-layer foundation `FloatingLabel`, audited for its 
 |---|---|
 | Foundation | `FloatingLabel`, a style-layer renderable with no component page of its own (`tools/materials/manifest.ts`, the style tier), declared in `src/style/floating-label.tsx` |
 | Source files | `src/style/floating-label.tsx`, `src/style/motion.ts` (its homes, its exports' declarations and its implementation, the private declarations they read) |
-| Seams | 2, the private declarations it alone reads (`tools/audit/foundations.ts` `foundationCode`), which its consumers are also found through: `FLOAT` (src/style/motion.ts), `FLOAT_EASING` (src/style/motion.ts) |
+| Seams | 3, the private declarations it alone reads (`tools/audit/foundations.ts` `foundationCode`), which its consumers are also found through: `NO_EDGES` (src/style/floating-label.tsx), `FLOAT` (src/style/motion.ts), `FLOAT_EASING` (src/style/motion.ts) |
 | Public exports | 4: `FloatingLabel` (deprecated-alias), `FloatingLabelStyles` (deprecated-alias, a type), `HIDDEN_FROM_A11Y` (deprecated-alias), `LabelContent` (deprecated-alias) |
 | K12-2 status | 4 deprecated alias already: FloatingLabel, FloatingLabelStyles, HIDDEN_FROM_A11Y, LabelContent |
 | Documented on | `foundation`: FloatingLabel, FloatingLabelStyles, HIDDEN_FROM_A11Y, LabelContent ("Field label") |
