@@ -406,7 +406,7 @@ export const FOUNDATION_PLANS: Readonly<Record<string, readonly string[]>> = {
     "a safe target bridge that keeps separate-window ownership, exercised with ActionSheet and Drawer over native content (materials target)",
   ],
   GlassPane: [
-    "renders nothing where its host resolves solid (`useMaterialResolution`), so no default black border or second hairline: the Android re-capture of chip, badge, kbd, switch, input, card, alert, checkbox, radio and steps is still pending (audit/README.md, Native spike)",
+    "renders nothing where its host resolves solid (`useMaterialResolution`), so no default black border or second hairline, photographed by the Android re-capture of chip, badge, kbd, switch, input, card, alert, checkbox, radio and steps (audit/README.md, Native spike)",
     "P3a: Android in-page glass resolves solid (`missing-target`), so the Android glass column equals solid outside overlays",
     "decoration behind a semantic host: the missing-renderer fallback keeps the host's full surface contract, and the material choice agrees with the parent's fill suppression (materials target)",
   ],
