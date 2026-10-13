@@ -1,0 +1,5 @@
+---
+"@nannier/canvas": patch
+---
+
+ButtonGroup is now the same size in solid and glass, so a page no longer reflows when the surface mode changes (the owner's GP-1 decision: a control is the same size in glass and solid). Under glass the group swapped its skin's track and cells for a shared geometry, a padded pill track with borderless cells and its own label weights: on the web a segmented Day, Week, Month group was 8.3 px narrower and 2 px shorter in glass and the spaced peers, the stepper and the docs' own Solid and Glass toggle changed size too; on iOS the stepper narrowed; on Android an overlay's segmented group grew 4 px taller. Every kind now keeps its skin's own box under glass: a resting border becomes padding, the stepper keeps its shared-border overlaps, the labels keep their type and weight (the web's 700), and the group's material covers the track's or cell's whole footprint on its own corners. Only the paint changes, as before: the selected segment rides its glass puck and the labels take the glass colours. Solid mode is unchanged.
