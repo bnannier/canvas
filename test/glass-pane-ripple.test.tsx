@@ -1,10 +1,12 @@
 import { afterEach, describe, expect, it, spyOn } from "bun:test";
-import { cleanup, render, type RenderResult } from "@testing-library/react";
-import type { ReactNode } from "react";
-import { Pressable, View } from "react-native";
+import { act, cleanup, render, type RenderResult } from "@testing-library/react";
+import { useEffect, useRef, type ReactNode } from "react";
+import { Pressable, Text, View } from "react-native";
 import { ThemeProvider } from "../src/style/theme.tsx";
 import { GlassBlurTargetContext } from "../src/style/glass-surface/glass-surface.shared.tsx";
 import { paneRipple } from "../src/style/glass-surface/glass-pane.tsx";
+import { GlassSurface } from "../src/style/glass-surface/glass-surface.tsx";
+import { frontRipple } from "../src/style/glass-surface/material-behind.tsx";
 import { createCaptureTarget, type CaptureTarget } from "../src/style/glass-surface/capture-target.ts";
 import * as runtime from "../src/style/glass-surface/material-runtime.ts";
 import type { MaterialCapabilities } from "../src/style/glass-surface/material-resolution.ts";
@@ -17,6 +19,10 @@ import { Chip as AndroidChip } from "../src/atoms/chip/chip.android.tsx";
 import { Input as AndroidInput } from "../src/atoms/input/input.android.tsx";
 import { Steps as AndroidSteps } from "../src/organisms/steps/steps.android.tsx";
 import { Tabs as AndroidTabs } from "../src/organisms/tabs/tabs.android.tsx";
+import { Tooltip as AndroidTooltip } from "../src/atoms/tooltip/tooltip.android.tsx";
+import { Breadcrumb as AndroidBreadcrumb } from "../src/atoms/breadcrumb/breadcrumb.android.tsx";
+import { Carousel as AndroidCarousel } from "../src/organisms/carousel/carousel.android.tsx";
+import { Card as AndroidCard } from "../src/molecules/card/card.android.tsx";
 import { PANE_HOSTS } from "./fixtures/pane-hosts.tsx";
 import { onPlatform, PLATFORM_PARTS } from "./fixtures/platform-parts.tsx";
 
@@ -36,8 +42,12 @@ import { onPlatform, PLATFORM_PARTS } from "./fixtures/platform-parts.tsx";
 // drops `android_ripple`, so the ripple is read from each Pressable's own props on its
 // fiber. Two rules decide which ripple must come forward, read off the rendered outlet:
 // a Pressable that holds a material of its own (a pane or a surface with no nearer
-// Pressable between them), and a borderless ripple inside a pane host, which is projected
-// beneath that host's pane.
+// Pressable between them), and a borderless ripple inside a pane host or inside any
+// surface whose material renders, which is projected beneath that material. The second
+// half is GlassSurface's (glass-surface-borderless-ripple-1): a control that cannot know
+// its ancestor frosts (a Tooltip trigger, a Breadcrumb link, a pressable Avatar disc, a
+// Carousel dot, Calendar's chevrons, TabBar's inactive tabs) reads it from the surface
+// through the kit's Pressable (`frontRipple`, src/style/glass-surface/material-behind.tsx).
 
 afterEach(cleanup);
 
@@ -109,8 +119,12 @@ function hiddenBehindAPane(container: Element, all: Press[]): Set<Press> {
     const press = owner(material, all);
     if (press?.ripple != null) out.add(press);
   }
-  // A borderless ripple inside a pane host, projected beneath the host's pane.
-  const hosts = Array.from(container.querySelectorAll("*")).filter(isPane).map((pane) => pane.parentElement!);
+  // A borderless ripple inside a pane host, projected beneath the host's pane, or inside a
+  // surface whose material renders (its host holds the material as a child).
+  const hosts = [
+    ...Array.from(container.querySelectorAll("*")).filter(isPane).map((pane) => pane.parentElement!),
+    ...materials(container).map((material) => material.parentElement!),
+  ];
   for (const press of all) {
     if (press.ripple?.borderless === true && hosts.some((host) => host !== press.node && host.contains(press.node))) out.add(press);
   }
@@ -198,4 +212,71 @@ describe("on Android a pane host's press shows over its pane", () => {
       expect(result.forward, `${name}: Pressables brought forward`).toBe(forward);
     });
   }
+});
+
+describe("frontRipple", () => {
+  const borderless = { color: "rgba(0, 0, 0, 0.12)", borderless: true };
+  const bounded = { color: "rgba(0, 0, 0, 0.10)", borderless: false };
+
+  it("brings a borderless ripple forward under a material", () => {
+    expect(frontRipple(true, borderless)).toEqual({ ...borderless, foreground: true });
+  });
+
+  it("hands back the identical object everywhere else", () => {
+    expect(frontRipple(false, borderless)).toBe(borderless);
+    expect(frontRipple(true, bounded)).toBe(bounded);
+    const forward = { ...borderless, foreground: true };
+    expect(frontRipple(true, forward)).toBe(forward);
+    expect(frontRipple(true, undefined)).toBeUndefined();
+    expect(frontRipple(true, null)).toBeNull();
+  });
+});
+
+describe("on Android a borderless control inside a frosted surface it does not own shows its press", () => {
+  // Each control on its Android skin, placed in a surface the app composes it into: a static
+  // Card (a GlassSurface), a pressable Card and an Alert (pane hosts that hold arbitrary
+  // content). In the outlet every borderless ripple comes forward; in solid and in the page
+  // (where Android's glass resolves solid) every ripple is solid's.
+  const CONTROLS: { name: string; node: ReactNode; borderless: number }[] = [
+    { name: "Tooltip icon and text triggers", node: <><AndroidTooltip iconTrigger label="Help" content="Saved daily" /><AndroidTooltip trigger="retention" content="Saved daily" /></>, borderless: 2 },
+    { name: "Breadcrumb links", node: <AndroidBreadcrumb items={["Home", "Library", "Data"]} onItemPress={() => {}} />, borderless: 2 },
+    { name: "a pressable Avatar disc", node: <AndroidAvatar name="Ada Lovelace" onPress={() => {}} accessibilityLabel="Ada" />, borderless: 1 },
+    { name: "Carousel dots", node: <AndroidCarousel showDots items={[{ key: "one", content: "Slide 1" }, { key: "two", content: "Slide 2" }]} />, borderless: 2 },
+  ];
+  const CONTAINERS: { name: string; wrap: (node: ReactNode) => ReactNode }[] = [
+    { name: "a static Card", wrap: (node) => <AndroidCard title="Retention">{node}</AndroidCard> },
+    { name: "a pressable Card", wrap: (node) => <AndroidCard title="Retention" onPress={() => {}}>{node}</AndroidCard> },
+    { name: "an Alert", wrap: (node) => <AndroidAlert title="Retention">{node}</AndroidAlert> },
+  ];
+  for (const control of CONTROLS) {
+    for (const container of CONTAINERS) {
+      const name = `${control.name} in ${container.name}`;
+      it(name, async () => {
+        const result = await holdsPressFeedback(name, container.wrap(control.node));
+        // The pressable Card's own surface ripple comes forward too (`paneRipple`, GP-5).
+        expect(result.forward, `${name}: Pressables brought forward`).toBe(control.borderless + (container.name === "a pressable Card" ? 1 : 0));
+      });
+    }
+  }
+
+  it("never remounts a surface's content when the material comes and goes", () => {
+    let mounts = 0;
+    function Probe() {
+      const node = useRef(null);
+      useEffect(() => { mounts++; }, []);
+      return <Text ref={node} testID="probe">Content</Text>;
+    }
+    const tree = (glass: boolean) => (
+      <ThemeProvider light glass={glass} solid={!glass}>
+        <GlassSurface layer="content" testID="surface" style={{ borderRadius: 12, borderWidth: 1, padding: 8 }}><Probe /></GlassSurface>
+      </ThemeProvider>
+    );
+    const result = render(tree(false));
+    const first = result.getByTestId("probe");
+    act(() => result.rerender(tree(true)));
+    expect(result.container.querySelector('[data-testid="glass-material"]')).not.toBeNull();
+    act(() => result.rerender(tree(false)));
+    expect(result.getByTestId("probe")).toBe(first);
+    expect(mounts).toBe(1);
+  });
 });
