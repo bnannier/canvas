@@ -1,7 +1,8 @@
 import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
 import { type ReactNode } from "react";
-import { View, Pressable, Text, StyleSheet, useFillStyle, useTheme, useLayoutAxis, useReducedMotion, surfaceRipple, pressDim, RippleClip, cornerRadii, splitElevation, alpha, devWarn, GlassSurface, GlassPane, paneStyle, paneRipple, legibleWash, type StyleProp, type ViewStyle, type TextStyle, type LayoutStyle } from "../../style/index.js";
+import { View, Pressable, Text, StyleSheet, useFillStyle, useTheme, useLayoutAxis, useReducedMotion, surfaceRipple, pressDim, RippleClip, cornerRadii, splitElevation, devWarn, GlassSurface, GlassPane, paneStyle, paneRipple, legibleWash, type StyleProp, type ViewStyle, type TextStyle, type LayoutStyle } from "../../style/index.js";
 import { RAISED, liftStyle, useHover, useRaiseCell, useSettling } from "../../style/hover.js";
+import { selectedCard } from "../../style/selected-card.js";
 import { Image } from "../../atoms/image/image.shared.js";
 import { imageLabel } from "../../atoms/image/image.accessibility.js";
 import * as s from "./card.styles.js";
@@ -206,10 +207,11 @@ export function createCard(skin: CardSkin) {
       // primary tint (the border width is unchanged, so content never shifts; on
       // Android's elevated default the resting hairline is transparent, so this
       // paints it in).
-      selected ? { borderColor: tokens.primary, backgroundColor: alpha(tokens.primary, 0.05) } : null,
+      selected ? selectedCard(tokens) : null,
     ];
     // Under glass the selection is the primary border, kept over the material as a state
-    // border, over the selection wash, capped where the card's ink would lose 4.5:1.
+    // border, over the selection wash: the same soft primary tint as in solid, capped where
+    // the card's ink would lose 4.5:1.
     const selectionWash = selected ? legibleWash(theme, "selection", { layer: "content" }) : undefined;
     // A card told to GROW fills the box its parent hands it, at every level of its own
     // anatomy: the outermost node grows into the parent's box, a pressable card's Pressable

@@ -15,6 +15,7 @@ import { selectionTint } from "../src/organisms/tabs/tabs.styles.ts";
 import { Pagination } from "../src/atoms/pagination/pagination.tsx";
 import { brandInk, brandTint, surfaceUnderFill, BRAND_TINT_ALPHA, BRAND_INK_CONTRAST } from "../src/style/glass-surface/glass-surface.shared.tsx";
 import { GLASS_WASH, legibleWash } from "../src/style/glass-surface/glass-wash.ts";
+import { SELECTED_CARD_TINT } from "../src/style/selected-card.ts";
 import { Card } from "../src/molecules/card/card.tsx";
 import { Radio, RadioGroup } from "../src/atoms/radio/radio.tsx";
 import { Text } from "react-native";
@@ -377,17 +378,29 @@ describe("state washes", () => {
     expect(missed).toEqual(["native dark control puck"]);
   });
 
-  it("keeps a visible wash in the dark palette and almost none in the light ones", () => {
-    const share = (fill: string, body: string) => rgbaOf(fill)[3] as number - (rgbaOf(body)[3] as number);
+  it("lays the selection wash at the solid recipe's own tint in every look, its inks still at 4.5:1", () => {
+    // The owner's GP-2b decision: a selected card reads as in solid in every look, the dark
+    // one included, so the wash's ceiling is solid's selected tint, read from the recipe, and
+    // on a card's content pane it is never capped below it: the card paints solid's tint over
+    // its own body, on the web's tints and the native ones.
+    expect(GLASS_WASH.selection.ceiling).toBe(SELECTED_CARD_TINT);
+    const within = (a: string, b: string) => {
+      const [x, y] = [rgbaOf(a), rgbaOf(b)] as number[][];
+      return x!.slice(0, 3).every((c, i) => Math.abs(c - y![i]!) <= 1);
+    };
     for (const look of LOOKS) {
       const t = look.tokens;
-      const g = look.webGlass;
-      const fill = legibleWash({ tokens: t, glass: g, dark: look.scheme === "dark" }, "selection", { layer: "content" });
-      const added = share(fill, surfaceUnderFill(g, "content"));
-      if (look.scheme === "dark") expect(added, look.name).toBeGreaterThan(0.02);
-      else expect(added, look.name).toBeLessThan(0.03);
-      // Never denser than the wash's own ceiling.
-      expect(added, look.name).toBeLessThanOrEqual(GLASS_WASH.selection.ceiling);
+      for (const [platform, g] of [["web", look.webGlass], ["native", look.nativeGlass]] as const) {
+        const fill = legibleWash({ tokens: t, glass: g, dark: look.scheme === "dark" }, "selection", { layer: "content" });
+        const body = surfaceUnderFill(g, "content");
+        for (const base of [t.background, composite(g["glass-tint-content"], t.background)]) {
+          const where = `${platform} ${look.name} over ${base}`;
+          const solidTint = composite(alpha(t.primary, SELECTED_CARD_TINT), composite(body, base));
+          expect(within(composite(fill, base), solidTint), `${where}: ${composite(fill, base)} against ${solidTint}`).toBe(true);
+          expect(contrastRatio(composite(fill, base), t["muted-foreground"]), `${where} muted`).toBeGreaterThanOrEqual(4.5);
+          expect(contrastRatio(composite(fill, base), t.foreground), `${where} foreground`).toBeGreaterThanOrEqual(4.5);
+        }
+      }
     }
   });
 
@@ -436,6 +449,22 @@ describe("state washes", () => {
       expect(rgbaOf(host.style.borderColor || host.style.borderTopColor)).toEqual(rgbaOf(alpha(lightColors.primary, 1)));
       expect(host.style.backgroundColor).toBe("rgba(0, 0, 0, 0.00)");
       expect(rgbaOf(underFillOf(host))).toEqual(rgbaOf(wash));
+    }
+  });
+
+  it("paints the same selected tint in solid, the one the glass wash reads", async () => {
+    const { container } = await renderGlass(
+      <>
+        <Card selected onPress={() => {}} testID="card"><Text>Pro</Text></Card>
+        <RadioGroup defaultValue="pro" label="Plan"><Radio value="pro" card description="For growing teams.">Pro</Radio></RadioGroup>
+      </>,
+      true,
+    );
+    const card = container.querySelector('[data-testid="card"]') as HTMLElement;
+    const radio = container.querySelector('[role="radio"]') as HTMLElement;
+    for (const host of [card, radio]) {
+      expect(rgbaOf(host.style.borderColor || host.style.borderTopColor)).toEqual(rgbaOf(alpha(lightColors.primary, 1)));
+      expect(rgbaOf(host.style.backgroundColor)).toEqual(rgbaOf(alpha(lightColors.primary, SELECTED_CARD_TINT)));
     }
   });
 });

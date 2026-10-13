@@ -5,7 +5,8 @@
     "src/style/motion.ts",
     "src/style/glass-surface/web-frost.ts",
     "src/style/identity-hue.ts",
-    "src/style/glass-surface/glass-wash.ts"
+    "src/style/glass-surface/glass-wash.ts",
+    "src/style/selected-card.ts"
   ],
   "references": [
     {
