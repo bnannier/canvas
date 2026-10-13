@@ -275,10 +275,10 @@ function paddingSides(flat: Readonly<Record<string, unknown>>): Record<keyof Bor
 }
 
 /**
- * The style a TextInput takes when it sits beside a GlassPane. React Native Web
- * leaves a text input unpositioned (its View and Text are `position: relative`), and
- * CSS paints positioned boxes after in-flow ones, so the absolutely positioned pane
- * would paint OVER the input's text on the web; positioning the input restores the
- * sibling order. Native paints siblings in order regardless, so this is a no-op there.
+ * The style the kit gave a TextInput beside a GlassPane, `position: relative`, kept for
+ * compatibility. It once restored the input's paint order over the pane on the web, where
+ * React Native Web leaves a text input unpositioned and CSS paints positioned boxes after
+ * in-flow ones. It changes nothing now: the pane orders itself behind its siblings on
+ * every platform (`zIndex: -1` inside its host).
  */
 export const PANE_SIBLING_INPUT: ViewStyle = { position: "relative" };
