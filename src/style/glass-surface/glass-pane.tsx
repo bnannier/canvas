@@ -17,7 +17,7 @@ import { StyleSheet, type StyleProp, type ViewStyle } from "react-native";
 import { type ThemeValue } from "../theme.js";
 import { isGlass } from "../glass-fill.js";
 import { GlassSurface } from "./glass-surface.js";
-import { borderSides, contrastBorderFor, type BorderSides, type GlassLayer } from "./glass-surface.shared.js";
+import { borderSides, clearedPaint, contrastBorderFor, type BorderSides, type GlassLayer } from "./glass-surface.shared.js";
 import { useMaterialResolution } from "./use-material-theme.js";
 
 /**
@@ -161,20 +161,23 @@ export function paneStyle(appearance: boolean | ThemeValue, style: StyleProp<Vie
   const glass = typeof appearance === "boolean" ? appearance : isGlass(appearance);
   if (!glass) return typeof appearance !== "boolean" && appearance.increasedContrast
     ? [style, contrastBorderFor(appearance.tokens, style, stateBorder)] : style;
-  if (stateBorder) return [style, { backgroundColor: "transparent" }];
-  return [style, borderAsPadding(style)];
+  return [style, stateBorder ? clearedPaint(style, true) : borderAsPadding(style)];
 }
 
 const NO_SIDES: BorderSides = { top: 0, bottom: 0, start: 0, end: 0 };
 
-/** The physical side keys a style may name instead of the logical ones. */
-const PHYSICAL_SIDE_KEYS = ["borderLeftWidth", "borderRightWidth", "paddingLeft", "paddingRight"] as const;
-
-/** Whether a style names a physical left or right border width or padding. */
-function namesPhysicalSide(style: Readonly<Record<string, unknown>>): boolean {
-  return PHYSICAL_SIDE_KEYS.some((key) => style[key] != null);
-}
-const SIDE_KEYS = ["top", "bottom", "start", "end"] as const;
+/**
+ * Each side's border width and padding keys, the logical ones first, then for start and end
+ * the physical left and right ones a style may name instead.
+ */
+const SIDE_KEYS: Readonly<Record<keyof BorderSides, readonly [border: string, padding: string, physicalBorder?: string, physicalPadding?: string]>> = {
+  top: ["borderTopWidth", "paddingTop"],
+  bottom: ["borderBottomWidth", "paddingBottom"],
+  start: ["borderStartWidth", "paddingStart", "borderLeftWidth", "paddingLeft"],
+  end: ["borderEndWidth", "paddingEnd", "borderRightWidth", "paddingRight"],
+};
+const SIDES = Object.keys(SIDE_KEYS) as (keyof BorderSides)[];
+const PHYSICAL_KEYS = ["borderLeftWidth", "borderRightWidth", "paddingLeft", "paddingRight"];
 
 /**
  * The border widths a resting host trades for padding under glass, per side: each side's
@@ -185,46 +188,34 @@ function tradedSides(flat: Readonly<Record<string, unknown>>): BorderSides {
   const sides = borderSides(flat as ViewStyle);
   const pads = paddingSides(flat);
   const out = { ...NO_SIDES };
-  for (const side of SIDE_KEYS) if (typeof pads[side] === "number") out[side] = sides[side];
+  for (const side of SIDES) if (typeof pads[side] === "number") out[side] = sides[side];
   return out;
 }
 
 /**
  * A resting border traded for padding: every border width the style names becomes 0 and
  * each side's padding grows by that side's border width, with the fill and border colours
- * cleared. A side whose padding is not a number keeps its border, transparent.
+ * cleared (`clearedPaint`). A side whose padding is not a number keeps its border,
+ * transparent. Where the style names a physical left or right width or padding, the
+ * physical keys are restated beside the logical ones with the same values, so whichever of
+ * the two a renderer ranks first gives the same box.
  */
 function borderAsPadding(style: StyleProp<ViewStyle>): ViewStyle {
   const flat = (StyleSheet.flatten(style) ?? {}) as Record<string, unknown>;
-  const sides = borderSides(flat as ViewStyle);
+  const out = clearedPaint(flat, false) as Record<string, unknown>;
   const traded = tradedSides(flat);
+  if (!SIDES.some((side) => traded[side] > 0)) return out as ViewStyle;
+  const sides = borderSides(flat as ViewStyle);
   const pads = paddingSides(flat);
-  const out: Record<string, unknown> = { backgroundColor: "transparent", borderColor: "transparent" };
-  for (const key of Object.keys(flat)) {
-    if (key.startsWith("border") && key.endsWith("Color")) out[key] = "transparent";
-  }
-  if (!SIDE_KEYS.some((side) => traded[side] > 0)) return out as ViewStyle;
-  const physical = namesPhysicalSide(flat);
-  const kept = (side: keyof BorderSides) => sides[side] - traded[side];
+  const physical = PHYSICAL_KEYS.some((key) => flat[key] != null);
   out.borderWidth = 0;
-  out.borderTopWidth = kept("top");
-  out.borderBottomWidth = kept("bottom");
-  out.borderStartWidth = kept("start");
-  out.borderEndWidth = kept("end");
-  if (physical) {
-    out.borderLeftWidth = kept("start");
-    out.borderRightWidth = kept("end");
-  }
-  const grow = (side: keyof BorderSides) => (pads[side] as number) + traded[side];
-  if (traded.top > 0) out.paddingTop = grow("top");
-  if (traded.bottom > 0) out.paddingBottom = grow("bottom");
-  if (traded.start > 0) {
-    out.paddingStart = grow("start");
-    if (physical) out.paddingLeft = grow("start");
-  }
-  if (traded.end > 0) {
-    out.paddingEnd = grow("end");
-    if (physical) out.paddingRight = grow("end");
+  for (const side of SIDES) {
+    const [border, padding, physicalBorder, physicalPadding] = SIDE_KEYS[side];
+    out[border] = sides[side] - traded[side];
+    if (physical && physicalBorder) out[physicalBorder] = out[border];
+    if (traded[side] === 0) continue;
+    out[padding] = (pads[side] as number) + traded[side];
+    if (physical && physicalPadding) out[physicalPadding] = out[padding];
   }
   return out as ViewStyle;
 }
@@ -250,7 +241,7 @@ export function paneEdges(appearance: boolean | ThemeValue, style: StyleProp<Vie
  */
 export function panePlaced(appearance: boolean | ThemeValue, host: StyleProp<ViewStyle>, child: StyleProp<ViewStyle>, stateBorder = false): StyleProp<ViewStyle> {
   const edges = paneEdges(appearance, host, stateBorder);
-  if (!SIDE_KEYS.some((side) => edges[side] > 0)) return child;
+  if (!SIDES.some((side) => edges[side] > 0)) return child;
   const flat = (StyleSheet.flatten(child) ?? {}) as Record<string, unknown>;
   const sideOf: Record<string, keyof BorderSides> = { top: "top", bottom: "bottom", start: "start", left: "start", end: "end", right: "end" };
   const moved: Record<string, number> = {};
