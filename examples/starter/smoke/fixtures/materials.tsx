@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { ActionSheet, Button, ButtonGroup, Card, Column, Dialog, Drawer, Dropdown, GlassModalBlurTarget, Input, PhoneInput, Radio, RadioGroup, Row, Slider, Switch, ThemeProvider, Typography } from "@nannier-com/canvas";
+import { ActionSheet, Button, ButtonGroup, Card, Checkbox, Column, Dialog, Drawer, Dropdown, GlassModalBlurTarget, Input, PhoneInput, Radio, RadioGroup, Row, Slider, Switch, ThemeProvider, Typography } from "@nannier-com/canvas";
 
 type Stats = { hosts: number; activeHosts: number; recordings: number; frostViews: number; frameListeners: number };
 declare const require: (name: string) => unknown;
@@ -113,6 +113,28 @@ export function MaterialsBody() {
           <Radio value="pro" card description="For growing teams.">Pro</Radio>
         </RadioGroup>
         <Card selected><Typography>Selected card</Typography><Typography muted>The selection wash under its text.</Typography></Card>
+      </Column>
+      {/* The control boundaries (the owner's GS-1 decision): an unchecked Radio ring and an
+          empty Checkbox box keep their solid outline over the pane at 3:1, and an off Switch
+          keeps its off-track fill as the pane's under-fill (GLASS_TRACK), on the page and on a
+          content pane, each beside its checked state. */}
+      <Typography h3>Control boundaries</Typography>
+      <Column snug testID="material-boundaries">
+        <Row snug>
+          <Radio testID="material-boundary-radio">Hobby</Radio>
+          <Radio checked>Pro</Radio>
+          <Checkbox selection testID="material-boundary-checkbox">Email</Checkbox>
+          <Checkbox selection defaultChecked>SMS</Checkbox>
+          <Switch testID="material-boundary-switch" accessibilityLabel="Off switch" />
+          <Switch defaultChecked accessibilityLabel="On switch" />
+        </Row>
+        <Card>
+          <Row snug>
+            <Radio>Hobby</Radio>
+            <Checkbox selection>Email</Checkbox>
+            <Switch accessibilityLabel="Off switch on a pane" />
+          </Row>
+        </Card>
       </Column>
       <Switch checked={nested} onChange={setNested} testID="material-nested">Nested glass</Switch>
       <ThemeProvider glass={nested} solid={!nested}>

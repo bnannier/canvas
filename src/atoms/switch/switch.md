@@ -2,8 +2,10 @@
 
 On / off switch, isolated or grouped in a settings list.
 
-In glass mode the track is a control-layer pane (brand-tinted while checked)
-and the knob a control-layer surface at whichever end the state puts it; the
+In glass mode the track is a control-layer pane (brand-tinted while checked,
+and under its own off-track grey while off, the boundary that tells an off switch
+from the page, kept at the 3:1 its solid track has) and the knob a control-layer
+surface at whichever end the state puts it; the
 track, the label, the description and the hit target never move, and the
 checked state flips at once. A disabled switch is inert; solid mode keeps the
 skin's own knob.
