@@ -39,6 +39,7 @@ import {
   type ServedRecord,
 } from "../../tools/audit/web-capture.ts";
 import { auditRunDir } from "./cell";
+import { backdropBlurCheck } from "./backdrop-check";
 
 const { sourceFingerprint } = require("../../docs/scripts/build-info.cjs") as { sourceFingerprint(root: string): string };
 
@@ -111,4 +112,11 @@ export default async function globalSetup(config: FullConfig): Promise<void> {
   const record: ServedRecord = { ...served, ...verdict, checkout, allowStale };
   writeFileSync(join(runDir, SERVED_FILE), `${JSON.stringify(record, null, 2)}\n`);
   if (!verdict.fresh && !allowStale) throw new Error(`refusing the ${served.mode}: ${verdict.reason}`);
+  // A glass cell is a photograph of the frost: refuse a browser that would not render it.
+  const backdrop = await backdropBlurCheck({ channel: use.channel, ...use.launchOptions });
+  if (!backdrop.blurs) {
+    throw new Error(
+      `refusing to capture: this Chromium leaves a backdrop blur over scrolled content unrendered (the frost keeps ${backdrop.frosted.toFixed(2)} of the bare text's ${backdrop.bare.toFixed(2)} step), so every glass cell would show frost without its blur; capture in the new headless mode (channel "chromium")`,
+    );
+  }
 }
