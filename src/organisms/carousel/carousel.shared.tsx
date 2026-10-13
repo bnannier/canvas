@@ -499,7 +499,7 @@ const TRACK: ViewStyle = { flexDirection: "row", alignItems: "stretch" };
 // slide never leaks. minWidth 0 lets it shrink below the slides' intrinsic width. The
 // basis is AUTO, not 0: Yoga has no min-content floor, so a basis-0 viewport would
 // contribute nothing to a content-sized parent and collapse the carousel to its
-// minWidth on native (the same trap splitSurfaceStyle's clip box documents), while
+// minWidth on native, while
 // the list pinned to the measured width keeps an auto basis from feeding back.
 const VIEWPORT: ViewStyle = { flexGrow: 1, flexShrink: 1, flexBasis: "auto", minWidth: 0, overflow: "hidden" };
 

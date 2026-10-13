@@ -18,8 +18,7 @@ import { ButtonGroup } from "../src/atoms/button-group/button-group.tsx";
 import { Form } from "../src/molecules/form/form.tsx";
 import { GlassSurface } from "../src/style/glass-surface/glass-surface.tsx";
 import { GlassSurface as IOSGlassSurface } from "../src/style/glass-surface/glass-surface.ios.tsx";
-import { GlassBox, PlainSurface, degradedGlassSurface } from "../src/style/glass-surface/glass-surface.shared.tsx";
-import { lightColors } from "../src/style/tokens.ts";
+import { GlassBox, PlainSurface } from "../src/style/glass-surface/glass-surface.shared.tsx";
 import { Calendar } from "../src/organisms/calendar/calendar.tsx";
 import { layoutEntrance, layoutHostedEntrance } from "./entrance-layout.ts";
 
@@ -332,16 +331,35 @@ it("the real material container retains escape on its plain outer host without g
   expect(cancelled).toBe(1);
 }));
 
-for (const increasedContrast of [false, true]) it(`accessibility degradation preserves escape with increased contrast ${increasedContrast}`, async () => withNativeHosts(host => {
-  let cancelled = 0;
-  ui(degradedGlassSurface({ increasedContrast, reducedTransparency: true, tokens: lightColors }, {
-    onAccessibilityEscape: () => cancelled++, children: <Text>Opaque content</Text>,
-  }));
-  const current = host(screen.getByText("Opaque content"));
-  expect(current.props.collapsable).toBe(false);
-  act(() => current.escape());
-  expect(cancelled).toBe(1);
-}));
+// The accessibility ladder is the real hosts' own: under Reduce Transparency, and under
+// Increase Contrast with its contrasting border, the material resolves solid and the host
+// keeps the escape handler on the same root.
+for (const [name, Surface] of [["base", GlassSurface], ["iOS", IOSGlassSurface]] as const) {
+  for (const increasedContrast of [false, true]) it(`${name} surface keeps escape under Reduce Transparency with increased contrast ${increasedContrast}`, async () => {
+    const media = spyOn(window, "matchMedia").mockImplementation((query: string) => ({
+      matches: query.includes("prefers-reduced-transparency") || (increasedContrast && query.includes("prefers-contrast")),
+      media: query, onchange: null,
+      addEventListener() {}, removeEventListener() {}, addListener() {}, removeListener() {}, dispatchEvent: () => true,
+    }) as unknown as MediaQueryList);
+    try {
+      await withNativeHosts(async (host) => {
+        let cancelled = 0;
+        render(<ThemeProvider light glass>
+          <Surface onAccessibilityEscape={() => cancelled++}><Text>Opaque content</Text></Surface>
+        </ThemeProvider>);
+        await waitFor(() => expect(screen.getByText("Opaque content")).toBeDefined());
+        const current = host(screen.getByText("Opaque content"));
+        expect(current.node.querySelector('[data-testid="glass-material"]')).toBeNull();
+        expect(current.props.collapsable).toBe(false);
+        expect(current.node.style.borderWidth).toBe(increasedContrast ? "1px" : "");
+        act(() => current.escape());
+        expect(cancelled).toBe(1);
+      });
+    } finally {
+      media.mockRestore();
+    }
+  });
+}
 
 it("surfaces without an escape owner do not gain a native callback", async () => withNativeHosts(host => {
   ui(<PlainSurface><Text>Persistent surface</Text></PlainSurface>);

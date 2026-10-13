@@ -1,74 +1,13 @@
 import { describe, it, expect } from "bun:test";
 import {
-  splitSurfaceStyle,
   contrastBorder,
+  contrastStyle,
   specularRim,
   MATERIAL_FILL,
   GLASS_INTENSITY,
   CONTRAST_BORDER_WIDTH,
 } from "../src/style/glass-surface/glass-surface.shared.tsx";
 import { lightColors, darkColors } from "../src/style/tokens.ts";
-
-describe("splitSurfaceStyle", () => {
-  it("strips backgroundColor so the material supplies the fill", () => {
-    const { outer, clip } = splitSurfaceStyle({ backgroundColor: "#ffffff", borderRadius: 12, width: 100 });
-    expect(outer.backgroundColor).toBeUndefined();
-    expect(clip.backgroundColor).toBeUndefined();
-  });
-
-  it("routes sizing/position to the outer box and clips the inner", () => {
-    const { outer, clip } = splitSurfaceStyle({ width: 100, height: 50, margin: 8, borderRadius: 12 });
-    expect(outer.width).toBe(100);
-    expect(outer.height).toBe(50);
-    expect(outer.margin).toBe(8);
-    expect(clip.overflow).toBe("hidden");
-    expect(clip.flexGrow).toBe(1);
-    expect(clip.flexShrink).toBe(1);
-  });
-
-  it("gives the clip an AUTO flex basis so a content-sized surface wraps its children", () => {
-    // A basis-0 clip (the `flex: 1` shorthand) collapses a content-sized surface
-    // to its padding under Yoga, which has no min-content floor: the ActionSheet
-    // cards, dialog cards, and menus all size from their children.
-    const { clip } = splitSurfaceStyle({ borderRadius: 34, padding: 14 });
-    expect(clip.flexBasis).toBe("auto");
-    expect(clip.flex).toBeUndefined();
-  });
-
-  it("duplicates the radius onto both boxes so the drop shadow is rounded too", () => {
-    const { outer, clip } = splitSurfaceStyle({ borderRadius: 16 });
-    expect(outer.borderRadius).toBe(16);
-    expect(clip.borderRadius).toBe(16);
-  });
-
-  it("keeps non-sizing skin styles (padding) on the clip box", () => {
-    const { clip } = splitSurfaceStyle({ padding: 12 });
-    expect(clip.padding).toBe(12);
-  });
-
-  it("strips border width/color/style so the material supplies the edge", () => {
-    const { outer, clip } = splitSurfaceStyle({
-      borderWidth: 1,
-      borderColor: "#e4e4e7",
-      borderStyle: "solid",
-      borderTopWidth: 2,
-      borderEndColor: "#000",
-      borderRadius: 12,
-      padding: 8,
-    });
-    // No border key survives on either box...
-    expect(clip.borderWidth).toBeUndefined();
-    expect(clip.borderColor).toBeUndefined();
-    expect(clip.borderStyle).toBeUndefined();
-    expect(clip.borderTopWidth).toBeUndefined();
-    expect(clip.borderEndColor).toBeUndefined();
-    expect(outer.borderWidth).toBeUndefined();
-    // ...but radius (shape) and padding are kept.
-    expect(clip.borderRadius).toBe(12);
-    expect(outer.borderRadius).toBe(12);
-    expect(clip.padding).toBe(8);
-  });
-});
 
 describe("contrastBorder", () => {
   it("is a 1px foreground border on light", () => {
@@ -80,7 +19,32 @@ describe("contrastBorder", () => {
   });
 });
 
+describe("contrastStyle", () => {
+  const style = { borderRadius: 12, borderWidth: 2, borderColor: "#123456" };
+
+  it("hands the skin's style back as given without Increase Contrast", () => {
+    expect(contrastStyle({ increasedContrast: false, tokens: lightColors }, style)).toBe(style);
+  });
+
+  it("adds the contrasting border under Increase Contrast, never thinner than the skin's", () => {
+    const [skin, border] = contrastStyle({ increasedContrast: true, tokens: lightColors }, style) as [typeof style, Record<string, unknown>];
+    expect(skin).toBe(style);
+    expect(border.borderWidth).toBe(2);
+    expect(border.borderColor).toBe(lightColors.foreground);
+  });
+
+  it("keeps a state border's colour under Increase Contrast", () => {
+    const [, border] = contrastStyle({ increasedContrast: true, tokens: lightColors }, style, true) as [unknown, Record<string, unknown>];
+    expect(border.borderColor).toBe("#123456");
+  });
+});
+
 describe("specularRim", () => {
+  it("sits inside a kept border on the border's inner curve", () => {
+    expect(specularRim({ borderRadius: 26, borderWidth: 2 }, false, true).borderRadius).toBe(24);
+    expect(specularRim({ borderRadius: 26, borderWidth: 2 }, false).borderRadius).toBe(26);
+  });
+
   it("carries the skin radius and a scheme-adaptive inset boxShadow", () => {
     const light = specularRim({ borderRadius: 26 }, false);
     const dark = specularRim({ borderRadius: 26 }, true);
