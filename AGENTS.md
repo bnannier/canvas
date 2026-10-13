@@ -352,18 +352,20 @@ strips the fill and border and supplies the material) and its `layer`. Where the
 that paints the surface also owns something else (a Pressable's tap, ripple and dim,
 a live region, a native TextInput), keep that node and render a `GlassPane` (the same
 material as a sibling BEHIND its content, `layer` + `shape` + optional `tint` /
-`brand`) as its first child, with `paneStyle` dropping the node's own fill and border
-under glass; a TextInput beside a pane takes `PANE_SIBLING_INPUT`. Fills INSIDE a
-glass surface (a hovered or selected row, a header band, a stripe, a code pill, a
-placeholder) go through `innerFill` / `withInnerFill`, which turn the opaque `muted` /
-`secondary` / `accent` roles into ink tints under glass so they never sit as opaque
-patches on the material. A state border (a focus ring, an error edge, an open
-trigger, the current step) stays over the pane; a resting hairline drops, the
-material's rim is the edge. In solid mode every one of these renders nothing extra:
-`GlassSurface` is the plain box, `GlassPane` renders null, `paneStyle` and the inner
-fills return the skin's own style, so the solid tree is byte-identical to the
-pre-glass one. Under Reduce Transparency or Increase Contrast every layer degrades to
-its opaque token (`styles/tokens/surface.css` and the accessibility ladder in
+`brand`) as its first child, with `paneStyle` dropping the node's own fill under glass
+and trading a resting border for padding of the same width, so the pane covers the
+node's whole solid footprint while a state border stays a border over it; a TextInput
+beside a pane takes `PANE_SIBLING_INPUT`. Fills INSIDE a glass surface (a hovered or
+selected row, a header band, a stripe, a code pill, a placeholder) go through
+`innerFill` / `withInnerFill`, which turn the opaque `muted` / `secondary` / `accent`
+roles into ink tints under glass so they never sit as opaque patches on the material.
+A state border (a focus ring, an error edge, an open trigger, the current step) stays
+over the pane; a resting hairline drops, the material's rim is the edge. In solid mode
+every one of these renders nothing extra: `GlassSurface` is the plain box, `GlassPane`
+renders null, `paneStyle` and the inner fills return the skin's own style, so the
+solid tree is byte-identical to the pre-glass one. Under Reduce Transparency or
+Increase Contrast every layer degrades to its opaque token
+(`styles/tokens/surface.css` and the accessibility ladder in
 `glass-surface.shared.tsx`).
 
 The material contract is role-based, not component-name-based. In glass mode,
