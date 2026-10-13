@@ -24,7 +24,7 @@ export function GlassSurface(props: GlassSurfaceProps) {
   const solid = resolved.renderer === "solid";
   // Sheer is a content-only treatment. It must never thin a menu or error verdict.
   const translucent = sheer && layer === "content";
-  const fill = materialFill(style);
+  const fill = materialFill(style, props.stateBorder);
   const blur = clear ? WEB_FROST.clearBlur : WEB_FROST.blur;
   const frost = blur > 0 ? `blur(${blur}px)` : undefined;
   const scheme = theme.dark ? "dark" : "light";

@@ -13,8 +13,8 @@ export function GlassSurface(props: GlassSurfaceProps) {
   const { style, layer = "functional", brand, tint, clear, interactive = false } = props;
   const solid = resolved.renderer === "solid";
   const translucent = props.sheer && layer === "content";
-  const fill = materialFill(style);
-  const rim = specularRim(style, theme.dark);
+  const fill = materialFill(style, props.stateBorder);
+  const rim = specularRim(style, theme.dark, props.stateBorder);
   const native = resolved.renderer === "liquid";
   // Liquid Glass takes a brand as its own tintColor and paints no fill for it; the
   // frost paints the fill, a brand one OVER the blur (see brandOverMaterial).

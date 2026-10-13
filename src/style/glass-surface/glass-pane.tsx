@@ -17,7 +17,10 @@ import { StyleSheet, type PressableAndroidRippleConfig, type StyleProp, type Vie
 import { type ThemeValue } from "../theme.js";
 import { isGlass } from "../glass-fill.js";
 import { GlassSurface } from "./glass-surface.js";
-import { borderSides, clearedPaint, contrastBorderFor, type BorderSides, type GlassLayer } from "./glass-surface.shared.js";
+import {
+  NO_SIDES, borderAsPadding, clearedPaint, contrastBorderFor, materialCorners, placedInside, tradedSides,
+  type BorderSides, type GlassLayer,
+} from "./glass-surface.shared.js";
 import { useMaterialResolution } from "./use-material-theme.js";
 
 /**
@@ -107,35 +110,13 @@ export function GlassPane({ layer = "control", shape, stateBorder = false, tint,
 // so a negative order keeps it above the host's own background and below its content.
 const BEHIND: ViewStyle = { zIndex: -1 };
 
-const RADIUS_KEYS = [
-  "borderRadius",
-  "borderTopLeftRadius", "borderTopRightRadius", "borderBottomLeftRadius", "borderBottomRightRadius",
-  "borderTopStartRadius", "borderTopEndRadius", "borderBottomStartRadius", "borderBottomEndRadius",
-] as const;
-type RadiusKey = (typeof RADIUS_KEYS)[number];
-
-/** The sides a corner meets (a physical left or right corner read as start or end, as `borderSides` reads a side). */
-function cornerSides(key: RadiusKey): readonly (keyof BorderSides)[] {
-  if (key === "borderRadius") return ["top", "bottom", "start", "end"];
-  return [key.startsWith("borderTop") ? "top" : "bottom", /Left|Start/.test(key) ? "start" : "end"];
-}
-
 /**
  * The pane's own shape: the host's corner radii and `borderCurve`, and nothing else. Inside
- * a kept border each radius is less the narrower border it meets, the inner curve of that
- * border, so the pane's corner never leaves a gap and never pokes over the border.
+ * a kept border each radius is less the narrower border it meets (`materialCorners`).
  */
 function paneShape(shape: StyleProp<ViewStyle>, inside: boolean): ViewStyle {
-  const flat = (StyleSheet.flatten(shape) ?? {}) as ViewStyle;
-  const sides = inside ? borderSides(flat) : null;
-  const out: Record<string, unknown> = {};
-  for (const key of RADIUS_KEYS) {
-    const radius = flat[key];
-    if (radius == null) continue;
-    out[key] = sides && typeof radius === "number" ? Math.max(0, radius - Math.min(...cornerSides(key).map((side) => sides[side]))) : radius;
-  }
-  if (flat.borderCurve != null) out.borderCurve = flat.borderCurve;
-  return out as ViewStyle;
+  const curve = ((StyleSheet.flatten(shape) ?? {}) as ViewStyle).borderCurve;
+  return curve != null ? { ...materialCorners(shape, inside), borderCurve: curve } : materialCorners(shape, inside);
 }
 
 /**
@@ -201,62 +182,6 @@ export function paneRipple(appearance: boolean | ThemeValue, ripple: PressableAn
   return glass && ripple != null ? { ...ripple, foreground: true } : ripple;
 }
 
-const NO_SIDES: BorderSides = { top: 0, bottom: 0, start: 0, end: 0 };
-
-/**
- * Each side's border width and padding keys, the logical ones first, then for start and end
- * the physical left and right ones a style may name instead.
- */
-const SIDE_KEYS: Readonly<Record<keyof BorderSides, readonly [border: string, padding: string, physicalBorder?: string, physicalPadding?: string]>> = {
-  top: ["borderTopWidth", "paddingTop"],
-  bottom: ["borderBottomWidth", "paddingBottom"],
-  start: ["borderStartWidth", "paddingStart", "borderLeftWidth", "paddingLeft"],
-  end: ["borderEndWidth", "paddingEnd", "borderRightWidth", "paddingRight"],
-};
-const SIDES = Object.keys(SIDE_KEYS) as (keyof BorderSides)[];
-const PHYSICAL_KEYS = ["borderLeftWidth", "borderRightWidth", "paddingLeft", "paddingRight"];
-
-/**
- * The border widths a resting host trades for padding under glass, per side: each side's
- * own border, resolved as React Native resolves it (`borderSides`), except where that side's
- * padding is not a number (a percentage), which cannot take the border's width and keeps it.
- */
-function tradedSides(flat: Readonly<Record<string, unknown>>): BorderSides {
-  const sides = borderSides(flat as ViewStyle);
-  const pads = paddingSides(flat);
-  const out = { ...NO_SIDES };
-  for (const side of SIDES) if (typeof pads[side] === "number") out[side] = sides[side];
-  return out;
-}
-
-/**
- * A resting border traded for padding: every border width the style names becomes 0 and
- * each side's padding grows by that side's border width, with the fill and border colours
- * cleared (`clearedPaint`). A side whose padding is not a number keeps its border,
- * transparent. Where the style names a physical left or right width or padding, the
- * physical keys are restated beside the logical ones with the same values, so whichever of
- * the two a renderer ranks first gives the same box.
- */
-function borderAsPadding(style: StyleProp<ViewStyle>): ViewStyle {
-  const flat = (StyleSheet.flatten(style) ?? {}) as Record<string, unknown>;
-  const out = clearedPaint(flat, false) as Record<string, unknown>;
-  const traded = tradedSides(flat);
-  if (!SIDES.some((side) => traded[side] > 0)) return out as ViewStyle;
-  const sides = borderSides(flat as ViewStyle);
-  const pads = paddingSides(flat);
-  const physical = PHYSICAL_KEYS.some((key) => flat[key] != null);
-  out.borderWidth = 0;
-  for (const side of SIDES) {
-    const [border, padding, physicalBorder, physicalPadding] = SIDE_KEYS[side];
-    out[border] = sides[side] - traded[side];
-    if (physical && physicalBorder) out[physicalBorder] = out[border];
-    if (traded[side] === 0) continue;
-    out[padding] = (pads[side] as number) + traded[side];
-    if (physical && physicalPadding) out[physicalPadding] = out[padding];
-  }
-  return out as ViewStyle;
-}
-
 /**
  * How far a pane host's padding box reaches over its border under glass, per side: the
  * resting border `paneStyle` turns into padding. Absolute offsets count from that box, so an
@@ -267,39 +192,20 @@ function borderAsPadding(style: StyleProp<ViewStyle>): ViewStyle {
 export function paneEdges(appearance: boolean | ThemeValue, style: StyleProp<ViewStyle>, stateBorder = false): BorderSides {
   const glass = typeof appearance === "boolean" ? appearance : isGlass(appearance);
   if (!glass || stateBorder) return NO_SIDES;
-  return tradedSides((StyleSheet.flatten(style) ?? {}) as Record<string, unknown>);
+  return tradedSides(style);
 }
 
 /**
- * An absolutely placed child of a pane host (a switch thumb, a label layer), kept where
- * solid places it: each side the child is pinned to by a number gains the host's
- * `paneEdges` there (a physical left or right read as start or end). Returned unchanged
- * where those are all zero, so the solid tree is untouched.
+ * An absolutely placed child of a pane host (a switch thumb, a label layer), or of a
+ * GlassSurface whose resting border became padding the same way (CodeBlock's floating copy
+ * chip), kept where solid places it: each side the child is pinned to by a number gains the
+ * host's `paneEdges` there (a physical left or right read as start or end). Returned
+ * unchanged where those are all zero, so the solid tree is untouched. For a GlassSurface,
+ * `appearance` is the host's resolved material (`useMaterialTheme` with the surface's
+ * `layer` and `static`), as for a pane.
  */
 export function panePlaced(appearance: boolean | ThemeValue, host: StyleProp<ViewStyle>, child: StyleProp<ViewStyle>, stateBorder = false): StyleProp<ViewStyle> {
-  const edges = paneEdges(appearance, host, stateBorder);
-  if (!SIDES.some((side) => edges[side] > 0)) return child;
-  const flat = (StyleSheet.flatten(child) ?? {}) as Record<string, unknown>;
-  const sideOf: Record<string, keyof BorderSides> = { top: "top", bottom: "bottom", start: "start", left: "start", end: "end", right: "end" };
-  const moved: Record<string, number> = {};
-  for (const [key, side] of Object.entries(sideOf)) {
-    const offset = flat[key];
-    if (typeof offset === "number" && edges[side] > 0) moved[key] = offset + edges[side];
-  }
-  return Object.keys(moved).length ? [child, moved as ViewStyle] : child;
-}
-
-/** A style's padding on each side, resolved as `borderSides` resolves the border. */
-function paddingSides(flat: Readonly<Record<string, unknown>>): Record<keyof BorderSides, unknown> {
-  const all = flat.padding ?? 0;
-  const vertical = flat.paddingVertical ?? all;
-  const horizontal = flat.paddingHorizontal ?? all;
-  return {
-    top: flat.paddingTop ?? vertical,
-    bottom: flat.paddingBottom ?? vertical,
-    start: flat.paddingStart ?? flat.paddingLeft ?? horizontal,
-    end: flat.paddingEnd ?? flat.paddingRight ?? horizontal,
-  };
+  return placedInside(paneEdges(appearance, host, stateBorder), child);
 }
 
 /**
