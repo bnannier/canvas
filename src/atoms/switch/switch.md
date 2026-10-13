@@ -2,13 +2,15 @@
 
 On / off switch, isolated or grouped in a settings list.
 
-In glass mode the track is a control-layer pane (brand-tinted while checked,
-and under its own off-track grey while off, the boundary that tells an off switch
-from the page, kept at the 3:1 its solid track has) and the knob a control-layer
-surface at whichever end the state puts it; the
-track, the label, the description and the hit target never move, and the
-checked state flips at once. A disabled switch is inert; solid mode keeps the
-skin's own knob.
+In glass mode the track is a control-layer pane, brand-tinted while checked.
+While off, its own off-track fill paints over the material, with the knob in its
+own colour: on the web at the sheerest strength that keeps the 3:1 boundary that
+tells an off switch from the page, on iOS as Apple's systemGray3 track (under 3:1
+by Apple's choice, as in solid mode), and on Android as the muted track, where the
+knob carries the boundary. The knob is a control-layer surface at whichever end
+the state puts it; the track, the label, the description and the hit target never
+move, and the checked state flips at once. A disabled switch is inert; solid mode
+keeps the skin's own knob.
 
 Pass `ref` to access the interactive switch row, including its label. Use `useRef<ComponentRef<typeof Switch>>(null)` from React, or `useRef<View>(null)` with React Native's `View` type. Object and callback refs are supported and detach on unmount. Calling `ref.current?.focus()` or `.blur()` delegates to the host without activating the control. Browser focus is supported; native focus depends on the platform and React Native version, and is separate from accessibility focus.
 
