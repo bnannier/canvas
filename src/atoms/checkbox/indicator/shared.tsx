@@ -31,13 +31,14 @@ export function CheckboxIndicatorBox({ skin, tokens, size, checked, indeterminat
 }) {
   const filled = !!(indeterminate || checked);
   // Under glass the box is a static pane at control density: a GlassPane paints the material
-  // behind the glyph (BRAND-tinted while filled) and the box drops its fill and
-  // outline (the pane's material and rim carry them).
+  // behind the glyph (BRAND-tinted while filled). A filled box drops its fill and outline
+  // (the brand pane carries them); an empty box keeps its outline over the pane, the
+  // boundary that identifies the control, in its solid colour at 3:1 (GS-1).
   const theme = useMaterialTheme({ static: true, layer: "control" });
   const box = skin.box(tokens, filled, size, nudge);
   return (
-    <View style={paneStyle(theme, box)}>
-      <GlassPane static layer="control" shape={box} brand={filled ? tokens.primary : undefined} />
+    <View style={paneStyle(theme, box, filled ? false : "boundary")}>
+      <GlassPane static layer="control" shape={box} boundary={!filled} brand={filled ? tokens.primary : undefined} />
       {filled ? (
         <View style={GLYPH_LAYER}>
           <Text style={skin.glyph(tokens, size)}>{indeterminate ? "–" : "✓"}</Text>

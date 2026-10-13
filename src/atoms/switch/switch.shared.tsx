@@ -4,7 +4,7 @@ import { useComposedRefs } from "../../style/use-composed-refs.js";
 import { useSpaceActivation } from "../../style/use-space-activation.js";
 import { type GestureResponderEvent } from "react-native";
 import { useSeededMinTargetSlop, styleBox } from "../../style/touch-target-seed.js";
-import { Pressable, View, Text, useControllableState, type ColorTokens, type StyleProp, type ViewStyle, type TouchTargetSkin, type LayoutStyle, GlassPane, GlassSurface, paneStyle, panePlaced } from "../../style/index.js";
+import { Pressable, View, Text, useControllableState, type ColorTokens, type StyleProp, type ViewStyle, type TouchTargetSkin, type LayoutStyle, GlassPane, GlassSurface, paneStyle, panePlaced, legibleTrack } from "../../style/index.js";
 
 // Shared Switch shell. Uses React Native's primitives DIRECTLY (no engine className
 // layer) and reads the active brand tokens via so colors follow light/dark.
@@ -80,8 +80,9 @@ export function createSwitch(skin: SwitchSkin) {
     const glassThumb = thumbTheme.surface === "glass";
     const size = sizeOf(props);
     // Under glass the track is a static pane at control density: a GlassPane paints the material
-    // behind the thumb (BRAND-tinted while checked) and the track drops its fill and
-    // outline (the pane's material and rim carry them). The thumb is a CONTROL-layer
+    // behind the thumb, BRAND-tinted while checked and under the skin's own off-track fill
+    // while off (`legibleTrack`, the boundary that identifies the control at 3:1, GS-1), and
+    // the track drops its fill and outline (the pane's material and rim carry them). The thumb is a CONTROL-layer
     // surface of its own, tinted with the skin's thumb fill and positioned by the skin
     // inside the track; in solid mode it is the skin's plain knob.
 
@@ -146,7 +147,15 @@ export function createSwitch(skin: SwitchSkin) {
           </View>
         ) : null}
         <View style={paneStyle(theme, disabled && glassThumb ? [trackShape, { backgroundColor: tokens.muted }] : trackShape)}>
-          <GlassPane static layer="control" shape={trackShape} brand={checked && !disabled ? tokens.primary : undefined} />
+          <GlassPane
+            static
+            layer="control"
+            shape={trackShape}
+            brand={checked && !disabled ? tokens.primary : undefined}
+            // An off track keeps its solid fill as a neutral under-fill, the boundary that
+            // identifies the control, as a checked one takes its brand (GS-1).
+            tint={!checked && !disabled ? legibleTrack(theme, String(trackShape.backgroundColor), String(thumbShape.backgroundColor)) : undefined}
+          />
           <GlassSurface
             layer="control"
             pointerEvents="none"

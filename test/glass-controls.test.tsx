@@ -14,7 +14,7 @@ import { Tabs } from "../src/organisms/tabs/tabs.tsx";
 import { selectionTint } from "../src/organisms/tabs/tabs.styles.ts";
 import { Pagination } from "../src/atoms/pagination/pagination.tsx";
 import { brandInk, brandTint, surfaceUnderFill, BRAND_TINT_ALPHA, BRAND_INK_CONTRAST } from "../src/style/glass-surface/glass-surface.shared.tsx";
-import { GLASS_WASH, legibleWash } from "../src/style/glass-surface/glass-wash.ts";
+import { GLASS_TRACK, GLASS_WASH, legibleTrack, legibleWash } from "../src/style/glass-surface/glass-wash.ts";
 import { SELECTED_CARD_TINT } from "../src/style/selected-card.ts";
 import { Card } from "../src/molecules/card/card.tsx";
 import { Radio, RadioGroup } from "../src/atoms/radio/radio.tsx";
@@ -32,8 +32,16 @@ import { frameBedsFor, lightColors, palette } from "../src/style/tokens.ts";
 import { WEB_TINTS } from "../src/style/glass-surface/web-frost.ts";
 import { statusColors } from "../src/style/status.ts";
 import { HUE_SOFT } from "../src/atoms/chip/chip.shared.tsx";
-import { LOOKS } from "./fixtures/looks.ts";
+import { LOOKS, lookProps } from "./fixtures/looks.ts";
 import { shellBeds } from "./fixtures/page-look.ts";
+import { createRadio } from "../src/atoms/radio/radio.shared.tsx";
+import { webSkin as webRadioSkin, androidSkin as androidRadioSkin } from "../src/atoms/radio/radio.styles.ts";
+import { Checkbox as AndroidCheckbox } from "../src/atoms/checkbox/checkbox.android.tsx";
+import { createSwitch } from "../src/atoms/switch/switch.shared.tsx";
+import { paneStyle } from "../src/style/glass-surface/glass-pane.tsx";
+import { StyleSheet } from "react-native";
+import { webSkin as webSwitchSkin, iosSkin as iosSwitchSkin } from "../src/atoms/switch/switch.styles.ts";
+import { webSkin as webCheckboxSkin, androidSkin as androidCheckboxSkin } from "../src/atoms/checkbox/checkbox.styles.ts";
 
 // The CONTROL layer of the glass model: every control that paints a surface of its
 // own (a field box, a button, a switch track, a checkbox, a badge, a chip, a keycap,
@@ -138,7 +146,7 @@ describe("brand-tinted glass pucks", () => {
     expect(button.style.borderColor).toBe("rgba(0, 0, 0, 0.00)");
   });
 
-  it("a checked Switch track is brand glass and an unchecked one the plain control material", async () => {
+  it("a checked Switch track is brand glass and an unchecked one its off-track fill (GS-1)", async () => {
     const { container } = await renderGlass(
       <>
         <Switch defaultChecked testID="on" accessibilityLabel="Notifications" />
@@ -148,7 +156,8 @@ describe("brand-tinted glass pucks", () => {
     const on = container.querySelector('[data-testid="on"]') as HTMLElement;
     const off = container.querySelector('[data-testid="off"]') as HTMLElement;
     expect(rgbaOf(underFillOf(on))).toEqual(rgbaOf(brandTint(lightColors.primary, lightColors.background)));
-    expect(rgbaOf(underFillOf(off))).toEqual(rgbaOf(LIGHT["glass-tint-control"]));
+    const offTrack = legibleTrack({ tokens: lightColors, glass: LIGHT }, lightColors.input, lightColors.background);
+    expect(rgbaOf(underFillOf(off))).toEqual(rgbaOf(offTrack.startsWith("#") ? alpha(offTrack, 1) : offTrack));
   });
 
   it("a checked Checkbox box is brand glass with the check on top", async () => {
@@ -504,5 +513,125 @@ describe("solid mode", () => {
         }
       }
     }
+  });
+});
+
+// The owner's GS-1 decision (audit/DECISIONS.md): under glass a resting control whose
+// boundary identifies it keeps that boundary at the 3:1 WCAG 1.4.11 asks. An unchecked
+// Radio ring and an unchecked Checkbox box keep their border over the pane in its solid
+// colour (`input` on the web, `muted-foreground` on Android), the pane flush inside it; an
+// off Switch keeps its off-track fill as the pane's under-fill (`legibleTrack`), the sheerest
+// alpha at which the track keeps 3:1 against the page or pane around it and under its thumb.
+// The rim alone measured about 1.2:1 in the light palettes and 1.4:1 in dark.
+describe("a selection control keeps its identifying boundary under glass (GS-1)", () => {
+  const contrast = (a: string, b: string) => contrastRatio(a, b);
+
+  it("holds the kept ring and box at 3:1 against the page, a content pane and the control pane inside them, in every look", () => {
+    for (const l of LOOKS) {
+      const t = l.tokens;
+      const rings = [
+        [webRadioSkin.mark.kind === "ring" ? webRadioSkin.mark.ring(t, "base", false, true).borderColor : t.input, l.webGlass, "web radio"],
+        [androidRadioSkin.mark.kind === "ring" ? androidRadioSkin.mark.ring(t, "base", false, true).borderColor : t["muted-foreground"], l.nativeGlass, "android radio"],
+        [webCheckboxSkin.box(t, false, "base", false).borderColor, l.webGlass, "web checkbox"],
+        [androidCheckboxSkin.box(t, false, "base", false).borderColor, l.nativeGlass, "android checkbox"],
+      ] as const;
+      for (const [ring, glass, name] of rings) {
+        const page = t.background;
+        const pane = composite(glass["glass-tint-content"], page);
+        for (const ground of [page, pane]) {
+          const inside = composite(glass["glass-tint-control"], ground);
+          expect(contrast(String(ring), ground), `${l.name} ${name} ring on its ground`).toBeGreaterThanOrEqual(3);
+          expect(contrast(String(ring), inside), `${l.name} ${name} ring on the pane inside it`).toBeGreaterThanOrEqual(3);
+        }
+      }
+    }
+  });
+
+  it("solves the web off track at 3:1 against the page and a content pane, and the thumb at 3:1 on it, in every look", () => {
+    for (const l of LOOKS) {
+      const t = l.tokens;
+      const track = webSwitchSkin.track(t, l.scheme === "dark", false, "base");
+      const thumb = String(webSwitchSkin.thumb(t, false, "base").backgroundColor);
+      const under = legibleTrack({ tokens: t, glass: l.webGlass }, String(track.backgroundColor), thumb);
+      for (const ground of [t.background, composite(l.webGlass["glass-tint-content"], t.background)]) {
+        const painted = composite(under, ground);
+        expect(contrast(painted, ground), `${l.name} track on its ground`).toBeGreaterThanOrEqual(GLASS_TRACK.boundaryContrast);
+        expect(contrast(painted, thumb), `${l.name} thumb on the track`).toBeGreaterThanOrEqual(GLASS_TRACK.boundaryContrast);
+      }
+    }
+  });
+
+  it("gives the iOS off track solid's systemGray3 under glass (Apple keeps it under 3:1; no floor is asserted)", () => {
+    for (const l of LOOKS) {
+      const dark = l.scheme === "dark";
+      const track = String(iosSwitchSkin.track(l.tokens, dark, false, "base").backgroundColor);
+      const thumb = String(iosSwitchSkin.thumb(l.tokens, false, "base").backgroundColor);
+      expect(track).toBe(dark ? "#48484a" : "#c7c7cc");
+      expect(legibleTrack({ tokens: l.tokens, glass: l.nativeGlass }, track, thumb)).toBe(track);
+    }
+  });
+
+  for (const l of LOOKS) {
+    it(`renders the kept boundary in ${l.name}: the unchecked ring and box keep their border colour with the pane inside, the checked ones trade it for padding`, async () => {
+      const WebRadio = createRadio(webRadioSkin);
+      const { container } = render(
+        <ThemeProvider glass {...lookProps(l)}>
+          <WebRadio testID="off">Hobby</WebRadio>
+          <WebRadio testID="on" checked>Pro</WebRadio>
+          <Checkbox testID="box-off">Email</Checkbox>
+          <Checkbox testID="box-on" defaultChecked>SMS</Checkbox>
+        </ThemeProvider>,
+      );
+      await waitFor(() => expect(materialLayers(container)).toBeGreaterThan(0));
+      const t = l.tokens;
+      const hostOf = (id: string) => {
+        const pane = (container.querySelector(`[data-testid="${id}"]`) as HTMLElement).querySelector('[data-testid="glass-material"]')!.parentElement!;
+        return { host: pane.parentElement as HTMLElement, pane: pane as HTMLElement };
+      };
+      const ring = hostOf("off");
+      expect(ring.host.style.borderWidth || ring.host.style.borderTopWidth).toBe("2px");
+      expect(rgbaOf(ring.host.style.borderColor || ring.host.style.borderTopColor)).toEqual(rgbaOf(alpha(t.input, 1)));
+      const ringRadius = Number.parseFloat(String(webRadioSkin.mark.kind === "ring" ? webRadioSkin.mark.ring(t, "base", false, true).borderRadius : 0));
+      expect(Number.parseFloat(ring.pane.style.borderTopLeftRadius || ring.pane.style.borderRadius)).toBe(Math.max(0, ringRadius - 2));
+      const checked = hostOf("on");
+      expect(checked.host.style.borderWidth || "0px").toBe("0px");
+      const box = hostOf("box-off");
+      expect(box.host.style.borderWidth || box.host.style.borderTopWidth).toBe("1px");
+      expect(rgbaOf(box.host.style.borderColor || box.host.style.borderTopColor)).toEqual(rgbaOf(alpha(t.input, 1)));
+      const filled = hostOf("box-on");
+      expect(filled.host.style.borderWidth || "0px").toBe("0px");
+    });
+  }
+
+  it("keeps the Android ring and box in muted-foreground over the pane", async () => {
+    const AndroidRadio = createRadio(androidRadioSkin);
+    const { container } = render(
+      <ThemeProvider glass light>
+        <AndroidRadio testID="off">Hobby</AndroidRadio>
+        <AndroidCheckbox selection testID="box-off">Email</AndroidCheckbox>
+      </ThemeProvider>,
+    );
+    await waitFor(() => expect(materialLayers(container)).toBeGreaterThan(0));
+    for (const id of ["off", "box-off"]) {
+      const host = (container.querySelector(`[data-testid="${id}"]`) as HTMLElement).querySelector('[data-testid="glass-material"]')!.parentElement!.parentElement as HTMLElement;
+      expect(host.style.borderWidth || host.style.borderTopWidth, id).toBe("2px");
+      expect(rgbaOf(host.style.borderColor || host.style.borderTopColor), id).toEqual(rgbaOf(alpha(lightColors["muted-foreground"], 1)));
+    }
+  });
+
+  it("reads a kept boundary as a resting border under Increase Contrast: it takes the contrasting border, where a state border keeps its colour", () => {
+    const contrastTheme = { surface: "solid", increasedContrast: true, reducedTransparency: false, tokens: lightColors } as Parameters<typeof paneStyle>[0];
+    const ring = { borderRadius: 9999, borderWidth: 2, borderColor: lightColors.input };
+    const flat = (kept: boolean | "boundary") => StyleSheet.flatten(paneStyle(contrastTheme, ring, kept)) as { borderColor?: string; borderWidth?: number };
+    expect(flat("boundary")).toMatchObject({ borderColor: lightColors.foreground, borderWidth: 2 });
+    expect(flat(true)).toMatchObject({ borderColor: lightColors.input, borderWidth: 2 });
+    // Under glass a boundary stays a border, as a state border does.
+    expect(StyleSheet.flatten(paneStyle(true, ring, "boundary"))).toMatchObject({ borderColor: lightColors.input, borderWidth: 2, backgroundColor: "transparent" });
+  });
+
+  it("renders the iOS off Switch's pane on solid's systemGray3", async () => {
+    const IosSwitch = createSwitch(iosSwitchSkin);
+    const { container } = await renderGlass(<IosSwitch testID="off" accessibilityLabel="Marketing" />);
+    expect(rgbaOf(underFillOf(container.querySelector('[data-testid="off"]') as HTMLElement))).toEqual(rgbaOf(alpha("#c7c7cc", 1)));
   });
 });
