@@ -160,8 +160,10 @@ export function createRadio(skin: RadioSkin) {
     const { tokens } = theme;
     // Under glass the ring is a static pane at control density: a GlassPane paints the material
     // behind the dot (BRAND-tinted while checked, with the dot in `primary-foreground`
-    // over it) and the ring drops its outline (the pane's rim carries it). A card-mode
-    // radio is a CONTENT-layer pane like a selectable Card, tinted while checked.
+    // over it). The checked ring's outline becomes padding (the brand pane carries it); the
+    // unchecked ring keeps its outline over the pane, the boundary that identifies the
+    // control (GS-1). A card-mode radio is a CONTENT-layer pane like a selectable Card,
+    // tinted while checked.
     const glass = isGlass(theme);
     // Whether the control carries any text at all (title and/or description).
     const hasText = children != null || description != null;
@@ -247,8 +249,10 @@ export function createRadio(skin: RadioSkin) {
       >
         {cardChrome ? <GlassPane layer="content" shape={cardChrome} stateBorder={isChecked} tint={isChecked ? legibleWash(theme, "selection", { layer: "content" }) : undefined} /> : null}
         {mark.kind === "ring" ? (
-          <View style={paneStyle(theme, mark.ring(tokens, size, isChecked, hasText))}>
-            <GlassPane static layer="control" shape={mark.ring(tokens, size, isChecked, hasText)} brand={isChecked ? tokens.primary : undefined} />
+          // An unchecked ring is the radio's boundary: under glass it stays over the pane in its
+          // solid colour at 3:1 (GS-1), where the checked ring's brand pane carries the control.
+          <View style={paneStyle(theme, mark.ring(tokens, size, isChecked, hasText), isChecked ? false : "boundary")}>
+            <GlassPane static layer="control" shape={mark.ring(tokens, size, isChecked, hasText)} boundary={!isChecked} brand={isChecked ? tokens.primary : undefined} />
             {isChecked ? <View style={[mark.dot(tokens, size), glass ? { backgroundColor: tokens["primary-foreground"] } : null]} /> : null}
           </View>
         ) : null}

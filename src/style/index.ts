@@ -52,7 +52,7 @@ export * from "./glass-surface/glass-surface.js";
 export * from "./glass-surface/liquid-glass.js";
 export * from "./glass-fill.js";
 export * from "./glass-surface/glass-pane.js";
-export { legibleWash, type GlassWash } from "./glass-surface/glass-wash.js";
+export { legibleWash, legibleTrack, type GlassWash } from "./glass-surface/glass-wash.js";
 // The Modal-side bridge for the Android sibling blur target (the contexts and the
 // per-platform host stay internal; the bridge is public so an app hosting its own
 // RN Modal can give its frost surfaces the same page blur the kit's sheets get).
