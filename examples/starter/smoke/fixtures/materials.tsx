@@ -114,6 +114,14 @@ export function MaterialsBody() {
         </RadioGroup>
         <Card selected><Typography>Selected card</Typography><Typography muted>The selection wash under its text.</Typography></Card>
       </Column>
+      {/* The fills that carry ink (the owner's GS-2 decision): a resting field's prefix and
+          suffix addons and PhoneInput's country segment, capped where the browser composites
+          them so their text keeps 4.5:1 over the field (legibleInnerFill). */}
+      <Typography h3>Fills that carry ink</Typography>
+      <Column snug testID="material-ink-fills">
+        <Input label="Amount" prefix="$" suffix="USD" placeholder="0.00" testID="material-ink-fill-field" />
+        <PhoneInput label="Phone" testID="material-ink-fill-phone" />
+      </Column>
       {/* The control boundaries (the owner's GS-1 decision): an unchecked Radio ring and an
           empty Checkbox box keep their solid outline over the pane at 3:1, and an off Switch
           keeps its off-track fill as the pane's under-fill (GLASS_TRACK), on the page and on a
