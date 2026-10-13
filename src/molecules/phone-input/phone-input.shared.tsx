@@ -147,7 +147,7 @@ export function createPhoneInput(skin: PhoneInputSkin) {
     // sampled backdrop. Native fields retain the original border owner. The box
     // keeps only its STATE border (focus, error) over it, drawn once (`stateSurface`),
     // an errored box tints the pane, and the country segment's `muted` fill becomes an
-    // ink tint.
+    // ink tint, capped in the browser for the flag and caret on it (`inkFill`, GS-2).
     const widthCap = useFillStyle("PhoneInput", props);
     const labelId = useId();
     const listId = `${labelId}-countries`;
