@@ -333,35 +333,48 @@ describe("state washes", () => {
     { name: "control puck", pane: { layer: "control" as const }, web: false },
     { name: "content pane", pane: { layer: "content" as const }, web: false },
   ];
-  it("holds the muted and foreground inks at 4.5:1 on the error and selection washes", () => {
+  it("holds the muted and foreground inks at 4.5:1 on the error and selection washes, and on the inner fill over the error wash", () => {
     for (const look of LOOKS) {
       const t = look.tokens;
       const dark = look.scheme === "dark";
+      // A field's addon and PhoneInput's country segment paint the soft inner fill over the
+      // error wash, under the same muted ink.
+      const addon = alpha(t.foreground, dark ? 0.09 : 0.06);
       for (const [platform, g] of [["web", look.webGlass], ["native", look.nativeGlass]] as const) {
         const bases = [t.background, composite(g["glass-tint-content"], t.background)];
         for (const { name, pane, web } of panes) {
           if (web && platform !== "web") continue;
           const body = pane.clear ? alpha(t.card, dark ? 0.28 : 0.22) : surfaceUnderFill(g, pane.layer);
-          const bodyHolds = bases.every((base) => [t["muted-foreground"], t.foreground].every((ink) => contrastRatio(composite(body, base), ink) >= 4.5));
           for (const wash of ["error", "selection"] as const) {
+            const beds = (fill: string) => bases.flatMap((base) => wash === "error" ? [composite(fill, base), composite(addon, composite(fill, base))] : [composite(fill, base)]);
+            const holds = (fill: string) => beds(fill).every((bed) => [t["muted-foreground"], t.foreground].every((ink) => contrastRatio(bed, ink) >= 4.5));
             const fill = legibleWash({ tokens: t, glass: g, dark }, wash, pane);
             const where = `${platform} ${look.name} ${name} ${wash}`;
-            if (!bodyHolds) {
-              // The dark native control puck misses the muted floor on its own (GP-11, the
-              // layer's legibility, GlassSurface's turn): a wash would only darken the miss,
-              // so the pane keeps its body.
-              expect(`${platform} ${look.name} ${name}`).toBe("native dark control puck");
+            if (!holds(body)) {
+              // Where the body alone misses the floor (the layer's own legibility: the dark
+              // native control puck, GP-11, and on the page model the light fields' addon
+              // fill), a wash would only deepen the miss, so the pane keeps its body.
               expect(fill, where).toBe(body);
               continue;
             }
-            for (const base of bases) {
-              expect(contrastRatio(composite(fill, base), t["muted-foreground"]), `${where} muted over ${base}`).toBeGreaterThanOrEqual(4.5);
-              expect(contrastRatio(composite(fill, base), t.foreground), `${where} foreground over ${base}`).toBeGreaterThanOrEqual(4.5);
+            for (const bed of beds(fill)) {
+              expect(contrastRatio(bed, t["muted-foreground"]), `${where} muted on ${bed}`).toBeGreaterThanOrEqual(4.5);
+              expect(contrastRatio(bed, t.foreground), `${where} foreground on ${bed}`).toBeGreaterThanOrEqual(4.5);
             }
           }
         }
       }
     }
+    // The selection wash misses only where its body does: the dark native control puck.
+    const missed = LOOKS.flatMap((look) => ([["web", look.webGlass], ["native", look.nativeGlass]] as const).flatMap(([platform, g]) => panes
+      .filter(({ web }) => !web || platform === "web")
+      .filter(({ pane }) => {
+        const t = look.tokens;
+        const body = pane.clear ? alpha(t.card, look.scheme === "dark" ? 0.28 : 0.22) : surfaceUnderFill(g, pane.layer);
+        return legibleWash({ tokens: t, glass: g, dark: look.scheme === "dark" }, "selection", pane) === body;
+      })
+      .map(({ name }) => `${platform} ${look.name} ${name}`)));
+    expect(missed).toEqual(["native dark control puck"]);
   });
 
   it("keeps a visible wash in the dark palette and almost none in the light ones", () => {
