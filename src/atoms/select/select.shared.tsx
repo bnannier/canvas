@@ -294,7 +294,7 @@ export function createSelect(skin: SelectSkin) {
           {({ pressed }) => {
             const ink = glass ? { opacity: disabled ? skin.disabledOpacity : pressed && skin.pressedOpacity != null ? skin.pressedOpacity : 1 } : null;
             return <>
-              <GlassPane layer="control" shape={triggerShape} stateBorder={open} interactive={!disabled} />
+              <GlassPane layer="control" shape={triggerShape} stateBorder={open} />
               <View
                 style={[
                   skin.triggerValue,

@@ -266,7 +266,7 @@ export function createTabs(skin: TabsSkin) {
       return selected && bg != null && bg !== "transparent";
     };
     const puckOf = (container: StyleProp<ViewStyle>) =>
-      glass && surfaced(container) ? <GlassPane layer="control" shape={container} tint={s.selectionTint(container, dark)} interactive /> : null;
+      glass && surfaced(container) ? <GlassPane layer="control" shape={container} tint={s.selectionTint(container, dark)} /> : null;
     const triggerStyle = (container: StyleProp<ViewStyle>) => surfaced(container) ? [paneStyle(theme, container), glass ? s.clearSelectionShadow : null] : container;
     const inkOf = (container: StyleProp<ViewStyle>): TextStyle | null => glass && surfaced(container) ? { color: tokens.foreground } : null;
     // The selected trigger's puck is a child of its Pressable: where it renders, the ripple

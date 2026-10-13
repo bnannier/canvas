@@ -221,7 +221,7 @@ export function createStepper(skin: StepperSkin) {
     const groupSurface = groupSurfaced ? entryMaterial.stateSurface(groupShape, focused && !!skin.groupShowsFocus) : null;
     const groupStyle = groupSurface ? groupSurface.style : groupShape;
     const groupPane = groupSurface ? <GlassPane {...entryMaterial.paneProps} stateBorder={groupSurface.keepsBorder} shape={groupShape} /> : null;
-    const buttonPane = (shape: ViewStyle, inactive: boolean) => (groupSurfaced ? null : <GlassPane layer="control" shape={shape} interactive={!inactive} />);
+    const buttonPane = (shape: ViewStyle) => (groupSurfaced ? null : <GlassPane layer="control" shape={shape} />);
 
     // Collision-free ids so the group can name itself from the visible label and be
     // described by the description (unconditional hooks: the ids are cheap and always
@@ -380,7 +380,7 @@ export function createStepper(skin: StepperSkin) {
           ]}
         >
           {({ pressed }) => <>
-            {buttonPane(skin.button(tokens, size, "left", atMin, false), atMin)}
+            {buttonPane(skin.button(tokens, size, "left", atMin, false))}
             <View style={[disabledInk, liquidActions && skin.pressedOpacity != null && pressed && !atMin ? { opacity: skin.pressedOpacity } : null]}>
               <Icon minus decorative {...glyphColorProps(glyph.color, atMin)} size={glyph.size} />
             </View>
@@ -406,7 +406,7 @@ export function createStepper(skin: StepperSkin) {
           ]}
         >
           {({ pressed }) => <>
-            {buttonPane(skin.button(tokens, size, "right", atMax, false), atMax)}
+            {buttonPane(skin.button(tokens, size, "right", atMax, false))}
             <View style={[disabledInk, liquidActions && skin.pressedOpacity != null && pressed && !atMax ? { opacity: skin.pressedOpacity } : null]}>
               <Icon plus decorative {...glyphColorProps(glyph.color, atMax)} size={glyph.size} />
             </View>

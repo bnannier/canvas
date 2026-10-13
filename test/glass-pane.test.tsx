@@ -5,6 +5,7 @@ import { Text, TextInput, View, type ViewStyle } from "react-native";
 import { ThemeProvider } from "../src/style/theme.tsx";
 import { lightColors } from "../src/style/tokens.ts";
 import { GlassPane, paneStyle, PANE_SIBLING_INPUT } from "../src/style/glass-surface/glass-pane.tsx";
+import { GlassSurface } from "../src/style/glass-surface/glass-surface.tsx";
 import { ButtonGroup } from "../src/atoms/button-group/button-group.tsx";
 import { contrastBorderFor } from "../src/style/glass-surface/glass-surface.shared.tsx";
 import { Radio, RadioGroup } from "../src/atoms/radio/radio.tsx";
@@ -369,4 +370,52 @@ describe("Increase Contrast only ever adds weight", () => {
       expect(ring(web.current)).toEqual({ width: 2, color: hex(lightColors.primary) });
     } finally { spy.mockRestore(); }
   });
+});
+
+describe("a pane is never interactive glass", () => {
+  // GP-9: a pane passes every tap through to its host (pointerEvents "none"), so React Native
+  // disables user interaction on it and iOS never hands its Liquid Glass the touch Apple's
+  // interactive glass responds to: on the iOS 26 simulator a pressed glass Button showed only
+  // its label's dim. The pane forwards no `interactive`, the prop is a deprecated no-op, and
+  // no kit host passes it; the host's own feedback carries the press.
+  type Fiber = { elementType: unknown; memoizedProps: Record<string, unknown> | null; child: Fiber | null; sibling: Fiber | null };
+  /** The props of every GlassSurface a GlassPane renders under a container. */
+  function paneSurfaces(container: Element): Record<string, unknown>[] {
+    const key = Object.keys(container).find((k) => k.startsWith("__reactContainer$"))!;
+    const out: Record<string, unknown>[] = [];
+    const walk = (fiber: Fiber | null, inPane: boolean) => {
+      for (let f = fiber; f; f = f.sibling) {
+        if (inPane && f.elementType === GlassSurface) out.push(f.memoizedProps ?? {});
+        walk(f.child, f.elementType === GlassPane || (inPane && f.elementType !== GlassSurface));
+      }
+    };
+    walk((container as unknown as Record<string, { stateNode: { current: Fiber } }>)[key]!.stateNode.current.child, false);
+    return out;
+  }
+
+  it("ignores a caller's `interactive`", async () => {
+    const { container } = await renderGlass(<View style={SHAPE}><GlassPane layer="control" shape={SHAPE} interactive /></View>);
+    const surfaces = paneSurfaces(container);
+    expect(surfaces).toHaveLength(1);
+    expect(surfaces[0]!.pointerEvents).toBe("none");
+    expect("interactive" in surfaces[0]!).toBe(false);
+  });
+
+  for (const platform of ["web", "ios"] as const) {
+    it(`no pane host asks for it (${platform} skins)`, async () => {
+      let seen = 0;
+      for (const host of PANE_HOSTS) {
+        const node = platform === "web" ? host.node : onPlatform(host.node, PLATFORM_PARTS.ios);
+        const result = render(<ThemeProvider light glass>{node}</ThemeProvider>);
+        host.act?.(result);
+        await new Promise((resolve) => setTimeout(resolve, 0));
+        for (const props of paneSurfaces(result.container)) {
+          seen++;
+          expect("interactive" in props, `${host.name}: a pane's surface`).toBe(false);
+        }
+        result.unmount();
+      }
+      expect(seen).toBeGreaterThan(40);
+    });
+  }
 });

@@ -248,7 +248,6 @@ export function createNavbar(skin: NavbarSkin, parts: NavbarParts = {}) {
                       <GlassPane
                         layer="control"
                         shape={tile}
-                        interactive
                         brand={skin.linkSelection === "brand" ? tokens.primary : undefined}
                         tint={skin.linkSelection === "tint" ? selectionTint(tile, dark) : undefined}
                       />

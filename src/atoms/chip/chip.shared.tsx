@@ -340,7 +340,7 @@ export function createChip(skin: ChipSkin) {
 
     // The chip's content minus the remove control: the leading check/icon, the
     // label, and any trailing element.
-    const pane = surfaced ? <GlassPane static={staticMaterial} layer="control" shape={skin.base} tint={appearance.glassTint} brand={appearance.brand} interactive={!staticMaterial && !disabled} /> : null;
+    const pane = surfaced ? <GlassPane static={staticMaterial} layer="control" shape={skin.base} tint={appearance.glassTint} brand={appearance.brand} /> : null;
     const bodyContent = (
       <>
         {selectedCheck != null ? (
