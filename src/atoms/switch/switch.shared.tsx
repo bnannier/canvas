@@ -80,11 +80,12 @@ export function createSwitch(skin: SwitchSkin) {
     const glassThumb = thumbTheme.surface === "glass";
     const size = sizeOf(props);
     // Under glass the track is a static pane at control density: a GlassPane paints the material
-    // behind the thumb, BRAND-tinted while checked and under the skin's own off-track fill
-    // while off (`legibleTrack`, the boundary that identifies the control at 3:1, GS-1), and
-    // the track drops its fill and outline (the pane's material and rim carry them). The thumb is a CONTROL-layer
-    // surface of its own, tinted with the skin's thumb fill and positioned by the skin
-    // inside the track; in solid mode it is the skin's plain knob.
+    // behind the thumb, BRAND-tinted while checked, and the track drops its fill and outline
+    // (the pane's material and rim carry them). While off, the track's own off-track fill and
+    // the thumb's colour paint over the material instead (`boundaryFill`, the off-track fill
+    // solved by `legibleTrack`), the boundary that identifies the control at 3:1 (GS-1). The
+    // thumb is a CONTROL-layer surface of its own, tinted with the skin's thumb fill and
+    // positioned by the skin inside the track; in solid mode it is the skin's plain knob.
 
     // Controlled when `checked` is provided, self-managed otherwise, so a bare
     // <Switch /> toggles out of the box (the standard library contract).
