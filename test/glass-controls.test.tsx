@@ -703,4 +703,30 @@ describe("a fill that carries ink is capped for it on the web host (GS-2)", () =
     expect(rgbaOf(addonOf("ios"))).toEqual(rgbaOf(legibleInnerFill({ tokens: dark.tokens, glass: dark.webGlass, dark: true }, { layer: "control" })));
     expect(rgbaOf(addonOf("web"))).toEqual(rgbaOf(alpha(dark.tokens.foreground, 0.09)));
   });
+
+  // PhoneInput's country segment is the other fill that carries ink (its flag and caret):
+  // the web skin's `muted` cluster, which the iOS and Android skins do not paint. Its clear
+  // field caps the fill to a trace in the light palettes and keeps the full soft strength
+  // in dark, and solid keeps the opaque `muted`.
+  it("renders PhoneInput's country segment capped on the clear web field in every look, and `muted` in solid", async () => {
+    const { PhoneInput } = await import("../src/molecules/phone-input/phone-input.tsx");
+    const countryOf = (root: HTMLElement) => (root.querySelector('[data-testid="phone-country"]') as HTMLElement).style.backgroundColor;
+    for (const look of LOOKS) {
+      const { container, unmount } = render(
+        <ThemeProvider glass {...lookProps(look)}>
+          <PhoneInput label="Phone" testID="phone" />
+        </ThemeProvider>,
+      );
+      await waitFor(() => expect(materialLayers(container)).toBeGreaterThan(0));
+      const dark = look.scheme === "dark";
+      const capped = legibleInnerFill({ tokens: look.tokens, glass: look.webGlass, dark }, { clear: true, layer: "control" }, "soft");
+      expect(rgbaOf(countryOf(container)), look.name).toEqual(rgbaOf(capped));
+      const soft = alpha(look.tokens.foreground, dark ? 0.09 : 0.06);
+      if (dark) expect(rgbaOf(capped), look.name).toEqual(rgbaOf(soft));
+      else expect(Number(/,\s*([\d.]+)\)$/.exec(capped)![1]), `${look.name} alpha`).toBeLessThan(0.06);
+      unmount();
+    }
+    const { container } = await renderGlass(<PhoneInput label="Phone" testID="phone" />, true);
+    expect(rgbaOf(countryOf(container))).toEqual(rgbaOf(alpha(lightColors.muted, 1)));
+  });
 });
