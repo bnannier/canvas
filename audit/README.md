@@ -1151,11 +1151,18 @@ development app installed.
   target (Popover, the option menus, Drawer, ActionSheet), and only once a capture opens
   one.
 
-  **Pending: the Android re-capture.** The expectation above rests on source and unit
-  tests; the cells measured above predate the fix. It is confirmed only by
-  `bun run audit:native -- --platform=android --only=chip,badge,kbd,switch,input,card,alert,checkbox,radio,steps --dev`
-  and the glass-versus-solid comparison above, which have not been run since: until they
-  are, the black ring and the doubled hairlines stay open on Android.
+  **Settled by the Android re-capture (GlassPane's turn, 2026-10-12).** The expectation
+  above rested on source and unit tests until the FoundationReference turn's native after
+  run `20261012T102808Z-android-df0c42f` (commit df0c42f, after the pane fixes) photographed
+  chip, badge, kbd, switch, input, card, alert, checkbox, radio and steps again: 234 of their
+  237 glass and solid card pairs are byte-identical, with no black ring and no doubled
+  hairline. The three that differ are alert/richbody in blush, mint and dark, inside its
+  inline code pill, Typography's inner fill reading the requested surface rather than the
+  resolved one (GlassPane's GP-6, deferred to Typography's turn as
+  typography-code-pill-material-1), not a pane. Across all 73 components GlassPane renders
+  through, 1336 of the run's 1344 in-page Android glass and solid pairs are byte-identical;
+  the other eight are the indeterminate Progress sweep's phase (motion), that code pill, and
+  Carousel's first slide where its example asks for the second (carousel-android-default-index-smoke).
 - **Pages.** `pattern-glass` and `template-signin` in dark glass: iOS 2,350 points of the
   sign-in page in 4 segments, Android 2,075 dp in 3, stitched without a seam; 8 s a page on
   iOS and 25 s on Android (each segment is two grabs).
