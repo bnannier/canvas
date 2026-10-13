@@ -39,7 +39,7 @@ export function GlassSurface(props: GlassSurfaceProps) {
     {over ? null : tintLayer}
     {Platform.OS === "web"
       ? frost ? <View style={[fill, { backdropFilter: frost, WebkitBackdropFilter: frost } as ViewStyle]} /> : null
-      : FrostView ? <FrostView intensity={intensity} tint={theme.dark ? "dark" : "light"} {...frostMethodProps(requiresBlurTarget, null)} style={fill} /> : null}
+      : FrostView ? <FrostView intensity={intensity} tint={theme.dark ? "dark" : "light"} {...frostMethodProps(requiresBlurTarget)} style={fill} /> : null}
     {over ? tintLayer : null}
     <View style={rim} />
   </>;
