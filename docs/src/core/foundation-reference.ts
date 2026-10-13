@@ -20,7 +20,7 @@ export interface DeprecatedName {
 }
 
 /** The title of one of the page's sections. */
-export type DeprecatedSectionTitle = "Overlay machinery" | "Entrance" | "Field label" | "Viewport tier" | "Focus and keyboard" | "Touch target" | "Press feedback" | "Glass fills" | "Motion" | "Gestures" | "Type and colour" | "Layout" | "State and warnings" | "CodeBlock internals" | "DashboardGrid internals" | "React Native pass-throughs";
+export type DeprecatedSectionTitle = "Overlay machinery" | "Entrance" | "Field label" | "Viewport tier" | "Focus and keyboard" | "Touch target" | "Press feedback" | "Glass material" | "Glass fills" | "Motion" | "Gestures" | "Type and colour" | "Layout" | "State and warnings" | "CodeBlock internals" | "DashboardGrid internals" | "React Native pass-throughs";
 
 export interface DeprecatedSection {
   /** The section's heading. */
@@ -341,6 +341,44 @@ export const DEPRECATED_SECTIONS: DeprecatedSection[] = [
         "type": false,
         "summary": "The Android ripple of a content surface (a card, a list row, a tile): a neutral ink, the foreground at low alpha so it reads in both schemes, bounded to the surface.",
         "instead": "Kit internals, with no replacement: the bounded Android ripple the kit's surfaces show for themselves (`Card` and the list rows given `onPress`). It keeps working until a major.",
+        "replacement": null,
+        "replacementRoute": null
+      }
+    ]
+  },
+  {
+    "title": "Glass material",
+    "about": "The material a kit component paints behind its own content under glass, and the surface style of the node it paints behind.",
+    "names": [
+      {
+        "name": "GlassPane",
+        "type": false,
+        "summary": "The glass material of a host's layer, painted as the host's first child: an absolutely filled, pointer-transparent layer behind the host's content, clipped to the host's corners, for a host that keeps its own node because it owns something else (a Pressable's press and ripple, a live region, a native text input).",
+        "instead": "Kit internals: every kit control, card and field paints its own material on its layer under ThemeProvider `glass`, so use that component (`Card` for a content pane, `Button`, `Chip` or `Input` for a control). It keeps working until a major.",
+        "replacement": null,
+        "replacementRoute": null
+      },
+      {
+        "name": "GlassPaneProps",
+        "type": true,
+        "summary": "The props of `GlassPane`: the layer and material options of the host it paints behind, the host's shape, and its tint.",
+        "instead": "Kit internals: use the props of the kit component that paints the material, such as `CardProps` or `ButtonProps`. It keeps working until a major.",
+        "replacement": null,
+        "replacementRoute": null
+      },
+      {
+        "name": "PANE_SIBLING_INPUT",
+        "type": false,
+        "summary": "The style the kit gave a TextInput beside a GlassPane, `position: relative`, kept for compatibility.",
+        "instead": "Kit internals, with no replacement: a no-op the kit kept for a text field beside a GlassPane. It keeps working until a major.",
+        "replacement": null,
+        "replacementRoute": null
+      },
+      {
+        "name": "paneStyle",
+        "type": false,
+        "summary": "A surface style for a node that renders a GlassPane behind its content.",
+        "instead": "Kit internals, with no replacement: the surface style of a node that paints a GlassPane behind its content, which every kit component sets for itself under ThemeProvider `glass`. It keeps working until a major.",
         "replacement": null,
         "replacementRoute": null
       }
