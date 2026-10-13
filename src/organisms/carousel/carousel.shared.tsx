@@ -224,7 +224,7 @@ export function createCarousel(skin: CarouselSkin) {
           ]}
         >
           {({ pressed }) => <>
-            <GlassPane layer="control" shape={skin.arrow(tokens)} interactive />
+            <GlassPane layer="control" shape={skin.arrow(tokens)} />
             <View style={liquid ? disabled ? DISABLED_DIM : pressed && skin.pressedOpacity != null ? { opacity: skin.pressedOpacity } : null : null}>
               {side === "prev" ? (
                 <Icon chevronLeft muted decorative size={skin.arrowIconSize} />
