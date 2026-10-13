@@ -233,12 +233,32 @@ export interface JavaScriptBudget {
 // 49,464 / 49,685B, ~600B gzip on Button and ~680B on DataTable. The Button ceiling moved
 // from 10,240 to 11,520B and DataTable's from 49,664 to 53,248B (7% headroom over the web
 // Button and the Android DataTable figures); Input and StackedList keep theirs.
+// Input was 39,160 / 39,725 / 39,394B (web / iOS / Android) before the GlassSurface audit
+// turn (the owner's GP-1, GS-1 and GS-2 decisions and GP-14), 211B under its ceiling on iOS
+// after growing into it since the layered glass model set it. Every field now carries what
+// that turn gave the shared material host and the controls on it: GlassBox trades a resting
+// border for padding as GlassPane does, so a GlassSurface host's material covers its whole
+// solid footprint (`borderAsPadding`, `tradedSides` and `paddingSides` moved from
+// glass-pane.tsx into glass-surface.shared.tsx, with the concentric corners in
+// `materialCorners`); the surface's pointerEvents resolve through a registered StyleSheet
+// table (`POINTER`), so box-none and box-only reach the web; the frost paints an off
+// Switch's track over the material (`boundaryFill`, GS-1), together ~150B minified net in
+// the shell and GlassPane on iOS; every GlassBox publishes whether its material renders and
+// every kit Pressable reads it, to draw a borderless Android ripple in front of a frost it
+// does not own (material-behind.tsx and `frontRipple`, GP-14, ~380B minified); and a
+// field's addon fill is capped under glass in the browser for the text it carries
+// (`legibleInnerFill` in glass-wash.ts and `inkFill` in text-entry-material.tsx, GS-2,
+// ~440B minified), after the wash helpers' shared search was factored into one
+// (`densestLegible`). Measured after at 39,460 / 40,079 / 39,709B (~300 / 354 / 315B gzip),
+// 143B over the old ceiling on iOS. The Input ceiling moved from 39,936 to 43,008B (7.3%
+// headroom over the iOS figure); Button, DataTable and StackedList grew by up to 205, 701
+// and 197B gzip and stay inside theirs.
 // Fixed ceilings leave room for deliberate growth while catching a heavy import.
 // These are independent budgets, not a combined total: shared modules legitimately
 // occur in more than one consumer. Changes require a fresh measurement and rationale.
 export const NAMED_IMPORT_BUDGETS: readonly JavaScriptBudget[] = [
   { label: "Button + ThemeProvider", entry: "scripts/size-fixtures/button.ts", maxGzip: 11_520, requiredExports: ["Button", "ThemeProvider"] },
-  { label: "Input + ThemeProvider", entry: "scripts/size-fixtures/input.ts", maxGzip: 39_936, requiredExports: ["Input", "ThemeProvider"] },
+  { label: "Input + ThemeProvider", entry: "scripts/size-fixtures/input.ts", maxGzip: 43_008, requiredExports: ["Input", "ThemeProvider"] },
   { label: "DataTable + ThemeProvider", entry: "scripts/size-fixtures/data-table.ts", maxGzip: 53_248, requiredExports: ["DataTable", "ThemeProvider"] },
   { label: "StackedList + ThemeProvider", entry: "scripts/size-fixtures/stacked-list.ts", maxGzip: 61_440, requiredExports: ["StackedList", "ThemeProvider"] },
 ];
