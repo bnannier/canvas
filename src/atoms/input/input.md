@@ -17,7 +17,10 @@ the web and from its name ("Full name, required") on iOS and Android. A field fi
 Select and the search field share its look, and Field and Form compose that
 label with helper and error text. On iOS the field is drawn to the iOS
 input-field reference: a white box with a hairline, a muted title above, a glyph
-that tints with focus and error, and an error wash.
+that tints with focus and error, and in solid mode an error wash. Under glass a
+wash would cost the field's ink its contrast over the material, so the iOS field
+takes none (the web's field a trace in dark only), and the error border, the tinted
+glyph and a Field's message carry the state.
 
 Inside an overlay, Escape follows the overlay's cancellation policy. A supplied
 `onKeyPress` runs first and can call `preventDefault()` to handle Escape locally.
