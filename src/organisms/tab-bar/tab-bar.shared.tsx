@@ -146,7 +146,7 @@ export function createTabBar(skin: TabBarSkin) {
                 {/* The cell capsule, behind the glyph and label alike. */}
                 {pill && cellPill && isActive ? (
                   glass
-                    ? <GlassPane layer="control" shape={pill} tint={pillTint} interactive />
+                    ? <GlassPane layer="control" shape={pill} tint={pillTint} />
                     : <View style={[StyleSheet.absoluteFill, pill, { pointerEvents: "none" }]} />
                 ) : null}
                 {pill ? (

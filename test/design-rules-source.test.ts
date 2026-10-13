@@ -473,6 +473,26 @@ describe("a pane and its host read one material", () => {
     expect(files.flatMap(({ file, text }) => paneDensityMismatches(file, text))).toEqual([]);
   });
 
+  // A pane passes its taps through (pointerEvents "none"), so interactive Liquid Glass never
+  // receives the touch it answers (GP-9, confirmed inert on the iOS 26 simulator): no host
+  // asks a pane for it, and GlassPane forwards none.
+  it("no GlassPane is asked for interactive glass", () => {
+    const offenders: string[] = [];
+    for (const { file, text } of sources) {
+      if (!text.includes("<GlassPane")) continue;
+      const source = ts.createSourceFile(file, text, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
+      const visit = (node: ts.Node) => {
+        if ((ts.isJsxSelfClosingElement(node) || ts.isJsxOpeningElement(node)) && node.tagName.getText() === "GlassPane"
+          && node.attributes.properties.some((attribute) => ts.isJsxAttribute(attribute) && attribute.name.getText() === "interactive")) {
+          offenders.push(`${file}:${source.getLineAndCharacterOfPosition(node.getStart()).line + 1}`);
+        }
+        ts.forEachChild(node, visit);
+      };
+      visit(source);
+    }
+    expect(offenders).toEqual([]);
+  });
+
   it("the density check catches a host and a pane that ask for different materials", () => {
     const host = (pane: string) => `
       function Host() {

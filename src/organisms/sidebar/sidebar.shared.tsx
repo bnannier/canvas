@@ -440,7 +440,7 @@ export function createSidebar(skin: SidebarSkin, parts: SidebarParts = {}) {
     // pane's material and rim carry it; `paneStyle`). Solid mode keeps each skin's
     // own row fill.
     const activeShape: StyleProp<ViewStyle> = [skin.row(tokens, density, collapsed), skin.rowFill(tokens, true)];
-    const activePane = glass ? <GlassPane layer="control" shape={activeShape} tint={selectionTint(activeShape, dark)} interactive /> : null;
+    const activePane = glass ? <GlassPane layer="control" shape={activeShape} tint={selectionTint(activeShape, dark)} /> : null;
 
     const shell = header != null || footer != null;
 

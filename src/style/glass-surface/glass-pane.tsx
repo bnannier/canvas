@@ -57,7 +57,12 @@ export interface GlassPaneProps {
   tint?: string;
   /** A brand colour for a brand-tinted puck (a primary Button, a checked Switch), its under-fill solved for the ink painted on it. */
   brand?: string;
-  /** Interactive Liquid Glass on iOS 26 (see GlassSurface). */
+  /**
+   * @deprecated A no-op, kept so existing code compiles until a major. The pane passes every
+   * tap through to its host (`pointerEvents="none"`), so iOS never delivers it the touch
+   * Apple's interactive Liquid Glass responds to, and the host's own press feedback (its
+   * dim, its Android ripple) carries the press. Omit it.
+   */
   interactive?: boolean;
   /** E2E hook forwarded to the pane. */
   testID?: string;
@@ -88,11 +93,13 @@ export interface GlassPaneProps {
  * Transparency and Increase Contrast it renders nothing and the host keeps its opaque
  * skin, with the contrasting border under Increase Contrast (`paneStyle`).
  */
-export function GlassPane({ layer = "control", shape, stateBorder = false, tint, brand, interactive, testID, static: stable, clear }: GlassPaneProps) {
+export function GlassPane({ layer = "control", shape, stateBorder = false, tint, brand, testID, static: stable, clear }: GlassPaneProps) {
   // A solid pane would paint a raw copy of the shape inside a host that already shows it.
   const { material } = useMaterialResolution({ static: stable, layer });
   if (material.renderer === "solid") return null;
-  return <GlassSurface static={stable} clear={clear} layer={layer} tint={tint} brand={brand} interactive={interactive} pointerEvents="none" testID={testID} style={[StyleSheet.absoluteFill, paneShape(shape, stateBorder), BEHIND]} />;
+  // `interactive` is not forwarded: a surface under pointerEvents "none" never receives the
+  // touch interactive Liquid Glass answers, so it only reinstalled the effect on each toggle.
+  return <GlassSurface static={stable} clear={clear} layer={layer} tint={tint} brand={brand} pointerEvents="none" testID={testID} style={[StyleSheet.absoluteFill, paneShape(shape, stateBorder), BEHIND]} />;
 }
 
 // The pane paints beneath every sibling inside its host, on every platform: each host is

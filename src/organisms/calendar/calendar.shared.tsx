@@ -483,7 +483,7 @@ export function createCalendar(skin: CalendarSkin, parts: CalendarParts = {}) {
               }`}
               {...calendarDayAccessibility(isSelected)}
             >
-              {selectedPuck ? <GlassPane layer="control" shape={daySurface} brand={tokens.primary} interactive /> : null}
+              {selectedPuck ? <GlassPane layer="control" shape={daySurface} brand={tokens.primary} /> : null}
               <Text style={[m.label, skin.dayLabel(tokens, state)]}>{dayNum}</Text>
               {count > 0 ? <View style={[skin.eventDot, skin.eventDotColor(tokens, state)]} /> : null}
             </Pressable>
