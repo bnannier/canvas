@@ -10,6 +10,12 @@
 // dark one included (the owner's GP-2b decision). The state is carried by the error border,
 // the message and the selected border, as in solid and in Dark Factory.
 //
+// A soft inner fill that carries ink is capped the same way (the owner's GS-2 decision): a
+// field's prefix or suffix addon and PhoneInput's country segment paint an ink tint over the
+// field's body under the same muted ink, and the tint takes the densest alpha up to its own
+// strength at which that ink keeps 4.5:1 plus the headroom on the body of the host that
+// renders it (`legibleInnerFill`).
+//
 // The off Switch's track is the third under-fill here (the owner's GS-1 decision): its solid
 // off-track fill as a neutral pane, as a checked track takes its brand, at the sheerest alpha
 // at which the track keeps the 3:1 WCAG 1.4.11 asks of a control's boundary against what lies
@@ -22,7 +28,7 @@
 
 import type { ThemeValue } from "../theme.js";
 import { alpha, channelsOf, composite, contrastRatio } from "../color.js";
-import { innerFill } from "../glass-fill.js";
+import { innerFill, innerFillAlpha, type InnerFillStrength } from "../glass-fill.js";
 import { SELECTED_CARD_TINT } from "../selected-card.js";
 import { clearSurfaceTint, surfaceUnderFill, type GlassLayer } from "./glass-surface.shared.js";
 
@@ -127,4 +133,34 @@ export function legibleTrack(theme: Pick<ThemeValue, "tokens" | "glass">, fill: 
     })) return under;
   }
   return fill;
+}
+
+/**
+ * The ink tint a soft inner fill that carries text paints under glass (a field's prefix or
+ * suffix addon, PhoneInput's country segment), capped for legibility like a wash (the
+ * owner's GS-2 decision): `innerFill`'s tint at the densest alpha up to the strength's own at
+ * which the muted and foreground inks keep 4.5:1 plus `GLASS_WASH.headroom`, laid over the
+ * pane's body (a clear field's veil, or the control layer's puck) composited on the page and
+ * on a content pane. A thinner tint of the ink only ever raises the ink's contrast, so the
+ * fill keeps its full strength wherever that already holds, and where even the body alone
+ * misses the floor it is no fill at all.
+ *
+ * The body is the tints the browser composites as they are, so this is the web host's
+ * answer (a host whose frost adds no colour of its own: Dark Factory's plain frost). A native
+ * frost paints its own scheme material over the pane's under-fill, which the tints do not
+ * predict (on the iOS device a dark field's body is #272730 and its addon's `$` reads 4.76:1
+ * at the full strength, where the tints alone would put it at 3.33), so a native host keeps
+ * the strength (`useTextEntryMaterial`).
+ */
+export function legibleInnerFill(theme: Pick<ThemeValue, "tokens" | "glass" | "dark">, pane: WashPane = {}, strength: InnerFillStrength = "soft"): string {
+  const { tokens, glass, dark } = theme;
+  const body = pane.clear ? clearSurfaceTint(tokens, dark) : surfaceUnderFill(glass, pane.layer ?? "control");
+  const beds = [tokens.background, composite(glass["glass-tint-content"], tokens.background)].map((ground) => composite(body, ground));
+  const inks = [tokens["muted-foreground"], tokens.foreground];
+  const holds = (fill: string) => beds.every((bed) => inks.every((ink) => contrastRatio(composite(fill, bed), ink) >= GLASS_WASH.inkContrast + GLASS_WASH.headroom));
+  for (let steps = Math.round(innerFillAlpha(theme, strength) / GLASS_WASH.step); steps > 0; steps--) {
+    const fill = alpha(tokens.foreground, Math.round(steps * GLASS_WASH.step * 100) / 100);
+    if (holds(fill)) return fill;
+  }
+  return alpha(tokens.foreground, 0);
 }

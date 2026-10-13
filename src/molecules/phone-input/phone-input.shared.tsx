@@ -23,7 +23,6 @@ import {
   type MeasureProps,
   type ViewStyle,
   GlassPane,
-  withInnerFill,
   legibleWash,
 } from "../../style/index.js";
 import { OverlayScrollView } from "../../style/overlay-scroll.js";
@@ -227,7 +226,7 @@ export function createPhoneInput(skin: PhoneInputSkin) {
           ref={countryRef}
           onPress={() => setOpen(!open)}
           disabled={!editable}
-          style={({ pressed }) => [withInnerFill(theme, skin.country(tokens, state), "soft"), field.pressedOpacity != null && pressed ? { opacity: field.pressedOpacity } : null]}
+          style={({ pressed }) => [entryMaterial.inkFill(skin.country(tokens, state)), field.pressedOpacity != null && pressed ? { opacity: field.pressedOpacity } : null]}
           android_ripple={ripple}
           accessibilityRole="button"
           accessibilityLabel={segmentName}

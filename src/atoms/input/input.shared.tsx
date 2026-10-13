@@ -9,7 +9,7 @@ import {
   type TextInput as RNTextInput,
   type TextInputProps as RNTextInputProps,
 } from "react-native";
-import { View, Pressable, Text, TextInput, useFillStyle, FloatingLabel, LabelContent, labelA11y, requiredName, useFloatingLabelRoom, FOCUS_RESET, type ColorTokens, type LayoutStyle, type MeasureProps, type StyleProp, type ViewStyle, type TextStyle, GlassPane, paneStyle, paneRipple, isGlass, withInnerFill, legibleWash, PANE_SIBLING_INPUT } from "../../style/index.js";
+import { View, Pressable, Text, TextInput, useFillStyle, FloatingLabel, LabelContent, labelA11y, requiredName, useFloatingLabelRoom, FOCUS_RESET, type ColorTokens, type LayoutStyle, type MeasureProps, type StyleProp, type ViewStyle, type TextStyle, GlassPane, paneStyle, paneRipple, isGlass, legibleWash, PANE_SIBLING_INPUT } from "../../style/index.js";
 import { useComposedRefs } from "../../style/use-composed-refs.js";
 import { frameHandlers, useFocusFrame } from "../../style/focus-frame.js";
 import { rowSeam } from "../../style/touch-seam.js";
@@ -263,7 +263,7 @@ export function createInput(skin: InputSkin) {
     const [focused, setFocused] = useState(false);
     // The password toggle's own state: masked until the eye is pressed.
     const [revealed, setRevealed] = useState(false);
-    const { theme, paneProps, stateSurface } = useTextEntryMaterial(!!skin.liquid);
+    const { theme, paneProps, stateSurface, inkFill } = useTextEntryMaterial(!!skin.liquid);
     const { tokens } = theme;
     // The room the Android floating label takes, which follows the user's text size.
     const room = useFloatingLabelRoom(skin, tokens, size);
@@ -524,7 +524,7 @@ export function createInput(skin: InputSkin) {
       >
         <GlassPane {...paneProps} stateBorder={groupSurface.keepsBorder} shape={groupShape} tint={paneTint} />
         {prefix != null ? (
-          <View style={withInnerFill(theme, skin.addonBox(tokens, "left", state), "soft")}>
+          <View style={inkFill(skin.addonBox(tokens, "left", state))}>
             <Text style={[skin.addonText(tokens), text]}>{prefix}</Text>
           </View>
         ) : null}
@@ -591,7 +591,7 @@ export function createInput(skin: InputSkin) {
           action ? (
             <Pressable
               style={({ pressed }) => [
-                withInnerFill(theme, skin.addonBox(tokens, "right", state), "soft"),
+                inkFill(skin.addonBox(tokens, "right", state)),
                 skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null,
               ]}
               onPress={onActionPress}
@@ -602,7 +602,7 @@ export function createInput(skin: InputSkin) {
               <Text style={[skin.actionText(tokens), text]}>{suffix}</Text>
             </Pressable>
           ) : (
-            <View style={withInnerFill(theme, skin.addonBox(tokens, "right", state), "soft")}>
+            <View style={inkFill(skin.addonBox(tokens, "right", state))}>
               <Text style={[skin.addonText(tokens), text]}>{suffix}</Text>
             </View>
           )

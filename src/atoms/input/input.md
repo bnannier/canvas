@@ -20,7 +20,9 @@ input-field reference: a white box with a hairline, a muted title above, a glyph
 that tints with focus and error, and in solid mode an error wash. Under glass a
 wash would cost the field's ink its contrast over the material, so the iOS field
 takes none (the web's field a trace in dark only), and the error border, the tinted
-glyph and a Field's message carry the state.
+glyph and a Field's message carry the state. A prefix or suffix addon's fill is held to
+the same bar: under glass in the browser it is only as dense as keeps its text at 4.5:1
+over the field, so in the light palettes it is a faint trace.
 
 Inside an overlay, Escape follows the overlay's cancellation policy. A supplied
 `onKeyPress` runs first and can call `preventDefault()` to handle Escape locally.

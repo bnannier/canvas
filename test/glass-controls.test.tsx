@@ -14,11 +14,11 @@ import { Tabs } from "../src/organisms/tabs/tabs.tsx";
 import { selectionTint } from "../src/organisms/tabs/tabs.styles.ts";
 import { Pagination } from "../src/atoms/pagination/pagination.tsx";
 import { brandInk, brandTint, surfaceUnderFill, BRAND_TINT_ALPHA, BRAND_INK_CONTRAST } from "../src/style/glass-surface/glass-surface.shared.tsx";
-import { GLASS_TRACK, GLASS_WASH, legibleTrack, legibleWash } from "../src/style/glass-surface/glass-wash.ts";
+import { GLASS_TRACK, GLASS_WASH, legibleInnerFill, legibleTrack, legibleWash } from "../src/style/glass-surface/glass-wash.ts";
 import { SELECTED_CARD_TINT } from "../src/style/selected-card.ts";
 import { Card } from "../src/molecules/card/card.tsx";
 import { Radio, RadioGroup } from "../src/atoms/radio/radio.tsx";
-import { Text } from "react-native";
+import { Text, View } from "react-native";
 import { Icon } from "../src/atoms/icon/icon.tsx";
 import { Tabs as IosTabs } from "../src/organisms/tabs/tabs.ios.tsx";
 import { Sidebar } from "../src/organisms/sidebar/sidebar.tsx";
@@ -348,13 +348,14 @@ describe("state washes", () => {
     for (const look of LOOKS) {
       const t = look.tokens;
       const dark = look.scheme === "dark";
-      // A field's addon and PhoneInput's country segment paint the soft inner fill over the
-      // error wash, under the same muted ink.
-      const addon = alpha(t.foreground, dark ? 0.09 : 0.06);
       for (const [platform, g] of [["web", look.webGlass], ["native", look.nativeGlass]] as const) {
         const bases = [t.background, composite(g["glass-tint-content"], t.background)];
         for (const { name, pane, web } of panes) {
           if (web && platform !== "web") continue;
+          // A field's addon and PhoneInput's country segment paint the soft inner fill over the
+          // error wash, under the same muted ink: on the web host capped for that ink
+          // (legibleInnerFill, GS-2), on a native host at the soft strength.
+          const addon = platform === "web" ? legibleInnerFill({ tokens: t, glass: g, dark }, pane, "soft") : alpha(t.foreground, dark ? 0.09 : 0.06);
           const body = pane.clear ? alpha(t.card, dark ? 0.28 : 0.22) : surfaceUnderFill(g, pane.layer);
           for (const wash of ["error", "selection"] as const) {
             const beds = (fill: string) => bases.flatMap((base) => wash === "error" ? [composite(fill, base), composite(addon, composite(fill, base))] : [composite(fill, base)]);
@@ -362,9 +363,12 @@ describe("state washes", () => {
             const fill = legibleWash({ tokens: t, glass: g, dark }, wash, pane);
             const where = `${platform} ${look.name} ${name} ${wash}`;
             if (!holds(body)) {
-              // Where the body alone misses the floor (the layer's own legibility: the dark
-              // native control puck, GP-11, and on the page model the light fields' addon
-              // fill), a wash would only deepen the miss, so the pane keeps its body.
+              // Where the body alone misses the floor a wash would only deepen the miss, so the
+              // pane keeps its body. That is never the web host since the addon is capped for
+              // its ink (GS-2): only the native host, whose tints put the dark control puck's
+              // muted ink at 4.20:1 (3.33 with the addon) where the iOS device's frost, which
+              // paints a body the tints do not predict, measures 4.76 with the addon (GP-11).
+              expect(platform, `${where}: the web host never misses the ink floor`).toBe("native");
               expect(fill, where).toBe(body);
               continue;
             }
@@ -633,5 +637,63 @@ describe("a selection control keeps its identifying boundary under glass (GS-1)"
     const IosSwitch = createSwitch(iosSwitchSkin);
     const { container } = await renderGlass(<IosSwitch testID="off" accessibilityLabel="Marketing" />);
     expect(rgbaOf(underFillOf(container.querySelector('[data-testid="off"]') as HTMLElement))).toEqual(rgbaOf(alpha("#c7c7cc", 1)));
+  });
+});
+
+// The owner's GS-2 decision: a soft inner fill that carries text (a field's prefix or
+// suffix addon, PhoneInput's country segment) is capped for its ink like a wash. The docs'
+// three-up drew the iOS skin's field through the web host's dark control puck, where the
+// addon's `$` read 3.93 to 3.99:1 (input/currency, input/prefix, field/helpertext,
+// field/amount); the iOS device itself reads 4.76.
+describe("a fill that carries ink is capped for it on the web host (GS-2)", () => {
+  const panes = [
+    { name: "clear field", pane: { clear: true, layer: "control" as const } },
+    { name: "control puck", pane: { layer: "control" as const } },
+  ];
+
+  it("holds the muted and foreground inks at 4.5:1 plus headroom on the capped fill, never denser than the soft strength", () => {
+    for (const look of LOOKS) {
+      const t = look.tokens;
+      const dark = look.scheme === "dark";
+      const g = look.webGlass;
+      for (const { name, pane } of panes) {
+        const fill = legibleInnerFill({ tokens: t, glass: g, dark }, pane, "soft");
+        const strength = dark ? 0.09 : 0.06;
+        expect(Number(/,\s*([\d.]+)\)$/.exec(fill)![1]), `${look.name} ${name} alpha`).toBeLessThanOrEqual(strength);
+        const body = pane.clear ? alpha(t.card, dark ? 0.28 : 0.22) : surfaceUnderFill(g, pane.layer);
+        for (const ground of [t.background, composite(g["glass-tint-content"], t.background)]) {
+          const bed = composite(fill, composite(body, ground));
+          for (const ink of [t["muted-foreground"], t.foreground]) {
+            expect(contrastRatio(bed, ink), `${look.name} ${name} ink on ${bed}`).toBeGreaterThanOrEqual(GLASS_WASH.inkContrast + GLASS_WASH.headroom);
+          }
+        }
+      }
+    }
+  });
+
+  it("keeps the full soft strength where the ink already holds (the dark web field) and thins the dark control puck's", () => {
+    const dark = LOOKS.find((look) => look.name === "dark")!;
+    const theme = { tokens: dark.tokens, glass: dark.webGlass, dark: true };
+    expect(rgbaOf(legibleInnerFill(theme, { clear: true, layer: "control" }))).toEqual(rgbaOf(alpha(dark.tokens.foreground, 0.09)));
+    expect(rgbaOf(legibleInnerFill(theme, { layer: "control" }))).toEqual(rgbaOf(alpha(dark.tokens.foreground, 0.03)));
+  });
+
+  it("renders the capped addon on the web host: the iOS skin's field in dark glass, and the web field's at full strength", async () => {
+    const { Input: IosInput } = await import("../src/atoms/input/input.ios.tsx");
+    const dark = LOOKS.find((look) => look.name === "dark")!;
+    const { container } = render(
+      <ThemeProvider glass dark>
+        <View testID="ios"><IosInput label="Amount" prefix="$" placeholder="0.00" /></View>
+        <View testID="web"><Input label="Amount" prefix="$" placeholder="0.00" /></View>
+      </ThemeProvider>,
+    );
+    await waitFor(() => expect(materialLayers(container)).toBeGreaterThan(0));
+    const addonOf = (id: string) => {
+      const dollar = Array.from(container.querySelector(`[data-testid="${id}"]`)!.querySelectorAll("*"))
+        .find((node) => node.textContent === "$" && node.children.length === 0)!;
+      return (dollar.parentElement as HTMLElement).style.backgroundColor;
+    };
+    expect(rgbaOf(addonOf("ios"))).toEqual(rgbaOf(legibleInnerFill({ tokens: dark.tokens, glass: dark.webGlass, dark: true }, { layer: "control" })));
+    expect(rgbaOf(addonOf("web"))).toEqual(rgbaOf(alpha(dark.tokens.foreground, 0.09)));
   });
 });

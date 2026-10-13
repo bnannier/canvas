@@ -30,11 +30,16 @@ const STRENGTH: Record<InnerFillStrength, { light: number; dark: number }> = {
   firm: { light: 0.10, dark: 0.14 },
 };
 
+/** The alpha of the ink tint an inner fill of `strength` paints under glass, in the theme's scheme. */
+export function innerFillAlpha(theme: Pick<ThemeValue, "dark">, strength: InnerFillStrength = "soft"): number {
+  const a = STRENGTH[strength];
+  return theme.dark ? a.dark : a.light;
+}
+
 /** The fill a role paints inside a surface: the opaque token in solid mode, an ink tint under glass. */
 export function innerFill(theme: Pick<ThemeValue, "tokens" | "surface" | "dark"> & Partial<Pick<ThemeValue, "reducedTransparency" | "increasedContrast">>, role: InnerFillRole, strength: InnerFillStrength = "soft"): string {
   if (theme.surface !== "glass" || theme.reducedTransparency || theme.increasedContrast) return theme.tokens[role];
-  const a = STRENGTH[strength];
-  return alpha(theme.tokens.foreground, theme.dark ? a.dark : a.light);
+  return alpha(theme.tokens.foreground, innerFillAlpha(theme, strength));
 }
 
 /** Whether the theme is painting the glass material right now (the layered model). */
