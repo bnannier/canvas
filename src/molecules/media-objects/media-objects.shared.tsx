@@ -1,7 +1,8 @@
 import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
+import { MaterialBehind } from "../../style/glass-surface/material-behind.js";
 import { type ComponentType, type ReactNode } from "react";
 import { StyleSheet } from "react-native";
-import { View, Pressable, Text, surfaceRipple, pressDim, RippleClip, cornerRadii, splitElevation, alpha, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle, type LayoutStyle, useFillStyle, GlassSurface, GlassPane, paneStyle, paneRipple } from "../../style/index.js";
+import { View, Pressable, Text, surfaceRipple, pressDim, RippleClip, cornerRadii, splitElevation, alpha, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle, type LayoutStyle, useFillStyle, GlassSurface, GlassPane, paneStyle, paneRipple, isGlass } from "../../style/index.js";
 import { Avatar as WebAvatar } from "../../atoms/avatar/avatar.js";
 import { type AvatarProps } from "../../atoms/avatar/avatar.shared.js";
 import { type Align, type Direction, DIRECTION_ROW, ALIGN_ITEMS } from "./media-objects.styles.js";
@@ -278,7 +279,7 @@ export function createMediaObject(skin: MediaObjectSkin, Avatar: AvatarComponent
             style={({ pressed }) => [props.bordered ? paneStyle(theme, surface) : surface, minTarget, elevZero, pressDim(pressed, skin.pressedOpacity)]}
           >
             {props.bordered ? <GlassPane layer="content" shape={surface} /> : null}
-            {inner}
+            <MaterialBehind rendered={!!props.bordered && isGlass(theme)}>{inner}</MaterialBehind>
           </Pressable>
         </RippleClip>
       );

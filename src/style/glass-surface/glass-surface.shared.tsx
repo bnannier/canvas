@@ -12,6 +12,7 @@ import { View, StyleSheet, type StyleProp, type ViewStyle, type ViewProps } from
 import { type ColorTokens, type GlassTokens } from "../tokens.js";
 import { alpha, composite, contrastRatio, inkOn } from "../color.js";
 import { actionFill, actionInk } from "../action.js";
+import { MaterialBehind } from "./material-behind.js";
 
 /**
  * The layer of the glass model a surface belongs to, which picks its tint (see
@@ -625,6 +626,9 @@ export function materialCorners(shape: StyleProp<ViewStyle>, inside = false): Vi
  * the material's rim its edge. A border that shows a state (`stateBorder`) stays a border in
  * its own colour, and the material sits flush inside it on concentric corners
  * (`materialCorners`). In solid mode (`solid`) the host is the skin's style untouched.
+ *
+ * It publishes whether its material renders to everything inside it (`MaterialBehind`), so a
+ * borderless Android ripple there draws in front of the frost instead of beneath it.
  */
 export function GlassBox({
   style, children, pointerEvents, testID, role, onLayout, onAccessibilityEscape, stateBorder = false,
@@ -644,7 +648,7 @@ export function GlassBox({
           {material}
         </View>
       ) : null}
-      {children}
+      <MaterialBehind rendered={material != null}>{children}</MaterialBehind>
     </View>
   );
 }
