@@ -423,11 +423,14 @@ export const publicApi: Readonly<Record<string, ApiEntry>> = {
   isGlass: { kind: "deprecated-alias", replacement: "useTheme", docs: "foundation", section: "Glass fills" },
   withInnerFill: { kind: "deprecated-alias", docs: "foundation", section: "Glass fills" },
 
-  // src/style/glass-surface/glass-pane.tsx
-  GlassPane: { kind: "internal-by-accident" },
-  GlassPaneProps: { kind: "internal-by-accident" },
-  PANE_SIBLING_INPUT: { kind: "internal-by-accident" },
-  paneStyle: { kind: "internal-by-accident" },
+  // src/style/glass-surface/glass-pane.tsx (deprecated aliases since the GlassPane audit
+  // turn, K12-2). No single public name replaces any of them: every kit control, card and
+  // field paints its own material under ThemeProvider `glass`, so the `@deprecated` text
+  // names those components.
+  GlassPane: { kind: "deprecated-alias", docs: "foundation", section: "Glass material" },
+  GlassPaneProps: { kind: "deprecated-alias", docs: "foundation", section: "Glass material" },
+  PANE_SIBLING_INPUT: { kind: "deprecated-alias", docs: "foundation", section: "Glass material" },
+  paneStyle: { kind: "deprecated-alias", docs: "foundation", section: "Glass material" },
 
   // src/style/glass-surface/glass-surface.shared.tsx
   GlassModalBlurTarget: { kind: "component", docs: "integration", section: "Native modals" },
@@ -832,8 +835,6 @@ export const PENDING_DOCS: Readonly<Record<string, DocsRoute>> = {
   FillOptions: "foundation",
   fontSize: "foundation",
   fontWeight: "foundation",
-  GlassPane: "foundation",
-  GlassPaneProps: "foundation",
   GlassSurface: "foundation",
   GRID_CELL_AXIS: "foundation",
   GRID_COLUMNS: "foundation",
@@ -854,8 +855,6 @@ export const PENDING_DOCS: Readonly<Record<string, DocsRoute>> = {
   measureStyle: "foundation",
   OverlayBounds: "foundation",
   OverlayHost: "foundation",
-  PANE_SIBLING_INPUT: "foundation",
-  paneStyle: "foundation",
   Portal: "foundation",
   PortalProps: "foundation",
   ResolvedFace: "foundation",
@@ -915,7 +914,7 @@ export const PLANNED_ROUTES: Readonly<Record<DocsRoute, PlannedRoute>> = {
   "components/scatter-plot": { turn: "components/scatter-plot" },
   "components/toast": { turn: "components/toast" },
   // K12-10: the generated foundation reference. Each Foundations turn moves its names there
-  // as it deprecates them (GlassPane, GlassSurface, LayoutAxisProvider, LoopView,
+  // as it deprecates them (GlassSurface, LayoutAxisProvider, LoopView,
   // OverlayProvider, Portal, RippleClip, the Riskora type ladder and the shadow helpers);
   // Tokens, the last, closes it.
   foundation: { turn: "foundation/tokens" },

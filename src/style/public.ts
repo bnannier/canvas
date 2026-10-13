@@ -559,7 +559,33 @@ export {
    */
   withInnerFill,
 } from "./glass-fill.js";
-export { GlassPane, type GlassPaneProps, PANE_SIBLING_INPUT, paneStyle } from "./glass-surface/glass-pane.js";
+// GlassPane, the material a kit component paints behind its own content, and its companions
+// were published by accident too; all four are deprecated aliases that keep working until a
+// major (audit K12-2), tagged on these specifiers only as above.
+export {
+  /**
+   * @deprecated Kit internals: every kit control, card and field paints its own material
+   * on its layer under ThemeProvider `glass`, so use that component (`Card` for a content
+   * pane, `Button`, `Chip` or `Input` for a control). It keeps working until a major.
+   */
+  GlassPane,
+  /**
+   * @deprecated Kit internals: use the props of the kit component that paints the material,
+   * such as `CardProps` or `ButtonProps`. It keeps working until a major.
+   */
+  type GlassPaneProps,
+  /**
+   * @deprecated Kit internals, with no replacement: a no-op the kit kept for a text field
+   * beside a GlassPane. It keeps working until a major.
+   */
+  PANE_SIBLING_INPUT,
+  /**
+   * @deprecated Kit internals, with no replacement: the surface style of a node that paints
+   * a GlassPane behind its content, which every kit component sets for itself under
+   * ThemeProvider `glass`. It keeps working until a major.
+   */
+  paneStyle,
+} from "./glass-surface/glass-pane.js";
 // The Modal-side bridge for the Android sibling blur target (the contexts and the
 // per-platform host stay internal; the bridge is public so an app hosting its own RN
 // Modal can give its frost surfaces the same page blur the kit's sheets get).

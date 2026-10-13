@@ -40,6 +40,7 @@ export const FOUNDATION_SECTIONS: readonly FoundationSection[] = [
   { title: "Focus and keyboard", about: "The focus-ring reset, the field indicator, the roving arrow keys, dialog and popover focus, and the Escape and Android back that close overlays." },
   { title: "Touch target", about: "The platform minimum touch target (44 pt on iOS, 48 dp on Android) the kit's controls extend their touch area to." },
   { title: "Press feedback", about: "The Android ripple and the iOS and web press and disabled dims the kit's controls show." },
+  { title: "Glass material", about: "The material a kit component paints behind its own content under glass, and the surface style of the node it paints behind." },
   { title: "Glass fills", about: "The fills the kit's components paint inside a glass surface, and whether glass paints at all." },
   { title: "Motion", about: "The native-driver gate and the loop easings behind the kit's functional motion." },
   { title: "Gestures", about: "GeoMap's wheel and pinch zoom." },
