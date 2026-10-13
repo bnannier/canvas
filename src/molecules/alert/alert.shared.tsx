@@ -1,4 +1,5 @@
 import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
+import { MaterialBehind } from "../../style/glass-surface/material-behind.js";
 import { cloneElement, isValidElement, type ReactElement, type ReactNode } from "react";
 import {
   View,
@@ -217,6 +218,7 @@ export function createAlert(skin: AlertSkin) {
           )
         ) : null}
         <View style={CONTENT}>
+          <MaterialBehind rendered={glass}>
           {title != null && title !== "" ? (
             <Text style={[skin.titleType, titleColor(tokens, tone)]}>{title}</Text>
           ) : null}
@@ -225,6 +227,7 @@ export function createAlert(skin: AlertSkin) {
           ) : null}
           {children}
           {actions != null ? <View style={skin.actions}>{actions}</View> : null}
+          </MaterialBehind>
         </View>
         {dismissible ? (
           <Pressable

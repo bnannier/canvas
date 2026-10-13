@@ -28,6 +28,7 @@ import {
   type ViewStyle,
 } from "react-native";
 import { useTheme } from "./theme.js";
+import { frontRipple, useMaterialBehind } from "./glass-surface/material-behind.js";
 
 /** The ring's distance from the control, the CSS hand-off's `--ring-offset`. */
 export const FOCUS_RING_OFFSET = 2;
@@ -104,8 +105,9 @@ function useLinkEnter(props: WebPressableProps): Pick<WebPressableProps, "onKeyD
 
 /**
  * React Native's Pressable with the theme's focus ring (the palette's `ring` color, set
- * off the control) and `focusable={false}` honoured on the web. Every kit control presses
- * through it.
+ * off the control), `focusable={false}` honoured on the web, and a borderless Android ripple
+ * drawn in the foreground inside a glass surface whose material renders, where it would
+ * otherwise draw beneath the frost. Every kit control presses through it.
  */
 export const Pressable = forwardRef<View, PressableProps>(function Pressable({ style, ...rest }, ref) {
   // `focusable={false}` marks a pointer-only surface (a row's press area, a picture
@@ -116,5 +118,11 @@ export const Pressable = forwardRef<View, PressableProps>(function Pressable({ s
   // for nothing new natively: React Native's View reads tab index -1 as focusable false.
   const tabIndex = rest.tabIndex ?? (rest.focusable === false ? -1 : undefined);
   const linkEnter = useLinkEnter(rest);
-  return <RNPressable ref={ref} {...rest} {...linkEnter} tabIndex={tabIndex} style={useRingStyle(style)} />;
+  // A borderless Android ripple inside a glass surface whose material renders would draw
+  // beneath that material (see material-behind.tsx); it comes forward there, and is the
+  // caller's own object everywhere else.
+  const behind = useMaterialBehind();
+  const ripple = rest.android_ripple;
+  const androidRipple = useMemo(() => frontRipple(behind, ripple), [behind, ripple]);
+  return <RNPressable ref={ref} {...rest} {...linkEnter} android_ripple={androidRipple} tabIndex={tabIndex} style={useRingStyle(style)} />;
 });

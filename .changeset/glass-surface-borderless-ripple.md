@@ -1,0 +1,5 @@
+---
+"@nannier/canvas": patch
+---
+
+On Android a borderless ripple inside a frosted glass surface now shows. Android projects a borderless ripple onto the nearest ancestor's background, which it draws beneath that ancestor's children, so inside a surface whose frost renders (an overlay or a bridged Modal; in the page Android's glass resolves solid) the press of a control the surface does not own drew beneath the frost and showed nothing: a Tooltip's icon or text trigger, a Breadcrumb link, a pressable Avatar disc, a Carousel dot, Calendar's month chevrons, TabBar's inactive tabs, or an app's own icon button placed in a Card, an Alert, a Popover, a Dialog or a Drawer. Every glass surface now tells the content inside it whether its material renders (a static Card, Dialog and the rest through their shared host; a pressable Card, an Alert and a bordered MediaObject around the content they hold), and the kit's Pressable draws a borderless ripple in the foreground there, as the controls that own their pane already do. Solid mode, Android's in-page glass, iOS and the web are unchanged, and the content is never remounted when the material comes and goes.

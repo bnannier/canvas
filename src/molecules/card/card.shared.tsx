@@ -1,6 +1,7 @@
 import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
+import { MaterialBehind } from "../../style/glass-surface/material-behind.js";
 import { type ReactNode } from "react";
-import { View, Pressable, Text, StyleSheet, useFillStyle, useTheme, useLayoutAxis, useReducedMotion, surfaceRipple, pressDim, RippleClip, cornerRadii, splitElevation, devWarn, GlassSurface, GlassPane, paneStyle, paneRipple, legibleWash, type StyleProp, type ViewStyle, type TextStyle, type LayoutStyle } from "../../style/index.js";
+import { View, Pressable, Text, StyleSheet, useFillStyle, useTheme, useLayoutAxis, useReducedMotion, surfaceRipple, pressDim, RippleClip, cornerRadii, splitElevation, devWarn, GlassSurface, GlassPane, paneStyle, paneRipple, isGlass, legibleWash, type StyleProp, type ViewStyle, type TextStyle, type LayoutStyle } from "../../style/index.js";
 import { RAISED, liftStyle, useHover, useRaiseCell, useSettling } from "../../style/hover.js";
 import { selectedCard } from "../../style/selected-card.js";
 import { Image } from "../../atoms/image/image.shared.js";
@@ -317,7 +318,7 @@ export function createCard(skin: CardSkin) {
             style={({ pressed }) => [paneStyle(theme, surface, !!selected), elevChild, fill, pressDim(pressed), lift]}
           >
             <GlassPane layer="content" shape={surface} stateBorder={!!selected} tint={selectionWash} />
-            {inner}
+            <MaterialBehind rendered={isGlass(theme)}>{inner}</MaterialBehind>
           </Pressable>
         </RippleClip>
       );
