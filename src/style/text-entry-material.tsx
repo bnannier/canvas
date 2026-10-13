@@ -1,7 +1,8 @@
 import { Platform, StyleSheet, View, type StyleProp, type ViewStyle } from "react-native";
 import { useMaterialTheme } from "./glass-surface/use-material-theme.js";
 import { paneEdges, paneStyle } from "./glass-surface/glass-pane.js";
-import { isGlass } from "./glass-fill.js";
+import { isGlass, withInnerFill } from "./glass-fill.js";
+import { legibleInnerFill } from "./glass-surface/glass-wash.js";
 
 /** Clear web editing surfaces; native fields retain their stable material. */
 export function useTextEntryMaterial(webSkin: boolean) {
@@ -42,5 +43,18 @@ export function useTextEntryMaterial(webSkin: boolean) {
       edges: paneEdges(theme, shape, kept),
     };
   };
-  return { theme, stateSurface, paneProps };
+  /**
+   * The style of a fill inside the field that carries text (a prefix or suffix addon,
+   * PhoneInput's country segment): under glass its opaque fill becomes the soft ink tint,
+   * capped where the browser composites it so the text on it keeps 4.5:1 (`legibleInnerFill`,
+   * the owner's GS-2 decision), and kept at the soft strength on a native host, whose frost
+   * paints a body the tints do not predict and where the text measures 4.76:1 at full
+   * strength in dark. In solid mode the style is returned as is.
+   */
+  const inkFill = (style: ViewStyle): ViewStyle => {
+    if (!isGlass(theme) || style.backgroundColor == null) return style;
+    if (Platform.OS !== "web") return withInnerFill(theme, style, "soft");
+    return { ...style, backgroundColor: legibleInnerFill(theme, paneProps, "soft") };
+  };
+  return { theme, stateSurface, paneProps, inkFill };
 }
