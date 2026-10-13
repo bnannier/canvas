@@ -156,7 +156,7 @@ export function createTabBar(skin: TabBarSkin) {
                   <View style={{ alignItems: "center", justifyContent: "center" }}>
                     {!cellPill && isActive ? (
                       glass
-                        ? <GlassSurface layer="control" interactive tint={pillTint} pointerEvents="none" style={pill} />
+                        ? <GlassSurface layer="control" tint={pillTint} pointerEvents="none" style={pill} />
                         : <View style={[pill, { pointerEvents: "none" }]} />
                     ) : null}
                     {it.icon(isActive)}
