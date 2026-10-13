@@ -86,7 +86,7 @@ One row per finding. Severity: critical, high, medium, low. Cell: a capture id f
 | ID | Severity | Cell | Summary | Status | Fix commit |
 |---|---|---|---|---|---|
 | row-menu-corner-1 | low | source | The iOS trigger drew 8, the web's control value, on an iOS control; it takes the iOS control corner, a circle on the 32pt box (it paints no fill, so nothing changes on screen). The shape gate (test/design-rules-shape.test.ts) now takes a corner only as a role of its own platform's row that its component plays, the pill, square or a declared concentric corner. | fixed | 278270a8 |
-| row-menu-ao-focus | high | source | Opening the menu left focus on the trigger, and Tab walked on to the next row's trigger with the menu still open. Since the AnchoredOverlay turn (AO-1, AO-2) focus enters at the first enabled row (the first link with `links`), the arrows, Home and End move among the rows, Enter and Space activate one, Tab out closes the menu, focus returns to the trigger, and natively the open menu is modal to VoiceOver and TalkBack. | fixed | 5d8dc836 |
+| row-menu-ao-focus | high | source | Opening the menu left focus on the trigger, and Tab walked on to the next row's trigger with the menu still open. Since the AnchoredOverlay turn (AO-1, AO-2) focus enters at the first enabled row (the first link with `links`), the arrows, Home and End move among the rows, Enter and Space activate one, Tab out closes the menu, focus returns to the trigger, and natively the open menu is modal to VoiceOver and TalkBack. | fixed | 2bad6173 |
 
 ## Sign-off
 

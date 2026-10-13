@@ -93,7 +93,7 @@ One row per finding. Severity: critical, high, medium, low. Cell: a capture id f
 
 | ID | Severity | Cell | Summary | Status | Fix commit |
 |---|---|---|---|---|---|
-| dropdown-ao-focus | high | source | Tab from the menu went to the end of the document with the menu still open, and natively the menu was not modal to VoiceOver and TalkBack. Since the AnchoredOverlay turn (AO-1, AO-2) Tab or Shift+Tab out of the menu closes it and goes on in the page's order, focus returns to the trigger control on close, and natively the open menu is modal, the screen reader entering at the first enabled row. | fixed | 5d8dc836 |
+| dropdown-ao-focus | high | source | Tab from the menu went to the end of the document with the menu still open, and natively the menu was not modal to VoiceOver and TalkBack. Since the AnchoredOverlay turn (AO-1, AO-2) Tab or Shift+Tab out of the menu closes it and goes on in the page's order, focus returns to the trigger control on close, and natively the open menu is modal, the screen reader entering at the first enabled row. | fixed | 2bad6173 |
 
 ## Sign-off
 

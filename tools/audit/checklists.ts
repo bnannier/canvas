@@ -38,7 +38,8 @@
 // inventory, a variants table `--write` would rewrite or a foundation's checklist should
 // not have, a missing findings table or sign-off section, and a turn record under
 // audit/turns/ (tools/audit/turn-record.ts) that names no checklist or has a row it
-// cannot read.
+// cannot read. Outside a shallow clone it also fails on a commit an audit record cites
+// that HEAD's history does not contain (tools/audit/commit-refs.ts).
 
 import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
@@ -87,6 +88,7 @@ import {
 import { SIGN_OFF_PLATFORMS, SIGN_OFF_SHAPE, readSignOffs } from "./sign-off.ts";
 import { SEPARATOR_LINE, headerRow, oneOf, readSectionTable, separatorRow, splitRow, type MalformedRow, type TableShape } from "./table.ts";
 import { turnProblems, turnRecordFile } from "./turn-record.ts";
+import { unreachableCommitRefs } from "./commit-refs.ts";
 
 export type { MalformedRow } from "./table.ts";
 
@@ -1045,7 +1047,7 @@ if (import.meta.main) {
       process.exit(1);
     }
   } else if (mode === "--check") {
-    const errors = checkChecklists(auditDir, defaultSources());
+    const errors = [...checkChecklists(auditDir, defaultSources()), ...unreachableCommitRefs(ROOT, auditDir)];
     if (errors.length) {
       console.error(`audit:checklists --check found ${errors.length} problem(s):\n${errors.map((e) => `  ${e}`).join("\n")}`);
       process.exit(1);
