@@ -78,6 +78,29 @@ function over(top: string, under: string): string {
   return `rgba(${channel(0)}, ${channel(1)}, ${channel(2)}, ${Math.round(a * 1000) / 1000})`;
 }
 
+/** The two grounds a glass surface is legible over: the page, and a content pane on it. */
+function grounds(theme: Pick<ThemeValue, "tokens" | "glass">): string[] {
+  return [theme.tokens.background, composite(theme.glass["glass-tint-content"], theme.tokens.background)];
+}
+
+/** A pane's own body under glass: a clear field's veil, or its layer's tint. */
+function paneBody(theme: Pick<ThemeValue, "tokens" | "glass" | "dark">, pane: WashPane): string {
+  return pane.clear ? clearSurfaceTint(theme.tokens, theme.dark) : surfaceUnderFill(theme.glass, pane.layer ?? "control");
+}
+
+/**
+ * The densest tint of `token`, from `ceiling` down in `GLASS_WASH.step`s, on whose `beds` the
+ * muted and foreground inks keep `GLASS_WASH.inkContrast` plus the headroom; null where none does.
+ */
+function densestLegible(tokens: ThemeValue["tokens"], token: "destructive" | "primary" | "foreground", ceiling: number, beds: (tint: string) => string[]): string | null {
+  const inks = [tokens["muted-foreground"], tokens.foreground];
+  for (let steps = Math.round(ceiling / GLASS_WASH.step); steps > 0; steps--) {
+    const tint = alpha(tokens[token], Math.round(steps * GLASS_WASH.step * 100) / 100);
+    if (beds(tint).every((bed) => inks.every((ink) => contrastRatio(bed, ink) >= GLASS_WASH.inkContrast + GLASS_WASH.headroom))) return tint;
+  }
+  return null;
+}
+
 /**
  * The under-fill of a pane showing a state wash, legible by construction: the wash's colour
  * over the pane's own body, at the densest alpha up to its ceiling at which the muted and
@@ -86,21 +109,16 @@ function over(top: string, under: string): string {
  * layer's own legibility, not the wash's), it is the body.
  */
 export function legibleWash(theme: Pick<ThemeValue, "tokens" | "glass" | "dark">, wash: GlassWash, pane: WashPane = {}): string {
-  const { tokens, glass, dark } = theme;
+  const { tokens, dark } = theme;
   const { token, ceiling, inner } = GLASS_WASH[wash];
-  const body = pane.clear ? clearSurfaceTint(tokens, dark) : surfaceUnderFill(glass, pane.layer ?? "control");
-  const bases = [tokens.background, composite(glass["glass-tint-content"], tokens.background)];
-  const inks = [tokens["muted-foreground"], tokens.foreground];
+  const body = paneBody(theme, pane);
+  const bases = grounds(theme);
   const fillOver = inner ? innerFill({ tokens, dark, surface: "glass" }, "muted", inner) : null;
-  const beds = (fill: string) => bases.flatMap((base) => {
-    const bed = composite(fill, base);
+  const tint = densestLegible(tokens, token, ceiling, (tone) => bases.flatMap((base) => {
+    const bed = composite(over(tone, body), base);
     return fillOver ? [bed, composite(fillOver, bed)] : [bed];
-  });
-  for (let steps = Math.round(ceiling / GLASS_WASH.step); steps > 0; steps--) {
-    const fill = over(alpha(tokens[token], Math.round(steps * GLASS_WASH.step * 100) / 100), body);
-    if (beds(fill).every((bed) => inks.every((ink) => contrastRatio(bed, ink) >= GLASS_WASH.inkContrast + GLASS_WASH.headroom))) return fill;
-  }
-  return body;
+  }));
+  return tint == null ? body : over(tint, body);
 }
 
 export const GLASS_TRACK = {
@@ -122,12 +140,11 @@ export const GLASS_TRACK = {
  * solid track.
  */
 export function legibleTrack(theme: Pick<ThemeValue, "tokens" | "glass">, fill: string, thumb: string): string {
-  const { tokens, glass } = theme;
-  const grounds = [tokens.background, composite(glass["glass-tint-content"], tokens.background)];
+  const around = grounds(theme);
   const bar = GLASS_TRACK.boundaryContrast + GLASS_TRACK.headroom;
   for (let a = GLASS_TRACK.floor; a < 1; a += GLASS_TRACK.step) {
     const under = alpha(fill, Math.round(a * 100) / 100);
-    if (grounds.every((ground) => {
+    if (around.every((ground) => {
       const track = composite(under, ground);
       return contrastRatio(track, ground) >= bar && contrastRatio(track, thumb) >= bar;
     })) return under;
@@ -153,14 +170,7 @@ export function legibleTrack(theme: Pick<ThemeValue, "tokens" | "glass">, fill: 
  * the strength (`useTextEntryMaterial`).
  */
 export function legibleInnerFill(theme: Pick<ThemeValue, "tokens" | "glass" | "dark">, pane: WashPane = {}, strength: InnerFillStrength = "soft"): string {
-  const { tokens, glass, dark } = theme;
-  const body = pane.clear ? clearSurfaceTint(tokens, dark) : surfaceUnderFill(glass, pane.layer ?? "control");
-  const beds = [tokens.background, composite(glass["glass-tint-content"], tokens.background)].map((ground) => composite(body, ground));
-  const inks = [tokens["muted-foreground"], tokens.foreground];
-  const holds = (fill: string) => beds.every((bed) => inks.every((ink) => contrastRatio(composite(fill, bed), ink) >= GLASS_WASH.inkContrast + GLASS_WASH.headroom));
-  for (let steps = Math.round(innerFillAlpha(theme, strength) / GLASS_WASH.step); steps > 0; steps--) {
-    const fill = alpha(tokens.foreground, Math.round(steps * GLASS_WASH.step * 100) / 100);
-    if (holds(fill)) return fill;
-  }
-  return alpha(tokens.foreground, 0);
+  const body = paneBody(theme, pane);
+  const beds = grounds(theme).map((ground) => composite(body, ground));
+  return densestLegible(theme.tokens, "foreground", innerFillAlpha(theme, strength), (tint) => beds.map((bed) => composite(tint, bed))) ?? alpha(theme.tokens.foreground, 0);
 }
