@@ -22,6 +22,7 @@ import {
   GlassSurface,
   GlassPane,
   paneStyle,
+  paneRipple,
   FOCUS_RESET,
 } from "../../style/index.js";
 import { Icon } from "../../atoms/icon/icon.js";
@@ -209,7 +210,9 @@ export function createCarousel(skin: CarouselSkin) {
           onPress={disabled ? undefined : onPress}
           disabled={disabled}
           hitSlop={skin.arrowHitSlop}
-          android_ripple={skin.ripple && !disabled ? skin.ripple(tokens) : undefined}
+          // The arrow's pane is a child of this Pressable: where it renders, the borderless
+          // ripple draws in the foreground, over it (`paneRipple`).
+          android_ripple={paneRipple(theme, skin.ripple && !disabled ? skin.ripple(tokens) : undefined)}
           accessibilityRole="button"
           accessibilityLabel={side === "prev" ? "Previous slide" : "Next slide"}
           accessibilityState={{ disabled }}

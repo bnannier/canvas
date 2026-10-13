@@ -1,7 +1,7 @@
 import { Children, cloneElement, isValidElement, useId, useState, type ReactElement, type ReactNode } from "react";
 import Svg, { Defs, LinearGradient, Rect, Stop } from "react-native-svg";
 import { View, Pressable, Text, pressDim, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle, type ImageStyle, type LayoutStyle } from "../../style/index.js";
-import { GlassPane, paneStyle } from "../../style/glass-surface/glass-pane.js";
+import { GlassPane, paneRipple, paneStyle } from "../../style/glass-surface/glass-pane.js";
 import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
 import { identityDisc, identityHue, type IdentityDisc } from "../../style/identity-hue.js";
 import { Image } from "../image/image.js";
@@ -252,7 +252,10 @@ export function createAvatar(skin: AvatarSkin) {
     if (onPress) {
       return (
         <Pressable
-          android_ripple={skin.ripple ? skin.ripple(tokens) : undefined}
+          // The tile's pane is a child of this Pressable, which the borderless ripple,
+          // projected onto an ancestor's background, lands beneath: where the pane renders
+          // the ripple draws in the foreground (`paneRipple`).
+          android_ripple={paneRipple(pane != null ? theme : false, skin.ripple ? skin.ripple(tokens) : undefined)}
           style={({ pressed }) => [container, pressDim(pressed, skin.pressedOpacity)]}
           onPress={onPress}
           hitSlop={hitSlop}

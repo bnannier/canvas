@@ -1,5 +1,5 @@
 import { type ComponentType, type ReactNode } from "react";
-import { View, Pressable, Text, RippleClip, cornerRadii, useTheme, useControllableState, useContainerBreakpoint, GlassPane, GlassSurface, paneStyle, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle } from "../../style/index.js";
+import { View, Pressable, Text, RippleClip, cornerRadii, useTheme, useControllableState, useContainerBreakpoint, GlassPane, GlassSurface, paneStyle, paneRipple, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle } from "../../style/index.js";
 import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
 import { selectionTint } from "../../style/selection-tint.js";
 import { Button as WebButton } from "../../atoms/button/button.js";
@@ -232,7 +232,9 @@ export function createNavbar(skin: NavbarSkin, parts: NavbarParts = {}) {
                       setActive(index);
                       onSelect?.(index);
                     }}
-                    android_ripple={skin.ripple ? skin.ripple(tokens) : undefined}
+                    // The active tile's puck is a child of this Pressable: where it renders,
+                    // the ripple draws in the foreground, over it (`paneRipple`).
+                    android_ripple={paneRipple(puck, skin.ripple ? skin.ripple(tokens) : undefined)}
                     accessibilityRole="link"
                     accessibilityState={{ selected: isActive }}
                     aria-current={isActive ? "page" : undefined}

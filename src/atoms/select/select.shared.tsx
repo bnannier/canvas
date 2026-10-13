@@ -2,7 +2,7 @@ import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.j
 import { EscapeLayerProvider, useEscapeLayer } from "../../style/escape-layer.js";
 import { forwardRef, useId, useRef, useState } from "react";
 import { useComposedRefs } from "../../style/use-composed-refs.js";
-import { View, Pressable, Text, useControllableState, useFillStyle, AnchoredOverlay, useOverlayHost, useMeasuredWidth, FloatingLabel, LabelContent, labelA11y, useFloatingLabelRoom, RippleClip, cornerRadii, type LayoutStyle, type MeasureProps, type StyleProp, type ViewStyle, GlassPane, paneStyle, panePlaced, isGlass, withInnerFill } from "../../style/index.js";
+import { View, Pressable, Text, useControllableState, useFillStyle, AnchoredOverlay, useOverlayHost, useMeasuredWidth, FloatingLabel, LabelContent, labelA11y, useFloatingLabelRoom, RippleClip, cornerRadii, type LayoutStyle, type MeasureProps, type StyleProp, type ViewStyle, GlassPane, paneStyle, paneRipple, panePlaced, isGlass, withInnerFill } from "../../style/index.js";
 import { useRowFocus } from "../../style/use-row-focus.js";
 import { OverlayScrollView } from "../../style/overlay-scroll.js";
 import { LISTBOX } from "../../style/listbox-role.js";
@@ -273,7 +273,9 @@ export function createSelect(skin: SelectSkin) {
           ]}
           disabled={disabled}
           onPress={() => setOpen(!open)}
-          android_ripple={ripple}
+          // The trigger's pane is a child of this Pressable: where it renders, the ripple
+          // draws in the foreground, over it (`paneRipple`).
+          android_ripple={paneRipple(theme, ripple)}
           testID={props.testID}
           accessibilityRole="button"
           accessibilityState={{ expanded: open, disabled: !!disabled }}

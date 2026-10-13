@@ -1,7 +1,7 @@
 import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
 import { type ComponentType, type ReactNode } from "react";
 import { StyleSheet } from "react-native";
-import { View, Pressable, Text, surfaceRipple, pressDim, RippleClip, cornerRadii, splitElevation, alpha, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle, type LayoutStyle, useFillStyle, GlassSurface, GlassPane, paneStyle } from "../../style/index.js";
+import { View, Pressable, Text, surfaceRipple, pressDim, RippleClip, cornerRadii, splitElevation, alpha, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle, type LayoutStyle, useFillStyle, GlassSurface, GlassPane, paneStyle, paneRipple } from "../../style/index.js";
 import { Avatar as WebAvatar } from "../../atoms/avatar/avatar.js";
 import { type AvatarProps } from "../../atoms/avatar/avatar.shared.js";
 import { type Align, type Direction, DIRECTION_ROW, ALIGN_ITEMS } from "./media-objects.styles.js";
@@ -272,7 +272,9 @@ export function createMediaObject(skin: MediaObjectSkin, Avatar: AvatarComponent
             accessibilityLabel={a11yLabel}
             onPress={props.onPress}
             testID={testID}
-            android_ripple={surfaceRipple(tokens)}
+            // A bordered row's pane is a child of this Pressable: where it renders, the ripple
+            // draws in the foreground, over it (`paneRipple`).
+            android_ripple={paneRipple(props.bordered ? theme : false, surfaceRipple(tokens))}
             style={({ pressed }) => [props.bordered ? paneStyle(theme, surface) : surface, minTarget, elevZero, pressDim(pressed, skin.pressedOpacity)]}
           >
             {props.bordered ? <GlassPane layer="content" shape={surface} /> : null}

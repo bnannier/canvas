@@ -14,6 +14,7 @@ import {
   GlassSurface,
   GlassPane,
   paneStyle,
+  paneRipple,
   isGlass,
   breakpoints,
   useBreakpoint,
@@ -497,7 +498,9 @@ export function createSidebar(skin: SidebarSkin, parts: SidebarParts = {}) {
         // paints the skin's hover wash beneath the row.
         <SidebarRowFrame key={item.id ?? item.label} shape={skin.row(tokens, density, collapsed)} wash={wash}>
           <Pressable
-            android_ripple={skin.ripple ? skin.ripple(tokens) : undefined}
+            // The active row's pane is a child of this Pressable: where it renders, the
+            // ripple draws in the foreground, over it (`paneRipple`).
+            android_ripple={paneRipple(glass && activeRow, skin.ripple ? skin.ripple(tokens) : undefined)}
             style={({ pressed }) => [
               skin.row(tokens, density, collapsed),
               // The active row carries its highlight persistently; on web a press paints it

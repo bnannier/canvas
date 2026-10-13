@@ -15,6 +15,7 @@ import {
   type TextStyle,
   GlassPane,
   paneStyle,
+  paneRipple,
   isGlass,
 } from "../../style/index.js";
 
@@ -231,7 +232,9 @@ export function createAlert(skin: AlertSkin) {
             accessibilityRole="button"
             accessibilityLabel="Dismiss"
             hitSlop={skin.dismissHitSlop ?? undefined}
-            android_ripple={controlRipple(tokens)}
+            // A borderless ripple is projected onto an ancestor's background, beneath the
+            // alert's pane: where the pane renders it draws in the foreground (`paneRipple`).
+            android_ripple={paneRipple(theme, controlRipple(tokens))}
             style={({ pressed }) => [skin.dismissButton, pressDim(pressed, skin.dismissPressedOpacity)]}
           >
             <Text style={[skin.dismissType, iconColor(tokens, tone)]}>×</Text>
