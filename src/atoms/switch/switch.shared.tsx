@@ -97,6 +97,8 @@ export function createSwitch(skin: SwitchSkin) {
       },
     );
     const trackShape = skin.track(tokens, dark, checked, size);
+    // An enabled switch that is off: its track and thumb carry its boundary (GS-1).
+    const off = !checked && !disabled;
     const thumbShape = skin.thumb(tokens, checked, size);
 
     const handlePress = (_event: GestureResponderEvent) => {
@@ -152,14 +154,17 @@ export function createSwitch(skin: SwitchSkin) {
             layer="control"
             shape={trackShape}
             brand={checked && !disabled ? tokens.primary : undefined}
-            // An off track keeps its solid fill as a neutral under-fill, the boundary that
-            // identifies the control, as a checked one takes its brand (GS-1).
-            tint={!checked && !disabled ? legibleTrack(theme, String(trackShape.backgroundColor), String(thumbShape.backgroundColor)) : undefined}
+            // An off track keeps its solid fill as a neutral fill over the frost, the boundary
+            // that identifies the control, as a checked one takes its brand (GS-1).
+            boundaryFill={off ? legibleTrack(theme, String(trackShape.backgroundColor), String(thumbShape.backgroundColor)) : undefined}
           />
           <GlassSurface
             layer="control"
             pointerEvents="none"
             tint={disabled ? tokens["muted-foreground"] : String(thumbShape.backgroundColor)}
+            // An off thumb is the other half of the off boundary (3:1 on its track): its colour
+            // renders as it is, over the frost, which would blur the track into it.
+            boundaryFill={off ? String(thumbShape.backgroundColor) : undefined}
             // The thumb keeps its solid place inside the track's border (panePlaced).
             style={[panePlaced(theme, trackShape, thumbShape), disabled && glassThumb ? { backgroundColor: tokens["muted-foreground"] } : null]}
           />

@@ -69,6 +69,11 @@ export interface GlassPaneProps {
   /** A brand colour for a brand-tinted puck (a primary Button, a checked Switch), its under-fill solved for the ink painted on it. */
   brand?: string;
   /**
+   * A control's boundary drawn as its fill (an off Switch track), painted over the frost so
+   * the colour solved for its 3:1 is the colour that renders (GlassSurface's `boundaryFill`).
+   */
+  boundaryFill?: string;
+  /**
    * @deprecated A no-op, kept so existing code compiles until a major. The pane passes every
    * tap through to its host (`pointerEvents="none"`), so iOS never delivers it the touch
    * Apple's interactive Liquid Glass responds to, and the host's own press feedback (its
@@ -105,13 +110,13 @@ export interface GlassPaneProps {
  * Transparency and Increase Contrast it renders nothing and the host keeps its opaque
  * skin, with the contrasting border under Increase Contrast (`paneStyle`).
  */
-export function GlassPane({ layer = "control", shape, stateBorder = false, boundary = false, tint, brand, testID, static: stable, clear }: GlassPaneProps) {
+export function GlassPane({ layer = "control", shape, stateBorder = false, boundary = false, tint, brand, boundaryFill, testID, static: stable, clear }: GlassPaneProps) {
   // A solid pane would paint a raw copy of the shape inside a host that already shows it.
   const { material } = useMaterialResolution({ static: stable, layer });
   if (material.renderer === "solid") return null;
   // `interactive` is not forwarded: a surface under pointerEvents "none" never receives the
   // touch interactive Liquid Glass answers, so it only reinstalled the effect on each toggle.
-  return <GlassSurface static={stable} clear={clear} layer={layer} tint={tint} brand={brand} pointerEvents="none" testID={testID} style={[StyleSheet.absoluteFill, paneShape(shape, stateBorder || boundary), BEHIND]} />;
+  return <GlassSurface static={stable} clear={clear} layer={layer} tint={tint} brand={brand} boundaryFill={boundaryFill} pointerEvents="none" testID={testID} style={[StyleSheet.absoluteFill, paneShape(shape, stateBorder || boundary), BEHIND]} />;
 }
 
 // The pane paints beneath every sibling inside its host, on every platform: each host is

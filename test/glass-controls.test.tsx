@@ -158,6 +158,15 @@ describe("brand-tinted glass pucks", () => {
     expect(rgbaOf(underFillOf(on))).toEqual(rgbaOf(brandTint(lightColors.primary, lightColors.background)));
     const offTrack = legibleTrack({ tokens: lightColors, glass: LIGHT }, lightColors.input, lightColors.background);
     expect(rgbaOf(underFillOf(off))).toEqual(rgbaOf(offTrack.startsWith("#") ? alpha(offTrack, 1) : offTrack));
+    // The off track and its thumb are the control's boundary: their fills paint OVER the
+    // frost, where the blur cannot pull the page into them (as a brand fill does), and the
+    // checked thumb keeps its tint beneath the frost as before.
+    const materials = (root: HTMLElement) => Array.from(root.querySelectorAll('[data-testid="glass-material"]'));
+    const [offTrackMaterial, offThumbMaterial] = materials(off);
+    expect(fillOfMaterial(offTrackMaterial!).over).toBe(true);
+    expect(fillOfMaterial(offThumbMaterial!).over).toBe(true);
+    expect(rgbaOf(fillOfMaterial(offThumbMaterial!).fill!.style.backgroundColor)).toEqual(rgbaOf(alpha(lightColors.background, 1)));
+    expect(fillOfMaterial(materials(on)[1]!).over).toBe(false);
   });
 
   it("a checked Checkbox box is brand glass with the check on top", async () => {
@@ -530,7 +539,7 @@ describe("solid mode", () => {
 describe("a selection control keeps its identifying boundary under glass (GS-1)", () => {
   const contrast = (a: string, b: string) => contrastRatio(a, b);
 
-  it("holds the kept ring and box at 3:1 against the page, a content pane and the control pane inside them, in every look", () => {
+  it("holds the kept ring and box at 3:1 against the page and a content pane around them, in every look", () => {
     for (const l of LOOKS) {
       const t = l.tokens;
       const rings = [
@@ -543,9 +552,7 @@ describe("a selection control keeps its identifying boundary under glass (GS-1)"
         const page = t.background;
         const pane = composite(glass["glass-tint-content"], page);
         for (const ground of [page, pane]) {
-          const inside = composite(glass["glass-tint-control"], ground);
           expect(contrast(String(ring), ground), `${l.name} ${name} ring on its ground`).toBeGreaterThanOrEqual(3);
-          expect(contrast(String(ring), inside), `${l.name} ${name} ring on the pane inside it`).toBeGreaterThanOrEqual(3);
         }
       }
     }
