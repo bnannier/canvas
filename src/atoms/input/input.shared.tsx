@@ -9,7 +9,7 @@ import {
   type TextInput as RNTextInput,
   type TextInputProps as RNTextInputProps,
 } from "react-native";
-import { View, Pressable, Text, TextInput, useFillStyle, FloatingLabel, LabelContent, labelA11y, requiredName, useFloatingLabelRoom, FOCUS_RESET, type ColorTokens, type LayoutStyle, type MeasureProps, type StyleProp, type ViewStyle, type TextStyle, GlassPane, paneStyle, isGlass, withInnerFill, legibleWash, PANE_SIBLING_INPUT } from "../../style/index.js";
+import { View, Pressable, Text, TextInput, useFillStyle, FloatingLabel, LabelContent, labelA11y, requiredName, useFloatingLabelRoom, FOCUS_RESET, type ColorTokens, type LayoutStyle, type MeasureProps, type StyleProp, type ViewStyle, type TextStyle, GlassPane, paneStyle, paneRipple, isGlass, withInnerFill, legibleWash, PANE_SIBLING_INPUT } from "../../style/index.js";
 import { useComposedRefs } from "../../style/use-composed-refs.js";
 import { frameHandlers, useFocusFrame } from "../../style/focus-frame.js";
 import { rowSeam } from "../../style/touch-seam.js";
@@ -506,6 +506,10 @@ export function createInput(skin: InputSkin) {
     };
     const groupShape = skin.groupContainer(tokens, borderColor, focused, isError);
     const groupSurface = stateSurface(groupShape, focused || isError);
+    // The clear and reveal buttons' borderless ripple is projected onto an ancestor's
+    // background, beneath the group's pane: where the pane renders it draws in the
+    // foreground (`paneRipple`).
+    const actionRipple = paneRipple(theme, skin.ripple ? { ...skin.ripple(tokens), borderless: true } : undefined);
     const groupedField = (
       <View
         hitSlop={hasClear || hasEye ? actionOverhang(skin.iconSize, height) : undefined}
@@ -554,7 +558,7 @@ export function createInput(skin: InputSkin) {
                   hitSlop={clearSlop}
                   accessibilityRole="button"
                   accessibilityLabel="Clear text"
-                  android_ripple={skin.ripple ? { ...skin.ripple(tokens), borderless: true } : undefined}
+                  android_ripple={actionRipple}
                   style={({ pressed }) => (skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null)}
                 >
                   <Icon circleX color={skin.iconColor(tokens, { ...state, action: true })} size={skin.iconSize} decorative />
@@ -568,7 +572,7 @@ export function createInput(skin: InputSkin) {
                   accessibilityLabel={revealed ? "Hide password" : "Show password"}
                   accessibilityState={{ selected: revealed }}
                   disabled={disabled}
-                  android_ripple={skin.ripple ? { ...skin.ripple(tokens), borderless: true } : undefined}
+                  android_ripple={actionRipple}
                   style={({ pressed }) => (skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null)}
                 >
                   <Icon {...(revealed ? { eye: true } : { eyeOff: true })} color={skin.iconColor(tokens, { ...state, action: true })} size={skin.iconSize} decorative />

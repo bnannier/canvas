@@ -3,7 +3,7 @@ import { forwardRef, type ReactNode } from "react";
 import { useComposedRefs } from "../../style/use-composed-refs.js";
 import { useSpaceActivation } from "../../style/use-space-activation.js";
 import { type GestureResponderEvent } from "react-native";
-import { View, Pressable, Text, surfaceRipple, RippleClip, cornerRadii, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle, type LayoutStyle, GlassPane, paneStyle, isGlass, legibleWash, withInnerFill } from "../../style/index.js";
+import { View, Pressable, Text, surfaceRipple, RippleClip, cornerRadii, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle, type LayoutStyle, GlassPane, paneStyle, paneRipple, isGlass, legibleWash, withInnerFill } from "../../style/index.js";
 import { useRadioGroup } from "./radio-context.js";
 
 // Shared Radio shell. Uses React Native's primitives DIRECTLY and reads the active
@@ -194,7 +194,9 @@ export function createRadio(skin: RadioSkin) {
     // Ripple (Android): a card uses a bounded surface ripple over the whole tile (clipped
     // to the rounded corners by the RippleClip parent); a plain radio uses the skin's
     // borderless ring ripple. iOS/web ignore android_ripple and keep the pressedOpacity dim.
-    const ripple = card ? surfaceRipple(tokens) : skin.ripple ? skin.ripple(tokens) : undefined;
+    // The card's pane and the ring's are children of the Pressable: where they render, the
+    // ripple draws in the foreground, over them (`paneRipple`).
+    const ripple = paneRipple(cardChrome != null || mark.kind === "ring" ? theme : false, card ? surfaceRipple(tokens) : skin.ripple ? skin.ripple(tokens) : undefined);
 
     // Roving-focus wiring from the group (web arrow-key nav): the group makes only
     // the selected radio a tab stop and the arrows move + select. `ref` passes

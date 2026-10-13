@@ -1,6 +1,6 @@
 import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
 import { type ReactNode } from "react";
-import { View, Pressable, Text, StyleSheet, useFillStyle, useTheme, useLayoutAxis, useReducedMotion, surfaceRipple, pressDim, RippleClip, cornerRadii, splitElevation, alpha, devWarn, GlassSurface, GlassPane, paneStyle, legibleWash, type StyleProp, type ViewStyle, type TextStyle, type LayoutStyle } from "../../style/index.js";
+import { View, Pressable, Text, StyleSheet, useFillStyle, useTheme, useLayoutAxis, useReducedMotion, surfaceRipple, pressDim, RippleClip, cornerRadii, splitElevation, alpha, devWarn, GlassSurface, GlassPane, paneStyle, paneRipple, legibleWash, type StyleProp, type ViewStyle, type TextStyle, type LayoutStyle } from "../../style/index.js";
 import { RAISED, liftStyle, useHover, useRaiseCell, useSettling } from "../../style/hover.js";
 import { Image } from "../../atoms/image/image.shared.js";
 import { imageLabel } from "../../atoms/image/image.accessibility.js";
@@ -309,7 +309,9 @@ export function createCard(skin: CardSkin) {
             accessibilityRole="button"
             onPress={onPress}
             testID={testID}
-            android_ripple={surfaceRipple(tokens)}
+            // The card's pane is a child of this Pressable: where it renders, the ripple draws
+            // in the foreground, over it (`paneRipple`).
+            android_ripple={paneRipple(theme, surfaceRipple(tokens))}
             style={({ pressed }) => [paneStyle(theme, surface, !!selected), elevChild, fill, pressDim(pressed), lift]}
           >
             <GlassPane layer="content" shape={surface} stateBorder={!!selected} tint={selectionWash} />

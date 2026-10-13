@@ -10,7 +10,7 @@ import {
 import { useComposedRefs } from "../../style/use-composed-refs.js";
 import { actionFill } from "../../style/action.js";
 import { useSeededMinTargetSlop, styleBox } from "../../style/touch-target-seed.js";
-import { View, Pressable, RippleClip, Text, useReducedMotion, useSizing, type LayoutStyle, type MeasureProps, GlassPane, paneStyle, isGlass } from "../../style/index.js";
+import { View, Pressable, RippleClip, Text, useReducedMotion, useSizing, type LayoutStyle, type MeasureProps, GlassPane, paneStyle, paneRipple, isGlass } from "../../style/index.js";
 import { liftStyle, useHover } from "../../style/hover.js";
 import { type ButtonSkin, type Intent, type Size } from "./button.styles.js";
 
@@ -152,7 +152,9 @@ export function createButton(skin: ButtonSkin) {
     const surfaced = skin.surface(intent, opts);
     const puck = isGlass(theme) && surfaced;
     const brand = intent === "primary" ? actionFill(tokens) : intent === "destructive" ? tokens.destructive : undefined;
-    const ripple = skin.ripple ? skin.ripple(tokens, intent) : undefined;
+    // Android's ripple is the Pressable's background, which the puck's pane would cover:
+    // where the pane renders it moves to the foreground (`paneRipple`).
+    const ripple = paneRipple(puck, skin.ripple ? skin.ripple(tokens, intent) : undefined);
     // The rounded shape the ripple is clipped to (Android only; undefined on iOS/web). A bounded
     // android_ripple bleeds past rounded corners unless a rounded overflow:"hidden" PARENT clips
     // it — <RippleClip> is that parent. See src/style/ripple-clip.

@@ -13,7 +13,7 @@
 // reads the same decision through `useMaterialTheme`, keeps its complete solid skin
 // there, and the solid tree is byte-identical to the pre-glass one.
 
-import { StyleSheet, type StyleProp, type ViewStyle } from "react-native";
+import { StyleSheet, type PressableAndroidRippleConfig, type StyleProp, type ViewStyle } from "react-native";
 import { type ThemeValue } from "../theme.js";
 import { isGlass } from "../glass-fill.js";
 import { GlassSurface } from "./glass-surface.js";
@@ -83,7 +83,8 @@ export interface GlassPaneProps {
  * it. It has no role, no label and no focus stop, its material is hidden from VoiceOver
  * and TalkBack, and on the web its node is an empty, pointer-transparent box, so a screen
  * reader and the keyboard meet only the host, with the host's name, role and state as in
- * solid mode. Taps pass through it to the host and its hit slop. Under Reduce
+ * solid mode. Taps pass through it to the host and its hit slop, and a Pressable host hands
+ * its Android ripple to `paneRipple`, so the press draws over the pane. Under Reduce
  * Transparency and Increase Contrast it renders nothing and the host keeps its opaque
  * skin, with the contrasting border under Increase Contrast (`paneStyle`).
  */
@@ -162,6 +163,35 @@ export function paneStyle(appearance: boolean | ThemeValue, style: StyleProp<Vie
   if (!glass) return typeof appearance !== "boolean" && appearance.increasedContrast
     ? [style, contrastBorderFor(appearance.tokens, style, stateBorder)] : style;
   return [style, stateBorder ? clearedPaint(style, true) : borderAsPadding(style)];
+}
+
+/**
+ * The Android ripple of a Pressable whose press a GlassPane would hide: the host's own ripple
+ * config moved to the foreground wherever the pane renders, and returned as given (the same
+ * object) everywhere else, so the solid tree is byte-identical.
+ *
+ * A ripple is the Pressable's background drawable, which Android draws before the view's
+ * children. A pane painting the Pressable's own surface is one of those children, so where
+ * its frost renders (an overlay outlet, a bridged Modal) it covers a bounded ripple, and a
+ * borderless ripple, which Android projects onto the nearest ancestor's background, lands
+ * beneath the host and its pane alike: the press shows nothing. That holds for the host's
+ * own Pressable and for a borderless control inside a pane host (an Alert's dismiss, a
+ * field's clear and reveal buttons). `foreground: true` draws the ripple after the view's
+ * children, over the pane and over the label, in the ripple's own translucent colour, as
+ * Compose draws Material 3's state layer over a control's content; a borderless foreground
+ * ripple is not projected and radiates on the Pressable's own canvas, clipped as its
+ * children are.
+ *
+ * `appearance` is what the host mounts its pane on, as for `paneStyle`: the resolved
+ * material of the pane's layer and `static` (the kit's components read it from their
+ * material resolution), or the boolean the host already renders its pane on (a surfaced
+ * puck, the active row). Never the requested surface from `useTheme()`: on Android in the
+ * page, where glass resolves solid, the pane renders nothing and the ripple stays in the
+ * background. iOS and the web ignore `android_ripple`.
+ */
+export function paneRipple(appearance: boolean | ThemeValue, ripple: PressableAndroidRippleConfig | null | undefined): PressableAndroidRippleConfig | null | undefined {
+  const glass = typeof appearance === "boolean" ? appearance : isGlass(appearance);
+  return glass && ripple != null ? { ...ripple, foreground: true } : ripple;
 }
 
 const NO_SIDES: BorderSides = { top: 0, bottom: 0, start: 0, end: 0 };

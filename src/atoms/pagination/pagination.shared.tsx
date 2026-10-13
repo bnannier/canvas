@@ -1,7 +1,7 @@
 import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
 import { useHover } from "../../style/hover.js";
 import { useSeededMinTargetSlop, styleBox } from "../../style/touch-target-seed.js";
-import { View, Pressable, Text, RippleClip, cornerRadii, isRTL, pressDim, useControllableState, type ViewStyle, type LayoutStyle, GlassPane, paneStyle, isGlass } from "../../style/index.js";
+import { View, Pressable, Text, RippleClip, cornerRadii, isRTL, pressDim, useControllableState, type ViewStyle, type LayoutStyle, GlassPane, paneStyle, paneRipple, isGlass } from "../../style/index.js";
 import { Icon } from "../icon/icon.js";
 import * as s from "./pagination.styles.js";
 import { type Size, type PaginationSkin } from "./pagination.styles.js";
@@ -217,7 +217,9 @@ export function createPagination(skin: PaginationSkin) {
           onPress={onPress}
           disabled={disabled}
           {...target}
-          android_ripple={skin.ripple ? skin.ripple(tokens, selected) : undefined}
+          // The current page's puck is a child of this Pressable: where it renders, the
+          // ripple draws in the foreground, over it (`paneRipple`).
+          android_ripple={paneRipple(puck, skin.ripple ? skin.ripple(tokens, selected) : undefined)}
           accessibilityRole="button"
           accessibilityLabel={`Page ${page}`}
           accessibilityState={{ selected, disabled }}

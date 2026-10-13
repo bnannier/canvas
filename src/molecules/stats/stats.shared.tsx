@@ -1,6 +1,6 @@
 import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
 import { type ReactNode } from "react";
-import { View, Pressable, Text, RippleClip, cornerRadii, useTheme, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle, type LayoutStyle, useFillStyle, GlassSurface, GlassPane, paneStyle } from "../../style/index.js";
+import { View, Pressable, Text, RippleClip, cornerRadii, useTheme, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle, type LayoutStyle, useFillStyle, GlassSurface, GlassPane, paneStyle, paneRipple } from "../../style/index.js";
 import { Sparkline } from "../../charts/sparkline/sparkline.js";
 import { StackedBar } from "../../charts/stacked-bar/stacked-bar.js";
 import { type StackedSegment } from "../../charts/shared/types.js";
@@ -223,7 +223,9 @@ export function createStats(skin: StatsSkin) {
       </>
     );
     if (onPress) {
-      const android_ripple = skin.ripple ? skin.ripple(tokens) : undefined;
+      // The card's pane is a child of this Pressable: where it renders, the ripple draws in
+      // the foreground, over it (`paneRipple`).
+      const android_ripple = paneRipple(cardShape ? theme : false, skin.ripple ? skin.ripple(tokens) : undefined);
       return (
         // Android: the bounded card ripple is clipped to the br12 outline by this
         // RippleClip parent (a node can't clip its own ripple). The outer flex sizing
