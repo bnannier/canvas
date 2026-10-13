@@ -1,4 +1,4 @@
-// Whether Apple's real Liquid Glass material is available on this iOS device —
+// Whether Apple's real Liquid Glass material is available on this iOS device:
 // true on iOS 26+ with Reduce Transparency off (isLiquidGlassAvailable honors that
 // accessibility setting), false otherwise. This drives BOTH the GlassSurface
 // material choice AND the theme runtime's platform default (glass-by-default on

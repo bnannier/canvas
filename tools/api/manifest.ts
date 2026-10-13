@@ -431,6 +431,10 @@ export const publicApi: Readonly<Record<string, ApiEntry>> = {
   GlassPaneProps: { kind: "deprecated-alias", docs: "foundation", section: "Glass material" },
   PANE_SIBLING_INPUT: { kind: "deprecated-alias", docs: "foundation", section: "Glass material" },
   paneStyle: { kind: "deprecated-alias", docs: "foundation", section: "Glass material" },
+  // src/style/glass-surface/glass-surface.tsx (a deprecated alias since the GlassSurface
+  // audit turn, K12-2), the host every kit glass surface renders through; the same holds,
+  // so its `@deprecated` text names the components that paint their own material.
+  GlassSurface: { kind: "deprecated-alias", docs: "foundation", section: "Glass material" },
 
   // src/style/glass-surface/glass-surface.shared.tsx
   GlassModalBlurTarget: { kind: "component", docs: "integration", section: "Native modals" },
@@ -442,9 +446,6 @@ export const publicApi: Readonly<Record<string, ApiEntry>> = {
   GlassBlurPlaneHandle: { kind: "type", docs: "integration", section: "Blur planes" },
   GlassBlurPlaneProps: { kind: "type", docs: "integration", section: "Blur planes" },
   GlassBlurScopeProps: { kind: "type", docs: "integration", section: "Blur planes" },
-
-  // src/style/glass-surface/glass-surface.tsx
-  GlassSurface: { kind: "internal-by-accident" },
 
   // src/style/glass-surface/liquid-glass.ts
   liquidGlassAvailable: { kind: "utility", docs: "patterns/glass" },
@@ -843,7 +844,6 @@ export const PENDING_DOCS: Readonly<Record<string, DocsRoute>> = {
   FillOptions: "foundation",
   fontSize: "foundation",
   fontWeight: "foundation",
-  GlassSurface: "foundation",
   GRID_CELL_AXIS: "foundation",
   GRID_COLUMNS: "foundation",
   HUG_IN_STRETCH_COLUMN: "foundation",
@@ -922,8 +922,8 @@ export const PLANNED_ROUTES: Readonly<Record<DocsRoute, PlannedRoute>> = {
   "components/scatter-plot": { turn: "components/scatter-plot" },
   "components/toast": { turn: "components/toast" },
   // K12-10: the generated foundation reference. Each Foundations turn moves its names there
-  // as it deprecates them (GlassSurface, LayoutAxisProvider, LoopView,
-  // OverlayProvider, Portal, RippleClip, the Riskora type ladder and the shadow helpers);
+  // as it deprecates them (LayoutAxisProvider, LoopView, OverlayProvider, Portal,
+  // RippleClip, the Riskora type ladder and the shadow helpers);
   // Tokens, the last, closes it.
   foundation: { turn: "foundation/tokens" },
 };

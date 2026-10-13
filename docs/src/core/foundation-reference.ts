@@ -348,7 +348,7 @@ export const DEPRECATED_SECTIONS: DeprecatedSection[] = [
   },
   {
     "title": "Glass material",
-    "about": "The material a kit component paints behind its own content under glass, and the surface style of the node it paints behind.",
+    "about": "The host every kit glass surface renders through, the material a kit component paints behind its own content under glass, and the surface style of the node it paints behind.",
     "names": [
       {
         "name": "GlassPane",
@@ -363,6 +363,14 @@ export const DEPRECATED_SECTIONS: DeprecatedSection[] = [
         "type": true,
         "summary": "The props of `GlassPane`: the layer and material options of the host it paints behind, the host's shape, and its tint.",
         "instead": "Kit internals: use the props of the kit component that paints the material, such as `CardProps` or `ButtonProps`. It keeps working until a major.",
+        "replacement": null,
+        "replacementRoute": null
+      },
+      {
+        "name": "GlassSurface",
+        "type": false,
+        "summary": "The host every kit glass surface renders through (a Card, a Dialog, a Popover's card, the Navbar, an option list and the rest), painting its layer's material behind its children.",
+        "instead": "Kit internals: every kit surface renders its own material on its layer under ThemeProvider `glass`, so use that component (`Card` for a content pane, `Dialog`, `Popover` or `Drawer` for a floating one). It keeps working until a major.",
         "replacement": null,
         "replacementRoute": null
       },
