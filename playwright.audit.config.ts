@@ -5,6 +5,11 @@
  *
  *   Chromium only     the probe reads paint stacks and the frame waits use Chromium's
  *                     DevTools protocol (e2e/support/docs.ts `animationFrames`).
+ *   new headless      `channel: "chromium"`, the full browser in its new headless mode.
+ *                     The old headless shell leaves a backdrop blur over scrolled content
+ *                     unrendered, so a glass cell's photograph showed frost without its
+ *                     blur; the global setup refuses a browser that still does
+ *                     (e2e/audit/backdrop-check.ts).
  *   DPR 2             every card.png is a retina picture, the density the reviewers read.
  *   reduced motion    as the suite: the kit reads prefers-reduced-motion, so the loops and
  *                     transitions are still for the photograph.
@@ -46,6 +51,6 @@ export default defineConfig({
     screenshot: "off",
     video: "off",
   },
-  projects: [{ name: "audit-web", use: { browserName: "chromium" } }],
+  projects: [{ name: "audit-web", use: { browserName: "chromium", channel: "chromium" } }],
   webServer: process.env.E2E_BASE_URL ? undefined : DOCS_SERVER,
 });

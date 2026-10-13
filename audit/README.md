@@ -437,7 +437,11 @@ worktree, so their records were not kept; each component's own turn starts its r
 with Playwright (`playwright.audit.config.ts`, `e2e/audit/`; `bun run e2e` never runs it):
 Chromium at device scale 2, reduced motion, the page clock fixed at the suite's
 `FIXED_TIME`, 6 workers (`--workers`); the manifest records those settings as read off the
-configuration and `FIXED_TIME` themselves. It serves `docs/dist` through the suite's own
+configuration and `FIXED_TIME` themselves. Chromium runs in its new headless mode
+(`channel: "chromium"`): the old headless shell leaves a backdrop blur over scrolled content
+unrendered, so every web glass cell captured before 2026-10-13 shows the frost without its
+blur, and contrast read off those photographs is not the material's. The run refuses a
+browser that still does (`e2e/audit/backdrop-check.ts`, before the first cell). It serves `docs/dist` through the suite's own
 export server on 4173 (reused when one is already up), or captures whatever `--base` names.
 
 Only this checkout's source is captured. Before the first cell the run opens
