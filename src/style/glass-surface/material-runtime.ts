@@ -9,8 +9,6 @@ export interface FrostProps {
   tint: "light" | "dark";
   style: StyleProp<ViewStyle>;
   experimentalBlurMethod?: "dimezisBlurView";
-  blurMethod?: "dimezisBlurView" | "none";
-  blurTarget?: React.RefObject<import("react-native").View | null>;
 }
 
 // Optional peers are loaded through a GUARDED require, never a static import, AND the

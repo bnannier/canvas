@@ -212,27 +212,18 @@ export interface GlassBlurTargetHostProps {
   pageHidden?: boolean;
 }
 
-// The Android blur-method props for the frost BlurView, chosen by which expo-blur API
-// generation is installed. expo-blur 57+ (detected by its BlurTargetView export) wants
-// `blurMethod` + `blurTarget`; passing the legacy prop there logs a deprecation
-// warning, and naming the dimezis method without a target logs a fallback warning, so
-// without a target it defensively asks for "none". The renderer resolves that
-// missing-target case to the complete solid skin before mounting a BlurView.
-// Older expo-blur keeps the legacy prop
-// unchanged, which still blurs the content behind the surface there. Web ignores all
-// three props (its backdrop-filter path never reads them).
+// The Android blur-method prop for expo-blur's frost, by the API generation installed. A
+// release before expo-blur 57 (no BlurTargetView export) blurs the content behind the
+// surface with the legacy `experimentalBlurMethod`. From 57 its Android blur samples only a
+// blur target, and the kit never hands it one: the one safe target, a capture plane, exists
+// only where @nannier/canvas-blur mounted its capture host, and there the Android host
+// renders canvas-blur's own frost; without it a surface needing a target resolves its
+// complete solid skin before any BlurView mounts (material-resolution.ts, `missing-target`).
+// So from 57 it takes no method prop, and the web and iOS hosts never read one.
 // Keep the return contract structural: an Expo type here leaks into Canvas's
 // public declarations and forces consumers to install an otherwise optional peer.
-export function frostMethodProps(
-  supportsBlurTarget: boolean,
-  target: RefObject<View | null> | null,
-): {
-  experimentalBlurMethod?: "dimezisBlurView";
-  blurMethod?: "dimezisBlurView" | "none";
-  blurTarget?: RefObject<View | null>;
-} {
-  if (!supportsBlurTarget) return { experimentalBlurMethod: "dimezisBlurView" };
-  return target ? { blurMethod: "dimezisBlurView", blurTarget: target } : { blurMethod: "none" };
+export function frostMethodProps(supportsBlurTarget: boolean): { experimentalBlurMethod?: "dimezisBlurView" } {
+  return supportsBlurTarget ? {} : { experimentalBlurMethod: "dimezisBlurView" };
 }
 
 // Blur strength for the frost. expo-blur maps intensity to a blur radius (~0.2px

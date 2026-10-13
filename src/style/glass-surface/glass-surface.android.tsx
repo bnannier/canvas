@@ -38,7 +38,7 @@ export function GlassSurface(props: GlassSurfaceProps) {
   const material = solid ? null : <>
     {over ? null : tintLayer}
     {NativeCaptureFrost && target ? <NativeCaptureFrost targetRef={target} intensity={intensity} tint={theme.dark ? "dark" : "light"} style={fill} onTargetRejected={reject ? () => reject(target) : undefined} />
-      : FrostView ? <FrostView intensity={intensity} tint={theme.dark ? "dark" : "light"} {...frostMethodProps(requiresBlurTarget, target)} style={fill} /> : null}
+      : FrostView ? <FrostView intensity={intensity} tint={theme.dark ? "dark" : "light"} {...frostMethodProps(requiresBlurTarget)} style={fill} /> : null}
     {over ? tintLayer : null}
     <View style={rim} />
   </>;
