@@ -499,7 +499,6 @@ export function createSlider(skin: SliderSkin) {
             responder, keeping the drag/jump on one code path. */}
         <GlassSurface
           layer="control"
-          interactive
           pointerEvents="none"
           testID={props.testID ? `${props.testID}-thumb` : undefined}
           tint={skin.glassTint?.(tokens)}

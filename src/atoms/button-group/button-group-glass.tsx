@@ -12,7 +12,6 @@ export function GroupGlass({ selected = false, brand, testID }: { selected?: boo
     <GlassSurface
       pointerEvents="none"
       testID={testID}
-      interactive={selected || brand != null}
       brand={brand}
       tint={selected ? alpha(dark ? tokens.foreground : tokens.background, dark ? 0.16 : 0.64) : undefined}
       style={[

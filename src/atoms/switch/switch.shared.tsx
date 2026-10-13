@@ -149,7 +149,6 @@ export function createSwitch(skin: SwitchSkin) {
           <GlassPane static layer="control" shape={trackShape} brand={checked && !disabled ? tokens.primary : undefined} />
           <GlassSurface
             layer="control"
-            interactive
             pointerEvents="none"
             tint={disabled ? tokens["muted-foreground"] : String(thumbShape.backgroundColor)}
             // The thumb keeps its solid place inside the track's border (panePlaced).
