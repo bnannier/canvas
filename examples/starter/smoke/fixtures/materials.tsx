@@ -101,9 +101,10 @@ export function MaterialsBody() {
       <GlassModalBlurTarget>
         <Card><Typography testID="material-misplaced">On Android, a bridge in the page keeps the solid skin.</Typography></Card>
       </GlassModalBlurTarget>
-      {/* The state washes (the owner's GP-2 decision): an errored field and a selected card
-          keep the solid recipe's ink at 4.5:1, on the page and on a content pane, so in the
-          light palettes their wash is almost none and the border carries the state. */}
+      {/* The state washes (the owner's GP-2 and GP-2b decisions): an errored field and a
+          selected card keep the solid recipe's ink at 4.5:1, on the page and on a content
+          pane. The error wash is none in every palette and the selection wash is solid's own
+          5 percent tint, so the border carries the state as in solid. */}
       <Typography h3>State washes</Typography>
       <Column snug testID="material-washes">
         <Input label="Amount" prefix="$" placeholder="0.00" error testID="material-wash-field" />
