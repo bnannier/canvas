@@ -218,13 +218,28 @@ export interface JavaScriptBudget {
 // 58,130 / 57,727 / 57,956B on main once the turn landed, ~3.7KB gzip, 2.3KB over the
 // 55,808B ceiling, which moved to 61,440B for that deliberate growth (5.7% headroom over
 // the web figure).
+// Button was 10,152 / 9,765 / 10,036B and DataTable 47,992 / 48,808 / 49,005B (web /
+// iOS / Android) before the GlassPane audit turn (the owner's GP-1 decision and GP-3).
+// Under glass every pane host now trades its resting border for padding of the same
+// width so the material covers its whole solid footprint (`paneStyle`'s trade over each
+// side's logical and physical border and padding keys, in glass-pane.tsx), a pane inside
+// a kept state border takes concentric corners (`paneShape`), and the Increase Contrast
+// border reads each side's own width so it never thins a ring and keeps an underline
+// field's state colour (`borderSides` and `contrastBorderFor` in glass-surface.shared.tsx).
+// DataTable also carries the helpers that keep absolutely placed children where solid
+// puts them (`paneEdges`, `panePlaced`), for its Select, Switch and field. The turn's own
+// duplication went first (paneStyle takes GlassBox's `clearedPaint` and walks one side
+// table). Measured after at Button 10,746 / 10,373 / 10,638B and DataTable 48,512 /
+// 49,464 / 49,685B, ~600B gzip on Button and ~680B on DataTable. The Button ceiling moved
+// from 10,240 to 11,520B and DataTable's from 49,664 to 53,248B (7% headroom over the web
+// Button and the Android DataTable figures); Input and StackedList keep theirs.
 // Fixed ceilings leave room for deliberate growth while catching a heavy import.
 // These are independent budgets, not a combined total: shared modules legitimately
 // occur in more than one consumer. Changes require a fresh measurement and rationale.
 export const NAMED_IMPORT_BUDGETS: readonly JavaScriptBudget[] = [
-  { label: "Button + ThemeProvider", entry: "scripts/size-fixtures/button.ts", maxGzip: 10_240, requiredExports: ["Button", "ThemeProvider"] },
+  { label: "Button + ThemeProvider", entry: "scripts/size-fixtures/button.ts", maxGzip: 11_520, requiredExports: ["Button", "ThemeProvider"] },
   { label: "Input + ThemeProvider", entry: "scripts/size-fixtures/input.ts", maxGzip: 39_936, requiredExports: ["Input", "ThemeProvider"] },
-  { label: "DataTable + ThemeProvider", entry: "scripts/size-fixtures/data-table.ts", maxGzip: 49_664, requiredExports: ["DataTable", "ThemeProvider"] },
+  { label: "DataTable + ThemeProvider", entry: "scripts/size-fixtures/data-table.ts", maxGzip: 53_248, requiredExports: ["DataTable", "ThemeProvider"] },
   { label: "StackedList + ThemeProvider", entry: "scripts/size-fixtures/stacked-list.ts", maxGzip: 61_440, requiredExports: ["StackedList", "ThemeProvider"] },
 ];
 
