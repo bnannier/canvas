@@ -27,7 +27,8 @@ const EMPTY_TARGET = { current: null };
  * before iOS 26. On Android it is the capture frost of `@nannier/canvas-blur` where a capture
  * plane is ready (an overlay outlet, a bridged Modal) and expo-blur's frost on its releases
  * before 57, while a surface in the page resolves its solid skin. A `brand` paints
- * brand-tinted glass and a `tint` a wash.
+ * brand-tinted glass, a `tint` a wash, and a `boundaryFill` a control's boundary over the
+ * material.
  *
  * Where its material resolves solid (in solid mode, under Reduce Transparency or Increase
  * Contrast, where an optional peer is missing, a browser lacks a backdrop filter or an
