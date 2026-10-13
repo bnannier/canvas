@@ -468,6 +468,18 @@ export function splitSurfaceStyle(style: StyleProp<ViewStyle>): Split {
   return { outer: outer as ViewStyle, clip: clip as ViewStyle };
 }
 
+// A surface's `pointerEvents`, as registered styles. React Native Web compiles its box-none
+// and box-only polyfill (the box itself `pointer-events: none` or its children so) only for
+// a StyleSheet.create style and passes an inline value straight to CSS, which has no such
+// value, so an inline `{ pointerEvents: "box-none" }` was dropped on the web (the outlet's
+// note in portal.tsx); React Native Web deprecates the prop of that name for the style.
+const POINTER = StyleSheet.create({
+  auto: { pointerEvents: "auto" },
+  none: { pointerEvents: "none" },
+  "box-none": { pointerEvents: "box-none" },
+  "box-only": { pointerEvents: "box-only" },
+});
+
 // A stable content host for every appearance. Only the decorative material is
 // clipped; content, focus rings, hit targets and the exterior shadow keep the
 // skin's own layout and overflow policy. Switching modes never reparents children.
@@ -499,7 +511,7 @@ export function GlassBox({
   // a stacking context of its own holds the material inside the box. React Native Web drops
   // the prop before the DOM.
   return (
-    <View style={[style, solid ? null : clearedPaint(style, stateBorder), pointerEvents ? { pointerEvents } : null]} testID={testID} role={role} onLayout={onLayout} onAccessibilityEscape={onAccessibilityEscape} collapsable={material || onAccessibilityEscape ? false : undefined}>
+    <View style={[style, solid ? null : clearedPaint(style, stateBorder), pointerEvents ? POINTER[pointerEvents] : null]} testID={testID} role={role} onLayout={onLayout} onAccessibilityEscape={onAccessibilityEscape} collapsable={material || onAccessibilityEscape ? false : undefined}>
       {material ? (
         <View testID="glass-material" accessible={false} accessibilityElementsHidden importantForAccessibility="no-hide-descendants" style={[materialFill(style), { overflow: "hidden", zIndex: -1 }]}>
           {material}
@@ -514,7 +526,7 @@ export function GlassBox({
 // surface (keeps the skin's own opaque fill from `style`).
 export function PlainSurface({ style, children, pointerEvents, testID, role, onLayout, onAccessibilityEscape }: GlassSurfaceProps) {
   return (
-    <View style={[style, pointerEvents ? { pointerEvents } : null]} testID={testID} role={role} onLayout={onLayout} onAccessibilityEscape={onAccessibilityEscape} collapsable={onAccessibilityEscape ? false : undefined}>
+    <View style={[style, pointerEvents ? POINTER[pointerEvents] : null]} testID={testID} role={role} onLayout={onLayout} onAccessibilityEscape={onAccessibilityEscape} collapsable={onAccessibilityEscape ? false : undefined}>
       {children}
     </View>
   );
