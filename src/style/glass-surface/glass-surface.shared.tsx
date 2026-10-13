@@ -367,37 +367,41 @@ export function borderSides(style: StyleProp<ViewStyle>): BorderSides {
   };
 }
 
+/** The side each border width key sets, a physical left or right read as start or end (as `borderSides` reads it). */
+const WIDTH_SIDE: Readonly<Record<string, keyof BorderSides | undefined>> = {
+  borderTopWidth: "top", borderBottomWidth: "bottom",
+  borderStartWidth: "start", borderLeftWidth: "start",
+  borderEndWidth: "end", borderRightWidth: "end",
+};
+
 /**
- * The Increase Contrast border for one surface. A resting surface takes the contrasting
- * border in `foreground` on every side, at least the hairline and never thinner than its
- * own width there, so Increase Contrast only ever adds weight (a 2 px radio ring or switch
- * track stays 2 px). A surface whose border shows a STATE (a focused or errored field, an
- * open trigger, a focused slider knob, the current step) keeps that colour, since it is the
- * state's only indicator (overwriting a field's `ring` focus border would leave a keyboard
- * user no focus cue at all), and only gains the contrast width where its own is thinner. A
- * style that names no border colour has no state border to keep, so it takes the
- * contrasting border.
+ * The Increase Contrast border for one surface: on every side at least the hairline and
+ * never thinner than the surface's own border there, so Increase Contrast only ever adds
+ * weight (a 2 px radio ring or switch track stays 2 px), in `foreground`. A surface whose
+ * border shows a STATE (`stateBorder`: a focused or errored field, an open trigger, a
+ * focused slider knob, the current step) keeps every border colour its style names, since
+ * that border is the state's only indicator (overwriting a field's `ring` focus border
+ * would leave a keyboard user no focus cue at all): a full border keeps its colour all
+ * round, and a Material 3 underline field its bottom edge, the active indicator, while the
+ * sides it names no colour for take the contrasting border. A state style that names no
+ * border colour has no state border to keep, so it takes the contrasting border.
  */
 export function contrastBorderFor(tokens: ColorTokens, style: StyleProp<ViewStyle>, stateBorder = false): ViewStyle {
   const flat = (StyleSheet.flatten(style) ?? {}) as Record<string, unknown>;
-  if (stateBorder && flat.borderColor != null) return { borderWidth: Math.max(CONTRAST_BORDER_WIDTH, (flat.borderWidth as number | undefined) ?? 0) };
-  const at = (width: number) => Math.max(CONTRAST_BORDER_WIDTH, width);
   const sides = borderSides(flat as ViewStyle);
+  const at = (side: keyof BorderSides) => Math.max(CONTRAST_BORDER_WIDTH, sides[side]);
   const out: Record<string, unknown> = { ...contrastBorder(tokens) };
   if (sides.top === sides.bottom && sides.top === sides.start && sides.top === sides.end) {
-    out.borderWidth = at(sides.top);
+    out.borderWidth = at("top");
   } else {
-    Object.assign(out, { borderTopWidth: at(sides.top), borderBottomWidth: at(sides.bottom), borderStartWidth: at(sides.start), borderEndWidth: at(sides.end) });
+    Object.assign(out, { borderTopWidth: at("top"), borderBottomWidth: at("bottom"), borderStartWidth: at("start"), borderEndWidth: at("end") });
   }
   // A side's own key outranks the shorthand, so every one the style names is restated: its
-  // width (a physical key as the side React Native reads it) and its colour in `foreground`.
+  // width as the side reads it, and its colour, in `foreground` unless it shows the state.
   for (const key of Object.keys(flat)) {
-    if (!key.startsWith("border")) continue;
-    if (key.endsWith("Color")) out[key] = tokens.foreground;
-    else if (key === "borderTopWidth") out[key] = at(sides.top);
-    else if (key === "borderBottomWidth") out[key] = at(sides.bottom);
-    else if (key === "borderStartWidth" || key === "borderLeftWidth") out[key] = at(sides.start);
-    else if (key === "borderEndWidth" || key === "borderRightWidth") out[key] = at(sides.end);
+    const side = WIDTH_SIDE[key];
+    if (side) out[key] = at(side);
+    else if (key.startsWith("border") && key.endsWith("Color")) out[key] = stateBorder ? flat[key] : tokens.foreground;
   }
   return out as ViewStyle;
 }
@@ -465,10 +469,11 @@ export function splitSurfaceStyle(style: StyleProp<ViewStyle>): Split {
 
 /**
  * The fill and border colours of a style turned transparent: what the material supplies
- * instead. A border that shows a state keeps its colours (CLAUDE.md, the glass model: a
- * state border stays over the pane, and only a resting hairline gives way to the rim).
+ * instead, under GlassBox and under a GlassPane's host (`paneStyle`). A border that shows a
+ * state keeps its colours (CLAUDE.md, the glass model: a state border stays over the pane,
+ * and only a resting hairline gives way to the rim).
  */
-function clearedPaint(style: StyleProp<ViewStyle>, stateBorder: boolean): ViewStyle {
+export function clearedPaint(style: StyleProp<ViewStyle>, stateBorder: boolean): ViewStyle {
   if (stateBorder) return { backgroundColor: "transparent" };
   const flat = (StyleSheet.flatten(style) ?? {}) as Record<string, unknown>;
   const clear: Record<string, unknown> = { backgroundColor: "transparent", borderColor: "transparent" };

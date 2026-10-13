@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, spyOn } from "bun:test";
-import { cleanup, render, screen, waitFor } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { Children, cloneElement, Fragment, isValidElement, type ReactElement, type ReactNode } from "react";
 import { Text, TextInput, View, type ViewStyle } from "react-native";
 import { ThemeProvider } from "../src/style/theme.tsx";
@@ -420,7 +420,14 @@ describe("Increase Contrast only ever adds weight", () => {
       borderWidth: 1, borderColor: fg, borderTopWidth: 1, borderBottomWidth: 2, borderStartWidth: 1, borderEndWidth: 1, borderBottomColor: fg,
     });
     // A state border keeps its colour and its width.
-    expect(contrastBorderFor(lightColors, { borderWidth: 2, borderColor: lightColors.ring }, true)).toEqual({ borderWidth: 2 });
+    expect(contrastBorderFor(lightColors, { borderWidth: 2, borderColor: lightColors.ring }, true)).toEqual({ borderWidth: 2, borderColor: lightColors.ring });
+    // A Material 3 underline field's state is its bottom edge, the active indicator: that edge
+    // keeps its colour, and the sides it names no colour for take the contrasting hairline.
+    expect(contrastBorderFor(lightColors, { borderBottomWidth: 2, borderBottomColor: lightColors.destructive }, true)).toEqual({
+      borderWidth: 1, borderColor: fg, borderTopWidth: 1, borderBottomWidth: 2, borderStartWidth: 1, borderEndWidth: 1, borderBottomColor: lightColors.destructive,
+    });
+    // A state style that names no border colour has no state border to keep.
+    expect(contrastBorderFor(lightColors, { borderWidth: 2 }, true)).toEqual({ borderWidth: 2, borderColor: fg });
   });
 
   function contrastMore() {
@@ -448,6 +455,44 @@ describe("Increase Contrast only ever adds weight", () => {
       render(<ThemeProvider light solid><RadioGroup defaultValue="pro" label="Plan"><Radio value="hobby">Hobby</Radio><Radio value="pro">Pro</Radio></RadioGroup></ThemeProvider>);
       await waitFor(() => expect(ring(screen.getAllByRole("radio")[0]!.firstElementChild!).color).toBe(hex(fg)));
       for (const radio of screen.getAllByRole("radio")) expect(ring(radio.firstElementChild!)).toEqual({ width: 2, color: hex(fg) });
+    } finally { spy.mockRestore(); }
+  });
+
+  it("a Material 3 underline field keeps its state colour on its active indicator", async () => {
+    // The Android Input, Textarea, Select and Autocomplete draw their state on the bottom edge
+    // alone (activeIndicator): an error in destructive, focus in ring, an open trigger in
+    // primary, each 2 dp. Increase Contrast keeps that colour and width; a resting field's
+    // 1 dp indicator takes the foreground.
+    const spy = contrastMore();
+    try {
+      render(
+        <ThemeProvider light solid>
+          <AndroidInput label="Name" error />
+          <AndroidTextarea label="Notes" error />
+          <AndroidInput label="Email" />
+          <AndroidInput label="Phone" />
+          <AndroidSelect label="Country" options={["Canada", "Mexico"]} />
+          <AndroidAutocomplete label="Assigned to" options={["Ada Lovelace", "Grace Hopper"]} />
+        </ThemeProvider>,
+      );
+      const indicator = (node: Element) => {
+        let at: Element | null = node;
+        while (at && borderOf(at, "bottom") === 0) at = at.parentElement;
+        return at ? { width: borderOf(at, "bottom"), color: channels(getComputedStyle(at).getPropertyValue("border-bottom-color")) } : null;
+      };
+      const [name, email, phone, assigned] = Array.from(document.querySelectorAll("input"));
+      const notes = document.querySelector("textarea")!;
+      await waitFor(() => expect(indicator(phone!)).toEqual({ width: 1, color: hex(fg) }));
+      expect(indicator(name!)).toEqual({ width: 2, color: hex(lightColors.destructive) });
+      expect(indicator(notes)).toEqual({ width: 2, color: hex(lightColors.destructive) });
+      fireEvent.focus(email!);
+      await waitFor(() => expect(indicator(email!)).toEqual({ width: 2, color: hex(lightColors.ring) }));
+      fireEvent.focus(assigned!);
+      await waitFor(() => expect(indicator(assigned!)).toEqual({ width: 2, color: hex(lightColors.ring) }));
+      const trigger = screen.getAllByRole("button").find((node) => node.textContent?.includes("Country"))!;
+      expect(indicator(trigger)).toEqual({ width: 1, color: hex(fg) });
+      fireEvent.click(trigger);
+      await waitFor(() => expect(indicator(trigger)).toEqual({ width: 2, color: hex(lightColors.primary) }));
     } finally { spy.mockRestore(); }
   });
 
