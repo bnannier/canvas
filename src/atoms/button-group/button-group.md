@@ -8,8 +8,10 @@ All four kinds follow the theme's surface mode. Toggle Liquid Glass in the docs,
 or use `<ThemeProvider glass>` in an app: segmented groups paint a glass
 selection pill on the selected segment, a split group is its call to action's
 brand-tinted glass (the action colour under the material, as a primary Button), a
-stepper shares a glass capsule, and spaced peers get individual glass surfaces. Solid mode keeps each
-platform's existing skin. The material uses native Liquid Glass on supported iOS
+stepper shares a glass capsule, and spaced peers get individual glass surfaces. Every
+kind keeps its solid size under glass: the material covers the track or cell's whole
+footprint and a hairline border gives way to the material's edge, so switching the surface
+mode never moves the page. Solid mode keeps each platform's existing skin. The material uses native Liquid Glass on supported iOS
 versions, the native blur or tint fallback on Android and older iOS, and
 Dark Factory's frost in the browser. Reduce Transparency and Increase Contrast use the
 shared material's opaque fallbacks.

@@ -123,35 +123,27 @@ export const segmentedContainer: ViewStyle = {
 export const blockSegment: ViewStyle = { flex: 1 };
 
 // Glass is a theme material, shared across skins. Native controls retain their
-// platform feedback and glyphs; GlassSurface resolves the platform's material.
+// platform feedback and glyphs; GlassSurface resolves the platform's material. Under glass
+// every kind keeps its solid geometry (the owner's GP-1 decision): each cell and track hands
+// the skin's own box to `paneStyle`, which turns a resting border into padding and drops the
+// fill, and the group's material (`GroupGlass`) fills the track's or cell's whole footprint
+// on its own corners. Only the paint changes: the selected segment's puck is a separate
+// material (`GlassSelection`), so a segment's own fill and shadow give way to it.
 export const glassCorners: ViewStyle = { borderRadius: 9999 };
-export const glassStartCorners: ViewStyle = { borderTopStartRadius: 9999, borderBottomStartRadius: 9999 };
-export const glassEndCorners: ViewStyle = { borderTopEndRadius: 9999, borderBottomEndRadius: 9999 };
-export const glassSegmentedContainer: ViewStyle = {
-  ...segmentedContainer,
-  padding: 3,
-  ...glassCorners,
-};
 export const glassSelectionPosition: ViewStyle = { position: "absolute", pointerEvents: "none" };
 export const glassSelectionShadow: ViewStyle = customShadow({ offsetY: 1, radius: 3, opacity: 0.12, elevation: 2 });
-export const glassCell: ViewStyle = {
-  backgroundColor: "transparent",
-  borderWidth: 0,
-  borderTopWidth: 0,
-  borderBottomWidth: 0,
-  borderStartWidth: 0,
-  marginStart: 0,
-};
-export const glassSegmentLabel = (t: ColorTokens, selected: boolean): TextStyle => ({
+/**
+ * A segment's surface under glass: its geometry (border widths, which `paneStyle` trades for
+ * padding) without its paint, the fill and shadow the selection puck replaces.
+ */
+export function glassSurfaceGeometry(surface: ViewStyle): ViewStyle {
+  const { backgroundColor: _fill, boxShadow: _box, shadowColor: _color, shadowOffset: _offset, shadowOpacity: _opacity, shadowRadius: _radius, elevation: _elevation, ...geometry } = surface;
+  return geometry;
+}
+/** The label's colour under glass; its type and weight stay the skin's. */
+export const glassSegmentColor = (t: ColorTokens, selected: boolean): TextStyle => ({
   color: selected ? primaryText(t) : t.foreground,
-  fontWeight: selected ? "600" : "500",
 });
-export const glassDivider = (t: ColorTokens, height: number): ViewStyle => ({
-  width: 1,
-  height: height / 2,
-  backgroundColor: t.border,
-});
-
 // =============================================================================
 // Web: Dark Factory's segmented control. The row sits in a pill track (`secondary`,
 // DF's card2, with the `border` hairline, a 3px inset and a 2px gap); every segment is

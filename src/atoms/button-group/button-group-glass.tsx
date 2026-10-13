@@ -1,12 +1,14 @@
-import { StyleSheet, type LayoutRectangle } from "react-native";
+import { StyleSheet, type LayoutRectangle, type ViewStyle } from "react-native";
 import { GlassSurface, View, alpha, useTheme } from "../../style/index.js";
 import * as s from "./button-group.styles.js";
 
 /**
- * A material sibling behind the controls, so it never clips focus or intercepts taps.
+ * A material sibling behind the controls, so it never clips focus or intercepts taps. It
+ * fills its parent's padding box, the whole footprint of a track or cell whose resting border
+ * `paneStyle` turned into padding, on that parent's own `corners` (a pill by default).
  * `brand` makes it brand-tinted glass (the split's call to action, like a primary Button).
  */
-export function GroupGlass({ selected = false, brand, testID }: { selected?: boolean; brand?: string; testID?: string }) {
+export function GroupGlass({ selected = false, brand, corners = s.glassCorners, testID }: { selected?: boolean; brand?: string; corners?: ViewStyle; testID?: string }) {
   const { tokens, dark } = useTheme();
   return (
     <GlassSurface
@@ -16,7 +18,7 @@ export function GroupGlass({ selected = false, brand, testID }: { selected?: boo
       tint={selected ? alpha(dark ? tokens.foreground : tokens.background, dark ? 0.16 : 0.64) : undefined}
       style={[
         StyleSheet.absoluteFill,
-        s.glassCorners,
+        corners,
         { backgroundColor: selected ? tokens.card : tokens.muted },
         selected ? s.glassSelectionShadow : null,
       ]}
