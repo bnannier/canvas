@@ -484,7 +484,7 @@ describe.skipIf(!hasDist)("the audit checklists keep a reviewer's work", () => {
     expect(row("feeds")).toBe(
       "| Interaction states | static: An activity list whose rows are read-only in every rail example. focus exempt, verified: `onItemPress` makes each row a button, a tab stop, and `virtualized` scrolls the rows in a list that is one once they overflow; no rail example passes either. pressed exempt, verified: `onItemPress` makes each row a button; no rail example passes it. |",
     );
-    expect(row("badge")).toBe("| Interaction states | static: A status label: it takes no input. |");
+    expect(row("badge")).toBe("| Interaction states | recipes: hover on Reference link (web row; desktop), focus on Reference link (web row; desktop), pressed on Reference link (web row; desktop). |");
     const steps = componentFacts("steps", sources.corpus).states;
     expect(steps).toMatchObject({ listed: true, recipes: [], unanswered: [], unshown: [], unreachable: [], exempt: [{ state: "focus", failure: null }, { state: "pressed", failure: null }] });
   });
