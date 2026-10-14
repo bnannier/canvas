@@ -46,6 +46,17 @@ Lucide-style outline. 1.75 stroke width, rounded caps. The stroke defaults to th
 <IconGallery />
 ```
 
+### Disclosure indicator
+
+`disclosure` turns the glyph 180 degrees over the original Argus 180ms ease when
+`expanded` changes. Reduce Motion snaps to the target. The existing glyph, color
+and stroke props keep their usual meaning.
+
+```tsx
+<Icon disclosure expanded decorative chevronDown muted heavyStroke size={14} />
+```
+
+
 ## Do & Don't
 
 ### Stroke coherence
