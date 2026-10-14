@@ -41,6 +41,7 @@ export const TEXT_ROLES: Record<string, Record<string, ReadingRole>> = {
     "typeScale.stageLabel": "caption",
   },
   "src/atoms/typography/typography.styles.ts": {
+    sectionDescription: "small",
     "roleType.micro": "caption",
     "roleType.tag": "caption",
     "roleType.eyebrow": "caption",

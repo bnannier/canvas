@@ -235,3 +235,11 @@ export function decorationStyle(decoration: Decoration): TextStyle {
 // carries no platform branch.
 export type Numerals = "tabular";
 
+
+/** A heading and its count/metadata wrap on a shared baseline. */
+export const sectionRow: import("react-native").ViewStyle = { flexDirection: "row", gap: 10, alignItems: "baseline", flexWrap: "wrap" };
+export const sectionActions: import("react-native").ViewStyle = { marginLeft: "auto" };
+export const sectionDescription = (tokens: ColorTokens, compact: boolean): TextStyle => ({
+  fontSize: compact ? 11.5 : 12, lineHeight: compact ? 16.1 : 16.8,
+  fontWeight: compact ? "600" : "500", color: tokens["muted-foreground"], flexShrink: 1,
+});
