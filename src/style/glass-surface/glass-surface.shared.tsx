@@ -695,7 +695,9 @@ export function specularRim(style: StyleProp<ViewStyle>, dark: boolean, inside =
 // surface (a docs Props table, 4158 pt at 3x). On the iPhone 17 Pro simulator's iOS 27 runtime
 // a rim alone renders clean at 2700 pt and tiles grey from 2780 pt, 8192 px at 3x being
 // 2731 pt. So a tall rim is drawn in bands of at most half that limit, each the rim clipped to
-// its band.
+// its band, and the single rim is capped at one band: the inset shadow's path runs a blur
+// radius past the view's bounds (RCTGetInsetBoxShadowLayer), so even a rim of exactly twice a
+// band would ask for more than the limit.
 export const RIM_BAND_PIXELS = 4096;
 
 // How far a band's rim runs past its band's clip, so the edges the band does not own (an
@@ -716,21 +718,36 @@ function bandCorners(corners: ViewStyle, top: boolean, bottom: boolean): ViewSty
 }
 
 /**
- * The native frost's specular rim (`SPECULAR_RIM`), on iOS's and Android's frost, drawn so no
- * shadow it asks for is taller than `RIM_BAND_PIXELS`: one rim over the whole surface up to
- * that height, and past it a column of bands, the first with the top edge and corners, the last
- * with the bottom ones, each the rim clipped to its band and running `RIM_BAND_OVERLAP` past
- * the edges it does not own, so the bands together draw exactly the one rim.
+ * The native frost's specular rim (`SPECULAR_RIM`), on iOS's and Android's frost: one rim over
+ * a surface up to `RIM_BAND_PIXELS` tall, and past it a column of bands, the first with the top
+ * edge and corners, the last with the bottom ones, each the rim clipped to its band and running
+ * `RIM_BAND_OVERLAP` past the edges it does not own, so the bands together draw exactly the one
+ * rim.
  *
- * It never draws an edge where the surface has none. It reads the surface's height in the
- * commit that mounts it, from a layout effect: React Native's New Architecture lays out in that
- * commit and applies the effect's update before the frame is drawn, as a browser does, so the
- * first frame already holds the rim whole or in its bands. Where no height can be read there
- * (nothing reports `offsetHeight`), it draws nothing until the surface's first layout lands,
- * never a guessed rim whose cut-off bottom edge would cross the surface. Afterwards it follows
- * `onLayout`: the single rim spans the surface, so it keeps the right edges while a surface grows
- * before its new layout lands (to twice a band, still under Core Animation's limit), and bands
- * past the surface's new end are clipped away while it shrinks.
+ * Its contract, in every frame:
+ *
+ * - No shadow view is ever taller than a band and its overlaps, whatever the surface's height
+ *   does before React hears of it. The bound is in each view's own style, never in the band
+ *   count: the single rim is capped at a band (`maxHeight`), each band's rim has a fixed
+ *   height, and the last band's rim keeps that height at the surface's bottom edge. So a
+ *   surface that grows in a commit the rim does not render in (a child's own state, a reflow)
+ *   never asks Core Animation for a shadow past its 8192 px limit. What it costs, for the
+ *   frames until that growth's `onLayout` lands: a grown single rim stops at a band's height,
+ *   its bottom edge across the surface there and no rim below it; past one band, the last
+ *   band's rim stays at the bottom edge and the length between it and the band above has no
+ *   rim, its top edge showing where it starts.
+ * - It reads the surface's height in every commit it renders in, mount or update, from a
+ *   layout effect: React Native's New Architecture lays out in that commit and applies the
+ *   effect's update before the frame is drawn, as a browser does, so a surface the rim mounts
+ *   on, or grows or shrinks in a commit that re-renders its host (a DataTable given more
+ *   rows), draws its rim whole or in its bands from that commit's frame, never a rim cut off
+ *   across it. Where no height can be read there (nothing reports `offsetHeight`), it draws
+ *   nothing until the surface's first layout lands, never a guess.
+ * - A surface no taller than a band draws the one rim, uncapped in effect: the cap only binds
+ *   past a band, so its look is `specularRim`'s own.
+ *
+ * Between those reads it follows `onLayout`, and bands past a shrinking surface's end are
+ * clipped away.
  */
 export function SpecularRim({ style, dark, inside = false }: { style: StyleProp<ViewStyle>; dark: boolean; inside?: boolean }) {
   const band = RIM_BAND_PIXELS / PixelRatio.get();
@@ -738,10 +755,12 @@ export function SpecularRim({ style, dark, inside = false }: { style: StyleProp<
   const [bands, setBands] = useState<number | null>(null);
   const frame = useRef<View>(null);
   const bandsFor = useCallback((height: number) => Math.max(1, Math.ceil(height / band)), [band]);
+  // No dependency list: the height is read after every commit the rim renders in, not only
+  // the one that mounts it. An unchanged count bails out without rendering again.
   useIsomorphicLayoutEffect(() => {
     const height = (frame.current as unknown as { offsetHeight?: unknown } | null)?.offsetHeight;
     if (typeof height === "number") setBands(bandsFor(height));
-  }, [bandsFor]);
+  });
   const onLayout = useCallback((event: LayoutChangeEvent) => {
     setBands(bandsFor(event.nativeEvent.layout.height));
   }, [bandsFor]);
@@ -750,7 +769,7 @@ export function SpecularRim({ style, dark, inside = false }: { style: StyleProp<
   if (bands === 1) {
     return (
       <View ref={frame} testID="glass-rim" style={RIM_FRAME} onLayout={onLayout}>
-        <View style={specularRim(style, dark, inside)} />
+        <View style={[specularRim(style, dark, inside), { maxHeight: band }]} />
       </View>
     );
   }

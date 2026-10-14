@@ -1,0 +1,5 @@
+---
+"@nannier/canvas": patch
+---
+
+On iOS's and Android's frost a surface that grows past two bands of its specular rim before its next layout no longer flashes Core Animation's flat dark tiles. The single rim spanned whatever its surface became, so a frosted surface measured short (a DataTable showing a few rows) that grew taller than about 2730 pt at 3x in one update (the same table given a long page) asked iOS for a shadow past its 8192 px limit for a frame or two, until its new layout re-banded the rim. Every shadow view of the rim is now bounded by its own style, the single rim capped at one band (4096 px), so no frame asks for an oversized shadow whatever the surface does. The rim also reads its surface's height in every update it renders in, not only the one that mounts it, so a surface that grows with its owner's re-render draws its bands from that update's first frame. A surface no taller than a band keeps its whole single rim, unchanged; solid mode and the web, which draws no specular rim, are unchanged.
