@@ -1430,3 +1430,13 @@ material for framed references. No optical or animation parameter changed.
 | Date | Effect and profile | Runtime and device | Revision (dirty?) | Surface | Values tried | rAF p50 / p95 / max (ms) | What the comparison showed | Versus reference | Artifacts |
 |---|---|---|---|---|---|---|---|---|---|
 | 2026-10-14 | Original static Argus brand mark | Installed Chrome headless, macOS, DPR 1; 1440 x 960/1100 and 390 x 844 | Canvas b0d69d5b plus logo Avatar; Argus 658874e plus sidebar import | shipped Argus sidebar and phone navigation, blush / mint / dark | Same 30px box, 9px corners, 14px extra-bold initial, 135-degree action-to-ring gradient and shadow; existing Avatar SVG renderer | n/a (static) | Fifteen page and drawer comparisons preserve geometry and appearance. Blush page and blush/mint phone navigation are pixel-identical; dark phone navigation differs by one pixel. Other sparse full-page differences are 0–93 pixels. | matches the existing Argus sidebar mark; native-device rendering was not assessed | `tools/native/reference/argus-logo-adoption/navigation-before.png` and `navigation-after.png` (zero pixels different) |
+
+
+## Argus authored Card artwork, 2026-10-14
+
+Reference: the original Argus featured approval, rail promotion and gradient samples.
+No artwork stops, geometry, type or motion parameters are retuned.
+
+| Date | Effect and profile | Runtime and device | Revision (dirty?) | Surface | Values tried | rAF p50 / p95 / max (ms) | What the comparison showed | Versus reference | Artifacts |
+|---|---|---|---|---|---|---|---|---|---|
+| 2026-10-14 | Authored gradients and featured hover | Chrome headless, macOS, DPR1, 1440x960 and 390x844 | Canvas 8c5a822e plus Card artwork; Argus 7c8f631 plus imports | shipped Argus roster and UI gallery, solid, blush/mint/dark | Original stops, CSS-angle endpoints, responsive dimensions; unchanged 2px/180ms ease lift and shadow | sample traces attached | Desktop blush/mint resting views are pixel-identical; dark has ten differing pixels. Phone and hover images retain appearance and geometry with primarily one-level SVG/background raster differences; mobile blush has 6317 one-level differences and 132 other pixels. Gallery differences are sparse (573–1541 pixels). Motion traces preserve endpoints, duration, easing and shadow. | matches original geometry and appearance within renderer raster variation; native WKWebView/device rendering unassessed | `tools/native/reference/argus-branded-card-adoption/featured-before.png`, `featured-after.png`, `motion-before.json`, `motion-after.json` |

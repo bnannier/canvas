@@ -40,7 +40,7 @@ const CORE_FILE_GZIP_OVERRIDES: Record<string, number> = {
   // role plus its frost tints, beside blush and the one dark palette), measured at
   // 2,403B gzip; 2,688B (2.625KB) leaves about the same headroom again while still
   // tripping well before the file could double.
-  "styles/tokens/colors.css": 2_688,
+  "styles/tokens/colors.css": 2_944,
 };
 
 // The shipped JavaScript budget: the whole kit, bundled with react / react-native /
@@ -109,7 +109,7 @@ const CORE_FILE_GZIP_OVERRIDES: Record<string, number> = {
 // ring beside it), 4.9 to 5.4KB on every platform, 4.5KB over the old cap on Android.
 // 235KB keeps 6.6% headroom over Android's figure, about the slack the 216KB cap started
 // with.
-export const JS_MAX_GZIP = 240_640; // 235 KB
+export const JS_MAX_GZIP = 241_664; // 236 KB
 
 export interface JavaScriptBudget {
   label: string;
@@ -283,6 +283,11 @@ export interface JavaScriptBudget {
 // unboxed geometry, fresh distribution measures Button at 12,378 / 11,035 / 11,300B
 // gzip (web / iOS / Android). Its fixed ceiling is 12,800B (3.4% web headroom).
 // The whole-package and all other consumer ceilings stay unchanged.
+// The seven authored Card gradient roles put colors.css at 2,800B gzip; its
+// dedicated ceiling becomes 2,944B. The overall CSS budget stays unchanged.
+// Original Argus Card artwork adds shared compositions and seven palette roles.
+// Fresh Android whole-kit gzip is 240,853B; the whole-kit ceiling becomes 241,664B
+// (811B headroom). All named-import caps stay fixed.
 export const NAMED_IMPORT_BUDGETS: readonly JavaScriptBudget[] = [
   { label: "Button + ThemeProvider", entry: "scripts/size-fixtures/button.ts", maxGzip: 12_800, requiredExports: ["Button", "ThemeProvider"] },
   { label: "Input + ThemeProvider", entry: "scripts/size-fixtures/input.ts", maxGzip: 43_008, requiredExports: ["Input", "ThemeProvider"] },

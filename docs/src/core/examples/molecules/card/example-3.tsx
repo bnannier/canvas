@@ -3,12 +3,8 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Card, Typography } = scope;
+  const { Button, Card } = scope;
   return (
-<Card>
-  <Typography lead semibold>The surface owns the rhythm</Typography>
-  <Typography small muted>Each line lands a steady step below the last.</Typography>
-  <Typography small muted>No layout wrapper between them.</Typography>
-</Card>
+<Card promo title="Gates come down only with receipts." body="Autonomy charter, circuit breakers, all as code." actions={<Button inlineLink link small extraBold inverse>Read the charter</Button>} />
   );
 }

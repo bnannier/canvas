@@ -413,3 +413,22 @@ it("owns reference summary content and opens the supplied source once", () => {
   fireEvent.click(getByRole("button", { name: "Open reference" }));
   expect(opened).toBe(1);
 });
+
+it("featured cards own their content and keep approval actions independent", () => {
+  let selected = 0, approved = 0;
+  const { getByText, getByRole, getAllByRole } = ui(<Card featured stacked interactiveContents steadyPress title="Blueprint" initials="B" eyebrow="Awaiting approval" badge="Architecture" body="Define the boundaries" caption="A human signs every one" metadata="Commerce" onPress={() => { selected++; }} actions={<Button onPress={() => { approved++; }}>Approve</Button>} />);
+  for (const text of ["Blueprint", "Awaiting approval", "Architecture", "Define the boundaries", "A human signs every one", "Commerce"]) expect(getByText(text)).toBeTruthy();
+  expect(getAllByRole("button").length).toBe(1);
+  fireEvent.click(getByRole("button", { name: "Approve" }));
+  expect(approved).toBe(1);
+  expect(selected).toBe(0);
+});
+
+it("promotional cards retain their title, body and action", () => {
+  let opened = 0;
+  const { getByText, getByRole } = ui(<Card promo title="Ship the next agent" body="Start with its charter" actions={<Button onPress={() => { opened++; }}>Read the charter</Button>} />);
+  expect(getByText("Ship the next agent")).toBeTruthy();
+  expect(getByText("Start with its charter")).toBeTruthy();
+  fireEvent.click(getByRole("button", { name: "Read the charter" }));
+  expect(opened).toBe(1);
+});

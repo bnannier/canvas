@@ -7,6 +7,15 @@ export type ColorScheme = "light" | "dark";
 
 /** Semantic color tokens. The named surface/intent colors components paint with. */
 export interface ColorTokens {
+  /** Authored brand artwork stops and the featured card's offset stack. */
+  "featured-start"?: string;
+  "featured-middle"?: string;
+  "featured-end"?: string;
+  "featured-stack"?: string;
+  "promo-start"?: string;
+  "promo-middle"?: string;
+  "promo-end"?: string;
+
   /** Optional informational text ink supplied by a brand. */
   info?: string;
   background: string;
@@ -135,6 +144,14 @@ export interface ColorTokens {
  * A frozen constant: read the live set from `useTheme().tokens`.
  */
 export const lightColors: ColorTokens = {
+  "featured-start": "#2b2a5e",
+  "featured-middle": "#4b3a8c",
+  "featured-end": "#7a55c8",
+  "featured-stack": "rgba(255, 255, 255, 0.5)",
+  "promo-start": "#8e7cf5",
+  "promo-middle": "#c98be9",
+  "promo-end": "#f3a5c8",
+
   background: "#f5f2fe",
   foreground: "#3b3c5c",
   card: "#ffffff",
@@ -189,6 +206,14 @@ export const lightColors: ColorTokens = {
  * constant: read the live set from `useTheme().tokens`.
  */
 export const darkColors: ColorTokens = {
+  "featured-start": "#2c2f72",
+  "featured-middle": "#5a3ab0",
+  "featured-end": "#a24fb4",
+  "featured-stack": "rgba(255, 255, 255, 0.14)",
+  "promo-start": "#5b4bd6",
+  "promo-middle": "#9a5cc9",
+  "promo-end": "#d16aa6",
+
   background: "#272544",
   foreground: "#ebebf7",
   card: "#252741",
@@ -258,6 +283,14 @@ export type Palette = "blush" | "mint";
  * `[data-palette="mint"]` block of styles/tokens/colors.css.
  */
 export const mintColors: ColorTokens = {
+  "featured-start": "#0f2b45",
+  "featured-middle": "#174a6a",
+  "featured-end": "#1e8a72",
+  "featured-stack": "rgba(255, 255, 255, 0.5)",
+  "promo-start": "#3f7fe0",
+  "promo-middle": "#4fb6c9",
+  "promo-end": "#8fe0b8",
+
   background: "#f0f7fd",
   foreground: "#2e3d4f",
   card: "#ffffff",

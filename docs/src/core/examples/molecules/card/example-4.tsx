@@ -3,10 +3,13 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Card, Typography } = scope;
+  const { Card, Progress, Column } = scope;
   return (
-<Card flat>
-  <Typography lead semibold>Outlined and quiet</Typography>
-</Card>
+<Column cozy>
+  <Card referenceInline referenceKey="CORE-1790" title="Size the pricing bet" description="In Progress" />
+  <Card referenceStacked referenceKey="CORE-1790" title="Size the pricing bet" description="In Progress" />
+  <Card referenceTile referenceKey="CORE-1790" title="Size the pricing bet" />
+  <Card referenceDetail referenceKey="CORE-1790" title="Size the pricing bet" description="In Progress · Platform Core" referenceSource="Jira" />
+</Column>
   );
 }

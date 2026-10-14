@@ -3,17 +3,12 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Card, Typography, Column } = scope;
+  const { Card, Typography } = scope;
   return (
-<Column cozy>
-  <Card compact>
-    <Typography lead semibold>Compact</Typography>
-    <Typography small muted>Tight padding and rhythm.</Typography>
-  </Card>
-  <Card comfortable>
-    <Typography lead semibold>Comfortable</Typography>
-    <Typography small muted>Roomy padding and rhythm.</Typography>
-  </Card>
-</Column>
+<Card>
+  <Typography lead semibold>The surface owns the rhythm</Typography>
+  <Typography small muted>Each line lands a steady step below the last.</Typography>
+  <Typography small muted>No layout wrapper between them.</Typography>
+</Card>
   );
 }

@@ -4,6 +4,14 @@
    to are in tools/darkfactory/tokens.json. The rgba roles are translucent by contract.
    src/style/tokens.ts mirrors the values. */
 :root{
+  --featured-start:oklch(0.317 0.09 280.8);
+  --featured-middle:oklch(0.412 0.131 288.9);
+  --featured-end:oklch(0.546 0.172 294.9);
+  --featured-stack:rgba(255, 255, 255, 0.5);
+  --promo-start:oklch(0.659 0.174 287.4);
+  --promo-middle:oklch(0.733 0.146 313.5);
+  --promo-end:oklch(0.808 0.101 351.1);
+
   --background:oklch(0.967 0.016 297.5);
   --foreground:oklch(0.37 0.055 282);
   --card:oklch(1 0 0);
@@ -94,6 +102,14 @@
    tints keep blush's place between the palette's shell and its opaque card
    (web-frost.ts). */
 [data-palette="mint"]:not(:where(.dark, .dark *)){
+  --featured-start:oklch(0.282 0.059 249.2);
+  --featured-middle:oklch(0.392 0.076 240.6);
+  --featured-end:oklch(0.569 0.101 173.3);
+  --featured-stack:rgba(255, 255, 255, 0.5);
+  --promo-start:oklch(0.604 0.162 258.6);
+  --promo-middle:oklch(0.723 0.098 211.6);
+  --promo-end:oklch(0.843 0.098 161.9);
+
   --background:oklch(0.973 0.011 243.7);
   --foreground:oklch(0.355 0.037 253.3);
   --card:oklch(1 0 0);
@@ -138,6 +154,14 @@
   --glass-tint-content:rgba(255,255,255,0.76);--glass-tint-control:rgba(255,255,255,0.75);--glass-tint-dense:rgba(255,255,255,0.93);
 }
 .dark{
+  --featured-start:oklch(0.344 0.113 276.7);
+  --featured-middle:oklch(0.455 0.177 290);
+  --featured-end:oklch(0.57 0.17 320.2);
+  --featured-stack:rgba(255, 255, 255, 0.14);
+  --promo-start:oklch(0.514 0.204 281.7);
+  --promo-middle:oklch(0.591 0.169 308.4);
+  --promo-end:oklch(0.662 0.147 345.9);
+
   --background:oklch(0.283 0.056 285.2);
   --foreground:oklch(0.944 0.016 286.1);
   --card:oklch(0.284 0.048 279.5);
