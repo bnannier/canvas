@@ -3388,16 +3388,25 @@
     ],
     "resolver": "src/atoms/button/button.styles.ts#webBodyOf",
     "order": [
+      "scopeTrigger",
+      "filterTrigger",
       "inlineLink",
       "utility"
     ],
     "none": "button",
     "single": {
+      "scopeTrigger": "scope",
+      "filterTrigger": "filter",
       "inlineLink": "link",
       "utility": "utility"
     },
     "pairs": {
-      "inlineLink + utility": "inlineLink"
+      "filterTrigger + inlineLink": "filterTrigger",
+      "filterTrigger + scopeTrigger": "scopeTrigger",
+      "filterTrigger + utility": "filterTrigger",
+      "inlineLink + scopeTrigger": "scopeTrigger",
+      "inlineLink + utility": "inlineLink",
+      "scopeTrigger + utility": "scopeTrigger"
     }
   },
   "Button.inline ink": {

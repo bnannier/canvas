@@ -73,6 +73,10 @@ export interface ButtonProps extends MeasureProps {
   /** The reference link hover dims to 85% while keeping its normal ink. */
   softHover?: boolean;
   /** Inline text action: compact type, no box, and an 80% pointer-hover opacity. */
+  /** Original project-scope pill, including its action-colored dot. */
+  scopeTrigger?: boolean;
+  /** Original compact filter-menu pill. */
+  filterTrigger?: boolean;
   inlineLink?: boolean;
   /** Foreground ink on an inline text action. */
   foreground?: boolean;
@@ -186,7 +190,7 @@ export function createButton(skin: ButtonSkin) {
     const size = sizeOf(props);
 
     const iconBox = iconBoxOf(props);
-    const opts = { inlineLink: !!props.inlineLink, foreground: !!props.foreground, extraBold: !!props.extraBold, utility: iconBox != null, iconBox, wideIcon: !!props.wideIcon, circle: !!props.circle, inset: !!props.inset, inverse: !!props.inverse, quiet: !!props.quiet, softHover: !!props.softHover, consistent: !!props.consistent, comfortable: !!props.comfortable, icon: !!icon, block: !!block, dim: !!(disabled || loading), disabled: !!disabled };
+    const opts = { scopeTrigger: !!props.scopeTrigger, filterTrigger: !!props.filterTrigger, inlineLink: !!props.inlineLink, foreground: !!props.foreground, extraBold: !!props.extraBold, utility: iconBox != null, iconBox, wideIcon: !!props.wideIcon, circle: !!props.circle, inset: !!props.inset, inverse: !!props.inverse, quiet: !!props.quiet, softHover: !!props.softHover, consistent: !!props.consistent, comfortable: !!props.comfortable, icon: !!icon, block: !!block, dim: !!(disabled || loading), disabled: !!disabled };
     const sizing = useSizing(props);
     const container = skin.container(tokens, intent, size, opts);
     // Under glass a button that paints a surface (the skin says which) is a CONTROL-layer
@@ -297,6 +301,7 @@ export function createButton(skin: ButtonSkin) {
                   importantForAccessibility="no-hide-descendants"
                 />
               ) : null}
+              {!loading && props.scopeTrigger ? <View style={{ width: 7, height: 7, borderRadius: 9999, backgroundColor: actionFill(tokens) }} /> : null}
               {!loading && iconLeft != null ? iconLeft : null}
               {children != null ? <Text style={skin.label(tokens, intent, size, opts)}>{children}</Text> : null}
               {!loading && iconRight != null ? iconRight : null}

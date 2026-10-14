@@ -3,8 +3,8 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Button } = scope;
+  const { Button, Icon } = scope;
   return (
-<Button outline>Save changes</Button>
+<Button icon largeIcon circle ghost steadyPress count={3} accessibilityLabel="Approvals" iconLeft={<Icon bell size={17} mediumStroke muted />} />
   );
 }
