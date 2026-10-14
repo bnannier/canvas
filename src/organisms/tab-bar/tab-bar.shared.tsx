@@ -1,7 +1,7 @@
 import { primaryText } from "../../style/primary-text.js";
 import { type ReactNode } from "react";
 import { StyleSheet } from "react-native";
-import { View, Text, Pressable, GlassPane, GlassSurface, paneRipple, useTheme, useControllableState, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle } from "../../style/index.js";
+import { View, Text, Pressable, GlassPane, paneHost, GlassSurface, paneRipple, useTheme, useControllableState, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle } from "../../style/index.js";
 import { selectionTint } from "../../style/selection-tint.js";
 import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
 
@@ -141,7 +141,7 @@ export function createTabBar(skin: TabBarSkin) {
                 // borderless ripple, projected onto an ancestor's background, lands beneath:
                 // where it renders the ripple draws in the foreground (`paneRipple`).
                 android_ripple={paneRipple(glass && isActive && pill != null, skin.ripple ? skin.ripple(tokens) : undefined)}
-                style={({ pressed }) => [skin.item, skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null]}
+                style={({ pressed }) => [skin.item, skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null, paneHost(glass && isActive && pill != null && cellPill)]}
               >
                 {/* The cell capsule, behind the glyph and label alike. */}
                 {pill && cellPill && isActive ? (

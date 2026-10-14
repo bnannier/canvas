@@ -23,7 +23,7 @@ import {
   type ViewStyle,
   type TextStyle,
   type LayoutStyle,
-  GlassPane, paneStyle,
+  GlassPane, paneHost, paneStyle,
   isGlass,
 } from "../../style/index.js";
 
@@ -317,7 +317,7 @@ export function createInputOTP(skin: InputOTPSkin) {
                     {SEPARATOR}
                   </Text>
                 ) : null}
-                <View style={[RUN, skin.connected ? null : { gap }]}>
+                <View style={[RUN, skin.connected ? paneHost(theme) : { gap }]}>
                   {skin.connected ? <GlassPane {...entryMaterial.paneProps} shape={runShape} /> : null}
                   {run.map((index) => {
                     const char = value[index];

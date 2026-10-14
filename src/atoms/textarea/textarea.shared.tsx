@@ -6,7 +6,7 @@ import { frameHandlers, useFocusFrame } from "../../style/focus-frame.js";
 import { useComposedRefs } from "../../style/use-composed-refs.js";
 import { forwardRef, useId, useState } from "react";
 import { type TextInput as RNTextInput, type TextInputProps as RNTextInputProps } from "react-native";
-import { View, Text, TextInput, useFillStyle, FloatingLabel, LabelContent, labelA11y, requiredName, useFloatingLabelRoom, FOCUS_RESET, type MeasureProps, type SizingKey, type StyleProp, type TextStyle, type ViewStyle, GlassPane, paneStyle, isGlass, legibleWash, PANE_SIBLING_INPUT } from "../../style/index.js";
+import { View, Text, TextInput, useFillStyle, FloatingLabel, LabelContent, labelA11y, requiredName, useFloatingLabelRoom, FOCUS_RESET, type MeasureProps, type SizingKey, type StyleProp, type TextStyle, type ViewStyle, GlassPane, paneHost, paneStyle, isGlass, legibleWash, PANE_SIBLING_INPUT } from "../../style/index.js";
 import { type TextEntryProps } from "../input/input.shared.js";
 import { type TextareaSkin, type Size, sizeText, minHeight } from "./textarea.styles.js";
 
@@ -286,7 +286,7 @@ export function createTextarea(skin: TextareaSkin) {
     // carries width/style and the disabled dim so the label dims with the field.
     if (floating) {
       return (
-        <View style={[{ position: "relative" }, disabledDim, widthCap, style]}>
+        <View style={[{ position: "relative" }, disabledDim, widthCap, style, paneHost(theme)]}>
           {fieldPane}
           <TextInput
             ref={hostRef}
@@ -327,7 +327,7 @@ export function createTextarea(skin: TextareaSkin) {
           <Text nativeID={labelId} style={aboveLabelStyle} {...labelA11y(label!, true)}>
             <LabelContent label={label!} required={required} starColor={tokens.destructive} />
           </Text>
-          <View>
+          <View style={paneHost(theme)}>
             {fieldPane}
             <TextInput ref={hostRef} multiline textAlignVertical="top" placeholder={placeholder} style={fieldStyle} {...common} />
           </View>
@@ -340,7 +340,7 @@ export function createTextarea(skin: TextareaSkin) {
     // selection, focus and uncontrolled text. The count remains outside its pane.
     return (
       <View style={[disabledDim, widthCap, style]}>
-        <View>
+        <View style={paneHost(theme)}>
           {fieldPane}
           <TextInput ref={hostRef} multiline textAlignVertical="top" placeholder={placeholder} style={fieldStyle} {...common} />
         </View>
