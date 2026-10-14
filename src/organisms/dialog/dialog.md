@@ -1,6 +1,6 @@
 # Dialog
 
-A modal dialog: a centered panel over a dimmed, blurred backdrop, with a title, an optional description, a body for real content like a form, and right-aligned actions. Use it for a focused task that warrants interrupting the page; reach for the Alert Dialog for a terse yes/no confirmation.
+A modal dialog: a centered panel over a dimmed backdrop, which glass on the web also blurs, with a title, an optional description, a body for real content like a form, and right-aligned actions. Use it for a focused task that warrants interrupting the page; reach for the Alert Dialog for a terse yes/no confirmation.
 
 On light glass, the description and currency prefix use the stronger foreground color. For custom body content, use the default `Typography` foreground for message copy over the dimmed background.
 

@@ -1,9 +1,11 @@
 // The web glass material: Dark Factory's plain frost, the one material a browser
 // renders under `<ThemeProvider glass>` (decision 5b of the Dark Factory direction:
-// it replaced the Chromium lens). This table is the only place its numbers live, the
-// tunables the tuning harness judges against the `df-frost` reference card
-// (tools/native/liquid-motion.md; harness route /testing/materials). The gate in
-// .tuning-harness.json refuses a push that changes a value here without an evidence row.
+// it replaced the Chromium lens), and the blur Dark Factory's modal scrim lays over the
+// page it dims (the owner's GS-6 decision, `scrimBlur`, rendered by scrim-frost.tsx).
+// This table is the only place their numbers live, the tunables the tuning harness
+// judges against the `df-frost` reference card (tools/native/liquid-motion.md; harness
+// route /testing/materials). The gate in .tuning-harness.json refuses a push that
+// changes a value here without an evidence row.
 //
 // iOS Liquid Glass and the Android blur do not read this file: their tints are the
 // public `glassByScheme` (glass-tints.ios.ts, glass-tints.android.ts), unchanged.
@@ -25,6 +27,11 @@ export const WEB_FROST = {
   rimWidth: 1,
   /** DF's shell line, the rim on the functional and content layers. */
   shellLine: { light: "rgba(255, 255, 255, 0.75)", dark: "rgba(255, 255, 255, 0.08)" } as Record<ColorScheme, string>,
+  /**
+   * The modal scrim's backdrop blur in px: DF's overlay scrim, `blur(2px)` under its tinted
+   * dim (the `scrim` token), on the web under glass only. 0 turns it off.
+   */
+  scrimBlur: 2,
 } as const;
 
 /**

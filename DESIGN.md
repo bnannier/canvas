@@ -746,7 +746,8 @@ Two roles carry the brand, and they differ on purpose. `primary` is the selectio
 checked, selected and current states, links and the focus ring. `action` is the
 call-to-action fill: primary buttons, meters, count badges. A theme that overrides
 `primary` alone repaints both, since `action` follows an overriding `primary` unless the
-theme sets it too. `scrim` dims the page behind every modal. `inverse`,
+theme sets it too. `scrim` dims the page behind every modal (under glass on the web it also
+blurs it by 2 px). `inverse`,
 `inverse-foreground` and `inverse-primary` are the toast pill, its ink and the action on
 it (every toast paints them: the web and iOS pill and the Android snackbar;
 `inverse-primary` is the palette's own brand hue lightened to read on the pill). The `-soft` washes, `shade` (the shadow tint) and
