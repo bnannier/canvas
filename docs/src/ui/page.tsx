@@ -6,6 +6,7 @@ import { ScreenFrame } from "../shell/native-header";
 import { H1, Lead } from "./prose";
 import { DocsHead } from "./docs-head";
 import { useAuditProbe } from "../audit/probe-context";
+import { useScrollEdgeReporter } from "../shell/scroll-edge";
 
 // The standard scrollable content frame uses the kit page measure and padding. ScreenFrame adds the native header + search overlay
 // on iOS/Android and is a transparent passthrough on web.
@@ -29,6 +30,8 @@ export function Page({ children, viewportOverlays = false }: { children: ReactNo
   const probe = useAuditProbe();
   const Sensor = probe?.Sensor;
   const scrollerRef = useRef<ScrollView>(null);
+  // Tells the web shell's top bar when content has scrolled under it (../shell/scroll-edge.tsx).
+  const onScroll = useScrollEdgeReporter();
   useEffect(() => probe?.scroller({ ref: scrollerRef }), [probe]);
   // Runtime fixtures need viewport modals and a sibling capture plane. Keep the
   // catalogue's content host by default so anchored previews scroll as before.
@@ -48,6 +51,8 @@ export function Page({ children, viewportOverlays = false }: { children: ReactNo
         // no-op on native.
         {...(Platform.OS === "web" ? ({ dataSet: { pageScroll: "" } } as object) : null)}
         style={{ flex: 1 }}
+        onScroll={onScroll}
+        scrollEventThrottle={16}
         contentInsetAdjustmentBehavior="automatic"
         contentContainerStyle={{
           // Web: clear the absolute Topbar overlay (CONTENT_TOP_INSET = 72). Native: iOS

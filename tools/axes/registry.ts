@@ -416,7 +416,7 @@ export const SUBJECTS: readonly AnySubject[] = [
   subject({ id: "Dialog.size", components: ["Dialog"], pages: ["dialog"], resolver: "src/organisms/dialog/dialog.shared.tsx#sizeOf", members: ["xs", "small", "medium", "large", "wide"], resolve: dialogSize }),
   subject({ id: "Drawer.edge", components: ["Drawer"], pages: ["drawer"], resolver: "src/organisms/drawer/drawer.shared.tsx#edgeOf", members: ["right", "bottom", "top", "left"], resolve: edgeOf }),
   subject({ id: "FilterPanel.density", components: ["FilterPanel"], pages: ["filter-panel"], resolver: "src/organisms/filter-panel/filter-panel.shared.tsx#densityOf", members: ["compact"], resolve: filterPanelDensity }),
-  subject({ id: "Navbar.surface", components: ["Navbar"], pages: ["navbars"], resolver: "src/organisms/navbars/navbars.shared.tsx#surfaceOf", members: ["bordered", "floating"], resolve: navbarSurface }),
+  subject({ id: "Navbar.surface", components: ["Navbar"], pages: ["navbars"], resolver: "src/organisms/navbars/navbars.shared.tsx#surfaceOf", members: ["bordered", "floating", "bare"], resolve: navbarSurface }),
   subject({ id: "Sidebar.density", components: ["Sidebar"], pages: ["sidebar"], resolver: "src/organisms/sidebar/sidebar.shared.tsx#densityOf", members: ["compact"], resolve: sidebarDensity }),
   subject({ id: "Sidebar.frame", components: ["Sidebar"], pages: ["sidebar"], resolver: "src/organisms/sidebar/sidebar.shared.tsx#frameOf", members: ["bordered", "floating"], resolve: frameOf }),
   subject({
