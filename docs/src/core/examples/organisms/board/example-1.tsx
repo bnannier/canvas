@@ -5,17 +5,6 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { Board } = scope;
   return (
-<Board
-  compact
-  columns={[
-    { id: "todo", label: "To do" },
-    { id: "doing", label: "Doing" },
-  ]}
-  defaultItems={[
-    { id: "t1", columnId: "todo", title: "Rotate webhook secrets" },
-    { id: "t2", columnId: "todo", title: "Draft the design review" },
-    { id: "t3", columnId: "doing", title: "SSO rollout" },
-  ]}
-/>
+<Board plain emptyLabel="No work here" columns={[{ id: "ready", label: "Ready" }, { id: "review", label: "Review" }]} items={[{ id: "core-1", columnId: "ready", title: "Preserve the Argus experience" }]} />
   );
 }
