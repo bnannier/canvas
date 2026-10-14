@@ -52,9 +52,24 @@ export type Gap = "page" | "panel" | "section" | "loose" | "generous" | "spaciou
 export type Justify = "start" | "center" | "end" | "between" | "around" | "evenly";
 export type Align = "alignStart" | "alignCenter" | "alignEnd" | "baseline" | "stretch";
 export type Pad = "padTight" | "pad" | "padLoose";
+export type Inset = "insetIdentity" | "insetActions" | "insetTheme" | "insetStatus" | "insetTabs";
 
 export interface FlexProps {
   children?: ReactNode;
+  rowsTight?: boolean;
+  rowsComfortable?: boolean;
+  rowsCozy?: boolean;
+  rowsSection?: boolean;
+  /** Application identity header inset. */
+  insetIdentity?: boolean;
+  /** Application action footer inset. */
+  insetActions?: boolean;
+  /** Theme controls inset. */
+  insetTheme?: boolean;
+  /** Status band inset. */
+  insetStatus?: boolean;
+  /** Navigation close controls inset. */
+  insetTabs?: boolean;
 
   fine?: boolean; // 3
   dense?: boolean; // 5
@@ -212,6 +227,23 @@ export function gapOf(p: Pick<FlexProps, Gap>): Gap {
   return "snug";
 }
 
+export function rowGapOf(props: FlexProps): number | null {
+  if (props.rowsSection) return 26;
+  if (props.rowsCozy) return 12;
+  if (props.rowsComfortable) return 10;
+  if (props.rowsTight) return 4;
+  return null;
+}
+
+export function insetOf(p: FlexProps): Inset | null {
+  if (p.insetIdentity) return "insetIdentity";
+  if (p.insetActions) return "insetActions";
+  if (p.insetTheme) return "insetTheme";
+  if (p.insetStatus) return "insetStatus";
+  if (p.insetTabs) return "insetTabs";
+  return null;
+}
+
 // Main-axis precedence; default `start`.
 export function justifyOf(p: FlexProps): Justify {
   if (p.between) return "between";
@@ -282,12 +314,16 @@ export function createFlex(skin: FlexSkin, direction: Direction) {
       alignItems: ALIGN[alignOf(props)],
     };
     if (props.wrap && !stacked) layout.flexWrap = "wrap";
-    if (props.fill) layout.flex = 1;
+    if (props.fill) { layout.flex = 1; layout.minWidth = 0; }
+    const rowGap = rowGapOf(props);
+    if (rowGap != null) layout.rowGap = rowGap;
     if (props.grow) layout.flexGrow = 1;
     if (props.shrink) layout.flexShrink = 1;
     if (props.indent) layout.paddingLeft = 24; // one control gutter: box (16) + row gap (8)
     const pad = padOf(props);
-    if (pad) layout.padding = skin.pad[pad];
+    const inset = insetOf(props);
+    if (inset) Object.assign(layout, skin.insets[inset]);
+    else if (pad) layout.padding = skin.pad[pad];
     return layout;
   }
 

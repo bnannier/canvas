@@ -1815,6 +1815,76 @@
       "baseline + stretch": "stretch"
     }
   },
+  "Layout.rowGap": {
+    "kind": "axis",
+    "components": [
+      "Row",
+      "Column"
+    ],
+    "pages": [
+      "row-column"
+    ],
+    "resolver": "src/atoms/layout/layout.shared.tsx#rowGapOf",
+    "order": [
+      "rowsSection",
+      "rowsCozy",
+      "rowsComfortable",
+      "rowsTight"
+    ],
+    "none": null,
+    "single": {
+      "rowsSection": 26,
+      "rowsCozy": 12,
+      "rowsComfortable": 10,
+      "rowsTight": 4
+    },
+    "pairs": {
+      "rowsComfortable + rowsCozy": "rowsCozy",
+      "rowsComfortable + rowsSection": "rowsSection",
+      "rowsComfortable + rowsTight": "rowsComfortable",
+      "rowsCozy + rowsSection": "rowsSection",
+      "rowsCozy + rowsTight": "rowsCozy",
+      "rowsSection + rowsTight": "rowsSection"
+    }
+  },
+  "Layout.inset": {
+    "kind": "axis",
+    "components": [
+      "Row",
+      "Column"
+    ],
+    "pages": [
+      "row-column"
+    ],
+    "resolver": "src/atoms/layout/layout.shared.tsx#insetOf",
+    "order": [
+      "insetIdentity",
+      "insetActions",
+      "insetTheme",
+      "insetStatus",
+      "insetTabs"
+    ],
+    "none": null,
+    "single": {
+      "insetIdentity": "insetIdentity",
+      "insetActions": "insetActions",
+      "insetTheme": "insetTheme",
+      "insetStatus": "insetStatus",
+      "insetTabs": "insetTabs"
+    },
+    "pairs": {
+      "insetActions + insetIdentity": "insetIdentity",
+      "insetActions + insetStatus": "insetActions",
+      "insetActions + insetTabs": "insetActions",
+      "insetActions + insetTheme": "insetActions",
+      "insetIdentity + insetStatus": "insetIdentity",
+      "insetIdentity + insetTabs": "insetIdentity",
+      "insetIdentity + insetTheme": "insetIdentity",
+      "insetStatus + insetTabs": "insetStatus",
+      "insetStatus + insetTheme": "insetTheme",
+      "insetTabs + insetTheme": "insetTheme"
+    }
+  },
   "Layout.pad": {
     "kind": "axis",
     "components": [
