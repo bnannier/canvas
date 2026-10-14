@@ -13,6 +13,13 @@ The Argus reference adds intermediate spacing steps without rounding its layout:
 `section` 26, `panel` 28, and `page` 30. Existing named steps keep their values.
 Larger active steps take precedence.
 
+`rowsTight`, `rowsComfortable`, `rowsCozy` and `rowsSection` set a wrapped row's
+vertical gap to 4, 10, 12 and 26 independently of its main gap. Application inset
+roles preserve identity headers (24 top/horizontal, 18 bottom), action footers
+(16 vertical, 24 horizontal), theme controls (14 top, 26 horizontal), status bands
+(10 vertical, 28 horizontal), and navigation close controls (12 top/horizontal):
+`insetIdentity`, `insetActions`, `insetTheme`, `insetStatus`, and `insetTabs`.
+
 ## Usage
 
 ```tsx

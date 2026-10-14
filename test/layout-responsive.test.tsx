@@ -223,3 +223,13 @@ it("keeps flow-grid cards at natural height and allows a whole-row banner", () =
   expect(cells[1].style.zIndex).toBe("10");
   expect(rootOf("natural").style.flexGrow).not.toBe("1");
 });
+
+it("preserves application header and action insets and separate wrap rhythm", () => {
+  ui(<Row insetIdentity comfortable rowsTight wrap testID="identity"><Column fill flush testID="copy"><Typography>Scout</Typography></Column></Row>);
+  const row = rootOf("identity");
+  expect(row.style.paddingTop).toBe("24px");
+  expect(row.style.paddingBottom).toBe("18px");
+  expect(row.style.gap).toBe("10px");
+  expect(row.style.rowGap).toBe("4px");
+  expect(rootOf("copy").style.minWidth).toBe("0px");
+});

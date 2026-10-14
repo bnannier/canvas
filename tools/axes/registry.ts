@@ -1,3 +1,4 @@
+import { rowGapOf, insetOf } from "../../src/atoms/layout/layout.shared.tsx";
 import { gridRowGapOf } from "../../src/atoms/grid/grid.shared.tsx";
 import { referenceSizeOf, sheenOf } from "../../src/atoms/avatar/avatar.reference.tsx";
 // Every axis resolver in the kit, as the characterization (test/axes.test.ts) calls it.
@@ -305,6 +306,8 @@ export const SUBJECTS: readonly AnySubject[] = [
   }),
   subject({ id: "Layout.justify", components: ["Row", "Column"], pages: ["row-column"], resolver: "src/atoms/layout/layout.shared.tsx#justifyOf", members: ["between", "around", "evenly", "center", "end", "start"], resolve: justifyOf }),
   subject({ id: "Layout.align", components: ["Row", "Column"], pages: ["row-column"], resolver: "src/atoms/layout/layout.shared.tsx#alignOf", members: ["stretch", "baseline", "alignCenter", "alignEnd", "alignStart"], resolve: flexAlign }),
+  subject({ id: "Layout.rowGap", components: ["Row", "Column"], pages: ["row-column"], resolver: "src/atoms/layout/layout.shared.tsx#rowGapOf", members: ["rowsSection", "rowsCozy", "rowsComfortable", "rowsTight"], resolve: rowGapOf }),
+  subject({ id: "Layout.inset", components: ["Row", "Column"], pages: ["row-column"], resolver: "src/atoms/layout/layout.shared.tsx#insetOf", members: ["insetIdentity", "insetActions", "insetTheme", "insetStatus", "insetTabs"], resolve: insetOf }),
   subject({ id: "Layout.pad", components: ["Row", "Column"], pages: ["row-column"], resolver: "src/atoms/layout/layout.shared.tsx#padOf", members: ["padLoose", "pad", "padTight"], resolve: flexPad }),
   subject({ id: "Listbox.mode", components: ["Listbox"], pages: ["listbox"], resolver: "src/atoms/listbox/listbox.shared.tsx#modeOf", members: ["multi"], resolve: modeOf }),
   subject({ id: "Listbox.size", components: ["Listbox"], pages: ["listbox"], resolver: "src/atoms/listbox/listbox.shared.tsx#sizeOf", members: SIZES, resolve: listboxSize }),
