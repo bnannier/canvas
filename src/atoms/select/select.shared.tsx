@@ -2,11 +2,12 @@ import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.j
 import { EscapeLayerProvider, useEscapeLayer } from "../../style/escape-layer.js";
 import { forwardRef, useId, useRef, useState } from "react";
 import { useComposedRefs } from "../../style/use-composed-refs.js";
-import { View, Pressable, Text, useControllableState, useFillStyle, AnchoredOverlay, useOverlayHost, useMeasuredWidth, FloatingLabel, LabelContent, labelA11y, useFloatingLabelRoom, RippleClip, cornerRadii, type LayoutStyle, type MeasureProps, type StyleProp, type ViewStyle, GlassPane, paneStyle, paneRipple, panePlaced, isGlass, withInnerFill } from "../../style/index.js";
+import { View, Pressable, Text, useControllableState, useFillStyle, AnchoredOverlay, useOverlayHost, useMeasuredWidth, FloatingLabel, LabelContent, labelA11y, useFloatingLabelRoom, RippleClip, cornerRadii, type LayoutStyle, type MeasureProps, type StyleProp, type ViewStyle, type PressableProps, GlassPane, paneStyle, paneRipple, panePlaced, isGlass, withInnerFill } from "../../style/index.js";
 import { useRowFocus } from "../../style/use-row-focus.js";
 import { OverlayScrollView } from "../../style/overlay-scroll.js";
 import { LISTBOX } from "../../style/listbox-role.js";
 
+import { useHover, hoverFill } from "../../style/hover.js";
 import { Icon } from "../icon/icon.js";
 import { root, rootLifted, PANEL_ANCHOR, type SelectSkin, type Size } from "./select.styles.js";
 
@@ -107,6 +108,20 @@ export interface SelectProps extends MeasureProps {
   onSelect?: (option: string) => void;
   /** E2E hook forwarded to the trigger pressable. */
   testID?: string;
+  /** Use the compact content-sized web field with a drawn disclosure chevron. */
+  dense?: boolean;
+  /** Use the compact application eyebrow above a web field. */
+  eyebrow?: boolean;
+  /** Use the brand field fill instead of the card fill. */
+  soft?: boolean;
+  /** Text-only options: selected ink and a pointer wash, without a check gutter. */
+  plainOptions?: boolean;
+  /** Keep the resting fill and opacity during a press. */
+  steadyPress?: boolean;
+  /** Announce a selection field as a combobox rather than a menu button. */
+  combobox?: boolean;
+  /** Width of the floating menu, clamped within the overlay outlet. */
+  menuWidth?: number;
   // Size (pick one; default is the medium field, matching Input's h-9).
   small?: boolean;
   large?: boolean;
@@ -120,6 +135,20 @@ export function sizeOf(p: SelectProps): Size {
   if (p.large) return "large";
   return "default";
 }
+
+/** Web field density is independent of the menu anatomy. */
+export function fieldOf(p: SelectProps): "dense" | "standard" {
+  return p.dense ? "dense" : "standard";
+}
+/** A plain option list has selected ink rather than the platform check gutter. */
+export function optionsOf(p: SelectProps): "plain" | "standard" {
+  return p.plainOptions ? "plain" : "standard";
+}
+
+const OptionPressable = forwardRef<View, Omit<PressableProps, "style"> & { rowStyle: StyleProp<ViewStyle>; pressedStyle?: StyleProp<ViewStyle>; hoverFill?: string }>(function OptionPressable({ hoverFill: wash, rowStyle, pressedStyle, disabled, ...props }, ref) {
+  const { hovered, target } = useHover(wash != null);
+  return <Pressable {...props} {...target} role="option" disabled={disabled} ref={ref} style={({ pressed }) => [rowStyle, pressed ? pressedStyle : null, hovered ? { backgroundColor: wash } : null]} />;
+});
 
 // Read a numeric style value (the Android trigger height), falling back when absent.
 const asNum = (v: unknown, fallback: number): number => (typeof v === "number" ? v : fallback);
@@ -141,6 +170,8 @@ export function createSelect(skin: SelectSkin) {
       style,
     } = props;
     const size = sizeOf(props);
+    const dense = fieldOf(props) === "dense" && skin.reference != null;
+    const plain = optionsOf(props) === "plain" && skin.reference != null;
     // One shape internally: a bare string is an option whose value is its label.
     const items: SelectOption[] = options.map((o) =>
       typeof o === "string" ? { value: o, label: o } : o,
@@ -219,7 +250,8 @@ export function createSelect(skin: SelectSkin) {
     const inline = hasLabel && !!props.inline;
     const floating = hasLabel && !inline && skin.floatingLabel;
     const above = hasLabel && !inline && !floating;
-    const triggerShape = skin.trigger(tokens, size, open);
+    const triggerShape = { ...(dense ? skin.reference!.trigger(tokens, open) : skin.trigger(tokens, size, open)), ...(props.soft ? { backgroundColor: tokens["field-fill"] ?? tokens.card } : null) };
+    const panelShape = plain ? skin.reference!.panel(tokens) : skin.panel(tokens);
     // The trigger's height: its floor where it grows with the text size (Android), else its height.
     const triggerHeight = asNum(triggerShape.minHeight ?? triggerShape.height, 56);
     // The room the Android floating label takes, which follows the user's text size.
@@ -252,7 +284,7 @@ export function createSelect(skin: SelectSkin) {
     return (
       <View style={[root, open && !host ? rootLifted : null, widthCap, style]}>
         {above ? (
-          <Text nativeID={labelId} style={skin.label(tokens, size)} {...labelA11y(label!, labelNames)}>
+          <Text nativeID={labelId} style={props.eyebrow && skin.reference ? skin.reference.label(tokens) : skin.label(tokens, size)} {...labelA11y(label!, labelNames)}>
             <LabelContent label={label!} required={required} starColor={tokens.destructive} />
           </Text>
         ) : null}
@@ -269,7 +301,7 @@ export function createSelect(skin: SelectSkin) {
             paneStyle(theme, triggerShape, open),
             glassTrigger,
             !glass && disabled ? { opacity: skin.disabledOpacity } : null,
-            !glass && skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null,
+            !props.steadyPress && !glass && skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null,
           ]}
           disabled={disabled}
           onPress={() => setOpen(!open)}
@@ -277,7 +309,7 @@ export function createSelect(skin: SelectSkin) {
           // draws in the foreground, over it (`paneRipple`).
           android_ripple={paneRipple(theme, ripple)}
           testID={props.testID}
-          accessibilityRole="button"
+          accessibilityRole={props.combobox ? "combobox" : "button"}
           accessibilityState={{ expanded: open, disabled: !!disabled }}
           aria-expanded={open}
           aria-disabled={!!disabled}
@@ -292,12 +324,13 @@ export function createSelect(skin: SelectSkin) {
           aria-labelledby={inline && !props.accessibilityLabel && !required ? labelId : undefined}
         >
           {({ pressed }) => {
-            const ink = glass ? { opacity: disabled ? skin.disabledOpacity : pressed && skin.pressedOpacity != null ? skin.pressedOpacity : 1 } : null;
+            const ink = glass ? { opacity: disabled ? skin.disabledOpacity : pressed && !props.steadyPress && skin.pressedOpacity != null ? skin.pressedOpacity : 1 } : null;
             return <>
               <GlassPane layer="control" shape={triggerShape} stateBorder={open} />
               <View
                 style={[
                   skin.triggerValue,
+                  dense ? { flex: 1, minWidth: 0 } : null,
                   // Android floating label: the reserve (top padding that lets the value
                   // clear the floated label, mirroring the M3 Input) belongs to the VALUE
                   // cluster only, not the whole trigger row. Stretched to full height, the
@@ -315,9 +348,9 @@ export function createSelect(skin: SelectSkin) {
                 ) : null}
                 {icon ? <Icon globe muted size={14} /> : null}
                 {selectedLeading != null ? <Text style={skin.valueText(tokens, size, true)}>{selectedLeading}</Text> : null}
-                <Text style={skin.valueText(tokens, size, hasValue)}>{displayText}</Text>
+                <Text numberOfLines={dense ? 1 : undefined} style={dense ? [skin.reference!.value(tokens), { flex: 1 }] : skin.valueText(tokens, size, hasValue)}>{displayText}</Text>
               </View>
-              <Text
+              {dense ? <Icon chevronDown heavyStroke muted size={14} /> : <Text
                 style={[chevronStyle, ink]}
                 onLayout={floating ? (e) => {
                   const { width } = e.nativeEvent.layout;
@@ -325,7 +358,7 @@ export function createSelect(skin: SelectSkin) {
                 } : undefined}
               >
                 {skin.chevronGlyph}
-              </Text>
+              </Text>}
               {floating ? (
                 <View style={[panePlaced(theme, triggerShape, floatingLabelLayer, open), ink]}>
                   <FloatingLabel
@@ -356,8 +389,9 @@ export function createSelect(skin: SelectSkin) {
           open={open}
           onDismiss={() => setOpen(false)}
           triggerRef={triggerRef}
-          gap={4}
-          cardStyle={[skin.panel(tokens), { minWidth: triggerWidth }]}
+          gap={dense ? 7 : 4}
+          cardWidth={props.menuWidth}
+          cardStyle={[panelShape, props.menuWidth == null ? { minWidth: triggerWidth } : { width: props.menuWidth }, dense ? { marginLeft: 1 } : null]}
           inlineStyle={PANEL_ANCHOR}
           // An option list is a card of rows, so under glass the panel takes the
           // DENSE layer: the material under the model's densest tint, so options a
@@ -376,22 +410,22 @@ export function createSelect(skin: SelectSkin) {
                 card's corners: a view cannot clip its own ripple, and the card's own clip
                 does not reach them through the card's padding. See src/style/ripple-clip. */}
             <OverlayScrollView style={optionScroll} bounces={false}>
-            <RippleClip shape={cornerRadii(skin.panel(tokens))}>
-            <View nativeID={listId} role={LISTBOX} accessibilityLabel={fieldName} aria-label={fieldName} aria-required={required || undefined}>
+            <RippleClip shape={cornerRadii(panelShape)}>
+            <View style={plain ? { gap: 2 } : undefined} nativeID={listId} role={LISTBOX} accessibilityLabel={fieldName} aria-label={fieldName} aria-required={required || undefined}>
             {items.map((option, i) => {
               const selected = option.value === value;
               return (
-                <Pressable
+                <OptionPressable
+                  hoverFill={plain ? hoverFill(tokens) : undefined}
                   key={option.value}
                   {...(rows.rowProps(i, () => selectOption(option.value)) as object)}
-                  style={({ pressed }) => [
-                    withInnerFill(theme, skin.optionRow(tokens, selected), "firm"),
+                  rowStyle={[
+                    withInnerFill(theme, plain ? skin.reference!.row : skin.optionRow(tokens, selected), "firm"),
                     // iOS draws a hairline group separator between rows (not above the
                     // first); a skin that omits rowSeparator keeps every row borderless.
                     i > 0 && skin.rowSeparator ? skin.rowSeparator(tokens) : null,
-                    // Web/iOS tint the row on press here; Android uses the ripple instead.
-                    skin.ripple == null && pressed ? withInnerFill(theme, skin.optionPressed(tokens), "firm") : null,
                   ]}
+                  pressedStyle={!props.steadyPress && skin.ripple == null ? withInnerFill(theme, skin.optionPressed(tokens), "firm") : undefined}
                   onPress={() => selectOption(option.value)}
                   disabled={disabled}
                   android_ripple={ripple}
@@ -400,7 +434,7 @@ export function createSelect(skin: SelectSkin) {
                   aria-selected={selected}
                   aria-disabled={!!disabled}
                 >
-                  {skin.selectedSide === "leading" ? (
+                  {!plain && skin.selectedSide === "leading" ? (
                     <Text style={[skin.indicator(tokens, size), { width: 14 }]}>
                       {selected ? "✓" : " "}
                     </Text>
@@ -408,15 +442,15 @@ export function createSelect(skin: SelectSkin) {
                   {option.leading != null ? (
                     <Text style={skin.optionText(tokens, size)}>{option.leading}</Text>
                   ) : null}
-                  <Text style={[skin.optionText(tokens, size), { flexShrink: 1 }]}>
+                  <Text style={[plain ? skin.reference!.option(tokens, selected) : skin.optionText(tokens, size), { flexShrink: 1 }]}>
                     {option.label}
                   </Text>
-                  {skin.selectedSide === "trailing" ? (
+                  {!plain && skin.selectedSide === "trailing" ? (
                     <Text style={skin.indicator(tokens, size)}>
                       {selected ? "✓" : ""}
                     </Text>
                   ) : null}
-                </Pressable>
+                </OptionPressable>
               );
             })}
             </View>

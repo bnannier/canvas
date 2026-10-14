@@ -126,7 +126,7 @@ describe("the state recipe table", () => {
     // recipe or an opening a resting pointer makes, and no hover recipe goes without one.
     expect([...new Set([...withHover, ...byOpening])].sort()).toEqual(resting);
     // Every reader of the hover primitive is among them.
-    expect(hoverDeclarers()).toEqual(["avatar", "badge", "button", "card", "chip", "dropdown", "listbox", "pagination", "row-menu", "sidebar"]);
+    expect(hoverDeclarers()).toEqual(["avatar", "badge", "button", "card", "chip", "dropdown", "listbox", "pagination", "row-menu", "select", "sidebar"]);
     for (const slug of hoverDeclarers()) expect(withHover).toContain(slug);
     // Spread handlers count: the Calendar's blocks take `{...hoverProps}` and Tooltip's
     // triggers `{...disclosure}`; Tooltip's hover is its open recipe's (a resting pointer opens it).
@@ -1030,7 +1030,7 @@ export function Probe(props: { disabled?: boolean; readOnly?: boolean; locked?: 
     const field = (slug: string) => signalsOf(slug).filter((s) => s.state === "disabled" && s.control?.tag === "TextInput");
     const read = (slug: string) => [...new Set(field(slug).map((s) => `${s.what} by ${ways(s)}`))].sort();
     expect(read("input")).toEqual(["accessibilityState on <TextInput> by disabled/-", "aria-disabled on <TextInput> by disabled/-", "editable on <TextInput> by disabled/- | readOnly/-"]);
-    expect(read("textarea")).toEqual(["accessibilityState on <TextInput> by disabled/-", "aria-disabled on <TextInput> by disabled/-", "editable on <TextInput> by disabled/-"]);
+    expect(read("textarea")).toEqual(["accessibilityState on <TextInput> by disabled/-", "aria-disabled on <TextInput> by disabled/-", "editable on <TextInput> by disabled/- | readOnly/-"]);
     expect(read("stepper")).toEqual(["accessibilityState on <TextInput> by disabled/-", "aria-disabled on <TextInput> by disabled/-", "editable on <TextInput> by disabled/-"]);
     // So each field's Disabled example asks for its field on every channel.
     for (const slug of ["input", "textarea", "stepper"]) {

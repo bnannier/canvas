@@ -1,5 +1,6 @@
 import { StyleSheet, type ViewStyle, type TextStyle } from "react-native";
 import { type ColorTokens, shadow, alpha, activeIndicator, shape, type FloatingLabelStyles } from "../../style/index.js";
+import { fieldEyebrow } from "../../style/field-label.js";
 import { fieldBorder } from "../../style/field-colors.js";
 
 // Co-located Select skins, one per platform, all driven by the brand tokens
@@ -49,6 +50,15 @@ function textType(size: Size): TextStyle {
 // indicator (a leading gutter glyph on web, a trailing brand check on iOS), and
 // `selectedGlyph` is the character it draws there.
 export interface SelectSkin extends FloatingLabelStyles<Size> {
+  /** Dense web field and unadorned option-list anatomy. Native skins retain their platform control. */
+  reference?: {
+    trigger: (t: ColorTokens, open: boolean) => ViewStyle;
+    value: (t: ColorTokens) => TextStyle;
+    label: (t: ColorTokens) => TextStyle;
+    panel: (t: ColorTokens) => ViewStyle;
+    row: ViewStyle;
+    option: (t: ColorTokens, selected: boolean) => TextStyle;
+  };
   /** Type scale per size; label, trigger value, and rows share it so they line up. */
   text: (size: Size) => TextStyle;
   /** The stacked (above-trigger) label type, used on iOS + web (`floatingLabel:
@@ -141,6 +151,14 @@ export const PANEL_ANCHOR: ViewStyle = { position: "absolute", top: "100%", star
 // Trigger height per size; mirrors the Input control's footprint (36 / 40 / 48).
 const WEB_TRIGGER_BOX: Record<Size, number> = { small: 36, default: 40, large: 48 };
 export const webSkin: SelectSkin = {
+  reference: {
+    trigger: (t, open) => ({ ...TRIGGER_ROW, borderRadius: shape.web.field, borderWidth: 1, borderColor: open ? t.ring : t.border, paddingVertical: 10, paddingHorizontal: 12 }),
+    value: (t) => ({ fontSize: 13, lineHeight: 16.9, fontWeight: "600", color: t.foreground }),
+    label: (t) => ({ ...fieldEyebrow(t), marginBottom: 6 }),
+    panel: (t) => ({ overflow: "hidden", borderRadius: shape.web.menu, backgroundColor: t.card, padding: 8, boxShadow: `0 26px 50px -20px ${t.shade ?? "rgba(0, 0, 0, 0.2)"}, 0 0 0 1px ${t.border}` }),
+    row: { flexDirection: "row", alignItems: "center", borderRadius: shape.web.control, paddingVertical: 8, paddingHorizontal: 10 },
+    option: (t, selected) => ({ fontSize: 12.5, lineHeight: 16.25, fontWeight: "700", color: selected ? (t.action ?? t.primary) : t.foreground, flex: 1 }),
+  },
   text: textType,
   label: (t) => ({ marginBottom: 6, fontSize: 10, lineHeight: 13, fontWeight: "700", letterSpacing: 1.6, textTransform: "uppercase", color: t["muted-foreground"] }),
   // Inline (toolbar) label: a muted medium-weight small label; no marginBottom
