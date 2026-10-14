@@ -23,6 +23,16 @@ selected account ring. The original default sizes and separator `ring` remain.
 
 ## Variants
 
+### Brand mark
+
+```tsx
+<Avatar logo whiteInk initials="A" />
+```
+
+`logo` retains the original 30px Argus mark, nine-pixel corners, action-to-ring
+gradient, 14px extra-bold initial, and selection-colored drop shadow.
+
+
 ### Photo
 
 ```tsx

@@ -548,3 +548,14 @@ it("preserves the Argus account identity and independently names its role menu",
   expect(selected).toBe("reviewer");
   expect(control.getAttribute("aria-expanded")).toBe("false");
 });
+
+it("preserves the original sidebar mark's dimensions and letter", () => {
+  ui(<Avatar logo whiteInk initials="A" />);
+  const label = screen.getByText("A");
+  const box = label.parentElement as HTMLElement;
+  expect(box.style.width).toBe("30px");
+  expect(box.style.height).toBe("30px");
+  expect(box.style.borderRadius).toBe("9px");
+  expect(label.style.fontSize).toBe("14px");
+  expect(label.style.lineHeight).toBe("14px");
+});
