@@ -129,3 +129,12 @@ describe("Input: the no-label path is unchanged (bare root)", () => {
     expect(input.style.maxWidth).toBe("");
   });
 });
+
+it("preserves the dense Argus eyebrow and an explicit accessible field name", () => {
+  render(<ThemeProvider light solid><InputWeb eyebrow label="Project name" accessibilityLabel="Project name override" /></ThemeProvider>);
+  const label = screen.getByText("Project name");
+  expect(label.style.fontSize).toBe("9.5px");
+  expect(label.style.lineHeight).toBe("12.35px");
+  expect(label.style.letterSpacing).toBe("1.52px");
+  expect(screen.getByRole("textbox", { name: "Project name override" })).toBeTruthy();
+});

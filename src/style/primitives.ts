@@ -28,7 +28,6 @@ export {
   type TextProps,
   type PressableProps,
   type PressableStateCallbackType,
-  type TextInputProps,
   type ScrollViewProps,
   type LayoutChangeEvent,
   type NativeSyntheticEvent,
@@ -38,3 +37,5 @@ export {
   type TextStyle,
   type ImageStyle,
 } from "react-native";
+
+export type { CanvasTextInputProps as TextInputProps } from "./text.js";

@@ -28,6 +28,7 @@ export const READING_FLOOR = { body: 12, lead: 12, small: 11, tiny: 10, caption:
 export type ReadingRole = keyof typeof READING_FLOOR;
 
 export const TEXT_ROLES: Record<string, Record<string, ReadingRole>> = {
+  "src/style/field-label.ts": { fieldEyebrow: "caption" },
   "src/atoms/input/input.styles.ts": { "webSkin.labelAbove": "caption" },
   "src/atoms/select/select.styles.ts": { "webSkin.label": "caption" },
   // Dark Factory's sub-12 styles, by the Typography role each one serves.

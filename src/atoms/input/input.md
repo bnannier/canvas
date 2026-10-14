@@ -31,6 +31,13 @@ Cancelling an IME candidate keeps the overlay open.
 On web, the default field uses Argus’s 40-pixel frame, 13-pixel semibold value,
 12-pixel inset, and muted tracked uppercase label (10-pixel reading floor).
 
+`eyebrow` uses the original dense uppercase web field label, preserving its
+9.5/12.35 metrics and tracking. Other platform label treatments retain their skin.
+
+`soft` uses the brand’s entry-well fill where the skin provides it.
+`systemFocus` preserves the platform’s system focus outline. An explicit
+`accessibilityLabel` takes precedence over the visible label’s accessible name.
+
 ## Usage
 
 ```tsx

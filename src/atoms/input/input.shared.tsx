@@ -126,6 +126,12 @@ export interface InputProps extends TextEntryProps, MeasureProps {
    * needed for the accessible name.
    */
   label?: string;
+  /** Dense uppercase eyebrow label where the skin offers it. */
+  eyebrow?: boolean;
+  /** Preserve the system focus outline on a framed field. */
+  systemFocus?: boolean;
+  /** Use the brand’s softer entry-well fill where the skin provides it. */
+  soft?: boolean;
   /**
    * Marks the field as required: appends a destructive "*" to the label (decorative,
    * never in the accessible name) and announces the field as required, through
@@ -301,7 +307,7 @@ export function createInput(skin: InputSkin) {
     // accessibilityLabel / aria-labelledby from the caller still wins. Natively a
     // required field's name says so (requiredName), since aria-required is web-only.
     const accessibleName = requiredName(props.accessibilityLabel ?? label, required);
-    const ariaLabelledby = props["aria-labelledby"] ?? (label != null ? labelId : undefined);
+    const ariaLabelledby = props["aria-labelledby"] ?? (label != null && props.accessibilityLabel == null ? labelId : undefined);
 
     // Border-color precedence: error > focus > default input border. Shared by
     // both layouts; in the grouped layout it lives on the outer border so prefix
@@ -326,6 +332,7 @@ export function createInput(skin: InputSkin) {
 
     const common = {
       value,
+      systemFocus: props.systemFocus,
       onChangeText: handleChangeText,
       placeholder,
       placeholderTextColor: tokens["muted-foreground"],
@@ -388,7 +395,7 @@ export function createInput(skin: InputSkin) {
     const above = label != null && !floating;
     // The above-field label's type and ink, from the skin on every platform (on
     // Android, for the grouped field whose addons keep the label from floating).
-    const aboveLabelStyle: TextStyle = skin.labelAbove(tokens, size);
+    const aboveLabelStyle: TextStyle = props.eyebrow && skin.referenceLabel ? skin.referenceLabel(tokens) : skin.labelAbove(tokens, size);
     // The field names itself from the label unless the caller named it, so natively the
     // label is then hidden beside it (labelA11y).
     const labelNames = props.accessibilityLabel == null;
@@ -406,10 +413,10 @@ export function createInput(skin: InputSkin) {
       // redundant and, over the filled Android skin, reads as a blue rectangle on
       // top of the indicator. No-op on native; matches the grouped path and the
       // Autocomplete/Textarea/Stepper shells.
-      const bareShape = skin.bareField(tokens, borderColor, focused, isError);
+      const bareShape = { ...skin.bareField(tokens, borderColor, focused, isError), ...(props.soft && skin.softFill ? { backgroundColor: skin.softFill(tokens) } : null) };
       // The field's whole box goes through paneStyle (its shape, height and any label
       // reserve), so under glass its resting border becomes padding of the same width.
-      const bareStyleWith = (reserve: StyleProp<ViewStyle>) => [paneStyle(theme, [bareShape, skin.bareBox(size), reserve], focused || isError), text, FOCUS_RESET, glass ? glassBox : null, isError ? errorFrame.ring() : null];
+      const bareStyleWith = (reserve: StyleProp<ViewStyle>) => [paneStyle(theme, [bareShape, skin.bareBox(size), reserve], focused || isError), text, props.systemFocus ? null : FOCUS_RESET, glass ? glassBox : null, isError ? errorFrame.ring() : null];
       const bareStyle = bareStyleWith(null);
       const disabledDim = disabled ? { opacity: skin.disabledOpacity } : null;
       // The puck behind a bare field (nothing in solid mode).
@@ -504,7 +511,7 @@ export function createInput(skin: InputSkin) {
       handleChangeText("");
       fieldRef.current?.focus();
     };
-    const groupShape = skin.groupContainer(tokens, borderColor, focused, isError);
+    const groupShape = { ...skin.groupContainer(tokens, borderColor, focused, isError), ...(props.soft && skin.softFill ? { backgroundColor: skin.softFill(tokens) } : null) };
     const groupSurface = stateSurface(groupShape, focused || isError);
     // The clear and reveal buttons' borderless ripple is projected onto an ancestor's
     // background, beneath the group's pane: where the pane renders it draws in the
@@ -543,7 +550,7 @@ export function createInput(skin: InputSkin) {
               // A second (or third) trailing glyph widens the trailing gutter by a glyph + gap each.
               trailingGlyphs > 1 ? { paddingEnd: asNum(skin.groupField(tokens, { leadingIcon: false, trailingIcon: true, hasPrefix: false, hasSuffix: false }).paddingEnd, 0) + (trailingGlyphs - 1) * (skin.iconSize + ACTION_GAP) } : null,
               text,
-              FOCUS_RESET,
+              props.systemFocus ? null : FOCUS_RESET,
               glass ? PANE_SIBLING_INPUT : null,
             ]}
             textAlignVertical="center"
