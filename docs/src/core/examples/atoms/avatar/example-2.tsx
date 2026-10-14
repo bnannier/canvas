@@ -3,19 +3,8 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Avatar, Row } = scope;
+  const { Avatar } = scope;
   return (
-<Row snug wrap>
-  <Avatar name="Ada Ito" />
-  <Avatar name="Rachel Tanaka" />
-  <Avatar name="Liang Kim" />
-  <Avatar name="Kira Okafor" />
-  <Avatar name="Marcus Singh" />
-  <Avatar name="Noor Novak" />
-  <Avatar name="Sofia Bao" />
-  <Avatar name="Theo Lovelace" />
-  <Avatar name="Omar Moreau" />
-  <Avatar name="Priya Haddad" />
-</Row>
+<Avatar src="/rachel-chen.jpg" name="RC" />
   );
 }

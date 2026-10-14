@@ -1,8 +1,10 @@
-import { referenceSizeOf, sheenOf, REFERENCE_SIZES, REFERENCE_TYPE, ConicRing } from "./avatar.reference.js";
+import { referenceSizeOf, referencePaintOf, sheenOf, REFERENCE_SIZES, REFERENCE_TYPE, ConicRing } from "./avatar.reference.js";
 import { Children, cloneElement, isValidElement, useId, useState, type ReactElement, type ReactNode } from "react";
 import Svg, { Defs, LinearGradient, Rect, Stop } from "react-native-svg";
 import { View, Pressable, Text, pressDim, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle, type ImageStyle, type LayoutStyle } from "../../style/index.js";
 import { GlassPane, paneRipple, paneStyle } from "../../style/glass-surface/glass-pane.js";
+import { actionFill } from "../../style/action.js";
+import { platformShape } from "../../style/platform-shape.js";
 import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
 import { identityDisc, identityHue, type IdentityDisc } from "../../style/identity-hue.js";
 import { Image } from "../image/image.js";
@@ -56,6 +58,8 @@ export interface AvatarSkin {
 }
 
 export interface AvatarProps {
+  /** Original 30px rounded brand mark with its action-to-selection gradient. */
+  logo?: boolean;
   /** Reference identity geometry, smallest first in precedence. */
   annotation?: boolean;
   compact?: boolean;
@@ -242,12 +246,14 @@ export function createAvatar(skin: AvatarSkin) {
     const colored = glyph !== "";
     const discHue = props.hue ?? identityHue(identity);
     const identityPaint = identityDisc(discHue);
-    const disc = colored ? props.orchid ? { from: "#d9b8ea", to: "#b559a6", mid: "#d9b8ea", ink: "#ffffff" } : identityPaint : null;
+    const paint = referencePaintOf(props);
+    const disc = colored ? paint === "logo" ? { from: actionFill(tokens), to: tokens.ring, mid: actionFill(tokens), ink: "#ffffff" } : paint === "orchid" ? { from: "#d9b8ea", to: "#b559a6", mid: "#d9b8ea", ink: "#ffffff" } : identityPaint : null;
     const gradientId = `avatar-disc-${useId().replace(/:/g, "")}`;
     const background = disc ? disc.mid : tokens.muted;
     const foreground = props.whiteInk || props.inverse ? "#ffffff" : disc ? disc.ink : tokens["muted-foreground"];
     const shapeStyle = { ...containerStyle(tokens, skin, size, shape, !!ring, background), width: diameter, height: diameter,
       ...(props.inverse || referenceGeometry != null ? { backgroundColor: "transparent" } : null),
+      ...(props.logo ? { borderRadius: platformShape.web.brandMark, boxShadow: `0 10px 18px -8px ${tokens.ring}` } : null),
       ...(props.glow ? { boxShadow: `0 0 0 2px ${tokens.card}, 0 0 0 3.5px ${tokens.primary}` } : null),
     };
     const separator = ring ? { borderWidth: RING_WIDTH, borderColor: theme.increasedContrast ? tokens.foreground : tokens.background } : null;

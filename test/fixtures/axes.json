@@ -3603,6 +3603,28 @@
       "center + right": "right"
     }
   },
+  "Avatar.reference paint": {
+    "kind": "axis",
+    "components": [
+      "Avatar"
+    ],
+    "pages": [
+      "avatar"
+    ],
+    "resolver": "src/atoms/avatar/avatar.reference.tsx#referencePaintOf",
+    "order": [
+      "logo",
+      "orchid"
+    ],
+    "none": "identity",
+    "single": {
+      "logo": "logo",
+      "orchid": "orchid"
+    },
+    "pairs": {
+      "logo + orchid": "logo"
+    }
+  },
   "Avatar.reference size": {
     "kind": "axis",
     "components": [
@@ -3613,6 +3635,7 @@
     ],
     "resolver": "src/atoms/avatar/avatar.reference.tsx#referenceSizeOf",
     "order": [
+      "logo",
       "annotation",
       "compact",
       "account",
@@ -3626,6 +3649,7 @@
     ],
     "none": null,
     "single": {
+      "logo": "logo",
       "annotation": "annotation",
       "compact": "compact",
       "account": "account",
@@ -3643,6 +3667,7 @@
       "account + detail": "account",
       "account + featured": "account",
       "account + hero": "account",
+      "account + logo": "logo",
       "account + person": "account",
       "account + profile": "account",
       "account + row": "account",
@@ -3651,6 +3676,7 @@
       "annotation + detail": "annotation",
       "annotation + featured": "annotation",
       "annotation + hero": "annotation",
+      "annotation + logo": "logo",
       "annotation + person": "annotation",
       "annotation + profile": "annotation",
       "annotation + row": "annotation",
@@ -3658,25 +3684,33 @@
       "compact + detail": "compact",
       "compact + featured": "compact",
       "compact + hero": "compact",
+      "compact + logo": "logo",
       "compact + person": "compact",
       "compact + profile": "compact",
       "compact + row": "compact",
       "compact + spotlight": "compact",
       "detail + featured": "detail",
       "detail + hero": "detail",
+      "detail + logo": "logo",
       "detail + person": "person",
       "detail + profile": "profile",
       "detail + row": "row",
       "detail + spotlight": "detail",
       "featured + hero": "hero",
+      "featured + logo": "logo",
       "featured + person": "person",
       "featured + profile": "profile",
       "featured + row": "row",
       "featured + spotlight": "featured",
+      "hero + logo": "logo",
       "hero + person": "person",
       "hero + profile": "profile",
       "hero + row": "row",
       "hero + spotlight": "hero",
+      "logo + person": "logo",
+      "logo + profile": "logo",
+      "logo + row": "logo",
+      "logo + spotlight": "logo",
       "person + profile": "person",
       "person + row": "row",
       "person + spotlight": "person",

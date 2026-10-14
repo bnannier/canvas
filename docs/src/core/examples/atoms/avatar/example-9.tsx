@@ -3,17 +3,8 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { AvatarMenu } = scope;
+  const { View, Switch, AvatarMenu } = scope;
   return (
-<AvatarMenu
-  name="Rachel Chen"
-  email="rachel.chen@example.com"
-  src="/rachel-chen.jpg"
-  items={[
-    { label: "Profile", icon: "user" },
-    { label: "Settings", icon: "settings" },
-    { label: "Sign out", icon: "logOut", destructive: true, separatorBefore: true }
-  ]}
-/>
+<AvatarMenu account name="Bobby" email="Principal Engineer" initials="B" triggerLabel="Viewing as Principal Engineer. Switch role" menuLabel="View as role" menuWidth={300} maxHeight={420} items={[{ label: "Principal Engineer", selected: true }, { label: "Architect" }]} />
   );
 }
