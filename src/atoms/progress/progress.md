@@ -130,3 +130,7 @@ progress fills smoothly. (Reduce Motion snaps instead.)
   <View style={{ height: "100%", width: "35%", borderRadius: 4, backgroundColor: tokens.primary }} />
 </View>
 ```
+
+`segments` displays a fixed number of discrete 13×5 dashes with three pixels
+between them. It uses the same 0–1 `value`, intent fill and accessible percentage.
+Indeterminate wins over discrete segments; a labelled segmented meter retains its header.
