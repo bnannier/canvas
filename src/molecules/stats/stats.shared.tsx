@@ -49,6 +49,8 @@ export interface StatItem {
   value: string;
   /** Optional change indicator (e.g. "+12.5%"). Omit to hide. */
   delta?: string;
+  /** Muted supporting line beneath a dense metric label. */
+  description?: string;
   /** Color the delta red (a decline) instead of the default green (a rise). */
   down?: boolean;
   /** Render the delta MUTED rather than as a rise or a decline, for a line that
@@ -100,6 +102,10 @@ export interface StatsProps {
   // Surface (pick one; default is bordered cards).
   /** Borderless metric stacks on a shared surface, for nesting inside a card. */
   plain?: boolean;
+  /** Dense value-first tile for a navigation rail. */
+  compact?: boolean;
+  /** Value-first dashboard tile with a 24px headline. */
+  large?: boolean;
   /** Optional heading shown above the metrics (mainly for the plain surface). */
   title?: string;
   /** Draw every metric's strip on a muted track, in one bounded band.
@@ -127,6 +133,10 @@ export interface StatsProps {
 export interface StatsSkin {
   /** The bordered card surface each metric sits in (shape, border, padding, shadow). */
   cardSurface: (tokens: ColorTokens) => ViewStyle;
+  denseCard: (tokens: ColorTokens, large: boolean) => ViewStyle;
+  denseValue: (tokens: ColorTokens, large: boolean) => TextStyle;
+  denseLabel: (tokens: ColorTokens, large: boolean) => TextStyle;
+  denseDescription: (tokens: ColorTokens) => TextStyle;
   /** The parent surface the plain variant nests on. */
   plainContainer: (tokens: ColorTokens) => ViewStyle;
   /** Row gap by surface (cards pack tighter, plain stacks sit roomier). */
@@ -175,15 +185,16 @@ export function deltaOf(item: Pick<StatItem, "steady" | "down">): "steady" | "do
 
 export function createStats(skin: StatsSkin) {
   // One metric: label, value, optional delta. Tappable when an onPress is given.
-  function StatItemView({ item, surface, framed, onPress }: { item: StatItem; surface: Surface; framed?: boolean; onPress?: () => void }): ReactNode {
+  function StatItemView({ item, surface, framed, onPress, dense, large }: { item: StatItem; surface: Surface; framed?: boolean; onPress?: () => void; dense?: boolean; large?: boolean }): ReactNode {
     const theme = useMaterialTheme({ static: true });
     const { tokens } = theme;
     // Under glass a card-surface metric is a CONTENT-layer pane (the material rides
     // inside the pressable so the tap, ripple and dim stay on the Pressable).
     // Split the surface shape (radius/border/fill/padding) from the outer flex sizing:
     // the shape stays on the tappable node, the sizing rides the RippleClip wrapper.
-    const cardShape = surface === "card" ? skin.cardSurface(tokens) : null;
-    const container = [cardShape, itemLayout[surface]];
+    const cardShape = surface === "card" ? dense ? skin.denseCard(tokens, !!large) : skin.cardSurface(tokens) : null;
+    const metricLayout = dense ? { flexGrow: 1, flexShrink: 1, flexBasis: "0%" as const, minWidth: 0 } : itemLayout[surface];
+    const container = [cardShape, metricLayout];
     // The accent recolors ONLY the headline value, never the label or the delta:
     // the delta keeps its own rise/decline semantics, which an accent must not
     // overwrite.
@@ -195,6 +206,7 @@ export function createStats(skin: StatsSkin) {
     const hasHeader = item.icon != null || item.actions != null;
     const inner = (
       <>
+        {dense ? <Text style={[skin.denseValue(tokens, !!large), accentStyle]}>{item.value}</Text> : null}
         {hasHeader ? (
           <View style={headerRow}>
             <Text style={skin.labelText(tokens)}>{item.label}</Text>
@@ -204,9 +216,10 @@ export function createStats(skin: StatsSkin) {
             </View>
           </View>
         ) : (
-          <Text style={skin.labelText(tokens)}>{item.label}</Text>
+          <Text style={dense ? skin.denseLabel(tokens, !!large) : skin.labelText(tokens)}>{item.label}</Text>
         )}
-        <Text style={[skin.valueText(tokens), accentStyle]}>{item.value}</Text>
+        {dense ? null : <Text style={[skin.valueText(tokens), accentStyle]}>{item.value}</Text>}
+        {item.description ? <Text style={skin.denseDescription(tokens)}>{item.description}</Text> : null}
         {item.delta != null && item.delta !== "" ? (
           <Text style={[skin.deltaBase, deltaKind === "steady" ? { color: tokens["muted-foreground"] } : deltaTone(tokens, deltaKind === "down")]}>{item.delta}</Text>
         ) : null}
@@ -231,7 +244,7 @@ export function createStats(skin: StatsSkin) {
         // RippleClip parent (a node can't clip its own ripple). The outer flex sizing
         // rides the wrapper so the card keeps its grid/full-width footprint; the shape,
         // padding, fill, and pressed-dim stay on the Pressable.
-        <RippleClip shape={cornerRadii(cardShape)} style={itemLayout[surface]}>
+        <RippleClip shape={cornerRadii(cardShape)} style={metricLayout}>
           <Pressable
             accessibilityRole="button"
             onPress={onPress}
@@ -268,7 +281,7 @@ export function createStats(skin: StatsSkin) {
         {title != null && title !== "" ? <Text style={skin.title(tokens, surface)}>{title}</Text> : null}
         <View style={[row, skin.rowGap[surface]]}>
           {items.map((item, i) => (
-            <StatItemView key={i} item={item} surface={surface} framed={props.framed} onPress={onPressItem ? () => onPressItem(i) : undefined} />
+            <StatItemView key={i} item={item} surface={surface} framed={props.framed} dense={props.compact || props.large} large={props.large && !props.compact} onPress={onPressItem ? () => onPressItem(i) : undefined} />
           ))}
         </View>
       </Root>
