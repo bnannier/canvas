@@ -1,10 +1,11 @@
 import { afterEach, beforeEach, describe, expect, it, spyOn } from "bun:test";
 import { cleanup, render, waitFor } from "@testing-library/react";
-import { View } from "react-native";
+import { StyleSheet, View, type ViewProps } from "react-native";
+import { type ForwardedRef, type ReactNode } from "react";
 import { ThemeProvider } from "../src/style/theme.tsx";
 import { glassByScheme, lightColors } from "../src/style/tokens.ts";
 import { GlassSurface } from "../src/style/glass-surface/glass-surface.ios.tsx";
-import { CLEAR_INTENSITY, CONTENT_INTENSITY, GLASS_INTENSITY, SPECULAR_RIM, brandTint, brandInk, type GlassLayer } from "../src/style/glass-surface/glass-surface.shared.tsx";
+import { CLEAR_INTENSITY, CONTENT_INTENSITY, GLASS_INTENSITY, SPECULAR_RIM, brandTint, brandInk, materialCorners, type GlassLayer } from "../src/style/glass-surface/glass-surface.shared.tsx";
 import * as iosRuntime from "../src/style/glass-surface/material-runtime.ios.ts";
 import * as runtime from "../src/style/glass-surface/material-runtime.ts";
 import type { MaterialCapabilities } from "../src/style/glass-surface/material-resolution.ts";
@@ -161,6 +162,54 @@ describe("the iOS host where its material resolves solid", () => {
       await waitFor(() => expect(getByTestId("surface").querySelector('[data-testid="glass-material"]')).toBeNull());
       expect(getByTestId("surface").querySelector('[data-testid="liquid-glass"], [data-testid="frost"]')).toBeNull();
       expect(getByTestId("surface").style.borderWidth).toBe(rung === "Increase Contrast" ? "1px" : "");
+    });
+  }
+});
+
+// glass-surface-border-curve-1: a skin with iOS's continuous corner (`borderCurve:
+// "continuous"`: Card, the lists, the Drawer sheet) kept it on its host while the material
+// under it took the radii alone, so the clip and the rim drew the circular corner (read on
+// the simulator through lldb: the Card host's layer continuous, its material's circular).
+// The material carries the host's curve on every layer: the clip, the fill, the frost or
+// the Liquid Glass, and the rim, in one view or in bands. React Native Web drops the key, so
+// the props are read as the native build receives them.
+describe("the material keeps the host's continuous corner", () => {
+  const CONTINUOUS = { borderRadius: 20, borderCurve: "continuous" as const, backgroundColor: "#ffffff" };
+
+  /** The style of every View rendered while `run` runs, flattened, as a native build receives it. */
+  function viewStyles(run: () => void): Record<string, unknown>[] {
+    const component = View as unknown as { render: (props: ViewProps, ref: ForwardedRef<unknown>) => ReactNode };
+    const original = component.render;
+    const seen: Record<string, unknown>[] = [];
+    const spy = spyOn(component, "render").mockImplementation((props, ref) => {
+      seen.push((StyleSheet.flatten(props.style) ?? {}) as Record<string, unknown>);
+      return original(props, ref);
+    });
+    try { run(); } finally { spy.mockRestore(); }
+    return seen;
+  }
+
+  it("carries the curve with the radii, inside a kept border too", () => {
+    expect(materialCorners(CONTINUOUS)).toEqual({ borderRadius: 20, borderCurve: "continuous" });
+    expect(materialCorners({ ...CONTINUOUS, borderWidth: 2 }, true)).toEqual({ borderRadius: 18, borderCurve: "continuous" });
+    expect(materialCorners({ borderRadius: 20 })).toEqual({ borderRadius: 20 });
+  });
+
+  for (const [name, capabilities, props] of [
+    ["Liquid Glass", ios26, { layer: "dense" as const }],
+    ["the frost and its rim", ios26, { layer: "content" as const }],
+  ] as const) {
+    it(`gives ${name} the host's curve on every layer`, () => {
+      stubs(capabilities);
+      const styles = viewStyles(() => { render(<ThemeProvider light glass><GlassSurface {...props} style={CONTINUOUS} /></ThemeProvider>); });
+      const material = [...liquid, ...frost].map((p) => StyleSheet.flatten(p.style as object) as Record<string, unknown>);
+      expect(material).toHaveLength(1);
+      expect(material[0]!.borderCurve).toBe("continuous");
+      // Every rounded View the host draws under it (the clip, the fill, the rim) takes the curve.
+      const rounded = styles.filter((style) => style.borderRadius === 20 && style.backgroundColor !== "#ffffff");
+      expect(rounded.length).toBeGreaterThan(1);
+      for (const style of rounded) expect(style.borderCurve).toBe("continuous");
+      if (props.layer === "content") expect(styles.some((style) => style.boxShadow != null && style.borderCurve === "continuous")).toBe(true);
     });
   }
 });

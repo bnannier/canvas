@@ -7,7 +7,7 @@ Audit checklist for the style-layer foundation `GlassPane`, audited for its cont
 |---|---|
 | Foundation | `GlassPane`, a style-layer renderable with no component page of its own (`tools/materials/manifest.ts`, the style tier), declared in `src/style/glass-surface/glass-pane.tsx` |
 | Source files | `src/style/glass-surface/capture-runtime.ts`, `src/style/glass-surface/capture-target.ts`, `src/style/glass-surface/glass-pane.tsx`, `src/style/glass-surface/glass-surface.shared.tsx`, `src/style/glass-surface/material-resolution.ts`, `src/style/glass-surface/material-runtime.android.ts`, `src/style/glass-surface/material-runtime.ios.ts`, `src/style/glass-surface/material-runtime.ts`, `src/style/glass-surface/use-material-theme.ts` (its homes, its exports' declarations and its implementation, the private declarations they read) |
-| Seams | 2, the private declarations it alone reads (`tools/audit/foundations.ts` `foundationCode`), which its consumers are also found through: `BEHIND` (src/style/glass-surface/glass-pane.tsx), `paneShape` (src/style/glass-surface/glass-pane.tsx) |
+| Seams | 1, the private declarations it alone reads (`tools/audit/foundations.ts` `foundationCode`), which its consumers are also found through: `BEHIND` (src/style/glass-surface/glass-pane.tsx) |
 | Public exports | 4: `GlassPane` (deprecated-alias), `GlassPaneProps` (deprecated-alias, a type), `PANE_SIBLING_INPUT` (deprecated-alias), `paneStyle` (deprecated-alias) |
 | K12-2 status | 4 deprecated alias already: GlassPane, GlassPaneProps, PANE_SIBLING_INPUT, paneStyle |
 | Documented on | `foundation`: GlassPane, GlassPaneProps, PANE_SIBLING_INPUT, paneStyle ("Glass material") |
