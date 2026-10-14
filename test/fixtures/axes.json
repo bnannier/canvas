@@ -491,6 +491,28 @@
       "largeIcon + mediumIcon": "mediumIcon"
     }
   },
+  "GlassSurface.frost": {
+    "kind": "axis",
+    "components": [
+      "GlassSurface"
+    ],
+    "pages": [
+      "glass"
+    ],
+    "resolver": "src/style/glass-surface/material-resolution.ts#frostedKindOf",
+    "order": [
+      "veil",
+      "frosted"
+    ],
+    "none": null,
+    "single": {
+      "veil": "veil",
+      "frosted": "frame"
+    },
+    "pairs": {
+      "frosted + veil": "veil"
+    }
+  },
   "Button.size": {
     "kind": "axis",
     "components": [

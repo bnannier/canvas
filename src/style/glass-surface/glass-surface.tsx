@@ -7,6 +7,7 @@
 // change never reaches a native build.
 import { Platform, View, type ViewStyle } from "react-native";
 import { FrostView, requiresBlurTarget } from "./material-runtime.js";
+import { frostedKindOf } from "./material-resolution.js";
 import { useMaterialResolution } from "./use-material-theme.js";
 import { WEB_FROST, webRimColor } from "./web-frost.js";
 import {
@@ -56,6 +57,14 @@ export function GlassSurface(props: GlassSurfaceProps) {
   const { theme, material: resolved } = useMaterialResolution(props);
   const { layer = "functional", sheer, style, clear } = props;
   const solid = resolved.renderer === "solid";
+  const frame = frostedKindOf(props);
+  if (frame != null && !solid && Platform.OS === "web") {
+    // The frame paints its tint over its own backdrop filter, exactly as Argus.
+    // It owns its exterior shadow and hairline; no additional material rim is added.
+    const backdrop = `blur(${frame === "veil" ? WEB_FROST.veilBlur : WEB_FROST.blur}px)`;
+    const paint = { backgroundColor: tint ?? (frame === "veil" ? theme.tokens.scrim : theme.tokens.card), backdropFilter: backdrop, WebkitBackdropFilter: backdrop } as ViewStyle;
+    return <GlassBox {...props} style={[style, paint]} solid material={null} />;
+  }
   // Sheer is a content-only treatment. It must never thin a menu or error verdict.
   const translucent = sheer && layer === "content";
   const fill = materialFill(style, props.stateBorder);

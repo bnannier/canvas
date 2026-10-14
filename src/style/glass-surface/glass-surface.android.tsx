@@ -8,9 +8,10 @@ import { View } from "react-native";
 import { FrostView, requiresBlurTarget } from "./material-runtime.android.js";
 import { NativeCaptureFrost } from "./capture-runtime.js";
 import { useCaptureDemand } from "./capture-target.js";
+import { frostedKindOf } from "./material-resolution.js";
 import { useMaterialResolution } from "./use-material-theme.js";
 import {
-  GlassBox, CLEAR_INTENSITY, contrastStyle, frostFill, frostMethodProps, SHEER_FILL_OPACITY, materialFill,
+  GlassBox, FRAME_FROST_INTENSITY, CLEAR_INTENSITY, contrastStyle, frostFill, frostMethodProps, SHEER_FILL_OPACITY, materialFill,
   SpecularRim, surfaceIntensity, useBlurTargetRejection, type GlassSurfaceProps,
 } from "./glass-surface.shared.js";
 
@@ -55,13 +56,14 @@ export function GlassSurface(props: GlassSurfaceProps) {
   const { theme, material: resolved, requestedTarget, target } = useMaterialResolution(props);
   const { layer = "functional", sheer, style, clear } = props;
   const solid = resolved.renderer === "solid";
+  const frame = frostedKindOf(props);
   useCaptureDemand(requestedTarget ?? EMPTY_TARGET, !solid && NativeCaptureFrost !== undefined);
   // A frost refuses only a plane that contains it: under a GlassModalBlurTarget that sits
   // in the plane's own window. The bridge then withdraws the plane and this resolves solid.
   const reject = useBlurTargetRejection();
   // Sheer is a content-only treatment. It must never thin a menu or error verdict.
   const translucent = sheer && layer === "content";
-  const intensity = clear ? CLEAR_INTENSITY : surfaceIntensity(layer, translucent);
+  const intensity = frame ? FRAME_FROST_INTENSITY[frame] : clear ? CLEAR_INTENSITY : surfaceIntensity(layer, translucent);
   const fill = materialFill(style, props.stateBorder);
   // The fill paints OVER either frost, then the rim, as on every frost path (`frostFill`,
   // glass-surface-native-frost-self-sample-1): a blur samples what is painted beneath it, so
@@ -73,7 +75,7 @@ export function GlassSurface(props: GlassSurfaceProps) {
     {NativeCaptureFrost && target ? <NativeCaptureFrost targetRef={target} intensity={intensity} tint={theme.dark ? "dark" : "light"} style={fill} onTargetRejected={reject ? () => reject(target) : undefined} />
       : FrostView ? <FrostView intensity={intensity} tint={theme.dark ? "dark" : "light"} {...frostMethodProps(requiresBlurTarget)} style={fill} /> : null}
     {tintLayer}
-    <SpecularRim style={style} dark={theme.dark} inside={props.stateBorder} />
+    {frame == null ? <SpecularRim style={style} dark={theme.dark} inside={props.stateBorder} /> : null}
   </>;
   return <GlassBox {...props} style={contrastStyle(theme, style, props.stateBorder)} solid={solid} material={material} />;
 }

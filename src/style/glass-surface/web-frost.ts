@@ -17,6 +17,8 @@ import type { GlassLayer } from "./glass-surface.shared.js";
 export const WEB_FROST = {
   /** The backdrop blur in px: DF's shell, `blur(24px)`, with no saturation shift. */
   blur: 24,
+  /** Original Argus modal dim: blur the backdrop by two pixels. */
+  veilBlur: 2,
   /**
    * A clear surface (a field on its pane, a pill) frosts nothing: DF draws its fields
    * as an unblurred translucent fill, so the backdrop reads through them unsoftened.
