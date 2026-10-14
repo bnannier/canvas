@@ -56,23 +56,10 @@ export interface GlassPaneProps {
    * whole footprint with the shape's own radii.
    */
   stateBorder?: boolean;
-  /**
-   * The host keeps its resting boundary over this pane: a border that identifies a selection
-   * control (an unchecked Radio ring, an unchecked Checkbox box, drawn in `input`, or in
-   * `muted-foreground` on Android), which WCAG 1.4.11 holds to 3:1 and the material's rim
-   * cannot carry (the owner's GS-1 decision). The pane sits flush inside it as inside a
-   * state border; pair it with `paneStyle`'s `"boundary"`. Defaults to false.
-   */
-  boundary?: boolean;
   /** The under-fill in place of the layer's tint: a toned wash, held legible by `legibleWash`. */
   tint?: string;
-  /** A brand colour for a brand-tinted puck (a primary Button, a checked Switch), its under-fill solved for the ink painted on it. */
+  /** A brand colour for a brand-tinted puck (a primary Button, a selected tab), its under-fill solved for the ink painted on it. */
   brand?: string;
-  /**
-   * A control's boundary drawn as its fill (an off Switch track), painted over the frost so
-   * the colour solved for its 3:1 is the colour that renders (GlassSurface's `boundaryFill`).
-   */
-  boundaryFill?: string;
   /**
    * @deprecated A no-op, kept so existing code compiles until a major. The pane passes every
    * tap through to its host (`pointerEvents="none"`), so iOS never delivers it the touch
@@ -95,9 +82,8 @@ export interface GlassPaneProps {
  * Geometry: the pane fills the host's padding box. Under glass `paneStyle` turns a resting
  * border into padding of the same width, so that box is the host's whole solid footprint
  * and the material covers the control's full size, the material's rim its edge. A host
- * that keeps a state border passes `stateBorder`, and one that keeps the boundary that
- * identifies a selection control passes `boundary`; the pane sits flush inside that border
- * with concentric corners. A pane beside a text field (a sibling inside a
+ * that keeps a state border passes `stateBorder`, and the pane sits flush inside that
+ * border with concentric corners. A pane beside a text field (a sibling inside a
  * borderless wrapper the field fills) covers the wrapper, the field's whole footprint,
  * and the field's own state border paints over it.
  *
@@ -110,13 +96,13 @@ export interface GlassPaneProps {
  * Transparency and Increase Contrast it renders nothing and the host keeps its opaque
  * skin, with the contrasting border under Increase Contrast (`paneStyle`).
  */
-export function GlassPane({ layer = "control", shape, stateBorder = false, boundary = false, tint, brand, boundaryFill, testID, static: stable, clear }: GlassPaneProps) {
+export function GlassPane({ layer = "control", shape, stateBorder = false, tint, brand, testID, static: stable, clear }: GlassPaneProps) {
   // A solid pane would paint a raw copy of the shape inside a host that already shows it.
   const { material } = useMaterialResolution({ static: stable, layer });
   if (material.renderer === "solid") return null;
   // `interactive` is not forwarded: a surface under pointerEvents "none" never receives the
   // touch interactive Liquid Glass answers, so it only reinstalled the effect on each toggle.
-  return <GlassSurface static={stable} clear={clear} layer={layer} tint={tint} brand={brand} boundaryFill={boundaryFill} pointerEvents="none" testID={testID} style={[StyleSheet.absoluteFill, paneShape(shape, stateBorder || boundary), BEHIND]} />;
+  return <GlassSurface static={stable} clear={clear} layer={layer} tint={tint} brand={brand} pointerEvents="none" testID={testID} style={[StyleSheet.absoluteFill, paneShape(shape, stateBorder), BEHIND]} />;
 }
 
 // The pane paints beneath every sibling inside its host, on every platform: each host is
@@ -143,14 +129,10 @@ function paneShape(shape: StyleProp<ViewStyle>, inside: boolean): ViewStyle {
  *   size and its content stays where it was, while its padding box, the box the pane
  *   fills, grows to the node's whole footprint: the material covers the control's full
  *   solid size and the material's rim is its edge.
- * - A border that shows a state (`kept` true: a focused or errored field, an open
+ * - A border that shows a state (`stateBorder`: a focused or errored field, an open
  *   trigger, the current step) stays a border, in its own colour, over the pane, as
  *   GlassBox keeps one over its material; give the pane `stateBorder` too, so it sits
  *   flush inside it. Under Increase Contrast the contrasting border does not overwrite it.
- * - A resting boundary that identifies a selection control (`kept` `"boundary"`: an
- *   unchecked Radio ring or Checkbox box) stays too, in its solid colour, at the 3:1 WCAG
- *   1.4.11 asks of it (the owner's GS-1 decision); give the pane `boundary`. It is a resting
- *   border all the same, so under Increase Contrast it takes the contrasting border.
  *
  * Hand it the node's whole box, every style that sets its padding or its border: a padding
  * set after it would replace the padding a border became. An absolutely placed child of
@@ -164,20 +146,12 @@ function paneShape(shape: StyleProp<ViewStyle>, inside: boolean): ViewStyle {
  * Android surface in the page, a missing optional peer, a browser without a backdrop
  * filter) the node would drop its fill and border while its pane renders nothing.
  */
-export function paneStyle(appearance: boolean | ThemeValue, style: StyleProp<ViewStyle>, kept: KeptBorder = false): StyleProp<ViewStyle> {
+export function paneStyle(appearance: boolean | ThemeValue, style: StyleProp<ViewStyle>, stateBorder = false): StyleProp<ViewStyle> {
   const glass = typeof appearance === "boolean" ? appearance : isGlass(appearance);
   if (!glass) return typeof appearance !== "boolean" && appearance.increasedContrast
-    ? [style, contrastBorderFor(appearance.tokens, style, kept === true)] : style;
-  return [style, kept ? clearedPaint(style, true) : borderAsPadding(style)];
+    ? [style, contrastBorderFor(appearance.tokens, style, stateBorder)] : style;
+  return [style, stateBorder ? clearedPaint(style, true) : borderAsPadding(style)];
 }
-
-/**
- * The border a pane host keeps over its pane under glass, `paneStyle`'s third argument:
- * `true` for a border that shows a state, `"boundary"` for the resting boundary that
- * identifies a selection control, and false (the default) for a resting border, which
- * becomes padding.
- */
-export type KeptBorder = boolean | "boundary";
 
 /**
  * The Android ripple of a Pressable whose press a GlassPane would hide: the host's own ripple
@@ -213,25 +187,26 @@ export function paneRipple(appearance: boolean | ThemeValue, ripple: PressableAn
  * resting border `paneStyle` turns into padding. Absolute offsets count from that box, so an
  * absolutely placed child adds these to keep the place solid gives it (`panePlaced`). All
  * zero wherever `paneStyle` returns the host's style unchanged: in solid mode, and for a host
- * that keeps its border (a state border or a boundary).
+ * that keeps its border (`stateBorder`).
  */
-export function paneEdges(appearance: boolean | ThemeValue, style: StyleProp<ViewStyle>, kept: KeptBorder = false): BorderSides {
+export function paneEdges(appearance: boolean | ThemeValue, style: StyleProp<ViewStyle>, stateBorder = false): BorderSides {
   const glass = typeof appearance === "boolean" ? appearance : isGlass(appearance);
-  if (!glass || kept) return NO_SIDES;
+  if (!glass || stateBorder) return NO_SIDES;
   return tradedSides(style);
 }
 
 /**
- * An absolutely placed child of a pane host (a switch thumb, a label layer), or of a
- * GlassSurface whose resting border became padding the same way (CodeBlock's floating copy
- * chip), kept where solid places it: each side the child is pinned to by a number gains the
- * host's `paneEdges` there (a physical left or right read as start or end). Returned
- * unchanged where those are all zero, so the solid tree is untouched. For a GlassSurface,
+ * An absolutely placed child of a pane host (a Select's floating label, the Calendar's
+ * fallback anchor), or of a GlassSurface whose resting border became padding the same way
+ * (CodeBlock's floating copy chip), kept where solid places it: each side the child is
+ * pinned to by a number gains the host's `paneEdges` there (a physical left or right read as
+ * start or end). Returned unchanged where those are all zero, so the solid tree is
+ * untouched. For a GlassSurface,
  * `appearance` is the host's resolved material (`useMaterialTheme` with the surface's
  * `layer` and `static`), as for a pane.
  */
-export function panePlaced(appearance: boolean | ThemeValue, host: StyleProp<ViewStyle>, child: StyleProp<ViewStyle>, kept: KeptBorder = false): StyleProp<ViewStyle> {
-  return placedInside(paneEdges(appearance, host, kept), child);
+export function panePlaced(appearance: boolean | ThemeValue, host: StyleProp<ViewStyle>, child: StyleProp<ViewStyle>, stateBorder = false): StyleProp<ViewStyle> {
+  return placedInside(paneEdges(appearance, host, stateBorder), child);
 }
 
 /**

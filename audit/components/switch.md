@@ -14,7 +14,7 @@ Audit checklist for `/components/switch`. The facts block and the variants table
 | Platform entries | iOS: own build: Switch (builds from its own iosSkin). Android: own build: Switch (builds from its own androidSkin) |
 | Platform-skins registry | iOS: Switch; Android: Switch |
 | Reference row | `switch` (Full, Built). iOS: link [switch (iOS 27)](https://www.sketch.com/s/04c24d8b-38fb-4afb-8836-36617e022f02/symbols?g=Toggles). Android: link [switch (Android)](https://m3.material.io/components/switch/overview). Web: link [switch (Web)](https://catalyst.tailwindui.com/docs/switch) |
-| Materials manifest | Switch: atoms, static + liquid + inherited; verification solid-appearance, glass-appearance, mode-switch, accessibility-fallback, runtime-capability, semantic-state |
+| Materials manifest | Switch: atoms, inherited; verification solid-appearance, mode-switch, accessibility-fallback, inherited-composition, semantic-state |
 | Hand-off open gaps | none |
 | Hand-off settled | none |
 | Hand-off metric gaps | none |
@@ -23,7 +23,7 @@ Audit checklist for `/components/switch`. The facts block and the variants table
 | Interaction states | recipes: focus on Default (web row; desktop), pressed on Default (web row; desktop), disabled on Disabled (web row; desktop). |
 | MeasureProps | not adopted |
 | Touch target | `switch.shared.tsx`: minTarget, styleBox, useSeededMinTargetSlop; `switch.styles.ts`: TOUCH_TARGET, minTarget |
-| Tests importing it | 20: `test/a11y-state.test.tsx`, `test/action-panel.test.tsx`, `test/atom-material-roles.test.tsx`, `test/control-refs-types.test.ts`, `test/control-refs.test.tsx`, `test/control-space.test.tsx`, `test/design-rules-skins.test.ts`, `test/field.test.tsx`, `test/floating-label-contract.test.tsx`, `test/forms.test.tsx`, `test/glass-controls.test.tsx`, `test/glass-pane-ripple.test.tsx`, `test/glass-pane.test.tsx`, `test/material-solid-fallback.test.tsx`, `test/native-focus-fixtures.test.tsx`, `test/native-material-coordinate-hosts.test.tsx`, `test/skins-smoke.test.tsx`, `test/switch-label.test.tsx`, `test/touch-target-coverage.test.ts`, `test/touch-target-seed.test.tsx` |
+| Tests importing it | 19: `test/a11y-state.test.tsx`, `test/action-panel.test.tsx`, `test/atom-material-roles.test.tsx`, `test/control-refs-types.test.ts`, `test/control-refs.test.tsx`, `test/control-space.test.tsx`, `test/design-rules-skins.test.ts`, `test/field.test.tsx`, `test/floating-label-contract.test.tsx`, `test/forms.test.tsx`, `test/glass-controls.test.tsx`, `test/glass-pane-ripple.test.tsx`, `test/glass-pane.test.tsx`, `test/native-focus-fixtures.test.tsx`, `test/native-material-coordinate-hosts.test.tsx`, `test/skins-smoke.test.tsx`, `test/switch-label.test.tsx`, `test/touch-target-coverage.test.ts`, `test/touch-target-seed.test.tsx` |
 | E2E naming it | 5: `e2e/behavior/form-autocomplete.e2e.ts`, `e2e/behavior/material-overlay-host.e2e.ts`, `e2e/journeys/control-refs.e2e.ts`, `e2e/journeys/keyboard.e2e.ts`, `e2e/journeys/touch.e2e.ts` |
 | E2E catalog sweeps | 7: `e2e/a11y/components.e2e.ts` (componentRoutes), `e2e/journeys/keyboard.e2e.ts` (componentRoutes), `e2e/responsive/component-widths.e2e.ts` (contentRoutes, componentRoutes), `e2e/smoke/examples.e2e.ts` (componentExamples), `e2e/smoke/routes.e2e.ts` (allRoutes), `e2e/visual/components.e2e.ts` (componentRoutes), `e2e/visual/materials.e2e.ts` (MATERIAL_ROUTES) |
 | Turn record | `audit/turns/switch.md`, written by `bun run audit:turn -- --slug=switch --phase=before\|after` (the before and after capture runs) |

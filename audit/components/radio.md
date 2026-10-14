@@ -14,7 +14,7 @@ Audit checklist for `/components/radio`. The facts block and the variants table 
 | Platform entries | iOS: own build: Radio (builds from its own iosSkin); RadioGroup (builds from its own iosSkin). Android: own build: Radio (builds from its own androidSkin); RadioGroup (builds from its own androidSkin) |
 | Platform-skins registry | iOS: Radio, RadioGroup; Android: Radio, RadioGroup |
 | Reference row | `radio` (Full, Built). iOS: none (iOS has no radio button; it is a macOS-only control. iOS apps use a single-select list with checkmarks or a picker instead). Android: link [radio (Android)](https://m3.material.io/components/radio-button/overview). Web: link [radio (Web)](https://catalyst.tailwindui.com/docs/radio) |
-| Materials manifest | Radio: atoms, static + liquid + inherited; verification solid-appearance, glass-appearance, mode-switch, accessibility-fallback, runtime-capability, semantic-state. RadioGroup: atoms, static + inherited; verification solid-appearance, glass-appearance, mode-switch, accessibility-fallback, runtime-capability, inherited-composition, semantic-state |
+| Materials manifest | Radio: atoms, static + inherited; verification solid-appearance, glass-appearance, mode-switch, accessibility-fallback, runtime-capability, semantic-state. RadioGroup: atoms, static + inherited; verification solid-appearance, glass-appearance, mode-switch, accessibility-fallback, runtime-capability, inherited-composition, semantic-state |
 | Hand-off open gaps | none |
 | Hand-off settled | none |
 | Hand-off metric gaps | none |

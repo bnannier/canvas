@@ -16,14 +16,9 @@
 // strength at which that ink keeps 4.5:1 plus the headroom on the body of the host that
 // renders it (`legibleInnerFill`).
 //
-// The off Switch's track is the third under-fill here (the owner's GS-1 decision): its solid
-// off-track fill as a neutral pane, as a checked track takes its brand, at the sheerest alpha
-// at which the track keeps the 3:1 WCAG 1.4.11 asks of a control's boundary against what lies
-// around it and under its thumb (`GLASS_TRACK`, `legibleTrack`).
-//
-// These tables are the only place the under-fills' numbers live, apart from the selection
-// ceiling read from the solid recipe (src/style/selected-card.ts): tuning-harness tunables
-// (.tuning-harness.json, both files), judged on /testing/materials and the shipped pages, their
+// This table is the only place the under-fills' numbers live, apart from the selection
+// ceiling read from the solid recipe (src/style/selected-card.ts): a tuning-harness tunable
+// (.tuning-harness.json, both files), judged on /testing/materials and the shipped pages, its
 // runs logged in tools/native/liquid-motion.md. test/glass-controls.test.tsx holds the floors.
 
 import type { ThemeValue } from "../theme.js";
@@ -119,37 +114,6 @@ export function legibleWash(theme: Pick<ThemeValue, "tokens" | "glass" | "dark">
     return fillOver ? [bed, composite(fillOver, bed)] : [bed];
   }));
   return tint == null ? body : over(tint, body);
-}
-
-export const GLASS_TRACK = {
-  /** The contrast an off track keeps against the page or pane around it, and its thumb against it: WCAG 1.4.11's 3:1. */
-  boundaryContrast: 3,
-  /** The headroom the alpha is solved with above `boundaryContrast`, for the same reason as `GLASS_WASH.headroom`. */
-  headroom: 0.1,
-  /** The sheerest alpha tried, a brand-tinted puck's own floor (`BRAND_TINT_ALPHA`), and the step up from it. */
-  floor: 0.66,
-  step: 0.02,
-} as const;
-
-/**
- * The under-fill of an off Switch's track under glass: the skin's own off-track `fill` at the
- * sheerest alpha from `GLASS_TRACK.floor` at which the track, composited on the page and on a
- * content pane, keeps 3:1 against that ground and the `thumb` keeps 3:1 against it. Where no
- * alpha clears that (the iOS systemGray3 track, which Apple keeps under 3:1 in solid too, and
- * Android's muted track, whose thumb carries the control), it is the opaque fill itself, the
- * solid track.
- */
-export function legibleTrack(theme: Pick<ThemeValue, "tokens" | "glass">, fill: string, thumb: string): string {
-  const around = grounds(theme);
-  const bar = GLASS_TRACK.boundaryContrast + GLASS_TRACK.headroom;
-  for (let a = GLASS_TRACK.floor; a < 1; a += GLASS_TRACK.step) {
-    const under = alpha(fill, Math.round(a * 100) / 100);
-    if (around.every((ground) => {
-      const track = composite(under, ground);
-      return contrastRatio(track, ground) >= bar && contrastRatio(track, thumb) >= bar;
-    })) return under;
-  }
-  return fill;
 }
 
 /**

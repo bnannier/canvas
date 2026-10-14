@@ -71,8 +71,8 @@ const anchoredCard = (container: HTMLElement, contentSelector: string): HTMLElem
 // The material's two visible signatures inside a surface: the material clip box GlassBox
 // paints behind the content (which a clear surface draws too, though it has no frost)
 // and the rim (an inset box-shadow), counted OUTSIDE the controls the surface contains
-// (a button, a switch, a checkbox), which are glass pucks of their own under the
-// layered model.
+// (a button), which are glass pucks of their own under the layered model (a switch and a
+// checkbox are solid marks, GS-5, and paint none).
 const outsideControls = (card: HTMLElement, nodes: Element[]) =>
   nodes.filter((n) => {
     const control = n.closest('[role="button"], [role="switch"], [role="checkbox"]');

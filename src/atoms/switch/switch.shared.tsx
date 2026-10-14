@@ -1,10 +1,10 @@
-import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
 import { forwardRef, type ReactNode } from "react";
 import { useComposedRefs } from "../../style/use-composed-refs.js";
 import { useSpaceActivation } from "../../style/use-space-activation.js";
 import { type GestureResponderEvent } from "react-native";
 import { useSeededMinTargetSlop, styleBox } from "../../style/touch-target-seed.js";
-import { Pressable, View, Text, useControllableState, type ColorTokens, type StyleProp, type ViewStyle, type TouchTargetSkin, type LayoutStyle, GlassPane, GlassSurface, paneStyle, panePlaced, legibleTrack } from "../../style/index.js";
+import { Pressable, View, Text, useControllableState, useTheme, type ColorTokens, type StyleProp, type ViewStyle, type TouchTargetSkin, type LayoutStyle } from "../../style/index.js";
+import { contrastStyle, PlainSurface } from "../../style/glass-surface/glass-surface.shared.js";
 
 // Shared Switch shell. Uses React Native's primitives DIRECTLY (no engine className
 // layer) and reads the active brand tokens via so colors follow light/dark.
@@ -74,21 +74,13 @@ export function createSwitch(skin: SwitchSkin) {
   const Switch = forwardRef<View, SwitchProps>(function Switch(props, ref) {
     const hostRef = useComposedRefs(ref);
     const { onChange, onValueChange, disabled, children, description, accessibilityLabel, style } = props;
-    const theme = useMaterialTheme({ static: true, layer: "control" });
-    const thumbTheme = useMaterialTheme({ layer: "control" });
+    const theme = useTheme();
     const { tokens, dark } = theme;
-    const glassThumb = thumbTheme.surface === "glass";
     const size = sizeOf(props);
-    // Under glass the track is a static pane at control density: a GlassPane paints the material
-    // behind the thumb, BRAND-tinted while checked, and the track drops its fill and outline
-    // (the pane's material and rim carry them). While off, the track's own off-track fill paints
-    // over its frost instead (`boundaryFill`, solved by `legibleTrack`): on the web the boundary
-    // that identifies the control at 3:1 (GS-1), on iOS Apple's systemGray3, and on Android the
-    // muted track, about 1.1:1, whose thumb carries the boundary. The thumb is a CONTROL-layer
-    // surface of its own, tinted with the skin's thumb fill and positioned by the skin inside
-    // the track; while off its colour paints over the frost (the web, Android, iOS before 26)
-    // and beneath iOS 26's Liquid Glass, which takes a fill under it. In solid mode it is the
-    // skin's plain knob.
+    // A switch is a small mark inside content, not a surface: it draws the skin's own track
+    // and knob in every mode, glass included, with no pane and no rim on any platform, its
+    // checked track the skin's solid brand fill (the owner's GS-5 decision). Under Increase
+    // Contrast the track and the knob take the contrasting border (`contrastStyle`).
 
     // Controlled when `checked` is provided, self-managed otherwise, so a bare
     // <Switch /> toggles out of the box (the standard library contract).
@@ -101,8 +93,6 @@ export function createSwitch(skin: SwitchSkin) {
       },
     );
     const trackShape = skin.track(tokens, dark, checked, size);
-    // An enabled switch that is off: its track and thumb carry its boundary (GS-1).
-    const off = !checked && !disabled;
     const thumbShape = skin.thumb(tokens, checked, size);
 
     const handlePress = (_event: GestureResponderEvent) => {
@@ -137,8 +127,8 @@ export function createSwitch(skin: SwitchSkin) {
             gap: 16,
             alignItems: description != null ? "flex-start" : "center",
           },
-          disabled && !glassThumb ? { opacity: 0.5 } : null,
-          pressed && !glassThumb ? { opacity: 0.9 } : null,
+          disabled ? { opacity: 0.5 } : null,
+          pressed ? { opacity: 0.9 } : null,
           style,
         ]}
       >
@@ -152,26 +142,8 @@ export function createSwitch(skin: SwitchSkin) {
             ) : null}
           </View>
         ) : null}
-        <View style={paneStyle(theme, disabled && glassThumb ? [trackShape, { backgroundColor: tokens.muted }] : trackShape)}>
-          <GlassPane
-            static
-            layer="control"
-            shape={trackShape}
-            brand={checked && !disabled ? tokens.primary : undefined}
-            // An off track keeps its solid fill as a neutral fill over the frost, the boundary
-            // that identifies the control, as a checked one takes its brand (GS-1).
-            boundaryFill={off ? legibleTrack(theme, String(trackShape.backgroundColor), String(thumbShape.backgroundColor)) : undefined}
-          />
-          <GlassSurface
-            layer="control"
-            pointerEvents="none"
-            tint={disabled ? tokens["muted-foreground"] : String(thumbShape.backgroundColor)}
-            // An off thumb is the other half of the off boundary (3:1 on its track): its colour
-            // renders as it is, over the frost, which would blur the track into it.
-            boundaryFill={off ? String(thumbShape.backgroundColor) : undefined}
-            // The thumb keeps its solid place inside the track's border (panePlaced).
-            style={[panePlaced(theme, trackShape, thumbShape), disabled && glassThumb ? { backgroundColor: tokens["muted-foreground"] } : null]}
-          />
+        <View style={contrastStyle(theme, trackShape)}>
+          <PlainSurface pointerEvents="none" style={contrastStyle(theme, thumbShape)} />
         </View>
       </Pressable>
     );

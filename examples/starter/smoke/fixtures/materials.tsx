@@ -122,19 +122,20 @@ export function MaterialsBody() {
         <Input label="Amount" prefix="$" suffix="USD" placeholder="0.00" testID="material-ink-fill-field" />
         <PhoneInput label="Phone" testID="material-ink-fill-phone" />
       </Column>
-      {/* The control boundaries (the owner's GS-1 decision): an unchecked Radio ring and an
-          empty Checkbox box keep their solid outline over the pane at 3:1, and an off Switch
-          keeps its off-track fill as the pane's under-fill (GLASS_TRACK), on the page and on a
-          content pane, each beside its checked state. */}
-      <Typography h3>Control boundaries</Typography>
+      {/* The selection marks (the owner's GS-5 decision): a Radio, a Checkbox and a Switch are
+          small marks inside content, not surfaces, so under glass they draw their solid look
+          with no pane and no rim, checked states included, on the page and on a content pane. */}
+      <Typography h3>Selection marks</Typography>
       <Column snug testID="material-boundaries">
         <Row snug>
           <Radio testID="material-boundary-radio">Hobby</Radio>
           <Radio checked>Pro</Radio>
           <Checkbox selection testID="material-boundary-checkbox">Email</Checkbox>
           <Checkbox selection defaultChecked>SMS</Checkbox>
+          <Checkbox indeterminate>Some</Checkbox>
           <Switch testID="material-boundary-switch" accessibilityLabel="Off switch" />
           <Switch defaultChecked accessibilityLabel="On switch" />
+          <Switch disabled accessibilityLabel="Disabled switch" />
         </Row>
         <Card>
           <Row snug>

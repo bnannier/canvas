@@ -27,8 +27,7 @@ import {
  * and a surface in the page, which has none, resolves its solid skin; otherwise (without the
  * package, or on Android 11 and earlier, where it captures nothing) it is expo-blur's frost on
  * expo-blur's releases before 57, in the page as in an overlay, and from 57 the surface
- * resolves solid. A `brand` paints brand-tinted glass, a `tint` a wash, and a
- * `boundaryFill` a control's boundary over the material.
+ * resolves solid. A `brand` paints brand-tinted glass and a `tint` a wash.
  *
  * Where its material resolves solid (in solid mode, under Reduce Transparency or Increase
  * Contrast, where an optional peer is missing, a browser lacks a backdrop filter or an
@@ -63,8 +62,8 @@ export function GlassSurface(props: GlassSurfaceProps) {
   const frost = blur > 0 ? `blur(${blur}px)` : undefined;
   const scheme = theme.dark ? "dark" : "light";
   const rim: ViewStyle = { ...fill, boxShadow: `inset 0 0 0 ${WEB_FROST.rimWidth}px ${webRimColor(layer, scheme, theme.tokens.border)}` };
-  // The fill paints beneath the material, except a brand colour and a boundary fill, which
-  // paint over it so their solved colour is the rendered one (`frostFill`).
+  // The fill paints beneath the material, except a brand colour, which paints over it so its
+  // solved colour is the rendered one (`frostFill`).
   const { color, over } = frostFill(theme, props);
   const tintLayer = <View style={[fill, { backgroundColor: color, opacity: translucent ? WEB_FROST.sheerFillOpacity : 1 }]} />;
   // A platform without its own host and without a browser's backdrop filter frosts
