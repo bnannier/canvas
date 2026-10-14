@@ -3,11 +3,17 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Card, Column } = scope;
+  const { Button, Card, CardContent, CardFooter, CardSeparator, Typography } = scope;
   return (
-<Column relaxed>
-  <Card onPress={() => {}} title="Scout" description="Research agent, v2.3" />
-  <Card onPress={() => {}} title="Mint" description="Release agent, v1.8" />
-</Column>
+<Card flush>
+  <CardContent>
+    <Typography small>Rename the workspace. The URL updates everywhere.</Typography>
+  </CardContent>
+  <CardSeparator />
+  <CardFooter>
+    <Button ghost small>Cancel</Button>
+    <Button primary small>Save</Button>
+  </CardFooter>
+</Card>
   );
 }

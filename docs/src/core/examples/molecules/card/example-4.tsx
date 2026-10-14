@@ -5,8 +5,8 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { Card, Typography } = scope;
   return (
-<Card raised>
-  <Typography lead semibold>Lifted above the page</Typography>
+<Card flat>
+  <Typography lead semibold>Outlined and quiet</Typography>
 </Card>
   );
 }
