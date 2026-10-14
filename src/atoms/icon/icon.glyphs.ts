@@ -24,7 +24,7 @@ export const ICONS: Record<string, Shape[]> = {
     { t: "path", d: "M4.24 14.5a5 5 0 0 0 6.88 6" },
     { t: "path", d: "M13.76 17.5a5 5 0 0 0-6.88-6" },
   ],
-  activity: [{ t: "path", d: "M22 12h-2.48a2 2 0 0 0-1.93 1.46l-2.35 8.36a.25.25 0 0 1-.48 0L9.24 2.18a.25.25 0 0 0-.48 0l-2.35 8.36A2 2 0 0 1 4.49 12H2" }],
+  activity: [{ t: "path", d: "M22 12h-4l-3 9L9 3l-3 9H2" }],
   alarmClock: [
     { t: "circle", cx: 12, cy: 13, r: 8 },
     { t: "path", d: "M12 9v4l2 2" },
@@ -59,11 +59,7 @@ export const ICONS: Record<string, Shape[]> = {
     { t: "path", d: "M2 8h20" },
     { t: "path", d: "M6 4v4" },
   ],
-  archive: [
-    { t: "rect", x: 2, y: 3, width: 20, height: 5, rx: 1 },
-    { t: "path", d: "M4 8v11a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8" },
-    { t: "path", d: "M10 12h4" },
-  ],
+  archive: [{ t: "path", d: "M21 8v13H3V8M1 3h22v5H1zM10 12h4" }],
   arrowDown: [
     { t: "path", d: "M12 5v14" },
     { t: "path", d: "m19 12-7 7-7-7" },
@@ -80,10 +76,7 @@ export const ICONS: Record<string, Shape[]> = {
     { t: "path", d: "m12 19-7-7 7-7" },
     { t: "path", d: "M19 12H5" },
   ],
-  arrowRight: [
-    { t: "path", d: "M5 12h14" },
-    { t: "path", d: "m12 5 7 7-7 7" },
-  ],
+  arrowRight: [{ t: "path", d: "M5 12h14M12 5l7 7-7 7" }],
   arrowUp: [
     { t: "path", d: "m5 12 7-7 7 7" },
     { t: "path", d: "M12 19V5" },
@@ -125,11 +118,7 @@ export const ICONS: Record<string, Shape[]> = {
     { t: "circle", cx: 12, cy: 12, r: 2 },
     { t: "path", d: "M6 12h.01M18 12h.01" },
   ],
-  barChart2: [
-    { t: "path", d: "M5 21v-6" },
-    { t: "path", d: "M12 21V3" },
-    { t: "path", d: "M19 21V9" },
-  ],
+  barChart2: [{ t: "path", d: "M18 20V10M12 20V4M6 20v-6" }],
   battery: [
     { t: "path", d: "M 22 14 L 22 10" },
     { t: "rect", x: 2, y: 6, width: 16, height: 12, rx: 2 },
@@ -152,10 +141,7 @@ export const ICONS: Record<string, Shape[]> = {
     { t: "path", d: "M6 14v-4" },
     { t: "rect", x: 2, y: 6, width: 16, height: 12, rx: 2 },
   ],
-  bell: [
-    { t: "path", d: "M10.268 21a2 2 0 0 0 3.464 0" },
-    { t: "path", d: "M3.262 15.326A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.673C19.41 13.956 18 12.499 18 8A6 6 0 0 0 6 8c0 4.499-1.411 5.956-2.738 7.326" },
-  ],
+  bell: [{ t: "path", d: "M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 0 1-3.46 0" }],
   bellOff: [
     { t: "path", d: "M10.268 21a2 2 0 0 0 3.464 0" },
     { t: "path", d: "M17 17H4a1 1 0 0 1-.74-1.673C4.59 13.956 6 12.499 6 8a6 6 0 0 1 .258-1.742" },
@@ -368,14 +354,14 @@ export const ICONS: Record<string, Shape[]> = {
     { t: "path", d: "M21 12c.552 0 1.005-.449.95-.998a10 10 0 0 0-8.953-8.951c-.55-.055-.998.398-.998.95v8a1 1 0 0 0 1 1z" },
     { t: "path", d: "M21.21 15.89A10 10 0 1 1 8 2.83" },
   ],
-  check: [{ t: "path", d: "M20 6 9 17l-5-5" }],
+  check: [{ t: "path", d: "M20 6L9 17l-5-5" }],
   checkSquare: [
     { t: "rect", x: 3, y: 3, width: 18, height: 18, rx: 2 },
     { t: "path", d: "m9 12 2 2 4-4" },
   ],
-  chevronDown: [{ t: "path", d: "m6 9 6 6 6-6" }],
-  chevronLeft: [{ t: "path", d: "m15 18-6-6 6-6" }],
-  chevronRight: [{ t: "path", d: "m9 18 6-6-6-6" }],
+  chevronDown: [{ t: "path", d: "M6 9l6 6 6-6" }],
+  chevronLeft: [{ t: "path", d: "M15 6l-6 6 6 6" }],
+  chevronRight: [{ t: "path", d: "M9 6l6 6-6 6" }],
   chevronsLeft: [
     { t: "path", d: "m11 17-5-5 5-5" },
     { t: "path", d: "m18 17-5-5 5-5" },
@@ -399,10 +385,7 @@ export const ICONS: Record<string, Shape[]> = {
     { t: "line", x1: 12, y1: 8, x2: 12, y2: 12 },
     { t: "line", x1: 12, y1: 16, x2: 12.01, y2: 16 },
   ],
-  circleCheck: [
-    { t: "circle", cx: 12, cy: 12, r: 10 },
-    { t: "path", d: "m9 12 2 2 4-4" },
-  ],
+  circleCheck: [{ t: "path", d: "M22 11.1V12a10 10 0 1 1-5.9-9.1M22 4L12 14l-3-3" }],
   circleCheckBig: [
     { t: "path", d: "M21.801 10A10 10 0 1 1 17 3.335" },
     { t: "path", d: "m9 11 3 3L22 4" },
@@ -562,10 +545,7 @@ export const ICONS: Record<string, Shape[]> = {
     { t: "path", d: "m6.134 14.768.866-.5 2 3.464" },
     { t: "circle", cx: 16, cy: 8, r: 6 },
   ],
-  columns2: [
-    { t: "rect", x: 3, y: 3, width: 18, height: 18, rx: 2 },
-    { t: "path", d: "M12 3v18" },
-  ],
+  columns2: [{ t: "path", d: "M3 3h7v18H3zM14 3h7v10h-7z" }],
   command: [{ t: "path", d: "M15 6v12a3 3 0 1 0 3-3H6a3 3 0 1 0 3 3V6a3 3 0 1 0-3 3h12a3 3 0 1 0-3-3" }],
   compass: [
     { t: "circle", cx: 12, cy: 12, r: 10 },
@@ -696,11 +676,7 @@ export const ICONS: Record<string, Shape[]> = {
     { t: "path", d: "M3 8V3h5" },
     { t: "path", d: "M9 9 3 3" },
   ],
-  externalLink: [
-    { t: "path", d: "M15 3h6v6" },
-    { t: "path", d: "M10 14 21 3" },
-    { t: "path", d: "M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" },
-  ],
+  externalLink: [{ t: "path", d: "M7 17L17 7M8 7h9v9" }],
   eye: [
     { t: "path", d: "M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0" },
     { t: "circle", cx: 12, cy: 12, r: 3 },
@@ -804,7 +780,7 @@ export const ICONS: Record<string, Shape[]> = {
     { t: "path", d: "M17 7.5h4" },
     { t: "path", d: "M17 16.5h4" },
   ],
-  filter: [{ t: "path", d: "M10 20a1 1 0 0 0 .553.895l2 1A1 1 0 0 0 14 21v-7a2 2 0 0 1 .517-1.341L21.74 4.67A1 1 0 0 0 21 3H3a1 1 0 0 0-.742 1.67l7.225 7.989A2 2 0 0 1 10 14z" }],
+  filter: [{ t: "path", d: "M22 3H2l8 9.46V19l4 2v-8.54L22 3z" }],
   fish: [
     { t: "path", d: "M6.5 12c.94-3.46 4.94-6 8.5-6 3.56 0 6.06 2.54 7 6-.94 3.47-3.44 6-7 6s-7.56-2.53-8.5-6Z" },
     { t: "path", d: "M18 12v.5" },
@@ -902,12 +878,7 @@ export const ICONS: Record<string, Shape[]> = {
     { t: "circle", cx: 6, cy: 6, r: 3 },
     { t: "path", d: "M6 21V9a9 9 0 0 0 9 9" },
   ],
-  gitPullRequest: [
-    { t: "circle", cx: 18, cy: 18, r: 3 },
-    { t: "circle", cx: 6, cy: 6, r: 3 },
-    { t: "path", d: "M13 6h3a2 2 0 0 1 2 2v7" },
-    { t: "line", x1: 6, y1: 9, x2: 6, y2: 21 },
-  ],
+  gitPullRequest: [{ t: "path", d: "M6 3v12M6 15a3 3 0 1 0 0 6 3 3 0 1 0 0-6M18 3a3 3 0 1 0 0 6 3 3 0 1 0 0-6M18 9a9 9 0 0 1-9 9" }],
   globe: [
     { t: "circle", cx: 12, cy: 12, r: 10 },
     { t: "path", d: "M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20" },
@@ -1067,11 +1038,7 @@ export const ICONS: Record<string, Shape[]> = {
     { t: "path", d: "M18 5a2 2 0 0 1 2 2v8.526a2 2 0 0 0 .212.897l1.068 2.127a1 1 0 0 1-.9 1.45H3.62a1 1 0 0 1-.9-1.45l1.068-2.127A2 2 0 0 0 4 15.526V7a2 2 0 0 1 2-2z" },
     { t: "path", d: "M20.054 15.987H3.946" },
   ],
-  layers: [
-    { t: "path", d: "M12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83z" },
-    { t: "path", d: "M2 12a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 12" },
-    { t: "path", d: "M2 17a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 17" },
-  ],
+  layers: [{ t: "path", d: "M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" }],
   layout: [
     { t: "rect", x: 3, y: 3, width: 18, height: 18, rx: 2 },
     { t: "path", d: "M3 9h18" },
@@ -1083,12 +1050,7 @@ export const ICONS: Record<string, Shape[]> = {
     { t: "rect", x: 14, y: 12, width: 7, height: 9, rx: 1 },
     { t: "rect", x: 3, y: 16, width: 7, height: 5, rx: 1 },
   ],
-  layoutGrid: [
-    { t: "rect", x: 3, y: 3, width: 7, height: 7, rx: 1 },
-    { t: "rect", x: 14, y: 3, width: 7, height: 7, rx: 1 },
-    { t: "rect", x: 14, y: 14, width: 7, height: 7, rx: 1 },
-    { t: "rect", x: 3, y: 14, width: 7, height: 7, rx: 1 },
-  ],
+  layoutGrid: [{ t: "path", d: "M3 3h7v7H3zM14 3h7v7h-7zM14 14h7v7h-7zM3 14h7v7H3z" }],
   layoutList: [
     { t: "rect", x: 3, y: 3, width: 7, height: 7, rx: 1 },
     { t: "rect", x: 3, y: 14, width: 7, height: 7, rx: 1 },
@@ -1129,14 +1091,7 @@ export const ICONS: Record<string, Shape[]> = {
     { t: "path", d: "M15 7h2a5 5 0 1 1 0 10h-2" },
     { t: "line", x1: 8, y1: 12, x2: 16, y2: 12 },
   ],
-  list: [
-    { t: "path", d: "M3 5h.01" },
-    { t: "path", d: "M3 12h.01" },
-    { t: "path", d: "M3 19h.01" },
-    { t: "path", d: "M8 5h13" },
-    { t: "path", d: "M8 12h13" },
-    { t: "path", d: "M8 19h13" },
-  ],
+  list: [{ t: "path", d: "M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01" }],
   listChecks: [
     { t: "path", d: "M13 5h8" },
     { t: "path", d: "M13 12h8" },
@@ -1214,10 +1169,7 @@ export const ICONS: Record<string, Shape[]> = {
     { t: "path", d: "M15 5.764v15" },
     { t: "path", d: "M9 3.236v15" },
   ],
-  mapPin: [
-    { t: "path", d: "M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0" },
-    { t: "circle", cx: 12, cy: 10, r: 3 },
-  ],
+  mapPin: [{ t: "path", d: "M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0zM12 7a3 3 0 1 0 0 6 3 3 0 1 0 0-6" }],
   maximize: [
     { t: "path", d: "M8 3H5a2 2 0 0 0-2 2v3" },
     { t: "path", d: "M21 8V5a2 2 0 0 0-2-2h-3" },
@@ -1262,11 +1214,7 @@ export const ICONS: Record<string, Shape[]> = {
     { t: "path", d: "M8 18v-2" },
     { t: "rect", x: 2, y: 6, width: 20, height: 10, rx: 2 },
   ],
-  menu: [
-    { t: "path", d: "M4 5h16" },
-    { t: "path", d: "M4 12h16" },
-    { t: "path", d: "M4 19h16" },
-  ],
+  menu: [{ t: "path", d: "M3 6h18M3 12h18M3 18h18" }],
   messageCircle: [{ t: "path", d: "M2.992 16.342a2 2 0 0 1 .094 1.167l-1.065 3.29a1 1 0 0 0 1.236 1.168l3.413-.998a2 2 0 0 1 1.099.092 10 10 0 1 0-4.777-4.719" }],
   messageSquare: [{ t: "path", d: "M22 17a2 2 0 0 1-2 2H6.828a2 2 0 0 0-1.414.586l-2.202 2.202A.71.71 0 0 1 2 21.286V5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2z" }],
   messageSquareText: [
@@ -1468,10 +1416,7 @@ export const ICONS: Record<string, Shape[]> = {
     { t: "path", d: "M10.5 16.5 13 14" },
     { t: "path", d: "m18 3-4 4h6l-4 4" },
   ],
-  plus: [
-    { t: "path", d: "M5 12h14" },
-    { t: "path", d: "M12 5v14" },
-  ],
+  plus: [{ t: "path", d: "M12 5v14M5 12h14" }],
   podcast: [
     { t: "path", d: "M13 17a1 1 0 1 0-2 0l.5 4.5a0.5 0.5 0 0 0 1 0z", fill: true },
     { t: "path", d: "M16.85 18.58a9 9 0 1 0-9.7 0" },
@@ -1628,10 +1573,7 @@ export const ICONS: Record<string, Shape[]> = {
     { t: "path", d: "M19 17V5a2 2 0 0 0-2-2H4" },
     { t: "path", d: "M8 21h12a2 2 0 0 0 2-2v-1a1 1 0 0 0-1-1H11a1 1 0 0 0-1 1v1a2 2 0 1 1-4 0V5a2 2 0 1 0-4 0v2a1 1 0 0 0 1 1h3" },
   ],
-  search: [
-    { t: "path", d: "m21 21-4.34-4.34" },
-    { t: "circle", cx: 11, cy: 11, r: 8 },
-  ],
+  search: [{ t: "path", d: "M11 3a8 8 0 1 0 0 16 8 8 0 1 0 0-16M21 21l-4.35-4.35" }],
   send: [
     { t: "path", d: "M14.536 21.686a.5.5 0 0 0 .937-.024l6.5-19a.496.496 0 0 0-.635-.635l-19 6.5a.5.5 0 0 0-.024.937l7.93 3.18a2 2 0 0 1 1.112 1.11z" },
     { t: "path", d: "m21.854 2.147-10.94 10.939" },
@@ -1783,11 +1725,7 @@ export const ICONS: Record<string, Shape[]> = {
     { t: "rect", x: 3, y: 3, width: 18, height: 18, rx: 2 },
     { t: "path", d: "M9 9.003a1 1 0 0 1 1.517-.859l4.997 2.997a1 1 0 0 1 0 1.718l-4.997 2.997A1 1 0 0 1 9 14.996z" },
   ],
-  squarePlus: [
-    { t: "rect", x: 3, y: 3, width: 18, height: 18, rx: 2 },
-    { t: "path", d: "M8 12h8" },
-    { t: "path", d: "M12 8v8" },
-  ],
+  squarePlus: [{ t: "path", d: "M12 8v8M8 12h8M5 3h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z" }],
   squareTerminal: [
     { t: "path", d: "m7 11 2-2-2-2" },
     { t: "path", d: "M11 13h4" },
@@ -1874,11 +1812,7 @@ export const ICONS: Record<string, Shape[]> = {
     { t: "path", d: "M2 7v6.172a2 2 0 0 0 .586 1.414l6.71 6.71a2.4 2.4 0 0 0 3.191.193" },
     { t: "circle", cx: 10.5, cy: 6.5, r: 0.5, fill: true },
   ],
-  target: [
-    { t: "circle", cx: 12, cy: 12, r: 10 },
-    { t: "circle", cx: 12, cy: 12, r: 6 },
-    { t: "circle", cx: 12, cy: 12, r: 2 },
-  ],
+  target: [{ t: "path", d: "M12 2a10 10 0 1 0 0 20 10 10 0 1 0 0-20M12 8a4 4 0 1 0 0 8 4 4 0 1 0 0-8" }],
   terminal: [
     { t: "path", d: "M12 19h8" },
     { t: "path", d: "m4 17 6-6-6-6" },
@@ -2054,12 +1988,7 @@ export const ICONS: Record<string, Shape[]> = {
     { t: "circle", cx: 12, cy: 8, r: 5 },
     { t: "path", d: "M20 21a8 8 0 0 0-16 0" },
   ],
-  users: [
-    { t: "path", d: "M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" },
-    { t: "path", d: "M16 3.128a4 4 0 0 1 0 7.744" },
-    { t: "path", d: "M22 21v-2a4 4 0 0 0-3-3.87" },
-    { t: "circle", cx: 9, cy: 7, r: 4 },
-  ],
+  users: [{ t: "path", d: "M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M9 3a4 4 0 1 0 0 8 4 4 0 1 0 0-8M23 21v-2a4 4 0 0 0-3-3.9M16 3.1a4 4 0 0 1 0 7.8" }],
   usersRound: [
     { t: "path", d: "M18 21a8 8 0 0 0-16 0" },
     { t: "circle", cx: 10, cy: 8, r: 5 },
@@ -2159,10 +2088,7 @@ export const ICONS: Record<string, Shape[]> = {
     { t: "path", d: "M9.8 4.4A2 2 0 1 1 11 8H2" },
   ],
   wrench: [{ t: "path", d: "M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.106-3.105c.32-.322.863-.22.983.218a6 6 0 0 1-8.259 7.057l-7.91 7.91a1 1 0 0 1-2.999-3l7.91-7.91a6 6 0 0 1 7.057-8.259c.438.12.54.662.219.984z" }],
-  x: [
-    { t: "path", d: "M18 6 6 18" },
-    { t: "path", d: "m6 6 12 12" },
-  ],
+  x: [{ t: "path", d: "M18 6L6 18M6 6l12 12" }],
   zap: [{ t: "path", d: "M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z" }],
   zoomIn: [
     { t: "circle", cx: 11, cy: 11, r: 8 },

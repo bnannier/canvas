@@ -2,7 +2,7 @@ import { describe, it, expect } from "bun:test";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { ICONS, NAMES } from "../src/atoms/icon/icon.glyphs.ts";
-import { SOURCES, ALIASES, REQUIRED_NAMES } from "../tools/icongen/icons.ts";
+import { SOURCES, ALIASES, REQUIRED_NAMES, REFERENCE_PATHS } from "../tools/icongen/icons.ts";
 
 // The glyph set is GENERATED (tools/icongen -> src/atoms/icon/icon.glyphs.ts), so the
 // failure mode it has that a hand-written module does not is DRIFT: a name added to the
@@ -51,7 +51,9 @@ describe("Icon glyph set", () => {
     // A cheap whole-set check that the generated shapes came from the real upstream
     // nodes: a stale or hand-edited entry shows up as a primitive-count mismatch.
     for (const source of new Set(SOURCES)) {
-      expect(ICONS[canvasName(source)]).toHaveLength(nodes[source].length);
+      const name = canvasName(source);
+      if (REFERENCE_PATHS[name]) expect(ICONS[name]).toEqual([{ t: "path", d: REFERENCE_PATHS[name] }]);
+      else expect(ICONS[name]).toHaveLength(nodes[source].length);
     }
   });
 });
