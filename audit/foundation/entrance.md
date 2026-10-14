@@ -7,7 +7,7 @@ Audit checklist for the style-layer foundation `Entrance`, audited for its contr
 |---|---|
 | Foundation | `Entrance`, a style-layer renderable with no component page of its own (`tools/materials/manifest.ts`, the style tier), declared in `src/style/entrance.tsx` |
 | Source files | `src/style/entrance.tsx` (its homes, its exports' declarations and its implementation, the private declarations they read) |
-| Seams | 1, the private declarations it alone reads (`tools/audit/foundations.ts` `foundationCode`), which its consumers are also found through: `HELD` (src/style/entrance.tsx) |
+| Seams | 2, the private declarations it alone reads (`tools/audit/foundations.ts` `foundationCode`), which its consumers are also found through: `HELD` (src/style/entrance.tsx), `HELD_OFFSET` (src/style/entrance.tsx) |
 | Public exports | 2: `Entrance` (deprecated-alias), `EntranceProps` (deprecated-alias, a type) |
 | K12-2 status | 2 deprecated alias already: Entrance, EntranceProps |
 | Documented on | `foundation`: Entrance, EntranceProps ("Entrance") |

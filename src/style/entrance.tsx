@@ -49,11 +49,18 @@ export interface EntranceProps {
   children: ReactNode;
 }
 
-// Invisible and untouchable while held. Opacity, not display: the card must lay out
-// (and report its size to the owner's fit) while it is hidden. pointerEvents rides in
-// the style, which React Native reads natively and react-native-web without its
+// Invisible and untouchable while held. Not display: the card must lay out (and report its
+// size to the owner's fit) while it is hidden. Not opacity either: the card is moved out of
+// the window, upward, where no scroller counts it as overflow, at full opacity. Liquid Glass
+// does not survive a hold at opacity 0 on iOS: expo-glass-effect installs no glass under an
+// ancestor that transparent and installs it later, once the card shows, and in an anchored
+// card UIKit never realized that late glass (an option list's or a menu's dense glass drew no
+// blur, the page behind it sharp through its fill). Held out of view at full opacity, the
+// glass installs as the card first lays out, as every glass in the page does. pointerEvents
+// rides in the style, which React Native reads natively and react-native-web without its
 // deprecation warning for the prop.
-const HELD: ViewStyle = { opacity: 0, pointerEvents: "none" };
+const HELD_OFFSET = -100000;
+const HELD: ViewStyle = { transform: [{ translateY: HELD_OFFSET }], pointerEvents: "none" };
 
 /**
  * The readiness hold for an anchored card: renders `children` in one View that is

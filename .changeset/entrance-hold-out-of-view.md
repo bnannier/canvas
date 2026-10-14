@@ -1,0 +1,5 @@
+---
+"@nannier/canvas": patch
+---
+
+An anchored card's iOS Liquid Glass now renders its blur. While an anchored card (a Dropdown menu, a Select, Autocomplete or RowMenu option list, a Popover) waits for its placement, Entrance held it at opacity 0; expo-glass-effect installs no glass under an ancestor that transparent and installs it later, once the card shows, and in an anchored card UIKit never realized that late glass, so on iOS 26 the dense and functional glass drew no blur and the page behind read sharp through the card's fill (the code block's Copy button behind the Dropdown docs' Actions menu, the variant picker behind Select's Country list). Entrance now holds the card out of view instead, moved up out of the window at full opacity, still untouchable and hidden from VoiceOver, TalkBack and the web's accessibility tree, so the glass installs as the card first lays out, as every glass in the page does. The card's look once shown, its placement and its timing are unchanged on every platform.
