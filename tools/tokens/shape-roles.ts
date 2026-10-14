@@ -359,7 +359,7 @@ export const COMPONENT_ROLES: Record<string, readonly string[]> = {
   "molecules/stacked-lists": ["control", "card", "groupedList"],
   "molecules/stats": ["card", "tile"],
   "organisms/action-sheet": ["dialog", "sheet", "actionSheet"],
-  "organisms/board": ["control", "card", "groupedList", "lane"],
+  "organisms/board": ["control", "card", "tile", "groupedList", "lane"],
   "organisms/calendar": ["control", "card", "menu", "event"],
   "organisms/carousel": ["card", "carouselItem"],
   "organisms/command": ["field", "menu"],

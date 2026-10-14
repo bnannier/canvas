@@ -31,7 +31,7 @@ import { type RowMenuProps } from "../row-menu/row-menu.shared.js";
 import { type RowMenuItem } from "../row-menu/row-menu.styles.js";
 import { type BoardColumn, type BoardItem, type BoardMove } from "./board.types.js";
 import { boardMoveFor, applyBoardMove } from "./board.logic.js";
-import { type BoardSkin } from "./board.styles.js";
+import { type BoardSkin, plainLane, plainColumn, plainHeader, plainLabel, plainEmpty, plainEmptyLabel } from "./board.styles.js";
 import { SeamLimitProvider, splitSeam, type SeamLimit } from "../../style/touch-seam.js";
 import { useHorizontalScrollFocus } from "../../style/use-scroll-focus.js";
 
@@ -73,6 +73,12 @@ import { useHorizontalScrollFocus } from "../../style/use-scroll-focus.js";
 export type { BoardColumn, BoardItem, BoardMove };
 
 export interface BoardProps {
+  /** Unframed work lanes whose cards expose their own actions instead of drag handles. */
+  plain?: boolean;
+  /** Custom card content for plain lanes; the app owns domain actions. */
+  renderItem?: (item: BoardItem) => ReactNode;
+  /** Extend the scroller through its parent's horizontal inset. */
+  bleed?: number;
   /** The columns (lanes), left to right. */
   columns: BoardColumn[];
   /**
@@ -293,6 +299,7 @@ export function createBoard(skin: BoardSkin, parts: BoardParts = WEB_PARTS) {
       testID,
       style,
     } = props;
+    const { tokens } = useMaterialTheme({ layer: "content" });
     const [list, setList] = useControllableState<BoardItem[]>(items, defaultItems ?? [], onItemsChange);
 
     const handleDrop = (e: DropEvent) => {
@@ -303,6 +310,20 @@ export function createBoard(skin: BoardSkin, parts: BoardParts = WEB_PARTS) {
       setList(applyBoardMove(list, move));
       onMove?.(move);
     };
+
+    if (props.plain) {
+      const bleed = props.bleed ?? 0;
+      return <ScrollView horizontal showsHorizontalScrollIndicator style={[{ marginHorizontal: -bleed }, style]} contentContainerStyle={plainLane(bleed)} testID={testID}>
+        {columns.map((column) => {
+          const cards = list.filter((item) => item.columnId === column.id);
+          return <View key={column.id} style={plainColumn}>
+            <View style={plainHeader}><Text style={plainLabel(tokens)}>{column.label}</Text><Badge start count secondary>{column.badge ?? String(cards.length)}</Badge></View>
+            {cards.map((item) => <View key={item.id}>{props.renderItem ? props.renderItem(item) : <Card><Text>{item.title}</Text></Card>}</View>)}
+            {cards.length === 0 ? <View style={plainEmpty(tokens)}><Text style={plainEmptyLabel(tokens)}>{emptyLabel}</Text></View> : null}
+          </View>;
+        })}
+      </ScrollView>;
+    }
 
     return (
       <DragDropProvider testID={testID} style={[ROOT, style]}>
