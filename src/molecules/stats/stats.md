@@ -4,6 +4,11 @@ Single value, grouped row, with sparkline, with comparison. Used for dashboards 
 
 Under the value each tile can draw one strip: its trend (`spark`) or its composition (`share`). Both reserve the same height, so a row that mixes them keeps one card height and no tile is left half empty. `framed` puts every strip on a muted track, which is what makes a ROW of them scan evenly.
 
+`compact` renders value-first rail tiles with 18px extra-bold values and compact
+labels. `large` renders 24px dashboard headlines; compact wins if both are set.
+Each item may include a muted `description`. These densities retain the Argus
+borderless tile surface, exact insets, tracking and text rhythm.
+
 ## Usage
 
 ```tsx
@@ -235,8 +240,3 @@ that varies.
     { label: "Cache hit rate", value: "94.1%", delta: "23.5k of 25k served warm", steady: true }
   ]} />
 ```
-
-`compact` renders value-first rail tiles with 18px extra-bold values and compact
-labels. `large` renders 24px dashboard headlines; compact wins if both are set.
-Each item may include a muted `description`. These densities retain the Argus
-borderless tile surface, exact insets, tracking and text rhythm.

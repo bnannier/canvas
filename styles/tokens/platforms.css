@@ -82,15 +82,15 @@
   /* Sidebar (sidebar.styles.ts webSkin) */
   --p-side-w:240px;--p-side-w-collapsed:64px;--p-side-fill:var(--background) /* @kind other */;
   --p-side-header-h:72px;--p-side-header-pad:16px;--p-side-body-pad:12px;--p-side-body-gap:16px;
-  --p-side-row-radius:8px;--p-side-row-pad-x:12px;--p-side-row-pad-y:14px;--p-side-row-gap:12px;
-  --p-side-label:14px;--p-side-label-lh:20px;--p-side-icon:20px;
-  --p-side-title:12px;--p-side-title-lh:16px;--p-side-title-weight:500;--p-side-title-transform:uppercase /* @kind other */;--p-side-title-tracking:0.48px;
+  --p-side-row-radius:0px;--p-side-row-pad-x:30px;--p-side-row-pad-y:9px;--p-side-row-gap:13px;
+  --p-side-label:12.5px;--p-side-label-lh:16.25px;--p-side-icon:16px;
+  --p-side-title:10px;--p-side-title-lh:13px;--p-side-title-weight:700;--p-side-title-transform:uppercase /* @kind other */;--p-side-title-tracking:1.8px;
   /* Sidebar sections + collapse chrome (sidebar.styles.ts webSkin: group gap 4, 12/4 title inset,
      11px Radix right caret spinning 0 to 90deg, 4px active dot, 14px chevron-left toggle).
      One disclosure glyph (chevron-right) rotated per platform: web/iOS rest at 0deg (the right
      caret) opening to 90deg; Android rest at 90deg (the M3 expand_more, pointing down) opening
      to 270deg, the same 180deg spin. */
-  --p-side-group-gap:4px;--p-side-title-pad-x:12px;--p-side-title-pad-y:4px;
+  --p-side-group-gap:0px;--p-side-title-pad-x:26px;--p-side-title-pad-y:0px;
   --p-side-sechdr-gap:4px;--p-side-sechdr-pad-y:6px;--p-side-chevron:11px;--p-side-dot:4px;
   --p-side-chevron-rest:0deg /* @kind other */;--p-side-chevron-open:90deg /* @kind other */;
   --p-side-toggle:14px;--p-side-toggle-pad:6px;--p-side-toggle-radius:8px;

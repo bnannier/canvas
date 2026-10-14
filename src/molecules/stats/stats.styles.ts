@@ -92,7 +92,7 @@ export function deltaTone(tokens: ColorTokens, down: boolean): TextStyle {
 // Dense value-first anatomy shared wherever no platform stat control exists.
 const DENSE = {
   denseCard: (tokens: ColorTokens, large: boolean): ViewStyle => ({
-    borderRadius: large ? 14 : 12, backgroundColor: tokens.card,
+    borderRadius: large ? shape.web.card : shape.web.tile, backgroundColor: tokens.card,
     paddingTop: large ? 16 : 13, paddingRight: large ? 18 : 14,
     paddingBottom: large ? 14 : 12, paddingLeft: large ? 18 : 14,
     ...shadow("sm", tokens),

@@ -103,7 +103,7 @@ export const webSkin: SidebarSkin = {
 
   rowFill() { return null; },
   activeIndicator(tokens) {
-    return { position: "absolute", left: 0, top: 7, bottom: 7, width: 3, borderTopRightRadius: 3, borderBottomRightRadius: 3, backgroundColor: tokens.primary };
+    return { position: "absolute", left: 0, top: 7, bottom: 7, width: 3, borderTopRightRadius: 9999, borderBottomRightRadius: 9999, backgroundColor: tokens.primary };
   },
   navigationCount: true,
   iconRegularStroke: true,
