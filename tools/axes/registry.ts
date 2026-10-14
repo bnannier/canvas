@@ -1,3 +1,4 @@
+import { gridRowGapOf } from "../../src/atoms/grid/grid.shared.tsx";
 import { referenceSizeOf, sheenOf } from "../../src/atoms/avatar/avatar.reference.tsx";
 // Every axis resolver in the kit, as the characterization (test/axes.test.ts) calls it.
 //
@@ -293,12 +294,13 @@ export const SUBJECTS: readonly AnySubject[] = [
   subject({ id: "Image.fit", components: ["Image"], pages: ["image"], resolver: "src/atoms/image/image.shared.tsx#fitOf", members: ["contain", "cover", "stretch", "center", "repeat", "none"], resolve: imageFit }),
   subject({ id: "Input.size", components: ["Input"], pages: ["input"], resolver: "src/atoms/input/input.shared.tsx#sizeOf", members: SIZES_LARGE_FIRST, resolve: inputSize }),
   subject({ id: "InputOTP.size", components: ["InputOTP"], pages: ["input-otp"], resolver: "src/atoms/input-otp/input-otp.shared.tsx#sizeOf", members: SIZES_LARGE_FIRST, resolve: inputOtpSize }),
+  subject({ id: "Grid.rowGap", components: ["Grid"], pages: ["grid"], resolver: "src/atoms/grid/grid.shared.tsx#gridRowGapOf", members: ["rowsSection", "rowsCozy"], resolve: gridRowGapOf }),
   subject({
     id: "Layout.gap",
     components: ["Row", "Column", "Grid"],
     pages: ["row-column", "grid"],
     resolver: "src/atoms/layout/layout.shared.tsx#gapOf",
-    members: ["loose", "relaxed", "cozy", "snug", "tight", "flush"],
+    members: ["page", "panel", "section", "loose", "generous", "spacious", "airy", "relaxed", "roomy", "cozy", "balanced", "comfortable", "nested", "snug", "close", "compact", "dense", "tight", "fine", "flush"],
     resolve: gapOf,
   }),
   subject({ id: "Layout.justify", components: ["Row", "Column"], pages: ["row-column"], resolver: "src/atoms/layout/layout.shared.tsx#justifyOf", members: ["between", "around", "evenly", "center", "end", "start"], resolve: justifyOf }),

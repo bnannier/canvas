@@ -35,6 +35,26 @@ import { gapOf, type Gap } from "../layout/layout.shared.js";
 // a field keeps its own height.
 
 export interface GridProps {
+  /** Natural card heights with the original Argus subpixel width allowance. */
+  flow?: boolean;
+  /** Separate vertical rhythm for wrapped rows. */
+  rowsCozy?: boolean;
+  rowsSection?: boolean;
+  fine?: boolean; // 3
+  dense?: boolean; // 5
+  compact?: boolean; // 6
+  close?: boolean; // 7
+  nested?: boolean; // 9
+  comfortable?: boolean; // 10
+  balanced?: boolean; // 11
+  roomy?: boolean; // 14
+  airy?: boolean; // 18
+  spacious?: boolean; // 20
+  generous?: boolean; // 22
+  section?: boolean; // 26
+  panel?: boolean; // 28
+  page?: boolean; // 30
+
   children?: ReactNode;
   /** Minimum tile width in px (default 240): the grid fits as many columns of
    *  at least this width as its measured container allows (auto-fit). */
@@ -60,6 +80,12 @@ export interface GridProps {
 }
 
 export interface GridItemProps {
+  /** Span the whole row. */
+  full?: boolean;
+  /** Stack above adjacent resting cells. */
+  raised?: boolean;
+  /** Stack above a raised banner while lifting. */
+  front?: boolean;
   children?: ReactNode;
   /** Span two cells when the grid has more than one column (a hero tile). One
    *  cell in a one-column grid. */
@@ -100,6 +126,12 @@ export function gridCellWidth(width: number, cols: number, gap: number): number 
   return Math.max(0, Math.floor((width - gap * (cols - 1)) / cols));
 }
 
+export function gridRowGapOf(props: Pick<GridProps, "rowsSection" | "rowsCozy">): number | null {
+  if (props.rowsSection) return 26;
+  if (props.rowsCozy) return 12;
+  return null;
+}
+
 /** Build a Grid component from a platform skin (the shared layout scale). */
 export function createGrid(skin: FlexSkin) {
   return function Grid(props: GridProps) {
@@ -111,24 +143,27 @@ export function createGrid(skin: FlexSkin) {
     // paint).
     const { width, onLayout } = useContainerWidth();
     const cols = gridColumns(width, minTileWidth, gapPx, columns);
-    const cellWidth = width > 0 ? gridCellWidth(width, cols, gapPx) : undefined;
+    const cellWidth = width > 0 ? gridCellWidth(width - (props.flow ? 1 : 0), cols, gapPx) : undefined;
     // The root spans its parent (FILL), so the measured width is the parent's
     // and not the cells' own; `style` stays last so a `maxWidth` still bounds it.
     const fill = useFillStyle("Grid");
     return (
-      <View onLayout={onLayout} style={[GRID, { gap: gapPx }, fill, style]} testID={testID}>
+      <View onLayout={onLayout} style={[GRID, { gap: gapPx, rowGap: gridRowGapOf(props) ?? gapPx }, fill, style]} testID={testID}>
         {Children.toArray(children).map((child, i) => {
           const wide =
             cols > 1 && isValidElement(child) && child.type === GridItem && !!(child.props as GridItemProps).wide;
-          const cell =
-            cellWidth == null ? null : { width: wide ? cellWidth * 2 + gapPx : cellWidth };
+          const hint = isValidElement(child) && child.type === GridItem ? child.props as GridItemProps : {};
+          const cell: ViewStyle = { minWidth: 0, ...(cellWidth == null ? props.flow ? { width: "100%" } : null : { width: wide ? cellWidth * 2 + gapPx : cellWidth }) };
+          if (hint.full) cell.width = "100%";
+          if (hint.raised) cell.zIndex = 1;
+          if (hint.front) cell.zIndex = 10;
           // A cell is a definite-width column stretched to its row's height: hug
           // components hug inside it, fill components fill it, and a Card grows
           // to the row's height (the layout-axis context from sizing.ts). It stacks
           // above the other cells while a card in it is lifted (src/style/hover.tsx).
           return (
-            <RaiseCell key={i} style={cell}>
-              <LayoutAxisProvider value={GRID_CELL_AXIS}>{child}</LayoutAxisProvider>
+            <RaiseCell key={isValidElement(child) ? child.key ?? i : i} style={cell}>
+              {props.flow ? child : <LayoutAxisProvider value={GRID_CELL_AXIS}>{child}</LayoutAxisProvider>}
             </RaiseCell>
           );
         })}

@@ -48,13 +48,28 @@ import { type FlexSkin } from "./layout.styles.js";
 // same scale maps. The full per-OS file structure exists to match the kit recipe.
 
 export type Direction = "row" | "column";
-export type Gap = "flush" | "tight" | "snug" | "cozy" | "relaxed" | "loose";
+export type Gap = "page" | "panel" | "section" | "loose" | "generous" | "spacious" | "airy" | "relaxed" | "roomy" | "cozy" | "balanced" | "comfortable" | "nested" | "snug" | "close" | "compact" | "dense" | "tight" | "fine" | "flush";
 export type Justify = "start" | "center" | "end" | "between" | "around" | "evenly";
 export type Align = "alignStart" | "alignCenter" | "alignEnd" | "baseline" | "stretch";
 export type Pad = "padTight" | "pad" | "padLoose";
 
 export interface FlexProps {
   children?: ReactNode;
+
+  fine?: boolean; // 3
+  dense?: boolean; // 5
+  compact?: boolean; // 6
+  close?: boolean; // 7
+  nested?: boolean; // 9
+  comfortable?: boolean; // 10
+  balanced?: boolean; // 11
+  roomy?: boolean; // 14
+  airy?: boolean; // 18
+  spacious?: boolean; // 20
+  generous?: boolean; // 22
+  section?: boolean; // 26
+  panel?: boolean; // 28
+  page?: boolean; // 30
 
   // Gap scale (pick one; default `snug`). Maps to the shared spacing tokens.
   flush?: boolean; // 0
@@ -174,11 +189,25 @@ const ALIGN: Record<Align, ViewStyle["alignItems"]> = {
 // (mirrors Typography's roleOf ordering). Default `snug` when none is set.
 // Exported for Grid, which shares the gap axis and its precedence.
 export function gapOf(p: Pick<FlexProps, Gap>): Gap {
+  if (p.page) return "page";
+  if (p.panel) return "panel";
+  if (p.section) return "section";
   if (p.loose) return "loose";
+  if (p.generous) return "generous";
+  if (p.spacious) return "spacious";
+  if (p.airy) return "airy";
   if (p.relaxed) return "relaxed";
+  if (p.roomy) return "roomy";
   if (p.cozy) return "cozy";
+  if (p.balanced) return "balanced";
+  if (p.comfortable) return "comfortable";
+  if (p.nested) return "nested";
   if (p.snug) return "snug";
+  if (p.close) return "close";
+  if (p.compact) return "compact";
+  if (p.dense) return "dense";
   if (p.tight) return "tight";
+  if (p.fine) return "fine";
   if (p.flush) return "flush";
   return "snug";
 }
