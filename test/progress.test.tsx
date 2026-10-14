@@ -159,8 +159,8 @@ describe("Progress reduced motion", async () => {
 });
 
 it("renders discrete eval-pass segments with the same accessible fraction", () => {
-  const { container } = render(<ThemeProvider light solid><Progress segments={5} value={0.8} accessibilityLabel="Eval pass" /></ThemeProvider>);
-  const meter = screen.getByRole("progressbar", { name: "Eval pass" });
+  const { container, getByRole } = render(<ThemeProvider light solid><Progress segments={5} value={0.8} accessibilityLabel="Eval pass" /></ThemeProvider>);
+  const meter = getByRole("progressbar", { name: "Eval pass" });
   expect(meter.getAttribute("aria-valuenow")).toBe("80");
   expect(meter.children.length).toBe(5);
   expect((meter.children[0] as HTMLElement).style.backgroundColor).toBe((meter.children[3] as HTMLElement).style.backgroundColor);
