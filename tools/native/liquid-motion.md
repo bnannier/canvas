@@ -948,21 +948,41 @@ judge before any completion claim.
   DF itself judged its blush desktop frame a match to its design prototype (its log's
   `argus-prototype` card); mint, dark and the narrow frames are DF's implementation and
   are the reference on that footing.
+- **Re-recorded 2026-10-14** for the docs page look (Argus b1dc807; the page-look sources,
+  `PageBackground`, `Orb`, `Gradient`, `materials.ts` and `palettes.ts`, are unchanged
+  since cf7c580, and the working tree's uncommitted edits touch only the Tauri desktop
+  wrapper), with Playwright 1.64 Chromium HEADED at DPR 2, since a headless capture renders
+  the frost with bands (the GLS-1 rows): every theme at every width, the theme picked
+  through the swatches at 1440 and the viewport then resized, plus one frame per theme
+  scrolled by the mouse wheel. Headed Chromium draws a classic 15 px scrollbar inside the
+  page's scroller, so these strips put the 1440 shell at x 43 and the narrower shells
+  15 px narrower (1340, 713, 351); the card's numbers below are the scrollbar-free values
+  of the 2026-09-23 headless probe, which the docs (an inner scroller with its own gutter)
+  are held to.
 - **Strips and measurements:** `tools/native/reference/df-argus-shell/rest-{blush,mint,
-  dark}-1440.png`, `rest-blush-768.png`, `rest-blush-390.png`, `rest-dark-390.png`
-  (halved and palette-quantized), and `probe-rest.json` (computed styles per theme and
-  width).
+  dark}-{1440,768,390}.png` and `scrolled-{blush,mint,dark}-1440.png` (halved and
+  palette-quantized), `probe-rest.json` (computed styles per theme and width, 2026-09-23)
+  and `probe-geometry.json` (the orbs' ellipse boxes and the shell's rect, fill and shadow
+  per theme and width, 2026-10-14).
 - **Page:** `linear-gradient(165deg, bg1 0%, bg2 50%, bg3 100%)` over the whole
   viewport: blush #fde3ee / #ebe3fc / #d9d6fc, mint #def4ec / #dcebfb / #cfdffb, dark
   #171a2f / #1d1b3b / #231d46. Two orbs behind the shell, solid ellipses under
   `feGaussianBlur` stdDeviation 90 and 100 (orb1 48% x 60% at left -8% / top -10%,
   opacity 0.35; orb2 46% x 70% at right -10% / bottom -20%, opacity 0.40; the page
-  clips them).
+  clips them). The orb colours: orb1 / orb2 blush #f7a6c8 / #a89cf7, mint #9fd9c3 /
+  #a9c6f7, dark #6a4b9c / #3d4aa0. The ellipse boxes at 1440 x 900 are x -115, y -90,
+  691 x 540 and x 922, y 450, 662 x 630 (the percentages are of the viewport, the
+  scrollbar included). The page layer is fixed to the viewport: it does not scroll, and
+  the scrolled frames show the same gradient and orbs behind a shell that has moved up.
 - **Shell:** one frosted panel, radius 22, `backdrop-filter: blur(24px)`, fill white
   at 0.52 (blush), 0.58 (mint), 0.045 (dark; the computed style reads 0.04), shadow
   `0 60px 100px -40px <palette shadow>` plus a 1 px inset hairline in white 0.75 (light
   themes) or 0.08 (dark). Placement by width tier: 1440 wide, x 50 / y 56, width 1340;
-  768 wide, x 20 / y 28, width 728; 390 wide, x 12 / y 16, width 366. The shell runs
+  768 wide, x 20 / y 28, width 728; 390 wide, x 12 / y 16, width 366. The rule behind
+  those (DF's `AppShell`): the phone tier pads the page 12 at the sides and 16 at the top,
+  the tablet tier 20 and 28, the desktop tier 28 and 56 with the shell capped at 1340 wide
+  and centred; the tiers are DF's breakpoints, phone up to 640 and tablet up to 1024,
+  the same cuts as Canvas's `useFormFactor`. The shell runs
   the page's full height and scrolls with it (2580, 3823, 4713 px tall on the roster).
   The sidebar (about 205 px) paints the shell fill again with a 1 px right hairline in
   the line color; fourteen static gradient wedges tint the shell's corners (geometry in
@@ -1202,3 +1222,30 @@ with it, at DPR 2).
 | 2026-10-13 | GP-2b state washes on the shipped pages, judged against `solid-state-washes` | Playwright 1.64 Chromium headed, DPR 2, 1440 x 1000, macOS host | Canvas, the export of source fingerprint 65fdfebfb37b (commit 2c411cc7, clean) | shipped docs pages `/components/radio/card`, `/components/card/selectable` (added), `/components/input/error`, `/components/phone-input/error`, `/components/field/amount`, web row, blush / mint / dark glass (`?scheme=light&palette=blush&surface=glass`, `?scheme=light&palette=mint&surface=glass`, `?scheme=dark&surface=glass`) | as harness run 4 | n/a (static) | Glass against solid on the same export: the checked Radio card's and the selected Card's body #f7f6fe against #f8f7fe (blush), #f4f8fd against #f5f8fd (mint), #2c2c4b against #2b2d4b (dark); title 9.85 / 10.38 / 11.32 against 9.93 / 10.40 / 11.24; the radio card's description 4.79 / 4.77 / 5.58 against 4.83 / 4.77 / 5.54 (run 3: dark #38375e, title 9.47, description 4.67; blush #f4f3fe, title 9.61, description 4.67). The errored fields as in run 3: placeholder 5.62 / 5.65 / 6.41, `+1` 5.03 / 4.99 / 5.99, the addon's `$` 4.53 / 4.52 / 4.63. Seen beside the wash and recorded on their own rows, outside it: the checked Radio's brand disc (radio-glass-checked-indicator-1), the unchecked rings and card edges (glass-surface-control-boundary-1), the frost body and the addon's inner fill (glass-surface-frost-body-ink-1). | differs: not judged blind yet (the coordinator's blind judge) | scratchpad `gp2/shipped-run4/` (web rows `<slug>-<variant>-<look>-glass.png`, `contrast.json`), solid on the same export `gp2b/solid-run4/`, comparison strips `gp2b/cmp4-radio.png` (solid dark, run 4 dark, run 3 dark, solid blush, run 4 blush) and `gp2b/cmp4-card.png` (solid and run 4, dark and mint) |
 | 2026-10-13 | GP-2b state washes on the shipped pages: the coordinator's blind judge of shipped run 4 | the judge read the run 4 PNGs (Playwright 1.64 Chromium headed, DPR 2, 1440 x 1000) with python3 and PIL, WCAG 2.x luminance from glyph cores and the colour directly behind them | Canvas, the export of source fingerprint 65fdfebfb37b (commit 2c411cc7, clean) | shipped docs pages `/components/radio/card`, `/components/card/selectable`, `/components/input/error`, `/components/phone-input/error`, `/components/field/amount`, web row, blush / mint / dark glass | as harness run 4 | n/a (static) | Blind judge (a fresh agent given only the `solid-state-washes` card, its reference strips and run 4's `-glass.png` strips; no log, history or measurements): item 1 (error border, no wash) shown in every look; item 2 (primary border over a 5 percent tint) shown in every look, the selected radio card's tint 5.0 / 5.1 / 3.8 percent in blush (the reference's own 5.0 / 5.1 / 3.8) and 5.1 / 4.8 / 5.6 in dark (reference 4.7 / 5.4 / 5.3); item 3 the inks are solid's hex in every look, every muted text at 4.5:1 or above (the addon `$` 4.53 / 4.52 / 4.63 the tightest), the ratios 0.04 to 0.11 under the card's on the frosted body; item 4 the border and indicator carry the state, with the radio indicator drawn as below. | differs: muted ratios 0.04 to 0.11 under the card's, same ink, on the frosted body (#fdfcff / #fcfdff / #282743 against solid's white) and the blush selected title 9.85:1 against the card's 9.9 floor of its range, both the material body (glass-surface-frost-body-ink-1, GlassSurface's turn); a 2 px lighter inset rim inside the selected cards' primary border, the material rim (glass-surface-control-boundary-1); unchecked radio rings 1.20 / 1.21 / 1.37:1 against the reference's 3.35 / 3.64 and unselected radio card edges 1.03:1 in blush and mint (GP-12, glass-surface-control-boundary-1, GlassSurface's turn); the checked radio a filled brand disc rather than ring plus dot, dark #8a7fd7 at 3.89:1 against 5.31 (radio-glass-checked-indicator-1, Radio's turn). The washes themselves (the GP-2b item) reproduce the card. | scratchpad `gp2/shipped-run4/*-glass.png`; the judge's crops and scripts `gp2b-judge/` (lib.py, radio-indicators.png) |
 
+## The docs page look, from 2026-10-14
+
+The docs paint Dark Factory's page look as docs-only scaffolding (design-language item
+7), judged against the `df-argus-shell` card's Page and Shell items and its qualities;
+its Content items (cards, inks) belong to the component turns. Until this section the docs
+painted the flat `background` token with no gradient, no orbs and no shell. The owner
+decided three things on 2026-10-13 from the plan's evidence, recorded here as the
+acceptances the rows below cite:
+
+- **The shell is an inset frame fixed to the viewport** around the docs' own sidebar, top
+  bar and scroller, with DF's radius, fill, hairline, shadow and per-tier insets. It
+  matches the card at rest and keeps the docs' sticky navigation; once a page scrolls,
+  the frame and the gradient band above it stay where they are, where DF's shell scrolls
+  away (`accepted: the frame stays fixed while the page scrolls inside it (user, 2026-10-13)`).
+- **The orbs are radial gradients** whose stops are sampled from the exact
+  Gaussian-blurred ellipse, on every platform, because react-native-svg's Android
+  `FeGaussianBlur` clamps its RenderScript radius at 25 device pixels (about 4 dp of
+  sigma on the Pixel 8 AVD against the card's 90 and 100) and would draw hard-edged
+  ellipses. The card's construction (`feGaussianBlur`) is replaced; its pixels are the
+  target.
+- **The muted ink darkens** by the amounts the plan measured (blush #696b8d to #616385,
+  mint #5f7083 to #5c6d80, dark #a3a5c6 to #a4a6c7), so muted text keeps 4.5:1 on the
+  shell's frost over the orb centres, where DF's own muted ink reads 4.0 to 4.4.
+
+| Date | Effect and profile | Runtime and device | Revision (dirty?) | Surface | Values tried | rAF p50 / p95 / max (ms) | What the comparison showed | Versus reference | Artifacts |
+|---|---|---|---|---|---|---|---|---|---|
+| 2026-10-14 | REFERENCE, re-recorded: DF page look at rest, every theme at every width, and scrolled | Playwright 1.64 Chromium HEADED (GPU compositing), DPR 2, macOS host; 1440 x 900, 768 x 1024, 390 x 844 | Argus b1dc807 (dirty: Tauri desktop wrapper only, inert in a browser); Canvas 9ea22133 (clean) | reference page: DF Argus `http://localhost:8090/roster`, web, blush / mint / dark | none (recording the reference) | n/a (static) | The page-look sources are unchanged since cf7c580. Ellipse boxes per theme and width equal the card's percentages of the viewport (1440: -115 / -90 / 691 x 540 and 922 / 450 / 662 x 630); the shell's fill and shadow per theme equal the card; the shell sits 7 px left and 15 px narrower than the card's numbers because headed Chromium draws a 15 px classic scrollbar inside DF's page scroller. Scrolled by the wheel, the shell moves up while the gradient and the orbs stay fixed to the viewport. Written into the card (orb colours, ellipse boxes, the tier rule, the fixed page layer). | no reference (this is the reference) | `tools/native/reference/df-argus-shell/` (9 rest strips, 3 scrolled, `probe-geometry.json`) |
