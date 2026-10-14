@@ -3082,6 +3082,114 @@
       "center + right": "right"
     }
   },
+  "Avatar.reference size": {
+    "kind": "axis",
+    "components": [
+      "Avatar"
+    ],
+    "pages": [
+      "avatar"
+    ],
+    "resolver": "src/atoms/avatar/avatar.reference.tsx#referenceSizeOf",
+    "order": [
+      "annotation",
+      "compact",
+      "account",
+      "row",
+      "person",
+      "profile",
+      "detail",
+      "hero",
+      "featured",
+      "spotlight"
+    ],
+    "none": null,
+    "single": {
+      "annotation": "annotation",
+      "compact": "compact",
+      "account": "account",
+      "row": "row",
+      "person": "person",
+      "profile": "profile",
+      "detail": "detail",
+      "hero": "hero",
+      "featured": "featured",
+      "spotlight": "spotlight"
+    },
+    "pairs": {
+      "account + annotation": "annotation",
+      "account + compact": "compact",
+      "account + detail": "account",
+      "account + featured": "account",
+      "account + hero": "account",
+      "account + person": "account",
+      "account + profile": "account",
+      "account + row": "account",
+      "account + spotlight": "account",
+      "annotation + compact": "annotation",
+      "annotation + detail": "annotation",
+      "annotation + featured": "annotation",
+      "annotation + hero": "annotation",
+      "annotation + person": "annotation",
+      "annotation + profile": "annotation",
+      "annotation + row": "annotation",
+      "annotation + spotlight": "annotation",
+      "compact + detail": "compact",
+      "compact + featured": "compact",
+      "compact + hero": "compact",
+      "compact + person": "compact",
+      "compact + profile": "compact",
+      "compact + row": "compact",
+      "compact + spotlight": "compact",
+      "detail + featured": "detail",
+      "detail + hero": "detail",
+      "detail + person": "person",
+      "detail + profile": "profile",
+      "detail + row": "row",
+      "detail + spotlight": "detail",
+      "featured + hero": "hero",
+      "featured + person": "person",
+      "featured + profile": "profile",
+      "featured + row": "row",
+      "featured + spotlight": "featured",
+      "hero + person": "person",
+      "hero + profile": "profile",
+      "hero + row": "row",
+      "hero + spotlight": "hero",
+      "person + profile": "person",
+      "person + row": "row",
+      "person + spotlight": "person",
+      "profile + row": "row",
+      "profile + spotlight": "profile",
+      "row + spotlight": "row"
+    }
+  },
+  "Avatar.sheen": {
+    "kind": "axis",
+    "components": [
+      "Avatar"
+    ],
+    "pages": [
+      "avatar"
+    ],
+    "resolver": "src/atoms/avatar/avatar.reference.tsx#sheenOf",
+    "order": [
+      "strongSheen",
+      "mediumSheen",
+      "sheen"
+    ],
+    "none": 0,
+    "single": {
+      "strongSheen": 3,
+      "mediumSheen": 2.5,
+      "sheen": 2
+    },
+    "pairs": {
+      "mediumSheen + sheen": "mediumSheen",
+      "mediumSheen + strongSheen": "strongSheen",
+      "sheen + strongSheen": "strongSheen"
+    }
+  },
   "ActionPanel.tone": {
     "kind": "toggle",
     "components": [

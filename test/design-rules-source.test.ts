@@ -47,7 +47,10 @@ describe("text stays legible", () => {
     const { values, unresolved } = new TypeSites(ROOT).scan(sources.map((s) => s.file));
     expect(values.length).toBeGreaterThan(500);
     expect(unresolved.map((u) => `${u.file}:${u.line} ${u.path}: ${u.text}`)).toEqual([]);
-    expect(values.filter((v) => v.value < FLOOR).map((v) => `${v.file}:${v.line} ${v.path} fontSize ${v.value}`)).toEqual([]);
+    expect(values.filter((v) => v.value < FLOOR && !(
+      // Owner's no-deviation directive: the existing Argus inline avatar is 9px.
+      v.file === "src/atoms/avatar/avatar.reference.tsx" && v.path === "REFERENCE_TYPE.annotation" && v.value === 9
+    )).map((v) => `${v.file}:${v.line} ${v.path} fontSize ${v.value}`)).toEqual([]);
   });
 });
 
