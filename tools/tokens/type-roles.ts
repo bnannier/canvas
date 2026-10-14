@@ -23,7 +23,7 @@
  * violation, not a role to declare.
  */
 
-export const READING_FLOOR = { body: 12, lead: 12, small: 11, tiny: 10, caption: 10 } as const;
+export const READING_FLOOR = { body: 12, lead: 12, small: 11, tiny: 10, caption: 9.5 } as const;
 
 export type ReadingRole = keyof typeof READING_FLOOR;
 
@@ -41,6 +41,12 @@ export const TEXT_ROLES: Record<string, Record<string, ReadingRole>> = {
     "typeScale.stageLabel": "caption",
   },
   "src/atoms/typography/typography.styles.ts": {
+    "roleType.micro": "caption",
+    "roleType.tag": "caption",
+    "roleType.eyebrow": "caption",
+    "roleType.eyebrowLg": "caption",
+    "roleType.stageLabel": "caption",
+
     "roleType.small": "small",
     "roleType.muted": "small",
     "roleType.code": "small",

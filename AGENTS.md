@@ -658,3 +658,11 @@ two conditional overrides), so no aliases or extra links are involved.
   because no sibling checkout exists there. Never switch a consumer's
   dependency to `link:`/`file:`, and never commit anything under
   node_modules.
+
+## Argus conversion reference precision (owner, 2026-10-14)
+
+The owner requires no deviation from the current Argus look and feel, especially
+the sidebar. The existing 9.5px eyebrows therefore remain available through the
+Typography eyebrow/stage-label roles; their reading floor is 9.5 rather than the
+previous rounded 10px. Exact fractional web line heights are retained through
+semantic leading props. Other reading floors and existing component defaults stay.

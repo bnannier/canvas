@@ -7,6 +7,8 @@ export type ColorScheme = "light" | "dark";
 
 /** Semantic color tokens. The named surface/intent colors components paint with. */
 export interface ColorTokens {
+  /** Optional informational text ink supplied by a brand. */
+  info?: string;
   background: string;
   foreground: string;
   card: string;
