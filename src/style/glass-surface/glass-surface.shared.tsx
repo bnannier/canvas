@@ -601,6 +601,13 @@ export function materialCorners(shape: StyleProp<ViewStyle>, inside = false): Vi
  * its own colour, and the material sits flush inside it on concentric corners
  * (`materialCorners`). In solid mode (`solid`) the host is the skin's style untouched.
  *
+ * Wherever a material renders the host is a native view of its own (`collapsable` false).
+ * Under glass its paint is cleared, so iOS's and Android's renderers would otherwise remove it
+ * as a box that draws nothing and hand its children to the nearest ancestor view, where the
+ * material's `zIndex: -1` (which keeps it behind the content on the web, where every View is a
+ * stacking context) orders it beneath every earlier sibling there: a glass card placed over an
+ * image or text drew its material under them.
+ *
  * It publishes whether its material renders to everything inside it (`MaterialBehind`), so a
  * borderless Android ripple there draws in front of the frost instead of beneath it.
  */
