@@ -54,8 +54,8 @@ export const DOCS_USAGE_EXCEPTIONS: readonly DocsUsageException[] = [
     reason: "Dedicated scroll/focus fixture constrains the scrollport to exercise real virtualized overflow and keyboard focus.",
   })),
   {
-    file: "docs/src/shell/native-header.tsx", owner: "ScreenFrame", tag: "View", attribute: "style", keys: ["flex"], occurrences: 1,
-    reason: "The Expo native stack needs a screen host that fills its available height.",
+    file: "docs/src/shell/native-header.tsx", owner: "ScreenFrame", tag: "View", attribute: "style", keys: ["borderTopLeftRadius", "borderTopRightRadius", "flex", "overflow"], occurrences: 2,
+    reason: "The Expo native stack needs a screen host that fills its available height, and the scroller inside the page-look frame rounds itself to the frame's top corners, since the frame does not clip.",
   },
   {
     file: "docs/src/ui/page.tsx", owner: "content", tag: "ScrollView", attribute: "style", keys: ["flex"], occurrences: 1,
@@ -106,8 +106,8 @@ export const DOCS_USAGE_EXCEPTIONS: readonly DocsUsageException[] = [
     reason: "The app's safe-area host fills the viewport, with the page look as its first child.",
   },
   {
-    file: "docs/src/shell/navbar.tsx", owner: "WebNav", tag: "View", attribute: "style", keys: ["bottom", "flex", "left", "minWidth", "pointerEvents", "position", "right", "top", "zIndex"], occurrences: 4,
-    reason: "Stable route/landmark hosts size the viewport and position measured top/bottom app bars above the page scroller.",
+    file: "docs/src/shell/navbar.tsx", owner: "WebNav", tag: "View", attribute: "style", keys: ["borderTopLeftRadius", "borderTopRightRadius", "bottom", "flex", "left", "minWidth", "overflow", "pointerEvents", "position", "right", "top", "zIndex"], occurrences: 5,
+    reason: "Stable route/landmark hosts size the viewport and position measured top/bottom app bars above the page scroller; the rail and the top bar round themselves to the page-look frame's top corners, since a clip on the frame made Chromium drop tiles.",
   },
   {
     file: "docs/src/app/(search)/search.tsx", owner: "NativeSearch", tag: "View", attribute: "style", keys: ["bottom", "flex", "left", "pointerEvents", "position", "right", "top"], occurrences: 2,
@@ -116,5 +116,17 @@ export const DOCS_USAGE_EXCEPTIONS: readonly DocsUsageException[] = [
   {
     file: "docs/src/shell/page-backdrop.tsx", owner: "PageBackdrop", tag: "View", attribute: "style", keys: ["backgroundColor", "bottom", "left", "overflow", "pointerEvents", "position", "right", "top"], occurrences: 1,
     reason: "Dark Factory's page look, docs-only scaffolding under design-language item 7: an untouchable layer fixed to the window behind the shell, clipping the drawing to it, over the gradient's last stop.",
+  },
+  {
+    file: "docs/src/shell/page-frame.tsx", owner: "PageFrame", tag: "View", attribute: "style", keys: ["flex", "paddingHorizontal", "paddingTop"], occurrences: 1,
+    reason: "Dark Factory's page padding around its shell, docs-only scaffolding under design-language item 7: the tier's inset of the frame from the window.",
+  },
+  {
+    file: "docs/src/shell/page-frame.tsx", owner: "PageFrame", tag: "GlassSurface", attribute: "style", keys: ["alignSelf", "backgroundColor", "borderTopLeftRadius", "borderTopRightRadius", "boxShadow", "flex", "maxWidth", "width"], occurrences: 1,
+    reason: "Dark Factory's frosted shell as the docs' frame (design-language item 7): its shape, cap, centring, solid fill and palette shadow, handed to the kit's GlassSurface as the skin style it frosts.",
+  },
+  {
+    file: "docs/src/shell/page-frame.tsx", owner: "ShellWedges", tag: "View", attribute: "style", keys: ["bottom", "left", "overflow", "pointerEvents", "position", "right", "top"], occurrences: 1,
+    reason: "Dark Factory's shell wedges (design-language item 7): an untouchable layer over the frame's surface, clipping its roster-tall drawing to the frame.",
   },
 ];

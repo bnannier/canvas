@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { Platform } from "react-native";
 import { useTheme } from "@nannier/canvas";
+import { PAGE_LOOK } from "../shell/page-look";
 
 // The classic (space-reserving) scrollbar width forced on web. The topbar is inset by
 // this on the right so the scrollbar sits in a gutter BESIDE the bar (fully visible
@@ -26,6 +27,9 @@ export function WebScrollbarTheme() {
 ::-webkit-scrollbar-corner { background: transparent; }
 ::-webkit-scrollbar-thumb { background-color: ${thumb}; border-radius: 9999px; border: 2px solid transparent; background-clip: padding-box; }
 ::-webkit-scrollbar-thumb:hover { background-color: ${thumbHover}; background-clip: padding-box; }
+/* The page scroller's bar starts below the frame's rounded top corner (docs/src/shell/
+   page-frame.tsx), so its thumb never pokes out past the corner's arc. */
+[data-page-scroll]::-webkit-scrollbar-track { margin-top: ${PAGE_LOOK.shell.radius}px; }
 /* Inside a component preview stage, hide the persistent browser scrollbar a scrollable
    demo would otherwise show — iOS/Android use a transient indicator, not a fixed bar, so a
    visible bar reads as wrong in the iOS/Android preview columns. The demo still scrolls. */
