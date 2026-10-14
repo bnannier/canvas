@@ -3,8 +3,10 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Dialog } = scope;
+  const { Button, Dialog, Input } = scope;
   return (
-<Dialog trigger="Open details" title="Workspace details" dismissible />
+<Dialog form trigger="Edit project" title="Project details" description="Update the project name." footer={<Button primary>Save changes</Button>}>
+  <Input label="Name" defaultValue="Platform Core" />
+</Dialog>
   );
 }

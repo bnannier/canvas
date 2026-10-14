@@ -131,7 +131,9 @@ function createFocusRef(modal: boolean, onAttach: () => void) {
     session = { panel, restoreTarget };
     sessions.add(session);
     if (modal) removeTrap = trapFocus(panel);
-    if (!child) panel.focus({ preventScroll: true });
+    // A field may have deliberately taken focus while the portal mounted.
+    // Keep it inside the modal instead of blurring its autofocus immediately.
+    if (!child && !panel.contains(active)) panel.focus({ preventScroll: true });
   };
 
   const ref: RefObject<View | null> = {
