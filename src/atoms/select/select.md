@@ -20,6 +20,9 @@ The label also names the option list. Use `accessibilityLabel` to provide an exp
 
 Pass `ref` to access the interactive trigger, preserving overlay measurement. Use `useRef<ComponentRef<typeof Select>>(null)` from React, or `useRef<View>(null)` with React Native's `View` type. Object and callback refs are supported and detach on unmount. Calling `ref.current?.focus()` or `.blur()` delegates to the host without activating the control. Browser focus is supported; native focus depends on the platform and React Native version, and is separate from accessibility focus.
 
+On web, the default trigger matches Argus’s 40-pixel field frame and 13-pixel
+value, with muted tracked uppercase labels at the kit’s 10-pixel reading floor.
+
 ## Usage
 
 ```tsx

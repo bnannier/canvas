@@ -96,7 +96,7 @@ describe("fields paint their own focus state", () => {
   it("the web Select trigger turns its border `ring` while its list is open", async () => {
     render(<ThemeProvider light solid><Select label="Region" options={["EU", "US"]} /></ThemeProvider>);
     const trigger = screen.getByRole("button", { name: "Region" });
-    expect(border(trigger)).toBe(channels(fieldBorder(t)));
+    expect(border(trigger)).toBe(channels(t.border));
     fireEvent.click(trigger);
     await waitFor(() => expect(border(trigger)).toBe(channels(t.ring)));
   });
