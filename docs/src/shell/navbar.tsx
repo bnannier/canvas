@@ -8,6 +8,8 @@ import { Sidebar } from "./sidebar";
 import { Topbar, titleFor } from "./topbar";
 import { MobileNavBar } from "./mobile-nav-bar";
 import { PageBackdrop } from "./page-backdrop";
+import { PageFrame } from "./page-frame";
+import { PAGE_LOOK } from "./page-look";
 import { SearchModal } from "./search-modal";
 import { ThemeToggles } from "./theme-toggles";
 import { WebScrollbarTheme, WebScrollPadding, SCROLLBAR_W } from "../ui/web-scrollbar";
@@ -56,6 +58,9 @@ function NativeNav() {
     </NativeTabs>
   );
 }
+
+// The frame's corner radius (Dark Factory's shell), which the chrome touching its corners takes.
+const SHELL_RADIUS = PAGE_LOOK.shell.radius;
 
 // The mobile-web bottom tab sections (the web counterpart of mobile.tabs): a kit Icon glyph
 // + the section root href. The active section is derived from the path via sectionFor, so
@@ -130,40 +135,49 @@ function WebNav() {
       <PageBackdrop />
       <WebScrollbarTheme />
       <WebScrollPadding top={headerHeight} bottom={wide ? 0 : barHeight} />
-      <Row flush fill>
-        {wide ? (
-          // The rail column is marked for the document root's one pre-hydration rule
-          // (docs/src/app/+html.tsx): a pre-rendered page always carries the desktop
-          // shell, because a server cannot measure a window, and on a phone that rail
-          // would squeeze the content into the remaining 170px until the bundle ran.
-          // The rule hides it below the desktop cut; after hydration the rail is
-          // simply not rendered there, so the rule matches nothing. (A web-only
-          // attribute, spread through a cast the way page.tsx marks its scroller.)
-          <View {...({ dataSet: { shellRail: "" } } as object)}>
-            <Sidebar collapsed={collapsed} collapsible onToggleCollapse={() => setCollapsed((c) => !c)} />
+      {/* Dark Factory's frosted shell (./page-frame.tsx), inset from the window over the
+          page look: the sidebar, the top bar and the page live inside it. */}
+      <PageFrame>
+        <Row flush fill>
+          {wide ? (
+            // The rail column is marked for the document root's one pre-hydration rule
+            // (docs/src/app/+html.tsx): a pre-rendered page always carries the desktop
+            // shell, because a server cannot measure a window, and on a phone that rail
+            // would squeeze the content into the remaining 170px until the bundle ran.
+            // The rule hides it below the desktop cut; after hydration the rail is
+            // simply not rendered there, so the rule matches nothing. (A web-only
+            // attribute, spread through a cast the way page.tsx marks its scroller.)
+            // It rounds its own top-left corner to the frame's, as Dark Factory's sidebar
+            // does: the frame itself does not clip (./page-frame.tsx says why).
+            <View {...({ dataSet: { shellRail: "" } } as object)} style={{ overflow: "hidden", borderTopLeftRadius: SHELL_RADIUS }}>
+              <Sidebar collapsed={collapsed} collapsible onToggleCollapse={() => setCollapsed((c) => !c)} />
+            </View>
+          ) : null}
+          <View style={{ flex: 1, minWidth: 0 }}>
+            {/* The page content is the main landmark at every width. */}
+            <View role="main" style={{ flex: 1 }}>
+              <OverlayProvider viewport viewportInsets={{ top: headerHeight, bottom: wide ? 0 : barHeight }}>
+                <Slot />
+              </OverlayProvider>
+            </View>
+            {/* The bar rounds the frame's top corners it reaches: the left one only on the
+                narrow shell (the desktop rail holds it otherwise), and the right one inset by
+                the scrollbar gutter, so its smaller radius stays inside the frame's arc. */}
+            <View onLayout={(event) => setHeaderHeight(event.nativeEvent.layout.height)} style={{ position: "absolute", top: 0, left: 0, right: SCROLLBAR_W, zIndex: 10, overflow: "hidden", borderTopLeftRadius: wide ? 0 : SHELL_RADIUS, borderTopRightRadius: SHELL_RADIUS - SCROLLBAR_W }}>
+              {wide ? (
+                <Topbar showMenu onMenu={() => setCollapsed((c) => !c)} onSearch={() => setSearchOpen(true)} />
+              ) : (
+                <MobileNavBar
+                  title={titleFor(pathname).title}
+                  showBack={!atRoot}
+                  onBack={goBack}
+                  onMenu={() => setMenuOpen(true)}
+                />
+              )}
+            </View>
           </View>
-        ) : null}
-        <View style={{ flex: 1, minWidth: 0 }}>
-          {/* The page content is the main landmark at every width. */}
-          <View role="main" style={{ flex: 1 }}>
-            <OverlayProvider viewport viewportInsets={{ top: headerHeight, bottom: wide ? 0 : barHeight }}>
-              <Slot />
-            </OverlayProvider>
-          </View>
-          <View onLayout={(event) => setHeaderHeight(event.nativeEvent.layout.height)} style={{ position: "absolute", top: 0, left: 0, right: SCROLLBAR_W, zIndex: 10 }}>
-            {wide ? (
-              <Topbar showMenu onMenu={() => setCollapsed((c) => !c)} onSearch={() => setSearchOpen(true)} />
-            ) : (
-              <MobileNavBar
-                title={titleFor(pathname).title}
-                showBack={!atRoot}
-                onBack={goBack}
-                onMenu={() => setMenuOpen(true)}
-              />
-            )}
-          </View>
-        </View>
-      </Row>
+        </Row>
+      </PageFrame>
       {!wide ? (
         // The bar floats over the page like the iOS 26 tab bar: an absolute overlay along
         // the bottom, touches passing through its margins to the page beneath, which

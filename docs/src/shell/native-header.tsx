@@ -11,10 +11,13 @@ import { PaletteRow, ThemeToggles } from "./theme-toggles";
 import { nativeHeaderMenu, type MenuIcon } from "./native-menu";
 import { useDocsTheme } from "../theme/docs-theme";
 import { PageBackdrop } from "./page-backdrop";
+import { PageFrame } from "./page-frame";
+import { PAGE_LOOK } from "./page-look";
 
 // Wraps a screen's scroller so the native header (which drives the per-screen Stack title +
 // menu, and hosts the Android menu drawer) can sit as a sibling of the content, with the
-// page look (./page-backdrop.tsx) behind it: the native tab and stack containers paint
+// page look (./page-backdrop.tsx) behind it and Dark Factory's frosted shell around it
+// (./page-frame.tsx): the native tab and stack containers paint
 // their own backgrounds under a screen, so each screen draws its own. On web this is a
 // no-op passthrough: it renders the scroller exactly as before, with NO wrapping View (an
 // extra flex wrapper there collapses onLayout-measured tile grids), and the web shell
@@ -24,7 +27,10 @@ export function ScreenFrame({ children }: { children: ReactNode }) {
   return (
     <View style={{ flex: 1 }}>
       <PageBackdrop />
-      {children}
+      <PageFrame>
+        {/* The scroller rounds itself to the frame's top corners (the frame does not clip). */}
+        <View style={{ flex: 1, overflow: "hidden", borderTopLeftRadius: PAGE_LOOK.shell.radius, borderTopRightRadius: PAGE_LOOK.shell.radius }}>{children}</View>
+      </PageFrame>
       <NativeHeader />
     </View>
   );
