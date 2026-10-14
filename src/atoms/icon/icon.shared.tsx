@@ -175,6 +175,14 @@ function Glyph({
   );
 }
 
+export function strokeWidthOf(p: IconProps): number {
+  if (p.heavyStroke) return 2.2;
+  if (p.boldStroke) return 2;
+  if (p.mediumStroke) return 1.9;
+  if (p.regularStroke) return 1.8;
+  return ICON_STROKE_WIDTH;
+}
+
 /** An outline glyph from the kit's icon set, sized and colored by props. */
 export function Icon(props: IconProps) {
   const { tokens } = useTheme();
@@ -185,7 +193,7 @@ export function Icon(props: IconProps) {
       shapes={ICONS[nameOf(props)]}
       size={props.size ?? 24}
       stroke={strokeOf(props, tokens)}
-      strokeWidth={props.heavyStroke ? 2.2 : props.boldStroke ? 2 : props.mediumStroke ? 1.9 : props.regularStroke ? 1.8 : ICON_STROKE_WIDTH}
+      strokeWidth={strokeWidthOf(props)}
       // When a wrapper View is the root it carries the testID instead.
       testID={wrapped ? undefined : props.testID}
       style={wrapped ? undefined : props.style}

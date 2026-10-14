@@ -4,6 +4,7 @@ import {
   View,
   Text,
   Pressable,
+  platformMinTarget,
   StyleSheet,
   useTheme,
   devWarn,
@@ -68,6 +69,13 @@ export interface SwatchProps {
   style?: LayoutStyle;
 }
 
+export function paletteOf(p: SwatchProps) {
+  if (p.dark) return "dark";
+  if (p.mint) return "mint";
+  if (p.blush) return "blush";
+  return null;
+}
+
 // Size precedence when more than one is passed: first match wins.
 export function sizeOf(p: SwatchProps): SwatchSize {
   if (p.small) return "small";
@@ -115,16 +123,17 @@ export function createSwatch(skin: SwatchSkin) {
     const size = sizeOf(props);
     const edge = skin.box[size];
     const gradientId = useId();
-    const palette = props.dark ? "dark" : props.mint ? "mint" : props.blush ? "blush" : null;
+    const minTarget = platformMinTarget();
+    const palette = paletteOf(props);
     if (palette) {
       const stops = palette === "dark" ? ["#1d1b3b", "#3a2f7a"] : palette === "mint" ? ["#def4ec", "#cfdffb"] : ["#fde3ee", "#d9d6fc"];
-      return <Pressable accessibilityRole="radio" accessibilityLabel={accessibilityLabel ?? `${palette} theme`} accessibilityState={{ checked: !!props.selected }} aria-checked={!!props.selected} onPress={props.onPress} testID={testID} style={[{
-        width: 16, height: 16, borderRadius: 8,
+      return <Pressable hitSlop={minTarget == null ? undefined : (minTarget - 16) / 2} accessibilityRole="radio" accessibilityLabel={accessibilityLabel ?? `${palette} theme`} accessibilityState={{ checked: !!props.selected }} aria-checked={!!props.selected} onPress={props.onPress} testID={testID} style={[{
+        width: 16, height: 16, borderRadius: 9999,
         boxShadow: props.selected ? `0 0 0 2px ${tokens.card}, 0 0 0 4px ${tokens.primary}` : `0 0 0 1px ${tokens.border}`,
       }, style]}>
         <Svg width={16} height={16} viewBox="0 0 16 16" pointerEvents="none">
           <Defs><LinearGradient id={gradientId} x1="0%" y1="0%" x2="100%" y2="100%"><Stop offset="0" stopColor={stops[0]} /><Stop offset="1" stopColor={stops[1]} /></LinearGradient></Defs>
-          <Rect width={16} height={16} rx={8} fill={`url(#${gradientId})`} />
+          <Rect width={16} height={16} rx={9999} fill={`url(#${gradientId})`} />
         </Svg>
       </Pressable>;
     }

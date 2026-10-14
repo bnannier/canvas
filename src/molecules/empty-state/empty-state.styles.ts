@@ -68,7 +68,7 @@ export function glyphTone(tokens: ColorTokens, tone: Tone): TextStyle {
 }
 
 // ---- Shared layout fragments reused across the skins -------------------------
-const ELEVATED = (tokens: ColorTokens): ViewStyle => ({ borderRadius: 14, borderWidth: 0, backgroundColor: tokens.card, paddingVertical: 44, paddingHorizontal: 32, ...shadow("empty", tokens) });
+const ELEVATED = (tokens: ColorTokens): ViewStyle => ({ borderRadius: shape.web.card, borderWidth: 0, backgroundColor: tokens.card, paddingVertical: 44, paddingHorizontal: 32, ...shadow("empty", tokens) });
 
 const CONTAINER: ViewStyle = { alignItems: "center" };
 

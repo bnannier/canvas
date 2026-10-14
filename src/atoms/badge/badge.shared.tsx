@@ -1,7 +1,8 @@
+import { platformShape } from "../../style/platform-shape.js";
 import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
 import { Linking } from "react-native";
 import { type ReactNode } from "react";
-import { View, Text, Pressable, alpha, useHugStyle, statusColors, MONO_FONT, type ColorTokens, type LayoutStyle, type StyleProp, type ViewStyle, type TextStyle, GlassPane, paneStyle } from "../../style/index.js";
+import { View, Text, Pressable, alpha, shape, platformMinTarget, useHugStyle, statusColors, MONO_FONT, type ColorTokens, type LayoutStyle, type StyleProp, type ViewStyle, type TextStyle, GlassPane, paneStyle } from "../../style/index.js";
 import { useHover } from "../../style/hover.js";
 import { actionFill, actionInk } from "../../style/action.js";
 
@@ -113,6 +114,42 @@ export function statusOf(p: BadgeProps): Status {
   return "neutral";
 }
 
+/** Dense metadata axes, with explicit precedence shared by appearance and docs. */
+export function badgeIntentOf(p: BadgeProps) {
+  if (p.action) return "action";
+  if (p.primary || p.reference) return "primary";
+  if (p.success) return "success";
+  if (p.warning) return "warning";
+  if (p.error) return "error";
+  if (p.info) return "info";
+  return "muted";
+}
+export function badgeMetricOf(p: BadgeProps) {
+  if (p.reference) return "reference";
+  if (p.navigationCount) return "navigationCount";
+  if (p.count) return "count";
+  if (p.small) return "small";
+  return "default";
+}
+export function badgeSurfaceOf(p: BadgeProps) {
+  if (p.inverse) return "inverse";
+  if (p.navigationCount || p.solid) return "solid";
+  if (p.neutralFill) return "neutral";
+  if (p.soft || p.reference) return "soft";
+  return "surface";
+}
+export function badgeInkOf(p: BadgeProps) {
+  if (p.inverse) return "inverse";
+  if (p.navigationCount || p.solid) return "solid";
+  if (p.foreground) return "foreground";
+  return "intent";
+}
+export function badgeTrackingOf(p: BadgeProps) {
+  if (p.reference) return "reference";
+  if (p.uppercase) return "uppercase";
+  return "normal";
+}
+
 // Semantic colors (platform-neutral), all from the theme's roles.
 function metaContainer(tokens: ColorTokens, tone: Tone): ViewStyle {
   switch (tone) {
@@ -201,22 +238,32 @@ export function createBadge(skin: BadgeSkin) {
 
     const tone = toneOf(props);
     const extended = props.success || props.warning || props.error || props.info || props.solid || props.soft || props.action || props.primary || props.inverse || props.neutralFill || props.foreground || props.small || props.count || props.navigationCount || props.reference || props.large || props.dot || props.uppercase;
-    const intentInk = props.action ? actionFill(tokens) : props.primary || props.reference ? tokens["primary-text"] ?? tokens.primary : props.success ? tokens.success : props.warning ? tokens.warning : props.error ? tokens["destructive-text"] ?? tokens.destructive : props.info ? tokens.info ?? tokens.primary : tokens["muted-foreground"];
-    const intentWash = props.action ? tokens["action-soft"] ?? alpha(actionFill(tokens), 0.12) : props.primary || props.reference ? tokens["primary-soft"] ?? alpha(tokens.primary, 0.12) : props.success ? tokens["success-soft"] ?? alpha(tokens.success, 0.12) : props.warning ? tokens["warning-soft"] ?? alpha(tokens.warning, 0.12) : props.error ? tokens["destructive-soft"] ?? alpha(tokens.destructive, 0.12) : props.info ? tokens["info-soft"] ?? alpha(intentInk, 0.12) : tokens.muted;
+    const intent = badgeIntentOf(props);
+    const metric = badgeMetricOf(props);
+    const surfaceKind = badgeSurfaceOf(props);
+    const inkKind = badgeInkOf(props);
+    const tracking = badgeTrackingOf(props);
+    const reference = metric === "reference";
+    const navigation = metric === "navigationCount";
+    const count = metric === "count";
+    const small = metric === "small";
+    const labelMetrics: TextStyle = { fontSize: reference ? props.large ? 11 : 10 : small || count || navigation ? 10 : 11 };
+    const fontSize = Number(labelMetrics.fontSize);
+    const intentInk = intent === "action" ? actionFill(tokens) : intent === "primary" ? tokens["primary-text"] ?? tokens.primary : intent === "success" ? tokens.success : intent === "warning" ? tokens.warning : intent === "error" ? tokens["destructive-text"] ?? tokens.destructive : intent === "info" ? tokens.info ?? tokens.primary : tokens["muted-foreground"];
+    const intentWash = intent === "action" ? tokens["action-soft"] ?? alpha(actionFill(tokens), 0.12) : intent === "primary" ? tokens["primary-soft"] ?? alpha(tokens.primary, 0.12) : intent === "success" ? tokens["success-soft"] ?? alpha(tokens.success, 0.12) : intent === "warning" ? tokens["warning-soft"] ?? alpha(tokens.warning, 0.12) : intent === "error" ? tokens["destructive-soft"] ?? alpha(tokens.destructive, 0.12) : intent === "info" ? tokens["info-soft"] ?? alpha(intentInk, 0.12) : tokens.muted;
     const base: ViewStyle = extended ? {
       flexDirection: "row", alignItems: "center", gap: 6,
-      borderRadius: props.reference ? 6 : 999,
-      paddingVertical: props.reference || props.navigationCount ? 2 : props.count ? 1 : 3,
-      paddingHorizontal: props.reference ? props.large ? 8 : 7 : props.navigationCount || props.count ? 7 : props.small ? 8 : 9,
+      borderRadius: reference ? platformShape.web.key : shape.web.pill,
+      paddingVertical: reference || navigation ? 2 : count ? 1 : 3,
+      paddingHorizontal: reference ? props.large ? 8 : 7 : navigation || count ? 7 : small ? 8 : 9,
     } : skin.metaBase;
-    const fill: ViewStyle = extended ? { backgroundColor: props.inverse ? "rgba(255,255,255,0.18)" : props.navigationCount || props.solid ? actionFill(tokens) : props.neutralFill ? tokens.border : props.soft || props.reference ? intentWash : tokens.muted } : metaContainer(tokens, tone);
+    const fill: ViewStyle = extended ? { backgroundColor: surfaceKind === "inverse" ? "rgba(255,255,255,0.18)" : surfaceKind === "solid" ? actionFill(tokens) : surfaceKind === "neutral" ? tokens.border : surfaceKind === "soft" ? intentWash : tokens.muted } : metaContainer(tokens, tone);
     const label: TextStyle = extended ? {
-      fontSize: props.reference ? props.large ? 11 : 10 : props.small || props.count || props.navigationCount ? 10 : 11,
-      lineHeight: props.reference ? props.large ? 14.3 : 13 : props.small || props.count || props.navigationCount ? 13 : 14.3,
-      fontWeight: props.count || props.navigationCount || props.reference ? "800" : "700",
-      letterSpacing: props.reference ? (props.large ? 11 : 10) * 0.04 : props.uppercase ? (props.small || props.count ? 10 : 11) * 0.06 : 0,
+      ...labelMetrics, lineHeight: fontSize === 10 ? 13 : 14.3,
+      fontWeight: count || navigation || reference ? "800" : "700",
+      letterSpacing: tracking === "reference" ? fontSize * 0.04 : tracking === "uppercase" ? fontSize * 0.06 : 0,
       textTransform: props.uppercase ? "uppercase" : "none",
-      color: props.inverse ? "#ffffff" : props.navigationCount || props.solid ? actionInk(tokens) : props.foreground ? tokens.foreground : intentInk,
+      color: inkKind === "inverse" ? "#ffffff" : inkKind === "solid" ? actionInk(tokens) : inkKind === "foreground" ? tokens.foreground : intentInk,
     } : { ...skin.labelType, ...metaLabel(tokens, tone) };
     // An outline badge is deliberately unfilled metadata, so it inherits its host.
     const surfaced = tone !== "outline";
@@ -226,11 +273,15 @@ export function createBadge(skin: BadgeSkin) {
 
     const content = <>
       {surfaced ? <GlassPane static layer="control" shape={base} brand={metaBrand(tokens, tone)} tint={extended ? fill.backgroundColor as string : metaTint(tokens, tone)} /> : null}
-      {props.dot ? <View style={{ width: skin.dotSize, height: skin.dotSize, borderRadius: 4, backgroundColor: intentInk }} /> : null}
+      {props.dot ? <View style={{ width: skin.dotSize, height: skin.dotSize, borderRadius: 9999, backgroundColor: intentInk }} /> : null}
       {children != null ? <Text style={[label, monoStyle]}>{children}</Text> : null}
     </>;
     const rootStyle = [surfaced || theme.increasedContrast ? paneStyle(theme, [base, fill]) : [base, fill], hug, props.start ? { alignSelf: "flex-start" as const } : null, style];
-    if (props.href) return <Pressable accessibilityRole="link" accessibilityLabel={accessibilityLabel ?? `Open ${children}`} onPress={() => Linking.openURL(props.href!)} style={[rootStyle, hovered ? { opacity: 0.85 } : null]} {...target} testID={testID}>{content}</Pressable>;
+    const minTarget = platformMinTarget();
+    const labelHeight = Number(label.lineHeight ?? 15);
+    const verticalInset = Number(base.paddingVertical ?? 0);
+    const linkSlop = minTarget == null ? undefined : Math.max(0, (minTarget - labelHeight - verticalInset * 2) / 2);
+    if (props.href) return <Pressable hitSlop={linkSlop} accessibilityRole="link" accessibilityLabel={accessibilityLabel ?? `Open ${children}`} onPress={() => Linking.openURL(props.href!)} style={[rootStyle, hovered ? { opacity: 0.85 } : null]} {...target} testID={testID}>{content}</Pressable>;
     return (
       <View style={rootStyle} testID={testID}>
         {content}

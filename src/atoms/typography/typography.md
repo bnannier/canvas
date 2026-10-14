@@ -15,6 +15,11 @@ The owner's exact-reference directive preserves the existing 9.5px eyebrows.
 on branded surfaces. `numberOfLines` truncates a reading block, and accessible
 labels and roles stay with the text. Existing roles and defaults keep working.
 
+`section` lets a heading own its `count`, muted `description` and trailing `actions`.
+They wrap along a shared baseline, preserving dense section anatomy. Pair it with
+`h5 bold labelLeading` or `subheading bold labelLeading`; the latter uses the compact
+metadata metrics. Actions move to the far edge and wrap below on narrow surfaces.
+
 ## Usage
 
 ```tsx
@@ -440,8 +445,3 @@ Inline text that NAVIGATES should be a real link, not pressable text that sets `
   Read the <Typography small underline href="https://canvas.nannier.com">Canvas docs</Typography> for the full component list.
 </Typography>
 ```
-
-`section` lets a heading own its `count`, muted `description` and trailing `actions`.
-They wrap along a shared baseline, preserving dense section anatomy. Pair it with
-`h5 bold labelLeading` or `subheading bold labelLeading`; the latter uses the compact
-metadata metrics. Actions move to the far edge and wrap below on narrow surfaces.

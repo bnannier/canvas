@@ -37,7 +37,7 @@ const ALL: PlatformKey[] = ["web", "ios", "android"];
 export const SHAPE_ROLES: Record<ShapeRole, ShapeMember[]> = {
   control: [
     { token: "p-nav-link-radius", on: ALL },
-    { token: "p-side-row-radius", on: ALL },
+    { token: "p-side-row-radius", on: ["ios", "android"], why: "Argus web rows run full width with square corners and an active edge marker" },
     { token: "p-cal-chevron-radius", on: ALL },
     { token: "p-btn-radius", on: ["ios", "android"], why: "the web Button is Dark Factory's pill, a `pill` member" },
     { token: "p-menu-row-radius", on: ["web"], why: "iOS and Android menu rows run full bleed inside the menu card" },
@@ -313,7 +313,7 @@ export const CONCENTRIC_CORNERS: ConcentricCorner[] = [
 export const COMPONENT_ROLES: Record<string, readonly string[]> = {
   "atoms/autocomplete": ["control", "field", "menu"],
   "atoms/avatar": ["control"],
-  "atoms/badge": ["pill"],
+  "atoms/badge": ["pill", "key"],
   "atoms/button": ["control", "pill"],
   "atoms/button-group": ["control", "menu", "pill"],
   "atoms/checkbox": ["checkbox"],
@@ -326,6 +326,7 @@ export const COMPONENT_ROLES: Record<string, readonly string[]> = {
   "atoms/listbox": ["control", "menu"],
   "atoms/pagination": ["pill"],
   "atoms/popover": ["menu", "sheet"],
+  "atoms/progress": ["cell"],
   "atoms/qrcode": ["tile"],
   "atoms/radio": ["groupedList"],
   "atoms/select": ["control", "field", "menu"],
@@ -347,7 +348,7 @@ export const COMPONENT_ROLES: Record<string, readonly string[]> = {
   "molecules/accordion": ["card"],
   "molecules/alert": ["control", "tile"],
   "molecules/alert-dialog": ["control", "dialog"],
-  "molecules/card": ["card"],
+  "molecules/card": ["card", "tile"],
   "molecules/code-block": ["control", "key"],
   "molecules/collapsible": ["card"],
   "molecules/description-lists": ["card", "groupedList"],
@@ -356,7 +357,7 @@ export const COMPONENT_ROLES: Record<string, readonly string[]> = {
   "molecules/grid-lists": ["control", "tile"],
   "molecules/media-objects": ["control", "card", "compactIconBox", "iconBox", "key"],
   "molecules/stacked-lists": ["control", "card", "groupedList"],
-  "molecules/stats": ["card"],
+  "molecules/stats": ["card", "tile"],
   "organisms/action-sheet": ["dialog", "sheet", "actionSheet"],
   "organisms/board": ["control", "card", "groupedList", "lane"],
   "organisms/calendar": ["control", "card", "menu", "event"],

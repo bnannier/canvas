@@ -25,16 +25,17 @@ import { requestedSchemeOf, requestedSurfaceOf, type ThemeProviderProps } from "
 import { sizeOf as autocompleteSize } from "../../src/atoms/autocomplete/autocomplete.shared.tsx";
 import { sizeOf as avatarSize, shapeOf as avatarShape, overlapOf } from "../../src/atoms/avatar/avatar.shared.tsx";
 import { alignEndOf } from "../../src/atoms/avatar/avatar-menu.shared.tsx";
-import { toneOf as badgeTone, statusOf as badgeStatus, badgeGapOf } from "../../src/atoms/badge/badge.shared.tsx";
+import { toneOf as badgeTone, statusOf as badgeStatus, badgeGapOf, badgeIntentOf, badgeMetricOf, badgeSurfaceOf, badgeInkOf, badgeTrackingOf } from "../../src/atoms/badge/badge.shared.tsx";
 import { separatorOf } from "../../src/atoms/breadcrumb/breadcrumb.shared.tsx";
 import { intentOf as buttonIntent, sizeOf as buttonSize } from "../../src/atoms/button/button.shared.tsx";
+import { webEmphasisOf } from "../../src/atoms/button/button.styles.ts";
 import { kindOf, sizeOf as buttonGroupSize } from "../../src/atoms/button-group/button-group.shared.tsx";
 import { sizeOf as checkboxSize } from "../../src/atoms/checkbox/checkbox.shared.tsx";
 import { colorOf } from "../../src/atoms/chip/chip.shared.tsx";
 import { measureOf, padOf as containerPad } from "../../src/atoms/container/container.shared.tsx";
 import { orientationOf, emphasisOf } from "../../src/atoms/divider/divider.shared.tsx";
 import { toneOf as emblemTone, sizeOf as emblemSize } from "../../src/atoms/emblem/emblem.shared.tsx";
-import { nameOf, strokeOf, type IconProps } from "../../src/atoms/icon/icon.shared.tsx";
+import { nameOf, strokeOf, strokeWidthOf, type IconProps } from "../../src/atoms/icon/icon.shared.tsx";
 import { NAMES } from "../../src/atoms/icon/icon.glyphs.ts";
 import { fitOf as imageFit } from "../../src/atoms/image/image.shared.tsx";
 import { sizeOf as inputSize } from "../../src/atoms/input/input.shared.tsx";
@@ -52,11 +53,11 @@ import { lineHeight, avatarDiameter, buttonSize as skeletonButton, shapeOf as sk
 import { sizeOf as sliderSize } from "../../src/atoms/slider/slider.shared.tsx";
 import { toneOf as spinnerTone, sizeOf as spinnerSize } from "../../src/atoms/spinner/spinner.shared.tsx";
 import { sizeOf as stepperSize } from "../../src/atoms/stepper/stepper.shared.tsx";
-import { sizeOf as swatchSize, stretchesOf } from "../../src/atoms/swatch/swatch.shared.tsx";
+import { sizeOf as swatchSize, stretchesOf, paletteOf } from "../../src/atoms/swatch/swatch.shared.tsx";
 import { sizeOf as switchSize } from "../../src/atoms/switch/switch.shared.tsx";
 import { sizeOf as textareaSize } from "../../src/atoms/textarea/textarea.shared.tsx";
 import { placementOf as tooltipPlacement, triggerOf } from "../../src/atoms/tooltip/tooltip.shared.tsx";
-import { roleOf, toneOf as typographyTone, weightOf, leadingOf, decorationOf, numeralsOf } from "../../src/atoms/typography/typography.shared.tsx";
+import { roleOf, textAlignOf, toneOf as typographyTone, weightOf, leadingOf, decorationOf, numeralsOf } from "../../src/atoms/typography/typography.shared.tsx";
 import { fitOf as videoFit } from "../../src/atoms/video/video.shared.tsx";
 import { toneOf as actionPanelTone, layoutOf as actionPanelLayout } from "../../src/molecules/action-panels/action-panels.shared.tsx";
 import { toneOf as alertTone } from "../../src/molecules/alert/alert.shared.tsx";
@@ -352,29 +353,39 @@ export const SUBJECTS: readonly AnySubject[] = [
     components: ["Typography"],
     pages: ["typography"],
     resolver: "src/atoms/typography/typography.shared.tsx#roleOf",
-    members: ["display", "h1", "h2", "h3", "h4", "h5", "lead", "code", "mono", "caption", "muted", "small", "tiny", "body"],
+    members: ["subheading", "label", "micro", "tag", "eyebrow", "eyebrowLg", "stageLabel", "statValue", "metricValue", "formValue", "display", "h1", "h2", "h3", "h4", "h5", "lead", "code", "mono", "caption", "small", "tiny", "body", "muted"],
     resolve: roleOf,
     notes: ["`muted` is both a role and a tone."],
   }),
   subject({ id: "Typography.tone", components: ["Typography"], pages: ["typography"], resolver: "src/atoms/typography/typography.shared.tsx#toneOf", members: ["destructive", "warning", "success", "primary", "subtle", "muted"], resolve: typographyTone }),
-  subject({ id: "Typography.weight", components: ["Typography"], pages: ["typography"], resolver: "src/atoms/typography/typography.shared.tsx#weightOf", members: ["bold", "semibold", "medium", "regular"], resolve: weightOf }),
-  subject({ id: "Typography.leading", components: ["Typography"], pages: ["typography"], resolver: "src/atoms/typography/typography.shared.tsx#leadingOf", members: ["tightLeading"], resolve: leadingOf }),
+  subject({ id: "Typography.weight", components: ["Typography"], pages: ["typography"], resolver: "src/atoms/typography/typography.shared.tsx#weightOf", members: ["extraBold", "bold", "semibold", "medium", "regular"], resolve: weightOf }),
+  subject({ id: "Typography.leading", components: ["Typography"], pages: ["typography"], resolver: "src/atoms/typography/typography.shared.tsx#leadingOf", members: ["displayLeading", "singleLeading", "lockupLeading", "denseLeading", "compactLeading", "labelLeading", "captionLeading", "smallLeading", "strongLeading", "bodyLeading", "relaxedLeading", "tightLeading"], resolve: leadingOf }),
   subject({ id: "Typography.decoration", components: ["Typography"], pages: ["typography"], resolver: "src/atoms/typography/typography.shared.tsx#decorationOf", members: ["underline"], resolve: decorationOf }),
   subject({ id: "Typography.numerals", components: ["Typography"], pages: ["typography"], resolver: "src/atoms/typography/typography.shared.tsx#numeralsOf", members: ["tabular"], resolve: numeralsOf }),
   subject({ id: "Video.fit", components: ["Video"], pages: ["video"], resolver: "src/atoms/video/video.shared.tsx#fitOf", members: ["contain", "cover", "stretch"], resolve: videoFit }),
+
+  subject({ id: "Badge.intent", components: ["Badge"], pages: ["badge"], resolver: "src/atoms/badge/badge.shared.tsx#badgeIntentOf", members: ["action", "primary", "reference", "success", "warning", "error", "info"], resolve: badgeIntentOf }),
+  subject({ id: "Badge.metrics", components: ["Badge"], pages: ["badge"], resolver: "src/atoms/badge/badge.shared.tsx#badgeMetricOf", members: ["reference", "navigationCount", "count", "small"], resolve: badgeMetricOf }),
+  subject({ id: "Badge.surface", components: ["Badge"], pages: ["badge"], resolver: "src/atoms/badge/badge.shared.tsx#badgeSurfaceOf", members: ["inverse", "navigationCount", "solid", "neutralFill", "soft", "reference"], resolve: badgeSurfaceOf }),
+  subject({ id: "Badge.ink", components: ["Badge"], pages: ["badge"], resolver: "src/atoms/badge/badge.shared.tsx#badgeInkOf", members: ["inverse", "navigationCount", "solid", "foreground"], resolve: badgeInkOf }),
+  subject({ id: "Badge.tracking", components: ["Badge"], pages: ["badge"], resolver: "src/atoms/badge/badge.shared.tsx#badgeTrackingOf", members: ["reference", "uppercase"], resolve: badgeTrackingOf }),
+  subject({ id: "Button.web emphasis", components: ["Button"], pages: ["button"], resolver: "src/atoms/button/button.styles.ts#webEmphasisOf", members: ["inverse", "quiet"], resolve: webEmphasisOf }),
+  subject({ id: "Icon.stroke weight", components: ["Icon"], pages: ["icon"], resolver: "src/atoms/icon/icon.shared.tsx#strokeWidthOf", members: ["heavyStroke", "boldStroke", "mediumStroke", "regularStroke"], resolve: strokeWidthOf }),
+  subject({ id: "Swatch.palette", components: ["Swatch"], pages: ["swatch"], resolver: "src/atoms/swatch/swatch.shared.tsx#paletteOf", members: ["dark", "mint", "blush"], resolve: paletteOf }),
+  subject({ id: "Typography.alignment", components: ["Typography"], pages: ["typography"], resolver: "src/atoms/typography/typography.shared.tsx#textAlignOf", members: ["right", "center"], resolve: textAlignOf }),
 
   // Molecules.
   subject({ id: "ActionPanel.tone", components: ["ActionPanel"], pages: ["action-panels"], resolver: "src/molecules/action-panels/action-panels.shared.tsx#toneOf", members: ["destructive"], resolve: actionPanelTone }),
   subject({ id: "ActionPanel.layout", components: ["ActionPanel"], pages: ["action-panels"], resolver: "src/molecules/action-panels/action-panels.shared.tsx#layoutOf", members: ["inline"], resolve: actionPanelLayout }),
   subject({ id: "Alert.tone", components: ["Alert"], pages: ["alert"], resolver: "src/molecules/alert/alert.shared.tsx#toneOf", members: ["destructive", "error", "warning", "success", "info"], resolve: alertTone }),
   subject({ id: "AlertDialog.width", components: ["AlertDialog"], pages: ["alert-dialog"], resolver: "src/molecules/alert-dialog/alert-dialog.shared.tsx#widthOf", members: ["narrow", "small", "large"], resolve: alertDialogWidth }),
-  subject({ id: "Card.elevation", components: ["Card"], pages: ["card"], resolver: "src/molecules/card/card.shared.tsx#elevationOf", members: ["raised", "flat"], resolve: elevationOf }),
+  subject({ id: "Card.elevation", components: ["Card"], pages: ["card"], resolver: "src/molecules/card/card.shared.tsx#elevationOf", members: ["raised", "flat", "tileShadow", "rowShadow", "emptyShadow"], resolve: elevationOf }),
   subject({
     id: "Card.density",
     components: ["Card"],
     pages: ["card"],
     resolver: "src/molecules/card/card.shared.tsx#densityOf",
-    members: ["compact", "comfortable"],
+    members: ["dense", "snug", "cozy", "relaxed", "spacious", "insetContent", "rail", "summary", "metric", "request", "menu", "compact", "comfortable"],
     resolve: cardDensity,
     notes: ["A density pads the surface on its own and wins over `padded` and `flush`."],
   }),

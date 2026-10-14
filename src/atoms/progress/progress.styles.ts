@@ -1,3 +1,4 @@
+import { platformShape } from "../../style/platform-shape.js";
 import { alpha, tabularNums, type ColorTokens, type TextStyle, type ViewStyle } from "../../style/index.js";
 import { actionFill } from "../../style/action.js";
 import { typeScale } from "../../style/type-scale.js";
@@ -108,5 +109,5 @@ export const webSkin: ProgressSkin = {
 
 export const SEGMENTED_METER: { row: ViewStyle; dash: ViewStyle } = {
   row: { flexDirection: "row", gap: 3 },
-  dash: { width: 13, height: 5, borderRadius: 2 },
+  dash: { width: 13, height: 5, borderRadius: platformShape.web.cell },
 };

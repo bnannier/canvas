@@ -8,6 +8,13 @@ If more than one tone is passed, Badge resolves the highest-precedence one: `def
 
 Lay out a series of badges with `BadgeGroup`, a wrapping row that owns the gap (`tight` / `snug` / `cozy`, default `snug`; the largest gap passed wins: `cozy` > `snug` > `tight`) and centers its badges, so a call site never hand-rolls a flex row around them. Give it an `accessibilityLabel` (say, "Rachel Chen's roles") and it is announced as a named group that keeps its badges' text; without one it is a plain row.
 
+Dense Argus badges use `small` (10/13), `count` (extra-bold with compact inset),
+`navigationCount` (solid action count), and `reference` (tracked square key, optionally
+`large` and `href`). `soft` pairs an intent wash with its ink; intent precedence is
+action, primary/reference, success, warning, error, info, muted. `foreground` overrides
+the label ink while preserving an intent dot. `inverse` and `solid` supply branded
+surfaces. `uppercase` tracks caps; `start` pins a badge in a host layout.
+
 ## Usage
 
 ```tsx
@@ -66,6 +73,12 @@ Lay out a series of badges with `BadgeGroup`, a wrapping row that owns the gap (
   <Badge>engineering</Badge>
   <Badge status success>active</Badge>
 </BadgeGroup>
+```
+
+### Reference link
+
+```tsx
+<Badge reference href="https://example.com">CORE-1842</Badge>
 ```
 
 ## Do & Don't
@@ -268,10 +281,3 @@ Lay out a series of badges with `BadgeGroup`, a wrapping row that owns the gap (
   <Badge destructive>legal</Badge>
 </View>
 ```
-
-Dense Argus badges use `small` (10/13), `count` (extra-bold with compact inset),
-`navigationCount` (solid action count), and `reference` (tracked square key, optionally
-`large` and `href`). `soft` pairs an intent wash with its ink; intent precedence is
-action, primary/reference, success, warning, error, info, muted. `foreground` overrides
-the label ink while preserving an intent dot. `inverse` and `solid` supply branded
-surfaces. `uppercase` tracks caps; `start` pins a badge in a host layout.

@@ -190,6 +190,12 @@ export interface TypographySkin {
   roleType: Record<Role, TextStyle>;
 }
 
+export function textAlignOf(p: TypographyProps) {
+  if (p.right) return "right";
+  if (p.center) return "center";
+  return null;
+}
+
 // Heading roles and the level they expose to assistive tech. Setting
 // accessibilityRole="header" gives the native heading trait and (via RNW) emits
 // a real <h*> element; passing both aria-level and accessibilityLevel pins the
@@ -305,6 +311,7 @@ export function createTypography(skin: TypographySkin) {
     const role = roleOf(props);
     const tone = toneOf(props);
     const weight = weightOf(props);
+    const textAlign = textAlignOf(props);
     const leading = leadingOf(props);
     const decoration = decorationOf(props);
     const numerals = numeralsOf(props);
@@ -352,7 +359,7 @@ export function createTypography(skin: TypographySkin) {
           props.inverseMuted ? { color: "rgba(255,255,255,0.78)" } : null,
           props.inverseSoft ? { color: "rgba(255,255,255,0.75)" } : null,
           props.inverseFaint ? { color: "rgba(255,255,255,0.72)" } : null,
-          props.right ? { textAlign: "right" } : props.center ? { textAlign: "center" } : null,
+          textAlign ? { textAlign } : null,
           props.uppercase ? { textTransform: "uppercase" } : null,
           props.displayTracking ? { letterSpacing: Number(skin.roleType[role].fontSize) * -0.02 } : null,
           props.tightTracking ? { letterSpacing: Number(skin.roleType[role].fontSize) * -0.01 } : null,
