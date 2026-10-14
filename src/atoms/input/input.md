@@ -28,6 +28,9 @@ Inside an overlay, Escape follows the overlay's cancellation policy. A supplied
 `onKeyPress` runs first and can call `preventDefault()` to handle Escape locally.
 Cancelling an IME candidate keeps the overlay open.
 
+On web, the default field uses Argus’s 40-pixel frame, 13-pixel semibold value,
+12-pixel inset, and muted tracked uppercase label (10-pixel reading floor).
+
 ## Usage
 
 ```tsx

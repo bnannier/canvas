@@ -108,7 +108,7 @@ describe("floating labels use text roles without recoloring control indicators",
     // grouped fallback title it in `foreground`; the iOS skins title it in the iOS
     // input-field reference's secondary gray (`muted-foreground`, its Text/Label).
     for (const [name, Component, props, role] of [
-      ["Web Input", WebInput, {}, "foreground"], ["iOS Input", IOSInput, {}, "muted-foreground"],
+      ["Web Input", WebInput, {}, "muted-foreground"], ["iOS Input", IOSInput, {}, "muted-foreground"],
       ["Web Textarea", WebTextarea, {}, "foreground"], ["iOS Textarea", IOSTextarea, {}, "muted-foreground"],
       ["Android grouped Input", Input, { prefix: "$" }, "foreground"],
       ["Android flush Textarea", Textarea, { flush: true }, "foreground"],

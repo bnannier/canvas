@@ -124,11 +124,17 @@ describe("the iOS glyph follows the field state", () => {
   });
 });
 
-describe("the web field box rests on the same hairline", () => {
+describe("the web field box follows Argus density", () => {
   const t = lightColors;
-  it("rests on `field-border`, focuses on `ring`, errors on `destructive`", () => {
-    expect(webSkin.bareField(t, "input", false, false).borderColor).toBe(t["field-border"]);
-    expect(webSkin.groupContainer(t, "input", false, false).borderColor).toBe(t["field-border"]);
+  it("keeps the 40px Argus frame, 13px semibold value, and eyebrow label", () => {
+    expect(webSkin.bareBox("base").height).toBe(40);
+    expect(webSkin.groupedHeight("base")).toBe(40);
+    expect(webSkin.text(t, "base")).toMatchObject({ fontSize: 13, fontWeight: "600" });
+    expect(webSkin.labelAbove(t, "base")).toMatchObject({ fontSize: 10, textTransform: "uppercase", color: t["muted-foreground"] });
+  });
+  it("rests on the Argus hairline, focuses on `ring`, errors on `destructive`", () => {
+    expect(webSkin.bareField(t, "input", false, false).borderColor).toBe(t.border);
+    expect(webSkin.groupContainer(t, "input", false, false).borderColor).toBe(t.border);
     expect(webSkin.bareField(t, "ring", true, false).borderColor).toBe(t.ring);
     expect(webSkin.bareField(t, "destructive", false, true).borderColor).toBe(t.destructive);
   });
