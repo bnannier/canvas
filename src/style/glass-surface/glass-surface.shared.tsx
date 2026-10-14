@@ -562,9 +562,13 @@ function cornerSides(key: CornerKey): readonly (keyof BorderSides)[] {
 }
 
 /**
- * The material's corners: the host's corner radii, and where the material sits inside a kept
- * border (`inside`) each radius less the narrower border it meets, the inner curve of that
- * border, so the material's corner never leaves a gap and never pokes over the border.
+ * The material's corners: the host's corner radii and its `borderCurve`, and where the material
+ * sits inside a kept border (`inside`) each radius less the narrower border it meets, the inner
+ * curve of that border, so the material's corner never leaves a gap and never pokes over the
+ * border. The curve keeps the skin's shape on the material: an iOS skin's continuous corner (a
+ * Card, a list, the Drawer sheet) stays continuous on the clip, the fill, the frost, the rim and
+ * Liquid Glass's own corner, where the material once drew the circular one under it. A browser
+ * has no curve to draw, and React Native Web drops the key.
  */
 export function materialCorners(shape: StyleProp<ViewStyle>, inside = false): ViewStyle {
   const flat = (StyleSheet.flatten(shape) ?? {}) as ViewStyle;
@@ -575,6 +579,7 @@ export function materialCorners(shape: StyleProp<ViewStyle>, inside = false): Vi
     if (radius == null) continue;
     out[key] = sides && typeof radius === "number" ? Math.max(0, radius - Math.min(...cornerSides(key).map((side) => sides[side]))) : radius;
   }
+  if (flat.borderCurve != null) out.borderCurve = flat.borderCurve;
   return out as ViewStyle;
 }
 

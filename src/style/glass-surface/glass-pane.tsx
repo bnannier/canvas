@@ -102,7 +102,9 @@ export function GlassPane({ layer = "control", shape, stateBorder = false, tint,
   if (material.renderer === "solid") return null;
   // `interactive` is not forwarded: a surface under pointerEvents "none" never receives the
   // touch interactive Liquid Glass answers, so it only reinstalled the effect on each toggle.
-  return <GlassSurface static={stable} clear={clear} layer={layer} tint={tint} brand={brand} pointerEvents="none" testID={testID} style={[StyleSheet.absoluteFill, paneShape(shape, stateBorder), BEHIND]} />;
+  // The pane's own shape is the host's corner radii and `borderCurve` and nothing else, each
+  // radius inside a kept border less the narrower border it meets (`materialCorners`).
+  return <GlassSurface static={stable} clear={clear} layer={layer} tint={tint} brand={brand} pointerEvents="none" testID={testID} style={[StyleSheet.absoluteFill, materialCorners(shape, stateBorder), BEHIND]} />;
 }
 
 // The pane paints beneath every sibling inside its host, on every platform: each host is
@@ -137,14 +139,6 @@ export function paneHost(appearance: boolean | ThemeValue): ViewStyle | null {
   return glass ? PANE_HOST : null;
 }
 
-/**
- * The pane's own shape: the host's corner radii and `borderCurve`, and nothing else. Inside
- * a kept border each radius is less the narrower border it meets (`materialCorners`).
- */
-function paneShape(shape: StyleProp<ViewStyle>, inside: boolean): ViewStyle {
-  const curve = ((StyleSheet.flatten(shape) ?? {}) as ViewStyle).borderCurve;
-  return curve != null ? { ...materialCorners(shape, inside), borderCurve: curve } : materialCorners(shape, inside);
-}
 
 /**
  * A surface style for a node that renders a GlassPane behind its content. In solid mode
