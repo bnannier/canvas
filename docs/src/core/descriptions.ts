@@ -66,7 +66,7 @@ export const COMPONENT_DESCRIPTIONS: Record<string, string> = {
   "phone-input": "A phone number field: the Input's box with a country segment at its start (the chosen country's flag and a caret, which open a list of countries with their names and dial codes) and that country's dial code inline before the number.",
   "stacked-lists": "Vertical lists with avatar, two-line items, and trailing metadata. Used for contacts, activity feeds, and data previews.",
   "stats": "Single value, grouped row, with sparkline, with comparison. Used for dashboards and overview pages.",
-  "action-sheet": "A modal sheet of contextual actions, the iOS action sheet idiom: a bottom sheet of choices summoned in response to a user action.",
+  "action-sheet": "A modal sheet of contextual actions, the iOS action sheet idiom: a bottom sheet of choices summoned in response to a user action, over a dimmed scrim that glass on the web also blurs.",
   "board": "A data-driven kanban board: columns scroll horizontally, each column is a drop zone, and every card carries a drag grip, an optional trailing badge, a muted two-line description, a free-form chips slot, and an optional kebab menu.",
   "calendar": "Month grid, week timeline, and day timeline in one component. Events mark their days with a dot in the month grid and week strip, and timed events render as blocks on the week/day hour timelines.",
   "carousel": "A horizontally paged slide viewer: swipe (or use the prev/next arrows and the dot indicators) to move one slide at a time.",

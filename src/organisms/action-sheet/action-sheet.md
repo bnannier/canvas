@@ -1,7 +1,8 @@
 # ActionSheet
 
 A modal sheet of contextual actions, the iOS action sheet idiom: a bottom sheet
-of choices summoned in response to a user action.
+of choices summoned in response to a user action, over a dimmed scrim that glass
+on the web also blurs.
 
 It poses an optional title and message, lists a set of actions (any of which can
 be destructive), and offers a Cancel. Selecting an action runs it and closes the

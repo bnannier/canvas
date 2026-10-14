@@ -18,7 +18,7 @@ export const docs: ComponentDocs = {
   category: "atoms",
   overview: [
     "On the web and Android the panel is Dark Factory's: a 12px card with a hairline and its soft popover shadow, Dark Factory's heading over its body in the muted ink. iOS keeps the iPad popover, a rounder borderless card with a beak toward its trigger, in the same type.",
-    "The triggered card opens below its button by default and above it with `top`; either way it flips to the other side when its own lacks room, and the iOS beak follows the side it took. At phone width a triggered card that can close is presented as a sheet on the bottom edge of the window, over the tab bar and a dimming scrim, its content kept clear of the home indicator: Dark Factory's sheet on the web, the iOS sheet on iPhone and the Material 3 bottom sheet on Android.",
+    "The triggered card opens below its button by default and above it with `top`; either way it flips to the other side when its own lacks room, and the iOS beak follows the side it took. At phone width a triggered card that can close is presented as a sheet on the bottom edge of the window, over the tab bar and a dimming scrim that glass on the web also blurs, its content kept clear of the home indicator: Dark Factory's sheet on the web, the iOS sheet on iPhone and the Material 3 bottom sheet on Android.",
     "In glass mode the triggered card is a functional-layer glass panel beside its button, and the sheet a dense-layer one, legible over its scrim; focus enters once the card's placement has committed, and the `inline` card is a static in-flow panel. Solid mode paints the skin's own panel.",
   ],
   examples: [
