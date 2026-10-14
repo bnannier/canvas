@@ -30,6 +30,9 @@ Two orthogonal axes drive the look:
 Web labels retain Argus’s exact 11/14.3 metrics and idle hover wash. `start` pins
 a chip when its host layout does not publish a Canvas sizing context.
 
+`steadyPress` retains the resting opacity during a press, while selection,
+hover feedback and the native ripple keep working.
+
 ## Usage
 
 ```tsx
