@@ -7,6 +7,12 @@ distribution (`center`, `between`, …), cross-axis alignment (`alignCenter`,
 `baseline`, …), and `wrap` / `fill` / `grow` / `shrink`, so a call site never
 hand-rolls `flexDirection`, `gap`, or `alignItems`.
 
+The Argus reference adds intermediate spacing steps without rounding its layout:
+`fine` 3, `dense` 5, `compact` 6, `close` 7, `nested` 9, `comfortable` 10,
+`balanced` 11, `roomy` 14, `airy` 18, `spacious` 20, `generous` 22,
+`section` 26, `panel` 28, and `page` 30. Existing named steps keep their values.
+Larger active steps take precedence.
+
 ## Usage
 
 ```tsx

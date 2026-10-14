@@ -21,6 +21,21 @@ export interface FlexSkin {
 // Gap scale → spacing tokens: flush 0, tight 4, snug 8, cozy 12, relaxed 16,
 // loose 24 (Tailwind steps 0 / 1 / 2 / 3 / 4 / 6).
 const gap: Record<Gap, number> = {
+  fine: spacing["0.5"] + spacing.px,
+  dense: spacing["1"] + spacing.px,
+  compact: spacing["1.5"],
+  close: spacing["1.5"] + spacing.px,
+  nested: spacing["2"] + spacing.px,
+  comfortable: spacing["2.5"],
+  balanced: spacing["2.5"] + spacing.px,
+  roomy: spacing["3.5"],
+  airy: spacing["4"] + spacing["0.5"],
+  spacious: spacing["5"],
+  generous: spacing["5"] + spacing["0.5"],
+  section: spacing["6"] + spacing["0.5"],
+  panel: spacing["7"],
+  page: spacing["7"] + spacing["0.5"],
+
   flush: spacing["0"],
   tight: spacing["1"],
   snug: spacing["2"],
