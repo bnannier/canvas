@@ -146,6 +146,8 @@ export interface ChipProps {
   outline?: boolean;
   // A chip has ONE compact size, so there is no size axis.
   disabled?: boolean;
+  /** Keep resting opacity while pressed, preserving the reference filter treatment. */
+  steadyPress?: boolean;
   accessibilityLabel?: string;
   /** E2E hook forwarded to the root element. */
   testID?: string;
@@ -455,7 +457,7 @@ export function createChip(skin: ChipSkin) {
             aria-pressed={isSelected}
             hitSlop={bodySlop}
             android_ripple={surfaceRipple(tokens)}
-            style={({ pressed }) => [{ flexDirection: "row", alignItems: "center", gap: bodyGap }, liquid && disabled ? { opacity: 0.5 } : null, pressDim(pressed, 0.85)]}
+            style={({ pressed }) => [{ flexDirection: "row", alignItems: "center", gap: bodyGap }, liquid && disabled ? { opacity: 0.5 } : null, props.steadyPress ? null : pressDim(pressed, 0.85)]}
           >
             {bodyContent}
           </Pressable>
@@ -494,14 +496,14 @@ export function createChip(skin: ChipSkin) {
             // iOS/web keep the opacity dim. The pill's pane is a child of this Pressable, so
             // where it renders the ripple draws in the foreground, over it (`paneRipple`).
             android_ripple={paneRipple(surfaced ? theme : false, surfaceRipple(tokens))}
-            style={({ pressed }) => [container, !liquid ? pressDim(pressed, 0.85) : null]}
+            style={({ pressed }) => [container, !liquid ? props.steadyPress ? null : pressDim(pressed, 0.85) : null]}
           >
             {({ pressed }) => <>
               {pane}
               <View style={[
                 { flexDirection: "row", alignItems: "center", gap: skin.base.gap, flexShrink: 1 },
                 liquid && disabled ? { opacity: 0.5 } : null,
-                liquid ? pressDim(pressed, 0.85) : null,
+                liquid ? props.steadyPress ? null : pressDim(pressed, 0.85) : null,
               ]}>{bodyContent}</View>
             </>}
           </Pressable>
