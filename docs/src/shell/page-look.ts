@@ -84,6 +84,12 @@ export const PAGE_LOOK = {
     insets: { phone: { side: 12, top: 16 }, tablet: { side: 20, top: 28 }, desktop: { side: 28, top: 56 } } satisfies Record<ShellTier, { side: number; top: number }>,
     shadow: { offsetY: 60, blur: 100, spread: -40 },
     /**
+     * How far the frame runs on past the window's bottom edge: Dark Factory's shell runs on
+     * below the window at rest, so the frost's 1 px hairline rim must not close it there.
+     * Kept to the rim, so the overlay host inside the frame stays within a pixel of the window.
+     */
+    bleed: 1,
+    /**
      * The height the wedges are laid out against: Dark Factory lays them over its shell,
      * which runs the roster's full height, so at rest only the top-right ones show. The
      * docs' frame is fixed to the viewport, so it keeps the roster's heights per tier.
