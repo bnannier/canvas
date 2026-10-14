@@ -1166,7 +1166,7 @@ describe("the rows of the docs' three-up a state is answered on", () => {
       "dialog.shared.tsx:212 Pressable: ios",
       "dialog.shared.tsx:233 Pressable: android",
       "dialog.shared.tsx:245 Pressable: android",
-      "dialog.shared.tsx:321 Pressable: every build",
+      "dialog.shared.tsx:324 Pressable: every build",
     ]);
     // AlertDialog's confirm (`skin.actionLayout`): the kit Button the web build hands `disabled`, its own on the others.
     expect(builds("alert-dialog", "disabled")).toEqual([
@@ -1381,7 +1381,7 @@ describe("the states the web runner can never show", () => {
       const controls = new Map(signalsOf(slug).flatMap((s) => (s.state === "pressed" && s.control ? [[s.control.at, s.control] as const] : [])));
       return [...controls.values()].map((c) => `${c.at.replace(/^src\/[a-z]+\/[a-z-]+\//, "")}: ${ROW_KEYS.map((row) => deviceFeedback(c, "pressed", row, rowsOf(slug), signalsOf(slug)) ?? "-").join(" ")}`).sort();
     };
-    expect(feedback("dialog")).toEqual(["dialog.shared.tsx:212: - - -", "dialog.shared.tsx:233: - - android_ripple", "dialog.shared.tsx:245: - - android_ripple", "dialog.shared.tsx:321: - - -"]);
+    expect(feedback("dialog")).toEqual(["dialog.shared.tsx:212: - - -", "dialog.shared.tsx:233: - - android_ripple", "dialog.shared.tsx:245: - - android_ripple", "dialog.shared.tsx:324: - - -"]);
     expect(feedback("alert-dialog")).toEqual(["alert-dialog.shared.tsx:196: - - -", "alert-dialog.shared.tsx:208: - - -", "alert-dialog.shared.tsx:236: - - android_ripple", "alert-dialog.shared.tsx:246: - - android_ripple"]);
     // The press on the iOS and Android rows, as the table had it: on the Android row it set up a
     // state the web runner could never see reached.
