@@ -1809,6 +1809,42 @@
       "fromLeft + fromRight": "fromLeft"
     }
   },
+  "Select.field": {
+    "kind": "toggle",
+    "components": [
+      "Select"
+    ],
+    "pages": [
+      "select"
+    ],
+    "resolver": "src/atoms/select/select.shared.tsx#fieldOf",
+    "order": [
+      "dense"
+    ],
+    "none": "standard",
+    "single": {
+      "dense": "dense"
+    },
+    "pairs": {}
+  },
+  "Select.options": {
+    "kind": "toggle",
+    "components": [
+      "Select"
+    ],
+    "pages": [
+      "select"
+    ],
+    "resolver": "src/atoms/select/select.shared.tsx#optionsOf",
+    "order": [
+      "plainOptions"
+    ],
+    "none": "standard",
+    "single": {
+      "plainOptions": "plain"
+    },
+    "pairs": {}
+  },
   "Select.size": {
     "kind": "axis",
     "components": [

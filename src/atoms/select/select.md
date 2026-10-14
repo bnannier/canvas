@@ -23,6 +23,13 @@ Pass `ref` to access the interactive trigger, preserving overlay measurement. Us
 On web, the default trigger matches Argus’s 40-pixel field frame and 13-pixel
 value, with muted tracked uppercase labels at the kit’s 10-pixel reading floor.
 
+Use `dense eyebrow soft` for the original compact application field on web.
+`plainOptions` removes the selection gutter and marks the chosen row with action
+ink; pointer hover uses the brand wash. `steadyPress` keeps the resting fill and
+opacity while pressed. `menuWidth` bounds the floating menu independently of the
+field. `combobox` exposes the selection-field role. Native skins keep their
+platform field anatomy and minimum touch targets.
+
 ## Usage
 
 ```tsx
@@ -30,6 +37,13 @@ value, with muted tracked uppercase labels at the kit’s 10-pixel reading floor
 ```
 
 ## Variants
+
+### Dense field
+
+```tsx
+<Select dense eyebrow soft plainOptions steadyPress menuWidth={260} label="Role" defaultValue="Developer" options={["Architect", "Developer", "Reviewer"]} />
+```
+
 
 ### Inline label
 
