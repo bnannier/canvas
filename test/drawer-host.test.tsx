@@ -207,3 +207,15 @@ describe("Drawer window overlay host", () => {
     expect(seen["nested-outlet-window"]).toBe(target);
   });
 });
+
+it("pins application chrome outside its independently scrolling body", () => {
+  ui(<Drawer open plain instant right accessibilityLabel="Agent details" header={<Text>Identity</Text>} footer={<Text>Actions</Text>}><Text>Trace contents</Text></Drawer>);
+  const body = screen.getByText("Trace contents");
+  let scroller: HTMLElement | null = body.parentElement;
+  while (scroller && getComputedStyle(scroller).overflowY !== "auto") scroller = scroller.parentElement;
+  expect(scroller).not.toBeNull();
+  expect(scroller!.contains(screen.getByText("Identity"))).toBe(false);
+  expect(scroller!.contains(screen.getByText("Actions"))).toBe(false);
+  expect(getComputedStyle(scroller!).flexGrow).toBe("1");
+  expect(screen.getByRole("dialog", { name: "Agent details" })).toBeDefined();
+});

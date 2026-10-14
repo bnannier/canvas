@@ -2,6 +2,8 @@ import { scrimFill } from "../../style/scrim.js";
 import { useScrimFrost } from "../../style/glass-surface/scrim-frost.js";
 import { useCallback, useEffect, useRef, useState, type ComponentType, type ReactNode } from "react";
 import { EscapeLayerProvider, useEscapeLayer } from "../../style/escape-layer.js";
+import { OverlayScrollView } from "../../style/overlay-scroll.js";
+import { useSafeAreaInsetsOrNull } from "../../style/safe-area.js";
 import { OverlayProvider } from "../../style/portal.js";
 import { Animated, KeyboardAvoidingView, Modal, Platform, StyleSheet } from "react-native";
 import { GlassModalBlurTarget, GlassSurface, Pressable, View, isRTL, useTheme, useReducedMotion, useHardwareBack, supportsNativeDriver, type StyleProp, type ViewStyle } from "../../style/index.js";
@@ -50,6 +52,16 @@ const PANEL_CONTENT: ViewStyle = { flexGrow: 1, flexShrink: 1, flexBasis: "auto"
 // - `bottom`: a sheet that spans the width and rises from the bottom.
 
 export interface DrawerProps {
+  /** Pinned header above the independently scrolling body. */
+  header?: ReactNode;
+  /** Pinned actions below the independently scrolling body. */
+  footer?: ReactNode;
+  /** Navigation body: no content inset or inter-item gap; fills the available height. */
+  navigation?: boolean;
+  /** Square web side panel and the original lightly frosted application dim. */
+  plain?: boolean;
+  /** Present and dismiss immediately, preserving the original application interaction. */
+  instant?: boolean;
   /** Panel content. */
   children?: ReactNode;
   /** Controlled open state. Omit for uncontrolled (a `trigger` opens it). */
@@ -107,6 +119,8 @@ export function createDrawer(skin: DrawerSkin, Button: ButtonComponent = WebButt
     // Under glass on the web the scrim also blurs what it dims (GS-6); null everywhere else.
     const scrimFrost = useScrimFrost();
     const edge = edgeOf(props);
+    const insets = useSafeAreaInsetsOrNull();
+    const structured = props.header != null || props.footer != null || !!props.navigation;
 
     // Uncontrolled by default: the trigger opens the drawer and the scrim closes it; a
     // controlled `open` prop overrides this.
@@ -143,6 +157,11 @@ export function createDrawer(skin: DrawerSkin, Button: ButtonComponent = WebButt
     const [panelH, setPanelH] = useState(0);
     const progress = useRef(new Animated.Value(open ? 1 : 0)).current;
     useEffect(() => {
+      if (props.instant) {
+        progress.setValue(open ? 1 : 0);
+        setMounted(open);
+        return;
+      }
       if (open) {
         setMounted(true);
         Animated.timing(progress, { toValue: 1, duration: reduced ? 0 : 220, useNativeDriver: supportsNativeDriver }).start();
@@ -151,7 +170,7 @@ export function createDrawer(skin: DrawerSkin, Button: ButtonComponent = WebButt
           if (finished) setMounted(false);
         });
       }
-    }, [open, mounted, progress, reduced]);
+    }, [open, mounted, progress, reduced, props.instant]);
 
     // Side panels land on the logical start (left) / end (right) edge via flexbox, which mirrors
     // under RTL, so the horizontal slide origin follows the PHYSICAL side the panel ends up on.
@@ -170,8 +189,8 @@ export function createDrawer(skin: DrawerSkin, Button: ButtonComponent = WebButt
     // skin's per-scheme alpha (iOS dims lighter in light, darker in dark). The resting
     // alpha lives in the color and the fade in the opacity (see scrimFill).
     const dimFill = scrimFill(tokens, skin.scrimOpacity(scheme));
-    const dimOpacity = progress.interpolate({ inputRange: [0, 1], outputRange: [0, 1] });
-    const slideTransform = isVertical ? [{ translateY: slide }] : [{ translateX: slide }];
+    const dimOpacity = props.instant ? 1 : progress.interpolate({ inputRange: [0, 1], outputRange: [0, 1] });
+    const slideTransform = props.instant ? [] : isVertical ? [{ translateY: slide }] : [{ translateX: slide }];
 
     // A sheet caps its width (Android M3 640dp) and centers on wide windows; the cap
     // rides on the panel positioner, and the layers around it are box-none, so a tap on
@@ -200,15 +219,25 @@ export function createDrawer(skin: DrawerSkin, Button: ButtonComponent = WebButt
     // itself still reaches the screen edge, and insets resolve to 0 elsewhere. The
     // SafeAreaView fills a sized panel (a side drawer's full height) and wraps its content in
     // a sheet, the same auto-basis recipe the surface's own clip box uses.
+    const plain = !!props.plain && !isVertical && skin.plainPanel != null;
+    const sideInset = physicalRight ? insets?.right ?? 0 : insets?.left ?? 0;
+    const panelShape = plain ? skin.plainPanel!(edge, width + sideInset, tokens) : skin.panelShape(edge, width, tokens);
+    const panelBody = structured ? <>
+      {props.header != null ? <View style={{ borderBottomWidth: 1, borderBottomColor: tokens.border }}>{props.header}</View> : null}
+      <OverlayScrollView style={{ flexGrow: 1, flexShrink: 1, flexBasis: 0 }} contentContainerStyle={props.navigation ? { flexGrow: 1 } : { paddingVertical: 20, paddingHorizontal: 24, gap: 22, ...(props.footer ? null : { paddingBottom: 0 }) }} keyboardShouldPersistTaps="handled">
+        {children}
+      </OverlayScrollView>
+      {props.footer ? <View style={{ borderTopWidth: 1, borderTopColor: tokens.border }}>{props.footer}</View> : null}
+    </> : children;
     const panel = (
       <View style={[s.panelPos[edge], sheetCap]} onLayout={isVertical ? (e) => setPanelH(e.nativeEvent.layout.height) : undefined}>
-        <GlassSurface style={[skin.panelShape(edge, width, tokens), style]}>
+        <GlassSurface style={[panelShape, style]}>
           <SafeAreaView
             edges={isVertical ? [edge as "top" | "bottom", "left", "right"] : ["top", "bottom", physicalRight ? "right" : "left"]}
             style={PANEL_CONTENT}
           >
             {edge === "bottom" ? handleNode : null}
-            {children}
+            {panelBody}
             {edge === "top" ? handleNode : null}
           </SafeAreaView>
         </GlassSurface>
@@ -232,7 +261,7 @@ export function createDrawer(skin: DrawerSkin, Button: ButtonComponent = WebButt
           </Button>
         ) : null}
         <Modal
-          visible={mounted}
+          visible={props.instant ? open : mounted}
           transparent
           animationType="none"
           onRequestClose={escapeScope.onRequestClose}
@@ -274,10 +303,10 @@ export function createDrawer(skin: DrawerSkin, Button: ButtonComponent = WebButt
                         panel against its edge and rides it in on translateX/translateY; it is
                         box-none, so only the panel itself takes a tap. */}
                     <View style={{ flex: 1 }} collapsable={false} onAccessibilityEscape={escapeScope.onAccessibilityEscape}>
-                      <Animated.View style={[StyleSheet.absoluteFill, { backgroundColor: dimFill, opacity: dimOpacity }, scrimFrost]} />
+                      {plain ? <GlassSurface veil tint={dimFill} pointerEvents="none" style={[StyleSheet.absoluteFill, { backgroundColor: dimFill }]} /> : <Animated.View style={[StyleSheet.absoluteFill, { backgroundColor: dimFill, opacity: dimOpacity }, scrimFrost]} />}
                       <Pressable accessible={false} focusable={false} tabIndex={-1} importantForAccessibility="no" style={StyleSheet.absoluteFill} onPress={() => setOpen(false)} />
                       <View style={s.panelLayer[edge]}>
-                        <Animated.View style={[s.slideLayer, { transform: slideTransform }]}>{panel}</Animated.View>
+                        <Animated.View style={[s.slideLayer, plain ? { maxWidth: "100%" } : null, { transform: slideTransform }]}>{panel}</Animated.View>
                       </View>
                     </View>
                   </KeyboardAvoidingView>

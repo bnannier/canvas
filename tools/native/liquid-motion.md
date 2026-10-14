@@ -1400,3 +1400,14 @@ introduced with the frame material on a shipped modal surface.
 | Date | Effect and profile | Runtime and device | Revision (dirty?) | Surface | Values tried | rAF p50 / p95 / max (ms) | What the comparison showed | Versus reference | Artifacts |
 |---|---|---|---|---|---|---|---|---|---|
 | 2026-10-14 | Original Argus modal veil and form dialog | Installed Chrome headless, macOS, DPR 1; 1440 x 1100 and 390 x 844 | Canvas b9f262b5 plus Dialog changes; Argus aab4076 plus Dialog imports | shipped Argus web New work item, Add person, Mint a new agent and Set up a project dialogs, blush / mint / dark | Original 2px backdrop blur and palette dim; original form metrics; preserve the mounted field's autofocus | n/a (static) | All 24 captures preserve geometry and appearance; 18 are pixel-identical, five differ by 1–18 pixels. The first work capture differs by at most 2 RGB levels across its blurred background; its card region differs by only 21 pixels, at most 1 RGB level. Restoring autofocus removed the initially observed field-outline difference. Nested dropdown Escape, keyboard selection, mocked work creation, and modal dismissal pass. | matches the Argus dialog and veil reference on these shipped web surfaces; native-device rendering was not assessed | `tools/native/reference/argus-dialog-adoption/person-phone-before.png` and `person-phone-after.png` (zero pixels different) |
+
+
+## Argus drawer adoption, 2026-10-14
+
+The existing agent and navigation drawers are the reference: square opaque panel,
+original shadow and 2px veil, immediate presentation, and pinned chrome around
+independently scrolling contents. No material parameters changed.
+
+| Date | Effect and profile | Runtime and device | Revision (dirty?) | Surface | Values tried | rAF p50 / p95 / max (ms) | What the comparison showed | Versus reference | Artifacts |
+|---|---|---|---|---|---|---|---|---|---|
+| 2026-10-14 | Original Argus drawer veil | Installed Chrome headless, macOS, DPR 1; 1440 x 1100 and 390 x 844 | Canvas ce9431a1 plus Drawer changes; Argus 7d0056c plus Drawer imports | shipped Argus agent and phone navigation drawers, blush / mint / dark | Original 2px blur, palette dim, square panel and shadow; viewport clamp at phone widths | n/a (static) | Nine captures retain panel and content bounds. Phone agent differences are 575–592 pixels, at most 2 RGB levels; phone navigation differs by 71–111 pixels, at most 1 RGB level. Desktop differences are sparse antialiasing and blurred background rasterization; first blush background varies more broadly. Fixed the outer carrier width so the 440px panel clamps to a 390px viewport. Pinned header/footer and separate body scroll are tested. | matches the Argus drawer appearance on these web surfaces; native-device rendering was not assessed | `tools/native/reference/argus-drawer-adoption/agent-phone-before.png` and `agent-phone-after.png` |

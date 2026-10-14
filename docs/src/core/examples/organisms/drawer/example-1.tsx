@@ -3,13 +3,10 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Drawer, Typography, Column } = scope;
+  const { Button, Drawer, Typography } = scope;
   return (
-<Drawer trigger="Right drawer" right>
-  <Column padLoose snug>
-    <Typography lead semibold>Details</Typography>
-    <Typography small muted>A full-height panel on the right.</Typography>
-  </Column>
+<Drawer plain instant right width={440} trigger="Agent details" header={<Typography h3 bold>Scout</Typography>} footer={<Button secondary>Pause</Button>}>
+  <Typography>Recent work and trace details.</Typography>
 </Drawer>
   );
 }

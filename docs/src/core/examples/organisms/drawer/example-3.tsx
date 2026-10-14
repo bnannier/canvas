@@ -5,10 +5,10 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { Drawer, Typography, Column } = scope;
   return (
-<Drawer trigger="Top sheet" top>
+<Drawer trigger="Bottom sheet" bottom>
   <Column padLoose snug>
-    <Typography lead semibold>What's new</Typography>
-    <Typography small muted>A sheet that drops down from the top edge.</Typography>
+    <Typography lead semibold>Actions</Typography>
+    <Typography small muted>A sheet that rises from the bottom edge.</Typography>
   </Column>
 </Drawer>
   );

@@ -15,6 +15,13 @@ than navigating a sidebar level. Focus restoration remains platform-dependent.
 Give a controlled drawer an `accessibilityLabel` when it has no built-in
 `trigger`. A drawer with a trigger uses the trigger label as its modal name.
 
+`header` and `footer` pin content around an independently scrolling body. Its
+application inset is 20 pixels vertically and 24 horizontally, with 22 between
+children. `navigation` gives that body no inset or gap and fills its height.
+`plain` preserves the original square Argus side panel and lightly frosted dim on
+web; native skins retain their platform panel. `instant` presents and dismisses
+without a slide or fade. Existing drawers retain their animated default.
+
 ## Usage
 
 ```tsx
@@ -29,6 +36,15 @@ Give a controlled drawer an `accessibilityLabel` when it has no built-in
 ```
 
 ## Variants
+
+### Application panel
+
+```tsx
+<Drawer plain instant right width={440} trigger="Agent details" header={<Typography h3 bold>Scout</Typography>} footer={<Button secondary>Pause</Button>}>
+  <Typography>Recent work and trace details.</Typography>
+</Drawer>
+```
+
 
 ### Right
 
