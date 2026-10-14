@@ -15,6 +15,7 @@ import { Avatar as AndroidAvatar } from "../src/atoms/avatar/avatar.android.tsx"
 import { Button as AndroidButton } from "../src/atoms/button/button.android.tsx";
 import { ButtonGroup as AndroidButtonGroup } from "../src/atoms/button-group/button-group.android.tsx";
 import { Checkbox as AndroidCheckbox } from "../src/atoms/checkbox/checkbox.android.tsx";
+import { Radio as AndroidRadio } from "../src/atoms/radio/radio.android.tsx";
 import { Chip as AndroidChip } from "../src/atoms/chip/chip.android.tsx";
 import { Input as AndroidInput } from "../src/atoms/input/input.android.tsx";
 import { Steps as AndroidSteps } from "../src/organisms/steps/steps.android.tsx";
@@ -131,12 +132,6 @@ function hiddenBehindAPane(container: Element, all: Press[]): Set<Press> {
   return out;
 }
 
-// A row whose indicator is a pane of its own (the Android FilterPanel's checkbox visual, a
-// decorative Checkbox inside the option row): the indicator covers the row's ripple only in
-// its own 18 dp box, as its solid fill does once checked. The row's surface is not a pane,
-// so its ripple stays in the background.
-const INDICATOR_ROW = (host: string, press: Press) => host === "FilterPanel" && press.props.accessibilityRole === "checkbox";
-
 const json = (ripple: Ripple) => JSON.stringify(ripple ?? null);
 
 async function holdsPressFeedback(name: string, node: ReactNode) {
@@ -160,11 +155,11 @@ async function holdsPressFeedback(name: string, node: ReactNode) {
     expect(outlet.length, `${name}: the same Pressables`).toBe(solid.length);
     const hidden = hiddenBehindAPane(looks.outlet.container, outlet);
     outlet.forEach((press, i) => {
-      const forward = hidden.has(press) && !INDICATOR_ROW(name, press);
+      const forward = hidden.has(press);
       const expected = forward ? { ...solid[i]!.ripple, foreground: true } : solid[i]!.ripple;
       expect(json(press.ripple), `${name}: Pressable ${i} (${String(press.props.accessibilityLabel ?? press.props.accessibilityRole ?? "")})`).toBe(json(expected));
     });
-    return { forward: outlet.filter((press) => hidden.has(press) && !INDICATOR_ROW(name, press)).length };
+    return { forward: outlet.filter((press) => hidden.has(press)).length };
   } finally {
     capabilities.mockRestore();
     remove();
@@ -198,7 +193,8 @@ describe("on Android a pane host's press shows over its pane", () => {
   const PRESSES: { name: string; node: ReactNode; forward: number }[] = [
     { name: "Button: primary and secondary pucks", node: <><AndroidButton primary>Save</AndroidButton><AndroidButton secondary>Cancel</AndroidButton><AndroidButton ghost>Skip</AndroidButton></>, forward: 2 },
     { name: "Chip: a tappable filter", node: <><AndroidChip onPress={() => {}}>Filter</AndroidChip><AndroidChip selectable defaultSelected>Picked</AndroidChip></>, forward: 2 },
-    { name: "Checkbox: the indeterminate box", node: <AndroidCheckbox indeterminate>Some</AndroidCheckbox>, forward: 1 },
+    // A Checkbox's box is a mark with no pane (GS-5), so its ripple stays solid's.
+    { name: "Checkbox: the indeterminate box keeps solid's ripple (GS-5)", node: <AndroidCheckbox indeterminate>Some</AndroidCheckbox>, forward: 0 },
     { name: "Steps: the pressable completed and current discs", node: <AndroidSteps steps={[{ label: "Account" }, { label: "Profile" }]} defaultCurrent={1} onStepPress={() => {}} />, forward: 2 },
     { name: "Alert: the dismiss button's borderless ripple", node: <AndroidAlert title="Saved" dismissible />, forward: 1 },
     { name: "Input: the clear and reveal buttons", node: <><AndroidInput label="Search" clearable defaultValue="canvas" /><AndroidInput label="Password" secureTextEntry passwordToggle /></>, forward: 2 },
@@ -242,6 +238,9 @@ describe("on Android a borderless control inside a frosted surface it does not o
     { name: "Breadcrumb links", node: <AndroidBreadcrumb items={["Home", "Library", "Data"]} onItemPress={() => {}} />, borderless: 2 },
     { name: "a pressable Avatar disc", node: <AndroidAvatar name="Ada Lovelace" onPress={() => {}} accessibilityLabel="Ada" />, borderless: 1 },
     { name: "Carousel dots", node: <AndroidCarousel showDots items={[{ key: "one", content: "Slide 1" }, { key: "two", content: "Slide 2" }]} />, borderless: 2 },
+    // The selection marks paint no pane of their own (GS-5); their borderless state layer
+    // comes forward through the surface they sit in.
+    { name: "a selection Checkbox and a Radio", node: <><AndroidCheckbox selection>Email</AndroidCheckbox><AndroidRadio checked>Daily</AndroidRadio></>, borderless: 2 },
   ];
   const CONTAINERS: { name: string; wrap: (node: ReactNode) => ReactNode }[] = [
     { name: "a static Card", wrap: (node) => <AndroidCard title="Retention">{node}</AndroidCard> },

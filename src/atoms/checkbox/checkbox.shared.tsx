@@ -2,8 +2,7 @@ import { forwardRef, type ComponentType, type ReactNode, type RefAttributes } fr
 import { useComposedRefs } from "../../style/use-composed-refs.js";
 import { useSpaceActivation } from "../../style/use-space-activation.js";
 import { type GestureResponderEvent } from "react-native";
-import { View, Pressable, useControllableState, paneRipple, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle, type LayoutStyle } from "../../style/index.js";
-import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
+import { View, Pressable, useControllableState, useTheme, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle, type LayoutStyle } from "../../style/index.js";
 import { CheckboxContent, CHECKBOX_ROW } from "./indicator/shared.js";
 
 // Shared Checkbox shell. Uses React Native's primitives DIRECTLY and reads the
@@ -133,9 +132,7 @@ function createCheckboxBox(skin: CheckboxSkin) {
     const hostRef = useComposedRefs(ref);
     const { children, description, indeterminate, onChange, onValueChange, disabled, style } = props;
     const size = sizeOf(props);
-    // The resolved material its indicator's pane mounts from (CheckboxIndicatorBox).
-    const theme = useMaterialTheme({ static: true, layer: "control" });
-    const { tokens } = theme;
+    const { tokens } = useTheme();
     // Whether the control carries any text at all (title and/or description).
     const hasText = children != null || description != null;
 
@@ -155,9 +152,9 @@ function createCheckboxBox(skin: CheckboxSkin) {
     };
     const keyboard = useSpaceActivation(!!disabled, handlePress);
 
-    // The box's pane is a child of this Pressable: where it renders, the ripple draws in the
-    // foreground, over it (`paneRipple`).
-    const ripple = paneRipple(theme, skin.ripple ? skin.ripple(tokens) : undefined);
+    // The box paints no pane (GS-5), so the ripple stays the skin's own; inside a frosted
+    // surface the kit's Pressable brings a borderless one forward (`frontRipple`).
+    const ripple = skin.ripple ? skin.ripple(tokens) : undefined;
 
     return (
       <Pressable

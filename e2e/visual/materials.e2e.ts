@@ -17,7 +17,8 @@ const VIEWPORTS = {
 // These actual default examples own a surface. Other families can be bare at
 // rest or delegate their surface to a child; their captures record the effect
 // count without pretending every declared material is visible in every variant.
-const SURFACED_DEFAULTS = new Set(["button", "button-group", "card", "input", "checkbox", "switch", "badge", "data-table"]);
+// A Checkbox and a Switch are solid marks in every mode (GS-5), so their defaults own none.
+const SURFACED_DEFAULTS = new Set(["button", "button-group", "card", "input", "badge", "data-table"]);
 // A text field under glass is Dark Factory's clear well: its own tint and hairline over
 // an unblurred backdrop (web-frost.ts `clearBlur`), so it owns a clear material rather
 // than a frosted one.

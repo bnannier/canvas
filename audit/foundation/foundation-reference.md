@@ -44,7 +44,7 @@ Audit checklist for the kit internals the generated `/foundation` reference page
 | `pagination` | directly | `isGlass`, `isRTL`, `platformMinTarget`, `pressDim`, `useControllableState` |
 | `popover` | directly | `usePopoverFocus` |
 | `progress` | directly | `innerFill`, `isGlass`, `supportsNativeDriver`, `tabularNums` |
-| `radio` | directly | `isGlass`, `surfaceRipple`, `useControllableState`, `useRovingFocus`, `withInnerFill` |
+| `radio` | directly | `surfaceRipple`, `useControllableState`, `useRovingFocus`, `withInnerFill` |
 | `reveal` | directly | `supportsNativeDriver` |
 | `select` | directly | `activeIndicator`, `isGlass`, `useControllableState`, `withInnerFill` |
 | `skeleton` | directly | `innerFill`, `thereAndBack` |

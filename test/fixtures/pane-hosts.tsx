@@ -7,9 +7,9 @@ import type { ReactNode } from "react";
 import { Text } from "react-native";
 import {
   Alert, Autocomplete, Avatar, AvatarGroup, Badge, BarList, BoxPlot, BulletChart, Button, Calendar, CandlestickChart, Card,
-  Carousel, Chart, Checkbox, Chip, DataTable, DepthChart, Emblem, FilterPanel, FunnelChart, GeoMap, Histogram, Icon, Input,
+  Carousel, Chart, Chip, DataTable, DepthChart, Emblem, FilterPanel, FunnelChart, GeoMap, Histogram, Icon, Input,
   InputOTP, Kbd, LineChart, Listbox, MediaObject, MetricBreakdown, Navbar, Pagination, PhoneInput, Progress, RadarChart, Radio,
-  RadioGroup, RangeAreaChart, ScatterPlot, Select, ServiceHealthList, Sidebar, Skeleton, Slider, Stats, Stepper, Steps, Switch,
+  RadioGroup, RangeAreaChart, ScatterPlot, Select, ServiceHealthList, Sidebar, Skeleton, Slider, Stats, Stepper, Steps,
   TabBar, Tabs, Textarea, Tooltip, Treemap, Video, WaterfallChart,
 } from "../../src/index.ts";
 import { Chip as AndroidChip } from "../../src/atoms/chip/chip.android.tsx";
@@ -33,7 +33,6 @@ export const PANE_HOSTS: PaneHost[] = [
   { file: "src/atoms/badge/badge.shared.tsx", name: "Badge", node: <><Badge>admin</Badge><Badge success>Live</Badge><Badge status success>Healthy</Badge></> },
   { file: "src/atoms/badge/badge.shared.tsx", name: "Android Badge", node: <><AndroidBadge>admin</AndroidBadge><AndroidBadge success>Live</AndroidBadge></> },
   { file: "src/atoms/button/button.shared.tsx", name: "Button", node: <><Button primary>Save</Button><Button secondary>Cancel</Button></> },
-  { file: "src/atoms/checkbox/indicator/shared.tsx", name: "Checkbox", node: <><Checkbox defaultChecked>Email</Checkbox><Checkbox>SMS</Checkbox></> },
   { file: "src/atoms/chip/chip.shared.tsx", name: "Chip", node: <><Chip>Neutral</Chip><Chip success>Healthy</Chip></> },
   { file: "src/atoms/chip/chip.shared.tsx", name: "Android Chip", node: <><AndroidChip>Neutral</AndroidChip><AndroidChip success>Healthy</AndroidChip></> },
   { file: "src/atoms/emblem/emblem.shared.tsx", name: "Emblem", node: <Emblem><Icon shield /></Emblem> },
@@ -49,7 +48,6 @@ export const PANE_HOSTS: PaneHost[] = [
   { file: "src/atoms/skeleton/skeleton.shared.tsx", name: "Skeleton", node: <Skeleton card /> },
   { file: "src/atoms/slider/slider.shared.tsx", name: "Slider", node: <Slider defaultValue={40} accessibilityLabel="Volume" /> },
   { file: "src/atoms/stepper/stepper.shared.tsx", name: "Stepper", node: <Stepper defaultValue={3} max={10} /> },
-  { file: "src/atoms/switch/switch.shared.tsx", name: "Switch", node: <><Switch defaultChecked>Live</Switch><Switch>Muted</Switch></> },
   { file: "src/atoms/textarea/textarea.shared.tsx", name: "Textarea", node: <Textarea label="Notes" /> },
   { file: "src/atoms/tooltip/tooltip.shared.tsx", name: "Tooltip", node: <Tooltip label="Open settings" trigger="Settings" open /> },
   { file: "src/atoms/video/video.controls.tsx", name: "Video controls", node: <Video source={{ uri: "/clip.mp4" }} accessibilityLabel="Clip" controls /> },

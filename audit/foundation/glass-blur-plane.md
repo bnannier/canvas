@@ -13,7 +13,7 @@ Audit checklist for the style-layer foundation `GlassBlurPlane`, audited for its
 | Documented on | `integration`: GlassBlurPlane, GlassBlurPlaneHandle, GlassBlurPlaneProps, GlassBlurScope, GlassBlurScopeProps, useGlassBlurPlane ("Blur planes") |
 | Docs planned | none: every export has its page |
 | Materials manifest | GlassBlurPlane: style, inherited; docs route `integration`; verification inherited-composition, semantic-state |
-| Tests of it | 8 (importing one of its public exports or one of its implementation's declarations by name, or named for it, `test/glass-blur-plane[-<what>].test.tsx`): `test/capture-target.test.tsx`, `test/drawer-host.test.tsx`, `test/glass-blur-plane.test.tsx`, `test/glass-blur-target.test.tsx`, `test/glass-modal-blur-target.test.tsx`, `test/glass-pane-ripple.test.tsx`, `test/material-portal-context.test.tsx`, `test/material-resolution.test.tsx` |
+| Tests of it | 9 (importing one of its public exports or one of its implementation's declarations by name, or named for it, `test/glass-blur-plane[-<what>].test.tsx`): `test/capture-target.test.tsx`, `test/drawer-host.test.tsx`, `test/glass-blur-plane.test.tsx`, `test/glass-blur-target.test.tsx`, `test/glass-controls.test.tsx`, `test/glass-modal-blur-target.test.tsx`, `test/glass-pane-ripple.test.tsx`, `test/material-portal-context.test.tsx`, `test/material-resolution.test.tsx` |
 | Consumers | none: no kit component's code reads one of its exports |
 | Pages using it | none: no pattern or template entry names one of its exports |
 | Capture through | nothing: no component or page shows it |
