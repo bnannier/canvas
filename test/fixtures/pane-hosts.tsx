@@ -30,6 +30,7 @@ export interface PaneHost {
 
 const days = Array.from({ length: 45 }, () => ({}));
 export const PANE_HOSTS: PaneHost[] = [
+  { file: "src/molecules/card/card.reference.tsx", name: "Reference Card", node: <Card referenceDetail referenceKey="CORE-1" title="Reference" description="Ready · Core" referenceSource="Jira" /> },
   { file: "src/atoms/autocomplete/autocomplete.shared.tsx", name: "Autocomplete", node: <Autocomplete label="Assigned to" options={["Ada Lovelace", "Grace Hopper"]} /> },
   { file: "src/atoms/avatar/avatar.shared.tsx", name: "Avatar tile and group overflow", node: <><Avatar /><AvatarGroup max={1}><Avatar name="Ada Lovelace" /><Avatar name="Grace Hopper" /></AvatarGroup></> },
   { file: "src/atoms/badge/badge.shared.tsx", name: "Badge", node: <><Badge>admin</Badge><Badge success>Live</Badge><Badge status success>Healthy</Badge></> },

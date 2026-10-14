@@ -1,3 +1,4 @@
+import { referenceModeOf } from "../../src/molecules/card/card.reference.tsx";
 import { rowGapOf, insetOf } from "../../src/atoms/layout/layout.shared.tsx";
 import { gridRowGapOf } from "../../src/atoms/grid/grid.shared.tsx";
 import { referenceSizeOf, sheenOf } from "../../src/atoms/avatar/avatar.reference.tsx";
@@ -397,6 +398,7 @@ export const SUBJECTS: readonly AnySubject[] = [
   subject({ id: "Alert.tone", components: ["Alert"], pages: ["alert"], resolver: "src/molecules/alert/alert.shared.tsx#toneOf", members: ["destructive", "error", "warning", "success", "info"], resolve: alertTone }),
   subject({ id: "AlertDialog.width", components: ["AlertDialog"], pages: ["alert-dialog"], resolver: "src/molecules/alert-dialog/alert-dialog.shared.tsx#widthOf", members: ["narrow", "small", "large"], resolve: alertDialogWidth }),
   subject({ id: "Card.elevation", components: ["Card"], pages: ["card"], resolver: "src/molecules/card/card.shared.tsx#elevationOf", members: ["raised", "flat", "tileShadow", "rowShadow", "emptyShadow"], resolve: elevationOf }),
+  subject({ id: "Card.reference", components: ["Card"], pages: ["card"], resolver: "src/molecules/card/card.reference.tsx#referenceModeOf", members: ["referenceDetail", "referenceTile", "referenceStacked", "referenceInline"], resolve: referenceModeOf }),
   subject({
     id: "Card.density",
     components: ["Card"],

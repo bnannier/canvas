@@ -4,6 +4,7 @@ import { View, Pressable, Text, shape as shapeTokens, StyleSheet, useFillStyle, 
 import { MaterialBehind } from "../../style/glass-surface/material-behind.js";
 import { RAISED, liftStyle, useHover, useRaiseCell, useSettling } from "../../style/hover.js";
 import { selectedCard } from "../../style/selected-card.js";
+import { ReferenceCard, referenceModeOf } from "./card.reference.js";
 import { Image } from "../../atoms/image/image.shared.js";
 import { imageLabel } from "../../atoms/image/image.accessibility.js";
 import * as s from "./card.styles.js";
@@ -61,6 +62,18 @@ const headerStyles = StyleSheet.create({
 });
 
 export interface CardProps {
+  /** A compact unframed reference summary in a row. */
+  referenceInline?: boolean;
+  /** A reference key/status row above its summary. */
+  referenceStacked?: boolean;
+  /** A compact inset reference panel. */
+  referenceTile?: boolean;
+  /** A roomy reference panel with context and source. */
+  referenceDetail?: boolean;
+  referenceKey?: string;
+  referenceSource?: string;
+  /** Open the reference through the system browser. */
+  href?: string;
   children?: ReactNode;
   // Simple content props for the children-less / data-driven case.
   title?: string;
@@ -200,6 +213,9 @@ export function createCard(skin: CardSkin) {
     const raised = useSettling(pointerOver, reduced ? 0 : (skin.hover?.motion.duration ?? 0));
     useRaiseCell(raised);
     useEffect(() => { onLiftChange?.(raised); }, [raised, onLiftChange]);
+
+    const reference = referenceModeOf(props);
+    if (reference) return <ReferenceCard {...props} mode={reference} hoverEnabled={skin.hover != null} />;
 
     // Empty strings count as "no content", so a cleared field never renders an empty
     // header, footer, or a stray separator: guard on truthiness rather than null for

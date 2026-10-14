@@ -3,15 +3,8 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Card, DescriptionList } = scope;
+  const { Card } = scope;
   return (
-<Card title="Identity">
-  <DescriptionList
-    items={[
-      { term: "ID", value: "6f1c2a" },
-      { term: "State", value: "Active" },
-    ]}
-  />
-</Card>
+<Card title="Recent activity" body="Two events today." />
   );
 }

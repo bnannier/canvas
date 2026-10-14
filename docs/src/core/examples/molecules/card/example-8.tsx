@@ -3,13 +3,15 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Card, Icon } = scope;
+  const { Card, DescriptionList } = scope;
   return (
-<Card
-  title="Identity"
-  icon={<Icon user size={16} />}
-  body="Name, primary email, and sign-in methods."
-  footer="Updated 2 minutes ago"
-/>
+<Card title="Identity">
+  <DescriptionList
+    items={[
+      { term: "ID", value: "6f1c2a" },
+      { term: "State", value: "Active" },
+    ]}
+  />
+</Card>
   );
 }

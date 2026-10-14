@@ -3846,6 +3846,37 @@
       "rowShadow + tileShadow": "tileShadow"
     }
   },
+  "Card.reference": {
+    "kind": "axis",
+    "components": [
+      "Card"
+    ],
+    "pages": [
+      "card"
+    ],
+    "resolver": "src/molecules/card/card.reference.tsx#referenceModeOf",
+    "order": [
+      "referenceDetail",
+      "referenceTile",
+      "referenceStacked",
+      "referenceInline"
+    ],
+    "none": null,
+    "single": {
+      "referenceDetail": "detail",
+      "referenceTile": "tile",
+      "referenceStacked": "stacked",
+      "referenceInline": "inline"
+    },
+    "pairs": {
+      "referenceDetail + referenceInline": "referenceDetail",
+      "referenceDetail + referenceStacked": "referenceDetail",
+      "referenceDetail + referenceTile": "referenceDetail",
+      "referenceInline + referenceStacked": "referenceStacked",
+      "referenceInline + referenceTile": "referenceTile",
+      "referenceStacked + referenceTile": "referenceTile"
+    }
+  },
   "Card.density": {
     "kind": "axis",
     "components": [

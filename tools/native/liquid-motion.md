@@ -1411,3 +1411,15 @@ independently scrolling contents. No material parameters changed.
 | Date | Effect and profile | Runtime and device | Revision (dirty?) | Surface | Values tried | rAF p50 / p95 / max (ms) | What the comparison showed | Versus reference | Artifacts |
 |---|---|---|---|---|---|---|---|---|---|
 | 2026-10-14 | Original Argus drawer veil | Installed Chrome headless, macOS, DPR 1; 1440 x 1100 and 390 x 844 | Canvas ce9431a1 plus Drawer changes; Argus 7d0056c plus Drawer imports | shipped Argus agent and phone navigation drawers, blush / mint / dark | Original 2px blur, palette dim, square panel and shadow; viewport clamp at phone widths | n/a (static) | Nine captures retain panel and content bounds. Phone agent differences are 575–592 pixels, at most 2 RGB levels; phone navigation differs by 71–111 pixels, at most 1 RGB level. Desktop differences are sparse antialiasing and blurred background rasterization; first blush background varies more broadly. Fixed the outer carrier width so the 440px panel clamps to a 390px viewport. Pinned header/footer and separate body scroll are tested. | matches the Argus drawer appearance on these web surfaces; native-device rendering was not assessed | `tools/native/reference/argus-drawer-adoption/agent-phone-before.png` and `agent-phone-after.png` |
+
+
+## Argus reference Card adoption, 2026-10-14
+
+The existing inline, stacked, compact and drawer reference panels are the visual
+reference. Card composes the existing Badge, Typography and Icon, retains the
+instant hover wash and system-browser action, and uses the existing static content
+material for framed references. No optical or animation parameter changed.
+
+| Date | Effect and profile | Runtime and device | Revision (dirty?) | Surface | Values tried | rAF p50 / p95 / max (ms) | What the comparison showed | Versus reference | Artifacts |
+|---|---|---|---|---|---|---|---|---|---|
+| 2026-10-14 | Original Argus reference surfaces and wash | Installed Chrome headless, macOS, DPR 1; 1440 x 960/1100 and 390 x 844 | Canvas 9766b8d9 plus reference Card changes; Argus 1030e07 plus reference imports | shipped Argus roster, approvals and agent detail drawer, solid, blush / mint / dark | Original metrics, key badge, type, corners and instant hover wash; existing content material and solid fallback | n/a (static) | Twelve page comparisons and nine drawer/navigation comparisons preserve geometry and appearance. Most differ by 0–91 pixels. The first blush page/drawer has the previously observed background raster variation. Reference hover retains its authored wash; held state stays opaque; external actions and parent-card isolation are checked. Material fallback and native touch-target coverage pass. | matches the original Argus solid surfaces; native/glass visual rendering was not assessed | `tools/native/reference/argus-reference-card-adoption/agent-panel-before.png` and `agent-panel-after.png` |
