@@ -64,6 +64,16 @@ export interface ButtonProps extends MeasureProps {
   // Intent (pick one; default is the primary action).
   primary?: boolean;
   secondary?: boolean;
+  /** White outlined action over a dark or branded surface. */
+  inverse?: boolean;
+  /** Muted outlined action for a low-emphasis operation. */
+  quiet?: boolean;
+  /** Align a row of short workflow actions on the same minimum measure. */
+  consistent?: boolean;
+  /** A roomier hit surround for a compact featured action. */
+  comfortable?: boolean;
+  /** Visual reference harness only; pointer hover remains the production source. */
+  testOnly_hovered?: boolean;
   destructive?: boolean;
   outline?: boolean;
   ghost?: boolean;
@@ -139,7 +149,7 @@ export function createButton(skin: ButtonSkin) {
     const intent = intentOf(props);
     const size = sizeOf(props);
 
-    const opts = { icon: !!icon, block: !!block, dim: !!(disabled || loading), disabled: !!disabled };
+    const opts = { inverse: !!props.inverse, quiet: !!props.quiet, consistent: !!props.consistent, comfortable: !!props.comfortable, icon: !!icon, block: !!block, dim: !!(disabled || loading), disabled: !!disabled };
     const sizing = useSizing(props);
     const container = skin.container(tokens, intent, size, opts);
     // Under glass a button that paints a surface (the skin says which) is a CONTROL-layer
@@ -175,7 +185,7 @@ export function createButton(skin: ButtonSkin) {
     const hoverLook = skin.hover?.(tokens, intent) ?? null;
     const { hovered: pointerOver, target: hoverTarget } = useHover(lift != null || hoverLook != null);
     const reduced = useReducedMotion();
-    const live = pointerOver && !(disabled || loading);
+    const live = (pointerOver || !!props.testOnly_hovered) && !(disabled || loading);
     const lifted = lift != null && live;
     // A raised call to action rests on its glow (primary only, never while disabled). It sits
     // on the Pressable, so it rides the web's hover lift, except where the skin clips its
@@ -197,7 +207,7 @@ export function createButton(skin: ButtonSkin) {
     // the outermost node on every platform, so positioning is identical with or without the clip
     // and the Pressable stretches to fill a block button.
     return (
-      <RippleClip shape={clipShape} hitSlop={target.hitSlop} style={[sizing, style, glowOnClip ? glow : null]} {...hoverTarget}>
+      <RippleClip shape={clipShape} hitSlop={target.hitSlop} style={[sizing, props.start ? { alignSelf: "flex-start" } : null, skin.surround?.(opts), style, glowOnClip ? glow : null]} {...hoverTarget}>
         <Pressable
           ref={hostRef}
           {...(anchor ?? undefined)}
