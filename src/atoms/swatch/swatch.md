@@ -98,3 +98,7 @@ a `block` (a full-width ramp bar).
   card
 </Swatch>
 ```
+
+Theme-picker samples use `blush`, `mint` or `dark` (precedence dark > mint > blush),
+with `selected` and `onPress`. These are 16px gradient radio swatches with the
+Argus selection ring and an accessible theme name. A plain sample still uses `color`.

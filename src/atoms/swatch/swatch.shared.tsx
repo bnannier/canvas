@@ -1,7 +1,9 @@
-import { type ReactNode } from "react";
+import Svg, { Defs, LinearGradient, Stop, Rect } from "react-native-svg";
+import { useId, type ReactNode } from "react";
 import {
   View,
   Text,
+  Pressable,
   StyleSheet,
   useTheme,
   devWarn,
@@ -32,7 +34,13 @@ export type SwatchSize = "small" | "default" | "large";
 
 export interface SwatchProps {
   /** The fill: any React Native color string. Pass a theme token, not a literal. */
-  color: string;
+  color?: string;
+  /** Theme-picker samples, in precedence order dark > mint > blush. */
+  blush?: boolean;
+  mint?: boolean;
+  dark?: boolean;
+  selected?: boolean;
+  onPress?: () => void;
   /** The sample's name (the token name). Swatch owns this label column. */
   children?: ReactNode;
   /** Primary mono line under the name: what the name resolves to (a hex, a custom-property name, a ramp step). */
@@ -106,6 +114,20 @@ export function createSwatch(skin: SwatchSkin) {
     const { tokens } = useTheme();
     const size = sizeOf(props);
     const edge = skin.box[size];
+    const gradientId = useId();
+    const palette = props.dark ? "dark" : props.mint ? "mint" : props.blush ? "blush" : null;
+    if (palette) {
+      const stops = palette === "dark" ? ["#1d1b3b", "#3a2f7a"] : palette === "mint" ? ["#def4ec", "#cfdffb"] : ["#fde3ee", "#d9d6fc"];
+      return <Pressable accessibilityRole="radio" accessibilityLabel={accessibilityLabel ?? `${palette} theme`} accessibilityState={{ checked: !!props.selected }} aria-checked={!!props.selected} onPress={props.onPress} testID={testID} style={[{
+        width: 16, height: 16, borderRadius: 8,
+        boxShadow: props.selected ? `0 0 0 2px ${tokens.card}, 0 0 0 4px ${tokens.primary}` : `0 0 0 1px ${tokens.border}`,
+      }, style]}>
+        <Svg width={16} height={16} viewBox="0 0 16 16" pointerEvents="none">
+          <Defs><LinearGradient id={gradientId} x1="0%" y1="0%" x2="100%" y2="100%"><Stop offset="0" stopColor={stops[0]} /><Stop offset="1" stopColor={stops[1]} /></LinearGradient></Defs>
+          <Rect width={16} height={16} rx={8} fill={`url(#${gradientId})`} />
+        </Svg>
+      </Pressable>;
+    }
 
     // A name node (an Icon row, a formatted element) cannot be read into the
     // accessible name, and role="img" hides it, so the sample would announce only its
@@ -150,7 +172,7 @@ export function createSwatch(skin: SwatchSkin) {
               width: stretch ? undefined : edge,
               alignSelf: stretch ? "stretch" : "auto",
               borderRadius: circle ? 9999 : skin.radius[size],
-              backgroundColor: color,
+              backgroundColor: color ?? tokens.primary,
               // LOAD-BEARING, not decoration: do not remove. A swatch of the
               // `background` token is #ffffff on a white card in light and #09090b on
               // #18181b in dark, so without this hairline those samples have no edge
