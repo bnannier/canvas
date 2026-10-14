@@ -21,8 +21,18 @@ import { join, relative } from "node:path";
  */
 const SHA = /(?<![-0-9a-f#])(?=[0-9a-f]*[a-f])[0-9a-f]{7,40}(?![0-9a-f-])/g;
 
+/**
+ * The environment a git call takes to address the repository at its `cwd` and no other:
+ * git exports the variables that locate a repository to its hooks (a pre-push from a
+ * worktree carries GIT_DIR), and a child git follows them over its working directory.
+ */
+export function repoEnv(env: NodeJS.ProcessEnv = process.env): NodeJS.ProcessEnv {
+  const locators = new Set(["GIT_DIR", "GIT_WORK_TREE", "GIT_COMMON_DIR", "GIT_INDEX_FILE", "GIT_OBJECT_DIRECTORY", "GIT_ALTERNATE_OBJECT_DIRECTORIES", "GIT_PREFIX"]);
+  return Object.fromEntries(Object.entries(env).filter(([key]) => !locators.has(key)));
+}
+
 function git(repo: string, args: string[], input?: string): { ok: boolean; out: string } {
-  const result = spawnSync("git", args, { cwd: repo, encoding: "utf8", input, maxBuffer: 64 * 1024 * 1024 });
+  const result = spawnSync("git", args, { cwd: repo, encoding: "utf8", input, env: repoEnv(), maxBuffer: 64 * 1024 * 1024 });
   return { ok: result.status === 0, out: result.stdout ?? "" };
 }
 
