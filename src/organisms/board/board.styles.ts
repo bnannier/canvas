@@ -135,3 +135,12 @@ export const androidSkin: BoardSkin = {
   pressedOpacity: null,
   ripple: (t) => surfaceRipple(t),
 };
+
+
+// The original Argus work board: no lane well, custom domain cards, and dashed empty slots.
+export const plainLane = (bleed: number): ViewStyle => ({ gap: 14, paddingBottom: 6, paddingHorizontal: bleed, flexGrow: 1 });
+export const plainColumn: ViewStyle = { flexDirection: "column", gap: 10, flex: 1, minWidth: 168 };
+export const plainHeader: ViewStyle = { flexDirection: "row", gap: 8, alignItems: "center", paddingHorizontal: 4 };
+export const plainLabel = (t: ColorTokens): TextStyle => ({ fontSize: 10, lineHeight: 15, fontWeight: "800", color: t["muted-foreground"], textTransform: "uppercase", letterSpacing: 1.4 });
+export const plainEmpty = (t: ColorTokens): ViewStyle => ({ borderWidth: 1, borderStyle: "dashed", borderColor: t.border, borderRadius: shape.web.tile, minHeight: 56, alignItems: "center", justifyContent: "center" });
+export const plainEmptyLabel = (t: ColorTokens): TextStyle => ({ fontSize: 11, lineHeight: 14.85, fontWeight: "600", color: t["muted-foreground"] });

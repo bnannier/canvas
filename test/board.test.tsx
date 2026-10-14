@@ -2,6 +2,7 @@ import { describe, it, expect, afterEach } from "bun:test";
 import { render, cleanup, fireEvent, act } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { Text } from "react-native";
+import { Button } from "../src/atoms/button/button.tsx";
 import { ThemeProvider } from "../src/style/theme.tsx";
 // Web build (the alias serves <name>.tsx); per-OS skins are covered by skins-smoke.
 import { Board, applyBoardMove, type BoardColumn, type BoardItem, type BoardMove } from "../src/organisms/board/board.tsx";
@@ -248,4 +249,15 @@ describe("Board keyboard lane cursor", () => {
       restore();
     }
   });
+});
+
+it("renders plain work lanes with custom card actions, counts and dashed empty slots", () => {
+  let opened = false;
+  const { getByText, queryByLabelText, getByRole } = ui(<Board plain bleed={20} emptyLabel="No work here" columns={columns} items={[items[0]]} renderItem={(item) => <Button onPress={() => { opened = true; }}>{item.title}</Button>} />);
+  expect(getByText("1")).toBeTruthy();
+  expect(getByText("0")).toBeTruthy();
+  expect(getByText("No work here")).toBeTruthy();
+  expect(queryByLabelText("Move Task A")).toBeNull();
+  fireEvent.click(getByRole("button", { name: "Task A" }));
+  expect(opened).toBe(true);
 });

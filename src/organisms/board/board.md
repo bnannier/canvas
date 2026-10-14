@@ -4,6 +4,11 @@ A data-driven kanban board: columns scroll horizontally, each column is a drop z
 
 Dragging is the kit's own drag-and-drop family, so it runs on iOS, Android, and the web from one code path and stays keyboard- and screen-reader-operable: press Space on a grip to grab, the arrow keys to move between positions and columns, Space to drop, Escape to cancel. The list stays controlled: a drop reports a `BoardMove` (source, target, insertion index, and the new neighbor ids) through `onMove`, and `applyBoardMove` is the standard reducer to apply it. Pass `defaultItems` instead of `items` for uncontrolled use, where the board applies each move itself.
 
+For an action-driven work board, `plain` retains the original Argus lane labels,
+count pills and dashed empty slots. `renderItem` supplies the domain card with its
+own controls. These lanes use those controls instead of drag handles. `bleed`
+extends horizontal scrolling through the owning container's inset.
+
 ## Usage
 
 ```tsx
@@ -23,6 +28,13 @@ Dragging is the kit's own drag-and-drop family, so it runs on iOS, Android, and 
 ```
 
 ## Variants
+
+### Plain work lanes
+
+```tsx
+<Board plain emptyLabel="No work here" columns={[{ id: "ready", label: "Ready" }, { id: "review", label: "Review" }]} items={[{ id: "core-1", columnId: "ready", title: "Preserve the Argus experience" }]} />
+```
+
 
 ### Compact
 
