@@ -5,7 +5,7 @@ import { consumeEscapeKey } from "../../style/escape-layer.js";
 import { useHorizontalScrollFocus, useScrollFocus } from "../../style/use-scroll-focus.js";
 import { useFocusFrame } from "../../style/focus-frame.js";
 import { FlatList, StyleSheet, ScrollView, type TextInputProps, type ViewProps, type ViewStyle as RNViewStyle } from "react-native";
-import { View, Pressable, Text, TextInput, useControllableState, controlRipple, devWarn, breakpoints, useContainerWidth, tabularNums, type BreakpointKey, type StyleProp, type TextStyle, type ViewStyle, type LayoutStyle, useFillStyle, GlassSurface, GlassPane, paneStyle, PANE_SIBLING_INPUT, withInnerFill, FOCUS_RESET } from "../../style/index.js";
+import { View, Pressable, Text, TextInput, useControllableState, controlRipple, devWarn, breakpoints, useContainerWidth, tabularNums, type BreakpointKey, type StyleProp, type TextStyle, type ViewStyle, type LayoutStyle, useFillStyle, GlassSurface, GlassPane, paneHost, paneStyle, PANE_SIBLING_INPUT, withInnerFill, FOCUS_RESET } from "../../style/index.js";
 import { type CheckboxProps } from "../../atoms/checkbox/checkbox.shared.js";
 import { type PaginationProps } from "../../atoms/pagination/pagination.shared.js";
 import { type SkeletonProps } from "../../atoms/skeleton/skeleton.shared.js";
@@ -436,7 +436,7 @@ export function createDataTable(skin: DataTableSkin, parts: DataTableParts) {
     const shape = skin.editInput(material.theme.tokens);
     if (!skin.liquidTextEntry) return <TextInput {...props} style={[shape, props.style]} />;
     return (
-      <View style={{ alignSelf: "stretch" }}>
+      <View style={[{ alignSelf: "stretch" }, paneHost(material.theme)]}>
         <GlassPane {...material.paneProps} shape={shape} />
         <TextInput {...props} style={[paneStyle(material.theme, [shape, props.style]), PANE_SIBLING_INPUT]} />
       </View>

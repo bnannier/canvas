@@ -1,7 +1,7 @@
 import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
 import { useEffect, useRef, useState, type ComponentType, type ReactNode } from "react";
 import { Animated, Easing, type LayoutChangeEvent } from "react-native";
-import { View, Text, useFillStyle, useReducedMotion, supportsNativeDriver, statusColors, type ColorTokens, type LayoutStyle, type MeasureProps, type ViewStyle, type TextStyle, type StyleProp, GlassPane, isGlass, innerFill } from "../../style/index.js";
+import { View, Text, useFillStyle, useReducedMotion, supportsNativeDriver, statusColors, type ColorTokens, type LayoutStyle, type MeasureProps, type ViewStyle, type TextStyle, type StyleProp, GlassPane, paneHost, isGlass, innerFill } from "../../style/index.js";
 
 // Shared Progress shell. Uses React Native's primitives DIRECTLY (no engine className
 // layer) and reads the active brand tokens via so the track/fill colors follow
@@ -360,6 +360,7 @@ export function createProgress(skin: ProgressSkin, parts: ProgressParts = {}) {
           segmented || glass ? null : { backgroundColor: trackColor },
           hasHeader ? null : widthStyle,
           hasHeader ? null : style,
+          segmented ? null : paneHost(theme),
         ]}
       >
         {segmented ? null : <GlassPane static layer="control" shape={{ borderRadius: radius }} />}

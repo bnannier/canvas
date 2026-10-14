@@ -9,7 +9,7 @@ import {
   type TextInput as RNTextInput,
   type TextInputProps as RNTextInputProps,
 } from "react-native";
-import { View, Pressable, Text, TextInput, useFillStyle, FloatingLabel, LabelContent, labelA11y, requiredName, useFloatingLabelRoom, FOCUS_RESET, type ColorTokens, type LayoutStyle, type MeasureProps, type StyleProp, type ViewStyle, type TextStyle, GlassPane, paneStyle, paneRipple, isGlass, legibleWash, PANE_SIBLING_INPUT } from "../../style/index.js";
+import { View, Pressable, Text, TextInput, useFillStyle, FloatingLabel, LabelContent, labelA11y, requiredName, useFloatingLabelRoom, FOCUS_RESET, type ColorTokens, type LayoutStyle, type MeasureProps, type StyleProp, type ViewStyle, type TextStyle, GlassPane, paneHost, paneStyle, paneRipple, isGlass, legibleWash, PANE_SIBLING_INPUT } from "../../style/index.js";
 import { useComposedRefs } from "../../style/use-composed-refs.js";
 import { frameHandlers, useFocusFrame } from "../../style/focus-frame.js";
 import { rowSeam } from "../../style/touch-seam.js";
@@ -425,7 +425,7 @@ export function createInput(skin: InputSkin) {
         // larger text size adds to the label's reserve and the value's line.
         const fieldHeight = asNum(skin.bareBox(size).height, 56) + room.growth;
         return (
-          <View style={[{ position: "relative" }, disabledDim, widthCap, style]}>
+          <View style={[{ position: "relative" }, disabledDim, widthCap, style, paneHost(theme)]}>
             {barePane}
             <TextInput
               ref={hostRef}
@@ -458,7 +458,7 @@ export function createInput(skin: InputSkin) {
         return (
           <View style={[labelGap, disabledDim, widthCap, style]}>
             {aboveLabel}
-            <View>
+            <View style={paneHost(theme)}>
               {barePane}
               <TextInput ref={hostRef} style={bareStyle} textAlignVertical="center" {...common} />
             </View>
@@ -469,7 +469,7 @@ export function createInput(skin: InputSkin) {
       // Keep the field host in place when the material changes, preserving focus,
       // native selection and uncontrolled text. The pane stays decoration only.
       return (
-        <View style={[disabledDim, widthCap, style]}>
+        <View style={[disabledDim, widthCap, style, paneHost(theme)]}>
           {barePane}
           <TextInput ref={hostRef} style={bareStyle} textAlignVertical="center" {...common} />
         </View>
