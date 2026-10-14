@@ -5,6 +5,6 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { Popover } = scope;
   return (
-<Popover top trigger="Filter" title="Filter results" description="Show only the projects you own." actionLabel="Apply" />
+<Popover inline title="Draft saved" description="Your changes are kept as a draft until you publish them." actionLabel="Publish" />
   );
 }

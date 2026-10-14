@@ -3,8 +3,10 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Popover } = scope;
+  const { Popover, Typography } = scope;
   return (
-<Popover inline title="Draft saved" description="Your changes are kept as a draft until you publish them." actionLabel="Publish" />
+<Popover compact comfortable anchored panelWidth={320} trigger="Filters" accessibilityLabel="Filters">
+  <Typography small muted>Choose the roles and pods to include.</Typography>
+</Popover>
   );
 }
