@@ -54,6 +54,8 @@ export interface EmptyStateProps {
   success?: boolean;
   // Container axis: wrap the column in a bordered card.
   bordered?: boolean;
+  /** Borderless card with the application empty-state elevation and inset. */
+  elevated?: boolean;
   // Density axis (only affects the bordered card's padding).
   compact?: boolean;
   /** E2E hook forwarded to the root element. */
@@ -93,18 +95,20 @@ export function createEmptyState(skin: EmptyStateSkin, Button: ButtonComponent =
 
     // A bordered state is a CONTENT-layer pane under glass (GlassSurface is the plain
     // View in solid mode); a bare state paints no surface of its own.
-    const Root = bordered ? GlassSurface : View;
+    const surfaced = bordered || props.elevated;
+    const Root = surfaced ? GlassSurface : View;
     const container: StyleProp<ViewStyle> = [
       skin.container,
       bordered ? skin.borderedBase : null,
       bordered ? s.borderedSurface(tokens) : null,
       bordered ? skin.borderedPad[compact ? "compact" : "default"] : null,
+      props.elevated ? skin.elevated(tokens) : null,
       fill,
       style,
     ];
 
     return (
-      <Root testID={testID} style={container} {...(bordered ? { layer: "content" as const } : null)}>
+      <Root testID={testID} style={container} {...(surfaced ? { layer: "content" as const } : null)}>
         {icon != null ? (
           // The disc glyph is purely decorative; the title carries the meaning.
           // Emoji announce their own accessible name, so hide the disc from
