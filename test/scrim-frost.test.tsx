@@ -28,6 +28,13 @@ import { resizeViewport } from "./viewport.ts";
 // inside it samples only what is inside it, so the blur never sits on a node that holds a
 // glass material (the Dialog and AlertDialog scrims hold their card and take the blur on a
 // layer of their own beneath it).
+//
+// The blur never samples the dim (glass-surface-scrim-self-sample-1): a backdrop filter blurs
+// whatever is painted before it, so the dim and the blur are one element, as Dark Factory's
+// scrim is (its background paints over its own filtered backdrop), and nothing beneath the
+// blur paints the dim. A blur layer under a role node that wore the dim sampled it: a light
+// fringe, up to about 22 levels a channel, at a contained scrim's rounded corners, where the
+// blur pulled the undimmed page outside the curve into the dim.
 
 afterEach(cleanup);
 
@@ -124,20 +131,30 @@ describe("a modal scrim blurs what it dims under glass on the web (GS-6)", () =>
       const blurs = scrimBlurs();
       expect(blurs).toHaveLength(1);
       const blur = blurs[0]!;
+      // The dim and the blur are one element, whose background paints over its own blurred
+      // backdrop, as Dark Factory draws its scrim.
+      expect(blur.style.backgroundColor, `${scrim.name}: the blur carries the dim`).toContain(SCRIM);
+      // Nothing beneath the blur paints the dim: no ancestor and no earlier sibling.
+      for (let node = blur.parentElement; node; node = node.parentElement) {
+        expect(node.style.backgroundColor, `${scrim.name}: an ancestor of the blur paints the dim`).not.toContain(SCRIM);
+      }
+      for (let node = blur.previousElementSibling; node; node = node.previousElementSibling) {
+        expect((node as HTMLElement).style.backgroundColor, `${scrim.name}: a layer beneath the blur paints the dim`).not.toContain(SCRIM);
+      }
       if (scrim.holdsCard) {
-        // The scrim holds the card: the blur is its first child, a layer of its own, and the
-        // scrim keeps its tint.
+        // The scrim holds the card: the blur is its first child, a layer of its own with the
+        // scrim's corners, and the role node wears neither the dim nor the blur.
         const role = blur.parentElement!;
         expect(["dialog", "alertdialog"]).toContain(role.getAttribute("role"));
         expect(role.firstElementChild).toBe(blur);
-        expect(role.style.backgroundColor).toContain(SCRIM);
+        expect(role.style.backdropFilter).toBe("");
+        expect(blur.style.borderTopLeftRadius).toBe(role.style.borderTopLeftRadius);
         expect(blur.getAttribute("aria-hidden")).toBe("true");
         expect(blur.childElementCount).toBe(0);
         expect(blur.style.position).toBe("absolute");
         expect(blur.style.pointerEvents).toBe("none");
       } else {
-        // The scrim is the card's sibling: tint and blur on one element, as Dark Factory draws it.
-        expect(blur.style.backgroundColor).toContain(SCRIM);
+        // The scrim is the card's sibling: it wears the dim and the blur itself.
         for (const material of materials) expect(blur.contains(material)).toBe(false);
       }
       // The backdrop-root guard: no node that holds a frost carries a backdrop filter itself.
@@ -183,15 +200,19 @@ describe("solid keeps its promise: nothing samples the backdrop", () => {
 
 describe("the native scrims take no blur", () => {
   for (const [platform, module] of [["iOS", iosScrim], ["Android", androidScrim]] as const) {
-    it(`${platform}: useScrimFrost is null and ScrimFrost renders nothing`, () => {
+    it(`${platform}: useScrimFrost is null and useHeldScrim keeps the backdrop with no layer`, () => {
       let frost: unknown = "unread";
+      const backdrop = [{ borderRadius: 18, backgroundColor: lightColors.scrim }];
+      let held: { style: unknown; layer: unknown } | null = null;
       function Probe() {
         frost = module.useScrimFrost();
-        return <module.ScrimFrost shape={{ borderRadius: 18 }} />;
+        held = module.useHeldScrim(backdrop);
+        return null;
       }
-      const { container } = render(<ThemeProvider light glass><Probe /></ThemeProvider>);
+      render(<ThemeProvider light glass><Probe /></ThemeProvider>);
       expect(frost).toBeNull();
-      expect(container.innerHTML).toBe("");
+      expect(held!.style).toBe(backdrop);
+      expect(held!.layer).toBeNull();
     });
   }
 });

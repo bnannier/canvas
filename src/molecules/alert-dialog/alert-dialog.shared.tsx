@@ -6,7 +6,7 @@ import { GlassSurface, Portal, Pressable, RippleClip, Text, View, cornerRadii, t
 import { Button as WebButton } from "../../atoms/button/button.js";
 import { Input as WebInput } from "../../atoms/input/input.js";
 import * as s from "./alert-dialog.styles.js";
-import { ScrimFrost } from "../../style/glass-surface/scrim-frost.js";
+import { useHeldScrim } from "../../style/glass-surface/scrim-frost.js";
 import { type Width, type AlertDialogSkin } from "./alert-dialog.styles.js";
 
 // Shared AlertDialog shell. The structure (optional trigger + dim backdrop +
@@ -281,6 +281,8 @@ export function createAlertDialog(skin: AlertDialogSkin, parts: AlertDialogParts
       trigger != null && !overlay ? s.triggerGap : null,
       overlay ? s.backdropOverlay : { minHeight: 200, minWidth: 0 },
     ];
+    // Under glass on the web the dim moves onto the scrim's blur layer (useHeldScrim).
+    const scrim = useHeldScrim(backdrop);
     return (
       <View testID={testID} style={s.root}>
         {trigger != null ? (
@@ -308,12 +310,13 @@ export function createAlertDialog(skin: AlertDialogSkin, parts: AlertDialogParts
             aria-modal={true}
             aria-labelledby={title != null ? titleId : undefined}
             aria-describedby={description != null ? descriptionId : undefined}
-            style={backdrop}
+            style={scrim.style}
           >
-            {/* Under glass on the web the scrim also blurs what it dims (GS-6), on a layer
-                of its own beneath the card: on this node, which holds the card, the blur
-                would cut the card's frost off from the page. */}
-            <ScrimFrost shape={backdrop} />
+            {/* Under glass on the web the scrim also blurs what it dims (GS-6): the dim and
+                the blur are one layer of their own beneath the card (useHeldScrim), so the
+                blur never samples the dim, and this node, which holds the card, wears
+                neither (a blur here would cut the card's frost off from the page). */}
+            {scrim.layer}
             <View style={[s.cardBase, s.panelWidth[width], style]}>
             {/* An alert dialog takes the DENSE layer of the glass model: the same
                 material as a Dialog, under the model's densest tint. It is the prompt

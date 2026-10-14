@@ -8,11 +8,15 @@
 //
 // A backdrop filter makes its element a backdrop root, and a frost inside one samples only
 // what is inside it: a scrim that holds its modal's card (Dialog, AlertDialog) takes the
-// blur on a layer of its own beneath the card (`ScrimFrost`), never on itself, while a
+// blur on a layer of its own beneath the card (`useHeldScrim`), never on itself, while a
 // scrim that is the card's sibling (Drawer, ActionSheet, the anchored phone sheet) wears
-// it (`useScrimFrost`). test/scrim-frost.test.tsx holds both.
+// it (`useScrimFrost`). Either way the dim and the blur are one element, as Dark Factory's
+// scrim is: its background paints over its own filtered backdrop, so the blur samples the
+// page and never the dim (no material may sample itself). test/scrim-frost.test.tsx holds
+// both.
 
-import { Platform, View, type StyleProp, type ViewStyle } from "react-native";
+import type { ReactElement } from "react";
+import { Platform, StyleSheet, View, type StyleProp, type ViewStyle } from "react-native";
 import { useMaterialResolution } from "./use-material-theme.js";
 import { WEB_FROST } from "./web-frost.js";
 import { materialFill } from "./glass-surface.shared.js";
@@ -32,13 +36,32 @@ export function useScrimFrost(): ViewStyle | null {
   return Platform.OS === "web" && material.renderer !== "solid" && WEB_FROST.scrimBlur > 0 ? FROST : null;
 }
 
+/** The scrim's role node under glass on the web: its dim moves onto the frost layer. */
+const HOLDER: ViewStyle = { backgroundColor: "transparent" };
+
 /**
- * The scrim's blur as a layer of its own, for a scrim that holds its modal's card: the
- * scrim's first child, filling it with the scrim's corners (`shape`), pointer-transparent
- * and hidden from assistive technology, so the card's own frost still samples the page.
- * Renders nothing wherever `useScrimFrost` returns null.
+ * A scrim that holds its modal's card (Dialog, AlertDialog): the style for its role node and
+ * the layer to render as that node's first child. Under glass on the web the layer carries
+ * the scrim's dim as its own background over Dark Factory's 2 px backdrop blur, one element as
+ * Dark Factory's scrim is, so the blur samples the page and never the dim, and the role node
+ * paints no dim of its own; the layer fills the node with its corners, pointer-transparent
+ * and hidden from assistive technology, beneath the card, whose own frost then samples the
+ * dimmed page (the node itself never wears a backdrop filter, which would cut the card's frost
+ * off from the page). Wherever `useScrimFrost` returns null (solid mode, Reduce Transparency,
+ * Increase Contrast, a browser without a backdrop filter) the node keeps `backdrop` untouched
+ * and there is no layer, so a solid scrim's markup is unchanged.
+ *
+ * A layer that only blurred, beneath a node that wore the dim, sampled that dim: invisible on a
+ * full-window scrim, whose straight edges clamp, but a light fringe at a contained scrim's
+ * rounded corners, where the blur pulled the undimmed page outside the curve into the dim
+ * (glass-surface-scrim-self-sample-1).
  */
-export function ScrimFrost({ shape }: { shape?: StyleProp<ViewStyle> }) {
+export function useHeldScrim(backdrop: StyleProp<ViewStyle>): { style: StyleProp<ViewStyle>; layer: ReactElement | null } {
   const frost = useScrimFrost();
-  return frost ? <View accessible={false} aria-hidden importantForAccessibility="no-hide-descendants" style={[materialFill(shape), frost]} /> : null;
+  if (!frost) return { style: backdrop, layer: null };
+  const dim = StyleSheet.flatten(backdrop)?.backgroundColor;
+  return {
+    style: [backdrop, HOLDER],
+    layer: <View accessible={false} aria-hidden importantForAccessibility="no-hide-descendants" style={[materialFill(backdrop), { backgroundColor: dim }, frost]} />,
+  };
 }
