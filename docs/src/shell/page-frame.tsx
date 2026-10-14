@@ -11,7 +11,7 @@ import { PAGE_LOOK, lookFor, shellBox, wedgeColor, wedgeGeometry, type PageLookP
 //
 // The frame is fixed to the window, the owner's 2026-10-13 choice: at rest it is Dark
 // Factory's shell, whose bottom runs on below the window, so only its top corners are
-// rounded and it meets the window's bottom edge; once a page scrolls, the page moves inside
+// rounded and it runs a hairline past the window's bottom edge (PAGE_LOOK.shell.bleed); once a page scrolls, the page moves inside
 // it and the frame stays (Dark Factory's whole shell scrolls away), which keeps the docs'
 // navigation in reach.
 //
@@ -34,7 +34,7 @@ export function PageFrame({ children }: { children: ReactNode }) {
   const tier = useFormFactor();
   const look = PAGE_LOOK.palettes[lookFor(scheme, palette)];
   const { side, top } = PAGE_LOOK.shell.insets[tier];
-  const { radius, maxWidth, shadow } = PAGE_LOOK.shell;
+  const { radius, maxWidth, shadow, bleed } = PAGE_LOOK.shell;
   return (
     <View style={{ flex: 1, paddingTop: top, paddingHorizontal: side }}>
       <GlassSurface
@@ -45,6 +45,7 @@ export function PageFrame({ children }: { children: ReactNode }) {
           width: "100%",
           maxWidth,
           alignSelf: "center",
+          marginBottom: -bleed,
           borderTopLeftRadius: radius,
           borderTopRightRadius: radius,
           backgroundColor: tokens.background,
@@ -67,18 +68,23 @@ const at = (value: number) => Math.round(value * 100) / 100;
 // the top-right ones, as in Dark Factory's at rest. Static and untouchable.
 function ShellWedges({ look, tier }: { look: PageLookPalette; tier: ShellTier }) {
   const id = useId().replace(/[^a-zA-Z0-9_-]/g, "");
-  const [width, setWidth] = useState<number | null>(null);
+  const [size, setSize] = useState<{ width: number; height: number } | null>(null);
   const onLayout = (event: LayoutChangeEvent) => {
-    const next = event.nativeEvent.layout.width;
-    if (next > 0) setWidth((prev) => (prev === next ? prev : next));
+    const { width, height } = event.nativeEvent.layout;
+    if (width > 0 && height > 0) setSize((prev) => (prev && prev.width === width && prev.height === height ? prev : { width, height }));
   };
-  const W = width ?? shellBox("desktop", PAGE_LOOK.seed.width).width;
+  const W = size?.width ?? shellBox("desktop", PAGE_LOOK.seed.width).width;
+  // The drawing is the frame's own size: react-native-svg on Android paints an SVG into a
+  // bitmap that size, and a roster-tall one ran to 174 MB and crashed the app. The wedges
+  // are still laid out against the roster's height, so the ones below the frame fall
+  // outside the drawing.
+  const visible = size?.height ?? PAGE_LOOK.seed.height;
   const H = PAGE_LOOK.shell.wedgeCanvasHeight[tier];
   return (
     <View onLayout={onLayout} style={{ position: "absolute", top: 0, right: 0, bottom: 0, left: 0, overflow: "hidden", pointerEvents: "none" }}>
-      {/* No viewBox: the drawing is in px, taller than the frame, and the frame clips it. A
-          viewBox would scale the roster-tall canvas down into the frame's height. */}
-      <Svg width={W} height={H}>
+      {/* No viewBox: the drawing is in px, laid out on the roster-tall canvas and cut to the
+          frame. A viewBox would scale that canvas down into the frame's height. */}
+      <Svg width={W} height={visible}>
         <Defs>
           <ClipPath id={`${id}-clip`}>
             <Rect x={0} y={0} width={W} height={H} rx={PAGE_LOOK.shell.radius} ry={PAGE_LOOK.shell.radius} />
