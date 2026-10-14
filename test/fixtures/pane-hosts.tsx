@@ -34,6 +34,7 @@ export const PANE_HOSTS: PaneHost[] = [
   { file: "src/atoms/avatar/avatar.shared.tsx", name: "Avatar tile and group overflow", node: <><Avatar /><AvatarGroup max={1}><Avatar name="Ada Lovelace" /><Avatar name="Grace Hopper" /></AvatarGroup></> },
   { file: "src/atoms/badge/badge.shared.tsx", name: "Badge", node: <><Badge>admin</Badge><Badge success>Live</Badge><Badge status success>Healthy</Badge></> },
   { file: "src/atoms/badge/badge.shared.tsx", name: "Android Badge", node: <><AndroidBadge>admin</AndroidBadge><AndroidBadge success>Live</AndroidBadge></> },
+  { file: "src/atoms/badge/badge.notification.tsx", name: "Notification Badge", node: <Badge notification solid action>3</Badge> },
   { file: "src/atoms/button/button.shared.tsx", name: "Button", node: <><Button primary>Save</Button><Button secondary>Cancel</Button></> },
   { file: "src/atoms/chip/chip.shared.tsx", name: "Chip", node: <><Chip>Neutral</Chip><Chip success>Healthy</Chip></> },
   { file: "src/atoms/chip/chip.shared.tsx", name: "Android Chip", node: <><AndroidChip>Neutral</AndroidChip><AndroidChip success>Healthy</AndroidChip></> },

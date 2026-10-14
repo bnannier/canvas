@@ -12,7 +12,7 @@ import { actionFill } from "../../style/action.js";
 import { useSeededMinTargetSlop, styleBox } from "../../style/touch-target-seed.js";
 import { View, Pressable, RippleClip, Text, useReducedMotion, useSizing, type LayoutStyle, type MeasureProps, GlassPane, paneStyle, paneRipple, isGlass } from "../../style/index.js";
 import { liftStyle, useHover } from "../../style/hover.js";
-import { Badge } from "../badge/badge.js";
+import { NotificationBadge } from "../badge/badge.notification.js";
 import { type ButtonSkin, type Intent, type Size } from "./button.styles.js";
 
 // Shared Button shell. The structure (Pressable + optional loading spinner +
@@ -292,7 +292,7 @@ export function createButton(skin: ButtonSkin) {
               {children != null ? <Text style={skin.label(tokens, intent, size, opts)}>{children}</Text> : null}
               {!loading && iconRight != null ? iconRight : null}
             </View>
-            {props.count !== undefined && props.count !== "" ? <View style={{ position: "absolute", top: 3, right: 2 }}><Badge notification solid action>{String(props.count)}</Badge></View> : null}
+            {props.count !== undefined && props.count !== "" ? <View style={{ position: "absolute", top: 3, right: 2 }}><NotificationBadge>{String(props.count)}</NotificationBadge></View> : null}
           </>}
         </Pressable>
       </RippleClip>
