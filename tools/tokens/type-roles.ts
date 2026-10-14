@@ -83,6 +83,7 @@ export const TEXT_ROLES: Record<string, Record<string, ReadingRole>> = {
   "src/atoms/badge/badge.styles.ts": { "webSkin.labelType": "tiny" },
   "src/atoms/chip/chip.shared.tsx": { COUNT_TYPE: "tiny" },
   "src/atoms/chip/chip.styles.ts": { "webSkin.labelType": "tiny" },
+  "src/molecules/stats/stats.styles.ts": { "DENSE.denseLabel": "caption", "DENSE.denseDescription": "tiny" },
   "src/atoms/avatar/avatar.styles.ts": { LABEL: "caption", "webMenuSkin.menuPillSecondary": "tiny" },
   "src/molecules/code-block/code-block.styles.ts": { headerBadge: "tiny" },
   "src/molecules/stacked-lists/stacked-lists.styles.ts": { "androidSkin.metaLabel": "tiny" },
