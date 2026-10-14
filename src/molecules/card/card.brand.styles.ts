@@ -21,3 +21,8 @@ export const illustration: ViewStyle = { padding: 12, borderRadius: shape.web.ca
 export const promoTitle: TextStyle = { maxWidth: 200 };
 
 export const controls: ViewStyle = { padding: 16, borderRadius: shape.web.card, overflow: "hidden" };
+
+// Shared content anatomy: the original Argus geometry on every platform.
+export const webSkin = { frame, featured, media, mediaOrb, body, copy, trailing, stackedCopy, nameRow, stackedFooter, promo, promoOrb, artwork, illustration, promoTitle, controls };
+export const iosSkin = webSkin;
+export const androidSkin = webSkin;

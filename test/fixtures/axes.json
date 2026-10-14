@@ -3902,6 +3902,32 @@
       "controls + illustration": "controls"
     }
   },
+  "Card.inset panels": {
+    "kind": "axis",
+    "components": [
+      "Card"
+    ],
+    "pages": [
+      "card"
+    ],
+    "resolver": "src/molecules/card/card.shared.tsx#panelOf",
+    "order": [
+      "notePanel",
+      "versionPanel",
+      "gatePanel"
+    ],
+    "none": null,
+    "single": {
+      "notePanel": "note",
+      "versionPanel": "version",
+      "gatePanel": "gate"
+    },
+    "pairs": {
+      "gatePanel + notePanel": "notePanel",
+      "gatePanel + versionPanel": "versionPanel",
+      "notePanel + versionPanel": "notePanel"
+    }
+  },
   "Card.brand artwork": {
     "kind": "axis",
     "components": [

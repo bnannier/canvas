@@ -5,7 +5,7 @@ import type { Card as CardComponent } from "../card/card.js";
 import { Icon } from "../../atoms/icon/icon.js";
 import { Typography } from "../../atoms/typography/typography.js";
 import type { AccordionItem } from "./accordion.shared.js";
-import * as s from "./accordion.activity.styles.js";
+import { webSkin as s } from "./accordion.activity.styles.js";
 
 export function ActivityAccordionRow({ Card, item, expanded, disabled, compact, renderHeader, onToggle }: { Card: typeof CardComponent; item: AccordionItem; expanded: boolean; disabled: boolean; compact: boolean; renderHeader?: (item: AccordionItem, expanded: boolean, indicator: ReactNode) => ReactNode; onToggle: () => void }) {
   const { tokens } = useTheme();

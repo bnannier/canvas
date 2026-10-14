@@ -67,6 +67,8 @@ export interface BadgeProps {
   large?: boolean;
   /** Show the intent dot without switching to the legacy status family. */
   dot?: boolean;
+  /** Standalone 10px signal marker, retaining its status label. */
+  signal?: boolean;
   /** Pin to the start when embedded in an unmeasured host layout. */
   start?: boolean;
   uppercase?: boolean;
@@ -200,6 +202,8 @@ export function createBadge(skin: BadgeSkin) {
     // HUG: content width inside a stretching Column, content-sized in a Row.
     const hug = useHugStyle();
     const { hovered, target } = useHover(!!props.href);
+
+    if (props.signal) return <View testID={testID} accessibilityRole="image" accessibilityLabel={accessibilityLabel ?? statusOf(props)} aria-label={accessibilityLabel ?? statusOf(props)} style={{ width: 10, height: 10, borderRadius: 9999, backgroundColor: statusColors(tokens, statusOf(props)).dot }} />;
 
     if (props.status) {
       const tone = statusOf(props);
