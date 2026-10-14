@@ -692,9 +692,10 @@ export function specularRim(style: StyleProp<ViewStyle>, dark: boolean, inside =
 // `boxShadow` on iOS as one Core Animation shadow over the whole view (RCTBoxShadow: a shadow
 // path the size of the bounds under a mask), and Core Animation renders no such shadow past
 // 8192 px on a side: on a frost taller than that, the rim drew flat dark tiles over the
-// surface (a docs Props table, 4158 pt at 3x). On the iOS 26 simulator a rim alone renders
-// clean at 2700 pt and tiles grey from 2780 pt, 8192 px at 3x being 2731 pt. So a tall rim is
-// drawn in bands of at most half that limit, each the rim clipped to its band.
+// surface (a docs Props table, 4158 pt at 3x). On the iPhone 17 Pro simulator's iOS 27 runtime
+// a rim alone renders clean at 2700 pt and tiles grey from 2780 pt, 8192 px at 3x being
+// 2731 pt. So a tall rim is drawn in bands of at most half that limit, each the rim clipped to
+// its band.
 export const RIM_BAND_PIXELS = 4096;
 
 // How far a band's rim runs past its band's clip, so the edges the band does not own (an

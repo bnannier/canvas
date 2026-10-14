@@ -377,9 +377,9 @@ describe("Increase Contrast only ever adds weight", () => {
 describe("a pane is never interactive glass", () => {
   // GP-9: a pane passes every tap through to its host (pointerEvents "none"), so React Native
   // disables user interaction on it and iOS never hands its Liquid Glass the touch Apple's
-  // interactive glass responds to: on the iOS 26 simulator a pressed glass Button showed only
-  // its label's dim. The pane forwards no `interactive`, the prop is a deprecated no-op, and
-  // no kit host passes it; the host's own feedback carries the press.
+  // interactive glass responds to: on the iPhone simulator's iOS 27 runtime a pressed glass
+  // Button showed only its label's dim. The pane forwards no `interactive`, the prop is a
+  // deprecated no-op, and no kit host passes it; the host's own feedback carries the press.
   type Fiber = { elementType: unknown; memoizedProps: Record<string, unknown> | null; child: Fiber | null; sibling: Fiber | null };
   /** The props of every GlassSurface a GlassPane renders under a container. */
   function paneSurfaces(container: Element): Record<string, unknown>[] {
