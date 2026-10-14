@@ -474,8 +474,8 @@ describe("a pane and its host read one material", () => {
   });
 
   // A pane passes its taps through (pointerEvents "none"), so interactive Liquid Glass never
-  // receives the touch it answers (GP-9, confirmed inert on the iOS 26 simulator): no host
-  // asks a pane for it, and GlassPane forwards none.
+  // receives the touch it answers (GP-9, confirmed inert on the iPhone simulator's iOS 27
+  // runtime): no host asks a pane for it, and GlassPane forwards none.
   it("no GlassPane is asked for interactive glass", () => {
     const offenders: string[] = [];
     for (const { file, text } of sources) {
