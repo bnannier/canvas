@@ -125,3 +125,7 @@ primary once selected.
 ## Touch area
 
 On Android a tappable Chip's touch area grows to the 48dp minimum without the chip changing size: 7dp above and below the 34dp chip, and nothing sideways once it is 48dp wide. On iOS it keeps 11pt of extra touch area on every side, which clears the 44pt minimum around the 25pt chip. The remove "×" pads out to the minimum on both, biased away from the label. Inside one chip the two never overlap: the chip splits the gap between its label and its "×", so a tap on the label never removes it. Between chips, React Native's own rule applies: where two touch areas overlap, the later chip takes the tap. Android chips that meet the minimum's width reach nothing sideways, so a Row of them never overlaps; on iOS two tappable chips closer than 22pt do, and a tap on the edge of one toggles the next. Leave room between chips on iOS where a mistaken toggle matters.
+
+`count` adds an extra-bold, dimmed trailing count and the denser filter inset.
+Web labels retain Argus’s exact 11/14.3 metrics and idle hover wash. `start` pins
+a chip when its host layout does not publish a Canvas sizing context.
