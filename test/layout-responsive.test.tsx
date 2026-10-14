@@ -209,3 +209,17 @@ describe("Grid rendering", () => {
     expect(rootOf("nested").style.flexGrow).toBe("");
   });
 });
+
+it("keeps flow-grid cards at natural height and allows a whole-row banner", () => {
+  resizeViewport(375);
+  ui(<Grid flow generous rowsCozy testID="flow"><GridItem full raised><Card testID="banner"><Typography>Banner</Typography></Card></GridItem><GridItem front><Card testID="natural"><Typography>Card</Typography></Card></GridItem></Grid>);
+  const grid = rootOf("flow");
+  expect(grid.style.gap).toBe("22px");
+  expect(grid.style.rowGap).toBe("12px");
+  const cells = Array.from(grid.children) as HTMLElement[];
+  expect(cells[0].style.width).toBe("100%");
+  expect(cells[0].style.zIndex).toBe("1");
+  expect(cells[1].style.width).toBe("374px");
+  expect(cells[1].style.zIndex).toBe("10");
+  expect(rootOf("natural").style.flexGrow).not.toBe("1");
+});

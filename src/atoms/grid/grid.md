@@ -17,6 +17,14 @@ Grid's `align-items: stretch`). A field or a hug component keeps its own height.
 Equal-width tiles belong here; content-sized rows that should stack at narrow
 widths belong to `Row stacks`.
 
+`flow` preserves natural card heights and the original Argus one-pixel allowance
+when fitting columns. `GridItem full` spans a whole row; `raised` and `front` keep
+banner and lifted-card shadows above adjacent cells. `rowsCozy` and `rowsSection`
+set the vertical rhythm to 12 or 26 independently of the horizontal gap.
+
+The shared gap scale also includes `comfortable` (10), `roomy` (14), `generous`
+(22) and `panel` (28), preserving the original application layout measurements.
+
 ## Usage
 
 ```tsx
