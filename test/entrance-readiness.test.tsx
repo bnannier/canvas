@@ -277,7 +277,7 @@ it("keeps a portaled card hidden, untouchable and out of the screen reader's rea
     layoutHostedEntrance(panel, SIZE);
     const hold = panel.closest<HTMLElement>('[aria-hidden="true"]');
     expect(hold).not.toBeNull();
-    expect(hold!.style.opacity).toBe("0");
+    expect(hold!.style.transform).toBe("translateY(-100000px)");
     expect(pointerEventsOf(panel)).toBe("none");
     expect(screen.queryByRole("dialog")).toBeNull();
     expect(screen.queryByRole("button", { name: "Opener" })).toBe(opener);

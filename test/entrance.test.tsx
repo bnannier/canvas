@@ -23,9 +23,12 @@ function ui(props: Omit<EntranceProps, "children"> = {}, inherited = true): Reac
 }
 const wrapper = () => screen.getByTestId("readiness").parentElement as HTMLElement;
 const readiness = () => screen.getByTestId("readiness").textContent;
+// Held out of view at full opacity: moved up out of the window, never faded (a hold at
+// opacity 0 left an anchored card's iOS Liquid Glass without its blur).
+const OUT_OF_VIEW = "translateY(-100000px)";
 const held = () => ({
   ariaHidden: wrapper().getAttribute("aria-hidden") === "true",
-  opacity: wrapper().style.opacity,
+  transform: wrapper().style.transform,
   pointerEvents: pointerEventsOf(wrapper()),
 });
 
@@ -50,18 +53,18 @@ describe("Entrance", () => {
   it("shows a default-ready card at once, visible and interactive", () => {
     render(ui());
     expect(readiness()).toBe("ready");
-    expect(held()).toEqual({ ariaHidden: false, opacity: "", pointerEvents: "auto" });
-    expect(wrapper().style.transform).toBe("");
+    expect(held()).toEqual({ ariaHidden: false, transform: "", pointerEvents: "auto" });
+    expect(wrapper().style.opacity).toBe("");
   });
 
   it("holds an unready card outside hit testing and accessibility, and releases it in place", () => {
     const view = render(ui({ ready: false }));
     expect(readiness()).toBe("held");
-    expect(held()).toEqual({ ariaHidden: true, opacity: "0", pointerEvents: "none" });
+    expect(held()).toEqual({ ariaHidden: true, transform: OUT_OF_VIEW, pointerEvents: "none" });
     const input = screen.getByLabelText("Draft") as HTMLInputElement;
     view.rerender(ui({ ready: true }));
     expect(readiness()).toBe("ready");
-    expect(held()).toEqual({ ariaHidden: false, opacity: "", pointerEvents: "auto" });
+    expect(held()).toEqual({ ariaHidden: false, transform: "", pointerEvents: "auto" });
     // The same host and the same input survive the release and a re-hold: nothing remounts.
     expect(screen.getByLabelText("Draft")).toBe(input);
     view.rerender(ui({ ready: false }));
@@ -75,15 +78,27 @@ describe("Entrance", () => {
     // card, which renders outside its logical ancestor, hidden (test/entrance-readiness).
     const view = render(ui({}, false));
     expect(readiness()).toBe("held");
-    expect(held()).toEqual({ ariaHidden: true, opacity: "0", pointerEvents: "none" });
+    expect(held()).toEqual({ ariaHidden: true, transform: OUT_OF_VIEW, pointerEvents: "none" });
     view.rerender(ui());
     expect(readiness()).toBe("ready");
-    expect(held()).toEqual({ ariaHidden: false, opacity: "", pointerEvents: "auto" });
+    expect(held()).toEqual({ ariaHidden: false, transform: "", pointerEvents: "auto" });
     view.rerender(ui({ ready: false }, true));
     expect(readiness()).toBe("held");
     view.rerender(ui({ ready: true }, false));
     expect(readiness()).toBe("held");
     expect(held().ariaHidden).toBe(true);
+  });
+
+  it("holds the card out of view at full opacity, so a glass inside it installs as it lays out", () => {
+    withViewProps((props) => {
+      const view = render(ui({ ready: false }));
+      const style = StyleSheet.flatten(props().style);
+      expect(style.opacity).toBeUndefined();
+      expect(style.transform).toEqual([{ translateY: -100000 }]);
+      expect(wrapper().style.opacity).toBe("");
+      view.rerender(ui({ ready: true }));
+      expect(StyleSheet.flatten(props().style).transform).toBeUndefined();
+    });
   });
 
   it("holds touches through its style, never the deprecated pointerEvents prop", () => {
@@ -115,7 +130,7 @@ describe("Entrance", () => {
       expect(props()["aria-hidden"]).toBeUndefined();
       expect(resolved(props())).toEqual(hiddenNatively);
       // Obscured is natively hidden only: the web keeps the card, so it stays out of aria-hidden.
-      expect(held()).toEqual({ ariaHidden: false, opacity: "", pointerEvents: "auto" });
+      expect(held()).toEqual({ ariaHidden: false, transform: "", pointerEvents: "auto" });
       view.rerender(ui({ obscured: true, ready: false }));
       expect(resolved(props())).toEqual(hiddenNatively);
       view.rerender(ui({ ready: false }));
