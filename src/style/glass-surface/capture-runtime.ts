@@ -4,7 +4,7 @@ import { captureTargetOwner } from "./capture-target.js";
 
 type AvailabilityEvent = { nativeEvent: { targetId: number; available: boolean } };
 
-interface CaptureHostProps extends ViewProps {
+export interface CaptureHostProps extends ViewProps {
   ref?: Ref<View>;
   captureEnabled: boolean;
   onAvailabilityChange?: (event: AvailabilityEvent) => void;

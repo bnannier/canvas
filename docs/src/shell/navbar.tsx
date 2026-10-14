@@ -2,7 +2,7 @@ import { Slot, usePathname, useRouter } from "expo-router";
 import { useState, useEffect } from "react";
 import { Platform } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
-import { View, Text, Row, Icon, Button, ButtonGroup, TabBar, OverlayProvider, useTheme, useFormFactor, liquidGlassAvailable, alpha, type IconProps } from "@nannier/canvas";
+import { View, Text, Row, Icon, Button, ButtonGroup, TabBar, OverlayProvider, GlassBlurPlane, useGlassBlurPlane, useTheme, useFormFactor, liquidGlassAvailable, alpha, type IconProps } from "@nannier/canvas";
 import { NativeTabs } from "expo-router/unstable-native-tabs";
 import { Sidebar } from "./sidebar";
 import { Topbar, titleFor } from "./topbar";
@@ -91,6 +91,8 @@ function sectionIcon(name: string, active: boolean) {
 // current section's sub-nav, mirroring the native iOS app). The cmd-K search modal and
 // the web scrollbar gutter are shared.
 function WebNav() {
+  // The page backdrop is the blur plane the frame's material frosts on Android (./page-frame.tsx).
+  const plane = useGlassBlurPlane();
   const insets = useSafeAreaInsets();
   const pathname = usePathname();
   const router = useRouter();
@@ -134,12 +136,12 @@ function WebNav() {
     // find the shell.
     <ScrollEdgeProvider>
       <SafeAreaView {...({ dataSet: { shellBackdrop: "" } } as object)} style={{ flex: 1 }} edges={["top"]}>
-        <PageBackdrop />
+        <GlassBlurPlane plane={plane}><PageBackdrop /></GlassBlurPlane>
         <WebScrollbarTheme />
         <WebScrollPadding top={headerHeight} bottom={wide ? 0 : barHeight} />
         {/* Dark Factory's frosted shell (./page-frame.tsx), inset from the window over the
             page look: the sidebar, the top bar and the page live inside it. */}
-        <PageFrame>
+        <PageFrame plane={plane}>
           <Row flush fill>
             {wide ? (
               // The rail column is marked for the document root's one pre-hydration rule

@@ -76,6 +76,27 @@ export function ReceiptSent({ open, onClose }) {
   );
 }`;
 
+const BLUR_PLANE = `import { View } from "react-native";
+import {
+  Card, CardContent, GlassBlurPlane, GlassBlurScope, useGlassBlurPlane,
+} from "@nannier/canvas";
+
+// A page whose backdrop sits behind its glass: the backdrop is the plane, and the
+// card in the scope frosts it on Android, as it frosts the page on iOS and the web.
+export function OverBackdrop({ backdrop, children }) {
+  const plane = useGlassBlurPlane();
+  return (
+    <View style={{ flex: 1 }}>
+      <GlassBlurPlane plane={plane}>{backdrop}</GlassBlurPlane>
+      <GlassBlurScope plane={plane}>
+        <Card>
+          <CardContent>{children}</CardContent>
+        </Card>
+      </GlassBlurScope>
+    </View>
+  );
+}`;
+
 const VITE_CONFIG = `import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 
@@ -283,6 +304,27 @@ export default function IntegrationScreen() {
               "It frosts on Android 12 or newer with `@nannier/canvas-blur` in an Expo SDK 57 native build, under an app-root `OverlayProvider` that fills the window. iOS (Liquid Glass and its frost) and the web (a backdrop filter) need no plane, so there it provides nothing, as it does on Android with no root provider: the Modal's surfaces render as they would without it",
               "It belongs only in a Modal. Placed in the main window, around page content or in a react-native-screens or expo-router modal screen (which shares the main window on Android), it hands its surfaces the plane they sit inside, which can never be sampled: `@nannier/canvas-blur` 0.2 or newer reports that once the frost has mounted, and every surface under the bridge then takes its complete solid skin (until the report, and for good with an older module, they show a tint with no blur)",
               "On Android a Modal's frost samples the outermost `OverlayProvider`'s page content only. It leaves out what is stacked above the page: the root outlet's toasts and pinned cards, any Modal beneath (a drawer opened from a drawer frosts the page, not the first drawer) and the Modal's own scrim and surfaces. iOS and the web blur the whole stack behind the Modal",
+            ]}
+          />
+          <H3>Blur planes</H3>
+          <P muted>
+            A glass surface in the page has no plane of its own on Android: the window's plane contains it, and a
+            frost may not sample a plane that holds it, so it keeps its solid skin. A page whose backdrop sits
+            behind its glass (a gradient behind a frosted panel) can make that backdrop the plane.{" "}
+            <InlineCode>useGlassBlurPlane</InlineCode> makes one, <InlineCode>GlassBlurPlane</InlineCode> wraps the
+            backdrop it captures, and <InlineCode>GlassBlurScope</InlineCode> offers it to the surfaces inside it.
+            <InlineCode>GlassBlurPlaneHandle</InlineCode> is the plane's type, and{" "}
+            <InlineCode>GlassBlurPlaneProps</InlineCode> and <InlineCode>GlassBlurScopeProps</InlineCode> type the two
+            components. The Canvas docs frame their pages this way.
+          </P>
+          <CodeBlock code={BLUR_PLANE} />
+          <BulletList
+            subtle
+            items={[
+              "The plane fills its parent, as a backdrop does, and takes no touches; keep the backdrop inside it and the surfaces that frost it outside it",
+              "Scope only the surfaces that sit directly over the backdrop: every glass surface inside the scope frosts the plane, including those nested in a scoped card, so content with glass of its own belongs outside it",
+              "It frosts on Android 12 or newer with `@nannier/canvas-blur` in an Expo SDK 57 native build. Without it, and on iOS and the web (whose materials need no plane), both render their children only, and the surfaces render as they would without them",
+              "A surface placed inside its own plane can never sample it: `@nannier/canvas-blur` refuses that plane and the surface keeps its solid skin",
             ]}
           />
           <H3>Accessibility</H3>

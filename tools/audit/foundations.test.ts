@@ -170,7 +170,7 @@ describe("the Foundations tier (tools/audit/foundations.ts)", () => {
   it("is the style-layer renderables, the design tokens and the reference's internals, each with a kebab id no component or page takes, and a plan row", () => {
     const list = foundations();
     expect(list.map((f) => f.name)).toEqual([...STYLE_LAYER_RENDERABLES, TOKENS_FOUNDATION, REFERENCE_FOUNDATION].sort((a, b) => a.localeCompare(b)));
-    expect(list).toHaveLength(16);
+    expect(list).toHaveLength(18);
     expect(findFoundation("foundation-reference")).toEqual({ name: "FoundationReference", id: "foundation-reference", kind: "reference" });
     expect(foundationId("GlassModalBlurTarget")).toBe("glass-modal-blur-target");
     expect(foundationId("ThemeProvider")).toBe("theme-provider");
