@@ -65,3 +65,21 @@ describe("the toast provider", () => {
     }
   });
 });
+
+it("replaces a brief notification and restarts its configured lifetime", async () => {
+  function Fire() {
+    const { toast } = useToast();
+    return <><Pressable onPress={() => toast({ message: "First" })}><Text>first</Text></Pressable><Pressable onPress={() => toast({ message: "Second" })}><Text>second</Text></Pressable></>;
+  }
+  render(<ThemeProvider light solid><ToastProvider single brief duration={100} bottomInset={28} horizontalInset={20}><Fire /></ToastProvider></ThemeProvider>);
+  fireEvent.click(screen.getByText("first"));
+  expect(screen.getByText("First")).toBeTruthy();
+  await act(async () => { await new Promise((resolve) => setTimeout(resolve, 60)); });
+  fireEvent.click(screen.getByText("second"));
+  expect(screen.queryByText("First")).toBeNull();
+  expect(screen.queryByRole("button", { name: "Dismiss" })).toBeNull();
+  await act(async () => { await new Promise((resolve) => setTimeout(resolve, 60)); });
+  expect(screen.getByText("Second")).toBeTruthy();
+  await act(async () => { await new Promise((resolve) => setTimeout(resolve, 60)); });
+  expect(screen.queryByText("Second")).toBeNull();
+});

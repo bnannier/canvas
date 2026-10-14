@@ -4,6 +4,11 @@ A transient notification capsule. Render a `<Toast>` directly, or drive them imp
 
 On the web and iOS the toast is Dark Factory's pill: the same deep fill in every palette and scheme, a bold white message, a pill with no description (a long message wraps inside the capsule) and a rounder card once a description sits under the message, with the intent glyph, the action and the dismiss in inks that read on the dark fill. Android keeps the Material 3 snackbar on the same fill.
 
+For a single brief notification, use `<ToastProvider single brief safeArea duration={2800}
+bottomInset={28} horizontalInset={20}>`. New messages replace the current pill and
+restart its lifetime. `safeArea` includes the device safe area. `brief` retains a
+single line without the dismiss control; Android retains its snackbar skin.
+
 ## Usage
 
 Toast is usually driven imperatively: mount a `<ToastProvider>` near your app root, then call the `toast(...)` handle from `useToast()` to enqueue an auto-dismissing capsule that floats over the app. Press the button to fire one. (`AppScreen` is just this demo's stand-in for your app root, so the toast has a screen to float over.)
