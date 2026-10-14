@@ -3,7 +3,7 @@ import { spawnSync } from "node:child_process";
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { unreachableCommitRefs } from "./commit-refs.ts";
+import { repoEnv, unreachableCommitRefs } from "./commit-refs.ts";
 
 // A turn that lands by cherry-pick leaves its records citing the branch's commits, which
 // main never contains. The check names them while the objects still exist.
@@ -12,7 +12,7 @@ const repos: string[] = [];
 afterEach(() => { for (const repo of repos.splice(0)) rmSync(repo, { recursive: true, force: true }); });
 
 function git(repo: string, ...args: string[]): string {
-  const result = spawnSync("git", args, { cwd: repo, encoding: "utf8", env: { ...process.env, GIT_AUTHOR_NAME: "t", GIT_AUTHOR_EMAIL: "t@t", GIT_COMMITTER_NAME: "t", GIT_COMMITTER_EMAIL: "t@t" } });
+  const result = spawnSync("git", args, { cwd: repo, encoding: "utf8", env: { ...repoEnv(), GIT_AUTHOR_NAME: "t", GIT_AUTHOR_EMAIL: "t@t", GIT_COMMITTER_NAME: "t", GIT_COMMITTER_EMAIL: "t@t" } });
   if (result.status !== 0) throw new Error(result.stderr);
   return result.stdout.trim();
 }
