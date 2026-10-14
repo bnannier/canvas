@@ -126,6 +126,8 @@ export interface InputProps extends TextEntryProps, MeasureProps {
    * needed for the accessible name.
    */
   label?: string;
+  /** A toolbar search field with a magnifier and a tracked uppercase empty prompt on web. */
+  search?: boolean;
   /** Dense uppercase eyebrow label where the skin offers it. */
   eyebrow?: boolean;
   /** Preserve the system focus outline on a framed field. */
@@ -248,16 +250,16 @@ export function createInput(skin: InputSkin) {
     const {
       value,
       onChangeText,
-      placeholder,
+      placeholder = props.search ? "Search" : undefined,
       label,
       required,
       disabled,
       readOnly,
       prefix,
       suffix,
-      leadingIcon,
+      leadingIcon = props.search,
       trailingIcon,
-      icon,
+      icon = props.search ? "search" : undefined,
       action,
       onActionPress,
       passwordToggle,
@@ -306,7 +308,7 @@ export function createInput(skin: InputSkin) {
     // web alias) and aria-labelledby -> the label Text's nativeID. An explicit
     // accessibilityLabel / aria-labelledby from the caller still wins. Natively a
     // required field's name says so (requiredName), since aria-required is web-only.
-    const accessibleName = requiredName(props.accessibilityLabel ?? label, required);
+    const accessibleName = requiredName(props.accessibilityLabel ?? label ?? (props.search ? placeholder : undefined), required);
     const ariaLabelledby = props["aria-labelledby"] ?? (label != null && props.accessibilityLabel == null ? labelId : undefined);
 
     // Border-color precedence: error > focus > default input border. Shared by
@@ -404,6 +406,21 @@ export function createInput(skin: InputSkin) {
         <LabelContent label={label!} required={required} starColor={tokens.destructive} />
       </Text>
     ) : null;
+
+    // Search owns its magnifier, decorative empty prompt, and editor as one field.
+    // It shares text state, refs and accessibility with both framed layouts.
+    if (props.search && skin.search) {
+      return <View style={[labelGap, widthCap, style, disabled ? { opacity: skin.disabledOpacity } : null]}>
+        {aboveLabel}
+        <View style={skin.search.container}>
+          <Icon search boldStroke muted size={15} />
+          <View style={{ flex: 1, justifyContent: "center" }}>
+            {!populated ? <Text accessible={false} aria-hidden style={skin.search.placeholder(tokens)}>{placeholder}</Text> : null}
+            <TextInput ref={hostRef} style={skin.search.field(tokens)} {...common} placeholder={undefined} />
+          </View>
+        </View>
+      </View>;
+    }
 
     // Bare field: no addons.
     if (!hasAddons) {
