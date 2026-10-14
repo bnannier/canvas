@@ -16,6 +16,10 @@ versions, the native blur or tint fallback on Android and older iOS, and
 Dark Factory's frost in the browser. Reduce Transparency and Increase Contrast use the
 shared material's opaque fallbacks.
 
+The default web segment preserves Argus’s exact 11.5-pixel label and 1.3 leading
+inside its padded pill track. `steadyPress` preserves the resting opacity of a
+segment while pressed; `start` pins the group in an app-owned host arrangement.
+
 ## Usage
 
 ```tsx

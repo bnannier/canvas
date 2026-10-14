@@ -30,9 +30,9 @@ describe("the web ButtonGroup is Dark Factory's segmented control", () => {
     expect(webSkin.segmentLabel(t, false)).toEqual({ fontWeight: "700", color: t["muted-foreground"] });
   });
 
-  it("sits its 27 px segments in a 35 px track at the default size, DF's, and steps 4 either way", () => {
-    const track = (size: "small" | "default" | "large") => (webSkin.segmentSize![size].height as number) + 2 * 3 + 2;
-    expect([track("small"), track("default"), track("large")]).toEqual([31, 35, 39]);
+  it("keeps the exact Argus segment and track metrics at default density", () => {
+    const track = (size: "small" | "default" | "large") => ((webSkin.segmentSize![size].height as number | undefined) ?? Number(webSkin.segmentType![size].lineHeight) + 2 * Number(webSkin.segmentSize![size].paddingVertical ?? 0)) + 2 * 3 + 2;
+    expect([track("small"), track("default"), track("large")]).toEqual([31, 34.95, 39]);
   });
 
   it("renders the selected segment on the thumb and the rest bare, inside the track", () => {
