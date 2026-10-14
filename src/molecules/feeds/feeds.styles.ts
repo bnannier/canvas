@@ -196,6 +196,6 @@ export const activityText = (t: ColorTokens): TextStyle => ({ flex: 1, fontSize:
 export const traceRow = (time?: string): ViewStyle => ({ flexDirection: "row", gap: 12, alignItems: "flex-start", paddingVertical: time ? 5 : 6 });
 export const traceTime = (t: ColorTokens): TextStyle => ({ fontSize: 11, fontWeight: "700", lineHeight: 16.5, color: t["muted-foreground"], ...tabularNums(), width: 40, paddingTop: 1 });
 export const traceMarkerSlot = (hasTime: boolean): ViewStyle => ({ width: hasTime ? 12 : 14, alignItems: "flex-start" });
-export const traceMarker = (color: string, halo?: string): ViewStyle => ({ width: 10, height: 10, borderRadius: 5, marginTop: 4, backgroundColor: color, boxShadow: halo ? `0 0 0 3px ${halo}` : undefined });
+export const traceMarker = (color: string, halo?: string): ViewStyle => ({ width: 10, height: 10, borderRadius: 9999, marginTop: 4, backgroundColor: color, boxShadow: halo ? `0 0 0 3px ${halo}` : undefined });
 export const traceText = (t: ColorTokens): TextStyle => ({ flex: 1, fontSize: 12.5, fontWeight: "500", lineHeight: 18.75, color: t.foreground });
 export const traceKind = (t: ColorTokens): TextStyle => ({ fontSize: 9.5, fontWeight: "700", lineHeight: 14.25, textTransform: "uppercase", letterSpacing: 1.33, color: t["muted-foreground"] });
