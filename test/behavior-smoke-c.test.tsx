@@ -214,3 +214,16 @@ describe("Skeleton", () => {
     expect(text.container.querySelector('[role="progressbar"]')!.children.length).toBe(0);
   });
 });
+
+it("preserves rich activity sentences and optional trace gutters without a card frame", () => {
+  const { unmount } = ui(<Feed activity label="Activity" items={[{ id: "a", time: "2m", content: <Text>Scout finished</Text> }]} />);
+  expect(screen.getByRole("list", { name: "Activity" })).toBeTruthy();
+  expect(screen.getByText("2m")).toBeTruthy();
+  expect(screen.getByText("Scout finished")).toBeTruthy();
+  unmount();
+  ui(<Feed trace label="Trace" items={[{ action: "Loaded context", time: "00:00", kind: "Context", color: "#00aa77", halo: "#ddffee" }, { action: "Checked work" }]} />);
+  expect(screen.getAllByRole("listitem")).toHaveLength(2);
+  expect(screen.getByText("00:00")).toBeTruthy();
+  expect(screen.getByText("Context", { exact: true })).toBeTruthy();
+  expect(screen.getByText("Checked work")).toBeTruthy();
+});

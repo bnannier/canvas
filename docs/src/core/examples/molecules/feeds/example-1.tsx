@@ -5,12 +5,6 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { Feed } = scope;
   return (
-<Feed
-  items={[
-    { icon: "shieldCheck", actor: "System", action: "rotated the signing key", time: "12 minutes ago" },
-    { icon: "userPlus", actor: "Rachel Chen", action: "invited a teammate", time: "2 hours ago" },
-    { icon: "gitMerge", actor: "Ada Lovelace", action: "merged a release", time: "1 day ago" }
-  ]}
-/>
+<Feed activity label="Recent activity" items={[{ time: "2m", action: "Scout completed discovery" }, { time: "18m", action: "Ranger restored the deployment" }]} />
   );
 }

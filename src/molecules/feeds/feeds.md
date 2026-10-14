@@ -17,6 +17,11 @@ event. Give a windowed feed a `label`: focused, a list with no name is named in
 Chromium from the text of every event it has rendered, so the kit warns in
 development when it has none.
 
+`activity` provides the original Argus time gutter, sentence, and dividing rule.
+`trace` provides a colored marker, optional halo, optional numeric time gutter,
+and inline category label. These unframed rows inherit their owning panel. Pass
+rich `content`, marker `color` and `halo`, and optional `kind` on each item.
+
 ## Usage
 
 ```tsx
@@ -30,6 +35,19 @@ development when it has none.
 ```
 
 ## Variants
+
+### Activity
+
+```tsx
+<Feed activity label="Recent activity" items={[{ time: "2m", action: "Scout completed discovery" }, { time: "18m", action: "Ranger restored the deployment" }]} />
+```
+
+### Trace
+
+```tsx
+<Feed trace label="Latest trace" items={[{ time: "00:00", kind: "Context", action: "Loaded the work item" }, { time: "01:05", kind: "Eval", action: "Checks passed" }]} />
+```
+
 
 ### Icon lead
 
