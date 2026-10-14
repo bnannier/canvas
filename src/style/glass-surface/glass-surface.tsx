@@ -63,28 +63,24 @@ export function GlassSurface(props: GlassSurfaceProps) {
   const frost = blur > 0 ? `blur(${blur}px)` : undefined;
   const scheme = theme.dark ? "dark" : "light";
   const rim: ViewStyle = { ...fill, boxShadow: `inset 0 0 0 ${WEB_FROST.rimWidth}px ${webRimColor(layer, scheme, theme.tokens.border)}` };
-  // The fill: the layer's tint, a `tint` wash or a solved `brand` colour (`frostFill`). On the
-  // web it paints OVER the backdrop blur, as Dark Factory's frost paints its background over
-  // its own filtered backdrop. A backdrop filter samples everything painted before it, so a
-  // fill beneath it was blurred into the material it belongs to (no material may sample
-  // itself), and at a rounded corner the wedges outside the fill's curve, where the page
-  // shows unfilled, bled into the blur as hard-edged blocks (the docs Dialog's top corners
-  // over its scrim). Over the blur the fill composites on the blurred page alone. A platform
-  // without its own host frosts through a native blur and keeps the native hosts' order: the
-  // layer's tint beneath, a brand colour over (`frostFill`).
+  // The fill: the layer's tint, a `tint` wash or a solved `brand` colour (`frostFill`). It
+  // paints OVER the blur, as Dark Factory's frost paints its background over its own filtered
+  // backdrop. A backdrop filter samples everything painted before it, so a fill beneath it was
+  // blurred into the material it belongs to (no material may sample itself), and at a rounded
+  // corner the wedges outside the fill's curve, where the page shows unfilled, bled into the
+  // blur as hard-edged blocks (the docs Dialog's top corners over its scrim). Over the blur the
+  // fill composites on the blurred page alone. A platform without its own host, which frosts
+  // through a native blur, takes the same order, as every native frost does.
   const web = Platform.OS === "web";
-  const fillOf = frostFill(theme, props);
-  const over = web || fillOf.over;
-  const tintLayer = <View style={[fill, { backgroundColor: fillOf.color, opacity: translucent ? WEB_FROST.sheerFillOpacity : 1 }]} />;
+  const tintLayer = <View style={[fill, { backgroundColor: frostFill(theme, props), opacity: translucent ? WEB_FROST.sheerFillOpacity : 1 }]} />;
   // A platform without its own host and without a browser's backdrop filter frosts
   // through expo-blur when it is installed; the web never reaches that branch.
   const intensity = clear ? CLEAR_INTENSITY : surfaceIntensity(layer, translucent);
   const material = solid ? null : <>
-    {over ? null : tintLayer}
     {web
       ? frost ? <View style={[fill, { backdropFilter: frost, WebkitBackdropFilter: frost } as ViewStyle]} /> : null
       : FrostView ? <FrostView intensity={intensity} tint={theme.dark ? "dark" : "light"} {...frostMethodProps(requiresBlurTarget)} style={fill} /> : null}
-    {over ? tintLayer : null}
+    {tintLayer}
     <View style={rim} />
   </>;
   return <GlassBox {...props} style={contrastStyle(theme, style, props.stateBorder)} solid={solid} material={material} />;
