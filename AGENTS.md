@@ -411,7 +411,10 @@ implementation or runtime-verification pass.
 Do not add a per-component `glass` prop and do NOT hand-paint glass (backdrop-filter,
 specular edges, a translucent fill of your own) onto individual components: route a
 new surface through `GlassSurface` or `GlassPane` with the layer it belongs to, and
-its inner fills through `innerFill`. `test/glass-tint.test.tsx`,
+its inner fills through `innerFill`. The modal scrim (`scrimFill`, the `scrim` token) is
+no surface: under glass on the web it also blurs what it dims by Dark Factory's 2 px
+(`WEB_FROST.scrimBlur`, through `useScrimFrost`); solid mode and every native scrim keep
+the plain dim. `test/glass-tint.test.tsx`,
 `test/glass-controls.test.tsx` and `test/dense-overlays.test.tsx` pin the layers, the
 legibility floors and the solid-mode byte identity.
 
