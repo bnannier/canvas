@@ -20,7 +20,8 @@ import type { MaterialCapabilities } from "../src/style/glass-surface/material-r
 // fill under expo-blur's frost), and that the host draws its specular rim through SpecularRim
 // as iOS's does: a surface taller than a band (a long DataTable, a Props table, 4158 pt) in
 // bands from its first render, none of whose shadows is taller than a band and its overlaps,
-// and a short one whole (glass-surface-ios-grey-1, glass-surface-rim-first-frame-1).
+// a short one whole, and a surface its host re-renders taller in bands from that commit
+// (glass-surface-ios-grey-1, glass-surface-rim-first-frame-1, glass-surface-rim-growth-1).
 
 type Props = Record<string, unknown>;
 const overlay: MaterialCapabilities = { platform: "android", frost: true, liquid: false, requiresTarget: true };
@@ -44,15 +45,23 @@ function stubs(capabilities: MaterialCapabilities) {
   restore = spies.map((spy) => () => spy.mockRestore());
 }
 
-/** The height the rim's frame reports as its offsetHeight, as a native layout read does in the commit that mounts it. */
+let reportedRim = 0;
+/**
+ * The height the rim's frame reports as its offsetHeight, as a native layout read does in each
+ * commit the rim renders in. Installed once per test, so a later call only moves the height.
+ */
 function rimHeight(height: number) {
-  const descriptor = Object.getOwnPropertyDescriptor(HTMLElement.prototype, "offsetHeight");
-  Object.defineProperty(HTMLElement.prototype, "offsetHeight", {
-    configurable: true,
-    get(this: HTMLElement) { return this.getAttribute("data-testid") === "glass-rim" ? height : 0; },
-  });
-  restore.push(() => { if (descriptor) Object.defineProperty(HTMLElement.prototype, "offsetHeight", descriptor); });
+  if (!restore.some((undo) => undo === restoreOffsetHeight)) {
+    Object.defineProperty(HTMLElement.prototype, "offsetHeight", {
+      configurable: true,
+      get(this: HTMLElement) { return this.getAttribute("data-testid") === "glass-rim" ? reportedRim : 0; },
+    });
+    restore.push(restoreOffsetHeight);
+  }
+  reportedRim = height;
 }
+const OFFSET_HEIGHT = Object.getOwnPropertyDescriptor(HTMLElement.prototype, "offsetHeight");
+function restoreOffsetHeight() { if (OFFSET_HEIGHT) Object.defineProperty(HTMLElement.prototype, "offsetHeight", OFFSET_HEIGHT); }
 
 /** An overlay outlet's capture plane: a page element attached and ready to sample. */
 function outlet(): (node: ReactNode) => ReactNode {
@@ -85,8 +94,8 @@ function rimOf(container: Element) {
 const SHAPE = { borderRadius: 12, backgroundColor: "#ffffff" };
 const BAND = RIM_BAND_PIXELS / 3;
 
-async function mount(wrap: (node: ReactNode) => ReactNode = (node) => node) {
-  const result = render(<ThemeProvider light glass>{wrap(<GlassSurface layer="content" style={SHAPE} />)}</ThemeProvider>);
+async function mount(wrap: (node: ReactNode) => ReactNode = (node) => node, children?: ReactNode) {
+  const result = render(<ThemeProvider light glass>{wrap(<GlassSurface layer="content" style={SHAPE}>{children}</GlassSurface>)}</ThemeProvider>);
   // A capture plane resolves after mount, so let the material settle before reading.
   await act(async () => { await new Promise((resolve) => setTimeout(resolve, 10)); });
   return result;
@@ -122,7 +131,28 @@ describe("the Android host's frost paths and their rim", () => {
       const [only, ...rest] = rimOf(container);
       expect(rest).toHaveLength(0);
       expect(only!.style.boxShadow).toBe(SPECULAR_RIM.light);
+      // Pinned to the surface's edges, capped at a band, which a 320 pt surface never reaches.
       expect([only!.style.top, only!.style.bottom]).toEqual(["0px", "0px"]);
+      expect(parseFloat(only!.style.maxHeight)).toBeCloseTo(BAND, 5);
+    });
+
+    // glass-surface-rim-growth-1, through the host: a DataTable given a long page re-renders its
+    // surface, and the rim reads the new height in that commit instead of keeping its single rim
+    // (uncapped, it spanned the new height) until onLayout lands.
+    it(`draws a surface's bands in the commit its host re-renders it taller over ${name}`, async () => {
+      stubs(capabilities);
+      rimHeight(320);
+      const wrap = capabilities.requiresTarget ? outlet() : (node: ReactNode) => node;
+      const { container, rerender } = await mount(wrap, <View testID="rows-few" />);
+      expect(rimOf(container)).toHaveLength(1);
+      rimHeight(9000);
+      rerender(<ThemeProvider light glass>{wrap(<GlassSurface layer="content" style={SHAPE}><View testID="rows-many" /></GlassSurface>)}</ThemeProvider>);
+      const bands = rimOf(container);
+      expect(bands).toHaveLength(Math.ceil(9000 / BAND));
+      for (const clip of bands) {
+        const rim = clip.firstElementChild as HTMLElement;
+        expect(parseFloat(rim.style.height) * 3).toBeLessThanOrEqual(RIM_BAND_PIXELS + 2 * RIM_BAND_OVERLAP * 3);
+      }
     });
   }
 
