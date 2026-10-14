@@ -23,7 +23,7 @@
  * violation, not a role to declare.
  */
 
-export const READING_FLOOR = { body: 12, lead: 12, small: 11, tiny: 10, caption: 9.5 } as const;
+export const READING_FLOOR = { body: 12, lead: 12, small: 11, tiny: 10, caption: 9.5, annotation: 9 } as const;
 
 export type ReadingRole = keyof typeof READING_FLOOR;
 
@@ -85,6 +85,7 @@ export const TEXT_ROLES: Record<string, Record<string, ReadingRole>> = {
   "src/atoms/chip/chip.shared.tsx": { COUNT_TYPE: "tiny" },
   "src/atoms/chip/chip.styles.ts": { "webSkin.labelType": "tiny" },
   "src/molecules/stats/stats.styles.ts": { "DENSE.denseLabel": "caption", "DENSE.denseDescription": "tiny" },
+  "src/atoms/avatar/avatar.reference.tsx": { "REFERENCE_TYPE.annotation": "annotation" },
   "src/atoms/avatar/avatar.styles.ts": { LABEL: "caption", "webMenuSkin.menuPillSecondary": "tiny" },
   "src/molecules/code-block/code-block.styles.ts": { headerBadge: "tiny" },
   "src/molecules/stacked-lists/stacked-lists.styles.ts": { "androidSkin.metaLabel": "tiny" },

@@ -4,6 +4,17 @@ A photo when the account has one, falling back to one or two initials on an iden
 
 Like a photo, the disc is identity content: it keeps its colours under glass, where only the neutral tile of an avatar with no name or initials takes the control material. `AvatarMenu` builds the signed-in account control on the same circle: one capsule trigger carrying the avatar, the name, and the email, opening the account menu under that same identity.
 
+Argus identity sizes are available as `annotation` (16), `compact` (30), `account`
+(32), `row` (36), `person` (38), `profile` (44), `detail` (52), `hero` (58),
+`featured` (60), and `spotlight` (74), in that precedence order. These retain their
+reference initials metrics, including the existing 9px annotation glyph.
+
+`hue` selects a stage identity independently of its name. `whiteInk` preserves
+white reference initials; `bold` uses the 700 weight. `sheen`, `mediumSheen`, and
+`strongSheen` add the 2, 2.5 and 3px conic ring (strongest wins). `inverse` is the
+translucent white identity disc, `orchid` the account gradient, and `glow` its
+selected account ring. The original default sizes and separator `ring` remain.
+
 ## Usage
 
 ```tsx

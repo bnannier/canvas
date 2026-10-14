@@ -1,3 +1,4 @@
+import { referenceSizeOf, sheenOf, REFERENCE_SIZES, REFERENCE_TYPE, ConicRing } from "./avatar.reference.js";
 import { Children, cloneElement, isValidElement, useId, useState, type ReactElement, type ReactNode } from "react";
 import Svg, { Defs, LinearGradient, Rect, Stop } from "react-native-svg";
 import { View, Pressable, Text, pressDim, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle, type ImageStyle, type LayoutStyle } from "../../style/index.js";
@@ -55,6 +56,27 @@ export interface AvatarSkin {
 }
 
 export interface AvatarProps {
+  /** Reference identity geometry, smallest first in precedence. */
+  annotation?: boolean;
+  compact?: boolean;
+  account?: boolean;
+  row?: boolean;
+  person?: boolean;
+  profile?: boolean;
+  detail?: boolean;
+  hero?: boolean;
+  featured?: boolean;
+  spotlight?: boolean;
+  /** Stage identity hue, independent of the display name. */
+  hue?: number;
+  whiteInk?: boolean;
+  bold?: boolean;
+  inverse?: boolean;
+  orchid?: boolean;
+  glow?: boolean;
+  sheen?: boolean;
+  mediumSheen?: boolean;
+  strongSheen?: boolean;
   /**
    * The photo. A remote/URI string, or a bundled image module from `require(...)` /
    * `import`. When set (and it loads), the image fills the circle and the initials
@@ -193,6 +215,10 @@ export function createAvatar(skin: AvatarSkin) {
     const { tokens } = theme;
     const size = sizeOf(props);
     const shape = shapeOf(props);
+    const reference = referenceSizeOf(props);
+    const referenceGeometry = reference ? REFERENCE_SIZES[reference] : null;
+    const diameter = referenceGeometry ?? BOX[size];
+    const sheen = sheenOf(props);
     const photo = src ?? uri;
     // Track a photo that failed to load so we fall back to the initials rather than
     // showing a blank circle (a broken URL, or a relative URL with no host on native).
@@ -214,23 +240,30 @@ export function createAvatar(skin: AvatarSkin) {
     // content, so it paints over the material rather than taking it. Only the neutral
     // glyph-less trigger is a plain control puck.
     const colored = glyph !== "";
-    const disc = colored ? identityDisc(identityHue(identity)) : null;
+    const discHue = props.hue ?? identityHue(identity);
+    const identityPaint = identityDisc(discHue);
+    const disc = colored ? props.orchid ? { from: "#d9b8ea", to: "#b559a6", mid: "#d9b8ea", ink: "#ffffff" } : identityPaint : null;
     const gradientId = `avatar-disc-${useId().replace(/:/g, "")}`;
     const background = disc ? disc.mid : tokens.muted;
-    const foreground = disc ? disc.ink : tokens["muted-foreground"];
-    const shapeStyle = containerStyle(tokens, skin, size, shape, !!ring, background);
+    const foreground = props.whiteInk || props.inverse ? "#ffffff" : disc ? disc.ink : tokens["muted-foreground"];
+    const shapeStyle = { ...containerStyle(tokens, skin, size, shape, !!ring, background), width: diameter, height: diameter,
+      ...(props.inverse || referenceGeometry != null ? { backgroundColor: "transparent" } : null),
+      ...(props.glow ? { boxShadow: `0 0 0 2px ${tokens.card}, 0 0 0 3.5px ${tokens.primary}` } : null),
+    };
     const separator = ring ? { borderWidth: RING_WIDTH, borderColor: theme.increasedContrast ? tokens.foreground : tokens.background } : null;
     // The separator ring is a border a tile keeps under glass, over its pane, which sits
     // flush inside it (paneStyle's and GlassPane's `stateBorder`).
     const container: StyleProp<ViewStyle> = [showPhoto || disc ? shapeStyle : paneStyle(theme, shapeStyle, !!ring), separator, style];
     const pane = showPhoto || disc ? null : <GlassPane static layer="control" shape={shapeStyle} stateBorder={!!ring} />;
-    const fill = !showPhoto && disc ? <DiscGradient disc={disc} id={gradientId} /> : null;
+    const fill = props.inverse ? <View style={[DISC_FILL, { borderRadius: 9999, backgroundColor: "rgba(255,255,255,0.2)", boxShadow: "inset 0 0 0 3px rgba(255,255,255,0.7)" }]} /> : !showPhoto && disc ? <DiscGradient disc={disc} id={gradientId} /> : null;
+    const innerRing = sheen ? <View style={[DISC_FILL, { borderRadius: 9999, boxShadow: `inset 0 0 0 ${sheen}px ${tokens.card}` }]} /> : null;
+    const wrap = (node: ReactNode) => sheen ? <View style={{ width: diameter + sheen * 2, height: diameter + sheen * 2, alignItems: "center", justifyContent: "center" }}><ConicRing size={diameter + sheen * 2} width={sheen} hue={discHue} />{node}</View> : node;
 
     // Pad the visual box out to the skin's minimum touch target (44pt HIG / 48dp
     // M3) when the avatar is pressable: e.g. the 28px `small` topbar trigger gets
     // hitSlop 8 on iOS (28 + 2*8 = 44) and 10 on Android (28 + 2*10 = 48). The
     // large 48px box already meets both minimums, so its slop resolves to 0.
-    const targetSlop = Math.max(0, Math.ceil((skin.minTarget - BOX[size]) / 2));
+    const targetSlop = Math.max(0, Math.ceil((skin.minTarget - diameter) / 2));
     const hitSlop = targetSlop > 0 ? targetSlop : undefined;
 
     let inner: ReactNode;
@@ -246,11 +279,11 @@ export function createAvatar(skin: AvatarSkin) {
         />
       );
     } else {
-      inner = glyph ? <Text style={labelStyle(skin, size, foreground)}>{glyph}</Text> : null;
+      inner = glyph ? <Text style={[labelStyle(skin, size, foreground), reference ? REFERENCE_TYPE[reference] : null, props.bold ? { fontWeight: "700" } : null]}>{glyph}</Text> : null;
     }
 
     if (onPress) {
-      return (
+      return wrap(
         <Pressable
           // The tile's pane is a child of this Pressable, which the borderless ripple,
           // projected onto an ancestor's background, lands beneath: where the pane renders
@@ -266,11 +299,12 @@ export function createAvatar(skin: AvatarSkin) {
         >
           {pane}
           {fill}
+          {innerRing}
           {inner}
         </Pressable>
       );
     }
-    return <View style={container} testID={testID}>{pane}{fill}{inner}</View>;
+    return wrap(<View style={container} testID={testID}>{pane}{fill}{innerRing}{inner}</View>);
   };
 }
 
