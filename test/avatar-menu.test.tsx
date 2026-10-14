@@ -533,3 +533,18 @@ describe("AvatarMenu disabled dim", () => {
     expect(trigger(container).style.opacity).toBe("0.5");
   });
 });
+
+it("preserves the Argus account identity and independently names its role menu", async () => {
+  let selected = "";
+  const { container } = ui(<AvatarMenu account name="Bobby" email="Architect" initials="B" triggerLabel="Switch role" menuLabel="View as role" menuWidth={300} maxHeight={420} items={[{ value: "architect", label: "Architect", selected: true }, { value: "reviewer", label: "Reviewer" }]} onSelect={(item) => { selected = item.value ?? ""; }} />);
+  const control = screen.getByRole("button", { name: "Switch role" });
+  expect(pill(container).style.paddingTop).toBe("2px");
+  expect(pill(container).style.paddingRight).toBe("4px");
+  expect(screen.getByText("Bobby").style.lineHeight).toBe("14.4px");
+  expect(screen.getByText("Architect").style.lineHeight).toBe("12.6px");
+  fireEvent.click(control);
+  await waitFor(() => expect(screen.getByRole("menu", { name: "View as role" })).toBeTruthy());
+  fireEvent.click(screen.getByRole("menuitem", { name: "Reviewer" }));
+  expect(selected).toBe("reviewer");
+  expect(control.getAttribute("aria-expanded")).toBe("false");
+});
