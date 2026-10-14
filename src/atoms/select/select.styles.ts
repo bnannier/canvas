@@ -36,7 +36,7 @@ export type Size = "small" | "default" | "large";
 // rows (text-xs / text-sm / text-base). Brand type, not a platform face.
 const TEXT_SIZE: Record<Size, TextStyle> = {
   small: { fontSize: 12, lineHeight: 16 },
-  default: { fontSize: 14, lineHeight: 20 },
+  default: { fontSize: 13, lineHeight: 18, fontWeight: "600" },
   large: { fontSize: 16, lineHeight: 24 },
 };
 function textType(size: Size): TextStyle {
@@ -138,11 +138,11 @@ const TRIGGER_ROW: ViewStyle = {
 export const PANEL_ANCHOR: ViewStyle = { position: "absolute", top: "100%", start: 0, end: 0, zIndex: 50, marginTop: 4 };
 
 // ---------- Web: a stacked label over the field box, and a bordered menu card ----------
-// Trigger height per size; mirrors the Input control's footprint (40 / 48 / 56).
-const WEB_TRIGGER_BOX: Record<Size, number> = { small: 40, default: 48, large: 56 };
+// Trigger height per size; mirrors the Input control's footprint (36 / 40 / 48).
+const WEB_TRIGGER_BOX: Record<Size, number> = { small: 36, default: 40, large: 48 };
 export const webSkin: SelectSkin = {
   text: textType,
-  label: (t, size) => ({ marginBottom: 6, fontWeight: "500", color: t.foreground, ...TEXT_SIZE[size] }),
+  label: (t) => ({ marginBottom: 6, fontSize: 10, lineHeight: 13, fontWeight: "700", letterSpacing: 1.6, textTransform: "uppercase", color: t["muted-foreground"] }),
   // Inline (toolbar) label: a muted medium-weight small label; no marginBottom
   // since it sits beside the value in the trigger row, not above it.
   inlineLabel: (t, size) => ({ fontWeight: "500", color: t["muted-foreground"], ...TEXT_SIZE[size] }),
@@ -152,9 +152,9 @@ export const webSkin: SelectSkin = {
     ...TRIGGER_ROW,
     borderRadius: shape.web.field,
     borderWidth: 1,
-    borderColor: open ? t.ring : fieldBorder(t),
+    borderColor: open ? t.ring : t.border,
     backgroundColor: t.card,
-    paddingHorizontal: 16,
+    paddingHorizontal: 12,
     height: WEB_TRIGGER_BOX[size],
   }),
   triggerValue: { flexDirection: "row", alignItems: "center", gap: 8 },
@@ -217,7 +217,7 @@ const IOS_TEXT: Record<Size, TextStyle> = {
 // The above-trigger label: the reference's 14pt regular secondary title.
 const IOS_LABEL: Record<Size, TextStyle> = {
   small: { fontSize: 12, lineHeight: 16 },
-  default: { fontSize: 14, lineHeight: 20 },
+  default: { fontSize: 13, lineHeight: 18, fontWeight: "600" },
   large: { fontSize: 16, lineHeight: 24 },
 };
 // Menu rows hold the iOS body size (17pt) regardless of the trigger's size axis,
