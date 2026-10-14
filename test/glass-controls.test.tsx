@@ -78,10 +78,11 @@ async function renderGlass(ui: React.ReactElement, solid = false) {
 // The material is the wrapper GlassBox paints behind the content. Counting wrappers, not
 // backdrop-filtered layers, finds the clear surfaces too: a text field draws no frost.
 const materialLayers = (root: HTMLElement) => root.querySelectorAll('[data-testid="glass-material"]').length;
-// Inside the wrapper the fill is the layer that paints a background: BEFORE the frost
-// for a layer tint (the material's body), AFTER it for a brand colour, which composites
-// over the material so the colour the ink solver saw is the colour that renders (the rim
-// that follows paints a box shadow, never a background).
+// Inside the wrapper the fill is the layer that paints a background. On the web every fill
+// paints AFTER the frost, over the blurred page, as Dark Factory's frost paints its tint (a
+// backdrop filter samples what is painted before it, and no material may sample itself), so
+// a brand colour too composites over the material and the colour the ink solver saw is the
+// colour that renders (the rim that follows paints a box shadow, never a background).
 const fillOfMaterial = (material: Element | null): { fill: HTMLElement | null; over: boolean } => {
   const layers = Array.from(material?.children ?? []) as HTMLElement[];
   const frost = layers.findIndex((layer) => layer.style.backdropFilter);
@@ -181,12 +182,14 @@ describe("brand-tinted glass pucks", () => {
     expect(rgbaOf(previous.style.borderTopColor)).toEqual(rgbaOf(alpha(lightColors.border, 1)));
   });
 
-  it("paints a brand fill OVER the material and a layer tint beneath it", async () => {
+  it("paints a brand fill and a layer tint alike OVER the web frost", async () => {
     // The solver models the puck as the brand composited on the page. Beneath the
     // material that model failed: the frost's own scheme tint dyed the fill (expo-blur's
     // dark BlurView halved the brand's brightness on iOS, 2:1 for the ink) and the blur
     // pulled the dark surroundings into a small puck (3.4:1 on the web Calendar day).
-    // Over the material the brand composites on the blurred page, as solved.
+    // Over the material the brand composites on the blurred page, as solved. On the web
+    // a layer tint paints over the blur too (glass-surface-web-frost-self-sample-1): beneath
+    // it, the blur sampled the surface's own tint.
     const { container } = await renderGlass(
       <>
         <Button primary testID="brand">Save</Button>
@@ -197,7 +200,7 @@ describe("brand-tinted glass pucks", () => {
     expect(brand.over).toBe(true);
     expect(rgbaOf(brand.fill!.style.backgroundColor)).toEqual(rgbaOf(brandTint(actionFill(lightColors), lightColors.background, actionInk(lightColors))));
     const plain = fillLayerOf(container.querySelector('[data-testid="plain"]') as HTMLElement);
-    expect(plain.over).toBe(false);
+    expect(plain.over).toBe(true);
     expect(rgbaOf(plain.fill!.style.backgroundColor)).toEqual(rgbaOf(LIGHT["glass-tint-control"]));
   });
 

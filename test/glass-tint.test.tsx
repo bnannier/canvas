@@ -10,8 +10,9 @@ import { glassByScheme, lightColors, darkColors } from "../src/style/tokens.ts";
 import { LOOKS } from "./fixtures/looks.ts";
 import { shellBeds } from "./fixtures/page-look.ts";
 
-// The glass material's UNDER-FILL: the layer painted beneath the frost or Liquid Glass
-// so a near-clear material still has a body.
+// The glass material's FILL (its under-fill, beneath the surface's content): the layer that
+// gives a near-clear material its body, painted over the web frost's blur and beneath the
+// native frost or Liquid Glass.
 //
 // The bug this file pins: that fill used to be the semantic `popover` token, which the
 // theme swapped translucent whenever glass turned on. One token therefore carried two
@@ -22,7 +23,8 @@ import { shellBeds } from "./fixtures/page-look.ts";
 // The under-fill only renders on a MATERIAL path, and with the expo peers stubbed the one
 // material reachable in this DOM is the web frost, which renders wherever the browser
 // supports a CSS backdrop-filter (the test DOM's CSS.supports says it does). Layer order
-// inside the clip box is under-fill, frost, hairline rim, then the content.
+// inside the clip box is frost, fill, hairline rim, then the content: the fill paints over
+// the blur, as Dark Factory's frost paints its tint (test/web-frost-paint-order.test.tsx).
 //
 // The web renders the web frost's own tints (web-frost.ts, which the ThemeProvider
 // publishes as `theme.glass` there); `glassByScheme` is the native set (iOS Liquid Glass
@@ -55,16 +57,16 @@ function mockMatchMedia(matching: (query: string) => boolean) {
   );
 }
 
-// The material's first layer: the under-fill, inside the clip box of the two-box glass
-// structure. Returns null when no material rendered at all (a degraded or solid surface).
-// GlassBox anatomy: the outer host, then the clip box, whose first child is the
-// under-fill the layer tint paints.
+// The material's fill, inside the clip box of the two-box glass structure: the layer that
+// paints a background. Returns null when no material rendered at all (a degraded or solid
+// surface). GlassBox anatomy: the outer host, then the clip box, whose layers are the frost,
+// the fill the layer tint paints, and the rim.
 async function underFillOf(testID: string): Promise<HTMLElement | null> {
   let fill: HTMLElement | null = null;
   await waitFor(() => {
     const outer = screen.getByTestId(testID) as HTMLElement;
     const clip = outer.firstElementChild as HTMLElement | null;
-    fill = (clip?.firstElementChild as HTMLElement | null) ?? null;
+    fill = (Array.from(clip?.children ?? []) as HTMLElement[]).find((layer) => layer.style.backgroundColor) ?? null;
     expect(clip).not.toBeNull();
   });
   return fill;
@@ -256,7 +258,7 @@ describe("GlassSurface layers", () => {
     expect((await underFillOf("control-gs"))!.getAttribute("style") ?? "").toContain(`background-color: ${printed(WEB_TINTS.light["glass-tint-control"])}`);
   });
 
-  it("renders Dark Factory's frost on the web: the layer's tint, one 24px blur with no saturation, then a 1px inset hairline", async () => {
+  it("renders Dark Factory's frost on the web: one 24px blur with no saturation, the layer's tint over it, then a 1px inset hairline", async () => {
     // The rim is Dark Factory's shell line on the floating and content layers, and the
     // palette's hairline on the controls and the dense menus.
     const rimColor = (layer: GlassLayer, scheme: "light" | "dark") =>
@@ -271,10 +273,12 @@ describe("GlassSurface layers", () => {
           </ThemeProvider>,
         );
         const painted = Array.from((await underFillOf(id))!.parentElement!.children) as HTMLElement[];
-        // Exactly the under-fill, the frost and the rim: no refraction layer, no highlight.
+        // Exactly the frost, the fill and the rim: no refraction layer, no highlight. The fill
+        // paints over the blur, so the blur samples the page and never the surface's own tint.
         expect(painted).toHaveLength(3);
-        expect(painted[0].style.backgroundColor).toBe(printed(WEB_TINTS[scheme][tint]));
-        expect(painted[1].style.backdropFilter).toBe(`blur(${WEB_FROST.blur}px)`);
+        expect(painted[0].style.backdropFilter).toBe(`blur(${WEB_FROST.blur}px)`);
+        expect(painted[0].style.backgroundColor).toBe("");
+        expect(painted[1].style.backgroundColor).toBe(printed(WEB_TINTS[scheme][tint]));
         expect(painted[2].style.boxShadow).toBe(`inset 0 0 0 ${WEB_FROST.rimWidth}px ${rimColor(layer, scheme)}`);
         view.unmount();
       }

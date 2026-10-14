@@ -60,7 +60,7 @@ const ui = (
 );
 
 // The material wrapper GlassBox paints behind the content, and inside it the frost layer:
-// the one node carrying a backdrop-filter (layer order: under-fill, frost, rim).
+// the one node carrying a backdrop-filter (layer order: frost, fill, rim).
 const materialOf = (root: ParentNode) => root.querySelector('[data-testid="glass-material"]') as HTMLElement | null;
 const frostOf = (root: ParentNode) => materialOf(root)?.querySelector("[style*='backdrop-filter']") as HTMLElement | null;
 const bodyOf = (root: ParentNode) => Array.from(root.querySelectorAll("div")).find((node) => node.textContent === "Glass body");
