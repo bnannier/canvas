@@ -15,6 +15,10 @@ action, primary/reference, success, warning, error, info, muted. `foreground` ov
 the label ink while preserving an intent dot. `inverse` and `solid` supply branded
 surfaces. `uppercase` tracks caps; `start` pins a badge in a host layout.
 
+`notification` is the compact count carried by a notification control: a
+16-pixel pill with a 9.5-pixel extra-bold label. Button owns its position when
+passed a `count`.
+
 ## Usage
 
 ```tsx
@@ -22,6 +26,13 @@ surfaces. `uppercase` tracks caps; `start` pins a badge in a host layout.
 ```
 
 ## Variants
+
+### Notification count
+
+```tsx
+<Badge notification solid action>3</Badge>
+```
+
 
 ### Solid
 

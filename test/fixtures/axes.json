@@ -465,6 +465,32 @@
       "primary + secondary": "primary"
     }
   },
+  "Button.iconBox": {
+    "kind": "axis",
+    "components": [
+      "Button"
+    ],
+    "pages": [
+      "button"
+    ],
+    "resolver": "src/atoms/button/button.shared.tsx#iconBoxOf",
+    "order": [
+      "compactIcon",
+      "mediumIcon",
+      "largeIcon"
+    ],
+    "none": null,
+    "single": {
+      "compactIcon": "compact",
+      "mediumIcon": "medium",
+      "largeIcon": "large"
+    },
+    "pairs": {
+      "compactIcon + largeIcon": "compactIcon",
+      "compactIcon + mediumIcon": "compactIcon",
+      "largeIcon + mediumIcon": "mediumIcon"
+    }
+  },
   "Button.size": {
     "kind": "axis",
     "components": [
@@ -2902,6 +2928,7 @@
     ],
     "resolver": "src/atoms/badge/badge.shared.tsx#badgeMetricOf",
     "order": [
+      "notification",
       "reference",
       "navigationCount",
       "count",
@@ -2909,6 +2936,7 @@
     ],
     "none": "default",
     "single": {
+      "notification": "notification",
       "reference": "reference",
       "navigationCount": "navigationCount",
       "count": "count",
@@ -2916,10 +2944,14 @@
     },
     "pairs": {
       "count + navigationCount": "navigationCount",
+      "count + notification": "notification",
       "count + reference": "reference",
       "count + small": "count",
+      "navigationCount + notification": "notification",
       "navigationCount + reference": "reference",
       "navigationCount + small": "navigationCount",
+      "notification + reference": "notification",
+      "notification + small": "notification",
       "reference + small": "reference"
     }
   },
@@ -2934,13 +2966,14 @@
     "resolver": "src/atoms/badge/badge.shared.tsx#badgeSurfaceOf",
     "order": [
       "inverse",
-      "navigationCount|solid",
+      "notification|navigationCount|solid",
       "neutralFill",
       "soft|reference"
     ],
     "none": "surface",
     "single": {
       "inverse": "inverse",
+      "notification": "solid",
       "navigationCount": "solid",
       "solid": "solid",
       "neutralFill": "neutral",
@@ -2950,16 +2983,22 @@
     "pairs": {
       "inverse + navigationCount": "inverse",
       "inverse + neutralFill": "inverse",
+      "inverse + notification": "inverse",
       "inverse + reference": "inverse",
       "inverse + soft": "inverse",
       "inverse + solid": "inverse",
       "navigationCount + neutralFill": "navigationCount",
+      "navigationCount + notification": "navigationCount|notification",
       "navigationCount + reference": "navigationCount",
       "navigationCount + soft": "navigationCount",
       "navigationCount + solid": "navigationCount|solid",
+      "neutralFill + notification": "notification",
       "neutralFill + reference": "neutralFill",
       "neutralFill + soft": "neutralFill",
       "neutralFill + solid": "solid",
+      "notification + reference": "notification",
+      "notification + soft": "notification",
+      "notification + solid": "notification|solid",
       "reference + soft": "reference|soft",
       "reference + solid": "solid",
       "soft + solid": "solid"
@@ -2976,12 +3015,13 @@
     "resolver": "src/atoms/badge/badge.shared.tsx#badgeInkOf",
     "order": [
       "inverse",
-      "navigationCount|solid",
+      "notification|navigationCount|solid",
       "foreground"
     ],
     "none": "intent",
     "single": {
       "inverse": "inverse",
+      "notification": "solid",
       "navigationCount": "solid",
       "solid": "solid",
       "foreground": "foreground"
@@ -2989,10 +3029,14 @@
     "pairs": {
       "foreground + inverse": "inverse",
       "foreground + navigationCount": "navigationCount",
+      "foreground + notification": "notification",
       "foreground + solid": "solid",
       "inverse + navigationCount": "inverse",
+      "inverse + notification": "inverse",
       "inverse + solid": "inverse",
-      "navigationCount + solid": "navigationCount|solid"
+      "navigationCount + notification": "navigationCount|notification",
+      "navigationCount + solid": "navigationCount|solid",
+      "notification + solid": "notification|solid"
     }
   },
   "Badge.tracking": {
@@ -3015,6 +3059,28 @@
     },
     "pairs": {
       "reference + uppercase": "reference"
+    }
+  },
+  "Button.web hover": {
+    "kind": "axis",
+    "components": [
+      "Button"
+    ],
+    "pages": [
+      "button"
+    ],
+    "resolver": "src/atoms/button/button.styles.ts#webHoverKindOf",
+    "order": [
+      "utility",
+      "inverse"
+    ],
+    "none": "default",
+    "single": {
+      "utility": "utility",
+      "inverse": "inverse"
+    },
+    "pairs": {
+      "inverse + utility": "utility"
     }
   },
   "Button.web emphasis": {

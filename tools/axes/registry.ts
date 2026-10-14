@@ -28,8 +28,8 @@ import { sizeOf as avatarSize, shapeOf as avatarShape, overlapOf } from "../../s
 import { alignEndOf } from "../../src/atoms/avatar/avatar-menu.shared.tsx";
 import { toneOf as badgeTone, statusOf as badgeStatus, badgeGapOf, badgeIntentOf, badgeMetricOf, badgeSurfaceOf, badgeInkOf, badgeTrackingOf } from "../../src/atoms/badge/badge.shared.tsx";
 import { separatorOf } from "../../src/atoms/breadcrumb/breadcrumb.shared.tsx";
-import { intentOf as buttonIntent, sizeOf as buttonSize } from "../../src/atoms/button/button.shared.tsx";
-import { webEmphasisOf } from "../../src/atoms/button/button.styles.ts";
+import { intentOf as buttonIntent, iconBoxOf, sizeOf as buttonSize } from "../../src/atoms/button/button.shared.tsx";
+import { webEmphasisOf, webHoverKindOf } from "../../src/atoms/button/button.styles.ts";
 import { kindOf, sizeOf as buttonGroupSize } from "../../src/atoms/button-group/button-group.shared.tsx";
 import { sizeOf as checkboxSize } from "../../src/atoms/checkbox/checkbox.shared.tsx";
 import { colorOf } from "../../src/atoms/chip/chip.shared.tsx";
@@ -225,6 +225,7 @@ export const SUBJECTS: readonly AnySubject[] = [
     resolve: buttonIntent,
     notes: ["`raised` applies to the primary intent only."],
   }),
+  subject({ id: "Button.iconBox", components: ["Button"], pages: ["button"], resolver: "src/atoms/button/button.shared.tsx#iconBoxOf", members: ["compactIcon", "mediumIcon", "largeIcon"], resolve: iconBoxOf }),
   subject({ id: "Button.size", components: ["Button"], pages: ["button"], resolver: "src/atoms/button/button.shared.tsx#sizeOf", members: SIZES, resolve: buttonSize }),
   subject({ id: "ButtonGroup.kind", components: ["ButtonGroup"], pages: ["button-group"], resolver: "src/atoms/button-group/button-group.shared.tsx#kindOf", members: ["segmented", "split", "stepper", "spaced"], resolve: kindOf }),
   subject({ id: "ButtonGroup.size", components: ["ButtonGroup"], pages: ["button-group"], resolver: "src/atoms/button-group/button-group.shared.tsx#sizeOf", members: SIZES, resolve: buttonGroupSize }),
@@ -368,10 +369,11 @@ export const SUBJECTS: readonly AnySubject[] = [
   subject({ id: "Video.fit", components: ["Video"], pages: ["video"], resolver: "src/atoms/video/video.shared.tsx#fitOf", members: ["contain", "cover", "stretch"], resolve: videoFit }),
 
   subject({ id: "Badge.intent", components: ["Badge"], pages: ["badge"], resolver: "src/atoms/badge/badge.shared.tsx#badgeIntentOf", members: ["action", "primary", "reference", "success", "warning", "error", "info"], resolve: badgeIntentOf }),
-  subject({ id: "Badge.metrics", components: ["Badge"], pages: ["badge"], resolver: "src/atoms/badge/badge.shared.tsx#badgeMetricOf", members: ["reference", "navigationCount", "count", "small"], resolve: badgeMetricOf }),
-  subject({ id: "Badge.surface", components: ["Badge"], pages: ["badge"], resolver: "src/atoms/badge/badge.shared.tsx#badgeSurfaceOf", members: ["inverse", "navigationCount", "solid", "neutralFill", "soft", "reference"], resolve: badgeSurfaceOf }),
-  subject({ id: "Badge.ink", components: ["Badge"], pages: ["badge"], resolver: "src/atoms/badge/badge.shared.tsx#badgeInkOf", members: ["inverse", "navigationCount", "solid", "foreground"], resolve: badgeInkOf }),
+  subject({ id: "Badge.metrics", components: ["Badge"], pages: ["badge"], resolver: "src/atoms/badge/badge.shared.tsx#badgeMetricOf", members: ["notification", "reference", "navigationCount", "count", "small"], resolve: badgeMetricOf }),
+  subject({ id: "Badge.surface", components: ["Badge"], pages: ["badge"], resolver: "src/atoms/badge/badge.shared.tsx#badgeSurfaceOf", members: ["inverse", "notification", "navigationCount", "solid", "neutralFill", "soft", "reference"], resolve: badgeSurfaceOf }),
+  subject({ id: "Badge.ink", components: ["Badge"], pages: ["badge"], resolver: "src/atoms/badge/badge.shared.tsx#badgeInkOf", members: ["inverse", "notification", "navigationCount", "solid", "foreground"], resolve: badgeInkOf }),
   subject({ id: "Badge.tracking", components: ["Badge"], pages: ["badge"], resolver: "src/atoms/badge/badge.shared.tsx#badgeTrackingOf", members: ["reference", "uppercase"], resolve: badgeTrackingOf }),
+  subject({ id: "Button.web hover", components: ["Button"], pages: ["button"], resolver: "src/atoms/button/button.styles.ts#webHoverKindOf", members: ["utility", "inverse"], resolve: webHoverKindOf }),
   subject({ id: "Button.web emphasis", components: ["Button"], pages: ["button"], resolver: "src/atoms/button/button.styles.ts#webEmphasisOf", members: ["inverse", "quiet"], resolve: webEmphasisOf }),
   subject({ id: "Icon.stroke weight", components: ["Icon"], pages: ["icon"], resolver: "src/atoms/icon/icon.shared.tsx#strokeWidthOf", members: ["heavyStroke", "boldStroke", "mediumStroke", "regularStroke"], resolve: strokeWidthOf }),
   subject({ id: "Swatch.palette", components: ["Swatch"], pages: ["swatch"], resolver: "src/atoms/swatch/swatch.shared.tsx#paletteOf", members: ["dark", "mint", "blush"], resolve: paletteOf }),
