@@ -25,6 +25,14 @@ const look = (intent: Intent, size: Size = "base", disabled = false) => ({
 });
 
 describe("the web Button is Dark Factory's pill", () => {
+  it("preserves Argus inverse, quiet and workflow action dimensions", () => {
+    const base = opts();
+    expect(webSkin.label(t, "outline", "small", { ...base, inverse: true }).color).toBe("#ffffff");
+    expect(webSkin.container(t, "outline", "small", { ...base, inverse: true }).borderColor).toBe("rgba(255,255,255,0.5)");
+    expect(webSkin.label(t, "outline", "base", { ...base, quiet: true }).color).toBe(t["muted-foreground"]);
+    expect(webSkin.container(t, "secondary", "small", { ...base, consistent: true }).minWidth).toBe(78);
+    expect(webSkin.surround?.({ ...base, comfortable: true })).toEqual({ paddingHorizontal: 16, paddingVertical: 7 });
+  });
   it("draws each intent in DF's colours", () => {
     const expected: Record<Intent, { fill: string; border: string; label: string }> = {
       primary: { fill: actionFill(t), border: actionFill(t), label: actionInk(t) },

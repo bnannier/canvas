@@ -17,6 +17,10 @@ export type Intent = "primary" | "secondary" | "destructive" | "outline" | "ghos
 export type Size = "small" | "base" | "large";
 
 export interface ButtonSkinOpts {
+  inverse?: boolean;
+  quiet?: boolean;
+  consistent?: boolean;
+  comfortable?: boolean;
   icon: boolean;
   block: boolean;
   /** disabled or loading: dim the control (the iOS and Android skins). */
@@ -26,6 +30,7 @@ export interface ButtonSkinOpts {
 }
 
 export interface ButtonSkin {
+  surround?: (opts: ButtonSkinOpts) => ViewStyle;
   container: (t: ColorTokens, intent: Intent, size: Size, opts: ButtonSkinOpts) => ViewStyle;
   label: (t: ColorTokens, intent: Intent, size: Size, opts?: ButtonSkinOpts) => TextStyle;
   /** The label's colour, which the loading spinner takes too. */
@@ -139,6 +144,8 @@ function webLook(t: ColorTokens, intent: Intent, o?: ButtonSkinOpts): WebLook {
     const edged = intent !== "ghost" && intent !== "link";
     return { fill: "transparent", border: edged ? t.border : "transparent", label: t["muted-foreground"] };
   }
+  if (o?.inverse) return { fill: "transparent", border: "rgba(255,255,255,0.5)", label: "#ffffff" };
+  if (o?.quiet) return { fill: "transparent", border: t.border, label: t["muted-foreground"] };
   switch (intent) {
     case "primary": { const action = actionFill(t); return { fill: action, border: action, label: actionInk(t) }; }
     case "destructive": return { fill: t.destructive, border: t.destructive, label: t["destructive-foreground"] };
@@ -176,6 +183,7 @@ function raisedGlow(t: ColorTokens, size: Size): ViewStyle {
 }
 
 export const webSkin: ButtonSkin = {
+  surround: (o) => o.comfortable ? { paddingHorizontal: 16, paddingVertical: 7 } : {},
   container: (t, intent, size, o) => {
     const look = webLook(t, intent, o);
     const pad = WEB_PAD[size];
@@ -188,6 +196,7 @@ export const webSkin: ButtonSkin = {
         : intent === "link" ? { paddingHorizontal: 0, paddingVertical: 0 }
         : { paddingVertical: pad.v, paddingHorizontal: WEB_CTA.has(intent) ? pad.ctaH : pad.h }),
       backgroundColor: look.fill,
+      ...(o.consistent ? { minWidth: 78 } : null),
       borderWidth: intent === "link" ? 0 : 1,
       borderColor: look.border,
       // `block` (full width) lives on the shell's <RippleClip> wrapper, the outer node.
