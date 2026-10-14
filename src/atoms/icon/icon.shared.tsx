@@ -1,3 +1,4 @@
+import { DisclosureRotation } from "../../style/disclosure-rotation.js";
 import Svg, { Circle, Ellipse, Line, Path, Polygon, Polyline, Rect } from "react-native-svg";
 import { View, useTheme, type ColorTokens, type StyleProp, type ViewStyle, type LayoutStyle } from "../../style/index.js";
 import { ICONS, NAMES, type Shape, type IconGlyphProps } from "./icon.glyphs.js";
@@ -50,6 +51,10 @@ export interface IconInternalProps {
 }
 
 export interface IconProps extends IconGlyphProps, IconInternalProps {
+  /** Rotate the glyph as an Argus disclosure indicator. */
+  disclosure?: boolean;
+  /** Open state of a disclosure indicator. */
+  expanded?: boolean;
   /** Strong action/link stroke from the Argus reference. */
   heavyStroke?: boolean;
   /** Standard emphasized metadata stroke. */
@@ -186,6 +191,8 @@ export function strokeWidthOf(p: IconProps): number {
 /** An outline glyph from the kit's icon set, sized and colored by props. */
 export function Icon(props: IconProps) {
   const { tokens } = useTheme();
+
+  if (props.disclosure) return <DisclosureRotation expanded={!!props.expanded}><Icon {...props} disclosure={false} /></DisclosureRotation>;
 
   const wrapped = props.decorative || props.accessibilityLabel != null;
   const glyph = (

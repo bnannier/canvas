@@ -104,6 +104,19 @@ to update it.)
 </Stateful>
 ```
 
+### Activity disclosure
+
+`activity` retains the original Argus run surface, instant trace reveal, dense
+header and 180-degree chevron transition. `compact` keeps the original phone
+insets. `renderHeader` arranges domain content inside the component-owned trigger;
+the supplied indicator carries the controlled disclosure state. Put nested actions
+in that header as Canvas controls so they retain independent targets.
+
+```tsx
+<Accordion activity items={[{ key: "run", title: "Scout run", content: "Trace complete" }]} defaultValue="run" />
+```
+
+
 ## Do & Don't
 
 ### Peer sections
