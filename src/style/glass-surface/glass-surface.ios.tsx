@@ -4,7 +4,7 @@ import { FrostView, LiquidView } from "./material-runtime.ios.js";
 import { useMaterialResolution } from "./use-material-theme.js";
 import {
   GlassBox, CLEAR_INTENSITY, contrastStyle, frostFill, SHEER_FILL_OPACITY, materialFill,
-  specularRim, surfaceIntensity, type GlassSurfaceProps,
+  SpecularRim, surfaceIntensity, type GlassSurfaceProps,
 } from "./glass-surface.shared.js";
 
 /**
@@ -47,7 +47,6 @@ export function GlassSurface(props: GlassSurfaceProps) {
   const solid = resolved.renderer === "solid";
   const translucent = props.sheer && layer === "content";
   const fill = materialFill(style, props.stateBorder);
-  const rim = specularRim(style, theme.dark, props.stateBorder);
   const native = resolved.renderer === "liquid";
   // Liquid Glass takes a brand as its own tintColor and paints no fill for it, and a
   // boundary fill beneath the glass; the frost paints the fill, a brand one or a boundary
@@ -61,7 +60,7 @@ export function GlassSurface(props: GlassSurfaceProps) {
     {native && LiquidView ? <LiquidView glassEffectStyle={clear ? "clear" : "regular"} isInteractive={interactive} tintColor={brand} colorScheme={theme.dark ? "dark" : "light"} style={fill} />
       : FrostView ? <FrostView intensity={clear ? CLEAR_INTENSITY : surfaceIntensity(layer, translucent)} tint={theme.dark ? "dark" : "light"} style={fill} /> : null}
     {paintsFill && over ? fillLayer : null}
-    {!native ? <View style={rim} /> : null}
+    {!native ? <SpecularRim style={style} dark={theme.dark} inside={props.stateBorder} /> : null}
   </>;
   return <GlassBox {...props} style={contrastStyle(theme, style, props.stateBorder)} solid={solid} material={material} />;
 }

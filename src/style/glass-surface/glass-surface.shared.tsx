@@ -12,8 +12,8 @@
 // contains only decoration, preserving shadow, focus and child identity.
 
 import { createContext, useCallback, useContext, useState, type ReactNode, type RefObject } from "react";
-import { View, StyleSheet, type StyleProp, type ViewStyle, type ViewProps } from "react-native";
-import { frameBedsFor, type ColorScheme, type ColorTokens, type GlassTokens, type Palette } from "../tokens.js";
+import { View, PixelRatio, StyleSheet, type LayoutChangeEvent, type StyleProp, type ViewStyle, type ViewProps } from "react-native";
+import { frameBedsFor, type ColorTokens, type GlassTokens, type ColorScheme, type Palette } from "../tokens.js";
 import { alpha, composite, contrastRatio, inkOn } from "../color.js";
 import { actionFill, actionInk } from "../action.js";
 import { MaterialBehind } from "./material-behind.js";
@@ -683,6 +683,72 @@ export const SPECULAR_RIM = {
 // below the content.
 export function specularRim(style: StyleProp<ViewStyle>, dark: boolean, inside = false): ViewStyle {
   return { ...materialFill(style, inside), boxShadow: dark ? SPECULAR_RIM.dark : SPECULAR_RIM.light };
+}
+
+// The tallest band of the specular rim, in device pixels. React Native draws an inset
+// `boxShadow` on iOS as one Core Animation shadow over the whole view (RCTBoxShadow: a shadow
+// path the size of the bounds under a mask), and Core Animation renders no such shadow past
+// 8192 px on a side: on a frost taller than that, the rim drew flat dark tiles over the
+// surface (a docs Props table, 4158 pt at 3x). On the iOS 26 simulator a rim alone renders
+// clean at 2700 pt and tiles grey from 2780 pt, 8192 px at 3x being 2731 pt. So a tall rim is
+// drawn in bands of at most half that limit, each the rim clipped to its band.
+export const RIM_BAND_PIXELS = 4096;
+
+// How far a band's rim runs past its band's clip, so the edges the band does not own (an
+// inner band's top and bottom) stay hidden: past the reach of every shadow in SPECULAR_RIM.
+export const RIM_BAND_OVERLAP = 8;
+
+const RIM_FRAME: ViewStyle = { ...MATERIAL_FILL };
+const TOP_CORNERS = ["borderTopLeftRadius", "borderTopRightRadius", "borderTopStartRadius", "borderTopEndRadius"] as const;
+const BOTTOM_CORNERS = ["borderBottomLeftRadius", "borderBottomRightRadius", "borderBottomStartRadius", "borderBottomEndRadius"] as const;
+
+/** The corners a band keeps: the top ones on the first band, the bottom ones on the last, none between. */
+function bandCorners(corners: ViewStyle, top: boolean, bottom: boolean): ViewStyle {
+  const out: Record<string, unknown> = { ...corners };
+  // A side's own key outranks the shorthand, so a zero on every key of an edge rounds none of it.
+  if (!top) for (const key of TOP_CORNERS) out[key] = 0;
+  if (!bottom) for (const key of BOTTOM_CORNERS) out[key] = 0;
+  return out as ViewStyle;
+}
+
+/**
+ * The native frost's specular rim (`SPECULAR_RIM`), on iOS's and Android's frost, drawn so no
+ * shadow it asks for is taller than `RIM_BAND_PIXELS`: one rim over the surface up to that
+ * height, and past it a column of bands, the first with the top edge and corners, the last
+ * with the bottom ones, each the rim clipped to its band and running `RIM_BAND_OVERLAP` past
+ * the edges it does not own, so the bands together draw exactly the one rim. It reads its
+ * height from its own layout and renders again only when the number of bands changes. Until
+ * then a single rim stops at the band height, and the last band's rim keeps its own height at
+ * the surface's bottom edge, so a surface that grows before its new layout lands loses the
+ * rim along the new length for that frame and never asks for a shadow past the limit.
+ */
+export function SpecularRim({ style, dark, inside = false }: { style: StyleProp<ViewStyle>; dark: boolean; inside?: boolean }) {
+  const band = RIM_BAND_PIXELS / PixelRatio.get();
+  const [bands, setBands] = useState(1);
+  const onLayout = useCallback((event: LayoutChangeEvent) => {
+    setBands(Math.max(1, Math.ceil(event.nativeEvent.layout.height / band)));
+  }, [band]);
+  const shadow = dark ? SPECULAR_RIM.dark : SPECULAR_RIM.light;
+  if (bands === 1) {
+    return (
+      <View testID="glass-rim" style={RIM_FRAME} onLayout={onLayout}>
+        <View style={[specularRim(style, dark, inside), { maxHeight: band }]} />
+      </View>
+    );
+  }
+  const corners = materialCorners(style, inside);
+  return (
+    <View testID="glass-rim" style={RIM_FRAME} onLayout={onLayout}>
+      {Array.from({ length: bands }, (_, index) => {
+        const first = index === 0;
+        const last = index === bands - 1;
+        const clip: ViewStyle = { position: "absolute", left: 0, right: 0, top: index * band, overflow: "hidden", ...(last ? { bottom: 0 } : { height: band }) };
+        const reach = band + (first || last ? RIM_BAND_OVERLAP : 2 * RIM_BAND_OVERLAP);
+        const rim: ViewStyle = { position: "absolute", left: 0, right: 0, height: reach, ...(last ? { bottom: 0 } : { top: first ? 0 : -RIM_BAND_OVERLAP }), ...bandCorners(corners, first, last), boxShadow: shadow };
+        return <View key={index} style={clip}><View style={rim} /></View>;
+      })}
+    </View>
+  );
 }
 
 // The absolute-fill style for the fill / blur / glass material layers, carrying the
