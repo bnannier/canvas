@@ -49,7 +49,7 @@ import { sizeOf as progressSize, toneOf as progressTone } from "../../src/atoms/
 import { sizeOf as qrcodeSize } from "../../src/atoms/qrcode/qrcode.shared.tsx";
 import { sizeOf as radioSize } from "../../src/atoms/radio/radio.shared.tsx";
 import { revealTravel, type RevealProps } from "../../src/atoms/reveal/reveal.shared.tsx";
-import { sizeOf as selectSize } from "../../src/atoms/select/select.shared.tsx";
+import { sizeOf as selectSize, fieldOf as selectField, optionsOf as selectOptions } from "../../src/atoms/select/select.shared.tsx";
 import { lineHeight, avatarDiameter, buttonSize as skeletonButton, shapeOf as skeletonShape, lengthOf } from "../../src/atoms/skeleton/skeleton.shared.tsx";
 import { sizeOf as sliderSize } from "../../src/atoms/slider/slider.shared.tsx";
 import { toneOf as spinnerTone, sizeOf as spinnerSize } from "../../src/atoms/spinner/spinner.shared.tsx";
@@ -325,6 +325,8 @@ export const SUBJECTS: readonly AnySubject[] = [
     members: ["fromBelow", "fromAbove", "fromLeft", "fromRight"],
     resolve: (p) => revealTravel(p, 12),
   }),
+  subject({ id: "Select.field", components: ["Select"], pages: ["select"], resolver: "src/atoms/select/select.shared.tsx#fieldOf", members: ["dense"], resolve: selectField }),
+  subject({ id: "Select.options", components: ["Select"], pages: ["select"], resolver: "src/atoms/select/select.shared.tsx#optionsOf", members: ["plainOptions"], resolve: selectOptions }),
   subject({ id: "Select.size", components: ["Select"], pages: ["select"], resolver: "src/atoms/select/select.shared.tsx#sizeOf", members: SIZES, resolve: selectSize }),
   subject({ id: "Skeleton.shape", components: ["Skeleton"], pages: ["skeleton"], resolver: "src/atoms/skeleton/skeleton.shared.tsx#shapeOf", members: ["text", "avatar", "button", "card", "list", "table"], resolve: skeletonShape }),
   subject({ id: "Skeleton.size (line)", components: ["Skeleton"], pages: ["skeleton"], resolver: "src/atoms/skeleton/skeleton.shared.tsx#lineHeight", members: SIZES_LARGE_FIRST, resolve: lineHeight }),

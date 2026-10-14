@@ -2182,6 +2182,7 @@ export const STATE_RECIPES: Record<string, ComponentStates> = {
   },
   reveal: { static: true, reason: "An entrance transition around its content: it takes no input." },
   select: {
+    hover: hover("densefield", byRole("option", "Architect"), { within: overlay("select") }),
     focus: [
       focus("default", byRole("button", "Country")),
       // Focus enters the list at the selected option (United States), the arrows move it.
