@@ -401,6 +401,14 @@ export const FOUNDATION_PLANS: Readonly<Record<string, readonly string[]>> = {
     "labels, the required marker, the focus and value transitions and the error contrast stay stable over glass wells; no material per label (materials target)",
     "the floating transition within 100 to 700 ms, still under Reduce Motion",
   ],
+  GlassBlurPlane: [
+    "documented on `integration` (Blur planes) as the capture host that makes a page's backdrop the safe blur plane on Android, with `useGlassBlurPlane` making the plane and `GlassBlurScope` offering it",
+    "captures only the backdrop it wraps and never contains the surfaces that frost it, exercised by the docs' frame over the page look on Android with canvas-blur (materials target)",
+  ],
+  GlassBlurScope: [
+    "documented on `integration` (Blur planes) as the scope that offers a page's blur plane to the glass surfaces inside it",
+    "offers the plane to its surfaces only, so content outside keeps its solid skin; exercised by the docs' frame, whose material alone is scoped (materials target)",
+  ],
   GlassModalBlurTarget: [
     "K12-5: documented on `integration` as the Modal blur bridge for an app hosting its own React Native Modal",
     "a safe target bridge that keeps separate-window ownership, exercised with ActionSheet and Drawer over native content (materials target)",

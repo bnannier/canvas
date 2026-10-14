@@ -492,8 +492,14 @@ export function GlassBox({
   style, children, pointerEvents, testID, role, onLayout, onAccessibilityEscape, stateBorder = false,
   material, solid = false,
 }: GlassSurfaceProps & { material: ReactNode; solid?: boolean }) {
+  // A box that paints a material keeps its native view (collapsable false). The material
+  // sits at zIndex -1 inside it, and Fabric hoists a flattened view's children into the
+  // nearest view it keeps, where a negative zIndex sorts them beneath everything earlier in
+  // that view: the docs' frame lost its frost behind the page backdrop on iOS that way. Only
+  // a stacking context of its own holds the material inside the box. React Native Web drops
+  // the prop before the DOM.
   return (
-    <View style={[style, solid ? null : clearedPaint(style, stateBorder), pointerEvents ? { pointerEvents } : null]} testID={testID} role={role} onLayout={onLayout} onAccessibilityEscape={onAccessibilityEscape} collapsable={onAccessibilityEscape ? false : undefined}>
+    <View style={[style, solid ? null : clearedPaint(style, stateBorder), pointerEvents ? { pointerEvents } : null]} testID={testID} role={role} onLayout={onLayout} onAccessibilityEscape={onAccessibilityEscape} collapsable={material || onAccessibilityEscape ? false : undefined}>
       {material ? (
         <View testID="glass-material" accessible={false} accessibilityElementsHidden importantForAccessibility="no-hide-descendants" style={[materialFill(style), { overflow: "hidden", zIndex: -1 }]}>
           {material}

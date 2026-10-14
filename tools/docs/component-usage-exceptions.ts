@@ -118,12 +118,12 @@ export const DOCS_USAGE_EXCEPTIONS: readonly DocsUsageException[] = [
     reason: "Dark Factory's page look, docs-only scaffolding under design-language item 7: an untouchable layer fixed to the window behind the shell, clipping the drawing to it, over the gradient's last stop.",
   },
   {
-    file: "docs/src/shell/page-frame.tsx", owner: "PageFrame", tag: "View", attribute: "style", keys: ["flex", "paddingHorizontal", "paddingTop"], occurrences: 1,
-    reason: "Dark Factory's page padding around its shell, docs-only scaffolding under design-language item 7: the tier's inset of the frame from the window.",
+    file: "docs/src/shell/page-frame.tsx", owner: "PageFrame", tag: "View", attribute: "style", keys: ["alignSelf", "flex", "marginBottom", "maxWidth", "paddingHorizontal", "paddingTop", "width"], occurrences: 2,
+    reason: "Dark Factory's page padding around its shell and the shell's box, docs-only scaffolding under design-language item 7: the tier's inset, the 1340 cap centred, and the hairline the frame runs past the window's bottom edge.",
   },
   {
-    file: "docs/src/shell/page-frame.tsx", owner: "PageFrame", tag: "GlassSurface", attribute: "style", keys: ["alignSelf", "backgroundColor", "borderTopLeftRadius", "borderTopRightRadius", "boxShadow", "flex", "marginBottom", "maxWidth", "width"], occurrences: 1,
-    reason: "Dark Factory's frosted shell as the docs' frame (design-language item 7): its shape, cap, centring, solid fill, palette shadow and the hairline it runs past the window's bottom edge, handed to the kit's GlassSurface as the skin style it frosts.",
+    file: "docs/src/shell/page-frame.tsx", owner: "PageFrame", tag: "GlassSurface", attribute: "style", keys: ["backgroundColor", "borderTopLeftRadius", "borderTopRightRadius", "bottom", "boxShadow", "left", "position", "right", "top"], occurrences: 1,
+    reason: "Dark Factory's frosted shell as the docs' frame (design-language item 7): the material as its own layer under the content (so only it frosts the blur plane), with its shape, solid fill and palette shadow, handed to the kit's GlassSurface as the skin style it frosts.",
   },
   {
     file: "docs/src/shell/page-frame.tsx", owner: "ShellWedges", tag: "View", attribute: "style", keys: ["bottom", "left", "overflow", "pointerEvents", "position", "right", "top"], occurrences: 1,

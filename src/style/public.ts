@@ -590,3 +590,5 @@ export {
 // per-platform host stay internal; the bridge is public so an app hosting its own RN
 // Modal can give its frost surfaces the same page blur the kit's sheets get).
 export { GlassModalBlurTarget } from "./glass-surface/glass-surface.shared.js";
+// A page's own blur plane on Android: a backdrop that the glass surfaces above it frost.
+export { useGlassBlurPlane, GlassBlurPlane, GlassBlurScope, type GlassBlurPlaneHandle, type GlassBlurPlaneProps, type GlassBlurScopeProps } from "./glass-surface/glass-blur-plane.js";
