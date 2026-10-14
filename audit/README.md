@@ -160,9 +160,9 @@ the markers or delete the file to reseed it.
 ## Foundations
 
 The Foundations tier is the style-layer renderables with no component page of their own,
-AnchoredOverlay, BreakpointOverride, Entrance, FloatingLabel, GlassModalBlurTarget, GlassPane,
-GlassSurface, LabelContent, LayoutAxisProvider, LoopView, OverlayProvider, Portal, RippleClip
-and ThemeProvider; the design tokens the docs' `tokens/*` pages document (Tokens); and the kit
+AnchoredOverlay, BreakpointOverride, Entrance, FloatingLabel, GlassBlurPlane, GlassBlurScope,
+GlassModalBlurTarget, GlassPane, GlassSurface, LabelContent, LayoutAxisProvider, LoopView,
+OverlayProvider, Portal, RippleClip and ThemeProvider; the design tokens the docs' `tokens/*` pages document (Tokens); and the kit
 internals the generated `/foundation` reference page documents (FoundationReference). The
 renderables are the material inventory's style tier less the primitives with a component page
 (`STYLE_LAYER_RENDERABLES` in `tools/audit/plan-specifics.ts`), and the checklist tests hold

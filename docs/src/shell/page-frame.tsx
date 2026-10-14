@@ -1,7 +1,7 @@
 import { useId, useState, type ReactNode } from "react";
 import type { LayoutChangeEvent } from "react-native";
 import Svg, { ClipPath, Defs, LinearGradient, Polygon, Rect, Stop } from "react-native-svg";
-import { GlassSurface, View, useFormFactor, useTheme } from "@nannier/canvas";
+import { GlassBlurScope, GlassSurface, View, useFormFactor, useTheme, type GlassBlurPlaneHandle } from "@nannier/canvas";
 import { PAGE_LOOK, lookFor, shellBox, wedgeColor, wedgeGeometry, type PageLookPalette, type ShellTier } from "./page-look";
 
 // Dark Factory's frosted shell, as the docs' frame: one panel inset from the window by the
@@ -15,10 +15,16 @@ import { PAGE_LOOK, lookFor, shellBox, wedgeColor, wedgeGeometry, type PageLookP
 // it and the frame stays (Dark Factory's whole shell scrolls away), which keeps the docs'
 // navigation in reach.
 //
-// Its surface is the kit's GlassSurface on the functional layer, painting Dark Factory's
-// shell fill on every platform: on the web the frost is that fill over a 24 px blur and a
-// 1 px hairline, which is the card's shell; iOS 26 takes it as the Liquid Glass tint;
-// Android frosts where the kit has a safe plane and paints the solid fill where it has none.
+// Its surface is the kit's GlassSurface on the content layer, the stable static material
+// the kit's contract gives a panel that content sits on, painting Dark Factory's shell fill
+// on every platform: on the web that fill over a 24 px blur and a 1 px hairline, which is
+// the card's shell, and on iOS the same fill over the native frost (Liquid Glass takes a
+// fill only as a faint tint, which left the frame far sheerer than the card's milky shell).
+// On Android an in-page surface has no safe plane of its own, so the page backdrop is made
+// the plane (the kit's GlassBlurPlane, mounted with the backdrop by ./navbar.tsx and
+// ./native-header.tsx) and only the frame's material is offered it (GlassBlurScope): the
+// material is a layer of its own under the content, which stays outside the scope, so the
+// page's own glass keeps the behaviour it has without a plane.
 // In solid mode it is an opaque panel in the page's `background`, the page look around it.
 // The wedges (Dark Factory's ShellDecor) are laid over the surface, under the content.
 //
@@ -29,7 +35,7 @@ import { PAGE_LOOK, lookFor, shellBox, wedgeColor, wedgeGeometry, type PageLookP
 // Factory, whatever touches the frame's top corners rounds itself: the web shell's rail and
 // top bar (./navbar.tsx), and a native screen's scroller (./native-header.tsx), where a
 // clip is cheap.
-export function PageFrame({ children }: { children: ReactNode }) {
+export function PageFrame({ plane, children }: { plane: GlassBlurPlaneHandle; children: ReactNode }) {
   const { scheme, palette, tokens } = useTheme();
   const tier = useFormFactor();
   const look = PAGE_LOOK.palettes[lookFor(scheme, palette)];
@@ -37,24 +43,27 @@ export function PageFrame({ children }: { children: ReactNode }) {
   const { radius, maxWidth, shadow, bleed } = PAGE_LOOK.shell;
   return (
     <View style={{ flex: 1, paddingTop: top, paddingHorizontal: side }}>
-      <GlassSurface
-        layer="functional"
-        tint={look.shell}
-        style={{
-          flex: 1,
-          width: "100%",
-          maxWidth,
-          alignSelf: "center",
-          marginBottom: -bleed,
-          borderTopLeftRadius: radius,
-          borderTopRightRadius: radius,
-          backgroundColor: tokens.background,
-          boxShadow: `0 ${shadow.offsetY}px ${shadow.blur}px ${shadow.spread}px ${look.shadow}`,
-        }}
-      >
+      <View style={{ flex: 1, width: "100%", maxWidth, alignSelf: "center", marginBottom: -bleed }}>
+        <GlassBlurScope plane={plane}>
+          <GlassSurface
+            layer="content"
+            tint={look.shell}
+            style={{
+              position: "absolute",
+              top: 0,
+              right: 0,
+              bottom: 0,
+              left: 0,
+              borderTopLeftRadius: radius,
+              borderTopRightRadius: radius,
+              backgroundColor: tokens.background,
+              boxShadow: `0 ${shadow.offsetY}px ${shadow.blur}px ${shadow.spread}px ${look.shadow}`,
+            }}
+          />
+        </GlassBlurScope>
         <ShellWedges look={look} tier={tier} />
         {children}
-      </GlassSurface>
+      </View>
     </View>
   );
 }

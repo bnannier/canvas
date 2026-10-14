@@ -2,7 +2,7 @@ import { useState, type ReactNode } from "react";
 import { Platform } from "react-native";
 import { Stack, usePathname, useRouter, useIsFocused } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { View, Row, Button, Icon } from "@nannier/canvas";
+import { View, Row, Button, Icon, GlassBlurPlane, useGlassBlurPlane } from "@nannier/canvas";
 import { titleFor } from "./topbar";
 import { nativeMenuFor, sectionFor, getActiveGroup, getActiveSlug } from "../data/nav";
 import { GLYPH_RASTERS } from "../core/glyph-rasters";
@@ -23,11 +23,13 @@ import { PAGE_LOOK } from "./page-look";
 // extra flex wrapper there collapses onLayout-measured tile grids), and the web shell
 // mounts the one backdrop behind every route.
 export function ScreenFrame({ children }: { children: ReactNode }) {
+  // The page backdrop is the blur plane the frame's material frosts on Android (./page-frame.tsx).
+  const plane = useGlassBlurPlane();
   if (Platform.OS === "web") return <>{children}</>;
   return (
     <View style={{ flex: 1 }}>
-      <PageBackdrop />
-      <PageFrame>
+      <GlassBlurPlane plane={plane}><PageBackdrop /></GlassBlurPlane>
+      <PageFrame plane={plane}>
         {/* The scroller rounds itself to the frame's top corners (the frame does not clip). */}
         <View style={{ flex: 1, overflow: "hidden", borderTopLeftRadius: PAGE_LOOK.shell.radius, borderTopRightRadius: PAGE_LOOK.shell.radius }}>{children}</View>
       </PageFrame>

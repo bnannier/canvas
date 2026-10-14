@@ -435,6 +435,14 @@ export const publicApi: Readonly<Record<string, ApiEntry>> = {
   // src/style/glass-surface/glass-surface.shared.tsx
   GlassModalBlurTarget: { kind: "component", docs: "integration", section: "Native modals" },
 
+  // src/style/glass-surface/glass-blur-plane.tsx
+  useGlassBlurPlane: { kind: "hook", docs: "integration", section: "Blur planes" },
+  GlassBlurPlane: { kind: "component", docs: "integration", section: "Blur planes" },
+  GlassBlurScope: { kind: "component", docs: "integration", section: "Blur planes" },
+  GlassBlurPlaneHandle: { kind: "type", docs: "integration", section: "Blur planes" },
+  GlassBlurPlaneProps: { kind: "type", docs: "integration", section: "Blur planes" },
+  GlassBlurScopeProps: { kind: "type", docs: "integration", section: "Blur planes" },
+
   // src/style/glass-surface/glass-surface.tsx
   GlassSurface: { kind: "internal-by-accident" },
 
