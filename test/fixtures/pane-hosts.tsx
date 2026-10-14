@@ -24,6 +24,8 @@ export interface PaneHost {
   node: ReactNode;
   /** Brings the pane on screen (an editor opened by a click). */
   act?: (result: RenderResult) => void;
+  /** Web may intentionally inherit its host, while a native skin owns a pane. */
+  optionalPane?: boolean;
 }
 
 const days = Array.from({ length: 45 }, () => ({}));
@@ -84,7 +86,7 @@ export const PANE_HOSTS: PaneHost[] = [
   },
   { file: "src/organisms/filter-panel/filter-panel.shared.tsx", name: "FilterPanel", node: <FilterPanel bordered groups={[{ title: "Status", options: [{ label: "Active", checked: true }, { label: "Archived" }] }]} /> },
   { file: "src/organisms/navbars/navbars.shared.tsx", name: "Navbar", node: <Navbar brand="Canvas" links={["Dashboard", "Users"]} actionLabel="New" /> },
-  { file: "src/organisms/sidebar/sidebar.shared.tsx", name: "Sidebar", node: <Sidebar defaultActive="Dashboard" items={[{ label: "Dashboard" }, { label: "Inbox" }]} /> },
+  { file: "src/organisms/sidebar/sidebar.shared.tsx", name: "Sidebar", optionalPane: true, node: <Sidebar defaultActive="Dashboard" items={[{ label: "Dashboard" }, { label: "Inbox" }]} /> },
   { file: "src/organisms/steps/steps.shared.tsx", name: "Steps", node: <Steps steps={[{ label: "Account" }, { label: "Profile" }, { label: "Review" }]} defaultCurrent={1} /> },
   { file: "src/organisms/tab-bar/tab-bar.shared.tsx", name: "TabBar", node: <TabBar items={[{ key: "home", label: "Home", icon: () => <Icon home size={22} /> }, { key: "search", label: "Search", icon: () => <Icon search size={22} /> }]} /> },
   { file: "src/organisms/tabs/tabs.shared.tsx", name: "Tabs", node: <Tabs tabs={["General", "Security"]} /> },

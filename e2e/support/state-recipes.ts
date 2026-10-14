@@ -2061,6 +2061,7 @@ export const STATE_RECIPES: Record<string, ComponentStates> = {
   grid: { static: true, reason: LAYOUT },
   container: { static: true, reason: LAYOUT },
   chip: {
+    hover: hover("selectable", byRole("button", "Engineering")),
     focus: focus("selectable", byRole("button", "Design")),
     pressed: pressed("selectable", byRole("button", "Engineering")),
   },
@@ -2086,7 +2087,11 @@ export const STATE_RECIPES: Record<string, ComponentStates> = {
       pressed: unpassed("`onPress` makes the Avatar a button; no rail example passes it (the AvatarMenu pill's button is the Dropdown's custom trigger).", "onPress"),
     },
   },
-  badge: { static: true, reason: "A status label: it takes no input." },
+  badge: {
+    hover: hover("referencelink", byRole("link", "Open CORE-1842")),
+    focus: focus("referencelink", byRole("link", "Open CORE-1842")),
+    pressed: pressed("referencelink", byRole("link", "Open CORE-1842")),
+  },
   breadcrumb: {
     focus: focus("default", byRole("link", "Projects")),
     pressed: pressed("default", byRole("link", "Projects")),
@@ -2208,7 +2213,10 @@ export const STATE_RECIPES: Record<string, ComponentStates> = {
     invalid: invalid("charactercounter", byRole("textbox"), { type: "x".repeat(281), how: "281 characters typed against the soft cap of 280" }),
     disabled: disabled("disabled", byRole("textbox")),
   },
-  swatch: { static: true, reason: "A colour sample: it takes no input." },
+  swatch: {
+    focus: focus("themepicker", byRole("radio", "blush theme")),
+    pressed: pressed("themepicker", byRole("radio", "mint theme")),
+  },
   switch: {
     focus: focus("default", byRole("switch")),
     pressed: pressed("default", byRole("switch")),

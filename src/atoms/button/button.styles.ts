@@ -139,13 +139,20 @@ const nativeSurface = (intent: Intent) => intent !== "ghost" && intent !== "link
 // has no large, so large steps up the same way (40).
 interface WebLook { fill: string; border: string; label: string }
 
+export function webEmphasisOf(p: Pick<ButtonSkinOpts, "inverse" | "quiet">) {
+  if (p?.inverse) return "inverse";
+  if (p?.quiet) return "quiet";
+  return "default";
+}
+
 function webLook(t: ColorTokens, intent: Intent, o?: ButtonSkinOpts): WebLook {
   if (o?.disabled) {
     const edged = intent !== "ghost" && intent !== "link";
     return { fill: "transparent", border: edged ? t.border : "transparent", label: t["muted-foreground"] };
   }
-  if (o?.inverse) return { fill: "transparent", border: "rgba(255,255,255,0.5)", label: "#ffffff" };
-  if (o?.quiet) return { fill: "transparent", border: t.border, label: t["muted-foreground"] };
+  const emphasis = webEmphasisOf(o ?? {});
+  if (emphasis === "inverse") return { fill: "transparent", border: "rgba(255,255,255,0.5)", label: "#ffffff" };
+  if (emphasis === "quiet") return { fill: "transparent", border: t.border, label: t["muted-foreground"] };
   switch (intent) {
     case "primary": { const action = actionFill(t); return { fill: action, border: action, label: actionInk(t) }; }
     case "destructive": return { fill: t.destructive, border: t.destructive, label: t["destructive-foreground"] };

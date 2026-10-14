@@ -8,6 +8,15 @@ The section props (`title` / `description` / `icon` / `actions` / `footer`) rend
 
 Density: pass `compact` or `comfortable` to tighten or relax the card's own padding and the gap between flat children (`compact` takes precedence, and a density prop pads the surface on its own). `grow` fills the height a parent Row or Column hands the card (the body takes the slack, so a footer stays on its floor); inside a `Grid` cell it is implied, so the tiles of one row are equal-height without being asked.
 
+Gap-free content densities preserve dense application layouts: `dense` (12),
+`snug` (18), `cozy` (20), `relaxed` (22×24), `spacious` (28), `insetContent` (14),
+`rail` (12×14), `summary` (14×16), `metric` (14×18), `request` (18/22/18/20),
+and `menu` (12 vertical). Precedence follows that order before compact/comfortable.
+`gapless` removes flat-child spacing; `borderless`, `smallCorners`, `inset`,
+`dimmed` and `clip` control surface anatomy. `tileShadow`, `rowShadow`, and
+`emptyShadow` extend the elevation axis after raised/flat. Accessible names and
+hover-lift reporting are supported on interactive cards.
+
 ## Usage
 
 ```tsx
@@ -224,12 +233,3 @@ Pass `onPress` and the whole card becomes a control, with the button role. On th
   </Card>
 </Card>
 ```
-
-Gap-free content densities preserve dense application layouts: `dense` (12),
-`snug` (18), `cozy` (20), `relaxed` (22×24), `spacious` (28), `insetContent` (14),
-`rail` (12×14), `summary` (14×16), `metric` (14×18), `request` (18/22/18/20),
-and `menu` (12 vertical). Precedence follows that order before compact/comfortable.
-`gapless` removes flat-child spacing; `borderless`, `smallCorners`, `inset`,
-`dimmed` and `clip` control surface anatomy. `tileShadow`, `rowShadow`, and
-`emptyShadow` extend the elevation axis after raised/flat. Accessible names and
-hover-lift reporting are supported on interactive cards.

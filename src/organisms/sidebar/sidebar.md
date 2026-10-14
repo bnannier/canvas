@@ -13,6 +13,11 @@ instant.
 
 Add `responsive` to make it adapt across breakpoints: it stays the accordion rail on desktop, and at and below the `lg` breakpoint (1024px) it becomes a start-edge (left, RTL-aware) **navigation drawer** that drills through the same `sections` one level at a time (tap a group to slide in to its rows, back to return). Drive the drawer's open state with `open` / `onOpenChange` from your own hamburger button; the `header` and `footer` slots pin above and below the drill-down, just as in the rail. The drawer slides from the start (left) edge by default; `drawerRight`, `drawerTop`, and `drawerBottom` change which edge it slides in from. (This page's own left nav does exactly this: an accordion rail here, a drill-down drawer on a phone.)
 
+`embedded` renders the navigation groups inside an app-owned rail, inheriting its
+frame and bounds. Web rows retain the Argus reference: 16px fine icons, 12.5/16.25
+labels, a 3px selected edge marker, solid action counts and 34px between groups.
+`compact` reduces the horizontal inset for drawer navigation.
+
 ## Usage
 
 The one `Sidebar` below is the whole story: on desktop it is the collapsible accordion rail (tap the header chevron to shrink it to icons); narrow the window to a phone and the same component becomes a start-edge drill-down **Liquid Glass menu** opened by the top bar's hamburger, exactly like this page's own left nav. `AppShell` is the docs' live app frame (the top bar and placeholder page); the `Sidebar` wiring is the part you copy.
@@ -109,8 +114,3 @@ The one `Sidebar` below is the whole story: on desktop it is the collapsible acc
   </View>
 </View>
 ```
-
-`embedded` renders the navigation groups inside an app-owned rail, inheriting its
-frame and bounds. Web rows retain the Argus reference: 16px fine icons, 12.5/16.25
-labels, a 3px selected edge marker, solid action counts and 34px between groups.
-`compact` reduces the horizontal inset for drawer navigation.

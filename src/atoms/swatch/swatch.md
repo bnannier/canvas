@@ -11,6 +11,10 @@ it. The value lines are set in mono, and the lockup comes in two more sizes
 (`small`, `large`), as a `circle`, `inline` (the label beside the block), or as
 a `block` (a full-width ramp bar).
 
+Theme-picker samples use `blush`, `mint` or `dark` (precedence dark > mint > blush),
+with `selected` and `onPress`. These are 16px gradient radio swatches with the
+Argus selection ring and an accessible theme name. A plain sample still uses `color`.
+
 ## Usage
 
 ```tsx
@@ -57,6 +61,16 @@ a `block` (a full-width ramp bar).
 </Swatch>
 ```
 
+### Theme picker
+
+```tsx
+<Row>
+  <Swatch blush selected onPress={() => {}} />
+  <Swatch mint onPress={() => {}} />
+  <Swatch dark onPress={() => {}} />
+</Row>
+```
+
 ## Do & Don't
 
 ### Anatomy
@@ -98,7 +112,3 @@ a `block` (a full-width ramp bar).
   card
 </Swatch>
 ```
-
-Theme-picker samples use `blush`, `mint` or `dark` (precedence dark > mint > blush),
-with `selected` and `onPress`. These are 16px gradient radio swatches with the
-Argus selection ring and an accessible theme name. A plain sample still uses `color`.

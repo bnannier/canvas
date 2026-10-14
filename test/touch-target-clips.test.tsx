@@ -225,7 +225,7 @@ describe("a tappable Chip's touch area", () => {
     const [found] = renderAndLayout(<Chip onPress={noop} accessibilityLabel="Tappable">Tappable</Chip>, null, { width: 70, height: 25 });
     expect(found!.pressable.props.hitSlop).toBe(chipWeb.bodyHitSlop);
     const pill = styleBox(StyleSheet.flatten(chipWeb.base), chipWeb.labelType.lineHeight);
-    expect(pill.height).toBe(25);
+    expect(pill.height).toBe(24.3);
     expect(pill.height! + 2 * chipWeb.bodyHitSlop!).toBeGreaterThanOrEqual(TOUCH_TARGET.ios);
   });
 

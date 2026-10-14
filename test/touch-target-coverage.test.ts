@@ -50,6 +50,8 @@ const ROOT = join(import.meta.dir, "..");
  * above the minimum, or the shell already extends it with its own hitSlop.
  */
 const COVERED_ANOTHER_WAY: Record<string, string> = {
+  "atoms/badge": "Linked references pad their text and content inset to platformMinTarget through hitSlop; passive badges remain noninteractive.",
+  "atoms/swatch": "Theme-picker radio samples pad the 16px dot to platformMinTarget through hitSlop; display swatches remain noninteractive.",
   "atoms/chip": "Android measures a tappable chip and grows its touch area to the 48dp minimum (the skin's bodyMinTarget; a body beside a remove glyph reaches the pill's whole target), iOS keeps a fixed 11pt body slop that clears 44 around the 25pt pill, and the remove glyph pads to the minimum; split where body and glyph face each other, the tappable pill's RippleClip carries the body's slop, and the clipping Android pill carries what reaches past it",
   "atoms/checkbox": "hitSlop around the box when there is no label to press",
   "atoms/input": "a field is 44/56 tall by skin, above both minimums; the clear and eye glyphs carry slop, split where they face each other or the value, and the grouped box carries the part that overhangs it",

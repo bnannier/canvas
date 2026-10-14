@@ -1,6 +1,6 @@
 import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
 import { useEffect, type ReactNode } from "react";
-import { View, Pressable, Text, StyleSheet, useFillStyle, useTheme, useLayoutAxis, useReducedMotion, surfaceRipple, pressDim, RippleClip, cornerRadii, splitElevation, devWarn, GlassSurface, GlassPane, paneStyle, paneRipple, legibleWash, isGlass, type StyleProp, type ViewStyle, type TextStyle, type LayoutStyle } from "../../style/index.js";
+import { View, Pressable, Text, shape as shapeTokens, StyleSheet, useFillStyle, useTheme, useLayoutAxis, useReducedMotion, surfaceRipple, pressDim, RippleClip, cornerRadii, splitElevation, devWarn, GlassSurface, GlassPane, paneStyle, paneRipple, legibleWash, isGlass, type StyleProp, type ViewStyle, type TextStyle, type LayoutStyle } from "../../style/index.js";
 import { MaterialBehind } from "../../style/glass-surface/material-behind.js";
 import { RAISED, liftStyle, useHover, useRaiseCell, useSettling } from "../../style/hover.js";
 import { selectedCard } from "../../style/selected-card.js";
@@ -226,7 +226,7 @@ export function createCard(skin: CardSkin) {
 
     // Shape: per-OS radius; iOS adds Apple's continuous (superellipse) corner curve
     // (an iOS-only RN style prop, omitted entirely on the other skins).
-    const shape: ViewStyle = { borderRadius: props.smallCorners ? 12 : skin.radius, ...(skin.curve ? { borderCurve: skin.curve } : null) };
+    const shape: ViewStyle = { borderRadius: props.smallCorners ? shapeTokens.web.tile : skin.radius, ...(skin.curve ? { borderCurve: skin.curve } : null) };
     // The card's visual box WITHOUT the elevation shadow and WITHOUT outer layout: shape, the
     // per-variant surface colors, density padding, and the selected tint.
     const surface: StyleProp<ViewStyle> = [

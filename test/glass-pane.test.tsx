@@ -229,7 +229,7 @@ describe("every pane host keeps its solid layout under glass", () => {
   // in its place (TabBar's cell capsule), solid has the one placed child more.
   const REPLACED_INDICATOR = new Set(["TabBar"]);
   for (const host of PANE_HOSTS) {
-    it(host.name, () => holdsSolidLayout(host.name, host.node, host.act, REPLACED_INDICATOR.has(host.name)));
+    it(host.name, () => holdsSolidLayout(host.name, host.node, host.act, REPLACED_INDICATOR.has(host.name), host.optionalPane));
   }
 
   // The iOS and Android skins draw their own borders (Android's 2 dp switch track and radio
