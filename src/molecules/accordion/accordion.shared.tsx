@@ -1,3 +1,5 @@
+import { Card as WebCard } from "../card/card.js";
+import { ActivityAccordionRow } from "./accordion.activity.js";
 import { type ReactNode, useEffect, useRef, useState, useCallback } from "react";
 import { Animated, LayoutAnimation, StyleSheet } from "react-native";
 import {
@@ -122,6 +124,12 @@ export interface AccordionItem {
 }
 
 export interface AccordionProps {
+  /** Original Argus run disclosure surface, header and trace insets. */
+  activity?: boolean;
+  /** Compact activity header and trace indentation. */
+  compact?: boolean;
+  /** Activity header content; the Accordion owns its trigger and indicator. */
+  renderHeader?: (item: AccordionItem, expanded: boolean, indicator: ReactNode) => ReactNode;
   /** The disclosure rows, top to bottom. */
   items?: AccordionItem[];
   /**
@@ -177,7 +185,8 @@ function fromSet(open: Set<string>, multiple: boolean): string | string[] {
 }
 
 /** Build an Accordion component from a platform skin. */
-export function createAccordion(skin: AccordionSkin) {
+export function createAccordion(skin: AccordionSkin, parts: { Card?: typeof WebCard } = {}) {
+  const Card = parts.Card ?? WebCard;
   // One disclosure row: the header (title + rotating chevron) over its panel.
   function Row({
     item,
@@ -295,7 +304,7 @@ export function createAccordion(skin: AccordionSkin) {
       (key: string) => {
         // Animate the reveal natively (a smooth height ease); web falls back to a
         // plain show/hide. Reduce Motion skips the height ease entirely.
-        if (supportsNativeDriver && !reduced) LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+        if (!props.activity && supportsNativeDriver && !reduced) LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
         const next = new Set(open);
         if (next.has(key)) {
           next.delete(key);
@@ -306,8 +315,10 @@ export function createAccordion(skin: AccordionSkin) {
         if (!controlled) setInternal(next);
         onValueChange?.(fromSet(next, multiple));
       },
-      [open, multiple, controlled, onValueChange, reduced],
+      [open, multiple, controlled, onValueChange, reduced, props.activity],
     );
+
+    if (props.activity) return <View testID={testID} style={[FILL, style]}>{items.map((item) => <ActivityAccordionRow Card={Card} key={item.key} item={item} expanded={open.has(item.key)} disabled={!!disabled || !!item.disabled} compact={!!props.compact} renderHeader={props.renderHeader} onToggle={() => toggle(item.key)} />)}</View>;
 
     // The container is a CONTENT-layer pane under glass when it paints a surface of its
     // own (the card variant, the iOS inset group); a borderless list stays bare.

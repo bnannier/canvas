@@ -1440,3 +1440,16 @@ No artwork stops, geometry, type or motion parameters are retuned.
 | Date | Effect and profile | Runtime and device | Revision (dirty?) | Surface | Values tried | rAF p50 / p95 / max (ms) | What the comparison showed | Versus reference | Artifacts |
 |---|---|---|---|---|---|---|---|---|---|
 | 2026-10-14 | Authored gradients and featured hover | Chrome headless, macOS, DPR1, 1440x960 and 390x844 | Canvas 8c5a822e plus Card artwork; Argus 7c8f631 plus imports | shipped Argus roster and UI gallery, solid, blush/mint/dark | Original stops, CSS-angle endpoints, responsive dimensions; unchanged 2px/180ms ease lift and shadow | sample traces attached | Desktop blush/mint resting views are pixel-identical; dark has ten differing pixels. Phone and hover images retain appearance and geometry with primarily one-level SVG/background raster differences; mobile blush has 6317 one-level differences and 132 other pixels. Gallery differences are sparse (573–1541 pixels). Motion traces preserve endpoints, duration, easing and shadow. | matches original geometry and appearance within renderer raster variation; native WKWebView/device rendering unassessed | `tools/native/reference/argus-branded-card-adoption/featured-before.png`, `featured-after.png`, `motion-before.json`, `motion-after.json` |
+
+
+## Argus run disclosure adoption, 2026-10-14
+
+The original run header is the reference: immediate content mount, 14px header
+vertical inset, 18px desktop/16px phone horizontal inset, desktop trace indentation
+68px and phone 16px. The down chevron turns 180 degrees in 180ms using CSS ease;
+Reduce Motion snaps. These values are preserved rather than tuned. The app hidden
+materials harness uses the same Canvas Icon disclosure as the shipped run header.
+
+| Date | Effect and profile | Runtime and device | Revision (dirty?) | Surface | Values tried | rAF p50 / p95 / max (ms) | What the comparison showed | Versus reference | Artifacts |
+|---|---|---|---|---|---|---|---|---|---|
+| 2026-10-14 | Run disclosure and indicator | Chrome headless, macOS, DPR1, 1440x1100 and 390x844 | Canvas 3dc5af01 plus Accordion/Icon changes; Argus e3806c6 plus imports | shipped Argus Runs, solid, blush/mint/dark | Original geometry and 180ms ease retained; native animated driver in the shared mechanism | n/a, endpoint captures | All six expanded run captures are pixel-identical. Controlled toggling, disabled state, nested action isolation and expanded semantics pass. Existing chevron curve/endpoints are copied unchanged. | matches original web run layout and endpoint appearance; native animation not assessed | `tools/native/reference/argus-run-disclosure/run-before.png` and `run-after.png` |
