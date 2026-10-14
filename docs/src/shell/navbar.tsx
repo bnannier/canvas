@@ -7,6 +7,7 @@ import { NativeTabs } from "expo-router/unstable-native-tabs";
 import { Sidebar } from "./sidebar";
 import { Topbar, titleFor } from "./topbar";
 import { MobileNavBar } from "./mobile-nav-bar";
+import { PageBackdrop } from "./page-backdrop";
 import { SearchModal } from "./search-modal";
 import { ThemeToggles } from "./theme-toggles";
 import { WebScrollbarTheme, WebScrollPadding, SCROLLBAR_W } from "../ui/web-scrollbar";
@@ -84,7 +85,6 @@ function sectionIcon(name: string, active: boolean) {
 // current section's sub-nav, mirroring the native iOS app). The cmd-K search modal and
 // the web scrollbar gutter are shared.
 function WebNav() {
-  const { tokens } = useTheme();
   const insets = useSafeAreaInsets();
   const pathname = usePathname();
   const router = useRouter();
@@ -121,11 +121,13 @@ function WebNav() {
   // Only the navigation siblings change: desktop gets the sidebar rail and Topbar;
   // narrow web gets MobileNavBar, bottom tabs and the responsive sidebar drawer.
   return (
-    // The shell paints the page backdrop on the web (TabShell's contentStyle does it
-    // natively), so it is marked for tooling the way page.tsx marks its scroller: the
-    // e2e paint check reads the backdrop off the Page scroller, and off this node on a
-    // route with no Page mounted yet (a runtime fixture before its client-only body).
-    <SafeAreaView {...({ dataSet: { shellBackdrop: "" } } as object)} style={{ flex: 1, backgroundColor: tokens.background }} edges={["top"]}>
+    // The shell's first child is the page look (./page-backdrop.tsx), Dark Factory's
+    // gradient and orbs fixed to the window behind everything; a native screen mounts its
+    // own inside ScreenFrame. Nothing above it paints a page fill, so the e2e paint check
+    // reads the look off the backdrop's own stops; the marker stays for the tools that
+    // find the shell.
+    <SafeAreaView {...({ dataSet: { shellBackdrop: "" } } as object)} style={{ flex: 1 }} edges={["top"]}>
+      <PageBackdrop />
       <WebScrollbarTheme />
       <WebScrollPadding top={headerHeight} bottom={wide ? 0 : barHeight} />
       <Row flush fill>

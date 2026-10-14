@@ -7,8 +7,7 @@
  * use), so an entire "light" screenshot set was really dark and nothing said so.
  * Reading the scheme back off the painted pixels is what makes a silent no-op fail.
  */
-import { colorsFor } from "../../src/style/tokens.ts";
-import { channels, gotoDocs, readBackground, readScheme } from "../support/docs";
+import { gotoDocs, lookStops, readPageLook, readScheme } from "../support/docs";
 import { expect, test } from "../support/fixtures";
 
 test("the toggle really changes what is painted", async ({ page }) => {
@@ -40,23 +39,24 @@ test("the launch URL seeds the scheme, and a later navigation does not re-seed i
   expect(await readScheme(page), "a client-side navigation re-seeded the scheme").toBe("dark");
 });
 
-test("?palette=mint paints the mint background", async ({ page }) => {
+test("?palette=mint paints the mint page look", async ({ page }) => {
   // gotoDocs itself fails when a page paints light in the wrong palette. This pins
-  // what that check rests on: the mint seed reaches the kit's ThemeProvider, and the
-  // two light palettes differ on the backdrop, so the check cannot pass by chance.
+  // what that check rests on: the mint seed reaches the kit's ThemeProvider and the page
+  // look behind the shell, and the two light looks differ, so the check cannot pass by
+  // chance.
   await gotoDocs(page, "/components/button", { scheme: "light", palette: "mint" });
-  const painted = await readBackground(page);
-  expect(painted).toEqual(channels(colorsFor("mint", "light").background));
-  expect(painted).not.toEqual(channels(colorsFor("blush", "light").background));
+  const painted = await readPageLook(page);
+  expect(painted).toEqual(lookStops("light", "mint"));
+  expect(painted).not.toEqual(lookStops("light", "blush"));
 });
 
 test("scheme=dark&palette=mint paints dark: the kit lets dark win over mint", async ({ page }) => {
   await gotoDocs(page, "/components/button", { scheme: "dark", palette: "mint" });
   expect(await readScheme(page)).toBe("dark");
-  expect(await readBackground(page)).toEqual(channels(colorsFor("mint", "dark").background));
+  expect(await readPageLook(page)).toEqual(lookStops("dark", "mint"));
 });
 
-test("the drawer's Palette control repaints the backdrop, and is absent while dark", async ({ page }) => {
+test("the drawer's Palette control repaints the page look, and is absent while dark", async ({ page }) => {
   // On the web the Blush/Mint control is carried only by the labelled appearance form,
   // the phone web drawer's footer (docs/src/shell/navbar.tsx), so the page opens at phone
   // width. It opens dark, where the control has nothing to paint and is not rendered.
@@ -75,21 +75,21 @@ test("the drawer's Palette control repaints the backdrop, and is absent while da
   const blush = palette.getByRole("tab", { name: "Blush", exact: true });
   const mint = palette.getByRole("tab", { name: "Mint", exact: true });
   await expect(blush).toHaveAttribute("aria-selected", "true");
-  expect(await readBackground(page)).toEqual(channels(colorsFor("blush", "light").background));
+  expect(await readPageLook(page)).toEqual(lookStops("light", "blush"));
 
   await mint.click();
   await expect(mint).toHaveAttribute("aria-selected", "true");
-  await expect.poll(() => readBackground(page)).toEqual(channels(colorsFor("mint", "light").background));
+  await expect.poll(() => readPageLook(page)).toEqual(lookStops("light", "mint"));
 
   await blush.click();
   await expect(blush).toHaveAttribute("aria-selected", "true");
-  await expect.poll(() => readBackground(page)).toEqual(channels(colorsFor("blush", "light").background));
+  await expect.poll(() => readPageLook(page)).toEqual(lookStops("light", "blush"));
 
   // Mint picked, then dark: the control goes, and the kit paints its one dark palette.
   await mint.click();
-  await expect.poll(() => readBackground(page)).toEqual(channels(colorsFor("mint", "light").background));
+  await expect.poll(() => readPageLook(page)).toEqual(lookStops("light", "mint"));
   await scheme.click();
   await expect.poll(() => readScheme(page)).toBe("dark");
   await expect(palette).toHaveCount(0);
-  expect(await readBackground(page)).toEqual(channels(colorsFor("mint", "dark").background));
+  expect(await readPageLook(page)).toEqual(lookStops("dark", "mint"));
 });

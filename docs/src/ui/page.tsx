@@ -1,6 +1,6 @@
 import { type ReactNode, useEffect, useRef } from "react";
 import { Platform } from "react-native";
-import { ScrollView, View, Column, Container, OverlayProvider, useTheme } from "@nannier/canvas";
+import { ScrollView, View, Column, Container, OverlayProvider } from "@nannier/canvas";
 import { CONTENT_TOP_INSET, CONTENT_BOTTOM_INSET } from "../shell/topbar";
 import { ScreenFrame } from "../shell/native-header";
 import { H1, Lead } from "./prose";
@@ -22,7 +22,6 @@ import { useAuditProbe } from "../audit/probe-context";
 // holds the page still while it is open. Playground stages mount their own nearer
 // host and place their overlays within the stage the same way.
 export function Page({ children, viewportOverlays = false }: { children: ReactNode; viewportOverlays?: boolean }) {
-  const { tokens } = useTheme();
   // The scroller, published to the native audit driver (docs/src/audit/probe-context.tsx)
   // so it can bring a card taller than the screen into view one segment at a time. The
   // probe is null outside the audit build, where this registers nothing and no sensor
@@ -44,11 +43,11 @@ export function Page({ children, viewportOverlays = false }: { children: ReactNo
         {...(probe ? { scrollToOverflowEnabled: true } : null)}
         // Marks the page's scroller for tooling. The docs scroll in an INNER view, not
         // the window, so a check for "does this page scroll sideways" has to ask this
-        // node and not the document. Its fill is the page backdrop, so the e2e paint
-        // check (gotoDocs) reads the scheme and palette off it too. Web-only
-        // attribute; a no-op on native.
+        // node and not the document. It paints no fill: the page look behind it
+        // (docs/src/shell/page-backdrop.tsx) shows through. Web-only attribute; a
+        // no-op on native.
         {...(Platform.OS === "web" ? ({ dataSet: { pageScroll: "" } } as object) : null)}
-        style={{ flex: 1, backgroundColor: tokens.background }}
+        style={{ flex: 1 }}
         contentInsetAdjustmentBehavior="automatic"
         contentContainerStyle={{
           // Web: clear the absolute Topbar overlay (CONTENT_TOP_INSET = 72). Native: iOS
