@@ -28,6 +28,7 @@ export const READING_FLOOR = { body: 12, lead: 12, small: 11, tiny: 10, caption:
 export type ReadingRole = keyof typeof READING_FLOOR;
 
 export const TEXT_ROLES: Record<string, Record<string, ReadingRole>> = {
+  "src/atoms/avatar/avatar-menu.shared.tsx": { ACCOUNT_SECONDARY: "tiny" },
   "src/organisms/board/board.styles.ts": { plainLabel: "caption", plainEmptyLabel: "small" },
   "src/molecules/feeds/feeds.styles.ts": { activityTime: "tiny", traceTime: "small", traceKind: "caption" },
   "src/style/field-label.ts": { fieldEyebrow: "caption" },

@@ -94,6 +94,16 @@ A lone avatar as the account trigger: the Dropdown makes the disc its press targ
 </Dropdown>
 ```
 
+### Argus account menu
+
+`account` preserves the original Argus 32px orchid disc, glow, name and role
+metrics, and compact menu. `triggerLabel` names the one press target;
+`menuLabel` independently names its menu. Bounds use `menuWidth` and `maxHeight`.
+
+```tsx
+<AvatarMenu account name="Bobby" email="Principal Engineer" initials="B" triggerLabel="Viewing as Principal Engineer. Switch role" menuLabel="View as role" menuWidth={300} maxHeight={420} items={[{ label: "Principal Engineer", selected: true }, { label: "Architect" }]} />
+```
+
 ### Account menu
 
 Built on Dropdown, so in glass mode the menu is Dropdown's dense-layer glass card
