@@ -71,11 +71,18 @@ export interface FeedItem {
   /** Actor who performed the action, rendered bold (e.g. "Rachel Chen"). */
   actor?: string;
   /** The action text, muted (e.g. "approved the request"). */
-  action: string;
+  action?: string;
+  /** Rich event content, used by the activity and trace rows. */
+  content?: ReactNode;
+  /** Trace category, rendered as an inline eyebrow. */
+  kind?: string;
+  /** Trace marker and optional halo colors. */
+  color?: string;
+  halo?: string;
   /** Optional target of the action, muted and trailing the action. */
   target?: string;
   /** Relative timestamp, muted and small (e.g. "2 hours ago"). */
-  time: string;
+  time?: string;
   /** Photo URL for the avatar lead; falls back to initials from the actor. */
   avatar?: string;
   /**
@@ -94,6 +101,8 @@ export interface FeedProps {
   /** Events to render, top to bottom. */
   items?: FeedItem[];
   // Lead axis (pick one; default is the connector node + vertical line).
+  activity?: boolean;
+  trace?: boolean;
   connector?: boolean;
   avatar?: boolean;
   // Density modifier: tightens the row padding and connector spacing.
@@ -122,7 +131,7 @@ export interface FeedProps {
   style?: LayoutStyle;
 }
 
-export type Lead = "connector" | "avatar";
+export type Lead = "activity" | "trace" | "connector" | "avatar";
 
 // The contract a platform skin fulfills. The shell renders the card surface, the
 // connector/avatar rows, the node, the connector line, and the labels; the skin
@@ -175,6 +184,8 @@ const NODE_ICON_SIZE = 16;
 
 // Lead precedence when more than one is passed: first match wins.
 export function leadOf(p: FeedProps): Lead {
+  if (p.activity) return "activity";
+  if (p.trace) return "trace";
   if (p.connector) return "connector";
   if (p.avatar) return "avatar";
   return "connector";
@@ -260,6 +271,26 @@ export function createFeed(skin: FeedSkin, Avatar: AvatarComponent = WebAvatar) 
         <Text style={skin.timeLabel(tokens)}>{item.time}</Text>
       </View>
     );
+
+    if (lead === "activity" || lead === "trace") {
+      const renderRow = (item: FeedItem, index: number, listItem: ViewProps) => {
+        const rowStyle = lead === "activity" ? s.activityRow(tokens) : s.traceRow(item.time);
+        const content = <>
+          {lead === "activity" ? <Text style={s.activityTime(tokens)}>{item.time}</Text> : <>
+            {item.time !== undefined ? <Text style={s.traceTime(tokens)}>{item.time}</Text> : null}
+            <View style={s.traceMarkerSlot(item.time !== undefined)}><View style={s.traceMarker(item.color ?? tokens["muted-foreground"], item.halo)} /></View>
+          </>}
+          <Text style={lead === "activity" ? s.activityText(tokens) : s.traceText(tokens)}>
+            {lead === "trace" && item.kind ? <Text style={s.traceKind(tokens)}>{item.kind}{"   "}</Text> : null}
+            {item.content ?? item.action}
+          </Text>
+        </>;
+        if (onItemPress) return <View {...listItem}><Pressable accessibilityRole="button" onPress={() => onItemPress(index)} android_ripple={ripple} style={({ pressed }) => [rowStyle, targetFloor, skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null]}>{content}</Pressable></View>;
+        return <View {...listItem} style={rowStyle}>{content}</View>;
+      };
+      const body = windowed ? <FlatList {...bodyProps} data={items} renderItem={({ item, index }) => renderRow(item, index, windowedListItem(index, items.length))} keyExtractor={keyOf} showsVerticalScrollIndicator={false} /> : <View {...list}>{items.map((item, index) => <Fragment key={keyOf(item, index)}>{renderRow(item, index, LIST_ITEM)}</Fragment>)}</View>;
+      return <View testID={testID} style={[fill, style, bodyFrame.ring()]}>{body}</View>;
+    }
 
     if (lead === "avatar") {
       // Avatar lead: each row leads with the actor's avatar; rows are ruled by a

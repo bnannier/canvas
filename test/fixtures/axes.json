@@ -3710,16 +3710,25 @@
     ],
     "resolver": "src/molecules/feeds/feeds.shared.tsx#leadOf",
     "order": [
+      "activity",
+      "trace",
       "connector",
       "avatar"
     ],
     "none": "connector",
     "single": {
+      "activity": "activity",
+      "trace": "trace",
       "connector": "connector",
       "avatar": "avatar"
     },
     "pairs": {
-      "avatar + connector": "connector"
+      "activity + avatar": "activity",
+      "activity + connector": "activity",
+      "activity + trace": "activity",
+      "avatar + connector": "connector",
+      "avatar + trace": "trace",
+      "connector + trace": "trace"
     }
   },
   "GridList.columns": {
