@@ -16,8 +16,9 @@ import type { MaterialCapabilities } from "../src/style/glass-surface/material-r
 // capabilities are iOS 26's by spy (the shared resolution reads the web runtime's hook under
 // test). Pinned: which layers take Liquid Glass and which the frost; the layer's fill
 // beneath the glass; a brand as the glass's tintColor with no fill of its own, and a tint
-// painted with it; the specular rim on the frost only, with a brand fill over the blur;
-// `clear`; and that solid and every accessibility rung mount neither view.
+// painted with it; the specular rim on the frost only, with every fill over the blur
+// (test/native-frost-paint-order.test.tsx holds that order for every case); `clear`; and
+// that solid and every accessibility rung mount neither view.
 
 type Props = Record<string, unknown>;
 const ios26: MaterialCapabilities = { platform: "ios", frost: true, liquid: true, requiresTarget: false };
@@ -77,7 +78,7 @@ describe("the iOS host on iOS 26 (Liquid Glass available)", () => {
       const { container } = render(<ThemeProvider light glass><GlassSurface {...props} style={SHAPE} /></ThemeProvider>);
       expect(liquid).toHaveLength(0);
       expect(frost).toHaveLength(1);
-      expect(layersOf(container).map(kind)).toEqual(["fill", "frost", "rim"]);
+      expect(layersOf(container).map(kind)).toEqual(["frost", "fill", "rim"]);
       expect(rimShadow(layersOf(container)[2]!)).toContain("inset");
       expect(frost[0]).toMatchObject({ intensity: "layer" in props ? CONTENT_INTENSITY : GLASS_INTENSITY, tint: "light" });
     });

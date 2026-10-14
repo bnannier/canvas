@@ -23,7 +23,8 @@ import { Card } from "../src/molecules/card/card.tsx";
 import { Radio, RadioGroup } from "../src/atoms/radio/radio.tsx";
 import { Radio as IosRadio } from "../src/atoms/radio/radio.ios.tsx";
 import { Radio as AndroidRadio } from "../src/atoms/radio/radio.android.tsx";
-import { Text, View } from "react-native";
+import { Platform, Text, View } from "react-native";
+import * as materialRuntime from "../src/style/glass-surface/material-runtime.ts";
 import { Icon } from "../src/atoms/icon/icon.tsx";
 import { Tabs as IosTabs } from "../src/organisms/tabs/tabs.ios.tsx";
 import { Sidebar } from "../src/organisms/sidebar/sidebar.tsx";
@@ -341,9 +342,10 @@ describe("state washes", () => {
         for (const { name, pane, web } of panes) {
           if (web && platform !== "web") continue;
           // A field's addon and PhoneInput's country segment paint the soft inner fill over the
-          // error wash, under the same muted ink: on the web host capped for that ink
-          // (legibleInnerFill, GS-2), on a native host at the soft strength.
-          const addon = platform === "web" ? legibleInnerFill({ tokens: t, glass: g, dark }, pane, "soft") : alpha(t.foreground, dark ? 0.09 : 0.06);
+          // error wash, under the same muted ink, capped for that ink on every host
+          // (legibleInnerFill, GS-2; a native host too since its frost paints the field's tint
+          // over its blur, glass-surface-native-frost-self-sample-1).
+          const addon = legibleInnerFill({ tokens: t, glass: g, dark }, pane, "soft");
           const body = pane.clear ? alpha(t.card, dark ? 0.28 : 0.22) : surfaceUnderFill(g, pane.layer);
           for (const wash of ["error", "selection"] as const) {
             const beds = (fill: string) => bases.flatMap((base) => wash === "error" ? [composite(fill, base), composite(addon, composite(fill, base))] : [composite(fill, base)]);
@@ -354,8 +356,11 @@ describe("state washes", () => {
               // Where the body alone misses the floor a wash would only deepen the miss, so the
               // pane keeps its body. That is never the web host since the addon is capped for
               // its ink (GS-2): only the native host, whose tints put the dark control puck's
-              // muted ink at 4.20:1 (3.33 with the addon) where the iOS device's frost, which
-              // paints a body the tints do not predict, measures 4.76 with the addon (GP-11).
+              // muted ink at 4.20:1 over the page token, where on the iOS device, whose dark
+              // frost runs darker than that token, the field's body with its tint over the
+              // frost measures 4.91, its addon's `$` too, the addon's fill capped to nothing
+              // (glass-surface-native-frost-self-sample-1; with the fill beneath the frost it
+              // measured 4.76 on the full-strength addon, GP-11).
               expect(platform, `${where}: the web host never misses the ink floor`).toBe("native");
               expect(fill, where).toBe(body);
               continue;
@@ -688,8 +693,10 @@ describe("Radio, Checkbox and Switch draw their solid look under glass (GS-5)", 
 // suffix addon, PhoneInput's country segment) is capped for its ink like a wash. The docs'
 // three-up drew the iOS skin's field through the web host's dark control puck, where the
 // addon's `$` read 3.93 to 3.99:1 (input/currency, input/prefix, field/helpertext,
-// field/amount); the iOS device itself reads 4.76.
-describe("a fill that carries ink is capped for it on the web host (GS-2)", () => {
+// field/amount). The iOS device read 4.76 while its frost painted over the field's tint, and
+// 3.83 at the full soft strength once the tint lay over the frost, so a native host caps the
+// fill too (4.91 on the device; glass-surface-native-frost-self-sample-1).
+describe("a fill that carries ink is capped for it (GS-2)", () => {
   const panes = [
     { name: "clear field", pane: { clear: true, layer: "control" as const } },
     { name: "control puck", pane: { layer: "control" as const } },
@@ -739,6 +746,36 @@ describe("a fill that carries ink is capped for it on the web host (GS-2)", () =
     };
     expect(rgbaOf(addonOf("ios"))).toEqual(rgbaOf(legibleInnerFill({ tokens: dark.tokens, glass: dark.webGlass, dark: true }, { layer: "control" })));
     expect(rgbaOf(addonOf("web"))).toEqual(rgbaOf(alpha(dark.tokens.foreground, 0.09)));
+  });
+
+  // A native host caps the addon too (glass-surface-native-frost-self-sample-1): its frost now
+  // paints the field's tint over its blur, so the body is the tints as composited, and at the
+  // full soft strength the iOS device read the dark addon's `$` at 3.83:1 where the cap
+  // leaves no fill and the `$` at 4.91. The field renders as an iOS build does (the platform
+  // and its frost capability by spy); the theme's tints are the web's under test, so the cap
+  // is read through the same resolver from the theme the field rendered with.
+  it("caps the addon on a native host too, where it once kept the full soft strength", async () => {
+    const os = Object.getOwnPropertyDescriptor(Platform, "OS")!;
+    Object.defineProperty(Platform, "OS", { configurable: true, value: "ios" });
+    const caps = spyOn(materialRuntime, "useMaterialCapabilities").mockReturnValue({ platform: "ios", frost: true, liquid: false, requiresTarget: false });
+    try {
+      const { Input: IosInput } = await import("../src/atoms/input/input.ios.tsx");
+      const dark = LOOKS.find((look) => look.name === "dark")!;
+      const { container } = render(
+        <ThemeProvider glass dark>
+          <View testID="ios"><IosInput label="Amount" prefix="$" placeholder="0.00" /></View>
+        </ThemeProvider>,
+      );
+      await waitFor(() => expect(materialLayers(container)).toBeGreaterThan(0));
+      const dollar = Array.from(container.querySelectorAll("*")).find((node) => node.textContent === "$" && node.children.length === 0)!;
+      const addon = (dollar.parentElement as HTMLElement).style.backgroundColor;
+      const capped = legibleInnerFill({ tokens: dark.tokens, glass: dark.webGlass, dark: true }, { layer: "control" }, "soft");
+      expect(rgbaOf(addon)).toEqual(rgbaOf(capped));
+      expect(rgbaOf(addon)).not.toEqual(rgbaOf(alpha(dark.tokens.foreground, 0.09)));
+    } finally {
+      caps.mockRestore();
+      Object.defineProperty(Platform, "OS", os);
+    }
   });
 
   // PhoneInput's country segment is the other fill that carries ink (its flag and caret):

@@ -126,12 +126,14 @@ export function legibleWash(theme: Pick<ThemeValue, "tokens" | "glass" | "dark">
  * fill keeps its full strength wherever that already holds, and where even the body alone
  * misses the floor it is no fill at all.
  *
- * The body is the tints the browser composites as they are, so this is the web host's
- * answer (a host whose frost adds no colour of its own: Dark Factory's plain frost). A native
- * frost paints its own scheme material over the pane's under-fill, which the tints do not
- * predict (on the iOS device a dark field's body is #272730 and its addon's `$` reads 4.76:1
- * at the full strength, where the tints alone would put it at 3.33), so a native host keeps
- * the strength (`useTextEntryMaterial`).
+ * The body is the tints as composited, which is what every host paints: the web's frost
+ * and the native frost alike paint the pane's tint over their blur
+ * (glass-surface-native-frost-self-sample-1), so every host caps the fill
+ * (`useTextEntryMaterial`). A native frost's own light or dark veil runs a few levels lighter
+ * or darker than the page token the cap is solved on, which only raises the ink's contrast:
+ * on the iOS device a dark field's body is #373740 and its `$` reads 4.91:1 on it, the addon
+ * capped to no fill, where the full soft strength read 3.83. (While the native frost painted
+ * over the tint, its body read #272730 and the full-strength addon 4.76.)
  */
 export function legibleInnerFill(theme: Pick<ThemeValue, "tokens" | "glass" | "dark">, pane: WashPane = {}, strength: InnerFillStrength = "soft"): string {
   const body = paneBody(theme, pane);

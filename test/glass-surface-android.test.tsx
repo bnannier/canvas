@@ -16,12 +16,13 @@ import type { MaterialCapabilities } from "../src/style/glass-surface/material-r
 // expo-blur's frost on its releases before 57. Both frost views are stand-ins that record
 // their props and render a marked View, and the capabilities are Android's by spy (the shared
 // resolution reads the web runtime's hook under test). Pinned: each path's paint order (the
-// capture frost under the fill, which paints over it since it samples a separate plane; the
-// fill under expo-blur's frost), and that the host draws its specular rim through SpecularRim
-// as iOS's does: a surface taller than a band (a long DataTable, a Props table, 4158 pt) in
-// bands from its first render, none of whose shadows is taller than a band and its overlaps,
-// a short one whole, and a surface its host re-renders taller in bands from that commit
-// (glass-surface-ios-grey-1, glass-surface-rim-first-frame-1, glass-surface-rim-growth-1).
+// frost first, the fill over it, the rim last, on the capture frost and expo-blur's frost
+// alike; test/native-frost-paint-order.test.tsx holds it for every case), and that the host
+// draws its specular rim through SpecularRim as iOS's does: a surface taller than a band (a
+// long DataTable, a Props table, 4158 pt) in bands from its first render, none of whose
+// shadows is taller than a band and its overlaps, a short one whole, and a surface its host
+// re-renders taller in bands from that commit (glass-surface-ios-grey-1,
+// glass-surface-rim-first-frame-1, glass-surface-rim-growth-1).
 
 type Props = Record<string, unknown>;
 const overlay: MaterialCapabilities = { platform: "android", frost: true, liquid: false, requiresTarget: true };
@@ -104,7 +105,7 @@ async function mount(wrap: (node: ReactNode) => ReactNode = (node) => node, chil
 describe("the Android host's frost paths and their rim", () => {
   for (const [name, capabilities, order] of [
     ["canvas-blur's capture frost in an overlay", overlay, ["capture-frost", "fill", "rim"]],
-    ["expo-blur's frost", expoBlur, ["fill", "frost", "rim"]],
+    ["expo-blur's frost", expoBlur, ["frost", "fill", "rim"]],
   ] as const) {
     it(`draws a tall surface's rim in bands over ${name}`, async () => {
       stubs(capabilities);

@@ -1,7 +1,7 @@
-// Android material host: the layer's tint, then the canvas-blur capture frost when the
-// app installed @nannier/canvas-blur and a safe capture target is ready, else expo-blur's
-// frost on its releases before 57 (from 57 a surface without a target resolves solid,
-// see frostMethodProps), then the specular rim. Only decoration changes when appearance
+// Android material host: the canvas-blur capture frost when the app installed
+// @nannier/canvas-blur and a safe capture target is ready, else expo-blur's frost on its
+// releases before 57 (from 57 a surface without a target resolves solid, see
+// frostMethodProps), then the layer's tint over the frost, then the specular rim. Only decoration changes when appearance
 // does. The web and iOS hosts are their own files (glass-surface.tsx and
 // glass-surface.ios.tsx), so a web material change never reaches Android.
 import { View } from "react-native";
@@ -20,16 +20,17 @@ const EMPTY_TARGET = { current: null };
  * The host every kit glass surface renders through (a Card, a Dialog, a Popover's card, the
  * Navbar, an option list and the rest), painting its layer's material behind its children.
  *
- * On the web the material is Dark Factory's plain frost (the layer's tint, a 24 px backdrop
- * blur with no saturation shift and a 1 px inset hairline). On iOS 26 and later it is
- * Apple's Liquid Glass through expo-glass-effect for the functional, control and dense
- * layers, and expo-blur's frost with a specular rim for content and static surfaces and
- * before iOS 26. On Android 12 and later with `@nannier/canvas-blur` installed, it is that
+ * On the web the material is Dark Factory's plain frost (a 24 px backdrop blur with no
+ * saturation shift, the layer's tint painted over it, and a 1 px inset hairline). On iOS 26
+ * and later it is Apple's Liquid Glass through expo-glass-effect for the functional, control
+ * and dense layers, and expo-blur's frost with a specular rim for content and static surfaces
+ * and before iOS 26. On Android 12 and later with `@nannier/canvas-blur` installed, it is that
  * package's capture frost where a capture plane is ready (an overlay outlet, a bridged Modal),
  * and a surface in the page, which has none, resolves its solid skin; otherwise (without the
  * package, or on Android 11 and earlier, where it captures nothing) it is expo-blur's frost on
  * expo-blur's releases before 57, in the page as in an overlay, and from 57 the surface
- * resolves solid. A `brand` paints brand-tinted glass and a `tint` a wash.
+ * resolves solid. Every frost carries the layer's tint over its blur, as Dark Factory's
+ * GlassSurface does. A `brand` paints brand-tinted glass and a `tint` a wash.
  *
  * Where its material resolves solid (in solid mode, under Reduce Transparency or Increase
  * Contrast, where an optional peer is missing, a browser lacks a backdrop filter or an
@@ -62,18 +63,16 @@ export function GlassSurface(props: GlassSurfaceProps) {
   const translucent = sheer && layer === "content";
   const intensity = clear ? CLEAR_INTENSITY : surfaceIntensity(layer, translucent);
   const fill = materialFill(style, props.stateBorder);
-  const nativeCapture = NativeCaptureFrost !== undefined && target !== null && !solid;
-  // The fill paints beneath the material, except over the capture frost (which samples
-  // a separate plane), and a brand colour, which paints over it so its solved colour is the
-  // rendered one (`frostFill`).
-  const fillOf = frostFill(theme, props);
-  const tintLayer = <View style={[fill, { backgroundColor: fillOf.color, opacity: translucent ? SHEER_FILL_OPACITY : 1 }]} />;
-  const over = nativeCapture || fillOf.over;
+  // The fill paints OVER either frost, then the rim, as on every frost path (`frostFill`,
+  // glass-surface-native-frost-self-sample-1): a blur samples what is painted beneath it, so
+  // a fill there is blurred into the frost it belongs to and dyed by its veil. canvas-blur's
+  // capture frost samples a separate plane and always took the fill over it; expo-blur's frost
+  // before 57 now does too.
+  const tintLayer = <View style={[fill, { backgroundColor: frostFill(theme, props), opacity: translucent ? SHEER_FILL_OPACITY : 1 }]} />;
   const material = solid ? null : <>
-    {over ? null : tintLayer}
     {NativeCaptureFrost && target ? <NativeCaptureFrost targetRef={target} intensity={intensity} tint={theme.dark ? "dark" : "light"} style={fill} onTargetRejected={reject ? () => reject(target) : undefined} />
       : FrostView ? <FrostView intensity={intensity} tint={theme.dark ? "dark" : "light"} {...frostMethodProps(requiresBlurTarget)} style={fill} /> : null}
-    {over ? tintLayer : null}
+    {tintLayer}
     <SpecularRim style={style} dark={theme.dark} inside={props.stateBorder} />
   </>;
   return <GlassBox {...props} style={contrastStyle(theme, style, props.stateBorder)} solid={solid} material={material} />;
