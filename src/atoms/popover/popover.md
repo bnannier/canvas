@@ -19,6 +19,14 @@ button, and the sheet a dense-layer one, legible over its scrim; focus enters on
 card's placement has committed, and the `inline` card is a static in-flow panel. Solid
 mode paints the skin's own panel.
 
+An existing control can own the trigger: pass its `anchorRef` and drive `open`
+with `onOpenChange`. The popover then adds no trigger or layout wrapper. Name
+custom content with `accessibilityLabel`. `compact` uses the original Argus panel
+inset and outside hairline on web, with scrolling contents; `comfortable` gives
+its filter panel more room. `panelWidth` and `maxHeight` bound the overlay.
+`anchored` keeps a floating card at narrow widths, and `alignEnd` follows the
+trigger’s trailing edge.
+
 ## Usage
 
 ```tsx
@@ -33,6 +41,15 @@ mode paints the skin's own panel.
 ```
 
 ## Variants
+
+### Compact panel
+
+```tsx
+<Popover compact comfortable anchored panelWidth={320} trigger="Filters" accessibilityLabel="Filters">
+  <Typography small muted>Choose the roles and pods to include.</Typography>
+</Popover>
+```
+
 
 ### Inline
 

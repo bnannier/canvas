@@ -2,6 +2,7 @@ import { type ReactNode } from "react";
 import { type ViewStyle, type TextStyle } from "react-native";
 import Svg, { Path } from "react-native-svg";
 import { type ColorTokens, customShadow, shadow, shape } from "../../style/index.js";
+import { menuPanel } from "../../style/menu-look.js";
 import { typeScale } from "../../style/type-scale.js";
 
 // Co-located Popover skins, one per platform, all driven by the theme tokens (passed
@@ -40,6 +41,8 @@ export interface PopoverSkin {
   /** The card's fixed width in px. The shell hands it to AnchoredOverlay so a
    *  narrow outlet (a phone screen) clamps the card instead of overflowing. */
   cardWidth: number;
+  /** Compact application panel with an outside hairline. */
+  compactCard?: (t: ColorTokens) => ViewStyle;
   /** The floating card frame: width, radius, border, fill, padding, shadow. */
   card: (t: ColorTokens) => ViewStyle;
   /** The popover heading. */
@@ -99,6 +102,7 @@ const DESC_TYPE: TextStyle = { marginTop: 4, ...typeScale.body };
 // glass), 16 padding, the popover shadow; no arrow.
 export const webSkin: PopoverSkin = {
   cardWidth: 260,
+  compactCard: (t) => menuPanel(t, true),
   // The card at the menu corner (12).
   card: (t) => ({
     width: 260,
