@@ -19,14 +19,15 @@ import { typeScale } from "./type-scale.js";
 // muted ink rather than a dim.
 
 /** The panel: shape, fill, hairline, shadow and inset. The shell adds the measured minimum width. */
-export function menuPanel(t: ColorTokens): ViewStyle {
+export function menuPanel(t: ColorTokens, outsideRing = false): ViewStyle {
   return {
     borderRadius: shape.web.menu,
-    borderWidth: 1,
+    borderWidth: outsideRing ? 0 : 1,
     borderColor: t.border,
     backgroundColor: t.popover,
     padding: 8,
     ...shadow("lg", t),
+    ...(outsideRing ? { boxShadow: `${shadow("lg", t).boxShadow}, 0 0 0 1px ${t.border}` } : null),
   };
 }
 

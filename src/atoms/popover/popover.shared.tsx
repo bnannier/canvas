@@ -9,6 +9,7 @@ import * as s from "./popover.styles.js";
 import { useOverlayAnchor, useOverlaySheet } from "../../style/anchored-overlay.js";
 import type { ColorTokens } from "../../style/tokens.js";
 import { EntranceReadinessContext } from "../../style/entrance-readiness.js";
+import { OverlayScrollView } from "../../style/overlay-scroll.js";
 import { moveAccessibilityFocus } from "../../style/accessibility-focus.js";
 
 // The floating card's panel: the node focus enters (usePopoverFocus), named a dialog by
@@ -16,8 +17,9 @@ import { moveAccessibilityFocus } from "../../style/accessibility-focus.js";
 // Presented as a phone sheet it is a modal dialog: the sheet holds the focus and dims the
 // page (src/style/anchored-overlay.tsx), so screen readers keep to it too (`aria-modal`).
 // Anchored, it is a non-modal dialog, as the owner decided for the web (AO-2).
-function PopoverFocusPanel({ focusRef, label, labelledBy, describedBy, children }: {
+function PopoverFocusPanel({ focusRef, label, labelledBy, describedBy, scroll, children }: {
   focusRef: RefObject<View | null>;
+  scroll?: boolean;
   label?: string;
   labelledBy?: string;
   describedBy?: string;
@@ -41,7 +43,7 @@ function PopoverFocusPanel({ focusRef, label, labelledBy, describedBy, children 
     if (ready && node.current) focusRef.current = node.current;
   }, [ready, attachment, focusRef]);
 
-  return <View ref={attach} tabIndex={-1} role="dialog" aria-modal={sheet || undefined} aria-label={label} aria-labelledby={labelledBy} aria-describedby={describedBy}>{children}</View>;
+  return <View style={scroll ? { flexShrink: 1 } : undefined} ref={attach} tabIndex={-1} role="dialog" aria-modal={sheet || undefined} aria-label={label} aria-labelledby={labelledBy} aria-describedby={describedBy}>{children}</View>;
 }
 
 // The beak rides the edge facing the trigger on the side the card actually took: `top`
@@ -92,6 +94,22 @@ function PopoverArrow({ skin, tokens }: { skin: PopoverSkin; tokens: ColorTokens
 //   card is shown at the trigger; when false, only the trigger renders.
 
 export interface PopoverProps {
+  /** An existing trigger to anchor against; omits the built-in trigger and wrapper. */
+  anchorRef?: RefObject<View | null>;
+  /** Explicit name for a panel with custom content. */
+  accessibilityLabel?: string;
+  /** Compact web application panel with an outside hairline and scrolling content. */
+  compact?: boolean;
+  /** Roomier compact-panel content inset. */
+  comfortable?: boolean;
+  /** Keep the card anchored on narrow windows instead of adapting to a sheet. */
+  anchored?: boolean;
+  /** Align the trailing edge of the card to its trigger. */
+  alignEnd?: boolean;
+  /** Floating card width, clamped inside the overlay outlet. */
+  panelWidth?: number;
+  /** Maximum height of the floating card; its compact contents scroll within it. */
+  maxHeight?: number;
   /** Label for the trigger button. */
   trigger?: string;
   /** Heading shown at the top of the floating card. */
@@ -172,6 +190,11 @@ export function createPopover(skin: PopoverSkin, parts: PopoverParts = {}) {
     // hugs the trigger, so its laid-out width is the trigger's box.
     const { width: triggerWidth, onLayout: onTriggerLayout } = useMeasuredWidth();
     const triggerRef = useRef<View>(null);
+    const external = props.anchorRef != null;
+    const anchor = props.anchorRef ?? triggerRef;
+    const compact = !!props.compact && skin.compactCard != null;
+    const panelWidth = props.panelWidth ?? skin.cardWidth;
+    const panelStyle = [compact ? skin.compactCard!(tokens) : skin.card(tokens), { width: panelWidth }, props.maxHeight != null ? { maxHeight: props.maxHeight } : null, compact && props.comfortable ? { padding: 14 } : null];
     // The trigger Button itself, where focus returns when the card closes.
     const buttonRef = useRef<View>(null);
     // Natively the card is modal to VoiceOver and TalkBack while open, and they enter
@@ -218,6 +241,51 @@ export function createPopover(skin: PopoverSkin, parts: PopoverParts = {}) {
       );
     }
 
+    const floatingPanel = (
+        <AnchoredOverlay
+          onAccessibilityEscape={escapeScope.onAccessibilityEscape}
+          open={open}
+          onDismiss={() => setOpen(false)}
+          triggerRef={anchor}
+          cardWidth={panelWidth}
+          alignEnd={props.alignEnd}
+          ownsScroll={compact}
+          above={placement === "top"}
+          // At the phone form factor the card is a sheet (a card that can close).
+          sheetStyle={props.anchored ? undefined : skin.sheet(tokens)}
+          gap={compact ? 8 : skin.arrow != null && surface !== "glass" ? skin.arrowGap ?? 4 : 4}
+          cardStyle={[panelStyle, props.panelWidth == null ? { minWidth: triggerWidth } : null]}
+          inlineStyle={s.cardFloating}
+          decoration={skin.arrow != null && surface !== "glass" ? <PopoverArrow skin={skin} tokens={tokens} /> : null}
+          // A card pinned open skips the hosted dismiss backdrop (it would only block the page).
+          dismissable={dismissable}
+          onCardMount={() => moveAccessibilityFocus(firstLineRef.current)}
+          returnFocusRef={external ? undefined : buttonRef}
+        >
+          <EscapeLayerProvider scope={escapeScope}>
+          {/* The anchor beak, drawn only when the skin supplies one (iOS) and only in
+              SOLID mode. Under glass the beak is intentionally omitted: a flat
+              token-filled beak cannot match the Liquid Glass material (GlassView has no
+              path mask to extend the material into a beak), and a beak-less floating
+              rounded card is exactly how iOS 26 menus read. (It was previously clipped
+              away by the GlassSurface clip box anyway; this makes the intent explicit.) */}
+          {/* A focusable (tabIndex -1) container so opening the popover moves focus
+              here and closing restores it to the trigger (usePopoverFocus). role
+              "dialog" pairs with the trigger's aria-haspopup="dialog". */}
+          <PopoverFocusPanel
+            focusRef={panelRef}
+            scroll={compact}
+            label={props.accessibilityLabel ?? (title == null ? trigger ?? "Open popover" : undefined)}
+            labelledBy={props.accessibilityLabel == null && title != null ? titleId : undefined}
+            describedBy={description != null ? descriptionId : undefined}
+          >
+            {compact ? <OverlayScrollView style={{ flexShrink: 1 }} contentContainerStyle={{ gap: 2 }} bounces={false}>{panelBody}</OverlayScrollView> : panelBody}
+          </PopoverFocusPanel>
+        </EscapeLayerProvider>
+        </AnchoredOverlay>
+    );
+    if (external) return floatingPanel;
+
     // Triggered mode: a trigger button plus a floating card. The open card routes
     // through AnchoredOverlay (mirroring Dropdown): with an OverlayProvider it
     // portals over the page anchored to the trigger, with outside-tap dismissal;
@@ -241,44 +309,7 @@ export function createPopover(skin: PopoverSkin, parts: PopoverParts = {}) {
 
         {/* The card prefers the placement's side and flips when it lacks room; the
             beak follows the side it took. */}
-        <AnchoredOverlay
-          onAccessibilityEscape={escapeScope.onAccessibilityEscape}
-          open={open}
-          onDismiss={() => setOpen(false)}
-          triggerRef={triggerRef}
-          cardWidth={skin.cardWidth}
-          above={placement === "top"}
-          // At the phone form factor the card is a sheet (a card that can close).
-          sheetStyle={skin.sheet(tokens)}
-          gap={skin.arrow != null && surface !== "glass" ? skin.arrowGap ?? 4 : 4}
-          cardStyle={[skin.card(tokens), { minWidth: triggerWidth }]}
-          inlineStyle={s.cardFloating}
-          decoration={skin.arrow != null && surface !== "glass" ? <PopoverArrow skin={skin} tokens={tokens} /> : null}
-          // A card pinned open skips the hosted dismiss backdrop (it would only block the page).
-          dismissable={dismissable}
-          onCardMount={() => moveAccessibilityFocus(firstLineRef.current)}
-          returnFocusRef={buttonRef}
-        >
-          <EscapeLayerProvider scope={escapeScope}>
-          {/* The anchor beak, drawn only when the skin supplies one (iOS) and only in
-              SOLID mode. Under glass the beak is intentionally omitted: a flat
-              token-filled beak cannot match the Liquid Glass material (GlassView has no
-              path mask to extend the material into a beak), and a beak-less floating
-              rounded card is exactly how iOS 26 menus read. (It was previously clipped
-              away by the GlassSurface clip box anyway; this makes the intent explicit.) */}
-          {/* A focusable (tabIndex -1) container so opening the popover moves focus
-              here and closing restores it to the trigger (usePopoverFocus). role
-              "dialog" pairs with the trigger's aria-haspopup="dialog". */}
-          <PopoverFocusPanel
-            focusRef={panelRef}
-            label={title == null ? trigger ?? "Open popover" : undefined}
-            labelledBy={title != null ? titleId : undefined}
-            describedBy={description != null ? descriptionId : undefined}
-          >
-            {panelBody}
-          </PopoverFocusPanel>
-        </EscapeLayerProvider>
-        </AnchoredOverlay>
+        {floatingPanel}
       </View>
     );
   };
