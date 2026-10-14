@@ -126,7 +126,7 @@ describe("the state recipe table", () => {
     // recipe or an opening a resting pointer makes, and no hover recipe goes without one.
     expect([...new Set([...withHover, ...byOpening])].sort()).toEqual(resting);
     // Every reader of the hover primitive is among them.
-    expect(hoverDeclarers()).toEqual(["avatar", "button", "card", "dropdown", "listbox", "pagination", "row-menu", "sidebar"]);
+    expect(hoverDeclarers()).toEqual(["avatar", "badge", "button", "card", "chip", "dropdown", "listbox", "pagination", "row-menu", "sidebar"]);
     for (const slug of hoverDeclarers()) expect(withHover).toContain(slug);
     // Spread handlers count: the Calendar's blocks take `{...hoverProps}` and Tooltip's
     // triggers `{...disclosure}`; Tooltip's hover is its open recipe's (a resting pointer opens it).
@@ -450,7 +450,7 @@ describe("the states each component's source gives it", () => {
     ]);
     // An own-surface recipe a disabled example asks for (Button's `disabled`, one of the two ways `disabled || loading` is true).
     expect(check("button", without("button"))).toEqual([
-      "button: its Disabled example asks for a disabled control on its own surface (disabled on <Pressable> at src/atoms/button/button.shared.tsx:209), with no disabled recipe there",
+      "button: its Disabled example asks for a disabled control on its own surface (disabled on <Pressable> at src/atoms/button/button.shared.tsx:219), with no disabled recipe there",
     ]);
   });
 
@@ -459,7 +459,7 @@ describe("the states each component's source gives it", () => {
     const item = recipeFor("dropdown", "disabled-disableditem");
     expect(check("button", { ...(STATE_RECIPES.button as object), disabled: { ...item, variant: "disabled" } } as ComponentStates)).toEqual([
       "button: its disabled recipe on the disabled example is applied inside an overlay, and its source renders none",
-      "button: its Disabled example asks for a disabled control on its own surface (disabled on <Pressable> at src/atoms/button/button.shared.tsx:209), with no disabled recipe there",
+      "button: its Disabled example asks for a disabled control on its own surface (disabled on <Pressable> at src/atoms/button/button.shared.tsx:219), with no disabled recipe there",
     ]);
     const dropdown = STATE_RECIPES.dropdown as Record<string, unknown>;
     expect(check("dropdown", { ...dropdown, disabled: [recipeFor("dropdown", "disabled-disabledtrigger"), { ...item, opens: "Popover" }] } as ComponentStates)[0]).toBe(
@@ -680,12 +680,12 @@ describe("the states each component's source gives it", () => {
 
   it("refuses an exemption for a state the source does not give, or beside a recipe", () => {
     const exemption = { claim: { unpassed: ["onPress"] }, reason: "test" };
-    const badge = coverageOf("badge", { static: true, reason: "A status label.", exempt: { pressed: exemption } }, signalsOf("badge"), railExamples(component("badge")), rowsOf("badge"));
-    expect(badge.errors).toEqual(["badge: exempts pressed, which its source does not give it"]);
+    const badge = coverageOf("divider", { static: true, reason: "A status label.", exempt: { pressed: exemption } }, signalsOf("divider"), railExamples(component("divider")), rowsOf("divider"));
+    expect(badge.errors).toEqual(["divider: exempts pressed, which its source does not give it"]);
     const button = coverageOf("button", { ...(STATE_RECIPES.button as object), exempt: { pressed: exemption } } as ComponentStates, signalsOf("button"), railExamples(component("button")), rowsOf("button"));
     expect(button.errors).toEqual(["button: has a pressed recipe and a pressed exemption"]);
-    const invalid = coverageOf("badge", { static: true, reason: "A status label.", exempt: { invalid: exemption } }, signalsOf("badge"), [], rowsOf("badge"));
-    expect(invalid.errors).toEqual(["badge: exempts invalid, which no source signal gives"]);
+    const invalid = coverageOf("divider", { static: true, reason: "A status label.", exempt: { invalid: exemption } }, signalsOf("divider"), [], rowsOf("divider"));
+    expect(invalid.errors).toEqual(["divider: exempts invalid, which no source signal gives"]);
   });
 
   it("reads gates from ifs, ternaries, &&, early returns and the props a local component is given", () => {
@@ -1333,7 +1333,7 @@ export function createProbe(skin: ProbeSkin) {
     // The rail's recipes, as the table had them at the desktop alone, leave the drawer unanswered.
     const rail = { hover: recipeFor("sidebar", "hover-default"), focus: recipeFor("sidebar", "focus-default"), pressed: recipeFor("sidebar", "pressed-default"), open: recipeFor("sidebar", "open") };
     expect(check("sidebar", rail)).toEqual([
-      "sidebar: its source gives it a hover state in the overlay in Sidebar (useHover() (src/style/hover.tsx) at src/organisms/sidebar/sidebar.item.tsx:98 via SidebarDrillDown > SidebarRowFrame, and 2 more), where no hover recipe acts on a control of its own, with no exemption",
+      "sidebar: its source gives it a hover state in the overlay in Sidebar (useHover() (src/style/hover.tsx) at src/organisms/sidebar/sidebar.item.tsx:101 via SidebarDrillDown > SidebarRowFrame, and 2 more), where no hover recipe acts on a control of its own, with no exemption",
       "sidebar: its source gives it a focus state in the overlay in Sidebar (a tab stop: <Pressable> at src/organisms/sidebar/sidebar.drilldown.tsx:106 via SidebarDrillDown, and 2 more), where no focus recipe acts on a control of its own, with no exemption",
       "sidebar: its source gives it a pressed state in the overlay in Sidebar (onPress on <Pressable> at src/organisms/sidebar/sidebar.drilldown.tsx:114 via SidebarDrillDown, and 5 more), where no pressed recipe acts on a control of its own, with no exemption",
     ]);
