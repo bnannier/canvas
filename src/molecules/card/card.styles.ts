@@ -30,8 +30,8 @@ import { type HoverMotion } from "../../style/hover.js";
 //   `raised` lifts the elevated card to M3 level 3 (6dp). Plus the M3 medium
 //   shape (the Android card corner) and tighter M3 density steps.
 
-export type Elevation = "raised" | "flat" | "default";
-export type Density = "compact" | "comfortable" | "default";
+export type Elevation = "raised" | "flat" | "tile" | "row" | "empty" | "default";
+export type Density = "compact" | "comfortable" | "dense" | "snug" | "cozy" | "relaxed" | "spacious" | "insetContent" | "rail" | "summary" | "metric" | "request" | "menu" | "default";
 
 export interface CardSkin {
   /** Corner radius of the card surface. */
@@ -67,7 +67,17 @@ const lightSurface = (tokens: ColorTokens): ViewStyle => ({ borderColor: tokens.
 
 // --- web (the card corner, a hairline, the ambient shade) ---------------------
 
+const REFERENCE_DENSITY = {
+  dense: { padding: 12 }, snug: { padding: 18 }, cozy: { padding: 20 },
+  relaxed: { paddingVertical: 22, paddingHorizontal: 24 }, spacious: { padding: 28 },
+  insetContent: { padding: 14 }, rail: { paddingVertical: 12, paddingHorizontal: 14 },
+  summary: { paddingVertical: 14, paddingHorizontal: 16 },
+  metric: { paddingVertical: 14, paddingHorizontal: 18 },
+  request: { paddingTop: 18, paddingRight: 22, paddingBottom: 18, paddingLeft: 20 },
+  menu: { paddingVertical: 12 },
+};
 const WEB_DENSITY: Record<Density, ViewStyle> = {
+  ...REFERENCE_DENSITY,
   compact: { padding: 16, gap: 12 },
   comfortable: { padding: 32, gap: 24 },
   // The default density IS the standard padded surface: the established 24px
@@ -79,7 +89,7 @@ const WEB_DENSITY: Record<Density, ViewStyle> = {
 export const webSkin: CardSkin = {
   radius: shape.web.card,
   surface: lightSurface,
-  elevation: (e, t) => (e === "raised" ? shadow("md", t) : e === "flat" ? shadow("none") : shadow("DEFAULT", t)),
+  elevation: (e, t) => (e === "raised" ? shadow("md", t) : e === "flat" ? shadow("none") : shadow(e === "tile" ? "sm" : e === "row" || e === "empty" ? e : "DEFAULT", t)),
   density: WEB_DENSITY,
   padded: { padding: 24 },
   // Dark Factory's card lift: a pressable card rises 2 px and its resting shade deepens
@@ -108,6 +118,7 @@ export const iosSkin: CardSkin = {
 // --- Android (Material 3 cards: 12dp medium shape, tighter M3 density) --------
 
 const M3_DENSITY: Record<Density, ViewStyle> = {
+  ...REFERENCE_DENSITY,
   compact: { padding: 12, gap: 8 },
   comfortable: { padding: 24, gap: 20 },
   // The default density IS the standard padded surface: M3's 16dp content

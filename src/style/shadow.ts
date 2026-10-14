@@ -17,10 +17,12 @@ import { lightColors, type ColorTokens } from "./tokens.js";
 // by the active palette: `{ ...shadow("md", t) }`. Without them the light palette's
 // shade stands in.
 
-export type ShadowLevel = "none" | "sm" | "DEFAULT" | "md" | "lg" | "xl";
+export type ShadowLevel = "none" | "row" | "empty" | "sm" | "DEFAULT" | "md" | "lg" | "xl";
 
 // The web ladder's geometry, [offsetY, blur, spread], painted in the palette's shade.
 const LADDER: Record<Exclude<ShadowLevel, "none" | "xl">, readonly [number, number, number]> = {
+  row: [16, 36, -24],
+  empty: [18, 40, -22],
   sm: [16, 32, -22],
   DEFAULT: [20, 44, -24],
   md: [30, 54, -24],
@@ -30,6 +32,8 @@ const LADDER: Record<Exclude<ShadowLevel, "none" | "xl">, readonly [number, numb
 const TOP_LAYER = "0px 50px 100px -30px rgba(0, 0, 0, 0.45)";
 
 const NATIVE_SHADOWS: Record<Exclude<ShadowLevel, "none">, ViewStyle> = {
+  row: { shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.06, shadowRadius: 10, elevation: 2 },
+  empty: { shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.06, shadowRadius: 10, elevation: 2 },
   sm: { shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.08, shadowRadius: 1.5, elevation: 1 },
   DEFAULT: { shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.06, shadowRadius: 10, elevation: 2 },
   md: { shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.1, shadowRadius: 12, elevation: 4 },
