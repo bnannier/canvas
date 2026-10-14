@@ -1,5 +1,6 @@
 import { spacing } from "../../style/index.js";
-import { type Gap, type Pad } from "./layout.shared.js";
+import { type ViewStyle } from "react-native";
+import { type Gap, type Pad, type Inset } from "./layout.shared.js";
 
 // Co-located layout scale maps. Row and Column resolve one gap step and one
 // optional padding step by first-match precedence (in the shared shell) and read
@@ -16,6 +17,7 @@ export interface FlexSkin {
   gap: Record<Gap, number>;
   /** Padding per scale step, in px. */
   pad: Record<Pad, number>;
+  insets: Record<Inset, ViewStyle>;
 }
 
 // Gap scale → spacing tokens: flush 0, tight 4, snug 8, cozy 12, relaxed 16,
@@ -51,8 +53,16 @@ const pad: Record<Pad, number> = {
   padLoose: spacing["6"],
 };
 
+const insets: Record<Inset, ViewStyle> = {
+  insetIdentity: { paddingTop: 24, paddingHorizontal: 24, paddingBottom: 18 },
+  insetActions: { paddingVertical: 16, paddingHorizontal: 24 },
+  insetTheme: { paddingTop: 14, paddingHorizontal: 26, paddingBottom: 0 },
+  insetStatus: { paddingVertical: 10, paddingHorizontal: 28 },
+  insetTabs: { paddingTop: 12, paddingHorizontal: 12, paddingBottom: 0 },
+};
+
 // Web base skin: the shared spacing scale (identical on every platform).
-export const webSkin: FlexSkin = { gap, pad };
+export const webSkin: FlexSkin = { gap, pad, insets };
 
 // iOS (HIG) and Material 3 skins reference the same scale: flexbox has no native
 // per-OS layout control to diverge toward. Keeping them identical is intentional.
