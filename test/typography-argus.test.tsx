@@ -26,3 +26,11 @@ test("preserves compact lockups, extra-bold metrics and explicit accessible name
   expect(label.style.lineHeight).toBe("13.8px");
   expect(label.style.fontWeight).toBe("800");
 });
+
+test("section headings own their count, metadata and trailing action", () => {
+  render(<ThemeProvider light solid><Typography section subheading bold labelLeading count={3} description="Waiting for a signature" actions={<button>Review</button>}>Needs a human</Typography></ThemeProvider>);
+  expect(screen.getByRole("heading", { name: "Needs a human" })).toBeTruthy();
+  expect(screen.getByText("3")).toBeTruthy();
+  expect(screen.getByText("Waiting for a signature").style.lineHeight).toBe("16.1px");
+  expect(screen.getByRole("button", { name: "Review" })).toBeTruthy();
+});
