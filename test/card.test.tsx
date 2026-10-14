@@ -3,6 +3,7 @@ import { render, cleanup } from "@testing-library/react";
 import { type ReactNode } from "react";
 import { Text } from "react-native";
 import { ThemeProvider } from "../src/style/theme.tsx";
+import { Button } from "../src/atoms/button/button.tsx";
 import { Image } from "../src/atoms/image/image.tsx";
 import {
   Card,
@@ -395,4 +396,10 @@ describe("A grown card fills the box it is given", () => {
     );
     expect((getByText("body").parentElement as HTMLElement).style.flexGrow).toBe("");
   });
+});
+
+it("clickable cards with nested actions expose only the action button role", () => {
+  const { getAllByRole, getByRole } = ui(<Card interactiveContents steadyPress onPress={() => {}}><Button onPress={() => {}}>Pause</Button></Card>);
+  expect(getAllByRole("button").length).toBe(1);
+  expect(getByRole("button", { name: "Pause" })).toBeTruthy();
 });
