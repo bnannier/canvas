@@ -122,8 +122,8 @@ export const DOCS_USAGE_EXCEPTIONS: readonly DocsUsageException[] = [
     reason: "Dark Factory's page padding around its shell, docs-only scaffolding under design-language item 7: the tier's inset of the frame from the window.",
   },
   {
-    file: "docs/src/shell/page-frame.tsx", owner: "PageFrame", tag: "GlassSurface", attribute: "style", keys: ["alignSelf", "backgroundColor", "borderTopLeftRadius", "borderTopRightRadius", "boxShadow", "flex", "maxWidth", "width"], occurrences: 1,
-    reason: "Dark Factory's frosted shell as the docs' frame (design-language item 7): its shape, cap, centring, solid fill and palette shadow, handed to the kit's GlassSurface as the skin style it frosts.",
+    file: "docs/src/shell/page-frame.tsx", owner: "PageFrame", tag: "GlassSurface", attribute: "style", keys: ["alignSelf", "backgroundColor", "borderTopLeftRadius", "borderTopRightRadius", "boxShadow", "flex", "marginBottom", "maxWidth", "width"], occurrences: 1,
+    reason: "Dark Factory's frosted shell as the docs' frame (design-language item 7): its shape, cap, centring, solid fill, palette shadow and the hairline it runs past the window's bottom edge, handed to the kit's GlassSurface as the skin style it frosts.",
   },
   {
     file: "docs/src/shell/page-frame.tsx", owner: "ShellWedges", tag: "View", attribute: "style", keys: ["bottom", "left", "overflow", "pointerEvents", "position", "right", "top"], occurrences: 1,
