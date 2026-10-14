@@ -64,6 +64,8 @@ export interface ColorTokens {
    * Omit in legacy maps; a skin then washes the role's own color itself.
    */
   "primary-soft"?: string;
+  "action-soft"?: string;
+  "info-soft"?: string;
   "success-soft"?: string;
   "warning-soft"?: string;
   "destructive-soft"?: string;
