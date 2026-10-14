@@ -17,6 +17,10 @@ and `menu` (12 vertical). Precedence follows that order before compact/comfortab
 `emptyShadow` extend the elevation axis after raised/flat. Accessible names and
 hover-lift reporting are supported on interactive cards.
 
+`interactiveContents` keeps a clickable card from nesting a button role around its
+own buttons and links. `steadyPress` preserves its resting opacity while keeping
+the hover lift and native ripple.
+
 ## Usage
 
 ```tsx
