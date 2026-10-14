@@ -3388,6 +3388,10 @@
     ],
     "resolver": "src/atoms/button/button.styles.ts#webBodyOf",
     "order": [
+      "themeChoice",
+      "identityAction",
+      "referenceLink",
+      "inlineIcon",
       "scopeTrigger",
       "filterTrigger",
       "inlineLink",
@@ -3395,18 +3399,44 @@
     ],
     "none": "button",
     "single": {
+      "themeChoice": "themeChoice",
+      "identityAction": "identity",
+      "referenceLink": "reference",
+      "inlineIcon": "inlineIcon",
       "scopeTrigger": "scope",
       "filterTrigger": "filter",
       "inlineLink": "link",
       "utility": "utility"
     },
     "pairs": {
+      "filterTrigger + identityAction": "identityAction",
+      "filterTrigger + inlineIcon": "inlineIcon",
       "filterTrigger + inlineLink": "filterTrigger",
+      "filterTrigger + referenceLink": "referenceLink",
       "filterTrigger + scopeTrigger": "scopeTrigger",
+      "filterTrigger + themeChoice": "themeChoice",
       "filterTrigger + utility": "filterTrigger",
+      "identityAction + inlineIcon": "identityAction",
+      "identityAction + inlineLink": "identityAction",
+      "identityAction + referenceLink": "identityAction",
+      "identityAction + scopeTrigger": "identityAction",
+      "identityAction + themeChoice": "themeChoice",
+      "identityAction + utility": "identityAction",
+      "inlineIcon + inlineLink": "inlineIcon",
+      "inlineIcon + referenceLink": "referenceLink",
+      "inlineIcon + scopeTrigger": "inlineIcon",
+      "inlineIcon + themeChoice": "themeChoice",
+      "inlineIcon + utility": "inlineIcon",
+      "inlineLink + referenceLink": "referenceLink",
       "inlineLink + scopeTrigger": "scopeTrigger",
+      "inlineLink + themeChoice": "themeChoice",
       "inlineLink + utility": "inlineLink",
-      "scopeTrigger + utility": "scopeTrigger"
+      "referenceLink + scopeTrigger": "referenceLink",
+      "referenceLink + themeChoice": "themeChoice",
+      "referenceLink + utility": "referenceLink",
+      "scopeTrigger + themeChoice": "themeChoice",
+      "scopeTrigger + utility": "scopeTrigger",
+      "themeChoice + utility": "themeChoice"
     }
   },
   "Button.inline ink": {
@@ -3441,20 +3471,31 @@
     ],
     "resolver": "src/atoms/button/button.styles.ts#webHoverKindOf",
     "order": [
+      "themeChoice",
+      "identityAction",
       "utility",
       "inlineLink",
       "inverse"
     ],
     "none": "default",
     "single": {
+      "themeChoice": "themeChoice",
+      "identityAction": "inlineLink",
       "utility": "utility",
       "inlineLink": "inlineLink",
       "inverse": "inverse"
     },
     "pairs": {
+      "identityAction + inlineLink": "identityAction|inlineLink",
+      "identityAction + inverse": "identityAction",
+      "identityAction + themeChoice": "themeChoice",
+      "identityAction + utility": "identityAction",
       "inlineLink + inverse": "inlineLink",
+      "inlineLink + themeChoice": "themeChoice",
       "inlineLink + utility": "utility",
-      "inverse + utility": "utility"
+      "inverse + themeChoice": "themeChoice",
+      "inverse + utility": "utility",
+      "themeChoice + utility": "themeChoice"
     }
   },
   "Button.web emphasis": {
