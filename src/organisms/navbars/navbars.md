@@ -45,6 +45,18 @@ links row nor the menu button that stands in for it.
 <Navbar floating brand="Canvas" links={["Dashboard", "Users", "Settings"]} />
 ```
 
+### Bare
+
+A bare bar paints no surface and no hairline, so it sits clear on what is behind it.
+Pass it at the scroll edge, while nothing has scrolled under the bar, and drop it once
+content does: the bar's own surface then returns to keep its labels legible, as iOS's
+navigation bar and Material 3's top app bar do. A framed bar (`bordered`, `floating`)
+keeps its frame over `bare`.
+
+```tsx
+<Navbar bare brand="Canvas" links={["Dashboard", "Users", "Settings"]} />
+```
+
 ### Console topbar
 
 ```tsx
