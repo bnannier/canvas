@@ -12,6 +12,7 @@ import { inverseDenseTint } from "../src/style/glass-fill.ts";
 import { composite as compositeOver, contrastRatio } from "../src/style/color.ts";
 import { IDENTITY_HUES, identityDisc, identityHue } from "../src/style/identity-hue.ts";
 import { LOOKS, lookProps, type Look } from "./fixtures/looks.ts";
+import { shellBeds } from "./fixtures/page-look.ts";
 import { oklchOf } from "../tools/darkfactory/derive-tokens.ts";
 import { androidSkin, iosSkin, webSkin } from "../src/atoms/button/button.styles.ts";
 import { blockDeclarations, cssColorToHex, stripComments } from "../tools/tokens/css-tokens.ts";
@@ -482,17 +483,20 @@ describe("Dialog message contrast", () => {
           expect(hexOf(rendered)).toBe(expected);
           expect(Number.parseFloat(getComputedStyle(node).fontSize)).toBe(original.fontSize);
           expect(Number.parseFloat(getComputedStyle(node).lineHeight)).toBe(original.lineHeight);
-          for (const underlying of ["background", "card", "muted"] as const) {
+          // The beds a dialog floats over: the page's surfaces and the docs' frame, its frost
+          // over the page look's stops and orb centres. The promoted ink reads on every one; the skin's own
+          // muted ink, which the promotion replaces, fails on at least one.
+          const originals: number[] = [];
+          for (const underlying of [tokens.background, tokens.card, tokens.muted, ...shellBeds(look.name)]) {
             // This is a tint-over-scrim model from the source tokens, not native
             // glass luminance. Device pixel acceptance validates the material.
             const background = surface === "glass"
-              ? composite(glassOf(look)["glass-tint"], composite(skin.backdrop(tokens).backgroundColor as string, tokens[underlying]))
+              ? composite(glassOf(look)["glass-tint"], composite(skin.backdrop(tokens).backgroundColor as string, underlying))
               : rgba(skin.card(tokens).backgroundColor as string);
             expect(textContrast(rendered, background)).toBeGreaterThanOrEqual(4.5);
-            if (light && surface === "glass") {
-              expect(textContrast(original.color as string, background)).toBeLessThan(4.5);
-            }
+            originals.push(textContrast(original.color as string, background));
           }
+          if (light && surface === "glass") expect(Math.min(...originals)).toBeLessThan(4.5);
         }
         expect(hexOf(screen.getByText("Refund payment").style.color)).toBe(skin.title(tokens).color);
         expect(hexOf(screen.getByText("Amount").style.color)).toBe(skin.fieldLabel(tokens).color);
@@ -534,15 +538,19 @@ describe("ActionSheet message contrast", () => {
           expect(rgba(rendered)).toEqual(rgba(expected));
           expect(Number.parseFloat(getComputedStyle(node).fontSize)).toBe(original.fontSize);
           expect(Number.parseFloat(getComputedStyle(node).lineHeight)).toBe(original.lineHeight);
-          for (const underlying of ["background", "card", "muted"] as const) {
+          // The beds a sheet floats over: the page's surfaces and the docs' frame over the page look. The
+          // promoted ink reads on every one; the muted ink it replaces fails on at least one.
+          const originals: number[] = [];
+          for (const underlying of [tokens.background, tokens.card, tokens.muted, ...shellBeds(look.name)]) {
             // Model the settled source scrim and tint, without claiming that a
             // native blur or Liquid Glass surface has this exact luminance.
             const background = surface === "glass"
-              ? composite(glassOf(look)["glass-tint"], composite(scrim, tokens[underlying]))
+              ? composite(glassOf(look)["glass-tint"], composite(scrim, underlying))
               : rgba(skin.actionsCard(tokens).backgroundColor as string);
             expect(textContrast(rendered, background)).toBeGreaterThanOrEqual(4.5);
-            if (promoted) expect(textContrast(original.color as string, background)).toBeLessThan(4.5);
+            originals.push(textContrast(original.color as string, background));
           }
+          if (promoted) expect(Math.min(...originals)).toBeLessThan(4.5);
         }
         expect(rgba(screen.getByText("Copy link").style.color)).toEqual(rgba(skin.rowLabel(tokens, false, false).color as string));
         expect(rgba(screen.getByText("Cancel").style.color)).toEqual(rgba(skin.cancelLabel(tokens).color as string));

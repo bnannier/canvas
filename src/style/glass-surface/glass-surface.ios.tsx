@@ -2,6 +2,7 @@
 import { View } from "react-native";
 import { FrostView, LiquidView } from "./material-runtime.ios.js";
 import { useMaterialResolution } from "./use-material-theme.js";
+import { frameBedsFor } from "../tokens.js";
 import {
   GlassBox, CLEAR_INTENSITY, brandOverMaterial, clearSurfaceTint, contrastBorderFor, SHEER_FILL_OPACITY, materialFill,
   specularRim, surfaceUnderFill, surfaceIntensity, type GlassSurfaceProps,
@@ -17,7 +18,7 @@ export function GlassSurface(props: GlassSurfaceProps) {
   const native = resolved.renderer === "liquid";
   // Liquid Glass takes a brand as its own tintColor and paints no fill for it; the
   // frost paints the fill, a brand one OVER the blur (see brandOverMaterial).
-  const fillLayer = <View style={[fill, { backgroundColor: surfaceUnderFill(theme.glass, layer, brand, tint ?? (clear && brand == null ? clearSurfaceTint(theme.tokens, theme.dark) : undefined), theme.tokens), opacity: translucent ? SHEER_FILL_OPACITY : 1 }]} />;
+  const fillLayer = <View style={[fill, { backgroundColor: surfaceUnderFill(theme.glass, layer, brand, tint ?? (clear && brand == null ? clearSurfaceTint(theme.tokens, theme.dark) : undefined), theme.tokens, frameBedsFor(theme.palette, theme.scheme)), opacity: translucent ? SHEER_FILL_OPACITY : 1 }]} />;
   const paintsFill = !native || brand == null || tint != null;
   const over = !native && brandOverMaterial(brand, tint);
   const material = solid ? null : <>

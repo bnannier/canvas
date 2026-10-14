@@ -155,6 +155,27 @@ describe("the docs page look", () => {
     expect(corner.points).toBe(`0,${2580 - 150} 0,2580 204,2580`);
   });
 
+  it("carries Dark Factory's page-look values: the snapshot in tools/darkfactory/theme.json", () => {
+    const theme = JSON.parse(readFileSync(join(import.meta.dir, "../tools/darkfactory/theme.json"), "utf8"));
+    const canon = (color: string) => color.replace(/\s+/g, "").toLowerCase();
+    for (const look of ["blush", "mint", "dark"] as const) {
+      const df = theme.palettes[look];
+      const ours = PAGE_LOOK.palettes[look];
+      expect(ours.stops.map(canon)).toEqual([df.bg1, df.bg2, df.bg3].map(canon));
+      expect(ours.orbs.map(canon)).toEqual([df.orb1, df.orb2].map(canon));
+      expect(canon(ours.shell)).toBe(canon(df.shell));
+      expect(canon(ours.shadow)).toBe(canon(df.shadow));
+      expect(canon(ours.accent2)).toBe(canon(df.accent2));
+    }
+    PAGE_LOOK.orbs.forEach((orb, i) => {
+      const df = theme.materials.orbs[i];
+      const pct = (v: string | undefined) => (v === undefined ? undefined : parseFloat(v) / 100);
+      expect([orb.width, orb.height, orb.left, orb.top, orb.right, orb.bottom, orb.opacity, orb.blur]).toEqual([pct(df.width), pct(df.height), pct(df.left), pct(df.top), pct(df.right), pct(df.bottom), df.opacity, df.blur]);
+    });
+    expect(PAGE_LOOK.shell.radius).toBe(theme.materials.shell.radius);
+    expect(PAGE_LOOK.wedges.map((w) => ({ ...w, fadeIn: w.fadeIn ?? undefined }))).toEqual(theme.wedges.map((w: Record<string, unknown>) => ({ ...w, fadeIn: w.fadeIn ?? undefined })));
+  });
+
   it("paints the one dark look whichever light palette is chosen", () => {
     expect(lookFor("dark", "mint")).toBe("dark");
     expect(lookFor("dark", "blush")).toBe("dark");

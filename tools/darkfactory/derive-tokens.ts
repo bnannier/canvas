@@ -213,6 +213,48 @@ const BODY_TEXT = 4.5;
 const BRAND_TEXT = 4.65; // primary-text holds 4.65 so its 0.9 hover still clears 4.5
 const CONTROL = 3;
 
+/** One of DF's page orbs (materials.orbs): its box in percentages of the page, and its opacity. */
+interface PageOrb { color: string; opacity: number; width: string; height: string; left?: string; right?: string; top?: string; bottom?: string }
+// The page gradient's CSS angle, a literal in DF's PageBackground (the snapshot has no key for it).
+const PAGE_ANGLE = 165;
+const pct = (value: string | undefined) => (value === undefined ? undefined : parseFloat(value) / 100);
+
+/**
+ * The page gradient's stops (0, 1, 2 for 0, 50 and 100 percent) an orb's centre lies
+ * between, at DF's three reference pages (1440 x 900, 768 x 1024, 390 x 844): the centre
+ * projected on the CSS 165 deg line, whose ends touch the page's corners.
+ */
+/**
+ * DF's frosted shell over its page (design-language item 7, the docs' frame): the shell
+ * fill over every page gradient stop, and over each orb at its full opacity (its centre) on
+ * the two stops its centre lies between. Every docs surface floats over one of these, so
+ * the inks and fills solved for the page are held over them too (the muted ink here, the
+ * brand fill's alpha in the kit's glass, from the copy in src/style/tokens.ts).
+ */
+export function frameBeds(name: PaletteName): string[] {
+  const p: Record<string, string> = theme.palettes[name];
+  const page = [p.bg1!, p.bg2!, p.bg3!];
+  const orbs = (theme.materials.orbs as PageOrb[]).flatMap((orb) => orbStops(orb).map((i) => over(withAlpha(p[orb.color]!, orb.opacity), page[i]!)));
+  return [...page, ...orbs].map((bed) => over(p.shell!, bed));
+}
+
+export function orbStops(orb: PageOrb): number[] {
+  const stops = new Set<number>();
+  for (const [w, h] of [[1440, 900], [768, 1024], [390, 844]] as const) {
+    const bw = pct(orb.width)! * w;
+    const bh = pct(orb.height)! * h;
+    const x = (pct(orb.left) !== undefined ? pct(orb.left)! * w : w - pct(orb.right)! * w - bw) + bw / 2;
+    const y = (pct(orb.top) !== undefined ? pct(orb.top)! * h : h - pct(orb.bottom)! * h - bh) + bh / 2;
+    const a = (PAGE_ANGLE * Math.PI) / 180;
+    const [dx, dy] = [Math.sin(a), -Math.cos(a)];
+    const length = Math.abs(w * dx) + Math.abs(h * dy);
+    const t = Math.min(1, Math.max(0, ((x - w / 2) * dx + (y - h / 2) * dy) / length + 0.5));
+    stops.add(Math.min(1, Math.floor(t * 2)));
+    stops.add(Math.min(2, Math.floor(t * 2) + 1));
+  }
+  return [...stops].sort();
+}
+
 export function derivePalette(name: PaletteName): DerivedPalette {
   const p: Record<string, string> = theme.palettes[name];
   const dark = name === "dark";
@@ -248,12 +290,15 @@ export function derivePalette(name: PaletteName): DerivedPalette {
     for (const role of ["foreground", "card-foreground", "popover-foreground", "secondary-foreground", "accent-foreground"]) put(role, text, kind, source);
   }
   {
+    // The muted line also reads straight on DF's page look (design-language item 7): a
+    // page's lead and the sidebar's rows sit on the frosted shell (frameBeds below).
+    const shellBeds = frameBeds(name);
     // Both colors perturbed by one 8-bit step, as the text-contrast test perturbs them.
-    const s = solveLightness(p.muted!, dark ? 1 : -1, (hex) => surfaces.every((surface) => {
+    const s = solveLightness(p.muted!, dark ? 1 : -1, (hex) => [...surfaces, ...shellBeds].every((surface) => {
       for (const fg of neighborhood(hex)) for (const bg of neighborhood(surface)) if (contrast(fg, bg) < BODY_TEXT) return false;
       return true;
     }));
-    put("muted-foreground", s.hex, s.steps ? "solved" : "from", s.steps ? `DF muted, ${s.steps} lightness steps to ${BODY_TEXT}:1 on every surface` : "DF muted", s.css);
+    put("muted-foreground", s.hex, s.steps ? "solved" : "from", s.steps ? `DF muted, ${s.steps} lightness steps to ${BODY_TEXT}:1 on every surface and on the page look's frosted shell` : "DF muted", s.css);
   }
 
   // The brand (violet): selection, checked, current, links, focus.
@@ -401,7 +446,7 @@ export function deriveAll(): Record<PaletteName, DerivedPalette> {
 }
 
 if (import.meta.main) {
-  const table = { source: theme.source, chart: CHART_SERIES, palettes: deriveAll() };
+  const table = { source: theme.source, chart: CHART_SERIES, palettes: deriveAll(), frameBeds: { blush: frameBeds("blush"), mint: frameBeds("mint"), dark: frameBeds("dark") } };
   const text = `${JSON.stringify(table, null, 2)}\n`;
   if (process.argv.includes("--check")) {
     if (readFileSync(TABLE, "utf8") !== text) {
