@@ -21,7 +21,7 @@ colors:
   secondary: "#f5f2fc"
   secondary-foreground: "#3b3c5c"
   muted: "#f5f2fc"
-  muted-foreground: "#696b8d"
+  muted-foreground: "#606183"
   accent: "#f4f3fe"
   accent-foreground: "#3b3c5c"
   destructive: "#b53a44"
@@ -61,7 +61,7 @@ colorsMint:
   secondary: "#f1f6fb"
   secondary-foreground: "#2e3d4f"
   muted: "#f1f6fb"
-  muted-foreground: "#5f7083"
+  muted-foreground: "#5a6b7e"
   accent: "#f0f5fd"
   accent-foreground: "#2e3d4f"
   destructive: "#b53a44"
@@ -101,7 +101,7 @@ colorsDark:
   secondary: "#2d2f4c"
   secondary-foreground: "#ebebf7"
   muted: "#2d2f4c"
-  muted-foreground: "#a3a5c6"
+  muted-foreground: "#a6a8c9"
   accent: "#323254"
   accent-foreground: "#ebebf7"
   destructive: "#ff8b93"
@@ -771,7 +771,7 @@ theme that omits any of these keeps the older fallbacks.
 | `secondary` | `#f5f2fc` | `#f1f6fb` | `#2d2f4c` |
 | `secondary-foreground` | `#3b3c5c` | `#2e3d4f` | `#ebebf7` |
 | `muted` | `#f5f2fc` | `#f1f6fb` | `#2d2f4c` |
-| `muted-foreground` | `#696b8d` | `#5f7083` | `#a3a5c6` |
+| `muted-foreground` | `#606183` | `#5a6b7e` | `#a6a8c9` |
 | `accent` | `#f4f3fe` | `#f0f5fd` | `#323254` |
 | `accent-foreground` | `#3b3c5c` | `#2e3d4f` | `#ebebf7` |
 | `destructive` | `#b53a44` | `#b53a44` | `#ff8b93` |

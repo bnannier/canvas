@@ -146,7 +146,7 @@ export const lightColors: ColorTokens = {
   secondary: "#f5f2fc",
   "secondary-foreground": "#3b3c5c",
   muted: "#f5f2fc",
-  "muted-foreground": "#696b8d",
+  "muted-foreground": "#606183",
   accent: "#f4f3fe",
   "accent-foreground": "#3b3c5c",
   destructive: "#b53a44",
@@ -200,7 +200,7 @@ export const darkColors: ColorTokens = {
   secondary: "#2d2f4c",
   "secondary-foreground": "#ebebf7",
   muted: "#2d2f4c",
-  "muted-foreground": "#a3a5c6",
+  "muted-foreground": "#a6a8c9",
   accent: "#323254",
   "accent-foreground": "#ebebf7",
   destructive: "#ff8b93",
@@ -269,7 +269,7 @@ export const mintColors: ColorTokens = {
   secondary: "#f1f6fb",
   "secondary-foreground": "#2e3d4f",
   muted: "#f1f6fb",
-  "muted-foreground": "#5f7083",
+  "muted-foreground": "#5a6b7e",
   accent: "#f0f5fd",
   "accent-foreground": "#2e3d4f",
   destructive: "#b53a44",
@@ -314,6 +314,26 @@ export function colorsFor(palette: Palette, scheme: ColorScheme): ColorTokens {
 }
 
 /**
+ * The beds Dark Factory's frosted shell makes over its page (design-language item 7, the
+ * docs' frame): the shell fill over each page gradient stop, and over each orb's centre on
+ * the stops it lies between. The second is the page token itself (the shell over the
+ * middle stop). Glass fills that carry an ink are solved over all of them, not over the
+ * `background` token alone, since the shell lightens and darkens across the page. Derived
+ * by `bun run df:tokens` (tools/darkfactory/derive-tokens.ts, `frameBeds`) and held to
+ * that table by the Dark Factory parity check.
+ */
+export const frameBeds: Record<"blush" | "mint" | "dark", readonly string[]> = {
+  blush: ["#fef2f7", "#f5f2fe", "#edebfe", "#fde7f1", "#f7e7f5", "#e8e4fd", "#e3e0fd"],
+  mint: ["#f1faf7", "#f0f7fd", "#ebf2fd", "#e8f7f1", "#e7f4f5", "#e8f0fc", "#e5edfc"],
+  dark: ["#212438", "#272544", "#2d274e", "#3d355d", "#413564", "#34376a", "#363871"],
+};
+
+/** The frame beds a palette paints in a scheme (the one dark palette wins over mint). */
+export function frameBedsFor(palette: Palette, scheme: ColorScheme): readonly string[] {
+  return scheme === "dark" ? frameBeds.dark : frameBeds[palette];
+}
+
+/**
  * The glass material's own tokens, per scheme, one tint per density layer.
  * These densities do not choose static versus liquid material or custom motion.
  * The role-based contract uses intentional static content panes and functional
@@ -327,7 +347,7 @@ export function colorsFor(palette: Palette, scheme: ColorScheme): ColorTokens {
  *   glass-tint-content  CONTENT panes: cards, tables, lists, tiles, feeds, the
  *                       calendar, chart frames, the docs stages. Dense enough
  *                       that `foreground` text clears 4.5:1 over the page and
- *                       over the aurora backdrop (test/glass-tint.test.tsx).
+ *                       over every bed of the frosted frame (frameBeds; test/glass-tint.test.tsx).
  *   glass-tint-control  CONTROLS: fields, buttons, segmented controls, chips,
  *                       badges, pills, the check and switch pucks. A brighter
  *                       "puck" than the pane it sits on, in both schemes.

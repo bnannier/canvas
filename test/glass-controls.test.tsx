@@ -26,13 +26,14 @@ import { Sidebar as IosSidebar } from "../src/organisms/sidebar/sidebar.ios.tsx"
 import { Navbar } from "../src/organisms/navbars/navbars.tsx";
 import { TabBar } from "../src/organisms/tab-bar/tab-bar.tsx";
 import { TabBar as IosTabBar } from "../src/organisms/tab-bar/tab-bar.ios.tsx";
-import { alpha, composite, contrastRatio } from "../src/style/color.ts";
+import { alpha, channelsOf, composite, contrastRatio } from "../src/style/color.ts";
 import { actionFill, actionInk } from "../src/style/action.ts";
-import { lightColors, palette, brandColors } from "../src/style/tokens.ts";
+import { frameBedsFor, lightColors, palette } from "../src/style/tokens.ts";
 import { WEB_TINTS } from "../src/style/glass-surface/web-frost.ts";
 import { statusColors } from "../src/style/status.ts";
 import { HUE_SOFT } from "../src/atoms/chip/chip.shared.tsx";
 import { LOOKS } from "./fixtures/looks.ts";
+import { shellBeds } from "./fixtures/page-look.ts";
 
 // The CONTROL layer of the glass model: every control that paints a surface of its
 // own (a field box, a button, a switch track, a checkbox, a badge, a chip, a keycap,
@@ -489,10 +490,18 @@ describe("solid mode", () => {
     expect(rgbaOf((container.querySelector('[data-testid="name"]') as HTMLElement).style.backgroundColor)).toEqual(rgbaOf(alpha(lightColors.card, 1)));
   });
 
-  it("the aurora is not a base the pucks are tuned against, but the brand ink still clears 4.5:1 over it", () => {
-    for (const { name: scheme, tokens: t } of LOOKS) {
-      for (const orb of [brandColors["orb-indigo"], brandColors["orb-violet"], brandColors["orb-cyan"]]) {
-        expect(contrastRatio(composite(brandTint(t.primary, t.background), orb), t["primary-foreground"]), `${scheme} primary over ${orb}`).toBeGreaterThanOrEqual(4.5);
+  it("solves a brand puck over the docs' frame too, so its ink clears 4.5:1 on every bed of it", () => {
+    // The frame: Dark Factory's shell frost over its page look (docs/src/shell/page-look.ts),
+    // which the kit carries as frameBeds; the fixture derives the same beds from the docs.
+    for (const look of LOOKS) {
+      const t = look.tokens;
+      const beds = frameBedsFor(look.palette, look.scheme);
+      expect(beds.map((bed) => channelsOf(bed)!.slice(0, 3))).toEqual(shellBeds(look.name).map((bed) => channelsOf(bed)!.slice(0, 3)));
+      for (const glass of [look.webGlass, look.nativeGlass]) {
+        const fill = surfaceUnderFill(glass, "control", t.primary, undefined, t, beds);
+        for (const bed of [t.background, ...beds]) {
+          expect(contrastRatio(composite(fill, bed), brandInk(t, t.primary)), `${look.name} primary over ${bed}`).toBeGreaterThanOrEqual(4.5);
+        }
       }
     }
   });
