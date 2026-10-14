@@ -158,10 +158,10 @@ const WEB_PAD: Record<Size, { v: number; h: number; ctaH: number }> = {
   base: { v: 9, h: 16, ctaH: 18 },
   large: { v: 10, h: 20, ctaH: 22 },
 };
-// Label type per size (whole-pixel line heights; DF sets 1.3).
+// Preserve Argus's exact 1.3 line-height for its small and base button sizes.
 const WEB_TYPE: Record<Size, TextStyle> = {
-  small: FS(11.5, 15),
-  base: FS(12, 16),
+  small: FS(11.5, 14.95),
+  base: FS(12, 15.6),
   large: FS(13, 18),
 };
 // Icon-only squares: the pill heights, drawn as circles.

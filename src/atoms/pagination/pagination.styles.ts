@@ -75,10 +75,10 @@ export const selectorSize: Record<Size, ViewStyle> = {
   large: { height: 40, paddingHorizontal: 14 },
 };
 
-// Label type per size: the web Button's (whole-pixel line heights).
+// Label type per size matches the web Button's Argus typography.
 export const labelSize: Record<Size, TextStyle> = {
-  small: { fontSize: 11.5, lineHeight: 15 },
-  default: { fontSize: 12, lineHeight: 16 },
+  small: { fontSize: 11.5, lineHeight: 14.95 },
+  default: { fontSize: 12, lineHeight: 15.6 },
   large: { fontSize: 13, lineHeight: 18 },
 };
 
