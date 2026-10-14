@@ -186,8 +186,10 @@ describe("the phone sheet (AO-6)", () => {
         render(<ThemeProvider light glass><OverlayProvider><Popover testID="trigger" trigger="Rename" title="Rename project" description="Choose a name your team will recognize." /></OverlayProvider></ThemeProvider>);
         fireEvent.click(screen.getByRole("button", { name: "Rename" }));
         const { entrance } = await held("dialog");
-        // The card's material comes before its content, so the first one is the card's.
-        fill = (entrance.querySelector('[data-testid="glass-material"]')!.firstElementChild as HTMLElement).style.backgroundColor;
+        // The card's material comes before its content, so the first one is the card's; its
+        // fill is the layer that paints a background (frost, fill, rim on the web).
+        const layers = Array.from(entrance.querySelector('[data-testid="glass-material"]')!.children) as HTMLElement[];
+        fill = layers.find((layer) => layer.style.backgroundColor)?.style.backgroundColor ?? "";
       });
       cleanup();
       return rgba(fill);

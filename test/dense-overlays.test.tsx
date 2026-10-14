@@ -82,9 +82,10 @@ const materialsOf = (card: HTMLElement) => outsideControls(card, Array.from(card
 const materialLayers = (card: HTMLElement) => materialsOf(card).length;
 const rimLayers = (card: HTMLElement) =>
   outsideControls(card, Array.from(card.querySelectorAll("*")).filter((n) => (n.getAttribute("style") ?? "").includes("box-shadow: inset"))).length;
-// The surface's under-fill: the first layer inside its material wrapper (layer order is
-// under-fill, frost, rim, and the content follows the wrapper).
-const underFillOf = (card: HTMLElement): string => (materialsOf(card)[0]?.firstElementChild as HTMLElement | null)?.style.backgroundColor ?? "";
+// The surface's fill: the layer inside its material wrapper that paints a background (on the
+// web the layer order is frost, fill, rim, and the content follows the wrapper).
+const underFillOf = (card: HTMLElement): string =>
+  (Array.from(materialsOf(card)[0]?.children ?? []) as HTMLElement[]).find((layer) => layer.style.backgroundColor)?.style.backgroundColor ?? "";
 // react-native-web stores an alpha as an 8-bit channel and prints it with two decimals,
 // so colours compare as numbers quantized the way it does.
 const rgbaOf = (value: string) => {
