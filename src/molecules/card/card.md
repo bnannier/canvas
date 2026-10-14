@@ -21,6 +21,10 @@ hover-lift reporting are supported on interactive cards.
 own buttons and links. `steadyPress` preserves its resting opacity while keeping
 the hover lift and native ripple.
 
+`gatePanel`, `versionPanel` and `notePanel` preserve the original Argus inset
+content surfaces. Precedence is note, version, then gate; they own their secondary
+fill, exact insets and corners.
+
 ## Usage
 
 ```tsx

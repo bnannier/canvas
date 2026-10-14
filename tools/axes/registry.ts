@@ -1,3 +1,4 @@
+import { panelOf } from "../../src/molecules/card/card.shared.js";
 import { brandCardModeOf, artworkInsetOf } from "../../src/molecules/card/card.brand.tsx";
 import { referenceModeOf } from "../../src/molecules/card/card.reference.tsx";
 import { rowGapOf, insetOf } from "../../src/atoms/layout/layout.shared.tsx";
@@ -401,6 +402,7 @@ export const SUBJECTS: readonly AnySubject[] = [
   subject({ id: "AlertDialog.width", components: ["AlertDialog"], pages: ["alert-dialog"], resolver: "src/molecules/alert-dialog/alert-dialog.shared.tsx#widthOf", members: ["narrow", "small", "large"], resolve: alertDialogWidth }),
   subject({ id: "Card.elevation", components: ["Card"], pages: ["card"], resolver: "src/molecules/card/card.shared.tsx#elevationOf", members: ["raised", "flat", "tileShadow", "rowShadow", "emptyShadow"], resolve: elevationOf }),
   subject({ id: "Card.artwork inset", components: ["Card"], pages: ["card"], resolver: "src/molecules/card/card.brand.tsx#artworkInsetOf", members: ["controls", "illustration"], resolve: artworkInsetOf }),
+  subject({ id: "Card.inset panels", components: ["Card"], pages: ["card"], resolver: "src/molecules/card/card.shared.tsx#panelOf", members: ["notePanel", "versionPanel", "gatePanel"], resolve: panelOf }),
   subject({ id: "Card.brand artwork", components: ["Card"], pages: ["card"], resolver: "src/molecules/card/card.brand.tsx#brandCardModeOf", members: ["featured", "promo"], resolve: brandCardModeOf }),
   subject({ id: "Card.reference", components: ["Card"], pages: ["card"], resolver: "src/molecules/card/card.reference.tsx#referenceModeOf", members: ["referenceDetail", "referenceTile", "referenceStacked", "referenceInline"], resolve: referenceModeOf }),
   subject({

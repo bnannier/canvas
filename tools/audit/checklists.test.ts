@@ -138,9 +138,9 @@ describe.skipIf(!hasDist)("the audit checklists", () => {
       expect(avatar).toContain("- [ ] divergence misreport (K4)");
       expect(avatar).toContain("| android |  |  |  |  |");
       expect(avatar).toContain("| Platform entries | iOS: web build: Avatar, AvatarGroup; own build: AvatarMenu");
-      // The hand-off records are read from divergences.json; a record with no redirect
-      // target (the report's dash) reads as the word none.
-      expect(avatar).toContain("Avatar.size (Boolean axis: `small`, `large`)");
+      // Hand-off rows remain present after the recorded Avatar gap is resolved.
+      // A record with no redirect target reads as none, rather than an em dash.
+      expect(avatar).toContain("| Hand-off settled |");
       expect(avatar).not.toContain(String.fromCharCode(0x2014));
       // A page's section rows are keyed by the section title's slug, not its position.
       const glass = read(dir, "pages/pattern-glass.md");

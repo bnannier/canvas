@@ -1,3 +1,4 @@
+import { platformShape } from "../../style/platform-shape.js";
 import { type ViewStyle, type TextStyle } from "react-native";
 import { type ColorTokens, shadow, customShadow, shape } from "../../style/index.js";
 import { HOVER } from "../../style/motion.js";
@@ -191,3 +192,11 @@ export const separator = (tokens: ColorTokens): ViewStyle => ({ height: 1, width
 export const bodyText = (tokens: ColorTokens): TextStyle => ({ fontSize: 14, lineHeight: 20, color: tokens["card-foreground"] });
 
 export const footerText = (tokens: ColorTokens): TextStyle => ({ fontSize: 14, lineHeight: 20, color: tokens["muted-foreground"] });
+
+/** Fixed insets from the original Argus content panels. */
+export function insetPanel(mode: "note" | "version" | "gate", t: ColorTokens): ViewStyle {
+  const base: ViewStyle = { borderWidth: 0, backgroundColor: t.secondary, boxShadow: "none", gap: 0 };
+  if (mode === "note") return { ...base, paddingVertical: 8, paddingHorizontal: 10, marginTop: 4, borderRadius: shape.web.control };
+  if (mode === "version") return { ...base, flexDirection: "row", alignItems: "center", gap: 12, paddingVertical: 9, paddingHorizontal: 12, borderRadius: platformShape.web.insetRow };
+  return { ...base, paddingVertical: 14, paddingHorizontal: 16, gap: 5, borderRadius: shape.web.tile };
+}

@@ -348,7 +348,7 @@ export const COMPONENT_ROLES: Record<string, readonly string[]> = {
   "molecules/accordion": ["card"],
   "molecules/alert": ["control", "tile"],
   "molecules/alert-dialog": ["control", "dialog"],
-  "molecules/card": ["card", "tile", "control", "referenceCard"],
+  "molecules/card": ["card", "tile", "control", "referenceCard", "insetRow"],
   "molecules/code-block": ["control", "key"],
   "molecules/collapsible": ["card"],
   "molecules/description-lists": ["card", "groupedList"],
