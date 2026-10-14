@@ -268,3 +268,10 @@ Lay out a series of badges with `BadgeGroup`, a wrapping row that owns the gap (
   <Badge destructive>legal</Badge>
 </View>
 ```
+
+Dense Argus badges use `small` (10/13), `count` (extra-bold with compact inset),
+`navigationCount` (solid action count), and `reference` (tracked square key, optionally
+`large` and `href`). `soft` pairs an intent wash with its ink; intent precedence is
+action, primary/reference, success, warning, error, info, muted. `foreground` overrides
+the label ink while preserving an intent dot. `inverse` and `solid` supply branded
+surfaces. `uppercase` tracks caps; `start` pins a badge in a host layout.
