@@ -13,6 +13,15 @@ name and state, and a selection commits and closes the menu the moment a row is
 pressed. AvatarMenu and the collapsed Navbar menu are built on Dropdown. Solid
 mode paints the skin's own menu.
 
+`compact steadyPress` preserves the original Argus web menu: an outside hairline,
+12.5-pixel bold labels, selected action ink, muted counts, and descriptions.
+Items can carry a stored `value`, `detail`, `description`, `selected` state, and a
+`sectionBefore` heading. `keepOpen` leaves refresh-style commands open. A `note`
+adds a muted footer. `menuWidth` and `maxHeight` bound the scrolling menu.
+Pass `anchorRef` to use an existing trigger without adding another control or
+layout wrapper; `accessibilityLabel` names the menu independently of its heading.
+Checked choices use browser menu-radio semantics and the native radio trait.
+
 ## Usage
 
 ```tsx
@@ -27,6 +36,18 @@ mode paints the skin's own menu.
 ```
 
 ## Variants
+
+### Project menu
+
+```tsx
+<Dropdown compact steadyPress menuWidth={250} trigger="Projects" label="Your projects" note="Only projects you can access appear."
+  items={[
+    { label: "All my projects", value: "all", detail: "11", selected: true },
+    { label: "Platform Core", value: "core", detail: "6", selected: false },
+    { label: "Add project", value: "add", sectionBefore: "Manage projects", description: "Open project setup" },
+  ]} />
+```
+
 
 ### Disabled trigger
 

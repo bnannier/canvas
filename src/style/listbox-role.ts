@@ -22,6 +22,6 @@ import { Platform, type Role } from "react-native";
 // of which forms one. test/native-roles.test.ts reads the accepted roles from the parser.
 export const LISTBOX_ROLES = { web: "listbox", native: "list" satisfies Role } as const;
 
-// React Native's Role type omits "listbox" because its native parser does; this is the one
-// role cast in the kit and the docs, and it only ever reaches the DOM.
+// React Native's Role type omits "listbox" because its native parser does; this
+// translated spelling only reaches the DOM, like MENU_CHOICE in menu-choice-role.ts.
 export const LISTBOX: Role = Platform.OS === "web" ? (LISTBOX_ROLES.web as Role) : LISTBOX_ROLES.native;

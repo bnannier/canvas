@@ -1,8 +1,10 @@
 import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
 import { EscapeLayerProvider, useEscapeLayer } from "../../style/escape-layer.js";
+import { MENU_CHOICE } from "../../style/menu-choice-role.js";
 import { useHover } from "../../style/hover.js";
-import { useRef, useState, type ReactNode } from "react";
+import { useRef, useState, type ReactNode, type RefObject } from "react";
 import { View, Pressable, Text, useHugStyle, AnchoredOverlay, useOverlayHost, useMeasuredWidth, RippleClip, cornerRadii, type StyleProp, type ViewStyle, withInnerFill } from "../../style/index.js";
+import { OverlayScrollView } from "../../style/overlay-scroll.js";
 import { useRowFocus, type RowFocusProps } from "../../style/use-row-focus.js";
 import { Button as WebButton } from "../button/button.js";
 import { Icon, type IconName } from "../icon/icon.js";
@@ -36,6 +38,18 @@ import { wrapper, wrapperLifted, customTrigger, type DropdownSkin } from "./drop
 
 export interface DropdownItem {
   label: string;
+  /** Stable stored value for command or project selection. */
+  value?: string;
+  /** Muted second line under the label. */
+  description?: string;
+  /** Muted trailing detail, such as a project count. */
+  detail?: string;
+  /** Selection state for a mutually exclusive menu choice. */
+  selected?: boolean;
+  /** Section heading immediately before this item. */
+  sectionBefore?: string;
+  /** Keep the menu open after this command, such as refreshing its contents. */
+  keepOpen?: boolean;
   /** Optional leading Canvas glyph rendered before the label, named from the kit
    *  icon set (e.g. `"user"`, `"settings"`, `"logOut"`). Rendered through the
    *  `Icon` atom, tinted to match the row (destructive rows go red). */
@@ -51,6 +65,20 @@ export interface DropdownItem {
 }
 
 export interface DropdownProps {
+  /** Use an existing trigger without adding a trigger or layout wrapper. */
+  anchorRef?: RefObject<View | null>;
+  /** Explicit accessible name for the menu. */
+  accessibilityLabel?: string;
+  /** Exact compact web application menu frame and row metrics. */
+  compact?: boolean;
+  /** Preserve resting row fill and opacity during a press. */
+  steadyPress?: boolean;
+  /** Width of the floating menu, clamped inside the overlay outlet. */
+  menuWidth?: number;
+  /** Height cap for the compact menu's scrolling contents. */
+  maxHeight?: number;
+  /** Muted footnote separated from menu commands by a hairline. */
+  note?: ReactNode;
   /** Label for the default outline trigger button. Omit when supplying a custom
    *  trigger via `children`. */
   trigger?: string;
@@ -128,6 +156,8 @@ export function createDropdown(skin: DropdownSkin, parts: DropdownParts = {}) {
 
   interface MenuRowProps {
     item: DropdownItem;
+    compact?: boolean;
+    steadyPress?: boolean;
     focusProps: RowFocusProps;
     onSelect: () => void;
     ripple: { color: string; borderless: boolean } | undefined;
@@ -136,11 +166,12 @@ export function createDropdown(skin: DropdownSkin, parts: DropdownParts = {}) {
   // One menu row, its own component so the web's hover wash has a hook per row. A
   // disabled row is inert and takes the skin's disabled look: the web's muted ink, or
   // the platform's dim.
-  function MenuRow({ item, focusProps, onSelect, ripple }: MenuRowProps) {
+  function MenuRow({ item, compact, steadyPress, focusProps, onSelect, ripple }: MenuRowProps) {
     const theme = useMaterialTheme({ layer: "dense" });
     const { tokens, dark } = theme;
     const disabled = !!item.disabled;
     const muted = disabled && skin.disabledRow.muted;
+    const name = item.description != null || item.detail != null ? [item.label, item.detail, item.description].filter(Boolean).join(", ") : undefined;
     const { hovered, target } = useHover(skin.itemHover != null && !disabled);
     return (
       <Pressable
@@ -148,25 +179,34 @@ export function createDropdown(skin: DropdownSkin, parts: DropdownParts = {}) {
         {...target}
         style={({ pressed }) => [
           skin.itemRow,
+          compact && item.description ? { paddingVertical: 7 } : null,
           hovered && skin.itemHover ? skin.itemHover(tokens) : null,
           // iOS/web tint the row on press here; Android uses the ripple instead.
-          skin.itemPressed != null && pressed ? withInnerFill(theme, skin.itemPressed(tokens), "firm") : null,
-          skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null,
+          !steadyPress && skin.itemPressed != null && pressed ? withInnerFill(theme, skin.itemPressed(tokens), "firm") : null,
+          !steadyPress && skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null,
           disabled && skin.disabledRow.opacity !== 1 ? { opacity: skin.disabledRow.opacity } : null,
         ]}
         onPress={disabled ? undefined : onSelect}
         disabled={item.disabled}
         android_ripple={ripple}
-        accessibilityRole="menuitem"
-        accessibilityState={{ disabled: item.disabled }}
+        accessibilityRole={item.selected == null ? "menuitem" : "radio"}
+        role={item.selected == null ? "menuitem" : MENU_CHOICE}
+        accessibilityState={{ disabled: item.disabled, checked: item.selected }}
+        aria-checked={item.selected}
+        accessibilityLabel={name}
+        aria-label={name}
         aria-disabled={item.disabled}
       >
         {item.icon ? (
           <Icon {...{ [item.icon]: true }} destructive={item.destructive && !muted} muted={muted} size={skin.iconSize} decorative />
         ) : null}
-        <Text style={[skin.itemTextType, muted ? { color: tokens["muted-foreground"] } : skin.itemTextColor(tokens, dark, !!item.destructive)]}>
-          {item.label}
-        </Text>
+        <View style={{ flex: 1 }}>
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
+            <Text style={[compact ? skin.reference!.label : skin.itemTextType, { flex: 1 }, muted ? { color: tokens["muted-foreground"] } : item.selected ? { color: tokens.action ?? tokens.primary } : skin.itemTextColor(tokens, dark, !!item.destructive)]}>{item.label}</Text>
+            {item.detail ? <Text style={compact ? skin.reference!.detail(tokens) : skin.shortcut(tokens)}>{item.detail}</Text> : null}
+          </View>
+          {item.description ? <Text style={compact ? skin.reference!.description(tokens) : skin.menuHeaderDescription(tokens)}>{item.description}</Text> : null}
+        </View>
         {item.shortcut ? (
           <Text style={skin.shortcut(tokens)}>
             {item.shortcut}
@@ -204,7 +244,7 @@ export function createDropdown(skin: DropdownSkin, parts: DropdownParts = {}) {
     // that header's title (the account name is what a user calls that menu), and
     // otherwise by the muted section label. With neither, the name is left to the
     // platform's own computation rather than invented here.
-    const menuName = title ?? description ?? label;
+    const menuName = props.accessibilityLabel ?? title ?? description ?? label;
 
     // Escape dismisses the open menu via browser Escape or native accessibility escape.
     const escapeScope = useEscapeLayer(open, () => setOpen(false));
@@ -231,11 +271,97 @@ export function createDropdown(skin: DropdownSkin, parts: DropdownParts = {}) {
     // The wrapper tightly wraps the trigger (the menu portals out when hosted), so
     // measuring it gives the trigger's box for anchoring the floating card.
     const triggerRef = useRef<View>(null);
+    const external = props.anchorRef != null;
+    const anchor = props.anchorRef ?? triggerRef;
+    const compact = !!props.compact && skin.reference != null;
+    const panelShape = compact ? skin.reference!.card(tokens) : skin.menuCard(tokens);
+    const labelStyle = compact ? skin.reference!.section(tokens) : skin.menuLabel(tokens);
     // The trigger control itself, where focus returns on close.
     const controlRef = useRef<View>(null);
     const host = useOverlayHost();
 
     const ripple = skin.ripple ? skin.ripple(tokens) : undefined;
+
+    const menuBody = (
+            <RippleClip shape={cornerRadii(panelShape)} style={{ alignSelf: "stretch" }}>
+            {/* An unnamed menu is announced as a bare "menu"; naming it from the
+                header (or the section label) is what tells a screen-reader user
+                WHICH menu opened. RNW forwards neither accessibilityLabel nor the
+                role's own name, so both aliases are set, per the kit's dual-a11y
+                contract. */}
+            <View accessibilityRole="menu" role="menu" accessibilityLabel={menuName} aria-label={menuName} style={skin.rowGap ? { gap: skin.rowGap } : undefined}>
+            {hasHeader ? (
+              <View style={skin.menuHeader} role="group" accessibilityLabel={headerName} aria-label={headerName}>
+                {title != null ? <Text style={skin.menuHeaderTitle(tokens)}>{title}</Text> : null}
+                {description != null ? <Text style={skin.menuHeaderDescription(tokens)}>{description}</Text> : null}
+              </View>
+            ) : null}
+            {/* The card's own hairline closes the header block off from what
+                follows (Android's M3 skin declares no separator, so there the
+                header's padding does the separating). */}
+            {hasHeader && skin.separator ? <View style={skin.separator(tokens)} /> : null}
+            {label ? (
+              <Text style={labelStyle}>
+                {label}
+              </Text>
+            ) : null}
+            {items.map((item, index) => {
+              const selectItem = () => { onSelect?.(item, index); if (!item.keepOpen) setOpen(false); };
+              return (
+              <View key={item.value ?? `${item.label}-${index}`} style={item.sectionBefore ? { gap: skin.rowGap } : undefined}>
+                {item.sectionBefore ? <Text style={labelStyle}>{item.sectionBefore}</Text> : null}
+                {item.separatorBefore && skin.separator ? (
+                  <View style={skin.separator(tokens)} />
+                ) : null}
+                <MenuRow item={item} compact={compact} steadyPress={props.steadyPress} focusProps={rows.rowProps(index, () => { if (!item.disabled) selectItem(); })} onSelect={selectItem} ripple={ripple} />
+              </View>
+              );
+            })}
+            {props.note ? <View style={compact ? skin.reference!.note(tokens) : undefined}><Text style={compact ? skin.reference!.noteText(tokens) : skin.menuHeaderDescription(tokens)}>{props.note}</Text></View> : null}
+            </View>
+            </RippleClip>
+    );
+    const floatingMenu = (
+        <AnchoredOverlay
+          onAccessibilityEscape={escapeScope.onAccessibilityEscape}
+          open={open}
+          onDismiss={() => setOpen(false)}
+          triggerRef={anchor}
+          gap={skin.menuGap}
+          cardWidth={props.menuWidth}
+          ownsScroll={compact}
+          cardStyle={[panelShape, props.menuWidth == null ? { minWidth: Math.max(triggerWidth, MENU_MIN_WIDTH) } : { width: props.menuWidth }, props.maxHeight != null ? { maxHeight: props.maxHeight } : null]}
+          inlineStyle={alignEnd ? menuAnchorEnd(skin.menuGap) : menuAnchor(skin.menuGap)}
+          // A menu is a card of action rows, so under glass it takes the DENSE
+          // layer: the material under the model's densest tint, so the rows a user
+          // reads and picks from stay legible (the functional layer's sheer tint let
+          // the page's own rules and rows read straight between the items) while the
+          // card still refracts the page at its rim.
+          dense
+          // Same logical alignment on the hosted path: the portal places the card
+          // by the trigger's trailing edge instead of its leading one, mirrored
+          // in a right-to-left layout (the overlay follows the app's direction).
+          alignEnd={alignEnd}
+          // A controlled `open` with no onOpenChange can never actually close, so
+          // the hosted dismiss backdrop is skipped (it would only block the page).
+          dismissable={openProp === undefined || onOpenChange !== undefined}
+          // The card is where the rows live, so its mount is when focus can move
+          // into them: on the portaled path that is a measurement later than the
+          // open itself.
+          onCardMount={focusFirstItem}
+          dismissOnTab
+          returnFocusRef={external ? undefined : controlRef}
+        >
+          <EscapeLayerProvider scope={escapeScope}>
+            {/* role="menu" gives the menuitem rows a valid ARIA parent; without it
+                each menuitem is orphaned and web SRs/validators flag it. The RippleClip
+                parent clips the Android bounded-ripple rows to the menu card's rounded
+                corners (a no-op on iOS/web; the card itself keeps no overflow). */}
+            {compact ? <OverlayScrollView style={{ flexShrink: 1 }} bounces={false}>{menuBody}</OverlayScrollView> : menuBody}
+        </EscapeLayerProvider>
+        </AnchoredOverlay>
+    );
+    if (external) return floatingMenu;
 
     return (
       // self-start keeps the trigger from stretching; relative anchors the inline
@@ -274,76 +400,7 @@ export function createDropdown(skin: DropdownSkin, parts: DropdownParts = {}) {
           </Button>
         )}
 
-        <AnchoredOverlay
-          onAccessibilityEscape={escapeScope.onAccessibilityEscape}
-          open={open}
-          onDismiss={() => setOpen(false)}
-          triggerRef={triggerRef}
-          gap={skin.menuGap}
-          cardStyle={[skin.menuCard(tokens), { minWidth: Math.max(triggerWidth, MENU_MIN_WIDTH) }]}
-          inlineStyle={alignEnd ? menuAnchorEnd(skin.menuGap) : menuAnchor(skin.menuGap)}
-          // A menu is a card of action rows, so under glass it takes the DENSE
-          // layer: the material under the model's densest tint, so the rows a user
-          // reads and picks from stay legible (the functional layer's sheer tint let
-          // the page's own rules and rows read straight between the items) while the
-          // card still refracts the page at its rim.
-          dense
-          // Same logical alignment on the hosted path: the portal places the card
-          // by the trigger's trailing edge instead of its leading one, mirrored
-          // in a right-to-left layout (the overlay follows the app's direction).
-          alignEnd={alignEnd}
-          // A controlled `open` with no onOpenChange can never actually close, so
-          // the hosted dismiss backdrop is skipped (it would only block the page).
-          dismissable={openProp === undefined || onOpenChange !== undefined}
-          // The card is where the rows live, so its mount is when focus can move
-          // into them: on the portaled path that is a measurement later than the
-          // open itself.
-          onCardMount={focusFirstItem}
-          dismissOnTab
-          returnFocusRef={controlRef}
-        >
-          <EscapeLayerProvider scope={escapeScope}>
-            {/* role="menu" gives the menuitem rows a valid ARIA parent; without it
-                each menuitem is orphaned and web SRs/validators flag it. The RippleClip
-                parent clips the Android bounded-ripple rows to the menu card's rounded
-                corners (a no-op on iOS/web; the card itself keeps no overflow). */}
-            <RippleClip shape={cornerRadii(skin.menuCard(tokens))} style={{ alignSelf: "stretch" }}>
-            {/* An unnamed menu is announced as a bare "menu"; naming it from the
-                header (or the section label) is what tells a screen-reader user
-                WHICH menu opened. RNW forwards neither accessibilityLabel nor the
-                role's own name, so both aliases are set, per the kit's dual-a11y
-                contract. */}
-            <View accessibilityRole="menu" role="menu" accessibilityLabel={menuName} aria-label={menuName} style={skin.rowGap ? { gap: skin.rowGap } : undefined}>
-            {hasHeader ? (
-              <View style={skin.menuHeader} role="group" accessibilityLabel={headerName} aria-label={headerName}>
-                {title != null ? <Text style={skin.menuHeaderTitle(tokens)}>{title}</Text> : null}
-                {description != null ? <Text style={skin.menuHeaderDescription(tokens)}>{description}</Text> : null}
-              </View>
-            ) : null}
-            {/* The card's own hairline closes the header block off from what
-                follows (Android's M3 skin declares no separator, so there the
-                header's padding does the separating). */}
-            {hasHeader && skin.separator ? <View style={skin.separator(tokens)} /> : null}
-            {label ? (
-              <Text style={skin.menuLabel(tokens)}>
-                {label}
-              </Text>
-            ) : null}
-            {items.map((item, index) => {
-              const selectItem = () => { onSelect?.(item, index); setOpen(false); };
-              return (
-              <View key={`${item.label}-${index}`}>
-                {item.separatorBefore && skin.separator ? (
-                  <View style={skin.separator(tokens)} />
-                ) : null}
-                <MenuRow item={item} focusProps={rows.rowProps(index, () => { if (!item.disabled) selectItem(); })} onSelect={selectItem} ripple={ripple} />
-              </View>
-              );
-            })}
-            </View>
-            </RippleClip>
-        </EscapeLayerProvider>
-        </AnchoredOverlay>
+        {floatingMenu}
       </View>
     );
   };
