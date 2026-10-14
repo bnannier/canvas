@@ -161,6 +161,8 @@ export interface ButtonGroupProps extends MeasureProps {
    * with a dev-only warning. Split and stepper ignore it (dev-only warning).
    */
   iconsOnly?: boolean;
+  /** Keep segmented and spaced cells at their resting opacity during a press. */
+  steadyPress?: boolean;
 
   /** Accessible name for the segmented row (the `tablist`), announcing what
    *  the group switches (e.g. "Preview form factor"). Segmented kind only:
@@ -213,6 +215,7 @@ export function createButtonGroup(skin: ButtonGroupSkin) {
     /** Render the glyph alone; `label` becomes the accessible name. */
     iconOnly?: boolean;
     selected: boolean;
+    steadyPress?: boolean;
     /**
      * Whether this segment can read selected. Segmented options are a single
      * mutually-exclusive control (role `tab`, with `aria-selected`); spaced peers
@@ -240,7 +243,7 @@ export function createButtonGroup(skin: ButtonGroupSkin) {
     onLayout?: (event: LayoutChangeEvent) => void;
   }
 
-  function Segment({ label, icon, iconOnly, selected, selectable, corners, leading, standalone, block, size, disabled, onPress, onPressIn, onPressOut, onLayout }: SegmentProps) {
+  function Segment({ label, icon, iconOnly, selected, steadyPress, selectable, corners, leading, standalone, block, size, disabled, onPress, onPressIn, onPressOut, onLayout }: SegmentProps) {
     const theme = useMaterialTheme({ layer: "functional" });
     const { tokens, surface } = theme;
     const glass = surface === "glass";
@@ -276,7 +279,7 @@ export function createButtonGroup(skin: ButtonGroupSkin) {
     const showIconAlone = iconOnly && icon != null;
     const button = (
       <Pressable
-        style={({ pressed }) => [paneStyle(theme, container), skin.pressedOpacity != null && pressed && !glass ? { opacity: skin.pressedOpacity } : null]}
+        style={({ pressed }) => [paneStyle(theme, container), !steadyPress && skin.pressedOpacity != null && pressed && !glass ? { opacity: skin.pressedOpacity } : null]}
         onPress={onPress}
         onPressIn={onPressIn}
         onPressOut={onPressOut}
@@ -606,6 +609,7 @@ export function createButtonGroup(skin: ButtonGroupSkin) {
               icon={itemIconOf(item)}
               iconOnly={props.iconsOnly}
               selected={false}
+              steadyPress={props.steadyPress}
               selectable={false}
               corners={skin.spacedCorners}
               leading={false}
@@ -667,6 +671,7 @@ export function createButtonGroup(skin: ButtonGroupSkin) {
         icon={itemIconOf(item)}
         iconOnly={props.iconsOnly}
         selected={i === active}
+        steadyPress={props.steadyPress}
         selectable
         corners={skin.joinCorners(i, count)}
         leading={i > 0}
@@ -687,7 +692,7 @@ export function createButtonGroup(skin: ButtonGroupSkin) {
     // sizing nature (HUG, or FILL under `block`) lands AFTER the skin wrap.
     const selectionLayout = segmentLayouts[disabled ? active : pressedSegment ?? active];
     return (
-      <View collapsable={false} accessibilityRole="tablist" accessibilityLabel={props.accessibilityLabel} aria-label={props.accessibilityLabel} style={[paneStyle(theme, wrap ?? s.segmentedContainer), sizing, style]} testID={testID}>
+      <View collapsable={false} accessibilityRole="tablist" accessibilityLabel={props.accessibilityLabel} aria-label={props.accessibilityLabel} style={[paneStyle(theme, wrap ?? s.segmentedContainer), sizing, props.start ? { alignSelf: "flex-start" } : null, style]} testID={testID}>
         {/* The track's material fills its whole footprint on the track's own corners (GP-1). */}
         {glass ? <GroupGlass corners={wrap ? cornerRadii(wrap) : undefined} testID={testID ? `${testID}-glass` : undefined} /> : null}
         {glass && active >= 0 && active < count && selectionLayout ? (
