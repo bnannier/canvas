@@ -231,7 +231,7 @@ describe("the index over real runs", () => {
     const states = `../../runs/${RUNS.states}/web-states`;
 
     const button = read("button");
-    expect(button).toContain("- Captured: web 2 of 270, ios 0 of 90, android 0 of 90; interaction states 4 of 24 (0 not reached)");
+    expect(button).toContain("- Captured: web 2 of 306, ios 0 of 102, android 0 of 102; interaction states 4 of 24 (0 not reached)");
     expect(button).toContain("## Interaction states\n\n4 cell(s), 4 reached and 0 not reached;");
     expect(button).toContain(`| [web-states/button/pressed.web/desktop.blush.solid](${states}/button/pressed.web/desktop.blush.solid/state.png) | Default (\`default\`) | yes | - | - | contrast | 0/0/0/0 | 12 | 1/0/0 | 0 | 0 | 0 | ${RUNS.states} | b87e514 (dirty) |`);
     expect(button).toContain(`| [web-states/button/pressed.web/desktop.blush.glass](${states}/button/pressed.web/desktop.blush.glass/state.png) | Default (\`default\`) | yes | - | - | contrast-review | - | 12 | 0/0/1 |`);
