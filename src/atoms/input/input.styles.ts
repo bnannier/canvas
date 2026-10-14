@@ -1,3 +1,4 @@
+import { fieldEyebrow } from "../../style/field-label.js";
 import { primaryText } from "../../style/primary-text.js";
 import { fieldBorder, fieldErrorFill } from "../../style/field-colors.js";
 import { type ViewStyle, type TextStyle } from "react-native";
@@ -68,6 +69,8 @@ export interface InputSkin extends FloatingLabelStyles<Size> {
   iconColor: (t: ColorTokens, state: FieldState & { action: boolean }) => string;
   /** Gap between the above-field label and the field (the Field/Form rhythm). */
   labelGap: number;
+  referenceLabel?: (tokens: ColorTokens) => TextStyle;
+  softFill?: (tokens: ColorTokens) => string;
   /** Overlaid icon position inside the field area (left or right gutter). The shell
    *  anchors it to the field-area wrapper — the container's CONTENT box — never to
    *  the bordered container itself: the Android active indicator changes the
@@ -109,6 +112,7 @@ function fieldEdge(t: ColorTokens, borderColor: keyof ColorTokens): string {
 
 export const webSkin: InputSkin = {
   liquid: true,
+  softFill: (tokens) => tokens["field-fill"] ?? tokens.card,
   text: webText,
   bareBox: (size) => ({ height: size === "large" ? 48 : size === "small" ? 36 : 40 }),
   groupedHeight: (size) => (size === "large" ? 48 : size === "small" ? 36 : 40),
@@ -164,6 +168,7 @@ export const webSkin: InputSkin = {
   iconSize: 16,
   iconColor: (t) => t["muted-foreground"],
   labelGap: 6,
+  referenceLabel: fieldEyebrow,
   disabledOpacity: 0.5,
   pressedOpacity: 0.9,
   ripple: null,
