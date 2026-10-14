@@ -64,7 +64,7 @@ export const TEXT_ROLES: Record<string, Record<string, ReadingRole>> = {
   },
 
   // Control labels at the small size, and the description lines under them.
-  "src/atoms/button/button.styles.ts": { "INLINE_LINK_TYPE.small": "small", "WEB_TYPE.small": "small" },
+  "src/atoms/button/button.styles.ts": { FILTER_TRIGGER_TYPE: "small", "INLINE_LINK_TYPE.small": "small", "WEB_TYPE.small": "small" },
   "src/atoms/button-group/button-group.styles.ts": { WEB_SEGMENT_TYPE: "small", WEB_CELL_TYPE: "small" },
   "src/atoms/pagination/pagination.styles.ts": { labelSize: "small" },
   "src/atoms/listbox/listbox.styles.ts": { LABEL_TYPE: "small", detail: "tiny" },

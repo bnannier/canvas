@@ -5,6 +5,6 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { Button } = scope;
   return (
-<Button ghost>Save changes</Button>
+<Button secondary>Save changes</Button>
   );
 }
