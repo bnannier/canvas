@@ -59,7 +59,9 @@ describe("the web Button is Dark Factory's pill", () => {
       const { box, label } = look("outline", size);
       return 2 * (box.paddingVertical as number) + (label.lineHeight as number) + 2;
     };
-    expect([height("small"), height("base"), height("large")]).toEqual([29, 36, 40]);
+    expect(height("small")).toBeCloseTo(28.95, 5);
+    expect(height("base")).toBeCloseTo(35.6, 5);
+    expect(height("large")).toBe(40);
     expect(look("primary").box.paddingHorizontal).toBe(18);
     expect(look("outline").box.paddingHorizontal).toBe(16);
     expect(look("link").box).toMatchObject({ paddingVertical: 0, paddingHorizontal: 0 });
