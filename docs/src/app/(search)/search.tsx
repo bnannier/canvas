@@ -3,9 +3,10 @@ import { Keyboard, Platform, type NativeSyntheticEvent, type TextInputFocusEvent
 import { Redirect, Stack, useFocusEffect, useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import type { SearchBarCommands } from "react-native-screens";
-import { View, Card, Column, ScrollView, StackedList, useTheme } from "@nannier/canvas";
+import { View, Card, Column, ScrollView, StackedList } from "@nannier/canvas";
 import { search } from "../../core/data/search";
 import type { SearchEntry } from "../../core/data/types";
+import { PageBackdrop } from "../../shell/page-backdrop";
 
 // The Search tab's screen. On native (iOS/Android) the rightmost bottom tab opens this and the
 // nav bar hosts the system search field (a real UISearchController on iOS 26 / Material search on
@@ -40,7 +41,6 @@ function rankForBubble(query: string): SearchEntry[] {
 
 function NativeSearch() {
   const router = useRouter();
-  const { tokens } = useTheme();
   const insets = useSafeAreaInsets();
   const [query, setQuery] = useState("");
   const results = useMemo(() => rankForBubble(query), [query]);
@@ -90,7 +90,10 @@ function NativeSearch() {
   };
 
   return (
-    <View style={{ flex: 1, backgroundColor: tokens.background }}>
+    // A native-only screen (the web redirects above), so it mounts its own page look the
+    // way ScreenFrame does for the other screens.
+    <View style={{ flex: 1 }}>
+      <PageBackdrop />
       <Stack.Screen
         options={{
           headerTitle: "Search",

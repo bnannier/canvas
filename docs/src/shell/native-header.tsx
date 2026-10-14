@@ -10,16 +10,20 @@ import { Sidebar } from "./sidebar";
 import { PaletteRow, ThemeToggles } from "./theme-toggles";
 import { nativeHeaderMenu, type MenuIcon } from "./native-menu";
 import { useDocsTheme } from "../theme/docs-theme";
+import { PageBackdrop } from "./page-backdrop";
 
 // Wraps a screen's scroller so the native header (which drives the per-screen Stack title +
-// menu, and hosts the Android menu drawer) can sit as a sibling of the content. On web
-// this is a no-op passthrough: it renders the scroller exactly as before, with NO wrapping
-// View, so the web build stays byte-identical (an extra flex wrapper there collapses
-// onLayout-measured tile grids).
+// menu, and hosts the Android menu drawer) can sit as a sibling of the content, with the
+// page look (./page-backdrop.tsx) behind it: the native tab and stack containers paint
+// their own backgrounds under a screen, so each screen draws its own. On web this is a
+// no-op passthrough: it renders the scroller exactly as before, with NO wrapping View (an
+// extra flex wrapper there collapses onLayout-measured tile grids), and the web shell
+// mounts the one backdrop behind every route.
 export function ScreenFrame({ children }: { children: ReactNode }) {
   if (Platform.OS === "web") return <>{children}</>;
   return (
     <View style={{ flex: 1 }}>
+      <PageBackdrop />
       {children}
       <NativeHeader />
     </View>
