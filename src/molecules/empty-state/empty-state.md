@@ -189,3 +189,7 @@ docs-only helper standing in for your own state; in an app you would hold the fi
 ```tsx
 <EmptyState bordered success icon={<Icon circleCheck />} title="No pending reviews" description="3 accounts are locked and waiting on you." />
 ```
+
+`elevated` provides the Argus empty-state card: borderless, 44×32 inset and the
+empty-state shadow. The web title and description preserve the existing Argus
+15/19.5 and 12.5/18.75 reading metrics with six pixels between them.
