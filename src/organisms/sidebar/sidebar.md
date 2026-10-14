@@ -109,3 +109,8 @@ The one `Sidebar` below is the whole story: on desktop it is the collapsible acc
   </View>
 </View>
 ```
+
+`embedded` renders the navigation groups inside an app-owned rail, inheriting its
+frame and bounds. Web rows retain the Argus reference: 16px fine icons, 12.5/16.25
+labels, a 3px selected edge marker, solid action counts and 34px between groups.
+`compact` reduces the horizontal inset for drawer navigation.

@@ -26,6 +26,8 @@ export interface SidebarItem {
   id?: string | number;
   /** Row label (e.g. "Dashboard"). */
   label: string;
+  /** Reference harness only: hold the row hover wash. */
+  testOnly_hovered?: boolean;
   /** Leading Canvas glyph rendered before the label, named from the kit icon set
    *  (e.g. `"home"`, `"users"`, `"settings"`). Rendered through the `Icon` atom,
    *  tinted per active state. */
@@ -72,9 +74,10 @@ export interface SidebarSection {
  *  its tone within that family) for a count that reports a problem. Lives here once
  *  so the rail row and the narrow drill-down leaf cannot drift apart. `Badge` is the
  *  platform's build, a Sidebar part. */
-export function SidebarItemBadge({ item, Badge }: { item: SidebarItem; Badge: typeof WebBadge }) {
+export function SidebarItemBadge({ item, Badge, navigationCount }: { item: SidebarItem; Badge: typeof WebBadge; navigationCount?: boolean }) {
   if (item.badge == null) return null;
   if (item.badgeError) return <Badge status error>{item.badge}</Badge>;
+  if (navigationCount) return <Badge navigationCount>{item.badge}</Badge>;
   return <Badge secondary>{item.badge}</Badge>;
 }
 
@@ -94,11 +97,11 @@ const STRETCH: ViewStyle = { alignSelf: "stretch" };
  * hover wash it is also the row's hover target and paints the wash in the row's shape
  * beneath the row, so the row's own pressed and active fills still switch at once.
  */
-export function SidebarRowFrame({ shape, wash, children }: { shape: ViewStyle; wash: SidebarRowWash | null; children: ReactNode }) {
+export function SidebarRowFrame({ shape, wash, children, testOnly_hovered }: { shape: ViewStyle; wash: SidebarRowWash | null; children: ReactNode; testOnly_hovered?: boolean }) {
   const { hovered, target } = useHover(wash != null);
   const radii = cornerRadii(shape);
   return (
-    <RippleClip shape={radii} style={[STRETCH, wash != null ? [radii, washStyle(hovered, wash.color, wash.motion, wash.reduced)] : null]} {...target}>
+    <RippleClip shape={radii} style={[STRETCH, wash != null ? [radii, washStyle(testOnly_hovered ?? hovered, wash.color, wash.motion, wash.reduced)] : null]} {...target}>
       {children}
     </RippleClip>
   );
