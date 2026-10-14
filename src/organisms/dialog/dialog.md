@@ -13,6 +13,14 @@ Pass `dismissible` to let a backdrop press follow the same cancel policy. It is
 off by default, so existing dialogs and destructive confirmations keep their
 current outside-press behavior. The scrim is excluded from keyboard navigation.
 
+Use `form overlay dismissible` for the original Argus application dialog: a
+persistent title and optional `description`, a close action, and scrolling body
+and `footer` content. `panelWidth` bounds the form (560 pixels by default), and
+the viewport keeps a twenty-pixel safe-area inset. The web treatment preserves
+Argus’s 28-pixel content inset, 17-pixel title, rounded card, shadow, and lightly
+frosted dim. A form with no trigger contributes no layout wrapper to its caller.
+Nested menus receive Escape before the dialog; focus stays in the open modal.
+
 ## Usage
 
 ```tsx
@@ -25,6 +33,15 @@ current outside-press behavior. The scrim is excluded from keyboard navigation.
 ```
 
 ## Variants
+
+### Application form
+
+```tsx
+<Dialog form trigger="Edit project" title="Project details" description="Update the project name." footer={<Button primary>Save changes</Button>}>
+  <Input label="Name" defaultValue="Platform Core" />
+</Dialog>
+```
+
 
 ### Dismissible
 

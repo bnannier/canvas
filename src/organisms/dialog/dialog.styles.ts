@@ -56,6 +56,12 @@ export type FooterKind = "buttons" | "capsules";
 // the active platform's look. The footer kind picks between a Button row
 // (web/Android) and iOS's side-by-side capsule row.
 export interface DialogSkin {
+  /** Structured application form treatment; platform alert defaults remain separate. */
+  form?: {
+    card: (t: ColorTokens) => ViewStyle;
+    title: (t: ColorTokens) => TextStyle;
+    description: (t: ColorTokens) => TextStyle;
+  };
   /** The dim backdrop behind the card (full black at the per-platform opacity). */
   backdrop: (t: ColorTokens) => ViewStyle;
   /** The card layout box: shape, fill, border (or lack of), shadow, padding. The
@@ -173,6 +179,11 @@ export function cardWidth(size: Size): ViewStyle {
 // right-aligned action row (gap 8, 24 above) of an outline Cancel + a primary/
 // destructive Confirm Button.
 export const webSkin: DialogSkin = {
+  form: {
+    card: (t) => ({ borderRadius: shape.web.dialog, borderWidth: 0, backgroundColor: t.card, paddingTop: 28, paddingHorizontal: 28, paddingBottom: 10, ...shadow("xl", t) }),
+    title: (t) => ({ fontSize: 17, lineHeight: 21.25, fontWeight: "700", letterSpacing: -0.17, color: t.foreground }),
+    description: (t) => ({ fontSize: 12, lineHeight: 16.2, fontWeight: "600", color: t["muted-foreground"] }),
+  },
   backdrop: (t) => ({ borderRadius: shape.web.dialog, backgroundColor: scrimFill(t, 0.6) }),
   card: (t) => ({
     borderRadius: shape.web.dialog,
