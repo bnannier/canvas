@@ -57,7 +57,8 @@ describe("native material coordinate hosts", () => {
         expect(control.lastElementChild).toBe(track);
         expect(control.getAttribute("aria-checked")).toBe("true");
         expect([track.style.width, track.style.height, track.style.borderRadius]).toEqual(initial.slice(0, 3));
-        if (!glass) expect(track.style.backgroundColor).toBe(initial[3]);
+        // A switch is a solid mark in every mode (GS-5): its track keeps solid's fill under glass.
+        expect(track.style.backgroundColor).toBe(initial[3]);
       }
       fireEvent.click(control);
       expect(control.getAttribute("aria-checked")).toBe("false");

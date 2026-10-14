@@ -349,8 +349,8 @@ export function frameBedsFor(palette: Palette, scheme: ColorScheme): readonly st
  *                       that `foreground` text clears 4.5:1 over the page and
  *                       over every bed of the frosted frame (frameBeds; test/glass-tint.test.tsx).
  *   glass-tint-control  CONTROLS: fields, buttons, segmented controls, chips,
- *                       badges, pills, the check and switch pucks. A brighter
- *                       "puck" than the pane it sits on, in both schemes.
+ *                       badges, pills. A brighter "puck" than the pane it sits
+ *                       on, in both schemes.
  *   glass-tint-dense    the surfaces the user READS rows or a verdict from: option
  *                       lists (dropdown, select, autocomplete, row menus), alert
  *                       dialogs, toasts. The densest tint, so the page's own rows

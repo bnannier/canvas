@@ -3,7 +3,8 @@ import { forwardRef, type ReactNode } from "react";
 import { useComposedRefs } from "../../style/use-composed-refs.js";
 import { useSpaceActivation } from "../../style/use-space-activation.js";
 import { type GestureResponderEvent } from "react-native";
-import { View, Pressable, Text, surfaceRipple, RippleClip, cornerRadii, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle, type LayoutStyle, GlassPane, paneStyle, paneRipple, isGlass, legibleWash, withInnerFill } from "../../style/index.js";
+import { View, Pressable, Text, surfaceRipple, RippleClip, cornerRadii, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle, type LayoutStyle, GlassPane, paneStyle, paneRipple, legibleWash, withInnerFill } from "../../style/index.js";
+import { contrastStyle } from "../../style/glass-surface/glass-surface.shared.js";
 import { useRadioGroup } from "./radio-context.js";
 
 // Shared Radio shell. Uses React Native's primitives DIRECTLY and reads the active
@@ -158,13 +159,10 @@ export function createRadio(skin: RadioSkin) {
     const size = sizeOf(props);
     const theme = useMaterialTheme({ static: true, layer: "control" });
     const { tokens } = theme;
-    // Under glass the ring is a static pane at control density: a GlassPane paints the material
-    // behind the dot (BRAND-tinted while checked, with the dot in `primary-foreground`
-    // over it). The checked ring's outline becomes padding (the brand pane carries it); the
-    // unchecked ring keeps its outline over the pane, the boundary that identifies the
-    // control (GS-1). A card-mode radio is a CONTENT-layer pane like a selectable Card,
-    // tinted while checked.
-    const glass = isGlass(theme);
+    // The ring is a small mark inside content, not a surface: it draws the skin's own ring
+    // and dot in every mode, glass included, with no pane and no rim (the owner's GS-5
+    // decision), and takes the contrasting border under Increase Contrast. A card-mode radio
+    // is a CONTENT-layer pane like a selectable Card, tinted while checked.
     // Whether the control carries any text at all (title and/or description).
     const hasText = children != null || description != null;
 
@@ -196,9 +194,9 @@ export function createRadio(skin: RadioSkin) {
     // Ripple (Android): a card uses a bounded surface ripple over the whole tile (clipped
     // to the rounded corners by the RippleClip parent); a plain radio uses the skin's
     // borderless ring ripple. iOS/web ignore android_ripple and keep the pressedOpacity dim.
-    // The card's pane and the ring's are children of the Pressable: where they render, the
-    // ripple draws in the foreground, over them (`paneRipple`).
-    const ripple = paneRipple(cardChrome != null || mark.kind === "ring" ? theme : false, card ? surfaceRipple(tokens) : skin.ripple ? skin.ripple(tokens) : undefined);
+    // The card's pane is a child of the Pressable: where it renders, the ripple draws in the
+    // foreground, over it (`paneRipple`).
+    const ripple = paneRipple(cardChrome != null ? theme : false, card ? surfaceRipple(tokens) : skin.ripple ? skin.ripple(tokens) : undefined);
 
     // Roving-focus wiring from the group (web arrow-key nav): the group makes only
     // the selected radio a tab stop and the arrows move + select. `ref` passes
@@ -249,11 +247,8 @@ export function createRadio(skin: RadioSkin) {
       >
         {cardChrome ? <GlassPane layer="content" shape={cardChrome} stateBorder={isChecked} tint={isChecked ? legibleWash(theme, "selection", { layer: "content" }) : undefined} /> : null}
         {mark.kind === "ring" ? (
-          // An unchecked ring is the radio's boundary: under glass it stays over the pane in its
-          // solid colour at 3:1 (GS-1), where the checked ring's brand pane carries the control.
-          <View style={paneStyle(theme, mark.ring(tokens, size, isChecked, hasText), isChecked ? false : "boundary")}>
-            <GlassPane static layer="control" shape={mark.ring(tokens, size, isChecked, hasText)} boundary={!isChecked} brand={isChecked ? tokens.primary : undefined} />
-            {isChecked ? <View style={[mark.dot(tokens, size), glass ? { backgroundColor: tokens["primary-foreground"] } : null]} /> : null}
+          <View style={contrastStyle(theme, mark.ring(tokens, size, isChecked, hasText))}>
+            {isChecked ? <View style={mark.dot(tokens, size)} /> : null}
           </View>
         ) : null}
         {hasText ? (

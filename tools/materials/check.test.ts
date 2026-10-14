@@ -81,6 +81,11 @@ test("inherited primitives require composition evidence without inventing surfac
   expect(materialCoverage.find((entry) => entry.name === "AlertDialog")?.roles).toEqual(["liquid"]);
   expect(materialCoverage.find((entry) => entry.name === "AvatarGroup")?.roles).toEqual(["static", "inherited"]);
   expect(materialCoverage.find((entry) => entry.name === "Heatmap")?.roles).toEqual(["liquid", "inherited"]);
+  // The selection marks draw their solid look in every mode (the owner's GS-5 decision): the
+  // Switch and the Checkbox own no surface, and a Radio owns one only as a card option.
+  expect(materialCoverage.find((entry) => entry.name === "Switch")?.roles).toEqual(["inherited"]);
+  expect(materialCoverage.find((entry) => entry.name === "Checkbox")?.roles).toEqual(["inherited"]);
+  expect(materialCoverage.find((entry) => entry.name === "Radio")?.roles).toEqual(["static", "inherited"]);
 });
 
 test("export discovery resolves aliases, classes, forwardRef and null-rendering compound members", () => {

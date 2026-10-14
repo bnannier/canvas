@@ -40,7 +40,7 @@ export interface GlassSurfaceProps {
   clear?: boolean;
   /**
    * Tint the material with a colour: the brand-tinted glass of a primary control (a
-   * checked switch's track, a split button's call to action). On iOS 26's Liquid Glass it
+   * primary Button, a split button's call to action). On iOS 26's Liquid Glass it
    * is passed to the native glass as its tintColor and no fill is painted for it; on the
    * frost paths (the web, Android, iOS's frost) it is the fill, the colour at the sheerest
    * alpha at which the ink painted on it keeps 4.5:1 (`brandTint`), painted OVER the
@@ -114,20 +114,11 @@ export interface GlassSurfaceProps {
    * The translucent under-fill painted behind the material in place of the layer's own
    * tint (`glass-tint`, `glass-tint-content`, `glass-tint-control` or `glass-tint-dense`
    * for the surface's `layer`): a toned or selected pane's wash, or a control's own fill
-   * (the Switch thumb and the Slider knob pass their knob colour, so the knob reads as a
-   * bright puck). It wins over `brand`. Not painted where the material resolves solid,
-   * where the skin's own opaque fill shows.
+   * (the Slider knob passes its knob colour, so the knob reads as a bright puck). It wins
+   * over `brand`. Not painted where the material resolves solid, where the skin's own opaque
+   * fill shows.
    */
   tint?: string;
-  /**
-   * A control's boundary drawn as its fill (an off Switch track, its thumb): the colour
-   * solved for the 3:1 WCAG 1.4.11 asks of it (`legibleTrack`), painted OVER the frost as a
-   * `brand` is, so the colour solved is the colour that renders (beneath a frost, the blur
-   * pulls the surroundings into a small surface: an off web track read 2.8:1 against the page
-   * where its fill solves to 3.35). On Liquid Glass it is the fill beneath the glass. It wins
-   * over `tint` and `brand`.
-   */
-  boundaryFill?: string;
 }
 
 // Android materials sample an explicitly safe native plane. An ancestor target
@@ -295,12 +286,11 @@ export function brandOverMaterial(brand: string | undefined, tint: string | unde
 }
 
 /**
- * The fill a frost surface paints and whether it paints OVER the material: a `boundaryFill`
- * over it, else `surfaceUnderFill`'s colour, over it only for a brand (`brandOverMaterial`).
+ * The fill a frost surface paints and whether it paints OVER the material: `surfaceUnderFill`'s
+ * colour, over it only for a brand (`brandOverMaterial`).
  */
-export function frostFill(theme: { glass: GlassTokens; tokens: ColorTokens; dark: boolean; palette: Palette; scheme: ColorScheme }, props: Pick<GlassSurfaceProps, "layer" | "brand" | "tint" | "clear" | "boundaryFill">): { color: string; over: boolean } {
-  const { layer = "functional", brand, tint, clear, boundaryFill } = props;
-  if (boundaryFill != null) return { color: boundaryFill, over: true };
+export function frostFill(theme: { glass: GlassTokens; tokens: ColorTokens; dark: boolean; palette: Palette; scheme: ColorScheme }, props: Pick<GlassSurfaceProps, "layer" | "brand" | "tint" | "clear">): { color: string; over: boolean } {
+  const { layer = "functional", brand, tint, clear } = props;
   const color = surfaceUnderFill(theme.glass, layer, brand, tint ?? (clear && brand == null ? clearSurfaceTint(theme.tokens, theme.dark) : undefined), theme.tokens, frameBedsFor(theme.palette, theme.scheme));
   return { color, over: brandOverMaterial(brand, tint) };
 }

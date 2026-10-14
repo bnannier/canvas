@@ -361,7 +361,7 @@ const density = getDensity();
       {
         title: "Surface inventory",
         description: "Representative surfaced roles and tint density. The component variant and surrounding context determine whether a pane exists. Reading content remains still, functional surfaces use supported liquid material, and unfilled variants inherit. Density does not select motion.",
-        render: () => (<DataTable bordered compact stacks columns={["Surface", "Layer", "Treatment"]} rows={[["Navbar, Sidebar, Dialog, Drawer, Popover, Command", "Functional", "Supported glass with complete solid fallback"], ["Card, list, table, calendar, chart, alert", "Content", "Stable frost for reading"], ["Fields, buttons, tabs, chips, switches", "Control", "Role-appropriate material; bare variants stay bare"], ["Option menus, AlertDialog, Toast, Tooltip", "Dense", "Denser tint for legibility; inverse surfaces retain inverse ink"]]} />),
+        render: () => (<DataTable bordered compact stacks columns={["Surface", "Layer", "Treatment"]} rows={[["Navbar, Sidebar, Dialog, Drawer, Popover, Command", "Functional", "Supported glass with complete solid fallback"], ["Card, list, table, calendar, chart, alert", "Content", "Stable frost for reading"], ["Fields, buttons, tabs, chips", "Control", "Role-appropriate material; bare variants stay bare"], ["Option menus, AlertDialog, Toast, Tooltip", "Dense", "Denser tint for legibility; inverse surfaces retain inverse ink"], ["Switch, Checkbox, Radio", "None", "Solid marks in every mode; no pane or rim"]]} />),
       },
       {
         title: "Live comparison",

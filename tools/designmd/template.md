@@ -103,11 +103,12 @@ the material, layered, each layer with its own under-fill: the functional shells
 overlays (navbars, the tab bar, the sidebar, dialogs, sheets, drawers, popovers, the
 command palette) take the sheer `glass-tint`; the content panes (cards, lists, tables,
 calendars, charts, alerts) the denser `glass-tint-content`, so their text keeps its
-contrast; the controls (fields, buttons, tabs, chips, badges, switches, checkboxes)
-the bright `glass-tint-control` puck, brand-tinted where the fill is the brand; and
-the surfaces a user reads and acts on (menus, selects, alert dialogs, toasts, tooltips)
-the densest `glass-tint-dense`. Fills inside a surface become ink tints, a brand
-puck stays as sheer as its ink's 4.5:1 allows, and solid mode is untouched. There is
+contrast; the controls (fields, buttons, tabs, chips, badges) the bright
+`glass-tint-control` puck, brand-tinted where the fill is the brand; and the surfaces
+a user reads and acts on (menus, selects, alert dialogs, toasts, tooltips) the
+densest `glass-tint-dense`. Radios, checkboxes and switches are marks inside content
+and keep their solid look. Fills inside a surface become ink tints, a brand puck
+stays as sheer as its ink's 4.5:1 allows, and solid mode is untouched. There is
 no per-component `glass` prop, and hand-painting the material onto a component is not
 a supported way to get one.
 

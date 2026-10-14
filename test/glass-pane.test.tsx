@@ -195,7 +195,7 @@ describe("every pane host keeps its solid layout under glass", () => {
       expect(twin, `${name}: the pane host has a solid twin`).not.toBeNull();
       // The content stays where solid puts it: each side's border plus padding is solid's.
       expect(insetsOf(host), `${name}: insets`).toEqual(insetsOf(twin!));
-      // Absolutely placed content (a switch thumb, a slider tick) keeps its place too: its
+      // Absolutely placed content (a floating label, a slider tick) keeps its place too: its
       // offset from the host's outer edge is solid's, and a layer pinned to both sides of an
       // axis (a centred glyph layer) keeps its centre.
       const placed = Array.from(host.children).filter((child) => !glassOnly(child) && getComputedStyle(child).position === "absolute");

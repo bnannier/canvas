@@ -20,8 +20,7 @@ import {
  * and a surface in the page, which has none, resolves its solid skin; otherwise (without the
  * package, or on Android 11 and earlier, where it captures nothing) it is expo-blur's frost on
  * expo-blur's releases before 57, in the page as in an overlay, and from 57 the surface
- * resolves solid. A `brand` paints brand-tinted glass, a `tint` a wash, and a
- * `boundaryFill` a control's boundary over the material.
+ * resolves solid. A `brand` paints brand-tinted glass and a `tint` a wash.
  *
  * Where its material resolves solid (in solid mode, under Reduce Transparency or Increase
  * Contrast, where an optional peer is missing, a browser lacks a backdrop filter or an
@@ -49,12 +48,11 @@ export function GlassSurface(props: GlassSurfaceProps) {
   const translucent = props.sheer && layer === "content";
   const fill = materialFill(style, props.stateBorder);
   const native = resolved.renderer === "liquid";
-  // Liquid Glass takes a brand as its own tintColor and paints no fill for it, and a
-  // boundary fill beneath the glass; the frost paints the fill, a brand one or a boundary
-  // fill OVER the blur (`frostFill`).
+  // Liquid Glass takes a brand as its own tintColor and paints no fill for it; the frost
+  // paints the fill, a brand one OVER the blur (`frostFill`).
   const fillOf = frostFill(theme, props);
   const fillLayer = <View style={[fill, { backgroundColor: fillOf.color, opacity: translucent ? SHEER_FILL_OPACITY : 1 }]} />;
-  const paintsFill = !native || brand == null || props.tint != null || props.boundaryFill != null;
+  const paintsFill = !native || brand == null || props.tint != null;
   const over = !native && fillOf.over;
   const material = solid ? null : <>
     {paintsFill && !over ? fillLayer : null}

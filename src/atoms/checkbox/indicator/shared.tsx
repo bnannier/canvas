@@ -1,6 +1,6 @@
-import { useMaterialTheme } from "../../../style/glass-surface/use-material-theme.js";
 import { type ReactNode } from "react";
-import { View, Text, useTheme, type ColorTokens, type ViewStyle, GlassPane, paneStyle } from "../../../style/index.js";
+import { View, Text, useTheme, type ColorTokens, type ViewStyle } from "../../../style/index.js";
+import { contrastStyle } from "../../../style/glass-surface/glass-surface.shared.js";
 import type { CheckboxSkin, Size } from "../checkbox.shared.js";
 
 // Shared by the interactive Checkbox and its private decorative counterpart, so
@@ -30,15 +30,13 @@ export function CheckboxIndicatorBox({ skin, tokens, size, checked, indeterminat
   nudge: boolean;
 }) {
   const filled = !!(indeterminate || checked);
-  // Under glass the box is a static pane at control density: a GlassPane paints the material
-  // behind the glyph (BRAND-tinted while filled). A filled box drops its fill and outline
-  // (the brand pane carries them); an empty box keeps its outline over the pane, the
-  // boundary that identifies the control, in its solid colour at 3:1 (GS-1).
-  const theme = useMaterialTheme({ static: true, layer: "control" });
+  // The box is a small mark inside content, not a surface: it draws the skin's own box and
+  // glyph in every mode, glass included, with no pane and no rim (the owner's GS-5
+  // decision), and takes the contrasting border under Increase Contrast.
+  const theme = useTheme();
   const box = skin.box(tokens, filled, size, nudge);
   return (
-    <View style={paneStyle(theme, box, filled ? false : "boundary")}>
-      <GlassPane static layer="control" shape={box} boundary={!filled} brand={filled ? tokens.primary : undefined} />
+    <View style={contrastStyle(theme, box)}>
       {filled ? (
         <View style={GLYPH_LAYER}>
           <Text style={skin.glyph(tokens, size)}>{indeterminate ? "–" : "✓"}</Text>
