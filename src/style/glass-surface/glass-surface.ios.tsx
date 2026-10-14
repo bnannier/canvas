@@ -11,11 +11,11 @@ import {
  * The host every kit glass surface renders through (a Card, a Dialog, a Popover's card, the
  * Navbar, an option list and the rest), painting its layer's material behind its children.
  *
- * On the web the material is Dark Factory's plain frost (the layer's tint, a 24 px backdrop
- * blur with no saturation shift and a 1 px inset hairline). On iOS 26 and later it is
- * Apple's Liquid Glass through expo-glass-effect for the functional, control and dense
- * layers, and expo-blur's frost with a specular rim for content and static surfaces and
- * before iOS 26. On Android 12 and later with `@nannier/canvas-blur` installed, it is that
+ * On the web the material is Dark Factory's plain frost (a 24 px backdrop blur with no
+ * saturation shift, the layer's tint painted over it, and a 1 px inset hairline). On iOS 26
+ * and later it is Apple's Liquid Glass through expo-glass-effect for the functional, control
+ * and dense layers, and expo-blur's frost with the layer's tint painted over its blur and a
+ * specular rim for content and static surfaces and before iOS 26. On Android 12 and later with `@nannier/canvas-blur` installed, it is that
  * package's capture frost where a capture plane is ready (an overlay outlet, a bridged Modal),
  * and a surface in the page, which has none, resolves its solid skin; otherwise (without the
  * package, or on Android 11 and earlier, where it captures nothing) it is expo-blur's frost on
@@ -48,18 +48,18 @@ export function GlassSurface(props: GlassSurfaceProps) {
   const translucent = props.sheer && layer === "content";
   const fill = materialFill(style, props.stateBorder);
   const native = resolved.renderer === "liquid";
-  // Liquid Glass takes a brand as its own tintColor and paints no fill for it; the frost
-  // paints the fill, a brand one OVER the blur (`frostFill`).
-  const fillOf = frostFill(theme, props);
-  const fillLayer = <View style={[fill, { backgroundColor: fillOf.color, opacity: translucent ? SHEER_FILL_OPACITY : 1 }]} />;
-  const paintsFill = !native || brand == null || props.tint != null;
-  const over = !native && fillOf.over;
-  const material = solid ? null : <>
-    {paintsFill && !over ? fillLayer : null}
-    {native && LiquidView ? <LiquidView glassEffectStyle={clear ? "clear" : "regular"} isInteractive={interactive} tintColor={brand} colorScheme={theme.dark ? "dark" : "light"} style={fill} />
-      : FrostView ? <FrostView intensity={clear ? CLEAR_INTENSITY : surfaceIntensity(layer, translucent)} tint={theme.dark ? "dark" : "light"} style={fill} /> : null}
-    {paintsFill && over ? fillLayer : null}
-    {!native ? <SpecularRim style={style} dark={theme.dark} inside={props.stateBorder} /> : null}
+  const fillLayer = <View style={[fill, { backgroundColor: frostFill(theme, props), opacity: translucent ? SHEER_FILL_OPACITY : 1 }]} />;
+  // Liquid Glass takes a brand as its own tintColor and paints no fill for it; any other fill
+  // lies beneath the glass, as it always has. The frost paints its fill OVER its blur, then the
+  // rim: the BlurView samples everything beneath it, so a fill there was blurred into the frost
+  // it belongs to and dyed by its veil (`frostFill`, glass-surface-native-frost-self-sample-1).
+  const material = solid ? null : native && LiquidView ? <>
+    {brand == null || props.tint != null ? fillLayer : null}
+    <LiquidView glassEffectStyle={clear ? "clear" : "regular"} isInteractive={interactive} tintColor={brand} colorScheme={theme.dark ? "dark" : "light"} style={fill} />
+  </> : <>
+    {FrostView ? <FrostView intensity={clear ? CLEAR_INTENSITY : surfaceIntensity(layer, translucent)} tint={theme.dark ? "dark" : "light"} style={fill} /> : null}
+    {fillLayer}
+    <SpecularRim style={style} dark={theme.dark} inside={props.stateBorder} />
   </>;
   return <GlassBox {...props} style={contrastStyle(theme, style, props.stateBorder)} solid={solid} material={material} />;
 }

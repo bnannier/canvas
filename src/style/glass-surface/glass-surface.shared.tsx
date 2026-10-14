@@ -44,9 +44,9 @@ export interface GlassSurfaceProps {
    * primary Button, a split button's call to action). On iOS 26's Liquid Glass it
    * is passed to the native glass as its tintColor and no fill is painted for it; on the
    * frost paths (the web, Android, iOS's frost) it is the fill, the colour at the sheerest
-   * alpha at which the ink painted on it keeps 4.5:1 (`brandTint`), painted OVER the
-   * material so the solved colour is the rendered one (`brandOverMaterial`). It wins over
-   * the layer's tint, and `tint` wins over it.
+   * alpha at which the ink painted on it keeps 4.5:1 (`brandTint`), painted over the blur
+   * as every frost fill is (`frostFill`), so the solved colour is the rendered one. It wins
+   * over the layer's tint, and `tint` wins over it.
    */
   brand?: string;
   /**
@@ -114,8 +114,8 @@ export interface GlassSurfaceProps {
   /**
    * The translucent fill the material carries in place of the layer's own tint
    * (`glass-tint`, `glass-tint-content`, `glass-tint-control` or `glass-tint-dense` for the
-   * surface's `layer`), behind the surface's content (on the web over the backdrop blur, on
-   * the native frost where its host places it): a toned or selected pane's wash, or a control's own fill
+   * surface's `layer`), behind the surface's content and over the frost's blur (beneath the
+   * glass on iOS 26's Liquid Glass): a toned or selected pane's wash, or a control's own fill
    * (the Slider knob passes its knob colour, so the knob reads as a bright puck). It wins
    * over `brand`. Not painted where the material resolves solid, where the skin's own opaque
    * fill shows.
@@ -246,7 +246,7 @@ export function frostMethodProps(supportsBlurTarget: boolean): { experimentalBlu
 // The native frost's strength, expo-blur's and canvas-blur's `intensity` (0 to 100), on
 // iOS and Android; the web blurs at WEB_FROST.blur through a CSS backdrop filter and reads
 // none of these. The frost brings its own light or dark tint at this intensity, under the
-// layer's tint.
+// layer's tint, which paints over the frost (`frostFill`).
 export const GLASS_INTENSITY = 80;
 
 // A content pane blurs a touch less than the functional layer: its tint is denser, so the
@@ -272,33 +272,24 @@ export const BRAND_TINT_STEP = 0.02;
 export const BRAND_INK_CONTRAST = 4.5;
 
 /**
- * Whether a surface's fill is a brand colour that must render OVER its material.
- * `brandTint` solves the ink's contrast for the brand composited on the page, and
- * a frost is not colour-neutral over a fill painted beneath it: the
- * frost's scheme tint dyes it (expo-blur's dark BlurView halved the brand's
- * brightness on iOS, 2:1 for the ink where the solver promised 4.5:1) and a blur
- * pulls the surroundings into a small puck. Painted over the material, the brand
- * composites on the blurred page and the solved colour is the rendered colour;
- * the material still shows through its 34 percent. On the native frost layer tints
- * stay beneath: they are the material's own body, tuned in place. An explicit `tint`
- * keeps its place too (an opaque knob does not care; a translucent selection tint was
- * tuned there). The web host reads none of this: it paints every fill over its
- * backdrop blur, as Dark Factory's frost does, since a backdrop filter samples what is
- * painted before it and no material may sample itself.
+ * The fill a frost surface paints: `surfaceUnderFill`'s colour (the layer's tint, a `tint`
+ * wash, a solved `brand` colour, or a clear surface's veil). Every frost path paints it OVER
+ * its blur, then the rim: the web's backdrop filter, iOS's and Android's expo-blur BlurView
+ * and canvas-blur's capture frost, as Dark Factory's GlassSurface does on every platform (its
+ * BlurView, then its fill). A blur samples whatever is painted beneath it, so a fill there was
+ * blurred into the material it belongs to (no material may sample itself) and dyed by the
+ * frost's own light or dark veil: on the iOS simulator a red tint under the frost read up to
+ * 53 levels a channel off the same tint over it, and the dark Card's content tint up to 10,
+ * where over the blur the fill composites on the frosted page within half a level
+ * (glass-surface-native-frost-self-sample-1; expo-blur's dark BlurView had halved a brand
+ * fill's brightness the same way, 2:1 for its ink where `brandTint` promised 4.5:1). Over the
+ * blur the solved colour is the rendered one and the material still shows through what the
+ * fill leaves. Only iOS 26's Liquid Glass keeps a fill beneath it (its host's own choice), and
+ * takes a brand as its tintColor instead.
  */
-export function brandOverMaterial(brand: string | undefined, tint: string | undefined): boolean {
-  return brand != null && tint == null;
-}
-
-/**
- * The fill a frost surface paints and whether it paints OVER the material: `surfaceUnderFill`'s
- * colour, over the native frost only for a brand (`brandOverMaterial`). The web host paints
- * it over its backdrop blur whatever this says.
- */
-export function frostFill(theme: { glass: GlassTokens; tokens: ColorTokens; dark: boolean; palette: Palette; scheme: ColorScheme }, props: Pick<GlassSurfaceProps, "layer" | "brand" | "tint" | "clear">): { color: string; over: boolean } {
+export function frostFill(theme: { glass: GlassTokens; tokens: ColorTokens; dark: boolean; palette: Palette; scheme: ColorScheme }, props: Pick<GlassSurfaceProps, "layer" | "brand" | "tint" | "clear">): string {
   const { layer = "functional", brand, tint, clear } = props;
-  const color = surfaceUnderFill(theme.glass, layer, brand, tint ?? (clear && brand == null ? clearSurfaceTint(theme.tokens, theme.dark) : undefined), theme.tokens, frameBedsFor(theme.palette, theme.scheme));
-  return { color, over: brandOverMaterial(brand, tint) };
+  return surfaceUnderFill(theme.glass, layer, brand, tint ?? (clear && brand == null ? clearSurfaceTint(theme.tokens, theme.dark) : undefined), theme.tokens, frameBedsFor(theme.palette, theme.scheme));
 }
 
 /**
@@ -328,11 +319,10 @@ export function brandTint(brand: string, page: string | readonly string[], ink: 
   return alpha(brand, 1);
 }
 
-/** The fill a surface's material carries (over the web's backdrop blur; on the native
- *  frost where its host places it, `frostFill`): `tint`, else the `brand` colour tinted so
- *  the ink painted on it stays legible over the page (both read from `tokens`) and over
- *  every bed of the page's frosted frame (`beds`, `frameBedsFor`), else the layer's own
- *  token. */
+/** The fill a surface's material carries (over the frost's blur, `frostFill`; beneath iOS
+ *  26's Liquid Glass): `tint`, else the `brand` colour tinted so the ink painted on it stays
+ *  legible over the page (both read from `tokens`) and over every bed of the page's frosted
+ *  frame (`beds`, `frameBedsFor`), else the layer's own token. */
 export function surfaceUnderFill(glass: GlassTokens, layer: GlassLayer, brand?: string, tint?: string, tokens?: ColorTokens, beds: readonly string[] = []): string {
   if (tint != null) return tint;
   if (brand != null) return tokens != null ? brandTint(brand, [tokens.background, ...beds], brandInk(tokens, brand)) : alpha(brand, BRAND_TINT_ALPHA);
