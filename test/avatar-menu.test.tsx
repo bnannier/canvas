@@ -540,8 +540,8 @@ it("preserves the Argus account identity and independently names its role menu",
   const control = screen.getByRole("button", { name: "Switch role" });
   expect(pill(container).style.paddingTop).toBe("2px");
   expect(pill(container).style.paddingRight).toBe("4px");
-  expect(screen.getByText("Bobby").style.lineHeight).toBe("14.4px");
-  expect(screen.getByText("Architect").style.lineHeight).toBe("12.6px");
+  expect(screen.getByText("Bobby").style.lineHeight).toBe("13.8px");
+  expect(screen.getByText("Architect").style.lineHeight).toBe("12.08px");
   fireEvent.click(control);
   await waitFor(() => expect(screen.getByRole("menu", { name: "View as role" })).toBeTruthy());
   fireEvent.click(screen.getByRole("menuitem", { name: "Reviewer" }));

@@ -105,8 +105,8 @@ export interface AvatarMenuProps {
 // height (32 / 36 / 40), so the shape is platform-neutral and owned here.
 const PILL_RADIUS = 9999;
 const ACCOUNT_PILL: ViewStyle = { flexDirection: "row", alignItems: "center", gap: 10, paddingVertical: 2, paddingStart: 2, paddingEnd: 4 };
-const ACCOUNT_NAME: TextStyle = { fontSize: 12, lineHeight: 14.4, fontWeight: "700" };
-const ACCOUNT_SECONDARY: TextStyle = { fontSize: 10.5, lineHeight: 12.6, fontWeight: "600" };
+const ACCOUNT_NAME: TextStyle = { fontSize: 12, lineHeight: 13.8, fontWeight: "700" };
+const ACCOUNT_SECONDARY: TextStyle = { fontSize: 10.5, lineHeight: 12.08, fontWeight: "600" };
 
 // The name-over-email column between the avatar and the chevron. Start-aligned and
 // allowed to shrink so a long email never pushes the chevron out of the capsule.
