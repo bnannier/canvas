@@ -61,7 +61,7 @@ function makeColumn(radius: number, collapsedWidth: number, pad: ViewStyle) {
 // 48px tall (the active one on the soft `accent` panel), a 12/16 uppercase section
 // eyebrow at the medium weight, 20px glyphs.
 export const webSkin: SidebarSkin = {
-  pressedFill: true,
+  pressedFill: false,
   pressedOpacity: null,
   ripple: null,
   // Keyboard focus shows the kit's themed ring inside the full-width row, where the
@@ -73,17 +73,17 @@ export const webSkin: SidebarSkin = {
 
   column: makeColumn(shape.web.card, 64, { gap: 16, padding: 12 }),
 
-  group: { gap: 4 },
+  group: { gap: 0 },
 
   sectionTitle(tokens) {
     return {
-      paddingHorizontal: 12,
-      paddingVertical: 4,
-      fontSize: 12,
-      lineHeight: 16,
-      fontWeight: "500",
+      paddingHorizontal: 26,
+      marginBottom: 10,
+      fontSize: 10,
+      lineHeight: 13,
+      fontWeight: "700",
       textTransform: "uppercase",
-      letterSpacing: 0.48,
+      letterSpacing: 1.8,
       color: tokens["muted-foreground"],
     };
   },
@@ -93,31 +93,36 @@ export const webSkin: SidebarSkin = {
       flexDirection: "row",
       alignItems: "center",
       justifyContent: collapsed ? "center" : "flex-start",
-      gap: collapsed ? 0 : 12,
-      borderRadius: shape.web.control,
-      paddingHorizontal: collapsed ? 0 : 12,
-      paddingVertical: density === "compact" ? 8 : 14,
+      gap: collapsed ? 0 : 13,
+      borderRadius: 0,
+      paddingLeft: collapsed ? 0 : density === "compact" ? 22 : 30,
+      paddingRight: collapsed ? 0 : density === "compact" ? 16 : 22,
+      paddingVertical: 9,
     };
   },
 
-  rowFill(tokens, active) {
-    return active ? { backgroundColor: tokens.accent } : null;
+  rowFill() { return null; },
+  activeIndicator(tokens) {
+    return { position: "absolute", left: 0, top: 7, bottom: 7, width: 3, borderTopRightRadius: 3, borderBottomRightRadius: 3, backgroundColor: tokens.primary };
   },
+  navigationCount: true,
+  iconRegularStroke: true,
+  iconOpacity: 0.9,
 
-  label(tokens, active, density) {
+  label(tokens, active) {
     return {
       flexGrow: 1,
       flexShrink: 1,
       flexBasis: "0%",
-      ...(density === "compact" ? { fontSize: 12, lineHeight: 16 } : { fontSize: 14, lineHeight: 20 }),
-      ...(active ? { fontWeight: "500", color: tokens.foreground } : { color: tokens["muted-foreground"] }),
+      fontSize: 12.5, lineHeight: 16.25,
+      ...(active ? { fontWeight: "700", color: tokens.foreground } : { fontWeight: "600", color: tokens["muted-foreground"] }),
     };
   },
 
   iconTint(active) {
     return active ? {} : { muted: true };
   },
-  iconSize: 20,
+  iconSize: 16,
 
   // --- collapse ---
   collapsedWidth: 64,
