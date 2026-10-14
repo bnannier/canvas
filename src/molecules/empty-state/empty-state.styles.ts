@@ -1,5 +1,5 @@
 import { type ViewStyle, type TextStyle } from "react-native";
-import { type ColorTokens, alpha, shape } from "../../style/index.js";
+import { type ColorTokens, alpha, shape, shadow } from "../../style/index.js";
 
 // Co-located EmptyState skins, one per platform. EmptyState is a "Light"
 // treatment: identical structure and semantic colors (those live below as the
@@ -29,6 +29,7 @@ export type Tone = "success" | "default";
 export interface EmptyStateSkin {
   /** The centered column wrapper. */
   container: ViewStyle;
+  elevated: (t: ColorTokens) => ViewStyle;
   /** The bordered card shape (radius + border width); fill/color is shared. */
   borderedBase: ViewStyle;
   /** Bordered card padding by density (compact tightens it for dense table cells). */
@@ -67,6 +68,8 @@ export function glyphTone(tokens: ColorTokens, tone: Tone): TextStyle {
 }
 
 // ---- Shared layout fragments reused across the skins -------------------------
+const ELEVATED = (tokens: ColorTokens): ViewStyle => ({ borderRadius: 14, borderWidth: 0, backgroundColor: tokens.card, paddingVertical: 44, paddingHorizontal: 32, ...shadow("empty", tokens) });
+
 const CONTAINER: ViewStyle = { alignItems: "center" };
 
 const DISC: ViewStyle = {
@@ -85,6 +88,7 @@ const ACTION_SPACING: ViewStyle = { marginTop: 16 };
 // ---- Web (the dashed drop-zone card) ------------------------------------------
 export const webSkin: EmptyStateSkin = {
   container: CONTAINER,
+  elevated: ELEVATED,
   // The drop zone: the card corner and a dashed hairline.
   borderedBase: { borderRadius: shape.web.card, borderWidth: 1, borderStyle: "dashed" },
   borderedPad: {
@@ -95,16 +99,17 @@ export const webSkin: EmptyStateSkin = {
   glyph: GLYPH,
   title: (tokens) => ({
     textAlign: "center",
-    fontSize: 16,
-    lineHeight: 24,
-    fontWeight: "500",
+    fontSize: 15,
+    lineHeight: 19.5,
+    fontWeight: "700",
     color: tokens.foreground,
   }),
   description: (tokens) => ({
-    marginTop: 4,
+    marginTop: 6,
     textAlign: "center",
-    fontSize: 14,
-    lineHeight: 20,
+    fontSize: 12.5,
+    lineHeight: 18.75,
+    fontWeight: "500",
     color: tokens["muted-foreground"],
   }),
   actionSpacing: ACTION_SPACING,
@@ -113,6 +118,7 @@ export const webSkin: EmptyStateSkin = {
 // ---- iOS (HIG): continuous-corner grouped-inset feel, SF Pro Text tracking ---
 export const iosSkin: EmptyStateSkin = {
   container: CONTAINER,
+  elevated: ELEVATED,
   // The superellipse corner curve of Apple's grouped-inset surfaces (iOS-only prop).
   borderedBase: { borderRadius: shape.ios.card, borderWidth: 1, borderCurve: "continuous" },
   borderedPad: {
@@ -143,6 +149,7 @@ export const iosSkin: EmptyStateSkin = {
 // ---- Android (Material 3): M3 medium shape, M3 type roles --------------------
 export const androidSkin: EmptyStateSkin = {
   container: CONTAINER,
+  elevated: ELEVATED,
   borderedBase: { borderRadius: shape.android.card, borderWidth: 1 },
   borderedPad: {
     compact: { paddingHorizontal: 16, paddingVertical: 24 },
