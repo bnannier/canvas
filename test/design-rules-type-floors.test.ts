@@ -44,7 +44,7 @@ function rendersJsx(node: ts.Node): boolean {
 
 describe("the reading floors", () => {
   it("are the design language's", () => {
-    expect(READING_FLOOR).toEqual({ body: 12, lead: 12, small: 11, tiny: 10, caption: 9.5 });
+    expect(READING_FLOOR).toEqual({ body: 12, lead: 12, small: 11, tiny: 10, caption: 9.5, annotation: 9 });
   });
 
   for (const platform of ["web", "ios", "android"] as const) {
@@ -52,6 +52,8 @@ describe("the reading floors", () => {
       const mod = (await import("../src/atoms/typography/typography.styles.ts")) as Record<string, { roleType: Record<string, { fontSize?: number }> }>;
       const roleType = mod[`${platform}Skin`].roleType;
       for (const [role, floor] of Object.entries(READING_FLOOR)) {
+        // Annotation belongs to the Avatar identity image, not Typography.
+        if (role === "annotation") continue;
         expect(roleType[role]?.fontSize, `Typography ${role} on ${platform}`).toBeGreaterThanOrEqual(floor);
       }
     });
