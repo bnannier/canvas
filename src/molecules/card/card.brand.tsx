@@ -10,7 +10,7 @@ import { Avatar } from "../../atoms/avatar/avatar.js";
 import { Badge } from "../../atoms/badge/badge.js";
 import { Typography } from "../../atoms/typography/typography.js";
 import type { CardProps } from "./card.shared.js";
-import * as s from "./card.brand.styles.js";
+import { webSkin as s } from "./card.brand.styles.js";
 
 export type BrandCardMode = "featured" | "promo";
 export function brandCardModeOf(p: CardProps): BrandCardMode | null {

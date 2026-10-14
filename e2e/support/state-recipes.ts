@@ -2250,6 +2250,7 @@ export const STATE_RECIPES: Record<string, ComponentStates> = {
 
   // Molecules
   accordion: {
+    hover: hover("activitydisclosure", byRole("button", "Scout run")),
     focus: focus("default", byRole("button", "Is it accessible?")),
     pressed: pressed("default", byRole("button", "Is it accessible?")),
     disabled: disabled("disabledrow", byRole("button", /^Advanced/)),

@@ -159,6 +159,12 @@ export interface CardProps {
   borderless?: boolean;
   smallCorners?: boolean;
   inset?: boolean;
+  /** Original inset human-gate content panel. */
+  gatePanel?: boolean;
+  /** Original compact version-history row. */
+  versionPanel?: boolean;
+  /** Original inset metric-tool note. */
+  notePanel?: boolean;
   dimmed?: boolean;
   clip?: boolean;
   tileShadow?: boolean;
@@ -172,6 +178,13 @@ export interface CardProps {
   testID?: string;
   /** Composition within a parent only, never a restyle hook and never a width: the parent layout container provides the bounds. */
   style?: LayoutStyle;
+}
+
+export function panelOf(p: CardProps) {
+  if (p.notePanel) return "note";
+  if (p.versionPanel) return "version";
+  if (p.gatePanel) return "gate";
+  return null;
 }
 
 // Elevation precedence when more than one is passed: first match wins.
@@ -210,7 +223,8 @@ export function createCard(skin: CardSkin) {
     // Under glass the card is a CONTENT-layer pane: GlassSurface strips the skin's fill
     // and hairline and lays the content tint + material behind the sections (see the
     // layered glass model in src/style/tokens.ts). Solid mode keeps the plain View.
-    const elev = elevationOf(props);
+    const panel = panelOf(props);
+    const elev = panel ? "flat" : elevationOf(props);
     const dens = densityOf(props);
     // A tile-grid cell is a definite box on both axes (the grid stretches it to
     // its row's height), so a card in one grows to fill it without `grow`: the
@@ -296,6 +310,7 @@ export function createCard(skin: CardSkin) {
       props.dimmed ? { opacity: 0.75 } : null,
       props.clip ? { overflow: "hidden" } : null,
       selected ? selectedCard(tokens) : null,
+      panel ? s.insetPanel(panel, tokens) : null,
     ];
     // Under glass the selection is the primary border, kept over the material as a state
     // border, over the selection wash: the same soft primary tint as in solid, capped where

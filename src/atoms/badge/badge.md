@@ -19,6 +19,9 @@ surfaces. `uppercase` tracks caps; `start` pins a badge in a host layout.
 16-pixel pill with a 9.5-pixel extra-bold label. Button owns its position when
 passed a `count`.
 
+`signal` is the original standalone 10px status marker. It uses the existing
+status-tone precedence and announces its supplied status label.
+
 ## Usage
 
 ```tsx

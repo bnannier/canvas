@@ -14,3 +14,8 @@ export const detailCopy: ViewStyle = { flex: 1, minWidth: 0, gap: 0 };
 export const source: ViewStyle = { flexDirection: "row", alignItems: "center", gap: 4 };
 export const tileHeader: ViewStyle = { flexDirection: "row", alignItems: "center", gap: 6 };
 export const stackedHeader: ViewStyle = { flexDirection: "row", alignItems: "center", gap: 8 };
+
+// Shared content anatomy: the original Argus geometry on every platform.
+export const webSkin = { referenceBox, detailCopy, source, tileHeader, stackedHeader };
+export const iosSkin = webSkin;
+export const androidSkin = webSkin;

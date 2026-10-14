@@ -8,7 +8,7 @@ import { Badge } from "../../atoms/badge/badge.js";
 import { Typography } from "../../atoms/typography/typography.js";
 import { Icon } from "../../atoms/icon/icon.js";
 import type { CardProps } from "./card.shared.js";
-import * as s from "./card.reference.styles.js";
+import { webSkin as s } from "./card.reference.styles.js";
 
 export type ReferenceMode = "detail" | "tile" | "stacked" | "inline";
 export function referenceModeOf(p: CardProps): ReferenceMode | null {

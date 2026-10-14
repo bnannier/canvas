@@ -1453,3 +1453,10 @@ materials harness uses the same Canvas Icon disclosure as the shipped run header
 | Date | Effect and profile | Runtime and device | Revision (dirty?) | Surface | Values tried | rAF p50 / p95 / max (ms) | What the comparison showed | Versus reference | Artifacts |
 |---|---|---|---|---|---|---|---|---|---|
 | 2026-10-14 | Run disclosure and indicator | Chrome headless, macOS, DPR1, 1440x1100 and 390x844 | Canvas 3dc5af01 plus Accordion/Icon changes; Argus e3806c6 plus imports | shipped Argus Runs, solid, blush/mint/dark | Original geometry and 180ms ease retained; native animated driver in the shared mechanism | n/a, endpoint captures | All six expanded run captures are pixel-identical. Controlled toggling, disabled state, nested action isolation and expanded semantics pass. Existing chevron curve/endpoints are copied unchanged. | matches original web run layout and endpoint appearance; native animation not assessed | `tools/native/reference/argus-run-disclosure/run-before.png` and `run-after.png` |
+
+
+## Argus inset content panels, 2026-10-14
+
+| Date | Effect and profile | Runtime and device | Revision (dirty?) | Surface | Values tried | rAF p50 / p95 / max (ms) | What the comparison showed | Versus reference | Artifacts |
+|---|---|---|---|---|---|---|---|---|---|
+| 2026-10-14 | Static human-gate, versions, metric notes and signal dots | Chrome headless, macOS, DPR1, desktop and phone | Canvas 99a1a15d plus inset presets; Argus d8ba54c plus imports | shipped Argus agent details, navigation and Metrics, solid, blush/mint/dark | Original secondary fills, corners, insets and no elevation; original 10px signal dots | n/a static | Initial comparison found unintended Card elevation; flat elevation corrected it. Seven drawer/navigation captures are pixel-identical, two differ by 1/24 pixels; five Metrics captures differ by 0–5 pixels. The first blush phone page has the existing backdrop raster variation. | matches original widget surfaces and geometry; native-device appearance unassessed | `tools/native/reference/argus-inset-panels/drawer-before.png` and `drawer-after.png` |
