@@ -19,9 +19,8 @@ import { type ColorTokens, FOCUS_RESET, activeIndicator, shape, type FloatingLab
 //     rest -> 2dp `ring` on focus, `destructive` on error), ~56dp tall; the
 //     action suffix uses android_ripple; disabled opacity 0.38.
 //   Web: a white (`card`) box at the field corner with a full 1px border
-//     (error > focus > the resting `field-border` hairline, see
-//     src/style/field-colors.ts), 48 tall at the base size (40 small, 56 large),
-//     16px inset, opacity 0.5 disabled, action press opacity 0.9.
+//     (error > focus > Argus's resting `border` hairline),
+//     40 tall at the base size (36 small, 48 large), 12px inset, opacity 0.5 disabled, action press opacity 0.9.
 
 export type Size = "small" | "base" | "large";
 
@@ -93,11 +92,11 @@ export interface InputSkin extends FloatingLabelStyles<Size> {
   labelAbove: NonNullable<FloatingLabelStyles<Size>["labelAbove"]>;
 }
 
-// --- shared type scale (identical across platforms; brand type, not a face) --
+// --- web value type: Argus density; native skins keep their platform scale ---
 function webText(_t: ColorTokens, size: Size): TextStyle {
-  if (size === "large") return { fontSize: 16, lineHeight: 24 };
-  if (size === "small") return { fontSize: 12, lineHeight: 16 };
-  return { fontSize: 14, lineHeight: 20 };
+  if (size === "large") return { fontSize: 14, lineHeight: 20, fontWeight: "600" };
+  if (size === "small") return { fontSize: 12, lineHeight: 16, fontWeight: "600" };
+  return { fontSize: 13, lineHeight: 18, fontWeight: "600" };
 }
 
 // ---------- Web: the field box with a full 1px border ----------
@@ -111,15 +110,15 @@ function fieldEdge(t: ColorTokens, borderColor: keyof ColorTokens): string {
 export const webSkin: InputSkin = {
   liquid: true,
   text: webText,
-  bareBox: (size) => ({ height: size === "large" ? 56 : size === "small" ? 40 : 48 }),
-  groupedHeight: (size) => (size === "large" ? 56 : size === "small" ? 40 : 48),
+  bareBox: (size) => ({ height: size === "large" ? 48 : size === "small" ? 36 : 40 }),
+  groupedHeight: (size) => (size === "large" ? 48 : size === "small" ? 36 : 40),
   bareField: (t, borderColor) => ({
     width: "100%",
     borderRadius: shape.web.field,
     borderWidth: 1,
-    borderColor: fieldEdge(t, borderColor),
+    borderColor: borderColor === "input" ? t.border : fieldEdge(t, borderColor),
     backgroundColor: t.card,
-    paddingHorizontal: 16,
+    paddingHorizontal: 12,
     paddingVertical: 0,
     color: t.foreground,
   }),
@@ -128,7 +127,7 @@ export const webSkin: InputSkin = {
     alignItems: "stretch",
     width: "100%",
     borderWidth: 1,
-    borderColor: fieldEdge(t, borderColor),
+    borderColor: borderColor === "input" ? t.border : fieldEdge(t, borderColor),
     borderRadius: shape.web.field,
     overflow: "hidden",
     backgroundColor: t.card,
@@ -140,7 +139,7 @@ export const webSkin: InputSkin = {
     flexGrow: 1,
     flexShrink: 1,
     flexBasis: "0%",
-    paddingHorizontal: 16,
+    paddingHorizontal: 12,
     color: t.foreground,
     ...(leadingIcon ? { paddingStart: 44 } : null),
     ...(trailingIcon ? { paddingEnd: 44 } : null),
@@ -148,7 +147,7 @@ export const webSkin: InputSkin = {
   addonBox: (t, side) => ({
     justifyContent: "center",
     backgroundColor: t.muted,
-    paddingHorizontal: 16,
+    paddingHorizontal: 12,
     borderColor: t.border,
     ...(side === "left" ? { borderEndWidth: 1 } : { borderStartWidth: 1 }),
   }),
@@ -160,7 +159,7 @@ export const webSkin: InputSkin = {
     bottom: 0,
     zIndex: 10,
     justifyContent: "center",
-    ...(side === "left" ? { start: 0, paddingStart: 16 } : { end: 0, paddingEnd: 16 }),
+    ...(side === "left" ? { start: 0, paddingStart: 12 } : { end: 0, paddingEnd: 12 }),
   }),
   iconSize: 16,
   iconColor: (t) => t["muted-foreground"],
@@ -168,15 +167,15 @@ export const webSkin: InputSkin = {
   disabledOpacity: 0.5,
   pressedOpacity: 0.9,
   ripple: null,
-  // The label sits ABOVE the field (a 14/20 medium title over the box at the base
-  // size, 12/16 small and 16/24 large), which is the visual the Field/Form composers
-  // render.
+  // Argus eyebrow label, clamped to the kit's 10px reading floor.
   floatingLabel: false,
-  labelAbove: (t, size) => ({
-    fontSize: size === "large" ? 16 : size === "small" ? 12 : 14,
-    lineHeight: size === "large" ? 24 : size === "small" ? 16 : 20,
-    fontWeight: "500",
-    color: t.foreground,
+  labelAbove: (t) => ({
+    fontSize: 10,
+    lineHeight: 13,
+    fontWeight: "700",
+    letterSpacing: 1.6,
+    textTransform: "uppercase",
+    color: t["muted-foreground"],
   }),
 };
 
