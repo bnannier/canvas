@@ -25,6 +25,8 @@ import { actionFill, actionInk } from "../../style/action.js";
 // same place Alert and the other toned surfaces read theirs, so a "warning" badge and a
 // "warning" alert in one view are the same state.
 
+const NOTIFICATION_TYPE: TextStyle = { fontSize: 9.5 };
+
 export type Tone = "default" | "secondary" | "outline" | "destructive";
 export type Status = "success" | "warning" | "error" | "info" | "neutral";
 
@@ -59,6 +61,8 @@ export interface BadgeProps {
   count?: boolean;
   /** Solid count used in navigation. */
   navigationCount?: boolean;
+  /** Compact counter carried by a notification control. */
+  notification?: boolean;
   /** Squared, tracked reference key; `large` uses the 11px card form. */
   reference?: boolean;
   large?: boolean;
@@ -125,6 +129,7 @@ export function badgeIntentOf(p: BadgeProps) {
   return "muted";
 }
 export function badgeMetricOf(p: BadgeProps) {
+  if (p.notification) return "notification";
   if (p.reference) return "reference";
   if (p.navigationCount) return "navigationCount";
   if (p.count) return "count";
@@ -133,14 +138,14 @@ export function badgeMetricOf(p: BadgeProps) {
 }
 export function badgeSurfaceOf(p: BadgeProps) {
   if (p.inverse) return "inverse";
-  if (p.navigationCount || p.solid) return "solid";
+  if (p.notification || p.navigationCount || p.solid) return "solid";
   if (p.neutralFill) return "neutral";
   if (p.soft || p.reference) return "soft";
   return "surface";
 }
 export function badgeInkOf(p: BadgeProps) {
   if (p.inverse) return "inverse";
-  if (p.navigationCount || p.solid) return "solid";
+  if (p.notification || p.navigationCount || p.solid) return "solid";
   if (p.foreground) return "foreground";
   return "intent";
 }
@@ -237,17 +242,18 @@ export function createBadge(skin: BadgeSkin) {
     }
 
     const tone = toneOf(props);
-    const extended = props.success || props.warning || props.error || props.info || props.solid || props.soft || props.action || props.primary || props.inverse || props.neutralFill || props.foreground || props.small || props.count || props.navigationCount || props.reference || props.large || props.dot || props.uppercase;
+    const extended = props.success || props.warning || props.error || props.info || props.solid || props.soft || props.action || props.primary || props.inverse || props.neutralFill || props.foreground || props.small || props.count || props.navigationCount || props.notification || props.reference || props.large || props.dot || props.uppercase;
     const intent = badgeIntentOf(props);
     const metric = badgeMetricOf(props);
     const surfaceKind = badgeSurfaceOf(props);
     const inkKind = badgeInkOf(props);
     const tracking = badgeTrackingOf(props);
+    const notification = metric === "notification";
     const reference = metric === "reference";
     const navigation = metric === "navigationCount";
     const count = metric === "count";
     const small = metric === "small";
-    const labelMetrics: TextStyle = { fontSize: reference ? props.large ? 11 : 10 : small || count || navigation ? 10 : 11 };
+    const labelMetrics: TextStyle = notification ? NOTIFICATION_TYPE : { fontSize: reference ? props.large ? 11 : 10 : small || count || navigation ? 10 : 11 };
     const fontSize = Number(labelMetrics.fontSize);
     const intentInk = intent === "action" ? actionFill(tokens) : intent === "primary" ? tokens["primary-text"] ?? tokens.primary : intent === "success" ? tokens.success : intent === "warning" ? tokens.warning : intent === "error" ? tokens["destructive-text"] ?? tokens.destructive : intent === "info" ? tokens.info ?? tokens.primary : tokens["muted-foreground"];
     const intentWash = intent === "action" ? tokens["action-soft"] ?? alpha(actionFill(tokens), 0.12) : intent === "primary" ? tokens["primary-soft"] ?? alpha(tokens.primary, 0.12) : intent === "success" ? tokens["success-soft"] ?? alpha(tokens.success, 0.12) : intent === "warning" ? tokens["warning-soft"] ?? alpha(tokens.warning, 0.12) : intent === "error" ? tokens["destructive-soft"] ?? alpha(tokens.destructive, 0.12) : intent === "info" ? tokens["info-soft"] ?? alpha(intentInk, 0.12) : tokens.muted;
@@ -257,10 +263,11 @@ export function createBadge(skin: BadgeSkin) {
       paddingVertical: reference || navigation ? 2 : count ? 1 : 3,
       paddingHorizontal: reference ? props.large ? 8 : 7 : navigation || count ? 7 : small ? 8 : 9,
     } : skin.metaBase;
+    if (notification) Object.assign(base, { minWidth: 16, height: 16, paddingVertical: 0, paddingHorizontal: 4, justifyContent: "center" });
     const fill: ViewStyle = extended ? { backgroundColor: surfaceKind === "inverse" ? "rgba(255,255,255,0.18)" : surfaceKind === "solid" ? actionFill(tokens) : surfaceKind === "neutral" ? tokens.border : surfaceKind === "soft" ? intentWash : tokens.muted } : metaContainer(tokens, tone);
     const label: TextStyle = extended ? {
-      ...labelMetrics, lineHeight: fontSize === 10 ? 13 : 14.3,
-      fontWeight: count || navigation || reference ? "800" : "700",
+      ...labelMetrics, lineHeight: notification ? 9.5 : fontSize === 10 ? 13 : 14.3,
+      fontWeight: notification || count || navigation || reference ? "800" : "700",
       letterSpacing: tracking === "reference" ? fontSize * 0.04 : tracking === "uppercase" ? fontSize * 0.06 : 0,
       textTransform: props.uppercase ? "uppercase" : "none",
       color: inkKind === "inverse" ? "#ffffff" : inkKind === "solid" ? actionInk(tokens) : inkKind === "foreground" ? tokens.foreground : intentInk,

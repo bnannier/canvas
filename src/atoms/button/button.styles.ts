@@ -1,3 +1,4 @@
+import { platformShape } from "../../style/platform-shape.js";
 import { primaryText } from "../../style/primary-text.js";
 import { actionFill, actionInk } from "../../style/action.js";
 import { type ViewStyle, type TextStyle } from "react-native";
@@ -17,6 +18,11 @@ export type Intent = "primary" | "secondary" | "destructive" | "outline" | "ghos
 export type Size = "small" | "base" | "large";
 
 export interface ButtonSkinOpts {
+  utility?: boolean;
+  iconBox?: "compact" | "medium" | "large" | null;
+  wideIcon?: boolean;
+  circle?: boolean;
+  inset?: boolean;
   inverse?: boolean;
   quiet?: boolean;
   softHover?: boolean;
@@ -146,6 +152,13 @@ export function webEmphasisOf(p: Pick<ButtonSkinOpts, "inverse" | "quiet">) {
   return "default";
 }
 
+/** Utility hover wins over inverse emphasis on an icon control. */
+export function webHoverKindOf(p: Pick<ButtonSkinOpts, "utility" | "inverse">) {
+  if (p.utility) return "utility";
+  if (p.inverse) return "inverse";
+  return "default";
+}
+
 function webLook(t: ColorTokens, intent: Intent, o?: ButtonSkinOpts): WebLook {
   if (o?.disabled) {
     const edged = intent !== "ghost" && intent !== "link";
@@ -180,6 +193,7 @@ const WEB_TYPE: Record<Size, TextStyle> = {
   large: FS(13, 18),
 };
 // Icon-only squares: the pill heights, drawn as circles.
+const UTILITY_BOX = { compact: 28, medium: 32, large: 34 } as const;
 const WEB_SQUARE: Record<Size, number> = { small: 29, base: 36, large: 40 };
 // DF's raised glow under the call to action, one step per size.
 const WEB_GLOW: Record<Size, [number, number]> = { small: [10, 20], base: [12, 22], large: [14, 24] };
@@ -195,6 +209,10 @@ export const webSkin: ButtonSkin = {
   container: (t, intent, size, o) => {
     const look = webLook(t, intent, o);
     const pad = WEB_PAD[size];
+    if (o.iconBox) {
+      const box = UTILITY_BOX[o.iconBox];
+      return { ...ROW, width: box + (o.wideIcon ? 2 : 0), height: box, borderRadius: o.circle ? shape.web.pill : platformShape.web.utilityControl, borderWidth: intent === "outline" ? 1 : 0, borderColor: t.border, backgroundColor: o.inset ? t.secondary : "transparent" };
+    }
     return {
       ...ROW,
       gap: 6,
@@ -225,13 +243,16 @@ export const webSkin: ButtonSkin = {
   foreground: (t, intent, o) => webLook(t, intent, o).label,
   // Only the filled pills paint a surface: DF's outline, ghost and link buttons are
   // transparent, and a disabled button is transparent too.
-  surface: (intent, o) => WEB_CTA.has(intent) && !o.disabled,
+  surface: (intent, o) => !o.iconBox && WEB_CTA.has(intent) && !o.disabled,
   // A link dims under the pointer. Dark Factory dims to 0.85, which leaves the `primary-text`
   // label at 4.33:1 on the blush page and 4.42:1 on mint; 0.9 holds 4.80 and 4.90 (WCAG 1.4.3).
-  hover: (t, intent, o) =>
-    o?.inverse ? { backgroundColor: "rgba(255,255,255,0.12)" } : intent === "secondary" || intent === "outline" || intent === "ghost" ? { backgroundColor: hoverFill(t) }
+  hover: (t, intent, o) => {
+    const kind = webHoverKindOf(o ?? {});
+    if (kind === "utility") return { backgroundColor: hoverFill(t) };
+    return kind === "inverse" ? { backgroundColor: "rgba(255,255,255,0.12)" } : intent === "secondary" || intent === "outline" || intent === "ghost" ? { backgroundColor: hoverFill(t) }
     : intent === "link" ? { opacity: o?.softHover ? 0.85 : 0.9 }
-    : null,
+    : null;
+  },
   raised: raisedGlow,
   pressedOpacity: 0.9,
   ripple: null,

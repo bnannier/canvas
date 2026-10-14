@@ -12,6 +12,7 @@ import { actionFill } from "../../style/action.js";
 import { useSeededMinTargetSlop, styleBox } from "../../style/touch-target-seed.js";
 import { View, Pressable, RippleClip, Text, useReducedMotion, useSizing, type LayoutStyle, type MeasureProps, GlassPane, paneStyle, paneRipple, isGlass } from "../../style/index.js";
 import { liftStyle, useHover } from "../../style/hover.js";
+import { Badge } from "../badge/badge.js";
 import { type ButtonSkin, type Intent, type Size } from "./button.styles.js";
 
 // Shared Button shell. The structure (Pressable + optional loading spinner +
@@ -84,6 +85,22 @@ export interface ButtonProps extends MeasureProps {
   small?: boolean;
   large?: boolean;
   icon?: boolean;
+  /** Compact utility icon box (28px on web). */
+  compactIcon?: boolean;
+  /** Medium utility icon box (32px on web). */
+  mediumIcon?: boolean;
+  /** Large utility icon box (34px on web). */
+  largeIcon?: boolean;
+  /** Give a compact icon box two extra pixels of horizontal room. */
+  wideIcon?: boolean;
+  /** Round a utility icon box into a circle. */
+  circle?: boolean;
+  /** Quiet inset fill for a utility icon action. */
+  inset?: boolean;
+  /** Preserve resting opacity while pressed. */
+  steadyPress?: boolean;
+  /** Notification count carried in the upper trailing corner. */
+  count?: number | string;
   // Layout and state. A Button is HUG (src/style/sizing.ts): it keeps its content
   // width inside a stretching Column and sits content-sized in a Row; `block` makes
   // it FILL (full width in a Column, an equal share in a Row), and a measure step
@@ -134,6 +151,14 @@ export function sizeOf(p: ButtonProps): Size {
   return "base";
 }
 
+/** Utility boxes are separate from text-button density. */
+export function iconBoxOf(p: Pick<ButtonProps, "compactIcon" | "mediumIcon" | "largeIcon">): "compact" | "medium" | "large" | null {
+  if (p.compactIcon) return "compact";
+  if (p.mediumIcon) return "medium";
+  if (p.largeIcon) return "large";
+  return null;
+}
+
 // The touch-target maths moved to src/style/touch-target.ts when every other
 // pressable started needing it. Re-exported here so this file's surface, and the
 // test that reads it, do not change.
@@ -151,7 +176,8 @@ export function createButton(skin: ButtonSkin) {
     const intent = intentOf(props);
     const size = sizeOf(props);
 
-    const opts = { inverse: !!props.inverse, quiet: !!props.quiet, softHover: !!props.softHover, consistent: !!props.consistent, comfortable: !!props.comfortable, icon: !!icon, block: !!block, dim: !!(disabled || loading), disabled: !!disabled };
+    const iconBox = iconBoxOf(props);
+    const opts = { utility: iconBox != null, iconBox, wideIcon: !!props.wideIcon, circle: !!props.circle, inset: !!props.inset, inverse: !!props.inverse, quiet: !!props.quiet, softHover: !!props.softHover, consistent: !!props.consistent, comfortable: !!props.comfortable, icon: !!icon, block: !!block, dim: !!(disabled || loading), disabled: !!disabled };
     const sizing = useSizing(props);
     const container = skin.container(tokens, intent, size, opts);
     // Under glass a button that paints a surface (the skin says which) is a CONTROL-layer
@@ -183,7 +209,7 @@ export function createButton(skin: ButtonSkin) {
     // The skin's hover lift for this intent, read on the <RippleClip> wrapper (which never
     // moves) and applied to the Pressable inside it. A disabled or loading button stays put.
     // Its instant hover style (a wash, a dim) switches with the pointer, never while inert.
-    const lift = skin.lift?.(intent) ?? null;
+    const lift = opts.iconBox ? null : skin.lift?.(intent) ?? null;
     const hoverLook = skin.hover?.(tokens, intent, opts) ?? null;
     const { hovered: pointerOver, target: hoverTarget } = useHover(lift != null || hoverLook != null);
     const reduced = useReducedMotion();
@@ -236,7 +262,7 @@ export function createButton(skin: ButtonSkin) {
             surfaced ? paneStyle(theme, container) : container,
             puck ? { opacity: 1 } : null,
             live ? hoverLook : null,
-            !puck && skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null,
+            !props.steadyPress && !puck && skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null,
             lift != null ? liftStyle(lifted, lift, reduced) : null,
             glowOnClip ? null : glow,
           ]}
@@ -247,7 +273,7 @@ export function createButton(skin: ButtonSkin) {
               { flexDirection: container.flexDirection, alignItems: container.alignItems, justifyContent: container.justifyContent, gap: container.gap, flexShrink: 1 },
               // Dim the foreground independently of native material feedback.
               // Keep this row in every mode to retain foreground child state.
-              puck ? { opacity: pressed && skin.pressedOpacity != null ? skin.pressedOpacity : container.opacity ?? 1 } : null,
+              puck ? { opacity: pressed && !props.steadyPress && skin.pressedOpacity != null ? skin.pressedOpacity : container.opacity ?? 1 } : null,
             ]}>
               {/* The button announces the wait itself (busy, with its own label), so the
                   indicator is decorative: react-native-web draws ActivityIndicator as a
@@ -266,6 +292,7 @@ export function createButton(skin: ButtonSkin) {
               {children != null ? <Text style={skin.label(tokens, intent, size, opts)}>{children}</Text> : null}
               {!loading && iconRight != null ? iconRight : null}
             </View>
+            {props.count !== undefined && props.count !== "" ? <View style={{ position: "absolute", top: 3, right: 2 }}><Badge notification solid action>{String(props.count)}</Badge></View> : null}
           </>}
         </Pressable>
       </RippleClip>

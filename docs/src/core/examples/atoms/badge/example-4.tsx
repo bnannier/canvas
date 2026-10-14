@@ -5,6 +5,6 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { Badge } = scope;
   return (
-<Badge mono>refresh_token</Badge>
+<Badge destructive>admin</Badge>
   );
 }

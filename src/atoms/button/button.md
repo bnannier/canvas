@@ -9,6 +9,13 @@ Pass `ref` to access the interactive Pressable, including link buttons. Use `use
 `softHover` keeps the reference link’s 85% hover opacity. Inverse actions use
 their translucent white hover wash over a branded surface.
 
+Utility icon actions use `icon` with `compactIcon` (28), `mediumIcon` (32), or
+`largeIcon` (34) on web. `wideIcon` gives the compact box two extra pixels of
+horizontal room; `circle` rounds it fully. Pair with `ghost` for a plain surface,
+`outline` for a hairline, or `ghost inset` for a quiet fill. `steadyPress` keeps
+the resting opacity, and `count` carries a compact notification badge. The button
+still owns its accessible name, hover wash, and native touch-target extension.
+
 ## Usage
 
 A button's whole job is to fire `onPress`. Wire it to your own handler and every press runs it.
@@ -18,6 +25,19 @@ A button's whole job is to fire `onPress`. Wire it to your own handler and every
 ```
 
 ## Variants
+
+### Utility icon
+
+```tsx
+<Button icon compactIcon ghost steadyPress accessibilityLabel="Open menu" iconLeft={<Icon menu size={15} boldStroke muted />} />
+```
+
+### Notification action
+
+```tsx
+<Button icon largeIcon circle ghost steadyPress count={3} accessibilityLabel="Approvals" iconLeft={<Icon bell size={17} mediumStroke muted />} />
+```
+
 
 The variant only changes how a button looks; every one of them fires `onPress` the same way.
 
