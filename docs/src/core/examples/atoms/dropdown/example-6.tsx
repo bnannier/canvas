@@ -6,11 +6,13 @@ export default function Example(scope: ExampleScope) {
   const { Dropdown } = scope;
   return (
 <Dropdown
-  trigger="Actions"
+  trigger="Account"
+  title="Rachel Chen"
+  description="rachel@nannier.com"
   items={[
-    { label: "Edit profile", shortcut: "⌘E" },
-    { label: "Duplicate", shortcut: "⌘D" },
-    { label: "Settings", shortcut: "⌘," }
+    { label: "Profile" },
+    { label: "Settings" },
+    { label: "Log out" }
   ]}
 />
   );

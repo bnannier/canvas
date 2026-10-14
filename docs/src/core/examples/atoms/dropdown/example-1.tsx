@@ -5,14 +5,11 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { Dropdown } = scope;
   return (
-<Dropdown
-  trigger="Actions"
-  disabled
+<Dropdown compact steadyPress menuWidth={250} trigger="Projects" label="Your projects" note="Only projects you can access appear."
   items={[
-    { label: "Edit profile" },
-    { label: "Duplicate" },
-    { label: "Settings" }
-  ]}
-/>
+    { label: "All my projects", value: "all", detail: "11", selected: true },
+    { label: "Platform Core", value: "core", detail: "6", selected: false },
+    { label: "Add project", value: "add", sectionBefore: "Manage projects", description: "Open project setup" },
+  ]} />
   );
 }

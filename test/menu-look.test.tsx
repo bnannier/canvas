@@ -64,7 +64,7 @@ describe("Dark Factory's menu on the web", () => {
     fireEvent.pointerEnter(archive, { pointerType: "mouse" });
     expect(archive.style.backgroundColor).not.toMatch(wash);
     expect(archive.style.opacity).toBe("");
-    const label = [...archive.querySelectorAll("div")].find((node) => node.textContent === "Archive") as HTMLElement;
+    const label = screen.getByText("Archive");
     expect(flat(label.style.color)).toBe(rgbaOf(t["muted-foreground"]));
   });
 

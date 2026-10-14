@@ -3,16 +3,15 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Avatar, Dropdown } = scope;
+  const { Dropdown } = scope;
   return (
 <Dropdown
+  trigger="Actions"
   items={[
-    { label: "Profile" },
-    { label: "Settings" },
-    { label: "Log out" }
+    { label: "Edit profile", shortcut: "⌘E" },
+    { label: "Duplicate", shortcut: "⌘D" },
+    { label: "Settings", shortcut: "⌘," }
   ]}
->
-  <Avatar name="Rachel Chen" />
-</Dropdown>
+/>
   );
 }

@@ -1,3 +1,4 @@
+import { fieldEyebrow } from "../../style/field-label.js";
 import { destructiveText } from "../../style/destructive-text.js";
 import { type ViewStyle, type TextStyle } from "react-native";
 import { type ColorTokens, shadow, alpha, shape } from "../../style/index.js";
@@ -29,6 +30,16 @@ import { typeScale } from "../../style/type-scale.js";
 // per-group separators, and the item rows; the skin maps the active platform's
 // shape/fill/sizing/feedback onto each piece.
 export interface DropdownSkin {
+  /** Exact compact application menu typography and frame. */
+  reference?: {
+    card: (t: ColorTokens) => ViewStyle;
+    label: TextStyle;
+    description: (t: ColorTokens) => TextStyle;
+    detail: (t: ColorTokens) => TextStyle;
+    section: (t: ColorTokens) => TextStyle;
+    note: (t: ColorTokens) => ViewStyle;
+    noteText: (t: ColorTokens) => TextStyle;
+  };
   /** The floating menu card: shape, fill, border (or lack of), shadow, padding.
    *  The shell supplies the measured minWidth inline. */
   menuCard: (t: ColorTokens) => ViewStyle;
@@ -99,6 +110,15 @@ export const customTrigger: ViewStyle = { alignSelf: "flex-start" };
 
 // ---------- Web: Dark Factory's menu (src/style/menu-look.ts) ----------
 export const webSkin: DropdownSkin = {
+  reference: {
+    card: (t) => menuPanel(t, true),
+    label: { fontSize: 12.5, lineHeight: 16.25, fontWeight: "700" },
+    description: (t) => ({ fontSize: 10.5, lineHeight: 13.65, fontWeight: "600", color: t["muted-foreground"], marginTop: 1 }),
+    detail: (t) => ({ fontSize: 11, lineHeight: 14.85, fontWeight: "600", color: t["muted-foreground"] }),
+    section: (t) => ({ ...fieldEyebrow(t), paddingTop: 6, paddingHorizontal: 10, paddingBottom: 4 }),
+    note: (t) => ({ borderTopWidth: 1, borderTopColor: t.border, marginTop: 4, paddingTop: 8, paddingHorizontal: 10, paddingBottom: 6 }),
+    noteText: (t) => ({ fontSize: 11, lineHeight: 15.95, fontWeight: "500", color: t["muted-foreground"] }),
+  },
   menuCard: menuPanel,
   menuLabel: menuSection,
   // The header shares the row gutter (10), so the identity block, the eyebrow and the row
