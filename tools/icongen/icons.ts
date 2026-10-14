@@ -135,3 +135,32 @@ export const SOURCES: string[] = [
   "link", "link-2", "unlink", "external-link", "cloud-download", "cloud-upload", "log-in",
   "hand", "hand-grab", "circle-dashed", "earth",
 ];
+
+/** Argus reference paths replace upstream outlines in the existing glyph set. */
+export const REFERENCE_PATHS: Record<string, string> = {
+  "search": "M11 3a8 8 0 1 0 0 16 8 8 0 1 0 0-16M21 21l-4.35-4.35",
+  "bell": "M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 0 1-3.46 0",
+  "chevronDown": "M6 9l6 6 6-6",
+  "chevronRight": "M9 6l6 6-6 6",
+  "chevronLeft": "M15 6l-6 6 6 6",
+  "externalLink": "M7 17L17 7M8 7h9v9",
+  "x": "M18 6L6 18M6 6l12 12",
+  "layoutGrid": "M3 3h7v7H3zM14 3h7v7h-7zM14 14h7v7h-7zM3 14h7v7H3z",
+  "list": "M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01",
+  "mapPin": "M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0zM12 7a3 3 0 1 0 0 6 3 3 0 1 0 0-6",
+  "activity": "M22 12h-4l-3 9L9 3l-3 9H2",
+  "arrowRight": "M5 12h14M12 5l7 7-7 7",
+  "columns2": "M3 3h7v18H3zM14 3h7v10h-7z",
+  "gitPullRequest": "M6 3v12M6 15a3 3 0 1 0 0 6 3 3 0 1 0 0-6M18 3a3 3 0 1 0 0 6 3 3 0 1 0 0-6M18 9a9 9 0 0 1-9 9",
+  "circleCheck": "M22 11.1V12a10 10 0 1 1-5.9-9.1M22 4L12 14l-3-3",
+  "barChart2": "M18 20V10M12 20V4M6 20v-6",
+  "users": "M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M9 3a4 4 0 1 0 0 8 4 4 0 1 0 0-8M23 21v-2a4 4 0 0 0-3-3.9M16 3.1a4 4 0 0 1 0 7.8",
+  "squarePlus": "M12 8v8M8 12h8M5 3h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z",
+  "target": "M12 2a10 10 0 1 0 0 20 10 10 0 1 0 0-20M12 8a4 4 0 1 0 0 8 4 4 0 1 0 0-8",
+  "layers": "M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5",
+  "archive": "M21 8v13H3V8M1 3h22v5H1zM10 12h4",
+  "menu": "M3 6h18M3 12h18M3 18h18",
+  "check": "M20 6L9 17l-5-5",
+  "plus": "M12 5v14M5 12h14",
+  "filter": "M22 3H2l8 9.46V19l4 2v-8.54L22 3z"
+};
