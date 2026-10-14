@@ -158,12 +158,12 @@ export const glassSegmentColor = (t: ColorTokens, selected: boolean): TextStyle 
 const PILL = shape.web.pill;
 const WEB_SEGMENT: Record<Size, ViewStyle> = {
   small: { height: 23, paddingHorizontal: 12 },
-  default: { height: 27, paddingHorizontal: 16 },
+  default: { paddingVertical: 6, paddingHorizontal: 16 },
   large: { height: 31, paddingHorizontal: 18 },
 };
 const WEB_SEGMENT_TYPE: Record<Size, TextStyle> = {
   small: { fontSize: 11, lineHeight: 15 },
-  default: { fontSize: 11.5, lineHeight: 15 },
+  default: { fontSize: 11.5, lineHeight: 14.95 },
   large: { fontSize: 12.5, lineHeight: 17 },
 };
 // The Button's pill metrics (button.styles.ts), so a split or stepper lines up with a Button beside it.
