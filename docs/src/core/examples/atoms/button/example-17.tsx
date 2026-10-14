@@ -3,8 +3,8 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Button, Icon } = scope;
+  const { Button } = scope;
   return (
-<Button iconLeft={<Icon plus primaryForeground size={16} />}>Save changes</Button>
+<Button block>Create account</Button>
   );
 }
