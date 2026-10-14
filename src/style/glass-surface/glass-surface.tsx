@@ -1,6 +1,6 @@
 // Web material host (and the fallback for a platform without its own host): Dark
-// Factory's plain frost. The layer's tint, a backdrop blur with no saturation shift, and
-// a 1px inset hairline; no refraction and no specular highlight. Every number is in
+// Factory's plain frost. A backdrop blur with no saturation shift, the layer's tint painted
+// over it, and a 1px inset hairline; no refraction and no specular highlight. Every number is in
 // web-frost.ts, the tuned table. Only decoration changes when appearance does. Android
 // and iOS are their own files (glass-surface.android.tsx: the canvas-blur capture and
 // expo-blur frost; glass-surface.ios.tsx: Liquid Glass and frost), so a web material
@@ -18,8 +18,9 @@ import {
  * The host every kit glass surface renders through (a Card, a Dialog, a Popover's card, the
  * Navbar, an option list and the rest), painting its layer's material behind its children.
  *
- * On the web the material is Dark Factory's plain frost (the layer's tint, a 24 px backdrop
- * blur with no saturation shift and a 1 px inset hairline). On iOS 26 and later it is
+ * On the web the material is Dark Factory's plain frost (a 24 px backdrop blur with no
+ * saturation shift, the layer's tint painted over it, so the blur samples the page and never
+ * the surface's own fill, and a 1 px inset hairline). On iOS 26 and later it is
  * Apple's Liquid Glass through expo-glass-effect for the functional, control and dense
  * layers, and expo-blur's frost with a specular rim for content and static surfaces and
  * before iOS 26. On Android 12 and later with `@nannier/canvas-blur` installed, it is that
@@ -62,16 +63,25 @@ export function GlassSurface(props: GlassSurfaceProps) {
   const frost = blur > 0 ? `blur(${blur}px)` : undefined;
   const scheme = theme.dark ? "dark" : "light";
   const rim: ViewStyle = { ...fill, boxShadow: `inset 0 0 0 ${WEB_FROST.rimWidth}px ${webRimColor(layer, scheme, theme.tokens.border)}` };
-  // The fill paints beneath the material, except a brand colour, which paints over it so its
-  // solved colour is the rendered one (`frostFill`).
-  const { color, over } = frostFill(theme, props);
-  const tintLayer = <View style={[fill, { backgroundColor: color, opacity: translucent ? WEB_FROST.sheerFillOpacity : 1 }]} />;
+  // The fill: the layer's tint, a `tint` wash or a solved `brand` colour (`frostFill`). On the
+  // web it paints OVER the backdrop blur, as Dark Factory's frost paints its background over
+  // its own filtered backdrop. A backdrop filter samples everything painted before it, so a
+  // fill beneath it was blurred into the material it belongs to (no material may sample
+  // itself), and at a rounded corner the wedges outside the fill's curve, where the page
+  // shows unfilled, bled into the blur as hard-edged blocks (the docs Dialog's top corners
+  // over its scrim). Over the blur the fill composites on the blurred page alone. A platform
+  // without its own host frosts through a native blur and keeps the native hosts' order: the
+  // layer's tint beneath, a brand colour over (`frostFill`).
+  const web = Platform.OS === "web";
+  const fillOf = frostFill(theme, props);
+  const over = web || fillOf.over;
+  const tintLayer = <View style={[fill, { backgroundColor: fillOf.color, opacity: translucent ? WEB_FROST.sheerFillOpacity : 1 }]} />;
   // A platform without its own host and without a browser's backdrop filter frosts
   // through expo-blur when it is installed; the web never reaches that branch.
   const intensity = clear ? CLEAR_INTENSITY : surfaceIntensity(layer, translucent);
   const material = solid ? null : <>
     {over ? null : tintLayer}
-    {Platform.OS === "web"
+    {web
       ? frost ? <View style={[fill, { backdropFilter: frost, WebkitBackdropFilter: frost } as ViewStyle]} /> : null
       : FrostView ? <FrostView intensity={intensity} tint={theme.dark ? "dark" : "light"} {...frostMethodProps(requiresBlurTarget)} style={fill} /> : null}
     {over ? tintLayer : null}

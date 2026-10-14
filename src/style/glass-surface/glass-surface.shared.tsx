@@ -112,9 +112,10 @@ export interface GlassSurfaceProps {
    */
   sheer?: boolean;
   /**
-   * The translucent under-fill painted behind the material in place of the layer's own
-   * tint (`glass-tint`, `glass-tint-content`, `glass-tint-control` or `glass-tint-dense`
-   * for the surface's `layer`): a toned or selected pane's wash, or a control's own fill
+   * The translucent fill the material carries in place of the layer's own tint
+   * (`glass-tint`, `glass-tint-content`, `glass-tint-control` or `glass-tint-dense` for the
+   * surface's `layer`), behind the surface's content (on the web over the backdrop blur, on
+   * the native frost where its host places it): a toned or selected pane's wash, or a control's own fill
    * (the Slider knob passes its knob colour, so the knob reads as a bright puck). It wins
    * over `brand`. Not painted where the material resolves solid, where the skin's own opaque
    * fill shows.
@@ -278,9 +279,12 @@ export const BRAND_INK_CONTRAST = 4.5;
  * brightness on iOS, 2:1 for the ink where the solver promised 4.5:1) and a blur
  * pulls the surroundings into a small puck. Painted over the material, the brand
  * composites on the blurred page and the solved colour is the rendered colour;
- * the material still shows through its 34 percent. Layer tints stay beneath: they
- * are the material's own body, tuned in place. An explicit `tint` keeps its place
- * too (an opaque knob does not care; a translucent selection tint was tuned there).
+ * the material still shows through its 34 percent. On the native frost layer tints
+ * stay beneath: they are the material's own body, tuned in place. An explicit `tint`
+ * keeps its place too (an opaque knob does not care; a translucent selection tint was
+ * tuned there). The web host reads none of this: it paints every fill over its
+ * backdrop blur, as Dark Factory's frost does, since a backdrop filter samples what is
+ * painted before it and no material may sample itself.
  */
 export function brandOverMaterial(brand: string | undefined, tint: string | undefined): boolean {
   return brand != null && tint == null;
@@ -288,7 +292,8 @@ export function brandOverMaterial(brand: string | undefined, tint: string | unde
 
 /**
  * The fill a frost surface paints and whether it paints OVER the material: `surfaceUnderFill`'s
- * colour, over it only for a brand (`brandOverMaterial`).
+ * colour, over the native frost only for a brand (`brandOverMaterial`). The web host paints
+ * it over its backdrop blur whatever this says.
  */
 export function frostFill(theme: { glass: GlassTokens; tokens: ColorTokens; dark: boolean; palette: Palette; scheme: ColorScheme }, props: Pick<GlassSurfaceProps, "layer" | "brand" | "tint" | "clear">): { color: string; over: boolean } {
   const { layer = "functional", brand, tint, clear } = props;
@@ -323,10 +328,11 @@ export function brandTint(brand: string, page: string | readonly string[], ink: 
   return alpha(brand, 1);
 }
 
-/** The under-fill a surface paints beneath its material: `tint`, else the `brand`
- *  colour tinted so the ink painted on it stays legible over the page (both read from
- *  `tokens`) and over every bed of the page's frosted frame (`beds`, `frameBedsFor`),
- *  else the layer's own token. */
+/** The fill a surface's material carries (over the web's backdrop blur; on the native
+ *  frost where its host places it, `frostFill`): `tint`, else the `brand` colour tinted so
+ *  the ink painted on it stays legible over the page (both read from `tokens`) and over
+ *  every bed of the page's frosted frame (`beds`, `frameBedsFor`), else the layer's own
+ *  token. */
 export function surfaceUnderFill(glass: GlassTokens, layer: GlassLayer, brand?: string, tint?: string, tokens?: ColorTokens, beds: readonly string[] = []): string {
   if (tint != null) return tint;
   if (brand != null) return tokens != null ? brandTint(brand, [tokens.background, ...beds], brandInk(tokens, brand)) : alpha(brand, BRAND_TINT_ALPHA);
