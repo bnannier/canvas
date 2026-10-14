@@ -3,13 +3,8 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Card, Progress, Column } = scope;
+  const { Button, Card } = scope;
   return (
-<Column cozy>
-  <Card referenceInline referenceKey="CORE-1790" title="Size the pricing bet" description="In Progress" />
-  <Card referenceStacked referenceKey="CORE-1790" title="Size the pricing bet" description="In Progress" />
-  <Card referenceTile referenceKey="CORE-1790" title="Size the pricing bet" />
-  <Card referenceDetail referenceKey="CORE-1790" title="Size the pricing bet" description="In Progress · Platform Core" referenceSource="Jira" />
-</Column>
+<Card featured stacked hue={285} initials="B" title="Blueprint" description="v3.0" eyebrow="Awaiting approval · Architect gate" badge="Architecture" body="Proposes service boundaries for pricing and money paths." caption="A human signs every money path." metadata="Commerce · $2.1k / 30d" actions={<Button primary small>Approve</Button>} />
   );
 }

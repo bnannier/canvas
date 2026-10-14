@@ -3,10 +3,11 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Card, Typography } = scope;
+  const { Card, Row, Column } = scope;
   return (
-<Card>
-  <Typography lead semibold>Anything goes here</Typography>
-</Card>
+<Row cozy>
+  <Column fill flush style={{ height: 100 }}><Card featured artwork /></Column>
+  <Column fill flush style={{ height: 100 }}><Card promo artwork /></Column>
+</Row>
   );
 }

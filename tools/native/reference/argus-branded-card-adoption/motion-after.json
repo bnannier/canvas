@@ -1,0 +1,298 @@
+[
+  {
+    "t": 600.6,
+    "top": 180.546875,
+    "transform": "none",
+    "shadow": "rgba(255, 255, 255, 0.5) 0px 14px 0px -7px, rgba(50, 35, 120, 0.65) 0px 34px 54px -24px",
+    "duration": "0.18s",
+    "easing": "cubic-bezier(0.25, 0.1, 0.25, 1)"
+  },
+  {
+    "t": 617.3,
+    "top": 180.546875,
+    "transform": "none",
+    "shadow": "rgba(255, 255, 255, 0.5) 0px 14px 0px -7px, rgba(50, 35, 120, 0.65) 0px 34px 54px -24px",
+    "duration": "0.18s",
+    "easing": "cubic-bezier(0.25, 0.1, 0.25, 1)"
+  },
+  {
+    "t": 634,
+    "top": 180.546875,
+    "transform": "none",
+    "shadow": "rgba(255, 255, 255, 0.5) 0px 14px 0px -7px, rgba(50, 35, 120, 0.65) 0px 34px 54px -24px",
+    "duration": "0.18s",
+    "easing": "cubic-bezier(0.25, 0.1, 0.25, 1)"
+  },
+  {
+    "t": 650.7,
+    "top": 180.546875,
+    "transform": "matrix(1, 0, 0, 1, 0, 0)",
+    "shadow": "rgba(255, 255, 255, 0.5) 0px 14px 0px -7px, rgba(50, 35, 120, 0.65) 0px 34px 54px -24px",
+    "duration": "0.18s",
+    "easing": "cubic-bezier(0.25, 0.1, 0.25, 1)"
+  },
+  {
+    "t": 667.3,
+    "top": 180.37994384765625,
+    "transform": "matrix(1, 0, 0, 1, 0, -0.166928)",
+    "shadow": "rgba(255, 255, 255, 0.5) 0px 14px 0px -7px, rgba(50, 35, 120, 0.65) 0px 34px 54px -24px",
+    "duration": "0.18s",
+    "easing": "cubic-bezier(0.25, 0.1, 0.25, 1)"
+  },
+  {
+    "t": 684,
+    "top": 180.0235595703125,
+    "transform": "matrix(1, 0, 0, 1, 0, -0.523323)",
+    "shadow": "rgba(255, 255, 255, 0.5) 0px 14px 0px -7px, rgba(50, 35, 120, 0.65) 0px 34px 54px -24px",
+    "duration": "0.18s",
+    "easing": "cubic-bezier(0.25, 0.1, 0.25, 1)"
+  },
+  {
+    "t": 700.7,
+    "top": 179.60958862304688,
+    "transform": "matrix(1, 0, 0, 1, 0, -0.937279)",
+    "shadow": "rgba(255, 255, 255, 0.5) 0px 14px 0px -7px, rgba(50, 35, 120, 0.65) 0px 34px 54px -24px",
+    "duration": "0.18s",
+    "easing": "cubic-bezier(0.25, 0.1, 0.25, 1)"
+  },
+  {
+    "t": 717.3,
+    "top": 179.2712860107422,
+    "transform": "matrix(1, 0, 0, 1, 0, -1.27559)",
+    "shadow": "rgba(255, 255, 255, 0.5) 0px 14px 0px -7px, rgba(50, 35, 120, 0.65) 0px 34px 54px -24px",
+    "duration": "0.18s",
+    "easing": "cubic-bezier(0.25, 0.1, 0.25, 1)"
+  },
+  {
+    "t": 734,
+    "top": 179.02093505859375,
+    "transform": "matrix(1, 0, 0, 1, 0, -1.52595)",
+    "shadow": "rgba(255, 255, 255, 0.5) 0px 14px 0px -7px, rgba(50, 35, 120, 0.65) 0px 34px 54px -24px",
+    "duration": "0.18s",
+    "easing": "cubic-bezier(0.25, 0.1, 0.25, 1)"
+  },
+  {
+    "t": 750.6,
+    "top": 178.8428955078125,
+    "transform": "matrix(1, 0, 0, 1, 0, -1.70398)",
+    "shadow": "rgba(255, 255, 255, 0.5) 0px 14px 0px -7px, rgba(50, 35, 120, 0.65) 0px 34px 54px -24px",
+    "duration": "0.18s",
+    "easing": "cubic-bezier(0.25, 0.1, 0.25, 1)"
+  },
+  {
+    "t": 767.3,
+    "top": 178.71725463867188,
+    "transform": "matrix(1, 0, 0, 1, 0, -1.82962)",
+    "shadow": "rgba(255, 255, 255, 0.5) 0px 14px 0px -7px, rgba(50, 35, 120, 0.65) 0px 34px 54px -24px",
+    "duration": "0.18s",
+    "easing": "cubic-bezier(0.25, 0.1, 0.25, 1)"
+  },
+  {
+    "t": 784,
+    "top": 178.6325225830078,
+    "transform": "matrix(1, 0, 0, 1, 0, -1.91435)",
+    "shadow": "rgba(255, 255, 255, 0.5) 0px 14px 0px -7px, rgba(50, 35, 120, 0.65) 0px 34px 54px -24px",
+    "duration": "0.18s",
+    "easing": "cubic-bezier(0.25, 0.1, 0.25, 1)"
+  },
+  {
+    "t": 800.7,
+    "top": 178.57984924316406,
+    "transform": "matrix(1, 0, 0, 1, 0, -1.96703)",
+    "shadow": "rgba(255, 255, 255, 0.5) 0px 14px 0px -7px, rgba(50, 35, 120, 0.65) 0px 34px 54px -24px",
+    "duration": "0.18s",
+    "easing": "cubic-bezier(0.25, 0.1, 0.25, 1)"
+  },
+  {
+    "t": 817.3,
+    "top": 178.55303955078125,
+    "transform": "matrix(1, 0, 0, 1, 0, -1.99384)",
+    "shadow": "rgba(255, 255, 255, 0.5) 0px 14px 0px -7px, rgba(50, 35, 120, 0.65) 0px 34px 54px -24px",
+    "duration": "0.18s",
+    "easing": "cubic-bezier(0.25, 0.1, 0.25, 1)"
+  },
+  {
+    "t": 834,
+    "top": 178.546875,
+    "transform": "matrix(1, 0, 0, 1, 0, -2)",
+    "shadow": "rgba(255, 255, 255, 0.5) 0px 14px 0px -7px, rgba(50, 35, 120, 0.65) 0px 34px 54px -24px",
+    "duration": "0.18s",
+    "easing": "cubic-bezier(0.25, 0.1, 0.25, 1)"
+  },
+  {
+    "t": 850.6,
+    "top": 178.546875,
+    "transform": "matrix(1, 0, 0, 1, 0, -2)",
+    "shadow": "rgba(255, 255, 255, 0.5) 0px 14px 0px -7px, rgba(50, 35, 120, 0.65) 0px 34px 54px -24px",
+    "duration": "0.18s",
+    "easing": "cubic-bezier(0.25, 0.1, 0.25, 1)"
+  },
+  {
+    "t": 867.3,
+    "top": 178.546875,
+    "transform": "matrix(1, 0, 0, 1, 0, -2)",
+    "shadow": "rgba(255, 255, 255, 0.5) 0px 14px 0px -7px, rgba(50, 35, 120, 0.65) 0px 34px 54px -24px",
+    "duration": "0.18s",
+    "easing": "cubic-bezier(0.25, 0.1, 0.25, 1)"
+  },
+  {
+    "t": 884,
+    "top": 178.546875,
+    "transform": "matrix(1, 0, 0, 1, 0, -2)",
+    "shadow": "rgba(255, 255, 255, 0.5) 0px 14px 0px -7px, rgba(50, 35, 120, 0.65) 0px 34px 54px -24px",
+    "duration": "0.18s",
+    "easing": "cubic-bezier(0.25, 0.1, 0.25, 1)"
+  },
+  {
+    "t": 900.7,
+    "top": 178.546875,
+    "transform": "matrix(1, 0, 0, 1, 0, -2)",
+    "shadow": "rgba(255, 255, 255, 0.5) 0px 14px 0px -7px, rgba(50, 35, 120, 0.65) 0px 34px 54px -24px",
+    "duration": "0.18s",
+    "easing": "cubic-bezier(0.25, 0.1, 0.25, 1)"
+  },
+  {
+    "t": 917.3,
+    "top": 178.546875,
+    "transform": "matrix(1, 0, 0, 1, 0, -2)",
+    "shadow": "rgba(255, 255, 255, 0.5) 0px 14px 0px -7px, rgba(50, 35, 120, 0.65) 0px 34px 54px -24px",
+    "duration": "0.18s",
+    "easing": "cubic-bezier(0.25, 0.1, 0.25, 1)"
+  },
+  {
+    "t": 934,
+    "top": 178.546875,
+    "transform": "matrix(1, 0, 0, 1, 0, -2)",
+    "shadow": "rgba(255, 255, 255, 0.5) 0px 14px 0px -7px, rgba(50, 35, 120, 0.65) 0px 34px 54px -24px",
+    "duration": "0.18s",
+    "easing": "cubic-bezier(0.25, 0.1, 0.25, 1)"
+  },
+  {
+    "t": 950.6,
+    "top": 178.546875,
+    "transform": "matrix(1, 0, 0, 1, 0, -2)",
+    "shadow": "rgba(255, 255, 255, 0.5) 0px 14px 0px -7px, rgba(50, 35, 120, 0.65) 0px 34px 54px -24px",
+    "duration": "0.18s",
+    "easing": "cubic-bezier(0.25, 0.1, 0.25, 1)"
+  },
+  {
+    "t": 967.3,
+    "top": 178.546875,
+    "transform": "matrix(1, 0, 0, 1, 0, -2)",
+    "shadow": "rgba(255, 255, 255, 0.5) 0px 14px 0px -7px, rgba(50, 35, 120, 0.65) 0px 34px 54px -24px",
+    "duration": "0.18s",
+    "easing": "cubic-bezier(0.25, 0.1, 0.25, 1)"
+  },
+  {
+    "t": 984,
+    "top": 178.71453857421875,
+    "transform": "matrix(1, 0, 0, 1, 0, -1.83233)",
+    "shadow": "rgba(255, 255, 255, 0.5) 0px 14px 0px -7px, rgba(50, 35, 120, 0.65) 0px 34px 54px -24px",
+    "duration": "0.18s",
+    "easing": "cubic-bezier(0.25, 0.1, 0.25, 1)"
+  },
+  {
+    "t": 1000.6,
+    "top": 179.06884765625,
+    "transform": "matrix(1, 0, 0, 1, 0, -1.47803)",
+    "shadow": "rgba(255, 255, 255, 0.5) 0px 14px 0px -7px, rgba(50, 35, 120, 0.65) 0px 34px 54px -24px",
+    "duration": "0.18s",
+    "easing": "cubic-bezier(0.25, 0.1, 0.25, 1)"
+  },
+  {
+    "t": 1017.3,
+    "top": 179.48291015625,
+    "transform": "matrix(1, 0, 0, 1, 0, -1.06397)",
+    "shadow": "rgba(255, 255, 255, 0.5) 0px 14px 0px -7px, rgba(50, 35, 120, 0.65) 0px 34px 54px -24px",
+    "duration": "0.18s",
+    "easing": "cubic-bezier(0.25, 0.1, 0.25, 1)"
+  },
+  {
+    "t": 1033.9,
+    "top": 179.82151794433594,
+    "transform": "matrix(1, 0, 0, 1, 0, -0.725361)",
+    "shadow": "rgba(255, 255, 255, 0.5) 0px 14px 0px -7px, rgba(50, 35, 120, 0.65) 0px 34px 54px -24px",
+    "duration": "0.18s",
+    "easing": "cubic-bezier(0.25, 0.1, 0.25, 1)"
+  },
+  {
+    "t": 1050.7,
+    "top": 180.0734100341797,
+    "transform": "matrix(1, 0, 0, 1, 0, -0.473471)",
+    "shadow": "rgba(255, 255, 255, 0.5) 0px 14px 0px -7px, rgba(50, 35, 120, 0.65) 0px 34px 54px -24px",
+    "duration": "0.18s",
+    "easing": "cubic-bezier(0.25, 0.1, 0.25, 1)"
+  },
+  {
+    "t": 1067.3,
+    "top": 180.2512664794922,
+    "transform": "matrix(1, 0, 0, 1, 0, -0.295605)",
+    "shadow": "rgba(255, 255, 255, 0.5) 0px 14px 0px -7px, rgba(50, 35, 120, 0.65) 0px 34px 54px -24px",
+    "duration": "0.18s",
+    "easing": "cubic-bezier(0.25, 0.1, 0.25, 1)"
+  },
+  {
+    "t": 1083.9,
+    "top": 180.37615966796875,
+    "transform": "matrix(1, 0, 0, 1, 0, -0.170718)",
+    "shadow": "rgba(255, 255, 255, 0.5) 0px 14px 0px -7px, rgba(50, 35, 120, 0.65) 0px 34px 54px -24px",
+    "duration": "0.18s",
+    "easing": "cubic-bezier(0.25, 0.1, 0.25, 1)"
+  },
+  {
+    "t": 1100.6,
+    "top": 180.46099853515625,
+    "transform": "matrix(1, 0, 0, 1, 0, -0.0858714)",
+    "shadow": "rgba(255, 255, 255, 0.5) 0px 14px 0px -7px, rgba(50, 35, 120, 0.65) 0px 34px 54px -24px",
+    "duration": "0.18s",
+    "easing": "cubic-bezier(0.25, 0.1, 0.25, 1)"
+  },
+  {
+    "t": 1117.3,
+    "top": 180.51377868652344,
+    "transform": "matrix(1, 0, 0, 1, 0, -0.0330961)",
+    "shadow": "rgba(255, 255, 255, 0.5) 0px 14px 0px -7px, rgba(50, 35, 120, 0.65) 0px 34px 54px -24px",
+    "duration": "0.18s",
+    "easing": "cubic-bezier(0.25, 0.1, 0.25, 1)"
+  },
+  {
+    "t": 1133.9,
+    "top": 180.54066467285156,
+    "transform": "matrix(1, 0, 0, 1, 0, -0.00621273)",
+    "shadow": "rgba(255, 255, 255, 0.5) 0px 14px 0px -7px, rgba(50, 35, 120, 0.65) 0px 34px 54px -24px",
+    "duration": "0.18s",
+    "easing": "cubic-bezier(0.25, 0.1, 0.25, 1)"
+  },
+  {
+    "t": 1150.7,
+    "top": 180.546875,
+    "transform": "none",
+    "shadow": "rgba(255, 255, 255, 0.5) 0px 14px 0px -7px, rgba(50, 35, 120, 0.65) 0px 34px 54px -24px",
+    "duration": "0.18s",
+    "easing": "cubic-bezier(0.25, 0.1, 0.25, 1)"
+  },
+  {
+    "t": 1167.4,
+    "top": 180.546875,
+    "transform": "none",
+    "shadow": "rgba(255, 255, 255, 0.5) 0px 14px 0px -7px, rgba(50, 35, 120, 0.65) 0px 34px 54px -24px",
+    "duration": "0.18s",
+    "easing": "cubic-bezier(0.25, 0.1, 0.25, 1)"
+  },
+  {
+    "t": 1184,
+    "top": 180.546875,
+    "transform": "none",
+    "shadow": "rgba(255, 255, 255, 0.5) 0px 14px 0px -7px, rgba(50, 35, 120, 0.65) 0px 34px 54px -24px",
+    "duration": "0.18s",
+    "easing": "cubic-bezier(0.25, 0.1, 0.25, 1)"
+  },
+  {
+    "t": 1200.6,
+    "top": 180.546875,
+    "transform": "none",
+    "shadow": "rgba(255, 255, 255, 0.5) 0px 14px 0px -7px, rgba(50, 35, 120, 0.65) 0px 34px 54px -24px",
+    "duration": "0.18s",
+    "easing": "cubic-bezier(0.25, 0.1, 0.25, 1)"
+  }
+]
