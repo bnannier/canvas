@@ -234,25 +234,39 @@ export interface JavaScriptBudget {
 // from 10,240 to 11,520B and DataTable's from 49,664 to 53,248B (7% headroom over the web
 // Button and the Android DataTable figures); Input and StackedList keep theirs.
 // Input was 39,160 / 39,725 / 39,394B (web / iOS / Android) before the GlassSurface audit
-// turn (the owner's GP-1, GS-1 and GS-2 decisions and GP-14), 211B under its ceiling on iOS
-// after growing into it since the layered glass model set it. Every field now carries what
-// that turn gave the shared material host and the controls on it: GlassBox trades a resting
-// border for padding as GlassPane does, so a GlassSurface host's material covers its whole
-// solid footprint (`borderAsPadding`, `tradedSides` and `paddingSides` moved from
-// glass-pane.tsx into glass-surface.shared.tsx, with the concentric corners in
-// `materialCorners`); the surface's pointerEvents resolve through a registered StyleSheet
-// table (`POINTER`), so box-none and box-only reach the web; the frost paints an off
-// Switch's track over the material (`boundaryFill`, GS-1), together ~150B minified net in
-// the shell and GlassPane on iOS; every GlassBox publishes whether its material renders and
-// every kit Pressable reads it, to draw a borderless Android ripple in front of a frost it
-// does not own (material-behind.tsx and `frontRipple`, GP-14, ~380B minified); and a
-// field's addon fill is capped under glass in the browser for the text it carries
-// (`legibleInnerFill` in glass-wash.ts and `inkFill` in text-entry-material.tsx, GS-2,
-// ~440B minified), after the wash helpers' shared search was factored into one
-// (`densestLegible`). Measured after at 39,460 / 40,079 / 39,709B (~300 / 354 / 315B gzip),
-// 143B over the old ceiling on iOS. The Input ceiling moved from 39,936 to 43,008B (7.3%
-// headroom over the iOS figure); Button, DataTable and StackedList grew by up to 205, 701
-// and 197B gzip and stay inside theirs.
+// turn (the owner's GP-1, GS-2, GS-5 and GS-6 decisions and GP-14), 211B under its ceiling on
+// iOS after growing into it since the layered glass model set it. Measured at the turn's end
+// (6173015d) at 39,477 / 40,423 / 40,072B, +317 / +698 / +678B gzip, by building the fixture
+// at each of the turn's commits and reading esbuild's per-module output bytes. Every field
+// carries what the turn gave the shared material host and the controls on it:
+// - the native frost's specular rim, on iOS and Android only (`SpecularRim` in
+//   glass-surface.shared.tsx): drawn in bands under Core Animation's 8192 px shadow limit,
+//   its height read in each commit it renders in, the single rim capped at a band; ~1,200B
+//   minified, +366 / +376B gzip on iOS and Android, the larger part of the growth there. The
+//   web draws no specular rim and tree-shakes it, keeping only its imports (~20B gzip);
+// - every GlassBox publishes whether its material renders and every kit Pressable reads it,
+//   to draw a borderless Android ripple in front of a frost it does not own
+//   (material-behind.tsx and `frontRipple`, GP-14, ~380B minified);
+// - a field's addon fill is capped under glass in the browser for the text it carries
+//   (`legibleInnerFill` in glass-wash.ts and `inkFill` in text-entry-material.tsx, GS-2,
+//   ~440B minified), after the wash helpers' shared search was factored into one
+//   (`densestLegible`);
+// - the host geometry, which nets out within 60B minified on every platform: GlassBox trades
+//   a resting border for padding as GlassPane does, so a GlassSurface host's material covers
+//   its whole solid footprint (`borderAsPadding`, `tradedSides` and `paddingSides` moved from
+//   glass-pane.tsx into glass-surface.shared.tsx, with the concentric corners and the host's
+//   borderCurve in `materialCorners`); the surface's pointerEvents resolve through a
+//   registered StyleSheet table (`POINTER`), so box-none and box-only reach the web; the host
+//   stays a native view of its own wherever its material renders; and every pane host stays a
+//   stacking context of its own under glass. On the web, GS-6's scrim blur adds its value to
+//   the frost's table (web-frost.ts, ~6B gzip).
+// The first measurement of the turn (354ac7b2: 39,460 / 40,079 / 39,709B, 143B over the old
+// ceiling on iOS) also counted GS-1's identifying boundary, an off Switch's track painted over
+// the frost (`boundaryFill`) and the panes' kept boundary; GS-5 removed both before release
+// (-39 / -39 / -37B gzip). The Input ceiling moved from 39,936 to 43,008B at that first
+// measurement; the end figure leaves it 2,585B (6.4%) of headroom on iOS, near the 6 to 7
+// percent the other ceilings carry, so it stays. Button, DataTable and StackedList grew by up
+// to 595, 659 and 486B gzip over the turn and stay inside theirs.
 // Fixed ceilings leave room for deliberate growth while catching a heavy import.
 // These are independent budgets, not a combined total: shared modules legitimately
 // occur in more than one consumer. Changes require a fresh measurement and rationale.
