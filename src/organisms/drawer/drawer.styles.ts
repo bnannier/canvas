@@ -40,6 +40,8 @@ export type Edge = "left" | "right" | "bottom" | "top";
 // optional grabber/drag handle, and the trigger touch-target floor onto each
 // piece, reading the tokens so light/dark keep working.
 export interface DrawerSkin {
+  /** Original square application side panel. Native skins keep their platform shape. */
+  plainPanel?: (edge: Edge, width: number, t: ColorTokens) => ViewStyle;
   /**
    * The scrim dimming alpha behind the panel, resolved per color SCHEME so a
    * platform can dim differently in light vs dark (iOS light 0.2 / dark 0.48;
@@ -113,6 +115,7 @@ function panelBase(t: ColorTokens): ViewStyle {
 // corners), a 1px `border` hairline on that edge, the ambient xl shade, under a
 // 0.5 black scrim.
 export const webSkin: DrawerSkin = {
+  plainPanel: (edge, width, t) => ({ width, maxWidth: "100%", height: "100%", backgroundColor: t.card, boxShadow: `${edge === "left" ? 30 : -30}px 0 80px -30px rgba(0,0,0,0.4)` }),
   scrimOpacity: () => 0.5,
   sheetMaxWidth: null,
   handle: null,
