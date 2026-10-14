@@ -6,6 +6,7 @@ import { getTemplate } from "../core/data/templates";
 import { getPattern } from "../core/data/patterns";
 import { useDocsTheme } from "../theme/docs-theme";
 import { Github } from "../brand/brand-logos";
+import { useAtScrollEdge } from "./scroll-edge";
 
 // The public repository the GitHub button in the bar links back to (mirrors the home page's link).
 const REPO_URL = "https://github.com/bnannier/canvas";
@@ -66,8 +67,11 @@ export function Topbar({ showMenu, onMenu, onSearch }: { showMenu: boolean; onMe
   const { scheme, surface, toggleScheme, setSurface } = useDocsTheme();
   const { title, subtitle } = titleFor(usePathname());
   const wideEnough = useBreakpoint() !== "sm";
+  // Clear on the frame until content scrolls under the bar (./scroll-edge.tsx).
+  const atEdge = useAtScrollEdge();
   return (
     <View role="banner"><Navbar
+      bare={atEdge}
       brandContent={<>
         {showMenu ? <Button ghost icon small accessibilityLabel="Toggle menu" iconLeft={<Icon menu />} onPress={onMenu} /> : null}
         <Column flush shrink>

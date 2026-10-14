@@ -35,7 +35,11 @@ import { type Surface } from "./navbars.styles.js";
 // `bordered` boxes it on all four sides with a rounded outline, and `floating`
 // lifts it as a rounded, shadowed card detached from the page edge. Each
 // platform skin renders that axis in its own native idiom (iOS keeps a slim
-// hairline-separated bar; Android keeps a flat borderless top app bar).
+// hairline-separated bar; Android keeps a flat borderless top app bar). `bare`
+// paints no surface and no hairline at all, so the bar sits clear on whatever is
+// behind it: the scroll-edge appearance of iOS's navigation bar and Material 3's
+// top app bar, which an app passes while nothing has scrolled under the bar and
+// drops once content does, so the bar's own material returns to keep it legible.
 
 // The platform-varying surface. Everything color/shape-bearing the bar needs
 // lives here, built from the active tokens (so each follows light/dark/glass).
@@ -121,16 +125,23 @@ export interface NavbarProps {
   // Surface (pick one; default is the flush bottom-hairline bar).
   bordered?: boolean;
   floating?: boolean;
+  /**
+   * No surface and no hairline: the bar sits clear on what is behind it. Pass it while
+   * nothing has scrolled under the bar (the scroll edge) and drop it once content does.
+   */
+  bare?: boolean;
   /** E2E hook forwarded to the root element. */
   testID?: string;
   /** Outer layout composition only (width/flex within a parent), never a restyle hook. */
   style?: StyleProp<ViewStyle>;
 }
 
-// Surface precedence when more than one is passed: first match wins.
-export function surfaceOf(p: NavbarProps): Surface {
+// Surface precedence when more than one is passed: first match wins, so a framed bar
+// (bordered, floating) keeps its frame over a `bare` request.
+export function surfaceOf(p: NavbarProps): Surface | "bare" {
   if (p.bordered) return "bordered";
   if (p.floating) return "floating";
+  if (p.bare) return "bare";
   return "default";
 }
 
@@ -191,16 +202,19 @@ export function createNavbar(skin: NavbarSkin, parts: NavbarParts = {}) {
     // The bar joins the functional glass layer: GlassSurface paints the native
     // Liquid Glass (iOS) or frost (web/Android) in glass mode, and the solid skin
     // background in default mode. The glass fill is stripped by GlassSurface, so
-    // the skin keeps supplying the solid background only.
-    const container: StyleProp<ViewStyle> = [
+    // the skin keeps supplying the solid background only. A bare bar is the row
+    // alone, with no surface in either mode.
+    const bare = surface === "bare";
+    const container: StyleProp<ViewStyle> = bare ? [skin.bar(tokens), style] : [
       skin.bar(tokens),
       skin.surface(tokens),
       skin.surfaceContainer(tokens, surface),
       style,
     ];
+    const Host = bare ? View : GlassSurface;
 
     return (
-      <GlassSurface testID={testID} style={container} onLayout={onBarLayout}>
+      <Host testID={testID} style={container} onLayout={onBarLayout}>
         <View style={skin.leftGroup(tokens)}>
           {brandContent}
           {brand ? <Text style={skin.brand(tokens)}>{brand}</Text> : null}
@@ -269,7 +283,7 @@ export function createNavbar(skin: NavbarSkin, parts: NavbarParts = {}) {
           ) : null}
           {avatar ? <Avatar small name={avatar} /> : null}
         </View>
-      </GlassSurface>
+      </Host>
     );
   };
 }

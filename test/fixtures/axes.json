@@ -3193,14 +3193,18 @@
     "resolver": "src/organisms/navbars/navbars.shared.tsx#surfaceOf",
     "order": [
       "bordered",
-      "floating"
+      "floating",
+      "bare"
     ],
     "none": "default",
     "single": {
       "bordered": "bordered",
-      "floating": "floating"
+      "floating": "floating",
+      "bare": "bare"
     },
     "pairs": {
+      "bare + bordered": "bordered",
+      "bare + floating": "floating",
       "bordered + floating": "bordered"
     }
   },
