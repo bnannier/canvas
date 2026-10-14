@@ -357,11 +357,11 @@ describe("the states each component's source gives it", () => {
     // it is Dropdown's disabled control and no more): neither its custom trigger nor its menu rows.
     expect(check("dropdown", { ...table.dropdown, focus: on("dropdown", "focus-customtrigger", "button", "default"), pressed: on("dropdown", "pressed-customtrigger", "button", "default") })).toEqual([
       "dropdown: its focus recipe on the default example answers nothing on the web row: it acts on a button on its own surface, which is none of the component's own controls there (its example renders none); a control another kit component renders is that component's",
-      "dropdown: its source gives it a focus state on its own surface (a tab stop: <Pressable> at src/atoms/dropdown/dropdown.shared.tsx:250), where no focus recipe acts on a control of its own, with no exemption",
-      "dropdown: its source gives it a focus state in the overlay in Dropdown (a tab stop: <Pressable> at src/atoms/dropdown/dropdown.shared.tsx:146 via MenuRow), where no focus recipe acts on a control of its own, with no exemption",
+      "dropdown: its source gives it a focus state in the overlay in Dropdown (a tab stop: <Pressable> at src/atoms/dropdown/dropdown.shared.tsx:177 via MenuRow), where no focus recipe acts on a control of its own, with no exemption",
+      "dropdown: its source gives it a focus state on its own surface (a tab stop: <Pressable> at src/atoms/dropdown/dropdown.shared.tsx:376), where no focus recipe acts on a control of its own, with no exemption",
       "dropdown: its pressed recipe on the default example answers nothing on the web row: it acts on a button on its own surface, which is none of the component's own controls there (its example renders none); a control another kit component renders is that component's",
-      "dropdown: its source gives it a pressed state on its own surface (onPress on <Pressable> at src/atoms/dropdown/dropdown.shared.tsx:255), where no pressed recipe acts on a control of its own, with no exemption",
-      "dropdown: its source gives it a pressed state in the overlay in Dropdown (onPress on <Pressable> at src/atoms/dropdown/dropdown.shared.tsx:157 via MenuRow, and 1 more), where no pressed recipe acts on a control of its own, with no exemption",
+      "dropdown: its source gives it a pressed state in the overlay in Dropdown (onPress on <Pressable> at src/atoms/dropdown/dropdown.shared.tsx:189 via MenuRow, and 1 more), where no pressed recipe acts on a control of its own, with no exemption",
+      "dropdown: its source gives it a pressed state on its own surface (onPress on <Pressable> at src/atoms/dropdown/dropdown.shared.tsx:381), where no pressed recipe acts on a control of its own, with no exemption",
     ]);
     // DescriptionList's focus and press on its Update link, a kit Button: its own inline-edit
     // field was never focused, and its source gives it no press at all.
@@ -390,7 +390,7 @@ describe("the states each component's source gives it", () => {
     const table = STATE_RECIPES as Record<string, Record<string, unknown>>;
     // Dropdown's custom trigger answers its own surface, not the rows of the menu it opens.
     expect(check("dropdown", { ...table.dropdown, focus: recipeFor("dropdown", "focus-customtrigger") })).toEqual([
-      "dropdown: its source gives it a focus state in the overlay in Dropdown (a tab stop: <Pressable> at src/atoms/dropdown/dropdown.shared.tsx:146 via MenuRow), where no focus recipe acts on a control of its own, with no exemption",
+      "dropdown: its source gives it a focus state in the overlay in Dropdown (a tab stop: <Pressable> at src/atoms/dropdown/dropdown.shared.tsx:177 via MenuRow), where no focus recipe acts on a control of its own, with no exemption",
     ]);
     // FilterPanel's rows are on the panel and inside the drawer it becomes at a phone's width.
     expect(check("filter-panel", { ...table["filter-panel"], focus: recipeFor("filter-panel", "focus-default") })).toEqual([
@@ -398,12 +398,12 @@ describe("the states each component's source gives it", () => {
     ]);
     // A recipe inside the overlay answers it alone.
     expect(check("dropdown", { ...table.dropdown, pressed: recipeFor("dropdown", "pressed-default") })).toEqual([
-      "dropdown: its source gives it a pressed state on its own surface (onPress on <Pressable> at src/atoms/dropdown/dropdown.shared.tsx:255), where no pressed recipe acts on a control of its own, with no exemption",
+      "dropdown: its source gives it a pressed state on its own surface (onPress on <Pressable> at src/atoms/dropdown/dropdown.shared.tsx:381), where no pressed recipe acts on a control of its own, with no exemption",
     ]);
     // Where each place's own controls are, with the roles the page gives them.
     const places = (slug: string, state: string) =>
       [...new Set(ownControls(signalsOf(slug)).filter((c) => c.signals.some((s) => s.state === state)).map((c) => `${c.place || "surface"}: ${c.control.in} <${c.control.tag}> ${c.control.roles.join("/") || "no role"}`))].sort();
-    expect(places("dropdown", "focus")).toEqual(["Dropdown: MenuRow <Pressable> menuitem", "surface: Dropdown <Pressable> button"]);
+    expect(places("dropdown", "focus")).toEqual(["Dropdown: MenuRow <Pressable> menuitem/radio", "surface: Dropdown <Pressable> button"]);
     expect(places("filter-panel", "focus")).toEqual(["FilterPanel: OptionRow <Pressable> checkbox", "surface: OptionRow <Pressable> checkbox"]);
     expect(places("description-lists", "focus")).toEqual(["surface: rows <TextInput> textbox"]);
     // A kit component the component disables is its control for the disabled state alone.
@@ -442,11 +442,11 @@ describe("the states each component's source gives it", () => {
     // Dropdown's trigger recipe answers its own surface, not the menu it opens; the item recipe, the menu alone.
     const [trigger, item] = recipesIn(STATE_RECIPES.dropdown!, "disabled");
     expect(check("dropdown", { ...without("dropdown"), disabled: trigger! })).toEqual([
-      "dropdown: its Disabled item example asks for a disabled control in the overlay in Dropdown (disabled on <Pressable> at src/atoms/dropdown/dropdown.shared.tsx:158 via MenuRow), with no disabled recipe there",
+      "dropdown: its Disabled item example asks for a disabled control in the overlay in Dropdown (disabled on <Pressable> at src/atoms/dropdown/dropdown.shared.tsx:190 via MenuRow), with no disabled recipe there",
     ]);
     expect(check("dropdown", { ...without("dropdown"), disabled: item! })).toEqual([
       // The kit Button it hands `disabled` (its Pressable trigger is an element trigger's, given `children`).
-      "dropdown: its Disabled trigger example asks for a disabled control on its own surface (disabled on <Button> at src/atoms/dropdown/dropdown.shared.tsx:272), with no disabled recipe there",
+      "dropdown: its Disabled trigger example asks for a disabled control on its own surface (disabled on <Button> at src/atoms/dropdown/dropdown.shared.tsx:398), with no disabled recipe there",
     ]);
     // An own-surface recipe a disabled example asks for (Button's `disabled`, one of the two ways `disabled || loading` is true).
     expect(check("button", without("button"))).toEqual([

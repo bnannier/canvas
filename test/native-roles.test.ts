@@ -2,6 +2,7 @@ import { describe, expect, it } from "bun:test";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { Glob } from "bun";
+import { MENU_CHOICE, MENU_CHOICE_ROLES } from "../src/style/menu-choice-role.ts";
 import { LISTBOX, LISTBOX_ROLES } from "../src/style/listbox-role.ts";
 
 // React Native parses a View's and a Text's `role` natively (Fabric's props), and its parser
@@ -72,14 +73,21 @@ describe("roles native can parse", () => {
     expect(LISTBOX).toBe("listbox");
   });
 
-  it("casts no role past React Native's Role type except the web's listbox", () => {
+  it("gives menu choices the browser radio-menu role and an accepted native radio role", () => {
+    expect(MENU_CHOICE).toBe("menuitemradio");
+    expect(MENU_CHOICE_ROLES.web).toBe("menuitemradio");
+    expect(roles.has(MENU_CHOICE_ROLES.native)).toBe(true);
+    expect(MENU_CHOICE_ROLES.native).toBe("radio");
+  });
+
+  it("casts only browser roles that translate to an accepted native role", () => {
     expect(modules.length).toBeGreaterThan(200);
     const casts = modules.flatMap(({ file, code }) => [
       ...[...code.matchAll(/\bas Role\b/g)].map(() => `${file}: as Role`),
       // Any other cast on a role value (as never, as any, as ViewProps["role"]) hides it too.
       ...roleValues(code).flatMap(({ expression }) => [...expression.matchAll(/\bas\s+(?!const\b)(\S+)/g)].map((m) => `${file}: as ${m[1]}`)),
     ]);
-    expect(casts).toEqual(["src/style/listbox-role.ts: as Role"]);
+    expect(casts.sort()).toEqual(["src/style/listbox-role.ts: as Role", "src/style/menu-choice-role.ts: as Role"]);
   });
 
   it("writes no role native rejects anywhere that renders on a device", () => {

@@ -7,10 +7,11 @@ export default function Example(scope: ExampleScope) {
   return (
 <Dropdown
   trigger="Actions"
+  disabled
   items={[
     { label: "Edit profile" },
     { label: "Duplicate" },
-    { label: "Archive", disabled: true }
+    { label: "Settings" }
   ]}
 />
   );

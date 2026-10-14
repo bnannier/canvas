@@ -10,7 +10,7 @@ export default function Example(scope: ExampleScope) {
   items={[
     { label: "Edit profile" },
     { label: "Duplicate" },
-    { label: "Delete…", destructive: true, separatorBefore: true }
+    { label: "Archive", disabled: true }
   ]}
 />
   );

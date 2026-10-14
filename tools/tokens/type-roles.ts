@@ -70,7 +70,7 @@ export const TEXT_ROLES: Record<string, Record<string, ReadingRole>> = {
   "src/atoms/slider/slider.styles.ts": { DESCRIPTION_TYPE: "small" },
   "src/atoms/switch/switch.shared.tsx": { DESC_FONT: "small" },
   "src/atoms/progress/progress.styles.ts": { dfDescription: "small" },
-  "src/atoms/dropdown/dropdown.styles.ts": { "webSkin.menuHeaderDescription": "small" },
+  "src/atoms/dropdown/dropdown.styles.ts": { "webSkin.reference.description": "tiny", "webSkin.reference.detail": "small", "webSkin.reference.noteText": "small", "webSkin.menuHeaderDescription": "small" },
   "src/organisms/toast/toast.styles.ts": { "webSkin.description": "small" },
   "src/molecules/media-objects/media-objects.styles.ts": {
     "webSkin.compact.description": "small",

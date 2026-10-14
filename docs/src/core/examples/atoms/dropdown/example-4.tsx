@@ -7,11 +7,10 @@ export default function Example(scope: ExampleScope) {
   return (
 <Dropdown
   trigger="Actions"
-  label="Actions"
   items={[
     { label: "Edit profile" },
     { label: "Duplicate" },
-    { label: "Settings" }
+    { label: "Delete…", destructive: true, separatorBefore: true }
   ]}
 />
   );
