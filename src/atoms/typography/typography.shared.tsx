@@ -1,5 +1,6 @@
+import { identityTextInk } from "../../style/identity-text.js";
 import { type ReactNode } from "react";
-import { type GestureResponderEvent } from "react-native";
+import { type AccessibilityRole, type GestureResponderEvent } from "react-native";
 import { Text, useHugStyle, useTheme, MONO_FONT, type StyleProp, type TextStyle, innerFill, tabularNums } from "../../style/index.js";
 import {
   type Role,
@@ -53,6 +54,56 @@ import {
 // nearest one (text-sm), as Kbd does for its 11px label.
 
 export interface TypographyProps {
+  /** Exact Argus reading roles; these preserve the original dense web type. */
+  subheading?: boolean;
+  label?: boolean;
+  micro?: boolean;
+  tag?: boolean;
+  eyebrow?: boolean;
+  eyebrowLg?: boolean;
+  stageLabel?: boolean;
+  statValue?: boolean;
+  metricValue?: boolean;
+  formValue?: boolean;
+  extraBold?: boolean;
+  uppercase?: boolean;
+  foreground?: boolean;
+  inverse?: boolean;
+  action?: boolean;
+  actionForeground?: boolean;
+  info?: boolean;
+  /** Hue-keyed stage text; deep in light schemes, pastel in dark. */
+  hue?: number;
+  /** De-emphasized white ink over branded surfaces. */
+  inverseHint?: boolean;
+  inverseSubtle?: boolean;
+  inverseMuted?: boolean;
+  inverseSoft?: boolean;
+  inverseFaint?: boolean;
+  right?: boolean;
+  center?: boolean;
+  numberOfLines?: number;
+  accessibilityRole?: AccessibilityRole;
+  accessibilityLabel?: string;
+  displayLeading?: boolean;
+  singleLeading?: boolean;
+  lockupLeading?: boolean;
+  denseLeading?: boolean;
+  compactLeading?: boolean;
+  labelLeading?: boolean;
+  captionLeading?: boolean;
+  smallLeading?: boolean;
+  strongLeading?: boolean;
+  bodyLeading?: boolean;
+  relaxedLeading?: boolean;
+  displayTracking?: boolean;
+  tightTracking?: boolean;
+  referenceTracking?: boolean;
+  labelTracking?: boolean;
+  eyebrowTracking?: boolean;
+  wideTracking?: boolean;
+  expandedTracking?: boolean;
+
   children?: ReactNode;
   // Role (pick one; default is the plain body style). First-match precedence.
   display?: boolean;
@@ -151,6 +202,17 @@ const HEADING_LEVEL: Partial<Record<Role, number>> = {
 // largest-to-smallest, headings before helper styles, so a conflicting pair
 // resolves to the more prominent role.
 export function roleOf(p: TypographyProps): Role {
+  if (p.subheading) return "subheading";
+  if (p.label) return "label";
+  if (p.micro) return "micro";
+  if (p.tag) return "tag";
+  if (p.eyebrow) return "eyebrow";
+  if (p.eyebrowLg) return "eyebrowLg";
+  if (p.stageLabel) return "stageLabel";
+  if (p.statValue) return "statValue";
+  if (p.metricValue) return "metricValue";
+  if (p.formValue) return "formValue";
+
   if (p.display) return "display";
   if (p.h1) return "h1";
   if (p.h2) return "h2";
@@ -161,10 +223,10 @@ export function roleOf(p: TypographyProps): Role {
   if (p.code) return "code";
   if (p.mono) return "mono";
   if (p.caption) return "caption";
-  if (p.muted) return "muted";
   if (p.small) return "small";
   if (p.tiny) return "tiny";
   if (p.body) return "body";
+  if (p.muted) return "muted";
   return "body";
 }
 
@@ -186,6 +248,7 @@ export function toneOf(p: TypographyProps): Tone | null {
 // Weight precedence when more than one is passed: first match wins. Returns null
 // when no weight prop is set, so the role's own weight stands.
 export function weightOf(p: TypographyProps): Weight | null {
+  if (p.extraBold) return "extraBold";
   if (p.bold) return "bold";
   if (p.semibold) return "semibold";
   if (p.medium) return "medium";
@@ -196,6 +259,18 @@ export function weightOf(p: TypographyProps): Weight | null {
 // Leading: a single-value axis today, so there is no precedence to resolve. Returns
 // null when the prop is absent, so the role's own line height stands.
 export function leadingOf(p: TypographyProps): Leading | null {
+  if (p.displayLeading) return "display";
+  if (p.singleLeading) return "single";
+  if (p.lockupLeading) return "lockup";
+  if (p.denseLeading) return "dense";
+  if (p.compactLeading) return "compact";
+  if (p.labelLeading) return "label";
+  if (p.captionLeading) return "caption";
+  if (p.smallLeading) return "small";
+  if (p.strongLeading) return "strong";
+  if (p.bodyLeading) return "body";
+  if (p.relaxedLeading) return "relaxed";
+
   if (p.tightLeading) return "tight";
   return null;
 }
@@ -251,11 +326,34 @@ export function createTypography(skin: TypographySkin) {
         {...(anchor ?? undefined)}
         testID={testID}
         onPress={props.onPress}
-        accessibilityRole={anchor ? "link" : level ? "header" : undefined}
+        numberOfLines={props.numberOfLines}
+        ellipsizeMode="tail"
+        accessibilityLabel={props.accessibilityLabel}
+        accessibilityRole={anchor ? "link" : props.accessibilityRole ?? (level ? "header" : undefined)}
         aria-level={anchor ? undefined : level}
         style={[
           skin.roleType[role],
           roleColor(tokens, role),
+          props.foreground ? { color: tokens.foreground } : null,
+          props.inverse ? { color: "#ffffff" } : null,
+          props.action ? { color: tokens.action ?? tokens.primary } : null,
+          props.actionForeground ? { color: tokens["action-foreground"] ?? "#ffffff" } : null,
+          props.info ? { color: tokens.info ?? tokens.primary } : null,
+          props.hue != null ? { color: identityTextInk(props.hue, dark) } : null,
+          props.inverseHint ? { color: "rgba(255,255,255,0.9)" } : null,
+          props.inverseSubtle ? { color: "rgba(255,255,255,0.8)" } : null,
+          props.inverseMuted ? { color: "rgba(255,255,255,0.78)" } : null,
+          props.inverseSoft ? { color: "rgba(255,255,255,0.75)" } : null,
+          props.inverseFaint ? { color: "rgba(255,255,255,0.72)" } : null,
+          props.right ? { textAlign: "right" } : props.center ? { textAlign: "center" } : null,
+          props.uppercase ? { textTransform: "uppercase" } : null,
+          props.displayTracking ? { letterSpacing: Number(skin.roleType[role].fontSize) * -0.02 } : null,
+          props.tightTracking ? { letterSpacing: Number(skin.roleType[role].fontSize) * -0.01 } : null,
+          props.referenceTracking ? { letterSpacing: Number(skin.roleType[role].fontSize) * 0.04 } : null,
+          props.labelTracking ? { letterSpacing: Number(skin.roleType[role].fontSize) * 0.06 } : null,
+          props.eyebrowTracking ? { letterSpacing: Number(skin.roleType[role].fontSize) * 0.14 } : null,
+          props.wideTracking ? { letterSpacing: Number(skin.roleType[role].fontSize) * 0.16 } : null,
+          props.expandedTracking ? { letterSpacing: Number(skin.roleType[role].fontSize) * 0.18 } : null,
           // The code pill is a Text node, which cannot host a material sibling, so under
           // glass its `muted` fill becomes an ink tint that lets the pane it sits on show
           // through (the same translucent emphasis a glass table's header band takes).

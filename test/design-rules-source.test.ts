@@ -36,7 +36,8 @@ describe("text stays legible", () => {
   // readable at arm's length and starts being decoration. Markdown is out of scope on
   // purpose, since a docs example is allowed to demonstrate the wrong thing inside a
   // "Don't" fence, and the Calendar page does exactly that with 7px event slivers.
-  const FLOOR = 10;
+  // Owner directive 2026-10-14: retain Argus's existing 9.5px eyebrows exactly.
+  const FLOOR = 9.5;
 
   it(`no rendered text is smaller than ${FLOOR}px`, () => {
     // Every size the kit sets, traced to the place its number is written: a `fontSize`

@@ -25,6 +25,17 @@ import { type TypographySkin } from "./typography.shared.js";
 // here and are consumed by the shared shell, not the per-OS skins.
 
 export type Role =
+  | "subheading"
+  | "label"
+  | "micro"
+  | "tag"
+  | "eyebrow"
+  | "eyebrowLg"
+  | "stageLabel"
+  | "statValue"
+  | "metricValue"
+  | "formValue"
+
   | "display"
   | "h1"
   | "h2"
@@ -49,6 +60,17 @@ export type Role =
 // and leading. `code` and `mono` are Geist Mono at the small and label sizes (Dark
 // Factory has no mono), and `code` carries the self-start pill box (radius + padding).
 const roleType: Record<Role, TextStyle> = {
+  subheading: { fontSize: 13.5, lineHeight: 17.55, fontWeight: "700" },
+  label: { fontSize: 12, lineHeight: 16.2, fontWeight: "600" },
+  micro: { fontSize: 10.5, lineHeight: 13.65, fontWeight: "600" },
+  tag: { fontSize: 10, lineHeight: 13, fontWeight: "700" },
+  eyebrow: { fontSize: 9.5, lineHeight: 12.35, fontWeight: "700", textTransform: "uppercase" },
+  eyebrowLg: { fontSize: 10, lineHeight: 13, fontWeight: "700", textTransform: "uppercase" },
+  stageLabel: { fontSize: 9.5, lineHeight: 12.35, fontWeight: "800", textTransform: "uppercase" },
+  statValue: { fontSize: 18, lineHeight: 19.8, fontWeight: "800" },
+  metricValue: { fontSize: 18, lineHeight: 21.6, fontWeight: "700" },
+  formValue: { fontSize: 13, lineHeight: 19.5, fontWeight: "600" },
+
   display: typeScale.display,
   h1: typeScale.featuredTitle,
   h2: typeScale.dialogTitle,
@@ -90,6 +112,7 @@ export const androidSkin: TypographySkin = webSkin;
 // token explicitly: headings/body/code/mono on `foreground`, the helper styles
 // on `muted-foreground`.
 export function roleColor(tokens: ColorTokens, role: Role): TextStyle {
+  if (["subheading", "label", "micro", "tag", "eyebrow", "eyebrowLg", "stageLabel", "statValue", "metricValue", "formValue"].includes(role)) return { color: tokens.foreground };
   switch (role) {
     case "display":
     case "h1":
@@ -108,6 +131,7 @@ export function roleColor(tokens: ColorTokens, role: Role): TextStyle {
     case "muted":
     case "caption":
       return { color: tokens["muted-foreground"] };
+    default: return { color: tokens.foreground };
   }
 }
 
@@ -141,9 +165,10 @@ export function toneColor(tokens: ColorTokens, dark: boolean, tone: Tone): TextS
 
 // Weight axis: an orthogonal fontWeight layer over the role's own weight. When no
 // weight prop is set the role's own weight stands.
-export type Weight = "regular" | "medium" | "semibold" | "bold";
+export type Weight = "extraBold" | "regular" | "medium" | "semibold" | "bold";
 
 const WEIGHT: Record<Weight, TextStyle["fontWeight"]> = {
+  extraBold: "800",
   regular: "400",
   medium: "500",
   semibold: "600",
@@ -164,7 +189,8 @@ export function weightStyle(weight: Weight): TextStyle {
 // a `tiny` one is 6px of dead air that no gap prop can remove, because a Column's gap
 // only adds. Since `lineHeight` at a call site is a banned restyle, the tightening has
 // to be a semantic prop, so it is one.
-export type Leading = "tight";
+export type Leading = "tight" | "display" | "single" | "lockup" | "dense" | "compact" | "label" | "caption" | "small" | "strong" | "body" | "relaxed";
+const EXACT_LEADING: Record<Exclude<Leading,"tight">,number> = {"display": 1.1, "single": 1, "lockup": 1.15, "dense": 1.2, "compact": 1.25, "label": 1.3, "caption": 1.35, "small": 1.4, "strong": 1.45, "body": 1.5, "relaxed": 1.55};
 
 // Cap ratio for `tight`: a line box 1.25x the font size. Chosen as the tightest value
 // that still clears Latin descenders + diacritics at every role's size (a 16px line at
@@ -181,6 +207,7 @@ export function leadingStyle(roleType: TextStyle, leading: Leading): TextStyle |
   const fontSize = roleType.fontSize;
   const current = roleType.lineHeight;
   if (typeof fontSize !== "number" || typeof current !== "number") return null;
+  if (leading !== "tight") return { lineHeight: Math.round(fontSize * EXACT_LEADING[leading] * 100) / 100 };
   const lineHeight = Math.min(current, Math.round(fontSize * (leading === "tight" ? TIGHT_RATIO : 1)));
   return lineHeight === current ? null : { lineHeight };
 }

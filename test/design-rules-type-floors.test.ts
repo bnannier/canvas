@@ -44,7 +44,7 @@ function rendersJsx(node: ts.Node): boolean {
 
 describe("the reading floors", () => {
   it("are the design language's", () => {
-    expect(READING_FLOOR).toEqual({ body: 12, lead: 12, small: 11, tiny: 10, caption: 10 });
+    expect(READING_FLOOR).toEqual({ body: 12, lead: 12, small: 11, tiny: 10, caption: 9.5 });
   });
 
   for (const platform of ["web", "ios", "android"] as const) {
