@@ -38,6 +38,12 @@ On web, the default field uses Argus’s 40-pixel frame, 13-pixel semibold value
 `systemFocus` preserves the platform’s system focus outline. An explicit
 `accessibilityLabel` takes precedence over the visible label’s accessible name.
 
+Pass `search` for the Argus toolbar search: a magnifier, a borderless editor, and
+a tracked uppercase prompt while empty on web. The prompt names the editor unless
+`accessibilityLabel` or `label` supplies its purpose. Native skins use their
+platform field with a leading search glyph. `systemFocus` preserves the system
+focus outline for the borderless editor.
+
 ## Usage
 
 ```tsx
@@ -45,6 +51,13 @@ On web, the default field uses Argus’s 40-pixel frame, 13-pixel semibold value
 ```
 
 ## Variants
+
+### Toolbar search
+
+```tsx
+<Input search systemFocus placeholder="Search work items" />
+```
+
 
 ### Label
 

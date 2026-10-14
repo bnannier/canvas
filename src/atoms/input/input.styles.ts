@@ -69,6 +69,12 @@ export interface InputSkin extends FloatingLabelStyles<Size> {
   iconColor: (t: ColorTokens, state: FieldState & { action: boolean }) => string;
   /** Gap between the above-field label and the field (the Field/Form rhythm). */
   labelGap: number;
+  /** Borderless web toolbar search anatomy; native uses its platform field. */
+  search?: {
+    container: ViewStyle;
+    field: (tokens: ColorTokens) => TextStyle;
+    placeholder: (tokens: ColorTokens) => TextStyle;
+  };
   referenceLabel?: (tokens: ColorTokens) => TextStyle;
   softFill?: (tokens: ColorTokens) => string;
   /** Overlaid icon position inside the field area (left or right gutter). The shell
@@ -111,6 +117,11 @@ function fieldEdge(t: ColorTokens, borderColor: keyof ColorTokens): string {
 }
 
 export const webSkin: InputSkin = {
+  search: {
+    container: { flexDirection: "row", alignItems: "center", gap: 10 },
+    field: (tokens) => ({ paddingVertical: 8, fontSize: 13, fontWeight: "600", color: tokens.foreground, backgroundColor: "transparent", borderWidth: 0 }),
+    placeholder: (tokens) => ({ position: "absolute", left: 0, opacity: 0.9, pointerEvents: "none", fontSize: 10.5, lineHeight: 13.65, fontWeight: "700", textTransform: "uppercase", letterSpacing: 1.68, color: tokens["muted-foreground"] }),
+  },
   liquid: true,
   softFill: (tokens) => tokens["field-fill"] ?? tokens.card,
   text: webText,

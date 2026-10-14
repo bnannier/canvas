@@ -5,6 +5,6 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { Input } = scope;
   return (
-<Input label="Date of birth" leadingIcon icon="calendar" placeholder="MM/DD/YYYY" keyboardType="numbers-and-punctuation" autoComplete="birthdate-full" />
+<Input label="Username" leadingIcon icon="user" placeholder="yourname" defaultValue="danello87" autoCapitalize="none" autoComplete="username" />
   );
 }
