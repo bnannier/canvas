@@ -235,3 +235,8 @@ that varies.
     { label: "Cache hit rate", value: "94.1%", delta: "23.5k of 25k served warm", steady: true }
   ]} />
 ```
+
+`compact` renders value-first rail tiles with 18px extra-bold values and compact
+labels. `large` renders 24px dashboard headlines; compact wins if both are set.
+Each item may include a muted `description`. These densities retain the Argus
+borderless tile surface, exact insets, tracking and text rhythm.

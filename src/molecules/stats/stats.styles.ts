@@ -89,8 +89,30 @@ export function deltaTone(tokens: ColorTokens, down: boolean): TextStyle {
   return { color: statusColors(tokens, down ? "error" : "success").ink };
 }
 
+// Dense value-first anatomy shared wherever no platform stat control exists.
+const DENSE = {
+  denseCard: (tokens: ColorTokens, large: boolean): ViewStyle => ({
+    borderRadius: large ? 14 : 12, backgroundColor: tokens.card,
+    paddingTop: large ? 16 : 13, paddingRight: large ? 18 : 14,
+    paddingBottom: large ? 14 : 12, paddingLeft: large ? 18 : 14,
+    ...shadow("sm", tokens),
+  }),
+  denseValue: (tokens: ColorTokens, large: boolean): TextStyle => ({
+    fontSize: large ? 24 : 18, lineHeight: large ? 26.4 : 19.8,
+    fontWeight: large ? "700" : "800", letterSpacing: large ? -0.48 : -0.36,
+    color: tokens.foreground,
+  }),
+  denseLabel: (tokens: ColorTokens, large: boolean): TextStyle => ({
+    marginTop: large ? 6 : 4, fontSize: large ? 12 : 10.5,
+    lineHeight: large ? 15.6 : 13.65, fontWeight: large ? "700" : "600",
+    color: large ? tokens.foreground : tokens["muted-foreground"],
+  }),
+  denseDescription: (tokens: ColorTokens): TextStyle => ({ marginTop: 3, fontSize: 11, lineHeight: 14.85, fontWeight: "500", color: tokens["muted-foreground"] }),
+};
+
 // ---------- Web: the bordered stat card ----------
 export const webSkin: StatsSkin = {
+  ...DENSE,
   // The stat card: the card corner, a soft hairline, the ambient shade, a 24px
   // inset.
   cardSurface: (tokens: ColorTokens): ViewStyle => ({
@@ -138,6 +160,7 @@ export const webSkin: StatsSkin = {
 
 // ---------- iOS (HIG / SF): inset card-like surface, flat, SF tracking ----------
 export const iosSkin: StatsSkin = {
+  ...DENSE,
   cardSurface: (tokens: ColorTokens): ViewStyle => ({
     borderRadius: shape.ios.card,
     // The superellipse corner curve of Apple's inset-grouped surfaces (iOS-only prop).
@@ -182,6 +205,7 @@ export const iosSkin: StatsSkin = {
 
 // ---------- Android (Material 3): outlined card, flat, M3 tracking, ripple ----------
 export const androidSkin: StatsSkin = {
+  ...DENSE,
   cardSurface: (tokens: ColorTokens): ViewStyle => ({
     borderRadius: shape.android.card,
     // Clip the Material ripple to the rounded outline (a tappable card carries a bounded android_ripple).
