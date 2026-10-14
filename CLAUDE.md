@@ -328,10 +328,9 @@ layers, each with its own under-fill token (`glass-tint*` in `src/style/tokens.t
 - **Control** (`glass-tint-control`, the bright "puck"): every control that paints a
   surface of its own, the field boxes (Input, Textarea, Select, Autocomplete,
   PhoneInput, Stepper, InputOTP), Button, ButtonGroup, Tabs pills, Chip, Badge, Kbd,
-  Switch tracks, Checkbox boxes, Radio rings, Progress rails, Steps circles, the Slider
-  knob, the neutral Avatar tile (an initials disc paints its identity gradient, like a
-  photo). A BRAND fill (a primary or destructive Button,
-  a checked Switch or Checkbox, a selected tab, page, day or step) is brand-tinted
+  Progress rails, Steps circles, the Slider knob, the neutral Avatar tile (an initials
+  disc paints its identity gradient, like a photo). A BRAND fill (a primary or
+  destructive Button, a selected tab, page, day or step) is brand-tinted
   glass: `brand={tokens.primary}`, whose under-fill `brandTint` keeps as sheer as its
   ink's WCAG 4.5:1 allows (on iOS 26 it is the GlassView's own `tintColor`). A toned
   WASH (a soft Badge, a coloured Chip, a toned Alert) is its own soft wash, the pane's
@@ -340,7 +339,11 @@ layers, each with its own under-fill token (`glass-tint*` in `src/style/tokens.t
   under its deep 800/300 label (`HUE_WASH` is deprecated and unused). A control with no
   surface of its own stays bare: a ghost or link Button, the web's outline and secondary
   Buttons (Dark Factory's transparent outline pills), and on every platform Pagination's
-  resting pages, arrows and rows-per-page trigger.
+  resting pages, arrows and rows-per-page trigger. Radio, Checkbox and Switch are small
+  marks inside content, not surfaces: under glass they draw their solid look on every
+  platform, with no pane and no rim (a checked mark its solid brand fill, an unchecked
+  ring, box or off track its solid boundary, the Switch knob its own colour). A Radio
+  `card` tile is a content pane, as a selectable Card is.
 - **Dense** (`glass-tint-dense`, the densest tint): the surfaces a user reads and
   acts on, the option lists (Dropdown, Select, Autocomplete, RowMenu, the SplitButton
   overflow, the PhoneInput country list, AvatarMenu), AlertDialog, Toast, Tooltip, the
@@ -367,13 +370,10 @@ selected row, a header band, a stripe, a code pill, a placeholder) go through
 `innerFill` / `withInnerFill`, which turn the opaque `muted` / `secondary` / `accent`
 roles into ink tints under glass so they never sit as opaque patches on the material.
 A state border (a focus ring, an error edge, an open trigger, the current step) stays
-over the pane; a resting hairline drops, the material's rim is the edge. A resting
-boundary drawn in the `input` token, the one that identifies a selection control (an
-unchecked Radio ring, an unchecked Checkbox box, an off Switch track), stays too, in
-its solid colour at 3:1. In solid mode every one of these renders nothing extra:
-`GlassSurface` is the plain box, `GlassPane` renders null, `paneStyle` and the inner
-fills return the skin's own style, so the solid tree is byte-identical to the
-pre-glass one. Under Reduce Transparency or
+over the pane; a resting hairline drops, the material's rim is the edge. In solid mode
+every one of these renders nothing extra: `GlassSurface` is the plain box, `GlassPane`
+renders null, `paneStyle` and the inner fills return the skin's own style, so the
+solid tree is byte-identical to the pre-glass one. Under Reduce Transparency or
 Increase Contrast every layer degrades to its opaque token
 (`styles/tokens/surface.css` and the accessibility ladder in
 `glass-surface.shared.tsx`).
