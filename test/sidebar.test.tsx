@@ -86,8 +86,8 @@ const badgeReference = (node: ReactNode) => {
 };
 
 describe("Sidebar item badges", () => {
-  it("renders a plain count as the Badge secondary metadata pill", () => {
-    const reference = badgeReference(<Badge secondary>3</Badge>);
+  it("renders a plain web count as the solid action navigation badge", () => {
+    const reference = badgeReference(<Badge navigationCount>3</Badge>);
     const { container } = ui(<Sidebar items={[{ id: "inbox", label: "Inbox", badge: "3" }]} />);
     expect(reference).toBeTruthy();
     expect(badgeHtml(container, "3")).toBe(reference);
@@ -261,4 +261,15 @@ describe("Sidebar narrow drill-down (SidebarDrillDown)", () => {
     expect(reference).toBeTruthy();
     expect(badgeHtml(container, "7")).toBe(reference);
   });
+});
+
+it("embedded navigation inherits the Argus rail bounds and preserves reference dimensions", () => {
+  ui(<Sidebar embedded sections={[{ title: "Factory", items: [{ id: "board", label: "Board", icon: "columns2" }] }]} active="board" />);
+  const nav = screen.getByRole("navigation");
+  expect(nav.style.width).toBe("");
+  expect(nav.style.backgroundColor).toBe("");
+  expect(nav.style.gap).toBe("34px");
+  const row = screen.getByRole("button", { name: "Board" });
+  expect(row.style.padding).toBe("9px 22px 9px 30px");
+  expect(screen.getByText("Board").style.lineHeight).toBe("16.25px");
 });

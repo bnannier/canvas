@@ -112,6 +112,13 @@ export interface SidebarSkin {
   iconTint: (active: boolean) => SidebarIconTint;
   /** The leading Canvas icon size (px), per platform. */
   iconSize: number;
+  /** Optional fine icon stroke and opacity from the navigation reference. */
+  iconRegularStroke?: boolean;
+  iconOpacity?: number;
+  /** Selected edge marker; when present the row inherits its host surface. */
+  activeIndicator?: (t: ColorTokens) => ViewStyle;
+  /** Solid action count instead of a quiet metadata badge. */
+  navigationCount?: boolean;
 
   // --- collapse (mini icon-rail) ---
   /** The panel width when collapsed. */
@@ -174,6 +181,8 @@ export interface SidebarProps {
   // Frame (pick one; default is the flush right-bordered column).
   bordered?: boolean;
   floating?: boolean;
+  /** Navigation groups embedded in an app-owned rail; inherits its frame and width. */
+  embedded?: boolean;
 
   // Collapse axis (the mini icon-rail).
   /** Collapsed to the mini icon-rail (CONTROLLED). Omit for uncontrolled use. */
@@ -440,7 +449,7 @@ export function createSidebar(skin: SidebarSkin, parts: SidebarParts = {}) {
     // pane's material and rim carry it; `paneStyle`). Solid mode keeps each skin's
     // own row fill.
     const activeShape: StyleProp<ViewStyle> = [skin.row(tokens, density, collapsed), skin.rowFill(tokens, true)];
-    const activePane = glass ? <GlassPane layer="control" shape={activeShape} tint={selectionTint(activeShape, dark)} /> : null;
+    const activePane = glass && !skin.activeIndicator ? <GlassPane layer="control" shape={activeShape} tint={selectionTint(activeShape, dark)} /> : null;
 
     const shell = header != null || footer != null;
 
@@ -496,7 +505,7 @@ export function createSidebar(skin: SidebarSkin, parts: SidebarParts = {}) {
         // only; a transparent passthrough on iOS/web). The row fills the sidebar width, so
         // the frame stretches to match (the row inside it fills the frame in turn), and it
         // paints the skin's hover wash beneath the row.
-        <SidebarRowFrame key={item.id ?? item.label} shape={skin.row(tokens, density, collapsed)} wash={wash}>
+        <SidebarRowFrame key={item.id ?? item.label} shape={skin.row(tokens, density, collapsed)} wash={wash} testOnly_hovered={item.testOnly_hovered}>
           <Pressable
             // The active row's pane is a child of this Pressable: where it renders, the
             // ripple draws in the foreground, over it (`paneRipple`).
@@ -523,15 +532,16 @@ export function createSidebar(skin: SidebarSkin, parts: SidebarParts = {}) {
             accessibilityLabel={collapsed ? rowA11yLabel(item) : undefined}
           >
             {activeRow ? activePane : null}
+            {activeRow && skin.activeIndicator ? <View style={skin.activeIndicator(tokens)} /> : null}
             {item.icon != null ? (
-              <Icon {...{ [item.icon]: true }} {...skin.iconTint(activeRow)} size={skin.iconSize} decorative />
+              <Icon {...{ [item.icon]: true }} {...skin.iconTint(activeRow)} size={skin.iconSize} regularStroke={skin.iconRegularStroke} style={skin.iconOpacity == null ? undefined : { opacity: skin.iconOpacity }} decorative />
             ) : null}
             {collapsed ? null : (
               <>
                 <Text style={skin.label(tokens, activeRow, density)} numberOfLines={1}>
                   {item.label}
                 </Text>
-                <SidebarItemBadge item={item} Badge={Badge} />
+                <SidebarItemBadge item={item} Badge={Badge} navigationCount={skin.navigationCount} />
               </>
             )}
           </Pressable>
@@ -570,7 +580,7 @@ export function createSidebar(skin: SidebarSkin, parts: SidebarParts = {}) {
                 accessibilityLabel={section.title}
               >
                 {section.icon != null ? (
-                  <Icon {...{ [section.icon]: true }} {...skin.iconTint(holdsActive)} size={skin.iconSize} decorative />
+                  <Icon {...{ [section.icon]: true }} {...skin.iconTint(holdsActive)} size={skin.iconSize} regularStroke={skin.iconRegularStroke} style={skin.iconOpacity == null ? undefined : { opacity: skin.iconOpacity }} decorative />
                 ) : null}
               </Pressable>
             </SidebarRowFrame>
@@ -619,7 +629,8 @@ export function createSidebar(skin: SidebarSkin, parts: SidebarParts = {}) {
     // Sidebar joins the functional glass layer: GlassSurface paints native Liquid
     // Glass (iOS) or frost (web/Android) in glass mode and the solid skin
     // background in default mode.
-    const column: StyleProp<ViewStyle> = [skin.column(tokens, frame, collapsed, shell), style];
+    const column: StyleProp<ViewStyle> = [props.embedded ? { gap: 34, alignSelf: "stretch" } : skin.column(tokens, frame, collapsed, shell), style];
+    if (props.embedded && !shell) return <View testID={testID} role="navigation" style={column}>{sectionsEl}</View>;
 
     // Legacy (no slots): sections directly in the column, content-sized, exactly as
     // before — every existing consumer/example is byte-identical.
