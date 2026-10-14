@@ -95,6 +95,8 @@ export const webSkin: ToastSkin = {
     backgroundColor: inverseFill(t),
     boxShadow: PILL_SHADOW,
   }),
+  briefContainer: (t) => ({ flexDirection: "row", alignItems: "center", paddingVertical: 11, paddingHorizontal: 18, borderRadius: shape.web.pill, maxWidth: "100%", backgroundColor: inverseFill(t), boxShadow: PILL_SHADOW }),
+  briefMessage: (t) => ({ ...typeScale.bodyStrong, lineHeight: 16.25, color: inverseInk(t) }),
   intentIcon: true,
   iconSize: 16,
   intentColor: (t, intent) => (intent === "info" ? inversePrimary(t) : inverseStatus(t, intent)),

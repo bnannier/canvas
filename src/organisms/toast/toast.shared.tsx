@@ -26,6 +26,7 @@ import {
 } from "../../style/index.js";
 import { Icon } from "../../atoms/icon/icon.js";
 import { inverseFill } from "../../style/inverse.js";
+import { useSafeAreaInsetsOrNull } from "../../style/safe-area.js";
 import { rowSeam } from "../../style/touch-seam.js";
 
 // Shared Toast shell. Two layers live here once and a platform file supplies only
@@ -70,6 +71,8 @@ export interface ToastAction {
 }
 
 export interface ToastProps {
+  /** A single-line notification pill without extra chrome. */
+  brief?: boolean;
   /** The headline line (required). */
   message: string;
   /** A secondary line under the message. */
@@ -111,6 +114,9 @@ export interface ToastSkin {
    *  slot. The M3 snackbar anatomy has no leading icon, so the Android skin turns
    *  this off; an explicit `icon` prop always renders. */
   intentIcon: boolean;
+  /** Single-line application pill geometry and type; omitted skins retain their native shape. */
+  briefContainer?: (t: ColorTokens) => ViewStyle;
+  briefMessage?: (t: ColorTokens) => TextStyle;
   /** The intent icon glyph size, in px. */
   iconSize: number;
   /** The intent glyph's ink, where the capsule's own fill needs one of its own (the
@@ -201,9 +207,25 @@ interface ToastInstance extends ToastOptions {
   id: string;
 }
 
+export interface ToastProviderProps {
+  children: ReactNode;
+  /** Replace the previous notification rather than stacking. */
+  single?: boolean;
+  /** Present a one-line pill without a dismiss control. */
+  brief?: boolean;
+  /** Default lifetime in milliseconds; each toast can override it. */
+  duration?: number;
+  /** Include device safe areas in the offsets. */
+  safeArea?: boolean;
+  /** Distance from the bottom safe area. */
+  bottomInset?: number;
+  /** Distance from each horizontal safe area. */
+  horizontalInset?: number;
+}
+
 const DEFAULT_DURATION = 4000;
 // The stack sits this far off the bottom edge (a fixed inset; an app that needs the
-// safe-area can wrap ToastProvider's host or pass its own offset via the provider).
+// safe area can enable the provider's safeArea option and customize its offsets).
 const STACK_BOTTOM_INSET = 24;
 
 /**
@@ -235,7 +257,7 @@ export function createToastSystem(skin: ToastSkin) {
     const glyph = icon !== undefined ? icon : auto;
     const hasTrailing = action != null || onDismiss != null;
     const hasDescription = description != null && description !== "";
-    const containerStyle = skin.container(tokens, hasTrailing, hasDescription);
+    const containerStyle = props.brief && skin.briefContainer ? skin.briefContainer(tokens) : skin.container(tokens, hasTrailing, hasDescription);
     // The action and the dismiss reach the platform minimum through the skin's slop, and sit
     // the capsule's gap apart. React Native gives a point both slops admit to the later
     // sibling, the dismiss, so the seam between them is split (src/style/touch-seam.ts): a
@@ -249,7 +271,7 @@ export function createToastSystem(skin: ToastSkin) {
       <>
         {glyph != null && glyph !== false ? <View style={ICON_SLOT}>{glyph}</View> : null}
         <View style={TEXT_COL}>
-          <Text style={skin.message(tokens)} numberOfLines={2}>
+          <Text style={props.brief && skin.briefMessage ? skin.briefMessage(tokens) : skin.message(tokens)} numberOfLines={props.brief ? 1 : 2}>
             {message}
           </Text>
           {description != null && description !== "" ? (
@@ -334,7 +356,9 @@ export function createToastSystem(skin: ToastSkin) {
 
   const ToastContext = createContext<ToastHandle | null>(null);
 
-  function ToastProvider({ children }: { children: ReactNode }) {
+  function ToastProvider({ children, single, brief, safeArea, duration: defaultDuration = DEFAULT_DURATION, bottomInset = STACK_BOTTOM_INSET, horizontalInset = 0 }: ToastProviderProps) {
+    const deviceInsets = useSafeAreaInsetsOrNull();
+    const insets = safeArea ? deviceInsets : null;
     const [toasts, setToasts] = useState<ToastInstance[]>([]);
     // Auto-dismiss timers, keyed by toast id, and a monotonic id counter. Both live
     // in refs so scheduling a timer never re-renders the provider.
@@ -360,8 +384,12 @@ export function createToastSystem(skin: ToastSkin) {
     const toast = useCallback(
       (options: ToastOptions) => {
         const id = `toast-${(seq.current += 1)}`;
-        setToasts((list) => [...list, { ...options, id }]);
-        const duration = options.duration ?? DEFAULT_DURATION;
+        if (single) {
+          for (const handle of timers.current.values()) clearTimeout(handle);
+          timers.current.clear();
+        }
+        setToasts((list) => [...(single ? [] : list), { ...options, id }]);
+        const duration = options.duration ?? defaultDuration;
         if (duration > 0 && duration !== Infinity) {
           timers.current.set(
             id,
@@ -370,7 +398,7 @@ export function createToastSystem(skin: ToastSkin) {
         }
         return id;
       },
-      [dismiss],
+      [dismiss, single, defaultDuration],
     );
 
     // Clear every pending timer on unmount so a dismissed provider leaves nothing
@@ -397,7 +425,7 @@ export function createToastSystem(skin: ToastSkin) {
             ToastCapsule (no region of their own) to avoid nesting live regions. */}
         <Portal>
           <View
-            style={stackStyles.stack}
+            style={[stackStyles.stack, { bottom: bottomInset + (insets?.bottom ?? 0), left: horizontalInset + (insets?.left ?? 0), right: horizontalInset + (insets?.right ?? 0) }]}
             role="status"
             accessibilityLiveRegion="polite"
             aria-live="polite"
@@ -405,6 +433,7 @@ export function createToastSystem(skin: ToastSkin) {
             {toasts.map((t) => (
               <View key={t.id} style={stackStyles.item}>
                 <ToastCapsule
+                  brief={brief}
                   message={t.message}
                   description={t.description}
                   action={t.action}
@@ -414,7 +443,7 @@ export function createToastSystem(skin: ToastSkin) {
                   warning={t.warning}
                   info={t.info}
                   icon={t.icon}
-                  onDismiss={() => dismiss(t.id)}
+                  onDismiss={brief ? undefined : () => dismiss(t.id)}
                 />
               </View>
             ))}
