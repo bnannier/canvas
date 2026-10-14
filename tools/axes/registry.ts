@@ -101,6 +101,8 @@ import { seriesTone } from "../../src/charts/shared/charts.styles.ts";
 import { periodStatus } from "../../src/charts/shared/status-strip.tsx";
 import { toneOf as sparklineTone, sizeOf as sparklineSize } from "../../src/charts/sparkline/sparkline.shared.tsx";
 
+import { frostedKindOf } from "../../src/style/glass-surface/material-resolution.ts";
+
 /** One resolver the characterization calls. */
 export interface AxisSubject<P> {
   /** `Component.axis`: the key of the resolver's record in test/fixtures/axes.json. */
@@ -226,6 +228,7 @@ export const SUBJECTS: readonly AnySubject[] = [
     notes: ["`raised` applies to the primary intent only."],
   }),
   subject({ id: "Button.iconBox", components: ["Button"], pages: ["button"], resolver: "src/atoms/button/button.shared.tsx#iconBoxOf", members: ["compactIcon", "mediumIcon", "largeIcon"], resolve: iconBoxOf }),
+  subject({ id: "GlassSurface.frost", components: ["GlassSurface"], pages: ["glass"], resolver: "src/style/glass-surface/material-resolution.ts#frostedKindOf", members: ["veil", "frosted"], resolve: frostedKindOf }),
   subject({ id: "Button.size", components: ["Button"], pages: ["button"], resolver: "src/atoms/button/button.shared.tsx#sizeOf", members: SIZES, resolve: buttonSize }),
   subject({ id: "ButtonGroup.kind", components: ["ButtonGroup"], pages: ["button-group"], resolver: "src/atoms/button-group/button-group.shared.tsx#kindOf", members: ["segmented", "split", "stepper", "spaced"], resolve: kindOf }),
   subject({ id: "ButtonGroup.size", components: ["ButtonGroup"], pages: ["button-group"], resolver: "src/atoms/button-group/button-group.shared.tsx#sizeOf", members: SIZES, resolve: buttonGroupSize }),

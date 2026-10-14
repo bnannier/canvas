@@ -1,9 +1,10 @@
 // Native iOS: intentional content frost and functional Apple Liquid Glass.
 import { View } from "react-native";
 import { FrostView, LiquidView } from "./material-runtime.ios.js";
+import { frostedKindOf } from "./material-resolution.js";
 import { useMaterialResolution } from "./use-material-theme.js";
 import {
-  GlassBox, CLEAR_INTENSITY, contrastStyle, frostFill, SHEER_FILL_OPACITY, materialFill,
+  GlassBox, FRAME_FROST_INTENSITY, CLEAR_INTENSITY, contrastStyle, frostFill, SHEER_FILL_OPACITY, materialFill,
   SpecularRim, surfaceIntensity, type GlassSurfaceProps,
 } from "./glass-surface.shared.js";
 
@@ -45,6 +46,7 @@ export function GlassSurface(props: GlassSurfaceProps) {
   const { theme, material: resolved } = useMaterialResolution(props);
   const { style, layer = "functional", brand, clear, interactive = false } = props;
   const solid = resolved.renderer === "solid";
+  const frame = frostedKindOf(props);
   const translucent = props.sheer && layer === "content";
   const fill = materialFill(style, props.stateBorder);
   const native = resolved.renderer === "liquid";
@@ -54,12 +56,13 @@ export function GlassSurface(props: GlassSurfaceProps) {
   // rim: the BlurView samples everything beneath it, so a fill there was blurred into the frost
   // it belongs to and dyed by its veil (`frostFill`, glass-surface-native-frost-self-sample-1).
   const material = solid ? null : native && LiquidView ? <>
-    {brand == null || props.tint != null ? fillLayer : null}
+    {(brand == null || props.tint != null) && frame == null ? fillLayer : null}
     <LiquidView glassEffectStyle={clear ? "clear" : "regular"} isInteractive={interactive} tintColor={brand} colorScheme={theme.dark ? "dark" : "light"} style={fill} />
+    {(brand == null || props.tint != null) && frame != null ? fillLayer : null}
   </> : <>
-    {FrostView ? <FrostView intensity={clear ? CLEAR_INTENSITY : surfaceIntensity(layer, translucent)} tint={theme.dark ? "dark" : "light"} style={fill} /> : null}
+    {FrostView ? <FrostView intensity={frame ? FRAME_FROST_INTENSITY[frame] : clear ? CLEAR_INTENSITY : surfaceIntensity(layer, translucent)} tint={theme.dark ? "dark" : "light"} style={fill} /> : null}
     {fillLayer}
-    <SpecularRim style={style} dark={theme.dark} inside={props.stateBorder} />
+    {frame == null ? <SpecularRim style={style} dark={theme.dark} inside={props.stateBorder} /> : null}
   </>;
   return <GlassBox {...props} style={contrastStyle(theme, style, props.stateBorder)} solid={solid} material={material} />;
 }
