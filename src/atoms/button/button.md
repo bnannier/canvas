@@ -22,6 +22,11 @@ a five-pixel icon gutter, and an 80% hover opacity. The default size is 12 pixel
 hierarchy. `external` opens `href` through the system browser on every platform,
 while keeping its browser link semantics.
 
+`scopeTrigger ghost steadyPress` preserves the project-scope pill, its action dot,
+12px label and original asymmetric inset. `filterTrigger ghost steadyPress`
+preserves the compact filter pill and muted 11.5px label. Supply the trailing
+chevron through `iconRight`, and announce the menu with `expanded` and `haspopup`.
+
 ## Usage
 
 A button's whole job is to fire `onPress`. Wire it to your own handler and every press runs it.
@@ -31,6 +36,16 @@ A button's whole job is to fire `onPress`. Wire it to your own handler and every
 ```
 
 ## Variants
+
+### Scope and filter triggers
+
+```tsx
+<Row comfortable alignCenter>
+  <Button scopeTrigger ghost steadyPress iconRight={<Icon chevronDown size={14} heavyStroke />}>All my projects</Button>
+  <Button filterTrigger ghost steadyPress iconRight={<Icon chevronDown size={13} heavyStroke muted />}>Filter by</Button>
+</Row>
+```
+
 
 ### Utility icon
 

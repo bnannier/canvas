@@ -18,6 +18,8 @@ export type Intent = "primary" | "secondary" | "destructive" | "outline" | "ghos
 export type Size = "small" | "base" | "large";
 
 export interface ButtonSkinOpts {
+  scopeTrigger?: boolean;
+  filterTrigger?: boolean;
   inlineLink?: boolean;
   foreground?: boolean;
   extraBold?: boolean;
@@ -172,7 +174,9 @@ export function webLinkInkOf(p: Pick<ButtonSkinOpts, "inverse" | "foreground">) 
 }
 
 /** Unboxed text actions win over utility-box metrics. */
-export function webBodyOf(p: Pick<ButtonSkinOpts, "inlineLink" | "utility">) {
+export function webBodyOf(p: Pick<ButtonSkinOpts, "scopeTrigger" | "filterTrigger" | "inlineLink" | "utility">) {
+  if (p.scopeTrigger) return "scope";
+  if (p.filterTrigger) return "filter";
   if (p.inlineLink) return "link";
   if (p.utility) return "utility";
   return "button";
@@ -210,6 +214,8 @@ const WEB_PAD: Record<Size, { v: number; h: number; ctaH: number }> = {
   large: { v: 10, h: 20, ctaH: 22 },
 };
 // Preserve Argus's exact 1.3 line-height for its small and base button sizes.
+const FILTER_TRIGGER_TYPE: TextStyle = { fontSize: 11.5, lineHeight: 14.95, fontWeight: "700" };
+const SCOPE_TRIGGER_TYPE: TextStyle = { fontSize: 12, lineHeight: 15.6, fontWeight: "700" };
 const INLINE_LINK_TYPE: Record<Size, TextStyle> = { small: FS(11.5, 14.95), base: FS(12, 15.6), large: FS(14, 18.2) };
 const WEB_TYPE: Record<Size, TextStyle> = {
   small: FS(11.5, 14.95),
@@ -234,6 +240,8 @@ export const webSkin: ButtonSkin = {
     const look = webLook(t, intent, o);
     const pad = WEB_PAD[size];
     const body = webBodyOf(o);
+    if (body === "scope") return { ...ROW, gap: 8, paddingVertical: 7, paddingLeft: 14, paddingRight: 12, borderRadius: shape.web.pill, borderWidth: 1, borderColor: t.border, backgroundColor: t["field-fill"] ?? t.input };
+    if (body === "filter") return { ...ROW, gap: 6, paddingVertical: 6, paddingLeft: 14, paddingRight: 10, borderRadius: shape.web.pill, borderWidth: 1, borderColor: t.border, backgroundColor: "transparent" };
     if (body === "link") return { ...ROW, gap: 5, backgroundColor: "transparent", padding: 0, borderWidth: 0 };
     if (body === "utility") {
       const box = UTILITY_BOX[o.iconBox!];
@@ -256,6 +264,9 @@ export const webSkin: ButtonSkin = {
   },
   label: (t, intent, size, o) => {
     const type = WEB_TYPE[size];
+    const body = webBodyOf(o ?? {});
+    if (body === "scope") return { ...SCOPE_TRIGGER_TYPE, color: t.foreground };
+    if (body === "filter") return { ...FILTER_TRIGGER_TYPE, color: t["muted-foreground"] };
     if (webBodyOf(o ?? {}) === "link") {
       return { ...INLINE_LINK_TYPE[size], fontWeight: o?.extraBold ? "800" : "700", color: webLook(t, "link", o).label };
     }
