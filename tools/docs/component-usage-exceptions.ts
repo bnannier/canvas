@@ -58,8 +58,8 @@ export const DOCS_USAGE_EXCEPTIONS: readonly DocsUsageException[] = [
     reason: "The Expo native stack needs a screen host that fills its available height.",
   },
   {
-    file: "docs/src/ui/page.tsx", owner: "content", tag: "ScrollView", attribute: "style", keys: ["backgroundColor", "flex"], occurrences: 1,
-    reason: "The page scroll host fills the native screen and supplies its root background.",
+    file: "docs/src/ui/page.tsx", owner: "content", tag: "ScrollView", attribute: "style", keys: ["flex"], occurrences: 1,
+    reason: "The page scroll host fills the native screen; it paints nothing, so the page look behind it shows through.",
   },
   {
     file: "docs/src/ui/page.tsx", owner: "content", tag: "ScrollView", attribute: "contentContainerStyle", keys: ["paddingBottom", "paddingTop", "width"], occurrences: 1,
@@ -102,15 +102,19 @@ export const DOCS_USAGE_EXCEPTIONS: readonly DocsUsageException[] = [
     reason: "The Sidebar example simulates a bounded app viewport so its real native drawer remains inside the preview.",
   },
   {
-    file: "docs/src/shell/navbar.tsx", owner: "WebNav", tag: "SafeAreaView", attribute: "style", keys: ["backgroundColor", "flex"], occurrences: 1,
-    reason: "The app's safe-area host fills the viewport and supplies the root background.",
+    file: "docs/src/shell/navbar.tsx", owner: "WebNav", tag: "SafeAreaView", attribute: "style", keys: ["flex"], occurrences: 1,
+    reason: "The app's safe-area host fills the viewport, with the page look as its first child.",
   },
   {
     file: "docs/src/shell/navbar.tsx", owner: "WebNav", tag: "View", attribute: "style", keys: ["bottom", "flex", "left", "minWidth", "pointerEvents", "position", "right", "top", "zIndex"], occurrences: 4,
     reason: "Stable route/landmark hosts size the viewport and position measured top/bottom app bars above the page scroller.",
   },
   {
-    file: "docs/src/app/(search)/search.tsx", owner: "NativeSearch", tag: "View", attribute: "style", keys: ["backgroundColor", "bottom", "flex", "left", "pointerEvents", "position", "right", "top"], occurrences: 2,
+    file: "docs/src/app/(search)/search.tsx", owner: "NativeSearch", tag: "View", attribute: "style", keys: ["bottom", "flex", "left", "pointerEvents", "position", "right", "top"], occurrences: 2,
     reason: "The native screen root fills the viewport; keyboard/safe-area bounds anchor the real Canvas results above the OS-owned search field.",
+  },
+  {
+    file: "docs/src/shell/page-backdrop.tsx", owner: "PageBackdrop", tag: "View", attribute: "style", keys: ["backgroundColor", "bottom", "left", "overflow", "pointerEvents", "position", "right", "top"], occurrences: 1,
+    reason: "Dark Factory's page look, docs-only scaffolding under design-language item 7: an untouchable layer fixed to the window behind the shell, clipping the drawing to it, over the gradient's last stop.",
   },
 ];

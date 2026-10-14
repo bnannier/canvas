@@ -23,7 +23,7 @@
  * instead.
  */
 import { expect, type Locator, type Page } from "@playwright/test";
-import { colorsFor } from "../../src/style/tokens.ts";
+import { PAGE_LOOK, lookFor } from "../../docs/src/shell/page-look.ts";
 
 export type Scheme = "dark" | "light";
 export type Surface = "solid" | "glass";
@@ -33,7 +33,7 @@ export type FormFactor = "phone" | "largePhone" | "tablet" | "laptop" | "desktop
 /**
  * A look the docs open in: a scheme, and for the light scheme the palette it paints.
  * Dark names no palette, since the kit paints its one dark palette whatever the link
- * says (`colorsFor` resolves it the same way). The id names a capture's directory.
+ * says (`lookFor` resolves it the same way). The id names a capture's directory.
  */
 export interface Look {
   id: "blush" | "mint" | "dark";
@@ -58,74 +58,74 @@ export const FIXED_TIME = new Date("2026-01-15T12:00:00Z");
 export const BASE_PATH = (process.env.E2E_BASE_PATH ?? "").replace(/\/+$/, "");
 
 /**
- * The page backdrop, as [r, g, b]: the fill the page's content sits on.
+ * The page look as painted: the page gradient's three stops, each as [r, g, b], from the
+ * top-left corner to the bottom-right.
  *
  * The docs are react-native-web, so the DOM carries only generated `css-*` class
  * names: there is no `.dark` class and no data attribute to read the scheme off.
  * Reading what the app actually paints is the only honest answer, and it has to be
- * read off the node that paints the backdrop. The largest opaque box is not that
- * node: a solid card paints the `card` token, opaque white in both light palettes,
- * and its bounds can run past the viewport on a long page, so on
- * /components/grid-lists the largest opaque box is a white card. Its luminance still
- * reads as light, which is how the scheme check got by on it; it names no palette.
+ * read off the node that paints the page. Since the docs took Dark Factory's page look
+ * (docs/src/shell/page-backdrop.tsx), no node paints a flat page fill: the page is the
+ * backdrop's SVG gradient, with its orbs over it, fixed behind the shell, and nothing
+ * between it and the content paints. So the read is the gradient's own stop colours, the
+ * computed `stop-color` of each stop under the backdrop's marker (`data-page-backdrop`),
+ * which is exactly what the renderer interpolates. The largest opaque box is not that
+ * node: a solid card paints the `card` token, opaque white in both light palettes, and
+ * its bounds can run past the viewport on a long page.
  *
- * The app marks its backdrop painters (web-only tooling attributes): the Page
- * scroller (`data-page-scroll`, docs/src/ui/page.tsx), and the web shell around every
- * route (`data-shell-backdrop`, docs/src/shell/navbar.tsx), which is what is painted
- * on a route with no Page mounted yet. A painter that is fully transparent shows its
- * parent's fill exactly, so the read walks up through those; one that is translucent
- * composites with what lies under it, and that reads as no opaque backdrop rather
- * than as a guess. Only a page with neither marker, which is not the docs app (the
- * baked static page under docs/public shadows /privacy and paints straight onto
- * body), falls back to the largest opaque background, with `body` in the scan.
+ * Only a page with no backdrop, which is not the docs app (the baked static page under
+ * docs/public shadows /privacy and paints straight onto body), falls back to the largest
+ * opaque background, with `body` in the scan, read as a one-stop look.
  *
  * Runs in the page, so it must stay self-contained.
  */
-function pageBackdrop(): [number, number, number] | null {
-  // [r, g, b, alpha] of a node's own background, or null for one that is not a color.
-  const fill = (el: Element): [number, number, number, number] | null => {
-    const m = /^rgba?\(([\d.]+),\s*([\d.]+),\s*([\d.]+)(?:,\s*([\d.]+))?\)$/.exec(
-      getComputedStyle(el).backgroundColor,
-    );
+function pageLook(): [number, number, number][] | null {
+  const parse = (value: string): [number, number, number, number] | null => {
+    const m = /^rgba?\(([\d.]+),\s*([\d.]+),\s*([\d.]+)(?:,\s*([\d.]+))?\)$/.exec(value);
     return m ? [Number(m[1]), Number(m[2]), Number(m[3]), m[4] === undefined ? 1 : Number(m[4])] : null;
   };
+  const backdrop = document.querySelector("[data-page-backdrop]");
+  if (backdrop) {
+    const stops = Array.from(backdrop.querySelectorAll("linearGradient stop")).map((stop) => parse(getComputedStyle(stop).stopColor));
+    if (stops.length !== 3 || stops.some((stop) => !stop || stop[3] < 1)) return null;
+    return stops.map((stop) => [stop![0], stop![1], stop![2]]);
+  }
   // Only an opaque surface says which scheme is being painted; the translucent scrims
   // and glass fills layered over the page fall below this.
   const OPAQUE = 0.9;
-  const painter = document.querySelector("[data-page-scroll]") ?? document.querySelector("[data-shell-backdrop]");
-  if (painter) {
-    for (let el: Element | null = painter; el; el = el.parentElement) {
-      const color = fill(el);
-      if (color && color[3] === 0) continue;
-      return color && color[3] >= OPAQUE ? [color[0], color[1], color[2]] : null;
-    }
-    return null;
-  }
   let bestArea = 0;
   let best: [number, number, number] | null = null;
   for (const el of Array.from(document.querySelectorAll("body, div"))) {
     const box = el.getBoundingClientRect();
     const area = box.width * box.height;
     if (area < 20000 || area <= bestArea) continue;
-    const color = fill(el);
+    const color = parse(getComputedStyle(el).backgroundColor);
     if (!color || color[3] < OPAQUE) continue;
     bestArea = area;
     best = [color[0], color[1], color[2]];
   }
-  return best;
+  return best ? [best] : null;
 }
 
-/** The page backdrop as [r, g, b], or null before an opaque one is painted. */
-export async function readBackground(page: Page): Promise<[number, number, number] | null> {
-  return page.evaluate(pageBackdrop).catch(() => null);
+/** The page look's stops as [r, g, b] each, or null before the page is painted. */
+export async function readPageLook(page: Page): Promise<[number, number, number][] | null> {
+  return page.evaluate(pageLook).catch(() => null);
 }
 
-/** The scheme the page backdrop is painted in, or null before an opaque one is painted. */
+/**
+ * The scheme the page is painted in, or null before it is painted: the luminance of the
+ * look's middle stop (Dark Factory's light stops are all light, its dark ones all dark).
+ */
 export async function readScheme(page: Page): Promise<Scheme | null> {
-  const rgb = await readBackground(page);
-  if (!rgb) return null;
-  const [r, g, b] = rgb;
+  const stops = await readPageLook(page);
+  if (!stops) return null;
+  const [r, g, b] = stops[Math.floor(stops.length / 2)]!;
   return (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255 < 0.5 ? "dark" : "light";
+}
+
+/** The page look a scheme and palette paint (dark wins over the palette), as [r, g, b] stops. */
+export function lookStops(scheme: Scheme, palette: Palette = "blush"): [number, number, number][] {
+  return PAGE_LOOK.palettes[lookFor(scheme, palette)].stops.map(channels);
 }
 
 /** A `#rrggbb` token as the [r, g, b] a computed style reports it. */
@@ -134,12 +134,11 @@ export function channels(hex: string): [number, number, number] {
   return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
 }
 
-// How far, per channel, a painted background may sit from the palette's token. A
-// computed style reports a hex fill exactly; the allowance is for a renderer that
-// rounds a composited fill, not for a different color. The two light backdrops are
-// close: blush #f5f2fe and mint #f0f7fd sit 5 apart on red and on green but only 1
-// apart on blue. The check measures the LARGEST channel distance, so the 5 is what
-// separates them, and the allowance stays below it.
+// How far, per channel, a painted stop may sit from the palette's. A computed style
+// reports a stop's colour exactly; the allowance is for a renderer that rounds it, not
+// for a different colour. The light looks are far apart (blush's first stop #fde3ee and
+// mint's #def4ec sit 31 apart on red), and the check measures the LARGEST channel
+// distance over the three stops, so the allowance stays far below what separates them.
 const PALETTE_TOLERANCE = 2;
 
 export interface GotoOptions {
@@ -171,9 +170,9 @@ export interface GotoOptions {
  * `emulateMedia` matters for exactly one page: the baked static /privacy export
  * follows prefers-color-scheme, since it is plain HTML and never sees the seed.
  *
- * In the light scheme the painted backdrop is then held to the palette's own
- * `background` token (`colorsFor`), since a light page in the wrong palette reads as
- * light all the same. That page without an app has no palette axis at all: a
+ * In the light scheme the painted page look is then held to the palette's own stops
+ * (`PAGE_LOOK`, docs/src/shell/page-look.ts), since a light page in the wrong palette
+ * reads as light all the same. That page without an app has no palette axis at all: a
  * palette asked for by name fails there rather than passing unpainted.
  */
 export async function gotoDocs(page: Page, route: string, options: GotoOptions = {}): Promise<void> {
@@ -192,7 +191,7 @@ export async function gotoDocs(page: Page, route: string, options: GotoOptions =
     await page.locator(`html[data-look="${scheme} ${surface} ${palette}"]`).waitFor({ state: "attached", timeout: 20_000 });
   }
   // What the poll saw decides what a failure says. A page read in the wrong look, or
-  // with no opaque backdrop, has a paint problem; a page whose evaluation was still out
+  // with no page look painted, has a paint problem; a page whose evaluation was still out
   // when the wait ran out stopped answering, whatever it painted. Blaming the paint for
   // the second sent the first look at a Firefox failure (Deploy 36101320198) after a
   // cause the trace ruled out: that page was painted dark, and the detector's first
@@ -211,7 +210,7 @@ export async function gotoDocs(page: Page, route: string, options: GotoOptions =
       }, { timeout: 20_000 })
       .toBe(scheme);
   } catch (error) {
-    const lastReading = `the last ${last ?? "finding no opaque backdrop"}`;
+    const lastReading = `the last ${last ?? "finding no page look painted"}`;
     throw new Error(
       answering
         ? `${route} never painted in ${scheme}: ${readings} readings, ${lastReading} (a missing font or a failed bundle both look like this)`
@@ -225,14 +224,15 @@ export async function gotoDocs(page: Page, route: string, options: GotoOptions =
     return;
   }
   // The palette lands in the same commit as the scheme (one transition applies the
-  // whole seed), so by now the backdrop is the palette's, or it is the wrong one.
-  const expected = channels(colorsFor(palette, "light").background);
-  const painted = await readBackground(page);
-  const distance = painted ? Math.max(...painted.map((channel, i) => Math.abs(channel - expected[i]))) : Infinity;
+  // whole seed), so by now the page look is the palette's, or it is the wrong one.
+  const expected = lookStops("light", palette);
+  const painted = await readPageLook(page);
+  const distance = painted && painted.length === expected.length
+    ? Math.max(...painted.flatMap((stop, i) => stop.map((channel, c) => Math.abs(channel - expected[i]![c]!))))
+    : Infinity;
   if (distance > PALETTE_TOLERANCE) {
-    throw new Error(
-      `${route} painted in light but not in ${palette}: the backdrop is ${painted ? `rgb(${painted.join(", ")})` : "not opaque"} where ${palette}'s is rgb(${expected.join(", ")})`,
-    );
+    const show = (stops: [number, number, number][] | null) => (stops ? stops.map((stop) => `rgb(${stop.join(", ")})`).join(" / ") : "not painted");
+    throw new Error(`${route} painted in light but not in ${palette}: the page look is ${show(painted)} where ${palette}'s is ${show(expected)}`);
   }
 }
 
