@@ -45,7 +45,12 @@ function layersOf(container: Element) {
   const material = container.querySelector('[data-testid="glass-material"]');
   return material ? Array.from(material.children) as HTMLElement[] : [];
 }
-const kind = (layer: HTMLElement) => layer.getAttribute("data-testid") ?? (layer.style.boxShadow ? "rim" : layer.style.backgroundColor ? "fill" : "other");
+// The rim is a frame (`glass-rim`) holding the rim's shadow, in one view or in bands (SpecularRim).
+const kind = (layer: HTMLElement) => {
+  const id = layer.getAttribute("data-testid");
+  return id === "glass-rim" ? "rim" : id ?? (layer.style.backgroundColor ? "fill" : "other");
+};
+const rimShadow = (layer: HTMLElement) => (layer.firstElementChild as HTMLElement).style.boxShadow;
 const channels = (color: string) => color.replace(/\s/g, "").replace(/^rgba?\(/, "").replace(/\)$/, "").split(",").slice(0, 3).join(",");
 const hexChannels = (hex: string) => [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16)).join(",");
 
@@ -72,7 +77,7 @@ describe("the iOS host on iOS 26 (Liquid Glass available)", () => {
       expect(liquid).toHaveLength(0);
       expect(frost).toHaveLength(1);
       expect(layersOf(container).map(kind)).toEqual(["fill", "frost", "rim"]);
-      expect(layersOf(container)[2]!.style.boxShadow).toContain("inset");
+      expect(rimShadow(layersOf(container)[2]!)).toContain("inset");
       expect(frost[0]).toMatchObject({ intensity: "layer" in props ? CONTENT_INTENSITY : GLASS_INTENSITY, tint: "light" });
     });
   }
@@ -120,7 +125,7 @@ describe("the iOS host before iOS 26 (frost)", () => {
     expect(layersOf(container).map(kind)).toEqual(["frost", "fill", "rim"]);
     const solved = brandTint(lightColors.primary, lightColors.background, brandInk(lightColors, lightColors.primary));
     expect(channels(layersOf(container)[1]!.style.backgroundColor)).toBe(channels(solved));
-    expect(layersOf(container)[2]!.style.boxShadow).toBe(SPECULAR_RIM.light);
+    expect(rimShadow(layersOf(container)[2]!)).toBe(SPECULAR_RIM.light);
   });
 
   it("paints a boundary fill over the blur, so the off Switch's systemGray3 renders as solved", () => {
@@ -140,7 +145,7 @@ describe("the iOS host before iOS 26 (frost)", () => {
     stubs(ios18);
     const { container } = render(<ThemeProvider dark glass><GlassSurface layer="content" style={SHAPE} /></ThemeProvider>);
     expect(frost[0]!.tint).toBe("dark");
-    expect(layersOf(container)[2]!.style.boxShadow).toBe(SPECULAR_RIM.dark);
+    expect(rimShadow(layersOf(container)[2]!)).toBe(SPECULAR_RIM.dark);
   });
 });
 
