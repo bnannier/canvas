@@ -2,6 +2,7 @@ import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.j
 import { forwardRef, type ReactNode } from "react";
 import {
   ActivityIndicator,
+  Linking,
   type GestureResponderEvent,
   type MouseEvent,
   type NativeSyntheticEvent,
@@ -71,6 +72,14 @@ export interface ButtonProps extends MeasureProps {
   quiet?: boolean;
   /** The reference link hover dims to 85% while keeping its normal ink. */
   softHover?: boolean;
+  /** Inline text action: compact type, no box, and an 80% pointer-hover opacity. */
+  inlineLink?: boolean;
+  /** Foreground ink on an inline text action. */
+  foreground?: boolean;
+  /** Extra-bold inline text action label. */
+  extraBold?: boolean;
+  /** Open href in the system browser on every platform. */
+  external?: boolean;
   /** Align a row of short workflow actions on the same minimum measure. */
   consistent?: boolean;
   /** A roomier hit surround for a compact featured action. */
@@ -177,7 +186,7 @@ export function createButton(skin: ButtonSkin) {
     const size = sizeOf(props);
 
     const iconBox = iconBoxOf(props);
-    const opts = { utility: iconBox != null, iconBox, wideIcon: !!props.wideIcon, circle: !!props.circle, inset: !!props.inset, inverse: !!props.inverse, quiet: !!props.quiet, softHover: !!props.softHover, consistent: !!props.consistent, comfortable: !!props.comfortable, icon: !!icon, block: !!block, dim: !!(disabled || loading), disabled: !!disabled };
+    const opts = { inlineLink: !!props.inlineLink, foreground: !!props.foreground, extraBold: !!props.extraBold, utility: iconBox != null, iconBox, wideIcon: !!props.wideIcon, circle: !!props.circle, inset: !!props.inset, inverse: !!props.inverse, quiet: !!props.quiet, softHover: !!props.softHover, consistent: !!props.consistent, comfortable: !!props.comfortable, icon: !!icon, block: !!block, dim: !!(disabled || loading), disabled: !!disabled };
     const sizing = useSizing(props);
     const container = skin.container(tokens, intent, size, opts);
     // Under glass a button that paints a surface (the skin says which) is a CONTROL-layer
@@ -239,7 +248,7 @@ export function createButton(skin: ButtonSkin) {
         <Pressable
           ref={hostRef}
           {...(anchor ?? undefined)}
-          onPress={onPress}
+          onPress={props.external && href ? (event) => { event.preventDefault(); void Linking.openURL(href); } : onPress}
           onHoverIn={onHoverIn}
           onHoverOut={onHoverOut}
           onFocus={onFocus}
@@ -247,7 +256,7 @@ export function createButton(skin: ButtonSkin) {
           disabled={disabled || loading}
           testID={testID}
           {...target}
-          accessibilityRole={href != null ? "link" : "button"}
+          accessibilityRole={href != null || props.inlineLink ? "link" : "button"}
           accessibilityLabel={accessibilityLabel}
           accessibilityState={{ busy: !!loading, disabled: !!(disabled || loading) }}
           aria-busy={loading ? true : undefined}

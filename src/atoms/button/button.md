@@ -16,6 +16,12 @@ horizontal room; `circle` rounds it fully. Pair with `ghost` for a plain surface
 the resting opacity, and `count` carries a compact notification badge. The button
 still owns its accessible name, hover wash, and native touch-target extension.
 
+Use `inlineLink link small` for an inline text action: 11.5-pixel bold text,
+a five-pixel icon gutter, and an 80% hover opacity. The default size is 12 pixels;
+`large` is 14. `extraBold`, `foreground`, and `inverse` preserve editorial action
+hierarchy. `external` opens `href` through the system browser on every platform,
+while keeping its browser link semantics.
+
 ## Usage
 
 A button's whole job is to fire `onPress`. Wire it to your own handler and every press runs it.
@@ -68,7 +74,7 @@ The variant only changes how a button looks; every one of them fires `onPress` t
 ### Link
 
 ```tsx
-<Button link>Save changes</Button>
+<Button inlineLink link small steadyPress>Save changes</Button>
 ```
 
 ### Small
