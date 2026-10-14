@@ -8,6 +8,10 @@ import { Button as WebButton } from "../../atoms/button/button.js";
 import { Input as WebInput } from "../../atoms/input/input.js";
 import * as s from "./dialog.styles.js";
 import { type Size, type DialogSkin } from "./dialog.styles.js";
+import { Icon } from "../../atoms/icon/icon.js";
+import { OverlayScrollView } from "../../style/overlay-scroll.js";
+import { useSafeAreaInsetsOrNull } from "../../style/safe-area.js";
+import { scrimFill } from "../../style/scrim.js";
 import { glassMessageStyle } from "../../style/glass-message.js";
 import { useHeldScrim } from "../../style/glass-surface/scrim-frost.js";
 
@@ -35,6 +39,12 @@ import { useHeldScrim } from "../../style/glass-surface/scrim-frost.js";
 //   more than one is set.
 
 export interface DialogProps {
+  /** Structured form: a named header and close action above scrolling body/footer content. */
+  form?: boolean;
+  /** Custom actions rendered after the form body, within its scrollport. */
+  footer?: ReactNode;
+  /** Maximum form panel width in pixels; defaults to 560. */
+  panelWidth?: number;
   children?: ReactNode;
   // Content (strings, for the children-less / data-driven case).
   title?: string;
@@ -168,6 +178,8 @@ export function createDialog(skin: DialogSkin, parts: DialogParts = {}) {
 
     const size = sizeOf(props);
     const overlay = props.overlay === true;
+    const insets = useSafeAreaInsetsOrNull();
+    const form = !!props.form;
     const accessibilityLabel = props.accessibilityLabel;
 
     const confirm = () => {
@@ -272,30 +284,22 @@ export function createDialog(skin: DialogSkin, parts: DialogParts = {}) {
         </View>
       );
 
-    // Optional trigger button plus the modal. The modal is a contained dim
-    // backdrop: a centered scrim with presence in the preview (explicit
-    // minHeight) so the panel reads as a modal within the area.
+    // The modal is a contained dim backdrop: a centered scrim with presence in the preview
+    // (explicit minHeight) so the panel reads as a modal within the area. A form dialog's dim
+    // is its veil, so its backdrop paints none and pads for the safe area.
     const backdrop = [
       skin.backdrop(tokens),
       trigger != null && !overlay ? s.backdropTriggerGap : null,
       overlay ? s.backdropOverlay : s.backdropLayout,
+      form ? { backgroundColor: "transparent", paddingTop: 20 + (insets?.top ?? 0), paddingBottom: 20 + (insets?.bottom ?? 0), paddingLeft: 20 + (insets?.left ?? 0), paddingRight: 20 + (insets?.right ?? 0) } : null,
     ];
     // Under glass on the web the dim moves onto the scrim's blur layer (useHeldScrim).
     const scrim = useHeldScrim(backdrop);
-    return (
-      <View testID={testID} style={s.root}>
-        {trigger != null ? (
-          <View style={s.triggerWrap}>
-            <Button outline small onPress={() => setOpen(true)}>
-              {trigger}
-            </Button>
-          </View>
-        ) : null}
-        {open ? (
+    const presentation = (
           <Present overlay={overlay}>
           <EscapeLayerProvider scope={escapeScope}>
           <View
-            ref={panelRef}
+            ref={panelRef} testID={form && overlay && trigger == null ? testID : undefined}
             tabIndex={-1}
             // The overlay carries the dialog semantics so assistive tech announces
             // it. `role` ("dialog", or "alertdialog" for a destructive confirm) +
@@ -311,28 +315,43 @@ export function createDialog(skin: DialogSkin, parts: DialogParts = {}) {
             onAccessibilityEscape={escapeScope.onAccessibilityEscape}
             aria-modal={true}
             aria-label={accessibilityLabel}
-            aria-labelledby={children == null && title != null ? titleId : undefined}
-            aria-describedby={children == null && description != null ? descriptionId : undefined}
+            aria-labelledby={accessibilityLabel == null && (form || children == null) && title != null ? titleId : undefined}
+            aria-describedby={(form || children == null) && description != null ? descriptionId : undefined}
             style={scrim.style}
           >
             {/* Under glass on the web the scrim also blurs what it dims (GS-6): the dim and
                 the blur are one layer of their own beneath the card (useHeldScrim), so the
                 blur never samples the dim, and this node, which holds the card, wears
-                neither (a blur here would cut the card's frost off from the page). */}
-            {scrim.layer}
+                neither (a blur here would cut the card's frost off from the page). A form
+                dialog's dim is its own veil instead. */}
+            {form ? <GlassSurface veil tint={scrimFill(tokens, 0.6)} pointerEvents="none" style={[s.dismissBackdrop, { backgroundColor: scrimFill(tokens, 0.6) }]} /> : scrim.layer}
             {props.dismissible ? (
               <Pressable accessible={false} focusable={false} tabIndex={-1}
                 importantForAccessibility="no" style={s.dismissBackdrop} onPress={cancel} />
             ) : null}
-            <View style={[s.cardSizing, s.cardWidth(size), style]}>
-            <GlassSurface style={[s.cardLayout, skin.card(tokens)]}>
+            <View style={[s.cardSizing, form ? { maxWidth: props.panelWidth ?? 560 } : s.cardWidth(size), style]}>
+            <GlassSurface style={[s.cardLayout, skin.card(tokens), form ? skin.form?.card(tokens) : null]}>
               {/* The panel content region wraps the content in a
                   KeyboardAvoidingView so the iOS keyboard never
                   covers a form field (padding behavior on iOS; a plain passthrough
                   View on web/Android). Both shrink when the overlay bounds the content. */}
               <View style={s.contentSizing}>
                 <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined} style={s.contentSizing}>
-                  {children != null ? (
+                  {form ? (
+                    <>
+                      <View style={{ flexDirection: "row", gap: 12, alignItems: "flex-start" }}>
+                        <View style={{ flex: 1, gap: 3 }}>
+                          {title != null ? <Text nativeID={titleId} role="heading" style={skin.form?.title(tokens) ?? skin.title(tokens)}>{title}</Text> : null}
+                          {description ? <Text nativeID={descriptionId} style={skin.form?.description(tokens) ?? skin.body(tokens)}>{description}</Text> : null}
+                        </View>
+                        <Button icon mediumIcon circle ghost inset steadyPress accessibilityLabel="Close" onPress={cancel} iconLeft={<Icon x muted heavyStroke size={15} />} />
+                      </View>
+                      <OverlayScrollView style={{ marginTop: 18 }} contentContainerStyle={{ gap: 18, paddingBottom: 12 }} keyboardShouldPersistTaps="handled">
+                        {children}
+                        {props.footer}
+                      </OverlayScrollView>
+                    </>
+                  ) : children != null ? (
                     children
                   ) : (
                     <>
@@ -367,7 +386,22 @@ export function createDialog(skin: DialogSkin, parts: DialogParts = {}) {
           </View>
           </EscapeLayerProvider>
           </Present>
+    );
+    if (form && overlay && trigger == null) return open ? presentation : null;
+
+    // Optional trigger button plus the modal. The modal is a contained dim
+    // backdrop: a centered scrim with presence in the preview (explicit
+    // minHeight) so the panel reads as a modal within the area.
+    return (
+      <View testID={testID} style={s.root}>
+        {trigger != null ? (
+          <View style={s.triggerWrap}>
+            <Button outline small onPress={() => setOpen(true)}>
+              {trigger}
+            </Button>
+          </View>
         ) : null}
+        {open ? presentation : null}
       </View>
     );
   };
