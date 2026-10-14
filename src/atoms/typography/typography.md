@@ -2,6 +2,19 @@
 
 Type scale classes for headings, body text, and helper styles.
 
+Argus reading roles include `subheading`, `label`, `micro`, `tag`, `eyebrow`,
+`eyebrowLg`, `stageLabel`, `statValue`, `metricValue`, and `formValue`. These extend
+Typography itself. Semantic leading and tracking props preserve the reference's
+fractional web metrics; for example `labelLeading` is the compact label line box
+and `wideTracking` its uppercase eyebrow tracking. `extraBold` selects the 800 face.
+The owner's exact-reference directive preserves the existing 9.5px eyebrows.
+
+`foreground`, `inverse`, `action`, `actionForeground`, and `info` name the ink;
+`hue` gives a stage its theme-aware identity text. `inverseHint`, `inverseSubtle`,
+`inverseMuted`, `inverseSoft`, and `inverseFaint` express the reference's hierarchy
+on branded surfaces. `numberOfLines` truncates a reading block, and accessible
+labels and roles stay with the text. Existing roles and defaults keep working.
+
 ## Usage
 
 ```tsx
