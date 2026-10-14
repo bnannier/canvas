@@ -4,7 +4,7 @@ import { type ReactNode } from "react";
 import { Text, TextInput, View, type ViewStyle } from "react-native";
 import { ThemeProvider } from "../src/style/theme.tsx";
 import { lightColors } from "../src/style/tokens.ts";
-import { GlassPane, paneStyle, PANE_SIBLING_INPUT } from "../src/style/glass-surface/glass-pane.tsx";
+import { GlassPane, paneHost, paneStyle, PANE_HOST, PANE_SIBLING_INPUT } from "../src/style/glass-surface/glass-pane.tsx";
 import { GlassSurface } from "../src/style/glass-surface/glass-surface.tsx";
 import { ButtonGroup } from "../src/atoms/button-group/button-group.tsx";
 import { contrastBorderFor } from "../src/style/glass-surface/glass-surface.shared.tsx";
@@ -17,6 +17,8 @@ import { Input as AndroidInput } from "../src/atoms/input/input.android.tsx";
 import { Select as AndroidSelect } from "../src/atoms/select/select.android.tsx";
 import { Switch as AndroidSwitch } from "../src/atoms/switch/switch.android.tsx";
 import { Textarea as AndroidTextarea } from "../src/atoms/textarea/textarea.android.tsx";
+import { Input } from "../src/atoms/input/input.tsx";
+import { Textarea } from "../src/atoms/textarea/textarea.tsx";
 import { Steps as AndroidSteps } from "../src/organisms/steps/steps.android.tsx";
 
 // GlassPane's geometry (the owner's GP-1 decision, audit/DECISIONS.md): under glass the
@@ -418,4 +420,61 @@ describe("a pane is never interactive glass", () => {
       expect(seen).toBeGreaterThan(40);
     });
   }
+});
+
+// glass-pane-hoisted-pane-1: a pane orders itself behind its host's content with `zIndex: -1`,
+// inside the stacking context its host forms. A React Native Web View always forms one, but
+// natively a host whose paint `paneStyle` clears under glass may have nothing left that makes
+// it a view of its own: iOS's and Android's renderers then flattened it and handed the pane to
+// the nearest ancestor view, where `zIndex: -1` sorted it beneath every earlier sibling (a
+// Badge's frost drawn under the text before it; 11 of the Select page's 39 materials sat in
+// the page's content view before GlassBox's own host kept its view). Every pane host is a
+// stacking context of its own under glass (`isolation`, through `paneStyle` or `paneHost`),
+// which keeps it a native view, and nothing changes in solid mode.
+describe("a pane host is a stacking context of its own under glass", () => {
+  // A host's isolation as the native build receives it: React Native Web prints the style
+  // prop, which iOS and Android read to keep the view.
+  const isolated = (node: Element) => (node as HTMLElement).style.isolation === "isolate";
+
+  it("paneStyle and paneHost make the host one under glass and leave solid untouched", () => {
+    const flat = (style: ReturnType<typeof paneStyle>) => Object.assign({}, ...[style].flat(3).filter(Boolean)) as Record<string, unknown>;
+    expect(flat(paneStyle(true, SHAPE)).isolation).toBe("isolate");
+    expect(flat(paneStyle(true, SHAPE, true)).isolation).toBe("isolate");
+    expect(paneStyle(false, SHAPE)).toBe(SHAPE);
+    expect(paneHost(true)).toBe(PANE_HOST);
+    expect(paneHost(false)).toBeNull();
+  });
+
+  // Every pane host in the shared list, and the bare text fields (whose pane sits in a
+  // wrapper beside the input) without a label, on every skin.
+  const EXTRA: { name: string; node: ReactNode }[] = [
+    { name: "bare Input", node: <Input placeholder="Search" /> },
+    { name: "bare Textarea", node: <Textarea placeholder="Notes" /> },
+  ];
+  for (const platform of ["web", "ios", "android"] as const) {
+    it(`every pane's host is isolated under glass (${platform} skins)`, async () => {
+      let seen = 0;
+      for (const host of [...PANE_HOSTS, ...EXTRA] as (PaneHost | { name: string; node: ReactNode; act?: undefined })[]) {
+        const node = platform === "web" ? host.node : onPlatform(host.node, PLATFORM_PARTS[platform]);
+        const result = render(<ThemeProvider light glass>{node}</ThemeProvider>);
+        host.act?.(result as never);
+        await new Promise((resolve) => setTimeout(resolve, 10));
+        for (const pane of panesIn(result.container)) {
+          seen++;
+          expect(isolated(pane.parentElement!), `${host.name}: the host of a pane`).toBe(true);
+        }
+        result.unmount();
+      }
+      expect(seen).toBeGreaterThan(40);
+    });
+  }
+
+  it("isolates nothing in solid mode", async () => {
+    for (const host of PANE_HOSTS) {
+      const result = render(<ThemeProvider light solid>{host.node}</ThemeProvider>);
+      host.act?.(result);
+      expect(Array.from(result.container.querySelectorAll("*")).filter(isolated).map((node) => node.tagName), host.name).toEqual([]);
+      result.unmount();
+    }
+  });
 });

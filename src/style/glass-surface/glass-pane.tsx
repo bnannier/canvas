@@ -106,9 +106,36 @@ export function GlassPane({ layer = "control", shape, stateBorder = false, tint,
 }
 
 // The pane paints beneath every sibling inside its host, on every platform: each host is
-// a stacking context (a React Native Web View is `position: relative` with `z-index: 0`),
-// so a negative order keeps it above the host's own background and below its content.
+// a stacking context (a React Native Web View is `position: relative` with `z-index: 0`,
+// and natively `paneStyle` makes it one, `PANE_HOST`), so a negative order keeps it above
+// the host's own background and below its content.
 const BEHIND: ViewStyle = { zIndex: -1 };
+
+/**
+ * What makes a node the stacking context its pane orders itself in: `isolation: "isolate"`.
+ * A React Native Web View is one already. Natively a node is one only when something makes it
+ * a view of its own, and a host whose paint `paneStyle` clears under glass may have nothing
+ * left that does: iOS's and Android's renderers then flatten it away and hand its children to
+ * the nearest ancestor view, where the pane's `zIndex: -1` sorts it beneath every earlier
+ * sibling there (a Badge's frost drawn under the text before it). Isolation keeps the host a
+ * view of its own on every platform, as GlassBox's `collapsable={false}` keeps its own host,
+ * and paints nothing: Android offscreens a group only for a child's blend mode, and a browser
+ * makes a backdrop root of a filter, never of isolation, so the pane's frost still samples the
+ * page. `paneStyle` adds it under glass; a host that renders a pane without `paneStyle` (a
+ * wrapper with no paint of its own) adds it where its pane renders.
+ */
+export const PANE_HOST: ViewStyle = { isolation: "isolate" };
+
+/**
+ * `PANE_HOST` for a node that renders a GlassPane without handing its style to `paneStyle` (a
+ * wrapper with no paint of its own around a field and its pane, a pressable cell whose pane is
+ * its indicator), wherever the pane renders, and null everywhere else, so the solid tree is
+ * byte-identical. `appearance` is what the pane mounts from, as for `paneStyle`.
+ */
+export function paneHost(appearance: boolean | ThemeValue): ViewStyle | null {
+  const glass = typeof appearance === "boolean" ? appearance : isGlass(appearance);
+  return glass ? PANE_HOST : null;
+}
 
 /**
  * The pane's own shape: the host's corner radii and `borderCurve`, and nothing else. Inside
@@ -134,6 +161,9 @@ function paneShape(shape: StyleProp<ViewStyle>, inside: boolean): ViewStyle {
  *   GlassBox keeps one over its material; give the pane `stateBorder` too, so it sits
  *   flush inside it. Under Increase Contrast the contrasting border does not overwrite it.
  *
+ * Under glass the node is also a stacking context of its own (`PANE_HOST`), so the pane
+ * stays inside it on every platform.
+ *
  * Hand it the node's whole box, every style that sets its padding or its border: a padding
  * set after it would replace the padding a border became. An absolutely placed child of
  * the node counts its offsets from the grown padding box, so it takes `panePlaced` to keep
@@ -150,7 +180,7 @@ export function paneStyle(appearance: boolean | ThemeValue, style: StyleProp<Vie
   const glass = typeof appearance === "boolean" ? appearance : isGlass(appearance);
   if (!glass) return typeof appearance !== "boolean" && appearance.increasedContrast
     ? [style, contrastBorderFor(appearance.tokens, style, stateBorder)] : style;
-  return [style, stateBorder ? clearedPaint(style, true) : borderAsPadding(style)];
+  return [style, stateBorder ? clearedPaint(style, true) : borderAsPadding(style), PANE_HOST];
 }
 
 /**
