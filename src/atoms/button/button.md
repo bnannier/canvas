@@ -6,6 +6,9 @@ On the web small and default buttons retain Argus's exact 1.3 label line height 
 
 Pass `ref` to access the interactive Pressable, including link buttons. Use `useRef<ComponentRef<typeof Button>>(null)` from React, or `useRef<View>(null)` with React Native's `View` type. Object and callback refs are supported and detach on unmount. Calling `ref.current?.focus()` or `.blur()` delegates to the host without activating the control. Browser focus is supported; native focus depends on the platform and React Native version, and is separate from accessibility focus.
 
+`softHover` keeps the reference link’s 85% hover opacity. Inverse actions use
+their translucent white hover wash over a branded surface.
+
 ## Usage
 
 A button's whole job is to fire `onPress`. Wire it to your own handler and every press runs it.
