@@ -14,7 +14,7 @@
 import { readFileSync, writeFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, resolve } from "node:path";
-import { SOURCES, ALIASES, REQUIRED_NAMES } from "./icons.ts";
+import { SOURCES, ALIASES, REQUIRED_NAMES, REFERENCE_PATHS } from "./icons.ts";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const repo = resolve(here, "../..");
@@ -106,7 +106,7 @@ for (const source of [...new Set(SOURCES)]) {
   }
   if (bad) { skipped.push(source); continue; }
   seen.set(name, source);
-  entries.push({ name, label: kebab(name), shapes, source });
+  entries.push({ name, label: kebab(name), shapes: REFERENCE_PATHS[name] ? [{ t: "path", d: REFERENCE_PATHS[name]! }] : shapes, source });
 }
 
 entries.sort((a, b) => a.name.localeCompare(b.name));

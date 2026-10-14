@@ -50,6 +50,14 @@ export interface IconInternalProps {
 }
 
 export interface IconProps extends IconGlyphProps, IconInternalProps {
+  /** Strong action/link stroke from the Argus reference. */
+  heavyStroke?: boolean;
+  /** Standard emphasized metadata stroke. */
+  boldStroke?: boolean;
+  /** The medium toolbar stroke. */
+  mediumStroke?: boolean;
+  /** The fine navigation stroke. */
+  regularStroke?: boolean;
   // Name axis (one boolean per glyph, first-match precedence, default shield) is
   // supplied by IconGlyphProps, generated in ./icon.glyphs.ts from tools/icongen.
 
@@ -138,12 +146,14 @@ function Glyph({
   shapes,
   size,
   stroke,
+  strokeWidth,
   testID,
   style,
 }: {
   shapes: Shape[];
   size: number;
   stroke: string;
+  strokeWidth: number;
   testID?: string;
   style?: LayoutStyle;
 }) {
@@ -154,7 +164,7 @@ function Glyph({
       viewBox="0 0 24 24"
       fill="none"
       stroke={stroke}
-      strokeWidth={ICON_STROKE_WIDTH}
+      strokeWidth={strokeWidth}
       strokeLinecap="round"
       strokeLinejoin="round"
       testID={testID}
@@ -175,6 +185,7 @@ export function Icon(props: IconProps) {
       shapes={ICONS[nameOf(props)]}
       size={props.size ?? 24}
       stroke={strokeOf(props, tokens)}
+      strokeWidth={props.heavyStroke ? 2.2 : props.boldStroke ? 2 : props.mediumStroke ? 1.9 : props.regularStroke ? 1.8 : ICON_STROKE_WIDTH}
       // When a wrapper View is the root it carries the testID instead.
       testID={wrapped ? undefined : props.testID}
       style={wrapped ? undefined : props.style}
