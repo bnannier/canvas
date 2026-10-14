@@ -3,13 +3,8 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Card, CardContent, CardMedia, Typography } = scope;
+  const { Card } = scope;
   return (
-<Card flush>
-  <CardMedia src="/kira-tanaka.jpg" alt="Portrait of Kira Tanaka" />
-  <CardContent>
-    <Typography h5 semibold>Kira Tanaka</Typography>
-  </CardContent>
-</Card>
+<Card title="Recent activity" body="Two events today." />
   );
 }

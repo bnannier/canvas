@@ -33,6 +33,41 @@ the hover lift and native ripple.
 
 ## Variants
 
+### Featured approval
+
+`featured` preserves Argus's illustrated approval banner. Supply the identity,
+eyebrow, stage badge, summary, gate caption, metadata and domain action controls.
+`stacked` places the illustration above the content at the app's compact tier.
+Its existing two-pixel hover lift retains the resting shadow.
+
+```tsx
+<Card featured stacked hue={285} initials="B" title="Blueprint" description="v3.0" eyebrow="Awaiting approval · Architect gate" badge="Architecture" body="Proposes service boundaries for pricing and money paths." caption="A human signs every money path." metadata="Commerce · $2.1k / 30d" actions={<Button primary small>Approve</Button>} />
+```
+
+### Artwork alone
+
+Give `artwork` a parent with definite height. It paints the authored featured or
+promotional artwork without text, illustration, padding or shadow. Add
+`illustration` with children for the original 12px inset around an identity.
+
+```tsx
+<Row cozy>
+  <Column fill flush style={{ height: 100 }}><Card featured artwork /></Column>
+  <Column fill flush style={{ height: 100 }}><Card promo artwork /></Column>
+</Row>
+```
+
+### Promotional artwork
+
+```tsx
+<Card promo title="Gates come down only with receipts." body="Autonomy charter, circuit breakers, all as code." actions={<Button inlineLink link small extraBold inverse>Read the charter</Button>} />
+```
+
+Artwork uses the authored palette stops (`featured-start/middle/end`,
+`featured-stack`, and `promo-start/middle/end`) mirrored by the native and CSS
+tokens. It stays opaque identity content in glass mode.
+
+
 ### Linked references
 
 `referenceInline`, `referenceStacked`, `referenceTile` and `referenceDetail`

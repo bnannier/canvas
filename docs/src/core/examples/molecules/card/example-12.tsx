@@ -3,11 +3,13 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Card, Column } = scope;
+  const { Card, Icon } = scope;
   return (
-<Column relaxed>
-  <Card onPress={() => {}} title="Scout" description="Research agent, v2.3" />
-  <Card onPress={() => {}} title="Mint" description="Release agent, v1.8" />
-</Column>
+<Card
+  title="Identity"
+  icon={<Icon user size={16} />}
+  body="Name, primary email, and sign-in methods."
+  footer="Updated 2 minutes ago"
+/>
   );
 }

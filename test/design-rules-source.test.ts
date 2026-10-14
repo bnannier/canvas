@@ -292,7 +292,11 @@ describe("widths come from the parent", () => {
     for (const { file, text } of sources) {
       text.split("\n").forEach((line, i) => {
         for (const m of line.matchAll(/maxWidth:\s*(\d+)/g)) {
-          if (!steps.has(Number(m[1]))) offenders.push(`${file}:${i + 1} maxWidth ${m[1]}`);
+          // The owner's unchanged-Argus directive preserves this one internal text
+          // measure; the Card's outer width still belongs to its parent. Do not add
+          // 200 to the shared width scale or exempt another style in this file.
+          const promoTitle = file === "src/molecules/card/card.brand.styles.ts" && /^export const promoTitle: TextStyle = \{ maxWidth: 200 \};$/.test(line);
+          if (!promoTitle && !steps.has(Number(m[1]))) offenders.push(`${file}:${i + 1} maxWidth ${m[1]}`);
         }
       });
     }

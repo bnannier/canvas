@@ -4,6 +4,7 @@ import { View, Pressable, Text, shape as shapeTokens, StyleSheet, useFillStyle, 
 import { MaterialBehind } from "../../style/glass-surface/material-behind.js";
 import { RAISED, liftStyle, useHover, useRaiseCell, useSettling } from "../../style/hover.js";
 import { selectedCard } from "../../style/selected-card.js";
+import { BrandCard, brandCardModeOf } from "./card.brand.js";
 import { ReferenceCard, referenceModeOf } from "./card.reference.js";
 import { Image } from "../../atoms/image/image.shared.js";
 import { imageLabel } from "../../atoms/image/image.accessibility.js";
@@ -62,6 +63,23 @@ const headerStyles = StyleSheet.create({
 });
 
 export interface CardProps {
+  /** Original illustrated approval banner. */
+  featured?: boolean;
+  /** Show only the authored artwork, filling bounds supplied by the parent. */
+  artwork?: boolean;
+  /** Inset an illustration in authored artwork. */
+  illustration?: boolean;
+  controls?: boolean;
+  /** Original promotional gradient card. */
+  promo?: boolean;
+  /** Stack the featured illustration above its content. */
+  stacked?: boolean;
+  hue?: number;
+  initials?: string;
+  eyebrow?: string;
+  badge?: string;
+  caption?: string;
+  metadata?: string;
   /** A compact unframed reference summary in a row. */
   referenceInline?: boolean;
   /** A reference key/status row above its summary. */
@@ -216,6 +234,8 @@ export function createCard(skin: CardSkin) {
 
     const reference = referenceModeOf(props);
     if (reference) return <ReferenceCard {...props} mode={reference} hoverEnabled={skin.hover != null} />;
+    const brand = brandCardModeOf(props);
+    if (brand) return <BrandCard {...props} mode={brand} hoverEnabled={skin.hover != null} />;
 
     // Empty strings count as "no content", so a cleared field never renders an empty
     // header, footer, or a stray separator: guard on truthiness rather than null for

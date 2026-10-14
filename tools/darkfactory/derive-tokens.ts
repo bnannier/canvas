@@ -265,6 +265,15 @@ export function derivePalette(name: PaletteName): DerivedPalette {
   };
   const from = (role: string, dfRole: string) => put(role, p[dfRole]!, "from", `DF ${dfRole}`);
 
+  // Authored card artwork stays exactly on DF's gradient stops.
+  for (const family of ["featured", "promo"] as const) {
+    const artwork = theme.palettes[name][family] as { stops: { color: string }[] };
+    for (const [index, stop] of ["start", "middle", "end"].entries()) {
+      put(`${family}-${stop}`, artwork.stops[index]!.color, "from", `DF ${family} gradient stop ${index}`);
+    }
+  }
+  from("featured-stack", "stack");
+
   // Surfaces.
   from("card", "card");
   from("popover", "card");

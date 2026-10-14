@@ -3,8 +3,10 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Card } = scope;
+  const { Card, Typography } = scope;
   return (
-<Card title="Recent activity" body="Two events today." />
+<Card flat>
+  <Typography lead semibold>Outlined and quiet</Typography>
+</Card>
   );
 }
