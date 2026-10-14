@@ -68,6 +68,8 @@ export interface ButtonProps extends MeasureProps {
   inverse?: boolean;
   /** Muted outlined action for a low-emphasis operation. */
   quiet?: boolean;
+  /** The reference link hover dims to 85% while keeping its normal ink. */
+  softHover?: boolean;
   /** Align a row of short workflow actions on the same minimum measure. */
   consistent?: boolean;
   /** A roomier hit surround for a compact featured action. */
@@ -149,7 +151,7 @@ export function createButton(skin: ButtonSkin) {
     const intent = intentOf(props);
     const size = sizeOf(props);
 
-    const opts = { inverse: !!props.inverse, quiet: !!props.quiet, consistent: !!props.consistent, comfortable: !!props.comfortable, icon: !!icon, block: !!block, dim: !!(disabled || loading), disabled: !!disabled };
+    const opts = { inverse: !!props.inverse, quiet: !!props.quiet, softHover: !!props.softHover, consistent: !!props.consistent, comfortable: !!props.comfortable, icon: !!icon, block: !!block, dim: !!(disabled || loading), disabled: !!disabled };
     const sizing = useSizing(props);
     const container = skin.container(tokens, intent, size, opts);
     // Under glass a button that paints a surface (the skin says which) is a CONTROL-layer
@@ -182,7 +184,7 @@ export function createButton(skin: ButtonSkin) {
     // moves) and applied to the Pressable inside it. A disabled or loading button stays put.
     // Its instant hover style (a wash, a dim) switches with the pointer, never while inert.
     const lift = skin.lift?.(intent) ?? null;
-    const hoverLook = skin.hover?.(tokens, intent) ?? null;
+    const hoverLook = skin.hover?.(tokens, intent, opts) ?? null;
     const { hovered: pointerOver, target: hoverTarget } = useHover(lift != null || hoverLook != null);
     const reduced = useReducedMotion();
     const live = (pointerOver || !!props.testOnly_hovered) && !(disabled || loading);

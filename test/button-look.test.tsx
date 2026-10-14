@@ -137,3 +137,13 @@ describe("a raised Button rests on DF's glow", () => {
     for (const name of ["Secondary", "Disabled", "Plain"]) expect(glow(name), name).toBe("");
   });
 });
+
+it("keeps Argus inverse and reference-link hover treatments", () => {
+  render(<ThemeProvider light solid><Button outline inverse>Reject</Button><Button link softHover>Clear filters</Button></ThemeProvider>);
+  const inverse = screen.getByRole("button", { name: "Reject" });
+  fireEvent.pointerEnter(inverse, { pointerType: "mouse" });
+  expect(inverse.style.backgroundColor).toMatch(/rgba\(255,\s*255,\s*255,\s*0\.12\)/);
+  const link = screen.getByRole("button", { name: "Clear filters" });
+  fireEvent.pointerEnter(link, { pointerType: "mouse" });
+  expect(link.style.opacity).toBe("0.85");
+});

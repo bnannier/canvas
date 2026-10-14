@@ -19,6 +19,7 @@ export type Size = "small" | "base" | "large";
 export interface ButtonSkinOpts {
   inverse?: boolean;
   quiet?: boolean;
+  softHover?: boolean;
   consistent?: boolean;
   comfortable?: boolean;
   icon: boolean;
@@ -45,7 +46,7 @@ export interface ButtonSkin {
    * behind an outline, a ghost and its secondary, the link's dim), or null. Never applied
    * while disabled or loading; omitted by the iOS and Android skins.
    */
-  hover?: (t: ColorTokens, intent: Intent) => ViewStyle | null;
+  hover?: (t: ColorTokens, intent: Intent, opts?: ButtonSkinOpts) => ViewStyle | null;
   /** The resting glow under a `raised` primary button (Dark Factory's call to action). */
   raised: (t: ColorTokens, size: Size) => ViewStyle;
   /** iOS/web dim the fill on press; Android uses a ripple instead (null). */
@@ -227,9 +228,9 @@ export const webSkin: ButtonSkin = {
   surface: (intent, o) => WEB_CTA.has(intent) && !o.disabled,
   // A link dims under the pointer. Dark Factory dims to 0.85, which leaves the `primary-text`
   // label at 4.33:1 on the blush page and 4.42:1 on mint; 0.9 holds 4.80 and 4.90 (WCAG 1.4.3).
-  hover: (t, intent) =>
-    intent === "secondary" || intent === "outline" || intent === "ghost" ? { backgroundColor: hoverFill(t) }
-    : intent === "link" ? { opacity: 0.9 }
+  hover: (t, intent, o) =>
+    o?.inverse ? { backgroundColor: "rgba(255,255,255,0.12)" } : intent === "secondary" || intent === "outline" || intent === "ghost" ? { backgroundColor: hoverFill(t) }
+    : intent === "link" ? { opacity: o?.softHover ? 0.85 : 0.9 }
     : null,
   raised: raisedGlow,
   pressedOpacity: 0.9,
