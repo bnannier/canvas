@@ -39,7 +39,7 @@ const M3 = { extraSmall: 4, small: 8, medium: 12, large: 16, extraLarge: 28 } as
  * the public table.
  */
 export const platformShape = {
-  web: { key: 6, tooltip: 8, event: 8, bar: 8, mark: 4, cell: 2, candle: 1, tableHeader: 10, dragGhost: 12 },
+  web: { utilityControl: 7, key: 6, tooltip: 8, event: 8, bar: 8, mark: 4, cell: 2, candle: 1, tableHeader: 10, dragGhost: 12 },
   ios: { actionSheet: 34, groupedList: 26, event: 6 },
   android: {
     chip: M3.small,

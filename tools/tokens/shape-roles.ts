@@ -314,7 +314,7 @@ export const COMPONENT_ROLES: Record<string, readonly string[]> = {
   "atoms/autocomplete": ["control", "field", "menu"],
   "atoms/avatar": ["control"],
   "atoms/badge": ["pill", "key"],
-  "atoms/button": ["control", "pill"],
+  "atoms/button": ["control", "utilityControl", "pill"],
   "atoms/button-group": ["control", "menu", "pill"],
   "atoms/checkbox": ["checkbox"],
   "atoms/chip": ["pill", "chip"],

@@ -80,7 +80,7 @@ export const TEXT_ROLES: Record<string, Record<string, ReadingRole>> = {
   "src/organisms/data-table/data-table.styles.ts": { "webSkin.stackedLabel": "small", "iosSkin.stackedLabel": "small" },
 
   // Pills, tags, badges, meta lines and annotations.
-  "src/atoms/badge/badge.shared.tsx": { "createBadge.labelMetrics": "tiny" },
+  "src/atoms/badge/badge.shared.tsx": { "NOTIFICATION_TYPE": "caption", "createBadge.labelMetrics": "tiny" },
   "src/organisms/sidebar/sidebar.styles.ts": { "webSkin.sectionTitle": "caption" },
   "src/atoms/badge/badge.styles.ts": { "webSkin.labelType": "tiny" },
   "src/atoms/chip/chip.shared.tsx": { COUNT_TYPE: "tiny" },
