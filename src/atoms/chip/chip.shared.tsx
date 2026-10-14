@@ -3,6 +3,7 @@ import { View, Text, Pressable, RippleClip, StyleSheet, cornerRadii, useHugStyle
 import { reachSlop, useClipSlop } from "../../style/clip-slop.js";
 import { inlineSide, rowSeam, slopSides } from "../../style/touch-seam.js";
 import { leastLine, styleBox, styleInsets, useSeededMinTargetSlop } from "../../style/touch-target-seed.js";
+import { useHover } from "../../style/hover.js";
 import { primaryText } from "../../style/primary-text.js";
 import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
 import { Icon } from "../icon/icon.js";
@@ -36,6 +37,8 @@ import { Icon } from "../icon/icon.js";
 export type { Hue };
 
 // Literal-hue props, scanned in this order (first match wins) after the status names.
+const COUNT_TYPE: TextStyle = { fontSize: 10, lineHeight: 13, fontWeight: "800", opacity: 0.7 };
+
 const HUES: Hue[] = [
   "red", "orange", "amber", "yellow", "lime", "green", "emerald", "teal", "cyan",
   "sky", "blue", "indigo", "violet", "fuchsia", "purple", "pink", "rose",
@@ -44,6 +47,7 @@ const HUES: Hue[] = [
 export interface ChipSkin {
   /** Container shape + padding + gap (the one, compact size). */
   base: ViewStyle;
+  hoverFill?: boolean;
   /** Label type. */
   labelType: TextStyle;
   /** Remove "×" glyph size. */
@@ -77,6 +81,10 @@ export interface ChipSkin {
 export interface ChipProps {
   /** The chip label. */
   children?: ReactNode;
+  /** A dimmed trailing count; enlarges the inset by one pixel. */
+  count?: number | string;
+  /** Pin a chip within an app-owned host layout. */
+  start?: boolean;
   /** A leading element (e.g. an `<Icon />` or a small `<Avatar />`). An `<Icon />` is
    *  auto-tinted to the chip's label color unless it sets its own color. */
   icon?: ReactNode;
@@ -225,7 +233,9 @@ export function createChip(skin: ChipSkin) {
     // its fill and hairline (the pane's material and rim carry them). The pressable
     // shell keeps its tap, ripple and dim over it.
     // HUG: content width inside a stretching Column, content-sized in a Row.
-    const hug = useHugStyle();
+    const naturalHug = useHugStyle();
+    const hug = [naturalHug, props.start ? { alignSelf: "flex-start" as const } : null];
+    const { hovered, target: hoverTarget } = useHover(!!skin.hoverFill);
     // A tappable chip's touch area grows to the skin's minimum where it sets one (Android):
     // the pill's own shortfall, measured, and seeded from its padding and border around one
     // label line so it is in place before the first layout (src/style/touch-target-seed.ts).
@@ -291,8 +301,9 @@ export function createChip(skin: ChipSkin) {
 
     const chrome: StyleProp<ViewStyle> = [
       skin.base,
+      props.count == null ? null : { paddingVertical: 5, paddingHorizontal: 11 },
       {
-        backgroundColor: appearance.bg,
+        backgroundColor: hovered && !isSelected && !tone && !hue && !outline ? tokens.hover ?? tokens.accent : appearance.bg,
         // A selected M3 filter chip drops its outline (the fill carries the
         // state); the borderWidth stays so the box doesn't shift between states.
         borderColor: selectedCheck != null ? "transparent" : appearance.border,
@@ -356,6 +367,7 @@ export function createChip(skin: ChipSkin) {
             {children}
           </Text>
         ) : null}
+        {props.count == null ? null : <Text style={[COUNT_TYPE, { color: appearance.text }]}>{String(props.count)}</Text>}
         {tint(trailing)}
       </>
     );
@@ -434,6 +446,7 @@ export function createChip(skin: ChipSkin) {
           {pane}
           <Pressable
             {...pillClip.measure("body")}
+            {...hoverTarget}
             onPress={handlePress}
             disabled={disabled}
             accessibilityRole="button"
@@ -461,6 +474,7 @@ export function createChip(skin: ChipSkin) {
         <RippleClip shape={cornerRadii(container)} hitSlop={bodySlop} style={hug}>
           <Pressable
             onLayout={pillTarget.onLayout}
+            {...hoverTarget}
             onPress={handlePress}
             disabled={disabled}
             testID={testID}

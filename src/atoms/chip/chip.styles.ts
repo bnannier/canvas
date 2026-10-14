@@ -57,7 +57,8 @@ const BODY_HIT_SLOP = 11;
 
 export const webSkin: ChipSkin = {
   base: pill,
-  labelType: { ...typeScale.caption, fontWeight: "700" },
+  hoverFill: true,
+  labelType: { ...typeScale.caption, fontWeight: "700", lineHeight: 14.3 },
   removeSize: REMOVE,
   removeHitSlop,
   bodyHitSlop: BODY_HIT_SLOP,
