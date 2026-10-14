@@ -11,7 +11,7 @@ import { useCaptureDemand } from "./capture-target.js";
 import { useMaterialResolution } from "./use-material-theme.js";
 import {
   GlassBox, CLEAR_INTENSITY, contrastStyle, frostFill, frostMethodProps, SHEER_FILL_OPACITY, materialFill,
-  specularRim, surfaceIntensity, useBlurTargetRejection, type GlassSurfaceProps,
+  SpecularRim, surfaceIntensity, useBlurTargetRejection, type GlassSurfaceProps,
 } from "./glass-surface.shared.js";
 
 const EMPTY_TARGET = { current: null };
@@ -62,7 +62,6 @@ export function GlassSurface(props: GlassSurfaceProps) {
   const translucent = sheer && layer === "content";
   const intensity = clear ? CLEAR_INTENSITY : surfaceIntensity(layer, translucent);
   const fill = materialFill(style, props.stateBorder);
-  const rim = specularRim(style, theme.dark, props.stateBorder);
   const nativeCapture = NativeCaptureFrost !== undefined && target !== null && !solid;
   // The fill paints beneath the material, except over the capture frost (which samples
   // a separate plane), and a brand colour or a boundary fill, which paint over it so their
@@ -75,7 +74,7 @@ export function GlassSurface(props: GlassSurfaceProps) {
     {NativeCaptureFrost && target ? <NativeCaptureFrost targetRef={target} intensity={intensity} tint={theme.dark ? "dark" : "light"} style={fill} onTargetRejected={reject ? () => reject(target) : undefined} />
       : FrostView ? <FrostView intensity={intensity} tint={theme.dark ? "dark" : "light"} {...frostMethodProps(requiresBlurTarget)} style={fill} /> : null}
     {over ? tintLayer : null}
-    <View style={rim} />
+    <SpecularRim style={style} dark={theme.dark} inside={props.stateBorder} />
   </>;
   return <GlassBox {...props} style={contrastStyle(theme, style, props.stateBorder)} solid={solid} material={material} />;
 }
