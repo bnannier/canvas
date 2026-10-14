@@ -33,6 +33,23 @@ the hover lift and native ripple.
 
 ## Variants
 
+### Linked references
+
+`referenceInline`, `referenceStacked`, `referenceTile` and `referenceDetail`
+preserve the original Argus reference layouts. `referenceKey` is the key, `title`
+the summary and `description` the status/context. `referenceSource` adds the
+source affordance in the detail panel. An `href` opens through the system browser.
+
+```tsx
+<Column cozy>
+  <Card referenceInline referenceKey="CORE-1790" title="Size the pricing bet" description="In Progress" />
+  <Card referenceStacked referenceKey="CORE-1790" title="Size the pricing bet" description="In Progress" />
+  <Card referenceTile referenceKey="CORE-1790" title="Size the pricing bet" />
+  <Card referenceDetail referenceKey="CORE-1790" title="Size the pricing bet" description="In Progress · Platform Core" referenceSource="Jira" />
+</Column>
+```
+
+
 ### Generic
 
 ```tsx

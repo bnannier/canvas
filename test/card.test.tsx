@@ -1,5 +1,5 @@
 import { describe, it, expect, afterEach } from "bun:test";
-import { render, cleanup } from "@testing-library/react";
+import { render, cleanup, fireEvent } from "@testing-library/react";
 import { type ReactNode } from "react";
 import { Text } from "react-native";
 import { ThemeProvider } from "../src/style/theme.tsx";
@@ -402,4 +402,14 @@ it("clickable cards with nested actions expose only the action button role", () 
   const { getAllByRole, getByRole } = ui(<Card interactiveContents steadyPress onPress={() => {}}><Button onPress={() => {}}>Pause</Button></Card>);
   expect(getAllByRole("button").length).toBe(1);
   expect(getByRole("button", { name: "Pause" })).toBeTruthy();
+});
+
+it("owns reference summary content and opens the supplied source once", () => {
+  let opened = 0;
+  const { getByRole, getByText } = ui(<Card referenceStacked referenceKey="CORE-1" title="Preserve the interface" description="Ready" onPress={() => { opened += 1; }} accessibilityLabel="Open reference" />);
+  expect(getByText("CORE-1")).toBeTruthy();
+  expect(getByText("Preserve the interface")).toBeTruthy();
+  expect(getByText("· Ready")).toBeTruthy();
+  fireEvent.click(getByRole("button", { name: "Open reference" }));
+  expect(opened).toBe(1);
 });
