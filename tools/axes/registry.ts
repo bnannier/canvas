@@ -1,7 +1,7 @@
 import { referenceModeOf } from "../../src/molecules/card/card.reference.tsx";
 import { rowGapOf, insetOf } from "../../src/atoms/layout/layout.shared.tsx";
 import { gridRowGapOf } from "../../src/atoms/grid/grid.shared.tsx";
-import { referenceSizeOf, sheenOf } from "../../src/atoms/avatar/avatar.reference.tsx";
+import { referenceSizeOf, referencePaintOf, sheenOf } from "../../src/atoms/avatar/avatar.reference.tsx";
 // Every axis resolver in the kit, as the characterization (test/axes.test.ts) calls it.
 //
 // An axis is a group of a component's semantic booleans that exclude each other: when a
@@ -390,7 +390,8 @@ export const SUBJECTS: readonly AnySubject[] = [
   subject({ id: "Swatch.palette", components: ["Swatch"], pages: ["swatch"], resolver: "src/atoms/swatch/swatch.shared.tsx#paletteOf", members: ["dark", "mint", "blush"], resolve: paletteOf }),
   subject({ id: "Typography.alignment", components: ["Typography"], pages: ["typography"], resolver: "src/atoms/typography/typography.shared.tsx#textAlignOf", members: ["right", "center"], resolve: textAlignOf }),
 
-  subject({ id: "Avatar.reference size", components: ["Avatar"], pages: ["avatar"], resolver: "src/atoms/avatar/avatar.reference.tsx#referenceSizeOf", members: ["annotation", "compact", "account", "row", "person", "profile", "detail", "hero", "featured", "spotlight"], resolve: referenceSizeOf }),
+  subject({ id: "Avatar.reference paint", components: ["Avatar"], pages: ["avatar"], resolver: "src/atoms/avatar/avatar.reference.tsx#referencePaintOf", members: ["logo", "orchid"], resolve: referencePaintOf }),
+  subject({ id: "Avatar.reference size", components: ["Avatar"], pages: ["avatar"], resolver: "src/atoms/avatar/avatar.reference.tsx#referenceSizeOf", members: ["logo", "annotation", "compact", "account", "row", "person", "profile", "detail", "hero", "featured", "spotlight"], resolve: referenceSizeOf }),
   subject({ id: "Avatar.sheen", components: ["Avatar"], pages: ["avatar"], resolver: "src/atoms/avatar/avatar.reference.tsx#sheenOf", members: ["strongSheen", "mediumSheen", "sheen"], resolve: sheenOf }),
   // Molecules.
   subject({ id: "ActionPanel.tone", components: ["ActionPanel"], pages: ["action-panels"], resolver: "src/molecules/action-panels/action-panels.shared.tsx#toneOf", members: ["destructive"], resolve: actionPanelTone }),

@@ -3,6 +3,7 @@ import { oklch } from "../../style/identity-text.js";
 import type { AvatarProps } from "./avatar.shared.js";
 
 export function referenceSizeOf(p: AvatarProps) {
+  if (p.logo) return "logo";
   if (p.annotation) return "annotation";
   if (p.compact) return "compact";
   if (p.account) return "account";
@@ -15,6 +16,11 @@ export function referenceSizeOf(p: AvatarProps) {
   if (p.spotlight) return "spotlight";
   return null;
 }
+export function referencePaintOf(p: Pick<AvatarProps, "logo" | "orchid">) {
+  if (p.logo) return "logo";
+  if (p.orchid) return "orchid";
+  return "identity";
+}
 export function sheenOf(p: AvatarProps) {
   if (p.strongSheen) return 3;
   if (p.mediumSheen) return 2.5;
@@ -22,10 +28,12 @@ export function sheenOf(p: AvatarProps) {
   return 0;
 }
 export const REFERENCE_SIZES = {
+  logo: 30,
   annotation: 16, compact: 30, account: 32, row: 36, person: 38,
   profile: 44, detail: 52, hero: 58, featured: 60, spotlight: 74,
 };
 export const REFERENCE_TYPE = {
+  logo: { fontSize: 14, lineHeight: 14, fontWeight: "800" as const },
   annotation: { fontSize: 9, lineHeight: 9 }, compact: { fontSize: 12, lineHeight: 12 },
   account: { fontSize: 13, lineHeight: 13 }, row: { fontSize: 13, lineHeight: 13 },
   person: { fontSize: 12, lineHeight: 12 }, profile: { fontSize: 15, lineHeight: 15 },

@@ -312,7 +312,7 @@ export const CONCENTRIC_CORNERS: ConcentricCorner[] = [
  */
 export const COMPONENT_ROLES: Record<string, readonly string[]> = {
   "atoms/autocomplete": ["control", "field", "menu"],
-  "atoms/avatar": ["control"],
+  "atoms/avatar": ["control", "brandMark"],
   "atoms/badge": ["pill", "key"],
   "atoms/button": ["control", "utilityControl", "pill"],
   "atoms/button-group": ["control", "menu", "pill"],
