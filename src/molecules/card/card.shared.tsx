@@ -89,6 +89,10 @@ export interface CardProps {
   flush?: boolean;
   /** When set, the whole card becomes pressable (a card that behaves as a control). */
   onPress?: () => void;
+  /** A clickable container whose nested controls keep their own button/link roles. */
+  interactiveContents?: boolean;
+  /** Keep the resting opacity while pressed; hover lift and native ripple remain. */
+  steadyPress?: boolean;
   /**
    * Active/selected surface: a primary border and a soft primary tint. For
    * selectable cards (a card-style radio or checkbox option that is chosen).
@@ -356,14 +360,14 @@ export function createCard(skin: CardSkin) {
       return (
         <RippleClip shape={cornerRadii(shape)} style={[elevParent, outer, raised ? RAISED : null]} {...hoverTarget}>
           <Pressable
-            accessibilityRole="button"
+            accessibilityRole={props.interactiveContents ? "none" : "button"}
             accessibilityLabel={props.accessibilityLabel}
             onPress={onPress}
             testID={testID}
             // The card's pane is a child of this Pressable: where it renders, the ripple draws
             // in the foreground, over it (`paneRipple`).
             android_ripple={paneRipple(theme, surfaceRipple(tokens))}
-            style={({ pressed }) => [paneStyle(theme, surface, !!selected), elevChild, fill, pressDim(pressed), lift]}
+            style={({ pressed }) => [paneStyle(theme, surface, !!selected), elevChild, fill, props.steadyPress ? null : pressDim(pressed), lift]}
           >
             <GlassPane layer="content" shape={surface} stateBorder={!!selected} tint={selectionWash} />
             <MaterialBehind rendered={isGlass(theme)}>{inner}</MaterialBehind>
