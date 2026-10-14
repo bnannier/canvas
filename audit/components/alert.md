@@ -86,6 +86,7 @@ One row per finding. Severity: critical, high, medium, low. Cell: a capture id f
 
 | ID | Severity | Cell | Summary | Status | Fix commit |
 |---|---|---|---|---|---|
+| alert-dismiss-glyph-1 | medium | web/alert/dismissible/desktop.blush.glass | The dismiss glyph `×` (#7262e5 on the toned wash) reads 3.77 to 3.80:1 in blush and mint glass on all three rows at rest (18 texts; solid 3.87 to 3.88), which as a control's identifying glyph is non-text content and clears WCAG 1.4.11's 3:1, but while pressed (`web-states/alert/pressed.web`, desktop) 2.41 to 2.96 (solid 2.46 to 2.94), under 3:1; the focus state reads as at rest. From GlassSurface's turn (glass-surface-blurred-ink-1): the glass cells of its web after capture (runs 20261013-202324-web-c38c5a1 and 20261013-205818-web-c38c5a1, the docs three-up's iOS, Android and web rows), read from the photographs (`fail-likely`, a pixel read, the only read where a backdrop filter hides the background from the DOM), the same set as in the retaken before runs (20261013-175041 and 20261013-182600-web-f538d1f); the solid twin is the DOM read of the same cell in solid. | open |  |
 
 ## Sign-off
 
