@@ -412,7 +412,7 @@ export const SUBJECTS: readonly AnySubject[] = [
     resolve: valueFormOf,
     notes: ["An item's `avatars` or `copyValue` take the value before any of these."],
   }),
-  subject({ id: "Feed.lead", components: ["Feed"], pages: ["feeds"], resolver: "src/molecules/feeds/feeds.shared.tsx#leadOf", members: ["connector", "avatar"], resolve: leadOf }),
+  subject({ id: "Feed.lead", components: ["Feed"], pages: ["feeds"], resolver: "src/molecules/feeds/feeds.shared.tsx#leadOf", members: ["activity", "trace", "connector", "avatar"], resolve: leadOf }),
   subject({
     id: "GridList.columns",
     components: ["GridList"],
