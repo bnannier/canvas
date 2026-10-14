@@ -11,12 +11,13 @@
 // The content host keeps its children in every mode. A separate absolute material clip
 // contains only decoration, preserving shadow, focus and child identity.
 
-import { createContext, useCallback, useContext, useState, type ReactNode, type RefObject } from "react";
+import { createContext, useCallback, useContext, useRef, useState, type ReactNode, type RefObject } from "react";
 import { View, PixelRatio, StyleSheet, type LayoutChangeEvent, type StyleProp, type ViewStyle, type ViewProps } from "react-native";
 import { frameBedsFor, type ColorTokens, type GlassTokens, type ColorScheme, type Palette } from "../tokens.js";
 import { alpha, composite, contrastRatio, inkOn } from "../color.js";
 import { actionFill, actionInk } from "../action.js";
 import { MaterialBehind } from "./material-behind.js";
+import { useIsomorphicLayoutEffect } from "../use-isomorphic-layout-effect.js";
 
 /**
  * The layer of the glass model a surface belongs to, which picks its tint (see
@@ -715,32 +716,46 @@ function bandCorners(corners: ViewStyle, top: boolean, bottom: boolean): ViewSty
 
 /**
  * The native frost's specular rim (`SPECULAR_RIM`), on iOS's and Android's frost, drawn so no
- * shadow it asks for is taller than `RIM_BAND_PIXELS`: one rim over the surface up to that
- * height, and past it a column of bands, the first with the top edge and corners, the last
+ * shadow it asks for is taller than `RIM_BAND_PIXELS`: one rim over the whole surface up to
+ * that height, and past it a column of bands, the first with the top edge and corners, the last
  * with the bottom ones, each the rim clipped to its band and running `RIM_BAND_OVERLAP` past
- * the edges it does not own, so the bands together draw exactly the one rim. It reads its
- * height from its own layout and renders again only when the number of bands changes. Until
- * then a single rim stops at the band height, and the last band's rim keeps its own height at
- * the surface's bottom edge, so a surface that grows before its new layout lands loses the
- * rim along the new length for that frame and never asks for a shadow past the limit.
+ * the edges it does not own, so the bands together draw exactly the one rim.
+ *
+ * It never draws an edge where the surface has none. It reads the surface's height in the
+ * commit that mounts it, from a layout effect: React Native's New Architecture lays out in that
+ * commit and applies the effect's update before the frame is drawn, as a browser does, so the
+ * first frame already holds the rim whole or in its bands. Where no height can be read there
+ * (nothing reports `offsetHeight`), it draws nothing until the surface's first layout lands,
+ * never a guessed rim whose cut-off bottom edge would cross the surface. Afterwards it follows
+ * `onLayout`: the single rim spans the surface, so it keeps the right edges while a surface grows
+ * before its new layout lands (to twice a band, still under Core Animation's limit), and bands
+ * past the surface's new end are clipped away while it shrinks.
  */
 export function SpecularRim({ style, dark, inside = false }: { style: StyleProp<ViewStyle>; dark: boolean; inside?: boolean }) {
   const band = RIM_BAND_PIXELS / PixelRatio.get();
-  const [bands, setBands] = useState(1);
+  // The number of bands, null until the surface's height is known.
+  const [bands, setBands] = useState<number | null>(null);
+  const frame = useRef<View>(null);
+  const bandsFor = useCallback((height: number) => Math.max(1, Math.ceil(height / band)), [band]);
+  useIsomorphicLayoutEffect(() => {
+    const height = (frame.current as unknown as { offsetHeight?: unknown } | null)?.offsetHeight;
+    if (typeof height === "number") setBands(bandsFor(height));
+  }, [bandsFor]);
   const onLayout = useCallback((event: LayoutChangeEvent) => {
-    setBands(Math.max(1, Math.ceil(event.nativeEvent.layout.height / band)));
-  }, [band]);
+    setBands(bandsFor(event.nativeEvent.layout.height));
+  }, [bandsFor]);
   const shadow = dark ? SPECULAR_RIM.dark : SPECULAR_RIM.light;
+  if (bands == null) return <View ref={frame} testID="glass-rim" style={RIM_FRAME} onLayout={onLayout} />;
   if (bands === 1) {
     return (
-      <View testID="glass-rim" style={RIM_FRAME} onLayout={onLayout}>
-        <View style={[specularRim(style, dark, inside), { maxHeight: band }]} />
+      <View ref={frame} testID="glass-rim" style={RIM_FRAME} onLayout={onLayout}>
+        <View style={specularRim(style, dark, inside)} />
       </View>
     );
   }
   const corners = materialCorners(style, inside);
   return (
-    <View testID="glass-rim" style={RIM_FRAME} onLayout={onLayout}>
+    <View ref={frame} testID="glass-rim" style={RIM_FRAME} onLayout={onLayout}>
       {Array.from({ length: bands }, (_, index) => {
         const first = index === 0;
         const last = index === bands - 1;

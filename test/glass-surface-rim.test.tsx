@@ -1,16 +1,19 @@
 import { afterEach, beforeEach, describe, expect, it, spyOn } from "bun:test";
 import { act, cleanup, render, screen } from "@testing-library/react";
-import { PixelRatio } from "react-native";
+import { type ForwardedRef, type ReactNode } from "react";
+import { PixelRatio, StyleSheet, View, type ViewProps } from "react-native";
 import { RIM_BAND_OVERLAP, RIM_BAND_PIXELS, SPECULAR_RIM, SpecularRim, specularRim } from "../src/style/glass-surface/glass-surface.shared.tsx";
 
 // The native frost's specular rim, React Native's inset boxShadow, which iOS draws as one Core
 // Animation shadow over its whole view: past 8192 px on a side that shadow drew flat dark
-// tiles over a tall frost (a docs Props table, 4158 pt at 3x; on the iOS 26 simulator a rim
-// alone renders at 2700 pt and fails at 2780). SpecularRim draws it so no shadow it asks for
-// is taller than RIM_BAND_PIXELS: one rim up to that height, bands past it, each clipped and
-// running past the edges it does not own. Pinned: the single rim and its cap, the bands'
-// clips, heights, offsets and corners, and that no shadow view is ever taller than a band
-// plus its overlaps, at 3x and 2x.
+// tiles over a tall frost (a docs Props table, 4158 pt at 3x; on the iPhone 17 Pro simulator's
+// iOS 27 runtime a rim alone renders at 2700 pt and fails at 2780). SpecularRim draws it so no
+// shadow it asks for is taller than RIM_BAND_PIXELS: one rim up to that height, bands past it,
+// each clipped and running past the edges it does not own. Pinned: the single rim over the
+// whole surface, the bands' clips, heights, offsets and corners, that no shadow view is ever
+// taller than a band plus its overlaps, at 3x and 2x, and that no render draws an edge where
+// the surface has none (glass-surface-rim-first-frame-1): the height is read in the commit
+// that mounts the rim, and where none can be read the rim waits for the first layout.
 
 let ratio: ReturnType<typeof spyOn>;
 afterEach(() => { cleanup(); ratio?.mockRestore(); });
@@ -32,17 +35,19 @@ for (const scale of [3, 2]) {
     const band = RIM_BAND_PIXELS / scale;
     beforeEach(() => { ratio = spyOn(PixelRatio, "get").mockReturnValue(scale); });
 
-    it("draws one rim, the surface's own, capped at a band, until the surface is taller than a band", () => {
+    it("draws one rim, the surface's own and spanning it, until the surface is taller than a band", () => {
       render(<SpecularRim style={SHAPE} dark={false} />);
       layOut(band - 1);
       expect(bands()).toHaveLength(1);
       const [only] = bands();
-      // The single rim is specularRim's own style, with the band as its cap.
+      // The single rim is specularRim's own style: it fills the surface with no cap, so its
+      // bottom edge is the surface's own while the surface grows ahead of its next layout.
       const expected = specularRim(SHAPE, false);
       expect(only!.clip.style.boxShadow).toBe(SPECULAR_RIM.light);
       expect(only!.clip.style.borderTopLeftRadius).toBe(`${expected.borderTopLeftRadius}px`);
       expect(only!.clip.style.borderBottomRightRadius).toBe(`${expected.borderBottomRightRadius}px`);
-      expect(px(only!.clip.style.maxHeight)).toBeCloseTo(band, 5);
+      expect([only!.clip.style.top, only!.clip.style.bottom]).toEqual(["0px", "0px"]);
+      expect(only!.clip.style.maxHeight).toBe("");
     });
 
     it("draws a tall surface in bands, none of whose shadows is taller than a band and its overlaps", () => {
@@ -93,3 +98,60 @@ for (const scale of [3, 2]) {
     });
   });
 }
+
+// glass-surface-rim-first-frame-1: the rim used to mount as one rim capped at a band and switch
+// to bands from the surface's first layout, so for one frame a surface taller than a band drew
+// the capped rim's bottom edge across itself at the band's height.
+describe("SpecularRim's first frame", () => {
+  /** Every shadow View rendered while `run` runs, flattened, in render order. */
+  function shadowViews(run: () => void): Record<string, unknown>[] {
+    const component = View as unknown as { render: (props: ViewProps, ref: ForwardedRef<unknown>) => ReactNode };
+    const original = component.render;
+    const seen: Record<string, unknown>[] = [];
+    const spy = spyOn(component, "render").mockImplementation((props, ref) => {
+      const style = (StyleSheet.flatten(props.style) ?? {}) as Record<string, unknown>;
+      if (style.boxShadow != null) seen.push(style);
+      return original(props, ref);
+    });
+    try { run(); } finally { spy.mockRestore(); }
+    return seen;
+  }
+  /** The height the rim's frame reports as its offsetHeight while `run` runs. */
+  function frameHeight(height: number | undefined, run: () => void) {
+    const descriptor = Object.getOwnPropertyDescriptor(HTMLElement.prototype, "offsetHeight");
+    Object.defineProperty(HTMLElement.prototype, "offsetHeight", {
+      configurable: true,
+      get(this: HTMLElement) { return this.getAttribute("data-testid") === "glass-rim" ? height : 0; },
+    });
+    try { run(); } finally {
+      if (descriptor) Object.defineProperty(HTMLElement.prototype, "offsetHeight", descriptor);
+    }
+  }
+
+  beforeEach(() => { ratio = spyOn(PixelRatio, "get").mockReturnValue(3); });
+  const band = RIM_BAND_PIXELS / 3;
+
+  it("mounts a tall surface in its bands: no render draws a rim cut off above the surface's end", () => {
+    let views: Record<string, unknown>[] = [];
+    frameHeight(4158, () => { views = shadowViews(() => { render(<SpecularRim style={SHAPE} dark={false} />); }); });
+    expect(bands()).toHaveLength(Math.ceil(4158 / band));
+    // Every shadow view rendered on the way is a band's rim, none the single rim (which would
+    // have drawn its bottom edge at a band's height, or asked for a shadow past the limit).
+    expect(views.length).toBeGreaterThan(0);
+    for (const view of views) expect(view.height, "a rim with no band's height").toBeDefined();
+  });
+
+  it("mounts a short surface's whole rim at once", () => {
+    let views: Record<string, unknown>[] = [];
+    frameHeight(320, () => { views = shadowViews(() => { render(<SpecularRim style={SHAPE} dark={false} />); }); });
+    expect(bands()).toHaveLength(1);
+    expect(views.every((view) => view.top === 0 && view.bottom === 0 && view.maxHeight == null)).toBe(true);
+  });
+
+  it("draws nothing where no height can be read, until the first layout lands", () => {
+    frameHeight(undefined, () => { render(<SpecularRim style={SHAPE} dark={false} />); });
+    expect(frame().childElementCount).toBe(0);
+    layOut(4158);
+    expect(bands()).toHaveLength(Math.ceil(4158 / band));
+  });
+});
