@@ -18,6 +18,9 @@ export type Intent = "primary" | "secondary" | "destructive" | "outline" | "ghos
 export type Size = "small" | "base" | "large";
 
 export interface ButtonSkinOpts {
+  inlineLink?: boolean;
+  foreground?: boolean;
+  extraBold?: boolean;
   utility?: boolean;
   iconBox?: "compact" | "medium" | "large" | null;
   wideIcon?: boolean;
@@ -146,17 +149,33 @@ const nativeSurface = (intent: Intent) => intent !== "ghost" && intent !== "link
 // has no large, so large steps up the same way (40).
 interface WebLook { fill: string; border: string; label: string }
 
-export function webEmphasisOf(p: Pick<ButtonSkinOpts, "inverse" | "quiet">) {
+export function webEmphasisOf(p: Pick<ButtonSkinOpts, "inlineLink" | "inverse" | "quiet">) {
+  if (p?.inlineLink) return "inlineLink";
   if (p?.inverse) return "inverse";
   if (p?.quiet) return "quiet";
   return "default";
 }
 
 /** Utility hover wins over inverse emphasis on an icon control. */
-export function webHoverKindOf(p: Pick<ButtonSkinOpts, "utility" | "inverse">) {
+export function webHoverKindOf(p: Pick<ButtonSkinOpts, "utility" | "inlineLink" | "inverse">) {
   if (p.utility) return "utility";
+  if (p.inlineLink) return "inlineLink";
   if (p.inverse) return "inverse";
   return "default";
+}
+
+/** Inline action ink, independent of its unboxed anatomy. */
+export function webLinkInkOf(p: Pick<ButtonSkinOpts, "inverse" | "foreground">) {
+  if (p.inverse) return "inverse";
+  if (p.foreground) return "foreground";
+  return "primary";
+}
+
+/** Unboxed text actions win over utility-box metrics. */
+export function webBodyOf(p: Pick<ButtonSkinOpts, "inlineLink" | "utility">) {
+  if (p.inlineLink) return "link";
+  if (p.utility) return "utility";
+  return "button";
 }
 
 function webLook(t: ColorTokens, intent: Intent, o?: ButtonSkinOpts): WebLook {
@@ -165,6 +184,10 @@ function webLook(t: ColorTokens, intent: Intent, o?: ButtonSkinOpts): WebLook {
     return { fill: "transparent", border: edged ? t.border : "transparent", label: t["muted-foreground"] };
   }
   const emphasis = webEmphasisOf(o ?? {});
+  if (emphasis === "inlineLink") {
+    const ink = webLinkInkOf(o ?? {});
+    return { fill: "transparent", border: "transparent", label: ink === "inverse" ? "#ffffff" : ink === "foreground" ? t.foreground : primaryText(t) };
+  }
   if (emphasis === "inverse") return { fill: "transparent", border: "rgba(255,255,255,0.5)", label: "#ffffff" };
   if (emphasis === "quiet") return { fill: "transparent", border: t.border, label: t["muted-foreground"] };
   switch (intent) {
@@ -187,6 +210,7 @@ const WEB_PAD: Record<Size, { v: number; h: number; ctaH: number }> = {
   large: { v: 10, h: 20, ctaH: 22 },
 };
 // Preserve Argus's exact 1.3 line-height for its small and base button sizes.
+const INLINE_LINK_TYPE: Record<Size, TextStyle> = { small: FS(11.5, 14.95), base: FS(12, 15.6), large: FS(14, 18.2) };
 const WEB_TYPE: Record<Size, TextStyle> = {
   small: FS(11.5, 14.95),
   base: FS(12, 15.6),
@@ -209,8 +233,10 @@ export const webSkin: ButtonSkin = {
   container: (t, intent, size, o) => {
     const look = webLook(t, intent, o);
     const pad = WEB_PAD[size];
-    if (o.iconBox) {
-      const box = UTILITY_BOX[o.iconBox];
+    const body = webBodyOf(o);
+    if (body === "link") return { ...ROW, gap: 5, backgroundColor: "transparent", padding: 0, borderWidth: 0 };
+    if (body === "utility") {
+      const box = UTILITY_BOX[o.iconBox!];
       return { ...ROW, width: box + (o.wideIcon ? 2 : 0), height: box, borderRadius: o.circle ? shape.web.pill : platformShape.web.utilityControl, borderWidth: intent === "outline" ? 1 : 0, borderColor: t.border, backgroundColor: o.inset ? t.secondary : "transparent" };
     }
     return {
@@ -230,6 +256,9 @@ export const webSkin: ButtonSkin = {
   },
   label: (t, intent, size, o) => {
     const type = WEB_TYPE[size];
+    if (webBodyOf(o ?? {}) === "link") {
+      return { ...INLINE_LINK_TYPE[size], fontWeight: o?.extraBold ? "800" : "700", color: webLook(t, "link", o).label };
+    }
     const cta = WEB_CTA.has(intent) && !o?.disabled;
     // DF's outline (our secondary) is 800 from its md size up; everything else but the CTA is 700.
     const heavy = cta || (intent === "secondary" && size !== "small" && !o?.disabled);
@@ -243,11 +272,12 @@ export const webSkin: ButtonSkin = {
   foreground: (t, intent, o) => webLook(t, intent, o).label,
   // Only the filled pills paint a surface: DF's outline, ghost and link buttons are
   // transparent, and a disabled button is transparent too.
-  surface: (intent, o) => !o.iconBox && WEB_CTA.has(intent) && !o.disabled,
+  surface: (intent, o) => !o.inlineLink && !o.iconBox && WEB_CTA.has(intent) && !o.disabled,
   // A link dims under the pointer. Dark Factory dims to 0.85, which leaves the `primary-text`
   // label at 4.33:1 on the blush page and 4.42:1 on mint; 0.9 holds 4.80 and 4.90 (WCAG 1.4.3).
   hover: (t, intent, o) => {
     const kind = webHoverKindOf(o ?? {});
+    if (kind === "inlineLink") return { opacity: 0.8 };
     if (kind === "utility") return { backgroundColor: hoverFill(t) };
     return kind === "inverse" ? { backgroundColor: "rgba(255,255,255,0.12)" } : intent === "secondary" || intent === "outline" || intent === "ghost" ? { backgroundColor: hoverFill(t) }
     : intent === "link" ? { opacity: o?.softHover ? 0.85 : 0.9 }

@@ -3061,6 +3061,50 @@
       "reference + uppercase": "reference"
     }
   },
+  "Button.web body": {
+    "kind": "axis",
+    "components": [
+      "Button"
+    ],
+    "pages": [
+      "button"
+    ],
+    "resolver": "src/atoms/button/button.styles.ts#webBodyOf",
+    "order": [
+      "inlineLink",
+      "utility"
+    ],
+    "none": "button",
+    "single": {
+      "inlineLink": "link",
+      "utility": "utility"
+    },
+    "pairs": {
+      "inlineLink + utility": "inlineLink"
+    }
+  },
+  "Button.inline ink": {
+    "kind": "axis",
+    "components": [
+      "Button"
+    ],
+    "pages": [
+      "button"
+    ],
+    "resolver": "src/atoms/button/button.styles.ts#webLinkInkOf",
+    "order": [
+      "inverse",
+      "foreground"
+    ],
+    "none": "primary",
+    "single": {
+      "inverse": "inverse",
+      "foreground": "foreground"
+    },
+    "pairs": {
+      "foreground + inverse": "inverse"
+    }
+  },
   "Button.web hover": {
     "kind": "axis",
     "components": [
@@ -3072,14 +3116,18 @@
     "resolver": "src/atoms/button/button.styles.ts#webHoverKindOf",
     "order": [
       "utility",
+      "inlineLink",
       "inverse"
     ],
     "none": "default",
     "single": {
       "utility": "utility",
+      "inlineLink": "inlineLink",
       "inverse": "inverse"
     },
     "pairs": {
+      "inlineLink + inverse": "inlineLink",
+      "inlineLink + utility": "utility",
       "inverse + utility": "utility"
     }
   },
@@ -3093,15 +3141,19 @@
     ],
     "resolver": "src/atoms/button/button.styles.ts#webEmphasisOf",
     "order": [
+      "inlineLink",
       "inverse",
       "quiet"
     ],
     "none": "default",
     "single": {
+      "inlineLink": "inlineLink",
       "inverse": "inverse",
       "quiet": "quiet"
     },
     "pairs": {
+      "inlineLink + inverse": "inlineLink",
+      "inlineLink + quiet": "inlineLink",
       "inverse + quiet": "inverse"
     }
   },
