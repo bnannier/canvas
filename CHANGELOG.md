@@ -1,5 +1,13 @@
 # @nannier/canvas
 
+## 3.7.4
+
+### Patch Changes
+
+- fe60a64: The audit's commit-reference check and its tests address the repository they are given even inside a git hook: git exports GIT_DIR to a pre-push run from a worktree, and the child git calls followed it instead of their working directory, so the pre-push battery failed three tests. Repository tooling only; nothing in the package changes.
+- f2e94c9: The docs paint Dark Factory's page look behind the shell: the 165 degree pastel gradient and its two soft orbs, in blush, mint and dark, on the web, iOS and Android, drawn by one react-native-svg backdrop whose orbs are radial gradients sampled from the exact blurred ellipse. The e2e paint check reads the page look's gradient stops. Docs and tooling only; nothing in the package changes.
+- ab18317: Re-record the Dark Factory page-look reference for the docs: every palette at every width, headed, with scrolled frames and the orbs' geometry, and record the owner's decisions for the docs page look.
+
 ## 3.7.3
 
 ### Patch Changes
