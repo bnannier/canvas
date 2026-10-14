@@ -278,8 +278,13 @@ export interface JavaScriptBudget {
 // Fixed ceilings leave room for deliberate growth while catching a heavy import.
 // These are independent budgets, not a combined total: shared modules legitimately
 // occur in more than one consumer. Changes require a fresh measurement and rationale.
+// Original Argus scope/filter pills and inline identity/reference/icon/theme controls
+// add curated layout/type data without another dependency. After consolidating the
+// unboxed geometry, fresh distribution measures Button at 12,378 / 11,035 / 11,300B
+// gzip (web / iOS / Android). Its fixed ceiling is 12,800B (3.4% web headroom).
+// The whole-package and all other consumer ceilings stay unchanged.
 export const NAMED_IMPORT_BUDGETS: readonly JavaScriptBudget[] = [
-  { label: "Button + ThemeProvider", entry: "scripts/size-fixtures/button.ts", maxGzip: 12_288, requiredExports: ["Button", "ThemeProvider"] },
+  { label: "Button + ThemeProvider", entry: "scripts/size-fixtures/button.ts", maxGzip: 12_800, requiredExports: ["Button", "ThemeProvider"] },
   { label: "Input + ThemeProvider", entry: "scripts/size-fixtures/input.ts", maxGzip: 43_008, requiredExports: ["Input", "ThemeProvider"] },
   { label: "DataTable + ThemeProvider", entry: "scripts/size-fixtures/data-table.ts", maxGzip: 53_248, requiredExports: ["DataTable", "ThemeProvider"] },
   { label: "StackedList + ThemeProvider", entry: "scripts/size-fixtures/stacked-list.ts", maxGzip: 65_536, requiredExports: ["StackedList", "ThemeProvider"] },

@@ -37,6 +37,26 @@ A button's whole job is to fire `onPress`. Wire it to your own handler and every
 
 ## Variants
 
+### Inline identity and reference actions
+
+```tsx
+<Row comfortable alignCenter>
+  <Button identityAction ghost steadyPress iconLeft={<Avatar annotation initials="S" hue={20} />}>Scout v2.3</Button>
+  <Button referenceLink inlineLink link steadyPress iconRight={<Icon externalLink size={10} heavyStroke muted />}>CORE-1790</Button>
+  <Button inlineIcon inlineLink link steadyPress iconLeft={<Icon externalLink size={13} heavyStroke primary />} accessibilityLabel="Open repository" />
+</Row>
+```
+
+### Theme choices
+
+```tsx
+<Row snug>
+  <Button themeChoice ghost steadyPress selected>blush</Button>
+  <Button themeChoice ghost steadyPress>mint</Button>
+</Row>
+```
+
+
 ### Scope and filter triggers
 
 ```tsx

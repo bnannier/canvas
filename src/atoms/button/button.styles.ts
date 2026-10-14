@@ -18,6 +18,11 @@ export type Intent = "primary" | "secondary" | "destructive" | "outline" | "ghos
 export type Size = "small" | "base" | "large";
 
 export interface ButtonSkinOpts {
+  identityAction?: boolean;
+  referenceLink?: boolean;
+  inlineIcon?: boolean;
+  themeChoice?: boolean;
+  selected?: boolean;
   scopeTrigger?: boolean;
   filterTrigger?: boolean;
   inlineLink?: boolean;
@@ -159,7 +164,9 @@ export function webEmphasisOf(p: Pick<ButtonSkinOpts, "inlineLink" | "inverse" |
 }
 
 /** Utility hover wins over inverse emphasis on an icon control. */
-export function webHoverKindOf(p: Pick<ButtonSkinOpts, "utility" | "inlineLink" | "inverse">) {
+export function webHoverKindOf(p: Pick<ButtonSkinOpts, "themeChoice" | "identityAction" | "utility" | "inlineLink" | "inverse">) {
+  if (p.themeChoice) return "themeChoice";
+  if (p.identityAction) return "inlineLink";
   if (p.utility) return "utility";
   if (p.inlineLink) return "inlineLink";
   if (p.inverse) return "inverse";
@@ -173,8 +180,12 @@ export function webLinkInkOf(p: Pick<ButtonSkinOpts, "inverse" | "foreground">) 
   return "primary";
 }
 
-/** Unboxed text actions win over utility-box metrics. */
-export function webBodyOf(p: Pick<ButtonSkinOpts, "scopeTrigger" | "filterTrigger" | "inlineLink" | "utility">) {
+/** Resolve reference anatomy before generic utility-box metrics. */
+export function webBodyOf(p: Pick<ButtonSkinOpts, "themeChoice" | "identityAction" | "referenceLink" | "inlineIcon" | "scopeTrigger" | "filterTrigger" | "inlineLink" | "utility">) {
+  if (p.themeChoice) return "themeChoice";
+  if (p.identityAction) return "identity";
+  if (p.referenceLink) return "reference";
+  if (p.inlineIcon) return "inlineIcon";
   if (p.scopeTrigger) return "scope";
   if (p.filterTrigger) return "filter";
   if (p.inlineLink) return "link";
@@ -214,6 +225,9 @@ const WEB_PAD: Record<Size, { v: number; h: number; ctaH: number }> = {
   large: { v: 10, h: 20, ctaH: 22 },
 };
 // Preserve Argus's exact 1.3 line-height for its small and base button sizes.
+const IDENTITY_ACTION_TYPE: TextStyle = { fontSize: 12, lineHeight: 18, fontWeight: "700" };
+const REFERENCE_LINK_TYPE: TextStyle = { fontSize: 10, lineHeight: 15, fontWeight: "800", letterSpacing: 0.4 };
+const THEME_CHOICE_TYPE: TextStyle = { fontSize: 11.5, lineHeight: 16.1, fontWeight: "600" };
 const FILTER_TRIGGER_TYPE: TextStyle = { fontSize: 11.5, lineHeight: 14.95, fontWeight: "700" };
 const SCOPE_TRIGGER_TYPE: TextStyle = { fontSize: 12, lineHeight: 15.6, fontWeight: "700" };
 const INLINE_LINK_TYPE: Record<Size, TextStyle> = { small: FS(11.5, 14.95), base: FS(12, 15.6), large: FS(14, 18.2) };
@@ -240,9 +254,13 @@ export const webSkin: ButtonSkin = {
     const look = webLook(t, intent, o);
     const pad = WEB_PAD[size];
     const body = webBodyOf(o);
+    if (body === "themeChoice") return { ...ROW, backgroundColor: o.selected ? t["primary-soft"] : "transparent", borderRadius: shape.web.pill, paddingVertical: 4, paddingHorizontal: 10, borderWidth: 0 };
+    if (body === "identity" || body === "reference" || body === "inlineIcon" || body === "link") {
+      const gap = body === "identity" ? 6 : body === "inlineIcon" ? 0 : 5;
+      return { ...ROW, gap, backgroundColor: "transparent", padding: body === "inlineIcon" ? 2 : 0, borderWidth: 0 };
+    }
     if (body === "scope") return { ...ROW, gap: 8, paddingVertical: 7, paddingLeft: 14, paddingRight: 12, borderRadius: shape.web.pill, borderWidth: 1, borderColor: t.border, backgroundColor: t["field-fill"] ?? t.input };
     if (body === "filter") return { ...ROW, gap: 6, paddingVertical: 6, paddingLeft: 14, paddingRight: 10, borderRadius: shape.web.pill, borderWidth: 1, borderColor: t.border, backgroundColor: "transparent" };
-    if (body === "link") return { ...ROW, gap: 5, backgroundColor: "transparent", padding: 0, borderWidth: 0 };
     if (body === "utility") {
       const box = UTILITY_BOX[o.iconBox!];
       return { ...ROW, width: box + (o.wideIcon ? 2 : 0), height: box, borderRadius: o.circle ? shape.web.pill : platformShape.web.utilityControl, borderWidth: intent === "outline" ? 1 : 0, borderColor: t.border, backgroundColor: o.inset ? t.secondary : "transparent" };
@@ -265,9 +283,12 @@ export const webSkin: ButtonSkin = {
   label: (t, intent, size, o) => {
     const type = WEB_TYPE[size];
     const body = webBodyOf(o ?? {});
+    if (body === "themeChoice") return { ...THEME_CHOICE_TYPE, color: o?.selected ? primaryText(t) : t["muted-foreground"] };
+    if (body === "identity") return { ...IDENTITY_ACTION_TYPE, color: t.foreground };
+    if (body === "reference") return { ...REFERENCE_LINK_TYPE, color: primaryText(t) };
     if (body === "scope") return { ...SCOPE_TRIGGER_TYPE, color: t.foreground };
     if (body === "filter") return { ...FILTER_TRIGGER_TYPE, color: t["muted-foreground"] };
-    if (webBodyOf(o ?? {}) === "link") {
+    if (body === "link") {
       return { ...INLINE_LINK_TYPE[size], fontWeight: o?.extraBold ? "800" : "700", color: webLook(t, "link", o).label };
     }
     const cta = WEB_CTA.has(intent) && !o?.disabled;
@@ -288,6 +309,7 @@ export const webSkin: ButtonSkin = {
   // label at 4.33:1 on the blush page and 4.42:1 on mint; 0.9 holds 4.80 and 4.90 (WCAG 1.4.3).
   hover: (t, intent, o) => {
     const kind = webHoverKindOf(o ?? {});
+    if (kind === "themeChoice") return null;
     if (kind === "inlineLink") return { opacity: 0.8 };
     if (kind === "utility") return { backgroundColor: hoverFill(t) };
     return kind === "inverse" ? { backgroundColor: "rgba(255,255,255,0.12)" } : intent === "secondary" || intent === "outline" || intent === "ghost" ? { backgroundColor: hoverFill(t) }

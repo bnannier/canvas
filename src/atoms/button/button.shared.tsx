@@ -75,6 +75,15 @@ export interface ButtonProps extends MeasureProps {
   /** Inline text action: compact type, no box, and an 80% pointer-hover opacity. */
   /** Original project-scope pill, including its action-colored dot. */
   scopeTrigger?: boolean;
+  /** Unboxed identity action with a leading avatar. */
+  identityAction?: boolean;
+  /** Compact tracked reference-key link. */
+  referenceLink?: boolean;
+  /** Unboxed icon with a small pointer inset. */
+  inlineIcon?: boolean;
+  /** Compact theme choice with an explicit selection state. */
+  themeChoice?: boolean;
+  selected?: boolean;
   /** Original compact filter-menu pill. */
   filterTrigger?: boolean;
   inlineLink?: boolean;
@@ -190,7 +199,7 @@ export function createButton(skin: ButtonSkin) {
     const size = sizeOf(props);
 
     const iconBox = iconBoxOf(props);
-    const opts = { scopeTrigger: !!props.scopeTrigger, filterTrigger: !!props.filterTrigger, inlineLink: !!props.inlineLink, foreground: !!props.foreground, extraBold: !!props.extraBold, utility: iconBox != null, iconBox, wideIcon: !!props.wideIcon, circle: !!props.circle, inset: !!props.inset, inverse: !!props.inverse, quiet: !!props.quiet, softHover: !!props.softHover, consistent: !!props.consistent, comfortable: !!props.comfortable, icon: !!icon, block: !!block, dim: !!(disabled || loading), disabled: !!disabled };
+    const opts = { identityAction: !!props.identityAction, referenceLink: !!props.referenceLink, inlineIcon: !!props.inlineIcon, themeChoice: !!props.themeChoice, selected: !!props.selected, scopeTrigger: !!props.scopeTrigger, filterTrigger: !!props.filterTrigger, inlineLink: !!props.inlineLink, foreground: !!props.foreground, extraBold: !!props.extraBold, utility: iconBox != null, iconBox, wideIcon: !!props.wideIcon, circle: !!props.circle, inset: !!props.inset, inverse: !!props.inverse, quiet: !!props.quiet, softHover: !!props.softHover, consistent: !!props.consistent, comfortable: !!props.comfortable, icon: !!icon, block: !!block, dim: !!(disabled || loading), disabled: !!disabled };
     const sizing = useSizing(props);
     const container = skin.container(tokens, intent, size, opts);
     // Under glass a button that paints a surface (the skin says which) is a CONTROL-layer
@@ -262,7 +271,7 @@ export function createButton(skin: ButtonSkin) {
           {...target}
           accessibilityRole={href != null || props.inlineLink ? "link" : "button"}
           accessibilityLabel={accessibilityLabel}
-          accessibilityState={{ busy: !!loading, disabled: !!(disabled || loading) }}
+          accessibilityState={{ busy: !!loading, disabled: !!(disabled || loading), selected: props.selected }}
           aria-busy={loading ? true : undefined}
           // RNW drops accessibilityState, so the disabled state needs its aria
           // alias too (the kit's dual-a11y contract). Only emitted when true, so
