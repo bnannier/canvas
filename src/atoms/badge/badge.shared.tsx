@@ -1,6 +1,8 @@
 import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
+import { Linking } from "react-native";
 import { type ReactNode } from "react";
-import { View, Text, useHugStyle, statusColors, MONO_FONT, type ColorTokens, type LayoutStyle, type StyleProp, type ViewStyle, type TextStyle, GlassPane, paneStyle } from "../../style/index.js";
+import { View, Text, Pressable, alpha, useHugStyle, statusColors, MONO_FONT, type ColorTokens, type LayoutStyle, type StyleProp, type ViewStyle, type TextStyle, GlassPane, paneStyle } from "../../style/index.js";
+import { useHover } from "../../style/hover.js";
 import { actionFill, actionInk } from "../../style/action.js";
 
 // Shared Badge shell. The structure (a metadata pill, or a status pill with a leading
@@ -40,6 +42,32 @@ export interface BadgeProps {
   children?: ReactNode;
   // Family: metadata badge (default) vs. status badge (with a dot).
   status?: boolean;
+  /** Soft intent fill with matching ink. */
+  soft?: boolean;
+  solid?: boolean;
+  action?: boolean;
+  primary?: boolean;
+  inverse?: boolean;
+  /** Neutral border-colored fill. */
+  neutralFill?: boolean;
+  /** Foreground ink on the quiet surface. */
+  foreground?: boolean;
+  /** Dense 10px status label. */
+  small?: boolean;
+  /** Compact, extra-bold 10px count. */
+  count?: boolean;
+  /** Solid count used in navigation. */
+  navigationCount?: boolean;
+  /** Squared, tracked reference key; `large` uses the 11px card form. */
+  reference?: boolean;
+  large?: boolean;
+  /** Show the intent dot without switching to the legacy status family. */
+  dot?: boolean;
+  /** Pin to the start when embedded in an unmeasured host layout. */
+  start?: boolean;
+  uppercase?: boolean;
+  /** A reference can open its source in the system browser. */
+  href?: string;
   // Metadata tone (pick one; default is the `secondary` surface pill).
   default?: boolean;
   secondary?: boolean;
@@ -130,6 +158,7 @@ export function createBadge(skin: BadgeSkin) {
     const { tokens } = theme;
     // HUG: content width inside a stretching Column, content-sized in a Row.
     const hug = useHugStyle();
+    const { hovered, target } = useHover(!!props.href);
 
     if (props.status) {
       const tone = statusOf(props);
@@ -171,18 +200,40 @@ export function createBadge(skin: BadgeSkin) {
     }
 
     const tone = toneOf(props);
+    const extended = props.success || props.warning || props.error || props.info || props.solid || props.soft || props.action || props.primary || props.inverse || props.neutralFill || props.foreground || props.small || props.count || props.navigationCount || props.reference || props.large || props.dot || props.uppercase;
+    const intentInk = props.action ? actionFill(tokens) : props.primary || props.reference ? tokens["primary-text"] ?? tokens.primary : props.success ? tokens.success : props.warning ? tokens.warning : props.error ? tokens["destructive-text"] ?? tokens.destructive : props.info ? tokens.info ?? tokens.primary : tokens["muted-foreground"];
+    const intentWash = props.action ? tokens["action-soft"] ?? alpha(actionFill(tokens), 0.12) : props.primary || props.reference ? tokens["primary-soft"] ?? alpha(tokens.primary, 0.12) : props.success ? tokens["success-soft"] ?? alpha(tokens.success, 0.12) : props.warning ? tokens["warning-soft"] ?? alpha(tokens.warning, 0.12) : props.error ? tokens["destructive-soft"] ?? alpha(tokens.destructive, 0.12) : props.info ? tokens["info-soft"] ?? alpha(intentInk, 0.12) : tokens.muted;
+    const base: ViewStyle = extended ? {
+      flexDirection: "row", alignItems: "center", gap: 6,
+      borderRadius: props.reference ? 6 : 999,
+      paddingVertical: props.reference || props.navigationCount ? 2 : props.count ? 1 : 3,
+      paddingHorizontal: props.reference ? props.large ? 8 : 7 : props.navigationCount || props.count ? 7 : props.small ? 8 : 9,
+    } : skin.metaBase;
+    const fill: ViewStyle = extended ? { backgroundColor: props.inverse ? "rgba(255,255,255,0.18)" : props.navigationCount || props.solid ? actionFill(tokens) : props.neutralFill ? tokens.border : props.soft || props.reference ? intentWash : tokens.muted } : metaContainer(tokens, tone);
+    const label: TextStyle = extended ? {
+      fontSize: props.reference ? props.large ? 11 : 10 : props.small || props.count || props.navigationCount ? 10 : 11,
+      lineHeight: props.reference ? props.large ? 14.3 : 13 : props.small || props.count || props.navigationCount ? 13 : 14.3,
+      fontWeight: props.count || props.navigationCount || props.reference ? "800" : "700",
+      letterSpacing: props.reference ? (props.large ? 11 : 10) * 0.04 : props.uppercase ? (props.small || props.count ? 10 : 11) * 0.06 : 0,
+      textTransform: props.uppercase ? "uppercase" : "none",
+      color: props.inverse ? "#ffffff" : props.navigationCount || props.solid ? actionInk(tokens) : props.foreground ? tokens.foreground : intentInk,
+    } : { ...skin.labelType, ...metaLabel(tokens, tone) };
     // An outline badge is deliberately unfilled metadata, so it inherits its host.
     const surfaced = tone !== "outline";
     // The mono modifier asks for a monospace face; RN has no font-family utility, so request
     // the cross-platform monospace alias via inline style.
     const monoStyle = mono ? { fontFamily: MONO_FONT } : null;
 
+    const content = <>
+      {surfaced ? <GlassPane static layer="control" shape={base} brand={metaBrand(tokens, tone)} tint={extended ? fill.backgroundColor as string : metaTint(tokens, tone)} /> : null}
+      {props.dot ? <View style={{ width: skin.dotSize, height: skin.dotSize, borderRadius: 4, backgroundColor: intentInk }} /> : null}
+      {children != null ? <Text style={[label, monoStyle]}>{children}</Text> : null}
+    </>;
+    const rootStyle = [surfaced || theme.increasedContrast ? paneStyle(theme, [base, fill]) : [base, fill], hug, props.start ? { alignSelf: "flex-start" as const } : null, style];
+    if (props.href) return <Pressable accessibilityRole="link" accessibilityLabel={accessibilityLabel ?? `Open ${children}`} onPress={() => Linking.openURL(props.href!)} style={[rootStyle, hovered ? { opacity: 0.85 } : null]} {...target} testID={testID}>{content}</Pressable>;
     return (
-      <View style={[surfaced || theme.increasedContrast ? paneStyle(theme, [skin.metaBase, metaContainer(tokens, tone)]) : [skin.metaBase, metaContainer(tokens, tone)], hug, style]} testID={testID}>
-        {surfaced ? <GlassPane static layer="control" shape={skin.metaBase} brand={metaBrand(tokens, tone)} tint={metaTint(tokens, tone)} /> : null}
-        {children != null ? (
-          <Text style={[skin.labelType, metaLabel(tokens, tone), monoStyle]}>{children}</Text>
-        ) : null}
+      <View style={rootStyle} testID={testID}>
+        {content}
       </View>
     );
   };
