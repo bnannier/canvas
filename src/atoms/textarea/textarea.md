@@ -20,6 +20,12 @@ Inside an overlay, Escape follows the overlay's cancellation policy. A supplied
 `onKeyPress` runs first and can call `preventDefault()` to handle Escape locally.
 Cancelling an IME candidate keeps the overlay open.
 
+`dense` preserves application paragraph fields with 13/19.5 semibold values,
+the dense field inset and explicit visible rows. `eyebrow` supplies the matching
+web label. `accessibilityLabel` overrides the visible label’s accessible name;
+`readOnly` prevents edits without dimming or removing the field from focus.
+`systemFocus` keeps the platform system focus outline.
+
 ## Usage
 
 ```tsx

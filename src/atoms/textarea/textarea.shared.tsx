@@ -1,3 +1,4 @@
+import { fieldEyebrow } from "../../style/field-label.js";
 import { useTextEntryMaterial } from "../../style/text-entry-material.js";
 import { textEntryState } from "../../style/text-entry-state.js";
 import { useInputEscapeBridge } from "../../style/escape-layer.js";
@@ -8,7 +9,7 @@ import { forwardRef, useId, useState } from "react";
 import { type TextInput as RNTextInput, type TextInputProps as RNTextInputProps } from "react-native";
 import { View, Text, TextInput, useFillStyle, FloatingLabel, LabelContent, labelA11y, requiredName, useFloatingLabelRoom, FOCUS_RESET, type MeasureProps, type SizingKey, type StyleProp, type TextStyle, type ViewStyle, GlassPane, paneHost, paneStyle, isGlass, legibleWash, PANE_SIBLING_INPUT } from "../../style/index.js";
 import { type TextEntryProps } from "../input/input.shared.js";
-import { type TextareaSkin, type Size, sizeText, minHeight } from "./textarea.styles.js";
+import { type TextareaSkin, type Size, sizeText, minHeight, denseField, denseText, denseMinHeight } from "./textarea.styles.js";
 
 // A style bump keeping the above-field label spaced from its field (the 6px the
 // Field/Form control stacks use), mirroring the single-line Input.
@@ -69,6 +70,14 @@ export interface TextareaProps extends TextEntryProps, MeasureProps {
    * top once the field is focused or filled. The label names the field for a11y.
    */
   label?: string;
+  eyebrow?: boolean;
+  /** Preserve the platform system focus outline. */
+  systemFocus?: boolean;
+  /** Dense paragraph-entry metrics matching the application field family. */
+  dense?: boolean;
+  accessibilityLabel?: string;
+  /** Prevent edits while retaining focus and the resting appearance. */
+  readOnly?: boolean;
   /**
    * Marks the field as required: appends a destructive "*" to the label (decorative,
    * never in the accessible name) and announces the field as required, through
@@ -182,8 +191,8 @@ export function createTextarea(skin: TextareaSkin) {
     // aria-labelledby -> the label Text's nativeID). A caller override still wins.
     // Natively a required field's name says so (requiredName), since aria-required
     // is web-only.
-    const accessibleName = requiredName(hasLabel ? label : undefined, required);
-    const ariaLabelledby = hasLabel ? labelId : undefined;
+    const accessibleName = requiredName(props.accessibilityLabel ?? (hasLabel ? label : undefined), required);
+    const ariaLabelledby = hasLabel && props.accessibilityLabel == null ? labelId : undefined;
 
     // Surface the validation problem programmatically, not just as a red border
     // (the border alone fails WCAG 1.4.1 / 4.1.2). `aria-invalid` is the
@@ -203,12 +212,14 @@ export function createTextarea(skin: TextareaSkin) {
     // Everything the multiline field forwards, shared by all three label paths.
     const common = {
       value,
+      systemFocus: props.systemFocus,
+      numberOfLines: props.dense ? Math.max(1, Math.floor(rows ?? 2)) : undefined,
       onChangeText: handleChangeText,
       placeholderTextColor: tokens["muted-foreground"],
       selectionColor: tokens.primary, // brand cursor / selection on every platform
       // Disabled reaches the browser as disabled (out of the tab order) and VoiceOver and
       // TalkBack as dimmed (src/style/text-entry-state.ts).
-      ...textEntryState({ disabled }),
+      ...textEntryState({ disabled, readOnly: props.readOnly }),
       // Text-entry behavior passthrough (the curated TextEntryProps slice).
       defaultValue: props.defaultValue,
       secureTextEntry: props.secureTextEntry,
@@ -246,6 +257,7 @@ export function createTextarea(skin: TextareaSkin) {
     // as an array (not StyleProp) so the floating path can spread it with the reserve.
     const fieldShape = {
       ...skin.field(tokens, { error: isError, focused }),
+      ...(props.dense ? denseField(tokens) : null),
       // Flush material shares the editor's square, borderless shape.
       ...(flush ? FLUSH_SHAPE : null),
     };
@@ -255,12 +267,12 @@ export function createTextarea(skin: TextareaSkin) {
     const fieldStyleWith = (reserve: StyleProp<ViewStyle>): StyleProp<TextStyle>[] => [
       paneStyle(theme, [fieldShape, reserve], focused || isError),
       glass ? { ...PANE_SIBLING_INPUT, backgroundColor: "transparent", borderColor: focused || isError ? (fieldShape.borderColor as string) : "transparent" } : null,
-      skin.text ? skin.text(size) : sizeText(size),
-      minHeight(rows),
+      props.dense ? denseText : skin.text ? skin.text(size) : sizeText(size),
+      props.dense ? denseMinHeight(rows) : minHeight(rows),
       // A framed field paints its own focus state (its border turns `ring`), so the
       // browser ring is suppressed; a flush field has no frame to paint, so it keeps the
       // kit's themed ring, drawn inside it where the toolbar card's clip cannot cut it.
-      flush ? [focusRing, INSET_FOCUS_RING] : FOCUS_RESET,
+      props.systemFocus ? null : flush ? [focusRing, INSET_FOCUS_RING] : FOCUS_RESET,
       // An errored framed field's border shows the error, not its focus, so the kit's
       // ring marks its keyboard focus around the red edge (src/style/focus-frame.tsx).
       isError && !flush ? errorFrame.ring() : null,
@@ -321,10 +333,10 @@ export function createTextarea(skin: TextareaSkin) {
     // above-label type and ink are the skin's `labelAbove` on every platform (on
     // Android, for the flush field, which never floats its label).
     if (above) {
-      const aboveLabelStyle: TextStyle = skin.labelAbove(tokens, size);
+      const aboveLabelStyle: TextStyle = props.eyebrow && skin.referenceLabel ? fieldEyebrow(tokens) : skin.labelAbove(tokens, size);
       return (
         <View style={[LABEL_GAP, disabledDim, widthCap, style]}>
-          <Text nativeID={labelId} style={aboveLabelStyle} {...labelA11y(label!, true)}>
+          <Text nativeID={labelId} style={aboveLabelStyle} {...labelA11y(label!, props.accessibilityLabel == null)}>
             <LabelContent label={label!} required={required} starColor={tokens.destructive} />
           </Text>
           <View style={paneHost(theme)}>

@@ -40,6 +40,7 @@ export interface TextareaFieldState {
 export interface TextareaSkin extends FloatingLabelStyles<Size> {
   /** Clear Liquid Glass text entry on the web appearance. */
   liquid?: boolean;
+  referenceLabel?: boolean;
   /** The above-field label's whole type and ink: every skin supplies it, Android's too,
    *  for the flush field, which never floats its label. */
   labelAbove: NonNullable<FloatingLabelStyles<Size>["labelAbove"]>;
@@ -98,6 +99,7 @@ export function minHeight(rows?: number): TextStyle {
 // focus(ring) > the resting `field-border` hairline (see src/style/field-colors.ts).
 export const webSkin: TextareaSkin = {
   liquid: true,
+  referenceLabel: true,
   field: (t, st) => ({
     width: "100%",
     borderRadius: shape.web.field,
@@ -192,3 +194,8 @@ export const androidSkin: TextareaSkin = {
   // passes the soft cap.
   count: (t, over) => ({ fontSize: 12, lineHeight: 16, letterSpacing: 0.4, color: over ? destructiveText(t) : t["muted-foreground"] }),
 };
+
+/** Dense paragraph entry shares Argus Input's inset and semibold values. */
+export const denseText: TextStyle = { fontSize: 13, lineHeight: 19.5, fontWeight: "600" };
+export const denseField = (tokens: ColorTokens): TextStyle => ({ paddingVertical: 10, paddingHorizontal: 12, backgroundColor: tokens["field-fill"] ?? tokens.card });
+export const denseMinHeight = (rows?: number): TextStyle => ({ minHeight: 20 + Math.max(1, Math.floor(rows ?? 2)) * 19.5 });
