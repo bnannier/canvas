@@ -1,7 +1,9 @@
+import { Badge } from "../badge/badge.js";
+import { sectionDescription, sectionRow, sectionActions } from "./typography.styles.js";
 import { identityTextInk } from "../../style/identity-text.js";
 import { type ReactNode } from "react";
 import { type AccessibilityRole, type GestureResponderEvent } from "react-native";
-import { Text, useHugStyle, useTheme, MONO_FONT, type StyleProp, type TextStyle, innerFill, tabularNums } from "../../style/index.js";
+import { View, Text, useHugStyle, useTheme, MONO_FONT, type StyleProp, type TextStyle, innerFill, tabularNums } from "../../style/index.js";
 import {
   type Role,
   type Tone,
@@ -54,6 +56,11 @@ import {
 // nearest one (text-sm), as Kbd does for its 11px label.
 
 export interface TypographyProps {
+  /** A section heading owning its count, metadata and trailing actions. */
+  section?: boolean;
+  count?: number | string;
+  description?: string;
+  actions?: ReactNode;
   /** Exact Argus reading roles; these preserve the original dense web type. */
   subheading?: boolean;
   label?: boolean;
@@ -314,14 +321,14 @@ export function createTypography(skin: TypographySkin) {
     // can navigate heading-by-heading (the H key / rotor); body/helper roles
     // stay plain text. aria-level + accessibilityLevel pin the level on web and
     // native (otherwise RNW emits every header as h1).
-    const level = HEADING_LEVEL[role];
+    const level = HEADING_LEVEL[role] ?? (props.section ? 6 : undefined);
 
     // A real browser link on the web (react-native-web renders Text carrying
     // `href` as one); native ignores these and navigates through onPress. RN's
     // prop types don't know the web-forwarded props, hence the narrow spread.
     const anchor = props.href != null ? { href: props.href, hrefAttrs: props.hrefAttrs } : null;
 
-    return (
+    const label = (
       <Text
         {...(anchor ?? undefined)}
         testID={testID}
@@ -377,5 +384,12 @@ export function createTypography(skin: TypographySkin) {
         {children}
       </Text>
     );
+    if (props.section) return <View style={sectionRow}>
+      {label}
+      {props.count === undefined ? null : <Badge count start>{String(props.count)}</Badge>}
+      {props.description ? <Text style={sectionDescription(tokens, role === "subheading")}>{props.description}</Text> : null}
+      {props.actions ? <View style={sectionActions}>{props.actions}</View> : null}
+    </View>;
+    return label;
   };
 }
