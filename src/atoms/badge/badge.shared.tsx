@@ -1,3 +1,4 @@
+import { NotificationBadge } from "./badge.notification.js";
 import { platformShape } from "../../style/platform-shape.js";
 import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
 import { Linking } from "react-native";
@@ -24,8 +25,6 @@ import { actionFill, actionInk } from "../../style/action.js";
 // The colors come from the theme's roles through statusColors (src/style/status.ts), the
 // same place Alert and the other toned surfaces read theirs, so a "warning" badge and a
 // "warning" alert in one view are the same state.
-
-const NOTIFICATION_TYPE: TextStyle = { fontSize: 9.5 };
 
 export type Tone = "default" | "secondary" | "outline" | "destructive";
 export type Status = "success" | "warning" | "error" | "info" | "neutral";
@@ -241,6 +240,8 @@ export function createBadge(skin: BadgeSkin) {
       );
     }
 
+    if (props.notification) return <NotificationBadge style={style} testID={testID}>{children}</NotificationBadge>;
+
     const tone = toneOf(props);
     const extended = props.success || props.warning || props.error || props.info || props.solid || props.soft || props.action || props.primary || props.inverse || props.neutralFill || props.foreground || props.small || props.count || props.navigationCount || props.notification || props.reference || props.large || props.dot || props.uppercase;
     const intent = badgeIntentOf(props);
@@ -248,12 +249,11 @@ export function createBadge(skin: BadgeSkin) {
     const surfaceKind = badgeSurfaceOf(props);
     const inkKind = badgeInkOf(props);
     const tracking = badgeTrackingOf(props);
-    const notification = metric === "notification";
     const reference = metric === "reference";
     const navigation = metric === "navigationCount";
     const count = metric === "count";
     const small = metric === "small";
-    const labelMetrics: TextStyle = notification ? NOTIFICATION_TYPE : { fontSize: reference ? props.large ? 11 : 10 : small || count || navigation ? 10 : 11 };
+    const labelMetrics: TextStyle = { fontSize: reference ? props.large ? 11 : 10 : small || count || navigation ? 10 : 11 };
     const fontSize = Number(labelMetrics.fontSize);
     const intentInk = intent === "action" ? actionFill(tokens) : intent === "primary" ? tokens["primary-text"] ?? tokens.primary : intent === "success" ? tokens.success : intent === "warning" ? tokens.warning : intent === "error" ? tokens["destructive-text"] ?? tokens.destructive : intent === "info" ? tokens.info ?? tokens.primary : tokens["muted-foreground"];
     const intentWash = intent === "action" ? tokens["action-soft"] ?? alpha(actionFill(tokens), 0.12) : intent === "primary" ? tokens["primary-soft"] ?? alpha(tokens.primary, 0.12) : intent === "success" ? tokens["success-soft"] ?? alpha(tokens.success, 0.12) : intent === "warning" ? tokens["warning-soft"] ?? alpha(tokens.warning, 0.12) : intent === "error" ? tokens["destructive-soft"] ?? alpha(tokens.destructive, 0.12) : intent === "info" ? tokens["info-soft"] ?? alpha(intentInk, 0.12) : tokens.muted;
@@ -263,11 +263,10 @@ export function createBadge(skin: BadgeSkin) {
       paddingVertical: reference || navigation ? 2 : count ? 1 : 3,
       paddingHorizontal: reference ? props.large ? 8 : 7 : navigation || count ? 7 : small ? 8 : 9,
     } : skin.metaBase;
-    if (notification) Object.assign(base, { minWidth: 16, height: 16, paddingVertical: 0, paddingHorizontal: 4, justifyContent: "center" });
     const fill: ViewStyle = extended ? { backgroundColor: surfaceKind === "inverse" ? "rgba(255,255,255,0.18)" : surfaceKind === "solid" ? actionFill(tokens) : surfaceKind === "neutral" ? tokens.border : surfaceKind === "soft" ? intentWash : tokens.muted } : metaContainer(tokens, tone);
     const label: TextStyle = extended ? {
-      ...labelMetrics, lineHeight: notification ? 9.5 : fontSize === 10 ? 13 : 14.3,
-      fontWeight: notification || count || navigation || reference ? "800" : "700",
+      ...labelMetrics, lineHeight: fontSize === 10 ? 13 : 14.3,
+      fontWeight: count || navigation || reference ? "800" : "700",
       letterSpacing: tracking === "reference" ? fontSize * 0.04 : tracking === "uppercase" ? fontSize * 0.06 : 0,
       textTransform: props.uppercase ? "uppercase" : "none",
       color: inkKind === "inverse" ? "#ffffff" : inkKind === "solid" ? actionInk(tokens) : inkKind === "foreground" ? tokens.foreground : intentInk,
