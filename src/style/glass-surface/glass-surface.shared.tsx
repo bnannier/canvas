@@ -28,6 +28,12 @@ import { useIsomorphicLayoutEffect } from "../use-isomorphic-layout-effect.js";
 export type GlassLayer = "functional" | "content" | "control" | "dense";
 
 export interface GlassSurfaceProps {
+  /** Original Argus frame frost. Its tint and blur apply to this surface while
+   * descendants retain their own material preference. Shape, exterior shadow,
+   * and the opaque accessibility fallback come from the frame’s skin style. */
+  frosted?: boolean;
+  /** Original lightly frosted modal dim layer; takes precedence over frosted. */
+  veil?: boolean;
   /**
    * Which layer of the glass model this surface is, so it takes that layer's tint
    * and blur: nested glass reads as distinct planes only because a control puck is
@@ -339,6 +345,9 @@ export function surfaceIntensity(layer: GlassLayer, sheer: boolean | undefined):
   if (sheer) return SHEER_INTENSITY;
   return layer === "content" ? CONTENT_INTENSITY : GLASS_INTENSITY;
 }
+
+/** Original Argus native blur calibration: 24px maps to 100, 2px to rounded 8. */
+export const FRAME_FROST_INTENSITY = { frame: 100, veil: 8 } as const;
 
 // The SHEER frost (GlassSurfaceProps.sheer): a lighter blur plus a thinner tint (the
 // fill layer is drawn at SHEER_FILL_OPACITY, so the glass tint's effective alpha drops

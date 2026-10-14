@@ -1378,3 +1378,14 @@ existing Avatar gains those capabilities; its default identity ramp is unchanged
 | Date | Effect and profile | Runtime and device | Revision (dirty?) | Surface | Values tried | rAF p50 / p95 / max (ms) | What the comparison showed | Versus reference | Artifacts |
 |---|---|---|---|---|---|---|---|---|---|
 | 2026-10-14 | Static Argus identity adoption | Playwright, installed Google Chrome headless, DPR 1, macOS; 1440 x 960 and 390 x 844 | Canvas f944cd82 plus Avatar changes; Argus ec77e14 plus Avatar import | shipped Argus web `/roster`, `/metrics`, `/merge-requests`, `/runs`, solid, blush / mint / dark | Existing Argus gradient stops and 48 conic segments copied exactly; removed the extra underpaint beneath the gradient to preserve circle-edge antialiasing | n/a (static) | Desktop Roster/Metrics entire-page differences 0–30 pixels; Scout, account and approver avatar regions in blush differ by zero pixels. Twelve phone comparisons against the same committed app with legacy Avatar differ by 0–1 pixels over the entire screenshot. Disc, ring and text bounds are preserved. | matches the Argus identity reference on these web surfaces; native-device rendering was not assessed | `tools/native/reference/argus-avatar-adoption/argus-phone-before.png` and `argus-phone-after.png` (zero pixels different) |
+
+## Argus frame adoption, 2026-10-14
+
+The existing Argus frame is the reference: its 24px backdrop blur, existing tint,
+22px browser frame and exterior shadow, full-width desktop frame without an extra
+rim, and unchanged sidebar and macOS drag band. The frame material stays separate
+from the opaque Canvas controls it contains. No optical values were retuned.
+
+| Date | Effect and profile | Runtime and device | Revision (dirty?) | Surface | Values tried | rAF p50 / p95 / max (ms) | What the comparison showed | Versus reference | Artifacts |
+|---|---|---|---|---|---|---|---|---|---|
+| 2026-10-14 | Original Argus frame frost | Installed Chrome headless, macOS, DPR 1; browser 1440 / 768 / 390 wide; Tauri layout emulated at 1440 / 768 | Canvas aaa12570 plus frame changes; Argus d814bd6 plus frame import | shipped Argus web `/roster`, `/board`, `/metrics`, blush / mint / dark; browser and desktop layout branches | Original 24px blur and palette tint on the same content host; keep the frame's own geometry, shadow and hairline | n/a (static) | All 18 desktop-layout captures are pixel-identical. Browser comparisons preserve layout and appearance: most are identical, sparse edge differences are 1–101 pixels, and the first blush phone roster differs by at most 2 RGB levels across 6,229 pixels. Native WKWebView, iOS and Android rendering were not assessed. | matches the Argus frame reference on these web surfaces; the new veil flavor is not assessed by this frame comparison | `tools/native/reference/argus-frame-adoption/tauri-layout-before.png` and `tauri-layout-after.png` (zero pixels different) |
