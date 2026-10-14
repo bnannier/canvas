@@ -1,4 +1,4 @@
-import { alpha, tabularNums, type ColorTokens, type TextStyle } from "../../style/index.js";
+import { alpha, tabularNums, type ColorTokens, type TextStyle, type ViewStyle } from "../../style/index.js";
 import { actionFill } from "../../style/action.js";
 import { typeScale } from "../../style/type-scale.js";
 import { type ProgressSkin, type Size } from "./progress.shared.js";
@@ -104,4 +104,9 @@ export const webSkin: ProgressSkin = {
   description: dfDescription,
   valueReadout: dfValueReadout,
   indeterminateWidth: 0.3,
+};
+
+export const SEGMENTED_METER: { row: ViewStyle; dash: ViewStyle } = {
+  row: { flexDirection: "row", gap: 3 },
+  dash: { width: 13, height: 5, borderRadius: 2 },
 };

@@ -1,7 +1,8 @@
+import { SEGMENTED_METER } from "./progress.styles.js";
 import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
 import { useEffect, useRef, useState, type ComponentType, type ReactNode } from "react";
 import { Animated, Easing, type LayoutChangeEvent } from "react-native";
-import { View, Text, useFillStyle, useReducedMotion, supportsNativeDriver, statusColors, type ColorTokens, type LayoutStyle, type MeasureProps, type ViewStyle, type TextStyle, type StyleProp, GlassPane, paneHost, isGlass, innerFill } from "../../style/index.js";
+import { View, Text, useFillStyle, useHugStyle, useReducedMotion, supportsNativeDriver, statusColors, GlassPane, isGlass, innerFill, paneHost, type ColorTokens, type LayoutStyle, type MeasureProps, type ViewStyle, type TextStyle, type StyleProp } from "../../style/index.js";
 
 // Shared Progress shell. Uses React Native's primitives DIRECTLY (no engine className
 // layer) and reads the active brand tokens via so the track/fill colors follow
@@ -29,6 +30,8 @@ import { View, Text, useFillStyle, useReducedMotion, supportsNativeDriver, statu
 export interface ProgressProps extends MeasureProps {
   /** Completion as a 0..1 fraction (clamped). Ignored when `indeterminate`. Defaults to 0. */
   value?: number;
+  /** A fixed number of discrete dashes, filled by the same fractional value. */
+  segments?: number;
   /** Indeterminate mode: ignore `value` and animate a sliding bar (a spinner on iOS). */
   indeterminate?: boolean;
   /**
@@ -169,6 +172,7 @@ export function createProgress(skin: ProgressSkin, parts: ProgressParts = {}) {
     const glass = isGlass(theme);
     // FILL, appended after the skin's width:"100%" (the row-sharing pair).
     const widthStyle = useFillStyle("Progress", props);
+    const hugStyle = useHugStyle();
 
     const height = skin.height[size];
     // The track and the fill are capsules on every platform: 9999 clamps to half the bar.
@@ -292,6 +296,17 @@ export function createProgress(skin: ProgressSkin, parts: ProgressParts = {}) {
         {description != null ? <Text style={skin.description(tokens)}>{description}</Text> : null}
       </View>
     ) : null;
+
+    if (props.segments != null && !indeterminate) {
+      const count = Number.isFinite(props.segments) ? Math.max(0, Math.floor(props.segments)) : 0;
+      const meter = <View accessibilityRole="progressbar" accessibilityLabel={accessibilityName}
+        accessibilityValue={{ min: 0, max: 100, now: Math.round(fraction * 100) }}
+        aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(fraction * 100)}
+        testID={hasHeader ? undefined : testID} style={[SEGMENTED_METER.row, hugStyle, hasHeader ? null : style]}>
+        {Array.from({ length: count }, (_, i) => <View key={i} style={[SEGMENTED_METER.dash, { backgroundColor: i < fraction * count ? fillColor : tokens.border }]} />)}
+      </View>;
+      return hasHeader ? <View testID={testID} style={[ROOT_STACK, widthStyle, style]}>{header}{meter}</View> : meter;
+    }
 
     if (indeterminate && IndeterminateSpinner) {
       const spinner = (
