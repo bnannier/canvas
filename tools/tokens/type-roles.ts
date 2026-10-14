@@ -29,7 +29,7 @@ export type ReadingRole = keyof typeof READING_FLOOR;
 
 export const TEXT_ROLES: Record<string, Record<string, ReadingRole>> = {
   "src/style/field-label.ts": { fieldEyebrow: "caption" },
-  "src/atoms/input/input.styles.ts": { "webSkin.labelAbove": "caption" },
+  "src/atoms/input/input.styles.ts": { "webSkin.search.placeholder": "tiny", "webSkin.labelAbove": "caption" },
   "src/atoms/select/select.styles.ts": { "webSkin.label": "caption" },
   // Dark Factory's sub-12 styles, by the Typography role each one serves.
   "src/style/type-scale.ts": {
