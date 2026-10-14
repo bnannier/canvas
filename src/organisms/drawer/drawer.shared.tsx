@@ -1,4 +1,5 @@
 import { scrimFill } from "../../style/scrim.js";
+import { useScrimFrost } from "../../style/glass-surface/scrim-frost.js";
 import { useCallback, useEffect, useRef, useState, type ComponentType, type ReactNode } from "react";
 import { EscapeLayerProvider, useEscapeLayer } from "../../style/escape-layer.js";
 import { OverlayProvider } from "../../style/portal.js";
@@ -103,6 +104,8 @@ export function createDrawer(skin: DrawerSkin, Button: ButtonComponent = WebButt
   return function Drawer(props: DrawerProps) {
     const { children, open: openProp, onOpenChange, trigger, width = 288, accessibilityLabel, testID, style } = props;
     const { tokens, scheme } = useTheme();
+    // Under glass on the web the scrim also blurs what it dims (GS-6); null everywhere else.
+    const scrimFrost = useScrimFrost();
     const edge = edgeOf(props);
 
     // Uncontrolled by default: the trigger opens the drawer and the scrim closes it; a
@@ -271,7 +274,7 @@ export function createDrawer(skin: DrawerSkin, Button: ButtonComponent = WebButt
                         panel against its edge and rides it in on translateX/translateY; it is
                         box-none, so only the panel itself takes a tap. */}
                     <View style={{ flex: 1 }} collapsable={false} onAccessibilityEscape={escapeScope.onAccessibilityEscape}>
-                      <Animated.View style={[StyleSheet.absoluteFill, { backgroundColor: dimFill, opacity: dimOpacity }]} />
+                      <Animated.View style={[StyleSheet.absoluteFill, { backgroundColor: dimFill, opacity: dimOpacity }, scrimFrost]} />
                       <Pressable accessible={false} focusable={false} tabIndex={-1} importantForAccessibility="no" style={StyleSheet.absoluteFill} onPress={() => setOpen(false)} />
                       <View style={s.panelLayer[edge]}>
                         <Animated.View style={[s.slideLayer, { transform: slideTransform }]}>{panel}</Animated.View>

@@ -95,6 +95,7 @@ import { isRTL } from "./rtl.js";
 import { useFormFactor } from "./responsive.js";
 import { useTheme } from "./theme.js";
 import { scrimFill } from "./scrim.js";
+import { useScrimFrost } from "./glass-surface/scrim-frost.js";
 import { OverlayPortContext, OverlayRowsContext, OverlayScrollContext, OverlayScrollView, type OverlayPort } from "./overlay-scroll.js";
 import { useIsomorphicLayoutEffect } from "./use-isomorphic-layout-effect.js";
 import { useHardwareBack } from "./use-hardware-back.js";
@@ -724,6 +725,8 @@ function HostedAnchoredOverlay({ host, frame, onDismiss, onAccessibilityEscape, 
   // owner's AO-6 decision; the window read is bucket-granular, and only while open).
   const sheet = useFormFactor() === "phone" && sheetStyle != null && dismissable;
   const { tokens } = useTheme();
+  // A phone sheet's scrim also blurs what it dims under glass on the web (GS-6).
+  const scrimFrost = useScrimFrost();
   // The outlet the card paints in: its window's layer when an outside tap can close
   // it, so the backdrop spans the window; otherwise its nearest provider's (see the
   // header). `inPlace` when that is the frame's own outlet.
@@ -1056,7 +1059,7 @@ function HostedAnchoredOverlay({ host, frame, onDismiss, onAccessibilityEscape, 
         {/* The dismiss backdrop only earns its keep when a tap on it can close the
             card; a non-dismissable overlay renders without it so the page under an
             always-open card stays interactive. */}
-        {dismissable ? <Pressable accessible={false} focusable={false} tabIndex={-1} importantForAccessibility="no-hide-descendants" accessibilityElementsHidden aria-hidden style={sheet ? [BACKDROP, { backgroundColor: scrimFill(tokens, SHEET_SCRIM_ALPHA) }] : BACKDROP} onPress={onDismiss} /> : null}
+        {dismissable ? <Pressable accessible={false} focusable={false} tabIndex={-1} importantForAccessibility="no-hide-descendants" accessibilityElementsHidden aria-hidden style={sheet ? [BACKDROP, { backgroundColor: scrimFill(tokens, SHEET_SCRIM_ALPHA) }, scrimFrost] : BACKDROP} onPress={onDismiss} /> : null}
         {/* Hold the card until the first measurement lands, so it never flashes at
             (0,0). The backdrop above is transparent, so a frame before the card
             shows nothing. */}

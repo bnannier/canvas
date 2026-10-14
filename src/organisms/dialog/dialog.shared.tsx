@@ -9,6 +9,7 @@ import { Input as WebInput } from "../../atoms/input/input.js";
 import * as s from "./dialog.styles.js";
 import { type Size, type DialogSkin } from "./dialog.styles.js";
 import { glassMessageStyle } from "../../style/glass-message.js";
+import { ScrimFrost } from "../../style/glass-surface/scrim-frost.js";
 
 // Shared Dialog shell. The structure (an optional trigger plus a modal panel
 // centered over a dimmed backdrop, a title, an optional description, an optional
@@ -274,6 +275,11 @@ export function createDialog(skin: DialogSkin, parts: DialogParts = {}) {
     // Optional trigger button plus the modal. The modal is a contained dim
     // backdrop: a centered scrim with presence in the preview (explicit
     // minHeight) so the panel reads as a modal within the area.
+    const backdrop = [
+      skin.backdrop(tokens),
+      trigger != null && !overlay ? s.backdropTriggerGap : null,
+      overlay ? s.backdropOverlay : s.backdropLayout,
+    ];
     return (
       <View testID={testID} style={s.root}>
         {trigger != null ? (
@@ -305,12 +311,12 @@ export function createDialog(skin: DialogSkin, parts: DialogParts = {}) {
             aria-label={accessibilityLabel}
             aria-labelledby={children == null && title != null ? titleId : undefined}
             aria-describedby={children == null && description != null ? descriptionId : undefined}
-            style={[
-              skin.backdrop(tokens),
-              trigger != null && !overlay ? s.backdropTriggerGap : null,
-              overlay ? s.backdropOverlay : s.backdropLayout,
-            ]}
+            style={backdrop}
           >
+            {/* Under glass on the web the scrim also blurs what it dims (GS-6), on a layer
+                of its own beneath the card: on this node, which holds the card, the blur
+                would cut the card's frost off from the page. */}
+            <ScrimFrost shape={backdrop} />
             {props.dismissible ? (
               <Pressable accessible={false} focusable={false} tabIndex={-1}
                 importantForAccessibility="no" style={s.dismissBackdrop} onPress={cancel} />

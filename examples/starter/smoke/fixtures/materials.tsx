@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { ActionSheet, Button, ButtonGroup, Card, Checkbox, Column, Dialog, Drawer, Dropdown, GlassModalBlurTarget, Input, PhoneInput, Radio, RadioGroup, Row, Slider, Switch, ThemeProvider, Typography } from "@nannier-com/canvas";
+import { ActionSheet, Button, ButtonGroup, Card, Checkbox, Column, Dialog, Drawer, Dropdown, GlassModalBlurTarget, Input, PhoneInput, Popover, Radio, RadioGroup, Row, Slider, Switch, ThemeProvider, Typography } from "@nannier-com/canvas";
 
 type Stats = { hosts: number; activeHosts: number; recordings: number; frostViews: number; frameListeners: number };
 declare const require: (name: string) => unknown;
@@ -95,6 +95,14 @@ export function MaterialsBody() {
       </Column></Drawer>
       <ActionSheet trigger="Material sheet" title="Live sheet" message="The sheet's frost samples the page behind it."
         actions={[{ label: "Keep editing", onPress: () => {} }, { label: "Inspect capture from sheet", onPress: inspect }]} />
+      {/* At the phone form factor a Popover is a sheet over a scrim (the owner's AO-6 decision). */}
+      <Popover trigger="Material popover" title="Live popover" description="A sheet over the scrim at phone widths." />
+      {/* The scrim (the owner's GS-6 decision): under glass on the web every modal scrim blurs
+          the page it dims by Dark Factory's 2 px (WEB_FROST.scrimBlur), solid mode and the
+          native scrims not at all. The ruler's hairline glyphs sit under the scrims the
+          triggers above open, so a 2 px blur is measurable on it. */}
+      <Typography h3>Scrim</Typography>
+      <Typography testID="material-scrim-ruler">{"|".repeat(48)} IIIIllll1111 {"|".repeat(48)}</Typography>
       {/* The bridge belongs only inside a Modal. Here, in the page, Android refuses the plane
           it hands this card, and the card keeps its solid skin with no frost mounted; iOS
           and the web ignore the bridge, so the card takes the page's material there. */}

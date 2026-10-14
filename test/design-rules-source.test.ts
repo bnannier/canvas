@@ -531,6 +531,22 @@ describe("a pane and its host read one material", () => {
   });
 });
 
+describe("the web's backdrop blur is the material's alone", () => {
+  // No component hand-paints glass (CLAUDE.md, the glass model): a backdrop filter is the web
+  // host's frost (glass-surface.tsx) and the modal scrim's blur (scrim-frost.tsx, the owner's
+  // GS-6 decision), both read from web-frost.ts and both resolved through the material, so
+  // solid mode and the accessibility ladder never sample the backdrop.
+  const OWNERS = new Set(["src/style/glass-surface/glass-surface.tsx", "src/style/glass-surface/scrim-frost.tsx"]);
+
+  it("only the material's two web modules set a backdrop filter", () => {
+    // A style key, the React Native spelling a View takes (the CSS name appears only in the
+    // capability probe and in comments).
+    const setters = sources.filter(({ text }) => /\b(?:Webkit)?[bB]ackdropFilter\s*:/.test(text)).map(({ file }) => file);
+    expect(setters.filter((file) => !OWNERS.has(file))).toEqual([]);
+    expect(setters.filter((file) => OWNERS.has(file)).sort()).toEqual([...OWNERS].sort());
+  });
+});
+
 describe("axes are declared, not hand-rolled", () => {
   // An axis of semantic booleans is declared once, as data, in the component's
   // `<dir>.axes.ts` table (src/style/axis.ts), and the shell resolves it with `pick`, so
