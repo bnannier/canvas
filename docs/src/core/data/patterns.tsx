@@ -356,7 +356,7 @@ const density = getDensity();
       {
         title: "The four ingredients",
         description: "Supported material combines a live backdrop, readable tint, and the platform skin's shape. The renderer keeps crisp content above it and restores the full solid skin when material is unavailable.",
-        render: () => (<Notes items={[["Blur material", "Supported native Liquid Glass or native frost; the web uses a 24px plain backdrop blur."], ["Readable tint", "The functional, content, control, and dense layers each have a tint chosen for their role."], ["The skin’s shape", "Shared material rendering keeps the component’s radius and replaces its resting fill and border."], ["A safe live backdrop", "The renderer samples content behind the surface without capturing itself. Text and icons remain crisp."]]} />),
+        render: () => (<Notes items={[["Blur material", "Supported native Liquid Glass or native frost; the web uses a 24px plain backdrop blur, and a 2px blur under a modal's scrim."], ["Readable tint", "The functional, content, control, and dense layers each have a tint chosen for their role."], ["The skin’s shape", "Shared material rendering keeps the component’s radius and replaces its resting fill and border."], ["A safe live backdrop", "The renderer samples content behind the surface without capturing itself. Text and icons remain crisp."]]} />),
       },
       {
         title: "Surface inventory",

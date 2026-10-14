@@ -1,6 +1,6 @@
 # AlertDialog
 
-Catalyst-style confirmation dialog: a centered panel over a dimmed, blurred backdrop, with a title, description, optional body, and action buttons. Reserve it for decisions that must block the rest of the app.
+Catalyst-style confirmation dialog: a centered panel over a dimmed backdrop, which glass on the web also blurs, with a title, description, optional body, and action buttons. Reserve it for decisions that must block the rest of the app.
 
 Browser Escape and iOS accessibility escape cancel the dialog, clear its
 confirmation field and request `open=false`. The confirmation text gates only

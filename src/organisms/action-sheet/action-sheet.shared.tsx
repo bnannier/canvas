@@ -1,4 +1,5 @@
 import { scrimFill } from "../../style/scrim.js";
+import { useScrimFrost } from "../../style/glass-surface/scrim-frost.js";
 import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
 import { useCallback, useEffect, useRef, useState, Fragment } from "react";
 import { EscapeLayerProvider, useEscapeLayer } from "../../style/escape-layer.js";
@@ -113,6 +114,8 @@ export function createActionSheet(skin: ActionSheetSkin, parts: ActionSheetParts
     const { open: openProp, onOpenChange, trigger, title, message, actions, cancelLabel = "Cancel", testID, style } = props;
     const theme = useMaterialTheme({ layer: "functional" });
     const { tokens } = theme;
+    // Under glass on the web the scrim also blurs what it dims (GS-6); null everywhere else.
+    const scrimFrost = useScrimFrost();
 
     // Uncontrolled by default: the trigger opens the sheet and the scrim/Cancel
     // closes it; a controlled `open` prop overrides this.
@@ -280,7 +283,7 @@ export function createActionSheet(skin: ActionSheetSkin, parts: ActionSheetParts
                     never moves, so the backdrop settles over the page while the sheet
                     rises. Purely decorative (the Pressable above it carries the dismiss
                     role), so it is unannounced. */}
-                <Animated.View style={[StyleSheet.absoluteFill, s.scrimDim, { backgroundColor: dimFill, opacity: dimOpacity }]} />
+                <Animated.View style={[StyleSheet.absoluteFill, s.scrimDim, { backgroundColor: dimFill, opacity: dimOpacity }, scrimFrost]} />
                 <Pressable
                   style={StyleSheet.absoluteFill}
                   onPress={close}
