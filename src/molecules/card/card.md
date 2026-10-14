@@ -224,3 +224,12 @@ Pass `onPress` and the whole card becomes a control, with the button role. On th
   </Card>
 </Card>
 ```
+
+Gap-free content densities preserve dense application layouts: `dense` (12),
+`snug` (18), `cozy` (20), `relaxed` (22×24), `spacious` (28), `insetContent` (14),
+`rail` (12×14), `summary` (14×16), `metric` (14×18), `request` (18/22/18/20),
+and `menu` (12 vertical). Precedence follows that order before compact/comfortable.
+`gapless` removes flat-child spacing; `borderless`, `smallCorners`, `inset`,
+`dimmed` and `clip` control surface anatomy. `tileShadow`, `rowShadow`, and
+`emptyShadow` extend the elevation axis after raised/flat. Accessible names and
+hover-lift reporting are supported on interactive cards.

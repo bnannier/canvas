@@ -1,7 +1,7 @@
 import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
+import { useEffect, type ReactNode } from "react";
+import { View, Pressable, Text, StyleSheet, useFillStyle, useTheme, useLayoutAxis, useReducedMotion, surfaceRipple, pressDim, RippleClip, cornerRadii, splitElevation, devWarn, GlassSurface, GlassPane, paneStyle, paneRipple, legibleWash, isGlass, type StyleProp, type ViewStyle, type TextStyle, type LayoutStyle } from "../../style/index.js";
 import { MaterialBehind } from "../../style/glass-surface/material-behind.js";
-import { type ReactNode } from "react";
-import { View, Pressable, Text, StyleSheet, useFillStyle, useTheme, useLayoutAxis, useReducedMotion, surfaceRipple, pressDim, RippleClip, cornerRadii, splitElevation, devWarn, GlassSurface, GlassPane, paneStyle, paneRipple, isGlass, legibleWash, type StyleProp, type ViewStyle, type TextStyle, type LayoutStyle } from "../../style/index.js";
 import { RAISED, liftStyle, useHover, useRaiseCell, useSettling } from "../../style/hover.js";
 import { selectedCard } from "../../style/selected-card.js";
 import { Image } from "../../atoms/image/image.shared.js";
@@ -107,6 +107,32 @@ export interface CardProps {
   // content padding and the gap between flat children.
   compact?: boolean;
   comfortable?: boolean;
+  /** Gap-free content densities, tightest first in precedence. */
+  dense?: boolean;
+  snug?: boolean;
+  cozy?: boolean;
+  relaxed?: boolean;
+  spacious?: boolean;
+  insetContent?: boolean;
+  rail?: boolean;
+  summary?: boolean;
+  metric?: boolean;
+  request?: boolean;
+  menu?: boolean;
+  /** Keep the reference inset without the compact density's flat-child gap. */
+  gapless?: boolean;
+  borderless?: boolean;
+  smallCorners?: boolean;
+  inset?: boolean;
+  dimmed?: boolean;
+  clip?: boolean;
+  tileShadow?: boolean;
+  rowShadow?: boolean;
+  emptyShadow?: boolean;
+  accessibilityLabel?: string;
+  /** Reference harness: hold the existing hover lift. */
+  testOnly_hovered?: boolean;
+  onLiftChange?: (raised: boolean) => void;
   /** E2E hook forwarded to the root element. */
   testID?: string;
   /** Composition within a parent only, never a restyle hook and never a width: the parent layout container provides the bounds. */
@@ -117,11 +143,25 @@ export interface CardProps {
 export function elevationOf(p: CardProps): Elevation {
   if (p.raised) return "raised";
   if (p.flat) return "flat";
+  if (p.tileShadow) return "tile";
+  if (p.rowShadow) return "row";
+  if (p.emptyShadow) return "empty";
   return "default";
 }
 
 // Density precedence when more than one is passed: first match wins.
 export function densityOf(p: CardProps): Density {
+  if (p.dense) return "dense";
+  if (p.snug) return "snug";
+  if (p.cozy) return "cozy";
+  if (p.relaxed) return "relaxed";
+  if (p.spacious) return "spacious";
+  if (p.insetContent) return "insetContent";
+  if (p.rail) return "rail";
+  if (p.summary) return "summary";
+  if (p.metric) return "metric";
+  if (p.request) return "request";
+  if (p.menu) return "menu";
   if (p.compact) return "compact";
   if (p.comfortable) return "comfortable";
   return "default";
@@ -129,7 +169,7 @@ export function densityOf(p: CardProps): Density {
 
 export function createCard(skin: CardSkin) {
   return function Card(props: CardProps) {
-    const { children, title, icon, actions, description, body, footer, flush, onPress, selected, testID, style } = props;
+    const { children, title, icon, actions, description, body, footer, flush, onPress, selected, testID, style, onLiftChange } = props;
     const theme = useMaterialTheme({ static: true });
     const { tokens } = theme;
     // Under glass the card is a CONTENT-layer pane: GlassSurface strips the skin's fill
@@ -148,12 +188,14 @@ export function createCard(skin: CardSkin) {
     // Row span rather than a width of its own.
     const widthFill = useFillStyle("Card");
     // Hover, read on the pressable card's wrapper (which never moves) for the skin's lift.
-    const { hovered: pointerOver, target: hoverTarget } = useHover(skin.hover != null && onPress != null);
+    const { hovered: pointerHovered, target: hoverTarget } = useHover(skin.hover != null && onPress != null);
+    const pointerOver = props.testOnly_hovered ?? pointerHovered;
     const reduced = useReducedMotion();
     // While it lifts and settles the card stacks above its neighbours (and lifts its layout
     // cell above the next one), so its deeper shade falls over them, as the reference's does.
     const raised = useSettling(pointerOver, reduced ? 0 : (skin.hover?.motion.duration ?? 0));
     useRaiseCell(raised);
+    useEffect(() => { onLiftChange?.(raised); }, [raised, onLiftChange]);
 
     // Empty strings count as "no content", so a cleared field never renders an empty
     // header, footer, or a stray separator: guard on truthiness rather than null for
@@ -184,7 +226,7 @@ export function createCard(skin: CardSkin) {
 
     // Shape: per-OS radius; iOS adds Apple's continuous (superellipse) corner curve
     // (an iOS-only RN style prop, omitted entirely on the other skins).
-    const shape: ViewStyle = { borderRadius: skin.radius, ...(skin.curve ? { borderCurve: skin.curve } : null) };
+    const shape: ViewStyle = { borderRadius: props.smallCorners ? 12 : skin.radius, ...(skin.curve ? { borderCurve: skin.curve } : null) };
     // The card's visual box WITHOUT the elevation shadow and WITHOUT outer layout: shape, the
     // per-variant surface colors, density padding, and the selected tint.
     const surface: StyleProp<ViewStyle> = [
@@ -208,6 +250,11 @@ export function createCard(skin: CardSkin) {
       // primary tint (the border width is unchanged, so content never shifts; on
       // Android's elevated default the resting hairline is transparent, so this
       // paints it in).
+      props.borderless ? { borderWidth: 0 } : null,
+      props.gapless ? { gap: 0 } : null,
+      props.inset ? { backgroundColor: tokens.secondary } : null,
+      props.dimmed ? { opacity: 0.75 } : null,
+      props.clip ? { overflow: "hidden" } : null,
       selected ? selectedCard(tokens) : null,
     ];
     // Under glass the selection is the primary border, kept over the material as a state
@@ -310,6 +357,7 @@ export function createCard(skin: CardSkin) {
         <RippleClip shape={cornerRadii(shape)} style={[elevParent, outer, raised ? RAISED : null]} {...hoverTarget}>
           <Pressable
             accessibilityRole="button"
+            accessibilityLabel={props.accessibilityLabel}
             onPress={onPress}
             testID={testID}
             // The card's pane is a child of this Pressable: where it renders, the ripple draws
