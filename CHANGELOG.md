@@ -1,5 +1,28 @@
 # @nannier/canvas
 
+## 3.8.0
+
+### Minor Changes
+
+- 8d178f8: A page's own blur plane on Android: `useGlassBlurPlane` makes a plane, `GlassBlurPlane` makes the view it wraps (a page backdrop) the captured plane through `@nannier/canvas-blur`, and `GlassBlurScope` offers it to the glass surfaces inside it, which frost it where they would otherwise paint their solid skin (an in-page surface has no safe plane of its own). On iOS and the web, and on Android without the integration, both render their children only.
+
+  Minor, justified: new public API (a hook and two components) for a capability the kit did not offer, a safe in-page blur plane on Android.
+
+  Also fixed: a glass surface's box keeps its native view while it paints a material, so on iOS and Android the material (at zIndex -1 inside the box) can no longer be hoisted by view flattening beneath the box's earlier siblings, where it disappeared.
+
+- 4d7e5d8: Navbar takes a `bare` surface: no fill, no material and no hairline, so the bar sits clear on whatever is behind it. It is the scroll-edge appearance of iOS's navigation bar and Material 3's top app bar: pass it while nothing has scrolled under the bar and drop it once content does, so the bar's own surface returns to keep its labels legible. A framed bar (`bordered`, `floating`) keeps its frame over `bare`.
+
+  Minor, justified: a new public option on an existing component (the Navbar's surface axis gains `bare`). The docs' top bar uses it on Dark Factory's frosted frame, clear at rest as Dark Factory's own top bar is, frosted once the page scrolls under it.
+
+### Patch Changes
+
+- ae93009: Re-mint the visual baselines for the docs' page look: the preview cards sit inside Dark Factory's frame (narrower by the frame's inset) with the re-solved muted ink, and the token stylesheet shows the new muted values. Minted on Linux by the Visual baselines workflow (run 38526733071) and reviewed. Baselines only; nothing in the package changes.
+- 029ea4c: The docs' frame runs a hairline past the window's bottom edge, so its frost rim no longer draws a bright line there, and its corner wedges are drawn at the frame's own size, which stops the Android docs app from crashing on a 174 MB bitmap. Docs only; nothing in the package changes.
+- 613e7ee: The docs frame their pages in Dark Factory's frosted shell: an inset panel fixed to the viewport, 12 / 16 px from the window on phones, 20 / 28 on tablets and 28 / 56 on desktops (capped at 1340 wide), with its 22 px top corners, palette shadow and corner wedges, around the sidebar, the top bar and the page scroller, on the web, iOS and Android. The frame does not clip, since a rounded clip around the frosted chrome made Chromium drop tiles; the chrome that reaches its corners rounds itself. Docs and tooling only; nothing in the package changes.
+- b9e743d: Legibility over Dark Factory's page look. The muted ink is solved to 4.5:1 on the frosted shell over the page gradient and its orbs as well as on every surface, so it darkens slightly in the light palettes (blush #696b8d to #606183, mint #5f7083 to #5a6b7e) and lightens slightly in dark (#a3a5c6 to #a6a8c9). A brand-tinted glass fill (a primary Button, a checked control under glass) is solved over the frame's beds as well as the page token (`frameBeds`, derived from Dark Factory with the tokens), so in dark it is a few percent denser and its ink keeps 4.5:1 there. The iOS ActionSheet's secondary header label is foreground at 0.89 instead of 0.85, which keeps it at 4.5:1 on the glass sheet.
+- 95912d6: Record the page look's open differences in the audit: on GlassSurface, the iOS dark frost's own dark tint, Android's top-lit frost rim and whiter light fill, and a faint ring outside the iOS frame; on Sidebar, the web rail's lighter glass hairline and wider compact rail than Dark Factory's. Each is left for its audit turn by the owner's 2026-10-14 decision. Records only; nothing in the package changes.
+- 6ea6fb3: The visual-baselines workflow gets 35 minutes instead of 20: its mints already took 16.5 to 18.3 minutes, and the first mint after the docs took Dark Factory's page look ran past the limit. CI only; nothing in the package changes.
+
 ## 3.7.4
 
 ### Patch Changes
