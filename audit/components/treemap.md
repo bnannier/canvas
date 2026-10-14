@@ -83,6 +83,7 @@ One row per finding. Severity: critical, high, medium, low. Cell: a capture id f
 
 | ID | Severity | Cell | Summary | Status | Fix commit |
 |---|---|---|---|---|---|
+| treemap-inspected-ink-1 | high | web/treemap/inspected/desktop.blush.glass | While a tile is inspected, the other tiles' labels and values (Add-ons, Services, Training, 900, 1.4k, 300) read 1.62 to 1.80:1 in every look on all three rows (135 texts), and the web row's pressed state (`web-states/treemap/pressed.web`, desktop) 1.60 to 1.83 (33 texts), under WCAG 1.4.3's 4.5:1. Not a glass effect: the solid twin's DOM read is the same, 1.63 to 1.84; the inspection dims the unfocused tiles' text. From GlassSurface's turn (glass-surface-blurred-ink-1): the glass cells of its web after capture (runs 20261013-202324-web-c38c5a1 and 20261013-205818-web-c38c5a1, the docs three-up's iOS, Android and web rows), read from the photographs (`fail-likely`, a pixel read, the only read where a backdrop filter hides the background from the DOM), the same set as in the retaken before runs (20261013-175041 and 20261013-182600-web-f538d1f); the solid twin is the DOM read of the same cell in solid. | open |  |
 
 ## Sign-off
 

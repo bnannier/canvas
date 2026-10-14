@@ -84,6 +84,7 @@ One row per finding. Severity: critical, high, medium, low. Cell: a capture id f
 
 | ID | Severity | Cell | Summary | Status | Fix commit |
 |---|---|---|---|---|---|
+| service-health-list-pressed-ink-1 | medium | web/service-health-list/default/desktop.blush.glass | The uptime `99.98%` while its row is pressed (`web-states/service-health-list/pressed.web`, desktop blush and mint) reads 3.76:1 (solid 3.76 to 3.78), under 4.5:1. From GlassSurface's turn (glass-surface-blurred-ink-1): the glass cells of its web after capture (runs 20261013-202324-web-c38c5a1 and 20261013-205818-web-c38c5a1, the docs three-up's iOS, Android and web rows), read from the photographs (`fail-likely`, a pixel read, the only read where a backdrop filter hides the background from the DOM), the same set as in the retaken before runs (20261013-175041 and 20261013-182600-web-f538d1f); the solid twin is the DOM read of the same cell in solid. | open |  |
 
 ## Sign-off
 
