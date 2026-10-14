@@ -6,8 +6,9 @@ import { GlassSurface } from "../src/style/glass-surface/glass-surface.tsx";
 import { BRAND_TINT_ALPHA, clearSurfaceTint, surfaceUnderFill, surfaceIntensity, type GlassLayer } from "../src/style/glass-surface/glass-surface.shared.tsx";
 import { glassTintsFor } from "../src/style/glass-surface/glass-tints.ts";
 import { WEB_FROST, WEB_TINTS } from "../src/style/glass-surface/web-frost.ts";
-import { glassByScheme, lightColors, darkColors, brandColors } from "../src/style/tokens.ts";
+import { glassByScheme, lightColors, darkColors } from "../src/style/tokens.ts";
 import { LOOKS } from "./fixtures/looks.ts";
+import { shellBeds } from "./fixtures/page-look.ts";
 
 // The glass material's UNDER-FILL: the layer painted beneath the frost or Liquid Glass
 // so a near-clear material still has a body.
@@ -305,19 +306,32 @@ describe("GlassSurface layers", () => {
     }
   });
 
-  it("keeps foreground text at 4.5:1 on a content pane and a dense pane over the page AND over the brand aurora", () => {
-    const aurora = [brandColors["orb-indigo"], brandColors["orb-violet"], brandColors["orb-cyan"]];
+  it("keeps foreground text at 4.5:1 on a content pane and a dense pane over the page AND over the docs' frame", () => {
+    // Every docs surface floats over the docs' frame: Dark Factory's shell frost over the page
+    // look (docs/src/shell/page-look.ts), its stops and its orb centres.
     for (const look of LOOKS) {
       const t = look.tokens;
       for (const [platform, g] of [["web", look.webGlass], ["native", look.nativeGlass]] as const) {
-        for (const base of [t.background, ...aurora]) {
+        for (const base of [t.background, ...shellBeds(look.name)]) {
           for (const tint of [g["glass-tint-content"], g["glass-tint-dense"]]) {
             expect(contrast(over(tint, base), rgb(t.foreground)), `${platform} ${look.name} foreground on ${tint} over ${base}`).toBeGreaterThanOrEqual(4.5);
           }
+          // The muted role is normal-size text (12 to 16 px descriptions, placeholders,
+          // prefixes), so it keeps the normal-text floor on a content pane too.
+          expect(contrast(over(g["glass-tint-content"], base), rgb(t["muted-foreground"])), `${platform} ${look.name} muted on a content pane over ${base}`).toBeGreaterThanOrEqual(4.5);
         }
-        // The muted role is normal-size text (12 to 16 px descriptions, placeholders,
-        // prefixes), so it keeps the normal-text floor on a content pane over the page.
-        expect(contrast(over(g["glass-tint-content"], t.background), rgb(t["muted-foreground"])), `${platform} ${look.name} muted`).toBeGreaterThanOrEqual(4.5);
+      }
+    }
+  });
+
+  it("keeps foreground and muted text at 4.5:1 on the docs' frosted shell over the page look", () => {
+    // A page's lead, prose and the sidebar's rows sit straight on the shell: Dark Factory's
+    // shell fill (which the docs' frame passes as its tint on every platform) over the
+    // page look. The muted ink is solved to this floor (tools/darkfactory/derive-tokens.ts).
+    for (const look of LOOKS) {
+      for (const bed of shellBeds(look.name)) {
+        expect(contrast(rgb(bed), rgb(look.tokens.foreground)), `${look.name} foreground on the shell over ${bed}`).toBeGreaterThanOrEqual(4.5);
+        expect(contrast(rgb(bed), rgb(look.tokens["muted-foreground"])), `${look.name} muted on the shell over ${bed}`).toBeGreaterThanOrEqual(4.5);
       }
     }
   });

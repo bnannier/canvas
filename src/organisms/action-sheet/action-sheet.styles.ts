@@ -191,7 +191,10 @@ export const iosSkin: ActionSheetSkin = {
   handle: null,
   header: { paddingTop: 8, paddingHorizontal: 8, paddingBottom: 24, gap: 10, alignItems: "flex-start" },
   headerTitle: (t) => ({ fontSize: 17, lineHeight: 22, fontWeight: "600", letterSpacing: -0.43, color: t.foreground }),
-  headerMessage: (t) => ({ fontSize: 15, lineHeight: 18, fontWeight: "400", letterSpacing: -0.24, color: alpha(t.foreground, 0.85) }),
+  // The secondary label stays translucent foreground, as iOS draws it, at the least alpha
+  // that reads 4.5:1 on the glass sheet over every bed of the page's frosted frame
+  // (frameBeds; test/text-contrast.test.tsx): 0.89, where 0.85 fell to 4.2 in blush.
+  headerMessage: (t) => ({ fontSize: 15, lineHeight: 18, fontWeight: "400", letterSpacing: -0.24, color: alpha(t.foreground, 0.89) }),
   divider: null,
   row: {
     minHeight: 48,

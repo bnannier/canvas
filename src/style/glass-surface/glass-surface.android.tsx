@@ -8,6 +8,7 @@ import { FrostView, requiresBlurTarget } from "./material-runtime.android.js";
 import { NativeCaptureFrost } from "./capture-runtime.js";
 import { useCaptureDemand } from "./capture-target.js";
 import { useMaterialResolution } from "./use-material-theme.js";
+import { frameBedsFor } from "../tokens.js";
 import {
   GlassBox, CLEAR_INTENSITY, brandOverMaterial, clearSurfaceTint, contrastBorderFor, frostMethodProps,
   SHEER_FILL_OPACITY, materialFill, specularRim, surfaceUnderFill, surfaceIntensity, useBlurTargetRejection,
@@ -30,7 +31,7 @@ export function GlassSurface(props: GlassSurfaceProps) {
   const fill = materialFill(style);
   const rim = specularRim(style, theme.dark);
   const nativeCapture = NativeCaptureFrost !== undefined && target !== null && !solid;
-  const tintLayer = <View style={[fill, { backgroundColor: surfaceUnderFill(theme.glass, layer, brand, tint ?? (clear && brand == null ? clearSurfaceTint(theme.tokens, theme.dark) : undefined), theme.tokens), opacity: translucent ? SHEER_FILL_OPACITY : 1 }]} />;
+  const tintLayer = <View style={[fill, { backgroundColor: surfaceUnderFill(theme.glass, layer, brand, tint ?? (clear && brand == null ? clearSurfaceTint(theme.tokens, theme.dark) : undefined), theme.tokens, frameBedsFor(theme.palette, theme.scheme)), opacity: translucent ? SHEER_FILL_OPACITY : 1 }]} />;
   // The fill paints beneath the material, except over the capture frost (which samples
   // a separate plane) and for a brand colour (see brandOverMaterial).
   const over = nativeCapture || brandOverMaterial(brand, tint);

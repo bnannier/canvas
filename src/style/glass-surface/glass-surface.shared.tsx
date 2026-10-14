@@ -297,20 +297,22 @@ export function brandInk(tokens: ColorTokens, brand: string): string {
 }
 
 /** The brand colour as a translucent under-fill whose `ink` stays legible over `page`. */
-export function brandTint(brand: string, page: string, ink: string = inkOn(brand)): string {
+export function brandTint(brand: string, page: string | readonly string[], ink: string = inkOn(brand)): string {
+  const beds = typeof page === "string" ? [page] : page;
   for (let a = BRAND_TINT_ALPHA; a < 1; a += BRAND_TINT_STEP) {
     const fill = alpha(brand, Math.round(a * 100) / 100);
-    if (contrastRatio(composite(fill, page), ink) >= BRAND_INK_CONTRAST) return fill;
+    if (beds.every((bed) => contrastRatio(composite(fill, bed), ink) >= BRAND_INK_CONTRAST)) return fill;
   }
   return alpha(brand, 1);
 }
 
 /** The under-fill a surface paints beneath its material: `tint`, else the `brand`
  *  colour tinted so the ink painted on it stays legible over the page (both read from
- *  `tokens`), else the layer's own token. */
-export function surfaceUnderFill(glass: GlassTokens, layer: GlassLayer, brand?: string, tint?: string, tokens?: ColorTokens): string {
+ *  `tokens`) and over every bed of the page's frosted frame (`beds`, `frameBedsFor`),
+ *  else the layer's own token. */
+export function surfaceUnderFill(glass: GlassTokens, layer: GlassLayer, brand?: string, tint?: string, tokens?: ColorTokens, beds: readonly string[] = []): string {
   if (tint != null) return tint;
-  if (brand != null) return tokens != null ? brandTint(brand, tokens.background, brandInk(tokens, brand)) : alpha(brand, BRAND_TINT_ALPHA);
+  if (brand != null) return tokens != null ? brandTint(brand, [tokens.background, ...beds], brandInk(tokens, brand)) : alpha(brand, BRAND_TINT_ALPHA);
   switch (layer) {
     case "content": return glass["glass-tint-content"];
     case "control": return glass["glass-tint-control"];

@@ -16,12 +16,13 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { MINT_SELECTOR, cssColorToHex, cssRgbaToCanonical, declarationsIn } from "../tokens/css-tokens.ts";
-import { darkColors, lightColors, mintColors, type ColorTokens } from "../../src/style/tokens.ts";
+import { darkColors, frameBeds, lightColors, mintColors, type ColorTokens } from "../../src/style/tokens.ts";
 
 interface Table {
   source: { commit: string };
   chart: string[];
   palettes: Record<string, Record<string, { value: string; kind: string; source: string }>>;
+  frameBeds: Record<"blush" | "mint" | "dark", string[]>;
 }
 
 const ROOT = join(import.meta.dir, "..", "..");
@@ -67,6 +68,10 @@ export function checkParity(table: Table = readTable(), css = readFileSync(join(
       if (js[role]?.toLowerCase() !== series) failures.push(`${scheme} ${role}: tokens.ts ${js[role]} != DF table ${series}`);
       if (cssValue(css[role]) !== series) failures.push(`${scheme} --${role}: css ${css[role]} != DF table ${series}`);
     });
+    // The frame beds the glass fills are solved over (src/style/tokens.ts `frameBeds`).
+    const beds = table.frameBeds?.[palette];
+    if (!beds) failures.push(`tokens.json has no frame beds for ${palette}`);
+    else if (JSON.stringify(frameBeds[palette]) !== JSON.stringify(beds)) failures.push(`${scheme} frame beds: tokens.ts ${frameBeds[palette].join(" ")} != DF table ${beds.join(" ")}`);
     // Nothing semantic outside the table: every JS color role is derived.
     for (const role of Object.keys(js)) {
       if (!(role in roles) && !role.startsWith("chart-")) failures.push(`${scheme} ${role}: in src/style/tokens.ts but not derived in tools/darkfactory/tokens.json`);
