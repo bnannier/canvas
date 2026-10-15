@@ -3,8 +3,11 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Button, Icon } = scope;
+  const { Button, Icon, Row } = scope;
   return (
-<Button icon compactIcon ghost steadyPress accessibilityLabel="Open menu" iconLeft={<Icon menu size={15} boldStroke muted />} />
+<Row comfortable alignCenter>
+  <Button scopeTrigger ghost steadyPress iconRight={<Icon chevronDown size={14} heavyStroke />}>All my projects</Button>
+  <Button filterTrigger ghost steadyPress iconRight={<Icon chevronDown size={13} heavyStroke muted />}>Filter by</Button>
+</Row>
   );
 }

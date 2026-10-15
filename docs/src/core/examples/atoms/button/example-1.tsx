@@ -3,12 +3,8 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Avatar, Button, Icon, Row } = scope;
+  const { Button } = scope;
   return (
-<Row comfortable alignCenter>
-  <Button identityAction ghost steadyPress iconLeft={<Avatar annotation initials="S" hue={20} />}>Scout v2.3</Button>
-  <Button referenceLink inlineLink link steadyPress iconRight={<Icon externalLink size={10} heavyStroke muted />}>CORE-1790</Button>
-  <Button inlineIcon inlineLink link steadyPress iconLeft={<Icon externalLink size={13} heavyStroke primary />} accessibilityLabel="Open repository" />
-</Row>
+<Button outline small attention>Configure AI</Button>
   );
 }

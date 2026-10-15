@@ -1460,3 +1460,16 @@ materials harness uses the same Canvas Icon disclosure as the shipped run header
 | Date | Effect and profile | Runtime and device | Revision (dirty?) | Surface | Values tried | rAF p50 / p95 / max (ms) | What the comparison showed | Versus reference | Artifacts |
 |---|---|---|---|---|---|---|---|---|---|
 | 2026-10-14 | Static human-gate, versions, metric notes and signal dots | Chrome headless, macOS, DPR1, desktop and phone | Canvas 99a1a15d plus inset presets; Argus d8ba54c plus imports | shipped Argus agent details, navigation and Metrics, solid, blush/mint/dark | Original secondary fills, corners, insets and no elevation; original 10px signal dots | n/a static | Initial comparison found unintended Card elevation; flat elevation corrected it. Seven drawer/navigation captures are pixel-identical, two differ by 1/24 pixels; five Metrics captures differ by 0–5 pixels. The first blush phone page has the existing backdrop raster variation. | matches original widget surfaces and geometry; native-device appearance unassessed | `tools/native/reference/argus-inset-panels/drawer-before.png` and `drawer-after.png` |
+
+
+## Argus configuration attention, 2026-10-15
+
+Reference: owner requested a pulse that attracts attention to required setup,
+then asked to remove the hard inner ring, keep the inner area fixed, prevent
+top clipping, and use a color that stands out. The resulting reference is a soft
+amber wave outside the existing button with no animated scale or border, two
+seconds per cycle, centered beside the project selector.
+
+| Date | Surface | Versus reference | Evidence and limits |
+|---|---|---|---|
+| 2026-10-15 | Argus Board, local Metro, Chrome at 1440 and 390; desktop shell exercised with isTauri | Three fixed-size, borderless shadow bands brighten in outward order; button/inner edge do not move. Reduced Motion is static. Centers differ by less than 0.01 px. Header moved outside Tauri content scroller so the glow has no clipping ancestor above it except the viewport. | Browser snapshots `/private/tmp/argus-attention-fixed-{1440,390}-{320,720,1160}.png`, final amber `/private/tmp/argus-attention-amber-{tauri,web}.png`. Final colors sampled as rgba(245,158,11,0.6). Native iOS/Android and actual WKWebView paint were not captured. Earlier violet/scaled iterations were rejected by the owner and are not acceptance evidence. |
