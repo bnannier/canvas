@@ -37,6 +37,17 @@ A button's whole job is to fire `onPress`. Wire it to your own handler and every
 
 ## Variants
 
+### Attention required
+
+Use `attention` for a required setup action. Soft amber glow spreads outward and
+fades every two seconds. Its inner edge, label and button dimensions stay still. Reduce Motion
+keeps a steady halo; disabled and loading buttons suppress it. Remove the button
+or the prop when the required setup is complete.
+
+```tsx
+<Button outline small attention>Configure AI</Button>
+```
+
 ### Inline identity and reference actions
 
 ```tsx

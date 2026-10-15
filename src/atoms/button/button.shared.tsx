@@ -14,6 +14,7 @@ import { useSeededMinTargetSlop, styleBox } from "../../style/touch-target-seed.
 import { View, Pressable, RippleClip, Text, useReducedMotion, useSizing, type LayoutStyle, type MeasureProps, GlassPane, paneStyle, paneRipple, isGlass } from "../../style/index.js";
 import { liftStyle, useHover } from "../../style/hover.js";
 import { NotificationBadge } from "../badge/badge.notification.js";
+import { ButtonAttention } from "./button-attention.js";
 import { type ButtonSkin, type Intent, type Size } from "./button.styles.js";
 
 // Shared Button shell. The structure (Pressable + optional loading spinner +
@@ -136,6 +137,8 @@ export interface ButtonProps extends MeasureProps {
    * button, ignore it.
    */
   raised?: boolean;
+  /** An outward amber glow for an action requiring attention. Static under Reduce Motion; hidden while disabled or loading. */
+  attention?: boolean;
   /**
    * Marks the Button as a disclosure/menu trigger and announces its open state to
    * assistive tech (aria-expanded, which react-native-web forwards and RN maps back
@@ -291,6 +294,7 @@ export function createButton(skin: ButtonSkin) {
         >
           {({ pressed }) => <>
             {puck ? <GlassPane layer="control" shape={container} brand={brand} /> : null}
+            {props.attention && !disabled && !loading ? <ButtonAttention radius={container.borderRadius} /> : null}
             <View style={[
               { flexDirection: container.flexDirection, alignItems: container.alignItems, justifyContent: container.justifyContent, gap: container.gap, flexShrink: 1 },
               // Dim the foreground independently of native material feedback.
