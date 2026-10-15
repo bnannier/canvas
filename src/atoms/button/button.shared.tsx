@@ -137,7 +137,7 @@ export interface ButtonProps extends MeasureProps {
    * button, ignore it.
    */
   raised?: boolean;
-  /** An outward amber glow for an action requiring attention. Static under Reduce Motion; hidden while disabled or loading. */
+  /** An outward red glow for an action requiring attention. Static under Reduce Motion; hidden while disabled or loading. */
   attention?: boolean;
   /**
    * Marks the Button as a disclosure/menu trigger and announces its open state to

@@ -15,7 +15,7 @@ const ATTENTION = {
 };
 
 export function ButtonAttention({ radius }: { radius: ViewStyle["borderRadius"] }) {
-  const color = palette["amber-500"];
+  const color = palette["red-500"];
   const reduced = useReducedMotion();
   const [channel] = useState(() => createLoopChannel({ period: ATTENTION.period }));
   useEffect(() => {
