@@ -8,8 +8,8 @@ Audit checklist for `/components/badge`. The facts block and the variants table 
 | Route | `/components/badge` |
 | Category | Atoms (`src/atoms/badge/`) |
 | Markdown | `src/atoms/badge/badge.md` |
-| Source files | `badge.android.tsx`, `badge.ios.tsx`, `badge.md`, `badge.shared.tsx`, `badge.styles.ts`, `badge.tsx` |
-| Implementation | its own source directory, `src/atoms/badge/` (5 TypeScript modules) |
+| Source files | `badge.android.tsx`, `badge.ios.tsx`, `badge.md`, `badge.notification.tsx`, `badge.shared.tsx`, `badge.styles.ts`, `badge.tsx` |
+| Implementation | its own source directory, `src/atoms/badge/` (6 TypeScript modules) |
 | Exports | Badge, BadgeGroup |
 | Platform entries | iOS: web build: Badge; re-exports the shared build: BadgeGroup. Android: web build: Badge; re-exports the shared build: BadgeGroup |
 | Platform-skins registry | none (every export is the web build, so the docs three-up renders it as is) |
@@ -20,10 +20,10 @@ Audit checklist for `/components/badge`. The facts block and the variants table 
 | Hand-off metric gaps | none |
 | Interactions registry | in the inventory; evidence: none registered |
 | Overlay recipe | none |
-| Interaction states | static: A status label: it takes no input. |
+| Interaction states | recipes: hover on Reference link (web row; desktop), focus on Reference link (web row; desktop), pressed on Reference link (web row; desktop). |
 | MeasureProps | not adopted |
-| Touch target | no touch-target name (the exports of `src/style/touch-target.ts`, `src/style/touch-target-seed.ts`, `src/style/touch-seam.ts`, `src/style/clip-slop.ts`, the `TouchTargetSkin` fields, or `hitSlop`) in its implementation modules |
-| Tests importing it | 21: `test/a11y-state.test.tsx`, `test/atom-material-roles.test.tsx`, `test/data-table-pan-identity.test.tsx`, `test/data-table-stacks.test.tsx`, `test/data-table.test.tsx`, `test/design-rules-shape.test.ts`, `test/design-rules-skins.test.ts`, `test/dist-smoke.test.tsx`, `test/glass-controls.test.tsx`, `test/glass-pane-ripple.test.tsx`, `test/glass-pane.test.tsx`, `test/layout-responsive.test.tsx`, `test/layout-spans.test.tsx`, `test/material-solid-fallback.test.tsx`, `test/new-components.test.tsx`, `test/prop-table.test.tsx`, `test/render.test.tsx`, `test/sidebar.test.tsx`, `test/skins-smoke.test.tsx`, `test/text-contrast.test.tsx`, `test/web-frost-paint-order.test.tsx` |
+| Touch target | `badge.shared.tsx`: hitSlop, minTarget, platformMinTarget. `test/touch-target-coverage.test.ts` records it as covered another way: Linked references pad their text and content inset to platformMinTarget through hitSlop; passive badges remain noninteractive. |
+| Tests importing it | 22: `test/a11y-state.test.tsx`, `test/atom-material-roles.test.tsx`, `test/badge-argus.test.tsx`, `test/data-table-pan-identity.test.tsx`, `test/data-table-stacks.test.tsx`, `test/data-table.test.tsx`, `test/design-rules-shape.test.ts`, `test/design-rules-skins.test.ts`, `test/dist-smoke.test.tsx`, `test/glass-controls.test.tsx`, `test/glass-pane-ripple.test.tsx`, `test/glass-pane.test.tsx`, `test/layout-responsive.test.tsx`, `test/layout-spans.test.tsx`, `test/material-solid-fallback.test.tsx`, `test/new-components.test.tsx`, `test/prop-table.test.tsx`, `test/render.test.tsx`, `test/sidebar.test.tsx`, `test/skins-smoke.test.tsx`, `test/text-contrast.test.tsx`, `test/web-frost-paint-order.test.tsx` |
 | E2E naming it | 1: `e2e/behavior/keyboard.e2e.ts` |
 | E2E catalog sweeps | 7: `e2e/a11y/components.e2e.ts` (componentRoutes), `e2e/journeys/keyboard.e2e.ts` (componentRoutes), `e2e/responsive/component-widths.e2e.ts` (contentRoutes, componentRoutes), `e2e/smoke/examples.e2e.ts` (componentExamples), `e2e/smoke/routes.e2e.ts` (allRoutes), `e2e/visual/components.e2e.ts` (componentRoutes), `e2e/visual/materials.e2e.ts` (MATERIAL_ROUTES) |
 | Turn record | `audit/turns/badge.md`, written by `bun run audit:turn -- --slug=badge --phase=before\|after` (the before and after capture runs) |
@@ -37,6 +37,7 @@ Web: 18 cells per variant (3 widths x 3 looks x 2 surfaces). iOS and Android: 6 
 | Variant | Label | Web (18) | iOS (6) | Android (6) | Notes |
 |---|---|---|---|---|---|
 | `default` | Default | [ ] | [ ] | [ ] |  |
+| `notificationcount` | Notification count | [ ] | [ ] | [ ] |  |
 | `solid` | Solid | [ ] | [ ] | [ ] |  |
 | `outline` | Outline | [ ] | [ ] | [ ] |  |
 | `destructive` | Destructive | [ ] | [ ] | [ ] |  |
@@ -44,6 +45,7 @@ Web: 18 cells per variant (3 widths x 3 looks x 2 surfaces). iOS and Android: 6 
 | `status` | Status | [ ] | [ ] | [ ] |  |
 | `statustones` | Status tones | [ ] | [ ] | [ ] |  |
 | `group` | Group | [ ] | [ ] | [ ] |  |
+| `referencelink` | Reference link | [ ] | [ ] | [ ] |  |
 <!-- audit:variants:end -->
 
 ## Universal rubric

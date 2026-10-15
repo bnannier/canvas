@@ -14,9 +14,9 @@ Audit checklist for the kit internals the generated `/foundation` reference page
 | Docs planned | none: every export has its page |
 | Materials manifest | none: the kit internals are not a renderable, so the material inventory has no entry for them |
 | Tests of it | 38 (importing one of its public exports or one of its implementation's declarations by name, or named for it, `test/foundation-reference[-<what>].test.tsx`): `test/atom-material-feedback.test.tsx`, `test/behavior.test.tsx`, `test/button-touch-target.test.ts`, `test/code-block.test.tsx`, `test/controllable-state.test.tsx`, `test/dashboard-grid-logic.test.ts`, `test/dashboard-grid.test.tsx`, `test/data-table-pan-identity.test.tsx`, `test/data-table-stacks.test.tsx`, `test/data-table.test.tsx`, `test/dense-overlays.test.tsx`, `test/dev-warn.test.tsx`, `test/escape-layers.test.tsx`, `test/focus-ring.test.tsx`, `test/focus-runtime.test.tsx`, `test/fonts.test.tsx`, `test/hardware-back.test.tsx`, `test/hosted-focus.test.tsx`, `test/ios-tints.test.ts`, `test/layout-responsive.test.tsx`, `test/layout-spans.test.tsx`, `test/list-semantics.test.tsx`, `test/loop.test.tsx`, `test/material-resolution.test.tsx`, `test/motion.test.ts`, `test/numerals.test.tsx`, `test/ripple.test.ts`, `test/roving-focus.test.tsx`, `test/scroll-frame-ring.test.tsx`, `test/sizing.test.tsx`, `test/swatch.test.tsx`, `test/text-contrast.test.tsx`, `test/touch-target-clips.test.tsx`, `test/touch-target-coverage.test.ts`, `test/touch-target-seams.test.tsx`, `test/touch-target-seed.test.tsx`, `test/use-wheel.test.tsx`, `test/virtualization.test.tsx` |
-| Consumers | 98 components: 90 directly, 8 through shared modules (one row each below, read from the source by `tools/audit/kit-graph.ts`) |
+| Consumers | 99 components: 90 directly, 9 through shared modules (one row each below, read from the source by `tools/audit/kit-graph.ts`) |
 | Pages using it | none: no pattern or template entry names one of its exports |
-| Capture through | 98, in this order: components `text`, `text-input`, `row-column`, `grid`, `container`, `chip`, `emblem`, `autocomplete`, `avatar`, `badge`, `breadcrumb`, `button-group`, `button`, `checkbox`, `dropdown`, `input`, `input-otp`, `listbox`, `stepper`, `pagination`, `popover`, `progress`, `radio`, `reveal`, `select`, `skeleton`, `slider`, `spinner`, `textarea`, `swatch`, `switch`, `tooltip`, `typography`, `video`, `accordion`, `alert`, `alert-dialog`, `card`, `code-block`, `collapsible`, `description-lists`, `empty-state`, `feeds`, `grid-lists`, `media-objects`, `phone-input`, `stacked-lists`, `stats`, `action-sheet`, `board`, `calendar`, `carousel`, `command`, `dashboard-grid`, `data-table`, `dialog`, `drag-drop`, `drawer`, `filter-panel`, `navbars`, `sidebar`, `row-menu`, `steps`, `tab-bar`, `tabs`, `toast`, `chart`, `pie-chart`, `scatter-plot`, `candlestick-chart`, `depth-chart`, `sparkline`, `stacked-bar`, `gauge`, `heatmap`, `bar-list`, `metric-breakdown`, `uptime-bar`, `service-health-list`, `bullet-chart`, `progress-ring`, `range-area-chart`, `histogram`, `box-plot`, `waterfall-chart`, `radial-bar-chart`, `funnel-chart`, `radar-chart`, `treemap`, `geo-map`, `divider`, `kbd`, `action-panels`, `field`, `form`, `line-chart`, `area-chart`, `composed-chart`; pages none |
+| Capture through | 99, in this order: components `text`, `text-input`, `row-column`, `grid`, `container`, `chip`, `emblem`, `autocomplete`, `avatar`, `badge`, `breadcrumb`, `button-group`, `button`, `checkbox`, `dropdown`, `input`, `input-otp`, `listbox`, `stepper`, `pagination`, `popover`, `progress`, `radio`, `reveal`, `select`, `skeleton`, `slider`, `spinner`, `textarea`, `swatch`, `switch`, `tooltip`, `typography`, `video`, `accordion`, `alert`, `alert-dialog`, `card`, `code-block`, `collapsible`, `description-lists`, `empty-state`, `feeds`, `grid-lists`, `media-objects`, `phone-input`, `stacked-lists`, `stats`, `action-sheet`, `board`, `calendar`, `carousel`, `command`, `dashboard-grid`, `data-table`, `dialog`, `drag-drop`, `drawer`, `filter-panel`, `navbars`, `sidebar`, `row-menu`, `steps`, `tab-bar`, `tabs`, `toast`, `chart`, `pie-chart`, `scatter-plot`, `candlestick-chart`, `depth-chart`, `sparkline`, `stacked-bar`, `gauge`, `heatmap`, `bar-list`, `metric-breakdown`, `uptime-bar`, `service-health-list`, `bullet-chart`, `progress-ring`, `range-area-chart`, `histogram`, `box-plot`, `waterfall-chart`, `radial-bar-chart`, `funnel-chart`, `radar-chart`, `treemap`, `geo-map`, `divider`, `icon`, `kbd`, `action-panels`, `field`, `form`, `line-chart`, `area-chart`, `composed-chart`; pages none |
 | Not captured | guide pages, which the capture inventory (component, pattern and template pages) does not hold: `/foundation` (documents activeIndicator, ActiveIndicatorOptions, CodeToken, containerStyle, controlRipple, DASHBOARD_COLUMNS, DashboardTier, devWarn, effectiveSpan, enableAndroidLayoutAnimations, FLUID, FOCUS_RESET, fontStyle, GESTURE_SURFACE, gridCellWidth, gridColumns, holdThen, innerFill, InnerFillRole, InnerFillStrength, inverseDenseTint, isGlass, isRTL, keyframes, Measure, measureOf, MinTargetOptions, minTargetSlop, MONO_FONT, moveWidget, normalizeWheelDelta, orderedWidgets, platformDisabledDim, platformMinTarget, pressDim, resetDevWarnings, rippleClip, RovingFocusOptions, RovingItemProps, StyleSheet, supportsNativeDriver, surfaceRipple, syntaxColor, tabularNums, thereAndBack, tokenize, TokenKind, TOUCH_TARGET, TouchTargetSkin, useControllableState, useDialogFocus, useEscapeKey, useHardwareBack, useMinTargetSlop, usePopoverFocus, useRovingFocus, useWheel, WheelGesture, withInnerFill) |
 | Turn record | `audit/turns/foundation-reference.md`, written by `bun run audit:turn -- --slug=foundation-reference --phase=before\|after` (the before and after capture runs) |
 
@@ -31,7 +31,7 @@ Audit checklist for the kit internals the generated `/foundation` reference page
 | `emblem` | directly | `innerFill` |
 | `autocomplete` | directly | `FOCUS_RESET`, `activeIndicator`, `isGlass`, `useControllableState`, `withInnerFill` |
 | `avatar` | directly | `controlRipple`, `platformDisabledDim`, `platformMinTarget`, `pressDim`, `useControllableState`, `withInnerFill` |
-| `badge` | directly | `MONO_FONT` |
+| `badge` | directly | `MONO_FONT`, `platformMinTarget` |
 | `breadcrumb` | directly | `controlRipple`, `isRTL` |
 | `button-group` | directly | `devWarn`, `useControllableState` |
 | `button` | directly | `isGlass` |
@@ -51,7 +51,7 @@ Audit checklist for the kit internals the generated `/foundation` reference page
 | `slider` | directly | `FOCUS_RESET`, `isRTL`, `tabularNums`, `useControllableState` |
 | `spinner` | directly | `supportsNativeDriver` |
 | `textarea` | directly | `FOCUS_RESET`, `isGlass` |
-| `swatch` | directly | `MONO_FONT`, `devWarn` |
+| `swatch` | directly | `MONO_FONT`, `devWarn`, `platformMinTarget` |
 | `switch` | directly | `TOUCH_TARGET`, `useControllableState` |
 | `tooltip` | directly | `controlRipple`, `inverseDenseTint`, `pressDim` |
 | `typography` | directly | `MONO_FONT`, `innerFill`, `tabularNums` |
@@ -59,12 +59,12 @@ Audit checklist for the kit internals the generated `/foundation` reference page
 | `accordion` | directly | `enableAndroidLayoutAnimations`, `supportsNativeDriver`, `surfaceRipple` |
 | `alert` | directly | `controlRipple`, `isGlass`, `platformMinTarget`, `pressDim`, `useControllableState` |
 | `alert-dialog` | directly | `useDialogFocus`, `useHardwareBack` |
-| `card` | directly | `devWarn`, `isGlass`, `pressDim`, `surfaceRipple` |
+| `card` | directly | `devWarn`, `isGlass`, `platformMinTarget`, `pressDim`, `surfaceRipple` |
 | `code-block` | directly | `FOCUS_RESET`, `MONO_FONT`, `devWarn`, `isGlass`, `platformMinTarget`, `pressDim` and 5 more |
 | `collapsible` | directly | `enableAndroidLayoutAnimations`, `supportsNativeDriver`, `surfaceRipple` |
 | `description-lists` | directly | `FOCUS_RESET`, `MONO_FONT` |
 | `empty-state` | directly | `withInnerFill` |
-| `feeds` | directly | `FOCUS_RESET`, `devWarn`, `surfaceRipple` |
+| `feeds` | directly | `FOCUS_RESET`, `devWarn`, `surfaceRipple`, `tabularNums` |
 | `grid-lists` | directly | `FOCUS_RESET`, `devWarn`, `surfaceRipple` |
 | `media-objects` | directly | `isGlass`, `pressDim`, `surfaceRipple` |
 | `phone-input` | directly | `FOCUS_RESET`, `useControllableState` |
@@ -113,6 +113,7 @@ Audit checklist for the kit internals the generated `/foundation` reference page
 | `treemap` | directly | `devWarn`, `isGlass`, `tabularNums`, `useControllableState` |
 | `geo-map` | directly | `FOCUS_RESET`, `GESTURE_SURFACE`, `devWarn`, `isGlass`, `useControllableState`, `useWheel` |
 | `divider` | through shared modules | `Text` (src/style/text.tsx) |
+| `icon` | through shared modules | `DisclosureRotation` (src/style/disclosure-rotation.tsx) |
 | `kbd` | through shared modules | `Text` (src/style/text.tsx), `paneStyle` (src/style/glass-surface/glass-pane.tsx) |
 | `action-panels` | through shared modules | `Text` (src/style/text.tsx) |
 | `field` | through shared modules | `LabelContent` (src/style/floating-label.tsx), `Text` (src/style/text.tsx), `useFillStyle` (src/style/sizing.ts) |

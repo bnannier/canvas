@@ -305,7 +305,7 @@ export default function ThemingScreen() {
           <H3>What changes</H3>
           <P>
             Application frames can preserve their stable frost independently of descendant controls.
-            The shared <InlineCode>GlassSurface</InlineCode> renderer accepts <InlineCode>frosted</InlineCode>
+            The kit&apos;s shared glass renderer accepts <InlineCode>frosted</InlineCode>
             for the original Argus frame and <InlineCode>veil</InlineCode> for its lightly frosted modal dim.
             These keep child controls on their own material preference, retain the frame skin&apos;s geometry
             and exterior shadow, and still honor Reduce Transparency, Increase Contrast, and missing-material fallbacks.

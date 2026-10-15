@@ -39,7 +39,7 @@ export function ReferenceCard({ mode, hoverEnabled, referenceKey, referenceSourc
   else if (mode === "stacked") content = <><View style={s.stackedHeader}>{reference}{status}{glyph}</View>{summary}</>;
   else content = <>{reference}{summary}{status}{glyph}</>;
   const inner = <>{framed ? <GlassPane layer="content" shape={shape} /> : null}{content}</>;
-  if (!interactive) return <View testID={testID} style={[surface, style]}>{inner}</View>;
+  if (!interactive) return <View testID={testID} style={[framed ? paneStyle(theme, surface) : surface, style]}>{inner}</View>;
   const press = (event: GestureResponderEvent) => { if (href) { event.preventDefault(); void Linking.openURL(href); } else onPress?.(); };
   return <Pressable {...hoverTarget} {...target} {...(href ? { href } : null)} accessibilityRole={href ? "link" : "button"} accessibilityLabel={accessibilityLabel ?? title ?? referenceKey} onPress={press} testID={testID} style={[framed ? paneStyle(theme, surface) : surface, style]}>{inner}</Pressable>;
 }
