@@ -38,7 +38,7 @@ import { frameBedsFor, lightColors, palette } from "../src/style/tokens.ts";
 import { WEB_TINTS } from "../src/style/glass-surface/web-frost.ts";
 import { statusColors } from "../src/style/status.ts";
 import { HUE_SOFT } from "../src/atoms/chip/chip.shared.tsx";
-import { LOOKS, lookProps } from "./fixtures/looks.ts";
+import { LOOKS, glassSets, lookProps } from "./fixtures/looks.ts";
 import { shellBeds } from "./fixtures/page-look.ts";
 import { webSkin as webRadioSkin, androidSkin as androidRadioSkin } from "../src/atoms/radio/radio.styles.ts";
 import { Checkbox as AndroidCheckbox } from "../src/atoms/checkbox/checkbox.android.tsx";
@@ -206,14 +206,15 @@ describe("brand-tinted glass pucks", () => {
   });
 
   it("keeps the painted ink at 4.5:1 over the page in every palette, densifying only as far as it needs", () => {
-    for (const { name: scheme, tokens: t, nativeGlass } of LOOKS) {
-      for (const brand of [t.primary, actionFill(t), t.destructive]) {
+    for (const look of LOOKS) {
+      const { name: scheme, tokens: t } = look;
+      for (const [platform, glass] of [["ios", look.iosGlass], ["android", look.androidGlass]] as const) for (const brand of [t.primary, actionFill(t), t.destructive]) {
         // The ink is the one the skin paints on the brand (its token pair), not the stronger
         // of black and white (see brandInk).
         const ink = brandInk(t, brand);
-        const fill = surfaceUnderFill(nativeGlass, "control", brand, undefined, t);
+        const fill = surfaceUnderFill(glass, "control", brand, undefined, t);
         expect(fill).toBe(brandTint(brand, t.background, ink));
-        expect(contrastRatio(composite(fill, t.background), ink), `${scheme} ${brand}`).toBeGreaterThanOrEqual(BRAND_INK_CONTRAST);
+        expect(contrastRatio(composite(fill, t.background), ink), `${platform} ${scheme} ${brand}`).toBeGreaterThanOrEqual(BRAND_INK_CONTRAST);
         // Never sheerer than the floor; where the floor already clears, it stays there.
         const floor = alpha(brand, BRAND_TINT_ALPHA);
         if (contrastRatio(composite(floor, t.background), ink) >= BRAND_INK_CONTRAST) expect(fill).toBe(floor);
@@ -255,7 +256,7 @@ describe("hue washes", () => {
     expect(hues.length).toBeGreaterThan(10);
     // The panes differ by platform: the web frost's tints and the native set.
     for (const look of LOOKS) {
-      for (const [platform, g] of [["web", look.webGlass], ["native", look.nativeGlass]] as const) {
+      for (const [platform, g] of glassSets(look)) {
         const { name: scheme, tokens: t } = look;
         const dark = look.scheme === "dark";
         const bases = [t.background, composite(g["glass-tint-content"], t.background), composite(g["glass-tint-control"], composite(g["glass-tint-content"], t.background))];
@@ -337,7 +338,7 @@ describe("state washes", () => {
     for (const look of LOOKS) {
       const t = look.tokens;
       const dark = look.scheme === "dark";
-      for (const [platform, g] of [["web", look.webGlass], ["native", look.nativeGlass]] as const) {
+      for (const [platform, g] of glassSets(look)) {
         const bases = [t.background, composite(g["glass-tint-content"], t.background)];
         for (const { name, pane, web } of panes) {
           if (web && platform !== "web") continue;
@@ -355,13 +356,12 @@ describe("state washes", () => {
             if (!holds(body)) {
               // Where the body alone misses the floor a wash would only deepen the miss, so the
               // pane keeps its body. That is never the web host since the addon is capped for
-              // its ink (GS-2): only the native host, whose tints put the dark control puck's
-              // muted ink at 4.20:1 over the page token, where on the iOS device, whose dark
-              // frost runs darker than that token, the field's body with its tint over the
-              // frost measures 4.91, its addon's `$` too, the addon's fill capped to nothing
-              // (glass-surface-native-frost-self-sample-1; with the fill beneath the frost it
-              // measured 4.76 on the full-strength addon, GP-11).
-              expect(platform, `${where}: the web host never misses the ink floor`).toBe("native");
+              // its ink (GS-2), nor iOS's since its dark control puck is white 0.05 (GS-8,
+              // glass-surface-ios-dark-control-tint-1): only Android's, whose dark control puck
+              // (the native set's white 0.12) puts the muted ink at 4.20:1 over the page token,
+              // the addon's fill capped to nothing. (On the iOS device at 0.12 the field's body
+              // read #373740 and its `$` 4.91 with no addon fill; at 0.05 it reads #272730.)
+              expect(platform, `${where}: only Android's dark control puck misses the ink floor`).toBe("android");
               expect(fill, where).toBe(body);
               continue;
             }
@@ -373,8 +373,9 @@ describe("state washes", () => {
         }
       }
     }
-    // The selection wash misses only where its body does: the dark native control puck.
-    const missed = LOOKS.flatMap((look) => ([["web", look.webGlass], ["native", look.nativeGlass]] as const).flatMap(([platform, g]) => panes
+    // The selection wash misses only where its body does: Android's dark control puck (iOS's,
+    // at white 0.05 since GS-8, holds).
+    const missed = LOOKS.flatMap((look) => (glassSets(look)).flatMap(([platform, g]) => panes
       .filter(({ web }) => !web || platform === "web")
       .filter(({ pane }) => {
         const t = look.tokens;
@@ -382,7 +383,7 @@ describe("state washes", () => {
         return legibleWash({ tokens: t, glass: g, dark: look.scheme === "dark" }, "selection", pane) === body;
       })
       .map(({ name }) => `${platform} ${look.name} ${name}`)));
-    expect(missed).toEqual(["native dark control puck"]);
+    expect(missed).toEqual(["android dark control puck"]);
   });
 
   it("lays the selection wash at the solid recipe's own tint in every look, its inks still at 4.5:1", () => {
@@ -397,7 +398,7 @@ describe("state washes", () => {
     };
     for (const look of LOOKS) {
       const t = look.tokens;
-      for (const [platform, g] of [["web", look.webGlass], ["native", look.nativeGlass]] as const) {
+      for (const [platform, g] of glassSets(look)) {
         const fill = legibleWash({ tokens: t, glass: g, dark: look.scheme === "dark" }, "selection", { layer: "content" });
         const body = surfaceUnderFill(g, "content");
         for (const base of [t.background, composite(g["glass-tint-content"], t.background)]) {
@@ -658,7 +659,7 @@ describe("Radio, Checkbox and Switch draw their solid look under glass (GS-5)", 
         ["android radio ring", String(androidRadioSkin.mark.kind === "ring" ? androidRadioSkin.mark.ring(t, "base", false, true).borderColor : "")],
         ["android checkbox box", String(androidCheckboxSkin.box(t, false, "base", false).borderColor)],
       ];
-      for (const [marks, glass] of [[web, l.webGlass], [native, l.nativeGlass]] as const) {
+      for (const [marks, glass] of [[web, l.webGlass], [native, l.androidGlass]] as const) {
         for (const [name, boundary] of marks) {
           for (const ground of [t.background, composite(glass["glass-tint-content"], t.background)]) {
             expect(contrastRatio(boundary, ground), `${l.name} ${name}`).toBeGreaterThanOrEqual(3);

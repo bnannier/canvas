@@ -1,5 +1,7 @@
-import { colorsFor, glassByScheme, type ColorScheme, type ColorTokens, type GlassTokens, type Palette } from "../../src/style/tokens.ts";
+import { colorsFor, type ColorScheme, type ColorTokens, type GlassTokens, type Palette } from "../../src/style/tokens.ts";
 import { glassTintsFor } from "../../src/style/glass-surface/glass-tints.ts";
+import { glassTintsFor as iosGlassTintsFor } from "../../src/style/glass-surface/glass-tints.ios.ts";
+import { glassTintsFor as androidGlassTintsFor } from "../../src/style/glass-surface/glass-tints.android.ts";
 import { MINT_SELECTOR } from "../../tools/tokens/css-tokens.ts";
 
 // The three looks the kit ships, one entry per palette in its scheme: blush (the light
@@ -17,12 +19,14 @@ export interface Look {
   selector: string;
   /** The web frost's tints under glass (web-frost.ts, through the web tint resolver). */
   webGlass: GlassTokens;
-  /** The native glass tints (iOS Liquid Glass and frost, the Android blur): one per scheme. */
-  nativeGlass: GlassTokens;
+  /** iOS's glass tints (its Liquid Glass and frost, through the iOS tint resolver): one per scheme. */
+  iosGlass: GlassTokens;
+  /** Android's glass tints (its capture and expo-blur frosts, through the Android resolver): one per scheme. */
+  androidGlass: GlassTokens;
 }
 
 function look(name: Look["name"], scheme: ColorScheme, palette: Palette, selector: Look["selector"]): Look {
-  return { name, scheme, palette, tokens: colorsFor(palette, scheme), selector, webGlass: glassTintsFor(scheme, palette), nativeGlass: glassByScheme[scheme] };
+  return { name, scheme, palette, tokens: colorsFor(palette, scheme), selector, webGlass: glassTintsFor(scheme, palette), iosGlass: iosGlassTintsFor(scheme, palette), androidGlass: androidGlassTintsFor(scheme, palette) };
 }
 
 export const LOOKS: readonly Look[] = [
@@ -30,6 +34,11 @@ export const LOOKS: readonly Look[] = [
   look("mint", "light", "mint", MINT_SELECTOR),
   look("dark", "dark", "blush", ".dark"),
 ];
+
+/** A look's tints on every platform, each named for the platform that paints it. */
+export function glassSets(l: Look): readonly (readonly ["web" | "ios" | "android", GlassTokens])[] {
+  return [["web", l.webGlass], ["ios", l.iosGlass], ["android", l.androidGlass]];
+}
 
 /** The ThemeProvider props that render a look. */
 export function lookProps(l: Look): { scheme: ColorScheme; mint: boolean } {
