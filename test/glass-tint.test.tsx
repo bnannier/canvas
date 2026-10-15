@@ -6,8 +6,9 @@ import { GlassSurface } from "../src/style/glass-surface/glass-surface.tsx";
 import { BRAND_TINT_ALPHA, clearSurfaceTint, surfaceUnderFill, surfaceIntensity, type GlassLayer } from "../src/style/glass-surface/glass-surface.shared.tsx";
 import { glassTintsFor } from "../src/style/glass-surface/glass-tints.ts";
 import { WEB_FROST, WEB_TINTS } from "../src/style/glass-surface/web-frost.ts";
+import { IOS_GLASS } from "../src/style/glass-surface/ios-tints.ts";
 import { glassByScheme, lightColors, darkColors } from "../src/style/tokens.ts";
-import { LOOKS } from "./fixtures/looks.ts";
+import { LOOKS, glassSets } from "./fixtures/looks.ts";
 import { shellBeds } from "./fixtures/page-look.ts";
 
 // The glass material's FILL (its under-fill, beneath the surface's content): the layer that
@@ -27,8 +28,9 @@ import { shellBeds } from "./fixtures/page-look.ts";
 // the blur, as Dark Factory's frost paints its tint (test/web-frost-paint-order.test.tsx).
 //
 // The web renders the web frost's own tints (web-frost.ts, which the ThemeProvider
-// publishes as `theme.glass` there); `glassByScheme` is the native set (iOS Liquid Glass
-// and frost, the Android blur). The token-level checks below hold both sets.
+// publishes as `theme.glass` there); `glassByScheme` is the native set (the Android blur's,
+// and iOS's but for its sheerer dark control puck, IOS_GLASS). The token-level checks below
+// hold every set.
 
 afterEach(cleanup);
 
@@ -38,8 +40,8 @@ afterEach(cleanup);
 const LIGHT_TINT = WEB_TINTS.light["glass-tint"];
 const DARK_TINT = WEB_TINTS.dark["glass-tint"];
 const OPAQUE_WHITE = "rgba(255, 255, 255, 1.00)";
-// Both tint sets, for the checks that hold on every platform.
-const TINT_SETS = [["web", WEB_TINTS], ["native", glassByScheme]] as const;
+// Every tint set, for the checks that hold on every platform.
+const TINT_SETS = [["web", WEB_TINTS], ["android", glassByScheme], ["ios", IOS_GLASS]] as const;
 
 function mockMatchMedia(matching: (query: string) => boolean) {
   return spyOn(window, "matchMedia").mockImplementation(
@@ -300,7 +302,7 @@ describe("GlassSurface layers", () => {
   it("orders the tints by density: functional < content < dense, and the control puck is the light one in dark", () => {
     const a = (v: string) => rgbaOf(v)[3];
     for (const look of LOOKS) {
-      for (const [platform, g] of [["web", look.webGlass], ["native", look.nativeGlass]] as const) {
+      for (const [platform, g] of glassSets(look)) {
         expect(a(g["glass-tint"]), `${platform} ${look.name}`).toBeLessThan(a(g["glass-tint-content"]));
         expect(a(g["glass-tint-content"]), `${platform} ${look.name}`).toBeLessThan(a(g["glass-tint-dense"]));
       }
@@ -315,7 +317,7 @@ describe("GlassSurface layers", () => {
     // look (docs/src/shell/page-look.ts), its stops and its orb centres.
     for (const look of LOOKS) {
       const t = look.tokens;
-      for (const [platform, g] of [["web", look.webGlass], ["native", look.nativeGlass]] as const) {
+      for (const [platform, g] of glassSets(look)) {
         for (const base of [t.background, ...shellBeds(look.name)]) {
           for (const tint of [g["glass-tint-content"], g["glass-tint-dense"]]) {
             expect(contrast(over(tint, base), rgb(t.foreground)), `${platform} ${look.name} foreground on ${tint} over ${base}`).toBeGreaterThanOrEqual(4.5);
@@ -345,9 +347,11 @@ describe("GlassSurface layers", () => {
       const t = look.tokens;
       // Without tokens the resolver can only return the sheer floor; with them it solves the
       // tint for the ink the skin paints (the primary pair).
-      expect(surfaceUnderFill(look.nativeGlass, "control", t.primary)).toContain(`${BRAND_TINT_ALPHA}`);
-      const fill = surfaceUnderFill(look.nativeGlass, "control", t.primary, undefined, t);
-      expect(contrast(over(fill, t.background), rgb(t["primary-foreground"])), look.name).toBeGreaterThanOrEqual(4.5);
+      for (const [platform, glass] of [["ios", look.iosGlass], ["android", look.androidGlass]] as const) {
+        expect(surfaceUnderFill(glass, "control", t.primary)).toContain(`${BRAND_TINT_ALPHA}`);
+        const fill = surfaceUnderFill(glass, "control", t.primary, undefined, t);
+        expect(contrast(over(fill, t.background), rgb(t["primary-foreground"])), `${platform} ${look.name}`).toBeGreaterThanOrEqual(4.5);
+      }
     }
   });
 
