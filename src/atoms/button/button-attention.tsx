@@ -1,23 +1,25 @@
-import { useEffect, useState } from "react";
-import { View, LoopView, createLoopChannel, useReducedMotion, type ViewStyle } from "../../style/index.js";
+import { useEffect, useMemo } from "react";
+import { View, LoopView, createLoopChannel, keyframes, useReducedMotion, type ViewStyle } from "../../style/index.js";
 import { alpha } from "../../style/color.js";
 import { palette } from "../../style/tokens.js";
 
 // Functional attention cue requested by the Argus owner. Animate the halo alone:
 // text, hit target, dimensions and the existing button treatment stay still.
 const ATTENTION = {
-  period: 2000,
+  period: 1800,
+  // A full swell and return, a softer second beat, then a quiet pause.
+  heartbeat: keyframes([[0, 0], [0.08, 0.4], [0.18, 1], [0.28, 0.4], [0.36, 0], [0.44, 0.3], [0.52, 0.8], [0.62, 0.3], [0.7, 0], [1, 0]]),
   waves: [
-    { blur: 6, spread: 0, inputRange: [0, 0.16, 0.42, 1], outputRange: [0, 0.85, 0, 0] },
-    { blur: 14, spread: 2, inputRange: [0, 0.12, 0.36, 0.66, 1], outputRange: [0, 0, 0.85, 0, 0] },
-    { blur: 24, spread: 4, inputRange: [0, 0.32, 0.58, 0.92, 1], outputRange: [0, 0, 0.7, 0, 0] },
+    { blur: 6, spread: 0, inputRange: [0, 0.4, 0.7, 1], outputRange: [0.04, 0.75, 0.5, 0.25] },
+    { blur: 14, spread: 2, inputRange: [0, 0.4, 0.7, 1], outputRange: [0, 0.12, 0.8, 0.6] },
+    { blur: 24, spread: 4, inputRange: [0, 0.4, 0.7, 1], outputRange: [0, 0, 0.2, 0.85] },
   ],
 };
 
 export function ButtonAttention({ radius }: { radius: ViewStyle["borderRadius"] }) {
   const color = palette["red-500"];
   const reduced = useReducedMotion();
-  const [channel] = useState(() => createLoopChannel({ period: ATTENTION.period }));
+  const channel = useMemo(() => createLoopChannel({ period: ATTENTION.period, shape: ATTENTION.heartbeat }), []);
   useEffect(() => {
     if (!reduced) channel.play();
     else channel.park(0.5);
