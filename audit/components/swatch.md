@@ -20,9 +20,9 @@ Audit checklist for `/components/swatch`. The facts block and the variants table
 | Hand-off metric gaps | none |
 | Interactions registry | in the inventory; evidence: none registered |
 | Overlay recipe | none |
-| Interaction states | static: A colour sample: it takes no input. |
+| Interaction states | recipes: focus on Theme picker (web row; desktop), pressed on Theme picker (web row; desktop). |
 | MeasureProps | not adopted |
-| Touch target | no touch-target name (the exports of `src/style/touch-target.ts`, `src/style/touch-target-seed.ts`, `src/style/touch-seam.ts`, `src/style/clip-slop.ts`, the `TouchTargetSkin` fields, or `hitSlop`) in its implementation modules |
+| Touch target | `swatch.shared.tsx`: hitSlop, minTarget, platformMinTarget. `test/touch-target-coverage.test.ts` records it as covered another way: Theme-picker radio samples pad the 16px dot to platformMinTarget through hitSlop; display swatches remain noninteractive. |
 | Tests importing it | 4: `test/design-rules-shape.test.ts`, `test/design-rules-skins.test.ts`, `test/skins-smoke.test.tsx`, `test/swatch.test.tsx` |
 | E2E naming it | 0: none |
 | E2E catalog sweeps | 7: `e2e/a11y/components.e2e.ts` (componentRoutes), `e2e/journeys/keyboard.e2e.ts` (componentRoutes), `e2e/responsive/component-widths.e2e.ts` (contentRoutes, componentRoutes), `e2e/smoke/examples.e2e.ts` (componentExamples), `e2e/smoke/routes.e2e.ts` (allRoutes), `e2e/visual/components.e2e.ts` (componentRoutes), `e2e/visual/materials.e2e.ts` (MATERIAL_ROUTES) |
@@ -42,6 +42,7 @@ Web: 18 cells per variant (3 widths x 3 looks x 2 surfaces). iOS and Android: 6 
 | `inline` | Inline | [ ] | [ ] | [ ] |  |
 | `block` | Block | [ ] | [ ] | [ ] |  |
 | `detailline` | Detail line | [ ] | [ ] | [ ] |  |
+| `themepicker` | Theme picker | [ ] | [ ] | [ ] |  |
 <!-- audit:variants:end -->
 
 ## Universal rubric

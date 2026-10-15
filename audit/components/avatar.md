@@ -8,8 +8,8 @@ Audit checklist for `/components/avatar`. The facts block and the variants table
 | Route | `/components/avatar` |
 | Category | Atoms (`src/atoms/avatar/`) |
 | Markdown | `src/atoms/avatar/avatar.md` |
-| Source files | `avatar-menu.shared.tsx`, `avatar.android.tsx`, `avatar.ios.tsx`, `avatar.md`, `avatar.shared.tsx`, `avatar.styles.ts`, `avatar.tsx` |
-| Implementation | its own source directory, `src/atoms/avatar/` (6 TypeScript modules) |
+| Source files | `avatar-menu.shared.tsx`, `avatar.android.tsx`, `avatar.ios.tsx`, `avatar.md`, `avatar.reference.tsx`, `avatar.shared.tsx`, `avatar.styles.ts`, `avatar.tsx` |
+| Implementation | its own source directory, `src/atoms/avatar/` (7 TypeScript modules) |
 | Exports | Avatar, AvatarGroup, AvatarMenu |
 | Platform entries | iOS: web build: Avatar, AvatarGroup; own build: AvatarMenu (builds a part from dropdown's own iosSkin (../dropdown/dropdown.styles.js); passes `menuGap: 6` where the web entry has `dropdownWebSkin`; counted as the platform's own). Android: web build: Avatar, AvatarGroup; own build: AvatarMenu (builds a part from dropdown's own androidSkin (../dropdown/dropdown.styles.js); passes `menuGap: 6` where the web entry has `dropdownWebSkin`; counted as the platform's own) |
 | Platform-skins registry | iOS: AvatarMenu; Android: AvatarMenu |
@@ -23,7 +23,7 @@ Audit checklist for `/components/avatar`. The facts block and the variants table
 | Interaction states | recipes: hover on Account menu (web row; desktop), open on Account menu (web, iOS, Android rows; phone, tablet and desktop), disabled on Disabled menu (web row; desktop). focus exempt, verified: `onPress` makes the Avatar a button, a tab stop; no rail example passes it (the AvatarMenu pill's button is the Dropdown's custom trigger). pressed exempt, verified: `onPress` makes the Avatar a button; no rail example passes it (the AvatarMenu pill's button is the Dropdown's custom trigger). |
 | MeasureProps | not adopted |
 | Touch target | `avatar.shared.tsx`: hitSlop, minTarget; `avatar.styles.ts`: minTarget, platformMinTarget |
-| Tests importing it | 17: `test/a11y-state.test.tsx`, `test/atom-material-feedback.test.tsx`, `test/atom-material-roles.test.tsx`, `test/avatar-menu.test.tsx`, `test/dense-overlays.test.tsx`, `test/design-rules-skins.test.ts`, `test/dist-smoke.test.tsx`, `test/glass-pane-ripple.test.tsx`, `test/glass-pane.test.tsx`, `test/image.test.tsx`, `test/material-solid-fallback.test.tsx`, `test/new-components.test.tsx`, `test/no-console-violations.test.tsx`, `test/skins-smoke.test.tsx`, `test/text-contrast.test.tsx`, `test/touch-target-coverage.test.ts`, `test/web-frost-paint-order.test.tsx` |
+| Tests importing it | 18: `test/a11y-state.test.tsx`, `test/atom-material-feedback.test.tsx`, `test/atom-material-roles.test.tsx`, `test/avatar-argus.test.tsx`, `test/avatar-menu.test.tsx`, `test/dense-overlays.test.tsx`, `test/design-rules-skins.test.ts`, `test/dist-smoke.test.tsx`, `test/glass-pane-ripple.test.tsx`, `test/glass-pane.test.tsx`, `test/image.test.tsx`, `test/material-solid-fallback.test.tsx`, `test/new-components.test.tsx`, `test/no-console-violations.test.tsx`, `test/skins-smoke.test.tsx`, `test/text-contrast.test.tsx`, `test/touch-target-coverage.test.ts`, `test/web-frost-paint-order.test.tsx` |
 | E2E naming it | 2: `e2e/a11y/structure.e2e.ts`, `e2e/behavior/component-docs.e2e.ts` |
 | E2E catalog sweeps | 7: `e2e/a11y/components.e2e.ts` (componentRoutes), `e2e/journeys/keyboard.e2e.ts` (componentRoutes), `e2e/responsive/component-widths.e2e.ts` (contentRoutes, componentRoutes), `e2e/smoke/examples.e2e.ts` (componentExamples), `e2e/smoke/routes.e2e.ts` (allRoutes), `e2e/visual/components.e2e.ts` (componentRoutes), `e2e/visual/materials.e2e.ts` (MATERIAL_ROUTES) |
 | Turn record | `audit/turns/avatar.md`, written by `bun run audit:turn -- --slug=avatar --phase=before\|after` (the before and after capture runs) |
@@ -37,6 +37,7 @@ Web: 18 cells per variant (3 widths x 3 looks x 2 surfaces). iOS and Android: 6 
 | Variant | Label | Web (18) | iOS (6) | Android (6) | Notes |
 |---|---|---|---|---|---|
 | `default` | Default | [ ] | [ ] | [ ] |  |
+| `brandmark` | Brand mark | [ ] | [ ] | [ ] |  |
 | `photo` | Photo | [ ] | [ ] | [ ] |  |
 | `identitycolours` | Identity colours | [ ] | [ ] | [ ] |  |
 | `sizes` | Sizes | [ ] | [ ] | [ ] |  |
@@ -44,6 +45,7 @@ Web: 18 cells per variant (3 widths x 3 looks x 2 surfaces). iOS and Android: 6 
 | `ringoutline` | Ring outline | [ ] | [ ] | [ ] |  |
 | `stacked` | Stacked | [ ] | [ ] | [ ] |  |
 | `topbar` | Topbar | [ ] | [ ] | [ ] |  |
+| `argusaccountmenu` | Argus account menu | [ ] | [ ] | [ ] |  |
 | `accountmenu` | Account menu | [ ] | [ ] | [ ] |  |
 | `compactmenu` | Compact menu | [ ] | [ ] | [ ] |  |
 | `menualignment` | Menu alignment | [ ] | [ ] | [ ] |  |

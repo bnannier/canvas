@@ -88,14 +88,15 @@ export const Text = forwardRef<RNText, TextProps>(function Text({ style, ...rest
   return <RNText ref={ref} {...rest} style={themed} />;
 });
 
-/**
- * React Native's TextInput with the theme's registered typefaces applied. Kit fields
- * (Input, Textarea, Select) build on it; reach for them first.
- */
+/** TextInput's props: React Native's, plus the focus appearance it keeps. */
 export interface CanvasTextInputProps extends TextInputProps {
   /** Keep the platform’s system focus appearance instead of the themed ring. */
   systemFocus?: boolean;
 }
+/**
+ * React Native's TextInput with the theme's registered typefaces applied. Kit fields
+ * (Input, Textarea, Select) build on it; reach for them first.
+ */
 export const TextInput = forwardRef<RNTextInput, CanvasTextInputProps>(function TextInput({ style, systemFocus, ...rest }, ref) {
   const ring = useFocusRingStyle();
   const font = useFontStyle(style);

@@ -32,7 +32,7 @@ Audit checklist for the design tokens the `tokens/*` docs pages document, audite
 | `emblem` | directly | `shape`, `statusColors` |
 | `autocomplete` | directly | `shadow`, `shape`, `useMeasuredWidth` |
 | `avatar` | directly | `shape` |
-| `badge` | directly | `shape`, `statusColors` |
+| `badge` | directly | `alpha`, `shape`, `statusColors` |
 | `breadcrumb` | directly | `alpha` |
 | `button-group` | directly | `alpha`, `customShadow`, `shadow`, `shape`, `useMeasuredWidth` |
 | `button` | directly | `shape` |
@@ -59,11 +59,11 @@ Audit checklist for the design tokens the `tokens/*` docs pages document, audite
 | `action-panels` | directly | `statusColors` |
 | `alert` | directly | `shape`, `statusColors` |
 | `alert-dialog` | directly | `alpha`, `shadow`, `shape`, `widths` |
-| `card` | directly | `customShadow`, `shadow`, `shape` |
+| `card` | directly | `customShadow`, `darkColors`, `lightColors`, `mintColors`, `shadow`, `shape` |
 | `code-block` | directly | `alpha`, `palette`, `shadow`, `shape` |
 | `collapsible` | directly | `shape` |
 | `description-lists` | directly | `containerProbe`, `shadow`, `shape`, `useContainerBreakpoint` |
-| `empty-state` | directly | `alpha`, `shape` |
+| `empty-state` | directly | `alpha`, `shadow`, `shape` |
 | `feeds` | directly | `shape` |
 | `form` | directly | `useContainerWidth`, `widths` |
 | `grid-lists` | directly | `alpha`, `palette`, `shape`, `useContainerBreakpoint` |

@@ -62,7 +62,7 @@ export function GlassSurface(props: GlassSurfaceProps) {
     // The frame paints its tint over its own backdrop filter, exactly as Argus.
     // It owns its exterior shadow and hairline; no additional material rim is added.
     const backdrop = `blur(${frame === "veil" ? WEB_FROST.veilBlur : WEB_FROST.blur}px)`;
-    const paint = { backgroundColor: tint ?? (frame === "veil" ? theme.tokens.scrim : theme.tokens.card), backdropFilter: backdrop, WebkitBackdropFilter: backdrop } as ViewStyle;
+    const paint = { backgroundColor: props.tint ?? (frame === "veil" ? theme.tokens.scrim : theme.tokens.card), backdropFilter: backdrop, WebkitBackdropFilter: backdrop } as ViewStyle;
     return <GlassBox {...props} style={[style, paint]} solid material={null} />;
   }
   // Sheer is a content-only treatment. It must never thin a menu or error verdict.

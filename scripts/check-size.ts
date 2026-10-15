@@ -109,7 +109,12 @@ const CORE_FILE_GZIP_OVERRIDES: Record<string, number> = {
 // ring beside it), 4.9 to 5.4KB on every platform, 4.5KB over the old cap on Android.
 // 235KB keeps 6.6% headroom over Android's figure, about the slack the 216KB cap started
 // with.
-export const JS_MAX_GZIP = 241_664; // 236 KB
+// The GlassSurface audit turn (the native frost's banded rim, the front ripple, the capped
+// addon fill, the scrim blur, GS-5's removals) and the Argus component adoption (the frame
+// frost, form dialogs, reference cards and the controls' Argus anatomy) landed together on
+// 2026-10-14 at 241,587 / 241,767 / 242,314B (web / iOS / Android), 650B over 236KB on
+// Android. 248KB keeps 4.8% headroom over Android's figure.
+export const JS_MAX_GZIP = 253_952; // 248 KB
 
 export interface JavaScriptBudget {
   label: string;
@@ -288,8 +293,10 @@ export interface JavaScriptBudget {
 // Original Argus Card artwork adds shared compositions and seven palette roles.
 // Fresh Android whole-kit gzip is 240,853B; the whole-kit ceiling becomes 241,664B
 // (811B headroom). All named-import caps stay fixed.
+// The GlassSurface turn and the Argus adoption together put the web Button at 12,877B on
+// 2026-10-14 (each was measured under 12,800B alone): its ceiling becomes 13,568B, 5% over.
 export const NAMED_IMPORT_BUDGETS: readonly JavaScriptBudget[] = [
-  { label: "Button + ThemeProvider", entry: "scripts/size-fixtures/button.ts", maxGzip: 12_800, requiredExports: ["Button", "ThemeProvider"] },
+  { label: "Button + ThemeProvider", entry: "scripts/size-fixtures/button.ts", maxGzip: 13_568, requiredExports: ["Button", "ThemeProvider"] },
   { label: "Input + ThemeProvider", entry: "scripts/size-fixtures/input.ts", maxGzip: 43_008, requiredExports: ["Input", "ThemeProvider"] },
   { label: "DataTable + ThemeProvider", entry: "scripts/size-fixtures/data-table.ts", maxGzip: 53_248, requiredExports: ["DataTable", "ThemeProvider"] },
   { label: "StackedList + ThemeProvider", entry: "scripts/size-fixtures/stacked-list.ts", maxGzip: 65_536, requiredExports: ["StackedList", "ThemeProvider"] },
