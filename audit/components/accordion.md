@@ -8,10 +8,10 @@ Audit checklist for `/components/accordion`. The facts block and the variants ta
 | Route | `/components/accordion` |
 | Category | Molecules (`src/molecules/accordion/`) |
 | Markdown | `src/molecules/accordion/accordion.md` |
-| Source files | `accordion.android.tsx`, `accordion.ios.tsx`, `accordion.md`, `accordion.shared.tsx`, `accordion.styles.ts`, `accordion.tsx` |
-| Implementation | its own source directory, `src/molecules/accordion/` (5 TypeScript modules) |
+| Source files | `accordion.activity.styles.ts`, `accordion.activity.tsx`, `accordion.android.tsx`, `accordion.ios.tsx`, `accordion.md`, `accordion.shared.tsx`, `accordion.styles.ts`, `accordion.tsx` |
+| Implementation | its own source directory, `src/molecules/accordion/` (7 TypeScript modules) |
 | Exports | Accordion |
-| Platform entries | iOS: own build: Accordion (builds from its own iosSkin). Android: own build: Accordion (builds from its own androidSkin) |
+| Platform entries | iOS: own build: Accordion (builds from its own iosSkin; injects platform parts (../card/card.ios.js)). Android: own build: Accordion (builds from its own androidSkin; injects platform parts (../card/card.android.js)) |
 | Platform-skins registry | iOS: Accordion; Android: Accordion |
 | Reference row | `accordion` (Full, Built). iOS: link [accordion (iOS)](https://developer.apple.com/design/human-interface-guidelines/disclosure-controls) (HIG Disclosure controls: available on iOS/iPadOS via SwiftUI DisclosureGroup; no iOS 27 kit group). Android: none (Material 3 has no accordion or expansion panel component; expansion panels existed only in the Material 1 spec and Android apps compose expandable list items or cards instead). Web: link [accordion (Web)](https://www.radix-ui.com/primitives/docs/components/accordion) (shadcn's accordion is a thin wrapper over this Radix primitive) |
 | Materials manifest | Accordion: molecules, static + inherited; verification solid-appearance, glass-appearance, mode-switch, accessibility-fallback, runtime-capability, semantic-state |
@@ -20,10 +20,10 @@ Audit checklist for `/components/accordion`. The facts block and the variants ta
 | Hand-off metric gaps | none |
 | Interactions registry | in the inventory; evidence: none registered |
 | Overlay recipe | none |
-| Interaction states | recipes: focus on Default (web row; desktop), pressed on Default (web row; desktop), disabled on Disabled row (web row; desktop). |
+| Interaction states | recipes: hover on Activity disclosure (web row; desktop), focus on Default (web row; desktop), pressed on Default (web row; desktop), disabled on Disabled row (web row; desktop). |
 | MeasureProps | not adopted |
 | Touch target | no touch-target name (the exports of `src/style/touch-target.ts`, `src/style/touch-target-seed.ts`, `src/style/touch-seam.ts`, `src/style/clip-slop.ts`, the `TouchTargetSkin` fields, or `hitSlop`) in its implementation modules. `test/touch-target-coverage.test.ts` records it as covered another way: triggers are 44/56 tall by skin |
-| Tests importing it | 5: `test/design-rules-shape.test.ts`, `test/design-rules-skins.test.ts`, `test/disclosure.test.tsx`, `test/focus-ring.test.tsx`, `test/skins-smoke.test.tsx` |
+| Tests importing it | 6: `test/accordion-activity.test.tsx`, `test/design-rules-shape.test.ts`, `test/design-rules-skins.test.ts`, `test/disclosure.test.tsx`, `test/focus-ring.test.tsx`, `test/skins-smoke.test.tsx` |
 | E2E naming it | 0: none |
 | E2E catalog sweeps | 7: `e2e/a11y/components.e2e.ts` (componentRoutes), `e2e/journeys/keyboard.e2e.ts` (componentRoutes), `e2e/responsive/component-widths.e2e.ts` (contentRoutes, componentRoutes), `e2e/smoke/examples.e2e.ts` (componentExamples), `e2e/smoke/routes.e2e.ts` (allRoutes), `e2e/visual/components.e2e.ts` (componentRoutes), `e2e/visual/materials.e2e.ts` (MATERIAL_ROUTES) |
 | Turn record | `audit/turns/accordion.md`, written by `bun run audit:turn -- --slug=accordion --phase=before\|after` (the before and after capture runs) |
@@ -42,6 +42,7 @@ Web: 18 cells per variant (3 widths x 3 looks x 2 surfaces). iOS and Android: 6 
 | `withdescriptions` | With descriptions | [ ] | [ ] | [ ] |  |
 | `disabledrow` | Disabled row | [ ] | [ ] | [ ] |  |
 | `controlled` | Controlled | [ ] | [ ] | [ ] |  |
+| `activitydisclosure` | Activity disclosure | [ ] | [ ] | [ ] |  |
 <!-- audit:variants:end -->
 
 ## Universal rubric

@@ -6,6 +6,13 @@ description: >-
   natively on iOS and Android and, through React Native Web, in the browser. Every
   visual variation is a semantic boolean prop; there is no style escape hatch.
 colors:
+  featured-start: "#2b2a5e"
+  featured-middle: "#4b3a8c"
+  featured-end: "#7a55c8"
+  featured-stack: "rgba(255, 255, 255, 0.5)"
+  promo-start: "#8e7cf5"
+  promo-middle: "#c98be9"
+  promo-end: "#f3a5c8"
   background: "#f5f2fe"
   foreground: "#3b3c5c"
   card: "#ffffff"
@@ -46,6 +53,13 @@ colors:
   inverse-foreground: "#ffffff"
   inverse-primary: "#cecfff"
 colorsMint:
+  featured-start: "#0f2b45"
+  featured-middle: "#174a6a"
+  featured-end: "#1e8a72"
+  featured-stack: "rgba(255, 255, 255, 0.5)"
+  promo-start: "#3f7fe0"
+  promo-middle: "#4fb6c9"
+  promo-end: "#8fe0b8"
   background: "#f0f7fd"
   foreground: "#2e3d4f"
   card: "#ffffff"
@@ -86,6 +100,13 @@ colorsMint:
   inverse-foreground: "#ffffff"
   inverse-primary: "#b9d4ff"
 colorsDark:
+  featured-start: "#2c2f72"
+  featured-middle: "#5a3ab0"
+  featured-end: "#a24fb4"
+  featured-stack: "rgba(255, 255, 255, 0.14)"
+  promo-start: "#5b4bd6"
+  promo-middle: "#9a5cc9"
+  promo-end: "#d16aa6"
   background: "#272544"
   foreground: "#ebebf7"
   card: "#252741"
@@ -387,7 +408,7 @@ components:
     nav-link-radius: "8px"
   sidebar:
     side-toggle-radius: "8px"
-    side-row-radius: "8px"
+    side-row-radius: "0px"
   steps:
     steps-connector-radius: "0px"
   toast:
@@ -757,6 +778,13 @@ theme that omits any of these keeps the older fallbacks.
 <!-- @generated:colors -->
 | Token | Blush (light) | Mint (light) | Dark |
 | --- | --- | --- | --- |
+| `featured-start` | `#2b2a5e` | `#0f2b45` | `#2c2f72` |
+| `featured-middle` | `#4b3a8c` | `#174a6a` | `#5a3ab0` |
+| `featured-end` | `#7a55c8` | `#1e8a72` | `#a24fb4` |
+| `featured-stack` | `rgba(255, 255, 255, 0.5)` | `rgba(255, 255, 255, 0.5)` | `rgba(255, 255, 255, 0.14)` |
+| `promo-start` | `#8e7cf5` | `#3f7fe0` | `#5b4bd6` |
+| `promo-middle` | `#c98be9` | `#4fb6c9` | `#9a5cc9` |
+| `promo-end` | `#f3a5c8` | `#8fe0b8` | `#d16aa6` |
 | `background` | `#f5f2fe` | `#f0f7fd` | `#272544` |
 | `foreground` | `#3b3c5c` | `#2e3d4f` | `#ebebf7` |
 | `card` | `#ffffff` | `#ffffff` | `#252741` |
@@ -889,6 +917,10 @@ kit's own Android parts at a step of the same scale.
 <!-- @generated:platform-shapes -->
 | Platform | Role | Corner |
 | --- | --- | --- |
+| web | `insetRow` | 10px |
+| web | `brandMark` | 9px |
+| web | `referenceCard` | 9px |
+| web | `utilityControl` | 7px |
 | web | `key` | 6px |
 | web | `tooltip` | 8px |
 | web | `event` | 8px |
@@ -935,7 +967,7 @@ drawn by those entries' platforms.
 <!-- @generated:shape-roles -->
 | Role | Drawn by |
 | --- | --- |
-| `control` | `atoms/autocomplete`, `atoms/avatar`, `atoms/button`, `atoms/button-group`, `atoms/listbox`, `atoms/select`, `atoms/tooltip`, `molecules/alert`, `molecules/alert-dialog`, `molecules/code-block`, `molecules/grid-lists`, `molecules/media-objects`, `molecules/stacked-lists`, `organisms/board`, `organisms/calendar`, `organisms/data-table`, `organisms/dialog`, `organisms/drag-drop`, `organisms/navbars`, `organisms/row-menu`, `organisms/sidebar`, `organisms/tabs`, `organisms/toast`, `style` |
+| `control` | `atoms/autocomplete`, `atoms/avatar`, `atoms/button`, `atoms/button-group`, `atoms/listbox`, `atoms/select`, `atoms/tooltip`, `molecules/alert`, `molecules/alert-dialog`, `molecules/card`, `molecules/code-block`, `molecules/grid-lists`, `molecules/media-objects`, `molecules/stacked-lists`, `organisms/board`, `organisms/calendar`, `organisms/data-table`, `organisms/dialog`, `organisms/drag-drop`, `organisms/navbars`, `organisms/row-menu`, `organisms/sidebar`, `organisms/tabs`, `organisms/toast`, `style` |
 | `field` | `atoms/autocomplete`, `atoms/input`, `atoms/input-otp`, `atoms/select`, `atoms/stepper`, `atoms/textarea`, `organisms/command`, `organisms/data-table` |
 | `card` | `atoms/skeleton`, `charts/shared`, `molecules/accordion`, `molecules/card`, `molecules/collapsible`, `molecules/description-lists`, `molecules/empty-state`, `molecules/feeds`, `molecules/media-objects`, `molecules/stacked-lists`, `molecules/stats`, `organisms/board`, `organisms/calendar`, `organisms/carousel`, `organisms/data-table`, `organisms/drag-drop`, `organisms/filter-panel`, `organisms/navbars`, `organisms/sidebar` |
 | `dialog` | `molecules/alert-dialog`, `organisms/action-sheet`, `organisms/dialog` |
@@ -943,13 +975,17 @@ drawn by those entries' platforms.
 | `sheet` | `atoms/popover`, `organisms/action-sheet`, `organisms/drawer`, `organisms/toast` |
 | `checkbox` | `atoms/checkbox` |
 | `pill` | `atoms/badge`, `atoms/button`, `atoms/button-group`, `atoms/chip`, `atoms/pagination`, `atoms/skeleton`, `organisms/tabs`, `organisms/toast` |
-| `tile` | `atoms/emblem`, `atoms/qrcode`, `atoms/swatch`, `molecules/alert`, `molecules/grid-lists`, `organisms/dashboard-grid` |
-| `key` | `atoms/kbd`, `atoms/skeleton`, `atoms/tooltip`, `atoms/typography`, `charts/heatmap`, `molecules/code-block`, `molecules/media-objects` |
+| `tile` | `atoms/emblem`, `atoms/qrcode`, `atoms/swatch`, `molecules/alert`, `molecules/card`, `molecules/grid-lists`, `molecules/stats`, `organisms/board`, `organisms/dashboard-grid` |
+| `insetRow` | `molecules/card` |
+| `brandMark` | `atoms/avatar` |
+| `referenceCard` | `molecules/card` |
+| `utilityControl` | `atoms/button` |
+| `key` | `atoms/badge`, `atoms/kbd`, `atoms/skeleton`, `atoms/tooltip`, `atoms/typography`, `charts/heatmap`, `molecules/code-block`, `molecules/media-objects` |
 | `tooltip` | `atoms/tooltip` |
 | `event` | `organisms/calendar` |
 | `bar` | `charts/shared` |
 | `mark` | `charts/sparkline`, `charts/stacked-bar`, `charts/treemap`, `charts/waterfall-chart` |
-| `cell` | `charts/bullet-chart`, `charts/heatmap`, `charts/shared` |
+| `cell` | `atoms/progress`, `charts/bullet-chart`, `charts/heatmap`, `charts/shared` |
 | `candle` | `charts/candlestick-chart` |
 | `tableHeader` | `organisms/data-table` |
 | `dragGhost` | `organisms/drag-drop` |

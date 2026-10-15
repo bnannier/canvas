@@ -15,7 +15,7 @@ Audit checklist for `/components/drawer`. The facts block and the variants table
 | Platform-skins registry | iOS: Drawer; Android: Drawer |
 | Reference row | `overlays` (Full, Built). iOS: link [overlays (iOS 27)](https://www.sketch.com/s/04c24d8b-38fb-4afb-8836-36617e022f02/symbols?g=Sheets%2520(iPhone)). Android: link [overlays (Android)](https://m3.material.io/components/bottom-sheets/overview) (side sheets for edge drawers). Web: link [overlays (Web)](https://ui.shadcn.com/docs/components/sheet) |
 | Materials manifest | Drawer: organisms, liquid; verification solid-appearance, glass-appearance, mode-switch, accessibility-fallback, runtime-capability, semantic-state, open-surface |
-| Hand-off open gaps | Drawer.title (unscheduled), Drawer.description (unscheduled), Drawer.footer (unscheduled) |
+| Hand-off open gaps | Drawer.title (unscheduled), Drawer.description (unscheduled) |
 | Hand-off settled | Drawer.side (Boolean axis: `top`, `bottom`, `left`, `right`), Drawer.onClose (Renamed: `onOpenChange`), Drawer.glass (Not offered: none), Drawer.size (Renamed: `width`) |
 | Hand-off metric gaps | none |
 | Interactions registry | in the inventory; evidence: drawer-nested-keyboard (browser-keyboard, e2e/journeys/keyboard.e2e.ts), drawer-nested-touch (browser-touch, e2e/journeys/touch.e2e.ts) |
@@ -37,6 +37,7 @@ Web: 18 cells per variant (3 widths x 3 looks x 2 surfaces). iOS and Android: 6 
 | Variant | Label | Web (18) | iOS (6) | Android (6) | Notes |
 |---|---|---|---|---|---|
 | `default` | Default | [ ] | [ ] | [ ] |  |
+| `applicationpanel` | Application panel | [ ] | [ ] | [ ] |  |
 | `right` | Right | [ ] | [ ] | [ ] |  |
 | `bottomsheet` | Bottom sheet | [ ] | [ ] | [ ] |  |
 | `topsheet` | Top sheet | [ ] | [ ] | [ ] |  |

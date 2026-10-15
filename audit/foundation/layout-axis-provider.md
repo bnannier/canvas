@@ -36,7 +36,7 @@ Audit checklist for the style-layer foundation `LayoutAxisProvider`, audited for
 | `kbd` | directly | `useHugStyle` |
 | `listbox` | directly | `useFillStyle` |
 | `stepper` | directly | `useHugStyle` |
-| `progress` | directly | `useFillStyle` |
+| `progress` | directly | `useFillStyle`, `useHugStyle` |
 | `qrcode` | directly | `useHugStyle` |
 | `radio` | directly | `useFillStyle` |
 | `select` | directly | `useFillStyle` |
