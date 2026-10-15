@@ -39,8 +39,9 @@ A button's whole job is to fire `onPress`. Wire it to your own handler and every
 
 ### Attention required
 
-Use `attention` for a required setup action. Soft red glow spreads outward and
-fades every two seconds. Its inner edge, label and button dimensions stay still. Reduce Motion
+Use `attention` for a required setup action. Soft red glow swells outward and returns
+in a heartbeat rhythm: a strong beat, a softer beat, then a pause every 1.8 seconds.
+Its inner edge, label and button dimensions stay still. Reduce Motion
 keeps a steady halo; disabled and loading buttons suppress it. Remove the button
 or the prop when the required setup is complete.
 
