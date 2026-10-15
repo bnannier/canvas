@@ -236,7 +236,7 @@ export interface JavaScriptBudget {
 // Input was 39,160 / 39,725 / 39,394B (web / iOS / Android) before the GlassSurface audit
 // turn (the owner's GP-1, GS-2, GS-5 and GS-6 decisions and GP-14), 211B under its ceiling on
 // iOS after growing into it since the layered glass model set it. Measured at the turn's end
-// (6173015d) at 39,477 / 40,423 / 40,072B, +317 / +698 / +678B gzip, by building the fixture
+// (ba394657) at 39,477 / 40,423 / 40,072B, +317 / +698 / +678B gzip, by building the fixture
 // at each of the turn's commits and reading esbuild's per-module output bytes. Every field
 // carries what the turn gave the shared material host and the controls on it:
 // - the native frost's specular rim, on iOS and Android only (`SpecularRim` in
@@ -260,7 +260,7 @@ export interface JavaScriptBudget {
 //   stays a native view of its own wherever its material renders; and every pane host stays a
 //   stacking context of its own under glass. On the web, GS-6's scrim blur adds its value to
 //   the frost's table (web-frost.ts, ~6B gzip).
-// The first measurement of the turn (354ac7b2: 39,460 / 40,079 / 39,709B, 143B over the old
+// The first measurement of the turn (e2b2b1ce: 39,460 / 40,079 / 39,709B, 143B over the old
 // ceiling on iOS) also counted GS-1's identifying boundary, an off Switch's track painted over
 // the frost (`boundaryFill`) and the panes' kept boundary; GS-5 removed both before release
 // (-39 / -39 / -37B gzip). The Input ceiling moved from 39,936 to 43,008B at that first

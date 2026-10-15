@@ -727,7 +727,7 @@ describe("a fill that carries ink is capped for it (GS-2)", () => {
     const dark = LOOKS.find((look) => look.name === "dark")!;
     const theme = { tokens: dark.tokens, glass: dark.webGlass, dark: true };
     expect(rgbaOf(legibleInnerFill(theme, { clear: true, layer: "control" }))).toEqual(rgbaOf(alpha(dark.tokens.foreground, 0.09)));
-    expect(rgbaOf(legibleInnerFill(theme, { layer: "control" }))).toEqual(rgbaOf(alpha(dark.tokens.foreground, 0.03)));
+    expect(rgbaOf(legibleInnerFill(theme, { layer: "control" }))).toEqual(rgbaOf(alpha(dark.tokens.foreground, 0.04)));
   });
 
   it("renders the capped addon on the web host: the iOS skin's field in dark glass, and the web field's at full strength", async () => {
@@ -781,8 +781,9 @@ describe("a fill that carries ink is capped for it (GS-2)", () => {
 
   // PhoneInput's country segment is the other fill that carries ink (its flag and caret):
   // the web skin's `muted` cluster, which the iOS and Android skins do not paint. Its clear
-  // field caps the fill to a trace in the light palettes and keeps the full soft strength
-  // in dark, and solid keeps the opaque `muted`.
+  // field keeps the full soft strength in every look since the page look's muted inks
+  // (#606183 blush, #5a6b7e mint, #a6a8c9 dark) clear the floor on it, and solid keeps the
+  // opaque `muted`.
   it("renders PhoneInput's country segment capped on the clear web field in every look, and `muted` in solid", async () => {
     const { PhoneInput } = await import("../src/molecules/phone-input/phone-input.tsx");
     const countryOf = (root: HTMLElement) => (root.querySelector('[data-testid="phone-country"]') as HTMLElement).style.backgroundColor;
@@ -797,8 +798,7 @@ describe("a fill that carries ink is capped for it (GS-2)", () => {
       const capped = legibleInnerFill({ tokens: look.tokens, glass: look.webGlass, dark }, { clear: true, layer: "control" }, "soft");
       expect(rgbaOf(countryOf(container)), look.name).toEqual(rgbaOf(capped));
       const soft = alpha(look.tokens.foreground, dark ? 0.09 : 0.06);
-      if (dark) expect(rgbaOf(capped), look.name).toEqual(rgbaOf(soft));
-      else expect(Number(/,\s*([\d.]+)\)$/.exec(capped)![1]), `${look.name} alpha`).toBeLessThan(0.06);
+      expect(rgbaOf(capped), look.name).toEqual(rgbaOf(soft));
       unmount();
     }
     const { container } = await renderGlass(<PhoneInput label="Phone" testID="phone" />, true);
