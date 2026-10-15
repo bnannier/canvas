@@ -7,8 +7,9 @@
 // route /testing/materials). The gate in .tuning-harness.json refuses a push that
 // changes a value here without an evidence row.
 //
-// iOS Liquid Glass and the Android blur do not read this file: their tints are the
-// public `glassByScheme` (glass-tints.ios.ts, glass-tints.android.ts), unchanged.
+// iOS Liquid Glass and the native frosts do not read this file: Android's tints are the
+// public `glassByScheme` (glass-tints.android.ts), iOS's its own table (ios-tints.ts, the
+// same set but for the dark control puck).
 
 import type { ColorScheme, GlassTokens } from "../tokens.js";
 import type { GlassLayer } from "./glass-surface.shared.js";

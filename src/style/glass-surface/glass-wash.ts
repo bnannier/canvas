@@ -131,9 +131,10 @@ export function legibleWash(theme: Pick<ThemeValue, "tokens" | "glass" | "dark">
  * (glass-surface-native-frost-self-sample-1), so every host caps the fill
  * (`useTextEntryMaterial`). A native frost's own light or dark veil runs a few levels lighter
  * or darker than the page token the cap is solved on, which only raises the ink's contrast:
- * on the iOS device a dark field's body is #373740 and its `$` reads 4.91:1 on it, the addon
- * capped to no fill, where the full soft strength read 3.83. (While the native frost painted
- * over the tint, its body read #272730 and the full-strength addon 4.76.)
+ * on the iOS device a dark field's body is #272730 under iOS's dark control tint (white 0.05,
+ * ios-tints.ts) and its addon keeps a faint fill (0.04) with the `$` at 5.53:1 on it. At the
+ * native set's 0.12, which Android keeps, the body read #373740 there and the addon was capped
+ * to no fill, its `$` at 4.91, where the full soft strength read 3.83.
  */
 export function legibleInnerFill(theme: Pick<ThemeValue, "tokens" | "glass" | "dark">, pane: WashPane = {}, strength: InnerFillStrength = "soft"): string {
   const body = paneBody(theme, pane);

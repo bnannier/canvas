@@ -321,7 +321,7 @@ describe("primary text on authored surfaces", () => {
       expect(toastSkins.iosSkin).toBe(skin);
       const bar = paint(skin.container(tokens, true, false), "backgroundColor");
       expect(bar).toBe(tokens.inverse!);
-      const beds = [rgba(bar), ...[look.webGlass, look.nativeGlass].flatMap((glass) =>
+      const beds = [rgba(bar), ...[look.webGlass, look.iosGlass, look.androidGlass].flatMap((glass) =>
         [tokens.background, tokens.card].map((backdrop) => composite(inverseDenseTint({ tokens, glass }, bar), backdrop)))];
       const texts: [string, string][] = [
         ["message", paint(skin.message(tokens))],
@@ -345,7 +345,7 @@ describe("primary text on authored surfaces", () => {
       expect(paint(toastSkins.androidSkin.message(tokens))).toBe(tokens["inverse-foreground"]!);
       const action = paint(toastSkins.androidSkin.actionLabel(tokens));
       expect(action).toBe(tokens["inverse-primary"]!);
-      const glassPills = [look.webGlass, look.nativeGlass].flatMap((glass) =>
+      const glassPills = [look.webGlass, look.iosGlass, look.androidGlass].flatMap((glass) =>
         [tokens.background, tokens.card].map((backdrop) => composite(inverseDenseTint({ tokens, glass }, bar), backdrop)));
       const ripple = toastSkins.androidSkin.ripple!(tokens).color;
       for (const resting of [rgba(bar), ...glassPills]) {
@@ -457,11 +457,12 @@ for (const look of LOOKS) {
 
 // Each platform's glass tints: the web frost's own (web-frost.ts) and the native set.
 const webGlass = (look: Look) => look.webGlass;
-const nativeGlass = (look: Look) => look.nativeGlass;
+const iosGlass = (look: Look) => look.iosGlass;
+const androidGlass = (look: Look) => look.androidGlass;
 const dialogPlatforms = [
   { name: "web", Component: Dialog, skin: dialogSkins.webSkin, glassOf: webGlass },
-  { name: "ios", Component: IOSDialog, skin: dialogSkins.iosSkin, glassOf: nativeGlass },
-  { name: "android", Component: AndroidDialog, skin: dialogSkins.androidSkin, glassOf: nativeGlass },
+  { name: "ios", Component: IOSDialog, skin: dialogSkins.iosSkin, glassOf: iosGlass },
+  { name: "android", Component: AndroidDialog, skin: dialogSkins.androidSkin, glassOf: androidGlass },
 ];
 
 describe("Dialog message contrast", () => {
@@ -512,8 +513,8 @@ describe("Dialog message contrast", () => {
 
 const actionSheetPlatforms = [
   { name: "web", Component: ActionSheet, skin: actionSheetSkins.webSkin, glassOf: webGlass },
-  { name: "ios", Component: IOSActionSheet, skin: actionSheetSkins.iosSkin, glassOf: nativeGlass },
-  { name: "android", Component: AndroidActionSheet, skin: actionSheetSkins.androidSkin, glassOf: nativeGlass },
+  { name: "ios", Component: IOSActionSheet, skin: actionSheetSkins.iosSkin, glassOf: iosGlass },
+  { name: "android", Component: AndroidActionSheet, skin: actionSheetSkins.androidSkin, glassOf: androidGlass },
 ];
 
 describe("ActionSheet message contrast", () => {

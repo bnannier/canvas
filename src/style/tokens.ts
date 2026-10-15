@@ -368,8 +368,9 @@ export function frameBedsFor(palette: Palette, scheme: ColorScheme): readonly st
  * Keys are the CSS custom-property names verbatim (`glass-tint` is `--glass-tint` in
  * styles/tokens/colors.css). The CSS hand-off carries the WEB frost's tints, Dark
  * Factory's (src/style/glass-surface/web-frost.ts), and scripts/validate-tokens.ts
- * holds the two together. `glassByScheme` below is the NATIVE set: iOS Liquid Glass and
- * frost and the Android blur read it, unchanged since the web took Dark Factory's frost.
+ * holds the two together. `glassByScheme` below is the NATIVE set: the Android blur reads
+ * it, and iOS's Liquid Glass and frost read it but for a sheerer dark control puck
+ * (src/style/glass-surface/ios-tints.ts).
  * Values are rgba so they compose over whatever sits behind the surface.
  */
 export interface GlassTokens {
@@ -411,9 +412,9 @@ export const darkGlass: GlassTokens = {
 };
 
 /**
- * The native glass tints per scheme (iOS Liquid Glass and frost, the Android blur). The
- * web's are Dark Factory's frost tints; read the active platform's through
- * `useTheme().glass`.
+ * The native glass tints per scheme: the Android blur's, and iOS's Liquid Glass and frost
+ * but for its dark control puck, which is sheerer there (white 0.05). The web's are Dark
+ * Factory's frost tints; read the active platform's through `useTheme().glass`.
  */
 export const glassByScheme: Record<ColorScheme, GlassTokens> = {
   light: lightGlass,
