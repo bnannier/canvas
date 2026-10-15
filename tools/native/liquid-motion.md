@@ -1473,3 +1473,5 @@ seconds per cycle, centered beside the project selector.
 | Date | Surface | Versus reference | Evidence and limits |
 |---|---|---|---|
 | 2026-10-15 | Argus Board, local Metro, Chrome at 1440 and 390; desktop shell exercised with isTauri | Three fixed-size, borderless shadow bands brighten in outward order; button/inner edge do not move. Reduced Motion is static. Centers differ by less than 0.01 px. Header moved outside Tauri content scroller so the glow has no clipping ancestor above it except the viewport. | Browser snapshots `/private/tmp/argus-attention-fixed-{1440,390}-{320,720,1160}.png`, final amber `/private/tmp/argus-attention-amber-{tauri,web}.png`. Final colors sampled as rgba(245,158,11,0.6). Native iOS/Android and actual WKWebView paint were not captured. Earlier violet/scaled iterations were rejected by the owner and are not acceptance evidence. |
+
+2026-10-15 follow-up: owner requested red instead of amber. The shipped Argus desktop-shell browser check samples rgba(239,68,68,0.6); all three wave transforms remain none. Screenshot: `/private/tmp/argus-attention-red-tauri.png`. Timing, geometry and reduced-motion behavior are unchanged.
