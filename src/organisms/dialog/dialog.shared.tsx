@@ -2,7 +2,7 @@ import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.j
 import { EscapeLayerProvider, useEscapeLayer } from "../../style/escape-layer.js";
 import { useHardwareBack } from "../../style/use-hardware-back.js";
 import { useId, useState, type ReactNode } from "react";
-import { KeyboardAvoidingView, Platform } from "react-native";
+import { KeyboardAvoidingView, Platform, useWindowDimensions } from "react-native";
 import { View, Text, Pressable, RippleClip, cornerRadii, GlassSurface, Portal, useDialogFocus, type StyleProp, type ViewStyle } from "../../style/index.js";
 import { Button as WebButton } from "../../atoms/button/button.js";
 import { Input as WebInput } from "../../atoms/input/input.js";
@@ -41,6 +41,8 @@ import { useHeldScrim } from "../../style/glass-surface/scrim-frost.js";
 export interface DialogProps {
   /** Structured form: a named header and close action above scrolling body/footer content. */
   form?: boolean;
+  /** Give an overlay form a viewport-bounded body that fills between its fixed header and footer. */
+  workspace?: boolean;
   /** Custom actions rendered after the form body, within its scrollport. */
   footer?: ReactNode;
   /** Maximum form panel width in pixels; defaults to 560. */
@@ -180,6 +182,9 @@ export function createDialog(skin: DialogSkin, parts: DialogParts = {}) {
     const overlay = props.overlay === true;
     const insets = useSafeAreaInsetsOrNull();
     const form = !!props.form;
+    const workspace = form && props.workspace === true;
+    const window = useWindowDimensions();
+    const workspaceHeight = s.workspaceHeight(window.height, insets?.top ?? 0, insets?.bottom ?? 0);
     const accessibilityLabel = props.accessibilityLabel;
 
     const confirm = () => {
@@ -329,14 +334,14 @@ export function createDialog(skin: DialogSkin, parts: DialogParts = {}) {
               <Pressable accessible={false} focusable={false} tabIndex={-1}
                 importantForAccessibility="no" style={s.dismissBackdrop} onPress={cancel} />
             ) : null}
-            <View style={[s.cardSizing, form ? { maxWidth: props.panelWidth ?? 560 } : s.cardWidth(size), style]}>
-            <GlassSurface style={[s.cardLayout, skin.card(tokens), form ? skin.form?.card(tokens) : null]}>
+            <View style={[s.cardSizing, workspace ? s.workspaceSizing(workspaceHeight) : null, form ? { maxWidth: props.panelWidth ?? 560 } : s.cardWidth(size), style]}>
+            <GlassSurface style={[s.cardLayout, workspace ? s.workspaceCard : null, skin.card(tokens), form ? skin.form?.card(tokens) : null]}>
               {/* The panel content region wraps the content in a
                   KeyboardAvoidingView so the iOS keyboard never
                   covers a form field (padding behavior on iOS; a plain passthrough
                   View on web/Android). Both shrink when the overlay bounds the content. */}
-              <View style={s.contentSizing}>
-                <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined} style={s.contentSizing}>
+              <View style={workspace ? s.workspaceContent : s.contentSizing}>
+                <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined} style={workspace ? s.workspaceContent : s.contentSizing}>
                   {form ? (
                     <>
                       <View style={{ flexDirection: "row", gap: 12, alignItems: "flex-start" }}>
@@ -346,10 +351,17 @@ export function createDialog(skin: DialogSkin, parts: DialogParts = {}) {
                         </View>
                         <Button icon mediumIcon circle ghost inset steadyPress accessibilityLabel="Close" onPress={cancel} iconLeft={<Icon x muted heavyStroke size={15} />} />
                       </View>
-                      <OverlayScrollView style={{ marginTop: 18 }} contentContainerStyle={{ gap: 18, paddingBottom: 12 }} keyboardShouldPersistTaps="handled">
-                        {children}
-                        {props.footer}
-                      </OverlayScrollView>
+                      {workspace ? (
+                        <>
+                          <View style={s.workspaceBody}>{children}</View>
+                          {props.footer ? <View style={s.workspaceFooter}>{props.footer}</View> : null}
+                        </>
+                      ) : (
+                        <OverlayScrollView style={{ marginTop: 18 }} contentContainerStyle={{ gap: 18, paddingBottom: 12 }} keyboardShouldPersistTaps="handled">
+                          {children}
+                          {props.footer}
+                        </OverlayScrollView>
+                      )}
                     </>
                   ) : children != null ? (
                     children
