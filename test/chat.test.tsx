@@ -1,7 +1,8 @@
 import { afterEach, expect, test } from "bun:test";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
-import { Chat, ChatMessage } from "../src/organisms/chat/chat.tsx";
+import { Chat, ChatMessage, type ChatAttachmentData } from "../src/organisms/chat/chat.tsx";
 import { chatAtBottom, chatBlocks } from "../src/organisms/chat/chat.logic.ts";
+import { Icon } from "../src/atoms/icon/icon.tsx";
 import { ThemeProvider } from "../src/style/theme.tsx";
 
 afterEach(cleanup);
@@ -54,4 +55,52 @@ test("assistant markdown never creates HTML, links, or remote embeds", () => {
   expect(chatBlocks("```ts\nstreaming")).toEqual([{ kind: "code", text: "streaming" }]);
   expect(chatAtBottom(500, 400, 920)).toBe(true);
   expect(chatAtBottom(200, 400, 920)).toBe(false);
+});
+
+
+test("chat exposes provider marks and application-owned saved file actions", () => {
+  const attachment = { id: "file-1", name: "release-plan.pdf" };
+  const opened: ChatAttachmentData[] = [];
+  render(<ThemeProvider light solid><Chat messages={[{ id: "message", role: "assistant", content: "Review the plan.", providerIcon: <Icon sparkles accessibilityLabel="Provider logo" />, provider: "API", attachments: [attachment] }]} value="" onChangeText={() => {}} onSend={() => {}} onOpenAttachment={(file) => opened.push(file)} /></ThemeProvider>);
+  expect(screen.getByRole("img", { name: "Provider logo" })).toBeTruthy();
+  expect(screen.getByText("API")).toBeTruthy();
+  fireEvent.click(screen.getByRole("button", { name: "Open release-plan.pdf" }));
+  expect(opened).toEqual([attachment]);
+});
+
+test("chat attaches, removes, and sends files without requiring a text draft", () => {
+  let picked = 0;
+  const sent: string[] = [];
+  const removed: string[] = [];
+  const attachment = { id: "file-1", name: "notes.txt" };
+  const props = { messages: [], value: "  ", onChangeText: () => {}, onSend: (value: string) => sent.push(value), onAttach: () => { picked++; }, onRemoveAttachment: (id: string) => removed.push(id), attachments: [attachment] };
+  const { rerender } = render(<ThemeProvider light solid><Chat {...props} /></ThemeProvider>);
+  fireEvent.click(screen.getByRole("button", { name: "Attach files" }));
+  fireEvent.click(screen.getByRole("button", { name: "Remove notes.txt" }));
+  expect(picked).toBe(1);
+  expect(removed).toEqual(["file-1"]);
+  fireEvent.click(screen.getByRole("button", { name: "Send message" }));
+  expect(sent).toEqual([""]);
+  for (const state of [{ attaching: true }, { attachments: [{ ...attachment, uploading: true }] }, { attachments: [{ ...attachment, error: true, notice: "Try attaching the file again." }] }]) {
+    rerender(<ThemeProvider light solid><Chat {...props} {...state} /></ThemeProvider>);
+    const send = screen.getByRole("button", { name: "Send message" });
+    expect(send.getAttribute("aria-disabled")).toBe("true");
+    fireEvent.click(send);
+  }
+  expect(screen.getByText("Upload failed")).toBeTruthy();
+  expect(screen.getByText("Try attaching the file again.")).toBeTruthy();
+  expect(sent).toEqual([""]);
+});
+
+
+test("thinking and streaming indicators exist only for an active reply", () => {
+  const props = { value: "", messages: [], onChangeText: () => {}, onSend: () => {}, pendingIcon: <Icon sparkles accessibilityLabel="Pending provider" /> };
+  const { rerender } = render(<ThemeProvider light solid><Chat {...props} pending /></ThemeProvider>);
+  expect(screen.getByRole("progressbar", { name: "Assistant is thinking…" })).toBeTruthy();
+  expect(screen.getByLabelText("Pending provider")).toBeTruthy();
+  rerender(<ThemeProvider light solid><Chat {...props} pending messages={[{ id: "reply", role: "assistant", content: "A partial reply", streaming: true }]} /></ThemeProvider>);
+  expect(screen.queryByRole("progressbar", { name: "Assistant is thinking…" })).toBeNull();
+  expect(screen.getByRole("progressbar", { name: "Responding…" })).toBeTruthy();
+  rerender(<ThemeProvider light solid><Chat {...props} messages={[{ id: "reply", role: "assistant", content: "A completed reply" }]} /></ThemeProvider>);
+  expect(screen.queryByRole("progressbar")).toBeNull();
 });

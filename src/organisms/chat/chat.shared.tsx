@@ -1,15 +1,25 @@
-import { useRef, type ComponentType, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ComponentType, type ReactNode } from "react";
 import { type ScrollView as RNScrollView, type ViewProps } from "react-native";
-import { View, Text, ScrollView, GlassSurface, useTheme, useFillStyle, FOCUS_RESET, type LayoutStyle } from "../../style/index.js";
+import { View, Text, ScrollView, GlassSurface, useTheme, useFillStyle, FOCUS_RESET, LoopView, createLoopChannel, useReducedMotion, type LayoutStyle } from "../../style/index.js";
 import { useScrollFocus } from "../../style/use-scroll-focus.js";
 import { useFocusFrame } from "../../style/focus-frame.js";
 import { listProps, LIST_ITEM } from "../../style/list-semantics.js";
 import { Button as WebButton, type ButtonProps } from "../../atoms/button/button.js";
 import { Textarea as WebTextarea, type TextareaProps } from "../../atoms/textarea/textarea.js";
 import { Spinner as WebSpinner, type SpinnerProps } from "../../atoms/spinner/spinner.js";
+import { Chip as WebChip, type ChipProps } from "../../atoms/chip/chip.js";
 import { Icon } from "../../atoms/icon/icon.js";
 import { chatAtBottom, chatBlocks, chatRuns } from "./chat.logic.js";
 import * as s from "./chat.styles.js";
+
+/** Application-owned file metadata. Picking, uploading, and opening files belong to the app. */
+export interface ChatAttachmentData {
+  id: string;
+  name: string;
+  uploading?: boolean;
+  error?: boolean;
+  notice?: string;
+}
 
 /** Application-owned message data. Update content under the same id while streaming. */
 export interface ChatMessageData {
@@ -18,6 +28,9 @@ export interface ChatMessageData {
   content: string;
   author?: string;
   provider?: string;
+  /** Application-supplied provider mark; give the image/icon an accessible provider name. */
+  providerIcon?: ReactNode;
+  attachments?: readonly ChatAttachmentData[];
   streaming?: boolean;
   /** Marks a failed reply with an explicit error label as well as error ink. */
   error?: boolean;
@@ -27,6 +40,7 @@ export interface ChatMessageData {
 
 export interface ChatMessageProps {
   message: ChatMessageData;
+  onOpenAttachment?: (attachment: ChatAttachmentData) => void;
   /** Render assistant markdown punctuation literally. User messages are always plain text. */
   plain?: boolean;
   testID?: string;
@@ -34,9 +48,12 @@ export interface ChatMessageProps {
 
 export interface ChatThreadProps {
   messages: readonly ChatMessageData[];
+  onOpenAttachment?: (attachment: ChatAttachmentData) => void;
   /** A reply is being prepared; no artificial message is added to the data. */
   pending?: boolean;
   pendingLabel?: string;
+  /** Application-supplied provider mark for a reply that has not started streaming. */
+  pendingIcon?: ReactNode;
   label?: string;
   emptyState?: ReactNode;
   plain?: boolean;
@@ -58,6 +75,12 @@ export interface ChatComposerProps {
   /** Prevent sending while a reply is pending; the draft remains editable. */
   pending?: boolean;
   disabled?: boolean;
+  /** Show an attachment control; the app owns its file picker and upload service. */
+  onAttach?: () => void;
+  attachments?: readonly ChatAttachmentData[];
+  onRemoveAttachment?: (id: string) => void;
+  /** File selection or upload is in progress; prevents attaching or sending again. */
+  attaching?: boolean;
   /** Anchored actions or help below the composer, outside the scrolling thread. */
   footer?: ReactNode;
   testID?: string;
@@ -69,14 +92,55 @@ interface ChatParts {
   Button: ComponentType<ButtonProps>;
   Textarea: ComponentType<TextareaProps>;
   Spinner: ComponentType<SpinnerProps>;
+  Chip: ComponentType<ChipProps>;
 }
 
-export function createChat(skin: s.ChatSkin, { Button = WebButton, Textarea = WebTextarea, Spinner = WebSpinner }: Partial<ChatParts> = {}) {
+export function createChat(skin: s.ChatSkin, { Button = WebButton, Textarea = WebTextarea, Spinner = WebSpinner, Chip = WebChip }: Partial<ChatParts> = {}) {
   function Inline({ value }: { value: string }) {
     return <>{chatRuns(value).map((run, index) => <Text key={index} style={[run.strong ? s.strong : null, run.emphasis ? s.emphasis : null, run.code ? s.code : null]}>{run.text}</Text>)}</>;
   }
 
-  function ChatMessage({ message, plain, testID }: ChatMessageProps) {
+  function Thinking({ label, icon }: { label: string; icon?: ReactNode }) {
+    const { tokens } = useTheme();
+    const reduced = useReducedMotion();
+    const channel = useRef<ReturnType<typeof createLoopChannel> | null>(null);
+    channel.current ??= createLoopChannel({ period: 1200 });
+    const pulse = channel.current;
+    useEffect(() => {
+      if (reduced) { pulse.park(0.4); return; }
+      pulse.play();
+      return () => pulse.stop();
+    }, [pulse, reduced]);
+    return <View accessible accessibilityRole="progressbar" accessibilityLabel={label} accessibilityState={{ busy: true }} aria-busy style={s.thinking}>
+      {icon ? <View aria-hidden accessibilityElementsHidden importantForAccessibility="no-hide-descendants">{icon}</View> : null}
+      <Text style={s.thinkingLabel(tokens)}>{label}</Text>
+      <View style={s.dots} aria-hidden accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
+        {[0, 1, 2].map((index) => <LoopView key={index} style={s.dot(tokens)} opacity={{ channel: pulse, inputRange: [0, 0.25, 0.5, 1], outputRange: [0.35, 1, 0.35, 0.35], offset: index / 6 }} />)}
+      </View>
+    </View>;
+  }
+
+  function Attachments({ attachments, onOpen, onRemove, disabled }: { attachments?: readonly ChatAttachmentData[]; onOpen?: (attachment: ChatAttachmentData) => void; onRemove?: (id: string) => void; disabled?: boolean }) {
+    const { tokens } = useTheme();
+    if (!attachments?.length) return null;
+    return <View style={s.attachments}>{attachments.map((attachment) => (
+      <View key={attachment.id} style={s.attachment}>
+        <Chip
+          icon={<Icon paperclip decorative size={14} />}
+          destructive={attachment.error}
+          onPress={onOpen && !attachment.uploading && !attachment.error ? () => onOpen(attachment) : undefined}
+          onRemove={onRemove ? () => onRemove(attachment.id) : undefined}
+          accessibilityLabel={onOpen ? `Open ${attachment.name}` : attachment.name}
+          disabled={disabled}
+        >{attachment.name}</Chip>
+        {attachment.uploading ? <Spinner small muted>Uploading {attachment.name}…</Spinner> : null}
+        {attachment.error ? <Text accessibilityLiveRegion="polite" style={skin.muted(tokens, true)}>Upload failed</Text> : null}
+        {attachment.notice ? <Text style={skin.muted(tokens, attachment.error)}>{attachment.notice}</Text> : null}
+      </View>
+    ))}</View>;
+  }
+
+  function ChatMessage({ message, plain, onOpenAttachment, testID }: ChatMessageProps) {
     const { tokens } = useTheme();
     const fill = useFillStyle("ChatMessage");
     const user = message.role === "user";
@@ -95,11 +159,13 @@ export function createChat(skin: s.ChatSkin, { Button = WebButton, Textarea = We
       <View {...LIST_ITEM} testID={testID} style={[fill, s.messageRow, user ? s.userRow : s.assistantRow]}>
         <View style={s.messageContent}>
           <View style={s.identity}>
+            {message.providerIcon}
             <Text style={skin.label(tokens)}>{author}</Text>
             {message.provider ? <Text style={skin.muted(tokens)}>{message.provider}</Text> : null}
           </View>
-          {user ? <GlassSurface layer="content" style={skin.message(tokens, true)}>{content}</GlassSurface> : content}
-          {message.streaming ? <Text accessibilityLiveRegion="polite" style={skin.muted(tokens)}>Responding…</Text> : null}
+          {message.content ? user ? <GlassSurface layer="content" style={skin.message(tokens, true)}>{content}</GlassSurface> : content : null}
+          <Attachments attachments={message.attachments} onOpen={onOpenAttachment} />
+          {message.streaming ? <Thinking label="Responding…" /> : null}
           {message.error ? <Text accessibilityLiveRegion="polite" style={skin.muted(tokens, true)}>Reply failed</Text> : null}
           {message.notice ? <Text style={skin.muted(tokens, message.error)}>{message.notice}</Text> : null}
         </View>
@@ -107,7 +173,7 @@ export function createChat(skin: s.ChatSkin, { Button = WebButton, Textarea = We
     );
   }
 
-  function ChatThread({ messages, pending, pendingLabel = "Assistant is thinking…", label = "Conversation", emptyState, plain, testID, style }: ChatThreadProps) {
+  function ChatThread({ messages, pending, pendingLabel = "Assistant is thinking…", pendingIcon, label = "Conversation", emptyState, plain, onOpenAttachment, testID, style }: ChatThreadProps) {
     const fill = useFillStyle("ChatThread");
     const scroll = useRef<RNScrollView>(null);
     const following = useRef(true);
@@ -142,27 +208,32 @@ export function createChat(skin: s.ChatSkin, { Button = WebButton, Textarea = We
         >
           {!messages.length && !pending ? <View style={s.empty}>{emptyState}</View> : null}
           <View {...listProps({ label })} style={s.blocks}>
-            {messages.map((message) => <ChatMessage key={message.id} message={message} plain={plain} />)}
+            {messages.map((message) => <ChatMessage key={message.id} message={message} plain={plain} onOpenAttachment={onOpenAttachment} />)}
           </View>
-          {pending && !streaming ? <View style={s.pending}><Spinner small muted>{pendingLabel}</Spinner></View> : null}
+          {pending && !streaming ? <View style={s.pending}><Thinking label={pendingLabel} icon={pendingIcon} /></View> : null}
         </ScrollView>
         {frame.innerRing()}
       </View>
     );
   }
 
-  function ChatComposer({ value, onChangeText, onSend, placeholder = "Message the assistant…", composerLabel = "Message", sendLabel = "Send message", maxLength, disabled, pending, footer, testID }: ChatComposerProps) {
+  function ChatComposer({ value, onChangeText, onSend, placeholder = "Message the assistant…", composerLabel = "Message", sendLabel = "Send message", maxLength, disabled, pending, onAttach, attachments, onRemoveAttachment, attaching, footer, testID }: ChatComposerProps) {
     const { tokens } = useTheme();
+    const [focused, setFocused] = useState(false);
     const fill = useFillStyle("ChatComposer");
-    const canSend = !disabled && !pending && value.trim().length > 0;
+    const filesPending = attaching || attachments?.some((attachment) => attachment.uploading || attachment.error);
+    const canSend = !disabled && !pending && !filesPending && (value.trim().length > 0 || !!attachments?.length);
     return (
-      <View style={[fill, s.composer, s.divider(tokens)]} testID={testID}>
-        <View style={s.composerRow}>
-          <View style={s.editor}>
-            <Textarea value={value} onChangeText={onChangeText} placeholder={placeholder} accessibilityLabel={composerLabel} rows={2} dense maxLength={maxLength} disabled={disabled} style={s.editorHeight} />
+      <View style={[fill, s.composer]} testID={testID}>
+        <GlassSurface static layer="control" stateBorder={focused} style={s.composerSurface(tokens, focused)}>
+          {attachments?.length ? <View style={s.composerAttachments}><Attachments attachments={attachments} onRemove={onRemoveAttachment} disabled={disabled || pending} /></View> : null}
+          <Textarea value={value} onChangeText={onChangeText} placeholder={placeholder} accessibilityLabel={composerLabel} rows={2} dense embedded maxLength={maxLength} disabled={disabled} style={s.editorHeight} onFocus={() => setFocused(true)} onBlur={() => setFocused(false)} />
+          <View style={s.composerRow}>
+            {onAttach ? <Button ghost icon disabled={disabled || pending || attaching || attachments?.some((attachment) => attachment.uploading)} accessibilityLabel="Attach files" iconLeft={<Icon paperclip color={tokens["muted-foreground"]} size={18} />} onPress={onAttach} /> : null}
+            <View style={s.actionSpace} />
+            <Button primary icon disabled={!canSend} accessibilityLabel={sendLabel} iconLeft={<Icon arrowUp color={canSend ? tokens["action-foreground"] ?? tokens["primary-foreground"] : tokens["muted-foreground"]} size={18} />} onPress={() => { if (canSend) onSend(value.trim()); }} />
           </View>
-          <Button primary icon disabled={!canSend} accessibilityLabel={sendLabel} iconLeft={<Icon arrowUp color={canSend ? tokens["action-foreground"] ?? tokens["primary-foreground"] : tokens["muted-foreground"]} size={18} />} onPress={() => { if (canSend) onSend(value.trim()); }} />
-        </View>
+        </GlassSurface>
         {footer ? <View style={s.footer}>{footer}</View> : null}
       </View>
     );

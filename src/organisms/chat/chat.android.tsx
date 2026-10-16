@@ -3,8 +3,9 @@ import { androidSkin } from "./chat.styles.js";
 import { Button } from "../../atoms/button/button.android.js";
 import { Textarea } from "../../atoms/textarea/textarea.android.js";
 import { Spinner } from "../../atoms/spinner/spinner.android.js";
+import { Chip } from "../../atoms/chip/chip.android.js";
 
-const components = createChat(androidSkin, { Button, Textarea, Spinner });
+const components = createChat(androidSkin, { Button, Textarea, Spinner, Chip });
 
 /** A controlled conversation with an independently scrolling thread and anchored composer. */
 export const Chat = components.Chat;
@@ -14,4 +15,4 @@ export const ChatThread = components.ChatThread;
 export const ChatMessage = components.ChatMessage;
 /** A controlled multiline draft with an explicit send action and anchored footer. */
 export const ChatComposer = components.ChatComposer;
-export type { ChatProps, ChatThreadProps, ChatMessageProps, ChatComposerProps, ChatMessageData } from "./chat.shared.js";
+export type { ChatProps, ChatThreadProps, ChatMessageProps, ChatComposerProps, ChatMessageData, ChatAttachmentData } from "./chat.shared.js";
