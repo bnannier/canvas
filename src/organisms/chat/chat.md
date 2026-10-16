@@ -1,14 +1,16 @@
 # Chat
 
-A controlled assistant conversation with independently scrolling messages, clear author and provider labels, and an anchored multiline composer. The parent supplies the bounds; Chat fills the available height without choosing a fixed height of its own.
+A controlled assistant conversation with independently scrolling messages, clear author and provider identities, and an anchored multiline composer. The parent supplies the bounds; Chat fills the available height without choosing a fixed height of its own.
 
-Messages remain application-owned `ChatMessageData`: keep each `id` stable while updating `content` during streaming. `pending` shows a thinking indicator until an explicitly `streaming` message arrives. `error` adds a visible failure label; `notice` preserves delivery or fallback information. `footer` anchors connection, review, or other actions below the composer and outside the scrollport.
+Messages remain application-owned `ChatMessageData`: keep each `id` stable while updating `content` during streaming. `pending` shows a three-dot thinking indicator until an explicitly `streaming` message arrives; pass `pendingIcon` to identify its provider. Streaming replies retain their own Responding indicator. Both animations stop when their state ends and stay still under Reduce Motion. `providerIcon` accepts an application-supplied provider logo beside the author; label the image or icon with the provider name for assistive technology. `provider` remains an optional supplementary text label such as the transport name. `error` adds a visible failure label; `notice` preserves delivery or fallback information. `footer` anchors connection, review, or other actions below the composer and outside the scrollport.
 
 Assistant content supports paragraphs, headings, lists, quotes, fenced code, bold, emphasis, and inline code through React Native text. HTML, images, and links stay literal text and never load or execute remote content. `plain` renders all source punctuation literally; user messages are always plain text. This is a small safe markdown subset rather than a complete CommonMark renderer.
 
 `ChatThread` follows new content while the reader is within 48 points of the bottom and leaves their position alone while they read older messages. Scrolling is immediate, so it does not add motion when text streams or Reduce Motion is enabled. The overflowing thread is keyboard focusable with a visible focus frame. The native app or owning Dialog handles safe areas and keyboard avoidance.
 
-`ChatComposer` keeps Enter available for newlines. Its explicit Send control receives the trimmed draft through `onSend`; empty, disabled, or pending sends are blocked. Pending replies leave the draft editable. The app owns draft clearing, transport, cancellation, persistence, and retry behavior.
+`ChatComposer` keeps Enter available for newlines. Its explicit Send control receives the trimmed draft through `onSend`; empty, disabled, pending, or uploading sends are blocked. An attached file permits an empty text draft. Pending replies leave the draft editable. The app owns draft clearing, transport, cancellation, persistence, and retry behavior.
+
+Set `onAttach` to show the accessible paperclip action. The app owns file picking and uploading, passes composer `attachments`, and removes a staged file through `onRemoveAttachment(id)`. A `ChatAttachmentData` has an `id`, `name`, optional `uploading` or `error` flags, and optional `notice` text. Uploading and failed files block sending; remove a failed file or replace it after retrying. `attaching` also blocks attaching and sending while the app opens a picker or uploads. Saved message attachments use the same metadata; `onOpenAttachment(attachment)` on Chat, ChatThread, or ChatMessage delegates opening or downloading to the app. Canvas never requests, uploads, or opens file URLs itself.
 
 ## Usage
 
@@ -42,7 +44,7 @@ Assistant content supports paragraphs, headings, lists, quotes, fenced code, bol
 ### Pending
 
 ```tsx
-<Chat style={{ height: 300 }} messages={[{ id: "request", role: "user", content: "Which checks matter for this change?" }]} value="" onChangeText={() => {}} onSend={() => {}} pending pendingLabel="Planner is reviewing the project…" />
+<Chat style={{ height: 300 }} messages={[{ id: "request", role: "user", content: "Which checks matter for this change?" }]} value="" onChangeText={() => {}} onSend={() => {}} pending pendingIcon={<Icon sparkles accessibilityLabel="Planner" size={24} />} pendingLabel="Planner is reviewing the project…" />
 ```
 
 ### Anchored actions
@@ -55,6 +57,12 @@ Assistant content supports paragraphs, headings, lists, quotes, fenced code, bol
 
 ```tsx
 <ChatMessage message={{ id: "failed", role: "assistant", author: "Planner", provider: "OpenAI", content: "The reply could not be completed.", error: true, notice: "Your draft is preserved. Try again when the provider is available." }} />
+```
+
+### Attachments
+
+```tsx
+<Chat style={{ height: 320 }} messages={[{ id: "request", role: "user", content: "Review this plan.", attachments: [{ id: "saved-plan", name: "release-plan.pdf" }] }]} value="" onChangeText={() => {}} onSend={() => {}} onAttach={() => {}} attachments={[{ id: "draft-notes", name: "notes.txt" }]} onRemoveAttachment={() => {}} onOpenAttachment={() => {}} />
 ```
 
 ### Separate pieces
