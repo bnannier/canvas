@@ -5,6 +5,10 @@ import type { DocsUsageException } from "./component-usage.ts";
 // Do not add examples, look-alike controls, callout surfaces or typography here.
 export const DOCS_USAGE_EXCEPTIONS: readonly DocsUsageException[] = [
   {
+    file: "docs/src/ui/preview-viewport.tsx", owner: "PreviewViewport", tag: "View", attribute: "style", keys: ["height"], occurrences: 1,
+    reason: "Docs-only viewport harness supplies a definite parent height for app-sized previews inside the unbounded page scroller; it paints no control or surface.",
+  },
+  {
     file: "docs/src/core/photos.ts", owner: "Wrapped", tag: "Loose", attribute: "spread", keys: ["<unresolved props>"], occurrences: 1,
     expression: "createElement(Loose, next ?? rec)",
     reason: "The example-scope adapter forwards the existing Canvas component's props after resolving bundled sample-photo paths; it authors no control or style.",

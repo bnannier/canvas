@@ -4,6 +4,7 @@ import type { ComponentDoc } from "./types";
 // first paragraph of its page's intro (src/<category>/<dir>/<dir>.md), generated into
 // docs/src/core/descriptions.ts, which the page's lead and the search index read.
 export const COMPONENTS: ComponentDoc[] = [
+  { slug: "chat", name: "Chat", category: "Organisms", stageAlign: "start" },
   // Primitives: the raw React Native building blocks Canvas re-exports
   // (@nannier/canvas). Styled with plain RN style objects, identical on every
   // platform. The foundation every higher-level component is built from.

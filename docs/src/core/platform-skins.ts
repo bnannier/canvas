@@ -1,3 +1,5 @@
+import { Chat as ChatIOS, ChatThread as ChatThreadIOS, ChatMessage as ChatMessageIOS, ChatComposer as ChatComposerIOS } from "../../../src/organisms/chat/chat.ios.js";
+import { Chat as ChatAndroid, ChatThread as ChatThreadAndroid, ChatMessage as ChatMessageAndroid, ChatComposer as ChatComposerAndroid } from "../../../src/organisms/chat/chat.android.js";
 // The registry of components that ship platform skins, ported from the web docs'
 // platform-components.ts. The WEB docs preview the iOS and Android skins by importing
 // the real `.ios`/`.android` files by LITERAL path (a bare/barrel import only ever
@@ -135,7 +137,7 @@ export const PLATFORM_SKINS: Record<"ios" | "android", Record<string, unknown>> 
     ActionPanel: ActionPanelIOS, Card: CardIOS, CardMedia: CardMediaIOS, DescriptionList: DescriptionListIOS,
     EmptyState: EmptyStateIOS, Field: FieldIOS, Feed: FeedIOS, Form: FormIOS, FormSection: FormSectionIOS,
     GridList: GridListIOS, MediaObject: MediaObjectIOS, PhoneInput: PhoneInputIOS, StackedList: StackedListIOS, Stats: StatsIOS,
-    Command: CommandIOS, DataTable: DataTableIOS, Drawer: DrawerIOS, FilterPanel: FilterPanelIOS,
+    Chat: ChatIOS, ChatThread: ChatThreadIOS, ChatMessage: ChatMessageIOS, ChatComposer: ChatComposerIOS, Command: CommandIOS, DataTable: DataTableIOS, Drawer: DrawerIOS, FilterPanel: FilterPanelIOS,
     Stepper: StepperIOS, InputOTP: InputOTPIOS, Collapsible: CollapsibleIOS,
     Carousel: CarouselIOS,
     Board: BoardIOS, BreadcrumbItem: BreadcrumbItemIOS,
@@ -155,7 +157,7 @@ export const PLATFORM_SKINS: Record<"ios" | "android", Record<string, unknown>> 
     ActionPanel: ActionPanelAndroid, Card: CardAndroid, CardMedia: CardMediaAndroid, DescriptionList: DescriptionListAndroid,
     EmptyState: EmptyStateAndroid, Field: FieldAndroid, Feed: FeedAndroid, Form: FormAndroid, FormSection: FormSectionAndroid,
     GridList: GridListAndroid, MediaObject: MediaObjectAndroid, PhoneInput: PhoneInputAndroid, StackedList: StackedListAndroid, Stats: StatsAndroid,
-    Command: CommandAndroid, DataTable: DataTableAndroid, Drawer: DrawerAndroid, FilterPanel: FilterPanelAndroid,
+    Chat: ChatAndroid, ChatThread: ChatThreadAndroid, ChatMessage: ChatMessageAndroid, ChatComposer: ChatComposerAndroid, Command: CommandAndroid, DataTable: DataTableAndroid, Drawer: DrawerAndroid, FilterPanel: FilterPanelAndroid,
     Stepper: StepperAndroid, InputOTP: InputOTPAndroid, Collapsible: CollapsibleAndroid,
     Carousel: CarouselAndroid, Toast: ToastAndroid, ToastProvider: ToastProviderAndroid, useToast: useToastAndroid,
     Chip: ChipAndroid,
