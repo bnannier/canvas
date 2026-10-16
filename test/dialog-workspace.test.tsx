@@ -15,11 +15,11 @@ test("workspace height leaves the safe-area inset in both full and short viewpor
   expect(workspaceHeight(320)).toBe(280);
 });
 
-test("workspace forms bound the panel and keep a flex body outside the dialog scrollport", () => {
+test.each([false, true])("workspace forms preserve independent scrolling and fixed actions (compact=%s)", (compact) => {
   const { getByTestId, getByRole, getByText } = render(
     <ThemeProvider solid>
       <OverlayProvider>
-        <Dialog form workspace overlay open title="Planning" testID="planning-dialog" footer={<Button>Save</Button>}>
+        <Dialog form workspace compact={compact} overlay open title="Planning" testID="planning-dialog" footer={<Button>Save</Button>}>
           <View testID="thread" style={{ flex: 1, minHeight: 0 }} />
         </Dialog>
       </OverlayProvider>
@@ -34,11 +34,20 @@ test("workspace forms bound the panel and keep a flex body outside the dialog sc
 
   const thread = getByTestId("thread");
   const body = thread.parentElement;
-  expect(body?.style.flex).toContain("1");
+  if (compact) {
+    expect(body?.style.flexBasis).toBe("auto");
+    expect(body?.style.flexGrow).toBe("0");
+  } else {
+    expect(body?.style.flex).toContain("1");
+  }
   expect(body?.style.minHeight).toBe("0px");
   expect(body?.style.overflowY).not.toBe("auto");
 
-  const sizing = [...(panel?.querySelectorAll("div") ?? [])].find((element) => (element as HTMLElement).style.height) as HTMLElement | undefined;
-  expect(Number.parseFloat(sizing?.style.height ?? "0")).toBeGreaterThan(0);
-  expect(sizing?.style.maxHeight).toBe(sizing?.style.height);
+  const sizing = panel?.firstElementChild?.nextElementSibling as HTMLElement | undefined;
+  expect(Number.parseFloat(sizing?.style.maxHeight ?? "0")).toBeGreaterThan(0);
+  if (compact) {
+    expect(sizing?.style.height).toBe("");
+  } else {
+    expect(sizing?.style.maxHeight).toBe(sizing?.style.height);
+  }
 });

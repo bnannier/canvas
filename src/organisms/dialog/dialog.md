@@ -29,6 +29,13 @@ keep its composer or other controls as siblings of that scroll region. The
 workspace body does not add an outer scrollport. This mode is intended for an
 overlay form; ordinary forms keep their existing scrolling body.
 
+Add `compact` to a workspace when short content should determine the panel's
+height: `form workspace compact overlay`. The panel hugs the conversation and
+composer, then grows up to the same safe-area-bounded viewport maximum. A long
+conversation scrolls inside its own thread while the header, composer, and dialog
+footer remain visible. The default workspace still fills its available height;
+`compact` has no effect without `form workspace`.
+
 ## Usage
 
 ```tsx

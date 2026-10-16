@@ -43,6 +43,8 @@ export interface DialogProps {
   form?: boolean;
   /** Give an overlay form a viewport-bounded body that fills between its fixed header and footer. */
   workspace?: boolean;
+  /** Let a workspace hug short content and grow only up to its viewport bound. */
+  compact?: boolean;
   /** Custom actions rendered after the form body, within its scrollport. */
   footer?: ReactNode;
   /** Maximum form panel width in pixels; defaults to 560. */
@@ -183,6 +185,8 @@ export function createDialog(skin: DialogSkin, parts: DialogParts = {}) {
     const insets = useSafeAreaInsetsOrNull();
     const form = !!props.form;
     const workspace = form && props.workspace === true;
+    const compactWorkspace = workspace && props.compact === true;
+    const workspaceContent = compactWorkspace ? s.compactWorkspaceContent : s.workspaceContent;
     const window = useWindowDimensions();
     const workspaceHeight = s.workspaceHeight(window.height, insets?.top ?? 0, insets?.bottom ?? 0);
     const accessibilityLabel = props.accessibilityLabel;
@@ -334,14 +338,14 @@ export function createDialog(skin: DialogSkin, parts: DialogParts = {}) {
               <Pressable accessible={false} focusable={false} tabIndex={-1}
                 importantForAccessibility="no" style={s.dismissBackdrop} onPress={cancel} />
             ) : null}
-            <View style={[s.cardSizing, workspace ? s.workspaceSizing(workspaceHeight) : null, form ? { maxWidth: props.panelWidth ?? 560 } : s.cardWidth(size), style]}>
-            <GlassSurface style={[s.cardLayout, workspace ? s.workspaceCard : null, skin.card(tokens), form ? skin.form?.card(tokens) : null]}>
+            <View style={[s.cardSizing, workspace ? s.workspaceSizing(workspaceHeight, compactWorkspace) : null, form ? { maxWidth: props.panelWidth ?? 560 } : s.cardWidth(size), style]}>
+            <GlassSurface style={[s.cardLayout, workspace ? compactWorkspace ? s.compactWorkspaceContent : s.workspaceCard : null, skin.card(tokens), form ? skin.form?.card(tokens) : null]}>
               {/* The panel content region wraps the content in a
                   KeyboardAvoidingView so the iOS keyboard never
                   covers a form field (padding behavior on iOS; a plain passthrough
                   View on web/Android). Both shrink when the overlay bounds the content. */}
-              <View style={workspace ? s.workspaceContent : s.contentSizing}>
-                <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined} style={workspace ? s.workspaceContent : s.contentSizing}>
+              <View style={workspace ? workspaceContent : s.contentSizing}>
+                <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined} style={workspace ? workspaceContent : s.contentSizing}>
                   {form ? (
                     <>
                       <View style={{ flexDirection: "row", gap: 12, alignItems: "flex-start" }}>
@@ -353,7 +357,7 @@ export function createDialog(skin: DialogSkin, parts: DialogParts = {}) {
                       </View>
                       {workspace ? (
                         <>
-                          <View style={s.workspaceBody}>{children}</View>
+                          <View style={[s.workspaceBody, compactWorkspace ? s.compactWorkspaceContent : null]}>{children}</View>
                           {props.footer ? <View style={s.workspaceFooter}>{props.footer}</View> : null}
                         </>
                       ) : (

@@ -164,11 +164,16 @@ export const cardSizing: ViewStyle = { width: "100%", maxHeight: "100%", flexShr
 export const contentSizing: ViewStyle = { flexShrink: 1, minHeight: 0 };
 // Workspace forms have a measured viewport height, leaving the card's inner
 // content with a definite flex bound for a separately scrolling child.
-export const workspaceSizing = (height: number): ViewStyle => ({ height, maxHeight: height });
+export const workspaceSizing = (height: number, compact = false): ViewStyle =>
+  compact ? { maxHeight: height } : { height, maxHeight: height };
 export const workspaceHeight = (windowHeight: number, topInset = 0, bottomInset = 0): number =>
   Math.max(0, windowHeight - topInset - bottomInset - 40);
 export const workspaceCard: ViewStyle = { flex: 1, minHeight: 0 };
 export const workspaceContent: ViewStyle = { flex: 1, minHeight: 0 };
+// Preserve the content's intrinsic height through every wrapper. The outer
+// viewport maximum can still shrink the chain, so a child's scrollport gets the
+// remaining space while its composer and the dialog header/footer stay fixed.
+export const compactWorkspaceContent: ViewStyle = { flexGrow: 0, flexShrink: 1, flexBasis: "auto", minHeight: 0 };
 export const workspaceBody: ViewStyle = { flex: 1, minHeight: 0, marginTop: 18 };
 export const workspaceFooter: ViewStyle = { flexShrink: 0, marginTop: 18 };
 export const dismissBackdrop: ViewStyle = { position: "absolute", top: 0, right: 0, bottom: 0, left: 0 };
