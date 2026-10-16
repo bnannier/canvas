@@ -21,6 +21,14 @@ Argus’s 28-pixel content inset, 17-pixel title, rounded card, shadow, and ligh
 frosted dim. A form with no trigger contributes no layout wrapper to its caller.
 Nested menus receive Escape before the dialog; focus stays in the open modal.
 
+For a conversation or other workspace with its own scroll region, use
+`form workspace overlay`. The dialog measures a safe-area-bounded viewport
+height; its header and optional `footer` stay fixed while `children` fill the
+remaining space. Put the workspace's scrollable content inside `children` and
+keep its composer or other controls as siblings of that scroll region. The
+workspace body does not add an outer scrollport. This mode is intended for an
+overlay form; ordinary forms keep their existing scrolling body.
+
 ## Usage
 
 ```tsx

@@ -136,6 +136,7 @@ describe("viewport reads", () => {
     "src/style/in-view.ts": "whether an element has scrolled into the window",
     "src/organisms/sidebar/sidebar.shared.tsx": "the Sidebar becomes a drawer over the WINDOW at its drawer breakpoint",
     "src/organisms/filter-panel/filter-panel.shared.tsx": "the FilterPanel becomes a drawer over the WINDOW at its drawer breakpoint",
+    "src/organisms/dialog/dialog.shared.tsx": "a workspace dialog sizes its window-level chrome to the safe-area-bounded viewport",
   };
   const VIEWPORT = /\b(useBreakpoint|useResponsive|useFormFactor|useWindowDimensions)\s*\(|\bDimensions\.(get|addEventListener)\b/;
 

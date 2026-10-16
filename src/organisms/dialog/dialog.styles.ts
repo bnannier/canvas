@@ -162,6 +162,15 @@ export const cardLayout: ViewStyle = { width: "100%", padding: 24, flexShrink: 1
 // no motion; its own padding stays on cardLayout, inside this box.
 export const cardSizing: ViewStyle = { width: "100%", maxHeight: "100%", flexShrink: 1, minHeight: 0 };
 export const contentSizing: ViewStyle = { flexShrink: 1, minHeight: 0 };
+// Workspace forms have a measured viewport height, leaving the card's inner
+// content with a definite flex bound for a separately scrolling child.
+export const workspaceSizing = (height: number): ViewStyle => ({ height, maxHeight: height });
+export const workspaceHeight = (windowHeight: number, topInset = 0, bottomInset = 0): number =>
+  Math.max(0, windowHeight - topInset - bottomInset - 40);
+export const workspaceCard: ViewStyle = { flex: 1, minHeight: 0 };
+export const workspaceContent: ViewStyle = { flex: 1, minHeight: 0 };
+export const workspaceBody: ViewStyle = { flex: 1, minHeight: 0, marginTop: 18 };
+export const workspaceFooter: ViewStyle = { flexShrink: 0, marginTop: 18 };
 export const dismissBackdrop: ViewStyle = { position: "absolute", top: 0, right: 0, bottom: 0, left: 0 };
 
 // Per-size panel width: a dialog is a floating container (a bounds provider for
