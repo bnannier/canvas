@@ -37,6 +37,7 @@ export const publicApi: Readonly<Record<string, ApiEntry>> = {
   ChatMessageProps: { kind: "type", docs: "components/chat" },
   ChatComposerProps: { kind: "type", docs: "components/chat" },
   ChatMessageData: { kind: "type", docs: "components/chat" },
+  ChatAttachmentData: { kind: "type", docs: "components/chat" },
   // src/atoms
   Autocomplete: { kind: "component", docs: "components/autocomplete" },
   AutocompleteProps: { kind: "type", docs: "components/autocomplete" },
