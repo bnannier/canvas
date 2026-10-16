@@ -70,6 +70,7 @@ export const COMPONENT_DESCRIPTIONS: Record<string, string> = {
   "board": "A data-driven kanban board: columns scroll horizontally, each column is a drop zone, and every card carries a drag grip, an optional trailing badge, a muted two-line description, a free-form chips slot, and an optional kebab menu.",
   "calendar": "Month grid, week timeline, and day timeline in one component. Events mark their days with a dot in the month grid and week strip, and timed events render as blocks on the week/day hour timelines.",
   "carousel": "A horizontally paged slide viewer: swipe (or use the prev/next arrows and the dot indicators) to move one slide at a time.",
+  "chat": "A controlled assistant conversation with independently scrolling messages, clear author and provider labels, and an anchored multiline composer. The parent supplies the bounds; Chat fills the available height without choosing a fixed height of its own.",
   "command": "Cmd+K search: navigation, actions, recent items.",
   "dashboard-grid": "A 12-column widget board for overview screens. Each widget declares a span in twelfths, and the grid measures its OWN width (never the window) to pick a tier: a wide container honors every span, a narrower one reflows widgets to their `narrowSpan`, and a phone-sized one stacks them full width.",
   "data-table": "A data table rendered from column and row data, with sorting, row selection, pagination, and the loading and empty states built in.",

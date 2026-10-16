@@ -28,6 +28,15 @@ export const entryPoints: Readonly<Record<string, EntryPointShape>> = {
 
 /** Every named export of the package entry `.` (src/index.ts), values and types. */
 export const publicApi: Readonly<Record<string, ApiEntry>> = {
+  Chat: { kind: "component", docs: "components/chat" },
+  ChatThread: { kind: "component", docs: "components/chat" },
+  ChatMessage: { kind: "component", docs: "components/chat" },
+  ChatComposer: { kind: "component", docs: "components/chat" },
+  ChatProps: { kind: "type", docs: "components/chat" },
+  ChatThreadProps: { kind: "type", docs: "components/chat" },
+  ChatMessageProps: { kind: "type", docs: "components/chat" },
+  ChatComposerProps: { kind: "type", docs: "components/chat" },
+  ChatMessageData: { kind: "type", docs: "components/chat" },
   // src/atoms
   Autocomplete: { kind: "component", docs: "components/autocomplete" },
   AutocompleteProps: { kind: "type", docs: "components/autocomplete" },

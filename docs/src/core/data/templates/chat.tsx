@@ -1,18 +1,15 @@
 import { useEffect, useRef, useState } from "react";
-import { Row, Column, Card, Typography, Button, Input, Chip, Avatar, Spinner, EmptyState, Icon } from "@nannier/canvas";
+import { Chat, Row, Chip, EmptyState, Icon, type ChatMessageData } from "@nannier/canvas";
 import type { TemplateDoc } from "../types";
+import { PreviewViewport } from "../../../ui/preview-viewport";
 
-// Assistant chat built from real Canvas components. Bubbles are small Cards
-// (selected = the user's primary-tinted side, flat = the assistant), so the
-// thread needs no hand-rolled surfaces.
+// This template exercises the same controlled conversation exported to consumers.
 
-type Message = { from: "user" | "assistant"; text: string };
-
-const THREAD: Message[] = [
-  { from: "user", text: "Which plan includes SSO?" },
-  { from: "assistant", text: "SSO and SAML are on the Enterprise plan. Pro covers custom domains and priority support; if you need identity-provider login, Enterprise is the one." },
-  { from: "user", text: "Can we trial Enterprise before committing?" },
-  { from: "assistant", text: "Yes. Sales can enable a 30-day Enterprise pilot on your existing workspace, so nothing migrates and your data stays put." },
+const THREAD: ChatMessageData[] = [
+  { id: "question-1", role: "user", content: "Which plan includes SSO?" },
+  { id: "answer-1", role: "assistant", author: "Canvas Assistant", content: "SSO and SAML are on the Enterprise plan. Pro covers custom domains and priority support; if you need identity-provider login, Enterprise is the one." },
+  { id: "question-2", role: "user", content: "Can we trial Enterprise before committing?" },
+  { id: "answer-2", role: "assistant", author: "Canvas Assistant", content: "Yes. Sales can enable a 30-day Enterprise pilot on your existing workspace, so nothing migrates and your data stays put." },
 ];
 
 const CANNED_REPLIES = [
@@ -39,32 +36,8 @@ const SUGGESTIONS = [
   },
 ];
 
-function Bubble({ from, text }: { from: string; text: string }) {
-  const user = from === "user";
-  return (
-    <Row end={user} start={!user}>
-      <Column span={10}>
-        <Row end={user} start={!user}>
-          <Card compact selected={user} flat={!user}>
-            <Typography small>{text}</Typography>
-          </Card>
-        </Row>
-      </Column>
-    </Row>
-  );
-}
-
-function TypingRow() {
-  return (
-    <Row start snug alignCenter>
-      <Spinner small />
-      <Typography tiny>Assistant is typing…</Typography>
-    </Row>
-  );
-}
-
 function ConversationLive() {
-  const [messages, setMessages] = useState<Message[]>(THREAD);
+  const [messages, setMessages] = useState<ChatMessageData[]>(THREAD);
   const [draft, setDraft] = useState("");
   const [pending, setPending] = useState(false);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -80,56 +53,25 @@ function ConversationLive() {
   const send = () => {
     const text = draft.trim();
     if (!text) return;
-    setMessages((prev) => [...prev, { from: "user", text }]);
+    setMessages((prev) => [...prev, { id: `user-${Date.now()}`, role: "user", content: text }]);
     setDraft("");
     setPending(true);
     if (timer.current) clearTimeout(timer.current);
     timer.current = setTimeout(() => {
       const reply = CANNED_REPLIES[replyIndex.current % CANNED_REPLIES.length];
       replyIndex.current += 1;
-      setMessages((prev) => [...prev, { from: "assistant", text: reply }]);
+      setMessages((prev) => [...prev, { id: `assistant-${Date.now()}`, role: "assistant", author: "Canvas Assistant", content: reply }]);
       setPending(false);
     }, 900);
   };
 
   return (
-    <Column cozy>
-      <Row snug alignCenter>
-        <Avatar small name="AI" />
-        <Column tight>
-          <Typography small medium>Canvas Assistant</Typography>
-          <Typography tiny>Answers from your workspace docs</Typography>
-        </Column>
-      </Row>
-      <Column snug>
-        {messages.map((m, i) => (
-          <Bubble key={i} from={m.from} text={m.text} />
-        ))}
-        {pending && <TypingRow />}
-      </Column>
-      <Row snug alignCenter>
-        <Column fill>
-          <Input
-            placeholder="Ask about plans, billing, or setup…"
-            value={draft}
-            onChangeText={setDraft}
-            onSubmitEditing={send}
-          />
-        </Column>
-        <Button
-          primary
-          icon
-          iconLeft={<Icon send primaryForeground size={18} />}
-          accessibilityLabel="Send message"
-          onPress={send}
-        />
-      </Row>
-    </Column>
+    <PreviewViewport height={420}><Chat messages={messages} value={draft} onChangeText={setDraft} onSend={send} pending={pending} placeholder="Ask about plans, billing, or setup…" /></PreviewViewport>
   );
 }
 
 function EmptyThreadLive() {
-  const [messages, setMessages] = useState<Message[]>([]);
+  const [messages, setMessages] = useState<ChatMessageData[]>([]);
   const [asked, setAsked] = useState<string[]>([]);
   const [pending, setPending] = useState(false);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -144,10 +86,10 @@ function EmptyThreadLive() {
   const ask = (suggestion: (typeof SUGGESTIONS)[number]) => {
     if (pending) return;
     setAsked((prev) => [...prev, suggestion.label]);
-    setMessages((prev) => [...prev, { from: "user", text: suggestion.question }]);
+    setMessages((prev) => [...prev, { id: `user-${Date.now()}`, role: "user", content: suggestion.question }]);
     setPending(true);
     timer.current = setTimeout(() => {
-      setMessages((prev) => [...prev, { from: "assistant", text: suggestion.reply }]);
+      setMessages((prev) => [...prev, { id: `assistant-${Date.now()}`, role: "assistant", author: "Canvas Assistant", content: suggestion.reply }]);
       setPending(false);
     }, 900);
   };
@@ -155,29 +97,9 @@ function EmptyThreadLive() {
   const remaining = SUGGESTIONS.filter((s) => !asked.includes(s.label));
 
   return (
-    <Column cozy alignCenter>
-      {messages.length === 0 ? (
-        <EmptyState
-          icon={<Icon messageCircle />}
-          title="Ask anything"
-          description="The assistant answers from your workspace's docs and settings."
-        />
-      ) : (
-        <Column snug>
-          {messages.map((m, i) => (
-            <Bubble key={i} from={m.from} text={m.text} />
-          ))}
-          {pending && <TypingRow />}
-        </Column>
-      )}
-      {remaining.length > 0 && (
-        <Row tight wrap center>
-          {remaining.map((s) => (
-            <Chip key={s.label} onPress={() => ask(s)}>{s.label}</Chip>
-          ))}
-        </Row>
-      )}
-    </Column>
+    <PreviewViewport>
+      <Chat messages={messages} pending={pending} value="" onChangeText={() => {}} onSend={() => {}} emptyState={<EmptyState icon={<Icon messageCircle />} title="Ask anything" description="The assistant answers from your workspace’s docs and settings." />} footer={remaining.length > 0 ? <Row tight wrap center>{remaining.map((suggestion) => <Chip key={suggestion.label} onPress={() => ask(suggestion)}>{suggestion.label}</Chip>)}</Row> : undefined} />
+    </PreviewViewport>
   );
 }
 
@@ -188,12 +110,12 @@ export const CHAT_TEMPLATE: TemplateDoc = {
   sections: [
     {
       title: "Conversation",
-      anatomy: "Bubbles are compact Cards (primary-tinted for the user, flat for the assistant), a Spinner typing row while the reply is pending, then the composer Input with its send Button. Sending appends your message and the assistant answers a moment later.",
+      anatomy: "The controlled Chat owns message anatomy, author labels, an independent thread scrollport, a pending indicator, and an anchored multiline composer. Sending appends your message and the assistant answers a moment later.",
       render: () => <ConversationLive />,
     },
     {
       title: "Empty thread",
-      anatomy: "Before the first message: an EmptyState plus suggestion Chips. Pressing a Chip seeds the conversation with that question and the assistant's answer.",
+      anatomy: "Before the first message: Chat shows an EmptyState and anchored suggestion Chips. Pressing a Chip seeds the conversation with that question and the assistant's answer.",
       render: () => <EmptyThreadLive />,
     },
   ],
