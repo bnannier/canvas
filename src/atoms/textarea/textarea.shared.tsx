@@ -117,6 +117,8 @@ export interface TextareaProps extends TextEntryProps, MeasureProps {
    * framed container (e.g. a Card with a formatting toolbar above it).
    */
   flush?: boolean;
+  /** Bare editor inside a parent-owned field surface and focus frame. Implies flush. */
+  embedded?: boolean;
   /** Composition within a parent only, never a restyle hook and never a width: the parent layout container provides the bounds. */
   style?: StyleProp<Omit<TextStyle, SizingKey>>;
 }
@@ -131,7 +133,8 @@ export function sizeOf(p: TextareaProps): Size {
 /** Build a Textarea component from a platform skin. */
 export function createTextarea(skin: TextareaSkin) {
   const Textarea = forwardRef<RNTextInput, TextareaProps>(function Textarea(props, ref) {
-    const { value, onChangeText, placeholder, label, required, rows, disabled, flush, showCount, style } = props;
+    const { value, onChangeText, placeholder, label, required, rows, disabled, embedded, showCount, style } = props;
+    const flush = props.flush || embedded;
     const size = sizeOf(props);
     const [focused, setFocused] = useState(false);
     const focusRing = useFocusRingStyle();
@@ -260,19 +263,20 @@ export function createTextarea(skin: TextareaSkin) {
       ...(props.dense ? denseField(tokens) : null),
       // Flush material shares the editor's square, borderless shape.
       ...(flush ? FLUSH_SHAPE : null),
+      ...(embedded ? { backgroundColor: "transparent" } : null),
     };
-    const fieldPane = <GlassPane {...entryMaterial.paneProps} shape={fieldShape} tint={isError ? legibleWash(theme, "error", entryMaterial.paneProps) : undefined} />;
+    const fieldPane = embedded ? null : <GlassPane {...entryMaterial.paneProps} shape={fieldShape} tint={isError ? legibleWash(theme, "error", entryMaterial.paneProps) : undefined} />;
     // The field's whole box goes through paneStyle (its shape and any label reserve), so
     // under glass its resting border becomes padding of the same width.
     const fieldStyleWith = (reserve: StyleProp<ViewStyle>): StyleProp<TextStyle>[] => [
-      paneStyle(theme, [fieldShape, reserve], focused || isError),
-      glass ? { ...PANE_SIBLING_INPUT, backgroundColor: "transparent", borderColor: focused || isError ? (fieldShape.borderColor as string) : "transparent" } : null,
+      embedded ? [fieldShape, reserve] : paneStyle(theme, [fieldShape, reserve], focused || isError),
+      glass && !embedded ? { ...PANE_SIBLING_INPUT, backgroundColor: "transparent", borderColor: focused || isError ? (fieldShape.borderColor as string) : "transparent" } : null,
       props.dense ? denseText : skin.text ? skin.text(size) : sizeText(size),
       props.dense ? denseMinHeight(rows) : minHeight(rows),
       // A framed field paints its own focus state (its border turns `ring`), so the
       // browser ring is suppressed; a flush field has no frame to paint, so it keeps the
       // kit's themed ring, drawn inside it where the toolbar card's clip cannot cut it.
-      props.systemFocus ? null : flush ? [focusRing, INSET_FOCUS_RING] : FOCUS_RESET,
+      embedded ? FOCUS_RESET : props.systemFocus ? null : flush ? [focusRing, INSET_FOCUS_RING] : FOCUS_RESET,
       // An errored framed field's border shows the error, not its focus, so the kit's
       // ring marks its keyboard focus around the red edge (src/style/focus-frame.tsx).
       isError && !flush ? errorFrame.ring() : null,

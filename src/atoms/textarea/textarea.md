@@ -26,6 +26,8 @@ web label. `accessibilityLabel` overrides the visible label’s accessible name;
 `readOnly` prevents edits without dimming or removing the field from focus.
 `systemFocus` keeps the platform system focus outline.
 
+`embedded` renders a bare editor inside a parent-owned field surface and focus frame, as used by Chat. It implies `flush` and removes the independent backing and focus outline; the parent must provide a visible focus treatment.
+
 ## Usage
 
 ```tsx
