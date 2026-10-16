@@ -15,3 +15,16 @@ test("dense paragraph fields keep Argus metrics, visible rows and accessible nam
   expect(field.disabled).toBe(false);
   expect(screen.getByText("Description").style.fontSize).toBe("9.5px");
 });
+
+
+test("embedded paragraph editors leave the field surface and focus frame to their parent", () => {
+  const { rerender } = render(<ThemeProvider light solid><Textarea embedded dense value="Keep my draft" accessibilityLabel="Message" /></ThemeProvider>);
+  const field = screen.getByRole("textbox", { name: "Message" }) as HTMLTextAreaElement;
+  expect(field.style.backgroundColor).toBe("rgba(0, 0, 0, 0.00)");
+  expect(field.style.borderWidth).toBe("0px");
+  expect(field.style.outlineWidth).toBe("0px");
+  rerender(<ThemeProvider light glass><Textarea embedded dense value="Keep my draft" accessibilityLabel="Message" /></ThemeProvider>);
+  expect(screen.getByRole("textbox", { name: "Message" })).toBe(field);
+  expect(field.value).toBe("Keep my draft");
+  expect(field.style.backgroundColor).toBe("rgba(0, 0, 0, 0.00)");
+});
