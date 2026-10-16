@@ -68,6 +68,7 @@ export const COMPONENT_DOC_KEYS: Record<string, string> = {
   "board": "./organisms/board/board-docs.tsx",
   "calendar": "./organisms/calendar/calendar-docs.tsx",
   "carousel": "./organisms/carousel/carousel-docs.tsx",
+  "chat": "./organisms/chat/chat-docs.tsx",
   "command": "./organisms/command/command-docs.tsx",
   "dashboard-grid": "./organisms/dashboard-grid/dashboard-grid-docs.tsx",
   "data-table": "./organisms/data-table/data-table-docs.tsx",
