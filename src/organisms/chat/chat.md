@@ -4,11 +4,13 @@ A controlled assistant conversation with independently scrolling messages, clear
 
 Messages remain application-owned `ChatMessageData`: keep each `id` stable while updating `content` during streaming. `pending` shows a three-dot thinking indicator until an explicitly `streaming` message arrives; pass `pendingIcon` to identify its provider. Streaming replies retain their own Responding indicator. Both animations stop when their state ends and stay still under Reduce Motion. `providerIcon` accepts an application-supplied provider logo beside the author; label the image or icon with the provider name for assistive technology. `provider` remains an optional supplementary text label such as the transport name. `error` adds a visible failure label; `notice` preserves delivery or fallback information. `footer` anchors connection, review, or other actions below the composer and outside the scrollport.
 
+Pass `actions` on any message for app-owned choices beneath its content: each has a stable `id`, a literal `label`, and optional `primary`. Chat, ChatThread, and ChatMessage call `onAction(messageId, actionId)` when chosen. Choices wrap at narrow widths and use each platform’s Button. `disabled`, `pending`, any streaming message in the thread, or an absent callback prevents activation. The app owns saving the choice, setting busy state while it is accepted, duplicate prevention, and removing resolved or historical actions. Actions do not send a composer draft or submit question answers.
+
 Assistant content supports paragraphs, headings, lists, quotes, fenced code, bold, emphasis, and inline code through React Native text. HTML, images, and links stay literal text and never load or execute remote content. `plain` renders all source punctuation literally; user messages are always plain text. This is a small safe markdown subset rather than a complete CommonMark renderer.
 
 `ChatThread` follows new content while the reader is within 48 points of the bottom. Scrolling up to read older messages pauses following; returning to the bottom resumes it. Message updates, streaming text, question-height changes, and viewport resizing coalesce into a tail adjustment after layout settles. Scrolling is immediate and never animated, so it does not add motion when text streams or Reduce Motion is enabled. The overflowing thread is keyboard focusable with a visible focus frame. The native app or owning Dialog handles safe areas and keyboard avoidance.
 
-`ChatComposer` keeps Enter available for newlines. Its explicit Send control receives the trimmed draft through `onSend`; empty, disabled, pending, or uploading sends are blocked. An attached file permits an empty text draft. Pending replies leave the draft editable. The app owns draft clearing, transport, cancellation, persistence, and retry behavior.
+`ChatComposer` keeps Enter available for newlines. Its explicit Send control receives the trimmed draft through `onSend`; empty, disabled, pending, or uploading sends are blocked. An attached file permits an empty text draft. `sendDisabled` blocks only Send while leaving drafts, attachment controls, and message choices interactive; use it when a saved choice must be made before another freeform message. Pending replies leave the draft editable. The app owns draft clearing, transport, cancellation, persistence, and retry behavior.
 
 Set `onAttach` to show the accessible paperclip action. The app owns file picking and uploading, passes composer `attachments`, and removes a staged file through `onRemoveAttachment(id)`. A `ChatAttachmentData` has an `id`, `name`, optional `uploading` or `error` flags, and optional `notice` text. Uploading and failed files block sending; remove a failed file or replace it after retrying. `attaching` also blocks attaching and sending while the app opens a picker or uploads. Saved message attachments use the same metadata; `onOpenAttachment(attachment)` on Chat, ChatThread, or ChatMessage delegates opening or downloading to the app. Canvas never requests, uploads, or opens file URLs itself.
 
@@ -61,6 +63,20 @@ The current question is framed by the existing compact, flat selected Card: a so
 
 ```tsx
 <Chat style={{ height: 320 }} messages={[]} value="" onChangeText={() => {}} onSend={() => {}} emptyState={<EmptyState title="Plan your next change" description="Describe the outcome you want." />} footer={<Row snug wrap><Button ghost small>AI connections</Button><Button ghost small>Review requirements</Button></Row>} />
+```
+
+### Message choices
+
+```tsx
+<Stateful initial="">
+  {(choice, setChoice) => (
+    <ChatThread
+      style={{ height: 240 }}
+      messages={[{ id: "checkpoint", role: "assistant", content: choice ? `Selected: ${choice}` : "Your answers are saved. What would you like to do next?", actions: choice ? [] : [{ id: "draft", label: "Draft plan", primary: true }, { id: "continue", label: "Continue with questions" }] }]}
+      onAction={(_messageId, actionId) => setChoice(actionId)}
+    />
+  )}
+</Stateful>
 ```
 
 ### Delivery notice

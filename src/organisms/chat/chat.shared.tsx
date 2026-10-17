@@ -50,6 +50,11 @@ export interface ChatQuestionAnswerData {
   skipped?: boolean;
 }
 
+interface MessageActionCallbacks {
+  /** The app owns action handling, persistence, and removing resolved actions. */
+  onAction?: (messageId: string | number, actionId: string) => void;
+}
+
 interface QuestionCallbacks {
   /** Update the message's controlled questionAnswers; the app owns saving the draft. */
   onQuestionAnswerChange?: (messageId: string | number, answers: ChatQuestionAnswerData[]) => void;
@@ -72,6 +77,8 @@ export interface ChatMessageData {
   /** Application-supplied provider mark; give the image/icon an accessible provider name. */
   providerIcon?: ReactNode;
   attachments?: readonly ChatAttachmentData[];
+  /** Application-owned choices beneath the message; omit once the choice is resolved. */
+  actions?: readonly { id: string; label: string; primary?: boolean }[];
   streaming?: boolean;
   /** Optional structured question form beneath assistant content. */
   questions?: readonly ChatQuestionData[];
@@ -89,7 +96,7 @@ export interface ChatMessageData {
   notice?: string;
 }
 
-export interface ChatMessageProps extends QuestionCallbacks {
+export interface ChatMessageProps extends QuestionCallbacks, MessageActionCallbacks {
   message: ChatMessageData;
   onOpenAttachment?: (attachment: ChatAttachmentData) => void;
   /** Render assistant markdown punctuation literally. User messages are always plain text. */
@@ -97,7 +104,7 @@ export interface ChatMessageProps extends QuestionCallbacks {
   testID?: string;
 }
 
-export interface ChatThreadProps extends QuestionCallbacks {
+export interface ChatThreadProps extends QuestionCallbacks, MessageActionCallbacks {
   messages: readonly ChatMessageData[];
   onOpenAttachment?: (attachment: ChatAttachmentData) => void;
   /** A reply is being prepared; no artificial message is added to the data. */
@@ -121,6 +128,8 @@ export interface ChatComposerProps {
   placeholder?: string;
   composerLabel?: string;
   sendLabel?: string;
+  /** Block only sending, keeping the draft, attachments, and message choices interactive. */
+  sendDisabled?: boolean;
   /** Optional application input limit; enforced by the native text field. */
   maxLength?: number;
   /** Prevent sending while a reply is pending; the draft remains editable. */
@@ -340,9 +349,10 @@ export function createChat(skin: s.ChatSkin, { Button = WebButton, Textarea = We
     </View></Card>;
   }
 
-  function ChatMessage({ message, plain, onOpenAttachment, testID, ...questionProps }: ChatMessageProps) {
+  function ChatMessage({ message, plain, onOpenAttachment, onAction, testID, ...questionProps }: ChatMessageProps) {
     const { tokens } = useTheme();
     const fill = useFillStyle("ChatMessage");
+    const actionsDisabled = !!(questionProps.disabled || questionProps.pending || message.streaming || !onAction);
     const user = message.role === "user";
     const author = message.author ?? (user ? "You" : message.role === "system" ? "System" : "Assistant");
     const body = skin.body(tokens);
@@ -365,6 +375,11 @@ export function createChat(skin: s.ChatSkin, { Button = WebButton, Textarea = We
           </View>
           {message.content ? user ? <GlassSurface layer="content" style={skin.message(tokens, true)}>{content}</GlassSurface> : content : null}
           {message.role === "assistant" && message.questions?.length ? <Questions key={message.id} message={message} {...questionProps} /> : null}
+          {message.actions?.length ? <View style={s.questionButtons}>
+            {message.actions.map((action) => <Button key={action.id} small primary={action.primary} outline={!action.primary} disabled={actionsDisabled} onPress={() => {
+              if (!actionsDisabled) onAction?.(message.id, action.id);
+            }}>{action.label}</Button>)}
+          </View> : null}
           <Attachments attachments={message.attachments} onOpen={onOpenAttachment} />
           {message.streaming ? <Thinking label="Responding…" /> : null}
           {message.error ? <Text accessibilityLiveRegion="polite" style={skin.muted(tokens, true)}>Reply failed</Text> : null}
@@ -374,7 +389,7 @@ export function createChat(skin: s.ChatSkin, { Button = WebButton, Textarea = We
     );
   }
 
-  function ChatThread({ messages, pending, pendingLabel = "Assistant is thinking…", pendingIcon, label = "Conversation", emptyState, plain, onOpenAttachment, testID, style, disabled, onQuestionAnswerChange, onSubmitQuestionAnswers, onQuestionIndexChange }: ChatThreadProps) {
+  function ChatThread({ messages, pending, pendingLabel = "Assistant is thinking…", pendingIcon, label = "Conversation", emptyState, plain, onOpenAttachment, testID, style, disabled, onAction, onQuestionAnswerChange, onSubmitQuestionAnswers, onQuestionIndexChange }: ChatThreadProps) {
     const fill = useFillStyle("ChatThread");
     const scroll = useRef<RNScrollView>(null);
     const tail = useChatTailFollow(scroll);
@@ -411,7 +426,7 @@ export function createChat(skin: s.ChatSkin, { Button = WebButton, Textarea = We
         >
           {!messages.length && !pending ? <View style={s.empty}>{emptyState}</View> : null}
           <View {...listProps({ label })} style={s.blocks}>
-            {messages.map((message) => <ChatMessage key={message.id} message={message} plain={plain} onOpenAttachment={onOpenAttachment} disabled={disabled} pending={pending || streaming} onQuestionAnswerChange={onQuestionAnswerChange} onSubmitQuestionAnswers={onSubmitQuestionAnswers} onQuestionIndexChange={onQuestionIndexChange} />)}
+            {messages.map((message) => <ChatMessage key={message.id} message={message} plain={plain} onOpenAttachment={onOpenAttachment} onAction={onAction} disabled={disabled} pending={pending || streaming} onQuestionAnswerChange={onQuestionAnswerChange} onSubmitQuestionAnswers={onSubmitQuestionAnswers} onQuestionIndexChange={onQuestionIndexChange} />)}
           </View>
           {pending && !streaming ? <View style={s.pending}><Thinking label={pendingLabel} icon={pendingIcon} /></View> : null}
         </ScrollView>
@@ -420,12 +435,12 @@ export function createChat(skin: s.ChatSkin, { Button = WebButton, Textarea = We
     );
   }
 
-  function ChatComposer({ value, onChangeText, onSend, placeholder = "Message the assistant…", composerLabel = "Message", sendLabel = "Send message", maxLength, disabled, pending, onAttach, attachments, onRemoveAttachment, attaching, footer, testID }: ChatComposerProps) {
+  function ChatComposer({ value, onChangeText, onSend, placeholder = "Message the assistant…", composerLabel = "Message", sendLabel = "Send message", maxLength, disabled, sendDisabled, pending, onAttach, attachments, onRemoveAttachment, attaching, footer, testID }: ChatComposerProps) {
     const { tokens } = useTheme();
     const [focused, setFocused] = useState(false);
     const fill = useFillStyle("ChatComposer");
     const filesPending = attaching || attachments?.some((attachment) => attachment.uploading || attachment.error);
-    const canSend = !disabled && !pending && !filesPending && (value.trim().length > 0 || !!attachments?.length);
+    const canSend = !disabled && !sendDisabled && !pending && !filesPending && (value.trim().length > 0 || !!attachments?.length);
     return (
       <View style={[fill, s.composer]} testID={testID}>
         <GlassSurface static layer="control" stateBorder={focused} style={s.composerSurface(tokens, focused)}>
