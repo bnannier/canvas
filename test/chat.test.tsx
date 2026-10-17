@@ -243,3 +243,28 @@ test("multiple-choice validation rejects empty, duplicate, unknown, mixed-shape,
   }
   expect(submissions).toBe(0);
 });
+
+for (const platform of ["web", "ios", "android"] as const) {
+  test(`question checkboxes keep exact option names when selected and cleared on ${platform}`, async () => {
+    const suffix = platform === "web" ? "" : `.${platform}`;
+    const { ChatMessage: PlatformChatMessage } = await import(`../src/organisms/chat/chat${suffix}.tsx`);
+    let answers: ChatQuestionAnswerData[] = [];
+    const message = { id: "execution", role: "assistant" as const, content: "Choose execution tools.", questions: [{ id: "tools", title: "Which tools?", multiple: true, options: [{ id: "builtin", label: "Built-in execution", description: "Run work directly in Argus." }] }] };
+    const props = { onQuestionAnswerChange: (_id: string | number, next: ChatQuestionAnswerData[]) => { answers = next; }, onSubmitQuestionAnswers: () => {} };
+    const { rerender } = render(<ThemeProvider light solid><PlatformChatMessage {...props} message={message} /></ThemeProvider>);
+    const update = () => rerender(<ThemeProvider light solid><PlatformChatMessage {...props} message={{ ...message, questionAnswers: answers }} /></ThemeProvider>);
+    fireEvent.click(screen.getByRole("checkbox", { name: "Built-in execution" }));
+    update();
+    const selected = screen.getByRole("checkbox", { name: "Built-in execution" });
+    expect(selected.getAttribute("aria-checked")).toBe("true");
+    fireEvent.click(selected);
+    update();
+    expect(screen.getByRole("checkbox", { name: "Built-in execution" }).getAttribute("aria-checked")).toBe("false");
+    fireEvent.click(screen.getByRole("checkbox", { name: "Write my own answer" }));
+    update();
+    expect(screen.getByRole("checkbox", { name: "Write my own answer" }).getAttribute("aria-checked")).toBe("true");
+    fireEvent.click(screen.getByRole("checkbox", { name: "Write my own answer" }));
+    update();
+    expect(screen.queryByRole("textbox")).toBeNull();
+  });
+}
