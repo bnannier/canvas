@@ -19,7 +19,7 @@ test.each([false, true])("workspace forms preserve independent scrolling and fix
   const { getByTestId, getByRole, getByText } = render(
     <ThemeProvider solid>
       <OverlayProvider>
-        <Dialog form workspace compact={compact} overlay open title="Planning" testID="planning-dialog" footer={<Button>Save</Button>}>
+        <Dialog form workspace compact={compact} overlay open title="Planning" testID="planning-dialog" workspaceHeader={<View testID="stepper" />} footer={<Button>Save</Button>}>
           <View testID="thread" style={{ flex: 1, minHeight: 0 }} />
         </Dialog>
       </OverlayProvider>
@@ -30,6 +30,7 @@ test.each([false, true])("workspace forms preserve independent scrolling and fix
   const panel = document.querySelector('[role="dialog"]');
   expect(panel).toBeTruthy();
   expect(getByRole("heading", { name: "Planning" })).toBeTruthy();
+  expect(getByTestId("stepper")).toBeTruthy();
   expect(getByText("Save")).toBeTruthy();
 
   const thread = getByTestId("thread");
