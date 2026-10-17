@@ -15,7 +15,7 @@ import { View, Pressable, RippleClip, Text, useReducedMotion, useSizing, type La
 import { liftStyle, useHover } from "../../style/hover.js";
 import { NotificationBadge } from "../badge/badge.notification.js";
 import { ButtonAttention } from "./button-attention.js";
-import { type ButtonSkin, type Intent, type Size } from "./button.styles.js";
+import { shrinkButton, shrinkLabel, type ButtonSkin, type Intent, type Size } from "./button.styles.js";
 
 // Shared Button shell. The structure (Pressable + optional loading spinner +
 // leading icon + label + trailing icon), the accessibility, and the intent/size
@@ -129,6 +129,8 @@ export interface ButtonProps extends MeasureProps {
   // it FILL (full width in a Column, an equal share in a Row), and a measure step
   // (`sm`, `lg`, …, from MeasureProps) makes it FILL up to that width of the scale.
   block?: boolean;
+  /** Keep the content-sized button in a tight row, allowing its label to wrap within the available width. */
+  shrink?: boolean;
   loading?: boolean;
   disabled?: boolean;
   /**
@@ -260,7 +262,7 @@ export function createButton(skin: ButtonSkin) {
     // the outermost node on every platform, so positioning is identical with or without the clip
     // and the Pressable stretches to fill a block button.
     return (
-      <RippleClip shape={clipShape} hitSlop={target.hitSlop} style={[sizing, props.start ? { alignSelf: "flex-start" } : null, skin.surround?.(opts), style, glowOnClip ? glow : null]} {...hoverTarget}>
+      <RippleClip shape={clipShape} hitSlop={target.hitSlop} style={[sizing, props.shrink ? shrinkButton : null, props.start ? { alignSelf: "flex-start" } : null, skin.surround?.(opts), style, glowOnClip ? glow : null]} {...hoverTarget}>
         <Pressable
           ref={hostRef}
           {...(anchor ?? undefined)}
@@ -316,7 +318,7 @@ export function createButton(skin: ButtonSkin) {
               ) : null}
               {!loading && props.scopeTrigger ? <View style={{ width: 7, height: 7, borderRadius: 9999, backgroundColor: actionFill(tokens) }} /> : null}
               {!loading && iconLeft != null ? iconLeft : null}
-              {children != null ? <Text style={skin.label(tokens, intent, size, opts)}>{children}</Text> : null}
+              {children != null ? <Text style={[skin.label(tokens, intent, size, opts), props.shrink ? shrinkLabel : null]}>{children}</Text> : null}
               {!loading && iconRight != null ? iconRight : null}
             </View>
             {props.count !== undefined && props.count !== "" ? <View style={{ position: "absolute", top: 3, right: 2 }}><NotificationBadge>{String(props.count)}</NotificationBadge></View> : null}
