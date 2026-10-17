@@ -170,6 +170,7 @@ export const workspaceHeight = (windowHeight: number, topInset = 0, bottomInset 
   Math.max(0, windowHeight - topInset - bottomInset - 40);
 export const workspaceCard: ViewStyle = { flex: 1, minHeight: 0 };
 export const workspaceContent: ViewStyle = { flex: 1, minHeight: 0 };
+export const workspaceHeader: ViewStyle = { flexShrink: 0, marginTop: 18 };
 // Preserve the content's intrinsic height through every wrapper. The outer
 // viewport maximum can still shrink the chain, so a child's scrollport gets the
 // remaining space while its composer and the dialog header/footer stay fixed.

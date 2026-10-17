@@ -45,7 +45,9 @@ export interface DialogProps {
   workspace?: boolean;
   /** Let a workspace hug short content and grow only up to its viewport bound. */
   compact?: boolean;
-  /** Custom actions rendered after the form body, within its scrollport. */
+  /** Extra content in the fixed header of a workspace form, below its title and description. */
+  workspaceHeader?: ReactNode;
+  /** Custom actions after the form body; fixed below the body in workspace mode. */
   footer?: ReactNode;
   /** Maximum form panel width in pixels; defaults to 560. */
   panelWidth?: number;
@@ -357,6 +359,7 @@ export function createDialog(skin: DialogSkin, parts: DialogParts = {}) {
                       </View>
                       {workspace ? (
                         <>
+                          {props.workspaceHeader != null ? <View style={s.workspaceHeader}>{props.workspaceHeader}</View> : null}
                           <View style={[s.workspaceBody, compactWorkspace ? s.compactWorkspaceContent : null]}>{children}</View>
                           {props.footer ? <View style={s.workspaceFooter}>{props.footer}</View> : null}
                         </>
