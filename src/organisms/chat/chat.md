@@ -12,9 +12,13 @@ Assistant content supports paragraphs, headings, lists, quotes, fenced code, bol
 
 Set `onAttach` to show the accessible paperclip action. The app owns file picking and uploading, passes composer `attachments`, and removes a staged file through `onRemoveAttachment(id)`. A `ChatAttachmentData` has an `id`, `name`, optional `uploading` or `error` flags, and optional `notice` text. Uploading and failed files block sending; remove a failed file or replace it after retrying. `attaching` also blocks attaching and sending while the app opens a picker or uploads. Saved message attachments use the same metadata; `onOpenAttachment(attachment)` on Chat, ChatThread, or ChatMessage delegates opening or downloading to the app. Canvas never requests, uploads, or opens file URLs itself.
 
-An assistant message can include `questions`: each `ChatQuestionData` has a stable `id`, `title`, optional `multiple`, and `options` with an `id`, `label`, and optional `description`. Supply controlled `ChatQuestionAnswerData` entries in `questionAnswers` containing `questionId`, `optionId` for a single choice or `optionIds` for multiple choices, and optional `customText`. Set `multiple` to render a named checkbox group with Select all that apply; custom answers can be combined with regular choices. Every question offers Write my own answer under the reserved `__custom` option id; custom text is limited to 1000 characters. Chat, ChatThread, and ChatMessage expose `onQuestionAnswerChange(messageId, answers)` and `onSubmitQuestionAnswers(messageId, answers)`. Record changes in message data and set `questionsSubmitted` after accepting submission. The complete answer set is submitted once per mounted message; use a new message id for a new request. The app owns persistence, transport, and the receipt state.
+An assistant message can include `questions`: each `ChatQuestionData` has a stable `id`, `title`, optional `multiple`, and `options` with an `id`, `label`, and optional `description`. Supply controlled `ChatQuestionAnswerData` entries in `questionAnswers` containing `questionId`, `optionId` for a single choice or `optionIds` for multiple choices, and optional `customText`. Set `multiple` on the question for checkboxes; a custom answer can be combined with regular choices. A single-choice question also offers Select multiple: switching it on records `multiple: true` in its answer and uses `optionIds`, preserving the original question metadata. The switch retains existing selections and custom text. Switching it off returns to the first selected choice, or clears an empty draft. Every question offers Write my own answer under the reserved `__custom` option id, limited to 1000 characters. Historical answers containing `skipped: true` remain readable in inactive history and saved receipts, but active questions require a real answer.
 
-Submission requires a valid answer for each question (one option for single choice, a nonempty set of distinct options for multiple choice), both callbacks, and an enabled form. Blank custom text cannot submit; submitted custom text is trimmed. `questionsDisabled` keeps an earlier form read-only. `disabled`, `pending`, and active streaming also prevent selection and submission. `questionsSubmitted` replaces controls with the saved question and answer text plus an Answers sent receipt. Submitted multiple choices show every selected label and any custom text. Question labels and descriptions remain literal text; RadioGroup supplies keyboard arrow navigation and accessible group names.
+The active form shows one question with a counter derived from the actual question count. Selecting an ordinary radio saves and advances before the last question. Custom text stays on the current question and uses Next; a blank custom answer cannot advance. Back is a neutral outline button that preserves saved selections and text. Revisited valid single choices offer Next. Checkboxes use Submit to advance; Submit appears only for multiple-choice questions and the last question. The last question always requires explicit Submit before the complete batch is sent, and every question must have a real answer. An incomplete earlier answer returns the reader to the first unresolved question instead of submitting. Submitted custom text is trimmed.
+
+Chat, ChatThread, and ChatMessage expose `onQuestionAnswerChange(messageId, answers)`, `onQuestionIndexChange(messageId, index)`, and `onSubmitQuestionAnswers(messageId, answers)`. Record answer changes in message data and pass the zero-based `questionIndex` to control navigation, including saved continuation after reload. Omitting `questionIndex` uses local navigation state. The position is clamped to the actual list. The final callback receives fresh answers for the whole batch, including the current answer; set `questionsSubmitted` after accepting it. Repeated activations are guarded while navigation or submission settles. A busy state that ends without a saved receipt permits retry. The app owns persistence, transport, and duplicate prevention across requests.
+
+Both answer callbacks and an enabled form are required for interaction. `disabled`, `pending`, and active streaming lock the current question. Use `questionsDisabled` for an inactive earlier batch: it shows every original question and option read-only, without navigation actions. `questionsSubmitted` shows saved answers and historical skipped decisions with an Answers sent receipt. Multiple-choice receipts include every selected label and custom text; an answer-mode override is identified as Multiple answers selected by you. Question labels and descriptions remain literal text; RadioGroup supplies arrow navigation and accessible group names. The counter is announced as Question X of N in a polite live region; navigation moves focus there through the kit's shared browser and native accessibility focus mechanism.
 
 ## Usage
 
@@ -71,30 +75,36 @@ Submission requires a valid answer for each question (one option for single choi
 
 ### Selectable questions
 
-Choose one answer or write your own. This example stores answers outside Chat, then preserves the submitted choices in its message data.
+Move through one question at a time. This example controls the saved position and answer draft separately so navigation and answer callbacks can update together.
 
 ```tsx
-<Stateful initial={{ answers: [] as { questionId: string; optionId?: string; optionIds?: string[]; customText?: string }[], submitted: false }}>
+<Stateful initial={{ answers: [] as { questionId: string; optionId?: string; optionIds?: string[]; customText?: string; multiple?: boolean }[], submitted: false }}>
   {(state, setState) => (
-    <ChatThread
-      style={{ height: 540 }}
-      messages={[{
-        id: "planning-questions",
-        role: "assistant",
-        content: "Which release approach should we plan?",
-        questions: [{ id: "scope", title: "What should the first release include?", options: [
-          { id: "focused", label: "A focused first release", description: "Ship the essential workflow, then expand from feedback." },
-          { id: "complete", label: "The complete workflow", description: "Include reporting, collaboration, and administration in the first release." }
-        ] }, { id: "checks", title: "Which checks should we include?", multiple: true, options: [
-          { id: "desktop", label: "Desktop browser testing" },
-          { id: "mobile", label: "Mobile layout and accessibility testing" }
-        ] }],
-        questionAnswers: state.answers,
-        questionsSubmitted: state.submitted
-      }]}
-      onQuestionAnswerChange={(_messageId, answers) => setState({ ...state, answers })}
-      onSubmitQuestionAnswers={(_messageId, answers) => setState({ answers, submitted: true })}
-    />
+    <Stateful initial={0}>
+      {(questionIndex, setQuestionIndex) => (
+        <ChatThread
+          style={{ height: 420 }}
+          messages={[{
+            id: "planning-questions",
+            role: "assistant",
+            content: "Which release approach should we plan?",
+            questions: [{ id: "scope", title: "What should the first release include?", options: [
+              { id: "focused", label: "A focused first release", description: "Ship the essential workflow, then expand from feedback." },
+              { id: "complete", label: "The complete workflow", description: "Include reporting, collaboration, and administration in the first release." }
+            ] }, { id: "checks", title: "Which checks should we include?", multiple: true, options: [
+              { id: "desktop", label: "Desktop browser testing" },
+              { id: "mobile", label: "Mobile layout and accessibility testing" }
+            ] }],
+            questionAnswers: state.answers,
+            questionIndex,
+            questionsSubmitted: state.submitted
+          }]}
+          onQuestionAnswerChange={(_messageId, answers) => setState({ ...state, answers })}
+          onQuestionIndexChange={(_messageId, index) => setQuestionIndex(index)}
+          onSubmitQuestionAnswers={(_messageId, answers) => setState({ answers, submitted: true })}
+        />
+      )}
+    </Stateful>
   )}
 </Stateful>
 ```

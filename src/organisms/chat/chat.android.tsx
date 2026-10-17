@@ -7,8 +7,9 @@ import { Chip } from "../../atoms/chip/chip.android.js";
 import { Radio, RadioGroup } from "../../atoms/radio/radio.android.js";
 import { Checkbox } from "../../atoms/checkbox/checkbox.android.js";
 import { FormSection } from "../../molecules/form/form.android.js";
+import { Switch } from "../../atoms/switch/switch.android.js";
 
-const components = createChat(androidSkin, { Button, Textarea, Spinner, Chip, Radio, RadioGroup, Checkbox, FormSection });
+const components = createChat(androidSkin, { Button, Textarea, Spinner, Chip, Radio, RadioGroup, Checkbox, FormSection, Switch });
 
 /** A controlled conversation with an independently scrolling thread and anchored composer. */
 export const Chat = components.Chat;

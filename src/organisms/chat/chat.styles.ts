@@ -22,6 +22,7 @@ export const questionContent: ViewStyle = { flexGrow: 1 };
 export const identity: ViewStyle = { flexDirection: "row", flexWrap: "wrap", gap: 8, alignItems: "center" };
 export const attachments: ViewStyle = { flexDirection: "row", flexWrap: "wrap", gap: 8, minWidth: 0 };
 export const attachment: ViewStyle = { flexShrink: 1, minWidth: 0, maxWidth: "100%", gap: 4 };
+export const questionActions: ViewStyle = { flexDirection: "row", flexWrap: "wrap", alignItems: "center", gap: 8 };
 export const questions: ViewStyle = { gap: 20, minWidth: 0 };
 export const blocks: ViewStyle = { gap: 10, minWidth: 0 };
 export const listRow: ViewStyle = { flexDirection: "row", gap: 8 };
