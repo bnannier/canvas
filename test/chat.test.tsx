@@ -601,3 +601,46 @@ test("historical skipped receipts remain readable without introducing an active 
   expect(screen.queryByRole("button")).toBeNull();
   expect(JSON.stringify(message)).toBe(original);
 });
+
+for (const platform of ["web", "ios", "android"] as const) {
+  test(`message actions delegate stable identities and obey busy state on ${platform}`, async () => {
+    const suffix = platform === "web" ? "" : `.${platform}`;
+    const { Chat: PlatformChat, ChatMessage: PlatformChatMessage } = await import(`../src/organisms/chat/chat${suffix}.tsx`);
+    const calls: [string | number, string][] = [];
+    let sent = 0;
+    const checkpoint = { id: 42, role: "system" as const, content: "Your answers are saved.", actions: [{ id: "draft", label: "Draft plan", primary: true }, { id: "continue", label: "Continue with questions" }] };
+    const original = JSON.stringify(checkpoint);
+    const props = { value: "Preserved composer draft", onChangeText: () => {}, onSend: () => { sent++; }, onAction: (messageId: string | number, actionId: string) => calls.push([messageId, actionId]) };
+    const view = (state = {}, streaming = false) => <ThemeProvider light solid><PlatformChat {...props} {...state} messages={[checkpoint, { id: "reply", role: "assistant", content: "Working", streaming }]} /></ThemeProvider>;
+    const { rerender } = render(view());
+    fireEvent.click(screen.getByRole("button", { name: "Draft plan" }));
+    fireEvent.click(screen.getByRole("button", { name: "Continue with questions" }));
+    expect(calls).toEqual([[42, "draft"], [42, "continue"]]);
+    expect(sent).toBe(0);
+    rerender(view({ sendDisabled: true }));
+    const send = screen.getByRole("button", { name: "Send message" });
+    expect(send.getAttribute("aria-disabled")).toBe("true");
+    fireEvent.click(send);
+    expect(sent).toBe(0);
+    expect((screen.getByRole("textbox", { name: "Message" }) as HTMLTextAreaElement).disabled).toBe(false);
+    fireEvent.click(screen.getByRole("button", { name: "Draft plan" }));
+    expect(calls).toEqual([[42, "draft"], [42, "continue"], [42, "draft"]]);
+    for (const [state, streaming] of [[{ disabled: true }, false], [{ pending: true }, false], [{}, true]] as const) {
+      rerender(view(state, streaming));
+      for (const name of ["Draft plan", "Continue with questions"]) {
+        const action = screen.getByRole("button", { name });
+        expect(action.getAttribute("aria-disabled")).toBe("true");
+        fireEvent.click(action);
+      }
+    }
+    expect(calls).toHaveLength(3);
+    rerender(<ThemeProvider light solid><PlatformChatMessage message={checkpoint} /></ThemeProvider>);
+    expect(screen.getByRole("button", { name: "Draft plan" }).getAttribute("aria-disabled")).toBe("true");
+    rerender(<ThemeProvider light solid><PlatformChatMessage message={{ ...checkpoint, streaming: true }} onAction={props.onAction} /></ThemeProvider>);
+    fireEvent.click(screen.getByRole("button", { name: "Draft plan" }));
+    expect(calls).toHaveLength(3);
+    rerender(<ThemeProvider light solid><PlatformChatMessage message={{ ...checkpoint, actions: [] }} onAction={props.onAction} /></ThemeProvider>);
+    expect(screen.queryByRole("button", { name: "Draft plan" })).toBeNull();
+    expect(JSON.stringify(checkpoint)).toBe(original);
+  });
+}
