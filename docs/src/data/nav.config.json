@@ -503,6 +503,11 @@
             "icon": "footprints"
           },
           {
+            "slug": "wizard",
+            "label": "Wizard",
+            "icon": "app-window"
+          },
+          {
             "slug": "tab-bar",
             "label": "TabBar",
             "icon": "navigation"

@@ -4,6 +4,7 @@ import { OverlayProvider, ToastProvider } from "@nannier/canvas";
 import { DocsThemeProvider } from "../theme/docs-theme";
 import { useDocsFonts } from "../ui/fonts";
 import { DocsHead, DocsLookMarker } from "../ui/docs-head";
+import { ViewportOverlayProvider } from "../ui/viewport-overlay";
 import { Navbar } from "../shell/navbar";
 
 // The component audit's in-app driver (docs/src/audit/driver.native.tsx), present only in
@@ -53,9 +54,11 @@ export default function RootLayout() {
   const [fontsLoaded] = useDocsFonts();
   const shell = (
     <OverlayProvider>
-      <ToastProvider>
-        <Navbar />
-      </ToastProvider>
+      <ViewportOverlayProvider>
+        <ToastProvider>
+          <Navbar />
+        </ToastProvider>
+      </ViewportOverlayProvider>
     </OverlayProvider>
   );
   return (
