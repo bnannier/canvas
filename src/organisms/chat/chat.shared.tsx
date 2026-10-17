@@ -223,8 +223,8 @@ export function createChat(skin: s.ChatSkin, { Button = WebButton, Textarea = We
         </View>;
         return <View key={question.id} style={s.blocks}>
           {question.multiple ? <FormSection title={question.title} description="Select all that apply">
-            {question.options.filter((option) => option.id !== "__custom").map((option) => <Checkbox selection key={option.id} checked={selected.includes(option.id)} disabled={!editable} description={option.description} onChange={(checked) => selectMany(option.id, checked)}>{option.label}</Checkbox>)}
-            <Checkbox selection checked={custom} disabled={!editable} onChange={(checked) => selectMany("__custom", checked)}>Write my own answer</Checkbox>
+            {question.options.filter((option) => option.id !== "__custom").map((option) => <Checkbox selection accessibilityLabel={option.label} key={option.id} checked={selected.includes(option.id)} disabled={!editable} description={option.description} onChange={(checked) => selectMany(option.id, checked)}>{option.label}</Checkbox>)}
+            <Checkbox selection accessibilityLabel="Write my own answer" checked={custom} disabled={!editable} onChange={(checked) => selectMany("__custom", checked)}>Write my own answer</Checkbox>
           </FormSection> : <RadioGroup label={question.title} value={answer?.optionId ?? ""} disabled={!editable} onChange={(value) => change({ questionId: question.id, optionId: String(value), ...(value === "__custom" ? { customText: answer?.customText ?? "" } : {}) })}>
             {question.options.filter((option) => option.id !== "__custom").map((option) => <Radio key={option.id} value={option.id} description={option.description}>{option.label}</Radio>)}
             <Radio value="__custom">Write my own answer</Radio>

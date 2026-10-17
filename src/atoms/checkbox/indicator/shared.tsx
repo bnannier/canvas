@@ -35,8 +35,10 @@ export function CheckboxIndicatorBox({ skin, tokens, size, checked, indeterminat
   // decision), and takes the contrasting border under Increase Contrast.
   const theme = useTheme();
   const box = skin.box(tokens, filled, size, nudge);
+  // The owning control announces checked state; the decorative glyph must never
+  // become part of its accessible name when selection changes.
   return (
-    <View style={contrastStyle(theme, box)}>
+    <View aria-hidden accessibilityElementsHidden importantForAccessibility="no-hide-descendants" style={contrastStyle(theme, box)}>
       {filled ? (
         <View style={GLYPH_LAYER}>
           <Text style={skin.glyph(tokens, size)}>{indeterminate ? "–" : "✓"}</Text>

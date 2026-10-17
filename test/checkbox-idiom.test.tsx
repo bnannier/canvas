@@ -95,3 +95,14 @@ describe("DataTable's bulk selection", () => {
     });
   }
 });
+
+for (const platform of ["web", "ios", "android"] as const) {
+  it(`keeps the checkbox name free of decorative check and mixed glyphs on ${platform}`, async () => {
+    const Checkbox = await load(platform);
+    const { rerender } = render(<ThemeProvider><Checkbox selection>Built-in execution</Checkbox></ThemeProvider>);
+    fireEvent.click(screen.getByRole("checkbox", { name: "Built-in execution" }));
+    expect(screen.getByRole("checkbox", { name: "Built-in execution" }).getAttribute("aria-checked")).toBe("true");
+    rerender(<ThemeProvider><Checkbox selection indeterminate>Built-in execution</Checkbox></ThemeProvider>);
+    expect(screen.getByRole("checkbox", { name: "Built-in execution" }).getAttribute("aria-checked")).toBe("mixed");
+  });
+}
