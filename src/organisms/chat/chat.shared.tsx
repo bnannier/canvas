@@ -15,7 +15,8 @@ import { FormSection as WebFormSection, type FormSectionProps } from "../../mole
 import { Switch as WebSwitch, type SwitchProps } from "../../atoms/switch/switch.js";
 import { Card as WebCard, type CardProps } from "../../molecules/card/card.js";
 import { Icon } from "../../atoms/icon/icon.js";
-import { chatAtBottom, chatBlocks, chatRuns } from "./chat.logic.js";
+import { useChatTailFollow } from "./chat-scroll.js";
+import { chatBlocks, chatRuns } from "./chat.logic.js";
 import * as s from "./chat.styles.js";
 
 /** Application-owned file metadata. Picking, uploading, and opening files belong to the app. */
@@ -376,7 +377,9 @@ export function createChat(skin: s.ChatSkin, { Button = WebButton, Textarea = We
   function ChatThread({ messages, pending, pendingLabel = "Assistant is thinking…", pendingIcon, label = "Conversation", emptyState, plain, onOpenAttachment, testID, style, disabled, onQuestionAnswerChange, onSubmitQuestionAnswers, onQuestionIndexChange }: ChatThreadProps) {
     const fill = useFillStyle("ChatThread");
     const scroll = useRef<RNScrollView>(null);
-    const following = useRef(true);
+    const tail = useChatTailFollow(scroll);
+    const { requestFollow } = tail;
+    useEffect(() => { requestFollow(); }, [messages, pending, pendingLabel, pendingIcon, requestFollow]);
     const scrollFocus = useScrollFocus("vertical");
     const frame = useFocusFrame();
     const { ref: frameRef, ...frameTarget } = frame.target;
@@ -395,14 +398,14 @@ export function createChat(skin: s.ChatSkin, { Button = WebButton, Textarea = We
           tabIndex={scrollFocus.tabIndex}
           onLayout={(event) => {
             scrollFocus.onLayout(event);
-            if (following.current) scroll.current?.scrollToEnd({ animated: false });
+            tail.onLayout(event.nativeEvent.layout.height);
           }}
           onContentSizeChange={(width, height) => {
             scrollFocus.onContentSizeChange(width, height);
-            if (following.current) scroll.current?.scrollToEnd({ animated: false });
+            tail.onContentSizeChange(height);
           }}
           onScroll={({ nativeEvent }) => {
-            following.current = chatAtBottom(nativeEvent.contentOffset.y, nativeEvent.layoutMeasurement.height, nativeEvent.contentSize.height);
+            tail.onScroll(nativeEvent.contentOffset.y, nativeEvent.layoutMeasurement.height, nativeEvent.contentSize.height);
           }}
           scrollEventThrottle={32}
         >
