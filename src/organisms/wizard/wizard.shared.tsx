@@ -1,5 +1,5 @@
 import { type ReactNode } from "react";
-import { ScrollView } from "../../style/index.js";
+import { ScrollView, View, breakpoints, useContainerWidth } from "../../style/index.js";
 import { Button as WebButton } from "../../atoms/button/button.js";
 import { Icon } from "../../atoms/icon/icon.js";
 import { Row, Column } from "../../atoms/layout/layout.js";
@@ -28,7 +28,7 @@ export interface WizardProps {
   previous?: { label: string; onPress: () => void; disabled?: boolean };
   /** Application actions in the right footer cell. */
   actions?: ReactNode;
-  /** Save/progress status in the centered footer cell. */
+  /** Centered save/progress status; above the button row when space is narrow. */
   status?: string;
   children?: ReactNode;
   /** Scroll the body (default true). Set false when a child, such as Chat, owns its scroll. */
@@ -43,14 +43,20 @@ type WizardParts = { Dialog: typeof WebDialog; Steps: typeof WebSteps; Button: t
 export function createWizard({ Dialog = WebDialog, Steps = WebSteps, Button = WebButton }: Partial<WizardParts> = {}) {
   return function Wizard({ open, title, description, steps, current, onOpenChange, panelWidth = 960, previous, actions, status, children, scrollBody = true, testID }: WizardProps) {
     const hook = (part: string) => testID ? `${testID}-${part}` : undefined;
+    const { width, onLayout } = useContainerWidth();
+    const narrowFooter = width <= breakpoints.sm;
+    const saveStatus = status ? <Typography small muted>{status}</Typography> : null;
     return <Dialog form workspace overlay open={open} title={title} description={description}
       panelWidth={panelWidth} onOpenChange={onOpenChange} testID={testID}
       workspaceHeader={<Steps stacks steps={steps} current={current} testID={hook("steps")} />}
-      footer={<Column comfortable><Divider /><Row stacks testID={hook("footer")}>
-        <Row span={4} start>{previous ? <Button outline iconLeft={<Icon chevronLeft decorative size={14} />} disabled={previous.disabled} onPress={previous.onPress}>{previous.label}</Button> : null}</Row>
-        <Row span={4} center alignCenter>{status ? <Typography small muted>{status}</Typography> : null}</Row>
-        <Row span={4} end wrap>{actions}</Row>
-      </Row></Column>}>
+      footer={<Column comfortable><Divider /><View onLayout={onLayout} testID={hook("footer")} style={s.footer}>
+        {narrowFooter && status ? <Row center>{saveStatus}</Row> : null}
+        <Row alignCenter testID={hook("footer-buttons")}>
+          <Row fill start>{previous ? <Button shrink outline iconLeft={<Icon chevronLeft decorative size={14} />} disabled={previous.disabled} onPress={previous.onPress}>{previous.label}</Button> : null}</Row>
+          {!narrowFooter && status ? <Row center alignCenter>{saveStatus}</Row> : null}
+          <Row fill end>{actions}</Row>
+        </Row>
+      </View></Column>}>
       {scrollBody ? <ScrollView testID={hook("body-scroll")} style={s.bodyScroll} contentContainerStyle={s.bodyContent} keyboardShouldPersistTaps="handled">{children}</ScrollView> : children}
     </Dialog>;
   };
