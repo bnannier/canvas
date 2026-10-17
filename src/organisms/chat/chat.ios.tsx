@@ -4,8 +4,11 @@ import { Button } from "../../atoms/button/button.ios.js";
 import { Textarea } from "../../atoms/textarea/textarea.ios.js";
 import { Spinner } from "../../atoms/spinner/spinner.ios.js";
 import { Chip } from "../../atoms/chip/chip.ios.js";
+import { Radio, RadioGroup } from "../../atoms/radio/radio.ios.js";
+import { Checkbox } from "../../atoms/checkbox/checkbox.ios.js";
+import { FormSection } from "../../molecules/form/form.ios.js";
 
-const components = createChat(iosSkin, { Button, Textarea, Spinner, Chip });
+const components = createChat(iosSkin, { Button, Textarea, Spinner, Chip, Radio, RadioGroup, Checkbox, FormSection });
 
 /** A controlled conversation with an independently scrolling thread and anchored composer. */
 export const Chat = components.Chat;
@@ -15,4 +18,4 @@ export const ChatThread = components.ChatThread;
 export const ChatMessage = components.ChatMessage;
 /** A controlled multiline draft with an explicit send action and anchored footer. */
 export const ChatComposer = components.ChatComposer;
-export type { ChatProps, ChatThreadProps, ChatMessageProps, ChatComposerProps, ChatMessageData, ChatAttachmentData } from "./chat.shared.js";
+export type { ChatProps, ChatThreadProps, ChatMessageProps, ChatComposerProps, ChatMessageData, ChatAttachmentData, ChatQuestionData, ChatQuestionAnswerData } from "./chat.shared.js";

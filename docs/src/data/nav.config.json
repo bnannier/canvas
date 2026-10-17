@@ -443,6 +443,11 @@
             "icon": "image"
           },
           {
+            "slug": "chat",
+            "label": "Chat",
+            "icon": "message-circle"
+          },
+          {
             "slug": "command",
             "label": "Command",
             "icon": "terminal"
