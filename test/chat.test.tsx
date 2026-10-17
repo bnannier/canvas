@@ -1,6 +1,6 @@
 import { afterEach, expect, test } from "bun:test";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
-import { Chat, ChatMessage, type ChatAttachmentData } from "../src/organisms/chat/chat.tsx";
+import { Chat, ChatMessage, type ChatAttachmentData, type ChatQuestionAnswerData } from "../src/organisms/chat/chat.tsx";
 import { chatAtBottom, chatBlocks } from "../src/organisms/chat/chat.logic.ts";
 import { Icon } from "../src/atoms/icon/icon.tsx";
 import { ThemeProvider } from "../src/style/theme.tsx";
@@ -103,4 +103,143 @@ test("thinking and streaming indicators exist only for an active reply", () => {
   expect(screen.getByRole("progressbar", { name: "Responding…" })).toBeTruthy();
   rerender(<ThemeProvider light solid><Chat {...props} messages={[{ id: "reply", role: "assistant", content: "A completed reply" }]} /></ThemeProvider>);
   expect(screen.queryByRole("progressbar")).toBeNull();
+});
+
+const questions = [
+  { id: "scope", title: "What should we build?", options: [{ id: "small", label: "A focused release", description: "Start with the essential workflow." }, { id: "full", label: "A complete release" }] },
+  { id: "audience", title: "Who is it for?", options: [{ id: "team", label: "Our team" }, { id: "public", label: "Everyone" }] },
+];
+const questionMessage = { id: "questions", role: "assistant" as const, content: "Choose an approach.", questions };
+
+test("question forms keep choices controlled, keyboard accessible, and complete before submission", () => {
+  const changes: { id: string | number; answers: ChatQuestionAnswerData[] }[] = [];
+  const sent: ChatQuestionAnswerData[][] = [];
+  const props = { value: "", onChangeText: () => {}, onSend: () => {}, onQuestionAnswerChange: (id: string | number, answers: ChatQuestionAnswerData[]) => changes.push({ id, answers }), onSubmitQuestionAnswers: (_id: string | number, answers: ChatQuestionAnswerData[]) => sent.push(answers) };
+  const { rerender } = render(<ThemeProvider light solid><Chat {...props} messages={[questionMessage]} /></ThemeProvider>);
+  expect(screen.getByRole("radiogroup", { name: "What should we build?" })).toBeTruthy();
+  const focused = screen.getByRole("radio", { name: /A focused release/ });
+  fireEvent.click(focused);
+  expect(changes[0]).toEqual({ id: "questions", answers: [{ questionId: "scope", optionId: "small" }] });
+  expect(focused.getAttribute("aria-checked")).toBe("false");
+  let answers = changes[0]!.answers;
+  rerender(<ThemeProvider light solid><Chat {...props} messages={[{ ...questionMessage, questionAnswers: answers }]} /></ThemeProvider>);
+  expect(screen.getByRole("radio", { name: /A focused release/ }).getAttribute("aria-checked")).toBe("true");
+  expect(screen.getByRole("button", { name: "Submit answers" }).getAttribute("aria-disabled")).toBe("true");
+  fireEvent.keyDown(screen.getByRole("radio", { name: /A focused release/ }), { key: "ArrowDown" });
+  expect(changes.at(-1)?.answers).toEqual([{ questionId: "scope", optionId: "full" }]);
+  fireEvent.click(screen.getByRole("radio", { name: "Our team" }));
+  answers = changes.at(-1)!.answers;
+  rerender(<ThemeProvider light solid><Chat {...props} messages={[{ ...questionMessage, questionAnswers: answers }]} /></ThemeProvider>);
+  const submit = screen.getByRole("button", { name: "Submit answers" });
+  expect(submit.getAttribute("aria-disabled")).not.toBe("true");
+  fireEvent.click(submit);
+  fireEvent.click(submit);
+  expect(sent).toEqual([answers]);
+  rerender(<ThemeProvider light solid><Chat {...props} messages={[{ ...questionMessage, questionAnswers: answers, questionsSubmitted: true }]} /></ThemeProvider>);
+  expect(screen.queryByRole("radio")).toBeNull();
+  expect(screen.queryByRole("button", { name: "Submit answers" })).toBeNull();
+  expect(screen.getByText("Answers sent")).toBeTruthy();
+  expect(screen.getByText("Our team")).toBeTruthy();
+});
+
+test("custom answers are controlled, limited to 1000 characters, and require nonempty text", () => {
+  let changed: ChatQuestionAnswerData[] = [];
+  let sent: ChatQuestionAnswerData[] = [];
+  const message = { ...questionMessage, questions: [questions[0]!] };
+  const props = { onQuestionAnswerChange: (_id: string | number, answers: ChatQuestionAnswerData[]) => { changed = answers; }, onSubmitQuestionAnswers: (_id: string | number, answers: ChatQuestionAnswerData[]) => { sent = answers; } };
+  const { rerender } = render(<ThemeProvider light solid><ChatMessage message={message} {...props} /></ThemeProvider>);
+  fireEvent.click(screen.getByRole("radio", { name: "Write my own answer" }));
+  expect(changed).toEqual([{ questionId: "scope", optionId: "__custom", customText: "" }]);
+  const custom = (text: string) => [{ questionId: "scope", optionId: "__custom", customText: text }];
+  rerender(<ThemeProvider light solid><ChatMessage {...props} message={{ ...message, questionAnswers: custom("  ") }} /></ThemeProvider>);
+  const editor = screen.getByRole("textbox", { name: "Your answer: What should we build?" });
+  expect(editor.getAttribute("maxLength")).toBe("1000");
+  expect(screen.getByRole("button", { name: "Submit answers" }).getAttribute("aria-disabled")).toBe("true");
+  fireEvent.change(editor, { target: { value: "x".repeat(1001) } });
+  expect(changed[0]?.customText).toHaveLength(1000);
+  rerender(<ThemeProvider light solid><ChatMessage {...props} message={{ ...message, questionAnswers: custom("  A pilot for partners  ") }} /></ThemeProvider>);
+  fireEvent.click(screen.getByRole("button", { name: "Submit answers" }));
+  expect(sent).toEqual(custom("A pilot for partners"));
+  rerender(<ThemeProvider light solid><ChatMessage {...props} message={{ ...message, questionAnswers: sent, questionsSubmitted: true }} /></ThemeProvider>);
+  expect(screen.getByText("A pilot for partners")).toBeTruthy();
+  expect(screen.queryByRole("textbox")).toBeNull();
+});
+
+test("inactive question forms cannot change or submit while pending, streaming, disabled, or missing callbacks", () => {
+  let events = 0;
+  const answers = [{ questionId: "scope", optionId: "small" }, { questionId: "audience", optionId: "team" }];
+  const props = { value: "", onChangeText: () => {}, onSend: () => {}, onQuestionAnswerChange: () => { events++; }, onSubmitQuestionAnswers: () => { events++; } };
+  const { rerender } = render(<ThemeProvider light solid><Chat {...props} messages={[]} /></ThemeProvider>);
+  for (const state of [{ pending: true }, { disabled: true }, { streaming: true }, { questionsDisabled: true }, { noChange: true }, { noSubmit: true }]) {
+    rerender(<ThemeProvider light solid><Chat {...props} pending={"pending" in state} disabled={"disabled" in state} onQuestionAnswerChange={"noChange" in state ? undefined : props.onQuestionAnswerChange} onSubmitQuestionAnswers={"noSubmit" in state ? undefined : props.onSubmitQuestionAnswers} messages={[{ ...questionMessage, questionAnswers: answers, streaming: "streaming" in state, questionsDisabled: "questionsDisabled" in state }]} /></ThemeProvider>);
+    const radio = screen.getByRole("radio", { name: "A complete release" });
+    const submit = screen.getByRole("button", { name: "Submit answers" });
+    expect(radio.getAttribute("aria-disabled")).toBe("true");
+    expect(submit.getAttribute("aria-disabled")).toBe("true");
+    fireEvent.click(radio);
+    fireEvent.click(submit);
+  }
+  expect(events).toBe(0);
+});
+
+for (const platform of ["ios", "android"] as const) {
+  test(`question forms use the ${platform} entry with controlled radio and checkbox selection`, async () => {
+    const { ChatMessage: NativeChatMessage } = await import(`../src/organisms/chat/chat.${platform}.tsx`);
+    let answers: ChatQuestionAnswerData[] = [];
+    render(<ThemeProvider light solid><NativeChatMessage message={{ ...questionMessage, questions: [questions[0]!, { ...questions[1]!, multiple: true }] }} onQuestionAnswerChange={(_id, next) => { answers = next; }} onSubmitQuestionAnswers={() => {}} /></ThemeProvider>);
+    fireEvent.click(screen.getByRole("radio", { name: /A focused release/ }));
+    expect(answers).toEqual([{ questionId: "scope", optionId: "small" }]);
+    fireEvent.click(screen.getByRole("checkbox", { name: "Our team" }));
+    expect(answers).toEqual([{ questionId: "audience", optionIds: ["team"] }]);
+  });
+}
+
+test("multiple-choice questions preserve checked options and combine them with a custom answer", () => {
+  let changed: ChatQuestionAnswerData[] = [];
+  let sent: ChatQuestionAnswerData[] = [];
+  const message = { ...questionMessage, questions: [{ ...questions[0]!, multiple: true }] };
+  const callbacks = { onQuestionAnswerChange: (_id: string | number, answers: ChatQuestionAnswerData[]) => { changed = answers; }, onSubmitQuestionAnswers: (_id: string | number, answers: ChatQuestionAnswerData[]) => { sent = answers; } };
+  const { rerender } = render(<ThemeProvider light solid><ChatMessage {...callbacks} message={message} /></ThemeProvider>);
+  const update = (answers: ChatQuestionAnswerData[]) => rerender(<ThemeProvider light solid><ChatMessage {...callbacks} message={{ ...message, questionAnswers: answers }} /></ThemeProvider>);
+  expect(screen.getByRole("group", { name: "What should we build?" })).toBeTruthy();
+  expect(screen.getByText("Select all that apply")).toBeTruthy();
+  expect(screen.getByRole("button", { name: "Submit answers" }).getAttribute("aria-disabled")).toBe("true");
+  fireEvent.click(screen.getByRole("checkbox", { name: /A focused release/ }));
+  expect(changed).toEqual([{ questionId: "scope", optionIds: ["small"] }]);
+  expect(screen.getByRole("checkbox", { name: /A focused release/ }).getAttribute("aria-checked")).toBe("false");
+  update(changed);
+  fireEvent.click(screen.getByRole("checkbox", { name: "A complete release" }));
+  expect(changed[0]?.optionIds).toEqual(["small", "full"]);
+  update(changed);
+  fireEvent.click(screen.getByRole("checkbox", { name: /A focused release/ }));
+  expect(changed[0]?.optionIds).toEqual(["full"]);
+  update(changed);
+  fireEvent.click(screen.getByRole("checkbox", { name: "Write my own answer" }));
+  expect(changed[0]?.optionIds).toEqual(["full", "__custom"]);
+  update(changed);
+  expect(screen.getByRole("button", { name: "Submit answers" }).getAttribute("aria-disabled")).toBe("true");
+  fireEvent.change(screen.getByRole("textbox"), { target: { value: "  Also include onboarding  " } });
+  update(changed);
+  fireEvent.click(screen.getByRole("button", { name: "Submit answers" }));
+  fireEvent.click(screen.getByRole("button", { name: "Submit answers" }));
+  expect(sent).toEqual([{ questionId: "scope", optionIds: ["full", "__custom"], customText: "Also include onboarding" }]);
+  rerender(<ThemeProvider light solid><ChatMessage {...callbacks} message={{ ...message, questionAnswers: sent, questionsSubmitted: true }} /></ThemeProvider>);
+  expect(screen.queryByRole("checkbox")).toBeNull();
+  expect(screen.getByText("A complete release")).toBeTruthy();
+  expect(screen.getByText("Also include onboarding")).toBeTruthy();
+});
+
+test("multiple-choice validation rejects empty, duplicate, unknown, mixed-shape, and blank-custom answers", () => {
+  let submissions = 0;
+  const message = { ...questionMessage, questions: [{ ...questions[0]!, multiple: true }] };
+  const callbacks = { onQuestionAnswerChange: () => {}, onSubmitQuestionAnswers: () => { submissions++; } };
+  const { rerender } = render(<ThemeProvider light solid><ChatMessage {...callbacks} message={message} /></ThemeProvider>);
+  const invalid = [{ optionIds: [] }, { optionIds: ["small", "small"] }, { optionIds: ["unknown"] }, { optionIds: ["small"], optionId: "small" }, { optionIds: ["small", "__custom"], customText: " \n " }];
+  for (const answer of invalid) {
+    rerender(<ThemeProvider light solid><ChatMessage {...callbacks} message={{ ...message, questionAnswers: [{ questionId: "scope", ...answer }] }} /></ThemeProvider>);
+    const submit = screen.getByRole("button", { name: "Submit answers" });
+    expect(submit.getAttribute("aria-disabled")).toBe("true");
+    fireEvent.click(submit);
+  }
+  expect(submissions).toBe(0);
 });

@@ -3,8 +3,30 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { ChatComposer, Typography } = scope;
+  const { Stateful, ChatThread } = scope;
   return (
-<ChatComposer value="Review the release plan" onChangeText={() => {}} onSend={() => {}} footer={<Typography tiny muted>Only reviewed requirements continue to execution.</Typography>} />
+<Stateful initial={{ answers: [] as { questionId: string; optionId?: string; optionIds?: string[]; customText?: string }[], submitted: false }}>
+  {(state, setState) => (
+    <ChatThread
+      style={{ height: 540 }}
+      messages={[{
+        id: "planning-questions",
+        role: "assistant",
+        content: "Which release approach should we plan?",
+        questions: [{ id: "scope", title: "What should the first release include?", options: [
+          { id: "focused", label: "A focused first release", description: "Ship the essential workflow, then expand from feedback." },
+          { id: "complete", label: "The complete workflow", description: "Include reporting, collaboration, and administration in the first release." }
+        ] }, { id: "checks", title: "Which checks should we include?", multiple: true, options: [
+          { id: "desktop", label: "Desktop browser testing" },
+          { id: "mobile", label: "Mobile layout and accessibility testing" }
+        ] }],
+        questionAnswers: state.answers,
+        questionsSubmitted: state.submitted
+      }]}
+      onQuestionAnswerChange={(_messageId, answers) => setState({ ...state, answers })}
+      onSubmitQuestionAnswers={(_messageId, answers) => setState({ answers, submitted: true })}
+    />
+  )}
+</Stateful>
   );
 }

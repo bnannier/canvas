@@ -12,6 +12,10 @@ Assistant content supports paragraphs, headings, lists, quotes, fenced code, bol
 
 Set `onAttach` to show the accessible paperclip action. The app owns file picking and uploading, passes composer `attachments`, and removes a staged file through `onRemoveAttachment(id)`. A `ChatAttachmentData` has an `id`, `name`, optional `uploading` or `error` flags, and optional `notice` text. Uploading and failed files block sending; remove a failed file or replace it after retrying. `attaching` also blocks attaching and sending while the app opens a picker or uploads. Saved message attachments use the same metadata; `onOpenAttachment(attachment)` on Chat, ChatThread, or ChatMessage delegates opening or downloading to the app. Canvas never requests, uploads, or opens file URLs itself.
 
+An assistant message can include `questions`: each `ChatQuestionData` has a stable `id`, `title`, optional `multiple`, and `options` with an `id`, `label`, and optional `description`. Supply controlled `ChatQuestionAnswerData` entries in `questionAnswers` containing `questionId`, `optionId` for a single choice or `optionIds` for multiple choices, and optional `customText`. Set `multiple` to render a named checkbox group with Select all that apply; custom answers can be combined with regular choices. Every question offers Write my own answer under the reserved `__custom` option id; custom text is limited to 1000 characters. Chat, ChatThread, and ChatMessage expose `onQuestionAnswerChange(messageId, answers)` and `onSubmitQuestionAnswers(messageId, answers)`. Record changes in message data and set `questionsSubmitted` after accepting submission. The complete answer set is submitted once per mounted message; use a new message id for a new request. The app owns persistence, transport, and the receipt state.
+
+Submission requires a valid answer for each question (one option for single choice, a nonempty set of distinct options for multiple choice), both callbacks, and an enabled form. Blank custom text cannot submit; submitted custom text is trimmed. `questionsDisabled` keeps an earlier form read-only. `disabled`, `pending`, and active streaming also prevent selection and submission. `questionsSubmitted` replaces controls with the saved question and answer text plus an Answers sent receipt. Submitted multiple choices show every selected label and any custom text. Question labels and descriptions remain literal text; RadioGroup supplies keyboard arrow navigation and accessible group names.
+
 ## Usage
 
 ```tsx
@@ -63,6 +67,36 @@ Set `onAttach` to show the accessible paperclip action. The app owns file pickin
 
 ```tsx
 <Chat style={{ height: 320 }} messages={[{ id: "request", role: "user", content: "Review this plan.", attachments: [{ id: "saved-plan", name: "release-plan.pdf" }] }]} value="" onChangeText={() => {}} onSend={() => {}} onAttach={() => {}} attachments={[{ id: "draft-notes", name: "notes.txt" }]} onRemoveAttachment={() => {}} onOpenAttachment={() => {}} />
+```
+
+### Selectable questions
+
+Choose one answer or write your own. This example stores answers outside Chat, then preserves the submitted choices in its message data.
+
+```tsx
+<Stateful initial={{ answers: [] as { questionId: string; optionId?: string; optionIds?: string[]; customText?: string }[], submitted: false }}>
+  {(state, setState) => (
+    <ChatThread
+      style={{ height: 540 }}
+      messages={[{
+        id: "planning-questions",
+        role: "assistant",
+        content: "Which release approach should we plan?",
+        questions: [{ id: "scope", title: "What should the first release include?", options: [
+          { id: "focused", label: "A focused first release", description: "Ship the essential workflow, then expand from feedback." },
+          { id: "complete", label: "The complete workflow", description: "Include reporting, collaboration, and administration in the first release." }
+        ] }, { id: "checks", title: "Which checks should we include?", multiple: true, options: [
+          { id: "desktop", label: "Desktop browser testing" },
+          { id: "mobile", label: "Mobile layout and accessibility testing" }
+        ] }],
+        questionAnswers: state.answers,
+        questionsSubmitted: state.submitted
+      }]}
+      onQuestionAnswerChange={(_messageId, answers) => setState({ ...state, answers })}
+      onSubmitQuestionAnswers={(_messageId, answers) => setState({ answers, submitted: true })}
+    />
+  )}
+</Stateful>
 ```
 
 ### Separate pieces
