@@ -7,8 +7,9 @@ import { Chip } from "../../atoms/chip/chip.js";
 import { Radio, RadioGroup } from "../../atoms/radio/radio.js";
 import { Checkbox } from "../../atoms/checkbox/checkbox.js";
 import { FormSection } from "../../molecules/form/form.js";
+import { Switch } from "../../atoms/switch/switch.js";
 
-const components = createChat(webSkin, { Button, Textarea, Spinner, Chip, Radio, RadioGroup, Checkbox, FormSection });
+const components = createChat(webSkin, { Button, Textarea, Spinner, Chip, Radio, RadioGroup, Checkbox, FormSection, Switch });
 
 /** A controlled conversation with an independently scrolling thread and anchored composer. */
 export const Chat = components.Chat;

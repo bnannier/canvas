@@ -7,8 +7,9 @@ import { Chip } from "../../atoms/chip/chip.ios.js";
 import { Radio, RadioGroup } from "../../atoms/radio/radio.ios.js";
 import { Checkbox } from "../../atoms/checkbox/checkbox.ios.js";
 import { FormSection } from "../../molecules/form/form.ios.js";
+import { Switch } from "../../atoms/switch/switch.ios.js";
 
-const components = createChat(iosSkin, { Button, Textarea, Spinner, Chip, Radio, RadioGroup, Checkbox, FormSection });
+const components = createChat(iosSkin, { Button, Textarea, Spinner, Chip, Radio, RadioGroup, Checkbox, FormSection, Switch });
 
 /** A controlled conversation with an independently scrolling thread and anchored composer. */
 export const Chat = components.Chat;
