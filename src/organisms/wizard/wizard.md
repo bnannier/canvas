@@ -64,4 +64,4 @@ Set `scrollBody={false}` for a bounded child such as Chat that already manages i
 
 ## Accessibility
 
-Dialog supplies the accessible modal name, focus management, close action, Escape and native back behavior. The previous action carries its stage name; application actions provide their own labels and disabled states. Steps and footer cells stack when their container narrows. A controlled `onOpenChange` lets the application decide whether a dismissal request can proceed.
+Dialog supplies the accessible modal name, focus management, close action, Escape and native back behavior. The previous action carries its stage name; application actions provide their own labels and disabled states. Footer buttons stay on one row. At narrow widths the centered status moves above them; use Button `shrink` on application actions so long labels wrap within their button rather than moving the operation to another row. A controlled `onOpenChange` lets the application decide whether a dismissal request can proceed.
