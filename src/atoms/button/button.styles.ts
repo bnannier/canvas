@@ -6,6 +6,9 @@ import { shape, type ColorTokens } from "../../style/index.js";
 import { HOVER } from "../../style/motion.js";
 import { hoverFill, type HoverMotion } from "../../style/hover.js";
 
+export const shrinkButton: ViewStyle = { flexShrink: 1, minWidth: 0 };
+export const shrinkLabel: TextStyle = { flexShrink: 1, textAlign: "center" };
+
 // Co-located Button skins, one per platform.
 //   Web: Dark Factory's pill buttons (its outline, ghost and link looks, a hairline on
 //   every intent but link, bold labels, an instant hover wash, its disabled look).

@@ -172,6 +172,9 @@ A disabled button ignores presses: `onPress` never runs.
 
 ### Measure
 
+Use `shrink` for a content-sized action in a narrow row. The button keeps its
+normal width when space permits and wraps its full label when constrained.
+
 ```tsx
 <Container>
   <Column>
