@@ -272,6 +272,19 @@ export function createChat(skin: s.ChatSkin, { Button = WebButton, Textarea = We
       })}
       <Text accessibilityLiveRegion="polite" style={skin.muted(tokens)}>Answers sent</Text>
     </View>;
+    const renderModeSwitch = (question: ChatQuestionData) => {
+      const answer = answers.find((entry) => entry.questionId === question.id);
+      const multiple = multipleFor(question, answer);
+      const selected = multiple ? answer?.optionIds ?? [] : answer?.optionId ? [answer.optionId] : [];
+      const custom = selected.includes("__custom");
+      return <Switch small accessibilityLabel="Select multiple" checked={!!multiple} disabled={!editable} onChange={(next) => {
+        if (next) change({ questionId: question.id, multiple: true, optionIds: [...selected], ...(custom ? { customText: answer?.customText ?? "" } : {}) });
+        else {
+          const first = selected[0];
+          change(first ? { questionId: question.id, optionId: first, ...(first === "__custom" ? { customText: answer?.customText ?? "" } : {}) } : undefined, question.id);
+        }
+      }}>Select multiple</Switch>;
+    };
     const renderQuestion = (question: ChatQuestionData) => {
       const answer = answers.find((entry) => entry.questionId === question.id);
       const multiple = multipleFor(question, answer);
@@ -283,13 +296,6 @@ export function createChat(skin: s.ChatSkin, { Button = WebButton, Textarea = We
         change({ questionId: question.id, ...override, optionIds, ...(optionIds.includes("__custom") ? { customText: answer?.customText ?? "" } : {}) });
       };
       return <View key={question.id} style={s.blocks}>
-        {!question.multiple ? <Switch small accessibilityLabel="Select multiple" checked={!!multiple} disabled={!editable} onChange={(next) => {
-          if (next) change({ questionId: question.id, multiple: true, optionIds: [...selected], ...(custom ? { customText: answer?.customText ?? "" } : {}) });
-          else {
-            const first = selected[0];
-            change(first ? { questionId: question.id, optionId: first, ...(first === "__custom" ? { customText: answer?.customText ?? "" } : {}) } : undefined, question.id);
-          }
-        }}>Select multiple</Switch> : null}
         {multiple ? <FormSection title={question.title} description="Select all that apply">
           {question.options.filter((option) => option.id !== "__custom").map((option) => <Checkbox selection accessibilityLabel={option.label} key={option.id} checked={selected.includes(option.id)} disabled={!editable} description={option.description} onChange={(checked) => selectMany(option.id, checked)}>{option.label}</Checkbox>)}
           <Checkbox selection accessibilityLabel="Write my own answer" checked={custom} disabled={!editable} onChange={(checked) => selectMany("__custom", checked)}>Write my own answer</Checkbox>
@@ -303,6 +309,7 @@ export function createChat(skin: s.ChatSkin, { Button = WebButton, Textarea = We
         </RadioGroup>}
         {custom ? <Textarea dense label={`Your answer: ${question.title}`} value={answer?.customText ?? ""} maxLength={1000} rows={3} readOnly={!editable} onChangeText={(customText) => change({ questionId: question.id, ...(multiple ? { ...override, optionIds: selected } : { optionId: "__custom" }), customText: customText.slice(0, 1000) })} /> : null}
         {answer?.skipped ? <Text style={skin.muted(tokens)}>{message.questionsDisabled ? "Skipped" : "Answer required"}</Text> : null}
+        {message.questionsDisabled && !question.multiple ? <View style={s.questionActions}><View style={s.questionMode}>{renderModeSwitch(question)}</View></View> : null}
       </View>;
     };
     if (message.questionsDisabled) return <View style={s.questions}>{questions.map(renderQuestion)}</View>;
@@ -316,13 +323,16 @@ export function createChat(skin: s.ChatSkin, { Button = WebButton, Textarea = We
       </View>
       {renderQuestion(question)}
       <View style={s.questionActions}>
-        <Button outline small accessibilityLabel="Previous question" disabled={!editable || index === 0} onPress={() => {
-          if (!editable || index === 0 || submitted.current || advancing.current === index) return;
-          advancing.current = index;
-          setPosition(index - 1);
-        }}>Back</Button>
-        {showNext ? <Button primary small accessibilityLabel="Next question" disabled={!editable || !valid(question, answer)} onPress={() => { if (answer) advance(answer); }}>Next</Button> : null}
-        {showSubmit ? <Button primary small accessibilityLabel="Submit answer" disabled={!editable || !valid(question, answer)} onPress={() => { if (answer) advance(answer); }}>Submit</Button> : null}
+        <View style={s.questionButtons}>
+          <Button outline small accessibilityLabel="Previous question" disabled={!editable || index === 0} onPress={() => {
+            if (!editable || index === 0 || submitted.current || advancing.current === index) return;
+            advancing.current = index;
+            setPosition(index - 1);
+          }}>Back</Button>
+          {showNext ? <Button primary small accessibilityLabel="Next question" disabled={!editable || !valid(question, answer)} onPress={() => { if (answer) advance(answer); }}>Next</Button> : null}
+          {showSubmit ? <Button primary small accessibilityLabel="Submit answer" disabled={!editable || !valid(question, answer)} onPress={() => { if (answer) advance(answer); }}>Submit</Button> : null}
+        </View>
+        {!question.multiple ? <View style={s.questionMode}>{renderModeSwitch(question)}</View> : null}
       </View>
     </View>;
   }
