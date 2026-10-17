@@ -315,6 +315,8 @@ export const publicApi: Readonly<Record<string, ApiEntry>> = {
   DataTableColumn: { kind: "type", docs: "components/data-table" },
   DataTableProps: { kind: "type", docs: "components/data-table" },
   DataTableSort: { kind: "type", docs: "components/data-table" },
+  Wizard: { kind: "component", docs: "components/wizard" },
+  WizardProps: { kind: "type", docs: "components/wizard" },
   Dialog: { kind: "component", docs: "components/dialog" },
   DialogProps: { kind: "type", docs: "components/dialog" },
   DragDropProvider: { kind: "component", docs: "components/drag-drop" },

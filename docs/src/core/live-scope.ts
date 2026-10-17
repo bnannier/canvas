@@ -1,3 +1,4 @@
+import { ViewportOverlay } from "../ui/viewport-overlay";
 import {
   View,
   Text,
@@ -41,6 +42,7 @@ import {
   DataTable,
   DescriptionList,
   Dialog,
+  Wizard,
   Draggable,
   DragDropProvider,
   DragHandle,
@@ -147,6 +149,7 @@ import { Stateful, Ticker, applyDrop, IconGallery, WithToast, AppScreen, AppShel
 // component. Every JSX tag used across the component docs must appear here. The values
 // are opaque to the consumers that read them, hence `unknown`.
 export const LIVE_SCOPE: Record<string, unknown> = {
+  ViewportOverlay,
   // Theme/style helpers for example fences that style a raw View/Text. `tokens`
   // is a placeholder here; <LiveExample> swaps in the live, theme-aware value
   // (so token colors follow the docs light/dark + glass toggles).
@@ -204,6 +207,7 @@ export const LIVE_SCOPE: Record<string, unknown> = {
   DataTable,
   DescriptionList,
   Dialog,
+  Wizard,
   Draggable,
   DragDropProvider,
   DragHandle,

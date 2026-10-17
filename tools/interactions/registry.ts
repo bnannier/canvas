@@ -1,7 +1,7 @@
 // An explicit inventory prevents new components from inheriting an assumed pass.
 // Empty evidence is reported as unregistered, never as covered or noninteractive.
 export const inventory = [
-  "chat",
+  "chat", "wizard",
   "view", "text", "pressable", "image", "text-input", "scroll-view", "row-column", "grid", "container", "chip", "emblem", "sparkline", "autocomplete", "avatar", "badge", "breadcrumb", "button-group", "button", "checkbox", "divider", "dropdown", "icon", "input", "pagination", "radio", "reveal", "select", "skeleton", "textarea", "swatch", "switch", "tooltip", "alert", "alert-dialog", "listbox", "card", "code-block", "field", "empty-state", "form", "filter-panel", "board", "calendar", "command", "dashboard-grid", "data-table", "dialog", "drag-drop", "drawer", "sidebar", "steps", "tab-bar", "tabs", "kbd", "typography", "spinner", "progress", "slider", "accordion", "action-sheet", "stepper", "input-otp", "collapsible", "carousel", "toast", "popover", "qrcode", "video", "row-menu", "action-panels", "description-lists", "feeds", "grid-lists", "media-objects", "phone-input", "stacked-lists", "stats", "chart", "line-chart", "area-chart", "pie-chart", "scatter-plot", "candlestick-chart", "depth-chart", "stacked-bar", "gauge", "heatmap", "bar-list", "metric-breakdown", "uptime-bar", "service-health-list", "bullet-chart", "progress-ring", "composed-chart", "range-area-chart", "histogram", "box-plot", "waterfall-chart", "radial-bar-chart", "funnel-chart", "radar-chart", "treemap", "geo-map", "navbars",
 ];
 
@@ -14,6 +14,7 @@ export interface InteractionEvidence {
 }
 
 export const evidence: InteractionEvidence[] = [
+  { id: "wizard-navigation", components: ["wizard"], layer: "unit-web", file: "test/wizard.test.tsx", test: "wizard keeps navigation controlled and names the previous stage" },
   { id: "chat-send", components: ["chat"], layer: "unit-web", file: "test/chat.test.tsx", test: "chat sends trimmed drafts once and blocks empty, pending, and disabled sends" },
   { id: "autocomplete-form-keyboard", components: ["autocomplete", "form"], layer: "browser-keyboard", file: "e2e/journeys/keyboard.e2e.ts", test: "@interaction:autocomplete-form-keyboard" },
   { id: "listbox-keyboard", components: ["listbox"], layer: "browser-keyboard", file: "e2e/journeys/keyboard.e2e.ts", test: "@interaction:listbox-keyboard" },

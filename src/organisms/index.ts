@@ -53,3 +53,5 @@ export * from "./tabs/tabs.js";
 export * from "./toast/toast.js";
 
 export * from "./chat/chat.js";
+
+export * from "./wizard/wizard.js";
