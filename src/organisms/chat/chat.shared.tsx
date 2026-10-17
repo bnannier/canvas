@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState, type ComponentType, type ReactNode } from "react";
 import { type ScrollView as RNScrollView, type ViewProps } from "react-native";
-import { View, Text, ScrollView, GlassSurface, useTheme, useFillStyle, FOCUS_RESET, LoopView, createLoopChannel, useReducedMotion, type LayoutStyle } from "../../style/index.js";
+import { View, Text, ScrollView, GlassSurface, useTheme, useFillStyle, useControllableState, FOCUS_RESET, LoopView, createLoopChannel, useReducedMotion, type LayoutStyle } from "../../style/index.js";
 import { useScrollFocus } from "../../style/use-scroll-focus.js";
 import { useFocusFrame } from "../../style/focus-frame.js";
+import { focusInto } from "../../style/accessibility-focus.js";
 import { listProps, LIST_ITEM } from "../../style/list-semantics.js";
 import { Button as WebButton, type ButtonProps } from "../../atoms/button/button.js";
 import { Textarea as WebTextarea, type TextareaProps } from "../../atoms/textarea/textarea.js";
@@ -11,6 +12,7 @@ import { Chip as WebChip, type ChipProps } from "../../atoms/chip/chip.js";
 import { Radio as WebRadio, RadioGroup as WebRadioGroup, type RadioProps, type RadioGroupProps } from "../../atoms/radio/radio.js";
 import { Checkbox as WebCheckbox, type CheckboxProps } from "../../atoms/checkbox/checkbox.js";
 import { FormSection as WebFormSection, type FormSectionProps } from "../../molecules/form/form.js";
+import { Switch as WebSwitch, type SwitchProps } from "../../atoms/switch/switch.js";
 import { Icon } from "../../atoms/icon/icon.js";
 import { chatAtBottom, chatBlocks, chatRuns } from "./chat.logic.js";
 import * as s from "./chat.styles.js";
@@ -39,14 +41,20 @@ export interface ChatQuestionAnswerData {
   optionId?: string;
   /** Multi-select answers use optionIds instead of optionId. */
   optionIds?: string[];
+  /** Human-selected multi-answer mode for a question originally supplied as single-choice. */
+  multiple?: boolean;
   customText?: string;
+  /** Historical skipped decision, rendered read-only. Active forms require an answer. @deprecated */
+  skipped?: boolean;
 }
 
 interface QuestionCallbacks {
   /** Update the message's controlled questionAnswers; the app owns saving the draft. */
   onQuestionAnswerChange?: (messageId: string | number, answers: ChatQuestionAnswerData[]) => void;
-  /** Submit a complete answer set; the app owns transport and setting questionsSubmitted. */
+  /** Submit the final complete answer set; the app owns transport and setting questionsSubmitted. */
   onSubmitQuestionAnswers?: (messageId: string | number, answers: ChatQuestionAnswerData[]) => void;
+  /** Save the zero-based current question index; omit questionIndex for local navigation state. */
+  onQuestionIndexChange?: (messageId: string | number, index: number) => void;
   /** Disable question forms while other application work is in progress. */
   disabled?: boolean;
   pending?: boolean;
@@ -67,9 +75,11 @@ export interface ChatMessageData {
   questions?: readonly ChatQuestionData[];
   /** Controlled answers, one entry per question. */
   questionAnswers?: readonly ChatQuestionAnswerData[];
+  /** Controlled zero-based position within questions; the counter always uses the actual question count. */
+  questionIndex?: number;
   /** Saved answers are shown read-only with an Answers sent receipt. */
   questionsSubmitted?: boolean;
-  /** Keep an earlier or inactive form read-only. */
+  /** Show every original question and option read-only for an earlier or inactive batch. */
   questionsDisabled?: boolean;
   /** Marks a failed reply with an explicit error label as well as error ink. */
   error?: boolean;
@@ -136,9 +146,10 @@ interface ChatParts {
   RadioGroup: ComponentType<RadioGroupProps>;
   Checkbox: ComponentType<CheckboxProps>;
   FormSection: ComponentType<FormSectionProps>;
+  Switch: ComponentType<SwitchProps>;
 }
 
-export function createChat(skin: s.ChatSkin, { Button = WebButton, Textarea = WebTextarea, Spinner = WebSpinner, Chip = WebChip, Radio = WebRadio, RadioGroup = WebRadioGroup, Checkbox = WebCheckbox, FormSection = WebFormSection }: Partial<ChatParts> = {}) {
+export function createChat(skin: s.ChatSkin, { Button = WebButton, Textarea = WebTextarea, Spinner = WebSpinner, Chip = WebChip, Radio = WebRadio, RadioGroup = WebRadioGroup, Checkbox = WebCheckbox, FormSection = WebFormSection, Switch = WebSwitch }: Partial<ChatParts> = {}) {
   function Inline({ value }: { value: string }) {
     return <>{chatRuns(value).map((run, index) => <Text key={index} style={[run.strong ? s.strong : null, run.emphasis ? s.emphasis : null, run.code ? s.code : null]}>{run.text}</Text>)}</>;
   }
@@ -183,64 +194,136 @@ export function createChat(skin: s.ChatSkin, { Button = WebButton, Textarea = We
     ))}</View>;
   }
 
-  function Questions({ message, disabled, pending, onQuestionAnswerChange, onSubmitQuestionAnswers }: ChatMessageProps) {
+  function Questions({ message, disabled, pending, onQuestionAnswerChange, onSubmitQuestionAnswers, onQuestionIndexChange }: ChatMessageProps) {
     const { tokens } = useTheme();
-    // Guard the activation synchronously while the application records submission.
-    // Answer selection and the saved receipt remain fully application-controlled.
-    const submitted = useRef(false);
+    const [position, setPosition] = useControllableState(message.questionIndex, 0, (next) => onQuestionIndexChange?.(message.id, next));
     const questions = message.questions ?? [];
+    const index = Math.max(0, Math.min(questions.length - 1, Number.isFinite(position) ? Math.trunc(position) : 0));
+    const question = questions[index];
+    // Guard activations until controlled navigation catches up, and guard the final
+    // batch while the application records submission. Answers remain app-owned.
+    const submitted = useRef(false);
+    const advancing = useRef<number | null>(null);
+    const progress = useRef<View>(null);
+    const previousIndex = useRef(index);
+    useEffect(() => {
+      advancing.current = null;
+      if (previousIndex.current !== index) focusInto(progress.current);
+      previousIndex.current = index;
+    }, [index]);
     const answers = message.questionAnswers ?? [];
-    const locked = !!(disabled || pending || message.streaming || message.questionsDisabled || message.questionsSubmitted);
+    const busy = !!(disabled || pending || message.streaming);
+    const wasBusy = useRef(busy);
+    useEffect(() => {
+      if (wasBusy.current && !busy && !message.questionsSubmitted) {
+        submitted.current = false;
+        advancing.current = null;
+      }
+      wasBusy.current = busy;
+    }, [busy, message.questionsSubmitted]);
+    const locked = busy || !!(message.questionsDisabled || message.questionsSubmitted);
     const editable = !locked && !!onQuestionAnswerChange && !!onSubmitQuestionAnswers;
-    const complete = questions.length > 0 && questions.every((question) => {
-      const answer = answers.find((entry) => entry.questionId === question.id);
-      const selected = question.multiple ? answer?.optionIds ?? [] : answer?.optionId ? [answer.optionId] : [];
+    const multipleFor = (item: ChatQuestionData, answer?: ChatQuestionAnswerData) => item.multiple || answer?.multiple === true;
+    const valid = (item: ChatQuestionData, answer?: ChatQuestionAnswerData) => {
+      if (answer?.skipped !== undefined) return false;
+      const multiple = multipleFor(item, answer);
+      const selected = multiple ? answer?.optionIds ?? [] : answer?.optionId ? [answer.optionId] : [];
       return selected.length > 0 && new Set(selected).size === selected.length
-        && (question.multiple ? answer?.optionId === undefined : answer?.optionIds === undefined)
+        && (answer?.multiple === undefined || answer.multiple === true)
+        && (multiple ? answer?.optionId === undefined : answer?.optionIds === undefined)
         && selected.every((id) => id === "__custom"
           ? !!answer?.customText?.trim() && answer.customText.length <= 1000
-          : question.options.some((option) => option.id !== "__custom" && option.id === id));
-    });
-    const change = (answer: ChatQuestionAnswerData) => {
-      if (!editable || submitted.current) return;
-      onQuestionAnswerChange?.(message.id, questions.flatMap((question) => {
-        const next = question.id === answer.questionId ? answer : answers.find((entry) => entry.questionId === question.id);
-        return next ? [next] : [];
-      }));
+          : item.options.some((option) => option.id !== "__custom" && option.id === id));
     };
-    return <View style={s.questions}>
-      {questions.map((question) => {
-        const answer = answers.find((entry) => entry.questionId === question.id);
-        const selected = question.multiple ? answer?.optionIds ?? [] : answer?.optionId ? [answer.optionId] : [];
-        const custom = selected.includes("__custom");
-        const selectMany = (id: string, checked: boolean) => {
-          const optionIds = checked ? [...new Set([...selected, id])] : selected.filter((value) => value !== id);
-          change({ questionId: question.id, optionIds, ...(optionIds.includes("__custom") ? { customText: answer?.customText ?? "" } : {}) });
-        };
-        if (message.questionsSubmitted) return <View key={question.id} style={s.blocks}>
-          <Text style={skin.label(tokens)}>{question.title}</Text>
-          {selected.map((id) => <Text key={id} selectable style={skin.body(tokens)}>{id === "__custom" ? answer?.customText : question.options.find((option) => option.id === id)?.label ?? "No answer"}</Text>)}
-        </View>;
-        return <View key={question.id} style={s.blocks}>
-          {question.multiple ? <FormSection title={question.title} description="Select all that apply">
-            {question.options.filter((option) => option.id !== "__custom").map((option) => <Checkbox selection accessibilityLabel={option.label} key={option.id} checked={selected.includes(option.id)} disabled={!editable} description={option.description} onChange={(checked) => selectMany(option.id, checked)}>{option.label}</Checkbox>)}
-            <Checkbox selection accessibilityLabel="Write my own answer" checked={custom} disabled={!editable} onChange={(checked) => selectMany("__custom", checked)}>Write my own answer</Checkbox>
-          </FormSection> : <RadioGroup label={question.title} value={answer?.optionId ?? ""} disabled={!editable} onChange={(value) => change({ questionId: question.id, optionId: String(value), ...(value === "__custom" ? { customText: answer?.customText ?? "" } : {}) })}>
-            {question.options.filter((option) => option.id !== "__custom").map((option) => <Radio key={option.id} value={option.id} description={option.description}>{option.label}</Radio>)}
-            <Radio value="__custom">Write my own answer</Radio>
-          </RadioGroup>}
-          {custom ? <Textarea dense label={`Your answer: ${question.title}`} value={answer?.customText ?? ""} maxLength={1000} rows={3} readOnly={!editable} onChangeText={(customText) => change({ questionId: question.id, ...(question.multiple ? { optionIds: selected } : { optionId: "__custom" }), customText: customText.slice(0, 1000) })} /> : null}
+    const normalized = (item: ChatQuestionData, answer: ChatQuestionAnswerData): ChatQuestionAnswerData => {
+      const multiple = multipleFor(item, answer);
+      const selected = multiple ? { optionIds: [...answer.optionIds!], ...(answer.multiple === true ? { multiple: true } : {}) } : { optionId: answer.optionId };
+      const custom = multiple ? answer.optionIds!.includes("__custom") : answer.optionId === "__custom";
+      return { questionId: item.id, ...selected, ...(custom ? { customText: answer.customText!.trim() } : {}) };
+    };
+    const replacing = (answer: ChatQuestionAnswerData | undefined, questionId = answer?.questionId) => questions.flatMap((item) => {
+      const next = item.id === questionId ? answer : answers.find((entry) => entry.questionId === item.id);
+      return next ? [next] : [];
+    });
+    const change = (answer: ChatQuestionAnswerData | undefined, questionId = answer?.questionId) => {
+      if (!editable || submitted.current || advancing.current === index) return;
+      onQuestionAnswerChange?.(message.id, replacing(answer, questionId));
+    };
+    const advance = (answer: ChatQuestionAnswerData) => {
+      if (!editable || submitted.current || advancing.current === index || !valid(question, answer)) return;
+      advancing.current = index;
+      const nextAnswers = replacing(normalized(question, answer));
+      onQuestionAnswerChange?.(message.id, nextAnswers);
+      if (index < questions.length - 1) { setPosition(index + 1); return; }
+      const unresolved = questions.findIndex((item) => !valid(item, nextAnswers.find((entry) => entry.questionId === item.id)));
+      if (unresolved >= 0) { setPosition(unresolved); return; }
+      submitted.current = true;
+      onSubmitQuestionAnswers?.(message.id, questions.map((item) => normalized(item, nextAnswers.find((entry) => entry.questionId === item.id)!)));
+    };
+    if (message.questionsSubmitted) return <View style={s.questions}>
+      {questions.map((item) => {
+        const answer = answers.find((entry) => entry.questionId === item.id);
+        const selected = multipleFor(item, answer) ? answer?.optionIds ?? [] : answer?.optionId ? [answer.optionId] : [];
+        return <View key={item.id} style={s.blocks}>
+          <Text style={skin.label(tokens)}>{item.title}</Text>
+          {!item.multiple && answer?.multiple ? <Text style={skin.muted(tokens)}>Multiple answers selected by you</Text> : null}
+          {answer?.skipped ? <Text style={skin.muted(tokens)}>Skipped</Text> : selected.map((id) => <Text key={id} selectable style={skin.body(tokens)}>{id === "__custom" ? answer?.customText : item.options.find((option) => option.id === id)?.label ?? "No answer"}</Text>)}
         </View>;
       })}
-      {message.questionsSubmitted ? <Text accessibilityLiveRegion="polite" style={skin.muted(tokens)}>Answers sent</Text> : <Button primary small disabled={!editable || !complete} onPress={() => {
-        if (!editable || !complete || submitted.current) return;
-        submitted.current = true;
-        onSubmitQuestionAnswers?.(message.id, questions.map((question) => {
-          const answer = answers.find((entry) => entry.questionId === question.id)!;
-          const selected = question.multiple ? { optionIds: [...answer.optionIds!] } : { optionId: answer.optionId };
-          return { questionId: question.id, ...selected, ...((question.multiple ? answer.optionIds!.includes("__custom") : answer.optionId === "__custom") ? { customText: answer.customText!.trim() } : {}) };
-        }));
-      }}>Submit answers</Button>}
+      <Text accessibilityLiveRegion="polite" style={skin.muted(tokens)}>Answers sent</Text>
+    </View>;
+    const renderQuestion = (question: ChatQuestionData) => {
+      const answer = answers.find((entry) => entry.questionId === question.id);
+      const multiple = multipleFor(question, answer);
+      const override = !question.multiple && answer?.multiple === true ? { multiple: true } : {};
+      const selected = multiple ? answer?.optionIds ?? [] : answer?.optionId ? [answer.optionId] : [];
+      const custom = selected.includes("__custom");
+      const selectMany = (id: string, checked: boolean) => {
+        const optionIds = checked ? [...new Set([...selected, id])] : selected.filter((value) => value !== id);
+        change({ questionId: question.id, ...override, optionIds, ...(optionIds.includes("__custom") ? { customText: answer?.customText ?? "" } : {}) });
+      };
+      return <View key={question.id} style={s.blocks}>
+        {!question.multiple ? <Switch small accessibilityLabel="Select multiple" checked={!!multiple} disabled={!editable} onChange={(next) => {
+          if (next) change({ questionId: question.id, multiple: true, optionIds: [...selected], ...(custom ? { customText: answer?.customText ?? "" } : {}) });
+          else {
+            const first = selected[0];
+            change(first ? { questionId: question.id, optionId: first, ...(first === "__custom" ? { customText: answer?.customText ?? "" } : {}) } : undefined, question.id);
+          }
+        }}>Select multiple</Switch> : null}
+        {multiple ? <FormSection title={question.title} description="Select all that apply">
+          {question.options.filter((option) => option.id !== "__custom").map((option) => <Checkbox selection accessibilityLabel={option.label} key={option.id} checked={selected.includes(option.id)} disabled={!editable} description={option.description} onChange={(checked) => selectMany(option.id, checked)}>{option.label}</Checkbox>)}
+          <Checkbox selection accessibilityLabel="Write my own answer" checked={custom} disabled={!editable} onChange={(checked) => selectMany("__custom", checked)}>Write my own answer</Checkbox>
+        </FormSection> : <RadioGroup label={question.title} value={answer?.optionId ?? ""} disabled={!editable} onChange={(value) => {
+          const next = { questionId: question.id, optionId: String(value), ...(value === "__custom" ? { customText: answer?.customText ?? "" } : {}) };
+          if (value !== "__custom" && index < questions.length - 1) advance(next);
+          else change(next);
+        }}>
+          {question.options.filter((option) => option.id !== "__custom").map((option) => <Radio key={option.id} value={option.id} description={option.description}>{option.label}</Radio>)}
+          <Radio value="__custom">Write my own answer</Radio>
+        </RadioGroup>}
+        {custom ? <Textarea dense label={`Your answer: ${question.title}`} value={answer?.customText ?? ""} maxLength={1000} rows={3} readOnly={!editable} onChangeText={(customText) => change({ questionId: question.id, ...(multiple ? { ...override, optionIds: selected } : { optionId: "__custom" }), customText: customText.slice(0, 1000) })} /> : null}
+        {answer?.skipped ? <Text style={skin.muted(tokens)}>{message.questionsDisabled ? "Skipped" : "Answer required"}</Text> : null}
+      </View>;
+    };
+    if (message.questionsDisabled) return <View style={s.questions}>{questions.map(renderQuestion)}</View>;
+    if (!question) return null;
+    const answer = answers.find((entry) => entry.questionId === question.id);
+    const showSubmit = multipleFor(question, answer) || index === questions.length - 1;
+    const showNext = !showSubmit && (answer?.optionId === "__custom" || valid(question, answer));
+    return <View style={s.questions}>
+      <View ref={progress} accessible accessibilityRole="text" tabIndex={-1} accessibilityLabel={`Question ${index + 1} of ${questions.length}`} aria-label={`Question ${index + 1} of ${questions.length}`} accessibilityLiveRegion="polite" aria-live="polite" style={FOCUS_RESET}>
+        <Text style={skin.muted(tokens)}>{index + 1} of {questions.length}</Text>
+      </View>
+      {renderQuestion(question)}
+      <View style={s.questionActions}>
+        <Button outline small accessibilityLabel="Previous question" disabled={!editable || index === 0} onPress={() => {
+          if (!editable || index === 0 || submitted.current || advancing.current === index) return;
+          advancing.current = index;
+          setPosition(index - 1);
+        }}>Back</Button>
+        {showNext ? <Button primary small accessibilityLabel="Next question" disabled={!editable || !valid(question, answer)} onPress={() => { if (answer) advance(answer); }}>Next</Button> : null}
+        {showSubmit ? <Button primary small accessibilityLabel="Submit answer" disabled={!editable || !valid(question, answer)} onPress={() => { if (answer) advance(answer); }}>Submit</Button> : null}
+      </View>
     </View>;
   }
 
@@ -278,7 +361,7 @@ export function createChat(skin: s.ChatSkin, { Button = WebButton, Textarea = We
     );
   }
 
-  function ChatThread({ messages, pending, pendingLabel = "Assistant is thinking…", pendingIcon, label = "Conversation", emptyState, plain, onOpenAttachment, testID, style, disabled, onQuestionAnswerChange, onSubmitQuestionAnswers }: ChatThreadProps) {
+  function ChatThread({ messages, pending, pendingLabel = "Assistant is thinking…", pendingIcon, label = "Conversation", emptyState, plain, onOpenAttachment, testID, style, disabled, onQuestionAnswerChange, onSubmitQuestionAnswers, onQuestionIndexChange }: ChatThreadProps) {
     const fill = useFillStyle("ChatThread");
     const scroll = useRef<RNScrollView>(null);
     const following = useRef(true);
@@ -313,7 +396,7 @@ export function createChat(skin: s.ChatSkin, { Button = WebButton, Textarea = We
         >
           {!messages.length && !pending ? <View style={s.empty}>{emptyState}</View> : null}
           <View {...listProps({ label })} style={s.blocks}>
-            {messages.map((message) => <ChatMessage key={message.id} message={message} plain={plain} onOpenAttachment={onOpenAttachment} disabled={disabled} pending={pending || streaming} onQuestionAnswerChange={onQuestionAnswerChange} onSubmitQuestionAnswers={onSubmitQuestionAnswers} />)}
+            {messages.map((message) => <ChatMessage key={message.id} message={message} plain={plain} onOpenAttachment={onOpenAttachment} disabled={disabled} pending={pending || streaming} onQuestionAnswerChange={onQuestionAnswerChange} onSubmitQuestionAnswers={onSubmitQuestionAnswers} onQuestionIndexChange={onQuestionIndexChange} />)}
           </View>
           {pending && !streaming ? <View style={s.pending}><Thinking label={pendingLabel} icon={pendingIcon} /></View> : null}
         </ScrollView>
