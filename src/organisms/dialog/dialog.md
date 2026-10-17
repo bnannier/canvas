@@ -26,8 +26,10 @@ For a conversation or other workspace with its own scroll region, use
 height; its header and optional `footer` stay fixed while `children` fill the
 remaining space. Put the workspace's scrollable content inside `children` and
 keep its composer or other controls as siblings of that scroll region. The
-workspace body does not add an outer scrollport. This mode is intended for an
-overlay form; ordinary forms keep their existing scrolling body.
+workspace body does not add an outer scrollport. `workspaceHeader` adds content
+below the title and description in the fixed header, such as a step indicator.
+This mode is intended for an overlay form; ordinary forms keep their existing
+scrolling body.
 
 Add `compact` to a workspace when short content should determine the panel's
 height: `form workspace compact overlay`. The panel hugs the conversation and
