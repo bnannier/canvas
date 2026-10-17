@@ -83,6 +83,7 @@ export const COMPONENT_DOC_KEYS: Record<string, string> = {
   "tab-bar": "./organisms/tab-bar/tab-bar-docs.tsx",
   "tabs": "./organisms/tabs/tabs-docs.tsx",
   "toast": "./organisms/toast/toast-docs.tsx",
+  "wizard": "./organisms/wizard/wizard-docs.tsx",
   "area-chart": "./charts/area-chart/area-chart-docs.tsx",
   "bar-list": "./charts/bar-list/bar-list-docs.tsx",
   "box-plot": "./charts/box-plot/box-plot-docs.tsx",

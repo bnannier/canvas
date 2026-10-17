@@ -1,4 +1,6 @@
-import { Calendar, Command, DataTable, Dialog, FilterPanel, Navbar, Steps, Tabs, useToast } from "@nannier/canvas";
+import { ViewportOverlay } from "../ui/viewport-overlay";
+import { useState } from "react";
+import { Button, Column, Typography, Wizard, Calendar, Command, DataTable, Dialog, FilterPanel, Navbar, Steps, Tabs, useToast } from "@nannier/canvas";
 import type { CatTile } from "./tile";
 
 function CalendarsPreview() {
@@ -89,6 +91,20 @@ function DialogPreview() {
   );
 }
 
+function WizardPreview() {
+  const [open, setOpen] = useState(false);
+  const [current, setCurrent] = useState(0);
+  return <Column>
+    <Button outline onPress={() => { setCurrent(0); setOpen(true); }}>Open wizard</Button>
+    <ViewportOverlay><Wizard open={open} onOpenChange={setOpen} title="Project setup" steps={[{ label: "Details" }, { label: "Review" }]} current={current}
+      previous={current ? { label: "Details", onPress: () => setCurrent(0) } : undefined}
+      status={`Step ${current + 1} of 2`}
+      actions={<Button primary onPress={() => current ? setOpen(false) : setCurrent(1)}>{current ? "Create project" : "Review"}</Button>}>
+      <Typography body>{current ? "Your project is ready to create." : "Choose your project details."}</Typography>
+    </Wizard></ViewportOverlay>
+  </Column>;
+}
+
 function StepsPreview() {
   return (
     <Steps
@@ -105,6 +121,7 @@ function TabsPreview() {
 }
 
 export const ORGANISMS_TILES: CatTile[] = [
+  { title: "Wizard", href: "/components/wizard", Preview: WizardPreview },
   { title: "Calendar", href: "/components/calendar", Preview: CalendarsPreview },
   { title: "Command", href: "/components/command", Preview: CommandPalettePreview },
   { title: "DataTable", href: "/components/data-table", span: true, Preview: DataTablesPreview },

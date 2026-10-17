@@ -80,6 +80,7 @@ export type ExampleScope = typeof import("@nannier/canvas") & {
   IconGallery: IconGalleryHelper;
   WithToast: WithToastHelper;
   AppScreen: AppScreenHelper;
+  ViewportOverlay: (props: { children: ReactNode }) => ReactNode;
   AppShell: AppShellHelper;
 };
 

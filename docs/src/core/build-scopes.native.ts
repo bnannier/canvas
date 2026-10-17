@@ -1,3 +1,4 @@
+import { ViewportOverlay } from "../ui/viewport-overlay";
 import * as Canvas from "@nannier/canvas";
 import type { ColorTokens } from "@nannier/canvas";
 import { Platform } from "react-native";
@@ -24,6 +25,7 @@ export function buildScopes(tokens: ColorTokens): PreviewScope[] {
   scope.IconGallery = IconGallery;
   scope.WithToast = WithToast;
   scope.AppScreen = AppScreen;
+  scope.ViewportOverlay = ViewportOverlay;
   scope.AppShell = AppShell;
   return [
     {

@@ -1,3 +1,4 @@
+import { ViewportOverlay } from "../ui/viewport-overlay";
 import * as Canvas from "@nannier/canvas";
 import type { ColorTokens } from "@nannier/canvas";
 import { PLATFORM_SKINS } from "./platform-skins";
@@ -31,6 +32,7 @@ function columnScope(skins: Record<string, unknown>, tokens: ColorTokens): Examp
   scope.IconGallery = IconGallery;
   scope.WithToast = WithToast;
   scope.AppScreen = AppScreen;
+  scope.ViewportOverlay = ViewportOverlay;
   scope.AppShell = AppShell;
   return scope as unknown as ExampleScope;
 }
