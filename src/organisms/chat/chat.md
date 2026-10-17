@@ -20,6 +20,8 @@ Chat, ChatThread, and ChatMessage expose `onQuestionAnswerChange(messageId, answ
 
 Both answer callbacks and an enabled form are required for interaction. `disabled`, `pending`, and active streaming lock the current question. Use `questionsDisabled` for an inactive earlier batch: it shows every original question and option read-only, without navigation actions. `questionsSubmitted` shows saved answers and historical skipped decisions with an Answers sent receipt. Multiple-choice receipts include every selected label and custom text; an answer-mode override is identified as Multiple answers selected by you. Question labels and descriptions remain literal text; RadioGroup supplies arrow navigation and accessible group names. The counter is announced as Question X of N in a polite live region; navigation moves focus there through the kit's shared browser and native accessibility focus mechanism.
 
+The current question is framed by the existing compact, flat selected Card: a soft theme tint and primary border distinguish its counter, answers and actions from the surrounding conversation. Saved receipts and inactive question history remain unframed. The Card is visual only, so answer controls retain their own accessible roles and focus behavior.
+
 ## Usage
 
 ```tsx

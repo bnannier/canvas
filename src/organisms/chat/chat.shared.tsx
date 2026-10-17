@@ -13,6 +13,7 @@ import { Radio as WebRadio, RadioGroup as WebRadioGroup, type RadioProps, type R
 import { Checkbox as WebCheckbox, type CheckboxProps } from "../../atoms/checkbox/checkbox.js";
 import { FormSection as WebFormSection, type FormSectionProps } from "../../molecules/form/form.js";
 import { Switch as WebSwitch, type SwitchProps } from "../../atoms/switch/switch.js";
+import { Card as WebCard, type CardProps } from "../../molecules/card/card.js";
 import { Icon } from "../../atoms/icon/icon.js";
 import { chatAtBottom, chatBlocks, chatRuns } from "./chat.logic.js";
 import * as s from "./chat.styles.js";
@@ -147,9 +148,10 @@ interface ChatParts {
   Checkbox: ComponentType<CheckboxProps>;
   FormSection: ComponentType<FormSectionProps>;
   Switch: ComponentType<SwitchProps>;
+  Card: ComponentType<CardProps>;
 }
 
-export function createChat(skin: s.ChatSkin, { Button = WebButton, Textarea = WebTextarea, Spinner = WebSpinner, Chip = WebChip, Radio = WebRadio, RadioGroup = WebRadioGroup, Checkbox = WebCheckbox, FormSection = WebFormSection, Switch = WebSwitch }: Partial<ChatParts> = {}) {
+export function createChat(skin: s.ChatSkin, { Button = WebButton, Textarea = WebTextarea, Spinner = WebSpinner, Chip = WebChip, Radio = WebRadio, RadioGroup = WebRadioGroup, Checkbox = WebCheckbox, FormSection = WebFormSection, Switch = WebSwitch, Card = WebCard }: Partial<ChatParts> = {}) {
   function Inline({ value }: { value: string }) {
     return <>{chatRuns(value).map((run, index) => <Text key={index} style={[run.strong ? s.strong : null, run.emphasis ? s.emphasis : null, run.code ? s.code : null]}>{run.text}</Text>)}</>;
   }
@@ -317,7 +319,7 @@ export function createChat(skin: s.ChatSkin, { Button = WebButton, Textarea = We
     const answer = answers.find((entry) => entry.questionId === question.id);
     const showSubmit = multipleFor(question, answer) || index === questions.length - 1;
     const showNext = !showSubmit && (answer?.optionId === "__custom" || valid(question, answer));
-    return <View style={s.questions}>
+    return <Card flat selected compact testID="chat-active-question"><View style={s.questions}>
       <View ref={progress} accessible accessibilityRole="text" tabIndex={-1} accessibilityLabel={`Question ${index + 1} of ${questions.length}`} aria-label={`Question ${index + 1} of ${questions.length}`} accessibilityLiveRegion="polite" aria-live="polite" style={FOCUS_RESET}>
         <Text style={skin.muted(tokens)}>{index + 1} of {questions.length}</Text>
       </View>
@@ -334,7 +336,7 @@ export function createChat(skin: s.ChatSkin, { Button = WebButton, Textarea = We
         </View>
         {!question.multiple ? <View style={s.questionMode}>{renderModeSwitch(question)}</View> : null}
       </View>
-    </View>;
+    </View></Card>;
   }
 
   function ChatMessage({ message, plain, onOpenAttachment, testID, ...questionProps }: ChatMessageProps) {
