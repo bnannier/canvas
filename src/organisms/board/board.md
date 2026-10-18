@@ -8,6 +8,8 @@ For an action-driven work board, `plain` retains the original Argus lane labels,
 count pills and dashed empty slots. `renderItem` supplies the domain card with its
 own controls. These lanes use those controls instead of drag handles. `bleed`
 extends horizontal scrolling through the owning container's inset.
+Plain lanes share the Board's measured width equally, with a 168px minimum per
+lane. Narrow containers scroll horizontally; long card text stays within its lane.
 
 ## Usage
 

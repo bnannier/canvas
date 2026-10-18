@@ -261,3 +261,31 @@ it("renders plain work lanes with custom card actions, counts and dashed empty s
   fireEvent.click(getByRole("button", { name: "Task A" }));
   expect(opened).toBe(true);
 });
+
+it("bounds plain lane content to its container and retains narrow horizontal overflow", () => {
+  const fourColumns = [...columns, { id: "review", label: "Review" }, { id: "done", label: "Done" }];
+  const { getByTestId, rerender } = ui(
+    <Board plain testID="work-board" columns={fourColumns} items={items}
+      renderItem={(item) => <Text>{item.title.repeat(100)}</Text>} />,
+  );
+  const viewport = getByTestId("work-board");
+  const resize = (width: number) => {
+    const host = viewport as unknown as { __reactLayoutHandler: (event: unknown) => void };
+    act(() => host.__reactLayoutHandler({ nativeEvent: { layout: { x: 0, y: 0, width, height: 400 } } }));
+  };
+  const row = () => viewport.firstElementChild as HTMLElement;
+
+  resize(856);
+  expect(row().style.width).toBe("856px");
+  expect(row().children).toHaveLength(4);
+  // Long card content must not make this width intrinsic or expand it on resize.
+  resize(1024);
+  expect(row().style.width).toBe("1024px");
+  resize(360);
+  expect(row().style.width).toBe("714px"); // Four 168px lanes + three 14px gaps.
+
+  rerender(<ThemeProvider><Board plain testID="work-board" bleed={20} columns={fourColumns} items={items} /></ThemeProvider>);
+  expect(row().style.width).toBe("754px"); // Bleed pads are outside the lane minimums.
+  rerender(<ThemeProvider><Board plain testID="work-board" bleed={20} columns={columns} items={items} /></ThemeProvider>);
+  expect(row().style.width).toBe("390px");
+});
