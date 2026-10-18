@@ -301,6 +301,7 @@ export function createBoard(skin: BoardSkin, parts: BoardParts = WEB_PARTS) {
     } = props;
     const { tokens } = useMaterialTheme({ layer: "content" });
     const [list, setList] = useControllableState<BoardItem[]>(items, defaultItems ?? [], onItemsChange);
+    const plainViewport = useMeasuredWidth();
 
     const handleDrop = (e: DropEvent) => {
       const move = boardMoveFor(list, { id: e.id, from: e.from, to: e.to, index: e.index });
@@ -313,7 +314,7 @@ export function createBoard(skin: BoardSkin, parts: BoardParts = WEB_PARTS) {
 
     if (props.plain) {
       const bleed = props.bleed ?? 0;
-      return <ScrollView horizontal showsHorizontalScrollIndicator style={[{ marginHorizontal: -bleed }, style]} contentContainerStyle={plainLane(bleed)} testID={testID}>
+      return <ScrollView horizontal showsHorizontalScrollIndicator onLayout={plainViewport.onLayout} style={[{ marginHorizontal: -bleed }, style]} contentContainerStyle={plainLane(bleed, plainViewport.width, columns.length)} testID={testID}>
         {columns.map((column) => {
           const cards = list.filter((item) => item.columnId === column.id);
           return <View key={column.id} style={plainColumn}>
