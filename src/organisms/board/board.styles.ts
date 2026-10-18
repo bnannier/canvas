@@ -138,7 +138,17 @@ export const androidSkin: BoardSkin = {
 
 
 // The original Argus work board: no lane well, custom domain cards, and dashed empty slots.
-export const plainLane = (bleed: number): ViewStyle => ({ gap: 14, paddingBottom: 6, paddingHorizontal: bleed, flexGrow: 1 });
+// A horizontal ScrollView has an unbounded content axis. Give its flex lanes a
+// definite row width so a long custom card cannot set every lane's intrinsic width.
+// Below the original 168px lane floor, only this row overflows the scrollport.
+export const plainLane = (bleed: number, viewportWidth: number, columns: number): ViewStyle => ({
+  flexDirection: "row",
+  alignItems: "flex-start",
+  gap: 14,
+  paddingBottom: 6,
+  paddingHorizontal: bleed,
+  width: Math.max(viewportWidth, columns * 168 + Math.max(0, columns - 1) * 14 + bleed * 2),
+});
 export const plainColumn: ViewStyle = { flexDirection: "column", gap: 10, flex: 1, minWidth: 168 };
 export const plainHeader: ViewStyle = { flexDirection: "row", gap: 8, alignItems: "center", paddingHorizontal: 4 };
 export const plainLabel = (t: ColorTokens): TextStyle => ({ fontSize: 10, lineHeight: 15, fontWeight: "800", color: t["muted-foreground"], textTransform: "uppercase", letterSpacing: 1.4 });
