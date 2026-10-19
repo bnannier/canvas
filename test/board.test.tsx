@@ -289,3 +289,51 @@ it("bounds plain lane content to its container and retains narrow horizontal ove
   rerender(<ThemeProvider><Board plain testID="work-board" bleed={20} columns={columns} items={items} /></ThemeProvider>);
   expect(row().style.width).toBe("390px");
 });
+
+describe("draggable plain work lanes", () => {
+  it("moves a custom card into an empty lane without taking over its actions", async () => {
+    let move: BoardMove | null = null;
+    let opened = false;
+    const { container, getByRole } = ui(<Board plain draggable columns={columns} items={[items[0]!]}
+      renderItem={(item, { dragHandle }) => <>{dragHandle}<Button onPress={() => { opened = true; }}>{item.title}</Button></>}
+      onMove={(next) => { move = next; }} />);
+    fireEvent.click(getByRole("button", { name: "Task A" }));
+    expect(opened).toBe(true);
+    const grip = byLabel(container, "Move Task A");
+    fireEvent.keyDown(grip, { key: " " });
+    await flush();
+    act(() => { fireEvent.keyDown(grip, { key: "ArrowRight" }); });
+    act(() => { fireEvent.keyDown(grip, { key: "Enter" }); });
+    expect(move).toEqual({ id: "a", from: "todo", to: "doing", index: 0, afterId: null, beforeId: null });
+    // Controlled data stays where the consumer placed it until persistence succeeds.
+    expect(getByRole("button", { name: "Task A" })).toBeTruthy();
+  });
+
+  it("supports uncontrolled plain cards and keyboard cancellation", async () => {
+    const changes: BoardItem[][] = [];
+    const { container } = ui(<Board plain draggable columns={columns} defaultItems={items} onItemsChange={(next) => { changes.push(next); }} />);
+    const grip = byLabel(container, "Move Task A");
+    fireEvent.keyDown(grip, { key: " " });
+    await flush();
+    act(() => { fireEvent.keyDown(grip, { key: "ArrowRight" }); });
+    act(() => { fireEvent.keyDown(grip, { key: "Escape" }); });
+    expect(changes).toHaveLength(0);
+    fireEvent.keyDown(grip, { key: " " });
+    await flush();
+    act(() => { fireEvent.keyDown(grip, { key: "ArrowRight" }); });
+    act(() => { fireEvent.keyDown(grip, { key: "Enter" }); });
+    expect(changes[0]?.find((item) => item.id === "a")?.columnId).toBe("doing");
+  });
+
+  it.each([false, true])("keeps disabled grips inert in plain=%s", async (plain) => {
+    const moves: BoardMove[] = [];
+    const { container } = ui(<Board plain={plain} draggable disabled columns={columns} items={items} onMove={(move) => { moves.push(move); }} />);
+    const grip = byLabel(container, "Move Task A");
+    expect(grip.getAttribute("aria-disabled")).toBe("true");
+    fireEvent.keyDown(grip, { key: " " });
+    await flush();
+    act(() => { fireEvent.keyDown(grip, { key: "ArrowRight" }); });
+    act(() => { fireEvent.keyDown(grip, { key: "Enter" }); });
+    expect(moves).toHaveLength(0);
+  });
+});
