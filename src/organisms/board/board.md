@@ -6,7 +6,10 @@ Dragging is the kit's own drag-and-drop family, so it runs on iOS, Android, and 
 
 For an action-driven work board, `plain` retains the original Argus lane labels,
 count pills and dashed empty slots. `renderItem` supplies the domain card with its
-own controls. These lanes use those controls instead of drag handles. `bleed`
+own controls. Add `draggable` to enable drag grips and drop targets while retaining
+the plain layout. A custom `renderItem` receives `{ dragHandle }` as its second
+argument; place that supplied grip in the card's header. `disabled` prevents moves
+while a consumer saves a change. `bleed`
 extends horizontal scrolling through the owning container's inset.
 Plain lanes share the Board's measured width equally, with a 168px minimum per
 lane. Narrow containers scroll horizontally; long card text stays within its lane.
@@ -35,6 +38,24 @@ lane. Narrow containers scroll horizontally; long card text stays within its lan
 
 ```tsx
 <Board plain emptyLabel="No work here" columns={[{ id: "ready", label: "Ready" }, { id: "review", label: "Review" }]} items={[{ id: "core-1", columnId: "ready", title: "Preserve the Argus experience" }]} />
+```
+
+### Draggable plain work lanes
+
+The grip supports pointer dragging and Space/arrow/Enter keyboard moves. Drop
+targets fill each column's height, including the space below an empty placeholder.
+Controlled consumers persist `onMove` before replacing their saved `items`.
+
+```tsx
+<Board plain draggable
+  columns={[{ id: "ready", label: "Ready" }, { id: "doing", label: "In progress" }, { id: "done", label: "Done" }]}
+  defaultItems={[{ id: "core-1", columnId: "ready", title: "Preserve the Argus experience" }]}
+  renderItem={(item, { dragHandle }) => (
+    <Card compact>
+      <Row between alignCenter><Typography bold>{item.title}</Typography>{dragHandle}</Row>
+    </Card>
+  )}
+/>
 ```
 
 

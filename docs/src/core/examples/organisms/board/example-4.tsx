@@ -3,18 +3,19 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Board } = scope;
+  const { Board, Chip } = scope;
   return (
 <Board
   columns={[
-    { id: "todo", label: "To do", badge: "WIP 2" },
+    { id: "todo", label: "To do" },
     { id: "doing", label: "Doing" },
   ]}
   defaultItems={[
-    { id: "t1", columnId: "todo", title: "Rotate webhook secrets" },
-    { id: "t2", columnId: "todo", title: "Draft the design review" },
+    { id: "t1", columnId: "todo", title: "Rotate webhook secrets", menu: [{ label: "Edit", icon: "pencil" }, { label: "Delete", icon: "trash", destructive: true }] },
+    { id: "t2", columnId: "doing", title: "SSO rollout", chips: <Chip>identity</Chip> },
   ]}
-  emptyLabel="Drop tasks here"
+  onPressItem={(item) => {}}
+  onSelectItemMenu={(item, menuItem) => {}}
 />
   );
 }
