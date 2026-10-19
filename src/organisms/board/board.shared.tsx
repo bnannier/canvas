@@ -73,10 +73,14 @@ import { useHorizontalScrollFocus } from "../../style/use-scroll-focus.js";
 export type { BoardColumn, BoardItem, BoardMove };
 
 export interface BoardProps {
-  /** Unframed work lanes whose cards expose their own actions instead of drag handles. */
+  /** Unframed work lanes with custom domain cards. */
   plain?: boolean;
-  /** Custom card content for plain lanes; the app owns domain actions. */
-  renderItem?: (item: BoardItem) => ReactNode;
+  /** Enable drag handles and drop targets in plain lanes. */
+  draggable?: boolean;
+  /** Temporarily prevent moves, for example while the consumer saves a drop. */
+  disabled?: boolean;
+  /** Custom plain card; place the supplied dragHandle alongside its domain actions. */
+  renderItem?: (item: BoardItem, controls: { dragHandle: ReactNode }) => ReactNode;
   /** Extend the scroller through its parent's horizontal inset. */
   bleed?: number;
   /** The columns (lanes), left to right. */
@@ -156,6 +160,7 @@ export function createBoard(skin: BoardSkin, parts: BoardParts = WEB_PARTS) {
     columnWidth: number;
     compact: boolean;
     emptyLabel: string;
+    disabled: boolean;
   }
 
   // The lanes live in their own component INSIDE the provider so useDragActive can subscribe:
@@ -165,7 +170,7 @@ export function createBoard(skin: BoardSkin, parts: BoardParts = WEB_PARTS) {
   // the board (its horizontal scroller claims a sideways drag it cannot scroll, dropping a
   // card's press and the page's scroll), and always elsewhere, where a disabled scroller
   // sets `touch-action: none` on the web.
-  function BoardLanes({ columns, list, onDrop, onPressItem, onSelectItemMenu, columnWidth, compact, emptyLabel }: LanesProps) {
+  function BoardLanes({ columns, list, onDrop, onPressItem, onSelectItemMenu, columnWidth, compact, emptyLabel, disabled }: LanesProps) {
     const theme = useMaterialTheme({ layer: "content" });
     const { tokens } = theme;
     const dragging = useDragActive();
@@ -218,7 +223,7 @@ export function createBoard(skin: BoardSkin, parts: BoardParts = WEB_PARTS) {
     const renderCard = (item: BoardItem): ReactNode => {
       const menu = item.menu != null && item.menu.length > 0 ? item.menu : null;
       return (
-        <Draggable key={item.id} id={item.id} data={item} label={item.title}>
+        <Draggable key={item.id} id={item.id} data={item} label={item.title} disabled={disabled}>
           <Card compact={compact}>
             <View style={skin.cardRow}>
               {renderBody(item)}
@@ -264,7 +269,7 @@ export function createBoard(skin: BoardSkin, parts: BoardParts = WEB_PARTS) {
         {columns.map((col) => {
           const colItems = list.filter((it) => it.columnId === col.id);
           return (
-            <DropZone key={col.id} id={col.id} label={col.label} onDrop={onDrop} style={{ width: laneWidth }}>
+            <DropZone key={col.id} id={col.id} label={col.label} onDrop={onDrop} disabled={disabled} style={{ width: laneWidth }}>
               {/* The lane is a CONTENT-layer pane under glass (the plain column View in
                   solid mode); the drop zone keeps the lane's width and drop target. */}
               <GlassSurface layer="content" style={skin.column(tokens, compact)}>
@@ -284,6 +289,51 @@ export function createBoard(skin: BoardSkin, parts: BoardParts = WEB_PARTS) {
     );
   }
 
+  function PlainBoardLanes({ columns, list, onDrop, renderItem, bleed, emptyLabel, draggable, disabled, style, testID }: {
+    columns: BoardColumn[];
+    list: BoardItem[];
+    onDrop: (event: DropEvent) => void;
+    renderItem: BoardProps["renderItem"];
+    bleed: number;
+    emptyLabel: string;
+    draggable: boolean;
+    disabled: boolean;
+    style?: BoardProps["style"];
+    testID?: string;
+  }) {
+    const { tokens } = useMaterialTheme({ layer: "content" });
+    const viewport = useMeasuredWidth();
+    const scrollport = useHorizontalScrollFocus();
+    const dragging = useDragActive();
+    return <ScrollView horizontal showsHorizontalScrollIndicator
+      onLayout={(event) => { viewport.onLayout(event); scrollport.onLayout(event); }}
+      onContentSizeChange={scrollport.onContentSizeChange}
+      scrollEnabled={!dragging && scrollport.scrollEnabled}
+      style={style}
+      contentContainerStyle={[plainLane(bleed, viewport.width, columns.length), draggable ? { alignItems: "stretch" } : null]}
+      testID={testID}>
+      {columns.map((column) => {
+        const cards = list.filter((item) => item.columnId === column.id);
+        const content = <>
+          <View style={plainHeader}><Text style={plainLabel(tokens)}>{column.label}</Text><Badge start count secondary>{column.badge ?? String(cards.length)}</Badge></View>
+          {cards.map((item) => {
+            const dragHandle = draggable ? <DragHandle label={`Move ${item.title}`} /> : null;
+            const card = renderItem ? renderItem(item, { dragHandle }) : <Card><View style={skin.cardRow}><View style={BODY}><Text>{item.title}</Text></View>{dragHandle}</View></Card>;
+            return draggable
+              ? <Draggable key={item.id} id={item.id} data={item} label={item.title} disabled={disabled}>{card}</Draggable>
+              : <View key={item.id}>{card}</View>;
+          })}
+          {cards.length === 0 ? <View style={plainEmpty(tokens)}><Text style={plainEmptyLabel(tokens)}>{emptyLabel}</Text></View> : null}
+        </>;
+        // Stretch each target to the full lane height, including the space below
+        // an empty placeholder, so a horizontal drag lands anywhere in that column.
+        return draggable
+          ? <DropZone key={column.id} id={column.id} label={column.label} onDrop={onDrop} disabled={disabled} style={plainColumn}>{content}</DropZone>
+          : <View key={column.id} style={plainColumn}>{content}</View>;
+      })}
+    </ScrollView>;
+  }
+
   return function Board(props: BoardProps) {
     const {
       columns,
@@ -295,15 +345,15 @@ export function createBoard(skin: BoardSkin, parts: BoardParts = WEB_PARTS) {
       onSelectItemMenu,
       columnWidth = 300,
       compact = false,
+      disabled = false,
       emptyLabel = "No items",
       testID,
       style,
     } = props;
-    const { tokens } = useMaterialTheme({ layer: "content" });
     const [list, setList] = useControllableState<BoardItem[]>(items, defaultItems ?? [], onItemsChange);
-    const plainViewport = useMeasuredWidth();
 
     const handleDrop = (e: DropEvent) => {
+      if (disabled) return;
       const move = boardMoveFor(list, { id: e.id, from: e.from, to: e.to, index: e.index });
       if (!move) return;
       // Uncontrolled mode applies the move internally; controlled mode leaves the list to the
@@ -314,16 +364,11 @@ export function createBoard(skin: BoardSkin, parts: BoardParts = WEB_PARTS) {
 
     if (props.plain) {
       const bleed = props.bleed ?? 0;
-      return <ScrollView horizontal showsHorizontalScrollIndicator onLayout={plainViewport.onLayout} style={[{ marginHorizontal: -bleed }, style]} contentContainerStyle={plainLane(bleed, plainViewport.width, columns.length)} testID={testID}>
-        {columns.map((column) => {
-          const cards = list.filter((item) => item.columnId === column.id);
-          return <View key={column.id} style={plainColumn}>
-            <View style={plainHeader}><Text style={plainLabel(tokens)}>{column.label}</Text><Badge start count secondary>{column.badge ?? String(cards.length)}</Badge></View>
-            {cards.map((item) => <View key={item.id}>{props.renderItem ? props.renderItem(item) : <Card><Text>{item.title}</Text></Card>}</View>)}
-            {cards.length === 0 ? <View style={plainEmpty(tokens)}><Text style={plainEmptyLabel(tokens)}>{emptyLabel}</Text></View> : null}
-          </View>;
-        })}
-      </ScrollView>;
+      const layout = [{ marginHorizontal: -bleed }, style];
+      const lanes = <PlainBoardLanes columns={columns} list={list} onDrop={handleDrop} renderItem={props.renderItem}
+        bleed={bleed} emptyLabel={emptyLabel} draggable={!!props.draggable} disabled={disabled}
+        style={props.draggable ? undefined : layout} testID={props.draggable ? undefined : testID} />;
+      return props.draggable ? <DragDropProvider style={layout} testID={testID}>{lanes}</DragDropProvider> : lanes;
     }
 
     return (
@@ -337,6 +382,7 @@ export function createBoard(skin: BoardSkin, parts: BoardParts = WEB_PARTS) {
           columnWidth={columnWidth}
           compact={compact}
           emptyLabel={emptyLabel}
+          disabled={disabled}
         />
       </DragDropProvider>
     );

@@ -3,19 +3,16 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Board } = scope;
+  const { Board, Card, Typography, Row } = scope;
   return (
-<Board
-  compact
-  columns={[
-    { id: "todo", label: "To do" },
-    { id: "doing", label: "Doing" },
-  ]}
-  defaultItems={[
-    { id: "t1", columnId: "todo", title: "Rotate webhook secrets" },
-    { id: "t2", columnId: "todo", title: "Draft the design review" },
-    { id: "t3", columnId: "doing", title: "SSO rollout" },
-  ]}
+<Board plain draggable
+  columns={[{ id: "ready", label: "Ready" }, { id: "doing", label: "In progress" }, { id: "done", label: "Done" }]}
+  defaultItems={[{ id: "core-1", columnId: "ready", title: "Preserve the Argus experience" }]}
+  renderItem={(item, { dragHandle }) => (
+    <Card compact>
+      <Row between alignCenter><Typography bold>{item.title}</Typography>{dragHandle}</Row>
+    </Card>
+  )}
 />
   );
 }
