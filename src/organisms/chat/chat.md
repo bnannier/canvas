@@ -24,6 +24,9 @@ Both answer callbacks and an enabled form are required for interaction. `disable
 
 The current question is framed by the existing compact, flat selected Card: a soft theme tint and primary border distinguish its counter, answers and actions from the surrounding conversation. Saved receipts and inactive question history remain unframed. The Card is visual only, so answer controls retain their own accessible roles and focus behavior.
 
+`Markdown` reuses Chat's safe grammar and renderer for standalone documents. It preserves heading levels one through six, emphasis, inline and fenced code, quotes, ordered and unordered lists, nested indentation, static checked/unchecked task lists, horizontal rules, and pipe tables. Tables use Canvas DataTable's container-responsive stacked layout on narrow surfaces, retaining every column on iOS too. Checklists are read-only Canvas selection controls; reading a document never changes its source. HTML, links and image syntax remain inert text: no source is executed and no remote image is requested. `MarkdownProps` accepts the source as children, an optional accessibility label and test ID; `compact` uses dense document typography. The parent supplies width.
+
+
 ## Usage
 
 ```tsx
@@ -131,6 +134,20 @@ Move through one question at a time. This example controls the saved position an
 
 ```tsx
 <ChatComposer value="Review the release plan" onChangeText={() => {}} onSend={() => {}} footer={<Typography tiny muted>Only reviewed requirements continue to execution.</Typography>} />
+```
+
+### Document Markdown
+
+```tsx
+<Markdown compact>{`# Release scope
+
+## Acceptance criteria
+- [ ] Behavior verified
+- [x] Requirement recorded
+
+| Story | Priority | Status |
+| --- | --- | --- |
+| Saved scope | Must | Backlog |`}</Markdown>
 ```
 
 ## Do & Don't
