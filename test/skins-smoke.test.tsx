@@ -55,6 +55,7 @@ interface SkinCase {
 }
 
 const CASES: SkinCase[] = [
+  { name: "Markdown", dir: "organisms/chat", file: "chat", children: "# Saved scope\n\n- [ ] Criterion\n\n| Child | Status |\n| --- | --- |\n| Scoped child | Backlog |" },
   // ---- atoms ----
   { name: "Avatar", dir: "atoms/avatar", file: "avatar", children: "AB" },
   // The `tiny` (24px) step the identity pill is built around: its own labelType
