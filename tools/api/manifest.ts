@@ -28,6 +28,8 @@ export const entryPoints: Readonly<Record<string, EntryPointShape>> = {
 
 /** Every named export of the package entry `.` (src/index.ts), values and types. */
 export const publicApi: Readonly<Record<string, ApiEntry>> = {
+  Markdown: { kind: "component", docs: "components/chat" },
+  MarkdownProps: { kind: "type", docs: "components/chat" },
   Chat: { kind: "component", docs: "components/chat" },
   ChatThread: { kind: "component", docs: "components/chat" },
   ChatMessage: { kind: "component", docs: "components/chat" },

@@ -16,7 +16,7 @@ import { Switch as WebSwitch, type SwitchProps } from "../../atoms/switch/switch
 import { Card as WebCard, type CardProps } from "../../molecules/card/card.js";
 import { Icon } from "../../atoms/icon/icon.js";
 import { useChatTailFollow } from "./chat-scroll.js";
-import { chatBlocks, chatRuns } from "./chat.logic.js";
+import { createMarkdown, type MarkdownParts } from "./markdown.shared.js";
 import * as s from "./chat.styles.js";
 
 /** Application-owned file metadata. Picking, uploading, and opening files belong to the app. */
@@ -148,7 +148,7 @@ export interface ChatComposerProps {
 
 export interface ChatProps extends ChatThreadProps, ChatComposerProps {}
 
-interface ChatParts {
+interface ChatParts extends MarkdownParts {
   Button: ComponentType<ButtonProps>;
   Textarea: ComponentType<TextareaProps>;
   Spinner: ComponentType<SpinnerProps>;
@@ -161,10 +161,8 @@ interface ChatParts {
   Card: ComponentType<CardProps>;
 }
 
-export function createChat(skin: s.ChatSkin, { Button = WebButton, Textarea = WebTextarea, Spinner = WebSpinner, Chip = WebChip, Radio = WebRadio, RadioGroup = WebRadioGroup, Checkbox = WebCheckbox, FormSection = WebFormSection, Switch = WebSwitch, Card = WebCard }: Partial<ChatParts> = {}) {
-  function Inline({ value }: { value: string }) {
-    return <>{chatRuns(value).map((run, index) => <Text key={index} style={[run.strong ? s.strong : null, run.emphasis ? s.emphasis : null, run.code ? s.code : null]}>{run.text}</Text>)}</>;
-  }
+export function createChat(skin: s.ChatSkin, { Button = WebButton, Textarea = WebTextarea, Spinner = WebSpinner, Chip = WebChip, Radio = WebRadio, RadioGroup = WebRadioGroup, Checkbox = WebCheckbox, FormSection = WebFormSection, Switch = WebSwitch, Card = WebCard, DataTable, Divider }: Partial<ChatParts> = {}) {
+  const Markdown = createMarkdown({ body: skin.body, heading: () => s.heading }, { Checkbox, DataTable, Divider }, false);
 
   function Thinking({ label, icon }: { label: string; icon?: ReactNode }) {
     const { tokens } = useTheme();
@@ -356,15 +354,7 @@ export function createChat(skin: s.ChatSkin, { Button = WebButton, Textarea = We
     const user = message.role === "user";
     const author = message.author ?? (user ? "You" : message.role === "system" ? "System" : "Assistant");
     const body = skin.body(tokens);
-    const content = user || plain ? <Text selectable style={body}>{message.content}</Text> : (
-      <View style={s.blocks}>
-        {chatBlocks(message.content).map((block, index) => {
-          const text = <Text selectable style={[body, block.kind === "heading" ? s.heading : null, block.kind === "code" ? s.code : null, block.kind === "list" ? s.listText : null]}>{block.kind === "code" ? block.text : <Inline value={block.text} />}</Text>;
-          if (block.kind === "list") return <View key={index} style={s.listRow}><Text style={body}>{block.marker}</Text>{text}</View>;
-          return <View key={index} style={block.kind === "quote" ? s.quote(tokens) : undefined}>{text}</View>;
-        })}
-      </View>
-    );
+    const content = user || plain ? <Text selectable style={body}>{message.content}</Text> : <Markdown>{message.content}</Markdown>;
     return (
       <View {...LIST_ITEM} testID={testID} style={[fill, s.messageRow, user ? s.userRow : s.assistantRow]}>
         <View style={[s.messageContent, message.questions?.length ? s.questionContent : null]}>
