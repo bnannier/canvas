@@ -690,10 +690,7 @@ describe("an open card is modal to VoiceOver and TalkBack (AO-2)", () => {
           const content = document.querySelector('[role="listbox"]')!;
           layoutHostedEntrance(content, { width: 220, height: 160 }, { width: 220, height: 160 }, { width: 220, height: 1600 });
           await settle();
-          // The reveal measures the row through measureLayout, which react-native-web answers
-          // on a timer, so the port's scroll lands a few timers after the layout: wait for it
-          // rather than assume a fixed delay covers a loaded runner (CI run 39610128823).
-          await waitFor(() => expect(scrolls.map(({ top }) => top)).toEqual([1080]));
+          expect(scrolls.map(({ top }) => top)).toEqual([1080]);
           if (os === "web") {
             // The DOM focus moved at once, without scrolling the page, and the port followed it.
             expect(scrolls[0]!.focusedThen).toBe("option");
