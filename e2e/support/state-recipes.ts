@@ -2387,6 +2387,14 @@ export const STATE_RECIPES: Record<string, ComponentStates> = {
     focus: focus("default", byRole("button", "Next slide")),
     pressed: pressed("default", byRole("button", "Next slide")),
   },
+  chat: {
+    // Its own control is the thread's scroller, a keyboard stop with a focus frame where its
+    // messages overflow (`useScrollFocus`, the Long conversation example's 28 at a height of
+    // 320). The composer's field and Send, the message choices and the question controls are
+    // kit Textarea, Buttons, Radios, Checkboxes and Switches, whose own recipes capture them,
+    // and the composer's focused border follows the Textarea's focus.
+    focus: focus("longconversation", byLabel("Conversation", { in: "ChatThread" }), { how: "Tab onto the Long conversation example's thread, a keyboard stop where its messages overflow its height" }),
+  },
   command: {
     // Its rows take the active highlight under a resting pointer (onHoverIn); the first is active
     // already. They do inline and in the palette its Search trigger opens.
@@ -2524,6 +2532,10 @@ export const STATE_RECIPES: Record<string, ComponentStates> = {
     ],
     // The iOS build is the web one (the docs registry injects no iOS Toast).
     open: open("default", TOAST_OPEN, ["web", "android"], "overlay-recipes.ts' TOAST_RECIPE (Show toast), from the row"),
+  },
+  wizard: {
+    static: true,
+    reason: "A modal workflow composed of kit parts: the Dialog it opens, its Steps and its footer Buttons are kit components, whose own recipes capture them, and its body scroller declares no keyboard stop.",
   },
 
   // Charts. A chart that inspects under a press has a press-to-inspect recipe on its Usage

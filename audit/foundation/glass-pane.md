@@ -14,9 +14,9 @@ Audit checklist for the style-layer foundation `GlassPane`, audited for its cont
 | Docs planned | none: every export has its page |
 | Materials manifest | GlassPane: style, static + liquid; docs route `foundation`; verification solid-appearance, glass-appearance, mode-switch, accessibility-fallback, runtime-capability, semantic-state |
 | Tests of it | 21 (importing one of its public exports or one of its implementation's declarations by name, or named for it, `test/glass-pane[-<what>].test.tsx`): `test/atom-material-roles.test.tsx`, `test/capture-target.test.tsx`, `test/chart-materials.test.tsx`, `test/drawer-host.test.tsx`, `test/frame-frost.test.tsx`, `test/frost-method-props.test.tsx`, `test/glass-blur-plane.test.tsx`, `test/glass-blur-target.test.tsx`, `test/glass-controls.test.tsx`, `test/glass-modal-blur-target.test.tsx`, `test/glass-pane-ripple.test.tsx`, `test/glass-pane.test.tsx`, `test/glass-surface-android.test.tsx`, `test/glass-surface-host-view.test.tsx`, `test/glass-surface-ios.test.tsx`, `test/glass-surface.test.ts`, `test/material-portal-context.test.tsx`, `test/material-resolution.test.tsx`, `test/native-frost-paint-order.test.tsx`, `test/organism-material-roles.test.tsx`, `test/web-frost-paint-order.test.tsx` |
-| Consumers | 73 components: 51 directly, 4 through shared modules, 18 through other kit components (one row each below, read from the source by `tools/audit/kit-graph.ts`) |
+| Consumers | 75 components: 51 directly, 4 through shared modules, 20 through other kit components (one row each below, read from the source by `tools/audit/kit-graph.ts`) |
 | Pages using it | none: no pattern or template entry names one of its exports |
-| Capture through | 73, in this order: components `chip`, `emblem`, `autocomplete`, `avatar`, `badge`, `button-group`, `button`, `input`, `input-otp`, `kbd`, `listbox`, `stepper`, `pagination`, `progress`, `radio`, `select`, `skeleton`, `slider`, `textarea`, `tooltip`, `video`, `alert`, `card`, `media-objects`, `phone-input`, `stats`, `calendar`, `carousel`, `data-table`, `filter-panel`, `navbars`, `sidebar`, `steps`, `tab-bar`, `tabs`, `chart`, `scatter-plot`, `candlestick-chart`, `depth-chart`, `bar-list`, `metric-breakdown`, `service-health-list`, `bullet-chart`, `range-area-chart`, `histogram`, `box-plot`, `waterfall-chart`, `funnel-chart`, `radar-chart`, `treemap`, `geo-map`, `line-chart`, `area-chart`, `heatmap`, `composed-chart`, `dropdown`, `popover`, `typography`, `accordion`, `action-panels`, `alert-dialog`, `description-lists`, `field`, `empty-state`, `feeds`, `form`, `grid-lists`, `stacked-lists`, `action-sheet`, `board`, `command`, `dialog`, `drawer`; pages none |
+| Capture through | 75, in this order: components `chip`, `emblem`, `autocomplete`, `avatar`, `badge`, `button-group`, `button`, `input`, `input-otp`, `kbd`, `listbox`, `stepper`, `pagination`, `progress`, `radio`, `select`, `skeleton`, `slider`, `textarea`, `tooltip`, `video`, `alert`, `card`, `media-objects`, `phone-input`, `stats`, `calendar`, `carousel`, `data-table`, `filter-panel`, `navbars`, `sidebar`, `steps`, `tab-bar`, `tabs`, `chart`, `scatter-plot`, `candlestick-chart`, `depth-chart`, `bar-list`, `metric-breakdown`, `service-health-list`, `bullet-chart`, `range-area-chart`, `histogram`, `box-plot`, `waterfall-chart`, `funnel-chart`, `radar-chart`, `treemap`, `geo-map`, `line-chart`, `area-chart`, `heatmap`, `composed-chart`, `dropdown`, `popover`, `typography`, `accordion`, `action-panels`, `alert-dialog`, `description-lists`, `field`, `empty-state`, `feeds`, `form`, `grid-lists`, `stacked-lists`, `action-sheet`, `board`, `chat`, `command`, `dialog`, `drawer`, `wizard`; pages none |
 | Not captured | guide pages, which the capture inventory (component, pattern and template pages) does not hold: `/foundation` (documents GlassPane, GlassPaneProps, PANE_SIBLING_INPUT, paneStyle) |
 | Turn record | `audit/turns/glass-pane.md`, written by `bun run audit:turn -- --slug=glass-pane --phase=before\|after` (the before and after capture runs) |
 
@@ -92,9 +92,11 @@ Audit checklist for the style-layer foundation `GlassPane`, audited for its cont
 | `stacked-lists` | through other kit components | `avatar`, `badge`, `button` |
 | `action-sheet` | through other kit components | `button` |
 | `board` | through other kit components | `badge`, `card` |
+| `chat` | through other kit components | `button`, `card`, `chip`, `data-table`, `radio`, `textarea` |
 | `command` | through other kit components | `kbd` |
 | `dialog` | through other kit components | `button`, `input` |
 | `drawer` | through other kit components | `button` |
+| `wizard` | through other kit components | `button`, `dialog`, `steps`, `typography` |
 <!-- audit:facts:end -->
 
 ## Contract rubric

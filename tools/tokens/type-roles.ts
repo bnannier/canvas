@@ -81,6 +81,8 @@ export const TEXT_ROLES: Record<string, Record<string, ReadingRole>> = {
     "androidSkin.compact.description": "small",
   },
   "src/organisms/data-table/data-table.styles.ts": { "webSkin.stackedLabel": "small", "iosSkin.stackedLabel": "small" },
+  // A message's author line, and the provider, notice and failure lines beside and under it.
+  "src/organisms/chat/chat.styles.ts": { "webSkin.label": "small", "webSkin.muted": "small" },
 
   // Pills, tags, badges, meta lines and annotations.
   "src/atoms/badge/badge.notification.tsx": { LABEL: "caption" },

@@ -38,6 +38,7 @@ Web: 18 cells per variant (3 widths x 3 looks x 2 surfaces). iOS and Android: 6 
 |---|---|---|---|---|---|
 | `default` | Default | [ ] | [ ] | [ ] |  |
 | `plainworklanes` | Plain work lanes | [ ] | [ ] | [ ] |  |
+| `draggableplainworklanes` | Draggable plain work lanes | [ ] | [ ] | [ ] |  |
 | `compact` | Compact | [ ] | [ ] | [ ] |  |
 | `cardmenusandpress` | Card menus and press | [ ] | [ ] | [ ] |  |
 | `emptycolumnandexplicitbadges` | Empty column and explicit badges | [ ] | [ ] | [ ] |  |

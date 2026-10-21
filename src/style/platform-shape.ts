@@ -23,8 +23,9 @@ const M3 = { extraSmall: 4, small: 8, medium: 12, large: 16, extraLarge: 28 } as
  *   step (8) on the tooltip bubble, a calendar event and a chart's bar; and the chart marks
  *   below a bar, a compact bar (4), a data cell (2, Dark Factory's meter segment) and a
  *   candlestick's body (1). The kit's own web parts no Dark Factory role covers keep their
- *   corner as a role of their own: a standalone table's header band (10) and the ghost a
- *   drag lifts (12).
+ *   corner as a role of their own: a standalone table's header band (10), the ghost a
+ *   drag lifts (12), a conversation's composer surface (20) and its user bubble (18),
+ *   tailed at 6 on the top end toward its author.
  * - iOS rounds the action sheet at 34 (the iOS 27 kit's Action Sheets symbol), an inset
  *   grouped list or well at 26, and a calendar event at 6.
  * - Android draws each Material 3 component at the step of the M3 scale its spec names: a
@@ -39,7 +40,7 @@ const M3 = { extraSmall: 4, small: 8, medium: 12, large: 16, extraLarge: 28 } as
  * the public table.
  */
 export const platformShape = {
-  web: { insetRow: 10, brandMark: 9, referenceCard: 9, utilityControl: 7, key: 6, tooltip: 8, event: 8, bar: 8, mark: 4, cell: 2, candle: 1, tableHeader: 10, dragGhost: 12 },
+  web: { insetRow: 10, brandMark: 9, referenceCard: 9, utilityControl: 7, key: 6, tooltip: 8, event: 8, bar: 8, mark: 4, cell: 2, candle: 1, tableHeader: 10, dragGhost: 12, composer: 20, bubble: 18, bubbleTail: 6 },
   ios: { actionSheet: 34, groupedList: 26, event: 6 },
   android: {
     chip: M3.small,

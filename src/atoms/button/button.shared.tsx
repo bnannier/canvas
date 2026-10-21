@@ -296,7 +296,7 @@ export function createButton(skin: ButtonSkin) {
         >
           {({ pressed }) => <>
             {puck ? <GlassPane layer="control" shape={container} brand={brand} /> : null}
-            {props.attention && !disabled && !loading ? <ButtonAttention radius={container.borderRadius} /> : null}
+            {props.attention && !disabled && !loading ? <ButtonAttention shape={container} /> : null}
             <View style={[
               { flexDirection: container.flexDirection, alignItems: container.alignItems, justifyContent: container.justifyContent, gap: container.gap, flexShrink: 1 },
               // Dim the foreground independently of native material feedback.

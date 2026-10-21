@@ -254,6 +254,21 @@ export const COMPONENT_PLANS: ComponentPlan[] = [
   { slug: "board", families: ["rearrangement"], native: "DF / DF (own skins until this turn aliases them, K8c)", specifics: ["keyboard move between columns", "announcements", "column scroll"] },
   { slug: "calendar", families: ["pickers"], native: "HIG / M3", specifics: ["APG grid navigation", "locale first day", "range", "disabled dates", "today vs selected"] },
   { slug: "carousel", families: ["data-display"], native: "page control (one job, different control, K8c) / M3", specifics: ["APG carousel (\"n of m\", pause)", "arrows beside slides", "swipe"] },
+  {
+    slug: "chat",
+    families: ["data-display", "text-entry", "feedback"],
+    native: "DF / DF (neither platform ships a conversation control; the platform Button, Textarea, Chip, Radio, Checkbox, Switch, Card and DataTable parts stay)",
+    specifics: [
+      "the parent supplies the height: the thread scrolls inside it and the composer stays anchored below it",
+      "the thread is a keyboard stop with a visible focus frame where its messages overflow (WCAG 2.1.1)",
+      "tail following: within 48 pt of the bottom the thread follows new content, scrolling up pauses it, and no scroll is animated, also under Reduce Motion",
+      "`list` and `listitem` semantics, one item per message, author and provider named",
+      "the thinking dots and the Responding indicator stop with their state and park still under Reduce Motion; the pending indicator is a busy `progressbar`",
+      "Send blocked on an empty, pending, disabled or uploading draft with Enter kept for newlines; `sendDisabled` blocks Send alone",
+      "one question at a time: a polite Question X of N counter that takes focus, Back, Next and Submit, the `__custom` answer capped at 1000 characters",
+      "message choices wrap at phone width; the safe Markdown subset keeps HTML, links and images literal",
+    ],
+  },
   { slug: "command", families: ["pickers"], native: "DF / DF (own skins until this turn aliases them, K8b)", specifics: ["APG combobox + listbox", "embedded mode", "phone full sheet", "groups", "empty text"] },
   { slug: "dashboard-grid", families: ["rearrangement"], native: "DF / DF", specifics: ["keyboard rearrange", "spans", "SSR"] },
   { slug: "data-table", families: ["data-display"], native: "HIG / DF (own Android skin until this turn aliases it, K8c)", specifics: ["`aria-sort`", "selection", "sticky header", "horizontal scroll", "phone stacks", "loading/empty", "windowing", "open gap `footer`"] },
@@ -273,6 +288,19 @@ export const COMPONENT_PLANS: ComponentPlan[] = [
   },
   { slug: "tabs", families: ["navigation"], native: "DF / M3 (the iOS build is the web capsule skin)", specifics: ["APG tabs (automatic vs manual activation)", "M3 underline", "overflow scroll"] },
   { slug: "toast", families: ["feedback"], native: "DF / M3 snackbar", specifics: ["polite live region", "enough time and pause on hover/focus (WCAG 2.2.1)", "inline action", "swipe dismiss", "stacking"] },
+  {
+    slug: "wizard",
+    families: ["menus-overlays", "navigation"],
+    native: "DF / DF (neither platform ships a wizard; the platform Dialog, Steps and Button parts stay, so the modal keeps HIG and M3 through Dialog)",
+    specifics: [
+      "a fixed header (title, description, Steps) and footer around a bounded body; `scrollBody={false}` hands the scroll to a child such as Chat",
+      "the footer's operations stay on one row at every width; the centered status moves above them at and below `sm` (container-measured)",
+      "the previous action carries its stage name and `disabled`; application actions keep their own labels and states",
+      "Dialog supplies the modal name, focus, Escape and native back; a controlled `onOpenChange` may refuse a dismissal",
+      "`panelWidth` (960) shrinks to the viewport; the phone presentation is Dialog's",
+      "the body scroller reachable by keyboard where it overflows with no focusable child (Backlog: scrollable regions, WCAG 2.1.1)",
+    ],
+  },
 
   // Charts (every chart inherits the chart family checklist; shared skin on every platform)
   { slug: "chart", families: ["charts"], native: CHART_NATIVE, specifics: ["open gaps `crosshair`, `valueLabels`, `unit`, `bare`", "ChartFrame (absent, K11): build the public chart wrapper the hand-off specifies"] },
@@ -433,7 +461,7 @@ export const FOUNDATION_PLANS: Readonly<Record<string, readonly string[]>> = {
   ],
   LoopView: [
     "the loop primitive: the native driver natively and a compositor CSS animation on the web, nothing committed through React per frame (`loop-native.ts` holds the primitive's one `Animated.loop`; `test/design-rules-source.test.ts` holds every file that loops to `supportsNativeDriver` and one timing per loop)",
-    "the Skeleton shimmer, the one effect that renders through it (Skeleton, and DataTable's loading rows through it: its Capture through list), still under Reduce Motion, where the shimmer is decoration and an animated Skeleton mounts no loop",
+    "the effects that render through it: the Skeleton shimmer (Skeleton, and DataTable's loading rows through it), Button's `attention` glow (Button, and every component that renders a Button) and Chat's thinking dots; still under Reduce Motion, where the shimmer and the glow are decoration that mounts no loop and the dots park still",
     "source: the Spinner, the indeterminate Progress sweep and the InputOTP caret drive their own `Animated.loop` (`src/atoms/spinner/spinner.shared.tsx`, `src/atoms/progress/progress.shared.tsx`, `src/atoms/input-otp/input-otp.shared.tsx`), not LoopView, though CLAUDE.md's Motion section puts them on the loop primitive and the materials target names the Spinner and the Progress: whether they move onto it or the doc and the target are corrected is the owner's question; their pictures are their own turns'",
   ],
   OverlayProvider: [
