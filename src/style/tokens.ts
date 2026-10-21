@@ -497,6 +497,13 @@ export const baseColors: Record<string, string> = {
 };
 
 /**
+ * Tailwind red-500, single-sourced for Button's attention glow. An atom that reads a
+ * hue through `palette[...]` retains the whole record (~1.5KB gzip) in every bundle
+ * that carries it; this named constant tree-shakes to the one value.
+ */
+export const PALETTE_RED_500 = "#ef4444";
+
+/**
  * The standard Tailwind v3 color-hue palette, scheme-independent. Color-coded
  * components that need hues beyond the semantic tokens read from here. Keyed
  * "<hue>-<step>" (e.g. "red-500"), values are the canonical Tailwind v3 hexes,
@@ -569,7 +576,7 @@ export const palette: Record<string, string> = {
   "red-200": "#fecaca",
   "red-300": "#fca5a5",
   "red-400": "#f87171",
-  "red-500": "#ef4444",
+  "red-500": PALETTE_RED_500,
   "red-600": "#dc2626",
   "red-700": "#b91c1c",
   "red-800": "#991b1b",

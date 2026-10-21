@@ -1,7 +1,7 @@
 import { useEffect, useMemo } from "react";
 import { View, LoopView, createLoopChannel, keyframes, useReducedMotion, type ViewStyle } from "../../style/index.js";
 import { alpha } from "../../style/color.js";
-import { palette } from "../../style/tokens.js";
+import { PALETTE_RED_500 } from "../../style/tokens.js";
 
 // Functional attention cue requested by the Argus owner. Animate the halo alone:
 // text, hit target, dimensions and the existing button treatment stay still.
@@ -17,7 +17,7 @@ const ATTENTION = {
 };
 
 export function ButtonAttention({ radius }: { radius: ViewStyle["borderRadius"] }) {
-  const color = palette["red-500"];
+  const color = PALETTE_RED_500;
   const reduced = useReducedMotion();
   const channel = useMemo(() => createLoopChannel({ period: ATTENTION.period, shape: ATTENTION.heartbeat }), []);
   useEffect(() => {
