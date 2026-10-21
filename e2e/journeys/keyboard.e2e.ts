@@ -397,6 +397,10 @@ for (const route of componentRoutes()) {
   for (const look of SWEEP_LOOKS) {
     const where = `${look.scheme} ${look.surface} ${look.palette}`;
     test(`every keyboard stop on ${route.path} shows the kit's ring in ${where}`, async ({ page }) => {
+      // The Calendar's 354 stops a look ran past the minute on CI's WebKit (Deploy run
+      // 39614900956: both looks timed out at 60s, where the comment above measured about
+      // half a minute), so that one page takes the slow budget. The walk is unchanged.
+      if (route.path === "/components/calendar") test.slow();
       await gotoDocs(page, route.path, look);
       const { stops, ringless, doubled } = await ringlessStops(page, rgb(colorsFor(look.palette, look.scheme).ring));
       expect(stops, `${route.path} (${where}) has a keyboard stop`).toBeGreaterThan(0);
