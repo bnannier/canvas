@@ -41,9 +41,9 @@ it with `tools/handoff-parity/extract.ts --from <export>`.
 | Present in the kit | 74 |
 | Absent (tracked) | 1 |
 | Hand-off props compared | 733 |
-| Same name, present | 515 |
+| Same name, present | 516 |
 | Settled divergences | 162 |
-| Open gaps (tracked) | 56 |
+| Open gaps (tracked) | 55 |
 | Metric gaps (not detectable here) | 4 |
 | **Unclassified** | **0** |
 
@@ -71,7 +71,6 @@ Capabilities the hand-off specifies that the kit does not offer. Acknowledged, n
 | `DepthChart` | `bare` | unscheduled | Drop the chart's card surface so it can embed in an existing one. Canvas charts always paint their own card; ChartFrame gains `bare` in phase 5 but the nine series charts do not. |
 | `Drawer` | `title` | unscheduled | Canvas's Drawer is a bare panel; the caller supplies its own header. The hand-off's owns title/description/footer chrome. |
 | `Drawer` | `description` | unscheduled | As above. |
-| `Drawer` | `footer` | unscheduled | As above. |
 | `Gauge` | `size` | unscheduled | A size axis for the dial. GaugeProps carries no size lever at all, so a Gauge is one size everywhere. This was recorded as a settled boolean axis pointing at `small`/`large`, which the component has never had. |
 | `Heatmap` | `startDay` | unscheduled | Which weekday the grid starts on. Canvas fixes it. |
 | `Heatmap` | `subtitle` | unscheduled | A muted second line under a chart title. Canvas charts carry `title` only. |

@@ -440,11 +440,6 @@
         "plannedIn": "unscheduled",
         "reason": "As above."
       },
-      "footer": {
-        "kind": "open-gap",
-        "plannedIn": "unscheduled",
-        "reason": "As above."
-      },
       "size": {
         "kind": "renamed",
         "to": "width",
