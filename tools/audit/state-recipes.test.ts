@@ -450,7 +450,7 @@ describe("the states each component's source gives it", () => {
     ]);
     // An own-surface recipe a disabled example asks for (Button's `disabled`, one of the two ways `disabled || loading` is true).
     expect(check("button", without("button"))).toEqual([
-      "button: its Disabled example asks for a disabled control on its own surface (disabled on <Pressable> at src/atoms/button/button.shared.tsx:269), with no disabled recipe there",
+      "button: its Disabled example asks for a disabled control on its own surface (disabled on <Pressable> at src/atoms/button/button.shared.tsx:274), with no disabled recipe there",
     ]);
   });
 
@@ -459,7 +459,7 @@ describe("the states each component's source gives it", () => {
     const item = recipeFor("dropdown", "disabled-disableditem");
     expect(check("button", { ...(STATE_RECIPES.button as object), disabled: { ...item, variant: "disabled" } } as ComponentStates)).toEqual([
       "button: its disabled recipe on the disabled example is applied inside an overlay, and its source renders none",
-      "button: its Disabled example asks for a disabled control on its own surface (disabled on <Pressable> at src/atoms/button/button.shared.tsx:269), with no disabled recipe there",
+      "button: its Disabled example asks for a disabled control on its own surface (disabled on <Pressable> at src/atoms/button/button.shared.tsx:274), with no disabled recipe there",
     ]);
     const dropdown = STATE_RECIPES.dropdown as Record<string, unknown>;
     expect(check("dropdown", { ...dropdown, disabled: [recipeFor("dropdown", "disabled-disabledtrigger"), { ...item, opens: "Popover" }] } as ComponentStates)[0]).toBe(
@@ -1161,12 +1161,12 @@ describe("the rows of the docs' three-up a state is answered on", () => {
     // Dialog's footer: the iOS build's capsules (`skin.footerKind === "capsules"`) and the
     // Android build's text buttons (`skin.textButton != null`); the web build's are kit
     // Buttons, none of its own. The Dismissible example's scrim is every build's.
-    expect(builds("dialog", "focus")).toEqual(["dialog.shared.tsx:224 Pressable: ios", "dialog.shared.tsx:245 Pressable: android", "dialog.shared.tsx:257 Pressable: android"]);
+    expect(builds("dialog", "focus")).toEqual(["dialog.shared.tsx:235 Pressable: ios", "dialog.shared.tsx:256 Pressable: android", "dialog.shared.tsx:268 Pressable: android"]);
     expect(builds("dialog", "pressed")).toEqual([
-      "dialog.shared.tsx:224 Pressable: ios",
-      "dialog.shared.tsx:245 Pressable: android",
-      "dialog.shared.tsx:257 Pressable: android",
-      "dialog.shared.tsx:329 Pressable: every build",
+      "dialog.shared.tsx:235 Pressable: ios",
+      "dialog.shared.tsx:256 Pressable: android",
+      "dialog.shared.tsx:268 Pressable: android",
+      "dialog.shared.tsx:340 Pressable: every build",
     ]);
     // AlertDialog's confirm (`skin.actionLayout`): the kit Button the web build hands `disabled`, its own on the others.
     expect(builds("alert-dialog", "disabled")).toEqual([
@@ -1198,9 +1198,9 @@ describe("the rows of the docs' three-up a state is answered on", () => {
     // text buttons' press, `android_ripple` alone, is the devices' whatever the table says.)
     expect(check("dialog", { ...table.dialog, focus: onWeb("dialog", "focus"), pressed: onWeb("dialog", "pressed") })).toEqual([
       "dialog: its focus recipe on the default example answers nothing on the web row: it acts on a button in the overlay in Present, which is none of the component's own controls there (its example renders none); a control another kit component renders is that component's",
-      "dialog: its source gives it a focus state in the overlay in Present on the iOS and Android rows (a tab stop: <Pressable> at src/organisms/dialog/dialog.shared.tsx:224, and 2 more), where no focus recipe acts on a control of its own, with no exemption",
+      "dialog: its source gives it a focus state in the overlay in Present on the iOS and Android rows (a tab stop: <Pressable> at src/organisms/dialog/dialog.shared.tsx:235, and 2 more), where no focus recipe acts on a control of its own, with no exemption",
       "dialog: its pressed recipe on the default example answers nothing on the web row: it acts on a button in the overlay in Present, which is none of the component's own controls there (its example renders none); a control another kit component renders is that component's",
-      "dialog: its source gives it a pressed state in the overlay in Present (onPress on <Pressable> at src/organisms/dialog/dialog.shared.tsx:227, and 2 more), where no pressed recipe acts on a control of its own, with no exemption",
+      "dialog: its source gives it a pressed state in the overlay in Present (onPress on <Pressable> at src/organisms/dialog/dialog.shared.tsx:238, and 2 more), where no pressed recipe acts on a control of its own, with no exemption",
     ]);
     // AlertDialog's the same, and its Body field's confirm: the web row's is the kit Button it
     // disables (its own for that state alone), the iOS and Android rows' its own, asked for too.
@@ -1381,7 +1381,7 @@ describe("the states the web runner can never show", () => {
       const controls = new Map(signalsOf(slug).flatMap((s) => (s.state === "pressed" && s.control ? [[s.control.at, s.control] as const] : [])));
       return [...controls.values()].map((c) => `${c.at.replace(/^src\/[a-z]+\/[a-z-]+\//, "")}: ${ROW_KEYS.map((row) => deviceFeedback(c, "pressed", row, rowsOf(slug), signalsOf(slug)) ?? "-").join(" ")}`).sort();
     };
-    expect(feedback("dialog")).toEqual(["dialog.shared.tsx:224: - - -", "dialog.shared.tsx:245: - - android_ripple", "dialog.shared.tsx:257: - - android_ripple", "dialog.shared.tsx:329: - - -"]);
+    expect(feedback("dialog")).toEqual(["dialog.shared.tsx:235: - - -", "dialog.shared.tsx:256: - - android_ripple", "dialog.shared.tsx:268: - - android_ripple", "dialog.shared.tsx:340: - - -"]);
     expect(feedback("alert-dialog")).toEqual(["alert-dialog.shared.tsx:196: - - -", "alert-dialog.shared.tsx:208: - - -", "alert-dialog.shared.tsx:236: - - android_ripple", "alert-dialog.shared.tsx:246: - - android_ripple"]);
     // The press on the iOS and Android rows, as the table had it: on the Android row it set up a
     // state the web runner could never see reached.
@@ -1398,7 +1398,7 @@ describe("the states the web runner can never show", () => {
       const coverage = coverageOf(slug, STATE_RECIPES[slug]!, signalsOf(slug), railExamples(component(slug)), rowsOf(slug));
       expect({ slug, errors: coverage.errors }).toEqual({ slug, errors: [] });
       const devices = coverage.answers.filter((a) => a.by === "devices").map((a) => `${a.state} in ${a.within} on ${a.rows!.join(" and ")}: ${a.feedback} (${a.signals.map((s) => s.at.replace(/^.*\//, "")).join(", ")})`);
-      const at = slug === "dialog" ? ["dialog.shared.tsx:247", "dialog.shared.tsx:259"] : ["alert-dialog.shared.tsx:237", "alert-dialog.shared.tsx:247"];
+      const at = slug === "dialog" ? ["dialog.shared.tsx:258", "dialog.shared.tsx:270"] : ["alert-dialog.shared.tsx:237", "alert-dialog.shared.tsx:247"];
       expect({ slug, devices }).toEqual({ slug, devices: [`pressed in Present on android: android_ripple (${at.join(", ")})`] });
       expect(coverage.answers.some((a) => a.by === "recipe" && a.signals.some((s) => at.some((place) => s.at.endsWith(place))))).toBe(false);
     }

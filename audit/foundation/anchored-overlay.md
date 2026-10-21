@@ -14,9 +14,9 @@ Audit checklist for the style-layer foundation `AnchoredOverlay`, audited for it
 | Docs planned | none: every export has its page |
 | Materials manifest | AnchoredOverlay: style, static + liquid; docs route `foundation`; verification solid-appearance, glass-appearance, mode-switch, accessibility-fallback, runtime-capability, semantic-state |
 | Tests of it | 10 (importing one of its public exports or one of its implementation's declarations by name, or named for it, `test/anchored-overlay[-<what>].test.tsx`): `test/anchored-overlay-dismissal.test.tsx`, `test/anchored-overlay-focus.test.tsx`, `test/anchored-overlay-placement.test.tsx`, `test/anchored-overlay-sheet.test.tsx`, `test/behavior.test.tsx`, `test/dense-overlays.test.tsx`, `test/entrance-readiness.test.tsx`, `test/material-portal-context.test.tsx`, `test/overlay-placement.test.tsx`, `test/scroll-view-children.test.tsx` |
-| Consumers | 21 components: 9 directly, 8 through shared modules, 4 through other kit components (one row each below, read from the source by `tools/audit/kit-graph.ts`) |
+| Consumers | 23 components: 9 directly, 10 through shared modules, 4 through other kit components (one row each below, read from the source by `tools/audit/kit-graph.ts`) |
 | Pages using it | none: no pattern or template entry names one of its exports |
-| Capture through | 21, in this order: components `autocomplete`, `button-group`, `dropdown`, `popover`, `select`, `phone-input`, `calendar`, `command`, `row-menu`, `scroll-view`, `code-block`, `action-sheet`, `board`, `dialog`, `drawer`, `sidebar`, `tabs`, `avatar`, `field`, `filter-panel`, `navbars`; pages none |
+| Capture through | 23, in this order: components `autocomplete`, `button-group`, `dropdown`, `popover`, `select`, `phone-input`, `calendar`, `command`, `row-menu`, `scroll-view`, `code-block`, `action-sheet`, `board`, `chat`, `dialog`, `drawer`, `sidebar`, `wizard`, `tabs`, `avatar`, `field`, `filter-panel`, `navbars`; pages none |
 | Not captured | guide pages, which the capture inventory (component, pattern and template pages) does not hold: `/foundation` (documents AnchoredOverlay, AnchoredOverlayProps, placeOverlay, useOverlayAnchor, useOverlaySide) |
 | Turn record | `audit/turns/anchored-overlay.md`, written by `bun run audit:turn -- --slug=anchored-overlay --phase=before\|after` (the before and after capture runs) |
 
@@ -35,9 +35,11 @@ Audit checklist for the style-layer foundation `AnchoredOverlay`, audited for it
 | `code-block` | through shared modules | `ScrollView` (src/style/scroll-view.tsx) |
 | `action-sheet` | through shared modules | `ScrollView` (src/style/scroll-view.tsx) |
 | `board` | through shared modules | `ScrollView` (src/style/scroll-view.tsx) |
+| `chat` | through shared modules | `ScrollView` (src/style/scroll-view.tsx) |
 | `dialog` | through shared modules | `OverlayScrollView` (src/style/overlay-scroll.tsx) |
 | `drawer` | through shared modules | `OverlayScrollView` (src/style/overlay-scroll.tsx) |
 | `sidebar` | through shared modules | `ScrollView` (src/style/scroll-view.tsx) |
+| `wizard` | through shared modules | `ScrollView` (src/style/scroll-view.tsx) |
 | `tabs` | through shared modules | `ScrollView` (src/style/scroll-view.tsx) |
 | `avatar` | through other kit components | `dropdown` |
 | `field` | through other kit components | `autocomplete`, `phone-input`, `select` |

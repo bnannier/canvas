@@ -14,9 +14,9 @@ Audit checklist for the style-layer foundation `RippleClip`, audited for its con
 | Docs planned | `foundation`: cornerRadii, RippleClip, RippleClipProps, rippleClipWrapperStyle, splitElevation |
 | Materials manifest | RippleClip: style, inherited; docs route none (`docsRoute: null`); verification inherited-composition, semantic-state |
 | Tests of it | 4 (importing one of its public exports or one of its implementation's declarations by name, or named for it, `test/ripple-clip[-<what>].test.tsx`): `test/ripple-clip.test.ts`, `test/touch-target-clips.test.tsx`, `test/touch-target-seams.test.tsx`, `test/touch-target-seed.test.tsx` |
-| Consumers | 48 components: 27 directly, 10 through shared modules, 11 through other kit components (one row each below, read from the source by `tools/audit/kit-graph.ts`) |
+| Consumers | 50 components: 27 directly, 11 through shared modules, 12 through other kit components (one row each below, read from the source by `tools/audit/kit-graph.ts`) |
 | Pages using it | none: no pattern or template entry names one of its exports |
-| Capture through | 48, in this order: components `chip`, `autocomplete`, `button-group`, `button`, `dropdown`, `stepper`, `pagination`, `radio`, `select`, `alert-dialog`, `card`, `code-block`, `media-objects`, `phone-input`, `stacked-lists`, `stats`, `action-sheet`, `board`, `calendar`, `dialog`, `filter-panel`, `navbars`, `sidebar`, `row-menu`, `steps`, `tabs`, `toast`, `input`, `popover`, `slider`, `textarea`, `feeds`, `grid-lists`, `carousel`, `command`, `data-table`, `geo-map`, `avatar`, `tooltip`, `video`, `accordion`, `action-panels`, `description-lists`, `field`, `empty-state`, `form`, `drawer`, `metric-breakdown`; pages none |
+| Capture through | 50, in this order: components `chip`, `autocomplete`, `button-group`, `button`, `dropdown`, `stepper`, `pagination`, `radio`, `select`, `alert-dialog`, `card`, `code-block`, `media-objects`, `phone-input`, `stacked-lists`, `stats`, `action-sheet`, `board`, `calendar`, `dialog`, `filter-panel`, `navbars`, `sidebar`, `row-menu`, `steps`, `tabs`, `toast`, `input`, `popover`, `slider`, `textarea`, `feeds`, `grid-lists`, `carousel`, `chat`, `command`, `data-table`, `geo-map`, `avatar`, `tooltip`, `video`, `accordion`, `action-panels`, `description-lists`, `field`, `empty-state`, `form`, `drawer`, `wizard`, `metric-breakdown`; pages none |
 | Not captured | guide pages, which the capture inventory (component, pattern and template pages) does not hold: `/foundation` (planned for cornerRadii, RippleClip, RippleClipProps, rippleClipWrapperStyle, splitElevation) |
 | Turn record | `audit/turns/ripple-clip.md`, written by `bun run audit:turn -- --slug=ripple-clip --phase=before\|after` (the before and after capture runs) |
 
@@ -56,6 +56,7 @@ Audit checklist for the style-layer foundation `RippleClip`, audited for its con
 | `feeds` | through shared modules | `useFocusFrame` (src/style/focus-frame.tsx) |
 | `grid-lists` | through shared modules | `useFocusFrame` (src/style/focus-frame.tsx) |
 | `carousel` | through shared modules | `useFocusFrame` (src/style/focus-frame.tsx) |
+| `chat` | through shared modules | `useFocusFrame` (src/style/focus-frame.tsx) |
 | `command` | through shared modules | `AnchoredOverlay` (src/style/anchored-overlay.tsx), `useFocusFrame` (src/style/focus-frame.tsx) |
 | `data-table` | through shared modules | `useFocusFrame` (src/style/focus-frame.tsx) |
 | `geo-map` | through shared modules | `useFocusFrame` (src/style/focus-frame.tsx) |
@@ -69,6 +70,7 @@ Audit checklist for the style-layer foundation `RippleClip`, audited for its con
 | `empty-state` | through other kit components | `button` |
 | `form` | through other kit components | `button` |
 | `drawer` | through other kit components | `button` |
+| `wizard` | through other kit components | `button`, `dialog`, `steps` |
 | `metric-breakdown` | through other kit components | `chip` |
 <!-- audit:facts:end -->
 

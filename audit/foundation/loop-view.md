@@ -14,16 +14,38 @@ Audit checklist for the style-layer foundation `LoopView`, audited for its contr
 | Docs planned | `foundation`: createLoopChannel, LoopChannel, LoopChannelOptions, LoopChannelState, LoopTrack, LoopView, LoopViewProps, trackAt, trackSamples, trackValueAt |
 | Materials manifest | LoopView: style, inherited; docs route none (`docsRoute: null`); verification inherited-composition, semantic-state |
 | Tests of it | 1 (importing one of its public exports or one of its implementation's declarations by name, or named for it, `test/loop-view[-<what>].test.tsx`): `test/loop.test.tsx` |
-| Consumers | 2 components: 1 directly, 1 through other kit components (one row each below, read from the source by `tools/audit/kit-graph.ts`) |
+| Consumers | 24 components: 3 directly, 21 through other kit components (one row each below, read from the source by `tools/audit/kit-graph.ts`) |
 | Pages using it | none: no pattern or template entry names one of its exports |
-| Capture through | 2, in this order: components `skeleton`, `data-table`; pages none |
+| Capture through | 24, in this order: components `button`, `skeleton`, `chat`, `avatar`, `dropdown`, `popover`, `tooltip`, `video`, `action-panels`, `alert-dialog`, `description-lists`, `empty-state`, `form`, `grid-lists`, `stacked-lists`, `action-sheet`, `data-table`, `dialog`, `drawer`, `filter-panel`, `navbars`, `sidebar`, `wizard`, `geo-map`; pages none |
 | Not captured | guide pages, which the capture inventory (component, pattern and template pages) does not hold: `/foundation` (planned for createLoopChannel, LoopChannel, LoopChannelOptions, LoopChannelState, LoopTrack, LoopView, LoopViewProps, trackAt, trackSamples, trackValueAt) |
 | Turn record | `audit/turns/loop-view.md`, written by `bun run audit:turn -- --slug=loop-view --phase=before\|after` (the before and after capture runs) |
 
 | Consumer | Reaches it | Through |
 |---|---|---|
+| `button` | directly | `LoopView`, `createLoopChannel` |
 | `skeleton` | directly | `LoopView`, `createLoopChannel` |
+| `chat` | directly | `LoopView`, `createLoopChannel` |
+| `avatar` | through other kit components | `dropdown` |
+| `dropdown` | through other kit components | `button` |
+| `popover` | through other kit components | `button` |
+| `tooltip` | through other kit components | `button` |
+| `video` | through other kit components | `button` |
+| `action-panels` | through other kit components | `button` |
+| `alert-dialog` | through other kit components | `button` |
+| `description-lists` | through other kit components | `button` |
+| `empty-state` | through other kit components | `button` |
+| `form` | through other kit components | `button` |
+| `grid-lists` | through other kit components | `button` |
+| `stacked-lists` | through other kit components | `button` |
+| `action-sheet` | through other kit components | `button` |
 | `data-table` | through other kit components | `skeleton` |
+| `dialog` | through other kit components | `button` |
+| `drawer` | through other kit components | `button` |
+| `filter-panel` | through other kit components | `button`, `drawer` |
+| `navbars` | through other kit components | `button`, `dropdown` |
+| `sidebar` | through other kit components | `drawer` |
+| `wizard` | through other kit components | `button`, `dialog` |
+| `geo-map` | through other kit components | `button` |
 <!-- audit:facts:end -->
 
 ## Contract rubric

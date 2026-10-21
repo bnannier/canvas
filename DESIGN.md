@@ -930,6 +930,9 @@ kit's own Android parts at a step of the same scale.
 | web | `candle` | 1px |
 | web | `tableHeader` | 10px |
 | web | `dragGhost` | 12px |
+| web | `composer` | 20px |
+| web | `bubble` | 18px |
+| web | `bubbleTail` | 6px |
 | ios | `actionSheet` | 34px |
 | ios | `groupedList` | 26px |
 | ios | `event` | 6px |
@@ -989,6 +992,9 @@ drawn by those entries' platforms.
 | `candle` | `charts/candlestick-chart` |
 | `tableHeader` | `organisms/data-table` |
 | `dragGhost` | `organisms/drag-drop` |
+| `composer` | `organisms/chat` |
+| `bubble` | `organisms/chat` |
+| `bubbleTail` | `organisms/chat` |
 | `actionSheet` | `organisms/action-sheet` |
 | `groupedList` | `atoms/radio`, `molecules/description-lists`, `molecules/stacked-lists`, `organisms/board` |
 | `chip` | `atoms/chip` |

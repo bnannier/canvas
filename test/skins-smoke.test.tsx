@@ -55,7 +55,6 @@ interface SkinCase {
 }
 
 const CASES: SkinCase[] = [
-  { name: "Markdown", dir: "organisms/chat", file: "chat", children: "# Saved scope\n\n- [ ] Criterion\n\n| Child | Status |\n| --- | --- |\n| Scoped child | Backlog |" },
   // ---- atoms ----
   { name: "Avatar", dir: "atoms/avatar", file: "avatar", children: "AB" },
   // The `tiny` (24px) step the identity pill is built around: its own labelType
@@ -252,6 +251,55 @@ const CASES: SkinCase[] = [
   // Range mode mounts the band + endpoint treatment of every skin.
   { name: "Calendar", dir: "organisms/calendar", file: "calendar", props: { range: true, month: "June 2026", daysInMonth: 30, startWeekday: 1, defaultRangeStart: 8, defaultRangeEnd: 14 } },
   { name: "Carousel", dir: "organisms/carousel", file: "carousel", props: { index: 0, onIndexChange: noop, items: [{ key: "a", content: "A" }, { key: "b", content: "B" }, { key: "c", content: "C" }] } },
+  // Chat mounts both author treatments (a user bubble with an attachment Chip, an assistant
+  // reply rendered as markdown with its provider and notice lines) over the composer with
+  // its attach and send Buttons, and the pending indicator with its dots.
+  {
+    name: "Chat",
+    dir: "organisms/chat",
+    file: "chat",
+    props: {
+      style: { height: 320 },
+      messages: [
+        { id: "ask", role: "user", content: "Help me plan the release.", attachments: [{ id: "plan", name: "release-plan.pdf" }] },
+        { id: "reply", role: "assistant", author: "Planner", provider: "OpenAI", content: "Start with **scope**.\n\n1. Confirm acceptance criteria\n2. Run the affected checks", notice: "Saved to the project." },
+      ],
+      value: "A follow-up",
+      onChangeText: noop,
+      onSend: noop,
+      onAttach: noop,
+      onOpenAttachment: noop,
+      pending: true,
+    },
+  },
+  // The thread's message choices and question form mount the injected per-platform parts:
+  // the choice Buttons, the framing Card, the RadioGroup and Checkbox options and the
+  // answer-mode Switch.
+  {
+    name: "ChatThread",
+    dir: "organisms/chat",
+    file: "chat",
+    props: {
+      style: { height: 320 },
+      onAction: noop,
+      messages: [
+        { id: "checkpoint", role: "assistant", content: "Your answers are saved.", actions: [{ id: "draft", label: "Draft plan", primary: true }, { id: "continue", label: "Continue" }] },
+        {
+          id: "questions",
+          role: "assistant",
+          content: "Which release approach should we plan?",
+          questions: [
+            { id: "scope", title: "What should the first release include?", options: [{ id: "focused", label: "A focused first release", description: "Ship the essential workflow." }, { id: "complete", label: "The complete workflow" }] },
+            { id: "checks", title: "Which checks should we include?", multiple: true, options: [{ id: "desktop", label: "Desktop" }, { id: "mobile", label: "Mobile" }] },
+          ],
+        },
+      ],
+    },
+  },
+  // A failed reply: the error ink on the failure label and the notice under it.
+  { name: "ChatMessage", dir: "organisms/chat", file: "chat", props: { message: { id: "failed", role: "assistant", author: "Planner", provider: "OpenAI", content: "The reply could not be completed.", error: true, notice: "Your draft is preserved." } } },
+  { name: "ChatComposer", dir: "organisms/chat", file: "chat", props: { value: "", onChangeText: noop, onSend: noop, onAttach: noop, attachments: [{ id: "notes", name: "notes.txt" }], onRemoveAttachment: noop, footer: txt("Shift+Enter for a new line") } },
+  { name: "Markdown", dir: "organisms/chat", file: "chat", children: "# Saved scope\n\n- [ ] Criterion\n\n| Child | Status |\n| --- | --- |\n| Scoped child | Backlog |" },
   { name: "Chart", dir: "charts/chart", file: "chart", props: { title: "Signups", data: [{ label: "Mon", value: 3 }, { label: "Tue", value: 5 }, { label: "Wed", value: 2 }] } },
   { name: "StackedBar", dir: "charts/stacked-bar", file: "stacked-bar", props: { label: "Traffic sources", segments: [{ label: "Direct", value: 60 }, { label: "Search", value: 40 }] } },
   { name: "Gauge", dir: "charts/gauge", file: "gauge", props: { value: 72, label: "Uptime" } },
@@ -327,6 +375,15 @@ const CASES: SkinCase[] = [
   { name: "Tabs", dir: "organisms/tabs", file: "tabs", props: { tabs: ["One", "Two", "Three"], active: 0 } },
   { name: "Toast", dir: "organisms/toast", file: "toast", props: { message: "Saved", success: true } },
   { name: "ToastProvider", dir: "organisms/toast", file: "toast", children: txt("App content") },
+  // Open, with a named previous stage, a status and an action, so each platform mounts its
+  // Dialog workspace, its Steps header and its footer Buttons around the scrolled body.
+  {
+    name: "Wizard",
+    dir: "organisms/wizard",
+    file: "wizard",
+    props: { open: true, onOpenChange: noop, title: "Set up a project", description: "Choose the basics.", steps: [{ label: "Details" }, { label: "Review" }], current: 1, previous: { label: "Details", onPress: noop }, status: "Step 2 of 2", actions: txt("Create project") },
+    children: txt("Ready to create"),
+  },
 ];
 
 // "web" is the bare `<file>.tsx` build (no platform suffix); ios/android are the

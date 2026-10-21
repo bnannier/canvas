@@ -14,9 +14,9 @@ Audit checklist for the style-layer foundation `FloatingLabel`, audited for its 
 | Docs planned | none: every export has its page |
 | Materials manifest | FloatingLabel: style, inherited; docs route `foundation`; verification inherited-composition, semantic-state |
 | Tests of it | 3 (importing one of its public exports or one of its implementation's declarations by name, or named for it, `test/floating-label[-<what>].test.tsx`): `test/floating-label-color.test.tsx`, `test/floating-label-contract.test.tsx`, `test/floating-label-parity.test.tsx` |
-| Consumers | 9 components: 7 directly, 2 through other kit components (one row each below, read from the source by `tools/audit/kit-graph.ts`) |
+| Consumers | 11 components: 7 directly, 4 through other kit components (one row each below, read from the source by `tools/audit/kit-graph.ts`) |
 | Pages using it | none: no pattern or template entry names one of its exports |
-| Capture through | 9, in this order: components `autocomplete`, `input`, `stepper`, `select`, `textarea`, `field`, `phone-input`, `alert-dialog`, `dialog`; pages none |
+| Capture through | 11, in this order: components `autocomplete`, `input`, `stepper`, `select`, `textarea`, `field`, `phone-input`, `alert-dialog`, `chat`, `dialog`, `wizard`; pages none |
 | Not captured | guide pages, which the capture inventory (component, pattern and template pages) does not hold: `/foundation` (documents FloatingLabel, FloatingLabelStyles, HIDDEN_FROM_A11Y, LabelContent) |
 | Turn record | `audit/turns/floating-label.md`, written by `bun run audit:turn -- --slug=floating-label --phase=before\|after` (the before and after capture runs) |
 
@@ -30,7 +30,9 @@ Audit checklist for the style-layer foundation `FloatingLabel`, audited for its 
 | `field` | directly | `LabelContent` |
 | `phone-input` | directly | `LabelContent` |
 | `alert-dialog` | through other kit components | `input` |
+| `chat` | through other kit components | `textarea` |
 | `dialog` | through other kit components | `input` |
+| `wizard` | through other kit components | `dialog` |
 <!-- audit:facts:end -->
 
 ## Contract rubric

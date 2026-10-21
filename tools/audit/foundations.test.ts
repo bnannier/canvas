@@ -269,8 +269,38 @@ describe("the Foundations tier (tools/audit/foundations.ts)", () => {
       }
     }
     expect(strays).toEqual([]);
-    // LoopView renders the Skeleton shimmer alone; the Spinner, the Progress and the caret loop on their own.
-    expect(facts("LoopView").captureThrough.components).toEqual(["skeleton", "data-table"]);
+    // LoopView renders the Skeleton shimmer, Button's attention glow (button-attention.tsx) and Chat's
+    // thinking dots, so Skeleton, Button and Chat read it directly, and every component that renders
+    // a Button (or Skeleton's DataTable rows) reaches it through them; the Spinner, the Progress and
+    // the caret loop on their own.
+    expect(facts("LoopView").captureThrough.components).toEqual([
+      "button",
+      "skeleton",
+      "chat",
+      "avatar",
+      "dropdown",
+      "popover",
+      "tooltip",
+      "video",
+      "action-panels",
+      "alert-dialog",
+      "description-lists",
+      "empty-state",
+      "form",
+      "grid-lists",
+      "stacked-lists",
+      "action-sheet",
+      "data-table",
+      "dialog",
+      "drawer",
+      "filter-panel",
+      "navbars",
+      "sidebar",
+      "wizard",
+      "geo-map",
+    ]);
+    for (const slug of ["button", "skeleton", "chat"]) expect(consumer("LoopView", slug)?.tier).toBe("direct");
+    expect(consumer("LoopView", "wizard")?.through).toEqual(["button", "dialog"]);
     expect(FOUNDATION_PLANS.LoopView!.find((line) => /Spinner/.test(line))).toStartWith("source:");
   });
 
@@ -299,14 +329,19 @@ describe("the Foundations tier (tools/audit/foundations.ts)", () => {
     expect(consumer("BreakpointOverride", "dropdown")?.through).toEqual(["`AnchoredOverlay` (src/style/anchored-overlay.tsx)"]);
     expect(consumer("BreakpointOverride", "dialog")?.through).toEqual(["`Portal` (src/style/portal.tsx)"]);
     for (const slug of ["avatar", "field", "board"]) expect(consumer("BreakpointOverride", slug)?.tier).toBe("component");
-    expect(override.captureThrough.components).toHaveLength(29);
+    // Chat reaches it through DataTable (its Markdown tables) and Wizard through `useContainerWidth`.
+    expect(override.captureThrough.components).toHaveLength(31);
+    expect(consumer("BreakpointOverride", "chat")?.tier).toBe("component");
+    expect(consumer("BreakpointOverride", "wizard")?.tier).toBe("shared");
     // The layer itself is Portal's and AnchoredOverlay's both, so it is a seam of neither,
     // and a seam never leaks one foundation's consumers into another's.
     const code = foundationCode(sources);
     const seamNames = (id: string) => code.get(id)!.seams.map((s) => `${s.file}#${s.name}`);
     for (const id of ["portal", "anchored-overlay"]) expect(seamNames(id)).not.toContain("src/style/overlay-layer.tsx#usePortalMount");
     expect(consumer("Portal", "card")).toBeUndefined();
-    expect(facts("Portal").consumers).toHaveLength(19);
+    // Wizard portals through the Dialog it composes.
+    expect(facts("Portal").consumers).toHaveLength(20);
+    expect(consumer("Portal", "wizard")?.tier).toBe("component");
   });
 
   it("lists a foundation's implementation under its Source files, and credits the tests of it", () => {
