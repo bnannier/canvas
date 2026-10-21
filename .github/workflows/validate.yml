@@ -302,8 +302,11 @@ jobs:
     runs-on: ubuntu-latest
     # Playwright shards by file, not by duration: shards 3 and 4 carry 9 to 11 minutes
     # of tests behind about 4 minutes of setup, and the fourth shard hit a 15 minute
-    # limit on a routine main run (GitHub reports that as cancelled).
-    timeout-minutes: 25
+    # limit on a routine main run (GitHub reports that as cancelled). The third shard,
+    # which carries the keyboard-ring sweep of every component page, took 21 minutes on
+    # the last green run (2026-10-14) and ran past 25 once Chat and Wizard added their
+    # routes (run 39614900956), so the limit is 35.
+    timeout-minutes: 35
     strategy:
       fail-fast: false
       matrix:

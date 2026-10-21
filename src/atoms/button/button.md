@@ -37,6 +37,8 @@ A button's whole job is to fire `onPress`. Wire it to your own handler and every
 
 ## Variants
 
+The variant only changes how a button looks; every one of them fires `onPress` the same way.
+
 ### Attention required
 
 Use `attention` for a required setup action. Soft red glow swells outward and returns
@@ -90,9 +92,6 @@ or the prop when the required setup is complete.
 ```tsx
 <Button icon largeIcon circle ghost steadyPress count={3} accessibilityLabel="Approvals" iconLeft={<Icon bell size={17} mediumStroke muted />} />
 ```
-
-
-The variant only changes how a button looks; every one of them fires `onPress` the same way.
 
 ### Outline
 

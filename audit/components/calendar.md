@@ -24,7 +24,7 @@ Audit checklist for `/components/calendar`. The facts block and the variants tab
 | MeasureProps | not adopted |
 | Touch target | `calendar.shared.tsx`: hitSlop. `test/touch-target-coverage.test.ts` records it as covered another way: hitSlop on the month chevrons |
 | Tests importing it | 16: `test/behavior.test.tsx`, `test/calendar-accessibility.test.tsx`, `test/controllable-state.test.tsx`, `test/design-rules-shape.test.ts`, `test/design-rules-skins.test.ts`, `test/glass-pane-ripple.test.tsx`, `test/glass-pane.test.tsx`, `test/glass-surface-footprint.test.tsx`, `test/material-solid-fallback.test.tsx`, `test/native-accessibility-escape-hosts.test.tsx`, `test/native-focus-fixtures.test.tsx`, `test/organism-material-roles.test.tsx`, `test/responsive-narrow-fixes.test.tsx`, `test/skins-smoke.test.tsx`, `test/text-contrast.test.tsx`, `test/web-frost-paint-order.test.tsx` |
-| E2E naming it | 1: `e2e/responsive/overlay-state.e2e.ts` |
+| E2E naming it | 2: `e2e/journeys/keyboard.e2e.ts`, `e2e/responsive/overlay-state.e2e.ts` |
 | E2E catalog sweeps | 7: `e2e/a11y/components.e2e.ts` (componentRoutes), `e2e/journeys/keyboard.e2e.ts` (componentRoutes), `e2e/responsive/component-widths.e2e.ts` (contentRoutes, componentRoutes), `e2e/smoke/examples.e2e.ts` (componentExamples), `e2e/smoke/routes.e2e.ts` (allRoutes), `e2e/visual/components.e2e.ts` (componentRoutes), `e2e/visual/materials.e2e.ts` (MATERIAL_ROUTES) |
 | Turn record | `audit/turns/calendar.md`, written by `bun run audit:turn -- --slug=calendar --phase=before\|after` (the before and after capture runs) |
 <!-- audit:facts:end -->

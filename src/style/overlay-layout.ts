@@ -52,9 +52,15 @@ export function fitOverlayHeight({
   const above = aboveBottom - ceiling;
   const desired = Math.max(0, desiredHeight ?? Infinity);
 
+  // The card's edges land on whole pixels, and it starts at or past its trigger's edge,
+  // never over it. A trigger standing at a fractional offset (text set at a fractional
+  // line height above it moves everything below by the fraction) would otherwise hand
+  // the card a fractional height, and the card's scrollport then clips its last
+  // whole-pixel row by that fraction: the Command's last result stood 0.047px short of
+  // visible behind its footer on the web.
   if (beside) {
     const height = Math.min(desired, floor - ceiling);
-    return { side: beside, top: Math.max(ceiling, Math.min(triggerTop, floor - height)), maxHeight: floor - ceiling };
+    return { side: beside, top: Math.ceil(Math.max(ceiling, Math.min(triggerTop, floor - height))), maxHeight: Math.floor(floor - ceiling) };
   }
 
   let side = currentSide;
@@ -71,8 +77,16 @@ export function fitOverlayHeight({
   const available = side === "below" ? below : above;
   // A visible trigger can occupy the entire band. Use the whole band when
   // neither adjacent space can display content.
-  if (available <= 0) return { side: "below", top: ceiling, maxHeight: floor - ceiling };
-  return side === "below"
-    ? { side, top: belowTop, maxHeight: available }
-    : { side, bottom: outletHeight - aboveBottom, maxHeight: available };
+  if (available <= 0) {
+    const top = Math.ceil(ceiling);
+    return { side: "below", top, maxHeight: Math.floor(floor - top) };
+  }
+  if (side === "below") {
+    const top = Math.ceil(belowTop);
+    return { side, top, maxHeight: Math.floor(floor - top) };
+  }
+  // The card's bottom edge, in the outlet's coordinates, on the whole pixel at or above
+  // the trigger's gap; `bottom` is that edge's offset from the outlet's bottom.
+  const edge = Math.floor(aboveBottom);
+  return { side, bottom: outletHeight - edge, maxHeight: Math.floor(edge - ceiling) };
 }
