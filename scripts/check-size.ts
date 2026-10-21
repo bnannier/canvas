@@ -295,11 +295,22 @@ export interface JavaScriptBudget {
 // (811B headroom). All named-import caps stay fixed.
 // The GlassSurface turn and the Argus adoption together put the web Button at 12,877B on
 // 2026-10-14 (each was measured under 12,800B alone): its ceiling becomes 13,568B, 5% over.
+// Button's attention glow (2026-10-15 to 10-21: `attention`, a red heartbeat halo for an action
+// awaiting the human, requested by the Argus owner) is the first atom to animate through the
+// kit's loop runtime (LoopView, createLoopChannel, keyframes: loop.js, loop-native.js and their
+// two helpers), so every Button consumer now carries it, ~3KB gzip. The glow's first cut also
+// read its red through `palette[...]`, which retained the whole ~500-entry record (~2KB gzip)
+// in the Button and StackedList bundles; PALETTE_RED_500 in tokens.ts single-sources the hue
+// without the record. Measured on bun 1.4.0 with that correction (web / iOS / Android): Button
+// 15,571 / 14,595 / 14,786B, StackedList 67,221 / 66,186 / 66,364B (its row menu is Button).
+// The Button ceiling moves from 13,568 to 16,384B (5.2% headroom over the web figure) and
+// StackedList's from 65,536 to 70,656B (5.1%). Input, DataTable and the whole-kit ceilings stay
+// unchanged (the whole kit measures 249,698 / 249,920 / 250,660B under its 253,952B cap).
 export const NAMED_IMPORT_BUDGETS: readonly JavaScriptBudget[] = [
-  { label: "Button + ThemeProvider", entry: "scripts/size-fixtures/button.ts", maxGzip: 13_568, requiredExports: ["Button", "ThemeProvider"] },
+  { label: "Button + ThemeProvider", entry: "scripts/size-fixtures/button.ts", maxGzip: 16_384, requiredExports: ["Button", "ThemeProvider"] },
   { label: "Input + ThemeProvider", entry: "scripts/size-fixtures/input.ts", maxGzip: 43_008, requiredExports: ["Input", "ThemeProvider"] },
   { label: "DataTable + ThemeProvider", entry: "scripts/size-fixtures/data-table.ts", maxGzip: 53_248, requiredExports: ["DataTable", "ThemeProvider"] },
-  { label: "StackedList + ThemeProvider", entry: "scripts/size-fixtures/stacked-list.ts", maxGzip: 65_536, requiredExports: ["StackedList", "ThemeProvider"] },
+  { label: "StackedList + ThemeProvider", entry: "scripts/size-fixtures/stacked-list.ts", maxGzip: 70_656, requiredExports: ["StackedList", "ThemeProvider"] },
 ];
 
 export interface JavaScriptSize extends JavaScriptBudget {
