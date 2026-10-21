@@ -1,4 +1,5 @@
 import { type ColorTokens, type ViewStyle, type TextStyle } from "../../style/index.js";
+import { platformShape } from "../../style/platform-shape.js";
 import { MONO_FONT } from "../../style/mono.js";
 import { destructiveText } from "../../style/destructive-text.js";
 
@@ -34,7 +35,8 @@ export const emphasis: TextStyle = { fontStyle: "italic" };
 export const code: TextStyle = { fontFamily: MONO_FONT, fontSize: 12, lineHeight: 18 };
 export const heading: TextStyle = { fontWeight: "700", fontSize: 13.5, lineHeight: 20 };
 export const composer: ViewStyle = { flexShrink: 0, padding: 16, paddingTop: 8, gap: 10 };
-export const composerSurface = (tokens: ColorTokens, focused: boolean): ViewStyle => ({ borderRadius: 20, borderWidth: 1, borderColor: focused ? tokens.ring : tokens.border, backgroundColor: tokens.card, overflow: "hidden" });
+// Conversation parts draw the web look on every platform, so they read the web row's own roles.
+export const composerSurface = (tokens: ColorTokens, focused: boolean): ViewStyle => ({ borderRadius: platformShape.web.composer, borderWidth: 1, borderColor: focused ? tokens.ring : tokens.border, backgroundColor: tokens.card, overflow: "hidden" });
 export const composerRow: ViewStyle = { flexDirection: "row", gap: 8, alignItems: "center", paddingHorizontal: 8, paddingBottom: 8 };
 export const composerAttachments: ViewStyle = { paddingHorizontal: 12, paddingTop: 12 };
 export const actionSpace: ViewStyle = { flexGrow: 1 };
@@ -45,12 +47,13 @@ export const empty: ViewStyle = { justifyContent: "center", paddingVertical: 16 
 export const thinking: ViewStyle = { flexDirection: "row", alignItems: "center", gap: 10, minHeight: 24, flexWrap: "wrap" };
 export const thinkingLabel = (tokens: ColorTokens): TextStyle => ({ fontSize: 12.5, lineHeight: 20, color: tokens["muted-foreground"] });
 export const dots: ViewStyle = { flexDirection: "row", alignItems: "center", gap: 4 };
-export const dot = (tokens: ColorTokens): ViewStyle => ({ width: 4, height: 4, borderRadius: 2, backgroundColor: tokens["muted-foreground"] });
+// A circle: the pill, which the renderer clamps to half the dot's size.
+export const dot = (tokens: ColorTokens): ViewStyle => ({ width: 4, height: 4, borderRadius: 9999, backgroundColor: tokens["muted-foreground"] });
 export const quote = (tokens: ColorTokens): ViewStyle => ({ borderStartWidth: 2, borderStartColor: tokens.border, paddingStart: 10 });
 
 export const webSkin: ChatSkin = {
   message: (tokens, user) => user ? {
-    backgroundColor: tokens.muted, borderRadius: 18, borderTopEndRadius: 6, paddingHorizontal: 16, paddingVertical: 12,
+    backgroundColor: tokens.muted, borderRadius: platformShape.web.bubble, borderTopEndRadius: platformShape.web.bubbleTail, paddingHorizontal: 16, paddingVertical: 12,
   } : {},
   body: (tokens) => ({ fontSize: 14, lineHeight: 22, color: tokens.foreground }),
   label: (tokens) => ({ fontSize: 11.5, lineHeight: 16, fontWeight: "700", color: tokens.foreground }),

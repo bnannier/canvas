@@ -40,7 +40,7 @@ export interface WizardProps {
 type WizardParts = { Dialog: typeof WebDialog; Steps: typeof WebSteps; Button: typeof WebButton };
 
 /** A wizard delegates modal behavior and platform controls to their existing components. */
-export function createWizard({ Dialog = WebDialog, Steps = WebSteps, Button = WebButton }: Partial<WizardParts> = {}) {
+export function createWizard(skin: s.WizardSkin, { Dialog = WebDialog, Steps = WebSteps, Button = WebButton }: Partial<WizardParts> = {}) {
   return function Wizard({ open, title, description, steps, current, onOpenChange, panelWidth = 960, previous, actions, status, children, scrollBody = true, testID }: WizardProps) {
     const hook = (part: string) => testID ? `${testID}-${part}` : undefined;
     const { width, onLayout } = useContainerWidth();
@@ -49,7 +49,7 @@ export function createWizard({ Dialog = WebDialog, Steps = WebSteps, Button = We
     return <Dialog form workspace overlay open={open} title={title} description={description}
       panelWidth={panelWidth} onOpenChange={onOpenChange} testID={testID}
       workspaceHeader={<Steps stacks steps={steps} current={current} testID={hook("steps")} />}
-      footer={<Column comfortable><Divider /><View onLayout={onLayout} testID={hook("footer")} style={s.footer}>
+      footer={<Column comfortable><Divider /><View onLayout={onLayout} testID={hook("footer")} style={skin.footer}>
         {narrowFooter && status ? <Row center>{saveStatus}</Row> : null}
         <Row alignCenter testID={hook("footer-buttons")}>
           <Row fill start>{previous ? <Button shrink outline iconLeft={<Icon chevronLeft decorative size={14} />} disabled={previous.disabled} onPress={previous.onPress}>{previous.label}</Button> : null}</Row>
@@ -57,7 +57,7 @@ export function createWizard({ Dialog = WebDialog, Steps = WebSteps, Button = We
           <Row fill end>{actions}</Row>
         </Row>
       </View></Column>}>
-      {scrollBody ? <ScrollView testID={hook("body-scroll")} style={s.bodyScroll} contentContainerStyle={s.bodyContent} keyboardShouldPersistTaps="handled">{children}</ScrollView> : children}
+      {scrollBody ? <ScrollView testID={hook("body-scroll")} style={s.bodyScroll} contentContainerStyle={skin.bodyContent} keyboardShouldPersistTaps="handled">{children}</ScrollView> : children}
     </Dialog>;
   };
 }

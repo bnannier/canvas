@@ -47,11 +47,23 @@ function literalsOf(expression: string): string[] {
   return [...expression.matchAll(/(?:^\s*|[?:]\s*|\?\?\s*|\(\s*)["'`](\w+)["'`]/g)].map((match) => match[1]!);
 }
 
+// Chat's message data: a message's `role` is its author (user, assistant, system), the
+// ChatMessageData field the shell compares and never writes to a View's role.
+const MESSAGE_AUTHOR = "each message's `role` is its author (user, assistant), Chat's ChatMessageData field";
+
 // Files whose `role:` keys are data, not accessibility roles.
 const DATA_ROLES: Record<string, string> = {
   "docs/src/app/(utilities)/tokens/typography.tsx": "each row's `role` names a type-scale role (display, lead, caption)",
   "docs/src/core/data/templates/team.tsx": "each member's `role` is a job (Admin, Editor, Viewer)",
   "docs/src/core/data/templates/identities.tsx": "each identity's `role` is a job (Admin, Editor, Viewer)",
+  "src/organisms/chat/chat.shared.tsx": "ChatMessageData types `role` as the message's author (user, assistant, system)",
+  "docs/src/core/data/templates/chat.tsx": MESSAGE_AUTHOR,
+  // The examples are generated from chat.md and wizard.md (docs:gen), so a new example that
+  // writes a message takes a line here.
+  ...Object.fromEntries(
+    ["chat/example-0", "chat/example-1", "chat/example-2", "chat/example-3", "chat/example-5", "chat/example-6", "chat/example-7", "chat/example-8", "chat/dont-0-do", "chat/dont-0-dont", "wizard/example-1"]
+      .map((example) => [`docs/src/core/examples/organisms/${example}.tsx`, MESSAGE_AUTHOR]),
+  ),
 };
 
 describe("roles native can parse", () => {

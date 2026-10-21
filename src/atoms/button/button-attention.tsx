@@ -1,7 +1,9 @@
 import { useEffect, useMemo } from "react";
+import { type StyleProp } from "react-native";
 import { View, LoopView, createLoopChannel, keyframes, useReducedMotion, type ViewStyle } from "../../style/index.js";
 import { alpha } from "../../style/color.js";
 import { PALETTE_RED_500 } from "../../style/tokens.js";
+import { materialCorners } from "../../style/glass-surface/glass-surface.shared.js";
 
 // Functional attention cue requested by the Argus owner. Animate the halo alone:
 // text, hit target, dimensions and the existing button treatment stay still.
@@ -16,7 +18,8 @@ const ATTENTION = {
   ],
 };
 
-export function ButtonAttention({ radius }: { radius: ViewStyle["borderRadius"] }) {
+/** The glow hugs its host, so its corners are the host's own, read off the host's shape the way GlassPane's are. */
+export function ButtonAttention({ shape }: { shape: StyleProp<ViewStyle> }) {
   const color = PALETTE_RED_500;
   const reduced = useReducedMotion();
   const channel = useMemo(() => createLoopChannel({ period: ATTENTION.period, shape: ATTENTION.heartbeat }), []);
@@ -27,7 +30,7 @@ export function ButtonAttention({ radius }: { radius: ViewStyle["borderRadius"] 
   }, [channel, reduced]);
   const style: ViewStyle = {
     position: "absolute", top: -1, right: -1, bottom: -1, left: -1,
-    borderRadius: radius,
+    ...materialCorners(shape),
   };
   const decorative = { pointerEvents: "none" as const, "aria-hidden": true, accessibilityElementsHidden: true, importantForAccessibility: "no-hide-descendants" as const };
   return reduced

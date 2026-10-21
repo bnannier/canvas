@@ -44,10 +44,18 @@ describe("Listbox accessible structure", () => {
 
     // An aria-hidden wrapper alone does not remove a nested control from the tab
     // order. The glyph subtree must contain no interactive or focusable host.
-    const indicators = group.querySelectorAll('[aria-hidden="true"]');
-    expect(indicators).toHaveLength(items.length);
+    // The row hides its indicator part as a unit, and the box inside hides its own
+    // glyph for every consumer (a standalone Checkbox is named from its content), so
+    // hidden nodes nest: a no-op for assistive technology. Count one hidden subtree
+    // per row, not hidden nodes, and check the decorative glyph sits inside it.
+    const indicators = rows.map((row) => row.querySelector('[aria-hidden="true"]')!);
+    expect(indicators.map((indicator) => indicator.textContent)).toEqual(["✓", "", "✓"]);
     for (const indicator of indicators) {
       expect(indicator.querySelector('[role], [tabindex], button, input, select, textarea, a[href], [contenteditable="true"]')).toBeNull();
+    }
+    // Nothing else in the group is hidden: every hidden node is inside a row's indicator.
+    for (const hidden of group.querySelectorAll('[aria-hidden="true"]')) {
+      expect(indicators.some((indicator) => indicator.contains(hidden))).toBe(true);
     }
   });
 
