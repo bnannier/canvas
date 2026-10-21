@@ -20,7 +20,7 @@ test("Button's guidance sections render after Do & Don't, with a real link in th
   const headings = await main.getByRole("heading", { level: 2 }).allTextContents();
   const dontsAt = headings.indexOf("Do & Don’t");
   expect(dontsAt, "the Do & Don't section").toBeGreaterThan(-1);
-  expect(headings.slice(dontsAt + 1)).toEqual(["Real links (href)", "Touch area"]);
+  expect(headings.slice(dontsAt + 1)).toEqual(["Real links (href)", "Workflow actions", "Touch area"]);
   await expect(main.getByText("A button that NAVIGATES should be a real link", { exact: false })).toBeVisible();
   await expect(main.getByText("keeps its size and extends only its touch area to the minimum", { exact: false })).toBeVisible();
   // The href example is live: its Button is a genuine browser link to the destination.

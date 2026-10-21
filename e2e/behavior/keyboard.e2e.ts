@@ -62,8 +62,9 @@ test("the example rail selects with the arrow keys and addresses the example", a
   await tabs.first().focus();
   await page.keyboard.press("ArrowDown");
   await expect(tabs.nth(1)).toHaveAttribute("aria-selected", "true");
-  // Selecting an example is addressable: the URL names it.
-  await expect(page).toHaveURL(/\/components\/badge\/solid(\?|$)/);
+  // Selecting an example is addressable: the URL names it (Badge's rail after the Usage
+  // default: Notification count, Solid, Outline, ...).
+  await expect(page).toHaveURL(/\/components\/badge\/notificationcount(\?|$)/);
   // Formerly a KNOWN GAP: selecting used to drop keyboard focus to the document body,
   // because /components/badge and /components/badge/solid are different route files
   // and router.replace remounted the whole screen out from under the focused tab. The
@@ -74,7 +75,7 @@ test("the example rail selects with the arrow keys and addresses the example", a
   await expect(tabs.nth(1)).toBeFocused();
   await page.keyboard.press("ArrowDown");
   await expect(tabs.nth(2)).toHaveAttribute("aria-selected", "true");
-  await expect(page).toHaveURL(/\/components\/badge\/outline(\?|$)/);
+  await expect(page).toHaveURL(/\/components\/badge\/solid(\?|$)/);
   await expect(tabs.nth(2)).toBeFocused();
 });
 

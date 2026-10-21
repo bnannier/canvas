@@ -19,6 +19,20 @@ describe("anchored card reachability", () => {
     expect(fitOverlayHeight({ ...base, triggerTop: 520 })).toEqual({ side: "above", bottom: 84, maxHeight: 508 });
   });
 
+  it("lands the card's edges on whole pixels past a trigger standing at a fraction", () => {
+    // /testing/overlay-placement's edge Command at 390x420: text set at a fractional line
+    // height above the trigger put it at y 311.953125, and the card fitted above it took
+    // the fraction (bottom 120.047px, maxHeight 203.953px), so its scrollport clipped the
+    // last 40px result by 0.047px. The edge now snaps to the pixel at or above the gap.
+    const above = fitOverlayHeight({ triggerTop: 311.953125, triggerHeight: 40, outletHeight: 420, visibleTop: 88, desiredHeight: 2000, gap: 12, currentSide: "above" });
+    expect(above).toEqual({ side: "above", bottom: 121, maxHeight: 203 });
+    expect(420 - above.bottom!).toBeLessThanOrEqual(311.953125 - 12);
+    // Below a fractional trigger the card starts at the next whole pixel, never over it.
+    const below = fitOverlayHeight({ ...base, triggerTop: 100.6 });
+    expect(below).toEqual({ side: "below", top: 145, maxHeight: 447 });
+    expect(below.top!).toBeGreaterThanOrEqual(100.6 + 40 + 4);
+  });
+
   it("repositions when the keyboard opens after the card", () => {
     const open = fitOverlayHeight({ ...base, triggerTop: 300 });
     expect(open.side).toBe("below");

@@ -68,7 +68,9 @@ test("Listbox multi previews mark a choice the way each platform does", async ({
     // Match the platform's selection Checkbox, border included: the Android M3 box
     // (18), the web box (20). A bare nested import in the shared shell would make
     // both the same size.
-    const box = row.locator('[aria-hidden="true"] > div > div');
+    // The first match is the box; the box hides its own glyph as well, so the glyph's
+    // text node also sits under a hidden node two levels down.
+    const box = row.locator('[aria-hidden="true"] > div > div').first();
     await expect(box).toHaveCSS("width", `${width}px`);
     await expect(box).toHaveCSS("height", `${width}px`);
   }
