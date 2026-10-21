@@ -7,6 +7,21 @@ import { Carousel, type CarouselProps } from "../src/organisms/carousel/carousel
 import { Carousel as IOSCarousel } from "../src/organisms/carousel/carousel.ios.tsx";
 import { Carousel as AndroidCarousel } from "../src/organisms/carousel/carousel.android.tsx";
 
+// Lay a scroll handler over HTMLElement.prototype for one case and take it off again by
+// its property descriptor. Assigning the saved function back would leave an OWN `scroll`
+// on HTMLElement.prototype, which shadows a spy a later test file installs on
+// Element.prototype.scroll (the unit suite shares one realm; CI's file order ran this file
+// before anchored-overlay-focus.test.tsx, whose reveal then saw no scroll).
+function overrideScroll(handler: (original: HTMLElement["scroll"]) => HTMLElement["scroll"]): () => void {
+  const own = Object.getOwnPropertyDescriptor(HTMLElement.prototype, "scroll");
+  const original = HTMLElement.prototype.scroll;
+  Object.defineProperty(HTMLElement.prototype, "scroll", { configurable: true, writable: true, value: handler(original) });
+  return () => {
+    if (own) Object.defineProperty(HTMLElement.prototype, "scroll", own);
+    else delete (HTMLElement.prototype as unknown as Record<string, unknown>).scroll;
+  };
+}
+
 // A Carousel cannot size its slides until its viewport measures: after the first
 // frame (and after a server render), and again when a hidden viewport (width 0) is
 // shown. Measuring changes the slides' layout only. Every slide stays mounted, so
@@ -90,16 +105,15 @@ for (const [platform, Component] of [["web", Carousel], ["ios", IOSCarousel], ["
       for (const start of [0, 2]) {
         const changes: number[] = [];
         const lefts: number[] = [];
-        const scroll = HTMLElement.prototype.scroll;
-        HTMLElement.prototype.scroll = function (this: HTMLElement, options?: ScrollToOptions | number) {
+        const restoreScroll = overrideScroll((scroll) => function (this: HTMLElement, options?: ScrollToOptions | number) {
           if (typeof options === "object" && options.left != null) lefts.push(options.left);
           return scroll.call(this, options as ScrollToOptions);
-        };
+        });
         try {
           render(<ThemeProvider><Component testID="carousel" items={items} defaultIndex={start} onIndexChange={(i) => changes.push(i)} /></ThemeProvider>);
           layout(viewport(), 300);
         } finally {
-          HTMLElement.prototype.scroll = scroll;
+          restoreScroll();
         }
         expect(lefts.length).toBeGreaterThan(0);
         expect(lefts.map((left) => Math.round(left / 300))).toEqual(lefts.map(() => start));
@@ -127,11 +141,10 @@ for (const [platform, Component] of [["web", Carousel], ["ios", IOSCarousel], ["
       // one viewport wide: the first scroll to slide 3 lands at 0. The command is issued
       // again once the content size reports every slide's width, as Android does.
       let nativeContent = 300;
-      const scroll = HTMLElement.prototype.scroll;
-      HTMLElement.prototype.scroll = function (this: HTMLElement, options?: ScrollToOptions | number) {
+      const restoreScroll = overrideScroll((scroll) => function (this: HTMLElement, options?: ScrollToOptions | number) {
         if (typeof options !== "object" || options.left == null) return scroll.call(this, options as ScrollToOptions);
         return scroll.call(this, { ...options, left: Math.min(options.left, Math.max(0, nativeContent - 300)) });
-      };
+      });
       try {
         const changes: number[] = [];
         render(<ThemeProvider><Component testID="carousel" items={items} defaultIndex={2} onIndexChange={(i) => changes.push(i)} /></ThemeProvider>);
@@ -145,7 +158,7 @@ for (const [platform, Component] of [["web", Carousel], ["ios", IOSCarousel], ["
         expect(scrollport().scrollLeft).toBe(600);
         expect(changes).toEqual([]);
       } finally {
-        HTMLElement.prototype.scroll = scroll;
+        restoreScroll();
       }
     });
   });
