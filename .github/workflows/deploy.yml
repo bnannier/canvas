@@ -132,6 +132,15 @@ jobs:
         run: node scripts/release.mjs publish "$RUNNER_TEMP/candidate" "$RUNNER_TEMP/artifacts"
         env:
           RELEASE_MAJOR: ${{ github.event_name == 'workflow_dispatch' && inputs.major && inputs.major_version || '' }}
+      # The publish step shows npm's error. npm's debug log also keeps the lines the console
+      # omits, among them why an OIDC token exchange was refused; print those on a failure.
+      - name: npm debug log of a failed publish
+        if: failure() && steps.publish.outcome == 'failure'
+        run: |
+          log=$(ls -t "$HOME"/.npm/_logs/*-debug-0.log 2>/dev/null | head -1)
+          if [ -z "$log" ]; then echo "npm wrote no debug log."; exit 0; fi
+          echo "$log"
+          grep -E '^[0-9]+ [a-z]+ (oidc|http|error|warn) ' "$log" | tail -80
       - name: npm outcome
         if: always()
         env:

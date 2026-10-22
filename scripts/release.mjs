@@ -268,6 +268,9 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
   else if (command === "verify") verifyArtifacts(cwd, dir, path.resolve(extra));
   else if (command === "publish") {
     if (process.env.GITHUB_ACTIONS !== "true" || process.env.GITHUB_REF !== "refs/heads/main") throw new Error("Publication is restricted to CI on main");
-    publish(cwd, dir, path.resolve(extra), (file) => run(cwd, "npm", ["publish", file, "--ignore-scripts", "--access", "public", "--registry", "https://registry.npmjs.org"]));
+    // npm's output streams straight to the job log. Captured and printed again by an uncaught
+    // error, it was cut at one pipe buffer (64 KiB), and the tarball listing alone is larger,
+    // so every failed publish from 3.5.0 to 3.9.0 lost npm's own error message.
+    publish(cwd, dir, path.resolve(extra), (file) => execFileSync("npm", ["publish", file, "--ignore-scripts", "--access", "public", "--registry", "https://registry.npmjs.org"], { cwd, stdio: "inherit", env: commandEnvironment() }));
   } else throw new Error("Expected prepare, restore, seal, verify or publish");
 }
