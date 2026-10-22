@@ -42,6 +42,9 @@ Lucide-style outline. 1.75 stroke width, rounded caps. The stroke defaults to th
 
 ### Gallery
 
+`ICON_NAMES` lists every glyph in gallery order, each with its prop `key` and its
+typed `label`, for an icon picker or a catalog like this one.
+
 ```tsx
 <IconGallery />
 ```
