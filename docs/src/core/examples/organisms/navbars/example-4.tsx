@@ -3,12 +3,21 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Button, Icon, Navbar } = scope;
+  const { Stateful, View, Button, Card, Drawer, Navbar, Typography, Column } = scope;
   return (
-<Navbar
-  brandContent={<Icon layers />}
-  actions={<Button ghost small icon accessibilityLabel="Search" iconLeft={<Icon search size={16} />} />}
-  avatar="RC"
-/>
+<Stateful initial={false}>
+  {(open, setOpen) => (
+    <View>
+      <Navbar bordered brand="Catalog" onMenu={() => setOpen(true)} />
+      <Drawer open={open} onOpenChange={setOpen} accessibilityLabel="Catalog menu">
+        <Column padLoose loose>
+          <Typography h3>Components</Typography>
+          <Button ghost onPress={() => setOpen(false)}>Button</Button>
+          <Button ghost onPress={() => setOpen(false)}>Card</Button>
+        </Column>
+      </Drawer>
+    </View>
+  )}
+</Stateful>
   );
 }
