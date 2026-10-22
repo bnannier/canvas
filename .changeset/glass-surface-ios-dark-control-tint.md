@@ -1,5 +1,0 @@
----
-"@nannier/canvas": patch
----
-
-On iOS the dark scheme's control-layer glass tint is now white 0.05 where the native set (`glassByScheme`, which Android keeps) says 0.12, the owner's GS-8 decision. Since the iOS frost paints a surface's tint over its blur, the 0.12 tint painted at full strength: a dark text field's body read #373740 on the iPhone simulator where it had read #272730, and the legibility cap left its prefix and suffix addons no fill. At 0.05 the body reads #272730 again and the addon keeps a faint fill with its text at 4.5:1 or better. Every iOS dark control-layer surface that paints the layer's own tint takes the sheerer one: the text fields, Stepper and InputOTP on the frost, and Liquid Glass's plain control pucks such as a secondary or outline Button or the Select trigger (a brand fill or a toned wash keeps its own colour). The light scheme, Android, the web and solid mode are unchanged. iOS's tints now live in their own table, `src/style/glass-surface/ios-tints.ts`, a tuning-harness tunable.
