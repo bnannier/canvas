@@ -105,16 +105,18 @@ test("reader discovers the unique flow manifest and preserves exact log evidence
   expect(() => readCarouselEvidence({ artifactRoot: root, flowDirectory: flow, expected })).toThrow("exactly one");
 });
 
-test("reader accepts the captured Maestro 2.10 iOS phase-A console line unchanged", () => {
+test("reader accepts the captured Maestro 2.10 iOS journey console line unchanged", () => {
+  // Captured from the local iPhone 18 Pro (iOS 27) single-session journey of 6d8b4a72.
   const bytes = readFileSync(new URL("./fixtures/maestro-2.10-carousel-ios.log", import.meta.url));
-  expect(hash(bytes)).toBe("028d1f9136c1c5fae871276cb9b74c7cb6aca5aa9900a0646e1ee74c32eebb1d");
-  const identity = { nonce: "2b256a23-c696-4b4a-aa35-5001993b3943", candidateRevision: "2e1abfa75575aba994726d6d23d1ebe48a8dd1e2", packageSha256: "2fa63129118817e2ae81f28c94b079f579a91946790a1d3d00bab4c7b34b9c9e", packageVersion: "2.62.3", platform: "ios", scheme: "light" };
+  expect(hash(bytes)).toBe("71056192f892d10d342687f9f5a43911217e6edbc9ca3a7212ffdc12d4566009");
+  const identity = { nonce: "a2a45f49-4639-4b86-b2fb-b596e442d6e4", candidateRevision: "6d8b4a72f75a6bf5f034185c65afcf1ca89cf1c5", packageSha256: "8e68086b4b9ef4da3b0cc8177d0069514dc290fa03fb37b4f8884d4116eb47d1", packageVersion: "3.10.0", platform: "ios", scheme: "light" };
   const { root } = artifacts(bytes.toString("utf8"));
   const result = readCarouselEvidence({ artifactRoot: root, expected: identity });
   expect(result.source.line + "\n").toBe(bytes.toString("utf8"));
-  expect(result.record).toEqual({ schema: 1, type: "canvas.carousel.measurement", ...identity,
-    measurement: { generation: 1, status: "ready", index: 1, page: 2, x: 24, y: 190, width: 354, height: 198, screenWidth: 402, screenHeight: 874, pixelRatio: 3, platform: "ios", rtl: false } });
-  expect(result.gesture).toEqual({ startX: 307, endX: 95, y: 289, duration: 400 });
+  const measured = { generation: 1, status: "ready", index: 1, page: 2, x: 25, y: 177, width: 352, height: 195, handleX: 295, handleY: 330, handleWidth: 57, handleHeight: 17, screenWidth: 402, screenHeight: 874, pixelRatio: 3, platform: "ios", rtl: false };
+  const gesture = { startX: 324, endX: 40, y: 339, duration: 400 };
+  expect(result.record).toEqual({ schema: 2, type: "canvas.carousel.measurement", ...identity, measurement: measured, gesture });
+  expect(result.gesture).toEqual(gesture);
   expect(() => readCarouselEvidence({ artifactRoot: root, expected })).toThrow("identity mismatch");
 });
 
