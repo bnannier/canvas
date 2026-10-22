@@ -152,7 +152,7 @@ export function withResolvedPhotos<P>(Component: ComponentType<P>): ComponentTyp
 }
 
 /** The scope keys whose components can carry a sample photo (see withResolvedPhotos). */
-export const PHOTO_COMPONENTS = ["Image", "Avatar", "MediaObject", "CardMedia", "GridList", "Feed", "DescriptionList", "Video"] as const;
+export const PHOTO_COMPONENTS = ["Image", "Avatar", "AvatarMenu", "MediaObject", "CardMedia", "GridList", "Feed", "DescriptionList", "Video"] as const;
 
 /** Wrap every photo-bearing component in a built example scope, in place. */
 export function applyResolvedPhotos(scope: Record<string, unknown>): void {
