@@ -25,7 +25,7 @@ test("the local workflow is validate.yml with only the local-runner differences"
   const all = lines(source);
   const start = all.indexOf("  native:");
   const native = all.slice(start, all.indexOf("", start));
-  const pins = Array.from({ length: 3 }, () => ["        with:", "          ref: ${{ github.sha }}"]).flat();
+  const pins = Array.from({ length: 4 }, () => ["        with:", "          ref: ${{ github.sha }}"]).flat();
   expect(minus(lines(source), lines(local)).sort()).toEqual([...native, ...pins].sort());
   expect(local).not.toMatch(/(upload|download)-artifact@v(?!4\b)/);
 });
