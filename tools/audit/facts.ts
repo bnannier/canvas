@@ -359,9 +359,9 @@ export class UnreadableImport extends Error {
 }
 
 /**
- * The names the kit is imported under: the package, and the starter's alias of it that
- * the smoke fixtures import (docs/metro.config.js and docs/tsconfig.json resolve both to
- * the kit's source).
+ * The names the kit is imported under: the package (which the smoke fixtures import), and
+ * the starter's registry alias of it (docs/metro.config.js and docs/tsconfig.json resolve
+ * both to the kit's source).
  */
 const KIT_PACKAGES = ["@nannier/canvas", "@nannier-com/canvas"];
 
@@ -587,11 +587,12 @@ function relativeImports(file: string, source: string): string[] {
 export const TESTING_DIR = "docs/src/app/(home)/testing";
 
 /** The shared fixture bodies a harness page renders (CLAUDE.md, the tuning harness). */
-const FIXTURES_ROOT = "examples/";
+const FIXTURES_ROOT = "smoke/src/testing/";
 
 /**
  * What a hidden `/testing/*` harness page renders from the kit: its own kit imports and
- * those of the fixture bodies it imports from `examples/`, followed through the fixtures'
+ * those of the fixture bodies it imports from the smoke app (`smoke/src/testing/`), followed
+ * through the fixtures'
  * own relative imports. The docs' page frame it sits in is scaffolding and is not read.
  */
 export function testingRoutes(root: string, graph = new ModuleGraph(root)): { route: string; file: string; imports: KitImports }[] {
