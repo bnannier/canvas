@@ -30,7 +30,7 @@ export const docs: ComponentDocs = {
     { label: "Success", code: "<Icon circleCheck success />", render: e_atoms_icon_example_3 },
     { label: "Warning", code: "<Icon alertTriangle warning />", render: e_atoms_icon_example_4 },
     { label: "Muted", code: "<Icon shield muted />", render: e_atoms_icon_example_5 },
-    { label: "Gallery", code: "<IconGallery />", render: e_atoms_icon_example_6 },
+    { label: "Gallery", code: "<IconGallery />", render: e_atoms_icon_example_6, note: ["`ICON_NAMES` lists every glyph in gallery order, each with its prop `key` and its typed `label`, for an icon picker or a catalog like this one."] },
     { label: "Disclosure indicator", code: "<Icon disclosure expanded decorative chevronDown muted heavyStroke size={14} />", render: e_atoms_icon_example_7, note: ["`disclosure` turns the glyph 180 degrees over the original Argus 180ms ease when `expanded` changes. Reduce Motion snaps to the target. The existing glyph, color and stroke props keep their usual meaning."] },
   ],
   donts: [

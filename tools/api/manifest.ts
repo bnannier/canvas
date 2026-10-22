@@ -89,6 +89,7 @@ export const publicApi: Readonly<Record<string, ApiEntry>> = {
   GridProps: { kind: "type", docs: "components/grid" },
   Icon: { kind: "component", docs: "components/icon" },
   IconName: { kind: "type" },
+  ICON_NAMES: { kind: "utility", docs: "components/icon" },
   IconProps: { kind: "type", docs: "components/icon" },
   Image: { kind: "component", docs: "components/image" },
   ImageProps: { kind: "type", docs: "components/image" },

@@ -1,10 +1,24 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
-import { View, Grid, Container, Navbar, Icon, OverlayProvider, Row, Column, Button, Typography, Card, Avatar, Skeleton, type IconProps, type ToastHandle } from "@nannier/canvas";
-import { useReducedMotion, useResponsive } from "../../../src/style/index.js";
-// The kit's glyph table, read straight from source like the style helpers above (the
-// public Icon renders one glyph at a time and does not expose the catalog). Used only by
-// the docs-only IconGallery below.
-import { NAMES } from "../../../src/atoms/icon/icon.glyphs.js";
+import { AccessibilityInfo } from "react-native";
+import { View, Grid, Container, Navbar, Icon, OverlayProvider, Row, Column, Button, Typography, Card, Avatar, Skeleton, ICON_NAMES, useResponsive, type IconProps, type ToastHandle } from "@nannier/canvas";
+// Public API only: the smoke app (smoke/) renders these same examples against the
+// sealed package, which has no kit source to import from.
+
+// Reduce Motion for the Ticker below, read from React Native (react-native-web answers
+// it from prefers-reduced-motion).
+function useReduceMotion(): boolean {
+  const [reduced, setReduced] = useState(false);
+  useEffect(() => {
+    let mounted = true;
+    AccessibilityInfo.isReduceMotionEnabled().then((value) => { if (mounted) setReduced(value); });
+    const subscription = AccessibilityInfo.addEventListener("reduceMotionChanged", setReduced);
+    return () => {
+      mounted = false;
+      subscription.remove();
+    };
+  }, []);
+  return reduced;
+}
 
 // Docs-only live-example infrastructure (not a Canvas component, not shipped): a
 // render-prop state holder so a stateless example fence can still demonstrate
@@ -178,7 +192,7 @@ export function Ticker<T>({
   restIndex?: number;
   children: (value: T) => ReactNode;
 }): ReactNode {
-  const reduced = useReducedMotion();
+  const reduced = useReduceMotion();
   const [index, setIndex] = useState(0);
   useEffect(() => {
     if (reduced) return; // honor Reduce Motion: hold a single frame, no auto-advance
@@ -210,7 +224,7 @@ export function applyDrop<T extends { id: string; zone: string }>(
 }
 
 // Select a glyph by its (string) name from Icon's one-boolean-per-name API. The name comes
-// from the kit's own NAMES table, so it always resolves to a real glyph; the cast just bridges
+// from the kit's public ICON_NAMES, so it always resolves to a real glyph; the cast just bridges
 // a dynamic string to the static prop shape (Icon reads the active name boolean at runtime).
 function glyphByName(name: string): IconProps {
   return { [name]: true } as unknown as IconProps;
@@ -233,8 +247,8 @@ export function IconGallery(): ReactNode {
   const query = useContext(IconSearchContext);
   const q = query.trim().toLowerCase();
   const matches = q
-    ? NAMES.filter(({ key, label }) => key.toLowerCase().includes(q) || label.toLowerCase().includes(q))
-    : NAMES;
+    ? ICON_NAMES.filter(({ key, label }) => key.toLowerCase().includes(q) || label.toLowerCase().includes(q))
+    : ICON_NAMES;
   if (matches.length === 0) return <Typography subtle>No icons match "{query}".</Typography>;
   return <Grid minTileWidth={80} columns={12} snug>
     {matches.map(({ key, label }) => <Column key={key} snug alignCenter padTight>

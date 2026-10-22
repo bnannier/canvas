@@ -1,7 +1,7 @@
 import { DisclosureRotation } from "../../style/disclosure-rotation.js";
 import Svg, { Circle, Ellipse, Line, Path, Polygon, Polyline, Rect } from "react-native-svg";
 import { View, useTheme, type ColorTokens, type StyleProp, type ViewStyle, type LayoutStyle } from "../../style/index.js";
-import { ICONS, NAMES, type Shape, type IconGlyphProps } from "./icon.glyphs.js";
+import { ICONS, NAMES, type Shape, type IconGlyphProps, type IconName } from "./icon.glyphs.js";
 import { ICON_STROKE_WIDTH } from "./icon.stroke.js";
 
 // Shared Icon shell. The whole glyph set, the boolean-prop axes (name + color),
@@ -102,6 +102,13 @@ export interface IconProps extends IconGlyphProps, IconInternalProps {
 // as this, so a menu row can only name a real Canvas glyph, then render it via
 // `<Icon {...{ [name]: true }} />`. Re-exported here for consumers.
 export type { IconName } from "./icon.glyphs.js";
+
+/**
+ * Every Canvas glyph in gallery order (alphabetical): its prop `key` (an `IconName`) and
+ * its typed `label`, for an icon picker or catalog. Render one with
+ * `<Icon {...{ [key]: true }} />`.
+ */
+export const ICON_NAMES: readonly { readonly key: IconName; readonly label: string }[] = NAMES as { key: IconName; label: string }[];
 
 // First-match name precedence; defaults to shield (the demo glyph).
 export function nameOf(p: IconProps): string {
