@@ -118,7 +118,7 @@ export interface CommandProps {
   footer?: boolean;
   /** Called with the chosen item and its flat index (within the visible, query-matching rows) when a row is pressed. */
   onSelect?: (item: CommandItem, index: number) => void;
-  /** E2E hook forwarded to the root element. */
+  /** E2E hook forwarded to the root element; the scrolling results list gets `${testID}-results`. */
   testID?: string;
   /** Outer layout composition only (width/flex within a parent), never a restyle hook. */
   style?: StyleProp<ViewStyle>;
@@ -309,7 +309,7 @@ export function createCommand(skin: CommandSkin) {
           />
         </View>
 
-        <OverlayScrollView style={s.results} ref={results.listRef} onLayout={results.onLayout} onScroll={results.onScroll} onContentSizeChange={results.scrollActiveIntoView} scrollEventThrottle={16}>
+        <OverlayScrollView testID={testID ? `${testID}-results` : undefined} style={s.results} ref={results.listRef} onLayout={results.onLayout} onScroll={results.onScroll} onContentSizeChange={results.scrollActiveIntoView} scrollEventThrottle={16}>
         {total === 0 && (q !== "" || props.emptyMessage != null) ? (
           <View style={s.emptyRow}>
             <Text style={s.emptyText(tokens)}>{props.emptyMessage ?? "No results"}</Text>
