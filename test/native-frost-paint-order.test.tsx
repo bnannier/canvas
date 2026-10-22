@@ -28,7 +28,7 @@ import { LOOKS, lookProps } from "./fixtures/looks.ts";
 // channel off (a red tint) and the dark Card's content tint up to 10.
 //
 // The rule held here, on every native frost path (iOS's frost, before iOS 26 and for the
-// content layer and static surfaces after it; Android's canvas-blur capture frost and
+// content layer and static surfaces after it; Android's native capture frost and
 // expo-blur's frost; the expo-blur frost of a platform with no host of its own): the frost
 // is the first layer of the material, nothing beneath it paints (the material clip, the
 // surface's own host), the fill comes after it and the rim after the fill, for every layer,
@@ -128,7 +128,7 @@ describe("every native frost paints its fill over its blur, then the rim", () =>
       expectFrostFirst(container, theme, "frost", `Android expo-blur ${look.name}`);
     });
 
-    it(`Android: canvas-blur's capture frost first, in ${look.name}`, async () => {
+    it(`Android: the native capture frost first, in ${look.name}`, async () => {
       capabilities({ platform: "android", frost: true, liquid: false, requiresTarget: true });
       stub(androidRuntime, "FrostView", Frost);
       stub(captureRuntime, "NativeCaptureFrost", Capture);

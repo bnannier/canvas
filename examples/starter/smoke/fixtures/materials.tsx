@@ -2,10 +2,15 @@ import { useEffect, useRef, useState } from "react";
 import { ActionSheet, Button, ButtonGroup, Card, Checkbox, Column, Dialog, Drawer, Dropdown, GlassModalBlurTarget, Input, PhoneInput, Popover, Radio, RadioGroup, Row, Slider, Switch, ThemeProvider, Typography } from "@nannier-com/canvas";
 
 type Stats = { hosts: number; activeHosts: number; recordings: number; frostViews: number; frameListeners: number };
+type CaptureModule = { supported: boolean; getCaptureStats(): Stats };
 declare const require: (name: string) => unknown;
+// Canvas keeps its Android capture module internal, so device verification reads the native
+// module by name. It is registered only in an Android build that links it.
 let capture: { available?: boolean; getCaptureStats?: () => Stats } | undefined;
 try {
-  capture = require("@nannier/canvas-blur") as typeof capture;
+  const core = require("expo-modules-core") as { requireOptionalNativeModule<T>(name: string): T | null };
+  const native = core.requireOptionalNativeModule<CaptureModule>("CanvasBlur");
+  capture = native ? { available: native.supported === true, getCaptureStats: () => native.getCaptureStats() } : undefined;
 } catch { /* Omitted in the optional-peer consumer matrix. */ }
 
 let nextEditor = 0;

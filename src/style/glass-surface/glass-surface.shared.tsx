@@ -4,7 +4,7 @@
 // Factory's plain frost, its numbers in web-frost.ts) and the fallback for a platform with
 // no host of its own, glass-surface.ios.tsx iOS's (Apple's Liquid Glass through
 // expo-glass-effect, or expo-blur's frost), glass-surface.android.tsx Android's
-// (@nannier/canvas-blur's capture frost, or expo-blur's on releases before expo-blur 57).
+// (Canvas's native capture frost, or expo-blur's on releases before expo-blur 57).
 // Each hands its layers to GlassBox, which lays them behind the content, or renders the
 // skin's own surface where the material resolves solid.
 //
@@ -133,12 +133,12 @@ export interface GlassSurfaceProps {
 // would create a render-node cycle, so OverlayProvider publishes its own content
 // target only to its sibling outlet. GlassModalBlurTarget bridges a window-level
 // target into a genuinely separate RN Modal window. Targetless surfaces resolve
-// to their complete solid skin. The optional capture integration owns demand,
+// to their complete solid skin. The native capture module owns demand,
 // readiness and resource release without changing the content host.
 export const GlassBlurTargetContext = createContext<RefObject<View | null> | null>(null);
 
 // The window-level Android capture plane: the OUTERMOST <OverlayProvider>'s page
-// content (the @nannier/canvas-blur CaptureHost it mounts when it fills its window),
+// content (the native CaptureHost it mounts when it fills its window),
 // published to its whole subtree, unlike GlassBlurTargetContext, which only ever wraps
 // an outlet or a Modal's content. Surfaces in a SEPARATE native window (a React Native
 // Modal: Drawer, ActionSheet, an app's own) take it through <GlassModalBlurTarget>.
@@ -152,7 +152,7 @@ export const GlassWindowBlurTargetContext = createContext<RefObject<View | null>
 export type BlurTargetRejection = (refused: RefObject<View | null>) => void;
 
 // Provided by a GlassModalBlurTarget for its own plane, and by nothing else. The Android
-// host forwards canvas-blur's onTargetRejected here: the frost refuses only a plane that
+// host forwards the native frost's onTargetRejected here: the frost refuses only a plane that
 // contains it, so a refusal means the bridge sits in the plane's own window, and the
 // bridge stops publishing the plane to everything under it.
 const GlassBlurTargetRejectionContext = createContext<BlurTargetRejection | null>(null);
@@ -171,9 +171,9 @@ export function useBlurTargetRejection(): BlurTargetRejection | null {
  *
  * `<Modal transparent><GlassModalBlurTarget><OverlayProvider separateWindow>{content}</OverlayProvider></GlassModalBlurTarget></Modal>`
  *
- * - Android: with `@nannier/canvas-blur` in an Expo SDK 57 build on Android 12 or newer,
- *   and an app-root `OverlayProvider` that fills the window (its default `flex: 1`,
- *   outside any scroller), whose page content is the plane. The outermost provider
+ * - Android: in an Expo SDK 57 build that links Canvas's native capture module, on
+ *   Android 12 or newer, and an app-root `OverlayProvider` that fills the window (its
+ *   default `flex: 1`, outside any scroller), whose page content is the plane. The outermost provider
  *   wins, so a Modal opened from a nested host frosts the whole page, and so does a
  *   Modal opened over another Modal. The frost samples that page only: not the root
  *   outlet's toasts, a Modal beneath, or the Modal's own scrim and surfaces.
@@ -183,11 +183,10 @@ export function useBlurTargetRejection(): BlurTargetRejection | null {
  * - Only directly inside a Modal's content, a separate native window that never
  *   contains the plane. Placed in the main window (around page content, or in a
  *   react-native-screens or expo-router modal screen, which shares the main window on
- *   Android) the plane contains its surfaces: canvas-blur 0.2 or newer refuses it and
+ *   Android) the plane contains its surfaces: the native frost refuses it and
  *   says so, and every surface under the bridge then resolves its complete solid skin.
  *   The refusal comes from the native frost once it has mounted, so the surfaces show
- *   a tint with no blur until it arrives; an older module refuses silently and leaves
- *   that tint in place.
+ *   a tint with no blur until it arrives.
  */
 export function GlassModalBlurTarget({ children }: { children?: ReactNode }) {
   // A kit component resolves its material (useMaterialTheme) inside the bridge, never
@@ -213,7 +212,7 @@ export function GlassModalBlurTarget({ children }: { children?: ReactNode }) {
 
 // The contract between OverlayProvider and the per-platform GlassBlurTargetHost
 // (glass-blur-target.tsx / .android.tsx): the provider hands over its wrapper
-// style, the ref the Android fork attaches to its canvas-blur CaptureHost, and the
+// style, the ref the Android fork attaches to its native CaptureHost, and the
 // outlet subtree, which every fork must keep OUTSIDE the target so outlet overlays
 // can blur the content as a sibling.
 export interface GlassBlurTargetHostProps {
@@ -239,8 +238,8 @@ export interface GlassBlurTargetHostProps {
 // release before expo-blur 57 (no BlurTargetView export) blurs the content behind the
 // surface with the legacy `experimentalBlurMethod`. From 57 its Android blur samples only a
 // blur target, and the kit never hands it one: the one safe target, a capture plane, exists
-// only where @nannier/canvas-blur mounted its capture host, and there the Android host
-// renders canvas-blur's own frost; without it a surface needing a target resolves its
+// only where Canvas's native capture module mounted its capture host, and there the
+// Android host renders that module's own frost; without it a surface needing a target resolves its
 // complete solid skin before any BlurView mounts (material-resolution.ts, `missing-target`).
 // So from 57 it takes no method prop, and the web and iOS hosts never read one.
 // Keep the return contract structural: an Expo type here leaks into Canvas's
@@ -249,7 +248,7 @@ export function frostMethodProps(supportsBlurTarget: boolean): { experimentalBlu
   return supportsBlurTarget ? {} : { experimentalBlurMethod: "dimezisBlurView" };
 }
 
-// The native frost's strength, expo-blur's and canvas-blur's `intensity` (0 to 100), on
+// The native frost's strength, expo-blur's and the native capture frost's `intensity` (0 to 100), on
 // iOS and Android; the web blurs at WEB_FROST.blur through a CSS backdrop filter and reads
 // none of these. The frost brings its own light or dark tint at this intensity, under the
 // layer's tint, which paints over the frost (`frostFill`).
@@ -281,7 +280,7 @@ export const BRAND_INK_CONTRAST = 4.5;
  * The fill a frost surface paints: `surfaceUnderFill`'s colour (the layer's tint, a `tint`
  * wash, a solved `brand` colour, or a clear surface's veil). Every frost path paints it OVER
  * its blur, then the rim: the web's backdrop filter, iOS's and Android's expo-blur BlurView
- * and canvas-blur's capture frost, as Dark Factory's GlassSurface does on every platform (its
+ * and the native capture frost, as Dark Factory's GlassSurface does on every platform (its
  * BlurView, then its fill). A blur samples whatever is painted beneath it, so a fill there was
  * blurred into the material it belongs to (no material may sample itself) and dyed by the
  * frost's own light or dark veil: on the iOS simulator a red tint under the frost read up to

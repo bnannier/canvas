@@ -71,17 +71,18 @@ export function prepareNativeSmoke(candidate, artifacts, output) {
     const installed = read(path.join(app, "node_modules", input.installedAs, "package.json"));
     if (installed.name !== input.name || installed.version !== input.version) throw new Error("Installed package differs from the candidate");
   }
-  // Resolve from this isolated app, never from the repository's source link.
-  if (inputs.some((input) => input.name === "@nannier/canvas-blur")) {
-    const autolinking = JSON.parse(run(app, "bunx", ["--no-install", "expo-modules-autolinking", "resolve", "--platform", "android", "--json"], identity, true));
-    const linked = autolinking.modules.find((module) => module.packageName === "@nannier/canvas-blur");
-    const expected = path.join(app, "node_modules/@nannier/canvas-blur/android");
-    if (!linked?.projects.some((project) => fs.realpathSync(project.sourceDir) === fs.realpathSync(expected)
-      && project.modules.some((module) => module.classifier === "io.ionize.canvas.blur.CanvasBlurModule"))) {
-      throw new Error("Sealed Android capture package did not autolink from the independent consumer");
-    }
-    write(path.join(output, "android-autolinking.json"), { identity, autolinking });
+  // Canvas carries its Android capture module (android/, expo-module.config.json). Resolve
+  // it from this isolated app, never from the repository's source link: the sealed
+  // package's own android/ must be the project Expo links.
+  const canvas = inputs.find((input) => input.name === manifest.name);
+  const autolinking = JSON.parse(run(app, "bunx", ["--no-install", "expo-modules-autolinking", "resolve", "--platform", "android", "--json"], identity, true));
+  const expected = fs.realpathSync(path.join(app, "node_modules", canvas.installedAs, "android"));
+  if (!autolinking.modules.some((module) => module.projects?.some((project) => fs.existsSync(project.sourceDir)
+    && fs.realpathSync(project.sourceDir) === expected
+    && project.modules.some((linked) => linked.classifier === "io.ionize.canvas.blur.CanvasBlurModule")))) {
+    throw new Error("The sealed Canvas capture module did not autolink from the independent consumer");
   }
+  write(path.join(output, "android-autolinking.json"), { identity, autolinking });
   // These templates can exercise new candidate APIs that the registry starter's
   // published pin does not have yet. Typecheck them only against the sealed install.
   installSmokeFixtures(app);
@@ -92,10 +93,9 @@ export function prepareNativeSmoke(candidate, artifacts, output) {
     || configuration.scheme !== "canvas-smoke" || JSON.stringify(configuration.extra?.canvasBuild) !== JSON.stringify(identity)) {
     throw new Error("Smoke app ID, scheme or runtime identity is incorrect");
   }
-  const androidInstrumentation = inputs.some((input) => input.name === "@nannier/canvas-blur")
-    ? preserveAndroidInstrumentation(repo, output, identity.candidateRevision) : undefined;
+  const androidInstrumentation = preserveAndroidInstrumentation(repo, output, identity.candidateRevision);
   write(path.join(output, "context.json"), { schema: 2, identity, appSources: appInventory(app), packages: inputs, tarball: manifest.packageFile,
-    ...(androidInstrumentation ? { androidInstrumentation } : {}) });
+    androidInstrumentation });
   console.log(`Prepared independent native candidate ${identity.packageVersion} (${identity.packageSha256}) in ${output}`);
 }
 
@@ -108,14 +108,14 @@ function context(output) {
     if (sha256(path.join(output, input.filename)) !== input.sha256) throw new Error("Native smoke candidate changed");
     assertInstalledPackage(path.join(output, "unpacked", input.name, "package"), path.join(app, "node_modules", input.installedAs ?? input.name));
   }
-  if (context.packages.some((input) => input.name === "@nannier/canvas-blur")) {
-    assertAndroidInstrumentationInputs(output, context.identity, context.androidInstrumentation);
-  }
-  return { ...context, app };
+  assertAndroidInstrumentationInputs(output, context.identity, context.androidInstrumentation);
+  const canvas = context.packages.find((input) => input.name === context.identity.packageName);
+  if (!canvas) throw new Error("Native smoke candidate has no Canvas package");
+  return { ...context, app, installedCanvas: canvas.installedAs ?? canvas.name };
 }
 
 export function buildNativeSmoke(output, platform, device) {
-  const { app, identity, androidInstrumentation } = context(output);
+  const { app, identity, installedCanvas } = context(output);
   run(app, "node", ["node_modules/expo/bin/cli", "prebuild", "--platform", platform, "--no-install"], identity);
   let binary;
   let bundleEvidence;
@@ -132,8 +132,7 @@ export function buildNativeSmoke(output, platform, device) {
     bundleEvidence = observeIosBundleEvidence({ app, binary, output: path.join(output, "ios-bundle-evidence"), identity,
       smokeFlag: buildEnvironment.EXPO_PUBLIC_CANVAS_SMOKE, identityProvided: Boolean(buildEnvironment.CANVAS_SMOKE_IDENTITY) });
   } else {
-    run(path.join(app, "android"), "./gradlew", androidInstrumentation
-      ? androidGradleArguments(output, app) : [":app:assembleRelease", "--no-daemon"], identity);
+    run(path.join(app, "android"), "./gradlew", androidGradleArguments(output, app, false, installedCanvas), identity);
     binary = path.join(app, "android/app/build/outputs/apk/release/app-release.apk");
   }
   if (!fs.existsSync(binary)) throw new Error(`Native release output missing: ${binary}`);
@@ -144,9 +143,8 @@ export function buildNativeSmoke(output, platform, device) {
 }
 
 export function instrumentNativeSmoke(output, device) {
-  const { app, identity, androidInstrumentation, packages } = context(output);
-  if (!androidInstrumentation) throw new Error("Android instrumentation requires the sealed capture package");
-  const files = androidInstrumentationPaths(output, app);
+  const { app, identity, androidInstrumentation, packages, installedCanvas } = context(output);
+  const files = androidInstrumentationPaths(output, app, installedCanvas);
   // A fresh evidence directory and clean connected reports prevent a previous
   // successful result from qualifying a command that did not execute tests.
   fs.mkdirSync(files.evidence);
@@ -155,10 +153,10 @@ export function instrumentNativeSmoke(output, device) {
   }
   const build = read(path.join(output, "android-build.json"));
   const result = { schema: 1, identity, device, startedAt: new Date().toISOString(), status: "failed",
-    package: packages.find((pkg) => pkg.name === "@nannier/canvas-blur"),
+    package: packages.find((pkg) => pkg.name === identity.packageName),
     productionVariant: "debug", releaseBinaryDigest: build.digest, testInputs: androidInstrumentation,
     contextSha256: sha256(path.join(output, "context.json")), buildManifestSha256: sha256(path.join(output, "android-build.json")),
-    command: ["./gradlew", ...androidGradleArguments(output, app, true)] };
+    command: ["./gradlew", ...androidGradleArguments(output, app, true, installedCanvas)] };
   result.testInfrastructure = {
     revision: run(repo, "git", ["rev-parse", "HEAD"], identity, true).trim(),
     dirty: run(repo, "git", ["status", "--porcelain", "--untracked-files=all"], identity, true).trim() !== "",
@@ -214,7 +212,7 @@ export function instrumentNativeSmoke(output, device) {
     write(path.join(files.evidence, "result.json"), result);
   }
   if (failure) throw failure;
-  console.log(`Verified ${result.junit.tests} Android instrumentation cases against the sealed capture package`);
+  console.log(`Verified ${result.junit.tests} Android instrumentation cases against the sealed Canvas capture module`);
 }
 
 export function testNativeSmoke(output, platform, device, maestro, requestedEvidence) {

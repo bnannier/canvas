@@ -39,7 +39,7 @@
     "typescript": "~6.0.3"
   },
   "scripts": {
-    "postinstall": "node scripts/link-sources.mjs && bun run --cwd ../packages/canvas-blur build",
+    "postinstall": "node scripts/link-sources.mjs",
     "dev": "node scripts/dev.mjs",
     "start": "expo start",
     "android": "expo run:android",
@@ -64,7 +64,7 @@
   },
   "expo": {
     "autolinking": {
-      "nativeModulesDir": "../packages"
+      "nativeModulesDir": ".."
     }
   }
 }

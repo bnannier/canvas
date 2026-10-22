@@ -97,7 +97,8 @@ test("native watch transforms subsequent changes as well as the initial emit", a
 
 function packageFixture() {
   const dir = root();
-  const metadata = { main: "./dist/index.js", types: "./dist/index.d.ts", "react-native": "./dist/native/index.js", exports: { ".": { default: "./dist/index.js", types: "./dist/index.d.ts", "react-native": "./dist/native/index.js" } }, peerDependencies: { "new-optional-peer": "*", "expo-clipboard": "*" }, peerDependenciesMeta: { "new-optional-peer": { optional: true }, "expo-clipboard": { optional: true } } };
+  const metadata = { main: "./dist/index.js", types: "./dist/index.d.ts", "react-native": "./dist/native/index.js", exports: { ".": { default: "./dist/index.js", types: "./dist/index.d.ts", "react-native": "./dist/native/index.js" } }, peerDependencies: { "new-optional-peer": "*", "expo-clipboard": "*" }, peerDependenciesMeta: { "new-optional-peer": { optional: true }, "expo-clipboard": { optional: true } },
+    files: ["dist", "styles", "android/build.gradle", "android/src/main", "expo-module.config.json"] };
   write(dir, "package.json", JSON.stringify(metadata));
   for (const output of ["dist", "dist/native"]) {
     write(dir, `${output}/index.js`, 'export {};');
@@ -105,6 +106,12 @@ function packageFixture() {
     write(dir, `${output}/control.android.js`, 'export {};');
   }
   write(dir, "dist/index.d.ts", 'export {};');
+  // The Android capture module every Canvas package carries.
+  write(dir, "expo-module.config.json", JSON.stringify({ platforms: ["android"], android: { modules: ["io.ionize.canvas.blur.CanvasBlurModule"] } }));
+  write(dir, "android/build.gradle", "android {\n  namespace 'io.ionize.canvas.blur'\n}\n");
+  write(dir, "android/src/main/AndroidManifest.xml", "<manifest />");
+  write(dir, "android/src/main/java/io/ionize/canvas/blur/CanvasBlurModule.kt", 'Name("CanvasBlur")');
+  write(dir, "dist/native/style/glass-surface/capture-module.js", 'requireNativeModule("CanvasBlur");');
   return dir;
 }
 
@@ -117,6 +124,22 @@ test("package guard rejects the old native entry and explicit native extensions"
   write(dir, "dist/native/index.js", 'export * from "./control.ios.js";');
   expect(verifyPackage(dir).join("\n")).toContain("legacy entry");
   expect(verifyPackage(dir).join("\n")).toContain("bypasses Metro platform resolution");
+});
+
+test("package guard requires the Android capture module's sources and nothing else under android/", () => {
+  const valid = packageFixture();
+  expect(verifyPackage(valid)).toEqual([]);
+  const metadata = JSON.parse(fs.readFileSync(path.join(valid, "package.json"), "utf8"));
+  write(valid, "package.json", JSON.stringify({ ...metadata, files: [...metadata.files, "android"] }));
+  expect(verifyPackage(valid).join("\n")).toContain("no other Android path");
+  const renamed = packageFixture();
+  write(renamed, "expo-module.config.json", JSON.stringify({ platforms: ["android", "ios"], android: { modules: ["io.ionize.canvas.blur.CanvasBlurModule"] } }));
+  write(renamed, "android/build.gradle", "android { namespace 'other' }");
+  fs.rmSync(path.join(renamed, "dist/native/style/glass-surface/capture-module.js"));
+  const errors = verifyPackage(renamed).join("\n");
+  expect(errors).toContain("on Android only");
+  expect(errors).toContain("wrong namespace");
+  expect(errors).toContain("capture module binding");
 });
 
 test("optional-peer guard derives all peers from metadata and checks AST block ownership", () => {

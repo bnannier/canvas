@@ -78,7 +78,33 @@ export function verifyPackage(root: string): string[] {
   for (const platform of ["ios", "android"]) {
     if (!files.some((file) => file.startsWith(native) && file.endsWith(`.${platform}.js`))) errors.push(`Native output has no ${platform} forks`);
   }
+  errors.push(...verifyCaptureModule(root, metadata));
   return [...new Set(errors)];
+}
+
+// Canvas's own Android capture module (android/), which Expo autolinks from the package
+// root. The files allowlist must ship its sources and never its build output or tests.
+const CAPTURE_FILES = ["android/build.gradle", "android/src/main", "expo-module.config.json"];
+function verifyCaptureModule(root: string, metadata: { files?: string[] }): string[] {
+  const errors: string[] = [];
+  const read = (file: string) => {
+    try { return fs.readFileSync(path.join(root, file), "utf8"); } catch { errors.push(`${file} missing`); return ""; }
+  };
+  const files = metadata.files ?? [];
+  if (!CAPTURE_FILES.every((file) => files.includes(file)) || files.some((file) => file === "android" || file.startsWith("android/src/androidTest"))) {
+    errors.push(`files must ship ${CAPTURE_FILES.join(", ")} and no other Android path`);
+  }
+  try {
+    const config = JSON.parse(read("expo-module.config.json") || "{}");
+    if (JSON.stringify(config.platforms) !== '["android"]' || JSON.stringify(config.android?.modules) !== '["io.ionize.canvas.blur.CanvasBlurModule"]') {
+      errors.push("expo-module.config.json must autolink io.ionize.canvas.blur.CanvasBlurModule on Android only");
+    }
+  } catch { errors.push("expo-module.config.json is not JSON"); }
+  if (!read("android/build.gradle").includes("namespace 'io.ionize.canvas.blur'")) errors.push("android/build.gradle has the wrong namespace");
+  read("android/src/main/AndroidManifest.xml");
+  if (!read("android/src/main/java/io/ionize/canvas/blur/CanvasBlurModule.kt").includes('Name("CanvasBlur")')) errors.push("Wrong native capture module name");
+  if (!read("dist/native/style/glass-surface/capture-module.js").includes('"CanvasBlur"')) errors.push("Native output is missing the capture module binding");
+  return errors;
 }
 
 if (import.meta.main) {

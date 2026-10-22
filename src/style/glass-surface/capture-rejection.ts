@@ -1,4 +1,4 @@
-import type { TargetRejectedEvent } from "./index";
+import type { TargetRejectedEvent } from "./capture-module.js";
 
 /**
  * The refusal handler for the host a frost names now. A report about a host it no longer

@@ -3,14 +3,16 @@ import * as fs from "node:fs";
 import * as path from "node:path";
 import { fileInventory, sha256 } from "./candidate.mjs";
 
-const sourcePath = "packages/canvas-blur/android/src/androidTest";
+const sourcePath = "android/src/androidTest";
 const initPath = "tools/native/canvas-blur-test.init.gradle";
 
-export function androidInstrumentationPaths(output, app = path.join(output, "app")) {
+// The capture module ships inside Canvas, installed under the Canvas dependency the
+// smoke app's starter declares (native-smoke.mjs `installedAs`).
+export function androidInstrumentationPaths(output, app = path.join(output, "app"), canvas = "@nannier/canvas") {
   const inputs = path.join(output, "android-instrumentation-inputs");
   return {
     inputs, tests: path.join(inputs, sourcePath), init: path.join(inputs, initPath),
-    module: path.join(app, "node_modules/@nannier/canvas-blur/android"),
+    module: path.join(app, "node_modules", canvas, "android"),
     build: path.join(output, "android-capture-build"),
     evidence: path.join(output, "android-instrumentation-evidence"),
   };
@@ -41,8 +43,8 @@ export function assertAndroidInstrumentationInputs(output, identity, inputs) {
 }
 
 /** Output redirection also applies to release builds: node_modules stays sealed. */
-export function androidGradleArguments(output, app, instrument = false) {
-  const files = androidInstrumentationPaths(output, app);
+export function androidGradleArguments(output, app, instrument = false, canvas = "@nannier/canvas") {
+  const files = androidInstrumentationPaths(output, app, canvas);
   const args = [instrument ? "canvasBlurConnectedDebugAndroidTest" : ":app:assembleRelease", "--no-daemon", "--console=plain",
     "--init-script", files.init, `-Dcanvas.blur.consumer=${path.join(app, "android")}`,
     `-Dcanvas.blur.module=${files.module}`, `-Dcanvas.blur.build=${files.build}`];

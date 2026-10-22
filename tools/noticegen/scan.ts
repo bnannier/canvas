@@ -87,7 +87,7 @@
  * Run: bun run notices:scan   (then `bun run notices:gen`, then commit both outputs)
  */
 import { execFileSync } from "node:child_process";
-import { readFileSync, writeFileSync, existsSync, rmSync, mkdtempSync, readdirSync } from "node:fs";
+import { readFileSync, writeFileSync, existsSync, rmSync, mkdtempSync, readdirSync, realpathSync } from "node:fs";
 import { createRequire } from "node:module";
 import { resolve, dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -187,7 +187,21 @@ for (const platform of ["apple", "android"]) {
     fail(`expo-modules-autolinking search failed for ${platform}; the expo native set cannot be determined.`, err);
   }
   const found = JSON.parse(raw) as Record<string, { path: string }>;
-  for (const [name, mod] of Object.entries(found)) record(fromExpo, name, mod.path);
+  for (const [name, mod] of Object.entries(found)) record(fromExpo, name, ownPackage(name, mod.path));
+}
+
+/**
+ * Canvas's own Android capture module autolinks from the repository root (docs/package.json
+ * `nativeModulesDir: ".."`). That root is the package the docs link at
+ * docs/node_modules/@nannier/canvas, so it is recorded there, as the bundle signal records it.
+ */
+function ownPackage(name: string, dir: string): string {
+  if (realpathSync(dir) !== realpathSync(repo)) return dir;
+  const link = join(docs, "node_modules", name);
+  if (!existsSync(link) || realpathSync(link) !== realpathSync(repo)) {
+    fail(`${name} autolinks from the repository root, but ${link} does not link to it; run the docs postinstall.`);
+  }
+  return link;
 }
 
 // ---- signal 3: what classic React Native autolinking links ---------------------------

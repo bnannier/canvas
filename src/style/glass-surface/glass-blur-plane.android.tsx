@@ -2,10 +2,10 @@
 // in-page surface has none by default (the window's plane contains it, and a frost may not
 // sample a plane that contains it), so it paints its complete solid skin. A page whose
 // backdrop is a sibling behind its surfaces, the docs' page look under their frame, can make
-// that backdrop the plane: GlassBlurPlane captures it through @nannier/canvas-blur, and the
-// surfaces in a GlassBlurScope frost it. canvas-blur refuses a plane that contains the frost
+// that backdrop the plane: GlassBlurPlane captures it through Canvas's native capture module, and
+// the surfaces in a GlassBlurScope frost it. The module refuses a plane that contains the frost
 // that samples it, so a surface placed inside its own plane falls back to the solid skin.
-// Without the integration both render their children only, and the surfaces stay solid.
+// Without the module both render their children only, and the surfaces stay solid.
 import { useMemo, type ComponentType, type ReactNode } from "react";
 import type { ViewProps, ViewStyle } from "react-native";
 import { createCaptureTarget, useCaptureEnabled, type CaptureTarget } from "./capture-target.js";

@@ -23,14 +23,14 @@ import { ActionSheet } from "../src/organisms/action-sheet/action-sheet.tsx";
 // glass surfaces the page's Android capture plane (the outermost OverlayProvider's page
 // content), which they can sample because a Modal is a separate native window. Placed
 // anywhere in the main window it hands them the plane they sit inside, which
-// @nannier/canvas-blur refuses (FrostView.kt's TargetSafety); the frost reports that
+// the native capture module refuses (FrostView.kt's TargetSafety); the frost reports that
 // (onTargetRejected) and the bridge then withdraws the plane, so every surface under it
 // resolves its complete solid skin (the owner's GMBT-2 decision).
 //
 // The runtime under test is the web's, so the material capabilities are Android's by
 // spy, and the plane is a real page element the tests render into: React Native Web
 // mounts a Modal's content in document.body, outside it, as Android mounts a Modal in a
-// window of its own. canvas-blur's FrostView is a stand-in that refuses a plane
+// window of its own. The capture module's FrostView is a stand-in that refuses a plane
 // containing it and reports that once, as the native view does.
 
 afterEach(cleanup);
@@ -38,7 +38,7 @@ afterEach(cleanup);
 const android: MaterialCapabilities = { platform: "android", frost: true, liquid: false, requiresTarget: true };
 const card = { borderRadius: 14, backgroundColor: "#123456", borderWidth: 1, borderColor: "#abcdef", padding: 8 };
 
-/** Android's capabilities and canvas-blur's frost, for the length of one test. */
+/** Android's capabilities and the capture module's frost, for the length of one test. */
 function androidRuntime(refuses: (plane: Element, frost: Element) => boolean = (plane, frost) => plane.contains(frost)) {
   const reports: number[] = [];
   function FakeFrost({ targetRef, onTargetRejected }: {
@@ -191,10 +191,10 @@ describe("GlassModalBlurTarget", () => {
     } finally { android.restore(); page.remove(); }
   });
 
-  it("keeps trusting its plane when the module never reports (an older canvas-blur)", () => {
+  it("keeps trusting its plane while the frost reports no refusal", () => {
     const { page, plane } = pagePlane();
-    // The 0.1 module refuses the same plane without a word: the surface keeps the frost
-    // it was handed, which draws no blur (a tint alone), as before the event existed.
+    // Until a refusal arrives the surface keeps the frost it was handed, which draws no
+    // blur over a plane it cannot sample (a tint alone).
     const android = androidRuntime(() => false);
     try {
       render(

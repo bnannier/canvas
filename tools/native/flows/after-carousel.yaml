@@ -303,7 +303,7 @@ name: Sealed Canvas native candidate after measured drag
     text: 'Mode: glass; scheme: ${SCHEME}'
 # On Android, in-page glass has no safe capture target, so the page's surfaces take
 # their solid skin and capture stays idle (the owner's P3a decision). That includes the
-# card under the misplaced GlassModalBlurTarget: canvas-blur refuses the plane it is
+# card under the misplaced GlassModalBlurTarget: the capture module refuses the plane it is
 # handed and the bridge withdraws it, so no frost stays mounted (GMBT-2). An open
 # overlay is the safe consumer: its frost captures the page, and the menu row reads the
 # counters while the menu is still open.

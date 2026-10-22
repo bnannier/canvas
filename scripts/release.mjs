@@ -5,8 +5,9 @@ import * as fs from "node:fs";
 import * as path from "node:path";
 import { fileURLToPath } from "node:url";
 
-const PACKAGE_PATHS = { "@nannier/canvas": ".", "@nannier/canvas-blur": "packages/canvas-blur" };
-const packageTag = (name, version) => name === "@nannier/canvas" ? `v${version}` : `canvas-blur@${version}`;
+// Canvas ships as one package, its Android capture module included (android/).
+const PACKAGE_PATHS = { "@nannier/canvas": "." };
+const packageTag = (name, version) => `v${version}`;
 function packages(cwd) {
   return Object.entries(PACKAGE_PATHS).filter(([, directory]) => fs.existsSync(path.join(cwd, directory, "package.json")))
     .map(([name, directory]) => {
@@ -173,15 +174,15 @@ export function seal(cwd, candidateDir, artifactDir) {
     run(cwd, "node", ["tools/licensegen/generate.mjs", directory]);
     const [pack] = JSON.parse(run(directory, "npm", ["pack", "--ignore-scripts", "--json", "--pack-destination", artifactDir, "--cache", path.join(artifactDir, "..", "npm-cache")]));
     if (pack.name !== pkg.name || pack.version !== pkg.version || path.basename(pack.filename) !== pack.filename) throw new Error("Packed a different package");
-    const required = ["LICENSE", "dist/index.js", "dist/index.d.ts", "package.json",
-      ...(pkg.directory === "." ? ["dist/native/index.js"] : ["expo-module.config.json", "android/build.gradle", "android/src/main/AndroidManifest.xml"])];
+    const required = ["LICENSE", "dist/index.js", "dist/index.d.ts", "dist/native/index.js", "package.json",
+      "expo-module.config.json", "android/build.gradle", "android/src/main/AndroidManifest.xml"];
     if (!required.every((name) => pack.files.some((file) => file.path === name))) throw new Error("Package is missing a required distribution file");
     const unpacked = fs.mkdtempSync(path.join(artifactDir, "unpacked-"));
     try {
       run(cwd, "tar", ["-xzf", path.join(artifactDir, pack.filename), "-C", unpacked]);
       const root = path.join(unpacked, "package");
-      run(cwd, "bun", [pkg.directory === "." ? "scripts/verify-package.ts" : "scripts/verify-blur-package.mjs", root]);
-      for (const child of pkg.directory === "." ? ["dist", "styles"] : ["dist", "android/src/main", "android/build.gradle", "expo-module.config.json", "README.md"]) {
+      run(cwd, "bun", ["scripts/verify-package.ts", root]);
+      for (const child of ["dist", "styles", "android/src/main", "android/build.gradle", "expo-module.config.json"]) {
         run(cwd, "diff", ["-r", path.join(directory, child), path.join(root, child)]);
       }
     } finally { fs.rmSync(unpacked, { recursive: true, force: true }); }
@@ -299,10 +300,9 @@ export function publish(cwd, candidateDir, artifactDir, npmPublish) {
   output("accepted", "true");
   if (m.release) {
     output("status", "publishing");
-    // Publish the optional implementation before the Canvas release that can use it.
     // Tag only after every registry operation succeeds; a partial release needs a
     // new changeset and candidate, never a retry of this accepted transaction.
-    const releases = m.packages.filter((p) => p.release).sort((a, b) => Number(a.directory === ".") - Number(b.directory === "."));
+    const releases = m.packages.filter((p) => p.release);
     for (const pkg of releases) npmPublish(path.join(artifactDir, m.packageFiles[pkg.name]));
     for (const pkg of releases) git(cwd, "tag", pkg.tag, m.candidate);
     git(cwd, "push", "origin", ...releases.map((pkg) => `refs/tags/${pkg.tag}:refs/tags/${pkg.tag}`));

@@ -5,8 +5,8 @@ import { resolveMaterial, type MaterialCapabilities } from "../src/style/glass-s
 // frostMethodProps picks expo-blur's Android blur-method prop by its API generation. Before
 // expo-blur 57 (no BlurTargetView export) the frost blurs the content behind it through the
 // legacy `experimentalBlurMethod`. From 57 the Android blur samples only a blur target, and
-// the kit hands it none: a capture plane exists only where @nannier/canvas-blur mounted its
-// capture host, where the Android host renders canvas-blur's own frost, and without one a
+// the kit hands it none: a capture plane exists only where Canvas's native capture module
+// mounted its capture host, where the Android host renders that module's own frost, and without one a
 // surface that needs a target resolves solid before any BlurView mounts (pinned below), so
 // from 57 it passes no method prop at all.
 

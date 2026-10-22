@@ -705,7 +705,7 @@ describe("text paints in the theme's face", () => {
 describe("the Android capture plane stays out of its own window", () => {
   // The window plane (GlassWindowBlurTargetContext) is the outermost OverlayProvider's
   // page content, and everything in the main window is inside it: a surface there that
-  // sampled it would sample itself, which @nannier/canvas-blur refuses. So it has two
+  // sampled it would sample itself, which the native capture module refuses. So it has two
   // readers only, OverlayProvider (which publishes it and keeps it from its own outlet)
   // and GlassModalBlurTarget (which hands it to a separate native window), and every
   // React Native Modal in the kit puts its content under the bridge, or its glass

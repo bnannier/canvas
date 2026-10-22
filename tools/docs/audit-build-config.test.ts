@@ -85,7 +85,8 @@ test("the native fingerprint follows the native build's inputs and nothing else"
   write("docs/app.json", "{}");
   write("docs/app.config.js", "module.exports = () => ({});");
   write("docs/plugins/with-cleartext-loopback.js", "module.exports = (config) => config;");
-  write("packages/canvas-blur/android/src/main/Frost.kt", "class Frost");
+  write("android/src/main/Frost.kt", "class Frost");
+  write("expo-module.config.json", "{}");
   write("src/index.ts", "export const value = 1;");
   const first = nativeFingerprint(root);
   expect(first).toMatch(/^[a-f0-9]{64}$/);
@@ -94,9 +95,9 @@ test("the native fingerprint follows the native build's inputs and nothing else"
   write("src/index.ts", "export const value = 2;");
   expect(nativeFingerprint(root)).toBe(first);
   expect(sourceFingerprint(root)).not.toBe(source);
-  // Build products and installs inside a native module do not count.
-  for (const product of ["node_modules/x/index.js", "dist/index.js", "android/build/out.dex", "android/.gradle/state.bin", "android/.cxx/cache", "android/.kotlin/session"]) {
-    write(`packages/canvas-blur/${product}`, "built");
+  // Build products inside the native module do not count.
+  for (const product of ["android/build/out.dex", "android/.gradle/state.bin", "android/.cxx/cache", "android/.kotlin/session"]) {
+    write(product, "built");
   }
   expect(nativeFingerprint(root)).toBe(first);
   // Every native input does.
@@ -108,7 +109,8 @@ test("the native fingerprint follows the native build's inputs and nothing else"
     ["docs/package.json", "{}"],
     ["docs/bun.lock", "{}"],
     ["docs/patches/expo-modules-jsi@57.1.1.patch", "diff"],
-    ["packages/canvas-blur/android/src/main/Frost.kt", "class Frost2"],
+    ["android/src/main/Frost.kt", "class Frost2"],
+    ["expo-module.config.json", "{\"platforms\":[\"android\"]}"],
   ];
   let last = first;
   for (const [path, text] of changes) {

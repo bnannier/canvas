@@ -11,7 +11,7 @@ import * as captureRuntime from "../src/style/glass-surface/capture-runtime.ts";
 import * as runtime from "../src/style/glass-surface/material-runtime.ts";
 import type { MaterialCapabilities } from "../src/style/glass-surface/material-resolution.ts";
 
-// The Android host's frost paths, which otherwise only ever run on a device: canvas-blur's
+// The Android host's frost paths, which otherwise only ever run on a device: the native
 // capture frost where a capture plane is ready (an overlay outlet, a bridged Modal), and
 // expo-blur's frost on its releases before 57. Both frost views are stand-ins that record
 // their props and render a marked View, and the capabilities are Android's by spy (the shared
@@ -104,7 +104,7 @@ async function mount(wrap: (node: ReactNode) => ReactNode = (node) => node, chil
 
 describe("the Android host's frost paths and their rim", () => {
   for (const [name, capabilities, order] of [
-    ["canvas-blur's capture frost in an overlay", overlay, ["capture-frost", "fill", "rim"]],
+    ["the native capture frost in an overlay", overlay, ["capture-frost", "fill", "rim"]],
     ["expo-blur's frost", expoBlur, ["frost", "fill", "rim"]],
   ] as const) {
     it(`draws a tall surface's rim in bands over ${name}`, async () => {

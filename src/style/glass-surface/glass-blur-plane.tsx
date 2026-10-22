@@ -28,8 +28,8 @@ export interface GlassBlurPlaneProps {
 }
 
 /**
- * Makes its children the blur plane: on Android, with `@nannier/canvas-blur` installed, a
- * capture host filling its parent, which the glass surfaces in a matching `GlassBlurScope`
+ * Makes its children the blur plane: on Android, in a build that links Canvas's native capture
+ * module, a capture host filling its parent, which the glass surfaces in a matching `GlassBlurScope`
  * frost. Off Android it renders its children only.
  */
 export function GlassBlurPlane({ children }: GlassBlurPlaneProps) {
