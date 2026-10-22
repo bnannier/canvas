@@ -57,6 +57,8 @@ describe("Navbar narrow collapse", () => {
     // Links live behind the closed menu now.
     expect(screen.queryByText("Deploys")).toBeNull();
     const trigger = screen.getByLabelText("Navigation menu");
+    // The menu button leads the bar, ahead of the brand.
+    expect(trigger.compareDocumentPosition(screen.getByText("Canvas")) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     fireEvent.click(trigger);
     fireEvent.click(screen.getByText("Deploys"));
     expect(picked).toBe(1);
