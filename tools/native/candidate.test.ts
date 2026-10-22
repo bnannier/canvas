@@ -55,12 +55,12 @@ test("prepared app inputs detect fixture edits while excluding generated native 
 });
 
 
-test("native capture identity binds both package tarballs and rejects a missing module digest", () => {
-  const native = { ...manifest, packages: [{ name: manifest.name, version: manifest.version }, { name: "@nannier/canvas-blur", version: "0.1.0" }],
-    packageFiles: { [manifest.name]: "canvas.tgz", "@nannier/canvas-blur": "blur.tgz" },
-    files: [...manifest.files, { name: "blur.tgz", sha256: "d".repeat(64) }] };
-  expect(packageIdentity(native).nativePackages).toEqual([{ packageName: "@nannier/canvas-blur", packageVersion: "0.1.0", packageSha256: "d".repeat(64) }]);
-  expect(packageArtifacts(native)).toHaveLength(2);
-  expect(() => packageIdentity({ ...native, files: manifest.files })).toThrow("Invalid native candidate packages");
-  expect(() => packageArtifacts({ ...native, packageFiles: { ...native.packageFiles, "@nannier/canvas-blur": "../blur.tgz" } })).toThrow("Invalid native candidate packages");
+test("the native candidate is the one Canvas tarball, which carries the capture module", () => {
+  const native = { ...manifest, packages: [{ name: manifest.name, version: manifest.version }], packageFiles: { [manifest.name]: manifest.packageFile } };
+  expect(packageIdentity(native)).not.toHaveProperty("nativePackages");
+  expect(packageArtifacts(native)).toEqual([{ name: manifest.name, version: manifest.version, filename: manifest.packageFile, sha256: manifest.files[0]!.sha256 }]);
+  const blur = { ...native, packages: [...native.packages, { name: "@nannier/canvas-blur", version: "0.1.0" }],
+    packageFiles: { ...native.packageFiles, "@nannier/canvas-blur": "blur.tgz" }, files: [...manifest.files, { name: "blur.tgz", sha256: "d".repeat(64) }] };
+  expect(() => packageArtifacts(blur)).toThrow("Invalid native candidate packages");
+  expect(() => packageArtifacts({ ...native, packageFiles: { [manifest.name]: "../canvas.tgz" } })).toThrow("Invalid native candidate packages");
 });

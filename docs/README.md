@@ -6,10 +6,10 @@ Expo Router codebase. The published `@nannier/canvas` package contains compiled
 `postinstall` creates a `node_modules/@nannier/canvas` symlink to the repository
 root, and `metro.config.js` resolves the package import to `src/index.ts` through
 that symlink. Metro also watches the source and resolves the native skin files.
-The optional `@nannier/canvas-blur` workspace is also linked and compiled during
-postinstall. Expo autolinks its Android implementation from `../packages`; rebuild
-the native app after changing that module. The root dev watcher recompiles its
-JavaScript. Generated documentation and examples live in-tree at `src/core`.
+Expo autolinks Canvas's Android capture module from the repository root
+(`nativeModulesDir: ".."` in `package.json`, read through the root's
+`expo-module.config.json`); rebuild the native app after changing `../android`.
+Generated documentation and examples live in-tree at `src/core`.
 
 ## Develop
 

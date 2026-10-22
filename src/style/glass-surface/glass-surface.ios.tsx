@@ -16,10 +16,10 @@ import {
  * saturation shift, the layer's tint painted over it, and a 1 px inset hairline). On iOS 26
  * and later it is Apple's Liquid Glass through expo-glass-effect for the functional, control
  * and dense layers, and expo-blur's frost with the layer's tint painted over its blur and a
- * specular rim for content and static surfaces and before iOS 26. On Android 12 and later with `@nannier/canvas-blur` installed, it is that
- * package's capture frost where a capture plane is ready (an overlay outlet, a bridged Modal),
- * and a surface in the page, which has none, resolves its solid skin; otherwise (without the
- * package, or on Android 11 and earlier, where it captures nothing) it is expo-blur's frost on
+ * specular rim for content and static surfaces and before iOS 26. On Android 12 and later in an Expo build that links Canvas's native
+ * capture module, it is that module's capture frost where a capture plane is ready (an overlay outlet, a bridged Modal),
+ * and a surface in the page, which has none, resolves its solid skin; otherwise (Expo Go, an app that excludes
+ * the module, or Android 11 and earlier, where it captures nothing) it is expo-blur's frost on
  * expo-blur's releases before 57, in the page as in an overlay, and from 57 the surface
  * resolves solid. A `brand` paints brand-tinted glass and a `tint` a wash.
  *

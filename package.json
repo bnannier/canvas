@@ -44,6 +44,9 @@
   "files": [
     "dist",
     "styles",
+    "android/build.gradle",
+    "android/src/main",
+    "expo-module.config.json",
     "CHANGELOG.md",
     "DESIGN.md"
   ],
@@ -52,12 +55,12 @@
   ],
   "scripts": {
     "prepare": "node -e \"if (require('node:fs').existsSync('.husky/install.mjs')) import('./.husky/install.mjs')\"",
-    "typecheck": "tsc --noEmit && tsc --noEmit -p tools/tsconfig.json && tsc --noEmit -p tools/axes/tsconfig.json && bun run --cwd packages/canvas-blur typecheck",
+    "typecheck": "tsc --noEmit && tsc --noEmit -p tools/tsconfig.json && tsc --noEmit -p tools/axes/tsconfig.json",
     "typecheck:e2e": "tsc --noEmit -p e2e/tsconfig.json",
     "lint": "eslint .",
-    "build": "rm -rf dist && tsc -p tsconfig.build.json && bun scripts/build-native.ts && bun run build:blur",
+    "build": "rm -rf dist && tsc -p tsconfig.build.json && bun scripts/build-native.ts",
     "dev": "bun scripts/dev.ts",
-    "verify-package": "bun scripts/verify-package.ts && node scripts/verify-blur-package.mjs",
+    "verify-package": "bun scripts/verify-package.ts",
     "prepublishOnly": "node tools/licensegen/generate.mjs && bun run build && bun run verify-package",
     "test": "bun test --timeout 20000 ./test ./tools",
     "e2e": "playwright test",
@@ -114,18 +117,17 @@
     "notices:gen": "bun tools/noticegen/generate.ts",
     "notices:gen:check": "bun tools/noticegen/generate.ts --check",
     "verify-native-consumer": "node scripts/verify-native-consumer.mjs",
-    "verify-consumer-support": "node scripts/verify-consumer-support.mjs",
-    "build:blur": "bun run --cwd packages/canvas-blur build"
+    "verify-consumer-support": "node scripts/verify-consumer-support.mjs"
   },
   "publishConfig": {
     "registry": "https://registry.npmjs.org",
     "access": "public"
   },
   "peerDependencies": {
-    "@nannier/canvas-blur": "*",
     "expo-blur": "*",
     "expo-clipboard": "*",
     "expo-glass-effect": "*",
+    "expo-modules-core": "*",
     "expo-video": "*",
     "react": ">=18",
     "react-native": ">=0.74",
@@ -134,9 +136,6 @@
     "react-native-svg": ">=14"
   },
   "peerDependenciesMeta": {
-    "@nannier/canvas-blur": {
-      "optional": true
-    },
     "expo-blur": {
       "optional": true
     },
@@ -144,6 +143,9 @@
       "optional": true
     },
     "expo-glass-effect": {
+      "optional": true
+    },
+    "expo-modules-core": {
       "optional": true
     },
     "expo-video": {
@@ -201,9 +203,5 @@
   "overrides": {
     "playwright-core": "1.64.0-alpha-2026-09-25"
   },
-  "react-native": "./dist/native/index.js",
-  "workspaces": [
-    ".",
-    "packages/*"
-  ]
+  "react-native": "./dist/native/index.js"
 }

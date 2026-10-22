@@ -75,10 +75,10 @@ jobs:
       - name: Lint
         run: bun run lint
 
-      - name: Build Canvas and optional Android module (dist)
+      - name: Build Canvas (dist)
         run: bun run build
 
-      - name: Verify both package artifacts
+      - name: Verify the package artifact and its Android capture module
         run: bun run verify-package
 
       - name: Install zsh for the opener's paste-shell quoting tests

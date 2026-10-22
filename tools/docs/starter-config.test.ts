@@ -38,13 +38,9 @@ describe("starter verification identity", () => {
     expect(config({ EXPO_PUBLIC_CANVAS_SMOKE: "1", CANVAS_SMOKE_IDENTITY: JSON.stringify(minimal) }).extra.canvasBuild).toEqual(minimal);
   });
 
-  it("preserves optional native package identity and validates every field", () => {
+  it("rejects a separate native package identity: Canvas ships its capture module itself", () => {
     const nativePackages = [{ packageName: "@nannier/canvas-blur", packageVersion: "0.1.0", packageSha256: "d".repeat(64) }];
-    const payload = { ...identity, nativePackages };
-    expect(config({ EXPO_PUBLIC_CANVAS_SMOKE: "1", CANVAS_SMOKE_IDENTITY: JSON.stringify(payload) }).extra.canvasBuild).toEqual(payload);
-    for (const invalid of [null, [], [null], [{ ...nativePackages[0], packageName: "other" }],
-      [{ ...nativePackages[0], packageVersion: "latest" }], [{ ...nativePackages[0], packageSha256: "bad" }],
-      [{ ...nativePackages[0], packageSha256: "d".repeat(64) + "\n" }], [...nativePackages, ...nativePackages]]) {
+    for (const invalid of [nativePackages, [], null]) {
       expect(() => config({ EXPO_PUBLIC_CANVAS_SMOKE: "1", CANVAS_SMOKE_IDENTITY: JSON.stringify({ ...identity, nativePackages: invalid }) })).toThrow("invalid nativePackages");
     }
   });

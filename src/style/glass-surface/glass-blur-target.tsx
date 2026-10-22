@@ -1,6 +1,6 @@
 // GlassBlurTargetHost, the base fork (web and iOS, and any platform without the
 // Android fork). The host is the piece of <OverlayProvider> that decides whether its
-// page content mounts inside a @nannier/canvas-blur capture host, the plane outlet
+// page content mounts inside a native capture host, the plane outlet
 // overlays and Modal sheets sample (an Android-only need; see GlassBlurTargetContext
 // in glass-surface.shared). Off Android no material ever reads a plane (the web blurs
 // through a backdrop filter, iOS through its native materials), so this base renders

@@ -317,7 +317,7 @@ export default function ThemingScreen() {
               "No semantic token changes: popover and card keep the same opaque values they carry in solid mode. Glass adds its own fills, glass-tint, glass-tint-content, glass-tint-control and glass-tint-dense, painted under the material by the surfaces of each layer",
               "Brand and status meanings remain readable in every material. Check contrast against actual backgrounds, including scrolling content; a tint token or a decorative rim alone does not establish it",
               "Solid surfaces retain their full opaque treatment without glass capture. Reduce Transparency and Increase Contrast require readable opaque treatment; Reduce Motion removes nonessential movement without requiring opacity by itself",
-              "Android blur needs a safe live backdrop target. The optional @nannier/canvas-blur integration on Android 12+ with Expo SDK 57 enables capture only while glass needs it. OverlayProvider supplies safe overlay targets. Missing or unsafe material uses the complete solid skin",
+              "Android blur needs a safe live backdrop target. Canvas's Android capture module on Android 12+ with Expo SDK 57 enables capture only while glass needs it. OverlayProvider supplies safe overlay targets. Missing or unsafe material uses the complete solid skin",
               "The CSS handoff always carries the web material's tints, blur and hairline; data-surface marks glass mode and gates the accessibility and print fallbacks that turn the material opaque. It paints no page backdrop of its own and supplies no native material",
             ]}
           />

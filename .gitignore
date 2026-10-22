@@ -33,7 +33,7 @@ blob-report/
 # MIT, which is the opposite of the intent (source stays all rights reserved).
 LICENSE
 
-# Optional native workspace build products stay local.
-packages/*/android/build/
-packages/*/android/.gradle/
-packages/*/android/.cxx/
+# Native capture module build products stay local.
+android/build/
+android/.gradle/
+android/.cxx/

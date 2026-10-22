@@ -21,8 +21,8 @@ const typings = readFileSync(join(RN, "Libraries/Components/View/ViewAccessibili
 const typedRoles = [...(/export type Role =([^;]*);/.exec(typings)?.[1] ?? "").matchAll(/'(\w+)'/g)].map((match) => match[1]!);
 
 /** The code of every module that renders on a device (the kit, the docs, the starter and smoke
- * apps, the blur package), comments stripped: they quote rejected roles. */
-const modules = ["src", "docs/src", "examples/starter/src", "examples/starter/smoke", "packages/canvas-blur/src"]
+ * apps), comments stripped: they quote rejected roles. */
+const modules = ["src", "docs/src", "examples/starter/src", "examples/starter/smoke"]
   .flatMap((dir) => [...new Glob(`${dir}/**/*.{ts,tsx}`).scanSync(ROOT)])
   .filter((file) => !file.endsWith(".d.ts"))
   .map((file) => ({

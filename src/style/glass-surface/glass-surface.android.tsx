@@ -1,5 +1,5 @@
-// Android material host: the canvas-blur capture frost when the app installed
-// @nannier/canvas-blur and a safe capture target is ready, else expo-blur's frost on its
+// Android material host: Canvas's native capture frost when the app's build links
+// its capture module and a safe capture target is ready, else expo-blur's frost on its
 // releases before 57 (from 57 a surface without a target resolves solid, see
 // frostMethodProps), then the layer's tint over the frost, then the specular rim. Only decoration changes when appearance
 // does. The web and iOS hosts are their own files (glass-surface.tsx and
@@ -25,10 +25,10 @@ const EMPTY_TARGET = { current: null };
  * saturation shift, the layer's tint painted over it, and a 1 px inset hairline). On iOS 26
  * and later it is Apple's Liquid Glass through expo-glass-effect for the functional, control
  * and dense layers, and expo-blur's frost with a specular rim for content and static surfaces
- * and before iOS 26. On Android 12 and later with `@nannier/canvas-blur` installed, it is that
- * package's capture frost where a capture plane is ready (an overlay outlet, a bridged Modal),
- * and a surface in the page, which has none, resolves its solid skin; otherwise (without the
- * package, or on Android 11 and earlier, where it captures nothing) it is expo-blur's frost on
+ * and before iOS 26. On Android 12 and later in an Expo build that links Canvas's native
+ * capture module, it is that module's capture frost where a capture plane is ready (an overlay outlet, a bridged Modal),
+ * and a surface in the page, which has none, resolves its solid skin; otherwise (Expo Go, an app that excludes
+ * the module, or Android 11 and earlier, where it captures nothing) it is expo-blur's frost on
  * expo-blur's releases before 57, in the page as in an overlay, and from 57 the surface
  * resolves solid. Every frost carries the layer's tint over its blur, as Dark Factory's
  * GlassSurface does. A `brand` paints brand-tinted glass and a `tint` a wash.
@@ -67,7 +67,7 @@ export function GlassSurface(props: GlassSurfaceProps) {
   const fill = materialFill(style, props.stateBorder);
   // The fill paints OVER either frost, then the rim, as on every frost path (`frostFill`,
   // glass-surface-native-frost-self-sample-1): a blur samples what is painted beneath it, so
-  // a fill there is blurred into the frost it belongs to and dyed by its veil. canvas-blur's
+  // a fill there is blurred into the frost it belongs to and dyed by its veil. The native
   // capture frost samples a separate plane and always took the fill over it; expo-blur's frost
   // before 57 now does too.
   const tintLayer = <View style={[fill, { backgroundColor: frostFill(theme, props), opacity: translucent ? SHEER_FILL_OPACITY : 1 }]} />;

@@ -18,7 +18,6 @@ const repoRoot = resolve(projectRoot, "..");
 // symlink, preserving its live source and native skin resolution.
 const links = [
   ["node_modules/@nannier/canvas", repoRoot],
-  ["node_modules/@nannier/canvas-blur", resolve(repoRoot, "packages/canvas-blur")],
 ];
 
 for (const [rel, target] of links) {

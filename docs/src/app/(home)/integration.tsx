@@ -8,10 +8,7 @@ import { PageNav } from "../../ui/page-nav";
 const INSTALL = `npm install @nannier/canvas react react-native react-native-svg`;
 
 const OPTIONAL_INSTALL = `# add only the ones whose feature you use
-npm install react-native-qrcode-svg expo-video react-native-safe-area-context expo-blur expo-glass-effect expo-clipboard
-
-# Android 12+ capture support in an Expo SDK 57 native build
-npm install @nannier/canvas-blur`;
+npm install react-native-qrcode-svg expo-video react-native-safe-area-context expo-blur expo-glass-effect expo-clipboard`;
 
 const QUICK_START = `import { ThemeProvider, Button } from "@nannier/canvas";
 
@@ -247,10 +244,14 @@ export default function IntegrationScreen() {
             supported legacy Android frost. The browser frost is built in and does not need this peer.
           </P>
           <P muted>
-            <InlineCode>@nannier/canvas-blur</InlineCode>: optional Android 12+ capture and frost for Expo SDK 57 native
-            builds, sampling a safe live backdrop: the page behind an overlay or a native Modal (see Overlay hosting).
-            Install it in the native app and rebuild so Expo autolinks the module. Capture runs only while needed.
-            Missing or unsafe material restores the complete opaque solid skin.
+            Android capture module: Canvas ships it in <InlineCode>@nannier/canvas</InlineCode> itself, Android 12+
+            capture and frost for Expo SDK 57 native builds, sampling a safe live backdrop: the page behind an overlay
+            or a native Modal (see Overlay hosting). Expo autolinks it when you rebuild the native app (Expo Go cannot
+            load it), and it binds through <InlineCode>expo-modules-core</InlineCode>, which every Expo app provides.
+            An app on an older SDK, or one that does not want it, leaves it out with{" "}
+            <InlineCode>{'"expo": { "autolinking": { "exclude": ["@nannier/canvas"] } }'}</InlineCode> in its
+            package.json. Capture runs only while needed. Missing or unsafe material restores the complete opaque solid
+            skin.
           </P>
           <P muted>
             <InlineCode>react-native-safe-area-context</InlineCode>: safe-area insets for the overlays that use them
@@ -283,7 +284,7 @@ export default function IntegrationScreen() {
             Mount one <InlineCode>OverlayProvider</InlineCode> inside <InlineCode>ThemeProvider</InlineCode> at the
             app's root, outside any scroller. It fills the window by default, and menus, selects, popovers and other
             floating content render above the whole page in its outlet, placed against the window. Without one, they
-            render inline where they are declared. On Android with <InlineCode>@nannier/canvas-blur</InlineCode>, the
+            render inline where they are declared. On Android, with Canvas's capture module linked, the
             root provider's page content is also the capture plane that glass overlays and native modals sample for
             their frost; a provider that does not fill its window has none, and glass there keeps its solid skin.
           </P>
@@ -301,8 +302,8 @@ export default function IntegrationScreen() {
             subtle
             items={[
               "Put it directly inside the Modal's content, outside the Modal's own `OverlayProvider separateWindow`, which gives the menus and popovers inside the Modal a host in its window",
-              "It frosts on Android 12 or newer with `@nannier/canvas-blur` in an Expo SDK 57 native build, under an app-root `OverlayProvider` that fills the window. iOS (Liquid Glass and its frost) and the web (a backdrop filter) need no plane, so there it provides nothing, as it does on Android with no root provider: the Modal's surfaces render as they would without it",
-              "It belongs only in a Modal. Placed in the main window, around page content or in a react-native-screens or expo-router modal screen (which shares the main window on Android), it hands its surfaces the plane they sit inside, which can never be sampled: `@nannier/canvas-blur` 0.2 or newer reports that once the frost has mounted, and every surface under the bridge then takes its complete solid skin (until the report, and for good with an older module, they show a tint with no blur)",
+              "It frosts on Android 12 or newer in an Expo SDK 57 native build that links Canvas's capture module, under an app-root `OverlayProvider` that fills the window. iOS (Liquid Glass and its frost) and the web (a backdrop filter) need no plane, so there it provides nothing, as it does on Android with no root provider: the Modal's surfaces render as they would without it",
+              "It belongs only in a Modal. Placed in the main window, around page content or in a react-native-screens or expo-router modal screen (which shares the main window on Android), it hands its surfaces the plane they sit inside, which can never be sampled: the capture module reports that once the frost has mounted, and every surface under the bridge then takes its complete solid skin (until the report, they show a tint with no blur)",
               "On Android a Modal's frost samples the outermost `OverlayProvider`'s page content only. It leaves out what is stacked above the page: the root outlet's toasts and pinned cards, any Modal beneath (a drawer opened from a drawer frosts the page, not the first drawer) and the Modal's own scrim and surfaces. iOS and the web blur the whole stack behind the Modal",
             ]}
           />
@@ -323,8 +324,8 @@ export default function IntegrationScreen() {
             items={[
               "The plane fills its parent, as a backdrop does, and takes no touches; keep the backdrop inside it and the surfaces that frost it outside it",
               "Scope only the surfaces that sit directly over the backdrop: every glass surface inside the scope frosts the plane, including those nested in a scoped card, so content with glass of its own belongs outside it",
-              "It frosts on Android 12 or newer with `@nannier/canvas-blur` in an Expo SDK 57 native build. Without it, and on iOS and the web (whose materials need no plane), both render their children only, and the surfaces render as they would without them",
-              "A surface placed inside its own plane can never sample it: `@nannier/canvas-blur` refuses that plane and the surface keeps its solid skin",
+              "It frosts on Android 12 or newer in an Expo SDK 57 native build that links Canvas's capture module. Without it, and on iOS and the web (whose materials need no plane), both render their children only, and the surfaces render as they would without them",
+              "A surface placed inside its own plane can never sample it: the capture module refuses that plane and the surface keeps its solid skin",
             ]}
           />
           <H3>Accessibility</H3>

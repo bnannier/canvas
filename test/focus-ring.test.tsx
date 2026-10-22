@@ -350,7 +350,7 @@ describe("outline styles native can parse", () => {
   });
 
   it("writes no other outline style anywhere a React Native tree renders", () => {
-    const files = ["src", "docs/src", "examples", "packages"]
+    const files = ["src", "docs/src", "examples"]
       .flatMap((dir) => [...new Glob(`${dir}/**/*.{ts,tsx}`).scanSync(ROOT)])
       .filter((file) => !file.endsWith(".d.ts") && !file.includes("node_modules/"));
     expect(files.length).toBeGreaterThan(200);

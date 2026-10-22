@@ -9,7 +9,7 @@ import * as base from "../src/style/glass-surface/glass-blur-plane.tsx";
 // the backdrop a page captures, and the scope that offers it to the glass surfaces above it.
 // An in-page surface has no safe plane on Android by default, so it paints its solid skin;
 // the docs' frame frosts their page backdrop through this. What must hold: off Android both
-// render their children only and offer nothing; on Android without @nannier/canvas-blur the
+// render their children only and offer nothing; on Android without the native capture module the
 // same (the surfaces stay solid rather than wait on a plane that never becomes ready); with
 // it, the plane's children mount inside a capture host and only the scope offers the plane.
 // The native capture itself is device-verified.
@@ -43,7 +43,7 @@ describe("the blur plane off Android (the base fork)", () => {
 });
 
 describe("the blur plane on Android", () => {
-  it("without @nannier/canvas-blur renders its children only and offers no plane", async () => {
+  it("without the native capture module renders its children only and offers no plane", async () => {
     const android = await import("../src/style/glass-surface/glass-blur-plane.android.tsx");
     const { result } = renderHook(() => android.useGlassBlurPlane());
     render(

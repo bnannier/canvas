@@ -30,8 +30,8 @@ Install the optional peers needed by your app's features. The package remains us
 | --- | --- | --- |
 | `react-native-qrcode-svg` | you render QR codes with `QRCode` | the accessible, sized frame remains empty and warns once in development |
 | `expo-glass-effect` | you want native Liquid Glass on supported iOS 26+ devices | forced glass uses `expo-blur` when available, otherwise the skin's solid fill; automatic surface mode remains solid |
-| `@nannier/canvas-blur` | you want Canvas backdrop capture and frost on Android 12+ in Expo SDK 57 (module 0.1.0+) | Canvas uses another supported material or the complete solid appearance |
 | `expo-blur` | you want static frost on iOS, including content beneath iOS 26 Liquid Glass, or supported legacy Android frost | surfaces use their solid fill when no other material is available; browser frost/lenses, native Liquid Glass and the Android capture module remain independent |
+| `expo-modules-core` | never by hand: every Expo app already provides it | Canvas's Android capture module is not linked (a React Native app without Expo), and surfaces use another supported material or the complete solid appearance |
 | `expo-video` | you play clips with `Video` | the frame keeps its size and poster, labeled, and warns once in development |
 | `expo-clipboard` | you want `CodeBlock` to copy text on native | web can use `navigator.clipboard`; native copying needs a supplied `onCopy` handler |
 | `react-native-safe-area-context` | you want safe-area insets in Canvas shells, with your app's `SafeAreaProvider` | safe-area wrappers render as plain views without insets |
@@ -39,9 +39,24 @@ Install the optional peers needed by your app's features. The package remains us
 ```bash
 # add any subset you actually use
 npm install react-native-qrcode-svg expo-video expo-glass-effect expo-blur expo-clipboard react-native-safe-area-context
-# Android native capture also requires rebuilding your custom native app
-npm install @nannier/canvas-blur
 ```
+
+### Android capture module
+
+Canvas includes a native Android module (`android/`) that captures the backdrop behind
+glass surfaces and frosts it on Android 12 and later. Expo links it into your app's
+Android build automatically: rebuild the native app after installing or upgrading
+Canvas (Expo Go cannot load it). It is built and verified with Expo SDK 57 and React
+Native 0.86. An app on an older SDK, or one that does not want it, leaves the module out
+of its native build with one line in its `package.json`:
+
+```json
+{ "expo": { "autolinking": { "exclude": ["@nannier/canvas"] } } }
+```
+
+Excluding it removes only this module, the only native code Canvas ships. Surfaces then
+use `expo-blur`'s frost or their complete solid appearance, exactly as on a device where
+the module is unavailable. iOS and the web are unaffected either way.
 
 ## Quick start
 
@@ -212,15 +227,15 @@ mode and material fallbacks must restore opaque fill, foreground, boundary and
 elevation without losing input focus or application state. Android blur needs a
 safe live backdrop target; a tint-only path does not establish native blur support.
 
-On Android 12+ with Expo SDK 57, the optional `@nannier/canvas-blur` integration
+On Android 12+ with Expo SDK 57, Canvas's [Android capture module](#android-capture-module)
 keeps a stable native content host and records only while a glass surface uses it.
 `OverlayProvider` supplies its overlays a sibling target, its own page, and
 `GlassModalBlurTarget` hands a native `Modal` the root provider's page (the root
 provider must fill the window). A Modal's frost samples that page only, not the
 toasts above it, a Modal beneath or its own scrim; iOS and the web blur the whole
 stack. Without a safe target, supported module or hardware material, the complete
-solid skin remains visible, including a bridge placed outside a Modal, which
-`@nannier/canvas-blur` 0.2+ reports. Modern Expo blur targets are not kept
+solid skin remains visible, including a bridge placed outside a Modal, which the
+module reports. Modern Expo blur targets are not kept
 recording in solid mode. The Android module requires a native rebuild; Expo Go
 does not contain it.
 

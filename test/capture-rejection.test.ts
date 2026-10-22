@@ -1,14 +1,14 @@
 import { describe, expect, it } from "bun:test";
-import { forCurrentTarget } from "../packages/canvas-blur/src/target-rejection.ts";
-import type { TargetRejectedEvent } from "../packages/canvas-blur/src/index.tsx";
+import { forCurrentTarget } from "../src/style/glass-surface/capture-rejection.ts";
+import type { TargetRejectedEvent } from "../src/style/glass-surface/capture-module.tsx";
 
-// @nannier/canvas-blur's FrostView forwards a refusal only for the host it names now:
+// The native capture module's FrostView forwards a refusal only for the host it names now:
 // the native event can arrive after the target ref has moved to another host, and a
 // stale report must not make Canvas's bridge withdraw a plane nobody refused.
 
 const refusal = (targetId: number): TargetRejectedEvent => ({ nativeEvent: { targetId, reason: "ancestor" } });
 
-describe("canvas-blur's refusal filter", () => {
+describe("the capture module's refusal filter", () => {
   it("forwards a refusal of the host the frost names", () => {
     const seen: TargetRejectedEvent[] = [];
     forCurrentTarget(7, (event) => seen.push(event))?.(refusal(7));
