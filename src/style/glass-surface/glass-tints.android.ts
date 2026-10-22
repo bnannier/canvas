@@ -1,6 +1,6 @@
 import { glassByScheme, type ColorScheme, type GlassTokens, type Palette } from "../tokens.js";
 
-// The glass material's tints on Android, under the canvas-blur capture and expo-blur
+// The glass material's tints on Android, under the native capture and expo-blur
 // frost, one per density layer, for the active scheme. The ThemeProvider publishes them
 // as `theme.glass`; each platform resolves its own file (glass-tints.ts, .ios.ts,
 // .android.ts), so a web material change never moves a native one. The owner froze the

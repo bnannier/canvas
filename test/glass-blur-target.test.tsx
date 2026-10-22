@@ -13,7 +13,7 @@ import { resolveCaptureComponents } from "../src/style/glass-surface/capture-run
 import { composite } from "../src/style/color.ts";
 import { OverlayProvider, Portal } from "../src/style/portal.tsx";
 
-// The Android capture-plane wiring (@nannier/canvas-blur). What must hold, per
+// The Android capture-plane wiring (Canvas's native capture module). What must hold, per
 // GlassBlurTargetContext in glass-surface.shared: a surface may only receive a
 // plane it is NOT a native descendant of (sampling an ancestor would record the
 // frost itself, a render-node cycle the module refuses), so OverlayProvider gives

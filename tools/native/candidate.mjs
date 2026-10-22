@@ -13,7 +13,7 @@ export function packageArtifacts(manifest) {
   return entries.map((pkg) => {
     const filename = files[pkg.name];
     const digest = manifest.files?.find((file) => file.name === filename)?.sha256;
-    if (!["@nannier/canvas", "@nannier/canvas-blur"].includes(pkg.name) || !/^\d+\.\d+\.\d+$/.test(pkg.version)
+    if (pkg.name !== "@nannier/canvas" || !/^\d+\.\d+\.\d+$/.test(pkg.version)
       || typeof filename !== "string" || !/^[a-zA-Z0-9_.-]+\.tgz$/.test(filename)
       || !/^[a-f0-9]{64}$/.test(digest ?? "")) throw new Error("Invalid native candidate packages");
     return { name: pkg.name, version: pkg.version, filename, sha256: digest };
@@ -25,13 +25,10 @@ export function packageIdentity(manifest) {
   if (manifest.name !== "@nannier/canvas" || !/^\d+\.\d+\.\d+$/.test(manifest.version)
     || !/^[a-f0-9]{40}$/.test(manifest.source) || !/^[a-f0-9]{40}$/.test(manifest.candidate)
     || !/^[a-f0-9]{64}$/.test(digest ?? "")) throw new Error("Invalid native candidate identity");
-  const nativePackages = manifest.packages ? packageArtifacts(manifest).filter((pkg) => pkg.name !== manifest.name)
-    .map((pkg) => ({ packageName: pkg.name, packageVersion: pkg.version, packageSha256: pkg.sha256 })) : [];
   return {
     schema: 1, inputMode: "package", packageName: manifest.name,
     sourceRevision: manifest.source, candidateRevision: manifest.candidate,
     packageVersion: manifest.version, packageSha256: digest,
-    ...(nativePackages.length ? { nativePackages } : {}),
   };
 }
 

@@ -5,8 +5,8 @@
     "expoModules": 27,
     "classicModules": 9,
     "bakedData": 3,
-    "nativeOnly": 14,
-    "total": 122
+    "nativeOnly": 13,
+    "total": 121
   },
   "bakedData": [
     "@expo-google-fonts/geist-mono",
@@ -16,7 +16,6 @@
   "nativeOnly": [
     "@expo/dom-webview",
     "@expo/log-box",
-    "@nannier/canvas-blur",
     "expo-eas-client",
     "expo-file-system",
     "expo-json-utils",
@@ -59,9 +58,6 @@
     ],
     "@nannier/canvas": [
       "docs/node_modules/@nannier/canvas"
-    ],
-    "@nannier/canvas-blur": [
-      "packages/canvas-blur"
     ],
     "@radix-ui/primitive": [
       "docs/node_modules/@radix-ui/primitive"

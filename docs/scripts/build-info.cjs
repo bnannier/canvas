@@ -43,17 +43,17 @@ function sourceFingerprint(root) {
 
 // What a native build of the docs app is made from beyond its bundle: the app config and
 // the config plugins `expo prebuild` generates the native project from, the dependency
-// manifest, lockfile and patches that decide the native code under node_modules, and the
-// local native modules autolinked from packages/ (docs/package.json `nativeModulesDir`),
-// their build products and installs left out. The component audit's build stamps it
+// manifest, lockfile and patches that decide the native code under node_modules, and
+// Canvas's own Android capture module autolinked from the repository root (android/ and
+// expo-module.config.json; docs/package.json `nativeModulesDir`), its build products left out. The component audit's build stamps it
 // (tools/audit/native/build.ts) and its capture host refuses an app whose stamp is not
 // this checkout's, the native half of what sourceFingerprint is for the JS.
 const NATIVE_BUILD_PRODUCTS = new Set(["node_modules", "dist", "build", ".gradle", ".cxx", ".kotlin"]);
 
 function nativeFingerprint(root) {
   return fingerprint(root, {
-    directories: ["docs/plugins", "docs/patches", "packages"],
-    files: ["docs/app.json", "docs/app.config.js", "docs/package.json", "docs/bun.lock"],
+    directories: ["docs/plugins", "docs/patches", "android"],
+    files: ["docs/app.json", "docs/app.config.js", "docs/package.json", "docs/bun.lock", "expo-module.config.json"],
     skip: NATIVE_BUILD_PRODUCTS,
   });
 }

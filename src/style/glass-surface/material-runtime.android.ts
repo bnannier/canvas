@@ -3,8 +3,8 @@ import type { MaterialCapabilities } from "./material-resolution.js";
 import type { FrostProps } from "./material-runtime.js";
 import { nativeCaptureAvailable } from "./capture-runtime.js";
 
-// Android's material runtime: expo-blur's frost, and the canvas-blur capture
-// integration when the app installed it (capture-runtime.ts). The web and iOS runtimes
+// Android's material runtime: expo-blur's frost, and Canvas's native capture
+// module when the app's build links it (capture-runtime.ts). The web and iOS runtimes
 // are their own files. The optional peer is loaded through the guarded require that
 // material-runtime.ts explains; keep the require directly inside the try block, or
 // Metro registers it as a required dependency.

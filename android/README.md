@@ -1,13 +1,15 @@
-# Canvas Blur
+# Android capture module
 
-Optional native Android capture and frost renderer for `@nannier/canvas`.
-Install `@nannier/canvas-blur` 0.1.0 or newer alongside Canvas in an Expo SDK 57 app, then rebuild
-the native app so Expo autolinking includes the Android module. Expo Go cannot load
-this custom module. Canvas remains installable without this package.
+Canvas's native Android capture and frost renderer, the `CanvasBlur` Expo module. It ships
+inside `@nannier/canvas`: Expo autolinks it from the package root's
+`expo-module.config.json`, so an Expo SDK 57 app gets it by installing Canvas and
+rebuilding its native app. Expo Go cannot load it, and an app leaves it out with
+`"expo": { "autolinking": { "exclude": ["@nannier/canvas"] } }`. Its JavaScript binding is
+`src/style/glass-surface/capture-module.tsx`, loaded by `capture-runtime.ts`.
 
 The native renderer uses Android 12 (API 31) RenderNode and RenderEffect. Earlier
-Android versions expose `available: false`; Canvas chooses another supported
-material or its complete solid appearance. This package has no iOS native module.
+Android versions report `supported: false`; Canvas chooses another supported
+material or its complete solid appearance. There is no iOS native module.
 
 `PaintHost` preserves React Native's original background, border, corners and
 overflow. Its content `CaptureHost` records an eligible backdrop only while
@@ -22,19 +24,17 @@ A direct decorative `CaptureHost` records its own paint without a parent underla
 separate-window offsets. Ancestor capture targets are rejected: a host that contains
 the frost would record the frost that samples it. The frost then draws no blur and
 calls its optional `onTargetRejected` once for that target, with
-`{ targetId, reason: "ancestor" }`, so the app can show its complete solid appearance
-instead (0.2.0 and newer; an older module refuses the same target silently). A host
-that is merely detached reports through `onAvailabilityChange` instead. Idle and
-detached hosts release their capture recordings, while their foreground children
+`{ targetId, reason: "ancestor" }`, so Canvas shows its complete solid appearance
+instead. A host that is merely detached reports through `onAvailabilityChange` instead.
+Idle and detached hosts release their capture recordings, while their foreground children
 remain mounted. `getCaptureStats()` supplies lifecycle diagnostics for native
 verification.
 
 Canvas requires the complete `PaintHost`, `CaptureHost` and `FrostView` integration
 before activating this renderer. A missing or partial integration selects the
 complete solid appearance for surfaces that require this native capture path.
-Canvas owns role selection and capture coordination; application components should
-normally consume Canvas surfaces instead of coordinating these primitives directly.
+Canvas owns role selection and capture coordination; these primitives are internal.
 
-Development builds compile with `bun run build:blur` from the repository root.
-The docs app links the built package and autolinks `../packages`; it does not pin
-a local directory dependency in its package manifest.
+The instrumentation tests in `src/androidTest` run against the sealed release tarball's
+installed copy of this module (`scripts/native-smoke.mjs instrument`, see
+`tools/native/README.md`); they are not part of the published package.

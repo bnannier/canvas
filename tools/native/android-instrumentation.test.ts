@@ -25,9 +25,9 @@ function candidate(withManifest = true) {
   git("init", "-q");
   git("config", "user.name", "Canvas tests");
   git("config", "user.email", "canvas-tests@example.invalid");
-  const source = "packages/canvas-blur/android/src/androidTest/java/io/ionize/canvas/blur/CaptureTest.kt";
+  const source = "android/src/androidTest/java/io/ionize/canvas/blur/CaptureTest.kt";
   write(path.join(repo, source), "package io.ionize.canvas.blur\nclass CaptureTest\n");
-  if (withManifest) write(path.join(repo, "packages/canvas-blur/android/src/androidTest/AndroidManifest.xml"), '<manifest package="io.ionize.canvas.blur.test"/>');
+  if (withManifest) write(path.join(repo, "android/src/androidTest/AndroidManifest.xml"), '<manifest package="io.ionize.canvas.blur.test"/>');
   write(path.join(repo, "tools/native/canvas-blur-test.init.gradle"), fs.readFileSync(path.join(root, "tools/native/canvas-blur-test.init.gradle"), "utf8"));
   git("add", ".");
   git("commit", "-qm", "Candidate inputs");
@@ -41,7 +41,7 @@ test("instrumentation snapshots the candidate revision, including manifest, and 
   const inputs = preserveAndroidInstrumentation(repo, output, revision);
   const paths = androidInstrumentationPaths(output);
   expect(fs.readFileSync(path.join(paths.inputs, source), "utf8")).toContain("class CaptureTest");
-  expect(Object.keys(inputs.files)).toContain("packages/canvas-blur/android/src/androidTest/AndroidManifest.xml");
+  expect(Object.keys(inputs.files)).toContain("android/src/androidTest/AndroidManifest.xml");
   expect(() => assertAndroidInstrumentationInputs(output, { candidateRevision: revision }, inputs)).not.toThrow();
   expect(() => assertAndroidInstrumentationInputs(output, { candidateRevision: "a".repeat(40) }, inputs)).toThrow("differ");
   write(path.join(paths.inputs, source), "altered preserved test");
@@ -88,21 +88,23 @@ function runnerFixture(mode: string) {
   const { repo, revision } = candidate(mode !== "pass-no-manifest");
   const output = temporaryDirectory();
   const app = path.join(output, "app");
-  const files = androidInstrumentationPaths(output, app);
+  const name = "@nannier/canvas";
+  // The starter can still declare Canvas under an older scope; the sealed tarball installs there.
+  const installedAs = mode === "pass-scope-alias" ? "@nannier-com/canvas" : name;
+  const files = androidInstrumentationPaths(output, app, installedAs);
   const inputs = preserveAndroidInstrumentation(repo, output, revision);
-  const name = "@nannier/canvas-blur";
   const unpacked = path.join(output, "unpacked", name, "package");
-  write(path.join(unpacked, "package.json"), JSON.stringify({ name, version: "0.1.0" }));
+  write(path.join(unpacked, "package.json"), JSON.stringify({ name, version: "2.0.0" }));
   write(path.join(unpacked, "android/src/main/Production.kt"), "sealed production");
   fs.mkdirSync(path.dirname(path.dirname(files.module)), { recursive: true });
   fs.cpSync(unpacked, path.dirname(files.module), { recursive: true });
   const binary = path.join(app, "android/app/build/outputs/apk/release/app-release.apk");
   write(binary, "sealed release binary");
   write(path.join(app, "package.json"), "{}");
-  write(path.join(output, "blur.tgz"), "sealed archive fixture");
+  write(path.join(output, "package.tgz"), "sealed archive fixture");
   const identity = { candidateRevision: revision, sourceRevision: revision, packageName: "@nannier/canvas", packageVersion: "2.0.0" };
   write(path.join(output, "context.json"), JSON.stringify({ schema: 2, identity, appSources: appInventory(app),
-    packages: [{ name, version: "0.1.0", filename: "blur.tgz", sha256: sha256(path.join(output, "blur.tgz")) }], androidInstrumentation: inputs }));
+    packages: [{ name, version: "2.0.0", filename: "package.tgz", sha256: sha256(path.join(output, "package.tgz")), installedAs }], androidInstrumentation: inputs }));
   write(path.join(output, "android-build.json"), JSON.stringify({ identity, binary, digest: sha256(binary) }));
   const adb = path.join(output, "bin/adb");
   write(adb, `#!${process.execPath}\nconsole.log(process.argv.at(-1) === 'ro.build.version.sdk' ? '35' : 'test/fingerprint');\n`);
@@ -126,7 +128,7 @@ ${mode === "fail" ? "process.exit(7);" : ""}
   return { output, files, unpacked, env: { ...cleanEnv, PATH: path.join(output, "bin") + path.delimiter + process.env.PATH } };
 }
 
-for (const mode of ["pass", "pass-no-manifest", "pass-alias"]) test(`native runner preserves reports and proves sealed bytes (${mode}) without a device in tooling tests`, () => {
+for (const mode of ["pass", "pass-no-manifest", "pass-alias", "pass-scope-alias"]) test(`native runner preserves reports and proves sealed bytes (${mode}) without a device in tooling tests`, () => {
   const { output, files, unpacked, env } = runnerFixture(mode);
   const requested = mode === "pass-alias" ? path.join(temporaryDirectory(), "candidate") : output;
   if (mode === "pass-alias") fs.symlinkSync(output, requested);

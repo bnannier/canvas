@@ -29,7 +29,7 @@ const ambientMajor = process.env.RELEASE_MAJOR;
 beforeEach(() => { delete process.env.RELEASE_MAJOR; });
 afterAll(() => { if (ambientMajor === undefined) delete process.env.RELEASE_MAJOR; else process.env.RELEASE_MAJOR = ambientMajor; });
 
-function fixture(bump = "patch", blurBump?: string) {
+function fixture(bump = "patch", otherPackageBump?: string) {
   const dir = root();
   const remote = path.join(dir, "origin.git");
   const repo = path.join(dir, "repo");
@@ -40,20 +40,21 @@ function fixture(bump = "patch", blurBump?: string) {
   git(repo, "config", "user.email", "release@example.test");
   git(repo, "config", "core.hooksPath", path.join(dir, "no-hooks"));
   git(repo, "remote", "add", "origin", remote);
-  const { main, types, exports, peerDependencies, peerDependenciesMeta, "react-native": nativeEntry } = JSON.parse(fs.readFileSync(path.resolve("package.json"), "utf8"));
-  write(path.join(repo, "package.json"), { name: "@nannier/canvas", version: "2.3.4", main, types, exports, "react-native": nativeEntry, peerDependencies, peerDependenciesMeta, files: ["dist", "styles"], scripts: { changeset: "changeset", "version-packages": "changeset version" } });
+  const { main, types, exports, peerDependencies, peerDependenciesMeta, "react-native": nativeEntry, files } = JSON.parse(fs.readFileSync(path.resolve("package.json"), "utf8"));
+  write(path.join(repo, "package.json"), { name: "@nannier/canvas", version: "2.3.4", main, types, exports, "react-native": nativeEntry, peerDependencies, peerDependenciesMeta, files, scripts: { changeset: "changeset", "version-packages": "changeset version" } });
   fs.writeFileSync(path.join(repo, "CHANGELOG.md"), "# Changes\n");
   fs.mkdirSync(path.join(repo, ".changeset"));
   fs.copyFileSync(path.resolve(".changeset/config.json"), path.join(repo, ".changeset/config.json"));
   if (bump) fs.writeFileSync(path.join(repo, ".changeset/fix.md"), `---\n"@nannier/canvas": ${bump}\n---\n\nCorrect a behavior.\n`);
-  if (blurBump !== undefined) {
+  if (otherPackageBump !== undefined) {
+    // A second workspace package, which Canvas never ships: it publishes as one package.
     const metadataFile = path.join(repo, "package.json");
     const metadata = JSON.parse(fs.readFileSync(metadataFile, "utf8"));
     metadata.workspaces = [".", "packages/*"];
     write(metadataFile, metadata);
     fs.mkdirSync(path.join(repo, "packages/canvas-blur"), { recursive: true });
-    write(path.join(repo, "packages/canvas-blur/package.json"), { ...JSON.parse(fs.readFileSync(path.resolve("packages/canvas-blur/package.json"), "utf8")), version: "0.0.0" });
-    if (blurBump) fs.writeFileSync(path.join(repo, ".changeset/blur.md"), `---\n"@nannier/canvas-blur": ${blurBump}\n---\n\nAdd optional Android backdrop capture.\n`);
+    write(path.join(repo, "packages/canvas-blur/package.json"), { name: "@nannier/canvas-blur", version: "0.2.0" });
+    fs.writeFileSync(path.join(repo, ".changeset/blur.md"), `---\n"@nannier/canvas-blur": ${otherPackageBump}\n---\n\nAdd optional Android backdrop capture.\n`);
   }
   git(repo, "add", ".");
   git(repo, "commit", "-m", "source");
@@ -67,7 +68,7 @@ function fixture(bump = "patch", blurBump?: string) {
 
 function artifacts(f: ReturnType<typeof fixture>, c: ReturnType<typeof readCandidate>) {
   fs.mkdirSync(f.artifacts);
-  const packageFiles = Object.fromEntries(c.packages.map((p) => [p.name, p.directory === "." ? "package.tgz" : "blur.tgz"]));
+  const packageFiles = Object.fromEntries(c.packages.map((p) => [p.name, "package.tgz"]));
   const files = [...Object.values(packageFiles), "docs.tgz"].map((name) => {
     const bytes = Buffer.from(name);
     fs.writeFileSync(path.join(f.artifacts, name), bytes);
@@ -89,60 +90,31 @@ function advance(f: ReturnType<typeof fixture>) {
 }
 
 describe("frozen release transaction", () => {
-  test("versions both root and module workspaces, publishes implementation first, and tags independently", () => {
-    const f = fixture("minor", "minor");
+  test("versions and tags the one Canvas package", () => {
+    const f = fixture("minor");
     const c = prepare(f.repo, f.candidateDir, f.source, true);
-    expect(c.packages.map((p) => [p.name, p.version, p.release])).toEqual([
-      ["@nannier/canvas", "2.4.0", true], ["@nannier/canvas-blur", "0.1.0", true],
-    ]);
-    expect(fs.existsSync(path.join(f.repo, "packages/canvas-blur/CHANGELOG.md"))).toBe(true);
+    expect(c.packages.map((p) => [p.name, p.version, p.release, p.tag])).toEqual([["@nannier/canvas", "2.4.0", true, "v2.4.0"]]);
     artifacts(f, c);
     const files: string[] = [];
     publish(f.repo, f.candidateDir, f.artifacts, (file) => files.push(path.basename(file)));
-    expect(files).toEqual(["blur.tgz", "package.tgz"]);
-    expect(git(f.repo, "ls-remote", "origin", "refs/tags/*")).toContain("refs/tags/canvas-blur@0.1.0");
+    expect(files).toEqual(["package.tgz"]);
     expect(git(f.repo, "ls-remote", "origin", "refs/tags/*")).toContain("refs/tags/v2.4.0");
   }, 30_000);
 
-  test("module-only changesets release the module without republishing unchanged Canvas", () => {
-    const f = fixture("", "minor");
-    const c = prepare(f.repo, f.candidateDir, f.source, true);
-    expect(c.version).toBe("2.3.4");
-    expect(c.packages[0].release).toBe(false);
-    expect(c.packages[1].version).toBe("0.1.0");
-    artifacts(f, c);
-    const files: string[] = [];
-    publish(f.repo, f.candidateDir, f.artifacts, (file) => files.push(path.basename(file)));
-    expect(files).toEqual(["blur.tgz"]);
-    expect(git(f.repo, "ls-remote", "origin", "refs/tags/*")).not.toContain("refs/tags/v2.3.4");
+  test("refuses a changeset for any package other than Canvas before a version is consumed", () => {
+    const f = fixture("patch", "patch");
+    expect(() => prepare(f.repo, f.candidateDir, f.source, true)).toThrow("Unregistered package in release plan");
+    expect(git(f.repo, "rev-parse", "HEAD")).toBe(f.source);
+    expect(git(f.repo, "ls-remote", "origin", "refs/heads/main").split(/\s/)[0]).toBe(f.source);
   }, 30_000);
 
-  test("root-only changesets retain and seal an unchanged module", () => {
-    const f = fixture("patch", "");
-    const c = prepare(f.repo, f.candidateDir, f.source, true);
-    expect(c.packages[1].release).toBe(false);
-    artifacts(f, c);
-    const manifest = verifyArtifacts(f.repo, f.candidateDir, f.artifacts);
-    expect(manifest.files).toHaveLength(3);
-    fs.appendFileSync(path.join(f.artifacts, "blur.tgz"), "tampered");
-    expect(() => verifyArtifacts(f.repo, f.candidateDir, f.artifacts)).toThrow("checksum");
-  }, 30_000);
-
-  test("root major authorization never authorizes a module major", () => {
-    const f = fixture("", "major");
-    const previous = process.env.RELEASE_MAJOR;
-    process.env.RELEASE_MAJOR = "3.0.0";
-    try { expect(prepare(f.repo, f.candidateDir, f.source, true).status).toBe("blocked-major"); }
-    finally { if (previous === undefined) delete process.env.RELEASE_MAJOR; else process.env.RELEASE_MAJOR = previous; }
-  }, 30_000);
-
-  test("second-package publication failure leaves no tags and never retries an accepted candidate", () => {
-    const f = fixture("patch", "minor");
+  test("a registry failure leaves no tag and never retries an accepted candidate", () => {
+    const f = fixture("patch");
     const c = prepare(f.repo, f.candidateDir, f.source, true);
     artifacts(f, c);
     let calls = 0;
-    expect(() => publish(f.repo, f.candidateDir, f.artifacts, () => { if (++calls === 2) throw new Error("second registry failure"); })).toThrow("second registry failure");
-    expect(calls).toBe(2);
+    expect(() => publish(f.repo, f.candidateDir, f.artifacts, () => { calls += 1; throw new Error("registry failure"); })).toThrow("registry failure");
+    expect(calls).toBe(1);
     expect(git(f.repo, "ls-remote", "origin", "refs/tags/*")).toBe("");
     expect(publish(f.repo, f.candidateDir, f.artifacts, () => { throw new Error("no retry"); })).toBe("stale");
   }, 30_000);
@@ -162,18 +134,19 @@ describe("frozen release transaction", () => {
   // invokes npm pack and verifies unpacked files. Give those subprocesses their
   // own bounded budget instead of Bun's five-second unit-test default.
   test.skipIf(!fs.existsSync(path.resolve("dist/index.js")))("seals real npm tarballs and docs archive, then verifies their unpacked bytes", () => {
-    const f = fixture("patch", "minor");
+    const f = fixture("patch");
     const c = prepare(f.repo, f.candidateDir, f.source, true);
     fs.cpSync(path.resolve("dist"), path.join(f.repo, "dist"), { recursive: true });
     fs.cpSync(path.resolve("styles"), path.join(f.repo, "styles"), { recursive: true });
     fs.mkdirSync(path.join(f.repo, "scripts"));
     fs.copyFileSync(path.resolve("scripts/verify-package.ts"), path.join(f.repo, "scripts/verify-package.ts"));
-    fs.copyFileSync(path.resolve("scripts/verify-blur-package.mjs"), path.join(f.repo, "scripts/verify-blur-package.mjs"));
-    for (const file of ["dist", "android/src/main", "android/build.gradle", "expo-module.config.json", "README.md"]) {
-      const destination = path.join(f.repo, "packages/canvas-blur", file);
-      fs.mkdirSync(path.dirname(destination), { recursive: true });
-      fs.cpSync(path.resolve("packages/canvas-blur", file), destination, { recursive: true });
+    // The capture module's sources, plus build output and tests the files allowlist must keep out.
+    for (const file of ["android/src/main", "android/src/androidTest", "android/build.gradle", "expo-module.config.json"]) {
+      fs.mkdirSync(path.dirname(path.join(f.repo, file)), { recursive: true });
+      fs.cpSync(path.resolve(file), path.join(f.repo, file), { recursive: true });
     }
+    fs.mkdirSync(path.join(f.repo, "android/build/intermediates"), { recursive: true });
+    fs.writeFileSync(path.join(f.repo, "android/build/intermediates/stale.txt"), "local build output");
     fs.mkdirSync(path.join(f.repo, "tools/licensegen"), { recursive: true });
     fs.copyFileSync(path.resolve("tools/licensegen/generate.mjs"), path.join(f.repo, "tools/licensegen/generate.mjs"));
     fs.mkdirSync(path.join(f.repo, "docs/dist"), { recursive: true });
@@ -185,12 +158,14 @@ describe("frozen release transaction", () => {
     expect(JSON.parse(packed).version).toBe("2.3.5");
     expect(execFileSync("tar", ["-xOf", path.join(f.artifacts, "docs.tgz"), "./index.html"], { encoding: "utf8" })).toBe("Validated docs bytes");
     expect(execFileSync("tar", ["-xOf", path.join(f.artifacts, m.packageFile), "package/LICENSE"], { encoding: "utf8" })).toContain("MIT License");
-    const blur = path.join(f.artifacts, m.packageFiles["@nannier/canvas-blur"]);
-    expect(execFileSync("tar", ["-xOf", blur, "package/LICENSE"], { encoding: "utf8" })).toContain("npm as @nannier/canvas-blur");
-    const entries = execFileSync("tar", ["-tzf", blur], { encoding: "utf8" });
-    expect(entries).toContain("android/src/main/java/io/ionize/canvas/blur/CanvasBlurModule.kt");
-    expect(entries).not.toContain("package/src/");
+    expect(Object.keys(m.packageFiles)).toEqual(["@nannier/canvas"]);
+    const entries = execFileSync("tar", ["-tzf", path.join(f.artifacts, m.packageFile)], { encoding: "utf8" });
+    expect(entries).toContain("package/expo-module.config.json");
+    expect(entries).toContain("package/android/build.gradle");
+    expect(entries).toContain("package/android/src/main/java/io/ionize/canvas/blur/CanvasBlurModule.kt");
+    expect(entries).not.toContain("androidTest");
     expect(entries).not.toContain("android/build/");
+    expect(entries).not.toContain("package/src/");
     expect(entries).not.toContain("node_modules/");
   }, 60_000);
 

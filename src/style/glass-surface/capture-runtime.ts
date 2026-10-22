@@ -1,37 +1,27 @@
-import { useCallback, type ComponentType, type Ref, type RefObject } from "react";
-import { findNodeHandle, Platform, type View, type ViewProps } from "react-native";
+import { useCallback, type RefObject } from "react";
+import { findNodeHandle, Platform, type View } from "react-native";
+import { createCaptureModule, type CaptureModule, type ExpoModulesCore } from "./capture-module.js";
 import { captureTargetOwner } from "./capture-target.js";
 
+export type { CaptureHostProps } from "./capture-module.js";
+
 type AvailabilityEvent = { nativeEvent: { targetId: number; available: boolean } };
+type CaptureIntegration = Partial<Pick<CaptureModule, "available" | "PaintHost" | "CaptureHost" | "FrostView">>;
 
-export interface CaptureHostProps extends ViewProps {
-  ref?: Ref<View>;
-  captureEnabled: boolean;
-  onAvailabilityChange?: (event: AvailabilityEvent) => void;
-}
-interface CaptureFrostProps extends ViewProps {
-  targetRef: RefObject<View | null>;
-  intensity: number;
-  tint: "light" | "dark";
-  /** Once per refused target (canvas-blur 0.2+; an older module refuses silently). */
-  onTargetRejected?: (event: { nativeEvent: { targetId: number; reason: string } }) => void;
-}
-interface CaptureModule {
-  available?: boolean;
-  PaintHost?: ComponentType<ViewProps>;
-  CaptureHost?: ComponentType<CaptureHostProps>;
-  FrostView?: ComponentType<CaptureFrostProps>;
-}
-
+// Canvas's own native capture module (capture-module.tsx) binds through expo-modules-core,
+// an optional peer loaded through the guarded require that material-runtime.ts explains;
+// keep the require directly inside the try block, or Metro registers it as a required
+// dependency.
 declare const require: (id: string) => unknown;
-let integration: CaptureModule | undefined;
+let integration: CaptureIntegration | undefined;
 try {
-  integration = require("@nannier/canvas-blur") as CaptureModule;
-} catch { /* Optional native module absent: use supported Expo frost or the solid skin. */ }
+  const core = require("expo-modules-core") as ExpoModulesCore;
+  integration = createCaptureModule(core);
+} catch { /* Native module not linked (Expo Go, an excluded module, a bare React Native app): use supported Expo frost or the solid skin. */ }
 
 // A partial or older integration cannot preserve paint ownership. Resolve all
 // three together so every consumer takes the same complete solid fallback.
-export function resolveCaptureComponents(platform: string, module?: CaptureModule) {
+export function resolveCaptureComponents(platform: string, module?: CaptureIntegration) {
   if (platform !== "android" || !module?.available || !module.PaintHost || !module.CaptureHost || !module.FrostView) return undefined;
   return { PaintHost: module.PaintHost, CaptureHost: module.CaptureHost, FrostView: module.FrostView };
 }

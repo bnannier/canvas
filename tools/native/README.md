@@ -2,15 +2,16 @@
 
 The smoke app is an isolated copy of `examples/starter`. Its checked-in dependency
 stays pinned to npm. Candidate preparation verifies the release seal, installs the
-exact Canvas and optional capture module tarballs only in the copy, and compares
+exact Canvas tarball (its Android capture module included) only in the copy, and compares
 installed package bytes before building
 or testing. The Canvas tarball is installed under the dependency name the starter
 declares for it (the registry scope can lag the package's own name across a scope
 migration), so every import in the copy resolves to the sealed package; the
 candidate identity still carries the package's own name and version. No source resolver, workspace link, `.origin` overlay or optional-peer
-stub is allowed. Both package hashes and versions are retained in the identity.
-Preparation also proves Android autolinking resolves the isolated installed module,
-and preserves that result in `android-autolinking.json`. These fixtures are outside the library's published `files` set.
+stub is allowed. The package hash and version are retained in the identity.
+Preparation also proves Android autolinking resolves the capture module from the
+isolated installed Canvas package's own `android/`, and preserves that result in
+`android-autolinking.json`. These fixtures are outside the library's published `files` set.
 
 Reviewed fixture bodies and route templates live in `examples/starter/smoke`,
 outside the ordinary app's source and route graph. Preparation copies only the
@@ -50,9 +51,9 @@ node scripts/native-smoke.mjs test --output /tmp/native-candidate --platform and
 ```
 
 Preparation archives the candidate revision's entire
-`packages/canvas-blur/android/src/androidTest` tree and the Gradle init script into
+`android/src/androidTest` tree and the Gradle init script into
 `android-instrumentation-inputs`. They are verification inputs, intentionally
-absent from the published module. The init script locates the installed sealed
+absent from the published package. The init script locates the installed sealed
 module by its canonical project directory, attaches those preserved test sources
 to `androidTest`, and redirects generated output to `android-capture-build` outside
 `node_modules`. The same output redirection is used by the app's release build.
