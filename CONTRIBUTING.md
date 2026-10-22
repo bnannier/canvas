@@ -107,6 +107,28 @@ Major releases require the owner's explicit authorization and are blocked by
 both automatic and manual release jobs. Write the summary for a consumer reading
 the changelog.
 
+### Run CI locally before pushing
+
+Run the CI validation on your machine before every push, so GitHub's build minutes
+confirm a result instead of discovering a failure:
+
+```bash
+brew install colima docker act
+colima start --vm-type vz --cpu 8 --memory 12 --disk 100
+bun run ci:local
+```
+
+`ci:local` (`scripts/ci-local.mjs`) runs `.github/workflows/validate.yml` through
+[act](https://github.com/nektos/act) in Linux runner containers: the check job, all
+four e2e shards and the starter, with artifacts passed between jobs as on GitHub
+(`bun run ci:local -- --job check` runs one job). Commit first: act copies the working
+tree, which must be exactly the commit you will push. The script's header lists the
+mechanical differences between the workflow act runs and `validate.yml`, and why each
+is needed. The native smoke jobs (an iOS simulator on a macOS runner, an Android
+emulator) cannot run in a container. When a change touches native code, run them on
+the Mac with `scripts/native-smoke.mjs` (see `tools/native/README.md`), and say so in
+the commit when you have not.
+
 Work directly on `main` unless the owner explicitly requests a branch or pull
 request. Verify each phase, then commit and push it without force-pushing main.
 Publication goes through CI; do not run `npm publish` locally. The `release`
