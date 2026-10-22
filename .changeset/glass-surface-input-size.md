@@ -1,5 +1,0 @@
----
-"@nannier/canvas": patch
----
-
-The size gate's ceiling for a named `Input` import grows from 39,936 to 43,008 bytes gzip, with the measured reason recorded beside it. Over the GlassSurface audit turn every field came to carry what that turn gave the material host and the controls on it: on iOS and Android the native frost's specular rim, drawn in bands under Core Animation's shadow limit (about 1,200 bytes minified, the larger part of the growth there); the borderless Android ripple brought in front of a frost; a field addon's fill capped for its text under glass in the browser; and the full-footprint geometry GlassBox shares with GlassPane with the registered pointer-events styles, which net out to within 60 bytes. Measured at the turn's end the import is 39,477 / 40,423 / 40,072 bytes gzip on the web, iOS and Android, 317 to 698 bytes over where it started; the first measurement went 143 bytes over the old ceiling on iOS, and the new one leaves 6.4 percent of headroom there. The wash helpers that turn added to now share one legibility search, with the same answers. Nothing changes at run time.
