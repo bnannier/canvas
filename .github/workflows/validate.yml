@@ -381,6 +381,78 @@ jobs:
 
   # This is an independent registry consumer. Passing library checks gate it,
   # but it builds its own app and never installs the sealed candidate package.
+  # The smoke app (smoke/) built for the browser from the sealed candidate, at the three
+  # form factors Canvas lays out for: desktop, tablet and phone (e2e/smoke-app).
+  smoke-web:
+    needs: check
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.sha }}
+
+      - name: Download candidate
+        uses: actions/download-artifact@v8
+        with:
+          name: release-candidate
+          path: ${{ runner.temp }}/candidate
+
+      - name: Restore the exact version candidate
+        run: node scripts/release.mjs restore "$RUNNER_TEMP/candidate"
+        env:
+          SOURCE_SHA: ${{ github.sha }}
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version-file: package.json
+
+      - name: Cache bun downloads
+        uses: actions/cache@v6
+        with:
+          path: ~/.bun/install/cache
+          key: bun-${{ runner.os }}-${{ hashFiles('bun.lock', 'docs/bun.lock', 'smoke/bun.lock') }}
+          restore-keys: |
+            bun-${{ runner.os }}-
+
+      - run: bun install --frozen-lockfile
+
+      - name: Cache the Playwright browsers
+        uses: actions/cache@v6
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('bun.lock') }}
+
+      - name: Install Chromium and WebKit
+        run: bunx playwright install --with-deps chromium webkit
+
+      - name: Download sealed artifacts
+        uses: actions/download-artifact@v8
+        with:
+          name: release-artifacts
+          path: ${{ runner.temp }}/artifacts
+
+      - name: Prepare the smoke app with the sealed candidate and export it for the web
+        run: |
+          node scripts/native-smoke.mjs prepare --candidate "$RUNNER_TEMP/candidate" --artifacts "$RUNNER_TEMP/artifacts" --output "$RUNNER_TEMP/native-smoke"
+          node scripts/native-smoke.mjs build --output "$RUNNER_TEMP/native-smoke" --platform web
+
+      - name: Verify the smoke app at desktop, tablet and phone sizes
+        run: bunx playwright test --config e2e/smoke-app/playwright.config.ts
+        env:
+          SMOKE_OUTPUT: ${{ runner.temp }}/native-smoke
+
+      - name: Upload the smoke app's Playwright report
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: playwright-report-smoke-app
+          path: |
+            playwright-report/smoke-app/
+            test-results/smoke-app/
+          retention-days: 14
+          if-no-files-found: ignore
+
   starter:
     needs: check
     runs-on: ubuntu-latest
