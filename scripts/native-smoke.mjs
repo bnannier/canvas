@@ -9,7 +9,7 @@ import { verifyArtifacts } from "./release.mjs";
 import { appInventory, assertInstalledPackage, fileInventory, packageArtifacts, packageIdentity, sha256 } from "../tools/native/candidate.mjs";
 import { installSmokeFixtures } from "../tools/native/fixtures.mjs";
 import { createEvidenceDirectory, recordNativeAttempt, successfulMaestroReport } from "../tools/native/evidence.mjs";
-import { createCarouselContinuation, createCarouselMeasurementCommands, readCarouselEvidence } from "../tools/native/gesture.mjs";
+import { createCarouselSwipeCommands, readCarouselEvidence } from "../tools/native/gesture.mjs";
 import { verifyNativeFlow } from "./verify-native-flow.mjs";
 import { observeIosBundleEvidence } from "../tools/native/ios-bundle-evidence.mjs";
 import { parseAndroidNightMode } from "../tools/native/appearance.mjs";
@@ -244,7 +244,7 @@ export function testNativeSmoke(output, platform, device, maestro, requestedEvid
   } : undefined;
   recordNativeAttempt(evidence, result, () => {
     // The authored segments are self-contained. Snapshot both before building
-    // the attempt-specific measurement export and literal continuation.
+    // the attempt-specific measurement guard and swipe.
     result.flowInputs = {};
     for (const file of ["candidate.yaml", "after-carousel.yaml"]) {
       const preserved = path.join(evidence, file);
@@ -310,11 +310,15 @@ export function testNativeSmoke(output, platform, device, maestro, requestedEvid
         phase.status = "passed";
         return phase;
       };
-      const measurementFlow = path.join(directory, "measurement.yaml");
-      const exportCommands = createCarouselMeasurementCommands(expected).map((command) => "- " + JSON.stringify(command)).join("\n");
-      fs.writeFileSync(measurementFlow, fs.readFileSync(flow, "utf8") + exportCommands + "\n", { flag: "wx" });
-      const measuredPhase = executePhase("measurement", measurementFlow);
-      const measured = readCarouselEvidence({ artifactRoot: measuredPhase.artifacts, expected });
+      // One Maestro session per appearance: the authored candidate flow, the generated
+      // measurement guard and label swipe, then the authored post-flow. A second session's
+      // first touch was dropped by the CI simulator, so nothing restarts the driver mid-journey.
+      const journeyFlow = path.join(directory, "journey.yaml");
+      const swipe = createCarouselSwipeCommands(expected, postFlow);
+      journey.postFlow = swipe.postFlow;
+      fs.writeFileSync(journeyFlow, fs.readFileSync(flow, "utf8") + swipe.commands.map((command) => "- " + JSON.stringify(command)).join("\n") + "\n", { flag: "wx" });
+      const journeyPhase = executePhase("journey", journeyFlow);
+      const measured = readCarouselEvidence({ artifactRoot: journeyPhase.artifacts, expected });
       // Keep the original log and manifest where Maestro wrote them. Record
       // their identities and exact executed line, without duplicating log bytes.
       journey.measurement = {
@@ -323,13 +327,6 @@ export function testNativeSmoke(output, platform, device, maestro, requestedEvid
         log: { path: measured.log.path, sha256: measured.log.sha256 },
       };
       write(path.join(directory, "measurement.json"), journey.measurement);
-      const continuation = createCarouselContinuation({ expected, measurement: measured.measurement, postFlow });
-      const continuationFlow = path.join(directory, "continuation.yaml");
-      fs.writeFileSync(continuationFlow, continuation.yaml, { flag: "wx" });
-      journey.postFlow = continuation.postFlow;
-      // No launch, navigation or appearance change between these invocations.
-      // The continuation proves retained generation 1, then remeasures once.
-      executePhase("continuation", continuationFlow);
       result.schemes[scheme] = "passed";
     }
     verifyFlowInputs();
