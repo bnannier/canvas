@@ -122,6 +122,13 @@ export interface NavbarProps {
   avatar?: string;
   /** Called when a nav link is pressed, with its index. */
   onSelect?: (index: number) => void;
+  /**
+   * The app's own navigation menu. When set, the bar leads with a menu button at
+   * every width and calls this on press, so the app can open navigation of its own
+   * (a Drawer of grouped sections). It replaces the `links` row and its narrow menu:
+   * pass one or the other.
+   */
+  onMenu?: () => void;
   // Surface (pick one; default is the flush bottom-hairline bar).
   bordered?: boolean;
   floating?: boolean;
@@ -162,7 +169,9 @@ export function createNavbar(skin: NavbarSkin, parts: NavbarParts = {}) {
   const Button = parts.Button ?? WebButton;
   const Avatar = parts.Avatar ?? WebAvatar;
   return function Navbar(props: NavbarProps) {
-    const { brand, brandContent, links = [], actions, actionLabel, onAction, avatar, onSelect, testID, style } = props;
+    const { brand, brandContent, links: linkProp = [], actions, actionLabel, onAction, avatar, onSelect, onMenu, testID, style } = props;
+    // An app menu (`onMenu`) stands in for the links row and its narrow menu at every width.
+    const links = onMenu ? [] : linkProp;
     const { tokens, dark } = useTheme();
     const surface = surfaceOf(props);
     const material = useMaterialTheme({ layer: "control" });
@@ -218,6 +227,9 @@ export function createNavbar(skin: NavbarSkin, parts: NavbarParts = {}) {
         <View style={skin.leftGroup(tokens)}>
           {/* Collapsed, the menu button leads the bar ahead of the brand, as Material 3's
               top app bar puts its navigation icon and the web's collapsed nav does. */}
+          {onMenu ? (
+            <Button ghost small accessibilityLabel="Navigation menu" iconLeft={<Icon menu size={20} decorative />} onPress={onMenu} />
+          ) : null}
           {hasLinks && collapsed ? (
             <Dropdown
               triggerLabel="Navigation menu"
