@@ -46,7 +46,7 @@ function fixture<Props extends object>(name: string, exported: string) {
     react: React,
     "react/jsx-runtime": JSX,
     "react-native": Native,
-    "@nannier-com/canvas": {
+    "@nannier/canvas": {
       ActionSheet, AlertDialog, Autocomplete, Button, Calendar, Checkbox, Column, Command, DataTable,
       DescriptionList, Dialog, Drawer, Dropdown, Icon, Listbox, Pagination, Radio, RadioGroup,
       Row, Select, Slider, Switch, TabBar, Tabs, ThemeProvider, Typography, useTheme,
