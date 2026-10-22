@@ -359,8 +359,12 @@ export const androidSkin: InputSkin = {
     borderTopEndRadius: ANDROID_TOP_RADIUS,
     borderBottomStartRadius: 0,
     borderBottomEndRadius: 0,
-    // The bottom indicator + its no-reflow padding (gap 8 keeps it balanced with paddingTop).
-    ...androidUnderline(t, borderColor, focused, error, 8),
+    // The bottom indicator + its no-reflow padding. M3 counts the indicator inside the
+    // 8dp bottom padding, so the band is 8 in all (gap 6 + the 2dp active indicator).
+    // Then the content box is exactly the value's line (56 - 24 label reserve - 8 = 24):
+    // with gap 8 it was 2dp shorter, so a filled field was vertically scrollable and kept
+    // a page swipe that started on it (ReactEditText holds the parent while it can scroll).
+    ...androidUnderline(t, borderColor, focused, error, 6),
     backgroundColor: t.muted,
     paddingHorizontal: 16,
     paddingTop: 8,
