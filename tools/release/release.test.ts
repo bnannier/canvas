@@ -4,7 +4,7 @@ import { createHash } from "node:crypto";
 import * as fs from "node:fs";
 import * as os from "node:os";
 import * as path from "node:path";
-import { accept, assertReleaseVersion, npmPublish, prepare, publish, publishOutput, readCandidate, restore, seal, verifyArtifacts } from "../../scripts/release.mjs";
+import { accept, assertReleaseVersion, npmPublish, prepare, publish, publishOutput, readCandidate, restore, seal, verifyArtifacts, verifyPublishAuth } from "../../scripts/release.mjs";
 import { preparePages } from "../../docs/scripts/prepare-pages.mjs";
 
 const roots: string[] = [];
@@ -392,6 +392,62 @@ describe("npm publish output in the job log", () => {
       error.mockRestore();
     }
     expect(printed).toEqual(["npm error code E404"]);
+  });
+});
+
+describe("trusted-publishing check before acceptance", () => {
+  // A candidate directory holding only candidate.json, as `restore` leaves it.
+  const candidateDir = (release: boolean) => {
+    const dir = root();
+    const version = release ? "3.9.3" : "3.9.2";
+    fs.writeFileSync(path.join(dir, "candidate.json"), JSON.stringify({
+      source: "a".repeat(40), candidate: (release ? "b" : "a").repeat(40), name: "@nannier/canvas", version, tag: `v${version}`,
+      release, status: release ? "ready" : "no-changesets",
+      packages: [{ name: "@nannier/canvas", directory: ".", version, tag: `v${version}`, release }],
+    }));
+    return dir;
+  };
+  const env = { ACTIONS_ID_TOKEN_REQUEST_URL: "https://actions.example/idtoken/abc?api-version=2.0", ACTIONS_ID_TOKEN_REQUEST_TOKEN: "request-token" };
+  type Call = { url: string; method: string; authorization: string };
+  const fakeFetch = (exchange: { status: number; body: unknown }) => {
+    const calls: Call[] = [];
+    const fetchImpl = async (url: string, init: { method?: string; headers: Record<string, string> }) => {
+      calls.push({ url, method: init.method ?? "GET", authorization: init.headers.Authorization });
+      if (url.startsWith("https://actions.example/")) return { ok: true, status: 200, json: async () => ({ value: "github-id-token" }) };
+      return { ok: exchange.status < 300, status: exchange.status, json: async () => exchange.body };
+    };
+    return { calls, fetchImpl };
+  };
+
+  test("a candidate that releases nothing asks no one", async () => {
+    const { calls, fetchImpl } = fakeFetch({ status: 201, body: {} });
+    expect(await verifyPublishAuth(candidateDir(false), { env, fetchImpl })).toEqual([]);
+    expect(calls).toEqual([]);
+  });
+
+  test("a publish job without id-token: write fails before acceptance", async () => {
+    const { fetchImpl } = fakeFetch({ status: 201, body: {} });
+    await expect(verifyPublishAuth(candidateDir(true), { env: {}, fetchImpl })).rejects.toThrow("id-token: write");
+  });
+
+  test("npm's refusal fails the job with npm's own message, after the requests npm itself makes", async () => {
+    const { calls, fetchImpl } = fakeFetch({ status: 404, body: { message: "OIDC token exchange error - package not found" } });
+    await expect(verifyPublishAuth(candidateDir(true), { env, fetchImpl }))
+      .rejects.toThrow("npm refused a trusted-publishing token for @nannier/canvas (HTTP 404: OIDC token exchange error - package not found)");
+    expect(calls).toEqual([
+      { url: "https://actions.example/idtoken/abc?api-version=2.0&audience=npm%3Aregistry.npmjs.org", method: "GET", authorization: "Bearer request-token" },
+      { url: "https://registry.npmjs.org/-/npm/v1/oidc/token/exchange/package/@nannier%2fcanvas", method: "POST", authorization: "Bearer github-id-token" },
+    ]);
+  });
+
+  test("an accepted exchange passes and never prints npm's token", async () => {
+    const { fetchImpl } = fakeFetch({ status: 201, body: { token: "npm-short-lived-token" } });
+    const printed: string[] = [];
+    const log = spyOn(console, "log").mockImplementation((text: unknown) => { printed.push(String(text)); });
+    try {
+      expect(await verifyPublishAuth(candidateDir(true), { env, fetchImpl })).toEqual(["@nannier/canvas"]);
+    } finally { log.mockRestore(); }
+    expect(printed).toEqual(["npm issues a trusted-publishing token for @nannier/canvas."]);
   });
 });
 

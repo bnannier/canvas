@@ -253,6 +253,35 @@ export function npmPublish(cwd, file) {
   }
 }
 
+// npm's own trusted-publishing exchange (npm/cli lib/utils/oidc.js), performed for every
+// package a candidate releases before the candidate is accepted. Acceptance pushes the version
+// commit, so a trusted publisher npm cannot match (none saved, or another repository or
+// workflow) used to cost a version: 3.9.0 to 3.9.2 were versioned and never published. The
+// short-lived npm token the exchange returns is discarded; `npm publish` performs its own.
+export async function verifyPublishAuth(candidateDir, { env = process.env, fetchImpl = globalThis.fetch, registry = "https://registry.npmjs.org" } = {}) {
+  const names = readCandidate(candidateDir).packages.filter((p) => p.release).map((p) => p.name);
+  if (!names.length) return [];
+  const { ACTIONS_ID_TOKEN_REQUEST_URL: tokenUrl, ACTIONS_ID_TOKEN_REQUEST_TOKEN: requestToken } = env;
+  if (!tokenUrl || !requestToken) throw new Error("Trusted publishing needs a GitHub OIDC token: give the publish job `id-token: write`");
+  const idTokenUrl = new URL(tokenUrl);
+  idTokenUrl.searchParams.append("audience", `npm:${new URL(registry).hostname}`);
+  for (const name of names) {
+    const issued = await fetchImpl(idTokenUrl.href, { headers: { Authorization: `Bearer ${requestToken}` }, signal: AbortSignal.timeout(30_000) });
+    const idToken = issued.ok ? (await issued.json())?.value : undefined;
+    if (!idToken) throw new Error(`GitHub issued no OIDC token (HTTP ${issued.status})`);
+    const exchange = await fetchImpl(new URL(`/-/npm/v1/oidc/token/exchange/package/${name.replace("/", "%2f")}`, registry).href, {
+      method: "POST", headers: { Authorization: `Bearer ${idToken}` }, signal: AbortSignal.timeout(30_000),
+    });
+    if (!exchange.ok) {
+      const body = await exchange.json().catch(() => ({}));
+      throw new Error(`npm refused a trusted-publishing token for ${name} (HTTP ${exchange.status}${body?.message ? `: ${body.message}` : ""}). ` +
+        "Its trusted publisher on npmjs.com must name this repository and workflow; no version was consumed.");
+    }
+    console.log(`npm issues a trusted-publishing token for ${name}.`);
+  }
+  return names;
+}
+
 export function publish(cwd, candidateDir, artifactDir, npmPublish) {
   const m = verifyArtifacts(cwd, candidateDir, artifactDir);
   if (m.status === "blocked-major") {
@@ -292,8 +321,11 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
   else if (command === "restore") restore(cwd, dir, process.env.SOURCE_SHA);
   else if (command === "seal") seal(cwd, dir, path.resolve(extra));
   else if (command === "verify") verifyArtifacts(cwd, dir, path.resolve(extra));
-  else if (command === "publish") {
+  else if (command === "verify-publish-auth") {
+    if (process.env.GITHUB_ACTIONS !== "true" || process.env.GITHUB_REF !== "refs/heads/main") throw new Error("Publication is restricted to CI on main");
+    await verifyPublishAuth(dir);
+  } else if (command === "publish") {
     if (process.env.GITHUB_ACTIONS !== "true" || process.env.GITHUB_REF !== "refs/heads/main") throw new Error("Publication is restricted to CI on main");
     publish(cwd, dir, path.resolve(extra), (file) => npmPublish(cwd, file));
-  } else throw new Error("Expected prepare, restore, seal, verify or publish");
+  } else throw new Error("Expected prepare, restore, seal, verify, verify-publish-auth or publish");
 }
