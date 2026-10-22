@@ -969,8 +969,8 @@ it; giving it its own scheme keeps `canvas://` links unambiguous on both platfor
    The generated project records, in `canvas-audit.json`, the native fingerprint it was
    generated from (`nativeFingerprint` in `docs/scripts/build-info.cjs`: `docs/app.json`,
    `docs/app.config.js`, `docs/plugins/`, `docs/patches/`, `docs/package.json`,
-   `docs/bun.lock` and the local native modules under `packages/`, their build products and
-   installs left out), and the build stamps it into the app's `extra.canvasBuild` beside
+   `docs/bun.lock` and Canvas's Android capture module (`android/`, `expo-module.config.json`),
+   its build products left out), and the build stamps it into the app's `extra.canvasBuild` beside
    the source fingerprint (`CANVAS_AUDIT_NATIVE_FINGERPRINT`, read by `docs/app.config.js`).
    `--incremental` reuses the parked project, so a JS-only change rebuilds in a minute or
    two, only while this checkout's native fingerprint is the one the project was generated
@@ -1110,7 +1110,7 @@ development app installed.
   tooltip's is the bubble's corner antialiasing. The cause is in the kit's material
   resolution, by design. On Android `materialCapabilities()`
   (`src/style/glass-surface/material-runtime.android.ts`) reports `requiresTarget: true`,
-  twice over: `@nannier/canvas-blur` is autolinked from `packages/` and reports `supported`
+  twice over: Canvas's capture module is autolinked from the repository root and reports `supported`
   on API 31 and up (`nativeCaptureAvailable`), and expo-blur 57 exports `BlurTargetView`
   (`requiresBlurTarget`). `resolveMaterial` (`material-resolution.ts`) then resolves any
   glass surface without a safe capture target to `solid` with the fallback
