@@ -57,7 +57,10 @@ module.exports = {
     // Apps linked against the iOS 27 SDK must adopt the UIScene lifecycle or UIKit
     // traps at launch; Expo ships its scene delegate behind this build property.
     plugins: ["expo-router", "expo-font", ["expo-build-properties", { ios: { enableSceneSupport: true } }]],
-    experiments: { typedRoutes: false },
+    // Metro resolves packages through metro.config.js (the app's own node_modules). The
+    // tsconfig paths exist only so TypeScript finds those packages for the docs modules
+    // outside the app; Metro must not apply them (they would send `react` to @types/react).
+    experiments: { typedRoutes: false, tsconfigPaths: false },
     extra: identity ? { canvasBuild: identity } : {},
   },
 };
