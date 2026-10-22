@@ -39,7 +39,7 @@ Severity follows rn-library-audit: critical (broken for a class of users), high 
 ## Specific checks
 
 - [ ] documented on `integration` (Blur planes) as the capture host that makes a page's backdrop the safe blur plane on Android, with `useGlassBlurPlane` making the plane and `GlassBlurScope` offering it
-- [ ] captures only the backdrop it wraps and never contains the surfaces that frost it, exercised by the docs' frame over the page look on Android with canvas-blur (materials target)
+- [ ] captures only the backdrop it wraps and never contains the surfaces that frost it, exercised by the docs' frame over the page look on Android with the capture module (materials target)
 - [ ] every component and page in its Capture through list is re-captured before and after a change (`bun run audit:turn -- --slug=<foundation> --phase=before|after`), and a consumer already signed off gets a re-sign-off row when its pictures change
 
 ## Findings
