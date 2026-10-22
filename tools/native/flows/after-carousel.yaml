@@ -97,7 +97,7 @@ name: Sealed Canvas native candidate after measured drag
       - tapOn:
           id: Return
       - assertNotVisible:
-          id: space
+          id: delete
 - runFlow:
     when:
       platform: Android
@@ -131,7 +131,8 @@ name: Sealed Canvas native candidate after measured drag
           text: Search work items
           focused: true
 # iOS can report focused=false for an active native text host. Actual typing
-# without another tap plus the visible software space key verifies input focus.
+# without another tap plus the visible software keyboard (its delete key, which iPhone and
+# iPad keyboards both name; the iPad space bar has no identifier) verifies input focus.
 - inputText: Work
 - assertVisible: Work
 - runFlow:
@@ -139,7 +140,7 @@ name: Sealed Canvas native candidate after measured drag
       platform: iOS
     commands:
       - assertVisible:
-          id: space
+          id: delete
 # Native hierarchy visibility does not account for clipping by the results pane.
 # Require the last row above the actual footer before selecting it.
 # The focused field's caret never lets the screen settle on CI's slow screen checks:
@@ -168,7 +169,7 @@ name: Sealed Canvas native candidate after measured drag
       platform: iOS
     commands:
       - assertVisible:
-          id: space
+          id: delete
 - assertVisible: to navigate
 - assertVisible: to select
 - assertVisible: to close
@@ -185,7 +186,7 @@ name: Sealed Canvas native candidate after measured drag
       platform: iOS
     commands:
       - assertVisible:
-          id: space
+          id: delete
 # The same bounded settle wait and 40 s limit as the first scroll to the last row
 # (the owner's decisions, 2026-10-11): the focused field's caret never lets the screen
 # settle on CI's slow screen checks, about 8.5 s per swipe there against about 4 s
@@ -214,7 +215,7 @@ name: Sealed Canvas native candidate after measured drag
       platform: iOS
     commands:
       - assertVisible:
-          id: space
+          id: delete
 - assertVisible: to navigate
 - assertVisible: to select
 - assertVisible: to close
