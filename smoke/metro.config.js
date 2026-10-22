@@ -4,9 +4,14 @@
 // tree and resolves every package from this app's own node_modules: the sealed candidate
 // a verification run installs here, never the docs app's source link.
 const path = require("node:path");
+const { createHash } = require("node:crypto");
 const { getDefaultConfig } = require("expo/metro-config");
 
 const config = getDefaultConfig(__dirname);
+// Expo inlines the app config (with the candidate identity it carries) into the transform,
+// and Metro's cache key does not track it: put the identity in the key, so one candidate's
+// build never reuses another's embedded identity (a web export showed the previous one).
+config.cacheVersion = `${config.cacheVersion ?? ""}:canvas-smoke-${createHash("sha256").update(process.env.CANVAS_SMOKE_IDENTITY ?? "").digest("hex")}`;
 const docs = path.resolve(__dirname, "../docs");
 config.watchFolders = [path.join(docs, "src/core"), path.join(docs, "public")];
 config.resolver.nodeModulesPaths = [path.resolve(__dirname, "node_modules")];
