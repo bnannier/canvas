@@ -125,6 +125,19 @@ function context(output) {
   return { ...context, app, installedCanvas: canvas.installedAs ?? canvas.name };
 }
 
+// The same prepared copy, exported for the browser: the smoke app's web build runs the
+// sealed package under Playwright at each form factor (e2e/smoke-app).
+export function buildWebSmoke(output) {
+  const { app, identity } = context(output);
+  const dist = path.join(output, "web-dist");
+  if (fs.existsSync(dist)) throw new Error("The web smoke export must be a new directory");
+  run(app, "node", ["node_modules/expo/bin/cli", "export", "--platform", "web", "--output-dir", dist], identity);
+  if (!fs.existsSync(path.join(dist, "index.html"))) throw new Error("The web smoke export has no index.html");
+  context(output);
+  write(path.join(output, "web-build.json"), { identity, dist, digest: fileInventory(dist) });
+  console.log(`Exported web candidate: ${dist}`);
+}
+
 export function buildNativeSmoke(output, platform, device) {
   const { app, identity, installedCanvas } = context(output);
   run(app, "node", ["node_modules/expo/bin/cli", "prebuild", "--platform", platform, "--no-install"], identity);
@@ -360,8 +373,9 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
     if (!options.candidate || !options.artifacts) throw new Error("prepare requires --candidate and --artifacts");
     prepareNativeSmoke(path.resolve(options.candidate), path.resolve(options.artifacts), output);
   } else {
-    if (!["ios", "android"].includes(options.platform) || !options.device) throw new Error("build/test/instrument requires --platform and --device");
-    if (command === "build") buildNativeSmoke(output, options.platform, options.device);
+    if (command === "build" && options.platform === "web" && !options.device) buildWebSmoke(output);
+    else if (!["ios", "android"].includes(options.platform) || !options.device) throw new Error("build/test/instrument requires --platform and --device (web builds take no device)");
+    else if (command === "build") buildNativeSmoke(output, options.platform, options.device);
     else if (command === "test") testNativeSmoke(output, options.platform, options.device, options.maestro ?? "maestro", options.evidence);
     else if (command === "instrument" && options.platform === "android") instrumentNativeSmoke(output, options.device);
     else throw new Error("Expected prepare, build, test or Android instrument");
