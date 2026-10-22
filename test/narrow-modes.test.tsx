@@ -64,6 +64,22 @@ describe("Navbar narrow collapse", () => {
     expect(picked).toBe(1);
   });
 
+  it("leads with the app's menu button at every width when onMenu is set", () => {
+    for (const width of [1280, 375]) {
+      resizeViewport(width);
+      let opened = 0;
+      ui(<Navbar brand="Canvas" links={LINKS} onMenu={() => { opened += 1; }} />);
+      const trigger = screen.getByLabelText("Navigation menu");
+      expect(trigger.compareDocumentPosition(screen.getByText("Canvas")) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+      // The app menu replaces the links row and its dropdown.
+      expect(screen.queryByText("Deploys")).toBeNull();
+      fireEvent.click(trigger);
+      expect(opened).toBe(1);
+      expect(screen.queryByText("Deploys")).toBeNull();
+      cleanup();
+    }
+  });
+
   it("collapses nothing for a bar with no links: no menu button, trailing actions intact", () => {
     resizeViewport(375);
     // A console topbar carries its controls in `actions`, which is not nav and so

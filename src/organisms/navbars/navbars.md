@@ -59,6 +59,29 @@ keeps its frame over `bare`.
 <Navbar bare brand="Canvas" links={["Dashboard", "Users", "Settings"]} />
 ```
 
+### App menu
+
+An app with more destinations than a bar can hold (a component catalog, a settings
+tree) passes `onMenu`: the bar leads with a menu button at every width and the app
+opens its own navigation, such as a Drawer of grouped sections. It replaces `links`.
+
+```tsx
+<Stateful initial={false}>
+  {(open, setOpen) => (
+    <View>
+      <Navbar bordered brand="Catalog" onMenu={() => setOpen(true)} />
+      <Drawer open={open} onOpenChange={setOpen} accessibilityLabel="Catalog menu">
+        <Column padLoose loose>
+          <Typography h3>Components</Typography>
+          <Button ghost onPress={() => setOpen(false)}>Button</Button>
+          <Button ghost onPress={() => setOpen(false)}>Card</Button>
+        </Column>
+      </Drawer>
+    </View>
+  )}
+</Stateful>
+```
+
 ### Console topbar
 
 ```tsx
