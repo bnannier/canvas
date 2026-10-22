@@ -182,15 +182,15 @@ test("best-effort wrapper retains exact inputs and a failure report when the obs
   fs.writeFileSync(path.join(root, 'Products/main.jsbundle'), 'plain original');
   fs.writeFileSync(path.join(binary, 'main.jsbundle'), 'embedded original');
   const output = path.join(root, 'evidence');
-  const result = observeIosBundleEvidence({ app: root, binary, output, identity: { candidateRevision: 'candidate' }, smokeFlag: '1', identityProvided: true }, { timeoutMs: 1 });
+  const result = observeIosBundleEvidence({ app: root, binary, output, identity: { candidateRevision: 'candidate' }, identityProvided: true }, { timeoutMs: 1 });
   expect(result.status).toBe("unavailable"); expect(result.binding).toBe("unavailable");
   const report = JSON.parse(fs.readFileSync(path.join(output, 'report.json'), 'utf8'));
   expect(report.inputs.plain.sha1).toBe(createHash('sha1').update('plain original').digest('hex'));
   expect(report.preservation.plain).toEqual({ original: 'unchanged', retained: 'unchanged' });
   expect(report.preservation.embedded).toEqual({ original: 'unchanged', retained: 'unchanged' });
-  expect(report.runnerEnvironment).toEqual({ smokeFlag: '1', identityProvided: true, scriptPhaseInheritance: 'unobserved' });
+  expect(report.runnerEnvironment).toEqual({ identityProvided: true, scriptPhaseInheritance: 'unobserved' });
   const oldReport = fs.readFileSync(path.join(output, 'report.json'));
-  expect(observeIosBundleEvidence({ app: root, binary, output, identity: {}, smokeFlag: '1', identityProvided: true }).status).toBe('unavailable');
+  expect(observeIosBundleEvidence({ app: root, binary, output, identity: {}, identityProvided: true }).status).toBe('unavailable');
   expect(fs.readFileSync(path.join(output, 'report.json'))).toEqual(oldReport);
 });
 
@@ -200,7 +200,7 @@ test("missing/symlink inputs produce explicit evidence without following the sym
   const preserved = path.join(root, 'preserved'); fs.writeFileSync(preserved, 'do not follow');
   fs.symlinkSync(preserved, path.join(root, 'Products/main.jsbundle'));
   const output = path.join(root, 'evidence');
-  const result = observeIosBundleEvidence({ app: root, binary, output, identity: {}, smokeFlag: undefined, identityProvided: false });
+  const result = observeIosBundleEvidence({ app: root, binary, output, identity: {}, identityProvided: false });
   const report = JSON.parse(fs.readFileSync(result.path!, 'utf8'));
   expect(report.inputs.plain.status).toBe('unavailable'); expect(report.inputs.embedded.status).toBe('unavailable');
   expect(fs.existsSync(path.join(output, 'plain.jsbundle'))).toBe(false);

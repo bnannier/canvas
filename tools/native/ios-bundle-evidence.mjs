@@ -338,7 +338,7 @@ async function worker(inputFile) {
     const config = JSON.parse(readFile(record.inputs.config.retained, LIMITS.config).bytes.toString("utf8"));
     report.configuration = { status: "available", scheme: config.scheme ?? null, bundleIdentifier: config.ios?.bundleIdentifier ?? null,
       canvasBuild: config.extra?.canvasBuild ?? null, identityMatches: isDeepStrictEqual(config.extra?.canvasBuild, record.identity),
-      expectedSchemeMatches: config.scheme === "canvas-smoke", expectedIdentifierMatches: config.ios?.bundleIdentifier === "com.nannier.canvas.starter.smoke" };
+      expectedSchemeMatches: config.scheme === "canvas-smoke", expectedIdentifierMatches: config.ios?.bundleIdentifier === "com.nannier.canvas.smoke" };
   } catch (error) { report.configuration = unavailable(error); }
   const plist = spawnSync("/usr/bin/plutil", ["-convert", "json", "-o", "-", record.inputs.plist.retained ?? record.inputs.plist.path],
     { encoding: "utf8", timeout: 2000, maxBuffer: LIMITS.config });
@@ -353,7 +353,7 @@ async function worker(inputFile) {
 }
 
 // Synchronous boundary preserves the native build API. All failures are diagnostic data.
-export function observeIosBundleEvidence({ app, binary, output, identity, smokeFlag, identityProvided }, { timeoutMs = LIMITS.observerMs } = {}) {
+export function observeIosBundleEvidence({ app, binary, output, identity, identityProvided }, { timeoutMs = LIMITS.observerMs } = {}) {
   try {
     output = path.resolve(output);
     fs.mkdirSync(output); // Fresh evidence only, never overwrite a prior attempt.
@@ -364,7 +364,7 @@ export function observeIosBundleEvidence({ app, binary, output, identity, smokeF
       capture(file, path.join(output, { plain: "plain.jsbundle", embedded: "embedded.jsbundle", config: "app.config.json", plist: "Info.plist" }[name]),
         ["config", "plist"].includes(name) ? LIMITS.config : LIMITS.bundle)]));
     const input = { schema: 1, app: path.resolve(app), output, identity, inputs, startedAt: new Date().toISOString(), helper: capture(SELF),
-      runnerEnvironment: { smokeFlag: smokeFlag ?? null, identityProvided: !!identityProvided, scriptPhaseInheritance: "unobserved" },
+      runnerEnvironment: { identityProvided: !!identityProvided, scriptPhaseInheritance: "unobserved" },
       limits: LIMITS, interpretation: "Best-effort build observation only; never changes native command success and does not prove navigation or the origin of a compiled branch." };
     const request = path.join(output, "request.json"); write(request, input);
     const observed = spawnSync(process.execPath, [SELF, "--observe", request], { timeout: timeoutMs, killSignal: "SIGKILL", maxBuffer: 16384, encoding: "utf8", env: { ...process.env } });

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Keyboard, useWindowDimensions } from "react-native";
-import { ActionSheet, Autocomplete, Button, Column, Command, Drawer, Form, Input, Switch, Typography, useOverlayHost } from "@nannier-com/canvas";
+import { ActionSheet, Autocomplete, Button, Column, Command, Drawer, Form, Input, Switch, Typography, useOverlayHost } from "@nannier/canvas";
 
 export const FRUIT = [
   "Apple", "Apricot", "Banana", "Cherry", "Dates", "Elderberry", "Fig", "Grapefruit",

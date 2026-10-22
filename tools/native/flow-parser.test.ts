@@ -15,7 +15,7 @@ function flow(commands: string) {
   const directory = mkdtempSync(join(tmpdir(), "canvas-native-flow-"));
   directories.push(directory);
   const file = join(directory, "flow.yaml");
-  writeFileSync(file, `appId: com.nannier.canvas.starter.smoke\n---\n${commands}\n`);
+  writeFileSync(file, `appId: com.nannier.canvas.smoke\n---\n${commands}\n`);
   return file;
 }
 

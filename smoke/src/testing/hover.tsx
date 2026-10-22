@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Button, Card, Column, Row, Sidebar, ThemeProvider, Typography, useReducedMotion } from "@nannier-com/canvas";
+import { Button, Card, Column, Row, Sidebar, ThemeProvider, Typography, useReducedMotion } from "@nannier/canvas";
 
 // The hover-feedback harness, the inner loop for Dark Factory's hover lifts (the
 // `df-hover-lift` reference card in tools/native/liquid-motion.md): the real controls the

@@ -1,4 +1,4 @@
-import { TouchTargetBody } from "../../../../../examples/starter/smoke/fixtures/touch-target";
+import { TouchTargetBody } from "../../../../../smoke/src/testing/touch-target";
 import { Page } from "../../../ui/page";
 
 export default function TouchTargetFixture() {

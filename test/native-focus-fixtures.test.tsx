@@ -41,7 +41,7 @@ const root = resolve(import.meta.dir, "..");
 // the RNW harness. This verifies fixture state/callback wiring, not native hover
 // or spoken feedback, which require the identified device candidate.
 function fixture<Props extends object>(name: string, exported: string) {
-  const source = readFileSync(resolve(root, `examples/starter/smoke/fixtures/${name}.tsx`), "utf8");
+  const source = readFileSync(resolve(root, `smoke/src/testing/${name}.tsx`), "utf8");
   const modules: Record<string, unknown> = {
     react: React,
     "react/jsx-runtime": JSX,

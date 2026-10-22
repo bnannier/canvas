@@ -14,7 +14,7 @@ import { IDENTITY_HUES, identityHue } from "../src/style/identity-hue.ts";
 type Entry = { hue: number; name: string };
 
 function fixtureTables(): { STAGES: readonly Entry[]; PEOPLE: readonly Entry[] } {
-  const source = readFileSync(resolve(import.meta.dir, "../examples/starter/smoke/fixtures/avatar.tsx"), "utf8");
+  const source = readFileSync(resolve(import.meta.dir, "../smoke/src/testing/avatar.tsx"), "utf8");
   const compiled = ts.transpileModule(source, {
     compilerOptions: { jsx: ts.JsxEmit.ReactJSX, module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2020 },
   }).outputText;

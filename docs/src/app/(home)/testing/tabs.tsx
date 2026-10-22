@@ -1,5 +1,5 @@
 import { useLocalSearchParams } from "expo-router";
-import { TabsBody } from "../../../../../examples/starter/smoke/fixtures/tabs";
+import { TabsBody } from "../../../../../smoke/src/testing/tabs";
 import { Page, PageHeader } from "../../../ui/page";
 
 export default function TabsFixture() {

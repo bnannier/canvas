@@ -2,7 +2,7 @@ import { useState, type ReactNode } from "react";
 import {
   Alert, Board, Button, Card, Chip, CodeBlock, Column, Icon, Input, Pagination, Row, RowMenu, StackedList,
   Stepper, Steps, ThemeProvider, Toast, Typography, useTheme,
-} from "@nannier-com/canvas";
+} from "@nannier/canvas";
 
 // The touch-target harness: the kit's controls that are smaller than the platform minimum
 // (44pt iOS, 48dp Android) and reach it through hitSlop, each with a press counter, so a tap

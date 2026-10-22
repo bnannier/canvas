@@ -596,7 +596,7 @@ effect on the shipped surface (the docs page or app screen the user opens, in th
 mode they will see) and compare against the card, blind, until nothing differs; log
 every run, docs screenshot last. In this repo the harness is the hidden `/testing/*`
 routes under `docs/src/app/(home)/testing/`, rendering the fixture bodies in
-`examples/starter/smoke/fixtures/` (shared with the sealed smoke app); the material
+`smoke/src/testing/` (shared with the sealed smoke app); the material
 one is `/testing/materials`, the hover one `/testing/hover`, the identity disc one
 `/testing/avatar`. The tunables live in one table per effect, never in a public
 value prop. The evidence log is `tools/native/liquid-motion.md`: its sections

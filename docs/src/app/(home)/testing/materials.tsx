@@ -1,4 +1,4 @@
-import { MaterialsBody } from "../../../../../examples/starter/smoke/fixtures/materials";
+import { MaterialsBody } from "../../../../../smoke/src/testing/materials";
 import { Page } from "../../../ui/page";
 
 export default function MaterialLifecycleFixture() {

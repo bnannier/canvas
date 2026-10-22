@@ -422,8 +422,6 @@ jobs:
         run: |
           bun run typecheck
           bun run build:web
-        env:
-          EXPO_PUBLIC_CANVAS_SMOKE: '0'
 
       - name: Verify starter user journeys across browser engines and touch
         run: bunx playwright test --config e2e/starter/playwright.config.ts
