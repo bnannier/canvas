@@ -1,10 +1,10 @@
-import { afterAll, afterEach, beforeEach, describe, expect, test } from "bun:test";
+import { afterAll, afterEach, beforeEach, describe, expect, spyOn, test } from "bun:test";
 import { execFileSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import * as fs from "node:fs";
 import * as os from "node:os";
 import * as path from "node:path";
-import { accept, assertReleaseVersion, prepare, publish, readCandidate, restore, seal, verifyArtifacts } from "../../scripts/release.mjs";
+import { accept, assertReleaseVersion, npmPublish, prepare, publish, publishOutput, readCandidate, restore, seal, verifyArtifacts } from "../../scripts/release.mjs";
 import { preparePages } from "../../docs/scripts/prepare-pages.mjs";
 
 const roots: string[] = [];
@@ -355,3 +355,43 @@ test("shared Pages preparation makes vendor fonts uploadable before browser vali
   fs.rmSync(path.join(dist, "assets/vendor/font/a.ttf"));
   expect(() => preparePages(dist)).toThrow();
 });
+
+describe("npm publish output in the job log", () => {
+  test("keeps npm's error and details and drops the tarball listing that once pushed them past a pipe buffer", () => {
+    const listing = Array.from({ length: 4000 }, (_, i) => `npm notice ${i % 9}.${i % 10}kB dist/charts/chart-${i}/chart-${i}.android.d.ts.map`);
+    const stderr = ["npm notice", "npm notice 📦  @nannier/canvas@3.9.2", "npm notice Tarball Contents", "npm notice 476.6kB CHANGELOG.md", "npm notice 315B dist/index.js", ...listing,
+      "npm notice Tarball Details", "npm notice total files: 3947", "npm notice Publishing to https://registry.npmjs.org/ with tag latest and public access",
+      "npm error code E404", "npm error 404 Not Found - PUT https://registry.npmjs.org/@nannier%2fcanvas - Not found"].join("\n");
+    const out = publishOutput("", stderr);
+    expect(out.split("\n")).toEqual(["npm notice", "npm notice 📦  @nannier/canvas@3.9.2", "npm notice Tarball Contents", "npm notice Tarball Details", "npm notice total files: 3947",
+      "npm notice Publishing to https://registry.npmjs.org/ with tag latest and public access", "npm error code E404", "npm error 404 Not Found - PUT https://registry.npmjs.org/@nannier%2fcanvas - Not found"]);
+    expect(Buffer.byteLength(out)).toBeLessThan(64 * 1024);
+    expect(publishOutput("+ @nannier/canvas@3.9.2\n", undefined)).toBe("+ @nannier/canvas@3.9.2");
+  });
+
+  test("a failed publish prints npm's error, not its listing, and stdin is closed so nothing waits on it", () => {
+    // A stand-in npm: a listing larger than a pipe buffer, a read of stdin to its end (a prompt
+    // on an open stdin would stall until the job's limit, as in Deploy run 39708247691), then
+    // the error and a failing exit.
+    const bin = root();
+    fs.writeFileSync(path.join(bin, "npm"), [
+      "#!/bin/sh",
+      "i=0; while [ $i -lt 4000 ]; do echo \"npm notice 1.${i}kB dist/chart-$i/chart-$i.android.d.ts.map\" >&2; i=$((i+1)); done",
+      "cat > /dev/null",
+      "echo \"npm error code E404\" >&2",
+      "exit 1",
+    ].join("\n") + "\n", { mode: 0o755 });
+    const pathBefore = process.env.PATH;
+    const printed: string[] = [];
+    const error = spyOn(console, "error").mockImplementation((text: unknown) => { printed.push(String(text)); });
+    process.env.PATH = `${bin}${path.delimiter}${pathBefore}`;
+    try {
+      expect(() => npmPublish(bin, "nannier-canvas-3.9.2.tgz")).toThrow("npm publish nannier-canvas-3.9.2.tgz failed (exit 1)");
+    } finally {
+      process.env.PATH = pathBefore;
+      error.mockRestore();
+    }
+    expect(printed).toEqual(["npm error code E404"]);
+  });
+});
+
