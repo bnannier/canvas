@@ -127,6 +127,11 @@ jobs:
           have=$(npm --version)
           node -e 'const [a,b,c]=process.argv[1].split(".").map(Number); process.exit(a>11||(a===11&&(b>5||(b===5&&c>=1)))?0:1)' "$have" \
             || { echo "::error::npm $have cannot use trusted publishing (needs 11.5.1 or later)"; exit 1; }
+      # Acceptance pushes the version commit, so first prove npm will issue a trusted-publishing
+      # token for every package this candidate releases (the same OIDC exchange `npm publish`
+      # performs). A trusted publisher npm cannot match fails here, before a version is consumed.
+      - name: Prove npm trusts this workflow for every released package
+        run: node scripts/release.mjs verify-publish-auth "$RUNNER_TEMP/candidate"
       - name: Accept candidate and publish tested tarballs
         id: publish
         run: node scripts/release.mjs publish "$RUNNER_TEMP/candidate" "$RUNNER_TEMP/artifacts"
