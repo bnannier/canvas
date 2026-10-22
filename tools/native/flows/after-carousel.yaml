@@ -216,8 +216,14 @@ name: Sealed Canvas native candidate after measured drag
 # Maestro's "above" compares top edges only, and its visibility ignores the results
 # pane's clipping, so it can stop with the last row's top just above the footer and
 # the rest of the row under it, where a tap lands on the footer. One more scroll
-# settles the list at its end, which is what reveals the whole last row.
-- scroll
+# settles the list at its end, which is what reveals the whole last row. It swipes the
+# list itself, as the loop above does, so it reaches the list on a tablet too.
+- swipe:
+    from:
+      id: keyboard-command-results
+    direction: UP
+    duration: 400
+    waitToSettleTimeoutMs: 1000
 - runFlow:
     when:
       platform: Android
