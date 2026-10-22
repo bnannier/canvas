@@ -38,7 +38,7 @@ const identity = smoke && process.env.CANVAS_SMOKE_IDENTITY ? readIdentity(proce
 
 module.exports = {
   expo: {
-    name: smoke ? "Canvas Starter Smoke" : "Canvas Starter",
+    name: smoke ? "Canvas Smoke Test" : "Canvas Starter",
     slug: "canvas-starter",
     version: "1.0.0",
     scheme: smoke ? "canvas-smoke" : "canvas-starter",
