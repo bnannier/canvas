@@ -40,9 +40,10 @@ installations. The journey installs `com.nannier.canvas.starter.smoke`, preservi
 the ordinary starter and docs apps. Maestro installs its native automation driver.
 
 Android CI also runs the capture module's device instrumentation before Maestro.
-It builds the release before the emulator boots (the build needs no device; run
-concurrently, it starved the idling emulator until its launcher stopped responding),
-then boots the emulator for instrumentation and the journey:
+It builds the release and compiles the module's test APK before the emulator boots
+(neither needs a device; run while the emulator idled, each starved it until its
+launcher stopped responding over the journey's first screen), then boots the emulator,
+where instrumentation finds the test APK up to date and only installs and runs it:
 
 ```sh
 node scripts/native-smoke.mjs build --output /tmp/native-candidate --platform android --device emulator-5554

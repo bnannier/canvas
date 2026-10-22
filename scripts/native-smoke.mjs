@@ -132,7 +132,7 @@ export function buildNativeSmoke(output, platform, device) {
     bundleEvidence = observeIosBundleEvidence({ app, binary, output: path.join(output, "ios-bundle-evidence"), identity,
       smokeFlag: buildEnvironment.EXPO_PUBLIC_CANVAS_SMOKE, identityProvided: Boolean(buildEnvironment.CANVAS_SMOKE_IDENTITY) });
   } else {
-    run(path.join(app, "android"), "./gradlew", androidGradleArguments(output, app, false, installedCanvas), identity);
+    run(path.join(app, "android"), "./gradlew", androidGradleArguments(output, app, "build", installedCanvas), identity);
     binary = path.join(app, "android/app/build/outputs/apk/release/app-release.apk");
   }
   if (!fs.existsSync(binary)) throw new Error(`Native release output missing: ${binary}`);
@@ -156,7 +156,7 @@ export function instrumentNativeSmoke(output, device) {
     package: packages.find((pkg) => pkg.name === identity.packageName),
     productionVariant: "debug", releaseBinaryDigest: build.digest, testInputs: androidInstrumentation,
     contextSha256: sha256(path.join(output, "context.json")), buildManifestSha256: sha256(path.join(output, "android-build.json")),
-    command: ["./gradlew", ...androidGradleArguments(output, app, true, installedCanvas)] };
+    command: ["./gradlew", ...androidGradleArguments(output, app, "instrument", installedCanvas)] };
   result.testInfrastructure = {
     revision: run(repo, "git", ["rev-parse", "HEAD"], identity, true).trim(),
     dirty: run(repo, "git", ["status", "--porcelain", "--untracked-files=all"], identity, true).trim() !== "",
