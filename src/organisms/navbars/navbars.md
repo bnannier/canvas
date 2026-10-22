@@ -6,7 +6,9 @@ primary app-level navigation.
 The bar measures its own width: at and below the `sm` breakpoint (640) the links
 row automatically collapses into a menu button opening a dropdown of the same
 links (the active one checkmarked), so links never clip off a phone screen;
-`active` and `onSelect` keep their contract in both renderings.
+`active` and `onSelect` keep their contract in both renderings. The menu button
+leads the bar, ahead of the logo and brand, where Material 3's top app bar puts
+its navigation icon.
 
 In glass mode the active link paints a control-layer pane (iOS keeps its
 inactive capsules and carries the brand fill as glass, web and Android carry

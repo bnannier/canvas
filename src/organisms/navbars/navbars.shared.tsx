@@ -216,9 +216,9 @@ export function createNavbar(skin: NavbarSkin, parts: NavbarParts = {}) {
     return (
       <Host testID={testID} style={container} onLayout={onBarLayout}>
         <View style={skin.leftGroup(tokens)}>
-          {brandContent}
-          {brand ? <Text style={skin.brand(tokens)}>{brand}</Text> : null}
-          {!hasLinks ? null : collapsed ? (
+          {/* Collapsed, the menu button leads the bar ahead of the brand, as Material 3's
+              top app bar puts its navigation icon and the web's collapsed nav does. */}
+          {hasLinks && collapsed ? (
             <Dropdown
               triggerLabel="Navigation menu"
               items={menuItems}
@@ -229,7 +229,10 @@ export function createNavbar(skin: NavbarSkin, parts: NavbarParts = {}) {
             >
               <Icon menu size={20} />
             </Dropdown>
-          ) : (
+          ) : null}
+          {brandContent}
+          {brand ? <Text style={skin.brand(tokens)}>{brand}</Text> : null}
+          {!hasLinks || collapsed ? null : (
           <View style={skin.linksRow(tokens)}>
             {links.map((link, index) => {
               const isActive = index === active;
