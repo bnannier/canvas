@@ -56,6 +56,16 @@ function assetUri(mod: unknown): string | undefined {
     const uri = Image.resolveAssetSource(mod)?.uri;
     if (typeof uri === "string") return uri;
   }
+  // A web export registers the photo too and hands back its id. expo-asset resolves it to
+  // the exported URL; without it the raw `/rachel-chen.jpg` loaded only where a public/
+  // folder served it at the root (the docs site), and 404'd elsewhere (the smoke app).
+  // Loaded here, on the one path that needs it, so a non-Expo host (the unit tests'
+  // react-native-web) never loads its native bindings.
+  if (typeof mod === "number") {
+    const { Asset } = require("expo-asset") as typeof import("expo-asset");
+    const uri = Asset.fromModule(mod).uri;
+    if (typeof uri === "string" && uri) return uri;
+  }
   return undefined;
 }
 
