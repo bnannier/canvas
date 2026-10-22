@@ -41,6 +41,20 @@ name: Sealed Canvas native candidate measurement
 - assertVisible:
     id: smoke-bundle-url
     text: (file:|assets:|/).*
+# Every documented component's examples, mounted in turn against the installed package.
+# The screen reports its own count; the backreference requires all of them rendered.
+- openLink: canvas-smoke:///testing/catalog
+- assertVisible: Component catalog
+- tapOn: Render every component
+- extendedWaitUntil:
+    visible:
+      id: catalog-progress
+      text: 'Rendered: ([1-9][0-9]*) of \1'
+    timeout: 180000
+- assertVisible:
+    id: catalog-failures
+    text: 'Failures: 0'
+- takeScreenshot: catalog-rendered
 - openLink: canvas-smoke:///testing/control-refs
 - assertVisible: Control refs
 - tapOn: Inspect refs

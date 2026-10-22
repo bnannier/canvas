@@ -1,6 +1,7 @@
 import { useRouter } from "expo-router";
 import { Card, Column, Grid, Typography } from "@nannier/canvas";
 import { Screen } from "../app-frame/screen";
+import { CATALOG } from "../catalog/components";
 import { JOURNEYS } from "../catalog/journeys";
 
 export default function SmokeHome() {
@@ -15,6 +16,13 @@ export default function SmokeHome() {
       <Grid minTileWidth={260} relaxed>
         {JOURNEYS.map((journey) => (
           <Card key={journey.route} title={journey.title} description={journey.description} onPress={() => router.navigate(journey.route)} />
+        ))}
+      </Grid>
+      <Typography h2>Components</Typography>
+      <Grid minTileWidth={200} relaxed>
+        {CATALOG.map((group) => (
+          <Card key={group.category} title={group.category} description={`${group.components.length} components`}
+            onPress={() => router.navigate(`/components?category=${group.category}`)} />
         ))}
       </Grid>
     </Screen>

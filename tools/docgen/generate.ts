@@ -34,6 +34,7 @@ const REPO = path.resolve(HERE, "..", "..");
 
 const EXAMPLES_DIR = path.join(REPO, "docs", "src", "core", "examples");
 const REGISTRY_FILE = path.join(REPO, "docs", "src", "core", "registry.ts");
+const DOCS_INDEX_FILE = path.join(REPO, "docs", "src", "core", "docs-index.ts");
 const CHUNKS_FILE = path.join(REPO, "docs", "src", "core", "docs-chunks.json");
 const PREVIEWS_FILE = path.join(REPO, "docs", "src", "core", "previews.ts");
 const DESCRIPTIONS_FILE = path.join(REPO, "docs", "src", "core", "descriptions.ts");
@@ -449,6 +450,27 @@ export function loadComponentDocs(dir: string): ComponentDocsRequest | undefined
 `;
 }
 
+// Every component's docs module by static import, for an app that bundles the docs from
+// outside its own project (the smoke app, smoke/): Expo roots Metro's server at the
+// repository, and a require.context there resolves its keys against the wrong directory.
+function renderDocsIndex(entries: Entry[]): string {
+  const sorted = [...entries].sort((a, b) => a.dir.localeCompare(b.dir));
+  const name = (e: Entry) => `d_${e.category}_${e.dir.replace(/[^a-z0-9]/gi, "_")}`;
+  const imports = sorted
+    .map((e) => `import { docs as ${name(e)} } from ${JSON.stringify(`./examples/${e.category}/${e.dir}/${e.dir}-docs`)};`)
+    .join("\n");
+  const rows = sorted.map((e) => `  ${name(e)},`).join("\n");
+  return `${GENERATED_HEADER}
+import type { ComponentDocs } from "./scope";
+${imports}
+
+/** Every documented component's docs, eagerly, in source-directory order. */
+export const ALL_COMPONENT_DOCS: readonly ComponentDocs[] = [
+${rows}
+];
+`;
+}
+
 function main() {
   // The shape of every page comes first (S1 to S10, docStructureViolations in
   // parse-md.ts), before anything is written. Unlike the style and prose guardrails it
@@ -571,6 +593,7 @@ function main() {
   pruneOrphans(EXAMPLES_DIR);
 
   writeFileIfChanged(REGISTRY_FILE, renderRegistry(entries));
+  writeFileIfChanged(DOCS_INDEX_FILE, renderDocsIndex(entries));
   writeFileIfChanged(PREVIEWS_FILE, renderPreviews(entries));
   writeFileIfChanged(DESCRIPTIONS_FILE, renderDescriptions(entries));
   // Which chunk carries each page's docs, for the export's post-processing: a page's

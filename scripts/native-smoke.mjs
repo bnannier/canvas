@@ -36,6 +36,14 @@ function declaredCanvasDependency(metadata) {
   return names[0];
 }
 
+// The docs modules the smoke app's component screens import (smoke/src/catalog): the
+// generated examples and their static index, their scope type, the example helpers, the
+// components list and the sample photos those examples name.
+const SMOKE_DOCS_INPUTS = ["docs/src/core/docs-index.ts", "docs/src/core/scope.ts", "docs/src/core/live-state.tsx",
+  "docs/src/core/photos.ts", "docs/src/core/data/components.ts", "docs/src/core/data/types.ts", "docs/src/core/examples",
+  "docs/public/*.jpg", "docs/public/*.mp4"];
+const docsInventory = (output) => fileInventory(path.join(output, "docs"));
+
 export function prepareNativeSmoke(candidate, artifacts, output) {
   const manifest = verifyArtifacts(repo, candidate, artifacts);
   const identity = packageIdentity(manifest);
@@ -48,6 +56,11 @@ export function prepareNativeSmoke(candidate, artifacts, output) {
   const appArchive = path.join(output, "smoke.tar");
   run(repo, "git", ["archive", "--format=tar", "--output", appArchive, "HEAD", "smoke"], identity);
   run(output, "tar", ["-xf", appArchive, "-C", app, "--strip-components=1"], identity);
+  // The component screens render the docs' generated examples (smoke/metro.config.js);
+  // copy exactly the committed modules they import beside the app, at the same relative path.
+  const docsArchive = path.join(output, "docs.tar");
+  run(repo, "git", ["archive", "--format=tar", "--output", docsArchive, "HEAD", ...SMOKE_DOCS_INPUTS], identity);
+  run(output, "tar", ["-xf", docsArchive, "-C", output], identity);
   run(app, "bun", ["install", "--frozen-lockfile"], identity);
   const metadataFile = path.join(app, "package.json");
   const metadata = read(metadataFile);
@@ -91,7 +104,7 @@ export function prepareNativeSmoke(candidate, artifacts, output) {
     throw new Error("Smoke app ID, scheme or runtime identity is incorrect");
   }
   const androidInstrumentation = preserveAndroidInstrumentation(repo, output, identity.candidateRevision);
-  write(path.join(output, "context.json"), { schema: 2, identity, appSources: appInventory(app), packages: inputs, tarball: manifest.packageFile,
+  write(path.join(output, "context.json"), { schema: 2, identity, appSources: appInventory(app), docsSources: docsInventory(output), packages: inputs, tarball: manifest.packageFile,
     androidInstrumentation });
   console.log(`Prepared independent native candidate ${identity.packageVersion} (${identity.packageSha256}) in ${output}`);
 }
@@ -100,7 +113,8 @@ function context(output) {
   const context = read(path.join(output, "context.json"));
   const app = path.join(output, "app");
   if (context.schema !== 2 || !Array.isArray(context.packages)) throw new Error("Native smoke candidate changed");
-  if (JSON.stringify(appInventory(app)) !== JSON.stringify(context.appSources)) throw new Error("Starter source changed after candidate preparation");
+  if (JSON.stringify(appInventory(app)) !== JSON.stringify(context.appSources)) throw new Error("Smoke app source changed after candidate preparation");
+  if (JSON.stringify(docsInventory(output)) !== JSON.stringify(context.docsSources)) throw new Error("Smoke docs inputs changed after candidate preparation");
   for (const input of context.packages) {
     if (sha256(path.join(output, input.filename)) !== input.sha256) throw new Error("Native smoke candidate changed");
     assertInstalledPackage(path.join(output, "unpacked", input.name, "package"), path.join(app, "node_modules", input.installedAs ?? input.name));

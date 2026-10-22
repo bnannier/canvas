@@ -23,6 +23,8 @@ test("docs and the smoke app consume one maintained public-API fixture body", ()
           const bindings = statement.importClause?.namedBindings;
           expect(bindings && ts.isNamedImports(bindings) ? bindings.elements.map((entry) => entry.name.text) : [])
             .toEqual(["Dimensions", "I18nManager", "PixelRatio", "Platform", "View"]);
+        } else if (fixture === "catalog" && statement.moduleSpecifier.text.startsWith("../catalog/")) {
+          // The catalog sweep renders the smoke app's own component list and example scope.
         } else expect(["react", "@nannier/canvas"]).toContain(statement.moduleSpecifier.text);
       }
     }
