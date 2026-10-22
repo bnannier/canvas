@@ -239,7 +239,10 @@ export function instrumentNativeSmoke(output, device) {
   console.log(`Verified ${result.junit.tests} Android instrumentation cases against the sealed Canvas capture module`);
 }
 
-export function testNativeSmoke(output, platform, device, maestro, requestedEvidence) {
+export function testNativeSmoke(output, platform, device, maestro, requestedEvidence, formFactor = "phone") {
+  // The device's form factor, for the flows' few form-factor branches (a phone presents
+  // some overlays as sheets). The caller picks the device; the flows read the factor.
+  if (!["phone", "tablet"].includes(formFactor)) throw new Error("Expected the phone or tablet form factor");
   const { app, identity } = context(output);
   const build = read(path.join(output, `${platform}-build.json`));
   const digest = platform === "ios" ? fileInventory(build.binary) : sha256(build.binary);
@@ -248,7 +251,7 @@ export function testNativeSmoke(output, platform, device, maestro, requestedEvid
   const startedAt = new Date().toISOString();
   const flow = path.join(evidence, "candidate.yaml");
   const postFlow = path.join(evidence, "after-carousel.yaml");
-  const result = { schema: 2, platform, device, identity, binaryDigest: digest, startedAt, status: "failed", voiceOver: "not-run", talkBack: "not-run" };
+  const result = { schema: 2, platform, formFactor, device, identity, binaryDigest: digest, startedAt, status: "failed", voiceOver: "not-run", talkBack: "not-run" };
   const verifyFlowInputs = () => {
     for (const [file, expected] of Object.entries(result.flowInputs)) {
       if (sha256(path.join(evidence, file)) !== expected) throw new Error("Preserved native flow changed during execution");
@@ -327,7 +330,7 @@ export function testNativeSmoke(output, platform, device, maestro, requestedEvid
         run(app, maestro, ["--device", device, "test", "--format", "junit", "--output", phase.reportPath,
           "--test-output-dir", phase.artifacts, "-e", `CANDIDATE=${identity.candidateRevision}`,
           "-e", `PACKAGE_SHA256=${identity.packageSha256}`, "-e", `PACKAGE_VERSION=${identity.packageVersion.replaceAll(".", "\\.")}`,
-          "-e", `SCHEME=${scheme}`, file], identity);
+          "-e", `SCHEME=${scheme}`, "-e", `FORM_FACTOR=${formFactor}`, file], identity);
         phase.report = successfulMaestroReport(phase.reportPath);
         if (sha256(file) !== phase.flowSha256) throw new Error("Native phase changed during execution");
         verifyFlowInputs();
@@ -362,7 +365,7 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
   const options = {};
   for (let index = 0; index < args.length; index += 2) {
     const key = args[index]?.replace(/^--/, "");
-    if (!["candidate", "artifacts", "output", "platform", "device", "maestro", "evidence"].includes(key)
+    if (!["candidate", "artifacts", "output", "platform", "device", "maestro", "evidence", "form-factor"].includes(key)
       || key in options || !args[index + 1] || args[index + 1].startsWith("--")) throw new Error("Expected unique named native smoke arguments");
     options[key] = args[index + 1];
   }
@@ -376,7 +379,7 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
     if (command === "build" && options.platform === "web" && !options.device) buildWebSmoke(output);
     else if (!["ios", "android"].includes(options.platform) || !options.device) throw new Error("build/test/instrument requires --platform and --device (web builds take no device)");
     else if (command === "build") buildNativeSmoke(output, options.platform, options.device);
-    else if (command === "test") testNativeSmoke(output, options.platform, options.device, options.maestro ?? "maestro", options.evidence);
+    else if (command === "test") testNativeSmoke(output, options.platform, options.device, options.maestro ?? "maestro", options.evidence, options["form-factor"]);
     else if (command === "instrument" && options.platform === "android") instrumentNativeSmoke(output, options.device);
     else throw new Error("Expected prepare, build, test or Android instrument");
   }
