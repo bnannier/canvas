@@ -22,7 +22,7 @@ const typedRoles = [...(/export type Role =([^;]*);/.exec(typings)?.[1] ?? "").m
 
 /** The code of every module that renders on a device (the kit, the docs, the starter and smoke
  * apps), comments stripped: they quote rejected roles. */
-const modules = ["src", "docs/src", "examples/starter/src", "examples/starter/smoke"]
+const modules = ["src", "docs/src", "examples/starter/src", "smoke/src"]
   .flatMap((dir) => [...new Glob(`${dir}/**/*.{ts,tsx}`).scanSync(ROOT)])
   .filter((file) => !file.endsWith(".d.ts"))
   .map((file) => ({

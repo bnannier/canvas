@@ -1,5 +1,5 @@
 import { useLocalSearchParams } from "expo-router";
-import { ListboxBody } from "../../../../../examples/starter/smoke/fixtures/listbox";
+import { ListboxBody } from "../../../../../smoke/src/testing/listbox";
 import { Page, PageHeader } from "../../../ui/page";
 
 export default function ListboxFixture() {

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Button, Checkbox, Column, Listbox, Row, Typography } from "@nannier-com/canvas";
+import { Button, Checkbox, Column, Listbox, Row, Typography } from "@nannier/canvas";
 
 const teams = [{ label: "Backend" }, { label: "Frontend", detail: "Web applications" }, { label: "Design" }];
 

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Column, Tabs, Typography } from "@nannier-com/canvas";
+import { Column, Tabs, Typography } from "@nannier/canvas";
 
 const tabs = [{ label: "Overview" }, { label: "Activity" }, { label: "Unavailable", disabled: true }];
 

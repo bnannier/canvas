@@ -1,8 +1,8 @@
 import { version as reactVersion } from "react";
 import { NativeModules, Platform } from "react-native";
 import Constants from "expo-constants";
-import canvasPackage from "@nannier-com/canvas/package.json";
-import { Column, Typography, useTheme } from "@nannier-com/canvas";
+import canvasPackage from "@nannier/canvas/package.json";
+import { Column, Typography, useTheme } from "@nannier/canvas";
 
 // Only the smoke build exposes this screen. The installed package's own metadata
 // is bundled independently of the candidate identity supplied to Expo config.

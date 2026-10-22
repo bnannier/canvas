@@ -328,7 +328,7 @@ its measured size while it shrinks (the freeze is close-only now). The button me
 (the pill absorbing the menu) is not part of this: the Autocomplete's field stays
 visible for typing, and the merge is a UIKit-private effect. Blur-to-sharp is out too
 (`filter: blur` is Android and web only in react-native 0.86). The harness is
-`/testing/popup` (`examples/starter/smoke/fixtures/popup.tsx`): the real Autocomplete
+`/testing/popup` (then `examples/starter/smoke/fixtures/popup.tsx`, since moved to `smoke/src/testing/`): the real Autocomplete
 and Dropdown under controlled Open / Close / Toggle / Cycle drivers, material and
 scheme switches, a frame readout, `?mode=glass&scheme=dark` to start there. The web
 actions module (`actions-popup.mjs`, beside the others in the artifact root) records

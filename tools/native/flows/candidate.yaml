@@ -1,10 +1,10 @@
-appId: com.nannier.canvas.starter.smoke
+appId: com.nannier.canvas.smoke
 name: Sealed Canvas native candidate measurement
 ---
 - launchApp:
     clearState: true
 # The router must mount before Android can deliver a warm-start link.
-- assertVisible: Your workspace
+- assertVisible: Journeys
 - openLink: canvas-smoke:///testing/diagnostics
 # iOS can require first-use confirmation before opening the app's custom scheme.
 - runFlow:

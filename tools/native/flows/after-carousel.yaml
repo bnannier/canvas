@@ -1,4 +1,4 @@
-appId: com.nannier.canvas.starter.smoke
+appId: com.nannier.canvas.smoke
 name: Sealed Canvas native candidate after measured drag
 ---
 - assertVisible:

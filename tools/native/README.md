@@ -1,26 +1,24 @@
 # Native candidate verification
 
-The smoke app is an isolated copy of `examples/starter`. Its checked-in dependency
-stays pinned to npm. Candidate preparation verifies the release seal, installs the
-exact Canvas tarball (its Android capture module included) only in the copy, and compares
-installed package bytes before building
-or testing. The Canvas tarball is installed under the dependency name the starter
-declares for it (the registry scope can lag the package's own name across a scope
-migration), so every import in the copy resolves to the sealed package; the
-candidate identity still carries the package's own name and version. No source resolver, workspace link, `.origin` overlay or optional-peer
-stub is allowed. The package hash and version are retained in the identity.
+The smoke app ("Canvas Smoke Test", `smoke/`) is a standalone Expo app whose screens
+are the verification fixtures the journeys drive (`smoke/src/testing`, routed under
+`smoke/src/app/testing`). Its checked-in dependency stays pinned to the published
+`@nannier/canvas`. Candidate preparation verifies the release seal, copies the committed
+`smoke/` tree into a fresh directory, installs the exact Canvas tarball (its Android
+capture module included) only in that copy, under the dependency name the app declares
+for it, and compares installed package bytes before building or testing. Every import in
+the copy resolves to the sealed package; the candidate identity still carries the
+package's own name and version. No source resolver, workspace link, `.origin` overlay or
+optional-peer stub is allowed. The package hash and version are retained in the identity.
 Preparation also proves Android autolinking resolves the capture module from the
 isolated installed Canvas package's own `android/`, and preserves that result in
-`android-autolinking.json`. These fixtures are outside the library's published `files` set.
+`android-autolinking.json`. The smoke app is outside the library's published `files` set.
 
-Reviewed fixture bodies and route templates live in `examples/starter/smoke`,
-outside the ordinary app's source and route graph. Preparation copies only the
-entries listed in `smoke/manifest.json` into the temporary app after installing the
-candidate, then typechecks the resulting app against that exact package. The docs
-import those same bodies. This permits a candidate fixture to exercise a new API
-without requiring the registry-pinned starter to compile against an unpublished API.
-The smoke environment flag selects the app identity and enables prepared routes;
-the flag alone does not install routes into the ordinary app.
+Preparation typechecks the copy against the sealed package, so a fixture may exercise a
+candidate API the app's published pin does not have yet; the app is only ever built
+against a candidate. The docs' hidden `/testing/*` routes import the same fixture bodies.
+The app is always the smoke app: its bundle ID is `com.nannier.canvas.smoke` and its URL
+scheme `canvas-smoke`, and `examples/starter` carries no verification code.
 
 The runner requires a clean checkout of the identified candidate, its `candidate`
 directory, and the sealed `artifacts` directory. Use task-local output paths:
@@ -36,8 +34,8 @@ node scripts/native-smoke.mjs test --output /tmp/native-candidate --platform ios
 For Android, replace `ios` and `SIMULATOR_UDID` with `android` and an explicit adb
 serial. Set `JAVA_HOME`, `ANDROID_HOME` and `PATH` for that command if the SDK/JDK
 is not already configured. The runner does not alter shell profiles or SDK
-installations. The journey installs `com.nannier.canvas.starter.smoke`, preserving
-the ordinary starter and docs apps. Maestro installs its native automation driver.
+installations. The journey installs `com.nannier.canvas.smoke`, preserving
+the starter and docs apps. Maestro installs its native automation driver.
 
 Android CI also runs the capture module's device instrumentation before Maestro.
 It builds the release and compiles the module's test APK before the emulator boots

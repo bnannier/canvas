@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { ActionSheet, Button, ButtonGroup, Card, Checkbox, Column, Dialog, Drawer, Dropdown, GlassModalBlurTarget, Input, PhoneInput, Popover, Radio, RadioGroup, Row, Slider, Switch, ThemeProvider, Typography } from "@nannier-com/canvas";
+import { ActionSheet, Button, ButtonGroup, Card, Checkbox, Column, Dialog, Drawer, Dropdown, GlassModalBlurTarget, Input, PhoneInput, Popover, Radio, RadioGroup, Row, Slider, Switch, ThemeProvider, Typography } from "@nannier/canvas";
 
 type Stats = { hosts: number; activeHosts: number; recordings: number; frostViews: number; frameListeners: number };
 type CaptureModule = { supported: boolean; getCaptureStats(): Stats };

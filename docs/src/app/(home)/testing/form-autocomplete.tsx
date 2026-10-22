@@ -2,7 +2,7 @@ import { useLocalSearchParams } from "expo-router";
 import { Autocomplete, Column } from "@nannier/canvas";
 import { Autocomplete as IosAutocomplete } from "../../../../../src/atoms/autocomplete/autocomplete.ios";
 import { Autocomplete as AndroidAutocomplete } from "../../../../../src/atoms/autocomplete/autocomplete.android";
-import { FormAutocompleteBody, FRUIT } from "../../../../../examples/starter/smoke/fixtures/form-autocomplete";
+import { FormAutocompleteBody, FRUIT } from "../../../../../smoke/src/testing/form-autocomplete";
 import { Page, PageHeader } from "../../../ui/page";
 
 // Browser skin comparisons remain docs-only. All interaction bodies also run in

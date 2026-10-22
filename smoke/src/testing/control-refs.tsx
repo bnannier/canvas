@@ -2,7 +2,7 @@ import { useCallback, useRef, useState } from "react";
 import {
   Button, Checkbox, Column, Dialog, Radio, RadioGroup, Row, Select, Slider, Switch, Typography,
   type View,
-} from "@nannier-com/canvas";
+} from "@nannier/canvas";
 
 // Shared by the docs and the independent native consumer. These refs come only
 // from the public package and target the real platform host.

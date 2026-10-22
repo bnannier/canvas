@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Avatar, AvatarGroup, Button, Card, Column, Row, ThemeProvider, Typography } from "@nannier-com/canvas";
+import { Avatar, AvatarGroup, Button, Card, Column, Row, ThemeProvider, Typography } from "@nannier/canvas";
 
 // The identity-disc harness, the inner loop for the Avatar's Dark Factory look (the
 // `df-avatar` reference card in tools/native/liquid-motion.md): the real Avatar through the

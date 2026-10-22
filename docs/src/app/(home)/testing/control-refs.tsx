@@ -1,4 +1,4 @@
-import { ControlRefsBody } from "../../../../../examples/starter/smoke/fixtures/control-refs";
+import { ControlRefsBody } from "../../../../../smoke/src/testing/control-refs";
 import { Page, PageHeader } from "../../../ui/page";
 
 export default function ControlRefsFixture() {
