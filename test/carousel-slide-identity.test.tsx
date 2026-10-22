@@ -1,7 +1,7 @@
 import { useEffect, type ComponentType } from "react";
 import { afterEach, beforeEach, describe, expect, it } from "bun:test";
 import { act, cleanup, fireEvent, render, screen } from "@testing-library/react";
-import { TextInput } from "react-native";
+import { Platform, TextInput } from "react-native";
 import { ThemeProvider } from "../src/style/theme.tsx";
 import { Carousel, type CarouselProps } from "../src/organisms/carousel/carousel.tsx";
 import { Carousel as IOSCarousel } from "../src/organisms/carousel/carousel.ios.tsx";
@@ -168,3 +168,39 @@ for (const [platform, Component] of [["web", Carousel], ["ios", IOSCarousel], ["
 function contentLayout(width: number) {
   layout(scrollport().firstElementChild as HTMLElement, width);
 }
+
+// Android caps a scroll at the width its content has natively when the command runs, and
+// React Native runs a scroll command ahead of layout updates still waiting to mount, so a
+// content-size report does not prove the native content has that width yet (Deploy
+// 38402410264 and 39730985294 showed Page 1 with "Current page: 2"). On native the
+// unmeasured content is therefore already every slide's width, so measuring never widens
+// it and the starting slide's scroll is never capped.
+describe("Carousel unmeasured native content", () => {
+  for (const os of ["ios", "android"] as const) {
+    it(`is every slide's width from the first frame on ${os}`, () => {
+      const platform = Object.getOwnPropertyDescriptor(Platform, "OS")!;
+      Object.defineProperty(Platform, "OS", { configurable: true, value: os });
+      try {
+        const Component = os === "ios" ? IOSCarousel : AndroidCarousel;
+        render(<ThemeProvider><Component testID="carousel" items={items} defaultIndex={1} /></ThemeProvider>);
+        const content = scrollport().firstElementChild as HTMLElement;
+        expect(content.style.width).toBe("300%");
+        expect(content.style.flexDirection).toBe("row");
+        // The slide sits in the paging cell RNW wraps each content child in.
+        let slide: HTMLElement | null = screen.getByText("Second");
+        while (slide && slide.parentElement?.parentElement !== content) slide = slide.parentElement;
+        expect(slide?.style.width).toBe(`${100 / 3}%`);
+        expect(hidden("Second")).toBe(false);
+      } finally {
+        Object.defineProperty(Platform, "OS", platform);
+      }
+    });
+  }
+
+  it("keeps the web's unmeasured column", () => {
+    render(<ThemeProvider><Carousel testID="carousel" items={items} defaultIndex={1} /></ThemeProvider>);
+    const content = scrollport().firstElementChild as HTMLElement;
+    expect(content.style.width).toBe("100%");
+    expect(content.style.flexDirection).toBe("column");
+  });
+});
