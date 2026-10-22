@@ -53,17 +53,21 @@ test("release and instrumentation share the sealed module and external build dir
   const output = temporaryDirectory();
   const app = path.join(output, "app with spaces");
   const paths = androidInstrumentationPaths(output, app);
-  for (const instrument of [false, true]) {
-    const args = androidGradleArguments(output, app, instrument);
+  for (const phase of ["build", "instrument"] as const) {
+    const args = androidGradleArguments(output, app, phase);
     expect(args).toContain(`-Dcanvas.blur.consumer=${path.join(app, "android")}`);
     expect(args).toContain(`-Dcanvas.blur.module=${paths.module}`);
     expect(args).toContain(`-Dcanvas.blur.build=${paths.build}`);
     expect(args).toContain(paths.init);
     expect(paths.build.startsWith(app + path.sep)).toBe(false);
-    expect(args.includes(`-Dcanvas.blur.tests=${paths.tests}`)).toBe(instrument);
-    expect(args.includes("--stacktrace")).toBe(instrument);
-    expect(args[0]).toBe(instrument ? "canvasBlurConnectedDebugAndroidTest" : ":app:assembleRelease");
+    // Both phases attach the same test sources, so the connected run finds the test APK
+    // the pre-boot build compiled up to date.
+    expect(args).toContain(`-Dcanvas.blur.tests=${paths.tests}`);
+    expect(args).toContain("--stacktrace");
+    expect(args).toContain(`-Dcanvas.blur.metadata=${phase === "instrument" ? path.join(paths.evidence, "configuration.json") : path.join(output, "android-build-instrumentation-configuration.json")}`);
+    expect(args.slice(0, phase === "build" ? 2 : 1)).toEqual(phase === "build" ? [":app:assembleRelease", "canvasBlurAssembleDebugAndroidTest"] : ["canvasBlurConnectedDebugAndroidTest"]);
   }
+  expect(() => androidGradleArguments(output, app, true as unknown as "build")).toThrow();
 });
 
 const passingXml = '<testsuite name="CaptureTest" tests="2" failures="0" errors="0" skipped="0"><testcase name="geometry" classname="CaptureTest"/><testcase name="lifecycle" classname="CaptureTest"/></testsuite>';

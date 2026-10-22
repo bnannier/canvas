@@ -43,15 +43,23 @@ export function assertAndroidInstrumentationInputs(output, identity, inputs) {
 }
 
 /** Output redirection also applies to release builds: node_modules stays sealed. */
-export function androidGradleArguments(output, app, instrument = false, canvas = "@nannier/canvas") {
+// The "build" phase runs before the emulator boots: it builds the release APK and compiles
+// the capture module's test APK, which needs no device. Compiling it while the emulator
+// idled held a 4-vCPU runner at load 10 to 12 for about 4 minutes, and the starved
+// emulator's launcher raised "isn't responding" over the journey's first screen (Deploy
+// 39714665080, 39700951399, 39629119921, 38403573725). The "instrument" phase then finds
+// the test APK up to date and only installs and runs it.
+export function androidGradleArguments(output, app, phase, canvas = "@nannier/canvas") {
+  if (phase !== "build" && phase !== "instrument") throw new Error("Expected the build or instrument Gradle phase");
   const files = androidInstrumentationPaths(output, app, canvas);
-  const args = [instrument ? "canvasBlurConnectedDebugAndroidTest" : ":app:assembleRelease", "--no-daemon", "--console=plain",
-    "--init-script", files.init, `-Dcanvas.blur.consumer=${path.join(app, "android")}`,
-    `-Dcanvas.blur.module=${files.module}`, `-Dcanvas.blur.build=${files.build}`];
+  const tasks = phase === "instrument" ? ["canvasBlurConnectedDebugAndroidTest"] : [":app:assembleRelease", "canvasBlurAssembleDebugAndroidTest"];
+  const metadata = phase === "instrument" ? path.join(files.evidence, "configuration.json") : path.join(output, "android-build-instrumentation-configuration.json");
   // A failed instrumentation build (CI once failed packaging the test APK with no cause
   // in the log) must name its exception in the preserved gradle.log.
-  if (instrument) args.push(`-Dcanvas.blur.tests=${files.tests}`, `-Dcanvas.blur.metadata=${path.join(files.evidence, "configuration.json")}`, "--stacktrace");
-  return args;
+  return [...tasks, "--no-daemon", "--console=plain",
+    "--init-script", files.init, `-Dcanvas.blur.consumer=${path.join(app, "android")}`,
+    `-Dcanvas.blur.module=${files.module}`, `-Dcanvas.blur.build=${files.build}`,
+    `-Dcanvas.blur.tests=${files.tests}`, `-Dcanvas.blur.metadata=${metadata}`, "--stacktrace"];
 }
 
 /** Gradle's per-class JUnit XML must contain actual successful, unskipped cases. */
