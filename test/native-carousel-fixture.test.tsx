@@ -15,7 +15,7 @@ import { ThemeProvider } from "../src/style/theme.tsx";
 
 afterEach(cleanup);
 const root = resolve(import.meta.dir, "..");
-const source = readFileSync(resolve(root, "examples/starter/smoke/fixtures/carousel.tsx"), "utf8");
+const source = readFileSync(resolve(root, "smoke/src/testing/carousel.tsx"), "utf8");
 
 function mountFixture() {
   const requests: ((x: number, y: number, width: number, height: number) => void)[] = [];

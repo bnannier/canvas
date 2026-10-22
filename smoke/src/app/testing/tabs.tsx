@@ -1,5 +1,5 @@
 import { useLocalSearchParams } from "expo-router";
-import { Typography } from "@nannier-com/canvas";
+import { Typography } from "@nannier/canvas";
 import { Screen } from "../../app-frame/screen";
 import { TabsBody } from "../../testing/tabs";
 

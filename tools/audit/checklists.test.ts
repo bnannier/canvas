@@ -1057,11 +1057,11 @@ describe("e2e driving a component", () => {
       write("docs/src/app/(home)/testing/_layout.tsx", 'import { Slot } from "expo-router";');
       write(
         "docs/src/app/(home)/testing/lists.tsx",
-        'import { ListsBody } from "../../../../../examples/starter/smoke/fixtures/lists";\nimport { Page } from "../../../ui/page";\nimport { Typography } from "@nannier/canvas";',
+        'import { ListsBody } from "../../../../../smoke/src/testing/lists";\nimport { Page } from "../../../ui/page";\nimport { Typography } from "@nannier/canvas";',
       );
       write("docs/src/ui/page.tsx", 'import { Card } from "@nannier/canvas";');
-      write("examples/starter/smoke/fixtures/lists.tsx", 'import { Feed } from "@nannier-com/canvas";\nimport { rows } from "./rows";');
-      write("examples/starter/smoke/fixtures/rows.ts", 'import { GridList } from "@nannier-com/canvas";\nexport const rows = [];');
+      write("smoke/src/testing/lists.tsx", 'import { Feed } from "@nannier/canvas";\nimport { rows } from "./rows";');
+      write("smoke/src/testing/rows.ts", 'import { GridList } from "@nannier/canvas";\nexport const rows = [];');
       const routes = testingRoutes(root);
       expect(routes.map((t) => t.route)).toEqual(["/testing/lists"]);
       expect([...routes[0].imports.names].sort()).toEqual(["Feed", "GridList", "Typography"]);

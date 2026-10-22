@@ -53,8 +53,8 @@ config.resolver.resolveRequest = (context, moduleName, platform) => {
   // Live-source pin: the package's main/exports point at dist (the publish
   // artifact), but docs development must track src edits without a rebuild.
   // The prior scope is pinned too while examples/starter (a real consumer of the
-  // published package, whose smoke fixtures the docs' testing routes import) still
-  // depends on @nannier-com/canvas until @nannier/canvas is published.
+  // published package) still depends on @nannier-com/canvas. The smoke app's fixtures,
+  // which the docs' testing routes import, use @nannier/canvas.
   if (moduleName === "@nannier/canvas" || moduleName === "@nannier-com/canvas") {
     // Resolve through the node_modules symlink path (docs/node_modules/@nannier/
     // canvas -> repoRoot), NOT a raw repoRoot path: Metro's file map indexes the kit

@@ -1,4 +1,4 @@
-import { OverlayProvider } from "@nannier-com/canvas";
+import { OverlayProvider } from "@nannier/canvas";
 import { Screen } from "../../app-frame/screen";
 import { MaterialsBody } from "../../testing/materials";
 

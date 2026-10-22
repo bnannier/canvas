@@ -33,7 +33,7 @@ function fingerprint(root, { directories, files, skip = new Set() }) {
 // whose changes make the source dirty (sourceDirty), so the two never disagree about what
 // "the source" is.
 const SOURCE_INPUTS = {
-  directories: ["src", "styles", "docs/src", "examples/starter/smoke/fixtures"],
+  directories: ["src", "styles", "docs/src", "smoke/src/testing"],
   files: ["package.json", "bun.lock", "docs/package.json", "docs/bun.lock", "docs/app.json", "docs/app.config.js", "docs/metro.config.js"],
 };
 

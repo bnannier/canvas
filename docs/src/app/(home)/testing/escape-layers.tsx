@@ -1,5 +1,5 @@
 import { useLocalSearchParams } from "expo-router";
-import { EscapeLayersBody } from "../../../../../examples/starter/smoke/fixtures/escape-layers";
+import { EscapeLayersBody } from "../../../../../smoke/src/testing/escape-layers";
 import { Page, PageHeader } from "../../../ui/page";
 
 export default function EscapeLayersFixture() {

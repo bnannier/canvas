@@ -21,8 +21,9 @@ test("Canvas carries its Android capture module in its one package", () => {
 test("docs autolink the module from the Canvas root, never through consumer source pins", () => {
   const docs = metadata("../../docs/package.json");
   const starter = metadata("../../examples/starter/package.json");
+  const smoke = metadata("../../smoke/package.json");
   expect(docs.expo.autolinking.nativeModulesDir).toBe("..");
-  for (const pkg of [docs, starter]) {
+  for (const pkg of [docs, starter, smoke]) {
     expect(pkg.dependencies["@nannier/canvas-blur"]).toBeUndefined();
     expect(Object.values(pkg.dependencies).some((value) => /^(file|link|workspace):/.test(String(value)))).toBe(false);
   }

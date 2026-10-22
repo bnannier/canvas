@@ -1,4 +1,4 @@
-// The ordinary starter stays registry-pinned. All candidate installs, generated
+// The smoke app (smoke/) stays registry-pinned. All candidate installs, generated
 // native projects and build outputs belong to a fresh isolated output directory.
 import { execFileSync } from "node:child_process";
 import { randomUUID } from "node:crypto";
@@ -7,7 +7,6 @@ import * as path from "node:path";
 import { fileURLToPath } from "node:url";
 import { verifyArtifacts } from "./release.mjs";
 import { appInventory, assertInstalledPackage, fileInventory, packageArtifacts, packageIdentity, sha256 } from "../tools/native/candidate.mjs";
-import { installSmokeFixtures } from "../tools/native/fixtures.mjs";
 import { createEvidenceDirectory, recordNativeAttempt, successfulMaestroReport } from "../tools/native/evidence.mjs";
 import { createCarouselSwipeCommands, readCarouselEvidence } from "../tools/native/gesture.mjs";
 import { verifyNativeFlow } from "./verify-native-flow.mjs";
@@ -20,21 +19,20 @@ const read = (file) => JSON.parse(fs.readFileSync(file, "utf8"));
 const write = (file, value) => fs.writeFileSync(file, JSON.stringify(value, null, 2) + "\n");
 const env = (identity) => ({
   ...Object.fromEntries(Object.entries(process.env).filter(([name]) => !name.startsWith("GIT_"))),
-  HUSKY: "0", CI: "1", EXPO_PUBLIC_CANVAS_SMOKE: "1", CANVAS_SMOKE_IDENTITY: JSON.stringify(identity),
+  HUSKY: "0", CI: "1", CANVAS_SMOKE_IDENTITY: JSON.stringify(identity),
   MAESTRO_CLI_NO_ANALYTICS: "1", MAESTRO_CLI_ANALYSIS_NOTIFICATION_DISABLED: "true",
 });
 function run(cwd, command, args, identity, capture = false) {
   return execFileSync(command, args, { cwd, env: env(identity), encoding: "utf8", stdio: capture ? ["ignore", "pipe", "pipe"] : "inherit" });
 }
 
-// The ordinary starter pins Canvas under the scope the registry serves it from
-// today, and its sources import that name. The candidate replaces exactly that
-// dependency, so every import in the copied app resolves to the sealed package
-// even while the registry name lags a scope migration. The identity still names
+// The smoke app pins Canvas under the name the registry serves it from, and its
+// sources import that name. The candidate replaces exactly that dependency, so every
+// import in the copied app resolves to the sealed package. The identity still names
 // the package by its own name.
 function declaredCanvasDependency(metadata) {
   const names = Object.keys(metadata.dependencies ?? {}).filter((name) => /^@[a-z0-9-]+\/canvas$/.test(name));
-  if (names.length !== 1) throw new Error("The starter must declare exactly one Canvas package");
+  if (names.length !== 1) throw new Error("The smoke app must declare exactly one Canvas package");
   return names[0];
 }
 
@@ -47,9 +45,9 @@ export function prepareNativeSmoke(candidate, artifacts, output) {
   fs.mkdirSync(app);
   // Copy only the candidate's committed tree. An ignored .env file or untracked
   // fixture in a developer checkout must not alter the app attributed to HEAD.
-  const starterArchive = path.join(output, "starter.tar");
-  run(repo, "git", ["archive", "--format=tar", "--output", starterArchive, "HEAD", "examples/starter"], identity);
-  run(output, "tar", ["-xf", starterArchive, "-C", app, "--strip-components=2"], identity);
+  const appArchive = path.join(output, "smoke.tar");
+  run(repo, "git", ["archive", "--format=tar", "--output", appArchive, "HEAD", "smoke"], identity);
+  run(output, "tar", ["-xf", appArchive, "-C", app, "--strip-components=1"], identity);
   run(app, "bun", ["install", "--frozen-lockfile"], identity);
   const metadataFile = path.join(app, "package.json");
   const metadata = read(metadataFile);
@@ -83,13 +81,12 @@ export function prepareNativeSmoke(candidate, artifacts, output) {
     throw new Error("The sealed Canvas capture module did not autolink from the independent consumer");
   }
   write(path.join(output, "android-autolinking.json"), { identity, autolinking });
-  // These templates can exercise new candidate APIs that the registry starter's
-  // published pin does not have yet. Typecheck them only against the sealed install.
-  installSmokeFixtures(app);
+  // The smoke app can exercise new candidate APIs that its published pin does not
+  // have yet, so it is typechecked only against the sealed install.
   run(app, "bun", ["run", "typecheck"], identity);
   const configuration = JSON.parse(run(app, "node", ["node_modules/expo/bin/cli", "config", "--type", "public", "--json"], identity, true));
-  if (configuration.ios?.bundleIdentifier !== "com.nannier.canvas.starter.smoke"
-    || configuration.android?.package !== "com.nannier.canvas.starter.smoke"
+  if (configuration.ios?.bundleIdentifier !== "com.nannier.canvas.smoke"
+    || configuration.android?.package !== "com.nannier.canvas.smoke"
     || configuration.scheme !== "canvas-smoke" || JSON.stringify(configuration.extra?.canvasBuild) !== JSON.stringify(identity)) {
     throw new Error("Smoke app ID, scheme or runtime identity is incorrect");
   }
@@ -130,7 +127,7 @@ export function buildNativeSmoke(output, platform, device) {
     binary = path.join(output, "ios-build/Build/Products/Release-iphonesimulator", `${scheme}.app`);
     const buildEnvironment = env(identity);
     bundleEvidence = observeIosBundleEvidence({ app, binary, output: path.join(output, "ios-bundle-evidence"), identity,
-      smokeFlag: buildEnvironment.EXPO_PUBLIC_CANVAS_SMOKE, identityProvided: Boolean(buildEnvironment.CANVAS_SMOKE_IDENTITY) });
+      identityProvided: Boolean(buildEnvironment.CANVAS_SMOKE_IDENTITY) });
   } else {
     run(path.join(app, "android"), "./gradlew", androidGradleArguments(output, app, "build", installedCanvas), identity);
     binary = path.join(app, "android/app/build/outputs/apk/release/app-release.apk");

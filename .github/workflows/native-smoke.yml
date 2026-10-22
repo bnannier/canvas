@@ -79,7 +79,7 @@ jobs:
             ~/.bun/install/cache
             ~/.gradle/caches
             ~/Library/Caches/CocoaPods
-          key: native-smoke-${{ runner.os }}-${{ hashFiles('examples/starter/bun.lock', 'tools/native/maestro.json') }}
+          key: native-smoke-${{ runner.os }}-${{ hashFiles('smoke/bun.lock', 'tools/native/maestro.json') }}
           restore-keys: native-smoke-${{ runner.os }}-
 
       - name: Install the verified native test CLI

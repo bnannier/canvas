@@ -3,7 +3,7 @@ import { Dimensions, I18nManager, PixelRatio, Platform, View } from "react-nativ
 import {
   ActionSheet, AlertDialog, Autocomplete, Button, Column, Command, DataTable, DescriptionList,
   Dialog, Drawer, Dropdown, Row, ThemeProvider, Typography, useTheme,
-} from "@nannier-com/canvas";
+} from "@nannier/canvas";
 
 // The menu trigger's window frame, in React Native units, with what a native flow needs
 // to turn it into a device point (Maestro takes iOS points and Android physical pixels).

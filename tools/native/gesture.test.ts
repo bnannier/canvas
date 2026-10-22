@@ -16,7 +16,7 @@ const expected = { nonce: "measurement-attempt-123456", candidateRevision: "a".r
 const measurement = { generation: 1, status: "ready", index: 1, page: 2, x: 25.142857142857142, y: 187.04761904761904, width: 361.14285714285717, height: 138.28571428571428,
   handleX: 315.42857142857144, handleY: 300.1904761904762, handleWidth: 54.095238095238095, handleHeight: 17.142857142857142,
   screenWidth: 411.42857142857144, screenHeight: 914.2857142857143, pixelRatio: 2.625, platform: "android", rtl: false };
-const postFlowFile = () => { const file = join(temp(), "after-carousel.yaml"); writeFileSync(file, 'appId: com.nannier.canvas.starter.smoke\n---\n- assertVisible: "Current page: 3"\n'); return file; };
+const postFlowFile = () => { const file = join(temp(), "after-carousel.yaml"); writeFileSync(file, 'appId: com.nannier.canvas.smoke\n---\n- assertVisible: "Current page: 3"\n'); return file; };
 const commandsFor = (identity = expected) => createCarouselSwipeCommands(identity, postFlowFile());
 
 function evaluate(code: string, value: unknown) {

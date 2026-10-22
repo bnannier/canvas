@@ -25,8 +25,8 @@ test("runtime identity changes with source bytes and preserves candidate versus 
   writeFileSync(join(root, "src/index.ts"), "export const value = 2;");
   expect(sourceFingerprint(root)).not.toBe(first.sourceFingerprint);
   const beforeFixture = sourceFingerprint(root);
-  mkdirSync(join(root, "examples/starter/smoke/fixtures"), { recursive: true });
-  writeFileSync(join(root, "examples/starter/smoke/fixtures/control-refs.tsx"), "export const fixture = 'shared';");
+  mkdirSync(join(root, "smoke/src/testing"), { recursive: true });
+  writeFileSync(join(root, "smoke/src/testing/control-refs.tsx"), "export const fixture = 'shared';");
   expect(sourceFingerprint(root)).not.toBe(beforeFixture);
   expect(() => readBuildInfo(root, { SOURCE_SHA: "not-a-revision" }, inspect)).toThrow("Invalid source revision");
 });

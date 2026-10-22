@@ -1,4 +1,4 @@
-import { HoverBody } from "../../../../../examples/starter/smoke/fixtures/hover";
+import { HoverBody } from "../../../../../smoke/src/testing/hover";
 import { Page } from "../../../ui/page";
 
 export default function HoverFeedbackFixture() {
