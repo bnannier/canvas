@@ -20,6 +20,21 @@ against a candidate. The docs' hidden `/testing/*` routes import the same fixtur
 The app is always the smoke app: its bundle ID is `com.nannier.canvas.smoke` and its URL
 scheme `canvas-smoke`, and `examples/starter` carries no verification code.
 
+The app's menu (the Navbar's app menu opens a Drawer) lists the journeys and every
+documented component under Atoms, Molecules, Organisms and Charts. A component screen
+renders that component's generated docs examples (docs/src/core, bundled from outside the
+app through `smoke/metro.config.js` and docgen's static `docs-index.ts`), each behind an
+error boundary that reports a throwing example in place. Preparation copies exactly those
+docs modules and the sample photos beside the app and hashes them with its sources. The
+Component catalog journey mounts every component's examples in turn and the flow requires
+all of them rendered with no failure.
+
+The journeys run at both native form factors: `test --form-factor phone|tablet` passes
+`FORM_FACTOR` to the flows for their few form-factor branches, and CI runs an iPhone and an
+iPad simulator, and the `pixel_7` and `pixel_tablet` emulator profiles. The web build
+(`build --platform web`, an export of the same prepared copy) runs under Playwright at a
+desktop window, a tablet and a phone (`e2e/smoke-app`, the `smoke-web` validate job).
+
 The runner requires a clean checkout of the identified candidate, its `candidate`
 directory, and the sealed `artifacts` directory. Use task-local output paths:
 
