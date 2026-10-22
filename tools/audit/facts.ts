@@ -627,8 +627,8 @@ export function testingRoutes(root: string, graph = new ModuleGraph(root)): { ro
 /** The files `bun test` runs: `*.test.ts(x)` and `*.spec.ts(x)` (and their `_test` forms). */
 export const isTestFile = (file: string): boolean => /[._](test|spec)\.[cm]?[jt]sx?$/.test(file);
 
-/** The e2e trees that are not the docs suite: the starter app's own (its own baseURL), and the audit's capture runner. */
-export const E2E_EXCLUDED = ["e2e/starter/", "e2e/audit/"];
+/** The e2e trees that are not the docs suite: the starter and smoke apps' own (each its own baseURL), and the audit's capture runner. */
+export const E2E_EXCLUDED = ["e2e/starter/", "e2e/smoke-app/", "e2e/audit/"];
 
 /** The docs e2e specs: what playwright.config.ts runs (`**\/*.e2e.ts` under e2e/), the excluded trees left out. */
 export const isSpecFile = (file: string): boolean => /\.e2e\.ts$/.test(file) && !E2E_EXCLUDED.some((dir) => file.startsWith(dir));

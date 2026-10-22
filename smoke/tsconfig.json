@@ -7,11 +7,9 @@
       "node"
     ],
     "paths": {
-      "@nannier/canvas": [
-        "./node_modules/@nannier/canvas"
-      ],
-      "@nannier/canvas/*": [
-        "./node_modules/@nannier/canvas/*"
+      "*": [
+        "./node_modules/@types/*",
+        "./node_modules/*"
       ]
     }
   },
