@@ -431,7 +431,7 @@ export const FOUNDATION_PLANS: Readonly<Record<string, readonly string[]>> = {
   ],
   GlassBlurPlane: [
     "documented on `integration` (Blur planes) as the capture host that makes a page's backdrop the safe blur plane on Android, with `useGlassBlurPlane` making the plane and `GlassBlurScope` offering it",
-    "captures only the backdrop it wraps and never contains the surfaces that frost it, exercised by the docs' frame over the page look on Android with canvas-blur (materials target)",
+    "captures only the backdrop it wraps and never contains the surfaces that frost it, exercised by the docs' frame over the page look on Android with the capture module (materials target)",
   ],
   GlassBlurScope: [
     "documented on `integration` (Blur planes) as the scope that offers a page's blur plane to the glass surfaces inside it",

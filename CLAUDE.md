@@ -112,6 +112,30 @@ job, and the native skin is the DF look everywhere else. The native machinery (L
 Glass, the frosted blur, hardware back, scroll physics, the ripple) stays on every
 component, whichever look its skin draws.
 
+## One package
+
+Canvas ships as exactly one npm package, `@nannier/canvas`, built from this repository's
+root. Everything the kit renders or runs lives in it, its own native code included: the
+Android capture module is `android/` plus the root `expo-module.config.json`, which Expo
+autolinks from the installed package, and its JavaScript binding sits in `src/` beside
+the components that use it. Never split a component, renderer, native module, platform
+integration or helper into a separate npm package, a `packages/*` workspace, or a sibling
+repository published on its own. When the kit needs new native capability, add it to
+Canvas's own `android/` (or an `ios/` beside it, with that platform in
+`expo-module.config.json`), load it through a guarded require so an app without it keeps
+the complete solid skin, and ship it in the same release. Third-party native libraries
+(`expo-blur`, `expo-glass-effect`, `expo-video` and the rest) stay optional peers; this
+rule is about code we write. The release tooling enforces it: `scripts/release.mjs`
+registers only `@nannier/canvas`, and a changeset for any other package fails release
+preparation before a version is consumed.
+
+Why: `@nannier/canvas-blur` was split out on 2026-09-17 as an optional Android package
+and never reached npm. A second package needed npm publishing setup of its own, a failed
+publish consumed its 0.2.0 in git, and the two-package release transaction, smoke app and
+docs wiring added complexity while no app could install the Android blur. The owner
+folded it back into Canvas on 2026-10-22: Canvas is a component library, and its native
+pieces are part of it.
+
 ## Dogfood the kit: every UI element is a Canvas component
 
 A claude prime global directive. Every UI element used anywhere in this repo, the
@@ -388,8 +412,8 @@ rendering owns glass fills instead of rewriting those tokens.
 
 Keep role, density, renderer capability and motion separate. Use supported native
 Liquid Glass through `expo-glass-effect` on iOS where appropriate, supported native
-frost through `expo-blur`, the optional `@nannier/canvas-blur` capture integration on
-Android 12+ (Expo SDK 57), and the shared web material paths. Android blur requires
+frost through `expo-blur`, Canvas's own Android capture module (`android/`; see One
+package) on Android 12+ (Expo SDK 57), and the shared web material paths. Android blur requires
 safe live backdrop ownership; no material may sample itself. A browser skin preview is
 not native evidence, and tint without blur is not proof of a native material.
 
