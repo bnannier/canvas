@@ -117,7 +117,8 @@
     "notices:gen": "bun tools/noticegen/generate.ts",
     "notices:gen:check": "bun tools/noticegen/generate.ts --check",
     "verify-native-consumer": "node scripts/verify-native-consumer.mjs",
-    "verify-consumer-support": "node scripts/verify-consumer-support.mjs"
+    "verify-consumer-support": "node scripts/verify-consumer-support.mjs",
+    "ci:local": "node scripts/ci-local.mjs"
   },
   "publishConfig": {
     "registry": "https://registry.npmjs.org",
