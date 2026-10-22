@@ -476,6 +476,12 @@ name: Sealed Canvas native candidate after measured drag
 - assertVisible:
     id: material-focus-mode
     text: Focus began in solid
+# The mode line sits above the button row; scrolling only to the timer can leave it
+# under the header while the keyboard is up (Deploy 39614900956, 38522352407).
+- scrollUntilVisible:
+    element:
+      id: material-mode
+    direction: UP
 - assertVisible:
     id: material-mode
     text: 'Mode: glass; scheme: ${SCHEME}'
@@ -550,6 +556,12 @@ name: Sealed Canvas native candidate after measured drag
 - assertVisible:
     id: material-focus-mode
     text: Focus began in glass
+# The mode line sits above the button row; scrolling only to the timer can leave it
+# under the header while the keyboard is up (Deploy 39614900956, 38522352407).
+- scrollUntilVisible:
+    element:
+      id: material-mode
+    direction: UP
 - assertVisible:
     id: material-mode
     text: 'Mode: solid; scheme: ${SCHEME}'
@@ -602,6 +614,10 @@ name: Sealed Canvas native candidate after measured drag
       - pressKey: Back
       - assertNotVisible: Live dialog
       - assertVisible: Material dialog
+      # The drawer trigger sits below the dialog's; bring it on screen (Deploy 38528811035).
+      - scrollUntilVisible:
+          element: Material drawer
+          direction: DOWN
       - tapOn: Material drawer
       - assertVisible: Native window
       # The drawer is a Modal, a window of its own: through GlassModalBlurTarget its

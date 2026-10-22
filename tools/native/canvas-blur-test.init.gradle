@@ -40,6 +40,10 @@ gradle.settingsEvaluated { settings ->
         def main = android.sourceSets.getByName('main')
         def connected = project.tasks.named('connectedDebugAndroidTest')
         gradle.rootProject.tasks.register('canvasBlurConnectedDebugAndroidTest') { dependsOn(connected) }
+        // Compiles the test APK without a device, so the build can run before the emulator
+        // boots and the connected run that follows finds it up to date.
+        def assemble = project.tasks.named('assembleDebugAndroidTest')
+        gradle.rootProject.tasks.register('canvasBlurAssembleDebugAndroidTest') { dependsOn(assemble) }
         def metadata = [
           projectPath: project.path,
           projectDirectory: project.projectDir.canonicalPath,
