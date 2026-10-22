@@ -20,7 +20,7 @@ function fixtureTables(): { STAGES: readonly Entry[]; PEOPLE: readonly Entry[] }
   }).outputText;
   const exports: Record<string, unknown> = {};
   // Reading the tables evaluates no component, so the kit resolves to an empty module.
-  const modules: Record<string, unknown> = { react: React, "react/jsx-runtime": JSX, "@nannier-com/canvas": {} };
+  const modules: Record<string, unknown> = { react: React, "react/jsx-runtime": JSX, "@nannier/canvas": {} };
   new Function("require", "exports", compiled)((name: string) => {
     if (!(name in modules)) throw new Error(`Unexpected fixture import ${name}`);
     return modules[name];
