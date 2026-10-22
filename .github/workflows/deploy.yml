@@ -91,6 +91,10 @@ jobs:
     timeout-minutes: 10
     permissions:
       contents: write
+      # npm Trusted Publishing: the job exchanges a GitHub OIDC token for a short-lived
+      # npm credential, bound to this repository and this workflow file on npmjs.com
+      # (package settings, Trusted publishing). No NPM_TOKEN secret is read.
+      id-token: write
     outputs:
       accepted: ${{ steps.publish.outputs.accepted }}
       status: ${{ steps.publish.outputs.status }}
@@ -116,11 +120,17 @@ jobs:
         env:
           SOURCE_SHA: ${{ github.sha }}
           RELEASE_MAJOR: ${{ github.event_name == 'workflow_dispatch' && inputs.major && inputs.major_version || '' }}
+      # Trusted publishing needs npm 11.5.1 or later. Assert it here, before the accept
+      # push: a too-old npm must fail this job without consuming the candidate's version.
+      - name: Check npm supports trusted publishing
+        run: |
+          have=$(npm --version)
+          node -e 'const [a,b,c]=process.argv[1].split(".").map(Number); process.exit(a>11||(a===11&&(b>5||(b===5&&c>=1)))?0:1)' "$have" \
+            || { echo "::error::npm $have cannot use trusted publishing (needs 11.5.1 or later)"; exit 1; }
       - name: Accept candidate and publish tested tarballs
         id: publish
         run: node scripts/release.mjs publish "$RUNNER_TEMP/candidate" "$RUNNER_TEMP/artifacts"
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
           RELEASE_MAJOR: ${{ github.event_name == 'workflow_dispatch' && inputs.major && inputs.major_version || '' }}
       - name: npm outcome
         if: always()
