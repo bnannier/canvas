@@ -325,9 +325,12 @@ export function createCarousel(skin: CarouselSkin) {
     //
     // The command counts as done only once the content is as wide as the slides. Android's
     // horizontal scroll view caps an offset at the width its content has on the native
-    // side, and on the first measurement that is still the unmeasured column, one
-    // viewport wide, so a slide past the first lands at 0. Left undone, the command is
-    // issued again by the effect below once the content size reports every slide's width.
+    // side when the command runs, and React Native runs a scroll command ahead of the
+    // layout updates still waiting to mount, so a report of the content's new size does
+    // not mean the native content has it yet. On native the unmeasured content is
+    // therefore already every slide's width (UNMEASURED_NATIVE_CONTENT), so no command
+    // to the starting slide can be capped. Left undone, the command is issued again by
+    // the effect below once the content size reports every slide's width.
     const measuredBefore = useRef(false);
     useIsomorphicLayoutEffect(() => {
       if (width <= 0 || count === 0) {
@@ -417,6 +420,7 @@ export function createCarousel(skin: CarouselSkin) {
       );
 
     const arrowsShown = arrowsVisible && count > 1;
+    const web = Platform.OS === "web";
 
     return (
       <View testID={testID} style={[ROOT, style]}>
@@ -438,7 +442,7 @@ export function createCarousel(skin: CarouselSkin) {
               // width caps that contribution and keeps slide N at N * width. Before
               // the viewport measures, its column stretches the list to its width.
               style={[measured ? { width } : null, FOCUS_RESET]}
-              contentContainerStyle={measured ? null : UNMEASURED_CONTENT}
+              contentContainerStyle={measured ? null : web ? UNMEASURED_CONTENT : unmeasuredNativeContent(count)}
               horizontal
               pagingEnabled
               showsHorizontalScrollIndicator={false}
@@ -448,7 +452,7 @@ export function createCarousel(skin: CarouselSkin) {
                 <GlassSurface
                   key={item.key}
                   layer="content"
-                  style={[measured ? { width } : i === current ? null : HIDDEN_SLIDE, skin.slide(tokens)]}
+                  style={[measured ? { width } : i !== current ? HIDDEN_SLIDE : web ? null : unmeasuredNativeSlide(count), skin.slide(tokens)]}
                 >
                   {slideBody(item)}
                 </GlassSurface>
@@ -509,6 +513,14 @@ const VIEWPORT: ViewStyle = { flexGrow: 1, flexShrink: 1, flexBasis: "auto", min
 // snap cell, and the slide would resolve the percentage against that content-sized
 // cell instead of the scrollport.
 const UNMEASURED_CONTENT: ViewStyle = { flexDirection: "column", width: "100%" };
+
+// On native the unmeasured content is laid out as wide as every slide will be: `count`
+// scroller widths (the percentage resolves against the scroll view), with the current
+// slide one scroller wide at its start. Measuring then leaves the native content's width
+// unchanged, so the scroll to the starting slide never meets a narrower content view
+// (see the layout effect). Native has no per-slide snap cell, so the percentages hold.
+const unmeasuredNativeContent = (count: number): ViewStyle => ({ flexDirection: "row", width: `${Math.max(count, 1) * 100}%` });
+const unmeasuredNativeSlide = (count: number): ViewStyle => ({ width: `${100 / Math.max(count, 1)}%` });
 
 // A slide waiting, unmeasured, behind the current one: mounted but not laid out.
 const HIDDEN_SLIDE: ViewStyle = { display: "none" };
