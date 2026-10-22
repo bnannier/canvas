@@ -114,38 +114,36 @@ directory must be a fresh direct child of the candidate output, named
 and links are rejected. Earlier results remain intact. The new result records
 the current test revision, dirty state and tooling hashes separately from the
 original candidate identity and binary digest. It preserves both authored flow
-segments and each generated phase with its parser result and checksum. This does not claim that an older binary was built from
+segments and each generated journey with its parser result and checksum. This does not claim that an older binary was built from
 the newer test revision; changed package or app inputs require a new build.
 
 The preflight invokes the installed, pinned Maestro command parser through a
 small Java 17 source launcher before any device action. CI also runs it before
 building. Maestro 2.10's `check-syntax` only deserializes YAML and can accept
 commands that fail during conversion, including interpolated swipe coordinates.
-The Carousel journey therefore uses two official CLI invocations per appearance.
-The first completes the earlier scenarios and measures the current card. It emits
-one validated console record with the candidate identity, appearance and a unique
-attempt nonce. The runner requires a successful process and JUnit case, finds the
-actual flow log through Maestro's artifact manifest, and rejects missing,
-ambiguous, malformed or mismatched records. It does not scrape command source or
-reuse a prior run's coordinates.
+Interpolated swipe coordinates, absolute or percentage, fail that conversion, so the
+Carousel swipe cannot take coordinates computed during the run.
 
-The second invocation continues the same app state. Before a gesture it checks
-the retained page, zero change callbacks and measurement generation 1, then asks
-for generation 2 exactly once. All geometry, screen, scale and platform values
-must match. The runner generates literal coordinates from 80% to 20% of that
-card at its vertical center, using iOS points or Android physical pixels. The
-fresh guard recomputes those integers and requires both endpoints strictly inside
-the card, with travel greater than half its width. One 400 ms swipe must produce
-page 3 and one change callback; the picker then produces page 6 and two callbacks.
-All later authored scenarios run from the preserved `after-carousel.yaml`.
+Each appearance runs as one official CLI invocation. The journey used to stop after
+measuring the card and continue in a second invocation with literal coordinates, but
+the CI simulator dropped that second session's first touch (backboardd registered the
+new session's virtual digitizer twice and cancelled the touch; Deploy 39629119921,
+38510450281, 39764166978). Nothing now restarts the driver mid-journey.
 
-There is no launch, reset, navigation or appearance change between the phases.
-Lost state or changed geometry fails the attempt before dragging. The complete
-command parser checks both authored segments and every generated phase, including
-the eagerly parsed nested post-flow. CI tests generated examples before building.
-The result records both phase reports, flow hashes and original measurement log
-identity; a scheme passes only when both phases succeed. Appearance restoration
-covers a failure in either phase.
+Each Carousel card carries a "Swipe left" label near its trailing edge
+(`carousel-swipe-<page>`), measured with the card. The swipe starts on that label with
+`direction: LEFT`, and Maestro 2.10 ends a directional swipe from an element at 10% of
+the screen width on the same row. Before swiping, a generated guard validates the fresh
+page 2 measurement (generation 1), predicts that exact gesture in iOS points or Android
+physical pixels, and requires both endpoints strictly inside the card with travel
+greater than half its width. It emits one validated console record with the candidate
+identity, appearance, a unique attempt nonce, the measurement and the predicted gesture.
+After a successful process and JUnit case, the runner finds the flow log through
+Maestro's artifact manifest and rejects missing, ambiguous, malformed or mismatched
+records. One 400 ms swipe must produce page 3 and one change callback; the picker then
+produces page 6 and two callbacks. All later authored scenarios run from the preserved
+`after-carousel.yaml`, in the same session. The complete command parser checks both
+authored segments and the generated journey, including the eagerly parsed post-flow.
 
 Parser success does not establish selector availability or gesture behavior;
 the native journey still checks page identity and callback count.
