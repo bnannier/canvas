@@ -6,7 +6,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { verifyNativeFlow } from "../../scripts/verify-native-flow.mjs";
-import { createCarouselContinuation, createCarouselMeasurementCommands } from "./gesture.mjs";
+import { createCarouselSwipeCommands } from "./gesture.mjs";
 
 const directories: string[] = [];
 afterEach(() => { for (const directory of directories.splice(0)) rmSync(directory, { recursive: true, force: true }); });
@@ -53,23 +53,16 @@ integration("the installed full parser accepts every canonical flow command", ()
 }, PARSER_TIMEOUT);
 
 for (const platform of ["ios", "android"] as const) {
-  integration(`the full parser converts generated ${platform} measurement and continuation commands`, () => {
-    // Parser-only geometry. Runtime coordinates always come from that attempt's
-    // current native Card and are measured again before any gesture.
-    const measurement = { generation: 1, status: "ready", index: 1, page: 2,
-      x: 24, y: 190, width: 354, height: 198, screenWidth: 402, screenHeight: 874,
-      pixelRatio: 3, platform, rtl: false };
+  integration(`the full parser converts the generated ${platform} single-session journey`, () => {
     const expected = { nonce: "parser-example-0001", candidateRevision: "a".repeat(40),
       packageSha256: "b".repeat(64), packageVersion: "1.0.0", platform, scheme: "light" };
-    const measurementFlow = flow(createCarouselMeasurementCommands(expected).map((command) => "- " + JSON.stringify(command)).join("\n"));
-    expect(verifyNativeFlow({ maestro, flow: measurementFlow }).commandCount).toBeGreaterThan(1);
+    const candidate = fileURLToPath(new URL("./flows/candidate.yaml", import.meta.url));
     const postFlow = fileURLToPath(new URL("./flows/after-carousel.yaml", import.meta.url));
-    const generated = createCarouselContinuation({ expected, measurement, postFlow });
-    const continuation = flow("- assertVisible: unused");
-    writeFileSync(continuation, generated.yaml);
-    const parsed = verifyNativeFlow({ maestro, flow: continuation });
-    expect(parsed.commandCount).toBeGreaterThan(1);
-    expect(parsed.flowSha256).toBe(generated.sha256);
+    const { commands } = createCarouselSwipeCommands(expected, postFlow);
+    const journey = flow("- assertVisible: unused");
+    writeFileSync(journey, readFileSync(candidate, "utf8") + commands.map((command) => "- " + JSON.stringify(command)).join("\n") + "\n");
+    const parsed = verifyNativeFlow({ maestro, flow: journey });
+    expect(parsed.commandCount).toBeGreaterThan(commands.length);
   }, PARSER_TIMEOUT);
 }
 
