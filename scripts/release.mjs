@@ -227,6 +227,32 @@ export function accept(cwd, c, beforePush = () => {}) {
   throw new Error(`Candidate push failed: ${pushed.stderr}`);
 }
 
+// One line of the tarball listing npm prints before it publishes (`npm notice 1.3kB LICENSE`).
+const NPM_TARBALL_ENTRY = /^npm notice [0-9.]+[kMG]?B /;
+
+/** npm's output without its tarball listing, for the job log. */
+export function publishOutput(...streams) {
+  return streams.filter(Boolean).join("\n").split("\n").filter((line) => !NPM_TARBALL_ENTRY.test(line)).join("\n").trim();
+}
+
+// npm runs captured, as every publish has (stdin closed, no terminal; inheriting the job's
+// stdio instead stalled npm past the job's limit in Deploy run 39708247691), and its output
+// is printed here without the listing. Printed whole inside an uncaught error it was cut at
+// one pipe buffer (64 KiB), and the 3,946-entry listing alone is larger, so every failed
+// publish from 3.5.0 to 3.9.0 lost npm's own error. The timeout keeps a stalled publish
+// inside the job's limit, so its output and the workflow's debug-log step still run.
+export function npmPublish(cwd, file) {
+  try {
+    const stdout = execFileSync("npm", ["publish", file, "--ignore-scripts", "--access", "public", "--registry", "https://registry.npmjs.org"], {
+      cwd, encoding: "utf8", env: commandEnvironment(), stdio: ["pipe", "pipe", "pipe"], maxBuffer: 64 * 1024 * 1024, timeout: 6 * 60 * 1000,
+    });
+    console.log(publishOutput(stdout));
+  } catch (error) {
+    console.error(publishOutput(error.stdout, error.stderr));
+    throw new Error(`npm publish ${path.basename(file)} failed (${error.code ?? `exit ${error.status ?? error.signal}`})`);
+  }
+}
+
 export function publish(cwd, candidateDir, artifactDir, npmPublish) {
   const m = verifyArtifacts(cwd, candidateDir, artifactDir);
   if (m.status === "blocked-major") {
@@ -268,9 +294,6 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
   else if (command === "verify") verifyArtifacts(cwd, dir, path.resolve(extra));
   else if (command === "publish") {
     if (process.env.GITHUB_ACTIONS !== "true" || process.env.GITHUB_REF !== "refs/heads/main") throw new Error("Publication is restricted to CI on main");
-    // npm's output streams straight to the job log. Captured and printed again by an uncaught
-    // error, it was cut at one pipe buffer (64 KiB), and the tarball listing alone is larger,
-    // so every failed publish from 3.5.0 to 3.9.0 lost npm's own error message.
-    publish(cwd, dir, path.resolve(extra), (file) => execFileSync("npm", ["publish", file, "--ignore-scripts", "--access", "public", "--registry", "https://registry.npmjs.org"], { cwd, stdio: "inherit", env: commandEnvironment() }));
+    publish(cwd, dir, path.resolve(extra), (file) => npmPublish(cwd, file));
   } else throw new Error("Expected prepare, restore, seal, verify or publish");
 }
