@@ -26,11 +26,11 @@ import type { TemplateDoc } from "../types";
 function submitCredentials(toast: ToastHandle["toast"], email: string, password: string): void {
   const address = email.trim();
   if (!address) {
-    toast({ error: true, message: "Email is required", description: "Enter the email address you signed up with." });
+    toast({ destructive: true, message: "Email is required", description: "Enter the email address you signed up with." });
     return;
   }
   if (!password) {
-    toast({ error: true, message: "Password is required", description: "Enter your password to continue." });
+    toast({ destructive: true, message: "Password is required", description: "Enter your password to continue." });
     return;
   }
   toast({ success: true, message: "Signed in", description: `Welcome back, ${address}.` });
@@ -188,7 +188,7 @@ function MagicLinkLive() {
   const [sent, setSent] = useState(false);
   const send = () => {
     if (!email.trim()) {
-      toast({ error: true, message: "Email is required", description: "Enter the address to send the magic link to." });
+      toast({ destructive: true, message: "Email is required", description: "Enter the address to send the magic link to." });
       return;
     }
     setSent(true);

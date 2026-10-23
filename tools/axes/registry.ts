@@ -220,7 +220,7 @@ export const SUBJECTS: readonly AnySubject[] = [
     resolver: "src/atoms/badge/badge.shared.tsx#statusOf",
     members: ["success", "error", "warning", "info", "neutral"],
     resolve: badgeStatus,
-    notes: ["Applies only with `status`.", "Has no `destructive` alias, where Alert, Toast and Chip accept `destructive` for `error`."],
+    notes: ["Applies only with `status`.", "Spells the danger tone `error`, where Alert, Toast and Chip spell it `destructive`."],
   }),
   subject({ id: "BadgeGroup.gap", components: ["BadgeGroup"], pages: ["badge"], resolver: "src/atoms/badge/badge.shared.tsx#badgeGapOf", members: ["cozy", "snug", "tight"], resolve: badgeGapOf }),
   subject({ id: "Breadcrumb.separator", components: ["Breadcrumb"], pages: ["breadcrumb"], resolver: "src/atoms/breadcrumb/breadcrumb.shared.tsx#separatorOf", members: ["chevron", "slash", "dot"], resolve: separatorOf }),
@@ -253,7 +253,7 @@ export const SUBJECTS: readonly AnySubject[] = [
     pages: ["chip"],
     resolver: "src/atoms/chip/chip.shared.tsx#colorOf",
     members: [
-      "success", "warning", "destructive", "error", "info", "neutral",
+      "success", "warning", "destructive", "info", "neutral",
       "red", "orange", "amber", "yellow", "lime", "green", "emerald", "teal", "cyan",
       "sky", "blue", "indigo", "violet", "fuchsia", "purple", "pink", "rose", "gray",
     ],
@@ -408,7 +408,7 @@ export const SUBJECTS: readonly AnySubject[] = [
   // Molecules.
   subject({ id: "ActionPanel.tone", components: ["ActionPanel"], pages: ["action-panels"], resolver: "src/molecules/action-panels/action-panels.shared.tsx#toneOf", members: ["destructive"], resolve: actionPanelTone }),
   subject({ id: "ActionPanel.layout", components: ["ActionPanel"], pages: ["action-panels"], resolver: "src/molecules/action-panels/action-panels.shared.tsx#layoutOf", members: ["inline"], resolve: actionPanelLayout }),
-  subject({ id: "Alert.tone", components: ["Alert"], pages: ["alert"], resolver: "src/molecules/alert/alert.shared.tsx#toneOf", members: ["destructive", "error", "warning", "success", "info"], resolve: alertTone }),
+  subject({ id: "Alert.tone", components: ["Alert"], pages: ["alert"], resolver: "src/molecules/alert/alert.shared.tsx#toneOf", members: ["destructive", "warning", "success", "info"], resolve: alertTone }),
   subject({ id: "AlertDialog.width", components: ["AlertDialog"], pages: ["alert-dialog"], resolver: "src/molecules/alert-dialog/alert-dialog.shared.tsx#widthOf", members: ["narrow", "small", "large"], resolve: alertDialogWidth }),
   subject({ id: "Card.elevation", components: ["Card"], pages: ["card"], resolver: "src/molecules/card/card.shared.tsx#elevationOf", members: ["raised", "flat", "tileShadow", "rowShadow", "emptyShadow"], resolve: elevationOf }),
   subject({ id: "Card.artwork inset", components: ["Card"], pages: ["card"], resolver: "src/molecules/card/card.brand.tsx#artworkInsetOf", members: ["controls", "illustration"], resolve: artworkInsetOf }),
@@ -486,7 +486,7 @@ export const SUBJECTS: readonly AnySubject[] = [
     resolve: (p) => wrapsOf(p, tabsVariant(p)),
     notes: ["A `responsive` vertical rail that flattens to a row honors `wrap`."],
   }),
-  subject({ id: "Toast.intent", components: ["Toast"], pages: ["toast"], resolver: "src/organisms/toast/toast.shared.tsx#intentOf", members: ["destructive", "error", "warning", "success", "info"], resolve: toastIntent }),
+  subject({ id: "Toast.intent", components: ["Toast"], pages: ["toast"], resolver: "src/organisms/toast/toast.shared.tsx#intentOf", members: ["destructive", "warning", "success", "info"], resolve: toastIntent }),
 
   // Charts.
   subject({

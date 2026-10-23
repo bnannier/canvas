@@ -303,7 +303,7 @@ export default function ColorsScreen() {
             <Grid minTileWidth={210} cozy>
               <Alert success title="success" description={ramp("success")} icon={<Badge status success accessibilityLabel="success" />} />
               <Alert warning title="warning" description={ramp("warning")} icon={<Badge status warning accessibilityLabel="warning" />} />
-              <Alert error title="error" description={ramp("error")} icon={<Badge status error accessibilityLabel="error" />} />
+              <Alert destructive title="error" description={ramp("error")} icon={<Badge status error accessibilityLabel="error" />} />
               <Alert info title="info" description={ramp("info")} icon={<Badge status info accessibilityLabel="info" />} />
             </Grid>
             <BadgeGroup>

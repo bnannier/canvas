@@ -114,9 +114,6 @@ export interface ChipProps {
   /** The danger tone. This is the name the intent axis uses across the kit (Button,
    *  AlertDialog, and every chart) and the one the design hand-off uses here too. */
   destructive?: boolean;
-  /** @deprecated Use `destructive`. Kept working so existing call sites are untouched;
-   *  it resolves to exactly the same hue. */
-  error?: boolean;
   info?: boolean;
   neutral?: boolean;
   //  - Free-form palette hues, plus `gray` for an explicit neutral tag.
@@ -172,7 +169,7 @@ interface Appearance {
 export function colorOf(p: ChipProps): { tone: StatusColorTone | null; hue: Hue | null; mutedGray: boolean } {
   if (p.success) return { tone: "success", hue: null, mutedGray: false };
   if (p.warning) return { tone: "warning", hue: null, mutedGray: false };
-  if (p.destructive || p.error) return { tone: "error", hue: null, mutedGray: false };
+  if (p.destructive) return { tone: "error", hue: null, mutedGray: false };
   if (p.info) return { tone: "info", hue: null, mutedGray: false };
   if (p.neutral) return { tone: null, hue: null, mutedGray: true };
   for (const h of HUES) if ((p as Record<string, unknown>)[h]) return { tone: null, hue: h, mutedGray: false };

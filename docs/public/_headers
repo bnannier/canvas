@@ -50,10 +50,9 @@
   # The danger this policy actually caught was OUR OWN code, not a dependency. The web
   # glass lens shipped injecting its SVG filter defs with `innerHTML`, at module-import
   # time, so the TypeError escaped the module factory before React ever mounted and the
-  # whole site served a blank page. Two guards now stand behind this header: kit source is
-  # linted against every Trusted Types sink (no-restricted-syntax in eslint.config.mjs),
-  # and test/glass-lens.test.tsx drives both def-injection paths through a setter that
-  # throws exactly as Chromium does. Re-run the route sweep anyway whenever a dependency
+  # whole site served a blank page. The lens is gone, and kit source is linted against
+  # every Trusted Types sink (no-restricted-syntax in eslint.config.mjs) so nothing like
+  # it returns. Re-run the route sweep anyway whenever a dependency
   # that touches the DOM is added or upgraded, and note that a violation on an import path
   # is fatal to the entire app rather than merely to one effect.
   Content-Security-Policy: default-src 'self'; base-uri 'none'; object-src 'none'; script-src 'self' 'sha256-67fhrP0+BkBqmgGGXTtgiVO/9EQs3QruYNU/7fnRkI8=' 'sha256-wt96maSwMEEC/nzVPmmPSBYbhFL7cQNXmvWbkn2xlUQ='; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self' https://registry.npmjs.org; frame-ancestors 'none'; form-action 'self'; require-trusted-types-for 'script'; upgrade-insecure-requests

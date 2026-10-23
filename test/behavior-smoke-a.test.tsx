@@ -38,7 +38,7 @@ describe("Alert", () => {
       { props: { info: true }, live: "polite" },
       { props: { success: true }, live: "polite" },
       { props: { warning: true }, live: "polite" },
-      { props: { error: true }, live: "assertive" },
+      { props: { destructive: true }, live: "assertive" },
       { props: {}, live: "polite" }, // neutral default
     ];
     for (const c of cases) {

@@ -63,11 +63,6 @@
   --chart-7:#b560cf;
   --chart-8:#a37e05;
 
-  /* Deprecated brand constants, kept as aliases until a major; nothing reads them. */
-  --orb-indigo:#3da3f5;
-  --orb-violet:#6676ff;
-  --orb-cyan:#68cdff;
-
   /* Menu and panel error text and activity deltas: the status colors the components
      paint (statusColors: the error ink for the menus' destructive rows, the danger
      panel's title and a decline; the success color for a rise), so they follow the
@@ -79,14 +74,11 @@
 
   /* Browser material hand-off: Dark Factory's plain frost (src/style/glass-surface/
      web-frost.ts). One tint per LAYER, a 24px backdrop blur with no saturation shift and a
-     1px inset hairline; no refraction, no specular highlight. --glass-lens and
-     --glass-illumination are deprecated aliases (the lens is gone), kept until a major. */
+     1px inset hairline; no refraction, no specular highlight. */
   --glass-tint:rgba(255,255,255,0.52);
   --glass-tint-content:rgba(255,255,255,0.72);--glass-tint-control:rgba(255,255,255,0.70);--glass-tint-dense:rgba(255,255,255,0.92);
   --glass-blur:24px;
   --glass-frost:blur(24px) /* @kind other */;
-  --glass-lens:var(--glass-frost) /* @kind other */;
-  --glass-illumination:none /* @kind other */;
   --glass-edge:rgba(255,255,255,0.75);
   --glass-specular:inset 0 0 0 1px var(--glass-edge) /* @kind shadow */;
   /* Scroll edge effect: content dissolves into the backdrop as it passes under a floating bar,

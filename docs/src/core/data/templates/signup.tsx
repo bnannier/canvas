@@ -24,7 +24,7 @@ function SignupLive() {
   const strength = passwordStrength(password);
   const createAccount = () => {
     if (!email.trim() || !password) {
-      toast({ error: true, message: "Missing details", description: "Enter your work email and a password to create an account." });
+      toast({ destructive: true, message: "Missing details", description: "Enter your work email and a password to create an account." });
       return;
     }
     toast({ success: true, message: "Account created", description: `We sent a confirmation link to ${email.trim()}.` });

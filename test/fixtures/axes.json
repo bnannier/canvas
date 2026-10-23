@@ -622,7 +622,7 @@
     "order": [
       "success",
       "warning",
-      "destructive|error",
+      "destructive",
       "info",
       "neutral",
       "red",
@@ -661,11 +661,6 @@
         "tone": "warning"
       },
       "destructive": {
-        "hue": null,
-        "mutedGray": false,
-        "tone": "error"
-      },
-      "error": {
         "hue": null,
         "mutedGray": false,
         "tone": "error"
@@ -776,7 +771,6 @@
       "amber + cyan": "amber",
       "amber + destructive": "destructive",
       "amber + emerald": "amber",
-      "amber + error": "error",
       "amber + fuchsia": "amber",
       "amber + gray": "amber",
       "amber + green": "amber",
@@ -798,7 +792,6 @@
       "blue + cyan": "cyan",
       "blue + destructive": "destructive",
       "blue + emerald": "emerald",
-      "blue + error": "error",
       "blue + fuchsia": "blue",
       "blue + gray": "blue",
       "blue + green": "green",
@@ -819,7 +812,6 @@
       "blue + yellow": "yellow",
       "cyan + destructive": "destructive",
       "cyan + emerald": "emerald",
-      "cyan + error": "error",
       "cyan + fuchsia": "cyan",
       "cyan + gray": "cyan",
       "cyan + green": "green",
@@ -839,7 +831,6 @@
       "cyan + warning": "warning",
       "cyan + yellow": "yellow",
       "destructive + emerald": "destructive",
-      "destructive + error": "destructive|error",
       "destructive + fuchsia": "destructive",
       "destructive + gray": "destructive",
       "destructive + green": "destructive",
@@ -858,7 +849,6 @@
       "destructive + violet": "destructive",
       "destructive + warning": "warning",
       "destructive + yellow": "destructive",
-      "emerald + error": "error",
       "emerald + fuchsia": "emerald",
       "emerald + gray": "emerald",
       "emerald + green": "green",
@@ -877,24 +867,6 @@
       "emerald + violet": "emerald",
       "emerald + warning": "warning",
       "emerald + yellow": "yellow",
-      "error + fuchsia": "error",
-      "error + gray": "error",
-      "error + green": "error",
-      "error + indigo": "error",
-      "error + info": "error",
-      "error + lime": "error",
-      "error + neutral": "error",
-      "error + orange": "error",
-      "error + pink": "error",
-      "error + purple": "error",
-      "error + red": "error",
-      "error + rose": "error",
-      "error + sky": "error",
-      "error + success": "success",
-      "error + teal": "error",
-      "error + violet": "error",
-      "error + warning": "warning",
-      "error + yellow": "error",
       "fuchsia + gray": "fuchsia",
       "fuchsia + green": "green",
       "fuchsia + indigo": "indigo",
@@ -3927,7 +3899,7 @@
     ],
     "resolver": "src/molecules/alert/alert.shared.tsx#toneOf",
     "order": [
-      "destructive|error",
+      "destructive",
       "warning",
       "success",
       "info"
@@ -3935,19 +3907,14 @@
     "none": "neutral",
     "single": {
       "destructive": "error",
-      "error": "error",
       "warning": "warning",
       "success": "success",
       "info": "info"
     },
     "pairs": {
-      "destructive + error": "destructive|error",
       "destructive + info": "destructive",
       "destructive + success": "destructive",
       "destructive + warning": "destructive",
-      "error + info": "error",
-      "error + success": "error",
-      "error + warning": "error",
       "info + success": "success",
       "info + warning": "warning",
       "success + warning": "warning"
@@ -4956,7 +4923,7 @@
     ],
     "resolver": "src/organisms/toast/toast.shared.tsx#intentOf",
     "order": [
-      "destructive|error",
+      "destructive",
       "warning",
       "success",
       "info"
@@ -4964,19 +4931,14 @@
     "none": "neutral",
     "single": {
       "destructive": "error",
-      "error": "error",
       "warning": "warning",
       "success": "success",
       "info": "info"
     },
     "pairs": {
-      "destructive + error": "destructive|error",
       "destructive + info": "destructive",
       "destructive + success": "destructive",
       "destructive + warning": "destructive",
-      "error + info": "error",
-      "error + success": "error",
-      "error + warning": "error",
       "info + success": "success",
       "info + warning": "warning",
       "success + warning": "warning"

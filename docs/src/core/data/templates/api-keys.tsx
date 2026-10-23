@@ -80,7 +80,7 @@ function CreateKeyLive() {
   const create = () => {
     const trimmed = name.trim();
     if (trimmed.length === 0) {
-      toast({ error: true, message: "Name your key", description: "Enter a key name before creating it." });
+      toast({ destructive: true, message: "Name your key", description: "Enter a key name before creating it." });
       return;
     }
     const secret = mintSecret();
@@ -191,7 +191,7 @@ function DangerZoneLive() {
             confirmLabel="Revoke all"
             onConfirm={() => {
               setKeys([]);
-              toast({ error: true, message: "All keys revoked", description: "Every integration is now disconnected." });
+              toast({ destructive: true, message: "All keys revoked", description: "Every integration is now disconnected." });
             }}
           />
         ) : null}

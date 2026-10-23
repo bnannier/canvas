@@ -205,15 +205,15 @@ describe("Calendar", () => {
     const gap = 6;
     // Trigger near the outlet's left edge: room on the right → right, top-aligned.
     const leftCell = { x: 20, y: 100, width: 36, height: 36 };
-    expect(placeOverlay(leftCell, { cardWidth: 300, preferSide: true, gap, outletWidth: 800 }))
+    expect(placeOverlay(leftCell, { cardWidth: 300, besideEnd: true, gap, outletWidth: 800 }))
       .toEqual({ left: 20 + 36 + gap, top: 100, side: "end" });
     // Trigger near the right edge: no room right, room left → left of the cell.
     const rightCell = { x: 700, y: 100, width: 36, height: 36 };
-    expect(placeOverlay(rightCell, { cardWidth: 300, preferSide: true, gap, outletWidth: 800 }))
+    expect(placeOverlay(rightCell, { cardWidth: 300, besideEnd: true, gap, outletWidth: 800 }))
       .toEqual({ left: 700 - gap - 300, top: 100, side: "start" });
     // Narrow outlet: neither side fits → below, clamped to the 8px inset.
     const narrowCell = { x: 40, y: 100, width: 36, height: 36 };
-    expect(placeOverlay(narrowCell, { cardWidth: 300, preferSide: true, gap, outletWidth: 340 }))
+    expect(placeOverlay(narrowCell, { cardWidth: 300, besideEnd: true, gap, outletWidth: 340 }))
       .toEqual({ left: 8, top: 100 + 36 + gap });
     // Legacy shape without a known width is untouched: left-aligned below.
     expect(placeOverlay(leftCell, { gap, outletWidth: 800 })).toEqual({ left: 20, top: 100 + 36 + gap });

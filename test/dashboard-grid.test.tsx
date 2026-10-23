@@ -108,30 +108,10 @@ describe("DashboardGrid collection prop", () => {
       const { container } = ui(<DashboardGrid items={items} />);
       expect(bodyOrder(container)).toEqual(["body-a", "body-b", "body-c"]);
     });
-    expect(messages.some((m) => m.includes("<DashboardGrid />") && m.includes("`widgets`"))).toBe(false);
+    expect(messages.filter((m) => m.includes("<DashboardGrid />"))).toEqual([]);
   });
 
-  it("still lays the board out from the deprecated `widgets` alias, warning once toward `items`", () => {
-    const messages = withWarnings(() => {
-      const { container } = ui(<DashboardGrid widgets={items} order={["c", "a"]} />);
-      // The alias feeds the same path: reconciliation, ordering, and appending all still run.
-      expect(bodyOrder(container)).toEqual(["body-c", "body-a", "body-b"]);
-    });
-    const deprecation = messages.filter((m) => m.includes("<DashboardGrid />") && m.includes("deprecated"));
-    expect(deprecation.length).toBe(1);
-    expect(deprecation[0]).toContain("pass `items` instead");
-  });
-
-  it("lets `items` win when both are passed, and says so", () => {
-    const legacy: DashboardWidget[] = [{ id: "z", span: 12, title: "Legacy", content: <Text testID="body-z">Legacy body</Text> }];
-    const messages = withWarnings(() => {
-      const { container } = ui(<DashboardGrid items={items} widgets={legacy} />);
-      expect(bodyOrder(container)).toEqual(["body-a", "body-b", "body-c"]);
-    });
-    expect(messages.some((m) => m.includes("<DashboardGrid />") && m.includes("`widgets` is ignored"))).toBe(true);
-  });
-
-  it("renders an empty board when neither is passed", () => {
+  it("renders an empty board when it is given no items", () => {
     const { container } = ui(<DashboardGrid testID="grid" />);
     expect(bodyOrder(container)).toEqual([]);
     expect(container.querySelector("[data-testid='grid']")).toBeTruthy();

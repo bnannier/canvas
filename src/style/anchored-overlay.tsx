@@ -203,8 +203,6 @@ export interface AnchoredOverlayProps {
    * where below the trigger would cover the grid.
    */
   besideEnd?: boolean;
-  /** @deprecated The old name of `besideEnd`, which it now means (trailing side first); it keeps working. */
-  preferSide?: boolean;
   /**
    * Paint the card as an OPAQUE surface: the skin's own `popover` fill on a
    * plain box, with NO glass material, in glass mode exactly as in solid mode.
@@ -308,7 +306,6 @@ export function AnchoredOverlay({
   above = false,
   besideStart = false,
   besideEnd = false,
-  preferSide = false,
   alignEnd = false,
   rtl,
   opaque = false,
@@ -363,7 +360,7 @@ export function AnchoredOverlay({
       centered={centered}
       above={above}
       besideStart={besideStart}
-      besideEnd={besideEnd || preferSide}
+      besideEnd={besideEnd}
       alignEnd={alignEnd}
       rtl={rtl ?? isRTL()}
       opaque={opaque}
@@ -613,8 +610,6 @@ export interface PlaceOverlayOptions {
   besideStart?: boolean;
   /** Prefer beside the trigger at its trailing side, then its leading side. */
   besideEnd?: boolean;
-  /** @deprecated The old name of `besideEnd`; it keeps working. */
-  preferSide?: boolean;
   /** Align the card's trailing edge with the trigger's instead of its leading edge. */
   alignEnd?: boolean;
   /** The layout direction is right to left: leading is the physical right. */
@@ -639,7 +634,7 @@ export interface PlaceOverlayOptions {
  * Every edge keeps 8px inside the visible band (`visibleLeft` to `visibleRight`, the
  * outlet less the window's unsafe edges).
  *
- * Beside (`besideStart`, `besideEnd`, or the old `preferSide`): the card is placed
+ * Beside (`besideStart` or `besideEnd`): the card is placed
  * beside the trigger, top-aligned, at the preferred side when it fits there, then at
  * the other side; `side` names the side it took. When neither fits, or before a card
  * of no fixed width has reported its width, it falls back to the vertical placement,
@@ -665,7 +660,7 @@ export function placeOverlay(
   rect: Rect,
   opts: PlaceOverlayOptions,
 ): { left?: number; right?: number; top: number; side?: OverlayBesideSide } {
-  const { cardWidth, measuredWidth, centered, preferSide, besideStart, besideEnd, alignEnd, rtl = false, gap, outletWidth } = opts;
+  const { cardWidth, measuredWidth, centered, besideStart, besideEnd, alignEnd, rtl = false, gap, outletWidth } = opts;
   const outlet = outletWidth != null && outletWidth > 0 ? outletWidth : null;
   // The leftmost and rightmost a card's edges may sit, 8px inside the visible band.
   const lo = (opts.visibleLeft ?? 0) + CLAMP_INSET;
@@ -674,7 +669,7 @@ export function placeOverlay(
   const width = cardWidth ?? measured;
   const below = rect.y + rect.height + gap;
 
-  const beside: OverlayBesideSide | null = besideStart ? "start" : besideEnd || preferSide ? "end" : null;
+  const beside: OverlayBesideSide | null = besideStart ? "start" : besideEnd ? "end" : null;
   if (beside && outlet != null && width != null) {
     for (const side of beside === "start" ? (["start", "end"] as const) : (["end", "start"] as const)) {
       // The trailing side is the physical right in a left-to-right layout.

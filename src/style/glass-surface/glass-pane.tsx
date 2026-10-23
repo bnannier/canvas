@@ -60,13 +60,6 @@ export interface GlassPaneProps {
   tint?: string;
   /** A brand colour for a brand-tinted puck (a primary Button, a selected tab), its under-fill solved for the ink painted on it. */
   brand?: string;
-  /**
-   * @deprecated A no-op, kept so existing code compiles until a major. The pane passes every
-   * tap through to its host (`pointerEvents="none"`), so iOS never delivers it the touch
-   * Apple's interactive Liquid Glass responds to, and the host's own press feedback (its
-   * dim, its Android ripple) carries the press. Omit it.
-   */
-  interactive?: boolean;
   /** E2E hook forwarded to the pane. */
   testID?: string;
 }
@@ -100,8 +93,9 @@ export function GlassPane({ layer = "control", shape, stateBorder = false, tint,
   // A solid pane would paint a raw copy of the shape inside a host that already shows it.
   const { material } = useMaterialResolution({ static: stable, layer });
   if (material.renderer === "solid") return null;
-  // `interactive` is not forwarded: a surface under pointerEvents "none" never receives the
-  // touch interactive Liquid Glass answers, so it only reinstalled the effect on each toggle.
+  // The pane is never interactive Liquid Glass: it passes every tap through to its host
+  // (pointerEvents "none"), so iOS never delivers it the touch that effect answers, and the
+  // host's own press feedback (its dim, its Android ripple) carries the press.
   // The pane's own shape is the host's corner radii and `borderCurve` and nothing else, each
   // radius inside a kept border less the narrower border it meets (`materialCorners`).
   return <GlassSurface static={stable} clear={clear} layer={layer} tint={tint} brand={brand} pointerEvents="none" testID={testID} style={[StyleSheet.absoluteFill, materialCorners(shape, stateBorder), BEHIND]} />;
