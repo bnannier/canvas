@@ -1,5 +1,43 @@
 # @nannier/canvas
 
+## 3.11.0
+
+### Minor Changes
+
+- 3455b16: Add AppFrame and Page, so an app no longer hand-rolls its screen frame. `AppFrame` is the app's root frame: it mounts the safe-area context and the app-root overlay host, pads all four safe-area edges over the theme background, renders an optional `header` in a `role="banner"` region and lets its body (a router's Stack) fill the height left. `Page` is one scrolling screen: a `role="main"` scroller that fills its parent, keeps taps while the keyboard is up, and caps and centers its content between page gutters at a step of the width scale (`widest` by default, any `MeasureProps` step, `start` or `fluid`), with its own overlay host, or a plain content box with `inheritOverlays` under an enclosing viewport host.
+
+  Minor justification: two new public components (`AppFrame`, `Page`, with `AppFrameProps` and `PageProps`) for app scaffolding: the safe area, the theme background, a banner header, and a scrolling page with a page measure and an overlay host. Existing components are unchanged.
+
+- 260f4c6: Icon: new `ICON_NAMES` export listing every glyph (its prop `key` and typed `label`) in gallery order, for icon pickers and catalogs.
+
+  Minor justification: a new public utility export (`ICON_NAMES`); nothing existing changes.
+
+- 15a01f5: Navbar: new `onMenu` prop. An app with more destinations than a bar can hold passes it, and the bar leads with a menu button at every width that calls it, so the app opens its own navigation (such as a Drawer of grouped sections) in place of the `links` row and its narrow menu.
+
+  Minor justification: a new public option on an existing component (`NavbarProps.onMenu`); existing bars are unchanged.
+
+- 855249f: Remove every deprecated alias and every helper the package published by accident: 131 names leave the public entry, among them AnchoredOverlay, Entrance, GlassSurface, GlassPane, FloatingLabel, Portal, LoopView, RippleClip, the overlay, focus, ripple and touch-target hooks, `shadow` and `customShadow`, the Riskora type ladder (`fontSize`, `fontWeight`, `lineHeight`, `letterSpacing`), `HUE_WASH`, `brandColors`, `tabularNums`, and the `StyleSheet` and `useWindowDimensions` pass-throughs. `useOverlayHost` and its `OverlayHost` type stay public, documented with OverlayProvider. The docs' /foundation reference page, which listed the deprecated names, is gone.
+
+  Minor by the owner's decision of 2026-10-23: nothing consumes these names, so their removal is shipped without a major. Use the components that render this machinery themselves (Popover, Dialog, Card, Typography's `tabular`, Card's appearances) and React Native's own `StyleSheet` and `useWindowDimensions`. The deprecated `styles/*` custom properties are unchanged.
+
+### Patch Changes
+
+- f7523ca: Carousel: land on `defaultIndex` on Android every time. Before the viewport measures, native now lays the slides' content out as wide as every slide will be, so the scroll to the starting slide can no longer be capped by a content view that has not yet mounted its new width.
+- 6398fa3: Command: the scrolling results list carries `${testID}-results` when the palette has a `testID`, so a test can scroll the list itself.
+- 4ea4b2c: Internal cleanup with no API or visual change: the kit drops unused imports and locals, and Chat drops six Markdown styles left behind when Markdown moved to its own style module. The unused `react-test-renderer` and `@eslint/js` dev dependencies are gone.
+- 27cae29: Input: on Android a page now scrolls when a swipe starts on a filled field. The filled field's bottom band is M3's 8dp with its active indicator inside it, so the value's line fits the field exactly instead of overflowing by 2dp, which made the field scrollable and kept the swipe.
+- 12d0d39: Native smoke: the journeys run on phones and tablets (an iPhone and an iPad simulator, a phone and a tablet emulator), and the flows receive the form factor for their form-factor branches.
+- 95fdf40: Native smoke: compile the Android test APK before the emulator boots, and bring the materials page's mode line and drawer trigger on screen before the journey checks them.
+- 6d8b4a7: Native smoke: run each appearance's journey in one Maestro session, swiping the Carousel from a measured label so its endpoints stay inside the card.
+- 7470561: Navbar: at phone widths the collapsed menu button leads the bar, ahead of the logo and brand, where Material 3's top app bar puts its navigation icon.
+- 2f0fc8a: Docs and smoke app: example photos resolve to their exported asset URLs on the web, and the smoke app's Metro cache is keyed on the candidate identity.
+- 8681635: Smoke app: the root layout is a Canvas AppFrame (the Navbar in its banner, the router Stack as its body) and every screen a Canvas Page, so the app hand-rolls no frame; the menu Drawer uses its own `navigation` body instead of a ScrollView. Page content now caps at the `widest` step (1152) instead of 1120.
+- 14bd101: Native smoke: the smoke build of the starter is named "Canvas Smoke Test", in its app name and header.
+- 701d7c8: Native smoke: the verification app is now its own Expo app in `smoke/` ("Canvas Smoke Test", `com.nannier.canvas.smoke`), and `examples/starter` is a plain example again.
+- 1bd6d74: Native smoke: the smoke app's menu groups every documented component under Atoms, Molecules, Organisms and Charts, each with a screen of its documented examples, and the journey renders every component on the device against the sealed package.
+- 0370a9e: CI: a smoke-web job prepares the smoke app with the sealed candidate, exports it for the web and runs it at desktop, tablet and phone sizes.
+- 70b7bd9: Smoke app: a web export of the prepared candidate runs under Playwright at desktop, tablet and phone sizes, checking the candidate identity, the menu, the catalog of every component and each component's examples.
+
 ## 3.10.0
 
 ### Minor Changes
