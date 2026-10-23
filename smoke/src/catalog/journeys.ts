@@ -13,3 +13,10 @@ export const JOURNEYS = [
   { route: "/testing/hover", title: "Hover", description: "Pointer hover states" },
   { route: "/testing/avatar", title: "Avatar", description: "Generated avatar colours" },
 ] as const;
+
+export type JourneyRoute = (typeof JOURNEYS)[number]["route"];
+
+/** A journey's title: the menu entry and the page heading both read it, so they always match. */
+export function journeyTitle(route: JourneyRoute): string {
+  return JOURNEYS.find((journey) => journey.route === route)!.title;
+}
