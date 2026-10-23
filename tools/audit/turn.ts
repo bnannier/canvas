@@ -52,7 +52,7 @@ import { COMPONENTS_DIR, PAGES_DIR } from "./checklists.ts";
 import { FOUNDATION_DIR, findFoundation, foundationFacts, foundationSources, type Foundation } from "./foundations.ts";
 import { NATIVE_CELLS_PER_VARIANT, components, pages, type InventoryComponent, type InventoryPage } from "./inventory.ts";
 import { CURRENT_DIR, listRuns, type AuditRun } from "./runs.ts";
-import { RUN_ID, TURN_PHASES, appendTurnRuns, turnRecordFile, type RunKind, type TurnPhase, type TurnRun } from "./turn-record.ts";
+import { RUN_ID, TURN_PHASES, appendTurnRuns, readTurnRecord, turnRecordFile, type RunKind, type TurnPhase, type TurnRun } from "./turn-record.ts";
 import { MANIFEST_FILE, parseWebFilters, planPageCapture, planStateCapture, planWebCapture } from "./web-capture.ts";
 
 const require = createRequire(import.meta.url);
@@ -155,28 +155,54 @@ export function resolveTarget(name: string, list: readonly InventoryComponent[] 
   throw new Error(`--slug=${name} names no component, page or foundation (a component slug such as button, a page id such as template-signin, or a foundation such as theme-provider)`);
 }
 
-/** The slugs a turn captures: its own, or a foundation's Capture through list, kept to the first n when capped. */
+/**
+ * The slugs a turn captures: its own, or a foundation's Capture through list, kept to the first n
+ * when capped, and in a foundation's after phase every slug its before phase captured besides.
+ */
 export interface TurnScope {
   components: string[];
   pages: string[];
   /** For a foundation capped with --only-first: how many slugs its list has, and how many the turn keeps. */
   capped: { total: number; kept: number } | null;
+  /**
+   * The slugs the turn's before phase captured that the current list no longer holds, captured
+   * again in its after phase (the owner's R-3 decision, audit/DECISIONS.md): a change that stops
+   * a component rendering through the foundation (GS-5 took Switch and Checkbox off the glass)
+   * changes that component's pictures too, so the after capture never drops its evidence.
+   */
+  carried: string[];
 }
 
-export function turnScope(target: TurnTarget, onlyFirst: number | null, captureThrough?: { components: string[]; pages: string[] }): TurnScope {
+export function turnScope(target: TurnTarget, onlyFirst: number | null, captureThrough?: { components: string[]; pages: string[] }, before?: { components: string[]; pages: string[] }): TurnScope {
   if (target.kind !== "foundation") {
     if (onlyFirst !== null) throw new Error(`--only-first caps a foundation's Capture through list; ${target.id} is a ${target.kind}, captured whole`);
-    return target.kind === "component" ? { components: [target.id], pages: [], capped: null } : { components: [], pages: [target.id], capped: null };
+    return target.kind === "component" ? { components: [target.id], pages: [], capped: null, carried: [] } : { components: [], pages: [target.id], capped: null, carried: [] };
   }
   const through = captureThrough ?? foundationFacts(target.foundation, { tests: [] }, foundationSources(ROOT)).captureThrough;
   const all = [...through.components.map((slug) => ({ slug, page: false })), ...through.pages.map((slug) => ({ slug, page: true }))];
   if (!all.length) throw new Error(`${target.id} has nothing in its Capture through list (no component renders through it and no page shows it), so there is nothing to capture it through`);
   const kept = onlyFirst === null ? all : all.slice(0, onlyFirst);
+  const listed = new Set(all.map((s) => s.slug));
+  const carried = [...(before?.components ?? []).map((slug) => ({ slug, page: false })), ...(before?.pages ?? []).map((slug) => ({ slug, page: true }))]
+    .filter((s, i, list) => !listed.has(s.slug) && list.findIndex((o) => o.slug === s.slug) === i);
+  const captured = [...kept, ...carried];
   return {
-    components: kept.filter((s) => !s.page).map((s) => s.slug),
-    pages: kept.filter((s) => s.page).map((s) => s.slug),
+    components: captured.filter((s) => !s.page).map((s) => s.slug),
+    pages: captured.filter((s) => s.page).map((s) => s.slug),
     capped: onlyFirst !== null && onlyFirst < all.length ? { total: all.length, kept: kept.length } : null,
+    carried: carried.map((s) => s.slug),
   };
+}
+
+/**
+ * The slugs a foundation's turn record says its before phase captured, split into components
+ * and pages by the inventory, for the after phase to carry (`turnScope`'s `before`); none when
+ * the record is missing or the phase is not after.
+ */
+export function beforeSlugs(recordContent: string | null, pageIds: ReadonlySet<string>): { components: string[]; pages: string[] } {
+  if (recordContent == null) return { components: [], pages: [] };
+  const slugs = [...new Set(readTurnRecord(recordContent).phases.before.flatMap((run) => run.slugs.replace(/\s*\(capped:[^)]*\)/, "").split(",").map((s) => s.trim()).filter(Boolean)))];
+  return { components: slugs.filter((s) => !pageIds.has(s)), pages: slugs.filter((s) => pageIds.has(s)) };
 }
 
 // ---------- the plan ----------
@@ -289,6 +315,7 @@ export function formatPlan(plan: TurnPlan, now: { export: ExportState | null; so
   lines.push(`  checklist ${target.checklist}`);
   if (target.kind === "foundation") {
     lines.push(`  expands  to its Capture through list${scope.capped ? `, capped by --only-first to the first ${scope.capped.kept} of ${scope.capped.total} (direct consumers first, then through shared modules, then through other kit components, then pages)` : ""}`);
+    if (scope.carried.length) lines.push(`  carries  from its before phase, no longer on the list: ${scope.carried.join(", ")}`);
   }
   lines.push(`  slugs    ${scope.components.length} component(s): ${scope.components.join(", ") || "none"}; ${scope.pages.length} page(s): ${scope.pages.join(", ") || "none"}`);
   let n = 0;
@@ -644,7 +671,11 @@ async function main(): Promise<number> {
     // The device names are the native runner's own grammar, checked before anything runs.
     if (args.devices) (await import("./native/devices.ts")).parseDeviceOverrides(args.devices);
     const target = resolveTarget(args.slug!);
-    plan = planTurn(args, target, args.phase!, turnScope(target, args.onlyFirst));
+    const recordFile = join(ROOT, "audit", turnRecordFile(target.id));
+    const before = target.kind === "foundation" && args.phase === "after"
+      ? beforeSlugs(existsSync(recordFile) ? readFileSync(recordFile, "utf8") : null, new Set(pages().map((page) => page.id)))
+      : undefined;
+    plan = planTurn(args, target, args.phase!, turnScope(target, args.onlyFirst, undefined, before));
   } catch (error) {
     console.error(`audit:turn: ${(error as Error).message}`);
     return 2;
