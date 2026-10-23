@@ -5,6 +5,7 @@ import {
   parseVariants,
   parseDonts,
   scopeNamesFromLiveScope,
+  fenceReferences,
   bannedStyleViolations,
   widthShimViolations,
   bareWidthViolations,
@@ -1064,3 +1065,35 @@ describe("docStructureViolations", () => {
     });
   });
 });
+
+describe("fenceReferences", () => {
+  const NAMES = ["View", "Switch", "Card", "Button", "tokens", "Text"];
+
+  it("counts JSX tags and value reads, in the scope's order", () => {
+    const code = `<View><Card style={{ backgroundColor: tokens.muted }}><Button>Go</Button></Card></View>`;
+    expect(fenceReferences(code, NAMES)).toEqual(["View", "Card", "Button", "tokens"]);
+  });
+
+  it("ignores a name inside a string or JSX text", () => {
+    const code = `<Button accessibilityLabel="View as role">Switch role</Button>`;
+    expect(fenceReferences(code, NAMES)).toEqual(["Button"]);
+  });
+
+  it("ignores property, attribute and member names", () => {
+    const code = `<Button Card="x" onPress={() => theme.Text} style={{ View: 1 }} />`;
+    expect(fenceReferences(code, NAMES)).toEqual(["Button"]);
+  });
+
+  it("counts the object of a member read, as a compound tag uses it", () => {
+    expect(fenceReferences(`<Card.Header />`, NAMES)).toEqual(["Card"]);
+  });
+
+  it("counts a shorthand property and a spread", () => {
+    expect(fenceReferences(`<Button {...{ Text }} />`, NAMES)).toEqual(["Button", "Text"]);
+  });
+
+  it("ignores a name the fence declares itself", () => {
+    expect(fenceReferences(`[1].map((Card) => <Button key={Card} />)`, NAMES)).toEqual(["Button"]);
+  });
+});
+

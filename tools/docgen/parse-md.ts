@@ -24,6 +24,7 @@
 // generator renders, so no spelling of a page can pass the one and lose its sections to
 // the other.
 
+import * as ts from "typescript";
 import { unsupportedInline } from "../../docs/src/lib/inline-markdown.ts";
 
 export type Example = { label: string; code: string };
@@ -1001,4 +1002,62 @@ export function prosePhantomApiViolations(md: string): { line: number; token: st
     }
   }
   return out;
+}
+
+// The scope names an example fence actually references. The fence is a JSX expression,
+// so it is parsed as one and only identifiers in a reference position count: a JSX tag,
+// a value read, the object of a member read. A name inside a string or JSX text ("Switch
+// role"), a property or attribute name (`{ View: 1 }`, `<X Card="a" />`), the member of a
+// member read (`theme.Card`) and a name the fence declares itself are not references, so
+// the generated module destructures only what it uses.
+export function fenceReferences(code: string, names: readonly string[]): string[] {
+  const wanted = new Set(names);
+  const source = ts.createSourceFile("fence.tsx", `const fence = (\n${code}\n);`, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
+  const found = new Set<string>();
+  // The names the fence's own functions and blocks declare, innermost last: a reference
+  // to one of those is the fence's own binding, not the scope's.
+  const shadowed: Set<string>[] = [];
+  const visit = (node: ts.Node): void => {
+    const declared = declaredIn(node);
+    if (declared.size) shadowed.push(declared);
+    if (ts.isIdentifier(node) && wanted.has(node.text) && isReference(node) && !shadowed.some((s) => s.has(node.text))) found.add(node.text);
+    ts.forEachChild(node, visit);
+    if (declared.size) shadowed.pop();
+  };
+  visit(source);
+  return names.filter((name) => found.has(name));
+}
+
+/** The names a function's parameters or a block's own declarations bind. */
+function declaredIn(node: ts.Node): Set<string> {
+  const names = new Set<string>();
+  const bind = (name: ts.BindingName): void => {
+    if (ts.isIdentifier(name)) names.add(name.text);
+    else for (const element of name.elements) if (!ts.isOmittedExpression(element)) bind(element.name);
+  };
+  if (ts.isFunctionLike(node)) for (const parameter of node.parameters) bind(parameter.name);
+  if (ts.isBlock(node) || ts.isSourceFile(node)) {
+    for (const statement of node.statements) {
+      if (ts.isVariableStatement(statement)) for (const declaration of statement.declarationList.declarations) bind(declaration.name);
+      else if ((ts.isFunctionDeclaration(statement) || ts.isClassDeclaration(statement)) && statement.name) names.add(statement.name.text);
+    }
+  }
+  if (ts.isSourceFile(node)) names.delete("fence");
+  return names;
+}
+
+function isReference(node: ts.Identifier): boolean {
+  const parent = node.parent;
+  if (ts.isPropertyAccessExpression(parent)) return parent.expression === node;
+  if (ts.isQualifiedName(parent)) return parent.left === node;
+  if (ts.isJsxAttribute(parent)) return false;
+  if (ts.isBindingElement(parent)) return false;
+  if (
+    (ts.isPropertyAssignment(parent) || ts.isMethodDeclaration(parent) || ts.isPropertyDeclaration(parent) ||
+      ts.isPropertySignature(parent) || ts.isGetAccessorDeclaration(parent) || ts.isSetAccessorDeclaration(parent) ||
+      ts.isVariableDeclaration(parent) || ts.isParameter(parent) || ts.isFunctionDeclaration(parent) ||
+      ts.isFunctionExpression(parent) || ts.isClassDeclaration(parent)) &&
+    parent.name === node
+  ) return false;
+  return true;
 }

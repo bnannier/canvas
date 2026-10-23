@@ -3,7 +3,7 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { tokens, Accordion } = scope;
+  const { Accordion } = scope;
   return (
 <Accordion
   items={[

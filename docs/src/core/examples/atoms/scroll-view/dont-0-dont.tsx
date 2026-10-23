@@ -3,7 +3,7 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { tokens, Image, ScrollView, Typography } = scope;
+  const { tokens, ScrollView, Typography } = scope;
   return (
 <ScrollView style={{ width: "100%", borderRadius: 10, borderWidth: 1, borderColor: tokens.border }} contentContainerStyle={{ padding: 12, gap: 8 }}>
   <Typography small>Deploy started</Typography>

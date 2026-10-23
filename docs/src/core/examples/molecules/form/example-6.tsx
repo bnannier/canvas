@@ -3,7 +3,7 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Card, Field, Form, Input, Row } = scope;
+  const { Field, Form, Input, Row } = scope;
   return (
 <Form submitLabel="Pay">
   <Field label="Card Number" error="Invalid card number.">

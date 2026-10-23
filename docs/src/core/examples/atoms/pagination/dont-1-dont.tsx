@@ -3,7 +3,7 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { tokens, View, Text, Pressable, Page, Icon } = scope;
+  const { tokens, View, Text, Pressable, Icon } = scope;
   return (
 <View style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
   <Pressable style={{ alignItems: "center", justifyContent: "center", width: 36, height: 36, borderRadius: 9999, borderWidth: 1, borderColor: tokens.border }} accessibilityRole="button" accessibilityLabel="Previous page">
