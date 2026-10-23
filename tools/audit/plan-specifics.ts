@@ -191,6 +191,7 @@ export const COMPONENT_PLANS: ComponentPlan[] = [
   { slug: "checkbox", families: ["selection"], native: "switch on iOS / M3 18 dp", specifics: ["one-job substitution via parts", "indeterminate `mixed`", "error", "description anatomy"] },
   { slug: "chip", families: ["actions"], native: "DF / M3", specifics: ["M3 chip 32 dp, 8 corners, 16 padding, label-large, selected filter chip leads with a check", "remove button named and 44/48", "`aria-pressed` toggle"] },
   { slug: "container", families: ["layout"], native: "n/a", specifics: ["measure steps and `start`"] },
+  { slug: "app-frame", families: ["layout"], native: "n/a", specifics: ["safe-area edges and theme background", "banner header and a body that fills the height left", "Page measure (default `widest`), `start`, `fluid`", "the root overlay host and the page's own or inherited host"] },
   { slug: "divider", families: ["layout"], native: "HIG / M3", specifics: ["vertical in Row", "inset", "decorative hidden", "smoke-only tests (K7)"] },
   { slug: "dropdown", families: ["menus-overlays"], native: "HIG / M3", specifics: ["APG menu with typeahead", "iOS menu radius and row 44", "M3 menu 4 dp, 48 rows", "phone presentation", "edge placement", "RTL"] },
   { slug: "emblem", families: ["media-identity"], native: "DF / DF", specifics: ["tones", "sizes", "maps to the \"icon-tile\" reference row"] },

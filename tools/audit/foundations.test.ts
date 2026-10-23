@@ -329,8 +329,9 @@ describe("the Foundations tier (tools/audit/foundations.ts)", () => {
     expect(consumer("BreakpointOverride", "dropdown")?.through).toEqual(["`AnchoredOverlay` (src/style/anchored-overlay.tsx)"]);
     expect(consumer("BreakpointOverride", "dialog")?.through).toEqual(["`Portal` (src/style/portal.tsx)"]);
     for (const slug of ["avatar", "field", "board"]) expect(consumer("BreakpointOverride", slug)?.tier).toBe("component");
-    // Chat reaches it through DataTable (its Markdown tables) and Wizard through `useContainerWidth`.
-    expect(override.captureThrough.components).toHaveLength(31);
+    // Chat reaches it through DataTable (its Markdown tables), Wizard through `useContainerWidth`
+    // and AppFrame through its overlay hosts.
+    expect(override.captureThrough.components).toHaveLength(32);
     expect(consumer("BreakpointOverride", "chat")?.tier).toBe("component");
     expect(consumer("BreakpointOverride", "wizard")?.tier).toBe("shared");
     // The layer itself is Portal's and AnchoredOverlay's both, so it is a seam of neither,
@@ -339,8 +340,8 @@ describe("the Foundations tier (tools/audit/foundations.ts)", () => {
     const seamNames = (id: string) => code.get(id)!.seams.map((s) => `${s.file}#${s.name}`);
     for (const id of ["portal", "anchored-overlay"]) expect(seamNames(id)).not.toContain("src/style/overlay-layer.tsx#usePortalMount");
     expect(consumer("Portal", "card")).toBeUndefined();
-    // Wizard portals through the Dialog it composes.
-    expect(facts("Portal").consumers).toHaveLength(20);
+    // Wizard portals through the Dialog it composes; AppFrame and Page host overlays.
+    expect(facts("Portal").consumers).toHaveLength(21);
     expect(consumer("Portal", "wizard")?.tier).toBe("component");
   });
 

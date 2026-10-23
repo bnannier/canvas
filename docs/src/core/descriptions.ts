@@ -67,6 +67,7 @@ export const COMPONENT_DESCRIPTIONS: Record<string, string> = {
   "stacked-lists": "Vertical lists with avatar, two-line items, and trailing metadata. Used for contacts, activity feeds, and data previews.",
   "stats": "Single value, grouped row, with sparkline, with comparison. Used for dashboards and overview pages.",
   "action-sheet": "A modal sheet of contextual actions, the iOS action sheet idiom: a bottom sheet of choices summoned in response to a user action, over a dimmed scrim that glass on the web also blurs.",
+  "app-frame": "The app's root frame and its scrolling screens. `AppFrame` mounts the safe-area context and the app-root overlay host, pads all four safe-area edges over the theme background, renders the app's top chrome in a banner region and lets its body (a router's Stack) fill the height left. `Page` is one screen inside it: the main region, a scroller with page gutters whose content is capped and centered at a step of the width scale.",
   "board": "A data-driven kanban board: columns scroll horizontally, each column is a drop zone, and every card carries a drag grip, an optional trailing badge, a muted two-line description, a free-form chips slot, and an optional kebab menu.",
   "calendar": "Month grid, week timeline, and day timeline in one component. Events mark their days with a dot in the month grid and week strip, and timed events render as blocks on the week/day hour timelines.",
   "carousel": "A horizontally paged slide viewer: swipe (or use the prev/next arrows and the dot indicators) to move one slide at a time.",

@@ -5,6 +5,8 @@ import type { ComponentDoc } from "./types";
 // docs/src/core/descriptions.ts, which the page's lead and the search index read.
 export const COMPONENTS: ComponentDoc[] = [
   { slug: "wizard", name: "Wizard", category: "Organisms", stageAlign: "start" },
+  // AppFrame fills its parent, so its examples take the stage's full width as that parent.
+  { slug: "app-frame", name: "AppFrame", category: "Organisms", stageAlign: "start" },
   { slug: "chat", name: "Chat", category: "Organisms", stageAlign: "start" },
   // Primitives: the raw React Native building blocks Canvas re-exports
   // (@nannier/canvas). Styled with plain RN style objects, identical on every

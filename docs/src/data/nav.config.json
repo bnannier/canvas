@@ -428,6 +428,11 @@
             "icon": "more-horizontal"
           },
           {
+            "slug": "app-frame",
+            "label": "AppFrame",
+            "icon": "app-window"
+          },
+          {
             "slug": "board",
             "label": "Board",
             "icon": "columns-2"

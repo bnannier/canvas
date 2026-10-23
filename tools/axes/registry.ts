@@ -39,6 +39,7 @@ import { kindOf, sizeOf as buttonGroupSize } from "../../src/atoms/button-group/
 import { sizeOf as checkboxSize } from "../../src/atoms/checkbox/checkbox.shared.tsx";
 import { colorOf } from "../../src/atoms/chip/chip.shared.tsx";
 import { measureOf, padOf as containerPad } from "../../src/atoms/container/container.shared.tsx";
+import { pageMeasureOf } from "../../src/organisms/app-frame/app-frame.shared.tsx";
 import { orientationOf, emphasisOf } from "../../src/atoms/divider/divider.shared.tsx";
 import { toneOf as emblemTone, sizeOf as emblemSize } from "../../src/atoms/emblem/emblem.shared.tsx";
 import { nameOf, strokeOf, strokeWidthOf, type IconProps } from "../../src/atoms/icon/icon.shared.tsx";
@@ -271,6 +272,15 @@ export const SUBJECTS: readonly AnySubject[] = [
     members: ["fluid", ...STEPS],
     resolve: measureOf,
     notes: ["`start` pins a capped container to the leading edge."],
+  }),
+  subject({
+    id: "Page.measure",
+    components: ["Page"],
+    pages: ["app-frame"],
+    resolver: "src/organisms/app-frame/app-frame.shared.tsx#pageMeasureOf",
+    members: ["fluid", ...STEPS],
+    resolve: pageMeasureOf,
+    notes: ["With no step the page caps at `widest`; `start` pins the capped content to the leading edge."],
   }),
   subject({ id: "Container.pad", components: ["Container"], pages: ["container"], resolver: "src/atoms/container/container.shared.tsx#padOf", members: ["padLoose", "pad", "padTight"], resolve: containerPad }),
   subject({ id: "Divider.orientation", components: ["Divider"], pages: ["divider"], resolver: "src/atoms/divider/divider.shared.tsx#orientationOf", members: ["vertical", "horizontal"], resolve: orientationOf }),

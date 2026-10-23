@@ -3,7 +3,7 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { DataTable, Sparkline } = scope;
+  const { DataTable, Page, Sparkline } = scope;
   return (
 <DataTable
   columns={["Page", "7D", "Visits"]}
