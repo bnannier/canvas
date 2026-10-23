@@ -4,7 +4,7 @@ import * as fs from "node:fs";
 import * as path from "node:path";
 import { tmpdir } from "node:os";
 import { androidGradleArguments, androidInstrumentationPaths, assertAndroidInstrumentationInputs, preserveAndroidInstrumentation, successfulAndroidInstrumentationReports } from "./android-instrumentation.mjs";
-import { appInventory, assertInstalledPackage, sha256 } from "./candidate.mjs";
+import { appInventory, assertInstalledPackage, fileInventory, sha256 } from "./candidate.mjs";
 
 const temporary: string[] = [];
 const root = path.resolve(import.meta.dir, "../..");
@@ -105,9 +105,11 @@ function runnerFixture(mode: string) {
   const binary = path.join(app, "android/app/build/outputs/apk/release/app-release.apk");
   write(binary, "sealed release binary");
   write(path.join(app, "package.json"), "{}");
+  // The docs modules the smoke app renders are archived next to it and sealed with it.
+  write(path.join(output, "docs/src/core/docs-index.ts"), "export const ALL_COMPONENT_DOCS = {};");
   write(path.join(output, "package.tgz"), "sealed archive fixture");
   const identity = { candidateRevision: revision, sourceRevision: revision, packageName: "@nannier/canvas", packageVersion: "2.0.0" };
-  write(path.join(output, "context.json"), JSON.stringify({ schema: 2, identity, appSources: appInventory(app),
+  write(path.join(output, "context.json"), JSON.stringify({ schema: 2, identity, appSources: appInventory(app), docsSources: fileInventory(path.join(output, "docs")),
     packages: [{ name, version: "2.0.0", filename: "package.tgz", sha256: sha256(path.join(output, "package.tgz")), installedAs }], androidInstrumentation: inputs }));
   write(path.join(output, "android-build.json"), JSON.stringify({ identity, binary, digest: sha256(binary) }));
   const adb = path.join(output, "bin/adb");
