@@ -220,7 +220,7 @@ export function createMetricBreakdown(skin: ChartSkin, parts: MetricBreakdownPar
           >
             {chipsLabel != null && chipsLabel !== "" ? <Text style={captionStyle(tokens)}>{chipsLabel}</Text> : null}
             {chips.map((chip, i) => (
-              <Chip key={chip.id ?? i} success={chip.success} warning={chip.warning} error={chip.destructive} info={chip.info}>
+              <Chip key={chip.id ?? i} success={chip.success} warning={chip.warning} destructive={chip.destructive} info={chip.info}>
                 {chip.count != null ? `${chip.label} · ${chip.count}` : chip.label}
               </Chip>
             ))}

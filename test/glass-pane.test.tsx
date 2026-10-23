@@ -395,8 +395,8 @@ describe("a pane is never interactive glass", () => {
     return out;
   }
 
-  it("ignores a caller's `interactive`", async () => {
-    const { container } = await renderGlass(<View style={SHAPE}><GlassPane layer="control" shape={SHAPE} interactive /></View>);
+  it("never makes its surface interactive glass, since it passes every tap to its host", async () => {
+    const { container } = await renderGlass(<View style={SHAPE}><GlassPane layer="control" shape={SHAPE} /></View>);
     const surfaces = paneSurfaces(container);
     expect(surfaces).toHaveLength(1);
     expect(surfaces[0]!.pointerEvents).toBe("none");

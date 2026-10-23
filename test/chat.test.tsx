@@ -351,30 +351,6 @@ for (const platform of ["web", "ios", "android"] as const) {
   });
 }
 
-test("the last Submit returns to an earlier legacy skip until a real answer replaces it", () => {
-  let answers: ChatQuestionAnswerData[] = [{ questionId: "scope", skipped: true }];
-  let index = 1;
-  const sent: ChatQuestionAnswerData[][] = [];
-  const props = { onQuestionAnswerChange: (_id: string | number, next: ChatQuestionAnswerData[]) => { answers = next; }, onQuestionIndexChange: (_id: string | number, next: number) => { index = next; }, onSubmitQuestionAnswers: (_id: string | number, next: ChatQuestionAnswerData[]) => sent.push(next) };
-  const view = () => <ThemeProvider light solid><ChatMessage {...props} message={{ ...questionMessage, questionAnswers: answers, questionIndex: index }} /></ThemeProvider>;
-  const { rerender } = render(view());
-  fireEvent.click(screen.getByRole("radio", { name: "Our team" }));
-  rerender(view());
-  fireEvent.click(screen.getByRole("button", { name: "Submit answer" }));
-  expect(index).toBe(0);
-  expect(sent).toEqual([]);
-  rerender(view());
-  expect(screen.getByText("Answer required")).toBeTruthy();
-  expect(screen.queryByRole("button", { name: "Next question" })).toBeNull();
-  expect(screen.queryByRole("button", { name: "Skip question" })).toBeNull();
-  fireEvent.click(screen.getByRole("radio", { name: "A complete release" }));
-  expect(answers).toEqual([{ questionId: "scope", optionId: "full" }, { questionId: "audience", optionId: "team" }]);
-  expect(index).toBe(1);
-  rerender(view());
-  fireEvent.click(screen.getByRole("button", { name: "Submit answer" }));
-  expect(sent).toEqual([answers]);
-});
-
 test("controlled navigation guards duplicate clicks and keeps all controls inactive while locked", () => {
   const indices: number[] = [];
   const answers: ChatQuestionAnswerData[] = [{ questionId: "scope", optionId: "small" }];
@@ -400,15 +376,13 @@ test("controlled navigation guards duplicate clicks and keeps all controls inact
   expect(indices).toEqual([1]);
 });
 
-test("historical skipped answers cannot submit and question positions are clamped to the actual list", () => {
+test("question positions are clamped to the actual list", () => {
   const message = { ...questionMessage, questions: [questions[0]!] };
   const props = { onQuestionAnswerChange: () => {}, onSubmitQuestionAnswers: () => {} };
   const { rerender } = render(<ThemeProvider light solid><ChatMessage {...props} message={{ ...message, questionIndex: 99 }} /></ThemeProvider>);
   expect(screen.getByLabelText("Question 1 of 1")).toBeTruthy();
-  for (const extra of [{}, { multiple: true }, { optionId: "small" }, { optionIds: ["small"] }, { customText: "Leftover draft" }]) {
-    rerender(<ThemeProvider light solid><ChatMessage {...props} message={{ ...message, questionIndex: -3, questionAnswers: [{ questionId: "scope", skipped: true, ...extra }] }} /></ThemeProvider>);
-    expect(screen.getByRole("button", { name: "Submit answer" }).getAttribute("aria-disabled")).toBe("true");
-  }
+  rerender(<ThemeProvider light solid><ChatMessage {...props} message={{ ...message, questionIndex: -3 }} /></ThemeProvider>);
+  expect(screen.getByLabelText("Question 1 of 1")).toBeTruthy();
 });
 
 for (const platform of ["web", "ios", "android"] as const) {
@@ -590,16 +564,6 @@ test("inactive human overrides retain checkboxes and a disabled mode switch", ()
   expect(screen.queryByRole("button", { name: "Skip question" })).toBeNull();
   fireEvent.click(screen.getByRole("button", { name: "Submit answer" }));
   expect(sent).toEqual([[{ questionId: "scope", multiple: true, optionIds: ["small", "full"] }]]);
-});
-
-test("historical skipped receipts remain readable without introducing an active Skip action", () => {
-  const message = { ...questionMessage, questionAnswers: [{ questionId: "scope", skipped: true }, { questionId: "audience", optionId: "team" }], questionsSubmitted: true };
-  const original = JSON.stringify(message);
-  render(<ThemeProvider light solid><ChatMessage message={message} /></ThemeProvider>);
-  expect(screen.getByText("Skipped")).toBeTruthy();
-  expect(screen.getByText("Our team")).toBeTruthy();
-  expect(screen.queryByRole("button")).toBeNull();
-  expect(JSON.stringify(message)).toBe(original);
 });
 
 for (const platform of ["web", "ios", "android"] as const) {

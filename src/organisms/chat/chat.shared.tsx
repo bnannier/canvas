@@ -46,8 +46,6 @@ export interface ChatQuestionAnswerData {
   /** Human-selected multi-answer mode for a question originally supplied as single-choice. */
   multiple?: boolean;
   customText?: string;
-  /** Historical skipped decision, rendered read-only. Active forms require an answer. @deprecated */
-  skipped?: boolean;
 }
 
 interface MessageActionCallbacks {
@@ -235,7 +233,6 @@ export function createChat(skin: s.ChatSkin, { Button = WebButton, Textarea = We
     const editable = !locked && !!onQuestionAnswerChange && !!onSubmitQuestionAnswers;
     const multipleFor = (item: ChatQuestionData, answer?: ChatQuestionAnswerData) => item.multiple || answer?.multiple === true;
     const valid = (item: ChatQuestionData, answer?: ChatQuestionAnswerData) => {
-      if (answer?.skipped !== undefined) return false;
       const multiple = multipleFor(item, answer);
       const selected = multiple ? answer?.optionIds ?? [] : answer?.optionId ? [answer.optionId] : [];
       return selected.length > 0 && new Set(selected).size === selected.length
@@ -277,7 +274,7 @@ export function createChat(skin: s.ChatSkin, { Button = WebButton, Textarea = We
         return <View key={item.id} style={s.blocks}>
           <Text style={skin.label(tokens)}>{item.title}</Text>
           {!item.multiple && answer?.multiple ? <Text style={skin.muted(tokens)}>Multiple answers selected by you</Text> : null}
-          {answer?.skipped ? <Text style={skin.muted(tokens)}>Skipped</Text> : selected.map((id) => <Text key={id} selectable style={skin.body(tokens)}>{id === "__custom" ? answer?.customText : item.options.find((option) => option.id === id)?.label ?? "No answer"}</Text>)}
+          {selected.map((id) => <Text key={id} selectable style={skin.body(tokens)}>{id === "__custom" ? answer?.customText : item.options.find((option) => option.id === id)?.label ?? "No answer"}</Text>)}
         </View>;
       })}
       <Text accessibilityLiveRegion="polite" style={skin.muted(tokens)}>Answers sent</Text>
@@ -318,7 +315,6 @@ export function createChat(skin: s.ChatSkin, { Button = WebButton, Textarea = We
           <Radio value="__custom">Write my own answer</Radio>
         </RadioGroup>}
         {custom ? <Textarea dense label={`Your answer: ${question.title}`} value={answer?.customText ?? ""} maxLength={1000} rows={3} readOnly={!editable} onChangeText={(customText) => change({ questionId: question.id, ...(multiple ? { ...override, optionIds: selected } : { optionId: "__custom" }), customText: customText.slice(0, 1000) })} /> : null}
-        {answer?.skipped ? <Text style={skin.muted(tokens)}>{message.questionsDisabled ? "Skipped" : "Answer required"}</Text> : null}
         {message.questionsDisabled && !question.multiple ? <View style={s.questionActions}><View style={s.questionMode}>{renderModeSwitch(question)}</View></View> : null}
       </View>;
     };

@@ -84,9 +84,6 @@ export interface ToastProps {
   /** Red danger intent (icon + tint). This is the name the intent axis uses across the
    *  kit (Button, AlertDialog, and every chart) and the one the design hand-off uses. */
   destructive?: boolean;
-  /** @deprecated Use `destructive`. Kept working so existing call sites are untouched;
-   *  it resolves to exactly the same intent. */
-  error?: boolean;
   /** Amber warning intent (icon + tint). */
   warning?: boolean;
   /** Brand-tinted informational intent (icon + tint). */
@@ -156,11 +153,10 @@ export interface ToastSkin {
 export function intentOf(p: {
   success?: boolean;
   destructive?: boolean;
-  error?: boolean;
   warning?: boolean;
   info?: boolean;
 }): Intent {
-  if (p.destructive || p.error) return "error";
+  if (p.destructive) return "error";
   if (p.warning) return "warning";
   if (p.success) return "success";
   if (p.info) return "info";
@@ -183,10 +179,8 @@ export interface ToastOptions {
   description?: string;
   action?: ToastAction;
   success?: boolean;
-  /** The danger intent; `error` is the deprecated alias. */
+  /** The danger intent. */
   destructive?: boolean;
-  /** @deprecated Use `destructive`. */
-  error?: boolean;
   warning?: boolean;
   info?: boolean;
   icon?: ReactNode;
@@ -439,7 +433,6 @@ export function createToastSystem(skin: ToastSkin) {
                   action={t.action}
                   success={t.success}
                   destructive={t.destructive}
-                  error={t.error}
                   warning={t.warning}
                   info={t.info}
                   icon={t.icon}

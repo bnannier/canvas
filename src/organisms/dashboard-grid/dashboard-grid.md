@@ -6,7 +6,7 @@ Cells render bare, because a widget arrives with its own surface (a Card, a Char
 
 Locked, it is a plain static grid and no drag machinery is mounted at all; `unlocked` turns on customize mode, where every cell gains a grip and the board reorders by pointer, keyboard, or screen reader through the kit's own drag-and-drop. The order is a plain array of ids, controlled through `order` and `onOrderChange` so the app can persist it, or left to the grid with `defaultOrder`.
 
-The board takes its widgets through `items`, the collection prop every other collection-taking component in the kit uses; the original `widgets` spelling still works as a deprecated alias and warns in development.
+The board takes its widgets through `items`, the collection prop every other collection-taking component in the kit uses.
 
 ## Usage
 

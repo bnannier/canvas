@@ -81,9 +81,9 @@ describe("Carousel keyboard and picker integration", () => {
     fireEvent.click(current);
   });
 
-  it("retains legacy skin typing and provides real fallback targets", () => {
+  it("gives a skin with no dotTarget real fallback targets", () => {
     const { dotTarget: _target, ...originalSkin } = webSkin;
-    const legacySkin: CarouselSkin = { ...originalSkin, dotHitSlop: 4, focusOutlineReset: {} };
+    const legacySkin: CarouselSkin = { ...originalSkin, focusOutlineReset: {} };
     const LegacyCarousel = createCarousel(legacySkin);
     render(<ThemeProvider><LegacyCarousel items={items} /></ThemeProvider>);
     const target = screen.getByRole("button", { name: "Slide 2 of 3" });

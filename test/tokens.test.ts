@@ -200,15 +200,14 @@ describe("CSS material handoff fallbacks", () => {
       // One blur with no saturation shift.
       expect(value("--glass-blur")).toBe(`${WEB_FROST.blur}px`);
       expect(value("--glass-frost")).toBe(`blur(${WEB_FROST.blur}px)`);
-      // The lens is gone: its token is a deprecated alias of the frost, and the
-      // illumination it drew went with it.
-      expect(value("--glass-lens")).toBe(value("--glass-frost"));
-      expect(value("--glass-illumination")).toBe("none");
+      // The lens is gone, and its tokens with it.
+      expect(() => value("--glass-lens")).toThrow("Missing CSS token");
+      expect(() => value("--glass-illumination")).toThrow("Missing CSS token");
       // The rim is one inset hairline in Dark Factory's shell line, no specular highlight.
       expect(channels(value("--glass-edge"))).toEqual(channels(WEB_FROST.shellLine[look.scheme]));
       expect(value("--glass-specular")).toBe(`inset 0 0 0 ${WEB_FROST.rimWidth}px ${value("--glass-edge")}`);
-      // The page behind the frost is the app's own: the kit ships no backdrop.
-      expect(value("--surface-backdrop")).toBe("none");
+      // The page behind the frost is the app's own: the kit ships no backdrop token.
+      expect(() => value("--surface-backdrop")).toThrow("Missing CSS token");
     });
 
     for (const media of ["(prefers-reduced-transparency:reduce)", "(prefers-contrast:more)", "print"]) {
@@ -219,10 +218,9 @@ describe("CSS material handoff fallbacks", () => {
           expect([value("--card"), value("--popover")]).toContain(fill);
           expect(fill).toMatch(/^oklch\([^/]+\)$/);
         }
-        for (const effect of ["--glass-frost", "--glass-lens", "--glass-illumination"]) expect(value(effect)).toBe("none");
+        expect(value("--glass-frost")).toBe("none");
         expect([value("--border"), value("--input")]).toContain(value("--glass-edge"));
         expect(value("--glass-specular")).toBe(media === "print" ? "none" : value("--shadow-lg"));
-        if (media === "print") expect(value("--surface-backdrop")).toBe("none");
         // Material fallback must not recolor the content placed above it.
         expect(value("--foreground")).toBe(materialValues(look)("--foreground"));
       });

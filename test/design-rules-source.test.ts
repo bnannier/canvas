@@ -207,7 +207,6 @@ describe("the brand is Dark Factory's", () => {
   // hue AND calls the brand indigo still fails.
   const HUE_NAMES: [RegExp, string][] = [
     [/\bindigo-\d+/gi, ""],
-    [/orb-indigo/gi, ""],
     [/["'`]indigo["'`]/gi, ""],
     [/\bindigo\?:/g, ""],
     [/(<Chip\b[^>]*?)\bindigo\b/g, "$1"],

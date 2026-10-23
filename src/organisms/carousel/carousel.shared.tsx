@@ -101,11 +101,6 @@ export interface CarouselSkin {
    * arrow size stays. Undefined on web (no touch-target minimum for a pointer).
    */
   arrowHitSlop?: number | Insets;
-  /**
-   * @deprecated Retained for skin compatibility. Real dotTarget bounds replace slop.
-   */
-  dotHitSlop?: number | Insets;
-
   /** The slide wrapper shape (corner radius; the content clips to it). */
   slide: (t: ColorTokens) => ViewStyle;
   /** The inset around a plain-string slide's text, in px. A ReactNode slide fills the

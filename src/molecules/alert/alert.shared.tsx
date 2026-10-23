@@ -81,9 +81,6 @@ export interface AlertProps {
   /** The danger tone. This is the name the intent axis uses across the kit (Button,
    *  AlertDialog, and every chart) and the one the design hand-off uses here too. */
   destructive?: boolean;
-  /** @deprecated Use `destructive`. Kept working so existing call sites are untouched;
-   *  it resolves to exactly the same tone. */
-  error?: boolean;
   /** Shows a trailing dismiss control. Pressing it hides the banner out of the box
    *  (uncontrolled); pass `dismissed` to own that state instead. */
   dismissible?: boolean;
@@ -113,10 +110,9 @@ export interface AlertProps {
 // alerts is the same measure top to bottom and a banner over a form lines up with
 // the fields; the parent layout container decides the measure.
 
-// Tone precedence when more than one is passed: first match wins. `destructive` and
-// `error` are the same tone under two names, so they share one branch.
+// Tone precedence when more than one is passed: first match wins.
 export function toneOf(p: AlertProps): Tone {
-  if (p.destructive || p.error) return "error";
+  if (p.destructive) return "error";
   if (p.warning) return "warning";
   if (p.success) return "success";
   if (p.info) return "info";

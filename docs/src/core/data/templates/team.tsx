@@ -63,7 +63,7 @@ function InviteLive() {
     const address = email.trim();
     if (!address) {
       setEmailError(true);
-      toast({ error: true, message: "Enter an email address", description: "The invite needs an address to go to." });
+      toast({ destructive: true, message: "Enter an email address", description: "The invite needs an address to go to." });
       return;
     }
     setPending((prev) => [...prev, { name: address, detail: `Invited as ${role}`, meta: "Just now" }]);

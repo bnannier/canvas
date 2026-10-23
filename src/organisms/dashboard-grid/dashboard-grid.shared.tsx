@@ -180,13 +180,6 @@ export interface DashboardGridProps {
    *  adding one to a release never breaks a saved layout. */
   items?: DashboardWidget[];
   /**
-   * Deprecated alias for `items`, kept working so existing call sites are untouched. Pass
-   * `items` instead: it is the spelling every collection-taking component in the kit uses
-   * (Sidebar, StackedList, DescriptionList, Feed, Stats). `items` wins if both are passed.
-   * @deprecated Use `items`.
-   */
-  widgets?: DashboardWidget[];
-  /**
    * CONTROLLED widget order, as ids. The primary path: the consuming app owns the array and
    * persists it through its own API, applying each `onOrderChange`. Ids the widget list does
    * not hold are ignored, and widgets missing from it are appended, so a stored order
@@ -298,19 +291,8 @@ export function createDashboardGrid(skin: DashboardGridSkin, parts: DashboardGri
 
   return function DashboardGrid(props: DashboardGridProps) {
     const { defaultOrder, onOrderChange, unlocked = false, storageKey, compact = false, testID, style } = props;
-    // `widgets` is the pre-rename spelling of `items`, kept working for call sites written
-    // against the first release. `items` is canonical, so it wins outright; each misuse warns
-    // once in dev and neither is an error at runtime (an unconfigured board is a legal empty
-    // state, so a grid given neither simply renders nothing).
-    devWarn(
-      props.widgets != null,
-      "[canvas] <DashboardGrid />: the `widgets` prop is deprecated; pass `items` instead, the collection prop every other Canvas component uses.",
-    );
-    devWarn(
-      props.items != null && props.widgets != null,
-      "[canvas] <DashboardGrid />: `items` and `widgets` were both passed; `widgets` is ignored, because `items` is the canonical spelling.",
-    );
-    const items = props.items ?? props.widgets ?? EMPTY;
+    // An unconfigured board is a legal empty state, so a grid given no items renders nothing.
+    const items = props.items ?? EMPTY;
     // Read the controlled prop RAW (never destructured with a default): coalescing it would
     // latch the component into controlled mode and a bare grid would stop reordering.
     const controlledOrder = props.order;

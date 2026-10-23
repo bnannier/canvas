@@ -28,14 +28,10 @@
 
    The material itself (`--glass-tint*`, `--glass-frost`, `--glass-specular`) lives in
    colors.css. This file only decides WHEN it is on. The page behind the frost is the
-   app's own: `--surface-backdrop` is a deprecated alias, now `none`, since the kit
-   ships no page backdrop (the Dark Factory direction keeps page looks in the app). */
+   app's own: the kit ships no page backdrop and leaves the body's background alone
+   (the Dark Factory direction keeps page looks in the app). */
 [data-surface="glass"]{
   --surface-mode:glass /* @kind other */;
-  --surface-backdrop:none /* @kind other */;
-}
-[data-surface="glass"] body,body[data-surface="glass"]{
-  background-image:var(--surface-backdrop);background-attachment:fixed;
 }
 
 /* Accessibility and media fallbacks. Translucency is decorative: it drops the
@@ -52,11 +48,11 @@
    `data-palette`) declares its own tints, which would otherwise win over the
    fallback inherited from the root, so each rule names those wrappers too. */
 @media (prefers-reduced-transparency:reduce){
-  [data-surface="glass"],[data-surface="glass"] :is(.dark,[data-palette]){--glass-tint:var(--popover);--glass-tint-content:var(--card);--glass-tint-control:var(--card);--glass-tint-dense:var(--popover);--glass-frost:none /* @kind other */;--glass-lens:none /* @kind other */;--glass-illumination:none /* @kind other */;--glass-edge:var(--border);--glass-specular:var(--shadow-lg) /* @kind shadow */}
+  [data-surface="glass"],[data-surface="glass"] :is(.dark,[data-palette]){--glass-tint:var(--popover);--glass-tint-content:var(--card);--glass-tint-control:var(--card);--glass-tint-dense:var(--popover);--glass-frost:none /* @kind other */;--glass-edge:var(--border);--glass-specular:var(--shadow-lg) /* @kind shadow */}
 }
 @media (prefers-contrast:more){
-  [data-surface="glass"],[data-surface="glass"] :is(.dark,[data-palette]){--glass-tint:var(--popover);--glass-tint-content:var(--card);--glass-tint-control:var(--card);--glass-tint-dense:var(--popover);--glass-frost:none /* @kind other */;--glass-lens:none /* @kind other */;--glass-illumination:none /* @kind other */;--glass-edge:var(--input);--glass-specular:var(--shadow-lg) /* @kind shadow */}
+  [data-surface="glass"],[data-surface="glass"] :is(.dark,[data-palette]){--glass-tint:var(--popover);--glass-tint-content:var(--card);--glass-tint-control:var(--card);--glass-tint-dense:var(--popover);--glass-frost:none /* @kind other */;--glass-edge:var(--input);--glass-specular:var(--shadow-lg) /* @kind shadow */}
 }
 @media print{
-  [data-surface="glass"],[data-surface="glass"] :is(.dark,[data-palette]){--glass-tint:var(--popover);--glass-tint-content:var(--card);--glass-tint-control:var(--card);--glass-tint-dense:var(--popover);--glass-frost:none /* @kind other */;--glass-lens:none /* @kind other */;--glass-illumination:none /* @kind other */;--glass-edge:var(--border);--glass-specular:none /* @kind shadow */;--surface-backdrop:none /* @kind other */}
+  [data-surface="glass"],[data-surface="glass"] :is(.dark,[data-palette]){--glass-tint:var(--popover);--glass-tint-content:var(--card);--glass-tint-control:var(--card);--glass-tint-dense:var(--popover);--glass-frost:none /* @kind other */;--glass-edge:var(--border);--glass-specular:none /* @kind shadow */}
 }
