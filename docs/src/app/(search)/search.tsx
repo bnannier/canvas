@@ -24,6 +24,7 @@ export default function SearchScreen() {
 }
 
 // Rank matches so the closest sorts LAST (it renders at the bottom of the bubble, by the field):
+// a component outranks every other kind of entry (the owner's 2026-10-23 decision), then
 // exact title > title prefix > title substring > weaker (description/keyword) match. Keep only
 // the strongest few so the bubble stays a glance, not a full list.
 function rankForBubble(query: string): SearchEntry[] {
@@ -31,7 +32,7 @@ function rankForBubble(query: string): SearchEntry[] {
   if (!q) return [];
   const score = (e: SearchEntry) => {
     const t = e.title.toLowerCase();
-    return t === q ? 4 : t.startsWith(q) ? 3 : t.includes(q) ? 2 : 1;
+    return (e.component ? 10 : 0) + (t === q ? 4 : t.startsWith(q) ? 3 : t.includes(q) ? 2 : 1);
   };
   return search(query)
     .slice()
