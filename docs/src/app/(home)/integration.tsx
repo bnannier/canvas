@@ -287,6 +287,8 @@ export default function IntegrationScreen() {
             render inline where they are declared. On Android, with Canvas's capture module linked, the
             root provider's page content is also the capture plane that glass overlays and native modals sample for
             their frost; a provider that does not fill its window has none, and glass there keeps its solid skin.
+            <InlineCode>AppFrame</InlineCode> mounts this host for you, inside the safe-area context and around its
+            padded frame, so an app built on it needs no provider of its own.
           </P>
           <CodeBlock code={OVERLAY_HOST} />
           <H3>Native modals</H3>
