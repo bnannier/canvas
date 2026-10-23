@@ -609,7 +609,8 @@ that work was judged against, and every row under a version 2 table names its
 `Surface` and its `Versus reference` verdict. `.tuning-harness.json` at the repo root
 (version 2) tells the global push gate which files are tunables (`src/style/motion.ts`,
 `src/style/glass-surface/web-frost.ts`, `src/style/identity-hue.ts`,
-`src/style/glass-surface/glass-wash.ts` and `src/style/selected-card.ts`): a push whose
+`src/style/glass-surface/glass-wash.ts`, `src/style/selected-card.ts`,
+`src/style/glass-surface/ios-tints.ts` and `docs/src/shell/page-look.ts`): a push whose
 newest tunable change has no evidence row in or after it is refused, and so is a row
 with an empty `Surface` or `Versus reference` cell or a `matches` written on a harness
 route. A pure refactor of those files with no visual change carries the commit
