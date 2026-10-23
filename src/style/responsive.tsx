@@ -52,12 +52,10 @@
 // desktop-OS tier; a macOS or desktop web window is placed by its width like any
 // other. Height and orientation are deliberately not modeled: no kit component
 // keys layout off viewport height today. Raw pixels are React Native's own
-// `useWindowDimensions`; the kit's pass-through of it (the re-export at the end
-// of this file, which the public surface publishes) is a deprecated alias (audit
-// K12-2 OD5) kept until a major.
+// `useWindowDimensions`.
 
 import { createContext, useContext, useSyncExternalStore, type ReactNode } from "react";
-import { Dimensions, useWindowDimensions } from "react-native";
+import { Dimensions } from "react-native";
 import { breakpoints, type BreakpointKey } from "./tokens.js";
 import { BreakpointOverrideContext } from "./breakpoint-override.js";
 
@@ -261,7 +259,3 @@ export function formFactor(width: number): FormFactor {
 export function useFormFactor(): FormFactor {
   return FORM_FACTOR_BY_BUCKET[useBreakpoint()];
 }
-
-// React Native's own hook, passed through for the public surface, where it is a
-// deprecated alias (src/style/public.ts carries the tag and names what to use).
-export { useWindowDimensions };

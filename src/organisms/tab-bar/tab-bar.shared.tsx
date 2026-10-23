@@ -8,7 +8,7 @@ import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.j
 // Shared TabBar shell. TabBar is the bottom app-navigation bar: a row of equal-width
 // destinations, each an icon over a short label, with exactly one active. It is a
 // functional-layer surface, so it renders through GlassSurface (real Liquid Glass on
-// iOS 26, the lens or a frost on web/Android in glass mode, solid otherwise), matching
+// iOS 26, the frost on web and Android in glass mode, solid otherwise), matching
 // the other bars. The structure, accessibility, and active state live here once; a
 // platform file supplies the skin (bar shape, label type, press feedback, the active
 // indicator) and calls createTabBar.

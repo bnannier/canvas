@@ -16,8 +16,7 @@ import { Platform } from "react-native";
  *
  * The pattern started on Button and lives here so every kit control shares it, and so
  * the coverage test has one thing to look for rather than a family of near-copies. These
- * are kit internals: the names were public by accident and are deprecated aliases now
- * (audit K12-2, src/style/public.ts), since a control the kit lacks belongs in the kit.
+ * are kit internals, since a control the kit lacks belongs in the kit.
  *
  * Where the touch area reaches on iOS and Android is React Native's own contract, and two
  * of its rules bound it.
