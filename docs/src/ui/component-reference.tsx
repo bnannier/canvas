@@ -1,13 +1,13 @@
 import { Suspense, useState } from "react";
 import { Platform } from "react-native";
 import { Redirect, useLocalSearchParams } from "expo-router";
-import { Column, Container, Typography, Alert, Skeleton } from "@nannier/canvas";
+import { Column, Typography, Alert, Skeleton } from "@nannier/canvas";
 import { getComponent } from "../core/data/components";
 import { componentDescription } from "../core/descriptions";
 import type { ComponentDoc } from "../core/data/types";
 import { useComponentDocs } from "../core/use-component-docs";
 import { Page } from "./page";
-import { InlineMarkdown, Lead, Prose } from "./prose";
+import { InlineMarkdown, Prose } from "./prose";
 import { Playground } from "./playground";
 import { PropTables } from "./prop-table";
 import { Donts } from "./dont";
@@ -21,11 +21,13 @@ import { DocsHead } from "./docs-head";
 // (components/[slug]/[variant]). It shows every line of the component's .md
 // (tools/docgen/parse-md.ts, parseDoc), in this order: the title and the lead, the rest of
 // the intro as its overview, the Playground with the selected example's notes under its
-// rail, the props, Do & Don't, then the page's own guidance sections. The optional `variant` path segment names one Playground
-// example by its slugified label (see variantSlug): /components/checkbox/nestedgroup opens
-// the "Nested group" example. An absent segment shows the first (default) example; a
-// segment that names the default, or names nothing valid, redirects to the bare component
-// URL so each variant has exactly one canonical address.
+// rail, the props, Do & Don't, then the page's own guidance sections. The lead and the
+// overview span the full page measure, the width of the Playground and the tables.
+// The optional `variant` path segment names one Playground example by its slugified label
+// (see variantSlug): /components/checkbox/nestedgroup opens the "Nested group" example.
+// An absent segment shows the first (default) example; a segment that names the default,
+// or names nothing valid, redirects to the bare component URL so each variant has exactly
+// one canonical address.
 export function ComponentReference() {
   const { slug, variant } = useLocalSearchParams<{ slug: string; variant?: string }>();
 
@@ -37,7 +39,7 @@ export function ComponentReference() {
       <DocsHead title={comp.name} />
       <Column snug>
         <Typography h1>{comp.name}</Typography>
-        <Lead><InlineMarkdown text={componentDescription(comp)} lead subtle /></Lead>
+        <Typography lead subtle><InlineMarkdown text={componentDescription(comp)} lead subtle /></Typography>
       </Column>
       {/* The docs module is the page's own chunk in the web export. It is on the page
           before the bundle runs, so this never suspends on a page load; a client-side
@@ -100,7 +102,7 @@ function ComponentBody({ comp, variant }: { comp: ComponentDoc; variant?: string
           Suspense boundary resolves, so the canonical tag tracks `selected` through
           every in-page switch instead of only being correct on a cold load. */}
       <DocsHead title={comp.name} path={hrefFor(selected)} />
-      {entry?.overview ? <Container xxl start><Prose blocks={entry.overview} /></Container> : null}
+      {entry?.overview ? <Prose blocks={entry.overview} /> : null}
       {examples.length > 0 ? (
         <Playground examples={examples} variantsNote={entry?.variantsNote} stageAlign={comp.stageAlign} singlePreview={comp.singlePreview} selected={selected} onSelect={onSelect} />
       ) : (
