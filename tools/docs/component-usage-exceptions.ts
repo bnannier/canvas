@@ -58,8 +58,8 @@ export const DOCS_USAGE_EXCEPTIONS: readonly DocsUsageException[] = [
     reason: "Dedicated scroll/focus fixture constrains the scrollport to exercise real virtualized overflow and keyboard focus.",
   })),
   {
-    file: "docs/src/shell/native-header.tsx", owner: "ScreenFrame", tag: "View", attribute: "style", keys: ["borderTopLeftRadius", "borderTopRightRadius", "flex", "overflow"], occurrences: 2,
-    reason: "The Expo native stack needs a screen host that fills its available height, and the scroller inside the page-look frame rounds itself to the frame's top corners, since the frame does not clip.",
+    file: "docs/src/shell/native-header.tsx", owner: "ScreenFrame", tag: "View", attribute: "style", keys: ["flex", "overflow"], occurrences: 2,
+    reason: "The Expo native stack needs a screen host that fills its available height, and the scroller inside the page-look frame clips itself to the frame, since the frame does not clip.",
   },
   {
     file: "docs/src/ui/page.tsx", owner: "content", tag: "ScrollView", attribute: "style", keys: ["flex"], occurrences: 1,
@@ -110,8 +110,8 @@ export const DOCS_USAGE_EXCEPTIONS: readonly DocsUsageException[] = [
     reason: "The app's safe-area host fills the viewport, with the page look as its first child.",
   },
   {
-    file: "docs/src/shell/navbar.tsx", owner: "WebNav", tag: "View", attribute: "style", keys: ["borderTopLeftRadius", "borderTopRightRadius", "bottom", "flex", "left", "minWidth", "overflow", "pointerEvents", "position", "right", "top", "zIndex"], occurrences: 5,
-    reason: "Stable route/landmark hosts size the viewport and position measured top/bottom app bars above the page scroller; the rail and the top bar round themselves to the page-look frame's top corners, since a clip on the frame made Chromium drop tiles.",
+    file: "docs/src/shell/navbar.tsx", owner: "WebNav", tag: "View", attribute: "style", keys: ["bottom", "flex", "left", "minWidth", "pointerEvents", "position", "right", "top", "zIndex"], occurrences: 4,
+    reason: "Stable route/landmark hosts size the viewport and position measured top/bottom app bars above the page scroller.",
   },
   {
     file: "docs/src/app/(search)/search.tsx", owner: "NativeSearch", tag: "View", attribute: "style", keys: ["bottom", "flex", "left", "pointerEvents", "position", "right", "top"], occurrences: 2,
@@ -122,12 +122,12 @@ export const DOCS_USAGE_EXCEPTIONS: readonly DocsUsageException[] = [
     reason: "Dark Factory's page look, docs-only scaffolding under design-language item 7: an untouchable layer fixed to the window behind the shell, clipping the drawing to it, over the gradient's last stop.",
   },
   {
-    file: "docs/src/shell/page-frame.tsx", owner: "PageFrame", tag: "View", attribute: "style", keys: ["alignSelf", "flex", "marginBottom", "maxWidth", "paddingHorizontal", "paddingTop", "width"], occurrences: 2,
-    reason: "Dark Factory's page padding around its shell and the shell's box, docs-only scaffolding under design-language item 7: the tier's inset, the 1340 cap centred, and the hairline the frame runs past the window's bottom edge.",
+    file: "docs/src/shell/page-frame.tsx", owner: "PageFrame", tag: "View", attribute: "style", keys: ["bottom", "flex", "left", "overflow", "position", "right", "top"], occurrences: 2,
+    reason: "Dark Factory's shell as the docs' frame, docs-only scaffolding under design-language item 7: the frame fills the window (the owner's 2026-10-23 decision), and a layer the size of the frame clips the material's hairline bleed so its rim falls outside the window.",
   },
   {
-    file: "docs/src/shell/page-frame.tsx", owner: "PageFrame", tag: "GlassSurface", attribute: "style", keys: ["backgroundColor", "borderTopLeftRadius", "borderTopRightRadius", "bottom", "boxShadow", "left", "position", "right", "top"], occurrences: 1,
-    reason: "Dark Factory's frosted shell as the docs' frame (design-language item 7): the material as its own layer under the content (so only it frosts the blur plane), with its shape, solid fill and palette shadow, handed to the kit's GlassSurface as the skin style it frosts.",
+    file: "docs/src/shell/page-frame.tsx", owner: "PageFrame", tag: "GlassSurface", attribute: "style", keys: ["backgroundColor", "bottom", "left", "position", "right", "top"], occurrences: 1,
+    reason: "Dark Factory's frosted shell as the docs' frame (design-language item 7): the material as its own layer under the content (so only it frosts the blur plane), run a hairline past the frame on every side and given its solid fill, handed to the kit's GlassSurface as the skin style it frosts.",
   },
   {
     file: "docs/src/shell/page-frame.tsx", owner: "ShellWedges", tag: "View", attribute: "style", keys: ["bottom", "left", "overflow", "pointerEvents", "position", "right", "top"], occurrences: 1,
