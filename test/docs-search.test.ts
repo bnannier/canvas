@@ -34,3 +34,13 @@ describe("docs search", () => {
     expect(hits.every((hit) => hit.component)).toBe(true);
   });
 });
+
+describe("docs search, inside the components", () => {
+  it("puts the exact title first, then title prefixes, then the rest", () => {
+    const names = search("text").filter((hit) => hit.component).map((hit) => hit.title);
+    expect(names[0]).toBe("Text");
+    const prefixEnd = names.findIndex((name, i) => i > 0 && !name.toLowerCase().startsWith("text"));
+    const rest = prefixEnd === -1 ? [] : names.slice(prefixEnd);
+    expect(rest.some((name) => name.toLowerCase().startsWith("text"))).toBe(false);
+  });
+});

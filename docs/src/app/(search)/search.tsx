@@ -4,7 +4,7 @@ import { Redirect, Stack, useFocusEffect, useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import type { SearchBarCommands } from "react-native-screens";
 import { View, Card, Column, ScrollView, StackedList } from "@nannier/canvas";
-import { search } from "../../core/data/search";
+import { search, titleCloseness } from "../../core/data/search";
 import type { SearchEntry } from "../../core/data/types";
 import { PageBackdrop } from "../../shell/page-backdrop";
 
@@ -28,12 +28,8 @@ export default function SearchScreen() {
 // exact title > title prefix > title substring > weaker (description/keyword) match. Keep only
 // the strongest few so the bubble stays a glance, not a full list.
 function rankForBubble(query: string): SearchEntry[] {
-  const q = query.trim().toLowerCase();
-  if (!q) return [];
-  const score = (e: SearchEntry) => {
-    const t = e.title.toLowerCase();
-    return (e.component ? 10 : 0) + (t === q ? 4 : t.startsWith(q) ? 3 : t.includes(q) ? 2 : 1);
-  };
+  if (!query.trim()) return [];
+  const score = (e: SearchEntry) => (e.component ? 10 : 0) + titleCloseness(e, query);
   return search(query)
     .slice()
     .sort((a, b) => score(a) - score(b) || b.title.localeCompare(a.title))

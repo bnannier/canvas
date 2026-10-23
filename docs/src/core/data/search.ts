@@ -59,10 +59,21 @@ const ALL_ENTRIES: SearchEntry[] = [
   })),
 ];
 
+/**
+ * How closely an entry's title matches the query: 4 for the exact title, 3 for a title
+ * that starts with it, 2 for one that contains it, 1 for a match elsewhere (the
+ * description, the category or a keyword).
+ */
+export function titleCloseness(entry: SearchEntry, query: string): number {
+  const q = query.trim().toLowerCase();
+  const t = entry.title.toLowerCase();
+  return t === q ? 4 : t.startsWith(q) ? 3 : t.includes(q) ? 2 : 1;
+}
+
 // Case-insensitive substring match across title, description, category, and keywords.
-// Returns up to 20 hits, the components always first (the owner's 2026-10-23 decision),
-// then the guides, patterns and templates, each in index order; the UI groups them by
-// category in that order, so the component categories lead.
+// Returns up to 20 hits, the components always first and closest title first among them
+// (the owner's 2026-10-23 decisions), then the guides, patterns and templates in index
+// order; the UI groups them by category in that order, so the component categories lead.
 export function search(query: string): SearchEntry[] {
   if (!query.trim()) return [];
   const q = query.toLowerCase();
@@ -72,7 +83,9 @@ export function search(query: string): SearchEntry[] {
     if (entry.category.toLowerCase().includes(q)) return true;
     return entry.keywords.some((k) => k.toLowerCase().includes(q));
   });
-  return [...hits.filter((entry) => entry.component), ...hits.filter((entry) => !entry.component)].slice(0, 20);
+  // Array.prototype.sort is stable, so equally close components keep the catalog's order.
+  const components = hits.filter((entry) => entry.component).sort((a, b) => titleCloseness(b, query) - titleCloseness(a, query));
+  return [...components, ...hits.filter((entry) => !entry.component)].slice(0, 20);
 }
 
 export { ALL_ENTRIES, GUIDE_ENTRIES };
