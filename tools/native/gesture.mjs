@@ -86,7 +86,7 @@ export function createCarouselSwipeCommands(expected, postFlow) {
   if (typeof postFlow !== "string" || !path.isAbsolute(postFlow)) throw new Error("Post-flow must be an absolute preserved path");
   const post = checkedFile(path.dirname(postFlow), path.basename(postFlow), 1024 * 1024);
   const page = [
-    { assertVisible: "Native carousel paging" },
+    { assertVisible: { id: "screen-title", text: "Carousel" } },
     { assertVisible: { id: "carousel-current", text: "Current page: 2" } },
     { assertVisible: { id: "carousel-changes", text: "Page changes: 0" } },
     { assertVisible: "Slide 2 of 6, current slide" },

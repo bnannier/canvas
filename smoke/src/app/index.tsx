@@ -9,7 +9,7 @@ export default function SmokeHome() {
   return (
     <Screen>
       <Column tight>
-        <Typography h1>Canvas Smoke Test</Typography>
+        <Typography h1>Home</Typography>
         <Typography muted>Every screen here runs against the installed Canvas package. Open the menu for the full list.</Typography>
       </Column>
       <Typography h2>Journeys</Typography>

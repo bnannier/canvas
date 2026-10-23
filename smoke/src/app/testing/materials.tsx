@@ -6,5 +6,5 @@ import { MaterialsBody } from "../../testing/materials";
 // candidate API, so the smoke route supplies it around the ordinary frame rather
 // than the frame carrying an API its registry pin does not have yet.
 export default function MaterialsRoute() {
-  return <OverlayProvider viewport><Screen viewportOverlays><MaterialsBody /></Screen></OverlayProvider>;
+  return <OverlayProvider viewport><Screen journey="/testing/materials" viewportOverlays><MaterialsBody /></Screen></OverlayProvider>;
 }

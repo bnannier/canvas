@@ -27,7 +27,7 @@ export function SmokeDiagnostics() {
   };
   return (
     <Column relaxed testID="smoke-diagnostics">
-      <Typography h2>Candidate runtime identity</Typography>
+      <Typography h3>Candidate runtime identity</Typography>
       {Object.entries(values).map(([name, value]) => (
         <Column tight key={name}>
           <Typography small muted>{name}</Typography>

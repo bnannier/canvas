@@ -13,7 +13,9 @@ name: Sealed Canvas native candidate measurement
       visible: 'Open in “Canvas Smoke Test”\?'
     commands:
       - tapOn: Open
-- assertVisible: Candidate runtime identity
+- assertVisible:
+    id: screen-title
+    text: Diagnostics
 - assertVisible:
     id: smoke-input-mode
     text: package
@@ -44,7 +46,9 @@ name: Sealed Canvas native candidate measurement
 # Every documented component's examples, mounted in turn against the installed package.
 # The screen reports its own count; the backreference requires all of them rendered.
 - openLink: canvas-smoke:///testing/catalog
-- assertVisible: Component catalog
+- assertVisible:
+    id: screen-title
+    text: Component catalog
 - tapOn: Render every component
 - extendedWaitUntil:
     visible:
@@ -56,7 +60,9 @@ name: Sealed Canvas native candidate measurement
     text: 'Failures: 0'
 - takeScreenshot: catalog-rendered
 - openLink: canvas-smoke:///testing/control-refs
-- assertVisible: Control refs
+- assertVisible:
+    id: screen-title
+    text: Control refs
 - tapOn: Inspect refs
 - assertVisible:
     id: ref-attached
@@ -195,7 +201,9 @@ name: Sealed Canvas native candidate measurement
     text: 'Changes: 4'
 - takeScreenshot: refs-remounted-and-interactive
 - openLink: canvas-smoke:///testing/form-autocomplete
-- assertVisible: Form and autocomplete
+- assertVisible:
+    id: screen-title
+    text: Form and autocomplete
 - tapOn:
     id: fruit-input
 - inputText: Ap
@@ -221,7 +229,9 @@ name: Sealed Canvas native candidate measurement
     id: submit-count
     text: '1'
 - openLink: canvas-smoke:///testing/listbox
-- assertVisible: Listbox input checks
+- assertVisible:
+    id: screen-title
+    text: Listbox
 - scrollUntilVisible:
     element:
       id: primary-team
@@ -281,7 +291,9 @@ name: Sealed Canvas native candidate measurement
     id: multi-pick-count
     text: 'Picks: 2'
 - openLink: canvas-smoke:///testing/listbox?disabled=true
-- assertVisible: Listbox input checks
+- assertVisible:
+    id: screen-title
+    text: Listbox
 - scrollUntilVisible:
     element:
       id: primary-team
@@ -321,7 +333,9 @@ name: Sealed Canvas native candidate measurement
     text: 'Picks: 0'
 - takeScreenshot: listbox-disabled-inert
 - openLink: canvas-smoke:///testing/tabs
-- assertVisible: Tabs input checks
+- assertVisible:
+    id: screen-title
+    text: Tabs
 - assertVisible:
     id: tabs-selection
     text: 'Selected tab: Overview'
@@ -345,7 +359,9 @@ name: Sealed Canvas native candidate measurement
     text: 'Changes: 1'
 - takeScreenshot: tabs-inactive-selected-disabled-inert
 - openLink: canvas-smoke:///testing/tabs?disabled=true
-- assertVisible: Tabs input checks
+- assertVisible:
+    id: screen-title
+    text: Tabs
 - tapOn:
     text: Activity
     retryTapIfNoChange: false
@@ -481,7 +497,9 @@ name: Sealed Canvas native candidate measurement
 # This scenario forces glass inside the inherited light/dark scheme. Use the
 # built-in Dialog body rather than custom children so description/currency paint.
 - openLink: canvas-smoke:///testing/escape-layers?scenario=glass-messages
-- assertVisible: Overlay keyboard checks
+- assertVisible:
+    id: screen-title
+    text: Overlays
 - tapOn:
     text: Open glass message dialog
     retryTapIfNoChange: false
@@ -508,7 +526,9 @@ name: Sealed Canvas native candidate measurement
     retryTapIfNoChange: false
 - assertNotVisible: Glass sharing actions
 - openLink: canvas-smoke:///testing/carousel
-- assertVisible: Native carousel paging
+- assertVisible:
+    id: screen-title
+    text: Carousel
 - assertVisible:
     id: carousel-current
     text: 'Current page: 2'
