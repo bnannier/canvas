@@ -1,4 +1,4 @@
-import { type ColorTokens, alpha, shadow, controlRipple, shape } from "../../style/index.js";
+import { alpha, shadow, controlRipple, shape } from "../../style/index.js";
 import { platformShape } from "../../style/platform-shape.js";
 import { type CarouselSkin } from "./carousel.shared.js";
 

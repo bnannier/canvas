@@ -41,7 +41,7 @@ import { STATE_RECIPES, recipesOf } from "../../e2e/support/state-recipes.ts";
 import { KIND_LABEL, compareCheckout, isGap, redirectTargets } from "../handoff-parity/compare.ts";
 import { evidence as interactionEvidence, inventory as interactionInventory } from "../interactions/registry.ts";
 import { materialCoverage } from "../materials/manifest.ts";
-import { ENTRY, componentSkins, hasPlatformBuilds, resolveSource, traceExport, type ComponentSkins, type Platform as SkinPlatform } from "../skins/divergence.ts";
+import { ENTRY, componentSkins, hasPlatformBuilds, traceExport, type ComponentSkins, type Platform as SkinPlatform } from "../skins/divergence.ts";
 import { referenceKeyFor, referenceRows, type ReferenceRow } from "../skins/references.ts";
 import { registeredSkins } from "../skins/registry.ts";
 import { ModuleGraph, NOT_HANDLED, PathUnder, resolveModule, within, type Intercept } from "./hosts.ts";

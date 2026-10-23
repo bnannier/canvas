@@ -1,7 +1,7 @@
 import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
 import { Fragment, useId, type ComponentType, type ReactNode } from "react";
 import { FlatList, StyleSheet, type GestureResponderEvent, type ViewProps } from "react-native";
-import { View, Pressable, Text, RippleClip, cornerRadii, devWarn, FOCUS_RESET, type StyleProp, type ViewStyle, type LayoutStyle, GlassSurface, withInnerFill } from "../../style/index.js";
+import { View, Pressable, Text, RippleClip, cornerRadii, devWarn, FOCUS_RESET, type ViewStyle, type LayoutStyle, GlassSurface, withInnerFill } from "../../style/index.js";
 import { useScrollFocus } from "../../style/use-scroll-focus.js";
 import { useFocusFrame } from "../../style/focus-frame.js";
 import { LIST_ITEM, LIST_WRAPPER, WindowedListCell, listProps, windowedListItem } from "../../style/list-semantics.js";

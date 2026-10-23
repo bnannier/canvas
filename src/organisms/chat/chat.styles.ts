@@ -1,6 +1,5 @@
 import { type ColorTokens, type ViewStyle, type TextStyle } from "../../style/index.js";
 import { platformShape } from "../../style/platform-shape.js";
-import { MONO_FONT } from "../../style/mono.js";
 import { destructiveText } from "../../style/destructive-text.js";
 
 export interface ChatSkin {
@@ -28,11 +27,6 @@ export const questionButtons: ViewStyle = { flexDirection: "row", flexWrap: "wra
 export const questionMode: ViewStyle = { marginStart: "auto", maxWidth: "100%" };
 export const questions: ViewStyle = { gap: 20, minWidth: 0 };
 export const blocks: ViewStyle = { gap: 10, minWidth: 0 };
-export const listRow: ViewStyle = { flexDirection: "row", gap: 8 };
-export const listText: TextStyle = { flex: 1, minWidth: 0 };
-export const strong: TextStyle = { fontWeight: "700" };
-export const emphasis: TextStyle = { fontStyle: "italic" };
-export const code: TextStyle = { fontFamily: MONO_FONT, fontSize: 12, lineHeight: 18 };
 export const heading: TextStyle = { fontWeight: "700", fontSize: 13.5, lineHeight: 20 };
 export const composer: ViewStyle = { flexShrink: 0, padding: 16, paddingTop: 8, gap: 10 };
 // Conversation parts draw the web look on every platform, so they read the web row's own roles.
@@ -49,7 +43,6 @@ export const thinkingLabel = (tokens: ColorTokens): TextStyle => ({ fontSize: 12
 export const dots: ViewStyle = { flexDirection: "row", alignItems: "center", gap: 4 };
 // A circle: the pill, which the renderer clamps to half the dot's size.
 export const dot = (tokens: ColorTokens): ViewStyle => ({ width: 4, height: 4, borderRadius: 9999, backgroundColor: tokens["muted-foreground"] });
-export const quote = (tokens: ColorTokens): ViewStyle => ({ borderStartWidth: 2, borderStartColor: tokens.border, paddingStart: 10 });
 
 export const webSkin: ChatSkin = {
   message: (tokens, user) => user ? {

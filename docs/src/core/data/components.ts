@@ -715,6 +715,3 @@ export function getComponent(slug: string): ComponentDoc | undefined {
   return COMPONENTS.find((c) => c.slug === slug);
 }
 
-export function getComponentsByCategory(category: string): ComponentDoc[] {
-  return COMPONENTS.filter((c) => c.category === category);
-}

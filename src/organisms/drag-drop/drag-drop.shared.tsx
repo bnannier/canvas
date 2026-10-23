@@ -11,7 +11,7 @@ import {
   type RefObject,
 } from "react";
 import { Animated, PanResponder, StyleSheet, AccessibilityInfo, type GestureResponderEvent } from "react-native";
-import { View, Text, useTheme, isRTL, type StyleProp, type ViewStyle, type ViewProps } from "../../style/index.js";
+import { View, useTheme, isRTL, type StyleProp, type ViewStyle, type ViewProps } from "../../style/index.js";
 import { useFocusRingStyle } from "../../style/pressable.js";
 import { useSeamLimit } from "../../style/touch-seam.js";
 import { Icon } from "../../atoms/icon/icon.js";
@@ -370,7 +370,7 @@ export function createDragDrop(skin: DragDropSkin) {
         setSnap(EMPTY_SNAPSHOT);
       };
 
-      const startPointerDrag: DragDropApi["startPointerDrag"] = ({ dragId, cardRef, handleRef, grantLocation }) => {
+      const startPointerDrag: DragDropApi["startPointerDrag"] = ({ dragId, handleRef, grantLocation }) => {
         const d = draggables.current.get(dragId);
         if (!d) return;
         const session = ++pointerSession.seq;

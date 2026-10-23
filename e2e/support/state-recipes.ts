@@ -387,15 +387,6 @@ function describeElement(el: Element | null): string {
   return `<${el.localName}${role ? ` role="${role}"` : ""}>${name ? ` "${name}"` : ""}`;
 }
 
-/** Runs in the page: the state a press could toggle, and where the page is. */
-function readToggles(el: Element): Record<string, string | null> {
-  const toggles: Record<string, string | null> = {};
-  for (const name of ["aria-checked", "aria-pressed", "aria-selected", "aria-expanded", "aria-current"]) toggles[name] = el.getAttribute(name);
-  toggles.value = el instanceof HTMLInputElement || el instanceof HTMLTextAreaElement ? el.value : el.getAttribute("aria-valuenow");
-  toggles.location = location.pathname + location.search;
-  return toggles;
-}
-
 /** The control a recipe acts on: how the page finds it inside a scope, and what the source says it is. */
 interface Target {
   locate: (scope: Locator) => Locator;

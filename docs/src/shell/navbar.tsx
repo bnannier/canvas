@@ -2,7 +2,7 @@ import { Slot, usePathname, useRouter } from "expo-router";
 import { useState, useEffect } from "react";
 import { Platform } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
-import { View, Text, Row, Icon, Button, ButtonGroup, TabBar, OverlayProvider, GlassBlurPlane, useGlassBlurPlane, useTheme, useFormFactor, liquidGlassAvailable, alpha, type IconProps } from "@nannier/canvas";
+import { View, Row, Icon, TabBar, OverlayProvider, GlassBlurPlane, useGlassBlurPlane, useTheme, useFormFactor, alpha, type IconProps } from "@nannier/canvas";
 import { NativeTabs } from "expo-router/unstable-native-tabs";
 import { Sidebar } from "./sidebar";
 import { Topbar, titleFor } from "./topbar";
@@ -14,8 +14,6 @@ import { PAGE_LOOK } from "./page-look";
 import { SearchModal } from "./search-modal";
 import { ThemeToggles } from "./theme-toggles";
 import { WebScrollbarTheme, WebScrollPadding, SCROLLBAR_W } from "../ui/web-scrollbar";
-import { useDocsTheme } from "../theme/docs-theme";
-import { sans } from "../ui/fonts";
 import { MOBILE_TABS, sectionFor } from "../data/nav";
 
 // The one adaptive navigation component. On the web it is the sidebar + topbar shell at

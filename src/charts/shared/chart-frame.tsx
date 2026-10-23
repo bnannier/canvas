@@ -1,7 +1,7 @@
 import { useState, type ReactNode } from "react";
 import { StyleSheet } from "react-native";
 import Svg, { Line } from "react-native-svg";
-import { View, Text, useTheme, FILL, type StyleProp, type ViewStyle } from "../../style/index.js";
+import { View, Text, useTheme, FILL, type ViewStyle } from "../../style/index.js";
 import { ScrubSurface } from "./chart-inspect.js";
 import { bandScale, estimateTextWidth, formatCompact, linearScale, niceTicks, type Band } from "./chart-math.js";
 

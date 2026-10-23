@@ -1,4 +1,4 @@
-import { View, Text, useTheme, devWarn, type StyleProp, type ViewStyle, type LayoutStyle } from "../../style/index.js";
+import { View, Text, useTheme, devWarn, type LayoutStyle } from "../../style/index.js";
 import { CHART_ROOT } from "../shared/chart-frame.js";
 import { StatusStrip, statusSummary, type UptimePeriod } from "../shared/status-strip.js";
 

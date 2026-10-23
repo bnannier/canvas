@@ -3,7 +3,7 @@ import { forwardRef, type ReactNode } from "react";
 import { useComposedRefs } from "../../style/use-composed-refs.js";
 import { useSpaceActivation } from "../../style/use-space-activation.js";
 import { type GestureResponderEvent } from "react-native";
-import { View, Pressable, Text, surfaceRipple, RippleClip, cornerRadii, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle, type LayoutStyle, GlassPane, paneStyle, paneRipple, legibleWash, withInnerFill } from "../../style/index.js";
+import { View, Pressable, Text, surfaceRipple, RippleClip, cornerRadii, type ColorTokens, type ViewStyle, type TextStyle, type LayoutStyle, GlassPane, paneStyle, paneRipple, legibleWash, withInnerFill } from "../../style/index.js";
 import { contrastStyle } from "../../style/glass-surface/glass-surface.shared.js";
 import { useRadioGroup } from "./radio-context.js";
 

@@ -1,6 +1,6 @@
 import { useEffect, useRef, type ReactNode } from "react";
 import { Animated, Easing } from "react-native";
-import { useReducedMotion, supportsNativeDriver, type View, type StyleProp, type ViewStyle, type LayoutStyle } from "../../style/index.js";
+import { useReducedMotion, supportsNativeDriver, type View, type LayoutStyle } from "../../style/index.js";
 import { useInView } from "../../style/in-view.js";
 import { useRevealOrdinal } from "./reveal-context.js";
 

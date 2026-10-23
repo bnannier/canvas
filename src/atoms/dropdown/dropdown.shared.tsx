@@ -219,7 +219,7 @@ export function createDropdown(skin: DropdownSkin, parts: DropdownParts = {}) {
   return function Dropdown(props: DropdownProps) {
     const { trigger, children, triggerLabel, label, title, description, items, open: openProp, onOpenChange, onSelect, alignEnd, disabled, testID, style } = props;
     const theme = useMaterialTheme({ layer: "dense" });
-    const { tokens, dark } = theme;
+    const { tokens } = theme;
     // HUG: the trigger keeps its content width inside a stretching Column.
     const hug = useHugStyle();
     // Uncontrolled by default (Headless-UI style): the trigger opens/closes the

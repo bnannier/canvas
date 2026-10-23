@@ -3,12 +3,6 @@ import type { MaterialCoverageEntry, MaterialRole, MaterialRoute } from "./types
 // Authored design inventory. This is intended coverage, not evidence that a
 // renderer, interaction or runtime has passed. Never regenerate decisions from
 // component names or import counts. check:materials reconciles public APIs/docs.
-export const solidMaterialContract = {
-  appearance: "Restore opaque fill, boundary, elevation and foreground/state roles; preserve deliberately unfilled anatomy.",
-  resources: "Resolved solid surfaces mount no capture, refraction or glass highlights; shared resources survive only for remaining glass consumers.",
-  transitions: "Both directions preserve focus, refs, caret, IME, values, open state, scrolling and hit targets; controlled state remains authoritative.",
-} as const;
-
 export const materialCoverage: readonly MaterialCoverageEntry[] = [
   {"name": "Chat", "tier": "organisms", "family": "chat", "docsRoute": "components/chat", "roles": ["inherited", "liquid"], "target": "Static content message bubbles and inherited conversation layout; existing native controls own material.", "unpaintedVariants": "Assistant content and layout remain unfilled.", "verification": ["solid-appearance", "glass-appearance", "mode-switch", "accessibility-fallback", "semantic-state", "runtime-capability"]},
   {"name": "ChatThread", "tier": "organisms", "family": "chat", "docsRoute": "components/chat", "roles": ["inherited", "liquid"], "target": "Static content message bubbles and inherited conversation layout; existing native controls own material.", "unpaintedVariants": "Assistant content and layout remain unfilled.", "verification": ["solid-appearance", "glass-appearance", "mode-switch", "accessibility-fallback", "semantic-state", "runtime-capability"]},

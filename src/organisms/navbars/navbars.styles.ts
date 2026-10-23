@@ -1,6 +1,5 @@
 import { primaryText } from "../../style/primary-text.js";
-import { type ViewStyle, type TextStyle } from "react-native";
-import { type ColorTokens, shadow, alpha, shape } from "../../style/index.js";
+import { shadow, alpha, shape } from "../../style/index.js";
 import { type NavbarSkin } from "./navbars.shared.js";
 
 // Co-located Navbar skins, one per platform. The shell resolves the surface axis

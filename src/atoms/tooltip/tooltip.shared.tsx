@@ -1,6 +1,6 @@
 import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
 import { useState, type ReactNode } from "react";
-import { View, Pressable, Text, useHugStyle, controlRipple, pressDim, type StyleProp, type ViewProps, type ViewStyle, type LayoutStyle, GlassPane, paneStyle, inverseDenseTint } from "../../style/index.js";
+import { View, Pressable, Text, useHugStyle, controlRipple, pressDim, type ViewProps, type LayoutStyle, GlassPane, paneStyle, inverseDenseTint } from "../../style/index.js";
 import { Button as WebButton } from "../button/button.js";
 import { Icon } from "../icon/icon.js";
 import {

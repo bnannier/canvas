@@ -1,5 +1,5 @@
 import { primaryText } from "../../style/primary-text.js";
-import { StyleSheet, type StyleProp, type ViewStyle, type TextStyle } from "react-native";
+import { type ViewStyle } from "react-native";
 import { type ColorTokens, shadow, customShadow, alpha, shape } from "../../style/index.js";
 import { platformShape } from "../../style/platform-shape.js";
 import { type TabsSkin } from "./tabs.shared.js";
