@@ -1,6 +1,6 @@
 import { expect, test } from "bun:test";
 import { readFileSync } from "node:fs";
-import { localWorkflow } from "../../scripts/ci-local.mjs";
+import { checkoutCachePath, localWorkflow } from "../../scripts/ci-local.mjs";
 
 // scripts/ci-local.mjs runs validate.yml through act with only the differences a local
 // runner needs (its header explains each). Any other difference would mean the local run
@@ -34,4 +34,13 @@ test("the local workflow refuses a validate.yml it no longer understands", () =>
   expect(() => localWorkflow(source.replace("on:\n  workflow_call:\n", "on:\n  push:\n"))).toThrow("workflow_call");
   expect(() => localWorkflow(source.replace("\n  native:\n", "\n  native-smoke:\n"))).toThrow("no native job");
   expect(() => localWorkflow(source.replace("\n  e2e:\n", "\n  browsers:\n"))).toThrow("no e2e matrix");
+});
+
+test("each checkout keeps its own action cache, so a cache saved under one workspace path never restores into another", () => {
+  const home = "/home/someone";
+  const a = checkoutCachePath("/work/canvas", home);
+  const b = checkoutCachePath("/work/canvas/.claude/worktrees/turn", home);
+  expect(a.startsWith("/home/someone/.cache/actcache/checkouts/")).toBe(true);
+  expect(a).not.toBe(b);
+  expect(checkoutCachePath("/work/canvas/", home)).toBe(a);
 });

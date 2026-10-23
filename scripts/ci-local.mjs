@@ -33,7 +33,16 @@
 // losing node, so the image's PATH is passed explicitly. act also puts every job on the
 // Docker host network by default, where concurrent e2e shards collide on the docs server's
 // port (4173); on GitHub each job has a machine of its own, so here each gets a bridge.
+//
+// Each checkout keeps its own action cache and its servers take free ports. actions/cache
+// (setup-bun's binary, the dependency caches) stores paths relative to the workspace, which on
+// GitHub is always the same directory, but act's workspace is the checkout's own host path: a
+// cache one worktree saved restored into another at the wrong depth (setup-bun then found no
+// /root/.bun/bin/bun). And two checkouts' runs at once collided on act's fixed artifact server
+// port (34567).
+import { createHash } from "node:crypto";
 import { execFileSync, spawnSync } from "node:child_process";
+import * as net from "node:net";
 import * as fs from "node:fs";
 import * as os from "node:os";
 import * as path from "node:path";
@@ -51,6 +60,23 @@ function fail(message) {
 
 function have(command, args) {
   return spawnSync(command, args, { stdio: "ignore" }).status === 0;
+}
+
+/** This checkout's own action cache directory: act's default location, one per checkout path. */
+export function checkoutCachePath(checkout, home = os.homedir()) {
+  return path.join(home, ".cache", "actcache", "checkouts", createHash("sha256").update(path.resolve(checkout)).digest("hex").slice(0, 16));
+}
+
+/** A port nothing listens on now, for act's artifact server. */
+function freePort() {
+  return new Promise((resolve, reject) => {
+    const server = net.createServer();
+    server.once("error", reject);
+    server.listen(0, () => {
+      const { port } = server.address();
+      server.close(() => resolve(port));
+    });
+  });
 }
 
 /** The workflow act runs: validate.yml with the local-runner differences above. */
@@ -84,11 +110,15 @@ export function localWorkflow(source, { shardsAtOnce = 2 } = {}) {
     .replace(/actions\/download-artifact@v\d+/g, "actions/download-artifact@v4");
 }
 
-function main() {
+async function main() {
   const args = process.argv.slice(2);
   const job = args.includes("--job") ? args[args.indexOf("--job") + 1] : undefined;
   if (!have("act", ["--version"])) fail("act is not installed (brew install act)");
   if (!have("docker", ["info"])) fail("no Docker Engine is reachable (colima start, or another Docker runtime)");
+  // A linked worktree's .git is a file naming a git directory outside the checkout, which act
+  // does not copy, so every git command in the jobs (the build info, the release tooling) fails
+  // there. Validate from the main checkout at the commit you push.
+  if (fs.statSync(path.join(repo, ".git")).isFile()) fail("this is a linked git worktree, whose .git points outside the copy act makes; run ci:local from the main checkout at the commit you push");
   const dirty = execFileSync("git", ["status", "--porcelain"], { cwd: repo, encoding: "utf8" }).trim();
   if (dirty) fail("commit or set aside your changes first: act copies the working tree, which must be exactly HEAD");
 
@@ -102,7 +132,8 @@ function main() {
   console.log(`ci:local: validating ${head} in ${PLATFORM} ${IMAGE} containers, ${shardsAtOnce} e2e shard(s) at a time${job ? ` (job ${job})` : ""}`);
   const run = spawnSync("act", ["workflow_dispatch", "-W", workflow, ...(job ? ["-j", job] : []),
     "--container-architecture", PLATFORM, "-P", `ubuntu-latest=${IMAGE}`, "--container-daemon-socket", "-",
-    "--network", "bridge", "--artifact-server-path", path.join(work, "artifacts"), "--concurrent-jobs", "2",
+    "--network", "bridge", "--artifact-server-path", path.join(work, "artifacts"), "--artifact-server-port", String(await freePort()),
+    "--cache-server-path", checkoutCachePath(repo), "--cache-server-port", "0", "--concurrent-jobs", "2",
     "--env", `PATH=${imagePath}`],
   { cwd: repo, stdio: "inherit" });
   if (!args.includes("--keep")) fs.rmSync(work, { recursive: true, force: true });
@@ -110,4 +141,4 @@ function main() {
   process.exit(run.status ?? 1);
 }
 
-if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) main();
+if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) await main();
