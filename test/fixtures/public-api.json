@@ -214,6 +214,7 @@
   "Histogram": "value",
   "HistogramProps": "type",
   "Hue": "type",
+  "ICON_NAMES": "value",
   "Icon": "value",
   "IconName": "type",
   "IconProps": "type",
