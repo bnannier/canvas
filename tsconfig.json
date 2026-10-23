@@ -6,6 +6,9 @@
     "module": "ESNext",
     "moduleResolution": "bundler",
     "strict": true,
+    // Unused imports and locals fail the typecheck. The tools, axes and e2e projects
+    // extend this file, so they hold the same line.
+    "noUnusedLocals": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
