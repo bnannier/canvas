@@ -104,7 +104,7 @@ trigger’s trailing edge.
 **Don't** — A full form belongs in a dialog; in a floating popover it is cramped and easy to dismiss by accident.
 
 ```tsx
-<View style={{ borderRadius: 12, borderWidth: 1, borderColor: tokens.border, backgroundColor: tokens.popover, padding: 16, ...shadow("lg"), alignSelf: "flex-start", minWidth: 260 }}>
+<View style={{ borderRadius: 12, borderWidth: 1, borderColor: tokens.border, backgroundColor: tokens.popover, padding: 16, boxShadow: "0px 26px 50px -20px rgba(121, 100, 214, 0.22)", alignSelf: "flex-start", minWidth: 260 }}>
   <Input label="Name" placeholder="Ada Lovelace" style={{ marginBottom: 8 }} />
   <Input label="Email" placeholder="ada@canvas.dev" style={{ marginBottom: 8 }} />
   <View style={{ marginBottom: 8 }}>
@@ -132,7 +132,7 @@ trigger’s trailing edge.
 ```tsx
 <View style={{ alignSelf: "flex-start" }}>
   <Button outline small>Open popover</Button>
-  <View style={{ borderRadius: 12, borderWidth: 1, borderColor: tokens.border, backgroundColor: tokens.popover, padding: 16, ...shadow("lg"), marginTop: 8, minWidth: 240 }}>
+  <View style={{ borderRadius: 12, borderWidth: 1, borderColor: tokens.border, backgroundColor: tokens.popover, padding: 16, boxShadow: "0px 26px 50px -20px rgba(121, 100, 214, 0.22)", marginTop: 8, minWidth: 240 }}>
     <Text style={{ fontSize: 12.5, lineHeight: 19, fontWeight: "500", color: tokens["popover-foreground"] }}>No anchor, no dismiss, no Close.</Text>
   </View>
 </View>
@@ -149,7 +149,7 @@ trigger’s trailing edge.
 **Don't** — An always-visible panel that scrolls internally is doing a card's or section's job; use the panel chrome only for short content.
 
 ```tsx
-<View style={{ borderRadius: 12, borderWidth: 1, borderColor: tokens.border, backgroundColor: tokens.popover, padding: 16, ...shadow("lg"), maxHeight: 120, minWidth: 260, overflow: "hidden" }}>
+<View style={{ borderRadius: 12, borderWidth: 1, borderColor: tokens.border, backgroundColor: tokens.popover, padding: 16, boxShadow: "0px 26px 50px -20px rgba(121, 100, 214, 0.22)", maxHeight: 120, minWidth: 260, overflow: "hidden" }}>
   <ScrollView style={{ maxHeight: 88 }}>
     <Input label="Street" placeholder="100 Market St" style={{ marginBottom: 8 }} />
     <Input label="City" placeholder="San Francisco" style={{ marginBottom: 8 }} />

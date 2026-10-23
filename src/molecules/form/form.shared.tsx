@@ -193,7 +193,7 @@ export function createForm(skin: FormSkin, Button: ButtonComponent = WebButton) 
     // multiline field keeps Enter for newlines (`textarea`) and a button keeps
     // Enter for its own activation. Natively there is no `document`, so both
     // effects are no-ops there and each field's return key drives its own
-    // onSubmitEditing. Like useEscapeKey, this is additive web-only EVENT
+    // onSubmitEditing. Like useEscapeLayer, this is additive web-only EVENT
     // handling, not a web-only rendering branch, so it stays inside the kit's
     // cross-platform rules.
     const formId = useId();

@@ -14,7 +14,6 @@ import { Dialog } from "../src/organisms/dialog/dialog.tsx";
 import { Drawer } from "../src/organisms/drawer/drawer.tsx";
 import { OverlayProvider } from "../src/style/portal.tsx";
 import { ThemeProvider } from "../src/style/theme.tsx";
-import { useEscapeKey } from "../src/style/use-escape-key.ts";
 import { layoutEntrance, layoutHostedEntrance } from "./entrance-layout.ts";
 
 let measure: ReturnType<typeof spyOn>;
@@ -193,21 +192,6 @@ it("honors a target handler's preventDefault before choosing an overlay owner", 
   expect(closed).toEqual([]);
   escape();
   expect(closed).toEqual(["parent"]);
-});
-
-it("retains the public hook signature, fresh callbacks and cleanup", () => {
-  const closed: string[] = [];
-  function Subscriber({ active, label }: { active: boolean; label: string }) {
-    useEscapeKey(active, () => closed.push(label));
-    return null;
-  }
-  const view = ui(<Subscriber active label="old" />);
-  view.rerender(themed(<Subscriber active label="current" />));
-  escape();
-  expect(closed).toEqual(["current"]);
-  view.unmount();
-  escape();
-  expect(closed).toEqual(["current"]);
 });
 
 it("delegates TextInput Escape from Autocomplete, preserving its query and the parent", async () => {

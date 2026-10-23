@@ -291,6 +291,12 @@ export default function IntegrationScreen() {
             padded frame, so an app built on it needs no provider of its own.
           </P>
           <CodeBlock code={OVERLAY_HOST} />
+          <P muted>
+            Code that measures against the outlet reads the nearest host with <InlineCode>useOverlayHost</InlineCode>,
+            which returns its <InlineCode>OverlayHost</InlineCode>, or null when no provider is mounted. The host
+            measures its outlet in window coordinates and the visible part of the window, and reports when its layout
+            changes.
+          </P>
           <H3>Native modals</H3>
           <P muted>
             A React Native <InlineCode>Modal</InlineCode> is a native window of its own on Android, outside the root

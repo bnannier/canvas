@@ -37,7 +37,7 @@ with the same key on the web (`data-mockup-section`, `docs/src/ui/mockup-page.ts
 ## The checklists
 
 `audit/components/<slug>.md` (104) and `audit/pages/<kind>-<slug>.md` (24), one per docs
-route, and `audit/foundation/<id>.md` (15), one per foundation (see "Foundations" below).
+route, and `audit/foundation/<id>.md` (7), one per foundation (see "Foundations" below).
 Each file is half generated and half hand-maintained:
 
 - **Facts** (generated, between `<!-- audit:facts:begin -->` and `<!-- audit:facts:end -->`):
@@ -160,23 +160,21 @@ the markers or delete the file to reseed it.
 ## Foundations
 
 The Foundations tier is the style-layer renderables with no component page of their own,
-AnchoredOverlay, BreakpointOverride, Entrance, FloatingLabel, GlassBlurPlane, GlassBlurScope,
-GlassModalBlurTarget, GlassPane, GlassSurface, LabelContent, LayoutAxisProvider, LoopView,
-OverlayProvider, Portal, RippleClip and ThemeProvider; the design tokens the docs' `tokens/*` pages document (Tokens); and the kit
-internals the generated `/foundation` reference page documents (FoundationReference). The
+BreakpointOverride, GlassBlurPlane, GlassBlurScope, GlassModalBlurTarget, OverlayProvider and ThemeProvider; and the design tokens the docs' `tokens/*` pages document (Tokens). The
 renderables are the material inventory's style tier less the primitives with a component page
 (`STYLE_LAYER_RENDERABLES` in `tools/audit/plan-specifics.ts`), and the checklist tests hold
 this paragraph to it. Each has `audit/foundation/<id>.md`, its name in kebab case
-(`glass-modal-blur-target`, `tokens`, `foundation-reference`), generated and checked by the
-same `audit:checklists` and `audit:checklists:check`, and counted by `audit:status`.
+(`glass-modal-blur-target`, `tokens`), generated and checked by the same `audit:checklists`
+and `audit:checklists:check`, and counted by `audit:status`.
 
-The tier carries the K12 items (the plan's "Foundations"): the 111 deprecations the owner
-decided (K12-2, with OD4, OD5 and K12-7 OD3), their JSDoc, and the generated `/foundation`
-reference page. So every name those decisions retire, each `internal-by-accident` export, each
-name `DECIDED_DEPRECATIONS` adds and each deprecated alias already, is on one of its
-checklists, and `audit:checklists:check` fails on one that is not (`unplacedDeprecations`).
-The reference foundation is where a kit internal lands when no renderable's home and no token
-module holds it: the ripple helpers, the behaviour hooks, React Native's `StyleSheet`.
+The tier carried the K12 items (the plan's "Foundations"): the deprecations the owner decided
+(K12-2, with OD4, OD5 and K12-7 OD3) and the generated `/foundation` reference page that listed
+them. On 2026-10-23 the owner removed every deprecated alias and every `internal-by-accident`
+export instead (nothing consumed them), and the reference page with them, so the kit's own
+machinery (AnchoredOverlay, GlassSurface, GlassPane, Portal and the rest) is internal and
+audited through the components that render it. `audit:checklists:check` still fails on a
+deprecated alias or an `internal-by-accident` export that no checklist holds
+(`unplacedDeprecations`), should one appear.
 
 A foundation has no examples of its own: it is a contract other components render through,
 audited for that contract on the page `tools/api/manifest.ts` documents it on (or, while that
@@ -186,51 +184,43 @@ through its consumers. So its checklist has no variants table, and its facts blo
 
 - **Foundation**, **Public exports**: a renderable is the module that declares its name, on
   every platform (the declaring file of each platform build), and the public names whose way
-  out of `src/index.ts` passes through that module, so FloatingLabel and LabelContent (one
-  module) share their exports, and so do Portal and OverlayProvider. The design tokens are
+  out of `src/index.ts` passes through that module, so two renderables declared in one module
+  share their exports. The design tokens are
   "whatever the docs have": the public names the API manifest documents on a `tokens/*` page
   or plans to, the kit names those pages' own sources import that are neither a component nor
-  a renderable's and are not declared in a component's modules (`shadow`, which
-  `/tokens/spacing` renders in its Elevation section; the cards and tables around the examples
-  are the pages' frame), and every other public name of the modules those are declared in,
-  the renderables' homes left out (`customShadow` and `ShadowLevel` beside `shadow`, the
-  Riskora type ladder in `src/style/tokens.ts`). The reference is the public names the API
-  manifest documents or plans on `/foundation` that no renderable and not the tokens hold
-  (`memberships` in `tools/audit/foundations.ts`). Each export carries its
-  `tools/api/manifest.ts` kind.
+  a renderable's and are not declared in a component's modules (the cards and tables around
+  the examples are the pages' frame), and every other public name of the modules those are
+  declared in, the renderables' homes left out (`memberships` in
+  `tools/audit/foundations.ts`). Each export carries its `tools/api/manifest.ts` kind.
 - **Source files**: its homes, the files declaring its exports, and the files of its
   implementation: the private declarations its exports read, through private declarations
   alone (`foundationCode` in `tools/audit/foundations.ts`). A declaration is private when no
   public export resolves to it, it is outside every component's own modules, and no
   component's own module reads it (a hook every component calls is shared vocabulary, no one
-  foundation's code). So GlassSurface's list holds its shell (`glass-surface.shared.tsx`), its
-  material runtime and the web frost (`web-frost.ts`, a tuning-harness tunable), and
-  BreakpointOverride's holds `breakpoint-override.ts`, the context its hooks resolve.
+  foundation's code). So BreakpointOverride's list holds `breakpoint-override.ts`, the
+  context its hooks resolve.
 - **Seams**: the implementation it owns, by its readers (`ownersByReaders` in
   `tools/audit/kit-graph.ts`): a private declaration is a foundation's when every reader of it,
   among the foundations' exports and the private declarations they own, is that foundation's;
-  one reader that is shared (the overlay layer, which Portal and AnchoredOverlay both publish
-  through) or shared vocabulary leaves it nobody's. A relay does not count as a reader: a
+  one reader that is shared (the overlay layer, which every kit overlay publishes through) or
+  shared vocabulary leaves it nobody's. A relay does not count as a reader: a
   declaration that reads a context and provides it again (`usePortalMount` carrying the
   publisher's breakpoint, readiness and theme into a portal) carries the context's owner, so
   BreakpointOverrideContext stays BreakpointOverride's and the overlays the layer publishes
   are its consumers.
-- **K12-2 status**: each export a deprecated alias to come (an `internal-by-accident` name,
-  K12-2, or one the owner's decisions retire: the shadow helpers, K12-2 OD4; React Native's
-  pass-throughs, OD5; the Riskora type ladder, K12-7 OD3), a deprecated alias already, or
-  public (ThemeProvider and its types stay public).
+- **K12-2 status**: each export a deprecated alias to come (an `internal-by-accident` name), a
+  deprecated alias already, or public. Every export is public since the owner's 2026-10-23
+  removal.
 - **Documented on**, **Docs planned**: the manifest's `docs` routes (with their sections) and
-  its `PENDING_DOCS` routes, a planned page not built yet said so (`foundation`, K12-10).
-- **Materials manifest**: its `tools/materials/manifest.ts` entry (Tokens and the reference have
-  none).
+  its `PENDING_DOCS` routes, a planned page not built yet said so.
+- **Materials manifest**: its `tools/materials/manifest.ts` entry (Tokens has none).
 - **Tests of it**: the test files importing one of its public exports by name (from the kit's
   entry or any kit module, by the same reader the component facts use), or one of its
   implementation's declarations by name from a module that resolves it there
-  (`test/glass-surface.test.ts` imports the shell's `specularRim`), and the test files named
-  for it, `test/<id>.test.tsx` or `test/<id>-<what>.test.tsx`
-  (`test/anchored-overlay-dismissal.test.tsx`, which tests AnchoredOverlay through the
-  consumers it renders). A module's path alone does not count: glass-surface.shared.tsx is
-  GlassModalBlurTarget's home and also the GlassSurface shell's.
+  and the test files named for it, `test/<id>.test.tsx` or `test/<id>-<what>.test.tsx`
+  (`test/glass-modal-blur-target.test.tsx`). A module's path alone does not count:
+  glass-surface.shared.tsx is GlassModalBlurTarget's home and also the internal GlassSurface
+  shell's.
 - **Consumers**: every kit component that renders through it, read from the source by the
   consumer reader, `tools/audit/kit-graph.ts`, and listed one row each under the facts table
   with how it gets there. The reader parses every module under `src/` (never runs one) and
@@ -241,13 +231,12 @@ through its consumers. So its checklist has no variants table, and its facts blo
   A type is never an edge, a package ends the walk, and a module's top-level statements are a
   node every declaration of the module reads. The foundation is reached at its public values
   and its seams. A component reaches a foundation **directly** when its own modules read one
-  of the foundation's public values (Card and Dialog read GlassSurface; Popover, Dropdown and
-  Select read AnchoredOverlay), **through shared modules** when it reads a declaration of a
-  module no component directory owns (the style layer, `src/charts/shared`) that leads there
-  through such modules alone (Button reaches GlassSurface through GlassPane; Dropdown and
-  Dialog reach BreakpointOverride through AnchoredOverlay and Portal, whose overlay layer
-  relays its context), and **through other kit components** when the only way
-  there is another component's directory (Avatar reaches AnchoredOverlay through Dropdown,
+  of the foundation's public values (Card reads ThemeProvider's `useTheme`), **through shared
+  modules** when it reads a declaration of a module no component directory owns (the style
+  layer, `src/charts/shared`) that leads there through such modules alone (Dropdown and
+  Dialog reach BreakpointOverride through the internal AnchoredOverlay and Portal, whose
+  overlay layer relays its context), and **through other kit components** when the only way
+  there is another component's directory (Avatar reaches BreakpointOverride through Dropdown,
   for AvatarMenu). A primitive built in a style module (Text, Pressable) is a component like
   any other, and its module is shared for everyone else. What the reader cannot follow (a
   relative `require()` or `import()`, a specifier that names no module, `export * as`) fails
@@ -260,7 +249,7 @@ through its consumers. So its checklist has no variants table, and its facts blo
   this list. A page that only composes consumer components shows the foundation through them,
   and they are captured as themselves.
 - **Not captured**: the guide pages that document it or are planned to (`/theming`,
-  `/integration`, the `tokens/*` pages, `/foundation`), which the capture inventory, component,
+  `/integration`, the `tokens/*` pages), which the capture inventory, component,
   pattern and template pages alone, does not hold: no runner photographs them yet, so a turn
   reads them on the live docs.
 - **Turn record**: as every checklist's.

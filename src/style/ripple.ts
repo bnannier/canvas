@@ -46,24 +46,3 @@ export function platformDisabledDim(os: string = Platform.OS): number {
   if (os === "android") return 0.38;
   return 0.5;
 }
-
-/**
- * `overflow: "hidden"` on Android and nothing elsewhere, for a rounded PARENT whose
- * children carry a bounded ripple, so the ripple keeps to the parent's corners while an
- * iOS shadow on the parent survives. It never clips a node's own ripple (see below).
- */
-// Android-only `overflow:"hidden"`. Add it to a rounded PARENT so it clips a bounded-ripple
-// CHILD (a menu/list card whose rows carry the ripple) to the parent's rounded corners. The
-// clip is Android-only so an iOS shadow on the parent (which `overflow:"hidden"` would mask)
-// survives; the Android elevation shadow is drawn around the outline by the platform and is
-// not clipped by the parent's own overflow.
-//
-// IMPORTANT — this only works on a PARENT of the ripple node, never on the ripple node
-// ITSELF. React Native does not use clipToOutline; it clips `overflow:"hidden"` as a manual
-// path-clip in `ViewGroup.dispatchDraw`, which affects only CHILD views. A bounded ripple is
-// the node's OWN background drawable (a rectangle, drawn before dispatchDraw), so a node can
-// never clip its own ripple. When the ripple node is itself the rounded surface (no clipping
-// parent exists), use `<RippleClip>` to introduce one instead. See src/style/ripple-clip.tsx.
-export function rippleClip() {
-  return Platform.OS === "android" ? ({ overflow: "hidden" } as const) : null;
-}

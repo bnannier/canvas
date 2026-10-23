@@ -1,14 +1,6 @@
 import { mentions, names } from "./docs";
 import { API_KINDS, type ApiEntry, type ApiExport, type ApiKind, type DocsPage, type DocsRoute, type EntryPointShape, type PlannedRoute, type Resolution } from "./types";
 
-/**
- * The generated foundation reference (audit K12-10, the owner's OD2 decision): the home of
- * every deprecated alias, and the planned home of the kit internals a later turn retires
- * as one. Once the route exists, every deprecated alias is documented there and none is
- * staged.
- */
-export const FOUNDATION_ROUTE = "foundation";
-
 // Which kinds each shape of export may take. A stylesheet is a file, so it cannot be a
 // type, a hook or a component, and it cannot carry a `@deprecated` tag.
 const RENDERABLE_KINDS = new Set<ApiKind>(["component", "part", "deprecated-alias", "internal-by-accident"]);
@@ -72,7 +64,7 @@ function checkDocs(subject: string, entry: ApiEntry, named: (page: DocsPage) => 
     }
     // Staged, not waived: the gate notices the day the planned page names it.
     const page = inventory.pages.get(planned);
-    if (!page && planned !== FOUNDATION_ROUTE) errors.push(`Unknown planned docs route for ${subject}: ${planned}`);
+    if (!page) errors.push(`Unknown planned docs route for ${subject}: ${planned}`);
     else if (page && named(page)) errors.push(`${subject} is pending, but its planned page ${planned} already names it: record docs "${planned}" and drop it from PENDING_DOCS`);
     return;
   }
@@ -141,8 +133,8 @@ export function checkPublicApi(inventory: ApiInventory, manifest: ApiManifest) {
     if (entry.kind === "token" && (api.callable || api.renderable)) errors.push(`${name} is classified as token but is a function`);
     if (api.deprecated && entry.kind !== "deprecated-alias") errors.push(`${name} carries @deprecated but is classified as ${entry.kind}`);
     if (entry.kind === "deprecated-alias" && !api.deprecated) errors.push(`${name} is classified as deprecated-alias but carries no @deprecated tag`);
-    // The tag's text is what the foundation reference shows under "Use instead", so it
-    // says what to use, or that nothing replaces the name, and names the replacement.
+    // The tag's text is what a consumer reads instead of the name, so it says what to use,
+    // or that nothing replaces the name, and names the replacement.
     if (entry.kind === "deprecated-alias" && api.deprecated && api.deprecatedText === "") errors.push(`${name}'s @deprecated tag says nothing: name what to use instead, or say that nothing replaces it`);
     if (entry.replacement !== undefined) {
       const replacement = own(manifest.publicApi, entry.replacement);
@@ -156,8 +148,8 @@ export function checkPublicApi(inventory: ApiInventory, manifest: ApiManifest) {
     if (PUBLIC_VALUE_KINDS.has(entry.kind) && api.value && !api.summary && !dependencyOwned(api)) {
       errors.push(`${name} is a public ${entry.kind} with no JSDoc summary on its declaration (${api.files.join(", ")})`);
     }
-    // A deprecated alias, value or type, says what it was on its declaration: the
-    // foundation reference shows that summary beside its @deprecated text.
+    // A deprecated alias, value or type, says what it was on its declaration, beside its
+    // @deprecated text.
     if (entry.kind === "deprecated-alias" && !api.summary && !dependencyOwned(api)) {
       errors.push(`${name} is a deprecated alias with no JSDoc summary on its declaration (${api.files.join(", ")}): say what it was`);
     }
@@ -185,8 +177,8 @@ export function checkPublicApi(inventory: ApiInventory, manifest: ApiManifest) {
   }
 
   // The staged migration ends route by route, each at the audit turn that lands the route's
-  // docs: a page that exists does not end it, since every planned page but the foundation
-  // reference exists already and later turns still write its sections. Every planned route
+  // docs: a page that exists does not end it, since every planned page exists already and
+  // later turns still write its sections. Every planned route
   // names its turn, that turn closes the route, and nothing may be staged for a closed
   // route; a route nothing is staged for any more must be closed. So staging never
   // outlives the turn that owns it.
@@ -204,24 +196,10 @@ export function checkPublicApi(inventory: ApiInventory, manifest: ApiManifest) {
     if (!plan.closed && !stagedFor.has(route)) errors.push(`Nothing is staged for ${route} any more: its turn (${plan.turn}) closes it in PLANNED_ROUTES (closed: true)`);
   }
 
-  // The foundation reference is every deprecated alias's home (K12-10 OD2): it lists each
-  // deprecated name with what replaces it, so no alias is documented anywhere else, and
-  // once the page exists none waits in PENDING_DOCS. A staged alias the page already names
-  // gets checkDocs' move request above; this catches one the page leaves out.
-  const foundation = inventory.pages.get(FOUNDATION_ROUTE);
-  for (const [name, entry] of Object.entries(manifest.publicApi)) {
-    if (entry.kind !== "deprecated-alias") continue;
-    const planned = own(manifest.pendingDocs, name);
-    if (entry.docs !== undefined && entry.docs !== FOUNDATION_ROUTE) errors.push(`${name} is a deprecated alias documented on ${entry.docs}: its home is the foundation reference (${FOUNDATION_ROUTE})`);
-    else if (planned !== undefined && planned !== FOUNDATION_ROUTE) errors.push(`${name} is a deprecated alias staged for ${planned}: its home is the foundation reference (${FOUNDATION_ROUTE})`);
-    else if (planned !== undefined && foundation && !names(foundation, name)) errors.push(`${name} is a deprecated alias, and the foundation reference (${FOUNDATION_ROUTE}) does not list it: every deprecated name is listed there with its replacement`);
-  }
-
-  // No page but the foundation reference, and no document the package ships, presents a
-  // kit internal as API (K12-10 OD2): a deprecated alias, or a helper a later turn retires
-  // as one, imported, called, rendered or typed in a snippet, or set alone as inline code.
-  // The foundation reference lists every deprecated name with what to use instead; any
-  // other page shows that instead.
+  // No page and no document the package ships presents a kit internal as API (K12-10 OD2):
+  // a deprecated alias, or a helper published without an API decision, imported, called,
+  // rendered or typed in a snippet, or set alone as inline code. A page shows what the kit
+  // offers instead.
   const retired = (name: string) => {
     const kind = own(manifest.publicApi, name)?.kind;
     return kind === "deprecated-alias" || kind === "internal-by-accident" ? kind : undefined;
@@ -233,10 +211,10 @@ export function checkPublicApi(inventory: ApiInventory, manifest: ApiManifest) {
       const key = `${where} ${name}`;
       if (!kind || presented.has(key)) continue;
       presented.add(key);
-      errors.push(`${where} presents ${name}, ${kind === "deprecated-alias" ? "a deprecated alias" : "a kit internal"}, as API: show what the kit offers instead (only the foundation reference lists it)`);
+      errors.push(`${where} presents ${name}, ${kind === "deprecated-alias" ? "a deprecated alias" : "a kit internal"}, as API: show what the kit offers instead`);
     }
   };
-  for (const [route, page] of inventory.pages) if (route !== FOUNDATION_ROUTE) present(page.sources.join(", "), page.uses);
+  for (const page of inventory.pages.values()) present(page.sources.join(", "), page.uses);
   for (const [file, uses] of inventory.packageDocs) present(file, uses);
 
   // The material inventory names a docs route for every renderable too, and the two

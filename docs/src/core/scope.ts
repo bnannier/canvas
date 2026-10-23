@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 import type { ColorTokens, ToastHandle } from "@nannier/canvas";
 
 // The scope an example fence renders against: every Canvas export (components,
-// primitives, the alpha/shadow/palette style helpers) plus the live, theme-aware
+// primitives, the alpha and palette style helpers) plus the live, theme-aware
 // `tokens`. This mirrors the docs runtime LIVE_SCOPE (./live-scope.ts), but
 // as a STATIC type, so every generated example fence is type-checked against the
 // real component prop types at build time — a guarantee the old runtime sucrase +

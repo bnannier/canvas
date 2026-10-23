@@ -458,37 +458,6 @@ export const glassByScheme: Record<ColorScheme, GlassTokens> = {
   dark: darkGlass,
 };
 
-/**
- * Fixed brand constants. Unlike the semantic tokens these do NOT flip with the
- * scheme: the sign-in orbs and the avatar gradient are brand marks, and a mark
- * that changed hue between light and dark would stop being one mark. Keys are the
- * CSS custom-property names verbatim (`orb-indigo` is `--orb-indigo` in
- * styles/tokens/colors.css); scripts/validate-tokens.ts fails the build if a key
- * here has no matching `--name` in the shipped CSS.
- */
-export interface BrandColors {
-  "orb-indigo": string;
-  "orb-violet": string;
-  "orb-cyan": string;
-}
-
-// The keys are historical (named for the hues the orbs once had; renaming them would
-// break consumers reading `brandColors["orb-indigo"]`); the values are the sky family
-// the kit used before Dark Factory, kept as they were.
-/**
- * The brand orb colours of the removed Backdrop organism, keyed by their historical
- * hue names; nothing in the kit reads them.
- *
- * @deprecated The brand orbs painted the removed Backdrop organism, and the kit's colors
- * are Dark Factory's now; nothing in the kit reads these. Kept, with their former values,
- * until an owner-authorized major removes them (the `--orb-*` custom properties too).
- */
-export const brandColors: BrandColors = {
-  "orb-indigo": "#3da3f5",
-  "orb-violet": "#6676ff",
-  "orb-cyan": "#68cdff",
-};
-
 /** Fixed, scheme-independent base colors. */
 export const baseColors: Record<string, string> = {
   white: "#ffffff",

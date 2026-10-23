@@ -1,4 +1,4 @@
-import { Column, DataTable, Grid, Card, Emblem, Icon, Avatar, Badge, Row, Typography, radius, shape, spacing, shadow, useTheme } from "@nannier/canvas";
+import { Column, DataTable, Grid, Card, Emblem, Icon, Avatar, Badge, Row, Typography, radius, shape, spacing } from "@nannier/canvas";
 import { Page } from "../../../ui/page";
 import { PageNav } from "../../../ui/page-nav";
 import { Playground } from "../../../ui/playground";
@@ -13,7 +13,6 @@ const GAPS = [
 const PADDING = [
   { prop: "padTight", step: "2" }, { prop: "pad", step: "4" }, { prop: "padLoose", step: "6" },
 ] as const;
-const SHADOW_LEVELS = ["none", "sm", "DEFAULT", "md", "lg", "xl"] as const;
 
 const gapExamples: DocExample[] = GAPS.map(({ prop, step }) => ({
   label: `${prop} · ${spacing[step]}px`,
@@ -127,7 +126,6 @@ const densityExamples: DocExample[] = [
 ];
 
 export default function SpacingScreen() {
-  const { tokens } = useTheme();
   return (
     <Page>
       <Column loose>
@@ -165,9 +163,8 @@ export default function SpacingScreen() {
           <Typography small muted>The shape table records platform token values. Each component selects the platform shape only when that platform defines a control for its job; other native skins use the web shape.</Typography>
         </TokenSection>
 
-        <TokenSection title="Elevation" description="Card exposes flat, default and raised appearances. These examples use those appearances directly; the reference lists the shadow helper's output on the running platform in the active theme.">
+        <TokenSection title="Elevation" description="Card exposes flat, default and raised appearances, and elevation comes from those appearances. These examples use them directly.">
           <Playground examples={elevationExamples} />
-          <DataTable columns={["Preset", "Resolved shadow"]} rows={SHADOW_LEVELS.map((level) => [level, JSON.stringify(shadow(level, tokens))])} />
         </TokenSection>
 
         <TokenSection title="Layering" description="Floating components own their placement and stacking. Open the Popover to see the real overlay above its sibling Card.">
