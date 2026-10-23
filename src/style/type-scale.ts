@@ -40,4 +40,3 @@ export const typeScale = {
   featuredTitle: { fontSize: 20, lineHeight: 25, fontWeight: "700", letterSpacing: -0.2 },
 } as const satisfies Record<string, TextStyle>;
 
-export type TypeStyle = keyof typeof typeScale;

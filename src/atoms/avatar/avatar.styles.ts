@@ -1,4 +1,4 @@
-import { type TextStyle, type ViewStyle } from "react-native";
+import { type TextStyle } from "react-native";
 import { controlRipple, platformDisabledDim, platformMinTarget, shape, type ColorTokens } from "../../style/index.js";
 import { type AvatarSkin, type Size } from "./avatar.shared.js";
 import { type AvatarMenuSkin } from "./avatar-menu.shared.js";

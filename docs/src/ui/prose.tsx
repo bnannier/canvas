@@ -1,10 +1,7 @@
 import type { ReactNode } from "react";
 import { Typography, Divider, Container, Column, Row, View } from "@nannier/canvas";
-import { geistMono } from "./fonts";
 import { parseInline } from "../lib/inline-markdown";
 import type { DocProse } from "../core/scope";
-
-export const MONO = geistMono("400");
 
 // Docs names are composition aliases; the kit owns all type and divider styling.
 export function H1({ children }: { children: ReactNode }) { return <Typography h1>{children}</Typography>; }

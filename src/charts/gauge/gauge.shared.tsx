@@ -1,5 +1,5 @@
 import Svg, { Path } from "react-native-svg";
-import { View, Text, useTheme, statusColors, devWarn, type ColorTokens, type StyleProp, type ViewStyle, type LayoutStyle } from "../../style/index.js";
+import { View, Text, useTheme, statusColors, devWarn, type ColorTokens, type LayoutStyle } from "../../style/index.js";
 
 // Gauge is a "Shared" platform treatment (data visualization is
 // platform-neutral): one implementation serves iOS, Android, and the web.
@@ -7,8 +7,6 @@ import { View, Text, useTheme, statusColors, devWarn, type ColorTokens, type Sty
 // Gauge: a 180 degree top semicircular arc (muted track + a tone-colored value
 // arc), the percent readout sitting in the open center of the semicircle, and
 // the optional label below the graphic.
-
-export type GaugeTone = "primary" | "success" | "warning" | "destructive";
 
 export interface GaugeProps {
   /** The value to display, 0–100. */

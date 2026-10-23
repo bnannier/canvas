@@ -4,7 +4,6 @@ import {
   Text,
   useTheme,
   type ColorTokens,
-  type StyleProp,
   type ViewStyle,
   type TextStyle,
   type LayoutStyle,

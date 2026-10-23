@@ -1,4 +1,4 @@
-import { View, useTheme, devWarn, alpha, type StyleProp, type ViewStyle, type LayoutStyle } from "../../style/index.js";
+import { View, useTheme, devWarn, alpha, type LayoutStyle } from "../../style/index.js";
 import { seriesFill } from "../shared/charts.styles.js";
 import { ChartLegend } from "../shared/chart-legend.js";
 import { type StackedSegment } from "../shared/types.js";

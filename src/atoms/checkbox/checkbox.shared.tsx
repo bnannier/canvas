@@ -2,7 +2,7 @@ import { forwardRef, type ComponentType, type ReactNode, type RefAttributes } fr
 import { useComposedRefs } from "../../style/use-composed-refs.js";
 import { useSpaceActivation } from "../../style/use-space-activation.js";
 import { type GestureResponderEvent } from "react-native";
-import { View, Pressable, useControllableState, useTheme, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle, type LayoutStyle } from "../../style/index.js";
+import { View, Pressable, useControllableState, useTheme, type ColorTokens, type ViewStyle, type TextStyle, type LayoutStyle } from "../../style/index.js";
 import { CheckboxContent, CHECKBOX_ROW } from "./indicator/shared.js";
 
 // Shared Checkbox shell. Uses React Native's primitives DIRECTLY and reads the

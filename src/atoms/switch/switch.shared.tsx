@@ -3,7 +3,7 @@ import { useComposedRefs } from "../../style/use-composed-refs.js";
 import { useSpaceActivation } from "../../style/use-space-activation.js";
 import { type GestureResponderEvent } from "react-native";
 import { useSeededMinTargetSlop, styleBox } from "../../style/touch-target-seed.js";
-import { Pressable, View, Text, useControllableState, useTheme, type ColorTokens, type StyleProp, type ViewStyle, type TouchTargetSkin, type LayoutStyle } from "../../style/index.js";
+import { Pressable, View, Text, useControllableState, useTheme, type ColorTokens, type ViewStyle, type TouchTargetSkin, type LayoutStyle } from "../../style/index.js";
 import { contrastStyle, PlainSurface } from "../../style/glass-surface/glass-surface.shared.js";
 
 // Shared Switch shell. Uses React Native's primitives DIRECTLY (no engine className

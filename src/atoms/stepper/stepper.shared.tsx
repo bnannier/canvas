@@ -22,7 +22,6 @@ import {
   labelA11y,
   requiredName,
   type ColorTokens,
-  type StyleProp,
   type ViewStyle,
   type TextStyle,
   type LayoutStyle,

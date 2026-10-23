@@ -9,8 +9,6 @@ import {
   useTheme,
   devWarn,
   MONO_FONT,
-  type StyleProp,
-  type ViewStyle,
   type LayoutStyle,
 } from "../../style/index.js";
 import { type SwatchSkin } from "./swatch.styles.js";

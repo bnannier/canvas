@@ -3,7 +3,7 @@ import { platformShape } from "../../style/platform-shape.js";
 import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
 import { Linking } from "react-native";
 import { type ReactNode } from "react";
-import { View, Text, Pressable, alpha, shape, platformMinTarget, useHugStyle, statusColors, MONO_FONT, type ColorTokens, type LayoutStyle, type StyleProp, type ViewStyle, type TextStyle, GlassPane, paneStyle } from "../../style/index.js";
+import { View, Text, Pressable, alpha, shape, platformMinTarget, useHugStyle, statusColors, MONO_FONT, type ColorTokens, type LayoutStyle, type ViewStyle, type TextStyle, GlassPane, paneStyle } from "../../style/index.js";
 import { useHover } from "../../style/hover.js";
 import { actionFill, actionInk } from "../../style/action.js";
 

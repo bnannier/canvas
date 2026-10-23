@@ -1,5 +1,5 @@
 import { type ComponentType, type ReactNode } from "react";
-import { View, Text, useTheme, type StyleProp, type ViewStyle, type LayoutStyle } from "../../style/index.js";
+import { View, Text, useTheme, type ViewStyle, type LayoutStyle } from "../../style/index.js";
 import { Card as WebCard } from "../card/card.js";
 import { type CardProps } from "../card/card.shared.js";
 import { Button as WebButton } from "../../atoms/button/button.js";

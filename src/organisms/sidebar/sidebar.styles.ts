@@ -1,6 +1,6 @@
 import { hoverFill } from "../../style/hover.js";
 import { primaryText } from "../../style/primary-text.js";
-import { type ViewStyle, type TextStyle } from "react-native";
+import { type ViewStyle } from "react-native";
 import { type ColorTokens, alpha, shape } from "../../style/index.js";
 import { platformShape } from "../../style/platform-shape.js";
 import { INSET_FOCUS_RING } from "../../style/pressable.js";

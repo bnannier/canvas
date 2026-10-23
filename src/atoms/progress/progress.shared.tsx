@@ -2,7 +2,7 @@ import { SEGMENTED_METER } from "./progress.styles.js";
 import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
 import { useEffect, useRef, useState, type ComponentType, type ReactNode } from "react";
 import { Animated, Easing, type LayoutChangeEvent } from "react-native";
-import { View, Text, useFillStyle, useHugStyle, useReducedMotion, supportsNativeDriver, statusColors, GlassPane, isGlass, innerFill, paneHost, type ColorTokens, type LayoutStyle, type MeasureProps, type ViewStyle, type TextStyle, type StyleProp } from "../../style/index.js";
+import { View, Text, useFillStyle, useHugStyle, useReducedMotion, supportsNativeDriver, statusColors, GlassPane, isGlass, innerFill, paneHost, type ColorTokens, type LayoutStyle, type MeasureProps, type ViewStyle, type TextStyle } from "../../style/index.js";
 
 // Shared Progress shell. Uses React Native's primitives DIRECTLY (no engine className
 // layer) and reads the active brand tokens via so the track/fill colors follow

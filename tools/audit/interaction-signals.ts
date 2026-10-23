@@ -553,7 +553,6 @@ export class SignalReader {
   private readonly groups = ["atoms", "molecules", "organisms", "charts"];
   /** Per module, a static evaluator that follows the kit's own imports (a skin read from its styles module). */
   private readonly evaluators = new Map<string, StaticReader>();
-  private readonly exportedValues = new Map<ts.Node, unknown>();
   /** Per component directory: its entries, each with the factory calls it makes. */
   private readonly entries = new Map<string, { entry: BuildEntry; calls: { fn: Fn; env: Env }[] }[]>();
   /** Per component directory: the calls its modules make, by the function called. */
