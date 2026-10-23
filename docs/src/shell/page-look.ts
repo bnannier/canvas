@@ -77,16 +77,10 @@ export const PAGE_LOOK = {
    */
   orbProfile: { level: 0.4, reach: 3.5, samples: 48 },
   shell: {
-    radius: 22,
-    /** The desktop shell's widest, centred. */
-    maxWidth: 1340,
-    /** The page's padding around the shell per tier (Dark Factory's AppShell). */
-    insets: { phone: { side: 12, top: 16 }, tablet: { side: 20, top: 28 }, desktop: { side: 28, top: 56 } } satisfies Record<ShellTier, { side: number; top: number }>,
-    shadow: { offsetY: 60, blur: 100, spread: -40 },
     /**
-     * How far the frame runs on past the window's bottom edge: Dark Factory's shell runs on
-     * below the window at rest, so the frost's 1 px hairline rim must not close it there.
-     * Kept to the rim, so the overlay host inside the frame stays within a pixel of the window.
+     * How far the frame's material runs on past the frame on every side, inside a clip to
+     * the frame: the frame fills the window with no margin (the owner's 2026-10-23
+     * decision), so the frost's 1 px hairline rim must fall outside the window's edges.
      */
     bleed: 1,
     /**
@@ -249,13 +243,6 @@ export function orbGradientAt(gradient: OrbGradient, x: number, y: number): numb
 /** The shell's tier for a window this wide: Dark Factory's breakpoints, which are Canvas's form factors. */
 export function shellTier(width: number): ShellTier {
   return width <= 640 ? "phone" : width <= 1024 ? "tablet" : "desktop";
-}
-
-/** The shell's box in a window of this width: its left edge, top edge and width, in px. */
-export function shellBox(tier: ShellTier, windowWidth: number): { left: number; top: number; width: number } {
-  const { side, top } = PAGE_LOOK.shell.insets[tier];
-  const width = Math.max(0, Math.min(PAGE_LOOK.shell.maxWidth, windowWidth - side * 2));
-  return { left: (windowWidth - width) / 2, top, width };
 }
 
 function px(value: number | `${number}%`, total: number): number {

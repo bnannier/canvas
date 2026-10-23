@@ -2,7 +2,7 @@ import { useWindowDimensions } from "react-native";
 import { ButtonGroup, Card, Column, Grid, Row, Typography } from "@nannier/canvas";
 import { Page } from "../../../ui/page";
 import { useDocsTheme } from "../../../theme/docs-theme";
-import { lookFor, shellBox, shellTier } from "../../../shell/page-look";
+import { lookFor, shellTier } from "../../../shell/page-look";
 
 // The page look's harness (the tuning-harness inner loop for the df-argus-shell card): the
 // real page look the docs shell mounts behind every route, here with drivers for the look
@@ -15,7 +15,6 @@ export default function PageLookFixture() {
   const { scheme, surface, palette, setScheme, setSurface, setPalette } = useDocsTheme();
   const { width, height } = useWindowDimensions();
   const tier = shellTier(width);
-  const shell = shellBox(tier, width);
   return (
     <Page>
       <Column relaxed>
@@ -26,7 +25,7 @@ export default function PageLookFixture() {
           <ButtonGroup segmented small accessibilityLabel="Surface" items={["Solid", "Glass"]} active={surface === "glass" ? 1 : 0} onSelect={(i) => setSurface(i === 1 ? "glass" : "solid")} testID="page-look-surface" />
         </Row>
         <Typography small testID="page-look-readout">
-          Look {lookFor(scheme, palette)}, {surface}; window {width} x {height}, the {tier} tier; shell at {shell.left}, {shell.top}, {shell.width} wide
+          Look {lookFor(scheme, palette)}, {surface}; window {width} x {height}, the {tier} tier; shell filling the window
         </Typography>
         <Grid minTileWidth={220} relaxed>
           {TILES.map((n) => (

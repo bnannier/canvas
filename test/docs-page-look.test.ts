@@ -9,7 +9,6 @@ import {
   orbEllipse,
   orbGradient,
   orbGradientAt,
-  shellBox,
   shellTier,
   wedgeGeometry,
   type PageLookName,
@@ -129,16 +128,18 @@ describe("the docs page look", () => {
     }
   });
 
-  it("insets the shell per tier as the card does, and caps it at 1340 centred", () => {
+  it("tiers the shell at Dark Factory's breakpoints, and bleeds its material past the window by a hairline", () => {
     expect(shellTier(390)).toBe("phone");
     expect(shellTier(640)).toBe("phone");
     expect(shellTier(641)).toBe("tablet");
     expect(shellTier(1024)).toBe("tablet");
     expect(shellTier(1025)).toBe("desktop");
-    expect(shellBox("desktop", 1440)).toEqual({ left: 50, top: 56, width: 1340 });
-    expect(shellBox("desktop", 1280)).toEqual({ left: 28, top: 56, width: 1224 });
-    expect(shellBox("tablet", 768)).toEqual({ left: 20, top: 28, width: 728 });
-    expect(shellBox("phone", 390)).toEqual({ left: 12, top: 16, width: 366 });
+    // The frame fills the window (the owner's 2026-10-23 decision): no inset, no width cap,
+    // no corner radius, only the material's 1 px run past each edge that hides the rim.
+    expect(PAGE_LOOK.shell).not.toHaveProperty("insets");
+    expect(PAGE_LOOK.shell).not.toHaveProperty("maxWidth");
+    expect(PAGE_LOOK.shell).not.toHaveProperty("radius");
+    expect(PAGE_LOOK.shell.bleed).toBe(1);
   });
 
   it("lays the wedges out as Dark Factory's ShellDecor does", () => {
@@ -172,7 +173,6 @@ describe("the docs page look", () => {
       const pct = (v: string | undefined) => (v === undefined ? undefined : parseFloat(v) / 100);
       expect([orb.width, orb.height, orb.left, orb.top, orb.right, orb.bottom, orb.opacity, orb.blur]).toEqual([pct(df.width), pct(df.height), pct(df.left), pct(df.top), pct(df.right), pct(df.bottom), df.opacity, df.blur]);
     });
-    expect(PAGE_LOOK.shell.radius).toBe(theme.materials.shell.radius);
     expect(PAGE_LOOK.wedges.map((w) => ({ ...w, fadeIn: w.fadeIn ?? undefined }))).toEqual(theme.wedges.map((w: Record<string, unknown>) => ({ ...w, fadeIn: w.fadeIn ?? undefined })));
   });
 
