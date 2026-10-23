@@ -19,7 +19,7 @@ import { Platform, type TextStyle } from "react-native";
  * this, so the same call now produces the same result on all three platforms.
  *
  * A kit skin spreads it into a text style: `{ ...tabularNums(), fontSize: 14 }`. An app
- * sets tabular figures with `<Typography tabular>`; the public name is a deprecated alias.
+ * sets tabular figures with `<Typography tabular>`.
  */
 export function tabularNums(): TextStyle {
   if (Platform.OS === "web") {

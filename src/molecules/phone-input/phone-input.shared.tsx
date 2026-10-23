@@ -143,8 +143,8 @@ export function createPhoneInput(skin: PhoneInputSkin) {
     const { theme } = entryMaterial;
     const { tokens } = theme;
     // GlassPane paints behind the country segment and editor. Clear web fields
-    // paint their active/error outline in the foreground, outside the lens's
-    // sampled backdrop. Native fields retain the original border owner. The box
+    // paint their active/error outline in the foreground, above the frost's
+    // blurred backdrop. Native fields retain the original border owner. The box
     // keeps only its STATE border (focus, error) over it, drawn once (`stateSurface`),
     // an errored box tints the pane, and the country segment's `muted` fill becomes an
     // ink tint, capped in the browser for the flag and caret on it (`inkFill`, GS-2).

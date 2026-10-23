@@ -30,8 +30,8 @@ function mix(a: string, b: string, t: number): string {
 // reads as lifted. The selected destination is a capsule covering its whole cell: a
 // raised white thumb on the muted track in light, a lifted gray one in dark, the same
 // thumb the segmented Tabs raise. Under glass the bar is the functional-layer material
-// and the thumb becomes the measured liquid puck that travels between destinations
-// (real Liquid Glass on iOS 26, the lens on Chromium). Icons 22pt over ~10pt SF labels;
+// (real Liquid Glass on iOS 26, the frost on the web and Android) and the active
+// destination paints a static control-layer pane where it is. Icons 22pt over ~10pt SF labels;
 // press = dim.
 function floatingBar(t: ColorTokens): ViewStyle {
   return { borderWidth: StyleSheet.hairlineWidth, borderRadius: 9999, paddingTop: 4, paddingHorizontal: 4, minHeight: 58, ...shadow("md", t) };

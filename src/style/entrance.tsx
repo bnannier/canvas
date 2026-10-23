@@ -32,7 +32,7 @@ export interface EntranceProps {
   /**
    * The wrapper's layout and position only (an anchored card's absolute left, top and
    * cap): never a restyle, since the card inside paints itself. Typed as a full ViewStyle
-   * until a major, as the kit's owners pass position keys LayoutStyle omits.
+   * because the kit's owners pass position keys LayoutStyle omits.
    */
   style?: StyleProp<ViewStyle>;
   /**

@@ -397,7 +397,7 @@ export function frameBedsFor(palette: Palette, scheme: ColorScheme): readonly st
  * (`card` and `popover` stay opaque in the token set, and a surface that opts out of
  * the material keeps its opaque fill). Every surface takes its tint UNDER the real
  * material selected by the shared renderer for the role and available capability.
- * Native Liquid Glass, static frost and the web lens are distinct material paths.
+ * Native Liquid Glass, the native frost and the web's plain frost are distinct material paths.
  * A tint alone is neither proof of real blur nor a complete solid fallback.
  * Missing or unsafe material capability requires the original opaque fill,
  * foreground, boundary and elevation; layout and semantic state must survive.

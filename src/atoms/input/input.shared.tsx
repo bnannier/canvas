@@ -276,7 +276,7 @@ export function createInput(skin: InputSkin) {
     // The room the Android floating label takes, which follows the user's text size.
     const room = useFloatingLabelRoom(skin, tokens, size);
     // GlassPane paints behind the editor. A grouped clear web field moves its
-    // focus/error outline above the material so the lens cannot sample it
+    // focus/error outline above the material so the frost never blurs it
     // (`stateSurface`, which clears the box's own border there, so it draws once).
     // Bare editors and native fields retain their existing state-border owner.
     const glass = isGlass(theme);
