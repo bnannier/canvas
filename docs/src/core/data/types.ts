@@ -63,4 +63,6 @@ export interface SearchEntry {
   path: string;
   category: string;
   keywords: string[];
+  /** A component's page: search ranks these above every other kind of entry. */
+  component?: boolean;
 }

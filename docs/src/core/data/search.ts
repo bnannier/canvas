@@ -41,6 +41,7 @@ const ALL_ENTRIES: SearchEntry[] = [
     // Keep the source-dir name searchable too, so "sidebar"/"switch" still find the
     // renamed Navigation/Toggle pages.
     keywords: [c.slug, ...c.slug.split("-"), ...(c.dir ? [c.dir] : [])],
+    component: true,
   })),
   ...getAllPatterns().map((p) => ({
     title: p.name,
@@ -59,17 +60,19 @@ const ALL_ENTRIES: SearchEntry[] = [
 ];
 
 // Case-insensitive substring match across title, description, category, and keywords.
-// Returns up to 20 hits in index order (guides first, then components, patterns,
-// templates), which the UI groups by category.
+// Returns up to 20 hits, the components always first (the owner's 2026-10-23 decision),
+// then the guides, patterns and templates, each in index order; the UI groups them by
+// category in that order, so the component categories lead.
 export function search(query: string): SearchEntry[] {
   if (!query.trim()) return [];
   const q = query.toLowerCase();
-  return ALL_ENTRIES.filter((entry) => {
+  const hits = ALL_ENTRIES.filter((entry) => {
     if (entry.title.toLowerCase().includes(q)) return true;
     if (entry.description.toLowerCase().includes(q)) return true;
     if (entry.category.toLowerCase().includes(q)) return true;
     return entry.keywords.some((k) => k.toLowerCase().includes(q));
-  }).slice(0, 20);
+  });
+  return [...hits.filter((entry) => entry.component), ...hits.filter((entry) => !entry.component)].slice(0, 20);
 }
 
 export { ALL_ENTRIES, GUIDE_ENTRIES };
