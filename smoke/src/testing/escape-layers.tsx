@@ -1,8 +1,8 @@
 import { useRef, useState } from "react";
-import { Dimensions, I18nManager, PixelRatio, Platform, View } from "react-native";
+import { Dimensions, I18nManager, PixelRatio, Platform } from "react-native";
 import {
   ActionSheet, AlertDialog, Autocomplete, Button, Column, Command, DataTable, DescriptionList,
-  Dialog, Drawer, Dropdown, Row, ThemeProvider, Typography, useTheme,
+  Dialog, Drawer, Dropdown, Row, ThemeProvider, Typography, View, useTheme,
 } from "@nannier/canvas";
 
 // The menu trigger's window frame, in React Native units, with what a native flow needs

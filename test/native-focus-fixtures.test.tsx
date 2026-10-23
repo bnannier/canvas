@@ -8,6 +8,7 @@ import * as Native from "react-native";
 import ts from "typescript";
 import { Autocomplete } from "../src/atoms/autocomplete/autocomplete.tsx";
 import { Button } from "../src/atoms/button/button.tsx";
+import { View } from "../src/style/primitives.ts";
 import { Calendar } from "../src/organisms/calendar/calendar.tsx";
 import { Pagination } from "../src/atoms/pagination/pagination.tsx";
 import { Checkbox } from "../src/atoms/checkbox/checkbox.tsx";
@@ -49,7 +50,7 @@ function fixture<Props extends object>(name: string, exported: string) {
     "@nannier/canvas": {
       ActionSheet, AlertDialog, Autocomplete, Button, Calendar, Checkbox, Column, Command, DataTable,
       DescriptionList, Dialog, Drawer, Dropdown, Icon, Listbox, Pagination, Radio, RadioGroup,
-      Row, Select, Slider, Switch, TabBar, Tabs, ThemeProvider, Typography, useTheme,
+      Row, Select, Slider, Switch, TabBar, Tabs, ThemeProvider, Typography, View, useTheme,
     },
   };
   const exports: Record<string, React.ComponentType<Props>> = {};

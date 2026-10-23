@@ -20,9 +20,10 @@ test("docs and the smoke app consume one maintained public-API fixture body", ()
           // alias (audit K12-2 OD5), and raw window pixels are React Native's.
           expect(bindings && ts.isNamedImports(bindings) ? bindings.elements.map((entry) => entry.name.text) : []).toEqual(["Keyboard", "useWindowDimensions"]);
         } else if ((fixture === "carousel" || fixture === "escape-layers") && statement.moduleSpecifier.text === "react-native") {
+          // Device geometry for the measurements only: every rendered element is Canvas's.
           const bindings = statement.importClause?.namedBindings;
           expect(bindings && ts.isNamedImports(bindings) ? bindings.elements.map((entry) => entry.name.text) : [])
-            .toEqual(["Dimensions", "I18nManager", "PixelRatio", "Platform", "View"]);
+            .toEqual(["Dimensions", "I18nManager", "PixelRatio", "Platform"]);
         } else if (fixture === "catalog" && statement.moduleSpecifier.text.startsWith("../catalog/")) {
           // The catalog sweep renders the smoke app's own component list and example scope.
         } else expect(["react", "@nannier/canvas"]).toContain(statement.moduleSpecifier.text);

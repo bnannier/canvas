@@ -1,6 +1,6 @@
 import { useCallback, useMemo, useRef, useState } from "react";
-import { Dimensions, I18nManager, PixelRatio, Platform, View } from "react-native";
-import { Button, Card, Carousel, Column, Row, Typography } from "@nannier/canvas";
+import { Dimensions, I18nManager, PixelRatio, Platform } from "react-native";
+import { Button, Card, Carousel, Column, Row, Typography, View } from "@nannier/canvas";
 
 type Measurement = { generation: number; status: "idle" | "pending" } | {
   generation: number; status: "ready"; index: number; page: number;
