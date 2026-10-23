@@ -14,9 +14,9 @@ Audit checklist for the style-layer foundation `GlassModalBlurTarget`, audited f
 | Docs planned | none: every export has its page |
 | Materials manifest | GlassModalBlurTarget: style, inherited; docs route `integration`; verification inherited-composition, semantic-state |
 | Tests of it | 10 (importing one of its public exports or one of its implementation's declarations by name, or named for it, `test/glass-modal-blur-target[-<what>].test.tsx`): `test/drawer-host.test.tsx`, `test/glass-blur-plane.test.tsx`, `test/glass-blur-target.test.tsx`, `test/glass-controls.test.tsx`, `test/glass-modal-blur-target.test.tsx`, `test/glass-pane-ripple.test.tsx`, `test/glass-surface-android.test.tsx`, `test/material-portal-context.test.tsx`, `test/material-resolution.test.tsx`, `test/native-frost-paint-order.test.tsx` |
-| Consumers | 4 components: 2 directly, 2 through other kit components (one row each below, read from the source by `tools/audit/kit-graph.ts`) |
+| Consumers | 5 components: 2 directly, 1 through shared modules, 2 through other kit components (one row each below, read from the source by `tools/audit/kit-graph.ts`) |
 | Pages using it | none: no pattern or template entry names one of its exports |
-| Capture through | 4, in this order: components `action-sheet`, `drawer`, `filter-panel`, `sidebar`; pages none |
+| Capture through | 5, in this order: components `action-sheet`, `drawer`, `app-frame`, `filter-panel`, `sidebar`; pages none |
 | Not captured | guide pages, which the capture inventory (component, pattern and template pages) does not hold: `/integration` (documents GlassModalBlurTarget) |
 | Turn record | `audit/turns/glass-modal-blur-target.md`, written by `bun run audit:turn -- --slug=glass-modal-blur-target --phase=before\|after` (the before and after capture runs) |
 
@@ -24,6 +24,7 @@ Audit checklist for the style-layer foundation `GlassModalBlurTarget`, audited f
 |---|---|---|
 | `action-sheet` | directly | `GlassModalBlurTarget` |
 | `drawer` | directly | `GlassModalBlurTarget` |
+| `app-frame` | through shared modules | `OverlayProvider` (src/style/portal.tsx) |
 | `filter-panel` | through other kit components | `drawer` |
 | `sidebar` | through other kit components | `drawer` |
 <!-- audit:facts:end -->
