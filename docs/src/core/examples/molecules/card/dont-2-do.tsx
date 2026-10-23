@@ -3,7 +3,7 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { shadow, Card, Typography, Column } = scope;
+  const { Card, Typography, Column } = scope;
   return (
 <Card padded>
   <Column tight>

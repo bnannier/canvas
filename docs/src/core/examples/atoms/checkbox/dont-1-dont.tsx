@@ -3,7 +3,7 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { View, Checkbox, Select } = scope;
+  const { View, Checkbox } = scope;
   return (
 <View style={{ gap: 8 }}>
   <Checkbox selection defaultChecked>Select all</Checkbox>

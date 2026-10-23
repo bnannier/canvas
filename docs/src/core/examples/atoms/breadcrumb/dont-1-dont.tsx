@@ -3,7 +3,7 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Avatar, Breadcrumb } = scope;
+  const { Breadcrumb } = scope;
   return (
 <Breadcrumb items={[
     "Projects",

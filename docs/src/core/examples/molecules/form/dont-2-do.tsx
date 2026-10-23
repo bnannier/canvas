@@ -3,7 +3,7 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Card, Form, FormSection, Input } = scope;
+  const { Form, FormSection, Input } = scope;
   return (
 <Form submitLabel="Save">
   <FormSection title="Personal info" description="Displayed on your public profile.">

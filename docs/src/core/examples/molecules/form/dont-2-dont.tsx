@@ -3,7 +3,7 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { tokens, View, Text, Card, Input } = scope;
+  const { tokens, View, Text, Input } = scope;
   return (
 <View style={{ width: 560, maxWidth: "100%", gap: 16 }}>
   <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: "600", color: tokens.foreground }}>Personal info</Text>
