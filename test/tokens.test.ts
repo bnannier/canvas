@@ -1,7 +1,7 @@
 import { describe, it, expect } from "bun:test";
 import { readFileSync } from "node:fs";
 import { CSSMediaRule, CSSStyleRule, Window } from "happy-dom";
-import { lightColors, darkColors, mintColors, colorsByScheme, colorsFor, glassByScheme, brandColors, palette } from "../src/style/tokens.ts";
+import { lightColors, darkColors, mintColors, colorsByScheme, colorsFor, glassByScheme, palette } from "../src/style/tokens.ts";
 import { WEB_FROST, WEB_TINTS } from "../src/style/glass-surface/web-frost.ts";
 import { statusHues } from "../src/style/status-hue.ts";
 import { LOOKS, type Look } from "./fixtures/looks.ts";
@@ -76,22 +76,6 @@ describe("color tokens", () => {
       for (const status of [colors.destructive, colors.success, colors.warning]) {
         expect(series).not.toContain(status);
       }
-    }
-  });
-});
-
-describe("brandColors", () => {
-  it("defines the three orb constants as lowercase hexes", () => {
-    for (const key of ["orb-indigo", "orb-violet", "orb-cyan"] as const) {
-      expect(brandColors[key]).toMatch(/^#[0-9a-f]{6}$/);
-    }
-  });
-
-  it("does not flip with the scheme, so it stays out of the light/dark token sets", () => {
-    // A brand mark is one mark: it must not be reachable as a scheme-aware token.
-    for (const key of Object.keys(brandColors)) {
-      expect(lightColors).not.toHaveProperty(key);
-      expect(darkColors).not.toHaveProperty(key);
     }
   });
 });

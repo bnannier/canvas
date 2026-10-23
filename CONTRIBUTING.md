@@ -84,10 +84,8 @@ run check:api` fails when an export or a file appears or disappears without its 
 when a kind disagrees with the source, when a public value has no summary, when a named
 route does not exist or never names the export, when a staged name's planned page
 already names it, and when the materials manifest records a different docs route. A
-deprecated alias lives on the generated foundation reference (`/foundation`), which
-lists it with what to use instead: it needs a summary and `@deprecated` text naming its
-replacement, and no other page, and no document the package ships, may present it or a
-kit internal as API. A planned route closes at the audit turn that owns it
+deprecated alias needs a summary and `@deprecated` text naming its replacement, and no
+page, and no document the package ships, may present it or a kit internal as API. A planned route closes at the audit turn that owns it
 (`PLANNED_ROUTES` in the manifest), so nothing stays staged for a closed route. An
 intended change to the surface also refreshes its snapshot with `bun run check:api
 --write-snapshot`. Read the source and the page before writing an entry;

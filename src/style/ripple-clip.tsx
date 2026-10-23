@@ -84,7 +84,7 @@ export interface RippleClipProps {
   onPointerLeave?: (event: PointerEvent) => void;
   /**
    * The touch slop of the pressable inside, the same insets it carries (a
-   * `useMinTargetSlop` result's `hitSlop`, or the skin's static slop). The Android clip
+   * `useSeededMinTargetSlop` result's `hitSlop`, or the skin's static slop). The Android clip
    * would otherwise cut the pressable's touch area at the wrapper's edge: a clipping view
    * is hit-tested only inside its own bounds plus its own slop (see the file header).
    * Omit it when the pressable has no slop.

@@ -302,7 +302,7 @@ export function createSlider(skin: SliderSkin) {
     // to the DOM node, but View's RN prop types omit it (it is web-only), so the
     // handler rides in through a cast; natively View has no onKeyDown and never
     // invokes it, so this is a no-op there — additive web-only EVENT handling, the
-    // same pattern as useEscapeKey, NOT a web-only render branch.
+    // same pattern as useEscapeLayer, NOT a web-only render branch.
     const pageStep = step * 10;
     // The horizontal arrows follow the visual direction: ArrowRight always moves the
     // thumb visually rightward, which is +step in LTR but -step in RTL (per APG). The

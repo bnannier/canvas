@@ -13,7 +13,7 @@ import { ActionSheet } from "../src/organisms/action-sheet/action-sheet.tsx";
 // untested.
 //
 // Autocomplete, Select, and RowMenu are anchored overlays that share the shared
-// `useEscapeKey` hook: it binds a DOCUMENT-level `keydown` listener while open, so
+// `useEscapeLayer` hook: it binds a DOCUMENT-level `keydown` listener while open, so
 // pressing Escape anywhere closes the panel. With no OverlayProvider mounted each
 // renders its open panel INLINE (the AnchoredOverlay fallback), so the content is
 // queryable directly.

@@ -350,14 +350,6 @@ export const STYLE_LAYER_RENDERABLES: readonly string[] = materialCoverage
 export const TOKENS_FOUNDATION = "Tokens";
 
 /**
- * The kit internals the generated `/foundation` reference page documents (K12-10 OD2): the
- * public names the API manifest documents or plans there that no renderable and not the
- * design tokens hold, each a deprecated alias to come (K12-2). The Foundations tier carries
- * the 111 deprecations, so every one of them is on one of its checklists.
- */
-export const REFERENCE_FOUNDATION = "FoundationReference";
-
-/**
  * The universal rubric adapted for a style-layer contract (the Foundations tier): a
  * foundation has no variants of its own, it is a contract other components render
  * through, so each item asks what the contract promises and what it must never break for
@@ -408,22 +400,9 @@ export const FOUNDATION_RUBRIC: RubricItem[] = [
  * every foundation also gets the consumers line below.
  */
 export const FOUNDATION_PLANS: Readonly<Record<string, readonly string[]>> = {
-  AnchoredOverlay: [
-    "gains the placement option P3e needs (above and beside its anchor), shipped in the same minor as Popover's real `top` anchoring (P3e)",
-    "edge placement and flipping at every width, inside the window's safe area",
-    "the dense option lists through `dense`, and the public `opaque` prop's behaviour kept (materials target)",
-  ],
   BreakpointOverride: [
     "K12-6: documented on `tokens/layout` with the responsive hooks and the sizing and width vocabulary",
     "keeps the responsive preview context the docs' three-up renders each platform row in (materials target)",
-  ],
-  Entrance: [
-    "a readiness hold for an overlay card: invisible, untouchable and hidden from assistive technology until its owner and every enclosing hold are ready (its controls stay mounted; focus enters only at release), then shown in place with no transform (materials target)",
-    "no motion of its own, after the 2026-09-21 removal of the Entrance spring",
-  ],
-  FloatingLabel: [
-    "labels, the required marker, the focus and value transitions and the error contrast stay stable over glass wells; no material per label (materials target)",
-    "the floating transition within 100 to 700 ms, still under Reduce Motion",
   ],
   GlassBlurPlane: [
     "documented on `integration` (Blur planes) as the capture host that makes a page's backdrop the safe blur plane on Android, with `useGlassBlurPlane` making the plane and `GlassBlurScope` offering it",
@@ -437,57 +416,18 @@ export const FOUNDATION_PLANS: Readonly<Record<string, readonly string[]>> = {
     "K12-5: documented on `integration` as the Modal blur bridge for an app hosting its own React Native Modal",
     "a safe target bridge that keeps separate-window ownership, exercised with ActionSheet and Drawer over native content (materials target)",
   ],
-  GlassPane: [
-    "renders nothing where its host resolves solid (`useMaterialResolution`), so no default black border or second hairline, photographed by the Android re-capture of chip, badge, kbd, switch, input, card, alert, checkbox, radio and steps (audit/README.md, Native spike)",
-    "P3a: Android in-page glass resolves solid (`missing-target`), so the Android glass column equals solid outside overlays",
-    "decoration behind a semantic host: the missing-renderer fallback keeps the host's full surface contract, and the material choice agrees with the parent's fill suppression (materials target)",
-  ],
-  GlassSurface: [
-    "centralizes renderer, density, clipping, accessibility and platform capability resolution, with its public props kept compatible (materials target)",
-    "the web's plain frost judged against the `df-frost` card through the tuning harness (`/testing/materials`)",
-    "the layers' legibility floors and solid byte identity held by `test/glass-tint.test.tsx`, `test/glass-controls.test.tsx` and `test/dense-overlays.test.tsx`",
-  ],
-  LabelContent: [
-    "labels, the required marker and the error contrast stay stable over glass wells; no material per label (materials target)",
-    "the required marker announced once, not read as a stray asterisk",
-  ],
-  LayoutAxisProvider: [
-    "the layout-axis context HUG resolves against (`alignSelf: \"flex-start\"` inside a stretching Column and nothing anywhere else), stable across renders (CLAUDE.md, Sizing)",
-    "semantic layout context and sizing kept stable (materials target)",
-  ],
-  LoopView: [
-    "the loop primitive: the native driver natively and a compositor CSS animation on the web, nothing committed through React per frame (`loop-native.ts` holds the primitive's one `Animated.loop`; `test/design-rules-source.test.ts` holds every file that loops to `supportsNativeDriver` and one timing per loop)",
-    "the effects that render through it: the Skeleton shimmer (Skeleton, and DataTable's loading rows through it), Button's `attention` glow (Button, and every component that renders a Button) and Chat's thinking dots; still under Reduce Motion, where the shimmer and the glow are decoration that mounts no loop and the dots park still",
-    "source: the Spinner, the indeterminate Progress sweep and the InputOTP caret drive their own `Animated.loop` (`src/atoms/spinner/spinner.shared.tsx`, `src/atoms/progress/progress.shared.tsx`, `src/atoms/input-otp/input-otp.shared.tsx`), not LoopView, though CLAUDE.md's Motion section puts them on the loop primitive and the materials target names the Spinner and the Progress: whether they move onto it or the doc and the target are corrected is the owner's question; their pictures are their own turns'",
-  ],
   OverlayProvider: [
     "K12-5: documented on `integration` (overlay hosting); OD6: its `style` prop documented as app-frame only",
     "owns placement, native ordering and safe backdrop contexts, with the unhosted fallback kept (materials target)",
-  ],
-  Portal: [
-    "owns placement, native ordering and safe backdrop contexts, with the unhosted fallback kept (materials target)",
-    "content portaled out of a Modal or a sheet keeps its focus order and its escape layer",
-  ],
-  RippleClip: [
-    "the native bounded ripple and the surface radii kept, with content never unclipped (materials target)",
-    "the hover read on the RippleClip wrapper, which never moves, so a lifted surface cannot slide out from under a resting pointer (`src/style/hover.tsx`)",
   ],
   ThemeProvider: [
     "stays public (K12-2); K12-3 and K12-4: the ThemeProvider reference on `theming`: reading the theme, the palette axis and the accessibility preferences",
     "the boolean grammar: `glass` wins over `solid`, `dark` over `light` and over `mint`; neither surface given resolves to glass on iOS 26+ and solid everywhere else",
     "resolves the glass and solid mode, the preferences and the tokens without changing precedence or defaults (materials target)",
   ],
-  [REFERENCE_FOUNDATION]: [
-    "K12-2: every export here becomes a deprecated alias that keeps working and names the kit component or token to use (the owner's decision: all 111, nothing removed before a major)",
-    "K12-2 OD5: React Native's `StyleSheet` pass-through deprecated, since it invites raw styling (`useWindowDimensions`, the other pass-through, is BreakpointOverride's)",
-    "K12-2 tabular: Typography's `tabular` boolean ships (a minor) before `tabularNums` is deprecated, so apps keep tabular figures",
-    "K12-10 OD2: the generated `/foundation` reference page lists every deprecated name with its replacement, the foundations' internals included, and no page presents an internal helper as API",
-    "every export here carries a JSDoc summary and its `@deprecated` note naming the replacement",
-  ],
   [TOKENS_FOUNDATION]: [
     "K12-7: the colors, spacing and shape, typography and layout references on the `tokens/*` pages name every token set and type they document",
-    "K12-7 OD3: `fontSize`, `fontWeight`, `lineHeight` and `letterSpacing` (the Riskora ladder nothing reads) deprecated, pointing to Typography's roles",
-    "K12-2 OD4: `shadow`, `customShadow` and `ShadowLevel` deprecated, elevation coming from Card's appearances; the Elevation section of `/tokens/spacing`, which renders `shadow`, moved to the replacement",
+    "K12-7 OD3 and K12-2 OD4: the Riskora type ladder (`fontSize`, `fontWeight`, `lineHeight`, `letterSpacing`) and the shadow helpers (`shadow`, `customShadow`, `ShadowLevel`) are no longer public (removed 2026-10-23); type comes from Typography's roles and elevation from Card's appearances",
     "Dark Factory's tokens on every platform: violet `primary` for selection, the green `action` role for calls to action, blush, mint and DF's one dark palette, Manrope at DF's dense sizes with the 12, 11 and 10 floors",
     "K9: one source of truth for the iOS checkbox's check radius (`DESIGN.md`'s generated 11 against `shape.ios.checkbox` 5 in `src/style/tokens.ts`)",
     "K10: no stale Riskora comments in `styles/tokens/platforms.css`; the web hand-off (`styles/tokens/*.css`) mirrors `src/style/tokens.ts`",

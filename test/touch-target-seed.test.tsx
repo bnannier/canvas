@@ -4,7 +4,6 @@ import { type ComponentType } from "react";
 import { PixelRatio, StyleSheet, type Insets, type LayoutChangeEvent, type ViewStyle } from "react-native";
 import { spyOn } from "bun:test";
 import { leastLine, minTargetSlop, seedSlop, styleBox, useSeededMinTargetSlop, type TargetBox } from "../src/style/touch-target-seed.ts";
-import { useMinTargetSlop } from "../src/style/touch-target.ts";
 import { iosSkin as buttonIos, androidSkin as buttonAndroid } from "../src/atoms/button/button.styles.ts";
 import { iosSkin as rowMenuIos, androidSkin as rowMenuAndroid } from "../src/organisms/row-menu/row-menu.styles.ts";
 import { iosSkin as switchIos, androidSkin as switchAndroid } from "../src/atoms/switch/switch.styles.ts";
@@ -179,13 +178,13 @@ describe("the seeded measurement", () => {
     expect(seen.at(-1)!.hitSlop).toEqual({ top: 11, bottom: 11, left: 11, right: 11 });
   });
 
-  it("without a box it is useMinTargetSlop: nothing until the first layout", () => {
+  it("without a box it measures nothing until the first layout", () => {
     const seen: Result[] = [];
-    function Public({ onRender }: { onRender: (r: Result) => void }) {
-      onRender(useMinTargetSlop(ANDROID));
+    function Unseeded({ onRender }: { onRender: (r: Result) => void }) {
+      onRender(useSeededMinTargetSlop(ANDROID));
       return null;
     }
-    render(<Public onRender={(r) => seen.push(r)} />);
+    render(<Unseeded onRender={(r) => seen.push(r)} />);
     expect(seen[0]!.hitSlop).toBeUndefined();
     act(() => seen.at(-1)!.onLayout!(layout(30, 30)));
     expect(seen.at(-1)!.hitSlop).toEqual({ top: 9, bottom: 9, left: 9, right: 9 });

@@ -1,5 +1,4 @@
-import { Platform, type Insets, type LayoutChangeEvent } from "react-native";
-import { useSeededMinTargetSlop, type MinTargetOptions } from "./touch-target-seed.js";
+import { Platform } from "react-native";
 
 /**
  * Meeting the platform minimum touch target without changing what anything looks like.
@@ -77,24 +76,6 @@ export interface TouchTargetSkin {
 
 // The maths and the measurement live in touch-target-seed.ts, beside the seed the kit's
 // own controls take from their declared box. The internal hub re-exports these two with
-// the rest of this file; the package lists them only as deprecated aliases.
+// the rest of this file.
 export { minTargetSlop, type MinTargetOptions } from "./touch-target-seed.js";
 
-/**
- * Measure a pressable and extend its touch area to the platform minimum.
- *
- * Spread the result onto the Pressable:
- *
- *   <Pressable {...useMinTargetSlop(skin.minTarget)} onPress={…} />
- *
- * A null minimum (the web skins) returns nothing at all, so the web pays no
- * measurement cost and the Pressable gets no onLayout it does not need.
- */
-export function useMinTargetSlop(
-  minTarget: number | null,
-  options: MinTargetOptions = {},
-): { onLayout?: (event: LayoutChangeEvent) => void; hitSlop?: Insets } {
-  // A caller's control declares no box, so there is no seed: the slop arrives with the
-  // first layout. A later layout that differs by less than a device pixel keeps it.
-  return useSeededMinTargetSlop(minTarget, undefined, options);
-}

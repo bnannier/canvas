@@ -3,9 +3,9 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { tokens, shadow, View, Text, Avatar } = scope;
+  const { tokens, View, Text, Avatar } = scope;
   return (
-<View style={{ borderRadius: 8, borderWidth: 1, borderColor: tokens.border, backgroundColor: tokens.card, overflow: "hidden", ...shadow("sm"), width: "100%", maxWidth: 560 }}>
+<View style={{ borderRadius: 8, borderWidth: 1, borderColor: tokens.border, backgroundColor: tokens.card, overflow: "hidden", boxShadow: "0px 16px 32px -22px rgba(121, 100, 214, 0.22)", width: "100%", maxWidth: 560 }}>
   <View style={{ flexDirection: "row", alignItems: "center", gap: 12, paddingHorizontal: 20, paddingVertical: 12 }}>
     <Avatar name="Rachel Chen">RC</Avatar>
     <View style={{ minWidth: 0, flexGrow: 1, flexShrink: 1, flexBasis: "0%" }}>

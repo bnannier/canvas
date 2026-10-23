@@ -1,9 +1,7 @@
-// The audit's Foundations tier (the plan's "Foundations"): the style-layer renderables with
-// no component page of their own (AnchoredOverlay, GlassSurface, ThemeProvider and the
-// rest, `STYLE_LAYER_RENDERABLES`), the design tokens the `tokens/*` docs pages document,
-// and the kit internals the generated `/foundation` reference page documents
-// (FoundationReference), so that every deprecation the owner decided is on one of the tier's
-// checklists. Each gets a checklist under audit/foundation/, whose facts this module
+// The audit's Foundations tier (the plan's "Foundations"): the public style-layer renderables
+// with no component page of their own (ThemeProvider, OverlayProvider and the rest,
+// `STYLE_LAYER_RENDERABLES`) and the design tokens the `tokens/*` docs pages document. Each
+// gets a checklist under audit/foundation/, whose facts this module
 // gathers from the kit's source and its own manifests, with no React Native import:
 //
 //   - its source files (its homes, its exports' declarations and its implementation: the
@@ -24,9 +22,8 @@
 //
 // A renderable foundation is the module that declares its name (on every platform) and
 // the public exports whose way out of the kit's entry passes through that module, so
-// FloatingLabel and LabelContent (one module) share their exports, and so do Portal and
-// OverlayProvider. The design tokens and the reference's internals are read in
-// `memberships`.
+// a module that holds two renderables shares its exports between them. The design tokens
+// are read in `memberships`.
 
 import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
@@ -38,7 +35,7 @@ import type { MaterialCoverageEntry } from "../materials/types.ts";
 import { componentImplementation, kitImportsOf, pageKitNames, type FactsCorpus, type KitImports } from "./facts.ts";
 import { components as inventoryComponents, pageModule, pages as inventoryPages, type InventoryComponent, type InventoryPage } from "./inventory.ts";
 import { KitGraph, MODULE_BODY, consumersOf, moduleFiles, ownersByReaders, symbolId, symbolOf, type Consumer, type ConsumerCandidate, type KitSymbol } from "./kit-graph.ts";
-import { REFERENCE_FOUNDATION, STYLE_LAYER_RENDERABLES, TOKENS_FOUNDATION } from "./plan-specifics.ts";
+import { STYLE_LAYER_RENDERABLES, TOKENS_FOUNDATION } from "./plan-specifics.ts";
 import { turnRecordFile } from "./turn-record.ts";
 
 /** The kit's public entry, where every public name's way out starts. */
@@ -48,16 +45,13 @@ export const KIT_ENTRY = "src/index.ts";
 export const FOUNDATION_DIR = "foundation";
 
 export interface Foundation {
-  /** The renderable's export name, `Tokens`, or `FoundationReference`. */
+  /** The renderable's export name, or `Tokens`. */
   name: string;
   /** Its checklist and turn id: the name in kebab case (`glass-modal-blur-target`). */
   id: string;
-  /** A style-layer renderable, the design tokens, or the kit internals of the `/foundation` reference page. */
-  kind: "renderable" | "tokens" | "reference";
+  /** A style-layer renderable, or the design tokens. */
+  kind: "renderable" | "tokens";
 }
-
-/** The docs route of the generated foundation API reference (K12-10 OD2), which the reference foundation is. */
-export const REFERENCE_ROUTE = "foundation";
 
 /** A name in kebab case: `GlassModalBlurTarget` is `glass-modal-blur-target`. */
 export function foundationId(name: string): string {
@@ -67,12 +61,11 @@ export function foundationId(name: string): string {
     .toLowerCase();
 }
 
-/** Every foundation, alphabetical: the style-layer renderables, the design tokens and the `/foundation` reference's internals. */
+/** Every foundation, alphabetical: the style-layer renderables and the design tokens. */
 export function foundations(): Foundation[] {
   return [
     ...STYLE_LAYER_RENDERABLES.map((name) => ({ name, id: foundationId(name), kind: "renderable" as const })),
     { name: TOKENS_FOUNDATION, id: foundationId(TOKENS_FOUNDATION), kind: "tokens" as const },
-    { name: REFERENCE_FOUNDATION, id: foundationId(REFERENCE_FOUNDATION), kind: "reference" as const },
   ].sort((a, b) => a.name.localeCompare(b.name));
 }
 
@@ -108,29 +101,11 @@ export function tokenPages(): string[] {
     .sort();
 }
 
-/**
- * The names the owner's decisions retire as deprecated aliases beyond the kit internals the
- * manifest records as internal by accident (audit/DECISIONS.md): the shadow helpers (K12-2
- * OD4), React Native's pass-throughs (K12-2 OD5) and the Riskora type ladder (K12-7 OD3).
- */
-export const DECIDED_DEPRECATIONS: Readonly<Record<string, string>> = {
-  shadow: "K12-2 OD4",
-  customShadow: "K12-2 OD4",
-  ShadowLevel: "K12-2 OD4",
-  StyleSheet: "K12-2 OD5",
-  useWindowDimensions: "K12-2 OD5",
-  fontSize: "K12-7 OD3",
-  fontWeight: "K12-7 OD3",
-  lineHeight: "K12-7 OD3",
-  letterSpacing: "K12-7 OD3",
-};
-
-/** An export's K12-2 status: a deprecated alias already, one to come (and by which decision), or public. */
-export function k12Status(name: string, entry: ApiEntry): string {
+/** An export's K12-2 status: a deprecated alias already, one to come, or public. */
+export function k12Status(entry: ApiEntry): string {
   if (entry.kind === "deprecated-alias") return entry.replacement ? `deprecated alias already (use \`${entry.replacement}\`)` : "deprecated alias already";
   if (entry.kind === "internal-by-accident") return "deprecated alias to come (K12-2)";
-  const decided = DECIDED_DEPRECATIONS[name];
-  return decided ? `deprecated alias to come (${decided})` : "public";
+  return "public";
 }
 
 export interface FoundationExport {
@@ -196,10 +171,7 @@ interface PublicName {
  *   - the design tokens: the names the API manifest documents or plans on a `tokens/*` page,
  *     the kit names those pages show that are neither a component nor a renderable's
  *     (`shadow` on `/tokens/spacing`), and every other public name of the modules those are
- *     declared in, the renderables' homes left out (the type ladder in `src/style/tokens.ts`,
- *     `customShadow` beside `shadow`);
- *   - the reference: the names the API manifest documents or plans on `/foundation` that no
- *     renderable and not the tokens hold.
+ *     declared in, the renderables' homes left out.
  */
 function memberships(sources: FoundationSources): Map<string, PublicName[]> {
   const cached = membershipCache.get(sources);
@@ -238,8 +210,6 @@ function memberships(sources: FoundationSources): Map<string, PublicName[]> {
   const tokenNames = new Set([...documented, ...onPages, ...fromHomes].map((n) => n.name));
   const tokens = all.find((f) => f.kind === "tokens")!;
   out.set(tokens.id, info.filter((n) => tokenNames.has(n.name)));
-  const reference = all.find((f) => f.kind === "reference")!;
-  out.set(reference.id, info.filter((n) => !held.has(n.name) && !tokenNames.has(n.name) && routeOf(n.name) === REFERENCE_ROUTE));
   membershipCache.set(sources, out);
   return out;
 }
@@ -247,15 +217,14 @@ function memberships(sources: FoundationSources): Map<string, PublicName[]> {
 const membershipCache = new WeakMap<FoundationSources, Map<string, PublicName[]>>();
 
 /**
- * The names the owner's decisions retire that no foundation's checklist holds: every
- * `internal-by-accident` export (K12-2), every name `DECIDED_DEPRECATIONS` adds, and every
- * deprecated alias already. The Foundations tier carries the 111 deprecations (the plan's
- * "Foundations"), so this is empty, and audit:checklists:check fails when it is not.
+ * The names the manifest marks for retirement that no foundation's checklist holds: every
+ * `internal-by-accident` export and every deprecated alias. None is left since the owner's
+ * 2026-10-23 removal, and audit:checklists:check fails when one appears unplaced.
  */
 export function unplacedDeprecations(sources: FoundationSources, api: Readonly<Record<string, ApiEntry>> = publicApi): string[] {
   const placed = new Set([...memberships(sources).values()].flat().map((n) => n.name));
   return Object.entries(api)
-    .filter(([name, entry]) => entry.kind === "internal-by-accident" || entry.kind === "deprecated-alias" || name in DECIDED_DEPRECATIONS)
+    .filter(([, entry]) => entry.kind === "internal-by-accident" || entry.kind === "deprecated-alias")
     .map(([name]) => name)
     .filter((name) => !placed.has(name))
     .sort((a, b) => a.localeCompare(b));
@@ -473,13 +442,13 @@ export function foundationFacts(foundation: Foundation, corpus: Pick<FactsCorpus
       declared,
       documented: entry.docs ? { route: entry.docs, section: entry.section ?? null } : null,
       planned: PENDING_DOCS[name] ?? null,
-      k12: k12Status(name, entry),
+      k12: k12Status(entry),
     };
   });
   const sourceFiles = [...new Set([...homes, ...exports.flatMap((e) => e.declared.filter((d) => d.startsWith("src/"))), ...code.implementation.map((s) => s.file)])].sort();
   const materials = materialCoverage.find((m) => m.tier === "style" && m.name === foundation.name) ?? null;
-  // Its own guide pages: the token pages for the tokens, the generated reference for the internals.
-  const ownRoutes = foundation.kind === "tokens" ? tokenPages().map((p) => p.slice(1)) : foundation.kind === "reference" ? [REFERENCE_ROUTE] : [];
+  // Its own guide pages: the token pages for the tokens.
+  const ownRoutes = foundation.kind === "tokens" ? tokenPages().map((p) => p.slice(1)) : [];
   const docs = docsPages(exports, sources.pages, [...ownRoutes, ...(materials?.docsRoute ? [materials.docsRoute] : [])]);
   const exportNames = exports.map((e) => e.name);
   // The consumer edges are the values among its public exports, at their declarations, and its seams.

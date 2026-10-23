@@ -37,7 +37,7 @@ export interface LoopChannelOptions {
   /** Cycle length in ms. */
   period: number;
   /** Shape of one cycle: maps the linear 0..1 phase to the channel's 0..1 value
-   *  (`thereAndBack`, `holdThen`, `keyframes` in src/style/motion.ts). Linear when
+   *  (`thereAndBack`, `keyframes` in src/style/motion.ts). Linear when
    *  omitted, which is the sawtooth a travelling layer wraps on. */
   shape?: EasingFunction;
   /** Points a shaped channel is sampled at per cycle (the native interpolation's

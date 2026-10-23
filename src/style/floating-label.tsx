@@ -134,22 +134,6 @@ export function useFloatingLabelRoom<S extends string>(styles: FloatingLabelStyl
   return useMemo(() => ({ reserve: { paddingTop: reserve }, growth, onLine }), [reserve, growth, onLine]);
 }
 
-/**
- * The props that take a node out of the accessibility tree, spread together:
- * `accessibilityElementsHidden` (VoiceOver), `importantForAccessibility:
- * "no-hide-descendants"` (TalkBack) and `aria-hidden` (the web, where an `aria-labelledby`
- * name computation also skips it). They hide a View, or a Text that is not inside another
- * Text, on every platform. A Text nested in another Text is a span of its parent's
- * paragraph on iOS and Android, not a view of its own, so there only `aria-hidden` on the
- * web takes effect: the kit keeps LabelContent's required star out of the native name
- * through the label Text's own accessible name instead (`labelA11y`).
- */
-export const HIDDEN_FROM_A11Y = {
-  accessibilityElementsHidden: true,
-  importantForAccessibility: "no-hide-descendants" as const,
-  "aria-hidden": true,
-} as const;
-
 /** The accessibility props `labelA11y` gives a field's visible label Text. */
 export interface LabelA11y {
   accessibilityLabel?: string;

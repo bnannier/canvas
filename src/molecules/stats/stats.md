@@ -179,7 +179,7 @@ that varies.
 **Don't** — Bordered cards inside a card surface double the chrome: a box drawn around boxes.
 
 ```tsx
-<View style={{ borderRadius: 8, borderWidth: 1, borderColor: tokens.border, backgroundColor: tokens.card, ...shadow("sm"), padding: 24 }}>
+<View style={{ borderRadius: 8, borderWidth: 1, borderColor: tokens.border, backgroundColor: tokens.card, boxShadow: "0px 16px 32px -22px rgba(121, 100, 214, 0.22)", padding: 24 }}>
   <Stats items={[
     { label: "Revenue", value: "$48.2k" },
     { label: "Orders", value: "842" }
@@ -202,7 +202,7 @@ that varies.
 **Don't** — A trend line with no current delta makes you eyeball the slope to guess the direction.
 
 ```tsx
-<View style={{ borderRadius: 8, borderWidth: 1, borderColor: tokens.border, backgroundColor: tokens.card, ...shadow("sm"), maxWidth: 220, padding: 20 }}>
+<View style={{ borderRadius: 8, borderWidth: 1, borderColor: tokens.border, backgroundColor: tokens.card, boxShadow: "0px 16px 32px -22px rgba(121, 100, 214, 0.22)", maxWidth: 220, padding: 20 }}>
   <Text style={{ fontSize: 12, lineHeight: 16, color: tokens["muted-foreground"] }}>Requests</Text>
   <Text style={{ marginTop: 4, fontSize: 24, lineHeight: 32, fontWeight: "600", letterSpacing: -0.4, color: tokens.foreground }}>24.5k</Text>
   <View style={{ marginTop: 12, flexDirection: "row", alignItems: "flex-end", gap: 2, height: 24 }}>

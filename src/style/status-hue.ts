@@ -42,20 +42,3 @@ export const statusHues: Record<StatusTone, Hue> = {
   info: "blue",
 };
 
-/**
- * The alpha of a hue's 500 step painted as a wash under the glass material, per scheme:
- * the tinted pane of an Alert, a status Badge, a coloured Chip, before Dark Factory's soft
- * washes replaced it.
- *
- * @deprecated The kit no longer paints with it: Dark Factory's soft washes replaced it
- * (`statusColors` for the status tones, and a Chip's free hue at Dark Factory's soft
- * alpha). Kept, unchanged, for code that reads it, until a major release removes it.
- */
-// The alpha of a hue's 500 step painted as a WASH under the glass material: the
-// tinted pane of an Alert, a status Badge, a coloured Chip. Dense enough to read as
-// the hue over the page and over a content pane, sheer enough that the material still
-// shows the backdrop through it. The label over the wash steps one deeper than the
-// solid recipe's (800 in light, 300 in dark) to hold 4.5:1 on every hue. Solved over
-// the Dark Factory pages: dark is the largest wash that keeps every hue's label at 4.5:1
-// on the page, a content pane and a control puck (0.30 fell to 4.36:1 there).
-export const HUE_WASH = { light: 0.28, dark: 0.27 } as const;

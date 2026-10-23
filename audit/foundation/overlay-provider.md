@@ -6,18 +6,18 @@ Audit checklist for the style-layer foundation `OverlayProvider`, audited for it
 | Fact | Value |
 |---|---|
 | Foundation | `OverlayProvider`, a style-layer renderable with no component page of its own (`tools/materials/manifest.ts`, the style tier), declared in `src/style/portal.tsx` |
-| Source files | `src/style/breakpoint-override.ts`, `src/style/glass-surface/capture-runtime.ts`, `src/style/glass-surface/capture-target.ts`, `src/style/glass-surface/glass-blur-target.android.tsx`, `src/style/glass-surface/glass-blur-target.tsx`, `src/style/glass-surface/glass-surface.shared.tsx`, `src/style/overlay-layer.tsx`, `src/style/portal.tsx`, `src/style/theme-context.tsx` (its homes, its exports' declarations and its implementation, the private declarations they read) |
-| Seams | 14, the private declarations it alone reads (`tools/audit/foundations.ts` `foundationCode`), which its consumers are also found through: `CHILD_KEYS` (src/style/glass-surface/glass-blur-target.android.tsx), `GlassBlurTargetHost` (src/style/glass-surface/glass-blur-target.android.tsx), `TARGET_FILL` (src/style/glass-surface/glass-blur-target.android.tsx), `blurTargetMountable` (src/style/glass-surface/glass-blur-target.android.tsx), `pageAccessibility` (src/style/glass-surface/glass-blur-target.android.tsx), `splitHostStyle` (src/style/glass-surface/glass-blur-target.android.tsx), `GlassBlurTargetHost` (src/style/glass-surface/glass-blur-target.tsx), `blurTargetMountable` (src/style/glass-surface/glass-blur-target.tsx), `registerOverlayLayer` (src/style/overlay-layer.tsx), `FILL` (src/style/portal.tsx), `Outlet` (src/style/portal.tsx), `OverlayContext` (src/style/portal.tsx), `outletStyles` (src/style/portal.tsx), `safeWithin` (src/style/portal.tsx) |
-| Public exports | 10: `insetOverlayBounds` (internal-by-accident), `intersectOverlayBounds` (internal-by-accident), `OverlayBounds` (internal-by-accident, a type), `OverlayHost` (internal-by-accident, a type), `OverlayProvider` (component), `OverlayProviderProps` (type), `OverlayViewportInsets` (type), `Portal` (internal-by-accident), `PortalProps` (internal-by-accident, a type), `useOverlayHost` (internal-by-accident) |
-| K12-2 status | 7 deprecated alias to come (K12-2): insetOverlayBounds, intersectOverlayBounds, OverlayBounds, OverlayHost, Portal, PortalProps, useOverlayHost; 3 public: OverlayProvider, OverlayProviderProps, OverlayViewportInsets |
-| Documented on | `integration`: OverlayProvider ("Overlay hosting") |
-| Docs planned | `foundation`: insetOverlayBounds, intersectOverlayBounds, OverlayBounds, OverlayHost, Portal, PortalProps, useOverlayHost; `integration`: OverlayProviderProps, OverlayViewportInsets |
+| Source files | `src/style/glass-surface/capture-runtime.ts`, `src/style/glass-surface/capture-target.ts`, `src/style/glass-surface/glass-blur-target.android.tsx`, `src/style/glass-surface/glass-blur-target.tsx`, `src/style/glass-surface/glass-surface.shared.tsx`, `src/style/overlay-layer.tsx`, `src/style/portal.tsx` (its homes, its exports' declarations and its implementation, the private declarations they read) |
+| Seams | 16, the private declarations it alone reads (`tools/audit/foundations.ts` `foundationCode`), which its consumers are also found through: `CHILD_KEYS` (src/style/glass-surface/glass-blur-target.android.tsx), `GlassBlurTargetHost` (src/style/glass-surface/glass-blur-target.android.tsx), `TARGET_FILL` (src/style/glass-surface/glass-blur-target.android.tsx), `blurTargetMountable` (src/style/glass-surface/glass-blur-target.android.tsx), `pageAccessibility` (src/style/glass-surface/glass-blur-target.android.tsx), `splitHostStyle` (src/style/glass-surface/glass-blur-target.android.tsx), `GlassBlurTargetHost` (src/style/glass-surface/glass-blur-target.tsx), `blurTargetMountable` (src/style/glass-surface/glass-blur-target.tsx), `registerOverlayLayer` (src/style/overlay-layer.tsx), `FILL` (src/style/portal.tsx), `Outlet` (src/style/portal.tsx), `OverlayContext` (src/style/portal.tsx), `insetOverlayBounds` (src/style/portal.tsx), `intersectOverlayBounds` (src/style/portal.tsx), `outletStyles` (src/style/portal.tsx), `safeWithin` (src/style/portal.tsx) |
+| Public exports | 5: `OverlayHost` (type), `OverlayProvider` (component), `OverlayProviderProps` (type), `OverlayViewportInsets` (type), `useOverlayHost` (hook) |
+| K12-2 status | 5 public: OverlayHost, OverlayProvider, OverlayProviderProps, OverlayViewportInsets, useOverlayHost |
+| Documented on | `integration`: OverlayHost, OverlayProvider, useOverlayHost ("Overlay hosting") |
+| Docs planned | `integration`: OverlayProviderProps, OverlayViewportInsets |
 | Materials manifest | OverlayProvider: style, inherited; docs route `integration`; verification inherited-composition, semantic-state |
 | Tests of it | 36 (importing one of its public exports or one of its implementation's declarations by name, or named for it, `test/overlay-provider[-<what>].test.tsx`): `test/anchored-overlay-dismissal.test.tsx`, `test/anchored-overlay-focus.test.tsx`, `test/anchored-overlay-placement.test.tsx`, `test/anchored-overlay-sheet.test.tsx`, `test/app-frame.test.tsx`, `test/autocomplete-accessibility-return.test.tsx`, `test/autocomplete-keyboard.test.tsx`, `test/avatar-menu.test.tsx`, `test/capture-target.test.tsx`, `test/command.test.tsx`, `test/control-refs.test.tsx`, `test/dialog-form.test.tsx`, `test/dialog-hardware-back.test.tsx`, `test/dialog-overlay.test.tsx`, `test/dialog-workspace.test.tsx`, `test/docs-live-patterns.test.tsx`, `test/docs-viewport-overlay.test.tsx`, `test/drawer-host.test.tsx`, `test/entrance-readiness.test.tsx`, `test/escape-layers.test.tsx`, `test/glass-blur-plane.test.tsx`, `test/glass-blur-target.test.tsx`, `test/glass-controls.test.tsx`, `test/glass-modal-blur-target.test.tsx`, `test/glass-pane-ripple.test.tsx`, `test/glass-surface-android.test.tsx`, `test/hosted-focus.test.tsx`, `test/hosted-trigger-focus.test.tsx`, `test/keyboard-nav.test.tsx`, `test/material-portal-context.test.tsx`, `test/material-resolution.test.tsx`, `test/native-accessibility-escape-hosts.test.tsx`, `test/native-frost-paint-order.test.tsx`, `test/overlay-placement.test.tsx`, `test/overlays.test.tsx`, `test/scrim-frost.test.tsx` |
-| Consumers | 21 components: 12 directly, 2 through shared modules, 7 through other kit components (one row each below, read from the source by `tools/audit/kit-graph.ts`) |
+| Consumers | 21 components: 9 directly, 5 through shared modules, 7 through other kit components (one row each below, read from the source by `tools/audit/kit-graph.ts`) |
 | Pages using it | none: no pattern or template entry names one of its exports |
-| Capture through | 21, in this order: components `autocomplete`, `button-group`, `dropdown`, `popover`, `select`, `alert-dialog`, `app-frame`, `command`, `dialog`, `drawer`, `row-menu`, `toast`, `phone-input`, `calendar`, `avatar`, `field`, `board`, `filter-panel`, `navbars`, `sidebar`, `wizard`; pages none |
-| Not captured | guide pages, which the capture inventory (component, pattern and template pages) does not hold: `/foundation` (planned for insetOverlayBounds, intersectOverlayBounds, OverlayBounds, OverlayHost, Portal, PortalProps, useOverlayHost), `/integration` (documents OverlayProvider; planned for OverlayProviderProps, OverlayViewportInsets) |
+| Capture through | 21, in this order: components `autocomplete`, `button-group`, `dropdown`, `popover`, `select`, `app-frame`, `command`, `drawer`, `row-menu`, `alert-dialog`, `phone-input`, `calendar`, `dialog`, `toast`, `avatar`, `field`, `board`, `filter-panel`, `navbars`, `sidebar`, `wizard`; pages none |
+| Not captured | guide pages, which the capture inventory (component, pattern and template pages) does not hold: `/integration` (documents OverlayHost, OverlayProvider, useOverlayHost; planned for OverlayProviderProps, OverlayViewportInsets) |
 | Turn record | `audit/turns/overlay-provider.md`, written by `bun run audit:turn -- --slug=overlay-provider --phase=before\|after` (the before and after capture runs) |
 
 | Consumer | Reaches it | Through |
@@ -27,15 +27,15 @@ Audit checklist for the style-layer foundation `OverlayProvider`, audited for it
 | `dropdown` | directly | `useOverlayHost` |
 | `popover` | directly | `useOverlayHost` |
 | `select` | directly | `useOverlayHost` |
-| `alert-dialog` | directly | `Portal` |
 | `app-frame` | directly | `OverlayProvider` |
 | `command` | directly | `useOverlayHost` |
-| `dialog` | directly | `Portal` |
 | `drawer` | directly | `OverlayProvider` |
 | `row-menu` | directly | `useOverlayHost` |
-| `toast` | directly | `Portal` |
+| `alert-dialog` | through shared modules | `Portal` (src/style/portal.tsx) |
 | `phone-input` | through shared modules | `AnchoredOverlay` (src/style/anchored-overlay.tsx) |
 | `calendar` | through shared modules | `AnchoredOverlay` (src/style/anchored-overlay.tsx) |
+| `dialog` | through shared modules | `Portal` (src/style/portal.tsx) |
+| `toast` | through shared modules | `Portal` (src/style/portal.tsx) |
 | `avatar` | through other kit components | `dropdown` |
 | `field` | through other kit components | `autocomplete`, `phone-input`, `select` |
 | `board` | through other kit components | `row-menu` |

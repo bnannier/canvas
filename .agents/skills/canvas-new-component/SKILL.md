@@ -47,8 +47,8 @@ Conventions inside the shell:
   alongside `accessibilityState`) because react-native-web drops
   accessibilityState (see `test/a11y-state.test.tsx`).
 - `role="img"` not `"image"` (RN Role type).
-- Android bounded ripple on a ROUNDED node needs `overflow:"hidden"` or the
-  `rippleClip()` helper (`src/style/ripple.ts`), else it bleeds past corners.
+- Android bounded ripple on a ROUNDED node needs a clipping parent, `<RippleClip>`
+  (`src/style/ripple-clip.tsx`), else it bleeds past corners.
 
 ## 2. Registration (all four, or the build fails)
 

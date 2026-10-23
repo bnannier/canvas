@@ -106,12 +106,6 @@ import { enterCard, focusedField, moveAccessibilityFocus, releaseFieldIn, type F
 
 const OverlaySideContext = createContext<{ side: OverlaySide; centerX?: number; cardWidth?: number }>({ side: "below" });
 /**
- * The side of its trigger an anchored card actually took once collisions were
- * resolved (`above`, `below`, or beside at the `start` or `end`), for a decoration
- * that points at the trigger. Read inside the card.
- */
-export const useOverlaySide = () => useContext(OverlaySideContext).side;
-/**
  * The resolved side plus where the trigger's center sits along the card (`centerX`,
  * measured from the card edge a decoration's `left` inset is measured from: the
  * physical left, or the start edge where React Native swaps `left` and `right` in a

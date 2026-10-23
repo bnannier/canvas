@@ -3,11 +3,11 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { tokens, shadow, View, Text, Button } = scope;
+  const { tokens, View, Text, Button } = scope;
   return (
 <View style={{ alignSelf: "flex-start" }}>
   <Button outline small>Open popover</Button>
-  <View style={{ borderRadius: 12, borderWidth: 1, borderColor: tokens.border, backgroundColor: tokens.popover, padding: 16, ...shadow("lg"), marginTop: 8, minWidth: 240 }}>
+  <View style={{ borderRadius: 12, borderWidth: 1, borderColor: tokens.border, backgroundColor: tokens.popover, padding: 16, boxShadow: "0px 26px 50px -20px rgba(121, 100, 214, 0.22)", marginTop: 8, minWidth: 240 }}>
     <Text style={{ fontSize: 12.5, lineHeight: 19, fontWeight: "500", color: tokens["popover-foreground"] }}>No anchor, no dismiss, no Close.</Text>
   </View>
 </View>

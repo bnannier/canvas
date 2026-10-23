@@ -1,6 +1,6 @@
 import { readdir, readFile } from "node:fs/promises";
 import { join } from "node:path";
-import { brandColors, darkColors, glassByScheme, lightColors, mintColors, palette } from "../src/style/tokens.ts";
+import { darkColors, glassByScheme, lightColors, mintColors, palette } from "../src/style/tokens.ts";
 import { WEB_TINTS } from "../src/style/glass-surface/web-frost.ts";
 // The oklch conversion and the block parser moved to tools/tokens so the design-rule
 // tests and the DESIGN.md generator can read the hand-off with the same parser this
@@ -77,18 +77,6 @@ if (missingInCss.length) {
   failed = true;
 }
 
-// Same cross-check for the fixed brand constants (the orb / avatar-gradient
-// colors). They do not flip with the scheme, so they live in their own JS export
-// rather than the light/dark pair, and their keys ARE the CSS names: a key here
-// with no `--name` in the CSS means a JS consumer and a web consumer would be
-// painting the brand from different sources.
-const brandMissingInCss = Object.keys(brandColors).filter((k) => !cssValueTokens.has(k)).sort();
-if (brandMissingInCss.length) {
-  console.log(`\nBrand tokens in src/style/tokens.ts but MISSING from styles/canvas.css: ${brandMissingInCss.length}`);
-  for (const k of brandMissingInCss) console.log(`  --${k}`);
-  failed = true;
-}
-
 // And for the GLASS MATERIAL family. The material owns its fill (`glass-tint`) instead of
 // borrowing the semantic `popover` token, which is what let a change to menu opacity drag
 // the bars along with it. Its keys ARE the CSS names, so a name here with no `--name` in
@@ -145,14 +133,8 @@ for (const [scheme, js, css] of [
     }
   }
 }
-// The brand constants and the Tailwind palette steps are authored as hex on both
-// sides, so they compare verbatim through the same path.
-for (const [name, jsValue] of Object.entries(brandColors)) {
-  const cssHex = cssLight[name] === undefined ? null : cssColorToHex(cssLight[name]);
-  if (cssHex !== null && cssHex !== jsValue.toLowerCase()) {
-    drifted.push(`  brand --${name.padEnd(24)} css ${cssHex}  !=  js ${jsValue}`);
-  }
-}
+// The Tailwind palette steps are authored as hex on both sides, so they compare
+// verbatim through the same path.
 for (const m of paletteCss.matchAll(/--([\w-]+)\s*:\s*([^;]+);/g)) {
   const jsValue = palette[m[1]];
   if (!jsValue) continue; // palette.css also defines aliases (--green-500-bar) with no JS twin
@@ -193,7 +175,7 @@ if (drifted.length) {
 
 console.log(
   `\nTokens: ${defined.size} defined, ${referenced.size} referenced; ${Object.keys(lightColors).length} JS color tokens + ` +
-    `${Object.keys(brandColors).length} JS brand tokens + ${glassKeys.length * 3} JS glass values (blush, mint, dark) cross-checked`,
+    `${glassKeys.length * 3} JS glass values (blush, mint, dark) cross-checked`,
 );
 if (!failed) console.log("Token validation passed.");
 else process.exit(1);

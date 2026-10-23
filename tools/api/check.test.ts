@@ -1,5 +1,5 @@
 import { expect, test } from "bun:test";
-import { checkPublicApi, FOUNDATION_ROUTE, type ApiInventory, type ApiManifest } from "./check";
+import { checkPublicApi, type ApiInventory, type ApiManifest } from "./check";
 import type { ApiEntry, ApiExport, DocsPage, PlannedRoute } from "./types";
 
 const exported = (name: string, facts: Partial<ApiExport> = {}): ApiExport => ({
@@ -22,7 +22,10 @@ const PAGES = new Map([
   ["components/field", page("components/field", "Field\nA labelled input.\n<Field label=\"Email\" />\nFieldProps\nlabel string", ["Default", "With error"])],
   ["guides/fields", page("guides/fields", "const { width } = useField();\nimport \"@nannier/canvas/styles/field.css\";", ["Hooks"])],
   ["guides/layout", page("guides/layout", "Layout widths.", ["Widths"])],
+  ["guides/retired", page("guides/retired", "Retired names.")],
 ]);
+// The planned page of the names a later turn retires.
+const RETIRED = "guides/retired";
 
 function inventory(overrides: Partial<ApiInventory> = {}): ApiInventory {
   return {
@@ -46,10 +49,10 @@ const API: Record<string, ApiEntry> = {
   measureField: { kind: "internal-by-accident" },
   FIELD_WASH: { kind: "deprecated-alias", replacement: "fieldWidths" },
 };
-const PENDING: Record<string, string> = { fieldWidths: "guides/layout", measureField: FOUNDATION_ROUTE, FIELD_WASH: FOUNDATION_ROUTE };
-const PLANNED: Record<string, PlannedRoute> = { "guides/layout": { turn: "components/field" }, [FOUNDATION_ROUTE]: { turn: "foundation/reference" } };
-// The plan once nothing is staged for guides/layout: only the reference is still open.
-const FOUNDATION_ONLY: Record<string, PlannedRoute> = { [FOUNDATION_ROUTE]: PLANNED[FOUNDATION_ROUTE] };
+const PENDING: Record<string, string> = { fieldWidths: "guides/layout", measureField: RETIRED, FIELD_WASH: RETIRED };
+const PLANNED: Record<string, PlannedRoute> = { "guides/layout": { turn: "components/field" }, [RETIRED]: { turn: "foundation/reference" } };
+// The plan once nothing is staged for guides/layout: only the retired names' page is still open.
+const RETIRED_ONLY: Record<string, PlannedRoute> = { [RETIRED]: PLANNED[RETIRED] };
 
 function manifest(api: Record<string, ApiEntry> = API, overrides: Partial<ApiManifest> = {}): ApiManifest {
   return {
@@ -123,7 +126,7 @@ test("a kind must agree with what the checker sees", () => {
   const unknown = errorsOf(inventory(), manifest({ ...API, fieldWidths: { kind: "constant" as never } }));
   expect(unknown).toContain("Unknown kind for fieldWidths: constant");
   // Internal helper types and deprecated type aliases are type-only too.
-  expect(errorsOf(inventory(), manifest({ ...API, FieldProps: { kind: "internal-by-accident" } }, { pendingDocs: { ...PENDING, FieldProps: FOUNDATION_ROUTE } }))).toEqual([]);
+  expect(errorsOf(inventory(), manifest({ ...API, FieldProps: { kind: "internal-by-accident" } }, { pendingDocs: { ...PENDING, FieldProps: RETIRED } }))).toEqual([]);
 });
 
 test("deprecated aliases match their @deprecated tag and name a live replacement", () => {
@@ -135,7 +138,7 @@ test("deprecated aliases match their @deprecated tag and name a live replacement
     .toContain("FIELD_WASH's replacement measureField is itself internal-by-accident");
   expect(errorsOf(inventory(), manifest({ ...API, fieldWidths: { kind: "token", replacement: "Field" } })))
     .toContain("fieldWidths names a replacement but is not a deprecated alias");
-  // A deprecated alias with nothing to replace it (brandColors) is allowed.
+  // A deprecated alias with nothing to replace it is allowed.
   expect(errorsOf(inventory(), manifest({ ...API, FIELD_WASH: { kind: "deprecated-alias" } }))).toEqual([]);
 });
 
@@ -187,7 +190,7 @@ test("a deprecated alias says what it was on its declaration, value or type", ()
 test("a docs claim names a real route that names the export, and a real section", () => {
   expect(errorsOf(inventory(), manifest({ ...API, Field: { kind: "component", docs: "components/fields" } })))
     .toContain("Unknown docs route for Field: components/fields");
-  expect(errorsOf(inventory(), manifest({ ...API, fieldWidths: { kind: "token", docs: "components/field" } }, { pendingDocs: { measureField: FOUNDATION_ROUTE, FIELD_WASH: FOUNDATION_ROUTE }, plannedRoutes: FOUNDATION_ONLY })))
+  expect(errorsOf(inventory(), manifest({ ...API, fieldWidths: { kind: "token", docs: "components/field" } }, { pendingDocs: { measureField: RETIRED, FIELD_WASH: RETIRED }, plannedRoutes: RETIRED_ONLY })))
     .toEqual(["Docs route components/field never names fieldWidths in what it renders (components/field.tsx): document it there, or stage it in PENDING_DOCS"]);
   expect(errorsOf(inventory(), manifest({ ...API, Field: { kind: "component", docs: "components/field", section: "Sizes" } })))
     .toEqual(["Docs route components/field has no section \"Sizes\" for Field"]);
@@ -207,8 +210,8 @@ test("a name that is also an ordinary word is named only where the page shows it
   const prose = new Map([...PAGES, ["guides/layout", page("guides/layout", "Layout widths and fieldWidths.", ["Widths"], "")]]);
   const words = { ...API, fieldWidths: { kind: "token" as const, docs: "guides/layout" }, widths: { kind: "token" as const, docs: "guides/layout" } };
   const web = [...EXPORTS, exported("widths")];
-  const pending = { measureField: FOUNDATION_ROUTE, FIELD_WASH: FOUNDATION_ROUTE };
-  expect(errorsOf(inventory({ pages: prose, exports: { web, ios: web, android: web } }), manifest(words, { pendingDocs: pending, plannedRoutes: FOUNDATION_ONLY })))
+  const pending = { measureField: RETIRED, FIELD_WASH: RETIRED };
+  expect(errorsOf(inventory({ pages: prose, exports: { web, ios: web, android: web } }), manifest(words, { pendingDocs: pending, plannedRoutes: RETIRED_ONLY })))
     .toEqual(["Docs route guides/layout never names widths in what it renders (guides/layout.tsx): document it there, or stage it in PENDING_DOCS"]);
   const code = new Map([...PAGES, ["guides/layout", page("guides/layout", "Layout widths.\nwidths.md", ["Widths"], "widths.md")]]);
   expect(errorsOf(inventory({ pages: code, exports: { web, ios: web, android: web } }), manifest({ ...words, fieldWidths: { kind: "token" } }, { pendingDocs: { ...pending, fieldWidths: "guides/layout" } }))).toEqual([]);
@@ -216,13 +219,13 @@ test("a name that is also an ordinary word is named only where the page shows it
 
 test("PENDING_DOCS stages a name with the route planned for it, and is checked both ways", () => {
   // Every name with no docs route is staged; nothing else is.
-  expect(errorsOf(inventory(), manifest(API, { pendingDocs: { measureField: FOUNDATION_ROUTE, FIELD_WASH: FOUNDATION_ROUTE }, plannedRoutes: FOUNDATION_ONLY })))
+  expect(errorsOf(inventory(), manifest(API, { pendingDocs: { measureField: RETIRED, FIELD_WASH: RETIRED }, plannedRoutes: RETIRED_ONLY })))
     .toEqual(["fieldWidths has no docs route and is not in PENDING_DOCS: document it, or stage it there with the route planned for it"]);
   expect(errorsOf(inventory(), manifest(API, { pendingDocs: { ...PENDING, Field: "components/field" }, plannedRoutes: { ...PLANNED, "components/field": { turn: "components/field" } } })))
     .toEqual(["PENDING_DOCS entry Field already has a docs route (components/field): drop it from PENDING_DOCS"]);
   expect(errorsOf(inventory(), manifest(API, { pendingDocs: { ...PENDING, FieldGroup: "guides/layout" } })))
     .toEqual(["PENDING_DOCS names FieldGroup, which the manifest does not classify"]);
-  expect(errorsOf(inventory(), manifest(API, { pendingDocs: { ...PENDING, fieldWidths: "guides/sizes" }, plannedRoutes: { ...FOUNDATION_ONLY, "guides/sizes": { turn: "components/field" } } })))
+  expect(errorsOf(inventory(), manifest(API, { pendingDocs: { ...PENDING, fieldWidths: "guides/sizes" }, plannedRoutes: { ...RETIRED_ONLY, "guides/sizes": { turn: "components/field" } } })))
     .toEqual(["Unknown planned docs route for fieldWidths: guides/sizes"]);
   // The day the planned page names a staged name, the gate asks for the move.
   const named = new Map([...PAGES, ["guides/layout", page("guides/layout", "Read fieldWidths for the scale.", ["Widths"])]]);
@@ -235,7 +238,7 @@ test("PENDING_DOCS stages a name with the route planned for it, and is checked b
 
 test("the staged migration ends route by route, at the audit turn that owns each route", () => {
   // A staged route names the turn that ends it.
-  expect(errorsOf(inventory(), manifest(API, { plannedRoutes: { [FOUNDATION_ROUTE]: PLANNED[FOUNDATION_ROUTE] } })))
+  expect(errorsOf(inventory(), manifest(API, { plannedRoutes: { [RETIRED]: PLANNED[RETIRED] } })))
     .toEqual(["PENDING_DOCS stages 1 (fieldWidths) for guides/layout, but PLANNED_ROUTES names no audit turn that lands its docs: give the route the turn that ends it"]);
   expect(errorsOf(inventory(), manifest(API, { plannedRoutes: { ...PLANNED, "guides/layout": { turn: "components/fields" } } })))
     .toEqual(["PLANNED_ROUTES gives guides/layout to components/fields, which is no checklist under audit/"]);
@@ -245,32 +248,17 @@ test("the staged migration ends route by route, at the audit turn that owns each
   // A route nothing is staged for any more is closed, so its staging cannot reopen quietly.
   const documented = new Map([...PAGES, ["guides/layout", page("guides/layout", "Layout widths: fieldWidths.", ["Widths"])]]);
   const moved = { ...API, fieldWidths: { kind: "token" as const, docs: "guides/layout" } };
-  const rest = { measureField: FOUNDATION_ROUTE, FIELD_WASH: FOUNDATION_ROUTE };
+  const rest = { measureField: RETIRED, FIELD_WASH: RETIRED };
   expect(errorsOf(inventory({ pages: documented }), manifest(moved, { pendingDocs: rest })))
     .toEqual(["Nothing is staged for guides/layout any more: its turn (components/field) closes it in PLANNED_ROUTES (closed: true)"]);
   expect(errorsOf(inventory({ pages: documented }), manifest(moved, { pendingDocs: rest, plannedRoutes: { ...PLANNED, "guides/layout": { turn: "components/field", closed: true } } }))).toEqual([]);
   expect(errorsOf(inventory(), manifest(API, { plannedRoutes: { ...PLANNED, "guides/sizes": { turn: "components/field", closed: true } } })))
     .toEqual(["PLANNED_ROUTES closes guides/sizes, which the docs do not serve"]);
-  // The foundation reference existing ends no other route: guides/layout stays staged, and
-  // an internal helper a later turn retires stays staged for the reference too.
-  const withFoundation = new Map([...PAGES, [FOUNDATION_ROUTE, page(FOUNDATION_ROUTE, "Deprecated names: FIELD_WASH.")]]);
-  const aliasHome = { ...API, FIELD_WASH: { ...API.FIELD_WASH, docs: FOUNDATION_ROUTE } };
-  expect(errorsOf(inventory({ pages: withFoundation }), manifest(aliasHome, { pendingDocs: { fieldWidths: "guides/layout", measureField: FOUNDATION_ROUTE } }))).toEqual([]);
-});
-
-test("the foundation reference is every deprecated alias's home, and lists each once it exists", () => {
-  // Before the page exists, an alias waits for it there and nowhere else.
-  expect(errorsOf(inventory(), manifest(API, { pendingDocs: { ...PENDING, FIELD_WASH: "guides/layout" } })))
-    .toEqual(["FIELD_WASH is a deprecated alias staged for guides/layout: its home is the foundation reference (foundation)"]);
-  expect(errorsOf(inventory({ pages: new Map([...PAGES, ["guides/layout", page("guides/layout", "FIELD_WASH fieldWidths")]]) }), manifest({ ...API, FIELD_WASH: { ...API.FIELD_WASH, docs: "guides/layout" } }, { pendingDocs: { fieldWidths: "guides/layout", measureField: FOUNDATION_ROUTE } })))
-    .toContain("FIELD_WASH is a deprecated alias documented on guides/layout: its home is the foundation reference (foundation)");
-  // Once it exists, a staged alias it names is moved to docs, and one it leaves out fails.
-  const listing = new Map([...PAGES, [FOUNDATION_ROUTE, page(FOUNDATION_ROUTE, "Deprecated names: FIELD_WASH.")]]);
-  expect(errorsOf(inventory({ pages: listing }), manifest()))
-    .toEqual([`FIELD_WASH is pending, but its planned page ${FOUNDATION_ROUTE} already names it: record docs "${FOUNDATION_ROUTE}" and drop it from PENDING_DOCS`]);
-  const silent = new Map([...PAGES, [FOUNDATION_ROUTE, page(FOUNDATION_ROUTE, "Deprecated names.")]]);
-  expect(errorsOf(inventory({ pages: silent }), manifest()))
-    .toEqual([`FIELD_WASH is a deprecated alias, and the foundation reference (${FOUNDATION_ROUTE}) does not list it: every deprecated name is listed there with its replacement`]);
+  // A page that documents one name ends no other route: guides/layout stays staged, and the
+  // internal helper a later turn retires stays staged beside the alias the page documents.
+  const listing = new Map([...PAGES, [RETIRED, page(RETIRED, "Retired names: FIELD_WASH.")]]);
+  const aliasHome = { ...API, FIELD_WASH: { ...API.FIELD_WASH, docs: RETIRED } };
+  expect(errorsOf(inventory({ pages: listing }), manifest(aliasHome, { pendingDocs: { fieldWidths: "guides/layout", measureField: RETIRED } }))).toEqual([]);
 });
 
 test("the materials manifest and the API manifest agree on a renderable's docs route", () => {
@@ -309,21 +297,18 @@ test("every file a file entry point reaches is classified, with its specifier on
   expect(wrong).toContain("Docs route components/field never names styles/field.css in what it renders (components/field.tsx): document it there, or stage it in PENDING_DOCS");
 });
 
-test("no page but the foundation reference, and no shipped document, presents a kit internal as API", () => {
+test("no page and no shipped document presents a kit internal as API", () => {
   // A guide whose snippet calls the deprecated FIELD_WASH and imports the internal measureField.
   const teaching = new Map([...PAGES, ["guides/layout", page("guides/layout", "Layout widths.", ["Widths"], "", ["FIELD_WASH", "measureField", "Field"])]]);
   expect(errorsOf(inventory({ pages: teaching }), manifest())).toEqual([
-    "guides/layout.tsx presents FIELD_WASH, a deprecated alias, as API: show what the kit offers instead (only the foundation reference lists it)",
-    "guides/layout.tsx presents measureField, a kit internal, as API: show what the kit offers instead (only the foundation reference lists it)",
+    "guides/layout.tsx presents FIELD_WASH, a deprecated alias, as API: show what the kit offers instead",
+    "guides/layout.tsx presents measureField, a kit internal, as API: show what the kit offers instead",
   ]);
   // A component page's example deep links render the same page: one error, not one per link.
   const linked = new Map([...PAGES, ["components/field", page("components/field", PAGES.get("components/field")!.text, ["Default", "With error"], undefined, ["FIELD_WASH"])], ["components/field/witherror", page("components/field", PAGES.get("components/field")!.text, [], undefined, ["FIELD_WASH"])]]);
   expect(errorsOf(inventory({ pages: linked }), manifest()).filter((error) => error.includes("presents"))).toHaveLength(1);
-  // The foundation reference lists every one of them, so it may.
-  const reference = new Map([...PAGES, [FOUNDATION_ROUTE, page(FOUNDATION_ROUTE, "Deprecated names.", [], "", ["FIELD_WASH", "measureField"])]]);
-  expect(errorsOf(inventory({ pages: reference }), manifest()).filter((error) => error.includes("presents"))).toEqual([]);
   // DESIGN.md ships in the package, so it is held to the same rule.
   expect(errorsOf(inventory({ packageDocs: new Map([["DESIGN.md", ["Field", "FIELD_WASH"]]]) }), manifest()))
-    .toEqual(["DESIGN.md presents FIELD_WASH, a deprecated alias, as API: show what the kit offers instead (only the foundation reference lists it)"]);
+    .toEqual(["DESIGN.md presents FIELD_WASH, a deprecated alias, as API: show what the kit offers instead"]);
 });
 

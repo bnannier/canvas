@@ -54,9 +54,7 @@ commit as its manifest entry.
 - **A deprecated alias says what it was and what to use instead.** Its declaration
   carries a JSDoc summary (value or type; a dependency's name is its owner's to
   document), and its `@deprecated` text is not empty and names its `replacement` when
-  it has one: the generated foundation reference shows
-  that text as the row's "Use instead" (docs:gen writes the rows from this manifest and
-  the source, tools/docgen/foundation.ts, and the gate reads them with the page).
+  it has one, since that text is what a consumer reads in place of the name.
 - **A public value has a JSDoc summary.** Every `component`, `part`, `hook`, `token` and
   `utility` value carries a summary on the declaration a consumer's editor shows through
   the published types (the web build's). A summary written on a re-export, or on the
@@ -68,32 +66,26 @@ commit as its manifest entry.
   identifier, and a `section` has to be one of the page's headings. A file is named by
   its import specifier (`@nannier/canvas/styles/…`).
 - **PENDING_DOCS is staged, not waived.** A name with no `docs` must be listed, and a
-  listed name must have no `docs`. Its planned route must exist (or be `foundation`, the
-  generated reference K12-10 adds), and the day that page names it the gate asks for the
-  move to `docs`.
+  listed name must have no `docs`. Its planned route must exist, and the day that page
+  names it the gate asks for the move to `docs`.
 - **The migration ends route by route.** `PLANNED_ROUTES` gives every planned route the
   audit turn that lands its docs (a checklist under `audit/`). That turn closes the route
   once it has moved the last of its names, a name staged for a closed route fails, and so
   does a route nothing is staged for that is still open. A page existing ends nothing,
-  since every planned page but the reference exists already and later turns write its
-  sections.
-- **No other page presents a kit internal as API.** A deprecated alias or an
+  since every planned page exists already and later turns write its sections.
+- **No page presents a kit internal as API.** A deprecated alias or an
   `internal-by-accident` helper that a snippet imports, calls, renders or names as a type,
-  or that an inline code span sets alone (`useMinTargetSlop`), fails on any page but the
-  foundation reference, and so it does in DESIGN.md and README.md, which the package
-  ships. Prose, JSX text, a style key (React Native's `fontStyle`) and a JSX attribute
-  never count.
-- **The foundation reference is every deprecated alias's home.** A `deprecated-alias` is
-  staged for `foundation` or documented there, never anywhere else, and once the page
-  exists it lists every one (the owner's K12-10 OD2 decision).
+  or that an inline code span sets alone, fails on any page, and so it does in DESIGN.md
+  and README.md, which the package ships. Prose, JSX text, a style key (React Native's
+  `fontStyle`) and a JSX attribute never count. The owner removed every such name on
+  2026-10-23 (nothing consumed them), so today the rule guards the next one.
 - **The two manifests agree.** The material inventory (tools/materials/manifest.ts)
   records a docs route for every renderable. It must be the API manifest's `docs`, or,
   while the docs are pending, none or the planned route.
 
 "Rendered text" is what a reader can see: string literals, code snippets, template
 text and JSX text, plus a component page's catalog entry and its generated examples,
-Do & Don't pairs and prop tables, and the foundation reference's generated rows (each
-row's name and replacement as code, each section as a heading). An import or a JSX tag that only uses a component
+Do & Don't pairs and prop tables. An import or a JSX tag that only uses a component
 does not count, and neither does a comment. A name that is also an ordinary word (one
 lowercase word, one capitalized word, one all-capitals word: `palette`, `Surface`,
 `FILL`) counts only where the page shows it as code: a snippet (comments stripped),

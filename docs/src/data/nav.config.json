@@ -45,11 +45,6 @@
       "href": "/rn-primitives",
       "icon": "smartphone"
     },
-    "foundation": {
-      "label": "Foundation reference",
-      "href": "/foundation",
-      "icon": "archive"
-    },
     "browser": {
       "label": "Browser Support",
       "href": "/browser-support",
@@ -99,7 +94,6 @@
           "integration",
           "theming",
           "rn",
-          "foundation",
           "browser",
           "privacy",
           "licenses"
@@ -836,7 +830,6 @@
           "overflow": [
             "theming",
             "rn",
-            "foundation",
             "browser",
             "boilerplate",
             "privacy",
