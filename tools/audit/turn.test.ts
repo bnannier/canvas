@@ -4,7 +4,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { components, pages } from "./inventory.ts";
 import { buildIdentity, findAppConfig, readInstalledAndroid, readInstalledIos, whyRebuild, type Exec, type InstalledBuild } from "./native/installed.ts";
-import { BASE_PLACEHOLDER, captureVerdict, exportState, formatPlan, madeRun, ownRun, parseTurnArgs, planTurn, readExportFingerprint, resolveTarget, runCells, sheetLines, turnScope, type TurnPlan } from "./turn.ts";
+import { BASE_PLACEHOLDER, beforeSlugs, captureVerdict, exportState, formatPlan, madeRun, ownRun, parseTurnArgs, planTurn, readExportFingerprint, resolveTarget, runCells, sheetLines, turnScope, type TurnPlan } from "./turn.ts";
 import { appendTurnRuns, readTurnRecord, renderTurnRecord, turnProblems, type TurnRun } from "./turn-record.ts";
 
 const FP = (c: string) => c.repeat(64);
@@ -68,16 +68,50 @@ describe("what a turn captures", () => {
   it("expands a foundation to its Capture through list, capped by --only-first, and refuses a cap on anything else", () => {
     const foundation = resolveTarget("overlay-provider");
     const through = { components: ["chip", "emblem", "autocomplete", "button"], pages: ["pattern-glass"] };
-    expect(turnScope(foundation, null, through)).toEqual({ components: ["chip", "emblem", "autocomplete", "button"], pages: ["pattern-glass"], capped: null });
-    expect(turnScope(foundation, 2, through)).toEqual({ components: ["chip", "emblem"], pages: [], capped: { total: 5, kept: 2 } });
-    expect(turnScope(foundation, 5, through)).toEqual({ components: ["chip", "emblem", "autocomplete", "button"], pages: ["pattern-glass"], capped: null });
+    expect(turnScope(foundation, null, through)).toEqual({ components: ["chip", "emblem", "autocomplete", "button"], pages: ["pattern-glass"], capped: null, carried: [] });
+    expect(turnScope(foundation, 2, through)).toEqual({ components: ["chip", "emblem"], pages: [], capped: { total: 5, kept: 2 }, carried: [] });
+    expect(turnScope(foundation, 5, through)).toEqual({ components: ["chip", "emblem", "autocomplete", "button"], pages: ["pattern-glass"], capped: null, carried: [] });
     expect(() => turnScope(foundation, null, { components: [], pages: [] })).toThrow(/nothing in its Capture through list/);
     expect(() => turnScope(resolveTarget("button"), 2)).toThrow(/--only-first caps a foundation's Capture through list; button is a component/);
-    expect(turnScope(resolveTarget("signin"), null)).toEqual({ components: [], pages: ["template-signin"], capped: null });
+    expect(turnScope(resolveTarget("signin"), null)).toEqual({ components: [], pages: ["template-signin"], capped: null, carried: [] });
     // A real foundation's list comes from its facts: OverlayProvider's direct consumers come first.
     const real = turnScope(foundation, 3);
     expect(real.capped?.kept).toBe(3);
     expect(real.components).toHaveLength(3);
+  });
+
+  it("carries into a foundation's after phase every slug its before phase captured that the list no longer holds (R-3)", () => {
+    const foundation = resolveTarget("overlay-provider");
+    const through = { components: ["chip", "emblem"], pages: ["pattern-glass"] };
+    const before = { components: ["chip", "switch", "checkbox", "switch"], pages: ["pattern-glass", "template-signin"] };
+    expect(turnScope(foundation, null, through, before)).toEqual({
+      components: ["chip", "emblem", "switch", "checkbox"],
+      pages: ["pattern-glass", "template-signin"],
+      capped: null,
+      carried: ["switch", "checkbox", "template-signin"],
+    });
+    expect(turnScope(foundation, null, through, { components: [], pages: [] }).carried).toEqual([]);
+  });
+
+  it("reads the slugs a turn record's before phase captured, pages apart, capped notes dropped", () => {
+    const record = [
+      "# Audit turn: OverlayProvider",
+      "",
+      "## before",
+      "",
+      "| Run id | Kind | Platform | Recorded | Commit | Status | Cells | Slugs |",
+      "|---|---|---|---|---|---|---|---|",
+      "| `20261013-131814-web-0fb577d` | variants | web | 2026-10-13T13:18:14Z | `0fb577d` | complete | 10 of 10 | chip, switch, pattern-glass |",
+      "| `20261013T141318Z-ios-d891e5f` | native | ios | 2026-10-13T14:13:18Z | `d891e5f` | complete | 4 of 4 | checkbox, switch (capped: the first 2 of 9) |",
+      "",
+      "## after",
+      "",
+      "| Run id | Kind | Platform | Recorded | Commit | Status | Cells | Slugs |",
+      "|---|---|---|---|---|---|---|---|",
+      "",
+    ].join("\n");
+    expect(beforeSlugs(record, new Set(["pattern-glass"]))).toEqual({ components: ["chip", "switch", "checkbox"], pages: ["pattern-glass"] });
+    expect(beforeSlugs(null, new Set())).toEqual({ components: [], pages: [] });
   });
 });
 
@@ -131,7 +165,7 @@ describe("a turn's plan", () => {
 
   it("captures the states of the components that have recipes only, and the pages with --pages", () => {
     const foundation = resolveTarget("overlay-provider");
-    const scope = { components: ["emblem", "chip"], pages: ["pattern-glass"], capped: null };
+    const scope = { components: ["emblem", "chip"], pages: ["pattern-glass"], capped: null, carried: [] };
     const steps = plan({ webOnly: true }, scope, foundation).steps;
     const argvs = steps.flatMap((s) => (s.kind === "capture" ? [s.argv.join(" ")] : []));
     expect(argvs).toEqual([
@@ -150,8 +184,9 @@ describe("a turn's plan", () => {
     expect(text).toContain("a dry run touches no device, so the installed builds are not read here");
     expect(text).toContain("source fingerprint bbbbbbbbbbbb, native cccccccccccc");
     expect(text).toContain(`append every run id the steps made to audit/turns/button.md under "before"`);
-    const capped = formatPlan(plan({ webOnly: true, noBuild: true }, { components: ["chip"], pages: [], capped: { total: 73, kept: 1 } }, resolveTarget("overlay-provider")), { export: { kind: "missing", embedded: null, checkout: FP("b"), detail: "docs/dist holds no export" }, source: FP("b"), native: FP("c") });
+    const capped = formatPlan(plan({ webOnly: true, noBuild: true }, { components: ["chip", "switch"], pages: [], capped: { total: 73, kept: 1 }, carried: ["switch"] }, resolveTarget("overlay-provider")), { export: { kind: "missing", embedded: null, checkout: FP("b"), detail: "docs/dist holds no export" }, source: FP("b"), native: FP("c") });
     expect(capped.join("\n")).toContain("capped by --only-first to the first 1 of 73");
+    expect(capped.join("\n")).toContain("carries  from its before phase, no longer on the list: switch");
     expect(capped.join("\n")).toContain("docs/dist is missing now (docs/dist holds no export): refused (--no-build)");
   });
 });
