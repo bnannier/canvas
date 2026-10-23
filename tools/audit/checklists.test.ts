@@ -388,8 +388,8 @@ describe.skipIf(!hasDist)("the audit checklists keep a reviewer's work", () => {
 
   it("names the kit's whole touch-target vocabulary, not two words of it, and the coverage test's record (item 3)", () => {
     // Chip builds its floor from the seeded slop, the seams and the clip slop, and its
-    // skin from platformMinTarget and TOUCH_TARGET; it never names minTarget or
-    // useMinTargetSlop, which is all the facts used to look for.
+    // skin from platformMinTarget and TOUCH_TARGET; it never names minTarget, which with the
+    // retired unseeded hook is all the facts used to look for.
     const chip = componentFacts("chip", sources.corpus).touchTarget;
     expect(chip.modules).toEqual([
       { module: "chip.shared.tsx", names: expect.arrayContaining(["hitSlop", "reachSlop", "rowSeam", "useSeededMinTargetSlop"]) },
@@ -859,7 +859,7 @@ describe("tests naming a component", () => {
 describe("the touch-target vocabulary", () => {
   it("is every value the kit's touch-target modules export, the skin's field, and hitSlop (item 3)", () => {
     const vocabulary = touchTargetVocabulary(ROOT);
-    for (const name of ["TOUCH_TARGET", "platformMinTarget", "useMinTargetSlop", "minTargetSlop", "useSeededMinTargetSlop", "seedSlop", "rowSeam", "columnSeam", "useSeamLimit", "reachSlop", "clipSlop", "minTarget", "hitSlop"]) {
+    for (const name of ["TOUCH_TARGET", "platformMinTarget", "minTargetSlop", "useSeededMinTargetSlop", "seedSlop", "rowSeam", "columnSeam", "useSeamLimit", "reachSlop", "clipSlop", "minTarget", "hitSlop"]) {
       expect(vocabulary).toContain(name);
     }
     // Types are not vocabulary; a value is.
@@ -1017,7 +1017,7 @@ describe("findings and sign-off tables", () => {
     const names = [...STYLE_LAYER_RENDERABLES];
     const list = `${names.slice(0, -1).join(", ")} and ${names.at(-1)}`;
     expect(readme).toContain(
-      `The Foundations tier is the style-layer renderables with no component page of their own, ${list}; the design tokens the docs' \`tokens/*\` pages document (Tokens); and the kit internals the generated \`/foundation\` reference page documents (FoundationReference).`,
+      `The Foundations tier is the style-layer renderables with no component page of their own, ${list}; and the design tokens the docs' \`tokens/*\` pages document (Tokens).`,
     );
     // Derived from the material inventory: the primitives with their own page are not in it.
     expect(names).toContain("ThemeProvider");

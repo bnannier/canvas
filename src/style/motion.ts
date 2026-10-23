@@ -33,7 +33,7 @@ import { AccessibilityInfo, Easing, Platform, UIManager, type EasingFunction } f
 //   - A native loop must be ONE `Animated.timing` inside `Animated.loop`. React Native
 //     refuses `Animated.sequence` inside a native loop and `Animated.delay` hardcodes the
 //     JS driver, so a cycle with a there-and-back or a hold is shaped by its EASING
-//     instead (`thereAndBack`, `holdThen`, `keyframes` below); the timing's `frames` carry the shape
+//     instead (`thereAndBack`, `keyframes` below); the timing's `frames` carry the shape
 //     natively and the JS driver evaluates the same function on web.
 //   - On react-native-web the flag must be false: loop() picks its strategy from the raw
 //     flag, and the native-loop path's per-iteration restart waits on a native onEnd
@@ -63,16 +63,6 @@ export const supportsNativeDriver: boolean = Platform.OS !== "web";
  *  `Animated.sequence` produced. */
 export function thereAndBack(easing: EasingFunction): EasingFunction {
   return (t) => (t < 0.5 ? easing(t * 2) : easing(2 - t * 2));
-}
-
-/** Shape one loop iteration as a hold followed by a sweep: the value stays parked at 0
- *  for the first `hold` fraction of the cycle (0..1), then `easing` carries it 0 to 1
- *  over the remainder. Replaces `Animated.sequence([Animated.delay(...), Animated.timing(...)])`
- *  for a rare-event loop (a comet, a flash), which the native driver cannot run as a
- *  sequence. */
-export function holdThen(hold: number, easing: EasingFunction): EasingFunction {
-  const sweep = 1 - hold;
-  return (t) => (t <= hold || sweep <= 0 ? 0 : easing(Math.min(1, (t - hold) / sweep)));
 }
 
 /** Shape one loop iteration from keyframes: `points` are `[t, value]` pairs with t rising

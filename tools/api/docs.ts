@@ -2,7 +2,6 @@ import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { dirname, relative, resolve } from "node:path";
 import ts from "typescript";
 import { variantSlug } from "../../docs/src/lib/variant";
-import { FOUNDATION_MODULE } from "../docgen/foundation";
 import type { DocsPage } from "./types";
 
 // The docs app's pages and the text each one shows a reader, read from source so the
@@ -25,11 +24,6 @@ const DESCRIPTIONS = "docs/src/core/descriptions.ts";
 // The hidden tuning and fixture harness (docs/src/app/(home)/testing/): served, never
 // linked, and not documentation.
 const HARNESS_PREFIX = "testing/";
-
-// A static page that renders rows docs:gen writes for it: the rows are part of what the
-// page shows, so the gate reads the module with the page's own file. The foundation
-// reference renders every deprecated name (tools/docgen/foundation.ts).
-const GENERATED_ROWS: Readonly<Record<string, string>> = { foundation: FOUNDATION_MODULE };
 
 interface CatalogEntry {
   slug: string;
@@ -187,7 +181,7 @@ interface CodeShown {
 /**
  * The names a page presents as API: an identifier a snippet imports, calls (a function or
  * a method off it, `StyleSheet.create`), renders as a JSX tag or names as a type, and an
- * inline code span that is one identifier (`useMinTargetSlop`, `tabularNums()`). Never
+ * inline code span that is one identifier (`useTheme`, `alpha()`). Never
  * prose, JSX text, a style key or another object key, or a JSX attribute: `fontStyle:`
  * in a style object is React Native's key, not the kit's helper.
  */
@@ -367,22 +361,6 @@ function objectOf(source: ts.SourceFile, name: string): ts.ObjectLiteralExpressi
  * code (the page sets them in InlineCode), and the section each row is listed under, and
  * every section title, as headings (the page renders one titled section for each).
  */
-function generatedRows(source: ts.SourceFile): { text: string; code: string; headings: string[] } {
-  const code: string[] = [];
-  const headings = new Set<string>();
-  const visit = (node: ts.Node) => {
-    if (ts.isPropertyAssignment(node) && (ts.isStringLiteral(node.initializer) || ts.isNoSubstitutionTemplateLiteral(node.initializer))) {
-      const name = propertyName(node);
-      if (name === "name" || name === "replacement") code.push(node.initializer.text);
-      if (name === "section" || name === "title") headings.add(node.initializer.text);
-    }
-    ts.forEachChild(node, visit);
-  };
-  visit(source);
-  const text = fileText(source);
-  return { text, code: [...code, ...backtickSpans(text)].join("\n"), headings: [...headings] };
-}
-
 function walkRoutes(root: string, directory: string, segments: string[], out: { route: string; file: string }[]) {
   for (const entry of readdirSync(resolve(root, directory), { withFileTypes: true }).sort((a, b) => a.name.localeCompare(b.name))) {
     const path = `${directory}/${entry.name}`;
@@ -426,17 +404,7 @@ export function docsPages(root: string, components: readonly CatalogEntry[]): Ma
       continue;
     }
     const source = parse(root, file);
-    const own = { ...pageText(source, source, false), headings: jsxHeadings(source) };
-    const rows = GENERATED_ROWS[route];
-    if (!rows) {
-      add({ route, sources: [file], ...own });
-      continue;
-    }
-    if (!existsSync(resolve(root, rows))) throw new Error(`${rows} is missing: run bun run docs:gen`);
-    const data = generatedRows(parse(root, rows));
-    // The rows name every deprecated alias by design; what the page itself presents as API
-    // is its own snippets'.
-    add({ route, sources: [file, rows], text: `${own.text}\n${data.text}`, code: `${own.code}\n${data.code}`, uses: own.uses, headings: [...own.headings, ...data.headings] });
+    add({ route, sources: [file], ...pageText(source, source, false), headings: jsxHeadings(source) });
   }
 
   const known = ["components/[slug]", "components/[slug]/[variant]", "patterns/[slug]", "templates/[slug]"];

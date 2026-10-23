@@ -1,6 +1,5 @@
 import { createContext, useContext, type ReactNode } from "react";
-import { useOverlayHost } from "@nannier/canvas";
-import type { OverlayHost } from "../../../src/style/portal.js";
+import { useOverlayHost, type OverlayHost } from "@nannier/canvas";
 import { PortalInto } from "../../../src/style/overlay-layer.js";
 
 // Docs-only presentation infrastructure: a screen-sized modal cannot live in

@@ -138,10 +138,10 @@ import {
 
 // Style helpers an example fence can reference when it styles a raw View/Text.
 // These model how a real consumer builds RN styles: `tokens` (the active,
-// theme-aware color set, injected live by the Playground), `alpha`/`shadow`
-// helpers, and the `palette` of fixed Tailwind hues. Imported from src/style so
+// theme-aware color set, injected live by the Playground), the `alpha`
+// helper, and the `palette` of fixed Tailwind hues. Imported from src/style so
 // they're available regardless of what the package barrel currently re-exports.
-import { alpha, shadow, palette } from "../../../src/style/index.js";
+import { alpha, palette } from "../../../src/style/index.js";
 // Docs-only live-example state helper (not a Canvas export); lets a fence drive a
 // component's controlled `value` from an external control. See ./live-state.tsx.
 import { Stateful, Ticker, applyDrop, IconGallery, WithToast, AppScreen, AppShell } from "./live-state.js";
@@ -159,7 +159,6 @@ export const LIVE_SCOPE: Record<string, unknown> = {
   // (so token colors follow the docs light/dark + glass toggles).
   tokens: {},
   alpha,
-  shadow,
   palette,
   Stateful,
   Ticker,

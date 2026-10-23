@@ -31,7 +31,6 @@ export * from "./floating-label.js";
 export * from "./ripple.js";
 export * from "./ripple-clip.js";
 export * from "./use-controllable-state.js";
-export * from "./use-escape-key.js";
 export * from "./use-wheel.js";
 export * from "./gesture-surface.js";
 export * from "./use-hardware-back.js";
@@ -40,7 +39,7 @@ export * from "./use-roving-focus.js";
 // Named rather than `export *`: motion.ts also holds the hover and float tunables
 // (HOVER, HOVER_EASING, FLOAT, FLOAT_EASING), which stay internal so a tuned value never
 // becomes API.
-export { supportsNativeDriver, thereAndBack, holdThen, keyframes, useReducedMotion, enableAndroidLayoutAnimations } from "./motion.js";
+export { supportsNativeDriver, thereAndBack, keyframes, useReducedMotion, enableAndroidLayoutAnimations } from "./motion.js";
 export * from "./loop.js";
 export * from "./a11y-preferences.js";
 export * from "./pointer.js";

@@ -11,13 +11,11 @@ import type { ApiEntry, DocsRoute, EntryPointShape, PlannedRoute } from "./types
 // presents it. A name met only in passing (another component's prop table, a list of
 // names, an ordinary word in prose) is not documented there. A name with no home yet has
 // no `docs` and waits in PENDING_DOCS (below) with the route planned for it.
-// `internal-by-accident` records what the source says about a helper the style hub
-// published before src/style/public.ts listed the surface; it deprecates nothing, and
-// the owner retires those names as deprecated aliases (audit K12-2), each Foundations
-// turn its own. A `deprecated-alias` carries `@deprecated` on its re-export (the
-// specifier in src/style/public.ts, or a tier barrel's for a component's helpers), with
-// a `replacement` where one public name replaces it; otherwise its tag names the kit
-// components or props to use, or says that nothing replaces it.
+// `internal-by-accident` records a kit helper published without an API decision, and a
+// `deprecated-alias` a name carrying `@deprecated` on its re-export, with a `replacement`
+// where one public name replaces it. On 2026-10-23 the owner removed every such name
+// (nothing consumed them), so neither kind has an entry; check:api keeps both rules for
+// the next one.
 
 /** Each subpath of package.json `exports`, by how the gate enumerates it. */
 export const entryPoints: Readonly<Record<string, EntryPointShape>> = {
@@ -70,10 +68,6 @@ export const publicApi: Readonly<Record<string, ApiEntry>> = {
   ChipProps: { kind: "type", docs: "components/chip" },
   Container: { kind: "component", docs: "components/container" },
   ContainerProps: { kind: "type", docs: "components/container" },
-  containerStyle: { kind: "deprecated-alias", replacement: "Container", docs: "foundation", section: "Layout" },
-  FLUID: { kind: "deprecated-alias", replacement: "Container", docs: "foundation", section: "Layout" },
-  Measure: { kind: "deprecated-alias", replacement: "MeasureProps", docs: "foundation", section: "Layout" },
-  measureOf: { kind: "deprecated-alias", replacement: "Container", docs: "foundation", section: "Layout" },
   Divider: { kind: "component", docs: "components/divider" },
   DividerProps: { kind: "type", docs: "components/divider" },
   Dropdown: { kind: "component", docs: "components/dropdown" },
@@ -82,8 +76,6 @@ export const publicApi: Readonly<Record<string, ApiEntry>> = {
   Emblem: { kind: "component", docs: "components/emblem" },
   EmblemProps: { kind: "type", docs: "components/emblem" },
   Grid: { kind: "component", docs: "components/grid" },
-  gridCellWidth: { kind: "deprecated-alias", replacement: "Grid", docs: "foundation", section: "Layout" },
-  gridColumns: { kind: "deprecated-alias", replacement: "Grid", docs: "foundation", section: "Layout" },
   GridItem: { kind: "part", docs: "components/grid" },
   GridItemProps: { kind: "type", docs: "components/grid" },
   GridProps: { kind: "type", docs: "components/grid" },
@@ -246,10 +238,6 @@ export const publicApi: Readonly<Record<string, ApiEntry>> = {
   CodeBlock: { kind: "component", docs: "components/code-block" },
   CodeBlockProps: { kind: "type", docs: "components/code-block" },
   CodeBlockTab: { kind: "type", docs: "components/code-block" },
-  CodeToken: { kind: "deprecated-alias", replacement: "CodeBlock", docs: "foundation", section: "CodeBlock internals" },
-  syntaxColor: { kind: "deprecated-alias", replacement: "CodeBlock", docs: "foundation", section: "CodeBlock internals" },
-  tokenize: { kind: "deprecated-alias", replacement: "CodeBlock", docs: "foundation", section: "CodeBlock internals" },
-  TokenKind: { kind: "deprecated-alias", replacement: "CodeBlock", docs: "foundation", section: "CodeBlock internals" },
   Collapsible: { kind: "component", docs: "components/collapsible" },
   CollapsibleProps: { kind: "type", docs: "components/collapsible" },
   DescriptionList: { kind: "component", docs: "components/description-lists" },
@@ -306,14 +294,9 @@ export const publicApi: Readonly<Record<string, ApiEntry>> = {
   CommandItem: { kind: "type", docs: "components/command" },
   CommandProps: { kind: "type", docs: "components/command" },
   clearStoredDashboardOrder: { kind: "utility", docs: "components/dashboard-grid" },
-  DASHBOARD_COLUMNS: { kind: "deprecated-alias", replacement: "DashboardGrid", docs: "foundation", section: "DashboardGrid internals" },
   DashboardGrid: { kind: "component", docs: "components/dashboard-grid" },
   DashboardGridProps: { kind: "type", docs: "components/dashboard-grid" },
-  DashboardTier: { kind: "deprecated-alias", replacement: "DashboardGrid", docs: "foundation", section: "DashboardGrid internals" },
   DashboardWidget: { kind: "type", docs: "components/dashboard-grid" },
-  effectiveSpan: { kind: "deprecated-alias", replacement: "DashboardGrid", docs: "foundation", section: "DashboardGrid internals" },
-  moveWidget: { kind: "deprecated-alias", replacement: "DashboardGrid", docs: "foundation", section: "DashboardGrid internals" },
-  orderedWidgets: { kind: "deprecated-alias", replacement: "DashboardGrid", docs: "foundation", section: "DashboardGrid internals" },
   DataTable: { kind: "component", docs: "components/data-table" },
   DataTableColumn: { kind: "type", docs: "components/data-table" },
   DataTableProps: { kind: "type", docs: "components/data-table" },
@@ -371,18 +354,6 @@ export const publicApi: Readonly<Record<string, ApiEntry>> = {
   useIncreasedContrast: { kind: "hook" },
   useReducedTransparency: { kind: "hook" },
 
-  // src/style/active-indicator.ts
-  activeIndicator: { kind: "deprecated-alias", docs: "foundation", section: "Focus and keyboard" },
-  ActiveIndicatorOptions: { kind: "deprecated-alias", docs: "foundation", section: "Focus and keyboard" },
-
-  // src/style/anchored-overlay.tsx (deprecated aliases since the AnchoredOverlay audit
-  // turn, K12-2)
-  AnchoredOverlay: { kind: "deprecated-alias", replacement: "Popover", docs: "foundation", section: "Overlay machinery" },
-  AnchoredOverlayProps: { kind: "deprecated-alias", replacement: "PopoverProps", docs: "foundation", section: "Overlay machinery" },
-  placeOverlay: { kind: "deprecated-alias", docs: "foundation", section: "Overlay machinery" },
-  useOverlayAnchor: { kind: "deprecated-alias", docs: "foundation", section: "Overlay machinery" },
-  useOverlaySide: { kind: "deprecated-alias", docs: "foundation", section: "Overlay machinery" },
-
   // src/style/color.ts
   alpha: { kind: "utility" },
   channelsOf: { kind: "utility" },
@@ -395,67 +366,16 @@ export const publicApi: Readonly<Record<string, ApiEntry>> = {
   // src/style/container.ts
   ContainerBreakpoint: { kind: "type" },
   ContainerBreakpointOptions: { kind: "type" },
-  containerProbe: { kind: "internal-by-accident" },
   MeasuredWidth: { kind: "type" },
   useContainerBreakpoint: { kind: "hook" },
   useContainerWidth: { kind: "hook" },
   useMeasuredWidth: { kind: "hook" },
 
-  // src/style/dev-warn.ts
-  devWarn: { kind: "deprecated-alias", docs: "foundation", section: "State and warnings" },
-  resetDevWarnings: { kind: "deprecated-alias", docs: "foundation", section: "State and warnings" },
-
-  // src/style/entrance.tsx (deprecated aliases since the Entrance audit turn, K12-2). No
-  // single public name replaces either one: every anchored card applies the hold to its
-  // own card, so their `@deprecated` text names those components.
-  Entrance: { kind: "deprecated-alias", docs: "foundation", section: "Entrance" },
-  EntranceProps: { kind: "deprecated-alias", docs: "foundation", section: "Entrance" },
-
-  // src/style/floating-label.tsx (deprecated aliases since the FloatingLabel audit turn,
-  // K12-2). No single public name replaces any of them: Input, Textarea, Select and
-  // Autocomplete float the label, and every field family renders its label and required
-  // marker, from their own `label` and `required` props, so the `@deprecated` text names
-  // those components.
-  FloatingLabel: { kind: "deprecated-alias", docs: "foundation", section: "Field label" },
-  FloatingLabelStyles: { kind: "deprecated-alias", docs: "foundation", section: "Field label" },
-  HIDDEN_FROM_A11Y: { kind: "deprecated-alias", docs: "foundation", section: "Field label" },
-  LabelContent: { kind: "deprecated-alias", docs: "foundation", section: "Field label" },
-
-  // src/style/focus-reset.ts
-  FOCUS_RESET: { kind: "deprecated-alias", docs: "foundation", section: "Focus and keyboard" },
-
   // src/style/fonts.ts
   FontFaces: { kind: "type" },
   FontWeightKey: { kind: "type" },
-  ResolvedFace: { kind: "internal-by-accident" },
-  resolveFontFace: { kind: "internal-by-accident" },
   ThemeFonts: { kind: "type" },
   typeface: { kind: "token" },
-  weightKey: { kind: "internal-by-accident" },
-
-  // src/style/gesture-surface.ts
-  GESTURE_SURFACE: { kind: "deprecated-alias", docs: "foundation", section: "Gestures" },
-
-  // src/style/glass-fill.ts
-  innerFill: { kind: "deprecated-alias", docs: "foundation", section: "Glass fills" },
-  InnerFillRole: { kind: "deprecated-alias", docs: "foundation", section: "Glass fills" },
-  InnerFillStrength: { kind: "deprecated-alias", docs: "foundation", section: "Glass fills" },
-  inverseDenseTint: { kind: "deprecated-alias", docs: "foundation", section: "Glass fills" },
-  isGlass: { kind: "deprecated-alias", replacement: "useTheme", docs: "foundation", section: "Glass fills" },
-  withInnerFill: { kind: "deprecated-alias", docs: "foundation", section: "Glass fills" },
-
-  // src/style/glass-surface/glass-pane.tsx (deprecated aliases since the GlassPane audit
-  // turn, K12-2). No single public name replaces any of them: every kit control, card and
-  // field paints its own material under ThemeProvider `glass`, so the `@deprecated` text
-  // names those components.
-  GlassPane: { kind: "deprecated-alias", docs: "foundation", section: "Glass material" },
-  GlassPaneProps: { kind: "deprecated-alias", docs: "foundation", section: "Glass material" },
-  PANE_SIBLING_INPUT: { kind: "deprecated-alias", docs: "foundation", section: "Glass material" },
-  paneStyle: { kind: "deprecated-alias", docs: "foundation", section: "Glass material" },
-  // src/style/glass-surface/glass-surface.tsx (a deprecated alias since the GlassSurface
-  // audit turn, K12-2), the host every kit glass surface renders through; the same holds,
-  // so its `@deprecated` text names the components that paint their own material.
-  GlassSurface: { kind: "deprecated-alias", docs: "foundation", section: "Glass material" },
 
   // src/style/glass-surface/glass-surface.shared.tsx
   GlassModalBlurTarget: { kind: "component", docs: "integration", section: "Native modals" },
@@ -471,122 +391,39 @@ export const publicApi: Readonly<Record<string, ApiEntry>> = {
   // src/style/glass-surface/liquid-glass.ts
   liquidGlassAvailable: { kind: "utility", docs: "patterns/glass" },
 
-  // src/style/loop.tsx
-  createLoopChannel: { kind: "internal-by-accident" },
-  LoopChannel: { kind: "internal-by-accident" },
-  LoopChannelOptions: { kind: "internal-by-accident" },
-  LoopChannelState: { kind: "internal-by-accident" },
-  LoopTrack: { kind: "internal-by-accident" },
-  LoopView: { kind: "internal-by-accident" },
-  LoopViewProps: { kind: "internal-by-accident" },
-  trackAt: { kind: "internal-by-accident" },
-  trackSamples: { kind: "internal-by-accident" },
-  trackValueAt: { kind: "internal-by-accident" },
-
-  // src/style/mono.ts
-  MONO_FONT: { kind: "deprecated-alias", replacement: "Typography", docs: "foundation", section: "Type and colour" },
-
   // src/style/motion.ts
-  enableAndroidLayoutAnimations: { kind: "deprecated-alias", docs: "foundation", section: "Motion" },
-  holdThen: { kind: "deprecated-alias", docs: "foundation", section: "Motion" },
-  keyframes: { kind: "deprecated-alias", docs: "foundation", section: "Motion" },
-  supportsNativeDriver: { kind: "deprecated-alias", docs: "foundation", section: "Motion" },
-  thereAndBack: { kind: "deprecated-alias", docs: "foundation", section: "Motion" },
   useReducedMotion: { kind: "hook" },
-
-  // src/style/numerals.ts (a deprecated alias since Typography took `tabular`, the
-  // FoundationReference audit turn's K12-2 tabular)
-  tabularNums: { kind: "deprecated-alias", replacement: "Typography", docs: "foundation", section: "Type and colour" },
 
   // src/style/pointer.ts
   useHoverCapable: { kind: "hook", docs: "patterns/responsive" },
   usePointerCoarse: { kind: "hook", docs: "patterns/responsive" },
 
   // src/style/portal.tsx
-  insetOverlayBounds: { kind: "internal-by-accident" },
-  intersectOverlayBounds: { kind: "internal-by-accident" },
-  OverlayBounds: { kind: "internal-by-accident" },
-  OverlayHost: { kind: "internal-by-accident" },
+  OverlayHost: { kind: "type", docs: "integration", section: "Overlay hosting" },
   OverlayProvider: { kind: "component", docs: "integration", section: "Overlay hosting" },
+  useOverlayHost: { kind: "hook", docs: "integration", section: "Overlay hosting" },
   OverlayProviderProps: { kind: "type" },
   OverlayViewportInsets: { kind: "type" },
-  Portal: { kind: "internal-by-accident" },
-  PortalProps: { kind: "internal-by-accident" },
-  useOverlayHost: { kind: "internal-by-accident" },
 
   // src/style/pressable.tsx
   Pressable: { kind: "component", docs: "components/pressable" },
 
-  // src/style/responsive.tsx (SsrBreakpointContext and the useWindowDimensions
-  // pass-through are deprecated aliases since the BreakpointOverride audit turn, K12-2
-  // and its OD5)
+  // src/style/responsive.tsx
   BreakpointOverride: { kind: "component", docs: "tokens/layout" },
   FormFactor: { kind: "type", docs: "tokens/layout" },
   formFactor: { kind: "utility", docs: "tokens/layout" },
   Responsive: { kind: "type", docs: "tokens/layout" },
   responsive: { kind: "utility", docs: "tokens/layout" },
-  SsrBreakpointContext: { kind: "deprecated-alias", replacement: "ThemeProvider", docs: "foundation", section: "Viewport tier" },
   useBreakpoint: { kind: "hook", docs: "patterns/responsive" },
   useFormFactor: { kind: "hook", docs: "patterns/responsive" },
   useResponsive: { kind: "hook", docs: "patterns/responsive" },
-  // React Native's own hook, passed through. No single kit export replaces it (the viewport
-  // tier for window-level chrome, a container hook inside a component, React Native's own
-  // hook for raw pixels), so its `@deprecated` text names the three.
-  useWindowDimensions: { kind: "deprecated-alias", docs: "foundation", section: "Viewport tier" },
-
-  // src/style/ripple-clip.tsx
-  cornerRadii: { kind: "internal-by-accident" },
-  RippleClip: { kind: "internal-by-accident" },
-  RippleClipProps: { kind: "internal-by-accident" },
-  rippleClipWrapperStyle: { kind: "internal-by-accident" },
-  splitElevation: { kind: "internal-by-accident" },
-
-  // src/style/ripple.ts and src/style/touch-target.ts (deprecated aliases since the
-  // FoundationReference audit turn, K12-2). No public name replaces any of them: the kit's
-  // controls show their own press feedback and meet the platform minimum touch target
-  // themselves, and a control the kit lacks belongs in the kit, so their `@deprecated`
-  // text names those controls.
-  controlRipple: { kind: "deprecated-alias", docs: "foundation", section: "Press feedback" },
-  platformDisabledDim: { kind: "deprecated-alias", docs: "foundation", section: "Press feedback" },
-  pressDim: { kind: "deprecated-alias", docs: "foundation", section: "Press feedback" },
-  rippleClip: { kind: "deprecated-alias", docs: "foundation", section: "Press feedback" },
-  surfaceRipple: { kind: "deprecated-alias", docs: "foundation", section: "Press feedback" },
-
-  // src/style/rtl.ts
-  isRTL: { kind: "deprecated-alias", docs: "foundation", section: "Layout" },
-
-  // src/style/shadow.ts
-  customShadow: { kind: "internal-by-accident" },
-  shadow: { kind: "utility" },
-  ShadowLevel: { kind: "type" },
 
   // src/style/sizing.ts
-  CELL_AXIS: { kind: "internal-by-accident" },
-  clampSpan: { kind: "internal-by-accident" },
-  columnAxis: { kind: "internal-by-accident" },
-  FILL: { kind: "internal-by-accident" },
-  FillOptions: { kind: "internal-by-accident" },
-  GRID_CELL_AXIS: { kind: "internal-by-accident" },
-  GRID_COLUMNS: { kind: "internal-by-accident" },
-  HUG_IN_STRETCH_COLUMN: { kind: "internal-by-accident" },
-  layoutAxis: { kind: "internal-by-accident" },
-  LayoutAxis: { kind: "internal-by-accident" },
-  LayoutAxisProvider: { kind: "internal-by-accident" },
   LayoutStyle: { kind: "type" },
   MeasureProps: { kind: "type" },
-  measureStyle: { kind: "internal-by-accident" },
-  ROW_AXIS: { kind: "internal-by-accident" },
   SizingKey: { kind: "type" },
-  spanWidth: { kind: "internal-by-accident" },
-  stepOf: { kind: "internal-by-accident" },
-  useFillStyle: { kind: "internal-by-accident" },
-  useHugStyle: { kind: "internal-by-accident" },
-  useLayoutAxis: { kind: "internal-by-accident" },
-  useMeasureStyle: { kind: "internal-by-accident" },
-  useSizing: { kind: "internal-by-accident" },
 
   // src/style/status-hue.ts
-  HUE_WASH: { kind: "deprecated-alias", replacement: "statusColors", docs: "foundation", section: "Type and colour" },
   Hue: { kind: "type" },
   statusHues: { kind: "token", docs: "tokens/colors", section: "Status surfaces" },
   StatusTone: { kind: "type" },
@@ -597,7 +434,6 @@ export const publicApi: Readonly<Record<string, ApiEntry>> = {
   StatusColorTone: { kind: "type" },
 
   // src/style/text.tsx
-  fontStyle: { kind: "deprecated-alias", replacement: "Text", docs: "foundation", section: "Type and colour" },
   Text: { kind: "component", docs: "components/text" },
   TextInput: { kind: "component", docs: "components/text-input" },
 
@@ -611,8 +447,6 @@ export const publicApi: Readonly<Record<string, ApiEntry>> = {
 
   // src/style/tokens.ts
   baseColors: { kind: "token" },
-  brandColors: { kind: "deprecated-alias", docs: "foundation", section: "Type and colour" },
-  BrandColors: { kind: "type" },
   BreakpointKey: { kind: "type" },
   breakpoints: { kind: "token" },
   colorsByScheme: { kind: "token" },
@@ -621,14 +455,10 @@ export const publicApi: Readonly<Record<string, ApiEntry>> = {
   ColorTokens: { kind: "type" },
   darkColors: { kind: "token", docs: "tokens/colors" },
   darkGlass: { kind: "token" },
-  fontSize: { kind: "token" },
-  fontWeight: { kind: "token" },
   glassByScheme: { kind: "token", docs: "tokens/colors", section: "Glass" },
   GlassTokens: { kind: "type" },
-  letterSpacing: { kind: "token" },
   lightColors: { kind: "token", docs: "tokens/colors" },
   lightGlass: { kind: "token" },
-  lineHeight: { kind: "token" },
   mintColors: { kind: "token", docs: "tokens/colors" },
   palette: { kind: "token" },
   Palette: { kind: "type" },
@@ -639,39 +469,6 @@ export const publicApi: Readonly<Record<string, ApiEntry>> = {
   spacing: { kind: "token" },
   WidthKey: { kind: "type" },
   widths: { kind: "token" },
-
-  // src/style/touch-target-seed.ts
-  MinTargetOptions: { kind: "deprecated-alias", docs: "foundation", section: "Touch target" },
-  minTargetSlop: { kind: "deprecated-alias", docs: "foundation", section: "Touch target" },
-
-  // src/style/touch-target.ts
-  platformMinTarget: { kind: "deprecated-alias", docs: "foundation", section: "Touch target" },
-  TOUCH_TARGET: { kind: "deprecated-alias", docs: "foundation", section: "Touch target" },
-  TouchTargetSkin: { kind: "deprecated-alias", docs: "foundation", section: "Touch target" },
-  useMinTargetSlop: { kind: "deprecated-alias", docs: "foundation", section: "Touch target" },
-
-  // src/style/use-controllable-state.ts
-  useControllableState: { kind: "deprecated-alias", docs: "foundation", section: "State and warnings" },
-
-  // src/style/use-dialog-focus.ts
-  useDialogFocus: { kind: "deprecated-alias", replacement: "Dialog", docs: "foundation", section: "Focus and keyboard" },
-  usePopoverFocus: { kind: "deprecated-alias", replacement: "Popover", docs: "foundation", section: "Focus and keyboard" },
-
-  // src/style/use-escape-key.ts
-  useEscapeKey: { kind: "deprecated-alias", docs: "foundation", section: "Focus and keyboard" },
-
-  // src/style/use-hardware-back.ts
-  useHardwareBack: { kind: "deprecated-alias", docs: "foundation", section: "Focus and keyboard" },
-
-  // src/style/use-roving-focus.ts
-  RovingFocusOptions: { kind: "deprecated-alias", docs: "foundation", section: "Focus and keyboard" },
-  RovingItemProps: { kind: "deprecated-alias", docs: "foundation", section: "Focus and keyboard" },
-  useRovingFocus: { kind: "deprecated-alias", docs: "foundation", section: "Focus and keyboard" },
-
-  // src/style/use-wheel.ts
-  normalizeWheelDelta: { kind: "deprecated-alias", docs: "foundation", section: "Gestures" },
-  useWheel: { kind: "deprecated-alias", docs: "foundation", section: "Gestures" },
-  WheelGesture: { kind: "deprecated-alias", docs: "foundation", section: "Gestures" },
 
   // src/theme.ts
   Density: { kind: "type" },
@@ -690,9 +487,7 @@ export const publicApi: Readonly<Record<string, ApiEntry>> = {
   hsl: { kind: "utility", docs: "integration", section: "Reading tokens (web)" },
   token: { kind: "utility", docs: "integration", section: "Reading tokens (web)" },
 
-  // react-native, re-exported by src/style/primitives.ts. The StyleSheet pass-through is a
-  // deprecated alias since the FoundationReference audit turn (K12-2 OD5): it invites raw
-  // styling, and nothing in the kit replaces it.
+  // react-native, re-exported by src/style/primitives.ts.
   ImageStyle: { kind: "type" },
   LayoutChangeEvent: { kind: "type" },
   NativeScrollEvent: { kind: "type" },
@@ -702,7 +497,6 @@ export const publicApi: Readonly<Record<string, ApiEntry>> = {
   ScrollView: { kind: "component", docs: "components/scroll-view" },
   ScrollViewProps: { kind: "type" },
   StyleProp: { kind: "type" },
-  StyleSheet: { kind: "deprecated-alias", docs: "foundation", section: "React Native pass-throughs" },
   TextInputProps: { kind: "type" },
   TextProps: { kind: "type" },
   TextStyle: { kind: "type" },
@@ -734,8 +528,7 @@ export const files: Readonly<Record<string, ApiEntry>> = {
  * The staged docs migration (audit K12): every export and file with no docs route yet,
  * each with the route planned for it. It is not a waiver. check:api fails when a
  * listed name is also given a docs route, when its planned page already names it (move
- * it to `docs` then), when its route is closed (PLANNED_ROUTES, below), and when a
- * deprecated alias waits here once the foundation reference (K12-10) exists. The list
+ * it to `docs` then), and when its route is closed (PLANNED_ROUTES, below). The list
  * empties route by route, as each route's turn lands its docs.
  */
 export const PENDING_DOCS: Readonly<Record<string, DocsRoute>> = {
@@ -847,66 +640,6 @@ export const PENDING_DOCS: Readonly<Record<string, DocsRoute>> = {
   ScatterPoint: "components/scatter-plot",
   ToastHandle: "components/toast",
   ToastOptions: "components/toast",
-
-  // K12-10: the generated foundation reference, home of every deprecated name. Every
-  // deprecated alias is documented there already (its `section` above); what waits here
-  // are the internal helpers, the Riskora type ladder and the shadow helpers the later
-  // Foundations turns retire as aliases (K12-2, OD4, K12-7 OD3), each turn moving its own
-  // names to `docs: "foundation"` as it deprecates them.
-  BrandColors: "foundation",
-  CELL_AXIS: "foundation",
-  clampSpan: "foundation",
-  columnAxis: "foundation",
-  containerProbe: "foundation",
-  cornerRadii: "foundation",
-  createLoopChannel: "foundation",
-  customShadow: "foundation",
-  FILL: "foundation",
-  FillOptions: "foundation",
-  fontSize: "foundation",
-  fontWeight: "foundation",
-  GRID_CELL_AXIS: "foundation",
-  GRID_COLUMNS: "foundation",
-  HUG_IN_STRETCH_COLUMN: "foundation",
-  insetOverlayBounds: "foundation",
-  intersectOverlayBounds: "foundation",
-  LayoutAxis: "foundation",
-  layoutAxis: "foundation",
-  LayoutAxisProvider: "foundation",
-  letterSpacing: "foundation",
-  lineHeight: "foundation",
-  LoopChannel: "foundation",
-  LoopChannelOptions: "foundation",
-  LoopChannelState: "foundation",
-  LoopTrack: "foundation",
-  LoopView: "foundation",
-  LoopViewProps: "foundation",
-  measureStyle: "foundation",
-  OverlayBounds: "foundation",
-  OverlayHost: "foundation",
-  Portal: "foundation",
-  PortalProps: "foundation",
-  ResolvedFace: "foundation",
-  resolveFontFace: "foundation",
-  RippleClip: "foundation",
-  RippleClipProps: "foundation",
-  rippleClipWrapperStyle: "foundation",
-  ROW_AXIS: "foundation",
-  shadow: "foundation",
-  ShadowLevel: "foundation",
-  spanWidth: "foundation",
-  splitElevation: "foundation",
-  stepOf: "foundation",
-  trackAt: "foundation",
-  trackSamples: "foundation",
-  trackValueAt: "foundation",
-  useFillStyle: "foundation",
-  useHugStyle: "foundation",
-  useLayoutAxis: "foundation",
-  useMeasureStyle: "foundation",
-  useOverlayHost: "foundation",
-  useSizing: "foundation",
-  weightKey: "foundation",
 };
 
 /**
@@ -942,9 +675,4 @@ export const PLANNED_ROUTES: Readonly<Record<DocsRoute, PlannedRoute>> = {
   "components/phone-input": { turn: "components/phone-input" },
   "components/scatter-plot": { turn: "components/scatter-plot" },
   "components/toast": { turn: "components/toast" },
-  // K12-10: the generated foundation reference. Each Foundations turn moves its names there
-  // as it deprecates them (LayoutAxisProvider, LoopView, OverlayProvider, Portal,
-  // RippleClip, the Riskora type ladder and the shadow helpers);
-  // Tokens, the last, closes it.
-  foundation: { turn: "foundation/tokens" },
 };

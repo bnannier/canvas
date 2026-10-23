@@ -40,17 +40,17 @@ describe("what a turn captures", () => {
     expect(resolveTarget("button")).toMatchObject({ kind: "component", id: "button", checklist: "audit/components/button.md" });
     expect(resolveTarget("template-signin")).toMatchObject({ kind: "page", id: "template-signin", checklist: "audit/pages/template-signin.md" });
     expect(resolveTarget("signin")).toMatchObject({ kind: "page", id: "template-signin" });
-    expect(resolveTarget("glass-pane")).toMatchObject({ kind: "foundation", id: "glass-pane", title: "GlassPane", checklist: "audit/foundation/glass-pane.md" });
-    expect(resolveTarget("GlassPane")).toMatchObject({ kind: "foundation", id: "glass-pane" });
+    expect(resolveTarget("overlay-provider")).toMatchObject({ kind: "foundation", id: "overlay-provider", title: "OverlayProvider", checklist: "audit/foundation/overlay-provider.md" });
+    expect(resolveTarget("OverlayProvider")).toMatchObject({ kind: "foundation", id: "overlay-provider" });
     expect(() => resolveTarget("nothing-here")).toThrow(/names no component, page or foundation/);
     // A component has no name but its slug, so the slug it shares with a page names the
     // component, and the page goes by its id: Calendar and template-calendar.
     expect(resolveTarget("calendar")).toMatchObject({ kind: "component", id: "calendar", checklist: "audit/components/calendar.md" });
     expect(resolveTarget("template-calendar")).toMatchObject({ kind: "page", id: "template-calendar" });
     // A component whose slug a foundation's id also were keeps it; the foundation goes by its name.
-    const clash = [...components(), { ...components()[0]!, slug: "glass-pane", name: "Impostor" }];
-    expect(resolveTarget("glass-pane", clash, pages())).toMatchObject({ kind: "component", id: "glass-pane" });
-    expect(resolveTarget("GlassPane", clash, pages())).toMatchObject({ kind: "foundation", id: "glass-pane" });
+    const clash = [...components(), { ...components()[0]!, slug: "overlay-provider", name: "Impostor" }];
+    expect(resolveTarget("overlay-provider", clash, pages())).toMatchObject({ kind: "component", id: "overlay-provider" });
+    expect(resolveTarget("OverlayProvider", clash, pages())).toMatchObject({ kind: "foundation", id: "overlay-provider" });
     // A page slug two pages share names neither: each goes by its id.
     const twin = [...pages(), { ...pages().find((p) => p.id === "template-signin")!, kind: "pattern" as const, id: "pattern-signin" }];
     expect(() => resolveTarget("signin", components(), twin)).toThrow("--slug=signin is the slug of 2 pages; name one by its id (template-signin, pattern-signin)");
@@ -66,7 +66,7 @@ describe("what a turn captures", () => {
   });
 
   it("expands a foundation to its Capture through list, capped by --only-first, and refuses a cap on anything else", () => {
-    const foundation = resolveTarget("glass-pane");
+    const foundation = resolveTarget("overlay-provider");
     const through = { components: ["chip", "emblem", "autocomplete", "button"], pages: ["pattern-glass"] };
     expect(turnScope(foundation, null, through)).toEqual({ components: ["chip", "emblem", "autocomplete", "button"], pages: ["pattern-glass"], capped: null });
     expect(turnScope(foundation, 2, through)).toEqual({ components: ["chip", "emblem"], pages: [], capped: { total: 5, kept: 2 } });
@@ -74,7 +74,7 @@ describe("what a turn captures", () => {
     expect(() => turnScope(foundation, null, { components: [], pages: [] })).toThrow(/nothing in its Capture through list/);
     expect(() => turnScope(resolveTarget("button"), 2)).toThrow(/--only-first caps a foundation's Capture through list; button is a component/);
     expect(turnScope(resolveTarget("signin"), null)).toEqual({ components: [], pages: ["template-signin"], capped: null });
-    // A real foundation's list comes from its facts: GlassPane's direct consumers come first.
+    // A real foundation's list comes from its facts: OverlayProvider's direct consumers come first.
     const real = turnScope(foundation, 3);
     expect(real.capped?.kept).toBe(3);
     expect(real.components).toHaveLength(3);
@@ -130,7 +130,7 @@ describe("a turn's plan", () => {
   });
 
   it("captures the states of the components that have recipes only, and the pages with --pages", () => {
-    const foundation = resolveTarget("glass-pane");
+    const foundation = resolveTarget("overlay-provider");
     const scope = { components: ["emblem", "chip"], pages: ["pattern-glass"], capped: null };
     const steps = plan({ webOnly: true }, scope, foundation).steps;
     const argvs = steps.flatMap((s) => (s.kind === "capture" ? [s.argv.join(" ")] : []));
@@ -150,7 +150,7 @@ describe("a turn's plan", () => {
     expect(text).toContain("a dry run touches no device, so the installed builds are not read here");
     expect(text).toContain("source fingerprint bbbbbbbbbbbb, native cccccccccccc");
     expect(text).toContain(`append every run id the steps made to audit/turns/button.md under "before"`);
-    const capped = formatPlan(plan({ webOnly: true, noBuild: true }, { components: ["chip"], pages: [], capped: { total: 73, kept: 1 } }, resolveTarget("glass-pane")), { export: { kind: "missing", embedded: null, checkout: FP("b"), detail: "docs/dist holds no export" }, source: FP("b"), native: FP("c") });
+    const capped = formatPlan(plan({ webOnly: true, noBuild: true }, { components: ["chip"], pages: [], capped: { total: 73, kept: 1 } }, resolveTarget("overlay-provider")), { export: { kind: "missing", embedded: null, checkout: FP("b"), detail: "docs/dist holds no export" }, source: FP("b"), native: FP("c") });
     expect(capped.join("\n")).toContain("capped by --only-first to the first 1 of 73");
     expect(capped.join("\n")).toContain("docs/dist is missing now (docs/dist holds no export): refused (--no-build)");
   });

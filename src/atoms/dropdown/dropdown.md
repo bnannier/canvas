@@ -274,7 +274,7 @@ Checked choices use browser menu-radio semantics and the native radio trait.
 **Don't** — Click Archive: it looks disabled but still fires, a greyed item that works is a trap.
 
 ```tsx
-<View style={{ alignSelf: "flex-start", gap: 2, borderRadius: 12, borderWidth: 1, borderColor: tokens.border, backgroundColor: tokens.popover, padding: 8, ...shadow("lg"), minWidth: 200 }}>
+<View style={{ alignSelf: "flex-start", gap: 2, borderRadius: 12, borderWidth: 1, borderColor: tokens.border, backgroundColor: tokens.popover, padding: 8, boxShadow: "0px 26px 50px -20px rgba(121, 100, 214, 0.22)", minWidth: 200 }}>
   <Pressable style={({ pressed }) => [{ flexDirection: "row", alignItems: "center", gap: 10, borderRadius: 8, paddingHorizontal: 10, paddingVertical: 8 }, pressed ? { backgroundColor: tokens.accent } : null]}>
     <Text style={{ fontSize: 12.5, lineHeight: 17, fontWeight: "700", color: tokens["popover-foreground"] }}>Edit</Text>
   </Pressable>

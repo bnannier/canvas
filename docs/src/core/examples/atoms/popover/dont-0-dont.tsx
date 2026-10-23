@@ -3,9 +3,9 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { tokens, shadow, View, Text, Button, Input, Select } = scope;
+  const { tokens, View, Text, Button, Input, Select } = scope;
   return (
-<View style={{ borderRadius: 12, borderWidth: 1, borderColor: tokens.border, backgroundColor: tokens.popover, padding: 16, ...shadow("lg"), alignSelf: "flex-start", minWidth: 260 }}>
+<View style={{ borderRadius: 12, borderWidth: 1, borderColor: tokens.border, backgroundColor: tokens.popover, padding: 16, boxShadow: "0px 26px 50px -20px rgba(121, 100, 214, 0.22)", alignSelf: "flex-start", minWidth: 260 }}>
   <Input label="Name" placeholder="Ada Lovelace" style={{ marginBottom: 8 }} />
   <Input label="Email" placeholder="ada@canvas.dev" style={{ marginBottom: 8 }} />
   <View style={{ marginBottom: 8 }}>

@@ -256,20 +256,20 @@ function hasAttribute(opening: ts.JsxOpeningLikeElement, name: string): boolean 
 
 /**
  * The names bound to a touch-target measurement in a file (`const target =
- * useMinTargetSlop(...)`, or the kit's seeded useSeededMinTargetSlop).
+ * useSeededMinTargetSlop(...)`).
  */
 function slopResults(file: ts.SourceFile): Set<string> {
   const names = new Set<string>();
   const visit = (node: ts.Node) => {
     if (ts.isVariableDeclaration(node) && ts.isIdentifier(node.name) && node.initializer && ts.isCallExpression(node.initializer)
-      && ["useMinTargetSlop", "useSeededMinTargetSlop"].includes(node.initializer.expression.getText())) names.add(node.name.text);
+      && node.initializer.expression.getText() === "useSeededMinTargetSlop") names.add(node.name.text);
     ts.forEachChild(node, visit);
   };
   visit(file);
   return names;
 }
 
-/** Whether a Pressable declares a slop: a hitSlop prop, or a spread useMinTargetSlop result. */
+/** Whether a Pressable declares a slop: a hitSlop prop, or a spread useSeededMinTargetSlop result. */
 function declaresSlop(opening: ts.JsxOpeningLikeElement, results: Set<string>): boolean {
   return opening.attributes.properties.some((p) =>
     (ts.isJsxAttribute(p) && p.name.getText() === "hitSlop")

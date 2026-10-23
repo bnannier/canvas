@@ -7,7 +7,7 @@ import { afterEach, describe, expect, it, spyOn } from "bun:test";
 import { act, cleanup, render, screen, waitFor } from "@testing-library/react";
 import { Profiler, useContext, useEffect, useRef, type ReactNode } from "react";
 import { I18nManager, Text, View } from "react-native";
-import { AnchoredOverlay, placeOverlay, useOverlayAnchor, useOverlaySide } from "../src/style/anchored-overlay.tsx";
+import { AnchoredOverlay, placeOverlay, useOverlayAnchor } from "../src/style/anchored-overlay.tsx";
 import { fitOverlayHeight } from "../src/style/overlay-layout.ts";
 import { OverlayProvider, useOverlayHost, type OverlayBounds, type OverlayHost } from "../src/style/portal.tsx";
 import { SafeAreaInsetsContext } from "../src/style/safe-area.tsx";
@@ -78,7 +78,7 @@ describe("the placement preference (AO-3)", () => {
 
   it("mounts a card that prefers above, above its trigger, and tells its decoration so", async () => {
     let side: string | undefined;
-    function Decoration() { side = useOverlaySide(); return null; }
+    function Decoration() { side = useOverlayAnchor().side; return null; }
     await withBoxes((node) => isOutlet(node) ? OUTLET : node.getAttribute("data-testid") === "trigger" ? { x: 100, y: 400, width: 80, height: 32 } : OUTLET, async () => {
       hosted(<Anchored above decoration={<Decoration />} />);
       await settle();
@@ -91,7 +91,7 @@ describe("the placement preference (AO-3)", () => {
 
   it("reports a beside card's side to its decoration rather than calling it below", async () => {
     let side: string | undefined;
-    function Decoration() { side = useOverlaySide(); return null; }
+    function Decoration() { side = useOverlayAnchor().side; return null; }
     await withBoxes((node) => isOutlet(node) ? OUTLET : node.getAttribute("data-testid") === "trigger" ? { x: 100, y: 200, width: 40, height: 40 } : OUTLET, async () => {
       hosted(<Anchored besideEnd cardWidth={200} gap={6} decoration={<Decoration />} />);
       await settle();

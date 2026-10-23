@@ -141,7 +141,7 @@ A per-item `trailing` slot renders right-aligned before the badge/meta cluster, 
 **Don't** — Equal weight on both lines flattens the hierarchy; the email competes with the name.
 
 ```tsx
-<View style={{ borderRadius: 8, borderWidth: 1, borderColor: tokens.border, backgroundColor: tokens.card, overflow: "hidden", ...shadow("sm"), width: "100%", maxWidth: 560 }}>
+<View style={{ borderRadius: 8, borderWidth: 1, borderColor: tokens.border, backgroundColor: tokens.card, overflow: "hidden", boxShadow: "0px 16px 32px -22px rgba(121, 100, 214, 0.22)", width: "100%", maxWidth: 560 }}>
   <View style={{ flexDirection: "row", alignItems: "center", gap: 12, paddingHorizontal: 20, paddingVertical: 12 }}>
     <Avatar name="Rachel Chen">RC</Avatar>
     <View style={{ minWidth: 0, flexGrow: 1, flexShrink: 1, flexBasis: "0%" }}>
@@ -183,7 +183,7 @@ A per-item `trailing` slot renders right-aligned before the badge/meta cluster, 
 **Don't** — A header with no rule blends into the rows, and dropping the per-row action removes the affordance.
 
 ```tsx
-<View style={{ borderRadius: 8, borderWidth: 1, borderColor: tokens.border, backgroundColor: tokens.card, overflow: "hidden", ...shadow("sm"), width: "100%", maxWidth: 560 }}>
+<View style={{ borderRadius: 8, borderWidth: 1, borderColor: tokens.border, backgroundColor: tokens.card, overflow: "hidden", boxShadow: "0px 16px 32px -22px rgba(121, 100, 214, 0.22)", width: "100%", maxWidth: 560 }}>
   <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: 20, paddingVertical: 12 }}>
     <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: "600", color: tokens.foreground }}>Team members</Text>
   </View>

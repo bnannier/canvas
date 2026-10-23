@@ -80,17 +80,17 @@ Each tile action carries its own `onPress`, so every button on a card fires your
 
 ```tsx
 <View style={{ flexDirection: "row", gap: 14 }}>
-  <View style={{ width: 200, alignItems: "center", gap: 8, padding: 20, borderRadius: 8, borderWidth: 1, borderColor: tokens.border, backgroundColor: tokens.card, ...shadow("sm") }}>
+  <View style={{ width: 200, alignItems: "center", gap: 8, padding: 20, borderRadius: 8, borderWidth: 1, borderColor: tokens.border, backgroundColor: tokens.card, boxShadow: "0px 16px 32px -22px rgba(121, 100, 214, 0.22)" }}>
     <Avatar large name="Rachel Chen">RC</Avatar>
     <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: "600", color: tokens["card-foreground"] }}>Rachel Chen</Text>
     <Text style={{ fontSize: 12, lineHeight: 16, color: tokens["muted-foreground"] }}>Engineering Lead</Text>
   </View>
-  <View style={{ width: 200, alignItems: "center", gap: 8, padding: 20, borderRadius: 8, borderWidth: 1, borderColor: tokens.border, backgroundColor: tokens.card, ...shadow("sm") }}>
+  <View style={{ width: 200, alignItems: "center", gap: 8, padding: 20, borderRadius: 8, borderWidth: 1, borderColor: tokens.border, backgroundColor: tokens.card, boxShadow: "0px 16px 32px -22px rgba(121, 100, 214, 0.22)" }}>
     <Avatar large name="Ada Lovelace">AL</Avatar>
     <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: "600", color: tokens["card-foreground"] }}>Ada Lovelace</Text>
     <Text style={{ fontSize: 12, lineHeight: 16, color: tokens["muted-foreground"] }}>Staff Engineer</Text>
   </View>
-  <View style={{ width: 200, alignItems: "center", gap: 8, padding: 20, borderRadius: 8, borderWidth: 1, borderColor: tokens.border, backgroundColor: tokens.card, ...shadow("sm") }}>
+  <View style={{ width: 200, alignItems: "center", gap: 8, padding: 20, borderRadius: 8, borderWidth: 1, borderColor: tokens.border, backgroundColor: tokens.card, boxShadow: "0px 16px 32px -22px rgba(121, 100, 214, 0.22)" }}>
     <Avatar large name="Kevin Turner">KT</Avatar>
     <Text style={{ fontSize: 14, lineHeight: 20, fontWeight: "600", color: tokens["card-foreground"] }}>Kevin Turner</Text>
     <Text style={{ fontSize: 12, lineHeight: 16, color: tokens["muted-foreground"] }}>Product Designer</Text>

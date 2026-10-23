@@ -68,8 +68,7 @@ Slider is the keyboard reference (`src/atoms/slider/slider.shared.tsx`):
 
 Overlay shells use `useEscapeLayer(active, onEscape)` from
 `src/style/escape-layer.ts`. Republish `EscapeLayerProvider` inside portaled
-content so logical child ownership survives registry teleportation. The public
-`useEscapeKey` signature remains unchanged.
+content so logical child ownership survives registry teleportation.
 
 Browser Escape uses the shared document listener and consumes matching keyup
 and repeat events. Native dismissal uses committed owner ancestry and the

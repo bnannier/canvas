@@ -14,7 +14,7 @@ import { ToastProvider } from "../src/organisms/toast/toast.tsx";
 afterEach(cleanup);
 const ui = (n: ReactNode) => render(<ThemeProvider>{n}</ThemeProvider>);
 
-describe("useEscapeKey — Escape dismisses anchored overlays", () => {
+describe("useEscapeLayer: Escape dismisses anchored overlays", () => {
   it("closes an open Dropdown when Escape is pressed anywhere", () => {
     const items = [{ label: "Profile" }, { label: "Sign out" }];
     const { container, getByText, queryByText } = ui(

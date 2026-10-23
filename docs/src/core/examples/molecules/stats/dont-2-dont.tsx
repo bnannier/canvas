@@ -3,9 +3,9 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { tokens, shadow, View, Stats } = scope;
+  const { tokens, View, Stats } = scope;
   return (
-<View style={{ borderRadius: 8, borderWidth: 1, borderColor: tokens.border, backgroundColor: tokens.card, ...shadow("sm"), padding: 24 }}>
+<View style={{ borderRadius: 8, borderWidth: 1, borderColor: tokens.border, backgroundColor: tokens.card, boxShadow: "0px 16px 32px -22px rgba(121, 100, 214, 0.22)", padding: 24 }}>
   <Stats items={[
     { label: "Revenue", value: "$48.2k" },
     { label: "Orders", value: "842" }

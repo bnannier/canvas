@@ -22,7 +22,7 @@
 //   7. the index and the contact sheets to read, printed per slug.
 //
 // The slug is a component slug (`button`), a page id or slug (`template-signin`, `signin`),
-// or a foundation (`glass-pane`, `GlassPane`); a component's slug names the component
+// or a foundation (`overlay-provider`, `OverlayProvider`); a component's slug names the component
 // alone (`calendar`; its template page is `template-calendar`). A foundation expands to its
 // Capture through list (tools/audit/foundations.ts): the components that render through it, direct consumers
 // first, then those through shared modules, then those through other kit components, then
@@ -139,7 +139,7 @@ export type TurnTarget =
  * page's id, a foundation's id or name; then a page's slug, when no component, page or
  * foundation has it as a name and no other page shares it. So `calendar` is the Calendar
  * component and `template-calendar` its page; a foundation whose id a component or a page
- * also had would be named by its name (`GlassPane`), which nothing else can have.
+ * also had would be named by its name (`OverlayProvider`), which nothing else can have.
  */
 export function resolveTarget(name: string, list: readonly InventoryComponent[] = components(), pageList: readonly InventoryPage[] = pages()): TurnTarget {
   const component = list.find((c) => c.slug === name);
@@ -152,7 +152,7 @@ export function resolveTarget(name: string, list: readonly InventoryComponent[] 
   const bySlug = pageList.filter((p) => p.slug === name);
   if (bySlug.length === 1) return asPage(bySlug[0]!);
   if (bySlug.length > 1) throw new Error(`--slug=${name} is the slug of ${bySlug.length} pages; name one by its id (${bySlug.map((p) => p.id).join(", ")})`);
-  throw new Error(`--slug=${name} names no component, page or foundation (a component slug such as button, a page id such as template-signin, or a foundation such as glass-pane)`);
+  throw new Error(`--slug=${name} names no component, page or foundation (a component slug such as button, a page id such as template-signin, or a foundation such as theme-provider)`);
 }
 
 /** The slugs a turn captures: its own, or a foundation's Capture through list, kept to the first n when capped. */

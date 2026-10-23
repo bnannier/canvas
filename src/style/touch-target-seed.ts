@@ -1,8 +1,8 @@
 import { useMemo, useState } from "react";
 import { PixelRatio, type Insets, type LayoutChangeEvent, type ViewStyle } from "react-native";
 
-// The touch-target measurement behind useMinTargetSlop (src/style/touch-target.ts), with
-// one addition the kit's own controls use: a seed from the box their skin fixes.
+// The touch-target measurement the kit's own controls extend their touch area with, seeded
+// from the box their skin fixes.
 //
 // A measured slop arrives after the first layout (onLayout, then a commit that changes only
 // hitSlop), and a commit that changes only hitSlop lays nothing out. A native ancestor that
@@ -116,8 +116,8 @@ function sameSlop(a: Insets | undefined, b: Insets | undefined): boolean {
 
 /**
  * Measure a pressable and extend its touch area to the platform minimum, seeded from its
- * declared `box` when the skin gives one (see the file header). useMinTargetSlop is this
- * without a box. A changed box seeds again, until the next layout measures it.
+ * declared `box` when the skin gives one (see the file header); without a box it measures
+ * nothing until the first layout. A changed box seeds again, until the next layout measures it.
  */
 export function useSeededMinTargetSlop(
   minTarget: number | null,

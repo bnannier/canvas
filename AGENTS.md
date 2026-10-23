@@ -63,10 +63,12 @@ until the phase that changes it rewrites them. These decisions bind all new work
 
 The reference cards for everything judged by eye (`df-argus-shell`, `df-frost`,
 `df-hover-lift`, `df-avatar`) are in `tools/native/liquid-motion.md` under
-`## References`, their strips under `tools/native/reference/df-*`. Deprecated public
-names (JS exports and `styles/*` custom properties) keep working as aliases until the
-owner authorizes a major. Why: the owner prefers DF's components, and a native shape
-is only worth keeping where the platform itself defines one.
+`## References`, their strips under `tools/native/reference/df-*`. On 2026-10-23 the
+owner removed every deprecated JS export and every helper published by accident, since
+nothing consumed them (a minor, by that decision); the deprecated `styles/*` custom
+properties keep working as aliases until the owner authorizes a major. Why: the owner
+prefers DF's components, and a native shape is only worth keeping where the platform
+itself defines one.
 
 ## React-Native-everywhere principle
 
@@ -360,7 +362,7 @@ layers, each with its own under-fill token (`glass-tint*` in `src/style/tokens.t
   WASH (a soft Badge, a coloured Chip, a toned Alert) is its own soft wash, the pane's
   `tint` in place of the layer's, under the same ink as in solid mode: `statusColors`
   for the status tones, and a free Chip hue's 500 step at Dark Factory's soft alpha
-  under its deep 800/300 label (`HUE_WASH` is deprecated and unused). A control with no
+  under its deep 800/300 label. A control with no
   surface of its own stays bare: a ghost or link Button, the web's outline and secondary
   Buttons (Dark Factory's transparent outline pills), and on every platform Pagination's
   resting pages, arrows and rows-per-page trigger. Radio, Checkbox and Switch are small

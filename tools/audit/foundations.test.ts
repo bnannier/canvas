@@ -3,10 +3,10 @@ import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { ROOT } from "../../e2e/support/routes.ts";
-import { DECIDED_DEPRECATIONS, findFoundation, foundationCode, foundationFacts, foundationId, foundationSources, foundations, importsFoundation, importsImplementation, k12Status, namedFor, routeModule, tokenPages, unplacedDeprecations } from "./foundations.ts";
+import { findFoundation, foundationCode, foundationFacts, foundationId, foundationSources, foundations, importsFoundation, importsImplementation, k12Status, namedFor, routeModule, tokenPages, unplacedDeprecations } from "./foundations.ts";
 import { components, pages } from "./inventory.ts";
 import { KitGraph, MODULE_BODY, UnreadableKitModule, consumersOf, moduleFiles, moduleStem, ownersByReaders, type ConsumerCandidate } from "./kit-graph.ts";
-import { FOUNDATION_PLANS, REFERENCE_FOUNDATION, STYLE_LAYER_RENDERABLES, TOKENS_FOUNDATION } from "./plan-specifics.ts";
+import { FOUNDATION_PLANS, STYLE_LAYER_RENDERABLES, TOKENS_FOUNDATION } from "./plan-specifics.ts";
 import { publicApi } from "../api/manifest.ts";
 
 /** A throwaway kit: files under a temporary root, read by the same graph the facts use. */
@@ -167,42 +167,31 @@ describe("the Foundations tier (tools/audit/foundations.ts)", () => {
   const facts = (name: string) => foundationFacts(findFoundation(name)!, { tests: [] }, sources);
   const consumer = (name: string, slug: string) => facts(name).consumers.find((c) => c.slug === slug);
 
-  it("is the style-layer renderables, the design tokens and the reference's internals, each with a kebab id no component or page takes, and a plan row", () => {
+  it("is the style-layer renderables and the design tokens, each with a kebab id no component or page takes, and a plan row", () => {
     const list = foundations();
-    expect(list.map((f) => f.name)).toEqual([...STYLE_LAYER_RENDERABLES, TOKENS_FOUNDATION, REFERENCE_FOUNDATION].sort((a, b) => a.localeCompare(b)));
-    expect(list).toHaveLength(18);
-    expect(findFoundation("foundation-reference")).toEqual({ name: "FoundationReference", id: "foundation-reference", kind: "reference" });
+    expect(list.map((f) => f.name)).toEqual([...STYLE_LAYER_RENDERABLES, TOKENS_FOUNDATION].sort((a, b) => a.localeCompare(b)));
+    expect(list).toHaveLength(7);
     expect(foundationId("GlassModalBlurTarget")).toBe("glass-modal-blur-target");
     expect(foundationId("ThemeProvider")).toBe("theme-provider");
     expect(foundationId("Tokens")).toBe("tokens");
-    expect(findFoundation("GlassPane")).toEqual(findFoundation("glass-pane"));
+    expect(findFoundation("ThemeProvider")).toEqual(findFoundation("theme-provider"));
     const taken = new Set([...components().map((c) => c.slug), ...pages().flatMap((p) => [p.id, p.slug])]);
     for (const f of list) expect(taken.has(f.id)).toBe(false);
     expect(Object.keys(FOUNDATION_PLANS).sort()).toEqual(list.map((f) => f.name).sort());
     expect(tokenPages()).toEqual(["/tokens/colors", "/tokens/layout", "/tokens/spacing", "/tokens/typography"]);
   });
 
-  it("finds GlassSurface's consumers in the source: Card and Dialog directly, Button through GlassPane", () => {
-    expect(consumer("GlassSurface", "card")).toEqual({ slug: "card", tier: "direct", through: ["GlassSurface"] });
-    expect(consumer("GlassSurface", "dialog")).toEqual({ slug: "dialog", tier: "direct", through: ["GlassSurface"] });
-    expect(consumer("GlassSurface", "button")).toMatchObject({ tier: "shared", through: expect.arrayContaining(["`GlassPane` (src/style/glass-surface/glass-pane.tsx)"]) });
-    // React Native's own View renders through nothing of the kit's.
-    expect(consumer("GlassSurface", "view")).toBeUndefined();
-    const glass = facts("GlassSurface");
-    expect(glass.homes).toEqual(["src/style/glass-surface/glass-surface.android.tsx", "src/style/glass-surface/glass-surface.ios.tsx", "src/style/glass-surface/glass-surface.tsx"]);
-    // A deprecated alias since GlassSurface's turn (K12-2), with no single replacement.
-    expect(glass.exports.map((e) => [e.name, e.k12])).toEqual([["GlassSurface", "deprecated alias already"]]);
-  });
-
-  it("finds AnchoredOverlay's consumers: Popover, Dropdown and Select directly, AvatarMenu's Avatar through Dropdown", () => {
-    for (const slug of ["popover", "dropdown", "select"]) expect(consumer("AnchoredOverlay", slug)).toMatchObject({ tier: "direct", through: expect.arrayContaining(["AnchoredOverlay"]) });
-    expect(consumer("AnchoredOverlay", "avatar")).toEqual({ slug: "avatar", tier: "component", through: ["dropdown"] });
-    // Tooltip opens in flow, not through the anchored overlay (P3e).
-    expect(consumer("AnchoredOverlay", "tooltip")).toBeUndefined();
-    const overlay = facts("AnchoredOverlay");
-    expect(overlay.exports.map((e) => e.name)).toEqual(["AnchoredOverlay", "AnchoredOverlayProps", "placeOverlay", "useOverlayAnchor", "useOverlaySide"]);
-    // Documented on the generated foundation reference since the FoundationReference turn.
-    expect(overlay.docs).toEqual([{ route: "foundation", documents: ["AnchoredOverlay", "AnchoredOverlayProps", "placeOverlay", "useOverlayAnchor", "useOverlaySide"], planned: [], page: null, exists: true }]);
+  it("finds BreakpointOverride's consumers through the kit's internal overlay machinery, and Avatar through Dropdown", () => {
+    // The anchored cards reach it through the internal AnchoredOverlay, Dialog through the
+    // internal Portal, whose overlay layer relays the override's context.
+    for (const slug of ["popover", "dropdown"]) expect(consumer("BreakpointOverride", slug)).toEqual({ slug, tier: "shared", through: ["`AnchoredOverlay` (src/style/anchored-overlay.tsx)"] });
+    expect(consumer("BreakpointOverride", "dialog")).toEqual({ slug: "dialog", tier: "shared", through: ["`Portal` (src/style/portal.tsx)"] });
+    expect(consumer("BreakpointOverride", "avatar")).toEqual({ slug: "avatar", tier: "component", through: ["dropdown"] });
+    expect(facts("BreakpointOverride").homes).toEqual(["src/style/responsive.tsx"]);
+    // Every export of the tier is public since the owner's 2026-10-23 removal.
+    const overlay = facts("OverlayProvider");
+    expect(overlay.exports.map((e) => [e.name, e.k12])).toEqual([["OverlayHost", "public"], ["OverlayProvider", "public"], ["OverlayProviderProps", "public"], ["OverlayViewportInsets", "public"], ["useOverlayHost", "public"]]);
+    expect(overlay.docs).toEqual([{ route: "integration", documents: ["OverlayHost", "OverlayProvider", "useOverlayHost"], planned: ["OverlayProviderProps", "OverlayViewportInsets"], page: null, exists: true }]);
   });
 
   it("orders a Capture through list by tier and adds the pages whose entry names an export", () => {
@@ -213,8 +202,8 @@ describe("the Foundations tier (tools/audit/foundations.ts)", () => {
     expect(theme.captureThrough.pages).toEqual(["pattern-accessibility", "pattern-glass"]);
     expect(theme.notCaptured.map((d) => d.route)).toEqual(["theming"]);
     // Two foundations of one module share its exports and its consumers.
-    expect(facts("Portal").exports).toEqual(facts("OverlayProvider").exports);
-    expect(facts("LabelContent").consumers).toEqual(facts("FloatingLabel").consumers);
+    expect(facts("GlassBlurScope").exports).toEqual(facts("GlassBlurPlane").exports);
+    expect(facts("GlassBlurScope").consumers).toEqual(facts("GlassBlurPlane").consumers);
   });
 
   it("reads the design tokens from the tokens/* pages: what the manifest routes there, what they show, and their modules' other names", () => {
@@ -222,37 +211,23 @@ describe("the Foundations tier (tools/audit/foundations.ts)", () => {
     expect(tokens.homes).toEqual(tokenPages());
     const names = tokens.exports.map((e) => e.name);
     expect(names).toEqual(expect.arrayContaining(["spacing", "radius", "lightColors", "breakpoints", "typeface"]));
-    // /tokens/spacing renders `shadow` in its Elevation section, and its module's other names come with it (K12-2 OD4).
     expect(routeModule(ROOT, "/tokens/spacing")).toBe("docs/src/app/(utilities)/tokens/spacing.tsx");
-    expect(sources.tokenNames.get("/tokens/spacing")).toContain("shadow");
-    expect(names).toEqual(expect.arrayContaining(["shadow", "customShadow", "ShadowLevel"]));
-    // src/style/tokens.ts declares the Riskora type ladder (K12-7 OD3), and the deprecated aliases beside the tokens.
-    expect(names).toEqual(expect.arrayContaining(["fontSize", "fontWeight", "lineHeight", "letterSpacing", "HUE_WASH", "brandColors"]));
-    expect(tokens.sourceFiles).toEqual(expect.arrayContaining(["src/style/shadow.ts", "src/style/tokens.ts"]));
+    // The shadow helpers and the Riskora type ladder are internal since the owner's 2026-10-23 removal.
+    for (const internal of ["shadow", "customShadow", "ShadowLevel", "fontSize", "fontWeight", "lineHeight", "letterSpacing"]) expect(names).not.toContain(internal);
+    expect(tokens.sourceFiles).toEqual(expect.arrayContaining(["src/style/tokens.ts"]));
     // A page's frame is components: Card, DataTable and the toast an example raises are not tokens.
     for (const frame of ["Card", "DataTable", "useToast", "Toast", "useTheme"]) expect(names).not.toContain(frame);
-    expect(tokens.notCaptured.map((d) => d.route)).toEqual(["foundation", "theming", "tokens/colors", "tokens/layout", "tokens/spacing", "tokens/typography"]);
+    expect(tokens.notCaptured.map((d) => d.route)).toEqual(["theming", "tokens/colors", "tokens/layout", "tokens/spacing", "tokens/typography"]);
     expect(tokens.materials).toBeNull();
     expect(consumer("Tokens", "card")?.tier).toBe("direct");
   });
 
-  it("puts every deprecation the owner decided on a Foundations checklist, the kit internals on the /foundation reference's", () => {
+  it("puts every name the manifest marks for retirement on a Foundations checklist", () => {
+    // None is left since the owner's 2026-10-23 removal.
     expect(unplacedDeprecations(sources)).toEqual([]);
     // A retired name no foundation holds is caught (audit:checklists:check fails on it).
     expect(unplacedDeprecations(sources, { ...publicApi, strayHelper: { kind: "internal-by-accident" } })).toEqual(["strayHelper"]);
-    const placed = new Map<string, string[]>();
-    for (const f of foundations()) for (const e of facts(f.name).exports) placed.set(e.name, [...(placed.get(e.name) ?? []), f.name]);
-    for (const name of Object.keys(DECIDED_DEPRECATIONS)) expect(placed.has(name)).toBe(true);
-    for (const [name, entry] of Object.entries(publicApi)) if (entry.kind === "internal-by-accident") expect([name, placed.has(name)]).toEqual([name, true]);
-    const reference = facts("FoundationReference");
-    expect(reference.homes).toEqual(["/foundation"]);
-    expect(reference.exports.map((e) => e.name)).toEqual(expect.arrayContaining(["StyleSheet", "controlRipple", "surfaceRipple", "rippleClip", "pressDim", "tabularNums", "useControllableState"]));
-    expect(reference.exports.every((e) => e.k12.startsWith("deprecated alias"))).toBe(true);
-    expect(reference.notCaptured.map((d) => d.route)).toEqual(["foundation"]);
-    // A name a renderable or the tokens hold stays theirs, though /foundation plans it too.
-    expect(placed.get("SsrBreakpointContext")).toEqual(["BreakpointOverride"]);
-    expect(placed.get("StyleSheet")).toEqual(["FoundationReference"]);
-    expect(placed.get("useWindowDimensions")).toEqual(["BreakpointOverride"]);
+    expect(unplacedDeprecations(sources, { ...publicApi, staleAlias: { kind: "deprecated-alias" } })).toEqual(["staleAlias"]);
   });
 
   it("asks in its specific checks only for components its own turn captures, or says the check is the source's", () => {
@@ -269,48 +244,13 @@ describe("the Foundations tier (tools/audit/foundations.ts)", () => {
       }
     }
     expect(strays).toEqual([]);
-    // LoopView renders the Skeleton shimmer, Button's attention glow (button-attention.tsx) and Chat's
-    // thinking dots, so Skeleton, Button and Chat read it directly, and every component that renders
-    // a Button (or Skeleton's DataTable rows) reaches it through them; the Spinner, the Progress and
-    // the caret loop on their own.
-    expect(facts("LoopView").captureThrough.components).toEqual([
-      "button",
-      "skeleton",
-      "chat",
-      "avatar",
-      "dropdown",
-      "popover",
-      "tooltip",
-      "video",
-      "action-panels",
-      "alert-dialog",
-      "description-lists",
-      "empty-state",
-      "form",
-      "grid-lists",
-      "stacked-lists",
-      "action-sheet",
-      "data-table",
-      "dialog",
-      "drawer",
-      "filter-panel",
-      "navbars",
-      "sidebar",
-      "wizard",
-      "geo-map",
-    ]);
-    for (const slug of ["button", "skeleton", "chat"]) expect(consumer("LoopView", slug)?.tier).toBe("direct");
-    expect(consumer("LoopView", "wizard")?.through).toEqual(["button", "dialog"]);
-    expect(FOUNDATION_PLANS.LoopView!.find((line) => /Spinner/.test(line))).toStartWith("source:");
   });
 
-  it("states the K12-2 status from the manifest and the owner's decisions", () => {
-    expect(k12Status("GlassPane", { kind: "internal-by-accident" })).toBe("deprecated alias to come (K12-2)");
-    expect(k12Status("shadow", { kind: "utility" })).toBe("deprecated alias to come (K12-2 OD4)");
-    expect(k12Status("fontSize", { kind: "token" })).toBe("deprecated alias to come (K12-7 OD3)");
-    expect(k12Status("HUE_WASH", { kind: "deprecated-alias", replacement: "statusColors" })).toBe("deprecated alias already (use `statusColors`)");
-    expect(k12Status("ThemeProvider", { kind: "component" })).toBe("public");
-    expect(Object.keys(DECIDED_DEPRECATIONS).sort()).toEqual(["ShadowLevel", "StyleSheet", "customShadow", "fontSize", "fontWeight", "letterSpacing", "lineHeight", "shadow", "useWindowDimensions"]);
+  it("states the K12-2 status from the manifest", () => {
+    expect(k12Status({ kind: "internal-by-accident" })).toBe("deprecated alias to come (K12-2)");
+    expect(k12Status({ kind: "deprecated-alias", replacement: "statusColors" })).toBe("deprecated alias already (use `statusColors`)");
+    expect(k12Status({ kind: "deprecated-alias" })).toBe("deprecated alias already");
+    expect(k12Status({ kind: "component" })).toBe("public");
   });
 
   it("credits a test with a foundation by the names it imports, not by its module path", () => {
@@ -334,29 +274,29 @@ describe("the Foundations tier (tools/audit/foundations.ts)", () => {
     expect(override.captureThrough.components).toHaveLength(32);
     expect(consumer("BreakpointOverride", "chat")?.tier).toBe("component");
     expect(consumer("BreakpointOverride", "wizard")?.tier).toBe("shared");
-    // The layer itself is Portal's and AnchoredOverlay's both, so it is a seam of neither,
-    // and a seam never leaks one foundation's consumers into another's.
-    const code = foundationCode(sources);
-    const seamNames = (id: string) => code.get(id)!.seams.map((s) => `${s.file}#${s.name}`);
-    for (const id of ["portal", "anchored-overlay"]) expect(seamNames(id)).not.toContain("src/style/overlay-layer.tsx#usePortalMount");
-    expect(consumer("Portal", "card")).toBeUndefined();
+    // Every kit overlay publishes through the layer, so it is no foundation's seam, and a seam
+    // never leaks one foundation's consumers into another's.
+    const seams = [...foundationCode(sources).values()].flatMap((c) => c.seams.map((s) => `${s.file}#${s.name}`));
+    expect(seams).not.toContain("src/style/overlay-layer.tsx#usePortalMount");
+    expect(consumer("OverlayProvider", "card")).toBeUndefined();
     // Wizard portals through the Dialog it composes; AppFrame and Page host overlays.
-    expect(facts("Portal").consumers).toHaveLength(21);
-    expect(consumer("Portal", "wizard")?.tier).toBe("component");
+    expect(facts("OverlayProvider").consumers).toHaveLength(21);
+    expect(consumer("OverlayProvider", "wizard")?.tier).toBe("component");
   });
 
   it("lists a foundation's implementation under its Source files, and credits the tests of it", () => {
-    const glass = facts("GlassSurface");
-    for (const file of ["src/style/glass-surface/glass-surface.shared.tsx", "src/style/glass-surface/material-runtime.ts", "src/style/glass-surface/material-runtime.ios.ts", "src/style/glass-surface/material-runtime.android.ts", "src/style/glass-surface/web-frost.ts"]) {
-      expect(glass.sourceFiles).toContain(file);
+    // OverlayProvider's implementation reaches into the portal, the overlay layer and the
+    // Android capture target its page content is.
+    for (const file of ["src/style/portal.tsx", "src/style/overlay-layer.tsx", "src/style/glass-surface/capture-target.ts"]) {
+      expect(facts("OverlayProvider").sourceFiles).toContain(file);
     }
-    const code = foundationCode(sources).get("glass-surface")!;
-    // test/glass-surface.test.ts tests the shell's helpers, imported by name from its module.
-    expect(importsImplementation(sources.kit, { names: new Set(["specularRim", "splitSurfaceStyle"]), modules: ["src/style/glass-surface/glass-surface.shared.tsx"] }, code.implementation)).toBe(true);
-    expect(importsImplementation(sources.kit, { names: new Set(["specularRim"]), modules: ["src/style/tokens.ts"] }, code.implementation)).toBe(false);
-    // test/anchored-overlay-dismissal.test.tsx tests AnchoredOverlay through its consumers, and is named for it.
-    expect(namedFor("test/anchored-overlay-dismissal.test.tsx", { id: "anchored-overlay" })).toBe(true);
-    expect(namedFor("test/glass-surface.test.ts", { id: "glass-surface" })).toBe(true);
-    expect(namedFor("test/glass-surfaces.test.ts", { id: "glass-surface" })).toBe(false);
+    const code = foundationCode(sources).get("glass-modal-blur-target")!;
+    // A test that imports the bridge's private contexts by name from their module tests it.
+    expect(importsImplementation(sources.kit, { names: new Set(["GlassWindowBlurTargetContext"]), modules: ["src/style/glass-surface/glass-surface.shared.tsx"] }, code.implementation)).toBe(true);
+    expect(importsImplementation(sources.kit, { names: new Set(["GlassWindowBlurTargetContext"]), modules: ["src/style/tokens.ts"] }, code.implementation)).toBe(false);
+    // A test named for a foundation tests it.
+    expect(namedFor("test/glass-modal-blur-target.test.tsx", { id: "glass-modal-blur-target" })).toBe(true);
+    expect(namedFor("test/theme-provider-palette.test.tsx", { id: "theme-provider" })).toBe(true);
+    expect(namedFor("test/glass-modal-blur-targets.test.ts", { id: "glass-modal-blur-target" })).toBe(false);
   });
 });

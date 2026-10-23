@@ -1,6 +1,6 @@
 import { describe, it, expect } from "bun:test";
 import { Easing } from "react-native";
-import { supportsNativeDriver, thereAndBack, holdThen, keyframes } from "../src/style/motion.ts";
+import { supportsNativeDriver, thereAndBack, keyframes } from "../src/style/motion.ts";
 
 describe("supportsNativeDriver", () => {
   it("is a boolean gate (RNW can't run the native driver; native can)", () => {
@@ -28,22 +28,6 @@ describe("thereAndBack", () => {
       // The first half IS the easing over twice the time, the second the same run back.
       expect(shape(t)).toBeCloseTo(io(t * 2), 6);
     }
-  });
-});
-
-describe("holdThen", () => {
-  const shape = holdThen(0.8, Easing.linear);
-
-  it("parks at 0 for the hold, then sweeps to 1 by the end", () => {
-    expect(shape(0)).toBe(0);
-    expect(shape(0.5)).toBe(0);
-    expect(shape(0.8)).toBe(0);
-    expect(shape(0.9)).toBeCloseTo(0.5, 6);
-    expect(shape(1)).toBe(1);
-  });
-
-  it("degrades to a flat 0 when the hold is the whole cycle", () => {
-    expect(holdThen(1, Easing.linear)(1)).toBe(0);
   });
 });
 
