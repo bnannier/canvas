@@ -15,7 +15,6 @@ import {
   Pressable,
   useReducedMotion,
   type ColorTokens,
-  type StyleProp,
   type ViewStyle,
   type TextStyle,
   type LayoutStyle,

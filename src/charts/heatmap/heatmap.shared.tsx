@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { ScrollView } from "react-native";
-import { View, Text, Pressable, useTheme, alpha, devWarn, type ColorTokens, type StyleProp, type ViewStyle, type LayoutStyle } from "../../style/index.js";
+import { View, Text, Pressable, useTheme, alpha, devWarn, type ColorTokens, type LayoutStyle } from "../../style/index.js";
 import { announceSelection, ChartInspectionSurface } from "../shared/chart-inspect.js";
 import { estimateTextWidth } from "../shared/chart-math.js";
 import { useHorizontalScrollFocus } from "../../style/use-scroll-focus.js";
@@ -173,7 +173,6 @@ function CalendarHeatmap({ cells, label, caption, hideLegend, testID, style }: H
 
   const cols = Math.ceil(cells.length / CAL_ROWS);
   const gridW = cols * CAL_PITCH - CAL_GAP;
-  const gridH = CAL_ROWS * CAL_PITCH - CAL_GAP;
   const hasDates = cells.some((c) => c.date);
 
   // Place a month abbreviation at each column where the (topmost dated) month changes.

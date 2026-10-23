@@ -1,6 +1,6 @@
 import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
 import { Fragment, type ReactNode } from "react";
-import { View, Text, useHugStyle, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle, type LayoutStyle, GlassPane, paneStyle } from "../../style/index.js";
+import { View, Text, useHugStyle, type ColorTokens, type ViewStyle, type TextStyle, type LayoutStyle, GlassPane, paneStyle } from "../../style/index.js";
 
 // Shared Kbd shell. Kbd is a keyboard shortcut indicator: a small bordered, slightly
 // raised key cap with monospace-ish small text. A single key comes from `children`

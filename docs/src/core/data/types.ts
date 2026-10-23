@@ -31,20 +31,6 @@ export type Category =
   | "Organisms"
   | "Charts";
 
-export const CATEGORIES: Category[] = [
-  "Atoms",
-  "Molecules",
-  "Organisms",
-  "Charts",
-];
-
-export interface GuidePage {
-  slug: string;
-  title: string;
-  description: string;
-  section: "Foundations" | "Guides";
-}
-
 /** A live example whose named component owns its state. */
 export interface DocSection {
   title: string;

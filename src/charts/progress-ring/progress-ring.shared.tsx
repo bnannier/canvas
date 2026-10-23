@@ -1,5 +1,5 @@
 import Svg, { Path } from "react-native-svg";
-import { View, Text, useTheme, statusColors, devWarn, type ColorTokens, type StyleProp, type ViewStyle, type LayoutStyle } from "../../style/index.js";
+import { View, Text, useTheme, statusColors, devWarn, type ColorTokens, type LayoutStyle } from "../../style/index.js";
 
 // ProgressRing is a "Shared" platform treatment (data visualization is
 // platform-neutral): one implementation serves iOS, Android, and the web.

@@ -1,5 +1,5 @@
 import { type ViewStyle, type TextStyle } from "react-native";
-import { alpha, type ColorTokens, shape } from "../../style/index.js";
+import { alpha, shape } from "../../style/index.js";
 import { fieldBorder } from "../../style/field-colors.js";
 import { type StepperSkin, type Size } from "./stepper.shared.js";
 

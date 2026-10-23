@@ -1,6 +1,6 @@
 import { StyleSheet } from "react-native";
 import Svg, { Path } from "react-native-svg";
-import { View, Pressable, useTheme, useControllableState, devWarn, type StyleProp, type ViewStyle, type LayoutStyle } from "../../style/index.js";
+import { View, Pressable, useTheme, useControllableState, devWarn, type LayoutStyle } from "../../style/index.js";
 import { seriesFill } from "../shared/charts.styles.js";
 import { type StackedSegment } from "../shared/types.js";
 import { ChartLegend } from "../shared/chart-legend.js";

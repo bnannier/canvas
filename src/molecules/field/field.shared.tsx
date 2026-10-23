@@ -7,7 +7,6 @@ import {
   type ReactElement,
   type ReactNode,
 } from "react";
-import { type StyleProp, type ViewStyle } from "react-native";
 import { View, Text, useTheme, LabelContent, labelA11y, requiredName, type LayoutStyle, type MeasureProps, useFillStyle } from "../../style/index.js";
 import { type FieldSkin } from "./field.styles.js";
 

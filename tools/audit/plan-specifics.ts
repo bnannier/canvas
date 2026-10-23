@@ -333,11 +333,6 @@ export const COMPONENT_PLANS: ComponentPlan[] = [
   { slug: "geo-map", families: ["charts"], native: CHART_NATIVE, specifics: ["camera and cluster by keyboard", "region names announced"] },
 ];
 
-/** A component's plan row, or null for a page the plan has no row for. */
-export function planFor(slug: string): ComponentPlan | null {
-  return COMPONENT_PLANS.find((plan) => plan.slug === slug) ?? null;
-}
-
 /**
  * The style-layer renderables with no component page of their own, so no checklist file:
  * the material inventory's style tier less the primitives whose docs route is a component

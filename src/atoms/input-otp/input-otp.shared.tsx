@@ -19,7 +19,6 @@ import {
   keyframes,
   FOCUS_RESET,
   type ColorTokens,
-  type StyleProp,
   type ViewStyle,
   type TextStyle,
   type LayoutStyle,

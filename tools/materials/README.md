@@ -19,9 +19,17 @@ string-valued styling props:
 - `liquid`: functional material appropriate to its context and native capability.
 - `inherited`: content, layout or data ink that does not own a separate pane.
 
-Every owned surface also follows `solidMaterialContract`: complete opaque
-appearance, no glass rendering work, and state-preserving switching in both
-directions. A liquid role names the material, never a motion.
+Every owned surface also follows the solid contract:
+
+- Appearance: restore the opaque fill, boundary, elevation and foreground and state
+  roles, and keep deliberately unfilled anatomy unfilled.
+- Resources: a resolved solid surface mounts no capture, refraction or glass
+  highlight; shared resources survive only for the remaining glass consumers.
+- Transitions: switching in either direction preserves focus, refs, caret, IME,
+  values, open state, scrolling and hit targets; controlled state stays
+  authoritative.
+
+A liquid role names the material, never a motion.
 
 A renderable's docs route is the page that documents it, and the public API manifest
 (tools/api/manifest.ts) is the authority on that: `check:api` fails when the two

@@ -1,6 +1,6 @@
 import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
 import { type ReactNode } from "react";
-import { View, Pressable, Text, RippleClip, cornerRadii, useTheme, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle, type LayoutStyle, useFillStyle, GlassSurface, GlassPane, paneStyle, paneRipple } from "../../style/index.js";
+import { View, Pressable, Text, RippleClip, cornerRadii, useTheme, type ColorTokens, type ViewStyle, type TextStyle, type LayoutStyle, useFillStyle, GlassSurface, GlassPane, paneStyle, paneRipple } from "../../style/index.js";
 import { Sparkline } from "../../charts/sparkline/sparkline.js";
 import { StackedBar } from "../../charts/stacked-bar/stacked-bar.js";
 import { type StackedSegment } from "../../charts/shared/types.js";

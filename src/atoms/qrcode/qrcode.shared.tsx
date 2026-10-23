@@ -1,5 +1,5 @@
 import type RNQRCodeType from "react-native-qrcode-svg";
-import { View, useHugStyle, type StyleProp, type ViewStyle, type LayoutStyle } from "../../style/index.js";
+import { View, useHugStyle, type ViewStyle, type LayoutStyle } from "../../style/index.js";
 
 // react-native-qrcode-svg is an OPTIONAL peer (it drags a large text-encoding
 // polyfill), so it is loaded with a guarded literal require: consumers who never

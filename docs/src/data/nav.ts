@@ -74,8 +74,6 @@ function navItem(label: string, href: string, iconName: string): NavItem {
   return { slug: getActiveSlug(href), label, href, icon: icon(iconName) };
 }
 
-export const NAV_ROUTES = CONFIG.routes;
-
 export function routeItem(key: string): NavItem {
   const r = CONFIG.routes[key];
   return navItem(r.label, r.href, r.icon);
@@ -121,7 +119,7 @@ export function sectionFor(pathname: string): "home" | "components" | "utilities
 // ── Native header menu model ─────────────────────────────────────────────────
 // The hamburger is the active tab's secondary nav, modelled as a RECURSIVE tree of
 // leaves (a page link) and submenus (a labelled drill-in). `nativeMenuFor` builds the
-// tree per tab, reusing NAV_ROUTES (link registry) and NAV_GROUPS (the category ->
+// tree per tab, reusing routeItem (the link registry) and NAV_GROUPS (the category ->
 // components tree the web sidebar consumes):
 //   • Home is a full SITE MAP: the About/guide links, plus a Components submenu that
 //     drills category -> component page, plus a Utilities submenu, so every page is

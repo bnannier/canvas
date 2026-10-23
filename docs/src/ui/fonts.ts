@@ -95,4 +95,3 @@ export const CANVAS_FONTS: ThemeFonts = { sans: SANS, mono: MONO };
 
 /** The brand face by weight, for the docs' own chrome (the kit gets it through `fonts`). */
 export const sans = (weight: SansWeight = "400") => SANS[weight];
-export const geistMono = (weight: MonoWeight = "400") => MONO[weight];

@@ -1,6 +1,6 @@
 import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
 import { G, Line, Path, Rect } from "react-native-svg";
-import { View, Text, useControllableState, alpha, devWarn, type ColorTokens, type StyleProp, type ViewStyle, type LayoutStyle, GlassPane, paneStyle, isGlass } from "../../style/index.js";
+import { View, Text, useControllableState, alpha, devWarn, type ColorTokens, type LayoutStyle, GlassPane, paneStyle, isGlass } from "../../style/index.js";
 import * as s from "../shared/charts.styles.js";
 import { type ChartSeries, type ChartSkin } from "../shared/types.js";
 import { CartesianFrame, CHART_ROOT, type CartesianLayout } from "../shared/chart-frame.js";

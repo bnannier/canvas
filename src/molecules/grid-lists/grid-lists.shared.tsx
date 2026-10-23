@@ -1,6 +1,6 @@
 import { Fragment, type ComponentType } from "react";
 import { FlatList, StyleSheet, type DimensionValue, type LayoutChangeEvent, type ViewProps } from "react-native";
-import { View, Pressable, Text, useTheme, useContainerBreakpoint, devWarn, FOCUS_RESET, type ColorTokens, type StyleProp, type ViewStyle, type TextStyle, type LayoutStyle, GlassSurface, alpha } from "../../style/index.js";
+import { View, Pressable, Text, useTheme, useContainerBreakpoint, devWarn, FOCUS_RESET, type ColorTokens, type ViewStyle, type TextStyle, type LayoutStyle, GlassSurface, alpha } from "../../style/index.js";
 import { Card as WebCard } from "../card/card.js";
 import { Avatar as WebAvatar } from "../../atoms/avatar/avatar.js";
 import { Badge as WebBadge } from "../../atoms/badge/badge.js";
