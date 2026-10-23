@@ -1293,6 +1293,13 @@ acceptances the rows below cite:
   sigma on the Pixel 8 AVD against the card's 90 and 100) and would draw hard-edged
   ellipses. The card's construction (`feGaussianBlur`) is replaced; its pixels are the
   target.
+- **The shell fills the viewport** (owner, 2026-10-23, superseding the per-tier insets,
+  the 1340 cap, the 22 px top corners and the drop shadow of the first item): the frame
+  has no margin on any side at any width, and its material runs 1 px past every window
+  edge so the frost's hairline rim never draws along them. This is a deliberate departure
+  from the `df-argus-shell` card's Shell geometry; its Page items (gradient, orbs) and the
+  shell's fill, frost and wedges still hold the card
+  (`accepted: the docs frame fills the viewport with no margins (user, 2026-10-23)`).
 - **The muted ink darkens** by the amounts the plan measured (blush #696b8d to #616385,
   mint #5f7083 to #5c6d80, dark #a3a5c6 to #a4a6c7), so muted text keeps 4.5:1 on the
   shell's frost over the orb centres, where DF's own muted ink reads 4.0 to 4.4.
