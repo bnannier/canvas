@@ -50,9 +50,10 @@ until the phase that changes it rewrites them. These decisions bind all new work
    backdrop (`page-backdrop.tsx`, behind the web shell and inside each native screen)
    is one react-native-svg drawing whose orbs are radial gradients sampled from the
    exact blurred ellipse, since react-native-svg's Android `FeGaussianBlur` caps its
-   radius at 25 device pixels; the shell is an inset frame fixed to the viewport around
-   the docs' own sidebar, top bar and scroller (the owner's 2026-10-13 decisions, in the
-   evidence log's page-look section). The e2e paint check reads the look off the
+   radius at 25 device pixels; the shell is a frame fixed to the viewport around the
+   docs' own sidebar, top bar and scroller (the owner's 2026-10-13 decisions), and fills
+   it with no margin, width cap or corner radius (the owner's 2026-10-23 decision; both
+   in the evidence log's page-look section). The e2e paint check reads the look off the
    backdrop's gradient stops.
 8. **Examples.** A docs example is shown only when an existing kit component fits it;
    never create a kit component to satisfy an example (see "Dogfood the kit").

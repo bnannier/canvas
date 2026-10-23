@@ -10,7 +10,6 @@ import { MobileNavBar } from "./mobile-nav-bar";
 import { PageBackdrop } from "./page-backdrop";
 import { PageFrame } from "./page-frame";
 import { ScrollEdgeProvider } from "./scroll-edge";
-import { PAGE_LOOK } from "./page-look";
 import { SearchModal } from "./search-modal";
 import { ThemeToggles } from "./theme-toggles";
 import { WebScrollbarTheme, WebScrollPadding, SCROLLBAR_W } from "../ui/web-scrollbar";
@@ -57,9 +56,6 @@ function NativeNav() {
     </NativeTabs>
   );
 }
-
-// The frame's corner radius (Dark Factory's shell), which the chrome touching its corners takes.
-const SHELL_RADIUS = PAGE_LOOK.shell.radius;
 
 // The mobile-web bottom tab sections (the web counterpart of mobile.tabs): a kit Icon glyph
 // + the section root href. The active section is derived from the path via sectionFor, so
@@ -137,7 +133,7 @@ function WebNav() {
         <GlassBlurPlane plane={plane}><PageBackdrop /></GlassBlurPlane>
         <WebScrollbarTheme />
         <WebScrollPadding top={headerHeight} bottom={wide ? 0 : barHeight} />
-        {/* Dark Factory's frosted shell (./page-frame.tsx), inset from the window over the
+        {/* Dark Factory's frosted shell (./page-frame.tsx), filling the window over the
             page look: the sidebar, the top bar and the page live inside it. */}
         <PageFrame plane={plane}>
           <Row flush fill>
@@ -149,9 +145,7 @@ function WebNav() {
               // The rule hides it below the desktop cut; after hydration the rail is
               // simply not rendered there, so the rule matches nothing. (A web-only
               // attribute, spread through a cast the way page.tsx marks its scroller.)
-              // It rounds its own top-left corner to the frame's, as Dark Factory's sidebar
-              // does: the frame itself does not clip (./page-frame.tsx says why).
-              <View {...({ dataSet: { shellRail: "" } } as object)} style={{ overflow: "hidden", borderTopLeftRadius: SHELL_RADIUS }}>
+              <View {...({ dataSet: { shellRail: "" } } as object)}>
                 <Sidebar collapsed={collapsed} collapsible onToggleCollapse={() => setCollapsed((c) => !c)} />
               </View>
             ) : null}
@@ -162,10 +156,7 @@ function WebNav() {
                   <Slot />
                 </OverlayProvider>
               </View>
-              {/* The bar rounds the frame's top corners it reaches: the left one only on the
-                  narrow shell (the desktop rail holds it otherwise), and the right one inset by
-                  the scrollbar gutter, so its smaller radius stays inside the frame's arc. */}
-              <View onLayout={(event) => setHeaderHeight(event.nativeEvent.layout.height)} style={{ position: "absolute", top: 0, left: 0, right: SCROLLBAR_W, zIndex: 10, overflow: "hidden", borderTopLeftRadius: wide ? 0 : SHELL_RADIUS, borderTopRightRadius: SHELL_RADIUS - SCROLLBAR_W }}>
+              <View onLayout={(event) => setHeaderHeight(event.nativeEvent.layout.height)} style={{ position: "absolute", top: 0, left: 0, right: SCROLLBAR_W, zIndex: 10 }}>
                 {wide ? (
                   <Topbar showMenu onMenu={() => setCollapsed((c) => !c)} onSearch={() => setSearchOpen(true)} />
                 ) : (

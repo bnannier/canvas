@@ -12,7 +12,6 @@ import { nativeHeaderMenu, type MenuIcon } from "./native-menu";
 import { useDocsTheme } from "../theme/docs-theme";
 import { PageBackdrop } from "./page-backdrop";
 import { PageFrame } from "./page-frame";
-import { PAGE_LOOK } from "./page-look";
 
 // Wraps a screen's scroller so the native header (which drives the per-screen Stack title +
 // menu, and hosts the Android menu drawer) can sit as a sibling of the content, with the
@@ -30,8 +29,8 @@ export function ScreenFrame({ children }: { children: ReactNode }) {
     <View style={{ flex: 1 }}>
       <GlassBlurPlane plane={plane}><PageBackdrop /></GlassBlurPlane>
       <PageFrame plane={plane}>
-        {/* The scroller rounds itself to the frame's top corners (the frame does not clip). */}
-        <View style={{ flex: 1, overflow: "hidden", borderTopLeftRadius: PAGE_LOOK.shell.radius, borderTopRightRadius: PAGE_LOOK.shell.radius }}>{children}</View>
+        {/* The scroller is clipped to the frame here (the frame does not clip). */}
+        <View style={{ flex: 1, overflow: "hidden" }}>{children}</View>
       </PageFrame>
       <NativeHeader />
     </View>

@@ -1,22 +1,23 @@
 import { useId, useState, type ReactNode } from "react";
 import type { LayoutChangeEvent } from "react-native";
-import Svg, { ClipPath, Defs, LinearGradient, Polygon, Rect, Stop } from "react-native-svg";
+import Svg, { Defs, LinearGradient, Polygon, Stop } from "react-native-svg";
 import { GlassBlurScope, View, useFormFactor, useTheme, type GlassBlurPlaneHandle } from "@nannier/canvas";
 // Kit internals, as the docs' other scaffolding takes them (the testing routes, the
 // platform-skin registry): the frosted shell paints through the kit's own glass host.
 import { GlassSurface } from "../../../src/style/glass-surface/glass-surface.js";
-import { PAGE_LOOK, lookFor, shellBox, wedgeColor, wedgeGeometry, type PageLookPalette, type ShellTier } from "./page-look";
+import { PAGE_LOOK, lookFor, wedgeColor, wedgeGeometry, type PageLookPalette, type ShellTier } from "./page-look";
 
-// Dark Factory's frosted shell, as the docs' frame: one panel inset from the window by the
-// tier's padding (12 / 16 on phones, 20 / 28 on tablets, 28 / 56 on desktops, capped at
-// 1340 wide and centred), around the docs' own sidebar, top bar and scroller. Docs-only
-// scaffolding (design-language item 7); the values are PAGE_LOOK's (./page-look.ts).
+// Dark Factory's frosted shell, as the docs' frame: one panel filling the window with no
+// margin, around the docs' own sidebar, top bar and scroller. Docs-only scaffolding
+// (design-language item 7); the values are PAGE_LOOK's (./page-look.ts).
 //
-// The frame is fixed to the window, the owner's 2026-10-13 choice: at rest it is Dark
-// Factory's shell, whose bottom runs on below the window, so only its top corners are
-// rounded and it runs a hairline past the window's bottom edge (PAGE_LOOK.shell.bleed); once a page scrolls, the page moves inside
-// it and the frame stays (Dark Factory's whole shell scrolls away), which keeps the docs'
-// navigation in reach.
+// The frame fills the window, the owner's 2026-10-23 choice (Dark Factory insets its shell
+// from the window by a per-tier padding, caps it at 1340 wide and rounds its top corners;
+// the docs dropped all three). It is fixed to the window, the owner's 2026-10-13 choice:
+// once a page scrolls, the page moves inside it and the frame stays (Dark Factory's whole
+// shell scrolls away), which keeps the docs' navigation in reach. Its material runs a
+// hairline past the frame on every side (PAGE_LOOK.shell.bleed) inside a clip to the frame,
+// so the frost's rim never draws along the window's edges and the page cannot scroll by it.
 //
 // Its surface is the kit's GlassSurface on the content layer, the stable static material
 // the kit's contract gives a panel that content sits on, painting Dark Factory's shell fill
@@ -28,45 +29,32 @@ import { PAGE_LOOK, lookFor, shellBox, wedgeColor, wedgeGeometry, type PageLookP
 // ./native-header.tsx) and only the frame's material is offered it (GlassBlurScope): the
 // material is a layer of its own under the content, which stays outside the scope, so the
 // page's own glass keeps the behaviour it has without a plane.
-// In solid mode it is an opaque panel in the page's `background`, the page look around it.
+// In solid mode it is an opaque panel in the page's `background`, covering the page look.
 // The wedges (Dark Factory's ShellDecor) are laid over the surface, under the content.
 //
-// The frame does not clip its content. On the web a rounded clip around a subtree holding
-// the other frosted surfaces (the sidebar, the top bar, the cards) made Chromium drop whole
-// tiles of the page at 1440 by 900 on a 2x screen (the 2026-10-14 runs in the evidence log),
-// and the material and the wedges clip themselves to the radius anyway. So, as in Dark
-// Factory, whatever touches the frame's top corners rounds itself: the web shell's rail and
-// top bar (./navbar.tsx), and a native screen's scroller (./native-header.tsx), where a
-// clip is cheap.
+// The frame does not clip its content. On the web a clip around a subtree holding the other
+// frosted surfaces (the sidebar, the top bar, the cards) made Chromium drop whole tiles of
+// the page at 1440 by 900 on a 2x screen (the 2026-10-14 runs in the evidence log).
 export function PageFrame({ plane, children }: { plane: GlassBlurPlaneHandle; children: ReactNode }) {
   const { scheme, palette, tokens } = useTheme();
   const tier = useFormFactor();
   const look = PAGE_LOOK.palettes[lookFor(scheme, palette)];
-  const { side, top } = PAGE_LOOK.shell.insets[tier];
-  const { radius, maxWidth, shadow, bleed } = PAGE_LOOK.shell;
+  const { bleed } = PAGE_LOOK.shell;
   return (
-    <View style={{ flex: 1, paddingTop: top, paddingHorizontal: side }}>
-      <View style={{ flex: 1, width: "100%", maxWidth, alignSelf: "center", marginBottom: -bleed }}>
+    <View style={{ flex: 1 }}>
+      {/* The material alone is clipped to the frame, a plain rectangle around one surface:
+          its rim falls outside the clip, and nothing runs past the window to scroll it. */}
+      <View style={{ position: "absolute", top: 0, right: 0, bottom: 0, left: 0, overflow: "hidden" }}>
         <GlassBlurScope plane={plane}>
           <GlassSurface
             layer="content"
             tint={look.shell}
-            style={{
-              position: "absolute",
-              top: 0,
-              right: 0,
-              bottom: 0,
-              left: 0,
-              borderTopLeftRadius: radius,
-              borderTopRightRadius: radius,
-              backgroundColor: tokens.background,
-              boxShadow: `0 ${shadow.offsetY}px ${shadow.blur}px ${shadow.spread}px ${look.shadow}`,
-            }}
+            style={{ position: "absolute", top: -bleed, right: -bleed, bottom: -bleed, left: -bleed, backgroundColor: tokens.background }}
           />
         </GlassBlurScope>
-        <ShellWedges look={look} tier={tier} />
-        {children}
       </View>
+      <ShellWedges look={look} tier={tier} />
+      {children}
     </View>
   );
 }
@@ -85,7 +73,7 @@ function ShellWedges({ look, tier }: { look: PageLookPalette; tier: ShellTier })
     const { width, height } = event.nativeEvent.layout;
     if (width > 0 && height > 0) setSize((prev) => (prev && prev.width === width && prev.height === height ? prev : { width, height }));
   };
-  const W = size?.width ?? shellBox("desktop", PAGE_LOOK.seed.width).width;
+  const W = size?.width ?? PAGE_LOOK.seed.width;
   // The drawing is the frame's own size: react-native-svg on Android paints an SVG into a
   // bitmap that size, and a roster-tall one ran to 174 MB and crashed the app. The wedges
   // are still laid out against the roster's height, so the ones below the frame fall
@@ -98,9 +86,6 @@ function ShellWedges({ look, tier }: { look: PageLookPalette; tier: ShellTier })
           frame. A viewBox would scale that canvas down into the frame's height. */}
       <Svg width={W} height={visible}>
         <Defs>
-          <ClipPath id={`${id}-clip`}>
-            <Rect x={0} y={0} width={W} height={H} rx={PAGE_LOOK.shell.radius} ry={PAGE_LOOK.shell.radius} />
-          </ClipPath>
           {PAGE_LOOK.wedges.map((wedge, i) => {
             const { line } = wedgeGeometry(wedge, W, H);
             const color = wedgeColor(wedge.color, look);
@@ -113,7 +98,7 @@ function ShellWedges({ look, tier }: { look: PageLookPalette; tier: ShellTier })
           })}
         </Defs>
         {PAGE_LOOK.wedges.map((wedge, i) => (
-          <Polygon key={i} points={wedgeGeometry(wedge, W, H).points.split(" ").map((p) => p.split(",").map((v) => at(Number(v))).join(",")).join(" ")} fill={`url(#${id}-w${i})`} opacity={wedge.opacity} clipPath={`url(#${id}-clip)`} />
+          <Polygon key={i} points={wedgeGeometry(wedge, W, H).points.split(" ").map((p) => p.split(",").map((v) => at(Number(v))).join(",")).join(" ")} fill={`url(#${id}-w${i})`} opacity={wedge.opacity} />
         ))}
       </Svg>
     </View>
