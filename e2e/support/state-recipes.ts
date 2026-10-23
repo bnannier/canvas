@@ -2060,6 +2060,7 @@ export const STATE_RECIPES: Record<string, ComponentStates> = {
   "row-column": { static: true, reason: LAYOUT },
   grid: { static: true, reason: LAYOUT },
   container: { static: true, reason: LAYOUT },
+  "app-frame": { static: true, reason: "App scaffolding: the frame and the page render no control of their own; the controls in its examples (Navbar, Input, Button, Switch, Select) are captured by those components' own recipes." },
   chip: {
     hover: hover("selectable", byRole("button", "Engineering")),
     focus: focus("selectable", byRole("button", "Design")),

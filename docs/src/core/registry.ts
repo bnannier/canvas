@@ -65,6 +65,7 @@ export const COMPONENT_DOC_KEYS: Record<string, string> = {
   "stacked-lists": "./molecules/stacked-lists/stacked-lists-docs.tsx",
   "stats": "./molecules/stats/stats-docs.tsx",
   "action-sheet": "./organisms/action-sheet/action-sheet-docs.tsx",
+  "app-frame": "./organisms/app-frame/app-frame-docs.tsx",
   "board": "./organisms/board/board-docs.tsx",
   "calendar": "./organisms/calendar/calendar-docs.tsx",
   "carousel": "./organisms/carousel/carousel-docs.tsx",

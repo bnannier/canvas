@@ -5,6 +5,7 @@ import { docs as d_molecules_action_panels } from "./examples/molecules/action-p
 import { docs as d_organisms_action_sheet } from "./examples/organisms/action-sheet/action-sheet-docs";
 import { docs as d_molecules_alert } from "./examples/molecules/alert/alert-docs";
 import { docs as d_molecules_alert_dialog } from "./examples/molecules/alert-dialog/alert-dialog-docs";
+import { docs as d_organisms_app_frame } from "./examples/organisms/app-frame/app-frame-docs";
 import { docs as d_charts_area_chart } from "./examples/charts/area-chart/area-chart-docs";
 import { docs as d_atoms_autocomplete } from "./examples/atoms/autocomplete/autocomplete-docs";
 import { docs as d_atoms_avatar } from "./examples/atoms/avatar/avatar-docs";
@@ -114,6 +115,7 @@ export const ALL_COMPONENT_DOCS: readonly ComponentDocs[] = [
   d_organisms_action_sheet,
   d_molecules_alert,
   d_molecules_alert_dialog,
+  d_organisms_app_frame,
   d_charts_area_chart,
   d_atoms_autocomplete,
   d_atoms_avatar,

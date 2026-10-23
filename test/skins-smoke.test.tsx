@@ -384,6 +384,10 @@ const CASES: SkinCase[] = [
     props: { open: true, onOpenChange: noop, title: "Set up a project", description: "Choose the basics.", steps: [{ label: "Details" }, { label: "Review" }], current: 1, previous: { label: "Details", onPress: noop }, status: "Step 2 of 2", actions: txt("Create project") },
     children: txt("Ready to create"),
   },
+  // A header and a body, so each platform mounts the safe-area frame, the banner and the root host.
+  { name: "AppFrame", dir: "organisms/app-frame", file: "app-frame", props: { header: txt("Brand") }, children: txt("Body") },
+  // A step, so the page's measure reads through Container on each platform.
+  { name: "Page", dir: "organisms/app-frame", file: "app-frame", props: { md: true }, children: txt("Page content") },
 ];
 
 // "web" is the bare `<file>.tsx` build (no platform suffix); ios/android are the
