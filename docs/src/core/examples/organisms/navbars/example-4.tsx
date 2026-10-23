@@ -3,7 +3,7 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Stateful, View, Button, Card, Drawer, Navbar, Typography, Column } = scope;
+  const { Stateful, View, Button, Drawer, Navbar, Typography, Column } = scope;
   return (
 <Stateful initial={false}>
   {(open, setOpen) => (

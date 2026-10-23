@@ -3,7 +3,7 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Checkbox, Select, Column } = scope;
+  const { Checkbox, Column } = scope;
   return (
 <Column snug>
   <Checkbox selection indeterminate>Select all</Checkbox>

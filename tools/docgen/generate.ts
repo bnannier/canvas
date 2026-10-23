@@ -23,7 +23,7 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
 import { fileURLToPath } from "node:url";
-import { parseDoc, scopeNamesFromLiveScope, bannedStyleViolations, widthShimViolations, bareWidthViolations, prosePhantomApiViolations, BARE_WIDTH_MIN, type ParsedDoc, type Prose } from "./parse-md.ts";
+import { parseDoc, scopeNamesFromLiveScope, fenceReferences, bannedStyleViolations, widthShimViolations, bareWidthViolations, prosePhantomApiViolations, BARE_WIDTH_MIN, type ParsedDoc, type Prose } from "./parse-md.ts";
 import { componentPages, pageStructureViolations, registeredComponents, type Category } from "./pages.ts";
 import { extractProps, type PropGroup } from "./extract-props.ts";
 import { COMPONENTS } from "../../docs/src/core/data/components.ts";
@@ -182,12 +182,11 @@ function pruneOrphans(root: string): void {
 // A valid JS identifier fragment for a dir/name (e.g. "button-group" -> "button_group").
 const ident = (s: string) => s.replace(/[^A-Za-z0-9_$]/g, "_");
 
-// The scope names a fence references (word-boundary match). False positives (a name
-// that only appears inside a string) are harmless — an unused destructure binding —
-// while every real JSX tag and helper resolves. All SCOPE_NAMES are value exports,
-// so the destructure is always valid.
+// The scope names a fence references (fenceReferences: identifiers in a reference
+// position, never a word inside a string). All SCOPE_NAMES are value exports, so the
+// destructure is always valid, and it holds no binding the example never reads.
 function usedScopeNames(code: string): string[] {
-  return SCOPE_NAMES.filter((name) => new RegExp(`\\b${name}\\b`).test(code));
+  return fenceReferences(code, SCOPE_NAMES);
 }
 
 // Emit one example module. `depth` is how many dirs the module sits below docs/src/core

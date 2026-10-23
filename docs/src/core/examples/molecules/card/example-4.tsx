@@ -3,7 +3,7 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Card, Progress, Column } = scope;
+  const { Card, Column } = scope;
   return (
 <Column cozy>
   <Card referenceInline referenceKey="CORE-1790" title="Size the pricing bet" description="In Progress" />

@@ -3,7 +3,7 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Button, CodeBlock } = scope;
+  const { CodeBlock } = scope;
   return (
 <CodeBlock
   numbered

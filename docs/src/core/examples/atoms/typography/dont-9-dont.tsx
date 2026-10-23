@@ -3,7 +3,7 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { View, Typography } = scope;
+  const { Typography } = scope;
   return (
 <Typography muted style={{ alignSelf: "flex-start", textDecorationLine: "underline" }}>View your invoices</Typography>
   );

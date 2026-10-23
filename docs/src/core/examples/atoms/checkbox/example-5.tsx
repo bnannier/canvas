@@ -3,7 +3,7 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Stateful, Checkbox, Select, Column } = scope;
+  const { Stateful, Checkbox, Column } = scope;
   return (
 <Stateful initial={["Read"]}>
   {(selected, setSelected) => {

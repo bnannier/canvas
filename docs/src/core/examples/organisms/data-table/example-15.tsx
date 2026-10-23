@@ -3,7 +3,7 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Stateful, DataTable, Page } = scope;
+  const { Stateful, DataTable } = scope;
   return (
 <Stateful initial={[
   ["/pricing", "12,480"],
