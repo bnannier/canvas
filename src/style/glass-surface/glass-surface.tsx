@@ -15,6 +15,9 @@ import {
   type GlassSurfaceProps,
 } from "./glass-surface.shared.js";
 
+// Its props leave the kit beside it, the same on every platform's host.
+export type { GlassLayer, GlassSurfaceProps } from "./glass-surface-props.js";
+
 /**
  * The host every kit glass surface renders through (a Card, a Dialog, a Popover's card, the
  * Navbar, an option list and the rest), painting its layer's material behind its children.

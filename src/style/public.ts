@@ -111,6 +111,11 @@ export {
   useOverlayHost,
 } from "./portal.js";
 export { liquidGlassAvailable } from "./glass-surface/liquid-glass.js";
+// The glass host every kit surface renders through, public for an app's own frame (Dark
+// Factory's frosted shell around its sidebar and pages, its `frosted` material), which no kit
+// component draws: design-language item 7 keeps shells out of the kit, and glass is never
+// hand-painted, so an app frame takes its material here.
+export { GlassSurface, type GlassLayer, type GlassSurfaceProps } from "./glass-surface/glass-surface.js";
 // The Modal-side bridge for the Android sibling blur target (the contexts and the
 // per-platform host stay internal; the bridge is public so an app hosting its own RN
 // Modal can give its frost surfaces the same page blur the kit's sheets get).

@@ -169,3 +169,18 @@ the owner on 2026-10-23, each the recommendation offered.
 | R-2 | With GlassSurface's checklist gone, what happens to its unfinished work: GS-7 (Liquid Glass samples the tint beneath it on iOS 26+), GS-8's blind judge and the tall-panel rim check | Fix now, standalone: build GS-7 and judge GS-8 and the rim through the tuning harness, recorded in the evidence log and here, before the next foundation starts. |
 | R-3 | A component that stops rendering through a foundation during its turn (Switch and Checkbox under GS-5) dropped out of the turn's after capture although it changed | The after phase captures every component the turn's before phase captured, plus anything the current list adds (`tools/audit/turn.ts`), so a change never drops its own evidence. |
 | R-4 | The order after the restructure | The remaining Foundations alphabetically (GlassBlurPlane, GlassBlurScope, OverlayProvider, ThemeProvider, Tokens), then the Atoms, one at a time as before. |
+
+## GlassSurface stays public (2026-10-25)
+
+The 2026-10-23 removal (855249f9) ran with no consumer search, on the word that nothing
+consumed the 131 names. A search of every consumer checkout (argus and cad, by the imports of
+`@nannier/canvas`) found one that does: Argus imports `GlassSurface` in its app shell
+(`Apps/Argus/src/features/shell/AppShell.tsx`), its `/ui` playground and its materials harness,
+and every signed-in Argus screen threw "Element type is invalid" from `AppShell`. No other
+removed name is imported anywhere. Decided by the agent under the owner's 2026-10-24 "decide,
+don't ask" instruction.
+
+| ID | Question | Decision |
+|---|---|---|
+| R-5 | Restore `GlassSurface` to the public entry, or move Argus's frame onto a kit component | Restore it, with `GlassSurfaceProps` and `GlassLayer`, documented on `integration` (App frames), not deprecated. Its `frosted` material was added for Argus's frame (d3103f1d), no kit component draws an app frame (design-language item 7 keeps shells out of the kit), and glass is never hand-painted, so a consumer's frame has no other correct source. A minor, justified in `.changeset/glass-surface-public.md`. The docs' own frame imports it from the package rather than from `src/`. The other 130 names stay removed. |
+

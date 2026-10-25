@@ -377,7 +377,10 @@ export const publicApi: Readonly<Record<string, ApiEntry>> = {
   ThemeFonts: { kind: "type" },
   typeface: { kind: "token" },
 
-  // src/style/glass-surface/glass-surface.shared.tsx
+  // src/style/glass-surface/glass-surface.tsx and glass-surface.shared.tsx
+  GlassSurface: { kind: "component", docs: "integration", section: "App frames" },
+  GlassSurfaceProps: { kind: "type", docs: "integration", section: "App frames" },
+  GlassLayer: { kind: "type", docs: "integration", section: "App frames" },
   GlassModalBlurTarget: { kind: "component", docs: "integration", section: "Native modals" },
 
   // src/style/glass-surface/glass-blur-plane.tsx

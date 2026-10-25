@@ -160,7 +160,7 @@ the markers or delete the file to reseed it.
 ## Foundations
 
 The Foundations tier is the style-layer renderables with no component page of their own,
-BreakpointOverride, GlassBlurPlane, GlassBlurScope, GlassModalBlurTarget, OverlayProvider and ThemeProvider; and the design tokens the docs' `tokens/*` pages document (Tokens). The
+BreakpointOverride, GlassBlurPlane, GlassBlurScope, GlassModalBlurTarget, GlassSurface, OverlayProvider and ThemeProvider; and the design tokens the docs' `tokens/*` pages document (Tokens). The
 renderables are the material inventory's style tier less the primitives with a component page
 (`STYLE_LAYER_RENDERABLES` in `tools/audit/plan-specifics.ts`), and the checklist tests hold
 this paragraph to it. Each has `audit/foundation/<id>.md`, its name in kebab case
@@ -171,8 +171,9 @@ The tier carried the K12 items (the plan's "Foundations"): the deprecations the 
 (K12-2, with OD4, OD5 and K12-7 OD3) and the generated `/foundation` reference page that listed
 them. On 2026-10-23 the owner removed every deprecated alias and every `internal-by-accident`
 export instead (nothing consumed them), and the reference page with them, so the kit's own
-machinery (AnchoredOverlay, GlassSurface, GlassPane, Portal and the rest) is internal and
-audited through the components that render it. `audit:checklists:check` still fails on a
+machinery (AnchoredOverlay, GlassPane, Portal and the rest) is internal and audited through
+the components that render it. GlassSurface returned to the entry on 2026-10-25 for app
+frames (DECISIONS.md R-5). `audit:checklists:check` still fails on a
 deprecated alias or an `internal-by-accident` export that no checklist holds
 (`unplacedDeprecations`), should one appear.
 
@@ -219,7 +220,7 @@ through its consumers. So its checklist has no variants table, and its facts blo
   implementation's declarations by name from a module that resolves it there
   and the test files named for it, `test/<id>.test.tsx` or `test/<id>-<what>.test.tsx`
   (`test/glass-modal-blur-target.test.tsx`). A module's path alone does not count:
-  glass-surface.shared.tsx is GlassModalBlurTarget's home and also the internal GlassSurface
+  glass-surface.shared.tsx is GlassModalBlurTarget's home and also the GlassSurface
   shell's.
 - **Consumers**: every kit component that renders through it, read from the source by the
   consumer reader, `tools/audit/kit-graph.ts`, and listed one row each under the facts table
