@@ -247,7 +247,10 @@ through its consumers. So its checklist has no variants table, and its facts blo
   through shared modules, then through other kit components, each in the docs' order), then
   the pages that use it or document it. `bun run audit:turn -- --slug=<foundation>` expands to
   this list. A page that only composes consumer components shows the foundation through them,
-  and they are captured as themselves.
+  and they are captured as themselves. In the after phase the turn also captures every slug its
+  before phase captured that the list no longer holds (the owner's R-3 decision): a fix that
+  stops a component rendering through the foundation changes that component's pictures too, so
+  the after capture never drops its evidence (the plan prints them as `carries`).
 - **Not captured**: the guide pages that document it or are planned to (`/theming`,
   `/integration`, the `tokens/*` pages), which the capture inventory, component,
   pattern and template pages alone, does not hold: no runner photographs them yet, so a turn
