@@ -1,10 +1,7 @@
 import { useId, useState, type ReactNode } from "react";
 import type { LayoutChangeEvent } from "react-native";
 import Svg, { Defs, LinearGradient, Polygon, Stop } from "react-native-svg";
-import { GlassBlurScope, View, useFormFactor, useTheme, type GlassBlurPlaneHandle } from "@nannier/canvas";
-// Kit internals, as the docs' other scaffolding takes them (the testing routes, the
-// platform-skin registry): the frosted shell paints through the kit's own glass host.
-import { GlassSurface } from "../../../src/style/glass-surface/glass-surface.js";
+import { GlassBlurScope, GlassSurface, View, useFormFactor, useTheme, type GlassBlurPlaneHandle } from "@nannier/canvas";
 import { PAGE_LOOK, lookFor, wedgeColor, wedgeGeometry, type PageLookPalette, type ShellTier } from "./page-look";
 
 // Dark Factory's frosted shell, as the docs' frame: one panel filling the window with no

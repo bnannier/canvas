@@ -94,6 +94,20 @@ export function OverBackdrop({ backdrop, children }) {
   );
 }`;
 
+const APP_FRAME = `import { GlassSurface, useTheme } from "@nannier/canvas";
+
+// An app's own frame around its sidebar and pages, frosted over the page behind it.
+// The style is the frame's whole solid box (shape, shadow, opaque fill): under glass the
+// fill gives way to the material, and in solid mode the box renders as it is.
+export function Shell({ children }) {
+  const { tokens } = useTheme();
+  return (
+    <GlassSurface frosted style={{ flex: 1, backgroundColor: tokens.card }} role="main">
+      {children}
+    </GlassSurface>
+  );
+}`;
+
 const VITE_CONFIG = `import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 
@@ -334,6 +348,25 @@ export default function IntegrationScreen() {
               "Scope only the surfaces that sit directly over the backdrop: every glass surface inside the scope frosts the plane, including those nested in a scoped card, so content with glass of its own belongs outside it",
               "It frosts on Android 12 or newer in an Expo SDK 57 native build that links Canvas's capture module. Without it, and on iOS and the web (whose materials need no plane), both render their children only, and the surfaces render as they would without them",
               "A surface placed inside its own plane can never sample it: the capture module refuses that plane and the surface keeps its solid skin",
+            ]}
+          />
+          <H3>App frames</H3>
+          <P muted>
+            Every kit surface paints its own material, so an app needs glass of its own only for the frame it draws
+            around its pages: Dark Factory's frosted shell, which no kit component draws, since shells stay in the
+            app. <InlineCode>GlassSurface</InlineCode> is the host the kit's surfaces render through, and an app frame
+            takes its material from it instead of painting a blur or a translucent fill of its own.{" "}
+            <InlineCode>frosted</InlineCode> gives the shell's frost, <InlineCode>tint</InlineCode> overrides its
+            fill, and <InlineCode>layer</InlineCode> (a <InlineCode>GlassLayer</InlineCode>) picks one of the four
+            layers of the glass model; <InlineCode>GlassSurfaceProps</InlineCode> types the rest.
+          </P>
+          <CodeBlock code={APP_FRAME} />
+          <BulletList
+            subtle
+            items={[
+              "Pass the frame's whole solid box as its style: under glass the fill gives way to the material and a resting border becomes padding of the same width, so the frame keeps its size; in solid mode, and under Reduce Transparency or Increase Contrast, the box renders as it is",
+              "Use it for the frame only: a card, list, dialog or field inside it is a kit component, which already takes the material of its own layer",
+              "On Android a frame in the page has no plane of its own and keeps its solid box, unless its backdrop is made a blur plane (above)",
             ]}
           />
           <H3>Accessibility</H3>

@@ -412,6 +412,12 @@ export const FOUNDATION_PLANS: Readonly<Record<string, readonly string[]>> = {
     "documented on `integration` (Blur planes) as the scope that offers a page's blur plane to the glass surfaces inside it",
     "offers the plane to its surfaces only, so content outside keeps its solid skin; exercised by the docs' frame, whose material alone is scoped (materials target)",
   ],
+  GlassSurface: [
+    "public again for an app's own frame (DECISIONS.md R-5), documented on `integration` (App frames) with `GlassSurfaceProps` and `GlassLayer`",
+    "centralizes renderer, density, clipping, accessibility and platform capability resolution, with its public props kept compatible (materials target)",
+    "the web's plain frost judged against the `df-frost` card through the tuning harness (`/testing/materials`)",
+    "the layers' legibility floors and solid byte identity held by `test/glass-tint.test.tsx`, `test/glass-controls.test.tsx` and `test/dense-overlays.test.tsx`",
+  ],
   GlassModalBlurTarget: [
     "K12-5: documented on `integration` as the Modal blur bridge for an app hosting its own React Native Modal",
     "a safe target bridge that keeps separate-window ownership, exercised with ActionSheet and Drawer over native content (materials target)",

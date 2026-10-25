@@ -170,7 +170,7 @@ describe("the Foundations tier (tools/audit/foundations.ts)", () => {
   it("is the style-layer renderables and the design tokens, each with a kebab id no component or page takes, and a plan row", () => {
     const list = foundations();
     expect(list.map((f) => f.name)).toEqual([...STYLE_LAYER_RENDERABLES, TOKENS_FOUNDATION].sort((a, b) => a.localeCompare(b)));
-    expect(list).toHaveLength(7);
+    expect(list).toHaveLength(8);
     expect(foundationId("GlassModalBlurTarget")).toBe("glass-modal-blur-target");
     expect(foundationId("ThemeProvider")).toBe("theme-provider");
     expect(foundationId("Tokens")).toBe("tokens");
