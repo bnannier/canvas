@@ -1,5 +1,13 @@
 # @nannier/canvas
 
+## 3.11.1
+
+### Patch Changes
+
+- 04ae9b7: The audit's turn capture keeps a foundation's after phase on every component its before phase photographed, so a fix that stops a component rendering through the foundation still records that component's after pictures (the owner's R-3 decision). Audit tooling only; nothing in the package changes.
+- dc0e870: The local CI runner (`bun run ci:local`) gives each checkout its own action cache and takes free ports for act's servers: a cache one worktree saved restored into another at the wrong path (setup-bun then found no bun), and two checkouts' runs at once collided on act's fixed artifact port. Tooling only; nothing in the package changes.
+- 8392c15: The repository's instructions (CLAUDE.md and AGENTS.md) name every file the tuning gate enforces, adding the iOS glass tints (`src/style/glass-surface/ios-tints.ts`) and the docs page look (`docs/src/shell/page-look.ts`), and the audit records the owner's decisions after the Foundations restructure. Repository docs only; nothing in the package changes.
+
 ## 3.11.0
 
 ### Minor Changes
