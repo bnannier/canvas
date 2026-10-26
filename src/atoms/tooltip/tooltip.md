@@ -38,8 +38,13 @@ focus, including a hardware keyboard on a tablet, raises the tip on every platfo
 
 ## Usage
 
+The examples pinned open leave room on the bubble's side, as a page would: the
+bubble floats and takes no room of its own.
+
 ```tsx
-<Tooltip label="Open settings" trigger="Settings" open />
+<Column padLoose alignCenter>
+  <Tooltip label="Open settings" trigger="Settings" open />
+</Column>
 ```
 
 ## Variants
@@ -53,7 +58,9 @@ focus, including a hardware keyboard on a tablet, raises the tip on every platfo
 ### Bottom
 
 ```tsx
-<Tooltip label="Open settings" trigger="Settings" open bottom />
+<Column padLoose alignCenter>
+  <Tooltip label="Open settings" trigger="Settings" open bottom />
+</Column>
 ```
 
 ### Left
@@ -65,21 +72,27 @@ focus, including a hardware keyboard on a tablet, raises the tip on every platfo
 ### Icon
 
 ```tsx
-<Tooltip label="Open settings" iconTrigger open />
+<Column padLoose alignCenter>
+  <Tooltip label="Open settings" iconTrigger open />
+</Column>
 ```
 
 ### Text
 
 ```tsx
-<Tooltip textTrigger label="Open settings" trigger="hover this text" open />
+<Column padLoose alignCenter>
+  <Tooltip textTrigger label="Open settings" trigger="hover this text" open />
+</Column>
 ```
 
 ### Element trigger
 
 ```tsx
-<Tooltip label="Open settings" open>
-  <Button ghost icon accessibilityLabel="Open settings" iconLeft={<Icon settings size={16} />} />
-</Tooltip>
+<Column padLoose alignCenter>
+  <Tooltip label="Open settings" open>
+    <Button ghost icon accessibilityLabel="Open settings" iconLeft={<Icon settings size={16} />} />
+  </Tooltip>
+</Column>
 ```
 
 ### On hover
@@ -95,13 +108,17 @@ focus, including a hardware keyboard on a tablet, raises the tip on every platfo
 **Do** — Keep tooltips short and supplementary; put essential steps in visible copy.
 
 ```tsx
-<Tooltip iconTrigger bottom open label="Rotate key" />
+<Column padLoose alignCenter>
+  <Tooltip iconTrigger bottom open label="Rotate key" />
+</Column>
 ```
 
 **Don't** — Long, essential instructions hidden in a tooltip are missed on touch and by screen readers.
 
 ```tsx
-<Tooltip iconTrigger bottom open label="To rotate this key you must first revoke the old one in Settings, then confirm via email within 24 hours." />
+<Column padLoose alignCenter>
+  <Tooltip iconTrigger bottom open label="To rotate this key you must first revoke the old one in Settings, then confirm via email within 24 hours." />
+</Column>
 ```
 
 ### Placement
@@ -109,7 +126,9 @@ focus, including a hardware keyboard on a tablet, raises the tip on every platfo
 **Do** — Pick the side with the most room; the tip flips and slides to stay on screen when it has none.
 
 ```tsx
-<Tooltip trigger="Save" top open label="Saves your changes" />
+<Column padLoose alignCenter>
+  <Tooltip trigger="Save" top open label="Saves your changes" />
+</Column>
 ```
 
 **Don't** — Don't place a tip where it covers the control a user needs next; it floats over the page, so it masks whatever sits on that side.
@@ -118,23 +137,5 @@ focus, including a hardware keyboard on a tablet, raises the tip on every platfo
 <View style={{ alignItems: "flex-start", gap: 4 }}>
   <Tooltip trigger="Filters" bottom open label="Refine results" />
   <Button outline small>Clear all</Button>
-</View>
-```
-
-### Overlay layer
-
-**Do** — Mount one `OverlayProvider` at the app root (AppFrame does) so every tip floats over the page.
-
-```tsx
-<OverlayProvider>
-  <Tooltip iconTrigger right open label="More info" />
-</OverlayProvider>
-```
-
-**Don't** — Without a provider the tip floats inside its trigger's ancestors, and one that clips its content cuts it off.
-
-```tsx
-<View style={{ overflow: "hidden", alignItems: "flex-start" }}>
-  <Tooltip iconTrigger right open label="More info" />
 </View>
 ```

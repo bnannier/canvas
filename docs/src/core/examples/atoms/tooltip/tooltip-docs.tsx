@@ -13,8 +13,6 @@ import e_atoms_tooltip_dont_0_do from "./dont-0-do";
 import e_atoms_tooltip_dont_0_dont from "./dont-0-dont";
 import e_atoms_tooltip_dont_1_do from "./dont-1-do";
 import e_atoms_tooltip_dont_1_dont from "./dont-1-dont";
-import e_atoms_tooltip_dont_2_do from "./dont-2-do";
-import e_atoms_tooltip_dont_2_dont from "./dont-2-dont";
 
 export const docs: ComponentDocs = {
   dir: "tooltip",
@@ -27,19 +25,18 @@ export const docs: ComponentDocs = {
     "Hover and focus are pointer-and-keyboard affordances. Touch pointers are skipped, and iOS and Android never fire hover at all. On touch the built-in triggers toggle the tip on tap (tap again to close it; a tip is never modal, so a tap elsewhere goes to the page). A long press is not taken: it belongs to the platform and to the control. An element trigger has no tap toggle either, because that press belongs to the child, so on native and on touch the controlled `open` prop is the way to show its tip: drive it from whatever the platform does offer (a long press the child handles, a selected row, an inline help toggle). Keyboard focus, including a hardware keyboard on a tablet, raises the tip on every platform.",
   ],
   examples: [
-    { label: "Default", code: "<Tooltip label=\"Open settings\" trigger=\"Settings\" open />", render: e_atoms_tooltip_example_0 },
+    { label: "Default", code: "<Column padLoose alignCenter>\n  <Tooltip label=\"Open settings\" trigger=\"Settings\" open />\n</Column>", render: e_atoms_tooltip_example_0, note: ["The examples pinned open leave room on the bubble's side, as a page would: the bubble floats and takes no room of its own."] },
     { label: "Right", code: "<Tooltip label=\"Open settings\" trigger=\"Settings\" open right />", render: e_atoms_tooltip_example_1 },
-    { label: "Bottom", code: "<Tooltip label=\"Open settings\" trigger=\"Settings\" open bottom />", render: e_atoms_tooltip_example_2 },
+    { label: "Bottom", code: "<Column padLoose alignCenter>\n  <Tooltip label=\"Open settings\" trigger=\"Settings\" open bottom />\n</Column>", render: e_atoms_tooltip_example_2 },
     { label: "Left", code: "<Tooltip label=\"Open settings\" trigger=\"Settings\" open left />", render: e_atoms_tooltip_example_3 },
-    { label: "Icon", code: "<Tooltip label=\"Open settings\" iconTrigger open />", render: e_atoms_tooltip_example_4 },
-    { label: "Text", code: "<Tooltip textTrigger label=\"Open settings\" trigger=\"hover this text\" open />", render: e_atoms_tooltip_example_5 },
-    { label: "Element trigger", code: "<Tooltip label=\"Open settings\" open>\n  <Button ghost icon accessibilityLabel=\"Open settings\" iconLeft={<Icon settings size={16} />} />\n</Tooltip>", render: e_atoms_tooltip_example_6 },
+    { label: "Icon", code: "<Column padLoose alignCenter>\n  <Tooltip label=\"Open settings\" iconTrigger open />\n</Column>", render: e_atoms_tooltip_example_4 },
+    { label: "Text", code: "<Column padLoose alignCenter>\n  <Tooltip textTrigger label=\"Open settings\" trigger=\"hover this text\" open />\n</Column>", render: e_atoms_tooltip_example_5 },
+    { label: "Element trigger", code: "<Column padLoose alignCenter>\n  <Tooltip label=\"Open settings\" open>\n    <Button ghost icon accessibilityLabel=\"Open settings\" iconLeft={<Icon settings size={16} />} />\n  </Tooltip>\n</Column>", render: e_atoms_tooltip_example_6 },
     { label: "On hover", code: "<Tooltip label=\"Open settings\" trigger=\"Hover me\" />", render: e_atoms_tooltip_example_7 },
   ],
   donts: [
-    { title: "Short labels", do: { caption: "Keep tooltips short and supplementary; put essential steps in visible copy.", code: "<Tooltip iconTrigger bottom open label=\"Rotate key\" />", render: e_atoms_tooltip_dont_0_do }, dont: { caption: "Long, essential instructions hidden in a tooltip are missed on touch and by screen readers.", code: "<Tooltip iconTrigger bottom open label=\"To rotate this key you must first revoke the old one in Settings, then confirm via email within 24 hours.\" />", render: e_atoms_tooltip_dont_0_dont } },
-    { title: "Placement", do: { caption: "Pick the side with the most room; the tip flips and slides to stay on screen when it has none.", code: "<Tooltip trigger=\"Save\" top open label=\"Saves your changes\" />", render: e_atoms_tooltip_dont_1_do }, dont: { caption: "Don't place a tip where it covers the control a user needs next; it floats over the page, so it masks whatever sits on that side.", code: "<View style={{ alignItems: \"flex-start\", gap: 4 }}>\n  <Tooltip trigger=\"Filters\" bottom open label=\"Refine results\" />\n  <Button outline small>Clear all</Button>\n</View>", render: e_atoms_tooltip_dont_1_dont } },
-    { title: "Overlay layer", do: { caption: "Mount one `OverlayProvider` at the app root (AppFrame does) so every tip floats over the page.", code: "<OverlayProvider>\n  <Tooltip iconTrigger right open label=\"More info\" />\n</OverlayProvider>", render: e_atoms_tooltip_dont_2_do }, dont: { caption: "Without a provider the tip floats inside its trigger's ancestors, and one that clips its content cuts it off.", code: "<View style={{ overflow: \"hidden\", alignItems: \"flex-start\" }}>\n  <Tooltip iconTrigger right open label=\"More info\" />\n</View>", render: e_atoms_tooltip_dont_2_dont } },
+    { title: "Short labels", do: { caption: "Keep tooltips short and supplementary; put essential steps in visible copy.", code: "<Column padLoose alignCenter>\n  <Tooltip iconTrigger bottom open label=\"Rotate key\" />\n</Column>", render: e_atoms_tooltip_dont_0_do }, dont: { caption: "Long, essential instructions hidden in a tooltip are missed on touch and by screen readers.", code: "<Column padLoose alignCenter>\n  <Tooltip iconTrigger bottom open label=\"To rotate this key you must first revoke the old one in Settings, then confirm via email within 24 hours.\" />\n</Column>", render: e_atoms_tooltip_dont_0_dont } },
+    { title: "Placement", do: { caption: "Pick the side with the most room; the tip flips and slides to stay on screen when it has none.", code: "<Column padLoose alignCenter>\n  <Tooltip trigger=\"Save\" top open label=\"Saves your changes\" />\n</Column>", render: e_atoms_tooltip_dont_1_do }, dont: { caption: "Don't place a tip where it covers the control a user needs next; it floats over the page, so it masks whatever sits on that side.", code: "<View style={{ alignItems: \"flex-start\", gap: 4 }}>\n  <Tooltip trigger=\"Filters\" bottom open label=\"Refine results\" />\n  <Button outline small>Clear all</Button>\n</View>", render: e_atoms_tooltip_dont_1_dont } },
   ],
   // Extracted from the component's exported `*Props` interfaces by
   // tools/docgen/extract-props.ts (the TypeScript checker).

@@ -3,10 +3,12 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Button, Icon, Tooltip } = scope;
+  const { Button, Icon, Tooltip, Column } = scope;
   return (
-<Tooltip label="Open settings" open>
-  <Button ghost icon accessibilityLabel="Open settings" iconLeft={<Icon settings size={16} />} />
-</Tooltip>
+<Column padLoose alignCenter>
+  <Tooltip label="Open settings" open>
+    <Button ghost icon accessibilityLabel="Open settings" iconLeft={<Icon settings size={16} />} />
+  </Tooltip>
+</Column>
   );
 }

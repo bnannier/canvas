@@ -42,7 +42,7 @@ export const FIRST_EXAMPLE_CODE: Record<string, string> = {
   "text": "<Text style={{ color: tokens.foreground }}>The quick brown fox jumps over the lazy dog.</Text>",
   "text-input": "<TextInput accessibilityLabel=\"Your name\" defaultValue=\"Ada Lovelace\" />",
   "textarea": "<Textarea placeholder=\"A few words about this project\" />",
-  "tooltip": "<Tooltip label=\"Open settings\" trigger=\"Settings\" open />",
+  "tooltip": "<Column padLoose alignCenter>\n  <Tooltip label=\"Open settings\" trigger=\"Settings\" open />\n</Column>",
   "typography": "<Typography>The quick brown fox</Typography>",
   "video": "<Video source={{ uri: \"/video-sample.mp4\" }} poster={{ uri: \"/video-sample.jpg\" }} accessibilityLabel=\"Sample clip\" />",
   "view": "<View style={{ width: 40, height: 40, borderRadius: 8, backgroundColor: tokens.primary }} />",
