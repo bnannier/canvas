@@ -264,14 +264,14 @@ describe("the Foundations tier (tools/audit/foundations.ts)", () => {
     expect(override.seams).toContainEqual({ file: "src/style/breakpoint-override.ts", name: "BreakpointOverrideContext" });
     // The overlay layer relays the context into every portal, so what AnchoredOverlay and
     // Portal publish resolves the override too.
-    const overlays = ["autocomplete", "button-group", "dropdown", "popover", "select", "alert-dialog", "phone-input", "calendar", "command", "dialog", "row-menu", "toast"];
+    const overlays = ["autocomplete", "button-group", "dropdown", "popover", "select", "alert-dialog", "phone-input", "calendar", "command", "dialog", "row-menu", "toast", "tooltip"];
     for (const slug of overlays) expect(consumer("BreakpointOverride", slug)?.tier).toBe("shared");
     expect(consumer("BreakpointOverride", "dropdown")?.through).toEqual(["`AnchoredOverlay` (src/style/anchored-overlay.tsx)"]);
     expect(consumer("BreakpointOverride", "dialog")?.through).toEqual(["`Portal` (src/style/portal.tsx)"]);
     for (const slug of ["avatar", "field", "board"]) expect(consumer("BreakpointOverride", slug)?.tier).toBe("component");
     // Chat reaches it through DataTable (its Markdown tables), Wizard through `useContainerWidth`
     // and AppFrame through its overlay hosts.
-    expect(override.captureThrough.components).toHaveLength(32);
+    expect(override.captureThrough.components).toHaveLength(33);
     expect(consumer("BreakpointOverride", "chat")?.tier).toBe("component");
     expect(consumer("BreakpointOverride", "wizard")?.tier).toBe("shared");
     // Every kit overlay publishes through the layer, so it is no foundation's seam, and a seam
@@ -279,8 +279,10 @@ describe("the Foundations tier (tools/audit/foundations.ts)", () => {
     const seams = [...foundationCode(sources).values()].flatMap((c) => c.seams.map((s) => `${s.file}#${s.name}`));
     expect(seams).not.toContain("src/style/overlay-layer.tsx#usePortalMount");
     expect(consumer("OverlayProvider", "card")).toBeUndefined();
-    // Wizard portals through the Dialog it composes; AppFrame and Page host overlays.
-    expect(facts("OverlayProvider").consumers).toHaveLength(21);
+    // Wizard portals through the Dialog it composes; AppFrame and Page host overlays; Tooltip's
+    // bubble floats through AnchoredOverlay.
+    expect(facts("OverlayProvider").consumers).toHaveLength(22);
+    expect(consumer("OverlayProvider", "tooltip")).toBeDefined();
     expect(consumer("OverlayProvider", "wizard")?.tier).toBe("component");
   });
 

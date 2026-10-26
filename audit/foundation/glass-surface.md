@@ -68,7 +68,7 @@ Audit checklist for the style-layer foundation `GlassSurface`, audited for its c
 | `select` | through shared modules | `AnchoredOverlay` (src/style/anchored-overlay.tsx), `GlassPane` (src/style/glass-surface/glass-pane.tsx) |
 | `skeleton` | through shared modules | `GlassPane` (src/style/glass-surface/glass-pane.tsx) |
 | `textarea` | through shared modules | `GlassPane` (src/style/glass-surface/glass-pane.tsx) |
-| `tooltip` | through shared modules | `GlassPane` (src/style/glass-surface/glass-pane.tsx) |
+| `tooltip` | through shared modules | `AnchoredOverlay` (src/style/anchored-overlay.tsx), `GlassPane` (src/style/glass-surface/glass-pane.tsx) |
 | `video` | through shared modules | `GlassPane` (src/style/glass-surface/glass-pane.tsx) |
 | `alert` | through shared modules | `GlassPane` (src/style/glass-surface/glass-pane.tsx) |
 | `phone-input` | through shared modules | `AnchoredOverlay` (src/style/anchored-overlay.tsx), `GlassPane` (src/style/glass-surface/glass-pane.tsx) |

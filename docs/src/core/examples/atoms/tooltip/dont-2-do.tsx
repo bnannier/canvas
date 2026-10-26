@@ -3,8 +3,10 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Tooltip } = scope;
+  const { OverlayProvider, Tooltip } = scope;
   return (
-<Tooltip iconTrigger right open label="More info" />
+<OverlayProvider>
+  <Tooltip iconTrigger right open label="More info" />
+</OverlayProvider>
   );
 }

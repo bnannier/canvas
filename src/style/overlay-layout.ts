@@ -15,12 +15,13 @@ const EPSILON = 0.5;
  * Above or below: the card goes on `currentSide` (the preferred side when it first
  * opens) while it fits there, flips to the opposite side when that one has more room,
  * and is capped to the larger band. It never falls back to beside. Beside (`beside`
- * names the side placeOverlay resolved): the card is top-aligned with its trigger and
- * slid inside the band, and the side reported is that beside side.
+ * names the side placeOverlay resolved): the card is top-aligned with its trigger
+ * (centered on it with `centered`) and slid inside the band, and the side reported is
+ * that beside side.
  */
 export function fitOverlayHeight({
   triggerTop, triggerHeight, outletHeight, visibleTop = 0, visibleBottom = outletHeight,
-  desiredHeight, currentSide = "below", gap, beside,
+  desiredHeight, currentSide = "below", gap, beside, centered = false,
 }: {
   triggerTop: number;
   triggerHeight: number;
@@ -31,6 +32,8 @@ export function fitOverlayHeight({
   currentSide?: OverlayVerticalSide;
   gap: number;
   beside?: OverlayBesideSide | null;
+  /** Beside the trigger: center the card on the trigger's height instead of its top. */
+  centered?: boolean;
 }): { side: OverlaySide; top?: number; bottom?: number; maxHeight: number } {
   // A content-sized outlet can lie inside the visible viewport without filling
   // it, so its card may extend beyond its own bottom. Only the visible band caps.
@@ -60,7 +63,8 @@ export function fitOverlayHeight({
   // visible behind its footer on the web.
   if (beside) {
     const height = Math.min(desired, floor - ceiling);
-    return { side: beside, top: Math.ceil(Math.max(ceiling, Math.min(triggerTop, floor - height))), maxHeight: Math.floor(floor - ceiling) };
+    const aligned = centered && Number.isFinite(height) ? triggerTop + triggerHeight / 2 - height / 2 : triggerTop;
+    return { side: beside, top: Math.ceil(Math.max(ceiling, Math.min(aligned, floor - height))), maxHeight: Math.floor(floor - ceiling) };
   }
 
   let side = currentSide;

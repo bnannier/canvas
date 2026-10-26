@@ -271,9 +271,11 @@ describe("AlertDialog, Toast and Tooltip are dense glass under glass", () => {
     const inkFill = channelsOf(lightColors.foreground)!;
     expect(ink).toEqual([inkFill[0], inkFill[1], inkFill[2], DENSE[3]]);
     await waitFor(() => expect(container.querySelector('[role="alert"]')).not.toBeNull());
-    const bubble = container.querySelector('[role="alert"]') as HTMLElement;
-    expect(bubble.style.backgroundColor).toBe("rgba(0, 0, 0, 0.00)");
-    expect(rgbaOf(underFillOf(bubble))).toEqual(ink);
+    // The bubble's surface is the anchored card around its live region: its own fill
+    // cleared for the pane, which paints the inverse dense tint behind the label.
+    const surface = (container.querySelector('[role="alert"]') as HTMLElement).parentElement!.parentElement!.closest('[style*="background-color"]') as HTMLElement;
+    expect(surface.style.backgroundColor).toBe("rgba(0, 0, 0, 0.00)");
+    expect(rgbaOf(underFillOf(surface))).toEqual(ink);
   });
 
   it("keeps all three byte-identical to solid mode when the surface is solid", async () => {

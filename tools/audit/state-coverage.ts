@@ -21,6 +21,8 @@
 // from: what it captures is the overlay the hover opens, which its `opens` names, and that
 // overlay is the component's own whatever element the pointer rests on (Tooltip hands the
 // same `disclosure` handlers to its own triggers and to the kit Button of its default one).
+// It answers the hover inside the overlay it opens too: a pointer on a hover-opened overlay
+// (Tooltip's floating bubble) only keeps it open, which is the capture the opening took.
 //
 // A recipe is applied on rows of the docs' three-up (`StateRecipe.rows`), and each row shows
 // one platform build (`docsRowsOf`: the build the docs registry injects there, or the web
@@ -448,6 +450,9 @@ function placeAnswers(slug: string, entry: ComponentStates, state: SignalState, 
     for (const row of shownRows(recipe, rows)) {
       if (recipe.state !== state) {
         if (!answered.has(at(place, row))) answered.set(at(place, row), recipe.state);
+        // The overlay a resting pointer opened: the one it names, or the source's only one.
+        const opened = recipe.state === "open" ? recipe.opens ?? (sites.length === 1 ? sites[0] : undefined) : undefined;
+        if (opened && !answered.has(at(opened, row))) answered.set(at(opened, row), recipe.state);
         continue;
       }
       const failure = controlFailure(recipe, state, place, signals, rail, rows[row]) ?? unseenFailure(recipe, state, place, signals, rail, row, rows);

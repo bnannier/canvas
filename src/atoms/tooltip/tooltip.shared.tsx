@@ -1,11 +1,13 @@
 import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
-import { useState, type ReactNode } from "react";
-import { View, Pressable, Text, useHugStyle, controlRipple, pressDim, type ViewProps, type LayoutStyle, GlassPane, paneStyle, inverseDenseTint } from "../../style/index.js";
+import { useEffect, useRef, useState, type ReactNode } from "react";
+import { View, Pressable, Text, useHugStyle, controlRipple, pressDim, type ViewProps, type LayoutStyle, GlassPane, paneStyle, inverseDenseTint, AnchoredOverlay } from "../../style/index.js";
 import { Button as WebButton } from "../button/button.js";
 import { Icon } from "../icon/icon.js";
 import {
-  wrapper,
-  bubbleGap,
+  BUBBLE_GAP,
+  HOVER_GRACE_MS,
+  bubbleParts,
+  inlineAnchor,
   iconTrigger,
   textTrigger,
   textTriggerLabel,
@@ -13,20 +15,28 @@ import {
   type TooltipSkin,
 } from "./tooltip.styles.js";
 
-// Shared Tooltip shell. The structure (the trigger plus the open bubble placed
-// next to it via flex order), the public boolean-prop API, the placement
-// precedence, the controlled/uncontrolled open state, the hover/focus/tap
-// disclosure handlers, and accessibility all live here once. A platform file supplies only its skin (the
+// Shared Tooltip shell. The structure (the trigger plus the open bubble floating
+// against it), the public boolean-prop API, the placement precedence, the
+// controlled/uncontrolled open state, the hover/focus/tap disclosure handlers, and
+// accessibility all live here once. A platform file supplies only its skin (the
 // bubble surface shape/fill and the label type) and calls createTooltip.
 //
 // Tooltip: a small dark bubble of helper text shown beside a trigger on hover
-// or focus. This RN port renders the open state inline (no portal/Modal): a
-// trigger button with the bubble positioned next to it via flex order, so the
-// docs playground can show it without an overlay layer.
+// or focus. The bubble FLOATS: it is the kit's anchored card (AnchoredOverlay),
+// portaled into the nearest OverlayProvider's outlet and placed against the
+// trigger's measured box, so opening it changes no layout. It used to render in
+// flow as a flex sibling of the trigger, which grew whatever held it (a table cell
+// gained the bubble's height and the row shifted under the pointer). The card is
+// pinned (`dismissable` false): no backdrop, so the page and the trigger keep
+// their hover and their taps, no screen-reader modality, and nothing moves focus
+// into it, because a tip is a description, not a place to go. With no provider it
+// floats on an absolute anchor inside the root (`inlineAnchor`) instead.
 //
 // Placement is a boolean axis (top default, bottom, left, right); first match
-// wins. top/bottom stack the bubble above/below the trigger in a column;
-// left/right place it beside the trigger in a row.
+// wins. top/bottom center the bubble above/below the trigger; left/right center it
+// beside the trigger at its leading/trailing side (mirrored in a right-to-left
+// layout, as the old flex row was). Each flips to the opposite side when the
+// visible band has no room, and slides to stay 8px inside it.
 //
 // Trigger precedence, first match wins: `children` (an arbitrary element the tip
 // hangs off), then `iconTrigger`, then `textTrigger`, then the default text Button.
@@ -108,15 +118,6 @@ export function triggerOf(p: Pick<TooltipProps, "children" | "iconTrigger" | "te
   return "button";
 }
 
-// Whether the bubble renders before the trigger in source order. top and left
-// place the bubble first; bottom and right place it after.
-const BUBBLE_FIRST: Record<Placement, boolean> = {
-  top: true,
-  bottom: false,
-  left: true,
-  right: false,
-};
-
 /** Build a Tooltip component from a platform skin. */
 /**
  * The components a Tooltip draws with that look different per platform. The web
@@ -135,23 +136,46 @@ export function createTooltip(skin: TooltipSkin, parts: TooltipParts = {}) {
     const triggerKind = triggerOf(props);
     const theme = useMaterialTheme({ static: true, layer: "dense" });
     const { tokens } = theme;
-    // HUG: the trigger + bubble wrapper shrinks to its content inside a stretching Column.
+    // HUG: the root hugs its trigger inside a stretching Column; the bubble takes no room in it.
     const hug = useHugStyle();
+    // The box the bubble is placed against: the root, which hugs the trigger.
+    const rootRef = useRef<View>(null);
     // Uncontrolled by default: hovering or focusing the trigger shows the
     // bubble, leaving/blurring hides it, and tapping toggles it (the touch
     // analogue of hover); a controlled `open` prop overrides this.
     const [internalOpen, setInternalOpen] = useState(false);
     const open = props.open ?? internalOpen;
     const setOpen = (next: boolean) => {
+      cancelClose();
       if (props.open === undefined) setInternalOpen(next);
       onOpenChange?.(next);
     };
+    // Hovering off the trigger closes the tip after a short grace, and hovering onto
+    // the bubble within it keeps the tip up (WCAG 1.4.13: hover content stays while
+    // the pointer moves over it). The bubble floats in another part of the tree, so
+    // the trigger's leave fires on the way to it; the grace spans the gap between.
+    const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const latestSetOpen = useRef(setOpen);
+    latestSetOpen.current = setOpen;
+    function cancelClose() {
+      if (closeTimer.current != null) clearTimeout(closeTimer.current);
+      closeTimer.current = null;
+    }
+    const hoverIn = () => {
+      cancelClose();
+      if (!open) setOpen(true);
+    };
+    const hoverOut = () => {
+      cancelClose();
+      closeTimer.current = setTimeout(() => latestSetOpen.current(false), HOVER_GRACE_MS);
+    };
+    useEffect(() => cancelClose, []);
     // Hover/focus disclosure shared by every trigger flavor. react-native-web
     // (and RN's pointer events natively) never fire hover for touch pointers,
     // so on touch devices only the press toggle runs and these are inert.
     const disclosure = {
-      onHoverIn: () => setOpen(true),
-      onHoverOut: () => setOpen(false),
+      onHoverIn: hoverIn,
+      onHoverOut: hoverOut,
       onFocus: () => setOpen(true),
       onBlur: () => setOpen(false),
     };
@@ -164,14 +188,14 @@ export function createTooltip(skin: TooltipSkin, parts: TooltipParts = {}) {
     // over its whole subtree instead. Touch pointers are skipped so tapping the
     // child never flashes the bubble, and native fires no hover at all, so the
     // controlled `open` prop is the native and touch path here.
-    const elementHover =
+    const pointerHover =
       (next: boolean): NonNullable<ViewProps["onPointerEnter"]> =>
       (e) => {
-        if (e.nativeEvent.pointerType !== "touch") setOpen(next);
+        if (e.nativeEvent.pointerType !== "touch") (next ? hoverIn : hoverOut)();
       };
     const elementDisclosure = {
-      onPointerEnter: elementHover(true),
-      onPointerLeave: elementHover(false),
+      onPointerEnter: pointerHover(true),
+      onPointerLeave: pointerHover(false),
       // Focus/blur bubble out of the child on the web (React routes them through
       // focusin/focusout), so the tip follows a keyboard tab onto the child
       // without the wrapper itself being a tab stop.
@@ -179,14 +203,8 @@ export function createTooltip(skin: TooltipSkin, parts: TooltipParts = {}) {
       onBlur: disclosure.onBlur,
     };
     // The element trigger keeps `children` intact and hangs the disclosure off
-    // the ROOT view (which spans the bubble AND the trigger) rather than a
-    // wrapper hugging the child. The bubble renders in flow, so opening it
-    // pushes the trigger over by the bubble's height (measured: 30px for a
-    // one-line tip): a child-hugging wrapper would be shoved out from under a
-    // stationary pointer, the browser's post-layout hover recompute would fire
-    // pointerleave, and the tip would close again the moment it appeared. The
-    // root grows to cover the bubble instead, so the pointer stays inside it and
-    // hovering the bubble itself keeps the tip up, as a tooltip should.
+    // the root view, which hugs the child. The bubble floats, so opening it moves
+    // nothing: the child stays under a resting pointer.
     const isElementTrigger = triggerKind === "element";
 
     // The open bubble is a polite live region so the tip text is announced when
@@ -194,21 +212,42 @@ export function createTooltip(skin: TooltipSkin, parts: TooltipParts = {}) {
     // toast pattern: accessibilityRole/LiveRegion for native plus the aria-live
     // alias, since react-native-web does not forward accessibilityLiveRegion's
     // role on its own.
-    // Under glass the bubble is a DENSE-layer pane: the material under the inverse
-    // dense tint (the bubble paints the scheme's ink as its fill and the page colour
-    // as its text, so the plain dense tint would put light text on a light pane). The
-    // pane rides behind the node, which keeps its live-region semantics.
-    const tip = open ? (
-      <View
-        style={[paneStyle(theme, skin.bubble(tokens)), bubbleGap[placement]]}
-        accessibilityRole="alert"
-        accessibilityLiveRegion="polite"
-        aria-live="polite"
+    // The bubble is the anchored card's surface: the skin's bubble less its padding,
+    // which the live region carries so hovering anywhere on the bubble keeps it up.
+    // Under glass it is a DENSE-layer pane: the material under the inverse dense tint
+    // (the bubble paints the scheme's ink as its fill and the page colour as its text,
+    // so the plain dense tint would put light text on a light pane). The pane rides
+    // behind the content as the card's decoration. `opaque` asks AnchoredOverlay for
+    // its plain surface, so the pane is the bubble's only material.
+    const { surface, padding } = bubbleParts(skin.bubble(tokens));
+    const tip = (
+      <AnchoredOverlay
+        open={open}
+        onDismiss={() => setOpen(false)}
+        dismissable={false}
+        triggerRef={rootRef}
+        gap={BUBBLE_GAP}
+        centered
+        above={placement === "top"}
+        besideStart={placement === "left"}
+        besideEnd={placement === "right"}
+        opaque
+        cardStyle={paneStyle(theme, surface)}
+        decoration={<GlassPane static layer="dense" shape={surface} tint={inverseDenseTint(theme)} />}
+        inlineStyle={inlineAnchor[placement]}
       >
-        <GlassPane static layer="dense" shape={skin.bubble(tokens)} tint={inverseDenseTint(theme)} />
-        <Text style={skin.label(tokens)}>{label}</Text>
-      </View>
-    ) : null;
+        <View
+          style={padding}
+          accessibilityRole="alert"
+          accessibilityLiveRegion="polite"
+          aria-live="polite"
+          onPointerEnter={pointerHover(true)}
+          onPointerLeave={pointerHover(false)}
+        >
+          <Text style={skin.label(tokens)}>{label}</Text>
+        </View>
+      </AnchoredOverlay>
+    );
 
     // The trigger `triggerOf` resolved.
     //
@@ -273,10 +312,9 @@ export function createTooltip(skin: TooltipSkin, parts: TooltipParts = {}) {
     );
 
     return (
-      <View style={[wrapper[placement], hug, style]} testID={testID} {...(isElementTrigger ? elementDisclosure : undefined)}>
-        {BUBBLE_FIRST[placement] ? tip : null}
+      <View ref={rootRef} style={[hug, style]} testID={testID} {...(isElementTrigger ? elementDisclosure : undefined)}>
         {triggerEl}
-        {BUBBLE_FIRST[placement] ? null : tip}
+        {tip}
       </View>
     );
   };

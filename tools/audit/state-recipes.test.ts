@@ -137,7 +137,7 @@ describe("the state recipe table", () => {
     expect([...HOVER_PROPERTIES].sort()).toEqual(["background-color", "box-shadow", "scale", "transform", "translate"]);
   });
 
-  it("opens every overlay a component's source opens, every one the e2e suite opens, and Tooltip's in-row bubble", () => {
+  it("opens every overlay a component's source opens and every one the e2e suite opens, Tooltip's floating bubble among them", () => {
     const opens = Object.keys(STATE_RECIPES).filter((slug) => recipesOf(slug).some((r) => r.state === "open")).sort();
     const overlays = [...MATERIAL_OVERLAY_RECIPES.map((r) => r.slug), TOAST_RECIPE.slug];
     for (const slug of overlays) expect(opens).toContain(slug);
@@ -146,8 +146,9 @@ describe("the state recipe table", () => {
     const bySource = pages.filter((c) => STATE_RECIPES[c.slug] && componentSignals(reader, c).some((s) => s.kind === "overlay")).map((c) => c.slug).sort();
     for (const slug of bySource) expect(opens).toContain(slug);
     expect(bySource).toContain("avatar");
-    // The one opening no overlay primitive carries: Tooltip draws its bubble in flow beside its trigger.
-    expect(opens.filter((slug) => !bySource.includes(slug))).toEqual(["tooltip"]);
+    // Every opening is an overlay primitive's: Tooltip's bubble floats in AnchoredOverlay.
+    expect(bySource).toContain("tooltip");
+    expect(opens.filter((slug) => !bySource.includes(slug))).toEqual([]);
     expect(opens).toEqual(Object.keys(OPENED_EXPORT).sort());
   });
 
@@ -318,9 +319,10 @@ describe("the states each component's source gives it", () => {
       "typography focus: holds",
       "typography pressed: holds",
     ]);
-    // A state answered by another state's recipe: Tooltip's hover, by the open recipe a resting pointer applies.
-    const via = coverage.flatMap((c) => c.answers.filter((a) => a.recipe).map((a) => `${c.slug} ${a.state} by ${a.recipe}`));
-    expect(via).toEqual(["tooltip hover by open"]);
+    // A state answered by another state's recipe: Tooltip's hover, by the open recipe a resting
+    // pointer applies, on its triggers and on the floating bubble that hover keeps open.
+    const via = coverage.flatMap((c) => c.answers.filter((a) => a.recipe).map((a) => `${c.slug} ${a.state} by ${a.recipe}${a.within ? ` in ${a.within}` : ""}`));
+    expect(via).toEqual(["tooltip hover by open in Tooltip", "tooltip hover by open"]);
     // The disabled controls inside an overlay, each answered by a recipe that opens it first.
     const inOverlays = coverage.flatMap((c) => c.answers.filter((a) => a.state === "disabled" && a.within).map((a) => `${c.slug} in ${a.within}: ${a.by}`));
     expect(inOverlays.sort()).toEqual([

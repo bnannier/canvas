@@ -20,9 +20,8 @@ import { platformShape } from "../../style/platform-shape.js";
 
 export type Placement = "top" | "bottom" | "left" | "right";
 
-// The contract a platform skin fulfills. Layout (wrapper direction per placement,
-// the gap between bubble and trigger, the bubble-first ordering) is shared and
-// lives in the shell; the skin supplies only the bubble surface and the label
+// The contract a platform skin fulfills. Layout (the anchored placement, the gap
+// between bubble and trigger) is shared and lives in the shell; the skin supplies only the bubble surface and the label
 // type, both functions of the active tokens so the inverse fill follows
 // light/dark automatically.
 export interface TooltipSkin {
@@ -34,24 +33,44 @@ export interface TooltipSkin {
 
 // --- shared layout fragments (identical across platforms) -------------------
 
-// Wrapper layout per placement: a column for top/bottom (bubble stacked above or
-// below the trigger), a row for left/right (bubble beside the trigger). Centered
-// on the cross axis; the shell appends `useHugStyle()` (src/style/sizing.ts) so the
-// wrapper shrinks to its content inside a stretching Column.
-export const wrapper: Record<Placement, ViewStyle> = {
-  top: { flexDirection: "column", alignItems: "center" },
-  bottom: { flexDirection: "column", alignItems: "center" },
-  left: { flexDirection: "row", alignItems: "center" },
-  right: { flexDirection: "row", alignItems: "center" },
-};
+// The gap between the bubble and its trigger, on whichever side the bubble
+// resolves to (the old `m{b,t,r,l}-1.5` = 6).
+export const BUBBLE_GAP = 6;
 
-// Gap between bubble and trigger (the old `m{b,t,r,l}-1.5` = 6), applied to the
-// bubble on the trigger-facing side: top -> below, bottom -> above, etc.
-export const bubbleGap: Record<Placement, ViewStyle> = {
-  top: { marginBottom: 6 },
-  bottom: { marginTop: 6 },
-  left: { marginRight: 6 },
-  right: { marginLeft: 6 },
+// How long a tip outlives the pointer leaving its trigger or its bubble, so the
+// pointer can cross the gap onto the bubble (which keeps it up) without the tip
+// closing on the way. Long enough for that crossing, short enough that a pointer
+// moving on across a row of triggers never sees two tips at once for long.
+export const HOVER_GRACE_MS = 100;
+
+// A skin's bubble split for the anchored card: the surface (shape, fill, elevation,
+// minimum height) paints the card, and the padding goes on the content inside it, so
+// the hover region and the live region span the whole bubble.
+const PADDING_KEYS = ["padding", "paddingHorizontal", "paddingVertical", "paddingTop", "paddingBottom", "paddingLeft", "paddingRight", "paddingStart", "paddingEnd"] as const;
+export function bubbleParts(bubble: ViewStyle): { surface: ViewStyle; padding: ViewStyle } {
+  const surface: ViewStyle = { ...bubble };
+  const padding: ViewStyle = {};
+  for (const key of PADDING_KEYS) {
+    if (bubble[key] !== undefined) {
+      (padding as Record<string, unknown>)[key] = bubble[key];
+      delete surface[key];
+    }
+  }
+  return { surface, padding };
+}
+
+// The no-provider fallback (AnchoredOverlay's `inlineStyle`): with no OverlayProvider
+// the bubble still floats, on an absolute anchor inside the root that hugs the
+// trigger, so it takes no room. The anchor is a fixed-width band centered on the
+// trigger's cross axis that only positions the bubble (it takes no pointer: `box-none`)
+// so a short label sits on one line rather than wrapping to the trigger's width.
+const ANCHOR_BAND = 240;
+const band: ViewStyle = { position: "absolute", pointerEvents: "box-none", zIndex: 1 };
+export const inlineAnchor: Record<Placement, ViewStyle> = {
+  top: { ...band, bottom: "100%", marginBottom: BUBBLE_GAP, left: "50%", marginLeft: -ANCHOR_BAND / 2, width: ANCHOR_BAND, alignItems: "center" },
+  bottom: { ...band, top: "100%", marginTop: BUBBLE_GAP, left: "50%", marginLeft: -ANCHOR_BAND / 2, width: ANCHOR_BAND, alignItems: "center" },
+  left: { ...band, end: "100%", marginEnd: BUBBLE_GAP, top: 0, bottom: 0, width: ANCHOR_BAND, alignItems: "flex-end", justifyContent: "center" },
+  right: { ...band, start: "100%", marginStart: BUBBLE_GAP, top: 0, bottom: 0, width: ANCHOR_BAND, alignItems: "flex-start", justifyContent: "center" },
 };
 
 // The icon trigger: a 40px square ghost button holding the settings glyph,

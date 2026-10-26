@@ -1391,9 +1391,10 @@ export interface OpenSpec {
   expands?: boolean;
   /**
    * Where the opened node is counted: anywhere the Playground's overlays paint (the
-   * stage's outlet, the window's layer, a document-root Modal; the default), inside the
-   * row (a tooltip's bubble draws in flow beside its trigger), or among the page's live
-   * regions that are saying something (a toast).
+   * stage's outlet, the window's layer, a document-root Modal; the default, where a
+   * tooltip's floating bubble paints too), inside the row (a node an opening draws in
+   * flow beside its trigger), or among the page's live regions that are saying something
+   * (a toast).
    */
   where?: "overlay" | "row" | "announcement";
   /**
@@ -1859,8 +1860,9 @@ async function restOn(page: Page, node: Locator): Promise<boolean> {
 }
 
 /**
- * A tooltip's bubble draws in flow beside its trigger, so opening it above the trigger
- * pushes the trigger down, out from under a pointer that has not moved. The trigger's hover
+ * A tooltip's bubble used to draw in flow beside its trigger, so opening it above the
+ * trigger pushed the trigger down, out from under a pointer that had not moved. It floats
+ * now, so a trigger that moves is a regression this guards against. The trigger's hover
  * then ends whenever the browser next hit-tests that pointer, and the bubble closes (and,
  * as the trigger slides back under the pointer, may open again). Steadying moves the
  * pointer back onto the trigger, wherever the trigger now is, until the pointer rests on it
@@ -1917,10 +1919,10 @@ const TOOLTIP_OPEN: OpenSpec = {
     await restOn(page, scope.getByRole("button", { name: "Hover me", exact: true }).last());
   },
   trigger: (_page, scope) => scope.getByRole("button", { name: "Hover me", exact: true }).last(),
-  // The open bubble is a polite live region announced as an alert (src/atoms/tooltip/tooltip.shared.tsx).
+  // The open bubble is a polite live region announced as an alert (src/atoms/tooltip/tooltip.shared.tsx),
+  // floating where the Playground's overlays paint.
   role: "alert",
   adds: 1,
-  where: "row",
   pointerHeld: true,
   steady: (page, scope, panel) => followPointer(page, scope.getByRole("button", { name: "Hover me", exact: true }).last(), panel),
   close: async (page) => {
