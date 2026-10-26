@@ -3,8 +3,10 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Tooltip } = scope;
+  const { Tooltip, Column } = scope;
   return (
-<Tooltip iconTrigger bottom open label="Rotate key" />
+<Column padLoose alignCenter>
+  <Tooltip iconTrigger bottom open label="Rotate key" />
+</Column>
   );
 }

@@ -3,8 +3,10 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Tooltip } = scope;
+  const { Tooltip, Column } = scope;
   return (
-<Tooltip textTrigger label="Open settings" trigger="hover this text" open />
+<Column padLoose alignCenter>
+  <Tooltip textTrigger label="Open settings" trigger="hover this text" open />
+</Column>
   );
 }
