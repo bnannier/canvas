@@ -86,7 +86,7 @@ Audit checklist for the style-layer foundation `ThemeProvider`, audited for its 
 | `skeleton` | through shared modules | `GlassPane` (src/style/glass-surface/glass-pane.tsx), `useMaterialTheme` (src/style/glass-surface/use-material-theme.ts) |
 | `slider` | through shared modules | `GlassPane` (src/style/glass-surface/glass-pane.tsx), `GlassSurface` (src/style/glass-surface/glass-surface.android.tsx), `GlassSurface` (src/style/glass-surface/glass-surface.ios.tsx) and 4 more |
 | `textarea` | through shared modules | `FloatingLabel` (src/style/floating-label.tsx), `GlassPane` (src/style/glass-surface/glass-pane.tsx), `LabelContent` (src/style/floating-label.tsx) and 5 more |
-| `tooltip` | through shared modules | `GlassPane` (src/style/glass-surface/glass-pane.tsx), `Pressable` (src/style/pressable.tsx), `Text` (src/style/text.tsx) and 1 more |
+| `tooltip` | through shared modules | `AnchoredOverlay` (src/style/anchored-overlay.tsx), `GlassPane` (src/style/glass-surface/glass-pane.tsx), `Pressable` (src/style/pressable.tsx) and 2 more |
 | `alert` | through shared modules | `GlassPane` (src/style/glass-surface/glass-pane.tsx), `Pressable` (src/style/pressable.tsx), `Text` (src/style/text.tsx) and 1 more |
 | `empty-state` | through shared modules | `GlassSurface` (src/style/glass-surface/glass-surface.android.tsx), `GlassSurface` (src/style/glass-surface/glass-surface.ios.tsx), `GlassSurface` (src/style/glass-surface/glass-surface.tsx) and 2 more |
 | `media-objects` | through shared modules | `GlassPane` (src/style/glass-surface/glass-pane.tsx), `GlassSurface` (src/style/glass-surface/glass-surface.android.tsx), `GlassSurface` (src/style/glass-surface/glass-surface.ios.tsx) and 4 more |

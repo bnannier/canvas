@@ -165,8 +165,12 @@ export interface AnchoredOverlayProps {
    * inside the outlet, instead (see placeOverlay).
    */
   cardWidth?: number;
-  /** With `cardWidth`: center the card on the trigger (tooltip-style) instead
-   *  of aligning to its left edge. Still clamped inside the outlet. */
+  /**
+   * Center the card on the trigger (tooltip-style) instead of aligning it by an edge:
+   * horizontally above or below the trigger, vertically beside it. A card without
+   * `cardWidth` is centered by the width it rendered at, which the card is held hidden
+   * until it reports. Still clamped inside the outlet.
+   */
   centered?: boolean;
   /**
    * Align the card's TRAILING edge with the trigger's trailing edge instead of
@@ -604,7 +608,8 @@ export interface PlaceOverlayOptions {
   cardWidth?: number;
   /** The width a card without a fixed one rendered at, once its layout reports it. */
   measuredWidth?: number | null;
-  /** With `cardWidth`: center the card on the trigger instead of aligning an edge. */
+  /** Center the card on the trigger instead of aligning an edge, by `cardWidth` or else
+   *  by `measuredWidth`. */
   centered?: boolean;
   /** Prefer beside the trigger at its leading side, then its trailing side. */
   besideStart?: boolean;
@@ -686,6 +691,14 @@ export function placeOverlay(
   if (cardWidth != null) {
     let x = centered || beside ? rect.x + rect.width / 2 - cardWidth / 2 : pinRight ? rect.x + rect.width - cardWidth : rect.x;
     x = Math.min(x, hi - cardWidth);
+    return { left: Math.max(lo, x), top: below };
+  }
+
+  // A centered card of no fixed width is centered by the width it rendered at, then
+  // clamped into the band the way a fixed width is. Its width is its content's (a short
+  // label), not the room its anchor leaves, so recentering it settles in one layout.
+  if (centered && measured != null) {
+    const x = Math.min(rect.x + rect.width / 2 - measured / 2, hi - measured);
     return { left: Math.max(lo, x), top: below };
   }
 
@@ -956,7 +969,7 @@ function HostedAnchoredOverlay({ host, frame, onDismiss, onAccessibilityEscape, 
     : swap ? (renderedCardWidth == null ? undefined : cardLeft + renderedCardWidth - triggerCenter) : triggerCenter - cardLeft;
   // Host bounds are measured in one native window and inherited through
   // content-sized providers; the card does not guess keyboard/screen offsets.
-  const fit = rect && outlet ? fitOverlayHeight({ triggerTop: rect.y, triggerHeight: rect.height, outletHeight: outlet.height, visibleTop: outlet.visibleTop, visibleBottom: outlet.visibleBottom, desiredHeight, currentSide: lastSide.current, gap, beside: horizontal?.side }) : null;
+  const fit = rect && outlet ? fitOverlayHeight({ triggerTop: rect.y, triggerHeight: rect.height, outletHeight: outlet.height, visibleTop: outlet.visibleTop, visibleBottom: outlet.visibleBottom, desiredHeight, currentSide: lastSide.current, gap, beside: horizontal?.side, centered }) : null;
   const fittedSide = fit?.side;
   const anchorGeometry = useMemo(() => ({ side: fittedSide ?? "below", centerX: anchorCenter, cardWidth: renderedCardWidth ?? undefined }), [fittedSide, anchorCenter, renderedCardWidth]);
   // A sheet stands in its layer's window, in the layer's coordinates: on the window's

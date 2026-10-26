@@ -76,6 +76,33 @@ describe("the placement preference (AO-3)", () => {
     expect(placeOverlay(cell, { gap: 6, outletWidth: 800, measuredWidth: null, besideEnd: true })).toEqual({ left: 380, top: 246 });
   });
 
+  // `centered` (the Tooltip's placement): a content-sized card is centered on its
+  // trigger by the width it rendered at, and stays 8px inside the band.
+  it("centers a content-sized card on its trigger by its measured width, clamped into the band", () => {
+    const trigger = { x: 380, y: 200, width: 40, height: 40 };
+    expect(placeOverlay(trigger, { gap: 6, outletWidth: 800, measuredWidth: 100, centered: true })).toEqual({ left: 350, top: 246 });
+    // Near either edge it slides inside the 8px inset rather than crossing it.
+    expect(placeOverlay({ ...trigger, x: 0 }, { gap: 6, outletWidth: 800, measuredWidth: 100, centered: true })).toEqual({ left: 8, top: 246 });
+    expect(placeOverlay({ ...trigger, x: 770 }, { gap: 6, outletWidth: 800, measuredWidth: 100, centered: true })).toEqual({ left: 692, top: 246 });
+    // Before it reports, it is placed as anchored (and held hidden until it reports).
+    expect(placeOverlay(trigger, { gap: 6, outletWidth: 800, measuredWidth: null, centered: true })).toEqual({ left: 380, top: 246 });
+    // Beside with no room on either side, it falls back to centered above or below.
+    expect(placeOverlay({ ...trigger, x: 100 }, { gap: 6, outletWidth: 320, measuredWidth: 200, centered: true, besideStart: true })).toEqual({ left: 20, top: 246 });
+  });
+
+  it("centers a card beside its trigger on the trigger's height with `centered`, inside the band", () => {
+    const beside = { triggerTop: 300, triggerHeight: 40, outletHeight: 600, gap: 6, beside: "end" as const };
+    // Top-aligned by default...
+    expect(fitOverlayHeight({ ...beside, desiredHeight: 24 }).top).toBe(300);
+    // ...centered on the trigger with `centered`: 320 - 12.
+    expect(fitOverlayHeight({ ...beside, desiredHeight: 24, centered: true }).top).toBe(308);
+    // A tall card centered on a trigger near the top is slid down to the inset.
+    expect(fitOverlayHeight({ ...beside, triggerTop: 0, desiredHeight: 200, centered: true }).top).toBe(8);
+    // Before the card reports a height it is fitted as the whole band, from the top
+    // inset, exactly as an uncentered card is (and held hidden until it reports).
+    expect(fitOverlayHeight({ ...beside, desiredHeight: null, centered: true }).top).toBe(fitOverlayHeight({ ...beside, desiredHeight: null }).top);
+  });
+
   it("mounts a card that prefers above, above its trigger, and tells its decoration so", async () => {
     let side: string | undefined;
     function Decoration() { side = useOverlayAnchor().side; return null; }

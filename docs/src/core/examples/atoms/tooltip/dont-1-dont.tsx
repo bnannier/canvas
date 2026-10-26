@@ -3,12 +3,11 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { View, Tooltip } = scope;
+  const { View, Button, Tooltip } = scope;
   return (
-<View style={{ overflow: "hidden", alignItems: "flex-start" }}>
-  <View style={{ marginTop: -16 }}>
-    <Tooltip trigger="Save" top open label="Saves your changes" />
-  </View>
+<View style={{ alignItems: "flex-start", gap: 4 }}>
+  <Tooltip trigger="Filters" bottom open label="Refine results" />
+  <Button outline small>Clear all</Button>
 </View>
   );
 }

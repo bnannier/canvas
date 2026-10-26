@@ -5,7 +5,7 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { View, Tooltip } = scope;
   return (
-<View style={{ alignItems: "flex-end" }}>
+<View style={{ overflow: "hidden", alignItems: "flex-start" }}>
   <Tooltip iconTrigger right open label="More info" />
 </View>
   );

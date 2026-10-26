@@ -14,9 +14,9 @@ Audit checklist for the style-layer foundation `BreakpointOverride`, audited for
 | Docs planned | none: every export has its page |
 | Materials manifest | BreakpointOverride: style, inherited; docs route `tokens/layout`; verification inherited-composition, semantic-state |
 | Tests of it | 4 (importing one of its public exports or one of its implementation's declarations by name, or named for it, `test/breakpoint-override[-<what>].test.tsx`): `test/anchored-overlay-dismissal.test.tsx`, `test/container.test.tsx`, `test/responsive-ssr.test.tsx`, `test/responsive.test.tsx` |
-| Consumers | 32 components: 2 directly, 23 through shared modules, 7 through other kit components (one row each below, read from the source by `tools/audit/kit-graph.ts`) |
+| Consumers | 33 components: 2 directly, 24 through shared modules, 7 through other kit components (one row each below, read from the source by `tools/audit/kit-graph.ts`) |
 | Pages using it | `pattern-responsive` (useFormFactor) |
-| Capture through | 33, in this order: components `filter-panel`, `sidebar`, `row-column`, `grid`, `autocomplete`, `button-group`, `dropdown`, `popover`, `select`, `alert-dialog`, `description-lists`, `form`, `grid-lists`, `phone-input`, `calendar`, `command`, `dashboard-grid`, `data-table`, `dialog`, `navbars`, `row-menu`, `steps`, `wizard`, `tabs`, `toast`, `avatar`, `video`, `field`, `app-frame`, `board`, `chat`, `geo-map`; pages `pattern-responsive` |
+| Capture through | 34, in this order: components `filter-panel`, `sidebar`, `row-column`, `grid`, `autocomplete`, `button-group`, `dropdown`, `popover`, `select`, `tooltip`, `alert-dialog`, `description-lists`, `form`, `grid-lists`, `phone-input`, `calendar`, `command`, `dashboard-grid`, `data-table`, `dialog`, `navbars`, `row-menu`, `steps`, `wizard`, `tabs`, `toast`, `avatar`, `video`, `field`, `app-frame`, `board`, `chat`, `geo-map`; pages `pattern-responsive` |
 | Not captured | guide pages, which the capture inventory (component, pattern and template pages) does not hold: `/tokens/layout` (documents BreakpointOverride, formFactor, FormFactor, responsive, Responsive) |
 | Turn record | `audit/turns/breakpoint-override.md`, written by `bun run audit:turn -- --slug=breakpoint-override --phase=before\|after` (the before and after capture runs) |
 
@@ -31,6 +31,7 @@ Audit checklist for the style-layer foundation `BreakpointOverride`, audited for
 | `dropdown` | through shared modules | `AnchoredOverlay` (src/style/anchored-overlay.tsx) |
 | `popover` | through shared modules | `AnchoredOverlay` (src/style/anchored-overlay.tsx) |
 | `select` | through shared modules | `AnchoredOverlay` (src/style/anchored-overlay.tsx) |
+| `tooltip` | through shared modules | `AnchoredOverlay` (src/style/anchored-overlay.tsx) |
 | `alert-dialog` | through shared modules | `Portal` (src/style/portal.tsx) |
 | `description-lists` | through shared modules | `useContainerBreakpoint` (src/style/container.ts) |
 | `form` | through shared modules | `useContainerWidth` (src/style/container.ts) |

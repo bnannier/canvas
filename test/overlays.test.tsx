@@ -13,6 +13,7 @@ import { RowMenu } from "../src/organisms/row-menu/row-menu.tsx";
 import { Dropdown } from "../src/atoms/dropdown/dropdown.tsx";
 import { Select } from "../src/atoms/select/select.tsx";
 import { OverlayProvider } from "../src/style/portal.tsx";
+import { HOVER_GRACE_MS } from "../src/atoms/tooltip/tooltip.styles.ts";
 import type { DropdownProps } from "../src/atoms/dropdown/dropdown.shared.tsx";
 import {
   webSkin as webMenuSkin,
@@ -67,6 +68,14 @@ const withLayout = async (run: () => Promise<void>) => {
 const settle = async () => {
   await act(async () => {
     await new Promise((resolve) => setTimeout(resolve, 50));
+  });
+};
+
+// A tip outlives a hover leave by its grace (the pointer may be crossing onto the
+// bubble); wait it out before asserting the tip closed.
+const pastGrace = async () => {
+  await act(async () => {
+    await new Promise((resolve) => setTimeout(resolve, HOVER_GRACE_MS + 30));
   });
 };
 
@@ -365,7 +374,7 @@ describe("Tooltip", () => {
     expect(trigger.getAttribute("aria-expanded")).toBe("false");
   });
 
-  it("shows the tip while the trigger is hovered and hides on hover out", () => {
+  it("shows the tip while the trigger is hovered and hides on hover out", async () => {
     const { container } = ui(<Tooltip trigger="Info" label="Extra context" />);
     const trigger = container.querySelector('[aria-expanded]')!;
     expect(screen.queryByText("Extra context")).toBeNull();
@@ -379,6 +388,9 @@ describe("Tooltip", () => {
 
     fireEvent.pointerLeave(trigger);
     fireEvent.mouseLeave(trigger);
+    // Still up through the grace, then closed.
+    expect(screen.getByText("Extra context")).toBeDefined();
+    await pastGrace();
     expect(screen.queryByText("Extra context")).toBeNull();
     expect(trigger.getAttribute("aria-expanded")).toBe("false");
   });
@@ -418,7 +430,7 @@ describe("Tooltip", () => {
     expect(screen.queryByText("Glass on")).toBeNull();
   });
 
-  it("shows the tip on the element trigger's hover and focus, and hides it again", () => {
+  it("shows the tip on the element trigger's hover and focus, and hides it again", async () => {
     const { container } = ui(
       <Tooltip label="Glass on">
         <Button ghost small onPress={() => {}}>Glass</Button>
@@ -433,6 +445,7 @@ describe("Tooltip", () => {
     expect(screen.getByText("Glass on")).toBeDefined();
 
     fireEvent.pointerLeave(child);
+    await pastGrace();
     expect(screen.queryByText("Glass on")).toBeNull();
 
     // Focus/blur bubble out of the child, so a keyboard tab onto it opens the tip.
@@ -442,12 +455,10 @@ describe("Tooltip", () => {
     expect(screen.queryByText("Glass on")).toBeNull();
   });
 
-  // The bubble renders IN FLOW, so opening it pushes the trigger over by the
-  // bubble's height. If the hover region hugged the child, the trigger would slide
-  // out from under a stationary pointer and the browser's post-layout hover
-  // recompute would close the tip the moment it appeared (verified in Chrome). The
-  // region is the whole tooltip instead, so crossing onto the bubble keeps it up.
-  it("keeps an element trigger's tip up while the pointer crosses onto the bubble", () => {
+  // The bubble floats in the overlay outlet, outside the trigger's subtree, so the
+  // trigger's leave fires on the way to it. The grace spans that crossing, and the
+  // bubble's own hover keeps the tip up (WCAG 1.4.13's hoverable content).
+  it("keeps an element trigger's tip up while the pointer crosses onto the bubble", async () => {
     const { container } = ui(
       <Tooltip label="Glass on">
         <Button ghost small onPress={() => {}}>Glass</Button>
@@ -458,14 +469,73 @@ describe("Tooltip", () => {
     const bubble = container.querySelector('[role="alert"]')!;
     expect(bubble.textContent).toBe("Glass on");
 
-    // Trigger -> bubble: a move WITHIN the tooltip must not close it.
-    fireEvent.pointerOut(child, { relatedTarget: bubble });
-    fireEvent.pointerOver(bubble, { relatedTarget: child });
+    // Trigger -> bubble: the trigger's leave, then the bubble's enter within the grace.
+    fireEvent.pointerLeave(child);
+    fireEvent.pointerEnter(bubble);
+    await pastGrace();
     expect(screen.getByText("Glass on")).toBeDefined();
 
-    // Leaving the tooltip altogether does close it.
+    // Leaving the bubble altogether does close it, after the grace.
     fireEvent.pointerLeave(bubble);
+    await pastGrace();
     expect(screen.queryByText("Glass on")).toBeNull();
+  });
+
+  // The reported bug: in a table row, hovering an action inserted its tip into the
+  // cell and the row grew. Hosted (an app mounts an OverlayProvider at its root), the
+  // bubble is portaled into the outlet: nothing is added to the trigger's subtree, so
+  // nothing around it can grow.
+  it("floats the bubble in the overlay outlet, outside the trigger's layout", async () => {
+    await withLayout(async () => {
+      for (const placement of [{}, { bottom: true }, { left: true }, { right: true }] as const) {
+        const { container, unmount } = ui(
+          <OverlayProvider>
+            <Tooltip label="Pull into board" testID="row-tip" {...placement}>
+              <Button ghost small onPress={() => {}}>Pull</Button>
+            </Tooltip>
+          </OverlayProvider>,
+        );
+        const root = container.querySelector('[data-testid="row-tip"]')!;
+        // Structure only: the hovered Button's own wash changes its colour.
+        const shape = () => Array.from(root.querySelectorAll("*")).map((n) => n.tagName).join();
+        const before = shape();
+        fireEvent.pointerEnter(container.querySelector("button")!);
+        await settle();
+        const bubble = container.querySelector('[role="alert"]');
+        expect(bubble?.textContent).toBe("Pull into board");
+        // Not inside the trigger's root, and the root itself is untouched.
+        expect(root.contains(bubble)).toBe(false);
+        expect(shape()).toBe(before);
+        // Placed by absolute insets in the outlet, never in flow.
+        let n: HTMLElement | null = bubble!.parentElement;
+        while (n && !(n.getAttribute("style") ?? "").includes("position: absolute")) n = n.parentElement;
+        expect(n).not.toBeNull();
+        unmount();
+      }
+    });
+  });
+
+  // The bubble is a description, not a place to go: no backdrop sits over the page
+  // (it would steal the trigger's hover and close the tip at once), and the page keeps
+  // its taps while a tip is up.
+  it("puts no dismiss backdrop over the page while a tip is up", async () => {
+    await withLayout(async () => {
+      let presses = 0;
+      const { container } = ui(
+        <OverlayProvider>
+          <Tooltip label="Pull into board" open>
+            <Button ghost small onPress={() => { presses += 1; }}>Pull</Button>
+          </Tooltip>
+        </OverlayProvider>,
+      );
+      await settle();
+      expect(container.querySelector('[role="alert"]')).not.toBeNull();
+      // AnchoredOverlay's backdrop is an aria-hidden pressable; a pinned card has none.
+      expect(container.querySelector('[aria-hidden="true"][tabindex="-1"]')).toBeNull();
+      fireEvent.click(container.querySelector("button")!);
+      expect(presses).toBe(1);
+      expect(container.querySelector('[role="alert"]')).not.toBeNull();
+    });
   });
 
   it("gives the element trigger's wrapper no role and no tab stop", () => {
