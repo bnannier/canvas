@@ -62,6 +62,22 @@ A row's value can compose real atoms: `status`/`badge` render Badges, `avatars` 
 />
 ```
 
+### Node values
+
+A `term` or `value` may be any node, as a DataTable cell may: a string or number takes the list's own type and the per-item forms (`badge`, `status`, `mono`, `copyValue`, `update`), and any other node renders as given in its place, here a row of Badges. An `update` row needs a text value to edit.
+
+```tsx
+<DescriptionList
+  twoColumn
+  divided
+  items={[
+    { term: "Role", value: <Row snug wrap><Badge soft>button</Badge></Row> },
+    { term: "States", value: <Row snug wrap><Badge soft>disabled</Badge><Badge soft>busy</Badge></Row> },
+    { term: "Keyboard", value: "Enter and Space activate it" }
+  ]}
+/>
+```
+
 ### Inline-edit
 
 ```tsx

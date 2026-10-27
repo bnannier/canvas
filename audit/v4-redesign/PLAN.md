@@ -134,6 +134,12 @@ the disagreement is recorded here and the call taken.
 - **S10 Toolbar search prompt.** Adopted (ChatGPT): the prompt takes what the hand-off actually
   renders (its interactive layer's `font: inherit`, 400 at the field's size), not the
   renderer's 700 10.5 px tracked span.
+- **S11 Grain source.** The hand-off's runtime template encoder rewrites camelCase
+  attributes inside the `--grain` data URI (`baseFrequency` becomes
+  `sc-camel-base-frequency`), so its live page and reference images draw a flat veil. The
+  baked texture is the AUTHORED noise, judged against strips captured with the vendored
+  `--grain` restored: the veil is an accidental encoder bug, not a deliberate override like
+  S10's (ChatGPT agreed).
 - **P1 Detail page.** Built behind a pilot gate on Button, from generated data only (extended
   `extract-props`, semantics, skin-token and related scans, and `tools/v4/derive-detail-specs.ts`
   porting the hand-off's knob, size, state, anatomy and keyboard specs, validated against

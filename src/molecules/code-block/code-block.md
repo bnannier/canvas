@@ -9,6 +9,15 @@ first match wins); `compact` tightens the density; `copy`, `wrap`, `diff`,
 highlighter (ts/tsx/js/jsx, json, bash, css, html, python; anything else renders
 monochrome), and long lines scroll horizontally instead of truncating.
 
+`inline` honours `copy` alone of the orthogonal booleans: `<CodeBlock inline copy>`
+is the import chip, a raised monospace pill (34 tall, the control corner, the
+`popover` fill and `field-border` hairline, 12 px mono in `muted-foreground`)
+whose whole surface is one copy button, with a trailing copy glyph that turns to
+a check for a moment once the code is on the clipboard. The chip copies the code
+verbatim, announces itself as "Copy" followed by the code, sets the code in one
+ink (no syntax colours), and on the web its hairline turns to the accent under the
+pointer. Under glass it is a control-layer pane.
+
 When a line is wider than the block, Tab reaches the scrollable code and the
 platform's arrow keys scroll it; while it has keyboard focus, the block's card
 draws the theme's focus ring. Short content, `wrap`, and `inline` do not add
@@ -63,6 +72,12 @@ setTheme(theme === "dark" ? "light" : "dark");`}
 
 ```tsx
 <CodeBlock inline language="bash" code="npm install" />
+```
+
+### Inline copy
+
+```tsx
+<CodeBlock inline copy code={`import { Button } from "@nannier/canvas"`} />
 ```
 
 ### Compact

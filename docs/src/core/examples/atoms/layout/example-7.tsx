@@ -3,11 +3,12 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Button, Input, Row } = scope;
+  const { Card, Typography, Row } = scope;
   return (
-<Row stacks>
-  <Input placeholder="Search runs" />
-  <Button primary>New run</Button>
-</Row>
+<Card flush>
+  <Row pad>
+    <Typography>Padded surround</Typography>
+  </Row>
+</Card>
   );
 }

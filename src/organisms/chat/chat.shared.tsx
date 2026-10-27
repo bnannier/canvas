@@ -3,6 +3,7 @@ import { type ScrollView as RNScrollView, type ViewProps } from "react-native";
 import { View, Text, ScrollView, GlassSurface, useTheme, useFillStyle, useControllableState, FOCUS_RESET, LoopView, createLoopChannel, useReducedMotion, type LayoutStyle } from "../../style/index.js";
 import { useScrollFocus } from "../../style/use-scroll-focus.js";
 import { useFocusFrame } from "../../style/focus-frame.js";
+import { usePinnedFocus } from "../../style/interaction-override.js";
 import { focusInto } from "../../style/accessibility-focus.js";
 import { listProps, LIST_ITEM } from "../../style/list-semantics.js";
 import { Button as WebButton, type ButtonProps } from "../../atoms/button/button.js";
@@ -423,7 +424,9 @@ export function createChat(skin: s.ChatSkin, { Button = WebButton, Textarea = We
 
   function ChatComposer({ value, onChangeText, onSend, placeholder = "Message the assistant…", composerLabel = "Message", sendLabel = "Send message", maxLength, disabled, sendDisabled, pending, onAttach, attachments, onRemoveAttachment, attaching, footer, testID }: ChatComposerProps) {
     const { tokens } = useTheme();
-    const [focused, setFocused] = useState(false);
+    const [focusedState, setFocused] = useState(false);
+    // An InteractionOverride's pinned focus shows the focused look (src/style/interaction-override.tsx).
+    const focused = usePinnedFocus(!disabled) || focusedState;
     const fill = useFillStyle("ChatComposer");
     const filesPending = attaching || attachments?.some((attachment) => attachment.uploading || attachment.error);
     const canSend = !disabled && !sendDisabled && !pending && !filesPending && (value.trim().length > 0 || !!attachments?.length);

@@ -8,4 +8,4 @@ import { Skeleton } from "../../atoms/skeleton/skeleton.ios.js";
 // on iOS; the docs import it for preview. The composed parts (selection
 // Checkbox, footer Pagination, loading Skeleton) are the iOS variants.
 export const DataTable = createDataTable(iosSkin, { Checkbox, Pagination, Skeleton });
-export type { DataTableProps, DataTableColumn, DataTableSort } from "./data-table.shared.js";
+export type { DataTableProps, DataTableColumn, DataTableSort, DataTableGroup } from "./data-table.shared.js";

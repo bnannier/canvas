@@ -26,6 +26,7 @@ import {
   type TextStyle,
 } from "../../style/index.js";
 import { type HoverMotion } from "../../style/hover.js";
+import { LayoutAxisProvider, ROW_AXIS } from "../../style/sizing.js";
 import { Icon } from "../../atoms/icon/icon.js";
 import { Drawer as WebDrawer } from "../drawer/drawer.js";
 import { Badge as WebBadge } from "../../atoms/badge/badge.js";
@@ -62,6 +63,9 @@ export type SidebarIconTint = { primary?: boolean; muted?: boolean };
 //   rounded card surface. `bordered` wins over `floating` when both are passed.
 // - Collapse axis: `collapsed`/`defaultCollapsed` shrink the panel to a mini
 //   icon-rail; `collapsible` shows the header toggle.
+// - Markers axis: `markers` gives each row a trailing dot: the accent on the active
+//   row, the field hairline on a row of the current place (`marked` on the item, or
+//   every row of a `current` section), none elsewhere.
 // - Sections may be `collapsible` (accordion groups); the accordion open-state
 //   mirrors the kit Accordion (single-open by default, `independentSections` for
 //   many-open, controllable via `openSections`).
@@ -98,27 +102,29 @@ export interface SidebarSkin {
    *  `shell` (a header/footer is present) drops the inner padding/gap onto the
    *  scroll body and fills the parent height. */
   column: (t: ColorTokens, frame: Frame, collapsed: boolean, shell: boolean) => ViewStyle;
-  /** A titled group of nav rows. */
-  group: ViewStyle;
-  /** The section heading above a pinned group. */
-  sectionTitle: (t: ColorTokens) => TextStyle;
+  /** A titled group of nav rows (the row spacing), per density. */
+  group: (density: Density) => ViewStyle;
+  /** The heading line above a pinned group (its inset; the title and count sit at either end). */
+  sectionHeading: (t: ColorTokens, density: Density) => ViewStyle;
+  /** The heading's title type; `current` marks the reader's current place. */
+  sectionTitle: (t: ColorTokens, density: Density, current: boolean) => TextStyle;
+  /** The section heading's trailing count (`SidebarSection.count`). */
+  sectionCount: (t: ColorTokens, current: boolean) => TextStyle;
   /** The nav-row container (shape + density padding); `collapsed` centers the icon. */
   row: (t: ColorTokens, density: Density, collapsed: boolean) => ViewStyle;
   /** The selected-row highlight fill (null when not active). */
   rowFill: (t: ColorTokens, active: boolean) => ViewStyle | null;
-  /** The row label (flex, type, color), per active state + density. */
-  label: (t: ColorTokens, active: boolean, density: Density) => TextStyle;
+  /** The row label (flex, type, color), per active state + density; `lifted` is a
+   *  resting row of the current place, which may take a stronger ink. */
+  label: (t: ColorTokens, active: boolean, density: Density, lifted?: boolean) => TextStyle;
   /** The leading Canvas icon's color booleans, per active state. */
   iconTint: (active: boolean) => SidebarIconTint;
   /** The leading Canvas icon size (px), per platform. */
   iconSize: number;
-  /** Optional fine icon stroke and opacity from the navigation reference. */
-  iconRegularStroke?: boolean;
-  iconOpacity?: number;
-  /** Selected edge marker; when present the row inherits its host surface. */
-  activeIndicator?: (t: ColorTokens) => ViewStyle;
-  /** Solid action count instead of a quiet metadata badge. */
-  navigationCount?: boolean;
+  /** A row's count is the small quiet pill (the hand-off rail's) rather than the default one. */
+  smallCount?: boolean;
+  /** The trailing marker dot `markers` draws: the active row's, or a marked row's. */
+  marker: (t: ColorTokens, kind: "active" | "marked") => ViewStyle;
 
   // --- collapse (mini icon-rail) ---
   /** The panel width when collapsed. */
@@ -140,9 +146,9 @@ export interface SidebarSkin {
 
   // --- collapsible section header (accordion) ---
   /** The collapsible-section header row layout. */
-  sectionHeaderRow: (t: ColorTokens) => ViewStyle;
+  sectionHeaderRow: (t: ColorTokens, density: Density) => ViewStyle;
   /** The collapsible-section header title type (flex, no standalone padding). */
-  sectionHeaderTitle: (t: ColorTokens) => TextStyle;
+  sectionHeaderTitle: (t: ColorTokens, current: boolean) => TextStyle;
   /** The disclosure chevron glyph at rest (chevronRight iOS/web; chevronDown M3). */
   sectionChevronGlyph: "chevronRight" | "chevronDown";
   /** Degrees the chevron rotates to when open (90 iOS/web; 180 M3). */
@@ -178,11 +184,19 @@ export interface SidebarProps {
   onSelect?: (item: SidebarItem, index: number, event: GestureResponderEvent) => void;
   // Density (pick one; default is the comfortable row).
   compact?: boolean;
-  // Frame (pick one; default is the flush right-bordered column).
+  // Frame (pick one; default is the flush right-bordered column). `bordered` wins
+  // over `floating`.
+  /** A rounded card inside the field hairline. */
   bordered?: boolean;
+  /** A rounded card lifted on the medium shadow (the bordered card natively). */
   floating?: boolean;
-  /** Navigation groups embedded in an app-owned rail; inherits its frame and width. */
+  /** Navigation groups embedded in an app-owned rail: no frame, fill or width of its
+   *  own and no scroll body (the host rail scrolls); the `header` and `footer` slots
+   *  stack above and below the groups as plain blocks. */
   embedded?: boolean;
+  /** Trailing marker dots: the accent on the active row, the field hairline on a row of
+   *  the current place (an item's `marked`, or every row of a `current` section). */
+  markers?: boolean;
 
   // Collapse axis (the mini icon-rail).
   /** Collapsed to the mini icon-rail (CONTROLLED). Omit for uncontrolled use. */
@@ -257,7 +271,7 @@ export function densityOf(p: SidebarProps): Density {
 // Frame precedence when more than one is passed: first match wins.
 export function frameOf(p: SidebarProps): Frame {
   if (p.bordered) return "bordered";
-  if (p.floating) return "bordered";
+  if (p.floating) return "floating";
   return "flush";
 }
 
@@ -295,6 +309,10 @@ function fromSet(open: Set<string>, independent: boolean): string | string[] {
 function rowA11yLabel(item: SidebarItem): string {
   return item.badge != null ? `${item.label}, ${item.badge}` : item.label;
 }
+
+// The embedded column and its slots: stretched to the host rail, 16 px between blocks.
+const EMBEDDED_COLUMN: ViewStyle = { gap: 16, alignSelf: "stretch" };
+const EMBEDDED_SLOT: ViewStyle = { alignSelf: "stretch" };
 
 /** Build a Sidebar component from a platform skin. */
 /**
@@ -449,7 +467,7 @@ export function createSidebar(skin: SidebarSkin, parts: SidebarParts = {}) {
     // pane's material and rim carry it; `paneStyle`). Solid mode keeps each skin's
     // own row fill.
     const activeShape: StyleProp<ViewStyle> = [skin.row(tokens, density, collapsed), skin.rowFill(tokens, true)];
-    const activePane = glass && !skin.activeIndicator ? <GlassPane layer="control" shape={activeShape} tint={selectionTint(activeShape, dark)} /> : null;
+    const activePane = glass ? <GlassPane layer="control" shape={activeShape} tint={selectionTint(activeShape, dark)} /> : null;
 
     const shell = header != null || footer != null;
 
@@ -497,8 +515,11 @@ export function createSidebar(skin: SidebarSkin, parts: SidebarParts = {}) {
     }
 
     // One nav row: leading icon + label + badge; icon-only and centered in the rail.
-    const renderRow = (item: SidebarItem, index: number) => {
+    const renderRow = (item: SidebarItem, index: number, inCurrent: boolean) => {
       const activeRow = index === activeIndex;
+      // The trailing marker under `markers`: the accent on the active row, the hairline
+      // on a row of the current place. The collapsed rail has no room for it.
+      const markerKind = !props.markers || collapsed ? null : activeRow ? "active" : item.marked || inCurrent ? "marked" : null;
       return (
         // The bounded Android ripple on a nav row is masked to a rectangle and cannot
         // clip itself; the frame's RippleClip rounds it to the row's own corners (Android
@@ -532,18 +553,19 @@ export function createSidebar(skin: SidebarSkin, parts: SidebarParts = {}) {
             accessibilityLabel={collapsed ? rowA11yLabel(item) : undefined}
           >
             {activeRow ? activePane : null}
-            {activeRow && skin.activeIndicator ? <View style={skin.activeIndicator(tokens)} /> : null}
-            {item.icon != null ? (
-              <Icon {...{ [item.icon]: true }} {...skin.iconTint(activeRow)} size={skin.iconSize} regularStroke={skin.iconRegularStroke} style={skin.iconOpacity == null ? undefined : { opacity: skin.iconOpacity }} decorative />
-            ) : null}
-            {collapsed ? null : (
-              <>
-                <Text style={skin.label(tokens, activeRow, density)} numberOfLines={1}>
-                  {item.label}
-                </Text>
-                <SidebarItemBadge item={item} Badge={Badge} navigationCount={skin.navigationCount} />
-              </>
-            )}
+            {/* The row is a row: a hugging count centers on its line rather than pinning to the top. */}
+            <LayoutAxisProvider value={ROW_AXIS}>
+              {item.icon != null ? <Icon {...{ [item.icon]: true }} {...skin.iconTint(activeRow)} size={skin.iconSize} decorative /> : null}
+              {collapsed ? null : (
+                <>
+                  <Text style={skin.label(tokens, activeRow, density, inCurrent)} numberOfLines={1}>
+                    {item.label}
+                  </Text>
+                  <SidebarItemBadge item={item} Badge={Badge} small={skin.smallCount} />
+                  {markerKind ? <View style={skin.marker(tokens, markerKind)} /> : null}
+                </>
+              )}
+            </LayoutAxisProvider>
           </Pressable>
         </SidebarRowFrame>
       );
@@ -553,6 +575,7 @@ export function createSidebar(skin: SidebarSkin, parts: SidebarParts = {}) {
       const isCollapsible = !!section.collapsible;
       const open = !isCollapsible || openSet.has(key);
       const holdsActive = key === activeSectionKey;
+      const current = !!section.current;
 
       // Collapsed rail: pinned sections show icon-only rows; a collapsible section
       // becomes a single icon button that expands the rail AND opens that section.
@@ -579,16 +602,14 @@ export function createSidebar(skin: SidebarSkin, parts: SidebarParts = {}) {
                 accessibilityRole="button"
                 accessibilityLabel={section.title}
               >
-                {section.icon != null ? (
-                  <Icon {...{ [section.icon]: true }} {...skin.iconTint(holdsActive)} size={skin.iconSize} regularStroke={skin.iconRegularStroke} style={skin.iconOpacity == null ? undefined : { opacity: skin.iconOpacity }} decorative />
-                ) : null}
+                {section.icon != null ? <Icon {...{ [section.icon]: true }} {...skin.iconTint(holdsActive)} size={skin.iconSize} decorative /> : null}
               </Pressable>
             </SidebarRowFrame>
           );
         }
         return (
-          <View key={key} style={skin.group}>
-            {rows.map((r) => renderRow(r.item, r.index))}
+          <View key={key} style={skin.group(density)}>
+            {rows.map((r) => renderRow(r.item, r.index, current))}
           </View>
         );
       }
@@ -596,12 +617,12 @@ export function createSidebar(skin: SidebarSkin, parts: SidebarParts = {}) {
       // Expanded: pinned = static title + rows; collapsible = pressable header
       // (title + active-dot + rotating chevron) over the rows when open.
       return (
-        <View key={key} style={skin.group}>
+        <View key={key} style={skin.group(density)}>
           {isCollapsible ? (
             <Pressable
               onPress={() => toggleSection(key)}
               style={({ pressed }) => [
-                skin.sectionHeaderRow(tokens),
+                skin.sectionHeaderRow(tokens, density),
                 skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null,
                 skin.focusRing,
               ]}
@@ -610,16 +631,23 @@ export function createSidebar(skin: SidebarSkin, parts: SidebarParts = {}) {
               accessibilityState={{ expanded: open }}
               aria-expanded={open}
             >
-              <Text style={skin.sectionHeaderTitle(tokens)} numberOfLines={1}>
+              <Text style={skin.sectionHeaderTitle(tokens, current)} numberOfLines={1}>
                 {section.title}
               </Text>
+              {section.count != null ? <Text style={skin.sectionCount(tokens, current)}>{section.count}</Text> : null}
               {holdsActive ? <View style={skin.activeDot(tokens)} /> : null}
               <SectionChevron open={open} />
             </Pressable>
           ) : section.title != null ? (
-            <Text style={skin.sectionTitle(tokens)}>{section.title}</Text>
+            // The heading line: the title, and its count at the far end.
+            <View style={skin.sectionHeading(tokens, density)}>
+              <Text style={skin.sectionTitle(tokens, density, current)} numberOfLines={1}>
+                {section.title}
+              </Text>
+              {section.count != null ? <Text style={skin.sectionCount(tokens, current)}>{section.count}</Text> : null}
+            </View>
           ) : null}
-          {open ? rows.map((r) => renderRow(r.item, r.index)) : null}
+          {open ? rows.map((r) => renderRow(r.item, r.index, current)) : null}
         </View>
       );
     };
@@ -629,8 +657,21 @@ export function createSidebar(skin: SidebarSkin, parts: SidebarParts = {}) {
     // Sidebar joins the functional glass layer: GlassSurface paints native Liquid
     // Glass (iOS) or frost (web/Android) in glass mode and the solid skin
     // background in default mode.
-    const column: StyleProp<ViewStyle> = [props.embedded ? { gap: 34, alignSelf: "stretch" } : skin.column(tokens, frame, collapsed, shell), style];
-    if (props.embedded && !shell) return <View testID={testID} role="navigation" style={column}>{sectionsEl}</View>;
+    // Embedded: the host rail owns the frame, the fill, the width and the scroll, so the
+    // groups (and any header/footer slot, as plain blocks) stack in a plain column at the
+    // hand-off rail's 16 px group spacing.
+    if (props.embedded) {
+      const headerNode = typeof header === "function" ? header(collapsed) : header;
+      const footerNode = typeof footer === "function" ? footer(collapsed) : footer;
+      return (
+        <View testID={testID} role="navigation" style={[EMBEDDED_COLUMN, style]}>
+          {headerNode != null ? <View style={EMBEDDED_SLOT}>{headerNode}</View> : null}
+          {sectionsEl}
+          {footerNode != null ? <View style={EMBEDDED_SLOT}>{footerNode}</View> : null}
+        </View>
+      );
+    }
+    const column: StyleProp<ViewStyle> = [skin.column(tokens, frame, collapsed, shell), style];
 
     // Legacy (no slots): sections directly in the column, content-sized, exactly as
     // before — every existing consumer/example is byte-identical.

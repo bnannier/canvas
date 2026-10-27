@@ -20,7 +20,7 @@ Audit checklist for `/components/swatch`. The facts block and the variants table
 | Hand-off metric gaps | none |
 | Interactions registry | in the inventory; evidence: none registered |
 | Overlay recipe | none |
-| Interaction states | recipes: focus on Theme picker (web row; desktop), pressed on Theme picker (web row; desktop). |
+| Interaction states | recipes: hover on Palette picker (web row; desktop), focus on Palette picker (web row; desktop), pressed on Palette picker (web row; desktop). |
 | MeasureProps | not adopted |
 | Touch target | `swatch.shared.tsx`: hitSlop, minTarget, platformMinTarget. `test/touch-target-coverage.test.ts` records it as covered another way: Theme-picker radio samples pad the 16px dot to platformMinTarget through hitSlop; display swatches remain noninteractive. |
 | Tests importing it | 4: `test/design-rules-shape.test.ts`, `test/design-rules-skins.test.ts`, `test/skins-smoke.test.tsx`, `test/swatch.test.tsx` |
@@ -42,7 +42,7 @@ Web: 18 cells per variant (3 widths x 3 looks x 2 surfaces). iOS and Android: 6 
 | `inline` | Inline | [ ] | [ ] | [ ] |  |
 | `block` | Block | [ ] | [ ] | [ ] |  |
 | `detailline` | Detail line | [ ] | [ ] | [ ] |  |
-| `themepicker` | Theme picker | [ ] | [ ] | [ ] |  |
+| `palettepicker` | Palette picker | [ ] | [ ] | [ ] |  |
 <!-- audit:variants:end -->
 
 ## Universal rubric

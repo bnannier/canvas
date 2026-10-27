@@ -402,10 +402,10 @@ components:
     drawer-side-radius: "22px"
     drawer-sheet-radius: "22px"
   navbar:
-    nav-link-radius: "10px"
+    nav-link-radius: "9999px"
   sidebar:
     side-toggle-radius: "10px"
-    side-row-radius: "0px"
+    side-row-radius: "9px"
   steps:
     steps-connector-radius: "0px"
   toast:
@@ -950,6 +950,11 @@ kit's own Android parts at a step of the same scale.
 | web | `composer` | 20px |
 | web | `bubble` | 18px |
 | web | `bubbleTail` | 6px |
+| web | `navRow` | 9px |
+| web | `navRowCompact` | 8px |
+| web | `rail` | 12px |
+| web | `floatingRail` | 14px |
+| web | `navBar` | 14px |
 | ios | `actionSheet` | 34px |
 | ios | `groupedList` | 26px |
 | ios | `event` | 6px |
@@ -995,7 +1000,7 @@ drawn by those entries' platforms.
 | `menu` | `atoms/autocomplete`, `atoms/button-group`, `atoms/dropdown`, `atoms/listbox`, `atoms/popover`, `atoms/select`, `charts/shared`, `organisms/calendar`, `organisms/command`, `organisms/row-menu`, `style` |
 | `sheet` | `atoms/popover`, `organisms/action-sheet`, `organisms/drawer`, `organisms/toast` |
 | `checkbox` | `atoms/checkbox` |
-| `pill` | `atoms/badge`, `atoms/button`, `atoms/button-group`, `atoms/chip`, `atoms/input`, `atoms/skeleton`, `organisms/tabs`, `organisms/toast` |
+| `pill` | `atoms/badge`, `atoms/button`, `atoms/button-group`, `atoms/chip`, `atoms/input`, `atoms/skeleton`, `organisms/navbars`, `organisms/tabs`, `organisms/toast` |
 | `tile` | `atoms/emblem`, `atoms/qrcode`, `atoms/swatch`, `molecules/alert`, `molecules/card`, `molecules/grid-lists`, `molecules/stats`, `organisms/board`, `organisms/dashboard-grid` |
 | `insetRow` | `molecules/card` |
 | `brandMark` | `atoms/avatar` |
@@ -1013,6 +1018,11 @@ drawn by those entries' platforms.
 | `composer` | `organisms/chat` |
 | `bubble` | `organisms/chat` |
 | `bubbleTail` | `organisms/chat` |
+| `navRow` | `organisms/sidebar` |
+| `navRowCompact` | `organisms/sidebar` |
+| `rail` | `organisms/sidebar` |
+| `floatingRail` | `organisms/sidebar` |
+| `navBar` | `organisms/navbars` |
 | `actionSheet` | `organisms/action-sheet` |
 | `groupedList` | `atoms/radio`, `molecules/description-lists`, `molecules/stacked-lists`, `organisms/board` |
 | `searchField` | `atoms/input` |

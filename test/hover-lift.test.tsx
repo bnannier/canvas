@@ -253,13 +253,11 @@ describe("a nav row's wash fades in on hover", () => {
     expect(webSidebarSkin.wash!.color(legacy)).toBe(lightColors.accent);
   });
 
-  it("keeps the Argus active edge marker independent of the hover wash", () => {
+  it("keeps the active row's soft accent fill independent of the hover wash", () => {
     render(<ThemeProvider light solid><Sidebar defaultActive="Dashboard" items={items} /></ThemeProvider>);
     const active = screen.getByText("Dashboard").closest("[tabindex]") as HTMLElement;
-    expect(style(active, "background-color")).toBe("");
-    const marker = Array.from(active.children).find((el) => style(el as HTMLElement, "width") === "3px") as HTMLElement;
-    expect(marker).toBeTruthy();
-    expect(channels(style(marker, "background-color"))).toBe(channels(lightColors.primary));
+    expect(channels(style(active, "background-color"))).toBe(channels(lightColors["primary-soft"]!));
+    expect(alphaOf(style(active, "background-color"))).toBeCloseTo(alphaOf(lightColors["primary-soft"]!), 3);
     expect(style(active, "transition-property")).toBe("");
   });
 

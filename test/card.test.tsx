@@ -155,6 +155,84 @@ describe("CardMedia", () => {
   });
 });
 
+// CardMedia given children: the specimen well the v4 component page stages its
+// variants, sizes, states and platform skins on (Component.dc.html): the content
+// centered on the sunken fill, at least the well step's height, with its inset.
+describe("CardMedia well", () => {
+  const hexRgb = (hex: string) => {
+    const m = /^#([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i.exec(hex)!;
+    return `rgba(${parseInt(m[1]!, 16)},${parseInt(m[2]!, 16)},${parseInt(m[3]!, 16)},1.00)`;
+  };
+
+  it("stages its children centered on the sunken fill, in place of the image", () => {
+    const { getByTestId, getByText, queryAllByRole } = ui(
+      <Card flush>
+        <CardMedia src="https://example.com/cover.png" alt="Cover" testID="well">
+          <Text>Live specimen</Text>
+        </CardMedia>
+      </Card>,
+    );
+    const well = getByTestId("well");
+    expect(well.contains(getByText("Live specimen"))).toBe(true);
+    // Children win over `src`: no image is mounted.
+    expect(queryAllByRole("img")).toHaveLength(0);
+    expect(well.style.alignItems).toBe("center");
+    expect(well.style.justifyContent).toBe("center");
+    expect(well.style.backgroundColor.replace(/\s/g, "")).toBe(hexRgb(lightColors["surface-sunken"]!));
+    // The top corners nest inside the card's corner, like the image's.
+    expect(well.style.borderTopLeftRadius).toBe(`${shape.web.card - 1}px`);
+  });
+
+  it("takes the default well, `compact` and `tall` steps, the smaller winning", () => {
+    const step = (props: Record<string, boolean>) => {
+      const { getByTestId } = ui(
+        <CardMedia testID="well" {...props}>
+          <Text>x</Text>
+        </CardMedia>,
+      );
+      const st = getByTestId("well").style;
+      const out = [st.minHeight, st.paddingTop, st.paddingLeft];
+      cleanup();
+      return out;
+    };
+    expect(step({})).toEqual(["160px", "28px", "20px"]);
+    expect(step({ compact: true })).toEqual(["130px", "24px", "16px"]);
+    expect(step({ tall: true })).toEqual(["240px", "32px", "20px"]);
+    expect(step({ tall: true, compact: true })).toEqual(["130px", "24px", "16px"]);
+  });
+
+  it("is an ink tint, not an opaque patch, under glass", () => {
+    const { getByTestId } = render(
+      <ThemeProvider glass>
+        <CardMedia testID="well">
+          <Text>x</Text>
+        </CardMedia>
+      </ThemeProvider>,
+    );
+    const fill = getByTestId("well").style.backgroundColor;
+    expect(fill).toMatch(/^rgba\(/);
+    expect(fill.replace(/\s/g, "")).not.toBe(hexRgb(lightColors["surface-sunken"]!));
+  });
+
+  it("centers a hug child rather than pinning it to the start edge", () => {
+    const { getByTestId } = ui(
+      <Card flush>
+        <CardMedia testID="well">
+          <Button primary>Save</Button>
+        </CardMedia>
+      </Card>,
+    );
+    const pinned = [...getByTestId("well").querySelectorAll("*")].filter((n) => (n as HTMLElement).style.alignSelf === "flex-start");
+    expect(pinned).toHaveLength(0);
+  });
+
+  it("keeps the image band when it has no children", () => {
+    const { getByTestId } = ui(<CardMedia src="/kira-tanaka.jpg" height={120} testID="m" />);
+    expect(getByTestId("m").style.height).toBe("120px");
+    expect(getByTestId("m").style.minHeight).toBe("");
+  });
+});
+
 // The composition parts: what a caller assembles when the string props do not fit (a
 // cover over a header, a separator, a body and a footer row). Each part owns its section
 // padding, so a composed card never pads by hand; the expectations read the web skin's

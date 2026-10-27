@@ -20,6 +20,15 @@ They wrap along a shared baseline, preserving dense section anatomy. Pair it wit
 `h5 bold labelLeading` or `subheading bold labelLeading`; the latter uses the compact
 metadata metrics. Actions move to the far edge and wrap below on narrow surfaces.
 
+`level={1..6}` sets the heading level assistive tech hears without changing the
+look. A heading role exposes its own level (`display` and `h1` at 1, `h2` to `h5` at
+2 to 5, a `section` heading 6), so `<Typography h3 level={2}>` draws the h3 size
+and is announced as a level-2 heading: a real `<h2>` on the web, the header trait
+natively. On a non-heading role `level` makes the text a heading at that level.
+`href` still wins: a link is never a heading. The level is a number because it is
+the document outline, not a style (the same reason Row's `span` is one); the look
+stays on the boolean role axis.
+
 ## Usage
 
 ```tsx
@@ -163,6 +172,15 @@ metadata metrics. Actions move to the far edge and wrap below on narrow surfaces
     <Typography small>Errors</Typography>
     <Typography tabular>11,407</Typography>
   </Row>
+</Column>
+```
+
+### Heading level
+
+```tsx
+<Column chapter>
+  <Typography h3 level={2}>Playground</Typography>
+  <Typography h3 level={2}>Examples</Typography>
 </Column>
 ```
 

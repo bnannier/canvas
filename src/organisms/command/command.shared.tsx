@@ -6,6 +6,7 @@ import { OverlayScrollView } from "../../style/overlay-scroll.js";
 import { FocusFrameContext, useFocusFrame } from "../../style/focus-frame.js";
 import { useActiveOptionScroll } from "../../style/use-active-option-scroll.js";
 import { LISTBOX } from "../../style/listbox-role.js";
+import { usePinnedFocus } from "../../style/interaction-override.js";
 import { focusFieldInto } from "../../style/accessibility-focus.js";
 import { Icon, type IconName } from "../../atoms/icon/icon.js";
 import { Kbd } from "../../atoms/kbd/kbd.js";
@@ -160,7 +161,9 @@ export function createCommand(skin: CommandSkin) {
     const [internalOpen, setInternalOpen] = useState(() => props.defaultOpen ?? !trigger);
     const open = openProp ?? internalOpen;
     // The search field's focus, painted on the search row's rule (its focus indicator).
-    const [searchFocused, setSearchFocused] = useState(false);
+    // An InteractionOverride's pinned focus shows it (src/style/interaction-override.tsx).
+    const [searchFocusedState, setSearchFocused] = useState(false);
+    const searchFocused = usePinnedFocus() || searchFocusedState;
     const setOpen = (next: boolean) => {
       if (openProp === undefined) setInternalOpen(next);
       onOpenChange?.(next);

@@ -1,10 +1,11 @@
 import { describe, it, expect, afterEach, spyOn } from "bun:test";
-import { render, cleanup, screen } from "@testing-library/react";
+import { render, cleanup, screen, act } from "@testing-library/react";
 import { type ReactNode } from "react";
 import { Platform } from "react-native";
 import { ThemeProvider } from "../src/style/theme.tsx";
 import { radius } from "../src/style/tokens.ts";
 import { Image } from "../src/atoms/image/image.tsx";
+import { declaresPointSize, tileCount } from "../src/atoms/image/image.shared.tsx";
 import { imageLabel, namedImageRole } from "../src/atoms/image/image.accessibility.ts";
 import { Avatar } from "../src/atoms/avatar/avatar.tsx";
 import { CardMedia } from "../src/molecules/card/card.tsx";
@@ -169,5 +170,84 @@ describe("Image decorative", () => {
     const { container } = ui(<Image source={SRC} alt="" testID="i" />);
     expect(rootOf(container).getAttribute("role")).toBeNull();
     expect(altOf(container)).toBe("");
+  });
+});
+
+// `repeat` over a source that states its point size (a bundled asset, or `{ uri, width,
+// height }`) is tiled by the kit: one measuring tile first, then a grid of plain stretched
+// images at the tile's point size, clipped by the box, so every platform tiles at the
+// asset's point size and draws the density variant it picked 1:1. happy-dom lays nothing
+// out, so the test fires the layout handlers react-native-web attaches, as a browser would.
+describe("Image repeat tiling", () => {
+  const TILE = { uri: "https://example.com/grain.png", width: 180, height: 180 };
+  type LayoutHost = { __reactLayoutHandler?: (event: unknown) => void };
+  const layout = (node: Element, width: number, height: number) =>
+    act(() => (node as unknown as LayoutHost).__reactLayoutHandler?.({ nativeEvent: { layout: { x: 0, y: 0, width, height } }, timeStamp: 1 }));
+  const gridOf = (c: HTMLElement) => rootOf(c).firstElementChild as HTMLElement;
+  const tilesOf = (c: HTMLElement) => [...gridOf(c).children].flatMap((row) => [...row.children]) as HTMLElement[];
+
+  it("mounts one measuring tile, then covers the measured box with point-size tiles", () => {
+    const { container } = ui(<Image source={TILE} repeat width="100%" height={200} testID="i" />);
+    expect(tilesOf(container)).toHaveLength(1);
+    layout(rootOf(container), 400, 200);
+    layout(tilesOf(container)[0], 180, 180);
+    // 400 / 180 rounds up to 3 columns, 200 / 180 to 2 rows.
+    expect(gridOf(container).children).toHaveLength(2);
+    expect(tilesOf(container)).toHaveLength(6);
+    for (const tile of tilesOf(container)) {
+      expect(getComputedStyle(tile.firstElementChild as HTMLElement).backgroundSize).toBe("100% 100%");
+      expect(getComputedStyle(tile.firstElementChild as HTMLElement).backgroundRepeat).toBe("no-repeat");
+    }
+    const clip = getComputedStyle(rootOf(container));
+    expect([clip.overflow, clip.overflowX]).toContain("hidden");
+    expect(gridOf(container).style.position).toBe("absolute");
+  });
+
+  it("keeps the measuring tile when the box grows, and follows a new box size", () => {
+    const { container } = ui(<Image source={TILE} repeat width="100%" height={200} testID="i" />);
+    const first = tilesOf(container)[0];
+    layout(rootOf(container), 400, 200);
+    layout(first, 180, 180);
+    expect(tilesOf(container)[0]).toBe(first);
+    layout(rootOf(container), 900, 400);
+    expect(tilesOf(container)).toHaveLength(5 * 3);
+  });
+
+  it("hides the tiles from assistive tech and names a named repeat image once, on its box", () => {
+    const { container } = ui(<Image source={TILE} repeat alt="Paper texture" width={360} height={180} testID="i" />);
+    layout(rootOf(container), 360, 180);
+    layout(tilesOf(container)[0], 180, 180);
+    const named = screen.getAllByRole("img", { name: "Paper texture" });
+    expect(named).toHaveLength(1);
+    expect(named[0]).toBe(rootOf(container));
+    expect(gridOf(container).getAttribute("aria-hidden")).toBe("true");
+    for (const img of container.querySelectorAll("img")) expect(img.getAttribute("alt")).toBe("");
+  });
+
+  it("stays decorative without a name", () => {
+    const { container } = ui(<Image source={TILE} repeat width={360} height={180} testID="i" />);
+    expect(rootOf(container).getAttribute("role")).toBeNull();
+    expect(rootOf(container).getAttribute("aria-label")).toBeNull();
+  });
+
+  it("leaves a source with no point size to React Native's own repeat, and every other fit untouched", () => {
+    const { container } = ui(<Image source={SRC} repeat testID="i" />);
+    expect(getComputedStyle(fillOf(container)).backgroundRepeat).toBe("repeat");
+    cleanup();
+    const sized = ui(<Image source={TILE} cover testID="i" />).container;
+    expect(getComputedStyle(fillOf(sized)).backgroundSize).toBe("cover");
+  });
+
+  it("counts tiles by rounding up, and knows which sources state a point size", () => {
+    expect(tileCount(400, 180)).toBe(3);
+    expect(tileCount(360, 180)).toBe(2);
+    expect(tileCount(0, 180)).toBe(1);
+    expect(tileCount(400, 0)).toBe(1);
+    expect(declaresPointSize(7)).toBe(true);
+    expect(declaresPointSize(TILE)).toBe(true);
+    expect(declaresPointSize(SRC)).toBe(false);
+    expect(declaresPointSize([TILE])).toBe(false);
+    expect(declaresPointSize({ uri: "x", width: 0, height: 10 })).toBe(false);
+    expect(declaresPointSize(undefined)).toBe(false);
   });
 });

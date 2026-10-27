@@ -6,13 +6,10 @@ export default function Example(scope: ExampleScope) {
   const { CodeBlock } = scope;
   return (
 <CodeBlock
-  numbered
-  language="tsx"
-  highlightLines={["2-3"]}
-  code={`export function Cta() {
-  const label = getLabel();
-  return <Button primary large>{label}</Button>;
-}`}
+  terminal
+  filename="deploy.sh"
+  code={`$ ./deploy.sh --stage production
+Build complete in 12s`}
 />
   );
 }

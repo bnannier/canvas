@@ -2213,8 +2213,10 @@ export const STATE_RECIPES: Record<string, ComponentStates> = {
     disabled: disabled("disabled", byRole("textbox")),
   },
   swatch: {
-    focus: focus("themepicker", byRole("radio", "blush theme")),
-    pressed: pressed("themepicker", byRole("radio", "mint theme")),
+    // The web grows a palette disc under a resting pointer.
+    hover: hover("palettepicker", byRole("radio", "Mint")),
+    focus: focus("palettepicker", byRole("radio", "Violet")),
+    pressed: pressed("palettepicker", byRole("radio", "Mint")),
   },
   switch: {
     // The web glows an on track under a resting pointer (the default example is on).
@@ -2282,6 +2284,8 @@ export const STATE_RECIPES: Record<string, ComponentStates> = {
     pressed: pressed("pressable", byRole("button", /^Scout/)),
   },
   "code-block": {
+    // The inline copy pill's hairline takes the accent under a resting pointer.
+    hover: hover("inlinecopy", byRole("button", /^Copy import/)),
     focus: focus("copybutton", byRole("button", "Copy code")),
     pressed: pressed("copybutton", byRole("button", "Copy code")),
   },
@@ -2463,6 +2467,8 @@ export const STATE_RECIPES: Record<string, ComponentStates> = {
     open: open("responsivedrawer", FILTER_DRAWER_OPEN, ALL_ROWS, "a click on the Responsive drawer example's Filters (1) trigger, from the row", widthsAtOrBelow("sm")),
   },
   navbars: {
+    // A resting link fills `secondary` under a resting pointer on the web.
+    hover: hover("default", byRole("link", "Users")),
     focus: focus("default", byRole("link", "Dashboard")),
     pressed: pressed("default", byRole("link", "Users")),
   },

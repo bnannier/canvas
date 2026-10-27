@@ -21,4 +21,9 @@ export const docs: ComponentDocs = {
   // Extracted from the component's exported `*Props` interfaces by
   // tools/docgen/extract-props.ts (the TypeScript checker).
   props: [],
+  // Read from the component's source by tools/docgen/scan-detail.ts: what its shell tells
+  // assistive tech, the colour roles its skins read, and the components it is used with.
+  semantics: {"roles":[],"states":[],"aria":[],"touchTarget":[]},
+  tokens: [],
+  related: ["container","row-column","typography","icon","emblem","swatch","reveal"],
 };

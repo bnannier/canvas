@@ -50,6 +50,8 @@ Web: 18 cells per variant (3 widths x 3 looks x 2 surfaces). iOS and Android: 6 
 | `sectionwithchildren` | Section with children | [ ] | [ ] | [ ] |  |
 | `iconandfooter` | Icon and footer | [ ] | [ ] | [ ] |  |
 | `media` | Media | [ ] | [ ] | [ ] |  |
+| `specimenwell` | Specimen well | [ ] | [ ] | [ ] |  |
+| `specimenwellsizes` | Specimen well sizes | [ ] | [ ] | [ ] |  |
 | `actions` | Actions | [ ] | [ ] | [ ] |  |
 | `pressable` | Pressable | [ ] | [ ] | [ ] |  |
 | `selectable` | Selectable | [ ] | [ ] | [ ] |  |

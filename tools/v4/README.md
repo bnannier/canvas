@@ -15,4 +15,12 @@ What reads it:
   `.v4-reference/` (gitignored) as the design images Lookout's design-parity judge
   compares the docs against.
 
+- `derive-detail-specs.ts` (`bun run v4:specs`, `--check` in `v4:specs:check`): runs the
+  kit's `cv-kit*.js` and `canvas-docs.js` in a bare VM context and writes the component
+  detail pages' specs (knobs, sizes, states, anatomy, keyboard tables) into
+  `docs/src/core/data/detail-specs.ts` and the sections into
+  `docs/src/core/data/detail-sections.ts`. `test/detail-specs.test.ts` holds every name
+  they pass to a real prop; a hand-off knob the repository has no prop for is listed in the
+  spec's `dropped` with its reason.
+
 Where the prototype and the repository disagree on an API, the repository wins.

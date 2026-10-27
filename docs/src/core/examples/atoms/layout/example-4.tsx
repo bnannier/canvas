@@ -3,15 +3,11 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Badge, Row } = scope;
+  const { Typography, Row } = scope;
   return (
-<Row wrap>
-  <Badge>alpha</Badge>
-  <Badge>beta</Badge>
-  <Badge>gamma</Badge>
-  <Badge>delta</Badge>
-  <Badge>epsilon</Badge>
-  <Badge>zeta</Badge>
+<Row between>
+  <Typography small>Request ID</Typography>
+  <Typography mono>req_8f2c10ab</Typography>
 </Row>
   );
 }

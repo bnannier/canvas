@@ -3,11 +3,11 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Typography, Row } = scope;
+  const { Badge, Row } = scope;
   return (
-<Row between>
-  <Typography small>Request ID</Typography>
-  <Typography mono>req_8f2c10ab</Typography>
+<Row center>
+  <Badge>schema</Badge>
+  <Badge>role</Badge>
 </Row>
   );
 }

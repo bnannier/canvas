@@ -33,7 +33,8 @@ import {
 } from "../../style/index.js";
 import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
 import { useTextEntryMaterial } from "../../style/text-entry-material.js";
-import { useFocusRingStyle } from "../../style/pressable.js";
+import { PINNED_FOCUS_RING, useFocusRingStyle } from "../../style/pressable.js";
+import { usePinnedFocus } from "../../style/interaction-override.js";
 import { clamp } from "../../style/math.js";
 import { Icon } from "../icon/icon.js";
 import { addDecimal } from "./stepper.math.js";
@@ -208,7 +209,11 @@ export function createStepper(skin: StepperSkin) {
     const glass = isGlass(theme);
     // The value field's focus: the web box paints it on the group's border; a bare field
     // keeps the kit's themed ring.
-    const [focused, setFocused] = useState(false);
+    const [focusedState, setFocused] = useState(false);
+    // An InteractionOverride's pinned focus shows the focused look (src/style/interaction-override.tsx):
+    // the group's state border, or the bare field's ring, which a pin spells out.
+    const pinnedFocus = usePinnedFocus(!disabled);
+    const focused = pinnedFocus || focusedState;
     const focusRing = useFocusRingStyle();
     const groupShape = skin.group(tokens, size, !!disabled, focused);
     const groupFill = (StyleSheet.flatten(groupShape) as ViewStyle).backgroundColor;
@@ -439,7 +444,7 @@ export function createStepper(skin: StepperSkin) {
         // web (omitted entirely when optional, so no aria-required="false" is emitted)
         // and the name natively (accessibleName).
         aria-required={required || undefined}
-        style={[skin.field(tokens, size, !!disabled), skin.groupShowsFocus ? FOCUS_RESET : focusRing, glass ? PANE_SIBLING_INPUT : null, disabledInk]}
+        style={[skin.field(tokens, size, !!disabled), skin.groupShowsFocus ? FOCUS_RESET : [focusRing, pinnedFocus ? PINNED_FOCUS_RING : null], glass ? PANE_SIBLING_INPUT : null, disabledInk]}
       />
     );
 

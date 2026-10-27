@@ -299,6 +299,7 @@ export const publicApi: Readonly<Record<string, ApiEntry>> = {
   DashboardWidget: { kind: "type", docs: "components/dashboard-grid" },
   DataTable: { kind: "component", docs: "components/data-table" },
   DataTableColumn: { kind: "type", docs: "components/data-table" },
+  DataTableGroup: { kind: "type", docs: "components/data-table" },
   DataTableProps: { kind: "type", docs: "components/data-table" },
   DataTableSort: { kind: "type", docs: "components/data-table" },
   Wizard: { kind: "component", docs: "components/wizard" },
@@ -410,6 +411,16 @@ export const publicApi: Readonly<Record<string, ApiEntry>> = {
 
   // src/style/pressable.tsx
   Pressable: { kind: "component", docs: "components/pressable" },
+
+  // src/style/interaction-override.tsx
+  InteractionOverride: { kind: "component", docs: "components/pressable" },
+  InteractionOverrideProps: { kind: "type", docs: "components/pressable" },
+
+  // src/style/anatomy.tsx
+  AnatomyProvider: { kind: "component", docs: "components/button" },
+  AnatomyProviderProps: { kind: "type", docs: "components/button" },
+  AnatomyRect: { kind: "type", docs: "components/button" },
+  AnatomyRects: { kind: "type", docs: "components/button" },
 
   // src/style/responsive.tsx
   BreakpointOverride: { kind: "component", docs: "tokens/layout" },

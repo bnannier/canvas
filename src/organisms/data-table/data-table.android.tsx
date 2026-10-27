@@ -8,4 +8,4 @@ import { Skeleton } from "../../atoms/skeleton/skeleton.android.js";
 // docs import it for preview. The composed parts (selection Checkbox, footer
 // Pagination, loading Skeleton) are the Material 3 variants.
 export const DataTable = createDataTable(androidSkin, { Checkbox, Pagination, Skeleton });
-export type { DataTableProps, DataTableColumn, DataTableSort } from "./data-table.shared.js";
+export type { DataTableProps, DataTableColumn, DataTableSort, DataTableGroup } from "./data-table.shared.js";

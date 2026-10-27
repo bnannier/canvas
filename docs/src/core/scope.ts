@@ -163,11 +163,38 @@ export interface PropDoc {
   type: string;
   required: boolean;
   description: string;
+  // The value taken when the prop is omitted, as source text: the shell's literal
+  // initializer, `false` for an optional boolean with none; absent otherwise.
+  default?: string;
+  // Index into the group's `groups`: the `//` axis header the prop sits under.
+  group?: number;
+}
+
+// One `//` axis header of a props interface ("Intent (pick one; ...)").
+export interface PropAxis {
+  title: string;
+  // The header says "pick one": the axis's booleans are mutually exclusive.
+  pickOne: boolean;
+  // The whole header, when it says more than its title.
+  note?: string;
 }
 
 export interface PropGroup {
   name: string;
   props: PropDoc[];
+  groups: PropAxis[];
+  // Shared interfaces inherited whole, as the interface writes its heritage
+  // (`MeasureProps`); their rows are INHERITED_PROPS in examples/inherited-props.ts.
+  inherits: string[];
+}
+
+// What a component's shell tells assistive tech (tools/docgen/scan-detail.ts).
+export interface DocSemantics {
+  roles: string[];
+  states: string[];
+  aria: string[];
+  // The touch-target helpers (and a hand-set hitSlop) the shell meets the minimum with.
+  touchTarget: string[];
 }
 
 // Everything a component page needs, generated into one module per component
@@ -175,4 +202,9 @@ export interface PropGroup {
 // registry, so the web export can ship it as that page's own chunk.
 export interface ComponentDocs extends DocEntry {
   props: PropGroup[];
+  semantics: DocSemantics;
+  // The ColorTokens roles the component's skins read (`*.styles.ts`).
+  tokens: string[];
+  // Related components' URL slugs: the ones its docs compose it with, then its section's.
+  related: string[];
 }

@@ -1,6 +1,7 @@
 import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { View, Pressable, Text, useHugStyle, controlRipple, pressDim, type ViewProps, type LayoutStyle, GlassPane, paneStyle, inverseDenseTint, AnchoredOverlay } from "../../style/index.js";
+import { useEscapeLayer } from "../../style/escape-layer.js";
 import { Button as WebButton } from "../button/button.js";
 import { Icon } from "../icon/icon.js";
 import {
@@ -170,6 +171,13 @@ export function createTooltip(skin: TooltipSkin, parts: TooltipParts = {}) {
       closeTimer.current = setTimeout(() => latestSetOpen.current(false), HOVER_GRACE_MS);
     };
     useEffect(() => cancelClose, []);
+    // Escape hides an open tip without moving focus (WCAG 1.4.13, dismissable), through
+    // the kit's one Escape owner: on the web the document Escape reaches the topmost open
+    // layer, so a tip inside a Dialog or Popover closes before its host does. Natively the
+    // same scope answers the iOS accessibility escape (the VoiceOver scrub, and Escape on
+    // a hardware keyboard under Full Keyboard Access) while the tip is open; React Native
+    // delivers no other key events to a view, and Android's back is never taken for it.
+    const escapeScope = useEscapeLayer(open, () => setOpen(false));
     // Hover/focus disclosure shared by every trigger flavor. react-native-web
     // (and RN's pointer events natively) never fire hover for touch pointers,
     // so on touch devices only the press toggle runs and these are inert.
@@ -312,7 +320,15 @@ export function createTooltip(skin: TooltipSkin, parts: TooltipParts = {}) {
     );
 
     return (
-      <View ref={rootRef} style={[hug, style]} testID={testID} {...(isElementTrigger ? elementDisclosure : undefined)}>
+      // The escape handler hangs only while the tip is open: a closed tip must leave the
+      // accessibility escape to the overlay it sits in.
+      <View
+        ref={rootRef}
+        style={[hug, style]}
+        testID={testID}
+        onAccessibilityEscape={open ? escapeScope.onAccessibilityEscape : undefined}
+        {...(isElementTrigger ? elementDisclosure : undefined)}
+      >
         {triggerEl}
         {tip}
       </View>

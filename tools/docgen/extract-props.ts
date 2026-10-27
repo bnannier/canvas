@@ -20,19 +20,50 @@ export interface PropDoc {
   type: string;
   required: boolean;
   description: string;
+  /**
+   * The value the component takes when the prop is omitted, as source text: the literal
+   * initializer the shell gives it where it destructures its props (`"md"`, `40`, `true`),
+   * `false` for an optional boolean with none, and absent for anything else (a computed
+   * default is the component's behavior, which the description states).
+   */
+  default?: string;
+  /** Index into the group's `groups`: the `//` axis header the prop sits under. */
+  group?: number;
+}
+
+/** One `//` axis header of an interface: the run of booleans (or other props) under it. */
+export interface PropAxis {
+  /** The header's name: its text before the first "(", ":" or sentence end ("Intent", "Size"). */
+  title: string;
+  /** The header says "pick one": the axis's booleans are mutually exclusive. */
+  pickOne: boolean;
+  /** The whole header, when it says more than its title. */
+  note?: string;
 }
 
 export interface PropGroup {
   /** The exported interface name, e.g. "ButtonProps" or "AvatarGroupProps". */
   name: string;
   props: PropDoc[];
+  /** The interface's `//` axis headers, in source order; a prop's `group` indexes them. */
+  groups: PropAxis[];
+  /**
+   * The shared interfaces the props inherit whole and are documented once, not row by
+   * row (INHERITED_INTERFACES), as the interface writes its heritage: `MeasureProps`,
+   * `Omit<CartesianSeriesProps, "series">`. Their members are not in `props`.
+   */
+  inherits: string[];
 }
 
 // One Program over the whole kit source so the checker resolves cross-file type
 // references (a `Pick<>` of a react-native type, an imported union). Built once and
 // reused across every component.
 let PROGRAM: ts.Program | null = null;
-function program(): ts.Program {
+/** A file whose Props interfaces feed a dir's prop tables: a shared `.tsx`, not a platform fork or a test. */
+export const isPropSource = (name: string) =>
+  name.endsWith(".tsx") && !/\.(ios|android|web)\.tsx$/.test(name) && !/\.test\.tsx$/.test(name);
+
+export function program(): ts.Program {
   if (PROGRAM) return PROGRAM;
   const configPath = path.join(REPO, "tsconfig.json");
   const config = ts.readConfigFile(configPath, ts.sys.readFile).config;
@@ -56,6 +87,13 @@ const MIXIN_PROP_TYPES = new Set(["TextEntryProps"]);
 // (it is the escape hatch the "No styling escape hatches" directive bans publicly;
 // consumers use the semantic color booleans).
 const OMIT_MEMBER_INTERFACES = new Set(["IconGlyphProps", "IconInternalProps"]);
+
+// Shared interfaces many components extend unchanged, documented once (their own group,
+// emitted by extractInherited) and named in a consuming group's `inherits` instead of
+// repeating their rows: the measure axis's 14 width steps on every field and button, the
+// cartesian series props on every series chart.
+export const INHERITED_INTERFACES = ["MeasureProps", "CartesianSeriesProps"] as const;
+const INHERITED = new Set<string>(INHERITED_INTERFACES);
 
 // A very long resolved type (e.g. react-native's `autoComplete` 50-value union)
 // would bloat both props.ts and the rendered cell; cap it so the table stays
@@ -132,6 +170,14 @@ function lineCommentRun(full: string, ranges: readonly ts.CommentRange[]): strin
     .trim();
 }
 
+// The `//` run nearest above a member among its leading comments, or "".
+function axisHeader(sym: ts.Symbol): string {
+  const decl = (sym.getDeclarations() ?? [])[0];
+  if (!decl) return "";
+  const full = decl.getSourceFile().getFullText();
+  return lineCommentRun(full, ts.getLeadingCommentRanges(full, decl.getFullStart()) ?? []);
+}
+
 // Source-order sort key: own-file members in declaration order first, then any
 // composed-in (Pick/extends) members from other files.
 function orderKey(sym: ts.Symbol, homeFile: string): [number, number] {
@@ -141,37 +187,156 @@ function orderKey(sym: ts.Symbol, homeFile: string): [number, number] {
   return [same ? 0 : 1, decl.getStart()];
 }
 
-function buildProps(checker: ts.TypeChecker, type: ts.Type, node: ts.Declaration): PropDoc[] {
+// The interface a member is declared on, when it is declared on one.
+function declaringInterface(sym: ts.Symbol): ts.InterfaceDeclaration | undefined {
+  const parent = (sym.getDeclarations() ?? [])[0]?.parent;
+  return parent && ts.isInterfaceDeclaration(parent) ? parent : undefined;
+}
+
+/**
+ * An axis header's parts: its title is the text before the first "(", ":" or sentence
+ * end ("Intent (pick one; default is the primary action)." is "Intent", "Gutters:
+ * horizontal padding (pick one)" is "Gutters"), it is a pick-one axis when it says
+ * "pick one" anywhere ("Tone (single-series only; pick one; default primary)"), and its
+ * note is the whole header when that says more than the title.
+ */
+export function parseAxis(header: string): PropAxis {
+  const text = header.replace(/\s+/g, " ").trim();
+  const head = /^(.*?)(?:\s*\(|:|\.(?=\s|$))/.exec(text);
+  const title = (head?.[1] ?? text).trim() || text;
+  const pickOne = /\bpick one\b/i.test(text);
+  const bare = text.replace(/[.:]\s*$/, "").trim();
+  return bare === title ? { title, pickOne } : { title, pickOne, note: text };
+}
+
+// A literal initializer's source text: a string (as a JSON string), a number, a negative
+// number, true, false or null. Anything else (an expression, an identifier, a call) is a
+// computed default and returns undefined.
+function literalText(e: ts.Expression): string | undefined {
+  if (ts.isStringLiteral(e) || ts.isNoSubstitutionTemplateLiteral(e)) return JSON.stringify(e.text);
+  if (ts.isNumericLiteral(e)) return e.text;
+  if (ts.isPrefixUnaryExpression(e) && e.operator === ts.SyntaxKind.MinusToken && ts.isNumericLiteral(e.operand)) return `-${e.operand.text}`;
+  if (e.kind === ts.SyntaxKind.TrueKeyword) return "true";
+  if (e.kind === ts.SyntaxKind.FalseKeyword) return "false";
+  if (e.kind === ts.SyntaxKind.NullKeyword) return "null";
+  return undefined;
+}
+
+// Whether `type` is the props type itself or carries it (an intersection such as
+// `ButtonProps & { ref }`, an instantiation of a generic props interface).
+function carriesProps(type: ts.Type, propsType: ts.Type): boolean {
+  if (type === propsType) return true;
+  const symbol = propsType.aliasSymbol ?? propsType.getSymbol();
+  if (symbol && (type.aliasSymbol === symbol || type.getSymbol() === symbol)) return true;
+  return type.isIntersection() && type.types.some((t) => carriesProps(t, propsType));
+}
+
+/**
+ * The defaults a component's shell writes where it destructures its props: every object
+ * binding pattern in the dir's source files whose destructured value is the props type
+ * (a `const { size = "md" } = props`, a `({ open = false }: DialogProps)` parameter).
+ * A name maps to its literal initializer's text, or to null when a shell initializes it
+ * with a computed expression or two shells disagree, so no default is claimed for it.
+ */
+function shellDefaults(checker: ts.TypeChecker, files: readonly ts.SourceFile[], propsType: ts.Type): Map<string, string | null> {
+  const out = new Map<string, string | null>();
+  const visit = (node: ts.Node) => {
+    if (ts.isObjectBindingPattern(node) && carriesProps(checker.getTypeAtLocation(node), propsType)) {
+      for (const el of node.elements) {
+        if (el.dotDotDotToken || !el.initializer) continue;
+        const key = el.propertyName ?? el.name;
+        if (!ts.isIdentifier(key) && !ts.isStringLiteral(key)) continue;
+        const name = key.text;
+        const literal = literalText(el.initializer);
+        if (literal === undefined) out.set(name, null);
+        else if (!out.has(name)) out.set(name, literal);
+        else if (out.get(name) !== literal) out.set(name, null);
+      }
+    }
+    ts.forEachChild(node, visit);
+  };
+  for (const file of files) visit(file);
+  return out;
+}
+
+// The heritage of a props declaration as written: an interface's `extends` types, a type
+// alias's intersection members.
+function heritageTexts(node: ts.Declaration): string[] {
+  if (ts.isInterfaceDeclaration(node)) return (node.heritageClauses ?? []).flatMap((c) => c.types.map((t) => t.getText()));
+  if (!ts.isTypeAliasDeclaration(node)) return [];
+  const out: string[] = [];
+  const visit = (t: ts.TypeNode) => (ts.isIntersectionTypeNode(t) ? t.types.forEach(visit) : out.push(t.getText()));
+  visit(node.type);
+  return out;
+}
+
+function buildProps(
+  checker: ts.TypeChecker,
+  type: ts.Type,
+  node: ts.InterfaceDeclaration | ts.TypeAliasDeclaration,
+  shell: readonly ts.SourceFile[],
+): Omit<PropGroup, "name"> {
   const homeFile = node.getSourceFile().fileName;
   const symbols = [...checker.getPropertiesOfType(type)].sort((a, b) => {
     const ka = orderKey(a, homeFile);
     const kb = orderKey(b, homeFile);
     return ka[0] - kb[0] || ka[1] - kb[1];
   });
+  const defaults = shellDefaults(checker, shell, type);
 
   let carry = "";
   const out: PropDoc[] = [];
+  const groups: PropAxis[] = [];
+  const inherited: string[] = [];
+  // The axis a member sits under: set by a `//` header, kept across the axis's later
+  // members (documented or not), and ended where the members move to another interface.
+  let group: number | undefined;
+  let lastOwner: ts.Node | undefined;
   for (const sym of symbols) {
+    const owner = declaringInterface(sym);
+    const ownerName = owner?.name.text;
     // Skip members composed in from a gallery-documented interface (e.g. Icon's
     // 400+ generated glyph-name booleans from IconGlyphProps).
-    const decl = (sym.getDeclarations() ?? [])[0];
-    const parent = decl?.parent;
-    if (parent && ts.isInterfaceDeclaration(parent) && OMIT_MEMBER_INTERFACES.has(parent.name.text)) continue;
+    if (ownerName && OMIT_MEMBER_INTERFACES.has(ownerName)) continue;
+    // A shared interface's members are documented once, on its own group.
+    if (owner && ownerName && INHERITED.has(ownerName) && owner !== node) {
+      if (!inherited.includes(ownerName)) inherited.push(ownerName);
+      continue;
+    }
+    const parentNode = (sym.getDeclarations() ?? [])[0]?.parent;
+    if (parentNode !== lastOwner) group = undefined;
+    lastOwner = parentNode;
     const { desc, source } = describe(checker, sym);
     let description: string;
     if (source === "jsdoc") {
       description = desc;
-      carry = ""; // a documented prop ends the current axis group
+      carry = ""; // a documented prop ends the current axis group's description
     } else if (source === "line") {
       description = desc;
       carry = desc; // a group `//` header carries to the axis's later booleans
     } else {
       description = carry;
     }
+    // An axis header is the `//` run nearest above the member, a JSDoc between them or not
+    // ("// Overlaid glyph mode." over a documented `leadingIcon`).
+    const header = axisHeader(sym);
+    if (header) {
+      groups.push(parseAxis(header));
+      group = groups.length - 1;
+    }
     const optional = isOptional(sym);
-    out.push({ name: sym.getName(), type: typeText(checker, sym, optional), required: !optional, description });
+    const typeString = typeText(checker, sym, optional);
+    const row: PropDoc = { name: sym.getName(), type: typeString, required: !optional, description };
+    const written = defaults.get(row.name);
+    const fallback = optional && typeString === "boolean" && !defaults.has(row.name) ? "false" : undefined;
+    const value = written ?? fallback;
+    if (value !== undefined) row.default = value;
+    if (group !== undefined) row.group = group;
+    out.push(row);
   }
-  return out;
+  const heritage = heritageTexts(node);
+  const inherits = inherited.map((name) => heritage.find((h) => new RegExp(`\\b${name}\\b`).test(h)) ?? name);
+  return { props: out, groups, inherits };
 }
 
 // forwardRef adds ref to the returned component, not to its input Props
@@ -211,12 +376,18 @@ function factoryRef(checker: ts.TypeChecker, source: ts.SourceFile, propsName: s
  * with one source file to scan; pass a dir more than once to fold several files
  * into it (e.g. `charts.shared.tsx` plus `charts-viz.tsx`). Every exported
  * interface/type alias whose name ends in `Props` becomes a group, in file order,
- * de-duplicated by name so a re-exported interface is not listed twice.
+ * de-duplicated by name so a re-exported interface is not listed twice. A group's
+ * defaults are read from every file of its dir (the shell may sit beside the props).
  */
 export function extractProps(dirs: { dir: string; file: string }[], prog = program()): Record<string, PropGroup[]> {
   const checker = prog.getTypeChecker();
   const out: Record<string, PropGroup[]> = {};
   const seen = new Map<string, Set<string>>();
+  const filesOf = new Map<string, ts.SourceFile[]>();
+  for (const { dir, file } of dirs) {
+    const sf = prog.getSourceFile(file);
+    if (sf) filesOf.set(dir, [...(filesOf.get(dir) ?? []), sf]);
+  }
 
   for (const { dir, file } of dirs) {
     const sf = prog.getSourceFile(file);
@@ -230,11 +401,11 @@ export function extractProps(dirs: { dir: string; file: string }[], prog = progr
       const name = node.name.text;
       if (!name.endsWith("Props") || MIXIN_PROP_TYPES.has(name) || names.has(name)) return;
       const type = checker.getTypeAtLocation(node);
-      const props = buildProps(checker, type, node);
+      const built = buildProps(checker, type, node, filesOf.get(dir) ?? [sf]);
       const ref = factoryRef(checker, sf, name, type);
-      if (ref && !props.some((prop) => prop.name === "ref")) props.push(ref);
-      if (props.length) {
-        groups.push({ name, props });
+      if (ref && !built.props.some((prop) => prop.name === "ref")) built.props.push(ref);
+      if (built.props.length || built.inherits.length) {
+        groups.push({ name, props: built.props, groups: built.groups, inherits: built.inherits });
         names.add(name);
       }
     });
@@ -244,4 +415,22 @@ export function extractProps(dirs: { dir: string; file: string }[], prog = progr
     }
   }
   return out;
+}
+
+/**
+ * The shared interfaces named in groups' `inherits` (INHERITED_INTERFACES), each as its
+ * own group, so their rows are documented once.
+ */
+export function extractInherited(prog = program()): Record<string, PropGroup> {
+  const checker = prog.getTypeChecker();
+  const out: Record<string, PropGroup> = {};
+  for (const sf of prog.getSourceFiles()) {
+    if (sf.isDeclarationFile || !sf.fileName.startsWith(path.join(REPO, "src"))) continue;
+    sf.forEachChild((node) => {
+      if (!ts.isInterfaceDeclaration(node) || !INHERITED.has(node.name.text)) return;
+      const built = buildProps(checker, checker.getTypeAtLocation(node), node, [sf]);
+      out[node.name.text] = { name: node.name.text, ...built };
+    });
+  }
+  return Object.fromEntries(INHERITED_INTERFACES.filter((name) => out[name]).map((name) => [name, out[name]]));
 }

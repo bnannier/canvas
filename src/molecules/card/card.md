@@ -179,6 +179,47 @@ source affordance in the detail panel. An `href` opens through the system browse
 </Card>
 ```
 
+### Specimen well
+
+Given children instead of `src`, `CardMedia` is a sunken well that stages live content: the page's sunken fill (an ink tint under glass), the content centered, at least 160 px tall with a 28 x 20 inset, growing with what it holds. `compact` takes the 130 px well with a 24 x 16 inset and `tall` the 240 px one with a 32 x 20 inset (`compact` wins when both are passed). `height` sizes the image band only. Children win over `src`.
+
+```tsx
+<Card flush>
+  <CardMedia>
+    <Button primary>Save changes</Button>
+  </CardMedia>
+  <CardSeparator />
+  <CardContent>
+    <Typography small medium>Primary</Typography>
+  </CardContent>
+</Card>
+```
+
+### Specimen well sizes
+
+```tsx
+<Column relaxed>
+  <Card flush>
+    <CardMedia compact>
+      <Button small>Small</Button>
+    </CardMedia>
+    <CardSeparator />
+    <CardContent>
+      <Typography small medium>compact</Typography>
+    </CardContent>
+  </Card>
+  <Card flush>
+    <CardMedia tall>
+      <Button large>Large</Button>
+    </CardMedia>
+    <CardSeparator />
+    <CardContent>
+      <Typography small medium>tall</Typography>
+    </CardContent>
+  </Card>
+</Column>
+```
+
 ### Actions
 
 ```tsx

@@ -9,6 +9,14 @@ bottomInset={28} horizontalInset={20}>`. New messages replace the current pill a
 restart its lifetime. `safeArea` includes the device safe area. `brief` retains a
 single line without the dismiss control; Android retains its snackbar skin.
 
+Tab reaches a toast's action and its dismiss, and Escape dismisses the toast that holds
+focus, then returns focus to where it came from. A toast the user is not in never takes
+Escape, so the key still reaches the page or the Dialog under it. A provider toast always
+answers it (a `brief` one too), a directly rendered `<Toast>` when it has `onDismiss`. On
+iOS the same dismiss answers the accessibility escape (the VoiceOver two-finger scrub,
+and Escape under Full Keyboard Access). Android delivers no Escape key to a view, and
+its back gesture is never taken for a toast.
+
 ## Usage
 
 Toast is usually driven imperatively: mount a `<ToastProvider>` near your app root, then call the `toast(...)` handle from `useToast()` to enqueue an auto-dismissing capsule that floats over the app. Press the button to fire one. (`AppScreen` is just this demo's stand-in for your app root, so the toast has a screen to float over.)

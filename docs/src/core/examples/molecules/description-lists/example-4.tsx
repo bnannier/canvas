@@ -3,13 +3,15 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { DescriptionList } = scope;
+  const { Badge, DescriptionList, Row } = scope;
   return (
 <DescriptionList
   twoColumn
+  divided
   items={[
-    { term: "Name", value: "Rachel Chen", update: true },
-    { term: "Email", value: "rachel.chen@example.com", update: true }
+    { term: "Role", value: <Row snug wrap><Badge soft>button</Badge></Row> },
+    { term: "States", value: <Row snug wrap><Badge soft>disabled</Badge><Badge soft>busy</Badge></Row> },
+    { term: "Keyboard", value: "Enter and Space activate it" }
   ]}
 />
   );

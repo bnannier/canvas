@@ -114,7 +114,15 @@ const CORE_FILE_GZIP_OVERRIDES: Record<string, number> = {
 // frost, form dialogs, reference cards and the controls' Argus anatomy) landed together on
 // 2026-10-14 at 241,587 / 241,767 / 242,314B (web / iOS / Android), 650B over 236KB on
 // Android. 248KB keeps 4.8% headroom over Android's figure.
-export const JS_MAX_GZIP = 253_952; // 248 KB
+// The v4 Phase 3 kit work (2026-10-27) adds public capability the docs shell and the
+// component detail page need: InteractionOverride and AnatomyProvider (pinned states and
+// part rects, honoured by every control), Navbar `compact`/`scrolls`/`hrefs`, the Sidebar
+// rail markers and current section, DataTable group bands and column weights, CardMedia's
+// specimen well, DescriptionList node values, the `chapter` gap, Typography `level`,
+// `CodeBlock inline copy`, the Swatch palette picker, Image's point-size tiles and Escape
+// on Tooltip and Toast. Measured on bun 1.4.0 at 256,218 / 256,960 / 257,939B (web / iOS /
+// Android). 264KB keeps 4.8% headroom over Android's figure.
+export const JS_MAX_GZIP = 270_336; // 264 KB
 
 export interface JavaScriptBudget {
   label: string;
@@ -316,9 +324,13 @@ export interface JavaScriptBudget {
 // moved into the web skin so the native bundles drop the inner-fill helper (-190B on iOS and
 // Android). Measured after on bun 1.4.0 at 16,349 / 16,150 / 16,651B. The Button ceiling moves
 // from 16,384 to 17,408B (4.5% headroom over the Android figure); the other ceilings stay.
+// Input + ThemeProvider: the pinned states (InteractionOverride, read by the shared press,
+// hover and focus primitives Input runs on) take iOS from 42,824 to 43,019B, 11B over
+// 43,008. Measured on bun 1.4.0 at 42,422 / 43,019 / 42,804B; the ceiling moves to 45,056B
+// (4.7% headroom over the iOS figure).
 export const NAMED_IMPORT_BUDGETS: readonly JavaScriptBudget[] = [
   { label: "Button + ThemeProvider", entry: "scripts/size-fixtures/button.ts", maxGzip: 17_408, requiredExports: ["Button", "ThemeProvider"] },
-  { label: "Input + ThemeProvider", entry: "scripts/size-fixtures/input.ts", maxGzip: 43_008, requiredExports: ["Input", "ThemeProvider"] },
+  { label: "Input + ThemeProvider", entry: "scripts/size-fixtures/input.ts", maxGzip: 45_056, requiredExports: ["Input", "ThemeProvider"] },
   { label: "DataTable + ThemeProvider", entry: "scripts/size-fixtures/data-table.ts", maxGzip: 53_248, requiredExports: ["DataTable", "ThemeProvider"] },
   { label: "StackedList + ThemeProvider", entry: "scripts/size-fixtures/stacked-list.ts", maxGzip: 70_656, requiredExports: ["StackedList", "ThemeProvider"] },
 ];

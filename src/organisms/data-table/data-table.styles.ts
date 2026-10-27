@@ -1,6 +1,7 @@
 import { type ViewStyle, type TextStyle } from "react-native";
 import { type ColorTokens, alpha, surfaceRipple, shape } from "../../style/index.js";
 import { platformShape } from "../../style/platform-shape.js";
+import { MONO_FONT } from "../../style/mono.js";
 import { typeScale } from "../../style/type-scale.js";
 
 // Co-located DataTable skins, one per platform. The table is laid out as flex
@@ -82,6 +83,16 @@ export interface DataTableSkin {
   selectCell: ViewStyle;
   /** A data row (flex row, vertically centered, with a hairline beneath it). */
   dataRow: (t: ColorTokens) => ViewStyle;
+  /**
+   * A group band (`groups`): the row spanning every column above a group's rows, on
+   * the sunken fill, with its padding and the row layout. The shell turns the fill into
+   * an ink tint under glass.
+   */
+  groupBand: (t: ColorTokens) => ViewStyle;
+  /** A group band's label type. */
+  groupLabel: (t: ColorTokens) => TextStyle;
+  /** A group band's count type: the muted monospace meta line. */
+  groupCount: (t: ColorTokens) => TextStyle;
   /** The striped tint on alternating (odd-index) rows. */
   stripeTint: (t: ColorTokens) => ViewStyle;
   /** The pressed tint for a pressable row (iOS/web tint via this; Android ripples). */
@@ -164,6 +175,12 @@ const SELECT_COL: ViewStyle = {
 // A content cell: equal-width column box (padding added per density).
 const DATA_CELL: ViewStyle = { flexGrow: 1, flexShrink: 1, flexBasis: "0%" };
 
+// The group band: the sunken fill (the hand-off's bg2) from the start edge, the label
+// and its adornment and count in a row. Each skin adds its own padding and hairline.
+const sunken = (t: ColorTokens): ViewStyle => ({ flexDirection: "row", alignItems: "center", backgroundColor: t["surface-sunken"] ?? t.muted });
+// The count: the muted monospace meta line (the hand-off's 400 12 px mono in tx3).
+const groupCount = (t: ColorTokens): TextStyle => ({ fontFamily: MONO_FONT, fontSize: 12, lineHeight: 16, fontWeight: "400", color: t["subtle-foreground"] ?? t["muted-foreground"] });
+
 // A row action's icon button corner: the web's control corner, and iOS's too, since no
 // iOS table control draws a row's icon button.
 const ACTION_BUTTON_CORNER: ViewStyle = { borderRadius: shape.web.control };
@@ -206,6 +223,11 @@ export const webSkin: DataTableSkin = {
     borderStyle: "dashed",
     borderColor: t.border,
   }),
+  // The hand-off's props-table band (Component.dc.html, Props): 12 / 16 / 8 padding on
+  // the sunken fill, a solid hairline beneath it, the label 600 13 px.
+  groupBand: (t) => ({ ...sunken(t), paddingTop: 12, paddingHorizontal: 16, paddingBottom: 8, borderBottomWidth: 1, borderColor: t.border }),
+  groupLabel: (t) => ({ fontSize: 13, lineHeight: 18, fontWeight: "600", color: t.foreground }),
+  groupCount,
   stripeTint: (t) => ({ backgroundColor: alpha(t.muted, 0.3) }),
   pressTint: (t) => ({ backgroundColor: t.accent }),
   cellPad: {
@@ -278,6 +300,11 @@ export const iosSkin: DataTableSkin = {
     // The hairline is a separate inset element (skin.separator), not a full-bleed
     // borderBottom, so it aligns with the content leading edge (iOS list idiom).
   }),
+  // No iOS table control draws a group band, so it is the web's band in the platform
+  // face, at the 13 pt footnote size with SF tracking; the inset separators stay the rows'.
+  groupBand: (t) => ({ ...sunken(t), paddingTop: 12, paddingHorizontal: 16, paddingBottom: 8 }),
+  groupLabel: (t) => ({ fontSize: 13, lineHeight: 18, fontWeight: "600", letterSpacing: -0.08, color: t.foreground }),
+  groupCount,
   stripeTint: (t) => ({ backgroundColor: alpha(t.muted, 0.24) }),
   // The iOS system row highlight on press.
   pressTint: (t) => ({ backgroundColor: t.secondary }),
@@ -359,6 +386,11 @@ export const androidSkin: DataTableSkin = {
     borderBottomWidth: 1,
     borderColor: t.border,
   }),
+  // Material 3 has no data table, so the band is the web's, with M3's title-small label
+  // (14/20/500/+0.1) and the 1 dp outline-variant hairline its rows draw.
+  groupBand: (t) => ({ ...sunken(t), paddingTop: 12, paddingHorizontal: 16, paddingBottom: 8, borderBottomWidth: 1, borderColor: t.border }),
+  groupLabel: (t) => ({ fontSize: 14, lineHeight: 20, fontWeight: "500", letterSpacing: 0.1, color: t.foreground }),
+  groupCount,
   stripeTint: (t) => ({ backgroundColor: alpha(t.muted, 0.2) }),
   // Press feedback comes from the ripple on Android; this fill is the SELECTED
   // row tint (the M3 primary state layer at 12%).

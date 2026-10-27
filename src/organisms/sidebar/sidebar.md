@@ -13,10 +13,24 @@ instant.
 
 Add `responsive` to make it adapt across breakpoints: it stays the accordion rail on desktop, and at and below the `lg` breakpoint (1024px) it becomes a start-edge (left, RTL-aware) **navigation drawer** that drills through the same `sections` one level at a time (tap a group to slide in to its rows, back to return). Drive the drawer's open state with `open` / `onOpenChange` from your own hamburger button; the `header` and `footer` slots pin above and below the drill-down, just as in the rail. The drawer slides from the start (left) edge by default; `drawerRight`, `drawerTop`, and `drawerBottom` change which edge it slides in from. (This page's own left nav does exactly this: an accordion rail here, a drill-down drawer on a phone.)
 
-`embedded` renders the navigation groups inside an app-owned rail, inheriting its
-frame and bounds. Web rows retain the Argus reference: 16px fine icons, 12.5/16.25
-labels, a 3px selected edge marker, solid action counts and 34px between groups.
-`compact` reduces the horizontal inset for drawer navigation.
+On the web the sidebar takes the Canvas v4 rail: a 232px column on the sunken page
+tone, rows 36px tall at a 9px corner (30px at 8 with `compact`, the docs rail's
+density), 500 13px labels in the secondary ink, the active row on the accent's soft
+wash in the accent's text ink, and a mono uppercase eyebrow over each titled group.
+iOS and Android keep their platform rows (the HIG capsule, the Material 3 pill) in the
+v4 colors.
+
+`markers` gives each row a trailing dot: the accent on the active row, and the field
+hairline on a row of the reader's current place, either one item with `marked: true`
+or every row of a section with `current: true`. A `current` section also sets its
+eyebrow in the accent's text ink and its resting rows in the foreground ink, and a
+section's `count` sits at the far end of its heading.
+
+`embedded` renders the navigation groups inside an app-owned rail: it inherits the
+rail's frame, fill, width and scroll, stacks its groups 16px apart, and renders the
+`header` and `footer` slots as plain blocks above and below them, so a filter field or
+a heading row fits there. A framed sidebar's header grows past its 56px floor when its
+content is taller.
 
 ## Usage
 
@@ -74,6 +88,65 @@ The one `Sidebar` below is the whole story: on desktop it is the collapsible acc
     { label: "Dashboard", icon: "layoutGrid" },
     { label: "Members", icon: "users" },
     { label: "Security", icon: "shield", badge: "3", badgeError: true }
+  ]}
+/>
+```
+
+### Markers and the current place
+
+```tsx
+<Sidebar
+  bordered
+  compact
+  markers
+  defaultActive="button"
+  sections={[
+    { title: "Controls", count: 3, current: true, items: [
+      { id: "button", label: "Button" },
+      { id: "switch", label: "Switch" },
+      { id: "checkbox", label: "Checkbox" }
+    ] },
+    { title: "Inputs", count: 2, items: [
+      { id: "input", label: "Input" },
+      { id: "select", label: "Select", marked: true }
+    ] }
+  ]}
+/>
+```
+
+### Embedded rail with a filter
+
+```tsx
+<Container xxxs start>
+  <Sidebar
+    embedded
+    compact
+    markers
+    defaultActive="button"
+    header={<Input small leadingIcon icon="search" placeholder="Filter 3 components" accessibilityLabel="Filter components" />}
+    sections={[
+      { title: "Controls", count: 3, items: [
+        { id: "button", label: "Button" },
+        { id: "switch", label: "Switch" },
+        { id: "checkbox", label: "Checkbox" }
+      ] }
+    ]}
+  />
+</Container>
+```
+
+### Floating
+
+```tsx
+<Sidebar
+  floating
+  defaultActive="Components"
+  sections={[
+    { title: "Library", items: [
+      { label: "Overview", icon: "layoutDashboard" },
+      { label: "Components", icon: "layers", badge: "107" },
+      { label: "Tokens", icon: "palette" }
+    ] }
   ]}
 />
 ```

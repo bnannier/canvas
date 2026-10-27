@@ -3,14 +3,29 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { DataTable, MediaObject } = scope;
+  const { Badge, DataTable } = scope;
   return (
 <DataTable
-  columns={["Member", "Role"]}
-  rows={[
-    [<MediaObject compact avatar="AJ" title="Alice Johnson" />, "Admin"],
-    [<MediaObject compact avatar="BS" title="Bob Smith" />, "Editor"],
-    [<MediaObject compact avatar="RC" title="Rachel Chen" />, "Admin"]
+  columns={["Prop", "Type", "Default"]}
+  groups={[
+    {
+      label: "Intent",
+      adornment: <Badge soft small>pick one</Badge>,
+      count: 3,
+      rows: [
+        ["primary", "boolean", "false"],
+        ["destructive", "boolean", "false"],
+        ["ghost", "boolean", "false"]
+      ]
+    },
+    {
+      label: "State",
+      count: 2,
+      rows: [
+        ["loading", "boolean", "false"],
+        ["disabled", "boolean", "false"]
+      ]
+    }
   ]}
 />
   );

@@ -15,10 +15,15 @@
 // ScrollView primitives (src/style/text.tsx, src/style/scroll-view.tsx) carry the same
 // ring, so a raw text field and a scroller the browser makes a keyboard stop take it too.
 //
-// It also gives a link its Enter key on the web (see useLinkEnter below).
+// It also gives a link its Enter key on the web (see useLinkEnter below), and honours an
+// InteractionOverride (src/style/interaction-override.tsx): a pinned focus draws the ring
+// the browser draws on keyboard focus, and a pinned press reports `pressed` to the
+// control's style and children functions (React Native's and react-native-web's own
+// `testOnly_pressed`), so every kit control shows those states without its own prop.
 
 import { forwardRef, useMemo, useRef, type KeyboardEvent } from "react";
 import {
+  Platform,
   Pressable as RNPressable,
   type GestureResponderEvent,
   type PressableProps,
@@ -29,6 +34,7 @@ import {
 } from "react-native";
 import { useTheme } from "./theme.js";
 import { frontRipple, useMaterialBehind } from "./glass-surface/material-behind.js";
+import { useInteractionOverride } from "./interaction-override.js";
 
 /**
  * The ring's distance from the control, the CSS hand-off's `--ring-offset`: the v4 hand-off's
@@ -60,14 +66,24 @@ export function useFocusRingStyle(): ViewStyle {
   return useMemo((): ViewStyle => ({ outlineColor: tokens.ring, outlineOffset: FOCUS_RING_OFFSET }), [tokens.ring]);
 }
 
+/**
+ * The ring a pinned focus draws (InteractionOverride `focused`): the outline the browser
+ * draws on :focus-visible, spelled out. Only the web has a kit ring; iOS and Android own
+ * focus on their side, so natively a pinned focus draws none (null), as a real one draws
+ * none there.
+ */
+export const PINNED_FOCUS_RING: ViewStyle | null = Platform.OS === "web" ? { outlineStyle: "solid", outlineWidth: FOCUS_RING_WIDTH } : null;
+
 type PressableStyle = PressableProps["style"];
 
-function useRingStyle(style: PressableStyle): PressableStyle {
+function useRingStyle(style: PressableStyle, pinnedFocus: boolean): PressableStyle {
   const ring = useFocusRingStyle();
-  // The ring goes first in the list so a control's own outline style wins.
+  const pinned = pinnedFocus ? PINNED_FOCUS_RING : null;
+  // The ring goes first in the list so a control's own outline style (FOCUS_RESET, an
+  // inset ring) wins.
   return useMemo(() => typeof style === "function"
-    ? (state: PressableStateCallbackType): StyleProp<ViewStyle> => [ring, style(state)]
-    : [ring, style], [style, ring]);
+    ? (state: PressableStateCallbackType): StyleProp<ViewStyle> => [ring, pinned, style(state)]
+    : [ring, pinned, style], [style, ring, pinned]);
 }
 
 // A web key event as react-native-web delivers it; natively a key event carries its key
@@ -131,5 +147,10 @@ export const Pressable = forwardRef<View, PressableProps>(function Pressable({ s
   const behind = useMaterialBehind();
   const ripple = rest.android_ripple;
   const androidRipple = useMemo(() => frontRipple(behind, ripple), [behind, ripple]);
-  return <RNPressable ref={ref} {...rest} {...linkEnter} android_ripple={androidRipple} tabIndex={tabIndex} style={useRingStyle(style)} />;
+  // A pinned state (InteractionOverride) shows only on a control that could take it.
+  const pinned = useInteractionOverride();
+  const live = pinned != null && !rest.disabled;
+  const ringStyle = useRingStyle(style, live && pinned.focused);
+  const testOnlyPressed = rest.testOnly_pressed ?? (live && pinned.pressed ? true : undefined);
+  return <RNPressable ref={ref} {...rest} {...linkEnter} android_ripple={androidRipple} tabIndex={tabIndex} testOnly_pressed={testOnlyPressed} style={ringStyle} />;
 });

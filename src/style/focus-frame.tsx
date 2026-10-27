@@ -29,7 +29,8 @@
 import { createContext, useCallback, useMemo, useRef, useState, type ReactElement } from "react";
 import { View, type StyleProp, type ViewProps, type ViewStyle } from "react-native";
 import { useTheme } from "./theme.js";
-import { FOCUS_RING_OFFSET, FOCUS_RING_WIDTH } from "./pressable.js";
+import { FOCUS_RING_OFFSET, FOCUS_RING_WIDTH, PINNED_FOCUS_RING } from "./pressable.js";
+import { usePinnedFocus } from "./interaction-override.js";
 import { cornerRadii } from "./ripple-clip.js";
 
 const SHORTCUT_KEYS = new Set(["Meta", "Control", "Alt", "AltGraph", "OS"]);
@@ -78,7 +79,10 @@ const INNER_LAYER: ViewStyle = { position: "absolute", top: 0, right: 0, bottom:
 /** The frame side of a node whose ring its frame draws. */
 export function useFocusFrame(): FocusFrame {
   const { tokens } = useTheme();
-  const [focused, setFocused] = useState(false);
+  const [keyFocused, setFocused] = useState(false);
+  // An InteractionOverride's pinned focus shows the frame ring where the kit draws rings
+  // at all, the web (see PINNED_FOCUS_RING).
+  const focused = usePinnedFocus(PINNED_FOCUS_RING != null) || keyFocused;
   // Whether a key last marked the node, kept across a blur (see above).
   const keyboard = useRef(false);
   const target = useMemo(() => {

@@ -5,15 +5,15 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { Card, Typography, Row, Column } = scope;
   return (
-<Row stacks>
-  <Column span={6}>
+<Row>
+  <Column span={8}>
     <Card>
-      <Typography medium>Left</Typography>
+      <Typography medium>Eight of twelve</Typography>
     </Card>
   </Column>
-  <Column span={6}>
+  <Column span={4}>
     <Card>
-      <Typography medium>Right</Typography>
+      <Typography medium>Four</Typography>
     </Card>
   </Column>
 </Row>

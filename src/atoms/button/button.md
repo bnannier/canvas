@@ -322,6 +322,10 @@ A button that NAVIGATES should be a real link, not a press handler that sets `lo
 </Row>
 ```
 
+## Anatomy
+
+A Button registers its parts with an enclosing `AnatomyProvider`, in the hand-off's order: `Container` (the pressable box), `Label`, `Leading icon`, `Trailing icon` and `Count badge`. The provider (`AnatomyProviderProps`) reports each rendered part's rectangle (an `AnatomyRect`, relative to its own box) to its `onMeasure` callback as `AnatomyRects` by part name, so a docs Anatomy section can number the parts with markers drawn over the specimen. Outside a provider the registration costs one context read and adds no node.
+
 ## Workflow actions
 
 Use `outline quiet` for a muted secondary operation and `outline inverse` on a dark

@@ -2,9 +2,10 @@ import { fieldEyebrow } from "../../style/field-label.js";
 import { useTextEntryMaterial } from "../../style/text-entry-material.js";
 import { textEntryState } from "../../style/text-entry-state.js";
 import { useInputEscapeBridge } from "../../style/escape-layer.js";
-import { INSET_FOCUS_RING, useFocusRingStyle } from "../../style/pressable.js";
+import { INSET_FOCUS_RING, PINNED_FOCUS_RING, useFocusRingStyle } from "../../style/pressable.js";
 import { frameHandlers, useFocusFrame } from "../../style/focus-frame.js";
 import { useComposedRefs } from "../../style/use-composed-refs.js";
+import { usePinnedFocus } from "../../style/interaction-override.js";
 import { forwardRef, useId, useState } from "react";
 import { type TextInput as RNTextInput, type TextInputProps as RNTextInputProps } from "react-native";
 import { View, Text, TextInput, useFillStyle, FloatingLabel, LabelContent, labelA11y, requiredName, useFloatingLabelRoom, FOCUS_RESET, type MeasureProps, type SizingKey, type StyleProp, type TextStyle, type ViewStyle, GlassPane, paneHost, paneStyle, isGlass, legibleWash, PANE_SIBLING_INPUT } from "../../style/index.js";
@@ -136,7 +137,10 @@ export function createTextarea(skin: TextareaSkin) {
     const { value, onChangeText, placeholder, label, required, rows, disabled, embedded, showCount, style } = props;
     const flush = props.flush || embedded;
     const size = sizeOf(props);
-    const [focused, setFocused] = useState(false);
+    const [focusedState, setFocused] = useState(false);
+    // An InteractionOverride's pinned focus shows the focused look (src/style/interaction-override.tsx).
+    const pinnedFocus = usePinnedFocus(!disabled);
+    const focused = pinnedFocus || focusedState;
     const focusRing = useFocusRingStyle();
     // The ring an errored framed field wears on keyboard focus (see fieldStyle below).
     const errorFrame = useFocusFrame();
@@ -276,10 +280,10 @@ export function createTextarea(skin: TextareaSkin) {
       // A framed field paints its own focus state (its border turns `ring`), so the
       // browser ring is suppressed; a flush field has no frame to paint, so it keeps the
       // kit's themed ring, drawn inside it where the toolbar card's clip cannot cut it.
-      embedded ? FOCUS_RESET : props.systemFocus ? null : flush ? [focusRing, INSET_FOCUS_RING] : FOCUS_RESET,
+      embedded ? FOCUS_RESET : props.systemFocus ? null : flush ? [focusRing, pinnedFocus ? PINNED_FOCUS_RING : null, INSET_FOCUS_RING] : FOCUS_RESET,
       // An errored framed field's border shows the error, not its focus, so the kit's
       // ring marks its keyboard focus around the red edge (src/style/focus-frame.tsx).
-      isError && !flush ? errorFrame.ring() : null,
+      isError && !flush && !disabled ? errorFrame.ring() : null,
     ];
     const fieldStyle = fieldStyleWith(null);
     const disabledDim = disabled ? { opacity: 0.5 } : null;

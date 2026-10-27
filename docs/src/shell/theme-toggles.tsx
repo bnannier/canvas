@@ -1,4 +1,4 @@
-import { Typography, Row, Icon, Button, ButtonGroup, liquidGlassAvailable, type Palette } from "@nannier/canvas";
+import { Typography, Row, Icon, Button, ButtonGroup, Swatch, View, liquidGlassAvailable, type Palette } from "@nannier/canvas";
 import { useDocsTheme } from "../theme/docs-theme";
 
 // The docs' appearance controls. The scheme + surface toggles show always-visible in the
@@ -12,10 +12,10 @@ import { useDocsTheme } from "../theme/docs-theme";
 // The palette control lists the kit's five accent hues and shows in both schemes, since
 // a palette paints its accent in either: in the labeled form, as the Android menu
 // drawer's footer row (PaletteRow), and as the Palette section of the iOS header menu
-// (paletteMenuSection). The desktop web Topbar does not carry it: the bar is narrowest at
-// the desktop cut, where the longest page title leaves no room for five segments. A
-// tablet-width window shows the narrow shell instead, whose drawer carries the labeled
-// form.
+// (paletteMenuSection). The labeled form and the drawer row draw it as the hand-off
+// navbar's hue swatches (HueSwatches: the kit Swatch's palette picker, five radio discs).
+// The desktop web Topbar does not carry it; a tablet-width window shows the narrow shell
+// instead, whose drawer carries the labeled form.
 
 export type { Palette };
 
@@ -28,18 +28,27 @@ const PALETTE_OPTIONS: readonly { value: Palette; label: string }[] = [
   { value: "amber", label: "Amber" },
 ];
 
-/** The palette segmented control. */
-export function PaletteToggle() {
+/**
+ * The palette control: the hand-off navbar's five hue swatches, one kit Swatch palette
+ * picker per palette in a radio group, the palette in force ringed. Row's `snug` gap
+ * (8 px) stands in for the hand-off's 6 px: `tight` (4 px) would let the selected disc's
+ * 4 px ring touch its neighbour.
+ */
+export function HueSwatches() {
   const { palette, setPalette } = useDocsTheme();
   return (
-    <ButtonGroup
-      segmented
-      small
-      accessibilityLabel="Palette"
-      items={PALETTE_OPTIONS.map((p) => p.label)}
-      active={PALETTE_OPTIONS.findIndex((p) => p.value === palette)}
-      onSelect={(i) => setPalette(PALETTE_OPTIONS[i].value)}
-    />
+    <View role="radiogroup" aria-label="Palette">
+      <Row snug alignCenter>
+        {PALETTE_OPTIONS.map((p) => (
+          <Swatch
+            key={p.value}
+            {...{ [p.value]: true }}
+            selected={p.value === palette}
+            onPress={() => setPalette(p.value)}
+          />
+        ))}
+      </Row>
+    </View>
   );
 }
 
@@ -51,7 +60,7 @@ export function PaletteRow() {
     <>
       <Typography small subtle>Palette</Typography>
       <Row snug alignCenter>
-        <PaletteToggle />
+        <HueSwatches />
       </Row>
     </>
   );
@@ -145,7 +154,7 @@ export function ThemeToggles({ compact = false }: { compact?: boolean }) {
             onSelect={(i) => setSurface(i === 0 ? "solid" : "glass")}
           />
         ) : null}
-        <PaletteToggle />
+        <HueSwatches />
         {schemeToggle}
       </Row>
     </>

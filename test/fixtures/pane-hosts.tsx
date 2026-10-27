@@ -7,7 +7,7 @@ import type { ReactNode } from "react";
 import { Text } from "react-native";
 import {
   Alert, Autocomplete, Avatar, AvatarGroup, Badge, BarList, BoxPlot, BulletChart, Button, Calendar, CandlestickChart, Card,
-  Carousel, Chart, Chip, DataTable, DepthChart, Emblem, FilterPanel, FunnelChart, GeoMap, Histogram, Icon, Input,
+  Carousel, Chart, Chip, CodeBlock, DataTable, DepthChart, Emblem, FilterPanel, FunnelChart, GeoMap, Histogram, Icon, Input,
   InputOTP, Kbd, LineChart, Listbox, MediaObject, MetricBreakdown, Navbar, Pagination, PhoneInput, Progress, RadarChart, Radio,
   RadioGroup, RangeAreaChart, ScatterPlot, Select, ServiceHealthList, Sidebar, Skeleton, Slider, Stats, Stepper, Steps,
   TabBar, Tabs, Textarea, Tooltip, Treemap, Video, WaterfallChart,
@@ -33,6 +33,7 @@ export const PANE_HOSTS: PaneHost[] = [
   { file: "src/molecules/card/card.reference.tsx", name: "Reference Card", node: <Card referenceDetail referenceKey="CORE-1" title="Reference" description="Ready · Core" referenceSource="Jira" /> },
   { file: "src/atoms/autocomplete/autocomplete.shared.tsx", name: "Autocomplete", node: <Autocomplete label="Assigned to" options={["Ada Lovelace", "Grace Hopper"]} /> },
   { file: "src/atoms/avatar/avatar.shared.tsx", name: "Avatar tile and group overflow", node: <><Avatar /><AvatarGroup max={1}><Avatar name="Ada Lovelace" /><Avatar name="Grace Hopper" /></AvatarGroup></> },
+  { file: "src/molecules/code-block/code-block.shared.tsx", name: "CodeBlock inline copy", node: <CodeBlock inline copy code={'import { Button } from "@nannier/canvas"'} /> },
   { file: "src/atoms/badge/badge.shared.tsx", name: "Badge", node: <><Badge>admin</Badge><Badge success>Live</Badge><Badge status success>Healthy</Badge></> },
   { file: "src/atoms/badge/badge.shared.tsx", name: "Android Badge", node: <><AndroidBadge>admin</AndroidBadge><AndroidBadge success>Live</AndroidBadge></> },
   { file: "src/atoms/badge/badge.notification.tsx", name: "Notification Badge", node: <Badge notification solid action>3</Badge> },

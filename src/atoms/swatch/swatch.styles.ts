@@ -1,5 +1,6 @@
 import { type TextStyle, type ViewStyle } from "react-native";
 import { shape } from "../../style/index.js";
+import { webHover } from "../../style/hover.js";
 import { type SwatchSize } from "./swatch.shared.js";
 
 // Co-located Swatch skins. The block sizes, the label lockup, and every color (in the
@@ -27,6 +28,13 @@ export interface SwatchSkin {
   value: TextStyle;
   /** The secondary mono detail line's type; size, line height, family, and color come from the shell. */
   detail: TextStyle;
+  /** The palette picker's disc edge, in px. */
+  picker: number;
+  /**
+   * The palette picker's hover growth: the disc scales by `scale` over `duration` ms on
+   * `easing`. Web only (null on native, where the kit declares no pointer hover yet).
+   */
+  pickerHover: { scale: number; duration: number; easing: string } | null;
 }
 
 // Platform-neutral metrics, shared by all three skins (the Emblem precedent: only a
@@ -48,6 +56,11 @@ export const webSkin: SwatchSkin = {
   name: { fontWeight: "700" },
   value: { fontWeight: "500" },
   detail: { fontWeight: "400" },
+  // The hand-off docs navbar's hue swatch (Controls.dc.html): a 16 px disc that grows to
+  // 1.25 under the pointer on a .4 s overshooting curve. Local to this skin rather than in
+  // the HOVER table: no other control grows on hover, and the value is the hand-off's.
+  picker: 16,
+  pickerHover: webHover({ scale: 1.25, duration: 400, easing: "cubic-bezier(0.34, 1.56, 0.64, 1)" }),
 };
 
 export const iosSkin: SwatchSkin = webSkin;

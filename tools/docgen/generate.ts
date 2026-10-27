@@ -5,7 +5,9 @@
 // notes, the Do/Don't pairs and the guidance sections after them, every line of the page
 // but its title and description), and emits, for each fence, a real statically-importable
 // example module under docs/src/core/examples/, one `<dir>-docs.tsx` module per component
-// beside them that carries that model with its fences wired up and its prop tables,
+// beside them that carries that model with its fences wired up, its prop tables (with their
+// axes, defaults and inherited interfaces, the shared ones in examples/inherited-props.ts)
+// and its detail scans (semantics, colour roles, related components; scan-detail.ts),
 // docs/src/core/descriptions.ts, every component's description (its intro's first
 // paragraph, the one place a description is written),
 // and docs/src/core/registry.ts, which reaches those modules through a
@@ -23,8 +25,10 @@ import * as path from "node:path";
 import { fileURLToPath } from "node:url";
 import { parseDoc, scopeNamesFromLiveScope, fenceReferences, bannedStyleViolations, widthShimViolations, bareWidthViolations, prosePhantomApiViolations, BARE_WIDTH_MIN, type ParsedDoc, type Prose } from "./parse-md.ts";
 import { componentPages, pageStructureViolations, registeredComponents, type Category } from "./pages.ts";
-import { extractProps, type PropGroup } from "./extract-props.ts";
+import { extractInherited, extractProps, isPropSource, program, type PropGroup } from "./extract-props.ts";
+import { exportedTags, relatedSlugs, scanSemantics, scanTokens, type Semantics } from "./scan-detail.ts";
 import { COMPONENTS } from "../../docs/src/core/data/components.ts";
+import { SECTIONS } from "../../docs/src/core/data/detail-sections.ts";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const REPO = path.resolve(HERE, "..", "..");
@@ -35,6 +39,7 @@ const DOCS_INDEX_FILE = path.join(REPO, "docs", "src", "core", "docs-index.ts");
 const CHUNKS_FILE = path.join(REPO, "docs", "src", "core", "docs-chunks.json");
 const PREVIEWS_FILE = path.join(REPO, "docs", "src", "core", "previews.ts");
 const DESCRIPTIONS_FILE = path.join(REPO, "docs", "src", "core", "descriptions.ts");
+const INHERITED_FILE = path.join(EXAMPLES_DIR, "inherited-props.ts");
 
 // `--check` (the pre-push gate) answers "is the generated output in sync with the
 // component markdown?" without touching the working tree: every would-be write and
@@ -57,10 +62,7 @@ const rel = (file: string) => path.relative(REPO, file);
 // except the platform forks (which only wire skins, no Props) and tests. Scanning
 // all of them lets a dir with more than one Props-bearing file (e.g. charts.shared
 // + charts-viz) contribute every group.
-const IS_PROP_SOURCE = (name: string) =>
-  name.endsWith(".tsx") &&
-  !/\.(ios|android|web)\.tsx$/.test(name) &&
-  !/\.test\.tsx$/.test(name);
+const IS_PROP_SOURCE = isPropSource;
 
 // The names an example fence may reference, taken straight from the docs runtime
 // scope so the destructure list never drifts from the single source of truth.
@@ -217,7 +219,15 @@ type Entry = {
   variantsNote: Prose[];
   donts: DontRef[];
   guidance: GuidanceRef[];
+  // The fences that show the component used the right way (every example, every "Do",
+  // every guidance example), in page order: the components they name are its related ones.
+  fences: string[];
 };
+
+// What a component's detail page shows beside its prop tables, read from its source
+// (tools/docgen/scan-detail.ts): its semantics from its shell, the colour roles its skins
+// and shell read, and its related components.
+type Detail = { semantics: Semantics; tokens: string[]; related: string[] };
 
 function writeModule(category: Category, dir: string, name: string, code: string, source: string): {
   importName: string;
@@ -282,7 +292,12 @@ function buildEntry(category: Category, dir: string, doc: ParsedDoc): Entry {
   // S2 holds every page to an intro that opens with a paragraph, so a page that reaches
   // here has its description.
   if (doc.description === null) throw new Error(`${source}: no description; its intro must open with a paragraph (S2)`);
-  return { dir, category, description: doc.description, overview: doc.overview, examples: exampleRefs, variantsNote: doc.variantsNote, donts: dontRefs, guidance: guidanceRefs };
+  const fences = [
+    ...examples.map((ex) => ex.code),
+    ...donts.map((d) => d.do.code),
+    ...guidance.flatMap((g) => g.blocks.flatMap((b) => (b.kind === "example" ? [b.code] : []))),
+  ];
+  return { dir, category, description: doc.description, overview: doc.overview, examples: exampleRefs, variantsNote: doc.variantsNote, donts: dontRefs, guidance: guidanceRefs, fences };
 }
 
 // Prose as the docs module carries it (DocProse in docs/src/core/scope.ts): a paragraph
@@ -300,7 +315,7 @@ const proseArray = (blocks: Prose[]) => `[${blocks.map(proseLiteral).join(", ")}
 // that share a component's name (carousel, tabs, listbox, layout, typography).
 const docsModuleFile = (category: Category, dir: string) => path.join(EXAMPLES_DIR, category, dir, `${dir}-docs.tsx`);
 
-function renderDocsModule(e: Entry, props: PropGroup[]): string {
+function renderDocsModule(e: Entry, props: PropGroup[], detail: Detail): string {
   const imports: string[] = [];
   const local = (file: string) => `./${path.basename(file)}`;
   for (const ex of e.examples) imports.push(`import ${ex.importName} from "${local(ex.file)}";`);
@@ -349,6 +364,62 @@ ${donts}
   // Extracted from the component's exported \`*Props\` interfaces by
   // tools/docgen/extract-props.ts (the TypeScript checker).
   props: ${JSON.stringify(props)},
+  // Read from the component's source by tools/docgen/scan-detail.ts: what its shell tells
+  // assistive tech, the colour roles its skins read, and the components it is used with.
+  semantics: ${JSON.stringify(detail.semantics)},
+  tokens: ${JSON.stringify(detail.tokens)},
+  related: ${JSON.stringify(detail.related)},
+};
+`;
+}
+
+// The detail scans of every documented component (tools/docgen/scan-detail.ts), by dir.
+// Related components are URL slugs: the tags a component's right-way fences name, mapped
+// through each dir's exports (Row and Column to row-column), then its hand-off section's
+// other components in the section's order.
+function detailScans(entries: Entry[], propSources: { dir: string; file: string }[]): Map<string, Detail> {
+  const prog = program();
+  const slugOfDir = new Map<string, string>();
+  for (const c of COMPONENTS) if (!slugOfDir.has(c.dir ?? c.slug)) slugOfDir.set(c.dir ?? c.slug, c.slug);
+  const tagToSlug = new Map<string, string>();
+  const tags = exportedTags(prog, entries.map((e) => ({ dir: e.dir, entry: path.join(REPO, "src", e.category, e.dir, `${e.dir}.tsx`) })));
+  for (const [tag, dir] of tags) {
+    const slug = slugOfDir.get(dir);
+    if (slug) tagToSlug.set(tag, slug);
+  }
+  // A primitive the kit re-exports from React Native (View, Text) has no web entry of its
+  // own; its registry name is its tag.
+  for (const c of COMPONENTS) if (/^[A-Z]\w*$/.test(c.name) && !tagToSlug.has(c.name)) tagToSlug.set(c.name, c.slug);
+  const out = new Map<string, Detail>();
+  for (const e of entries) {
+    const slug = slugOfDir.get(e.dir) ?? e.dir;
+    const srcDir = path.join(REPO, "src", e.category, e.dir);
+    const shells = propSources.filter((s) => s.dir === e.dir).map((s) => ({ file: s.file, text: fs.readFileSync(s.file, "utf8") }));
+    // The skins (`*.styles.ts`) hold most of a look, but a shell can paint too (a chart's
+    // `ctx.tokens.card` ring, an Alert's tone), so every source file of the dir is read.
+    const sources = fs.readdirSync(srcDir).filter((f) => /\.tsx?$/.test(f) && !/\.test\.tsx?$/.test(f)).sort().map((f) => path.join(srcDir, f));
+    const section = SECTIONS.find((s) => s.slugs.includes(slug));
+    out.set(e.dir, {
+      semantics: scanSemantics(shells),
+      tokens: scanTokens(prog, sources),
+      related: relatedSlugs(slug, e.fences, tagToSlug, section?.slugs ?? []),
+    });
+  }
+  return out;
+}
+
+// The shared interfaces documented once (extract-props.ts INHERITED_INTERFACES), each a
+// prop group a page shows wherever a group's \`inherits\` names it.
+function renderInherited(groups: Record<string, PropGroup>): string {
+  const rows = Object.entries(groups).map(([name, group]) => `  ${JSON.stringify(name)}: ${JSON.stringify(group)},`).join("\n");
+  return `${GENERATED_HEADER}
+import type { PropGroup } from "../scope";
+
+// The shared props interfaces a component's prop group names in \`inherits\` instead of
+// listing their members, each documented once here. Extracted by
+// tools/docgen/extract-props.ts (extractInherited).
+export const INHERITED_PROPS: Record<string, PropGroup> = {
+${rows}
 };
 `;
 }
@@ -575,11 +646,14 @@ function main() {
   }
 
   const props = extractProps(propSources);
+  const details = detailScans(entries, propSources);
   for (const e of entries) {
     const file = docsModuleFile(e.category, e.dir);
-    writeFileIfChanged(file, renderDocsModule(e, props[e.dir] ?? []));
+    writeFileIfChanged(file, renderDocsModule(e, props[e.dir] ?? [], details.get(e.dir)!));
     writtenExampleFiles.add(file);
   }
+  writeFileIfChanged(INHERITED_FILE, renderInherited(extractInherited()));
+  writtenExampleFiles.add(INHERITED_FILE);
 
   // Drop modules from fences that no longer exist before writing the registry that
   // reaches them, so a stale orphan can't satisfy a key that should have failed.

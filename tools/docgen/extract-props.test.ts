@@ -1,7 +1,7 @@
 import { beforeAll, expect, test } from "bun:test";
 import * as path from "node:path";
 import * as ts from "typescript";
-import { extractProps } from "./extract-props.ts";
+import { extractInherited, extractProps, parseAxis } from "./extract-props.ts";
 
 const root = path.resolve(import.meta.dir, "../..");
 const read = (dir: string) => extractProps([{ dir, file: path.join(root, `src/atoms/${dir}/${dir}.shared.tsx`) }])[dir];
@@ -75,4 +75,79 @@ test("ActionPanel's axis rows read whole, the wrapped toggle comment included", 
   expect(rows.destructive).toBe("Tone (omit for the neutral, primary-action default).");
   expect(rows.inline).toBe("Layout (pick one; default stacks the action below the copy).");
   expect(rows.toggle).toBe("Affordance: render the action as an on/off Switch instead of a Button. The panel always lays out inline in this mode.");
+});
+
+const fixture = (name: string) => {
+  const file = path.join(import.meta.dir, `fixtures/${name}.tsx`);
+  const prog = ts.createProgram([file], { strict: true, skipLibCheck: true, jsx: ts.JsxEmit.ReactJSX, module: ts.ModuleKind.ESNext });
+  return extractProps([{ dir: "fixtures", file }], prog).fixtures;
+};
+
+test("an axis header names its title before the first parenthesis, colon or sentence end, and says whether it is pick-one", () => {
+  expect(parseAxis("Intent (pick one; default is the primary action).")).toEqual({ title: "Intent", pickOne: true, note: "Intent (pick one; default is the primary action)." });
+  expect(parseAxis("Gutters: horizontal padding (pick one; omit for none).").title).toBe("Gutters");
+  expect(parseAxis("Tone (single-series only; pick one; default primary).").pickOne).toBe(true);
+  expect(parseAxis("Layout and state. A Button is HUG.")).toEqual({ title: "Layout and state", pickOne: false, note: "Layout and state. A Button is HUG." });
+  expect(parseAxis("State.")).toEqual({ title: "State", pickOne: false });
+  expect(parseAxis("Size (pick one).").note).toBe("Size (pick one).");
+});
+
+test("props carry their axis, the `//` header nearest above them even over a JSDoc, until the next header", () => {
+  const widget = fixture("defaults").find((group) => group.name === "WidgetProps")!;
+  expect(widget.groups).toEqual([
+    { title: "Tone", pickOne: true, note: "Tone (pick one; default neutral)." },
+    { title: "Layout", pickOne: false, note: "Layout. The widget hugs its content." },
+  ]);
+  const axis = Object.fromEntries(widget.props.map((prop) => [prop.name, prop.group]));
+  expect(axis).toMatchObject({ label: undefined, success: 0, danger: 0, block: 1, wrap: 1, size: 1, title: 1 });
+  // The documented `block` keeps its own description under the header.
+  expect(widget.props.find((prop) => prop.name === "block")?.description).toBe("Fill the parent.");
+});
+
+test("defaults are the shell's literal initializers, false for an untouched optional boolean, and nothing when computed or contested", () => {
+  const widget = fixture("defaults").find((group) => group.name === "WidgetProps")!;
+  const defaults = Object.fromEntries(widget.props.map((prop) => [prop.name, prop.default]));
+  expect(defaults).toEqual({
+    label: '"Widget"',
+    success: "false",
+    danger: "false",
+    block: "false",
+    wrap: undefined, // `!props.block` is the component's behavior, not a value
+    size: '"large"',
+    count: "3",
+    offset: "-2",
+    open: "true",
+    placement: undefined, // "top" in one shell, "bottom" in another
+    title: undefined, // a call
+  });
+});
+
+test("a shared interface is inherited by name, not listed row by row, and documented once on its own", () => {
+  const widget = fixture("defaults").find((group) => group.name === "WidgetProps")!;
+  expect(widget.inherits).toEqual(["MeasureProps"]);
+  expect(widget.props.some((prop) => prop.name === "sm" || prop.name === "lg")).toBe(false);
+  // Its own group keeps its rows.
+  expect(fixture("defaults").find((group) => group.name === "MeasureProps")?.props.map((prop) => prop.name)).toEqual(["sm", "lg"]);
+
+  const button = read("button").find((group) => group.name === "ButtonProps")!;
+  expect(button.inherits).toEqual(["MeasureProps"]);
+  expect(button.props.some((prop) => prop.name === "xs" || prop.name === "start")).toBe(false);
+  expect(button.groups.map((group) => group.title)).toEqual(["Intent", "Size", "Layout and state"]);
+  expect(button.props.find((prop) => prop.name === "primary")).toMatchObject({ group: 0, default: "false" });
+  expect(button.props.find((prop) => prop.name === "children")?.default).toBeUndefined();
+
+  const composed = extractProps([{ dir: "composed-chart", file: path.join(root, "src/charts/composed-chart/composed-chart.shared.tsx") }])["composed-chart"];
+  expect(composed.find((group) => group.name === "ComposedChartProps")?.inherits).toEqual(['Omit<CartesianSeriesProps, "series">']);
+
+  const inherited = extractInherited();
+  expect(Object.keys(inherited)).toEqual(["MeasureProps", "CartesianSeriesProps"]);
+  expect(inherited.MeasureProps.props.map((prop) => prop.name)).toContain("start");
+  expect(inherited.MeasureProps.groups[0]).toMatchObject({ title: "Measure", pickOne: true });
+});
+
+test("a header above a documented member opens its axis (Input's overlaid glyph mode)", () => {
+  const input = read("input").find((group) => group.name === "InputProps")!;
+  const titles = input.groups.map((group) => group.title);
+  expect(titles).toContain("Overlaid glyph mode");
+  expect(input.groups[input.props.find((prop) => prop.name === "leadingIcon")!.group!].title).toBe("Overlaid glyph mode");
 });

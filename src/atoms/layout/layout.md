@@ -13,6 +13,12 @@ The Argus reference adds intermediate spacing steps without rounding its layout:
 `section` 26, `panel` 28, and `page` 30. Existing named steps keep their values.
 Larger active steps take precedence.
 
+`chapter` (64) is the widest step: the space between a page's chapters, the major
+sections of a long page (a component detail page's Playground, Props and Examples).
+It wins over every other gap step, so the precedence runs `chapter` > `page` >
+`panel` > `section` > `loose` and on down the scale to `flush`. Row, Column and
+Grid all take it.
+
 `rowsTight`, `rowsComfortable`, `rowsCozy` and `rowsSection` set a wrapped row's
 vertical gap to 4, 10, 12 and 26 independently of its main gap. Application inset
 roles preserve identity headers (24 top/horizontal, 18 bottom), action footers
@@ -37,6 +43,18 @@ roles preserve identity headers (24 top/horizontal, 18 bottom), action footers
 <Column>
   <Button primary>Save</Button>
   <Button ghost>Cancel</Button>
+</Column>
+```
+
+### Chapters
+
+The widest gap, between the major sections of a long page.
+
+```tsx
+<Column chapter>
+  <Typography h3 level={2}>Playground</Typography>
+  <Typography h3 level={2}>Props</Typography>
+  <Typography h3 level={2}>Examples</Typography>
 </Column>
 ```
 

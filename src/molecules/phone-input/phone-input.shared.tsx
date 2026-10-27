@@ -30,6 +30,7 @@ import { useComposedRefs } from "../../style/use-composed-refs.js";
 import { frameHandlers, useFocusFrame } from "../../style/focus-frame.js";
 import { LISTBOX } from "../../style/listbox-role.js";
 import { useRowFocus } from "../../style/use-row-focus.js";
+import { usePinnedFocus } from "../../style/interaction-override.js";
 import { root, rootLifted, PANEL_ANCHOR } from "../../atoms/select/select.styles.js";
 import { type TextEntryProps } from "../../atoms/input/input.shared.js";
 import { PHONE_COUNTRIES, flagOf, type PhoneCountry } from "./countries.js";
@@ -161,7 +162,9 @@ export function createPhoneInput(skin: PhoneInputSkin) {
     const [code, setCode] = useControllableState<string>(props.country, initialCode, onCountryChange);
     const selected = countries.find((c) => c.code === code) ?? countries[0];
     const [open, setOpen] = useState(false);
-    const [focused, setFocused] = useState(false);
+    const [focusedState, setFocused] = useState(false);
+    // An InteractionOverride's pinned focus shows the focused look (src/style/interaction-override.tsx).
+    const focused = usePinnedFocus(!disabled) || focusedState;
     const entry = textEntryState({ disabled, readOnly });
     const { editable } = entry;
     const active = focused || open;
@@ -219,7 +222,7 @@ export function createPhoneInput(skin: PhoneInputSkin) {
       <View
         ref={boxRef}
         onLayout={onBoxLayout}
-        style={[boxSurface.style, { minHeight: field.groupedHeight(size) }, isError ? errorFrame.ring() : null]}
+        style={[boxSurface.style, { minHeight: field.groupedHeight(size) }, isError && !disabled ? errorFrame.ring() : null]}
       >
         <GlassPane {...entryMaterial.paneProps} stateBorder={boxSurface.keepsBorder} shape={boxShape} tint={isError ? legibleWash(theme, "error", entryMaterial.paneProps) : undefined} />
         <Pressable

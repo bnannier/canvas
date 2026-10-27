@@ -329,6 +329,44 @@ function inlineBox(tokens: ColorTokens): ViewStyle {
 // The inline pill's own smaller size (text-[13px]).
 const inlineType: TextStyle = { fontSize: 13 };
 
+// The copyable inline pill (`inline copy`): the hand-off's import chip on the component
+// detail page (Component.dc.html's header), a 34-tall raised pill of mono 12 code with
+// a trailing copy glyph, the whole pill one button. `sf2` is the raised `popover`
+// surface, `ln2` the `field-border` hairline, `tx2` the `muted-foreground` ink; under
+// the pointer the hairline turns to the accent (`ion`) and the ink to `foreground`.
+// `minHeight` (not the hand-off's fixed height) so a line too long for a phone wraps
+// inside the pill instead of spilling out of it.
+function inlineCopyBox(tokens: ColorTokens, hovered: boolean): ViewStyle {
+  return {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    minHeight: 34,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    // The control corner (10 on the web row): the chip is a button.
+    borderRadius: shape.web.control,
+    borderWidth: 1,
+    borderColor: hovered ? tokens.primary : tokens["field-border"] ?? tokens.input,
+    backgroundColor: tokens.popover,
+  };
+}
+
+// The copyable pill's code: JetBrains Mono 12 at regular weight, monochrome (the
+// hand-off sets the import line in one ink, no syntax colors).
+function inlineCopyType(tokens: ColorTokens, hovered: boolean): TextStyle {
+  return {
+    fontSize: 12,
+    lineHeight: 16,
+    fontWeight: "400",
+    flexShrink: 1,
+    color: hovered ? tokens.foreground : tokens["muted-foreground"],
+  };
+}
+
+// The trailing glyph's size (the hand-off's 13px icon).
+const inlineCopyIcon = 13;
+
 // --- copy affordance ---------------------------------------------------------
 
 // The copy chip: flex-row items-center gap-1 rounded-md border px-2.5 py-1.
@@ -408,6 +446,9 @@ export const webSkin: CodeBlockSkin = {
   terminalOutput,
   inlineBox,
   inlineType,
+  inlineCopyBox,
+  inlineCopyType,
+  inlineCopyIcon,
   copyButton,
   copyText,
   copyPressedOpacity: 0.8,

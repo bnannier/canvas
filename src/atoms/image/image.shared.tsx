@@ -1,10 +1,14 @@
+import { useState } from "react";
 import {
   Image as RNImage,
+  View,
   type ImageProps as RNImageProps,
   type ImageResizeMode,
   type ImageSourcePropType,
   type ImageStyle,
+  type LayoutChangeEvent,
   type StyleProp,
+  type ViewStyle,
 } from "react-native";
 import { radius as radiusScale } from "../../style/index.js";
 import { imageLabel, namedImageRole } from "./image.accessibility.js";
@@ -25,6 +29,19 @@ import { imageLabel, namedImageRole } from "./image.accessibility.js";
 // the <img> and name a second image, so the runtime picks it. `alt` still reaches React
 // Native, which makes the image its own accessibility element natively. An image with no
 // name stays decorative, with no role and an empty alt.
+//
+// `repeat` tiles the picture at its POINT size on every platform, through the same React
+// Native code: the box is measured, one tile measures the asset's own size (an image with
+// no width or height style takes a bundled asset's point size on iOS, Android and
+// react-native-web alike), and a grid of plain images covers the box, clipped by it. Each
+// tile is an ordinary Image of a bundled source, so every platform picks the density
+// variant that matches the screen (grain@2x.png on a 2x screen) and draws it 1:1 into
+// the tile. react-native-web's own repeat sizes its background from the bitmap's natural
+// pixels instead, which tiles a 2x variant at twice its point size, and iOS and Android
+// differ in how they tile; self-tiling gives one result everywhere. A source that does
+// not declare a point size (a remote `{ uri }` without width and height) keeps React
+// Native's own repeat. The tiles are decorative and hidden from assistive tech; a named
+// repeat image is named once, on its box.
 //
 // Image carries no per-OS skin — fitting is platform-neutral — so there is one shell that
 // re-exports unchanged on every platform (the BadgeGroup pattern): no ios / android forks.
@@ -100,9 +117,85 @@ export function Image(props: ImageProps) {
   if (width !== undefined) box.width = width;
   if (height !== undefined) box.height = height;
   if (radius !== undefined) box.borderRadius = radiusScale[radius];
+  const fit = fitOf(props);
+  if (fit === "repeat" && declaresPointSize(rest.source)) return <TiledImage {...rest} source={rest.source} box={box} style={style} />;
   // React Native's own order: aria-label, then accessibilityLabel, then alt. A caller's
   // own role stays; otherwise the runtime's role for a named image (none on the web).
   const label = imageLabel(rest);
   const name = label ? { role: rest.role ?? namedImageRole(), accessibilityLabel: label, "aria-label": label } : null;
-  return <RNImage {...rest} {...name} style={[box, style]} resizeMode={fitOf(props)} />;
+  return <RNImage {...rest} {...name} style={[box, style]} resizeMode={fit} />;
 }
+
+/** Whether a source states its own point size: a bundled asset (`require(...)`, whose
+ * registry entry carries it on every platform) or a single `{ uri, width, height }`. */
+export function declaresPointSize(source: ImageSourcePropType | undefined): source is number | { uri?: string; width: number; height: number } {
+  if (typeof source === "number") return true;
+  return source != null && !Array.isArray(source) && typeof source === "object" && typeof source.width === "number" && typeof source.height === "number" && source.width > 0 && source.height > 0;
+}
+
+/** How many tiles of `tile` points cover `extent` points: at least the one that measures. */
+export function tileCount(extent: number, tile: number): number {
+  return extent > 0 && tile > 0 ? Math.ceil(extent / tile) : 1;
+}
+
+type Size = { width: number; height: number };
+const sizeOf = (e: LayoutChangeEvent): Size => ({ width: e.nativeEvent.layout.width, height: e.nativeEvent.layout.height });
+const sameSize = (a: Size | null, b: Size) => a != null && a.width === b.width && a.height === b.height;
+
+type TiledImageProps = Omit<ImageProps, "contain" | "cover" | "stretch" | "center" | "repeat" | "none" | "width" | "height" | "radius" | "source"> & {
+  source: ImageSourcePropType;
+  box: ImageStyle;
+};
+
+// The repeat fit, tiled by the kit (see the header). The first frame mounts one tile, the
+// one that measures the asset's point size; once the box and the tile are measured, the
+// grid fills the box. The grid sits absolutely in the box, so it never sizes it: a box
+// with no size of its own takes one tile's size, as a bundled image does.
+function TiledImage({ source, box, style, testID, nativeID, onLayout, onLoad, onLoadStart, onLoadEnd, onError, role, alt, accessibilityLabel, "aria-label": ariaLabel, ...imageProps }: TiledImageProps) {
+  const [boxSize, setBoxSize] = useState<Size | null>(null);
+  const [tile, setTile] = useState<Size | null>(null);
+  const label = imageLabel({ "aria-label": ariaLabel, accessibilityLabel, alt });
+  const name = label ? { accessible: true, role: role ?? "img", accessibilityLabel: label, "aria-label": label } : role ? { role } : null;
+  const rows = tile && boxSize ? tileCount(boxSize.height, tile.height) : 1;
+  const cols = tile && boxSize ? tileCount(boxSize.width, tile.width) : 1;
+  const measureBox = (e: LayoutChangeEvent) => {
+    onLayout?.(e);
+    const next = sizeOf(e);
+    if (!sameSize(boxSize, next)) setBoxSize(next);
+  };
+  const measureTile = (e: LayoutChangeEvent) => {
+    const next = sizeOf(e);
+    if (next.width > 0 && next.height > 0 && !sameSize(tile, next)) setTile(next);
+  };
+  // An ImageStyle's composition keys are view layout keys; the box itself is a View.
+  const rootStyle = [styles.root, tile, box, style] as StyleProp<ViewStyle>;
+  return (
+    <View testID={testID} nativeID={nativeID} {...name} onLayout={measureBox} style={rootStyle}>
+      <View style={styles.grid} aria-hidden accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
+        {Array.from({ length: rows }, (_, r) => (
+          <View key={r} style={styles.row}>
+            {Array.from({ length: cols }, (_, c) => {
+              const first = r === 0 && c === 0;
+              return (
+                <RNImage
+                  key={c}
+                  {...imageProps}
+                  {...(first ? { onLayout: measureTile, onLoad, onLoadStart, onLoadEnd, onError } : null)}
+                  source={source}
+                  resizeMode="stretch"
+                  accessible={false}
+                />
+              );
+            })}
+          </View>
+        ))}
+      </View>
+    </View>
+  );
+}
+
+const styles = {
+  root: { overflow: "hidden" },
+  grid: { position: "absolute", top: 0, left: 0, pointerEvents: "none" },
+  row: { flexDirection: "row" },
+} satisfies Record<string, ViewStyle>;

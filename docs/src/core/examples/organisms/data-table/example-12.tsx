@@ -3,14 +3,19 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { DataTable, Sparkline } = scope;
+  const { DataTable } = scope;
   return (
 <DataTable
-  columns={["Page", "7D", "Visits"]}
+  columns={[
+    { label: "Prop", minWidth: 150 },
+    { label: "Type", grow: 1.2, minWidth: 150 },
+    { label: "Default", width: 100 },
+    { label: "Description", grow: 2.2, minWidth: 220 }
+  ]}
   rows={[
-    ["/pricing", <Sparkline values={[52, 60, 55, 71, 68, 84, 96]} />, "12,480"],
-    ["/docs", <Sparkline values={[88, 74, 70, 66, 58, 49, 41]} />, "8,102"],
-    ["/blog", <Sparkline values={[34, 42, 39, 51, 60, 66, 78]} />, "5,914"]
+    ["primary", "boolean", "false", "The filled accent button, for the one main action on a surface."],
+    ["small", "boolean", "false", "The 32 px control height."],
+    ["loading", "boolean", "false", "Shows a spinner in place of the label and blocks presses."]
   ]}
 />
   );

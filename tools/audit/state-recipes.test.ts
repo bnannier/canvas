@@ -126,7 +126,7 @@ describe("the state recipe table", () => {
     // recipe or an opening a resting pointer makes, and no hover recipe goes without one.
     expect([...new Set([...withHover, ...byOpening])].sort()).toEqual(resting);
     // Every reader of the hover primitive is among them.
-    expect(hoverDeclarers()).toEqual(["accordion", "avatar", "badge", "button", "card", "checkbox", "chip", "dropdown", "input", "listbox", "pagination", "row-menu", "select", "sidebar", "switch"]);
+    expect(hoverDeclarers()).toEqual(["accordion", "avatar", "badge", "button", "card", "checkbox", "chip", "code-block", "dropdown", "input", "listbox", "navbars", "pagination", "row-menu", "select", "sidebar", "swatch", "switch"]);
     for (const slug of hoverDeclarers()) expect(withHover).toContain(slug);
     // Spread handlers count: the Calendar's blocks take `{...hoverProps}` and Tooltip's
     // triggers `{...disclosure}`; Tooltip's hover is its open recipe's (a resting pointer opens it).
@@ -370,7 +370,7 @@ describe("the states each component's source gives it", () => {
     const update = on("description-lists", "focus", "button");
     expect(check("description-lists", { focus: update, pressed: { ...update, state: "pressed" } })).toEqual([
       "description-lists: its focus recipe on the inlineedit example answers nothing on the web row: it acts on a button on its own surface, which is none of the component's own controls there (its example renders a textbox in rows); a control another kit component renders is that component's",
-      "description-lists: its source gives it a focus state on its own surface (a TextInput at src/molecules/description-lists/description-lists.shared.tsx:330), where no focus recipe acts on a control of its own, with no exemption",
+      "description-lists: its source gives it a focus state on its own surface (a TextInput at src/molecules/description-lists/description-lists.shared.tsx:362), where no focus recipe acts on a control of its own, with no exemption",
       "description-lists: its pressed recipe on the inlineedit example answers nothing on the web row: it acts on a button on its own surface, which is none of the component's own controls there (its example renders a textbox in rows); a control another kit component renders is that component's",
     ]);
     // GeoMap's focus on its Zoom in, a kit Button it disables at the end of the zoom: the map itself is the tab stop.
@@ -452,7 +452,7 @@ describe("the states each component's source gives it", () => {
     ]);
     // An own-surface recipe a disabled example asks for (Button's `disabled`, one of the two ways `disabled || loading` is true).
     expect(check("button", without("button"))).toEqual([
-      "button: its Disabled example asks for a disabled control on its own surface (disabled on <Pressable> at src/atoms/button/button.shared.tsx:273), with no disabled recipe there",
+      "button: its Disabled example asks for a disabled control on its own surface (disabled on <Pressable> at src/atoms/button/button.shared.tsx:280), with no disabled recipe there",
     ]);
   });
 
@@ -461,7 +461,7 @@ describe("the states each component's source gives it", () => {
     const item = recipeFor("dropdown", "disabled-disableditem");
     expect(check("button", { ...(STATE_RECIPES.button as object), disabled: { ...item, variant: "disabled" } } as ComponentStates)).toEqual([
       "button: its disabled recipe on the disabled example is applied inside an overlay, and its source renders none",
-      "button: its Disabled example asks for a disabled control on its own surface (disabled on <Pressable> at src/atoms/button/button.shared.tsx:273), with no disabled recipe there",
+      "button: its Disabled example asks for a disabled control on its own surface (disabled on <Pressable> at src/atoms/button/button.shared.tsx:280), with no disabled recipe there",
     ]);
     const dropdown = STATE_RECIPES.dropdown as Record<string, unknown>;
     expect(check("dropdown", { ...dropdown, disabled: [recipeFor("dropdown", "disabled-disabledtrigger"), { ...item, opens: "Popover" }] } as ComponentStates)[0]).toBe(
@@ -1180,9 +1180,9 @@ describe("the rows of the docs' three-up a state is answered on", () => {
     // DataTable's cell editor: the web build's under its glass pane (`skin.liquidTextEntry`), the
     // others' bare; its scroller only where the skin does not collapse to the primary column.
     expect(builds("data-table", "focus").filter((line) => !line.endsWith("every build"))).toEqual([
-      "data-table.shared.tsx:437 TextInput: ios and android",
-      "data-table.shared.tsx:441 TextInput: web",
-      "data-table.shared.tsx:847 ScrollView: web and android",
+      "data-table.shared.tsx:508 TextInput: ios and android",
+      "data-table.shared.tsx:512 TextInput: web",
+      "data-table.shared.tsx:939 ScrollView: web and android",
     ]);
     // The rows each page shows, and the build each renders: Toast's iOS row is the web build,
     // the docs registry injecting no iOS Toast; Sidebar's page shows one preview, the web build.
@@ -1215,7 +1215,7 @@ describe("the rows of the docs' three-up a state is answered on", () => {
     ]);
     // DataTable's native cell editor is on the iOS and Android rows alone.
     expect(check("data-table", { ...table["data-table"], focus: onWeb("data-table", "focus") })).toEqual([
-      "data-table: its source gives it a focus state on its own surface on the iOS and Android rows (a TextInput at src/organisms/data-table/data-table.shared.tsx:437 via CellEditor), where no focus recipe acts on a control of its own, with no exemption",
+      "data-table: its source gives it a focus state on its own surface on the iOS and Android rows (a TextInput at src/organisms/data-table/data-table.shared.tsx:508 via CellEditor), where no focus recipe acts on a control of its own, with no exemption",
     ]);
     // As the table has them, each on the rows its own controls are on: nothing is left, and the
     // answers say which rows they are.
@@ -1335,9 +1335,9 @@ export function createProbe(skin: ProbeSkin) {
     // The rail's recipes, as the table had them at the desktop alone, leave the drawer unanswered.
     const rail = { hover: recipeFor("sidebar", "hover-default"), focus: recipeFor("sidebar", "focus-default"), pressed: recipeFor("sidebar", "pressed-default"), open: recipeFor("sidebar", "open") };
     expect(check("sidebar", rail)).toEqual([
-      "sidebar: its source gives it a hover state in the overlay in Sidebar (useHover() (src/style/hover.tsx) at src/organisms/sidebar/sidebar.item.tsx:101 via SidebarDrillDown > SidebarRowFrame, and 2 more), where no hover recipe acts on a control of its own, with no exemption",
-      "sidebar: its source gives it a focus state in the overlay in Sidebar (a tab stop: <Pressable> at src/organisms/sidebar/sidebar.drilldown.tsx:106 via SidebarDrillDown, and 2 more), where no focus recipe acts on a control of its own, with no exemption",
-      "sidebar: its source gives it a pressed state in the overlay in Sidebar (onPress on <Pressable> at src/organisms/sidebar/sidebar.drilldown.tsx:114 via SidebarDrillDown, and 5 more), where no pressed recipe acts on a control of its own, with no exemption",
+      "sidebar: its source gives it a hover state in the overlay in Sidebar (useHover() (src/style/hover.tsx) at src/organisms/sidebar/sidebar.item.tsx:110 via SidebarDrillDown > SidebarRowFrame, and 2 more), where no hover recipe acts on a control of its own, with no exemption",
+      "sidebar: its source gives it a focus state in the overlay in Sidebar (a tab stop: <Pressable> at src/organisms/sidebar/sidebar.drilldown.tsx:107 via SidebarDrillDown, and 2 more), where no focus recipe acts on a control of its own, with no exemption",
+      "sidebar: its source gives it a pressed state in the overlay in Sidebar (onPress on <Pressable> at src/organisms/sidebar/sidebar.drilldown.tsx:115 via SidebarDrillDown, and 5 more), where no pressed recipe acts on a control of its own, with no exemption",
     ]);
     // A recipe inside the drawer acts on a row of the drill-down's own there, and answers it.
     for (const name of ["hover-default-inside", "focus-default-inside", "pressed-default-inside"]) {

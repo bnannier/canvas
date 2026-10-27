@@ -13,6 +13,7 @@ import { actionFill } from "../../style/action.js";
 import { useSeededMinTargetSlop, styleBox } from "../../style/touch-target-seed.js";
 import { View, Pressable, RippleClip, Text, useReducedMotion, useSizing, type LayoutStyle, type MeasureProps, type ViewStyle, GlassPane, paneStyle, paneRipple, isGlass } from "../../style/index.js";
 import { liftStyle, useHover } from "../../style/hover.js";
+import { AnatomyPart, useAnatomyPart, withPartLayout } from "../../style/anatomy.js";
 import { CountBadge } from "../badge/badge.notification.js";
 import { ButtonAttention } from "./button-attention.js";
 import { shrinkButton, shrinkLabel, type ButtonSkin, type Intent, type Size } from "./button.styles.js";
@@ -195,7 +196,13 @@ export { minTargetSlop } from "../../style/touch-target.js";
  */
 export function createButton(skin: ButtonSkin) {
   const Button = forwardRef<View, ButtonProps>(function Button(props, ref) {
-    const hostRef = useComposedRefs(ref);
+    // The anatomy parts a docs AnatomyProvider numbers (src/style/anatomy.tsx), in the
+    // hand-off's order: Container, Label, Leading icon, Trailing icon, Count badge.
+    // Outside a provider each is undefined and adds nothing.
+    const containerPart = useAnatomyPart("Container");
+    const labelPart = useAnatomyPart("Label");
+    const countPart = useAnatomyPart("Count badge");
+    const hostRef = useComposedRefs(ref, containerPart?.ref);
     const { children, iconLeft, iconRight, accessibilityLabel, onPress, href, hrefAttrs, onHoverIn, onHoverOut, onFocus, onBlur, loading, disabled, block, icon, testID, style } = props;
     const theme = useMaterialTheme({ layer: "control" });
     const { tokens } = theme;
@@ -273,6 +280,7 @@ export function createButton(skin: ButtonSkin) {
           disabled={disabled || loading}
           testID={testID}
           {...target}
+          onLayout={withPartLayout(containerPart, target.onLayout)}
           accessibilityRole={href != null || props.inlineLink ? "link" : "button"}
           accessibilityLabel={accessibilityLabel}
           accessibilityState={{ busy: !!loading, disabled: !!(disabled || loading), selected: props.selected }}
@@ -317,11 +325,11 @@ export function createButton(skin: ButtonSkin) {
                   importantForAccessibility="no-hide-descendants"
                 />
               ) : null}
-              {!loading && iconLeft != null ? iconLeft : null}
-              {children != null ? <Text style={[skin.label(tokens, intent, size, opts), props.shrink ? shrinkLabel : null]}>{children}</Text> : null}
-              {!loading && iconRight != null ? iconRight : null}
+              {!loading && iconLeft != null ? <AnatomyPart name="Leading icon">{iconLeft}</AnatomyPart> : null}
+              {children != null ? <Text ref={labelPart?.ref} onLayout={labelPart?.onLayout} style={[skin.label(tokens, intent, size, opts), props.shrink ? shrinkLabel : null]}>{children}</Text> : null}
+              {!loading && iconRight != null ? <AnatomyPart name="Trailing icon">{iconRight}</AnatomyPart> : null}
             </View>
-            {props.count !== undefined && props.count !== "" ? <View style={skin.count}><CountBadge>{String(props.count)}</CountBadge></View> : null}
+            {props.count !== undefined && props.count !== "" ? <View ref={countPart?.ref} onLayout={countPart?.onLayout} style={skin.count}><CountBadge>{String(props.count)}</CountBadge></View> : null}
           </>}
         </Pressable>
       </RippleClip>

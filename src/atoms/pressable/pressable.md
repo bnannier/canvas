@@ -73,3 +73,22 @@ A disabled Pressable ignores presses.
   <Text style={{ color: tokens["primary-foreground"], fontWeight: "600" }}>Save changes</Text>
 </Pressable>
 ```
+
+## Pinned states
+
+`InteractionOverride` pins hover, keyboard focus or the pressed state for every kit control inside it, so a docs specimen or a visual test shows that state without a pointer or a key. Pass `hovered`, `focused` or `pressed` (its `InteractionOverrideProps`); they combine, and passing none gives the subtree back its real states. The kit's Pressable draws its focus ring and reports `pressed` to its style and children functions, the hover primitive reports a hover, and a field shows its focused look, so Button, Input, Checkbox, Switch, Pagination and every other kit control honour it without a prop of their own. It pins the look only: no handler fires, assistive technology hears the control as it is, a disabled control stays at rest, and natively a pinned focus draws no ring, as a real one draws none there. Portaled overlay content keeps its real states.
+
+```tsx
+<Row wrap alignCenter cozy>
+  <Button outline>Rest</Button>
+  <InteractionOverride hovered>
+    <Button outline>Hover</Button>
+  </InteractionOverride>
+  <InteractionOverride focused>
+    <Button outline>Focus</Button>
+  </InteractionOverride>
+  <InteractionOverride pressed>
+    <Button outline>Pressed</Button>
+  </InteractionOverride>
+</Row>
+```
