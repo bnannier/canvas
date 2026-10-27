@@ -10,13 +10,15 @@ import { Pagination } from "../src/atoms/pagination/pagination.tsx";
 import { arrowIcon } from "../src/atoms/pagination/pagination.shared.tsx";
 import { Pagination as IOSPagination } from "../src/atoms/pagination/pagination.ios.tsx";
 import { Pagination as AndroidPagination } from "../src/atoms/pagination/pagination.android.tsx";
-import { webSkin, iosSkin, androidSkin, itemSize, arrowSize, labelSize, type Size } from "../src/atoms/pagination/pagination.styles.ts";
-import { webSkin as buttonSkin } from "../src/atoms/button/button.styles.ts";
+import { webSkin, iosSkin, androidSkin, itemSize, arrowSize, selectorSize, labelSize, gapBox, cellStep, iconSize, selectorIconSize, numberedRow, compactRow, type Size } from "../src/atoms/pagination/pagination.styles.ts";
+import { MONO_FONT } from "../src/style/mono.ts";
 
-// Pagination has no platform control and no Dark Factory counterpart, so every platform
-// takes one look built from Dark Factory's parts (SKN-4c): bare page pills in the
-// foreground ink, the current page DF's violet pill, hairline arrow circles around chevron
-// icons, DF's hover wash on a resting cell, and DF's disabled look in place of a dim.
+// Pagination has no platform control (PLATFORM-REFERENCES.md), so every platform takes the
+// v4 hand-off's pager (its `pagination` renderer in tools/v4/handoff/cv-kit-inputs.js): 8-
+// cornered hairline cells at 28 / 34 / 40, 500 13px mono numerals in the muted ink, the
+// current page the accent fill under its own ink with the accent's glow, Prev / Next a 14px
+// chevron and a 500 13px label, the ellipsis s / 1.5 wide in the subtle ink, the secondary
+// hover wash, and .4 for disabled.
 
 afterEach(cleanup);
 
@@ -25,50 +27,87 @@ const flat = (value: string) => value.replace(/\s/g, "");
 const hex = (color: string) => [1, 3, 5].map((i) => parseInt(color.slice(i, i + 2), 16));
 const rgbaOf = (color: string) => `rgba(${hex(color).join(",")},1.00)`;
 
-describe("Dark Factory's pager on every platform", () => {
+describe("the hand-off's pager on every platform", () => {
   it("is one skin on the web, iOS and Android", () => {
     expect(iosSkin).toBe(webSkin);
     expect(androidSkin).toBe(webSkin);
   });
 
-  it("draws the pages as pills, the current one DF's violet pill, in 700 labels", () => {
-    expect(webSkin.pageBox(t, false)).toMatchObject({ borderRadius: 9999, borderWidth: 1, borderColor: "transparent", backgroundColor: "transparent" });
-    expect(webSkin.pageBox(t, true)).toMatchObject({ borderRadius: 9999, borderWidth: 1, borderColor: t.primary, backgroundColor: t.primary });
-    expect(webSkin.pageLabel(t, false)).toEqual({ fontWeight: "700", color: t.foreground });
-    expect(webSkin.pageLabel(t, true)).toEqual({ fontWeight: "700", color: t["primary-foreground"] });
+  it("draws a resting page as an 8-cornered hairline cell, its number 500 mono in the muted ink", () => {
+    expect(webSkin.pageBox(t, false)).toMatchObject({ borderRadius: 8, borderWidth: 1, borderColor: t.border, backgroundColor: "transparent" });
+    expect(webSkin.pageLabel(t, false)).toEqual({ fontFamily: MONO_FONT, fontWeight: "500", color: t["muted-foreground"] });
   });
 
-  it("draws the arrows and the rows-per-page trigger as transparent hairline pills", () => {
-    for (const box of [webSkin.controlBox(t), webSkin.selectorBox(t)]) {
-      expect(box).toMatchObject({ borderRadius: 9999, borderWidth: 1, borderColor: t.border, backgroundColor: "transparent" });
-    }
-    expect(webSkin.controlLabel(t, false).color).toBe(t.foreground);
-    expect(webSkin.mutedLabel(t)).toEqual({ fontWeight: "500", color: t["muted-foreground"] });
+  it("fills the current page with the accent under its own ink, the accent's glow beneath it", () => {
+    expect(webSkin.pageBox(t, true)).toMatchObject({
+      borderRadius: 8,
+      borderWidth: 1,
+      borderColor: t.primary,
+      backgroundColor: t.primary,
+      boxShadow: `0px 6px 16px -6px ${t.glow}`,
+    });
+    expect(webSkin.pageLabel(t, true)).toEqual({ fontFamily: MONO_FONT, fontWeight: "500", color: t["primary-foreground"] });
   });
 
-  it("is the web Button's pill heights and label type at every size, so it lines up beside one", () => {
-    const opts = { icon: true, block: false, dim: false, disabled: false };
-    const buttonSize = { small: "small", default: "base", large: "large" } as const;
+  it("draws the arrows on the border hairline and the rows-per-page trigger on the input edge", () => {
+    expect(webSkin.controlBox(t)).toMatchObject({ borderRadius: 8, borderWidth: 1, borderColor: t.border, backgroundColor: "transparent" });
+    expect(webSkin.selectorBox(t)).toMatchObject({ borderRadius: 8, borderWidth: 1, borderColor: t.input, backgroundColor: "transparent", gap: 6 });
+    expect(webSkin.controlLabel(t)).toEqual({ fontWeight: "500", color: t["muted-foreground"] });
+    expect(webSkin.selectorLabel(t)).toEqual({ fontWeight: "400", color: t.foreground });
+    expect(webSkin.mutedLabel(t)).toEqual({ fontWeight: "400", color: t["muted-foreground"] });
+    expect(webSkin.gapLabel(t).color).toBe(t["subtle-foreground"]);
+  });
+
+  it("is the hand-off's metrics at every size: 28 / 34 / 40 cells, 13px labels, 14px chevrons, s / 1.5 gaps", () => {
+    const step: Record<Size, number> = { small: 28, default: 34, large: 40 };
     for (const size of ["small", "default", "large"] as Size[]) {
-      const square = buttonSkin.container(t, "outline", buttonSize[size], opts);
-      expect(itemSize[size].height, size).toBe(square.height);
-      expect(arrowSize[size], size).toEqual({ width: square.width, height: square.height });
-      const label = buttonSkin.label(t, "outline", buttonSize[size], opts);
-      expect(labelSize[size], size).toEqual({ fontSize: label.fontSize, lineHeight: label.lineHeight });
+      expect(cellStep[size], size).toBe(step[size]);
+      expect(itemSize[size], size).toEqual({ height: step[size], minWidth: step[size] });
+      expect(arrowSize[size], size).toEqual({ height: step[size], minWidth: step[size], paddingHorizontal: 10, gap: 4 });
+      expect(selectorSize[size], size).toEqual({ height: step[size], paddingHorizontal: 10 });
+      expect(labelSize[size].fontSize, size).toBe(13);
+      expect(iconSize[size], size).toBe(14);
+      expect(gapBox[size].width, size).toBeCloseTo(step[size] / 1.5);
+    }
+    expect(selectorIconSize).toBe(12);
+    expect(numberedRow.gap).toBe(6);
+    expect(compactRow.gap).toBe(10);
+  });
+
+  it("labels the arrows Prev and Next beside the numbers, never at the small size or in the compact row", () => {
+    render(<ThemeProvider light solid><Pagination total={3} defaultPage={2} /></ThemeProvider>);
+    expect(screen.getByRole("button", { name: "Previous page" }).textContent).toBe("Prev");
+    expect(screen.getByRole("button", { name: "Next page" }).textContent).toBe("Next");
+    cleanup();
+    render(
+      <ThemeProvider light solid>
+        <Pagination small total={3} defaultPage={2} />
+        <Pagination compact total={3} defaultPage={2} />
+      </ThemeProvider>,
+    );
+    for (const button of [...screen.getAllByRole("button", { name: "Previous page" }), ...screen.getAllByRole("button", { name: "Next page" })]) {
+      expect(button.textContent).toBe("");
     }
   });
 
-  it("shows DF's disabled look rather than a dim: muted inks, the hairlines kept, the current page a hairline pill", () => {
-    // The edge is all that marks a disabled current page, so it is the 3:1 `input` line.
-    expect(webSkin.pageBox(t, true, true)).toMatchObject({ borderColor: t.input, backgroundColor: "transparent" });
-    expect(webSkin.pageLabel(t, true, true).color).toBe(t["muted-foreground"]);
-    expect(webSkin.pageLabel(t, false, true).color).toBe(t["muted-foreground"]);
-    expect(webSkin.controlLabel(t, true).color).toBe(t["muted-foreground"]);
-    render(<ThemeProvider light solid><Pagination disabled total={3} defaultPage={2} /></ThemeProvider>);
+  it("widens a three-digit page past the square with the hand-off's 10px inset", () => {
+    render(<ThemeProvider light solid><Pagination total={120} defaultPage={100} /></ThemeProvider>);
+    expect(screen.getByRole("button", { name: "Page 100" }).style.paddingLeft).toBe("10px");
+    expect(screen.getByRole("button", { name: "Page 1" }).style.paddingLeft).toBe("");
+  });
+
+  it("dims a disabled pager as one at .4, and an end arrow on its own in an enabled one", () => {
+    expect(webSkin.disabledOpacity).toBe(0.4);
+    render(<ThemeProvider light solid><Pagination disabled total={3} defaultPage={2} testID="off" /></ThemeProvider>);
+    expect(screen.getByTestId("off").style.opacity).toBe("0.4");
     for (const button of screen.getAllByRole("button")) expect(button.style.opacity, button.getAttribute("aria-label") ?? "").toBe("");
-    const current = screen.getByRole("button", { name: "Page 2" });
-    expect(flat(current.style.borderTopColor)).toBe(rgbaOf(t.input));
-    expect(current.style.backgroundColor).toBe("rgba(0, 0, 0, 0.00)");
+    // A disabled current page keeps its fill under the dim.
+    expect(flat(screen.getByRole("button", { name: "Page 2" }).style.backgroundColor)).toBe(rgbaOf(t.primary));
+    cleanup();
+    render(<ThemeProvider light solid><Pagination total={3} defaultPage={1} testID="on" /></ThemeProvider>);
+    expect(screen.getByTestId("on").style.opacity).toBe("");
+    expect(screen.getByRole("button", { name: "Previous page" }).style.opacity).toBe("0.4");
+    expect(screen.getByRole("button", { name: "Next page" }).style.opacity).toBe("");
   });
 });
 
@@ -88,7 +127,8 @@ describe("the pager renders kit icons, not text glyphs", () => {
   it("draws a chevron in each arrow and an ellipsis in each gap, and no text glyph", () => {
     const drawn = glyphs(<ThemeProvider light solid><Pagination total={12} defaultPage={6} testID="pages" /></ThemeProvider>);
     expect(drawn).toEqual(["chevronLeft", "moreHorizontal", "moreHorizontal", "chevronRight"]);
-    for (const name of ["Previous page", "Next page"]) expect(screen.getByRole("button", { name }).textContent, name).toBe("");
+    // The arrows' only text is their label; the chevron is the icon, never a glyph.
+    expect(["Previous page", "Next page"].map((name) => screen.getByRole("button", { name }).textContent)).toEqual(["Prev", "Next"]);
     expect((screen.getByTestId("pages").textContent ?? "")).not.toMatch(/[‹›…▾]/);
   });
 
@@ -112,11 +152,9 @@ describe("the pager renders kit icons, not text glyphs", () => {
 });
 
 describe("hover and platforms", () => {
-  // The scheme's hover wash (the hand-off's `--hover`), as react-native-web prints it.
-  const wash = (() => {
-    const [r, g, b, a] = lightColors.hover!.match(/[\d.]+/g)!;
-    return new RegExp(`rgba\\(${r},\\s*${g},\\s*${b},\\s*${Number(a).toFixed(2)}\\)`);
-  })();
+  // The hover wash, the hand-off's `--sf3` (`secondary`), as react-native-web prints it.
+  const [wr, wg, wb] = hex(t.secondary);
+  const wash = new RegExp(`rgba\\(${wr},\\s*${wg},\\s*${wb},\\s*1\\.00\\)`);
   it("washes a resting page and an arrow at once on hover, never the current page or a disabled arrow", () => {
     render(<ThemeProvider light solid><Pagination total={3} defaultPage={1} /></ThemeProvider>);
     for (const name of ["Page 2", "Next page"]) {
@@ -155,7 +193,7 @@ describe("hover and platforms", () => {
   });
 
   it("declares the wash on the web only: native pointer hover waits on the owner", () => {
-    const look = { backgroundColor: t.hover };
+    const look = { backgroundColor: t.secondary };
     expect(webHover(look, "web")).toBe(look);
     expect(webHover(look, "ios")).toBeNull();
     expect(webHover(look, "android")).toBeNull();
@@ -174,11 +212,11 @@ describe("hover and platforms", () => {
         cleanup();
       }
     };
-    // Numbered: the two arrows and three pages, all 4px apart.
+    // Numbered: the two arrows and three pages, all 6px apart.
     expect(axes(<ThemeProvider light solid><Pagination total={3} /></ThemeProvider>)).toEqual(["vertical", "vertical", "vertical", "vertical", "vertical"]);
     // Compact: the two arrows sit beside the count.
     expect(axes(<ThemeProvider light solid><Pagination compact total={3} /></ThemeProvider>)).toEqual(["both", "both"]);
-    // With size: the trigger has room; the arrows sit 4px apart.
+    // With size: the trigger has room; the arrows sit 6px apart.
     expect(axes(<ThemeProvider light solid><Pagination withSize total={3} /></ThemeProvider>)).toEqual(["both", "vertical", "vertical"]);
   });
 

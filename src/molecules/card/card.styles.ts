@@ -2,34 +2,34 @@ import { platformShape } from "../../style/platform-shape.js";
 import { type ViewStyle, type TextStyle } from "react-native";
 import { type ColorTokens, shadow, customShadow, shape } from "../../style/index.js";
 import { HOVER } from "../../style/motion.js";
+import { DISPLAY_FONT } from "../../style/mono.js";
 import { type HoverMotion } from "../../style/hover.js";
 
-// Per-OS Card skins. Card is a "Light" platform treatment: one structure and one
-// set of (semantic) colors live in card.shared.tsx; only the small native touches
-// shift per OS on the MAIN card surface, namely the corner radius (+ the iOS
-// corner curve), the surface's border-vs-elevation treatment, the card's own
-// content density (its padding + the gap between flat children), and the elevation
-// / shadow. Press feedback (the interactive / onPress affordance) is handled in
-// the shell: Android gets android_ripple, iOS/web get a pressed opacity dim.
+// Per-OS Card skins. Card takes the Canvas v4 hand-off's panel (`K.def('card')` in
+// tools/v4/handoff/cv-kit-data.js, with its docs overrides in cv-kit-code.js): one
+// structure and one set of (semantic) colors live in card.shared.tsx, and the skins set
+// the main surface's corner, fill and border per elevation, its shadow, its own content
+// density and its title face. Press feedback is the shell's: Android gets android_ripple,
+// iOS and the web a pressed opacity dim.
 //
-// The composition subcomponents (CardHeader/CardTitle/CardContent/CardFooter/
-// CardSeparator) are STATIC shared members, so their insets and type are shared
-// (one value across platforms); only the main surface is skin-parameterized.
+// The composition subcomponents (CardHeader/CardContent/CardFooter/CardSeparator) are
+// STATIC shared members, so their insets and type are shared (one value across
+// platforms); the main surface and the title face are skin-parameterized.
 //
-// - Web is the card corner (`shape.web.card`), a soft 1px hairline, the
-//   ambient standard shade at rest (raised lifts to md), a 24px inset; the default
-//   density also carries the card's own flat-child gap (padding implies rhythm). A
-//   pressable card takes Dark Factory's hover lift (`hover`).
-// - iOS follows HIG conventions: iOS has no card control, so the structure is kept
-//   and only iOS touches are applied: the iOS card corner with Apple's continuous
-//   (superellipse) corner curve, and the shared Light-treatment 1px border. Native
-//   iOS grouped surfaces are flat, so the resting card drops to no shadow (raised
-//   still lifts).
-// - Android matches Material 3 cards, where outline and elevation are mutually
-//   exclusive: the default card is the M3 ELEVATED card (level-1 elevation, NO
-//   visible outline), `flat` is the M3 OUTLINED card (1dp outline, elevation 0),
-//   `raised` lifts the elevated card to M3 level 3 (6dp). Plus the M3 medium
-//   shape (the Android card corner) and tighter M3 density steps.
+// - Web is the hand-off's: the web card corner, the `card` fill under a 1 px `border`
+//   hairline, the small shadow at rest (`--sh-sm`), the large one raised (`--sh-lg`) and
+//   none flat, where the fill steps up to `popover` (the hand-off's sf2). A 20 px inset
+//   with an 8 px rhythm between flat children (14 / 8 compact, 28 / 8 comfortable). The
+//   title is 500 21 px in the display face. Selected adds a 4 px ring of the accent's
+//   soft wash outside the primary border. A pressable card takes the hover lift
+//   (`hover`): 2 px up, its resting shade deepening to the raised one.
+// - iOS has no card control (PLATFORM-REFERENCES.md), so its card is the web look at the
+//   hand-off's iOS card corner (with Apple's continuous curve), in the platform face.
+// - Android matches Material 3 cards, the platform's own card control, drawn in the
+//   hand-off's colors: outline and elevation are mutually exclusive, so the default card
+//   is the M3 ELEVATED card (level-1 elevation, NO visible outline), `flat` is the M3
+//   OUTLINED card (1dp outline, elevation 0), `raised` lifts the elevated card to M3
+//   level 3 (6dp). Plus the 12dp medium shape and M3's density steps.
 
 export type Elevation = "raised" | "flat" | "tile" | "row" | "empty" | "default";
 export type Density = "compact" | "comfortable" | "dense" | "snug" | "cozy" | "relaxed" | "spacious" | "insetContent" | "rail" | "summary" | "metric" | "request" | "menu" | "default";
@@ -41,8 +41,19 @@ export interface CardSkin {
   curve?: ViewStyle["borderCurve"];
   /** Surface colors (fill + border color), per elevation variant. */
   surface: (tokens: ColorTokens, e: Elevation) => ViewStyle;
-  /** Elevation -> shadow mapping (resting/raised/flat differ per OS). */
-  elevation: (e: Elevation, t: ColorTokens) => ViewStyle;
+  /**
+   * The fill a `flat` card steps up to, over `surface`'s. Separate from `surface` because
+   * Radio's `card` mode reads `surface(tokens, "flat")` for its outlined tile, which keeps
+   * the card fill. Omitted: the flat card keeps `surface`'s fill.
+   */
+  flatFill?: (tokens: ColorTokens) => string;
+  /**
+   * Elevation -> shadow mapping (resting/raised/flat differ per OS). `selected` lets a
+   * skin add the selected card's outer ring to the same shadow list.
+   */
+  elevation: (e: Elevation, t: ColorTokens, selected?: boolean) => ViewStyle;
+  /** The title's face: the display face on the web skin, the platform face natively. */
+  titleFont?: string;
   /** The card's own content padding + flat-child gap, per density. The `default`
    *  row is the standard padded surface every plain card takes (what the `padded`
    *  prop makes explicit), so the surface owns the rhythm between flat children;
@@ -66,7 +77,7 @@ export interface CardSkin {
 // `flat`): the hairline tokens.border outline on the tokens.card fill.
 const lightSurface = (tokens: ColorTokens): ViewStyle => ({ borderColor: tokens.border, backgroundColor: tokens.card });
 
-// --- web (the card corner, a hairline, the ambient shade) ---------------------
+// --- web (the hand-off's panel: the card corner, a hairline, the sh ladder) --
 
 const REFERENCE_DENSITY = {
   dense: { padding: 12 }, snug: { padding: 18 }, cozy: { padding: 20 },
@@ -79,39 +90,56 @@ const REFERENCE_DENSITY = {
 };
 const WEB_DENSITY: Record<Density, ViewStyle> = {
   ...REFERENCE_DENSITY,
-  compact: { padding: 16, gap: 12 },
-  comfortable: { padding: 32, gap: 24 },
-  // The default density IS the standard padded surface: the established 24px
-  // inset plus the card's own rhythm between flat children (`padded` is the
-  // explicit form of this default; `flush` opts out of the whole row).
-  default: { padding: 24, gap: 16 },
+  compact: { padding: 14, gap: 8 },
+  comfortable: { padding: 28, gap: 8 },
+  // The default density IS the standard padded surface: the hand-off's 20px inset
+  // plus its 8px rhythm between flat children (`padded` is the explicit
+  // form of this default; `flush` opts out of the whole row).
+  default: { padding: 20, gap: 8 },
 };
+
+// The selected card's outer ring: the accent's soft wash, 4 px outside the border.
+const SELECTED_RING = 4;
+const selectedRing = (t: ColorTokens) => `0px 0px 0px ${SELECTED_RING}px ${t["primary-soft"] ?? t.ring}`;
+
+// The hand-off's shadow per elevation: none flat, the large step raised, the small one
+// at rest (and on the legacy tile, row and empty steps, which the ladder rests at sm).
+const webElevation = (e: Elevation, t: ColorTokens): ViewStyle =>
+  e === "raised" ? shadow("lg", t) : e === "flat" ? shadow("none") : shadow(e === "tile" ? "sm" : e === "row" || e === "empty" ? e : "DEFAULT", t);
+
+// The selected ring joins the elevation's shadow list (one boxShadow per node on the web).
+function withRing(style: ViewStyle, t: ColorTokens): ViewStyle {
+  const drop = typeof style.boxShadow === "string" && style.boxShadow !== "none" ? `${style.boxShadow}, ` : "";
+  return { ...style, boxShadow: `${drop}${selectedRing(t)}` };
+}
 
 export const webSkin: CardSkin = {
   radius: shape.web.card,
   surface: lightSurface,
-  elevation: (e, t) => (e === "raised" ? shadow("md", t) : e === "flat" ? shadow("none") : shadow(e === "tile" ? "sm" : e === "row" || e === "empty" ? e : "DEFAULT", t)),
+  flatFill: (t) => t.popover,
+  elevation: (e, t, selected) => (selected ? withRing(webElevation(e, t), t) : webElevation(e, t)),
+  titleFont: DISPLAY_FONT,
   density: WEB_DENSITY,
+  // The gap-free inset Radio's `card` mode spreads into its tile; it keeps its own 24px,
+  // since the Radio card is restyled with Radio.
   padded: { padding: 24 },
-  // Dark Factory's card lift: a pressable card rises 2 px and its resting shade deepens
-  // to the hovered one (md, DF's hovered card) in step; a raised or flat card rises with
-  // its shade unchanged, as DF's other lifting surfaces do.
+  // The hand-off's hover: a pressable card rises 2 px and its resting shade deepens to
+  // the raised one (sh-lg) in step; a raised or flat card rises with its shade unchanged.
   hover: { motion: HOVER.card, elevation: (e) => (e === "default" ? "raised" : e) },
 };
 
-// --- iOS (HIG conventions: continuous corner curve, flat resting surface) ----
+// --- iOS (no card control: the web look at the iOS card corner) -------------
 
 export const iosSkin: CardSkin = {
   radius: shape.ios.card,
   // Apple's superellipse corner curve (an iOS-only RN style prop; device-only
   // visual, a no-op on other platforms and in the web docs preview).
   curve: "continuous",
-  // iOS keeps the shared Light-treatment border (the documented cross-platform
-  // choice; native grouped surfaces separate by fill, but the hairline is by design).
   surface: lightSurface,
-  // Native iOS grouped surfaces are flat: the resting card carries no shadow;
-  // raised still lifts, flat stays flat.
-  elevation: (e, t) => (e === "raised" ? shadow("sm", t) : shadow("none")),
+  flatFill: (t) => t.popover,
+  // The web's ladder in the platform's shadow props. The selected ring is a web
+  // boxShadow; natively the primary border alone marks the selection.
+  elevation: (e, t) => webElevation(e, t),
   density: WEB_DENSITY,
   padded: { padding: 24 },
 };
@@ -167,31 +195,37 @@ export const CARD_BORDER = 1;
 
 export const cardBase: ViewStyle = { borderWidth: CARD_BORDER };
 
-export const header: ViewStyle = { gap: 6, paddingHorizontal: 20, paddingBottom: 16, paddingTop: 20 };
+// The hand-off's CardHeader: the card inset above and beside, none below (the body
+// below brings its own), the title and description 8px apart, the card's rhythm.
+export const header: ViewStyle = { gap: 8, paddingHorizontal: 20, paddingBottom: 0, paddingTop: 20 };
 
-// The card title: 20/30 at the regular weight, no tracking.
-export const title = (tokens: ColorTokens): TextStyle => ({ fontSize: 20, lineHeight: 30, fontWeight: "400", color: tokens["card-foreground"] });
+// The card title: 500 21/25 (the h4 step at 1.2) with -0.02em tracking (the face is the skin's).
+export const title = (tokens: ColorTokens, fontFamily?: string): TextStyle => ({ fontSize: 21, lineHeight: 25, fontWeight: "500", letterSpacing: -0.42, color: tokens["card-foreground"], ...(fontFamily ? { fontFamily } : null) });
 
-export const description = (tokens: ColorTokens): TextStyle => ({ fontSize: 14, lineHeight: 20, color: tokens["muted-foreground"] });
+export const description = (tokens: ColorTokens): TextStyle => ({ fontSize: 14, lineHeight: 21, color: tokens["muted-foreground"] });
 
-// The body section pads itself AND spaces its flat children, mirroring the plain
-// padded surface's rhythm (gap is inert with a single child).
-export const content: ViewStyle = { paddingHorizontal: 20, paddingVertical: 20, gap: 16 };
+// The body section pads itself AND spaces its flat children (gap is inert with a single child).
+export const content: ViewStyle = { paddingHorizontal: 20, paddingVertical: 20, gap: 10 };
 
 export const footer: ViewStyle = {
   flexDirection: "row",
   alignItems: "center",
   gap: 8,
   paddingHorizontal: 20,
-  paddingBottom: 20,
-  paddingTop: 16,
+  paddingBottom: 14,
+  paddingTop: 14,
 };
+
+// The data-driven card's eyebrow (500 11 px mono, tracked caps, in the accent's text
+// ink) and the row it shares with a badge.
+export const eyebrowRow: ViewStyle = { flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 8, paddingHorizontal: 20, paddingTop: 20 };
+export const eyebrow = (tokens: ColorTokens): TextStyle => ({ fontSize: 11, lineHeight: 14, fontWeight: "500", letterSpacing: 1.1, textTransform: "uppercase", color: tokens["primary-text"] ?? tokens.primary });
 
 export const separator = (tokens: ColorTokens): ViewStyle => ({ height: 1, width: "100%", backgroundColor: tokens.border });
 
-export const bodyText = (tokens: ColorTokens): TextStyle => ({ fontSize: 14, lineHeight: 20, color: tokens["card-foreground"] });
+export const bodyText = (tokens: ColorTokens): TextStyle => ({ fontSize: 14, lineHeight: 21, color: tokens["card-foreground"] });
 
-export const footerText = (tokens: ColorTokens): TextStyle => ({ fontSize: 14, lineHeight: 20, color: tokens["muted-foreground"] });
+export const footerText = (tokens: ColorTokens): TextStyle => ({ fontSize: 12, lineHeight: 18, color: tokens["subtle-foreground"] ?? tokens["muted-foreground"] });
 
 /** Fixed insets from the original Argus content panels. */
 export function insetPanel(mode: "note" | "version" | "gate", t: ColorTokens): ViewStyle {

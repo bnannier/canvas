@@ -4,6 +4,7 @@ import { useSpaceActivation } from "../../style/use-space-activation.js";
 import { type GestureResponderEvent } from "react-native";
 import { View, Pressable, useControllableState, useTheme, type ColorTokens, type ViewStyle, type TextStyle, type LayoutStyle } from "../../style/index.js";
 import { CheckboxContent, CHECKBOX_ROW } from "./indicator/shared.js";
+import { useHover } from "../../style/hover.js";
 
 // Shared Checkbox shell. Uses React Native's primitives DIRECTLY and reads the
 // active brand tokens via useTheme, so colors follow light/dark and the glass
@@ -82,10 +83,12 @@ export function sizeOf(p: CheckboxProps): Size {
 // The only thing a platform skin owns: the box, glyph, and label styles for a given
 // state and size, plus the press/disabled feedback. Everything else is the shell.
 export interface CheckboxSkin {
-  /** The square box. `filled` = checked or indeterminate. `nudge` aligns the box to a label's first line. */
-  box: (tokens: ColorTokens, filled: boolean, size: Size, nudge: boolean) => ViewStyle;
-  /** The check / dash glyph inside a filled box. */
-  glyph: (tokens: ColorTokens, size: Size) => TextStyle;
+  /** The square box. `filled` = checked or indeterminate. */
+  box: (tokens: ColorTokens, filled: boolean, size: Size) => ViewStyle;
+  /** The box's look under a hovering pointer (the web's soft accent ring); omit for none. */
+  hover?: (tokens: ColorTokens) => ViewStyle;
+  /** The check / minus glyph inside a filled box: its colour and its size in px. */
+  glyph: (tokens: ColorTokens, size: Size) => { color: string; size: number };
   /** The label text to the right of the box. */
   label: (tokens: ColorTokens, size: Size) => TextStyle;
   /** The muted secondary description line, rendered under the label when present. */
@@ -151,6 +154,9 @@ function createCheckboxBox(skin: CheckboxSkin) {
       setChecked(!checked);
     };
     const keyboard = useSpaceActivation(!!disabled, handlePress);
+    // The web rings the box while a pointer hovers the row; the row never moves, so it is
+    // its own hover target (src/style/hover.tsx).
+    const { hovered, target: hoverTarget } = useHover(skin.hover != null && !disabled);
 
     // The box paints no pane (GS-5), so the ripple stays the skin's own; inside a frosted
     // surface the kit's Pressable brings a borderless one forward (`frontRipple`).
@@ -160,6 +166,7 @@ function createCheckboxBox(skin: CheckboxSkin) {
       <Pressable
         ref={hostRef}
         {...(keyboard as object)}
+        {...hoverTarget}
         onPress={handlePress}
         disabled={disabled}
         testID={props.testID}
@@ -181,7 +188,7 @@ function createCheckboxBox(skin: CheckboxSkin) {
         ]}
       >
         <CheckboxContent skin={skin} tokens={tokens} size={size} checked={checked}
-          indeterminate={indeterminate} description={description}>
+          indeterminate={indeterminate} description={description} hovered={hovered}>
           {children}
         </CheckboxContent>
       </Pressable>

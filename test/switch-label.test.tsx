@@ -13,7 +13,7 @@ afterEach(cleanup);
 // including the whole-row tap target and the track's independently fixed dimensions.
 for (const [platform, Switch, trackWidth] of [
   ["web", WebSwitch, "44px"],
-  ["ios", IosSwitch, "46px"],
+  ["ios", IosSwitch, "51px"],
   ["android", AndroidSwitch, "52px"],
 ] as const) {
   describe(`${platform} Switch label`, () => {

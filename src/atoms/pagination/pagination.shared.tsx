@@ -1,7 +1,7 @@
 import { useMaterialTheme } from "../../style/glass-surface/use-material-theme.js";
 import { useHover } from "../../style/hover.js";
 import { useSeededMinTargetSlop, styleBox } from "../../style/touch-target-seed.js";
-import { View, Pressable, Text, RippleClip, cornerRadii, isRTL, pressDim, useControllableState, type ViewStyle, type LayoutStyle, GlassPane, paneStyle, paneRipple, isGlass } from "../../style/index.js";
+import { View, Pressable, Text, RippleClip, cornerRadii, isRTL, pressDim, useControllableState, type ViewStyle, type LayoutStyle, GlassPane, paneStyle, paneRipple, isGlass, withInnerFill } from "../../style/index.js";
 import { Icon } from "../icon/icon.js";
 import * as s from "./pagination.styles.js";
 import { type Size, type PaginationSkin } from "./pagination.styles.js";
@@ -10,7 +10,7 @@ import { type Size, type PaginationSkin } from "./pagination.styles.js";
 // variants, the windowing math, the clamp + go handler, the size-selector
 // cycling), the accessibility, and the variant/size precedence live here once; a
 // platform file supplies only its skin (the cells, the current page's fill, the
-// inks, the hover and press feedback, the touch target) and calls createPagination.
+// inks, the hover and press feedback, the disabled dim, the touch target) and calls createPagination.
 // No platform has a pagination control, so all three pass the same skin today.
 //
 // Pagination is page-of-N navigation for tables and lists: a horizontal row of
@@ -30,7 +30,12 @@ import { type Size, type PaginationSkin } from "./pagination.styles.js";
 //
 // The arrows, the selector's caret and the truncation gap are kit Icons (chevrons
 // and an ellipsis). The arrows point along the reading direction, so under a
-// right-to-left layout Previous points right.
+// right-to-left layout Previous points right. Beside the numbers (the numbered and
+// with-size rows) an arrow also carries its "Prev" / "Next" label, except at the small
+// size; the compact row's arrows bracket the count with the chevron alone.
+//
+// Disabled dims the whole pager to the skin's disabled opacity; in an enabled pager the
+// arrow at either end dims on its own.
 
 export interface PaginationProps {
   /** Current page, 1-based (CONTROLLED). Clamped into the 1..total range before rendering. Omit for uncontrolled use. */
@@ -122,14 +127,14 @@ function pageWindow(current: number, total: number): number[] {
 // puck: a GlassPane paints the brand-tinted material behind its number (the Pressable
 // keeps its tap, ripple and dim) and the cell drops its fill and edge (the pane carries
 // them), with the number in `primary-foreground`. A cell with no fill (a resting page, the
-// hairline arrows and selector, which are Dark Factory's transparent outline pills like
-// the web's outline Button) stays bare, its hairline kept, as it is in solid mode.
+// hairline arrows and selector) stays bare, its hairline kept, as it is in solid mode, and
+// its hover wash is an ink tint there rather than the opaque `secondary` (withInnerFill).
 function filled(box: ViewStyle): boolean {
   const bg = box.backgroundColor;
   return bg != null && bg !== "transparent";
 }
 
-// Where the cells sit 4px apart (the pages, and the arrows beside them or each other) the
+// Where the cells sit 6px apart (the pages, and the arrows beside them or each other) the
 // touch area grows vertically only: growing sideways would overlap the neighbour's. The
 // compact arrows sit beside text and grow both ways.
 const ABUTTING = { axis: "vertical" } as const;
@@ -147,13 +152,17 @@ export function createPagination(skin: PaginationSkin) {
     direction: "previous" | "next";
     size: Size;
     disabled: boolean;
-    /** Another cell sits 4px away, so the touch area grows vertically only. */
+    /** Dim this arrow on its own (it is disabled in an enabled pager). */
+    dim: boolean;
+    /** Another cell sits 6px away, so the touch area grows vertically only. */
     abutting: boolean;
+    /** Carry the "Prev" / "Next" label beside the chevron. */
+    labelled: boolean;
     onPress: () => void;
   }
 
-  // A Previous/Next arrow: a chevron in a circle, no number.
-  function Arrow({ direction, size, disabled, abutting, onPress }: ArrowProps) {
+  // A Previous/Next arrow: a chevron, and beside the numbers its label, in a hairline cell.
+  function Arrow({ direction, size, disabled, dim, abutting, labelled, onPress }: ArrowProps) {
     const theme = useMaterialTheme({ static: true, layer: "control" });
     const { tokens } = theme;
     const box = skin.controlBox(tokens);
@@ -161,7 +170,10 @@ export function createPagination(skin: PaginationSkin) {
     // (src/style/touch-target-seed.ts).
     const target = useSeededMinTargetSlop(skin.minTarget, styleBox(s.arrowSize[size]), abutting ? ABUTTING : undefined);
     const { hovered, target: hoverTarget } = useHover(hoverLook != null);
-    const ink = skin.controlLabel(tokens, disabled).color as string;
+    const label = skin.controlLabel(tokens);
+    const ink = label.color as string;
+    const chevron = <Icon {...{ [arrowIcon(direction, isRTL())]: true }} decorative size={s.iconSize[size]} color={ink} />;
+    const text = labelled ? <Text style={[label, s.labelSize[size]]}>{direction === "previous" ? "Prev" : "Next"}</Text> : null;
     return (
       // The rounded cell's bounded Android ripple is clipped to its corners by this RippleClip
       // parent (no-op on iOS/web), which is also the hover target: it never moves. A same-node
@@ -171,8 +183,8 @@ export function createPagination(skin: PaginationSkin) {
           style={({ pressed }) => [
             box,
             s.arrowSize[size],
-            hovered && !disabled && hoverLook ? hoverLook(tokens) : null,
-            pressDim(pressed, skin.pressedOpacity),
+            hovered && !disabled && hoverLook ? withInnerFill(theme, hoverLook(tokens)) : null,
+            dim ? { opacity: skin.disabledOpacity } : pressDim(pressed, skin.pressedOpacity),
           ]}
           onPress={onPress}
           disabled={disabled}
@@ -183,7 +195,8 @@ export function createPagination(skin: PaginationSkin) {
           accessibilityState={{ disabled }}
           aria-disabled={disabled}
         >
-          <Icon {...{ [arrowIcon(direction, isRTL())]: true }} decorative size={s.iconSize[size]} color={ink} />
+          {direction === "previous" ? chevron : text}
+          {direction === "previous" ? text : chevron}
         </Pressable>
       </RippleClip>
     );
@@ -197,21 +210,23 @@ export function createPagination(skin: PaginationSkin) {
     onPress: () => void;
   }
 
-  // A numbered page. The current page is the brand pill (a brand puck under glass); a
-  // resting page is bare and takes the hover wash.
+  // A numbered page. The current page is the accent fill (a brand puck under glass); a
+  // resting page is a hairline cell and takes the hover wash.
   function Page({ page, selected, size, disabled, onPress }: PageProps) {
     const theme = useMaterialTheme({ static: true, layer: "control" });
     const { tokens } = theme;
-    const box = skin.pageBox(tokens, selected, disabled);
+    const box = skin.pageBox(tokens, selected);
     const puck = isGlass(theme) && filled(box);
-    const target = useSeededMinTargetSlop(skin.minTarget, styleBox(s.itemSize[size]), ABUTTING);
+    // A number of three or more digits takes the cell's inset and widens past the square.
+    const cell: ViewStyle[] = page > 99 ? [s.itemSize[size], s.widePage] : [s.itemSize[size]];
+    const target = useSeededMinTargetSlop(skin.minTarget, styleBox(Object.assign({}, ...cell)), ABUTTING);
     const { hovered, target: hoverTarget } = useHover(hoverLook != null && !selected);
     return (
       <RippleClip shape={cornerRadii(box)} hitSlop={target.hitSlop} {...hoverTarget}>
         <Pressable
           style={({ pressed }) => [
-            filled(box) ? paneStyle(theme, [box, s.itemSize[size]]) : [box, s.itemSize[size]],
-            hovered && !disabled && hoverLook ? hoverLook(tokens) : null,
+            filled(box) ? paneStyle(theme, [box, ...cell]) : [box, ...cell],
+            hovered && !disabled && hoverLook ? withInnerFill(theme, hoverLook(tokens)) : null,
             pressDim(pressed, skin.pressedOpacity),
           ]}
           onPress={onPress}
@@ -227,7 +242,7 @@ export function createPagination(skin: PaginationSkin) {
           aria-disabled={disabled}
         >
           {puck ? <GlassPane static layer="control" shape={box} brand={tokens.primary} /> : null}
-          <Text style={[skin.pageLabel(tokens, selected, disabled), s.labelSize[size], puck ? { color: tokens["primary-foreground"] } : null]}>{page}</Text>
+          <Text style={[skin.pageLabel(tokens, selected), s.labelSize[size], puck ? { color: tokens["primary-foreground"] } : null]}>{page}</Text>
         </Pressable>
       </RippleClip>
     );
@@ -240,7 +255,7 @@ export function createPagination(skin: PaginationSkin) {
     onPress: () => void;
   }
 
-  // The rows-per-page trigger: the value and a chevron in a hairline pill. There is no
+  // The rows-per-page trigger: the value and a chevron-down in a cell on the `input` edge. There is no
   // menu: it advances through `pageSizes` on press.
   function Selector({ value, size, disabled, onPress }: SelectorProps) {
     const theme = useMaterialTheme({ static: true, layer: "control" });
@@ -254,7 +269,7 @@ export function createPagination(skin: PaginationSkin) {
           style={({ pressed }) => [
             box,
             s.selectorSize[size],
-            hovered && !disabled && hoverLook ? hoverLook(tokens) : null,
+            hovered && !disabled && hoverLook ? withInnerFill(theme, hoverLook(tokens)) : null,
             pressDim(pressed, skin.pressedOpacity),
           ]}
           onPress={onPress}
@@ -266,8 +281,8 @@ export function createPagination(skin: PaginationSkin) {
           accessibilityState={{ disabled }}
           aria-disabled={disabled}
         >
-          <Text style={[skin.controlLabel(tokens, disabled), s.labelSize[size]]}>{value}</Text>
-          <Icon chevronDown decorative size={s.iconSize[size]} color={skin.mutedLabel(tokens).color as string} />
+          <Text style={[skin.selectorLabel(tokens), s.labelSize[size]]}>{value}</Text>
+          <Icon chevronDown decorative size={s.selectorIconSize} color={skin.mutedLabel(tokens).color as string} />
         </Pressable>
       </RippleClip>
     );
@@ -313,13 +328,16 @@ export function createPagination(skin: PaginationSkin) {
     };
 
     const abutting = variant !== "compact";
-    const prev = <Arrow direction="previous" size={size} disabled={disabled || atStart} abutting={abutting} onPress={() => go(current - 1)} />;
-    const next = <Arrow direction="next" size={size} disabled={disabled || atEnd} abutting={abutting} onPress={() => go(current + 1)} />;
+    const labelled = abutting && s.arrowLabelled(size);
+    // A disabled pager dims as one; in an enabled one an arrow at either end dims on its own.
+    const dimmed = disabled ? { opacity: skin.disabledOpacity } : null;
+    const prev = <Arrow direction="previous" size={size} disabled={disabled || atStart} dim={!disabled && atStart} abutting={abutting} labelled={labelled} onPress={() => go(current - 1)} />;
+    const next = <Arrow direction="next" size={size} disabled={disabled || atEnd} dim={!disabled && atEnd} abutting={abutting} labelled={labelled} onPress={() => go(current + 1)} />;
 
     // Compact: Prev/Next bracketing a "Page X of N" indicator, no number buttons.
     if (variant === "compact") {
       return (
-        <View testID={testID} style={[s.compactRow, style]}>
+        <View testID={testID} style={[s.compactRow, dimmed, style]}>
           {prev}
           <Text style={muted}>{indicatorLabel}</Text>
           {next}
@@ -344,7 +362,7 @@ export function createPagination(skin: PaginationSkin) {
         }
       };
       return (
-        <View testID={testID} style={[s.withSizeRow, style]}>
+        <View testID={testID} style={[s.withSizeRow, dimmed, style]}>
           <View style={s.selectorCluster}>
             <Text style={muted}>Rows per page</Text>
             <Selector value={pageSize} size={size} disabled={disabled} onPress={cycleSize} />
@@ -362,12 +380,12 @@ export function createPagination(skin: PaginationSkin) {
     const window = pageWindow(current, total);
 
     return (
-      <View testID={testID} style={[s.numberedRow, style]}>
+      <View testID={testID} style={[s.numberedRow, dimmed, style]}>
         {prev}
         {window.map((p, i) =>
           p === GAP ? (
-            <View key={`gap-${i}`} style={s.gapBox}>
-              <Icon moreHorizontal decorative size={s.iconSize[size]} color={skin.mutedLabel(tokens).color as string} />
+            <View key={`gap-${i}`} style={s.gapBox[size]}>
+              <Icon moreHorizontal decorative size={s.iconSize[size]} color={skin.gapLabel(tokens).color as string} />
             </View>
           ) : (
             <Page key={`page-${p}`} page={p} selected={p === current} size={size} disabled={disabled} onPress={() => go(p)} />

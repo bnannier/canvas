@@ -5,6 +5,7 @@ import { type GestureResponderEvent } from "react-native";
 import { useSeededMinTargetSlop, styleBox } from "../../style/touch-target-seed.js";
 import { Pressable, View, Text, useControllableState, useTheme, type ColorTokens, type ViewStyle, type TouchTargetSkin, type LayoutStyle } from "../../style/index.js";
 import { contrastStyle, PlainSurface } from "../../style/glass-surface/glass-surface.shared.js";
+import { useHover } from "../../style/hover.js";
 
 // Shared Switch shell. Uses React Native's primitives DIRECTLY (no engine className
 // layer) and reads the active brand tokens via so colors follow light/dark.
@@ -24,7 +25,8 @@ export interface SwitchProps {
   onValueChange?: (next: boolean) => void;
   /** E2E hook forwarded to the pressable row. */
   testID?: string;
-  // Size (pick one; default is the standard track).
+  // Size (pick one; default is the standard track). The web track scales; iOS and
+  // Android draw their platform switch, which comes in one size.
   small?: boolean;
   large?: boolean;
   // State.
@@ -53,16 +55,21 @@ export function sizeOf(p: SwitchProps): Size {
 
 // The only thing a platform skin owns: the track and thumb styles for a given
 // on/off state and size, built from the active tokens. Everything else is the
-// shell. `dark` is threaded in (like dropdown/badge) so a skin can pick a
-// scheme-specific off-track gray that the generic `input` token does not provide
-// (the iOS off track is a solid mid-gray in light mode, systemGray3).
+// shell. `dark` is threaded in (like dropdown/badge) for a skin whose track needs a
+// scheme-specific value the tokens do not carry; the v4 skins read tokens only.
 export interface SwitchSkin extends TouchTargetSkin {
   track: (tokens: ColorTokens, dark: boolean, checked: boolean, size: Size) => ViewStyle;
   thumb: (tokens: ColorTokens, checked: boolean, size: Size) => ViewStyle;
+  /** The track's look under a hovering pointer (the web's glow on an on switch); omit for none. */
+  hover?: (tokens: ColorTokens, checked: boolean, size: Size) => ViewStyle | null;
 }
 
-const LABEL_FONT: Record<Size, number> = { small: 12, base: 14, large: 16 };
-const DESC_FONT: Record<Size, number> = { small: 11, base: 12, large: 14 };
+// The hand-off's switch row: a 500 14px title over a 12px description in the subtle ink,
+// the same type at every size (only the track scales), and the whole row at 0.4 when
+// disabled. Line heights are the hand-off's ratios (1.3, 1.45) rounded up to a pixel.
+const LABEL_TYPE = { fontSize: 14, lineHeight: 19, fontWeight: "500" } as const;
+const DESCRIPTION_TYPE = { fontSize: 12, lineHeight: 18, fontWeight: "400" } as const;
+const DISABLED_OPACITY = 0.4;
 // The label takes the space left by the fixed-size track and wraps within it.
 // Without shrink, a long description makes the whole switch wider than its parent.
 const TEXT_COLUMN: ViewStyle = { flexShrink: 1, minWidth: 0 };
@@ -92,7 +99,9 @@ export function createSwitch(skin: SwitchSkin) {
         onValueChange?.(next);
       },
     );
+    const { hovered, target: hoverTarget } = useHover(skin.hover != null && !disabled);
     const trackShape = skin.track(tokens, dark, checked, size);
+    const trackHover = hovered ? skin.hover?.(tokens, checked, size) ?? null : null;
     const thumbShape = skin.thumb(tokens, checked, size);
 
     const handlePress = (_event: GestureResponderEvent) => {
@@ -112,6 +121,7 @@ export function createSwitch(skin: SwitchSkin) {
         ref={hostRef}
         {...(keyboard as object)}
         {...target}
+        {...hoverTarget}
         onPress={handlePress}
         disabled={disabled}
         testID={props.testID}
@@ -124,10 +134,10 @@ export function createSwitch(skin: SwitchSkin) {
           {
             flexDirection: "row",
             justifyContent: "space-between",
-            gap: 16,
-            alignItems: description != null ? "flex-start" : "center",
+            gap: 24,
+            alignItems: "center",
           },
-          disabled ? { opacity: 0.5 } : null,
+          disabled ? { opacity: DISABLED_OPACITY } : null,
           pressed ? { opacity: 0.9 } : null,
           style,
         ]}
@@ -135,14 +145,14 @@ export function createSwitch(skin: SwitchSkin) {
         {children != null || description != null ? (
           <View style={TEXT_COLUMN}>
             {children != null ? (
-              <Text style={{ fontWeight: "500", color: disabled ? tokens["muted-foreground"] : tokens.foreground, fontSize: LABEL_FONT[size] }}>{children}</Text>
+              <Text style={{ ...LABEL_TYPE, color: tokens.foreground }}>{children}</Text>
             ) : null}
             {description != null ? (
-              <Text style={{ color: tokens["muted-foreground"], fontSize: DESC_FONT[size] }}>{description}</Text>
+              <Text style={{ ...DESCRIPTION_TYPE, color: tokens["subtle-foreground"] ?? tokens["muted-foreground"] }}>{description}</Text>
             ) : null}
           </View>
         ) : null}
-        <View style={contrastStyle(theme, trackShape)}>
+        <View style={contrastStyle(theme, trackHover ? { ...trackShape, ...trackHover } : trackShape)}>
           <PlainSurface pointerEvents="none" style={contrastStyle(theme, thumbShape)} />
         </View>
       </Pressable>

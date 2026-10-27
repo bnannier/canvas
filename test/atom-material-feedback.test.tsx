@@ -19,26 +19,17 @@ import { Dropdown } from "../src/atoms/dropdown/dropdown.tsx";
 import { Stepper as AndroidStepper } from "../src/atoms/stepper/stepper.android.tsx";
 import { GlassSurface } from "../src/style/glass-surface/glass-surface.tsx";
 import { ThemeProvider } from "../src/style/theme.tsx";
-import { lightColors } from "../src/style/tokens.ts";
 
 afterEach(cleanup);
 
-// `buttonDisabled` is the Button's own dim: null on the web, whose disabled Button is Dark
-// Factory's look (a transparent pill, a hairline, a muted label) rather than a fade.
+// `buttonDisabled` is the Button's own dim: the hand-off's 0.4 on the web and iOS, M3's 0.38
+// on Android. `pressed` is the Button's label dim on a glass puck: none on the web, whose
+// press scales the control instead (test/button-look.test.tsx), nor on Android, which ripples.
 const platforms = [
-  { name: "web", Button, Select, Chip, AvatarMenu, disabled: 0.5, buttonDisabled: null, selectDisabled: 0.5, pressed: 0.9, selectPressed: 0.9 },
+  { name: "web", Button, Select, Chip, AvatarMenu, disabled: 0.5, buttonDisabled: 0.4, selectDisabled: 0.5, pressed: null, selectPressed: 0.9 },
   { name: "iOS", Button: IOSButton, Select: IOSSelect, Chip: IOSChip, AvatarMenu: IOSAvatarMenu, disabled: 0.4, buttonDisabled: 0.4, selectDisabled: 0.4, pressed: 0.8, selectPressed: 0.8 },
   { name: "Android", Button: AndroidButton, Select: AndroidSelect, Chip: AndroidChip, AvatarMenu: AndroidAvatarMenu, disabled: 0.38, buttonDisabled: 0.38, selectDisabled: 0.38, pressed: null, selectPressed: null },
 ] as const;
-
-// The web's disabled Button: no dim anywhere above its label, the muted ink instead.
-function expectWebDisabledLook(label: HTMLElement) {
-  for (let node: HTMLElement | null = label; node && node.getAttribute("role") !== "button"; node = node.parentElement) {
-    expect(node.style.opacity === "" || Number(node.style.opacity) === 1).toBe(true);
-  }
-  const [r, g, b] = [1, 3, 5].map((i) => parseInt(lightColors["muted-foreground"].slice(i, i + 2), 16));
-  expect(label.style.color.replace(/\s/g, "")).toBe(`rgba(${r},${g},${b},1.00)`);
-}
 
 function expectMaterialAncestorsOpaque(root: HTMLElement) {
   const layers = [...root.querySelectorAll<HTMLElement>('[style*="backdrop-filter"]')];
@@ -65,8 +56,7 @@ describe("liquid control foreground feedback", () => {
         <p.AvatarMenu disabled name="Rachel Chen" email="rachel@example.com" items={[]} onOpenChange={() => calls++} />
       </ThemeProvider>);
       expectMaterialAncestorsOpaque(container);
-      if (p.buttonDisabled == null) expectWebDisabledLook(screen.getByText("Save"));
-      else expect(Number(screen.getByText("Save").parentElement!.style.opacity)).toBe(p.buttonDisabled);
+      expect(Number(screen.getByText("Save").parentElement!.style.opacity)).toBe(p.buttonDisabled);
       expect(Number(screen.getByText("North").parentElement!.style.opacity)).toBe(p.selectDisabled);
       expect(Number(screen.getByText("Filter").parentElement!.style.opacity)).toBe(0.5);
       expect(Number(screen.getByText("Removable").parentElement!.style.opacity)).toBe(0.5);
@@ -79,16 +69,14 @@ describe("liquid control foreground feedback", () => {
 
     it(`${p.name} keeps its original solid disabled surface dim`, () => {
       render(<ThemeProvider solid><p.Button disabled>Save</p.Button><p.Select disabled options={["North"]} defaultValue="North" label="Region" /></ThemeProvider>);
-      if (p.buttonDisabled == null) {
-        expect(screen.getByRole("button", { name: "Save" }).style.opacity).toBe("");
-        expectWebDisabledLook(screen.getByText("Save"));
-      } else expect(Number(screen.getByRole("button", { name: "Save" }).style.opacity)).toBe(p.buttonDisabled);
+      expect(Number(screen.getByRole("button", { name: "Save" }).style.opacity)).toBe(p.buttonDisabled);
       expect(Number(screen.getByRole("button", { name: "Region" }).style.opacity)).toBe(p.selectDisabled);
     });
 
-    if (p.pressed !== null) it(`${p.name} keeps actual press feedback on the label instead of the native material`, async () => {
+    if (p.selectPressed !== null) it(`${p.name} keeps actual press feedback on the label instead of the native material`, async () => {
       const { container } = render(<ThemeProvider glass><p.Button>Save</p.Button><p.Select options={["North"]} defaultValue="North" label="Region" /><p.Chip selectable>Filter</p.Chip></ThemeProvider>);
-      for (const [name, text, opacity] of [["Save", "Save", p.pressed], ["Region", "North", p.selectPressed], ["Filter", "Filter", 0.85]] as const) {
+      const dims = [["Save", "Save", p.pressed], ["Region", "North", p.selectPressed], ["Filter", "Filter", 0.85]] as const;
+      for (const [name, text, opacity] of dims.filter((d) => d[2] !== null)) {
         const host = screen.getByRole("button", { name });
         press(host);
         await waitFor(() => expect(Number(screen.getByText(text).parentElement!.style.opacity)).toBe(opacity));

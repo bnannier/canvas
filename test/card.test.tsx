@@ -16,7 +16,7 @@ import {
   CardSeparator,
 } from "../src/molecules/card/card.tsx";
 import * as cardStyles from "../src/molecules/card/card.styles.ts";
-import { shape } from "../src/style/tokens.ts";
+import { shape, lightColors } from "../src/style/tokens.ts";
 import { LOOKS, lookProps } from "./fixtures/looks.ts";
 
 afterEach(cleanup);
@@ -26,9 +26,9 @@ const ui = (node: ReactNode) => render(<ThemeProvider>{node}</ThemeProvider>);
 // standard padded surface plus the card's flat-child gap) and the density steps.
 // The tests pin the padding CONTRACT, not the exact pixel values, but reading them
 // from one place keeps the two in sync if the skin ever moves.
-const PADDED = "24px";
-const GAP = "16px";
-const COMPACT = "16px";
+const PADDED = "20px";
+const GAP = "8px";
+const COMPACT = "14px";
 
 describe("Card surface padding", () => {
   it("pads raw children by default and spaces them (the surface owns the rhythm)", () => {
@@ -62,7 +62,7 @@ describe("Card surface padding", () => {
     const { getByTestId } = ui(<Card compact testID="c"><Text>content</Text></Card>);
     const el = getByTestId("c");
     expect(el.style.padding).toBe(COMPACT);
-    expect(el.style.gap).toBe("12px");
+    expect(el.style.gap).toBe("8px");
   });
 
   it("the string path pads through its sections, never the surface", () => {
@@ -91,14 +91,14 @@ describe("Card surface padding", () => {
 });
 
 describe("CardContent", () => {
-  it("spaces its flat children with the standard card rhythm", () => {
+  it("spaces its flat children with the section's own rhythm", () => {
     const { getByText } = ui(
       <CardContent>
         <Text>inside</Text>
       </CardContent>,
     );
     // The Text renders as a leaf div; its parent is CardContent's own View.
-    expect((getByText("inside").parentElement as HTMLElement).style.gap).toBe(GAP);
+    expect((getByText("inside").parentElement as HTMLElement).style.gap).toBe(`${cardStyles.content.gap}px`);
   });
 });
 
@@ -431,4 +431,17 @@ it("promotional cards retain their title, body and action", () => {
   expect(getByText("Start with its charter")).toBeTruthy();
   fireEvent.click(getByRole("button", { name: "Read the charter" }));
   expect(opened).toBe(1);
+});
+
+it("a data-driven card sets the hand-off's eyebrow row above its title", () => {
+  const { getByText } = ui(<Card eyebrow="Library" badge="MIT" title="Canvas v4.0.0" description="107 components" footer="Updated Oct 26" />);
+  const eyebrow = getByText("Library");
+  expect(eyebrow.style.textTransform).toBe("uppercase");
+  expect(eyebrow.style.fontSize).toBe(`${cardStyles.eyebrow(lightColors).fontSize}px`);
+  expect(getByText("MIT")).toBeTruthy();
+  // The eyebrow precedes the title, and the title takes the card's 500 20 px heading.
+  const title = getByText("Canvas v4.0.0");
+  expect(eyebrow.compareDocumentPosition(title) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  expect(title.style.fontSize).toBe("21px");
+  expect(title.style.fontWeight).toBe("500");
 });

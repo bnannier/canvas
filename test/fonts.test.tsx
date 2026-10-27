@@ -108,8 +108,8 @@ describe("the themed primitives", () => {
     );
     expect(getComputedStyle(screen.getByText("Plain")).fontFamily).toBe("InstrumentSans_700Bold");
     expect(getComputedStyle(screen.getByText("Plain")).fontWeight).not.toBe("700");
-    // The call to action's label weight resolves to the registered face of that weight.
-    expect(getComputedStyle(screen.getByText("Save")).fontFamily).toBe("InstrumentSans_800ExtraBold");
+    // The call to action's label weight (the hand-off's 500) resolves to the registered face of that weight.
+    expect(getComputedStyle(screen.getByText("Save")).fontFamily).toBe("InstrumentSans_500Medium");
     // Typography titles are medium display-face titles in the v4 scale: the h2 role asks for
     // DISPLAY_FONT at 500 and gets the registered display face.
     expect(getComputedStyle(screen.getByText("Title")).fontFamily).toBe("BricolageGrotesque_500Medium");
@@ -152,7 +152,7 @@ describe("nested providers", () => {
       </ThemeProvider>,
     );
     expect(family("Inner")).toBe("InstrumentSans_700Bold");
-    expect(family("Save")).toBe("InstrumentSans_800ExtraBold");
+    expect(family("Save")).toBe("InstrumentSans_500Medium");
     // The whole map inherits, the mono role included.
     expect(family("--inner")).toBe("JetBrainsMono_400Regular");
     expect(seen.inner?.fonts).toBe(FACES);

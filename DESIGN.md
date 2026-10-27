@@ -309,8 +309,8 @@ components:
     empty-radius: "16px"
   card:
     card-radius: "16px"
-    card-shadow: "var(--shadow)"
-    card-shadow-raised: "var(--shadow-md)"
+    card-shadow: "var(--shadow-sm)"
+    card-shadow-raised: "var(--shadow-lg)"
   autocomplete:
     ac-radius: "10px"
     ac-radius-bottom: "10px"
@@ -323,7 +323,7 @@ components:
     seg-track-radius: "9999px"
     seg-inner-radius: "9999px"
   button:
-    btn-radius: "9999px"
+    btn-radius: "10px"
   checkbox:
     check-radius: "5px"
   chip:
@@ -340,7 +340,7 @@ components:
     field-radius: "10px"
     field-radius-bottom: "10px"
   pagination:
-    page-radius: "9999px"
+    page-radius: "8px"
   select:
     select-panel-shadow: "var(--shadow-lg)"
     select-radius: "10px"
@@ -364,7 +364,7 @@ components:
     acc-container-radius: "0px"
   alertdialog:
     ad-radius: "20px"
-    ad-btn-radius: "9999px"
+    ad-btn-radius: "10px"
   alert:
     alert-radius: "12px"
   descriptionlist:
@@ -397,7 +397,7 @@ components:
   dialog:
     dialog-shadow: "var(--shadow-xl)"
     dialog-radius: "20px"
-    alert-btn-radius: "9999px"
+    alert-btn-radius: "10px"
   drawer:
     drawer-side-radius: "22px"
     drawer-sheet-radius: "22px"
@@ -457,8 +457,8 @@ platformSkins:
       empty-radius: "12px"
     card:
       card-radius: "12px"
-      card-shadow: none
-      card-shadow-raised: "var(--shadow-sm)"
+      card-shadow: "var(--shadow-sm)"
+      card-shadow-raised: "var(--shadow-lg)"
     autocomplete:
       ac-radius: "8px"
       ac-radius-bottom: "8px"
@@ -937,7 +937,7 @@ kit's own Android parts at a step of the same scale.
 | web | `insetRow` | 10px |
 | web | `brandMark` | 9px |
 | web | `referenceCard` | 9px |
-| web | `utilityControl` | 7px |
+| web | `pageCell` | 8px |
 | web | `key` | 6px |
 | web | `tooltip` | 8px |
 | web | `event` | 8px |
@@ -953,6 +953,7 @@ kit's own Android parts at a step of the same scale.
 | ios | `actionSheet` | 34px |
 | ios | `groupedList` | 26px |
 | ios | `event` | 6px |
+| ios | `searchField` | 10px |
 | android | `chip` | 8px |
 | android | `event` | 8px |
 | android | `sliderTrack` | 8px |
@@ -994,12 +995,12 @@ drawn by those entries' platforms.
 | `menu` | `atoms/autocomplete`, `atoms/button-group`, `atoms/dropdown`, `atoms/listbox`, `atoms/popover`, `atoms/select`, `charts/shared`, `organisms/calendar`, `organisms/command`, `organisms/row-menu`, `style` |
 | `sheet` | `atoms/popover`, `organisms/action-sheet`, `organisms/drawer`, `organisms/toast` |
 | `checkbox` | `atoms/checkbox` |
-| `pill` | `atoms/badge`, `atoms/button`, `atoms/button-group`, `atoms/chip`, `atoms/pagination`, `atoms/skeleton`, `organisms/tabs`, `organisms/toast` |
+| `pill` | `atoms/badge`, `atoms/button`, `atoms/button-group`, `atoms/chip`, `atoms/input`, `atoms/skeleton`, `organisms/tabs`, `organisms/toast` |
 | `tile` | `atoms/emblem`, `atoms/qrcode`, `atoms/swatch`, `molecules/alert`, `molecules/card`, `molecules/grid-lists`, `molecules/stats`, `organisms/board`, `organisms/dashboard-grid` |
 | `insetRow` | `molecules/card` |
 | `brandMark` | `atoms/avatar` |
 | `referenceCard` | `molecules/card` |
-| `utilityControl` | `atoms/button` |
+| `pageCell` | `atoms/pagination` |
 | `key` | `atoms/badge`, `atoms/kbd`, `atoms/skeleton`, `atoms/tooltip`, `atoms/typography`, `charts/heatmap`, `molecules/code-block`, `molecules/media-objects` |
 | `tooltip` | `atoms/tooltip` |
 | `event` | `organisms/calendar` |
@@ -1014,6 +1015,7 @@ drawn by those entries' platforms.
 | `bubbleTail` | `organisms/chat` |
 | `actionSheet` | `organisms/action-sheet` |
 | `groupedList` | `atoms/radio`, `molecules/description-lists`, `molecules/stacked-lists`, `organisms/board` |
+| `searchField` | `atoms/input` |
 | `chip` | `atoms/chip` |
 | `sliderTrack` | `atoms/slider` |
 | `snackbar` | `organisms/toast` |

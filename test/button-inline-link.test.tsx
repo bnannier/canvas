@@ -14,9 +14,10 @@ test("inline work actions remain a single named link and activate their editor",
   fireEvent.click(link);
   expect(opened).toBe(1);
   const label = getByText("Preserve the interface");
-  expect(label.style.fontSize).toBe("14px");
-  expect(label.style.lineHeight).toBe("18.2px");
+  expect(label.style.fontSize).toBe("16px");
+  expect(label.style.lineHeight).toBe("22px");
   expect(label.style.fontWeight).toBe("800");
+  expect(label.style.textDecorationLine || label.style.textDecoration).toMatch(/underline/);
 });
 
 test("external inline links keep their destination and open it once through the system browser", async () => {

@@ -72,8 +72,8 @@ import { ActionSheet as ActionSheetIOS } from "../../../src/organisms/action-she
 import { ActionSheet as ActionSheetAndroid } from "../../../src/organisms/action-sheet/action-sheet.android.js";
 import { ActionPanel as ActionPanelIOS } from "../../../src/molecules/action-panels/action-panels.ios.js";
 import { ActionPanel as ActionPanelAndroid } from "../../../src/molecules/action-panels/action-panels.android.js";
-import { Card as CardIOS, CardMedia as CardMediaIOS } from "../../../src/molecules/card/card.ios.js";
-import { Card as CardAndroid, CardMedia as CardMediaAndroid } from "../../../src/molecules/card/card.android.js";
+import { Card as CardIOS, CardMedia as CardMediaIOS, CardTitle as CardTitleIOS } from "../../../src/molecules/card/card.ios.js";
+import { Card as CardAndroid, CardMedia as CardMediaAndroid, CardTitle as CardTitleAndroid } from "../../../src/molecules/card/card.android.js";
 import { DescriptionList as DescriptionListIOS } from "../../../src/molecules/description-lists/description-lists.ios.js";
 import { DescriptionList as DescriptionListAndroid } from "../../../src/molecules/description-lists/description-lists.android.js";
 import { Field as FieldIOS } from "../../../src/molecules/field/field.ios.js";
@@ -136,7 +136,7 @@ export const PLATFORM_SKINS: Record<"ios" | "android", Record<string, unknown>> 
     AvatarMenu: AvatarMenuIOS,
     Breadcrumb: BreadcrumbIOS, Slider: SliderIOS, Progress: ProgressIOS,
     Accordion: AccordionIOS, ActionSheet: ActionSheetIOS,
-    ActionPanel: ActionPanelIOS, Card: CardIOS, CardMedia: CardMediaIOS, DescriptionList: DescriptionListIOS,
+    ActionPanel: ActionPanelIOS, Card: CardIOS, CardMedia: CardMediaIOS, CardTitle: CardTitleIOS, DescriptionList: DescriptionListIOS,
     EmptyState: EmptyStateIOS, Field: FieldIOS, Feed: FeedIOS, Form: FormIOS, FormSection: FormSectionIOS,
     GridList: GridListIOS, MediaObject: MediaObjectIOS, PhoneInput: PhoneInputIOS, StackedList: StackedListIOS, Stats: StatsIOS,
     Chat: ChatIOS, ChatThread: ChatThreadIOS, ChatMessage: ChatMessageIOS, ChatComposer: ChatComposerIOS, Markdown: MarkdownIOS, Command: CommandIOS, DataTable: DataTableIOS, Drawer: DrawerIOS, FilterPanel: FilterPanelIOS,
@@ -156,7 +156,7 @@ export const PLATFORM_SKINS: Record<"ios" | "android", Record<string, unknown>> 
     AvatarMenu: AvatarMenuAndroid,
     Breadcrumb: BreadcrumbAndroid, Slider: SliderAndroid, Progress: ProgressAndroid,
     Accordion: AccordionAndroid, ActionSheet: ActionSheetAndroid,
-    ActionPanel: ActionPanelAndroid, Card: CardAndroid, CardMedia: CardMediaAndroid, DescriptionList: DescriptionListAndroid,
+    ActionPanel: ActionPanelAndroid, Card: CardAndroid, CardMedia: CardMediaAndroid, CardTitle: CardTitleAndroid, DescriptionList: DescriptionListAndroid,
     EmptyState: EmptyStateAndroid, Field: FieldAndroid, Feed: FeedAndroid, Form: FormAndroid, FormSection: FormSectionAndroid,
     GridList: GridListAndroid, MediaObject: MediaObjectAndroid, PhoneInput: PhoneInputAndroid, StackedList: StackedListAndroid, Stats: StatsAndroid,
     Chat: ChatAndroid, ChatThread: ChatThreadAndroid, ChatMessage: ChatMessageAndroid, ChatComposer: ChatComposerAndroid, Markdown: MarkdownAndroid, Command: CommandAndroid, DataTable: DataTableAndroid, Drawer: DrawerAndroid, FilterPanel: FilterPanelAndroid,
