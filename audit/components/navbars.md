@@ -41,6 +41,7 @@ Web: 18 cells per variant (3 widths x 3 looks x 2 surfaces). iOS and Android: 6 
 | `floating` | Floating | [ ] | [ ] | [ ] |  |
 | `compact` | Compact | [ ] | [ ] | [ ] |  |
 | `scrolls` | Scrolls | [ ] | [ ] | [ ] |  |
+| `branddivider` | Brand divider | [ ] | [ ] | [ ] |  |
 | `linkswithdestinations` | Links with destinations | [ ] | [ ] | [ ] |  |
 | `bare` | Bare | [ ] | [ ] | [ ] |  |
 | `appmenu` | App menu | [ ] | [ ] | [ ] |  |

@@ -42,6 +42,7 @@ export const SHAPE_ROLES: Record<ShapeRole, ShapeMember[]> = {
     { token: "p-menu-row-radius", on: ["web"], why: "iOS and Android menu rows run full bleed inside the menu card" },
     { token: "p-side-toggle-radius", on: ["web", "android"], why: "the iOS collapse toggle paints no fill" },
     { token: "p-tab-v-radius", on: ["web", "android"], why: "iOS draws its grouped-rail row at 8, not a capsule" },
+    { token: "p-seg-track-radius", on: ["web"], why: "iOS draws the UISegmentedControl capsule and Android the M3 stadium, `pill` members" },
   ],
   field: [
     { token: "p-field-radius", on: ALL },
@@ -81,7 +82,7 @@ export const SHAPE_ROLES: Record<ShapeRole, ShapeMember[]> = {
   pill: [
     { token: "p-nav-link-radius", on: ALL },
     { token: "p-badge-radius", on: ALL },
-    { token: "p-seg-track-radius", on: ALL },
+    { token: "p-seg-track-radius", on: ["ios", "android"], why: "the web draws the hand-off's segmented track at the 10 control corner, a `control` member" },
     { token: "p-tab-pill-track-radius", on: ALL },
     { token: "p-tab-pill-radius", on: ALL },
     { token: "p-chip-radius", on: ["web", "ios"], why: "Android draws the M3 chip at 8" },
@@ -279,6 +280,16 @@ export const CONCENTRIC_CORNERS: ConcentricCorner[] = [
       return [num(surface, "borderRadius") - num(surface, "borderWidth")];
     },
     on: ALL,
+  },
+  {
+    name: "ButtonGroup's web segment inside its track's padding",
+    site: "src/atoms/button-group/button-group.styles.ts SEGMENT_CORNER",
+    module: "atoms/button-group/button-group",
+    corners: (styles, _platform, tokens) => {
+      const track = styleAt(styles.webSkin as Skin, "segmentedWrap", tokens);
+      return [num(track, "borderRadius") - num(track, "padding")];
+    },
+    on: ["web"],
   },
   {
     name: "Tabs' wrapped capsule track around its pills",

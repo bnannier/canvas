@@ -3,10 +3,12 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Button, Divider } = scope;
+  const { Divider, Column } = scope;
   return (
-<Divider>
-  <Button ghost small>Show more</Button>
-</Divider>
+<Column snug>
+  <Divider soft />
+  <Divider />
+  <Divider strong />
+</Column>
   );
 }

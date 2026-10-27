@@ -75,6 +75,16 @@ the hand-off's docs pill.
 <Navbar scrolls floating compact brand="Canvas" links={["Foundations", "Controls", "Inputs", "Navigation", "Overlays", "Data", "Charts", "Layout", "Templates"]} />
 ```
 
+### Brand divider
+
+`brandDivider` sets the brand apart from the links with a short vertical rule (the kit
+`Divider vertical inset strong`), as the hand-off's floating docs pill does. It shows
+only while the links row is on the bar.
+
+```tsx
+<Navbar brandDivider scrolls floating compact brand="Canvas" links={["Foundations", "Controls", "Inputs", "Navigation"]} />
+```
+
 ### Links with destinations
 
 `hrefs` gives the links their destinations, by index. On the web each becomes a real

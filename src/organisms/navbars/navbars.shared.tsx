@@ -8,6 +8,7 @@ import { useHorizontalScrollFocus } from "../../style/use-scroll-focus.js";
 import { Button as WebButton } from "../../atoms/button/button.js";
 import { Avatar as WebAvatar } from "../../atoms/avatar/avatar.js";
 import { Icon } from "../../atoms/icon/icon.js";
+import { Divider } from "../../atoms/divider/divider.js";
 import { Dropdown as WebDropdown, type DropdownProps, type DropdownItem } from "../../atoms/dropdown/dropdown.js";
 import { type Surface, type Density } from "./navbars.styles.js";
 
@@ -116,6 +117,13 @@ export interface NavbarProps {
    * It takes the left cluster's own gap, so it needs no wrapper.
    */
   brandContent?: ReactNode;
+  /**
+   * Draw a short vertical separator between the brand and the links (the kit
+   * `<Divider vertical inset strong />`), as the hand-off's floating docs pill does. It
+   * shows only while both the brand and the links row are on the bar, so a collapsed
+   * bar or one without links never ends its brand on a stray rule.
+   */
+  brandDivider?: boolean;
   /**
    * Ordered navigation link labels rendered in the middle row. Omit it (or pass an
    * empty array) for a bar with no middle nav: neither the links row nor the
@@ -293,7 +301,7 @@ export function createNavbar(skin: NavbarSkin, parts: NavbarParts = {}) {
   const Button = parts.Button ?? WebButton;
   const Avatar = parts.Avatar ?? WebAvatar;
   return function Navbar(props: NavbarProps) {
-    const { brand, brandContent, links: linkProp = [], hrefs, actions, actionLabel, onAction, avatar, onSelect, onMenu, scrolls, testID, style } = props;
+    const { brand, brandContent, brandDivider, links: linkProp = [], hrefs, actions, actionLabel, onAction, avatar, onSelect, onMenu, scrolls, testID, style } = props;
     // An app menu (`onMenu`) stands in for the links row and its narrow menu at every width.
     const links = onMenu ? [] : linkProp;
     const { tokens } = useTheme();
@@ -367,6 +375,9 @@ export function createNavbar(skin: NavbarSkin, parts: NavbarParts = {}) {
             {brandContent}
             {brand ? <Text style={skin.brand(tokens, density)}>{brand}</Text> : null}
           </View>
+        ) : null}
+        {brandDivider && (brandContent != null || !!brand) && hasLinks && !collapsed ? (
+          <Divider vertical inset strong />
         ) : null}
         {!hasLinks || collapsed ? null : (
           <View style={skin.linksRow(tokens, density)}>

@@ -5,6 +5,6 @@ import type { ExampleScope } from "../../../scope";
 export default function Example(scope: ExampleScope) {
   const { Navbar } = scope;
   return (
-<Navbar bordered brand="Canvas" links={["Docs", "Components", "Templates"]} hrefs={["/docs", "/components", "/templates"]} />
+<Navbar brandDivider scrolls floating compact brand="Canvas" links={["Foundations", "Controls", "Inputs", "Navigation"]} />
   );
 }

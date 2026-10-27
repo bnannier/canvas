@@ -3,8 +3,13 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { Divider } = scope;
+  const { Button, Divider, Row } = scope;
   return (
-<Divider>Or continue with</Divider>
+<Row alignCenter flush>
+  <Button ghost small>Bold</Button>
+  <Button ghost small>Italic</Button>
+  <Divider vertical inset />
+  <Button ghost small>Link</Button>
+</Row>
   );
 }

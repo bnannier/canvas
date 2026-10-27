@@ -13,6 +13,7 @@ export function GroupGlass({ selected = false, brand, corners = s.glassCorners, 
   return (
     <GlassSurface
       pointerEvents="none"
+      layer="control"
       testID={testID}
       brand={brand}
       tint={selected ? alpha(dark ? tokens.foreground : tokens.background, dark ? 0.16 : 0.64) : undefined}
@@ -32,7 +33,7 @@ export function GroupGlass({ selected = false, brand, corners = s.glassCorners, 
  * hit target and focus stay in place over it. `pressed` and `disabled` are the shell's
  * call-site props; a static selection reads neither.
  */
-export function GlassSelection({ layout, testID }: { layout: LayoutRectangle; pressed?: boolean; disabled?: boolean; testID?: string }) {
+export function GlassSelection({ layout, corners, testID }: { layout: LayoutRectangle; corners?: ViewStyle; pressed?: boolean; disabled?: boolean; testID?: string }) {
   return (
     <View
       accessible={false}
@@ -41,7 +42,7 @@ export function GlassSelection({ layout, testID }: { layout: LayoutRectangle; pr
       aria-hidden
       style={[s.glassSelectionPosition, { left: layout.x, top: layout.y, width: layout.width, height: layout.height }]}
     >
-      <GroupGlass selected testID={testID} />
+      <GroupGlass selected corners={corners} testID={testID} />
     </View>
   );
 }

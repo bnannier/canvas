@@ -1,7 +1,7 @@
 import { primaryText } from "../../style/primary-text.js";
 import { actionFill, actionInk } from "../../style/action.js";
 import { type ViewStyle, type TextStyle } from "react-native";
-import { type ColorTokens, alpha, shadow, customShadow, shape } from "../../style/index.js";
+import { type ColorTokens, alpha, shadow, customShadow, shape, webShadow } from "../../style/index.js";
 import { type ButtonGroupSkin, type Size } from "./button-group.shared.js";
 
 // Co-located ButtonGroup skins, one per platform. The group is laid out per
@@ -18,10 +18,10 @@ import { type ButtonGroupSkin, type Size } from "./button-group.shared.js";
 //     `border` outline); segments share 1dp borders (no gap); the SELECTED
 //     segment is a tonal fill (alpha(primary, .12)) with a `primary-text` label and
 //     a leading check; press = android_ripple.
-//   Web: Dark Factory's segmented control (a card2 pill track with a hairline, 3px
-//     inset and a 2px gap, the selected segment a white card pill on DF's segment
-//     shadow, 700 labels in foreground or muted) with its split and stepper kinds as
-//     the web Button's pills.
+//   Web: the v4 hand-off's segmented control (`K.def('button-group')`: a `secondary`
+//     track with the `border` hairline, a 3px inset and a 2px gap on the control corner,
+//     the selected segment a flat `card` thumb on the sm shadow, 500 labels in
+//     foreground or muted) with its split and stepper kinds as the web Button's pills.
 
 // --- shared size scales (brand type/sizing, identical across platforms) ------
 
@@ -145,26 +145,30 @@ export const glassSegmentColor = (t: ColorTokens, selected: boolean): TextStyle 
   color: selected ? primaryText(t) : t.foreground,
 });
 // =============================================================================
-// Web: Dark Factory's segmented control. The row sits in a pill track (`secondary`,
-// DF's card2, with the `border` hairline, a 3px inset and a 2px gap); every segment is
-// a pill, the selected one DF's white `card` thumb on its segment shadow (0 4px 12px
-// -6px in the `shade` role), the labels 700 in `foreground` when selected and
-// `muted-foreground` otherwise. DF's segments are 27 tall in a 35 track at its one
-// size; small and large step 4 either way. The split and stepper kinds and the spaced
-// peers are the web Button's pills (29 / 36 / 40): the split is the green call to
-// action with its chevron half, the stepper and the spaced peers DF's hairline pills.
+// Web: the v4 hand-off's segmented control (`K.def('button-group')` in
+// tools/v4/handoff/cv-kit-controls.js). The row sits in a track on the control corner
+// (`secondary`, its --sf3, with the `border` hairline, its --ln, a 3px inset and a 2px
+// gap); each segment rounds 3px inside the track's corner, the selected one a flat `card`
+// thumb (its --sf) on the sm shadow, the labels 500 in `foreground` when selected and
+// `muted-foreground` otherwise (its --tx and --tx2). The control is 30 / 36 / 44 tall at
+// small / default / large, so a segment is 8px shorter: 22 / 28 / 36, padded 14 a side
+// (8 for an icon alone), labels 12 at small and 13 otherwise. The split and stepper kinds
+// and the spaced peers are the web Button's pills (29 / 36 / 40): the split is the call
+// to action with its chevron half, the stepper and the spaced peers hairline pills.
 // =============================================================================
 
+const SEGMENT_INSET = 3;
+const SEGMENT_CORNER = shape.web.control - SEGMENT_INSET;
 const PILL = shape.web.pill;
 const WEB_SEGMENT: Record<Size, ViewStyle> = {
-  small: { height: 23, paddingHorizontal: 12 },
-  default: { paddingVertical: 6, paddingHorizontal: 16 },
-  large: { height: 31, paddingHorizontal: 18 },
+  small: { height: 22, paddingHorizontal: 14 },
+  default: { height: 28, paddingHorizontal: 14 },
+  large: { height: 36, paddingHorizontal: 14 },
 };
 const WEB_SEGMENT_TYPE: Record<Size, TextStyle> = {
-  small: { fontSize: 11, lineHeight: 15 },
-  default: { fontSize: 11.5, lineHeight: 14.95 },
-  large: { fontSize: 12.5, lineHeight: 17 },
+  small: { fontSize: 12, lineHeight: 16 },
+  default: { fontSize: 13, lineHeight: 18 },
+  large: { fontSize: 13, lineHeight: 18 },
 };
 // The Button's pill metrics (button.styles.ts), so a split or stepper lines up with a Button beside it.
 const WEB_CELL: Record<Size, ViewStyle> = {
@@ -181,27 +185,28 @@ const WEB_CELL_TYPE: Record<Size, TextStyle> = {
 export const webSkin: ButtonGroupSkin = {
   segmentedWrap: (t) => ({
     ...segmentedContainer,
-    padding: 3,
+    padding: SEGMENT_INSET,
     gap: 2,
-    borderRadius: PILL,
+    borderRadius: shape.web.control,
     borderWidth: 1,
     borderColor: t.border,
     backgroundColor: t.secondary,
   }),
   segmentBorderWidth: 0,
-  joinCorners: () => ({ borderRadius: PILL }),
+  joinCorners: () => ({ borderRadius: SEGMENT_CORNER }),
   spacedCorners: { borderRadius: PILL },
   overlap: null,
   segmentSurface(t, selected) {
     return selected
-      ? { backgroundColor: t.card, boxShadow: `0px 4px 12px -6px ${t.shade}` }
+      ? { backgroundColor: t.card, boxShadow: webShadow("sm", t) }
       : { backgroundColor: "transparent" };
   },
   segmentLabel(t, selected) {
-    return { fontWeight: "700", color: selected ? t.foreground : t["muted-foreground"] };
+    return { fontWeight: "500", color: selected ? t.foreground : t["muted-foreground"] };
   },
   // Glyphs track the label: foreground on the selected thumb, muted otherwise.
   segmentIconColor: (selected) => (selected ? "foreground" : "muted"),
+  segmentIconOnlyPadding: 8,
   showSelectedCheck: false,
   segmentSize: WEB_SEGMENT,
   segmentType: WEB_SEGMENT_TYPE,
