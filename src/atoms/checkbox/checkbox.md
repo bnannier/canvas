@@ -185,7 +185,7 @@ in your own component.)
 </Checkbox>
 ```
 
-**Don't**: A detached checkbox makes only the 16px box tappable; the label text does nothing.
+**Don't**: A detached checkbox makes only the 18px box tappable; the label text does nothing.
 
 ```tsx
 <View style={{ flexDirection: "row", alignItems: "flex-start", gap: 8 }}>

@@ -1,23 +1,16 @@
 # Badge
 
-Two families on one Badge component, picked by boolean props, both Dark Factory's pill. The metadata badge labels a schema, role, or tag (tones: `secondary`, the quiet surface pill and the default; `default`, the solid call-to-action pill; `outline`, a hairline pill; `destructive`, the soft red pill; add `mono` for token names). The status badge (`status`) is Dark Factory's live-state pill for state like active, pending, or failed: a quiet pill whose leading dot carries the tone (success, warning, error, info, neutral) beside a label in the foreground.
+Two families on one Badge component, picked by boolean props. The metadata badge labels a schema, role, or tag: with no tone it is the accent's soft pill, and the tones give `default` the solid call-to-action pill, `secondary` the quiet surface pill, `outline` a hairline pill and `destructive` the soft red pill; add `mono` for token names. A status tone (`success`, `warning`, `error`, `info`, `neutral`) paints the pill in that tone's wash and ink and leads it with a dot. The status badge (`status`) has no pill: a dot in the tone's color, ringed in its wash, beside a muted label, for live state like active, pending, or failed.
 
-The tone colors come from `statusColors`, the helper every toned surface in the kit reads, so a warning badge and a warning alert are the same state.
+The tone colors come from `statusColors`, the helper every toned surface in the kit reads, so a warning badge and a warning alert are the same state, and every ink is the solved text role that keeps 4.5:1 on its wash.
 
-If more than one tone is passed, Badge resolves the highest-precedence one: `default` > `destructive` > `secondary` > `outline` for metadata (`secondary` when none is passed), and `success` > `error` > `warning` > `info` > `neutral` for status (`neutral` when none is passed).
+If more than one tone is passed, Badge resolves the highest-precedence one: `default` > `destructive` > `secondary` > `outline` for metadata (the accent's soft pill when none is passed), and `success` > `error` > `warning` > `info` > `neutral` for status (`neutral` when none is passed). The metadata tones win over a status tone's colors; the status tone's dot stays.
 
 Lay out a series of badges with `BadgeGroup`, a wrapping row that owns the gap (`tight` / `snug` / `cozy`, default `snug`; the largest gap passed wins: `cozy` > `snug` > `tight`) and centers its badges, so a call site never hand-rolls a flex row around them. Give it an `accessibilityLabel` (say, "Rachel Chen's roles") and it is announced as a named group that keeps its badges' text; without one it is a plain row.
 
-Dense Argus badges use `small` (10/13), `count` (extra-bold with compact inset),
-`navigationCount` (solid action count), and `reference` (tracked square key, optionally
-`large` and `href`). `soft` pairs an intent wash with its ink; intent precedence is
-action, primary/reference, success, warning, error, info, muted. `foreground` overrides
-the label ink while preserving an intent dot. `inverse` and `solid` supply branded
-surfaces. `uppercase` tracks caps; `start` pins a badge in a host layout.
+The pill is 22 px tall with a 12 px label; `small` is 18 px with an 11 px label and `large` 26 px. `count` is the small pill with the heavier label, `navigationCount` the small solid count, and `reference` a linked key at the 6 px key corner in the code face, underlined, with an arrow when it has an `href`. `primary` and `action` take the accent's wash, `soft` names the soft wash every toned pill already has, `neutralFill` fills with the border color, `foreground` overrides the label ink, `dot` adds the leading dot without a status tone, and `inverse` and `solid` supply branded surfaces. `uppercase` tracks caps; `start` pins a badge in a host layout.
 
-`notification` is the compact count carried by a notification control: a
-16-pixel pill with a 9.5-pixel extra-bold label. Button owns its position when
-passed a `count`.
+`notification` is a destructive count: a 20 px pill with a 600 11 px label, soft by default and solid with `solid`, set off from the page by a ring of the background; `action` adds a halo of the destructive wash. Button carries its own count when passed a `count`.
 
 `signal` is the original standalone 10px status marker. It uses the existing
 status-tone precedence and announces its supplied status label.

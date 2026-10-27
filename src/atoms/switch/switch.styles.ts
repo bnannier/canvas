@@ -1,129 +1,114 @@
 import { type ViewStyle } from "react-native";
-import { customShadow, TOUCH_TARGET } from "../../style/index.js";
+import { customShadow, TOUCH_TARGET, type ColorTokens } from "../../style/index.js";
 import { type SwitchSkin, type Size } from "./switch.shared.js";
 
-// Co-located Switch styles, one skin per platform, all driven by the brand tokens
-// (passed in from useTheme so they follow light/dark). Plain RN style objects, so
-// they apply on iOS, Android, and web alike. The on-track is always the brand
-// `primary`, never the platform default, so the control reads native but stays yours.
+// Co-located Switch skins, one per platform, drawn in the Canvas v4 hand-off's colours
+// (tools/v4/handoff/cv-kit-controls.js, its `sw` renderer and the K.PF rows). Plain RN
+// style objects, so they apply on iOS, Android, and web alike. A switch is a real control
+// on iOS and Android (PLATFORM-REFERENCES.md), so those skins keep the platform's own
+// shape; the on track is always the accent (`primary`), never a platform default.
+//
+//   Web: a 44x26 pill at the base size (0.8x and 1.2x for small and large), a 1px edge,
+//     the raised surface with the `input` boundary when off (solved to 3:1, where the
+//     hand-off's hairline is about 1.5:1), the accent fill and edge when on, a lit inset
+//     top line, a white knob (track height less 4) with a soft drop shadow, inset 2px
+//     from the outer edge. Hovering an on switch adds the accent's glow.
+//   iOS: the 51x31 UISwitch pill with a 27pt white round knob inset 2pt, the raised
+//     surface when off, the accent when on.
+//   Android (Material 3): the 52x32dp track with a 2dp outline, the secondary fill and
+//     the subtle ink outline with a 16dp subtle knob when off, the accent fill with a
+//     24dp knob in the accent's own ink when on.
+//   The platform controls come in one size, and so do these two skins: `small` and
+//   `large` scale the web track only, as the hand-off's renderer does.
 
-// iOS pill, matched to the iOS 27 UI Kit Toggles symbol: the real UISwitch is a
-// ~51:31 (≈1.64) pill, NOT the more-elongated track Canvas used before. Each size
-// is brought to that aspect ratio (base 46x28 = 1.643, small 40x24 = 1.667,
-// large 52x32 = 1.625).
-const IOS_TRACK: Record<Size, { width: number; height: number }> = {
-  small: { width: 40, height: 24 },
-  base: { width: 46, height: 28 },
-  large: { width: 52, height: 32 },
-};
+// The hand-off's knob is white on every platform, in either scheme.
+const KNOB = "#ffffff";
 
-// iOS off-track gray. systemGray3 (#c7c7cc light, #48484a dark) is the real
-// at-rest UISwitch track fill, and the reason to hard-code it is platform
-// FIDELITY, not contrast: an iOS switch that is off has to be the grey iOS
-// users read as off. (The comment here used to say `input` was too washed out
-// to use; that was true of the old hairline value and is no longer why this
-// constant exists. `input` now clears 3:1 on every surface, and the web skin
-// below uses it directly.) Both systemGray3 values sit UNDER the WCAG 1.4.11
-// 3:1 floor, 1.68:1 light and 2.18:1 dark against their page, which is Apple's
-// own trade-off; changing it is a HIG question, not a token one.
-const IOS_OFF_TRACK = { light: "#c7c7cc", dark: "#48484a" } as const;
+// The raised surface (the hand-off's --sf4), the off track's fill.
+function raised(t: ColorTokens): string {
+  return t["surface-raised"] ?? t.secondary;
+}
 
-// Material 3 (m3.material.io/components/switch/specs): the switch has a SINGLE
-// size, a 52×32dp track. Base is that exact spec; small/large are proportional
-// Canvas variants.
-const NATIVE_TRACK: Record<Size, { width: number; height: number }> = {
-  small: { width: 46, height: 28 },
-  base: { width: 52, height: 32 },
-  large: { width: 56, height: 34 },
-};
-
-// Web: a 44x24 pill at the base size with a 20px thumb inset 2px.
-const WEB_TRACK: Record<Size, { width: number; height: number }> = {
-  small: { width: 36, height: 20 },
-  base: { width: 44, height: 24 },
-  large: { width: 52, height: 28 },
-};
-
-const WEB_THUMB: Record<Size, number> = { small: 16, base: 20, large: 24 };
-
-// Fully rounded (9999 clamps to half the shorter side): the pill track and the round thumb.
+// Fully rounded (9999 clamps to half the shorter side): the pill track and the round knob.
 const PILL: ViewStyle = { borderRadius: 9999, position: "relative" };
 const ABS: ViewStyle = { position: "absolute", borderRadius: 9999 };
-const IOS_SHADOW: ViewStyle = customShadow({ offsetY: 1, radius: 2, opacity: 0.2, elevation: 2 });
 
-// iOS (iOS 27 UI Kit Toggles): a ~1.64 pill with a white rounded-rect CAPSULE
-// knob (wider than tall), not a circle. The on-track is the brand `primary`; the
-// off-track is systemGray3 (a solid mid-gray), never the washed-out `input`.
-// The capsule keeps the ~2pt inset on every side and the soft drop shadow.
-//
-//   thumb height = track height − 4 (2pt top/bottom inset, preserved)
-//   thumb width  > height (the iOS 26/27 capsule), with ~2pt inset on the
-//                  active edge so it sits flush like the reference:
-//                  base 28w×24h, small 24w×20h, large 34w×28h
-//   borderRadius = height / 2 (fully-rounded ends, so it reads as a capsule)
-const IOS_THUMB: Record<Size, { width: number; height: number }> = {
-  small: { width: 24, height: 20 },
-  base: { width: 28, height: 24 },
-  large: { width: 34, height: 28 },
+// ---------- Web ----------
+// The hand-off scales the base 44x26 track by 0.8 and 1.2 and rounds.
+const WEB_TRACK: Record<Size, { width: number; height: number }> = {
+  small: { width: 35, height: 21 },
+  base: { width: 44, height: 26 },
+  large: { width: 53, height: 31 },
 };
+const WEB_EDGE = 1;
+// The lit top line every web track carries, and the knob's drop.
+const WEB_TRACK_LIGHT = "inset 0px 1px 0px rgba(255, 255, 255, 0.2)";
+const WEB_KNOB_SHADOW: ViewStyle = customShadow({ offsetY: 1, radius: 3, opacity: 0.35 });
 
-export const iosSkin: SwitchSkin = {
-  minTarget: TOUCH_TARGET.ios,
-  track: (t, dark, checked, size) => ({
-    ...PILL,
-    width: IOS_TRACK[size].width,
-    height: IOS_TRACK[size].height,
-    backgroundColor: checked ? t.primary : dark ? IOS_OFF_TRACK.dark : IOS_OFF_TRACK.light,
-  }),
-  thumb: (_t, checked, size) => {
-    const { width, height } = IOS_THUMB[size];
-    return {
-      position: "absolute",
-      borderRadius: 9999,
-      ...IOS_SHADOW,
-      top: 2,
-      width,
-      height,
-      backgroundColor: "#ffffff",
-      ...(checked ? { end: 2 } : { start: 2 }),
-    };
-  },
-};
-
-// Material 3: an outlined track with a small dot when off; a filled brand track with
-// a larger white thumb when on.
-export const androidSkin: SwitchSkin = {
-  minTarget: TOUCH_TARGET.android,
-  track: (t, _dark, checked, size) => ({
-    ...PILL,
-    width: NATIVE_TRACK[size].width,
-    height: NATIVE_TRACK[size].height,
-    ...(checked ? { backgroundColor: t.primary } : { backgroundColor: t.muted, borderWidth: 2, borderColor: t.border }),
-  }),
-  thumb: (t, checked, size) => {
-    const h = NATIVE_TRACK[size].height;
-    if (checked) {
-      // M3 selected handle: 24dp at base (h − 8 = 24 when h = 32).
-      const d = h - 8;
-      return { ...ABS, top: (h - d) / 2, end: 4, width: d, height: d, backgroundColor: "#ffffff" };
-    }
-    // M3 unselected handle: 16dp at base (h / 2 = 16 when h = 32), centered.
-    const d = h / 2;
-    return { ...ABS, top: (h - d) / 2, start: 4, width: d, height: d, backgroundColor: t["muted-foreground"] };
-  },
-};
-
-// Web: a compact pill with a surface-colored thumb.
 export const webSkin: SwitchSkin = {
   minTarget: null,
   track: (t, _dark, checked, size) => ({
     ...PILL,
     width: WEB_TRACK[size].width,
     height: WEB_TRACK[size].height,
-    backgroundColor: checked ? t.primary : t.input,
+    borderWidth: WEB_EDGE,
+    borderColor: checked ? t.primary : t.input,
+    backgroundColor: checked ? t.primary : raised(t),
+    boxShadow: WEB_TRACK_LIGHT,
   }),
-  thumb: (t, checked, size) => {
-    const d = WEB_THUMB[size];
-    return { ...ABS, top: 2, width: d, height: d, backgroundColor: t.background, ...(checked ? { end: 2 } : { start: 2 }) };
+  thumb: (_t, checked, size) => {
+    // The knob sits 1px inside the 1px edge: 2px from the track's outer edge on every side.
+    const d = WEB_TRACK[size].height - 4;
+    return { ...ABS, ...WEB_KNOB_SHADOW, top: 1, width: d, height: d, backgroundColor: KNOB, ...(checked ? { end: 1 } : { start: 1 }) };
+  },
+  hover: (t, checked) => (checked ? { boxShadow: `${WEB_TRACK_LIGHT}, 0px 0px 16px ${t.glow ?? t.ring}` } : null),
+};
+
+// ---------- iOS ----------
+// The UISwitch is one size, 51x31 with a 27pt knob.
+const IOS_TRACK = { width: 51, height: 31 };
+const IOS_KNOB_SHADOW: ViewStyle = customShadow({ offsetY: 3, radius: 8, opacity: 0.15 });
+
+export const iosSkin: SwitchSkin = {
+  minTarget: TOUCH_TARGET.ios,
+  track: (t, _dark, checked) => ({
+    ...PILL,
+    width: IOS_TRACK.width,
+    height: IOS_TRACK.height,
+    backgroundColor: checked ? t.primary : raised(t),
+  }),
+  thumb: (_t, checked) => {
+    const d = IOS_TRACK.height - 4;
+    return { ...ABS, ...IOS_KNOB_SHADOW, top: 2, width: d, height: d, backgroundColor: KNOB, ...(checked ? { end: 2 } : { start: 2 }) };
+  },
+};
+
+// ---------- Android (Material 3) ----------
+// m3.material.io/components/switch/specs: a single 52x32dp track.
+const ANDROID_TRACK = { width: 52, height: 32 };
+const ANDROID_OUTLINE = 2;
+
+export const androidSkin: SwitchSkin = {
+  minTarget: TOUCH_TARGET.android,
+  track: (t, _dark, checked) => ({
+    ...PILL,
+    width: ANDROID_TRACK.width,
+    height: ANDROID_TRACK.height,
+    borderWidth: ANDROID_OUTLINE,
+    ...(checked
+      ? { backgroundColor: t.primary, borderColor: t.primary }
+      : { backgroundColor: t.secondary, borderColor: t["subtle-foreground"] ?? t["muted-foreground"] }),
+  }),
+  thumb: (t, checked) => {
+    // The knob is placed inside the 2dp outline (absolute children sit in the padding box).
+    const inner = ANDROID_TRACK.height - ANDROID_OUTLINE * 2;
+    if (checked) {
+      // M3 selected handle: 24dp at base, 2dp from the outline's inner edge.
+      const d = inner - 4;
+      return { ...ABS, top: (inner - d) / 2, end: 2, width: d, height: d, backgroundColor: t["primary-foreground"] };
+    }
+    // M3 unselected handle: 16dp at base, centered, 4dp in from the start.
+    const d = ANDROID_TRACK.height / 2;
+    return { ...ABS, top: (inner - d) / 2, start: 4, width: d, height: d, backgroundColor: t["subtle-foreground"] ?? t["muted-foreground"] };
   },
 };

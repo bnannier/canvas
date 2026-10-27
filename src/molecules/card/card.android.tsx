@@ -1,4 +1,4 @@
-import { createCard, createCardMedia } from "./card.shared.js";
+import { createCard, createCardMedia, createCardTitle } from "./card.shared.js";
 import { androidSkin } from "./card.styles.js";
 
 // Material 3 Card. Metro resolves this file on Android; the docs import it for
@@ -13,11 +13,13 @@ export const Card = createCard(androidSkin);
 // skin-parameterized rather than static.
 export const CardMedia = createCardMedia(androidSkin);
 
+// The title takes the skin's face (the display face on the web, the platform face natively).
+export const CardTitle = createCardTitle(androidSkin);
+
 // The composition subcomponents are static + shared, re-exported here so the full
 // public API exists on Android.
 export {
   CardHeader,
-  CardTitle,
   CardDescription,
   CardContent,
   CardFooter,

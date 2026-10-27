@@ -44,13 +44,13 @@ describe("a pressable card lifts on hover", () => {
     render(<ThemeProvider light solid><Card onPress={() => {}} testID="card"><Text>Scout</Text></Card></ThemeProvider>);
     const surface = screen.getByTestId("card");
     expect(transition(surface)).toEqual(["transform, box-shadow", `${HOVER.card.duration}ms`, HOVER_EASING]);
-    // The shade is the hand-off's ladder: sm at rest, md on hover.
+    // The shade is the hand-off's ladder: sm at rest, lg on hover (the raised card's).
     expect(style(surface, "transform")).toBe("");
     expect(style(surface, "box-shadow")).toContain("0px 1px 2px 0px");
 
     hover(surface);
     expect(style(surface, "transform")).toContain(`translateY(-${HOVER.card.distance}px)`);
-    expect(style(surface, "box-shadow")).toContain("0px 12px 32px -10px");
+    expect(style(surface, "box-shadow")).toContain("0px 30px 80px -16px");
 
     leave(surface);
     expect(style(surface, "transform")).toBe("");

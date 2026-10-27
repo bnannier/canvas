@@ -2,128 +2,103 @@ import { type ViewStyle, type TextStyle } from "react-native";
 import { shape, type ColorTokens } from "../../style/index.js";
 import { type CheckboxSkin, type Size } from "./checkbox.shared.js";
 
-// Co-located Checkbox skins, one per platform, all driven by the brand tokens
-// (passed in from useTheme so they follow light/dark and the glass surface). The
-// BRAND survives on every platform (the filled box is always the `primary` token,
-// never a platform default), and only the native SHAPE, sizing, border weight, and
-// press feedback change per OS. Each corner is the platform's `shape.checkbox`:
+// Co-located Checkbox skins, one per platform, drawn in the Canvas v4 hand-off's colours
+// (tools/v4/handoff/cv-kit-controls.js, its `cbx` renderer and the K.PF rows). The
+// filled box is always the accent (`primary`) with a check or dash glyph in the accent's
+// own ink (`primary-foreground`); an empty box is the `input` boundary (solved to 3:1,
+// where the hand-off's hairline is about 1.5:1) over nothing. Each corner is the
+// platform's `shape.checkbox`:
+//   Web: a 16/18/22px box per size at the web checkbox corner with a 1.5px edge; a hovering
+//     pointer rings the box in the accent's soft wash (6px).
 //   iOS (HIG): no native checkbox, so a one-setting Checkbox is the iOS switch (the
 //     entry passes it as the Standalone part) and the box drawn here is only ever a
-//     SELECTION: the edit-mode selection circle, a 22pt ring in the control boundary
-//     when empty, the brand fill with a white check (or dash) when selected; press =
-//     opacity dim (~0.8).
-//   Android (Material 3): an 18dp square at the Material 3 checkbox corner with a 2dp
-//     outline when empty, brand fill + white check when checked; press = android_ripple over
-//     a 40dp state layer; disabled opacity 0.38.
-//   Web: a 16/20/24px box per size at the checkbox corner with a 1px `input` border,
-//     the brand fill with the `primary-foreground` check.
+//     SELECTION: the edit-mode selection circle, 22pt at every size with a 1.5pt edge;
+//     press = opacity dim (~0.8).
+//   Android (Material 3): a 16/18/22dp box at the Material 3 checkbox corner with a 2dp edge; press =
+//     android_ripple over a 40dp state layer.
+// The glyph is the kit's check (or minus) Icon at the box less 6, from the web's box
+// steps on every platform, as the hand-off sizes it. Every skin dims the row to 0.4 when
+// disabled.
 
 // Box dimensions per size.
-const WEB_BOX: Record<Size, number> = { small: 16, base: 20, large: 24 };
-const IOS_BOX: Record<Size, number> = { small: 20, base: 22, large: 26 };
-const ANDROID_BOX: Record<Size, number> = { small: 18, base: 18, large: 20 };
+const BOX: Record<Size, number> = { small: 16, base: 18, large: 22 };
+const IOS_BOX = 22;
 
-// Glyph (check / dash) type per box family. The check sits inside the box, so the
-// font tracks the box size; `lineHeight: fontSize` keeps it optically centered.
-function glyphType(fontSize: number): TextStyle {
-  return { fontSize, lineHeight: fontSize };
+// Label type, the same at every size (only the box scales): the hand-off's 500 14px
+// title at its 1.3 line, and the 12px description in the subtle ink at its 1.45 line,
+// both rounded up to a whole pixel. `flexShrink` lets a long label wrap within the row.
+const LABEL_TYPE: TextStyle = { fontSize: 14, lineHeight: 19, fontWeight: "500" };
+const DESCRIPTION_TYPE: TextStyle = { fontSize: 12, lineHeight: 18, fontWeight: "400" };
+function label(tokens: ColorTokens): TextStyle {
+  return { ...LABEL_TYPE, flexShrink: 1, color: tokens.foreground };
 }
-const WEB_GLYPH: Record<Size, number> = { small: 12, base: 14, large: 16 };
-const IOS_GLYPH: Record<Size, number> = { small: 12, base: 13, large: 15 };
-const ANDROID_GLYPH: Record<Size, number> = { small: 13, base: 13, large: 15 };
-
-// Label type per size (shared across platforms; the label is brand type, not a
-// platform face). Matches the original Canvas label scale. `flexShrink` lets a
-// long label wrap within the row instead of forcing the row wider.
-const LABEL_TYPE: Record<Size, TextStyle> = {
-  small: { fontSize: 12, lineHeight: 16 }, // text-xs
-  base: { fontSize: 14, lineHeight: 20 }, // text-sm
-  large: { fontSize: 16, lineHeight: 24 }, // text-base
-};
-function label(tokens: ColorTokens, size: Size): TextStyle {
-  return { fontWeight: "500", flexShrink: 1, color: tokens.foreground, ...LABEL_TYPE[size] };
+// The whole row already dims when disabled, so the description keeps its ink in either state.
+function description(tokens: ColorTokens): TextStyle {
+  return { ...DESCRIPTION_TYPE, color: tokens["subtle-foreground"] ?? tokens["muted-foreground"] };
 }
 
-// Description type per size, one step below the label, matching the kit's other
-// title+description controls (Radio, Switch). Muted secondary color on every
-// platform. The whole row already dims when disabled, so the description keeps
-// the muted token in either state.
-const DESCRIPTION_TYPE: Record<Size, TextStyle> = {
-  small: { fontSize: 11, lineHeight: 15 },
-  base: { fontSize: 12, lineHeight: 16 },
-  large: { fontSize: 14, lineHeight: 20 },
-};
-function description(tokens: ColorTokens, size: Size): TextStyle {
-  return { color: tokens["muted-foreground"], ...DESCRIPTION_TYPE[size] };
+function glyph(tokens: ColorTokens, size: Size) {
+  return { color: tokens["primary-foreground"], size: BOX[size] - 6 };
 }
 
-// Box base: a square, centered, nudged down (`marginTop: 2`) to align with the
-// label's first line when text sits beside it. Per-platform radius/border weight
-// is layered on by each skin.
-function boxBase(box: number, nudge: boolean): ViewStyle {
-  return {
-    flexShrink: 0,
-    alignItems: "center",
-    justifyContent: "center",
-    width: box,
-    height: box,
-    ...(nudge ? { marginTop: 2 } : null),
-  };
+// Box base: a square, centered. Per-platform corner and edge are layered on by each skin.
+function boxBase(box: number): ViewStyle {
+  return { flexShrink: 0, alignItems: "center", justifyContent: "center", width: box, height: box };
+}
+function fill(t: ColorTokens, filled: boolean): ViewStyle {
+  return filled
+    ? { borderColor: t.primary, backgroundColor: t.primary }
+    : { borderColor: t.input, backgroundColor: "transparent" };
 }
 
-// ---------- Web: a 20px box at the base size with the 5px corner ----------
+const DISABLED_OPACITY = 0.4;
+
+// ---------- Web: an 18px box at the base size with the 5px corner ----------
 export const webSkin: CheckboxSkin = {
-  box: (t, filled, size, nudge) => ({
-    ...boxBase(WEB_BOX[size], nudge),
+  box: (t, filled, size) => ({
+    ...boxBase(BOX[size]),
     borderRadius: shape.web.checkbox,
-    borderWidth: 1,
-    ...(filled
-      ? { borderColor: t.primary, backgroundColor: t.primary }
-      : { borderColor: t.input, backgroundColor: "transparent" }),
+    borderWidth: 1.5,
+    ...fill(t, filled),
   }),
-  glyph: (t, size) => ({ fontWeight: "500", color: t["primary-foreground"], ...glyphType(WEB_GLYPH[size]) }),
+  hover: (t) => ({ boxShadow: `0px 0px 0px 6px ${t["primary-soft"] ?? t.accent}` }),
+  glyph,
   label,
   description,
-  disabledOpacity: 0.5,
+  disabledOpacity: DISABLED_OPACITY,
   pressedOpacity: 0.9,
   ripple: null,
 };
 
 // ---------- iOS (HIG): the edit-mode selection circle, dim on press ----------
 export const iosSkin: CheckboxSkin = {
-  box: (t, filled, size, nudge) => ({
-    ...boxBase(IOS_BOX[size], nudge),
+  box: (t, filled) => ({
+    ...boxBase(IOS_BOX),
     // A full round on the square box: the selection circle at every size.
     borderRadius: shape.ios.checkbox,
-    // The empty ring is the control boundary (`input`, 3:1 on every surface); the
-    // fill hides it when selected.
     borderWidth: 1.5,
-    ...(filled
-      ? { borderColor: t.primary, backgroundColor: t.primary }
-      : { borderColor: t.input, backgroundColor: "transparent" }),
+    ...fill(t, filled),
   }),
-  glyph: (_t, size) => ({ fontWeight: "700", color: "#ffffff", ...glyphType(IOS_GLYPH[size]) }),
+  glyph,
   label,
   description,
-  disabledOpacity: 0.5,
+  disabledOpacity: DISABLED_OPACITY,
   pressedOpacity: 0.8,
   ripple: null,
 };
 
-// ---------- Android (Material 3): 18dp square, 2dp radius/outline, ripple ----------
+// ---------- Android (Material 3): the 2dp corner and edge, ripple ----------
 export const androidSkin: CheckboxSkin = {
-  box: (t, filled, size, nudge) => ({
-    ...boxBase(ANDROID_BOX[size], nudge),
+  box: (t, filled, size) => ({
+    ...boxBase(BOX[size]),
     borderRadius: shape.android.checkbox,
     borderWidth: 2,
-    ...(filled
-      ? { borderColor: t.primary, backgroundColor: t.primary }
-      : { borderColor: t["muted-foreground"], backgroundColor: "transparent" }),
+    ...fill(t, filled),
   }),
-  glyph: (_t, size) => ({ fontWeight: "700", color: "#ffffff", ...glyphType(ANDROID_GLYPH[size]) }),
+  glyph,
   label,
   description,
-  disabledOpacity: 0.38, // M3 disabled opacity
+  disabledOpacity: DISABLED_OPACITY,
   pressedOpacity: null, // Android uses a ripple instead
   ripple: (t) => ({ color: t.primary, borderless: true, radius: 20 }), // 40dp state layer
 };

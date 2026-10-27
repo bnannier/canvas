@@ -15,8 +15,8 @@ decorative: a screen reader hears the field as required, from `aria-required` on
 the web and from its name ("Full name, required") on iOS and Android. A field fills the parent it is given; a step of its own (`xs`, `lg`, …, with
 `start` to pin it to the leading edge) or a Container step sets its measure.
 Select and the search field share its look, and Field and Form compose that
-label with helper and error text. On iOS the field is drawn to the iOS
-input-field reference: a white box with a hairline, a muted title above, a glyph
+label with helper and error text. On iOS the field is the native text field in
+Canvas's colors: a card-colored box with a hairline, a muted title above, a glyph
 that tints with focus and error, and in solid mode an error wash. Under glass a
 wash would cost the field's ink its contrast over the material, so the iOS field
 takes none (the web's field a trace in dark only), and the error border, the tinted
@@ -28,8 +28,20 @@ Inside an overlay, Escape follows the overlay's cancellation policy. A supplied
 `onKeyPress` runs first and can call `preventDefault()` to handle Escape locally.
 Cancelling an IME candidate keeps the overlay open.
 
-On web, the default field uses Argus’s 40-pixel frame, 13-pixel semibold value,
-12-pixel inset, and muted tracked uppercase label (10-pixel reading floor).
+On web, the field is a sunken well: 40 pixels tall (32 small, 48 large) at the
+10-pixel field corner, a hairline edge, a 12-pixel inset, a regular 14-pixel value
+(13 small) and a medium 13-pixel muted label above. The edge darkens under the
+pointer, takes the accent with a soft accent halo on focus, and turns red with a
+red halo for an error; a read-only field is a dashed edge on no fill, and a
+disabled one dims. A prefix sits in a muted box behind a divider, a passive
+suffix is inline monospace text before the clear button (a small raised disc with
+an x), and an action suffix is a button box at the end.
+
+On iOS the clear button is the system's gray disc with an x, inside the boxed
+suffix segment, and the action suffix's label is a semibold 15-point brand label.
+On Android the suffix is inline text before the circled-x clear glyph, an errored
+field shows a red alert glyph at its end (in place of a clear or eye button), and
+a read-only field drops its fill under a dashed frame with a subtle underline.
 
 `eyebrow` uses the original dense uppercase web field label, preserving its
 9.5/12.35 metrics and tracking. Other platform label treatments retain their skin.
@@ -38,10 +50,11 @@ On web, the default field uses Argus’s 40-pixel frame, 13-pixel semibold value
 `systemFocus` preserves the platform’s system focus outline. An explicit
 `accessibilityLabel` takes precedence over the visible label’s accessible name.
 
-Pass `search` for the Argus toolbar search: a magnifier, a borderless editor, and
-a tracked uppercase prompt while empty on web. The prompt names the editor unless
-`accessibilityLabel` or `label` supplies its purpose. Native skins use their
-platform field with a leading search glyph. `systemFocus` preserves the system
+Pass `search` for the toolbar search: a magnifier, a borderless editor, and a
+tracked uppercase prompt while empty on web. The prompt names the editor unless
+`accessibilityLabel` or `label` supplies its purpose. iOS draws its search field
+(a 36-point muted well) and Android the Material 3 search bar (a 56-dp muted
+stadium). `systemFocus` preserves the system
 focus outline for the borderless editor.
 
 ## Usage

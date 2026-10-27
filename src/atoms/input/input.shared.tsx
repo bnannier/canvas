@@ -9,10 +9,11 @@ import {
   type TextInput as RNTextInput,
   type TextInputProps as RNTextInputProps,
 } from "react-native";
-import { View, Pressable, Text, TextInput, useFillStyle, FloatingLabel, LabelContent, labelA11y, requiredName, useFloatingLabelRoom, FOCUS_RESET, type ColorTokens, type LayoutStyle, type MeasureProps, type StyleProp, type ViewStyle, type TextStyle, GlassPane, paneHost, paneStyle, paneRipple, isGlass, legibleWash, PANE_SIBLING_INPUT } from "../../style/index.js";
+import { View, Pressable, Text, TextInput, useFillStyle, FloatingLabel, LabelContent, labelA11y, requiredName, useFloatingLabelRoom, FOCUS_RESET, type ColorTokens, type LayoutStyle, type MeasureProps, type StyleProp, type ViewStyle, type TextStyle, GlassPane, paneHost, paneStyle, paneRipple, isGlass, legibleWash, PANE_SIBLING_INPUT, shape } from "../../style/index.js";
 import { useComposedRefs } from "../../style/use-composed-refs.js";
 import { frameHandlers, useFocusFrame } from "../../style/focus-frame.js";
 import { rowSeam } from "../../style/touch-seam.js";
+import { useHover } from "../../style/hover.js";
 import { Icon, type IconName } from "../icon/icon.js";
 import { type InputSkin, type Size } from "./input.styles.js";
 
@@ -287,6 +288,8 @@ export function createInput(skin: InputSkin) {
     const fieldRef = useRef<RNTextInput>(null);
     // The ring an errored field wears on keyboard focus (see the note above FOCUS_RESET).
     const errorFrame = useFocusFrame();
+    // A pointer over the box steps its resting edge (web only, where the skin declares it).
+    const hover = useHover(!!skin.hover && !disabled);
     const hostRef = useComposedRefs(fieldRef, ref, errorFrame.target.ref);
     // One collision-free id for the label so the field can name itself via
     // aria-labelledby (unconditional hook: the id is cheap and always available).
@@ -311,14 +314,38 @@ export function createInput(skin: InputSkin) {
     const accessibleName = requiredName(props.accessibilityLabel ?? label ?? (props.search ? placeholder : undefined), required);
     const ariaLabelledby = props["aria-labelledby"] ?? (label != null && props.accessibilityLabel == null ? labelId : undefined);
 
-    // Border-color precedence: error > focus > default input border. Shared by
+    // Border-color precedence: error > focus > hover > default input border. Shared by
     // both layouts; in the grouped layout it lives on the outer border so prefix
     // + field + suffix light up together as one control. The skin decides how
     // that color is used (a full border on iOS/web, the bottom active indicator
     // on Android).
-    const borderColor: keyof ColorTokens = isError ? "destructive" : focused ? "ring" : "input";
-    const text = skin.text(tokens, size);
+    const borderColor: keyof ColorTokens = isError ? "destructive" : focused ? "ring" : hover.hovered ? "subtle-foreground" : "input";
+    // The focused box's halo (the web's accent spread). An errored field under the kit's
+    // keyboard ring takes none, so the ring and the halo never stack.
+    const halo = focused && skin.focusHalo && !(isError && errorFrame.focused) ? skin.focusHalo(tokens, isError) : null;
     const state = { focused, error: isError };
+    // What read-only changes on the box (the web's dashed edge on no fill, the Android
+    // field's fill and resting indicator, which its frame below replaces).
+    const readOnlyLook = readOnly && skin.readOnlyField ? skin.readOnlyField(tokens, state) : null;
+    // The frame a skin draws over a read-only field (Android's dashed edge and subtle
+    // underline). It is absolutely positioned and takes no touches, so the floating label,
+    // the content box and the value never move; a focused or errored field keeps its own
+    // active indicator in place of the frame's underline.
+    const frameLook = readOnly && skin.readOnlyFrame ? skin.readOnlyFrame(tokens) : null;
+    const readOnlyFrame = frameLook ? (
+      <View style={[StyleSheet.absoluteFill, frameLook.frame, { pointerEvents: "none" }]}>
+        {focused || isError ? null : <View style={frameLook.underline} />}
+      </View>
+    ) : null;
+    const text = skin.text(tokens, size);
+    // The trailing glyph gutter: the glyph row's end inset, one glyph and the gap to the value.
+    const gutter = asNum(skin.groupField(tokens, { leadingIcon: false, trailingIcon: true, hasPrefix: false, hasSuffix: false }).paddingEnd, 0);
+    // An errored field's trailing alert glyph, where the skin draws one (Android).
+    const alertGlyph = (
+      <View style={{ pointerEvents: "none" }}>
+        <Icon circleAlert color={tokens.destructive} size={skin.iconSize} decorative />
+      </View>
+    );
     const iconName = icon;
     // The trailing action glyphs: the eye needs a masked value to toggle; the clear
     // button shows only while there is text to clear (and the field is editable).
@@ -337,7 +364,7 @@ export function createInput(skin: InputSkin) {
       systemFocus: props.systemFocus,
       onChangeText: handleChangeText,
       placeholder,
-      placeholderTextColor: tokens["muted-foreground"],
+      placeholderTextColor: skin.placeholder(tokens),
       // Disabled reaches the browser as disabled (out of the tab order) and VoiceOver and
       // TalkBack as dimmed; read-only stays focusable on the web (src/style/text-entry-state.ts).
       ...textEntryState({ disabled, readOnly }),
@@ -408,12 +435,17 @@ export function createInput(skin: InputSkin) {
     ) : null;
 
     // Search owns its magnifier, decorative empty prompt, and editor as one field.
-    // It shares text state, refs and accessibility with both framed layouts.
+    // It shares text state, refs and accessibility with both framed layouts. A search
+    // container with a fill of its own (the native search fields) is a control surface:
+    // under glass it renders through the pane like the framed field.
     if (props.search && skin.search) {
+      const searchBox = skin.search.container(tokens);
+      const filled = searchBox.backgroundColor != null;
       return <View style={[labelGap, widthCap, style, disabled ? { opacity: skin.disabledOpacity } : null]}>
         {aboveLabel}
-        <View style={skin.search.container}>
-          <Icon search boldStroke muted size={15} />
+        <View style={filled ? paneStyle(theme, searchBox) : searchBox}>
+          {filled ? <GlassPane {...paneProps} shape={searchBox} /> : null}
+          <Icon search boldStroke={skin.search.icon.bold} color={skin.search.icon.color(tokens)} size={skin.search.icon.size} decorative />
           <View style={{ flex: 1, justifyContent: "center" }}>
             {!populated ? <Text accessible={false} aria-hidden style={skin.search.placeholder(tokens)}>{placeholder}</Text> : null}
             <TextInput ref={hostRef} style={skin.search.field(tokens)} {...common} placeholder={undefined} />
@@ -430,10 +462,14 @@ export function createInput(skin: InputSkin) {
       // redundant and, over the filled Android skin, reads as a blue rectangle on
       // top of the indicator. No-op on native; matches the grouped path and the
       // Autocomplete/Textarea/Stepper shells.
-      const bareShape = { ...skin.bareField(tokens, borderColor, focused, isError), ...(props.soft && skin.softFill ? { backgroundColor: skin.softFill(tokens) } : null) };
+      const bareShape = { ...skin.bareField(tokens, borderColor, focused, isError), ...(props.soft && skin.softFill ? { backgroundColor: skin.softFill(tokens) } : null), ...readOnlyLook };
+      // An errored bare field keeps its layout (and its floating label) and overlays the
+      // alert glyph at the end, the value padded clear of it by the glyph gutter.
+      const bareAlert = isError && !!skin.errorGlyph;
       // The field's whole box goes through paneStyle (its shape, height and any label
       // reserve), so under glass its resting border becomes padding of the same width.
-      const bareStyleWith = (reserve: StyleProp<ViewStyle>) => [paneStyle(theme, [bareShape, skin.bareBox(size), reserve], focused || isError), text, props.systemFocus ? null : FOCUS_RESET, glass ? glassBox : null, isError ? errorFrame.ring() : null];
+      const bareStyleWith = (reserve: StyleProp<ViewStyle>) => [paneStyle(theme, [bareShape, skin.bareBox(size), reserve], focused || isError), text, props.systemFocus ? null : FOCUS_RESET, glass ? glassBox : null, bareAlert ? { paddingEnd: gutter } : null, halo, isError ? errorFrame.ring() : null];
+      const bareTrailing = bareAlert ? <View style={[skin.iconOverlay("right"), { pointerEvents: "none" }]}>{alertGlyph}</View> : null;
       const bareStyle = bareStyleWith(null);
       const disabledDim = disabled ? { opacity: skin.disabledOpacity } : null;
       // The puck behind a bare field (nothing in solid mode).
@@ -458,6 +494,8 @@ export function createInput(skin: InputSkin) {
               {...common}
               placeholder={focused ? placeholder : undefined}
             />
+            {bareTrailing}
+            {readOnlyFrame}
             <FloatingLabel
               styles={skin}
               size={size}
@@ -482,9 +520,11 @@ export function createInput(skin: InputSkin) {
         return (
           <View style={[labelGap, disabledDim, widthCap, style]}>
             {aboveLabel}
-            <View style={paneHost(theme)}>
+            <View style={paneHost(theme)} {...hover.target}>
               {barePane}
               <TextInput ref={hostRef} style={bareStyle} textAlignVertical="center" {...common} />
+              {bareTrailing}
+              {readOnlyFrame}
             </View>
           </View>
         );
@@ -493,9 +533,11 @@ export function createInput(skin: InputSkin) {
       // Keep the field host in place when the material changes, preserving focus,
       // native selection and uncontrolled text. The pane stays decoration only.
       return (
-        <View style={[disabledDim, widthCap, style, paneHost(theme)]}>
+        <View style={[disabledDim, widthCap, style, paneHost(theme)]} {...hover.target}>
           {barePane}
           <TextInput ref={hostRef} style={bareStyle} textAlignVertical="center" {...common} />
+          {bareTrailing}
+          {readOnlyFrame}
         </View>
       );
     }
@@ -511,12 +553,25 @@ export function createInput(skin: InputSkin) {
     // field, and the total stays groupedHeight — the indicator/border band lives
     // INSIDE it rather than inflating past it.
     const height = skin.groupedHeight(size);
-    // How many glyphs share the trailing gutter (clear, eye, a passive trailing icon).
-    const trailingGlyphs = (hasClear ? 1 : 0) + (hasEye ? 1 : 0) + (trailingIcon && iconName != null ? 1 : 0);
+    // The trailing glyphs, in the hand-off's order: the clear button, the eye, the error
+    // alert (where the skin draws one, and only in place of a clear or eye button), then a
+    // passive trailing icon.
+    const hasAlert = !!skin.errorGlyph && isError && !hasClear && !hasEye;
+    const hasTrailingIcon = !!trailingIcon && iconName != null;
+    const trailingGlyphs = (hasClear ? 1 : 0) + (hasEye ? 1 : 0) + (hasAlert ? 1 : 0) + (hasTrailingIcon ? 1 : 0);
+    // The clear button's box: its disc where the skin draws one, never under the glyph size.
+    const disc = skin.clearDisc;
+    const clearBox = Math.max(skin.iconSize, disc?.size ?? 0);
+    // The gutter the glyphs need: the one-glyph gutter widened by each further glyph and
+    // ACTION_GAP, and by what a clear disc adds over a glyph.
+    const trailingGutter = trailingGlyphs > 0 ? gutter + (hasClear ? clearBox - skin.iconSize : 0) + (trailingGlyphs - 1) * (skin.iconSize + ACTION_GAP) : 0;
+    // A passive suffix the skin draws inline sits in the field area BEFORE the glyphs (web,
+    // Android), so it, not the value, reserves their gutter; a boxed suffix stays at the
+    // edge after them (iOS), and the action suffix is always last.
+    const inlineSuffix = suffix != null && !action && !!skin.inlineSuffix;
     // The pressable glyphs' slops (the clear glyph first, then the eye). The one-glyph gutter
-    // holds the glyph row's end inset, the glyph and the gap to the value, so that gap is what
-    // is left of it; each further glyph widens the gutter by a glyph and ACTION_GAP.
-    const gutter = asNum(skin.groupField(tokens, { leadingIcon: false, trailingIcon: true, hasPrefix: false, hasSuffix: false }).paddingEnd, 0);
+    // holds the glyph row's end inset, the glyph and the gap to the value (or the inline
+    // suffix), so that gap is what is left of it.
     const endInset = asNum((StyleSheet.flatten(skin.iconOverlay("right")) as ViewStyle).paddingEnd, 0);
     const [firstSlop, secondSlop] = actionSlops((hasClear ? 1 : 0) + (hasEye ? 1 : 0), Math.max(0, gutter - endInset - skin.iconSize));
     const clearSlop = hasClear ? firstSlop : undefined;
@@ -528,7 +583,9 @@ export function createInput(skin: InputSkin) {
       handleChangeText("");
       fieldRef.current?.focus();
     };
-    const groupShape = { ...skin.groupContainer(tokens, borderColor, focused, isError), ...(props.soft && skin.softFill ? { backgroundColor: skin.softFill(tokens) } : null) };
+    const groupShape = { ...skin.groupContainer(tokens, borderColor, focused, isError), ...(props.soft && skin.softFill ? { backgroundColor: skin.softFill(tokens) } : null), ...readOnlyLook };
+    // The trailing addon's state: the action suffix is a box of its own on some skins.
+    const suffixState = { ...state, action: !!action };
     const groupSurface = stateSurface(groupShape, focused || isError);
     // The clear and reveal buttons' borderless ripple is projected onto an ancestor's
     // background, beneath the group's pane: where the pane renders it draws in the
@@ -536,10 +593,12 @@ export function createInput(skin: InputSkin) {
     const actionRipple = paneRipple(theme, skin.ripple ? { ...skin.ripple(tokens), borderless: true } : undefined);
     const groupedField = (
       <View
-        hitSlop={hasClear || hasEye ? actionOverhang(skin.iconSize, height) : undefined}
+        {...hover.target}
+        hitSlop={hasClear || hasEye ? actionOverhang(hasClear ? clearBox : skin.iconSize, height) : undefined}
         style={[
           groupSurface.style,
           { minHeight: height },
+          halo,
           above ? null : disabled ? { opacity: skin.disabledOpacity } : null,
           above ? null : widthCap,
           above ? null : style,
@@ -549,7 +608,7 @@ export function createInput(skin: InputSkin) {
         <GlassPane {...paneProps} stateBorder={groupSurface.keepsBorder} shape={groupShape} tint={paneTint} />
         {prefix != null ? (
           <View style={inkFill(skin.addonBox(tokens, "left", state))}>
-            <Text style={[skin.addonText(tokens), text]}>{prefix}</Text>
+            <Text style={[text, skin.addonText(tokens, "left")]}>{prefix}</Text>
           </View>
         ) : null}
 
@@ -563,9 +622,8 @@ export function createInput(skin: InputSkin) {
           <TextInput
             ref={hostRef}
             style={[
-              skin.groupField(tokens, { leadingIcon: !!leadingIcon, trailingIcon: trailingGlyphs > 0, hasPrefix: prefix != null, hasSuffix: suffix != null }),
-              // A second (or third) trailing glyph widens the trailing gutter by a glyph + gap each.
-              trailingGlyphs > 1 ? { paddingEnd: asNum(skin.groupField(tokens, { leadingIcon: false, trailingIcon: true, hasPrefix: false, hasSuffix: false }).paddingEnd, 0) + (trailingGlyphs - 1) * (skin.iconSize + ACTION_GAP) } : null,
+              skin.groupField(tokens, { leadingIcon: !!leadingIcon, trailingIcon: trailingGlyphs > 0 && !inlineSuffix, hasPrefix: prefix != null, hasSuffix: suffix != null, action: !!action }),
+              trailingGlyphs > 0 && !inlineSuffix ? { paddingEnd: trailingGutter } : null,
               text,
               props.systemFocus ? null : FOCUS_RESET,
               glass ? PANE_SIBLING_INPUT : null,
@@ -573,6 +631,12 @@ export function createInput(skin: InputSkin) {
             textAlignVertical="center"
             {...common}
           />
+
+          {inlineSuffix ? (
+            <View style={[inkFill(skin.addonBox(tokens, "right", suffixState)), trailingGlyphs > 0 ? { paddingEnd: trailingGutter } : null]}>
+              <Text style={[text, skin.addonText(tokens, "right")]}>{suffix}</Text>
+            </View>
+          ) : null}
 
           {trailingGlyphs > 0 ? (
             <View style={[skin.iconOverlay("right"), { flexDirection: "row", alignItems: "center", gap: ACTION_GAP }]} pointerEvents="box-none">
@@ -583,9 +647,18 @@ export function createInput(skin: InputSkin) {
                   accessibilityRole="button"
                   accessibilityLabel="Clear text"
                   android_ripple={actionRipple}
-                  style={({ pressed }) => (skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null)}
+                  style={({ pressed }) => [
+                    disc ? { width: clearBox, height: clearBox, alignItems: "center", justifyContent: "center" } : null,
+                    skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null,
+                  ]}
                 >
-                  <Icon circleX color={skin.iconColor(tokens, { ...state, action: true })} size={skin.iconSize} decorative />
+                  {disc ? (
+                    <View style={{ width: disc.size, height: disc.size, borderRadius: shape.web.pill, backgroundColor: disc.fill(tokens), alignItems: "center", justifyContent: "center" }}>
+                      <Icon x color={disc.ink(tokens)} size={disc.glyph} decorative />
+                    </View>
+                  ) : (
+                    <Icon circleX color={skin.iconColor(tokens, { ...state, action: true })} size={skin.iconSize} decorative />
+                  )}
                 </Pressable>
               ) : null}
               {hasEye ? (
@@ -602,7 +675,8 @@ export function createInput(skin: InputSkin) {
                   <Icon {...(revealed ? { eye: true } : { eyeOff: true })} color={skin.iconColor(tokens, { ...state, action: true })} size={skin.iconSize} decorative />
                 </Pressable>
               ) : null}
-              {trailingIcon && iconName != null ? (
+              {hasAlert ? alertGlyph : null}
+              {hasTrailingIcon && iconName != null ? (
                 <View pointerEvents="none">
                   <Icon {...{ [iconName]: true }} color={skin.iconColor(tokens, { ...state, action: false })} size={skin.iconSize} decorative />
                 </View>
@@ -611,11 +685,11 @@ export function createInput(skin: InputSkin) {
           ) : null}
         </View>
 
-        {suffix != null ? (
+        {suffix != null && !inlineSuffix ? (
           action ? (
             <Pressable
               style={({ pressed }) => [
-                inkFill(skin.addonBox(tokens, "right", state)),
+                inkFill(skin.addonBox(tokens, "right", suffixState)),
                 skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null,
               ]}
               onPress={onActionPress}
@@ -623,14 +697,15 @@ export function createInput(skin: InputSkin) {
               android_ripple={skin.ripple ? skin.ripple(tokens) : undefined}
               accessibilityRole="button"
             >
-              <Text style={[skin.actionText(tokens), text]}>{suffix}</Text>
+              <Text style={[text, skin.actionText(tokens)]}>{suffix}</Text>
             </Pressable>
           ) : (
-            <View style={inkFill(skin.addonBox(tokens, "right", state))}>
-              <Text style={[skin.addonText(tokens), text]}>{suffix}</Text>
+            <View style={inkFill(skin.addonBox(tokens, "right", suffixState))}>
+              <Text style={[text, skin.addonText(tokens, "right")]}>{suffix}</Text>
             </View>
           )
         ) : null}
+        {readOnlyFrame}
         {groupSurface.border}
       </View>
     );

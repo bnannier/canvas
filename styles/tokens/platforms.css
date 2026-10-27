@@ -12,18 +12,18 @@
 
    Values are lifted verbatim from the upstream skins. */
 :root,[data-platform="web"]{
-  /* Button — Dark Factory's pill: a 1px border on every intent but link, 36 tall at base
-     (29 small, 40 large), 700 labels (800 on the call to action), a 6px gap, opacity press */
-  --p-btn-radius:9999px;--p-btn-pad-x:16px;--p-btn-pad-y:9px;--p-btn-gap:6px;
-  --p-btn-font:12px;--p-btn-lh:16px;--p-btn-weight:700;--p-btn-tracking:0px;
-  --p-btn-pad-x-sm:14px;--p-btn-pad-y-sm:6px;--p-btn-font-sm:11.5px;--p-btn-lh-sm:15px;
-  --p-btn-pad-x-lg:20px;--p-btn-pad-y-lg:10px;--p-btn-font-lg:13px;--p-btn-lh-lg:18px;
-  --p-btn-square:36px;--p-btn-square-sm:29px;--p-btn-square-lg:40px;
+  /* Button: the v4 control: a 1px border on every intent but link, 40 tall at base
+     (32 small, 48 large), the 10 control corner, 500 labels, an 8px gap, a scale press */
+  --p-btn-radius:10px;--p-btn-pad-x:16px;--p-btn-pad-y:9px;--p-btn-gap:8px;
+  --p-btn-font:14px;--p-btn-lh:20px;--p-btn-weight:500;--p-btn-tracking:0px;
+  --p-btn-pad-x-sm:12px;--p-btn-pad-y-sm:6px;--p-btn-font-sm:13px;--p-btn-lh-sm:18px;
+  --p-btn-pad-x-lg:22px;--p-btn-pad-y-lg:12px;--p-btn-font-lg:16px;--p-btn-lh-lg:22px;
+  --p-btn-square:40px;--p-btn-square-sm:32px;--p-btn-square-lg:48px;
   --p-press:0.9 /* @kind other */;--p-disabled:0.5 /* @kind other */;
-  /* Card: the 16px card corner, soft hairline, the ambient shade, 24px inset */
-  --p-card-radius:16px;--p-card-shadow:var(--shadow);--p-card-shadow-raised:var(--shadow-md);
-  --p-card-pad:24px;--p-card-gap:16px;--p-card-pad-compact:16px;--p-card-gap-compact:12px;
-  --p-card-pad-comfortable:32px;--p-card-gap-comfortable:24px;--p-card-border:var(--border) /* @kind other */;
+  /* Card: the v4 panel: the 16px card corner, a hairline, sh-sm at rest and sh-lg raised, 20px inset */
+  --p-card-radius:16px;--p-card-shadow:var(--shadow-sm);--p-card-shadow-raised:var(--shadow-lg);
+  --p-card-pad:20px;--p-card-gap:12px;--p-card-pad-compact:14px;--p-card-gap-compact:8px;
+  --p-card-pad-comfortable:24px;--p-card-gap-comfortable:12px;--p-card-border:var(--border) /* @kind other */;
   /* Field: the 10px field corner, full 1px border, 48px tall, card fill */
   --p-field-radius:10px;--p-field-height:48px;--p-field-height-sm:40px;--p-field-height-lg:56px;
   --p-field-fill:var(--card);--p-field-pad-x:16px;--p-field-font:14px;--p-field-lh:20px;
@@ -52,7 +52,7 @@
   --p-switch-thumb-off-w:20px;--p-switch-thumb-off-h:20px;--p-switch-thumb-off-fill:var(--background);--p-switch-thumb-off-x:2px;
   --p-switch-thumb-shadow:none;
   /* Pills and tiles */
-  --p-badge-radius:9999px;--p-badge-font:11px;--p-badge-weight:700;--p-badge-tracking:0px;
+  --p-badge-radius:9999px;--p-badge-font:12px;--p-badge-weight:500;--p-badge-tracking:0px;
   --p-chip-radius:9999px;--p-chip-pad-x:10px;--p-chip-pad-y:4px;--p-chip-font:11px;--p-chip-gap:7px;
   /* Chip glyphs (chip.styles.ts: 12px web/iOS remove glyph; the M3 selected checkmark shows on Android only) */
   --p-chip-remove:12px;--p-chip-check-display:none /* @kind other */;--p-chip-check-size:18px;
@@ -228,8 +228,8 @@
   --p-dialog-scrim:rgba(0,0,0,0.6);--p-dialog-radius:20px;--p-dialog-border:1px;--p-dialog-shadow:var(--shadow-xl);
   --p-dialog-title:18px;--p-dialog-title-lh:28px;--p-dialog-title-weight:500;
   --p-dialog-body:14px;--p-dialog-body-lh:20px;--p-dialog-body-gap:8px;--p-dialog-footer-gap:8px;--p-dialog-footer-top:24px;
-  --p-alert-btn-flex:0 0 auto /* @kind other */;--p-alert-btn-min-h:0px;--p-alert-btn-pad:8px 14px;--p-alert-btn-radius:9999px;
-  --p-alert-btn-font:14px;--p-alert-btn-lh:20px;--p-alert-btn-weight:500;--p-alert-btn-tracking:0px;
+  --p-alert-btn-flex:0 0 auto /* @kind other */;--p-alert-btn-min-h:0px;--p-alert-btn-pad:6px 12px;--p-alert-btn-radius:10px;
+  --p-alert-btn-font:13px;--p-alert-btn-lh:18px;--p-alert-btn-weight:500;--p-alert-btn-tracking:0px;
   --p-alert-cancel-border:1px;--p-alert-cancel-fill:transparent;--p-alert-cancel-label:var(--foreground);
   --p-alert-confirm-fill:var(--primary);--p-alert-confirm-label:var(--primary-foreground);
   --p-alert-confirm-destructive-fill:var(--destructive);--p-alert-confirm-destructive-label:var(--destructive-foreground);
@@ -238,7 +238,7 @@
   --p-ad-title:18px;--p-ad-title-lh:28px;--p-ad-title-weight:500;
   --p-ad-desc:14px;--p-ad-desc-lh:20px;--p-ad-desc-gap:8px;
   --p-ad-actions-justify:flex-end /* @kind other */;--p-ad-actions-gap:8px;
-  --p-ad-btn-flex:0 0 auto /* @kind other */;--p-ad-btn-min-h:0px;--p-ad-btn-pad:8px 14px;--p-ad-btn-radius:9999px;--p-ad-btn-font:14px;--p-ad-btn-lh:20px;
+  --p-ad-btn-flex:0 0 auto /* @kind other */;--p-ad-btn-min-h:0px;--p-ad-btn-pad:6px 12px;--p-ad-btn-radius:10px;--p-ad-btn-font:13px;--p-ad-btn-lh:18px;
   --p-ad-cancel-border:1px;--p-ad-cancel-fill:transparent;--p-ad-cancel-label:var(--foreground);--p-ad-cancel-weight:500;
   --p-ad-confirm-fill:var(--primary);--p-ad-confirm-label:var(--primary-foreground);--p-ad-confirm-weight:500;
   --p-ad-confirm-destructive-fill:var(--destructive);--p-ad-confirm-destructive-label:var(--destructive-foreground);
@@ -272,16 +272,18 @@
   /* Steps (steps.styles.ts webSkin; the progress layout's 6px muted track and 500-weight caption) */
   --p-steps-current-fill:transparent;--p-steps-connector-radius:0px;--p-steps-desc:12px;--p-steps-desc-lh:16px;
   --p-steps-track-h:6px;--p-steps-caption-weight:500;
-  /* Pagination (pagination.styles.ts webSkin, every platform: Dark Factory's pager, bare page
-     pills at the Button's heights, the current page a violet pill, hairline arrow circles,
-     700 labels, the instant hover wash on a resting cell) */
-  --p-page-h-small:29px;--p-page-h-default:36px;--p-page-h-large:40px;
-  --p-page-pad-small:8px;--p-page-pad-default:10px;--p-page-pad-large:12px;
-  --p-page-font-small:11.5px;--p-page-font-default:12px;--p-page-font-large:13px;
-  --p-page-lh-small:15px;--p-page-lh-default:16px;--p-page-lh-large:18px;
-  --p-page-radius:9999px;--p-page-border:1px;--p-page-weight:700;--p-page-rest-fill:transparent;
+  /* Pagination (pagination.styles.ts webSkin, every platform: the v4 hand-off's pager, 8-cornered
+     hairline cells at 28 / 34 / 40, 500 13px mono numerals in the muted ink, the current page
+     the accent fill with its glow, the instant secondary wash on a resting cell, .4 disabled) */
+  --p-page-h-small:28px;--p-page-h-default:34px;--p-page-h-large:40px;
+  --p-page-pad-small:0px;--p-page-pad-default:0px;--p-page-pad-large:0px;
+  --p-page-font-small:13px;--p-page-font-default:13px;--p-page-font-large:13px;
+  --p-page-lh-small:18px;--p-page-lh-default:18px;--p-page-lh-large:18px;
+  --p-page-radius:8px;--p-page-border:1px;--p-page-weight:500;--p-page-rest-fill:transparent;
+  --p-page-rest-border:var(--border);--p-page-rest-label:var(--muted-foreground);
   --p-page-selected-fill:var(--primary);--p-page-selected-border:var(--primary);--p-page-selected-label:var(--primary-foreground);
-  --p-page-arrow-border:var(--border);--p-page-hover-fill:var(--hover);
+  --p-page-selected-shadow:0px 6px 16px -6px var(--glow);
+  --p-page-arrow-border:var(--border);--p-page-hover-fill:var(--secondary);--p-page-disabled-opacity:.4;
   /* Slider (slider.styles.ts webSkin — shadcn-matched) */
   --p-slider-track-h-small:6px;--p-slider-track-h-base:8px;--p-slider-track-h-large:10px;
   --p-slider-track-radius:9999px;--p-slider-inner-radius:9999px;--p-slider-gap:0px;--p-slider-row-min-h:16px;
@@ -361,14 +363,14 @@
    continuous corner curve, 0.8 press dim, 44pt targets. Only the values that
    DIFFER from the web defaults above appear here. */
 [data-platform="ios"]{
-  --p-btn-radius:9999px;--p-btn-pad-x:20px;--p-btn-pad-y:14px;--p-btn-gap:6px;
-  --p-btn-font:17px;--p-btn-lh:22px;--p-btn-weight:600;
-  --p-btn-pad-x-sm:14px;--p-btn-pad-y-sm:8px;--p-btn-font-sm:15px;--p-btn-lh-sm:20px;
-  --p-btn-pad-x-lg:26px;--p-btn-pad-y-lg:18px;--p-btn-font-lg:17px;--p-btn-lh-lg:22px;
-  --p-btn-square:44px;--p-btn-square-sm:36px;--p-btn-square-lg:52px;
+  --p-btn-radius:9999px;--p-btn-pad-x:16px;--p-btn-pad-y:13px;--p-btn-gap:8px;
+  --p-btn-font:17px;--p-btn-lh:22px;--p-btn-weight:600;--p-btn-tracking:-0.2px;
+  --p-btn-pad-x-sm:12px;--p-btn-pad-y-sm:6px;--p-btn-font-sm:13px;--p-btn-lh-sm:18px;
+  --p-btn-pad-x-lg:22px;--p-btn-pad-y-lg:17px;--p-btn-font-lg:17px;--p-btn-lh-lg:22px;
+  --p-btn-square:50px;--p-btn-square-sm:32px;--p-btn-square-lg:58px;
   --p-press:0.8 /* @kind other */;--p-disabled:0.4 /* @kind other */;
   --p-min-target:44px;
-  --p-card-radius:12px;--p-card-shadow:none;--p-card-shadow-raised:var(--shadow-sm);
+  --p-card-radius:12px;--p-card-shadow:var(--shadow-sm);--p-card-shadow-raised:var(--shadow-lg);
   /* Field — iOS: the iOS input-field reference (input.styles.ts iosSkin): a white card box,
      8pt corner, the gray-300 `field-border` hairline at rest, 16pt value, 20px glyph, a 14pt
      regular muted title above. */
@@ -589,10 +591,10 @@
    fields with a bottom active indicator, ripple instead of a dim, 48dp targets.
    Only the values that DIFFER from the web defaults appear here. */
 [data-platform="android"]{
-  --p-btn-radius:9999px;--p-btn-pad-x:24px;--p-btn-pad-y:10px;--p-btn-gap:8px;
-  --p-btn-font:14px;--p-btn-lh:20px;--p-btn-weight:500;
-  --p-btn-pad-x-sm:16px;--p-btn-pad-y-sm:6px;--p-btn-font-sm:13px;--p-btn-lh-sm:18px;
-  --p-btn-pad-x-lg:24px;--p-btn-pad-y-lg:13px;--p-btn-font-lg:14px;--p-btn-lh-lg:20px;
+  --p-btn-radius:9999px;--p-btn-pad-x:16px;--p-btn-pad-y:9px;--p-btn-gap:8px;
+  --p-btn-font:14px;--p-btn-lh:20px;--p-btn-weight:500;--p-btn-tracking:0.1px;
+  --p-btn-pad-x-sm:12px;--p-btn-pad-y-sm:6px;--p-btn-font-sm:13px;--p-btn-lh-sm:18px;
+  --p-btn-pad-x-lg:22px;--p-btn-pad-y-lg:12px;--p-btn-font-lg:16px;--p-btn-lh-lg:22px;
   --p-btn-square:40px;--p-btn-square-sm:32px;--p-btn-square-lg:48px;
   --p-press:1 /* @kind other */;--p-disabled:0.38 /* @kind other */;
   --p-card-radius:12px;--p-card-shadow:var(--shadow-sm);--p-card-shadow-raised:0px 4px 6px rgba(0,0,0,0.1);

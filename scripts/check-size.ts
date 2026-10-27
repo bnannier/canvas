@@ -306,8 +306,18 @@ export interface JavaScriptBudget {
 // The Button ceiling moves from 13,568 to 16,384B (5.2% headroom over the web figure) and
 // StackedList's from 65,536 to 70,656B (5.1%). Input, DataTable and the whole-kit ceilings stay
 // unchanged (the whole kit measures 249,698 / 249,920 / 250,660B under its 253,952B cap).
+// Button was 16,187 / 15,210 / 15,669B (web / iOS / Android) before the v4 skin (2026-10-27,
+// audit/v4-redesign Phase 2): one intent table (`lookOf`) and the special bodies now serve
+// every platform, so the native skins draw `inverse`, `quiet`, the theme choice, identity,
+// reference, scope, filter and utility looks they used to drop (+3,008B minified in the
+// Android skin module, the bulk of the growth), and the press, lift and glass-safe hover
+// came with the hand-off. Trimmed first: Button's count reads the theme's roles instead of
+// the status table Badge's notification family needs (-555B gzip), and the glass-safe hover
+// moved into the web skin so the native bundles drop the inner-fill helper (-190B on iOS and
+// Android). Measured after on bun 1.4.0 at 16,349 / 16,150 / 16,651B. The Button ceiling moves
+// from 16,384 to 17,408B (4.5% headroom over the Android figure); the other ceilings stay.
 export const NAMED_IMPORT_BUDGETS: readonly JavaScriptBudget[] = [
-  { label: "Button + ThemeProvider", entry: "scripts/size-fixtures/button.ts", maxGzip: 16_384, requiredExports: ["Button", "ThemeProvider"] },
+  { label: "Button + ThemeProvider", entry: "scripts/size-fixtures/button.ts", maxGzip: 17_408, requiredExports: ["Button", "ThemeProvider"] },
   { label: "Input + ThemeProvider", entry: "scripts/size-fixtures/input.ts", maxGzip: 43_008, requiredExports: ["Input", "ThemeProvider"] },
   { label: "DataTable + ThemeProvider", entry: "scripts/size-fixtures/data-table.ts", maxGzip: 53_248, requiredExports: ["DataTable", "ThemeProvider"] },
   { label: "StackedList + ThemeProvider", entry: "scripts/size-fixtures/stacked-list.ts", maxGzip: 70_656, requiredExports: ["StackedList", "ThemeProvider"] },

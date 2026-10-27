@@ -129,9 +129,9 @@ describe("brand-tinted glass pucks", () => {
     expect(materialLayers(container.querySelector('[data-testid="link"]') as HTMLElement)).toBe(0);
   });
 
-  it("the web's outline and secondary Buttons paint no surface, so they stay bare with their borders", async () => {
-    // Dark Factory's outline looks are transparent pills: a hairline (`outline`) or the
-    // violet ring (`secondary`) around the label, no fill for the material to replace.
+  it("the web's outline Button stays bare with its border, and its secondary well is a plain control puck", async () => {
+    // The hand-off's outline is a transparent control around the label, no fill for the
+    // material to replace; its secondary is the `secondary` well, which the material takes.
     const { container } = await renderGlass(
       <>
         <Button primary testID="anchor">Save</Button>
@@ -142,9 +142,10 @@ describe("brand-tinted glass pucks", () => {
     const more = container.querySelector('[data-testid="more"]') as HTMLElement;
     const review = container.querySelector('[data-testid="review"]') as HTMLElement;
     expect(materialLayers(more)).toBe(0);
-    expect(materialLayers(review)).toBe(0);
-    expect(rgbaOf(more.style.borderColor)).toEqual(rgbaOf(alpha(lightColors.border, 1)));
-    expect(rgbaOf(review.style.borderColor)).toEqual(rgbaOf(alpha(lightColors.ring, 1)));
+    expect(rgbaOf(more.style.borderColor)).toEqual(rgbaOf(alpha(lightColors.input, 1)));
+    expect(materialLayers(review)).toBe(1);
+    expect(rgbaOf(underFillOf(review))).toEqual(rgbaOf(LIGHT["glass-tint-control"]));
+    expect(review.style.borderColor).toBe("rgba(0, 0, 0, 0.00)");
   });
 
   it("a surfaced outline Button (iOS) is a plain control puck with its hairline dropped (the rim is the edge)", async () => {
@@ -224,7 +225,7 @@ describe("brand-tinted glass pucks", () => {
 });
 
 describe("hue washes", () => {
-  it("a coloured Chip washes the material with the hue's mid step at the soft alpha under its deep label; a status Badge is the plain control material with its tone on the dot", async () => {
+  it("a coloured Chip washes the material with the hue's mid step at the soft alpha under its deep label; a status Badge has no pill, its tone on the dot", async () => {
     const { container } = await renderGlass(
       <>
         <Badge status success testID="status">Active</Badge>
@@ -234,12 +235,14 @@ describe("hue washes", () => {
       </>,
     );
     // Dark Factory's live-state pill: the quiet surface pill, the foreground label, the tone's dot.
+    // The status badge has no pill: no material, its tone on the dot and its ring.
     const badge = container.querySelector('[data-testid="status"]') as HTMLElement;
-    expect(rgbaOf(underFillOf(badge))).toEqual(rgbaOf(LIGHT["glass-tint-control"]));
-    expect(badge.style.backgroundColor).toBe("rgba(0, 0, 0, 0.00)");
+    expect(materialLayers(badge)).toBe(0);
     const badgeLabel = Array.from(badge.querySelectorAll("*")).find((n) => n.textContent === "Active" && (n as HTMLElement).style.color) as HTMLElement;
-    expect(rgbaOf(badgeLabel.style.color)).toEqual(rgbaOf(alpha(lightColors.foreground, 1)));
-    expect(rgbaOf((badgeLabel.previousElementSibling as HTMLElement).style.backgroundColor)).toEqual(rgbaOf(alpha(statusColors(lightColors, "success").dot, 1)));
+    expect(rgbaOf(badgeLabel.style.color)).toEqual(rgbaOf(alpha(lightColors["muted-foreground"], 1)));
+    const ring = badgeLabel.previousElementSibling as HTMLElement;
+    expect(rgbaOf(ring.style.backgroundColor)).toEqual(rgbaOf(statusColors(lightColors, "success").wash));
+    expect(rgbaOf((ring.firstElementChild as HTMLElement).style.backgroundColor)).toEqual(rgbaOf(alpha(statusColors(lightColors, "success").dot, 1)));
     // The soft destructive pill washes the material with its own wash, under its ink.
     const soft = container.querySelector('[data-testid="soft"]') as HTMLElement;
     expect(rgbaOf(underFillOf(soft))).toEqual(rgbaOf(statusColors(lightColors, "error").wash));
@@ -495,7 +498,7 @@ describe("solid mode", () => {
     );
     expect(materialLayers(container)).toBe(0);
     expect(rgbaOf((container.querySelector('[data-testid="save"]') as HTMLElement).style.backgroundColor)).toEqual(rgbaOf(alpha(actionFill(lightColors), 1)));
-    expect(rgbaOf((container.querySelector('[data-testid="name"]') as HTMLElement).style.backgroundColor)).toEqual(rgbaOf(alpha(lightColors.card, 1)));
+    expect(rgbaOf((container.querySelector('[data-testid="name"]') as HTMLElement).style.backgroundColor)).toEqual(rgbaOf(alpha(lightColors["surface-sunken"]!, 1)));
   });
 
   it("solves a brand puck over the docs' frame too, so its ink clears 4.5:1 on every bed of it", () => {
@@ -655,12 +658,13 @@ describe("Radio, Checkbox and Switch draw their solid look under glass (GS-5)", 
       const t = l.tokens;
       const web: [string, string][] = [
         ["web radio ring", String(webRadioSkin.mark.kind === "ring" ? webRadioSkin.mark.ring(t, "base", false, true).borderColor : "")],
-        ["web checkbox box", String(webCheckboxSkin.box(t, false, "base", false).borderColor)],
-        ["web off track", String(webSwitchSkin.track(t, l.scheme === "dark", false, "base").backgroundColor)],
+        ["web checkbox box", String(webCheckboxSkin.box(t, false, "base").borderColor)],
+        ["web off track", String(webSwitchSkin.track(t, l.scheme === "dark", false, "base").borderColor)],
       ];
       const native: [string, string][] = [
         ["android radio ring", String(androidRadioSkin.mark.kind === "ring" ? androidRadioSkin.mark.ring(t, "base", false, true).borderColor : "")],
-        ["android checkbox box", String(androidCheckboxSkin.box(t, false, "base", false).borderColor)],
+        ["android checkbox box", String(androidCheckboxSkin.box(t, false, "base").borderColor)],
+        ["android off track", String(androidSwitchSkin.track(t, l.scheme === "dark", false, "base").borderColor)],
       ];
       for (const [marks, glass] of [[web, l.webGlass], [native, l.androidGlass]] as const) {
         for (const [name, boundary] of marks) {
@@ -669,7 +673,7 @@ describe("Radio, Checkbox and Switch draw their solid look under glass (GS-5)", 
           }
         }
       }
-      // Android's off switch keeps its boundary in the knob, muted-foreground on the muted track.
+      // Android's off switch also keeps its boundary in the knob, the subtle ink on the secondary track.
       const knob = String(androidSwitchSkin.thumb(t, false, "base").backgroundColor);
       const track = String(androidSwitchSkin.track(t, l.scheme === "dark", false, "base").backgroundColor);
       expect(contrastRatio(knob, track), `${l.name} android off knob`).toBeGreaterThanOrEqual(3);

@@ -225,7 +225,7 @@ export const publicApi: Readonly<Record<string, ApiEntry>> = {
   AlertDialogProps: { kind: "type", docs: "components/alert-dialog" },
   Card: { kind: "component", docs: "components/card" },
   CardContent: { kind: "part", docs: "components/card" },
-  CardDescription: { kind: "part" },
+  CardDescription: { kind: "part", docs: "components/card" },
   CardFooter: { kind: "part", docs: "components/card" },
   CardHeader: { kind: "part", docs: "components/card" },
   CardMedia: { kind: "part", docs: "components/card" },
@@ -635,7 +635,6 @@ export const PENDING_DOCS: Readonly<Record<string, DocsRoute>> = {
 
   // K12-8 and a component's own types: the anatomy parts and helpers on their family page.
   BreadcrumbItem: "components/breadcrumb",
-  CardDescription: "components/card",
   DescriptionListAvatar: "components/description-lists",
   FilterOption: "components/filter-panel",
   GridListAction: "components/grid-lists",
@@ -671,7 +670,7 @@ export const PLANNED_ROUTES: Readonly<Record<DocsRoute, PlannedRoute>> = {
   "rn-primitives": { turn: "components/view" },
   // K12-8: each component's own parts, helpers and types, on its own page in its own turn.
   "components/breadcrumb": { turn: "components/breadcrumb" },
-  "components/card": { turn: "components/card" },
+  "components/card": { turn: "components/card", closed: true },
   "components/description-lists": { turn: "components/description-lists" },
   "components/filter-panel": { turn: "components/filter-panel" },
   "components/grid-lists": { turn: "components/grid-lists" },

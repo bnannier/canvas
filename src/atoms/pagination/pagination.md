@@ -2,18 +2,19 @@
 
 Page-of-N navigation for tables and lists.
 
-Neither iOS nor Android has a numbered pagination control, and Dark Factory has no
-pager, so every platform shows one look built from Dark Factory's parts: the page
-numbers are bare pills, the current page is the violet pill, Previous and Next are
-hairline circles around chevrons, and the rows-per-page trigger is a hairline pill. A
-resting page or arrow takes the hover wash at once; a disabled pager keeps its outlines
-and mutes its numbers rather than fading. The cells are the Button's heights, so a pager
-lines up with a Button beside it.
+Neither iOS nor Android has a numbered pagination control, so every platform shows the
+same pager: rounded hairline cells at 28, 34 or 40 (small, default, large), the page
+numbers in 13px mono numerals, and the current page in the accent fill with a soft glow
+beneath it. Previous and Next carry a chevron and a "Prev" / "Next" label beside the
+numbers (the chevron alone at the small size and in the compact row), the truncation gap
+is a quiet ellipsis, and the rows-per-page trigger sits on the field edge. A resting page
+or arrow takes the hover wash at once; a disabled pager dims as one, and in an enabled
+pager the arrow at either end dims on its own.
 
 In glass mode the current page is a brand-tinted control-layer puck behind its number;
 the other pages and the hairline arrows paint no surface, so they stay bare. Beyond
 seven pages a page change also shifts the window (an ellipsis moves, a number appears or
-drops out). Solid mode keeps the violet pill.
+drops out). Solid mode keeps the accent fill.
 
 ## Usage
 

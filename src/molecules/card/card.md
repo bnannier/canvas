@@ -1,12 +1,12 @@
 # Card
 
-A content surface, used three ways: a stat card (a single metric, a big number and a delta), a section card (a labeled surface with an optional header and divider), and the generic card that brings its own structure.
+A content surface, used three ways: a stat card (a single metric, a big number and a delta), a section card (a labeled surface with an optional eyebrow, header and footer), and the generic card that brings its own structure. It is the Canvas v4 panel: the card fill under a hairline at the card corner (16 px on the web, 12 natively), the small shadow at rest and the large one `raised`; `flat` drops the shadow and steps the fill up a surface. A pressable card lifts 2 px on hover and takes the raised shadow. `selected` draws the primary border with a ring of the accent's soft wash around it.
 
 A card with content is padded by default, and a padded surface also spaces its flat children (the card owns the vertical rhythm, so a stack of Typography lines needs no layout wrapper); pass `flush` to opt out of both, the inset and the spacing, for edge-to-edge content (a table, a nav bar) or when you compose the self-padding `CardHeader`/`CardContent`.
 
-The section props (`title` / `description` / `icon` / `actions` / `footer`) render self-padding sections, so a sectioned card needs no `padded`. They compose with a string `body` OR with raw children, so a panel can carry a titled header above a table or a form; children win when both are passed. For a cover image, `CardMedia` is the full-bleed top slot: it spans the card edge to edge, its top corners follow the card's corner, and its bottom edge stays flat; compose it with `flush` and let `CardContent` pad the text below.
+The section props (`eyebrow` / `badge` / `title` / `description` / `icon` / `actions` / `footer`) render self-padding sections, so a sectioned card needs no `padded`: a tracked mono eyebrow with a badge opposite, the 20 px title in the display face over its muted description, the body, and a footer under a hairline in the subtle ink. They compose with a string `body` OR with raw children, so a panel can carry a titled header above a table or a form; children win when both are passed. For a cover image, `CardMedia` is the full-bleed top slot: it spans the card edge to edge, its top corners follow the card's corner, and its bottom edge stays flat; compose it with `flush` and let `CardContent` pad the text below.
 
-Density: pass `compact` or `comfortable` to tighten or relax the card's own padding and the gap between flat children (`compact` takes precedence, and a density prop pads the surface on its own). `grow` fills the height a parent Row or Column hands the card (the body takes the slack, so a footer stays on its floor); inside a `Grid` cell it is implied, so the tiles of one row are equal-height without being asked.
+Density: the card's own inset is 20 px with a 12 px rhythm; pass `compact` (14 / 8) or `comfortable` (24 / 12) to tighten or relax the card's own padding and the gap between flat children (`compact` takes precedence, and a density prop pads the surface on its own). `grow` fills the height a parent Row or Column hands the card (the body takes the slack, so a footer stays on its floor); inside a `Grid` cell it is implied, so the tiles of one row are equal-height without being asked.
 
 Gap-free content densities preserve dense application layouts: `dense` (12),
 `snug` (18), `cozy` (20), `relaxed` (22×24), `spacious` (28), `insetContent` (14),
@@ -39,10 +39,10 @@ fill, exact insets and corners.
 
 ### Featured approval
 
-`featured` preserves Argus's illustrated approval banner. Supply the identity,
-eyebrow, stage badge, summary, gate caption, metadata and domain action controls.
-`stacked` places the illustration above the content at the app's compact tier.
-Its existing two-pixel hover lift retains the resting shadow.
+`featured` washes the card with the accent's soft tint from its top-left corner and
+rims it in the accent. Supply the identity, eyebrow, stage badge, summary, gate
+caption, metadata and domain action controls. `stacked` sets a second card behind
+it. A pressable featured card lifts two pixels on hover.
 
 ```tsx
 <Card featured stacked hue={285} initials="B" title="Blueprint" description="v3.0" eyebrow="Awaiting approval · Architect gate" badge="Architecture" body="Proposes service boundaries for pricing and money paths." caption="A human signs every money path." metadata="Commerce · $2.1k / 30d" actions={<Button primary small>Approve</Button>} />
@@ -50,9 +50,10 @@ Its existing two-pixel hover lift retains the resting shadow.
 
 ### Artwork alone
 
-Give `artwork` a parent with definite height. It paints the authored featured or
-promotional artwork without text, illustration, padding or shadow. Add
-`illustration` with children for the original 12px inset around an identity.
+Give `artwork` a parent with definite height. It paints two radial blooms, the
+accent and the brand cyan (swapped on `promo`), over the quiet surface, without
+text, padding or shadow. Add `illustration` with children for a 12px inset around
+an identity.
 
 ```tsx
 <Row cozy>
@@ -64,12 +65,11 @@ promotional artwork without text, illustration, padding or shadow. Add
 ### Promotional artwork
 
 ```tsx
-<Card promo title="Gates come down only with receipts." body="Autonomy charter, circuit breakers, all as code." actions={<Button inlineLink link small extraBold inverse>Read the charter</Button>} />
+<Card promo title="Gates come down only with receipts." body="Autonomy charter, circuit breakers, all as code." actions={<Button inlineLink link small>Read the charter</Button>} />
 ```
 
-Artwork uses the authored palette stops (`featured-start/middle/end`,
-`featured-stack`, and `promo-start/middle/end`) mirrored by the native and CSS
-tokens. It stays opaque identity content in glass mode.
+`promo` sweeps from the accent to the brand cyan, each mixed into the card fill,
+under the card's own inks. It stays opaque content in glass mode.
 
 
 ### Linked references
@@ -243,28 +243,26 @@ Pass `onPress` and the whole card becomes a control, with the button role. On th
 
 ### section
 
-**Do** — Keep the divider between header and body; it anchors the title.
+**Do** — Give the header its title and description through the card's own parts; the header's spacing sets it apart from the body.
 
 ```tsx
 <Card flush>
   <CardHeader>
     <CardTitle>Recent activity</CardTitle>
+    <CardDescription>Events from the last 24 hours.</CardDescription>
   </CardHeader>
-  <CardSeparator />
   <CardContent>
     <Typography small>Two events today.</Typography>
   </CardContent>
 </Card>
 ```
 
-**Don't** — Without the divider the header floats and stops reading as a header.
+**Don't** — Hand-style a title in the body; it loses the card's title type and the header's spacing.
 
 ```tsx
 <Card flush>
-  <CardHeader>
-    <CardTitle>Recent activity</CardTitle>
-  </CardHeader>
   <CardContent>
+    <Text style={{ fontSize: 18, fontWeight: "700", color: tokens["card-foreground"] }}>Recent activity</Text>
     <Text style={{ fontSize: 14, lineHeight: 20, color: tokens["card-foreground"] }}>Two events today.</Text>
   </CardContent>
 </Card>

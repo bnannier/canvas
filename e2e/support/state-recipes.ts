@@ -2111,6 +2111,8 @@ export const STATE_RECIPES: Record<string, ComponentStates> = {
     disabled: disabled("disabled", byRole("button", "Save changes")),
   },
   checkbox: {
+    // The web rings the box in the accent's soft wash under a resting pointer.
+    hover: hover("default", byRole("checkbox")),
     focus: focus("default", byRole("checkbox")),
     pressed: pressed("default", byRole("checkbox")),
     disabled: disabled("disabled", byRole("checkbox")),
@@ -2137,6 +2139,8 @@ export const STATE_RECIPES: Record<string, ComponentStates> = {
   },
   icon: { static: true, reason: "A glyph: it takes no input." },
   input: {
+    // The web field's edge steps up to the subtle ink under a resting pointer.
+    hover: hover("default", byRole("textbox")),
     focus: focus("default", byRole("textbox")),
     pressed: pressed("password", byRole("button", "Show password")),
     invalid: invalid("error", byRole("textbox")),
@@ -2213,6 +2217,8 @@ export const STATE_RECIPES: Record<string, ComponentStates> = {
     pressed: pressed("themepicker", byRole("radio", "mint theme")),
   },
   switch: {
+    // The web glows an on track under a resting pointer (the default example is on).
+    hover: hover("default", byRole("switch")),
     focus: focus("default", byRole("switch")),
     pressed: pressed("default", byRole("switch")),
     disabled: disabled("disabled", byRole("switch")),

@@ -31,15 +31,15 @@ describe("the seed each control takes from its skin", () => {
   it("a text Button: its padding and border around one label line, the least it renders at", () => {
     const box = (skin: typeof buttonIos, intent: "primary" | "outline", size: "small" | "base") =>
       styleBox(skin.container(t, intent, size, opts), skin.label(t, intent, size, opts).lineHeight);
-    // Android: 30dp small, 40dp base. Sideways, the padding alone (a label only widens it):
-    // 32dp small, 48dp base.
-    expect(box(buttonAndroid, "primary", "small")).toEqual({ width: 32, height: 30 });
-    expect(seedSlop(ANDROID, box(buttonAndroid, "primary", "small"))).toEqual({ top: 9, bottom: 9, left: 8, right: 8 });
-    expect(seedSlop(ANDROID, box(buttonAndroid, "primary", "base"))).toEqual({ top: 4, bottom: 4, left: 0, right: 0 });
-    // iOS: 36pt small; the 50pt base meets the minimum in height, and its 40pt of padding
-    // leaves 2pt a side until the label is measured.
-    expect(seedSlop(IOS, box(buttonIos, "primary", "small"))).toEqual({ top: 4, bottom: 4, left: 8, right: 8 });
-    expect(seedSlop(IOS, box(buttonIos, "primary", "base"))).toEqual({ top: 0, bottom: 0, left: 2, right: 2 });
+    // Android: 32dp small, 40dp base. Sideways, the padding and border alone (a label only
+    // widens it): 26dp small, 34dp base.
+    expect(box(buttonAndroid, "primary", "small")).toEqual({ width: 26, height: 32 });
+    expect(seedSlop(ANDROID, box(buttonAndroid, "primary", "small"))).toEqual({ top: 8, bottom: 8, left: 11, right: 11 });
+    expect(seedSlop(ANDROID, box(buttonAndroid, "primary", "base"))).toEqual({ top: 4, bottom: 4, left: 7, right: 7 });
+    // iOS: 32pt small; the 50pt base meets the minimum in height, and its 34pt of padding
+    // and border leaves 5pt a side until the label is measured.
+    expect(seedSlop(IOS, box(buttonIos, "primary", "small"))).toEqual({ top: 6, bottom: 6, left: 9, right: 9 });
+    expect(seedSlop(IOS, box(buttonIos, "primary", "base"))).toEqual({ top: 0, bottom: 0, left: 5, right: 5 });
   });
 
   it("an icon Button: its fixed square, on both axes", () => {
@@ -55,11 +55,11 @@ describe("the seed each control takes from its skin", () => {
     expect(seedSlop(ANDROID, styleBox(StyleSheet.flatten(rowMenuAndroid.trigger)))).toEqual({ top: 4, bottom: 4, left: 4, right: 4 });
     expect(seedSlop(IOS, styleBox(StyleSheet.flatten(rowMenuIos.trigger)))).toEqual({ top: 6, bottom: 6, left: 6, right: 6 });
     // A page abuts its neighbors, so it grows vertically only.
-    expect(seedSlop(ANDROID, styleBox(itemSize.default), { axis: "vertical" })).toEqual({ top: 6, bottom: 6, left: 0, right: 0 });
-    expect(seedSlop(IOS, styleBox(itemSize.small), { axis: "vertical" })).toEqual({ top: 7.5, bottom: 7.5, left: 0, right: 0 });
-    expect(seedSlop(ANDROID, styleBox(arrowSize.default))).toEqual({ top: 6, bottom: 6, left: 6, right: 6 });
+    expect(seedSlop(ANDROID, styleBox(itemSize.default), { axis: "vertical" })).toEqual({ top: 7, bottom: 7, left: 0, right: 0 });
+    expect(seedSlop(IOS, styleBox(itemSize.small), { axis: "vertical" })).toEqual({ top: 8, bottom: 8, left: 0, right: 0 });
+    expect(seedSlop(ANDROID, styleBox(arrowSize.default))).toEqual({ top: 7, bottom: 7, left: 7, right: 7 });
     // The rows-per-page trigger's width is its value's: seeded from its padding alone.
-    expect(seedSlop(ANDROID, styleBox(selectorSize.default))).toEqual({ top: 6, bottom: 6, left: 12, right: 12 });
+    expect(seedSlop(ANDROID, styleBox(selectorSize.default))).toEqual({ top: 7, bottom: 7, left: 14, right: 14 });
   });
 
   it("the CodeBlock copy chip: its padding and border around one 16px line, 26 tall", () => {

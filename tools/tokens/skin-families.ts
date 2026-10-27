@@ -422,7 +422,7 @@ export const SKIN_FAMILIES: SkinFamily[] = [
   {
     name: "Badge",
     module: "atoms/badge/badge",
-    checks: [{ token: "p-badge-radius", read: (s) => num(at(s, "metaBase", "borderRadius")) }],
+    checks: [{ token: "p-badge-radius", read: (s) => num(at(s, "radius")) }],
   },
   {
     name: "InputOTP",

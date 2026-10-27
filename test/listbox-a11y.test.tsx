@@ -49,7 +49,9 @@ describe("Listbox accessible structure", () => {
     // hidden nodes nest: a no-op for assistive technology. Count one hidden subtree
     // per row, not hidden nodes, and check the decorative glyph sits inside it.
     const indicators = rows.map((row) => row.querySelector('[aria-hidden="true"]')!);
-    expect(indicators.map((indicator) => indicator.textContent)).toEqual(["✓", "", "✓"]);
+    // The box (the innermost hidden node) holds its check glyph's layer only when checked.
+    const glyphs = (indicator: Element) => [...indicator.querySelectorAll('[aria-hidden="true"]')].at(-1)!.childElementCount;
+    expect(indicators.map(glyphs)).toEqual([1, 0, 1]);
     for (const indicator of indicators) {
       expect(indicator.querySelector('[role], [tabindex], button, input, select, textarea, a[href], [contenteditable="true"]')).toBeNull();
     }

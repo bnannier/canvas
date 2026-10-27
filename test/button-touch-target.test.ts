@@ -24,14 +24,14 @@ describe("Button skin minTarget", () => {
 });
 
 describe("minTargetSlop", () => {
-  it("extends the 36pt iOS small text button to 44pt (vertical only)", () => {
-    // small: lineHeight 20 + 2x8 padding = 36pt tall; width is text-driven (> 44 here).
-    expect(minTargetSlop(44, 80, 36)).toEqual({ top: 4, bottom: 4, left: 0, right: 0 });
+  it("extends the 32pt iOS small text button to 44pt (vertical only)", () => {
+    // small: lineHeight 18 + 2x6 padding + 2x1 border = 32pt tall; width is text-driven (> 44 here).
+    expect(minTargetSlop(44, 80, 32)).toEqual({ top: 6, bottom: 6, left: 0, right: 0 });
   });
 
-  it("extends the 30dp Android small text button to 48dp (vertical only)", () => {
-    // small: lineHeight 18 + 2x6 padding = 30dp tall.
-    expect(minTargetSlop(48, 80, 30)).toEqual({ top: 9, bottom: 9, left: 0, right: 0 });
+  it("extends the 32dp Android small text button to 48dp (vertical only)", () => {
+    // small: lineHeight 18 + 2x6 padding + 2x1 border = 32dp tall.
+    expect(minTargetSlop(48, 80, 32)).toEqual({ top: 8, bottom: 8, left: 0, right: 0 });
   });
 
   it("extends the 40dp Android base button to 48dp (M3 container 40dp, target 48dp)", () => {

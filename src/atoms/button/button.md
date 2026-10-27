@@ -2,30 +2,36 @@
 
 Six intents × three sizes (plus the icon square) × disabled / focus / hover states. Always semantic: the intent communicates what the button does (default = the primary action, destructive = irreversible, ghost = chrome).
 
-On the web small and default buttons retain Argus's exact 1.3 label line height (14.95 px and 15.6 px), with their existing padding and pill shape. On the web every intent is a pill: the call to action is the green `action` pill, `secondary` a violet outline, `outline` a hairline, `ghost` and `link` bare. A primary button rises 1 px under the pointer over 150 ms and settles back when it leaves, the outline looks take a hover wash at once, and a link dims; a disabled or loading button stays put, and Reduce Motion makes the lift instant. A disabled web button goes transparent with a hairline and a muted label rather than fading. On iOS and Android the buttons keep their platform shapes in the theme's colours.
+On the web a button is 32, 40 or 48 tall (`small`, default, `large`) with the 10 px control corner, a 500-weight label at 13, 14 or 16 px, and an 8 px gap beside its icons. The call to action fills with the accent, `destructive` with the status red, both under a lit top edge; `secondary` is the quiet well with a boundary, `outline` the boundary alone, `ghost` and `link` bare (the link underlined). A filled button brightens and rises 1 px under the pointer over 150 ms and settles back when it leaves; the other looks take the well's wash at once. A press scales the button to 96% and darkens it, unless `steadyPress`. A disabled button fades to 40%; a loading one keeps its full look while its spinner runs. A disabled or loading button stays put, and Reduce Motion makes the lift instant. On iOS the button is the 50 pt capsule with a semibold 17 pt label, on Android the 40 dp Material 3 stadium, both in the same colours.
 
 Pass `ref` to access the interactive Pressable, including link buttons. Use `useRef<ComponentRef<typeof Button>>(null)` from React, or `useRef<View>(null)` with React Native's `View` type. Object and callback refs are supported and detach on unmount. Calling `ref.current?.focus()` or `.blur()` delegates to the host without activating the control. Browser focus is supported; native focus depends on the platform and React Native version, and is separate from accessibility focus.
 
-`softHover` keeps the reference link’s 85% hover opacity. Inverse actions use
-their translucent white hover wash over a branded surface.
+`softHover` dims a link to 85% on hover in place of the wash. Inverse actions use
+a translucent white hover wash over a branded surface.
 
 Utility icon actions use `icon` with `compactIcon` (28), `mediumIcon` (32), or
-`largeIcon` (34) on web. `wideIcon` gives the compact box two extra pixels of
+`largeIcon` (34). `wideIcon` gives the compact box two extra pixels of
 horizontal room; `circle` rounds it fully. Pair with `ghost` for a plain surface,
-`outline` for a hairline, or `ghost inset` for a quiet fill. `steadyPress` keeps
-the resting opacity, and `count` carries a compact notification badge. The button
-still owns its accessible name, hover wash, and native touch-target extension.
+`outline` for a boundary, or `ghost inset` for a quiet fill. `steadyPress` keeps
+the resting look while pressed, and `count` carries a notification badge over the
+upper trailing corner. The button still owns its accessible name, hover wash, and
+native touch-target extension.
 
-Use `inlineLink link small` for an inline text action: 11.5-pixel bold text,
-a five-pixel icon gutter, and an 80% hover opacity. The default size is 12 pixels;
-`large` is 14. `extraBold`, `foreground`, and `inverse` preserve editorial action
-hierarchy. `external` opens `href` through the system browser on every platform,
-while keeping its browser link semantics.
+Use `inlineLink link small` for an inline text action: an underlined 13-pixel
+label with no box, read as a link and washed on hover. The default size is 14
+pixels; `large` is 16. `extraBold`, `foreground`, and `inverse` set its weight and
+ink. `external` opens `href` through the system browser on every platform, while
+keeping its browser link semantics.
 
-`scopeTrigger ghost steadyPress` preserves the project-scope pill, its action dot,
-12px label and original asymmetric inset. `filterTrigger ghost steadyPress`
-preserves the compact filter pill and muted 11.5px label. Supply the trailing
-chevron through `iconRight`, and announce the menu with `expanded` and `haspopup`.
+`scopeTrigger ghost steadyPress` is a bare 32 px menu trigger with a 600-weight
+14px label; `filterTrigger ghost steadyPress` the same with a muted 13px label. Both
+take the well's wash on hover. Supply the trailing chevron through `iconRight`, and
+announce the menu with `expanded` and `haspopup`.
+
+`identityAction` is a 28 px hairline pill around a leading avatar and its name;
+`referenceLink` an underlined monospace key in the link ink; `inlineIcon` an unboxed
+22 px icon action; `themeChoice` a 32 px pill whose `selected` state is the accent
+edge with a soft accent halo.
 
 ## Usage
 

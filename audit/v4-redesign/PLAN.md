@@ -73,8 +73,9 @@ prototype's machinery (`support.js`, `cv-jsx.js`).
   each skin's complete opaque look (brand, status and inverse fills included), not a
   blanket `sf2` (review R2). Tuned through the
   tuning harness against a `v4-glass` reference card recorded from the hand-off.
-- **D8 Motion.** Specified per control and platform: the web skin presses at `scale(.97)`
-  unless `steadyPress`; iOS keeps its dim and Android its ripple; switch and segmented
+- **D8 Motion.** Specified per control and platform: the web skin presses at `scale(.96)`
+  with `brightness(.92)` unless `steadyPress` (the renderer's drawn pressed state, `K.st` in
+  `cv-kit.js`, which wins over the prototype's live `.97` pointer handler by D3); iOS keeps its dim and Android its ripple; switch and segmented
   thumbs take the spring `cubic-bezier(.34,1.56,.64,1)`; Reveal takes `cvRev`. A gate for
   each: it runs on the compositor (a CSS transition on the web, the native driver natively;
   Reveal moves off the JS driver it uses today), and Reduce Motion, visibility and stagger

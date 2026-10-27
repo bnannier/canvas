@@ -3,13 +3,11 @@
 import type { ExampleScope } from "../../../scope";
 
 export default function Example(scope: ExampleScope) {
-  const { tokens, Text, Card, CardContent, CardHeader, CardTitle } = scope;
+  const { tokens, Text, Card, CardContent } = scope;
   return (
 <Card flush>
-  <CardHeader>
-    <CardTitle>Recent activity</CardTitle>
-  </CardHeader>
   <CardContent>
+    <Text style={{ fontSize: 18, fontWeight: "700", color: tokens["card-foreground"] }}>Recent activity</Text>
     <Text style={{ fontSize: 14, lineHeight: 20, color: tokens["card-foreground"] }}>Two events today.</Text>
   </CardContent>
 </Card>

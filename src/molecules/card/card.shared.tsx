@@ -4,9 +4,11 @@ import { View, Pressable, Text, shape as shapeTokens, StyleSheet, useFillStyle, 
 import { MaterialBehind } from "../../style/glass-surface/material-behind.js";
 import { RAISED, liftStyle, useHover, useRaiseCell, useSettling } from "../../style/hover.js";
 import { selectedCard } from "../../style/selected-card.js";
-import { BrandCard, brandCardModeOf } from "./card.brand.js";
+import { createBrandCard, brandCardModeOf } from "./card.brand.js";
 import { ReferenceCard, referenceModeOf } from "./card.reference.js";
 import { Image } from "../../atoms/image/image.shared.js";
+import { Badge } from "../../atoms/badge/badge.js";
+import { MONO_FONT } from "../../style/mono.js";
 import { imageLabel } from "../../atoms/image/image.accessibility.js";
 import * as s from "./card.styles.js";
 import { type CardSkin, type Elevation, type Density } from "./card.styles.js";
@@ -60,6 +62,7 @@ const headerStyles = StyleSheet.create({
   row: { flexDirection: "row", alignItems: "flex-start", justifyContent: "space-between", gap: 12 },
   main: { flexDirection: "row", alignItems: "center", gap: 8, flex: 1 },
   text: { flex: 1 },
+  stack: { gap: 4 },
 });
 
 export interface CardProps {
@@ -216,6 +219,8 @@ export function densityOf(p: CardProps): Density {
 }
 
 export function createCard(skin: CardSkin) {
+  // The featured, promotional and artwork modes, at this skin's corner and title face.
+  const BrandCard = createBrandCard(skin);
   return function Card(props: CardProps) {
     const { children, title, icon, actions, description, body, footer, flush, onPress, selected, testID, style, onLiftChange } = props;
     const theme = useMaterialTheme({ static: true });
@@ -254,7 +259,10 @@ export function createCard(skin: CardSkin) {
     // Empty strings count as "no content", so a cleared field never renders an empty
     // header, footer, or a stray separator: guard on truthiness rather than null for
     // these display strings.
-    const hasHeader = Boolean(title) || Boolean(description) || Boolean(icon) || Boolean(actions);
+    const hasTitle = Boolean(title) || Boolean(description) || Boolean(icon) || Boolean(actions);
+    // The hand-off's eyebrow row: a tracked mono eyebrow, a badge opposite it.
+    const hasEyebrow = Boolean(props.eyebrow) || Boolean(props.badge);
+    const hasHeader = hasTitle || hasEyebrow;
     // A card is SECTIONED when it renders one of the self-padding sections, whether its
     // body is raw children or the data-driven `body` string. That is what moves the
     // inset off the surface and onto the sections.
@@ -290,6 +298,8 @@ export function createCard(skin: CardSkin) {
       // treatment hairline; Android paints it transparent on the non-outlined
       // (M3 elevated) variants and shows it only on `flat` (M3 outlined).
       skin.surface(tokens, elev),
+      // A flat card steps its fill up a surface where the skin says so (the hand-off's sf2).
+      elev === "flat" && skin.flatFill ? { backgroundColor: skin.flatFill(tokens) } : null,
       // The surface inset belongs to the PLAIN card alone: a sectioned card (one
       // carrying a header or footer, whatever its body) renders self-padding
       // sections, so a surface inset there would stack on the sections' own
@@ -338,19 +348,31 @@ export function createCard(skin: CardSkin) {
     // title / icon / actions / description / footer. A section panel needs a titled
     // header AND arbitrary children (a table, a form), which the string `body` cannot
     // express.
+    const eyebrowNode = hasEyebrow ? (
+      <View style={s.eyebrowRow}>
+        {props.eyebrow ? <Text style={[s.eyebrow(tokens), { fontFamily: MONO_FONT }]}>{props.eyebrow}</Text> : <View />}
+        {props.badge ? <Badge secondary mono small>{props.badge}</Badge> : null}
+      </View>
+    ) : null;
     const headerNode = hasHeader ? (
-      <CardHeader>
-        <View style={headerStyles.row}>
-          <View style={headerStyles.main}>
-            {icon}
-            <View style={headerStyles.text}>
-              {title ? <CardTitle>{title}</CardTitle> : null}
-              {description ? <CardDescription>{description}</CardDescription> : null}
+      <>
+        {eyebrowNode}
+        {hasTitle ? (
+          // Below an eyebrow row the title keeps the card's 12px rhythm, not a second inset.
+          <CardHeader style={hasEyebrow ? { paddingTop: 12 } : undefined}>
+            <View style={headerStyles.row}>
+              <View style={headerStyles.main}>
+                {icon}
+                <View style={[headerStyles.text, headerStyles.stack]}>
+                  {title ? <Text style={s.title(tokens, skin.titleFont)}>{title}</Text> : null}
+                  {description ? <CardDescription>{description}</CardDescription> : null}
+                </View>
+              </View>
+              {actions}
             </View>
-          </View>
-          {actions}
-        </View>
-      </CardHeader>
+          </CardHeader>
+        ) : null}
+      </>
     ) : null;
 
     const footerNode = footer ? (
@@ -371,7 +393,6 @@ export function createCard(skin: CardSkin) {
       inner = hasSections ? (
         <>
           {headerNode}
-          {hasHeader && hasBody ? <CardSeparator /> : null}
           {hasBody ? flush ? children : <CardContent style={bodyFill}>{children}</CardContent> : null}
           {footerNode}
         </>
@@ -382,7 +403,6 @@ export function createCard(skin: CardSkin) {
       inner = (
         <>
           {headerNode}
-          {hasHeader && body ? <CardSeparator /> : null}
           {body ? (
             <CardContent style={bodyFill}>
               <Text style={s.bodyText(tokens)}>{body}</Text>
@@ -406,7 +426,7 @@ export function createCard(skin: CardSkin) {
       // parent-clip WOULD cut the child's own Android elevation shadow, the Android `elevation`
       // moves onto the wrapper (whose own shadow is drawn around its outline, unclipped) while the
       // iOS `shadow*` stays on the inner node, so iOS is unchanged.
-      const { parent: elevParent, child: elevChild } = splitElevation(skin.elevation(hovered ? hover.elevation(elev) : elev, tokens));
+      const { parent: elevParent, child: elevChild } = splitElevation(skin.elevation(hovered ? hover.elevation(elev) : elev, tokens, !!selected));
       const lift = hover != null ? liftStyle(hovered, hover.motion, reduced, shade) : null;
       return (
         <RippleClip shape={cornerRadii(shape)} style={[elevParent, outer, raised ? RAISED : null]} {...hoverTarget}>
@@ -427,7 +447,7 @@ export function createCard(skin: CardSkin) {
       );
     }
     return (
-      <GlassSurface layer="content" testID={testID} stateBorder={!!selected} tint={selectionWash} style={[surface, skin.elevation(elev, tokens), outer]}>
+      <GlassSurface layer="content" testID={testID} stateBorder={!!selected} tint={selectionWash} style={[surface, skin.elevation(elev, tokens, !!selected), outer]}>
         {inner}
       </GlassSurface>
     );
@@ -451,10 +471,13 @@ export function CardHeader({ children, style }: CardSectionProps) {
   return <View style={[s.header, style]}>{children}</View>;
 }
 
-/** A Card's heading: semibold, tight tracking, in the card foreground. */
-export function CardTitle({ children, style }: CardTextProps) {
-  const { tokens } = useTheme();
-  return <Text style={[s.title(tokens), style]}>{children}</Text>;
+/** The Card heading for a skin: the skin supplies the title face. */
+export function createCardTitle(skin: Pick<CardSkin, "titleFont">) {
+  /** A Card's heading: 500 weight, tight tracking, in the card foreground. */
+  return function CardTitle({ children, style }: CardTextProps) {
+    const { tokens } = useTheme();
+    return <Text style={[s.title(tokens, skin.titleFont), style]}>{children}</Text>;
+  };
 }
 
 /** The muted supporting line beneath a CardTitle. */

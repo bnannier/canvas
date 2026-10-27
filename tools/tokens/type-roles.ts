@@ -32,7 +32,7 @@ export const TEXT_ROLES: Record<string, Record<string, ReadingRole>> = {
   "src/organisms/board/board.styles.ts": { plainLabel: "caption", plainEmptyLabel: "small" },
   "src/molecules/feeds/feeds.styles.ts": { activityTime: "tiny", traceTime: "small", traceKind: "caption" },
   "src/style/field-label.ts": { fieldEyebrow: "caption" },
-  "src/atoms/input/input.styles.ts": { "webSkin.search.placeholder": "tiny", "webSkin.labelAbove": "caption" },
+  "src/atoms/input/input.styles.ts": { "webSkin.search.placeholder": "tiny" },
   "src/atoms/select/select.styles.ts": { "webSkin.label": "caption" },
   // Dark Factory's sub-12 styles, by the Typography role each one serves.
   "src/style/type-scale.ts": {
@@ -57,14 +57,10 @@ export const TEXT_ROLES: Record<string, Record<string, ReadingRole>> = {
   },
 
   // Control labels at the small size, and the description lines under them.
-  "src/atoms/button/button.styles.ts": { REFERENCE_LINK_TYPE: "caption", THEME_CHOICE_TYPE: "small", FILTER_TRIGGER_TYPE: "small", "INLINE_LINK_TYPE.small": "small", "WEB_TYPE.small": "small" },
   "src/atoms/button-group/button-group.styles.ts": { WEB_SEGMENT_TYPE: "small", WEB_CELL_TYPE: "small" },
-  "src/atoms/pagination/pagination.styles.ts": { labelSize: "small" },
   "src/atoms/listbox/listbox.styles.ts": { LABEL_TYPE: "small", detail: "tiny" },
-  "src/atoms/checkbox/checkbox.styles.ts": { DESCRIPTION_TYPE: "small" },
   "src/atoms/radio/radio.styles.ts": { DESCRIPTION_TYPE: "small" },
   "src/atoms/slider/slider.styles.ts": { DESCRIPTION_TYPE: "small" },
-  "src/atoms/switch/switch.shared.tsx": { DESC_FONT: "small" },
   "src/atoms/progress/progress.styles.ts": { dfDescription: "small" },
   "src/atoms/dropdown/dropdown.styles.ts": { "webSkin.reference.description": "tiny", "webSkin.reference.detail": "small", "webSkin.reference.noteText": "small", "webSkin.menuHeaderDescription": "small" },
   "src/organisms/toast/toast.styles.ts": { "webSkin.description": "small" },
@@ -78,10 +74,10 @@ export const TEXT_ROLES: Record<string, Record<string, ReadingRole>> = {
   "src/organisms/chat/chat.styles.ts": { "webSkin.label": "small", "webSkin.muted": "small" },
 
   // Pills, tags, badges, meta lines and annotations.
-  "src/atoms/badge/badge.notification.tsx": { LABEL: "caption" },
-  "src/atoms/badge/badge.shared.tsx": { "createBadge.labelMetrics": "tiny" },
+  "src/atoms/badge/badge.notification.tsx": { COUNT_LABEL: "tiny", BADGE_LABEL: "tiny" },
   "src/organisms/sidebar/sidebar.styles.ts": { "webSkin.sectionTitle": "caption" },
-  "src/atoms/badge/badge.styles.ts": { "webSkin.labelType": "tiny" },
+  "src/atoms/badge/badge.styles.ts": { "webSkin.sizes": "tiny" },
+  "src/molecules/card/card.styles.ts": { eyebrow: "caption" },
   "src/atoms/chip/chip.shared.tsx": { COUNT_TYPE: "tiny" },
   "src/atoms/chip/chip.styles.ts": { "webSkin.labelType": "tiny" },
   "src/molecules/stats/stats.styles.ts": { "DENSE.denseLabel": "caption", "DENSE.denseDescription": "tiny" },

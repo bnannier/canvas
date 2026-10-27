@@ -857,15 +857,12 @@ describe("Dropdown", () => {
     // The default trigger takes Button's disabled treatment instead, so the menu
     // skin's number is deliberately NOT applied there. (What Button does per platform
     // is the Button suite's business; under bun there is no .ios/.android resolution,
-    // so every build here links the web Button, whose disabled look is Dark Factory's:
-    // a transparent pill with a muted label, no fade.) What matters at this seam is
-    // that the default path looks inert and leaves the tab order rather than looking live.
+    // so every build here links the web Button, whose disabled look is the hand-off's 0.4
+    // fade, not the menu skin's number.) What matters at this seam is that the default
+    // path looks inert and leaves the tab order rather than looking live.
     const { container } = ui(<Dropdown trigger="Actions" disabled items={[{ label: "Edit" }]} />);
     const button = container.querySelector('[aria-haspopup="menu"]') as HTMLElement;
-    expect(button.style.opacity).toBe("");
-    expect(button.style.backgroundColor).toBe("rgba(0, 0, 0, 0.00)");
-    const [r, g, b] = [1, 3, 5].map((i) => parseInt(lightColors["muted-foreground"].slice(i, i + 2), 16));
-    expect(screen.getByText("Actions").style.color.replace(/\s/g, "")).toBe(`rgba(${r},${g},${b},1.00)`);
+    expect(button.style.opacity).toBe("0.4");
     expect(button.getAttribute("aria-disabled")).toBe("true");
     expect(button.getAttribute("tabindex")).toBe("-1");
   });

@@ -1,28 +1,30 @@
 import type { TextStyle, ViewStyle } from "react-native";
 import { shape } from "../../style/tokens.js";
 
-export const frame: ViewStyle = { borderRadius: shape.web.card };
-export const featured = (stacked: boolean): ViewStyle => ({ borderRadius: shape.web.card, flexDirection: stacked ? "column" : "row", minHeight: 136, overflow: "hidden" });
-export const media = (stacked: boolean): ViewStyle => ({ ...(stacked ? { height: 96 } : { width: 128 }), alignItems: "center", justifyContent: "center", overflow: "hidden" });
-export const mediaOrb: ViewStyle = { position: "absolute", right: -30, bottom: -30, width: 110, height: 110, borderRadius: 9999, backgroundColor: "rgba(255,255,255,0.14)" };
-export const body: ViewStyle = { flexDirection: "row", flex: 1, minWidth: 0, flexWrap: "wrap", alignItems: "center" };
-export const copy: ViewStyle = { flexDirection: "column", gap: 6, justifyContent: "center", flexGrow: 1, flexBasis: 308, minWidth: 0, paddingVertical: 22, paddingHorizontal: 24 };
-export const trailing: ViewStyle = { flexDirection: "column", alignItems: "flex-end", justifyContent: "space-between", gap: 12, marginLeft: "auto", paddingVertical: 20, paddingHorizontal: 22 };
-export const stackedCopy: ViewStyle = { flexDirection: "column", gap: 10, padding: 18 };
-export const nameRow: ViewStyle = { flexDirection: "row", gap: 10, alignItems: "center", flexWrap: "wrap" };
-export const stackedFooter: ViewStyle = { flexDirection: "row", gap: 10, alignItems: "center", justifyContent: "space-between", flexWrap: "wrap" };
-export const promo: ViewStyle = { borderRadius: shape.web.card, paddingTop: 22, paddingHorizontal: 20, paddingBottom: 20, overflow: "hidden" };
-export const promoOrb: ViewStyle = { position: "absolute", right: -40, bottom: -50, width: 150, height: 150, borderRadius: 9999, backgroundColor: "rgba(255,255,255,0.14)" };
+// The featured and promotional cards' anatomy, the hand-off's (cv-kit-code.js
+// `O('card')`): a 20px inset (14 compact) with a 12px rhythm (8 compact), the eyebrow row,
+// a head of identity disc, title and description 12px apart, the body, the caption and
+// metadata lines, and the actions at the end. The corner is the Card skin's.
 
-export const artwork: ViewStyle = { flex: 1, borderRadius: shape.web.card, overflow: "hidden" };
+export const frame: ViewStyle = { position: "relative" };
+export const surface = (compact: boolean): ViewStyle => ({ borderWidth: 1, padding: compact ? 14 : 20, gap: compact ? 8 : 12, overflow: "hidden" });
+// The second card behind a stacked one: 8px down and in, under the first.
+export const stack: ViewStyle = { position: "absolute", top: 8, right: -8, bottom: -8, left: 8, borderWidth: 1 };
+export const topRow: ViewStyle = { flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 8 };
+export const head: ViewStyle = { flexDirection: "row", gap: 12, alignItems: "center" };
+export const headTop: ViewStyle = { alignItems: "flex-start" };
+export const headCopy: ViewStyle = { flex: 1, minWidth: 0, gap: 4 };
+export const compactTitle: TextStyle = { fontSize: 17, lineHeight: 20 };
+export const meta: ViewStyle = { gap: 4 };
+export const actions: ViewStyle = { flexDirection: "row", flexWrap: "wrap", gap: 8, justifyContent: "flex-end" };
 
-export const illustration: ViewStyle = { padding: 12, borderRadius: shape.web.card, overflow: "hidden" };
-// The original Argus promotional heading keeps its internal 200px reading measure.
-export const promoTitle: TextStyle = { maxWidth: 200 };
+// The artwork alone fills the bounds its parent gives it, under a hairline.
+export const artwork: ViewStyle = { flex: 1, minHeight: 100, borderWidth: 1, borderRadius: shape.web.card, overflow: "hidden" };
+// Artwork around an identity keeps the original insets.
+export const illustration: ViewStyle = { padding: 12, borderWidth: 1, borderRadius: shape.web.card, overflow: "hidden" };
+export const controls: ViewStyle = { padding: 16, borderWidth: 1, borderRadius: shape.web.card, overflow: "hidden" };
 
-export const controls: ViewStyle = { padding: 16, borderRadius: shape.web.card, overflow: "hidden" };
-
-// Shared content anatomy: the original Argus geometry on every platform.
-export const webSkin = { frame, featured, media, mediaOrb, body, copy, trailing, stackedCopy, nameRow, stackedFooter, promo, promoOrb, artwork, illustration, promoTitle, controls };
+// Shared content anatomy on every platform.
+export const webSkin = { frame, surface, stack, topRow, head, headTop, headCopy, compactTitle, meta, actions, artwork, illustration, controls };
 export const iosSkin = webSkin;
 export const androidSkin = webSkin;

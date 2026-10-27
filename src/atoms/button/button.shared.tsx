@@ -11,9 +11,9 @@ import {
 import { useComposedRefs } from "../../style/use-composed-refs.js";
 import { actionFill } from "../../style/action.js";
 import { useSeededMinTargetSlop, styleBox } from "../../style/touch-target-seed.js";
-import { View, Pressable, RippleClip, Text, useReducedMotion, useSizing, type LayoutStyle, type MeasureProps, GlassPane, paneStyle, paneRipple, isGlass } from "../../style/index.js";
+import { View, Pressable, RippleClip, Text, useReducedMotion, useSizing, type LayoutStyle, type MeasureProps, type ViewStyle, GlassPane, paneStyle, paneRipple, isGlass } from "../../style/index.js";
 import { liftStyle, useHover } from "../../style/hover.js";
-import { NotificationBadge } from "../badge/badge.notification.js";
+import { CountBadge } from "../badge/badge.notification.js";
 import { ButtonAttention } from "./button-attention.js";
 import { shrinkButton, shrinkLabel, type ButtonSkin, type Intent, type Size } from "./button.styles.js";
 
@@ -73,20 +73,20 @@ export interface ButtonProps extends MeasureProps {
   quiet?: boolean;
   /** The reference link hover dims to 85% while keeping its normal ink. */
   softHover?: boolean;
-  /** Inline text action: compact type, no box, and an 80% pointer-hover opacity. */
-  /** Original project-scope pill, including its action-colored dot. */
+  /** A bare project-scope menu trigger: its label set in 600, a hover wash, the chevron through `iconRight`. */
   scopeTrigger?: boolean;
-  /** Unboxed identity action with a leading avatar. */
+  /** An identity action: a 28-tall hairline pill around a leading avatar and its name. */
   identityAction?: boolean;
-  /** Compact tracked reference-key link. */
+  /** A reference-key link: an underlined monospace key in the link ink. */
   referenceLink?: boolean;
-  /** Unboxed icon with a small pointer inset. */
+  /** An unboxed 22px icon action. */
   inlineIcon?: boolean;
-  /** Compact theme choice with an explicit selection state. */
+  /** A theme choice pill whose `selected` state is the accent edge and a soft accent halo. */
   themeChoice?: boolean;
   selected?: boolean;
-  /** Original compact filter-menu pill. */
+  /** A bare filter-menu trigger: a muted label, a hover wash, the chevron through `iconRight`. */
   filterTrigger?: boolean;
+  /** Inline text action: an underlined link label with no box, read as a link, washed on hover. */
   inlineLink?: boolean;
   /** Foreground ink on an inline text action. */
   foreground?: boolean;
@@ -108,11 +108,11 @@ export interface ButtonProps extends MeasureProps {
   small?: boolean;
   large?: boolean;
   icon?: boolean;
-  /** Compact utility icon box (28px on web). */
+  /** Compact utility icon box (28px). */
   compactIcon?: boolean;
-  /** Medium utility icon box (32px on web). */
+  /** Medium utility icon box (32px). */
   mediumIcon?: boolean;
-  /** Large utility icon box (34px on web). */
+  /** Large utility icon box (34px). */
   largeIcon?: boolean;
   /** Give a compact icon box two extra pixels of horizontal room. */
   wideIcon?: boolean;
@@ -120,7 +120,7 @@ export interface ButtonProps extends MeasureProps {
   circle?: boolean;
   /** Quiet inset fill for a utility icon action. */
   inset?: boolean;
-  /** Preserve resting opacity while pressed. */
+  /** Keep the resting look while pressed (no dim, no press scale). */
   steadyPress?: boolean;
   /** Notification count carried in the upper trailing corner. */
   count?: number | string;
@@ -135,8 +135,7 @@ export interface ButtonProps extends MeasureProps {
   disabled?: boolean;
   /**
    * Lifts a primary button off the page with a soft glow in its own colour: the page's
-   * main call to action (Dark Factory's raised button). Other intents, and a disabled
-   * button, ignore it.
+   * main call to action. Other intents, and a disabled button, ignore it.
    */
   raised?: boolean;
   /** An outward red glow for an action requiring attention. Static under Reduce Motion; hidden while disabled or loading. */
@@ -236,8 +235,8 @@ export function createButton(skin: ButtonSkin) {
     // The skin's hover lift for this intent, read on the <RippleClip> wrapper (which never
     // moves) and applied to the Pressable inside it. A disabled or loading button stays put.
     // Its instant hover style (a wash, a dim) switches with the pointer, never while inert.
-    const lift = opts.iconBox ? null : skin.lift?.(intent) ?? null;
-    const hoverLook = skin.hover?.(tokens, intent, opts) ?? null;
+    const lift = opts.iconBox ? null : skin.lift?.(intent, opts) ?? null;
+    const hoverLook = skin.hover?.(theme, intent, opts, puck) ?? null;
     const { hovered: pointerOver, target: hoverTarget } = useHover(lift != null || hoverLook != null);
     const reduced = useReducedMotion();
     const live = (pointerOver || !!props.testOnly_hovered) && !(disabled || loading);
@@ -291,6 +290,8 @@ export function createButton(skin: ButtonSkin) {
             live ? hoverLook : null,
             !props.steadyPress && !puck && skin.pressedOpacity != null && pressed ? { opacity: skin.pressedOpacity } : null,
             lift != null ? liftStyle(lifted, lift, reduced) : null,
+            // The web's press, after the lift so a held button scales in place of rising.
+            !props.steadyPress && skin.press != null && pressed ? pressStyle(skin.press, puck) : null,
             glowOnClip ? null : glow,
           ]}
         >
@@ -316,12 +317,11 @@ export function createButton(skin: ButtonSkin) {
                   importantForAccessibility="no-hide-descendants"
                 />
               ) : null}
-              {!loading && props.scopeTrigger ? <View style={{ width: 7, height: 7, borderRadius: 9999, backgroundColor: actionFill(tokens) }} /> : null}
               {!loading && iconLeft != null ? iconLeft : null}
               {children != null ? <Text style={[skin.label(tokens, intent, size, opts), props.shrink ? shrinkLabel : null]}>{children}</Text> : null}
               {!loading && iconRight != null ? iconRight : null}
             </View>
-            {props.count !== undefined && props.count !== "" ? <View style={{ position: "absolute", top: 3, right: 2 }}><NotificationBadge>{String(props.count)}</NotificationBadge></View> : null}
+            {props.count !== undefined && props.count !== "" ? <View style={skin.count}><CountBadge>{String(props.count)}</CountBadge></View> : null}
           </>}
         </Pressable>
       </RippleClip>
@@ -329,4 +329,9 @@ export function createButton(skin: ButtonSkin) {
   });
   Button.displayName = "Button";
   return Button;
+}
+
+/** The web's press: a scale, and a darkening wherever no glass pane sits under it. */
+function pressStyle(press: { scale: number; brightness: number }, puck: boolean): ViewStyle {
+  return { transform: [{ scale: press.scale }], ...(puck ? null : { filter: `brightness(${press.brightness})` }) };
 }

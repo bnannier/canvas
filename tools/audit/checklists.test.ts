@@ -440,14 +440,14 @@ describe.skipIf(!hasDist)("the audit checklists keep a reviewer's work", () => {
     );
     // Input's and Textarea's Disabled fields are announced disabled (`aria-disabled` and an
     // accessibilityState beside `editable`), so their disabled recipes are plain recipes.
-    expect(row("input")).toBe("| Interaction states | recipes: focus on Default (web row; desktop), pressed on Password (web row; desktop), invalid on Error (web row; desktop), disabled on Disabled (web row; desktop). |");
+    expect(row("input")).toBe("| Interaction states | recipes: hover on Default (web row; desktop), focus on Default (web row; desktop), pressed on Password (web row; desktop), invalid on Error (web row; desktop), disabled on Disabled (web row; desktop). |");
     expect(row("textarea")).toBe("| Interaction states | recipes: focus on Default (web row; desktop), invalid on Character counter (web row; desktop), disabled on Disabled (web row; desktop). |");
     // A recipe whose state the source never announces on the web stays (its cell records the
     // finding), and the row says why it cannot be reached: a field disabled only through `editable`.
     const input = componentFacts("input", sources.corpus);
     const readOnlyField = { ...input, states: { ...input.states, unreachable: ["disabled on Disabled on the web row: its source disables the field only through `editable`, which react-native-web renders read-only, never `aria-disabled` or a native `disabled`, so the page never announces it disabled and the recipe cannot confirm it"] } };
     expect(renderComponentFacts(readOnlyField).find((line) => line.startsWith("| Interaction states |"))).toBe(
-      "| Interaction states | recipes: focus on Default (web row; desktop), pressed on Password (web row; desktop), invalid on Error (web row; desktop), disabled on Disabled (web row; desktop). not reachable on the web: disabled on Disabled on the web row: its source disables the field only through `editable`, which react-native-web renders read-only, never `aria-disabled` or a native `disabled`, so the page never announces it disabled and the recipe cannot confirm it. |",
+      "| Interaction states | recipes: hover on Default (web row; desktop), focus on Default (web row; desktop), pressed on Password (web row; desktop), invalid on Error (web row; desktop), disabled on Disabled (web row; desktop). not reachable on the web: disabled on Disabled on the web row: its source disables the field only through `editable`, which react-native-web renders read-only, never `aria-disabled` or a native `disabled`, so the page never announces it disabled and the recipe cannot confirm it. |",
     );
     // Sidebar's rail at the desktop, and its drill-down's rows inside the drawer it becomes at a phone's and a tablet's width.
     expect(row("sidebar")).toContain(

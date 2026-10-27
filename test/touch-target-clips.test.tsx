@@ -167,6 +167,14 @@ describe("the grouped Input box carries the part of an action's slop that overha
     expect(actionOverhang(inputAndroid.iconSize, inputAndroid.groupedHeight("small"))).toBeUndefined();
   });
 
+  it("measures the clear button by the glyph box natively: the iOS disc sits inside it, Android draws the glyph", () => {
+    // The shell sizes the clear button's box as max(iconSize, disc), so a disc smaller than
+    // the glyphs keeps the 20pt box every slop above is measured from.
+    for (const skin of [inputIos, inputAndroid]) {
+      expect(Math.max(skin.iconSize, skin.clearDisc?.size ?? 0)).toBe(skin.iconSize);
+    }
+  });
+
   it("never overhangs sideways: the gutter's end inset covers the slop on every skin", () => {
     for (const skin of [inputIos, inputAndroid, inputWeb]) {
       expect(StyleSheet.flatten(skin.iconOverlay("right")).paddingEnd as number).toBeGreaterThanOrEqual(ACTION_HIT_SLOP);

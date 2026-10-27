@@ -1,14 +1,14 @@
 import { type ReactNode } from "react";
 import { View, Text, useTheme, type ColorTokens, type ViewStyle } from "../../../style/index.js";
 import { contrastStyle } from "../../../style/glass-surface/glass-surface.shared.js";
+import { Icon } from "../../icon/icon.js";
 import type { CheckboxSkin, Size } from "../checkbox.shared.js";
 
 // Shared by the interactive Checkbox and its private decorative counterpart, so
 // removing a nested control does not change the indicator's layout or skin.
-export const CHECKBOX_ROW: ViewStyle = { flexDirection: "row", alignItems: "flex-start", gap: 8 };
+export const CHECKBOX_ROW: ViewStyle = { flexDirection: "row", alignItems: "flex-start", gap: 12 };
 
-// Keep the glyph out of flow. Native Android otherwise measures the square from
-// the Text's width instead of honoring the skin's explicit box width.
+// Keep the glyph out of flow, so the box is always the skin's explicit square.
 const GLYPH_LAYER: ViewStyle = {
   position: "absolute",
   top: 0,
@@ -21,27 +21,29 @@ const GLYPH_LAYER: ViewStyle = {
 };
 
 /** Private visual anatomy, with no press handler, role, or focusable host. */
-export function CheckboxIndicatorBox({ skin, tokens, size, checked, indeterminate, nudge }: {
+export function CheckboxIndicatorBox({ skin, tokens, size, checked, indeterminate, hovered }: {
   skin: CheckboxSkin;
   tokens: ColorTokens;
   size: Size;
   checked?: boolean;
   indeterminate?: boolean;
-  nudge: boolean;
+  hovered?: boolean;
 }) {
   const filled = !!(indeterminate || checked);
   // The box is a small mark inside content, not a surface: it draws the skin's own box and
   // glyph in every mode, glass included, with no pane and no rim (the owner's GS-5
   // decision), and takes the contrasting border under Increase Contrast.
   const theme = useTheme();
-  const box = skin.box(tokens, filled, size, nudge);
+  const shape = skin.box(tokens, filled, size);
+  const box = hovered && skin.hover ? { ...shape, ...skin.hover(tokens) } : shape;
+  const glyph = skin.glyph(tokens, size);
   // The owning control announces checked state; the decorative glyph must never
   // become part of its accessible name when selection changes.
   return (
     <View aria-hidden accessibilityElementsHidden importantForAccessibility="no-hide-descendants" style={contrastStyle(theme, box)}>
       {filled ? (
         <View style={GLYPH_LAYER}>
-          <Text style={skin.glyph(tokens, size)}>{indeterminate ? "–" : "✓"}</Text>
+          {indeterminate ? <Icon minus size={glyph.size} color={glyph.color} /> : <Icon check size={glyph.size} color={glyph.color} />}
         </View>
       ) : null}
     </View>
@@ -49,7 +51,7 @@ export function CheckboxIndicatorBox({ skin, tokens, size, checked, indeterminat
 }
 
 /** Shared text and indicator anatomy, with no interaction or semantic role. */
-export function CheckboxContent({ skin, tokens, size, checked, indeterminate, children, description }: {
+export function CheckboxContent({ skin, tokens, size, checked, indeterminate, children, description, hovered }: {
   skin: CheckboxSkin;
   tokens: ColorTokens;
   size: Size;
@@ -57,29 +59,27 @@ export function CheckboxContent({ skin, tokens, size, checked, indeterminate, ch
   indeterminate?: boolean;
   children?: ReactNode;
   description?: ReactNode;
+  hovered?: boolean;
 }) {
   const hasText = children != null || description != null;
   return (
     <>
       <CheckboxIndicatorBox skin={skin} tokens={tokens} size={size} checked={checked}
-        indeterminate={indeterminate} nudge={hasText} />
+        indeterminate={indeterminate} hovered={hovered} />
       {hasText ? (
-        description != null ? (
-          <View style={TEXT_COLUMN}>
-            {children != null ? <Text style={skin.label(tokens, size)}>{children}</Text> : null}
-            <Text style={skin.description(tokens, size)}>{description}</Text>
-          </View>
-        ) : (
-          <Text style={skin.label(tokens, size)}>{children}</Text>
-        )
+        <View style={TEXT_COLUMN}>
+          {children != null ? <Text style={skin.label(tokens, size)}>{children}</Text> : null}
+          {description != null ? <Text style={skin.description(tokens, size)}>{description}</Text> : null}
+        </View>
       ) : null}
     </>
   );
 }
 
-// Same snug title/description spacing and shrink behavior as the interactive
-// Checkbox. Sharing this layout keeps private compound controls in sync.
-const TEXT_COLUMN: ViewStyle = { flexShrink: 1, gap: 8 };
+// The hand-off's text column: the title sits 1px below the box's top and the
+// description follows it with no gap (the line heights carry the spacing). Shared by
+// the interactive Checkbox and the private indicator, so compound controls stay in sync.
+const TEXT_COLUMN: ViewStyle = { flexShrink: 1, minWidth: 0, paddingTop: 1 };
 
 export interface CheckboxIndicatorProps {
   checked?: boolean;
